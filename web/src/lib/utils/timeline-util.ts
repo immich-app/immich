@@ -1,4 +1,6 @@
+import { TimelineMonth } from '$lib/managers/timeline-manager/TimelineMonth.svelte';
 import type { TimelineAsset, ViewportTopMonth } from '$lib/managers/timeline-manager/types';
+import type { ScrollSegment, SegmentIdentifier } from '$lib/managers/VirtualScrollManager/ScrollSegment.svelte';
 import { locale } from '$lib/stores/preferences.store';
 import { getAssetRatio } from '$lib/utils/asset-utils';
 import { AssetTypeEnum, type AssetResponseDto } from '@immich/sdk';
@@ -99,7 +101,7 @@ export const toISOYearMonthUTC = ({ year, month }: TimelineYearMonth): string =>
   return `${yearFull}-${monthFull}-01T00:00:00.000Z`;
 };
 
-export function formatMonthGroupTitle(_date: DateTime): string {
+export function formatMonthTitle(_date: DateTime): string {
   if (!_date.isValid) {
     return _date.toString();
   }
@@ -113,7 +115,7 @@ export function formatMonthGroupTitle(_date: DateTime): string {
   );
 }
 
-export function formatGroupTitle(_date: DateTime): string {
+export function formatDayTitle(_date: DateTime): string {
   if (!_date.isValid) {
     return _date.toString();
   }
@@ -245,3 +247,29 @@ export function setDifferenceInPlace<T>(setA: Set<T>, setB: Set<T>): Set<T> {
   }
   return setA;
 }
+
+export const formatDayTitleFull = (_date: DateTime): string => {
+  if (!_date.isValid) {
+    return _date.toString();
+  }
+  const date = _date as DateTime<true>;
+  return getDateLocaleString(date);
+};
+
+/**
+ * Creates a segment identifier for a given year/month or date/time.
+ * This is used to uniquely identify and match timeline segments (MonthGroups).
+ */
+export const getSegmentIdentifier = (yearMonth: TimelineYearMonth | TimelineDateTime): SegmentIdentifier => ({
+  get id() {
+    return yearMonth.year + '-' + yearMonth.month;
+  },
+  matches: (segment: ScrollSegment) => {
+    const monthSegment = segment as TimelineMonth;
+    return (
+      monthSegment.yearMonth &&
+      monthSegment.yearMonth.year === yearMonth.year &&
+      monthSegment.yearMonth.month === yearMonth.month
+    );
+  },
+});

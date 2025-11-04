@@ -8,7 +8,7 @@
   import Timeline from '$lib/components/timeline/Timeline.svelte';
   import { AppRoute, AssetAction, QueryParameter } from '$lib/constants';
   import SkipLink from '$lib/elements/SkipLink.svelte';
-  import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
+  import { TimelineManager } from '$lib/managers/timeline-manager/TimelineManager.svelte';
   import TagCreateModal from '$lib/modals/TagCreateModal.svelte';
   import TagEditModal from '$lib/modals/TagEditModal.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';

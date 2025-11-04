@@ -3,7 +3,7 @@ import ToastAction from '$lib/components/ToastAction.svelte';
 import { AppRoute } from '$lib/constants';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { downloadManager } from '$lib/managers/download-manager.svelte';
-import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
+import { TimelineManager } from '$lib/managers/timeline-manager/TimelineManager.svelte';
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
 import { assetsSnapshot } from '$lib/managers/timeline-manager/utils.svelte';
 import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
@@ -14,6 +14,7 @@ import { getByteUnitString } from '$lib/utils/byte-units';
 import { getFormatter } from '$lib/utils/i18n';
 import { navigate } from '$lib/utils/navigation';
 import { asQueryString } from '$lib/utils/shared-links';
+import { getSegmentIdentifier } from '$lib/utils/timeline-util';
 import {
   addAssetsToAlbum as addAssets,
   addAssetsToAlbums as addToAlbums,
@@ -490,17 +491,17 @@ export const selectAllAssets = async (timelineManager: TimelineManager, assetInt
   isSelectingAllAssets.set(true);
 
   try {
-    for (const monthGroup of timelineManager.months) {
-      await timelineManager.loadMonthGroup(monthGroup.yearMonth);
+    for (const month of timelineManager.segments) {
+      await timelineManager.loadSegment(getSegmentIdentifier(month.yearMonth));
 
       if (!get(isSelectingAllAssets)) {
         assetInteraction.clearMultiselect();
         break; // Cancelled
       }
-      assetInteraction.selectAssets(assetsSnapshot([...monthGroup.assetsIterator()]));
+      assetInteraction.selectAssets(assetsSnapshot([...month.assetsIterator()]));
 
-      for (const dateGroup of monthGroup.dayGroups) {
-        assetInteraction.addGroupToMultiselectGroup(dateGroup.groupTitle);
+      for (const day of month.days) {
+        assetInteraction.addGroupToMultiselectGroup(day.dayTitle);
       }
     }
   } catch (error) {

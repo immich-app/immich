@@ -7,7 +7,7 @@
     setFocusTo as setFocusToInit,
   } from '$lib/components/timeline/actions/focus-actions';
   import { AppRoute } from '$lib/constants';
-  import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
+  import { TimelineManager } from '$lib/managers/timeline-manager/TimelineManager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import NavigateToDateModal from '$lib/modals/NavigateToDateModal.svelte';
   import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
@@ -122,7 +122,7 @@
   };
 
   const isTrashEnabled = $derived($featureFlags.loaded && $featureFlags.trash);
-  const isEmpty = $derived(timelineManager.isInitialized && timelineManager.months.length === 0);
+  const isEmpty = $derived(timelineManager.isInitialized && timelineManager.segments.length === 0);
   const idsSelectedAssets = $derived(assetInteraction.selectedAssets.map(({ id }) => id));
   let isShortcutModalOpen = false;
 
