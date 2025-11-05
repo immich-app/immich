@@ -109,7 +109,7 @@ export class PluginExecutionService extends BaseService implements OnModuleInit 
     const workflowFilters = await this.workflowRepository.getFilters(workflowId);
     const workflowActions = await this.workflowRepository.getActions(workflowId);
 
-    let context = {
+    const context = {
       jwtToken,
       asset,
       triggerConfig: workflow.triggerConfig,

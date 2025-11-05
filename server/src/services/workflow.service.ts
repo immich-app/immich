@@ -32,7 +32,7 @@ export class WorkflowService extends BaseService {
   async getAll(auth: AuthDto): Promise<WorkflowResponseDto[]> {
     const workflows = await this.workflowRepository.getWorkflowsByOwner(auth.user.id);
 
-    return Promise.all(workflows.map(this.mapWorkflow));
+    return Promise.all(workflows.map((workflow) => this.mapWorkflow(workflow)));
   }
 
   async get(auth: AuthDto, id: string): Promise<WorkflowResponseDto> {

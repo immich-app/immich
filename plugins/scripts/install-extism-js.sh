@@ -33,63 +33,98 @@ case $(uname) in
 esac
 
 ARCH=$(uname -m)
+echo "Detected architecture: $ARCH"
+
+# Map architecture names for downloads
+EXTISM_ARCH="$ARCH"
+BINARYEN_ARCH="$ARCH"
+
 case "$ARCH" in
-  ix86*|x86_64*)    ARCH="x86_64" ;;
-  arm64*|aarch64*)  ARCH="aarch64" ;;
-  *)                echo "unknown arch: $ARCH" && exit 1 ;;
+  ix86*|x86_64*)    
+    EXTISM_ARCH="x86_64"
+    BINARYEN_ARCH="x86_64"
+    ;;
+  arm64*|aarch64*)  
+    EXTISM_ARCH="aarch64"
+    BINARYEN_ARCH="aarch64"
+    ;;
+  *)                
+    echo "unknown arch: $ARCH" && exit 1 
+    ;;
 esac
 
-BINARYEN_TAG="version_116"
-DOWNLOAD_URL="https://github.com/extism/js-pdk/releases/download/$LATEST_TAG/extism-js-$ARCH-$OS-$LATEST_TAG.gz"
+echo "Using OS: $OS, Architecture for extism-js: $EXTISM_ARCH, Architecture for binaryen: $BINARYEN_ARCH"
+
+BINARYEN_TAG="version_124"
+DOWNLOAD_URL="https://github.com/extism/js-pdk/releases/download/$LATEST_TAG/extism-js-$EXTISM_ARCH-$OS-$LATEST_TAG.gz"
+
+echo "Download URL: $DOWNLOAD_URL"
 
 # Use /usr/local/bin directly (no sudo in Docker)
 INSTALL_DIR="/usr/local/bin"
 
 echo "Checking for binaryen..."
 
-if ! which "wasm-merge" > /dev/null || ! which "wasm-opt" > /dev/null; then
-  echo "Missing binaryen tool(s)"
+# Check if tools exist and are executable
+NEEDS_INSTALL=false
+if ! command -v wasm-merge > /dev/null 2>&1 || ! command -v wasm-opt > /dev/null 2>&1; then
+  NEEDS_INSTALL=true
+fi
 
-  # binaryen use arm64 instead where as extism-js uses aarch64 for release file naming
-  BINARYEN_ARCH="$ARCH"
-  case "$BINARYEN_ARCH" in
-    aarch64*)  BINARYEN_ARCH="arm64" ;;
-  esac
+if [ "$NEEDS_INSTALL" = true ]; then
+  echo "Installing binaryen tools..."
 
-  # matches the case where the user installs extism-pdk in a Linux-based Docker image running on mac m1
-  # binaryen didn't have arm64 release file for linux 
-  if [ "$BINARYEN_ARCH" = "arm64" ] && [ "$OS" = "linux" ]; then
-    BINARYEN_ARCH="x86_64"
-  fi
-
-  if [ $OS = "macos" ]; then
-    echo "Installing binaryen and wasm-merge using homebrew"
+  if [ "$OS" = "macos" ]; then
+    echo "Installing binaryen using homebrew"
     brew install binaryen
   else
-    if [ ! -e "binaryen-$BINARYEN_TAG-$BINARYEN_ARCH-$OS.tar.gz" ]; then
-      echo 'Downloading binaryen...'
-      curl -L -O "https://github.com/WebAssembly/binaryen/releases/download/$BINARYEN_TAG/binaryen-$BINARYEN_TAG-$BINARYEN_ARCH-$OS.tar.gz"
+    echo "Downloading binaryen for $OS/$BINARYEN_ARCH..."
+    BINARYEN_DOWNLOAD_URL="https://github.com/WebAssembly/binaryen/releases/download/$BINARYEN_TAG/binaryen-$BINARYEN_TAG-$BINARYEN_ARCH-$OS.tar.gz"
+
+    echo "Binaryen download URL: $BINARYEN_DOWNLOAD_URL"
+    
+    curl -fsSL -o "/tmp/binaryen.tar.gz" "$BINARYEN_DOWNLOAD_URL"
+    
+    # Extract to /tmp
+    cd /tmp
+    tar xzf binaryen.tar.gz
+    
+    # The extracted directory name
+    BINARYEN_DIR="/tmp/binaryen-$BINARYEN_TAG"
+    
+    if [ ! -d "$BINARYEN_DIR" ]; then
+      echo "Error: Failed to extract binaryen to $BINARYEN_DIR"
+      ls -la /tmp/
+      exit 1
     fi
-    rm -rf 'binaryen' "binaryen-$BINARYEN_TAG"
-    tar xf "binaryen-$BINARYEN_TAG-$BINARYEN_ARCH-$OS.tar.gz"
-    mv "binaryen-$BINARYEN_TAG"/ binaryen/
-    mkdir -p /usr/local/binaryen
-    if ! which 'wasm-merge' > /dev/null; then
-      echo "Installing wasm-merge..."
-      rm -f /usr/local/binaryen/wasm-merge
-      mv binaryen/bin/wasm-merge /usr/local/binaryen/wasm-merge
-      ln -s /usr/local/binaryen/wasm-merge /usr/local/bin/wasm-merge
-    else
-      echo "wasm-merge is already installed"
-    fi
-    if ! which 'wasm-opt' > /dev/null; then
-      echo "Installing wasm-opt..."
-      rm -f /usr/local/bin/wasm-opt
-      mv binaryen/bin/wasm-opt /usr/local/binaryen/wasm-opt
-      ln -s /usr/local/binaryen/wasm-opt /usr/local/bin/wasm-opt
-    else
-      echo "wasm-opt is already installed"
-    fi
+    
+    # Install the binaries
+    mkdir -p "$INSTALL_DIR"
+    
+    echo "Installing wasm-merge to $INSTALL_DIR..."
+    cp "$BINARYEN_DIR/bin/wasm-merge" "$INSTALL_DIR/wasm-merge"
+    chmod +x "$INSTALL_DIR/wasm-merge"
+    
+    echo "Installing wasm-opt to $INSTALL_DIR..."
+    cp "$BINARYEN_DIR/bin/wasm-opt" "$INSTALL_DIR/wasm-opt"
+    chmod +x "$INSTALL_DIR/wasm-opt"
+    
+    # Cleanup
+    cd -
+    rm -rf "$BINARYEN_DIR" /tmp/binaryen.tar.gz
+    
+    echo "Binaryen tools installed successfully"
+  fi
+  
+  # Verify installation
+  if ! command -v wasm-merge > /dev/null 2>&1; then
+    echo "Error: wasm-merge not found after installation"
+    exit 1
+  fi
+  
+  if ! command -v wasm-opt > /dev/null 2>&1; then
+    echo "Error: wasm-opt not found after installation"
+    exit 1
   fi
 else
   echo "binaryen tools are already installed"
@@ -114,4 +149,9 @@ if [[ ":$PATH:" != *":$INSTALL_DIR:"* ]]; then
   echo "Note: $INSTALL_DIR is not in your PATH. You may need to add it to your PATH or use the full path to run extism-js."
 fi
 
-echo "Installation complete. Try to run 'extism-js --version' to ensure it was correctly installed."
+echo "Installation complete. Verifying installations..."
+echo "wasm-merge location: $(command -v wasm-merge || echo 'NOT FOUND')"
+echo "wasm-opt location: $(command -v wasm-opt || echo 'NOT FOUND')"
+echo "extism-js location: $(command -v extism-js || echo 'NOT FOUND')"
+echo ""
+echo "Try to run 'extism-js --version' to ensure it was correctly installed."

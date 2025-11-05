@@ -52,9 +52,16 @@ FROM builder AS plugins
 
 WORKDIR /usr/src/app
 COPY ./plugins ./plugins/
+
+# Install extism-js and dependencies
 RUN apt-get update && apt-get install -y curl && \
   chmod +x ./plugins/scripts/install-extism-js.sh && \
   ./plugins/scripts/install-extism-js.sh v1.5.1
+
+# Ensure tools are in PATH for subsequent commands
+ENV PATH="/usr/local/bin:${PATH}"
+
+# Build plugins
 RUN --mount=type=cache,id=pnpm-plugins,target=/buildcache/pnpm-store \
   --mount=type=bind,source=package.json,target=package.json \
   --mount=type=bind,source=.pnpmfile.cjs,target=.pnpmfile.cjs \

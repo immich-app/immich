@@ -1,6 +1,7 @@
 import { IsNotEmpty, IsString } from 'class-validator';
-import { PluginContext, PluginTrigger } from 'src/schema/tables/plugin.table';
+import { PluginContext } from 'src/schema/tables/plugin.table';
 import type { JSONSchema } from 'src/types/plugin-schema.types';
+import { ValidateEnum } from 'src/validation';
 
 export class PluginResponseDto {
   id!: string;
@@ -12,7 +13,7 @@ export class PluginResponseDto {
   wasmPath!: string;
   createdAt!: string;
   updatedAt!: string;
-  triggers!: PluginTrigger[];
+  triggers!: PluginTriggerResponseDto[];
   filters!: PluginFilterResponseDto[];
   actions!: PluginActionResponseDto[];
 }
@@ -20,6 +21,8 @@ export class PluginResponseDto {
 export class PluginTriggerResponseDto {
   name!: string;
   description!: string;
+
+  @ValidateEnum({ enum: PluginContext, name: 'PluginContext' })
   context!: PluginContext;
   schema!: JSONSchema | null;
 }
@@ -30,6 +33,8 @@ export class PluginFilterResponseDto {
   name!: string;
   displayName!: string;
   description!: string;
+
+  @ValidateEnum({ enum: PluginContext, name: 'PluginContext' })
   supportedContexts!: PluginContext[];
   schema!: JSONSchema | null;
 }
@@ -40,6 +45,8 @@ export class PluginActionResponseDto {
   name!: string;
   displayName!: string;
   description!: string;
+
+  @ValidateEnum({ enum: PluginContext, name: 'PluginContext' })
   supportedContexts!: PluginContext[];
   schema!: JSONSchema | null;
 }

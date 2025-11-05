@@ -941,7 +941,7 @@ export type PluginActionResponseDto = {
     name: string;
     pluginId: string;
     schema: object | null;
-    supportedContexts: SupportedContexts[];
+    supportedContexts: PluginContext[];
 };
 export type PluginFilterResponseDto = {
     description: string;
@@ -950,7 +950,13 @@ export type PluginFilterResponseDto = {
     name: string;
     pluginId: string;
     schema: object | null;
-    supportedContexts: SupportedContexts[];
+    supportedContexts: PluginContext[];
+};
+export type PluginTriggerResponseDto = {
+    context: PluginContext;
+    description: string;
+    name: string;
+    schema: object | null;
 };
 export type PluginResponseDto = {
     actions: PluginActionResponseDto[];
@@ -961,7 +967,7 @@ export type PluginResponseDto = {
     filters: PluginFilterResponseDto[];
     id: string;
     name: string;
-    triggers: object[];
+    triggers: PluginTriggerResponseDto[];
     updatedAt: string;
     version: string;
     wasmPath: string;
@@ -5235,7 +5241,7 @@ export enum PartnerDirection {
     SharedBy = "shared-by",
     SharedWith = "shared-with"
 }
-export enum SupportedContexts {
+export enum PluginContext {
     Asset = "asset",
     Album = "album",
     Person = "person"

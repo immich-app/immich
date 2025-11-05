@@ -34,7 +34,7 @@ class PluginFilterResponseDto {
 
   Object? schema;
 
-  List<String> supportedContexts;
+  List<PluginContext> supportedContexts;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is PluginFilterResponseDto &&
@@ -91,7 +91,7 @@ class PluginFilterResponseDto {
         name: mapValueOfType<String>(json, r'name')!,
         pluginId: mapValueOfType<String>(json, r'pluginId')!,
         schema: mapValueOfType<Object>(json, r'schema'),
-        supportedContexts: PluginFilterResponseDtoSupportedContextsEnum.listFromJson(json[r'supportedContexts']),
+        supportedContexts: PluginContext.listFromJson(json[r'supportedContexts']),
       );
     }
     return null;
@@ -148,81 +148,4 @@ class PluginFilterResponseDto {
     'supportedContexts',
   };
 }
-
-
-class PluginFilterResponseDtoSupportedContextsEnum {
-  /// Instantiate a new enum with the provided [value].
-  const PluginFilterResponseDtoSupportedContextsEnum._(this.value);
-
-  /// The underlying value of this enum member.
-  final String value;
-
-  @override
-  String toString() => value;
-
-  String toJson() => value;
-
-  static const asset = PluginFilterResponseDtoSupportedContextsEnum._(r'asset');
-  static const album = PluginFilterResponseDtoSupportedContextsEnum._(r'album');
-  static const person = PluginFilterResponseDtoSupportedContextsEnum._(r'person');
-
-  /// List of all possible values in this [enum][PluginFilterResponseDtoSupportedContextsEnum].
-  static const values = <PluginFilterResponseDtoSupportedContextsEnum>[
-    asset,
-    album,
-    person,
-  ];
-
-  static PluginFilterResponseDtoSupportedContextsEnum? fromJson(dynamic value) => PluginFilterResponseDtoSupportedContextsEnumTypeTransformer().decode(value);
-
-  static List<PluginFilterResponseDtoSupportedContextsEnum> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <PluginFilterResponseDtoSupportedContextsEnum>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = PluginFilterResponseDtoSupportedContextsEnum.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
-  }
-}
-
-/// Transformation class that can [encode] an instance of [PluginFilterResponseDtoSupportedContextsEnum] to String,
-/// and [decode] dynamic data back to [PluginFilterResponseDtoSupportedContextsEnum].
-class PluginFilterResponseDtoSupportedContextsEnumTypeTransformer {
-  factory PluginFilterResponseDtoSupportedContextsEnumTypeTransformer() => _instance ??= const PluginFilterResponseDtoSupportedContextsEnumTypeTransformer._();
-
-  const PluginFilterResponseDtoSupportedContextsEnumTypeTransformer._();
-
-  String encode(PluginFilterResponseDtoSupportedContextsEnum data) => data.value;
-
-  /// Decodes a [dynamic value][data] to a PluginFilterResponseDtoSupportedContextsEnum.
-  ///
-  /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
-  /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
-  /// cannot be decoded successfully, then an [UnimplementedError] is thrown.
-  ///
-  /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
-  /// and users are still using an old app with the old code.
-  PluginFilterResponseDtoSupportedContextsEnum? decode(dynamic data, {bool allowNull = true}) {
-    if (data != null) {
-      switch (data) {
-        case r'asset': return PluginFilterResponseDtoSupportedContextsEnum.asset;
-        case r'album': return PluginFilterResponseDtoSupportedContextsEnum.album;
-        case r'person': return PluginFilterResponseDtoSupportedContextsEnum.person;
-        default:
-          if (!allowNull) {
-            throw ArgumentError('Unknown enum value to decode: $data');
-          }
-      }
-    }
-    return null;
-  }
-
-  /// Singleton [PluginFilterResponseDtoSupportedContextsEnumTypeTransformer] instance.
-  static PluginFilterResponseDtoSupportedContextsEnumTypeTransformer? _instance;
-}
-
 

@@ -14338,12 +14338,7 @@
           },
           "supportedContexts": {
             "items": {
-              "enum": [
-                "asset",
-                "album",
-                "person"
-              ],
-              "type": "string"
+              "$ref": "#/components/schemas/PluginContext"
             },
             "type": "array"
           }
@@ -14358,6 +14353,14 @@
           "supportedContexts"
         ],
         "type": "object"
+      },
+      "PluginContext": {
+        "enum": [
+          "asset",
+          "album",
+          "person"
+        ],
+        "type": "string"
       },
       "PluginFilterResponseDto": {
         "properties": {
@@ -14382,12 +14385,7 @@
           },
           "supportedContexts": {
             "items": {
-              "enum": [
-                "asset",
-                "album",
-                "person"
-              ],
-              "type": "string"
+              "$ref": "#/components/schemas/PluginContext"
             },
             "type": "array"
           }
@@ -14437,7 +14435,7 @@
           },
           "triggers": {
             "items": {
-              "type": "object"
+              "$ref": "#/components/schemas/PluginTriggerResponseDto"
             },
             "type": "array"
           },
@@ -14464,6 +14462,34 @@
           "updatedAt",
           "version",
           "wasmPath"
+        ],
+        "type": "object"
+      },
+      "PluginTriggerResponseDto": {
+        "properties": {
+          "context": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PluginContext"
+              }
+            ]
+          },
+          "description": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "schema": {
+            "nullable": true,
+            "type": "object"
+          }
+        },
+        "required": [
+          "context",
+          "description",
+          "name",
+          "schema"
         ],
         "type": "object"
       },

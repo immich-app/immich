@@ -43,7 +43,7 @@ class PluginResponseDto {
 
   String name;
 
-  List<Object> triggers;
+  List<PluginTriggerResponseDto> triggers;
 
   String updatedAt;
 
@@ -119,7 +119,7 @@ class PluginResponseDto {
         filters: PluginFilterResponseDto.listFromJson(json[r'filters']),
         id: mapValueOfType<String>(json, r'id')!,
         name: mapValueOfType<String>(json, r'name')!,
-        triggers: Object.listFromJson(json[r'triggers']),
+        triggers: PluginTriggerResponseDto.listFromJson(json[r'triggers']),
         updatedAt: mapValueOfType<String>(json, r'updatedAt')!,
         version: mapValueOfType<String>(json, r'version')!,
         wasmPath: mapValueOfType<String>(json, r'wasmPath')!,

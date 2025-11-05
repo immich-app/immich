@@ -1,18 +1,17 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { Plugin, PluginAction, PluginFilter } from 'src/database';
-import { AuthDto } from 'src/dtos/auth.dto';
 import { PluginResponseDto } from 'src/dtos/plugin.dto';
 import { pluginTriggers } from 'src/schema/tables/plugin.table';
 import { BaseService } from 'src/services/base.service';
 
 @Injectable()
 export class PluginService extends BaseService {
-  async getAll(auth: AuthDto): Promise<PluginResponseDto[]> {
+  async getAll(): Promise<PluginResponseDto[]> {
     const plugins = await this.pluginRepository.getAllPlugins();
     return Promise.all(plugins.map((plugin) => this.mapPlugin(plugin)));
   }
 
-  async get(auth: AuthDto, id: string): Promise<PluginResponseDto> {
+  async get(id: string): Promise<PluginResponseDto> {
     const plugin = await this.findOrFail(id);
     return this.mapPlugin(plugin);
   }
@@ -40,8 +39,8 @@ export class PluginService extends BaseService {
       createdAt: plugin.createdAt.toISOString(),
       updatedAt: plugin.updatedAt.toISOString(),
       triggers: pluginTriggers,
-      filters: filters.map(this.mapPluginFilter),
-      actions: actions.map(this.mapPluginAction),
+      filters: filters.map((filter) => this.mapPluginFilter(filter)),
+      actions: actions.map((action) => this.mapPluginAction(action)),
     };
   }
 

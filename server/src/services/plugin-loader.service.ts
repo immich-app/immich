@@ -17,7 +17,7 @@ export class PluginLoaderService extends BaseService implements OnApplicationBoo
       const manifestFilePath = path.join(process.cwd(), '..', 'plugins', 'manifest.json');
       this.logger.debug(`Loading plugins from manifest file at: ${manifestFilePath}.`);
 
-      const content = await readFile(manifestFilePath, { encoding: 'utf-8' });
+      const content = await readFile(manifestFilePath, { encoding: 'utf8' });
 
       const manifestData = JSON.parse(content);
       const manifest = plainToInstance(PluginManifestDto, manifestData);

@@ -32,14 +32,6 @@ delete from "workflow"
 where
   "id" = $1
 
--- WorkflowRepository.getFilter
-select
-  *
-from
-  "workflow_filter"
-where
-  "id" = $1
-
 -- WorkflowRepository.getFilters
 select
   *
@@ -52,14 +44,6 @@ order by
 
 -- WorkflowRepository.deleteFilter
 delete from "workflow_filter"
-where
-  "id" = $1
-
--- WorkflowRepository.getAction
-select
-  *
-from
-  "workflow_action"
 where
   "id" = $1
 
@@ -77,8 +61,3 @@ order by
 delete from "workflow_action"
 where
   "id" = $1
-
--- WorkflowRepository.deleteActionsByWorkflow
-delete from "workflow_action"
-where
-  "workflowId" = $1
