@@ -1,13 +1,15 @@
-import { NestFactory } from '@nestjs/core';
+import { Kysely } from 'kysely';
 import { CommandFactory } from 'nest-commander';
 import { ChildProcess, fork } from 'node:child_process';
 import { dirname, join } from 'node:path';
 import { Worker } from 'node:worker_threads';
-import { ApiModule, ImmichAdminModule } from 'src/app.module';
+import { ImmichAdminModule } from 'src/app.module';
 import { ExitCode, ImmichWorker, LogLevel } from 'src/enum';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
+import { type DB } from 'src/schema';
 import { MaintenanceService } from 'src/services/maintenance.service';
+import { getKyselyConfig } from 'src/utils/database';
 
 /**
  * Manages worker lifecycle
@@ -48,12 +50,10 @@ class Workers {
    * @returns System configuration
    */
   private async getConfig(): Promise<{ isMaintenanceMode: boolean }> {
-    const app = await NestFactory.create(ApiModule);
-    const metadataRepository = app.get(SystemMetadataRepository);
-
-    await app.close();
-
-    return await MaintenanceService.getMaintenanceModeWith(metadataRepository);
+    const { database } = new ConfigRepository().getEnv();
+    const kysely = new Kysely<DB>(getKyselyConfig(database.config));
+    const systemMetadataRepository = new SystemMetadataRepository(kysely);
+    return await MaintenanceService.getMaintenanceModeWith(systemMetadataRepository);
   }
 
   /**
