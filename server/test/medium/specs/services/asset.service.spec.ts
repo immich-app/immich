@@ -51,7 +51,7 @@ describe(AssetService.name, () => {
       const { asset: newAsset } = await ctx.newAsset({ ownerId: user.id });
 
       const { album } = await ctx.newAlbum({ ownerId: user.id });
-      await ctx.newAlbumAsset({ albumId: album.id, assetId: oldAsset.id });
+      await ctx.newAlbumAsset({ albumId: album.id, assetId: oldAsset.id, createdBy: user.id });
 
       const auth = factory.auth({ user: { id: user.id } });
       await sut.copy(auth, { sourceId: oldAsset.id, targetId: newAsset.id });
