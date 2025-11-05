@@ -49,5 +49,5 @@ extension ActionButtonTypeVisuals on ActionButtonType {
     };
   }
 
-  String localizedLabel(BuildContext context) => _labelKey.tr();
+  String localizedLabel(BuildContext _) => _labelKey.tr();
 }

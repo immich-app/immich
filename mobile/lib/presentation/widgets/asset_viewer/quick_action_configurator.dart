@@ -83,7 +83,7 @@ class _ViewerQuickActionConfiguratorState extends ConsumerState<ViewerQuickActio
               height: 4,
               decoration: BoxDecoration(
                 color: theme.colorScheme.onSurface.withValues(alpha: 0.25),
-                borderRadius: BorderRadius.circular(2),
+                borderRadius: const BorderRadius.all(Radius.circular(2)),
               ),
             ),
             const SizedBox(height: 16),
@@ -172,7 +172,7 @@ class _QuickActionTile extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: const BorderRadius.all(Radius.circular(12)),
           border: Border.all(color: borderColor),
           color: backgroundColor,
         ),
@@ -189,7 +189,7 @@ class _QuickActionTile extends StatelessWidget {
                   height: 24,
                   decoration: BoxDecoration(
                     color: indicatorColor.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: const BorderRadius.all(Radius.circular(12)),
                   ),
                   child: Center(
                     child: Text(
