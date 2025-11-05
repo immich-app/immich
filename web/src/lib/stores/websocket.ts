@@ -50,7 +50,7 @@ export const websocketStore = {
   connected: writable<boolean>(false),
   serverVersion: writable<ServerVersionResponseDto>(),
   release: writable<ReleaseEvent>(),
-  serverRestarting: writable<boolean>(false),
+  serverRestarting: writable<undefined | MaintenanceModeResponseDto>(),
 };
 
 export const websocketEvents = createEventEmitter(websocket);
@@ -59,22 +59,7 @@ websocket
   .on('connect', () => websocketStore.connected.set(true))
   .on('disconnect', () => websocketStore.connected.set(false))
   .on('on_server_version', (serverVersion) => websocketStore.serverVersion.set(serverVersion))
-  .on('on_server_restart', (mode) => {
-    if (mode.isMaintenanceMode !== location.pathname.startsWith(AppRoute.MAINTENANCE)) {
-      websocketStore.serverRestarting.set(true);
-
-      // we will be disconnected momentarily
-      // wait for reconnect then reload
-      let waiting = false;
-      websocketStore.connected.subscribe((connected) => {
-        if (!connected) {
-          waiting = true;
-        } else if (connected && waiting) {
-          location.href = mode.isMaintenanceMode ? AppRoute.MAINTENANCE : '/';
-        }
-      });
-    }
-  })
+  .on('on_server_restart', (mode) => websocketStore.serverRestarting.set(mode))
   .on('on_new_release', (releaseVersion) => websocketStore.release.set(releaseVersion))
   .on('on_session_delete', () => authManager.logout())
   .on('on_notification', () => notificationManager.refresh())

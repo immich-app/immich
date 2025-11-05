@@ -107,20 +107,26 @@
 
   $effect(() => void handleRelease($release));
 
-  const handleRestart = async (isRestarting: boolean) => {
+  serverRestarting.subscribe((isRestarting) => {
     if (!isRestarting) {
       return;
     }
 
-    try {
-      serverRestarting.set(false);
-      await modalManager.show(ServerRestartingModal, {});
-    } catch (error) {
-      console.error('Error [ServerRestartBox]:', error);
-    }
-  };
+    if (isRestarting.isMaintenanceMode !== page.url.pathname.startsWith(AppRoute.MAINTENANCE)) {
+      modalManager.show(ServerRestartingModal, {}).catch((error) => console.error('Error [ServerRestartBox]:', error));
 
-  $effect(() => void handleRestart($serverRestarting));
+      // we will be disconnected momentarily
+      // wait for reconnect then reload
+      let waiting = false;
+      websocketStore.connected.subscribe((connected) => {
+        if (!connected) {
+          waiting = true;
+        } else if (connected && waiting) {
+          location.href = isRestarting.isMaintenanceMode ? AppRoute.MAINTENANCE : '/';
+        }
+      });
+    }
+  });
 </script>
 
 <svelte:head>
