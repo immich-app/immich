@@ -14344,7 +14344,6 @@
               "enum": [
                 "asset",
                 "album",
-                "user",
                 "person"
               ],
               "type": "string"
@@ -14398,7 +14397,6 @@
               "enum": [
                 "asset",
                 "album",
-                "user",
                 "person"
               ],
               "type": "string"

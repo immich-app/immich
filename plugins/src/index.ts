@@ -54,16 +54,18 @@ export function action_add_to_album() {
   return returnOutput({ success: true, context });
 }
 
-export function archiveAssetAction() {
-  const event = parseInput();
+export function action_archive() {
+  const input = parseInput();
+  const { context } = input;
   const ptr = Memory.fromString(
     JSON.stringify({
-      id: event.asset.id,
-      isArchived: true,
+      id: context.asset.id,
+      visibility: 'archive',
     })
   );
 
   updateAsset(ptr.offset);
   ptr.free();
-  return 0;
+
+  return returnOutput({ success: true, context });
 }

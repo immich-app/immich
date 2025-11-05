@@ -48,7 +48,6 @@ export class PluginService extends BaseService implements OnModuleInit {
 
   @OnEvent({ name: 'AssetCreate' })
   async handleAssetCreate({ asset }: ArgOf<'AssetCreate'>) {
-    console.log(`PluginService.handleAssetCreate: ${asset.id}`);
     const auth = { userId: asset.ownerId };
 
     // TODO: Sign auth as jwt
@@ -158,6 +157,8 @@ export class PluginService extends BaseService implements OnModuleInit {
         context,
         config: workflowAction.actionConfig,
       });
+
+      console.log(`Calling action ${action.functionName} with input: ${actionInput}`);
 
       const actionResult = await pluginInstance.call(action.functionName, actionInput);
       if (!actionResult) {

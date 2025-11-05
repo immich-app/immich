@@ -41,7 +41,7 @@
     {
       "name": "file_type",
       "displayName": "File Type Match",
-      "description": "Filter assets by file type (IMAGE, VIDEO, etc.)",
+      "description": "Filter assets by file type",
       "supportedContexts": ["asset"],
       "schema": {
         "type": "object",
@@ -50,7 +50,7 @@
             "type": "array",
             "items": {
               "type": "string",
-              "enum": ["IMAGE", "VIDEO", "RAW", "LIVE_PHOTO"]
+              "enum": ["IMAGE", "VIDEO"]
             },
             "description": "Allowed file types"
           }

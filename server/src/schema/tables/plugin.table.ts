@@ -14,7 +14,6 @@ import type { JSONSchema } from 'src/types/plugin-schema.types';
 export enum PluginContext {
   Asset = 'asset',
   Album = 'album',
-  User = 'user',
   Person = 'person',
 }
 
