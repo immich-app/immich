@@ -103,7 +103,7 @@
       </HStack>
     {/snippet}
 
-    <Timeline enableRouting={true} {options} {assetInteraction} onEscape={handleEscape}>
+    <Timeline enableRouting={true} bind:timelineManager {options} {assetInteraction} onEscape={handleEscape}>
       <p class="font-medium text-gray-500/60 dark:text-gray-300/60 p-4">
         {$t('trashed_items_will_be_permanently_deleted_after', { values: { days: $serverConfig.trashDays } })}
       </p>
