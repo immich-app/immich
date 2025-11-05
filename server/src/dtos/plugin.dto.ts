@@ -9,7 +9,7 @@ export class PluginResponseDto {
   description!: string;
   author!: string;
   version!: string;
-  manifestPath!: string;
+  wasmPath!: string;
   createdAt!: string;
   updatedAt!: string;
   triggers!: PluginTrigger[];

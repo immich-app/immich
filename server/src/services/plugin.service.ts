@@ -36,7 +36,7 @@ export class PluginService extends BaseService {
       description: plugin.description,
       author: plugin.author,
       version: plugin.version,
-      manifestPath: plugin.manifestPath,
+      wasmPath: plugin.wasmPath,
       createdAt: plugin.createdAt.toISOString(),
       updatedAt: plugin.updatedAt.toISOString(),
       triggers: pluginTriggers,

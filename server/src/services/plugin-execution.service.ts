@@ -36,9 +36,8 @@ export class PluginExecutionService extends BaseService implements OnModuleInit 
     const plugins = await this.pluginRepository.getAllPlugins();
     for (const plugin of plugins) {
       try {
-        const pluginPath = resolve(process.cwd(), '..', plugin.manifestPath);
-
-        this.logger.log(`Loading plugin: ${plugin.name} from ${pluginPath}`);
+        const pluginPath = resolve(process.cwd(), '..', plugin.wasmPath);
+        this.logger.debug(`Loading plugin: ${plugin.name} from ${pluginPath}`);
 
         const extismPlugin = await newPlugin(pluginPath, {
           useWasi: true,

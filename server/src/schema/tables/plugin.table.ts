@@ -78,7 +78,7 @@ export class PluginTable {
   version!: string;
 
   @Column()
-  manifestPath!: string;
+  wasmPath!: string;
 
   @CreateDateColumn()
   createdAt!: Generated<Timestamp>;

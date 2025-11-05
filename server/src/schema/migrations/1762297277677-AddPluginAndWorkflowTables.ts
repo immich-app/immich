@@ -8,7 +8,7 @@ export async function up(db: Kysely<any>): Promise<void> {
   "description" character varying NOT NULL,
   "author" character varying NOT NULL,
   "version" character varying NOT NULL,
-  "manifestPath" character varying NOT NULL,
+  "wasmPath" character varying NOT NULL,
   "createdAt" timestamp with time zone NOT NULL DEFAULT now(),
   "updatedAt" timestamp with time zone NOT NULL DEFAULT now(),
   CONSTRAINT "plugin_name_uq" UNIQUE ("name"),

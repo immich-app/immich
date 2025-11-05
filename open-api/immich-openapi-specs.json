@@ -14432,9 +14432,6 @@
           "id": {
             "type": "string"
           },
-          "manifestPath": {
-            "type": "string"
-          },
           "name": {
             "type": "string"
           },
@@ -14449,6 +14446,9 @@
           },
           "version": {
             "type": "string"
+          },
+          "wasmPath": {
+            "type": "string"
           }
         },
         "required": [
@@ -14459,11 +14459,11 @@
           "displayName",
           "filters",
           "id",
-          "manifestPath",
           "name",
           "triggers",
           "updatedAt",
-          "version"
+          "version",
+          "wasmPath"
         ],
         "type": "object"
       },

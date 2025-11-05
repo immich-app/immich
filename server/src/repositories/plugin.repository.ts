@@ -72,7 +72,7 @@ export class PluginRepository {
           description: plugin.description,
           author: plugin.author,
           version: plugin.version,
-          manifestPath: plugin.manifestPath,
+          wasmPath: plugin.wasmPath,
         }),
       )
       .returningAll()

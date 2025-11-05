@@ -15,6 +15,8 @@ export class PluginLoaderService extends BaseService implements OnApplicationBoo
   async loadPluginsFromManifests(): Promise<void> {
     try {
       const manifestFilePath = path.join(process.cwd(), '..', 'plugins', 'manifest.json');
+      this.logger.debug(`Loading plugins from manifest file at: ${manifestFilePath}`);
+
       const content = await readFile(manifestFilePath, { encoding: 'utf-8' });
 
       const manifestData = JSON.parse(content);
@@ -44,7 +46,7 @@ export class PluginLoaderService extends BaseService implements OnApplicationBoo
       description: manifest.description,
       author: manifest.author,
       version: manifest.version,
-      manifestPath: manifest.wasm.path,
+      wasmPath: manifest.wasm.path,
     });
 
     if (manifest.filters) {

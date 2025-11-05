@@ -48,6 +48,21 @@ RUN --mount=type=cache,id=pnpm-cli,target=/buildcache/pnpm-store \
   pnpm --filter @immich/sdk --filter @immich/cli build && \
   pnpm --filter @immich/cli --prod --no-optional deploy /output/cli-pruned
 
+FROM builder AS plugins
+
+WORKDIR /usr/src/app
+COPY ./plugins ./plugins/
+RUN apt-get update && apt-get install -y curl && \
+  chmod +x ./plugins/scripts/install-extism-js.sh && \
+  ./plugins/scripts/install-extism-js.sh v1.5.1
+RUN --mount=type=cache,id=pnpm-plugins,target=/buildcache/pnpm-store \
+  --mount=type=bind,source=package.json,target=package.json \
+  --mount=type=bind,source=.pnpmfile.cjs,target=.pnpmfile.cjs \
+  --mount=type=bind,source=pnpm-lock.yaml,target=pnpm-lock.yaml \
+  --mount=type=bind,source=pnpm-workspace.yaml,target=pnpm-workspace.yaml \
+  pnpm --filter plugins --frozen-lockfile install && \
+  pnpm --filter plugins build
+
 FROM ghcr.io/immich-app/base-server-prod:202510281104@sha256:84f8f3eb4cfafc5e624235f7db703e1222fd60831bef1d488d8d8cad2be5023d
 
 WORKDIR /usr/src/app
@@ -58,6 +73,8 @@ ENV NODE_ENV=production \
 COPY --from=server /output/server-pruned ./server
 COPY --from=web /usr/src/app/web/build /build/www
 COPY --from=cli /output/cli-pruned ./cli
+COPY --from=plugins /usr/src/app/plugins/dist ../plugins/dist
+COPY --from=plugins /usr/src/app/plugins/manifest.json ../plugins/manifest.json
 RUN ln -s ../../cli/bin/immich server/bin/immich
 COPY LICENSE /licenses/LICENSE.txt
 COPY LICENSE /LICENSE
