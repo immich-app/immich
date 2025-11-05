@@ -15,7 +15,7 @@ export class PluginLoaderService extends BaseService implements OnApplicationBoo
   async loadPluginsFromManifests(): Promise<void> {
     try {
       const manifestFilePath = path.join(process.cwd(), '..', 'plugins', 'manifest.json');
-      this.logger.debug(`Loading plugins from manifest file at: ${manifestFilePath}`);
+      this.logger.debug(`Loading plugins from manifest file at: ${manifestFilePath}.`);
 
       const content = await readFile(manifestFilePath, { encoding: 'utf-8' });
 
@@ -39,44 +39,16 @@ export class PluginLoaderService extends BaseService implements OnApplicationBoo
       return;
     }
 
-    // TODO: How to perform the subsequent upsert operations in a transaction from the service layer?
-    const plugin = await this.pluginRepository.upsertPlugin({
-      name: manifest.name,
-      displayName: manifest.displayName,
-      description: manifest.description,
-      author: manifest.author,
-      version: manifest.version,
-      wasmPath: manifest.wasm.path,
-    });
+    const { plugin, filters, actions } = await this.pluginRepository.loadPlugin(manifest);
 
-    if (manifest.filters) {
-      for (const filter of manifest.filters) {
-        const filterResult = await this.pluginRepository.upsertFilter({
-          pluginId: plugin.id,
-          name: filter.name,
-          displayName: filter.displayName,
-          description: filter.description,
-          supportedContexts: filter.supportedContexts,
-          schema: filter.schema,
-        });
+    this.logger.log(`Upserted plugin: ${plugin.name} (ID: ${plugin.id}, version: ${plugin.version})`);
 
-        this.logger.log(`Upserted plugin filter: ${filterResult.name} (ID: ${filterResult.id})`);
-      }
+    for (const filter of filters) {
+      this.logger.log(`Upserted plugin filter: ${filter.name} (ID: ${filter.id})`);
     }
 
-    if (manifest.actions) {
-      for (const action of manifest.actions) {
-        const actionResult = await this.pluginRepository.upsertAction({
-          pluginId: plugin.id,
-          name: action.name,
-          displayName: action.displayName,
-          description: action.description,
-          supportedContexts: action.supportedContexts,
-          schema: action.schema,
-        });
-
-        this.logger.log(`Upserted plugin action: ${actionResult.name} (ID: ${actionResult.id})`);
-      }
+    for (const action of actions) {
+      this.logger.log(`Upserted plugin action: ${action.name} (ID: ${action.id})`);
     }
   }
 

@@ -2,12 +2,107 @@ import { Injectable } from '@nestjs/common';
 import { Insertable, Kysely, Updateable } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { DummyValue, GenerateSql } from 'src/decorators';
+import { PluginManifestDto } from 'src/dtos/plugin-manifest.dto';
 import { DB } from 'src/schema';
 import { PluginActionTable, PluginFilterTable, PluginTable } from 'src/schema/tables/plugin.table';
 
 @Injectable()
 export class PluginRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
+
+  /**
+   * Loads a plugin from a validated manifest file in a transaction.
+   * This ensures all plugin, filter, and action operations are atomic.
+   */
+  async loadPlugin(manifest: PluginManifestDto) {
+    return this.db.transaction().execute(async (trx) => {
+      // Upsert the plugin
+      const plugin = await trx
+        .insertInto('plugin')
+        .values({
+          name: manifest.name,
+          displayName: manifest.displayName,
+          description: manifest.description,
+          author: manifest.author,
+          version: manifest.version,
+          wasmPath: manifest.wasm.path,
+        })
+        .onConflict((oc) =>
+          oc.column('name').doUpdateSet({
+            displayName: manifest.displayName,
+            description: manifest.description,
+            author: manifest.author,
+            version: manifest.version,
+            wasmPath: manifest.wasm.path,
+          }),
+        )
+        .returningAll()
+        .executeTakeFirstOrThrow();
+
+      const filters = [];
+      const actions = [];
+
+      // Upsert filters
+      if (manifest.filters) {
+        for (const filter of manifest.filters) {
+          const filterResult = await trx
+            .insertInto('plugin_filter')
+            .values({
+              pluginId: plugin.id,
+              name: filter.name,
+              displayName: filter.displayName,
+              description: filter.description,
+              supportedContexts: filter.supportedContexts,
+              schema: filter.schema,
+            })
+            .onConflict((oc) =>
+              oc.column('name').doUpdateSet({
+                pluginId: plugin.id,
+                displayName: filter.displayName,
+                description: filter.description,
+                supportedContexts: filter.supportedContexts,
+                schema: filter.schema,
+              }),
+            )
+            .returningAll()
+            .executeTakeFirstOrThrow();
+
+          filters.push(filterResult);
+        }
+      }
+
+      // Upsert actions
+      if (manifest.actions) {
+        for (const action of manifest.actions) {
+          const actionResult = await trx
+            .insertInto('plugin_action')
+            .values({
+              pluginId: plugin.id,
+              name: action.name,
+              displayName: action.displayName,
+              description: action.description,
+              supportedContexts: action.supportedContexts,
+              schema: action.schema,
+            })
+            .onConflict((oc) =>
+              oc.column('name').doUpdateSet({
+                pluginId: plugin.id,
+                displayName: action.displayName,
+                description: action.description,
+                supportedContexts: action.supportedContexts,
+                schema: action.schema,
+              }),
+            )
+            .returningAll()
+            .executeTakeFirstOrThrow();
+
+          actions.push(actionResult);
+        }
+      }
+
+      return { plugin, filters, actions };
+    });
+  }
 
   @GenerateSql({ params: [DummyValue.UUID] })
   getPlugin(id: string) {
