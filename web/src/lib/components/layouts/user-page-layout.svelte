@@ -65,7 +65,7 @@
     </div>
 
     {#if title || buttons}
-      <div class="absolute flex h-16 w-full place-items-center justify-between border-b p-2 text-dark">
+      <div class="absolute z-10 flex h-16 w-full place-items-center justify-between border-b p-2 text-dark bg-immich-bg dark:bg-immich-dark-bg">
         <div class="flex gap-2 items-center">
           {#if title}
             <div class="font-medium outline-none pe-8" tabindex="-1" id={headerId}>{title}</div>

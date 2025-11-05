@@ -9065,6 +9065,15 @@
             }
           },
           {
+            "name": "withSharedAlbums",
+            "required": false,
+            "in": "query",
+            "description": "Include assets from albums shared with the user",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
             "name": "withStacked",
             "required": false,
             "in": "query",
@@ -9214,6 +9223,15 @@
             "required": false,
             "in": "query",
             "description": "Include assets shared by partners",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "withSharedAlbums",
+            "required": false,
+            "in": "query",
+            "description": "Include assets from albums shared with the user",
             "schema": {
               "type": "boolean"
             }
@@ -17420,6 +17438,22 @@
       },
       "TimeBucketAssetResponseDto": {
         "properties": {
+          "albumId": {
+            "description": "Array of album IDs for assets from shared albums (null for owned assets)",
+            "items": {
+              "nullable": true,
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "albumName": {
+            "description": "Array of album names for assets from shared albums (null for owned assets)",
+            "items": {
+              "nullable": true,
+              "type": "string"
+            },
+            "type": "array"
+          },
           "city": {
             "description": "Array of city names extracted from EXIF GPS data",
             "items": {

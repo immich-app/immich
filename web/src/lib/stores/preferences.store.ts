@@ -49,12 +49,24 @@ const defaultMapSettings = {
 const persistedObject = <T>(key: string, defaults: T) =>
   persisted<T>(key, defaults, {
     serializer: {
-      parse: (text) => ({ ...defaultMapSettings, ...JSON.parse(text ?? null) }),
+      parse: (text) => ({ ...defaults, ...JSON.parse(text ?? null) }),
       stringify: JSON.stringify,
     },
   });
 
 export const mapSettings = persistedObject<MapSettings>('map-settings', defaultMapSettings);
+
+export interface TimelineSettings {
+  withPartners: boolean;
+  withSharedAlbums: boolean;
+}
+
+const defaultTimelineSettings: TimelineSettings = {
+  withPartners: true,
+  withSharedAlbums: false,
+};
+
+export const timelineSettings = persistedObject<TimelineSettings>('timeline-settings', defaultTimelineSettings);
 
 export const videoViewerVolume = persisted<number>('video-viewer-volume', 1, {});
 export const videoViewerMuted = persisted<boolean>('video-viewer-muted', false, {});

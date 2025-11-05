@@ -38,6 +38,9 @@ export class TimeBucketDto {
   @ValidateBoolean({ optional: true, description: 'Include assets shared by partners' })
   withPartners?: boolean;
 
+  @ValidateBoolean({ optional: true, description: 'Include assets from albums shared with the user' })
+  withSharedAlbums?: boolean;
+
   @ValidateEnum({
     enum: AssetOrder,
     name: 'AssetOrder',
@@ -207,6 +210,22 @@ export class TimeBucketAssetResponseDto {
     description: 'Array of longitude coordinates extracted from EXIF GPS data',
   })
   longitude!: number[];
+
+  @ApiProperty({
+    type: 'array',
+    required: false,
+    items: { type: 'string', nullable: true },
+    description: 'Array of album IDs for assets from shared albums (null for owned assets)',
+  })
+  albumId?: (string | null)[];
+
+  @ApiProperty({
+    type: 'array',
+    required: false,
+    items: { type: 'string', nullable: true },
+    description: 'Array of album names for assets from shared albums (null for owned assets)',
+  })
+  albumName?: (string | null)[];
 }
 
 export class TimeBucketsResponseDto {

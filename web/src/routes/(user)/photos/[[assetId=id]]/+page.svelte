@@ -23,10 +23,12 @@
   import Timeline from '$lib/components/timeline/Timeline.svelte';
   import { AssetAction } from '$lib/constants';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
+  import TimelineSettingsModal from '$lib/modals/TimelineSettingsModal.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import { preferences, user } from '$lib/stores/user.store';
+  import { timelineSettings } from '$lib/stores/preferences.store';
   import {
     updateStackedAssetInTimeline,
     updateUnstackedAssetInTimeline,
@@ -36,15 +38,30 @@
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
   import { AssetVisibility } from '@immich/sdk';
 
-  import { mdiDotsVertical, mdiPlus } from '@mdi/js';
+  import { mdiCog, mdiDotsVertical, mdiPlus } from '@mdi/js';
+  import { IconButton } from '@immich/ui';
 
   import { t } from 'svelte-i18n';
 
   let { isViewing: showAssetViewer } = assetViewingStore;
   let timelineManager = $state<TimelineManager>() as TimelineManager;
-  const options = { visibility: AssetVisibility.Timeline, withStacked: true, withPartners: true };
+  let showTimelineSettings = $state(false);
+
+  let options = $derived({
+    visibility: AssetVisibility.Timeline,
+    withStacked: true,
+    withPartners: $timelineSettings.withPartners,
+    withSharedAlbums: $timelineSettings.withSharedAlbums,
+  });
 
   const assetInteraction = new AssetInteraction();
+
+  const handleTimelineSettings = (settings?: typeof $timelineSettings) => {
+    showTimelineSettings = false;
+    if (settings) {
+      $timelineSettings = settings;
+    }
+  };
 
   let selectedAssets = $derived(assetInteraction.selectedAssets);
   let isAssetStackSelected = $derived(selectedAssets.length === 1 && !!selectedAssets[0].stack);
@@ -88,6 +105,11 @@
 </script>
 
 <UserPageLayout hideNavbar={assetInteraction.selectionActive} showUploadButton scrollbar={false}>
+  {#snippet buttons()}
+    {#if !assetInteraction.selectionActive}
+      <IconButton icon={mdiCog} title={$t('timeline_settings')} onclick={() => (showTimelineSettings = true)} />
+    {/if}
+  {/snippet}
   <Timeline
     enableRouting={true}
     bind:timelineManager
@@ -105,6 +127,10 @@
     {/snippet}
   </Timeline>
 </UserPageLayout>
+
+{#if showTimelineSettings}
+  <TimelineSettingsModal settings={$timelineSettings} onClose={handleTimelineSettings} />
+{/if}
 
 {#if assetInteraction.selectionActive}
   <AssetSelectControlBar
