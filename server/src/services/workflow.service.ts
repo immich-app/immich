@@ -36,13 +36,13 @@ export class WorkflowService extends BaseService {
   }
 
   async get(auth: AuthDto, id: string): Promise<WorkflowResponseDto> {
-    await this.requireAccess({ auth, permission: Permission.All, ids: [id] });
+    await this.requireAccess({ auth, permission: Permission.WorkflowRead, ids: [id] });
     const workflow = await this.findOrFail(id);
     return this.mapWorkflow(workflow);
   }
 
   async update(auth: AuthDto, id: string, dto: WorkflowUpdateDto): Promise<WorkflowResponseDto> {
-    await this.requireAccess({ auth, permission: Permission.All, ids: [id] });
+    await this.requireAccess({ auth, permission: Permission.WorkflowUpdate, ids: [id] });
 
     if (Object.values(dto).filter((prop) => prop !== undefined).length === 0) {
       throw new BadRequestException('No fields to update');
@@ -53,12 +53,12 @@ export class WorkflowService extends BaseService {
   }
 
   async delete(auth: AuthDto, id: string): Promise<void> {
-    await this.requireAccess({ auth, permission: Permission.All, ids: [id] });
+    await this.requireAccess({ auth, permission: Permission.WorkflowDelete, ids: [id] });
     await this.workflowRepository.deleteWorkflow(id);
   }
 
   async addFilter(auth: AuthDto, workflowId: string, dto: WorkflowFilterCreateDto): Promise<WorkflowFilterResponseDto> {
-    await this.requireAccess({ auth, permission: Permission.All, ids: [workflowId] });
+    await this.requireAccess({ auth, permission: Permission.WorkflowUpdate, ids: [workflowId] });
 
     const filter = await this.pluginRepository.getFilter(dto.filterId);
     if (!filter) {
@@ -79,12 +79,12 @@ export class WorkflowService extends BaseService {
   }
 
   async removeFilter(auth: AuthDto, workflowId: string, filterId: string): Promise<void> {
-    await this.requireAccess({ auth, permission: Permission.All, ids: [workflowId] });
+    await this.requireAccess({ auth, permission: Permission.WorkflowUpdate, ids: [workflowId] });
     await this.workflowRepository.deleteFilter(filterId);
   }
 
   async addAction(auth: AuthDto, workflowId: string, dto: WorkflowActionCreateDto): Promise<WorkflowActionResponseDto> {
-    // await this.requireAccess({ auth, permission: Permission.All, ids: [workflowId] });
+    await this.requireAccess({ auth, permission: Permission.WorkflowUpdate, ids: [workflowId] });
 
     const action = await this.pluginRepository.getAction(dto.actionId);
     if (!action) {
@@ -105,7 +105,7 @@ export class WorkflowService extends BaseService {
   }
 
   async removeAction(auth: AuthDto, workflowId: string, actionId: string): Promise<void> {
-    await this.requireAccess({ auth, permission: Permission.All, ids: [workflowId] });
+    await this.requireAccess({ auth, permission: Permission.WorkflowUpdate, ids: [workflowId] });
     await this.workflowRepository.deleteAction(actionId);
   }
 

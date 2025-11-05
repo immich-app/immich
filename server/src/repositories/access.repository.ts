@@ -462,6 +462,26 @@ class TagAccess {
   }
 }
 
+class WorkflowAccess {
+  constructor(private db: Kysely<DB>) {}
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
+  @ChunkedSet({ paramIndex: 1 })
+  async checkOwnerAccess(userId: string, workflowIds: Set<string>) {
+    if (workflowIds.size === 0) {
+      return new Set<string>();
+    }
+
+    return this.db
+      .selectFrom('workflow')
+      .select('workflow.id')
+      .where('workflow.id', 'in', [...workflowIds])
+      .where('workflow.ownerId', '=', userId)
+      .execute()
+      .then((workflows) => new Set(workflows.map((workflow) => workflow.id)));
+  }
+}
+
 @Injectable()
 export class AccessRepository {
   activity: ActivityAccess;
@@ -476,6 +496,7 @@ export class AccessRepository {
   stack: StackAccess;
   tag: TagAccess;
   timeline: TimelineAccess;
+  workflow: WorkflowAccess;
 
   constructor(@InjectKysely() db: Kysely<DB>) {
     this.activity = new ActivityAccess(db);
@@ -490,5 +511,6 @@ export class AccessRepository {
     this.stack = new StackAccess(db);
     this.tag = new TagAccess(db);
     this.timeline = new TimelineAccess(db);
+    this.workflow = new WorkflowAccess(db);
   }
 }
