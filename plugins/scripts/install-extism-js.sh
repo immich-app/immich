@@ -26,13 +26,13 @@ else
 fi
 
 OS=''
-case `uname` in
+case $(uname) in
   Darwin*)  OS="macos" ;;
   Linux*)   OS="linux" ;;
   *)        echo "unknown os: $OSTYPE" && exit 1 ;;
 esac
 
-ARCH=`uname -m`
+ARCH=$(uname -m)
 case "$ARCH" in
   ix86*|x86_64*)    ARCH="x86_64" ;;
   arm64*|aarch64*)  ARCH="aarch64" ;;
@@ -58,7 +58,7 @@ if ! which "wasm-merge" > /dev/null || ! which "wasm-opt" > /dev/null; then
 
   # matches the case where the user installs extism-pdk in a Linux-based Docker image running on mac m1
   # binaryen didn't have arm64 release file for linux 
-  if [ $BINARYEN_ARCH = "arm64" ] && [ $OS = "linux" ]; then
+  if [ "$BINARYEN_ARCH" = "arm64" ] && [ "$OS" = "linux" ]; then
     BINARYEN_ARCH="x86_64"
   fi
 
