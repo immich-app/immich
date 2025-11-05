@@ -1,3 +1,4 @@
+import { page } from '$app/state';
 import { AppRoute } from '$lib/constants';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { notificationManager } from '$lib/stores/notification-manager.svelte';
@@ -81,11 +82,9 @@ websocket
 
 export const openWebsocketConnection = () => {
   try {
-    if (!get(user)) {
-      return;
+    if (get(user) || page.url.pathname.startsWith(AppRoute.MAINTENANCE)) {
+      websocket.connect();
     }
-
-    websocket.connect();
   } catch (error) {
     console.log('Cannot connect to websocket', error);
   }

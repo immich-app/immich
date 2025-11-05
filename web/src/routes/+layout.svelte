@@ -7,6 +7,7 @@
   import AppleHeader from '$lib/components/shared-components/apple-header.svelte';
   import NavigationLoadingBar from '$lib/components/shared-components/navigation-loading-bar.svelte';
   import UploadPanel from '$lib/components/shared-components/upload-panel.svelte';
+  import { AppRoute } from '$lib/constants';
   import { eventManager } from '$lib/managers/event-manager.svelte';
   import ServerRestartingModal from '$lib/modals/ServerRestartingModal.svelte';
   import VersionAnnouncementModal from '$lib/modals/VersionAnnouncementModal.svelte';
@@ -72,7 +73,7 @@
     showNavigationLoadingBar = false;
   });
   run(() => {
-    if ($user) {
+    if ($user || page.url.pathname.startsWith(AppRoute.MAINTENANCE)) {
       openWebsocketConnection();
     } else {
       closeWebsocketConnection();
