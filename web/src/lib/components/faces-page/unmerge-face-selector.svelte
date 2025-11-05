@@ -159,6 +159,7 @@
               border
               circle
               selectable
+              selected
               thumbnailSize={180}
               onClick={handleRemoveSelectedPerson}
             />
