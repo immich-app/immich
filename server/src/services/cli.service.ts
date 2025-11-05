@@ -1,12 +1,25 @@
 import { Injectable } from '@nestjs/common';
+import { createAdapter } from '@socket.io/redis-adapter';
+import Redis from 'ioredis';
 import { isAbsolute } from 'node:path';
+import { Server } from 'socket.io';
 import { SALT_ROUNDS } from 'src/constants';
 import { UserAdminResponseDto, mapUserAdmin } from 'src/dtos/user.dto';
 import { SystemMetadataKey } from 'src/enum';
+import { type ArgsOf } from 'src/repositories/event.repository';
+import { type ServerEvents } from 'src/repositories/websocket.repository';
 import { BaseService } from 'src/services/base.service';
 
 @Injectable()
 export class CliService extends BaseService {
+  private oneShotServerSend<T extends ServerEvents>(event: T, ...args: ArgsOf<T>): void {
+    const server = new Server();
+    const pubClient = new Redis(this.configRepository.getEnv().redis);
+    const subClient = pubClient.duplicate();
+    server.adapter(createAdapter(pubClient, subClient));
+    server.serverSideEmit(event, ...args);
+  }
+
   async listUsers(): Promise<UserAdminResponseDto[]> {
     const users = await this.userRepository.getList({ withDeleted: true });
     return users.map((user) => mapUserAdmin(user));
@@ -39,12 +52,16 @@ export class CliService extends BaseService {
     await this.updateConfig(config);
   }
 
-  disableMaintenanceMode(): Promise<void> {
-    return this.systemMetadataRepository.set(SystemMetadataKey.MaintenanceMode, { isMaintenanceMode: false });
+  async disableMaintenanceMode(): Promise<void> {
+    const state = { isMaintenanceMode: false };
+    await this.systemMetadataRepository.set(SystemMetadataKey.MaintenanceMode, state);
+    this.oneShotServerSend('AppRestart', state);
   }
 
-  enableMaintenanceMode(): Promise<void> {
-    return this.systemMetadataRepository.set(SystemMetadataKey.MaintenanceMode, { isMaintenanceMode: true });
+  async enableMaintenanceMode(): Promise<void> {
+    const state = { isMaintenanceMode: true };
+    await this.systemMetadataRepository.set(SystemMetadataKey.MaintenanceMode, state);
+    this.oneShotServerSend('AppRestart', state);
   }
 
   async grantAdminAccess(email: string): Promise<void> {

@@ -12,7 +12,7 @@ export class EnableMaintenanceModeCommand extends CommandRunner {
 
   async run(): Promise<void> {
     await this.service.enableMaintenanceMode();
-    console.log("Maintenance mode has been enabled.\nThis change won't automatically propagate.");
+    console.log('Maintenance mode has been enabled.');
   }
 }
 
@@ -27,6 +27,6 @@ export class DisableMaintenanceModeCommand extends CommandRunner {
 
   async run(): Promise<void> {
     await this.service.disableMaintenanceMode();
-    console.log("Maintenance mode has been disabled.\nThis change won't automatically propagate.");
+    console.log('Maintenance mode has been disabled.');
   }
 }
