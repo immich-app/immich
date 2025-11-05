@@ -13,14 +13,6 @@ export interface JSONSchemaProperty {
   items?: JSONSchemaProperty;
   properties?: Record<string, JSONSchemaProperty>;
   required?: string[];
-  minimum?: number;
-  maximum?: number;
-  minLength?: number;
-  maxLength?: number;
-  minItems?: number;
-  maxItems?: number;
-  pattern?: string;
-  format?: string;
   additionalProperties?: boolean | JSONSchemaProperty;
 }
 
@@ -32,56 +24,6 @@ export interface JSONSchema {
   description?: string;
 }
 
-/**
- * Plugin manifest schema structure
- */
-export interface PluginManifestTrigger {
-  name: string;
-  displayName: string;
-  description: string;
-  context: 'asset' | 'album' | 'user' | 'person';
-  schema: JSONSchema;
-  functionName: string;
-}
-
-export interface PluginManifestFilter {
-  name: string;
-  displayName: string;
-  description: string;
-  supportedContexts: ('asset' | 'album' | 'user' | 'person')[];
-  schema: JSONSchema;
-  functionName: string;
-}
-
-export interface PluginManifestAction {
-  name: string;
-  displayName: string;
-  description: string;
-  supportedContexts: ('asset' | 'album' | 'user' | 'person')[];
-  schema: JSONSchema;
-  functionName: string;
-}
-
-export interface PluginManifest {
-  name: string;
-  version: string;
-  displayName: string;
-  description: string;
-  author: string;
-  wasm: {
-    url: string;
-    hash: string;
-    allowedHosts: string[];
-  };
-  triggers: PluginManifestTrigger[];
-  filters: PluginManifestFilter[];
-  actions: PluginManifestAction[];
-}
-
-/**
- * Example configuration values that conform to schemas
- * These are the actual runtime config values stored in workflow_filter, workflow_action, etc.
- */
 export type ConfigValue = string | number | boolean | null | ConfigValue[] | { [key: string]: ConfigValue };
 
 export interface TriggerConfig {

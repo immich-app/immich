@@ -5,7 +5,7 @@ import { Asset, WorkflowAction, WorkflowFilter } from 'src/database';
 import { OnEvent, OnJob } from 'src/decorators';
 import { JobName, JobStatus, QueueName } from 'src/enum';
 import { ArgOf } from 'src/repositories/event.repository';
-import { PluginContext, PluginTrigger, pluginTriggers, PluginTriggerType } from 'src/schema/tables/plugin.table';
+import { PluginContext, pluginTriggers, PluginTriggerType } from 'src/schema/tables/plugin.table';
 import { BaseService } from 'src/services/base.service';
 import { PluginHostFunctions } from 'src/services/plugin-host.functions';
 import { JobItem, JobOf } from 'src/types';
@@ -23,7 +23,12 @@ export class PluginExecutionService extends BaseService implements OnModuleInit 
   private hostFunctions!: PluginHostFunctions;
 
   async onModuleInit() {
-    this.hostFunctions = new PluginHostFunctions(this.assetRepository, this.albumRepository, this.logger);
+    this.hostFunctions = new PluginHostFunctions(
+      this.assetRepository,
+      this.albumRepository,
+      this.accessRepository,
+      this.logger,
+    );
     await this.loadCorePlugins();
   }
 
@@ -50,11 +55,6 @@ export class PluginExecutionService extends BaseService implements OnModuleInit 
 
   @OnEvent({ name: 'AssetCreate' })
   async handleAssetCreate({ asset }: ArgOf<'AssetCreate'>) {
-    const auth = { userId: asset.ownerId };
-
-    // TODO: Sign auth as jwt
-    const token = JSON.stringify({ userId: asset.ownerId });
-
     const trigger = pluginTriggers.find((trigger) => trigger.type === PluginTriggerType.AssetCreate);
     if (!trigger) {
       this.logger.debug('No trigger found for asset_uploaded');
@@ -67,13 +67,11 @@ export class PluginExecutionService extends BaseService implements OnModuleInit 
       return;
     }
 
-    // Queue workflow execution jobs
     const jobs: JobItem[] = workflows.map((workflow) => ({
-      name: JobName.WorkflowExecute,
+      name: JobName.AssetCreateWorkflow,
       data: {
         workflowId: workflow.id,
         assetId: asset.id,
-        triggerId: trigger.type,
       },
     }));
 
@@ -81,27 +79,18 @@ export class PluginExecutionService extends BaseService implements OnModuleInit 
     this.logger.debug(`Queued ${jobs.length} workflow execution jobs for asset ${asset.id}`);
   }
 
-  @OnJob({ name: JobName.WorkflowExecute, queue: QueueName.Workflow })
-  async handleWorkflowExecute({ workflowId, assetId, triggerId }: JobOf<JobName.WorkflowExecute>): Promise<JobStatus> {
+  @OnJob({ name: JobName.AssetCreateWorkflow, queue: QueueName.Workflow })
+  async handleAssetCreateWorkflow({ workflowId, assetId }: JobOf<JobName.AssetCreateWorkflow>): Promise<JobStatus> {
     try {
-      // Get asset info
       const asset = await this.assetRepository.getById(assetId);
       if (!asset) {
         this.logger.error(`Asset ${assetId} not found`);
         return JobStatus.Failed;
       }
 
-      // Get trigger
-      const trigger = pluginTriggers.find((t) => t.type === triggerId);
-      if (!trigger) {
-        this.logger.error(`Trigger ${triggerId} not found`);
-        return JobStatus.Failed;
-      }
-
-      // Create token
       const token = JSON.stringify({ userId: asset.ownerId });
 
-      await this.executeWorkflow(token, workflowId, asset, trigger);
+      await this.executeAssetCreateWorkflow(token, workflowId, asset);
       return JobStatus.Success;
     } catch (error) {
       this.logger.error(`Error executing workflow ${workflowId}:`, error);
@@ -109,8 +98,8 @@ export class PluginExecutionService extends BaseService implements OnModuleInit 
     }
   }
 
-  private async executeWorkflow(jwtToken: string, workflowId: string, asset: any, trigger: PluginTrigger) {
-    this.logger.debug(`Executing workflow ${workflowId}`);
+  private async executeAssetCreateWorkflow(jwtToken: string, workflowId: string, asset: Asset) {
+    this.logger.debug(`Executing AssetCreate workflow ${workflowId}`);
 
     const workflow = await this.workflowRepository.getWorkflow(workflowId);
     if (!workflow) {
@@ -127,13 +116,11 @@ export class PluginExecutionService extends BaseService implements OnModuleInit 
       triggerConfig: workflow.triggerConfig,
     };
 
-    // Execute filters - if any filter returns false, stop execution
     const filtersPassed = await this.executeFilters(workflowFilters, context);
     if (!filtersPassed) {
       return;
     }
 
-    // Execute actions in order
     await this.executeActions(workflowActions, context);
 
     this.logger.log(`Workflow ${workflowId} executed successfully`);

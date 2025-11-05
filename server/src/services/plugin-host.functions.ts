@@ -1,9 +1,13 @@
 import { CurrentPlugin } from '@extism/extism';
+import { UnauthorizedException } from '@nestjs/common';
 import { Updateable } from 'kysely';
+import { Permission } from 'src/enum';
+import { AccessRepository } from 'src/repositories/access.repository';
 import { AlbumRepository } from 'src/repositories/album.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { AssetTable } from 'src/schema/tables/asset.table';
+import { requireAccess } from 'src/utils/access';
 
 /**
  * Plugin host functions that are exposed to WASM plugins via Extism.
@@ -13,6 +17,7 @@ export class PluginHostFunctions {
   constructor(
     private assetRepository: AssetRepository,
     private albumRepository: AlbumRepository,
+    private accessRepository: AccessRepository,
     private logger: LoggingRepository,
   ) {}
 
@@ -33,32 +38,79 @@ export class PluginHostFunctions {
    * Host function wrapper for updateAsset.
    * Reads the input from the plugin, parses it, and calls the actual update function.
    */
-  private handleUpdateAsset(cp: CurrentPlugin, offs: bigint) {
+  private async handleUpdateAsset(cp: CurrentPlugin, offs: bigint) {
     const input = JSON.parse(cp.read(offs)!.text());
-    return this.updateAsset(input);
+    await this.updateAsset(input);
   }
 
   /**
    * Host function wrapper for addAssetToAlbum.
    * Reads the input from the plugin, parses it, and calls the actual add function.
    */
-  private handleAddAssetToAlbum(cp: CurrentPlugin, offs: bigint) {
+  private async handleAddAssetToAlbum(cp: CurrentPlugin, offs: bigint) {
     const input = JSON.parse(cp.read(offs)!.text());
-    return this.addAssetToAlbum(input);
+    await this.addAssetToAlbum(input);
+  }
+
+  /**
+   * Validates the JWT token and returns the auth context.
+   */
+  private validateToken(jwtToken: string): { userId: string } {
+    try {
+      // TODO: Properly verify JWT signature
+      const auth = JSON.parse(jwtToken);
+      if (!auth.userId) {
+        throw new UnauthorizedException('Invalid token: missing userId');
+      }
+      return auth;
+    } catch (error) {
+      this.logger.error('Token validation failed:', error);
+      throw new UnauthorizedException('Invalid token');
+    }
   }
 
   /**
    * Updates an asset with the given properties.
    */
-  async updateAsset(asset: Updateable<AssetTable> & { id: string }) {
-    this.logger.log(`Updating asset ${asset.id} -- ${JSON.stringify({ ...asset, id: undefined })}`);
-    await this.assetRepository.update(asset);
+  async updateAsset(input: { jwtToken: string } & Updateable<AssetTable> & { id: string }) {
+    const { jwtToken, id, ...assetData } = input;
+
+    // Validate token
+    const auth = this.validateToken(jwtToken);
+
+    // Check access to the asset
+    await requireAccess(this.accessRepository, {
+      auth: { user: { id: auth.userId } } as any,
+      permission: Permission.AssetUpdate,
+      ids: [id],
+    });
+
+    this.logger.log(`Updating asset ${id} -- ${JSON.stringify(assetData)}`);
+    await this.assetRepository.update({ id, ...assetData });
   }
 
   /**
    * Adds an asset to an album.
    */
-  async addAssetToAlbum({ assetId, albumId }: { assetId: string; albumId: string }) {
+  async addAssetToAlbum(input: { jwtToken: string; assetId: string; albumId: string }) {
+    const { jwtToken, assetId, albumId } = input;
+
+    // Validate token
+    const auth = this.validateToken(jwtToken);
+
+    // Check access to both the asset and the album
+    await requireAccess(this.accessRepository, {
+      auth: { user: { id: auth.userId } } as any,
+      permission: Permission.AssetRead,
+      ids: [assetId],
+    });
+
+    await requireAccess(this.accessRepository, {
+      auth: { user: { id: auth.userId } } as any,
+      permission: Permission.AlbumUpdate,
+      ids: [albumId],
+    });
+
     this.logger.log(`Adding asset ${assetId} to album ${albumId}`);
     await this.albumRepository.addAssetIds(albumId, [assetId]);
     return 0;

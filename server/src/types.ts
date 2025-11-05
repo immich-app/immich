@@ -263,10 +263,9 @@ export interface INotifyAlbumUpdateJob extends IEntityJob, IDelayedJob {
   recipientId: string;
 }
 
-export interface IWorkflowExecuteJob {
+export interface IAssetCreateWorkflowJob {
   workflowId: string;
   assetId: string;
-  triggerId: string;
 }
 
 export interface JobCounts {
@@ -383,7 +382,7 @@ export type JobItem =
   | { name: JobName.Ocr; data: IEntityJob }
 
   // Workflow
-  | { name: JobName.WorkflowExecute; data: IWorkflowExecuteJob };
+  | { name: JobName.AssetCreateWorkflow; data: IAssetCreateWorkflowJob };
 
 export type VectorExtension = (typeof VECTOR_EXTENSIONS)[number];
 

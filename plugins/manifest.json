@@ -1,6 +1,6 @@
 {
   "name": "immich-core",
-  "version": "2.0.1",
+  "version": "2.0.0",
   "displayName": "Immich Core",
   "description": "Core workflow capabilities for Immich",
   "author": "Immich Team",

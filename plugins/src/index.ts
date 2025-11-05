@@ -43,6 +43,7 @@ export function actionAddToAlbum() {
 
   const ptr = Memory.fromString(
     JSON.stringify({
+      jwtToken: context.jwtToken,
       assetId: context.asset.id,
       albumId: albumId,
     })
@@ -59,6 +60,7 @@ export function actionArchive() {
   const { context } = input;
   const ptr = Memory.fromString(
     JSON.stringify({
+      jwtToken: context.jwtToken,
       id: context.asset.id,
       visibility: 'archive',
     })

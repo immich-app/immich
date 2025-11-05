@@ -604,7 +604,7 @@ export enum JobName {
   Ocr = 'Ocr',
 
   // Workflow
-  WorkflowExecute = 'WorkflowExecute',
+  AssetCreateWorkflow = 'WorkflowExecute',
 }
 
 export enum JobCommand {
