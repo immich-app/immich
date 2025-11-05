@@ -55,6 +55,9 @@ As an alternative to nginx, you can also use [Caddy](https://caddyserver.com/) a
 
 ```
 immich.example.org {
+    request_body {
+	    max_size 50000MB
+    }
     reverse_proxy http://<snip>:2283
 }
 ```
