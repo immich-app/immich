@@ -8,6 +8,7 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { MaintenanceModeResponseDto } from 'src/dtos/maintenance.dto';
+import { ExitCode } from 'src/enum';
 import { ArgsOf } from 'src/repositories/event.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 
@@ -45,8 +46,12 @@ export class MaintenanceWorkerRepository implements OnGatewayConnection, OnGatew
   }
 
   private exitApp() {
-    this.closeFn?.().then(() => process.exit(7));
-    setTimeout(() => process.exit(7), 5000 /* constant */);
+    this.closeFn?.().then(() => process.exit(ExitCode.AppRestart));
+
+    // mirroring behaviour of maintenance service
+    // although there shouldn't be any reason for
+    // the maintenance module to hang
+    setTimeout(() => process.exit(ExitCode.AppRestart), 5000);
   }
 
   async handleConnection(client: Socket) {

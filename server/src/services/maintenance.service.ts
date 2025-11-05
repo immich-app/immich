@@ -2,7 +2,7 @@ import { BadRequestException, INestApplication, Injectable } from '@nestjs/commo
 import { PostgresError } from 'postgres';
 import { OnEvent } from 'src/decorators';
 import { MaintenanceModeResponseDto } from 'src/dtos/maintenance.dto';
-import { SystemMetadataKey } from 'src/enum';
+import { ExitCode, SystemMetadataKey } from 'src/enum';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
 import { BaseService } from 'src/services/base.service';
 
@@ -62,10 +62,10 @@ export class MaintenanceService extends BaseService {
     // we need to specify the exact exit code
     void this.nestApplication
       ?.close() // attempt graceful shutdown
-      .then(() => process.exit(7)); // then signal restart
+      .then(() => process.exit(ExitCode.AppRestart)); // then signal restart
 
     // in some exceptional circumstances, close() may hang
-    setTimeout(() => process.exit(7), 5000);
+    setTimeout(() => process.exit(ExitCode.AppRestart), 5000);
     /* eslint-enable unicorn/no-process-exit */
   }
 }

@@ -4,7 +4,7 @@ import { ChildProcess, fork } from 'node:child_process';
 import { dirname, join } from 'node:path';
 import { Worker } from 'node:worker_threads';
 import { ApiModule, ImmichAdminModule } from 'src/app.module';
-import { ImmichWorker, LogLevel } from 'src/enum';
+import { ExitCode, ImmichWorker, LogLevel } from 'src/enum';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
 import { MaintenanceService } from 'src/services/maintenance.service';
@@ -86,7 +86,7 @@ class Workers {
 
   onExit(name: ImmichWorker, exitCode: number | null) {
     // restart immich server
-    if (exitCode === 7 || this.restarting) {
+    if (exitCode === ExitCode.AppRestart || this.restarting) {
       this.restarting = true;
 
       console.info(`${name} worker shutdown for restart`);

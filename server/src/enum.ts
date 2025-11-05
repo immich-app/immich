@@ -633,6 +633,10 @@ export enum DatabaseLock {
   MemoryCreation = 777,
 }
 
+export enum ExitCode {
+  AppRestart = 7,
+}
+
 export enum SyncRequestType {
   AlbumsV1 = 'AlbumsV1',
   AlbumUsersV1 = 'AlbumUsersV1',
