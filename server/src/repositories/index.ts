@@ -18,6 +18,7 @@ import { JobRepository } from 'src/repositories/job.repository';
 import { LibraryRepository } from 'src/repositories/library.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { MachineLearningRepository } from 'src/repositories/machine-learning.repository';
+import { MaintenanceRepository } from 'src/repositories/maintenance.repository';
 import { MapRepository } from 'src/repositories/map.repository';
 import { MediaRepository } from 'src/repositories/media.repository';
 import { MemoryRepository } from 'src/repositories/memory.repository';
@@ -68,6 +69,7 @@ export const repositories = [
   LibraryRepository,
   LoggingRepository,
   MachineLearningRepository,
+  MaintenanceRepository,
   MapRepository,
   MediaRepository,
   MemoryRepository,

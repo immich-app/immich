@@ -17,7 +17,6 @@ import {
 import { StorageFolder, SystemMetadataKey } from 'src/enum';
 import { UserStatsQueryResponse } from 'src/repositories/user.repository';
 import { BaseService } from 'src/services/base.service';
-import { MaintenanceService } from 'src/services/maintenance.service';
 import { asHumanReadable } from 'src/utils/bytes';
 import { mimeTypes } from 'src/utils/mime-types';
 import {
@@ -119,7 +118,7 @@ export class ServerService extends BaseService {
     const config = await this.getConfig({ withCache: false });
     const isInitialized = await this.userRepository.hasAdmin();
     const onboarding = await this.systemMetadataRepository.get(SystemMetadataKey.AdminOnboarding);
-    const { isMaintenanceMode } = await MaintenanceService.getMaintenanceModeWith(this.systemMetadataRepository);
+    const isMaintenanceMode = await this.maintenanceRepository.isMaintenanceMode();
 
     return {
       loginPageMessage: config.server.loginPageMessage,

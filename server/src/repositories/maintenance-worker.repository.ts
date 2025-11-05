@@ -8,9 +8,11 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { MaintenanceModeResponseDto } from 'src/dtos/maintenance.dto';
-import { ExitCode } from 'src/enum';
+import { ExitCode, SystemMetadataKey } from 'src/enum';
 import { ArgsOf } from 'src/repositories/event.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
+import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
+import { MaintenanceModeState } from 'src/types';
 
 export const serverEvents = ['AppRestart'] as const;
 export type ServerEvents = (typeof serverEvents)[number];
@@ -30,8 +32,30 @@ export class MaintenanceWorkerRepository implements OnGatewayConnection, OnGatew
   private websocketServer?: Server;
   private closeFn?: () => Promise<void>;
 
-  constructor(private logger: LoggingRepository) {
+  constructor(
+    private logger: LoggingRepository,
+    private systemMetadataRepository: SystemMetadataRepository,
+  ) {
     this.logger.setContext(MaintenanceWorkerRepository.name);
+  }
+
+  async exitMaintenanceMode() {
+    const state: MaintenanceModeState = { isMaintenanceMode: false as const };
+    await this.systemMetadataRepository.set(SystemMetadataKey.MaintenanceMode, state);
+    this.restartApp(state);
+  }
+
+  async maintenanceToken(): Promise<string> {
+    const result = await this.systemMetadataRepository.get(SystemMetadataKey.MaintenanceMode);
+    if (!result) {
+      throw new Error('Unreachable: Missing metadata for maintenance mode.');
+    }
+
+    if (!result.isMaintenanceMode) {
+      throw new Error('Unreachable: Not in maintenance mode.');
+    }
+
+    return result.token;
   }
 
   afterInit(websocketServer: Server) {

@@ -1,13 +1,12 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { parse } from 'cookie';
 import { IncomingHttpHeaders } from 'node:http';
-import { MaintenanceAuthDto, MaintenanceModeResponseDto } from 'src/dtos/maintenance.dto';
-import { ImmichCookie, SystemMetadataKey } from 'src/enum';
+import { MaintenanceAuthDto } from 'src/dtos/maintenance.dto';
+import { ImmichCookie } from 'src/enum';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { MaintenanceWorkerRepository } from 'src/repositories/maintenance-worker.repository';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
-import { MaintenanceService } from 'src/services/maintenance.service';
 import { getConfig } from 'src/utils/config';
 
 /**
@@ -54,19 +53,8 @@ export class MaintenanceWorkerService {
     };
   }
 
-  getMaintenanceMode(): Promise<MaintenanceModeResponseDto> {
-    return MaintenanceService.getMaintenanceModeWith(this.systemMetadataRepository);
-  }
-
   async endMaintenance(): Promise<void> {
-    const { isMaintenanceMode } = await this.getMaintenanceMode();
-    if (!isMaintenanceMode) {
-      throw new BadRequestException('Not in maintenance mode');
-    }
-
-    const state = { isMaintenanceMode: false };
-    await this.systemMetadataRepository.set(SystemMetadataKey.MaintenanceMode, state);
-    this.maintenanceRepository.restartApp(state);
+    await this.maintenanceRepository.exitMaintenanceMode();
   }
 
   private getCookieToken(headers: IncomingHttpHeaders): string | null {

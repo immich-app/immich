@@ -5,7 +5,6 @@ import { isAbsolute } from 'node:path';
 import { Server } from 'socket.io';
 import { SALT_ROUNDS } from 'src/constants';
 import { UserAdminResponseDto, mapUserAdmin } from 'src/dtos/user.dto';
-import { SystemMetadataKey } from 'src/enum';
 import { type ArgsOf } from 'src/repositories/event.repository';
 import { type ServerEvents } from 'src/repositories/websocket.repository';
 import { BaseService } from 'src/services/base.service';
@@ -53,15 +52,16 @@ export class CliService extends BaseService {
   }
 
   async disableMaintenanceMode(): Promise<void> {
-    const state = { isMaintenanceMode: false };
-    await this.systemMetadataRepository.set(SystemMetadataKey.MaintenanceMode, state);
+    const state = { isMaintenanceMode: false as const };
+    this.maintenanceRepository.setMaintenanceMode(state);
     this.oneShotServerSend('AppRestart', state);
   }
 
   async enableMaintenanceMode(): Promise<void> {
-    const state = { isMaintenanceMode: true };
-    await this.systemMetadataRepository.set(SystemMetadataKey.MaintenanceMode, state);
-    this.oneShotServerSend('AppRestart', state);
+    this.maintenanceRepository.enterMaintenanceMode();
+    this.oneShotServerSend('AppRestart', {
+      isMaintenanceMode: true,
+    });
   }
 
   async grantAdminAccess(email: string): Promise<void> {

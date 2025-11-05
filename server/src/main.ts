@@ -6,9 +6,9 @@ import { Worker } from 'node:worker_threads';
 import { ImmichAdminModule } from 'src/app.module';
 import { ExitCode, ImmichWorker, LogLevel } from 'src/enum';
 import { ConfigRepository } from 'src/repositories/config.repository';
+import { isMaintenanceMode } from 'src/repositories/maintenance.repository';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
 import { type DB } from 'src/schema';
-import { MaintenanceService } from 'src/services/maintenance.service';
 import { getKyselyConfig } from 'src/utils/database';
 
 /**
@@ -33,7 +33,7 @@ class Workers {
    * Boot all enabled workers
    */
   async bootstrap() {
-    const { isMaintenanceMode } = await this.getConfig();
+    const isMaintenanceMode = await this.isMaintenanceMode();
     const { workers } = new ConfigRepository().getEnv();
 
     if (isMaintenanceMode) {
@@ -49,11 +49,11 @@ class Workers {
    * Initialise a short-lived Nest application to build configuration
    * @returns System configuration
    */
-  private async getConfig(): Promise<{ isMaintenanceMode: boolean }> {
+  private async isMaintenanceMode(): Promise<boolean> {
     const { database } = new ConfigRepository().getEnv();
     const kysely = new Kysely<DB>(getKyselyConfig(database.config));
     const systemMetadataRepository = new SystemMetadataRepository(kysely);
-    return await MaintenanceService.getMaintenanceModeWith(systemMetadataRepository);
+    return await isMaintenanceMode(systemMetadataRepository);
   }
 
   /**

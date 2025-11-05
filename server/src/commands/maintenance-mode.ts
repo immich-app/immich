@@ -3,7 +3,7 @@ import { CliService } from 'src/services/cli.service';
 
 @Command({
   name: 'enable-maintenance-mode',
-  description: 'Enable maintenance mode',
+  description: 'Enable maintenance mode or regenerate the maintenance token',
 })
 export class EnableMaintenanceModeCommand extends CommandRunner {
   constructor(private service: CliService) {
