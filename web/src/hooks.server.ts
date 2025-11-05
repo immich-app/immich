@@ -1,5 +1,6 @@
 import overpass from '$lib/assets/fonts/overpass/Overpass.ttf?url';
 import overpassMono from '$lib/assets/fonts/overpass/OverpassMono.ttf?url';
+import { maintenanceCreateUrl, maintenanceReturnUrl } from '$lib/utils/maintenance';
 import { redirect, type Handle } from '@sveltejs/kit';
 
 export const handle = (async ({ event, resolve }) => {
@@ -13,7 +14,12 @@ export const handle = (async ({ event, resolve }) => {
     );
 
   if (typeof redirectToMaintenance === 'boolean') {
-    throw redirect(302, redirectToMaintenance ? '/maintenance' : '/');
+    throw redirect(
+      302,
+      redirectToMaintenance
+        ? maintenanceCreateUrl(event.url)
+        : maintenanceReturnUrl(event.url.searchParams, event.url.origin),
+    );
   }
 
   // replace the variables from app.html

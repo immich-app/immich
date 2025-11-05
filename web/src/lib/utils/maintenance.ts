@@ -1,6 +1,18 @@
+import { AppRoute } from '$lib/constants';
 import { maintenanceAuth as maintenanceAuth$ } from '$lib/stores/maintenance.store';
 import { maintenanceLogin } from '@immich/sdk';
 import { get } from 'svelte/store';
+
+export function maintenanceCreateUrl(url: URL) {
+  const target = new URL(AppRoute.MAINTENANCE, url.origin);
+  target.searchParams.set('next', url.href);
+  return target.href;
+}
+
+export function maintenanceReturnUrl(searchParams: URLSearchParams, origin: string) {
+  const target = new URL(searchParams.get('next') ?? '/', origin);
+  return new URL(target.pathname + target.search + target.hash, origin).href;
+}
 
 export const loadMaintenanceAuth = async () => {
   try {

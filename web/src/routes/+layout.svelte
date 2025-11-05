@@ -20,6 +20,7 @@
     type ReleaseEvent,
   } from '$lib/stores/websocket';
   import { copyToClipboard, getReleaseType } from '$lib/utils';
+  import { maintenanceCreateUrl, maintenanceReturnUrl } from '$lib/utils/maintenance';
   import { isAssetViewerRoute } from '$lib/utils/navigation';
   import type { ServerVersionResponseDto } from '@immich/sdk';
   import { modalManager, setTranslations } from '@immich/ui';
@@ -107,17 +108,6 @@
 
   $effect(() => void handleRelease($release));
 
-  function maintenanceUrl() {
-    const target = new URL(AppRoute.MAINTENANCE);
-    target.searchParams.set('next', location.href);
-    return target;
-  }
-
-  function nextUrl() {
-    const target = new URL(new URLSearchParams(location.search).get('next') ?? '/');
-    return new URL(target.pathname + target.search + target.hash, location.origin).href;
-  }
-
   serverRestarting.subscribe((isRestarting) => {
     if (!isRestarting) {
       return;
@@ -133,7 +123,9 @@
         if (!connected) {
           waiting = true;
         } else if (connected && waiting) {
-          location.href = isRestarting.isMaintenanceMode ? maintenanceUrl() : nextUrl();
+          location.href = isRestarting.isMaintenanceMode
+            ? maintenanceCreateUrl(new URL(location.href))
+            : maintenanceReturnUrl(new URLSearchParams(location.search), location.origin);
         }
       });
     }
