@@ -51,26 +51,27 @@ if ! which "wasm-merge" > /dev/null || ! which "wasm-opt" > /dev/null; then
   echo "Missing binaryen tool(s)"
 
   # binaryen use arm64 instead where as extism-js uses aarch64 for release file naming
-  case "$ARCH" in
-    aarch64*)  ARCH="arm64" ;;
+  BINARYEN_ARCH="$ARCH"
+  case "$BINARYEN_ARCH" in
+    aarch64*)  BINARYEN_ARCH="arm64" ;;
   esac
 
   # matches the case where the user installs extism-pdk in a Linux-based Docker image running on mac m1
   # binaryen didn't have arm64 release file for linux 
-  if [ $ARCH = "arm64" ] && [ $OS = "linux" ]; then
-    ARCH="x86_64"
+  if [ $BINARYEN_ARCH = "arm64" ] && [ $OS = "linux" ]; then
+    BINARYEN_ARCH="x86_64"
   fi
 
   if [ $OS = "macos" ]; then
     echo "Installing binaryen and wasm-merge using homebrew"
     brew install binaryen
   else
-    if [ ! -e "binaryen-$BINARYEN_TAG-$ARCH-$OS.tar.gz" ]; then
+    if [ ! -e "binaryen-$BINARYEN_TAG-$BINARYEN_ARCH-$OS.tar.gz" ]; then
       echo 'Downloading binaryen...'
-      curl -L -O "https://github.com/WebAssembly/binaryen/releases/download/$BINARYEN_TAG/binaryen-$BINARYEN_TAG-$ARCH-$OS.tar.gz"
+      curl -L -O "https://github.com/WebAssembly/binaryen/releases/download/$BINARYEN_TAG/binaryen-$BINARYEN_TAG-$BINARYEN_ARCH-$OS.tar.gz"
     fi
     rm -rf 'binaryen' "binaryen-$BINARYEN_TAG"
-    tar xf "binaryen-$BINARYEN_TAG-$ARCH-$OS.tar.gz"
+    tar xf "binaryen-$BINARYEN_TAG-$BINARYEN_ARCH-$OS.tar.gz"
     mv "binaryen-$BINARYEN_TAG"/ binaryen/
     mkdir -p /usr/local/binaryen
     if ! which 'wasm-merge' > /dev/null; then
@@ -105,7 +106,7 @@ if curl -fsSL --output /tmp/extism-js.gz "$DOWNLOAD_URL"; then
   echo "Successfully installed extism-js to $TARGET"
 else
   echo "Failed to download or install extism-js. Curl exit code: $?"
-  exit
+  exit 1
 fi
 
 # Warn the user if the chosen path is not in the path
