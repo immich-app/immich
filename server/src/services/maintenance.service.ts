@@ -1,6 +1,5 @@
-import { BadRequestException, INestApplication, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { OnEvent } from 'src/decorators';
-import { ExitCode } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
 
 /**
@@ -8,8 +7,6 @@ import { BaseService } from 'src/services/base.service';
  */
 @Injectable()
 export class MaintenanceService extends BaseService {
-  nestApplication: INestApplication | undefined;
-
   async startMaintenance(): Promise<{ secret: string }> {
     const { isMaintenanceMode } = await this.maintenanceRepository.getMaintenanceMode();
     if (isMaintenanceMode) {
@@ -21,14 +18,6 @@ export class MaintenanceService extends BaseService {
 
   @OnEvent({ name: 'AppRestart', server: true })
   onRestart() {
-    /* eslint-disable unicorn/no-process-exit */
-    // we need to specify the exact exit code
-    void this.nestApplication
-      ?.close() // attempt graceful shutdown
-      .then(() => process.exit(ExitCode.AppRestart)); // then signal restart
-
-    // in some exceptional circumstances, close() may hang
-    setTimeout(() => process.exit(ExitCode.AppRestart), 5000);
-    /* eslint-enable unicorn/no-process-exit */
+    this.maintenanceRepository.exitApp();
   }
 }

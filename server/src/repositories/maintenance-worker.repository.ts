@@ -121,9 +121,7 @@ export class MaintenanceWorkerRepository implements OnGatewayConnection, OnGatew
   private exitApp() {
     this.closeFn?.().then(() => process.exit(ExitCode.AppRestart));
 
-    // mirroring behaviour of maintenance service
-    // although there shouldn't be any reason for
-    // the maintenance module to hang
+    // in exceptional circumstance, the application may hang
     setTimeout(() => process.exit(ExitCode.AppRestart), 5000);
   }
 

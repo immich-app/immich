@@ -2,7 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { configureExpress, configureTelemetry } from 'src/app.common';
 import { ApiModule } from 'src/app.module';
-import { MaintenanceService } from 'src/services/maintenance.service';
+import { MaintenanceRepository } from 'src/repositories/maintenance.repository';
 import { isStartUpError } from 'src/utils/misc';
 
 async function bootstrap() {
@@ -11,7 +11,7 @@ async function bootstrap() {
   configureTelemetry();
 
   const app = await NestFactory.create<NestExpressApplication>(ApiModule, { bufferLogs: true });
-  app.get(MaintenanceService).nestApplication = app;
+  app.get(MaintenanceRepository).setCloseFn(() => app.close());
 
   configureExpress(app);
 }
