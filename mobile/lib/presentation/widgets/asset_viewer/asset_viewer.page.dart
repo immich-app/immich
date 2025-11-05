@@ -3,13 +3,18 @@ import 'dart:async';
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/extensions/scroll_extensions.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/download_status_floating_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/asset_viewer/activities_bottom_sheet.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_stack.provider.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_stack.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
@@ -24,26 +29,37 @@ import 'package:immich_mobile/providers/asset_viewer/video_player_controls_provi
 import 'package:immich_mobile/providers/asset_viewer/video_player_value_provider.dart';
 import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_loading_indicator.dart';
 import 'package:immich_mobile/widgets/photo_view/photo_view.dart';
 import 'package:immich_mobile/widgets/photo_view/photo_view_gallery.dart';
-import 'package:platform/platform.dart';
 
 @RoutePage()
 class AssetViewerPage extends StatelessWidget {
   final int initialIndex;
   final TimelineService timelineService;
   final int? heroOffset;
+  final RemoteAlbum? currentAlbum;
 
-  const AssetViewerPage({super.key, required this.initialIndex, required this.timelineService, this.heroOffset});
+  const AssetViewerPage({
+    super.key,
+    required this.initialIndex,
+    required this.timelineService,
+    this.heroOffset,
+    this.currentAlbum,
+  });
 
   @override
   Widget build(BuildContext context) {
     // This is necessary to ensure that the timeline service is available
     // since the Timeline and AssetViewer are on different routes / Widget subtrees.
     return ProviderScope(
-      overrides: [timelineServiceProvider.overrideWithValue(timelineService)],
+      overrides: [
+        timelineServiceProvider.overrideWithValue(timelineService),
+        currentRemoteAlbumScopedProvider.overrideWithValue(currentAlbum),
+      ],
       child: AssetViewer(initialIndex: initialIndex, heroOffset: heroOffset),
     );
   }
@@ -51,13 +67,33 @@ class AssetViewerPage extends StatelessWidget {
 
 class AssetViewer extends ConsumerStatefulWidget {
   final int initialIndex;
-  final Platform? platform;
   final int? heroOffset;
 
-  const AssetViewer({super.key, required this.initialIndex, this.platform, this.heroOffset});
+  const AssetViewer({super.key, required this.initialIndex, this.heroOffset});
 
   @override
   ConsumerState createState() => _AssetViewerState();
+
+  static void setAsset(WidgetRef ref, BaseAsset asset) {
+    ref.read(assetViewerProvider.notifier).reset();
+    _setAsset(ref, asset);
+  }
+
+  void changeAsset(WidgetRef ref, BaseAsset asset) {
+    _setAsset(ref, asset);
+  }
+
+  static void _setAsset(WidgetRef ref, BaseAsset asset) {
+    // Always holds the current asset from the timeline
+    ref.read(assetViewerProvider.notifier).setAsset(asset);
+    // The currentAssetNotifier actually holds the current asset that is displayed
+    // which could be stack children as well
+    ref.read(currentAssetNotifier.notifier).setAsset(asset);
+    if (asset.isVideo || asset.isMotionPhoto) {
+      ref.read(videoPlaybackValueProvider.notifier).reset();
+      ref.read(videoPlayerControlsProvider.notifier).pause();
+    }
+  }
 }
 
 const double _kBottomSheetMinimumExtent = 0.4;
@@ -72,7 +108,6 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   PhotoViewControllerBase? viewController;
   StreamSubscription? reloadSubscription;
 
-  late Platform platform;
   late final int heroOffset;
   late PhotoViewControllerValue initialPhotoViewState;
   bool? hasDraggedDown;
@@ -95,18 +130,22 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   ImageStream? _prevPreCacheStream;
   ImageStream? _nextPreCacheStream;
 
+  KeepAliveLink? _stackChildrenKeepAlive;
+
   @override
   void initState() {
     super.initState();
+    assert(ref.read(currentAssetNotifier) != null, "Current asset should not be null when opening the AssetViewer");
     pageController = PageController(initialPage: widget.initialIndex);
-    platform = widget.platform ?? const LocalPlatform();
     totalAssets = ref.read(timelineServiceProvider).totalAssets;
     bottomSheetController = DraggableScrollableController();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _onAssetChanged(widget.initialIndex);
-    });
+    WidgetsBinding.instance.addPostFrameCallback(_onAssetInit);
     reloadSubscription = EventStream.shared.listen(_onEvent);
     heroOffset = widget.heroOffset ?? TabsRouterScope.of(context)?.controller.activeIndex ?? 0;
+    final asset = ref.read(currentAssetNotifier);
+    if (asset != null) {
+      _stackChildrenKeepAlive = ref.read(stackChildrenNotifier(asset).notifier).ref.keepAlive();
+    }
   }
 
   @override
@@ -117,6 +156,8 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     reloadSubscription?.cancel();
     _prevPreCacheStream?.removeListener(_dummyListener);
     _nextPreCacheStream?.removeListener(_dummyListener);
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    _stackChildrenKeepAlive?.close();
     super.dispose();
   }
 
@@ -142,26 +183,9 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     return provider.resolve(ImageConfiguration.empty)..addListener(_dummyListener);
   }
 
-  void _onAssetChanged(int index) async {
-    // Validate index bounds and try to get asset, loading buffer if needed
+  void _precacheAssets(int index) {
     final timelineService = ref.read(timelineServiceProvider);
-    final asset = await timelineService.getAssetAsync(index);
-
-    if (asset == null) {
-      return;
-    }
-
-    // Always holds the current asset from the timeline
-    ref.read(assetViewerProvider.notifier).setAsset(asset);
-    // The currentAssetNotifier actually holds the current asset that is displayed
-    // which could be stack children as well
-    ref.read(currentAssetNotifier.notifier).setAsset(asset);
-    if (asset.isVideo || asset.isMotionPhoto) {
-      ref.read(videoPlaybackValueProvider.notifier).reset();
-      ref.read(videoPlayerControlsProvider.notifier).pause();
-    }
-
-    unawaited(ref.read(timelineServiceProvider).preCacheAssets(index));
+    unawaited(timelineService.preCacheAssets(index));
     _cancelTimers();
     // This will trigger the pre-caching of adjacent assets ensuring
     // that they are ready when the user navigates to them.
@@ -180,21 +204,38 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       _nextPreCacheStream = nextAsset != null ? _precacheImage(nextAsset) : null;
     });
     _delayedOperations.add(timer);
-
-    _handleCasting(asset);
   }
 
-  void _handleCasting(BaseAsset asset) {
+  void _onAssetInit(Duration _) {
+    _precacheAssets(widget.initialIndex);
+    _handleCasting();
+  }
+
+  void _onAssetChanged(int index) async {
+    final timelineService = ref.read(timelineServiceProvider);
+    final asset = await timelineService.getAssetAsync(index);
+    if (asset == null) {
+      return;
+    }
+
+    widget.changeAsset(ref, asset);
+    _precacheAssets(index);
+    _handleCasting();
+    _stackChildrenKeepAlive?.close();
+    _stackChildrenKeepAlive = ref.read(stackChildrenNotifier(asset).notifier).ref.keepAlive();
+  }
+
+  void _handleCasting() {
     if (!ref.read(castProvider).isCasting) return;
+    final asset = ref.read(currentAssetNotifier);
+    if (asset == null) return;
 
     // hide any casting snackbars if they exist
     context.scaffoldMessenger.hideCurrentSnackBar();
 
     // send image to casting if the server has it
-    if (asset.hasRemote) {
-      final remoteAsset = asset as RemoteAsset;
-
-      ref.read(castProvider.notifier).loadMedia(remoteAsset, false);
+    if (asset is RemoteAsset) {
+      ref.read(castProvider.notifier).loadMedia(asset, false);
     } else {
       // casting cannot show local assets
       context.scaffoldMessenger.clearSnackBars();
@@ -308,7 +349,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       bottomSheetController.jumpTo((centre + distanceToOrigin) / ctx.height);
     }
 
-    if (distanceToOrigin > openThreshold && !showingBottomSheet) {
+    if (distanceToOrigin > openThreshold && !showingBottomSheet && !ref.read(readonlyModeProvider)) {
       _openBottomSheet(ctx);
     }
   }
@@ -390,7 +431,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
 
     if (event is ViewerOpenBottomSheetEvent) {
       final extent = _kBottomSheetMinimumExtent + 0.3;
-      _openBottomSheet(scaffoldContext!, extent: extent);
+      _openBottomSheet(scaffoldContext!, extent: extent, activitiesMode: event.activitiesMode);
       final offset = _getVerticalOffsetForBottomSheet(extent);
       viewController?.position = Offset(0, -offset);
       return;
@@ -432,7 +473,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     });
   }
 
-  void _openBottomSheet(BuildContext ctx, {double extent = _kBottomSheetMinimumExtent}) {
+  void _openBottomSheet(BuildContext ctx, {double extent = _kBottomSheetMinimumExtent, bool activitiesMode = false}) {
     ref.read(assetViewerProvider.notifier).setBottomSheet(true);
     initialScale = viewController?.scale;
     // viewController?.updateMultiple(scale: (viewController?.scale ?? 1.0) + 0.01);
@@ -446,7 +487,9 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       builder: (_) {
         return NotificationListener<Notification>(
           onNotification: _onNotification,
-          child: AssetDetailBottomSheet(controller: bottomSheetController, initialChildSize: extent),
+          child: activitiesMode
+              ? ActivitiesBottomSheet(controller: bottomSheetController, initialChildSize: extent)
+              : AssetDetailBottomSheet(controller: bottomSheetController, initialChildSize: extent),
         );
       },
     );
@@ -507,7 +550,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     BaseAsset displayAsset = asset;
     final stackChildren = ref.read(stackChildrenNotifier(asset)).valueOrNull;
     if (stackChildren != null && stackChildren.isNotEmpty) {
-      displayAsset = stackChildren.elementAt(ref.read(assetViewerProvider.select((s) => s.stackIndex)));
+      displayAsset = stackChildren.elementAt(ref.read(assetViewerProvider).stackIndex);
     }
 
     final isPlayingMotionVideo = ref.read(isPlayingMotionVideoProvider);
@@ -584,6 +627,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     // Rebuild the widget when the asset viewer state changes
     // Using multiple selectors to avoid unnecessary rebuilds for other state changes
     ref.watch(assetViewerProvider.select((s) => s.showingBottomSheet));
+    ref.watch(assetViewerProvider.select((s) => s.showingControls));
     ref.watch(assetViewerProvider.select((s) => s.backgroundOpacity));
     ref.watch(assetViewerProvider.select((s) => s.stackIndex));
     ref.watch(isPlayingMotionVideoProvider);
@@ -596,8 +640,17 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       if (asset == null) return;
 
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        _handleCasting(asset);
+        _handleCasting();
       });
+    });
+
+    // Listen for control visibility changes and change system UI mode accordingly
+    ref.listen(assetViewerProvider.select((value) => value.showingControls), (_, showingControls) async {
+      if (showingControls) {
+        unawaited(SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge));
+      } else {
+        unawaited(SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky));
+      }
     });
 
     // Currently it is not possible to scroll the asset when the bottom sheet is open all the way.
@@ -610,20 +663,25 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
         appBar: const ViewerTopAppBar(),
         extendBody: true,
         extendBodyBehindAppBar: true,
-        body: PhotoViewGallery.builder(
-          gaplessPlayback: true,
-          loadingBuilder: _placeholderBuilder,
-          pageController: pageController,
-          scrollPhysics: platform.isIOS
-              ? const FastScrollPhysics() // Use bouncing physics for iOS
-              : const FastClampingScrollPhysics(), // Use heavy physics for Android
-          itemCount: totalAssets,
-          onPageChanged: _onPageChanged,
-          onPageBuild: _onPageBuild,
-          scaleStateChangedCallback: _onScaleStateChanged,
-          builder: _assetBuilder,
-          backgroundDecoration: BoxDecoration(color: backgroundColor),
-          enablePanAlways: true,
+        floatingActionButton: const DownloadStatusFloatingButton(),
+        body: Stack(
+          children: [
+            PhotoViewGallery.builder(
+              gaplessPlayback: true,
+              loadingBuilder: _placeholderBuilder,
+              pageController: pageController,
+              scrollPhysics: CurrentPlatform.isIOS
+                  ? const FastScrollPhysics() // Use bouncing physics for iOS
+                  : const FastClampingScrollPhysics(), // Use heavy physics for Android
+              itemCount: totalAssets,
+              onPageChanged: _onPageChanged,
+              onPageBuild: _onPageBuild,
+              scaleStateChangedCallback: _onScaleStateChanged,
+              builder: _assetBuilder,
+              backgroundDecoration: BoxDecoration(color: backgroundColor),
+              enablePanAlways: true,
+            ),
+          ],
         ),
         bottomNavigationBar: showingBottomSheet
             ? const SizedBox.shrink()

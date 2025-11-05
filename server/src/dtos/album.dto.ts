@@ -128,6 +128,14 @@ export class AlbumUserResponseDto {
   role!: AlbumUserRole;
 }
 
+export class ContributorCountResponseDto {
+  @ApiProperty()
+  userId!: string;
+
+  @ApiProperty({ type: 'integer' })
+  assetCount!: number;
+}
+
 export class AlbumResponseDto {
   id!: string;
   ownerId!: string;
@@ -149,6 +157,11 @@ export class AlbumResponseDto {
   isActivityEnabled!: boolean;
   @ValidateEnum({ enum: AssetOrder, name: 'AssetOrder', optional: true })
   order?: AssetOrder;
+
+  // Optional per-user contribution counts for shared albums
+  @Type(() => ContributorCountResponseDto)
+  @ApiProperty({ type: [ContributorCountResponseDto], required: false })
+  contributorCounts?: ContributorCountResponseDto[];
 }
 
 export type MapAlbumDto = {

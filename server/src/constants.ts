@@ -5,7 +5,7 @@ import { SemVer } from 'semver';
 import { DatabaseExtension, ExifOrientation, VectorIndex } from 'src/enum';
 
 export const POSTGRES_VERSION_RANGE = '>=14.0.0';
-export const VECTORCHORD_VERSION_RANGE = '>=0.3 <0.5';
+export const VECTORCHORD_VERSION_RANGE = '>=0.3 <0.6';
 export const VECTORS_VERSION_RANGE = '>=0.2 <0.4';
 export const VECTOR_VERSION_RANGE = '>=0.5 <1';
 
@@ -50,11 +50,6 @@ export const serverVersion = new SemVer(version);
 
 export const AUDIT_LOG_MAX_DURATION = Duration.fromObject({ days: 100 });
 export const ONE_HOUR = Duration.fromObject({ hours: 1 });
-
-export const MACHINE_LEARNING_PING_TIMEOUT = Number(process.env.MACHINE_LEARNING_PING_TIMEOUT || 2000);
-export const MACHINE_LEARNING_AVAILABILITY_BACKOFF_TIME = Number(
-  process.env.MACHINE_LEARNING_AVAILABILITY_BACKOFF_TIME || 30_000,
-);
 
 export const citiesFile = 'cities500.txt';
 export const reverseGeocodeMaxDistance = 25_000;

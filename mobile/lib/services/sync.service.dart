@@ -147,7 +147,9 @@ class SyncService {
       dbUsers,
       compare: (UserDto a, UserDto b) => a.id.compareTo(b.id),
       both: (UserDto a, UserDto b) {
-        if (!a.updatedAt.isAtSameMomentAs(b.updatedAt) ||
+        if ((a.updatedAt == null && b.updatedAt != null) ||
+            (a.updatedAt != null && b.updatedAt == null) ||
+            (a.updatedAt != null && b.updatedAt != null && !a.updatedAt!.isAtSameMomentAs(b.updatedAt!)) ||
             a.isPartnerSharedBy != b.isPartnerSharedBy ||
             a.isPartnerSharedWith != b.isPartnerSharedWith ||
             a.inTimeline != b.inTimeline) {
@@ -703,7 +705,7 @@ class SyncService {
     if (assets.isEmpty) return;
 
     if (Platform.isAndroid && _appSettingsService.getSetting<bool>(AppSettingsEnum.manageLocalMediaAndroid)) {
-      _toggleTrashStatusForAssets(assets);
+      await _toggleTrashStatusForAssets(assets);
     }
 
     try {

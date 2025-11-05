@@ -1,13 +1,13 @@
 <script lang="ts">
-  import PlacesCardGroup from './places-card-group.svelte';
-  import { groupBy } from 'lodash-es';
+  import { PlacesGroupBy, type PlacesViewSettings } from '$lib/stores/preferences.store';
   import { normalizeSearchString } from '$lib/utils/string-utils';
   import { type AssetResponseDto } from '@immich/sdk';
   import { mdiMapMarkerOff } from '@mdi/js';
-  import Icon from '$lib/components/elements/icon.svelte';
-  import { PlacesGroupBy, type PlacesViewSettings } from '$lib/stores/preferences.store';
+  import { groupBy } from 'lodash-es';
+  import PlacesCardGroup from './places-card-group.svelte';
 
   import { type PlacesGroup, getSelectedPlacesGroupOption } from '$lib/utils/places-utils';
+  import { Icon } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import { run } from 'svelte/legacy';
 
@@ -114,7 +114,7 @@
 {:else}
   <div class="flex min-h-[calc(66vh-11rem)] w-full place-content-center items-center dark:text-white">
     <div class="flex flex-col content-center items-center text-center">
-      <Icon path={mdiMapMarkerOff} size="3.5em" />
+      <Icon icon={mdiMapMarkerOff} size="3.5em" />
       <p class="mt-5 text-3xl font-medium">{$t('no_places')}</p>
     </div>
   </div>

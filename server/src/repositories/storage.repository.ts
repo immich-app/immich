@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import archiver from 'archiver';
 import chokidar, { ChokidarOptions } from 'chokidar';
 import { escapePath, glob, globStream } from 'fast-glob';
-import { constants, createReadStream, createWriteStream, existsSync, mkdirSync } from 'node:fs';
+import { constants, createReadStream, createWriteStream, existsSync, mkdirSync, ReadOptionsWithBuffer } from 'node:fs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { Readable, Writable } from 'node:stream';
@@ -103,11 +103,11 @@ export class StorageRepository {
     };
   }
 
-  async readFile(filepath: string, options?: fs.FileReadOptions<Buffer>): Promise<Buffer> {
+  async readFile(filepath: string, options?: ReadOptionsWithBuffer<Buffer>): Promise<Buffer> {
     const file = await fs.open(filepath);
     try {
       const { buffer } = await file.read(options);
-      return buffer;
+      return buffer as Buffer;
     } finally {
       await file.close();
     }

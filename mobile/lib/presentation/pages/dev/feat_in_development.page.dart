@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:drift/drift.dart' hide Column;
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
@@ -135,7 +136,7 @@ class FeatInDevPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Features in Development'), centerTitle: true),
+      appBar: AppBar(title: Text('features_in_development'.tr()), centerTitle: true),
       body: Column(
         children: [
           Flexible(

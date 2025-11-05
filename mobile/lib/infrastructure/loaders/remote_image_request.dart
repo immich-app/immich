@@ -65,40 +65,53 @@ class RemoteImageRequest extends ImageRequest {
       return null;
     }
 
-    // Handle unknown content length from reverse proxy
-    final contentLength = response.contentLength;
+    final cacheManager = this.cacheManager;
+    final streamController = StreamController<List<int>>(sync: true);
+    final Stream<List<int>> stream;
+    unawaited(cacheManager?.putStreamedFile(url, streamController.stream));
+    stream = response.map((chunk) {
+      if (_isCancelled) {
+        throw StateError('Cancelled request');
+      }
+      if (cacheManager != null) {
+        streamController.add(chunk);
+      }
+      return chunk;
+    });
+
+    try {
+      final Uint8List bytes = await _downloadBytes(stream, response.contentLength);
+      unawaited(streamController.close());
+      return await ImmutableBuffer.fromUint8List(bytes);
+    } catch (e) {
+      streamController.addError(e);
+      unawaited(streamController.close());
+      if (_isCancelled) {
+        return null;
+      }
+      rethrow;
+    }
+  }
+
+  Future<Uint8List> _downloadBytes(Stream<List<int>> stream, int length) async {
     final Uint8List bytes;
     int offset = 0;
-
-    if (contentLength >= 0) {
+    if (length > 0) {
       // Known content length - use pre-allocated buffer
-      bytes = Uint8List(contentLength);
-      final subscription = response.listen((List<int> chunk) {
-        // this is important to break the response stream if the request is cancelled
-        if (_isCancelled) {
-          throw StateError('Cancelled request');
-        }
+      bytes = Uint8List(length);
+      await stream.listen((chunk) {
         bytes.setAll(offset, chunk);
         offset += chunk.length;
-      }, cancelOnError: true);
-      cacheManager?.putStreamedFile(url, response);
-      await subscription.asFuture();
+      }, cancelOnError: true).asFuture();
     } else {
       // Unknown content length - collect chunks dynamically
       final chunks = <List<int>>[];
       int totalLength = 0;
-      final subscription = response.listen((List<int> chunk) {
-        // this is important to break the response stream if the request is cancelled
-        if (_isCancelled) {
-          throw StateError('Cancelled request');
-        }
+      await stream.listen((chunk) {
         chunks.add(chunk);
         totalLength += chunk.length;
-      }, cancelOnError: true);
-      cacheManager?.putStreamedFile(url, response);
-      await subscription.asFuture();
+      }, cancelOnError: true).asFuture();
 
-      // Combine all chunks into a single buffer
       bytes = Uint8List(totalLength);
       for (final chunk in chunks) {
         bytes.setAll(offset, chunk);
@@ -106,7 +119,7 @@ class RemoteImageRequest extends ImageRequest {
       }
     }
 
-    return await ImmutableBuffer.fromUint8List(bytes);
+    return bytes;
   }
 
   Future<ImageInfo?> _loadCachedFile(
@@ -130,7 +143,7 @@ class RemoteImageRequest extends ImageRequest {
       return await _decodeBuffer(buffer, decode, scale);
     } catch (e) {
       log.severe('Failed to decode cached image', e);
-      _evictFile(url);
+      unawaited(_evictFile(url));
       return null;
     }
   }

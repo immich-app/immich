@@ -95,5 +95,8 @@ export class AllJobStatusResponseDto implements Record<QueueName, JobStatusDto> 
   [QueueName.BackupDatabase]!: JobStatusDto;
 
   @ApiProperty({ type: JobStatusDto })
+  [QueueName.Ocr]!: JobStatusDto;
+
+  @ApiProperty({ type: JobStatusDto })
   [QueueName.AutoStack]!: JobStatusDto;
 }

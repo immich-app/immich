@@ -8,12 +8,14 @@ export enum AssetAction {
   RESTORE = 'restore',
   ADD = 'add',
   ADD_TO_ALBUM = 'add-to-album',
+  STACK = 'stack',
   UNSTACK = 'unstack',
   KEEP_THIS_DELETE_OTHERS = 'keep-this-delete-others',
   SET_STACK_PRIMARY_ASSET = 'set-stack-primary-asset',
   REMOVE_ASSET_FROM_STACK = 'remove-asset-from-stack',
   SET_VISIBILITY_LOCKED = 'set-visibility-locked',
   SET_VISIBILITY_TIMELINE = 'set-visibility-timeline',
+  SET_PERSON_FEATURED_PHOTO = 'set-person-featured-photo',
 }
 
 export enum AppRoute {
@@ -52,6 +54,7 @@ export enum AppRoute {
   UTILITIES = '/utilities',
   DUPLICATES = '/utilities/duplicates',
   LARGE_FILES = '/utilities/large-files',
+  GEOLOCATION = '/utilities/geolocation',
 
   FOLDERS = '/folders',
   TAGS = '/tags',
@@ -135,9 +138,10 @@ export enum QueryType {
   SMART = 'smart',
   METADATA = 'metadata',
   DESCRIPTION = 'description',
+  OCR = 'ocr',
 }
 
-export const validQueryTypes = new Set([QueryType.SMART, QueryType.METADATA, QueryType.DESCRIPTION]);
+export const validQueryTypes = new Set([QueryType.SMART, QueryType.METADATA, QueryType.DESCRIPTION, QueryType.OCR]);
 
 export const locales = [
   { code: 'af-ZA', name: 'Afrikaans (South Africa)' },

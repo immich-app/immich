@@ -12,7 +12,7 @@ with
       ) as "assets"
     from
       "asset"
-      left join lateral (
+      inner join lateral (
         select
           "asset".*,
           "asset_exif" as "exifInfo"

@@ -40,6 +40,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
     [QueueName.ThumbnailGeneration]: { concurrency: 3 },
     [QueueName.VideoConversion]: { concurrency: 1 },
     [QueueName.Notification]: { concurrency: 5 },
+    [QueueName.Ocr]: { concurrency: 1 },
   },
   backup: {
     database: {
@@ -53,7 +54,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
     threads: 0,
     preset: 'ultrafast',
     targetAudioCodec: AudioCodec.Aac,
-    acceptedAudioCodecs: [AudioCodec.Aac, AudioCodec.Mp3, AudioCodec.LibOpus, AudioCodec.PcmS16le],
+    acceptedAudioCodecs: [AudioCodec.Aac, AudioCodec.Mp3, AudioCodec.LibOpus],
     targetResolution: '720',
     targetVideoCodec: VideoCodec.H264,
     acceptedVideoCodecs: [VideoCodec.H264],
@@ -83,6 +84,11 @@ const updatedConfig = Object.freeze<SystemConfig>({
   machineLearning: {
     enabled: true,
     urls: ['http://immich-machine-learning:3003'],
+    availabilityChecks: {
+      enabled: true,
+      interval: 30_000,
+      timeout: 2000,
+    },
     clip: {
       enabled: true,
       modelName: 'ViT-B-32__openai',
@@ -97,6 +103,13 @@ const updatedConfig = Object.freeze<SystemConfig>({
       minScore: 0.7,
       maxDistance: 0.5,
       minFaces: 3,
+    },
+    ocr: {
+      enabled: true,
+      modelName: 'PP-OCRv5_mobile',
+      minDetectionScore: 0.5,
+      minRecognitionScore: 0.8,
+      maxResolution: 736,
     },
   },
   map: {
@@ -224,6 +237,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
       transport: {
         host: '',
         port: 587,
+        secure: false,
         username: '',
         password: '',
         ignoreCert: false,

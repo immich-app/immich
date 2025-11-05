@@ -95,6 +95,7 @@ export enum Permission {
   AssetDownload = 'asset.download',
   AssetUpload = 'asset.upload',
   AssetReplace = 'asset.replace',
+  AssetCopy = 'asset.copy',
 
   AlbumCreate = 'album.create',
   AlbumRead = 'album.read',
@@ -236,6 +237,8 @@ export enum Permission {
   AdminUserUpdate = 'adminUser.update',
   AdminUserDelete = 'adminUser.delete',
 
+  AdminSessionRead = 'adminSession.read',
+
   AdminAuthUnlinkAll = 'adminAuth.unlinkAll',
 }
 
@@ -275,6 +278,10 @@ export enum UserMetadataKey {
   Preferences = 'preferences',
   License = 'license',
   Onboarding = 'onboarding',
+}
+
+export enum AssetMetadataKey {
+  MobileApp = 'mobile-app',
 }
 
 export enum UserAvatarColor {
@@ -508,6 +515,7 @@ export enum QueueName {
   Library = 'library',
   Notification = 'notifications',
   BackupDatabase = 'backupDatabase',
+  Ocr = 'ocr',
   AutoStack = 'autoStack',
 }
 
@@ -528,6 +536,7 @@ export enum JobName {
   AssetGenerateThumbnails = 'AssetGenerateThumbnails',
 
   AuditLogCleanup = 'AuditLogCleanup',
+  AuditTableCleanup = 'AuditTableCleanup',
 
   DatabaseBackup = 'DatabaseBackup',
 
@@ -568,8 +577,7 @@ export enum JobName {
   SendMail = 'SendMail',
 
   SidecarQueueAll = 'SidecarQueueAll',
-  SidecarDiscovery = 'SidecarDiscovery',
-  SidecarSync = 'SidecarSync',
+  SidecarCheck = 'SidecarCheck',
   SidecarWrite = 'SidecarWrite',
 
   SmartSearchQueueAll = 'SmartSearchQueueAll',
@@ -587,6 +595,10 @@ export enum JobName {
   AutoStackCandidateResetAll = 'AutoStackCandidateResetAll',
 
   VersionCheck = 'VersionCheck',
+
+  // OCR
+  OcrQueueAll = 'OcrQueueAll',
+  Ocr = 'Ocr',
 }
 
 export enum JobCommand {
@@ -635,6 +647,7 @@ export enum SyncRequestType {
   AlbumAssetExifsV1 = 'AlbumAssetExifsV1',
   AssetsV1 = 'AssetsV1',
   AssetExifsV1 = 'AssetExifsV1',
+  AssetMetadataV1 = 'AssetMetadataV1',
   AuthUsersV1 = 'AuthUsersV1',
   MemoriesV1 = 'MemoriesV1',
   MemoryToAssetsV1 = 'MemoryToAssetsV1',
@@ -658,6 +671,8 @@ export enum SyncEntityType {
   AssetV1 = 'AssetV1',
   AssetDeleteV1 = 'AssetDeleteV1',
   AssetExifV1 = 'AssetExifV1',
+  AssetMetadataV1 = 'AssetMetadataV1',
+  AssetMetadataDeleteV1 = 'AssetMetadataDeleteV1',
 
   PartnerV1 = 'PartnerV1',
   PartnerDeleteV1 = 'PartnerDeleteV1',
@@ -709,6 +724,7 @@ export enum SyncEntityType {
 
   SyncAckV1 = 'SyncAckV1',
   SyncResetV1 = 'SyncResetV1',
+  SyncCompleteV1 = 'SyncCompleteV1',
 }
 
 export enum NotificationLevel {
@@ -722,6 +738,8 @@ export enum NotificationType {
   JobFailed = 'JobFailed',
   BackupFailed = 'BackupFailed',
   SystemMessage = 'SystemMessage',
+  AlbumInvite = 'AlbumInvite',
+  AlbumUpdate = 'AlbumUpdate',
   Custom = 'Custom',
 }
 

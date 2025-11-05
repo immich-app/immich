@@ -1,6 +1,6 @@
 /**
  * Immich
- * 1.139.4
+ * 2.2.3
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -71,6 +71,7 @@ export type SystemConfigSmtpTransportDto = {
     ignoreCert: boolean;
     password: string;
     port: number;
+    secure: boolean;
     username: string;
 };
 export type SystemConfigSmtpDto = {
@@ -243,6 +244,17 @@ export type UserPreferencesUpdateDto = {
     sharedLinks?: SharedLinksUpdate;
     tags?: TagsUpdate;
 };
+export type SessionResponseDto = {
+    appVersion: string | null;
+    createdAt: string;
+    current: boolean;
+    deviceOS: string;
+    deviceType: string;
+    expiresAt?: string;
+    id: string;
+    isPendingSyncReset: boolean;
+    updatedAt: string;
+};
 export type AssetStatsResponseDto = {
     images: number;
     total: number;
@@ -356,12 +368,17 @@ export type AssetResponseDto = {
     updatedAt: string;
     visibility: AssetVisibility;
 };
+export type ContributorCountResponseDto = {
+    assetCount: number;
+    userId: string;
+};
 export type AlbumResponseDto = {
     albumName: string;
     albumThumbnailAssetId: string | null;
     albumUsers: AlbumUserResponseDto[];
     assetCount: number;
     assets: AssetResponseDto[];
+    contributorCounts?: ContributorCountResponseDto[];
     createdAt: string;
     description: string;
     endDate?: string;
@@ -447,6 +464,10 @@ export type AssetBulkDeleteDto = {
     force?: boolean;
     ids: string[];
 };
+export type AssetMetadataUpsertItemDto = {
+    key: AssetMetadataKey;
+    value: object;
+};
 export type AssetMediaCreateDto = {
     assetData: Blob;
     deviceAssetId: string;
@@ -457,6 +478,7 @@ export type AssetMediaCreateDto = {
     filename?: string;
     isFavorite?: boolean;
     livePhotoVideoId?: string;
+    metadata: AssetMetadataUpsertItemDto[];
     sidecarData?: Blob;
     visibility?: AssetVisibility;
 };
@@ -495,6 +517,15 @@ export type AssetBulkUploadCheckResult = {
 export type AssetBulkUploadCheckResponseDto = {
     results: AssetBulkUploadCheckResult[];
 };
+export type AssetCopyDto = {
+    albums?: boolean;
+    favorite?: boolean;
+    sharedLinks?: boolean;
+    sidecar?: boolean;
+    sourceId: string;
+    stack?: boolean;
+    targetId: string;
+};
 export type CheckExistingAssetsDto = {
     deviceAssetIds: string[];
     deviceId: string;
@@ -516,6 +547,40 @@ export type UpdateAssetDto = {
     rating?: number;
     visibility?: AssetVisibility;
 };
+export type AssetMetadataResponseDto = {
+    key: AssetMetadataKey;
+    updatedAt: string;
+    value: object;
+};
+export type AssetMetadataUpsertDto = {
+    items: AssetMetadataUpsertItemDto[];
+};
+export type AssetOcrResponseDto = {
+    assetId: string;
+    /** Confidence score for text detection box */
+    boxScore: number;
+    id: string;
+    /** Recognized text */
+    text: string;
+    /** Confidence score for text recognition */
+    textScore: number;
+    /** Normalized x coordinate of box corner 1 (0-1) */
+    x1: number;
+    /** Normalized x coordinate of box corner 2 (0-1) */
+    x2: number;
+    /** Normalized x coordinate of box corner 3 (0-1) */
+    x3: number;
+    /** Normalized x coordinate of box corner 4 (0-1) */
+    x4: number;
+    /** Normalized y coordinate of box corner 1 (0-1) */
+    y1: number;
+    /** Normalized y coordinate of box corner 2 (0-1) */
+    y2: number;
+    /** Normalized y coordinate of box corner 3 (0-1) */
+    y3: number;
+    /** Normalized y coordinate of box corner 4 (0-1) */
+    y4: number;
+};
 export type AssetMediaReplaceDto = {
     assetData: Blob;
     deviceAssetId: string;
@@ -531,6 +596,7 @@ export type SignUpDto = {
     password: string;
 };
 export type ChangePasswordDto = {
+    invalidateSessions?: boolean;
     newPassword: string;
     password: string;
 };
@@ -665,6 +731,7 @@ export type AllJobStatusResponseDto = {
     metadataExtraction: JobStatusDto;
     migration: JobStatusDto;
     notifications: JobStatusDto;
+    ocr: JobStatusDto;
     search: JobStatusDto;
     sidecar: JobStatusDto;
     smartSearch: JobStatusDto;
@@ -798,7 +865,10 @@ export type PartnerResponseDto = {
     profileChangedAt: string;
     profileImagePath: string;
 };
-export type UpdatePartnerDto = {
+export type PartnerCreateDto = {
+    sharedWithId: string;
+};
+export type PartnerUpdateDto = {
     inTimeline: boolean;
 };
 export type PeopleResponseDto = {
@@ -892,6 +962,7 @@ export type MetadataSearchDto = {
     libraryId?: string | null;
     make?: string;
     model?: string | null;
+    ocr?: string;
     order?: AssetOrder;
     originalFileName?: string;
     originalPath?: string;
@@ -964,6 +1035,7 @@ export type RandomSearchDto = {
     libraryId?: string | null;
     make?: string;
     model?: string | null;
+    ocr?: string;
     personIds?: string[];
     rating?: number;
     size?: number;
@@ -999,9 +1071,11 @@ export type SmartSearchDto = {
     libraryId?: string | null;
     make?: string;
     model?: string | null;
+    ocr?: string;
     page?: number;
     personIds?: string[];
-    query: string;
+    query?: string;
+    queryAssetId?: string;
     rating?: number;
     size?: number;
     state?: string | null;
@@ -1034,6 +1108,7 @@ export type StatisticsSearchDto = {
     libraryId?: string | null;
     make?: string;
     model?: string | null;
+    ocr?: string;
     personIds?: string[];
     rating?: number;
     state?: string | null;
@@ -1100,6 +1175,7 @@ export type ServerFeaturesDto = {
     map: boolean;
     oauth: boolean;
     oauthAutoLaunch: boolean;
+    ocr: boolean;
     passwordLogin: boolean;
     reverseGeocoding: boolean;
     search: boolean;
@@ -1169,16 +1245,6 @@ export type ServerVersionHistoryResponseDto = {
     id: string;
     version: string;
 };
-export type SessionResponseDto = {
-    createdAt: string;
-    current: boolean;
-    deviceOS: string;
-    deviceType: string;
-    expiresAt?: string;
-    id: string;
-    isPendingSyncReset: boolean;
-    updatedAt: string;
-};
 export type SessionCreateDto = {
     deviceOS?: string;
     deviceType?: string;
@@ -1186,6 +1252,7 @@ export type SessionCreateDto = {
     duration?: number;
 };
 export type SessionCreateResponseDto = {
+    appVersion: string | null;
     createdAt: string;
     current: boolean;
     deviceOS: string;
@@ -1345,6 +1412,7 @@ export type SystemConfigJobDto = {
     metadataExtraction: JobSettingsDto;
     migration: JobSettingsDto;
     notifications: JobSettingsDto;
+    ocr: JobSettingsDto;
     search: JobSettingsDto;
     sidecar: JobSettingsDto;
     smartSearch: JobSettingsDto;
@@ -1366,6 +1434,11 @@ export type SystemConfigLoggingDto = {
     enabled: boolean;
     level: LogLevel;
 };
+export type MachineLearningAvailabilityChecksDto = {
+    enabled: boolean;
+    interval: number;
+    timeout: number;
+};
 export type ClipConfig = {
     enabled: boolean;
     modelName: string;
@@ -1381,13 +1454,20 @@ export type FacialRecognitionConfig = {
     minScore: number;
     modelName: string;
 };
+export type OcrConfig = {
+    enabled: boolean;
+    maxResolution: number;
+    minDetectionScore: number;
+    minRecognitionScore: number;
+    modelName: string;
+};
 export type SystemConfigMachineLearningDto = {
+    availabilityChecks: MachineLearningAvailabilityChecksDto;
     clip: ClipConfig;
     duplicateDetection: DuplicateDetectionConfig;
     enabled: boolean;
     facialRecognition: FacialRecognitionConfig;
-    /** This property was deprecated in v1.122.0 */
-    url?: string;
+    ocr: OcrConfig;
     urls: string[];
 };
 export type SystemConfigMapDto = {
@@ -1544,10 +1624,14 @@ export type TimeBucketAssetResponseDto = {
     isImage: boolean[];
     /** Array indicating whether each asset is in the trash */
     isTrashed: boolean[];
+    /** Array of latitude coordinates extracted from EXIF GPS data */
+    latitude?: (number | null)[];
     /** Array of live photo video asset IDs (null for non-live photos) */
     livePhotoVideoId: (string | null)[];
     /** Array of UTC offset hours at the time each photo was taken. Positive values are east of UTC, negative values are west of UTC. Values may be fractional (e.g., 5.5 for +05:30, -9.75 for -09:45). Applying this offset to 'fileCreatedAt' will give you the time the photo was taken from the photographer's perspective. */
     localOffsetHours: number[];
+    /** Array of longitude coordinates extracted from EXIF GPS data */
+    longitude?: (number | null)[];
     /** Array of owner IDs for each asset */
     ownerId: string[];
     /** Array of projection types for 360° content (e.g., "EQUIRECTANGULAR", "CUBEFACE", "CYLINDRICAL") */
@@ -1820,6 +1904,19 @@ export function restoreUserAdmin({ id }: {
     }>(`/admin/users/${encodeURIComponent(id)}/restore`, {
         ...opts,
         method: "POST"
+    }));
+}
+/**
+ * This endpoint is an admin-only route, and requires the `adminSession.read` permission.
+ */
+export function getUserSessionsAdmin({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: SessionResponseDto[];
+    }>(`/admin/users/${encodeURIComponent(id)}/sessions`, {
+        ...opts
     }));
 }
 /**
@@ -2169,6 +2266,18 @@ export function checkBulkUpload({ assetBulkUploadCheckDto }: {
     })));
 }
 /**
+ * This endpoint requires the `asset.copy` permission.
+ */
+export function copyAsset({ assetCopyDto }: {
+    assetCopyDto: AssetCopyDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/assets/copy", oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: assetCopyDto
+    })));
+}
+/**
  * getAllUserAssetsByDeviceId
  */
 export function getAllUserAssetsByDeviceId({ deviceId }: {
@@ -2274,6 +2383,74 @@ export function updateAsset({ id, updateAssetDto }: {
     })));
 }
 /**
+ * This endpoint requires the `asset.read` permission.
+ */
+export function getAssetMetadata({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AssetMetadataResponseDto[];
+    }>(`/assets/${encodeURIComponent(id)}/metadata`, {
+        ...opts
+    }));
+}
+/**
+ * This endpoint requires the `asset.update` permission.
+ */
+export function updateAssetMetadata({ id, assetMetadataUpsertDto }: {
+    id: string;
+    assetMetadataUpsertDto: AssetMetadataUpsertDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AssetMetadataResponseDto[];
+    }>(`/assets/${encodeURIComponent(id)}/metadata`, oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: assetMetadataUpsertDto
+    })));
+}
+/**
+ * This endpoint requires the `asset.update` permission.
+ */
+export function deleteAssetMetadata({ id, key }: {
+    id: string;
+    key: AssetMetadataKey;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/assets/${encodeURIComponent(id)}/metadata/${encodeURIComponent(key)}`, {
+        ...opts,
+        method: "DELETE"
+    }));
+}
+/**
+ * This endpoint requires the `asset.read` permission.
+ */
+export function getAssetMetadataByKey({ id, key }: {
+    id: string;
+    key: AssetMetadataKey;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AssetMetadataResponseDto;
+    }>(`/assets/${encodeURIComponent(id)}/metadata/${encodeURIComponent(key)}`, {
+        ...opts
+    }));
+}
+/**
+ * This endpoint requires the `asset.read` permission.
+ */
+export function getAssetOcr({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AssetOcrResponseDto[];
+    }>(`/assets/${encodeURIComponent(id)}/ocr`, {
+        ...opts
+    }));
+}
+/**
  * This endpoint requires the `asset.download` permission.
  */
 export function downloadAsset({ id, key, slug }: {
@@ -2292,7 +2469,7 @@ export function downloadAsset({ id, key, slug }: {
     }));
 }
 /**
- * replaceAsset
+ * Replace the asset with new file, without changing its id
  */
 export function replaceAsset({ id, key, slug, assetMediaReplaceDto }: {
     id: string;
@@ -3054,6 +3231,21 @@ export function getPartners({ direction }: {
     }));
 }
 /**
+ * This endpoint requires the `partner.create` permission.
+ */
+export function createPartner({ partnerCreateDto }: {
+    partnerCreateDto: PartnerCreateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: PartnerResponseDto;
+    }>("/partners", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: partnerCreateDto
+    })));
+}
+/**
  * This endpoint requires the `partner.delete` permission.
  */
 export function removePartner({ id }: {
@@ -3065,9 +3257,9 @@ export function removePartner({ id }: {
     }));
 }
 /**
- * This endpoint requires the `partner.create` permission.
+ * This property was deprecated in v1.141.0. This endpoint requires the `partner.create` permission.
  */
-export function createPartner({ id }: {
+export function createPartnerDeprecated({ id }: {
     id: string;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
@@ -3081,9 +3273,9 @@ export function createPartner({ id }: {
 /**
  * This endpoint requires the `partner.update` permission.
  */
-export function updatePartner({ id, updatePartnerDto }: {
+export function updatePartner({ id, partnerUpdateDto }: {
     id: string;
-    updatePartnerDto: UpdatePartnerDto;
+    partnerUpdateDto: PartnerUpdateDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
@@ -3091,7 +3283,7 @@ export function updatePartner({ id, updatePartnerDto }: {
     }>(`/partners/${encodeURIComponent(id)}`, oazapfts.json({
         ...opts,
         method: "PUT",
-        body: updatePartnerDto
+        body: partnerUpdateDto
     })));
 }
 /**
@@ -3282,7 +3474,7 @@ export function getExploreData(opts?: Oazapfts.RequestOpts) {
 /**
  * This endpoint requires the `asset.read` permission.
  */
-export function searchLargeAssets({ albumIds, city, country, createdAfter, createdBefore, deviceId, isEncoded, isFavorite, isMotion, isNotInAlbum, isOffline, lensModel, libraryId, make, minFileSize, model, personIds, rating, size, state, tagIds, takenAfter, takenBefore, trashedAfter, trashedBefore, $type, updatedAfter, updatedBefore, visibility, withDeleted, withExif }: {
+export function searchLargeAssets({ albumIds, city, country, createdAfter, createdBefore, deviceId, isEncoded, isFavorite, isMotion, isNotInAlbum, isOffline, lensModel, libraryId, make, minFileSize, model, ocr, personIds, rating, size, state, tagIds, takenAfter, takenBefore, trashedAfter, trashedBefore, $type, updatedAfter, updatedBefore, visibility, withDeleted, withExif }: {
     albumIds?: string[];
     city?: string | null;
     country?: string | null;
@@ -3299,6 +3491,7 @@ export function searchLargeAssets({ albumIds, city, country, createdAfter, creat
     make?: string;
     minFileSize?: number;
     model?: string | null;
+    ocr?: string;
     personIds?: string[];
     rating?: number;
     size?: number;
@@ -3335,6 +3528,7 @@ export function searchLargeAssets({ albumIds, city, country, createdAfter, creat
         make,
         minFileSize,
         model,
+        ocr,
         personIds,
         rating,
         size,
@@ -3450,9 +3644,10 @@ export function searchAssetStatistics({ statisticsSearchDto }: {
 /**
  * This endpoint requires the `asset.read` permission.
  */
-export function getSearchSuggestions({ country, includeNull, make, model, state, $type }: {
+export function getSearchSuggestions({ country, includeNull, lensModel, make, model, state, $type }: {
     country?: string;
     includeNull?: boolean;
+    lensModel?: string;
     make?: string;
     model?: string;
     state?: string;
@@ -3464,6 +3659,7 @@ export function getSearchSuggestions({ country, includeNull, make, model, state,
     }>(`/search/suggestions${QS.query(QS.explode({
         country,
         includeNull,
+        lensModel,
         make,
         model,
         state,
@@ -4206,7 +4402,7 @@ export function tagAssets({ id, bulkIdsDto }: {
 /**
  * This endpoint requires the `asset.read` permission.
  */
-export function getTimeBucket({ albumId, isFavorite, isTrashed, key, order, personId, slug, tagId, timeBucket, userId, visibility, withPartners, withStacked }: {
+export function getTimeBucket({ albumId, isFavorite, isTrashed, key, order, personId, slug, tagId, timeBucket, userId, visibility, withCoordinates, withPartners, withStacked }: {
     albumId?: string;
     isFavorite?: boolean;
     isTrashed?: boolean;
@@ -4218,6 +4414,7 @@ export function getTimeBucket({ albumId, isFavorite, isTrashed, key, order, pers
     timeBucket: string;
     userId?: string;
     visibility?: AssetVisibility;
+    withCoordinates?: boolean;
     withPartners?: boolean;
     withStacked?: boolean;
 }, opts?: Oazapfts.RequestOpts) {
@@ -4236,6 +4433,7 @@ export function getTimeBucket({ albumId, isFavorite, isTrashed, key, order, pers
         timeBucket,
         userId,
         visibility,
+        withCoordinates,
         withPartners,
         withStacked
     }))}`, {
@@ -4245,7 +4443,7 @@ export function getTimeBucket({ albumId, isFavorite, isTrashed, key, order, pers
 /**
  * This endpoint requires the `asset.read` permission.
  */
-export function getTimeBuckets({ albumId, isFavorite, isTrashed, key, order, personId, slug, tagId, userId, visibility, withPartners, withStacked }: {
+export function getTimeBuckets({ albumId, isFavorite, isTrashed, key, order, personId, slug, tagId, userId, visibility, withCoordinates, withPartners, withStacked }: {
     albumId?: string;
     isFavorite?: boolean;
     isTrashed?: boolean;
@@ -4256,6 +4454,7 @@ export function getTimeBuckets({ albumId, isFavorite, isTrashed, key, order, per
     tagId?: string;
     userId?: string;
     visibility?: AssetVisibility;
+    withCoordinates?: boolean;
     withPartners?: boolean;
     withStacked?: boolean;
 }, opts?: Oazapfts.RequestOpts) {
@@ -4273,6 +4472,7 @@ export function getTimeBuckets({ albumId, isFavorite, isTrashed, key, order, per
         tagId,
         userId,
         visibility,
+        withCoordinates,
         withPartners,
         withStacked
     }))}`, {
@@ -4551,6 +4751,8 @@ export enum NotificationType {
     JobFailed = "JobFailed",
     BackupFailed = "BackupFailed",
     SystemMessage = "SystemMessage",
+    AlbumInvite = "AlbumInvite",
+    AlbumUpdate = "AlbumUpdate",
     Custom = "Custom"
 }
 export enum UserStatus {
@@ -4615,6 +4817,7 @@ export enum Permission {
     AssetDownload = "asset.download",
     AssetUpload = "asset.upload",
     AssetReplace = "asset.replace",
+    AssetCopy = "asset.copy",
     AlbumCreate = "album.create",
     AlbumRead = "album.read",
     AlbumUpdate = "album.update",
@@ -4723,7 +4926,11 @@ export enum Permission {
     AdminUserRead = "adminUser.read",
     AdminUserUpdate = "adminUser.update",
     AdminUserDelete = "adminUser.delete",
+    AdminSessionRead = "adminSession.read",
     AdminAuthUnlinkAll = "adminAuth.unlinkAll"
+}
+export enum AssetMetadataKey {
+    MobileApp = "mobile-app"
 }
 export enum AssetMediaStatus {
     Created = "created",
@@ -4772,7 +4979,8 @@ export enum JobName {
     Sidecar = "sidecar",
     Library = "library",
     Notifications = "notifications",
-    BackupDatabase = "backupDatabase"
+    BackupDatabase = "backupDatabase",
+    Ocr = "ocr"
 }
 export enum JobCommand {
     Start = "start",
@@ -4793,7 +5001,8 @@ export enum SearchSuggestionType {
     State = "state",
     City = "city",
     CameraMake = "camera-make",
-    CameraModel = "camera-model"
+    CameraModel = "camera-model",
+    CameraLensModel = "camera-lens-model"
 }
 export enum SharedLinkType {
     Album = "ALBUM",
@@ -4811,6 +5020,8 @@ export enum SyncEntityType {
     AssetV1 = "AssetV1",
     AssetDeleteV1 = "AssetDeleteV1",
     AssetExifV1 = "AssetExifV1",
+    AssetMetadataV1 = "AssetMetadataV1",
+    AssetMetadataDeleteV1 = "AssetMetadataDeleteV1",
     PartnerV1 = "PartnerV1",
     PartnerDeleteV1 = "PartnerDeleteV1",
     PartnerAssetV1 = "PartnerAssetV1",
@@ -4848,7 +5059,8 @@ export enum SyncEntityType {
     UserMetadataV1 = "UserMetadataV1",
     UserMetadataDeleteV1 = "UserMetadataDeleteV1",
     SyncAckV1 = "SyncAckV1",
-    SyncResetV1 = "SyncResetV1"
+    SyncResetV1 = "SyncResetV1",
+    SyncCompleteV1 = "SyncCompleteV1"
 }
 export enum SyncRequestType {
     AlbumsV1 = "AlbumsV1",
@@ -4858,6 +5070,7 @@ export enum SyncRequestType {
     AlbumAssetExifsV1 = "AlbumAssetExifsV1",
     AssetsV1 = "AssetsV1",
     AssetExifsV1 = "AssetExifsV1",
+    AssetMetadataV1 = "AssetMetadataV1",
     AuthUsersV1 = "AuthUsersV1",
     MemoriesV1 = "MemoriesV1",
     MemoryToAssetsV1 = "MemoryToAssetsV1",

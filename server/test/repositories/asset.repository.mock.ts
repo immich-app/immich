@@ -41,6 +41,10 @@ export const newAssetRepositoryMock = (): Mocked<RepositoryInterface<AssetReposi
     filterNewExternalAssetPaths: vitest.fn(),
     updateByLibraryId: vitest.fn(),
     getFileSamples: vitest.fn(),
+    getMetadata: vitest.fn(),
+    upsertMetadata: vitest.fn(),
+    getMetadataByKey: vitest.fn(),
+    deleteMetadataByKey: vitest.fn(),
     // auto stack additions
     // removed deprecated getAutoStackId (autoStackId column dropped)
     getDateTimeOriginal: vitest.fn(),

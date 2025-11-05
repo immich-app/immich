@@ -1,15 +1,17 @@
 import { Injectable } from '@nestjs/common';
-import { Insertable, Kysely, NotNull, Selectable, UpdateResult, Updateable, sql } from 'kysely';
+import { Insertable, Kysely, NotNull, Selectable, sql, Updateable, UpdateResult } from 'kysely';
 import { isEmpty, isUndefined, omitBy } from 'lodash';
 import { InjectKysely } from 'nestjs-kysely';
 import { Stack } from 'src/database';
 import { Chunked, ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
-import { AssetFileType, AssetOrder, AssetStatus, AssetType, AssetVisibility } from 'src/enum';
+import { AuthDto } from 'src/dtos/auth.dto';
+import { AssetFileType, AssetMetadataKey, AssetOrder, AssetStatus, AssetType, AssetVisibility } from 'src/enum';
 import { DB } from 'src/schema';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
 import { AssetFileTable } from 'src/schema/tables/asset-file.table';
 import { AssetJobStatusTable } from 'src/schema/tables/asset-job-status.table';
 import { AssetTable } from 'src/schema/tables/asset.table';
+import { AssetMetadataItem } from 'src/types';
 import {
   anyUuid,
   asUuid,
@@ -59,6 +61,7 @@ interface AssetBuilderOptions {
   status?: AssetStatus;
   assetType?: AssetType;
   visibility?: AssetVisibility;
+  withCoordinates?: boolean;
 }
 
 export interface TimeBucketOptions extends AssetBuilderOptions {
@@ -309,12 +312,50 @@ export class AssetRepository {
               metadataExtractedAt: eb.ref('excluded.metadataExtractedAt'),
               previewAt: eb.ref('excluded.previewAt'),
               thumbnailAt: eb.ref('excluded.thumbnailAt'),
+              ocrAt: eb.ref('excluded.ocrAt'),
             },
             values[0],
           ),
         ),
       )
       .execute();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  getMetadata(assetId: string) {
+    return this.db
+      .selectFrom('asset_metadata')
+      .select(['key', 'value', 'updatedAt'])
+      .where('assetId', '=', assetId)
+      .execute();
+  }
+
+  upsertMetadata(id: string, items: AssetMetadataItem[]) {
+    return this.db
+      .insertInto('asset_metadata')
+      .values(items.map((item) => ({ assetId: id, ...item })))
+      .onConflict((oc) =>
+        oc
+          .columns(['assetId', 'key'])
+          .doUpdateSet((eb) => ({ key: eb.ref('excluded.key'), value: eb.ref('excluded.value') })),
+      )
+      .returning(['key', 'value', 'updatedAt'])
+      .execute();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING] })
+  getMetadataByKey(assetId: string, key: AssetMetadataKey) {
+    return this.db
+      .selectFrom('asset_metadata')
+      .select(['key', 'value', 'updatedAt'])
+      .where('assetId', '=', assetId)
+      .where('key', '=', key)
+      .executeTakeFirst();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING] })
+  async deleteMetadataByKey(id: string, key: AssetMetadataKey) {
+    await this.db.deleteFrom('asset_metadata').where('assetId', '=', id).where('key', '=', key).execute();
   }
 
   create(asset: Insertable<AssetTable>) {
@@ -639,8 +680,8 @@ export class AssetRepository {
           .$if(!!options.visibility, (qb) => qb.where('asset.visibility', '=', options.visibility!))
           .$if(!!options.albumId, (qb) =>
             qb
-              .innerJoin('album_asset', 'asset.id', 'album_asset.assetsId')
-              .where('album_asset.albumsId', '=', asUuid(options.albumId!)),
+              .innerJoin('album_asset', 'asset.id', 'album_asset.assetId')
+              .where('album_asset.albumId', '=', asUuid(options.albumId!)),
           )
           .$if(!!options.personId, (qb) => hasPeople(qb, [options.personId!]))
           .$if(!!options.withStacked, (qb) =>
@@ -667,9 +708,9 @@ export class AssetRepository {
   }
 
   @GenerateSql({
-    params: [DummyValue.TIME_BUCKET, { withStacked: true }],
+    params: [DummyValue.TIME_BUCKET, { withStacked: true }, { user: { id: DummyValue.UUID } }],
   })
-  getTimeBucket(timeBucket: string, options: TimeBucketOptions) {
+  getTimeBucket(timeBucket: string, options: TimeBucketOptions, auth: AuthDto) {
     const query = this.db
       .with('cte', (qb) =>
         qb
@@ -679,7 +720,7 @@ export class AssetRepository {
             'asset.duration',
             'asset.id',
             'asset.visibility',
-            'asset.isFavorite',
+            sql`asset."isFavorite" and asset."ownerId" = ${auth.user.id}`.as('isFavorite'),
             sql`asset.type = 'IMAGE'`.as('isImage'),
             sql`asset."deletedAt" is not null`.as('isTrashed'),
             'asset.livePhotoVideoId',
@@ -707,6 +748,7 @@ export class AssetRepository {
               )
               .as('ratio'),
           ])
+          .$if(!!options.withCoordinates, (qb) => qb.select(['asset_exif.latitude', 'asset_exif.longitude']))
           .where('asset.deletedAt', options.isTrashed ? 'is not' : 'is', null)
           .$if(options.visibility == undefined, withDefaultVisibility)
           .$if(!!options.visibility, (qb) => qb.where('asset.visibility', '=', options.visibility!))
@@ -716,8 +758,8 @@ export class AssetRepository {
               eb.exists(
                 eb
                   .selectFrom('album_asset')
-                  .whereRef('album_asset.assetsId', '=', 'asset.id')
-                  .where('album_asset.albumsId', '=', asUuid(options.albumId!)),
+                  .whereRef('album_asset.assetId', '=', 'asset.id')
+                  .where('album_asset.albumId', '=', asUuid(options.albumId!)),
               ),
             ),
           )
@@ -780,6 +822,12 @@ export class AssetRepository {
             eb.fn.coalesce(eb.fn('array_agg', ['status']), sql.lit('{}')).as('status'),
             eb.fn.coalesce(eb.fn('array_agg', ['thumbhash']), sql.lit('{}')).as('thumbhash'),
           ])
+          .$if(!!options.withCoordinates, (qb) =>
+            qb.select((eb) => [
+              eb.fn.coalesce(eb.fn('array_agg', ['latitude']), sql.lit('{}')).as('latitude'),
+              eb.fn.coalesce(eb.fn('array_agg', ['longitude']), sql.lit('{}')).as('longitude'),
+            ]),
+          )
           .$if(!!options.withStacked, (qb) =>
             qb.select((eb) => eb.fn.coalesce(eb.fn('json_agg', ['stack']), sql.lit('[]')).as('stack')),
           ),

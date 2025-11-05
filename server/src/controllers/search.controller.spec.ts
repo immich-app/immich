@@ -128,12 +128,6 @@ describe(SearchController.name, () => {
         await request(ctx.getHttpServer()).post('/search/smart');
         expect(ctx.authenticate).toHaveBeenCalled();
       });
-
-      it('should require a query', async () => {
-        const { status, body } = await request(ctx.getHttpServer()).post('/search/smart').send({});
-        expect(status).toBe(400);
-        expect(body).toEqual(errorDto.badRequest(['query should not be empty', 'query must be a string']));
-      });
     });
 
     describe('GET /search/explore', () => {

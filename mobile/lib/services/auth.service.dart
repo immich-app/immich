@@ -58,7 +58,7 @@ class AuthService {
   Future<String> validateServerUrl(String url) async {
     final validUrl = await _apiService.resolveAndSetEndpoint(url);
     await _apiService.setDeviceInfoHeader();
-    Store.put(StoreKey.serverUrl, validUrl);
+    await Store.put(StoreKey.serverUrl, validUrl);
 
     return validUrl;
   }

@@ -4,6 +4,8 @@ import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/loaders/image_request.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/one_frame_multi_image_stream_completer.dart';
@@ -35,7 +37,8 @@ class LocalThumbProvider extends CancellableImageProvider<LocalThumbProvider>
   }
 
   Stream<ImageInfo> _codec(LocalThumbProvider key, ImageDecoderCallback decode) {
-    return loadRequest(LocalImageRequest(localId: key.id, size: key.size, assetType: key.assetType), decode);
+    final request = this.request = LocalImageRequest(localId: key.id, size: key.size, assetType: key.assetType);
+    return loadRequest(request, decode);
   }
 
   @override
@@ -82,16 +85,29 @@ class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProv
     yield* initialImageStream();
 
     if (isCancelled) {
-      evict();
+      unawaited(evict());
       return;
     }
 
     final devicePixelRatio = PlatformDispatcher.instance.views.first.devicePixelRatio;
-    final request = LocalImageRequest(
+    var request = this.request = LocalImageRequest(
       localId: key.id,
       size: Size(size.width * devicePixelRatio, size.height * devicePixelRatio),
       assetType: key.assetType,
     );
+
+    yield* loadRequest(request, decode);
+
+    if (!Store.get(StoreKey.loadOriginal, false)) {
+      return;
+    }
+
+    if (isCancelled) {
+      unawaited(evict());
+      return;
+    }
+
+    request = this.request = LocalImageRequest(localId: key.id, assetType: key.assetType, size: Size.zero);
 
     yield* loadRequest(request, decode);
   }

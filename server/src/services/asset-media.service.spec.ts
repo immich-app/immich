@@ -25,6 +25,7 @@ const file1 = Buffer.from('d2947b871a706081be194569951b7db246907957', 'hex');
 const uploadFile = {
   nullAuth: {
     auth: null,
+    body: {},
     fieldName: UploadFieldName.ASSET_DATA,
     file: {
       uuid: 'random-uuid',
@@ -37,6 +38,7 @@ const uploadFile = {
   filename: (fieldName: UploadFieldName, filename: string) => {
     return {
       auth: authStub.admin,
+      body: {},
       fieldName,
       file: {
         uuid: 'random-uuid',
@@ -897,7 +899,10 @@ describe(AssetMediaService.name, () => {
 
   describe('onUploadError', () => {
     it('should queue a job to delete the uploaded file', async () => {
-      const request = { user: authStub.user1 } as AuthRequest;
+      const request = {
+        body: {},
+        user: authStub.user1,
+      } as AuthRequest;
 
       const file = {
         fieldname: UploadFieldName.ASSET_DATA,

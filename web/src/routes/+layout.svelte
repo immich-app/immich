@@ -6,7 +6,6 @@
   import ErrorLayout from '$lib/components/layouts/ErrorLayout.svelte';
   import AppleHeader from '$lib/components/shared-components/apple-header.svelte';
   import NavigationLoadingBar from '$lib/components/shared-components/navigation-loading-bar.svelte';
-  import NotificationList from '$lib/components/shared-components/notification/notification-list.svelte';
   import UploadPanel from '$lib/components/shared-components/upload-panel.svelte';
   import { eventManager } from '$lib/managers/event-manager.svelte';
   import VersionAnnouncementModal from '$lib/modals/VersionAnnouncementModal.svelte';
@@ -18,7 +17,7 @@
     websocketStore,
     type ReleaseEvent,
   } from '$lib/stores/websocket';
-  import { copyToClipboard } from '$lib/utils';
+  import { copyToClipboard, getReleaseType } from '$lib/utils';
   import { isAssetViewerRoute } from '$lib/utils/navigation';
   import type { ServerVersionResponseDto } from '@immich/sdk';
   import { modalManager, setTranslations } from '@immich/ui';
@@ -36,6 +35,12 @@
       close: $t('close'),
       show_password: $t('show_password'),
       hide_password: $t('hide_password'),
+      confirm: $t('confirm'),
+      cancel: $t('cancel'),
+      toast_success_title: $t('success'),
+      toast_info_title: $t('info'),
+      toast_warning_title: $t('warning'),
+      toast_danger_title: $t('error'),
     });
   });
 
@@ -83,8 +88,9 @@
 
     const releaseVersion = semverToName(release.releaseVersion);
     const serverVersion = semverToName(release.serverVersion);
+    const type = getReleaseType(release.serverVersion, release.releaseVersion);
 
-    if (localStorage.getItem('appVersion') === releaseVersion) {
+    if (type === 'none' || type === 'patch' || localStorage.getItem('appVersion') === releaseVersion) {
       return;
     }
 
@@ -152,4 +158,3 @@
 
 <DownloadPanel />
 <UploadPanel />
-<NotificationList />

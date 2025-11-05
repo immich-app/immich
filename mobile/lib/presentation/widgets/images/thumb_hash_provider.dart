@@ -17,11 +17,12 @@ class ThumbHashProvider extends CancellableImageProvider<ThumbHashProvider>
 
   @override
   ImageStreamCompleter loadImage(ThumbHashProvider key, ImageDecoderCallback decode) {
-    return OneFramePlaceholderImageStreamCompleter(_loadCodec(key, decode))..addOnLastListenerRemovedCallback(cancel);
+    return OneFramePlaceholderImageStreamCompleter(_loadCodec(key, decode), onDispose: cancel);
   }
 
   Stream<ImageInfo> _loadCodec(ThumbHashProvider key, ImageDecoderCallback decode) {
-    return loadRequest(ThumbhashImageRequest(thumbhash: key.thumbHash), decode);
+    final request = this.request = ThumbhashImageRequest(thumbhash: key.thumbHash);
+    return loadRequest(request, decode);
   }
 
   @override

@@ -1,10 +1,10 @@
 import 'dart:convert';
 
-import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:immich_mobile/domain/services/user.service.dart';
 import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
+import 'package:immich_mobile/utils/debug_print.dart';
 
 enum UploadProfileStatus { idle, loading, success, failure }
 
@@ -67,7 +67,7 @@ class UploadProfileImageNotifier extends StateNotifier<UploadProfileImageState> 
     var profileImagePath = await _userService.createProfileImage(file.name, await file.readAsBytes());
 
     if (profileImagePath != null) {
-      debugPrint("Successfully upload profile image");
+      dPrint(() => "Successfully upload profile image");
       state = state.copyWith(status: UploadProfileStatus.success, profileImagePath: profileImagePath);
       return true;
     }

@@ -29,7 +29,8 @@
   <a href="README_de_DE.md">Deutsch</a>
   <a href="README_nl_NL.md">Nederlands</a>
   <a href="README_tr_TR.md">Türkçe</a>
-  <a href="README_zh_CN.md">中文</a>
+  <a href="README_zh_CN.md">简体中文</a>
+  <a href="README_zh_TW.md">正體中文</a>
   <a href="README_ru_RU.md">Русский</a>
   <a href="README_pt_BR.md">Português Brasileiro</a>
   <a href="README_sv_SE.md">Svenska</a>
@@ -42,26 +43,26 @@
 
 - ⚠️ Цей проєкт перебуває **в дуже активній** розробці.
 - ⚠️ Очікуйте безліч помилок і глобальних змін.
-- ⚠️ **Не використовуйте цей додаток як єдине сховище своїх фото та відео.**
+- ⚠️ **Не використовуйте цей застосунок як єдине сховище своїх фото та відео.**
 - ⚠️ Завжди дотримуйтесь [плану резервного копіювання 3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) для ваших дорогоцінних фотографій та відео!
 
 > [!NOTE]
-> Основну документацію, зокрема посібники з встановлення, можна знайти за адресою https://immich.app/.
+> Основну документацію, зокрема посібники зі встановлення, можна знайти за адресою https://immich.app/.
 
 ## Посилання
 
-- [Документація](https://immich.app/docs)
-- [Про проєкт](https://immich.app/docs/overview/introduction)
-- [Встановлення](https://immich.app/docs/install/requirements)
+- [Документація](https://docs.immich.app)
+- [Про проєкт](https://docs.immich.app/overview/introduction)
+- [Встановлення](https://docs.immich.app/install/requirements)
 - [Дорожня карта](https://immich.app/roadmap)
 - [Демо](#демо)
 - [Функції](#функції)
-- [Переклади](https://immich.app/docs/developer/translations)
-- [Гід для розробки проєкту](https://immich.app/docs/overview/support-the-project)
+- [Переклади](https://docs.immich.app/developer/translations)
+- [Гід для розробки проєкту](https://docs.immich.app/overview/support-the-project)
 
 ## Демо
 
-Доступ до демо-версії [тут](https://demo.immich.app). Для мобільного додатку ви можете використовувати `https://demo.immich.app` в якості `Server Endpoint URL`.
+Доступ до демо-версії [тут](https://demo.immich.app). Для мобільного застосунку ви можете використовувати `https://demo.immich.app` в якості `Server Endpoint URL`.
 
 ### Облікові дані для входу
 
@@ -74,7 +75,7 @@
 | Функції                                                  | Додаток | Веб |
 | :------------------------------------------------------- | ------- | --- |
 | Завантаження та перегляд відео й фото                    | Так     | Так |
-| Автоматичне резервне копіювання при відкритті додатка    | Так     | Н/Д |
+| Автоматичне резервне копіювання при відкритті застосунку | Так     | Н/Д |
 | Запобігання дублюванню файлів                            | Так     | Так |
 | Вибір альбомів для резервного копіювання                 | Так     | Н/Д |
 | Завантаження фото та відео на локальний пристрій         | Так     | Так |
@@ -106,13 +107,13 @@
 
 ## Переклади
 
-Більше про переклади [тут](https://immich.app/docs/developer/translations).
+Більше про переклади [тут](https://docs.immich.app/developer/translations).
 
 <a href="https://hosted.weblate.org/engage/immich/">
 <img src="https://hosted.weblate.org/widget/immich/immich/multi-auto.svg" alt="Статус перекладів" />
 </a>
 
-## Активність репозитарію
+## Активність репозиторію
 
 ![Діяльність](https://repobeats.axiom.co/api/embed/9e86d9dc3ddd137161f2f6d2e758d7863b1789cb.svg "Зображення аналітики Repobeats")
 

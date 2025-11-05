@@ -3,6 +3,7 @@ import { DateTime } from 'luxon';
 import { ImmichEnvironment, JobName, JobStatus } from 'src/enum';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { CryptoRepository } from 'src/repositories/crypto.repository';
+import { EventRepository } from 'src/repositories/event.repository';
 import { JobRepository } from 'src/repositories/job.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
@@ -21,7 +22,7 @@ const setup = (db?: Kysely<DB>) => {
   return newMediumService(UserService, {
     database: db || defaultDatabase,
     real: [CryptoRepository, ConfigRepository, SystemMetadataRepository, UserRepository],
-    mock: [LoggingRepository, JobRepository],
+    mock: [LoggingRepository, JobRepository, EventRepository],
   });
 };
 
@@ -34,7 +35,8 @@ beforeAll(async () => {
 describe(UserService.name, () => {
   describe('create', () => {
     it('should create a user', async () => {
-      const { sut } = setup();
+      const { sut, ctx } = setup();
+      ctx.getMock(EventRepository).emit.mockResolvedValue();
       const user = mediumFactory.userInsert();
       await expect(sut.createUser({ name: user.name, email: user.email })).resolves.toEqual(
         expect.objectContaining({ name: user.name, email: user.email }),
@@ -42,14 +44,16 @@ describe(UserService.name, () => {
     });
 
     it('should reject user with duplicate email', async () => {
-      const { sut } = setup();
+      const { sut, ctx } = setup();
+      ctx.getMock(EventRepository).emit.mockResolvedValue();
       const user = mediumFactory.userInsert();
       await expect(sut.createUser({ email: user.email })).resolves.toMatchObject({ email: user.email });
       await expect(sut.createUser({ email: user.email })).rejects.toThrow('User exists');
     });
 
     it('should not return password', async () => {
-      const { sut } = setup();
+      const { sut, ctx } = setup();
+      ctx.getMock(EventRepository).emit.mockResolvedValue();
       const dto = mediumFactory.userInsert({ password: 'password' });
       const user = await sut.createUser({ email: dto.email, password: 'password' });
       expect((user as any).password).toBeUndefined();

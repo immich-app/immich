@@ -1,9 +1,9 @@
 <script lang="ts">
   import type { Shortcut } from '$lib/actions/shortcut';
   import { shortcut as bindShortcut, shortcutLabel as computeShortcutLabel } from '$lib/actions/shortcut';
-  import Icon from '$lib/components/elements/icon.svelte';
   import { optionClickCallbackStore, selectedIdStore } from '$lib/stores/context-menu.store';
   import { generateId } from '$lib/utils/generate-id';
+  import { Icon } from '@immich/ui';
 
   interface Props {
     text: string;
@@ -59,7 +59,7 @@
   role="menuitem"
 >
   {#if icon}
-    <Icon path={icon} ariaHidden={true} size="18" />
+    <Icon {icon} aria-hidden size="18" />
   {/if}
   <div class="w-full">
     <div class="flex justify-between">

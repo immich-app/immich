@@ -4,9 +4,9 @@
   import { userInteraction } from '$lib/stores/user.svelte';
   import { requestServerInfo } from '$lib/utils/auth';
   import { getByteUnitString } from '$lib/utils/byte-units';
+  import { LoadingSpinner } from '@immich/ui';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
-  import LoadingSpinner from '../loading-spinner.svelte';
 
   let usageClasses = $state('');
 

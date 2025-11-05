@@ -96,8 +96,9 @@ export class AssetMediaController {
   @Put(':id/original')
   @UseInterceptors(FileUploadInterceptor)
   @ApiConsumes('multipart/form-data')
-  @EndpointLifecycle({ addedAt: 'v1.106.0' })
-  @ApiOperation({
+  @EndpointLifecycle({
+    addedAt: 'v1.106.0',
+    deprecatedAt: 'v1.142.0',
     summary: 'replaceAsset',
     description: 'Replace the asset with new file, without changing its id',
   })
@@ -188,7 +189,7 @@ export class AssetMediaController {
    * Checks if assets exist by checksums
    */
   @Post('bulk-upload-check')
-  @Authenticated()
+  @Authenticated({ permission: Permission.AssetUpload })
   @ApiOperation({
     summary: 'checkBulkUpload',
     description: 'Checks if assets exist by checksums',

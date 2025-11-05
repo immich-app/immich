@@ -1,14 +1,16 @@
+import 'dart:async';
+
 import 'package:background_downloader/background_downloader.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/models/download/download_state.model.dart';
 import 'package:immich_mobile/models/download/livephotos_medatada.model.dart';
 import 'package:immich_mobile/services/album.service.dart';
 import 'package:immich_mobile/services/download.service.dart';
-import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/services/share.service.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:immich_mobile/widgets/common/share_dialog.dart';
@@ -159,24 +161,26 @@ class DownloadStateNotifier extends StateNotifier<DownloadState> {
   }
 
   void shareAsset(Asset asset, BuildContext context) async {
-    showDialog(
-      context: context,
-      builder: (BuildContext buildContext) {
-        _shareService.shareAsset(asset, context).then((bool status) {
-          if (!status) {
-            ImmichToast.show(
-              context: context,
-              msg: 'image_viewer_page_state_provider_share_error'.tr(),
-              toastType: ToastType.error,
-              gravity: ToastGravity.BOTTOM,
-            );
-          }
-          buildContext.pop();
-        });
-        return const ShareDialog();
-      },
-      barrierDismissible: false,
-      useRootNavigator: false,
+    unawaited(
+      showDialog(
+        context: context,
+        builder: (BuildContext buildContext) {
+          _shareService.shareAsset(asset, context).then((bool status) {
+            if (!status) {
+              ImmichToast.show(
+                context: context,
+                msg: 'image_viewer_page_state_provider_share_error'.tr(),
+                toastType: ToastType.error,
+                gravity: ToastGravity.BOTTOM,
+              );
+            }
+            buildContext.pop();
+          });
+          return const ShareDialog();
+        },
+        barrierDismissible: false,
+        useRootNavigator: false,
+      ),
     );
   }
 }

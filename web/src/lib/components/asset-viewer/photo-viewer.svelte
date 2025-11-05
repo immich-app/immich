@@ -20,12 +20,11 @@
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { AssetMediaSize, type AssetResponseDto, type SharedLinkResponseDto } from '@immich/sdk';
+  import { LoadingSpinner, toastManager } from '@immich/ui';
   import { onDestroy, onMount } from 'svelte';
-  import { swipe, type SwipeCustomEvent } from 'svelte-gestures';
+  import { useSwipe, type SwipeCustomEvent } from 'svelte-gestures';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
-  import LoadingSpinner from '../shared-components/loading-spinner.svelte';
-  import { NotificationType, notificationController } from '../shared-components/notification/notification';
 
   interface Props {
     asset: AssetResponseDto;
@@ -92,17 +91,13 @@
   };
 
   copyImage = async () => {
-    if (!canCopyImageToClipboard()) {
+    if (!canCopyImageToClipboard() || !$photoViewerImgElement) {
       return;
     }
 
     try {
-      await copyImageToClipboard($photoViewerImgElement ?? assetFileUrl);
-      notificationController.show({
-        type: NotificationType.Info,
-        message: $t('copied_image_to_clipboard'),
-        timeout: 3000,
-      });
+      await copyImageToClipboard($photoViewerImgElement);
+      toastManager.info($t('copied_image_to_clipboard'));
     } catch (error) {
       handleError(error, $t('copy_error'));
     }
@@ -238,8 +233,7 @@
   {:else if !imageError}
     <div
       use:zoomImageAction
-      use:swipe={() => ({})}
-      onswipe={onSwipe}
+      {...useSwipe(onSwipe)}
       class="h-full w-full"
       transition:fade={{ duration: haveFadeTransition ? assetViewerFadeDuration : 0 }}
     >
@@ -263,7 +257,7 @@
       <!-- eslint-disable-next-line svelte/require-each-key -->
       {#each getBoundingBox($boundingBoxesArray, $photoZoomState, $photoViewerImgElement) as boundingbox}
         <div
-          class="absolute border-solid border-white border-[3px] rounded-lg"
+          class="absolute border-solid border-white border-3 rounded-lg"
           style="top: {boundingbox.top}px; left: {boundingbox.left}px; height: {boundingbox.height}px; width: {boundingbox.width}px;"
         ></div>
       {/each}

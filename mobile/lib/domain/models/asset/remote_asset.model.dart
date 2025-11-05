@@ -5,7 +5,7 @@ enum AssetVisibility { timeline, hidden, archive, locked }
 // Model for an asset stored in the server
 class RemoteAsset extends BaseAsset {
   final String id;
-  final String? localId;
+  final String? localAssetId;
   final String? thumbHash;
   final AssetVisibility visibility;
   final String ownerId;
@@ -13,7 +13,7 @@ class RemoteAsset extends BaseAsset {
 
   const RemoteAsset({
     required this.id,
-    this.localId,
+    String? localId,
     required super.name,
     required this.ownerId,
     required super.checksum,
@@ -28,7 +28,13 @@ class RemoteAsset extends BaseAsset {
     this.visibility = AssetVisibility.timeline,
     super.livePhotoVideoId,
     this.stackId,
-  });
+  }) : localAssetId = localId;
+
+  @override
+  String? get localId => localAssetId;
+
+  @override
+  String? get remoteId => id;
 
   @override
   AssetState get storage => localId == null ? AssetState.remote : AssetState.merged;

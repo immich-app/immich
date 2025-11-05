@@ -1,29 +1,29 @@
-dev: prepare-volumes
+dev:
 	@trap 'make dev-down' EXIT; COMPOSE_BAKE=true docker compose -f ./docker/docker-compose.dev.yml up --remove-orphans
 
 dev-down:
 	docker compose -f ./docker/docker-compose.dev.yml down --remove-orphans
 
-dev-update: prepare-volumes
+dev-update:
 	@trap 'make dev-down' EXIT; COMPOSE_BAKE=true docker compose -f ./docker/docker-compose.dev.yml up --build -V --remove-orphans
 
-dev-scale: prepare-volumes
+dev-scale:
 	@trap 'make dev-down' EXIT; COMPOSE_BAKE=true docker compose -f ./docker/docker-compose.dev.yml up --build -V --scale immich-server=3 --remove-orphans
 
-dev-docs: prepare-volumes
+dev-docs:
 	npm --prefix docs run start
 
 .PHONY: e2e
-e2e: prepare-volumes
+e2e:
 	@trap 'make e2e-down' EXIT; COMPOSE_BAKE=true docker compose -f ./e2e/docker-compose.yml up --remove-orphans
 
-e2e-update: prepare-volumes
+e2e-update:
 	@trap 'make e2e-down' EXIT; COMPOSE_BAKE=true docker compose -f ./e2e/docker-compose.yml up --build -V --remove-orphans
 
 e2e-down:
 	docker compose -f ./e2e/docker-compose.yml down --remove-orphans
 
-prod: 
+prod:
 	@trap 'make prod-down' EXIT; COMPOSE_BAKE=true docker compose -f ./docker/docker-compose.prod.yml up --build -V --remove-orphans
 
 prod-down:
@@ -33,16 +33,16 @@ prod-scale:
 	@trap 'make prod-down' EXIT; COMPOSE_BAKE=true docker compose -f ./docker/docker-compose.prod.yml up --build -V --scale immich-server=3 --scale immich-microservices=3 --remove-orphans
 
 .PHONY: open-api
-open-api: prepare-volumes
+open-api:
 	cd ./open-api && bash ./bin/generate-open-api.sh
 
-open-api-dart: prepare-volumes
+open-api-dart:
 	cd ./open-api && bash ./bin/generate-open-api.sh dart
 
-open-api-typescript: prepare-volumes
+open-api-typescript:
 	cd ./open-api && bash ./bin/generate-open-api.sh typescript
 
-sql: prepare-volumes
+sql:
 	pnpm --filter immich run sync:sql
 
 attach-server:
@@ -60,20 +60,13 @@ VOLUME_DIRS = \
 	./e2e/node_modules \
 	./docs/node_modules \
 	./server/node_modules \
-	./server/dist \
 	./open-api/typescript-sdk/node_modules \
 	./.github/node_modules \
 	./node_modules \
 	./cli/node_modules
 
-# create empty directories and chown to current user
-prepare-volumes:
-	@for dir in $(VOLUME_DIRS); do \
-		mkdir -p $$dir; \
-	done
-	@if [ -n "$(VOLUME_DIRS)" ]; then \
-		chown -R $$(id -u):$$(id -g) $(VOLUME_DIRS); \
-	fi
+# Include .env file if it exists
+-include docker/.env
 
 MODULES = e2e server web cli sdk docs .github
 
@@ -98,8 +91,6 @@ format-%:
 	pnpm --filter $(call map-package,$*) run format:fix
 lint-%:
 	pnpm --filter $(call map-package,$*) run lint:fix
-lint-web:
-	pnpm --filter $(call map-package,$*) run lint:p
 check-%:
 	pnpm --filter $(call map-package,$*) run check
 check-web:
@@ -150,8 +141,9 @@ clean:
 	find . -name ".svelte-kit" -type d -prune -exec rm -rf '{}' +
 	find . -name "coverage" -type d -prune -exec rm -rf '{}' +
 	find . -name ".pnpm-store" -type d -prune -exec rm -rf '{}' +
-	command -v docker >/dev/null 2>&1 && docker compose -f ./docker/docker-compose.dev.yml rm -v -f || true
-	command -v docker >/dev/null 2>&1 && docker compose -f ./e2e/docker-compose.yml rm -v -f || true
+	command -v docker >/dev/null 2>&1 && docker compose -f ./docker/docker-compose.dev.yml down -v --remove-orphans || true
+	command -v docker >/dev/null 2>&1 && docker compose -f ./e2e/docker-compose.yml down -v --remove-orphans || true
+
 
 setup-server-dev: install-server
 setup-web-dev: install-sdk build-sdk install-web

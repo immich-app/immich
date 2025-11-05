@@ -6,7 +6,7 @@ import { PropertyLifecycle } from 'src/decorators';
 import { AlbumResponseDto } from 'src/dtos/album.dto';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import { AssetOrder, AssetType, AssetVisibility } from 'src/enum';
-import { Optional, ValidateBoolean, ValidateDate, ValidateEnum, ValidateUUID } from 'src/validation';
+import { Optional, ValidateBoolean, ValidateDate, ValidateEnum, ValidateString, ValidateUUID } from 'src/validation';
 
 class BaseSearchDto {
   @ValidateUUID({ optional: true, nullable: true })
@@ -101,6 +101,11 @@ class BaseSearchDto {
   @Max(5)
   @Min(-1)
   rating?: number;
+
+  @IsString()
+  @IsNotEmpty()
+  @Optional()
+  ocr?: string;
 }
 
 class BaseSearchWithResultsDto extends BaseSearchDto {
@@ -144,9 +149,7 @@ export class MetadataSearchDto extends RandomSearchDto {
   @Optional()
   deviceAssetId?: string;
 
-  @IsString()
-  @IsNotEmpty()
-  @Optional()
+  @ValidateString({ optional: true, trim: true })
   description?: string;
 
   @IsString()
@@ -154,9 +157,7 @@ export class MetadataSearchDto extends RandomSearchDto {
   @Optional()
   checksum?: string;
 
-  @IsString()
-  @IsNotEmpty()
-  @Optional()
+  @ValidateString({ optional: true, trim: true })
   originalFileName?: string;
 
   @IsString()
@@ -190,16 +191,17 @@ export class MetadataSearchDto extends RandomSearchDto {
 }
 
 export class StatisticsSearchDto extends BaseSearchDto {
-  @IsString()
-  @IsNotEmpty()
-  @Optional()
+  @ValidateString({ optional: true, trim: true })
   description?: string;
 }
 
 export class SmartSearchDto extends BaseSearchWithResultsDto {
-  @IsString()
-  @IsNotEmpty()
-  query!: string;
+  @ValidateString({ optional: true, trim: true })
+  query?: string;
+
+  @ValidateUUID({ optional: true })
+  @Optional()
+  queryAssetId?: string;
 
   @IsString()
   @IsNotEmpty()
@@ -252,6 +254,7 @@ export enum SearchSuggestionType {
   CITY = 'city',
   CAMERA_MAKE = 'camera-make',
   CAMERA_MODEL = 'camera-model',
+  CAMERA_LENS_MODEL = 'camera-lens-model',
 }
 
 export class SearchSuggestionRequestDto {
@@ -273,6 +276,10 @@ export class SearchSuggestionRequestDto {
   @IsString()
   @Optional()
   model?: string;
+
+  @IsString()
+  @Optional()
+  lensModel?: string;
 
   @ValidateBoolean({ optional: true })
   @PropertyLifecycle({ addedAt: 'v111.0.0' })

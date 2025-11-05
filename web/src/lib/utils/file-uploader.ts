@@ -2,6 +2,7 @@ import { authManager } from '$lib/managers/auth-manager.svelte';
 import { uploadManager } from '$lib/managers/upload-manager.svelte';
 import { UploadState } from '$lib/models/upload-asset';
 import { uploadAssetsStore } from '$lib/stores/upload';
+import { user } from '$lib/stores/user.store';
 import { uploadRequest } from '$lib/utils';
 import { addAssetsToAlbum } from '$lib/utils/asset-utils';
 import { ExecutorQueue } from '$lib/utils/executor-queue';
@@ -51,7 +52,7 @@ export const openFileUploadDialog = async (options: FileUploadParam = {}) => {
   const { albumId, multiple = true, assetId } = options;
   const extensions = uploadManager.getExtensions();
 
-  return new Promise<(string | undefined)[]>((resolve, reject) => {
+  return new Promise<string[]>((resolve, reject) => {
     try {
       const fileSelector = document.createElement('input');
 
@@ -231,6 +232,11 @@ async function fileUploader({
 
     return responseData.id;
   } catch (error) {
+    // ignore errors if the user logs out during uploads
+    if (!get(user)) {
+      return;
+    }
+
     const errorMessage = handleError(error, $t('errors.unable_to_upload_file'));
     uploadAssetsStore.track('error');
     uploadAssetsStore.updateItem(deviceAssetId, { state: UploadState.ERROR, error: errorMessage });

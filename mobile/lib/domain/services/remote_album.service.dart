@@ -26,6 +26,10 @@ class RemoteAlbumService {
     return _repository.get(albumId);
   }
 
+  Future<RemoteAlbum?> getByName(String albumName, String ownerId) {
+    return _repository.getByName(albumName, ownerId);
+  }
+
   Future<List<RemoteAlbum>> sortAlbums(
     List<RemoteAlbum> albums,
     RemoteAlbumSortMode sortMode, {
@@ -80,7 +84,6 @@ class RemoteAlbumService {
 
   Future<RemoteAlbum> createAlbum({required String title, required List<String> assetIds, String? description}) async {
     final album = await _albumApiRepository.createDriftAlbum(title, description: description, assetIds: assetIds);
-
     await _repository.create(album, assetIds);
 
     return album;
@@ -115,6 +118,10 @@ class RemoteAlbumService {
 
   Future<List<UserDto>> getSharedUsers(String albumId) {
     return _repository.getSharedUsers(albumId);
+  }
+
+  Future<AlbumUserRole?> getUserRole(String albumId, String userId) {
+    return _repository.getUserRole(albumId, userId);
   }
 
   Future<List<RemoteAsset>> getAssets(String albumId) {
@@ -155,6 +162,10 @@ class RemoteAlbumService {
 
   Future<int> getCount() {
     return _repository.getCount();
+  }
+
+  Future<List<RemoteAlbum>> getAlbumsContainingAsset(String assetId) {
+    return _repository.getAlbumsContainingAsset(assetId);
   }
 
   Future<List<RemoteAlbum>> _sortByNewestAsset(List<RemoteAlbum> albums) async {

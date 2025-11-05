@@ -1,9 +1,9 @@
 <script lang="ts">
-  import Icon from '$lib/components/elements/icon.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
+  import type { RenderedOption } from '$lib/elements/Dropdown.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import {
     AlbumUserRole,
@@ -14,12 +14,10 @@
     type AlbumResponseDto,
     type UserResponseDto,
   } from '@immich/sdk';
-  import { Modal, ModalBody, modalManager } from '@immich/ui';
+  import { Icon, Modal, ModalBody, modalManager, toastManager } from '@immich/ui';
   import { mdiArrowDownThin, mdiArrowUpThin, mdiDotsVertical, mdiPlus } from '@mdi/js';
   import { findKey } from 'lodash-es';
   import { t } from 'svelte-i18n';
-  import type { RenderedOption } from '../components/elements/dropdown.svelte';
-  import { notificationController, NotificationType } from '../components/shared-components/notification/notification';
   import SettingDropdown from '../components/shared-components/settings/setting-dropdown.svelte';
 
   interface Props {
@@ -69,10 +67,7 @@
         },
       });
 
-      notificationController.show({
-        type: NotificationType.Info,
-        message: $t('activity_changed', { values: { enabled: album.isActivityEnabled } }),
-      });
+      toastManager.success($t('activity_changed', { values: { enabled: album.isActivityEnabled } }));
     } catch (error) {
       handleError(error, $t('errors.cant_change_activity', { values: { enabled: album.isActivityEnabled } }));
     }
@@ -92,10 +87,7 @@
     try {
       await removeUserFromAlbum({ id: album.id, userId: user.id });
       onClose({ action: 'refreshAlbum' });
-      notificationController.show({
-        type: NotificationType.Info,
-        message: $t('album_user_removed', { values: { user: user.name } }),
-      });
+      toastManager.success($t('album_user_removed', { values: { user: user.name } }));
     } catch (error) {
       handleError(error, $t('errors.unable_to_remove_album_users'));
     }
@@ -108,7 +100,7 @@
         values: { user: user.name, role: role == AlbumUserRole.Viewer ? $t('role_viewer') : $t('role_editor') },
       });
       onClose({ action: 'refreshAlbum' });
-      notificationController.show({ type: NotificationType.Info, message });
+      toastManager.success(message);
     } catch (error) {
       handleError(error, $t('errors.unable_to_change_album_user_role'));
     }
@@ -119,7 +111,7 @@
   <ModalBody>
     <div class="items-center justify-center">
       <div class="py-2">
-        <h2 class="text-gray text-sm mb-2">{$t('settings').toUpperCase()}</h2>
+        <h2 class="uppercase text-gray text-sm mb-2">{$t('settings')}</h2>
         <div class="grid p-2 gap-y-2">
           {#if order}
             <SettingDropdown
@@ -138,11 +130,11 @@
         </div>
       </div>
       <div class="py-2">
-        <div class="text-gray text-sm mb-3">{$t('people').toUpperCase()}</div>
+        <div class="uppercase text-gray text-sm mb-3">{$t('people')}</div>
         <div class="p-2">
           <button type="button" class="flex items-center gap-2" onclick={() => onClose({ action: 'shareUser' })}>
             <div class="rounded-full w-10 h-10 border border-gray-500 flex items-center justify-center">
-              <div><Icon path={mdiPlus} size="25" /></div>
+              <div><Icon icon={mdiPlus} size="25" /></div>
             </div>
             <div>{$t('invite_people')}</div>
           </button>

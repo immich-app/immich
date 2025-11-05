@@ -211,6 +211,18 @@ export const ValidateDate = (options?: DateOptions & ApiPropertyOptions) => {
   return applyDecorators(...decorators);
 };
 
+type StringOptions = { optional?: boolean; nullable?: boolean; trim?: boolean };
+export const ValidateString = (options?: StringOptions & ApiPropertyOptions) => {
+  const { optional, nullable, trim, ...apiPropertyOptions } = options || {};
+  const decorators = [ApiProperty(apiPropertyOptions), IsString(), optional ? Optional({ nullable }) : IsNotEmpty()];
+
+  if (trim) {
+    decorators.push(Transform(({ value }: { value: string }) => value?.trim()));
+  }
+
+  return applyDecorators(...decorators);
+};
+
 type BooleanOptions = { optional?: boolean; nullable?: boolean };
 export const ValidateBoolean = (options?: BooleanOptions & ApiPropertyOptions) => {
   const { optional, nullable, ...apiPropertyOptions } = options || {};
