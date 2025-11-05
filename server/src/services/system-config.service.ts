@@ -16,6 +16,20 @@ export class SystemConfigService extends BaseService {
   async onBootstrap() {
     const config = await this.getConfig({ withCache: false });
     await this.eventRepository.emit('ConfigInit', { newConfig: config });
+
+    if (
+      process.env.IMMICH_MACHINE_LEARNING_PING_TIMEOUT ||
+      process.env.IMMICH_MACHINE_LEARNING_AVAILABILITY_BACKOFF_TIME
+    ) {
+      this.logger.deprecate(
+        'IMMICH_MACHINE_LEARNING_PING_TIMEOUT and MACHINE_LEARNING_AVAILABILITY_BACKOFF_TIME have been moved to system config(`machineLearning.availabilityChecks`) and will be removed in a future release.',
+      );
+    }
+  }
+
+  @OnEvent({ name: 'AppShutdown' })
+  onShutdown() {
+    this.machineLearningRepository.teardown();
   }
 
   async getSystemConfig(): Promise<SystemConfigDto> {
@@ -28,12 +42,14 @@ export class SystemConfigService extends BaseService {
   }
 
   @OnEvent({ name: 'ConfigInit', priority: -100 })
-  onConfigInit({ newConfig: { logging } }: ArgOf<'ConfigInit'>) {
+  onConfigInit({ newConfig: { logging, machineLearning } }: ArgOf<'ConfigInit'>) {
     const { logLevel: envLevel } = this.configRepository.getEnv();
     const configLevel = logging.enabled ? logging.level : false;
     const level = envLevel ?? configLevel;
     this.logger.setLogLevel(level);
     this.logger.log(`LogLevel=${level} ${envLevel ? '(set via IMMICH_LOG_LEVEL)' : '(set via system config)'}`);
+
+    this.machineLearningRepository.setup(machineLearning);
   }
 
   @OnEvent({ name: 'ConfigUpdate', server: true })

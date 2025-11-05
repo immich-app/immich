@@ -155,7 +155,7 @@ class BackupControllerPage extends HookConsumerWidget {
                 // waited until returning from selection
                 await ref.read(backupProvider.notifier).backupAlbumSelectionDone();
                 // waited until backup albums are stored in DB
-                ref.read(albumProvider.notifier).refreshDeviceAlbums();
+                await ref.read(albumProvider.notifier).refreshDeviceAlbums();
               },
               child: const Text("select", style: TextStyle(fontWeight: FontWeight.bold)).tr(),
             ),
@@ -205,9 +205,9 @@ class BackupControllerPage extends HookConsumerWidget {
     }
 
     buildBackgroundBackupInfo() {
-      return const ListTile(
-        leading: Icon(Icons.info_outline_rounded),
-        title: Text("Background backup is currently running, cannot start manual backup"),
+      return ListTile(
+        leading: const Icon(Icons.info_outline_rounded),
+        title: Text('background_backup_running_error'.tr()),
       );
     }
 

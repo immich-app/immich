@@ -22,8 +22,60 @@ class PartnersApi {
   ///
   /// Parameters:
   ///
+  /// * [PartnerCreateDto] partnerCreateDto (required):
+  Future<Response> createPartnerWithHttpInfo(PartnerCreateDto partnerCreateDto,) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/partners';
+
+    // ignore: prefer_final_locals
+    Object? postBody = partnerCreateDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'POST',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// This endpoint requires the `partner.create` permission.
+  ///
+  /// Parameters:
+  ///
+  /// * [PartnerCreateDto] partnerCreateDto (required):
+  Future<PartnerResponseDto?> createPartner(PartnerCreateDto partnerCreateDto,) async {
+    final response = await createPartnerWithHttpInfo(partnerCreateDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'PartnerResponseDto',) as PartnerResponseDto;
+    
+    }
+    return null;
+  }
+
+  /// This property was deprecated in v1.141.0. This endpoint requires the `partner.create` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
   /// * [String] id (required):
-  Future<Response> createPartnerWithHttpInfo(String id,) async {
+  Future<Response> createPartnerDeprecatedWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/partners/{id}'
       .replaceAll('{id}', id);
@@ -49,13 +101,13 @@ class PartnersApi {
     );
   }
 
-  /// This endpoint requires the `partner.create` permission.
+  /// This property was deprecated in v1.141.0. This endpoint requires the `partner.create` permission.
   ///
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<PartnerResponseDto?> createPartner(String id,) async {
-    final response = await createPartnerWithHttpInfo(id,);
+  Future<PartnerResponseDto?> createPartnerDeprecated(String id,) async {
+    final response = await createPartnerDeprecatedWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -179,14 +231,14 @@ class PartnersApi {
   ///
   /// * [String] id (required):
   ///
-  /// * [UpdatePartnerDto] updatePartnerDto (required):
-  Future<Response> updatePartnerWithHttpInfo(String id, UpdatePartnerDto updatePartnerDto,) async {
+  /// * [PartnerUpdateDto] partnerUpdateDto (required):
+  Future<Response> updatePartnerWithHttpInfo(String id, PartnerUpdateDto partnerUpdateDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/partners/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
-    Object? postBody = updatePartnerDto;
+    Object? postBody = partnerUpdateDto;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
@@ -212,9 +264,9 @@ class PartnersApi {
   ///
   /// * [String] id (required):
   ///
-  /// * [UpdatePartnerDto] updatePartnerDto (required):
-  Future<PartnerResponseDto?> updatePartner(String id, UpdatePartnerDto updatePartnerDto,) async {
-    final response = await updatePartnerWithHttpInfo(id, updatePartnerDto,);
+  /// * [PartnerUpdateDto] partnerUpdateDto (required):
+  Future<PartnerResponseDto?> updatePartner(String id, PartnerUpdateDto partnerUpdateDto,) async {
+    final response = await updatePartnerWithHttpInfo(id, partnerUpdateDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

@@ -33,8 +33,8 @@ class VideoPlaybackValue {
     };
 
     return VideoPlaybackValue(
-      position: Duration(seconds: playbackInfo.position),
-      duration: Duration(seconds: videoInfo.duration),
+      position: Duration(milliseconds: playbackInfo.position),
+      duration: Duration(milliseconds: videoInfo.duration),
       state: status,
       volume: playbackInfo.volume,
     );

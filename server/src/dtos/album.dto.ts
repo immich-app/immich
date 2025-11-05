@@ -3,6 +3,7 @@ import { Type } from 'class-transformer';
 import { ArrayNotEmpty, IsArray, IsString, ValidateNested } from 'class-validator';
 import _ from 'lodash';
 import { AlbumUser, AuthSharedLink, User } from 'src/database';
+import { BulkIdErrorReason } from 'src/dtos/asset-ids.response.dto';
 import { AssetResponseDto, MapAsset, mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { UserResponseDto, mapUser } from 'src/dtos/user.dto';
@@ -52,6 +53,20 @@ export class CreateAlbumDto {
 
   @ValidateUUID({ optional: true, each: true })
   assetIds?: string[];
+}
+
+export class AlbumsAddAssetsDto {
+  @ValidateUUID({ each: true })
+  albumIds!: string[];
+
+  @ValidateUUID({ each: true })
+  assetIds!: string[];
+}
+
+export class AlbumsAddAssetsResponseDto {
+  success!: boolean;
+  @ValidateEnum({ enum: BulkIdErrorReason, name: 'BulkIdErrorReason', optional: true })
+  error?: BulkIdErrorReason;
 }
 
 export class UpdateAlbumDto {
@@ -113,6 +128,14 @@ export class AlbumUserResponseDto {
   role!: AlbumUserRole;
 }
 
+export class ContributorCountResponseDto {
+  @ApiProperty()
+  userId!: string;
+
+  @ApiProperty({ type: 'integer' })
+  assetCount!: number;
+}
+
 export class AlbumResponseDto {
   id!: string;
   ownerId!: string;
@@ -134,6 +157,11 @@ export class AlbumResponseDto {
   isActivityEnabled!: boolean;
   @ValidateEnum({ enum: AssetOrder, name: 'AssetOrder', optional: true })
   order?: AssetOrder;
+
+  // Optional per-user contribution counts for shared albums
+  @Type(() => ContributorCountResponseDto)
+  @ApiProperty({ type: [ContributorCountResponseDto], required: false })
+  contributorCounts?: ContributorCountResponseDto[];
 }
 
 export type MapAlbumDto = {

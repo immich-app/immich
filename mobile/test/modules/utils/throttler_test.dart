@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/utils/throttle.dart';
+import 'package:immich_mobile/utils/debug_print.dart';
 
 class _Counter {
   int _count = 0;
@@ -8,7 +8,7 @@ class _Counter {
 
   int get count => _count;
   void increment() {
-    debugPrint("Counter inside increment: $count");
+    dPrint(() => "Counter inside increment: $count");
     _count = _count + 1;
   }
 }

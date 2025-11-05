@@ -1,10 +1,15 @@
+import 'dart:async';
+
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/upload_profile_image.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_loading_indicator.dart';
@@ -17,6 +22,7 @@ class AppBarProfileInfoBox extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authProvider);
     final uploadProfileImageStatus = ref.watch(uploadProfileImageProvider).status;
+    final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
     final user = ref.watch(currentUserProvider);
 
     buildUserProfileImage() {
@@ -50,9 +56,28 @@ class AppBarProfileInfoBox extends HookConsumerWidget {
             ref.read(currentUserProvider.notifier).refresh();
           }
 
-          ref.read(backupProvider.notifier).updateDiskInfo();
+          unawaited(ref.read(backupProvider.notifier).updateDiskInfo());
         }
       }
+    }
+
+    void toggleReadonlyMode() {
+      // read only mode is only supported int he beta experience
+      // TODO: remove this check when the beta UI goes stable
+      if (!Store.isBetaTimelineEnabled) return;
+
+      final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
+      ref.read(readonlyModeProvider.notifier).toggleReadonlyMode();
+
+      context.scaffoldMessenger.showSnackBar(
+        SnackBar(
+          duration: const Duration(seconds: 2),
+          content: Text(
+            (isReadonlyModeEnabled ? "readonly_mode_disabled" : "readonly_mode_enabled").tr(),
+            style: context.textTheme.bodyLarge?.copyWith(color: context.primaryColor),
+          ),
+        ),
+      );
     }
 
     return Padding(
@@ -67,23 +92,25 @@ class AppBarProfileInfoBox extends HookConsumerWidget {
           minLeadingWidth: 50,
           leading: GestureDetector(
             onTap: pickUserProfileImage,
+            onLongPress: toggleReadonlyMode,
             child: Stack(
               clipBehavior: Clip.none,
               children: [
-                buildUserProfileImage(),
-                Positioned(
-                  bottom: -5,
-                  right: -8,
-                  child: Material(
-                    color: context.colorScheme.surfaceContainerHighest,
-                    elevation: 3,
-                    shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(50.0))),
-                    child: Padding(
-                      padding: const EdgeInsets.all(5.0),
-                      child: Icon(Icons.camera_alt_outlined, color: context.primaryColor, size: 14),
+                AbsorbPointer(child: buildUserProfileImage()),
+                if (!isReadonlyModeEnabled)
+                  Positioned(
+                    bottom: -5,
+                    right: -8,
+                    child: Material(
+                      color: context.colorScheme.surfaceContainerHighest,
+                      elevation: 3,
+                      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(50.0))),
+                      child: Padding(
+                        padding: const EdgeInsets.all(5.0),
+                        child: Icon(Icons.camera_alt_outlined, color: context.primaryColor, size: 14),
+                      ),
                     ),
                   ),
-                ),
               ],
             ),
           ),

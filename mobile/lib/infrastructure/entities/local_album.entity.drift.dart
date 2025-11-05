@@ -7,6 +7,9 @@ import 'package:immich_mobile/domain/models/album/local_album.model.dart' as i2;
 import 'package:immich_mobile/infrastructure/entities/local_album.entity.dart'
     as i3;
 import 'package:drift/src/runtime/query_builder/query_builder.dart' as i4;
+import 'package:immich_mobile/infrastructure/entities/remote_album.entity.drift.dart'
+    as i5;
+import 'package:drift/internal/modular.dart' as i6;
 
 typedef $$LocalAlbumEntityTableCreateCompanionBuilder =
     i1.LocalAlbumEntityCompanion Function({
@@ -15,6 +18,7 @@ typedef $$LocalAlbumEntityTableCreateCompanionBuilder =
       i0.Value<DateTime> updatedAt,
       required i2.BackupSelection backupSelection,
       i0.Value<bool> isIosSharedAlbum,
+      i0.Value<String?> linkedRemoteAlbumId,
       i0.Value<bool?> marker_,
     });
 typedef $$LocalAlbumEntityTableUpdateCompanionBuilder =
@@ -24,8 +28,56 @@ typedef $$LocalAlbumEntityTableUpdateCompanionBuilder =
       i0.Value<DateTime> updatedAt,
       i0.Value<i2.BackupSelection> backupSelection,
       i0.Value<bool> isIosSharedAlbum,
+      i0.Value<String?> linkedRemoteAlbumId,
       i0.Value<bool?> marker_,
     });
+
+final class $$LocalAlbumEntityTableReferences
+    extends
+        i0.BaseReferences<
+          i0.GeneratedDatabase,
+          i1.$LocalAlbumEntityTable,
+          i1.LocalAlbumEntityData
+        > {
+  $$LocalAlbumEntityTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static i5.$RemoteAlbumEntityTable _linkedRemoteAlbumIdTable(
+    i0.GeneratedDatabase db,
+  ) => i6.ReadDatabaseContainer(db)
+      .resultSet<i5.$RemoteAlbumEntityTable>('remote_album_entity')
+      .createAlias(
+        i0.$_aliasNameGenerator(
+          i6.ReadDatabaseContainer(db)
+              .resultSet<i1.$LocalAlbumEntityTable>('local_album_entity')
+              .linkedRemoteAlbumId,
+          i6.ReadDatabaseContainer(
+            db,
+          ).resultSet<i5.$RemoteAlbumEntityTable>('remote_album_entity').id,
+        ),
+      );
+
+  i5.$$RemoteAlbumEntityTableProcessedTableManager? get linkedRemoteAlbumId {
+    final $_column = $_itemColumn<String>('linked_remote_album_id');
+    if ($_column == null) return null;
+    final manager = i5
+        .$$RemoteAlbumEntityTableTableManager(
+          $_db,
+          i6.ReadDatabaseContainer(
+            $_db,
+          ).resultSet<i5.$RemoteAlbumEntityTable>('remote_album_entity'),
+        )
+        .filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_linkedRemoteAlbumIdTable($_db));
+    if (item == null) return manager;
+    return i0.ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
 
 class $$LocalAlbumEntityTableFilterComposer
     extends i0.Composer<i0.GeneratedDatabase, i1.$LocalAlbumEntityTable> {
@@ -66,6 +118,33 @@ class $$LocalAlbumEntityTableFilterComposer
     column: $table.marker_,
     builder: (column) => i0.ColumnFilters(column),
   );
+
+  i5.$$RemoteAlbumEntityTableFilterComposer get linkedRemoteAlbumId {
+    final i5.$$RemoteAlbumEntityTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.linkedRemoteAlbumId,
+      referencedTable: i6.ReadDatabaseContainer(
+        $db,
+      ).resultSet<i5.$RemoteAlbumEntityTable>('remote_album_entity'),
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => i5.$$RemoteAlbumEntityTableFilterComposer(
+            $db: $db,
+            $table: i6.ReadDatabaseContainer(
+              $db,
+            ).resultSet<i5.$RemoteAlbumEntityTable>('remote_album_entity'),
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 }
 
 class $$LocalAlbumEntityTableOrderingComposer
@@ -106,6 +185,34 @@ class $$LocalAlbumEntityTableOrderingComposer
     column: $table.marker_,
     builder: (column) => i0.ColumnOrderings(column),
   );
+
+  i5.$$RemoteAlbumEntityTableOrderingComposer get linkedRemoteAlbumId {
+    final i5.$$RemoteAlbumEntityTableOrderingComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.linkedRemoteAlbumId,
+          referencedTable: i6.ReadDatabaseContainer(
+            $db,
+          ).resultSet<i5.$RemoteAlbumEntityTable>('remote_album_entity'),
+          getReferencedColumn: (t) => t.id,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => i5.$$RemoteAlbumEntityTableOrderingComposer(
+                $db: $db,
+                $table: i6.ReadDatabaseContainer(
+                  $db,
+                ).resultSet<i5.$RemoteAlbumEntityTable>('remote_album_entity'),
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return composer;
+  }
 }
 
 class $$LocalAlbumEntityTableAnnotationComposer
@@ -139,6 +246,34 @@ class $$LocalAlbumEntityTableAnnotationComposer
 
   i0.GeneratedColumn<bool> get marker_ =>
       $composableBuilder(column: $table.marker_, builder: (column) => column);
+
+  i5.$$RemoteAlbumEntityTableAnnotationComposer get linkedRemoteAlbumId {
+    final i5.$$RemoteAlbumEntityTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.linkedRemoteAlbumId,
+          referencedTable: i6.ReadDatabaseContainer(
+            $db,
+          ).resultSet<i5.$RemoteAlbumEntityTable>('remote_album_entity'),
+          getReferencedColumn: (t) => t.id,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => i5.$$RemoteAlbumEntityTableAnnotationComposer(
+                $db: $db,
+                $table: i6.ReadDatabaseContainer(
+                  $db,
+                ).resultSet<i5.$RemoteAlbumEntityTable>('remote_album_entity'),
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return composer;
+  }
 }
 
 class $$LocalAlbumEntityTableTableManager
@@ -152,16 +287,9 @@ class $$LocalAlbumEntityTableTableManager
           i1.$$LocalAlbumEntityTableAnnotationComposer,
           $$LocalAlbumEntityTableCreateCompanionBuilder,
           $$LocalAlbumEntityTableUpdateCompanionBuilder,
-          (
-            i1.LocalAlbumEntityData,
-            i0.BaseReferences<
-              i0.GeneratedDatabase,
-              i1.$LocalAlbumEntityTable,
-              i1.LocalAlbumEntityData
-            >,
-          ),
+          (i1.LocalAlbumEntityData, i1.$$LocalAlbumEntityTableReferences),
           i1.LocalAlbumEntityData,
-          i0.PrefetchHooks Function()
+          i0.PrefetchHooks Function({bool linkedRemoteAlbumId})
         > {
   $$LocalAlbumEntityTableTableManager(
     i0.GeneratedDatabase db,
@@ -187,6 +315,7 @@ class $$LocalAlbumEntityTableTableManager
                 i0.Value<i2.BackupSelection> backupSelection =
                     const i0.Value.absent(),
                 i0.Value<bool> isIosSharedAlbum = const i0.Value.absent(),
+                i0.Value<String?> linkedRemoteAlbumId = const i0.Value.absent(),
                 i0.Value<bool?> marker_ = const i0.Value.absent(),
               }) => i1.LocalAlbumEntityCompanion(
                 id: id,
@@ -194,6 +323,7 @@ class $$LocalAlbumEntityTableTableManager
                 updatedAt: updatedAt,
                 backupSelection: backupSelection,
                 isIosSharedAlbum: isIosSharedAlbum,
+                linkedRemoteAlbumId: linkedRemoteAlbumId,
                 marker_: marker_,
               ),
           createCompanionCallback:
@@ -203,6 +333,7 @@ class $$LocalAlbumEntityTableTableManager
                 i0.Value<DateTime> updatedAt = const i0.Value.absent(),
                 required i2.BackupSelection backupSelection,
                 i0.Value<bool> isIosSharedAlbum = const i0.Value.absent(),
+                i0.Value<String?> linkedRemoteAlbumId = const i0.Value.absent(),
                 i0.Value<bool?> marker_ = const i0.Value.absent(),
               }) => i1.LocalAlbumEntityCompanion.insert(
                 id: id,
@@ -210,12 +341,60 @@ class $$LocalAlbumEntityTableTableManager
                 updatedAt: updatedAt,
                 backupSelection: backupSelection,
                 isIosSharedAlbum: isIosSharedAlbum,
+                linkedRemoteAlbumId: linkedRemoteAlbumId,
                 marker_: marker_,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), i0.BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  i1.$$LocalAlbumEntityTableReferences(db, table, e),
+                ),
+              )
               .toList(),
-          prefetchHooksCallback: null,
+          prefetchHooksCallback: ({linkedRemoteAlbumId = false}) {
+            return i0.PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends i0.TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (linkedRemoteAlbumId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.linkedRemoteAlbumId,
+                                referencedTable: i1
+                                    .$$LocalAlbumEntityTableReferences
+                                    ._linkedRemoteAlbumIdTable(db),
+                                referencedColumn: i1
+                                    .$$LocalAlbumEntityTableReferences
+                                    ._linkedRemoteAlbumIdTable(db)
+                                    .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
         ),
       );
 }
@@ -230,16 +409,9 @@ typedef $$LocalAlbumEntityTableProcessedTableManager =
       i1.$$LocalAlbumEntityTableAnnotationComposer,
       $$LocalAlbumEntityTableCreateCompanionBuilder,
       $$LocalAlbumEntityTableUpdateCompanionBuilder,
-      (
-        i1.LocalAlbumEntityData,
-        i0.BaseReferences<
-          i0.GeneratedDatabase,
-          i1.$LocalAlbumEntityTable,
-          i1.LocalAlbumEntityData
-        >,
-      ),
+      (i1.LocalAlbumEntityData, i1.$$LocalAlbumEntityTableReferences),
       i1.LocalAlbumEntityData,
-      i0.PrefetchHooks Function()
+      i0.PrefetchHooks Function({bool linkedRemoteAlbumId})
     >;
 
 class $LocalAlbumEntityTable extends i3.LocalAlbumEntity
@@ -308,6 +480,20 @@ class $LocalAlbumEntityTable extends i3.LocalAlbumEntity
         ),
         defaultValue: const i4.Constant(false),
       );
+  static const i0.VerificationMeta _linkedRemoteAlbumIdMeta =
+      const i0.VerificationMeta('linkedRemoteAlbumId');
+  @override
+  late final i0.GeneratedColumn<String> linkedRemoteAlbumId =
+      i0.GeneratedColumn<String>(
+        'linked_remote_album_id',
+        aliasedName,
+        true,
+        type: i0.DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultConstraints: i0.GeneratedColumn.constraintIsAlways(
+          'REFERENCES remote_album_entity (id) ON DELETE SET NULL',
+        ),
+      );
   static const i0.VerificationMeta _marker_Meta = const i0.VerificationMeta(
     'marker_',
   );
@@ -329,6 +515,7 @@ class $LocalAlbumEntityTable extends i3.LocalAlbumEntity
     updatedAt,
     backupSelection,
     isIosSharedAlbum,
+    linkedRemoteAlbumId,
     marker_,
   ];
   @override
@@ -368,6 +555,15 @@ class $LocalAlbumEntityTable extends i3.LocalAlbumEntity
         isIosSharedAlbum.isAcceptableOrUnknown(
           data['is_ios_shared_album']!,
           _isIosSharedAlbumMeta,
+        ),
+      );
+    }
+    if (data.containsKey('linked_remote_album_id')) {
+      context.handle(
+        _linkedRemoteAlbumIdMeta,
+        linkedRemoteAlbumId.isAcceptableOrUnknown(
+          data['linked_remote_album_id']!,
+          _linkedRemoteAlbumIdMeta,
         ),
       );
     }
@@ -412,6 +608,10 @@ class $LocalAlbumEntityTable extends i3.LocalAlbumEntity
         i0.DriftSqlType.bool,
         data['${effectivePrefix}is_ios_shared_album'],
       )!,
+      linkedRemoteAlbumId: attachedDatabase.typeMapping.read(
+        i0.DriftSqlType.string,
+        data['${effectivePrefix}linked_remote_album_id'],
+      ),
       marker_: attachedDatabase.typeMapping.read(
         i0.DriftSqlType.bool,
         data['${effectivePrefix}marker'],
@@ -441,6 +641,7 @@ class LocalAlbumEntityData extends i0.DataClass
   final DateTime updatedAt;
   final i2.BackupSelection backupSelection;
   final bool isIosSharedAlbum;
+  final String? linkedRemoteAlbumId;
   final bool? marker_;
   const LocalAlbumEntityData({
     required this.id,
@@ -448,6 +649,7 @@ class LocalAlbumEntityData extends i0.DataClass
     required this.updatedAt,
     required this.backupSelection,
     required this.isIosSharedAlbum,
+    this.linkedRemoteAlbumId,
     this.marker_,
   });
   @override
@@ -464,6 +666,9 @@ class LocalAlbumEntityData extends i0.DataClass
       );
     }
     map['is_ios_shared_album'] = i0.Variable<bool>(isIosSharedAlbum);
+    if (!nullToAbsent || linkedRemoteAlbumId != null) {
+      map['linked_remote_album_id'] = i0.Variable<String>(linkedRemoteAlbumId);
+    }
     if (!nullToAbsent || marker_ != null) {
       map['marker'] = i0.Variable<bool>(marker_);
     }
@@ -482,6 +687,9 @@ class LocalAlbumEntityData extends i0.DataClass
       backupSelection: i1.$LocalAlbumEntityTable.$converterbackupSelection
           .fromJson(serializer.fromJson<int>(json['backupSelection'])),
       isIosSharedAlbum: serializer.fromJson<bool>(json['isIosSharedAlbum']),
+      linkedRemoteAlbumId: serializer.fromJson<String?>(
+        json['linkedRemoteAlbumId'],
+      ),
       marker_: serializer.fromJson<bool?>(json['marker_']),
     );
   }
@@ -498,6 +706,7 @@ class LocalAlbumEntityData extends i0.DataClass
         ),
       ),
       'isIosSharedAlbum': serializer.toJson<bool>(isIosSharedAlbum),
+      'linkedRemoteAlbumId': serializer.toJson<String?>(linkedRemoteAlbumId),
       'marker_': serializer.toJson<bool?>(marker_),
     };
   }
@@ -508,6 +717,7 @@ class LocalAlbumEntityData extends i0.DataClass
     DateTime? updatedAt,
     i2.BackupSelection? backupSelection,
     bool? isIosSharedAlbum,
+    i0.Value<String?> linkedRemoteAlbumId = const i0.Value.absent(),
     i0.Value<bool?> marker_ = const i0.Value.absent(),
   }) => i1.LocalAlbumEntityData(
     id: id ?? this.id,
@@ -515,6 +725,9 @@ class LocalAlbumEntityData extends i0.DataClass
     updatedAt: updatedAt ?? this.updatedAt,
     backupSelection: backupSelection ?? this.backupSelection,
     isIosSharedAlbum: isIosSharedAlbum ?? this.isIosSharedAlbum,
+    linkedRemoteAlbumId: linkedRemoteAlbumId.present
+        ? linkedRemoteAlbumId.value
+        : this.linkedRemoteAlbumId,
     marker_: marker_.present ? marker_.value : this.marker_,
   );
   LocalAlbumEntityData copyWithCompanion(i1.LocalAlbumEntityCompanion data) {
@@ -528,6 +741,9 @@ class LocalAlbumEntityData extends i0.DataClass
       isIosSharedAlbum: data.isIosSharedAlbum.present
           ? data.isIosSharedAlbum.value
           : this.isIosSharedAlbum,
+      linkedRemoteAlbumId: data.linkedRemoteAlbumId.present
+          ? data.linkedRemoteAlbumId.value
+          : this.linkedRemoteAlbumId,
       marker_: data.marker_.present ? data.marker_.value : this.marker_,
     );
   }
@@ -540,6 +756,7 @@ class LocalAlbumEntityData extends i0.DataClass
           ..write('updatedAt: $updatedAt, ')
           ..write('backupSelection: $backupSelection, ')
           ..write('isIosSharedAlbum: $isIosSharedAlbum, ')
+          ..write('linkedRemoteAlbumId: $linkedRemoteAlbumId, ')
           ..write('marker_: $marker_')
           ..write(')'))
         .toString();
@@ -552,6 +769,7 @@ class LocalAlbumEntityData extends i0.DataClass
     updatedAt,
     backupSelection,
     isIosSharedAlbum,
+    linkedRemoteAlbumId,
     marker_,
   );
   @override
@@ -563,6 +781,7 @@ class LocalAlbumEntityData extends i0.DataClass
           other.updatedAt == this.updatedAt &&
           other.backupSelection == this.backupSelection &&
           other.isIosSharedAlbum == this.isIosSharedAlbum &&
+          other.linkedRemoteAlbumId == this.linkedRemoteAlbumId &&
           other.marker_ == this.marker_);
 }
 
@@ -573,6 +792,7 @@ class LocalAlbumEntityCompanion
   final i0.Value<DateTime> updatedAt;
   final i0.Value<i2.BackupSelection> backupSelection;
   final i0.Value<bool> isIosSharedAlbum;
+  final i0.Value<String?> linkedRemoteAlbumId;
   final i0.Value<bool?> marker_;
   const LocalAlbumEntityCompanion({
     this.id = const i0.Value.absent(),
@@ -580,6 +800,7 @@ class LocalAlbumEntityCompanion
     this.updatedAt = const i0.Value.absent(),
     this.backupSelection = const i0.Value.absent(),
     this.isIosSharedAlbum = const i0.Value.absent(),
+    this.linkedRemoteAlbumId = const i0.Value.absent(),
     this.marker_ = const i0.Value.absent(),
   });
   LocalAlbumEntityCompanion.insert({
@@ -588,6 +809,7 @@ class LocalAlbumEntityCompanion
     this.updatedAt = const i0.Value.absent(),
     required i2.BackupSelection backupSelection,
     this.isIosSharedAlbum = const i0.Value.absent(),
+    this.linkedRemoteAlbumId = const i0.Value.absent(),
     this.marker_ = const i0.Value.absent(),
   }) : id = i0.Value(id),
        name = i0.Value(name),
@@ -598,6 +820,7 @@ class LocalAlbumEntityCompanion
     i0.Expression<DateTime>? updatedAt,
     i0.Expression<int>? backupSelection,
     i0.Expression<bool>? isIosSharedAlbum,
+    i0.Expression<String>? linkedRemoteAlbumId,
     i0.Expression<bool>? marker_,
   }) {
     return i0.RawValuesInsertable({
@@ -606,6 +829,8 @@ class LocalAlbumEntityCompanion
       if (updatedAt != null) 'updated_at': updatedAt,
       if (backupSelection != null) 'backup_selection': backupSelection,
       if (isIosSharedAlbum != null) 'is_ios_shared_album': isIosSharedAlbum,
+      if (linkedRemoteAlbumId != null)
+        'linked_remote_album_id': linkedRemoteAlbumId,
       if (marker_ != null) 'marker': marker_,
     });
   }
@@ -616,6 +841,7 @@ class LocalAlbumEntityCompanion
     i0.Value<DateTime>? updatedAt,
     i0.Value<i2.BackupSelection>? backupSelection,
     i0.Value<bool>? isIosSharedAlbum,
+    i0.Value<String?>? linkedRemoteAlbumId,
     i0.Value<bool?>? marker_,
   }) {
     return i1.LocalAlbumEntityCompanion(
@@ -624,6 +850,7 @@ class LocalAlbumEntityCompanion
       updatedAt: updatedAt ?? this.updatedAt,
       backupSelection: backupSelection ?? this.backupSelection,
       isIosSharedAlbum: isIosSharedAlbum ?? this.isIosSharedAlbum,
+      linkedRemoteAlbumId: linkedRemoteAlbumId ?? this.linkedRemoteAlbumId,
       marker_: marker_ ?? this.marker_,
     );
   }
@@ -650,6 +877,11 @@ class LocalAlbumEntityCompanion
     if (isIosSharedAlbum.present) {
       map['is_ios_shared_album'] = i0.Variable<bool>(isIosSharedAlbum.value);
     }
+    if (linkedRemoteAlbumId.present) {
+      map['linked_remote_album_id'] = i0.Variable<String>(
+        linkedRemoteAlbumId.value,
+      );
+    }
     if (marker_.present) {
       map['marker'] = i0.Variable<bool>(marker_.value);
     }
@@ -664,6 +896,7 @@ class LocalAlbumEntityCompanion
           ..write('updatedAt: $updatedAt, ')
           ..write('backupSelection: $backupSelection, ')
           ..write('isIosSharedAlbum: $isIosSharedAlbum, ')
+          ..write('linkedRemoteAlbumId: $linkedRemoteAlbumId, ')
           ..write('marker_: $marker_')
           ..write(')'))
         .toString();

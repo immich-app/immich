@@ -61,19 +61,26 @@ fi
 
 if [ "$CURRENT_SERVER" != "$NEXT_SERVER" ]; then
   echo "Pumping Server: $CURRENT_SERVER => $NEXT_SERVER"
-  npm --prefix server version "$SERVER_PUMP"
-  npm --prefix server ci
-  npm --prefix server run build
-  make open-api
-  npm --prefix open-api/typescript-sdk version "$SERVER_PUMP"
+  jq --arg version "$NEXT_SERVER" '.version = $version' server/package.json > server/package.json.tmp && mv server/package.json.tmp server/package.json
+  pnpm install --frozen-lockfile --prefix server
+  pnpm --prefix server run build
+
+  ( cd ./open-api && bash ./bin/generate-open-api.sh )
+
+  jq --arg version "$NEXT_SERVER" '.version = $version' open-api/typescript-sdk/package.json > open-api/typescript-sdk/package.json.tmp && mv open-api/typescript-sdk/package.json.tmp open-api/typescript-sdk/package.json
+
   # TODO use $SERVER_PUMP once we pass 2.2.x
-  npm --prefix cli version patch
-  npm --prefix cli i --package-lock-only
-  npm --prefix web version "$SERVER_PUMP"
-  npm --prefix web i --package-lock-only
-  npm --prefix e2e version "$SERVER_PUMP"
-  npm --prefix e2e i --package-lock-only
-  uvx --from=toml-cli toml set --toml-path=pyproject.toml project.version "$SERVER_PUMP"
+  CURRENT_CLI_VERSION=$(jq -r '.version' cli/package.json)
+  CLI_PATCH_VERSION=$(echo "$CURRENT_CLI_VERSION" | awk -F. '{print $1"."$2"."($3+1)}')
+  jq --arg version "$CLI_PATCH_VERSION" '.version = $version' cli/package.json > cli/package.json.tmp && mv cli/package.json.tmp cli/package.json
+  pnpm install --frozen-lockfile --prefix cli
+
+  jq --arg version "$NEXT_SERVER" '.version = $version' web/package.json > web/package.json.tmp && mv web/package.json.tmp web/package.json
+  pnpm install --frozen-lockfile --prefix web
+
+  jq --arg version "$NEXT_SERVER" '.version = $version' e2e/package.json > e2e/package.json.tmp && mv e2e/package.json.tmp e2e/package.json
+  pnpm install --frozen-lockfile --prefix e2e
+  uvx --from=toml-cli toml set --toml-path=machine-learning/pyproject.toml project.version "$NEXT_SERVER"
 fi
 
 if [ "$CURRENT_MOBILE" != "$NEXT_MOBILE" ]; then
@@ -81,7 +88,6 @@ if [ "$CURRENT_MOBILE" != "$NEXT_MOBILE" ]; then
 fi
 
 sed -i "s/\"android\.injected\.version\.name\" => \"$CURRENT_SERVER\",/\"android\.injected\.version\.name\" => \"$NEXT_SERVER\",/" mobile/android/fastlane/Fastfile
-sed -i "s/version_number: \"$CURRENT_SERVER\"$/version_number: \"$NEXT_SERVER\"/" mobile/ios/fastlane/Fastfile
 sed -i "s/\"android\.injected\.version\.code\" => $CURRENT_MOBILE,/\"android\.injected\.version\.code\" => $NEXT_MOBILE,/" mobile/android/fastlane/Fastfile
 sed -i "s/^version: $CURRENT_SERVER+$CURRENT_MOBILE$/version: $NEXT_SERVER+$NEXT_MOBILE/" mobile/pubspec.yaml
 

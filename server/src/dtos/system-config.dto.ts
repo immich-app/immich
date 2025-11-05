@@ -1,35 +1,34 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Exclude, Transform, Type } from 'class-transformer';
+import { Type } from 'class-transformer';
 import {
-    ArrayMinSize,
-    IsInt,
-    IsNotEmpty,
-    IsNumber,
-    IsObject,
-    IsPositive,
-    IsString,
-    IsUrl,
-    Max,
-    Min,
-    ValidateIf,
-    ValidateNested,
+  ArrayMinSize,
+  IsInt,
+  IsNotEmpty,
+  IsNumber,
+  IsObject,
+  IsPositive,
+  IsString,
+  IsUrl,
+  Max,
+  Min,
+  ValidateIf,
+  ValidateNested,
 } from 'class-validator';
 import { SystemConfig } from 'src/config';
-import { PropertyLifecycle } from 'src/decorators';
-import { CLIPConfig, DuplicateDetectionConfig, FacialRecognitionConfig } from 'src/dtos/model-config.dto';
+import { CLIPConfig, DuplicateDetectionConfig, FacialRecognitionConfig, OcrConfig } from 'src/dtos/model-config.dto';
 import {
-    AudioCodec,
-    CQMode,
-    Colorspace,
-    ImageFormat,
-    LogLevel,
-    OAuthTokenEndpointAuthMethod,
-    QueueName,
-    ToneMapping,
-    TranscodeHardwareAcceleration,
-    TranscodePolicy,
-    VideoCodec,
-    VideoContainer,
+  AudioCodec,
+  CQMode,
+  Colorspace,
+  ImageFormat,
+  LogLevel,
+  OAuthTokenEndpointAuthMethod,
+  QueueName,
+  ToneMapping,
+  TranscodeHardwareAcceleration,
+  TranscodePolicy,
+  VideoCodec,
+  VideoContainer,
 } from 'src/enum';
 import { ConcurrentQueueName } from 'src/types';
 import { IsCronExpression, IsDateStringFormat, Optional, ValidateBoolean, ValidateEnum } from 'src/validation';
@@ -547,6 +546,12 @@ class SystemConfigJobDto implements Record<ConcurrentQueueName, JobSettingsDto> 
   @ValidateNested()
   @IsObject()
   @Type(() => JobSettingsDto)
+  [QueueName.Ocr]!: JobSettingsDto;
+
+  @ApiProperty({ type: JobSettingsDto })
+  @ValidateNested()
+  @IsObject()
+  @Type(() => JobSettingsDto)
   [QueueName.Sidecar]!: JobSettingsDto;
 
   @ApiProperty({ type: JobSettingsDto })
@@ -605,20 +610,31 @@ class SystemConfigLoggingDto {
   level!: LogLevel;
 }
 
+class MachineLearningAvailabilityChecksDto {
+  @ValidateBoolean()
+  enabled!: boolean;
+
+  @IsInt()
+  timeout!: number;
+
+  @IsInt()
+  interval!: number;
+}
+
 class SystemConfigMachineLearningDto {
   @ValidateBoolean()
   enabled!: boolean;
 
-  @PropertyLifecycle({ deprecatedAt: 'v1.122.0' })
-  @Exclude()
-  url?: string;
-
   @IsUrl({ require_tld: false, allow_underscores: true }, { each: true })
   @ArrayMinSize(1)
-  @Transform(({ obj, value }: { obj: any; value: any }) => (obj.url ? [obj.url] : value))
-  @ValidateIf((dto: any) => dto.enabled)
+  @ValidateIf((dto) => dto.enabled)
   @ApiProperty({ type: 'array', items: { type: 'string', format: 'uri' }, minItems: 1 })
   urls!: string[];
+
+  @Type(() => MachineLearningAvailabilityChecksDto)
+  @ValidateNested()
+  @IsObject()
+  availabilityChecks!: MachineLearningAvailabilityChecksDto;
 
   @Type(() => CLIPConfig)
   @ValidateNested()
@@ -634,6 +650,11 @@ class SystemConfigMachineLearningDto {
   @ValidateNested()
   @IsObject()
   facialRecognition!: FacialRecognitionConfig;
+
+  @Type(() => OcrConfig)
+  @ValidateNested()
+  @IsObject()
+  ocr!: OcrConfig;
 }
 
 enum MapTheme {
@@ -805,6 +826,9 @@ class SystemConfigSmtpTransportDto {
   @Min(0)
   @Max(65_535)
   port!: number;
+
+  @ValidateBoolean()
+  secure!: boolean;
 
   @IsString()
   username!: string;

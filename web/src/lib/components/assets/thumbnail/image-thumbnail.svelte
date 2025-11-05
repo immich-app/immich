@@ -1,7 +1,7 @@
 <script lang="ts">
   import BrokenAsset from '$lib/components/assets/broken-asset.svelte';
-  import Icon from '$lib/components/elements/icon.svelte';
   import { cancelImageUrl } from '$lib/utils/sw-messaging';
+  import { Icon } from '@immich/ui';
   import { mdiEyeOffOutline } from '@mdi/js';
   import type { ActionReturn } from 'svelte/action';
   import type { ClassValue } from 'svelte/elements';
@@ -68,7 +68,7 @@
       circle && 'rounded-full',
       shadow && 'shadow-lg',
       (circle || !heightStyle) && 'aspect-square',
-      border && 'border-[3px] border-immich-dark-primary/80 hover:border-immich-primary',
+      border && 'border-3 border-immich-dark-primary/80 hover:border-immich-primary',
       brokenAssetClass,
     ]
       .filter(Boolean)
@@ -97,6 +97,7 @@
 
 {#if hidden}
   <div class="absolute start-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%] transform">
-    <Icon {title} path={mdiEyeOffOutline} size="2em" class={hiddenIconClass} />
+    <!-- TODO fix `title` type -->
+    <Icon title={title ?? undefined} icon={mdiEyeOffOutline} size="2em" class={hiddenIconClass} />
   </div>
 {/if}

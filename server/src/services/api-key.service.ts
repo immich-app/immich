@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import { ApiKey } from 'src/database';
 import { APIKeyCreateDto, APIKeyCreateResponseDto, APIKeyResponseDto, APIKeyUpdateDto } from 'src/dtos/api-key.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -44,6 +44,19 @@ export class ApiKeyService extends BaseService {
     }
 
     await this.apiKeyRepository.delete(auth.user.id, id);
+  }
+
+  async getMine(auth: AuthDto): Promise<APIKeyResponseDto> {
+    if (!auth.apiKey) {
+      throw new ForbiddenException('Not authenticated with an API Key');
+    }
+
+    const key = await this.apiKeyRepository.getById(auth.user.id, auth.apiKey.id);
+    if (!key) {
+      throw new BadRequestException('API Key not found');
+    }
+
+    return this.map(key);
   }
 
   async getById(auth: AuthDto, id: string): Promise<APIKeyResponseDto> {

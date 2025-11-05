@@ -15,9 +15,9 @@ You can access the [user settings](https://my.immich.app/user-settings) by click
 ---
 
 :::tip Reset Password
-The admin can reset a user password through the [User Management](/docs/administration/user-management.mdx) screen.
+The admin can reset a user password through the [User Management](/administration/user-management.mdx) screen.
 :::
 
 :::tip Reset Admin Password
-The admin password can be reset using a [Server Command](/docs/administration/server-commands.md)
+The admin password can be reset using a [Server Command](/administration/server-commands.md)
 :::

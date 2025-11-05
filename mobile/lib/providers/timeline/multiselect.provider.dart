@@ -28,6 +28,8 @@ class MultiSelectState {
   bool get hasRemote =>
       selectedAssets.any((asset) => asset.storage == AssetState.remote || asset.storage == AssetState.merged);
 
+  bool get hasStacked => selectedAssets.any((asset) => asset is RemoteAsset && asset.stackId != null);
+
   bool get hasLocal => selectedAssets.any((asset) => asset.storage == AssetState.local);
 
   bool get hasMerged => selectedAssets.any((asset) => asset.storage == AssetState.merged);

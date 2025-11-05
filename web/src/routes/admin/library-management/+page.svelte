@@ -5,11 +5,6 @@
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
-  import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
-  import {
-    notificationController,
-    NotificationType,
-  } from '$lib/components/shared-components/notification/notification';
   import LibraryImportPathModal from '$lib/modals/LibraryImportPathModal.svelte';
   import LibraryRenameModal from '$lib/modals/LibraryRenameModal.svelte';
   import LibraryUserPickerModal from '$lib/modals/LibraryUserPickerModal.svelte';
@@ -31,7 +26,7 @@
     type LibraryStatsResponseDto,
     type UserResponseDto,
   } from '@immich/sdk';
-  import { Button, modalManager, Text } from '@immich/ui';
+  import { Button, LoadingSpinner, modalManager, Text, toastManager } from '@immich/ui';
   import { mdiDotsVertical, mdiPlusBoxOutline, mdiSync } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -93,10 +88,7 @@
     let createdLibrary: LibraryResponseDto | undefined;
     try {
       createdLibrary = await createLibrary({ createLibraryDto: { ownerId } });
-      notificationController.show({
-        message: $t('admin.library_created', { values: { library: createdLibrary.name } }),
-        type: NotificationType.Info,
-      });
+      toastManager.success($t('admin.library_created', { values: { library: createdLibrary.name } }));
     } catch (error) {
       handleError(error, $t('errors.unable_to_create_library'));
     } finally {
@@ -161,10 +153,7 @@
     try {
       await sendJobCommand({ id: JobName.Library, jobCommandDto: { command: JobCommand.Start } });
 
-      notificationController.show({
-        message: $t('admin.refreshing_all_libraries'),
-        type: NotificationType.Info,
-      });
+      toastManager.info($t('admin.refreshing_all_libraries'));
     } catch (error) {
       handleError(error, $t('errors.unable_to_scan_libraries'));
     }
@@ -173,10 +162,7 @@
   const handleScan = async (libraryId: string) => {
     try {
       await scanLibrary({ id: libraryId });
-      notificationController.show({
-        message: $t('admin.scanning_library'),
-        type: NotificationType.Info,
-      });
+      toastManager.info($t('admin.scanning_library'));
     } catch (error) {
       handleError(error, $t('errors.unable_to_scan_library'));
     }
@@ -245,7 +231,7 @@
 
     try {
       await deleteLibrary({ id: library.id });
-      notificationController.show({ message: $t('admin.library_deleted'), type: NotificationType.Info });
+      toastManager.success($t('admin.library_deleted'));
     } catch (error) {
       handleError(error, $t('errors.unable_to_remove_library'));
     } finally {
@@ -278,7 +264,7 @@
       {#if libraries.length > 0}
         <table class="w-full text-start">
           <thead
-            class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-primary"
+            class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray"
           >
             <tr class="grid grid-cols-6 w-full place-items-center">
               <th class="text-center text-sm font-medium">{$t('name')}</th>
@@ -292,31 +278,31 @@
           <tbody class="block overflow-y-auto rounded-md border dark:border-immich-dark-gray">
             {#each libraries as library, index (library.id)}
               <tr
-                class="grid grid-cols-6 h-[80px] w-full place-items-center text-center dark:text-immich-dark-fg even:bg-subtle/20 odd:bg-subtle/80"
+                class="grid grid-cols-6 h-20 w-full place-items-center text-center dark:text-immich-dark-fg even:bg-subtle/20 odd:bg-subtle/80"
               >
                 <td class="text-ellipsis px-4 text-sm">{library.name}</td>
                 <td class="text-ellipsis px-4 text-sm">
                   {#if owner[index] == undefined}
-                    <LoadingSpinner size="40" />
+                    <LoadingSpinner size="large" />
                   {:else}{owner[index].name}{/if}
                 </td>
                 <td class="text-ellipsis px-4 text-sm">
                   {#if photos[index] == undefined}
-                    <LoadingSpinner size="40" />
+                    <LoadingSpinner size="large" />
                   {:else}
                     {photos[index].toLocaleString($locale)}
                   {/if}
                 </td>
                 <td class="text-ellipsis px-4 text-sm">
                   {#if videos[index] == undefined}
-                    <LoadingSpinner size="40" />
+                    <LoadingSpinner size="large" />
                   {:else}
                     {videos[index].toLocaleString($locale)}
                   {/if}
                 </td>
                 <td class="text-ellipsis px-4 text-sm">
                   {#if diskUsage[index] == undefined}
-                    <LoadingSpinner size="40" />
+                    <LoadingSpinner size="large" />
                   {:else}
                     {diskUsage[index]}
                     {diskUsageUnit[index]}

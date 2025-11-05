@@ -1,16 +1,11 @@
 <script lang="ts">
-  import {
-    notificationController,
-    NotificationType,
-  } from '$lib/components/shared-components/notification/notification';
-  import { updateMyPreferences } from '@immich/sdk';
-  import { fade } from 'svelte/transition';
-  import { handleError } from '../../utils/handle-error';
-
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import { preferences } from '$lib/stores/user.store';
+  import { handleError } from '$lib/utils/handle-error';
+  import { updateMyPreferences } from '@immich/sdk';
+  import { Button, toastManager } from '@immich/ui';
   import { t } from 'svelte-i18n';
-  import { Button } from '@immich/ui';
+  import { fade } from 'svelte/transition';
 
   let emailNotificationsEnabled = $state($preferences?.emailNotifications?.enabled ?? true);
   let albumInviteNotificationEnabled = $state($preferences?.emailNotifications?.albumInvite ?? true);
@@ -32,7 +27,7 @@
       $preferences.emailNotifications.albumInvite = data.emailNotifications.albumInvite;
       $preferences.emailNotifications.albumUpdate = data.emailNotifications.albumUpdate;
 
-      notificationController.show({ message: $t('saved_settings'), type: NotificationType.Info });
+      toastManager.success($t('saved_settings'));
     } catch (error) {
       handleError(error, $t('errors.unable_to_update_settings'));
     }

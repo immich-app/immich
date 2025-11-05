@@ -2,6 +2,7 @@ import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, 
 import { ApiTags } from '@nestjs/swagger';
 import { AssetStatsDto, AssetStatsResponseDto } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
+import { SessionResponseDto } from 'src/dtos/session.dto';
 import { UserPreferencesResponseDto, UserPreferencesUpdateDto } from 'src/dtos/user-preferences.dto';
 import {
   UserAdminCreateDto,
@@ -56,6 +57,12 @@ export class UserAdminController {
     @Body() dto: UserAdminDeleteDto,
   ): Promise<UserAdminResponseDto> {
     return this.service.delete(auth, id, dto);
+  }
+
+  @Get(':id/sessions')
+  @Authenticated({ permission: Permission.AdminSessionRead, admin: true })
+  getUserSessionsAdmin(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<SessionResponseDto[]> {
+    return this.service.getSessions(auth, id);
   }
 
   @Get(':id/statistics')

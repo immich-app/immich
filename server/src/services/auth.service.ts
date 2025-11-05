@@ -29,11 +29,13 @@ import { BaseService } from 'src/services/base.service';
 import { isGranted } from 'src/utils/access';
 import { HumanReadableSize } from 'src/utils/bytes';
 import { mimeTypes } from 'src/utils/mime-types';
+import { getUserAgentDetails } from 'src/utils/request';
 export interface LoginDetails {
   isSecure: boolean;
   clientIp: string;
   deviceType: string;
   deviceOS: string;
+  appVersion: string | null;
 }
 
 interface ClaimOptions<T> {
@@ -48,7 +50,8 @@ export type ValidateRequest = {
   metadata: {
     sharedLinkRoute: boolean;
     adminRoute: boolean;
-    permission?: Permission;
+    /** `false` explicitly means no permission is required, which otherwise defaults to `all` */
+    permission?: Permission | false;
     uri: string;
   };
 };
@@ -100,6 +103,12 @@ export class AuthService extends BaseService {
     const hashedPassword = await this.cryptoRepository.hashBcrypt(newPassword, SALT_ROUNDS);
 
     const updatedUser = await this.userRepository.update(user.id, { password: hashedPassword });
+
+    await this.eventRepository.emit('AuthChangePassword', {
+      userId: user.id,
+      currentSessionId: auth.session?.id,
+      invalidateSessions: dto.invalidateSessions,
+    });
 
     return mapUserAdmin(updatedUser);
   }
@@ -187,7 +196,11 @@ export class AuthService extends BaseService {
       throw new ForbiddenException('Forbidden');
     }
 
-    if (authDto.apiKey && !isGranted({ requested: [requestedPermission], current: authDto.apiKey.permissions })) {
+    if (
+      authDto.apiKey &&
+      requestedPermission !== false &&
+      !isGranted({ requested: [requestedPermission], current: authDto.apiKey.permissions })
+    ) {
       throw new ForbiddenException(`Missing required permission: ${requestedPermission}`);
     }
 
@@ -213,7 +226,7 @@ export class AuthService extends BaseService {
     }
 
     if (session) {
-      return this.validateSession(session);
+      return this.validateSession(session, headers);
     }
 
     if (apiKey) {
@@ -339,7 +352,7 @@ export class AuthService extends BaseService {
         await this.jobRepository.queue({ name: JobName.FileDelete, data: { files: [oldPath] } });
       }
     } catch (error: Error | any) {
-      this.logger.warn(`Unable to sync oauth profile picture: ${error}`, error?.stack);
+      this.logger.warn(`Unable to sync oauth profile picture: ${error}\n${error?.stack}`);
     }
   }
 
@@ -458,15 +471,22 @@ export class AuthService extends BaseService {
     return this.cryptoRepository.compareBcrypt(inputSecret, existingHash);
   }
 
-  private async validateSession(tokenValue: string): Promise<AuthDto> {
+  private async validateSession(tokenValue: string, headers: IncomingHttpHeaders): Promise<AuthDto> {
     const hashedToken = this.cryptoRepository.hashSha256(tokenValue);
     const session = await this.sessionRepository.getByToken(hashedToken);
     if (session?.user) {
+      const { appVersion, deviceOS, deviceType } = getUserAgentDetails(headers);
       const now = DateTime.now();
       const updatedAt = DateTime.fromJSDate(session.updatedAt);
       const diff = now.diff(updatedAt, ['hours']);
-      if (diff.hours > 1) {
-        await this.sessionRepository.update(session.id, { id: session.id, updatedAt: new Date() });
+      if (diff.hours > 1 || appVersion != session.appVersion) {
+        await this.sessionRepository.update(session.id, {
+          id: session.id,
+          updatedAt: new Date(),
+          appVersion,
+          deviceOS,
+          deviceType,
+        });
       }
 
       // Pin check
@@ -524,6 +544,7 @@ export class AuthService extends BaseService {
       token: tokenHashed,
       deviceOS: loginDetails.deviceOS,
       deviceType: loginDetails.deviceType,
+      appVersion: loginDetails.appVersion,
       userId: user.id,
     });
 

@@ -10,7 +10,7 @@ This guide explains how to optimize facial recognition in systems with large ima
 
 - **Best Suited For:** Large image libraries after importing a significant number of images.
 - **Warning:** This method deletes all previously assigned names.
-- **Tip:** **Always take a [backup](/docs/administration/backup-and-restore#database) before proceeding!**
+- **Tip:** **Always take a [backup](/administration/backup-and-restore#database) before proceeding!**
 
 ---
 

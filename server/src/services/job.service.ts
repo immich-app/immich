@@ -1,6 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { ClassConstructor } from 'class-transformer';
-import { snakeCase } from 'lodash';
 import { SystemConfig } from 'src/config';
 import { OnEvent } from 'src/decorators';
 import { mapAsset } from 'src/dtos/asset-response.dto';
@@ -186,7 +185,7 @@ export class JobService extends BaseService {
       throw new BadRequestException(`Job is already running`);
     }
 
-    this.telemetryRepository.jobs.addToCounter(`immich.queues.${snakeCase(name)}.started`, 1);
+    await this.eventRepository.emit('QueueStart', { name });
 
     switch (name) {
       case QueueName.VideoConversion: {
@@ -242,27 +241,29 @@ export class JobService extends BaseService {
         return this.jobRepository.queue({ name: JobName.DatabaseBackup, data: { force } });
       }
 
+      case QueueName.Ocr: {
+        return this.jobRepository.queue({ name: JobName.OcrQueueAll, data: { force } });
+      }
+
       default: {
         throw new BadRequestException(`Invalid job name: ${name}`);
       }
     }
   }
 
-  @OnEvent({ name: 'JobStart' })
-  async onJobStart(...[queueName, job]: ArgsOf<'JobStart'>) {
-    const queueMetric = `immich.queues.${snakeCase(queueName)}.active`;
-    this.telemetryRepository.jobs.addToGauge(queueMetric, 1);
+  @OnEvent({ name: 'JobRun' })
+  async onJobRun(...[queueName, job]: ArgsOf<'JobRun'>) {
     try {
-      const status = await this.jobRepository.run(job);
-      const jobMetric = `immich.jobs.${snakeCase(job.name)}.${status}`;
-      this.telemetryRepository.jobs.addToCounter(jobMetric, 1);
-      if (status === JobStatus.Success || status == JobStatus.Skipped) {
+      await this.eventRepository.emit('JobStart', queueName, job);
+      const response = await this.jobRepository.run(job);
+      await this.eventRepository.emit('JobSuccess', { job, response });
+      if (response && typeof response === 'string' && [JobStatus.Success, JobStatus.Skipped].includes(response)) {
         await this.onDone(job);
       }
     } catch (error: Error | any) {
-      await this.eventRepository.emit('JobFailed', { job, error });
+      await this.eventRepository.emit('JobError', { job, error });
     } finally {
-      this.telemetryRepository.jobs.addToGauge(queueMetric, -1);
+      await this.eventRepository.emit('JobComplete', queueName, job);
     }
   }
 
@@ -286,6 +287,7 @@ export class JobService extends BaseService {
         { name: JobName.PersonCleanup },
         { name: JobName.MemoryCleanup },
         { name: JobName.SessionCleanup },
+        { name: JobName.AuditTableCleanup },
         { name: JobName.AuditLogCleanup },
       );
     }
@@ -314,8 +316,7 @@ export class JobService extends BaseService {
    */
   private async onDone(item: JobItem) {
     switch (item.name) {
-      case JobName.SidecarSync:
-      case JobName.SidecarDiscovery: {
+      case JobName.SidecarCheck: {
         await this.jobRepository.queue({ name: JobName.AssetExtractMetadata, data: item.data });
         break;
       }
@@ -339,7 +340,7 @@ export class JobService extends BaseService {
         const { id } = item.data;
         const person = await this.personRepository.getById(id);
         if (person) {
-          this.eventRepository.clientSend('on_person_thumbnail', person.ownerId, person.id);
+          this.websocketRepository.clientSend('on_person_thumbnail', person.ownerId, person.id);
         }
         break;
       }
@@ -358,6 +359,7 @@ export class JobService extends BaseService {
         const jobs: JobItem[] = [
           { name: JobName.SmartSearch, data: item.data },
           { name: JobName.AssetDetectFaces, data: item.data },
+          { name: JobName.Ocr, data: item.data },
         ];
 
         if (asset.type === AssetType.Video) {
@@ -366,10 +368,10 @@ export class JobService extends BaseService {
 
         await this.jobRepository.queueAll(jobs);
         if (asset.visibility === AssetVisibility.Timeline || asset.visibility === AssetVisibility.Archive) {
-          this.eventRepository.clientSend('on_upload_success', asset.ownerId, mapAsset(asset));
+          this.websocketRepository.clientSend('on_upload_success', asset.ownerId, mapAsset(asset));
           if (asset.exifInfo) {
             const exif = asset.exifInfo;
-            this.eventRepository.clientSend('AssetUploadReadyV1', asset.ownerId, {
+            this.websocketRepository.clientSend('AssetUploadReadyV1', asset.ownerId, {
               // TODO remove `on_upload_success` and then modify the query to select only the required fields)
               asset: {
                 id: asset.id,
@@ -427,11 +429,6 @@ export class JobService extends BaseService {
         if (item.data.source === 'upload') {
           await this.jobRepository.queue({ name: JobName.AssetDetectDuplicates, data: item.data });
         }
-        break;
-      }
-
-      case JobName.UserDelete: {
-        this.eventRepository.clientBroadcast('on_user_delete', item.data.id);
         break;
       }
     }

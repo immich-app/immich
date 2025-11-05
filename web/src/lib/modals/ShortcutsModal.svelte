@@ -1,8 +1,7 @@
 <script lang="ts">
-  import { Modal, ModalBody } from '@immich/ui';
+  import { Icon, Modal, ModalBody } from '@immich/ui';
   import { mdiInformationOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
-  import Icon from '../components/elements/icon.svelte';
 
   interface Shortcuts {
     general: ExplainedShortcut[];
@@ -28,6 +27,7 @@
         { key: ['D', 'd'], action: $t('previous_or_next_day') },
         { key: ['M', 'm'], action: $t('previous_or_next_month') },
         { key: ['Y', 'y'], action: $t('previous_or_next_year') },
+        { key: ['g'], action: $t('navigate_to_time') },
         { key: ['x'], action: $t('select') },
         { key: ['Esc'], action: $t('back_close_deselect') },
         { key: ['Ctrl', 'k'], action: $t('search_your_photos') },
@@ -91,7 +91,7 @@
                 <div class="flex items-center gap-2">
                   <p class="mb-1 mt-1 flex">{shortcut.action}</p>
                   {#if shortcut.info}
-                    <Icon path={mdiInformationOutline} title={shortcut.info} />
+                    <Icon icon={mdiInformationOutline} title={shortcut.info} />
                   {/if}
                 </div>
               </div>

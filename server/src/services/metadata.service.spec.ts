@@ -1,7 +1,7 @@
 import { BinaryField, ExifDateTime } from 'exiftool-vendored';
+import { DateTime } from 'luxon';
 import { randomBytes } from 'node:crypto';
 import { Stats } from 'node:fs';
-import { constants } from 'node:fs/promises';
 import { defaults } from 'src/config';
 import { MapAsset } from 'src/dtos/asset-response.dto';
 import { AssetType, AssetVisibility, ExifOrientation, ImmichWorker, JobName, JobStatus, SourceType } from 'src/enum';
@@ -14,6 +14,21 @@ import { personStub } from 'test/fixtures/person.stub';
 import { tagStub } from 'test/fixtures/tag.stub';
 import { factory } from 'test/small.factory';
 import { makeStream, newTestService, ServiceMocks } from 'test/utils';
+
+const forSidecarJob = (
+  asset: {
+    id?: string;
+    originalPath?: string;
+    sidecarPath?: string | null;
+  } = {},
+) => {
+  return {
+    id: factory.uuid(),
+    originalPath: '/path/to/IMG_123.jpg',
+    sidecarPath: null,
+    ...asset,
+  };
+};
 
 const makeFaceTags = (face: Partial<{ Name: string }> = {}, orientation?: ImmichTags['Orientation']) => ({
   Orientation: orientation,
@@ -217,7 +232,7 @@ describe(MetadataService.name, () => {
       });
     });
 
-    it('should account for the server being in a non-UTC timezone', async () => {
+    it('should determine dateTimeOriginal regardless of the server time zone', async () => {
       process.env.TZ = 'America/Los_Angeles';
       mocks.assetJob.getForMetadataExtraction.mockResolvedValue(assetStub.sidecar);
       mockReadTags({ DateTimeOriginal: '2022:01:01 00:00:00' });
@@ -225,7 +240,7 @@ describe(MetadataService.name, () => {
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
       expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
         expect.objectContaining({
-          dateTimeOriginal: new Date('2022-01-01T08:00:00.000Z'),
+          dateTimeOriginal: new Date('2022-01-01T00:00:00.000Z'),
         }),
       );
 
@@ -842,6 +857,7 @@ describe(MetadataService.name, () => {
         tz: 'UTC-11:30',
         Rating: 3,
       };
+
       mocks.assetJob.getForMetadataExtraction.mockResolvedValue(assetStub.image);
       mockReadTags(tags);
 
@@ -882,7 +898,7 @@ describe(MetadataService.name, () => {
           id: assetStub.image.id,
           duration: null,
           fileCreatedAt: dateForTest,
-          localDateTime: dateForTest,
+          localDateTime: DateTime.fromISO('1970-01-01T00:00:00.000Z').toJSDate(),
         }),
       );
     });
@@ -1456,7 +1472,7 @@ describe(MetadataService.name, () => {
 
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
-          name: JobName.SidecarSync,
+          name: JobName.SidecarCheck,
           data: { id: assetStub.sidecar.id },
         },
       ]);
@@ -1470,132 +1486,64 @@ describe(MetadataService.name, () => {
       expect(mocks.assetJob.streamForSidecar).toHaveBeenCalledWith(false);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
-          name: JobName.SidecarDiscovery,
+          name: JobName.SidecarCheck,
           data: { id: assetStub.image.id },
         },
       ]);
     });
   });
 
-  describe('handleSidecarSync', () => {
+  describe('handleSidecarCheck', () => {
     it('should do nothing if asset could not be found', async () => {
-      mocks.asset.getByIds.mockResolvedValue([]);
-      await expect(sut.handleSidecarSync({ id: assetStub.image.id })).resolves.toBe(JobStatus.Failed);
+      mocks.assetJob.getForSidecarCheckJob.mockResolvedValue(void 0);
+
+      await expect(sut.handleSidecarCheck({ id: assetStub.image.id })).resolves.toBeUndefined();
+
       expect(mocks.asset.update).not.toHaveBeenCalled();
     });
 
-    it('should do nothing if asset has no sidecar path', async () => {
-      mocks.asset.getByIds.mockResolvedValue([assetStub.image]);
-      await expect(sut.handleSidecarSync({ id: assetStub.image.id })).resolves.toBe(JobStatus.Failed);
-      expect(mocks.asset.update).not.toHaveBeenCalled();
+    it('should detect a new sidecar at .jpg.xmp', async () => {
+      const asset = forSidecarJob({ originalPath: '/path/to/IMG_123.jpg' });
+
+      mocks.assetJob.getForSidecarCheckJob.mockResolvedValue(asset);
+      mocks.storage.checkFileExists.mockResolvedValueOnce(true);
+
+      await expect(sut.handleSidecarCheck({ id: asset.id })).resolves.toBe(JobStatus.Success);
+
+      expect(mocks.asset.update).toHaveBeenCalledWith({ id: asset.id, sidecarPath: `/path/to/IMG_123.jpg.xmp` });
     });
 
-    it('should set sidecar path if exists (sidecar named photo.ext.xmp)', async () => {
-      mocks.asset.getByIds.mockResolvedValue([assetStub.sidecar]);
-      mocks.storage.checkFileExists.mockResolvedValue(true);
+    it('should detect a new sidecar at .xmp', async () => {
+      const asset = forSidecarJob({ originalPath: '/path/to/IMG_123.jpg' });
 
-      await expect(sut.handleSidecarSync({ id: assetStub.sidecar.id })).resolves.toBe(JobStatus.Success);
-      expect(mocks.storage.checkFileExists).toHaveBeenCalledWith(
-        `${assetStub.sidecar.originalPath}.xmp`,
-        constants.R_OK,
-      );
-      expect(mocks.asset.update).toHaveBeenCalledWith({
-        id: assetStub.sidecar.id,
-        sidecarPath: assetStub.sidecar.sidecarPath,
-      });
-    });
-
-    it('should set sidecar path if exists (sidecar named photo.xmp)', async () => {
-      mocks.asset.getByIds.mockResolvedValue([assetStub.sidecarWithoutExt as any]);
+      mocks.assetJob.getForSidecarCheckJob.mockResolvedValue(asset);
       mocks.storage.checkFileExists.mockResolvedValueOnce(false);
       mocks.storage.checkFileExists.mockResolvedValueOnce(true);
 
-      await expect(sut.handleSidecarSync({ id: assetStub.sidecarWithoutExt.id })).resolves.toBe(JobStatus.Success);
-      expect(mocks.storage.checkFileExists).toHaveBeenNthCalledWith(
-        2,
-        assetStub.sidecarWithoutExt.sidecarPath,
-        constants.R_OK,
-      );
-      expect(mocks.asset.update).toHaveBeenCalledWith({
-        id: assetStub.sidecarWithoutExt.id,
-        sidecarPath: assetStub.sidecarWithoutExt.sidecarPath,
-      });
-    });
+      await expect(sut.handleSidecarCheck({ id: asset.id })).resolves.toBe(JobStatus.Success);
 
-    it('should set sidecar path if exists (two sidecars named photo.ext.xmp and photo.xmp, should pick photo.ext.xmp)', async () => {
-      mocks.asset.getByIds.mockResolvedValue([assetStub.sidecar]);
-      mocks.storage.checkFileExists.mockResolvedValueOnce(true);
-      mocks.storage.checkFileExists.mockResolvedValueOnce(true);
-
-      await expect(sut.handleSidecarSync({ id: assetStub.sidecar.id })).resolves.toBe(JobStatus.Success);
-      expect(mocks.storage.checkFileExists).toHaveBeenNthCalledWith(1, assetStub.sidecar.sidecarPath, constants.R_OK);
-      expect(mocks.storage.checkFileExists).toHaveBeenNthCalledWith(
-        2,
-        assetStub.sidecarWithoutExt.sidecarPath,
-        constants.R_OK,
-      );
-      expect(mocks.asset.update).toHaveBeenCalledWith({
-        id: assetStub.sidecar.id,
-        sidecarPath: assetStub.sidecar.sidecarPath,
-      });
+      expect(mocks.asset.update).toHaveBeenCalledWith({ id: asset.id, sidecarPath: '/path/to/IMG_123.xmp' });
     });
 
     it('should unset sidecar path if file does not exist anymore', async () => {
-      mocks.asset.getByIds.mockResolvedValue([assetStub.sidecar]);
+      const asset = forSidecarJob({ originalPath: '/path/to/IMG_123.jpg', sidecarPath: '/path/to/IMG_123.jpg.xmp' });
+      mocks.assetJob.getForSidecarCheckJob.mockResolvedValue(asset);
       mocks.storage.checkFileExists.mockResolvedValue(false);
 
-      await expect(sut.handleSidecarSync({ id: assetStub.sidecar.id })).resolves.toBe(JobStatus.Success);
-      expect(mocks.storage.checkFileExists).toHaveBeenCalledWith(
-        `${assetStub.sidecar.originalPath}.xmp`,
-        constants.R_OK,
-      );
-      expect(mocks.asset.update).toHaveBeenCalledWith({
-        id: assetStub.sidecar.id,
-        sidecarPath: null,
-      });
-    });
-  });
+      await expect(sut.handleSidecarCheck({ id: asset.id })).resolves.toBe(JobStatus.Success);
 
-  describe('handleSidecarDiscovery', () => {
-    it('should skip hidden assets', async () => {
-      mocks.asset.getByIds.mockResolvedValue([assetStub.livePhotoMotionAsset as any]);
-      await sut.handleSidecarDiscovery({ id: assetStub.livePhotoMotionAsset.id });
-      expect(mocks.storage.checkFileExists).not.toHaveBeenCalled();
+      expect(mocks.asset.update).toHaveBeenCalledWith({ id: asset.id, sidecarPath: null });
     });
 
-    it('should skip assets with a sidecar path', async () => {
-      mocks.asset.getByIds.mockResolvedValue([assetStub.sidecar]);
-      await sut.handleSidecarDiscovery({ id: assetStub.sidecar.id });
-      expect(mocks.storage.checkFileExists).not.toHaveBeenCalled();
-    });
+    it('should do nothing if the sidecar file still exists', async () => {
+      const asset = forSidecarJob({ originalPath: '/path/to/IMG_123.jpg', sidecarPath: '/path/to/IMG_123.jpg' });
 
-    it('should do nothing when a sidecar is not found ', async () => {
-      mocks.asset.getByIds.mockResolvedValue([assetStub.image]);
-      mocks.storage.checkFileExists.mockResolvedValue(false);
-      await sut.handleSidecarDiscovery({ id: assetStub.image.id });
+      mocks.assetJob.getForSidecarCheckJob.mockResolvedValue(asset);
+      mocks.storage.checkFileExists.mockResolvedValueOnce(true);
+
+      await expect(sut.handleSidecarCheck({ id: asset.id })).resolves.toBe(JobStatus.Skipped);
+
       expect(mocks.asset.update).not.toHaveBeenCalled();
-    });
-
-    it('should update a image asset when a sidecar is found', async () => {
-      mocks.asset.getByIds.mockResolvedValue([assetStub.image]);
-      mocks.storage.checkFileExists.mockResolvedValue(true);
-      await sut.handleSidecarDiscovery({ id: assetStub.image.id });
-      expect(mocks.storage.checkFileExists).toHaveBeenCalledWith('/original/path.jpg.xmp', constants.R_OK);
-      expect(mocks.asset.update).toHaveBeenCalledWith({
-        id: assetStub.image.id,
-        sidecarPath: '/original/path.jpg.xmp',
-      });
-    });
-
-    it('should update a video asset when a sidecar is found', async () => {
-      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
-      mocks.storage.checkFileExists.mockResolvedValue(true);
-      await sut.handleSidecarDiscovery({ id: assetStub.video.id });
-      expect(mocks.storage.checkFileExists).toHaveBeenCalledWith('/original/path.ext.xmp', constants.R_OK);
-      expect(mocks.asset.update).toHaveBeenCalledWith({
-        id: assetStub.image.id,
-        sidecarPath: '/original/path.ext.xmp',
-      });
     });
   });
 
@@ -1648,7 +1596,7 @@ describe(MetadataService.name, () => {
 
       const result = firstDateTime(tags);
       expect(result?.tag).toBe('SonyDateTime2');
-      expect(result?.dateTime?.toDate()?.toISOString()).toBe('2023-07-07T07:00:00.000Z');
+      expect(result?.dateTime?.toISOString()).toBe('2023-07-07T07:00:00');
     });
 
     it('should respect full priority order with all date tags present', () => {
@@ -1677,7 +1625,7 @@ describe(MetadataService.name, () => {
       const result = firstDateTime(tags);
       // Should use SubSecDateTimeOriginal as it has highest priority
       expect(result?.tag).toBe('SubSecDateTimeOriginal');
-      expect(result?.dateTime?.toDate()?.toISOString()).toBe('2023-01-01T01:00:00.000Z');
+      expect(result?.dateTime?.toISOString()).toBe('2023-01-01T01:00:00');
     });
 
     it('should handle missing SubSec tags and use available date tags', () => {
@@ -1697,7 +1645,7 @@ describe(MetadataService.name, () => {
       const result = firstDateTime(tags);
       // Should use CreationDate when available
       expect(result?.tag).toBe('CreationDate');
-      expect(result?.dateTime?.toDate()?.toISOString()).toBe('2023-07-07T07:00:00.000Z');
+      expect(result?.dateTime?.toISOString()).toBe('2023-07-07T07:00:00');
     });
 
     it('should handle invalid date formats gracefully', () => {
@@ -1711,7 +1659,18 @@ describe(MetadataService.name, () => {
       const result = firstDateTime(tags);
       // Should skip invalid dates and use the first valid one
       expect(result?.tag).toBe('GPSDateTime');
-      expect(result?.dateTime?.toDate()?.toISOString()).toBe('2023-10-10T10:00:00.000Z');
+      expect(result?.dateTime?.toISOString()).toBe('2023-10-10T10:00:00');
+    });
+
+    it('should prefer CreationDate over CreateDate', () => {
+      const tags = {
+        CreationDate: '2025:05:24 18:26:20+02:00',
+        CreateDate: '2025:08:27 08:45:40',
+      };
+
+      const result = firstDateTime(tags);
+      expect(result?.tag).toBe('CreationDate');
+      expect(result?.dateTime?.toDate()?.toISOString()).toBe('2025-05-24T16:26:20.000Z');
     });
   });
 });

@@ -41,6 +41,7 @@ class PreloadModelData(BaseModel):
 
 class MaxBatchSize(BaseModel):
     facial_recognition: int | None = None
+    text_recognition: int | None = None
 
 
 class Settings(BaseSettings):
@@ -61,6 +62,7 @@ class Settings(BaseSettings):
     request_threads: int = os.cpu_count() or 4
     model_inter_op_threads: int = 0
     model_intra_op_threads: int = 0
+    model_arena: bool = True
     ann: bool = True
     ann_fp16_turbo: bool = False
     ann_tuning_level: int = 2

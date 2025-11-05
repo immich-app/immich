@@ -16,13 +16,9 @@
 <div class="mt-8 flex justify-between gap-2">
   <div class="left">
     {#if showResetToDefault}
-      <button
-        type="button"
-        onclick={() => onReset({ default: true })}
-        class="bg-none text-sm font-medium text-immich-primary hover:text-immich-primary/75 dark:text-immich-dark-primary hover:dark:text-immich-dark-primary/75"
+      <Button variant="ghost" shape="round" size="small" onclick={() => onReset({ default: true })}
+        >{$t('reset_to_default')}</Button
       >
-        {$t('reset_to_default')}
-      </button>
     {/if}
   </div>
 

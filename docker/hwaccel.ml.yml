@@ -4,7 +4,7 @@
 # you can inline the config for a backend by copying its contents
 # into the immich-machine-learning service in the docker-compose.yml file.
 
-# See https://immich.app/docs/features/ml-hardware-acceleration for info on usage.
+# See https://docs.immich.app/features/ml-hardware-acceleration for info on usage.
 
 services:
   armnn:

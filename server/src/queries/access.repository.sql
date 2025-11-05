@@ -25,8 +25,8 @@ select
   "album"."id"
 from
   "album"
-  left join "album_user" as "albumUsers" on "albumUsers"."albumsId" = "album"."id"
-  left join "user" on "user"."id" = "albumUsers"."usersId"
+  left join "album_user" as "albumUsers" on "albumUsers"."albumId" = "album"."id"
+  left join "user" on "user"."id" = "albumUsers"."userId"
   and "user"."deletedAt" is null
 where
   "album"."id" in ($1)
@@ -52,8 +52,8 @@ select
   "album"."id"
 from
   "album"
-  left join "album_user" on "album_user"."albumsId" = "album"."id"
-  left join "user" on "user"."id" = "album_user"."usersId"
+  left join "album_user" on "album_user"."albumId" = "album"."id"
+  left join "user" on "user"."id" = "album_user"."userId"
   and "user"."deletedAt" is null
 where
   "album"."id" in ($1)
@@ -71,19 +71,28 @@ where
   and "shared_link"."albumId" in ($2)
 
 -- AccessRepository.asset.checkAlbumAccess
+with
+  "target" as (
+    select
+      array[$1]::uuid[] as "ids"
+  )
 select
   "asset"."id",
   "asset"."livePhotoVideoId"
 from
   "album"
-  inner join "album_asset" as "albumAssets" on "album"."id" = "albumAssets"."albumsId"
-  inner join "asset" on "asset"."id" = "albumAssets"."assetsId"
+  inner join "album_asset" as "albumAssets" on "album"."id" = "albumAssets"."albumId"
+  inner join "asset" on "asset"."id" = "albumAssets"."assetId"
   and "asset"."deletedAt" is null
-  left join "album_user" as "albumUsers" on "albumUsers"."albumsId" = "album"."id"
-  left join "user" on "user"."id" = "albumUsers"."usersId"
+  left join "album_user" as "albumUsers" on "albumUsers"."albumId" = "album"."id"
+  left join "user" on "user"."id" = "albumUsers"."userId"
   and "user"."deletedAt" is null
+  cross join "target"
 where
-  array["asset"."id", "asset"."livePhotoVideoId"] && array[$1]::uuid[]
+  (
+    "asset"."id" = any (target.ids)
+    or "asset"."livePhotoVideoId" = any (target.ids)
+  )
   and (
     "album"."ownerId" = $2
     or "user"."id" = $3
@@ -127,11 +136,11 @@ from
   "shared_link"
   left join "album" on "album"."id" = "shared_link"."albumId"
   and "album"."deletedAt" is null
-  left join "shared_link_asset" on "shared_link_asset"."sharedLinksId" = "shared_link"."id"
-  left join "asset" on "asset"."id" = "shared_link_asset"."assetsId"
+  left join "shared_link_asset" on "shared_link_asset"."sharedLinkId" = "shared_link"."id"
+  left join "asset" on "asset"."id" = "shared_link_asset"."assetId"
   and "asset"."deletedAt" is null
-  left join "album_asset" on "album_asset"."albumsId" = "album"."id"
-  left join "asset" as "albumAssets" on "albumAssets"."id" = "album_asset"."assetsId"
+  left join "album_asset" on "album_asset"."albumId" = "album"."id"
+  left join "asset" as "albumAssets" on "albumAssets"."id" = "album_asset"."assetId"
   and "albumAssets"."deletedAt" is null
 where
   "shared_link"."id" = $1

@@ -1,7 +1,7 @@
 <script lang="ts">
+  import { resolve } from '$app/paths';
   import { autoGrowHeight } from '$lib/actions/autogrow';
   import { shortcut } from '$lib/actions/shortcut';
-  import Icon from '$lib/components/elements/icon.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import { AppRoute, timeBeforeShowLoadingSpinner } from '$lib/constants';
@@ -12,12 +12,10 @@
   import { handleError } from '$lib/utils/handle-error';
   import { isTenMinutesApart } from '$lib/utils/timesince';
   import { ReactionType, type ActivityResponseDto, type AssetTypeEnum, type UserResponseDto } from '@immich/sdk';
-  import { IconButton } from '@immich/ui';
+  import { Icon, IconButton, LoadingSpinner, toastManager } from '@immich/ui';
   import { mdiClose, mdiDeleteOutline, mdiDotsVertical, mdiHeart, mdiSend } from '@mdi/js';
   import * as luxon from 'luxon';
   import { t } from 'svelte-i18n';
-  import LoadingSpinner from '../shared-components/loading-spinner.svelte';
-  import { NotificationType, notificationController } from '../shared-components/notification/notification';
   import UserAvatar from '../shared-components/user-avatar.svelte';
 
   const units: Intl.RelativeTimeFormatUnit[] = ['year', 'month', 'week', 'day', 'hour', 'minute', 'second'];
@@ -76,10 +74,7 @@
         [ReactionType.Comment]: $t('comment_deleted'),
         [ReactionType.Like]: $t('like_deleted'),
       };
-      notificationController.show({
-        message: deleteMessages[reaction.type],
-        type: NotificationType.Info,
-      });
+      toastManager.success(deleteMessages[reaction.type]);
     } catch (error) {
       handleError(error, $t('errors.unable_to_remove_reaction'));
     }
@@ -146,11 +141,14 @@
                 <UserAvatar user={reaction.user} size="sm" />
               </div>
 
-              <div class="w-full leading-4 overflow-hidden self-center break-words text-sm">{reaction.comment}</div>
+              <div class="w-full leading-4 overflow-hidden self-center wrap-break-word text-sm">{reaction.comment}</div>
               {#if assetId === undefined && reaction.assetId}
-                <a class="aspect-square w-[75px] h-[75px]" href="{AppRoute.ALBUMS}/{albumId}/photos/{reaction.assetId}">
+                <a
+                  class="aspect-square w-19 h-19"
+                  href={resolve(`${AppRoute.ALBUMS}/${albumId}/photos/${reaction.assetId}`)}
+                >
                   <img
-                    class="rounded-lg w-[75px] h-[75px] object-cover"
+                    class="rounded-lg w-19 h-19 object-cover"
                     src={getAssetThumbnailUrl(reaction.assetId)}
                     alt="Profile picture of {reaction.user.name}, who commented on this asset"
                   />
@@ -187,7 +185,7 @@
           {:else if reaction.type === ReactionType.Like}
             <div class="relative">
               <div class="flex py-3 ps-3 mt-3 gap-4 items-center text-sm">
-                <div class="text-red-600"><Icon path={mdiHeart} size={20} /></div>
+                <div class="text-red-600"><Icon icon={mdiHeart} size="20" /></div>
 
                 <div class="w-full" title={`${reaction.user.name} (${reaction.user.email})`}>
                   {$t('user_liked', {
@@ -199,11 +197,11 @@
                 </div>
                 {#if assetId === undefined && reaction.assetId}
                   <a
-                    class="aspect-square w-[75px] h-[75px]"
-                    href="{AppRoute.ALBUMS}/{albumId}/photos/{reaction.assetId}"
+                    class="aspect-square w-19 h-19"
+                    href={resolve(`${AppRoute.ALBUMS}/${albumId}/photos/${reaction.assetId}`)}
                   >
                     <img
-                      class="rounded-lg w-[75px] h-[75px] object-cover"
+                      class="rounded-lg w-19 h-19 object-cover"
                       src={getAssetThumbnailUrl(reaction.assetId)}
                       alt="Profile picture of {reaction.user.name}, who liked this asset"
                     />

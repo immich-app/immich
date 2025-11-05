@@ -26,7 +26,6 @@ describe(SyncRequestType.PartnerAssetExifsV1, () => {
     await ctx.newExif({ assetId: asset.id, make: 'Canon' });
 
     const response = await ctx.syncStream(auth, [SyncRequestType.PartnerAssetExifsV1]);
-    expect(response).toHaveLength(1);
     expect(response).toEqual([
       {
         ack: expect.any(String),
@@ -59,10 +58,11 @@ describe(SyncRequestType.PartnerAssetExifsV1, () => {
         },
         type: SyncEntityType.PartnerAssetExifV1,
       },
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
     ]);
 
     await ctx.syncAckAll(auth, response);
-    await expect(ctx.syncStream(auth, [SyncRequestType.PartnerAssetExifsV1])).resolves.toEqual([]);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.PartnerAssetExifsV1]);
   });
 
   it('should not sync partner asset exif for own user', async () => {
@@ -72,8 +72,11 @@ describe(SyncRequestType.PartnerAssetExifsV1, () => {
     const { asset } = await ctx.newAsset({ ownerId: auth.user.id });
     await ctx.newExif({ assetId: asset.id, make: 'Canon' });
 
-    await expect(ctx.syncStream(auth, [SyncRequestType.AssetExifsV1])).resolves.toHaveLength(1);
-    await expect(ctx.syncStream(auth, [SyncRequestType.PartnerAssetExifsV1])).resolves.toHaveLength(0);
+    await expect(ctx.syncStream(auth, [SyncRequestType.AssetExifsV1])).resolves.toEqual([
+      expect.objectContaining({ type: SyncEntityType.AssetExifV1 }),
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
+    ]);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.PartnerAssetExifsV1]);
   });
 
   it('should not sync partner asset exif for unrelated user', async () => {
@@ -86,8 +89,11 @@ describe(SyncRequestType.PartnerAssetExifsV1, () => {
     const { session } = await ctx.newSession({ userId: user3.id });
     const authUser3 = factory.auth({ session, user: user3 });
 
-    await expect(ctx.syncStream(authUser3, [SyncRequestType.AssetExifsV1])).resolves.toHaveLength(1);
-    await expect(ctx.syncStream(auth, [SyncRequestType.PartnerAssetExifsV1])).resolves.toHaveLength(0);
+    await expect(ctx.syncStream(authUser3, [SyncRequestType.AssetExifsV1])).resolves.toEqual([
+      expect.objectContaining({ type: SyncEntityType.AssetExifV1 }),
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
+    ]);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.PartnerAssetExifsV1]);
   });
 
   it('should backfill partner asset exif when a partner shared their library with you', async () => {
@@ -102,7 +108,6 @@ describe(SyncRequestType.PartnerAssetExifsV1, () => {
     await ctx.newPartner({ sharedById: user2.id, sharedWithId: auth.user.id });
 
     const response = await ctx.syncStream(auth, [SyncRequestType.PartnerAssetExifsV1]);
-    expect(response).toHaveLength(1);
     expect(response).toEqual(
       expect.arrayContaining([
         {
@@ -112,6 +117,7 @@ describe(SyncRequestType.PartnerAssetExifsV1, () => {
           }),
           type: SyncEntityType.PartnerAssetExifV1,
         },
+        expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
       ]),
     );
 
@@ -119,7 +125,6 @@ describe(SyncRequestType.PartnerAssetExifsV1, () => {
     await ctx.newPartner({ sharedById: user3.id, sharedWithId: auth.user.id });
 
     const newResponse = await ctx.syncStream(auth, [SyncRequestType.PartnerAssetExifsV1]);
-    expect(newResponse).toHaveLength(2);
     expect(newResponse).toEqual([
       {
         ack: expect.any(String),
@@ -133,10 +138,11 @@ describe(SyncRequestType.PartnerAssetExifsV1, () => {
         data: {},
         type: SyncEntityType.SyncAckV1,
       },
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
     ]);
 
     await ctx.syncAckAll(auth, newResponse);
-    await expect(ctx.syncStream(auth, [SyncRequestType.PartnerAssetExifsV1])).resolves.toEqual([]);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.PartnerAssetExifsV1]);
   });
 
   it('should handle partners with users ids lower than a uuidv7', async () => {
@@ -151,7 +157,6 @@ describe(SyncRequestType.PartnerAssetExifsV1, () => {
     await ctx.newPartner({ sharedById: user2.id, sharedWithId: auth.user.id });
 
     const response = await ctx.syncStream(auth, [SyncRequestType.PartnerAssetExifsV1]);
-    expect(response).toHaveLength(1);
     expect(response).toEqual([
       {
         ack: expect.any(String),
@@ -160,15 +165,15 @@ describe(SyncRequestType.PartnerAssetExifsV1, () => {
         }),
         type: SyncEntityType.PartnerAssetExifV1,
       },
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
     ]);
 
     await ctx.syncAckAll(auth, response);
     // This checks that our ack upsert is correct
-    await expect(ctx.syncStream(auth, [SyncRequestType.PartnerAssetExifsV1])).resolves.toEqual([]);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.PartnerAssetExifsV1]);
     await ctx.newPartner({ sharedById: user3.id, sharedWithId: auth.user.id });
 
     const newResponse = await ctx.syncStream(auth, [SyncRequestType.PartnerAssetExifsV1]);
-    expect(newResponse).toHaveLength(2);
     expect(newResponse).toEqual([
       {
         ack: expect.stringMatching(new RegExp(`${SyncEntityType.PartnerAssetExifBackfillV1}\\|.+?\\|.+`)),
@@ -182,10 +187,11 @@ describe(SyncRequestType.PartnerAssetExifsV1, () => {
         data: {},
         type: SyncEntityType.SyncAckV1,
       },
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
     ]);
 
     await ctx.syncAckAll(auth, newResponse);
-    await expect(ctx.syncStream(auth, [SyncRequestType.PartnerAssetExifsV1])).resolves.toEqual([]);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.PartnerAssetExifsV1]);
   });
 
   it('should only backfill partner assets created prior to the current partner asset checkpoint', async () => {
@@ -203,7 +209,6 @@ describe(SyncRequestType.PartnerAssetExifsV1, () => {
     await ctx.newPartner({ sharedById: user2.id, sharedWithId: auth.user.id });
 
     const response = await ctx.syncStream(auth, [SyncRequestType.PartnerAssetExifsV1]);
-    expect(response).toHaveLength(1);
     expect(response).toEqual([
       {
         ack: expect.any(String),
@@ -212,13 +217,13 @@ describe(SyncRequestType.PartnerAssetExifsV1, () => {
         }),
         type: SyncEntityType.PartnerAssetExifV1,
       },
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
     ]);
 
     await ctx.syncAckAll(auth, response);
     await ctx.newPartner({ sharedById: user3.id, sharedWithId: auth.user.id });
 
     const newResponse = await ctx.syncStream(auth, [SyncRequestType.PartnerAssetExifsV1]);
-    expect(newResponse).toHaveLength(3);
     expect(newResponse).toEqual([
       {
         ack: expect.stringMatching(new RegExp(`${SyncEntityType.PartnerAssetExifBackfillV1}\\|.+?\\|.+`)),
@@ -239,9 +244,10 @@ describe(SyncRequestType.PartnerAssetExifsV1, () => {
         }),
         type: SyncEntityType.PartnerAssetExifV1,
       },
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
     ]);
 
     await ctx.syncAckAll(auth, newResponse);
-    await expect(ctx.syncStream(auth, [SyncRequestType.PartnerAssetExifsV1])).resolves.toEqual([]);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.PartnerAssetExifsV1]);
   });
 });

@@ -1,13 +1,16 @@
-import 'package:flutter/material.dart';
+import 'dart:async';
+
+import 'package:auto_route/auto_route.dart';
 import 'package:crop_image/crop_image.dart';
+import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/hooks/crop_controller_hook.dart';
-import 'package:immich_mobile/entities/asset.entity.dart';
+
 import 'edit.page.dart';
-import 'package:easy_localization/easy_localization.dart';
-import 'package:auto_route/auto_route.dart';
 
 /// A widget for cropping an image.
 /// This widget uses [HookWidget] to manage its lifecycle and state. It allows
@@ -35,7 +38,7 @@ class CropImagePage extends HookWidget {
             icon: Icon(Icons.done_rounded, color: context.primaryColor, size: 24),
             onPressed: () async {
               final croppedImage = await cropController.croppedImage();
-              context.pushRoute(EditImageRoute(asset: asset, image: croppedImage, isEdited: true));
+              unawaited(context.pushRoute(EditImageRoute(asset: asset, image: croppedImage, isEdited: true)));
             },
           ),
         ],

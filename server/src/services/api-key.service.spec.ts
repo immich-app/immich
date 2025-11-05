@@ -1,4 +1,4 @@
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import { Permission } from 'src/enum';
 import { ApiKeyService } from 'src/services/api-key.service';
 import { factory, newUuid } from 'test/small.factory';
@@ -131,6 +131,41 @@ describe(ApiKeyService.name, () => {
       await sut.delete(auth, apiKey.id);
 
       expect(mocks.apiKey.delete).toHaveBeenCalledWith(auth.user.id, apiKey.id);
+    });
+  });
+
+  describe('getMine', () => {
+    it('should not work with a session token', async () => {
+      const session = factory.session();
+      const auth = factory.auth({ session });
+
+      mocks.apiKey.getById.mockResolvedValue(void 0);
+
+      await expect(sut.getMine(auth)).rejects.toBeInstanceOf(ForbiddenException);
+
+      expect(mocks.apiKey.getById).not.toHaveBeenCalled();
+    });
+
+    it('should throw an error if the key is not found', async () => {
+      const apiKey = factory.authApiKey();
+      const auth = factory.auth({ apiKey });
+
+      mocks.apiKey.getById.mockResolvedValue(void 0);
+
+      await expect(sut.getMine(auth)).rejects.toBeInstanceOf(BadRequestException);
+
+      expect(mocks.apiKey.getById).toHaveBeenCalledWith(auth.user.id, apiKey.id);
+    });
+
+    it('should get a key by id', async () => {
+      const auth = factory.auth();
+      const apiKey = factory.apiKey({ userId: auth.user.id });
+
+      mocks.apiKey.getById.mockResolvedValue(apiKey);
+
+      await sut.getById(auth, apiKey.id);
+
+      expect(mocks.apiKey.getById).toHaveBeenCalledWith(auth.user.id, apiKey.id);
     });
   });
 

@@ -1,4 +1,3 @@
-import { NotificationType, notificationController } from '$lib/components/shared-components/notification/notification';
 import { defaultLang, langs, locales } from '$lib/constants';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { lang } from '$lib/stores/preferences.store';
@@ -21,9 +20,11 @@ import {
   unlinkOAuthAccount,
   type MemoryResponseDto,
   type PersonResponseDto,
+  type ServerVersionResponseDto,
   type SharedLinkResponseDto,
   type UserResponseDto,
 } from '@immich/sdk';
+import { toastManager } from '@immich/ui';
 import { mdiCogRefreshOutline, mdiDatabaseRefreshOutline, mdiHeadSyncOutline, mdiImageRefreshOutline } from '@mdi/js';
 import { init, register, t } from 'svelte-i18n';
 import { derived, get } from 'svelte/store';
@@ -59,20 +60,24 @@ interface UploadRequestOptions {
 }
 
 export class AbortError extends Error {
-  name = 'AbortError';
+  override name = 'AbortError';
 }
 
 class ApiError extends Error {
-  name = 'ApiError';
+  override name = 'ApiError';
 
   constructor(
-    public message: string,
+    public override message: string,
     public statusCode: number,
     public details: string,
   ) {
     super(message);
   }
 }
+
+export const sleep = (ms: number) => {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+};
 
 export const uploadRequest = async <T>(options: UploadRequestOptions): Promise<{ data: T; status: number }> => {
   const { onUploadProgress: onProgress, data, url } = options;
@@ -157,6 +162,7 @@ export const getJobName = derived(t, ($t) => {
       [JobName.Library]: $t('external_libraries'),
       [JobName.Notifications]: $t('notifications'),
       [JobName.BackupDatabase]: $t('admin.backup_database'),
+      [JobName.Ocr]: $t('admin.machine_learning_ocr'),
       [JobName.AutoStackCandidateQueueAll]: $t('admin.auto_stack_job'),
     };
 
@@ -258,7 +264,7 @@ export const copyToClipboard = async (secret: string) => {
 
   try {
     await navigator.clipboard.writeText(secret);
-    notificationController.show({ message: $t('copied_to_clipboard'), type: NotificationType.Info });
+    toastManager.info($t('copied_to_clipboard'));
   } catch (error) {
     handleError(error, $t('errors.unable_to_copy_to_clipboard'));
   }
@@ -382,3 +388,22 @@ export function createDateFormatter(localeCode: string | undefined): DateFormatt
     },
   };
 }
+
+export const getReleaseType = (
+  current: ServerVersionResponseDto,
+  newVersion: ServerVersionResponseDto,
+): 'major' | 'minor' | 'patch' | 'none' => {
+  if (current.major !== newVersion.major) {
+    return 'major';
+  }
+
+  if (current.minor !== newVersion.minor) {
+    return 'minor';
+  }
+
+  if (current.patch !== newVersion.patch) {
+    return 'patch';
+  }
+
+  return 'none';
+};

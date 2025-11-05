@@ -41,6 +41,7 @@ const loginDetails = {
   clientIp: '127.0.0.1',
   deviceOS: '',
   deviceType: '',
+  appVersion: null,
 };
 
 const fixtures = {
@@ -123,6 +124,11 @@ describe(AuthService.name, () => {
 
       expect(mocks.user.getForChangePassword).toHaveBeenCalledWith(user.id);
       expect(mocks.crypto.compareBcrypt).toHaveBeenCalledWith('old-password', 'hash-password');
+      expect(mocks.event.emit).toHaveBeenCalledWith('AuthChangePassword', {
+        userId: user.id,
+        currentSessionId: auth.session?.id,
+        shouldLogoutSessions: undefined,
+      });
     });
 
     it('should throw when password does not match existing password', async () => {
@@ -145,6 +151,25 @@ describe(AuthService.name, () => {
       mocks.user.getForChangePassword.mockResolvedValue({ id: user.id, password: '' });
 
       await expect(sut.changePassword(auth, dto)).rejects.toBeInstanceOf(BadRequestException);
+    });
+
+    it('should change the password and logout other sessions', async () => {
+      const user = factory.userAdmin();
+      const auth = factory.auth({ user });
+      const dto = { password: 'old-password', newPassword: 'new-password', invalidateSessions: true };
+
+      mocks.user.getForChangePassword.mockResolvedValue({ id: user.id, password: 'hash-password' });
+      mocks.user.update.mockResolvedValue(user);
+
+      await sut.changePassword(auth, dto);
+
+      expect(mocks.user.getForChangePassword).toHaveBeenCalledWith(user.id);
+      expect(mocks.crypto.compareBcrypt).toHaveBeenCalledWith('old-password', 'hash-password');
+      expect(mocks.event.emit).toHaveBeenCalledWith('AuthChangePassword', {
+        userId: user.id,
+        invalidateSessions: true,
+        currentSessionId: auth.session?.id,
+      });
     });
   });
 
@@ -243,6 +268,7 @@ describe(AuthService.name, () => {
         updatedAt: session.updatedAt,
         user: factory.authUser(),
         pinExpiresAt: null,
+        appVersion: null,
       };
 
       mocks.session.getByToken.mockResolvedValue(sessionWithToken);
@@ -408,6 +434,7 @@ describe(AuthService.name, () => {
         updatedAt: session.updatedAt,
         user: factory.authUser(),
         pinExpiresAt: null,
+        appVersion: null,
       };
 
       mocks.session.getByToken.mockResolvedValue(sessionWithToken);
@@ -435,6 +462,7 @@ describe(AuthService.name, () => {
         user: factory.authUser(),
         isPendingSyncReset: false,
         pinExpiresAt: null,
+        appVersion: null,
       };
 
       mocks.session.getByToken.mockResolvedValue(sessionWithToken);
@@ -456,6 +484,7 @@ describe(AuthService.name, () => {
         user: factory.authUser(),
         isPendingSyncReset: false,
         pinExpiresAt: null,
+        appVersion: null,
       };
 
       mocks.session.getByToken.mockResolvedValue(sessionWithToken);
@@ -516,6 +545,20 @@ describe(AuthService.name, () => {
       });
       await expect(result).rejects.toBeInstanceOf(ForbiddenException);
       await expect(result).rejects.toThrow('Missing required permission: all');
+    });
+
+    it('should not require any permission when metadata is set to `false`', async () => {
+      const authUser = factory.authUser();
+      const authApiKey = factory.authApiKey({ permissions: [Permission.ActivityRead] });
+
+      mocks.apiKey.getKey.mockResolvedValue({ ...authApiKey, user: authUser });
+
+      const result = sut.authenticate({
+        headers: { 'x-api-key': 'auth_token' },
+        queryParams: {},
+        metadata: { adminRoute: false, sharedLinkRoute: false, uri: 'test', permission: false },
+      });
+      await expect(result).resolves.toEqual({ user: authUser, apiKey: expect.objectContaining(authApiKey) });
     });
 
     it('should return an auth dto', async () => {
@@ -825,7 +868,7 @@ describe(AuthService.name, () => {
       mocks.crypto.randomUUID.mockReturnValue(fileId);
       mocks.oauth.getProfilePicture.mockResolvedValue({
         contentType: 'image/jpeg',
-        data: new Uint8Array([1, 2, 3, 4, 5]),
+        data: new Uint8Array([1, 2, 3, 4, 5]).buffer,
       });
       mocks.user.update.mockResolvedValue(user);
       mocks.session.create.mockResolvedValue(factory.session());

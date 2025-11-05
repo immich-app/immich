@@ -12,14 +12,14 @@ Manage password, OAuth, and other authentication settings
 
 ### OAuth Authentication
 
-Immich supports OAuth Authentication. Read more about this feature and its configuration [here](/docs/administration/oauth).
+Immich supports OAuth Authentication. Read more about this feature and its configuration [here](/administration/oauth).
 
 ### Password Authentication
 
-The administrator can choose to disable login with username and password for the entire instance. This means that **no one**, including the system administrator, will be able to log using this method. If [OAuth Authentication](/docs/administration/oauth) is also disabled, no users will be able to login using **any** method. Changing this setting does not affect existing sessions, just new login attempts.
+The administrator can choose to disable login with username and password for the entire instance. This means that **no one**, including the system administrator, will be able to log using this method. If [OAuth Authentication](/administration/oauth) is also disabled, no users will be able to login using **any** method. Changing this setting does not affect existing sessions, just new login attempts.
 
 :::tip
-You can always use the [Server CLI](/docs/administration/server-commands) to re-enable password login.
+You can always use the [Server CLI](/administration/server-commands) to re-enable password login.
 :::
 
 ## Image Settings (thumbnails and previews)
@@ -108,7 +108,7 @@ If more than one URL is provided, each server will be attempted one-at-a-time un
 
 ### Smart Search
 
-The [smart search](/docs/features/searching) settings allow you to change the [CLIP model](https://openai.com/research/clip). Larger models will typically provide [more accurate search results](https://github.com/immich-app/immich/discussions/11862) but consume more processing power and RAM. When [changing the CLIP model](/docs/FAQ#can-i-use-a-custom-clip-model) it is mandatory to re-run the Smart Search job on all images to fully apply the change.
+The [smart search](/features/searching) settings allow you to change the [CLIP model](https://openai.com/research/clip). Larger models will typically provide [more accurate search results](https://github.com/immich-app/immich/discussions/11862) but consume more processing power and RAM. When [changing the CLIP model](/FAQ#can-i-use-a-custom-clip-model) it is mandatory to re-run the Smart Search job on all images to fully apply the change.
 
 :::info Internet connection
 Changing models requires a connection to the Internet to download the model.
@@ -132,7 +132,7 @@ Editable settings:
 - **Max Recognition Distance**
 - **Min Recognized Faces**
 
-You can learn more about these options on the [Facial Recognition page](/docs/features/facial-recognition#how-face-detection-works)
+You can learn more about these options on the [Facial Recognition page](/features/facial-recognition#how-face-detection-works)
 
 :::info
 When changing the values in Min Detection Score, Max Recognition Distance, and Min Recognized Faces.
@@ -154,15 +154,15 @@ The map can be adjusted via [OpenMapTiles](https://openmaptiles.org/styles/) for
 
 ### Reverse Geocoding Settings
 
-Immich supports [Reverse Geocoding](/docs/features/reverse-geocoding) using data from the [GeoNames](https://www.geonames.org/) geographical database.
+Immich supports [Reverse Geocoding](/features/reverse-geocoding) using data from the [GeoNames](https://www.geonames.org/) geographical database.
 
 ## Notification Settings
 
-SMTP server setup, for user creation notifications, new albums, etc. More information can be found [here](/docs/administration/email-notification)
+SMTP server setup, for user creation notifications, new albums, etc. More information can be found [here](/administration/email-notification)
 
 ## Notification Templates
 
-Override the default notifications text with notification templates. More information can be found [here](/docs/administration/email-notification)
+Override the default notifications text with notification templates. More information can be found [here](/administration/email-notification)
 
 ## Server Settings
 
@@ -176,7 +176,7 @@ The administrator can set a custom message on the login screen (the message will
 
 ## Storage Template
 
-Immich supports a custom [Storage Template](/docs/administration/storage-template). Learn more about this feature and its configuration [here](/docs/administration/storage-template).
+Immich supports a custom [Storage Template](/administration/storage-template). Learn more about this feature and its configuration [here](/administration/storage-template).
 
 ## Theme Settings
 

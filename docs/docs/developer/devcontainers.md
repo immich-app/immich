@@ -204,8 +204,8 @@ When the Dev Container starts, it automatically:
 
 1. **Runs post-create script** (`container-server-post-create.sh`):
    - Adjusts file permissions for the `node` user
-   - Installs dependencies: `npm install` in all packages
-   - Builds TypeScript SDK: `npm run build` in `open-api/typescript-sdk`
+   - Installs dependencies: `pnpm install` in all packages
+   - Builds TypeScript SDK: `pnpm run build` in `open-api/typescript-sdk`
 
 2. **Starts development servers** via VS Code tasks:
    - `Immich API Server (Nest)` - API server with hot-reloading on port 2283
@@ -243,7 +243,7 @@ To connect the mobile app to your Dev Container:
 
 - **Server code** (`/server`): Changes trigger automatic restart
 - **Web code** (`/web`): Changes trigger hot module replacement
-- **Database migrations**: Run `npm run sync:sql` in the server directory
+- **Database migrations**: Run `pnpm run sync:sql` in the server directory
 - **API changes**: Regenerate TypeScript SDK with `make open-api`
 
 ## Testing
@@ -273,19 +273,19 @@ make test-medium-dev    # End-to-end tests
 ```bash
 # Server tests
 cd /workspaces/immich/server
-npm test                # Run all tests
-npm run test:watch     # Watch mode
-npm run test:cov       # Coverage report
+pnpm test                # Run all tests
+pnpm run test:watch     # Watch mode
+pnpm run test:cov       # Coverage report
 
 # Web tests
 cd /workspaces/immich/web
-npm test               # Run all tests
-npm run test:watch     # Watch mode
+pnpm test               # Run all tests
+pnpm run test:watch     # Watch mode
 
 # E2E tests
 cd /workspaces/immich/e2e
-npm run test           # Run API tests
-npm run test:web       # Run web UI tests
+pnpm run test           # Run API tests
+pnpm run test:web       # Run web UI tests
 ```
 
 ### Code Quality Commands
@@ -431,7 +431,7 @@ While the Dev Container focuses on server and web development, you can connect m
    - Server URL: `http://YOUR_IP:2283/api`
    - Ensure firewall allows port 2283
 
-3. **For full mobile development**, see the [mobile development guide](/docs/developer/setup) which covers:
+3. **For full mobile development**, see the [mobile development guide](/developer/setup) which covers:
    - Flutter setup
    - Running on simulators/devices
    - Mobile-specific debugging
@@ -474,7 +474,7 @@ Recommended minimums:
 
 ## Next Steps
 
-- Read the [architecture overview](/docs/developer/architecture)
-- Learn about [database migrations](/docs/developer/database-migrations)
-- Explore [API documentation](/docs/api)
+- Read the [architecture overview](/developer/architecture)
+- Learn about [database migrations](/developer/database-migrations)
+- Explore [API documentation](https://api.immich.app/)
 - Join `#immich` on [Discord](https://discord.immich.app)

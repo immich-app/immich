@@ -11,7 +11,7 @@
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import { closeEditorCofirm } from '$lib/stores/asset-editor.store';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { isShowDetail } from '$lib/stores/preferences.store';
+  import { alwaysLoadOriginalVideo, isShowDetail } from '$lib/stores/preferences.store';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { user } from '$lib/stores/user.store';
   import { websocketEvents } from '$lib/stores/websocket';
@@ -23,6 +23,7 @@
     AssetJobName,
     AssetTypeEnum,
     getAllAlbums,
+    getAssetInfo,
     getStack,
     runAssetJobs,
     type AlbumResponseDto,
@@ -30,11 +31,11 @@
     type PersonResponseDto,
     type StackResponseDto,
   } from '@immich/sdk';
+  import { toastManager } from '@immich/ui';
   import { onDestroy, onMount, untrack } from 'svelte';
   import { t } from 'svelte-i18n';
   import { fly } from 'svelte/transition';
   import Thumbnail from '../assets/thumbnail/thumbnail.svelte';
-  import { NotificationType, notificationController } from '../shared-components/notification/notification';
   import ActivityStatus from './activity-status.svelte';
   import ActivityViewer from './activity-viewer.svelte';
   import DetailPanel from './detail-panel.svelte';
@@ -109,6 +110,11 @@
   let stack: StackResponseDto | null = $state(null);
 
   let zoomToggle = $state(() => void 0);
+  let playOriginalVideo = $state($alwaysLoadOriginalVideo);
+
+  const setPlayOriginalVideo = (value: boolean) => {
+    playOriginalVideo = value;
+  };
 
   const refreshStack = async () => {
     if (authManager.isSharedLink) {
@@ -269,7 +275,7 @@
   const handleRunJob = async (name: AssetJobName) => {
     try {
       await runAssetJobs({ assetJobsDto: { assetIds: [asset.id], name } });
-      notificationController.show({ type: NotificationType.Info, message: $getAssetJobMessage(name) });
+      toastManager.success($getAssetJobMessage(name));
     } catch (error) {
       handleError(error, $t('errors.unable_to_submit_job'));
     }
@@ -302,10 +308,8 @@
 
   const handleStopSlideshow = async () => {
     try {
-      // eslint-disable-next-line tscompat/tscompat
       if (document.fullscreenElement) {
         document.body.style.cursor = '';
-        // eslint-disable-next-line tscompat/tscompat
         await document.exitFullscreen();
       }
     } catch (error) {
@@ -335,8 +339,14 @@
         }
         break;
       }
+      case AssetAction.STACK:
       case AssetAction.SET_STACK_PRIMARY_ASSET: {
         stack = action.stack;
+        break;
+      }
+      case AssetAction.SET_PERSON_FEATURED_PHOTO: {
+        const assetInfo = await getAssetInfo({ id: asset.id });
+        asset = { ...asset, people: assetInfo.people };
         break;
       }
       case AssetAction.KEEP_THIS_DELETE_OTHERS:
@@ -405,6 +415,8 @@
         onPlaySlideshow={() => ($slideshowState = SlideshowState.PlaySlideshow)}
         onShowDetail={toggleDetailPanel}
         onClose={closeViewer}
+        {playOriginalVideo}
+        {setPlayOriginalVideo}
       >
         {#snippet motionPhoto()}
           <MotionPhotoAction
@@ -460,6 +472,7 @@
             onClose={closeViewer}
             onVideoEnded={() => navigateAsset()}
             onVideoStarted={handleVideoStarted}
+            {playOriginalVideo}
           />
         {/if}
       {/key}
@@ -475,6 +488,7 @@
               onPreviousAsset={() => navigateAsset('previous')}
               onNextAsset={() => navigateAsset('next')}
               onVideoEnded={() => (shouldPlayMotionPhoto = false)}
+              {playOriginalVideo}
             />
           {:else if asset.exifInfo?.projectionType === ProjectionType.EQUIRECTANGULAR || (asset.originalPath && asset.originalPath
                 .toLowerCase()
@@ -491,7 +505,7 @@
               onPreviousAsset={() => navigateAsset('previous')}
               onNextAsset={() => navigateAsset('next')}
               {sharedLink}
-              haveFadeTransition={$slideshowState === SlideshowState.None || $slideshowTransition}
+              haveFadeTransition={$slideshowState !== SlideshowState.None && $slideshowTransition}
             />
           {/if}
         {:else}
@@ -505,6 +519,7 @@
             onClose={closeViewer}
             onVideoEnded={() => navigateAsset()}
             onVideoStarted={handleVideoStarted}
+            {playOriginalVideo}
           />
         {/if}
         {#if $slideshowState === SlideshowState.None && isShared && ((album && album.isActivityEnabled) || activityManager.commentCount > 0) && !activityManager.isLoading}
@@ -578,7 +593,7 @@
 
             {#if stackedAsset.id === asset.id}
               <div class="w-full flex place-items-center place-content-center">
-                <div class="w-2 h-2 bg-white rounded-full flex mt-[2px]"></div>
+                <div class="w-2 h-2 bg-white rounded-full flex mt-0.5"></div>
               </div>
             {/if}
           </div>

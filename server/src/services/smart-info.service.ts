@@ -108,11 +108,7 @@ export class SmartInfoService extends BaseService {
       return JobStatus.Skipped;
     }
 
-    const embedding = await this.machineLearningRepository.encodeImage(
-      machineLearning.urls,
-      asset.files[0].path,
-      machineLearning.clip,
-    );
+    const embedding = await this.machineLearningRepository.encodeImage(asset.files[0].path, machineLearning.clip);
 
     if (this.databaseRepository.isBusy(DatabaseLock.CLIPDimSize)) {
       this.logger.verbose(`Waiting for CLIP dimension size to be updated`);

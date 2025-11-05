@@ -1,11 +1,11 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/log.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/log.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
+import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:logging/logging.dart';
 
 /// Service responsible for handling application logging.
@@ -15,7 +15,7 @@ import 'package:logging/logging.dart';
 /// via [IStoreRepository]
 class LogService {
   final LogRepository _logRepository;
-  final IsarStoreRepository _storeRepository;
+  final IStoreRepository _storeRepository;
 
   final List<LogMessage> _msgBuffer = [];
 
@@ -38,7 +38,7 @@ class LogService {
 
   static Future<LogService> init({
     required LogRepository logRepository,
-    required IsarStoreRepository storeRepository,
+    required IStoreRepository storeRepository,
     bool shouldBuffer = true,
   }) async {
     _instance ??= await create(
@@ -51,7 +51,7 @@ class LogService {
 
   static Future<LogService> create({
     required LogRepository logRepository,
-    required IsarStoreRepository storeRepository,
+    required IStoreRepository storeRepository,
     bool shouldBuffer = true,
   }) async {
     final instance = LogService._(logRepository, storeRepository, shouldBuffer);
@@ -66,13 +66,12 @@ class LogService {
   }
 
   void _handleLogRecord(LogRecord r) {
-    if (kDebugMode) {
-      debugPrint(
-        '[${r.level.name}] [${r.time}] [${r.loggerName}] ${r.message}'
-        '${r.error == null ? '' : '\nError: ${r.error}'}'
-        '${r.stackTrace == null ? '' : '\nStack: ${r.stackTrace}'}',
-      );
-    }
+    dPrint(
+      () =>
+          '[${r.level.name}] [${r.time}] [${r.loggerName}] ${r.message}'
+          '${r.error == null ? '' : '\nError: ${r.error}'}'
+          '${r.stackTrace == null ? '' : '\nStack: ${r.stackTrace}'}',
+    );
 
     final record = LogMessage(
       message: r.message,
@@ -92,7 +91,7 @@ class LogService {
   }
 
   Future<void> setLogLevel(LogLevel level) async {
-    await _storeRepository.insert(StoreKey.logLevel, level.index);
+    await _storeRepository.upsert(StoreKey.logLevel, level.index);
     Logger.root.level = level.toLevel();
   }
 
@@ -123,6 +122,11 @@ class LogService {
     _flushTimer = null;
     final buffer = [..._msgBuffer];
     _msgBuffer.clear();
+
+    if (buffer.isEmpty) {
+      return;
+    }
+
     await _logRepository.insertAll(buffer);
   }
 }

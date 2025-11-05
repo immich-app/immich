@@ -71,7 +71,7 @@
   <div class="overflow-x-auto">
     <table class="w-full text-start mt-4">
       <thead
-        class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-primary"
+        class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray"
       >
         <tr class="flex w-full place-items-center text-sm font-medium text-center">
           <th class="w-1/4">{$t('view_name')}</th>
@@ -94,9 +94,7 @@
   </div>
   <div class="overflow-x-auto">
     <table class="w-full text-start mt-4">
-      <thead
-        class="mb-4 flex h-12 w-full rounded-md border text-immich-primary dark:border-immich-dark-gray bg-subtle dark:text-immich-dark-primary"
-      >
+      <thead class="mb-4 flex h-12 w-full rounded-md border text-primary dark:border-immich-dark-gray bg-subtle">
         <tr class="flex w-full place-items-center text-sm font-medium text-center">
           <th class="w-1/2">{$t('owned')}</th>
           <th class="w-1/2">{$t('shared')}</th>

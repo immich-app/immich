@@ -2,8 +2,6 @@ import 'dart:io';
 
 import 'package:cancellation_token_http/http.dart';
 import 'package:collection/collection.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
@@ -33,6 +31,7 @@ import 'package:immich_mobile/utils/diff.dart';
 import 'package:logging/logging.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_manager/photo_manager.dart' show PMProgressHandler;
+import 'package:immich_mobile/utils/debug_print.dart';
 
 final backupProvider = StateNotifierProvider<BackupNotifier, BackUpState>((ref) {
   return BackupNotifier(
@@ -286,7 +285,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     state = state.copyWith(selectedBackupAlbums: selectedAlbums, excludedBackupAlbums: excludedAlbums);
 
     log.info("_getBackupAlbumsInfo: Found ${availableAlbums.length} available albums");
-    debugPrint("_getBackupAlbumsInfo takes ${stopwatch.elapsedMilliseconds}ms");
+    dPrint(() => "_getBackupAlbumsInfo takes ${stopwatch.elapsedMilliseconds}ms");
   }
 
   ///
@@ -381,7 +380,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
     state = state.copyWith(backgroundBackup: isEnabled);
     if (isEnabled != Store.get(StoreKey.backgroundBackup, !isEnabled)) {
-      Store.put(StoreKey.backgroundBackup, isEnabled);
+      await Store.put(StoreKey.backgroundBackup, isEnabled);
     }
 
     if (state.backupProgress != BackUpProgressEnum.inBackground) {
@@ -428,7 +427,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
   /// Invoke backup process
   Future<void> startBackupProcess() async {
-    debugPrint("Start backup process");
+    dPrint(() => "Start backup process");
     assert(state.backupProgress == BackUpProgressEnum.idle);
     state = state.copyWith(backupProgress: BackUpProgressEnum.inProgress);
 
@@ -475,7 +474,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       );
       await notifyBackgroundServiceCanRun();
     } else {
-      openAppSettings();
+      await openAppSettings();
     }
   }
 
@@ -534,10 +533,10 @@ class BackupNotifier extends StateNotifier<BackUpState> {
         progressInFileSpeedUpdateTime: DateTime.now(),
         progressInFileSpeedUpdateSentBytes: 0,
       );
-      _updatePersistentAlbumsSelection();
+      await _updatePersistentAlbumsSelection();
     }
 
-    updateDiskInfo();
+    await updateDiskInfo();
   }
 
   void _onUploadProgress(int sent, int total) {

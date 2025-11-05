@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
@@ -10,15 +11,17 @@ import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
+import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/providers/oauth.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
+import 'package:immich_mobile/providers/websocket.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/utils/migration.dart';
 import 'package:immich_mobile/utils/provider_utils.dart';
 import 'package:immich_mobile/utils/url_helper.dart';
 import 'package:immich_mobile/utils/version_compatibility.dart';
@@ -162,6 +165,18 @@ class LoginForm extends HookConsumerWidget {
       serverEndpointController.text = 'http://10.1.15.216:2283/api';
     }
 
+    Future<void> handleSyncFlow() async {
+      final backgroundManager = ref.read(backgroundSyncProvider);
+
+      await backgroundManager.syncLocal(full: true);
+      await backgroundManager.syncRemote();
+      await backgroundManager.hashAssets();
+
+      if (Store.get(StoreKey.syncAlbums, false)) {
+        await backgroundManager.syncLinkedAlbum();
+      }
+    }
+
     login() async {
       TextInput.finishAutofillContext();
 
@@ -174,16 +189,17 @@ class LoginForm extends HookConsumerWidget {
         final result = await ref.read(authProvider.notifier).login(emailController.text, passwordController.text);
 
         if (result.shouldChangePassword && !result.isAdmin) {
-          context.pushRoute(const ChangePasswordRoute());
+          unawaited(context.pushRoute(const ChangePasswordRoute()));
         } else {
           final isBeta = Store.isBetaTimelineEnabled;
           if (isBeta) {
             await ref.read(galleryPermissionNotifier.notifier).requestGalleryPermission();
-
-            context.replaceRoute(const TabShellRoute());
+            unawaited(handleSyncFlow());
+            ref.read(websocketProvider.notifier).connect();
+            unawaited(context.replaceRoute(const TabShellRoute()));
             return;
           }
-          context.replaceRoute(const TabControllerRoute());
+          unawaited(context.replaceRoute(const TabControllerRoute()));
         }
       } catch (error) {
         ImmichToast.show(
@@ -273,15 +289,15 @@ class LoginForm extends HookConsumerWidget {
             final permission = ref.watch(galleryPermissionNotifier);
             final isBeta = Store.isBetaTimelineEnabled;
             if (!isBeta && (permission.isGranted || permission.isLimited)) {
-              ref.watch(backupProvider.notifier).resumeBackup();
+              unawaited(ref.watch(backupProvider.notifier).resumeBackup());
             }
             if (isBeta) {
               await ref.read(galleryPermissionNotifier.notifier).requestGalleryPermission();
-              await runNewSync(ref);
-              context.replaceRoute(const TabShellRoute());
+              unawaited(handleSyncFlow());
+              unawaited(context.replaceRoute(const TabShellRoute()));
               return;
             }
-            context.replaceRoute(const TabControllerRoute());
+            unawaited(context.replaceRoute(const TabControllerRoute()));
           }
         } catch (error, stack) {
           log.severe('Error logging in with OAuth: $error', stack);

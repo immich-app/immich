@@ -13,13 +13,16 @@ part of openapi.api;
 class SystemConfigMachineLearningDto {
   /// Returns a new [SystemConfigMachineLearningDto] instance.
   SystemConfigMachineLearningDto({
+    required this.availabilityChecks,
     required this.clip,
     required this.duplicateDetection,
     required this.enabled,
     required this.facialRecognition,
-    this.url,
+    required this.ocr,
     this.urls = const [],
   });
+
+  MachineLearningAvailabilityChecksDto availabilityChecks;
 
   CLIPConfig clip;
 
@@ -29,50 +32,42 @@ class SystemConfigMachineLearningDto {
 
   FacialRecognitionConfig facialRecognition;
 
-  /// This property was deprecated in v1.122.0
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  String? url;
+  OcrConfig ocr;
 
   List<String> urls;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigMachineLearningDto &&
+    other.availabilityChecks == availabilityChecks &&
     other.clip == clip &&
     other.duplicateDetection == duplicateDetection &&
     other.enabled == enabled &&
     other.facialRecognition == facialRecognition &&
-    other.url == url &&
+    other.ocr == ocr &&
     _deepEquality.equals(other.urls, urls);
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (availabilityChecks.hashCode) +
     (clip.hashCode) +
     (duplicateDetection.hashCode) +
     (enabled.hashCode) +
     (facialRecognition.hashCode) +
-    (url == null ? 0 : url!.hashCode) +
+    (ocr.hashCode) +
     (urls.hashCode);
 
   @override
-  String toString() => 'SystemConfigMachineLearningDto[clip=$clip, duplicateDetection=$duplicateDetection, enabled=$enabled, facialRecognition=$facialRecognition, url=$url, urls=$urls]';
+  String toString() => 'SystemConfigMachineLearningDto[availabilityChecks=$availabilityChecks, clip=$clip, duplicateDetection=$duplicateDetection, enabled=$enabled, facialRecognition=$facialRecognition, ocr=$ocr, urls=$urls]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+      json[r'availabilityChecks'] = this.availabilityChecks;
       json[r'clip'] = this.clip;
       json[r'duplicateDetection'] = this.duplicateDetection;
       json[r'enabled'] = this.enabled;
       json[r'facialRecognition'] = this.facialRecognition;
-    if (this.url != null) {
-      json[r'url'] = this.url;
-    } else {
-    //  json[r'url'] = null;
-    }
+      json[r'ocr'] = this.ocr;
       json[r'urls'] = this.urls;
     return json;
   }
@@ -86,11 +81,12 @@ class SystemConfigMachineLearningDto {
       final json = value.cast<String, dynamic>();
 
       return SystemConfigMachineLearningDto(
+        availabilityChecks: MachineLearningAvailabilityChecksDto.fromJson(json[r'availabilityChecks'])!,
         clip: CLIPConfig.fromJson(json[r'clip'])!,
         duplicateDetection: DuplicateDetectionConfig.fromJson(json[r'duplicateDetection'])!,
         enabled: mapValueOfType<bool>(json, r'enabled')!,
         facialRecognition: FacialRecognitionConfig.fromJson(json[r'facialRecognition'])!,
-        url: mapValueOfType<String>(json, r'url'),
+        ocr: OcrConfig.fromJson(json[r'ocr'])!,
         urls: json[r'urls'] is Iterable
             ? (json[r'urls'] as Iterable).cast<String>().toList(growable: false)
             : const [],
@@ -141,10 +137,12 @@ class SystemConfigMachineLearningDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
+    'availabilityChecks',
     'clip',
     'duplicateDetection',
     'enabled',
     'facialRecognition',
+    'ocr',
     'urls',
   };
 }

@@ -1,8 +1,8 @@
 <script lang="ts">
+  import type { Snippet } from 'svelte';
+  import { t } from 'svelte-i18n';
   import { quintOut } from 'svelte/easing';
   import { fly } from 'svelte/transition';
-  import { t } from 'svelte-i18n';
-  import type { Snippet } from 'svelte';
 
   interface Props {
     value: string;
@@ -30,8 +30,8 @@
 </script>
 
 <div class="mb-4 w-full">
-  <div class="flex h-[26px] place-items-center gap-1">
-    <label class="font-medium text-immich-primary dark:text-immich-dark-primary text-sm" for={label}>{label}</label>
+  <div class="flex h-6.5 place-items-center gap-1">
+    <label class="font-medium text-primary text-sm" for={label}>{label}</label>
     {#if required}
       <div class="text-red-400">*</div>
     {/if}

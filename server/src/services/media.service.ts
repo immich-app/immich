@@ -271,7 +271,9 @@ export class MediaService extends BaseService {
     // Handle embedded preview extraction for RAW files
     const extractEmbedded = image.extractEmbedded && mimeTypes.isRaw(asset.originalFileName);
     const extracted = extractEmbedded ? await this.extractImage(asset.originalPath, image.preview.size) : null;
-    const generateFullsize = image.fullsize.enabled && !mimeTypes.isWebSupportedImage(asset.originalPath);
+    const generateFullsize =
+      (image.fullsize.enabled || asset.exifInfo.projectionType == 'EQUIRECTANGULAR') &&
+      !mimeTypes.isWebSupportedImage(asset.originalPath);
     const convertFullsize = generateFullsize && (!extracted || !mimeTypes.isWebSupportedImage(` .${extracted.format}`));
 
     const { info, data, colorspace } = await this.decodeImage(

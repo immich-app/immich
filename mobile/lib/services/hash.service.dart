@@ -16,9 +16,10 @@ class HashService {
     required IsarDeviceAssetRepository deviceAssetRepository,
     required BackgroundService backgroundService,
     this.batchSizeLimit = kBatchHashSizeLimit,
-    this.batchFileLimit = kBatchHashFileLimit,
+    int? batchFileLimit,
   }) : _deviceAssetRepository = deviceAssetRepository,
-       _backgroundService = backgroundService;
+       _backgroundService = backgroundService,
+       batchFileLimit = batchFileLimit ?? kBatchHashFileLimit;
 
   final IsarDeviceAssetRepository _deviceAssetRepository;
   final BackgroundService _backgroundService;

@@ -1,5 +1,5 @@
 import { goto } from '$app/navigation';
-import { notificationController, NotificationType } from '$lib/components/shared-components/notification/notification';
+import ToastAction from '$lib/components/ToastAction.svelte';
 import { AppRoute } from '$lib/constants';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { downloadManager } from '$lib/managers/download-manager.svelte';
@@ -9,14 +9,16 @@ import { assetsSnapshot } from '$lib/managers/timeline-manager/utils.svelte';
 import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
 import { isSelectingAllAssets } from '$lib/stores/assets-store.svelte';
 import { preferences } from '$lib/stores/user.store';
-import { downloadRequest, withError } from '$lib/utils';
+import { downloadRequest, sleep, withError } from '$lib/utils';
 import { getByteUnitString } from '$lib/utils/byte-units';
 import { getFormatter } from '$lib/utils/i18n';
 import { navigate } from '$lib/utils/navigation';
 import { asQueryString } from '$lib/utils/shared-links';
 import {
   addAssetsToAlbum as addAssets,
+  addAssetsToAlbums as addToAlbums,
   AssetVisibility,
+  BulkIdErrorReason,
   bulkTagAssets,
   createStack,
   deleteAssets,
@@ -32,10 +34,12 @@ import {
   type AssetResponseDto,
   type AssetTypeEnum,
   type DownloadInfoDto,
+  type ExifResponseDto,
   type StackResponseDto,
   type UserPreferencesResponseDto,
   type UserResponseDto,
 } from '@immich/sdk';
+import { toastManager } from '@immich/ui';
 import { DateTime } from 'luxon';
 import { t } from 'svelte-i18n';
 import { get } from 'svelte/store';
@@ -54,23 +58,61 @@ export const addAssetsToAlbum = async (albumId: string, assetIds: string[], show
   const $t = get(t);
 
   if (showNotification) {
-    let message = $t('assets_cannot_be_added_to_album_count', { values: { count: assetIds.length } });
+    let description = $t('assets_cannot_be_added_to_album_count', { values: { count: assetIds.length } });
     if (count > 0) {
-      message = $t('assets_added_to_album_count', { values: { count } });
+      description = $t('assets_added_to_album_count', { values: { count } });
     } else if (duplicateErrorCount > 0) {
-      message = $t('assets_were_part_of_album_count', { values: { count: duplicateErrorCount } });
+      description = $t('assets_were_part_of_album_count', { values: { count: duplicateErrorCount } });
     }
-    notificationController.show({
-      type: NotificationType.Info,
-      timeout: 5000,
-      message,
-      button: {
-        text: $t('view_album'),
-        onClick() {
-          return goto(`${AppRoute.ALBUMS}/${albumId}`);
+    toastManager.custom(
+      {
+        component: ToastAction,
+        props: {
+          title: $t('info'),
+          color: 'primary',
+          description,
+          button: {
+            text: $t('view_album'),
+            color: 'primary',
+            onClick() {
+              return goto(`${AppRoute.ALBUMS}/${albumId}`);
+            },
+          },
         },
       },
-    });
+      { timeout: 5000 },
+    );
+  }
+};
+
+export const addAssetsToAlbums = async (albumIds: string[], assetIds: string[], showNotification = true) => {
+  const result = await addToAlbums({
+    ...authManager.params,
+    albumsAddAssetsDto: {
+      albumIds,
+      assetIds,
+    },
+  });
+
+  if (!showNotification) {
+    return result;
+  }
+
+  if (showNotification) {
+    const $t = get(t);
+
+    if (result.error === BulkIdErrorReason.Duplicate) {
+      toastManager.info($t('assets_were_part_of_albums_count', { values: { count: assetIds.length } }));
+      return result;
+    }
+    if (result.error) {
+      toastManager.warning($t('assets_cannot_be_added_to_albums', { values: { count: assetIds.length } }));
+      return result;
+    }
+    toastManager.success(
+      $t('assets_added_to_albums_count', { values: { albumTotal: albumIds.length, assetTotal: assetIds.length } }),
+    );
+    return result;
   }
 };
 
@@ -87,10 +129,7 @@ export const tagAssets = async ({
 
   if (showNotification) {
     const $t = await getFormatter();
-    notificationController.show({
-      message: $t('tagged_assets', { values: { count: assetIds.length } }),
-      type: NotificationType.Info,
-    });
+    toastManager.success($t('tagged_assets', { values: { count: assetIds.length } }));
   }
 
   return assetIds;
@@ -111,10 +150,7 @@ export const removeTag = async ({
 
   if (showNotification) {
     const $t = await getFormatter();
-    notificationController.show({
-      message: $t('removed_tagged_assets', { values: { count: assetIds.length } }),
-      type: NotificationType.Info,
-    });
+    toastManager.success($t('removed_tagged_assets', { values: { count: assetIds.length } }));
   }
 
   return assetIds;
@@ -230,13 +266,14 @@ export const downloadFile = async (asset: AssetResponseDto) => {
 
   const queryParams = asQueryString(authManager.params);
 
-  for (const { filename, id } of assets) {
-    try {
-      notificationController.show({
-        type: NotificationType.Info,
-        message: $t('downloading_asset_filename', { values: { filename: asset.originalFileName } }),
-      });
+  for (const [i, { filename, id }] of assets.entries()) {
+    if (i !== 0) {
+      // play nice with Safari
+      await sleep(500);
+    }
 
+    try {
+      toastManager.success($t('downloading_asset_filename', { values: { filename: asset.originalFileName } }));
       downloadUrl(getBaseUrl() + `/assets/${id}/original` + (queryParams ? `?${queryParams}` : ''), filename);
     } catch (error) {
       handleError(error, $t('errors.error_downloading', { values: { filename } }));
@@ -274,6 +311,15 @@ export function isFlipped(orientation?: string | null) {
   const value = Number(orientation);
   return value && (isRotated270CW(value) || isRotated90CW(value));
 }
+
+export const getDimensions = (exifInfo: ExifResponseDto) => {
+  const { exifImageWidth: width, exifImageHeight: height } = exifInfo;
+  if (isFlipped(exifInfo.orientation)) {
+    return { width: height, height: width };
+  }
+
+  return { width, height };
+};
 
 export function getFileSize(asset: AssetResponseDto, maxPrecision = 4): string {
   const size = asset.exifInfo?.fileSizeInByte || 0;
@@ -342,16 +388,13 @@ export const getAssetType = (type: AssetTypeEnum) => {
   }
 };
 
-export const getSelectedAssets = (assets: TimelineAsset[], user: UserResponseDto | null): string[] => {
+export const getOwnedAssetsWithWarning = (assets: TimelineAsset[], user: UserResponseDto | null): string[] => {
   const ids = [...assets].filter((a) => user && a.ownerId === user.id).map((a) => a.id);
 
   const numberOfIssues = [...assets].filter((a) => user && a.ownerId !== user.id).length;
   if (numberOfIssues > 0) {
     const $t = get(t);
-    notificationController.show({
-      message: $t('errors.cant_change_metadata_assets_count', { values: { count: numberOfIssues } }),
-      type: NotificationType.Warning,
-    });
+    toastManager.warning($t('errors.cant_change_metadata_assets_count', { values: { count: numberOfIssues } }));
   }
   return ids;
 };
@@ -371,12 +414,16 @@ export const stackAssets = async (assets: { id: string }[], showNotification = t
   try {
     const stack = await createStack({ stackCreateDto: { assetIds: assets.map(({ id }) => id) } });
     if (showNotification) {
-      notificationController.show({
-        message: $t('stacked_assets_count', { values: { count: stack.assets.length } }),
-        type: NotificationType.Info,
-        button: {
-          text: $t('view_stack'),
-          onClick: () => navigate({ targetRoute: 'current', assetId: stack.primaryAssetId }),
+      toastManager.custom({
+        component: ToastAction,
+        props: {
+          title: $t('success'),
+          description: $t('stacked_assets_count', { values: { count: stack.assets.length } }),
+          color: 'success',
+          button: {
+            text: $t('view_stack'),
+            onClick: () => navigate({ targetRoute: 'current', assetId: stack.primaryAssetId }),
+          },
         },
       });
     }
@@ -405,10 +452,7 @@ export const deleteStack = async (stackIds: string[]) => {
 
     await deleteStacks({ bulkIdsDto: { ids: [...ids] } });
 
-    notificationController.show({
-      type: NotificationType.Info,
-      message: $t('unstacked_assets_count', { values: { count } }),
-    });
+    toastManager.success($t('unstacked_assets_count', { values: { count } }));
 
     const assets = stacks.flatMap((stack) => stack.assets);
     for (const asset of assets) {
@@ -429,10 +473,7 @@ export const keepThisDeleteOthers = async (keepAsset: AssetResponseDto, stack: S
     await deleteAssets({ assetBulkDeleteDto: { ids: assetsToDeleteIds } });
     await deleteStacks({ bulkIdsDto: { ids: [stack.id] } });
 
-    notificationController.show({
-      type: NotificationType.Info,
-      message: $t('kept_this_deleted_others', { values: { count: assetsToDeleteIds.length } }),
-    });
+    toastManager.success($t('kept_this_deleted_others', { values: { count: assetsToDeleteIds.length } }));
 
     keepAsset.stack = null;
     return keepAsset;
@@ -485,11 +526,7 @@ export const toggleArchive = async (asset: AssetResponseDto) => {
     });
 
     asset.isArchived = data.isArchived;
-
-    notificationController.show({
-      type: NotificationType.Info,
-      message: asset.isArchived ? $t(`added_to_archive`) : $t(`removed_from_archive`),
-    });
+    toastManager.success(asset.isArchived ? $t(`added_to_archive`) : $t(`removed_from_archive`));
   } catch (error) {
     handleError(error, $t('errors.unable_to_add_remove_archive', { values: { archived: asset.isArchived } }));
   }
@@ -508,13 +545,11 @@ export const archiveAssets = async (assets: { id: string }[], visibility: AssetV
       });
     }
 
-    notificationController.show({
-      message:
-        visibility === AssetVisibility.Archive
-          ? $t('archived_count', { values: { count: ids.length } })
-          : $t('unarchived_count', { values: { count: ids.length } }),
-      type: NotificationType.Info,
-    });
+    toastManager.success(
+      visibility === AssetVisibility.Archive
+        ? $t('archived_count', { values: { count: ids.length } })
+        : $t('unarchived_count', { values: { count: ids.length } }),
+    );
   } catch (error) {
     handleError(
       error,
@@ -557,12 +592,7 @@ const imgToBlob = async (imageElement: HTMLImageElement) => {
   throw new Error('Canvas context is null');
 };
 
-const urlToBlob = async (imageSource: string) => {
-  const response = await fetch(imageSource);
-  return await response.blob();
-};
-
-export const copyImageToClipboard = async (source: HTMLImageElement | string) => {
-  const blob = source instanceof HTMLImageElement ? await imgToBlob(source) : await urlToBlob(source);
-  await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
+export const copyImageToClipboard = async (source: HTMLImageElement) => {
+  // do not await, so the Safari clipboard write happens in the context of the user gesture
+  await navigator.clipboard.write([new ClipboardItem({ ['image/png']: imgToBlob(source) })]);
 };

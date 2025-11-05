@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
+import { Duration } from 'luxon';
 import { readFile } from 'node:fs/promises';
-import { MACHINE_LEARNING_AVAILABILITY_BACKOFF_TIME, MACHINE_LEARNING_PING_TIMEOUT } from 'src/constants';
+import { MachineLearningConfig } from 'src/config';
 import { CLIPConfig } from 'src/dtos/model-config.dto';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 
@@ -14,6 +15,7 @@ export interface BoundingBox {
 export enum ModelTask {
   FACIAL_RECOGNITION = 'facial-recognition',
   SEARCH = 'clip',
+  OCR = 'ocr',
 }
 
 export enum ModelType {
@@ -22,6 +24,7 @@ export enum ModelType {
   RECOGNITION = 'recognition',
   TEXTUAL = 'textual',
   VISUAL = 'visual',
+  OCR = 'ocr',
 }
 
 export type ModelPayload = { imagePath: string } | { text: string };
@@ -29,13 +32,32 @@ export type ModelPayload = { imagePath: string } | { text: string };
 type ModelOptions = { modelName: string };
 
 export type FaceDetectionOptions = ModelOptions & { minScore: number };
-
+export type OcrOptions = ModelOptions & {
+  minDetectionScore: number;
+  minRecognitionScore: number;
+  maxResolution: number;
+};
 type VisualResponse = { imageHeight: number; imageWidth: number };
 export type ClipVisualRequest = { [ModelTask.SEARCH]: { [ModelType.VISUAL]: ModelOptions } };
 export type ClipVisualResponse = { [ModelTask.SEARCH]: string } & VisualResponse;
 
 export type ClipTextualRequest = { [ModelTask.SEARCH]: { [ModelType.TEXTUAL]: ModelOptions } };
 export type ClipTextualResponse = { [ModelTask.SEARCH]: string };
+
+export type OCR = {
+  text: string[];
+  box: number[];
+  boxScore: number[];
+  textScore: number[];
+};
+
+export type OcrRequest = {
+  [ModelTask.OCR]: {
+    [ModelType.DETECTION]: ModelOptions & { options: { minScore: number; maxResolution: number } };
+    [ModelType.RECOGNITION]: ModelOptions & { options: { minScore: number } };
+  };
+};
+export type OcrResponse = { [ModelTask.OCR]: OCR } & VisualResponse;
 
 export type FacialRecognitionRequest = {
   [ModelTask.FACIAL_RECOGNITION]: {
@@ -52,89 +74,107 @@ export interface Face {
 
 export type FacialRecognitionResponse = { [ModelTask.FACIAL_RECOGNITION]: Face[] } & VisualResponse;
 export type DetectedFaces = { faces: Face[] } & VisualResponse;
-export type MachineLearningRequest = ClipVisualRequest | ClipTextualRequest | FacialRecognitionRequest;
+export type MachineLearningRequest = ClipVisualRequest | ClipTextualRequest | FacialRecognitionRequest | OcrRequest;
 export type TextEncodingOptions = ModelOptions & { language?: string };
 
 @Injectable()
 export class MachineLearningRepository {
-  // Note that deleted URL's are not removed from this map (ie: they're leaked)
-  // Cleaning them up is low priority since there should be very few over a
-  // typical server uptime cycle
-  private urlAvailability: {
-    [url: string]:
-      | {
-          active: boolean;
-          lastChecked: number;
-        }
-      | undefined;
-  };
+  private healthyMap: Record<string, boolean> = {};
+  private interval?: ReturnType<typeof setInterval>;
+  private _config?: MachineLearningConfig;
+
+  private get config(): MachineLearningConfig {
+    if (!this._config) {
+      throw new Error('Machine learning repository not been setup');
+    }
+
+    return this._config;
+  }
   // Cache whether a given ML server supports /phash to avoid repeated 404 spam
   private pHashSupport: { [url: string]: boolean | undefined } = {};
 
   constructor(private logger: LoggingRepository) {
     this.logger.setContext(MachineLearningRepository.name);
-    this.urlAvailability = {};
   }
 
-  private setUrlAvailability(url: string, active: boolean) {
-    const current = this.urlAvailability[url];
-    if (current?.active !== active) {
-      this.logger.verbose(`Setting ${url} ML server to ${active ? 'active' : 'inactive'}.`);
+  setup(config: MachineLearningConfig) {
+    this._config = config;
+    this.teardown();
+
+    // delete old servers
+    for (const url of Object.keys(this.healthyMap)) {
+      if (!config.urls.includes(url)) {
+        delete this.healthyMap[url];
+      }
     }
-    this.urlAvailability[url] = {
-      active,
-      lastChecked: Date.now(),
-    };
+
+    if (!config.enabled || !config.availabilityChecks.enabled) {
+      return;
+    }
+
+    this.tick();
+    this.interval = setInterval(
+      () => this.tick(),
+      Duration.fromObject({ milliseconds: config.availabilityChecks.interval }).as('milliseconds'),
+    );
   }
 
-  private async checkAvailability(url: string) {
-    let active = false;
+  teardown() {
+    if (this.interval) {
+      clearInterval(this.interval);
+    }
+  }
+
+  private tick() {
+    for (const url of this.config.urls) {
+      void this.check(url);
+    }
+  }
+
+  private async check(url: string) {
+    let healthy = false;
     try {
       const response = await fetch(new URL('/ping', url), {
-        signal: AbortSignal.timeout(MACHINE_LEARNING_PING_TIMEOUT),
+        signal: AbortSignal.timeout(this.config.availabilityChecks.timeout),
       });
-      active = response.ok;
+      if (response.ok) {
+        healthy = true;
+      }
     } catch {
       // nothing to do here
     }
-    this.setUrlAvailability(url, active);
-    return active;
+
+    this.setHealthy(url, healthy);
   }
 
-  private async shouldSkipUrl(url: string) {
-    const availability = this.urlAvailability[url];
-    if (availability === undefined) {
-      // If this is a new endpoint, then check inline and skip if it fails
-      if (!(await this.checkAvailability(url))) {
-        return true;
-      }
-      return false;
+  private setHealthy(url: string, healthy: boolean) {
+    if (this.healthyMap[url] !== healthy) {
+      this.logger.log(`Machine learning server became ${healthy ? 'healthy' : 'unhealthy'} (${url}).`);
     }
-    if (!availability.active && Date.now() - availability.lastChecked < MACHINE_LEARNING_AVAILABILITY_BACKOFF_TIME) {
-      // If this is an old inactive endpoint that hasn't been checked in a
-      // while then check but don't wait for the result, just skip it
-      // This avoids delays on every search whilst allowing higher priority
-      // ML servers to recover over time.
-      void this.checkAvailability(url);
+
+    this.healthyMap[url] = healthy;
+  }
+
+  private isHealthy(url: string) {
+    if (!this.config.availabilityChecks.enabled) {
       return true;
     }
-    return false;
+
+    return this.healthyMap[url];
   }
 
-  private async predict<T>(urls: string[], payload: ModelPayload, config: MachineLearningRequest): Promise<T> {
+  private async predict<T>(payload: ModelPayload, config: MachineLearningRequest): Promise<T> {
     const formData = await this.getFormData(payload, config);
-    let urlCounter = 0;
-    for (const url of urls) {
-      urlCounter++;
-      const isLast = urlCounter >= urls.length;
-      if (!isLast && (await this.shouldSkipUrl(url))) {
-        continue;
-      }
 
+    for (const url of [
+      // try healthy servers first
+      ...this.config.urls.filter((url) => this.isHealthy(url)),
+      ...this.config.urls.filter((url) => !this.isHealthy(url)),
+    ]) {
       try {
         const response = await fetch(new URL('/predict', url), { method: 'POST', body: formData });
         if (response.ok) {
-          this.setUrlAvailability(url, true);
+          this.setHealthy(url, true);
           return response.json();
         }
 
@@ -146,20 +186,21 @@ export class MachineLearningRepository {
           `Machine learning request to "${url}" failed: ${error instanceof Error ? error.message : error}`,
         );
       }
-      this.setUrlAvailability(url, false);
+
+      this.setHealthy(url, false);
     }
 
     throw new Error(`Machine learning request '${JSON.stringify(config)}' failed for all URLs`);
   }
 
-  async detectFaces(urls: string[], imagePath: string, { modelName, minScore }: FaceDetectionOptions) {
+  async detectFaces(imagePath: string, { modelName, minScore }: FaceDetectionOptions) {
     const request = {
       [ModelTask.FACIAL_RECOGNITION]: {
         [ModelType.DETECTION]: { modelName, options: { minScore } },
         [ModelType.RECOGNITION]: { modelName },
       },
     };
-    const response = await this.predict<FacialRecognitionResponse>(urls, { imagePath }, request);
+    const response = await this.predict<FacialRecognitionResponse>({ imagePath }, request);
     return {
       imageHeight: response.imageHeight,
       imageWidth: response.imageWidth,
@@ -167,16 +208,27 @@ export class MachineLearningRepository {
     };
   }
 
-  async encodeImage(urls: string[], imagePath: string, { modelName }: CLIPConfig) {
+  async encodeImage(imagePath: string, { modelName }: CLIPConfig) {
     const request = { [ModelTask.SEARCH]: { [ModelType.VISUAL]: { modelName } } };
-    const response = await this.predict<ClipVisualResponse>(urls, { imagePath }, request);
+    const response = await this.predict<ClipVisualResponse>({ imagePath }, request);
     return response[ModelTask.SEARCH];
   }
 
-  async encodeText(urls: string[], text: string, { language, modelName }: TextEncodingOptions) {
+  async encodeText(text: string, { language, modelName }: TextEncodingOptions) {
     const request = { [ModelTask.SEARCH]: { [ModelType.TEXTUAL]: { modelName, options: { language } } } };
-    const response = await this.predict<ClipTextualResponse>(urls, { text }, request);
+    const response = await this.predict<ClipTextualResponse>({ text }, request);
     return response[ModelTask.SEARCH];
+  }
+
+  async ocr(imagePath: string, { modelName, minDetectionScore, minRecognitionScore, maxResolution }: OcrOptions) {
+    const request = {
+      [ModelTask.OCR]: {
+        [ModelType.DETECTION]: { modelName, options: { minScore: minDetectionScore, maxResolution } },
+        [ModelType.RECOGNITION]: { modelName, options: { minScore: minRecognitionScore } },
+      },
+    };
+    const response = await this.predict<OcrResponse>({ imagePath }, request);
+    return response[ModelTask.OCR];
   }
 
   async computePhash(urls: string[], imagePath: string): Promise<string> {
@@ -324,7 +376,8 @@ export class MachineLearningRepository {
     formData.append('entries', JSON.stringify(config));
 
     if ('imagePath' in payload) {
-      formData.append('image', new Blob([await readFile(payload.imagePath)]));
+      const fileBuffer = await readFile(payload.imagePath);
+      formData.append('image', new Blob([new Uint8Array(fileBuffer)]));
     } else if ('text' in payload) {
       formData.append('text', payload.text);
     } else {

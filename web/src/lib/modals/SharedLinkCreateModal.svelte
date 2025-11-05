@@ -3,11 +3,21 @@
   import { locale } from '$lib/stores/preferences.store';
   import { handleError } from '$lib/utils/handle-error';
   import { SharedLinkType, createSharedLink, updateSharedLink, type SharedLinkResponseDto } from '@immich/sdk';
-  import { Button, Field, Input, Modal, ModalBody, ModalFooter, PasswordInput, Switch, Text } from '@immich/ui';
+  import {
+    Button,
+    Field,
+    Input,
+    Modal,
+    ModalBody,
+    ModalFooter,
+    PasswordInput,
+    Switch,
+    Text,
+    toastManager,
+  } from '@immich/ui';
   import { mdiLink } from '@mdi/js';
   import { DateTime, Duration } from 'luxon';
   import { t } from 'svelte-i18n';
-  import { NotificationType, notificationController } from '../components/shared-components/notification/notification';
 
   interface Props {
     onClose: (sharedLink?: SharedLinkResponseDto) => void;
@@ -103,7 +113,7 @@
     try {
       const expirationDate = expirationOption > 0 ? DateTime.now().plus(expirationOption).toISO() : null;
 
-      await updateSharedLink({
+      const updatedLink = await updateSharedLink({
         id: editingLink.id,
         sharedLinkEditDto: {
           description,
@@ -116,12 +126,9 @@
         },
       });
 
-      notificationController.show({
-        type: NotificationType.Info,
-        message: $t('edited'),
-      });
+      toastManager.success($t('saved'));
 
-      onClose();
+      onClose(updatedLink);
     } catch (error) {
       handleError(error, $t('errors.failed_to_edit_shared_link'));
     }
@@ -146,7 +153,7 @@
       {:else}
         <div class="text-sm">
           {$t('public_album')} |
-          <span class="text-immich-primary dark:text-immich-dark-primary">{editingLink.album?.albumName}</span>
+          <span class="text-primary">{editingLink.album?.albumName}</span>
         </div>
       {/if}
     {/if}
@@ -157,7 +164,7 @@
       {:else}
         <div class="text-sm">
           {$t('individual_share')} |
-          <span class="text-immich-primary dark:text-immich-dark-primary">{editingLink.description || ''}</span>
+          <span class="text-primary">{editingLink.description || ''}</span>
         </div>
       {/if}
     {/if}

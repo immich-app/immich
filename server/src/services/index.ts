@@ -21,6 +21,7 @@ import { MemoryService } from 'src/services/memory.service';
 import { MetadataService } from 'src/services/metadata.service';
 import { NotificationAdminService } from 'src/services/notification-admin.service';
 import { NotificationService } from 'src/services/notification.service';
+import { OcrService } from 'src/services/ocr.service';
 import { PartnerService } from 'src/services/partner.service';
 import { PersonService } from 'src/services/person.service';
 import { SearchService } from 'src/services/search.service';
@@ -35,6 +36,7 @@ import { SyncService } from 'src/services/sync.service';
 import { SystemConfigService } from 'src/services/system-config.service';
 import { SystemMetadataService } from 'src/services/system-metadata.service';
 import { TagService } from 'src/services/tag.service';
+import { TelemetryService } from 'src/services/telemetry.service';
 import { TimelineService } from 'src/services/timeline.service';
 import { TrashService } from 'src/services/trash.service';
 import { UserAdminService } from 'src/services/user-admin.service';
@@ -66,6 +68,7 @@ export const services = [
   MetadataService,
   NotificationService,
   NotificationAdminService,
+  OcrService,
   PartnerService,
   PersonService,
   SearchService,
@@ -80,6 +83,7 @@ export const services = [
   SystemConfigService,
   SystemMetadataService,
   TagService,
+  TelemetryService,
   TimelineService,
   TrashService,
   UserAdminService,
