@@ -45,5 +45,6 @@ export const newAssetRepositoryMock = (): Mocked<RepositoryInterface<AssetReposi
     upsertMetadata: vitest.fn(),
     getMetadataByKey: vitest.fn(),
     deleteMetadataByKey: vitest.fn(),
+    getLatestCreatedAtForUser: vitest.fn().mockResolvedValue(null),
   };
 };

@@ -1233,6 +1233,7 @@
   "large_files": "Large Files",
   "last": "Last",
   "last_seen": "Last seen",
+  "last_upload": "Last upload",
   "latest_version": "Latest Version",
   "latitude": "Latitude",
   "leave": "Leave",
@@ -1398,6 +1399,7 @@
   "networking_settings": "Networking",
   "networking_subtitle": "Manage the server endpoint settings",
   "never": "Never",
+  "never_uploaded": "Never uploaded",
   "new_album": "New Album",
   "new_api_key": "New API Key",
   "new_date_range": "New date range",
@@ -2174,7 +2176,5 @@
   "you_dont_have_any_shared_links": "You don't have any shared links",
   "your_wifi_name": "Your Wi-Fi name",
   "zoom_image": "Zoom Image",
-  "zoom_to_bounds": "Zoom to bounds",
-  "last_upload": "Last upload",
-  "never_uploaded": "Never uploaded"
+  "zoom_to_bounds": "Zoom to bounds"
 }
