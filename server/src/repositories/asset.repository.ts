@@ -117,6 +117,20 @@ interface GetByIdsRelations {
 export class AssetRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
+  @GenerateSql({ params: [DummyValue.UUID] })
+  async getLatestCreatedAtForUser(ownerId: string): Promise<Date | null> {
+    const row = await this.db
+      .selectFrom('asset')
+      .select(['createdAt'])
+      .where('ownerId', '=', asUuid(ownerId))
+      .where('deletedAt', 'is', null)
+      .orderBy('createdAt', 'desc')
+      .limit(1)
+      .executeTakeFirst();
+
+    return row?.createdAt ?? null;
+  }
+
   async upsertExif(exif: Insertable<AssetExifTable>): Promise<void> {
     const value = { ...exif, assetId: asUuid(exif.assetId) };
     await this.db

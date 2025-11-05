@@ -95,6 +95,7 @@ export type UserAdminResponseDto = {
     email: string;
     id: string;
     isAdmin: boolean;
+    lastAssetUploadedAt: string | null;
     license: (UserLicense) | null;
     name: string;
     oauthId: string;

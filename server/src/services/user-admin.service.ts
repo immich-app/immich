@@ -47,7 +47,14 @@ export class UserAdminService extends BaseService {
 
   async get(auth: AuthDto, id: string): Promise<UserAdminResponseDto> {
     const user = await this.findOrFail(id, { withDeleted: true });
-    return mapUserAdmin(user);
+    const dto = mapUserAdmin(user);
+
+    // populate lastAssetUploadedAt using AssetRepository
+    const last = await this.assetRepository.getLatestCreatedAtForUser(id);
+    dto.lastAssetUploadedAt = last ?? null;
+    this.logger.debug(`UserAdminService.get: lastAssetUploadedAt for user ${id} = ${dto.lastAssetUploadedAt}`);
+
+    return dto;
   }
 
   async update(auth: AuthDto, id: string, dto: UserAdminUpdateDto): Promise<UserAdminResponseDto> {

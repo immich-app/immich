@@ -39,6 +39,7 @@
     mdiChartPie,
     mdiChartPieOutline,
     mdiCheckCircle,
+    mdiCloudUpload,
     mdiDeleteRestore,
     mdiFeatureSearchOutline,
     mdiLockSmart,
@@ -345,6 +346,15 @@
                 </div>
               </div>
             {/if}
+            <div class="mt-3 flex items-center gap-2">
+              <Icon icon={mdiCloudUpload} size="1.25rem" class="text-primary" />
+              <Heading tag="h3" size="tiny">{$t('last_upload')}</Heading>
+              {#if user.lastAssetUploadedAt}
+                <Text>{createDateFormatter(editedLocale).formatDateTime(new Date(user.lastAssetUploadedAt))}</Text>
+              {:else}
+                <Text>{$t('never_uploaded')}</Text>
+              {/if}
+            </div>
           </CardBody>
         </Card>
         <Card color="secondary">
