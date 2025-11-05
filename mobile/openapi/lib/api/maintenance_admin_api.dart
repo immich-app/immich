@@ -60,6 +60,45 @@ class MaintenanceAdminApi {
     return null;
   }
 
+  /// Performs an HTTP 'POST /admin/maintenance/login' operation and returns the [Response].
+  /// Parameters:
+  ///
+  /// * [MaintenanceLoginDto] maintenanceLoginDto (required):
+  Future<Response> maintenanceLoginWithHttpInfo(MaintenanceLoginDto maintenanceLoginDto,) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/admin/maintenance/login';
+
+    // ignore: prefer_final_locals
+    Object? postBody = maintenanceLoginDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'POST',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Parameters:
+  ///
+  /// * [MaintenanceLoginDto] maintenanceLoginDto (required):
+  Future<void> maintenanceLogin(MaintenanceLoginDto maintenanceLoginDto,) async {
+    final response = await maintenanceLoginWithHttpInfo(maintenanceLoginDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
   /// This endpoint is an admin-only route, and requires the `maintenance` permission.
   ///
   /// Note: This method returns the HTTP [Response].

@@ -6,8 +6,10 @@ import { Server } from 'socket.io';
 import { SALT_ROUNDS } from 'src/constants';
 import { UserAdminResponseDto, mapUserAdmin } from 'src/dtos/user.dto';
 import { type ArgsOf } from 'src/repositories/event.repository';
+import { MaintenanceRepository } from 'src/repositories/maintenance.repository';
 import { type ServerEvents } from 'src/repositories/websocket.repository';
 import { BaseService } from 'src/services/base.service';
+import { getExternalDomain } from 'src/utils/misc';
 
 @Injectable()
 export class CliService extends BaseService {
@@ -57,11 +59,25 @@ export class CliService extends BaseService {
     this.oneShotServerSend('AppRestart', state);
   }
 
-  async enableMaintenanceMode(): Promise<void> {
-    await this.maintenanceRepository.enterMaintenanceMode();
+  async enableMaintenanceMode(): Promise<{ authUrl: string }> {
+    const { token } = await this.maintenanceRepository.enterMaintenanceMode();
+
     this.oneShotServerSend('AppRestart', {
       isMaintenanceMode: true,
     });
+
+    const { server } = await this.getConfig({ withCache: true });
+
+    return {
+      authUrl:
+        getExternalDomain(server) +
+        '/maintenance?token=' +
+        encodeURIComponent(
+          MaintenanceRepository.createJwt(token, {
+            username: 'cli-admin',
+          }),
+        ),
+    };
   }
 
   async grantAdminAccess(email: string): Promise<void> {

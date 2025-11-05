@@ -277,6 +277,30 @@
         "description": "This endpoint is an admin-only route, and requires the `maintenance` permission."
       }
     },
+    "/admin/maintenance/login": {
+      "post": {
+        "operationId": "maintenanceLogin",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MaintenanceLoginDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Maintenance (admin)"
+        ]
+      }
+    },
     "/admin/maintenance/start": {
       "post": {
         "operationId": "startMaintenance",
@@ -12642,6 +12666,17 @@
           "enabled",
           "interval",
           "timeout"
+        ],
+        "type": "object"
+      },
+      "MaintenanceLoginDto": {
+        "properties": {
+          "token": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "token"
         ],
         "type": "object"
       },

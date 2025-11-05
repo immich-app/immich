@@ -11,8 +11,9 @@ export class EnableMaintenanceModeCommand extends CommandRunner {
   }
 
   async run(): Promise<void> {
-    await this.service.enableMaintenanceMode();
+    const { authUrl } = await this.service.enableMaintenanceMode();
     console.log('Maintenance mode has been enabled.');
+    console.info(authUrl);
   }
 }
 

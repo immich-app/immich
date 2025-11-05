@@ -1,19 +1,41 @@
 <script lang="ts">
   import AuthPageLayout from '$lib/components/layouts/AuthPageLayout.svelte';
-  import { endMaintenance } from '@immich/sdk';
+  import { AppRoute } from '$lib/constants';
+  import { endMaintenance, maintenanceLogin } from '@immich/sdk';
   import { Button, Heading } from '@immich/ui';
   import { t } from 'svelte-i18n';
 
-  function checkAuth() {
+  async function loadAuth() {
+    const query = new URLSearchParams(location.search);
+    const token = query.get('token');
+
+    if (token) {
+      await maintenanceLogin({
+        maintenanceLoginDto: {
+          token,
+        },
+      });
+
+      history.replaceState({}, document.title, AppRoute.MAINTENANCE);
+
+      return token;
+    }
+  }
+
+  function checkAuth(jwt?: string) {
     try {
-      const jwtCookie = document.cookie
-        .split(';')
-        .map((cookie) => cookie.split('=', 2).map((value) => value.trim()))
-        .find(([name]) => name === 'immich_maintenance_token');
+      if (!jwt) {
+        const jwtCookie = document.cookie
+          .split(';')
+          .map((cookie) => cookie.split('=', 2).map((value) => value.trim()))
+          .find(([name]) => name === 'immich_maintenance_token');
 
-      if (jwtCookie) {
-        const [, jwt] = jwtCookie;
+        if (jwtCookie) {
+          jwt = jwtCookie[1];
+        }
+      }
 
+      if (jwt) {
         // decode the JWT
         // https://stackoverflow.com/a/38552302
         const encodedPayload = decodeURIComponent(
@@ -34,7 +56,9 @@
     }
   }
 
-  const user = checkAuth();
+  let user: { username: string } | undefined;
+
+  void loadAuth().then(() => (user = checkAuth()));
 </script>
 
 <AuthPageLayout>

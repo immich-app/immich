@@ -3,19 +3,15 @@ import {
   ExecutionContext,
   Injectable,
   SetMetadata,
-  UnauthorizedException,
   applyDecorators,
   createParamDecorator,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { parse } from 'cookie';
 import { Request } from 'express';
 import { MaintenanceAuthDto } from 'src/dtos/maintenance.dto';
-import { ImmichCookie, MetadataKey } from 'src/enum';
+import { MetadataKey } from 'src/enum';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { MaintenanceWorkerRepository } from 'src/repositories/maintenance-worker.repository';
-
-import * as jwt from 'jsonwebtoken';
 
 export const MaintenanceRoute = (options = {}): MethodDecorator => {
   const decorators: MethodDecorator[] = [SetMetadata(MetadataKey.AuthRoute, options)];
@@ -52,19 +48,7 @@ export class MaintenanceAuthGuard implements CanActivate {
     }
 
     const request = context.switchToHttp().getRequest<MaintenanceAuthRequest>();
-    const jwtToken = parse(request.headers.cookie || '')[ImmichCookie.MaintenanceToken];
-
-    if (!jwtToken) {
-      throw new UnauthorizedException('Missing JWT Token');
-    }
-
-    try {
-      const secret = await this.maintenanceWorkerRepository.maintenanceToken();
-      const payload = jwt.verify(jwtToken, secret);
-      request['maintenanceAuth'] = payload as MaintenanceAuthDto;
-    } catch {
-      throw new UnauthorizedException('Invalid JWT Token');
-    }
+    request['maintenanceAuth'] = await this.maintenanceWorkerRepository.authenticate(request.headers);
 
     return true;
   }

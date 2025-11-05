@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import {
   OnGatewayConnection,
   OnGatewayDisconnect,
@@ -6,13 +6,17 @@ import {
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
+import { parse } from 'cookie';
+import { IncomingHttpHeaders } from 'node:http';
 import { Server, Socket } from 'socket.io';
-import { MaintenanceModeResponseDto } from 'src/dtos/maintenance.dto';
-import { ExitCode, SystemMetadataKey } from 'src/enum';
+import { MaintenanceAuthDto, MaintenanceModeResponseDto } from 'src/dtos/maintenance.dto';
+import { ExitCode, ImmichCookie, SystemMetadataKey } from 'src/enum';
 import { ArgsOf } from 'src/repositories/event.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
 import { MaintenanceModeState } from 'src/types';
+
+import * as jwt from 'jsonwebtoken';
 
 export const serverEvents = ['AppRestart'] as const;
 export type ServerEvents = (typeof serverEvents)[number];
@@ -56,6 +60,24 @@ export class MaintenanceWorkerRepository implements OnGatewayConnection, OnGatew
     }
 
     return result.token;
+  }
+
+  async authenticate(headers: IncomingHttpHeaders): Promise<MaintenanceAuthDto> {
+    const jwtToken = parse(headers.cookie || '')[ImmichCookie.MaintenanceToken];
+    return this.decodeToken(jwtToken);
+  }
+
+  async decodeToken(jwtToken?: string): Promise<MaintenanceAuthDto> {
+    if (!jwtToken) {
+      throw new UnauthorizedException('Missing JWT Token');
+    }
+
+    try {
+      const secret = await this.maintenanceToken();
+      return jwt.verify(jwtToken, secret) as MaintenanceAuthDto;
+    } catch {
+      throw new UnauthorizedException('Invalid JWT Token');
+    }
   }
 
   afterInit(websocketServer: Server) {

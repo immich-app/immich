@@ -169,6 +169,7 @@ part 'model/login_credential_dto.dart';
 part 'model/login_response_dto.dart';
 part 'model/logout_response_dto.dart';
 part 'model/machine_learning_availability_checks_dto.dart';
+part 'model/maintenance_login_dto.dart';
 part 'model/maintenance_mode_response_dto.dart';
 part 'model/manual_job_name.dart';
 part 'model/map_marker_response_dto.dart';

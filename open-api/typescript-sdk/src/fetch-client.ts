@@ -43,6 +43,9 @@ export type ActivityStatisticsResponseDto = {
 export type MaintenanceModeResponseDto = {
     isMaintenanceMode: boolean;
 };
+export type MaintenanceLoginDto = {
+    token: string;
+};
 export type NotificationCreateDto = {
     data?: object;
     description?: string | null;
@@ -1764,6 +1767,15 @@ export function endMaintenance(opts?: Oazapfts.RequestOpts) {
         ...opts,
         method: "POST"
     }));
+}
+export function maintenanceLogin({ maintenanceLoginDto }: {
+    maintenanceLoginDto: MaintenanceLoginDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/admin/maintenance/login", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: maintenanceLoginDto
+    })));
 }
 /**
  * This endpoint is an admin-only route, and requires the `maintenance` permission.
