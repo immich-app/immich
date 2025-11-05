@@ -1,8 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { parse } from 'cookie';
-import { IncomingHttpHeaders } from 'node:http';
-import { MaintenanceAuthDto } from 'src/dtos/maintenance.dto';
-import { ImmichCookie } from 'src/enum';
+import { Injectable } from '@nestjs/common';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { MaintenanceWorkerRepository } from 'src/repositories/maintenance-worker.repository';
@@ -55,18 +51,5 @@ export class MaintenanceWorkerService {
 
   async endMaintenance(): Promise<void> {
     await this.maintenanceRepository.exitMaintenanceMode();
-  }
-
-  private getCookieToken(headers: IncomingHttpHeaders): string | null {
-    const cookies = parse(headers.cookie || '');
-    return cookies[ImmichCookie.MaintenanceToken] || null;
-  }
-
-  async authenticate(headers: IncomingHttpHeaders): Promise<MaintenanceAuthDto> {
-    if (this.getCookieToken(headers) !== 'my-token') {
-      throw new UnauthorizedException('Invalid maintenance key');
-    }
-
-    return {};
   }
 }

@@ -53,12 +53,12 @@ export class CliService extends BaseService {
 
   async disableMaintenanceMode(): Promise<void> {
     const state = { isMaintenanceMode: false as const };
-    this.maintenanceRepository.setMaintenanceMode(state);
+    await this.maintenanceRepository.setMaintenanceMode(state);
     this.oneShotServerSend('AppRestart', state);
   }
 
   async enableMaintenanceMode(): Promise<void> {
-    this.maintenanceRepository.enterMaintenanceMode();
+    await this.maintenanceRepository.enterMaintenanceMode();
     this.oneShotServerSend('AppRestart', {
       isMaintenanceMode: true,
     });

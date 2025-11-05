@@ -5,4 +5,6 @@ export class MaintenanceModeResponseDto {
   isMaintenanceMode!: boolean;
 }
 
-export class MaintenanceAuthDto {}
+export class MaintenanceAuthDto {
+  username!: string;
+}
