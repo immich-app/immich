@@ -738,6 +738,7 @@ export type AllJobStatusResponseDto = {
     storageTemplateMigration: JobStatusDto;
     thumbnailGeneration: JobStatusDto;
     videoConversion: JobStatusDto;
+    workflow: JobStatusDto;
 };
 export type JobCreateDto = {
     name: ManualJobName;
@@ -932,6 +933,38 @@ export type AssetFaceUpdateDto = {
 };
 export type PersonStatisticsResponseDto = {
     assets: number;
+};
+export type PluginActionResponseDto = {
+    description: string;
+    displayName: string;
+    id: string;
+    name: string;
+    pluginId: string;
+    schema: object | null;
+    supportedContexts: SupportedContexts[];
+};
+export type PluginFilterResponseDto = {
+    description: string;
+    displayName: string;
+    id: string;
+    name: string;
+    pluginId: string;
+    schema: object | null;
+    supportedContexts: SupportedContexts[];
+};
+export type PluginResponseDto = {
+    actions: PluginActionResponseDto[];
+    author: string;
+    createdAt: string;
+    description: string;
+    displayName: string;
+    filters: PluginFilterResponseDto[];
+    id: string;
+    name: string;
+    triggers: object[];
+    updatedAt: string;
+    version: string;
+    wasmPath: string;
 };
 export type SearchExploreItem = {
     data: AssetResponseDto;
@@ -1418,6 +1451,7 @@ export type SystemConfigJobDto = {
     smartSearch: JobSettingsDto;
     thumbnailGeneration: JobSettingsDto;
     videoConversion: JobSettingsDto;
+    workflow: JobSettingsDto;
 };
 export type SystemConfigLibraryScanDto = {
     cronExpression: string;
@@ -1673,6 +1707,56 @@ export type CreateProfileImageResponseDto = {
     profileChangedAt: string;
     profileImagePath: string;
     userId: string;
+};
+export type WorkflowActionResponseDto = {
+    actionConfig: object | null;
+    actionId: string;
+    id: string;
+    order: number;
+    workflowId: string;
+};
+export type WorkflowFilterResponseDto = {
+    filterConfig: object | null;
+    filterId: string;
+    id: string;
+    order: number;
+    workflowId: string;
+};
+export type WorkflowResponseDto = {
+    actions: WorkflowActionResponseDto[];
+    createdAt: string;
+    description: string;
+    displayName: string;
+    enabled: boolean;
+    filters: WorkflowFilterResponseDto[];
+    id: string;
+    name: string;
+    ownerId: string;
+    triggerConfig: object | null;
+    triggerType: TriggerType;
+};
+export type WorkflowCreateDto = {
+    description?: string;
+    displayName: string;
+    enabled?: boolean;
+    name: string;
+    triggerConfig?: object;
+    triggerType: PluginTriggerType;
+};
+export type WorkflowUpdateDto = {
+    description?: string;
+    displayName?: string;
+    enabled?: boolean;
+    name?: string;
+    triggerConfig?: object;
+};
+export type WorkflowActionCreateDto = {
+    actionConfig?: object;
+    actionId: string;
+};
+export type WorkflowFilterCreateDto = {
+    filterConfig?: object;
+    filterId: string;
 };
 /**
  * This endpoint requires the `activity.read` permission.
@@ -3450,6 +3534,30 @@ export function getPersonThumbnail({ id }: {
     }));
 }
 /**
+ * This endpoint requires the `plugin.read` permission.
+ */
+export function getPlugins(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: PluginResponseDto[];
+    }>("/plugins", {
+        ...opts
+    }));
+}
+/**
+ * This endpoint requires the `plugin.read` permission.
+ */
+export function getPlugin({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: PluginResponseDto;
+    }>(`/plugins/${encodeURIComponent(id)}`, {
+        ...opts
+    }));
+}
+/**
  * This endpoint requires the `asset.read` permission.
  */
 export function getAssetsByCity(opts?: Oazapfts.RequestOpts) {
@@ -4721,6 +4829,128 @@ export function getUniqueOriginalPaths(opts?: Oazapfts.RequestOpts) {
         ...opts
     }));
 }
+/**
+ * This endpoint requires the `workflow.read` permission.
+ */
+export function getWorkflows(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: WorkflowResponseDto[];
+    }>("/workflows", {
+        ...opts
+    }));
+}
+/**
+ * This endpoint requires the `workflow.create` permission.
+ */
+export function createWorkflow({ workflowCreateDto }: {
+    workflowCreateDto: WorkflowCreateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: WorkflowResponseDto;
+    }>("/workflows", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: workflowCreateDto
+    })));
+}
+/**
+ * This endpoint requires the `workflow.delete` permission.
+ */
+export function deleteWorkflow({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/workflows/${encodeURIComponent(id)}`, {
+        ...opts,
+        method: "DELETE"
+    }));
+}
+/**
+ * This endpoint requires the `workflow.read` permission.
+ */
+export function getWorkflow({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: WorkflowResponseDto;
+    }>(`/workflows/${encodeURIComponent(id)}`, {
+        ...opts
+    }));
+}
+/**
+ * This endpoint requires the `workflow.update` permission.
+ */
+export function updateWorkflow({ id, workflowUpdateDto }: {
+    id: string;
+    workflowUpdateDto: WorkflowUpdateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: WorkflowResponseDto;
+    }>(`/workflows/${encodeURIComponent(id)}`, oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: workflowUpdateDto
+    })));
+}
+/**
+ * This endpoint requires the `workflow.update` permission.
+ */
+export function addWorkflowAction({ id, workflowActionCreateDto }: {
+    id: string;
+    workflowActionCreateDto: WorkflowActionCreateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: WorkflowActionResponseDto;
+    }>(`/workflows/${encodeURIComponent(id)}/actions`, oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: workflowActionCreateDto
+    })));
+}
+/**
+ * This endpoint requires the `workflow.update` permission.
+ */
+export function removeWorkflowAction({ actionId, id }: {
+    actionId: string;
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/workflows/${encodeURIComponent(id)}/actions/${encodeURIComponent(actionId)}`, {
+        ...opts,
+        method: "DELETE"
+    }));
+}
+/**
+ * This endpoint requires the `workflow.update` permission.
+ */
+export function addWorkflowFilter({ id, workflowFilterCreateDto }: {
+    id: string;
+    workflowFilterCreateDto: WorkflowFilterCreateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: WorkflowFilterResponseDto;
+    }>(`/workflows/${encodeURIComponent(id)}/filters`, oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: workflowFilterCreateDto
+    })));
+}
+/**
+ * This endpoint requires the `workflow.update` permission.
+ */
+export function removeWorkflowFilter({ filterId, id }: {
+    filterId: string;
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/workflows/${encodeURIComponent(id)}/filters/${encodeURIComponent(filterId)}`, {
+        ...opts,
+        method: "DELETE"
+    }));
+}
 export enum ReactionLevel {
     Album = "album",
     Asset = "asset"
@@ -4873,6 +5103,10 @@ export enum Permission {
     PinCodeCreate = "pinCode.create",
     PinCodeUpdate = "pinCode.update",
     PinCodeDelete = "pinCode.delete",
+    PluginCreate = "plugin.create",
+    PluginRead = "plugin.read",
+    PluginUpdate = "plugin.update",
+    PluginDelete = "plugin.delete",
     ServerAbout = "server.about",
     ServerApkLinks = "server.apkLinks",
     ServerStorage = "server.storage",
@@ -4922,6 +5156,10 @@ export enum Permission {
     UserProfileImageRead = "userProfileImage.read",
     UserProfileImageUpdate = "userProfileImage.update",
     UserProfileImageDelete = "userProfileImage.delete",
+    WorkflowCreate = "workflow.create",
+    WorkflowRead = "workflow.read",
+    WorkflowUpdate = "workflow.update",
+    WorkflowDelete = "workflow.delete",
     AdminUserCreate = "adminUser.create",
     AdminUserRead = "adminUser.read",
     AdminUserUpdate = "adminUser.update",
@@ -4980,7 +5218,8 @@ export enum JobName {
     Library = "library",
     Notifications = "notifications",
     BackupDatabase = "backupDatabase",
-    Ocr = "ocr"
+    Ocr = "ocr",
+    Workflow = "workflow"
 }
 export enum JobCommand {
     Start = "start",
@@ -4995,6 +5234,11 @@ export enum MemoryType {
 export enum PartnerDirection {
     SharedBy = "shared-by",
     SharedWith = "shared-with"
+}
+export enum SupportedContexts {
+    Asset = "asset",
+    Album = "album",
+    Person = "person"
 }
 export enum SearchSuggestionType {
     Country = "country",
@@ -5146,4 +5390,12 @@ export enum LogLevel {
 export enum OAuthTokenEndpointAuthMethod {
     ClientSecretPost = "client_secret_post",
     ClientSecretBasic = "client_secret_basic"
+}
+export enum TriggerType {
+    AssetCreate = "AssetCreate",
+    PersonRecognized = "PersonRecognized"
+}
+export enum PluginTriggerType {
+    AssetCreate = "AssetCreate",
+    PersonRecognized = "PersonRecognized"
 }

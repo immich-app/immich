@@ -191,6 +191,8 @@ Class | Method | HTTP request | Description
 *PeopleApi* | [**reassignFaces**](doc//PeopleApi.md#reassignfaces) | **PUT** /people/{id}/reassign | 
 *PeopleApi* | [**updatePeople**](doc//PeopleApi.md#updatepeople) | **PUT** /people | 
 *PeopleApi* | [**updatePerson**](doc//PeopleApi.md#updateperson) | **PUT** /people/{id} | 
+*PluginsApi* | [**getPlugin**](doc//PluginsApi.md#getplugin) | **GET** /plugins/{id} | 
+*PluginsApi* | [**getPlugins**](doc//PluginsApi.md#getplugins) | **GET** /plugins | 
 *SearchApi* | [**getAssetsByCity**](doc//SearchApi.md#getassetsbycity) | **GET** /search/cities | 
 *SearchApi* | [**getExploreData**](doc//SearchApi.md#getexploredata) | **GET** /search/explore | 
 *SearchApi* | [**getSearchSuggestions**](doc//SearchApi.md#getsearchsuggestions) | **GET** /search/suggestions | 
@@ -292,6 +294,15 @@ Class | Method | HTTP request | Description
 *UsersAdminApi* | [**updateUserPreferencesAdmin**](doc//UsersAdminApi.md#updateuserpreferencesadmin) | **PUT** /admin/users/{id}/preferences | 
 *ViewApi* | [**getAssetsByOriginalPath**](doc//ViewApi.md#getassetsbyoriginalpath) | **GET** /view/folder | 
 *ViewApi* | [**getUniqueOriginalPaths**](doc//ViewApi.md#getuniqueoriginalpaths) | **GET** /view/folder/unique-paths | 
+*WorkflowsApi* | [**addWorkflowAction**](doc//WorkflowsApi.md#addworkflowaction) | **POST** /workflows/{id}/actions | 
+*WorkflowsApi* | [**addWorkflowFilter**](doc//WorkflowsApi.md#addworkflowfilter) | **POST** /workflows/{id}/filters | 
+*WorkflowsApi* | [**createWorkflow**](doc//WorkflowsApi.md#createworkflow) | **POST** /workflows | 
+*WorkflowsApi* | [**deleteWorkflow**](doc//WorkflowsApi.md#deleteworkflow) | **DELETE** /workflows/{id} | 
+*WorkflowsApi* | [**getWorkflow**](doc//WorkflowsApi.md#getworkflow) | **GET** /workflows/{id} | 
+*WorkflowsApi* | [**getWorkflows**](doc//WorkflowsApi.md#getworkflows) | **GET** /workflows | 
+*WorkflowsApi* | [**removeWorkflowAction**](doc//WorkflowsApi.md#removeworkflowaction) | **DELETE** /workflows/{id}/actions/{actionId} | 
+*WorkflowsApi* | [**removeWorkflowFilter**](doc//WorkflowsApi.md#removeworkflowfilter) | **DELETE** /workflows/{id}/filters/{filterId} | 
+*WorkflowsApi* | [**updateWorkflow**](doc//WorkflowsApi.md#updateworkflow) | **PUT** /workflows/{id} | 
 
 
 ## Documentation For Models
@@ -446,6 +457,10 @@ Class | Method | HTTP request | Description
  - [PinCodeResetDto](doc//PinCodeResetDto.md)
  - [PinCodeSetupDto](doc//PinCodeSetupDto.md)
  - [PlacesResponseDto](doc//PlacesResponseDto.md)
+ - [PluginActionResponseDto](doc//PluginActionResponseDto.md)
+ - [PluginFilterResponseDto](doc//PluginFilterResponseDto.md)
+ - [PluginResponseDto](doc//PluginResponseDto.md)
+ - [PluginTriggerType](doc//PluginTriggerType.md)
  - [PurchaseResponse](doc//PurchaseResponse.md)
  - [PurchaseUpdate](doc//PurchaseUpdate.md)
  - [QueueStatusDto](doc//QueueStatusDto.md)
@@ -599,6 +614,13 @@ Class | Method | HTTP request | Description
  - [VersionCheckStateResponseDto](doc//VersionCheckStateResponseDto.md)
  - [VideoCodec](doc//VideoCodec.md)
  - [VideoContainer](doc//VideoContainer.md)
+ - [WorkflowActionCreateDto](doc//WorkflowActionCreateDto.md)
+ - [WorkflowActionResponseDto](doc//WorkflowActionResponseDto.md)
+ - [WorkflowCreateDto](doc//WorkflowCreateDto.md)
+ - [WorkflowFilterCreateDto](doc//WorkflowFilterCreateDto.md)
+ - [WorkflowFilterResponseDto](doc//WorkflowFilterResponseDto.md)
+ - [WorkflowResponseDto](doc//WorkflowResponseDto.md)
+ - [WorkflowUpdateDto](doc//WorkflowUpdateDto.md)
 
 
 ## Documentation For Authorization

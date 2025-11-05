@@ -29,6 +29,7 @@ class AllJobStatusResponseDto {
     required this.storageTemplateMigration,
     required this.thumbnailGeneration,
     required this.videoConversion,
+    required this.workflow,
   });
 
   JobStatusDto backgroundTask;
@@ -63,6 +64,8 @@ class AllJobStatusResponseDto {
 
   JobStatusDto videoConversion;
 
+  JobStatusDto workflow;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is AllJobStatusResponseDto &&
     other.backgroundTask == backgroundTask &&
@@ -80,7 +83,8 @@ class AllJobStatusResponseDto {
     other.smartSearch == smartSearch &&
     other.storageTemplateMigration == storageTemplateMigration &&
     other.thumbnailGeneration == thumbnailGeneration &&
-    other.videoConversion == videoConversion;
+    other.videoConversion == videoConversion &&
+    other.workflow == workflow;
 
   @override
   int get hashCode =>
@@ -100,10 +104,11 @@ class AllJobStatusResponseDto {
     (smartSearch.hashCode) +
     (storageTemplateMigration.hashCode) +
     (thumbnailGeneration.hashCode) +
-    (videoConversion.hashCode);
+    (videoConversion.hashCode) +
+    (workflow.hashCode);
 
   @override
-  String toString() => 'AllJobStatusResponseDto[backgroundTask=$backgroundTask, backupDatabase=$backupDatabase, duplicateDetection=$duplicateDetection, faceDetection=$faceDetection, facialRecognition=$facialRecognition, library_=$library_, metadataExtraction=$metadataExtraction, migration=$migration, notifications=$notifications, ocr=$ocr, search=$search, sidecar=$sidecar, smartSearch=$smartSearch, storageTemplateMigration=$storageTemplateMigration, thumbnailGeneration=$thumbnailGeneration, videoConversion=$videoConversion]';
+  String toString() => 'AllJobStatusResponseDto[backgroundTask=$backgroundTask, backupDatabase=$backupDatabase, duplicateDetection=$duplicateDetection, faceDetection=$faceDetection, facialRecognition=$facialRecognition, library_=$library_, metadataExtraction=$metadataExtraction, migration=$migration, notifications=$notifications, ocr=$ocr, search=$search, sidecar=$sidecar, smartSearch=$smartSearch, storageTemplateMigration=$storageTemplateMigration, thumbnailGeneration=$thumbnailGeneration, videoConversion=$videoConversion, workflow=$workflow]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -123,6 +128,7 @@ class AllJobStatusResponseDto {
       json[r'storageTemplateMigration'] = this.storageTemplateMigration;
       json[r'thumbnailGeneration'] = this.thumbnailGeneration;
       json[r'videoConversion'] = this.videoConversion;
+      json[r'workflow'] = this.workflow;
     return json;
   }
 
@@ -151,6 +157,7 @@ class AllJobStatusResponseDto {
         storageTemplateMigration: JobStatusDto.fromJson(json[r'storageTemplateMigration'])!,
         thumbnailGeneration: JobStatusDto.fromJson(json[r'thumbnailGeneration'])!,
         videoConversion: JobStatusDto.fromJson(json[r'videoConversion'])!,
+        workflow: JobStatusDto.fromJson(json[r'workflow'])!,
       );
     }
     return null;
@@ -214,6 +221,7 @@ class AllJobStatusResponseDto {
     'storageTemplateMigration',
     'thumbnailGeneration',
     'videoConversion',
+    'workflow',
   };
 }
 
