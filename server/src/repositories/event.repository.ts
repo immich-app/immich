@@ -6,6 +6,7 @@ import { Socket } from 'socket.io';
 import { SystemConfig } from 'src/config';
 import { EventConfig } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
+import { MaintenanceModeResponseDto } from 'src/dtos/maintenance.dto';
 import { ImmichWorker, JobStatus, MetadataKey, QueueName, UserAvatarColor, UserStatus } from 'src/enum';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
@@ -25,7 +26,7 @@ type EventMap = {
   // app events
   AppBootstrap: [];
   AppShutdown: [];
-  AppRestart: [];
+  AppRestart: [MaintenanceModeResponseDto];
 
   ConfigInit: [{ newConfig: SystemConfig }];
   // config events

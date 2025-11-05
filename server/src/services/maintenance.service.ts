@@ -40,9 +40,7 @@ export class MaintenanceService extends BaseService {
   private async setMaintenanceMode(isMaintenanceMode: boolean) {
     const state = { isMaintenanceMode };
     await this.systemMetadataRepository.set(SystemMetadataKey.MaintenanceMode, state);
-    this.websocketRepository.clientBroadcast('on_server_restart', state);
-    this.websocketRepository.serverSend('AppRestart');
-    await this.eventRepository.emit('AppRestart');
+    await this.eventRepository.emit('AppRestart', state);
   }
 
   async startMaintenance(): Promise<void> {
