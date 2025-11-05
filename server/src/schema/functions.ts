@@ -148,7 +148,7 @@ export const album_asset_generate_aggregation_id = registerFunction({
       SELECT "aggregationId"
         INTO v_existing
         FROM album_asset
-        WHERE "albumsId" = NEW."albumsId"
+        WHERE "albumId" = NEW."albumId"
           AND "createdBy" = NEW."createdBy"
           AND "createdAt" >= v_now - INTERVAL '60 minutes'
         ORDER BY "createdAt" DESC
@@ -183,7 +183,7 @@ export const album_asset_sync_activity_apply = registerFunction({
 
       SELECT
         ARRAY(
-          SELECT aa."assetsId"
+          SELECT aa."assetId"
           FROM album_asset aa
           WHERE aa."aggregationId" = p_aggregation_id
           ORDER BY aa."createdAt" ASC
@@ -249,25 +249,25 @@ export const album_asset_sync_activity = registerFunction({
     BEGIN
       IF TG_OP = 'INSERT' THEN
         FOR v_row IN
-          SELECT DISTINCT "aggregationId", "albumsId", "createdBy"
+          SELECT DISTINCT "aggregationId", "albumId", "createdBy"
           FROM inserted_rows
           WHERE "aggregationId" IS NOT NULL
         LOOP
           PERFORM album_asset_sync_activity_apply(
             v_row."aggregationId",
-            v_row."albumsId",
+            v_row."albumId",
             v_row."createdBy"
           );
         END LOOP;
       ELSIF TG_OP = 'DELETE' THEN
         FOR v_row IN
-          SELECT DISTINCT "aggregationId", "albumsId", "createdBy"
+          SELECT DISTINCT "aggregationId", "albumId", "createdBy"
           FROM deleted_rows
           WHERE "aggregationId" IS NOT NULL
         LOOP
           PERFORM album_asset_sync_activity_apply(
             v_row."aggregationId",
-            v_row."albumsId",
+            v_row."albumId",
             v_row."createdBy"
           );
         END LOOP;
