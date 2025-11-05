@@ -229,7 +229,7 @@ export class AlbumService extends BaseService {
       results.success = true;
 
       for (const assetId of notPresentAssetIds) {
-        albumAssetValues.push({ albumId: albumId, assetId: assetId, createdBy: auth.user.id });
+        albumAssetValues.push({ albumId, assetId, createdBy: auth.user.id });
       }
       await this.albumRepository.update(albumId, {
         id: albumId,
