@@ -8,13 +8,14 @@ import {
   createParamDecorator,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { JwtService } from '@nestjs/jwt';
 import { parse } from 'cookie';
 import { Request } from 'express';
 import { MaintenanceAuthDto } from 'src/dtos/maintenance.dto';
 import { ImmichCookie, MetadataKey } from 'src/enum';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { MaintenanceWorkerRepository } from 'src/repositories/maintenance-worker.repository';
+
+import * as jwt from 'jsonwebtoken';
 
 export const MaintenanceRoute = (options = {}): MethodDecorator => {
   const decorators: MethodDecorator[] = [SetMetadata(MetadataKey.AuthRoute, options)];
@@ -39,7 +40,6 @@ export class MaintenanceAuthGuard implements CanActivate {
     private logger: LoggingRepository,
     private reflector: Reflector,
     private maintenanceWorkerRepository: MaintenanceWorkerRepository,
-    private jwtService: JwtService,
   ) {
     this.logger.setContext(MaintenanceAuthGuard.name);
   }
@@ -52,19 +52,16 @@ export class MaintenanceAuthGuard implements CanActivate {
     }
 
     const request = context.switchToHttp().getRequest<MaintenanceAuthRequest>();
-    const token = parse(request.headers.cookie || '')[ImmichCookie.MaintenanceToken];
+    const jwtToken = parse(request.headers.cookie || '')[ImmichCookie.MaintenanceToken];
 
-    if (!token) {
+    if (!jwtToken) {
       throw new UnauthorizedException('Missing JWT Token');
     }
 
     try {
-      const payload = await this.jwtService.verifyAsync(token, {
-        secret: await this.maintenanceWorkerRepository.maintenanceToken(),
-      });
-
-      request['maintenanceAuth'] = payload;
-      this.logger.debug(payload);
+      const secret = await this.maintenanceWorkerRepository.maintenanceToken();
+      const payload = jwt.verify(jwtToken, secret);
+      request['maintenanceAuth'] = payload as MaintenanceAuthDto;
     } catch {
       throw new UnauthorizedException('Invalid JWT Token');
     }

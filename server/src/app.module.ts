@@ -1,7 +1,6 @@
 import { BullModule } from '@nestjs/bullmq';
 import { Inject, Module, OnModuleDestroy, OnModuleInit, ValidationPipe } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
-import { JwtModule } from '@nestjs/jwt';
 import { ScheduleModule, SchedulerRegistry } from '@nestjs/schedule';
 import { ClsModule } from 'nestjs-cls';
 import { KyselyModule } from 'nestjs-kysely';
@@ -50,13 +49,6 @@ const commonImports = [
   ClsModule.forRoot(cls.config),
   KyselyModule.forRoot(getKyselyConfig(database.config)),
   OpenTelemetryModule.forRoot(otel),
-  JwtModule.register({
-    // used for maintenance mode JWTs
-    global: true,
-    signOptions: {
-      expiresIn: '1h',
-    },
-  }),
 ];
 
 const bullImports = [BullModule.forRoot(bull.config), BullModule.registerQueue(...bull.queues)];

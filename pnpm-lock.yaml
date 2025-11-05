@@ -310,9 +310,6 @@ importers:
       '@nestjs/core':
         specifier: ^11.0.4
         version: 11.1.7(@nestjs/common@11.1.7(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/platform-express@11.1.7)(@nestjs/websockets@11.1.7)(reflect-metadata@0.2.2)(rxjs@7.8.2)
-      '@nestjs/jwt':
-        specifier: ^11.0.1
-        version: 11.0.1(@nestjs/common@11.1.7(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))
       '@nestjs/platform-express':
         specifier: ^11.0.4
         version: 11.1.7(@nestjs/common@11.1.7(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.7)
@@ -433,6 +430,9 @@ importers:
       js-yaml:
         specifier: ^4.1.0
         version: 4.1.0
+      jsonwebtoken:
+        specifier: ^9.0.2
+        version: 9.0.2
       kysely:
         specifier: 0.28.2
         version: 0.28.2
@@ -572,6 +572,9 @@ importers:
       '@types/js-yaml':
         specifier: ^4.0.9
         version: 4.0.9
+      '@types/jsonwebtoken':
+        specifier: ^9.0.10
+        version: 9.0.10
       '@types/lodash':
         specifier: ^4.14.197
         version: 4.17.20
@@ -3211,11 +3214,6 @@ packages:
         optional: true
       '@nestjs/websockets':
         optional: true
-
-  '@nestjs/jwt@11.0.1':
-    resolution: {integrity: sha512-HXSsc7SAnCnjA98TsZqrE7trGtHDnYXWp4Ffy6LwSmck1QvbGYdMzBquXofX5l6tIRpeY4Qidl2Ti2CVG77Pdw==}
-    peerDependencies:
-      '@nestjs/common': ^8.0.0 || ^9.0.0 || ^10.0.0 || ^11.0.0
 
   '@nestjs/mapped-types@2.1.0':
     resolution: {integrity: sha512-W+n+rM69XsFdwORF11UqJahn4J3xi4g/ZEOlJNL6KoW5ygWSmBB2p0S2BZ4FQeS/NDH72e6xIcu35SfJnE8bXw==}
@@ -14915,12 +14913,6 @@ snapshots:
     optionalDependencies:
       '@nestjs/platform-express': 11.1.7(@nestjs/common@11.1.7(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.7)
       '@nestjs/websockets': 11.1.7(@nestjs/common@11.1.7(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.7)(@nestjs/platform-socket.io@11.1.7)(reflect-metadata@0.2.2)(rxjs@7.8.2)
-
-  '@nestjs/jwt@11.0.1(@nestjs/common@11.1.7(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))':
-    dependencies:
-      '@nestjs/common': 11.1.7(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2)
-      '@types/jsonwebtoken': 9.0.10
-      jsonwebtoken: 9.0.2
 
   '@nestjs/mapped-types@2.1.0(@nestjs/common@11.1.7(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)':
     dependencies:

@@ -1,10 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { randomBytes } from 'node:crypto';
 import { PostgresError } from 'postgres';
+import { MaintenanceAuthDto } from 'src/dtos/maintenance.dto';
 import { SystemMetadataKey } from 'src/enum';
 import { EventRepository } from 'src/repositories/event.repository';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
 import { MaintenanceModeState } from 'src/types';
+
+import * as jwt from 'jsonwebtoken';
 
 export async function isMaintenanceMode(systemMetadataRepository: SystemMetadataRepository): Promise<boolean> {
   try {
@@ -44,5 +47,17 @@ export class MaintenanceRepository {
     await this.eventRepository.emit('AppRestart', state);
 
     return { token };
+  }
+
+  static createJwt(secret: string, data: MaintenanceAuthDto) {
+    return jwt.sign(
+      {
+        data,
+      },
+      secret,
+      {
+        expiresIn: '4h',
+      },
+    );
   }
 }
