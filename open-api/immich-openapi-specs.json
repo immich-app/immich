@@ -242,27 +242,6 @@
         "description": "This endpoint is an admin-only route, and requires the `adminAuth.unlinkAll` permission."
       }
     },
-    "/admin/maintenance": {
-      "get": {
-        "operationId": "getMaintenanceMode",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MaintenanceModeResponseDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "tags": [
-          "Maintenance (admin)"
-        ]
-      }
-    },
     "/admin/maintenance/end": {
       "post": {
         "operationId": "endMaintenance",
@@ -12649,17 +12628,6 @@
           "enabled",
           "interval",
           "timeout"
-        ],
-        "type": "object"
-      },
-      "MaintenanceModeResponseDto": {
-        "properties": {
-          "isMaintenanceMode": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "isMaintenanceMode"
         ],
         "type": "object"
       },

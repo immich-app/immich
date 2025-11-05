@@ -13,11 +13,6 @@ export class MaintenanceWorkerController {
     return this.service.getSystemConfig();
   }
 
-  @Get('admin/maintenance')
-  getMaintenanceMode() {
-    return this.service.getMaintenanceMode();
-  }
-
   @Post('admin/maintenance/start')
   startMaintenance() {
     return this.service.startMaintenance();

@@ -1,4 +1,4 @@
-import { Controller, Get, Post } from '@nestjs/common';
+import { Controller, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Permission } from 'src/enum';
 import { Authenticated } from 'src/middleware/auth.guard';
@@ -8,11 +8,6 @@ import { MaintenanceService } from 'src/services/maintenance.service';
 @Controller('admin/maintenance')
 export class MaintenanceController {
   constructor(private service: MaintenanceService) {}
-
-  @Get()
-  getMaintenanceMode() {
-    return this.service.getMaintenanceMode();
-  }
 
   @Post('start')
   @Authenticated({ permission: Permission.SystemMetadataUpdate, admin: true })
