@@ -7,14 +7,14 @@ import 'package:immich_mobile/providers/infrastructure/viewer_quick_action_order
 import 'package:immich_mobile/utils/action_button.utils.dart';
 import 'package:immich_mobile/utils/action_button_visuals.dart';
 
-class ViewerQuickActionConfigurator extends ConsumerStatefulWidget {
-  const ViewerQuickActionConfigurator({super.key});
+class QuickActionConfigurator extends ConsumerStatefulWidget {
+  const QuickActionConfigurator({super.key});
 
   @override
-  ConsumerState<ViewerQuickActionConfigurator> createState() => _ViewerQuickActionConfiguratorState();
+  ConsumerState<QuickActionConfigurator> createState() => _QuickActionConfiguratorState();
 }
 
-class _ViewerQuickActionConfiguratorState extends ConsumerState<ViewerQuickActionConfigurator> {
+class _QuickActionConfiguratorState extends ConsumerState<QuickActionConfigurator> {
   late List<ActionButtonType> _order;
   late final ScrollController _scrollController;
   bool _hasLocalChanges = false;

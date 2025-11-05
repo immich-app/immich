@@ -5,7 +5,7 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/setting.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
-import 'package:immich_mobile/presentation/widgets/asset_viewer/quick_action_configurator.dart';
+import 'package:immich_mobile/presentation/widgets/asset_viewer/quick_action_configurator.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/viewer_quick_action_order.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
@@ -70,8 +70,7 @@ class ViewerBottomBar extends ConsumerWidget {
         context: context,
         isScrollControlled: true,
         enableDrag: false,
-        builder: (sheetContext) =>
-            const FractionallySizedBox(heightFactor: 0.75, child: ViewerQuickActionConfigurator()),
+        builder: (sheetContext) => const FractionallySizedBox(heightFactor: 0.75, child: QuickActionConfigurator()),
       ).whenComplete(() {
         viewerNotifier.setBottomSheet(false);
       });
