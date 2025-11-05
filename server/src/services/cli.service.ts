@@ -4,9 +4,9 @@ import Redis from 'ioredis';
 import { isAbsolute } from 'node:path';
 import { Server } from 'socket.io';
 import { SALT_ROUNDS } from 'src/constants';
+import { MaintenanceAuthDto } from 'src/dtos/maintenance.dto';
 import { UserAdminResponseDto, mapUserAdmin } from 'src/dtos/user.dto';
 import { type ArgsOf } from 'src/repositories/event.repository';
-import { MaintenanceRepository } from 'src/repositories/maintenance.repository';
 import { type ServerEvents } from 'src/repositories/websocket.repository';
 import { BaseService } from 'src/services/base.service';
 import { getExternalDomain } from 'src/utils/misc';
@@ -18,7 +18,10 @@ export class CliService extends BaseService {
     const pubClient = new Redis(this.configRepository.getEnv().redis);
     const subClient = pubClient.duplicate();
     server.adapter(createAdapter(pubClient, subClient));
-    server.serverSideEmit(event, ...args);
+    server.serverSideEmit(event, ...args, () => {
+      pubClient.disconnect();
+      subClient.disconnect();
+    });
   }
 
   async listUsers(): Promise<UserAdminResponseDto[]> {
@@ -53,30 +56,48 @@ export class CliService extends BaseService {
     await this.updateConfig(config);
   }
 
-  async disableMaintenanceMode(): Promise<void> {
+  async disableMaintenanceMode(): Promise<{ alreadyDisabled: boolean }> {
+    const currentState = await this.maintenanceRepository.getMaintenanceMode();
+    if (!currentState.isMaintenanceMode) {
+      return {
+        alreadyDisabled: true,
+      };
+    }
+
     const state = { isMaintenanceMode: false as const };
     await this.maintenanceRepository.setMaintenanceMode(state);
     this.oneShotServerSend('AppRestart', state);
+
+    return {
+      alreadyDisabled: false,
+    };
   }
 
-  async enableMaintenanceMode(): Promise<{ authUrl: string }> {
-    const { token } = await this.maintenanceRepository.enterMaintenanceMode();
+  async enableMaintenanceMode(): Promise<{ authUrl: string; alreadyEnabled: boolean }> {
+    const { server } = await this.getConfig({ withCache: true });
+    const baseUrl = getExternalDomain(server);
+
+    const payload: MaintenanceAuthDto = {
+      username: 'cli-admin',
+    };
+
+    const state = await this.maintenanceRepository.getMaintenanceMode();
+    if (state.isMaintenanceMode) {
+      return {
+        authUrl: await this.maintenanceRepository.createLoginUrl(baseUrl, payload, state.secret),
+        alreadyEnabled: true,
+      };
+    }
+
+    const { secret } = await this.maintenanceRepository.enterMaintenanceMode();
 
     this.oneShotServerSend('AppRestart', {
       isMaintenanceMode: true,
     });
 
-    const { server } = await this.getConfig({ withCache: true });
-
     return {
-      authUrl:
-        getExternalDomain(server) +
-        '/maintenance?token=' +
-        encodeURIComponent(
-          MaintenanceRepository.createJwt(token, {
-            username: 'cli-admin',
-          }),
-        ),
+      authUrl: await this.maintenanceRepository.createLoginUrl(baseUrl, payload, secret),
+      alreadyEnabled: false,
     };
   }
 

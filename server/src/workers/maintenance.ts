@@ -11,12 +11,15 @@ async function bootstrap() {
   configureTelemetry();
 
   const app = await NestFactory.create<NestExpressApplication>(MaintenanceModule, { bufferLogs: true });
-  app.get(MaintenanceWorkerRepository).setCloseFn(() => app.close());
+  const maintenanceWorkerRepository = app.get(MaintenanceWorkerRepository);
+  maintenanceWorkerRepository.setCloseFn(() => app.close());
 
   configureExpress(app, {
     permitSwaggerWrite: false,
     ssr: false,
   });
+
+  void maintenanceWorkerRepository.logSecret();
 }
 
 bootstrap().catch((error) => {

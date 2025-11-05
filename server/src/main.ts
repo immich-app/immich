@@ -3,10 +3,10 @@ import { CommandFactory } from 'nest-commander';
 import { ChildProcess, fork } from 'node:child_process';
 import { dirname, join } from 'node:path';
 import { Worker } from 'node:worker_threads';
+import { PostgresError } from 'postgres';
 import { ImmichAdminModule } from 'src/app.module';
-import { ExitCode, ImmichWorker, LogLevel } from 'src/enum';
+import { ExitCode, ImmichWorker, LogLevel, SystemMetadataKey } from 'src/enum';
 import { ConfigRepository } from 'src/repositories/config.repository';
-import { isMaintenanceMode } from 'src/repositories/maintenance.repository';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
 import { type DB } from 'src/schema';
 import { getKyselyConfig } from 'src/utils/database';
@@ -53,7 +53,18 @@ class Workers {
     const { database } = new ConfigRepository().getEnv();
     const kysely = new Kysely<DB>(getKyselyConfig(database.config));
     const systemMetadataRepository = new SystemMetadataRepository(kysely);
-    return await isMaintenanceMode(systemMetadataRepository);
+
+    try {
+      const value = await systemMetadataRepository.get(SystemMetadataKey.MaintenanceMode);
+      return value?.isMaintenanceMode || false;
+    } catch (error) {
+      // Table doesn't exist (migrations haven't run yet)
+      if (error instanceof PostgresError && error.code === '42P01') {
+        return false;
+      }
+
+      throw error;
+    }
   }
 
   /**

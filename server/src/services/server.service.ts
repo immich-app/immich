@@ -118,7 +118,7 @@ export class ServerService extends BaseService {
     const config = await this.getConfig({ withCache: false });
     const isInitialized = await this.userRepository.hasAdmin();
     const onboarding = await this.systemMetadataRepository.get(SystemMetadataKey.AdminOnboarding);
-    const isMaintenanceMode = await this.maintenanceRepository.isMaintenanceMode();
+    const { isMaintenanceMode } = await this.maintenanceRepository.getMaintenanceMode();
 
     return {
       loginPageMessage: config.server.loginPageMessage,

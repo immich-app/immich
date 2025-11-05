@@ -24,8 +24,8 @@ export class MaintenanceController {
     @Auth() auth: AuthDto,
     @Res({ passthrough: true }) response: Response,
   ): Promise<MaintenanceModeResponseDto> {
-    const { token } = await this.service.startMaintenance();
-    const jwt = MaintenanceRepository.createJwt(token, {
+    const { secret } = await this.service.startMaintenance();
+    const jwt = MaintenanceRepository.createJwt(secret, {
       username: auth.user.name,
     });
 

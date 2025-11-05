@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { randomBytes } from 'node:crypto';
-import { PostgresError } from 'postgres';
 import { MaintenanceAuthDto } from 'src/dtos/maintenance.dto';
 import { SystemMetadataKey } from 'src/enum';
 import { EventRepository } from 'src/repositories/event.repository';
@@ -9,20 +8,6 @@ import { MaintenanceModeState } from 'src/types';
 
 import * as jwt from 'jsonwebtoken';
 
-export async function isMaintenanceMode(systemMetadataRepository: SystemMetadataRepository): Promise<boolean> {
-  try {
-    const value = await systemMetadataRepository.get(SystemMetadataKey.MaintenanceMode);
-    return value?.isMaintenanceMode || false;
-  } catch (error) {
-    // Table doesn't exist (migrations haven't run yet)
-    if (error instanceof PostgresError && error.code === '42P01') {
-      return false;
-    }
-
-    throw error;
-  }
-}
-
 @Injectable()
 export class MaintenanceRepository {
   constructor(
@@ -30,8 +15,10 @@ export class MaintenanceRepository {
     private systemMetadataRepository: SystemMetadataRepository,
   ) {}
 
-  isMaintenanceMode(): Promise<boolean> {
-    return isMaintenanceMode(this.systemMetadataRepository);
+  getMaintenanceMode(): Promise<MaintenanceModeState> {
+    return this.systemMetadataRepository
+      .get(SystemMetadataKey.MaintenanceMode)
+      .then((state) => state ?? { isMaintenanceMode: false });
   }
 
   async setMaintenanceMode(state: MaintenanceModeState) {
@@ -39,14 +26,30 @@ export class MaintenanceRepository {
     await this.eventRepository.emit('AppRestart', state);
   }
 
-  async enterMaintenanceMode(): Promise<{ token: string }> {
-    const token = randomBytes(64).toString('hex');
-    const state: MaintenanceModeState = { isMaintenanceMode: true, token };
+  async enterMaintenanceMode(): Promise<{ secret: string }> {
+    const secret = randomBytes(64).toString('hex');
+    const state: MaintenanceModeState = { isMaintenanceMode: true, secret };
 
     await this.systemMetadataRepository.set(SystemMetadataKey.MaintenanceMode, state);
     await this.eventRepository.emit('AppRestart', state);
 
-    return { token };
+    return { secret: secret };
+  }
+
+  async createLoginUrl(baseUrl: string, auth: MaintenanceAuthDto, secret?: string) {
+    secret ??= await this.getMaintenanceMode().then((state) => {
+      if (!state.isMaintenanceMode) {
+        throw new Error('Not in maintenance mode.');
+      }
+
+      return state.secret;
+    });
+
+    return MaintenanceRepository.createLoginUrl(baseUrl, auth, secret!);
+  }
+
+  static createLoginUrl(baseUrl: string, auth: MaintenanceAuthDto, secret: string) {
+    return `${baseUrl}/maintenance?token=${encodeURIComponent(MaintenanceRepository.createJwt(secret!, auth))}`;
   }
 
   static createJwt(secret: string, data: MaintenanceAuthDto) {

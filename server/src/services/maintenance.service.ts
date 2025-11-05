@@ -1,6 +1,5 @@
 import { BadRequestException, INestApplication, Injectable } from '@nestjs/common';
 import { OnEvent } from 'src/decorators';
-import { MaintenanceModeResponseDto } from 'src/dtos/maintenance.dto';
 import { ExitCode } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
 
@@ -11,14 +10,8 @@ import { BaseService } from 'src/services/base.service';
 export class MaintenanceService extends BaseService {
   nestApplication: INestApplication | undefined;
 
-  async getMaintenanceMode(): Promise<MaintenanceModeResponseDto> {
-    return {
-      isMaintenanceMode: await this.maintenanceRepository.isMaintenanceMode(),
-    };
-  }
-
-  async startMaintenance(): Promise<{ token: string }> {
-    const { isMaintenanceMode } = await this.getMaintenanceMode();
+  async startMaintenance(): Promise<{ secret: string }> {
+    const { isMaintenanceMode } = await this.maintenanceRepository.getMaintenanceMode();
     if (isMaintenanceMode) {
       throw new BadRequestException('Already in maintenance mode');
     }
