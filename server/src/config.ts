@@ -183,6 +183,35 @@ export interface SystemConfig {
     externalDomain: string;
     loginPageMessage: string;
     publicUsers: boolean;
+    autoStack: {
+      enabled: boolean;
+      windowSeconds: number; // time window around new asset for candidate grouping
+      maxGapSeconds: number; // max allowed gap between sequential assets inside a group
+      minGroupSize: number; // minimum assets required to store a candidate
+      cameraMatch: boolean; // require same make+model when available
+      autoPromoteMinScore: number; // if >0 and group score >= value, auto-promote immediately
+      weights: { size: number; timeSpan: number; continuity: number; visual: number; exposure: number };
+      visualPromoteThreshold: number;
+      // New enhancement keys (phase: merging & bridging)
+      maxMergeGapSeconds?: number; // if two groups separated by <= this temporal gap, attempt merge
+      visualBridgeThreshold?: number; // raw cosine (0..1); if exceeded between boundary assets, allow continuity despite gap
+      mergeScoreDelta?: number; // minimum score improvement required to keep merged group (default 0 = always merge)
+      // Outlier pruning (remove assets whose removal improves avg visual similarity by at least this delta)
+      outlierPruneEnabled?: boolean;
+      outlierPruneMinDelta?: number; // 0..1 delta improvement threshold
+      outlierPruneIterative?: boolean; // iterate pruning until no further improvement
+      // Google-Photos-like enhancements
+      secondaryVisualWindowSeconds?: number; // extend search radius to pull in visually near-identical shots just outside window
+      visualGroupSimilarityThreshold?: number; // cosine threshold for adding external assets into an existing group
+      pHashHammingThreshold?: number; // maximum pHash Hamming distance to consider near-duplicate
+      overlapMergeEnabled?: boolean; // merge overlapping / intersecting groups into unified stack
+      bestPrimaryHeuristic?: boolean; // choose best primary (sharpest / lowest ISO / shortest exposure)
+      secondaryVisualMaxAdds?: number; // cap number of visually expanded assets per group
+      // Session segmentation
+      sessionMaxSpanSeconds?: number;
+      sessionMinAvgAdjacency?: number;
+      sessionMinSegmentSize?: number;
+    };
   };
   user: {
     deleteDelay: number;
@@ -224,6 +253,7 @@ export const defaults = Object.freeze<SystemConfig>({
   },
   job: {
     [QueueName.BackgroundTask]: { concurrency: 5 },
+    [QueueName.AutoStack]: { concurrency: 1 },
     [QueueName.SmartSearch]: { concurrency: 2 },
     [QueueName.MetadataExtraction]: { concurrency: 5 },
     [QueueName.FaceDetection]: { concurrency: 2 },
@@ -362,6 +392,37 @@ export const defaults = Object.freeze<SystemConfig>({
     externalDomain: '',
     loginPageMessage: '',
     publicUsers: true,
+    autoStack: {
+      enabled: true,
+      windowSeconds: 180, // total bi-directional scan window (was 180)
+      maxGapSeconds: 30, // max allowed gap inside a burst (was 180)
+      minGroupSize: 2,
+      cameraMatch: true,
+      autoPromoteMinScore: 70,
+      weights: {
+        size: 10, // de-emphasize raw count
+        timeSpan: 10,
+        continuity: 10, // emphasize sequential capture
+        visual: 50, // emphasize visual similarity
+        exposure: 20, // include exposure consistency
+      },
+      visualPromoteThreshold: 0.8,
+      maxMergeGapSeconds: 120,
+      visualBridgeThreshold: 0.5,
+      mergeScoreDelta: 10,
+
+      // Outlier pruning: remove assets that hurt cohesion (avg visual similarity) beyond threshold
+      outlierPruneEnabled: true,
+      outlierPruneMinDelta: 0.2, // increased from 0.04 to make pruning less aggressive (require larger visual gain)
+      outlierPruneIterative: true,
+      overlapMergeEnabled: true,
+      bestPrimaryHeuristic: true,
+      secondaryVisualMaxAdds: 20, // allow more visual expansion per group (was 3)
+      // Session segmentation defaults
+      sessionMaxSpanSeconds: 300, // 5 minutes
+      sessionMinAvgAdjacency: 0.7, // require moderate visual cohesion to keep long span
+      sessionMinSegmentSize: 1,
+    },
   },
   notifications: {
     smtp: {

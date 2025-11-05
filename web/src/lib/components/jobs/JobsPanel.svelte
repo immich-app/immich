@@ -11,6 +11,7 @@
     mdiFileXmlBox,
     mdiFolderMove,
     mdiImageSearch,
+    mdiLayersTriple,
     mdiLibraryShelves,
     mdiTable,
     mdiTagFaces,
@@ -128,6 +129,16 @@
       allText: $t('all'),
       missingText: $t('missing'),
       disabled: !$featureFlags.ocr,
+    },
+    // FIXME: find why the JobName.AutoStackCandidateQueueAll is not working
+    // [JobName.AutoStack]: {
+    autoStack: {
+      icon: mdiLayersTriple,
+      title: $getJobName(JobName.AutoStackCandidateQueueAll),
+      subtitle: $t('admin.auto_stack_job_description'),
+      missingText: $t('missing'),
+      handleCommand: handleConfirmCommand,
+      allText: $t('reset'),
     },
     [JobName.VideoConversion]: {
       icon: mdiVideo,

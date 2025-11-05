@@ -24,7 +24,8 @@ describe(JobService.name, () => {
     it('should update concurrency', () => {
       sut.onConfigUpdate({ newConfig: defaults, oldConfig: {} as SystemConfig });
 
-      expect(mocks.job.setConcurrency).toHaveBeenCalledTimes(16);
+      expect(mocks.job.setConcurrency).toHaveBeenCalledTimes(17);
+      expect(mocks.job.setConcurrency).toHaveBeenNthCalledWith(1, QueueName.ThumbnailGeneration, 3);
       expect(mocks.job.setConcurrency).toHaveBeenNthCalledWith(5, QueueName.FacialRecognition, 1);
       expect(mocks.job.setConcurrency).toHaveBeenNthCalledWith(7, QueueName.DuplicateDetection, 1);
       expect(mocks.job.setConcurrency).toHaveBeenNthCalledWith(8, QueueName.BackgroundTask, 5);
@@ -83,6 +84,7 @@ describe(JobService.name, () => {
       };
 
       await expect(sut.getAllJobsStatus()).resolves.toEqual({
+        [QueueName.AutoStack]: expectedJobStatus,
         [QueueName.BackgroundTask]: expectedJobStatus,
         [QueueName.DuplicateDetection]: expectedJobStatus,
         [QueueName.SmartSearch]: expectedJobStatus,

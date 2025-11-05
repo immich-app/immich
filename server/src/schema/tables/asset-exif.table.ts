@@ -86,8 +86,16 @@ export class AssetExifTable {
   @Column({ type: 'integer', nullable: true })
   bitsPerSample!: number | null;
 
+  // provenance for how the asset joined a stack: EXIF (explicit ID), TIME_WINDOW (temporal heuristic), VISUAL (visual merge/bridge)
+  @Column({ type: 'character varying', nullable: true, index: true })
+  autoStackSource!: 'EXIF' | 'TIME_WINDOW' | 'VISUAL' | null;
+
   @Column({ type: 'character varying', nullable: true, index: true })
   autoStackId!: string | null;
+
+  // perceptual hash (64-bit hex or base16 string) for visual similarity (auto-stacking, duplicate detection fallback)
+  @Column({ type: 'character varying', nullable: true, index: true })
+  pHash!: string | null;
 
   @Column({ type: 'integer', nullable: true })
   rating!: number | null;

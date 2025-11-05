@@ -20,6 +20,10 @@ After creating an album, you can access the sharing options by clicking on the s
 
 <img src={require('./img/shared-album-mobile.webp').default} width='33%' title='Shared album option' />
 
+#### Stacks
+
+Shared albums and partner timelines respect stacks: viewers typically see the primary item with a stack count in grids, and can open it to browse the rest. Public links behave similarly unless a view explicitly lists individual items. See [Stacks and AutoStack](/docs/features/stacks).
+
 ### Partners
 
 Partner sharing allows you to share your _entire_ library with other users of your choice. They can then view your library and download the assets.

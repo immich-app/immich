@@ -39,6 +39,238 @@ const isOAuthOverrideEnabled = (config: SystemConfigOAuthDto) => config.mobileOv
 const isEmailNotificationEnabled = (config: SystemConfigSmtpDto) => config.enabled;
 const isDatabaseBackupEnabled = (config: DatabaseBackupConfig) => config.enabled;
 
+class AutoStackWeightsDto {
+  @IsInt() @Min(0) @Max(100) @Type(() => Number) size!: number;
+  @IsInt() @Min(0) @Max(100) @Type(() => Number) timeSpan!: number;
+  @IsInt() @Min(0) @Max(100) @Type(() => Number) continuity!: number;
+  @IsInt() @Min(0) @Max(100) @Type(() => Number) visual!: number;
+  @IsInt() @Min(0) @Max(100) @Type(() => Number) exposure!: number;
+}
+
+/**
+ * AutoStack configuration (server.autoStack)
+ *
+ * Groups photos shot close together into stack candidates using time gaps, filename continuity,
+ * and visual similarity. This class exposes the knobs to tune grouping, scoring, merging,
+ * pruning, and housekeeping. See docs: docs/developer/auto-stack.md
+ */
+class SystemConfigAutoStackDto {
+  // Core toggle
+  @ValidateBoolean()
+  @ApiProperty({ description: 'Enable automatic stack candidate generation' })
+  enabled!: boolean;
+
+  // Core time windows and grouping
+  @IsInt()
+  @Min(1)
+  @Max(3600)
+  @Type(() => Number)
+  @ApiProperty({
+    description: 'Primary time window (seconds) around a new asset for temporal grouping scan',
+    minimum: 1,
+    maximum: 3600,
+  })
+  windowSeconds!: number;
+
+  @IsInt()
+  @Min(1)
+  @Max(3600)
+  @Type(() => Number)
+  @ApiProperty({
+    description: 'Maximum allowed gap (seconds) between adjacent assets within a group',
+    minimum: 1,
+    maximum: 3600,
+  })
+  maxGapSeconds!: number;
+
+  @IsInt()
+  @Min(2)
+  @Max(50)
+  @Type(() => Number)
+  @ApiProperty({ description: 'Minimum number of assets required to store a candidate', minimum: 2, maximum: 50 })
+  minGroupSize!: number;
+
+  // Heuristics and limits
+  @ValidateBoolean()
+  @ApiProperty({ description: 'Require matching camera make+model if metadata present' })
+  cameraMatch!: boolean;
+
+  @IsInt()
+  @Min(0)
+  @Max(100)
+  @Type(() => Number)
+  @ApiProperty({
+    description: 'Auto-promote when overall heuristic score >= this value (0 disables auto-promotion)',
+    minimum: 0,
+    maximum: Number.MAX_SAFE_INTEGER,
+  })
+  autoPromoteMinScore!: number;
+  @IsObject()
+  @ValidateNested()
+  @Type(() => AutoStackWeightsDto)
+  @ApiProperty({ description: 'Scoring weights for { size, timeSpan, continuity, visual, exposure }' })
+  weights!: AutoStackWeightsDto;
+
+  // Visual similarity thresholds and fast-paths
+  @IsNumber()
+  @Min(0)
+  @Max(1)
+  @Type(() => Number)
+  @ApiProperty({
+    description: 'Cosine similarity threshold (0-1) to immediately promote when embeddings indicate strong cohesion',
+    minimum: 0,
+    maximum: 1,
+  })
+  visualPromoteThreshold!: number;
+
+  // Merging and bridging of adjacent groups
+  @IsNumber()
+  @Min(0)
+  @Optional()
+  @ApiProperty({ required: false, description: 'Max temporal gap (s) to attempt merging adjacent groups', minimum: 0 })
+  maxMergeGapSeconds?: number;
+
+  @IsNumber()
+  @Min(0)
+  @Max(1)
+  @Optional()
+  @ApiProperty({
+    required: false,
+    description: 'Visual bridge cosine threshold (0-1) to merge across a larger gap',
+    minimum: 0,
+    maximum: 1,
+  })
+  visualBridgeThreshold?: number;
+
+  @IsNumber()
+  @Min(0)
+  @Optional()
+  @ApiProperty({
+    required: false,
+    description: 'Minimum score improvement required to retain a merged group (0 = always merge)',
+    minimum: 0,
+  })
+  mergeScoreDelta?: number;
+
+  // Outlier pruning
+  @ValidateBoolean()
+  @Optional()
+  @ApiProperty({ required: false, description: 'Enable outlier pruning that removes assets lowering visual cohesion' })
+  outlierPruneEnabled?: boolean;
+
+  @IsNumber()
+  @Min(0)
+  @Max(1)
+  @Optional()
+  @ApiProperty({
+    required: false,
+    description: 'Minimum delta improvement (0-1) in avg visual similarity to prune an outlier',
+    minimum: 0,
+    maximum: 1,
+  })
+  outlierPruneMinDelta?: number;
+
+  @ValidateBoolean()
+  @Optional()
+  @ApiProperty({ required: false, description: 'Iteratively prune multiple outliers while improvement threshold met' })
+  outlierPruneIterative?: boolean;
+
+  // Visual expansion: pull in near-duplicates just outside the window
+  @IsInt()
+  @Min(0)
+  @Max(1800)
+  @Optional()
+  @ApiProperty({
+    required: false,
+    description: 'Secondary visual expansion window (seconds) to pull in near-duplicates',
+    minimum: 0,
+    maximum: 1800,
+  })
+  secondaryVisualWindowSeconds?: number;
+
+  @IsNumber()
+  @Min(0)
+  @Max(1)
+  @Optional()
+  @ApiProperty({
+    required: false,
+    description: 'Cosine similarity threshold (0-1) for adding external assets to a group',
+    minimum: 0,
+    maximum: 1,
+  })
+  visualGroupSimilarityThreshold?: number;
+
+  @IsInt()
+  @Min(0)
+  @Max(64)
+  @Optional()
+  @ApiProperty({
+    required: false,
+    description: 'Maximum pHash Hamming distance (0-64) to treat assets as near-duplicates',
+    minimum: 0,
+    maximum: 64,
+  })
+  pHashHammingThreshold?: number;
+
+  // Overlap merging and primary selection
+  @ValidateBoolean()
+  @Optional()
+  @ApiProperty({ required: false, description: 'Enable merging of overlapping groups (shared assets)' })
+  overlapMergeEnabled?: boolean;
+
+  @ValidateBoolean()
+  @Optional()
+  @ApiProperty({ required: false, description: 'Enable best-primary heuristic (pick sharpest/lowest ISO)' })
+  bestPrimaryHeuristic?: boolean;
+
+  @IsInt()
+  @Min(0)
+  @Max(100)
+  @Optional()
+  @ApiProperty({
+    required: false,
+    description: 'Maximum number of visually expanded assets to add per group',
+    minimum: 0,
+    maximum: 100,
+  })
+  secondaryVisualMaxAdds?: number;
+
+  // Session segmentation (split long temporal spans with low cohesion)
+  @IsInt()
+  @Min(5)
+  @Max(86_400)
+  @Optional()
+  @ApiProperty({
+    required: false,
+    description: 'Maximum span (seconds) allowed for a single group before segmentation considered',
+    minimum: 5,
+    maximum: 86_400,
+  })
+  sessionMaxSpanSeconds?: number;
+  @IsNumber()
+  @Min(0)
+  @Max(1)
+  @Optional()
+  @ApiProperty({
+    required: false,
+    description: 'Minimum average adjacent visual similarity (0-1) required to keep a long-span group intact',
+    minimum: 0,
+    maximum: 1,
+  })
+  sessionMinAvgAdjacency?: number;
+  @IsInt()
+  @Min(1)
+  @Max(50)
+  @Optional()
+  @ApiProperty({
+    required: false,
+    description: 'Minimum segment size when splitting a session',
+    minimum: 1,
+    maximum: 50,
+  })
+  sessionMinSegmentSize?: number;
+}
+
 export class DatabaseBackupConfig {
   @ValidateBoolean()
   enabled!: boolean;
@@ -224,6 +456,12 @@ class SystemConfigJobDto implements Record<ConcurrentQueueName, JobSettingsDto> 
   @IsObject()
   @Type(() => JobSettingsDto)
   [QueueName.Notification]!: JobSettingsDto;
+
+  @ApiProperty({ type: JobSettingsDto })
+  @ValidateNested()
+  @IsObject()
+  @Type(() => JobSettingsDto)
+  [QueueName.AutoStack]!: JobSettingsDto;
 }
 
 class SystemConfigLibraryScanDto {
@@ -450,7 +688,7 @@ class SystemConfigMetadataDto {
 }
 
 class SystemConfigServerDto {
-  @ValidateIf((_, value: string) => value !== '')
+  @ValidateIf((_: any, value: string) => value !== '')
   @IsUrl({ require_tld: false, require_protocol: true, protocols: ['http', 'https'] })
   externalDomain!: string;
 
@@ -459,6 +697,11 @@ class SystemConfigServerDto {
 
   @ValidateBoolean()
   publicUsers!: boolean;
+
+  @Type(() => SystemConfigAutoStackDto)
+  @ValidateNested()
+  @IsObject()
+  autoStack!: SystemConfigAutoStackDto;
 }
 
 class SystemConfigSmtpTransportDto {

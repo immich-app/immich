@@ -140,6 +140,7 @@ export class AssetRepository {
               city: eb.ref('excluded.city'),
               livePhotoCID: eb.ref('excluded.livePhotoCID'),
               autoStackId: eb.ref('excluded.autoStackId'),
+              autoStackSource: eb.ref('excluded.autoStackSource'),
               state: eb.ref('excluded.state'),
               country: eb.ref('excluded.country'),
               make: eb.ref('excluded.make'),
@@ -152,6 +153,7 @@ export class AssetRepository {
               profileDescription: eb.ref('excluded.profileDescription'),
               colorspace: eb.ref('excluded.colorspace'),
               bitsPerSample: eb.ref('excluded.bitsPerSample'),
+              pHash: eb.ref('excluded.pHash'),
               rating: eb.ref('excluded.rating'),
               fps: eb.ref('excluded.fps'),
             },
@@ -160,6 +162,111 @@ export class AssetRepository {
         ),
       )
       .execute();
+  }
+
+  async getDateTimeOriginal(assetId: string): Promise<Date | null> {
+    const row = await this.db
+      .selectFrom('asset_exif')
+      .select('dateTimeOriginal')
+      .where('assetId', '=', asUuid(assetId))
+      .executeTakeFirst();
+    return row?.dateTimeOriginal ?? null;
+  }
+
+  async getExifMakeModel(assetId: string): Promise<{ make: string | null; model: string | null } | null> {
+    const row = await this.db
+      .selectFrom('asset_exif')
+      .select(['make', 'model'])
+      .where('assetId', '=', asUuid(assetId))
+      .executeTakeFirst();
+    if (!row) {
+      return null;
+    }
+    return { make: row.make ?? null, model: row.model ?? null };
+  }
+
+  /**
+   * Get assets in a time window around a reference date for the same camera (make+model).
+   * Ordered by dateTimeOriginal asc, then id.
+   */
+  async getTimeWindowCameraSequence(options: {
+    ownerId: string;
+    from: Date;
+    to: Date;
+    make: string | null;
+    model: string | null;
+  }) {
+    const { ownerId, from, to, make, model } = options;
+    return this.db
+      .selectFrom('asset')
+      .innerJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
+      .select([
+        'asset.id',
+        'asset.originalFileName',
+        'asset.thumbhash as thumbhash',
+        'asset_exif.dateTimeOriginal as dateTimeOriginal',
+        'asset_exif.iso as iso',
+        'asset_exif.exposureTime as exposureTime',
+        'asset_exif.pHash as pHash',
+        // include dimensions for orientation-based grouping constraints
+        'asset_exif.exifImageWidth as exifImageWidth',
+        'asset_exif.exifImageHeight as exifImageHeight',
+      ])
+      .where('asset.ownerId', '=', asUuid(ownerId))
+      .where('asset.deletedAt', 'is', null)
+      .where('asset_exif.dateTimeOriginal', '>=', from)
+      .where('asset_exif.dateTimeOriginal', '<=', to)
+      .$if(!!make, (qb: any) => qb.where('asset_exif.make', '=', make!))
+      .$if(!!model, (qb: any) => qb.where('asset_exif.model', '=', model!))
+      .orderBy('asset_exif.dateTimeOriginal', 'asc')
+      .orderBy('asset.id')
+      .execute();
+  }
+
+  /** Fetch CLIP embeddings (if any) for a set of asset ids. Returns a map assetId -> float[] */
+  async getClipEmbeddings(assetIds: string[]): Promise<Record<string, number[]>> {
+    if (assetIds.length === 0) {
+      return {};
+    }
+    const rows = await this.db
+      .selectFrom('smart_search')
+      .select(['assetId', 'embedding'])
+      .where(
+        'assetId',
+        'in',
+        assetIds.map((id) => asUuid(id)),
+      )
+      .execute();
+    const map: Record<string, number[]> = {};
+    for (const r of rows as any[]) {
+      const raw = r.embedding as unknown as string; // postgres vector comes back as string like '[0.1,0.2,...]'
+      if (!raw) {
+        continue;
+      }
+      const trimmed = raw.replaceAll(/[[\]{}]/g, '');
+      const parts = trimmed
+        .split(',')
+        .map((p) => p.trim())
+        .filter((p) => p.length);
+      const nums = parts.map((p) => Number.parseFloat(p)).filter((n) => Number.isFinite(n));
+      if (nums.length > 0) {
+        map[r.assetId] = nums;
+      }
+    }
+    return map;
+  }
+
+  /** Return a batch of assets that are missing pHash, excluding deleted. */
+  async listMissingPHash(limit: number): Promise<{ id: string; originalPath: string }[]> {
+    const rows = await this.db
+      .selectFrom('asset')
+      .leftJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
+      .select(['asset.id', 'asset.originalPath'])
+      .where('asset_exif.pHash', 'is', null)
+      .where('asset.deletedAt', 'is', null)
+      .limit(limit)
+      .execute();
+    return rows as any;
   }
 
   @GenerateSql({ params: [[DummyValue.UUID], { model: DummyValue.STRING }] })
@@ -436,6 +543,16 @@ export class AssetRepository {
       .$if(!!tags, (qb) => qb.select(withTags))
       .limit(1)
       .executeTakeFirst();
+  }
+
+  getByOwnerId(ownerid: string) {
+    return this.db
+      .selectFrom('asset')
+      .selectAll('asset')
+      .where('ownerId', '=', asUuid(ownerid))
+      .where('deletedAt', 'is', null)
+      .orderBy('createdAt', 'desc')
+      .execute();
   }
 
   @GenerateSql({ params: [[DummyValue.UUID], { deviceId: DummyValue.STRING }] })

@@ -48,6 +48,7 @@ type EventMap = {
   AssetTrash: [{ assetId: string; userId: string }];
   AssetDelete: [{ assetId: string; userId: string }];
   AssetMetadataExtracted: [{ assetId: string; userId: string; source?: JobSource }];
+  AssetSmartSearchProcessed: [{ assetId: string; userId: string }];
 
   // asset bulk events
   AssetTrashAll: [{ assetIds: string[]; userId: string }];

@@ -332,6 +332,25 @@ export const newTestService = <T extends BaseService>(
     websocket: automock(WebsocketRepository, { args: [, loggerMock], strict: false }),
   };
 
+  // Augment asset mock with methods used in tests if missing
+  if (!(mocks.asset as any).getClipEmbeddings) {
+    (mocks.asset as any).getClipEmbeddings = vitest.fn().mockResolvedValue({});
+    (mocks.asset as any).create = vitest.fn().mockResolvedValue({});
+  }
+  if (!(mocks.asset as any).getTimeWindowCameraSequence) {
+    (mocks.asset as any).getTimeWindowCameraSequence = vitest.fn().mockResolvedValue([]);
+  }
+
+  // Provide default stack.create implementation to avoid strict mock failures
+  (mocks.stack as any).create.mockImplementation((entity: any, assetIds: string[]) => {
+    return {
+      id: 'stack_test',
+      ownerId: entity.ownerId,
+      primaryAssetId: assetIds[0],
+      assets: assetIds.map((id) => ({ id })),
+    };
+  });
+
   const sut = new Service(
     overrides.logger || (mocks.logger as As<LoggingRepository>),
     overrides.access || (mocks.access as IAccessRepository as AccessRepository),

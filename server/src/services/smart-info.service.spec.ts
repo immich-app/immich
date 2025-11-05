@@ -198,9 +198,10 @@ describe(SmartInfoService.name, () => {
       expect(mocks.machineLearning.encodeImage).not.toHaveBeenCalled();
     });
 
-    it('should save the returned objects', async () => {
+    it('should save the returned objects and emit AssetSmartSearchProcessed event', async () => {
       mocks.machineLearning.encodeImage.mockResolvedValue('[0.01, 0.02, 0.03]');
       mocks.assetJob.getForClipEncoding.mockResolvedValue({ ...assetStub.image, files: [assetStub.image.files[1]] });
+      mocks.asset.getById.mockResolvedValue(assetStub.image);
 
       expect(await sut.handleEncodeClip({ id: assetStub.image.id })).toEqual(JobStatus.Success);
 
@@ -209,6 +210,10 @@ describe(SmartInfoService.name, () => {
         expect.objectContaining({ modelName: 'ViT-B-32__openai' }),
       );
       expect(mocks.search.upsert).toHaveBeenCalledWith(assetStub.image.id, '[0.01, 0.02, 0.03]');
+      expect(mocks.event.emit).toHaveBeenCalledWith('AssetSmartSearchProcessed', {
+        assetId: assetStub.image.id,
+        userId: assetStub.image.ownerId,
+      });
     });
 
     it('should skip invisible assets', async () => {
@@ -230,6 +235,18 @@ describe(SmartInfoService.name, () => {
 
       expect(mocks.machineLearning.encodeImage).not.toHaveBeenCalled();
       expect(mocks.search.upsert).not.toHaveBeenCalled();
+      expect(mocks.event.emit).not.toHaveBeenCalled();
+    });
+
+    it('should not emit event if asset owner cannot be found', async () => {
+      mocks.machineLearning.encodeImage.mockResolvedValue('[0.01, 0.02, 0.03]');
+      mocks.assetJob.getForClipEncoding.mockResolvedValue({ ...assetStub.image, files: [assetStub.image.files[1]] });
+      mocks.asset.getById.mockResolvedValue(null);
+
+      expect(await sut.handleEncodeClip({ id: assetStub.image.id })).toEqual(JobStatus.Success);
+
+      expect(mocks.search.upsert).toHaveBeenCalledWith(assetStub.image.id, '[0.01, 0.02, 0.03]');
+      expect(mocks.event.emit).not.toHaveBeenCalled();
     });
 
     it('should wait for database', async () => {

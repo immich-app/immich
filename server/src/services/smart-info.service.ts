@@ -123,6 +123,17 @@ export class SmartInfoService extends BaseService {
 
     await this.searchRepository.upsert(asset.id, embedding);
 
+    // Trigger auto-stack candidate generation after CLIP embedding is generated
+    // This ensures all necessary data (metadata, pHash, embeddings) is available
+    // Get the asset owner ID for the event
+    const assetWithOwner = await this.assetRepository.getById(asset.id);
+    if (assetWithOwner) {
+      await this.eventRepository.emit('AssetSmartSearchProcessed', {
+        assetId: asset.id,
+        userId: assetWithOwner.ownerId,
+      });
+    }
+
     return JobStatus.Success;
   }
 }

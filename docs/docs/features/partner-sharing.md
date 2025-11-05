@@ -53,6 +53,10 @@ From the partner’s view, toggle the button
 
 <img src={require('./img/partner-sharing-8.webp').default} width="30%" title='Partner Sharing for the mobile app' />
 
+### Stacks
+
+Partner timelines respect stacks: by default, only the primary item of a stack appears in the grid with a stack count. Open the item to browse the rest of the stack. See [Stacks and AutoStack](/docs/features/stacks).
+
 ## Removing Access
 
 In order to remove a partner, you can go to `User > Account Settings > Sharing` and click on the X button.

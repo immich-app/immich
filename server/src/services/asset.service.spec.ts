@@ -487,7 +487,7 @@ describe(AssetService.name, () => {
           name: JobName.SidecarWrite,
           data: {
             id: 'asset-1',
-            dateTimeOriginal: '2020-02-25T06:41:00.000+02:00',
+            dateTimeOriginal: '2020-02-25T05:41:00.000+02:00',
             description: undefined,
             latitude: undefined,
             longitude: undefined,
@@ -599,7 +599,23 @@ describe(AssetService.name, () => {
 
     it('should update stack primary asset if deleted asset was primary asset in a stack', async () => {
       mocks.stack.update.mockResolvedValue(factory.stack() as any);
-      mocks.assetJob.getForAssetDeletion.mockResolvedValue(assetStub.primaryImage);
+      // Provide stack info directly on the asset as expected by current service implementation
+      mocks.assetJob.getForAssetDeletion.mockResolvedValue({
+        id: assetStub.primaryImage.id,
+        ownerId: assetStub.primaryImage.ownerId,
+        originalPath: assetStub.primaryImage.originalPath,
+        encodedVideoPath: assetStub.primaryImage.encodedVideoPath,
+        livePhotoVideoId: assetStub.primaryImage.livePhotoVideoId,
+        sidecarPath: assetStub.primaryImage.sidecarPath,
+        libraryId: assetStub.primaryImage.libraryId,
+        visibility: assetStub.primaryImage.visibility,
+        files: assetStub.primaryImage.files.map((f: any) => ({ id: f.id, path: f.path, type: f.type })),
+        stack: {
+          id: 'stack-1',
+          primaryAssetId: assetStub.primaryImage.id,
+          assets: [{ id: 'stack-child-asset-1' }, { id: 'stack-child-asset-2' }, { id: assetStub.primaryImage.id }],
+        },
+      } as any);
 
       await sut.handleAssetDeletion({ id: assetStub.primaryImage.id, deleteOnDisk: true });
 
@@ -611,10 +627,23 @@ describe(AssetService.name, () => {
 
     it('should delete the entire stack if deleted asset was the primary asset and the stack would only contain one asset afterwards', async () => {
       mocks.stack.delete.mockResolvedValue();
+      // Asset contains stack with only 2 assets (including the primary) -> expect delete
       mocks.assetJob.getForAssetDeletion.mockResolvedValue({
-        ...assetStub.primaryImage,
-        stack: { ...assetStub.primaryImage.stack, assets: assetStub.primaryImage.stack!.assets.slice(0, 2) },
-      });
+        id: assetStub.primaryImage.id,
+        ownerId: assetStub.primaryImage.ownerId,
+        originalPath: assetStub.primaryImage.originalPath,
+        encodedVideoPath: assetStub.primaryImage.encodedVideoPath,
+        livePhotoVideoId: assetStub.primaryImage.livePhotoVideoId,
+        sidecarPath: assetStub.primaryImage.sidecarPath,
+        libraryId: assetStub.primaryImage.libraryId,
+        visibility: assetStub.primaryImage.visibility,
+        files: assetStub.primaryImage.files.map((f: any) => ({ id: f.id, path: f.path, type: f.type })),
+        stack: {
+          id: 'stack-1',
+          primaryAssetId: assetStub.primaryImage.id,
+          assets: [{ id: assetStub.primaryImage.id }, { id: 'stack-child-asset-1' }],
+        },
+      } as any);
 
       await sut.handleAssetDeletion({ id: assetStub.primaryImage.id, deleteOnDisk: true });
 
@@ -622,8 +651,20 @@ describe(AssetService.name, () => {
     });
 
     it('should delete a live photo', async () => {
-      mocks.assetJob.getForAssetDeletion.mockResolvedValue(assetStub.livePhotoStillAsset as any);
+      mocks.assetJob.getForAssetDeletion.mockResolvedValue({
+        id: assetStub.livePhotoStillAsset.id,
+        ownerId: assetStub.livePhotoStillAsset.ownerId,
+        originalPath: assetStub.livePhotoStillAsset.originalPath,
+        encodedVideoPath: assetStub.livePhotoStillAsset.encodedVideoPath,
+        livePhotoVideoId: assetStub.livePhotoStillAsset.livePhotoVideoId,
+        sidecarPath: assetStub.livePhotoStillAsset.sidecarPath,
+        libraryId: assetStub.livePhotoStillAsset.libraryId,
+        stackId: assetStub.livePhotoStillAsset.stackId,
+        visibility: assetStub.livePhotoStillAsset.visibility,
+        files: assetStub.livePhotoStillAsset.files.map((f: any) => ({ id: f.id, path: f.path, type: f.type })),
+      } as any);
       mocks.asset.getLivePhotoCount.mockResolvedValue(0);
+      mocks.stack.getForAssetRemoval.mockResolvedValue([assetStub.livePhotoStillAsset.id]);
 
       await sut.handleAssetDeletion({
         id: assetStub.livePhotoStillAsset.id,
@@ -660,7 +701,19 @@ describe(AssetService.name, () => {
 
     it('should not delete a live motion part if it is being used by another asset', async () => {
       mocks.asset.getLivePhotoCount.mockResolvedValue(2);
-      mocks.assetJob.getForAssetDeletion.mockResolvedValue(assetStub.livePhotoStillAsset as any);
+      mocks.assetJob.getForAssetDeletion.mockResolvedValue({
+        id: assetStub.livePhotoStillAsset.id,
+        ownerId: assetStub.livePhotoStillAsset.ownerId,
+        originalPath: assetStub.livePhotoStillAsset.originalPath,
+        encodedVideoPath: assetStub.livePhotoStillAsset.encodedVideoPath,
+        livePhotoVideoId: assetStub.livePhotoStillAsset.livePhotoVideoId,
+        sidecarPath: assetStub.livePhotoStillAsset.sidecarPath,
+        libraryId: assetStub.livePhotoStillAsset.libraryId,
+        stackId: assetStub.livePhotoStillAsset.stackId,
+        visibility: assetStub.livePhotoStillAsset.visibility,
+        files: assetStub.livePhotoStillAsset.files.map((f: any) => ({ id: f.id, path: f.path, type: f.type })),
+      } as any);
+      mocks.stack.getForAssetRemoval.mockResolvedValue([assetStub.livePhotoStillAsset.id]);
 
       await sut.handleAssetDeletion({
         id: assetStub.livePhotoStillAsset.id,
@@ -687,7 +740,20 @@ describe(AssetService.name, () => {
     });
 
     it('should update usage', async () => {
-      mocks.assetJob.getForAssetDeletion.mockResolvedValue(assetStub.image);
+      mocks.assetJob.getForAssetDeletion.mockResolvedValue({
+        id: assetStub.image.id,
+        ownerId: assetStub.image.ownerId,
+        originalPath: assetStub.image.originalPath,
+        encodedVideoPath: assetStub.image.encodedVideoPath,
+        livePhotoVideoId: assetStub.image.livePhotoVideoId,
+        sidecarPath: assetStub.image.sidecarPath,
+        libraryId: assetStub.image.libraryId,
+        stackId: assetStub.image.stackId,
+        visibility: assetStub.image.visibility,
+        files: assetStub.image.files.map((f: any) => ({ id: f.id, path: f.path, type: f.type })),
+        exifInfo: { fileSizeInByte: 5000 },
+      } as any);
+      mocks.stack.getForAssetRemoval.mockResolvedValue([assetStub.image.id]);
       await sut.handleAssetDeletion({ id: assetStub.image.id, deleteOnDisk: true });
       expect(mocks.user.updateUsage).toHaveBeenCalledWith(assetStub.image.ownerId, -5000);
     });
