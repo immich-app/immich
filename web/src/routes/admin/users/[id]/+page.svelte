@@ -48,6 +48,7 @@
     mdiPlayCircle,
     mdiTrashCanOutline,
   } from '@mdi/js';
+  import { DateTime } from 'luxon';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
 
@@ -69,6 +70,21 @@
   let usedPercentage = $derived(Math.min(Math.round((usedBytes / availableBytes) * 100), 100));
   let canResetPassword = $derived($authUser.id !== user.id);
   let newPassword = $state<string>('');
+
+  let lastUploadText = $derived(
+    user.lastAssetUploadedAt
+      ? (() => {
+          const dt = DateTime.fromJSDate(new Date(user.lastAssetUploadedAt));
+          const now = DateTime.now();
+          if (dt.hasSame(now, 'day')) {
+            return $t('today');
+          } else {
+            const days = Math.floor(now.diff(dt, 'days').days);
+            return $t('days_ago', { values: { days } });
+          }
+        })()
+      : $t('never_uploaded'),
+  );
 
   let editedLocale = $derived(findLocale($locale).code);
   let createAtDate: Date = $derived(new Date(user.createdAt));
@@ -346,14 +362,10 @@
                 </div>
               </div>
             {/if}
-            <div class="mt-3 flex items-center gap-2">
+            <div class="px-4 pb-4 flex items-center gap-1">
               <Icon icon={mdiCloudUpload} size="1.25rem" class="text-primary" />
               <Heading tag="h3" size="tiny">{$t('last_upload')}</Heading>
-              {#if user.lastAssetUploadedAt}
-                <Text>{createDateFormatter(editedLocale).formatDateTime(new Date(user.lastAssetUploadedAt))}</Text>
-              {:else}
-                <Text>{$t('never_uploaded')}</Text>
-              {/if}
+              <Text>{lastUploadText}</Text>
             </div>
           </CardBody>
         </Card>
