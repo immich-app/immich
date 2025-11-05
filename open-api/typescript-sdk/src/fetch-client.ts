@@ -1753,28 +1753,26 @@ export function unlinkAllOAuthAccountsAdmin(opts?: Oazapfts.RequestOpts) {
         method: "POST"
     }));
 }
-export function getMaintenanceMode(opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: MaintenanceModeResponseDto;
-    }>("/admin/maintenance", {
-        ...opts
-    }));
-}
 /**
- * This endpoint is an admin-only route, and requires the `systemMetadata.update` permission.
+ * This endpoint is an admin-only route, and requires the `maintenance` permission.
  */
 export function endMaintenance(opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchText("/admin/maintenance/end", {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: MaintenanceModeResponseDto;
+    }>("/admin/maintenance/end", {
         ...opts,
         method: "POST"
     }));
 }
 /**
- * This endpoint is an admin-only route, and requires the `systemMetadata.update` permission.
+ * This endpoint is an admin-only route, and requires the `maintenance` permission.
  */
 export function startMaintenance(opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchText("/admin/maintenance/start", {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: MaintenanceModeResponseDto;
+    }>("/admin/maintenance/start", {
         ...opts,
         method: "POST"
     }));
@@ -4878,6 +4876,7 @@ export enum Permission {
     LibraryStatistics = "library.statistics",
     TimelineRead = "timeline.read",
     TimelineDownload = "timeline.download",
+    Maintenance = "maintenance",
     MemoryCreate = "memory.create",
     MemoryRead = "memory.read",
     MemoryUpdate = "memory.update",

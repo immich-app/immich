@@ -152,7 +152,6 @@ Class | Method | HTTP request | Description
 *LibrariesApi* | [**updateLibrary**](doc//LibrariesApi.md#updatelibrary) | **PUT** /libraries/{id} | 
 *LibrariesApi* | [**validate**](doc//LibrariesApi.md#validate) | **POST** /libraries/{id}/validate | 
 *MaintenanceAdminApi* | [**endMaintenance**](doc//MaintenanceAdminApi.md#endmaintenance) | **POST** /admin/maintenance/end | 
-*MaintenanceAdminApi* | [**getMaintenanceMode**](doc//MaintenanceAdminApi.md#getmaintenancemode) | **GET** /admin/maintenance | 
 *MaintenanceAdminApi* | [**startMaintenance**](doc//MaintenanceAdminApi.md#startmaintenance) | **POST** /admin/maintenance/start | 
 *MapApi* | [**getMapMarkers**](doc//MapApi.md#getmapmarkers) | **GET** /map/markers | 
 *MapApi* | [**reverseGeocode**](doc//MapApi.md#reversegeocode) | **GET** /map/reverse-geocode | 

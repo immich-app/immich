@@ -248,6 +248,13 @@
         "parameters": [],
         "responses": {
           "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MaintenanceModeResponseDto"
+                }
+              }
+            },
             "description": ""
           }
         },
@@ -266,8 +273,8 @@
           "Maintenance (admin)"
         ],
         "x-immich-admin-only": true,
-        "x-immich-permission": "systemMetadata.update",
-        "description": "This endpoint is an admin-only route, and requires the `systemMetadata.update` permission."
+        "x-immich-permission": "maintenance",
+        "description": "This endpoint is an admin-only route, and requires the `maintenance` permission."
       }
     },
     "/admin/maintenance/start": {
@@ -276,6 +283,13 @@
         "parameters": [],
         "responses": {
           "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MaintenanceModeResponseDto"
+                }
+              }
+            },
             "description": ""
           }
         },
@@ -294,8 +308,8 @@
           "Maintenance (admin)"
         ],
         "x-immich-admin-only": true,
-        "x-immich-permission": "systemMetadata.update",
-        "description": "This endpoint is an admin-only route, and requires the `systemMetadata.update` permission."
+        "x-immich-permission": "maintenance",
+        "description": "This endpoint is an admin-only route, and requires the `maintenance` permission."
       }
     },
     "/admin/notifications": {
@@ -12631,6 +12645,17 @@
         ],
         "type": "object"
       },
+      "MaintenanceModeResponseDto": {
+        "properties": {
+          "isMaintenanceMode": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "isMaintenanceMode"
+        ],
+        "type": "object"
+      },
       "ManualJobName": {
         "enum": [
           "person-cleanup",
@@ -13559,6 +13584,7 @@
           "library.statistics",
           "timeline.read",
           "timeline.download",
+          "maintenance",
           "memory.create",
           "memory.read",
           "memory.update",

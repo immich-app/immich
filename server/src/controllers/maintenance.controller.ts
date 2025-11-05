@@ -1,5 +1,6 @@
-import { Controller, Post } from '@nestjs/common';
+import { BadRequestException, Controller, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { MaintenanceModeResponseDto } from 'src/dtos/maintenance.dto';
 import { Permission } from 'src/enum';
 import { Authenticated } from 'src/middleware/auth.guard';
 import { MaintenanceService } from 'src/services/maintenance.service';
@@ -10,14 +11,15 @@ export class MaintenanceController {
   constructor(private service: MaintenanceService) {}
 
   @Post('start')
-  @Authenticated({ permission: Permission.SystemMetadataUpdate, admin: true })
-  startMaintenance() {
-    return this.service.startMaintenance();
+  @Authenticated({ permission: Permission.Maintenance, admin: true })
+  async startMaintenance(): Promise<MaintenanceModeResponseDto> {
+    await this.service.startMaintenance();
+    return { isMaintenanceMode: true };
   }
 
   @Post('end')
-  @Authenticated({ permission: Permission.SystemMetadataUpdate, admin: true })
-  endMaintenance() {
-    return this.service.endMaintenance();
+  @Authenticated({ permission: Permission.Maintenance, admin: true })
+  endMaintenance(): Promise<MaintenanceModeResponseDto> {
+    throw new BadRequestException('Not in maintenance mode');
   }
 }

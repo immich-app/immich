@@ -13,12 +13,6 @@ import { getConfig } from 'src/utils/config';
  */
 @Injectable()
 export class MaintenanceWorkerService {
-  // protected storageCore: StorageCore;
-
-  // nestApplication: INestApplication | undefined;
-
-  //
-
   constructor(
     protected logger: LoggingRepository,
     private configRepository: ConfigRepository,
@@ -26,16 +20,6 @@ export class MaintenanceWorkerService {
     private maintenanceRepository: MaintenanceWorkerRepository,
   ) {
     this.logger.setContext(this.constructor.name);
-    // this.storageCore = StorageCore.create(
-    //   assetRepository,
-    //   configRepository,
-    //   cryptoRepository,
-    //   moveRepository,
-    //   personRepository,
-    //   storageRepository,
-    //   systemMetadataRepository,
-    //   this.logger,
-    // );
   }
 
   private get configRepos() {
@@ -72,24 +56,14 @@ export class MaintenanceWorkerService {
     return MaintenanceService.getMaintenanceModeWith(this.systemMetadataRepository);
   }
 
-  private async setMaintenanceMode(isMaintenanceMode: boolean) {
-    const state = { isMaintenanceMode };
-    await this.systemMetadataRepository.set(SystemMetadataKey.MaintenanceMode, state);
-    this.maintenanceRepository.restartApp(state);
-  }
-
-  async startMaintenance(): Promise<void> {
-    throw new BadRequestException('Already in maintenance mode');
-  }
-
   async endMaintenance(): Promise<void> {
     const { isMaintenanceMode } = await this.getMaintenanceMode();
     if (!isMaintenanceMode) {
       throw new BadRequestException('Not in maintenance mode');
     }
 
-    await this.setMaintenanceMode(false);
+    const state = { isMaintenanceMode: false };
+    await this.systemMetadataRepository.set(SystemMetadataKey.MaintenanceMode, state);
+    this.maintenanceRepository.restartApp(state);
   }
-
-  // todo: restart works differently
 }

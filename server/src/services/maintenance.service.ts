@@ -37,23 +37,15 @@ export class MaintenanceService extends BaseService {
     return MaintenanceService.getMaintenanceModeWith(this.systemMetadataRepository);
   }
 
-  private async setMaintenanceMode(isMaintenanceMode: boolean) {
-    const state = { isMaintenanceMode };
-    await this.systemMetadataRepository.set(SystemMetadataKey.MaintenanceMode, state);
-    await this.eventRepository.emit('AppRestart', state);
-  }
-
   async startMaintenance(): Promise<void> {
     const { isMaintenanceMode } = await this.getMaintenanceMode();
     if (isMaintenanceMode) {
       throw new BadRequestException('Already in maintenance mode');
     }
 
-    await this.setMaintenanceMode(true);
-  }
-
-  async endMaintenance(): Promise<void> {
-    throw new BadRequestException('Not in maintenance mode');
+    const state = { isMaintenanceMode: true };
+    await this.systemMetadataRepository.set(SystemMetadataKey.MaintenanceMode, state);
+    await this.eventRepository.emit('AppRestart', state);
   }
 
   @OnEvent({ name: 'AppRestart', server: true })

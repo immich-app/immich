@@ -1,5 +1,6 @@
-import { Controller, Get, Post } from '@nestjs/common';
+import { BadRequestException, Controller, Get, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { MaintenanceModeResponseDto } from 'src/dtos/maintenance.dto';
 import { ServerConfigDto } from 'src/dtos/server.dto';
 import { MaintenanceWorkerService } from 'src/services/maintenance-worker.service';
 
@@ -14,12 +15,13 @@ export class MaintenanceWorkerController {
   }
 
   @Post('admin/maintenance/start')
-  startMaintenance() {
-    return this.service.startMaintenance();
+  startMaintenance(): Promise<MaintenanceModeResponseDto> {
+    throw new BadRequestException('Already in maintenance mode');
   }
 
   @Post('admin/maintenance/end')
-  endMaintenance() {
-    return this.service.endMaintenance();
+  async endMaintenance(): Promise<MaintenanceModeResponseDto> {
+    await this.service.endMaintenance();
+    return { isMaintenanceMode: false };
   }
 }

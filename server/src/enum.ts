@@ -138,6 +138,8 @@ export enum Permission {
   TimelineRead = 'timeline.read',
   TimelineDownload = 'timeline.download',
 
+  Maintenance = 'maintenance',
+
   MemoryCreate = 'memory.create',
   MemoryRead = 'memory.read',
   MemoryUpdate = 'memory.update',
