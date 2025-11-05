@@ -49,10 +49,8 @@ export class UserAdminService extends BaseService {
     const user = await this.findOrFail(id, { withDeleted: true });
     const dto = mapUserAdmin(user);
 
-    // populate lastAssetUploadedAt using AssetRepository
     const last = await this.assetRepository.getLatestCreatedAtForUser(id);
     dto.lastAssetUploadedAt = last ?? null;
-    this.logger.debug(`UserAdminService.get: lastAssetUploadedAt for user ${id} = ${dto.lastAssetUploadedAt}`);
 
     return dto;
   }
