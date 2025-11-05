@@ -140,20 +140,3 @@ export class UserController {
     await sendFile(res, next, () => this.service.getProfileImage(id), this.logger);
   }
 }
-
-@Controller(RouteKey.User)
-export class MaintenanceUserController {
-  constructor(private service: UserService) {}
-
-  @Get('me')
-  @Authenticated({ permission: Permission.UserRead })
-  getMyUser(@Auth() auth: AuthDto): Promise<UserAdminResponseDto> {
-    return this.service.getMe(auth);
-  }
-
-  @Get('me/preferences')
-  @Authenticated({ permission: Permission.UserPreferenceRead })
-  getMyPreferences(@Auth() auth: AuthDto): Promise<UserPreferencesResponseDto> {
-    return this.service.getMyPreferences(auth);
-  }
-}

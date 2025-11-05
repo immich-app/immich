@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { MaintenanceModeResponseDto } from 'src/dtos/maintenance.dto';
+import { SystemMetadataKey } from 'src/enum';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { MaintenanceWorkerRepository } from 'src/repositories/maintenance-worker.repository';
@@ -72,12 +73,9 @@ export class MaintenanceWorkerService {
   }
 
   private async setMaintenanceMode(isMaintenanceMode: boolean) {
-    // const state = { isMaintenanceMode };
-    // todo:
-    // await this.systemMetadataRepository.set(SystemMetadataKey.MaintenanceMode, state);
-    // this.websocketRepository.clientBroadcast('on_server_restart', state);
-    // this.websocketRepository.serverSend('AppRestart');
-    // await this.eventRepository.emit('AppRestart');
+    const state = { isMaintenanceMode };
+    await this.systemMetadataRepository.set(SystemMetadataKey.MaintenanceMode, state);
+    this.maintenanceRepository.restartApp(state);
   }
 
   async startMaintenance(): Promise<void> {
