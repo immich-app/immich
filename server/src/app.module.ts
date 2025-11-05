@@ -114,7 +114,14 @@ export class ApiModule extends BaseModule {}
     { provide: IWorker, useValue: ImmichWorker.Maintenance },
   ],
 })
-export class MaintenanceModule {}
+export class MaintenanceModule {
+  constructor(
+    @Inject(IWorker) private worker: ImmichWorker,
+    logger: LoggingRepository,
+  ) {
+    logger.setAppName(this.worker);
+  }
+}
 
 @Module({
   imports: [...bullImports, ...commonImports],
