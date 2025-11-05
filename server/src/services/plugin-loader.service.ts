@@ -4,7 +4,6 @@ import { validateOrReject } from 'class-validator';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { PluginManifestDto } from 'src/dtos/plugin-manifest.dto';
-import { PluginActionName, PluginFilterName } from 'src/schema/tables/plugin.table';
 import { BaseService } from 'src/services/base.service';
 
 @Injectable()
@@ -34,8 +33,7 @@ export class PluginLoaderService extends BaseService implements OnApplicationBoo
   private async loadPluginToDatabase(manifest: PluginManifestDto): Promise<void> {
     const currentPlugin = await this.pluginRepository.getPluginByName(manifest.name);
     if (currentPlugin != null && currentPlugin.version === manifest.version) {
-      this.logger.log(`Plugin ${manifest.name} is up to date (version ${manifest.version}). Skipping.`);
-
+      this.logger.log(`Plugin ${manifest.name} is up to date (version ${manifest.version}). Skipping`);
       return;
     }
 
@@ -53,11 +51,10 @@ export class PluginLoaderService extends BaseService implements OnApplicationBoo
       for (const filter of manifest.filters) {
         const filterResult = await this.pluginRepository.upsertFilter({
           pluginId: plugin.id,
-          name: filter.name as PluginFilterName,
+          name: filter.name,
           displayName: filter.displayName,
           description: filter.description,
           supportedContexts: filter.supportedContexts,
-          functionName: filter.functionName,
           schema: filter.schema,
         });
 
@@ -69,11 +66,10 @@ export class PluginLoaderService extends BaseService implements OnApplicationBoo
       for (const action of manifest.actions) {
         const actionResult = await this.pluginRepository.upsertAction({
           pluginId: plugin.id,
-          name: action.name as PluginActionName,
+          name: action.name,
           displayName: action.displayName,
           description: action.description,
           supportedContexts: action.supportedContexts,
-          functionName: action.functionName,
           schema: action.schema,
         });
 

@@ -17,18 +17,6 @@ export enum PluginContext {
   Person = 'person',
 }
 
-export enum PluginFilterName {
-  FileName = 'file_name',
-  FileType = 'file_type',
-  PersonName = 'person_name',
-}
-
-export enum PluginActionName {
-  Archive = 'archive',
-  Favorite = 'favorite',
-  AddToAlbum = 'add_to_album',
-}
-
 export enum PluginTriggerType {
   AssetCreate = 'AssetCreate',
   PersonRecognized = 'PersonRecognized',
@@ -109,8 +97,8 @@ export class PluginFilterTable {
   @Column({ index: true })
   pluginId!: string;
 
-  @Column({ type: 'character varying', index: true, unique: true })
-  name!: Generated<PluginFilterName>;
+  @Column({ index: true, unique: true })
+  name!: string;
 
   @Column()
   displayName!: string;
@@ -120,9 +108,6 @@ export class PluginFilterTable {
 
   @Column({ type: 'character varying', array: true })
   supportedContexts!: Generated<PluginContext[]>;
-
-  @Column()
-  functionName!: string;
 
   @Column({ type: 'jsonb', nullable: true })
   schema!: JSONSchema | null;
@@ -138,8 +123,8 @@ export class PluginActionTable {
   @Column({ index: true })
   pluginId!: string;
 
-  @Column({ type: 'character varying', index: true, unique: true })
-  name!: Generated<PluginActionName>;
+  @Column({ index: true, unique: true })
+  name!: string;
 
   @Column()
   displayName!: string;
@@ -149,9 +134,6 @@ export class PluginActionTable {
 
   @Column({ type: 'character varying', array: true })
   supportedContexts!: Generated<PluginContext[]>;
-
-  @Column()
-  functionName!: string;
 
   @Column({ type: 'jsonb', nullable: true })
   schema!: JSONSchema | null;

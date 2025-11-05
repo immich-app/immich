@@ -110,13 +110,13 @@ export class PluginService extends BaseService implements OnModuleInit {
         continue;
       }
 
-      this.logger.debug(`Executing filter: ${filter.name} (${filter.functionName})`);
+      this.logger.debug(`Executing filter: ${filter.name}`);
       const filterInput = JSON.stringify({
         context,
         config: workflowFilter.filterConfig,
       });
 
-      const filterResult = await pluginInstance.call(filter.functionName, new TextEncoder().encode(filterInput));
+      const filterResult = await pluginInstance.call(filter.name, new TextEncoder().encode(filterInput));
       if (!filterResult) {
         this.logger.error(`Filter ${filter.name} returned null`);
         return;
@@ -152,15 +152,15 @@ export class PluginService extends BaseService implements OnModuleInit {
         continue;
       }
 
-      this.logger.debug(`Executing action: ${action.name} (${action.functionName})`);
+      this.logger.debug(`Executing action: ${action.name}`);
       const actionInput = JSON.stringify({
         context,
         config: workflowAction.actionConfig,
       });
 
-      console.log(`Calling action ${action.functionName} with input: ${actionInput}`);
+      console.log(`Calling action ${action.name} with input: ${actionInput}`);
 
-      const actionResult = await pluginInstance.call(action.functionName, actionInput);
+      const actionResult = await pluginInstance.call(action.name, actionInput);
       if (!actionResult) {
         console.error(`Action ${action.name} returned null`);
         continue;
@@ -233,7 +233,6 @@ export class PluginService extends BaseService implements OnModuleInit {
       displayName: filter.displayName,
       description: filter.description,
       supportedContexts: filter.supportedContexts,
-      functionName: filter.functionName,
       schema: filter.schema,
     };
   }
@@ -246,7 +245,6 @@ export class PluginService extends BaseService implements OnModuleInit {
       displayName: action.displayName,
       description: action.description,
       supportedContexts: action.supportedContexts,
-      functionName: action.functionName,
       schema: action.schema,
     };
   }

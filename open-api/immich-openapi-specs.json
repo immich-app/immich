@@ -14318,18 +14318,10 @@
           "displayName": {
             "type": "string"
           },
-          "functionName": {
-            "type": "string"
-          },
           "id": {
             "type": "string"
           },
           "name": {
-            "enum": [
-              "archive",
-              "favorite",
-              "add_to_album"
-            ],
             "type": "string"
           },
           "pluginId": {
@@ -14354,7 +14346,6 @@
         "required": [
           "description",
           "displayName",
-          "functionName",
           "id",
           "name",
           "pluginId",
@@ -14371,18 +14362,10 @@
           "displayName": {
             "type": "string"
           },
-          "functionName": {
-            "type": "string"
-          },
           "id": {
             "type": "string"
           },
           "name": {
-            "enum": [
-              "file_name",
-              "file_type",
-              "person_name"
-            ],
             "type": "string"
           },
           "pluginId": {
@@ -14407,7 +14390,6 @@
         "required": [
           "description",
           "displayName",
-          "functionName",
           "id",
           "name",
           "pluginId",

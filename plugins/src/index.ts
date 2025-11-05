@@ -9,7 +9,7 @@ function returnOutput(output: any) {
   return 0;
 }
 
-export function filter_filename() {
+export function filterFileName() {
   const input = parseInput();
   const { context, config } = input;
   const { pattern, matchType = 'contains', caseSensitive = false } = config;
@@ -35,7 +35,7 @@ export function filter_filename() {
   return returnOutput({ passed, context });
 }
 
-export function action_add_to_album() {
+export function actionAddToAlbum() {
   console.log('Executing action action_add_to_album');
   const input = parseInput();
   const { context, config } = input;
@@ -54,7 +54,7 @@ export function action_add_to_album() {
   return returnOutput({ success: true, context });
 }
 
-export function action_archive() {
+export function actionArchive() {
   const input = parseInput();
   const { context } = input;
   const ptr = Memory.fromString(

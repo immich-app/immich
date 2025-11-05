@@ -15,10 +15,8 @@ import {
 import { AlbumTable } from 'src/schema/tables/album.table';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
 import {
-  PluginActionName,
   PluginActionTable,
   PluginContext,
-  PluginFilterName,
   PluginFilterTable,
   PluginTable,
   PluginTriggerType,
@@ -291,20 +289,18 @@ export type AssetFace = {
 export type Plugin = Selectable<PluginTable>;
 
 export type PluginFilter = Selectable<PluginFilterTable> & {
-  name: PluginFilterName;
+  name: string;
   displayName: string;
   description: string;
   supportedContexts: PluginContext[];
-  functionName: string;
   schema: JSONSchema | null;
 };
 
 export type PluginAction = Selectable<PluginActionTable> & {
-  name: PluginActionName;
+  name: string;
   displayName: string;
   description: string;
   supportedContexts: PluginContext[];
-  functionName: string;
   schema: JSONSchema | null;
 };
 

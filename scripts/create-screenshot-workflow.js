@@ -86,7 +86,7 @@ async function createWorkflow() {
   const { filters, actions } = await getPluginFiltersAndActions();
 
   // Find the file_name filter
-  const fileNameFilter = filters.find((f) => f.name === 'file_name');
+  const fileNameFilter = filters.find((f) => f.name === 'filterFileName');
   if (!fileNameFilter) {
     throw new Error(
       'file_name filter not found. Make sure plugins are loaded.'
@@ -95,7 +95,7 @@ async function createWorkflow() {
   console.log(`✓ Found file_name filter (ID: ${fileNameFilter.id})`);
 
   // Find the add_to_album action
-  const addToAlbumAction = actions.find((a) => a.name === 'add_to_album');
+  const addToAlbumAction = actions.find((a) => a.name === 'actionAddToAlbum');
   if (!addToAlbumAction) {
     throw new Error(
       'add_to_album action not found. Make sure plugins are loaded.'
@@ -104,7 +104,7 @@ async function createWorkflow() {
   console.log(`✓ Found add_to_album action (ID: ${addToAlbumAction.id})`);
 
   // Find the archive action
-  const archiveAction = actions.find((a) => a.name === 'archive');
+  const archiveAction = actions.find((a) => a.name === 'actionArchive');
   if (!archiveAction) {
     throw new Error('archive action not found. Make sure plugins are loaded.');
   }

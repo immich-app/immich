@@ -1,6 +1,6 @@
 {
   "name": "immich-core",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "displayName": "Immich Core",
   "description": "Core workflow capabilities for Immich",
   "author": "Immich Team",
@@ -11,8 +11,8 @@
 
   "filters": [
     {
-      "name": "file_name",
-      "displayName": "File Name Match",
+      "name": "filterFileName",
+      "displayName": "Filter by filename",
       "description": "Filter assets by filename pattern using text matching or regular expressions",
       "supportedContexts": ["asset"],
       "schema": {
@@ -35,12 +35,11 @@
           }
         },
         "required": ["pattern"]
-      },
-      "functionName": "filter_filename"
+      }
     },
     {
-      "name": "file_type",
-      "displayName": "File Type Match",
+      "name": "filterFileType",
+      "displayName": "Filter by file type",
       "description": "Filter assets by file type",
       "supportedContexts": ["asset"],
       "schema": {
@@ -56,23 +55,22 @@
           }
         },
         "required": ["fileTypes"]
-      },
-      "functionName": "filter_filetype"
+      }
     },
     {
-      "name": "person_name",
-      "displayName": "Person Name Match",
-      "description": "Filter by detected person names",
+      "name": "filterPerson",
+      "displayName": "Filter by person",
+      "description": "Filter by detected person",
       "supportedContexts": ["person"],
       "schema": {
         "type": "object",
         "properties": {
-          "personNames": {
+          "personIds": {
             "type": "array",
             "items": {
               "type": "string"
             },
-            "description": "List of person names to match"
+            "description": "List of person to match"
           },
           "matchAny": {
             "type": "boolean",
@@ -80,23 +78,21 @@
             "description": "Match any name (true) or require all names (false)"
           }
         },
-        "required": ["personNames"]
-      },
-      "functionName": "filter_person_name"
+        "required": ["personIds"]
+      }
     }
   ],
 
   "actions": [
     {
-      "name": "archive",
+      "name": "actionArchive",
       "displayName": "Archive",
       "description": "Move the asset to archive",
       "supportedContexts": ["asset"],
-      "schema": {},
-      "functionName": "action_archive"
+      "schema": {}
     },
     {
-      "name": "favorite",
+      "name": "actionFavorite",
       "displayName": "Favorite",
       "description": "Mark the asset as favorite or unfavorite",
       "supportedContexts": ["asset"],
@@ -109,11 +105,10 @@
             "description": "Set favorite (true) or unfavorite (false)"
           }
         }
-      },
-      "functionName": "action_favorite"
+      }
     },
     {
-      "name": "add_to_album",
+      "name": "actionAddToAlbum",
       "displayName": "Add to Album",
       "description": "Add the item to a specified album",
       "supportedContexts": ["asset", "person"],
@@ -126,8 +121,7 @@
           }
         },
         "required": ["albumId"]
-      },
-      "functionName": "action_add_to_album"
+      }
     }
   ]
 }

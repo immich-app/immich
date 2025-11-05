@@ -3,13 +3,7 @@ import { Insertable, Kysely, Updateable } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { DB } from 'src/schema';
-import {
-  PluginActionName,
-  PluginActionTable,
-  PluginFilterName,
-  PluginFilterTable,
-  PluginTable,
-} from 'src/schema/tables/plugin.table';
+import { PluginActionTable, PluginFilterTable, PluginTable } from 'src/schema/tables/plugin.table';
 
 @Injectable()
 export class PluginRepository {
@@ -91,7 +85,7 @@ export class PluginRepository {
   }
 
   @GenerateSql({ params: [DummyValue.STRING] })
-  getFilterByName(name: PluginFilterName) {
+  getFilterByName(name: string) {
     return this.db.selectFrom('plugin_filter').selectAll().where('name', '=', name).executeTakeFirst();
   }
 
@@ -122,7 +116,6 @@ export class PluginRepository {
         displayName: DummyValue.STRING,
         description: DummyValue.STRING,
         supportedContexts: [DummyValue.STRING],
-        functionName: DummyValue.STRING,
         schema: null,
       },
     ],
@@ -149,7 +142,6 @@ export class PluginRepository {
         displayName: DummyValue.STRING,
         description: DummyValue.STRING,
         supportedContexts: [DummyValue.STRING],
-        functionName: DummyValue.STRING,
         schema: null,
       },
     ],
@@ -164,7 +156,6 @@ export class PluginRepository {
           displayName: filter.displayName,
           description: filter.description,
           supportedContexts: filter.supportedContexts,
-          functionName: filter.functionName,
           schema: filter.schema,
         }),
       )
@@ -178,7 +169,7 @@ export class PluginRepository {
   }
 
   @GenerateSql({ params: [DummyValue.STRING] })
-  getActionByName(name: PluginActionName) {
+  getActionByName(name: string) {
     return this.db.selectFrom('plugin_action').selectAll().where('name', '=', name).executeTakeFirst();
   }
 
@@ -209,7 +200,6 @@ export class PluginRepository {
         displayName: DummyValue.STRING,
         description: DummyValue.STRING,
         supportedContexts: [DummyValue.STRING],
-        functionName: DummyValue.STRING,
         schema: null,
       },
     ],
@@ -236,7 +226,6 @@ export class PluginRepository {
         displayName: DummyValue.STRING,
         description: DummyValue.STRING,
         supportedContexts: [DummyValue.STRING],
-        functionName: DummyValue.STRING,
         schema: null,
       },
     ],
@@ -251,7 +240,6 @@ export class PluginRepository {
           displayName: action.displayName,
           description: action.description,
           supportedContexts: action.supportedContexts,
-          functionName: action.functionName,
           schema: action.schema,
         }),
       )

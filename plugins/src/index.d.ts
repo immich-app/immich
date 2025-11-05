@@ -1,7 +1,7 @@
 declare module 'main' {
-  export function filter_filename(): I32;
-  export function action_add_to_album(): I32;
-  export function action_archive(): I32;
+  export function filterFileName(): I32;
+  export function actionAddToAlbum(): I32;
+  export function actionArchive(): I32;
 }
 
 declare module 'extism:host' {

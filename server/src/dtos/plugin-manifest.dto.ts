@@ -10,9 +10,8 @@ import {
   Matches,
   ValidateNested,
 } from 'class-validator';
-import { PluginActionName, PluginContext, PluginFilterName } from 'src/schema/tables/plugin.table';
+import { PluginContext } from 'src/schema/tables/plugin.table';
 import { JSONSchema } from 'src/types/plugin-schema.types';
-import { ValidateEnum } from 'src/validation';
 
 class PluginManifestWasmDto {
   @IsString()
@@ -21,33 +20,8 @@ class PluginManifestWasmDto {
 }
 
 class PluginManifestFilterDto {
-  @ValidateEnum({ enum: PluginFilterName, name: 'PluginFilterName', optional: false })
-  name!: PluginFilterName;
-
   @IsString()
   @IsNotEmpty()
-  displayName!: string;
-
-  @IsString()
-  @IsNotEmpty()
-  description!: string;
-
-  @IsArray()
-  @ArrayMinSize(1)
-  @IsEnum(PluginContext, { each: true })
-  supportedContexts!: PluginContext[];
-
-  @IsString()
-  @IsNotEmpty()
-  functionName!: string;
-
-  @IsObject()
-  @IsOptional()
-  schema?: JSONSchema;
-}
-
-class PluginManifestActionDto {
-  @ValidateEnum({ enum: PluginActionName, name: 'PluginActionName', optional: false })
   name!: string;
 
   @IsString()
@@ -63,9 +37,28 @@ class PluginManifestActionDto {
   @IsEnum(PluginContext, { each: true })
   supportedContexts!: PluginContext[];
 
+  @IsObject()
+  @IsOptional()
+  schema?: JSONSchema;
+}
+
+class PluginManifestActionDto {
   @IsString()
   @IsNotEmpty()
-  functionName!: string;
+  name!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  displayName!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  description!: string;
+
+  @IsArray()
+  @ArrayMinSize(1)
+  @IsEnum(PluginContext, { each: true })
+  supportedContexts!: PluginContext[];
 
   @IsObject()
   @IsOptional()
