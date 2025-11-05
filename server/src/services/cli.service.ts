@@ -83,8 +83,10 @@ export class CliService extends BaseService {
 
     const state = await this.maintenanceRepository.getMaintenanceMode();
     if (state.isMaintenanceMode) {
+      const secret = new TextEncoder().encode(state.secret);
+
       return {
-        authUrl: await this.maintenanceRepository.createLoginUrl(baseUrl, payload, state.secret),
+        authUrl: await this.maintenanceRepository.createLoginUrl(baseUrl, payload, secret),
         alreadyEnabled: true,
       };
     }
