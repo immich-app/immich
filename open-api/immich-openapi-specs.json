@@ -11009,6 +11009,9 @@
           },
           "videoConversion": {
             "$ref": "#/components/schemas/JobStatusDto"
+          },
+          "workflow": {
+            "$ref": "#/components/schemas/JobStatusDto"
           }
         },
         "required": [
@@ -11027,7 +11030,8 @@
           "smartSearch",
           "storageTemplateMigration",
           "thumbnailGeneration",
-          "videoConversion"
+          "videoConversion",
+          "workflow"
         ],
         "type": "object"
       },
@@ -12813,7 +12817,8 @@
           "library",
           "notifications",
           "backupDatabase",
-          "ocr"
+          "ocr",
+          "workflow"
         ],
         "type": "string"
       },
@@ -17356,6 +17361,9 @@
           },
           "videoConversion": {
             "$ref": "#/components/schemas/JobSettingsDto"
+          },
+          "workflow": {
+            "$ref": "#/components/schemas/JobSettingsDto"
           }
         },
         "required": [
@@ -17370,7 +17378,8 @@
           "sidecar",
           "smartSearch",
           "thumbnailGeneration",
-          "videoConversion"
+          "videoConversion",
+          "workflow"
         ],
         "type": "object"
       },

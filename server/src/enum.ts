@@ -525,6 +525,7 @@ export enum QueueName {
   Notification = 'notifications',
   BackupDatabase = 'backupDatabase',
   Ocr = 'ocr',
+  Workflow = 'workflow',
 }
 
 export enum JobName {
@@ -601,6 +602,9 @@ export enum JobName {
   // OCR
   OcrQueueAll = 'OcrQueueAll',
   Ocr = 'Ocr',
+
+  // Workflow
+  WorkflowExecute = 'WorkflowExecute',
 }
 
 export enum JobCommand {
