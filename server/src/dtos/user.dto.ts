@@ -189,7 +189,6 @@ export function mapUserAdmin(entity: UserAdmin): UserAdminResponseDto {
     quotaUsageInBytes: entity.quotaUsageInBytes,
     status: entity.status,
     license: license ? { ...license, activatedAt: new Date(license?.activatedAt) } : null,
-    // default value; service may populate a real value
     lastAssetUploadedAt: null,
   };
 }
