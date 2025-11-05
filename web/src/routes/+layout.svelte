@@ -107,6 +107,17 @@
 
   $effect(() => void handleRelease($release));
 
+  function maintenanceUrl() {
+    const target = new URL(AppRoute.MAINTENANCE);
+    target.searchParams.set('next', location.href);
+    return target;
+  }
+
+  function nextUrl() {
+    const target = new URL(new URLSearchParams(location.search).get('next') ?? '/');
+    return new URL(target.pathname + target.search + target.hash, location.origin).href;
+  }
+
   serverRestarting.subscribe((isRestarting) => {
     if (!isRestarting) {
       return;
@@ -122,7 +133,7 @@
         if (!connected) {
           waiting = true;
         } else if (connected && waiting) {
-          location.href = isRestarting.isMaintenanceMode ? AppRoute.MAINTENANCE : '/';
+          location.href = isRestarting.isMaintenanceMode ? maintenanceUrl() : nextUrl();
         }
       });
     }
