@@ -100,9 +100,7 @@ class OrtSession:
                         "cache_dir": (self.model_path.parent / "openvino").as_posix(),
                         "load_config": orjson.dumps(
                             {
-                                f"GPU.{settings.device_id}": {
-                                    "CPU_RUNTIME_CACHE_CAPACITY": str(settings.openvino_cache_capacity)
-                                },
+                                "CPU": {"CPU_RUNTIME_CACHE_CAPACITY": str(settings.openvino_cache_capacity)},
                             }
                         ).decode(),
                     }

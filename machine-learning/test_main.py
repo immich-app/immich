@@ -248,7 +248,7 @@ class TestOrtSession:
                 "device_type": "GPU.0",
                 "precision": "FP32",
                 "cache_dir": "/cache/ViT-B-32__openai/openvino",
-                "load_config": "{\"GPU.0\":{\"CPU_RUNTIME_CACHE_CAPACITY\":\"20\"}}",
+                "load_config": "{\"CPU\":{\"CPU_RUNTIME_CACHE_CAPACITY\":\"20\"}}",
             },
             {"arena_extend_strategy": "kSameAsRequested"},
         ]
@@ -265,7 +265,7 @@ class TestOrtSession:
                 "device_type": "GPU.1",
                 "precision": "FP32",
                 "cache_dir": "/cache/ViT-B-32__openai/textual/openvino",
-                "load_config": "{\"GPU.1\":{\"CPU_RUNTIME_CACHE_CAPACITY\":\"10\"}}"
+                "load_config": "{\"CPU\":{\"CPU_RUNTIME_CACHE_CAPACITY\":\"10\"}}"
             }
         ]
 
