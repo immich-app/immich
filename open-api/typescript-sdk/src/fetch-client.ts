@@ -1,6 +1,6 @@
 /**
  * Immich
- * 2.1.0
+ * 2.2.3
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -523,6 +523,15 @@ export type AssetBulkUploadCheckResult = {
 export type AssetBulkUploadCheckResponseDto = {
     results: AssetBulkUploadCheckResult[];
 };
+export type AssetCopyDto = {
+    albums?: boolean;
+    favorite?: boolean;
+    sharedLinks?: boolean;
+    sidecar?: boolean;
+    sourceId: string;
+    stack?: boolean;
+    targetId: string;
+};
 export type CheckExistingAssetsDto = {
     deviceAssetIds: string[];
     deviceId: string;
@@ -552,6 +561,32 @@ export type AssetMetadataResponseDto = {
 export type AssetMetadataUpsertDto = {
     items: AssetMetadataUpsertItemDto[];
 };
+export type AssetOcrResponseDto = {
+    assetId: string;
+    /** Confidence score for text detection box */
+    boxScore: number;
+    id: string;
+    /** Recognized text */
+    text: string;
+    /** Confidence score for text recognition */
+    textScore: number;
+    /** Normalized x coordinate of box corner 1 (0-1) */
+    x1: number;
+    /** Normalized x coordinate of box corner 2 (0-1) */
+    x2: number;
+    /** Normalized x coordinate of box corner 3 (0-1) */
+    x3: number;
+    /** Normalized x coordinate of box corner 4 (0-1) */
+    x4: number;
+    /** Normalized y coordinate of box corner 1 (0-1) */
+    y1: number;
+    /** Normalized y coordinate of box corner 2 (0-1) */
+    y2: number;
+    /** Normalized y coordinate of box corner 3 (0-1) */
+    y3: number;
+    /** Normalized y coordinate of box corner 4 (0-1) */
+    y4: number;
+};
 export type AssetMediaReplaceDto = {
     assetData: Blob;
     deviceAssetId: string;
@@ -567,6 +602,7 @@ export type SignUpDto = {
     password: string;
 };
 export type ChangePasswordDto = {
+    invalidateSessions?: boolean;
     newPassword: string;
     password: string;
 };
@@ -701,6 +737,7 @@ export type AllJobStatusResponseDto = {
     metadataExtraction: JobStatusDto;
     migration: JobStatusDto;
     notifications: JobStatusDto;
+    ocr: JobStatusDto;
     search: JobStatusDto;
     sidecar: JobStatusDto;
     smartSearch: JobStatusDto;
@@ -931,6 +968,7 @@ export type MetadataSearchDto = {
     libraryId?: string | null;
     make?: string;
     model?: string | null;
+    ocr?: string;
     order?: AssetOrder;
     originalFileName?: string;
     originalPath?: string;
@@ -1003,6 +1041,7 @@ export type RandomSearchDto = {
     libraryId?: string | null;
     make?: string;
     model?: string | null;
+    ocr?: string;
     personIds?: string[];
     rating?: number;
     size?: number;
@@ -1038,6 +1077,7 @@ export type SmartSearchDto = {
     libraryId?: string | null;
     make?: string;
     model?: string | null;
+    ocr?: string;
     page?: number;
     personIds?: string[];
     query?: string;
@@ -1074,6 +1114,7 @@ export type StatisticsSearchDto = {
     libraryId?: string | null;
     make?: string;
     model?: string | null;
+    ocr?: string;
     personIds?: string[];
     rating?: number;
     state?: string | null;
@@ -1140,6 +1181,7 @@ export type ServerFeaturesDto = {
     map: boolean;
     oauth: boolean;
     oauthAutoLaunch: boolean;
+    ocr: boolean;
     passwordLogin: boolean;
     reverseGeocoding: boolean;
     search: boolean;
@@ -1376,6 +1418,7 @@ export type SystemConfigJobDto = {
     metadataExtraction: JobSettingsDto;
     migration: JobSettingsDto;
     notifications: JobSettingsDto;
+    ocr: JobSettingsDto;
     search: JobSettingsDto;
     sidecar: JobSettingsDto;
     smartSearch: JobSettingsDto;
@@ -1417,12 +1460,20 @@ export type FacialRecognitionConfig = {
     minScore: number;
     modelName: string;
 };
+export type OcrConfig = {
+    enabled: boolean;
+    maxResolution: number;
+    minDetectionScore: number;
+    minRecognitionScore: number;
+    modelName: string;
+};
 export type SystemConfigMachineLearningDto = {
     availabilityChecks: MachineLearningAvailabilityChecksDto;
     clip: ClipConfig;
     duplicateDetection: DuplicateDetectionConfig;
     enabled: boolean;
     facialRecognition: FacialRecognitionConfig;
+    ocr: OcrConfig;
     urls: string[];
 };
 export type SystemConfigMapDto = {
@@ -2223,6 +2274,18 @@ export function checkBulkUpload({ assetBulkUploadCheckDto }: {
     })));
 }
 /**
+ * This endpoint requires the `asset.copy` permission.
+ */
+export function copyAsset({ assetCopyDto }: {
+    assetCopyDto: AssetCopyDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/assets/copy", oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: assetCopyDto
+    })));
+}
+/**
  * getAllUserAssetsByDeviceId
  */
 export function getAllUserAssetsByDeviceId({ deviceId }: {
@@ -2379,6 +2442,19 @@ export function getAssetMetadataByKey({ id, key }: {
         status: 200;
         data: AssetMetadataResponseDto;
     }>(`/assets/${encodeURIComponent(id)}/metadata/${encodeURIComponent(key)}`, {
+        ...opts
+    }));
+}
+/**
+ * This endpoint requires the `asset.read` permission.
+ */
+export function getAssetOcr({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AssetOcrResponseDto[];
+    }>(`/assets/${encodeURIComponent(id)}/ocr`, {
         ...opts
     }));
 }
@@ -3406,7 +3482,7 @@ export function getExploreData(opts?: Oazapfts.RequestOpts) {
 /**
  * This endpoint requires the `asset.read` permission.
  */
-export function searchLargeAssets({ albumIds, city, country, createdAfter, createdBefore, deviceId, isEncoded, isFavorite, isMotion, isNotInAlbum, isOffline, lensModel, libraryId, make, minFileSize, model, personIds, rating, size, state, tagIds, takenAfter, takenBefore, trashedAfter, trashedBefore, $type, updatedAfter, updatedBefore, visibility, withDeleted, withExif }: {
+export function searchLargeAssets({ albumIds, city, country, createdAfter, createdBefore, deviceId, isEncoded, isFavorite, isMotion, isNotInAlbum, isOffline, lensModel, libraryId, make, minFileSize, model, ocr, personIds, rating, size, state, tagIds, takenAfter, takenBefore, trashedAfter, trashedBefore, $type, updatedAfter, updatedBefore, visibility, withDeleted, withExif }: {
     albumIds?: string[];
     city?: string | null;
     country?: string | null;
@@ -3423,6 +3499,7 @@ export function searchLargeAssets({ albumIds, city, country, createdAfter, creat
     make?: string;
     minFileSize?: number;
     model?: string | null;
+    ocr?: string;
     personIds?: string[];
     rating?: number;
     size?: number;
@@ -3459,6 +3536,7 @@ export function searchLargeAssets({ albumIds, city, country, createdAfter, creat
         make,
         minFileSize,
         model,
+        ocr,
         personIds,
         rating,
         size,
@@ -4748,6 +4826,7 @@ export enum Permission {
     AssetDownload = "asset.download",
     AssetUpload = "asset.upload",
     AssetReplace = "asset.replace",
+    AssetCopy = "asset.copy",
     AlbumCreate = "album.create",
     AlbumRead = "album.read",
     AlbumUpdate = "album.update",
@@ -4909,7 +4988,8 @@ export enum JobName {
     Sidecar = "sidecar",
     Library = "library",
     Notifications = "notifications",
-    BackupDatabase = "backupDatabase"
+    BackupDatabase = "backupDatabase",
+    Ocr = "ocr"
 }
 export enum JobCommand {
     Start = "start",

@@ -117,7 +117,7 @@
   ]}
 />
 
-<div class="pt-4 rounded-3xl border dark:border-2 border-gray-300 dark:border-gray-700 max-w-216 mx-auto mb-4">
+<div class="rounded-3xl border dark:border-2 border-gray-300 dark:border-gray-700 max-w-256 mx-auto mb-4 py-6 px-0.2">
   <div class="flex flex-wrap gap-y-6 mb-4 px-6 w-full place-content-end justify-between">
     <!-- MARK ALL BUTTONS -->
     <div class="flex text-xs text-black">
@@ -139,7 +139,7 @@
         <Button
           size="small"
           leadingIcon={mdiCheck}
-          color="primary"
+          color="success"
           class="flex place-items-center rounded-s-full gap-2"
           onclick={handleResolve}
         >
@@ -169,10 +169,12 @@
     </div>
   </div>
 
-  <div class="flex flex-wrap gap-1 mb-4 place-items-center place-content-center px-4 pt-4">
-    {#each assets as asset (asset.id)}
-      <DuplicateAsset {asset} {onSelectAsset} isSelected={selectedAssetIds.has(asset.id)} {onViewAsset} />
-    {/each}
+  <div class="overflow-x-auto p-2">
+    <div class="flex flex-nowrap gap-1 place-items-center justify-center min-w-full w-fit mx-auto">
+      {#each assets as asset (asset.id)}
+        <DuplicateAsset {assets} {asset} {onSelectAsset} isSelected={selectedAssetIds.has(asset.id)} {onViewAsset} />
+      {/each}
+    </div>
   </div>
 </div>
 

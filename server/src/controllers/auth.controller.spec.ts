@@ -183,7 +183,7 @@ describe(AuthController.name, () => {
     it('should be an authenticated route', async () => {
       await request(ctx.getHttpServer())
         .post('/auth/change-password')
-        .send({ password: 'password', newPassword: 'Password1234' });
+        .send({ password: 'password', newPassword: 'Password1234', invalidateSessions: false });
       expect(ctx.authenticate).toHaveBeenCalled();
     });
   });

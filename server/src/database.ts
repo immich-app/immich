@@ -359,7 +359,7 @@ export const columns = {
     'asset.stackId',
     'asset.libraryId',
   ],
-  syncAlbumUser: ['album_user.albumsId as albumId', 'album_user.usersId as userId', 'album_user.role'],
+  syncAlbumUser: ['album_user.albumId as albumId', 'album_user.userId as userId', 'album_user.role'],
   syncStack: ['stack.id', 'stack.createdAt', 'stack.updatedAt', 'stack.primaryAssetId', 'stack.ownerId'],
   syncUser: ['id', 'name', 'email', 'avatarColor', 'deletedAt', 'updateId', 'profileImagePath', 'profileChangedAt'],
   stack: ['stack.id', 'stack.primaryAssetId', 'ownerId'],

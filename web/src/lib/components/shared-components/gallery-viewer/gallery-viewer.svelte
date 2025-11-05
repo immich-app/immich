@@ -23,7 +23,6 @@
   import { modalManager } from '@immich/ui';
   import { debounce } from 'lodash-es';
   import { t } from 'svelte-i18n';
-  import AssetViewer from '../../asset-viewer/asset-viewer.svelte';
   import DeleteAssetDialog from '../../photos-page/delete-asset-dialog.svelte';
 
   interface Props {
@@ -97,18 +96,18 @@
 
   let shiftKeyIsDown = $state(false);
   let lastAssetMouseEvent: TimelineAsset | null = $state(null);
-  let slidingWindow = $state({ top: 0, bottom: 0 });
-
-  const updateSlidingWindow = () => {
-    const v = $state.snapshot(viewport);
-    const top = (document.scrollingElement?.scrollTop || 0) - slidingWindowOffset;
-    const bottom = top + v.height;
-    const w = {
+  let scrollTop = $state(0);
+  let slidingWindow = $derived.by(() => {
+    const top = (scrollTop || 0) - slidingWindowOffset;
+    const bottom = top + viewport.height;
+    return {
       top,
       bottom,
     };
-    slidingWindow = w;
-  };
+  });
+
+  const updateSlidingWindow = () => (scrollTop = document.scrollingElement?.scrollTop ?? 0);
+
   const debouncedOnIntersected = debounce(() => onIntersected?.(), 750, { maxWait: 100, leading: true });
 
   let lastIntersectedHeight = 0;
@@ -487,16 +486,18 @@
 <!-- Overlay Asset Viewer -->
 {#if $isViewerOpen}
   <Portal target="body">
-    <AssetViewer
-      asset={$viewingAsset}
-      onAction={handleAction}
-      onPrevious={handlePrevious}
-      onNext={handleNext}
-      onRandom={handleRandom}
-      onClose={() => {
-        assetViewingStore.showAssetViewer(false);
-        handlePromiseError(navigate({ targetRoute: 'current', assetId: null }));
-      }}
-    />
+    {#await import('$lib/components/asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
+      <AssetViewer
+        asset={$viewingAsset}
+        onAction={handleAction}
+        onPrevious={handlePrevious}
+        onNext={handleNext}
+        onRandom={handleRandom}
+        onClose={() => {
+          assetViewingStore.showAssetViewer(false);
+          handlePromiseError(navigate({ targetRoute: 'current', assetId: null }));
+        }}
+      />
+    {/await}
   </Portal>
 {/if}

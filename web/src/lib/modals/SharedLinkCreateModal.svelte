@@ -3,11 +3,21 @@
   import { locale } from '$lib/stores/preferences.store';
   import { handleError } from '$lib/utils/handle-error';
   import { SharedLinkType, createSharedLink, updateSharedLink, type SharedLinkResponseDto } from '@immich/sdk';
-  import { Button, Field, Input, Modal, ModalBody, ModalFooter, PasswordInput, Switch, Text } from '@immich/ui';
+  import {
+    Button,
+    Field,
+    Input,
+    Modal,
+    ModalBody,
+    ModalFooter,
+    PasswordInput,
+    Switch,
+    Text,
+    toastManager,
+  } from '@immich/ui';
   import { mdiLink } from '@mdi/js';
   import { DateTime, Duration } from 'luxon';
   import { t } from 'svelte-i18n';
-  import { NotificationType, notificationController } from '../components/shared-components/notification/notification';
 
   interface Props {
     onClose: (sharedLink?: SharedLinkResponseDto) => void;
@@ -116,10 +126,7 @@
         },
       });
 
-      notificationController.show({
-        type: NotificationType.Info,
-        message: $t('edited'),
-      });
+      toastManager.success($t('saved'));
 
       onClose(updatedLink);
     } catch (error) {

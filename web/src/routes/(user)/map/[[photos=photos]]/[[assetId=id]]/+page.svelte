@@ -1,16 +1,16 @@
 <script lang="ts">
-  import { run } from 'svelte/legacy';
-
   import { goto } from '$app/navigation';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-  import Map from '$lib/components/shared-components/map/map.svelte';
-  import { AppRoute } from '$lib/constants';
+  import { AppRoute, timeToLoadTheMap } from '$lib/constants';
   import Portal from '$lib/elements/Portal.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { handlePromiseError } from '$lib/utils';
+  import { delay } from '$lib/utils/asset-utils';
   import { navigate } from '$lib/utils/navigation';
+  import { LoadingSpinner } from '@immich/ui';
   import { onDestroy } from 'svelte';
+  import { run } from 'svelte/legacy';
   import type { PageData } from './$types';
 
   interface Props {
@@ -72,12 +72,21 @@
 {#if $featureFlags.loaded && $featureFlags.map}
   <UserPageLayout title={data.meta.title}>
     <div class="isolate h-full w-full">
-      <Map hash onSelect={onViewAssets} />
+      {#await import('$lib/components/shared-components/map/map.svelte')}
+        {#await delay(timeToLoadTheMap) then}
+          <!-- show the loading spinner only if loading the map takes too much time -->
+          <div class="flex items-center justify-center h-full w-full">
+            <LoadingSpinner />
+          </div>
+        {/await}
+      {:then { default: Map }}
+        <Map hash onSelect={onViewAssets} />
+      {/await}
     </div>
   </UserPageLayout>
   <Portal target="body">
     {#if $showAssetViewer}
-      {#await import('../../../../../lib/components/asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
+      {#await import('$lib/components/asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
         <AssetViewer
           asset={$viewingAsset}
           showNavigation={viewingAssets.length > 1}
