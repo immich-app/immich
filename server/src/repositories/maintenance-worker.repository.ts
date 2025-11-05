@@ -101,7 +101,7 @@ export class MaintenanceWorkerRepository implements OnGatewayConnection, OnGatew
 
     try {
       const secret = await this.maintenanceSecret();
-      return jwt.verify(jwtToken, secret) as MaintenanceAuthDto;
+      return (jwt.verify(jwtToken, secret) as { data: MaintenanceAuthDto }).data;
     } catch {
       throw new UnauthorizedException('Invalid JWT Token');
     }

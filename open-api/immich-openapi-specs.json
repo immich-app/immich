@@ -293,6 +293,13 @@
         },
         "responses": {
           "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MaintenanceAuthDto"
+                }
+              }
+            },
             "description": ""
           }
         },
@@ -12666,6 +12673,17 @@
           "enabled",
           "interval",
           "timeout"
+        ],
+        "type": "object"
+      },
+      "MaintenanceAuthDto": {
+        "properties": {
+          "username": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "username"
         ],
         "type": "object"
       },

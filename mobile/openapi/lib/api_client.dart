@@ -390,6 +390,8 @@ class ApiClient {
           return LogoutResponseDto.fromJson(value);
         case 'MachineLearningAvailabilityChecksDto':
           return MachineLearningAvailabilityChecksDto.fromJson(value);
+        case 'MaintenanceAuthDto':
+          return MaintenanceAuthDto.fromJson(value);
         case 'MaintenanceLoginDto':
           return MaintenanceLoginDto.fromJson(value);
         case 'MaintenanceModeResponseDto':

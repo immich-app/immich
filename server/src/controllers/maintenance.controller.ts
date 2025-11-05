@@ -2,7 +2,7 @@ import { BadRequestException, Body, Controller, Post, Res } from '@nestjs/common
 import { ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { MaintenanceLoginDto, MaintenanceModeResponseDto } from 'src/dtos/maintenance.dto';
+import { MaintenanceAuthDto, MaintenanceLoginDto, MaintenanceModeResponseDto } from 'src/dtos/maintenance.dto';
 import { ImmichCookie, Permission } from 'src/enum';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { MaintenanceRepository } from 'src/repositories/maintenance.repository';
@@ -14,7 +14,7 @@ export class MaintenanceController {
   constructor(private service: MaintenanceService) {}
 
   @Post('login')
-  async maintenanceLogin(@Body() _dto: MaintenanceLoginDto): Promise<void> {
+  async maintenanceLogin(@Body() _dto: MaintenanceLoginDto): Promise<MaintenanceAuthDto> {
     throw new BadRequestException('Not in maintenance mode');
   }
 

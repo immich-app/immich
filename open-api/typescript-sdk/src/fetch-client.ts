@@ -46,6 +46,9 @@ export type MaintenanceModeResponseDto = {
 export type MaintenanceLoginDto = {
     token: string;
 };
+export type MaintenanceAuthDto = {
+    username: string;
+};
 export type NotificationCreateDto = {
     data?: object;
     description?: string | null;
@@ -1771,7 +1774,10 @@ export function endMaintenance(opts?: Oazapfts.RequestOpts) {
 export function maintenanceLogin({ maintenanceLoginDto }: {
     maintenanceLoginDto: MaintenanceLoginDto;
 }, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchText("/admin/maintenance/login", oazapfts.json({
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: MaintenanceAuthDto;
+    }>("/admin/maintenance/login", oazapfts.json({
         ...opts,
         method: "POST",
         body: maintenanceLoginDto

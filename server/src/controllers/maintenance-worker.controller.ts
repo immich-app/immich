@@ -1,7 +1,7 @@
 import { BadRequestException, Body, Controller, Get, Post, Res } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
-import { MaintenanceLoginDto, MaintenanceModeResponseDto } from 'src/dtos/maintenance.dto';
+import { MaintenanceAuthDto, MaintenanceLoginDto, MaintenanceModeResponseDto } from 'src/dtos/maintenance.dto';
 import { ServerConfigDto } from 'src/dtos/server.dto';
 import { ImmichCookie } from 'src/enum';
 import { MaintenanceRoute } from 'src/middleware/maintenance-auth.guard';
@@ -31,9 +31,10 @@ export class MaintenanceWorkerController {
   async maintenanceLogin(
     @Body() dto: MaintenanceLoginDto,
     @Res({ passthrough: true }) response: Response,
-  ): Promise<void> {
-    await this.repository.decodeToken(dto.token);
+  ): Promise<MaintenanceAuthDto> {
+    const auth = await this.repository.decodeToken(dto.token);
     response.cookie(ImmichCookie.MaintenanceToken, dto.token);
+    return auth;
   }
 
   @Post('admin/maintenance/end')
