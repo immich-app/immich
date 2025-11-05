@@ -162,10 +162,6 @@ export class PluginExecutionService extends BaseService {
         this.logger.debug(`Filter ${filter.name} returned false, stopping workflow execution`);
         return false;
       }
-
-      if (result.context) {
-        Object.assign(context, result.context);
-      }
     }
 
     return true;
@@ -202,12 +198,6 @@ export class PluginExecutionService extends BaseService {
       if (!actionResult) {
         this.logger.error(`Action ${action.name} returned null`);
         continue;
-      }
-
-      const result = JSON.parse(actionResult.text());
-
-      if (result.context) {
-        Object.assign(context, result.context);
       }
     }
   }
