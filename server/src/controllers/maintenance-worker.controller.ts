@@ -5,7 +5,7 @@ import { ServerConfigDto } from 'src/dtos/server.dto';
 import { MaintenanceWorkerService } from 'src/services/maintenance-worker.service';
 
 @ApiTags('Maintenance (admin)')
-@Controller('api')
+@Controller('')
 export class MaintenanceWorkerController {
   constructor(private service: MaintenanceWorkerService) {}
 
