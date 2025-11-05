@@ -2,8 +2,10 @@ import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { MaintenanceModule } from 'src/app.module';
 import { serverVersion } from 'src/constants';
+import { WebSocketAdapter } from 'src/middleware/websocket.adapter';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
+import { MaintenanceWorkerRepository } from 'src/repositories/maintenance-worker.repository';
 import { isStartUpError } from 'src/utils/misc';
 async function bootstrap() {
   process.title = 'immich-maintenance';
@@ -16,7 +18,7 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(MaintenanceModule, { bufferLogs: true });
   const logger = await app.resolve(LoggingRepository);
   const configRepository = app.get(ConfigRepository);
-  // app.get(MaintenanceService).nestApplication = app;
+  app.get(MaintenanceWorkerRepository).setCloseFn(() => app.close());
 
   const { environment, host, port, resourcePaths } = configRepository.getEnv();
 
@@ -29,7 +31,7 @@ async function bootstrap() {
   // if (configRepository.isDev()) {
   //   app.enableCors();
   // }
-  // app.useWebSocketAdapter(new WebSocketAdapter(app));
+  app.useWebSocketAdapter(new WebSocketAdapter(app));
   // useSwagger(app, { write: configRepository.isDev() });
 
   // app.setGlobalPrefix('api', { exclude: excludePaths });

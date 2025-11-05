@@ -7,7 +7,11 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { ArgsOf } from 'src/repositories/event.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
+
+export const serverEvents = ['AppRestart'] as const;
+export type ServerEvents = (typeof serverEvents)[number];
 
 @WebSocketGateway({
   cors: true,
@@ -15,17 +19,25 @@ import { LoggingRepository } from 'src/repositories/logging.repository';
   transports: ['websocket'],
 })
 @Injectable()
-export class MaintenanceRepository implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit {
+export class MaintenanceWorkerRepository implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit {
   @WebSocketServer()
   private websocketServer?: Server;
+  private closeFn?: () => Promise<void>;
 
   constructor(private logger: LoggingRepository) {
-    this.logger.setContext(MaintenanceRepository.name);
+    this.logger.setContext(MaintenanceWorkerRepository.name);
   }
 
-  afterInit(server: Server) {
+  afterInit(websocketServer: Server) {
     this.logger.log('Initialized websocket server');
-    // yay!
+
+    websocketServer.on('AppRestart', () => {
+      console.info('hi');
+    });
+
+    // setTimeout(() => {
+    //   this.serverSend('AppRestart', { isMaintenanceMode: false });
+    // }, 5000);
   }
 
   async handleConnection(client: Socket) {
@@ -58,14 +70,14 @@ export class MaintenanceRepository implements OnGatewayConnection, OnGatewayDisc
   //   this.server?.emit(event, ...data);
   // }
 
-  // serverSend<T extends ServerEvents>(event: T, ...args: ArgsOf<T>): void {
-  //   this.logger.debug(`Server event: ${event} (send)`);
-  //   this.server?.serverSideEmit(event, ...args);
-  // }
+  serverSend<T extends ServerEvents>(event: T, ...args: ArgsOf<T>): void {
+    this.logger.debug(`Server event: ${event} (send)`);
+    this.websocketServer?.serverSideEmit(event, ...args);
+  }
 
-  // setAuthFn(fn: (client: Socket) => Promise<AuthDto>) {
-  //   this.authFn = fn;
-  // }
+  setCloseFn(fn: () => Promise<void>) {
+    this.closeFn = fn;
+  }
 
   // private async authenticate(client: Socket) {
   //   if (!this.authFn) {

@@ -2,7 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { MaintenanceModeResponseDto } from 'src/dtos/maintenance.dto';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
-import { MaintenanceRepository } from 'src/repositories/maintenance.repository';
+import { MaintenanceWorkerRepository } from 'src/repositories/maintenance-worker.repository';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
 import { MaintenanceService } from 'src/services/maintenance.service';
 import { getConfig } from 'src/utils/config';
@@ -22,7 +22,7 @@ export class MaintenanceWorkerService {
     protected logger: LoggingRepository,
     private configRepository: ConfigRepository,
     private systemMetadataRepository: SystemMetadataRepository,
-    private maintenanceRepository: MaintenanceRepository,
+    private maintenanceRepository: MaintenanceWorkerRepository,
   ) {
     this.logger.setContext(this.constructor.name);
     // this.storageCore = StorageCore.create(
