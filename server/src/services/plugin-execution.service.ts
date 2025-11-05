@@ -1,5 +1,5 @@
 import { Plugin as ExtismPlugin, newPlugin } from '@extism/extism';
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { resolve } from 'node:path';
 import { Asset, WorkflowAction, WorkflowFilter } from 'src/database';
 import { OnEvent, OnJob } from 'src/decorators';
@@ -18,11 +18,12 @@ interface WorkflowContext {
 }
 
 @Injectable()
-export class PluginExecutionService extends BaseService implements OnModuleInit {
+export class PluginExecutionService extends BaseService {
   private loadedPlugins: Map<string, ExtismPlugin> = new Map();
   private hostFunctions!: PluginHostFunctions;
 
-  async onModuleInit() {
+  @OnEvent({ name: 'AppBootstrap' })
+  async onBootstrap() {
     this.hostFunctions = new PluginHostFunctions(
       this.assetRepository,
       this.albumRepository,

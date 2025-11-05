@@ -1,35 +1,33 @@
-import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
 import { validateOrReject } from 'class-validator';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
+import { OnEvent } from 'src/decorators';
 import { PluginManifestDto } from 'src/dtos/plugin-manifest.dto';
 import { BaseService } from 'src/services/base.service';
 
 @Injectable()
-export class PluginLoaderService extends BaseService implements OnApplicationBootstrap {
-  async onApplicationBootstrap() {
+export class PluginLoaderService extends BaseService {
+  @OnEvent({ name: 'AppBootstrap' })
+  async onBootstrap() {
     await this.loadPluginsFromManifests();
   }
 
   async loadPluginsFromManifests(): Promise<void> {
-    try {
-      const manifestFilePath = path.join(process.cwd(), '..', 'plugins', 'manifest.json');
-      this.logger.debug(`Loading plugins from manifest file at: ${manifestFilePath}.`);
+    const manifestFilePath = path.join(process.cwd(), '..', 'plugins', 'manifest.json');
+    this.logger.debug(`Loading plugins from manifest file at: ${manifestFilePath}.`);
 
-      const content = await readFile(manifestFilePath, { encoding: 'utf8' });
+    const content = await readFile(manifestFilePath, { encoding: 'utf8' });
 
-      const manifestData = JSON.parse(content);
-      const manifest = plainToInstance(PluginManifestDto, manifestData);
+    const manifestData = JSON.parse(content);
+    const manifest = plainToInstance(PluginManifestDto, manifestData);
 
-      await this.validateManifest(manifest);
+    await this.validateManifest(manifest);
 
-      await this.loadPluginToDatabase(manifest);
+    await this.loadPluginToDatabase(manifest);
 
-      this.logger.log(`Successfully loaded plugin: ${manifest.name} (version ${manifest.version})`);
-    } catch (error) {
-      this.logger.error('Error loading plugins from manifests:', error);
-    }
+    this.logger.log(`Successfully loaded plugin: ${manifest.name} (version ${manifest.version})`);
   }
 
   private async loadPluginToDatabase(manifest: PluginManifestDto): Promise<void> {
