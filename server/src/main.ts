@@ -126,6 +126,7 @@ function main() {
   if (immichApp === 'immich-admin') {
     process.title = 'immich_admin_cli';
     process.env.IMMICH_LOG_LEVEL = LogLevel.Warn;
+
     return CommandFactory.run(ImmichAdminModule);
   }
 

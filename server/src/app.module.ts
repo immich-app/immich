@@ -15,6 +15,7 @@ import { ErrorInterceptor } from 'src/middleware/error.interceptor';
 import { FileUploadInterceptor } from 'src/middleware/file-upload.interceptor';
 import { GlobalExceptionFilter } from 'src/middleware/global-exception.filter';
 import { LoggingInterceptor } from 'src/middleware/logging.interceptor';
+import { MaintenanceAuthGuard } from 'src/middleware/maintenance-auth.guard';
 import { repositories } from 'src/repositories';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { EventRepository } from 'src/repositories/event.repository';
@@ -39,13 +40,7 @@ const commonMiddleware = [
   { provide: APP_INTERCEPTOR, useClass: ErrorInterceptor },
 ];
 
-const apiMiddleware = [
-  FileUploadInterceptor,
-  ...commonMiddleware,
-  { provide: APP_GUARD, useClass: AuthGuard },
-  // -> guard for all req. (auth)
-  // uses meta from @Authenticated()
-];
+const apiMiddleware = [FileUploadInterceptor, ...commonMiddleware, { provide: APP_GUARD, useClass: AuthGuard }];
 
 const configRepository = new ConfigRepository();
 const { bull, cls, database, otel } = configRepository.getEnv();
@@ -111,6 +106,7 @@ export class ApiModule extends BaseModule {}
     MaintenanceWorkerRepository,
     MaintenanceWorkerService,
     ...commonMiddleware,
+    { provide: APP_GUARD, useClass: MaintenanceAuthGuard },
     { provide: IWorker, useValue: ImmichWorker.Maintenance },
   ],
 })

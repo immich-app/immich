@@ -5,6 +5,7 @@ export enum AuthType {
 
 export enum ImmichCookie {
   AccessToken = 'immich_access_token',
+  MaintenanceToken = 'immich_maintenance_token',
   AuthType = 'immich_auth_type',
   IsAuthenticated = 'immich_is_authenticated',
   SharedLinkToken = 'immich_shared_link_token',

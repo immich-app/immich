@@ -4,3 +4,5 @@ export class MaintenanceModeResponseDto {
   @ValidateBoolean()
   isMaintenanceMode!: boolean;
 }
+
+export class MaintenanceAuthDto {}

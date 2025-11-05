@@ -1,7 +1,8 @@
-import { BadRequestException, Controller, Post } from '@nestjs/common';
+import { BadRequestException, Controller, Post, Res } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { Response } from 'express';
 import { MaintenanceModeResponseDto } from 'src/dtos/maintenance.dto';
-import { Permission } from 'src/enum';
+import { ImmichCookie, Permission } from 'src/enum';
 import { Authenticated } from 'src/middleware/auth.guard';
 import { MaintenanceService } from 'src/services/maintenance.service';
 
@@ -12,8 +13,9 @@ export class MaintenanceController {
 
   @Post('start')
   @Authenticated({ permission: Permission.Maintenance, admin: true })
-  async startMaintenance(): Promise<MaintenanceModeResponseDto> {
+  async startMaintenance(@Res({ passthrough: true }) response: Response): Promise<MaintenanceModeResponseDto> {
     await this.service.startMaintenance();
+    response.cookie(ImmichCookie.MaintenanceToken, 'my-token');
     return { isMaintenanceMode: true };
   }
 
