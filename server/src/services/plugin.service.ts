@@ -13,24 +13,37 @@ import { BaseService } from 'src/services/base.service';
 
 @Injectable()
 export class PluginService extends BaseService implements OnModuleInit {
-  private corePlugins!: ExtismPlugin;
+  private loadedPlugins: Map<string, ExtismPlugin> = new Map();
 
   async onModuleInit() {
     await this.loadCorePlugins();
   }
 
   private async loadCorePlugins() {
-    const pluginPath = resolve(__dirname, '../../..', 'plugins/dist/plugin.wasm');
-    console.log(`Loading plugin from: ${pluginPath}`);
-    this.corePlugins = await newPlugin(pluginPath, {
-      useWasi: true,
-      functions: {
-        'extism:host/user': {
-          updateAsset: (cp: CurrentPlugin, offs: bigint) => this.updateAsset(JSON.parse(cp.read(offs)!.text())),
-          addAssetToAlbum: (cp: CurrentPlugin, offs: bigint) => this.addAssetToAlbum(JSON.parse(cp.read(offs)!.text())),
-        },
-      },
-    });
+    const plugins = await this.pluginRepository.getAllPlugins();
+    for (const plugin of plugins) {
+      try {
+        const pluginPath = resolve(process.cwd(), '..', plugin.manifestPath);
+
+        this.logger.log(`Loading plugin: ${plugin.name} from ${pluginPath}`);
+
+        const extismPlugin = await newPlugin(pluginPath, {
+          useWasi: true,
+          functions: {
+            'extism:host/user': {
+              updateAsset: (cp: CurrentPlugin, offs: bigint) => this.updateAsset(JSON.parse(cp.read(offs)!.text())),
+              addAssetToAlbum: (cp: CurrentPlugin, offs: bigint) =>
+                this.addAssetToAlbum(JSON.parse(cp.read(offs)!.text())),
+            },
+          },
+        });
+
+        this.loadedPlugins.set(plugin.id, extismPlugin);
+        this.logger.log(`Successfully loaded plugin: ${plugin.name}`);
+      } catch (error) {
+        this.logger.error(`Failed to load plugin ${plugin.name}:`, error);
+      }
+    }
   }
 
   @OnEvent({ name: 'AssetCreate' })
@@ -43,31 +56,28 @@ export class PluginService extends BaseService implements OnModuleInit {
 
     const trigger = pluginTriggers.find((trigger) => trigger.type === PluginTriggerType.AssetCreate);
     if (!trigger) {
-      console.log('No trigger found for asset_uploaded');
+      this.logger.debug('No trigger found for asset_uploaded');
       return;
     }
 
-    // Get all enabled workflows for this trigger
     const workflows = await this.workflowRepository.getWorkflowsByTrigger(PluginTriggerType.AssetCreate);
     if (workflows.length === 0) {
-      console.log('No enabled workflows found for asset_uploaded trigger');
+      this.logger.debug('No enabled workflows found for asset_uploaded trigger');
       return;
     }
 
-    // Execute each workflow
     for (const workflow of workflows) {
       try {
         await this.executeWorkflow(token, workflow.id, asset, trigger);
       } catch (error) {
-        console.error(`Error executing workflow ${workflow.id} (${workflow.name}):`, error);
+        this.logger.error(`Error executing workflow ${workflow.id} (${workflow.name}):`, error);
       }
     }
   }
 
   private async executeWorkflow(jwtToken: string, workflowId: string, asset: any, trigger: PluginTrigger) {
-    console.log(`Executing workflow ${workflowId}`);
+    this.logger.debug(`Executing workflow ${workflowId}`);
 
-    // Get the workflow with its filters and actions
     const workflow = await this.workflowRepository.getWorkflow(workflowId);
     if (!workflow) {
       console.error(`Workflow ${workflowId} not found`);
@@ -77,54 +87,48 @@ export class PluginService extends BaseService implements OnModuleInit {
     const workflowFilters = await this.workflowRepository.getFilters(workflowId);
     const workflowActions = await this.workflowRepository.getActions(workflowId);
 
-    // Load the WASM plugin
-    // manifestPath is relative to project root (e.g., "plugins/dist/plugin.json")
-    // The WASM file should be in the same directory with .wasm extension
-
-    // Create the context object for the plugin
     let context = {
       jwtToken,
       asset,
       triggerConfig: workflow.triggerConfig,
     };
 
-    // Execute filters in order
     for (const workflowFilter of workflowFilters) {
       const filter = await this.pluginRepository.getFilter(workflowFilter.filterId);
       if (!filter) {
-        console.error(`Filter ${workflowFilter.filterId} not found`);
+        this.logger.error(`Filter ${workflowFilter.filterId} not found`);
         continue;
       }
 
-      // Check if filter supports the current context
+      const pluginInstance = this.loadedPlugins.get(filter.pluginId);
+      if (!pluginInstance) {
+        this.logger.error(`Plugin ${filter.pluginId} not loaded`);
+        continue;
+      }
+
       if (!filter.supportedContexts.includes(PluginContext.Asset)) {
-        console.log(`Filter ${filter.name} does not support asset context`);
+        this.logger.warn(`Filter ${filter.name} does not support asset context`);
         continue;
       }
 
-      console.log(`Executing filter: ${filter.name} (${filter.functionName})`);
-
-      // Call the filter function
+      this.logger.debug(`Executing filter: ${filter.name} (${filter.functionName})`);
       const filterInput = JSON.stringify({
         context,
         config: workflowFilter.filterConfig,
       });
 
-      const filterResult = await this.corePlugins.call(filter.functionName, new TextEncoder().encode(filterInput));
+      const filterResult = await pluginInstance.call(filter.functionName, new TextEncoder().encode(filterInput));
       if (!filterResult) {
-        console.error(`Filter ${filter.name} returned null`);
+        this.logger.error(`Filter ${filter.name} returned null`);
         return;
       }
 
       const result = JSON.parse(filterResult.text());
-      console.log(`Filter result: ${JSON.stringify(result)}`);
-      // If filter returns false, stop workflow execution
       if (result.passed === false) {
-        console.log(`Filter ${filter.name} returned false, stopping workflow execution`);
+        this.logger.debug(`Filter ${filter.name} returned false, stopping workflow execution`);
         return;
       }
 
-      // Update context if filter returned modified context
       if (result.context) {
         context = result.context;
       }
@@ -134,25 +138,28 @@ export class PluginService extends BaseService implements OnModuleInit {
     for (const workflowAction of workflowActions) {
       const action = await this.pluginRepository.getAction(workflowAction.actionId);
       if (!action) {
-        console.error(`Action ${workflowAction.actionId} not found`);
+        this.logger.error(`Action ${workflowAction.actionId} not found`);
         continue;
       }
 
-      // Check if action supports the current context
+      const pluginInstance = this.loadedPlugins.get(action.pluginId);
+      if (!pluginInstance) {
+        this.logger.error(`Action ${action.pluginId} not loaded`);
+        continue;
+      }
+
       if (!action.supportedContexts.includes(PluginContext.Asset)) {
-        console.log(`Action ${action.name} does not support asset context`);
+        this.logger.warn(`Action ${action.name} does not support asset context`);
         continue;
       }
 
-      console.log(`Executing action: ${action.name} (${action.functionName})`);
-
-      // Call the action function
+      this.logger.debug(`Executing action: ${action.name} (${action.functionName})`);
       const actionInput = JSON.stringify({
         context,
         config: workflowAction.actionConfig,
       });
 
-      const actionResult = await this.corePlugins.call(action.functionName, actionInput);
+      const actionResult = await pluginInstance.call(action.functionName, actionInput);
       if (!actionResult) {
         console.error(`Action ${action.name} returned null`);
         continue;
@@ -160,22 +167,21 @@ export class PluginService extends BaseService implements OnModuleInit {
 
       const result = JSON.parse(actionResult.text());
 
-      // Update context if action returned modified context
       if (result.context) {
         context = result.context;
       }
     }
 
-    console.log(`Workflow ${workflowId} executed successfully`);
+    this.logger.log(`Workflow ${workflowId} executed successfully`);
   }
 
   async updateAsset(asset: Updateable<AssetTable> & { id: string }) {
-    console.log(`Updating asset ${asset.id} -- ${JSON.stringify({ ...asset, id: undefined })}`);
+    this.logger.log(`Updating asset ${asset.id} -- ${JSON.stringify({ ...asset, id: undefined })}`);
     await this.assetRepository.update(asset);
   }
 
   async addAssetToAlbum({ assetId, albumId }: { assetId: string; albumId: string }) {
-    console.log(`Adding asset ${assetId} to album ${albumId}`);
+    this.logger.log(`Adding asset ${assetId} to album ${albumId}`);
     await this.albumRepository.addAssetIds(albumId, [assetId]);
     return 0;
   }
