@@ -38,7 +38,7 @@ export const deleteAssets = async (
         props: {
           title: $t('success'),
           description: force
-            ? $t('assets_permanently_deleted_count')
+            ? $t('assets_permanently_deleted_count', { values: { count: ids.length } })
             : $t('assets_trashed_count', { values: { count: ids.length } }),
           color: 'success',
           button:
