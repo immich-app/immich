@@ -19,8 +19,8 @@
     mdiDevices,
     mdiDownload,
     mdiFeatureSearchOutline,
-    mdiLockSmart,
     mdiFormTextboxPassword,
+    mdiLockSmart,
     mdiServerOutline,
     mdiTwoFactorAuthentication,
   } from '@mdi/js';
@@ -30,8 +30,10 @@
   import AppSettings from './app-settings.svelte';
   import ChangePasswordSettings from './change-password-settings.svelte';
   import DeviceList from './device-list.svelte';
-  import OAuthSettings from './oauth-settings.svelte';
   import PartnerSettings from './partner-settings.svelte';
+  import PuChangePasswordSettingsOauth from './pu-change-password-settings-oauth.svelte';
+  import PuOAuthSettings from './pu-oauth-settings.svelte';
+  import PuUserProfileSettings from './pu-user-profile-settings.svelte';
   import UserAPIKeyList from './user-api-key-list.svelte';
   import UserProfileSettings from './user-profile-settings.svelte';
 
@@ -57,9 +59,15 @@
     <AppSettings />
   </SettingAccordion>
 
-  <SettingAccordion icon={mdiAccountOutline} key="account" title={$t('account')} subtitle={$t('manage_your_account')}>
-    <UserProfileSettings />
-  </SettingAccordion>
+  {#if $featureFlags.loaded && !$featureFlags.oauth}
+    <SettingAccordion icon={mdiAccountOutline} key="account" title={$t('account')} subtitle={$t('manage_your_account')}>
+      <UserProfileSettings />
+    </SettingAccordion>
+  {:else}
+    <SettingAccordion icon={mdiAccountOutline} key="account" title={$t('account')} subtitle={$t('manage_your_account')}>
+      <PuUserProfileSettings />
+    </SettingAccordion>
+  {/if}
 
   <SettingAccordion
     icon={mdiServerOutline}
@@ -118,18 +126,28 @@
       subtitle={$t('manage_your_oauth_connection')}
       isOpen={oauthOpen || undefined}
     >
-      <OAuthSettings user={$user} />
+      <PuOAuthSettings user={$user} />
+    </SettingAccordion>
+    <SettingAccordion
+      icon={mdiFormTextboxPassword}
+      key="password"
+      title={$t('password')}
+      subtitle={$t('change_your_password')}
+    >
+      <PuChangePasswordSettingsOauth />
     </SettingAccordion>
   {/if}
 
-  <SettingAccordion
-    icon={mdiFormTextboxPassword}
-    key="password"
-    title={$t('password')}
-    subtitle={$t('change_your_password')}
-  >
-    <ChangePasswordSettings />
-  </SettingAccordion>
+  {#if $featureFlags.loaded && !$featureFlags.oauth}
+    <SettingAccordion
+      icon={mdiFormTextboxPassword}
+      key="password"
+      title={$t('password')}
+      subtitle={$t('change_your_password')}
+    >
+      <ChangePasswordSettings />
+    </SettingAccordion>
+  {/if}
 
   <SettingAccordion
     icon={mdiAccountGroupOutline}
