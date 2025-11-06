@@ -1,0 +1,15 @@
+import 'remote_asset.entity.dart';
+import 'local_asset.entity.dart';
+import 'local_asset_upload_entity.dart';
+
+CREATE TRIGGER delete_upload_error_on_remote_insert
+AFTER INSERT ON remote_asset_entity
+FOR EACH ROW
+BEGIN
+	DELETE FROM local_asset_upload_entity
+	WHERE asset_id IN (
+		SELECT lae.id 
+		FROM local_asset_entity lae 
+		WHERE lae.checksum = NEW.checksum
+	);
+END;

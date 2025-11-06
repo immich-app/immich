@@ -17,6 +17,7 @@ typedef $$LocalAssetUploadEntityTableCreateCompanionBuilder =
       i0.Value<int> numberOfAttempts,
       i0.Value<DateTime> lastAttemptAt,
       i0.Value<i2.UploadErrorType> errorType,
+      i0.Value<String?> errorMessage,
     });
 typedef $$LocalAssetUploadEntityTableUpdateCompanionBuilder =
     i1.LocalAssetUploadEntityCompanion Function({
@@ -24,6 +25,7 @@ typedef $$LocalAssetUploadEntityTableUpdateCompanionBuilder =
       i0.Value<int> numberOfAttempts,
       i0.Value<DateTime> lastAttemptAt,
       i0.Value<i2.UploadErrorType> errorType,
+      i0.Value<String?> errorMessage,
     });
 
 final class $$LocalAssetUploadEntityTableReferences
@@ -99,6 +101,11 @@ class $$LocalAssetUploadEntityTableFilterComposer
     builder: (column) => i0.ColumnWithTypeConverterFilters(column),
   );
 
+  i0.ColumnFilters<String> get errorMessage => $composableBuilder(
+    column: $table.errorMessage,
+    builder: (column) => i0.ColumnFilters(column),
+  );
+
   i5.$$LocalAssetEntityTableFilterComposer get assetId {
     final i5.$$LocalAssetEntityTableFilterComposer composer = $composerBuilder(
       composer: this,
@@ -148,6 +155,11 @@ class $$LocalAssetUploadEntityTableOrderingComposer
 
   i0.ColumnOrderings<int> get errorType => $composableBuilder(
     column: $table.errorType,
+    builder: (column) => i0.ColumnOrderings(column),
+  );
+
+  i0.ColumnOrderings<String> get errorMessage => $composableBuilder(
+    column: $table.errorMessage,
     builder: (column) => i0.ColumnOrderings(column),
   );
 
@@ -201,6 +213,11 @@ class $$LocalAssetUploadEntityTableAnnotationComposer
 
   i0.GeneratedColumnWithTypeConverter<i2.UploadErrorType, int> get errorType =>
       $composableBuilder(column: $table.errorType, builder: (column) => column);
+
+  i0.GeneratedColumn<String> get errorMessage => $composableBuilder(
+    column: $table.errorMessage,
+    builder: (column) => column,
+  );
 
   i5.$$LocalAssetEntityTableAnnotationComposer get assetId {
     final i5.$$LocalAssetEntityTableAnnotationComposer composer =
@@ -278,11 +295,13 @@ class $$LocalAssetUploadEntityTableTableManager
                 i0.Value<DateTime> lastAttemptAt = const i0.Value.absent(),
                 i0.Value<i2.UploadErrorType> errorType =
                     const i0.Value.absent(),
+                i0.Value<String?> errorMessage = const i0.Value.absent(),
               }) => i1.LocalAssetUploadEntityCompanion(
                 assetId: assetId,
                 numberOfAttempts: numberOfAttempts,
                 lastAttemptAt: lastAttemptAt,
                 errorType: errorType,
+                errorMessage: errorMessage,
               ),
           createCompanionCallback:
               ({
@@ -291,11 +310,13 @@ class $$LocalAssetUploadEntityTableTableManager
                 i0.Value<DateTime> lastAttemptAt = const i0.Value.absent(),
                 i0.Value<i2.UploadErrorType> errorType =
                     const i0.Value.absent(),
+                i0.Value<String?> errorMessage = const i0.Value.absent(),
               }) => i1.LocalAssetUploadEntityCompanion.insert(
                 assetId: assetId,
                 numberOfAttempts: numberOfAttempts,
                 lastAttemptAt: lastAttemptAt,
                 errorType: errorType,
+                errorMessage: errorMessage,
               ),
           withReferenceMapper: (p0) => p0
               .map(
@@ -430,12 +451,24 @@ class $LocalAssetUploadEntityTable extends i3.LocalAssetUploadEntity
       ).withConverter<i2.UploadErrorType>(
         i1.$LocalAssetUploadEntityTable.$convertererrorType,
       );
+  static const i0.VerificationMeta _errorMessageMeta =
+      const i0.VerificationMeta('errorMessage');
+  @override
+  late final i0.GeneratedColumn<String> errorMessage =
+      i0.GeneratedColumn<String>(
+        'error_message',
+        aliasedName,
+        true,
+        type: i0.DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
   @override
   List<i0.GeneratedColumn> get $columns => [
     assetId,
     numberOfAttempts,
     lastAttemptAt,
     errorType,
+    errorMessage,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -475,6 +508,15 @@ class $LocalAssetUploadEntityTable extends i3.LocalAssetUploadEntity
         ),
       );
     }
+    if (data.containsKey('error_message')) {
+      context.handle(
+        _errorMessageMeta,
+        errorMessage.isAcceptableOrUnknown(
+          data['error_message']!,
+          _errorMessageMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -505,6 +547,10 @@ class $LocalAssetUploadEntityTable extends i3.LocalAssetUploadEntity
           data['${effectivePrefix}error_type'],
         )!,
       ),
+      errorMessage: attachedDatabase.typeMapping.read(
+        i0.DriftSqlType.string,
+        data['${effectivePrefix}error_message'],
+      ),
     );
   }
 
@@ -529,11 +575,13 @@ class LocalAssetUploadEntityData extends i0.DataClass
   final int numberOfAttempts;
   final DateTime lastAttemptAt;
   final i2.UploadErrorType errorType;
+  final String? errorMessage;
   const LocalAssetUploadEntityData({
     required this.assetId,
     required this.numberOfAttempts,
     required this.lastAttemptAt,
     required this.errorType,
+    this.errorMessage,
   });
   @override
   Map<String, i0.Expression> toColumns(bool nullToAbsent) {
@@ -545,6 +593,9 @@ class LocalAssetUploadEntityData extends i0.DataClass
       map['error_type'] = i0.Variable<int>(
         i1.$LocalAssetUploadEntityTable.$convertererrorType.toSql(errorType),
       );
+    }
+    if (!nullToAbsent || errorMessage != null) {
+      map['error_message'] = i0.Variable<String>(errorMessage);
     }
     return map;
   }
@@ -561,6 +612,7 @@ class LocalAssetUploadEntityData extends i0.DataClass
       errorType: i1.$LocalAssetUploadEntityTable.$convertererrorType.fromJson(
         serializer.fromJson<int>(json['errorType']),
       ),
+      errorMessage: serializer.fromJson<String?>(json['errorMessage']),
     );
   }
   @override
@@ -573,6 +625,7 @@ class LocalAssetUploadEntityData extends i0.DataClass
       'errorType': serializer.toJson<int>(
         i1.$LocalAssetUploadEntityTable.$convertererrorType.toJson(errorType),
       ),
+      'errorMessage': serializer.toJson<String?>(errorMessage),
     };
   }
 
@@ -581,11 +634,13 @@ class LocalAssetUploadEntityData extends i0.DataClass
     int? numberOfAttempts,
     DateTime? lastAttemptAt,
     i2.UploadErrorType? errorType,
+    i0.Value<String?> errorMessage = const i0.Value.absent(),
   }) => i1.LocalAssetUploadEntityData(
     assetId: assetId ?? this.assetId,
     numberOfAttempts: numberOfAttempts ?? this.numberOfAttempts,
     lastAttemptAt: lastAttemptAt ?? this.lastAttemptAt,
     errorType: errorType ?? this.errorType,
+    errorMessage: errorMessage.present ? errorMessage.value : this.errorMessage,
   );
   LocalAssetUploadEntityData copyWithCompanion(
     i1.LocalAssetUploadEntityCompanion data,
@@ -599,6 +654,9 @@ class LocalAssetUploadEntityData extends i0.DataClass
           ? data.lastAttemptAt.value
           : this.lastAttemptAt,
       errorType: data.errorType.present ? data.errorType.value : this.errorType,
+      errorMessage: data.errorMessage.present
+          ? data.errorMessage.value
+          : this.errorMessage,
     );
   }
 
@@ -608,14 +666,20 @@ class LocalAssetUploadEntityData extends i0.DataClass
           ..write('assetId: $assetId, ')
           ..write('numberOfAttempts: $numberOfAttempts, ')
           ..write('lastAttemptAt: $lastAttemptAt, ')
-          ..write('errorType: $errorType')
+          ..write('errorType: $errorType, ')
+          ..write('errorMessage: $errorMessage')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode =>
-      Object.hash(assetId, numberOfAttempts, lastAttemptAt, errorType);
+  int get hashCode => Object.hash(
+    assetId,
+    numberOfAttempts,
+    lastAttemptAt,
+    errorType,
+    errorMessage,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -623,7 +687,8 @@ class LocalAssetUploadEntityData extends i0.DataClass
           other.assetId == this.assetId &&
           other.numberOfAttempts == this.numberOfAttempts &&
           other.lastAttemptAt == this.lastAttemptAt &&
-          other.errorType == this.errorType);
+          other.errorType == this.errorType &&
+          other.errorMessage == this.errorMessage);
 }
 
 class LocalAssetUploadEntityCompanion
@@ -632,29 +697,34 @@ class LocalAssetUploadEntityCompanion
   final i0.Value<int> numberOfAttempts;
   final i0.Value<DateTime> lastAttemptAt;
   final i0.Value<i2.UploadErrorType> errorType;
+  final i0.Value<String?> errorMessage;
   const LocalAssetUploadEntityCompanion({
     this.assetId = const i0.Value.absent(),
     this.numberOfAttempts = const i0.Value.absent(),
     this.lastAttemptAt = const i0.Value.absent(),
     this.errorType = const i0.Value.absent(),
+    this.errorMessage = const i0.Value.absent(),
   });
   LocalAssetUploadEntityCompanion.insert({
     required String assetId,
     this.numberOfAttempts = const i0.Value.absent(),
     this.lastAttemptAt = const i0.Value.absent(),
     this.errorType = const i0.Value.absent(),
+    this.errorMessage = const i0.Value.absent(),
   }) : assetId = i0.Value(assetId);
   static i0.Insertable<i1.LocalAssetUploadEntityData> custom({
     i0.Expression<String>? assetId,
     i0.Expression<int>? numberOfAttempts,
     i0.Expression<DateTime>? lastAttemptAt,
     i0.Expression<int>? errorType,
+    i0.Expression<String>? errorMessage,
   }) {
     return i0.RawValuesInsertable({
       if (assetId != null) 'asset_id': assetId,
       if (numberOfAttempts != null) 'number_of_attempts': numberOfAttempts,
       if (lastAttemptAt != null) 'last_attempt_at': lastAttemptAt,
       if (errorType != null) 'error_type': errorType,
+      if (errorMessage != null) 'error_message': errorMessage,
     });
   }
 
@@ -663,12 +733,14 @@ class LocalAssetUploadEntityCompanion
     i0.Value<int>? numberOfAttempts,
     i0.Value<DateTime>? lastAttemptAt,
     i0.Value<i2.UploadErrorType>? errorType,
+    i0.Value<String?>? errorMessage,
   }) {
     return i1.LocalAssetUploadEntityCompanion(
       assetId: assetId ?? this.assetId,
       numberOfAttempts: numberOfAttempts ?? this.numberOfAttempts,
       lastAttemptAt: lastAttemptAt ?? this.lastAttemptAt,
       errorType: errorType ?? this.errorType,
+      errorMessage: errorMessage ?? this.errorMessage,
     );
   }
 
@@ -691,6 +763,9 @@ class LocalAssetUploadEntityCompanion
         ),
       );
     }
+    if (errorMessage.present) {
+      map['error_message'] = i0.Variable<String>(errorMessage.value);
+    }
     return map;
   }
 
@@ -700,7 +775,8 @@ class LocalAssetUploadEntityCompanion
           ..write('assetId: $assetId, ')
           ..write('numberOfAttempts: $numberOfAttempts, ')
           ..write('lastAttemptAt: $lastAttemptAt, ')
-          ..write('errorType: $errorType')
+          ..write('errorType: $errorType, ')
+          ..write('errorMessage: $errorMessage')
           ..write(')'))
         .toString();
   }

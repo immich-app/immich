@@ -33,18 +33,18 @@ class EnqueueStatus {
 class DriftUploadStatus {
   final String taskId;
   final String filename;
-  final double progress;
-  final int fileSize;
-  final String networkSpeedAsString;
+  final double? progress;
+  final int? fileSize;
+  final String? networkSpeedAsString;
   final bool? isFailed;
   final String? error;
 
   const DriftUploadStatus({
     required this.taskId,
     required this.filename,
-    required this.progress,
-    required this.fileSize,
-    required this.networkSpeedAsString,
+    this.progress,
+    this.fileSize,
+    this.networkSpeedAsString,
     this.isFailed,
     this.error,
   });
@@ -250,15 +250,12 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
           });
         }
 
+        await _uploadService.clearError(taskId);
+
       case TaskStatus.failed:
+        _removeUploadItem(taskId);
         // Ignore retry errors to avoid confusing users
         if (update.exception?.description == 'Delayed or retried enqueue failed') {
-          _removeUploadItem(taskId);
-          return;
-        }
-
-        final currentItem = state.uploadItems[taskId];
-        if (currentItem == null) {
           return;
         }
 
@@ -272,8 +269,6 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
             _ => UploadErrorType.unknown,
           };
 
-          await _uploadService.updateError(taskId, errorType);
-
           if (exception is TaskHttpException) {
             final message = tryJsonDecode(exception.description)?['message'] as String?;
             if (message != null) {
@@ -281,15 +276,10 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
               error = "${exception.exceptionType}, response code $responseCode: $message";
             }
           }
-        }
-        error ??= update.exception?.toString();
 
-        state = state.copyWith(
-          uploadItems: {
-            ...state.uploadItems,
-            taskId: currentItem.copyWith(isFailed: true, error: error),
-          },
-        );
+          error ??= exception.toString();
+          await _uploadService.updateError(taskId, errorType, error);
+        }
         _logger.fine("Upload failed for taskId: $taskId, exception: ${update.exception}");
         break;
 

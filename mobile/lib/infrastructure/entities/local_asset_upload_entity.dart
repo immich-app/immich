@@ -11,6 +11,7 @@ class LocalAssetUploadEntity extends Table with DriftDefaultsMixin {
   IntColumn get numberOfAttempts => integer().withDefault(const Constant(0))();
   DateTimeColumn get lastAttemptAt => dateTime().withDefault(currentDateAndTime)();
   IntColumn get errorType => intEnum<UploadErrorType>().withDefault(const Constant(0))();
+  TextColumn get errorMessage => text().nullable()();
 
   @override
   Set<Column> get primaryKey => {assetId};

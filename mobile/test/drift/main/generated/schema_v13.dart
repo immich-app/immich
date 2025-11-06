@@ -1110,292 +1110,6 @@ class RemoteAssetEntityCompanion
   }
 }
 
-class StackEntity extends Table with TableInfo<StackEntity, StackEntityData> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  StackEntity(this.attachedDatabase, [this._alias]);
-  late final GeneratedColumn<String> id = GeneratedColumn<String>(
-    'id',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
-    'created_at',
-    aliasedName,
-    false,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: false,
-    defaultValue: const CustomExpression('CURRENT_TIMESTAMP'),
-  );
-  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
-    'updated_at',
-    aliasedName,
-    false,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: false,
-    defaultValue: const CustomExpression('CURRENT_TIMESTAMP'),
-  );
-  late final GeneratedColumn<String> ownerId = GeneratedColumn<String>(
-    'owner_id',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES user_entity (id) ON DELETE CASCADE',
-    ),
-  );
-  late final GeneratedColumn<String> primaryAssetId = GeneratedColumn<String>(
-    'primary_asset_id',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  @override
-  List<GeneratedColumn> get $columns => [
-    id,
-    createdAt,
-    updatedAt,
-    ownerId,
-    primaryAssetId,
-  ];
-  @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
-  static const String $name = 'stack_entity';
-  @override
-  Set<GeneratedColumn> get $primaryKey => {id};
-  @override
-  StackEntityData map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return StackEntityData(
-      id: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}id'],
-      )!,
-      createdAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}created_at'],
-      )!,
-      updatedAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}updated_at'],
-      )!,
-      ownerId: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}owner_id'],
-      )!,
-      primaryAssetId: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}primary_asset_id'],
-      )!,
-    );
-  }
-
-  @override
-  StackEntity createAlias(String alias) {
-    return StackEntity(attachedDatabase, alias);
-  }
-
-  @override
-  bool get withoutRowId => true;
-  @override
-  bool get isStrict => true;
-}
-
-class StackEntityData extends DataClass implements Insertable<StackEntityData> {
-  final String id;
-  final DateTime createdAt;
-  final DateTime updatedAt;
-  final String ownerId;
-  final String primaryAssetId;
-  const StackEntityData({
-    required this.id,
-    required this.createdAt,
-    required this.updatedAt,
-    required this.ownerId,
-    required this.primaryAssetId,
-  });
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['id'] = Variable<String>(id);
-    map['created_at'] = Variable<DateTime>(createdAt);
-    map['updated_at'] = Variable<DateTime>(updatedAt);
-    map['owner_id'] = Variable<String>(ownerId);
-    map['primary_asset_id'] = Variable<String>(primaryAssetId);
-    return map;
-  }
-
-  factory StackEntityData.fromJson(
-    Map<String, dynamic> json, {
-    ValueSerializer? serializer,
-  }) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return StackEntityData(
-      id: serializer.fromJson<String>(json['id']),
-      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
-      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
-      ownerId: serializer.fromJson<String>(json['ownerId']),
-      primaryAssetId: serializer.fromJson<String>(json['primaryAssetId']),
-    );
-  }
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'id': serializer.toJson<String>(id),
-      'createdAt': serializer.toJson<DateTime>(createdAt),
-      'updatedAt': serializer.toJson<DateTime>(updatedAt),
-      'ownerId': serializer.toJson<String>(ownerId),
-      'primaryAssetId': serializer.toJson<String>(primaryAssetId),
-    };
-  }
-
-  StackEntityData copyWith({
-    String? id,
-    DateTime? createdAt,
-    DateTime? updatedAt,
-    String? ownerId,
-    String? primaryAssetId,
-  }) => StackEntityData(
-    id: id ?? this.id,
-    createdAt: createdAt ?? this.createdAt,
-    updatedAt: updatedAt ?? this.updatedAt,
-    ownerId: ownerId ?? this.ownerId,
-    primaryAssetId: primaryAssetId ?? this.primaryAssetId,
-  );
-  StackEntityData copyWithCompanion(StackEntityCompanion data) {
-    return StackEntityData(
-      id: data.id.present ? data.id.value : this.id,
-      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
-      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
-      ownerId: data.ownerId.present ? data.ownerId.value : this.ownerId,
-      primaryAssetId: data.primaryAssetId.present
-          ? data.primaryAssetId.value
-          : this.primaryAssetId,
-    );
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('StackEntityData(')
-          ..write('id: $id, ')
-          ..write('createdAt: $createdAt, ')
-          ..write('updatedAt: $updatedAt, ')
-          ..write('ownerId: $ownerId, ')
-          ..write('primaryAssetId: $primaryAssetId')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode =>
-      Object.hash(id, createdAt, updatedAt, ownerId, primaryAssetId);
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is StackEntityData &&
-          other.id == this.id &&
-          other.createdAt == this.createdAt &&
-          other.updatedAt == this.updatedAt &&
-          other.ownerId == this.ownerId &&
-          other.primaryAssetId == this.primaryAssetId);
-}
-
-class StackEntityCompanion extends UpdateCompanion<StackEntityData> {
-  final Value<String> id;
-  final Value<DateTime> createdAt;
-  final Value<DateTime> updatedAt;
-  final Value<String> ownerId;
-  final Value<String> primaryAssetId;
-  const StackEntityCompanion({
-    this.id = const Value.absent(),
-    this.createdAt = const Value.absent(),
-    this.updatedAt = const Value.absent(),
-    this.ownerId = const Value.absent(),
-    this.primaryAssetId = const Value.absent(),
-  });
-  StackEntityCompanion.insert({
-    required String id,
-    this.createdAt = const Value.absent(),
-    this.updatedAt = const Value.absent(),
-    required String ownerId,
-    required String primaryAssetId,
-  }) : id = Value(id),
-       ownerId = Value(ownerId),
-       primaryAssetId = Value(primaryAssetId);
-  static Insertable<StackEntityData> custom({
-    Expression<String>? id,
-    Expression<DateTime>? createdAt,
-    Expression<DateTime>? updatedAt,
-    Expression<String>? ownerId,
-    Expression<String>? primaryAssetId,
-  }) {
-    return RawValuesInsertable({
-      if (id != null) 'id': id,
-      if (createdAt != null) 'created_at': createdAt,
-      if (updatedAt != null) 'updated_at': updatedAt,
-      if (ownerId != null) 'owner_id': ownerId,
-      if (primaryAssetId != null) 'primary_asset_id': primaryAssetId,
-    });
-  }
-
-  StackEntityCompanion copyWith({
-    Value<String>? id,
-    Value<DateTime>? createdAt,
-    Value<DateTime>? updatedAt,
-    Value<String>? ownerId,
-    Value<String>? primaryAssetId,
-  }) {
-    return StackEntityCompanion(
-      id: id ?? this.id,
-      createdAt: createdAt ?? this.createdAt,
-      updatedAt: updatedAt ?? this.updatedAt,
-      ownerId: ownerId ?? this.ownerId,
-      primaryAssetId: primaryAssetId ?? this.primaryAssetId,
-    );
-  }
-
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    if (id.present) {
-      map['id'] = Variable<String>(id.value);
-    }
-    if (createdAt.present) {
-      map['created_at'] = Variable<DateTime>(createdAt.value);
-    }
-    if (updatedAt.present) {
-      map['updated_at'] = Variable<DateTime>(updatedAt.value);
-    }
-    if (ownerId.present) {
-      map['owner_id'] = Variable<String>(ownerId.value);
-    }
-    if (primaryAssetId.present) {
-      map['primary_asset_id'] = Variable<String>(primaryAssetId.value);
-    }
-    return map;
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('StackEntityCompanion(')
-          ..write('id: $id, ')
-          ..write('createdAt: $createdAt, ')
-          ..write('updatedAt: $updatedAt, ')
-          ..write('ownerId: $ownerId, ')
-          ..write('primaryAssetId: $primaryAssetId')
-          ..write(')'))
-        .toString();
-  }
-}
-
 class LocalAssetEntity extends Table
     with TableInfo<LocalAssetEntity, LocalAssetEntityData> {
   @override
@@ -1904,6 +1618,597 @@ class LocalAssetEntityCompanion extends UpdateCompanion<LocalAssetEntityData> {
           ..write('checksum: $checksum, ')
           ..write('isFavorite: $isFavorite, ')
           ..write('orientation: $orientation')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class LocalAssetUploadEntity extends Table
+    with TableInfo<LocalAssetUploadEntity, LocalAssetUploadEntityData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  LocalAssetUploadEntity(this.attachedDatabase, [this._alias]);
+  late final GeneratedColumn<String> assetId = GeneratedColumn<String>(
+    'asset_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES local_asset_entity (id) ON DELETE CASCADE',
+    ),
+  );
+  late final GeneratedColumn<int> numberOfAttempts = GeneratedColumn<int>(
+    'number_of_attempts',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const CustomExpression('0'),
+  );
+  late final GeneratedColumn<DateTime> lastAttemptAt =
+      GeneratedColumn<DateTime>(
+        'last_attempt_at',
+        aliasedName,
+        false,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+        defaultValue: const CustomExpression('CURRENT_TIMESTAMP'),
+      );
+  late final GeneratedColumn<int> errorType = GeneratedColumn<int>(
+    'error_type',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const CustomExpression('0'),
+  );
+  late final GeneratedColumn<String> errorMessage = GeneratedColumn<String>(
+    'error_message',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    assetId,
+    numberOfAttempts,
+    lastAttemptAt,
+    errorType,
+    errorMessage,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'local_asset_upload_entity';
+  @override
+  Set<GeneratedColumn> get $primaryKey => {assetId};
+  @override
+  LocalAssetUploadEntityData map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LocalAssetUploadEntityData(
+      assetId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}asset_id'],
+      )!,
+      numberOfAttempts: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}number_of_attempts'],
+      )!,
+      lastAttemptAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}last_attempt_at'],
+      )!,
+      errorType: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}error_type'],
+      )!,
+      errorMessage: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}error_message'],
+      ),
+    );
+  }
+
+  @override
+  LocalAssetUploadEntity createAlias(String alias) {
+    return LocalAssetUploadEntity(attachedDatabase, alias);
+  }
+
+  @override
+  bool get withoutRowId => true;
+  @override
+  bool get isStrict => true;
+}
+
+class LocalAssetUploadEntityData extends DataClass
+    implements Insertable<LocalAssetUploadEntityData> {
+  final String assetId;
+  final int numberOfAttempts;
+  final DateTime lastAttemptAt;
+  final int errorType;
+  final String? errorMessage;
+  const LocalAssetUploadEntityData({
+    required this.assetId,
+    required this.numberOfAttempts,
+    required this.lastAttemptAt,
+    required this.errorType,
+    this.errorMessage,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['asset_id'] = Variable<String>(assetId);
+    map['number_of_attempts'] = Variable<int>(numberOfAttempts);
+    map['last_attempt_at'] = Variable<DateTime>(lastAttemptAt);
+    map['error_type'] = Variable<int>(errorType);
+    if (!nullToAbsent || errorMessage != null) {
+      map['error_message'] = Variable<String>(errorMessage);
+    }
+    return map;
+  }
+
+  factory LocalAssetUploadEntityData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LocalAssetUploadEntityData(
+      assetId: serializer.fromJson<String>(json['assetId']),
+      numberOfAttempts: serializer.fromJson<int>(json['numberOfAttempts']),
+      lastAttemptAt: serializer.fromJson<DateTime>(json['lastAttemptAt']),
+      errorType: serializer.fromJson<int>(json['errorType']),
+      errorMessage: serializer.fromJson<String?>(json['errorMessage']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'assetId': serializer.toJson<String>(assetId),
+      'numberOfAttempts': serializer.toJson<int>(numberOfAttempts),
+      'lastAttemptAt': serializer.toJson<DateTime>(lastAttemptAt),
+      'errorType': serializer.toJson<int>(errorType),
+      'errorMessage': serializer.toJson<String?>(errorMessage),
+    };
+  }
+
+  LocalAssetUploadEntityData copyWith({
+    String? assetId,
+    int? numberOfAttempts,
+    DateTime? lastAttemptAt,
+    int? errorType,
+    Value<String?> errorMessage = const Value.absent(),
+  }) => LocalAssetUploadEntityData(
+    assetId: assetId ?? this.assetId,
+    numberOfAttempts: numberOfAttempts ?? this.numberOfAttempts,
+    lastAttemptAt: lastAttemptAt ?? this.lastAttemptAt,
+    errorType: errorType ?? this.errorType,
+    errorMessage: errorMessage.present ? errorMessage.value : this.errorMessage,
+  );
+  LocalAssetUploadEntityData copyWithCompanion(
+    LocalAssetUploadEntityCompanion data,
+  ) {
+    return LocalAssetUploadEntityData(
+      assetId: data.assetId.present ? data.assetId.value : this.assetId,
+      numberOfAttempts: data.numberOfAttempts.present
+          ? data.numberOfAttempts.value
+          : this.numberOfAttempts,
+      lastAttemptAt: data.lastAttemptAt.present
+          ? data.lastAttemptAt.value
+          : this.lastAttemptAt,
+      errorType: data.errorType.present ? data.errorType.value : this.errorType,
+      errorMessage: data.errorMessage.present
+          ? data.errorMessage.value
+          : this.errorMessage,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalAssetUploadEntityData(')
+          ..write('assetId: $assetId, ')
+          ..write('numberOfAttempts: $numberOfAttempts, ')
+          ..write('lastAttemptAt: $lastAttemptAt, ')
+          ..write('errorType: $errorType, ')
+          ..write('errorMessage: $errorMessage')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    assetId,
+    numberOfAttempts,
+    lastAttemptAt,
+    errorType,
+    errorMessage,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LocalAssetUploadEntityData &&
+          other.assetId == this.assetId &&
+          other.numberOfAttempts == this.numberOfAttempts &&
+          other.lastAttemptAt == this.lastAttemptAt &&
+          other.errorType == this.errorType &&
+          other.errorMessage == this.errorMessage);
+}
+
+class LocalAssetUploadEntityCompanion
+    extends UpdateCompanion<LocalAssetUploadEntityData> {
+  final Value<String> assetId;
+  final Value<int> numberOfAttempts;
+  final Value<DateTime> lastAttemptAt;
+  final Value<int> errorType;
+  final Value<String?> errorMessage;
+  const LocalAssetUploadEntityCompanion({
+    this.assetId = const Value.absent(),
+    this.numberOfAttempts = const Value.absent(),
+    this.lastAttemptAt = const Value.absent(),
+    this.errorType = const Value.absent(),
+    this.errorMessage = const Value.absent(),
+  });
+  LocalAssetUploadEntityCompanion.insert({
+    required String assetId,
+    this.numberOfAttempts = const Value.absent(),
+    this.lastAttemptAt = const Value.absent(),
+    this.errorType = const Value.absent(),
+    this.errorMessage = const Value.absent(),
+  }) : assetId = Value(assetId);
+  static Insertable<LocalAssetUploadEntityData> custom({
+    Expression<String>? assetId,
+    Expression<int>? numberOfAttempts,
+    Expression<DateTime>? lastAttemptAt,
+    Expression<int>? errorType,
+    Expression<String>? errorMessage,
+  }) {
+    return RawValuesInsertable({
+      if (assetId != null) 'asset_id': assetId,
+      if (numberOfAttempts != null) 'number_of_attempts': numberOfAttempts,
+      if (lastAttemptAt != null) 'last_attempt_at': lastAttemptAt,
+      if (errorType != null) 'error_type': errorType,
+      if (errorMessage != null) 'error_message': errorMessage,
+    });
+  }
+
+  LocalAssetUploadEntityCompanion copyWith({
+    Value<String>? assetId,
+    Value<int>? numberOfAttempts,
+    Value<DateTime>? lastAttemptAt,
+    Value<int>? errorType,
+    Value<String?>? errorMessage,
+  }) {
+    return LocalAssetUploadEntityCompanion(
+      assetId: assetId ?? this.assetId,
+      numberOfAttempts: numberOfAttempts ?? this.numberOfAttempts,
+      lastAttemptAt: lastAttemptAt ?? this.lastAttemptAt,
+      errorType: errorType ?? this.errorType,
+      errorMessage: errorMessage ?? this.errorMessage,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (assetId.present) {
+      map['asset_id'] = Variable<String>(assetId.value);
+    }
+    if (numberOfAttempts.present) {
+      map['number_of_attempts'] = Variable<int>(numberOfAttempts.value);
+    }
+    if (lastAttemptAt.present) {
+      map['last_attempt_at'] = Variable<DateTime>(lastAttemptAt.value);
+    }
+    if (errorType.present) {
+      map['error_type'] = Variable<int>(errorType.value);
+    }
+    if (errorMessage.present) {
+      map['error_message'] = Variable<String>(errorMessage.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalAssetUploadEntityCompanion(')
+          ..write('assetId: $assetId, ')
+          ..write('numberOfAttempts: $numberOfAttempts, ')
+          ..write('lastAttemptAt: $lastAttemptAt, ')
+          ..write('errorType: $errorType, ')
+          ..write('errorMessage: $errorMessage')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class StackEntity extends Table with TableInfo<StackEntity, StackEntityData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  StackEntity(this.attachedDatabase, [this._alias]);
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: const CustomExpression('CURRENT_TIMESTAMP'),
+  );
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: const CustomExpression('CURRENT_TIMESTAMP'),
+  );
+  late final GeneratedColumn<String> ownerId = GeneratedColumn<String>(
+    'owner_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES user_entity (id) ON DELETE CASCADE',
+    ),
+  );
+  late final GeneratedColumn<String> primaryAssetId = GeneratedColumn<String>(
+    'primary_asset_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    createdAt,
+    updatedAt,
+    ownerId,
+    primaryAssetId,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'stack_entity';
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  StackEntityData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return StackEntityData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+      ownerId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}owner_id'],
+      )!,
+      primaryAssetId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}primary_asset_id'],
+      )!,
+    );
+  }
+
+  @override
+  StackEntity createAlias(String alias) {
+    return StackEntity(attachedDatabase, alias);
+  }
+
+  @override
+  bool get withoutRowId => true;
+  @override
+  bool get isStrict => true;
+}
+
+class StackEntityData extends DataClass implements Insertable<StackEntityData> {
+  final String id;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final String ownerId;
+  final String primaryAssetId;
+  const StackEntityData({
+    required this.id,
+    required this.createdAt,
+    required this.updatedAt,
+    required this.ownerId,
+    required this.primaryAssetId,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    map['owner_id'] = Variable<String>(ownerId);
+    map['primary_asset_id'] = Variable<String>(primaryAssetId);
+    return map;
+  }
+
+  factory StackEntityData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return StackEntityData(
+      id: serializer.fromJson<String>(json['id']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      ownerId: serializer.fromJson<String>(json['ownerId']),
+      primaryAssetId: serializer.fromJson<String>(json['primaryAssetId']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'ownerId': serializer.toJson<String>(ownerId),
+      'primaryAssetId': serializer.toJson<String>(primaryAssetId),
+    };
+  }
+
+  StackEntityData copyWith({
+    String? id,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    String? ownerId,
+    String? primaryAssetId,
+  }) => StackEntityData(
+    id: id ?? this.id,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+    ownerId: ownerId ?? this.ownerId,
+    primaryAssetId: primaryAssetId ?? this.primaryAssetId,
+  );
+  StackEntityData copyWithCompanion(StackEntityCompanion data) {
+    return StackEntityData(
+      id: data.id.present ? data.id.value : this.id,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      ownerId: data.ownerId.present ? data.ownerId.value : this.ownerId,
+      primaryAssetId: data.primaryAssetId.present
+          ? data.primaryAssetId.value
+          : this.primaryAssetId,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('StackEntityData(')
+          ..write('id: $id, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('ownerId: $ownerId, ')
+          ..write('primaryAssetId: $primaryAssetId')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, createdAt, updatedAt, ownerId, primaryAssetId);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is StackEntityData &&
+          other.id == this.id &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt &&
+          other.ownerId == this.ownerId &&
+          other.primaryAssetId == this.primaryAssetId);
+}
+
+class StackEntityCompanion extends UpdateCompanion<StackEntityData> {
+  final Value<String> id;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<String> ownerId;
+  final Value<String> primaryAssetId;
+  const StackEntityCompanion({
+    this.id = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.ownerId = const Value.absent(),
+    this.primaryAssetId = const Value.absent(),
+  });
+  StackEntityCompanion.insert({
+    required String id,
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    required String ownerId,
+    required String primaryAssetId,
+  }) : id = Value(id),
+       ownerId = Value(ownerId),
+       primaryAssetId = Value(primaryAssetId);
+  static Insertable<StackEntityData> custom({
+    Expression<String>? id,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<String>? ownerId,
+    Expression<String>? primaryAssetId,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (ownerId != null) 'owner_id': ownerId,
+      if (primaryAssetId != null) 'primary_asset_id': primaryAssetId,
+    });
+  }
+
+  StackEntityCompanion copyWith({
+    Value<String>? id,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<String>? ownerId,
+    Value<String>? primaryAssetId,
+  }) {
+    return StackEntityCompanion(
+      id: id ?? this.id,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      ownerId: ownerId ?? this.ownerId,
+      primaryAssetId: primaryAssetId ?? this.primaryAssetId,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (ownerId.present) {
+      map['owner_id'] = Variable<String>(ownerId.value);
+    }
+    if (primaryAssetId.present) {
+      map['primary_asset_id'] = Variable<String>(primaryAssetId.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('StackEntityCompanion(')
+          ..write('id: $id, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('ownerId: $ownerId, ')
+          ..write('primaryAssetId: $primaryAssetId')
           ..write(')'))
         .toString();
   }
@@ -3880,269 +4185,6 @@ class PartnerEntityCompanion extends UpdateCompanion<PartnerEntityData> {
           ..write('sharedById: $sharedById, ')
           ..write('sharedWithId: $sharedWithId, ')
           ..write('inTimeline: $inTimeline')
-          ..write(')'))
-        .toString();
-  }
-}
-
-class LocalAssetUploadEntity extends Table
-    with TableInfo<LocalAssetUploadEntity, LocalAssetUploadEntityData> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  LocalAssetUploadEntity(this.attachedDatabase, [this._alias]);
-  late final GeneratedColumn<String> assetId = GeneratedColumn<String>(
-    'asset_id',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES local_asset_entity (id) ON DELETE CASCADE',
-    ),
-  );
-  late final GeneratedColumn<int> numberOfAttempts = GeneratedColumn<int>(
-    'number_of_attempts',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-    defaultValue: const CustomExpression('0'),
-  );
-  late final GeneratedColumn<DateTime> lastAttemptAt =
-      GeneratedColumn<DateTime>(
-        'last_attempt_at',
-        aliasedName,
-        false,
-        type: DriftSqlType.dateTime,
-        requiredDuringInsert: false,
-        defaultValue: const CustomExpression('CURRENT_TIMESTAMP'),
-      );
-  late final GeneratedColumn<int> errorType = GeneratedColumn<int>(
-    'error_type',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-    defaultValue: const CustomExpression('0'),
-  );
-  @override
-  List<GeneratedColumn> get $columns => [
-    assetId,
-    numberOfAttempts,
-    lastAttemptAt,
-    errorType,
-  ];
-  @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
-  static const String $name = 'local_asset_upload_entity';
-  @override
-  Set<GeneratedColumn> get $primaryKey => {assetId};
-  @override
-  LocalAssetUploadEntityData map(
-    Map<String, dynamic> data, {
-    String? tablePrefix,
-  }) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return LocalAssetUploadEntityData(
-      assetId: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}asset_id'],
-      )!,
-      numberOfAttempts: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}number_of_attempts'],
-      )!,
-      lastAttemptAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}last_attempt_at'],
-      )!,
-      errorType: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}error_type'],
-      )!,
-    );
-  }
-
-  @override
-  LocalAssetUploadEntity createAlias(String alias) {
-    return LocalAssetUploadEntity(attachedDatabase, alias);
-  }
-
-  @override
-  bool get withoutRowId => true;
-  @override
-  bool get isStrict => true;
-}
-
-class LocalAssetUploadEntityData extends DataClass
-    implements Insertable<LocalAssetUploadEntityData> {
-  final String assetId;
-  final int numberOfAttempts;
-  final DateTime lastAttemptAt;
-  final int errorType;
-  const LocalAssetUploadEntityData({
-    required this.assetId,
-    required this.numberOfAttempts,
-    required this.lastAttemptAt,
-    required this.errorType,
-  });
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['asset_id'] = Variable<String>(assetId);
-    map['number_of_attempts'] = Variable<int>(numberOfAttempts);
-    map['last_attempt_at'] = Variable<DateTime>(lastAttemptAt);
-    map['error_type'] = Variable<int>(errorType);
-    return map;
-  }
-
-  factory LocalAssetUploadEntityData.fromJson(
-    Map<String, dynamic> json, {
-    ValueSerializer? serializer,
-  }) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return LocalAssetUploadEntityData(
-      assetId: serializer.fromJson<String>(json['assetId']),
-      numberOfAttempts: serializer.fromJson<int>(json['numberOfAttempts']),
-      lastAttemptAt: serializer.fromJson<DateTime>(json['lastAttemptAt']),
-      errorType: serializer.fromJson<int>(json['errorType']),
-    );
-  }
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'assetId': serializer.toJson<String>(assetId),
-      'numberOfAttempts': serializer.toJson<int>(numberOfAttempts),
-      'lastAttemptAt': serializer.toJson<DateTime>(lastAttemptAt),
-      'errorType': serializer.toJson<int>(errorType),
-    };
-  }
-
-  LocalAssetUploadEntityData copyWith({
-    String? assetId,
-    int? numberOfAttempts,
-    DateTime? lastAttemptAt,
-    int? errorType,
-  }) => LocalAssetUploadEntityData(
-    assetId: assetId ?? this.assetId,
-    numberOfAttempts: numberOfAttempts ?? this.numberOfAttempts,
-    lastAttemptAt: lastAttemptAt ?? this.lastAttemptAt,
-    errorType: errorType ?? this.errorType,
-  );
-  LocalAssetUploadEntityData copyWithCompanion(
-    LocalAssetUploadEntityCompanion data,
-  ) {
-    return LocalAssetUploadEntityData(
-      assetId: data.assetId.present ? data.assetId.value : this.assetId,
-      numberOfAttempts: data.numberOfAttempts.present
-          ? data.numberOfAttempts.value
-          : this.numberOfAttempts,
-      lastAttemptAt: data.lastAttemptAt.present
-          ? data.lastAttemptAt.value
-          : this.lastAttemptAt,
-      errorType: data.errorType.present ? data.errorType.value : this.errorType,
-    );
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('LocalAssetUploadEntityData(')
-          ..write('assetId: $assetId, ')
-          ..write('numberOfAttempts: $numberOfAttempts, ')
-          ..write('lastAttemptAt: $lastAttemptAt, ')
-          ..write('errorType: $errorType')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode =>
-      Object.hash(assetId, numberOfAttempts, lastAttemptAt, errorType);
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is LocalAssetUploadEntityData &&
-          other.assetId == this.assetId &&
-          other.numberOfAttempts == this.numberOfAttempts &&
-          other.lastAttemptAt == this.lastAttemptAt &&
-          other.errorType == this.errorType);
-}
-
-class LocalAssetUploadEntityCompanion
-    extends UpdateCompanion<LocalAssetUploadEntityData> {
-  final Value<String> assetId;
-  final Value<int> numberOfAttempts;
-  final Value<DateTime> lastAttemptAt;
-  final Value<int> errorType;
-  const LocalAssetUploadEntityCompanion({
-    this.assetId = const Value.absent(),
-    this.numberOfAttempts = const Value.absent(),
-    this.lastAttemptAt = const Value.absent(),
-    this.errorType = const Value.absent(),
-  });
-  LocalAssetUploadEntityCompanion.insert({
-    required String assetId,
-    this.numberOfAttempts = const Value.absent(),
-    this.lastAttemptAt = const Value.absent(),
-    this.errorType = const Value.absent(),
-  }) : assetId = Value(assetId);
-  static Insertable<LocalAssetUploadEntityData> custom({
-    Expression<String>? assetId,
-    Expression<int>? numberOfAttempts,
-    Expression<DateTime>? lastAttemptAt,
-    Expression<int>? errorType,
-  }) {
-    return RawValuesInsertable({
-      if (assetId != null) 'asset_id': assetId,
-      if (numberOfAttempts != null) 'number_of_attempts': numberOfAttempts,
-      if (lastAttemptAt != null) 'last_attempt_at': lastAttemptAt,
-      if (errorType != null) 'error_type': errorType,
-    });
-  }
-
-  LocalAssetUploadEntityCompanion copyWith({
-    Value<String>? assetId,
-    Value<int>? numberOfAttempts,
-    Value<DateTime>? lastAttemptAt,
-    Value<int>? errorType,
-  }) {
-    return LocalAssetUploadEntityCompanion(
-      assetId: assetId ?? this.assetId,
-      numberOfAttempts: numberOfAttempts ?? this.numberOfAttempts,
-      lastAttemptAt: lastAttemptAt ?? this.lastAttemptAt,
-      errorType: errorType ?? this.errorType,
-    );
-  }
-
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    if (assetId.present) {
-      map['asset_id'] = Variable<String>(assetId.value);
-    }
-    if (numberOfAttempts.present) {
-      map['number_of_attempts'] = Variable<int>(numberOfAttempts.value);
-    }
-    if (lastAttemptAt.present) {
-      map['last_attempt_at'] = Variable<DateTime>(lastAttemptAt.value);
-    }
-    if (errorType.present) {
-      map['error_type'] = Variable<int>(errorType.value);
-    }
-    return map;
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('LocalAssetUploadEntityCompanion(')
-          ..write('assetId: $assetId, ')
-          ..write('numberOfAttempts: $numberOfAttempts, ')
-          ..write('lastAttemptAt: $lastAttemptAt, ')
-          ..write('errorType: $errorType')
           ..write(')'))
         .toString();
   }
@@ -7380,12 +7422,13 @@ class DatabaseAtV13 extends GeneratedDatabase {
   DatabaseAtV13(QueryExecutor e) : super(e);
   late final UserEntity userEntity = UserEntity(this);
   late final RemoteAssetEntity remoteAssetEntity = RemoteAssetEntity(this);
-  late final StackEntity stackEntity = StackEntity(this);
   late final LocalAssetEntity localAssetEntity = LocalAssetEntity(this);
-  late final RemoteAlbumEntity remoteAlbumEntity = RemoteAlbumEntity(this);
-  late final LocalAlbumEntity localAlbumEntity = LocalAlbumEntity(this);
-  late final LocalAlbumAssetEntity localAlbumAssetEntity =
-      LocalAlbumAssetEntity(this);
+  late final LocalAssetUploadEntity localAssetUploadEntity =
+      LocalAssetUploadEntity(this);
+  late final Trigger deleteUploadErrorOnRemoteInsert = Trigger(
+    'CREATE TRIGGER delete_upload_error_on_remote_insert AFTER INSERT ON remote_asset_entity BEGIN DELETE FROM local_asset_upload_entity WHERE asset_id IN (SELECT lae.id FROM local_asset_entity AS lae WHERE lae.checksum = NEW.checksum);END',
+    'delete_upload_error_on_remote_insert',
+  );
   late final Index idxLocalAssetChecksum = Index(
     'idx_local_asset_checksum',
     'CREATE INDEX IF NOT EXISTS idx_local_asset_checksum ON local_asset_entity (checksum)',
@@ -7406,11 +7449,14 @@ class DatabaseAtV13 extends GeneratedDatabase {
     'idx_remote_asset_checksum',
     'CREATE INDEX IF NOT EXISTS idx_remote_asset_checksum ON remote_asset_entity (checksum)',
   );
+  late final StackEntity stackEntity = StackEntity(this);
+  late final RemoteAlbumEntity remoteAlbumEntity = RemoteAlbumEntity(this);
+  late final LocalAlbumEntity localAlbumEntity = LocalAlbumEntity(this);
+  late final LocalAlbumAssetEntity localAlbumAssetEntity =
+      LocalAlbumAssetEntity(this);
   late final AuthUserEntity authUserEntity = AuthUserEntity(this);
   late final UserMetadataEntity userMetadataEntity = UserMetadataEntity(this);
   late final PartnerEntity partnerEntity = PartnerEntity(this);
-  late final LocalAssetUploadEntity localAssetUploadEntity =
-      LocalAssetUploadEntity(this);
   late final RemoteExifEntity remoteExifEntity = RemoteExifEntity(this);
   late final RemoteAlbumAssetEntity remoteAlbumAssetEntity =
       RemoteAlbumAssetEntity(this);
@@ -7432,20 +7478,21 @@ class DatabaseAtV13 extends GeneratedDatabase {
   List<DatabaseSchemaEntity> get allSchemaEntities => [
     userEntity,
     remoteAssetEntity,
-    stackEntity,
     localAssetEntity,
-    remoteAlbumEntity,
-    localAlbumEntity,
-    localAlbumAssetEntity,
+    localAssetUploadEntity,
+    deleteUploadErrorOnRemoteInsert,
     idxLocalAssetChecksum,
     idxRemoteAssetOwnerChecksum,
     uQRemoteAssetsOwnerChecksum,
     uQRemoteAssetsOwnerLibraryChecksum,
     idxRemoteAssetChecksum,
+    stackEntity,
+    remoteAlbumEntity,
+    localAlbumEntity,
+    localAlbumAssetEntity,
     authUserEntity,
     userMetadataEntity,
     partnerEntity,
-    localAssetUploadEntity,
     remoteExifEntity,
     remoteAlbumAssetEntity,
     remoteAlbumUserEntity,
@@ -7456,6 +7503,16 @@ class DatabaseAtV13 extends GeneratedDatabase {
     storeEntity,
     idxLatLng,
   ];
+  @override
+  StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'remote_asset_entity',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [],
+    ),
+  ]);
   @override
   int get schemaVersion => 13;
   @override

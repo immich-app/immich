@@ -93,8 +93,12 @@ class UploadService {
     _taskProgressController.close();
   }
 
-  Future<void> updateError(String assetId, UploadErrorType errorType) {
-    return _assetUploadRepository.upsert(assetId, errorType);
+  Future<void> updateError(String assetId, UploadErrorType errorType, String error) {
+    return _assetUploadRepository.upsert(assetId, errorType, error);
+  }
+
+  Future<void> clearError(String assetId) {
+    return _assetUploadRepository.delete(assetId);
   }
 
   Future<List<bool>> enqueueTasks(List<UploadTask> tasks) {

@@ -65,7 +65,10 @@ class IsarDatabaseRepository implements IDatabaseRepository {
     AssetFaceEntity,
     StoreEntity,
   ],
-  include: {'package:immich_mobile/infrastructure/entities/merged_asset.drift'},
+  include: {
+    'package:immich_mobile/infrastructure/entities/merged_asset.drift',
+    'package:immich_mobile/infrastructure/entities/local_asset_upload_trigger.drift',
+  },
 )
 class Drift extends $Drift implements IDatabaseRepository {
   Drift([QueryExecutor? executor])
@@ -182,6 +185,7 @@ class Drift extends $Drift implements IDatabaseRepository {
           },
           from12To13: (m, v13) async {
             await m.createTable(v13.localAssetUploadEntity);
+            await m.createTrigger(v13.deleteUploadErrorOnRemoteInsert);
           },
         ),
       );

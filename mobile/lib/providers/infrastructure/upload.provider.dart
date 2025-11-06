@@ -80,3 +80,11 @@ final uploadTimerProvider = NotifierProvider<UploadTimerNotifier, bool>(UploadTi
 final assetUploadRepositoryProvider = Provider<DriftLocalAssetUploadRepository>(
   (ref) => DriftLocalAssetUploadRepository(ref.watch(driftProvider)),
 );
+
+final failedUploadStatusProvider = FutureProvider.autoDispose<Map<String, DriftUploadStatus>>((ref) async {
+  final allUploads = await ref.watch(assetUploadRepositoryProvider).getAll();
+  return allUploads.fold<Map<String, DriftUploadStatus>>({}, (acc, upload) {
+    acc[upload.taskId] = upload;
+    return acc;
+  });
+});
