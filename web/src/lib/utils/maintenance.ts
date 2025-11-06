@@ -16,7 +16,7 @@ export function maintenanceReturnUrl(searchParams: URLSearchParams, origin: stri
 
 export const loadMaintenanceAuth = async () => {
   try {
-    let maintenanceAuth = get(maintenanceAuth$);
+    const maintenanceAuth = get(maintenanceAuth$);
 
     const query = new URLSearchParams(location.search);
     const queryToken = query.get('token');
