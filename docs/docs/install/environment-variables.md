@@ -171,7 +171,7 @@ Redis (Sentinel) URL example JSON before encoding:
 | `MACHINE_LEARNING_MAX_BATCH_SIZE__FACIAL_RECOGNITION`       | Set the maximum number of faces that will be processed at once by the facial recognition model            |  None (`1` if using OpenVINO)   | machine learning |
 | `MACHINE_LEARNING_MAX_BATCH_SIZE__OCR`                      | Set the maximum number of boxes that will be processed at once by the OCR model                           |               `6`               | machine learning |
 | `MACHINE_LEARNING_RKNN`                                     | Enable RKNN hardware acceleration if supported                                                            |             `True`              | machine learning |
-| `MACHINE_LEARNING_RKNN_THREADS`                             | How many threads of RKNN runtime should be spinned up while inferencing.                                  |               `1`               | machine learning |
+| `MACHINE_LEARNING_RKNN_THREADS`                             | How many threads of RKNN runtime should be spun up while inferencing.                                     |               `1`               | machine learning |
 | `MACHINE_LEARNING_MODEL_ARENA`                              | Pre-allocates CPU memory to avoid memory fragmentation                                                    |              true               | machine learning |
 | `MACHINE_LEARNING_OPENVINO_PRECISION`                       | If set to FP16, uses half-precision floating-point operations for faster inference with reduced accuracy (one of [`FP16`, `FP32`], applies only to OpenVINO) |             `FP32`              | machine learning |
 
