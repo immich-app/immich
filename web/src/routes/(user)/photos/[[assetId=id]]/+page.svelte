@@ -105,11 +105,6 @@
 </script>
 
 <UserPageLayout hideNavbar={assetInteraction.selectionActive} showUploadButton scrollbar={false}>
-  {#snippet buttons()}
-    {#if !assetInteraction.selectionActive}
-      <IconButton icon={mdiCog} title={$t('timeline_settings')} onclick={() => (showTimelineSettings = true)} />
-    {/if}
-  {/snippet}
   <Timeline
     enableRouting={true}
     bind:timelineManager
@@ -127,6 +122,19 @@
     {/snippet}
   </Timeline>
 </UserPageLayout>
+
+{#if !assetInteraction.selectionActive}
+  <button
+    type="button"
+    class="fixed bottom-6 right-6 z-50 rounded-full bg-immich-primary p-4 text-white shadow-lg hover:bg-immich-primary/90 dark:bg-immich-dark-primary dark:hover:bg-immich-dark-primary/90"
+    title={$t('timeline_settings')}
+    onclick={() => (showTimelineSettings = true)}
+  >
+    <svg class="h-6 w-6" viewBox="0 0 24 24" fill="currentColor">
+      <path d={mdiCog} />
+    </svg>
+  </button>
+{/if}
 
 {#if showTimelineSettings}
   <TimelineSettingsModal settings={$timelineSettings} onClose={handleTimelineSettings} />
