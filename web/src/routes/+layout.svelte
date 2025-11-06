@@ -20,6 +20,7 @@
     type ReleaseEvent,
   } from '$lib/stores/websocket';
   import { copyToClipboard, getReleaseType } from '$lib/utils';
+  import { maintenanceShouldRedirect } from '$lib/utils/maintenance';
   import { isAssetViewerRoute } from '$lib/utils/navigation';
   import type { ServerVersionResponseDto } from '@immich/sdk';
   import { modalManager, setTranslations } from '@immich/ui';
@@ -112,7 +113,7 @@
       return;
     }
 
-    if (isRestarting.isMaintenanceMode !== page.url.pathname.startsWith(AppRoute.MAINTENANCE)) {
+    if (maintenanceShouldRedirect(isRestarting.isMaintenanceMode, location)) {
       modalManager.show(ServerRestartingModal, {}).catch((error) => console.error('Error [ServerRestartBox]:', error));
 
       // we will be disconnected momentarily

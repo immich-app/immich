@@ -2,6 +2,7 @@
   import AuthPageLayout from '$lib/components/layouts/AuthPageLayout.svelte';
   import FormatMessage from '$lib/elements/FormatMessage.svelte';
   import { maintenanceAuth } from '$lib/stores/maintenance.store';
+  import { handleError } from '$lib/utils/handle-error';
   import { endMaintenance } from '@immich/sdk';
   import { Button, Heading, Link } from '@immich/ui';
   import { t } from 'svelte-i18n';
@@ -11,6 +12,14 @@
   if (url.searchParams.get('token')) {
     url.searchParams.delete('token');
     history.replaceState({}, document.title, url);
+  }
+
+  async function end() {
+    try {
+      await endMaintenance();
+    } catch (error) {
+      handleError(error, $t('maintenance_end_error'));
+    }
   }
 </script>
 
@@ -36,7 +45,7 @@
           },
         })}
       </p>
-      <Button onclick={() => endMaintenance()}>{$t('maintenance_exit')}</Button>
+      <Button onclick={end}>{$t('maintenance_end')}</Button>
     {/if}
   </div>
 </AuthPageLayout>

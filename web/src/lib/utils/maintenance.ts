@@ -13,6 +13,10 @@ export function maintenanceReturnUrl(searchParams: URLSearchParams) {
   return searchParams.get('continue') ?? '/';
 }
 
+export function maintenanceShouldRedirect(maintenanceMode: boolean, currentUrl: URL | Location) {
+  return maintenanceMode !== currentUrl.pathname.startsWith(AppRoute.MAINTENANCE);
+}
+
 export const loadMaintenanceAuth = async () => {
   try {
     const maintenanceAuth = get(maintenanceAuth$);

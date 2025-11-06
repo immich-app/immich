@@ -15,7 +15,7 @@
     try {
       await startMaintenance();
     } catch (error) {
-      handleError(error, 'Failed to start maintenance mode'); // todo: i18n
+      handleError(error, $t('admin.maintenance_start_error'));
     }
   }
 </script>
@@ -24,7 +24,7 @@
   <div in:fade={{ duration: 500 }}>
     <div class="ms-4 mt-4 flex items-end gap-4">
       <Button shape="round" type="submit" {disabled} size="small" onclick={start}
-        >{$t('admin.maintenance_enabled_description')}</Button
+        >{$t('admin.maintenance_start')}</Button
       >
     </div>
   </div>
