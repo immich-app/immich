@@ -45,19 +45,11 @@ class MaintenanceAdminApi {
   }
 
   /// This endpoint is an admin-only route, and requires the `maintenance` permission.
-  Future<MaintenanceModeResponseDto?> endMaintenance() async {
+  Future<void> endMaintenance() async {
     final response = await endMaintenanceWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
-    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'MaintenanceModeResponseDto',) as MaintenanceModeResponseDto;
-    
-    }
-    return null;
   }
 
   /// Performs an HTTP 'POST /admin/maintenance/login' operation and returns the [Response].
@@ -136,18 +128,10 @@ class MaintenanceAdminApi {
   }
 
   /// This endpoint is an admin-only route, and requires the `maintenance` permission.
-  Future<MaintenanceModeResponseDto?> startMaintenance() async {
+  Future<void> startMaintenance() async {
     final response = await startMaintenanceWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
-    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'MaintenanceModeResponseDto',) as MaintenanceModeResponseDto;
-    
-    }
-    return null;
   }
 }

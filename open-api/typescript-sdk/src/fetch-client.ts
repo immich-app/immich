@@ -40,9 +40,6 @@ export type ActivityStatisticsResponseDto = {
     comments: number;
     likes: number;
 };
-export type MaintenanceModeResponseDto = {
-    isMaintenanceMode: boolean;
-};
 export type MaintenanceLoginDto = {
     token?: string;
 };
@@ -1763,10 +1760,7 @@ export function unlinkAllOAuthAccountsAdmin(opts?: Oazapfts.RequestOpts) {
  * This endpoint is an admin-only route, and requires the `maintenance` permission.
  */
 export function endMaintenance(opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 201;
-        data: MaintenanceModeResponseDto;
-    }>("/admin/maintenance/end", {
+    return oazapfts.ok(oazapfts.fetchText("/admin/maintenance/end", {
         ...opts,
         method: "POST"
     }));
@@ -1787,10 +1781,7 @@ export function maintenanceLogin({ maintenanceLoginDto }: {
  * This endpoint is an admin-only route, and requires the `maintenance` permission.
  */
 export function startMaintenance(opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 201;
-        data: MaintenanceModeResponseDto;
-    }>("/admin/maintenance/start", {
+    return oazapfts.ok(oazapfts.fetchText("/admin/maintenance/start", {
         ...opts,
         method: "POST"
     }));

@@ -58,7 +58,7 @@ export class MaintenanceWorkerService {
     return this.maintenanceRepository.authenticateToken(jwt);
   }
 
-  startMaintenance(): Promise<void> {
+  startMaintenance(): void {
     throw new BadRequestException('Already in maintenance mode');
   }
 

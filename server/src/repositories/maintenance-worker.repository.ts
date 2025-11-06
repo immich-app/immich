@@ -9,7 +9,7 @@ import {
 import { parse } from 'cookie';
 import { IncomingHttpHeaders } from 'node:http';
 import { Server, Socket } from 'socket.io';
-import { MaintenanceAuthDto, MaintenanceModeResponseDto } from 'src/dtos/maintenance.dto';
+import { MaintenanceAuthDto } from 'src/dtos/maintenance.dto';
 import { ExitCode, ImmichCookie, SystemMetadataKey } from 'src/enum';
 import { AppRestartEvent, ArgsOf } from 'src/repositories/event.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
@@ -113,7 +113,7 @@ export class MaintenanceWorkerRepository implements OnGatewayConnection, OnGatew
     websocketServer.on('AppRestart', () => this.exitApp());
   }
 
-  restartApp(state: MaintenanceModeResponseDto) {
+  restartApp(state: AppRestartEvent) {
     this.clientBroadcast('AppRestartV1', state);
     this.serverSend('AppRestart', state);
     this.exitApp();

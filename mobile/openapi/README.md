@@ -405,7 +405,6 @@ Class | Method | HTTP request | Description
  - [MachineLearningAvailabilityChecksDto](doc//MachineLearningAvailabilityChecksDto.md)
  - [MaintenanceAuthDto](doc//MaintenanceAuthDto.md)
  - [MaintenanceLoginDto](doc//MaintenanceLoginDto.md)
- - [MaintenanceModeResponseDto](doc//MaintenanceModeResponseDto.md)
  - [ManualJobName](doc//ManualJobName.md)
  - [MapMarkerResponseDto](doc//MapMarkerResponseDto.md)
  - [MapReverseGeocodeResponseDto](doc//MapReverseGeocodeResponseDto.md)
