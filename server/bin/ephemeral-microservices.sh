@@ -22,7 +22,6 @@
 #   GRACEFUL_TIMEOUT        Seconds to wait after SIGTERM before SIGKILL (default: 30)
 #   VERBOSE                 If set to non-empty, enables extra logging
 #   EXTRA_START_ENV         Extra env vars to export when starting microservices (format KEY=VAL space separated)
-#   KEEP_ALIVE_URL          If set, performs a keep-alive HTTP request after starting microservices (optional)
 #
 # Exit codes:
 #   0  Normal exit (terminated by signal or EOF)
@@ -190,6 +189,7 @@ while true; do
   vlog "Queue totals: waiting=$waiting_total active=$active_total running=$(micro_running && echo yes || echo no)"
 
   if [[ $waiting_total -ge $WAITING_THRESHOLD ]]; then
+    node ./server/scripts/queue-stats.js
     start_micro
     if [[ -n "${KEEP_ALIVE_URL:-}" ]]; then
       keep_alive || vlog "Keep-alive check failed"
