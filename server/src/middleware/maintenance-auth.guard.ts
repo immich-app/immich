@@ -19,15 +19,15 @@ export const MaintenanceRoute = (options = {}): MethodDecorator => {
 };
 
 export interface MaintenanceAuthRequest extends Request {
-  maintenanceAuth?: MaintenanceAuthDto;
+  auth?: MaintenanceAuthDto;
 }
 
 export interface MaintenanceAuthenticatedRequest extends Request {
-  maintenanceAuth: MaintenanceAuthDto;
+  auth: MaintenanceAuthDto;
 }
 
 export const MaintenanceAuth = createParamDecorator((data, context: ExecutionContext): MaintenanceAuthDto => {
-  return context.switchToHttp().getRequest<MaintenanceAuthenticatedRequest>().maintenanceAuth;
+  return context.switchToHttp().getRequest<MaintenanceAuthenticatedRequest>().auth;
 });
 
 @Injectable()
@@ -51,7 +51,7 @@ export class MaintenanceAuthGuard implements CanActivate {
     }
 
     const request = context.switchToHttp().getRequest<MaintenanceAuthRequest>();
-    request['maintenanceAuth'] = await this.maintenanceWorkerRepository.authenticate(request.headers);
+    request['auth'] = await this.maintenanceWorkerRepository.authenticate(request.headers);
 
     return true;
   }
