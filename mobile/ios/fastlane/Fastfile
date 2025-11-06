@@ -32,6 +32,17 @@ platform :ios do
     )
   end
   
+  # Helper method to get version from pubspec.yaml
+def get_version_from_pubspec
+  require 'yaml'
+  
+  pubspec_path = File.join(Dir.pwd, "../..", "pubspec.yaml")
+  pubspec = YAML.load_file(pubspec_path)
+  
+  version_string = pubspec['version']
+  version_string ? version_string.split('+').first : nil
+end
+  
   # Helper method to configure code signing for all targets
   def configure_code_signing(bundle_id_suffix: "")
     bundle_suffix = bundle_id_suffix.empty? ? "" : ".#{bundle_id_suffix}"
@@ -158,7 +169,8 @@ platform :ios do
     # Build and upload with version number
     build_and_upload(
       api_key: api_key,
-      version_number: "2.1.0"
+      version_number: get_version_from_pubspec,
+      distribute_external: false,
     )
   end
 
@@ -168,8 +180,9 @@ platform :ios do
       path: "./Runner.xcodeproj",
       targets: ["Runner", "ShareExtension", "WidgetExtension"]
     )
+
     increment_version_number(
-      version_number: "2.2.1"
+      version_number: get_version_from_pubspec
     )
     increment_build_number(
       build_number: latest_testflight_build_number + 1,
