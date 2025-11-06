@@ -201,13 +201,6 @@ class TestOrtSession:
 
         assert session.providers == self.OV_EP
 
-    @pytest.mark.ov_device_ids(["CPU"])
-    @pytest.mark.providers(OV_EP)
-    def test_avoids_openvino_if_gpu_not_available(self, providers: list[str], ov_device_ids: list[str]) -> None:
-        session = OrtSession("ViT-B-32__openai")
-
-        assert session.providers == self.CPU_EP
-
     @pytest.mark.providers(CUDA_EP_OUT_OF_ORDER)
     def test_sets_providers_in_correct_order(self, providers: list[str]) -> None:
         session = OrtSession("ViT-B-32__openai")
@@ -248,7 +241,8 @@ class TestOrtSession:
             {"arena_extend_strategy": "kSameAsRequested"},
         ]
 
-    def test_sets_provider_options_for_openvino(self) -> None:
+    @pytest.mark.ov_device_ids(["GPU.0", "GPU.1", "CPU"])
+    def test_sets_provider_options_for_openvino(self, ov_device_ids: list[str]) -> None:
         model_path = "/cache/ViT-B-32__openai/textual/model.onnx"
         os.environ["MACHINE_LEARNING_DEVICE_ID"] = "1"
 
@@ -259,6 +253,19 @@ class TestOrtSession:
                 "device_type": "GPU.1",
                 "precision": "FP32",
                 "cache_dir": "/cache/ViT-B-32__openai/textual/openvino",
+            }
+        ]
+
+    @pytest.mark.ov_device_ids(["CPU"])
+    def test_sets_provider_options_for_openvino_cpu(self, ov_device_ids: list[str]) -> None:
+        model_path = "/cache/ViT-B-32__openai/model.onnx"
+        session = OrtSession(model_path, providers=["OpenVINOExecutionProvider"])
+
+        assert session.provider_options == [
+            {
+                "device_type": "CPU",
+                "precision": "FP32",
+                "cache_dir": "/cache/ViT-B-32__openai/openvino",
             }
         ]
 
@@ -291,6 +298,23 @@ class TestOrtSession:
         assert session.sess_options.execution_mode == ort.ExecutionMode.ORT_SEQUENTIAL
         assert session.sess_options.inter_op_num_threads == 1
         assert session.sess_options.intra_op_num_threads == 2
+
+    @pytest.mark.ov_device_ids(["CPU"])
+    def test_sets_default_sess_options_if_openvino_cpu(self, ov_device_ids: list[str]) -> None:
+        model_path = "/cache/ViT-B-32__openai/model.onnx"
+        session = OrtSession(model_path, providers=["OpenVINOExecutionProvider"])
+
+        assert session.sess_options.execution_mode == ort.ExecutionMode.ORT_SEQUENTIAL
+        assert session.sess_options.inter_op_num_threads == 1
+        assert session.sess_options.intra_op_num_threads == 1
+
+    @pytest.mark.ov_device_ids(["GPU.0", "CPU"])
+    def test_sets_default_sess_options_if_openvino_gpu(self, ov_device_ids: list[str]) -> None:
+        model_path = "/cache/ViT-B-32__openai/model.onnx"
+        session = OrtSession(model_path, providers=["OpenVINOExecutionProvider"])
+
+        assert session.sess_options.inter_op_num_threads == 0
+        assert session.sess_options.intra_op_num_threads == 0
 
     def test_sets_default_sess_options_does_not_set_threads_if_non_cpu_and_default_threads(self) -> None:
         session = OrtSession("ViT-B-32__openai", providers=["CUDAExecutionProvider", "CPUExecutionProvider"])
