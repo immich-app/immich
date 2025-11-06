@@ -21,17 +21,13 @@ export class MaintenanceRepository {
     private systemMetadataRepository: SystemMetadataRepository,
   ) {}
 
-  getMaintenanceMode(): Promise<MaintenanceModeState<Uint8Array>> {
+  getMaintenanceMode(): Promise<MaintenanceModeState> {
     return this.systemMetadataRepository
       .get(SystemMetadataKey.MaintenanceMode)
-      .then((state) =>
-        state?.isMaintenanceMode
-          ? { isMaintenanceMode: true, secret: new TextEncoder().encode(state.secret) }
-          : { isMaintenanceMode: false as const },
-      );
+      .then((state) => state ?? { isMaintenanceMode: false as const });
   }
 
-  async setMaintenanceMode(state: MaintenanceModeState<string>) {
+  async setMaintenanceMode(state: MaintenanceModeState) {
     await this.systemMetadataRepository.set(SystemMetadataKey.MaintenanceMode, state);
     await this.eventRepository.emit('AppRestart', state);
   }
@@ -51,14 +47,14 @@ export class MaintenanceRepository {
     });
   }
 
-  async enterMaintenanceMode(): Promise<{ secret: Uint8Array }> {
+  async enterMaintenanceMode(): Promise<{ secret: string }> {
     const secret = randomBytes(64).toString('hex');
-    const state: MaintenanceModeState<string> = { isMaintenanceMode: true, secret };
+    const state: MaintenanceModeState = { isMaintenanceMode: true, secret };
 
     await this.systemMetadataRepository.set(SystemMetadataKey.MaintenanceMode, state);
     await this.eventRepository.emit('AppRestart', state);
 
-    return { secret: new TextEncoder().encode(secret) };
+    return { secret };
   }
 
   exitApp() {
@@ -70,7 +66,7 @@ export class MaintenanceRepository {
     /* eslint-enable unicorn/no-process-exit */
   }
 
-  async createLoginUrl(baseUrl: string, auth: MaintenanceAuthDto, secret?: Uint8Array) {
+  async createLoginUrl(baseUrl: string, auth: MaintenanceAuthDto, secret?: string) {
     secret ??= await this.getMaintenanceMode().then((state) => {
       if (!state.isMaintenanceMode) {
         throw new Error('Not in maintenance mode.');
@@ -82,18 +78,18 @@ export class MaintenanceRepository {
     return await MaintenanceRepository.createLoginUrl(baseUrl, auth, secret!);
   }
 
-  static async createLoginUrl(baseUrl: string, auth: MaintenanceAuthDto, secret: Uint8Array) {
+  static async createLoginUrl(baseUrl: string, auth: MaintenanceAuthDto, secret: string) {
     return `${baseUrl}/maintenance?token=${encodeURIComponent(await MaintenanceRepository.createJwt(secret!, auth))}`;
   }
 
-  static async createJwt(secret: Uint8Array, data: MaintenanceAuthDto) {
+  static async createJwt(secret: string, data: MaintenanceAuthDto) {
     const alg = 'HS256';
 
     return await new SignJWT({ ...data })
       .setProtectedHeader({ alg })
       .setIssuedAt()
       .setExpirationTime('4h')
-      .sign(secret);
+      .sign(new TextEncoder().encode(secret));
   }
 
   setCloseFn(fn: () => Promise<void>) {

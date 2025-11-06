@@ -49,12 +49,12 @@ export class MaintenanceWorkerRepository implements OnGatewayConnection, OnGatew
   }
 
   async exitMaintenanceMode(): Promise<void> {
-    const state: MaintenanceModeState<string> = { isMaintenanceMode: false as const };
+    const state: MaintenanceModeState = { isMaintenanceMode: false as const };
     await this.systemMetadataRepository.set(SystemMetadataKey.MaintenanceMode, state);
     this.restartApp(state);
   }
 
-  async maintenanceSecret(): Promise<Uint8Array> {
+  async maintenanceSecret(): Promise<string> {
     const result = await this.systemMetadataRepository.get(SystemMetadataKey.MaintenanceMode);
     if (!result) {
       throw new Error('Unreachable: Missing metadata for maintenance mode.');
@@ -64,7 +64,7 @@ export class MaintenanceWorkerRepository implements OnGatewayConnection, OnGatew
       throw new Error('Unreachable: Not in maintenance mode.');
     }
 
-    return new TextEncoder().encode(result.secret);
+    return result.secret;
   }
 
   async logSecret(): Promise<void> {
@@ -101,7 +101,7 @@ export class MaintenanceWorkerRepository implements OnGatewayConnection, OnGatew
 
     try {
       const secret = await this.maintenanceSecret();
-      const result = await jose.jwtVerify<MaintenanceAuthDto>(jwtToken, secret);
+      const result = await jose.jwtVerify<MaintenanceAuthDto>(jwtToken, new TextEncoder().encode(secret));
       return result.payload;
     } catch {
       throw new UnauthorizedException('Invalid JWT Token');

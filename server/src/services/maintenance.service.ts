@@ -7,7 +7,7 @@ import { BaseService } from 'src/services/base.service';
  */
 @Injectable()
 export class MaintenanceService extends BaseService {
-  async startMaintenance(): Promise<{ secret: Uint8Array }> {
+  async startMaintenance(): Promise<{ secret: string }> {
     const { isMaintenanceMode } = await this.maintenanceRepository.getMaintenanceMode();
     if (isMaintenanceMode) {
       throw new BadRequestException('Already in maintenance mode');
