@@ -1,5 +1,6 @@
 import 'package:async/async.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/trash_sync.model.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/domain/services/trash_sync.service.dart';
 import 'package:immich_mobile/infrastructure/repositories/trash_sync.repository.dart';
@@ -42,6 +43,16 @@ final outOfSyncCountProvider = StreamProvider<int>((ref) {
     loading: () => Stream<int>.value(0),
     error: (_, __) => Stream<int>.value(0),
   );
+});
+
+final restoredCountProvider = StreamProvider<int>((ref) {
+  return ref.read(trashSyncServiceProvider)
+      .watchPendingApprovalCount(actionType: TrashActionType.restored);
+});
+
+final trashedCountProvider = StreamProvider<int>((ref) {
+  return ref.read(trashSyncServiceProvider)
+      .watchPendingApprovalCount(actionType: TrashActionType.trashed);
 });
 
 // final isApprovalPendingProvider = StreamProvider.autoDispose.family<bool, String?>((ref, checksum) async* {

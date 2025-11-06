@@ -45,7 +45,7 @@ class TrashSyncService {
   bool get isReviewMode =>
       _platform.isAndroid && _appSettingsService.getSetting<bool>(AppSettingsEnum.reviewOutOfSyncChangesAndroid);
 
-  Stream<int> watchPendingApprovalCount() => _trashSyncRepository.watchPendingApprovalCount();
+  Stream<int> watchPendingApprovalCount({TrashActionType? actionType}) => _trashSyncRepository.watchPendingApprovalCount(actionType);
 
   Stream<Set<String>> watchPendingApprovalChecksums() => _trashSyncRepository.watchPendingApprovalChecksums();
 

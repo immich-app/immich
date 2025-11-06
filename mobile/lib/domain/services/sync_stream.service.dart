@@ -268,7 +268,7 @@ class SyncStreamService {
               .where((la) => la.checksum.isNotEmpty);
 
           _logger.info("Apply remote trash action to review for: $itemsToReview");
-          await _trashSyncRepository.upsertWithActionTypeCheck(itemsToReview,TrashActionType.delete);
+          await _trashSyncRepository.upsertWithActionTypeCheck(itemsToReview,TrashActionType.trashed);
         } else {
           final mediaUrls = await Future.wait(
             localAssetsToTrash.values
@@ -297,7 +297,7 @@ class SyncStreamService {
             .map<ReviewItem>((la) => (localAssetId: la.id, checksum: la.checksum ?? ''))
             .where((la) => la.checksum.isNotEmpty);
         _logger.info("remote restored, itemsToReview: $itemsToReview");
-        await _trashSyncRepository.upsertWithActionTypeCheck(itemsToReview, TrashActionType.restore);
+        await _trashSyncRepository.upsertWithActionTypeCheck(itemsToReview, TrashActionType.restored);
       } else {
         final restoredIds = await _localFilesManager.restoreAssetsFromTrash(assetsToRestore);
         await _trashedLocalAssetRepository.applyRestoredAssets(restoredIds);

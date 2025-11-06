@@ -131,11 +131,15 @@ class DriftTrashSyncRepository extends DriftDatabaseRepository {
         .go();
   }
 
-  Stream<int> watchPendingApprovalCount() {
+  Stream<int> watchPendingApprovalCount(TrashActionType? actionType) {
     final countExpr = _db.trashSyncEntity.assetId.count();
     final q = _db.selectOnly(_db.trashSyncEntity)
       ..addColumns([countExpr])
       ..where(_db.trashSyncEntity.isSyncApproved.isNull());
+
+    if (actionType != null) {
+      q.where(_db.trashSyncEntity.actionType.equalsValue(actionType));
+    }
     return q.watchSingle().map((row) => row.read(countExpr) ?? 0).distinct();
   }
 

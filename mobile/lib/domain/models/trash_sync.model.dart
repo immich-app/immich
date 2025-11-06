@@ -1,4 +1,4 @@
-enum TrashActionType { delete, restore }
+enum TrashActionType { trashed, restored }
 
 class TrashSyncDecision {
   final String assetId;
