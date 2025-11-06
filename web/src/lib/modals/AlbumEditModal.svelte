@@ -1,14 +1,14 @@
 <script lang="ts">
   import AlbumCover from '$lib/components/album-page/album-cover.svelte';
-  import { handleError } from '$lib/utils/handle-error';
-  import { updateAlbumInfo, type AlbumResponseDto } from '@immich/sdk';
+  import { handleEditAlbum } from '$lib/services/album.service';
+  import { type AlbumResponseDto } from '@immich/sdk';
   import { Button, Field, HStack, Input, Modal, ModalBody, ModalFooter, Textarea } from '@immich/ui';
   import { mdiRenameOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
   type Props = {
     album: AlbumResponseDto;
-    onClose: (album?: AlbumResponseDto) => void;
+    onClose: () => void;
   };
 
   let { album = $bindable(), onClose }: Props = $props();
@@ -21,16 +21,11 @@
     event.preventDefault();
 
     isSubmitting = true;
+    const success = await handleEditAlbum(album, { albumName, description });
+    isSubmitting = false;
 
-    try {
-      await updateAlbumInfo({ id: album.id, updateAlbumDto: { albumName, description } });
-      album.albumName = albumName;
-      album.description = description;
-      onClose(album);
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_update_album_info'));
-    } finally {
-      isSubmitting = false;
+    if (success) {
+      onClose();
     }
   };
 </script>

@@ -1,40 +1,31 @@
 <script lang="ts">
   import AlbumSharedLink from '$lib/components/album-page/album-shared-link.svelte';
+  import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
   import { AppRoute } from '$lib/constants';
   import Dropdown from '$lib/elements/Dropdown.svelte';
-  import QrCodeModal from '$lib/modals/QrCodeModal.svelte';
-  import { makeSharedLinkUrl } from '$lib/utils';
+  import { handleAddAlbumUsers, handleCreateAlbumSharedLink } from '$lib/services/album.service';
   import {
     AlbumUserRole,
     getAllSharedLinks,
     searchUsers,
     type AlbumResponseDto,
-    type AlbumUserAddDto,
     type SharedLinkResponseDto,
     type UserResponseDto,
   } from '@immich/sdk';
-  import { Button, Icon, Link, Modal, ModalBody, modalManager, Stack, Text } from '@immich/ui';
+  import { Button, Icon, Link, Modal, ModalBody, Stack, Text } from '@immich/ui';
   import { mdiCheck, mdiEye, mdiLink, mdiPencil } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
-  import UserAvatar from '../components/shared-components/user-avatar.svelte';
 
   interface Props {
     album: AlbumResponseDto;
-    onClose: (result?: { action: 'sharedLink' } | { action: 'sharedUsers'; data: AlbumUserAddDto[] }) => void;
+    onClose: () => void;
   }
 
   let { album, onClose }: Props = $props();
 
   let users: UserResponseDto[] = $state([]);
   let selectedUsers: Record<string, { user: UserResponseDto; role: AlbumUserRole }> = $state({});
-
-  const handleViewQrCode = async (sharedLink: SharedLinkResponseDto) => {
-    await modalManager.show(QrCodeModal, {
-      title: $t('view_link'),
-      value: makeSharedLinkUrl(sharedLink),
-    });
-  };
 
   const roleOptions: Array<{ title: string; value: AlbumUserRole | 'none'; icon?: string }> = [
     { title: $t('role_editor'), value: AlbumUserRole.Editor, icon: mdiPencil },
@@ -69,6 +60,21 @@
       delete selectedUsers[user.id];
     } else {
       selectedUsers[user.id].role = role;
+    }
+  };
+
+  const handleAddUsers = async () => {
+    const users = Object.values(selectedUsers).map(({ user, ...rest }) => ({ userId: user.id, ...rest }));
+    const success = await handleAddAlbumUsers(album, users);
+    if (success) {
+      onClose();
+    }
+  };
+
+  const handleCreateLink = async () => {
+    const success = await handleCreateAlbumSharedLink(album);
+    if (success) {
+      onClose();
     }
   };
 </script>
@@ -154,11 +160,7 @@
           fullWidth
           shape="round"
           disabled={Object.keys(selectedUsers).length === 0}
-          onclick={() =>
-            onClose({
-              action: 'sharedUsers',
-              data: Object.values(selectedUsers).map(({ user, ...rest }) => ({ userId: user.id, ...rest })),
-            })}>{$t('add')}</Button
+          onclick={handleAddUsers}>{$t('add')}</Button
         >
       </div>
     {/if}
@@ -174,17 +176,13 @@
 
         <Stack gap={4}>
           {#each sharedLinks as sharedLink (sharedLink.id)}
-            <AlbumSharedLink {album} {sharedLink} onViewQrCode={() => handleViewQrCode(sharedLink)} />
+            <AlbumSharedLink {album} {sharedLink} />
           {/each}
         </Stack>
       {/if}
 
-      <Button
-        leadingIcon={mdiLink}
-        size="small"
-        shape="round"
-        fullWidth
-        onclick={() => onClose({ action: 'sharedLink' })}>{$t('create_link')}</Button
+      <Button leadingIcon={mdiLink} size="small" shape="round" fullWidth onclick={handleCreateLink}
+        >{$t('create_link')}</Button
       >
     </Stack>
   </ModalBody>

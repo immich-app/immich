@@ -1,11 +1,10 @@
 <script lang="ts">
+  import ActionButton from '$lib/components/ActionButton.svelte';
   import AlbumCover from '$lib/components/album-page/album-cover.svelte';
+  import { getAlbumActions } from '$lib/services/album.service';
   import { user } from '$lib/stores/user.store';
-  import { getContextMenuPositionFromEvent, type ContextMenuPosition } from '$lib/utils/context-menu';
   import { getShortDateRange } from '$lib/utils/date-time';
   import type { AlbumResponseDto } from '@immich/sdk';
-  import { IconButton } from '@immich/ui';
-  import { mdiDotsVertical } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
   interface Props {
@@ -14,47 +13,24 @@
     showDateRange?: boolean;
     showItemCount?: boolean;
     preload?: boolean;
-    onShowContextMenu?: ((position: ContextMenuPosition) => unknown) | undefined;
   }
 
-  let {
-    album,
-    showOwner = false,
-    showDateRange = false,
-    showItemCount = false,
-    preload = false,
-    onShowContextMenu = undefined,
-  }: Props = $props();
+  let { album, showOwner = false, showDateRange = false, showItemCount = false, preload = false }: Props = $props();
 
-  const showAlbumContextMenu = (e: MouseEvent) => {
-    e.stopPropagation();
-    e.preventDefault();
-    onShowContextMenu?.(getContextMenuPositionFromEvent(e));
-  };
+  const AlbumActions = $derived(getAlbumActions($t, album));
 </script>
 
 <div
   class="group relative rounded-2xl border border-transparent p-5 hover:bg-gray-100 hover:border-gray-200 dark:hover:border-gray-800 dark:hover:bg-gray-900"
   data-testid="album-card"
 >
-  {#if onShowContextMenu}
-    <div
-      id="icon-{album.id}"
-      class="absolute end-6 top-6 opacity-0 group-hover:opacity-100 focus-within:opacity-100"
-      data-testid="context-button-parent"
-    >
-      <IconButton
-        color="secondary"
-        aria-label={$t('show_album_options')}
-        icon={mdiDotsVertical}
-        shape="round"
-        variant="filled"
-        size="medium"
-        class="icon-white-drop-shadow"
-        onclick={showAlbumContextMenu}
-      />
-    </div>
-  {/if}
+  <div
+    id="icon-{album.id}"
+    class="absolute end-6 top-6 opacity-0 group-hover:opacity-100 focus-within:opacity-100"
+    data-testid="context-button-parent"
+  >
+    <ActionButton action={AlbumActions.ContextMenu} />
+  </div>
 
   <AlbumCover {album} {preload} class="transition-all duration-300 hover:shadow-lg" />
 

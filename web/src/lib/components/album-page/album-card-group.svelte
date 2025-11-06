@@ -70,14 +70,7 @@
           animate:flip={{ duration: 400 }}
           oncontextmenu={(event) => oncontextmenu(event, album)}
         >
-          <AlbumCard
-            {album}
-            {showOwner}
-            {showDateRange}
-            {showItemCount}
-            preload={index < 20}
-            onShowContextMenu={onShowContextMenu ? (position) => showContextMenu(position, album) : undefined}
-          />
+          <AlbumCard {album} {showOwner} {showDateRange} {showItemCount} preload={index < 20} />
         </a>
       {/each}
     </div>

@@ -32,17 +32,15 @@
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import AlbumOptionsModal from '$lib/modals/AlbumOptionsModal.svelte';
-  import AlbumShareModal from '$lib/modals/AlbumShareModal.svelte';
   import AlbumUsersModal from '$lib/modals/AlbumUsersModal.svelte';
-  import QrCodeModal from '$lib/modals/QrCodeModal.svelte';
   import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
+  import { handleDeleteAlbum, onShareAlbum } from '$lib/services/album.service';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { preferences, user } from '$lib/stores/user.store';
-  import { handlePromiseError, makeSharedLinkUrl } from '$lib/utils';
-  import { confirmAlbumDelete } from '$lib/utils/album-utils';
+  import { handlePromiseError } from '$lib/utils';
   import { cancelMultiselect, downloadAlbum } from '$lib/utils/asset-utils';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
   import { handleError } from '$lib/utils/handle-error';
@@ -58,11 +56,9 @@
     AssetOrder,
     AssetVisibility,
     addAssetsToAlbum,
-    addUsersToAlbum,
     deleteAlbum,
     getAlbumInfo,
     updateAlbumInfo,
-    type AlbumUserAddDto,
   } from '@immich/sdk';
   import { Button, Icon, IconButton, modalManager, toastManager } from '@immich/ui';
   import {
@@ -217,42 +213,17 @@
     await setModeToView();
   };
 
-  const handleAddUsers = async (albumUsers: AlbumUserAddDto[]) => {
-    try {
-      await addUsersToAlbum({
-        id: album.id,
-        addUsersDto: {
-          albumUsers,
-        },
-      });
-      await refreshAlbum();
-
-      viewMode = AlbumPageViewMode.VIEW;
-    } catch (error) {
-      handleError(error, $t('errors.error_adding_users_to_album'));
-    }
-  };
-
   const handleDownloadAlbum = async () => {
     await downloadAlbum(album);
   };
 
-  const handleRemoveAlbum = async () => {
-    const isConfirmed = await confirmAlbumDelete(album);
-
-    if (!isConfirmed) {
-      viewMode = AlbumPageViewMode.VIEW;
-      return;
-    }
-
-    try {
-      await deleteAlbum({ id: album.id });
+  const handleDelete = async () => {
+    const success = await handleDeleteAlbum(album);
+    if (success) {
       await goto(backUrl);
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_delete_album'));
-    } finally {
-      viewMode = AlbumPageViewMode.VIEW;
     }
+
+    viewMode = AlbumPageViewMode.VIEW;
   };
 
   const handleSetVisibility = (assetIds: string[]) => {
@@ -373,32 +344,20 @@
   );
 
   const handleShare = async () => {
-    const result = await modalManager.show(AlbumShareModal, { album });
-
-    switch (result?.action) {
-      case 'sharedLink': {
-        await handleShareLink();
-        return;
-      }
-
-      case 'sharedUsers': {
-        await handleAddUsers(result.data);
-        return;
-      }
-    }
+    await onShareAlbum(album);
+    await refreshAlbum();
+    viewMode = AlbumPageViewMode.VIEW;
   };
 
   const handleShareLink = async () => {
     const sharedLink = await modalManager.show(SharedLinkCreateModal, { albumId: album.id });
     if (sharedLink) {
       await refreshAlbum();
-      await modalManager.show(QrCodeModal, { title: $t('view_link'), value: makeSharedLinkUrl(sharedLink) });
     }
   };
 
   const handleEditUsers = async () => {
     const changed = await modalManager.show(AlbumUsersModal, { album });
-
     if (changed) {
       await refreshAlbum();
     }
@@ -674,7 +633,7 @@
                   <MenuOption icon={mdiCogOutline} text={$t('options')} onClick={handleOptions} />
                 {/if}
 
-                <MenuOption icon={mdiDeleteOutline} text={$t('delete_album')} onClick={() => handleRemoveAlbum()} />
+                <MenuOption icon={mdiDeleteOutline} text={$t('delete_album')} onClick={() => handleDelete()} />
               </ButtonContextMenu>
             {/if}
 

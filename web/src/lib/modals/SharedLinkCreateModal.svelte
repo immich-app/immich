@@ -1,8 +1,9 @@
 <script lang="ts">
   import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
+  import { handleCreateSharedLink } from '$lib/services/shared-link.service';
   import { locale } from '$lib/stores/preferences.store';
   import { handleError } from '$lib/utils/handle-error';
-  import { SharedLinkType, createSharedLink, updateSharedLink, type SharedLinkResponseDto } from '@immich/sdk';
+  import { SharedLinkType, updateSharedLink, type SharedLinkResponseDto } from '@immich/sdk';
   import {
     Button,
     Field,
@@ -81,27 +82,23 @@
     assetIds = editingLink.assets.map(({ id }) => id);
   }
 
-  const handleCreateSharedLink = async () => {
+  const handleCreate = async () => {
     const expirationDate = expirationOption > 0 ? DateTime.now().plus(expirationOption).toISO() : undefined;
+    const sharedLink = await handleCreateSharedLink({
+      type: shareType,
+      albumId,
+      assetIds,
+      expiresAt: expirationDate,
+      allowUpload,
+      description,
+      password,
+      allowDownload,
+      showMetadata,
+      slug,
+    });
 
-    try {
-      const data = await createSharedLink({
-        sharedLinkCreateDto: {
-          type: shareType,
-          albumId,
-          assetIds,
-          expiresAt: expirationDate,
-          allowUpload,
-          description,
-          password,
-          allowDownload,
-          showMetadata,
-          slug,
-        },
-      });
-      onClose(data);
-    } catch (error) {
-      handleError(error, $t('errors.failed_to_create_shared_link'));
+    if (sharedLink) {
+      onClose(sharedLink);
     }
   };
 
@@ -221,7 +218,7 @@
     {#if editingLink}
       <Button fullWidth onclick={handleEditLink}>{$t('confirm')}</Button>
     {:else}
-      <Button fullWidth onclick={handleCreateSharedLink}>{$t('create_link')}</Button>
+      <Button fullWidth onclick={handleCreate}>{$t('create_link')}</Button>
     {/if}
   </ModalFooter>
 </Modal>
