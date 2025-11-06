@@ -79,6 +79,7 @@ export const BASE_SERVICE_DEPENDENCIES = [
   JobRepository,
   LibraryRepository,
   MachineLearningRepository,
+  MaintenanceRepository,
   MapRepository,
   MediaRepository,
   MemoryRepository,
