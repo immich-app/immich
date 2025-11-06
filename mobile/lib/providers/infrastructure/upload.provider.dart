@@ -58,7 +58,7 @@ class UploadTimerNotifier extends Notifier<bool> {
     final tasks = await FileDownloader().allTasks(group: kBackupGroup);
     final currentUserId = ref.read(currentUserProvider)?.id;
     if (tasks.isEmpty && currentUserId != null) {
-      await ref.read(driftBackupProvider.notifier).startBackup(currentUserId);
+      await ref.read(driftBackupProvider.notifier).startBackup(currentUserId, ignoreFailed: true);
     } else {
       _timerLogger.fine("UploadTimer: There are still active upload tasks - ${tasks.length}, skipping backup start.");
     }

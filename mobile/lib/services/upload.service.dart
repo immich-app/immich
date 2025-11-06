@@ -135,12 +135,21 @@ class UploadService {
   /// Find backup candidates
   /// Build the upload tasks
   /// Enqueue the tasks
-  Future<void> startBackup(String userId, void Function(EnqueueStatus status) onEnqueueTasks) async {
+  Future<void> startBackup(
+    String userId,
+    void Function(EnqueueStatus status) onEnqueueTasks, {
+    bool ignoreFailed = false,
+  }) async {
     await _storageRepository.clearCache();
 
     shouldAbortQueuingTasks = false;
 
-    final candidates = await _backupRepository.getCandidates(userId, limit: 100, sortBy: SortCandidatesBy.attemptCount);
+    final candidates = await _backupRepository.getCandidates(
+      userId,
+      limit: 100,
+      ignoreFailed: ignoreFailed,
+      sortBy: SortCandidatesBy.attemptCount,
+    );
     if (candidates.isEmpty) {
       return;
     }

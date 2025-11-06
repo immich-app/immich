@@ -352,9 +352,9 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
     state = state.copyWith(isSyncing: isSyncing);
   }
 
-  Future<void> startBackup(String userId) {
+  Future<void> startBackup(String userId, {bool ignoreFailed = false}) {
     state = state.copyWith(error: BackupError.none);
-    return _uploadService.startBackup(userId, _updateEnqueueCount);
+    return _uploadService.startBackup(userId, _updateEnqueueCount, ignoreFailed: ignoreFailed);
   }
 
   void _updateEnqueueCount(EnqueueStatus status) {

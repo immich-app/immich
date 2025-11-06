@@ -86,6 +86,7 @@ class DriftBackupRepository extends DriftDatabaseRepository {
   Future<List<LocalAsset>> getCandidates(
     String userId, {
     bool onlyHashed = true,
+    bool ignoreFailed = false,
     int? limit,
     SortCandidatesBy sortBy = SortCandidatesBy.createdAt,
   }) async {
@@ -133,6 +134,10 @@ class DriftBackupRepository extends DriftDatabaseRepository {
 
     if (onlyHashed) {
       query.where(_db.localAssetEntity.checksum.isNotNull());
+    }
+
+    if (ignoreFailed) {
+      query.where(_db.localAssetUploadEntity.assetId.isNull());
     }
 
     if (limit != null) {
