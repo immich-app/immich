@@ -28,14 +28,12 @@ FROM rocm/dev-ubuntu-24.04:6.4.4-complete@sha256:31418ac10a3769a71eaef330c07280d
 ARG ONNXRUNTIME_VERSION="v1.21.1"
 WORKDIR /code
 
-RUN apt-get update && apt-get install -y --no-install-recommends wget git python3.12-venv
+RUN apt-get update && apt-get install -y --no-install-recommends wget git
 RUN wget -nv https://github.com/Kitware/CMake/releases/download/v3.31.9/cmake-3.31.9-linux-x86_64.sh && \
     chmod +x cmake-3.31.9-linux-x86_64.sh && \
     mkdir -p /code/cmake-3.31.9-linux-x86_64 && \
     ./cmake-3.31.9-linux-x86_64.sh --skip-license --prefix=/code/cmake-3.31.9-linux-x86_64 && \
     rm cmake-3.31.9-linux-x86_64.sh
-
-ENV PATH=/code/cmake-3.31.9-linux-x86_64/bin:${PATH}
 
 RUN git clone --single-branch --branch "${ONNXRUNTIME_VERSION}" --recursive "https://github.com/Microsoft/onnxruntime" onnxruntime
 WORKDIR /code/onnxruntime
@@ -46,6 +44,7 @@ RUN git apply /tmp/*.patch
 
 RUN /bin/sh ./dockerfiles/scripts/install_common_deps.sh
 
+ENV PATH=/opt/rocm-venv/bin:/code/cmake-3.31.9-linux-x86_64/bin:${PATH}
 ENV CCACHE_DIR="/ccache"
 # Note: the `parallel` setting uses a substantial amount of RAM
 RUN --mount=type=cache,target=/ccache \
@@ -58,7 +57,7 @@ RUN --mount=type=cache,target=/ccache \
     --parallel 17 \
     --cmake_extra_defines \
     ONNXRUNTIME_VERSION="${ONNXRUNTIME_VERSION}" \
-    CMAKE_HIP_ARCHITECTURES="gfx900;gfx908;gfx90a;gfx1030;gfx1100;gfx1101;gfx1102;gfx940;gfx941;gfx942;gfx1200;gfx1201" \
+    CMAKE_HIP_ARCHITECTURES="gfx900;gfx906;gfx908;gfx90a;gfx1030;gfx1100;gfx1101;gfx1102;gfx940;gfx941;gfx942;gfx1200;gfx1201" \
     --skip_tests \
     --use_rocm \
     --rocm_home=/opt/rocm \

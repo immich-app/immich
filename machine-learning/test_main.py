@@ -282,6 +282,7 @@ class TestOrtSession:
                 "device_type": "GPU.1",
                 "precision": "FP16",
                 "cache_dir": "/cache/ViT-B-32__openai/textual/openvino",
+                "load_config": "{\"CPU\":{\"CPU_RUNTIME_CACHE_CAPACITY\":\"20\"}}",
             }
         ]
 

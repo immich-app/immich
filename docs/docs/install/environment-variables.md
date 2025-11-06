@@ -18,7 +18,7 @@ If this does not work, try running `docker compose up -d --force-recreate`.
 ## Docker Compose
 
 | Variable           | Description                     |  Default  | Containers               |
-|:-------------------|:--------------------------------|:---------:|:-------------------------|
+| :----------------- | :------------------------------ | :-------: | :----------------------- |
 | `IMMICH_VERSION`   | Image tags                      | `release` | server, machine learning |
 | `UPLOAD_LOCATION`  | Host path for uploads           |           | server                   |
 | `DB_DATA_LOCATION` | Host path for Postgres database |           | database                 |
@@ -30,7 +30,7 @@ These environment variables are used by the `docker-compose.yml` file and do **N
 ## General
 
 | Variable                            | Description                                                                               |           Default            | Containers               | Workers            |
-| :---------------------------------- | :---------------------------------------------------------------------------------------- | :--------------------------: | :----------------------- |:------------------ |
+| :---------------------------------- | :---------------------------------------------------------------------------------------- | :--------------------------: | :----------------------- | :----------------- |
 | `TZ`                                | Timezone                                                                                  |        <sup>\*1</sup>        | server                   | microservices      |
 | `IMMICH_ENV`                        | Environment (production, development)                                                     |         `production`         | server, machine learning | api, microservices |
 | `IMMICH_LOG_LEVEL`                  | Log level (verbose, debug, log, warn, error)                                              |            `log`             | server, machine learning | api, microservices |
@@ -52,7 +52,7 @@ These environment variables are used by the `docker-compose.yml` file and do **N
 ## Workers
 
 | Variable                 | Description                                                                                          | Default | Containers |
-|:-------------------------|:-----------------------------------------------------------------------------------------------------|:-------:|:-----------|
+| :----------------------- | :--------------------------------------------------------------------------------------------------- | :-----: | :--------- |
 | `IMMICH_WORKERS_INCLUDE` | Only run these workers.                                                                              |         | server     |
 | `IMMICH_WORKERS_EXCLUDE` | Do not run these workers. Matches against default workers, or `IMMICH_WORKERS_INCLUDE` if specified. |         | server     |
 
@@ -63,14 +63,14 @@ Information on the current workers can be found [here](/administration/jobs-work
 ## Ports
 
 | Variable      | Description    |                  Default                   |
-|:--------------|:---------------|:------------------------------------------:|
+| :------------ | :------------- | :----------------------------------------: |
 | `IMMICH_HOST` | Listening host |                 `0.0.0.0`                  |
 | `IMMICH_PORT` | Listening port | `2283` (server), `3003` (machine learning) |
 
 ## Database
 
 | Variable                            | Description                                                                            |  Default   | Containers                     |
-|:------------------------------------|:---------------------------------------------------------------------------------------|:----------:|:-------------------------------|
+| :---------------------------------- | :------------------------------------------------------------------------------------- | :--------: | :----------------------------- |
 | `DB_URL`                            | Database URL                                                                           |            | server                         |
 | `DB_HOSTNAME`                       | Database host                                                                          | `database` | server                         |
 | `DB_PORT`                           | Database port                                                                          |   `5432`   | server                         |
@@ -102,7 +102,7 @@ When `DB_URL` is defined, the `DB_HOSTNAME`, `DB_PORT`, `DB_USERNAME`, `DB_PASSW
 ## Redis
 
 | Variable         | Description    | Default | Containers |
-|:-----------------|:---------------|:-------:|:-----------|
+| :--------------- | :------------- | :-----: | :--------- |
 | `REDIS_URL`      | Redis URL      |         | server     |
 | `REDIS_SOCKET`   | Redis socket   |         | server     |
 | `REDIS_HOSTNAME` | Redis host     | `redis` | server     |
@@ -150,7 +150,7 @@ Redis (Sentinel) URL example JSON before encoding:
 ## Machine Learning
 
 | Variable                                                    | Description                                                                                                                                                  |             Default             | Containers       |
-|:------------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------|:-------------------------------:|:-----------------|
+| :---------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------- | :-----------------------------: | :--------------- |
 | `MACHINE_LEARNING_MODEL_TTL`                                | Inactivity time (s) before a model is unloaded (disabled if \<= 0)                                                                                           |              `300`              | machine learning |
 | `MACHINE_LEARNING_MODEL_TTL_POLL_S`                         | Interval (s) between checks for the model TTL (disabled if \<= 0)                                                                                            |              `10`               | machine learning |
 | `MACHINE_LEARNING_CACHE_FOLDER`                             | Directory where models are downloaded                                                                                                                        |            `/cache`             | machine learning |
@@ -197,7 +197,7 @@ Additional machine learning parameters can be tuned from the admin UI.
 ## Prometheus
 
 | Variable                   | Description                                                                                                           | Default | Containers | Workers            |
-|:---------------------------|:----------------------------------------------------------------------------------------------------------------------|:-------:|:-----------|:-------------------|
+| :------------------------- | :-------------------------------------------------------------------------------------------------------------------- | :-----: | :--------- | :----------------- |
 | `IMMICH_TELEMETRY_INCLUDE` | Collect these telemetries. List of `host`, `api`, `io`, `repo`, `job`. Note: You can also specify `all` to enable all |         | server     | api, microservices |
 | `IMMICH_TELEMETRY_EXCLUDE` | Do not collect these telemetries. List of `host`, `api`, `io`, `repo`, `job`                                          |         | server     | api, microservices |
 
@@ -208,7 +208,7 @@ The following variables support reading from files, either via [Systemd Credenti
 To use any of these, either set `CREDENTIALS_DIRECTORY` to a directory that contains files whose name is the “regular variable” name, and whose content is the secret. If using Docker Secrets, setting `CREDENTIALS_DIRECTORY=/run/secrets` will cause all secrets present to be used. Alternatively, replace the regular variable with the equivalent `_FILE` environment variable as below. The value of the `_FILE` variable should be set to the path of a file containing the variable value.
 
 | Regular Variable   | Equivalent Docker Secrets '\_FILE' Variable |
-|:-------------------|:--------------------------------------------|
+| :----------------- | :------------------------------------------ |
 | `DB_HOSTNAME`      | `DB_HOSTNAME_FILE`<sup>\*1</sup>            |
 | `DB_DATABASE_NAME` | `DB_DATABASE_NAME_FILE`<sup>\*1</sup>       |
 | `DB_USERNAME`      | `DB_USERNAME_FILE`<sup>\*1</sup>            |
@@ -223,13 +223,8 @@ details on how to use Docker Secrets in the Postgres image.
 to use a Docker secret for the password in the Redis container.
 
 [tz-list]: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List
-
 [docker-secrets-example]: https://github.com/docker-library/redis/issues/46#issuecomment-335326234
-
 [docker-secrets-docs]: https://github.com/docker-library/docs/tree/master/postgres#docker-secrets
-
 [docker-secrets]: https://docs.docker.com/engine/swarm/secrets/
-
 [ioredis]: https://ioredis.readthedocs.io/en/latest/README/#connect-to-redis
-
 [systemd-creds]: https://systemd.io/CREDENTIALS/
