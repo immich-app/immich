@@ -94,10 +94,12 @@ class OrtSession:
                 case "CUDAExecutionProvider" | "ROCMExecutionProvider":
                     options = {"arena_extend_strategy": "kSameAsRequested", "device_id": settings.device_id}
                 case "OpenVINOExecutionProvider":
+                    openvino_dir = self.model_path.parent / "openvino"
+                    device = f"GPU.{settings.device_id}"
                     options = {
-                        "device_type": f"GPU.{settings.device_id}",
-                        "precision": "FP32",
-                        "cache_dir": (self.model_path.parent / "openvino").as_posix(),
+                        "device_type": device,
+                        "precision": settings.openvino_precision.value,
+                        "cache_dir": openvino_dir.as_posix(),
                         "load_config": orjson.dumps(
                             {
                                 "CPU": {"CPU_RUNTIME_CACHE_CAPACITY": str(settings.openvino_cache_capacity)},
