@@ -44,7 +44,7 @@ export type MaintenanceModeResponseDto = {
     isMaintenanceMode: boolean;
 };
 export type MaintenanceLoginDto = {
-    token: string;
+    token?: string;
 };
 export type MaintenanceAuthDto = {
     username: string;

@@ -6,7 +6,7 @@ export class MaintenanceModeResponseDto {
 }
 
 export class MaintenanceLoginDto {
-  @ValidateString()
+  @ValidateString({ optional: true })
   token?: string;
 }
 

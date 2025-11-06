@@ -23,8 +23,9 @@ export class MaintenanceWorkerController {
     @Body() dto: MaintenanceLoginDto,
     @Res({ passthrough: true }) response: Response,
   ): Promise<MaintenanceAuthDto> {
-    const auth = await this.service.login(dto.token ?? request.cookies[ImmichCookie.MaintenanceToken]);
-    response.cookie(ImmichCookie.MaintenanceToken, dto.token);
+    const token = dto.token ?? request.cookies[ImmichCookie.MaintenanceToken];
+    const auth = await this.service.login(token);
+    response.cookie(ImmichCookie.MaintenanceToken, token);
     return auth;
   }
 

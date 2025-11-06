@@ -248,13 +248,6 @@
         "parameters": [],
         "responses": {
           "201": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MaintenanceModeResponseDto"
-                }
-              }
-            },
             "description": ""
           }
         },
@@ -314,13 +307,6 @@
         "parameters": [],
         "responses": {
           "201": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MaintenanceModeResponseDto"
-                }
-              }
-            },
             "description": ""
           }
         },
@@ -12693,17 +12679,6 @@
             "type": "string"
           }
         },
-        "type": "object"
-      },
-      "MaintenanceModeResponseDto": {
-        "properties": {
-          "isMaintenanceMode": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "isMaintenanceMode"
-        ],
         "type": "object"
       },
       "ManualJobName": {

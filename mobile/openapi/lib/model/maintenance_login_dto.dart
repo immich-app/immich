@@ -13,10 +13,16 @@ part of openapi.api;
 class MaintenanceLoginDto {
   /// Returns a new [MaintenanceLoginDto] instance.
   MaintenanceLoginDto({
-    required this.token,
+    this.token,
   });
 
-  String token;
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? token;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is MaintenanceLoginDto &&
@@ -25,14 +31,18 @@ class MaintenanceLoginDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (token.hashCode);
+    (token == null ? 0 : token!.hashCode);
 
   @override
   String toString() => 'MaintenanceLoginDto[token=$token]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+    if (this.token != null) {
       json[r'token'] = this.token;
+    } else {
+    //  json[r'token'] = null;
+    }
     return json;
   }
 
@@ -45,7 +55,7 @@ class MaintenanceLoginDto {
       final json = value.cast<String, dynamic>();
 
       return MaintenanceLoginDto(
-        token: mapValueOfType<String>(json, r'token')!,
+        token: mapValueOfType<String>(json, r'token'),
       );
     }
     return null;
@@ -93,7 +103,6 @@ class MaintenanceLoginDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'token',
   };
 }
 
