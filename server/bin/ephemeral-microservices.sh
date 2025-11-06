@@ -22,6 +22,7 @@
 #   GRACEFUL_TIMEOUT        Seconds to wait after SIGTERM before SIGKILL (default: 30)
 #   VERBOSE                 If set to non-empty, enables extra logging
 #   EXTRA_START_ENV         Extra env vars to export when starting microservices (format KEY=VAL space separated)
+#   KEEP_ALIVE_URL          If set, performs a keep-alive HTTP request after starting microservices (optional)
 #
 # Exit codes:
 #   0  Normal exit (terminated by signal or EOF)
@@ -190,7 +191,9 @@ while true; do
 
   if [[ $waiting_total -ge $WAITING_THRESHOLD ]]; then
     start_micro
-    keep_alive
+    if [[ -n "${KEEP_ALIVE_URL:-}" ]]; then
+      keep_alive || vlog "Keep-alive check failed"
+    fi
     idle_start=0
   fi
 
