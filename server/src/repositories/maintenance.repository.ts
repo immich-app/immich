@@ -43,7 +43,7 @@ export class MaintenanceRepository {
     server.adapter(createAdapter(pubClient, subClient));
 
     // => corresponds to notification.service.ts#onAppRestart
-    server.emit('on_server_restart', state, () => {
+    server.emit('AppRestartV1', state, () => {
       server.serverSideEmit('AppRestart', state, () => {
         pubClient.disconnect();
         subClient.disconnect();

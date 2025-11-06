@@ -7,7 +7,7 @@ export class MaintenanceModeResponseDto {
 
 export class MaintenanceLoginDto {
   @ValidateString()
-  token!: string;
+  token?: string;
 }
 
 export class MaintenanceAuthDto {

@@ -1,4 +1,5 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { MaintenanceAuthDto } from 'src/dtos/maintenance.dto';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { MaintenanceWorkerRepository } from 'src/repositories/maintenance-worker.repository';
@@ -47,6 +48,18 @@ export class MaintenanceWorkerService {
       mapLightStyleUrl: config.map.lightStyle,
       maintenanceMode: true,
     };
+  }
+
+  logSecret() {
+    void this.maintenanceRepository.logSecret();
+  }
+
+  login(jwt?: string): Promise<MaintenanceAuthDto> {
+    return this.maintenanceRepository.authenticateToken(jwt);
+  }
+
+  startMaintenance(): Promise<void> {
+    throw new BadRequestException('Already in maintenance mode');
   }
 
   async endMaintenance(): Promise<void> {

@@ -1,46 +1,42 @@
-import { BadRequestException, Body, Controller, Get, Post, Res } from '@nestjs/common';
+import { Body, Controller, Get, Post, Req, Res } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { Response } from 'express';
-import { MaintenanceAuthDto, MaintenanceLoginDto, MaintenanceModeResponseDto } from 'src/dtos/maintenance.dto';
+import { Request, Response } from 'express';
+import { MaintenanceAuthDto, MaintenanceLoginDto } from 'src/dtos/maintenance.dto';
 import { ServerConfigDto } from 'src/dtos/server.dto';
 import { ImmichCookie } from 'src/enum';
 import { MaintenanceRoute } from 'src/middleware/maintenance-auth.guard';
-import { MaintenanceWorkerRepository } from 'src/repositories/maintenance-worker.repository';
 import { MaintenanceWorkerService } from 'src/services/maintenance-worker.service';
 
 @ApiTags('Maintenance (admin)')
-@Controller('')
+@Controller()
 export class MaintenanceWorkerController {
-  constructor(
-    private repository: MaintenanceWorkerRepository,
-    private service: MaintenanceWorkerService,
-  ) {}
+  constructor(private service: MaintenanceWorkerService) {}
 
   @Get('server/config')
   getServerConfig(): Promise<ServerConfigDto> {
     return this.service.getSystemConfig();
   }
 
-  @Post('admin/maintenance/start')
-  @MaintenanceRoute()
-  startMaintenance(): Promise<MaintenanceModeResponseDto> {
-    throw new BadRequestException('Already in maintenance mode');
-  }
-
   @Post('admin/maintenance/login')
   async maintenanceLogin(
+    @Req() request: Request,
     @Body() dto: MaintenanceLoginDto,
     @Res({ passthrough: true }) response: Response,
   ): Promise<MaintenanceAuthDto> {
-    const auth = await this.repository.decodeToken(dto.token);
+    const auth = await this.service.login(dto.token ?? request.cookies[ImmichCookie.MaintenanceToken]);
     response.cookie(ImmichCookie.MaintenanceToken, dto.token);
     return auth;
   }
 
+  @Post('admin/maintenance/start')
+  @MaintenanceRoute()
+  startMaintenance(): void {
+    this.service.startMaintenance();
+  }
+
   @Post('admin/maintenance/end')
   @MaintenanceRoute()
-  async endMaintenance(): Promise<MaintenanceModeResponseDto> {
+  async endMaintenance(): Promise<void> {
     await this.service.endMaintenance();
-    return { isMaintenanceMode: false };
   }
 }

@@ -11,7 +11,7 @@ import { IncomingHttpHeaders } from 'node:http';
 import { Server, Socket } from 'socket.io';
 import { MaintenanceAuthDto, MaintenanceModeResponseDto } from 'src/dtos/maintenance.dto';
 import { ExitCode, ImmichCookie, SystemMetadataKey } from 'src/enum';
-import { ArgsOf } from 'src/repositories/event.repository';
+import { AppRestartEvent, ArgsOf } from 'src/repositories/event.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
 import { MaintenanceModeState } from 'src/types';
@@ -26,7 +26,7 @@ export const serverEvents = ['AppRestart'] as const;
 export type ServerEvents = (typeof serverEvents)[number];
 
 export interface ClientEventMap {
-  on_server_restart: [MaintenanceModeResponseDto];
+  AppRestartV1: [AppRestartEvent];
 }
 
 @WebSocketGateway({
@@ -91,10 +91,10 @@ export class MaintenanceWorkerRepository implements OnGatewayConnection, OnGatew
 
   async authenticate(headers: IncomingHttpHeaders): Promise<MaintenanceAuthDto> {
     const jwtToken = parse(headers.cookie || '')[ImmichCookie.MaintenanceToken];
-    return this.decodeToken(jwtToken);
+    return this.authenticateToken(jwtToken);
   }
 
-  async decodeToken(jwtToken?: string): Promise<MaintenanceAuthDto> {
+  async authenticateToken(jwtToken?: string): Promise<MaintenanceAuthDto> {
     if (!jwtToken) {
       throw new UnauthorizedException('Missing JWT Token');
     }
@@ -114,7 +114,7 @@ export class MaintenanceWorkerRepository implements OnGatewayConnection, OnGatew
   }
 
   restartApp(state: MaintenanceModeResponseDto) {
-    this.clientBroadcast('on_server_restart', state);
+    this.clientBroadcast('AppRestartV1', state);
     this.serverSend('AppRestart', state);
     this.exitApp();
   }

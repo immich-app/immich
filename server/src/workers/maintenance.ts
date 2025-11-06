@@ -3,23 +3,21 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { configureExpress, configureTelemetry } from 'src/app.common';
 import { MaintenanceModule } from 'src/app.module';
 import { MaintenanceWorkerRepository } from 'src/repositories/maintenance-worker.repository';
+import { MaintenanceWorkerService } from 'src/services/maintenance-worker.service';
 import { isStartUpError } from 'src/utils/misc';
 
 async function bootstrap() {
   process.title = 'immich-maintenance';
-
   configureTelemetry();
 
   const app = await NestFactory.create<NestExpressApplication>(MaintenanceModule, { bufferLogs: true });
-  const maintenanceWorkerRepository = app.get(MaintenanceWorkerRepository);
-  maintenanceWorkerRepository.setCloseFn(() => app.close());
-
+  app.get(MaintenanceWorkerRepository).setCloseFn(() => app.close());
   void configureExpress(app, {
     permitSwaggerWrite: false,
     ssr: false,
   });
 
-  void maintenanceWorkerRepository.logSecret();
+  app.get(MaintenanceWorkerService).logSecret();
 }
 
 bootstrap().catch((error) => {
