@@ -153,6 +153,25 @@ stop_micro() {
   rm -f "$PID_FILE" || true
 }
 
+keep_alive() {
+  local status
+  status=$(curl -m 5 -s -o /dev/null -w "%{http_code}" "$KEEP_ALIVE_URL" || true)
+  if [[ -z "$status" || "$status" == "000" ]]; then
+    vlog "Keep-alive: no response from $KEEP_ALIVE_URL"
+    return 1
+  fi
+  if [[ "$status" -ge 500 ]]; then
+    vlog "Keep-alive: server error status=$status url=$KEEP_ALIVE_URL"
+    return 1
+  fi
+  if [[ "$status" -ge 400 ]]; then
+    vlog "Keep-alive: client error status=$status url=$KEEP_ALIVE_URL"
+    return 1
+  fi
+  vlog "Keep-alive: OK status=$status"
+  return 0
+}
+
 log "Starting ephemeral microservices monitor. Interval=${CHECK_INTERVAL}s Threshold=${WAITING_THRESHOLD} Idle=${IDLE_AFTER_COMPLETE}s"
 
 idle_start=0
@@ -171,6 +190,7 @@ while true; do
 
   if [[ $waiting_total -ge $WAITING_THRESHOLD ]]; then
     start_micro
+    keep_alive
     idle_start=0
   fi
 
