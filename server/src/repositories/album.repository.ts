@@ -33,11 +33,11 @@ const withAlbumUsers = (eb: ExpressionBuilder<DB, 'album'>) => {
       .selectFrom('album_user')
       .select('album_user.role')
       .select((eb) =>
-        jsonObjectFrom(eb.selectFrom('user').select(columns.user).whereRef('user.id', '=', 'album_user.usersId'))
+        jsonObjectFrom(eb.selectFrom('user').select(columns.user).whereRef('user.id', '=', 'album_user.userId'))
           .$notNull()
           .as('user'),
       )
-      .whereRef('album_user.albumsId', '=', 'album.id'),
+      .whereRef('album_user.albumId', '=', 'album.id'),
   )
     .$notNull()
     .as('albumUsers');
@@ -57,8 +57,8 @@ const withAssets = (eb: ExpressionBuilder<DB, 'album'>) => {
         .selectAll('asset')
         .leftJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
         .select((eb) => eb.table('asset_exif').$castTo<Exif>().as('exifInfo'))
-        .innerJoin('album_asset', 'album_asset.assetsId', 'asset.id')
-        .whereRef('album_asset.albumsId', '=', 'album.id')
+        .innerJoin('album_asset', 'album_asset.assetId', 'asset.id')
+        .whereRef('album_asset.albumId', '=', 'album.id')
         .where('asset.deletedAt', 'is', null)
         .$call(withDefaultVisibility)
         .orderBy('asset.fileCreatedAt', 'desc')
@@ -92,19 +92,19 @@ export class AlbumRepository {
     return this.db
       .selectFrom('album')
       .selectAll('album')
-      .innerJoin('album_asset', 'album_asset.albumsId', 'album.id')
+      .innerJoin('album_asset', 'album_asset.albumId', 'album.id')
       .where((eb) =>
         eb.or([
           eb('album.ownerId', '=', ownerId),
           eb.exists(
             eb
               .selectFrom('album_user')
-              .whereRef('album_user.albumsId', '=', 'album.id')
-              .where('album_user.usersId', '=', ownerId),
+              .whereRef('album_user.albumId', '=', 'album.id')
+              .where('album_user.userId', '=', ownerId),
           ),
         ]),
       )
-      .where('album_asset.assetsId', '=', assetId)
+      .where('album_asset.assetId', '=', assetId)
       .where('album.deletedAt', 'is', null)
       .orderBy('album.createdAt', 'desc')
       .select(withOwner)
@@ -125,16 +125,16 @@ export class AlbumRepository {
       this.db
         .selectFrom('asset')
         .$call(withDefaultVisibility)
-        .innerJoin('album_asset', 'album_asset.assetsId', 'asset.id')
-        .select('album_asset.albumsId as albumId')
+        .innerJoin('album_asset', 'album_asset.assetId', 'asset.id')
+        .select('album_asset.albumId as albumId')
         .select((eb) => eb.fn.min(sql<Date>`("asset"."localDateTime" AT TIME ZONE 'UTC'::text)::date`).as('startDate'))
         .select((eb) => eb.fn.max(sql<Date>`("asset"."localDateTime" AT TIME ZONE 'UTC'::text)::date`).as('endDate'))
         // lastModifiedAssetTimestamp is only used in mobile app, please remove if not need
         .select((eb) => eb.fn.max('asset.updatedAt').as('lastModifiedAssetTimestamp'))
         .select((eb) => sql<number>`${eb.fn.count('asset.id')}::int`.as('assetCount'))
-        .where('album_asset.albumsId', 'in', ids)
+        .where('album_asset.albumId', 'in', ids)
         .where('asset.deletedAt', 'is', null)
-        .groupBy('album_asset.albumsId')
+        .groupBy('album_asset.albumId')
         .execute()
     );
   }
@@ -166,8 +166,8 @@ export class AlbumRepository {
           eb.exists(
             eb
               .selectFrom('album_user')
-              .whereRef('album_user.albumsId', '=', 'album.id')
-              .where((eb) => eb.or([eb('album.ownerId', '=', ownerId), eb('album_user.usersId', '=', ownerId)])),
+              .whereRef('album_user.albumId', '=', 'album.id')
+              .where((eb) => eb.or([eb('album.ownerId', '=', ownerId), eb('album_user.userId', '=', ownerId)])),
           ),
           eb.exists(
             eb
@@ -195,7 +195,7 @@ export class AlbumRepository {
       .selectAll('album')
       .where('album.ownerId', '=', ownerId)
       .where('album.deletedAt', 'is', null)
-      .where((eb) => eb.not(eb.exists(eb.selectFrom('album_user').whereRef('album_user.albumsId', '=', 'album.id'))))
+      .where((eb) => eb.not(eb.exists(eb.selectFrom('album_user').whereRef('album_user.albumId', '=', 'album.id'))))
       .where((eb) => eb.not(eb.exists(eb.selectFrom('shared_link').whereRef('shared_link.albumId', '=', 'album.id'))))
       .select(withOwner)
       .orderBy('album.createdAt', 'desc')
@@ -217,7 +217,7 @@ export class AlbumRepository {
   @GenerateSql({ params: [[DummyValue.UUID]] })
   @Chunked()
   async removeAssetsFromAll(assetIds: string[]): Promise<void> {
-    await this.db.deleteFrom('album_asset').where('album_asset.assetsId', 'in', assetIds).execute();
+    await this.db.deleteFrom('album_asset').where('album_asset.assetId', 'in', assetIds).execute();
   }
 
   @Chunked({ paramIndex: 1 })
@@ -228,8 +228,8 @@ export class AlbumRepository {
 
     await this.db
       .deleteFrom('album_asset')
-      .where('album_asset.albumsId', '=', albumId)
-      .where('album_asset.assetsId', 'in', assetIds)
+      .where('album_asset.albumId', '=', albumId)
+      .where('album_asset.assetId', 'in', assetIds)
       .execute();
   }
 
@@ -250,10 +250,10 @@ export class AlbumRepository {
     return this.db
       .selectFrom('album_asset')
       .selectAll()
-      .where('album_asset.albumsId', '=', albumId)
-      .where('album_asset.assetsId', 'in', assetIds)
+      .where('album_asset.albumId', '=', albumId)
+      .where('album_asset.assetId', 'in', assetIds)
       .execute()
-      .then((results) => new Set(results.map(({ assetsId }) => assetsId)));
+      .then((results) => new Set(results.map(({ assetId }) => assetId)));
   }
 
   async addAssetIds(albumId: string, assetIds: string[]): Promise<void> {
@@ -276,7 +276,7 @@ export class AlbumRepository {
         await tx
           .insertInto('album_user')
           .values(
-            albumUsers.map((albumUser) => ({ albumsId: newAlbum.id, usersId: albumUser.userId, role: albumUser.role })),
+            albumUsers.map((albumUser) => ({ albumId: newAlbum.id, userId: albumUser.userId, role: albumUser.role })),
           )
           .execute();
       }
@@ -317,12 +317,12 @@ export class AlbumRepository {
 
     await db
       .insertInto('album_asset')
-      .values(assetIds.map((assetId) => ({ albumsId: albumId, assetsId: assetId })))
+      .values(assetIds.map((assetId) => ({ albumId, assetId })))
       .execute();
   }
 
   @Chunked({ chunkSize: 30_000 })
-  async addAssetIdsToAlbums(values: { albumsId: string; assetsId: string }[]): Promise<void> {
+  async addAssetIdsToAlbums(values: { albumId: string; assetId: string }[]): Promise<void> {
     if (values.length === 0) {
       return;
     }
@@ -344,7 +344,7 @@ export class AlbumRepository {
       .updateTable('album')
       .set((eb) => ({
         albumThumbnailAssetId: this.updateThumbnailBuilder(eb)
-          .select('album_asset.assetsId')
+          .select('album_asset.assetId')
           .orderBy('asset.fileCreatedAt', 'desc')
           .limit(1),
       }))
@@ -360,7 +360,7 @@ export class AlbumRepository {
               eb.exists(
                 this.updateThumbnailBuilder(eb)
                   .select(sql`1`.as('1'))
-                  .whereRef('album.albumThumbnailAssetId', '=', 'album_asset.assetsId'), // Has invalid assets
+                  .whereRef('album.albumThumbnailAssetId', '=', 'album_asset.assetId'), // Has invalid assets
               ),
             ),
           ]),
@@ -375,9 +375,9 @@ export class AlbumRepository {
     return eb
       .selectFrom('album_asset')
       .innerJoin('asset', (join) =>
-        join.onRef('album_asset.assetsId', '=', 'asset.id').on('asset.deletedAt', 'is', null),
+        join.onRef('album_asset.assetId', '=', 'asset.id').on('asset.deletedAt', 'is', null),
       )
-      .whereRef('album_asset.albumsId', '=', 'album.id');
+      .whereRef('album_asset.albumId', '=', 'album.id');
   }
 
   /**
@@ -388,9 +388,9 @@ export class AlbumRepository {
   getContributorCounts(id: string) {
     return this.db
       .selectFrom('album_asset')
-      .innerJoin('asset', 'asset.id', 'assetsId')
+      .innerJoin('asset', 'asset.id', 'assetId')
       .where('asset.deletedAt', 'is', sql.lit(null))
-      .where('album_asset.albumsId', '=', id)
+      .where('album_asset.albumId', '=', id)
       .select('asset.ownerId as userId')
       .select((eb) => eb.fn.countAll<number>().as('assetCount'))
       .groupBy('asset.ownerId')
@@ -405,8 +405,8 @@ export class AlbumRepository {
       .expression((eb) =>
         eb
           .selectFrom('album_asset')
-          .select((eb) => ['album_asset.albumsId', eb.val(targetAssetId).as('assetsId')])
-          .where('album_asset.assetsId', '=', sourceAssetId),
+          .select((eb) => ['album_asset.albumId', eb.val(targetAssetId).as('assetId')])
+          .where('album_asset.assetId', '=', sourceAssetId),
       )
       .onConflict((oc) => oc.doNothing())
       .execute();
