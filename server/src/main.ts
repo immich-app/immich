@@ -64,6 +64,8 @@ class Workers {
       }
 
       throw error;
+    } finally {
+      await kysely.destroy();
     }
   }
 
