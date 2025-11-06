@@ -1,8 +1,11 @@
+import { locale } from '$lib/stores/preferences.store';
 import { getAssetThumbnailUrl, setSharedLink } from '$lib/utils';
 import { authenticate } from '$lib/utils/auth';
 import { getFormatter } from '$lib/utils/i18n';
 import { getAssetInfoFromParam } from '$lib/utils/navigation';
 import { getMySharedLink, isHttpError } from '@immich/sdk';
+import { DateTime, type ToRelativeUnit } from 'luxon';
+import { get } from 'svelte/store';
 
 export const asQueryString = ({ slug, key }: { slug?: string; key?: string }) => {
   const params = new URLSearchParams();
@@ -60,5 +63,17 @@ export const loadSharedLink = async ({
     }
 
     throw error;
+  }
+};
+
+export const getCountDownExpirationDate = (expiresAtDate: DateTime, now: DateTime) => {
+  const relativeUnits: ToRelativeUnit[] = ['days', 'hours', 'minutes', 'seconds'];
+  const expirationCountdown = expiresAtDate.diff(now, relativeUnits).toObject();
+
+  for (const unit of relativeUnits) {
+    const value = expirationCountdown[unit];
+    if (value && value > 0) {
+      return expiresAtDate.toRelativeCalendar({ base: now, locale: get(locale), unit });
+    }
   }
 };

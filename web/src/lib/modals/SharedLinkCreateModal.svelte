@@ -2,6 +2,7 @@
   import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
   import { locale } from '$lib/stores/preferences.store';
   import { handleError } from '$lib/utils/handle-error';
+  import { getCountDownExpirationDate } from '$lib/utils/shared-links';
   import { SharedLinkType, createSharedLink, updateSharedLink, type SharedLinkResponseDto } from '@immich/sdk';
   import {
     Button,
@@ -36,7 +37,6 @@
   let expirationOption: number = $state(0);
   let password = $state('');
   let slug = $state('');
-  let shouldChangeExpirationTime = $state(false);
 
   const expirationOptions: [number, Intl.RelativeTimeFormatUnit][] = [
     [30, 'minutes'],
@@ -49,8 +49,27 @@
     [1, 'year'],
   ];
 
+  let now = DateTime.now();
+  let expiresAt = $derived(editingLink && editingLink.expiresAt ? DateTime.fromISO(editingLink.expiresAt) : null);
+  let isExpired = $derived(expiresAt ? now > expiresAt : false);
+  let currentExpirationOption = $derived.by(() => {
+    if (isExpired) {
+      return { text: $t('expired'), value: -1, disabled: true };
+    } else if (expiresAt) {
+      return {
+        text: $t('select_option_unchanged', { values: { label: getCountDownExpirationDate(expiresAt, now) } }),
+        value: -1,
+      };
+    } else {
+      return null;
+    }
+  });
+  // svelte-ignore state_referenced_locally
+  expirationOption = currentExpirationOption?.value ?? 0; // set the selected option to the current expiry date
+
   let relativeTime = $derived(new Intl.RelativeTimeFormat($locale));
   let expiredDateOptions = $derived([
+    ...(currentExpirationOption ? [currentExpirationOption] : []),
     { text: $t('never'), value: 0 },
     ...expirationOptions.map(([value, unit]) => ({
       text: relativeTime.format(value, unit),
@@ -118,7 +137,7 @@
         sharedLinkEditDto: {
           description,
           password: password ?? null,
-          expiresAt: shouldChangeExpirationTime ? expirationDate : undefined,
+          expiresAt: expirationOption > -1 ? expirationDate : undefined,
           allowUpload,
           allowDownload,
           showMetadata,
@@ -192,7 +211,6 @@
           bind:value={expirationOption}
           options={expiredDateOptions}
           label={$t('expire_after')}
-          disabled={editingLink && !shouldChangeExpirationTime}
           number={true}
         />
       </div>
@@ -208,12 +226,6 @@
       <Field label={$t('allow_public_user_to_upload')}>
         <Switch bind:checked={allowUpload} />
       </Field>
-
-      {#if editingLink}
-        <Field label={$t('change_expiration_time')}>
-          <Switch bind:checked={shouldChangeExpirationTime} />
-        </Field>
-      {/if}
     </div>
   </ModalBody>
 

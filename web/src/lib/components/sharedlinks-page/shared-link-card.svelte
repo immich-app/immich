@@ -6,10 +6,10 @@
   import ShareCover from '$lib/components/sharedlinks-page/covers/share-cover.svelte';
   import { AppRoute } from '$lib/constants';
   import Badge from '$lib/elements/Badge.svelte';
-  import { locale } from '$lib/stores/preferences.store';
+  import { getCountDownExpirationDate } from '$lib/utils/shared-links';
   import { SharedLinkType, type SharedLinkResponseDto } from '@immich/sdk';
   import { mdiDotsVertical } from '@mdi/js';
-  import { DateTime, type ToRelativeUnit } from 'luxon';
+  import { DateTime } from 'luxon';
   import { t } from 'svelte-i18n';
 
   interface Props {
@@ -22,18 +22,6 @@
   let now = DateTime.now();
   let expiresAt = $derived(link.expiresAt ? DateTime.fromISO(link.expiresAt) : undefined);
   let isExpired = $derived(expiresAt ? now > expiresAt : false);
-
-  const getCountDownExpirationDate = (expiresAtDate: DateTime, now: DateTime) => {
-    const relativeUnits: ToRelativeUnit[] = ['days', 'hours', 'minutes', 'seconds'];
-    const expirationCountdown = expiresAtDate.diff(now, relativeUnits).toObject();
-
-    for (const unit of relativeUnits) {
-      const value = expirationCountdown[unit];
-      if (value && value > 0) {
-        return expiresAtDate.toRelativeCalendar({ base: now, locale: $locale, unit });
-      }
-    }
-  };
 </script>
 
 <div
