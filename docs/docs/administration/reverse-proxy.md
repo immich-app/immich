@@ -78,10 +78,6 @@ Below is an example config for Apache2 site configuration.
 Example for an HAProxy configuration with a single default_backend for Immich.
 
 ```
-global
-	daemon
-	maxconn 256
-
 defaults
 	mode http
 	timeout connect 5s
