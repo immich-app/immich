@@ -42,7 +42,7 @@
     {#if showDetail}
       <div
         in:scale={{ duration: 250, easing: quartInOut }}
-        class="w-[325px] rounded-xl border border-gray-200 dark:border-subtle p-4 text-sm shadow-xs bg-subtle"
+        class="w-81 rounded-xl border border-gray-200 dark:border-subtle p-4 text-sm shadow-xs bg-subtle"
       >
         <div class="place-item-center mb-4 flex justify-between">
           <div class="flex flex-col gap-1">
@@ -101,8 +101,8 @@
           </div>
         </div>
         {#if showOptions}
-          <div class="immich-scrollbar mb-4 max-h-[400px] overflow-y-auto rounded-lg">
-            <div class="flex h-[26px] place-items-center gap-1">
+          <div class="immich-scrollbar mb-4 max-h-100 overflow-y-auto rounded-lg">
+            <div class="flex h-6.5 place-items-center gap-1">
               <label class="immich-form-label" for="upload-concurrency">{$t('upload_concurrency')}</label>
             </div>
             <input

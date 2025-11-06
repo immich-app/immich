@@ -63,7 +63,7 @@ importers:
         specifier: ^4.13.1
         version: 4.13.4
       '@types/node':
-        specifier: ^22.18.12
+        specifier: ^22.18.13
         version: 22.18.13
       '@vitest/coverage-v8':
         specifier: ^3.0.0
@@ -211,7 +211,7 @@ importers:
         specifier: ^3.4.2
         version: 3.7.1
       '@types/node':
-        specifier: ^22.18.12
+        specifier: ^22.18.13
         version: 22.18.13
       '@types/oidc-provider':
         specifier: ^9.0.0
@@ -293,7 +293,7 @@ importers:
         version: 1.0.4
     devDependencies:
       '@types/node':
-        specifier: ^22.18.12
+        specifier: ^22.18.13
         version: 22.18.13
       typescript:
         specifier: ^5.3.3
@@ -582,7 +582,7 @@ importers:
         specifier: ^2.0.0
         version: 2.0.0
       '@types/node':
-        specifier: ^22.18.12
+        specifier: ^22.18.13
         version: 22.18.13
       '@types/nodemailer':
         specifier: ^7.0.0
