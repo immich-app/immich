@@ -38,10 +38,11 @@
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
   import { AssetVisibility } from '@immich/sdk';
 
-  import { mdiCog, mdiDotsVertical, mdiPlus } from '@mdi/js';
-  import { IconButton } from '@immich/ui';
+  import { mdiDotsVertical, mdiPlus, mdiTune } from '@mdi/js';
+  import { Icon, IconButton } from '@immich/ui';
 
   import { t } from 'svelte-i18n';
+  import { scale } from 'svelte/transition';
 
   let { isViewing: showAssetViewer } = assetViewingStore;
   let timelineManager = $state<TimelineManager>() as TimelineManager;
@@ -126,13 +127,14 @@
 {#if !assetInteraction.selectionActive}
   <button
     type="button"
-    class="fixed bottom-6 right-6 z-50 rounded-full bg-immich-primary p-4 text-white shadow-lg hover:bg-immich-primary/90 dark:bg-immich-dark-primary dark:hover:bg-immich-dark-primary/90"
+    class="fixed bottom-20 right-6 md:bottom-6 md:right-20 z-50 rounded-full bg-immich-primary p-5 md:p-4 text-white shadow-lg hover:bg-immich-primary/90 hover:shadow-xl dark:bg-immich-dark-primary dark:hover:bg-immich-dark-primary/90 transition-all duration-200 active:scale-95"
     title={$t('timeline_settings')}
+    aria-label={$t('timeline_settings')}
     onclick={() => (showTimelineSettings = true)}
+    in:scale={{ duration: 200, start: 0.8 }}
+    out:scale={{ duration: 200, start: 0.8 }}
   >
-    <svg class="h-6 w-6" viewBox="0 0 24 24" fill="currentColor">
-      <path d={mdiCog} />
-    </svg>
+    <Icon path={mdiTune} size="24" ariaHidden />
   </button>
 {/if}
 
