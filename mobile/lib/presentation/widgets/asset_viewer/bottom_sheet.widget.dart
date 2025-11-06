@@ -127,21 +127,17 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
     if (exifInfo == null) {
       return null;
     }
-
-    final iso = exifInfo.iso != null ? 'ISO ${exifInfo.iso}' : null;
     final exposureTime = exifInfo.exposureTime.isNotEmpty ? exifInfo.exposureTime : null;
-
-    return [iso, exposureTime].where((spec) => spec != null && spec.isNotEmpty).join(_kSeparator);
+    final iso = exifInfo.iso != null ? 'ISO ${exifInfo.iso}' : null;
+    return [exposureTime, iso].where((spec) => spec != null && spec.isNotEmpty).join(_kSeparator);
   }
 
   String? _getLensInfoSubtitle(ExifInfo? exifInfo) {
     if (exifInfo == null) {
       return null;
     }
-
     final fNumber = exifInfo.fNumber.isNotEmpty ? 'ƒ/${exifInfo.fNumber}' : null;
     final focalLength = exifInfo.focalLength.isNotEmpty ? '${exifInfo.focalLength} mm' : null;
-
     return [fNumber, focalLength].where((spec) => spec != null && spec.isNotEmpty).join(_kSeparator);
   }
 
