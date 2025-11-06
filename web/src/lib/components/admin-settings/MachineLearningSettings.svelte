@@ -275,8 +275,14 @@
             name="ocr-model"
             bind:value={config.machineLearning.ocr.modelName}
             options={[
-              { value: 'PP-OCRv5_server', text: 'PP-OCRv5_server' },
-              { value: 'PP-OCRv5_mobile', text: 'PP-OCRv5_mobile' },
+              { text: 'PP-OCRv5_server (Chinese, Japanese and English)', value: 'PP-OCRv5_server' },
+              { text: 'PP-OCRv5_mobile (Chinese, Japanese and English)', value: 'PP-OCRv5_mobile' },
+              { text: 'PP-OCRv5_mobile (English-only)', value: 'EN__PP-OCRv5_mobile' },
+              { text: 'PP-OCRv5_mobile (Greek and English)', value: 'EL__PP-OCRv5_mobile' },
+              { text: 'PP-OCRv5_mobile (Korean and English)', value: 'KOREAN__PP-OCRv5_mobile' },
+              { text: 'PP-OCRv5_mobile (Latin script languages)', value: 'LATIN__PP-OCRv5_mobile' },
+              { text: 'PP-OCRv5_mobile (Russian, Belarusian, Ukrainian and English)', value: 'ESLAV__PP-OCRv5_mobile' },
+              { text: 'PP-OCRv5_mobile (Thai and English)', value: 'TH__PP-OCRv5_mobile' },
             ]}
             disabled={disabled || !config.machineLearning.enabled || !config.machineLearning.ocr.enabled}
             isEdited={config.machineLearning.ocr.modelName !== savedConfig.machineLearning.ocr.modelName}
