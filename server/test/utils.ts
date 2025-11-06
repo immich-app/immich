@@ -34,6 +34,7 @@ import { JobRepository } from 'src/repositories/job.repository';
 import { LibraryRepository } from 'src/repositories/library.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { MachineLearningRepository } from 'src/repositories/machine-learning.repository';
+import { MaintenanceRepository } from 'src/repositories/maintenance.repository';
 import { MapRepository } from 'src/repositories/map.repository';
 import { MediaRepository } from 'src/repositories/media.repository';
 import { MemoryRepository } from 'src/repositories/memory.repository';
@@ -73,6 +74,7 @@ import { newConfigRepositoryMock } from 'test/repositories/config.repository.moc
 import { newCryptoRepositoryMock } from 'test/repositories/crypto.repository.mock';
 import { newDatabaseRepositoryMock } from 'test/repositories/database.repository.mock';
 import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
+import { newMaintenanceRepositoryMock } from 'test/repositories/maintenance.repository.mock';
 import { newMediaRepositoryMock } from 'test/repositories/media.repository.mock';
 import { newMetadataRepositoryMock } from 'test/repositories/metadata.repository.mock';
 import { newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
@@ -225,6 +227,7 @@ export type ServiceOverrides = {
   library: LibraryRepository;
   logger: LoggingRepository;
   machineLearning: MachineLearningRepository;
+  maintenance: MaintenanceRepository;
   map: MapRepository;
   media: MediaRepository;
   memory: MemoryRepository;
@@ -298,6 +301,7 @@ export const newTestService = <T extends BaseService>(
     apiKey: automock(ApiKeyRepository),
     library: automock(LibraryRepository, { strict: false }),
     machineLearning: automock(MachineLearningRepository, { args: [loggerMock], strict: false }),
+    maintenance: newMaintenanceRepositoryMock(),
     map: automock(MapRepository, { args: [undefined, undefined, { setContext: () => {} }] }),
     media: newMediaRepositoryMock(),
     memory: automock(MemoryRepository),
@@ -353,6 +357,7 @@ export const newTestService = <T extends BaseService>(
     overrides.job || (mocks.job as As<JobRepository>),
     overrides.library || (mocks.library as As<LibraryRepository>),
     overrides.machineLearning || (mocks.machineLearning as As<MachineLearningRepository>),
+    overrides.maintenance || (mocks.maintenance as As<MaintenanceRepository>),
     overrides.map || (mocks.map as As<MapRepository>),
     overrides.media || (mocks.media as As<MediaRepository>),
     overrides.memory || (mocks.memory as As<MemoryRepository>),
