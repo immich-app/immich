@@ -16,13 +16,11 @@
   import { handleError } from '$lib/utils/handle-error';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { addSharedLinkAssets, getAssetInfo, type SharedLinkResponseDto } from '@immich/sdk';
-  import { IconButton } from '@immich/ui';
+  import { IconButton, toastManager } from '@immich/ui';
   import { mdiArrowLeft, mdiDownload, mdiFileImagePlusOutline, mdiSelectAll } from '@mdi/js';
   import { t } from 'svelte-i18n';
-  import AssetViewer from '../asset-viewer/asset-viewer.svelte';
   import ControlAppBar from '../shared-components/control-app-bar.svelte';
   import GalleryViewer from '../shared-components/gallery-viewer/gallery-viewer.svelte';
-  import { NotificationType, notificationController } from '../shared-components/notification/notification';
 
   interface Props {
     sharedLink: SharedLinkResponseDto;
@@ -63,10 +61,7 @@
 
       const added = data.filter((item) => item.success).length;
 
-      notificationController.show({
-        message: $t('assets_added_count', { values: { count: added } }),
-        type: NotificationType.Info,
-      });
+      toastManager.success($t('assets_added_count', { values: { count: added } }));
     } catch (error) {
       handleError(error, $t('errors.unable_to_add_assets_to_shared_link'));
     }
@@ -141,20 +136,22 @@
         {/snippet}
       </ControlAppBar>
     {/if}
-    <section class="my-[160px] mx-4" bind:clientHeight={viewport.height} bind:clientWidth={viewport.width}>
+    <section class="my-40 mx-4" bind:clientHeight={viewport.height} bind:clientWidth={viewport.width}>
       <GalleryViewer {assets} {assetInteraction} {viewport} />
     </section>
   {:else if assets.length === 1}
     {#await getAssetInfo({ ...authManager.params, id: assets[0].id }) then asset}
-      <AssetViewer
-        {asset}
-        showCloseButton={false}
-        onAction={handleAction}
-        onPrevious={() => Promise.resolve(false)}
-        onNext={() => Promise.resolve(false)}
-        onRandom={() => Promise.resolve(undefined)}
-        onClose={() => {}}
-      />
+      {#await import('$lib/components/asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
+        <AssetViewer
+          {asset}
+          showCloseButton={false}
+          onAction={handleAction}
+          onPrevious={() => Promise.resolve(false)}
+          onNext={() => Promise.resolve(false)}
+          onRandom={() => Promise.resolve(undefined)}
+          onClose={() => {}}
+        />
+      {/await}
     {/await}
   {/if}
 </section>

@@ -1,10 +1,6 @@
 <script lang="ts">
   import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
   import ServerStatisticsCard from '$lib/components/server-statistics/ServerStatisticsCard.svelte';
-  import {
-    notificationController,
-    NotificationType,
-  } from '$lib/components/shared-components/notification/notification';
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
   import DeviceCard from '$lib/components/user-settings-page/device-card.svelte';
   import FeatureSetting from '$lib/components/users/FeatureSetting.svelte';
@@ -34,6 +30,7 @@
     modalManager,
     Stack,
     Text,
+    toastManager,
   } from '@immich/ui';
   import {
     mdiAccountOutline,
@@ -148,8 +145,7 @@
 
     try {
       await updateUserAdmin({ id: user.id, userAdminUpdateDto: { pinCode: null } });
-
-      notificationController.show({ type: NotificationType.Info, message: $t('pin_code_reset_successfully') });
+      toastManager.success($t('pin_code_reset_successfully'));
     } catch (error) {
       handleError(error, $t('errors.unable_to_reset_pin_code'));
     }

@@ -33,8 +33,8 @@ const withAssets = (eb: ExpressionBuilder<DB, 'stack'>, withTags = false) => {
             eb
               .selectFrom('tag')
               .select(columns.tag)
-              .innerJoin('tag_asset', 'tag.id', 'tag_asset.tagsId')
-              .whereRef('tag_asset.assetsId', '=', 'asset.id'),
+              .innerJoin('tag_asset', 'tag.id', 'tag_asset.tagId')
+              .whereRef('tag_asset.assetId', '=', 'asset.id'),
           ).as('tags'),
         ),
       )
@@ -161,5 +161,10 @@ export class StackRepository {
       .select(['stackId as id', 'stack.primaryAssetId'])
       .where('asset.id', '=', assetId)
       .executeTakeFirst();
+  }
+
+  @GenerateSql({ params: [{ sourceId: DummyValue.UUID, targetId: DummyValue.UUID }] })
+  merge({ sourceId, targetId }: { sourceId: string; targetId: string }) {
+    return this.db.updateTable('asset').set({ stackId: targetId }).where('asset.stackId', '=', sourceId).execute();
   }
 }

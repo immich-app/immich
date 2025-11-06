@@ -78,7 +78,7 @@
         class="sidebar:hidden"
       />
       <a data-sveltekit-preload-data="hover" href={AppRoute.PHOTOS}>
-        <ImmichLogo class="max-md:h-[48px] h-[50px]" noText={!mobileDevice.isFullSidebar} />
+        <ImmichLogo class="max-md:h-12 h-12.5" noText={!mobileDevice.isFullSidebar} />
       </a>
     </div>
     <div class="flex justify-between gap-4 lg:gap-8 pe-6">

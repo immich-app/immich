@@ -271,7 +271,7 @@ class _BackupAlbumSelectionCard extends ConsumerWidget {
             if (currentUser == null) {
               return;
             }
-            ref.read(driftBackupProvider.notifier).getBackupStatus(currentUser.id);
+            unawaited(ref.read(driftBackupProvider.notifier).getBackupStatus(currentUser.id));
           },
           child: const Text("select", style: TextStyle(fontWeight: FontWeight.bold)).tr(),
         ),

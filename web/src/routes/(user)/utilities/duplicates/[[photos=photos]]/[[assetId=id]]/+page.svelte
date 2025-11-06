@@ -3,10 +3,6 @@
   import { page } from '$app/state';
   import { shortcuts } from '$lib/actions/shortcut';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-  import {
-    notificationController,
-    NotificationType,
-  } from '$lib/components/shared-components/notification/notification';
   import DuplicatesCompareControl from '$lib/components/utilities-page/duplicates/duplicates-compare-control.svelte';
   import { AppRoute } from '$lib/constants';
   import DuplicatesInformationModal from '$lib/modals/DuplicatesInformationModal.svelte';
@@ -19,7 +15,7 @@
   import { handleError } from '$lib/utils/handle-error';
   import type { AssetResponseDto } from '@immich/sdk';
   import { deleteAssets, deleteDuplicates, updateAssets } from '@immich/sdk';
-  import { Button, HStack, IconButton, modalManager, Text } from '@immich/ui';
+  import { Button, HStack, IconButton, modalManager, Text, toastManager } from '@immich/ui';
   import {
     mdiCheckOutline,
     mdiChevronLeft,
@@ -96,12 +92,10 @@
       return;
     }
 
-    notificationController.show({
-      message: $featureFlags.trash
-        ? $t('assets_moved_to_trash_count', { values: { count: trashedCount } })
-        : $t('permanently_deleted_assets_count', { values: { count: trashedCount } }),
-      type: NotificationType.Info,
-    });
+    const message = $featureFlags.trash
+      ? $t('assets_moved_to_trash_count', { values: { count: trashedCount } })
+      : $t('permanently_deleted_assets_count', { values: { count: trashedCount } });
+    toastManager.success(message);
   };
 
   const handleResolve = async (duplicateId: string, duplicateAssetIds: string[], trashIds: string[]) => {
@@ -173,10 +167,7 @@
 
         duplicates = [];
 
-        notificationController.show({
-          message: $t('resolved_all_duplicates'),
-          type: NotificationType.Info,
-        });
+        toastManager.success($t('resolved_all_duplicates'));
         page.url.searchParams.delete('index');
         await goto(`${AppRoute.DUPLICATES}`);
       },
@@ -281,8 +272,8 @@
             handleResolve(duplicates[duplicatesIndex].duplicateId, duplicateAssetIds, trashIds)}
           onStack={(assets) => handleStack(duplicates[duplicatesIndex].duplicateId, assets)}
         />
-        <div class="max-w-216 mx-auto mb-16">
-          <div class="flex flex-wrap gap-y-6 mb-4 px-6 w-full place-content-end justify-between items-center">
+        <div class="max-w-256 mx-auto mb-16">
+          <div class="flex mb-4 sm:px-6 w-full place-content-center justify-between items-center place-items-center">
             <div class="flex text-xs text-black">
               <Button
                 size="small"
@@ -305,7 +296,9 @@
                 {$t('previous')}
               </Button>
             </div>
-            <p>{duplicatesIndex + 1}/{duplicates.length.toLocaleString($locale)}</p>
+            <p class="border px-3 md:px-6 py-1 dark:bg-subtle rounded-lg text-xs md:text-sm">
+              {duplicatesIndex + 1} / {duplicates.length.toLocaleString($locale)}
+            </p>
             <div class="flex text-xs text-black">
               <Button
                 size="small"

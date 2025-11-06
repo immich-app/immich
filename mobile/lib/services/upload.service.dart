@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:background_downloader/background_downloader.dart';
 import 'package:cancellation_token_http/http.dart';
+import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
@@ -17,6 +18,7 @@ import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/storage.provider.dart';
+import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/repositories/upload.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
@@ -32,6 +34,7 @@ final uploadServiceProvider = Provider((ref) {
     ref.watch(storageRepositoryProvider),
     ref.watch(localAssetRepository),
     ref.watch(appSettingsServiceProvider),
+    ref.watch(assetMediaRepositoryProvider),
   );
 
   ref.onDispose(service.dispose);
@@ -45,6 +48,7 @@ class UploadService {
     this._storageRepository,
     this._localAssetRepository,
     this._appSettingsService,
+    this._assetMediaRepository,
   ) {
     _uploadRepository.onUploadStatus = _onUploadCallback;
     _uploadRepository.onTaskProgress = _onTaskProgressCallback;
@@ -55,6 +59,7 @@ class UploadService {
   final StorageRepository _storageRepository;
   final DriftLocalAssetRepository _localAssetRepository;
   final AppSettingsService _appSettingsService;
+  final AssetMediaRepository _assetMediaRepository;
   final Logger _logger = Logger('UploadService');
 
   final StreamController<TaskStatusUpdate> _taskStatusController = StreamController<TaskStatusUpdate>.broadcast();
@@ -99,7 +104,7 @@ class UploadService {
     await _storageRepository.clearCache();
     List<UploadTask> tasks = [];
     for (final asset in localAssets) {
-      final task = await _getUploadTask(
+      final task = await getUploadTask(
         asset,
         group: kManualUploadGroup,
         priority: 1, // High priority after upload motion photo part
@@ -137,7 +142,7 @@ class UploadService {
       final batch = candidates.skip(i).take(batchSize).toList();
       List<UploadTask> tasks = [];
       for (final asset in batch) {
-        final task = await _getUploadTask(asset);
+        final task = await getUploadTask(asset);
         if (task != null) {
           tasks.add(task);
         }
@@ -412,7 +417,7 @@ class UploadService {
   void _handleTaskStatusUpdate(TaskStatusUpdate update) async {
     switch (update.status) {
       case TaskStatus.complete:
-        _handleLivePhoto(update);
+        unawaited(_handleLivePhoto(update));
 
         if (CurrentPlatform.isIOS) {
           try {
@@ -451,13 +456,13 @@ class UploadService {
         return;
       }
 
-      final uploadTask = await _getLivePhotoUploadTask(localAsset, response['id'] as String);
+      final uploadTask = await getLivePhotoUploadTask(localAsset, response['id'] as String);
 
       if (uploadTask == null) {
         return;
       }
 
-      enqueueTasks([uploadTask]);
+      await enqueueTasks([uploadTask]);
     } catch (error, stackTrace) {
       dPrint(() => "Error handling live photo upload task: $error $stackTrace");
     }
@@ -499,7 +504,8 @@ class UploadService {
     );
   }
 
-  Future<UploadTask?> _getUploadTask(LocalAsset asset, {String group = kBackupGroup, int? priority}) async {
+  @visibleForTesting
+  Future<UploadTask?> getUploadTask(LocalAsset asset, {String group = kBackupGroup, int? priority}) async {
     final entity = await _storageRepository.getAssetEntityForAsset(asset);
     if (entity == null) {
       return null;
@@ -527,7 +533,8 @@ class UploadService {
       return null;
     }
 
-    final originalFileName = entity.isLivePhoto ? p.setExtension(asset.name, p.extension(file.path)) : asset.name;
+    final fileName = await _assetMediaRepository.getOriginalFilename(asset.id) ?? asset.name;
+    final originalFileName = entity.isLivePhoto ? p.setExtension(fileName, p.extension(file.path)) : fileName;
 
     String metadata = UploadTaskMetadata(
       localAssetId: asset.id,
@@ -551,7 +558,8 @@ class UploadService {
     );
   }
 
-  Future<UploadTask?> _getLivePhotoUploadTask(LocalAsset asset, String livePhotoVideoId) async {
+  @visibleForTesting
+  Future<UploadTask?> getLivePhotoUploadTask(LocalAsset asset, String livePhotoVideoId) async {
     final entity = await _storageRepository.getAssetEntityForAsset(asset);
     if (entity == null) {
       return null;
@@ -565,12 +573,13 @@ class UploadService {
     final fields = {'livePhotoVideoId': livePhotoVideoId};
 
     final requiresWiFi = _shouldRequireWiFi(asset);
+    final originalFileName = await _assetMediaRepository.getOriginalFilename(asset.id) ?? asset.name;
 
     return buildUploadTask(
       file,
       createdAt: asset.createdAt,
       modifiedAt: asset.updatedAt,
-      originalFileName: asset.name,
+      originalFileName: originalFileName,
       deviceAssetId: asset.id,
       fields: fields,
       group: kBackupLivePhotoGroup,

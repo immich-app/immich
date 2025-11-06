@@ -5,10 +5,7 @@
   import AlbumsTable from '$lib/components/album-page/albums-table.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import RightClickContextMenu from '$lib/components/shared-components/context-menu/right-click-context-menu.svelte';
-  import {
-    NotificationType,
-    notificationController,
-  } from '$lib/components/shared-components/notification/notification';
+  import ToastAction from '$lib/components/ToastAction.svelte';
   import { AppRoute } from '$lib/constants';
   import AlbumEditModal from '$lib/modals/AlbumEditModal.svelte';
   import AlbumShareModal from '$lib/modals/AlbumShareModal.svelte';
@@ -38,7 +35,7 @@
   import { handleError } from '$lib/utils/handle-error';
   import { normalizeSearchString } from '$lib/utils/string-utils';
   import { addUsersToAlbum, deleteAlbum, isHttpError, type AlbumResponseDto, type AlbumUserAddDto } from '@immich/sdk';
-  import { modalManager } from '@immich/ui';
+  import { modalManager, toastManager } from '@immich/ui';
   import { mdiDeleteOutline, mdiDownload, mdiRenameOutline, mdiShareVariantOutline } from '@mdi/js';
   import { groupBy } from 'lodash-es';
   import { onMount, type Snippet } from 'svelte';
@@ -280,11 +277,8 @@
 
     try {
       await handleDeleteAlbum(albumToDelete);
-    } catch {
-      notificationController.show({
-        message: $t('errors.unable_to_delete_album'),
-        type: NotificationType.Error,
-      });
+    } catch (error) {
+      handleError(error, $t('errors.unable_to_delete_album'));
     } finally {
       albumToDelete = null;
     }
@@ -310,13 +304,18 @@
   };
 
   const successEditAlbumInfo = (album: AlbumResponseDto) => {
-    notificationController.show({
-      message: $t('album_info_updated'),
-      type: NotificationType.Info,
-      button: {
-        text: $t('view_album'),
-        onClick() {
-          return goto(resolve(`${AppRoute.ALBUMS}/${album.id}`));
+    toastManager.custom({
+      component: ToastAction,
+      props: {
+        color: 'primary',
+        title: $t('success'),
+        description: $t('album_info_updated'),
+        button: {
+          text: $t('view_album'),
+          color: 'primary',
+          onClick() {
+            return goto(resolve(`${AppRoute.ALBUMS}/${album.id}`));
+          },
         },
       },
     });
