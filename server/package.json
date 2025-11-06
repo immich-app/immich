@@ -126,7 +126,6 @@
     "@types/express": "^5.0.0",
     "@types/fluent-ffmpeg": "^2.1.21",
     "@types/js-yaml": "^4.0.9",
-    "@types/jsonwebtoken": "^9.0.10",
     "@types/lodash": "^4.14.197",
     "@types/luxon": "^3.6.2",
     "@types/mock-fs": "^4.13.1",

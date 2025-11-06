@@ -572,9 +572,6 @@ importers:
       '@types/js-yaml':
         specifier: ^4.0.9
         version: 4.0.9
-      '@types/jsonwebtoken':
-        specifier: ^9.0.10
-        version: 9.0.10
       '@types/lodash':
         specifier: ^4.14.197
         version: 4.17.20
@@ -4595,9 +4592,6 @@ packages:
 
   '@types/json-schema@7.0.15':
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
-
-  '@types/jsonwebtoken@9.0.10':
-    resolution: {integrity: sha512-asx5hIG9Qmf/1oStypjanR7iKTv0gXQ1Ov/jfrX6kS/EO0OFni8orbmGCn0672NHR3kXHwpAwR+B368ZGN/2rA==}
 
   '@types/justified-layout@4.1.4':
     resolution: {integrity: sha512-q2ybP0u0NVj87oMnGZOGxY2iUN8ddr48zPOBHBdbOLpsMTA/keGj+93ou+OMCnJk0xewzlNIaVEkxM6VBD3E2w==}
@@ -16424,11 +16418,6 @@ snapshots:
   '@types/js-yaml@4.0.9': {}
 
   '@types/json-schema@7.0.15': {}
-
-  '@types/jsonwebtoken@9.0.10':
-    dependencies:
-      '@types/ms': 2.1.0
-      '@types/node': 22.18.13
 
   '@types/justified-layout@4.1.4': {}
 
