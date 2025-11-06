@@ -42,7 +42,12 @@ class SyncStatusAndActions extends HookConsumerWidget {
 
         await dbFile.copy(exportFile.path);
 
-        await Share.shareXFiles([XFile(exportFile.path)], text: 'Immich Database Export');
+        final size = MediaQuery.of(context).size;
+        await Share.shareXFiles(
+          [XFile(exportFile.path)],
+          text: 'Immich Database Export',
+          sharePositionOrigin: Rect.fromPoints(Offset.zero, Offset(size.width / 3, size.height)),
+        );
 
         Future.delayed(const Duration(seconds: 30), () async {
           if (await exportFile.exists()) {

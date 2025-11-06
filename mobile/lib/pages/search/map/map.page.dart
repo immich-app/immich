@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:auto_route/auto_route.dart';
@@ -83,7 +84,7 @@ class MapPage extends HookConsumerWidget {
         isLoading.value = true;
         markers.value = await ref.read(mapMarkersProvider.future);
         assetsDebouncer.run(updateAssetsInBounds);
-        reloadLayers();
+        await reloadLayers();
       } finally {
         isLoading.value = false;
       }
@@ -128,7 +129,7 @@ class MapPage extends HookConsumerWidget {
       );
 
       if (marker != null) {
-        updateAssetMarkerPosition(marker);
+        await updateAssetMarkerPosition(marker);
       } else {
         // If no asset was previously selected and no new asset is available, close the bottom sheet
         if (selectedMarker.value == null) {
@@ -165,7 +166,7 @@ class MapPage extends HookConsumerWidget {
       if (asset.isVideo) {
         ref.read(showControlsProvider.notifier).show = false;
       }
-      context.pushRoute(GalleryViewerRoute(initialIndex: 0, heroOffset: 0, renderList: renderList));
+      unawaited(context.pushRoute(GalleryViewerRoute(initialIndex: 0, heroOffset: 0, renderList: renderList)));
     }
 
     /// BOTTOM SHEET CALLBACKS
@@ -209,7 +210,7 @@ class MapPage extends HookConsumerWidget {
       }
 
       if (mapController.value != null && location != null) {
-        mapController.value!.animateCamera(
+        await mapController.value!.animateCamera(
           CameraUpdate.newLatLngZoom(LatLng(location.latitude, location.longitude), mapZoomToAssetLevel),
           duration: const Duration(milliseconds: 800),
         );

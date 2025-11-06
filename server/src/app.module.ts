@@ -19,6 +19,7 @@ import { ConfigRepository } from 'src/repositories/config.repository';
 import { EventRepository } from 'src/repositories/event.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { teardownTelemetry, TelemetryRepository } from 'src/repositories/telemetry.repository';
+import { WebsocketRepository } from 'src/repositories/websocket.repository';
 import { services } from 'src/services';
 import { AuthService } from 'src/services/auth.service';
 import { CliService } from 'src/services/cli.service';
@@ -52,6 +53,7 @@ class BaseModule implements OnModuleInit, OnModuleDestroy {
     @Inject(IWorker) private worker: ImmichWorker,
     logger: LoggingRepository,
     private eventRepository: EventRepository,
+    private websocketRepository: WebsocketRepository,
     private jobService: JobService,
     private telemetryRepository: TelemetryRepository,
     private authService: AuthService,
@@ -64,7 +66,7 @@ class BaseModule implements OnModuleInit, OnModuleDestroy {
 
     this.jobService.setServices(services);
 
-    this.eventRepository.setAuthFn(async (client) =>
+    this.websocketRepository.setAuthFn(async (client) =>
       this.authService.authenticate({
         headers: client.request.headers,
         queryParams: {},

@@ -32,17 +32,14 @@
   let selectedCity = $state<string | null>(null);
   let selectedCountry = $state<string | null>(null);
 
-  const timelineManager = new TimelineManager();
+  let timelineManager = $state<TimelineManager>() as TimelineManager;
   let showOnlyWithoutGps = $state(true);
-
-  $effect(() => {
-    void timelineManager.updateOptions({
-      visibility: AssetVisibility.Timeline,
-      withStacked: true,
-      withPartners: true,
-      withCoordinates: true,
-      withoutGps: !!showOnlyWithoutGps,
-    });
+  const getOptions = () => ({
+    visibility: AssetVisibility.Timeline,
+    withStacked: true,
+    withPartners: true,
+    withCoordinates: true,
+    withoutGps: !!showOnlyWithoutGps,
   });
 
   const handleUpdate = async () => {
@@ -194,26 +191,26 @@
 
 <UserPageLayout title={data.meta.title} scrollbar={true}>
   {#snippet buttons()}
-  <div class="flex w-fit rounded-full bg-gray-200 p-1 text-sm font-medium font-mono overflow-hidden">
-        <Button
-          size="small"
-          variant={showOnlyWithoutGps ? 'ghost' : 'filled'}
-          color={showOnlyWithoutGps ? 'secondary' : 'primary'}
-          class={`flex-1 px-4 py-1 text-center transition-colors duration-200 rounded-full ${!showOnlyWithoutGps ? 'bg-primary text-light' : ''}`}
-          onclick={() => (showOnlyWithoutGps = false)}
-        >
-          <Text class="whitespace-nowrap">{$t('all')}</Text>
-        </Button>
-        <Button
-          size="small"
-          variant={showOnlyWithoutGps ? 'filled' : 'ghost'}
-          color={showOnlyWithoutGps ? 'primary' : 'secondary'}
-          class={`flex-1 px-4 py-1 text-center transition-colors duration-200 rounded-full ${showOnlyWithoutGps ? 'bg-primary text-light' : ''}`}
-          onclick={() => (showOnlyWithoutGps = true)}
-        >
-          <Text class="whitespace-nowrap">{$t('no_gps')}</Text>
-        </Button>
-      </div>
+    <div class="flex w-fit rounded-full bg-gray-200 p-1 text-sm font-medium font-mono overflow-hidden">
+      <Button
+        size="small"
+        variant={showOnlyWithoutGps ? 'ghost' : 'filled'}
+        color={showOnlyWithoutGps ? 'secondary' : 'primary'}
+        class={`flex-1 px-4 py-1 text-center transition-colors duration-200 rounded-full ${!showOnlyWithoutGps ? 'bg-primary text-light' : ''}`}
+        onclick={() => (showOnlyWithoutGps = false)}
+      >
+        <Text class="whitespace-nowrap">{$t('all')}</Text>
+      </Button>
+      <Button
+        size="small"
+        variant={showOnlyWithoutGps ? 'filled' : 'ghost'}
+        color={showOnlyWithoutGps ? 'primary' : 'secondary'}
+        class={`flex-1 px-4 py-1 text-center transition-colors duration-200 rounded-full ${showOnlyWithoutGps ? 'bg-primary text-light' : ''}`}
+        onclick={() => (showOnlyWithoutGps = true)}
+      >
+        <Text class="whitespace-nowrap">{$t('no_gps')}</Text>
+      </Button>
+    </div>
     <div class="flex gap-2 justify-end place-items-center">
       <div class="border flex place-items-center place-content-center px-2 py-1 bg-primary/10 rounded-2xl">
         <Text class="hidden md:inline-block text-xs text-gray-500 font-mono mr-5 ml-2 uppercase">
@@ -270,7 +267,8 @@
   <Timeline
     isSelectionMode={true}
     enableRouting={true}
-    {timelineManager}
+    bind:timelineManager
+    options={getOptions()}
     {assetInteraction}
     removeAction={AssetAction.ARCHIVE}
     onEscape={handleEscape}

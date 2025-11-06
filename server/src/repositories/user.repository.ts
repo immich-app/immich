@@ -286,6 +286,16 @@ export class UserRepository {
       .execute();
   }
 
+  @GenerateSql()
+  async getCount(): Promise<number> {
+    const result = await this.db
+      .selectFrom('user')
+      .select((eb) => eb.fn.countAll().as('count'))
+      .where('user.deletedAt', 'is', null)
+      .executeTakeFirstOrThrow();
+    return Number(result.count);
+  }
+
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.NUMBER] })
   async updateUsage(id: string, delta: number): Promise<void> {
     await this.db

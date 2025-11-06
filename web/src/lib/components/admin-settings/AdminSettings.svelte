@@ -1,15 +1,12 @@
 <script lang="ts">
-  import {
-    NotificationType,
-    notificationController,
-  } from '$lib/components/shared-components/notification/notification';
+  import { retrieveServerConfig } from '$lib/stores/server-config.store';
   import { handleError } from '$lib/utils/handle-error';
   import { getConfig, getConfigDefaults, updateConfig, type SystemConfigDto } from '@immich/sdk';
-  import { retrieveServerConfig } from '$lib/stores/server-config.store';
+  import { toastManager } from '@immich/ui';
   import { cloneDeep, isEqual } from 'lodash-es';
   import { onMount } from 'svelte';
-  import type { SettingsResetOptions } from './admin-settings';
   import { t } from 'svelte-i18n';
+  import type { SettingsResetOptions } from './admin-settings';
 
   interface Props {
     config: SystemConfigDto;
@@ -41,7 +38,7 @@
 
       config = cloneDeep(newConfig);
       savedConfig = cloneDeep(newConfig);
-      notificationController.show({ message: $t('settings_saved'), type: NotificationType.Info });
+      toastManager.success($t('settings_saved'));
 
       await retrieveServerConfig();
     } catch (error) {
@@ -56,10 +53,7 @@
       config = { ...config, [key]: resetConfig[key] };
     }
 
-    notificationController.show({
-      message: $t('admin.reset_settings_to_recent_saved'),
-      type: NotificationType.Info,
-    });
+    toastManager.info($t('admin.reset_settings_to_recent_saved'));
   };
 
   const resetToDefault = (configKeys: Array<keyof SystemConfigDto>) => {
@@ -71,10 +65,7 @@
       config = { ...config, [key]: defaultConfig[key] };
     }
 
-    notificationController.show({
-      message: $t('admin.reset_settings_to_default'),
-      type: NotificationType.Info,
-    });
+    toastManager.info($t('admin.reset_settings_to_default'));
   };
 
   onMount(async () => {

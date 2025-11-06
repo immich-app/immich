@@ -29,7 +29,10 @@ void main() {
   });
 
   testWidgets('Returns a Dismissible', (tester) async {
-    await tester.pumpConsumerWidget(DismissibleActivity('1', ActivityTile(activity)), overrides: overrides);
+    await tester.pumpConsumerWidget(
+      DismissibleActivity('1', ActivityTile(activity), onDismiss: (_) {}),
+      overrides: overrides,
+    );
 
     expect(find.byType(Dismissible), findsOneWidget);
   });
@@ -81,20 +84,16 @@ void main() {
   testWidgets('No delete dialog if onDismiss is not set', (tester) async {
     await tester.pumpConsumerWidget(DismissibleActivity('1', ActivityTile(activity)), overrides: overrides);
 
-    final dismissible = find.byType(Dismissible);
-    await tester.drag(dismissible, const Offset(500, 0));
-    await tester.pumpAndSettle();
-
+    // When onDismiss is not set, the widget should not be wrapped by a Dismissible
+    expect(find.byType(Dismissible), findsNothing);
     expect(find.byType(ConfirmDialog), findsNothing);
   });
 
   testWidgets('No icon for background if onDismiss is not set', (tester) async {
     await tester.pumpConsumerWidget(DismissibleActivity('1', ActivityTile(activity)), overrides: overrides);
 
-    final dismissible = find.byType(Dismissible);
-    await tester.drag(dismissible, const Offset(-500, 0));
-    await tester.pumpAndSettle();
-
+    // No Dismissible should exist when onDismiss is not provided, so no delete icon either
+    expect(find.byType(Dismissible), findsNothing);
     expect(find.byIcon(Icons.delete_sweep_rounded), findsNothing);
   });
 }

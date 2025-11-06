@@ -24,7 +24,7 @@
   <section>
     <div class="flex place-items-center border-b px-6 py-4 dark:border-b-immich-dark-gray">
       <a class="flex place-items-center gap-2 hover:cursor-pointer" href="/photos">
-        <ImmichLogo class="h-[50px]" />
+        <ImmichLogo class="h-12.5" />
       </a>
     </div>
   </section>
@@ -32,7 +32,7 @@
   <div class="fixed top-0 flex h-full w-full place-content-center place-items-center overflow-hidden bg-black/50">
     <div>
       <div
-        class="w-[500px] max-w-[95vw] rounded-3xl border shadow-sm dark:border-immich-dark-gray dark:text-immich-dark-fg bg-subtle/80"
+        class="w-125 max-w-[95vw] rounded-3xl border shadow-sm dark:border-immich-dark-gray dark:text-immich-dark-fg bg-subtle/80"
       >
         <div>
           <div class="flex items-center justify-between gap-4 px-4 py-4">
@@ -52,7 +52,7 @@
 
           <hr />
 
-          <div class="immich-scrollbar max-h-[75vh] min-h-[300px] gap-4 overflow-y-auto p-4 pb-4">
+          <div class="immich-scrollbar max-h-[75vh] min-h-75 gap-4 overflow-y-auto p-4 pb-4">
             <div class="flex w-full flex-col gap-2">
               <p class="text-red-500">{error?.message} ({error?.code})</p>
               {#if error?.stack}
@@ -91,7 +91,7 @@
             </a>
 
             <a
-              href="https://immich.app/docs/guides/docker-help"
+              href="https://docs.immich.app/guides/docker-help"
               target="_blank"
               rel="noopener noreferrer"
               class="flex grow basis-0 justify-center p-4"

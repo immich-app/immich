@@ -28,7 +28,7 @@ Before enabling OAuth in Immich, a new client application needs to be configured
 2. Configure Redirect URIs/Origins
 
    The **Sign-in redirect URIs** should include:
-   - `app.immich:///oauth-callback` - for logging in with OAuth from the [Mobile App](/docs/features/mobile-app.mdx)
+   - `app.immich:///oauth-callback` - for logging in with OAuth from the [Mobile App](/features/mobile-app.mdx)
    - `http://DOMAIN:PORT/auth/login` - for logging in with OAuth from the Web Client
    - `http://DOMAIN:PORT/user-settings` - for manually linking OAuth in the Web Client
 
@@ -98,7 +98,7 @@ The redirect URI for the mobile app is `app.immich:///oauth-callback`, which is 
 2. Whitelist the new endpoint as a valid redirect URI with your provider.
 3. Specify the new endpoint as the `Mobile Redirect URI Override`, in the OAuth settings.
 
-With these steps in place, you should be able to use OAuth from the [Mobile App](/docs/features/mobile-app.mdx) without a custom scheme redirect URI.
+With these steps in place, you should be able to use OAuth from the [Mobile App](/features/mobile-app.mdx) without a custom scheme redirect URI.
 
 :::info
 Immich has a route (`/api/oauth/mobile-redirect`) that is already configured to forward requests to `app.immich:///oauth-callback`, and can be used for step 1.

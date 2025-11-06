@@ -1,10 +1,6 @@
 <script lang="ts">
   import { page } from '$app/stores';
   import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
-  import {
-    NotificationType,
-    notificationController,
-  } from '$lib/components/shared-components/notification/notification';
   import { AppRoute } from '$lib/constants';
   import UserCreateModal from '$lib/modals/UserCreateModal.svelte';
   import UserDeleteConfirmModal from '$lib/modals/UserDeleteConfirmModal.svelte';
@@ -15,7 +11,7 @@
   import { websocketEvents } from '$lib/stores/websocket';
   import { getByteUnitString } from '$lib/utils/byte-units';
   import { UserStatus, searchUsersAdmin, type UserAdminResponseDto } from '@immich/sdk';
-  import { Button, HStack, Icon, IconButton, Text, modalManager } from '@immich/ui';
+  import { Button, HStack, Icon, IconButton, Text, modalManager, toastManager } from '@immich/ui';
   import { mdiDeleteRestore, mdiEyeOutline, mdiInfinity, mdiPlusBoxOutline, mdiTrashCanOutline } from '@mdi/js';
   import { DateTime } from 'luxon';
   import { onMount } from 'svelte';
@@ -38,10 +34,7 @@
     const user = allUsers.find(({ id }) => id === userId);
     if (user) {
       allUsers = allUsers.filter((user) => user.id !== userId);
-      notificationController.show({
-        type: NotificationType.Info,
-        message: $t('admin.user_successfully_removed', { values: { email: user.email } }),
-      });
+      toastManager.success($t('admin.user_successfully_removed', { values: { email: user.email } }));
     }
   };
 
@@ -84,7 +77,7 @@
     </HStack>
   {/snippet}
   <section id="setting-content" class="flex place-content-center sm:mx-4">
-    <section class="w-full pb-28 lg:w-[850px]">
+    <section class="w-full pb-28 lg:w-212.5">
       <table class="my-5 w-full text-start">
         <thead
           class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray"
@@ -102,7 +95,7 @@
           {#if allUsers}
             {#each allUsers as immichUser (immichUser.id)}
               <tr
-                class="flex h-[80px] overflow-hidden w-full place-items-center text-center dark:text-immich-dark-fg {immichUser.deletedAt
+                class="flex h-20 overflow-hidden w-full place-items-center text-center dark:text-immich-dark-fg {immichUser.deletedAt
                   ? 'bg-red-300 dark:bg-red-900'
                   : 'even:bg-subtle/20 odd:bg-subtle/80'}"
               >

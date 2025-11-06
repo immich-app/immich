@@ -380,7 +380,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
     state = state.copyWith(backgroundBackup: isEnabled);
     if (isEnabled != Store.get(StoreKey.backgroundBackup, !isEnabled)) {
-      Store.put(StoreKey.backgroundBackup, isEnabled);
+      await Store.put(StoreKey.backgroundBackup, isEnabled);
     }
 
     if (state.backupProgress != BackUpProgressEnum.inBackground) {
@@ -474,7 +474,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       );
       await notifyBackgroundServiceCanRun();
     } else {
-      openAppSettings();
+      await openAppSettings();
     }
   }
 
@@ -533,10 +533,10 @@ class BackupNotifier extends StateNotifier<BackUpState> {
         progressInFileSpeedUpdateTime: DateTime.now(),
         progressInFileSpeedUpdateSentBytes: 0,
       );
-      _updatePersistentAlbumsSelection();
+      await _updatePersistentAlbumsSelection();
     }
 
-    updateDiskInfo();
+    await updateDiskInfo();
   }
 
   void _onUploadProgress(int sent, int total) {

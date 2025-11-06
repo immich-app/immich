@@ -2,6 +2,7 @@
 import { Insertable, Kysely } from 'kysely';
 import { DateTime } from 'luxon';
 import { createHash, randomBytes } from 'node:crypto';
+import { Stats } from 'node:fs';
 import { Writable } from 'node:stream';
 import { AssetFace } from 'src/database';
 import { AuthDto, LoginResponseDto } from 'src/dtos/auth.dto';
@@ -27,23 +28,31 @@ import { EmailRepository } from 'src/repositories/email.repository';
 import { EventRepository } from 'src/repositories/event.repository';
 import { JobRepository } from 'src/repositories/job.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
+import { MachineLearningRepository } from 'src/repositories/machine-learning.repository';
+import { MapRepository } from 'src/repositories/map.repository';
 import { MemoryRepository } from 'src/repositories/memory.repository';
+import { MetadataRepository } from 'src/repositories/metadata.repository';
 import { NotificationRepository } from 'src/repositories/notification.repository';
+import { OcrRepository } from 'src/repositories/ocr.repository';
 import { PartnerRepository } from 'src/repositories/partner.repository';
 import { PersonRepository } from 'src/repositories/person.repository';
 import { SearchRepository } from 'src/repositories/search.repository';
 import { SessionRepository } from 'src/repositories/session.repository';
+import { SharedLinkAssetRepository } from 'src/repositories/shared-link-asset.repository';
 import { SharedLinkRepository } from 'src/repositories/shared-link.repository';
 import { StackRepository } from 'src/repositories/stack.repository';
 import { StorageRepository } from 'src/repositories/storage.repository';
 import { SyncCheckpointRepository } from 'src/repositories/sync-checkpoint.repository';
 import { SyncRepository } from 'src/repositories/sync.repository';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
+import { TagRepository } from 'src/repositories/tag.repository';
+import { TelemetryRepository } from 'src/repositories/telemetry.repository';
 import { UserRepository } from 'src/repositories/user.repository';
 import { VersionHistoryRepository } from 'src/repositories/version-history.repository';
 import { DB } from 'src/schema';
 import { AlbumTable } from 'src/schema/tables/album.table';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
+import { AssetFileTable } from 'src/schema/tables/asset-file.table';
 import { AssetJobStatusTable } from 'src/schema/tables/asset-job-status.table';
 import { AssetTable } from 'src/schema/tables/asset.table';
 import { FaceSearchTable } from 'src/schema/tables/face-search.table';
@@ -51,9 +60,14 @@ import { MemoryTable } from 'src/schema/tables/memory.table';
 import { PersonTable } from 'src/schema/tables/person.table';
 import { SessionTable } from 'src/schema/tables/session.table';
 import { StackTable } from 'src/schema/tables/stack.table';
+import { TagAssetTable } from 'src/schema/tables/tag-asset.table';
+import { TagTable } from 'src/schema/tables/tag.table';
 import { UserTable } from 'src/schema/tables/user.table';
 import { BASE_SERVICE_DEPENDENCIES, BaseService } from 'src/services/base.service';
+import { MetadataService } from 'src/services/metadata.service';
 import { SyncService } from 'src/services/sync.service';
+import { mockEnvData } from 'test/repositories/config.repository.mock';
+import { newTelemetryRepositoryMock } from 'test/repositories/telemetry.repository.mock';
 import { factory, newDate, newEmbedding, newUuid } from 'test/small.factory';
 import { automock, wait } from 'test/utils';
 import { Mocked } from 'vitest';
@@ -163,6 +177,11 @@ export class MediumTestContext<S extends BaseService = BaseService> {
     return { asset, result };
   }
 
+  async newAssetFile(dto: Insertable<AssetFileTable>) {
+    const result = await this.get(AssetRepository).upsertFile(dto);
+    return { result };
+  }
+
   async newAssetFace(dto: Partial<Insertable<AssetFace>> & { assetId: string }) {
     const assetFace = mediumFactory.assetFaceInsert(dto);
     const result = await this.get(PersonRepository).createAssetFace(assetFace);
@@ -198,7 +217,7 @@ export class MediumTestContext<S extends BaseService = BaseService> {
 
   async newAlbumUser(dto: { albumId: string; userId: string; role?: AlbumUserRole }) {
     const { albumId, userId, role = AlbumUserRole.Editor } = dto;
-    const result = await this.get(AlbumUserRepository).create({ albumsId: albumId, usersId: userId, role });
+    const result = await this.get(AlbumUserRepository).create({ albumId, userId, role });
     return { albumUser: { albumId, userId, role }, result };
   }
 
@@ -237,6 +256,18 @@ export class MediumTestContext<S extends BaseService = BaseService> {
       session,
       user,
     };
+  }
+
+  async newTagAsset(tagBulkAssets: { tagIds: string[]; assetIds: string[] }) {
+    const tagsAssets: Insertable<TagAssetTable>[] = [];
+    for (const tagId of tagBulkAssets.tagIds) {
+      for (const assetId of tagBulkAssets.assetIds) {
+        tagsAssets.push({ tagId, assetId });
+      }
+    }
+
+    const result = await this.get(TagRepository).upsertAssetIds(tagsAssets);
+    return { tagsAssets, result };
   }
 }
 
@@ -279,6 +310,63 @@ export class SyncTestContext extends MediumTestContext<SyncService> {
   }
 }
 
+const mockDate = new Date('2024-06-01T12:00:00.000Z');
+const mockStats = {
+  mtime: mockDate,
+  atime: mockDate,
+  ctime: mockDate,
+  birthtime: mockDate,
+  atimeMs: 0,
+  mtimeMs: 0,
+  ctimeMs: 0,
+  birthtimeMs: 0,
+};
+
+export class ExifTestContext extends MediumTestContext<MetadataService> {
+  constructor(database: Kysely<DB>) {
+    super(MetadataService, {
+      database,
+      real: [AssetRepository, AssetJobRepository, MetadataRepository, SystemMetadataRepository, TagRepository],
+      mock: [ConfigRepository, EventRepository, LoggingRepository, MapRepository, StorageRepository],
+    });
+
+    this.getMock(ConfigRepository).getEnv.mockReturnValue(mockEnvData({}));
+    this.getMock(EventRepository).emit.mockResolvedValue();
+    this.getMock(MapRepository).reverseGeocode.mockResolvedValue({ country: null, state: null, city: null });
+    this.getMock(StorageRepository).stat.mockResolvedValue(mockStats as Stats);
+  }
+
+  getMockStats() {
+    return mockStats;
+  }
+
+  getGps(assetId: string) {
+    return this.database
+      .selectFrom('asset_exif')
+      .select(['latitude', 'longitude'])
+      .where('assetId', '=', assetId)
+      .executeTakeFirstOrThrow();
+  }
+
+  getTags(assetId: string) {
+    return this.database
+      .selectFrom('tag')
+      .innerJoin('tag_asset', 'tag.id', 'tag_asset.tagId')
+      .where('tag_asset.assetId', '=', assetId)
+      .selectAll()
+      .execute();
+  }
+
+  getDates(assetId: string) {
+    return this.database
+      .selectFrom('asset')
+      .innerJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
+      .where('id', '=', assetId)
+      .select(['asset.fileCreatedAt', 'asset.localDateTime', 'asset_exif.dateTimeOriginal', 'asset_exif.timeZone'])
+      .executeTakeFirstOrThrow();
+  }
+}
+
 const newRealRepository = <T>(key: ClassConstructor<T>, db: Kysely<DB>): T => {
   switch (key) {
     case AccessRepository:
@@ -289,11 +377,13 @@ const newRealRepository = <T>(key: ClassConstructor<T>, db: Kysely<DB>): T => {
     case AssetJobRepository:
     case MemoryRepository:
     case NotificationRepository:
+    case OcrRepository:
     case PartnerRepository:
     case PersonRepository:
     case SearchRepository:
     case SessionRepository:
     case SharedLinkRepository:
+    case SharedLinkAssetRepository:
     case StackRepository:
     case SyncRepository:
     case SyncCheckpointRepository:
@@ -316,6 +406,18 @@ const newRealRepository = <T>(key: ClassConstructor<T>, db: Kysely<DB>): T => {
       return new key(LoggingRepository.create());
     }
 
+    case MetadataRepository: {
+      return new key(LoggingRepository.create());
+    }
+
+    case StorageRepository: {
+      return new key(LoggingRepository.create());
+    }
+
+    case TagRepository: {
+      return new key(db, LoggingRepository.create());
+    }
+
     case LoggingRepository as unknown as ClassConstructor<LoggingRepository>: {
       return new key() as unknown as T;
     }
@@ -336,6 +438,7 @@ const newMockRepository = <T>(key: ClassConstructor<T>) => {
     case CryptoRepository:
     case MemoryRepository:
     case NotificationRepository:
+    case OcrRepository:
     case PartnerRepository:
     case PersonRepository:
     case SessionRepository:
@@ -343,8 +446,17 @@ const newMockRepository = <T>(key: ClassConstructor<T>) => {
     case SyncCheckpointRepository:
     case SystemMetadataRepository:
     case UserRepository:
-    case VersionHistoryRepository: {
+    case VersionHistoryRepository:
+    case TagRepository: {
       return automock(key);
+    }
+
+    case MapRepository: {
+      return automock(MapRepository, { args: [undefined, undefined, { setContext: () => {} }] });
+    }
+
+    case TelemetryRepository: {
+      return newTelemetryRepositoryMock();
     }
 
     case DatabaseRepository: {
@@ -377,6 +489,10 @@ const newMockRepository = <T>(key: ClassConstructor<T>) => {
     case LoggingRepository as unknown as ClassConstructor<T>: {
       const configMock = { getEnv: () => ({ noColor: false }) };
       return automock(LoggingRepository, { args: [undefined, configMock], strict: false });
+    }
+
+    case MachineLearningRepository: {
+      return automock(MachineLearningRepository, { args: [{ setContext: () => {} }] });
     }
 
     case StorageRepository: {
@@ -561,6 +677,23 @@ const memoryInsert = (memory: Partial<Insertable<MemoryTable>> = {}) => {
   return { ...defaults, ...memory, id };
 };
 
+const tagInsert = (tag: Partial<Insertable<TagTable>>) => {
+  const id = tag.id || newUuid();
+
+  const defaults: Insertable<TagTable> = {
+    id,
+    userId: '',
+    value: '',
+    createdAt: newDate(),
+    updatedAt: newDate(),
+    color: '',
+    parentId: null,
+    updateId: newUuid(),
+  };
+
+  return { ...defaults, ...tag, id };
+};
+
 class CustomWritable extends Writable {
   private data = '';
 
@@ -583,7 +716,7 @@ const syncStream = () => {
 };
 
 const loginDetails = () => {
-  return { isSecure: false, clientIp: '', deviceType: '', deviceOS: '' };
+  return { isSecure: false, clientIp: '', deviceType: '', deviceOS: '', appVersion: null };
 };
 
 const loginResponse = (): LoginResponseDto => {
@@ -613,4 +746,5 @@ export const mediumFactory = {
   memoryInsert,
   loginDetails,
   loginResponse,
+  tagInsert,
 };

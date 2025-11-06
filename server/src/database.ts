@@ -238,6 +238,7 @@ export type Session = {
   expiresAt: Date | null;
   deviceOS: string;
   deviceType: string;
+  appVersion: string | null;
   pinExpiresAt: Date | null;
   isPendingSyncReset: boolean;
 };
@@ -308,7 +309,7 @@ export const columns = {
   assetFiles: ['asset_file.id', 'asset_file.path', 'asset_file.type'],
   authUser: ['user.id', 'user.name', 'user.email', 'user.isAdmin', 'user.quotaUsageInBytes', 'user.quotaSizeInBytes'],
   authApiKey: ['api_key.id', 'api_key.permissions'],
-  authSession: ['session.id', 'session.updatedAt', 'session.pinExpiresAt'],
+  authSession: ['session.id', 'session.updatedAt', 'session.pinExpiresAt', 'session.appVersion'],
   authSharedLink: [
     'shared_link.id',
     'shared_link.userId',
@@ -355,7 +356,7 @@ export const columns = {
     'asset.stackId',
     'asset.libraryId',
   ],
-  syncAlbumUser: ['album_user.albumsId as albumId', 'album_user.usersId as userId', 'album_user.role'],
+  syncAlbumUser: ['album_user.albumId as albumId', 'album_user.userId as userId', 'album_user.role'],
   syncStack: ['stack.id', 'stack.createdAt', 'stack.updatedAt', 'stack.primaryAssetId', 'stack.ownerId'],
   syncUser: ['id', 'name', 'email', 'avatarColor', 'deletedAt', 'updateId', 'profileImagePath', 'profileChangedAt'],
   stack: ['stack.id', 'stack.primaryAssetId', 'ownerId'],

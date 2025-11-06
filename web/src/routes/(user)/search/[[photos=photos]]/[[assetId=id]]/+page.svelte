@@ -21,7 +21,6 @@
   import TagAction from '$lib/components/timeline/actions/TagAction.svelte';
   import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import { AppRoute, QueryParameter } from '$lib/constants';
-  import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset, Viewport } from '$lib/managers/timeline-manager/types';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
@@ -79,8 +78,6 @@
     });
   });
 
-  let timelineManager = new TimelineManager();
-
   const onEscape = () => {
     if ($showAssetViewer) {
       return;
@@ -129,7 +126,6 @@
   };
 
   const handleSetVisibility = (assetIds: string[]) => {
-    timelineManager.removeAssets(assetIds);
     assetInteraction.clearMultiselect();
     onAssetDelete(assetIds);
   };
@@ -209,6 +205,7 @@
       originalFileName: $t('file_name'),
       description: $t('description'),
       queryAssetId: $t('query_asset_id'),
+      ocr: $t('ocr'),
     };
     return keyMap[key] || key;
   }

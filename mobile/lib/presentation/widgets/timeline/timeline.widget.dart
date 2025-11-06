@@ -36,10 +36,11 @@ class Timeline extends StatelessWidget {
     this.showStorageIndicator = false,
     this.withStack = false,
     this.appBar = const ImmichSliverAppBar(floating: true, pinned: false, snap: false),
-    this.bottomSheet = const GeneralBottomSheet(minChildSize: 0.18),
+    this.bottomSheet = const GeneralBottomSheet(minChildSize: 0.23),
     this.groupBy,
     this.withScrubber = true,
     this.snapToMonth = true,
+    this.initialScrollOffset,
   });
 
   final Widget? topSliverWidget;
@@ -51,6 +52,7 @@ class Timeline extends StatelessWidget {
   final GroupAssetsBy? groupBy;
   final bool withScrubber;
   final bool snapToMonth;
+  final double? initialScrollOffset;
 
   @override
   Widget build(BuildContext context) {
@@ -78,6 +80,7 @@ class Timeline extends StatelessWidget {
             bottomSheet: bottomSheet,
             withScrubber: withScrubber,
             snapToMonth: snapToMonth,
+            initialScrollOffset: initialScrollOffset,
           ),
         ),
       ),
@@ -93,6 +96,7 @@ class _SliverTimeline extends ConsumerStatefulWidget {
     this.bottomSheet,
     this.withScrubber = true,
     this.snapToMonth = true,
+    this.initialScrollOffset,
   });
 
   final Widget? topSliverWidget;
@@ -101,13 +105,14 @@ class _SliverTimeline extends ConsumerStatefulWidget {
   final Widget? bottomSheet;
   final bool withScrubber;
   final bool snapToMonth;
+  final double? initialScrollOffset;
 
   @override
   ConsumerState createState() => _SliverTimelineState();
 }
 
 class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
-  final _scrollController = ScrollController();
+  late final ScrollController _scrollController;
   StreamSubscription? _eventSubscription;
 
   // Drag selection state
@@ -119,10 +124,15 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
   int _perRow = 4;
   double _scaleFactor = 3.0;
   double _baseScaleFactor = 3.0;
+  int? _scaleRestoreAssetIndex;
 
   @override
   void initState() {
     super.initState();
+    _scrollController = ScrollController(
+      initialScrollOffset: widget.initialScrollOffset ?? 0.0,
+      onAttach: _restoreScalePosition,
+    );
     _eventSubscription = EventStream.shared.listen(_onEvent);
 
     final currentTilesPerRow = ref.read(settingsProvider).get(Setting.tilesPerRow);
@@ -152,6 +162,28 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
 
   void _onMultiSelectionToggled(_, bool isEnabled) {
     EventStream.shared.emit(MultiSelectToggleEvent(isEnabled));
+  }
+
+  void _restoreScalePosition(_) {
+    if (_scaleRestoreAssetIndex == null) return;
+
+    final asyncSegments = ref.read(timelineSegmentProvider);
+    asyncSegments.whenData((segments) {
+      final targetSegment = segments.lastWhereOrNull((segment) => segment.firstAssetIndex <= _scaleRestoreAssetIndex!);
+      if (targetSegment != null) {
+        final assetIndexInSegment = _scaleRestoreAssetIndex! - targetSegment.firstAssetIndex;
+        final newColumnCount = ref.read(timelineArgsProvider).columnCount;
+        final rowIndexInSegment = (assetIndexInSegment / newColumnCount).floor();
+        final targetRowIndex = targetSegment.firstIndex + 1 + rowIndexInSegment;
+        final targetOffset = targetSegment.indexToLayoutOffset(targetRowIndex);
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            _scrollController.jumpTo(targetOffset.clamp(0.0, _scrollController.position.maxScrollExtent));
+          }
+        });
+      }
+    });
+    _scaleRestoreAssetIndex = null;
   }
 
   @override
@@ -188,11 +220,16 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
       if (fallbackSegment != null) {
         // Scroll to the segment with a small offset to show the header
         final targetOffset = fallbackSegment.startOffset - 50;
-        _scrollController.animateTo(
-          targetOffset.clamp(0.0, _scrollController.position.maxScrollExtent),
-          duration: const Duration(milliseconds: 500),
-          curve: Curves.easeInOut,
-        );
+        ref.read(timelineStateProvider.notifier).setScrubbing(true);
+        _scrollController
+            .animateTo(
+              targetOffset.clamp(0.0, _scrollController.position.maxScrollExtent),
+              duration: const Duration(milliseconds: 500),
+              curve: Curves.easeInOut,
+            )
+            .whenComplete(() => ref.read(timelineStateProvider.notifier).setScrubbing(false));
+      } else {
+        ref.read(timelineStateProvider.notifier).setScrubbing(false);
       }
     });
   }
@@ -345,9 +382,28 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
                       final newPerRow = 7 - newScaleFactor.toInt();
 
                       if (newPerRow != _perRow) {
+                        final currentOffset = _scrollController.offset.clamp(
+                          0.0,
+                          _scrollController.position.maxScrollExtent,
+                        );
+                        final segment = segments.findByOffset(currentOffset) ?? segments.lastOrNull;
+                        int? targetAssetIndex;
+                        if (segment != null) {
+                          final rowIndex = segment.getMinChildIndexForScrollOffset(currentOffset);
+                          if (rowIndex > segment.firstIndex) {
+                            final rowIndexInSegment = rowIndex - (segment.firstIndex + 1);
+                            final assetsPerRow = ref.read(timelineArgsProvider).columnCount;
+                            final assetIndexInSegment = rowIndexInSegment * assetsPerRow;
+                            targetAssetIndex = segment.firstAssetIndex + assetIndexInSegment;
+                          } else {
+                            targetAssetIndex = segment.firstAssetIndex;
+                          }
+                        }
+
                         setState(() {
                           _scaleFactor = newScaleFactor;
                           _perRow = newPerRow;
+                          _scaleRestoreAssetIndex = targetAssetIndex;
                         });
 
                         ref.read(settingsProvider.notifier).set(Setting.tilesPerRow, _perRow);

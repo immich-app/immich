@@ -773,6 +773,54 @@
         "description": "This endpoint is an admin-only route, and requires the `adminUser.delete` permission."
       }
     },
+    "/admin/users/{id}/sessions": {
+      "get": {
+        "operationId": "getUserSessionsAdmin",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SessionResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Users (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-permission": "adminSession.read",
+        "description": "This endpoint is an admin-only route, and requires the `adminSession.read` permission."
+      }
+    },
     "/admin/users/{id}/statistics": {
       "get": {
         "operationId": "getUserStatisticsAdmin",
@@ -1898,6 +1946,43 @@
         "x-immich-permission": "asset.upload"
       }
     },
+    "/assets/copy": {
+      "put": {
+        "operationId": "copyAsset",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssetCopyDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Assets"
+        ],
+        "x-immich-permission": "asset.copy",
+        "description": "This endpoint requires the `asset.copy` permission."
+      }
+    },
     "/assets/device/{deviceId}": {
       "get": {
         "description": "Get all asset of a device that are in the database, ID only.",
@@ -2419,6 +2504,53 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AssetMetadataResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Assets"
+        ],
+        "x-immich-permission": "asset.read",
+        "description": "This endpoint requires the `asset.read` permission."
+      }
+    },
+    "/assets/{id}/ocr": {
+      "get": {
+        "operationId": "getAssetOcr",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AssetOcrResponseDto"
+                  },
+                  "type": "array"
                 }
               }
             },
@@ -5937,6 +6069,14 @@
             }
           },
           {
+            "name": "ocr",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "personIds",
             "required": false,
             "in": "query",
@@ -6408,6 +6548,14 @@
             "description": "This property was added in v111.0.0",
             "schema": {
               "type": "boolean"
+            }
+          },
+          {
+            "name": "lensModel",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
             }
           },
           {
@@ -9876,7 +10024,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.142.1",
+    "version": "2.2.3",
     "contact": {}
   },
   "tags": [],
@@ -10111,6 +10259,12 @@
           "assets": {
             "items": {
               "$ref": "#/components/schemas/AssetResponseDto"
+            },
+            "type": "array"
+          },
+          "contributorCounts": {
+            "items": {
+              "$ref": "#/components/schemas/ContributorCountResponseDto"
             },
             "type": "array"
           },
@@ -10364,6 +10518,9 @@
           "notifications": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
+          "ocr": {
+            "$ref": "#/components/schemas/JobStatusDto"
+          },
           "search": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
@@ -10393,6 +10550,7 @@
           "metadataExtraction",
           "migration",
           "notifications",
+          "ocr",
           "search",
           "sidecar",
           "smartSearch",
@@ -10545,6 +10703,43 @@
         "required": [
           "action",
           "id"
+        ],
+        "type": "object"
+      },
+      "AssetCopyDto": {
+        "properties": {
+          "albums": {
+            "default": true,
+            "type": "boolean"
+          },
+          "favorite": {
+            "default": true,
+            "type": "boolean"
+          },
+          "sharedLinks": {
+            "default": true,
+            "type": "boolean"
+          },
+          "sidecar": {
+            "default": true,
+            "type": "boolean"
+          },
+          "sourceId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "stack": {
+            "default": true,
+            "type": "boolean"
+          },
+          "targetId": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "sourceId",
+          "targetId"
         ],
         "type": "object"
       },
@@ -11061,6 +11256,88 @@
         ],
         "type": "object"
       },
+      "AssetOcrResponseDto": {
+        "properties": {
+          "assetId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "boxScore": {
+            "description": "Confidence score for text detection box",
+            "format": "double",
+            "type": "number"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "text": {
+            "description": "Recognized text",
+            "type": "string"
+          },
+          "textScore": {
+            "description": "Confidence score for text recognition",
+            "format": "double",
+            "type": "number"
+          },
+          "x1": {
+            "description": "Normalized x coordinate of box corner 1 (0-1)",
+            "format": "double",
+            "type": "number"
+          },
+          "x2": {
+            "description": "Normalized x coordinate of box corner 2 (0-1)",
+            "format": "double",
+            "type": "number"
+          },
+          "x3": {
+            "description": "Normalized x coordinate of box corner 3 (0-1)",
+            "format": "double",
+            "type": "number"
+          },
+          "x4": {
+            "description": "Normalized x coordinate of box corner 4 (0-1)",
+            "format": "double",
+            "type": "number"
+          },
+          "y1": {
+            "description": "Normalized y coordinate of box corner 1 (0-1)",
+            "format": "double",
+            "type": "number"
+          },
+          "y2": {
+            "description": "Normalized y coordinate of box corner 2 (0-1)",
+            "format": "double",
+            "type": "number"
+          },
+          "y3": {
+            "description": "Normalized y coordinate of box corner 3 (0-1)",
+            "format": "double",
+            "type": "number"
+          },
+          "y4": {
+            "description": "Normalized y coordinate of box corner 4 (0-1)",
+            "format": "double",
+            "type": "number"
+          }
+        },
+        "required": [
+          "assetId",
+          "boxScore",
+          "id",
+          "text",
+          "textScore",
+          "x1",
+          "x2",
+          "x3",
+          "x4",
+          "y1",
+          "y2",
+          "y3",
+          "y4"
+        ],
+        "type": "object"
+      },
       "AssetOrder": {
         "enum": [
           "asc",
@@ -11433,6 +11710,10 @@
       },
       "ChangePasswordDto": {
         "properties": {
+          "invalidateSessions": {
+            "default": false,
+            "type": "boolean"
+          },
           "newPassword": {
             "example": "password",
             "minLength": 8,
@@ -11488,6 +11769,21 @@
           "p3"
         ],
         "type": "string"
+      },
+      "ContributorCountResponseDto": {
+        "properties": {
+          "assetCount": {
+            "type": "integer"
+          },
+          "userId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "assetCount",
+          "userId"
+        ],
+        "type": "object"
       },
       "CreateAlbumDto": {
         "properties": {
@@ -12045,7 +12341,8 @@
           "sidecar",
           "library",
           "notifications",
-          "backupDatabase"
+          "backupDatabase",
+          "ocr"
         ],
         "type": "string"
       },
@@ -12615,6 +12912,9 @@
             "nullable": true,
             "type": "string"
           },
+          "ocr": {
+            "type": "string"
+          },
           "order": {
             "allOf": [
               {
@@ -12838,6 +13138,8 @@
           "JobFailed",
           "BackupFailed",
           "SystemMessage",
+          "AlbumInvite",
+          "AlbumUpdate",
           "Custom"
         ],
         "type": "string"
@@ -12923,6 +13225,40 @@
           "client_secret_basic"
         ],
         "type": "string"
+      },
+      "OcrConfig": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "maxResolution": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "minDetectionScore": {
+            "format": "double",
+            "maximum": 1,
+            "minimum": 0.1,
+            "type": "number"
+          },
+          "minRecognitionScore": {
+            "format": "double",
+            "maximum": 1,
+            "minimum": 0.1,
+            "type": "number"
+          },
+          "modelName": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "enabled",
+          "maxResolution",
+          "minDetectionScore",
+          "minRecognitionScore",
+          "modelName"
+        ],
+        "type": "object"
       },
       "OnThisDayDto": {
         "properties": {
@@ -13154,6 +13490,7 @@
           "asset.download",
           "asset.upload",
           "asset.replace",
+          "asset.copy",
           "album.create",
           "album.read",
           "album.update",
@@ -13262,6 +13599,7 @@
           "adminUser.read",
           "adminUser.update",
           "adminUser.delete",
+          "adminSession.read",
           "adminAuth.unlinkAll"
         ],
         "type": "string"
@@ -13593,6 +13931,9 @@
             "nullable": true,
             "type": "string"
           },
+          "ocr": {
+            "type": "string"
+          },
           "personIds": {
             "items": {
               "format": "uuid",
@@ -13887,7 +14228,8 @@
           "state",
           "city",
           "camera-make",
-          "camera-model"
+          "camera-model",
+          "camera-lens-model"
         ],
         "type": "string"
       },
@@ -14060,6 +14402,9 @@
           "oauthAutoLaunch": {
             "type": "boolean"
           },
+          "ocr": {
+            "type": "boolean"
+          },
           "passwordLogin": {
             "type": "boolean"
           },
@@ -14088,6 +14433,7 @@
           "map",
           "oauth",
           "oauthAutoLaunch",
+          "ocr",
           "passwordLogin",
           "reverseGeocoding",
           "search",
@@ -14298,6 +14644,10 @@
       },
       "SessionCreateResponseDto": {
         "properties": {
+          "appVersion": {
+            "nullable": true,
+            "type": "string"
+          },
           "createdAt": {
             "type": "string"
           },
@@ -14327,6 +14677,7 @@
           }
         },
         "required": [
+          "appVersion",
           "createdAt",
           "current",
           "deviceOS",
@@ -14340,6 +14691,10 @@
       },
       "SessionResponseDto": {
         "properties": {
+          "appVersion": {
+            "nullable": true,
+            "type": "string"
+          },
           "createdAt": {
             "type": "string"
           },
@@ -14366,6 +14721,7 @@
           }
         },
         "required": [
+          "appVersion",
           "createdAt",
           "current",
           "deviceOS",
@@ -14685,6 +15041,9 @@
             "nullable": true,
             "type": "string"
           },
+          "ocr": {
+            "type": "string"
+          },
           "page": {
             "minimum": 1,
             "type": "number"
@@ -14888,6 +15247,9 @@
           },
           "model": {
             "nullable": true,
+            "type": "string"
+          },
+          "ocr": {
             "type": "string"
           },
           "personIds": {
@@ -16339,6 +16701,9 @@
           "notifications": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
+          "ocr": {
+            "$ref": "#/components/schemas/JobSettingsDto"
+          },
           "search": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
@@ -16362,6 +16727,7 @@
           "metadataExtraction",
           "migration",
           "notifications",
+          "ocr",
           "search",
           "sidecar",
           "smartSearch",
@@ -16447,6 +16813,9 @@
           "facialRecognition": {
             "$ref": "#/components/schemas/FacialRecognitionConfig"
           },
+          "ocr": {
+            "$ref": "#/components/schemas/OcrConfig"
+          },
           "urls": {
             "format": "uri",
             "items": {
@@ -16463,6 +16832,7 @@
           "duplicateDetection",
           "enabled",
           "facialRecognition",
+          "ocr",
           "urls"
         ],
         "type": "object"
@@ -16721,6 +17091,9 @@
             "minimum": 0,
             "type": "number"
           },
+          "secure": {
+            "type": "boolean"
+          },
           "username": {
             "type": "string"
           }
@@ -16730,6 +17103,7 @@
           "ignoreCert",
           "password",
           "port",
+          "secure",
           "username"
         ],
         "type": "object"

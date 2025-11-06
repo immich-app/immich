@@ -11,7 +11,7 @@
   let { options }: Props = $props();
 
   const getLuxonExample = (format: string) => {
-    return DateTime.fromISO('2022-09-04T20:03:05.250Z', { locale: $locale }).toFormat(format);
+    return DateTime.fromISO('2022-02-15T20:03:05.250Z', { locale: $locale }).toFormat(format);
   };
 </script>
 
@@ -23,9 +23,9 @@
 <div class="mt-2 rounded-lg bg-gray-200 p-4 text-xs dark:bg-gray-700 dark:text-immich-dark-fg">
   <div class="mb-2 text-gray-600 dark:text-immich-dark-fg">
     <p>{$t('admin.storage_template_date_time_description')}</p>
-    <p>{$t('admin.storage_template_date_time_sample', { values: { date: '2022-09-04T20:03:05.250' } })}</p>
+    <p>{$t('admin.storage_template_date_time_sample', { values: { date: '2022-02-03T20:03:05.250' } })}</p>
   </div>
-  <div class="flex gap-[40px]">
+  <div class="flex gap-10">
     <div>
       <p class="uppercase font-medium text-primary">{$t('year')}</p>
       <ul>

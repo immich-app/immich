@@ -80,7 +80,7 @@ if [ "$CURRENT_SERVER" != "$NEXT_SERVER" ]; then
 
   jq --arg version "$NEXT_SERVER" '.version = $version' e2e/package.json > e2e/package.json.tmp && mv e2e/package.json.tmp e2e/package.json
   pnpm install --frozen-lockfile --prefix e2e
-  uvx --from=toml-cli toml set --toml-path=pyproject.toml project.version "$SERVER_PUMP"
+  uvx --from=toml-cli toml set --toml-path=machine-learning/pyproject.toml project.version "$NEXT_SERVER"
 fi
 
 if [ "$CURRENT_MOBILE" != "$NEXT_MOBILE" ]; then
@@ -88,7 +88,6 @@ if [ "$CURRENT_MOBILE" != "$NEXT_MOBILE" ]; then
 fi
 
 sed -i "s/\"android\.injected\.version\.name\" => \"$CURRENT_SERVER\",/\"android\.injected\.version\.name\" => \"$NEXT_SERVER\",/" mobile/android/fastlane/Fastfile
-sed -i "s/version_number: \"$CURRENT_SERVER\"$/version_number: \"$NEXT_SERVER\"/" mobile/ios/fastlane/Fastfile
 sed -i "s/\"android\.injected\.version\.code\" => $CURRENT_MOBILE,/\"android\.injected\.version\.code\" => $NEXT_MOBILE,/" mobile/android/fastlane/Fastfile
 sed -i "s/^version: $CURRENT_SERVER+$CURRENT_MOBILE$/version: $NEXT_SERVER+$NEXT_MOBILE/" mobile/pubspec.yaml
 

@@ -160,9 +160,9 @@ select
           "tag"."parentId"
         from
           "tag"
-          inner join "tag_asset" on "tag"."id" = "tag_asset"."tagsId"
+          inner join "tag_asset" on "tag"."id" = "tag_asset"."tagId"
         where
-          "asset"."id" = "tag_asset"."assetsId"
+          "asset"."id" = "tag_asset"."assetId"
       ) as agg
   ) as "tags",
   to_json("asset_exif") as "exifInfo"
@@ -296,7 +296,8 @@ with
       "asset"."duration",
       "asset"."id",
       "asset"."visibility",
-      "asset"."isFavorite",
+      asset."isFavorite"
+      and asset."ownerId" = $1 as "isFavorite",
       asset.type = 'IMAGE' as "isImage",
       asset."deletedAt" is not null as "isTrashed",
       "asset"."livePhotoVideoId",
@@ -341,14 +342,14 @@ with
         where
           "stacked"."stackId" = "asset"."stackId"
           and "stacked"."deletedAt" is null
-          and "stacked"."visibility" = $1
+          and "stacked"."visibility" = $2
         group by
           "stacked"."stackId"
       ) as "stacked_assets" on true
     where
       "asset"."deletedAt" is null
       and "asset"."visibility" in ('archive', 'timeline')
-      and date_trunc('MONTH', "localDateTime" AT TIME ZONE 'UTC') AT TIME ZONE 'UTC' = $2
+      and date_trunc('MONTH', "localDateTime" AT TIME ZONE 'UTC') AT TIME ZONE 'UTC' = $3
       and not exists (
         select
         from

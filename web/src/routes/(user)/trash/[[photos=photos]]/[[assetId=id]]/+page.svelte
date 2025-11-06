@@ -3,10 +3,6 @@
   import empty3Url from '$lib/assets/empty-3.svg';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
-  import {
-    notificationController,
-    NotificationType,
-  } from '$lib/components/shared-components/notification/notification';
   import DeleteAssets from '$lib/components/timeline/actions/DeleteAssetsAction.svelte';
   import RestoreAssets from '$lib/components/timeline/actions/RestoreAction.svelte';
   import SelectAllAssets from '$lib/components/timeline/actions/SelectAllAction.svelte';
@@ -19,9 +15,8 @@
   import { handlePromiseError } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { emptyTrash, restoreTrash } from '@immich/sdk';
-  import { Button, HStack, modalManager, Text } from '@immich/ui';
+  import { Button, HStack, modalManager, Text, toastManager } from '@immich/ui';
   import { mdiDeleteForeverOutline, mdiHistory } from '@mdi/js';
-  import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
 
@@ -35,9 +30,8 @@
     handlePromiseError(goto(AppRoute.PHOTOS));
   }
 
-  const timelineManager = new TimelineManager();
-  void timelineManager.updateOptions({ isTrashed: true });
-  onDestroy(() => timelineManager.destroy());
+  let timelineManager = $state<TimelineManager>() as TimelineManager;
+  const options = { isTrashed: true };
 
   const assetInteraction = new AssetInteraction();
 
@@ -49,11 +43,7 @@
 
     try {
       const { count } = await emptyTrash();
-
-      notificationController.show({
-        message: $t('assets_permanently_deleted_count', { values: { count } }),
-        type: NotificationType.Info,
-      });
+      toastManager.success($t('assets_permanently_deleted_count', { values: { count } }));
     } catch (error) {
       handleError(error, $t('errors.unable_to_empty_trash'));
     }
@@ -66,10 +56,7 @@
     }
     try {
       const { count } = await restoreTrash();
-      notificationController.show({
-        message: $t('assets_restored_count', { values: { count } }),
-        type: NotificationType.Info,
-      });
+      toastManager.success($t('assets_restored_count', { values: { count } }));
 
       // reset asset grid (TODO fix in asset store that it should reset when it is empty)
       // note - this is still a problem, but updateOptions with the same value will not
@@ -116,7 +103,7 @@
       </HStack>
     {/snippet}
 
-    <Timeline enableRouting={true} {timelineManager} {assetInteraction} onEscape={handleEscape}>
+    <Timeline enableRouting={true} bind:timelineManager {options} {assetInteraction} onEscape={handleEscape}>
       <p class="font-medium text-gray-500/60 dark:text-gray-300/60 p-4">
         {$t('trashed_items_will_be_permanently_deleted_after', { values: { days: $serverConfig.trashDays } })}
       </p>

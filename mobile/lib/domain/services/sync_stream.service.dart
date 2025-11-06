@@ -23,7 +23,7 @@ class SyncStreamService {
 
   bool get isCancelled => _cancelChecker?.call() ?? false;
 
-  Future<void> sync() async {
+  Future<bool> sync() async {
     _logger.info("Remote sync request for user");
     // Start the sync stream and handle events
     bool shouldReset = false;
@@ -32,6 +32,7 @@ class SyncStreamService {
       _logger.info("Resetting sync state as requested by server");
       await _syncApiRepository.streamChanges(_handleEvents);
     }
+    return true;
   }
 
   Future<void> _handleEvents(List<SyncEvent> events, Function() abort, Function() reset) async {
@@ -129,9 +130,10 @@ class SyncStreamService {
       // to acknowledge that the client has processed all the backfill events
       case SyncEntityType.syncAckV1:
         return;
-      // No-op. SyncCompleteV1 is used to signal the completion of the sync process
+      // SyncCompleteV1 is used to signal the completion of the sync process. Cleanup stale assets and signal completion
       case SyncEntityType.syncCompleteV1:
         return;
+      // return _syncStreamRepository.pruneAssets();
       // Request to reset the client state. Clear everything related to remote entities
       case SyncEntityType.syncResetV1:
         return _syncStreamRepository.reset();

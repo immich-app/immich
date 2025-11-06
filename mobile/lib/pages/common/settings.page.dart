@@ -141,14 +141,9 @@ class SettingsSubPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     context.locale;
-    return SafeArea(
-      bottom: true,
-      top: false,
-      right: true,
-      child: Scaffold(
-        appBar: AppBar(centerTitle: false, title: Text(section.title).tr()),
-        body: section.widget,
-      ),
+    return Scaffold(
+      appBar: AppBar(centerTitle: false, title: Text(section.title).tr()),
+      body: section.widget,
     );
   }
 }

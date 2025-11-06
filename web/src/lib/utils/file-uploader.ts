@@ -52,7 +52,7 @@ export const openFileUploadDialog = async (options: FileUploadParam = {}) => {
   const { albumId, multiple = true, assetId } = options;
   const extensions = uploadManager.getExtensions();
 
-  return new Promise<(string | undefined)[]>((resolve, reject) => {
+  return new Promise<string[]>((resolve, reject) => {
     try {
       const fileSelector = document.createElement('input');
 

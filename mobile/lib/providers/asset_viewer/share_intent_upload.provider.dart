@@ -104,7 +104,7 @@ class ShareIntentUploadStateNotifier extends StateNotifier<List<ShareIntentAttac
   Future<void> upload(File file) async {
     final task = await _buildUploadTask(hash(file.path).toString(), file);
 
-    _uploadService.enqueueTasks([task]);
+    await _uploadService.enqueueTasks([task]);
   }
 
   Future<UploadTask> _buildUploadTask(String id, File file, {Map<String, String>? fields}) async {
