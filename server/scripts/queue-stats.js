@@ -44,7 +44,6 @@ const QUEUE_NAMES = [
   'facialRecognition',
   'smartSearch',
   'duplicateDetection',
-  'backgroundTask',
   'storageTemplateMigration',
   'migration',
   'search',

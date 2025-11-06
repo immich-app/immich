@@ -189,7 +189,6 @@ while true; do
   vlog "Queue totals: waiting=$waiting_total active=$active_total running=$(micro_running && echo yes || echo no)"
 
   if [[ $waiting_total -ge $WAITING_THRESHOLD ]]; then
-    node ./server/scripts/queue-stats.js
     start_micro
     if [[ -n "${KEEP_ALIVE_URL:-}" ]]; then
       keep_alive || vlog "Keep-alive check failed"
