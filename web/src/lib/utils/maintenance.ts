@@ -5,13 +5,12 @@ import { get } from 'svelte/store';
 
 export function maintenanceCreateUrl(url: URL) {
   const target = new URL(AppRoute.MAINTENANCE, url.origin);
-  target.searchParams.set('continue', url.href);
+  target.searchParams.set('continue', url.pathname + url.search);
   return target.href;
 }
 
-export function maintenanceReturnUrl(searchParams: URLSearchParams, origin: string) {
-  const target = new URL(searchParams.get('continue') ?? '/', origin);
-  return new URL(target.pathname + target.search + target.hash, origin).href;
+export function maintenanceReturnUrl(searchParams: URLSearchParams) {
+  return searchParams.get('continue') ?? '/';
 }
 
 export const loadMaintenanceAuth = async () => {
@@ -36,8 +35,6 @@ export const loadMaintenanceAuth = async () => {
               token,
             },
           });
-
-          console.info(auth);
 
           maintenanceAuth$.set(auth);
         } catch (error) {

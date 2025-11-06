@@ -1,28 +1,9 @@
 import overpass from '$lib/assets/fonts/overpass/Overpass.ttf?url';
 import overpassMono from '$lib/assets/fonts/overpass/OverpassMono.ttf?url';
-import { maintenanceCreateUrl, maintenanceReturnUrl } from '$lib/utils/maintenance';
-import { redirect, type Handle } from '@sveltejs/kit';
+import type { Handle } from '@sveltejs/kit';
 
+// only used during the build to replace the variables from app.html
 export const handle = (async ({ event, resolve }) => {
-  // try to check maintenance status and redirect accordingly ahead of time
-  const redirectToMaintenance = await fetch(process.env.IMMICH_SERVER_URL + 'api/server/config')
-    .then((response) => response.json())
-    .then(({ maintenanceMode }: { maintenanceMode: boolean }) => maintenanceMode)
-    .catch((_) => false)
-    .then((maintenanceMode) =>
-      maintenanceMode === event.url.pathname.startsWith('/maintenance') ? undefined : maintenanceMode,
-    );
-
-  if (typeof redirectToMaintenance === 'boolean') {
-    throw redirect(
-      302,
-      redirectToMaintenance
-        ? maintenanceCreateUrl(event.url)
-        : maintenanceReturnUrl(event.url.searchParams, event.url.origin),
-    );
-  }
-
-  // replace the variables from app.html
   return resolve(event, {
     transformPageChunk: ({ html }) => {
       return html.replace('%app.font%', overpass).replace('%app.monofont%', overpassMono);

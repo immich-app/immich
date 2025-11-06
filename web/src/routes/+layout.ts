@@ -1,4 +1,6 @@
+import { goto } from '$app/navigation';
 import { AppRoute } from '$lib/constants';
+import { maintenanceCreateUrl, maintenanceReturnUrl } from '$lib/utils/maintenance';
 import { init } from '$lib/utils/server';
 import type { LayoutLoad } from './$types';
 
@@ -10,7 +12,7 @@ export const load = (async ({ fetch, url }) => {
   try {
     const { maintenanceMode } = await init(fetch);
     if (maintenanceMode !== url.pathname.startsWith(AppRoute.MAINTENANCE)) {
-      location.href = maintenanceMode ? AppRoute.MAINTENANCE : '/';
+      goto(maintenanceMode ? maintenanceCreateUrl(url) : maintenanceReturnUrl(url.searchParams));
     }
   } catch (initError) {
     error = initError;

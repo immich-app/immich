@@ -12693,9 +12693,6 @@
             "type": "string"
           }
         },
-        "required": [
-          "token"
-        ],
         "type": "object"
       },
       "MaintenanceModeResponseDto": {

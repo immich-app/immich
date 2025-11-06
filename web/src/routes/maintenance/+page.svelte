@@ -3,7 +3,7 @@
   import FormatMessage from '$lib/elements/FormatMessage.svelte';
   import { maintenanceAuth } from '$lib/stores/maintenance.store';
   import { endMaintenance } from '@immich/sdk';
-  import { Button, Heading } from '@immich/ui';
+  import { Button, Heading, Link } from '@immich/ui';
   import { t } from 'svelte-i18n';
 
   // strip token from URL after load
@@ -21,11 +21,9 @@
       <FormatMessage key="maintenance_description">
         {#snippet children({ tag, message })}
           {#if tag === 'link'}
-            <span class="font-medium underline">
-              <a href="https://docs.immich.app/administration/maintenance-mode" target="_blank" rel="noopener">
-                {message}
-              </a>
-            </span>
+            <Link href="https://docs.immich.app/administration/maintenance-mode">
+              {message}
+            </Link>
           {/if}
         {/snippet}
       </FormatMessage>

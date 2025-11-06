@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { afterNavigate, beforeNavigate, goto } from '$app/navigation';
+  import { afterNavigate, beforeNavigate } from '$app/navigation';
   import { page } from '$app/state';
   import { shortcut } from '$lib/actions/shortcut';
   import DownloadPanel from '$lib/components/asset-viewer/download-panel.svelte';
@@ -20,7 +20,6 @@
     type ReleaseEvent,
   } from '$lib/stores/websocket';
   import { copyToClipboard, getReleaseType } from '$lib/utils';
-  import { maintenanceCreateUrl, maintenanceReturnUrl } from '$lib/utils/maintenance';
   import { isAssetViewerRoute } from '$lib/utils/navigation';
   import type { ServerVersionResponseDto } from '@immich/sdk';
   import { modalManager, setTranslations } from '@immich/ui';
@@ -123,12 +122,7 @@
         if (!connected) {
           waiting = true;
         } else if (connected && waiting) {
-          void goto(
-            isRestarting.isMaintenanceMode
-              ? maintenanceCreateUrl(new URL(location.href))
-              : maintenanceReturnUrl(new URLSearchParams(location.search), location.origin),
-            { invalidateAll: true },
-          );
+          location.reload();
         }
       });
     }
