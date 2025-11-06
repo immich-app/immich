@@ -46,17 +46,17 @@ class AddActionButton extends ConsumerWidget {
     final List<PopupMenuEntry<_AddMenu>> items = [
       PopupMenuItem(
         value: _AddMenu.album,
-        child: ListTile(leading: Icon(Icons.photo_album_outlined), title: Text("album".tr())),
+        child: ListTile(leading: const Icon(Icons.photo_album_outlined), title: Text("album".tr())),
       ),
       if (asset.hasRemote && isOwner)
         PopupMenuItem(
           value: _AddMenu.archive,
-          child: ListTile(leading: Icon(Icons.archive_outlined), title: Text("archive".tr())),
+          child: ListTile(leading: const Icon(Icons.archive_outlined), title: Text("archive".tr())),
         ),
       if (asset.hasRemote && isOwner)
         PopupMenuItem(
           value: _AddMenu.lockedFolder,
-          child: ListTile(leading: Icon(Icons.lock_outline), title: Text("locked_folder".tr())),
+          child: ListTile(leading: const Icon(Icons.lock_outline), title: Text("locked_folder".tr())),
         ),
     ];
 
