@@ -134,7 +134,7 @@
     in:scale={{ duration: 200, start: 0.8 }}
     out:scale={{ duration: 200, start: 0.8 }}
   >
-    <Icon path={mdiTune} size="24" ariaHidden />
+    <Icon icon={mdiTune} size="24" ariaHidden />
   </button>
 {/if}
 
