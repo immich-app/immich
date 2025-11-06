@@ -1,9 +1,13 @@
 import { Injectable } from '@nestjs/common';
+import { createAdapter } from '@socket.io/redis-adapter';
+import Redis from 'ioredis';
 import { SignJWT } from 'jose';
 import { randomBytes } from 'node:crypto';
+import { Server as SocketIO } from 'socket.io';
 import { MaintenanceAuthDto } from 'src/dtos/maintenance.dto';
 import { ExitCode, SystemMetadataKey } from 'src/enum';
-import { EventRepository } from 'src/repositories/event.repository';
+import { ConfigRepository } from 'src/repositories/config.repository';
+import { AppRestartEvent, EventRepository } from 'src/repositories/event.repository';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
 import { MaintenanceModeState } from 'src/types';
 
@@ -12,24 +16,44 @@ export class MaintenanceRepository {
   private closeFn?: () => Promise<void>;
 
   constructor(
+    private configRepository: ConfigRepository,
     private eventRepository: EventRepository,
     private systemMetadataRepository: SystemMetadataRepository,
   ) {}
 
-  getMaintenanceMode(): Promise<MaintenanceModeState> {
+  getMaintenanceMode(): Promise<MaintenanceModeState<Uint8Array>> {
     return this.systemMetadataRepository
       .get(SystemMetadataKey.MaintenanceMode)
-      .then((state) => state ?? { isMaintenanceMode: false });
+      .then((state) =>
+        state?.isMaintenanceMode
+          ? { isMaintenanceMode: true, secret: new TextEncoder().encode(state.secret) }
+          : { isMaintenanceMode: false as const },
+      );
   }
 
-  async setMaintenanceMode(state: MaintenanceModeState) {
+  async setMaintenanceMode(state: MaintenanceModeState<string>) {
     await this.systemMetadataRepository.set(SystemMetadataKey.MaintenanceMode, state);
     await this.eventRepository.emit('AppRestart', state);
   }
 
+  sendOneShotAppRestart(state: AppRestartEvent) {
+    const server = new SocketIO();
+    const pubClient = new Redis(this.configRepository.getEnv().redis);
+    const subClient = pubClient.duplicate();
+    server.adapter(createAdapter(pubClient, subClient));
+
+    // => corresponds to notification.service.ts#onAppRestart
+    server.emit('on_server_restart', state, () => {
+      server.serverSideEmit('AppRestart', state, () => {
+        pubClient.disconnect();
+        subClient.disconnect();
+      });
+    });
+  }
+
   async enterMaintenanceMode(): Promise<{ secret: Uint8Array }> {
     const secret = randomBytes(64).toString('hex');
-    const state: MaintenanceModeState = { isMaintenanceMode: true, secret };
+    const state: MaintenanceModeState<string> = { isMaintenanceMode: true, secret };
 
     await this.systemMetadataRepository.set(SystemMetadataKey.MaintenanceMode, state);
     await this.eventRepository.emit('AppRestart', state);
@@ -52,7 +76,7 @@ export class MaintenanceRepository {
         throw new Error('Not in maintenance mode.');
       }
 
-      return new TextEncoder().encode(state.secret);
+      return state.secret;
     });
 
     return await MaintenanceRepository.createLoginUrl(baseUrl, auth, secret!);

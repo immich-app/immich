@@ -1,29 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { createAdapter } from '@socket.io/redis-adapter';
-import Redis from 'ioredis';
 import { isAbsolute } from 'node:path';
-import { Server } from 'socket.io';
 import { SALT_ROUNDS } from 'src/constants';
 import { MaintenanceAuthDto } from 'src/dtos/maintenance.dto';
 import { UserAdminResponseDto, mapUserAdmin } from 'src/dtos/user.dto';
-import { type ArgsOf } from 'src/repositories/event.repository';
-import { type ServerEvents } from 'src/repositories/websocket.repository';
 import { BaseService } from 'src/services/base.service';
 import { getExternalDomain } from 'src/utils/misc';
 
 @Injectable()
 export class CliService extends BaseService {
-  private oneShotServerSend<T extends ServerEvents>(event: T, ...args: ArgsOf<T>): void {
-    const server = new Server();
-    const pubClient = new Redis(this.configRepository.getEnv().redis);
-    const subClient = pubClient.duplicate();
-    server.adapter(createAdapter(pubClient, subClient));
-    server.serverSideEmit(event, ...args, () => {
-      pubClient.disconnect();
-      subClient.disconnect();
-    });
-  }
-
   async listUsers(): Promise<UserAdminResponseDto[]> {
     const users = await this.userRepository.getList({ withDeleted: true });
     return users.map((user) => mapUserAdmin(user));
@@ -66,7 +50,7 @@ export class CliService extends BaseService {
 
     const state = { isMaintenanceMode: false as const };
     await this.maintenanceRepository.setMaintenanceMode(state);
-    this.oneShotServerSend('AppRestart', state);
+    this.maintenanceRepository.sendOneShotAppRestart(state);
 
     return {
       alreadyDisabled: false,
@@ -83,17 +67,15 @@ export class CliService extends BaseService {
 
     const state = await this.maintenanceRepository.getMaintenanceMode();
     if (state.isMaintenanceMode) {
-      const secret = new TextEncoder().encode(state.secret);
-
       return {
-        authUrl: await this.maintenanceRepository.createLoginUrl(baseUrl, payload, secret),
+        authUrl: await this.maintenanceRepository.createLoginUrl(baseUrl, payload, state.secret),
         alreadyEnabled: true,
       };
     }
 
     const { secret } = await this.maintenanceRepository.enterMaintenanceMode();
 
-    this.oneShotServerSend('AppRestart', {
+    this.maintenanceRepository.sendOneShotAppRestart({
       isMaintenanceMode: true,
     });
 

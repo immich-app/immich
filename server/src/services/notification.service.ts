@@ -116,7 +116,10 @@ export class NotificationService extends BaseService {
 
   @OnEvent({ name: 'AppRestart' })
   onAppRestart(state: ArgOf<'AppRestart'>) {
-    this.websocketRepository.clientBroadcast('on_server_restart', state);
+    this.websocketRepository.clientBroadcast('on_server_restart', {
+      isMaintenanceMode: state.isMaintenanceMode,
+    });
+
     this.websocketRepository.serverSend('AppRestart', state);
   }
 

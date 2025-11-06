@@ -49,7 +49,7 @@ export class MaintenanceWorkerRepository implements OnGatewayConnection, OnGatew
   }
 
   async exitMaintenanceMode(): Promise<void> {
-    const state: MaintenanceModeState = { isMaintenanceMode: false as const };
+    const state: MaintenanceModeState<string> = { isMaintenanceMode: false as const };
     await this.systemMetadataRepository.set(SystemMetadataKey.MaintenanceMode, state);
     this.restartApp(state);
   }
