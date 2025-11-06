@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { afterNavigate, beforeNavigate } from '$app/navigation';
+  import { afterNavigate, beforeNavigate, goto } from '$app/navigation';
   import { page } from '$app/state';
   import { shortcut } from '$lib/actions/shortcut';
   import DownloadPanel from '$lib/components/asset-viewer/download-panel.svelte';
@@ -123,9 +123,12 @@
         if (!connected) {
           waiting = true;
         } else if (connected && waiting) {
-          location.href = isRestarting.isMaintenanceMode
-            ? maintenanceCreateUrl(new URL(location.href))
-            : maintenanceReturnUrl(new URLSearchParams(location.search), location.origin);
+          void goto(
+            isRestarting.isMaintenanceMode
+              ? maintenanceCreateUrl(new URL(location.href))
+              : maintenanceReturnUrl(new URLSearchParams(location.search), location.origin),
+            { invalidateAll: true },
+          );
         }
       });
     }
