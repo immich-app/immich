@@ -173,7 +173,7 @@ Redis (Sentinel) URL example JSON before encoding:
 | `MACHINE_LEARNING_RKNN`                                     | Enable RKNN hardware acceleration if supported                                                            |             `True`              | machine learning |
 | `MACHINE_LEARNING_RKNN_THREADS`                             | How many threads of RKNN runtime should be spinned up while inferencing.                                  |               `1`               | machine learning |
 | `MACHINE_LEARNING_MODEL_ARENA`                              | Pre-allocates CPU memory to avoid memory fragmentation                                                    |              true               | machine learning |
-| `MACHINE_LEARNING_OPENVINO_PRECISION`                       | If set to FP16, increases speed and reduces precision (one of [`FP16`, `FP32`], applies only to OpenVINO) |             `FP32`              | machine learning |
+| `MACHINE_LEARNING_OPENVINO_PRECISION`                       | If set to FP16, uses half-precision floating-point operations for faster inference with reduced accuracy (one of [`FP16`, `FP32`], applies only to OpenVINO) |             `FP32`              | machine learning |
 
 \*1: It is recommended to begin with this parameter when changing the concurrency levels of the machine learning service and then tune the other ones.
 
