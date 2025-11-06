@@ -8,6 +8,7 @@ class BaseBottomSheet extends ConsumerStatefulWidget {
   final List<Widget> actions;
   final DraggableScrollableController? controller;
   final List<Widget>? slivers;
+  final Widget? child;
   final Widget? footer;
   final double initialChildSize;
   final double minChildSize;
@@ -19,8 +20,9 @@ class BaseBottomSheet extends ConsumerStatefulWidget {
 
   const BaseBottomSheet({
     super.key,
-    required this.actions,
+    this.actions = const [],
     this.slivers,
+    this.child,
     this.footer,
     this.controller,
     this.initialChildSize = 0.35,
@@ -77,32 +79,37 @@ class _BaseDraggableScrollableSheetState extends ConsumerState<BaseBottomSheet> 
           margin: const EdgeInsets.symmetric(horizontal: 0),
           child: Column(
             children: [
-              Expanded(
-                child: CustomScrollView(
-                  controller: scrollController,
-                  slivers: [
-                    const SliverPersistentHeader(delegate: _DragHandleDelegate(), pinned: true),
-                    if (widget.actions.isNotEmpty)
-                      SliverToBoxAdapter(
-                        child: Column(
-                          children: [
-                            SizedBox(
-                              height: 115,
-                              child: ListView(
-                                shrinkWrap: true,
-                                scrollDirection: Axis.horizontal,
-                                children: widget.actions,
+              if (widget.child != null) ...[
+                const _DragHandle(),
+                Expanded(child: widget.child!),
+              ] else ...[
+                Expanded(
+                  child: CustomScrollView(
+                    controller: scrollController,
+                    slivers: [
+                      const SliverPersistentHeader(delegate: _DragHandleDelegate(), pinned: true),
+                      if (widget.actions.isNotEmpty)
+                        SliverToBoxAdapter(
+                          child: Column(
+                            children: [
+                              SizedBox(
+                                height: 115,
+                                child: ListView(
+                                  shrinkWrap: true,
+                                  scrollDirection: Axis.horizontal,
+                                  children: widget.actions,
+                                ),
                               ),
-                            ),
-                            const Divider(indent: 16, endIndent: 16),
-                            const SizedBox(height: 16),
-                          ],
+                              const Divider(indent: 16, endIndent: 16),
+                              const SizedBox(height: 16),
+                            ],
+                          ),
                         ),
-                      ),
-                    if (widget.slivers != null) ...widget.slivers!,
-                  ],
+                      if (widget.slivers != null) ...widget.slivers!,
+                    ],
+                  ),
                 ),
-              ),
+              ],
               if (widget.footer != null) widget.footer!,
             ],
           ),

@@ -431,7 +431,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
 
     if (event is ViewerOpenBottomSheetEvent) {
       final extent = _kBottomSheetMinimumExtent + 0.3;
-      _openBottomSheet(scaffoldContext!, extent: extent, activitiesMode: event.activitiesMode);
+      _openBottomSheet(scaffoldContext!, extent: extent, activitiesMode: event.activitiesMode, activityId: event.activityId);
       final offset = _getVerticalOffsetForBottomSheet(extent);
       viewController?.position = Offset(0, -offset);
       return;
@@ -473,7 +473,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     });
   }
 
-  void _openBottomSheet(BuildContext ctx, {double extent = _kBottomSheetMinimumExtent, bool activitiesMode = false}) {
+  void _openBottomSheet(BuildContext ctx, {double extent = _kBottomSheetMinimumExtent, bool activitiesMode = false, String? activityId}) {
     ref.read(assetViewerProvider.notifier).setBottomSheet(true);
     initialScale = viewController?.scale;
     // viewController?.updateMultiple(scale: (viewController?.scale ?? 1.0) + 0.01);
@@ -488,7 +488,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
         return NotificationListener<Notification>(
           onNotification: _onNotification,
           child: activitiesMode
-              ? ActivitiesBottomSheet(controller: bottomSheetController, initialChildSize: extent)
+              ? ActivitiesBottomSheet(controller: bottomSheetController, initialChildSize: extent, activityId: activityId)
               : AssetDetailBottomSheet(controller: bottomSheetController, initialChildSize: extent),
         );
       },

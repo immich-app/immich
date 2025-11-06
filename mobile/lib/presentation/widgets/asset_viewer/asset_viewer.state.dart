@@ -5,7 +5,8 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 class ViewerOpenBottomSheetEvent extends Event {
   final bool activitiesMode;
-  const ViewerOpenBottomSheetEvent({this.activitiesMode = false});
+  final String? activityId;
+  const ViewerOpenBottomSheetEvent({this.activitiesMode = false, this.activityId});
 }
 
 class ViewerReloadAssetEvent extends Event {

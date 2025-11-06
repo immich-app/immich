@@ -1,9 +1,12 @@
+import 'dart:async';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/datetime_extensions.dart';
 import 'package:immich_mobile/models/activities/activity.model.dart';
+import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
 import 'package:immich_mobile/providers/activity.provider.dart';
 import 'package:immich_mobile/providers/activity_service.provider.dart';
 import 'package:immich_mobile/providers/image/immich_remote_thumbnail_provider.dart';
@@ -32,10 +35,19 @@ class CommentBubble extends ConsumerWidget {
       albumActivityProvider(album.id, isAssetActivity ? activity.assetId : null).notifier,
     );
 
-    Future<void> openAssetViewer() async {
+    Future<void> openAssetViewer({bool openBottomSheet = false}) async {
       final activityService = ref.read(activityServiceProvider);
       final route = await activityService.buildAssetViewerRoute(activity.assetId!, ref);
-      if (route != null) await context.pushRoute(route);
+
+      if (route != null) {
+        unawaited(context.pushRoute(route));
+
+        if (openBottomSheet) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            EventStream.shared.emit(ViewerOpenBottomSheetEvent(activitiesMode: true, activityId: activity.id));
+          });
+        }
+      }
     }
 
     // avatar (hidden for own messages)
@@ -52,7 +64,7 @@ class CommentBubble extends ConsumerWidget {
         child: Stack(
           children: [
             GestureDetector(
-              onTap: openAssetViewer,
+              onTap: () => openAssetViewer(openBottomSheet: false),
               child: ClipRRect(
                 borderRadius: const BorderRadius.all(Radius.circular(10)),
                 child: Image(
@@ -89,7 +101,7 @@ class CommentBubble extends ConsumerWidget {
     // Comment bubble, comment-only
     Widget? commentBubble;
     if (activity.comment != null && activity.comment!.isNotEmpty) {
-      commentBubble = ConstrainedBox(
+      final bubbleContent = ConstrainedBox(
         constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.5),
         child: Container(
           padding: const EdgeInsets.all(10),
@@ -100,6 +112,29 @@ class CommentBubble extends ConsumerWidget {
           ),
         ),
       );
+
+      // Wrap commentBubble with Row to include reply button
+      if (showThumbnail) {
+        final replyButton = IconButton(
+          onPressed: () => openAssetViewer(openBottomSheet: true),
+          icon: const Icon(Icons.reply_outlined),
+          iconSize: 20,
+          constraints: const BoxConstraints(minWidth: 14, minHeight: 14),
+          padding: EdgeInsets.zero,
+          visualDensity: VisualDensity.compact,
+        );
+
+        commentBubble = Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (isOwn) ...[replyButton, const SizedBox(width: 1)],
+            bubbleContent,
+            if (!isOwn) ...[const SizedBox(width: 1), replyButton],
+          ],
+        );
+      } else {
+        commentBubble = bubbleContent;
+      }
     }
 
     // Combined content widgets
