@@ -14,7 +14,7 @@ async function bootstrap() {
   const maintenanceWorkerRepository = app.get(MaintenanceWorkerRepository);
   maintenanceWorkerRepository.setCloseFn(() => app.close());
 
-  configureExpress(app, {
+  void configureExpress(app, {
     permitSwaggerWrite: false,
     ssr: false,
   });

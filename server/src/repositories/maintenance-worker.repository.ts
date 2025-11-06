@@ -120,13 +120,15 @@ export class MaintenanceWorkerRepository implements OnGatewayConnection, OnGatew
   }
 
   private exitApp() {
-    this.closeFn?.().then(() => process.exit(ExitCode.AppRestart));
+    /* eslint-disable unicorn/no-process-exit */
+    void this.closeFn?.().then(() => process.exit(ExitCode.AppRestart));
 
     // in exceptional circumstance, the application may hang
     setTimeout(() => process.exit(ExitCode.AppRestart), 5000);
+    /* eslint-enable unicorn/no-process-exit */
   }
 
-  async handleConnection(client: Socket) {
+  handleConnection(client: Socket) {
     this.logger.log(`Websocket Connect:    ${client.id}`);
   }
 

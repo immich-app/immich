@@ -14,7 +14,7 @@ export class MaintenanceController {
   constructor(private service: MaintenanceService) {}
 
   @Post('login')
-  async maintenanceLogin(@Body() _dto: MaintenanceLoginDto): Promise<MaintenanceAuthDto> {
+  maintenanceLogin(@Body() _dto: MaintenanceLoginDto): MaintenanceAuthDto {
     throw new BadRequestException('Not in maintenance mode');
   }
 

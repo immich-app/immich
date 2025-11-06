@@ -13,7 +13,7 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(ApiModule, { bufferLogs: true });
   app.get(MaintenanceRepository).setCloseFn(() => app.close());
 
-  configureExpress(app);
+  void configureExpress(app);
 }
 
 bootstrap().catch((error) => {

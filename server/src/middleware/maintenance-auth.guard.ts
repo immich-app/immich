@@ -42,7 +42,10 @@ export class MaintenanceAuthGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const targets = [context.getHandler()];
-    const options = this.reflector.getAllAndOverride<{} | undefined>(MetadataKey.AuthRoute, targets);
+    const options = this.reflector.getAllAndOverride<{ _emptyObject: never } | undefined>(
+      MetadataKey.AuthRoute,
+      targets,
+    );
     if (!options) {
       return true;
     }
