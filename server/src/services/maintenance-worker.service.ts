@@ -131,14 +131,14 @@ export class MaintenanceWorkerService {
         return next();
       }
 
-      const shareKey = request.url.match(/^\/share\/(.+)$/);
-      const shareSlug = request.url.match(/^\/s\/(.+)$/);
+      const maintenancePath = '/maintenance';
+      if (!request.url.startsWith(maintenancePath)) {
+        const params = new URLSearchParams();
+        params.set('continue', request.path);
+        return res.redirect(`${maintenancePath}?${params}`);
+      }
 
-      res
-        .status(shareKey || shareSlug ? 500 : 200)
-        .type('text/html')
-        .header('Cache-Control', 'no-store')
-        .send(index);
+      res.status(200).type('text/html').header('Cache-Control', 'no-store').send(index);
     };
   }
 }
