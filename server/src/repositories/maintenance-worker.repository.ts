@@ -7,7 +7,7 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { AppRestartEvent, ArgsOf } from 'src/repositories/event.repository';
+import { AppRestartEvent } from 'src/repositories/event.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { MaintenanceRepository } from 'src/repositories/maintenance.repository';
 
@@ -41,9 +41,12 @@ export class MaintenanceWorkerRepository implements OnGatewayConnection, OnGatew
   }
 
   restartApp(state: AppRestartEvent) {
-    this.clientBroadcast('AppRestartV1', state);
-    this.serverSend('AppRestart', state);
-    this.maintenanceRepository.exitApp();
+    // => corresponds to notification.service.ts#onAppRestart
+    this.websocketServer?.emit('AppRestartV1', state, () => {
+      this.websocketServer!.serverSideEmit('AppRestart', state, () => {
+        this.maintenanceRepository.exitApp();
+      });
+    });
   }
 
   handleConnection(client: Socket) {
@@ -52,15 +55,5 @@ export class MaintenanceWorkerRepository implements OnGatewayConnection, OnGatew
 
   async handleDisconnect(client: Socket) {
     this.logger.log(`Websocket Disconnect: ${client.id}`);
-    await client.leave(client.nsp.name);
-  }
-
-  clientBroadcast<T extends keyof ClientEventMap>(event: T, ...data: ClientEventMap[T]) {
-    this.websocketServer?.emit(event, ...data);
-  }
-
-  serverSend<T extends ServerEvents>(event: T, ...args: ArgsOf<T>): void {
-    this.logger.debug(`Server event: ${event} (send)`);
-    this.websocketServer?.serverSideEmit(event, ...args);
   }
 }
