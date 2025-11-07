@@ -49,6 +49,7 @@
               src={getAssetThumbnailUrl({ id: item.id, size: AssetMediaSize.Thumbnail })}
               alt={city}
               class="object-cover w-39 h-39"
+              loading="lazy"
             />
           </div>
           <span
