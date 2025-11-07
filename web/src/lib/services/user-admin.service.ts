@@ -34,8 +34,10 @@ import { get } from 'svelte/store';
 export const getUserAdminsActions = ($t: MessageFormatter) => {
   const Create: ActionItem = {
     title: $t('create_user'),
+    type: $t('command'),
     icon: mdiPlusBoxOutline,
     onAction: () => void modalManager.show(UserCreateModal, {}),
+    shortcuts: { shift: true, key: 'n' },
   };
 
   return { Create };
@@ -45,34 +47,39 @@ export const getUserAdminActions = ($t: MessageFormatter, user: UserAdminRespons
   const Update: ActionItem = {
     icon: mdiPencilOutline,
     title: $t('edit'),
-    onAction: () => void modalManager.show(UserEditModal, { user }),
+    onAction: () => modalManager.show(UserEditModal, { user }),
   };
 
   const Delete: ActionItem = {
     icon: mdiTrashCanOutline,
     title: $t('delete'),
+    type: $t('command'),
     color: 'danger',
     $if: () => get(authUser).id !== user.id && !user.deletedAt,
-    onAction: () => void modalManager.show(UserDeleteConfirmModal, { user }),
+    onAction: () => modalManager.show(UserDeleteConfirmModal, { user }),
+    shortcuts: { key: 'Backspace' },
   };
 
   const Restore: ActionItem = {
     icon: mdiDeleteRestore,
     title: $t('restore'),
+    type: $t('command'),
     color: 'primary',
     $if: () => !!user.deletedAt && user.status === UserStatus.Deleted,
-    onAction: () => void modalManager.show(UserRestoreConfirmModal, { user }),
+    onAction: () => modalManager.show(UserRestoreConfirmModal, { user }),
   };
 
   const ResetPassword: ActionItem = {
     icon: mdiLockReset,
     title: $t('reset_password'),
+    type: $t('command'),
     $if: () => get(authUser).id !== user.id,
     onAction: () => void handleResetPasswordUserAdmin(user),
   };
 
   const ResetPinCode: ActionItem = {
     icon: mdiLockSmart,
+    type: $t('command'),
     title: $t('reset_pin_code'),
     onAction: () => void handleResetPinCodeUserAdmin(user),
   };

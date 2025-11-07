@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { afterNavigate, beforeNavigate } from '$app/navigation';
+  import { afterNavigate, beforeNavigate, goto } from '$app/navigation';
   import { page } from '$app/state';
   import { shortcut } from '$lib/actions/shortcut';
   import DownloadPanel from '$lib/components/asset-viewer/download-panel.svelte';
@@ -11,6 +11,7 @@
   import { AppRoute } from '$lib/constants';
   import { eventManager } from '$lib/managers/event-manager.svelte';
   import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
+  import { themeManager } from '$lib/managers/theme-manager.svelte';
   import ServerRestartingModal from '$lib/modals/ServerRestartingModal.svelte';
   import VersionAnnouncementModal from '$lib/modals/VersionAnnouncementModal.svelte';
   import { user } from '$lib/stores/user.store';
@@ -19,7 +20,8 @@
   import { copyToClipboard, getReleaseType, semverToName } from '$lib/utils';
   import { maintenanceShouldRedirect } from '$lib/utils/maintenance';
   import { isAssetViewerRoute } from '$lib/utils/navigation';
-  import { modalManager, setTranslations } from '@immich/ui';
+  import { CommandPaletteContext, modalManager, setTranslations, type ActionItem } from '@immich/ui';
+  import { mdiAccountMultipleOutline, mdiBookshelf, mdiCog, mdiServer, mdiSync, mdiThemeLightDark } from '@mdi/js';
   import { onMount, type Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
   import '../app.css';
@@ -120,9 +122,57 @@
       });
     }
   });
+
+  const userCommands: ActionItem[] = [
+    {
+      title: $t('theme'),
+      description: $t('toggle_theme_description'),
+      type: $t('command'),
+      icon: mdiThemeLightDark,
+      onAction: () => themeManager.toggleTheme(),
+      shortcuts: { shift: true, key: 't' },
+      isGlobal: true,
+    },
+  ];
+
+  const adminCommands: ActionItem[] = [
+    {
+      title: $t('users'),
+      description: $t('admin.users_page_description'),
+      icon: mdiAccountMultipleOutline,
+      onAction: () => goto(AppRoute.ADMIN_USERS),
+    },
+    {
+      title: $t('jobs'),
+      description: $t('admin.jobs_page_description'),
+      icon: mdiSync,
+      onAction: () => goto(AppRoute.ADMIN_JOBS),
+    },
+    {
+      title: $t('settings'),
+      description: $t('admin.jobs_page_description'),
+      icon: mdiCog,
+      onAction: () => goto(AppRoute.ADMIN_SETTINGS),
+    },
+    {
+      title: $t('external_libraries'),
+      description: $t('admin.external_libraries_page_description'),
+      icon: mdiBookshelf,
+      onAction: () => goto(AppRoute.ADMIN_LIBRARY_MANAGEMENT),
+    },
+    {
+      title: $t('server_stats'),
+      description: $t('admin.server_stats_page_description'),
+      icon: mdiServer,
+      onAction: () => goto(AppRoute.ADMIN_STATS),
+    },
+  ].map((route) => ({ ...route, type: $t('page'), isGlobal: true, $if: () => $user?.isAdmin }));
+
+  const commands = $derived([...userCommands, ...adminCommands]);
 </script>
 
 <OnEvents {onReleaseEvent} />
+<CommandPaletteContext {commands} />
 
 <svelte:head>
   <title>{page.data.meta?.title || 'Web'} - Immich</title>
