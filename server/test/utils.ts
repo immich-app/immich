@@ -74,7 +74,6 @@ import { newConfigRepositoryMock } from 'test/repositories/config.repository.moc
 import { newCryptoRepositoryMock } from 'test/repositories/crypto.repository.mock';
 import { newDatabaseRepositoryMock } from 'test/repositories/database.repository.mock';
 import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
-import { newMaintenanceRepositoryMock } from 'test/repositories/maintenance.repository.mock';
 import { newMediaRepositoryMock } from 'test/repositories/media.repository.mock';
 import { newMetadataRepositoryMock } from 'test/repositories/metadata.repository.mock';
 import { newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
@@ -301,7 +300,7 @@ export const newTestService = <T extends BaseService>(
     apiKey: automock(ApiKeyRepository),
     library: automock(LibraryRepository, { strict: false }),
     machineLearning: automock(MachineLearningRepository, { args: [loggerMock], strict: false }),
-    maintenance: newMaintenanceRepositoryMock(),
+    maintenance: automock(MaintenanceRepository),
     map: automock(MapRepository, { args: [undefined, undefined, { setContext: () => {} }] }),
     media: newMediaRepositoryMock(),
     memory: automock(MemoryRepository),
