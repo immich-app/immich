@@ -22,7 +22,7 @@ export class MaintenanceWorkerService {
     protected logger: LoggingRepository,
     private configRepository: ConfigRepository,
     private systemMetadataRepository: SystemMetadataRepository,
-    private maintenanceRepository: MaintenanceWorkerRepository,
+    private maintenanceWorkerRepository: MaintenanceWorkerRepository,
   ) {
     this.logger.setContext(this.constructor.name);
   }
@@ -35,7 +35,7 @@ export class MaintenanceWorkerService {
     };
   }
 
-  getConfig(options: { withCache: boolean }) {
+  private getConfig(options: { withCache: boolean }) {
     return getConfig(this.configRepos, options);
   }
 
@@ -90,8 +90,9 @@ export class MaintenanceWorkerService {
       throw new UnauthorizedException('Missing JWT Token');
     }
 
+    const secret = await this.secret();
+
     try {
-      const secret = await this.secret();
       const result = await jwtVerify<MaintenanceAuthDto>(jwt, new TextEncoder().encode(secret));
       return result.payload;
     } catch {
@@ -106,6 +107,6 @@ export class MaintenanceWorkerService {
   async endMaintenance(): Promise<void> {
     const state: MaintenanceModeState = { isMaintenanceMode: false as const };
     await this.systemMetadataRepository.set(SystemMetadataKey.MaintenanceMode, state);
-    this.maintenanceRepository.restartApp(state);
+    this.maintenanceWorkerRepository.restartApp(state);
   }
 }

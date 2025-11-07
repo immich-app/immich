@@ -51,7 +51,7 @@ export class MaintenanceService extends BaseService {
 
     secret ??= await this.getMaintenanceMode().then((state) => {
       if (!state.isMaintenanceMode) {
-        throw new Error('Not in maintenance mode.');
+        throw new Error('Not in maintenance mode');
       }
 
       return state.secret;
@@ -65,7 +65,7 @@ export class MaintenanceService extends BaseService {
   }
 
   static async createLoginUrl(baseUrl: string, auth: MaintenanceAuthDto, secret: string): Promise<string> {
-    return `${baseUrl}/maintenance?token=${encodeURIComponent(await MaintenanceService.createJwt(secret!, auth))}`;
+    return `${baseUrl}/maintenance?token=${await MaintenanceService.createJwt(secret!, auth)}`;
   }
 
   static async createJwt(secret: string, data: MaintenanceAuthDto): Promise<string> {

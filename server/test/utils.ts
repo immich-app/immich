@@ -269,10 +269,7 @@ type Constructor<Type, Args extends Array<any>> = {
   new (...deps: Args): Type;
 };
 
-export const newTestService = <T extends BaseService>(
-  Service: Constructor<T, BaseServiceArgs>,
-  overrides: Partial<ServiceOverrides> = {},
-) => {
+export const getMocks = () => {
   const loggerMock = { setContext: () => {} };
   const configMock = { getEnv: () => ({}) };
 
@@ -334,6 +331,15 @@ export const newTestService = <T extends BaseService>(
     // eslint-disable-next-line no-sparse-arrays
     websocket: automock(WebsocketRepository, { args: [, loggerMock], strict: false }),
   };
+
+  return mocks;
+};
+
+export const newTestService = <T extends BaseService>(
+  Service: Constructor<T, BaseServiceArgs>,
+  overrides: Partial<ServiceOverrides> = {},
+) => {
+  const mocks = getMocks();
 
   const sut = new Service(
     overrides.logger || (mocks.logger as As<LoggingRepository>),
