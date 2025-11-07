@@ -118,7 +118,6 @@ export class ServerService extends BaseService {
     const config = await this.getConfig({ withCache: false });
     const isInitialized = await this.userRepository.hasAdmin();
     const onboarding = await this.systemMetadataRepository.get(SystemMetadataKey.AdminOnboarding);
-    const maintenanceMode = await this.systemMetadataRepository.get(SystemMetadataKey.MaintenanceMode);
 
     return {
       loginPageMessage: config.server.loginPageMessage,
@@ -131,7 +130,7 @@ export class ServerService extends BaseService {
       publicUsers: config.server.publicUsers,
       mapDarkStyleUrl: config.map.darkStyle,
       mapLightStyleUrl: config.map.lightStyle,
-      maintenanceMode: maintenanceMode?.isMaintenanceMode || false,
+      maintenanceMode: false,
     };
   }
 
