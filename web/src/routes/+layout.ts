@@ -11,7 +11,7 @@ export const load = (async ({ fetch, url }) => {
   try {
     const { maintenanceMode } = await init(fetch);
     if (maintenanceShouldRedirect(maintenanceMode, url)) {
-      goto(maintenanceMode ? maintenanceCreateUrl(url) : maintenanceReturnUrl(url.searchParams));
+      await goto(maintenanceMode ? maintenanceCreateUrl(url) : maintenanceReturnUrl(url.searchParams));
     }
   } catch (initError) {
     error = initError;

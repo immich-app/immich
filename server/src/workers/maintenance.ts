@@ -17,7 +17,7 @@ async function bootstrap() {
     ssr: false,
   });
 
-  app.get(MaintenanceWorkerService).logSecret();
+  void app.get(MaintenanceWorkerService).logSecret();
 }
 
 bootstrap().catch((error) => {
