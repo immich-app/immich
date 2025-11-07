@@ -297,7 +297,7 @@ export const getMocks = () => {
     apiKey: automock(ApiKeyRepository),
     library: automock(LibraryRepository, { strict: false }),
     machineLearning: automock(MachineLearningRepository, { args: [loggerMock], strict: false }),
-    maintenance: automock(MaintenanceRepository),
+    maintenance: automock(MaintenanceRepository, { strict: false }),
     map: automock(MapRepository, { args: [undefined, undefined, { setContext: () => {} }] }),
     media: newMediaRepositoryMock(),
     memory: automock(MemoryRepository),

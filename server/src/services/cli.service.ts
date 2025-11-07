@@ -1,13 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { createAdapter } from '@socket.io/redis-adapter';
-import Redis from 'ioredis';
 import { isAbsolute } from 'node:path';
-import { Server } from 'socket.io';
 import { SALT_ROUNDS } from 'src/constants';
 import { MaintenanceAuthDto } from 'src/dtos/maintenance.dto';
 import { UserAdminResponseDto, mapUserAdmin } from 'src/dtos/user.dto';
 import { SystemMetadataKey } from 'src/enum';
-import { AppRestartEvent } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
 import { MaintenanceService } from 'src/services/maintenance.service';
 import { getExternalDomain } from 'src/utils/misc';
@@ -46,21 +42,6 @@ export class CliService extends BaseService {
     await this.updateConfig(config);
   }
 
-  private sendOneShotAppRestart(state: AppRestartEvent): void {
-    const server = new Server();
-    const pubClient = new Redis(this.configRepository.getEnv().redis);
-    const subClient = pubClient.duplicate();
-    server.adapter(createAdapter(pubClient, subClient));
-
-    // => corresponds to notification.service.ts#onAppRestart
-    server.emit('AppRestartV1', state, () => {
-      server.serverSideEmit('AppRestart', state, () => {
-        pubClient.disconnect();
-        subClient.disconnect();
-      });
-    });
-  }
-
   async disableMaintenanceMode(): Promise<{ alreadyDisabled: boolean }> {
     const currentState = await this.systemMetadataRepository
       .get(SystemMetadataKey.MaintenanceMode)
@@ -75,7 +56,7 @@ export class CliService extends BaseService {
     const state = { isMaintenanceMode: false as const };
     await this.systemMetadataRepository.set(SystemMetadataKey.MaintenanceMode, state);
 
-    this.sendOneShotAppRestart(state);
+    this.maintenanceRepository.sendOneShotAppRestart(state);
 
     return {
       alreadyDisabled: false,
@@ -108,7 +89,7 @@ export class CliService extends BaseService {
       secret,
     });
 
-    this.sendOneShotAppRestart({
+    this.maintenanceRepository.sendOneShotAppRestart({
       isMaintenanceMode: true,
     });
 
