@@ -113,6 +113,15 @@ class UploadService {
     return _backupRepository.getAllCounts(userId);
   }
 
+  Future<void> manualBackupId(String localId) async {
+    final localAsset = await _localAssetRepository.get(localId);
+    if (localAsset == null) {
+      _logger.warning('Local asset with id $localId not found for manual backup');
+      return;
+    }
+    await manualBackup([localAsset]);
+  }
+
   Future<void> manualBackup(List<LocalAsset> localAssets) async {
     await _storageRepository.clearCache();
     List<UploadTask> tasks = [];
@@ -141,6 +150,7 @@ class UploadService {
     bool ignoreFailed = false,
   }) async {
     await _storageRepository.clearCache();
+    await _assetUploadRepository.prune();
 
     shouldAbortQueuingTasks = false;
 
@@ -164,6 +174,7 @@ class UploadService {
 
   Future<void> startBackupWithHttpClient(String userId, bool hasWifi, CancellationToken token) async {
     await _storageRepository.clearCache();
+    await _assetUploadRepository.prune();
 
     shouldAbortQueuingTasks = false;
 
@@ -206,6 +217,7 @@ class UploadService {
     shouldAbortQueuingTasks = true;
 
     await _storageRepository.clearCache();
+    await _assetUploadRepository.prune();
     await _uploadRepository.reset(kBackupGroup);
     await _uploadRepository.deleteDatabaseRecords(kBackupGroup);
 

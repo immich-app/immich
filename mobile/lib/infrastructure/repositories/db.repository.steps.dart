@@ -5043,21 +5043,20 @@ final class Schema13 extends i0.VersionedSchema {
   late final List<i1.DatabaseSchemaEntity> entities = [
     userEntity,
     remoteAssetEntity,
+    stackEntity,
     localAssetEntity,
-    localAssetUploadEntity,
-    deleteUploadErrorOnRemoteInsert,
+    remoteAlbumEntity,
+    localAlbumEntity,
+    localAlbumAssetEntity,
     idxLocalAssetChecksum,
     idxRemoteAssetOwnerChecksum,
     uQRemoteAssetsOwnerChecksum,
     uQRemoteAssetsOwnerLibraryChecksum,
     idxRemoteAssetChecksum,
-    stackEntity,
-    remoteAlbumEntity,
-    localAlbumEntity,
-    localAlbumAssetEntity,
     authUserEntity,
     userMetadataEntity,
     partnerEntity,
+    localAssetUploadEntity,
     remoteExifEntity,
     remoteAlbumAssetEntity,
     remoteAlbumUserEntity,
@@ -5116,6 +5115,17 @@ final class Schema13 extends i0.VersionedSchema {
     ),
     alias: null,
   );
+  late final Shape3 stackEntity = Shape3(
+    source: i0.VersionedTable(
+      entityName: 'stack_entity',
+      withoutRowId: true,
+      isStrict: true,
+      tableConstraints: ['PRIMARY KEY(id)'],
+      columns: [_column_0, _column_9, _column_5, _column_15, _column_75],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
   late final Shape2 localAssetEntity = Shape2(
     source: i0.VersionedTable(
       entityName: 'local_asset_entity',
@@ -5135,52 +5145,6 @@ final class Schema13 extends i0.VersionedSchema {
         _column_14,
         _column_23,
       ],
-      attachedDatabase: database,
-    ),
-    alias: null,
-  );
-  late final Shape23 localAssetUploadEntity = Shape23(
-    source: i0.VersionedTable(
-      entityName: 'local_asset_upload_entity',
-      withoutRowId: true,
-      isStrict: true,
-      tableConstraints: ['PRIMARY KEY(asset_id)'],
-      columns: [_column_34, _column_95, _column_96, _column_97, _column_98],
-      attachedDatabase: database,
-    ),
-    alias: null,
-  );
-  final i1.Trigger deleteUploadErrorOnRemoteInsert = i1.Trigger(
-    'CREATE TRIGGER delete_upload_error_on_remote_insert AFTER INSERT ON remote_asset_entity BEGIN DELETE FROM local_asset_upload_entity WHERE asset_id IN (SELECT lae.id FROM local_asset_entity AS lae WHERE lae.checksum = NEW.checksum);END',
-    'delete_upload_error_on_remote_insert',
-  );
-  final i1.Index idxLocalAssetChecksum = i1.Index(
-    'idx_local_asset_checksum',
-    'CREATE INDEX IF NOT EXISTS idx_local_asset_checksum ON local_asset_entity (checksum)',
-  );
-  final i1.Index idxRemoteAssetOwnerChecksum = i1.Index(
-    'idx_remote_asset_owner_checksum',
-    'CREATE INDEX IF NOT EXISTS idx_remote_asset_owner_checksum ON remote_asset_entity (owner_id, checksum)',
-  );
-  final i1.Index uQRemoteAssetsOwnerChecksum = i1.Index(
-    'UQ_remote_assets_owner_checksum',
-    'CREATE UNIQUE INDEX IF NOT EXISTS UQ_remote_assets_owner_checksum ON remote_asset_entity (owner_id, checksum) WHERE(library_id IS NULL)',
-  );
-  final i1.Index uQRemoteAssetsOwnerLibraryChecksum = i1.Index(
-    'UQ_remote_assets_owner_library_checksum',
-    'CREATE UNIQUE INDEX IF NOT EXISTS UQ_remote_assets_owner_library_checksum ON remote_asset_entity (owner_id, library_id, checksum) WHERE(library_id IS NOT NULL)',
-  );
-  final i1.Index idxRemoteAssetChecksum = i1.Index(
-    'idx_remote_asset_checksum',
-    'CREATE INDEX IF NOT EXISTS idx_remote_asset_checksum ON remote_asset_entity (checksum)',
-  );
-  late final Shape3 stackEntity = Shape3(
-    source: i0.VersionedTable(
-      entityName: 'stack_entity',
-      withoutRowId: true,
-      isStrict: true,
-      tableConstraints: ['PRIMARY KEY(id)'],
-      columns: [_column_0, _column_9, _column_5, _column_15, _column_75],
       attachedDatabase: database,
     ),
     alias: null,
@@ -5236,6 +5200,26 @@ final class Schema13 extends i0.VersionedSchema {
     ),
     alias: null,
   );
+  final i1.Index idxLocalAssetChecksum = i1.Index(
+    'idx_local_asset_checksum',
+    'CREATE INDEX IF NOT EXISTS idx_local_asset_checksum ON local_asset_entity (checksum)',
+  );
+  final i1.Index idxRemoteAssetOwnerChecksum = i1.Index(
+    'idx_remote_asset_owner_checksum',
+    'CREATE INDEX IF NOT EXISTS idx_remote_asset_owner_checksum ON remote_asset_entity (owner_id, checksum)',
+  );
+  final i1.Index uQRemoteAssetsOwnerChecksum = i1.Index(
+    'UQ_remote_assets_owner_checksum',
+    'CREATE UNIQUE INDEX IF NOT EXISTS UQ_remote_assets_owner_checksum ON remote_asset_entity (owner_id, checksum) WHERE(library_id IS NULL)',
+  );
+  final i1.Index uQRemoteAssetsOwnerLibraryChecksum = i1.Index(
+    'UQ_remote_assets_owner_library_checksum',
+    'CREATE UNIQUE INDEX IF NOT EXISTS UQ_remote_assets_owner_library_checksum ON remote_asset_entity (owner_id, library_id, checksum) WHERE(library_id IS NOT NULL)',
+  );
+  final i1.Index idxRemoteAssetChecksum = i1.Index(
+    'idx_remote_asset_checksum',
+    'CREATE INDEX IF NOT EXISTS idx_remote_asset_checksum ON remote_asset_entity (checksum)',
+  );
   late final Shape21 authUserEntity = Shape21(
     source: i0.VersionedTable(
       entityName: 'auth_user_entity',
@@ -5276,6 +5260,17 @@ final class Schema13 extends i0.VersionedSchema {
       isStrict: true,
       tableConstraints: ['PRIMARY KEY(shared_by_id, shared_with_id)'],
       columns: [_column_28, _column_29, _column_30],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape23 localAssetUploadEntity = Shape23(
+    source: i0.VersionedTable(
+      entityName: 'local_asset_upload_entity',
+      withoutRowId: true,
+      isStrict: true,
+      tableConstraints: ['PRIMARY KEY(asset_id)'],
+      columns: [_column_34, _column_95, _column_96, _column_97, _column_98],
       attachedDatabase: database,
     ),
     alias: null,

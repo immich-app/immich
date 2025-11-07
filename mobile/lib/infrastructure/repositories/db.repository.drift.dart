@@ -5,45 +5,43 @@ import 'package:immich_mobile/infrastructure/entities/user.entity.drift.dart'
     as i1;
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.dart'
     as i2;
-import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart'
-    as i3;
-import 'package:immich_mobile/infrastructure/entities/local_asset_upload_entity.drift.dart'
-    as i4;
-import 'package:immich_mobile/infrastructure/entities/local_asset_upload_trigger.drift.dart'
-    as i5;
 import 'package:immich_mobile/infrastructure/entities/stack.entity.drift.dart'
-    as i6;
+    as i3;
+import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart'
+    as i4;
 import 'package:immich_mobile/infrastructure/entities/remote_album.entity.drift.dart'
-    as i7;
+    as i5;
 import 'package:immich_mobile/infrastructure/entities/local_album.entity.drift.dart'
-    as i8;
+    as i6;
 import 'package:immich_mobile/infrastructure/entities/local_album_asset.entity.drift.dart'
-    as i9;
+    as i7;
 import 'package:immich_mobile/infrastructure/entities/auth_user.entity.drift.dart'
-    as i10;
+    as i8;
 import 'package:immich_mobile/infrastructure/entities/user_metadata.entity.drift.dart'
-    as i11;
+    as i9;
 import 'package:immich_mobile/infrastructure/entities/partner.entity.drift.dart'
-    as i12;
+    as i10;
+import 'package:immich_mobile/infrastructure/entities/local_asset_upload_entity.drift.dart'
+    as i11;
 import 'package:immich_mobile/infrastructure/entities/exif.entity.drift.dart'
-    as i13;
+    as i12;
 import 'package:immich_mobile/infrastructure/entities/remote_album_asset.entity.drift.dart'
-    as i14;
+    as i13;
 import 'package:immich_mobile/infrastructure/entities/remote_album_user.entity.drift.dart'
-    as i15;
+    as i14;
 import 'package:immich_mobile/infrastructure/entities/memory.entity.drift.dart'
-    as i16;
+    as i15;
 import 'package:immich_mobile/infrastructure/entities/memory_asset.entity.drift.dart'
-    as i17;
+    as i16;
 import 'package:immich_mobile/infrastructure/entities/person.entity.drift.dart'
-    as i18;
+    as i17;
 import 'package:immich_mobile/infrastructure/entities/asset_face.entity.drift.dart'
-    as i19;
+    as i18;
 import 'package:immich_mobile/infrastructure/entities/store.entity.drift.dart'
-    as i20;
+    as i19;
 import 'package:immich_mobile/infrastructure/entities/merged_asset.drift.dart'
-    as i21;
-import 'package:drift/internal/modular.dart' as i22;
+    as i20;
+import 'package:drift/internal/modular.dart' as i21;
 
 abstract class $Drift extends i0.GeneratedDatabase {
   $Drift(i0.QueryExecutor e) : super(e);
@@ -51,41 +49,41 @@ abstract class $Drift extends i0.GeneratedDatabase {
   late final i1.$UserEntityTable userEntity = i1.$UserEntityTable(this);
   late final i2.$RemoteAssetEntityTable remoteAssetEntity = i2
       .$RemoteAssetEntityTable(this);
-  late final i3.$LocalAssetEntityTable localAssetEntity = i3
+  late final i3.$StackEntityTable stackEntity = i3.$StackEntityTable(this);
+  late final i4.$LocalAssetEntityTable localAssetEntity = i4
       .$LocalAssetEntityTable(this);
-  late final i4.$LocalAssetUploadEntityTable localAssetUploadEntity = i4
-      .$LocalAssetUploadEntityTable(this);
-  late final i6.$StackEntityTable stackEntity = i6.$StackEntityTable(this);
-  late final i7.$RemoteAlbumEntityTable remoteAlbumEntity = i7
+  late final i5.$RemoteAlbumEntityTable remoteAlbumEntity = i5
       .$RemoteAlbumEntityTable(this);
-  late final i8.$LocalAlbumEntityTable localAlbumEntity = i8
+  late final i6.$LocalAlbumEntityTable localAlbumEntity = i6
       .$LocalAlbumEntityTable(this);
-  late final i9.$LocalAlbumAssetEntityTable localAlbumAssetEntity = i9
+  late final i7.$LocalAlbumAssetEntityTable localAlbumAssetEntity = i7
       .$LocalAlbumAssetEntityTable(this);
-  late final i10.$AuthUserEntityTable authUserEntity = i10.$AuthUserEntityTable(
+  late final i8.$AuthUserEntityTable authUserEntity = i8.$AuthUserEntityTable(
     this,
   );
-  late final i11.$UserMetadataEntityTable userMetadataEntity = i11
+  late final i9.$UserMetadataEntityTable userMetadataEntity = i9
       .$UserMetadataEntityTable(this);
-  late final i12.$PartnerEntityTable partnerEntity = i12.$PartnerEntityTable(
+  late final i10.$PartnerEntityTable partnerEntity = i10.$PartnerEntityTable(
     this,
   );
-  late final i13.$RemoteExifEntityTable remoteExifEntity = i13
+  late final i11.$LocalAssetUploadEntityTable localAssetUploadEntity = i11
+      .$LocalAssetUploadEntityTable(this);
+  late final i12.$RemoteExifEntityTable remoteExifEntity = i12
       .$RemoteExifEntityTable(this);
-  late final i14.$RemoteAlbumAssetEntityTable remoteAlbumAssetEntity = i14
+  late final i13.$RemoteAlbumAssetEntityTable remoteAlbumAssetEntity = i13
       .$RemoteAlbumAssetEntityTable(this);
-  late final i15.$RemoteAlbumUserEntityTable remoteAlbumUserEntity = i15
+  late final i14.$RemoteAlbumUserEntityTable remoteAlbumUserEntity = i14
       .$RemoteAlbumUserEntityTable(this);
-  late final i16.$MemoryEntityTable memoryEntity = i16.$MemoryEntityTable(this);
-  late final i17.$MemoryAssetEntityTable memoryAssetEntity = i17
+  late final i15.$MemoryEntityTable memoryEntity = i15.$MemoryEntityTable(this);
+  late final i16.$MemoryAssetEntityTable memoryAssetEntity = i16
       .$MemoryAssetEntityTable(this);
-  late final i18.$PersonEntityTable personEntity = i18.$PersonEntityTable(this);
-  late final i19.$AssetFaceEntityTable assetFaceEntity = i19
+  late final i17.$PersonEntityTable personEntity = i17.$PersonEntityTable(this);
+  late final i18.$AssetFaceEntityTable assetFaceEntity = i18
       .$AssetFaceEntityTable(this);
-  late final i20.$StoreEntityTable storeEntity = i20.$StoreEntityTable(this);
-  i21.MergedAssetDrift get mergedAssetDrift => i22.ReadDatabaseContainer(
+  late final i19.$StoreEntityTable storeEntity = i19.$StoreEntityTable(this);
+  i20.MergedAssetDrift get mergedAssetDrift => i21.ReadDatabaseContainer(
     this,
-  ).accessor<i21.MergedAssetDrift>(i21.MergedAssetDrift.new);
+  ).accessor<i20.MergedAssetDrift>(i20.MergedAssetDrift.new);
   @override
   Iterable<i0.TableInfo<i0.Table, Object?>> get allTables =>
       allSchemaEntities.whereType<i0.TableInfo<i0.Table, Object?>>();
@@ -93,21 +91,20 @@ abstract class $Drift extends i0.GeneratedDatabase {
   List<i0.DatabaseSchemaEntity> get allSchemaEntities => [
     userEntity,
     remoteAssetEntity,
+    stackEntity,
     localAssetEntity,
-    localAssetUploadEntity,
-    i5.deleteUploadErrorOnRemoteInsert,
-    i3.idxLocalAssetChecksum,
+    remoteAlbumEntity,
+    localAlbumEntity,
+    localAlbumAssetEntity,
+    i4.idxLocalAssetChecksum,
     i2.idxRemoteAssetOwnerChecksum,
     i2.uQRemoteAssetsOwnerChecksum,
     i2.uQRemoteAssetsOwnerLibraryChecksum,
     i2.idxRemoteAssetChecksum,
-    stackEntity,
-    remoteAlbumEntity,
-    localAlbumEntity,
-    localAlbumAssetEntity,
     authUserEntity,
     userMetadataEntity,
     partnerEntity,
+    localAssetUploadEntity,
     remoteExifEntity,
     remoteAlbumAssetEntity,
     remoteAlbumUserEntity,
@@ -116,7 +113,7 @@ abstract class $Drift extends i0.GeneratedDatabase {
     personEntity,
     assetFaceEntity,
     storeEntity,
-    i13.idxLatLng,
+    i12.idxLatLng,
   ];
   @override
   i0.StreamQueryUpdateRules
@@ -128,24 +125,6 @@ abstract class $Drift extends i0.GeneratedDatabase {
       ),
       result: [
         i0.TableUpdate('remote_asset_entity', kind: i0.UpdateKind.delete),
-      ],
-    ),
-    i0.WritePropagation(
-      on: i0.TableUpdateQuery.onTableName(
-        'local_asset_entity',
-        limitUpdateKind: i0.UpdateKind.delete,
-      ),
-      result: [
-        i0.TableUpdate('local_asset_upload_entity', kind: i0.UpdateKind.delete),
-      ],
-    ),
-    i0.WritePropagation(
-      on: i0.TableUpdateQuery.onTableName(
-        'remote_asset_entity',
-        limitUpdateKind: i0.UpdateKind.insert,
-      ),
-      result: [
-        i0.TableUpdate('local_asset_upload_entity', kind: i0.UpdateKind.delete),
       ],
     ),
     i0.WritePropagation(
@@ -222,6 +201,15 @@ abstract class $Drift extends i0.GeneratedDatabase {
         limitUpdateKind: i0.UpdateKind.delete,
       ),
       result: [i0.TableUpdate('partner_entity', kind: i0.UpdateKind.delete)],
+    ),
+    i0.WritePropagation(
+      on: i0.TableUpdateQuery.onTableName(
+        'local_asset_entity',
+        limitUpdateKind: i0.UpdateKind.delete,
+      ),
+      result: [
+        i0.TableUpdate('local_asset_upload_entity', kind: i0.UpdateKind.delete),
+      ],
     ),
     i0.WritePropagation(
       on: i0.TableUpdateQuery.onTableName(
@@ -327,44 +315,44 @@ class $DriftManager {
       i1.$$UserEntityTableTableManager(_db, _db.userEntity);
   i2.$$RemoteAssetEntityTableTableManager get remoteAssetEntity =>
       i2.$$RemoteAssetEntityTableTableManager(_db, _db.remoteAssetEntity);
-  i3.$$LocalAssetEntityTableTableManager get localAssetEntity =>
-      i3.$$LocalAssetEntityTableTableManager(_db, _db.localAssetEntity);
-  i4.$$LocalAssetUploadEntityTableTableManager get localAssetUploadEntity =>
-      i4.$$LocalAssetUploadEntityTableTableManager(
+  i3.$$StackEntityTableTableManager get stackEntity =>
+      i3.$$StackEntityTableTableManager(_db, _db.stackEntity);
+  i4.$$LocalAssetEntityTableTableManager get localAssetEntity =>
+      i4.$$LocalAssetEntityTableTableManager(_db, _db.localAssetEntity);
+  i5.$$RemoteAlbumEntityTableTableManager get remoteAlbumEntity =>
+      i5.$$RemoteAlbumEntityTableTableManager(_db, _db.remoteAlbumEntity);
+  i6.$$LocalAlbumEntityTableTableManager get localAlbumEntity =>
+      i6.$$LocalAlbumEntityTableTableManager(_db, _db.localAlbumEntity);
+  i7.$$LocalAlbumAssetEntityTableTableManager get localAlbumAssetEntity => i7
+      .$$LocalAlbumAssetEntityTableTableManager(_db, _db.localAlbumAssetEntity);
+  i8.$$AuthUserEntityTableTableManager get authUserEntity =>
+      i8.$$AuthUserEntityTableTableManager(_db, _db.authUserEntity);
+  i9.$$UserMetadataEntityTableTableManager get userMetadataEntity =>
+      i9.$$UserMetadataEntityTableTableManager(_db, _db.userMetadataEntity);
+  i10.$$PartnerEntityTableTableManager get partnerEntity =>
+      i10.$$PartnerEntityTableTableManager(_db, _db.partnerEntity);
+  i11.$$LocalAssetUploadEntityTableTableManager get localAssetUploadEntity =>
+      i11.$$LocalAssetUploadEntityTableTableManager(
         _db,
         _db.localAssetUploadEntity,
       );
-  i6.$$StackEntityTableTableManager get stackEntity =>
-      i6.$$StackEntityTableTableManager(_db, _db.stackEntity);
-  i7.$$RemoteAlbumEntityTableTableManager get remoteAlbumEntity =>
-      i7.$$RemoteAlbumEntityTableTableManager(_db, _db.remoteAlbumEntity);
-  i8.$$LocalAlbumEntityTableTableManager get localAlbumEntity =>
-      i8.$$LocalAlbumEntityTableTableManager(_db, _db.localAlbumEntity);
-  i9.$$LocalAlbumAssetEntityTableTableManager get localAlbumAssetEntity => i9
-      .$$LocalAlbumAssetEntityTableTableManager(_db, _db.localAlbumAssetEntity);
-  i10.$$AuthUserEntityTableTableManager get authUserEntity =>
-      i10.$$AuthUserEntityTableTableManager(_db, _db.authUserEntity);
-  i11.$$UserMetadataEntityTableTableManager get userMetadataEntity =>
-      i11.$$UserMetadataEntityTableTableManager(_db, _db.userMetadataEntity);
-  i12.$$PartnerEntityTableTableManager get partnerEntity =>
-      i12.$$PartnerEntityTableTableManager(_db, _db.partnerEntity);
-  i13.$$RemoteExifEntityTableTableManager get remoteExifEntity =>
-      i13.$$RemoteExifEntityTableTableManager(_db, _db.remoteExifEntity);
-  i14.$$RemoteAlbumAssetEntityTableTableManager get remoteAlbumAssetEntity =>
-      i14.$$RemoteAlbumAssetEntityTableTableManager(
+  i12.$$RemoteExifEntityTableTableManager get remoteExifEntity =>
+      i12.$$RemoteExifEntityTableTableManager(_db, _db.remoteExifEntity);
+  i13.$$RemoteAlbumAssetEntityTableTableManager get remoteAlbumAssetEntity =>
+      i13.$$RemoteAlbumAssetEntityTableTableManager(
         _db,
         _db.remoteAlbumAssetEntity,
       );
-  i15.$$RemoteAlbumUserEntityTableTableManager get remoteAlbumUserEntity => i15
+  i14.$$RemoteAlbumUserEntityTableTableManager get remoteAlbumUserEntity => i14
       .$$RemoteAlbumUserEntityTableTableManager(_db, _db.remoteAlbumUserEntity);
-  i16.$$MemoryEntityTableTableManager get memoryEntity =>
-      i16.$$MemoryEntityTableTableManager(_db, _db.memoryEntity);
-  i17.$$MemoryAssetEntityTableTableManager get memoryAssetEntity =>
-      i17.$$MemoryAssetEntityTableTableManager(_db, _db.memoryAssetEntity);
-  i18.$$PersonEntityTableTableManager get personEntity =>
-      i18.$$PersonEntityTableTableManager(_db, _db.personEntity);
-  i19.$$AssetFaceEntityTableTableManager get assetFaceEntity =>
-      i19.$$AssetFaceEntityTableTableManager(_db, _db.assetFaceEntity);
-  i20.$$StoreEntityTableTableManager get storeEntity =>
-      i20.$$StoreEntityTableTableManager(_db, _db.storeEntity);
+  i15.$$MemoryEntityTableTableManager get memoryEntity =>
+      i15.$$MemoryEntityTableTableManager(_db, _db.memoryEntity);
+  i16.$$MemoryAssetEntityTableTableManager get memoryAssetEntity =>
+      i16.$$MemoryAssetEntityTableTableManager(_db, _db.memoryAssetEntity);
+  i17.$$PersonEntityTableTableManager get personEntity =>
+      i17.$$PersonEntityTableTableManager(_db, _db.personEntity);
+  i18.$$AssetFaceEntityTableTableManager get assetFaceEntity =>
+      i18.$$AssetFaceEntityTableTableManager(_db, _db.assetFaceEntity);
+  i19.$$StoreEntityTableTableManager get storeEntity =>
+      i19.$$StoreEntityTableTableManager(_db, _db.storeEntity);
 }

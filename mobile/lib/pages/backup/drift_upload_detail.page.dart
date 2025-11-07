@@ -9,6 +9,7 @@ import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart'
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/upload.provider.dart';
+import 'package:immich_mobile/services/upload.service.dart';
 import 'package:immich_mobile/utils/bytes_units.dart';
 import 'package:path/path.dart' as path;
 
@@ -113,7 +114,9 @@ class DriftUploadDetailPage extends ConsumerWidget {
                       ],
                     ),
                   ),
-                  if (progress != null)
+                  if (item.isFailed == true)
+                    _buildRetryButton(item)
+                  else if (progress != null)
                     _buildProgressIndicator(
                       context,
                       progress,
@@ -175,6 +178,26 @@ class DriftUploadDetailPage extends ConsumerWidget {
           ),
       ],
     );
+  }
+
+  Widget _buildRetryButton(DriftUploadStatus item) {
+    return Consumer(
+      builder: (context, ref, child) {
+        return IconButton(
+          onPressed: () => _retryFailedUpload(ref, item),
+          icon: const Icon(Icons.refresh_rounded),
+          iconSize: 24,
+          color: context.colorScheme.onErrorContainer,
+          tooltip: "retry_upload".t(context: context),
+        );
+      },
+    );
+  }
+
+  Future<void> _retryFailedUpload(WidgetRef ref, DriftUploadStatus item) async {
+    await ref.read(uploadServiceProvider).clearError(item.taskId);
+    ref.invalidate(failedUploadStatusProvider);
+    await ref.read(uploadServiceProvider).manualBackupId(item.taskId);
   }
 
   Future<void> _showFileDetailDialog(BuildContext context, DriftUploadStatus item) {

@@ -8,7 +8,7 @@ class DriftLocalAssetUploadRepository extends DriftDatabaseRepository {
   final Drift _db;
   const DriftLocalAssetUploadRepository(this._db) : super(_db);
 
-  Future<List<DriftUploadStatus>> getAll() async {
+  Stream<List<DriftUploadStatus>> watchAll() {
     final query = _db.localAssetUploadEntity.select().addColumns([_db.localAssetEntity.name]).join([
       leftOuterJoin(
         _db.localAssetEntity,
@@ -16,12 +16,11 @@ class DriftLocalAssetUploadRepository extends DriftDatabaseRepository {
         useColumns: false,
       ),
     ]);
-    final results = await query.get();
-    return results.map((row) {
+    return query.map((row) {
       final upload = row.readTable(_db.localAssetUploadEntity);
       final assetName = row.read(_db.localAssetEntity.name)!;
       return DriftUploadStatus(taskId: upload.assetId, filename: assetName, error: upload.errorMessage, isFailed: true);
-    }).toList();
+    }).watch();
   }
 
   Future<void> upsert(String assetId, UploadErrorType errorType, String error) {
@@ -48,5 +47,24 @@ class DriftLocalAssetUploadRepository extends DriftDatabaseRepository {
 
   Future<void> delete(String assetId) async {
     await _db.managers.localAssetUploadEntity.filter((row) => row.assetId.id.equals(assetId)).delete();
+  }
+
+  Future<void> prune() async {
+    final query =
+        _db.localAssetUploadEntity.selectOnly().join([
+            leftOuterJoin(
+              _db.localAssetEntity,
+              _db.localAssetUploadEntity.assetId.equalsExp(_db.localAssetEntity.id),
+              useColumns: false,
+            ),
+            leftOuterJoin(
+              _db.remoteAssetEntity,
+              _db.remoteAssetEntity.checksum.equalsExp(_db.localAssetEntity.checksum),
+              useColumns: false,
+            ),
+          ])
+          ..where(_db.remoteAssetEntity.checksum.isNotNull())
+          ..addColumns([_db.localAssetUploadEntity.assetId]);
+    await _db.localAssetUploadEntity.deleteWhere((row) => row.assetId.isInQuery(query));
   }
 }
