@@ -14,10 +14,10 @@ export class MaintenanceRepository {
 
   exitApp() {
     /* eslint-disable unicorn/no-process-exit */
-    void this.closeFn?.().then(() => process.exit(ExitCode.AppRestart));
+    void this.closeFn?.().finally(() => process.exit(ExitCode.AppRestart));
 
     // in exceptional circumstance, the application may hang
-    setTimeout(() => process.exit(ExitCode.AppRestart), 5000);
+    setTimeout(() => process.exit(ExitCode.AppRestart), 2000);
     /* eslint-enable unicorn/no-process-exit */
   }
 
