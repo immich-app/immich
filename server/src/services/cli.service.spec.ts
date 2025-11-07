@@ -86,7 +86,7 @@ describe(CliService.name, () => {
     it('should not do anything if not in maintenance mode', async () => {
       mocks.systemMetadata.get.mockResolvedValue({ isMaintenanceMode: false });
       await expect(sut.disableMaintenanceMode()).resolves.toEqual({
-        alreadyDisabled: true
+        alreadyDisabled: true,
       });
 
       expect(mocks.systemMetadata.set).toHaveBeenCalledTimes(0);
@@ -96,7 +96,7 @@ describe(CliService.name, () => {
     it('should disable maintenance mode', async () => {
       mocks.systemMetadata.get.mockResolvedValue({ isMaintenanceMode: true, secret: 'secret' });
       await expect(sut.disableMaintenanceMode()).resolves.toEqual({
-        alreadyDisabled: false
+        alreadyDisabled: false,
       });
 
       expect(mocks.systemMetadata.set).toHaveBeenCalledWith(SystemMetadataKey.MaintenanceMode, {
@@ -112,9 +112,11 @@ describe(CliService.name, () => {
   describe('enableMaintenanceMode', () => {
     it('should not do anything if in maintenance mode', async () => {
       mocks.systemMetadata.get.mockResolvedValue({ isMaintenanceMode: true, secret: 'secret' });
-      await expect(sut.enableMaintenanceMode()).resolves.toEqual(expect.objectContaining({
-        alreadyEnabled: true
-      }));
+      await expect(sut.enableMaintenanceMode()).resolves.toEqual(
+        expect.objectContaining({
+          alreadyEnabled: true,
+        }),
+      );
 
       expect(mocks.systemMetadata.set).toHaveBeenCalledTimes(0);
       expect(mocks.event.emit).toHaveBeenCalledTimes(0);
@@ -122,9 +124,11 @@ describe(CliService.name, () => {
 
     it('should enable maintenance mode', async () => {
       mocks.systemMetadata.get.mockResolvedValue({ isMaintenanceMode: false });
-      await expect(sut.enableMaintenanceMode()).resolves.toEqual(expect.objectContaining({
-        alreadyEnabled: false
-      }));
+      await expect(sut.enableMaintenanceMode()).resolves.toEqual(
+        expect.objectContaining({
+          alreadyEnabled: false,
+        }),
+      );
 
       expect(mocks.systemMetadata.set).toHaveBeenCalledWith(SystemMetadataKey.MaintenanceMode, {
         isMaintenanceMode: true,
@@ -143,18 +147,20 @@ describe(CliService.name, () => {
 
       const result = await sut.enableMaintenanceMode();
 
-      expect(result).toEqual(expect.objectContaining({
-        authUrl: expect.stringMatching(RE_LOGIN_URL),
-        alreadyEnabled: true,
-      }));
+      expect(result).toEqual(
+        expect.objectContaining({
+          authUrl: expect.stringMatching(RE_LOGIN_URL),
+          alreadyEnabled: true,
+        }),
+      );
 
       const token = RE_LOGIN_URL.exec(result.authUrl)![1];
 
-      await expect(jwtVerify(token, new TextEncoder().encode("secret"))).resolves.toEqual(
+      await expect(jwtVerify(token, new TextEncoder().encode('secret'))).resolves.toEqual(
         expect.objectContaining({
           payload: expect.objectContaining({
             username: 'cli-admin',
-          })
+          }),
         }),
       );
     });
