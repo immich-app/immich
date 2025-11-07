@@ -18,6 +18,7 @@ import {
   QueueName,
   RawExtractedFormat,
   StorageFolder,
+  ToneMapping,
   TranscodeHardwareAcceleration,
   TranscodePolicy,
   TranscodeTarget,
@@ -424,8 +425,16 @@ export class MediaService extends BaseService {
     }
     const mainAudioStream = this.getMainStream(audioStreams);
 
-    const previewConfig = ThumbnailConfig.create({ ...ffmpeg, targetResolution: image.preview.size.toString() });
-    const thumbnailConfig = ThumbnailConfig.create({ ...ffmpeg, targetResolution: image.thumbnail.size.toString() });
+    const previewConfig = ThumbnailConfig.create({
+      ...ffmpeg,
+      targetResolution: image.preview.size.toString(),
+      tonemap: ToneMapping.Hable,
+    });
+    const thumbnailConfig = ThumbnailConfig.create({
+      ...ffmpeg,
+      targetResolution: image.thumbnail.size.toString(),
+      tonemap: ToneMapping.Hable,
+    });
     const previewOptions = previewConfig.getCommand(TranscodeTarget.Video, mainVideoStream, mainAudioStream, format);
     const thumbnailOptions = thumbnailConfig.getCommand(
       TranscodeTarget.Video,
