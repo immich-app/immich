@@ -3,6 +3,7 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { configureExpress, configureTelemetry } from 'src/app.common';
 import { ApiModule } from 'src/app.module';
 import { MaintenanceRepository } from 'src/repositories/maintenance.repository';
+import { ApiService } from 'src/services/api.service';
 import { isStartUpError } from 'src/utils/misc';
 
 async function bootstrap() {
@@ -13,7 +14,9 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(ApiModule, { bufferLogs: true });
   app.get(MaintenanceRepository).setCloseFn(() => app.close());
 
-  void configureExpress(app);
+  void configureExpress(app, {
+    ssr: ApiService,
+  });
 }
 
 bootstrap().catch((error) => {

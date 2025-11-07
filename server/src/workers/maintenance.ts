@@ -14,7 +14,7 @@ async function bootstrap() {
   app.get(MaintenanceRepository).setCloseFn(() => app.close());
   void configureExpress(app, {
     permitSwaggerWrite: false,
-    ssr: false,
+    ssr: MaintenanceWorkerService,
   });
 
   void app.get(MaintenanceWorkerService).logSecret();

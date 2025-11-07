@@ -10,6 +10,7 @@ import { ConfigRepository } from 'src/repositories/config.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { bootstrapTelemetry } from 'src/repositories/telemetry.repository';
 import { ApiService } from 'src/services/api.service';
+import { MaintenanceWorkerService } from 'src/services/maintenance-worker.service';
 import { useSwagger } from 'src/utils/misc';
 
 export function configureTelemetry() {
@@ -23,7 +24,7 @@ export async function configureExpress(
   app: NestExpressApplication,
   {
     permitSwaggerWrite = true,
-    ssr = true,
+    ssr,
   }: {
     /**
      * Whether to allow swagger module to write to the specs.json
@@ -32,12 +33,10 @@ export async function configureExpress(
      */
     permitSwaggerWrite?: boolean;
     /**
-     * Whether to enable server-side rendering
-     * @requires ApiService
-     * @default true
+     * Service to use for server-side rendering
      */
-    ssr?: boolean;
-  } = {},
+    ssr: typeof ApiService | typeof MaintenanceWorkerService;
+  },
 ) {
   const configRepository = app.get(ConfigRepository);
   const { environment, host, port, resourcePaths, network } = configRepository.getEnv();
@@ -78,10 +77,7 @@ export async function configureExpress(
     );
   }
 
-  if (ssr) {
-    app.use(app.get(ApiService).ssr(excludePaths));
-  }
-
+  app.use(app.get(ssr).ssr(excludePaths));
   app.use(compression());
 
   const server = await (host ? app.listen(port, host) : app.listen(port));

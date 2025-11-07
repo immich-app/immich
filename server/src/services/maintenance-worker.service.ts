@@ -1,6 +1,8 @@
 import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { parse } from 'cookie';
+import { NextFunction, Request, Response } from 'express';
 import { jwtVerify } from 'jose';
+import { readFileSync } from 'node:fs';
 import { IncomingHttpHeaders } from 'node:http';
 import { MaintenanceAuthDto } from 'src/dtos/maintenance.dto';
 import { ImmichCookie, SystemMetadataKey } from 'src/enum';
@@ -108,5 +110,35 @@ export class MaintenanceWorkerService {
     const state: MaintenanceModeState = { isMaintenanceMode: false as const };
     await this.systemMetadataRepository.set(SystemMetadataKey.MaintenanceMode, state);
     this.maintenanceWorkerRepository.restartApp(state);
+  }
+
+  ssr(excludePaths: string[]) {
+    const { resourcePaths } = this.configRepository.getEnv();
+
+    let index = '';
+    try {
+      index = readFileSync(resourcePaths.web.indexHtml).toString();
+    } catch {
+      this.logger.warn(`Unable to open ${resourcePaths.web.indexHtml}, skipping SSR.`);
+    }
+
+    return async (request: Request, res: Response, next: NextFunction) => {
+      if (
+        request.url.startsWith('/api') ||
+        request.method.toLowerCase() !== 'get' ||
+        excludePaths.some((item) => request.url.startsWith(item))
+      ) {
+        return next();
+      }
+
+      const shareKey = request.url.match(/^\/share\/(.+)$/);
+      const shareSlug = request.url.match(/^\/s\/(.+)$/);
+
+      res
+        .status(shareKey || shareSlug ? 500 : 200)
+        .type('text/html')
+        .header('Cache-Control', 'no-store')
+        .send(index);
+    };
   }
 }
