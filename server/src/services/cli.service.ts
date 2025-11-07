@@ -1,9 +1,15 @@
 import { Injectable } from '@nestjs/common';
+import { createAdapter } from '@socket.io/redis-adapter';
+import Redis from 'ioredis';
 import { isAbsolute } from 'node:path';
+import { Server } from 'socket.io';
 import { SALT_ROUNDS } from 'src/constants';
 import { MaintenanceAuthDto } from 'src/dtos/maintenance.dto';
 import { UserAdminResponseDto, mapUserAdmin } from 'src/dtos/user.dto';
+import { SystemMetadataKey } from 'src/enum';
+import { AppRestartEvent } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
+import { MaintenanceService } from 'src/services/maintenance.service';
 import { getExternalDomain } from 'src/utils/misc';
 
 @Injectable()
@@ -40,8 +46,26 @@ export class CliService extends BaseService {
     await this.updateConfig(config);
   }
 
+  private sendOneShotAppRestart(state: AppRestartEvent): void {
+    const server = new Server();
+    const pubClient = new Redis(this.configRepository.getEnv().redis);
+    const subClient = pubClient.duplicate();
+    server.adapter(createAdapter(pubClient, subClient));
+
+    // => corresponds to notification.service.ts#onAppRestart
+    server.emit('AppRestartV1', state, () => {
+      server.serverSideEmit('AppRestart', state, () => {
+        pubClient.disconnect();
+        subClient.disconnect();
+      });
+    });
+  }
+
   async disableMaintenanceMode(): Promise<{ alreadyDisabled: boolean }> {
-    const currentState = await this.maintenanceRepository.getMaintenanceMode();
+    const currentState = await this.systemMetadataRepository
+      .get(SystemMetadataKey.MaintenanceMode)
+      .then((state) => state ?? { isMaintenanceMode: false as const });
+
     if (!currentState.isMaintenanceMode) {
       return {
         alreadyDisabled: true,
@@ -49,8 +73,9 @@ export class CliService extends BaseService {
     }
 
     const state = { isMaintenanceMode: false as const };
-    await this.maintenanceRepository.setMaintenanceMode(state);
-    this.maintenanceRepository.sendOneShotAppRestart(state);
+    await this.systemMetadataRepository.set(SystemMetadataKey.MaintenanceMode, state);
+
+    this.sendOneShotAppRestart(state);
 
     return {
       alreadyDisabled: false,
@@ -65,22 +90,30 @@ export class CliService extends BaseService {
       username: 'cli-admin',
     };
 
-    const state = await this.maintenanceRepository.getMaintenanceMode();
+    const state = await this.systemMetadataRepository
+      .get(SystemMetadataKey.MaintenanceMode)
+      .then((state) => state ?? { isMaintenanceMode: false as const });
+
     if (state.isMaintenanceMode) {
       return {
-        authUrl: await this.maintenanceRepository.createLoginUrl(baseUrl, payload, state.secret),
+        authUrl: await MaintenanceService.createLoginUrl(baseUrl, payload, state.secret),
         alreadyEnabled: true,
       };
     }
 
-    const { secret } = await this.maintenanceRepository.enterMaintenanceMode();
+    const secret = MaintenanceService.generateSecret();
 
-    this.maintenanceRepository.sendOneShotAppRestart({
+    await this.systemMetadataRepository.set(SystemMetadataKey.MaintenanceMode, {
+      isMaintenanceMode: true,
+      secret,
+    });
+
+    this.sendOneShotAppRestart({
       isMaintenanceMode: true,
     });
 
     return {
-      authUrl: await this.maintenanceRepository.createLoginUrl(baseUrl, payload, secret),
+      authUrl: await MaintenanceService.createLoginUrl(baseUrl, payload, secret),
       alreadyEnabled: false,
     };
   }

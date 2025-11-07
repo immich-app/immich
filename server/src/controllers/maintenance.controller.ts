@@ -1,11 +1,10 @@
-import { BadRequestException, Body, Controller, Post, Res } from '@nestjs/common';
+import { Body, Controller, Post, Res } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { MaintenanceAuthDto, MaintenanceLoginDto } from 'src/dtos/maintenance.dto';
 import { ImmichCookie, Permission } from 'src/enum';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
-import { MaintenanceRepository } from 'src/repositories/maintenance.repository';
 import { MaintenanceService } from 'src/services/maintenance.service';
 
 @ApiTags('Maintenance (admin)')
@@ -15,14 +14,14 @@ export class MaintenanceController {
 
   @Post('login')
   maintenanceLogin(@Body() _dto: MaintenanceLoginDto): MaintenanceAuthDto {
-    throw new BadRequestException('Not in maintenance mode');
+    return this.service.login();
   }
 
   @Post('start')
   @Authenticated({ permission: Permission.Maintenance, admin: true })
   async startMaintenance(@Auth() auth: AuthDto, @Res({ passthrough: true }) response: Response): Promise<void> {
     const { secret } = await this.service.startMaintenance();
-    const jwt = await MaintenanceRepository.createJwt(secret, {
+    const jwt = await this.service.createJwt(secret, {
       username: auth.user.name,
     });
 
@@ -32,6 +31,6 @@ export class MaintenanceController {
   @Post('end')
   @Authenticated({ permission: Permission.Maintenance, admin: true })
   endMaintenance(): void {
-    throw new BadRequestException('Not in maintenance mode');
+    this.service.endMaintenance();
   }
 }

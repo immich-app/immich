@@ -21,6 +21,7 @@ import { ConfigRepository } from 'src/repositories/config.repository';
 import { EventRepository } from 'src/repositories/event.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { MaintenanceWorkerRepository } from 'src/repositories/maintenance-worker.repository';
+import { MaintenanceRepository } from 'src/repositories/maintenance.repository';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
 import { teardownTelemetry, TelemetryRepository } from 'src/repositories/telemetry.repository';
 import { WebsocketRepository } from 'src/repositories/websocket.repository';
@@ -103,6 +104,7 @@ export class ApiModule extends BaseModule {}
     ConfigRepository,
     LoggingRepository,
     SystemMetadataRepository,
+    MaintenanceRepository,
     MaintenanceWorkerRepository,
     MaintenanceWorkerService,
     ...commonMiddleware,

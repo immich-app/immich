@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import {
   OnGatewayConnection,
   OnGatewayDisconnect,
@@ -6,21 +6,10 @@ import {
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
-import { parse } from 'cookie';
-import { IncomingHttpHeaders } from 'node:http';
 import { Server, Socket } from 'socket.io';
-import { MaintenanceAuthDto } from 'src/dtos/maintenance.dto';
-import { ExitCode, ImmichCookie, SystemMetadataKey } from 'src/enum';
 import { AppRestartEvent, ArgsOf } from 'src/repositories/event.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
-import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
-import { MaintenanceModeState } from 'src/types';
-
-import * as jose from 'jose';
-import { ConfigRepository } from 'src/repositories/config.repository';
 import { MaintenanceRepository } from 'src/repositories/maintenance.repository';
-import { getConfig } from 'src/utils/config';
-import { getExternalDomain } from 'src/utils/misc';
 
 export const serverEvents = ['AppRestart'] as const;
 export type ServerEvents = (typeof serverEvents)[number];
@@ -38,94 +27,23 @@ export interface ClientEventMap {
 export class MaintenanceWorkerRepository implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit {
   @WebSocketServer()
   private websocketServer?: Server;
-  private closeFn?: () => Promise<void>;
 
   constructor(
     private logger: LoggingRepository,
-    private configRepository: ConfigRepository,
-    private systemMetadataRepository: SystemMetadataRepository,
+    private maintenanceRepository: MaintenanceRepository,
   ) {
     this.logger.setContext(MaintenanceWorkerRepository.name);
   }
 
-  async exitMaintenanceMode(): Promise<void> {
-    const state: MaintenanceModeState = { isMaintenanceMode: false as const };
-    await this.systemMetadataRepository.set(SystemMetadataKey.MaintenanceMode, state);
-    this.restartApp(state);
-  }
-
-  async maintenanceSecret(): Promise<string> {
-    const result = await this.systemMetadataRepository.get(SystemMetadataKey.MaintenanceMode);
-    if (!result) {
-      throw new Error('Unreachable: Missing metadata for maintenance mode.');
-    }
-
-    if (!result.isMaintenanceMode) {
-      throw new Error('Unreachable: Not in maintenance mode.');
-    }
-
-    return result.secret;
-  }
-
-  async logSecret(): Promise<void> {
-    const { server } = await getConfig(
-      {
-        configRepo: this.configRepository,
-        metadataRepo: this.systemMetadataRepository,
-        logger: this.logger,
-      },
-      { withCache: true },
-    );
-
-    const baseUrl = getExternalDomain(server);
-    const url = await MaintenanceRepository.createLoginUrl(
-      baseUrl,
-      {
-        username: 'immich-admin',
-      },
-      await this.maintenanceSecret(),
-    );
-
-    this.logger.log(`\n\n🚧 Immich is in maintenance mode, you can log in using the following URL:\n${url}\n`);
-  }
-
-  async authenticate(headers: IncomingHttpHeaders): Promise<MaintenanceAuthDto> {
-    const jwtToken = parse(headers.cookie || '')[ImmichCookie.MaintenanceToken];
-    return this.authenticateToken(jwtToken);
-  }
-
-  async authenticateToken(jwtToken?: string): Promise<MaintenanceAuthDto> {
-    if (!jwtToken) {
-      throw new UnauthorizedException('Missing JWT Token');
-    }
-
-    try {
-      const secret = await this.maintenanceSecret();
-      const result = await jose.jwtVerify<MaintenanceAuthDto>(jwtToken, new TextEncoder().encode(secret));
-      return result.payload;
-    } catch {
-      throw new UnauthorizedException('Invalid JWT Token');
-    }
-  }
-
   afterInit(websocketServer: Server) {
     this.logger.log('Initialized websocket server');
-    websocketServer.on('AppRestart', () => this.exitApp());
+    websocketServer.on('AppRestart', () => this.maintenanceRepository.exitApp());
   }
 
   restartApp(state: AppRestartEvent) {
     this.clientBroadcast('AppRestartV1', state);
     this.serverSend('AppRestart', state);
-    this.exitApp();
-  }
-
-  private exitApp() {
-    /* eslint-disable unicorn/no-process-exit */
-    void this.closeFn?.().then(() => process.exit(ExitCode.AppRestart));
-
-    // in exceptional circumstance, the application may hang
-    setTimeout(() => process.exit(ExitCode.AppRestart), 5000);
-    /* eslint-enable unicorn/no-process-exit */
+    this.maintenanceRepository.exitApp();
   }
 
   handleConnection(client: Socket) {
@@ -144,9 +62,5 @@ export class MaintenanceWorkerRepository implements OnGatewayConnection, OnGatew
   serverSend<T extends ServerEvents>(event: T, ...args: ArgsOf<T>): void {
     this.logger.debug(`Server event: ${event} (send)`);
     this.websocketServer?.serverSideEmit(event, ...args);
-  }
-
-  setCloseFn(fn: () => Promise<void>) {
-    this.closeFn = fn;
   }
 }
