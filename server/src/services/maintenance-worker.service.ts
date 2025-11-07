@@ -122,7 +122,7 @@ export class MaintenanceWorkerService {
       this.logger.warn(`Unable to open ${resourcePaths.web.indexHtml}, skipping SSR.`);
     }
 
-    return async (request: Request, res: Response, next: NextFunction) => {
+    return (request: Request, res: Response, next: NextFunction) => {
       if (
         request.url.startsWith('/api') ||
         request.method.toLowerCase() !== 'get' ||

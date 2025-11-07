@@ -23,7 +23,8 @@ test.describe('Maintenance', () => {
     await page.waitForURL('/maintenance?**');
     await expect(page.getByText('Temporarily Unavailable')).toBeVisible();
 
-    cookie = (await context.cookies(page.url())).find(({ name }) => name === 'immich_maintenance_token')?.value;
+    const cookies = await context.cookies(page.url());
+    cookie = cookies.find(({ name }) => name === 'immich_maintenance_token')?.value;
     expect(cookie).toBeTruthy();
   });
 
