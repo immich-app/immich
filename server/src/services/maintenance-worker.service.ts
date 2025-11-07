@@ -10,7 +10,10 @@ import { ConfigRepository } from 'src/repositories/config.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { MaintenanceWorkerRepository } from 'src/repositories/maintenance-worker.repository';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
+import { type ApiService } from 'src/services/api.service';
+import { type BaseService } from 'src/services/base.service';
 import { MaintenanceService } from 'src/services/maintenance.service';
+import { type ServerService } from 'src/services/server.service';
 import { MaintenanceModeState } from 'src/types';
 import { getConfig } from 'src/utils/config';
 import { getExternalDomain } from 'src/utils/misc';
@@ -29,6 +32,9 @@ export class MaintenanceWorkerService {
     this.logger.setContext(this.constructor.name);
   }
 
+  /**
+   * {@link BaseService.configRepos}
+   */
   private get configRepos() {
     return {
       configRepo: this.configRepository,
@@ -37,10 +43,16 @@ export class MaintenanceWorkerService {
     };
   }
 
+  /**
+   * {@link BaseService.prototype.getConfig}
+   */
   private getConfig(options: { withCache: boolean }) {
     return getConfig(this.configRepos, options);
   }
 
+  /**
+   * {@link ServerService.getSystemConfig}
+   */
   async getSystemConfig() {
     const config = await this.getConfig({ withCache: false });
 
@@ -56,6 +68,39 @@ export class MaintenanceWorkerService {
       mapDarkStyleUrl: config.map.darkStyle,
       mapLightStyleUrl: config.map.lightStyle,
       maintenanceMode: true,
+    };
+  }
+
+  /**
+   * {@link ApiService.ssr}
+   */
+  ssr(excludePaths: string[]) {
+    const { resourcePaths } = this.configRepository.getEnv();
+
+    let index = '';
+    try {
+      index = readFileSync(resourcePaths.web.indexHtml).toString();
+    } catch {
+      this.logger.warn(`Unable to open ${resourcePaths.web.indexHtml}, skipping SSR.`);
+    }
+
+    return (request: Request, res: Response, next: NextFunction) => {
+      if (
+        request.url.startsWith('/api') ||
+        request.method.toLowerCase() !== 'get' ||
+        excludePaths.some((item) => request.url.startsWith(item))
+      ) {
+        return next();
+      }
+
+      const maintenancePath = '/maintenance';
+      if (!request.url.startsWith(maintenancePath)) {
+        const params = new URLSearchParams();
+        params.set('continue', request.path);
+        return res.redirect(`${maintenancePath}?${params}`);
+      }
+
+      res.status(200).type('text/html').header('Cache-Control', 'no-store').send(index);
     };
   }
 
@@ -110,35 +155,5 @@ export class MaintenanceWorkerService {
     const state: MaintenanceModeState = { isMaintenanceMode: false as const };
     await this.systemMetadataRepository.set(SystemMetadataKey.MaintenanceMode, state);
     this.maintenanceWorkerRepository.restartApp(state);
-  }
-
-  ssr(excludePaths: string[]) {
-    const { resourcePaths } = this.configRepository.getEnv();
-
-    let index = '';
-    try {
-      index = readFileSync(resourcePaths.web.indexHtml).toString();
-    } catch {
-      this.logger.warn(`Unable to open ${resourcePaths.web.indexHtml}, skipping SSR.`);
-    }
-
-    return (request: Request, res: Response, next: NextFunction) => {
-      if (
-        request.url.startsWith('/api') ||
-        request.method.toLowerCase() !== 'get' ||
-        excludePaths.some((item) => request.url.startsWith(item))
-      ) {
-        return next();
-      }
-
-      const maintenancePath = '/maintenance';
-      if (!request.url.startsWith(maintenancePath)) {
-        const params = new URLSearchParams();
-        params.set('continue', request.path);
-        return res.redirect(`${maintenancePath}?${params}`);
-      }
-
-      res.status(200).type('text/html').header('Cache-Control', 'no-store').send(index);
-    };
   }
 }
