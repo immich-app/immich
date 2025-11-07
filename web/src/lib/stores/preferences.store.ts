@@ -59,11 +59,13 @@ export const mapSettings = persistedObject<MapSettings>('map-settings', defaultM
 export interface TimelineSettings {
   withPartners: boolean;
   withSharedAlbums: boolean;
+  selectedSharedAlbumIds: string[];
 }
 
 const defaultTimelineSettings: TimelineSettings = {
   withPartners: true,
   withSharedAlbums: false,
+  selectedSharedAlbumIds: [],
 };
 
 export const timelineSettings = persistedObject<TimelineSettings>('timeline-settings', defaultTimelineSettings);

@@ -29,6 +29,7 @@ export class TimelineService extends BaseService {
     const { userId, ...options } = dto;
     let userIds: string[] | undefined = undefined;
     let sharedAlbumsUserId: string | undefined = undefined;
+    let specificAlbumIds: string[] | undefined = undefined;
 
     if (userId) {
       userIds = [userId];
@@ -40,12 +41,26 @@ export class TimelineService extends BaseService {
         });
         userIds.push(...partnerIds);
       }
-      if (dto.withSharedAlbums) {
+
+      // Priority: specific album selection > all shared albums
+      if (dto.albumIds && dto.albumIds.length > 0) {
+        // Validate user has access to these albums
+        const userAlbums = await this.albumRepository.getShared(auth.user.id);
+        const userAlbumIds = new Set(userAlbums.map((a) => a.id));
+
+        // Filter to only albums user has access to
+        specificAlbumIds = dto.albumIds.filter((id) => userAlbumIds.has(id));
+
+        // If user requested albums but has access to none, use empty array (show no shared album assets)
+        if (specificAlbumIds.length === 0 && dto.albumIds.length > 0) {
+          specificAlbumIds = [];
+        }
+      } else if (dto.withSharedAlbums) {
         sharedAlbumsUserId = auth.user.id;
       }
     }
 
-    return { ...options, userIds, sharedAlbumsUserId };
+    return { ...options, userIds, sharedAlbumsUserId, specificAlbumIds };
   }
 
   private async timeBucketChecks(auth: AuthDto, dto: TimeBucketDto) {
@@ -90,6 +105,18 @@ export class TimelineService extends BaseService {
       if (requestedArchived || requestedFavorite || requestedTrash) {
         throw new BadRequestException(
           'withSharedAlbums is only supported for non-archived, non-trashed, non-favorited assets',
+        );
+      }
+    }
+
+    if (dto.albumIds && dto.albumIds.length > 0) {
+      const requestedArchived = dto.visibility === AssetVisibility.Archive || dto.visibility === undefined;
+      const requestedFavorite = dto.isFavorite === true || dto.isFavorite === false;
+      const requestedTrash = dto.isTrashed === true;
+
+      if (requestedArchived || requestedFavorite || requestedTrash) {
+        throw new BadRequestException(
+          'Album filtering is only supported for non-archived, non-trashed, non-favorited assets',
         );
       }
     }

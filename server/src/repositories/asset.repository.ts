@@ -59,6 +59,7 @@ interface AssetBuilderOptions {
   withStacked?: boolean;
   withSharedAlbums?: boolean;
   sharedAlbumsUserId?: string;
+  specificAlbumIds?: string[];
   exifInfo?: boolean;
   status?: AssetStatus;
   assetType?: AssetType;
@@ -577,6 +578,25 @@ export class AssetRepository {
               .where((eb) => eb.or([eb('asset.stackId', 'is', null), eb(eb.table('stack'), 'is not', null)])),
           )
           .$if(!!options.userIds, (qb) => {
+            // Priority: specific album selection > all shared albums
+            if (options.specificAlbumIds !== undefined) {
+              if (options.specificAlbumIds.length === 0) {
+                // User has access to no albums, only show owned assets
+                return qb.where('asset.ownerId', '=', anyUuid(options.userIds!));
+              }
+              // Show owned assets OR assets from specific albums
+              return qb.where((eb) =>
+                eb.or([
+                  eb('asset.ownerId', '=', anyUuid(options.userIds!)),
+                  eb.exists(
+                    eb
+                      .selectFrom('album_asset')
+                      .whereRef('album_asset.assetId', '=', 'asset.id')
+                      .where('album_asset.albumId', 'in', options.specificAlbumIds!),
+                  ),
+                ]),
+              );
+            }
             if (options.withSharedAlbums && options.sharedAlbumsUserId) {
               return qb.where((eb) =>
                 eb.or([
@@ -651,24 +671,47 @@ export class AssetRepository {
               .as('ratio'),
           ])
           .$if(!!options.withCoordinates, (qb) => qb.select(['asset_exif.latitude', 'asset_exif.longitude']))
-          .$if(!!options.withSharedAlbums && !!options.sharedAlbumsUserId, (qb) =>
-            qb
-              .leftJoinLateral(
-                (eb) =>
-                  eb
-                    .selectFrom('album_asset')
-                    .innerJoin('album_user', 'album_asset.albumId', 'album_user.albumId')
-                    .innerJoin('album', 'album_asset.albumId', 'album.id')
-                    .select(['album.id as albumId', 'album.albumName as albumName'])
-                    .whereRef('album_asset.assetId', '=', 'asset.id')
-                    .where('album_user.userId', '=', options.sharedAlbumsUserId!)
-                    .where('album_user.role', 'in', [AlbumUserRole.Editor, AlbumUserRole.Viewer])
-                    .where('album.deletedAt', 'is', null)
-                    .limit(1)
-                    .as('shared_album'),
-                (join) => join.onTrue(),
-              )
-              .select(['shared_album.albumId', 'shared_album.albumName']),
+          .$if(
+            (!!options.withSharedAlbums && !!options.sharedAlbumsUserId) ||
+              (!!options.specificAlbumIds && options.specificAlbumIds.length > 0),
+            (qb) => {
+              if (options.specificAlbumIds !== undefined && options.specificAlbumIds.length > 0) {
+                // For specific albums, just get album info without role check
+                return qb
+                  .leftJoinLateral(
+                    (eb) =>
+                      eb
+                        .selectFrom('album_asset')
+                        .innerJoin('album', 'album_asset.albumId', 'album.id')
+                        .select(['album.id as albumId', 'album.albumName as albumName'])
+                        .whereRef('album_asset.assetId', '=', 'asset.id')
+                        .where('album_asset.albumId', 'in', options.specificAlbumIds!)
+                        .where('album.deletedAt', 'is', null)
+                        .limit(1)
+                        .as('shared_album'),
+                    (join) => join.onTrue(),
+                  )
+                  .select(['shared_album.albumId', 'shared_album.albumName']);
+              }
+              // For all shared albums, check user role
+              return qb
+                .leftJoinLateral(
+                  (eb) =>
+                    eb
+                      .selectFrom('album_asset')
+                      .innerJoin('album_user', 'album_asset.albumId', 'album_user.albumId')
+                      .innerJoin('album', 'album_asset.albumId', 'album.id')
+                      .select(['album.id as albumId', 'album.albumName as albumName'])
+                      .whereRef('album_asset.assetId', '=', 'asset.id')
+                      .where('album_user.userId', '=', options.sharedAlbumsUserId!)
+                      .where('album_user.role', 'in', [AlbumUserRole.Editor, AlbumUserRole.Viewer])
+                      .where('album.deletedAt', 'is', null)
+                      .limit(1)
+                      .as('shared_album'),
+                  (join) => join.onTrue(),
+                )
+                .select(['shared_album.albumId', 'shared_album.albumName']);
+            },
           )
           .where('asset.deletedAt', options.isTrashed ? 'is not' : 'is', null)
           .$if(options.visibility == undefined, withDefaultVisibility)
@@ -686,6 +729,25 @@ export class AssetRepository {
           )
           .$if(!!options.personId, (qb) => hasPeople(qb, [options.personId!]))
           .$if(!!options.userIds, (qb) => {
+            // Priority: specific album selection > all shared albums
+            if (options.specificAlbumIds !== undefined) {
+              if (options.specificAlbumIds.length === 0) {
+                // User has access to no albums, only show owned assets
+                return qb.where('asset.ownerId', '=', anyUuid(options.userIds!));
+              }
+              // Show owned assets OR assets from specific albums
+              return qb.where((eb) =>
+                eb.or([
+                  eb('asset.ownerId', '=', anyUuid(options.userIds!)),
+                  eb.exists(
+                    eb
+                      .selectFrom('album_asset')
+                      .whereRef('album_asset.assetId', '=', 'asset.id')
+                      .where('album_asset.albumId', 'in', options.specificAlbumIds!),
+                  ),
+                ]),
+              );
+            }
             if (options.withSharedAlbums && options.sharedAlbumsUserId) {
               return qb.where((eb) =>
                 eb.or([

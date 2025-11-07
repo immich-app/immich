@@ -53,6 +53,8 @@
     withStacked: true,
     withPartners: $timelineSettings.withPartners,
     withSharedAlbums: $timelineSettings.withSharedAlbums,
+    albumIds:
+      $timelineSettings.selectedSharedAlbumIds.length > 0 ? $timelineSettings.selectedSharedAlbumIds : undefined,
   });
 
   const assetInteraction = new AssetInteraction();

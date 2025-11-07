@@ -11,6 +11,9 @@ export class TimeBucketDto {
   @ValidateUUID({ optional: true, description: 'Filter assets belonging to a specific album' })
   albumId?: string;
 
+  @ValidateUUID({ optional: true, each: true, description: 'Filter assets from specific shared albums (user must have access)' })
+  albumIds?: string[];
+
   @ValidateUUID({ optional: true, description: 'Filter assets containing a specific person (face recognition)' })
   personId?: string;
 
