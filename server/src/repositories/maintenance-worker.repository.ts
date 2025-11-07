@@ -53,7 +53,7 @@ export class MaintenanceWorkerRepository implements OnGatewayConnection, OnGatew
     this.logger.log(`Websocket Connect:    ${client.id}`);
   }
 
-  async handleDisconnect(client: Socket) {
+  handleDisconnect(client: Socket) {
     this.logger.log(`Websocket Disconnect: ${client.id}`);
   }
 }
