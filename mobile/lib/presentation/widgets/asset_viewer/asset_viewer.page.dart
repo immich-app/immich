@@ -663,7 +663,6 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
         appBar: const ViewerTopAppBar(),
         extendBody: true,
         extendBodyBehindAppBar: true,
-        // floatingActionButton: const DownloadStatusFloatingButton(),
         floatingActionButton: IgnorePointer(
           ignoring: !showingControls, // avoid invisible fab being tappable
           child: AnimatedOpacity(
