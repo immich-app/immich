@@ -10,7 +10,7 @@ Running with a pre-existing Postgres server can unlock powerful administrative f
 
 ## Prerequisites
 
-You must install `pgvector` (`>= 0.7.0, < 0.9.0`), as it is a prerequisite for `vchord`.
+You must install `pgvector` (versions `>= 0.7.0, < 0.9.0` are known to work) as it is a prerequisite for VectorChord.
 The easiest way to do this on Debian/Ubuntu is by adding the [PostgreSQL Apt repository][pg-apt] and then
 running `apt install postgresql-NN-pgvector`, where `NN` is your Postgres version (e.g., `16`).
 
