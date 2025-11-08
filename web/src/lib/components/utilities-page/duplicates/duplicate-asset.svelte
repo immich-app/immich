@@ -17,6 +17,7 @@
     mdiImageOutline,
     mdiMagnifyPlus,
     mdiMapMarkerOutline,
+    mdiFolderOutline
   } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import InfoRow from './info-row.svelte';
@@ -51,6 +52,7 @@
     fileName: isDifferent((a) => a.originalFileName),
     fileSize: isDifferent((a) => getFileSize(a)),
     resolution: isDifferent((a) => getAssetResolution(a)),
+    originalPath: isDifferent((a) => a.originalPath ?? 'unknown'),
     date: isDifferent((a) => {
       const tz = a.exifInfo?.timeZone;
       const dt =
@@ -150,6 +152,10 @@
   >
     <InfoRow icon={mdiImageOutline} highlight={hasDifferentValues.fileName} title={$t('file_name')}>
       {asset.originalFileName}
+    </InfoRow>
+
+    <InfoRow icon={mdiFolderOutline} highlight={hasDifferentValues.originalPath} title={$t('original_path')}>
+      {asset.originalPath ?? $t('unknown')}
     </InfoRow>
 
     <InfoRow icon={mdiFile} highlight={hasDifferentValues.fileSize} title={$t('file_size')}>
