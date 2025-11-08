@@ -17,9 +17,8 @@
     websocketStore,
     type ReleaseEvent,
   } from '$lib/stores/websocket';
-  import { copyToClipboard, getReleaseType } from '$lib/utils';
+  import { copyToClipboard, getReleaseType, semverToName } from '$lib/utils';
   import { isAssetViewerRoute } from '$lib/utils/navigation';
-  import type { ServerVersionResponseDto } from '@immich/sdk';
   import { modalManager, setTranslations } from '@immich/ui';
   import { onMount, type Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -78,7 +77,6 @@
     }
   });
 
-  const semverToName = ({ major, minor, patch }: ServerVersionResponseDto) => `v${major}.${minor}.${patch}`;
   const { release } = websocketStore;
 
   const handleRelease = async (release?: ReleaseEvent) => {
