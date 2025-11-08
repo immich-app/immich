@@ -9,6 +9,7 @@
   import { photoViewerImgElement } from '$lib/stores/assets-store.svelte';
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import { boundingBoxesArray } from '$lib/stores/people.store';
+  import { ocrDataArray, showOcrOverlay } from '$lib/stores/ocr.store';
   import { alwaysLoadOriginalFile } from '$lib/stores/preferences.store';
   import { SlideshowLook, SlideshowState, slideshowLookCssMapping, slideshowStore } from '$lib/stores/slideshow.store';
   import { photoZoomState } from '$lib/stores/zoom-image.store';
@@ -16,6 +17,7 @@
   import { canCopyImageToClipboard, copyImageToClipboard, isWebCompatibleImage } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
   import { getBoundingBox } from '$lib/utils/people-utils';
+  import { getOcrBoundingBoxes } from '$lib/utils/ocr-utils';
   import { cancelImageUrl } from '$lib/utils/sw-messaging';
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
@@ -70,6 +72,12 @@
   onDestroy(() => {
     $boundingBoxesArray = [];
   });
+
+  let ocrBoxes = $derived(
+    $showOcrOverlay && $photoViewerImgElement
+      ? getOcrBoundingBoxes($ocrDataArray, $photoZoomState, $photoViewerImgElement)
+      : []
+  );
 
   const preload = (targetSize: AssetMediaSize | 'original', preloadAssets?: TimelineAsset[]) => {
     for (const preloadAsset of preloadAssets || []) {
@@ -261,6 +269,32 @@
           style="top: {boundingbox.top}px; left: {boundingbox.left}px; height: {boundingbox.height}px; width: {boundingbox.width}px;"
         ></div>
       {/each}
+      <!-- OCR bounding boxes -->
+      {#if $showOcrOverlay && ocrBoxes.length > 0}
+        <svg class="absolute top-0 left-0 w-full h-full pointer-events-none" style="overflow: visible;">
+          {#each ocrBoxes as ocrBox (ocrBox.id)}
+            {@const points = ocrBox.points}
+            {@const pathData = `M ${points[0].x} ${points[0].y} L ${points[1].x} ${points[1].y} L ${points[2].x} ${points[2].y} L ${points[3].x} ${points[3].y} Z`}
+            <path
+              d={pathData}
+              fill="rgba(59, 130, 246, 0.2)"
+              stroke="rgb(59, 130, 246)"
+              stroke-width="2"
+            />
+          {/each}
+        </svg>
+        {#each ocrBoxes as ocrBox (ocrBox.id)}
+          {@const points = ocrBox.points}
+          {@const centerX = (points[0].x + points[1].x + points[2].x + points[3].x) / 4}
+          {@const centerY = (points[0].y + points[1].y + points[2].y + points[3].y) / 4}
+          <div
+            class="absolute pointer-events-none text-white text-sm font-semibold px-2 py-1 rounded shadow-lg"
+            style="left: {centerX}px; top: {centerY}px; transform: translate(-50%, -50%); background-color: rgba(59, 130, 246, 0.9); max-width: 200px; word-break: break-word;"
+          >
+            {ocrBox.text}
+          </div>
+        {/each}
+      {/if}
     </div>
 
     {#if isFaceEditMode.value}

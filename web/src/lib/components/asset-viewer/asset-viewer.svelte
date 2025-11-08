@@ -42,6 +42,7 @@
   import CropArea from './editor/crop-tool/crop-area.svelte';
   import EditorPanel from './editor/editor-panel.svelte';
   import ImagePanoramaViewer from './image-panorama-viewer.svelte';
+  import OcrButton from './ocr-button.svelte';
   import PhotoViewer from './photo-viewer.svelte';
   import SlideshowBar from './slideshow-bar.svelte';
   import VideoViewer from './video-wrapper-viewer.svelte';
@@ -532,6 +533,11 @@
               onFavorite={handleFavorite}
               onOpenActivityTab={handleOpenActivity}
             />
+          </div>
+        {/if}
+        {#if $slideshowState === SlideshowState.None && asset.type === AssetTypeEnum.Image && !isShowEditor}
+          <div class="absolute bottom-0 end-0 mb-6 me-6">
+            <OcrButton assetId={asset.id} />
           </div>
         {/if}
       {/key}
