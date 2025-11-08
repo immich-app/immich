@@ -2,8 +2,8 @@
   import ServerAboutModal from '$lib/modals/ServerAboutModal.svelte';
   import { user } from '$lib/stores/user.store';
   import { userInteraction } from '$lib/stores/user.svelte';
-  import { websocketStore, type ReleaseEvent } from '$lib/stores/websocket';
-  import { getReleaseType, semverToName } from '$lib/utils';
+  import { websocketStore } from '$lib/stores/websocket';
+  import { semverToName } from '$lib/utils';
   import { requestServerInfo } from '$lib/utils/auth';
   import {
     getAboutInfo,
@@ -20,8 +20,6 @@
 
   let info: ServerAboutResponseDto | undefined = $state();
   let versions: ServerVersionHistoryResponseDto[] = $state([]);
-  let availableVersion: string | null = $state(null);
-  let releaseUrl: string | null = $state(null);
 
   onMount(async () => {
     if (userInteraction.aboutInfo && userInteraction.versions && $serverVersion) {
@@ -39,23 +37,20 @@
     $serverVersion ? `v${$serverVersion.major}.${$serverVersion.minor}.${$serverVersion.patch}` : null,
   );
 
-  const handleRelease = (release?: ReleaseEvent) => {
-    if (!release?.isAvailable || !$user.isAdmin) {
+  const releaseInfo = $derived.by(() => {
+    if ($release == undefined || $release?.isAvailable || !$user.isAdmin) {
       return;
     }
 
-    const releaseVersion = semverToName(release.releaseVersion);
-    const serverVersion = semverToName(release.serverVersion);
-    const type = getReleaseType(release.serverVersion, release.releaseVersion);
-    if (type === 'none' || serverVersion === releaseVersion) {
+    const availableVersion = semverToName($release.releaseVersion);
+    const serverVersion = semverToName($release.serverVersion);
+
+    if (serverVersion === availableVersion) {
       return;
     }
 
-    availableVersion = releaseVersion;
-    releaseUrl = `https://github.com/immich-app/immich/releases/tag/${releaseVersion}`;
-  };
-
-  $effect(() => void handleRelease($release));
+    return { availableVersion, releaseUrl: `https://github.com/immich-app/immich/releases/tag/${availableVersion}` };
+  });
 </script>
 
 <div
@@ -92,9 +87,9 @@
   </div>
 </div>
 
-{#if availableVersion && releaseUrl}
+{#if releaseInfo}
   <a
-    href={releaseUrl}
+    href={releaseInfo.releaseUrl}
     target="_blank"
     rel="noopener noreferrer"
     class="mt-3 p-2.5 ms-4 rounded-lg text-sm min-w-52 border border-gray-200/50 dark:border-gray-700/50 bg-white/50 dark:bg-gray-800/50 hover:border-immich-primary/40 dark:hover:border-immich-dark-primary/40 hover:bg-immich-primary/5 dark:hover:bg-immich-dark-primary/5 transition-all duration-200 group block"
@@ -103,7 +98,7 @@
       <div class="flex items-center gap-2">
         <Icon icon={mdiNewBox} size="16" class="text-immich-primary dark:text-immich-dark-primary opacity-80" />
         <Text size="tiny" class="font-medium text-gray-700 dark:text-gray-300">
-          {availableVersion}
+          {releaseInfo.availableVersion}
         </Text>
       </div>
       <span
