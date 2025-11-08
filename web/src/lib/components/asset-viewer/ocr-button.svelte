@@ -1,69 +1,17 @@
 <script lang="ts">
-  import { ocrDataArray, showOcrOverlay } from '$lib/stores/ocr.store';
-  import { getAssetOcr } from '@immich/sdk';
+  import { ocrStore } from '$lib/stores/ocr.svelte';
   import { IconButton } from '@immich/ui';
   import { mdiTextRecognition } from '@mdi/js';
-  import { untrack } from 'svelte';
-
-  interface Props {
-    assetId: string;
-  }
-
-  let { assetId }: Props = $props();
-
-  let isLoading = $state(false);
-  let hasOcrData = $state<boolean | null>(null);
-  let currentAssetId = $state<string>('');
-
-  const checkOcrData = async (id: string) => {
-    try {
-      const ocrResults = await getAssetOcr({ id });
-      console.log('OCR results for asset', id, ocrResults);
-      
-      untrack(() => {
-        $ocrDataArray = ocrResults;
-        hasOcrData = ocrResults.length > 0;
-      });
-    } catch (error) {
-      console.error('Failed to check OCR data:', error);
-      untrack(() => {
-        hasOcrData = false;
-      });
-    }
-  };
-
-  const toggleOcrOverlay = () => {
-    $showOcrOverlay = !$showOcrOverlay;
-  };
-
-  $effect(() => {
-    // Only react to assetId changes
-    if (assetId && assetId !== currentAssetId) {
-      currentAssetId = assetId;
-      
-      // Reset state in untrack to avoid triggering the effect again
-      untrack(() => {
-        hasOcrData = null;
-        $showOcrOverlay = false;
-        $ocrDataArray = [];
-      });
-      
-      // Check for OCR data
-      void checkOcrData(assetId);
-    }
-  });
+  import { t } from 'svelte-i18n';
 </script>
 
-{#if hasOcrData === true}
-  <IconButton
-    title={$showOcrOverlay ? 'Hide text recognition' : 'Show text recognition'}
-    icon={mdiTextRecognition}
-    disabled={isLoading}
-    class={$showOcrOverlay ? 'bg-immich-primary text-white' : ''}
-    color="secondary"
-    variant="ghost"
-    shape="round"
-    aria-label="Text recognition"
-    onclick={toggleOcrOverlay}
-  />
-{/if}
+<IconButton
+  title={ocrStore.showOverlay ? $t('hide_text_recognition') : $t('show_text_recognition')}
+  icon={mdiTextRecognition}
+  class={"dark {ocrStore.showOverlay ? 'bg-immich-primary text-white dark' : 'dark'}"}
+  color="secondary"
+  variant="ghost"
+  shape="round"
+  aria-label={$t('text_recognition')}
+  onclick={() => ocrStore.toggleOcrBoundingBox()}
+/>

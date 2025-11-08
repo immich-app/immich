@@ -1,4 +1,4 @@
-import type { OcrBoundingBox } from '$lib/stores/ocr.store';
+import type { OcrBoundingBox } from '$lib/stores/ocr.svelte';
 import type { ZoomImageWheelState } from '@zoom-image/core';
 
 const getContainedSize = (img: HTMLImageElement): { width: number; height: number } => {

@@ -11,6 +11,7 @@
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import { closeEditorCofirm } from '$lib/stores/asset-editor.store';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
+  import { ocrStore } from '$lib/stores/ocr.svelte';
   import { alwaysLoadOriginalVideo, isShowDetail } from '$lib/stores/preferences.store';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { user } from '$lib/stores/user.store';
@@ -382,9 +383,13 @@
       handlePromiseError(activityManager.init(album.id, asset.id));
     }
   });
+
+  let currentAssetId = $derived(asset.id);
   $effect(() => {
-    if (asset.id) {
-      handlePromiseError(handleGetAllAlbums());
+    if (currentAssetId) {
+      untrack(() => handlePromiseError(handleGetAllAlbums()));
+      ocrStore.clear();
+      handlePromiseError(ocrStore.getAssetOcr(currentAssetId));
     }
   });
 </script>
@@ -523,6 +528,7 @@
             {playOriginalVideo}
           />
         {/if}
+
         {#if $slideshowState === SlideshowState.None && isShared && ((album && album.isActivityEnabled) || activityManager.commentCount > 0) && !activityManager.isLoading}
           <div class="absolute bottom-0 end-0 mb-20 me-8">
             <ActivityStatus
@@ -535,9 +541,10 @@
             />
           </div>
         {/if}
-        {#if $slideshowState === SlideshowState.None && asset.type === AssetTypeEnum.Image && !isShowEditor}
+
+        {#if $slideshowState === SlideshowState.None && asset.type === AssetTypeEnum.Image && !isShowEditor && ocrStore.hasOcrData}
           <div class="absolute bottom-0 end-0 mb-6 me-6">
-            <OcrButton assetId={asset.id} />
+            <OcrButton />
           </div>
         {/if}
       {/key}
