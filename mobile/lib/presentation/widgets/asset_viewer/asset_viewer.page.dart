@@ -664,7 +664,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
         extendBody: true,
         extendBodyBehindAppBar: true,
         floatingActionButton: IgnorePointer(
-          ignoring: !showingControls, // avoid invisible fab being tappable
+          ignoring: !showingControls,
           child: AnimatedOpacity(
             opacity: showingControls ? 1.0 : 0.0,
             duration: Durations.short2,
