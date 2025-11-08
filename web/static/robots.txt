@@ -1,5 +1,6 @@
 # Allow social media access og Tags
 User-agent: *
+Content-Signal: ai-train=no, search=yes, ai-input=no # https://contentsignals.org/
 Allow: /share/
 Allow: /api/assets/
 
