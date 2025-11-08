@@ -154,9 +154,11 @@
       {asset.originalFileName}
     </InfoRow>
 
-    <InfoRow icon={mdiFolderOutline} highlight={hasDifferentValues.originalPath} title={$t('original_path')}>
-      {asset.originalPath ?? $t('unknown')}
-    </InfoRow>
+    {#if isFromExternalLibrary}
+      <InfoRow icon={mdiFolderOutline} highlight={hasDifferentValues.originalPath} title={$t('original_path')}>
+        {asset.originalPath ?? $t('unknown')}
+      </InfoRow>
+    {/if}
 
     <InfoRow icon={mdiFile} highlight={hasDifferentValues.fileSize} title={$t('file_size')}>
       {getFileSize(asset)}
