@@ -116,3 +116,5 @@ Then click on **Next**.
 If everything looks fine on the summary configuration page, then click on **Next** again, and then **Submit**.
 
 After Immich will be up-and-running again, go into your admin **External Libraries** configuration page in Immich, and add the supplied path (i.e. `/data/test1`).
+
+You can repeat these steps, if you want to add even more shares to the Immich instance.
