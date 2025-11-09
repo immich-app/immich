@@ -15,6 +15,10 @@
  *             While waiting in a TTY, prints a single updating status line; on completion
  *             prints final output (respects --total / --json if provided).
  *             (Alias: --watch retained for backwards compatibility)
+ *  - --queue <name>: Limit output to a single queue (disables --wait).
+ *  - --exclude <q1[,q2,...]>: Exclude one or more queues from aggregate totals. They will still
+ *              appear under `queues` unless --json is omitted and a human summary is shown.
+ *              Invalid names cause an error. Cannot be combined with --queue or --wait.
  *
  * Usage examples:
  *   node server/scripts/queue-stats.js
@@ -29,8 +33,8 @@
  *   REDIS_PASSWORD, REDIS_DBINDEX, BULL_PREFIX
  */
 
-const { Queue } = require('bullmq');
-const process = require('process');
+import { Queue } from 'bullmq';
+import process from 'node:process';
 
 /**
  * Ordered list of queues whose statistics we care about for Immich.
@@ -51,7 +55,9 @@ const QUEUE_NAMES = [
   'library',
   'notifications',
   'backupDatabase',
-  'ocr'
+  'ocr',
+  // Newly added backgroundTask queue: triggers microservices start but suppresses keep-alive.
+  'backgroundTask',
 ];
 
 /**
@@ -65,12 +71,16 @@ const QUEUE_NAMES = [
 function parseArgs() {
   const argv = process.argv.slice(2);
   const totalIdx = argv.indexOf('--total');
+  const queueIdx = argv.indexOf('--queue');
+  const excludeIdx = argv.indexOf('--exclude');
   const hasWatch = argv.includes('--watch');
   const hasWait = argv.includes('--wait');
   return {
-    total: totalIdx !== -1 ? argv[totalIdx + 1] : undefined,
+    total: totalIdx === -1 ? undefined : argv[totalIdx + 1],
     json: argv.includes('--json'),
     wait: hasWait || hasWatch,
+    queue: queueIdx === -1 ? undefined : argv[queueIdx + 1],
+    exclude: excludeIdx === -1 ? [] : argv[excludeIdx + 1].split(',').filter(Boolean),
   };
 }
 
@@ -98,7 +108,7 @@ function getRedisConnectionOptions() {
 
   if (REDIS_URL) {
     if (REDIS_URL.startsWith('ioredis://')) {
-      const encoded = REDIS_URL.substring('ioredis://'.length);
+      const encoded = REDIS_URL.slice('ioredis://'.length);
       try {
         const json = JSON.parse(Buffer.from(encoded, 'base64').toString('utf8'));
         return { ...json, prefix };
@@ -133,7 +143,7 @@ function getRedisConnectionOptions() {
 async function fetchQueue(name, connection) {
   const queue = new Queue(name, { connection, prefix: connection.prefix });
   try {
-    const [counts, isPaused, activeCount] = await Promise.all([
+    const [counts, _isPaused, activeCount] = await Promise.all([
       queue.getJobCounts('active', 'completed', 'failed', 'delayed', 'waiting', 'paused'),
       queue.isPaused(),
       queue.getActiveCount(),
@@ -180,31 +190,72 @@ function aggregate(entries) {
  * Exits with code 2 for invalid arguments, 1 for unhandled errors.
  */
 async function main() {
-  const { total, json, wait } = parseArgs();
+  const { total, json, wait, queue, exclude } = parseArgs();
   if (total && !['active', 'completed', 'failed', 'delayed', 'waiting', 'paused'].includes(total)) {
     console.error(`Invalid --total value: ${total}`);
     process.exit(2);
   }
+  if (queue && !QUEUE_NAMES.includes(queue)) {
+    console.error(`Invalid --queue value: ${queue}`);
+    process.exit(2);
+  }
+  if (queue && wait) {
+    console.error('--queue cannot be combined with --wait/--watch mode');
+    process.exit(2);
+  }
+  if (exclude.length > 0) {
+    for (const name of exclude) {
+      if (!QUEUE_NAMES.includes(name)) {
+        console.error(`Invalid --exclude queue: ${name}`);
+        process.exit(2);
+      }
+    }
+    if (queue) {
+      console.error('--exclude cannot be combined with --queue');
+      process.exit(2);
+    }
+    if (wait) {
+      console.error('--exclude cannot be combined with --wait/--watch');
+      process.exit(2);
+    }
+  }
   const connection = getRedisConnectionOptions();
   const intervalMs = 1000;
 
-  /**
-   * Execute one full polling cycle.
-   * @returns {{ entries: Array<[string, {jobCounts:object}]>, totals: {active:number,completed:number,failed:number,delayed:number,waiting:number,paused:number} }}
-   */
-  async function runOnce() {
-    const entries = await Promise.all(QUEUE_NAMES.map((q) => fetchQueue(q, connection)));
+  // Internal helper with optional queue filtering
+  async function runOnce(filterQueue) {
+    let names = filterQueue ? [filterQueue] : QUEUE_NAMES;
+    if (!filterQueue && exclude.length > 0) {
+      names = names.filter((n) => !exclude.includes(n));
+    }
+    const entries = await Promise.all(names.map((q) => fetchQueue(q, connection)));
     const totals = aggregate(entries);
     return { entries, totals };
   }
 
   if (!wait) {
-    const { entries, totals } = await runOnce();
+    const { entries, totals } = await runOnce(queue);
+
+    // If a specific queue is requested, scope the output accordingly.
+    if (queue) {
+      const found = entries.find(([name]) => name === queue);
+      const jobCounts = found
+        ? found[1].jobCounts
+        : { active: 0, completed: 0, failed: 0, delayed: 0, waiting: 0, paused: 0 };
+      if (total) {
+        console.log(String(jobCounts[total] ?? 0));
+        return;
+      }
+      const output = { queue: { [queue]: { jobCounts } }, totals: { jobCounts } };
+      console.log(JSON.stringify(output, null, 2));
+      return;
+    }
+
     if (total) {
       console.log(String(totals[total] ?? 0));
       return;
     }
-    const output = { queues: Object.fromEntries(entries), totals: { jobCounts: totals } };
+    const output = { queues: Object.fromEntries(entries), totals: { jobCounts: totals }, excluded: exclude };
     console.log(JSON.stringify(output, null, 2));
     return;
   }
@@ -217,12 +268,17 @@ async function main() {
    * @param {{active:number,waiting:number}} totals Current aggregate totals.
    */
   function renderStatus(totals) {
-    if (!isTTY) return; // don't spam logs when not interactive
+    if (!isTTY) {
+      return;
+    } // don't spam logs when not interactive
     const line = `active:${totals.active} waiting:${totals.waiting} (remaining:${totals.active + totals.waiting})`;
     // Avoid flicker if unchanged
-    if (line === lastLine) return;
+    if (line === lastLine) {
+      return;
+    }
     lastLine = line;
-    process.stdout.write(`\r${line.padEnd(process.stdout.columns || line.length)}`);
+    const columns = process.stdout.columns && process.stdout.columns > 0 ? process.stdout.columns : line.length;
+    process.stdout.write(`\r${line.padEnd(columns)}`);
   }
 
   while (true) {
@@ -235,12 +291,12 @@ async function main() {
       if (total) {
         console.log(String(totals[total] ?? 0));
       } else if (json || !isTTY) {
-        const output = { queues: Object.fromEntries(entries), totals: { jobCounts: totals } };
+        const output = { queues: Object.fromEntries(entries), totals: { jobCounts: totals }, excluded: exclude };
         console.log(JSON.stringify(output, null, 2));
       } else {
-  // Human readable summary
-  console.log('All queues idle. Final totals:');
-        console.log(JSON.stringify({ totals: { jobCounts: totals } }, null, 2));
+        // Human readable summary
+        console.log('All queues idle. Final totals:');
+        console.log(JSON.stringify({ totals: { jobCounts: totals }, excluded: exclude }, null, 2));
       }
       break;
     }
@@ -249,7 +305,7 @@ async function main() {
   }
 }
 
-main().catch((err) => {
-  console.error(err);
+main().catch((error) => {
+  console.error(error);
   process.exit(1);
 });

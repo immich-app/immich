@@ -23,6 +23,12 @@
 #   VERBOSE                 If set to non-empty, enables extra logging
 #   EXTRA_START_ENV         Extra env vars to export when starting microservices (format KEY=VAL space separated)
 #
+# Special-case queue: backgroundTask
+#   - If any waiting jobs exist for backgroundTask, the microservices worker will be started even if
+#     the aggregate WAITING_THRESHOLD is not met.
+#   - If the start was triggered solely by backgroundTask (no other queues waiting), the keep-alive
+#     HTTP probe will be skipped.
+#
 # Exit codes:
 #   0  Normal exit (terminated by signal or EOF)
 #   1  Unhandled error in script logic
@@ -67,7 +73,21 @@ trap cleanup EXIT INT TERM
 
 get_total() {
   local state="$1" value
-  if ! value="$(node ./server/scripts/queue-stats.js --total "$state" 2>/dev/null | tr -d '\r')"; then
+  if ! value="$(node ./server/scripts/queue-stats.js --total "$state" --exclude backgroundTask 2>/dev/null | tr -d '\r')"; then
+    echo "-1"
+    return 0
+  fi
+  if [[ ! "$value" =~ ^[0-9]+$ ]]; then
+    echo "-1"
+    return 0
+  fi
+  echo "$value"
+}
+
+# Return waiting count for a specific queue (uses --queue flag of queue-stats.js)
+get_queue_waiting() {
+  local q="$1" value
+  if ! value="$(node ./server/scripts/queue-stats.js --queue "$q" --total waiting 2>/dev/null | tr -d '\r')"; then
     echo "-1"
     return 0
   fi
@@ -101,8 +121,13 @@ start_micro() {
     export IMMICH_WORKERS_INCLUDE="microservices"
     # Accept optional additional environment overrides.
     if [[ -n "${EXTRA_START_ENV:-}" ]]; then
-      # shellcheck disable=SC2086
-      export ${EXTRA_START_ENV}
+      # shellcheck disable=SC2086,SC2046
+      for kv in ${EXTRA_START_ENV}; do
+        # Expect KEY=VAL format; split on first '='
+        key="${kv%%=*}"
+        val="${kv#*=}"
+        export "${key}=${val}"
+      done
     fi
     # start.sh will exec node main.js; we place it in background via sh -c wrapper.
     start.sh &
@@ -179,6 +204,7 @@ idle_start=0
 while true; do
   waiting_total=$(get_total waiting)
   active_total=$(get_total active)
+  background_waiting=$(get_queue_waiting backgroundTask)
 
   if [[ $waiting_total -lt 0 || $active_total -lt 0 ]]; then
     error "Failed to read queue stats (waiting=$waiting_total active=$active_total). Will retry."
@@ -186,12 +212,34 @@ while true; do
     continue
   fi
 
-  vlog "Queue totals: waiting=$waiting_total active=$active_total running=$(micro_running && echo yes || echo no)"
+  vlog "Queue totals: waiting=$waiting_total active=$active_total background_waiting=$background_waiting running=$(micro_running && echo yes || echo no)"
 
+  start_due_to_background_only=0
+  start_needed=0
+
+  # Start if backgroundTask has work regardless of threshold.
+  if [[ $background_waiting -gt 0 ]]; then
+    start_needed=1
+    # If no other queues contribute waiting jobs, mark as background-only trigger.
+    if [[ $(( waiting_total - background_waiting )) -eq 0 && $waiting_total -lt $WAITING_THRESHOLD ]]; then
+      start_due_to_background_only=1
+    fi
+  fi
+
+  # Start if global threshold exceeded.
   if [[ $waiting_total -ge $WAITING_THRESHOLD ]]; then
+    start_needed=1
+    if [[ $background_waiting -gt 0 && $(( waiting_total - background_waiting )) -eq 0 ]]; then
+      start_due_to_background_only=1
+    fi
+  fi
+
+  if [[ $start_needed -eq 1 ]]; then
     start_micro
-    if [[ -n "${KEEP_ALIVE_URL:-}" ]]; then
+    if [[ $start_due_to_background_only -eq 0 && -n "${KEEP_ALIVE_URL:-}" ]]; then
       keep_alive || vlog "Keep-alive check failed"
+    else
+      vlog "Keep-alive skipped (backgroundTask-only trigger)"
     fi
     idle_start=0
   fi
