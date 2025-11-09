@@ -89,9 +89,16 @@ class AssetMediaRepository {
       return null;
     }
 
-    // titleAsync gets the correct original filename for some assets on iOS
-    // otherwise using the `entity.title` would return a random GUID
-    return await entity.titleAsync;
+    try {
+      // titleAsync gets the correct original filename for some assets on iOS
+      // otherwise using the `entity.title` would return a random GUID
+      final originalFilename = await entity.titleAsync;
+      // treat empty filename as missing
+      return originalFilename.isNotEmpty ? originalFilename : null;
+    } catch (e) {
+      _log.warning("Failed to get original filename for asset: $id. Error: $e");
+      return null;
+    }
   }
 
   // TODO: make this more efficient

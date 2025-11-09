@@ -67,7 +67,7 @@ class ServerInfoNotifier extends StateNotifier<ServerInfo> {
       return;
     }
 
-    if (clientVersion < serverVersion) {
+    if (clientVersion < serverVersion && clientVersion.differenceType(serverVersion) != SemVerType.patch) {
       state = state.copyWith(versionStatus: VersionStatus.clientOutOfDate);
       return;
     }
