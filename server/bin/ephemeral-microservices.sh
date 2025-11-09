@@ -214,29 +214,23 @@ while true; do
 
   vlog "Queue totals: waiting=$waiting_total active=$active_total background_waiting=$background_waiting running=$(micro_running && echo yes || echo no)"
 
-  start_due_to_background_only=0
+  start_due_to_background=0
   start_needed=0
 
   # Start if backgroundTask has work regardless of threshold.
   if [[ $background_waiting -gt 0 ]]; then
     start_needed=1
-    # If no other queues contribute waiting jobs, mark as background-only trigger.
-    if [[ $(( waiting_total - background_waiting )) -eq 0 && $waiting_total -lt $WAITING_THRESHOLD ]]; then
-      start_due_to_background_only=1
-    fi
+    start_due_to_background=1
   fi
 
   # Start if global threshold exceeded.
   if [[ $waiting_total -ge $WAITING_THRESHOLD ]]; then
     start_needed=1
-    if [[ $background_waiting -gt 0 && $(( waiting_total - background_waiting )) -eq 0 ]]; then
-      start_due_to_background_only=1
-    fi
   fi
 
   if [[ $start_needed -eq 1 ]]; then
     start_micro
-    if [[ $start_due_to_background_only -eq 0 && -n "${KEEP_ALIVE_URL:-}" ]]; then
+    if [[ $start_due_to_background -eq 0 && -n "${KEEP_ALIVE_URL:-}" ]]; then
       keep_alive || vlog "Keep-alive check failed"
     else
       vlog "Keep-alive skipped (backgroundTask-only trigger)"
