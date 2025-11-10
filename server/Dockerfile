@@ -1,4 +1,4 @@
-FROM ghcr.io/immich-app/base-server-dev:202510281104@sha256:e2f94c2e92cbae5982b014e610ff29731c0fbcb4bf69022c7fe27594e40c9f83 AS builder
+FROM ghcr.io/immich-app/base-server-dev:202511041104@sha256:7558931a4a71989e7fd9fa3e1ba6c28da15891867310edda8c58236171839f2f AS builder
 ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0 \
   CI=1 \
   COREPACK_HOME=/tmp \
@@ -48,7 +48,7 @@ RUN --mount=type=cache,id=pnpm-cli,target=/buildcache/pnpm-store \
   pnpm --filter @immich/sdk --filter @immich/cli build && \
   pnpm --filter @immich/cli --prod --no-optional deploy /output/cli-pruned
 
-FROM ghcr.io/immich-app/base-server-prod:202510281104@sha256:84f8f3eb4cfafc5e624235f7db703e1222fd60831bef1d488d8d8cad2be5023d
+FROM ghcr.io/immich-app/base-server-prod:202511041104@sha256:57c0379977fd5521d83cdf661aecd1497c83a9a661ebafe0a5243a09fc1064cb
 
 WORKDIR /usr/src/app
 ENV NODE_ENV=production \

@@ -20,6 +20,7 @@
     hiddenIconClass?: string;
     class?: ClassValue;
     brokenAssetClass?: ClassValue;
+    preload?: boolean;
     onComplete?: ((errored: boolean) => void) | undefined;
   }
 
@@ -38,6 +39,7 @@
     onComplete = undefined,
     class: imageClass = '',
     brokenAssetClass = '',
+    preload = true,
   }: Props = $props();
 
   let loaded = $state(false);
@@ -92,6 +94,7 @@
     {title}
     class={['object-cover', optionalClasses, imageClass]}
     draggable="false"
+    loading={preload ? 'eager' : 'lazy'}
   />
 {/if}
 

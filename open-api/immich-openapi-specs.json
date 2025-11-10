@@ -12646,18 +12646,27 @@
       },
       "MemoriesResponse": {
         "properties": {
+          "duration": {
+            "default": 5,
+            "type": "integer"
+          },
           "enabled": {
             "default": true,
             "type": "boolean"
           }
         },
         "required": [
+          "duration",
           "enabled"
         ],
         "type": "object"
       },
       "MemoriesUpdate": {
         "properties": {
+          "duration": {
+            "minimum": 1,
+            "type": "integer"
+          },
           "enabled": {
             "type": "boolean"
           }
