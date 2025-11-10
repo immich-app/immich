@@ -7,11 +7,13 @@ import androidx.work.Configuration
 import androidx.work.WorkManager
 import app.alextran.immich.background.BackgroundEngineLock
 import app.alextran.immich.background.BackgroundWorkerApiImpl
+import app.alextran.immich.upload.NetworkMonitor
 
 class ImmichApp : Application() {
   override fun onCreate() {
     super.onCreate()
     val config = Configuration.Builder().build()
+    NetworkMonitor.initialize(this)
     WorkManager.initialize(this, config)
     // always start BackupWorker after WorkManager init; this fixes the following bug:
     // After the process is killed (by user or system), the first trigger (taking a new picture) is lost.

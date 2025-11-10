@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/models/backup/backup_state.model.dart';
@@ -11,7 +10,6 @@ import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
-import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/providers/backup/ios_background_settings.provider.dart';
 import 'package:immich_mobile/providers/backup/manual_upload.provider.dart';
 import 'package:immich_mobile/providers/gallery_permission.provider.dart';
@@ -148,41 +146,19 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
     final isAlbumLinkedSyncEnable = _ref.read(appSettingsServiceProvider).getSetting(AppSettingsEnum.syncAlbums);
 
     try {
-      bool syncSuccess = false;
       await Future.wait([
         _safeRun(backgroundManager.syncLocal(), "syncLocal"),
-        _safeRun(backgroundManager.syncRemote().then((success) => syncSuccess = success), "syncRemote"),
+        _safeRun(backgroundManager.syncRemote(), "syncRemote"),
       ]);
-      if (syncSuccess) {
-        await Future.wait([
-          _safeRun(backgroundManager.hashAssets(), "hashAssets").then((_) {
-            _resumeBackup();
-          }),
-          _resumeBackup(),
-        ]);
-      } else {
-        await _safeRun(backgroundManager.hashAssets(), "hashAssets");
-      }
+
+      await _safeRun(backgroundManager.hashAssets(), "hashAssets");
+      await _safeRun(uploadApi.refresh(), "refresh");
 
       if (isAlbumLinkedSyncEnable) {
         await _safeRun(backgroundManager.syncLinkedAlbum(), "syncLinkedAlbum");
       }
     } catch (e, stackTrace) {
       _log.severe("Error during background sync", e, stackTrace);
-    }
-  }
-
-  Future<void> _resumeBackup() async {
-    final isEnableBackup = _ref.read(appSettingsServiceProvider).getSetting(AppSettingsEnum.enableBackup);
-
-    if (isEnableBackup) {
-      final currentUser = Store.tryGet(StoreKey.currentUser);
-      if (currentUser != null) {
-        await _safeRun(
-          _ref.read(driftBackupProvider.notifier).handleBackupResume(currentUser.id),
-          "handleBackupResume",
-        );
-      }
     }
   }
 

@@ -5485,6 +5485,701 @@ i1.GeneratedColumn<String> _column_95(String aliasedName) =>
       false,
       type: i1.DriftSqlType.string,
     );
+
+final class Schema14 extends i0.VersionedSchema {
+  Schema14({required super.database}) : super(version: 14);
+  @override
+  late final List<i1.DatabaseSchemaEntity> entities = [
+    uploadTasks,
+    uploadTaskStats,
+    updateStatsInsert,
+    updateStatsUpdate,
+    updateStatsDelete,
+    idxUploadTasksLocalId,
+    idxUploadTasksAssetData,
+    userEntity,
+    remoteAssetEntity,
+    stackEntity,
+    localAssetEntity,
+    remoteAlbumEntity,
+    localAlbumEntity,
+    localAlbumAssetEntity,
+    idxLocalAssetChecksum,
+    idxRemoteAssetOwnerChecksum,
+    uQRemoteAssetsOwnerChecksum,
+    uQRemoteAssetsOwnerLibraryChecksum,
+    idxRemoteAssetChecksum,
+    authUserEntity,
+    userMetadataEntity,
+    partnerEntity,
+    remoteExifEntity,
+    remoteAlbumAssetEntity,
+    remoteAlbumUserEntity,
+    memoryEntity,
+    memoryAssetEntity,
+    personEntity,
+    assetFaceEntity,
+    storeEntity,
+    trashedLocalAssetEntity,
+    idxLatLng,
+    idxTrashedLocalAssetChecksum,
+    idxTrashedLocalAssetAlbum,
+  ];
+  late final Shape24 uploadTasks = Shape24(
+    source: i0.VersionedTable(
+      entityName: 'upload_tasks',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: [],
+      columns: [
+        _column_96,
+        _column_97,
+        _column_98,
+        _column_99,
+        _column_100,
+        _column_101,
+        _column_102,
+        _column_103,
+        _column_104,
+        _column_105,
+        _column_106,
+        _column_107,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape25 uploadTaskStats = Shape25(
+    source: i0.VersionedTable(
+      entityName: 'upload_task_stats',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: [],
+      columns: [
+        _column_108,
+        _column_109,
+        _column_110,
+        _column_111,
+        _column_112,
+        _column_113,
+        _column_114,
+        _column_115,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  final i1.Trigger updateStatsInsert = i1.Trigger(
+    'CREATE TRIGGER update_stats_insert BEFORE INSERT ON upload_tasks BEGIN UPDATE upload_task_stats SET pending_downloads = pending_downloads +(NEW.status = 0), queued_downloads = queued_downloads +(NEW.status = 1), failed_downloads = failed_downloads +(NEW.status = 2), pending_uploads = pending_uploads +(NEW.status = 3), queued_uploads = queued_uploads +(NEW.status = 4), failed_uploads = failed_uploads +(NEW.status = 5), completed_uploads = completed_uploads +(NEW.status = 6), skipped_uploads = skipped_uploads +(NEW.status = 7);END',
+    'update_stats_insert',
+  );
+  final i1.Trigger updateStatsUpdate = i1.Trigger(
+    'CREATE TRIGGER update_stats_update BEFORE UPDATE OF status ON upload_tasks WHEN OLD.status != NEW.status BEGIN UPDATE upload_task_stats SET pending_downloads = pending_downloads -(OLD.status = 0)+(NEW.status = 0), queued_downloads = queued_downloads -(OLD.status = 1)+(NEW.status = 1), failed_downloads = failed_downloads -(OLD.status = 2)+(NEW.status = 2), pending_uploads = pending_uploads -(OLD.status = 3)+(NEW.status = 3), queued_uploads = queued_uploads -(OLD.status = 4)+(NEW.status = 4), failed_uploads = failed_uploads -(OLD.status = 5)+(NEW.status = 5), completed_uploads = completed_uploads -(OLD.status = 6)+(NEW.status = 6), skipped_uploads = skipped_uploads -(OLD.status = 7)+(NEW.status = 7);END',
+    'update_stats_update',
+  );
+  final i1.Trigger updateStatsDelete = i1.Trigger(
+    'CREATE TRIGGER update_stats_delete BEFORE DELETE ON upload_tasks BEGIN UPDATE upload_task_stats SET pending_downloads = pending_downloads -(OLD.status = 0), queued_downloads = queued_downloads -(OLD.status = 1), failed_downloads = failed_downloads -(OLD.status = 2), pending_uploads = pending_uploads -(OLD.status = 3), queued_uploads = queued_uploads -(OLD.status = 4), failed_uploads = failed_uploads -(OLD.status = 5), completed_uploads = completed_uploads -(OLD.status = 6), skipped_uploads = skipped_uploads -(OLD.status = 7);END',
+    'update_stats_delete',
+  );
+  final i1.Index idxUploadTasksLocalId = i1.Index(
+    'idx_upload_tasks_local_id',
+    'CREATE UNIQUE INDEX idx_upload_tasks_local_id ON upload_tasks (local_id, live_photo_video_id)',
+  );
+  final i1.Index idxUploadTasksAssetData = i1.Index(
+    'idx_upload_tasks_asset_data',
+    'CREATE INDEX idx_upload_tasks_asset_data ON upload_tasks (status, priority DESC, created_at)',
+  );
+  late final Shape20 userEntity = Shape20(
+    source: i0.VersionedTable(
+      entityName: 'user_entity',
+      withoutRowId: true,
+      isStrict: true,
+      tableConstraints: ['PRIMARY KEY(id)'],
+      columns: [
+        _column_0,
+        _column_1,
+        _column_3,
+        _column_84,
+        _column_85,
+        _column_91,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape17 remoteAssetEntity = Shape17(
+    source: i0.VersionedTable(
+      entityName: 'remote_asset_entity',
+      withoutRowId: true,
+      isStrict: true,
+      tableConstraints: ['PRIMARY KEY(id)'],
+      columns: [
+        _column_1,
+        _column_8,
+        _column_9,
+        _column_5,
+        _column_10,
+        _column_11,
+        _column_12,
+        _column_0,
+        _column_13,
+        _column_14,
+        _column_15,
+        _column_16,
+        _column_17,
+        _column_18,
+        _column_19,
+        _column_20,
+        _column_21,
+        _column_86,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape3 stackEntity = Shape3(
+    source: i0.VersionedTable(
+      entityName: 'stack_entity',
+      withoutRowId: true,
+      isStrict: true,
+      tableConstraints: ['PRIMARY KEY(id)'],
+      columns: [_column_0, _column_9, _column_5, _column_15, _column_75],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape2 localAssetEntity = Shape2(
+    source: i0.VersionedTable(
+      entityName: 'local_asset_entity',
+      withoutRowId: true,
+      isStrict: true,
+      tableConstraints: ['PRIMARY KEY(id)'],
+      columns: [
+        _column_1,
+        _column_8,
+        _column_9,
+        _column_5,
+        _column_10,
+        _column_11,
+        _column_12,
+        _column_0,
+        _column_22,
+        _column_14,
+        _column_23,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape9 remoteAlbumEntity = Shape9(
+    source: i0.VersionedTable(
+      entityName: 'remote_album_entity',
+      withoutRowId: true,
+      isStrict: true,
+      tableConstraints: ['PRIMARY KEY(id)'],
+      columns: [
+        _column_0,
+        _column_1,
+        _column_56,
+        _column_9,
+        _column_5,
+        _column_15,
+        _column_57,
+        _column_58,
+        _column_59,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape19 localAlbumEntity = Shape19(
+    source: i0.VersionedTable(
+      entityName: 'local_album_entity',
+      withoutRowId: true,
+      isStrict: true,
+      tableConstraints: ['PRIMARY KEY(id)'],
+      columns: [
+        _column_0,
+        _column_1,
+        _column_5,
+        _column_31,
+        _column_32,
+        _column_90,
+        _column_33,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape22 localAlbumAssetEntity = Shape22(
+    source: i0.VersionedTable(
+      entityName: 'local_album_asset_entity',
+      withoutRowId: true,
+      isStrict: true,
+      tableConstraints: ['PRIMARY KEY(asset_id, album_id)'],
+      columns: [_column_34, _column_35, _column_33],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  final i1.Index idxLocalAssetChecksum = i1.Index(
+    'idx_local_asset_checksum',
+    'CREATE INDEX IF NOT EXISTS idx_local_asset_checksum ON local_asset_entity (checksum)',
+  );
+  final i1.Index idxRemoteAssetOwnerChecksum = i1.Index(
+    'idx_remote_asset_owner_checksum',
+    'CREATE INDEX IF NOT EXISTS idx_remote_asset_owner_checksum ON remote_asset_entity (owner_id, checksum)',
+  );
+  final i1.Index uQRemoteAssetsOwnerChecksum = i1.Index(
+    'UQ_remote_assets_owner_checksum',
+    'CREATE UNIQUE INDEX IF NOT EXISTS UQ_remote_assets_owner_checksum ON remote_asset_entity (owner_id, checksum) WHERE(library_id IS NULL)',
+  );
+  final i1.Index uQRemoteAssetsOwnerLibraryChecksum = i1.Index(
+    'UQ_remote_assets_owner_library_checksum',
+    'CREATE UNIQUE INDEX IF NOT EXISTS UQ_remote_assets_owner_library_checksum ON remote_asset_entity (owner_id, library_id, checksum) WHERE(library_id IS NOT NULL)',
+  );
+  final i1.Index idxRemoteAssetChecksum = i1.Index(
+    'idx_remote_asset_checksum',
+    'CREATE INDEX IF NOT EXISTS idx_remote_asset_checksum ON remote_asset_entity (checksum)',
+  );
+  late final Shape21 authUserEntity = Shape21(
+    source: i0.VersionedTable(
+      entityName: 'auth_user_entity',
+      withoutRowId: true,
+      isStrict: true,
+      tableConstraints: ['PRIMARY KEY(id)'],
+      columns: [
+        _column_0,
+        _column_1,
+        _column_3,
+        _column_2,
+        _column_84,
+        _column_85,
+        _column_92,
+        _column_93,
+        _column_7,
+        _column_94,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape4 userMetadataEntity = Shape4(
+    source: i0.VersionedTable(
+      entityName: 'user_metadata_entity',
+      withoutRowId: true,
+      isStrict: true,
+      tableConstraints: ['PRIMARY KEY(user_id, "key")'],
+      columns: [_column_25, _column_26, _column_27],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape5 partnerEntity = Shape5(
+    source: i0.VersionedTable(
+      entityName: 'partner_entity',
+      withoutRowId: true,
+      isStrict: true,
+      tableConstraints: ['PRIMARY KEY(shared_by_id, shared_with_id)'],
+      columns: [_column_28, _column_29, _column_30],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape8 remoteExifEntity = Shape8(
+    source: i0.VersionedTable(
+      entityName: 'remote_exif_entity',
+      withoutRowId: true,
+      isStrict: true,
+      tableConstraints: ['PRIMARY KEY(asset_id)'],
+      columns: [
+        _column_36,
+        _column_37,
+        _column_38,
+        _column_39,
+        _column_40,
+        _column_41,
+        _column_11,
+        _column_10,
+        _column_42,
+        _column_43,
+        _column_44,
+        _column_45,
+        _column_46,
+        _column_47,
+        _column_48,
+        _column_49,
+        _column_50,
+        _column_51,
+        _column_52,
+        _column_53,
+        _column_54,
+        _column_55,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape7 remoteAlbumAssetEntity = Shape7(
+    source: i0.VersionedTable(
+      entityName: 'remote_album_asset_entity',
+      withoutRowId: true,
+      isStrict: true,
+      tableConstraints: ['PRIMARY KEY(asset_id, album_id)'],
+      columns: [_column_36, _column_60],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape10 remoteAlbumUserEntity = Shape10(
+    source: i0.VersionedTable(
+      entityName: 'remote_album_user_entity',
+      withoutRowId: true,
+      isStrict: true,
+      tableConstraints: ['PRIMARY KEY(album_id, user_id)'],
+      columns: [_column_60, _column_25, _column_61],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape11 memoryEntity = Shape11(
+    source: i0.VersionedTable(
+      entityName: 'memory_entity',
+      withoutRowId: true,
+      isStrict: true,
+      tableConstraints: ['PRIMARY KEY(id)'],
+      columns: [
+        _column_0,
+        _column_9,
+        _column_5,
+        _column_18,
+        _column_15,
+        _column_8,
+        _column_62,
+        _column_63,
+        _column_64,
+        _column_65,
+        _column_66,
+        _column_67,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape12 memoryAssetEntity = Shape12(
+    source: i0.VersionedTable(
+      entityName: 'memory_asset_entity',
+      withoutRowId: true,
+      isStrict: true,
+      tableConstraints: ['PRIMARY KEY(asset_id, memory_id)'],
+      columns: [_column_36, _column_68],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape14 personEntity = Shape14(
+    source: i0.VersionedTable(
+      entityName: 'person_entity',
+      withoutRowId: true,
+      isStrict: true,
+      tableConstraints: ['PRIMARY KEY(id)'],
+      columns: [
+        _column_0,
+        _column_9,
+        _column_5,
+        _column_15,
+        _column_1,
+        _column_69,
+        _column_71,
+        _column_72,
+        _column_73,
+        _column_74,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape15 assetFaceEntity = Shape15(
+    source: i0.VersionedTable(
+      entityName: 'asset_face_entity',
+      withoutRowId: true,
+      isStrict: true,
+      tableConstraints: ['PRIMARY KEY(id)'],
+      columns: [
+        _column_0,
+        _column_36,
+        _column_76,
+        _column_77,
+        _column_78,
+        _column_79,
+        _column_80,
+        _column_81,
+        _column_82,
+        _column_83,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape18 storeEntity = Shape18(
+    source: i0.VersionedTable(
+      entityName: 'store_entity',
+      withoutRowId: true,
+      isStrict: true,
+      tableConstraints: ['PRIMARY KEY(id)'],
+      columns: [_column_87, _column_88, _column_89],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape23 trashedLocalAssetEntity = Shape23(
+    source: i0.VersionedTable(
+      entityName: 'trashed_local_asset_entity',
+      withoutRowId: true,
+      isStrict: true,
+      tableConstraints: ['PRIMARY KEY(id, album_id)'],
+      columns: [
+        _column_1,
+        _column_8,
+        _column_9,
+        _column_5,
+        _column_10,
+        _column_11,
+        _column_12,
+        _column_0,
+        _column_95,
+        _column_22,
+        _column_14,
+        _column_23,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  final i1.Index idxLatLng = i1.Index(
+    'idx_lat_lng',
+    'CREATE INDEX IF NOT EXISTS idx_lat_lng ON remote_exif_entity (latitude, longitude)',
+  );
+  final i1.Index idxTrashedLocalAssetChecksum = i1.Index(
+    'idx_trashed_local_asset_checksum',
+    'CREATE INDEX IF NOT EXISTS idx_trashed_local_asset_checksum ON trashed_local_asset_entity (checksum)',
+  );
+  final i1.Index idxTrashedLocalAssetAlbum = i1.Index(
+    'idx_trashed_local_asset_album',
+    'CREATE INDEX IF NOT EXISTS idx_trashed_local_asset_album ON trashed_local_asset_entity (album_id)',
+  );
+}
+
+class Shape24 extends i0.VersionedTable {
+  Shape24({required super.source, required super.alias}) : super.aliased();
+  i1.GeneratedColumn<int> get id =>
+      columnsByName['id']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<int> get attempts =>
+      columnsByName['attempts']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<int> get createdAt =>
+      columnsByName['created_at']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<String> get filePath =>
+      columnsByName['file_path']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<int> get isLivePhoto =>
+      columnsByName['is_live_photo']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<int> get lastError =>
+      columnsByName['last_error']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<String> get livePhotoVideoId =>
+      columnsByName['live_photo_video_id']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get localId =>
+      columnsByName['local_id']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<int> get method =>
+      columnsByName['method']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<double> get priority =>
+      columnsByName['priority']! as i1.GeneratedColumn<double>;
+  i1.GeneratedColumn<int> get retryAfter =>
+      columnsByName['retry_after']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<int> get status =>
+      columnsByName['status']! as i1.GeneratedColumn<int>;
+}
+
+i1.GeneratedColumn<int> _column_96(String aliasedName) =>
+    i1.GeneratedColumn<int>(
+      'id',
+      aliasedName,
+      true,
+      hasAutoIncrement: true,
+      type: i1.DriftSqlType.int,
+      $customConstraints: 'PRIMARY KEY AUTOINCREMENT',
+    );
+i1.GeneratedColumn<int> _column_97(String aliasedName) =>
+    i1.GeneratedColumn<int>(
+      'attempts',
+      aliasedName,
+      false,
+      type: i1.DriftSqlType.int,
+      $customConstraints: 'NOT NULL',
+    );
+i1.GeneratedColumn<int> _column_98(String aliasedName) =>
+    i1.GeneratedColumn<int>(
+      'created_at',
+      aliasedName,
+      false,
+      type: i1.DriftSqlType.int,
+      $customConstraints: 'NOT NULL',
+    );
+i1.GeneratedColumn<String> _column_99(String aliasedName) =>
+    i1.GeneratedColumn<String>(
+      'file_path',
+      aliasedName,
+      true,
+      type: i1.DriftSqlType.string,
+      $customConstraints: '',
+    );
+i1.GeneratedColumn<int> _column_100(String aliasedName) =>
+    i1.GeneratedColumn<int>(
+      'is_live_photo',
+      aliasedName,
+      true,
+      type: i1.DriftSqlType.int,
+      $customConstraints: '',
+    );
+i1.GeneratedColumn<int> _column_101(String aliasedName) =>
+    i1.GeneratedColumn<int>(
+      'last_error',
+      aliasedName,
+      true,
+      type: i1.DriftSqlType.int,
+      $customConstraints: '',
+    );
+i1.GeneratedColumn<String> _column_102(String aliasedName) =>
+    i1.GeneratedColumn<String>(
+      'live_photo_video_id',
+      aliasedName,
+      true,
+      type: i1.DriftSqlType.string,
+      $customConstraints: '',
+    );
+i1.GeneratedColumn<String> _column_103(String aliasedName) =>
+    i1.GeneratedColumn<String>(
+      'local_id',
+      aliasedName,
+      false,
+      type: i1.DriftSqlType.string,
+      $customConstraints: 'NOT NULL',
+    );
+i1.GeneratedColumn<int> _column_104(String aliasedName) =>
+    i1.GeneratedColumn<int>(
+      'method',
+      aliasedName,
+      false,
+      type: i1.DriftSqlType.int,
+      $customConstraints: 'NOT NULL',
+    );
+i1.GeneratedColumn<double> _column_105(String aliasedName) =>
+    i1.GeneratedColumn<double>(
+      'priority',
+      aliasedName,
+      false,
+      type: i1.DriftSqlType.double,
+      $customConstraints: 'NOT NULL',
+    );
+i1.GeneratedColumn<int> _column_106(String aliasedName) =>
+    i1.GeneratedColumn<int>(
+      'retry_after',
+      aliasedName,
+      true,
+      type: i1.DriftSqlType.int,
+      $customConstraints: '',
+    );
+i1.GeneratedColumn<int> _column_107(String aliasedName) =>
+    i1.GeneratedColumn<int>(
+      'status',
+      aliasedName,
+      false,
+      type: i1.DriftSqlType.int,
+      $customConstraints: 'NOT NULL',
+    );
+
+class Shape25 extends i0.VersionedTable {
+  Shape25({required super.source, required super.alias}) : super.aliased();
+  i1.GeneratedColumn<int> get pendingDownloads =>
+      columnsByName['pending_downloads']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<int> get pendingUploads =>
+      columnsByName['pending_uploads']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<int> get queuedDownloads =>
+      columnsByName['queued_downloads']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<int> get queuedUploads =>
+      columnsByName['queued_uploads']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<int> get failedDownloads =>
+      columnsByName['failed_downloads']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<int> get failedUploads =>
+      columnsByName['failed_uploads']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<int> get completedUploads =>
+      columnsByName['completed_uploads']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<int> get skippedUploads =>
+      columnsByName['skipped_uploads']! as i1.GeneratedColumn<int>;
+}
+
+i1.GeneratedColumn<int> _column_108(String aliasedName) =>
+    i1.GeneratedColumn<int>(
+      'pending_downloads',
+      aliasedName,
+      false,
+      type: i1.DriftSqlType.int,
+      $customConstraints: 'NOT NULL',
+    );
+i1.GeneratedColumn<int> _column_109(String aliasedName) =>
+    i1.GeneratedColumn<int>(
+      'pending_uploads',
+      aliasedName,
+      false,
+      type: i1.DriftSqlType.int,
+      $customConstraints: 'NOT NULL',
+    );
+i1.GeneratedColumn<int> _column_110(String aliasedName) =>
+    i1.GeneratedColumn<int>(
+      'queued_downloads',
+      aliasedName,
+      false,
+      type: i1.DriftSqlType.int,
+      $customConstraints: 'NOT NULL',
+    );
+i1.GeneratedColumn<int> _column_111(String aliasedName) =>
+    i1.GeneratedColumn<int>(
+      'queued_uploads',
+      aliasedName,
+      false,
+      type: i1.DriftSqlType.int,
+      $customConstraints: 'NOT NULL',
+    );
+i1.GeneratedColumn<int> _column_112(String aliasedName) =>
+    i1.GeneratedColumn<int>(
+      'failed_downloads',
+      aliasedName,
+      false,
+      type: i1.DriftSqlType.int,
+      $customConstraints: 'NOT NULL',
+    );
+i1.GeneratedColumn<int> _column_113(String aliasedName) =>
+    i1.GeneratedColumn<int>(
+      'failed_uploads',
+      aliasedName,
+      false,
+      type: i1.DriftSqlType.int,
+      $customConstraints: 'NOT NULL',
+    );
+i1.GeneratedColumn<int> _column_114(String aliasedName) =>
+    i1.GeneratedColumn<int>(
+      'completed_uploads',
+      aliasedName,
+      false,
+      type: i1.DriftSqlType.int,
+      $customConstraints: 'NOT NULL',
+    );
+i1.GeneratedColumn<int> _column_115(String aliasedName) =>
+    i1.GeneratedColumn<int>(
+      'skipped_uploads',
+      aliasedName,
+      false,
+      type: i1.DriftSqlType.int,
+      $customConstraints: 'NOT NULL',
+    );
 i0.MigrationStepWithVersion migrationSteps({
   required Future<void> Function(i1.Migrator m, Schema2 schema) from1To2,
   required Future<void> Function(i1.Migrator m, Schema3 schema) from2To3,
@@ -5498,6 +6193,7 @@ i0.MigrationStepWithVersion migrationSteps({
   required Future<void> Function(i1.Migrator m, Schema11 schema) from10To11,
   required Future<void> Function(i1.Migrator m, Schema12 schema) from11To12,
   required Future<void> Function(i1.Migrator m, Schema13 schema) from12To13,
+  required Future<void> Function(i1.Migrator m, Schema14 schema) from13To14,
 }) {
   return (currentVersion, database) async {
     switch (currentVersion) {
@@ -5561,6 +6257,11 @@ i0.MigrationStepWithVersion migrationSteps({
         final migrator = i1.Migrator(database, schema);
         await from12To13(migrator, schema);
         return 13;
+      case 13:
+        final schema = Schema14(database: database);
+        final migrator = i1.Migrator(database, schema);
+        await from13To14(migrator, schema);
+        return 14;
       default:
         throw ArgumentError.value('Unknown migration from $currentVersion');
     }
@@ -5580,6 +6281,7 @@ i1.OnUpgrade stepByStep({
   required Future<void> Function(i1.Migrator m, Schema11 schema) from10To11,
   required Future<void> Function(i1.Migrator m, Schema12 schema) from11To12,
   required Future<void> Function(i1.Migrator m, Schema13 schema) from12To13,
+  required Future<void> Function(i1.Migrator m, Schema14 schema) from13To14,
 }) => i0.VersionedSchema.stepByStepHelper(
   step: migrationSteps(
     from1To2: from1To2,
@@ -5594,5 +6296,6 @@ i1.OnUpgrade stepByStep({
     from10To11: from10To11,
     from11To12: from11To12,
     from12To13: from12To13,
+    from13To14: from13To14,
   ),
 );

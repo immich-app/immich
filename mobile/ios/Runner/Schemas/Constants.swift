@@ -1,12 +1,22 @@
 import SQLiteData
 
-struct Endpoint: Codable {
-  let url: URL
-  let status: Status
+extension Notification.Name {
+  static let networkDidConnect = Notification.Name("networkDidConnect")
+}
 
-  enum Status: String, Codable {
-    case loading, valid, error, unknown
-  }
+enum TaskConfig {
+  static let maxActiveDownloads = 3
+  static let maxPendingDownloads = 50
+  static let maxPendingUploads = 50
+  static let maxRetries = 10
+  static let sessionId = "app.mertalev.immich.upload"
+  static let downloadCheckIntervalNs: UInt64 = 30_000_000_000  // 30 seconds
+  static let downloadTimeoutS = TimeInterval(60)
+  static let transferSpeedAlpha = 0.4
+  static let originalsDir = FileManager.default.temporaryDirectory.appendingPathComponent(
+    "originals",
+    isDirectory: true
+  )
 }
 
 enum StoreKey: Int, CaseIterable, QueryBindable {
@@ -47,8 +57,6 @@ enum StoreKey: Int, CaseIterable, QueryBindable {
   static let deviceId = Typed<String>(rawValue: ._deviceId)
   case _accessToken = 11
   static let accessToken = Typed<String>(rawValue: ._accessToken)
-  case _serverEndpoint = 12
-  static let serverEndpoint = Typed<String>(rawValue: ._serverEndpoint)
   case _sslClientCertData = 15
   static let sslClientCertData = Typed<String>(rawValue: ._sslClientCertData)
   case _sslClientPasswd = 16
@@ -67,10 +75,12 @@ enum StoreKey: Int, CaseIterable, QueryBindable {
   static let externalEndpointList = Typed<[Endpoint]>(rawValue: ._externalEndpointList)
 
   // MARK: - URL
-  case _localEndpoint = 134
-  static let localEndpoint = Typed<URL>(rawValue: ._localEndpoint)
   case _serverUrl = 10
   static let serverUrl = Typed<URL>(rawValue: ._serverUrl)
+  case _serverEndpoint = 12
+  static let serverEndpoint = Typed<URL>(rawValue: ._serverEndpoint)
+  case _localEndpoint = 134
+  static let localEndpoint = Typed<URL>(rawValue: ._localEndpoint)
 
   // MARK: - Date
   case _backupFailedSince = 5
@@ -160,6 +170,17 @@ enum StoreKey: Int, CaseIterable, QueryBindable {
   }
 }
 
+enum UploadHeaders: String {
+  case reprDigest = "Repr-Digest"
+  case userToken = "X-Immich-User-Token"
+  case assetData = "X-Immich-Asset-Data"
+}
+
+enum TaskStatus: Int, QueryBindable {
+  case downloadPending, downloadQueued, downloadFailed, uploadPending, uploadQueued, uploadFailed, uploadComplete,
+    uploadSkipped
+}
+
 enum BackupSelection: Int, QueryBindable {
   case selected, none, excluded
 }
@@ -174,4 +195,78 @@ enum AlbumUserRole: Int, QueryBindable {
 
 enum MemoryType: Int, QueryBindable {
   case onThisDay
+}
+
+enum AssetVisibility: Int, QueryBindable {
+  case timeline, hidden, archive, locked
+}
+
+enum SourceType: String, QueryBindable {
+  case machineLearning = "machine-learning"
+  case exif, manual
+}
+
+enum UploadMethod: Int, QueryBindable {
+  case multipart, resumable
+}
+
+enum UploadError: Error {
+  case fileCreationFailed
+  case iCloudError(UploadErrorCode)
+  case photosError(UploadErrorCode)
+}
+
+enum UploadErrorCode: Int, QueryBindable {
+  case unknown
+  case assetNotFound
+  case fileNotFound
+  case resourceNotFound
+  case invalidResource
+  case encodingFailed
+  case writeFailed
+  case notEnoughSpace
+  case networkError
+  case photosInternalError
+  case photosUnknownError
+  case noServerUrl
+  case noDeviceId
+  case noAccessToken
+  case interrupted
+  case cancelled
+  case downloadStalled
+  case forceQuit
+  case outOfResources
+  case backgroundUpdatesDisabled
+  case uploadTimeout
+  case iCloudRateLimit
+  case iCloudThrottled
+  case invalidResponse
+  case badRequest
+  case internalServerError
+}
+
+enum AssetType: Int, QueryBindable {
+  case other, image, video, audio
+}
+
+enum AssetMediaStatus: String, Codable {
+  case created, replaced, duplicate
+}
+
+struct Endpoint: Codable {
+  let url: URL
+  let status: Status
+
+  enum Status: String, Codable {
+    case loading, valid, error, unknown
+  }
+}
+
+struct UploadSuccessResponse: Codable {
+  let status: AssetMediaStatus
+  let id: String
+}
+
+struct UploadErrorResponse: Codable {
+  let message: String
 }

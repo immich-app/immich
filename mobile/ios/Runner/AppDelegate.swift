@@ -1,11 +1,11 @@
 import BackgroundTasks
 import Flutter
+import UIKit
 import network_info_plus
 import path_provider_foundation
 import permission_handler_apple
 import photo_manager
 import shared_preferences_foundation
-import UIKit
 
 @main
 @objc class AppDelegate: FlutterAppDelegate {
@@ -15,7 +15,7 @@ import UIKit
   ) -> Bool {
     // Required for flutter_local_notification
     if #available(iOS 10.0, *) {
-      UNUserNotificationCenter.current().delegate = self as? UNUserNotificationCenterDelegate
+      UNUserNotificationCenter.current().delegate = self
     }
 
     GeneratedPluginRegistrant.register(with: self)
@@ -36,7 +36,9 @@ import UIKit
       }
 
       if !registry.hasPlugin("org.cocoapods.shared-preferences-foundation") {
-        SharedPreferencesPlugin.register(with: registry.registrar(forPlugin: "org.cocoapods.shared-preferences-foundation")!)
+        SharedPreferencesPlugin.register(
+          with: registry.registrar(forPlugin: "org.cocoapods.shared-preferences-foundation")!
+        )
       }
 
       if !registry.hasPlugin("org.cocoapods.permission-handler-apple") {
@@ -50,13 +52,22 @@ import UIKit
 
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
-  
+
   public static func registerPlugins(with engine: FlutterEngine) {
     NativeSyncApiImpl.register(with: engine.registrar(forPlugin: NativeSyncApiImpl.name)!)
     ThumbnailApiSetup.setUp(binaryMessenger: engine.binaryMessenger, api: ThumbnailApiImpl())
     BackgroundWorkerFgHostApiSetup.setUp(binaryMessenger: engine.binaryMessenger, api: BackgroundWorkerApiImpl())
+    
+    let statusListener = StatusEventListener()
+    StreamStatusStreamHandler.register(with: engine.binaryMessenger, streamHandler: statusListener)
+    let progressListener = ProgressEventListener()
+    StreamProgressStreamHandler.register(with: engine.binaryMessenger, streamHandler: progressListener)
+    UploadApiSetup.setUp(
+      binaryMessenger: engine.binaryMessenger,
+      api: UploadApiImpl(statusListener: statusListener, progressListener: progressListener)
+    )
   }
-  
+
   public static func cancelPlugins(with engine: FlutterEngine) {
     (engine.valuePublished(byPlugin: NativeSyncApiImpl.name) as? NativeSyncApiImpl)?.detachFromEngine()
   }
