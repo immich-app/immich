@@ -81,6 +81,13 @@
       (a) => [a.exifInfo?.city, a.exifInfo?.state, a.exifInfo?.country].filter(Boolean).join(', ') || 'unknown',
     ),
   });
+
+  const getBaseFilePath = (fullpath: string, fileName: string): string => {
+    if (fileName && fullpath.endsWith(fileName)) {
+      return fullpath.slice(0, -(fileName.length + 1));
+    }
+    return fullpath;
+  };
 </script>
 
 <div class="min-w-60 transition-colors border rounded-lg">
@@ -154,11 +161,9 @@
       {asset.originalFileName}
     </InfoRow>
 
-    {#if isFromExternalLibrary}
-      <InfoRow icon={mdiFolderOutline} highlight={hasDifferentValues.originalPath} title={$t('original_path')}>
-        {asset.originalPath ?? $t('unknown')}
-      </InfoRow>
-    {/if}
+    <InfoRow icon={mdiFolderOutline} highlight={hasDifferentValues.originalPath} title={$t('original_path')}>
+      {getBasePath(asset.originalPath, asset.originalFileName) || $t('unknown')}
+    </InfoRow>
 
     <InfoRow icon={mdiFile} highlight={hasDifferentValues.fileSize} title={$t('file_size')}>
       {getFileSize(asset)}
