@@ -26,7 +26,15 @@
     type LibraryStatsResponseDto,
     type UserResponseDto,
   } from '@immich/sdk';
-  import { Button, LoadingSpinner, modalManager, Text, toastManager } from '@immich/ui';
+  import {
+    Button,
+    CommandPaletteContext,
+    LoadingSpinner,
+    modalManager,
+    Text,
+    toastManager,
+    type CommandItem,
+  } from '@immich/ui';
   import { mdiDotsVertical, mdiPlusBoxOutline, mdiSync } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -191,7 +199,7 @@
     }
   };
 
-  const onCreateNewLibraryClicked = async () => {
+  const handleCreateNewLibrary = async () => {
     const result = await modalManager.show(LibraryUserPickerModal);
     if (result) {
       await handleCreate(result);
@@ -238,7 +246,27 @@
       await readLibraryList();
     }
   };
+
+  const commands: CommandItem[] = $derived([
+    {
+      title: $t('scan_all_libraries'),
+      type: $t('command'),
+      icon: mdiSync,
+      action: () => handleScanAll(),
+      shortcuts: { shift: true, key: 'r' },
+      $if: () => libraries.length > 0,
+    },
+    {
+      title: $t('create_library'),
+      type: $t('command'),
+      icon: mdiPlusBoxOutline,
+      action: () => handleCreateNewLibrary(),
+      shortcuts: { shift: true, key: 'n' },
+    },
+  ]);
 </script>
+
+<CommandPaletteContext {commands} />
 
 <AdminPageLayout title={data.meta.title}>
   {#snippet buttons()}
@@ -250,7 +278,7 @@
       {/if}
       <Button
         leadingIcon={mdiPlusBoxOutline}
-        onclick={onCreateNewLibraryClicked}
+        onclick={handleCreateNewLibrary}
         size="small"
         variant="ghost"
         color="secondary"
@@ -360,7 +388,7 @@
 
         <!-- Empty message -->
       {:else}
-        <EmptyPlaceholder text={$t('no_libraries_message')} onClick={onCreateNewLibraryClicked} />
+        <EmptyPlaceholder text={$t('no_libraries_message')} onClick={handleCreateNewLibrary} />
       {/if}
     </div>
   </section>

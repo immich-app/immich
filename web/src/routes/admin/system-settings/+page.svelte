@@ -28,7 +28,7 @@
   import { featureFlags } from '$lib/stores/server-config.store';
   import { copyToClipboard } from '$lib/utils';
   import { downloadBlob } from '$lib/utils/asset-utils';
-  import { Alert, Button, HStack, Text } from '@immich/ui';
+  import { Alert, Button, CommandPaletteContext, HStack, Text, type CommandItem } from '@immich/ui';
   import {
     mdiAccountOutline,
     mdiBackupRestore,
@@ -64,6 +64,7 @@
 
   let config = $state(data.configs);
   let adminSettingElement = $state<ReturnType<typeof AdminSettings>>();
+  let inputElement: HTMLInputElement | undefined = $state();
 
   type SettingsComponent = Component<SettingsComponentProps>;
 
@@ -79,7 +80,7 @@
           }, {})
       : value;
 
-  const downloadConfig = () => {
+  const handleDownload = () => {
     const blob = new Blob([JSON.stringify(config, jsonReplacer, 2)], { type: 'application/json' });
     const downloadKey = 'immich-config.json';
     downloadManager.add(downloadKey, blob.size);
@@ -88,7 +89,8 @@
     setTimeout(() => downloadManager.clear(downloadKey), 5000);
   };
 
-  let inputElement: HTMLInputElement | undefined = $state();
+  const handleCopyToClipboard = () => copyToClipboard(JSON.stringify(config, jsonReplacer, 2));
+  const handleUpload = () => inputElement?.click();
 
   const uploadConfig = (e: Event) => {
     const file = (e.target as HTMLInputElement).files?.[0];
@@ -246,9 +248,41 @@
       return title.toLowerCase().includes(query) || subtitle.toLowerCase().includes(query);
     }),
   );
+
+  const commands: CommandItem[] = [
+    {
+      title: $t('copy_to_clipboard'),
+      description: $t('admin.copy_config_to_clipboard_description'),
+      type: $t('command'),
+      icon: mdiContentCopy,
+      action: () => void handleCopyToClipboard(),
+      shortcuts: { shift: true, key: 'c' },
+    },
+    {
+      title: $t('export_as_json'),
+      description: $t('admin.export_config_as_json_description'),
+      type: $t('command'),
+      icon: mdiDownload,
+      action: () => handleDownload(),
+      shortcuts: [
+        { shift: true, key: 's' },
+        { shift: true, key: 'd' },
+      ],
+    },
+    {
+      title: $t('import_from_json'),
+      description: $t('admin.import_config_from_json_description'),
+      type: $t('command'),
+      icon: mdiUpload,
+      action: () => handleUpload(),
+      shortcuts: { shift: true, key: 'u' },
+    },
+  ];
 </script>
 
 <input bind:this={inputElement} type="file" accept=".json" style="display: none" onchange={uploadConfig} />
+
+<CommandPaletteContext {commands} />
 
 <AdminPageLayout title={data.meta.title}>
   {#snippet buttons()}
@@ -258,24 +292,18 @@
       </div>
       <Button
         leadingIcon={mdiContentCopy}
-        onclick={() => copyToClipboard(JSON.stringify(config, jsonReplacer, 2))}
+        onclick={handleCopyToClipboard}
         size="small"
         variant="ghost"
         color="secondary"
       >
         <Text class="hidden md:block">{$t('copy_to_clipboard')}</Text>
       </Button>
-      <Button leadingIcon={mdiDownload} onclick={() => downloadConfig()} size="small" variant="ghost" color="secondary">
+      <Button leadingIcon={mdiDownload} onclick={handleDownload} size="small" variant="ghost" color="secondary">
         <Text class="hidden md:block">{$t('export_as_json')}</Text>
       </Button>
       {#if !$featureFlags.configFile}
-        <Button
-          leadingIcon={mdiUpload}
-          onclick={() => inputElement?.click()}
-          size="small"
-          variant="ghost"
-          color="secondary"
-        >
+        <Button leadingIcon={mdiUpload} onclick={handleUpload} size="small" variant="ghost" color="secondary">
           <Text class="hidden md:block">{$t('import_from_json')}</Text>
         </Button>
       {/if}

@@ -11,7 +11,17 @@
   import { websocketEvents } from '$lib/stores/websocket';
   import { getByteUnitString } from '$lib/utils/byte-units';
   import { UserStatus, searchUsersAdmin, type UserAdminResponseDto } from '@immich/sdk';
-  import { Button, HStack, Icon, IconButton, Text, modalManager, toastManager } from '@immich/ui';
+  import {
+    Button,
+    CommandPaletteContext,
+    HStack,
+    Icon,
+    IconButton,
+    Text,
+    modalManager,
+    toastManager,
+    type CommandItem,
+  } from '@immich/ui';
   import { mdiDeleteRestore, mdiEyeOutline, mdiInfinity, mdiPlusBoxOutline, mdiTrashCanOutline } from '@mdi/js';
   import { DateTime } from 'luxon';
   import { onMount } from 'svelte';
@@ -66,7 +76,19 @@
       await refresh();
     }
   };
+
+  const commands: CommandItem[] = [
+    {
+      title: $t('create_user'),
+      type: $t('command'),
+      icon: mdiPlusBoxOutline,
+      action: () => void handleCreate(),
+      shortcuts: { shift: true, key: 'n' },
+    },
+  ];
 </script>
+
+<CommandPaletteContext {commands} />
 
 <AdminPageLayout title={data.meta.title}>
   {#snippet buttons()}

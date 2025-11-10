@@ -92,7 +92,7 @@
     }
 
     const result = modalManager.open(SearchFilterModal, { searchQuery });
-    close = () => result.close(undefined);
+    close = () => result.close();
     closeDropdown();
 
     const searchResult = await result.onClose;
