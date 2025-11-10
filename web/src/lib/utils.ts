@@ -400,3 +400,5 @@ export const getReleaseType = (
 
   return 'none';
 };
+
+export const semverToName = ({ major, minor, patch }: ServerVersionResponseDto) => `v${major}.${minor}.${patch}`;
