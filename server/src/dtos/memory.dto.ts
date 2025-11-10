@@ -4,7 +4,7 @@ import { IsInt, IsObject, IsPositive, ValidateNested } from 'class-validator';
 import { Memory } from 'src/database';
 import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { MemoryType } from 'src/enum';
+import { AssetOrderWithRandom, MemoryType } from 'src/enum';
 import { ValidateBoolean, ValidateDate, ValidateEnum, ValidateUUID } from 'src/validation';
 
 class MemoryBaseDto {
@@ -27,6 +27,15 @@ export class MemorySearchDto {
 
   @ValidateBoolean({ optional: true })
   isSaved?: boolean;
+
+  @IsInt()
+  @IsPositive()
+  @Type(() => Number)
+  @ApiProperty({ type: 'integer', description: 'Number of memories to return' })
+  size?: number;
+
+  @ValidateEnum({ enum: AssetOrderWithRandom, name: 'MemorySearchOrder', optional: true })
+  order?: AssetOrderWithRandom;
 }
 
 class OnThisDayDto {

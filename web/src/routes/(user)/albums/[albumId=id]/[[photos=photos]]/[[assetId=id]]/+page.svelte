@@ -8,6 +8,7 @@
   import AlbumTitle from '$lib/components/album-page/album-title.svelte';
   import ActivityStatus from '$lib/components/asset-viewer/activity-status.svelte';
   import ActivityViewer from '$lib/components/asset-viewer/activity-viewer.svelte';
+  import OnEvents from '$lib/components/OnEvents.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
@@ -34,16 +35,15 @@
   import AlbumOptionsModal from '$lib/modals/AlbumOptionsModal.svelte';
   import AlbumShareModal from '$lib/modals/AlbumShareModal.svelte';
   import AlbumUsersModal from '$lib/modals/AlbumUsersModal.svelte';
-  import QrCodeModal from '$lib/modals/QrCodeModal.svelte';
   import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
+  import { handleConfirmAlbumDelete, handleDownloadAlbum } from '$lib/services/album.service';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { preferences, user } from '$lib/stores/user.store';
-  import { handlePromiseError, makeSharedLinkUrl } from '$lib/utils';
-  import { confirmAlbumDelete } from '$lib/utils/album-utils';
-  import { cancelMultiselect, downloadAlbum } from '$lib/utils/asset-utils';
+  import { handlePromiseError } from '$lib/utils';
+  import { cancelMultiselect } from '$lib/utils/asset-utils';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
   import { handleError } from '$lib/utils/handle-error';
   import {
@@ -233,12 +233,8 @@
     }
   };
 
-  const handleDownloadAlbum = async () => {
-    await downloadAlbum(album);
-  };
-
   const handleRemoveAlbum = async () => {
-    const isConfirmed = await confirmAlbumDelete(album);
+    const isConfirmed = await handleConfirmAlbumDelete(album);
 
     if (!isConfirmed) {
       viewMode = AlbumPageViewMode.VIEW;
@@ -388,12 +384,12 @@
     }
   };
 
+  const onSharedLinkCreate = async () => {
+    await refreshAlbum();
+  };
+
   const handleShareLink = async () => {
-    const sharedLink = await modalManager.show(SharedLinkCreateModal, { albumId: album.id });
-    if (sharedLink) {
-      await refreshAlbum();
-      await modalManager.show(QrCodeModal, { title: $t('view_link'), value: makeSharedLinkUrl(sharedLink) });
-    }
+    await modalManager.show(SharedLinkCreateModal, { albumId: album.id });
   };
 
   const handleEditUsers = async () => {
@@ -427,6 +423,8 @@
     }
   };
 </script>
+
+<OnEvents {onSharedLinkCreate} />
 
 <div class="flex overflow-hidden" use:scrollMemoryClearer={{ routeStartsWith: AppRoute.ALBUMS }}>
   <div class="relative w-full shrink">
@@ -653,7 +651,7 @@
                 variant="ghost"
                 color="secondary"
                 aria-label={$t('download')}
-                onclick={handleDownloadAlbum}
+                onclick={() => handleDownloadAlbum(album)}
                 icon={mdiDownload}
               />
             {/if}

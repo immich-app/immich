@@ -4269,6 +4269,24 @@
             }
           },
           {
+            "name": "order",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/MemorySearchOrder"
+            }
+          },
+          {
+            "name": "size",
+            "required": false,
+            "in": "query",
+            "description": "Number of memories to return",
+            "schema": {
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
             "name": "type",
             "required": false,
             "in": "query",
@@ -4379,6 +4397,24 @@
             "in": "query",
             "schema": {
               "type": "boolean"
+            }
+          },
+          {
+            "name": "order",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/MemorySearchOrder"
+            }
+          },
+          {
+            "name": "size",
+            "required": false,
+            "in": "query",
+            "description": "Number of memories to return",
+            "schema": {
+              "minimum": 1,
+              "type": "integer"
             }
           },
           {
@@ -12779,6 +12815,14 @@
           "updatedAt"
         ],
         "type": "object"
+      },
+      "MemorySearchOrder": {
+        "enum": [
+          "asc",
+          "desc",
+          "random"
+        ],
+        "type": "string"
       },
       "MemoryStatisticsResponseDto": {
         "properties": {
