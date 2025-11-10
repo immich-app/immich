@@ -61,7 +61,7 @@ extension StoreConvertible where Self: Codable, StorageType == String {
     } catch {
       throw StoreError.encodingFailed
     }
-    
+
     guard let string = String(data: encoded, encoding: .utf8) else {
       throw StoreError.encodingFailed
     }

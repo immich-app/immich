@@ -61,7 +61,7 @@ enum StoreKey: Int, CaseIterable, QueryBindable {
   static let primaryColor = Typed<String>(rawValue: ._primaryColor)
   case _preferredWifiName = 133
   static let preferredWifiName = Typed<String>(rawValue: ._preferredWifiName)
-  
+
   // MARK: - Endpoint
   case _externalEndpointList = 135
   static let externalEndpointList = Typed<[Endpoint]>(rawValue: ._externalEndpointList)
