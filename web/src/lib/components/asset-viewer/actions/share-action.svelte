@@ -1,6 +1,5 @@
 <script lang="ts">
   import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
-  import { handleViewSharedLinkQrCode } from '$lib/services/shared-link.service';
   import type { AssetResponseDto } from '@immich/sdk';
   import { IconButton, modalManager } from '@immich/ui';
   import { mdiShareVariantOutline } from '@mdi/js';
@@ -13,10 +12,7 @@
   let { asset }: Props = $props();
 
   const handleClick = async () => {
-    const sharedLink = await modalManager.show(SharedLinkCreateModal, { assetIds: [asset.id] });
-    if (sharedLink) {
-      await handleViewSharedLinkQrCode(sharedLink);
-    }
+    await modalManager.show(SharedLinkCreateModal, { assetIds: [asset.id] });
   };
 </script>
 
