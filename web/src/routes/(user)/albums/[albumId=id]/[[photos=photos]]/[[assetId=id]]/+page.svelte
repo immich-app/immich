@@ -8,6 +8,7 @@
   import AlbumTitle from '$lib/components/album-page/album-title.svelte';
   import ActivityStatus from '$lib/components/asset-viewer/activity-status.svelte';
   import ActivityViewer from '$lib/components/asset-viewer/activity-viewer.svelte';
+  import OnEvents from '$lib/components/OnEvents.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
@@ -36,7 +37,6 @@
   import AlbumUsersModal from '$lib/modals/AlbumUsersModal.svelte';
   import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
   import { handleConfirmAlbumDelete, handleDownloadAlbum } from '$lib/services/album.service';
-  import { handleViewSharedLinkQrCode } from '$lib/services/shared-link.service';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { featureFlags } from '$lib/stores/server-config.store';
@@ -384,12 +384,12 @@
     }
   };
 
+  const onSharedLinkCreate = async () => {
+    await refreshAlbum();
+  };
+
   const handleShareLink = async () => {
-    const sharedLink = await modalManager.show(SharedLinkCreateModal, { albumId: album.id });
-    if (sharedLink) {
-      await refreshAlbum();
-      await handleViewSharedLinkQrCode(sharedLink);
-    }
+    await modalManager.show(SharedLinkCreateModal, { albumId: album.id });
   };
 
   const handleEditUsers = async () => {
@@ -423,6 +423,8 @@
     }
   };
 </script>
+
+<OnEvents {onSharedLinkCreate} />
 
 <div class="flex overflow-hidden" use:scrollMemoryClearer={{ routeStartsWith: AppRoute.ALBUMS }}>
   <div class="relative w-full shrink">

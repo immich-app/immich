@@ -1,5 +1,5 @@
 import type { ThemeSetting } from '$lib/managers/theme-manager.svelte';
-import type { LoginResponseDto } from '@immich/sdk';
+import type { LoginResponseDto, SharedLinkResponseDto } from '@immich/sdk';
 
 export type Events = {
   AppInit: [];
@@ -8,6 +8,8 @@ export type Events = {
   AuthLogout: [];
   LanguageChange: [{ name: string; code: string; rtl?: boolean }];
   ThemeChange: [ThemeSetting];
+  SharedLinkCreate: [SharedLinkResponseDto];
+  SharedLinkUpdate: [SharedLinkResponseDto];
 };
 
 type Listener<EventMap extends Record<string, unknown[]>, K extends keyof EventMap> = (...params: EventMap[K]) => void;

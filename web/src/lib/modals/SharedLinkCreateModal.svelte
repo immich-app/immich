@@ -1,26 +1,15 @@
 <script lang="ts">
   import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
+  import { handleCreateSharedLink, handleUpdateSharedLink } from '$lib/services/shared-link.service';
   import { locale } from '$lib/stores/preferences.store';
-  import { handleError } from '$lib/utils/handle-error';
-  import { SharedLinkType, createSharedLink, updateSharedLink, type SharedLinkResponseDto } from '@immich/sdk';
-  import {
-    Button,
-    Field,
-    Input,
-    Modal,
-    ModalBody,
-    ModalFooter,
-    PasswordInput,
-    Switch,
-    Text,
-    toastManager,
-  } from '@immich/ui';
+  import { SharedLinkType, type SharedLinkResponseDto } from '@immich/sdk';
+  import { Button, Field, Input, Modal, ModalBody, ModalFooter, PasswordInput, Switch, Text } from '@immich/ui';
   import { mdiLink } from '@mdi/js';
   import { DateTime, Duration } from 'luxon';
   import { t } from 'svelte-i18n';
 
   interface Props {
-    onClose: (sharedLink?: SharedLinkResponseDto) => void;
+    onClose: (success?: boolean) => void;
     albumId?: string | undefined;
     assetIds?: string[];
     editingLink?: SharedLinkResponseDto | undefined;
@@ -81,56 +70,46 @@
     assetIds = editingLink.assets.map(({ id }) => id);
   }
 
-  const handleCreateSharedLink = async () => {
-    const expirationDate = expirationOption > 0 ? DateTime.now().plus(expirationOption).toISO() : undefined;
+  const onCreate = async () => {
+    const success = await handleCreateSharedLink({
+      type: shareType,
+      albumId,
+      assetIds,
+      expiresAt: expirationOption > 0 ? DateTime.now().plus(expirationOption).toISO() : undefined,
+      allowUpload,
+      description,
+      password,
+      allowDownload,
+      showMetadata,
+      slug,
+    });
 
-    try {
-      const data = await createSharedLink({
-        sharedLinkCreateDto: {
-          type: shareType,
-          albumId,
-          assetIds,
-          expiresAt: expirationDate,
-          allowUpload,
-          description,
-          password,
-          allowDownload,
-          showMetadata,
-          slug,
-        },
-      });
-      onClose(data);
-    } catch (error) {
-      handleError(error, $t('errors.failed_to_create_shared_link'));
+    if (success) {
+      onClose(true);
     }
   };
 
-  const handleEditLink = async () => {
+  const onUpdate = async () => {
     if (!editingLink) {
       return;
     }
 
-    try {
-      const expirationDate = expirationOption > 0 ? DateTime.now().plus(expirationOption).toISO() : null;
+    const success = await handleUpdateSharedLink(editingLink, {
+      description,
+      password: password ?? null,
+      expiresAt: shouldChangeExpirationTime
+        ? expirationOption > 0
+          ? DateTime.now().plus(expirationOption).toISO()
+          : null
+        : undefined,
+      allowUpload,
+      allowDownload,
+      showMetadata,
+      slug: slug.trim() ?? null,
+    });
 
-      const updatedLink = await updateSharedLink({
-        id: editingLink.id,
-        sharedLinkEditDto: {
-          description,
-          password: password ?? null,
-          expiresAt: shouldChangeExpirationTime ? expirationDate : undefined,
-          allowUpload,
-          allowDownload,
-          showMetadata,
-          slug: slug.trim() ?? null,
-        },
-      });
-
-      toastManager.success($t('saved'));
-
-      onClose(updatedLink);
-    } catch (error) {
-      handleError(error, $t('errors.failed_to_edit_shared_link'));
+    if (success) {
+      onClose(true);
     }
   };
 
@@ -219,9 +198,9 @@
 
   <ModalFooter>
     {#if editingLink}
-      <Button fullWidth onclick={handleEditLink}>{$t('confirm')}</Button>
+      <Button fullWidth onclick={onUpdate}>{$t('confirm')}</Button>
     {:else}
-      <Button fullWidth onclick={handleCreateSharedLink}>{$t('create_link')}</Button>
+      <Button fullWidth onclick={onCreate}>{$t('create_link')}</Button>
     {/if}
   </ModalFooter>
 </Modal>

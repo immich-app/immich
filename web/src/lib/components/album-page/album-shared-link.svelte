@@ -1,6 +1,6 @@
 <script lang="ts">
   import SharedLinkCopy from '$lib/components/sharedlinks-page/actions/shared-link-copy.svelte';
-  import { handleViewSharedLinkQrCode } from '$lib/services/shared-link.service';
+  import { handleShowSharedLinkQrCode } from '$lib/services/shared-link.service';
   import { locale } from '$lib/stores/preferences.store';
   import type { AlbumResponseDto, SharedLinkResponseDto } from '@immich/sdk';
   import { IconButton, Text } from '@immich/ui';
@@ -46,7 +46,7 @@
       color="secondary"
       variant="ghost"
       icon={mdiQrcode}
-      onclick={() => handleViewSharedLinkQrCode(sharedLink)}
+      onclick={() => handleShowSharedLinkQrCode(sharedLink)}
     />
     <SharedLinkCopy {sharedLink} />
   </div>

@@ -11,7 +11,6 @@
   import AlbumShareModal from '$lib/modals/AlbumShareModal.svelte';
   import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
   import { handleConfirmAlbumDelete, handleDownloadAlbum } from '$lib/services/album.service';
-  import { handleViewSharedLinkQrCode } from '$lib/services/shared-link.service';
   import {
     AlbumFilter,
     AlbumGroupBy,
@@ -255,10 +254,11 @@
           }
 
           case 'sharedLink': {
-            const sharedLink = await modalManager.show(SharedLinkCreateModal, { albumId: selectedAlbum.id });
-            if (sharedLink) {
-              handleSharedLinkCreated(selectedAlbum);
-              await handleViewSharedLinkQrCode(sharedLink);
+            const success = await modalManager.show(SharedLinkCreateModal, { albumId: selectedAlbum.id });
+            if (success) {
+              selectedAlbum.shared = true;
+              selectedAlbum.hasSharedLink = true;
+              updateAlbumInfo(selectedAlbum);
             }
             break;
           }
@@ -345,12 +345,6 @@
     } finally {
       albumToShare = null;
     }
-  };
-
-  const handleSharedLinkCreated = (album: AlbumResponseDto) => {
-    album.shared = true;
-    album.hasSharedLink = true;
-    updateAlbumInfo(album);
   };
 </script>
 
