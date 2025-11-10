@@ -1,5 +1,14 @@
 import SQLiteData
 
+struct Endpoint: Codable {
+  let url: URL
+  let status: Status
+
+  enum Status: String, Codable {
+    case loading, valid, error, unknown
+  }
+}
+
 enum StoreKey: Int, CaseIterable, QueryBindable {
   // MARK: - Int
   case _version = 0
@@ -47,17 +56,19 @@ enum StoreKey: Int, CaseIterable, QueryBindable {
   case _themeMode = 102
   static let themeMode = Typed<String>(rawValue: ._themeMode)
   case _customHeaders = 127
-  static let customHeaders = Typed<String>(rawValue: ._customHeaders)
+  static let customHeaders = Typed<[String: String]>(rawValue: ._customHeaders)
   case _primaryColor = 128
   static let primaryColor = Typed<String>(rawValue: ._primaryColor)
   case _preferredWifiName = 133
   static let preferredWifiName = Typed<String>(rawValue: ._preferredWifiName)
-  case _localEndpoint = 134
-  static let localEndpoint = Typed<String>(rawValue: ._localEndpoint)
+  
+  // MARK: - Endpoint
   case _externalEndpointList = 135
-  static let externalEndpointList = Typed<String>(rawValue: ._externalEndpointList)
+  static let externalEndpointList = Typed<[Endpoint]>(rawValue: ._externalEndpointList)
 
   // MARK: - URL
+  case _localEndpoint = 134
+  static let localEndpoint = Typed<URL>(rawValue: ._localEndpoint)
   case _serverUrl = 10
   static let serverUrl = Typed<URL>(rawValue: ._serverUrl)
 
