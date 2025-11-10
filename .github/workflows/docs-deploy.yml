@@ -174,7 +174,7 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           TF_STATE_POSTGRES_CONN_STR: ${{ secrets.TF_STATE_POSTGRES_CONN_STR }}
         working-directory: 'deployment/modules/cloudflare/docs'
-        run: 'mise run tf apply'
+        run: 'mise run //deployment:tf apply'
 
       - name: Deploy Docs Subdomain Output
         id: docs-output
@@ -186,7 +186,7 @@ jobs:
           TF_STATE_POSTGRES_CONN_STR: ${{ secrets.TF_STATE_POSTGRES_CONN_STR }}
         working-directory: 'deployment/modules/cloudflare/docs'
         run: |
-          mise run tf output -- -json | jq -r '
+          mise run //deployment:tf output -- -json | jq -r '
             "projectName=\(.pages_project_name.value)",
             "subdomain=\(.immich_app_branch_subdomain.value)"
           ' >> $GITHUB_OUTPUT
@@ -211,7 +211,7 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           TF_STATE_POSTGRES_CONN_STR: ${{ secrets.TF_STATE_POSTGRES_CONN_STR }}
         working-directory: 'deployment/modules/cloudflare/docs-release'
-        run: 'mise run tf apply'
+        run: 'mise run //deployment:tf apply'
 
       - name: Comment
         uses: actions-cool/maintain-one-comment@4b2dbf086015f892dcb5e8c1106f5fccd6c1476b # v3.2.0
