@@ -36,6 +36,7 @@
   import AlbumUsersModal from '$lib/modals/AlbumUsersModal.svelte';
   import QrCodeModal from '$lib/modals/QrCodeModal.svelte';
   import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
+  import { handleDownloadAlbum } from '$lib/services/album.service';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { featureFlags } from '$lib/stores/server-config.store';
@@ -43,7 +44,7 @@
   import { preferences, user } from '$lib/stores/user.store';
   import { handlePromiseError, makeSharedLinkUrl } from '$lib/utils';
   import { confirmAlbumDelete } from '$lib/utils/album-utils';
-  import { cancelMultiselect, downloadAlbum } from '$lib/utils/asset-utils';
+  import { cancelMultiselect } from '$lib/utils/asset-utils';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
   import { handleError } from '$lib/utils/handle-error';
   import {
@@ -231,10 +232,6 @@
     } catch (error) {
       handleError(error, $t('errors.error_adding_users_to_album'));
     }
-  };
-
-  const handleDownloadAlbum = async () => {
-    await downloadAlbum(album);
   };
 
   const handleRemoveAlbum = async () => {
@@ -653,7 +650,7 @@
                 variant="ghost"
                 color="secondary"
                 aria-label={$t('download')}
-                onclick={handleDownloadAlbum}
+                onclick={() => handleDownloadAlbum(album)}
                 icon={mdiDownload}
               />
             {/if}
