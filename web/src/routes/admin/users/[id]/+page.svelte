@@ -34,12 +34,12 @@
   } from '@immich/ui';
   import {
     mdiAccountOutline,
-    mdiAppsBox,
     mdiCameraIris,
     mdiChartPie,
     mdiChartPieOutline,
     mdiCheckCircle,
     mdiDeleteRestore,
+    mdiDevices,
     mdiFeatureSearchOutline,
     mdiLockSmart,
     mdiOnepassword,
@@ -350,8 +350,8 @@
         <Card color="secondary">
           <CardHeader>
             <div class="flex items-center gap-2 px-4 py-2 text-primary">
-              <Icon icon={mdiAppsBox} size="1.5rem" />
-              <CardTitle>Sessions</CardTitle>
+              <Icon icon={mdiDevices} size="1.5rem" />
+              <CardTitle>{$t('authorized_devices')}</CardTitle>
             </div>
           </CardHeader>
           <CardBody>
@@ -360,7 +360,7 @@
                 {#each userSessions as session (session.id)}
                   <DeviceCard {session} />
                 {:else}
-                  <span class="text-dark">No mobile devices</span>
+                  <span class="text-dark">{$t('no_devices')}</span>
                 {/each}
               </Stack>
             </div>
