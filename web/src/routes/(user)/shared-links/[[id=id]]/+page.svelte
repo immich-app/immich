@@ -109,8 +109,8 @@
       </div>
     {:else}
       <div class="flex flex-col gap-2">
-        {#each filteredSharedLinks as link (link.id)}
-          <SharedLinkCard {link} onDelete={() => handleDeleteLink(link.id)} />
+        {#each filteredSharedLinks as sharedLink (sharedLink.id)}
+          <SharedLinkCard {sharedLink} onDelete={() => handleDeleteLink(sharedLink.id)} />
         {/each}
       </div>
     {/if}

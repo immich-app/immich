@@ -34,16 +34,16 @@
   import AlbumOptionsModal from '$lib/modals/AlbumOptionsModal.svelte';
   import AlbumShareModal from '$lib/modals/AlbumShareModal.svelte';
   import AlbumUsersModal from '$lib/modals/AlbumUsersModal.svelte';
-  import QrCodeModal from '$lib/modals/QrCodeModal.svelte';
   import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
+  import { handleConfirmAlbumDelete, handleDownloadAlbum } from '$lib/services/album.service';
+  import { handleViewSharedLinkQrCode } from '$lib/services/shared-link.service';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { preferences, user } from '$lib/stores/user.store';
-  import { handlePromiseError, makeSharedLinkUrl } from '$lib/utils';
-  import { confirmAlbumDelete } from '$lib/utils/album-utils';
-  import { cancelMultiselect, downloadAlbum } from '$lib/utils/asset-utils';
+  import { handlePromiseError } from '$lib/utils';
+  import { cancelMultiselect } from '$lib/utils/asset-utils';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
   import { handleError } from '$lib/utils/handle-error';
   import {
@@ -233,12 +233,8 @@
     }
   };
 
-  const handleDownloadAlbum = async () => {
-    await downloadAlbum(album);
-  };
-
   const handleRemoveAlbum = async () => {
-    const isConfirmed = await confirmAlbumDelete(album);
+    const isConfirmed = await handleConfirmAlbumDelete(album);
 
     if (!isConfirmed) {
       viewMode = AlbumPageViewMode.VIEW;
@@ -392,7 +388,7 @@
     const sharedLink = await modalManager.show(SharedLinkCreateModal, { albumId: album.id });
     if (sharedLink) {
       await refreshAlbum();
-      await modalManager.show(QrCodeModal, { title: $t('view_link'), value: makeSharedLinkUrl(sharedLink) });
+      await handleViewSharedLinkQrCode(sharedLink);
     }
   };
 
@@ -653,7 +649,7 @@
                 variant="ghost"
                 color="secondary"
                 aria-label={$t('download')}
-                onclick={handleDownloadAlbum}
+                onclick={() => handleDownloadAlbum(album)}
                 icon={mdiDownload}
               />
             {/if}
