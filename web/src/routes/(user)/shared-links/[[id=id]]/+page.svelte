@@ -7,9 +7,7 @@
   import { AppRoute } from '$lib/constants';
   import GroupTab from '$lib/elements/GroupTab.svelte';
   import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
-  import { handleError } from '$lib/utils/handle-error';
-  import { getAllSharedLinks, removeSharedLink, SharedLinkType, type SharedLinkResponseDto } from '@immich/sdk';
-  import { modalManager, toastManager } from '@immich/ui';
+  import { getAllSharedLinks, SharedLinkType, type SharedLinkResponseDto } from '@immich/sdk';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
@@ -30,26 +28,6 @@
   onMount(async () => {
     await refresh();
   });
-
-  const handleDeleteLink = async (id: string) => {
-    const isConfirmed = await modalManager.showDialog({
-      title: $t('delete_shared_link'),
-      prompt: $t('confirm_delete_shared_link'),
-      confirmText: $t('delete'),
-    });
-
-    if (!isConfirmed) {
-      return;
-    }
-
-    try {
-      await removeSharedLink({ id });
-      toastManager.success($t('deleted_shared_link'));
-      await refresh();
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_delete_shared_link'));
-    }
-  };
 
   type Filter = 'all' | 'album' | 'individual';
 
@@ -87,9 +65,13 @@
       sharedLinks[index] = sharedLink;
     }
   };
+
+  const onSharedLinkDelete = (sharedLink: SharedLinkResponseDto) => {
+    sharedLinks = sharedLinks.filter(({ id }) => id !== sharedLink.id);
+  };
 </script>
 
-<OnEvents {onSharedLinkUpdate} />
+<OnEvents {onSharedLinkUpdate} {onSharedLinkDelete} />
 
 <UserPageLayout title={data.meta.title}>
   {#snippet buttons()}
@@ -108,7 +90,7 @@
     {:else}
       <div class="flex flex-col gap-2">
         {#each filteredSharedLinks as sharedLink (sharedLink.id)}
-          <SharedLinkCard {sharedLink} onDelete={() => handleDeleteLink(sharedLink.id)} />
+          <SharedLinkCard {sharedLink} />
         {/each}
       </div>
     {/if}

@@ -1,3 +1,5 @@
+import { goto } from '$app/navigation';
+import { AppRoute } from '$lib/constants';
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import QrCodeModal from '$lib/modals/QrCodeModal.svelte';
 import { serverConfig } from '$lib/stores/server-config.store';
@@ -6,15 +8,58 @@ import { handleError } from '$lib/utils/handle-error';
 import { getFormatter } from '$lib/utils/i18n';
 import {
   createSharedLink,
+  removeSharedLink,
   updateSharedLink,
   type SharedLinkCreateDto,
   type SharedLinkEditDto,
   type SharedLinkResponseDto,
 } from '@immich/sdk';
-import { modalManager, toastManager } from '@immich/ui';
+import { MenuItemType, menuManager, modalManager, toastManager, type MenuItem } from '@immich/ui';
+import { mdiCircleEditOutline, mdiContentCopy, mdiDelete, mdiDotsVertical, mdiQrcode } from '@mdi/js';
+import type { MessageFormatter } from 'svelte-i18n';
 import { get } from 'svelte/store';
 
-const makeSharedLinkUrl = (sharedLink: SharedLinkResponseDto) => {
+export const getSharedLinkActions = ($t: MessageFormatter, sharedLink: SharedLinkResponseDto) => {
+  const Edit: MenuItem = {
+    title: $t('edit_link'),
+    icon: mdiCircleEditOutline,
+    onSelect: () => void goto(`${AppRoute.SHARED_LINKS}/${sharedLink.id}`),
+  };
+
+  const Delete: MenuItem = {
+    title: $t('delete_link'),
+    icon: mdiDelete,
+    color: 'danger',
+    onSelect: () => void handleDeleteSharedLink(sharedLink),
+  };
+
+  const Copy: MenuItem = {
+    title: $t('copy_link'),
+    icon: mdiContentCopy,
+    onSelect: () => void copyToClipboard(asUrl(sharedLink)),
+  };
+
+  const ViewQrCode: MenuItem = {
+    title: $t('view_qr_code'),
+    icon: mdiQrcode,
+    onSelect: () => void handleShowSharedLinkQrCode(sharedLink),
+  };
+
+  const ContextMenu: MenuItem = {
+    title: $t('shared_link_options'),
+    icon: mdiDotsVertical,
+    onSelect: ({ event }) =>
+      void menuManager.show({
+        target: event.currentTarget as HTMLElement,
+        position: 'top-right',
+        items: [Edit, Copy, MenuItemType.Divider, Delete],
+      }),
+  };
+
+  return { Edit, Delete, Copy, ViewQrCode, ContextMenu };
+};
+
+const asUrl = (sharedLink: SharedLinkResponseDto) => {
   const path = sharedLink.slug ? `s/${sharedLink.slug}` : `share/${sharedLink.key}`;
   return new URL(path, get(serverConfig).externalDomain || globalThis.location.origin).href;
 };
@@ -54,11 +99,34 @@ export const handleUpdateSharedLink = async (sharedLink: SharedLinkResponseDto, 
   }
 };
 
-export const handleShowSharedLinkQrCode = async (sharedLink: SharedLinkResponseDto) => {
+export const handleDeleteSharedLink = async (sharedLink: SharedLinkResponseDto): Promise<boolean> => {
   const $t = await getFormatter();
-  await modalManager.show(QrCodeModal, { title: $t('view_link'), value: makeSharedLinkUrl(sharedLink) });
+
+  const success = await modalManager.showDialog({
+    title: $t('delete_shared_link'),
+    prompt: $t('confirm_delete_shared_link'),
+    confirmText: $t('delete'),
+  });
+
+  if (!success) {
+    return false;
+  }
+
+  try {
+    await removeSharedLink({ id: sharedLink.id });
+
+    eventManager.emit('SharedLinkDelete', sharedLink);
+
+    toastManager.success($t('deleted_shared_link'));
+
+    return true;
+  } catch (error) {
+    handleError(error, $t('errors.unable_to_delete_shared_link'));
+    return false;
+  }
 };
 
-export const handleCopySharedLinkUrl = async (sharedLink: SharedLinkResponseDto) => {
-  await copyToClipboard(makeSharedLinkUrl(sharedLink));
+const handleShowSharedLinkQrCode = async (sharedLink: SharedLinkResponseDto) => {
+  const $t = await getFormatter();
+  await modalManager.show(QrCodeModal, { title: $t('view_link'), value: asUrl(sharedLink) });
 };
