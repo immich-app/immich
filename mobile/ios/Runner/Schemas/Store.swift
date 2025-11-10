@@ -83,7 +83,7 @@ class StoreRepository {
   init(db: DatabasePool) {
     self.db = db
   }
-  
+
   func get<T: StoreConvertible>(_ key: StoreKey.Typed<T>) throws -> T? where T.StorageType == Int {
     let query = Store.select(\.intValue).where { $0.id.eq(key.rawValue) }
     if let value = try db.read({ conn in try query.fetchOne(conn) }) ?? nil {
@@ -115,7 +115,7 @@ class StoreRepository {
     }
     return nil
   }
-  
+
   func set<T: StoreConvertible>(_ key: StoreKey.Typed<T>, value: T) throws where T.StorageType == Int {
     let value = try T.toValue(value)
     try db.write { conn in
