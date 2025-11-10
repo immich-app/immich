@@ -62,6 +62,6 @@ export class MaintenanceService extends BaseService {
       secret = state.secret;
     }
 
-    return await createMaintenanceLoginUrl(baseUrl, auth, secret!);
+    return await createMaintenanceLoginUrl(baseUrl, auth, secret);
   }
 }
