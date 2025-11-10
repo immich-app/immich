@@ -1,5 +1,6 @@
 import { goto } from '$app/navigation';
 import { AppRoute } from '$lib/constants';
+import { authManager } from '$lib/managers/auth-manager.svelte';
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import QrCodeModal from '$lib/modals/QrCodeModal.svelte';
 import { serverConfig } from '$lib/stores/server-config.store';
@@ -9,6 +10,7 @@ import { getFormatter } from '$lib/utils/i18n';
 import {
   createSharedLink,
   removeSharedLink,
+  removeSharedLinkAssets,
   updateSharedLink,
   type SharedLinkCreateDto,
   type SharedLinkEditDto,
@@ -122,6 +124,43 @@ export const handleDeleteSharedLink = async (sharedLink: SharedLinkResponseDto):
     return true;
   } catch (error) {
     handleError(error, $t('errors.unable_to_delete_shared_link'));
+    return false;
+  }
+};
+
+export const handleRemoveSharedLinkAssets = async (sharedLink: SharedLinkResponseDto, assetIds: string[]) => {
+  const $t = await getFormatter();
+
+  const success = await modalManager.showDialog({
+    title: $t('remove_assets_title'),
+    prompt: $t('remove_assets_shared_link_confirmation', { values: { count: assetIds.length } }),
+    confirmText: $t('remove'),
+  });
+
+  if (!success) {
+    return false;
+  }
+
+  try {
+    const results = await removeSharedLinkAssets({
+      ...authManager.params,
+      id: sharedLink.id,
+      assetIdsDto: { assetIds },
+    });
+
+    for (const result of results) {
+      if (!result.success) {
+        continue;
+      }
+
+      sharedLink.assets = sharedLink.assets.filter((asset) => asset.id !== result.assetId);
+    }
+
+    const count = results.filter((item) => item.success).length;
+    toastManager.success($t('assets_removed_count', { values: { count } }));
+    return true;
+  } catch (error) {
+    handleError(error, $t('errors.unable_to_remove_assets_from_shared_link'));
     return false;
   }
 };
