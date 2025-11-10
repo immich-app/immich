@@ -30,7 +30,7 @@ class AuthManager {
         globalThis.location.href = redirectUri;
       }
     } finally {
-      eventManager.emit('auth.logout');
+      eventManager.emit('AuthLogout');
     }
   }
 }

@@ -1,5 +1,6 @@
 <script lang="ts">
   import SharedLinkCopy from '$lib/components/sharedlinks-page/actions/shared-link-copy.svelte';
+  import { handleShowSharedLinkQrCode } from '$lib/services/shared-link.service';
   import { locale } from '$lib/stores/preferences.store';
   import type { AlbumResponseDto, SharedLinkResponseDto } from '@immich/sdk';
   import { IconButton, Text } from '@immich/ui';
@@ -10,10 +11,9 @@
   type Props = {
     album: AlbumResponseDto;
     sharedLink: SharedLinkResponseDto;
-    onViewQrCode: () => void;
   };
 
-  const { album, sharedLink, onViewQrCode }: Props = $props();
+  const { album, sharedLink }: Props = $props();
 
   const getShareProperties = () =>
     [
@@ -46,8 +46,8 @@
       color="secondary"
       variant="ghost"
       icon={mdiQrcode}
-      onclick={onViewQrCode}
+      onclick={() => handleShowSharedLinkQrCode(sharedLink)}
     />
-    <SharedLinkCopy link={sharedLink} />
+    <SharedLinkCopy {sharedLink} />
   </div>
 </div>

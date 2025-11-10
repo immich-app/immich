@@ -2,6 +2,7 @@
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
+  import OnEvents from '$lib/components/OnEvents.svelte';
   import SharedLinkCard from '$lib/components/sharedlinks-page/shared-link-card.svelte';
   import { AppRoute } from '$lib/constants';
   import GroupTab from '$lib/elements/GroupTab.svelte';
@@ -50,18 +51,6 @@
     }
   };
 
-  const handleEditDone = async (updatedLink?: SharedLinkResponseDto) => {
-    if (updatedLink) {
-      const index = sharedLinks.findIndex((link) => link.id === updatedLink.id);
-      if (index !== -1) {
-        sharedLinks[index] = updatedLink;
-      }
-    } else {
-      await refresh();
-    }
-    await goto(AppRoute.SHARED_LINKS);
-  };
-
   type Filter = 'all' | 'album' | 'individual';
 
   const filterMap: Record<Filter, string> = {
@@ -91,7 +80,16 @@
         (type === SharedLinkType.Individual && selectedTab === 'individual'),
     ),
   );
+
+  const onSharedLinkUpdate = (sharedLink: SharedLinkResponseDto) => {
+    const index = sharedLinks.findIndex((link) => link.id === sharedLink.id);
+    if (index !== -1) {
+      sharedLinks[index] = sharedLink;
+    }
+  };
 </script>
+
+<OnEvents {onSharedLinkUpdate} />
 
 <UserPageLayout title={data.meta.title}>
   {#snippet buttons()}
@@ -109,14 +107,14 @@
       </div>
     {:else}
       <div class="flex flex-col gap-2">
-        {#each filteredSharedLinks as link (link.id)}
-          <SharedLinkCard {link} onDelete={() => handleDeleteLink(link.id)} />
+        {#each filteredSharedLinks as sharedLink (sharedLink.id)}
+          <SharedLinkCard {sharedLink} onDelete={() => handleDeleteLink(sharedLink.id)} />
         {/each}
       </div>
     {/if}
 
     {#if sharedLink}
-      <SharedLinkCreateModal editingLink={sharedLink} onClose={handleEditDone} />
+      <SharedLinkCreateModal editingLink={sharedLink} onClose={() => goto(AppRoute.SHARED_LINKS)} />
     {/if}
   </div>
 </UserPageLayout>
