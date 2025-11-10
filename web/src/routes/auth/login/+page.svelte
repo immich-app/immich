@@ -27,7 +27,7 @@
 
   const onSuccess = async (user: LoginResponseDto) => {
     await goto(data.continueUrl, { invalidateAll: true });
-    eventManager.emit('auth.login', user);
+    eventManager.emit('AuthLogin', user);
   };
 
   const onFirstLogin = () => goto(AppRoute.AUTH_CHANGE_PASSWORD);
