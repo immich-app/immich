@@ -23,12 +23,7 @@ class OcrStore {
 
   async getAssetOcr(id: string) {
     this.data = await getAssetOcr({ id });
-
-    if (this.data.length > 0) {
-      this.hasOcrData = true;
-    } else {
-      this.hasOcrData = false;
-    }
+    this.hasOcrData = this.data.length > 0;
   }
 
   clear() {

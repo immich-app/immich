@@ -19,6 +19,54 @@ export interface OcrBox {
   confidence: number;
 }
 
+export interface BoundingBoxDimensions {
+  minX: number;
+  maxX: number;
+  minY: number;
+  maxY: number;
+  width: number;
+  height: number;
+  centerX: number;
+  centerY: number;
+  rotation: number;
+  pathData: string;
+}
+
+/**
+ * Calculate bounding box dimensions and properties from OCR points
+ * @param points - Array of 4 corner points of the bounding box
+ * @returns Dimensions, rotation, and SVG path data for the bounding box
+ */
+export const calculateBoundingBoxDimensions = (points: { x: number; y: number }[]): BoundingBoxDimensions => {
+  const minX = Math.min(...points.map(({ x }) => x));
+  const maxX = Math.max(...points.map(({ x }) => x));
+  const minY = Math.min(...points.map(({ y }) => y));
+  const maxY = Math.max(...points.map(({ y }) => y));
+  const width = maxX - minX;
+  const height = maxY - minY;
+  const centerX = (minX + maxX) / 2;
+  const centerY = (minY + maxY) / 2;
+
+  // Calculate rotation angle from the bottom edge (points[3] to points[2])
+  const rotation = Math.atan2(points[2].y - points[3].y, points[2].x - points[3].x) * (180 / Math.PI);
+
+  // Create SVG path data for the quadrilateral
+  const pathData = `M ${points[0].x} ${points[0].y} L ${points[1].x} ${points[1].y} L ${points[2].x} ${points[2].y} L ${points[3].x} ${points[3].y} Z`;
+
+  return {
+    minX,
+    maxX,
+    minY,
+    maxY,
+    width,
+    height,
+    centerX,
+    centerY,
+    rotation,
+    pathData,
+  };
+};
+
 /**
  * Convert normalized OCR coordinates to screen coordinates
  * OCR coordinates are normalized (0-1) and represent the 4 corners of a rotated rectangle
