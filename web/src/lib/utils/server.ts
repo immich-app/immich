@@ -11,7 +11,7 @@ async function _init(fetch: Fetch): Promise<ServerConfigDto> {
   // https://github.com/oazapfts/oazapfts/blob/main/README.md#fetch-options
   defaults.fetch = fetch;
   await initLanguage();
-  return await retrieveServerConfig();
+  return retrieveServerConfig();
 }
 
 export const init = memoize(_init, () => 'singlevalue');
