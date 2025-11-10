@@ -105,10 +105,10 @@ export class MaintenanceWorkerService {
   }
 
   private async secret(): Promise<string> {
-    const state = await this.systemMetadataRepository.get(SystemMetadataKey.MaintenanceMode);
-    if (!state?.isMaintenanceMode) {
-      throw new Error('Unreachable: not in maintenance mode');
-    }
+    const state = (await this.systemMetadataRepository.get(SystemMetadataKey.MaintenanceMode)) as {
+      secret: string;
+    };
+
     return state.secret;
   }
 
