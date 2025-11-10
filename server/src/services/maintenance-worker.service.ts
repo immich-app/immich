@@ -12,10 +12,10 @@ import { MaintenanceWorkerRepository } from 'src/repositories/maintenance-worker
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
 import { type ApiService as _ApiService } from 'src/services/api.service';
 import { type BaseService as _BaseService } from 'src/services/base.service';
-import { MaintenanceService } from 'src/services/maintenance.service';
 import { type ServerService as _ServerService } from 'src/services/server.service';
 import { MaintenanceModeState } from 'src/types';
 import { getConfig } from 'src/utils/config';
+import { createMaintenanceLoginUrl } from 'src/utils/maintenance';
 import { getExternalDomain } from 'src/utils/misc';
 
 /**
@@ -116,7 +116,7 @@ export class MaintenanceWorkerService {
     const { server } = await this.getConfig({ withCache: true });
 
     const baseUrl = getExternalDomain(server);
-    const url = await MaintenanceService.createLoginUrl(
+    const url = await createMaintenanceLoginUrl(
       baseUrl,
       {
         username: 'immich-admin',

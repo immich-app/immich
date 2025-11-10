@@ -5,7 +5,7 @@ import { MaintenanceAuthDto } from 'src/dtos/maintenance.dto';
 import { UserAdminResponseDto, mapUserAdmin } from 'src/dtos/user.dto';
 import { SystemMetadataKey } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
-import { MaintenanceService } from 'src/services/maintenance.service';
+import { createMaintenanceLoginUrl, generateMaintenanceSecret, sendOneShotAppRestart } from 'src/utils/maintenance';
 import { getExternalDomain } from 'src/utils/misc';
 
 @Injectable()
@@ -56,7 +56,7 @@ export class CliService extends BaseService {
     const state = { isMaintenanceMode: false as const };
     await this.systemMetadataRepository.set(SystemMetadataKey.MaintenanceMode, state);
 
-    this.maintenanceRepository.sendOneShotAppRestart(state);
+    sendOneShotAppRestart(state);
 
     return {
       alreadyDisabled: false,
@@ -77,24 +77,24 @@ export class CliService extends BaseService {
 
     if (state.isMaintenanceMode) {
       return {
-        authUrl: await MaintenanceService.createLoginUrl(baseUrl, payload, state.secret),
+        authUrl: await createMaintenanceLoginUrl(baseUrl, payload, state.secret),
         alreadyEnabled: true,
       };
     }
 
-    const secret = MaintenanceService.generateSecret();
+    const secret = generateMaintenanceSecret();
 
     await this.systemMetadataRepository.set(SystemMetadataKey.MaintenanceMode, {
       isMaintenanceMode: true,
       secret,
     });
 
-    this.maintenanceRepository.sendOneShotAppRestart({
+    sendOneShotAppRestart({
       isMaintenanceMode: true,
     });
 
     return {
-      authUrl: await MaintenanceService.createLoginUrl(baseUrl, payload, secret),
+      authUrl: await createMaintenanceLoginUrl(baseUrl, payload, secret),
       alreadyEnabled: false,
     };
   }

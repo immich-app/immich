@@ -102,10 +102,6 @@ describe(CliService.name, () => {
       expect(mocks.systemMetadata.set).toHaveBeenCalledWith(SystemMetadataKey.MaintenanceMode, {
         isMaintenanceMode: false,
       });
-
-      expect(mocks.maintenance.sendOneShotAppRestart).toHaveBeenCalledWith({
-        isMaintenanceMode: false,
-      });
     });
   });
 
@@ -133,10 +129,6 @@ describe(CliService.name, () => {
       expect(mocks.systemMetadata.set).toHaveBeenCalledWith(SystemMetadataKey.MaintenanceMode, {
         isMaintenanceMode: true,
         secret: expect.stringMatching(/^\w{128}$/),
-      });
-
-      expect(mocks.maintenance.sendOneShotAppRestart).toHaveBeenCalledWith({
-        isMaintenanceMode: true,
       });
     });
 
