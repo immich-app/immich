@@ -14,8 +14,8 @@ import { BaseService } from 'src/services/base.service';
 @Injectable()
 export class WorkflowService extends BaseService {
   async create(auth: AuthDto, dto: WorkflowCreateDto): Promise<WorkflowResponseDto> {
-    const filterInserts = dto.filters.length > 0 ? await this.validateAndMapFilters(dto.filters) : [];
-    const actionInserts = dto.actions.length > 0 ? await this.validateAndMapActions(dto.actions) : [];
+    const filterInserts = await this.validateAndMapFilters(dto.filters);
+    const actionInserts = await this.validateAndMapActions(dto.actions);
 
     const workflow = await this.workflowRepository.createWorkflow(
       {
@@ -68,6 +68,10 @@ export class WorkflowService extends BaseService {
   }
 
   private async validateAndMapFilters(filters: Array<{ filterId: string; filterConfig?: any }>) {
+    if (filters.length === 0) {
+      return [];
+    }
+
     for (const dto of filters) {
       const filter = await this.pluginRepository.getFilter(dto.filterId);
       if (!filter) {
@@ -83,6 +87,10 @@ export class WorkflowService extends BaseService {
   }
 
   private async validateAndMapActions(actions: Array<{ actionId: string; actionConfig?: any }>) {
+    if (actions.length === 0) {
+      return [];
+    }
+
     for (const dto of actions) {
       const action = await this.pluginRepository.getAction(dto.actionId);
       if (!action) {
