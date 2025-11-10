@@ -40,15 +40,24 @@ class DriftSearchPage extends HookConsumerWidget {
     final searchHintText = useState<String>('sunrise_on_the_beach'.t(context: context));
     final textSearchController = useTextEditingController();
     final preFilter = ref.watch(searchPreFilterProvider);
+    final emptyFilter = SearchFilter(
+      people: {},
+      location: SearchLocationFilter(),
+      camera: SearchCameraFilter(),
+      date: SearchDateFilter(),
+      display: SearchDisplayFilters(isNotInAlbum: false, isArchive: false, isFavorite: false),
+      mediaType: AssetType.other,
+      language: "${context.locale.languageCode}-${context.locale.countryCode}",
+      assetId: null,
+    );
     final filter = useState<SearchFilter>(
-      SearchFilter(
-        people: preFilter?.people ?? {},
-        location: preFilter?.location ?? SearchLocationFilter(),
-        camera: preFilter?.camera ?? SearchCameraFilter(),
-        date: preFilter?.date ?? SearchDateFilter(),
-        display: preFilter?.display ?? SearchDisplayFilters(isNotInAlbum: false, isArchive: false, isFavorite: false),
-        mediaType: preFilter?.mediaType ?? AssetType.other,
-        language: "${context.locale.languageCode}-${context.locale.countryCode}",
+      emptyFilter.copyWith(
+        people: preFilter?.people,
+        location: preFilter?.location,
+        camera: preFilter?.camera,
+        date: preFilter?.date,
+        display: preFilter?.display,
+        mediaType: preFilter?.mediaType,
         assetId: preFilter?.assetId,
       ),
     );
@@ -125,6 +134,20 @@ class DriftSearchPage extends HookConsumerWidget {
 
       return null;
     }, [preFilter]);
+
+    clearSearch() {
+      filter.value = emptyFilter;
+
+      peopleCurrentFilterWidget.value = null;
+      dateRangeCurrentFilterWidget.value = null;
+      cameraCurrentFilterWidget.value = null;
+      locationCurrentFilterWidget.value = null;
+      mediaTypeCurrentFilterWidget.value = null;
+      displayOptionCurrentFilterWidget.value = null;
+      textSearchController.clear();
+
+      ref.watch(paginatedSearchProvider.notifier).clear();
+    }
 
     showPeoplePicker() {
       handleOnSelect(Set<PersonDto> value) {
@@ -551,6 +574,9 @@ class DriftSearchPage extends HookConsumerWidget {
             controller: textSearchController,
             contentPadding: preFilter != null ? const EdgeInsets.only(left: 24) : const EdgeInsets.all(8),
             prefixIcon: preFilter != null ? null : Icon(getSearchPrefixIcon(), color: context.colorScheme.primary),
+            suffixIcon: (textSearchController.text.isNotEmpty || filter.value != emptyFilter)
+                ? IconButton(icon: const Icon(Icons.clear_rounded), onPressed: clearSearch)
+                : null,
             onSubmitted: handleTextSubmitted,
             focusNode: ref.watch(searchInputFocusProvider),
           ),
