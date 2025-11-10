@@ -105,6 +105,7 @@ dependencies {
   def serialization_version = '1.8.1'
   def compose_version = '1.1.1'
   def gson_version = '2.10.1'
+  def room_version = "2.8.3"
 
   implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
   implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlin_coroutines_version"
@@ -113,6 +114,8 @@ dependencies {
   implementation "com.google.guava:guava:$guava_version"
   implementation "com.github.bumptech.glide:glide:$glide_version"
   implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:$serialization_version"
+  implementation "org.jetbrains.kotlinx:kotlinx-coroutines-guava:1.10.2"
+  implementation "com.squareup.okhttp3:okhttp:5.3.1"
 
   ksp "com.github.bumptech.glide:ksp:$glide_version"
   coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.2'
@@ -127,6 +130,10 @@ dependencies {
   implementation "androidx.compose.ui:ui-tooling:$compose_version"
   implementation "androidx.compose.material3:material3:1.2.1"
   implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.6.2"
+
+  // Room Database
+  implementation "androidx.room:room-runtime:$room_version"
+  ksp "androidx.room:room-compiler:$room_version"
 }
 
 // This is uncommented in F-Droid build script

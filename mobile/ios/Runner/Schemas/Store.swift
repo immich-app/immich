@@ -4,35 +4,75 @@ enum StoreError: Error {
   case invalidJSON(String)
   case invalidURL(String)
   case encodingFailed
+  case notFound
 }
 
 protocol StoreConvertible {
+  static var cacheKeyPath: ReferenceWritableKeyPath<StoreCache, [StoreKey: Self]> { get }
   associatedtype StorageType
   static func fromValue(_ value: StorageType) throws(StoreError) -> Self
   static func toValue(_ value: Self) throws(StoreError) -> StorageType
 }
 
+extension StoreConvertible {
+  static func get(_ cache: StoreCache, key: StoreKey) -> Self? {
+    os_unfair_lock_lock(&cache.lock)
+    defer { os_unfair_lock_unlock(&cache.lock) }
+    return cache[keyPath: cacheKeyPath][key]
+  }
+
+  static func set(_ cache: StoreCache, key: StoreKey, value: Self?) {
+    os_unfair_lock_lock(&cache.lock)
+    defer { os_unfair_lock_unlock(&cache.lock) }
+    cache[keyPath: cacheKeyPath][key] = value
+  }
+}
+
+final class StoreCache {
+  fileprivate var lock = os_unfair_lock()
+  fileprivate var intCache: [StoreKey: Int] = [:]
+  fileprivate var boolCache: [StoreKey: Bool] = [:]
+  fileprivate var dateCache: [StoreKey: Date] = [:]
+  fileprivate var stringCache: [StoreKey: String] = [:]
+  fileprivate var urlCache: [StoreKey: URL] = [:]
+  fileprivate var endpointArrayCache: [StoreKey: [Endpoint]] = [:]
+  fileprivate var stringDictCache: [StoreKey: [String: String]] = [:]
+
+  func get<T: StoreConvertible>(_ key: StoreKey.Typed<T>) -> T? {
+    T.get(self, key: key.rawValue)
+  }
+
+  func set<T: StoreConvertible>(_ key: StoreKey.Typed<T>, value: T?) {
+    T.set(self, key: key.rawValue, value: value)
+  }
+}
+
 extension Int: StoreConvertible {
+  static let cacheKeyPath = \StoreCache.intCache
   static func fromValue(_ value: Int) -> Int { value }
   static func toValue(_ value: Int) -> Int { value }
 }
 
 extension Bool: StoreConvertible {
+  static let cacheKeyPath = \StoreCache.boolCache
   static func fromValue(_ value: Int) -> Bool { value == 1 }
   static func toValue(_ value: Bool) -> Int { value ? 1 : 0 }
 }
 
 extension Date: StoreConvertible {
+  static let cacheKeyPath = \StoreCache.dateCache
   static func fromValue(_ value: Int) -> Date { Date(timeIntervalSince1970: TimeInterval(value) / 1000) }
   static func toValue(_ value: Date) -> Int { Int(value.timeIntervalSince1970 * 1000) }
 }
 
 extension String: StoreConvertible {
+  static let cacheKeyPath = \StoreCache.stringCache
   static func fromValue(_ value: String) -> String { value }
   static func toValue(_ value: String) -> String { value }
 }
 
 extension URL: StoreConvertible {
+  static let cacheKeyPath = \StoreCache.urlCache
   static func fromValue(_ value: String) throws(StoreError) -> URL {
     guard let url = URL(string: value) else {
       throw StoreError.invalidURL(value)
@@ -69,78 +109,52 @@ extension StoreConvertible where Self: Codable, StorageType == String {
   }
 }
 
-extension Array: StoreConvertible where Element: Codable {
+extension Array: StoreConvertible where Element == Endpoint {
+  static let cacheKeyPath = \StoreCache.endpointArrayCache
   typealias StorageType = String
 }
 
-extension Dictionary: StoreConvertible where Key == String, Value: Codable {
+extension Dictionary: StoreConvertible where Key == String, Value == String {
+  static let cacheKeyPath = \StoreCache.stringDictCache
   typealias StorageType = String
 }
 
-class StoreRepository {
-  private let db: DatabasePool
-
-  init(db: DatabasePool) {
-    self.db = db
-  }
-
-  func get<T: StoreConvertible>(_ key: StoreKey.Typed<T>) throws -> T? where T.StorageType == Int {
+extension Store {
+  static let cache = StoreCache()
+  
+  static func get<T: StoreConvertible>(_ conn: Database, _ key: StoreKey.Typed<T>) throws -> T?
+  where T.StorageType == Int {
+    if let cached = cache.get(key) { return cached }
     let query = Store.select(\.intValue).where { $0.id.eq(key.rawValue) }
-    if let value = try db.read({ conn in try query.fetchOne(conn) }) ?? nil {
-      return try T.fromValue(value)
+    if let value = try query.fetchOne(conn) ?? nil {
+      let converted = try T.fromValue(value)
+      cache.set(key, value: converted)
     }
     return nil
   }
 
-  func get<T: StoreConvertible>(_ key: StoreKey.Typed<T>) throws -> T? where T.StorageType == String {
+  static func get<T: StoreConvertible>(_ conn: Database, _ key: StoreKey.Typed<T>) throws -> T?
+  where T.StorageType == String {
+    if let cached = cache.get(key) { return cached }
     let query = Store.select(\.stringValue).where { $0.id.eq(key.rawValue) }
-    if let value = try db.read({ conn in try query.fetchOne(conn) }) ?? nil {
-      return try T.fromValue(value)
+    if let value = try query.fetchOne(conn) ?? nil {
+      let converted = try T.fromValue(value)
+      cache.set(key, value: converted)
     }
     return nil
   }
 
-  func get<T: StoreConvertible>(_ key: StoreKey.Typed<T>) async throws -> T? where T.StorageType == Int {
-    let query = Store.select(\.intValue).where { $0.id.eq(key.rawValue) }
-    if let value = try await db.read({ conn in try query.fetchOne(conn) }) ?? nil {
-      return try T.fromValue(value)
-    }
-    return nil
+  static func set<T: StoreConvertible>(_ conn: Database, _ key: StoreKey.Typed<T>, value: T) throws
+  where T.StorageType == Int {
+    let converted = try T.toValue(value)
+    try Store.upsert { Store(id: key.rawValue, stringValue: nil, intValue: converted) }.execute(conn)
+    cache.set(key, value: value)
   }
 
-  func get<T: StoreConvertible>(_ key: StoreKey.Typed<T>) async throws -> T? where T.StorageType == String {
-    let query = Store.select(\.stringValue).where { $0.id.eq(key.rawValue) }
-    if let value = try await db.read({ conn in try query.fetchOne(conn) }) ?? nil {
-      return try T.fromValue(value)
-    }
-    return nil
-  }
-
-  func set<T: StoreConvertible>(_ key: StoreKey.Typed<T>, value: T) throws where T.StorageType == Int {
-    let value = try T.toValue(value)
-    try db.write { conn in
-      try Store.upsert { Store(id: key.rawValue, stringValue: nil, intValue: value) }.execute(conn)
-    }
-  }
-
-  func set<T: StoreConvertible>(_ key: StoreKey.Typed<T>, value: T) throws where T.StorageType == String {
-    let value = try T.toValue(value)
-    try db.write { conn in
-      try Store.upsert { Store(id: key.rawValue, stringValue: value, intValue: nil) }.execute(conn)
-    }
-  }
-
-  func set<T: StoreConvertible>(_ key: StoreKey.Typed<T>, value: T) async throws where T.StorageType == Int {
-    let value = try T.toValue(value)
-    try await db.write { conn in
-      try Store.upsert { Store(id: key.rawValue, stringValue: nil, intValue: value) }.execute(conn)
-    }
-  }
-
-  func set<T: StoreConvertible>(_ key: StoreKey.Typed<T>, value: T) async throws where T.StorageType == String {
-    let value = try T.toValue(value)
-    try await db.write { conn in
-      try Store.upsert { Store(id: key.rawValue, stringValue: value, intValue: nil) }.execute(conn)
-    }
+  static func set<T: StoreConvertible>(_ conn: Database, _ key: StoreKey.Typed<T>, value: T) throws
+  where T.StorageType == String {
+    let converted = try T.toValue(value)
+    try Store.upsert { Store(id: key.rawValue, stringValue: converted, intValue: nil) }.execute(conn)
+    cache.set(key, value: value)
   }
 }

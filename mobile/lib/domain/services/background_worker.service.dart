@@ -1,15 +1,11 @@
 import 'dart:async';
-import 'dart:io';
 import 'dart:ui';
 
-import 'package:background_downloader/background_downloader.dart';
 import 'package:cancellation_token_http/http.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
-import 'package:immich_mobile/extensions/network_capability_extensions.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/logger_db.repository.dart';
@@ -17,16 +13,13 @@ import 'package:immich_mobile/platform/background_worker_api.g.dart';
 import 'package:immich_mobile/platform/background_worker_lock_api.g.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
-import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
-import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/repositories/file_media.repository.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/services/auth.service.dart';
 import 'package:immich_mobile/services/localization.service.dart';
-import 'package:immich_mobile/services/upload.service.dart';
 import 'package:immich_mobile/utils/bootstrap.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:immich_mobile/utils/http_ssl_options.dart';
@@ -96,22 +89,9 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
           loadTranslations(),
           workerManagerPatch.init(dynamicSpawning: true),
           _ref?.read(authServiceProvider).setOpenApiServiceEndpoint(),
-          // Initialize the file downloader
-          FileDownloader().configure(
-            globalConfig: [
-              // maxConcurrent: 6, maxConcurrentByHost(server):6, maxConcurrentByGroup: 3
-              (Config.holdingQueue, (6, 6, 3)),
-              // On Android, if files are larger than 256MB, run in foreground service
-              (Config.runInForegroundIfFileLargerThan, 256),
-            ],
-          ),
-          FileDownloader().trackTasksInGroup(kDownloadGroupLivePhoto, markDownloadedComplete: false),
-          FileDownloader().trackTasks(),
           _ref?.read(fileMediaRepositoryProvider).enableBackgroundAccess(),
         ].nonNulls,
       );
-
-      configureFileDownloaderNotifications();
 
       // Notify the host that the background worker service has been initialized and is ready to use
       unawaited(_backgroundHostApi.onInitialized());
@@ -130,7 +110,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
         _logger.warning("Remote sync did not complete successfully, skipping backup");
         return;
       }
-      await _handleBackup();
+      await uploadApi.refresh();
     } catch (error, stack) {
       _logger.severe("Failed to complete Android background processing", error, stack);
     } finally {
@@ -150,13 +130,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
         _logger.warning("Remote sync did not complete successfully, skipping backup");
         return;
       }
-
-      final backupFuture = _handleBackup();
-      if (maxSeconds != null) {
-        await backupFuture.timeout(Duration(seconds: maxSeconds - 1), onTimeout: () {});
-      } else {
-        await backupFuture;
-      }
+      await uploadApi.refresh();
     } catch (error, stack) {
       _logger.severe("Failed to complete iOS background upload", error, stack);
     } finally {
@@ -212,39 +186,6 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
     } catch (error, stack) {
       dPrint(() => 'Failed to cleanup background worker: $error with stack: $stack');
     }
-  }
-
-  Future<void> _handleBackup() async {
-    await runZonedGuarded(
-      () async {
-        if (_isCleanedUp) {
-          return;
-        }
-
-        if (!_isBackupEnabled) {
-          _logger.info("Backup is disabled. Skipping backup routine");
-          return;
-        }
-
-        final currentUser = _ref?.read(currentUserProvider);
-        if (currentUser == null) {
-          _logger.warning("No current user found. Skipping backup from background");
-          return;
-        }
-
-        if (Platform.isIOS) {
-          return _ref?.read(driftBackupProvider.notifier).handleBackupResume(currentUser.id);
-        }
-
-        final networkCapabilities = await _ref?.read(connectivityApiProvider).getCapabilities() ?? [];
-        return _ref
-            ?.read(uploadServiceProvider)
-            .startBackupWithHttpClient(currentUser.id, networkCapabilities.isUnmetered, _cancellationToken);
-      },
-      (error, stack) {
-        dPrint(() => "Error in backup zone $error, $stack");
-      },
-    );
   }
 
   Future<bool> _syncAssets({Duration? hashTimeout}) async {

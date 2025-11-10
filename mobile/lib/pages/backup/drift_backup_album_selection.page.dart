@@ -116,11 +116,10 @@ class _DriftBackupAlbumSelectionPageState extends ConsumerState<DriftBackupAlbum
               unawaited(
                 backupNotifier.cancel().whenComplete(
                   () => backgroundSync.syncRemote().then((success) {
-                    if (success) {
-                      return backupNotifier.startBackup(user.id);
-                    } else {
-                      Logger('DriftBackupAlbumSelectionPage').warning('Background sync failed, not starting backup');
+                    if (!success) {
+                      Logger('DriftBackupAlbumSelectionPage').warning('Remote sync failed');
                     }
+                    return backupNotifier.startBackup();
                   }),
                 ),
               );

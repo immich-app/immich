@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 54;
+	objectVersion = 77;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -77,6 +77,16 @@
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		FE4C52462EAFE736009EEB47 /* Embed ExtensionKit Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(EXTENSIONS_FOLDER_PATH)";
+			dstSubfolderSpec = 16;
+			files = (
+			);
+			name = "Embed ExtensionKit Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
@@ -136,15 +146,11 @@
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		B231F52D2E93A44A00BC45D1 /* Core */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
 			path = Core;
 			sourceTree = "<group>";
 		};
 		B2CF7F8C2DDE4EBB00744BF6 /* Sync */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
 			path = Sync;
 			sourceTree = "<group>";
 		};
@@ -156,10 +162,18 @@
 			path = WidgetExtension;
 			sourceTree = "<group>";
 		};
+		FE14355D2EC446E90009D5AC /* Upload */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Upload;
+			sourceTree = "<group>";
+		};
+		FEB3BA112EBD52860081A5EB /* Schemas */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Schemas;
+			sourceTree = "<group>";
+		};
 		FEE084F22EC172080045228E /* Schemas */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
 			path = Schemas;
 			sourceTree = "<group>";
 		};
@@ -267,7 +281,9 @@
 		97C146F01CF9000F007C117D /* Runner */ = {
 			isa = PBXGroup;
 			children = (
+				FE14355D2EC446E90009D5AC /* Upload */,
 				FEE084F22EC172080045228E /* Schemas */,
+				FEB3BA112EBD52860081A5EB /* Schemas */,
 				B231F52D2E93A44A00BC45D1 /* Core */,
 				B25D37792E72CA15008B6CA7 /* Connectivity */,
 				B21E34A62E5AF9760031FDB9 /* Background */,
@@ -345,6 +361,7 @@
 				3B06AD1E1E4923F5004D2608 /* Thin Binary */,
 				D218A34AEE62BC1EF119F5B0 /* [CP] Embed Pods Frameworks */,
 				6724EEB7D74949FA08581154 /* [CP] Copy Pods Resources */,
+				FE4C52462EAFE736009EEB47 /* Embed ExtensionKit Extensions */,
 			);
 			buildRules = (
 			);
@@ -355,6 +372,8 @@
 			fileSystemSynchronizedGroups = (
 				B231F52D2E93A44A00BC45D1 /* Core */,
 				B2CF7F8C2DDE4EBB00744BF6 /* Sync */,
+				FE14355D2EC446E90009D5AC /* Upload */,
+				FEB3BA112EBD52860081A5EB /* Schemas */,
 				FEE084F22EC172080045228E /* Schemas */,
 			);
 			name = Runner;
@@ -407,7 +426,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
-				LastSwiftUpdateCheck = 1640;
+				LastSwiftUpdateCheck = 1620;
 				LastUpgradeCheck = 1510;
 				ORGANIZATIONNAME = "";
 				TargetAttributes = {
@@ -549,9 +568,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -581,9 +604,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -735,7 +762,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 233;
 				CUSTOM_GROUP_ID = group.app.immich.share;
-				DEVELOPMENT_TEAM = 2F67MQ8R79;
+				DEVELOPMENT_TEAM = 33MF3D8ZGA;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = Runner/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
@@ -744,7 +771,8 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.121.0;
-				PRODUCT_BUNDLE_IDENTIFIER = app.alextran.immich.profile;
+				OTHER_SWIFT_FLAGS = "$(inherited) -D COCOAPODS -D DEBUG -Xllvm -sil-disable-pass=performance-linker";
+				PRODUCT_BUNDLE_IDENTIFIER = app.mertalev.immich.profile;
 				PRODUCT_NAME = "Immich-Profile";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";
@@ -879,7 +907,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 233;
 				CUSTOM_GROUP_ID = group.app.immich.share;
-				DEVELOPMENT_TEAM = 2F67MQ8R79;
+				DEVELOPMENT_TEAM = 33MF3D8ZGA;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = Runner/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
@@ -888,7 +916,8 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.121.0;
-				PRODUCT_BUNDLE_IDENTIFIER = app.alextran.immich.vdebug;
+				OTHER_SWIFT_FLAGS = "$(inherited) -D COCOAPODS -D DEBUG -Xllvm -sil-disable-pass=performance-linker";
+				PRODUCT_BUNDLE_IDENTIFIER = app.mertalev.immich.vdebug;
 				PRODUCT_NAME = "Immich-Debug";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";
@@ -909,7 +938,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 233;
 				CUSTOM_GROUP_ID = group.app.immich.share;
-				DEVELOPMENT_TEAM = 2F67MQ8R79;
+				DEVELOPMENT_TEAM = 33MF3D8ZGA;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = Runner/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
@@ -918,7 +947,8 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.121.0;
-				PRODUCT_BUNDLE_IDENTIFIER = app.alextran.immich;
+				OTHER_SWIFT_FLAGS = "$(inherited) -D COCOAPODS -Xllvm -sil-disable-pass=performance-linker";
+				PRODUCT_BUNDLE_IDENTIFIER = app.mertalev.immich;
 				PRODUCT_NAME = Immich;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";
@@ -942,7 +972,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 233;
-				DEVELOPMENT_TEAM = 2F67MQ8R79;
+				DEVELOPMENT_TEAM = 33MF3D8ZGA;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -959,7 +989,7 @@
 				MARKETING_VERSION = 1.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = app.alextran.immich.vdebug.Widget;
+				PRODUCT_BUNDLE_IDENTIFIER = app.mertalev.immich.vdebug.Widget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
@@ -985,7 +1015,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 233;
-				DEVELOPMENT_TEAM = 2F67MQ8R79;
+				DEVELOPMENT_TEAM = 33MF3D8ZGA;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1001,7 +1031,7 @@
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MARKETING_VERSION = 1.0;
 				MTL_FAST_MATH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = app.alextran.immich.Widget;
+				PRODUCT_BUNDLE_IDENTIFIER = app.mertalev.immich.Widget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -1025,7 +1055,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 233;
-				DEVELOPMENT_TEAM = 2F67MQ8R79;
+				DEVELOPMENT_TEAM = 33MF3D8ZGA;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1041,7 +1071,7 @@
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MARKETING_VERSION = 1.0;
 				MTL_FAST_MATH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = app.alextran.immich.profile.Widget;
+				PRODUCT_BUNDLE_IDENTIFIER = app.mertalev.immich.profile.Widget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -1065,7 +1095,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 233;
 				CUSTOM_GROUP_ID = group.app.immich.share;
-				DEVELOPMENT_TEAM = 2F67MQ8R79;
+				DEVELOPMENT_TEAM = 33MF3D8ZGA;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1082,7 +1112,7 @@
 				MARKETING_VERSION = 1.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = app.alextran.immich.vdebug.ShareExtension;
+				PRODUCT_BUNDLE_IDENTIFIER = app.mertalev.immich.vdebug.ShareExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = YES;
@@ -1109,7 +1139,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 233;
 				CUSTOM_GROUP_ID = group.app.immich.share;
-				DEVELOPMENT_TEAM = 2F67MQ8R79;
+				DEVELOPMENT_TEAM = 33MF3D8ZGA;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1125,7 +1155,7 @@
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MARKETING_VERSION = 1.0;
 				MTL_FAST_MATH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = app.alextran.immich.ShareExtension;
+				PRODUCT_BUNDLE_IDENTIFIER = app.mertalev.immich.ShareExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = YES;
@@ -1150,7 +1180,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 233;
 				CUSTOM_GROUP_ID = group.app.immich.share;
-				DEVELOPMENT_TEAM = 2F67MQ8R79;
+				DEVELOPMENT_TEAM = 33MF3D8ZGA;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1166,7 +1196,7 @@
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MARKETING_VERSION = 1.0;
 				MTL_FAST_MATH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = app.alextran.immich.profile.ShareExtension;
+				PRODUCT_BUNDLE_IDENTIFIER = app.mertakev.immich.profile.ShareExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = YES;
