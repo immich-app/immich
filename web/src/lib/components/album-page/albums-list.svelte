@@ -9,9 +9,9 @@
   import { AppRoute } from '$lib/constants';
   import AlbumEditModal from '$lib/modals/AlbumEditModal.svelte';
   import AlbumShareModal from '$lib/modals/AlbumShareModal.svelte';
-  import QrCodeModal from '$lib/modals/QrCodeModal.svelte';
   import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
   import { handleConfirmAlbumDelete, handleDownloadAlbum } from '$lib/services/album.service';
+  import { handleViewSharedLinkQrCode } from '$lib/services/shared-link.service';
   import {
     AlbumFilter,
     AlbumGroupBy,
@@ -23,7 +23,6 @@
   } from '$lib/stores/preferences.store';
   import { user } from '$lib/stores/user.store';
   import { userInteraction } from '$lib/stores/user.svelte';
-  import { makeSharedLinkUrl } from '$lib/utils';
   import { getSelectedAlbumGroupOption, sortAlbums, stringToSortOrder, type AlbumGroup } from '$lib/utils/album-utils';
   import type { ContextMenuPosition } from '$lib/utils/context-menu';
   import { handleError } from '$lib/utils/handle-error';
@@ -259,7 +258,7 @@
             const sharedLink = await modalManager.show(SharedLinkCreateModal, { albumId: selectedAlbum.id });
             if (sharedLink) {
               handleSharedLinkCreated(selectedAlbum);
-              await modalManager.show(QrCodeModal, { title: $t('view_link'), value: makeSharedLinkUrl(sharedLink) });
+              await handleViewSharedLinkQrCode(sharedLink);
             }
             break;
           }
