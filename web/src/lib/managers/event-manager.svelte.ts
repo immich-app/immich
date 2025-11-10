@@ -1,5 +1,5 @@
 import type { ThemeSetting } from '$lib/managers/theme-manager.svelte';
-import type { LoginResponseDto, SharedLinkResponseDto } from '@immich/sdk';
+import type { AlbumResponseDto, LoginResponseDto, SharedLinkResponseDto } from '@immich/sdk';
 
 export type Events = {
   AppInit: [];
@@ -8,6 +8,9 @@ export type Events = {
   AuthLogout: [];
   LanguageChange: [{ name: string; code: string; rtl?: boolean }];
   ThemeChange: [ThemeSetting];
+
+  AlbumDelete: [AlbumResponseDto];
+
   SharedLinkCreate: [SharedLinkResponseDto];
   SharedLinkUpdate: [SharedLinkResponseDto];
   SharedLinkDelete: [SharedLinkResponseDto];

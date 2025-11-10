@@ -36,7 +36,7 @@
   import AlbumShareModal from '$lib/modals/AlbumShareModal.svelte';
   import AlbumUsersModal from '$lib/modals/AlbumUsersModal.svelte';
   import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
-  import { handleConfirmAlbumDelete, handleDownloadAlbum } from '$lib/services/album.service';
+  import { handleDeleteAlbum, handleDownloadAlbum } from '$lib/services/album.service';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { featureFlags } from '$lib/stores/server-config.store';
@@ -59,9 +59,9 @@
     AssetVisibility,
     addAssetsToAlbum,
     addUsersToAlbum,
-    deleteAlbum,
     getAlbumInfo,
     updateAlbumInfo,
+    type AlbumResponseDto,
     type AlbumUserAddDto,
   } from '@immich/sdk';
   import { Button, Icon, IconButton, modalManager, toastManager } from '@immich/ui';
@@ -233,24 +233,6 @@
     }
   };
 
-  const handleRemoveAlbum = async () => {
-    const isConfirmed = await handleConfirmAlbumDelete(album);
-
-    if (!isConfirmed) {
-      viewMode = AlbumPageViewMode.VIEW;
-      return;
-    }
-
-    try {
-      await deleteAlbum({ id: album.id });
-      await goto(backUrl);
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_delete_album'));
-    } finally {
-      viewMode = AlbumPageViewMode.VIEW;
-    }
-  };
-
   const handleSetVisibility = (assetIds: string[]) => {
     timelineManager.removeAssets(assetIds);
     assetInteraction.clearMultiselect();
@@ -301,7 +283,7 @@
 
   onNavigate(async ({ to }) => {
     if (!isAlbumsRoute(to?.route.id) && album.assetCount === 0 && !album.albumName) {
-      await deleteAlbum(album);
+      await handleDeleteAlbum(album, { notify: false, prompt: false });
     }
   });
 
@@ -388,6 +370,13 @@
     await refreshAlbum();
   };
 
+  const onAlbumDelete = async ({ id }: AlbumResponseDto) => {
+    if (id === album.id) {
+      await goto(backUrl);
+      viewMode = AlbumPageViewMode.VIEW;
+    }
+  };
+
   const handleShareLink = async () => {
     await modalManager.show(SharedLinkCreateModal, { albumId: album.id });
   };
@@ -424,7 +413,7 @@
   };
 </script>
 
-<OnEvents {onSharedLinkCreate} />
+<OnEvents {onSharedLinkCreate} {onAlbumDelete} />
 
 <div class="flex overflow-hidden" use:scrollMemoryClearer={{ routeStartsWith: AppRoute.ALBUMS }}>
   <div class="relative w-full shrink">
@@ -672,7 +661,11 @@
                   <MenuOption icon={mdiCogOutline} text={$t('options')} onClick={handleOptions} />
                 {/if}
 
-                <MenuOption icon={mdiDeleteOutline} text={$t('delete_album')} onClick={() => handleRemoveAlbum()} />
+                <MenuOption
+                  icon={mdiDeleteOutline}
+                  text={$t('delete_album')}
+                  onClick={() => handleDeleteAlbum(album)}
+                />
               </ButtonContextMenu>
             {/if}
 
