@@ -57,13 +57,13 @@ describe(MaintenanceService.name, () => {
   describe('startMaintenance', () => {
     it('should fail if in maintenance mode', async () => {
       mocks.systemMetadata.get.mockResolvedValue({ isMaintenanceMode: true, secret: '' });
-      await expect(sut.startMaintenance()).rejects.toThrowError(BadRequestException);
+      await expect(sut.startMaintenance('admin')).rejects.toThrowError(BadRequestException);
     });
 
     it('should set maintenance mode and return a secret', async () => {
       mocks.systemMetadata.get.mockResolvedValue({ isMaintenanceMode: false });
 
-      await expect(sut.startMaintenance()).resolves.toMatchObject({
+      await expect(sut.startMaintenance('admin')).resolves.toMatchObject({
         secret: expect.stringMatching(/^\w{128}$/),
       });
 
@@ -122,16 +122,6 @@ describe(MaintenanceService.name, () => {
       ).resolves.toEqual(expect.stringMatching(/./));
 
       expect(mocks.systemMetadata.get).toHaveBeenCalledTimes(1);
-    });
-  });
-
-  describe('createJwt', () => {
-    it('should generate a JWT', async () => {
-      await expect(
-        sut.createJwt('secret', {
-          username: '',
-        }),
-      ).resolves.toEqual(expect.stringMatching(/^[A-Za-z0-9-_]*\.[A-Za-z0-9-_]*\.[A-Za-z0-9-_]*$/));
     });
   });
 });

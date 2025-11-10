@@ -1,6 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { OnEvent } from 'src/decorators';
-import { AuthDto } from 'src/dtos/auth.dto';
 import { MaintenanceAuthDto } from 'src/dtos/maintenance.dto';
 import { SystemMetadataKey } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
@@ -23,7 +22,7 @@ export class MaintenanceService extends BaseService {
     throw new BadRequestException('Not in maintenance mode');
   }
 
-  async startMaintenance(auth: AuthDto): Promise<{ jwt: string }> {
+  async startMaintenance(username: string): Promise<{ jwt: string }> {
     const { isMaintenanceMode } = await this.getMaintenanceMode();
     if (isMaintenanceMode) {
       throw new BadRequestException('Already in maintenance mode');
@@ -35,7 +34,7 @@ export class MaintenanceService extends BaseService {
 
     return {
       jwt: await signMaintenanceJwt(secret, {
-        username: auth.user.name,
+        username,
       }),
     };
   }

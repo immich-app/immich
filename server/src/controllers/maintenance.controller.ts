@@ -20,7 +20,7 @@ export class MaintenanceController {
   @Post('start')
   @Authenticated({ permission: Permission.Maintenance, admin: true })
   async startMaintenance(@Auth() auth: AuthDto, @Res({ passthrough: true }) response: Response): Promise<void> {
-    const { jwt } = await this.service.startMaintenance(auth);
+    const { jwt } = await this.service.startMaintenance(auth.user.name);
     response.cookie(ImmichCookie.MaintenanceToken, jwt);
   }
 
