@@ -1,5 +1,16 @@
 import SQLiteData
 
+enum TaskConfig {
+  static let maxActiveDownloads = 3
+  static let maxPendingDownloads = 50
+  static let maxPendingUploads = 50
+  static let maxAttempts = 10
+  static let sessionId = "app.mertalev.immich.upload"
+  static let downloadCheckIntervalNs: UInt64 = 30_000_000_000 // 30 seconds
+  static let downloadTimeoutS = TimeInterval(60)
+  static let originalsDir = FileManager.default.temporaryDirectory.appendingPathComponent("originals", isDirectory: true)
+}
+
 struct Endpoint: Codable {
   let url: URL
   let status: Status
@@ -160,6 +171,16 @@ enum StoreKey: Int, CaseIterable, QueryBindable {
   }
 }
 
+enum UploadHeaders: String {
+  case reprDigest = "Repr-Digest"
+  case userToken = "X-Immich-User-Token"
+  case assetData = "X-Immich-Asset-Data"
+}
+
+enum TaskStatus: Int, QueryBindable {
+  case downloadPending, downloadQueued, downloadFailed, uploadPending, uploadQueued, uploadFailed, uploadComplete
+}
+
 enum BackupSelection: Int, QueryBindable {
   case selected, none, excluded
 }
@@ -174,4 +195,47 @@ enum AlbumUserRole: Int, QueryBindable {
 
 enum MemoryType: Int, QueryBindable {
   case onThisDay
+}
+
+enum AssetVisibility: Int, QueryBindable {
+  case timeline, hidden, archive, locked
+}
+
+enum SourceType: String, QueryBindable {
+  case machineLearning = "machine-learning"
+  case exif, manual
+}
+
+enum UploadMethod: Int, QueryBindable {
+  case multipart, resumable
+}
+
+enum UploadErrorCode: Int, QueryBindable {
+  case unknown
+  case assetNotFound
+  case fileNotFound
+  case resourceNotFound
+  case invalidResource
+  case encodingFailed
+  case writeFailed
+  case notEnoughSpace
+  case networkError
+  case photosInternalError
+  case photosUnknownError
+  case noServerUrl
+  case noDeviceId
+  case noAccessToken
+  case interrupted
+  case cancelled
+  case downloadStalled
+  case forceQuit
+  case outOfResources
+  case backgroundUpdatesDisabled
+  case uploadTimeout
+  case iCloudRateLimit
+  case iCloudThrottled
+}
+
+enum AssetType: Int, QueryBindable {
+  case other, image, video, audio
 }

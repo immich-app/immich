@@ -69,6 +69,7 @@ class NativeSyncApiImpl: ImmichPlugin, NativeSyncApi, FlutterPlugin {
       return
     }
     saveChangeToken(token: PHPhotoLibrary.shared().currentChangeToken)
+    NotificationCenter.default.post(name: .localAssetsDidUpdate, object: nil)
   }
 
   func shouldFullSync() -> Bool {
