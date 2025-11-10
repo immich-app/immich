@@ -10328,204 +10328,6 @@
         "x-immich-permission": "workflow.update",
         "description": "This endpoint requires the `workflow.update` permission."
       }
-    },
-    "/workflows/{id}/actions": {
-      "post": {
-        "operationId": "addWorkflowAction",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/WorkflowActionCreateDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/WorkflowActionResponseDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Workflows"
-        ],
-        "x-immich-permission": "workflow.update",
-        "description": "This endpoint requires the `workflow.update` permission."
-      }
-    },
-    "/workflows/{id}/actions/{actionId}": {
-      "delete": {
-        "operationId": "removeWorkflowAction",
-        "parameters": [
-          {
-            "name": "actionId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Workflows"
-        ],
-        "x-immich-permission": "workflow.update",
-        "description": "This endpoint requires the `workflow.update` permission."
-      }
-    },
-    "/workflows/{id}/filters": {
-      "post": {
-        "operationId": "addWorkflowFilter",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/WorkflowFilterCreateDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/WorkflowFilterResponseDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Workflows"
-        ],
-        "x-immich-permission": "workflow.update",
-        "description": "This endpoint requires the `workflow.update` permission."
-      }
-    },
-    "/workflows/{id}/filters/{filterId}": {
-      "delete": {
-        "operationId": "removeWorkflowFilter",
-        "parameters": [
-          {
-            "name": "filterId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Workflows"
-        ],
-        "x-immich-permission": "workflow.update",
-        "description": "This endpoint requires the `workflow.update` permission."
-      }
     }
   },
   "info": {
@@ -19024,7 +18826,7 @@
         ],
         "type": "string"
       },
-      "WorkflowActionCreateDto": {
+      "WorkflowActionItemDto": {
         "properties": {
           "actionConfig": {
             "type": "object"
@@ -19069,6 +18871,12 @@
       },
       "WorkflowCreateDto": {
         "properties": {
+          "actions": {
+            "items": {
+              "$ref": "#/components/schemas/WorkflowActionItemDto"
+            },
+            "type": "array"
+          },
           "description": {
             "type": "string"
           },
@@ -19077,6 +18885,12 @@
           },
           "enabled": {
             "type": "boolean"
+          },
+          "filters": {
+            "items": {
+              "$ref": "#/components/schemas/WorkflowFilterItemDto"
+            },
+            "type": "array"
           },
           "name": {
             "type": "string"
@@ -19093,13 +18907,15 @@
           }
         },
         "required": [
+          "actions",
           "displayName",
+          "filters",
           "name",
           "triggerType"
         ],
         "type": "object"
       },
-      "WorkflowFilterCreateDto": {
+      "WorkflowFilterItemDto": {
         "properties": {
           "filterConfig": {
             "type": "object"
@@ -19206,6 +19022,12 @@
       },
       "WorkflowUpdateDto": {
         "properties": {
+          "actions": {
+            "items": {
+              "$ref": "#/components/schemas/WorkflowActionItemDto"
+            },
+            "type": "array"
+          },
           "description": {
             "type": "string"
           },
@@ -19214,6 +19036,12 @@
           },
           "enabled": {
             "type": "boolean"
+          },
+          "filters": {
+            "items": {
+              "$ref": "#/components/schemas/WorkflowFilterItemDto"
+            },
+            "type": "array"
           },
           "name": {
             "type": "string"

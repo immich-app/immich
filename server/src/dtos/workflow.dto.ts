@@ -1,7 +1,26 @@
-import { IsNotEmpty, IsObject, IsString, IsUUID } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsNotEmpty, IsObject, IsString, IsUUID, ValidateNested } from 'class-validator';
 import { PluginTriggerType } from 'src/schema/tables/plugin.table';
 import type { ActionConfig, FilterConfig, TriggerConfig } from 'src/types/plugin-schema.types';
 import { Optional, ValidateBoolean, ValidateEnum } from 'src/validation';
+
+export class WorkflowFilterItemDto {
+  @IsUUID()
+  filterId!: string;
+
+  @IsObject()
+  @Optional()
+  filterConfig?: FilterConfig;
+}
+
+export class WorkflowActionItemDto {
+  @IsUUID()
+  actionId!: string;
+
+  @IsObject()
+  @Optional()
+  actionConfig?: ActionConfig;
+}
 
 export class WorkflowCreateDto {
   @ValidateEnum({ enum: PluginTriggerType, name: 'PluginTriggerType' })
@@ -25,6 +44,14 @@ export class WorkflowCreateDto {
 
   @ValidateBoolean({ optional: true })
   enabled?: boolean;
+
+  @ValidateNested({ each: true })
+  @Type(() => WorkflowFilterItemDto)
+  filters!: WorkflowFilterItemDto[];
+
+  @ValidateNested({ each: true })
+  @Type(() => WorkflowActionItemDto)
+  actions!: WorkflowActionItemDto[];
 }
 
 export class WorkflowUpdateDto {
@@ -48,6 +75,16 @@ export class WorkflowUpdateDto {
   @IsObject()
   @Optional()
   triggerConfig?: TriggerConfig;
+
+  @ValidateNested({ each: true })
+  @Type(() => WorkflowFilterItemDto)
+  @Optional()
+  filters?: WorkflowFilterItemDto[];
+
+  @ValidateNested({ each: true })
+  @Type(() => WorkflowActionItemDto)
+  @Optional()
+  actions?: WorkflowActionItemDto[];
 }
 
 export class WorkflowResponseDto {
@@ -78,22 +115,4 @@ export class WorkflowActionResponseDto {
   actionId!: string;
   actionConfig!: ActionConfig | null;
   order!: number;
-}
-
-export class WorkflowFilterCreateDto {
-  @IsUUID()
-  filterId!: string;
-
-  @IsObject()
-  @Optional()
-  filterConfig?: FilterConfig;
-}
-
-export class WorkflowActionCreateDto {
-  @IsUUID()
-  actionId!: string;
-
-  @IsObject()
-  @Optional()
-  actionConfig?: ActionConfig;
 }

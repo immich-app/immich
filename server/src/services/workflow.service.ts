@@ -2,10 +2,8 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { Workflow, WorkflowAction, WorkflowFilter } from 'src/database';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
-  WorkflowActionCreateDto,
   WorkflowActionResponseDto,
   WorkflowCreateDto,
-  WorkflowFilterCreateDto,
   WorkflowFilterResponseDto,
   WorkflowResponseDto,
   WorkflowUpdateDto,
@@ -16,15 +14,22 @@ import { BaseService } from 'src/services/base.service';
 @Injectable()
 export class WorkflowService extends BaseService {
   async create(auth: AuthDto, dto: WorkflowCreateDto): Promise<WorkflowResponseDto> {
-    const workflow = await this.workflowRepository.createWorkflow({
-      ownerId: auth.user.id,
-      triggerType: dto.triggerType,
-      triggerConfig: dto.triggerConfig || null,
-      name: dto.name,
-      displayName: dto.displayName,
-      description: dto.description || '',
-      enabled: dto.enabled ?? true,
-    });
+    const filterInserts = dto.filters.length > 0 ? await this.validateAndMapFilters(dto.filters) : [];
+    const actionInserts = dto.actions.length > 0 ? await this.validateAndMapActions(dto.actions) : [];
+
+    const workflow = await this.workflowRepository.createWorkflow(
+      {
+        ownerId: auth.user.id,
+        triggerType: dto.triggerType,
+        triggerConfig: dto.triggerConfig || null,
+        name: dto.name,
+        displayName: dto.displayName,
+        description: dto.description || '',
+        enabled: dto.enabled ?? true,
+      },
+      filterInserts,
+      actionInserts,
+    );
 
     return this.mapWorkflow(workflow);
   }
@@ -48,7 +53,12 @@ export class WorkflowService extends BaseService {
       throw new BadRequestException('No fields to update');
     }
 
-    const workflow = await this.workflowRepository.updateWorkflow(id, dto);
+    const { filters, actions, ...workflowUpdate } = dto;
+    const filterInserts = filters !== undefined ? await this.validateAndMapFilters(filters) : undefined;
+    const actionInserts = actions !== undefined ? await this.validateAndMapActions(actions) : undefined;
+
+    const workflow = await this.workflowRepository.updateWorkflow(id, workflowUpdate, filterInserts, actionInserts);
+
     return this.mapWorkflow(workflow);
   }
 
@@ -57,56 +67,34 @@ export class WorkflowService extends BaseService {
     await this.workflowRepository.deleteWorkflow(id);
   }
 
-  async addFilter(auth: AuthDto, workflowId: string, dto: WorkflowFilterCreateDto): Promise<WorkflowFilterResponseDto> {
-    await this.requireAccess({ auth, permission: Permission.WorkflowUpdate, ids: [workflowId] });
-
-    const filter = await this.pluginRepository.getFilter(dto.filterId);
-    if (!filter) {
-      throw new BadRequestException('Invalid filter ID');
+  private async validateAndMapFilters(filters: Array<{ filterId: string; filterConfig?: any }>) {
+    for (const dto of filters) {
+      const filter = await this.pluginRepository.getFilter(dto.filterId);
+      if (!filter) {
+        throw new BadRequestException(`Invalid filter ID: ${dto.filterId}`);
+      }
     }
 
-    const existingFilters = await this.workflowRepository.getFilters(workflowId);
-    const order = existingFilters.length;
-
-    const workflowFilter = await this.workflowRepository.createFilter({
-      workflowId,
+    return filters.map((dto, index) => ({
       filterId: dto.filterId,
       filterConfig: dto.filterConfig || null,
-      order,
-    });
-
-    return this.mapWorkflowFilter(workflowFilter);
+      order: index,
+    }));
   }
 
-  async removeFilter(auth: AuthDto, workflowId: string, filterId: string): Promise<void> {
-    await this.requireAccess({ auth, permission: Permission.WorkflowUpdate, ids: [workflowId] });
-    await this.workflowRepository.deleteFilter(filterId);
-  }
-
-  async addAction(auth: AuthDto, workflowId: string, dto: WorkflowActionCreateDto): Promise<WorkflowActionResponseDto> {
-    await this.requireAccess({ auth, permission: Permission.WorkflowUpdate, ids: [workflowId] });
-
-    const action = await this.pluginRepository.getAction(dto.actionId);
-    if (!action) {
-      throw new BadRequestException('Invalid action ID');
+  private async validateAndMapActions(actions: Array<{ actionId: string; actionConfig?: any }>) {
+    for (const dto of actions) {
+      const action = await this.pluginRepository.getAction(dto.actionId);
+      if (!action) {
+        throw new BadRequestException(`Invalid action ID: ${dto.actionId}`);
+      }
     }
 
-    const existingActions = await this.workflowRepository.getActions(workflowId);
-    const order = existingActions.length;
-
-    const workflowAction = await this.workflowRepository.createAction({
-      workflowId,
+    return actions.map((dto, index) => ({
       actionId: dto.actionId,
       actionConfig: dto.actionConfig || null,
-      order,
-    });
-
-    return this.mapWorkflowAction(workflowAction);
-  }
-
-  async removeAction(auth: AuthDto, workflowId: string, actionId: string): Promise<void> {
-    await this.requireAccess({ auth, permission: Permission.WorkflowUpdate, ids: [workflowId] });
-    await this.workflowRepository.deleteAction(actionId);
+      order: index,
+    }));
   }
 
   private async findOrFail(id: string) {

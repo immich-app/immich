@@ -30,12 +30,70 @@ export class WorkflowRepository {
       .execute();
   }
 
-  createWorkflow(workflow: Insertable<WorkflowTable>) {
-    return this.db.insertInto('workflow').values(workflow).returningAll().executeTakeFirstOrThrow();
+  async createWorkflow(
+    workflow: Insertable<WorkflowTable>,
+    filters: Omit<Insertable<WorkflowFilterTable>, 'workflowId'>[],
+    actions: Omit<Insertable<WorkflowActionTable>, 'workflowId'>[],
+  ) {
+    return await this.db.transaction().execute(async (trx) => {
+      const createdWorkflow = await trx
+        .insertInto('workflow')
+        .values(workflow)
+        .returningAll()
+        .executeTakeFirstOrThrow();
+
+      const newFilters = filters.map((filter) => ({
+        ...filter,
+        workflowId: createdWorkflow.id,
+      }));
+
+      await trx.insertInto('workflow_filter').values(newFilters).execute();
+
+      const newActions = actions.map((action) => ({
+        ...action,
+        workflowId: createdWorkflow.id,
+      }));
+      await trx.insertInto('workflow_action').values(newActions).execute();
+
+      return createdWorkflow;
+    });
   }
 
-  updateWorkflow(id: string, dto: Updateable<WorkflowTable>) {
-    return this.db.updateTable('workflow').set(dto).where('id', '=', id).returningAll().executeTakeFirstOrThrow();
+  async updateWorkflow(
+    id: string,
+    workflow: Updateable<WorkflowTable>,
+    filters: Omit<Insertable<WorkflowFilterTable>, 'workflowId'>[] | undefined,
+    actions: Omit<Insertable<WorkflowActionTable>, 'workflowId'>[] | undefined,
+  ) {
+    return await this.db.transaction().execute(async (trx) => {
+      if (Object.keys(workflow).length > 0) {
+        await trx.updateTable('workflow').set(workflow).where('id', '=', id).execute();
+      }
+
+      if (filters !== undefined) {
+        await trx.deleteFrom('workflow_filter').where('workflowId', '=', id).execute();
+        if (filters.length > 0) {
+          const filtersWithWorkflowId = filters.map((filter) => ({
+            ...filter,
+            workflowId: id,
+          }));
+          await trx.insertInto('workflow_filter').values(filtersWithWorkflowId).execute();
+        }
+      }
+
+      if (actions !== undefined) {
+        await trx.deleteFrom('workflow_action').where('workflowId', '=', id).execute();
+        if (actions.length > 0) {
+          const actionsWithWorkflowId = actions.map((action) => ({
+            ...action,
+            workflowId: id,
+          }));
+          await trx.insertInto('workflow_action').values(actionsWithWorkflowId).execute();
+        }
+      }
+
+      return await trx.selectFrom('workflow').selectAll().where('id', '=', id).executeTakeFirstOrThrow();
+    });
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
@@ -53,13 +111,16 @@ export class WorkflowRepository {
       .execute();
   }
 
-  createFilter(workflowFilter: Insertable<WorkflowFilterTable>) {
-    return this.db.insertInto('workflow_filter').values(workflowFilter).returningAll().executeTakeFirstOrThrow();
+  @GenerateSql({ params: [DummyValue.UUID] })
+  async deleteFiltersByWorkflow(workflowId: string) {
+    await this.db.deleteFrom('workflow_filter').where('workflowId', '=', workflowId).execute();
   }
 
-  @GenerateSql({ params: [DummyValue.UUID] })
-  async deleteFilter(id: string) {
-    await this.db.deleteFrom('workflow_filter').where('id', '=', id).execute();
+  async createFilters(filters: Insertable<WorkflowFilterTable>[]) {
+    if (filters.length === 0) {
+      return [];
+    }
+    return this.db.insertInto('workflow_filter').values(filters).returningAll().execute();
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
@@ -70,14 +131,5 @@ export class WorkflowRepository {
       .where('workflowId', '=', workflowId)
       .orderBy('order', 'asc')
       .execute();
-  }
-
-  createAction(workflowAction: Insertable<WorkflowActionTable>) {
-    return this.db.insertInto('workflow_action').values(workflowAction).returningAll().executeTakeFirstOrThrow();
-  }
-
-  @GenerateSql({ params: [DummyValue.UUID] })
-  async deleteAction(id: string) {
-    await this.db.deleteFrom('workflow_action').where('id', '=', id).execute();
   }
 }

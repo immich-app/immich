@@ -1,15 +1,7 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { AuthDto } from 'src/dtos/auth.dto';
-import {
-  WorkflowActionCreateDto,
-  WorkflowActionResponseDto,
-  WorkflowCreateDto,
-  WorkflowFilterCreateDto,
-  WorkflowFilterResponseDto,
-  WorkflowResponseDto,
-  WorkflowUpdateDto,
-} from 'src/dtos/workflow.dto';
+import { WorkflowCreateDto, WorkflowResponseDto, WorkflowUpdateDto } from 'src/dtos/workflow.dto';
 import { Permission } from 'src/enum';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { WorkflowService } from 'src/services/workflow.service';
@@ -53,47 +45,5 @@ export class WorkflowController {
   @HttpCode(HttpStatus.NO_CONTENT)
   deleteWorkflow(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<void> {
     return this.service.delete(auth, id);
-  }
-
-  @Post(':id/filters')
-  @Authenticated({ permission: Permission.WorkflowUpdate })
-  addWorkflowFilter(
-    @Auth() auth: AuthDto,
-    @Param() { id }: UUIDParamDto,
-    @Body() dto: WorkflowFilterCreateDto,
-  ): Promise<WorkflowFilterResponseDto> {
-    return this.service.addFilter(auth, id, dto);
-  }
-
-  @Delete(':id/filters/:filterId')
-  @Authenticated({ permission: Permission.WorkflowUpdate })
-  @HttpCode(HttpStatus.NO_CONTENT)
-  removeWorkflowFilter(
-    @Auth() auth: AuthDto,
-    @Param() { id }: UUIDParamDto,
-    @Param('filterId') filterId: string,
-  ): Promise<void> {
-    return this.service.removeFilter(auth, id, filterId);
-  }
-
-  @Post(':id/actions')
-  @Authenticated({ permission: Permission.WorkflowUpdate })
-  addWorkflowAction(
-    @Auth() auth: AuthDto,
-    @Param() { id }: UUIDParamDto,
-    @Body() dto: WorkflowActionCreateDto,
-  ): Promise<WorkflowActionResponseDto> {
-    return this.service.addAction(auth, id, dto);
-  }
-
-  @Delete(':id/actions/:actionId')
-  @Authenticated({ permission: Permission.WorkflowUpdate })
-  @HttpCode(HttpStatus.NO_CONTENT)
-  removeWorkflowAction(
-    @Auth() auth: AuthDto,
-    @Param() { id }: UUIDParamDto,
-    @Param('actionId') actionId: string,
-  ): Promise<void> {
-    return this.service.removeAction(auth, id, actionId);
   }
 }

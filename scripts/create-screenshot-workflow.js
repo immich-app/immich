@@ -15,8 +15,8 @@
 
 // ============= CONFIGURATION =============
 const API_URL = 'http://localhost:2283/api'; // Your Immich API URL
-const API_KEY = 'jHfUAuTGMNio35XfuRwUpPg77nK8AKiJ8rkZKqbhA'; // Your Immich API key
-const ALBUM_ID = '9c9791bd-ae9f-463f-bf2f-1939857ae757'; // Target album ID for screenshots
+const API_KEY = 'VmD7pJoAV0NLVRRb00CfVB810XQMtqMIxNebNh1Weg'; // Your Immich API key
+const ALBUM_ID = '0d08bdca-5866-4ecf-bc96-6a738537ff9b'; // Target album ID for screenshots
 // =========================================
 
 async function makeApiRequest(endpoint, method = 'GET', body = null) {
@@ -110,8 +110,8 @@ async function createWorkflow() {
   }
   console.log(`✓ Found archive action (ID: ${archiveAction.id})`);
 
-  // Step 2: Create the workflow
-  console.log('\n📝 Creating workflow...');
+  // Step 2: Create the workflow with filters and actions in a single request
+  console.log('\n📝 Creating workflow with filters and actions...');
   const workflowData = {
     triggerType: 'AssetCreate',
     name: 'screenshot_organizer',
@@ -122,6 +122,28 @@ async function createWorkflow() {
     triggerConfig: {
       assetType: 'All',
     },
+    filters: [
+      {
+        filterId: fileNameFilter.id,
+        filterConfig: {
+          pattern: 'screenshot',
+          matchType: 'contains',
+          caseSensitive: false,
+        },
+      },
+    ],
+    actions: [
+      {
+        actionId: addToAlbumAction.id,
+        actionConfig: {
+          albumId: ALBUM_ID,
+        },
+      },
+      {
+        actionId: archiveAction.id,
+        actionConfig: {},
+      },
+    ],
   };
 
   const workflow = await makeApiRequest('/workflows', 'POST', workflowData);
@@ -129,82 +151,31 @@ async function createWorkflow() {
     `✓ Created workflow: ${workflow.displayName} (ID: ${workflow.id})`
   );
   console.log(`  Owner ID: ${workflow.ownerId}`);
+  console.log(`  Filters: ${workflow.filters.length}`);
+  console.log(`  Actions: ${workflow.actions.length}`);
 
-  // Step 3: Add the file_name filter to check for "screenshot"
-  console.log('\n🔍 Adding filename filter...');
-  const filterData = {
-    filterId: fileNameFilter.id,
-    filterConfig: {
-      pattern: 'screenshot',
-      matchType: 'contains',
-      caseSensitive: false,
-    },
-  };
-
-  const addedFilter = await makeApiRequest(
-    `/workflows/${workflow.id}/filters`,
-    'POST',
-    filterData
-  );
-  console.log(`✓ Added filter: ${fileNameFilter.displayName}`);
-  console.log(`  - Pattern: "screenshot" (case-insensitive, contains match)`);
-
-  // Step 4: Add the add_to_album action
-  console.log('\n📁 Adding "Add to Album" action...');
-  const albumActionData = {
-    actionId: addToAlbumAction.id,
-    actionConfig: {
-      albumId: ALBUM_ID,
-    },
-  };
-
-  const addedAlbumAction = await makeApiRequest(
-    `/workflows/${workflow.id}/actions`,
-    'POST',
-    albumActionData
-  );
-  console.log(`✓ Added action: ${addToAlbumAction.displayName}`);
-  console.log(`  - Album ID: ${ALBUM_ID}`);
-
-  // Step 5: Add the archive action
-  console.log('\n📦 Adding "Archive" action...');
-  const archiveActionData = {
-    actionId: archiveAction.id,
-    actionConfig: {},
-  };
-
-  const addedArchiveAction = await makeApiRequest(
-    `/workflows/${workflow.id}/actions`,
-    'POST',
-    archiveActionData
-  );
-  console.log(`✓ Added action: ${archiveAction.displayName}`);
-
-  // Step 6: Get the complete workflow to show summary
-  console.log('\n📊 Fetching complete workflow...');
-  const completeWorkflow = await makeApiRequest(`/workflows/${workflow.id}`);
-
+  // Step 3: Show workflow summary
   console.log('\n✅ Workflow created successfully!\n');
   console.log('==========================================');
   console.log('Workflow Summary:');
   console.log('==========================================');
-  console.log(`Name: ${completeWorkflow.displayName}`);
-  console.log(`Description: ${completeWorkflow.description}`);
-  console.log(`Enabled: ${completeWorkflow.enabled}`);
-  console.log(`Trigger: ${completeWorkflow.triggerType}`);
-  console.log(`\nFilters (${completeWorkflow.filters.length}):`);
-  completeWorkflow.filters.forEach((filter, idx) => {
+  console.log(`Name: ${workflow.displayName}`);
+  console.log(`Description: ${workflow.description}`);
+  console.log(`Enabled: ${workflow.enabled}`);
+  console.log(`Trigger: ${workflow.triggerType}`);
+  console.log(`\nFilters (${workflow.filters.length}):`);
+  workflow.filters.forEach((filter, idx) => {
     console.log(`  ${idx + 1}. Filter ID: ${filter.filterId}`);
     console.log(`     Config: ${JSON.stringify(filter.filterConfig)}`);
   });
-  console.log(`\nActions (${completeWorkflow.actions.length}):`);
-  completeWorkflow.actions.forEach((action, idx) => {
+  console.log(`\nActions (${workflow.actions.length}):`);
+  workflow.actions.forEach((action, idx) => {
     console.log(`  ${idx + 1}. Action ID: ${action.actionId}`);
     console.log(`     Config: ${JSON.stringify(action.actionConfig)}`);
   });
   console.log('==========================================\n');
 
-  return completeWorkflow;
+  return workflow;
 }
 
 // Main execution
