@@ -50,7 +50,7 @@ export async function createMaintenanceLoginUrl(
   auth: MaintenanceAuthDto,
   secret: string,
 ): Promise<string> {
-  return `${baseUrl}/maintenance?token=${await signMaintenanceJwt(secret!, auth)}`;
+  return `${baseUrl}/maintenance?token=${await signMaintenanceJwt(secret, auth)}`;
 }
 
 export async function signMaintenanceJwt(secret: string, data: MaintenanceAuthDto): Promise<string> {
