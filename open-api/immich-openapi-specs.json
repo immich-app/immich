@@ -4269,6 +4269,24 @@
             }
           },
           {
+            "name": "order",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/MemorySearchOrder"
+            }
+          },
+          {
+            "name": "size",
+            "required": false,
+            "in": "query",
+            "description": "Number of memories to return",
+            "schema": {
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
             "name": "type",
             "required": false,
             "in": "query",
@@ -4379,6 +4397,24 @@
             "in": "query",
             "schema": {
               "type": "boolean"
+            }
+          },
+          {
+            "name": "order",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/MemorySearchOrder"
+            }
+          },
+          {
+            "name": "size",
+            "required": false,
+            "in": "query",
+            "description": "Number of memories to return",
+            "schema": {
+              "minimum": 1,
+              "type": "integer"
             }
           },
           {
@@ -10495,7 +10531,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "2.2.2",
+    "version": "2.2.3",
     "contact": {}
   },
   "tags": [],
@@ -13140,18 +13176,27 @@
       },
       "MemoriesResponse": {
         "properties": {
+          "duration": {
+            "default": 5,
+            "type": "integer"
+          },
           "enabled": {
             "default": true,
             "type": "boolean"
           }
         },
         "required": [
+          "duration",
           "enabled"
         ],
         "type": "object"
       },
       "MemoriesUpdate": {
         "properties": {
+          "duration": {
+            "minimum": 1,
+            "type": "integer"
+          },
           "enabled": {
             "type": "boolean"
           }
@@ -13264,6 +13309,14 @@
           "updatedAt"
         ],
         "type": "object"
+      },
+      "MemorySearchOrder": {
+        "enum": [
+          "asc",
+          "desc",
+          "random"
+        ],
+        "type": "string"
       },
       "MemoryStatisticsResponseDto": {
         "properties": {

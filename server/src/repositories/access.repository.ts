@@ -52,8 +52,8 @@ class ActivityAccess {
     return this.db
       .selectFrom('album')
       .select('album.id')
-      .leftJoin('album_user as albumUsers', 'albumUsers.albumsId', 'album.id')
-      .leftJoin('user', (join) => join.onRef('user.id', '=', 'albumUsers.usersId').on('user.deletedAt', 'is', null))
+      .leftJoin('album_user as albumUsers', 'albumUsers.albumId', 'album.id')
+      .leftJoin('user', (join) => join.onRef('user.id', '=', 'albumUsers.userId').on('user.deletedAt', 'is', null))
       .where('album.id', 'in', [...albumIds])
       .where('album.isActivityEnabled', '=', true)
       .where((eb) => eb.or([eb('album.ownerId', '=', userId), eb('user.id', '=', userId)]))
@@ -96,8 +96,8 @@ class AlbumAccess {
     return this.db
       .selectFrom('album')
       .select('album.id')
-      .leftJoin('album_user', 'album_user.albumsId', 'album.id')
-      .leftJoin('user', (join) => join.onRef('user.id', '=', 'album_user.usersId').on('user.deletedAt', 'is', null))
+      .leftJoin('album_user', 'album_user.albumId', 'album.id')
+      .leftJoin('user', (join) => join.onRef('user.id', '=', 'album_user.userId').on('user.deletedAt', 'is', null))
       .where('album.id', 'in', [...albumIds])
       .where('album.deletedAt', 'is', null)
       .where('user.id', '=', userId)
@@ -138,12 +138,12 @@ class AssetAccess {
     return this.db
       .with('target', (qb) => qb.selectNoFrom(sql`array[${sql.join([...assetIds])}]::uuid[]`.as('ids')))
       .selectFrom('album')
-      .innerJoin('album_asset as albumAssets', 'album.id', 'albumAssets.albumsId')
+      .innerJoin('album_asset as albumAssets', 'album.id', 'albumAssets.albumId')
       .innerJoin('asset', (join) =>
-        join.onRef('asset.id', '=', 'albumAssets.assetsId').on('asset.deletedAt', 'is', null),
+        join.onRef('asset.id', '=', 'albumAssets.assetId').on('asset.deletedAt', 'is', null),
       )
-      .leftJoin('album_user as albumUsers', 'albumUsers.albumsId', 'album.id')
-      .leftJoin('user', (join) => join.onRef('user.id', '=', 'albumUsers.usersId').on('user.deletedAt', 'is', null))
+      .leftJoin('album_user as albumUsers', 'albumUsers.albumId', 'album.id')
+      .leftJoin('user', (join) => join.onRef('user.id', '=', 'albumUsers.userId').on('user.deletedAt', 'is', null))
       .crossJoin('target')
       .select(['asset.id', 'asset.livePhotoVideoId'])
       .where((eb) =>
@@ -223,13 +223,13 @@ class AssetAccess {
     return this.db
       .selectFrom('shared_link')
       .leftJoin('album', (join) => join.onRef('album.id', '=', 'shared_link.albumId').on('album.deletedAt', 'is', null))
-      .leftJoin('shared_link_asset', 'shared_link_asset.sharedLinksId', 'shared_link.id')
+      .leftJoin('shared_link_asset', 'shared_link_asset.sharedLinkId', 'shared_link.id')
       .leftJoin('asset', (join) =>
-        join.onRef('asset.id', '=', 'shared_link_asset.assetsId').on('asset.deletedAt', 'is', null),
+        join.onRef('asset.id', '=', 'shared_link_asset.assetId').on('asset.deletedAt', 'is', null),
       )
-      .leftJoin('album_asset', 'album_asset.albumsId', 'album.id')
+      .leftJoin('album_asset', 'album_asset.albumId', 'album.id')
       .leftJoin('asset as albumAssets', (join) =>
-        join.onRef('albumAssets.id', '=', 'album_asset.assetsId').on('albumAssets.deletedAt', 'is', null),
+        join.onRef('albumAssets.id', '=', 'album_asset.assetId').on('albumAssets.deletedAt', 'is', null),
       )
       .select([
         'asset.id as assetId',
