@@ -1,23 +1,19 @@
 <script lang="ts">
-  import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
-  import SharedLinkCopy from '$lib/components/sharedlinks-page/actions/shared-link-copy.svelte';
-  import SharedLinkDelete from '$lib/components/sharedlinks-page/actions/shared-link-delete.svelte';
-  import SharedLinkEdit from '$lib/components/sharedlinks-page/actions/shared-link-edit.svelte';
+  import ActionButton from '$lib/components/ActionButton.svelte';
   import ShareCover from '$lib/components/sharedlinks-page/covers/share-cover.svelte';
   import { AppRoute } from '$lib/constants';
   import Badge from '$lib/elements/Badge.svelte';
+  import { getSharedLinkActions } from '$lib/services/shared-link.service';
   import { locale } from '$lib/stores/preferences.store';
   import { SharedLinkType, type SharedLinkResponseDto } from '@immich/sdk';
-  import { mdiDotsVertical } from '@mdi/js';
   import { DateTime, type ToRelativeUnit } from 'luxon';
   import { t } from 'svelte-i18n';
 
   interface Props {
     sharedLink: SharedLinkResponseDto;
-    onDelete: () => void;
   }
 
-  let { sharedLink, onDelete }: Props = $props();
+  let { sharedLink }: Props = $props();
 
   let now = DateTime.now();
   let expiresAt = $derived(sharedLink.expiresAt ? DateTime.fromISO(sharedLink.expiresAt) : undefined);
@@ -34,6 +30,8 @@
       }
     }
   };
+
+  const SharedLinkActions = $derived(getSharedLinkActions($t, sharedLink));
 </script>
 
 <div
@@ -97,23 +95,13 @@
   </svelte:element>
   <div class="flex flex-auto flex-col place-content-center place-items-end text-end ms-4">
     <div class="sm:flex hidden">
-      <SharedLinkEdit {sharedLink} />
-      <SharedLinkCopy {sharedLink} />
-      <SharedLinkDelete {onDelete} />
+      <ActionButton action={SharedLinkActions.Edit} />
+      <ActionButton action={SharedLinkActions.Copy} />
+      <ActionButton action={SharedLinkActions.Delete} />
     </div>
 
     <div class="sm:hidden">
-      <ButtonContextMenu
-        color="primary"
-        title={$t('shared_link_options')}
-        icon={mdiDotsVertical}
-        size="large"
-        hideContent
-      >
-        <SharedLinkEdit menuItem {sharedLink} />
-        <SharedLinkCopy menuItem {sharedLink} />
-        <SharedLinkDelete menuItem {onDelete} />
-      </ButtonContextMenu>
+      <ActionButton action={SharedLinkActions.ContextMenu} />
     </div>
   </div>
 </div>
