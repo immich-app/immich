@@ -6,10 +6,10 @@ import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/widgets/activities/comment_bubble.dart';
 import 'package:immich_mobile/presentation/widgets/album/drift_activity_text_field.dart';
+import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
 import 'package:immich_mobile/providers/activity.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
-import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 class ActivitiesBottomSheet extends HookConsumerWidget {
@@ -85,7 +85,6 @@ class ActivitiesBottomSheet extends HookConsumerWidget {
     );
 
     return BaseBottomSheet(
-      controller: controller,
       footer: Padding(
         // TODO: avoid fixed padding, use context.padding.bottom
         padding: const EdgeInsets.only(bottom: 32),
@@ -101,6 +100,7 @@ class ActivitiesBottomSheet extends HookConsumerWidget {
           ],
         ),
       ),
+      controller: controller,
       initialChildSize: initialChildSize,
       minChildSize: 0.1,
       maxChildSize: 0.88,
