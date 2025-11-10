@@ -314,6 +314,7 @@ class AppRouter extends RootStackRouter {
           settings: page,
           pageBuilder: (_, __, ___) => child,
           opaque: false,
+          transitionsBuilder: TransitionsBuilders.fadeIn,
         ),
       ),
     ),
