@@ -1,7 +1,6 @@
 import { defaultLang, langs, locales } from '$lib/constants';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { lang } from '$lib/stores/preferences.store';
-import { serverConfig } from '$lib/stores/server-config.store';
 import { handleError } from '$lib/utils/handle-error';
 import {
   AssetJobName,
@@ -267,11 +266,6 @@ export const copyToClipboard = async (secret: string) => {
   } catch (error) {
     handleError(error, $t('errors.unable_to_copy_to_clipboard'));
   }
-};
-
-export const makeSharedLinkUrl = (sharedLink: SharedLinkResponseDto) => {
-  const path = sharedLink.slug ? `s/${sharedLink.slug}` : `share/${sharedLink.key}`;
-  return new URL(path, get(serverConfig).externalDomain || globalThis.location.origin).href;
 };
 
 export const oauth = {

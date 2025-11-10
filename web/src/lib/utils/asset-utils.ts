@@ -30,7 +30,6 @@ import {
   untagAssets,
   updateAsset,
   updateAssets,
-  type AlbumResponseDto,
   type AssetResponseDto,
   type AssetTypeEnum,
   type DownloadInfoDto,
@@ -154,12 +153,6 @@ export const removeTag = async ({
   }
 
   return assetIds;
-};
-
-export const downloadAlbum = async (album: AlbumResponseDto) => {
-  await downloadArchive(`${album.albumName}.zip`, {
-    albumId: album.id,
-  });
 };
 
 export const downloadBlob = (data: Blob, filename: string) => {

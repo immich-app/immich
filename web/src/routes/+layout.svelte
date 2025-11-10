@@ -58,7 +58,7 @@
     // if the browser theme changes, changes the Immich theme too
   });
 
-  eventManager.emit('app.init');
+  eventManager.emit('AppInit');
 
   beforeNavigate(({ from, to }) => {
     if (isAssetViewerRoute(from) && isAssetViewerRoute(to)) {
