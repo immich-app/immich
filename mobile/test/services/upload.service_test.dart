@@ -29,6 +29,7 @@ void main() {
   late MockDriftLocalAssetRepository mockLocalAssetRepository;
   late MockAppSettingsService mockAppSettingsService;
   late MockAssetMediaRepository mockAssetMediaRepository;
+  late MockLocalAssetUploadRepository mockLocalAssetUploadRepository;
   late Drift db;
 
   setUpAll(() async {
@@ -53,6 +54,7 @@ void main() {
     mockLocalAssetRepository = MockDriftLocalAssetRepository();
     mockAppSettingsService = MockAppSettingsService();
     mockAssetMediaRepository = MockAssetMediaRepository();
+    mockLocalAssetUploadRepository = MockLocalAssetUploadRepository();
 
     when(() => mockAppSettingsService.getSetting(AppSettingsEnum.useCellularForUploadVideos)).thenReturn(false);
     when(() => mockAppSettingsService.getSetting(AppSettingsEnum.useCellularForUploadPhotos)).thenReturn(false);
@@ -64,6 +66,7 @@ void main() {
       mockLocalAssetRepository,
       mockAppSettingsService,
       mockAssetMediaRepository,
+      mockLocalAssetUploadRepository,
     );
 
     mockUploadRepository.onUploadStatus = (_) {};

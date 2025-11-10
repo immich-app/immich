@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
@@ -7,6 +8,8 @@ import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/upload.provider.dart';
+import 'package:immich_mobile/services/upload.service.dart';
 import 'package:immich_mobile/utils/bytes_units.dart';
 import 'package:path/path.dart' as path;
 
@@ -16,7 +19,10 @@ class DriftUploadDetailPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final uploadItems = ref.watch(driftBackupProvider.select((state) => state.uploadItems));
+    final inProgressUploads = ref.watch(driftBackupProvider.select((state) => state.uploadItems));
+    final failedUploads = ref.watch(failedUploadStatusProvider).valueOrNull ?? {};
+    // In-progress uploads take precedence over failed uploads with the same key
+    final uploadItems = {...failedUploads, ...inProgressUploads};
 
     return Scaffold(
       appBar: AppBar(
@@ -46,21 +52,21 @@ class DriftUploadDetailPage extends ConsumerWidget {
   }
 
   Widget _buildUploadList(Map<String, DriftUploadStatus> uploadItems) {
+    final sortedKeys = uploadItems.keys.sorted();
     return ListView.separated(
       addAutomaticKeepAlives: true,
       padding: const EdgeInsets.all(16),
-      itemCount: uploadItems.length,
+      itemCount: sortedKeys.length,
       separatorBuilder: (context, index) => const SizedBox(height: 4),
       itemBuilder: (context, index) {
-        final item = uploadItems.values.elementAt(index);
+        final item = uploadItems[sortedKeys[index]]!;
         return _buildUploadCard(context, item);
       },
     );
   }
 
   Widget _buildUploadCard(BuildContext context, DriftUploadStatus item) {
-    final isCompleted = item.progress >= 1.0;
-    final double progressPercentage = (item.progress * 100).clamp(0, 100);
+    final progress = item.progress;
 
     return Card(
       elevation: 0,
@@ -108,13 +114,16 @@ class DriftUploadDetailPage extends ConsumerWidget {
                       ],
                     ),
                   ),
-                  _buildProgressIndicator(
-                    context,
-                    item.progress,
-                    progressPercentage,
-                    isCompleted,
-                    item.networkSpeedAsString,
-                  ),
+                  if (item.isFailed == true)
+                    _buildRetryButton(item)
+                  else if (progress != null)
+                    _buildProgressIndicator(
+                      context,
+                      progress,
+                      (progress * 100).clamp(0, 100),
+                      progress >= 1.0,
+                      item.networkSpeedAsString,
+                    ),
                 ],
               ),
             ],
@@ -129,7 +138,7 @@ class DriftUploadDetailPage extends ConsumerWidget {
     double progress,
     double percentage,
     bool isCompleted,
-    String networkSpeedAsString,
+    String? networkSpeedAsString,
   ) {
     return Column(
       children: [
@@ -159,15 +168,36 @@ class DriftUploadDetailPage extends ConsumerWidget {
               ),
           ],
         ),
-        Text(
-          networkSpeedAsString,
-          style: context.textTheme.labelSmall?.copyWith(
-            color: context.colorScheme.onSurface.withValues(alpha: 0.6),
-            fontSize: 10,
+        if (networkSpeedAsString != null)
+          Text(
+            networkSpeedAsString,
+            style: context.textTheme.labelSmall?.copyWith(
+              color: context.colorScheme.onSurface.withValues(alpha: 0.6),
+              fontSize: 10,
+            ),
           ),
-        ),
       ],
     );
+  }
+
+  Widget _buildRetryButton(DriftUploadStatus item) {
+    return Consumer(
+      builder: (context, ref, child) {
+        return IconButton(
+          onPressed: () => _retryFailedUpload(ref, item),
+          icon: const Icon(Icons.refresh_rounded),
+          iconSize: 24,
+          color: context.colorScheme.onErrorContainer,
+          tooltip: "retry_upload".t(context: context),
+        );
+      },
+    );
+  }
+
+  Future<void> _retryFailedUpload(WidgetRef ref, DriftUploadStatus item) async {
+    await ref.read(uploadServiceProvider).clearError(item.taskId);
+    ref.invalidate(failedUploadStatusProvider);
+    await ref.read(uploadServiceProvider).manualBackupId(item.taskId);
   }
 
   Future<void> _showFileDetailDialog(BuildContext context, DriftUploadStatus item) {
@@ -241,7 +271,8 @@ class FileDetailDialog extends ConsumerWidget {
                     _buildInfoSection(context, [
                       _buildInfoRow(context, "Filename", path.basename(uploadStatus.filename)),
                       _buildInfoRow(context, "Local ID", asset.id),
-                      _buildInfoRow(context, "File Size", formatHumanReadableBytes(uploadStatus.fileSize, 2)),
+                      if (uploadStatus.fileSize != null)
+                        _buildInfoRow(context, "File Size", formatHumanReadableBytes(uploadStatus.fileSize!, 2)),
                       if (asset.width != null) _buildInfoRow(context, "Width", "${asset.width}px"),
                       if (asset.height != null) _buildInfoRow(context, "Height", "${asset.height}px"),
                       _buildInfoRow(context, "Created At", asset.createdAt.toString()),

@@ -1,18 +1,19 @@
 import 'package:immich_mobile/infrastructure/repositories/exif.repository.dart';
-import 'package:immich_mobile/repositories/partner_api.repository.dart';
-import 'package:immich_mobile/repositories/album_media.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/local_asset_upload.repository.dart';
+import 'package:immich_mobile/repositories/album.repository.dart';
 import 'package:immich_mobile/repositories/album_api.repository.dart';
-import 'package:immich_mobile/repositories/partner.repository.dart';
-import 'package:immich_mobile/repositories/etag.repository.dart';
-import 'package:immich_mobile/repositories/local_files_manager.repository.dart';
-import 'package:immich_mobile/repositories/file_media.repository.dart';
-import 'package:immich_mobile/repositories/backup.repository.dart';
+import 'package:immich_mobile/repositories/album_media.repository.dart';
+import 'package:immich_mobile/repositories/asset.repository.dart';
+import 'package:immich_mobile/repositories/asset_api.repository.dart';
+import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/repositories/auth.repository.dart';
 import 'package:immich_mobile/repositories/auth_api.repository.dart';
-import 'package:immich_mobile/repositories/asset.repository.dart';
-import 'package:immich_mobile/repositories/asset_media.repository.dart';
-import 'package:immich_mobile/repositories/album.repository.dart';
-import 'package:immich_mobile/repositories/asset_api.repository.dart';
+import 'package:immich_mobile/repositories/backup.repository.dart';
+import 'package:immich_mobile/repositories/etag.repository.dart';
+import 'package:immich_mobile/repositories/file_media.repository.dart';
+import 'package:immich_mobile/repositories/local_files_manager.repository.dart';
+import 'package:immich_mobile/repositories/partner.repository.dart';
+import 'package:immich_mobile/repositories/partner_api.repository.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockAlbumRepository extends Mock implements AlbumRepository {}
@@ -46,3 +47,5 @@ class MockPartnerRepository extends Mock implements PartnerRepository {}
 class MockPartnerApiRepository extends Mock implements PartnerApiRepository {}
 
 class MockLocalFilesManagerRepository extends Mock implements LocalFilesManagerRepository {}
+
+class MockLocalAssetUploadRepository extends Mock implements DriftLocalAssetUploadRepository {}

@@ -7,17 +7,20 @@ import 'package:cancellation_token_http/http.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
+import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/backup.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/local_asset_upload.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/storage.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/upload.provider.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/repositories/upload.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
@@ -34,6 +37,7 @@ final uploadServiceProvider = Provider((ref) {
     ref.watch(localAssetRepository),
     ref.watch(appSettingsServiceProvider),
     ref.watch(assetMediaRepositoryProvider),
+    ref.watch(assetUploadRepositoryProvider),
   );
 
   ref.onDispose(service.dispose);
@@ -48,6 +52,7 @@ class UploadService {
     this._localAssetRepository,
     this._appSettingsService,
     this._assetMediaRepository,
+    this._assetUploadRepository,
   ) {
     _uploadRepository.onUploadStatus = _onUploadCallback;
     _uploadRepository.onTaskProgress = _onTaskProgressCallback;
@@ -59,6 +64,7 @@ class UploadService {
   final DriftLocalAssetRepository _localAssetRepository;
   final AppSettingsService _appSettingsService;
   final AssetMediaRepository _assetMediaRepository;
+  final DriftLocalAssetUploadRepository _assetUploadRepository;
   final Logger _logger = Logger('UploadService');
 
   final StreamController<TaskStatusUpdate> _taskStatusController = StreamController<TaskStatusUpdate>.broadcast();
@@ -87,6 +93,14 @@ class UploadService {
     _taskProgressController.close();
   }
 
+  Future<void> updateError(String assetId, UploadErrorType errorType, String error) {
+    return _assetUploadRepository.upsert(assetId, errorType, error);
+  }
+
+  Future<void> clearError(String assetId) {
+    return _assetUploadRepository.delete(assetId);
+  }
+
   Future<List<bool>> enqueueTasks(List<UploadTask> tasks) {
     return _uploadRepository.enqueueBackgroundAll(tasks);
   }
@@ -97,6 +111,15 @@ class UploadService {
 
   Future<({int total, int remainder, int processing})> getBackupCounts(String userId) {
     return _backupRepository.getAllCounts(userId);
+  }
+
+  Future<void> manualBackupId(String localId) async {
+    final localAsset = await _localAssetRepository.get(localId);
+    if (localAsset == null) {
+      _logger.warning('Local asset with id $localId not found for manual backup');
+      return;
+    }
+    await manualBackup([localAsset]);
   }
 
   Future<void> manualBackup(List<LocalAsset> localAssets) async {
@@ -121,47 +144,41 @@ class UploadService {
   /// Find backup candidates
   /// Build the upload tasks
   /// Enqueue the tasks
-  Future<void> startBackup(String userId, void Function(EnqueueStatus status) onEnqueueTasks) async {
+  Future<void> startBackup(
+    String userId,
+    void Function(EnqueueStatus status) onEnqueueTasks, {
+    bool ignoreFailed = false,
+  }) async {
     await _storageRepository.clearCache();
+    await _assetUploadRepository.prune();
 
     shouldAbortQueuingTasks = false;
 
-    final candidates = await _backupRepository.getCandidates(userId);
+    final candidates = await _backupRepository.getCandidates(
+      userId,
+      limit: 100,
+      ignoreFailed: ignoreFailed,
+      sortBy: SortCandidatesBy.attemptCount,
+    );
     if (candidates.isEmpty) {
       return;
     }
 
-    const batchSize = 100;
-    int count = 0;
-    for (int i = 0; i < candidates.length; i += batchSize) {
-      if (shouldAbortQueuingTasks) {
-        break;
-      }
+    final tasks = (await Future.wait(candidates.map((asset) => getUploadTask(asset)))).nonNulls.toList();
+    if (tasks.isNotEmpty && !shouldAbortQueuingTasks) {
+      await enqueueTasks(tasks);
 
-      final batch = candidates.skip(i).take(batchSize).toList();
-      List<UploadTask> tasks = [];
-      for (final asset in batch) {
-        final task = await getUploadTask(asset);
-        if (task != null) {
-          tasks.add(task);
-        }
-      }
-
-      if (tasks.isNotEmpty && !shouldAbortQueuingTasks) {
-        count += tasks.length;
-        await enqueueTasks(tasks);
-
-        onEnqueueTasks(EnqueueStatus(enqueueCount: count, totalCount: candidates.length));
-      }
+      onEnqueueTasks(EnqueueStatus(enqueueCount: tasks.length, totalCount: candidates.length));
     }
   }
 
   Future<void> startBackupWithHttpClient(String userId, bool hasWifi, CancellationToken token) async {
     await _storageRepository.clearCache();
+    await _assetUploadRepository.prune();
 
     shouldAbortQueuingTasks = false;
 
-    final candidates = await _backupRepository.getCandidates(userId);
+    final candidates = await _backupRepository.getCandidates(userId, sortBy: SortCandidatesBy.attemptCount);
     if (candidates.isEmpty) {
       return;
     }
@@ -200,6 +217,7 @@ class UploadService {
     shouldAbortQueuingTasks = true;
 
     await _storageRepository.clearCache();
+    await _assetUploadRepository.prune();
     await _uploadRepository.reset(kBackupGroup);
     await _uploadRepository.deleteDatabaseRecords(kBackupGroup);
 

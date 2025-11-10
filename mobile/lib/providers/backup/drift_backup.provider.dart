@@ -5,6 +5,7 @@ import 'package:background_downloader/background_downloader.dart';
 import 'package:collection/collection.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
+import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/string_extensions.dart';
@@ -32,18 +33,18 @@ class EnqueueStatus {
 class DriftUploadStatus {
   final String taskId;
   final String filename;
-  final double progress;
-  final int fileSize;
-  final String networkSpeedAsString;
+  final double? progress;
+  final int? fileSize;
+  final String? networkSpeedAsString;
   final bool? isFailed;
   final String? error;
 
   const DriftUploadStatus({
     required this.taskId,
     required this.filename,
-    required this.progress,
-    required this.fileSize,
-    required this.networkSpeedAsString,
+    this.progress,
+    this.fileSize,
+    this.networkSpeedAsString,
     this.isFailed,
     this.error,
   });
@@ -231,7 +232,7 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
     }
   }
 
-  void _handleTaskStatusUpdate(TaskStatusUpdate update) {
+  void _handleTaskStatusUpdate(TaskStatusUpdate update) async {
     final taskId = update.task.taskId;
 
     switch (update.status) {
@@ -249,35 +250,36 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
           });
         }
 
+        await _uploadService.clearError(taskId);
+
       case TaskStatus.failed:
+        _removeUploadItem(taskId);
         // Ignore retry errors to avoid confusing users
         if (update.exception?.description == 'Delayed or retried enqueue failed') {
-          _removeUploadItem(taskId);
-          return;
-        }
-
-        final currentItem = state.uploadItems[taskId];
-        if (currentItem == null) {
           return;
         }
 
         String? error;
         final exception = update.exception;
-        if (exception != null && exception is TaskHttpException) {
-          final message = tryJsonDecode(exception.description)?['message'] as String?;
-          if (message != null) {
-            final responseCode = exception.httpResponseCode;
-            error = "${exception.exceptionType}, response code $responseCode: $message";
-          }
-        }
-        error ??= update.exception?.toString();
+        if (exception != null) {
+          final errorType = switch (exception) {
+            TaskConnectionException() => UploadErrorType.network,
+            TaskFileSystemException() || TaskUrlException() => UploadErrorType.client,
+            TaskHttpException() => UploadErrorType.server,
+            _ => UploadErrorType.unknown,
+          };
 
-        state = state.copyWith(
-          uploadItems: {
-            ...state.uploadItems,
-            taskId: currentItem.copyWith(isFailed: true, error: error),
-          },
-        );
+          if (exception is TaskHttpException) {
+            final message = tryJsonDecode(exception.description)?['message'] as String?;
+            if (message != null) {
+              final responseCode = exception.httpResponseCode;
+              error = "${exception.exceptionType}, response code $responseCode: $message";
+            }
+          }
+
+          error ??= exception.toString();
+          await _uploadService.updateError(taskId, errorType, error);
+        }
         _logger.fine("Upload failed for taskId: $taskId, exception: ${update.exception}");
         break;
 
@@ -350,9 +352,9 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
     state = state.copyWith(isSyncing: isSyncing);
   }
 
-  Future<void> startBackup(String userId) {
+  Future<void> startBackup(String userId, {bool ignoreFailed = false}) {
     state = state.copyWith(error: BackupError.none);
-    return _uploadService.startBackup(userId, _updateEnqueueCount);
+    return _uploadService.startBackup(userId, _updateEnqueueCount, ignoreFailed: ignoreFailed);
   }
 
   void _updateEnqueueCount(EnqueueStatus status) {
