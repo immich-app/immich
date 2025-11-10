@@ -3,6 +3,7 @@
   import { resolve } from '$app/paths';
   import AlbumCardGroup from '$lib/components/album-page/album-card-group.svelte';
   import AlbumsTable from '$lib/components/album-page/albums-table.svelte';
+  import OnEvents from '$lib/components/OnEvents.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import RightClickContextMenu from '$lib/components/shared-components/context-menu/right-click-context-menu.svelte';
   import ToastAction from '$lib/components/ToastAction.svelte';
@@ -10,7 +11,7 @@
   import AlbumEditModal from '$lib/modals/AlbumEditModal.svelte';
   import AlbumShareModal from '$lib/modals/AlbumShareModal.svelte';
   import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
-  import { handleConfirmAlbumDelete, handleDownloadAlbum } from '$lib/services/album.service';
+  import { handleDeleteAlbum, handleDownloadAlbum } from '$lib/services/album.service';
   import {
     AlbumFilter,
     AlbumGroupBy,
@@ -26,7 +27,7 @@
   import type { ContextMenuPosition } from '$lib/utils/context-menu';
   import { handleError } from '$lib/utils/handle-error';
   import { normalizeSearchString } from '$lib/utils/string-utils';
-  import { addUsersToAlbum, deleteAlbum, isHttpError, type AlbumResponseDto, type AlbumUserAddDto } from '@immich/sdk';
+  import { addUsersToAlbum, type AlbumResponseDto, type AlbumUserAddDto } from '@immich/sdk';
   import { modalManager, toastManager } from '@immich/ui';
   import { mdiDeleteOutline, mdiDownload, mdiRenameOutline, mdiShareVariantOutline } from '@mdi/js';
   import { groupBy } from 'lodash-es';
@@ -210,25 +211,6 @@
     isOpen = false;
   };
 
-  const handleDeleteAlbum = async (albumToDelete: AlbumResponseDto) => {
-    try {
-      await deleteAlbum({
-        id: albumToDelete.id,
-      });
-    } catch (error) {
-      // In rare cases deleting an album completes after the list of albums has been requested,
-      // leading to a bad request error.
-      // Since the album is already deleted, the error is ignored.
-      const isBadRequest = isHttpError(error) && error.status === 400;
-      if (!isBadRequest) {
-        throw error;
-      }
-    }
-
-    ownedAlbums = ownedAlbums.filter(({ id }) => id !== albumToDelete.id);
-    sharedAlbums = sharedAlbums.filter(({ id }) => id !== albumToDelete.id);
-  };
-
   const handleSelect = async (action: 'edit' | 'share' | 'download' | 'delete') => {
     closeAlbumContextMenu();
 
@@ -272,17 +254,7 @@
       }
 
       case 'delete': {
-        const isConfirmed = await handleConfirmAlbumDelete(selectedAlbum);
-        if (!isConfirmed) {
-          return;
-        }
-
-        try {
-          await handleDeleteAlbum(selectedAlbum);
-        } catch (error) {
-          handleError(error, $t('errors.unable_to_delete_album'));
-        }
-
+        await handleDeleteAlbum(selectedAlbum);
         break;
       }
     }
@@ -290,7 +262,7 @@
 
   const removeAlbumsIfEmpty = async () => {
     const albumsToRemove = ownedAlbums.filter((album) => album.assetCount === 0 && !album.albumName);
-    await Promise.allSettled(albumsToRemove.map((album) => handleDeleteAlbum(album)));
+    await Promise.allSettled(albumsToRemove.map((album) => handleDeleteAlbum(album, { prompt: false, notify: false })));
   };
 
   const updateAlbumInfo = (album: AlbumResponseDto) => {
@@ -346,7 +318,14 @@
       albumToShare = null;
     }
   };
+
+  const onAlbumDelete = (album: AlbumResponseDto) => {
+    ownedAlbums = ownedAlbums.filter(({ id }) => id !== album.id);
+    sharedAlbums = sharedAlbums.filter(({ id }) => id !== album.id);
+  };
 </script>
+
+<OnEvents {onAlbumDelete} />
 
 {#if albums.length > 0}
   {#if userSettings.view === AlbumViewMode.Cover}
