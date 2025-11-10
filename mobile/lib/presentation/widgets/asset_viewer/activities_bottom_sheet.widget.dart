@@ -34,11 +34,9 @@ class ActivitiesBottomSheet extends HookConsumerWidget {
     final activityNotifier = ref.read(albumActivityProvider(album.id, asset?.id).notifier);
     final activities = ref.watch(albumActivityProvider(album.id, asset?.id));
 
-    // ItemScrollControllerを作成
     final itemScrollController = useMemoized(() => ItemScrollController(), []);
     final itemPositionsListener = useMemoized(() => ItemPositionsListener.create(), []);
 
-    // activityIdが指定されている場合、スクロール処理
     useEffect(() {
       if (activityId == null) {
         return null;
@@ -52,13 +50,12 @@ class ActivitiesBottomSheet extends HookConsumerWidget {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         final activityIndex = data.indexWhere((activity) => activity.id == activityId);
         if (activityIndex != -1) {
-          // 逆順表示のため、実際の表示インデックスを計算
           final displayIndex = data.length - 1 - activityIndex;
           itemScrollController.scrollTo(
             index: displayIndex,
             duration: const Duration(milliseconds: 300),
             curve: Curves.easeInOut,
-            alignment: 0.1, // 上部から少し下に配置
+            alignment: 0.1,
           );
         }
       });
@@ -77,7 +74,6 @@ class ActivitiesBottomSheet extends HookConsumerWidget {
           itemPositionsListener: itemPositionsListener,
           itemCount: data.length,
           itemBuilder: (context, index) {
-            // 逆順表示のため、インデックスを反転
             final activity = data[data.length - 1 - index];
             return Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
