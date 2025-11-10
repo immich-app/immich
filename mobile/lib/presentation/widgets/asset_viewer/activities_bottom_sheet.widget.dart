@@ -87,11 +87,17 @@ class ActivitiesBottomSheet extends HookConsumerWidget {
     return BaseBottomSheet(
       controller: controller,
       footer: Padding(
+        // TODO: avoid fixed padding, use context.padding.bottom
         padding: const EdgeInsets.only(bottom: 32),
         child: Column(
           children: [
             const Divider(indent: 16, endIndent: 16),
-            DriftActivityTextField(isEnabled: album.isActivityEnabled, isBottomSheet: true, onSubmit: onAddComment),
+            DriftActivityTextField(
+              isEnabled: album.isActivityEnabled,
+              isBottomSheet: true,
+              // likeId: likedId,
+              onSubmit: onAddComment,
+            ),
           ],
         ),
       ),
