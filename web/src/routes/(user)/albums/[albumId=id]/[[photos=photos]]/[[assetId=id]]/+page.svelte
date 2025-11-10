@@ -36,14 +36,13 @@
   import AlbumUsersModal from '$lib/modals/AlbumUsersModal.svelte';
   import QrCodeModal from '$lib/modals/QrCodeModal.svelte';
   import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
-  import { handleDownloadAlbum } from '$lib/services/album.service';
+  import { handleConfirmAlbumDelete, handleDownloadAlbum } from '$lib/services/album.service';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { preferences, user } from '$lib/stores/user.store';
   import { handlePromiseError, makeSharedLinkUrl } from '$lib/utils';
-  import { confirmAlbumDelete } from '$lib/utils/album-utils';
   import { cancelMultiselect } from '$lib/utils/asset-utils';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
   import { handleError } from '$lib/utils/handle-error';
@@ -235,7 +234,7 @@
   };
 
   const handleRemoveAlbum = async () => {
-    const isConfirmed = await confirmAlbumDelete(album);
+    const isConfirmed = await handleConfirmAlbumDelete(album);
 
     if (!isConfirmed) {
       viewMode = AlbumPageViewMode.VIEW;
