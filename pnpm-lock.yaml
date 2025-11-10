@@ -771,8 +771,8 @@ importers:
         specifier: ^4.0.1
         version: 4.0.1(svelte@5.43.0)
       svelte-maplibre:
-        specifier: ^1.2.0
-        version: 1.2.4(svelte@5.43.0)
+        specifier: ^1.2.5
+        version: 1.2.5(svelte@5.43.0)
       svelte-persisted-store:
         specifier: ^0.12.0
         version: 0.12.0(svelte@5.43.0)
@@ -10483,8 +10483,8 @@ packages:
     peerDependencies:
       svelte: ^3 || ^4 || ^5
 
-  svelte-maplibre@1.2.4:
-    resolution: {integrity: sha512-VlK4nTQ8zgFWMCVHfWV/kPsDvZzFhrG77Rchgskh544pbYSvKmyMNN+jUiCgbdYpj6/i7oQc5CqZDBIUuPZ6rQ==}
+  svelte-maplibre@1.2.5:
+    resolution: {integrity: sha512-Uklcbi6inW9GA0MuSusbXmFr/MQPmXrjuP8hS1+yFX3ySvCQ477tsM3I7Jo/fUDK3XAxFSIHW6hZfucnM3kXwQ==}
     peerDependencies:
       '@deck.gl/core': ^9
       '@deck.gl/layers': ^9
@@ -23509,7 +23509,7 @@ snapshots:
       svelte: 5.43.0
       tiny-glob: 0.2.9
 
-  svelte-maplibre@1.2.4(svelte@5.43.0):
+  svelte-maplibre@1.2.5(svelte@5.43.0):
     dependencies:
       d3-geo: 3.1.1
       dequal: 2.0.3
