@@ -1,7 +1,6 @@
 import { AppRoute } from '$lib/constants';
 import { maintenanceAuth as maintenanceAuth$ } from '$lib/stores/maintenance.store';
 import { maintenanceLogin } from '@immich/sdk';
-import { get } from 'svelte/store';
 
 export function maintenanceCreateUrl(url: URL) {
   const target = new URL(AppRoute.MAINTENANCE, url.origin);
@@ -18,24 +17,17 @@ export function maintenanceShouldRedirect(maintenanceMode: boolean, currentUrl: 
 }
 
 export const loadMaintenanceAuth = async () => {
+  const query = new URLSearchParams(location.search);
+
   try {
-    const maintenanceAuth = get(maintenanceAuth$);
-    const query = new URLSearchParams(location.search);
+    const auth = await maintenanceLogin({
+      maintenanceLoginDto: {
+        token: query.get('token') ?? undefined,
+      },
+    });
 
-    try {
-      const auth = await maintenanceLogin({
-        maintenanceLoginDto: {
-          token: query.get('token') ?? undefined,
-        },
-      });
-
-      maintenanceAuth$.set(auth);
-    } catch (error) {
-      void error;
-    }
-
-    return maintenanceAuth;
+    maintenanceAuth$.set(auth);
   } catch {
-    return null;
+    // silently fail
   }
 };
