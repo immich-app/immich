@@ -83,6 +83,22 @@ class StoreRepository {
   init(db: DatabasePool) {
     self.db = db
   }
+  
+  func get<T: StoreConvertible>(_ key: StoreKey.Typed<T>) throws -> T? where T.StorageType == Int {
+    let query = Store.select(\.intValue).where { $0.id.eq(key.rawValue) }
+    if let value = try db.read({ conn in try query.fetchOne(conn) }) ?? nil {
+      return try T.fromValue(value)
+    }
+    return nil
+  }
+
+  func get<T: StoreConvertible>(_ key: StoreKey.Typed<T>) throws -> T? where T.StorageType == String {
+    let query = Store.select(\.stringValue).where { $0.id.eq(key.rawValue) }
+    if let value = try db.read({ conn in try query.fetchOne(conn) }) ?? nil {
+      return try T.fromValue(value)
+    }
+    return nil
+  }
 
   func get<T: StoreConvertible>(_ key: StoreKey.Typed<T>) async throws -> T? where T.StorageType == Int {
     let query = Store.select(\.intValue).where { $0.id.eq(key.rawValue) }
@@ -98,6 +114,20 @@ class StoreRepository {
       return try T.fromValue(value)
     }
     return nil
+  }
+  
+  func set<T: StoreConvertible>(_ key: StoreKey.Typed<T>, value: T) throws where T.StorageType == Int {
+    let value = try T.toValue(value)
+    try db.write { conn in
+      try Store.upsert { Store(id: key.rawValue, stringValue: nil, intValue: value) }.execute(conn)
+    }
+  }
+
+  func set<T: StoreConvertible>(_ key: StoreKey.Typed<T>, value: T) throws where T.StorageType == String {
+    let value = try T.toValue(value)
+    try db.write { conn in
+      try Store.upsert { Store(id: key.rawValue, stringValue: value, intValue: nil) }.execute(conn)
+    }
   }
 
   func set<T: StoreConvertible>(_ key: StoreKey.Typed<T>, value: T) async throws where T.StorageType == Int {
