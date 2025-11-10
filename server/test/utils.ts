@@ -312,7 +312,7 @@ export const newTestService = <T extends BaseService>(
     oauth: automock(OAuthRepository, { args: [loggerMock] }),
     partner: automock(PartnerRepository, { strict: false }),
     person: automock(PersonRepository, { strict: false }),
-    plugin: automock(PluginRepository, { strict: false }),
+    plugin: automock(PluginRepository, { strict: true }),
     process: automock(ProcessRepository),
     search: automock(SearchRepository, { strict: false }),
     // eslint-disable-next-line no-sparse-arrays
@@ -335,7 +335,7 @@ export const newTestService = <T extends BaseService>(
     view: automock(ViewRepository),
     // eslint-disable-next-line no-sparse-arrays
     websocket: automock(WebsocketRepository, { args: [, loggerMock], strict: false }),
-    workflow: automock(WorkflowRepository, { strict: false }),
+    workflow: automock(WorkflowRepository, { strict: true }),
   };
 
   const sut = new Service(

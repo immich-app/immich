@@ -57,13 +57,11 @@ export class PluginExecutionService extends BaseService {
   async handleAssetCreate({ asset }: ArgOf<'AssetCreate'>) {
     const trigger = pluginTriggers.find((trigger) => trigger.type === PluginTriggerType.AssetCreate);
     if (!trigger) {
-      this.logger.debug('No trigger found for asset_uploaded');
       return;
     }
 
     const workflows = await this.workflowRepository.getWorkflowsByTrigger(PluginTriggerType.AssetCreate);
     if (workflows.length === 0) {
-      this.logger.debug('No enabled workflows found for asset_uploaded trigger');
       return;
     }
 

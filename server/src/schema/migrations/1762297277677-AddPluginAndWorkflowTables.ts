@@ -102,12 +102,14 @@ export async function up(db: Kysely<any>): Promise<void> {
 }
 
 export async function down(db: Kysely<any>): Promise<void> {
-  await sql`DROP TABLE "plugin";`.execute(db);
-  await sql`DROP TABLE "plugin_filter";`.execute(db);
-  await sql`DROP TABLE "plugin_action";`.execute(db);
   await sql`DROP TABLE "workflow";`.execute(db);
   await sql`DROP TABLE "workflow_filter";`.execute(db);
   await sql`DROP TABLE "workflow_action";`.execute(db);
+
+  await sql`DROP TABLE "plugin";`.execute(db);
+  await sql`DROP TABLE "plugin_filter";`.execute(db);
+  await sql`DROP TABLE "plugin_action";`.execute(db);
+
   await sql`DELETE FROM "migration_overrides" WHERE "name" = 'index_plugin_filter_supportedContexts_idx';`.execute(db);
   await sql`DELETE FROM "migration_overrides" WHERE "name" = 'index_plugin_action_supportedContexts_idx';`.execute(db);
 }
