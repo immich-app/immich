@@ -1421,6 +1421,7 @@
   "no_cast_devices_found": "No cast devices found",
   "no_checksum_local": "No checksum available - cannot fetch local assets",
   "no_checksum_remote": "No checksum available - cannot fetch remote asset",
+  "no_devices": "No authorized devices",
   "no_duplicates_found": "No duplicates were found.",
   "no_exif_info_available": "No exif info available",
   "no_explore_results_message": "Upload more photos to explore your collection.",
