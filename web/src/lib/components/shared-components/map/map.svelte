@@ -1,11 +1,10 @@
 <script lang="ts" module>
-  import mapboxRtlUrl from '@mapbox/mapbox-gl-rtl-text/mapbox-gl-rtl-text.min.js?url';
   import { addProtocol, setRTLTextPlugin } from 'maplibre-gl';
   import { Protocol } from 'pmtiles';
 
   let protocol = new Protocol();
   void addProtocol('pmtiles', protocol.tile);
-  void setRTLTextPlugin(mapboxRtlUrl, true);
+  void setRTLTextPlugin('@mapbox/mapbox-gl-rtl-text/mapbox-gl-rtl-text.min.js', true);
 </script>
 
 <script lang="ts">
