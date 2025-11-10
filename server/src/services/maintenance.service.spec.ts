@@ -64,7 +64,7 @@ describe(MaintenanceService.name, () => {
       mocks.systemMetadata.get.mockResolvedValue({ isMaintenanceMode: false });
 
       await expect(sut.startMaintenance('admin')).resolves.toMatchObject({
-        secret: expect.stringMatching(/^\w{128}$/),
+        jwt: expect.any(String),
       });
 
       expect(mocks.systemMetadata.set).toHaveBeenCalledWith(SystemMetadataKey.MaintenanceMode, {
