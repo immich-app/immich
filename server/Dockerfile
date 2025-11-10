@@ -50,25 +50,21 @@ RUN --mount=type=cache,id=pnpm-cli,target=/buildcache/pnpm-store \
 
 FROM builder AS plugins
 
+COPY --from=ghcr.io/jdx/mise:2025.11.3 /usr/local/bin/mise /usr/local/bin/mise
+
 WORKDIR /usr/src/app
+COPY ./plugins/mise.toml ./plugins/
+ENV MISE_TRUSTED_CONFIG_PATHS=/usr/src/app/plugins/mise.toml
+RUN mise install --cd plugins
+
 COPY ./plugins ./plugins/
-
-# Install extism-js and dependencies
-RUN apt-get update && apt-get install -y curl && \
-  chmod +x ./plugins/scripts/install-extism-js.sh && \
-  ./plugins/scripts/install-extism-js.sh v1.5.1
-
-# Ensure tools are in PATH for subsequent commands
-ENV PATH="/usr/local/bin:${PATH}"
-
 # Build plugins
 RUN --mount=type=cache,id=pnpm-plugins,target=/buildcache/pnpm-store \
   --mount=type=bind,source=package.json,target=package.json \
   --mount=type=bind,source=.pnpmfile.cjs,target=.pnpmfile.cjs \
   --mount=type=bind,source=pnpm-lock.yaml,target=pnpm-lock.yaml \
   --mount=type=bind,source=pnpm-workspace.yaml,target=pnpm-workspace.yaml \
-  pnpm --filter plugins --frozen-lockfile install && \
-  pnpm --filter plugins build
+  cd plugins && mise run build
 
 FROM ghcr.io/immich-app/base-server-prod:202511041104@sha256:57c0379977fd5521d83cdf661aecd1497c83a9a661ebafe0a5243a09fc1064cb
 
