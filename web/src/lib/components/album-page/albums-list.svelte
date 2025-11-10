@@ -11,6 +11,7 @@
   import AlbumShareModal from '$lib/modals/AlbumShareModal.svelte';
   import QrCodeModal from '$lib/modals/QrCodeModal.svelte';
   import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
+  import { handleDownloadAlbum } from '$lib/services/album.service';
   import {
     AlbumFilter,
     AlbumGroupBy,
@@ -30,7 +31,6 @@
     stringToSortOrder,
     type AlbumGroup,
   } from '$lib/utils/album-utils';
-  import { downloadAlbum } from '$lib/utils/asset-utils';
   import type { ContextMenuPosition } from '$lib/utils/context-menu';
   import { handleError } from '$lib/utils/handle-error';
   import { normalizeSearchString } from '$lib/utils/string-utils';
@@ -221,11 +221,10 @@
     isOpen = false;
   };
 
-  const handleDownloadAlbum = async () => {
+  const onDownloadAlbum = async () => {
     if (contextMenuTargetAlbum) {
-      const album = contextMenuTargetAlbum;
       closeAlbumContextMenu();
-      await downloadAlbum(album);
+      await handleDownloadAlbum(contextMenuTargetAlbum);
     }
   };
 
@@ -419,7 +418,7 @@
     />
     <MenuOption icon={mdiShareVariantOutline} text={$t('share')} onClick={() => openShareModal()} />
   {/if}
-  <MenuOption icon={mdiDownload} text={$t('download')} onClick={() => handleDownloadAlbum()} />
+  <MenuOption icon={mdiDownload} text={$t('download')} onClick={onDownloadAlbum} />
   {#if showFullContextMenu}
     <MenuOption icon={mdiDeleteOutline} text={$t('delete')} onClick={() => setAlbumToDelete()} />
   {/if}
