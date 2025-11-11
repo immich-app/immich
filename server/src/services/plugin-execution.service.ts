@@ -1,6 +1,7 @@
 import { Plugin as ExtismPlugin, newPlugin } from '@extism/extism';
 import { Injectable } from '@nestjs/common';
 import { resolve } from 'node:path';
+import { PLUGIN_JWT_SECRET } from 'src/constants';
 import { Asset, WorkflowAction, WorkflowFilter } from 'src/database';
 import { OnEvent, OnJob } from 'src/decorators';
 import { JobName, JobStatus, QueueName } from 'src/enum';
@@ -28,6 +29,7 @@ export class PluginExecutionService extends BaseService {
       this.assetRepository,
       this.albumRepository,
       this.accessRepository,
+      this.cryptoRepository,
       this.logger,
     );
     await this.loadCorePlugins();
@@ -94,14 +96,14 @@ export class PluginExecutionService extends BaseService {
 
       switch (type) {
         case PluginTriggerType.AssetCreate: {
-          const workflowEvent = event as WorkflowData[PluginTriggerType.AssetCreate];
-          const asset = await this.assetRepository.getById(workflowEvent.assetId);
+          const data = event as WorkflowData[PluginTriggerType.AssetCreate];
+          const asset = await this.assetRepository.getById(data.assetId);
           if (!asset) {
-            this.logger.error(`Asset ${workflowEvent.assetId} not found`);
+            this.logger.error(`Asset ${data.assetId} not found`);
             return JobStatus.Failed;
           }
 
-          const jwtToken = JSON.stringify({ userId: asset.ownerId });
+          const jwtToken = this.cryptoRepository.signJwt({ userId: asset.ownerId }, PLUGIN_JWT_SECRET);
 
           const context = {
             jwtToken,

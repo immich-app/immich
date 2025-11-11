@@ -1,4 +1,5 @@
 import { Duration } from 'luxon';
+import { randomBytes } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { SemVer } from 'semver';
@@ -16,6 +17,8 @@ export const ADDED_IN_PREFIX = 'This property was added in ';
 
 export const JOBS_ASSET_PAGINATION_SIZE = 1000;
 export const JOBS_LIBRARY_PAGINATION_SIZE = 10_000;
+
+export const PLUGIN_JWT_SECRET = randomBytes(32).toString('base64');
 
 export const EXTENSION_NAMES: Record<DatabaseExtension, string> = {
   cube: 'cube',

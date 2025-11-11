@@ -15,8 +15,8 @@
 
 // ============= CONFIGURATION =============
 const API_URL = 'http://localhost:2283/api'; // Your Immich API URL
-const API_KEY = 'VmD7pJoAV0NLVRRb00CfVB810XQMtqMIxNebNh1Weg'; // Your Immich API key
-const ALBUM_ID = '0d08bdca-5866-4ecf-bc96-6a738537ff9b'; // Target album ID for screenshots
+const API_KEY = 'gxBnYnWMdtfzsxHWV0eLHMjHb3JjXX0pH3kBOLZw'; // Your Immich API key
+const ALBUM_ID = 'ae2f18fb-c543-4b66-b818-15d68edbe963'; // Target album ID for screenshots
 // =========================================
 
 async function makeApiRequest(endpoint, method = 'GET', body = null) {

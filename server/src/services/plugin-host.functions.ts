@@ -1,10 +1,12 @@
 import { CurrentPlugin } from '@extism/extism';
 import { UnauthorizedException } from '@nestjs/common';
 import { Updateable } from 'kysely';
+import { PLUGIN_JWT_SECRET } from 'src/constants';
 import { Permission } from 'src/enum';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { AlbumRepository } from 'src/repositories/album.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
+import { CryptoRepository } from 'src/repositories/crypto.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { AssetTable } from 'src/schema/tables/asset.table';
 import { requireAccess } from 'src/utils/access';
@@ -18,6 +20,7 @@ export class PluginHostFunctions {
     private assetRepository: AssetRepository,
     private albumRepository: AlbumRepository,
     private accessRepository: AccessRepository,
+    private cryptoRepository: CryptoRepository,
     private logger: LoggingRepository,
   ) {}
 
@@ -57,8 +60,7 @@ export class PluginHostFunctions {
    */
   private validateToken(jwtToken: string): { userId: string } {
     try {
-      // TODO: Properly verify JWT signature
-      const auth = JSON.parse(jwtToken);
+      const auth = this.cryptoRepository.verifyJwt<{ userId: string }>(jwtToken, PLUGIN_JWT_SECRET);
       if (!auth.userId) {
         throw new UnauthorizedException('Invalid token: missing userId');
       }
