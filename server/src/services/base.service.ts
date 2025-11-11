@@ -108,6 +108,7 @@ export const BASE_SERVICE_DEPENDENCIES = [
   UserRepository,
   VersionHistoryRepository,
   ViewRepository,
+  WebsocketRepository,
   WorkflowRepository,
 ];
 
