@@ -7,6 +7,19 @@ set
 where
   "assetId" in ($2)
 
+-- AssetRepository.getLatestCreatedAtForUser
+select
+  "createdAt"
+from
+  "asset"
+where
+  "ownerId" = $1::uuid
+  and "deletedAt" is null
+order by
+  "createdAt" desc
+limit
+  $2
+
 -- AssetRepository.updateDateTimeOriginal
 update "asset_exif"
 set

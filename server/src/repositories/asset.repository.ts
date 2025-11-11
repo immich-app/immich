@@ -172,6 +172,19 @@ export class AssetRepository {
     await this.db.updateTable('asset_exif').set(options).where('assetId', 'in', ids).execute();
   }
 
+  @GenerateSql({ params: [DummyValue.UUID] })
+  getLatestCreatedAtForUser(ownerId: string) {
+    return this.db
+      .selectFrom('asset')
+      .select('createdAt')
+      .where('ownerId', '=', asUuid(ownerId))
+      .where('deletedAt', 'is', null)
+      .orderBy('createdAt', 'desc')
+      .limit(1)
+      .executeTakeFirst()
+      .then((row) => row?.createdAt ?? null);
+  }
+
   @GenerateSql({ params: [[DummyValue.UUID], DummyValue.NUMBER, DummyValue.STRING] })
   @Chunked()
   async updateDateTimeOriginal(

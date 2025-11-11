@@ -17919,6 +17919,11 @@
           "isAdmin": {
             "type": "boolean"
           },
+          "lastAssetUploadedAt": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
           "license": {
             "allOf": [
               {
@@ -17976,6 +17981,7 @@
           "email",
           "id",
           "isAdmin",
+          "lastAssetUploadedAt",
           "license",
           "name",
           "oauthId",

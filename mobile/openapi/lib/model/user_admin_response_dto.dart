@@ -19,6 +19,7 @@ class UserAdminResponseDto {
     required this.email,
     required this.id,
     required this.isAdmin,
+    required this.lastAssetUploadedAt,
     required this.license,
     required this.name,
     required this.oauthId,
@@ -43,6 +44,8 @@ class UserAdminResponseDto {
   String id;
 
   bool isAdmin;
+
+  DateTime? lastAssetUploadedAt;
 
   UserLicense? license;
 
@@ -74,6 +77,7 @@ class UserAdminResponseDto {
     other.email == email &&
     other.id == id &&
     other.isAdmin == isAdmin &&
+    other.lastAssetUploadedAt == lastAssetUploadedAt &&
     other.license == license &&
     other.name == name &&
     other.oauthId == oauthId &&
@@ -95,6 +99,7 @@ class UserAdminResponseDto {
     (email.hashCode) +
     (id.hashCode) +
     (isAdmin.hashCode) +
+    (lastAssetUploadedAt == null ? 0 : lastAssetUploadedAt!.hashCode) +
     (license == null ? 0 : license!.hashCode) +
     (name.hashCode) +
     (oauthId.hashCode) +
@@ -108,7 +113,7 @@ class UserAdminResponseDto {
     (updatedAt.hashCode);
 
   @override
-  String toString() => 'UserAdminResponseDto[avatarColor=$avatarColor, createdAt=$createdAt, deletedAt=$deletedAt, email=$email, id=$id, isAdmin=$isAdmin, license=$license, name=$name, oauthId=$oauthId, profileChangedAt=$profileChangedAt, profileImagePath=$profileImagePath, quotaSizeInBytes=$quotaSizeInBytes, quotaUsageInBytes=$quotaUsageInBytes, shouldChangePassword=$shouldChangePassword, status=$status, storageLabel=$storageLabel, updatedAt=$updatedAt]';
+  String toString() => 'UserAdminResponseDto[avatarColor=$avatarColor, createdAt=$createdAt, deletedAt=$deletedAt, email=$email, id=$id, isAdmin=$isAdmin, lastAssetUploadedAt=$lastAssetUploadedAt, license=$license, name=$name, oauthId=$oauthId, profileChangedAt=$profileChangedAt, profileImagePath=$profileImagePath, quotaSizeInBytes=$quotaSizeInBytes, quotaUsageInBytes=$quotaUsageInBytes, shouldChangePassword=$shouldChangePassword, status=$status, storageLabel=$storageLabel, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -122,6 +127,11 @@ class UserAdminResponseDto {
       json[r'email'] = this.email;
       json[r'id'] = this.id;
       json[r'isAdmin'] = this.isAdmin;
+    if (this.lastAssetUploadedAt != null) {
+      json[r'lastAssetUploadedAt'] = this.lastAssetUploadedAt!.toUtc().toIso8601String();
+    } else {
+    //  json[r'lastAssetUploadedAt'] = null;
+    }
     if (this.license != null) {
       json[r'license'] = this.license;
     } else {
@@ -167,6 +177,7 @@ class UserAdminResponseDto {
         email: mapValueOfType<String>(json, r'email')!,
         id: mapValueOfType<String>(json, r'id')!,
         isAdmin: mapValueOfType<bool>(json, r'isAdmin')!,
+        lastAssetUploadedAt: mapDateTime(json, r'lastAssetUploadedAt', r''),
         license: UserLicense.fromJson(json[r'license']),
         name: mapValueOfType<String>(json, r'name')!,
         oauthId: mapValueOfType<String>(json, r'oauthId')!,
@@ -231,6 +242,7 @@ class UserAdminResponseDto {
     'email',
     'id',
     'isAdmin',
+    'lastAssetUploadedAt',
     'license',
     'name',
     'oauthId',

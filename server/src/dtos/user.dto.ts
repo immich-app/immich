@@ -166,6 +166,8 @@ export class UserAdminResponseDto extends UserResponseDto {
   @ValidateEnum({ enum: UserStatus, name: 'UserStatus' })
   status!: string;
   license!: UserLicense | null;
+  @ApiProperty({ type: 'string', format: 'date-time', nullable: true })
+  lastAssetUploadedAt!: Date | null;
 }
 
 export function mapUserAdmin(entity: UserAdmin): UserAdminResponseDto {
@@ -187,5 +189,6 @@ export function mapUserAdmin(entity: UserAdmin): UserAdminResponseDto {
     quotaUsageInBytes: entity.quotaUsageInBytes,
     status: entity.status,
     license: license ? { ...license, activatedAt: new Date(license?.activatedAt) } : null,
+    lastAssetUploadedAt: null,
   };
 }
