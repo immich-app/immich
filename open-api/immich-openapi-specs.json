@@ -3,6 +3,7 @@
   "paths": {
     "/activities": {
       "get": {
+        "description": "Returns a list of activities for the selected asset or album. The activities are returned in sorted order, with the oldest activities appearing first.",
         "operationId": "getActivities",
         "parameters": [
           {
@@ -75,13 +76,14 @@
             "api_key": []
           }
         ],
+        "summary": "List all activities",
         "tags": [
           "Activities"
         ],
-        "x-immich-permission": "activity.read",
-        "description": "This endpoint requires the `activity.read` permission."
+        "x-immich-permission": "activity.read"
       },
       "post": {
+        "description": "Create a like or a comment for an album, or an asset in an album.",
         "operationId": "createActivity",
         "parameters": [],
         "requestBody": {
@@ -117,15 +119,16 @@
             "api_key": []
           }
         ],
+        "summary": "Create an activity",
         "tags": [
           "Activities"
         ],
-        "x-immich-permission": "activity.create",
-        "description": "This endpoint requires the `activity.create` permission."
+        "x-immich-permission": "activity.create"
       }
     },
     "/activities/statistics": {
       "get": {
+        "description": "Returns the number of likes and comments for a given album or asset in an album.",
         "operationId": "getActivityStatistics",
         "parameters": [
           {
@@ -170,15 +173,16 @@
             "api_key": []
           }
         ],
+        "summary": "Retrieve activity statistics",
         "tags": [
           "Activities"
         ],
-        "x-immich-permission": "activity.statistics",
-        "description": "This endpoint requires the `activity.statistics` permission."
+        "x-immich-permission": "activity.statistics"
       }
     },
     "/activities/{id}": {
       "delete": {
+        "description": "Removes a like or comment from a given album or asset in an album.",
         "operationId": "deleteActivity",
         "parameters": [
           {
@@ -207,15 +211,16 @@
             "api_key": []
           }
         ],
+        "summary": "Delete an activity",
         "tags": [
           "Activities"
         ],
-        "x-immich-permission": "activity.delete",
-        "description": "This endpoint requires the `activity.delete` permission."
+        "x-immich-permission": "activity.delete"
       }
     },
     "/admin/auth/unlink-all": {
       "post": {
+        "description": "Unlinks all OAuth accounts associated with user accounts in the system.",
         "operationId": "unlinkAllOAuthAccountsAdmin",
         "parameters": [],
         "responses": {
@@ -234,16 +239,17 @@
             "api_key": []
           }
         ],
+        "summary": "Unlink all OAuth accounts",
         "tags": [
-          "Auth (admin)"
+          "Authentication (admin)"
         ],
         "x-immich-admin-only": true,
-        "x-immich-permission": "adminAuth.unlinkAll",
-        "description": "This endpoint is an admin-only route, and requires the `adminAuth.unlinkAll` permission."
+        "x-immich-permission": "adminAuth.unlinkAll"
       }
     },
     "/admin/notifications": {
       "post": {
+        "description": "Create a new notification for a specific user.",
         "operationId": "createNotification",
         "parameters": [],
         "requestBody": {
@@ -279,14 +285,16 @@
             "api_key": []
           }
         ],
+        "summary": "Create a notification",
         "tags": [
-          "Notifications (Admin)"
+          "Notifications (admin)"
         ],
         "x-immich-admin-only": true
       }
     },
     "/admin/notifications/templates/{name}": {
       "post": {
+        "description": "Retrieve a preview of the provided email template.",
         "operationId": "getNotificationTemplateAdmin",
         "parameters": [
           {
@@ -331,14 +339,16 @@
             "api_key": []
           }
         ],
+        "summary": "Render email template",
         "tags": [
-          "Notifications (Admin)"
+          "Notifications (admin)"
         ],
         "x-immich-admin-only": true
       }
     },
     "/admin/notifications/test-email": {
       "post": {
+        "description": "Send a test email using the provided SMTP configuration.",
         "operationId": "sendTestEmailAdmin",
         "parameters": [],
         "requestBody": {
@@ -374,14 +384,16 @@
             "api_key": []
           }
         ],
+        "summary": "Send test email",
         "tags": [
-          "Notifications (Admin)"
+          "Notifications (admin)"
         ],
         "x-immich-admin-only": true
       }
     },
     "/admin/users": {
       "get": {
+        "description": "Search for users.",
         "operationId": "searchUsersAdmin",
         "parameters": [
           {
@@ -428,14 +440,15 @@
             "api_key": []
           }
         ],
+        "summary": "Search users",
         "tags": [
           "Users (admin)"
         ],
         "x-immich-admin-only": true,
-        "x-immich-permission": "adminUser.read",
-        "description": "This endpoint is an admin-only route, and requires the `adminUser.read` permission."
+        "x-immich-permission": "adminUser.read"
       },
       "post": {
+        "description": "Create a new user.",
         "operationId": "createUserAdmin",
         "parameters": [],
         "requestBody": {
@@ -471,16 +484,17 @@
             "api_key": []
           }
         ],
+        "summary": "Create a user",
         "tags": [
           "Users (admin)"
         ],
         "x-immich-admin-only": true,
-        "x-immich-permission": "adminUser.create",
-        "description": "This endpoint is an admin-only route, and requires the `adminUser.create` permission."
+        "x-immich-permission": "adminUser.create"
       }
     },
     "/admin/users/{id}": {
       "delete": {
+        "description": "Delete a user.",
         "operationId": "deleteUserAdmin",
         "parameters": [
           {
@@ -526,14 +540,15 @@
             "api_key": []
           }
         ],
+        "summary": "Delete a user",
         "tags": [
           "Users (admin)"
         ],
         "x-immich-admin-only": true,
-        "x-immich-permission": "adminUser.delete",
-        "description": "This endpoint is an admin-only route, and requires the `adminUser.delete` permission."
+        "x-immich-permission": "adminUser.delete"
       },
       "get": {
+        "description": "Retrieve  a specific user by their ID.",
         "operationId": "getUserAdmin",
         "parameters": [
           {
@@ -569,14 +584,15 @@
             "api_key": []
           }
         ],
+        "summary": "Retrieve a user",
         "tags": [
           "Users (admin)"
         ],
         "x-immich-admin-only": true,
-        "x-immich-permission": "adminUser.read",
-        "description": "This endpoint is an admin-only route, and requires the `adminUser.read` permission."
+        "x-immich-permission": "adminUser.read"
       },
       "put": {
+        "description": "Update an existing user.",
         "operationId": "updateUserAdmin",
         "parameters": [
           {
@@ -622,16 +638,17 @@
             "api_key": []
           }
         ],
+        "summary": "Update a user",
         "tags": [
           "Users (admin)"
         ],
         "x-immich-admin-only": true,
-        "x-immich-permission": "adminUser.update",
-        "description": "This endpoint is an admin-only route, and requires the `adminUser.update` permission."
+        "x-immich-permission": "adminUser.update"
       }
     },
     "/admin/users/{id}/preferences": {
       "get": {
+        "description": "Retrieve the preferences of a specific user.",
         "operationId": "getUserPreferencesAdmin",
         "parameters": [
           {
@@ -667,14 +684,15 @@
             "api_key": []
           }
         ],
+        "summary": "Retrieve user preferences",
         "tags": [
           "Users (admin)"
         ],
         "x-immich-admin-only": true,
-        "x-immich-permission": "adminUser.read",
-        "description": "This endpoint is an admin-only route, and requires the `adminUser.read` permission."
+        "x-immich-permission": "adminUser.read"
       },
       "put": {
+        "description": "Update the preferences of a specific user.",
         "operationId": "updateUserPreferencesAdmin",
         "parameters": [
           {
@@ -720,16 +738,17 @@
             "api_key": []
           }
         ],
+        "summary": "Update user preferences",
         "tags": [
           "Users (admin)"
         ],
         "x-immich-admin-only": true,
-        "x-immich-permission": "adminUser.update",
-        "description": "This endpoint is an admin-only route, and requires the `adminUser.update` permission."
+        "x-immich-permission": "adminUser.update"
       }
     },
     "/admin/users/{id}/restore": {
       "post": {
+        "description": "Restore a previously deleted user.",
         "operationId": "restoreUserAdmin",
         "parameters": [
           {
@@ -765,16 +784,17 @@
             "api_key": []
           }
         ],
+        "summary": "Restore a deleted user",
         "tags": [
           "Users (admin)"
         ],
         "x-immich-admin-only": true,
-        "x-immich-permission": "adminUser.delete",
-        "description": "This endpoint is an admin-only route, and requires the `adminUser.delete` permission."
+        "x-immich-permission": "adminUser.delete"
       }
     },
     "/admin/users/{id}/sessions": {
       "get": {
+        "description": "Retrieve all sessions for a specific user.",
         "operationId": "getUserSessionsAdmin",
         "parameters": [
           {
@@ -813,16 +833,17 @@
             "api_key": []
           }
         ],
+        "summary": "Retrieve user sessions",
         "tags": [
           "Users (admin)"
         ],
         "x-immich-admin-only": true,
-        "x-immich-permission": "adminSession.read",
-        "description": "This endpoint is an admin-only route, and requires the `adminSession.read` permission."
+        "x-immich-permission": "adminSession.read"
       }
     },
     "/admin/users/{id}/statistics": {
       "get": {
+        "description": "Retrieve asset statistics for a specific user.",
         "operationId": "getUserStatisticsAdmin",
         "parameters": [
           {
@@ -882,16 +903,17 @@
             "api_key": []
           }
         ],
+        "summary": "Retrieve user statistics",
         "tags": [
           "Users (admin)"
         ],
         "x-immich-admin-only": true,
-        "x-immich-permission": "adminUser.read",
-        "description": "This endpoint is an admin-only route, and requires the `adminUser.read` permission."
+        "x-immich-permission": "adminUser.read"
       }
     },
     "/albums": {
       "get": {
+        "description": "Retrieve a list of albums available to the authenticated user.",
         "operationId": "getAllAlbums",
         "parameters": [
           {
@@ -939,13 +961,14 @@
             "api_key": []
           }
         ],
+        "summary": "List all albums",
         "tags": [
           "Albums"
         ],
-        "x-immich-permission": "album.read",
-        "description": "This endpoint requires the `album.read` permission."
+        "x-immich-permission": "album.read"
       },
       "post": {
+        "description": "Create a new album. The album can also be created with initial users and assets.",
         "operationId": "createAlbum",
         "parameters": [],
         "requestBody": {
@@ -981,15 +1004,16 @@
             "api_key": []
           }
         ],
+        "summary": "Create an album",
         "tags": [
           "Albums"
         ],
-        "x-immich-permission": "album.create",
-        "description": "This endpoint requires the `album.create` permission."
+        "x-immich-permission": "album.create"
       }
     },
     "/albums/assets": {
       "put": {
+        "description": "Send a list of asset IDs and album IDs to add each asset to each album.",
         "operationId": "addAssetsToAlbums",
         "parameters": [
           {
@@ -1042,15 +1066,16 @@
             "api_key": []
           }
         ],
+        "summary": "Add assets to albums",
         "tags": [
           "Albums"
         ],
-        "x-immich-permission": "albumAsset.create",
-        "description": "This endpoint requires the `albumAsset.create` permission."
+        "x-immich-permission": "albumAsset.create"
       }
     },
     "/albums/statistics": {
       "get": {
+        "description": "Returns statistics about the albums available to the authenticated user.",
         "operationId": "getAlbumStatistics",
         "parameters": [],
         "responses": {
@@ -1076,15 +1101,16 @@
             "api_key": []
           }
         ],
+        "summary": "Retrieve album statistics",
         "tags": [
           "Albums"
         ],
-        "x-immich-permission": "album.statistics",
-        "description": "This endpoint requires the `album.statistics` permission."
+        "x-immich-permission": "album.statistics"
       }
     },
     "/albums/{id}": {
       "delete": {
+        "description": "Delete a specific album by its ID. Note the album is initially trashed and then immediately scheduled for deletion, but relies on a background job to complete the process.",
         "operationId": "deleteAlbum",
         "parameters": [
           {
@@ -1113,13 +1139,14 @@
             "api_key": []
           }
         ],
+        "summary": "Delete an album",
         "tags": [
           "Albums"
         ],
-        "x-immich-permission": "album.delete",
-        "description": "This endpoint requires the `album.delete` permission."
+        "x-immich-permission": "album.delete"
       },
       "get": {
+        "description": "Retrieve information about a specific album by its ID.",
         "operationId": "getAlbumInfo",
         "parameters": [
           {
@@ -1179,13 +1206,14 @@
             "api_key": []
           }
         ],
+        "summary": "Retrieve an album",
         "tags": [
           "Albums"
         ],
-        "x-immich-permission": "album.read",
-        "description": "This endpoint requires the `album.read` permission."
+        "x-immich-permission": "album.read"
       },
       "patch": {
+        "description": "Update the information of a specific album by its ID. This endpoint can be used to update the album name, description, sort order, etc. However, it is not used to add or remove assets or users from the album.",
         "operationId": "updateAlbumInfo",
         "parameters": [
           {
@@ -1231,15 +1259,16 @@
             "api_key": []
           }
         ],
+        "summary": "Update an album",
         "tags": [
           "Albums"
         ],
-        "x-immich-permission": "album.update",
-        "description": "This endpoint requires the `album.update` permission."
+        "x-immich-permission": "album.update"
       }
     },
     "/albums/{id}/assets": {
       "delete": {
+        "description": "Remove multiple assets from a specific album by its ID.",
         "operationId": "removeAssetFromAlbum",
         "parameters": [
           {
@@ -1288,13 +1317,14 @@
             "api_key": []
           }
         ],
+        "summary": "Remove assets from an album",
         "tags": [
           "Albums"
         ],
-        "x-immich-permission": "albumAsset.delete",
-        "description": "This endpoint requires the `albumAsset.delete` permission."
+        "x-immich-permission": "albumAsset.delete"
       },
       "put": {
+        "description": "Add multiple assets to a specific album by its ID.",
         "operationId": "addAssetsToAlbum",
         "parameters": [
           {
@@ -1359,15 +1389,16 @@
             "api_key": []
           }
         ],
+        "summary": "Add assets to an album",
         "tags": [
           "Albums"
         ],
-        "x-immich-permission": "albumAsset.create",
-        "description": "This endpoint requires the `albumAsset.create` permission."
+        "x-immich-permission": "albumAsset.create"
       }
     },
     "/albums/{id}/user/{userId}": {
       "delete": {
+        "description": "Remove a user from an album. Use an ID of \"me\" to leave a shared album.",
         "operationId": "removeUserFromAlbum",
         "parameters": [
           {
@@ -1404,13 +1435,14 @@
             "api_key": []
           }
         ],
+        "summary": "Remove user from album",
         "tags": [
           "Albums"
         ],
-        "x-immich-permission": "albumUser.delete",
-        "description": "This endpoint requires the `albumUser.delete` permission."
+        "x-immich-permission": "albumUser.delete"
       },
       "put": {
+        "description": "Change the role for a specific user in a specific album.",
         "operationId": "updateAlbumUser",
         "parameters": [
           {
@@ -1457,15 +1489,16 @@
             "api_key": []
           }
         ],
+        "summary": "Update user role",
         "tags": [
           "Albums"
         ],
-        "x-immich-permission": "albumUser.update",
-        "description": "This endpoint requires the `albumUser.update` permission."
+        "x-immich-permission": "albumUser.update"
       }
     },
     "/albums/{id}/users": {
       "put": {
+        "description": "Share an album with multiple users. Each user can be given a specific role in the album.",
         "operationId": "addUsersToAlbum",
         "parameters": [
           {
@@ -1511,15 +1544,16 @@
             "api_key": []
           }
         ],
+        "summary": "Share album with users",
         "tags": [
           "Albums"
         ],
-        "x-immich-permission": "albumUser.create",
-        "description": "This endpoint requires the `albumUser.create` permission."
+        "x-immich-permission": "albumUser.create"
       }
     },
     "/api-keys": {
       "get": {
+        "description": "Retrieve all API keys of the current user.",
         "operationId": "getApiKeys",
         "parameters": [],
         "responses": {
@@ -1548,13 +1582,14 @@
             "api_key": []
           }
         ],
+        "summary": "List all API keys",
         "tags": [
-          "API Keys"
+          "API keys"
         ],
-        "x-immich-permission": "apiKey.read",
-        "description": "This endpoint requires the `apiKey.read` permission."
+        "x-immich-permission": "apiKey.read"
       },
       "post": {
+        "description": "Creates a new API key. It will be limited to the permissions specified.",
         "operationId": "createApiKey",
         "parameters": [],
         "requestBody": {
@@ -1590,15 +1625,16 @@
             "api_key": []
           }
         ],
+        "summary": "Create an API key",
         "tags": [
-          "API Keys"
+          "API keys"
         ],
-        "x-immich-permission": "apiKey.create",
-        "description": "This endpoint requires the `apiKey.create` permission."
+        "x-immich-permission": "apiKey.create"
       }
     },
     "/api-keys/me": {
       "get": {
+        "description": "Retrieve the API key that is used to access this endpoint.",
         "operationId": "getMyApiKey",
         "parameters": [],
         "responses": {
@@ -1624,13 +1660,15 @@
             "api_key": []
           }
         ],
+        "summary": "Retrieve the current API key",
         "tags": [
-          "API Keys"
+          "API keys"
         ]
       }
     },
     "/api-keys/{id}": {
       "delete": {
+        "description": "Deletes an API key identified by its ID. The current user must own this API key.",
         "operationId": "deleteApiKey",
         "parameters": [
           {
@@ -1659,13 +1697,14 @@
             "api_key": []
           }
         ],
+        "summary": "Delete an API key",
         "tags": [
-          "API Keys"
+          "API keys"
         ],
-        "x-immich-permission": "apiKey.delete",
-        "description": "This endpoint requires the `apiKey.delete` permission."
+        "x-immich-permission": "apiKey.delete"
       },
       "get": {
+        "description": "Retrieve an API key by its ID. The current user must own this API key.",
         "operationId": "getApiKey",
         "parameters": [
           {
@@ -1701,13 +1740,14 @@
             "api_key": []
           }
         ],
+        "summary": "Retrieve an API key",
         "tags": [
-          "API Keys"
+          "API keys"
         ],
-        "x-immich-permission": "apiKey.read",
-        "description": "This endpoint requires the `apiKey.read` permission."
+        "x-immich-permission": "apiKey.read"
       },
       "put": {
+        "description": "Updates the name and permissions of an API key by its ID. The current user must own this API key.",
         "operationId": "updateApiKey",
         "parameters": [
           {
@@ -1753,15 +1793,16 @@
             "api_key": []
           }
         ],
+        "summary": "Update an API key",
         "tags": [
-          "API Keys"
+          "API keys"
         ],
-        "x-immich-permission": "apiKey.update",
-        "description": "This endpoint requires the `apiKey.update` permission."
+        "x-immich-permission": "apiKey.update"
       }
     },
     "/assets": {
       "delete": {
+        "description": "Deletes multiple assets at the same time.",
         "operationId": "deleteAssets",
         "parameters": [],
         "requestBody": {
@@ -1790,13 +1831,14 @@
             "api_key": []
           }
         ],
+        "summary": "Delete assets",
         "tags": [
           "Assets"
         ],
-        "x-immich-permission": "asset.delete",
-        "description": "This endpoint requires the `asset.delete` permission."
+        "x-immich-permission": "asset.delete"
       },
       "post": {
+        "description": "Uploads a new asset to the server.",
         "operationId": "uploadAsset",
         "parameters": [
           {
@@ -1859,13 +1901,14 @@
             "api_key": []
           }
         ],
+        "summary": "Upload asset",
         "tags": [
           "Assets"
         ],
-        "x-immich-permission": "asset.upload",
-        "description": "This endpoint requires the `asset.upload` permission."
+        "x-immich-permission": "asset.upload"
       },
       "put": {
+        "description": "Updates multiple assets at the same time.",
         "operationId": "updateAssets",
         "parameters": [],
         "requestBody": {
@@ -1894,16 +1937,16 @@
             "api_key": []
           }
         ],
+        "summary": "Update assets",
         "tags": [
           "Assets"
         ],
-        "x-immich-permission": "asset.update",
-        "description": "This endpoint requires the `asset.update` permission."
+        "x-immich-permission": "asset.update"
       }
     },
     "/assets/bulk-upload-check": {
       "post": {
-        "description": "Checks if assets exist by checksums. This endpoint requires the `asset.upload` permission.",
+        "description": "Determine which assets have already been uploaded to the server based on their SHA1 checksums.",
         "operationId": "checkBulkUpload",
         "parameters": [],
         "requestBody": {
@@ -1939,7 +1982,7 @@
             "api_key": []
           }
         ],
-        "summary": "checkBulkUpload",
+        "summary": "Check bulk upload",
         "tags": [
           "Assets"
         ],
@@ -1948,6 +1991,7 @@
     },
     "/assets/copy": {
       "put": {
+        "description": "Copy asset information like albums, tags, etc. from one asset to another.",
         "operationId": "copyAsset",
         "parameters": [],
         "requestBody": {
@@ -1976,16 +2020,17 @@
             "api_key": []
           }
         ],
+        "summary": "Copy asset",
         "tags": [
           "Assets"
         ],
-        "x-immich-permission": "asset.copy",
-        "description": "This endpoint requires the `asset.copy` permission."
+        "x-immich-permission": "asset.copy"
       }
     },
     "/assets/device/{deviceId}": {
       "get": {
-        "description": "Get all asset of a device that are in the database, ID only.",
+        "deprecated": true,
+        "description": "This property was deprecated in v2.0.0. Get all asset of a device that are in the database, ID only.",
         "operationId": "getAllUserAssetsByDeviceId",
         "parameters": [
           {
@@ -2023,10 +2068,14 @@
             "api_key": []
           }
         ],
-        "summary": "getAllUserAssetsByDeviceId",
+        "summary": "Retrieve assets by device ID",
         "tags": [
-          "Assets"
-        ]
+          "Assets",
+          "Deprecated"
+        ],
+        "x-immich-lifecycle": {
+          "deprecatedAt": "v2.0.0"
+        }
       }
     },
     "/assets/exist": {
@@ -2067,7 +2116,7 @@
             "api_key": []
           }
         ],
-        "summary": "checkExistingAssets",
+        "summary": "Check existing assets",
         "tags": [
           "Assets"
         ]
@@ -2075,6 +2124,7 @@
     },
     "/assets/jobs": {
       "post": {
+        "description": "Run a specific job on a set of assets.",
         "operationId": "runAssetJobs",
         "parameters": [],
         "requestBody": {
@@ -2103,6 +2153,7 @@
             "api_key": []
           }
         ],
+        "summary": "Run an asset job",
         "tags": [
           "Assets"
         ]
@@ -2111,7 +2162,7 @@
     "/assets/random": {
       "get": {
         "deprecated": true,
-        "description": "This property was deprecated in v1.116.0. This endpoint requires the `asset.read` permission.",
+        "description": "This property was deprecated in v1.116.0. Retrieve a specified number of random assets for the authenticated user.",
         "operationId": "getRandom",
         "parameters": [
           {
@@ -2150,6 +2201,7 @@
             "api_key": []
           }
         ],
+        "summary": "Get random assets",
         "tags": [
           "Assets",
           "Deprecated"
@@ -2162,6 +2214,7 @@
     },
     "/assets/statistics": {
       "get": {
+        "description": "Retrieve various statistics about the assets owned by the authenticated user.",
         "operationId": "getAssetStatistics",
         "parameters": [
           {
@@ -2212,15 +2265,16 @@
             "api_key": []
           }
         ],
+        "summary": "Get asset statistics",
         "tags": [
           "Assets"
         ],
-        "x-immich-permission": "asset.statistics",
-        "description": "This endpoint requires the `asset.statistics` permission."
+        "x-immich-permission": "asset.statistics"
       }
     },
     "/assets/{id}": {
       "get": {
+        "description": "Retrieve detailed information about a specific asset.",
         "operationId": "getAssetInfo",
         "parameters": [
           {
@@ -2272,13 +2326,14 @@
             "api_key": []
           }
         ],
+        "summary": "Retrieve an asset",
         "tags": [
           "Assets"
         ],
-        "x-immich-permission": "asset.read",
-        "description": "This endpoint requires the `asset.read` permission."
+        "x-immich-permission": "asset.read"
       },
       "put": {
+        "description": "Update information of a specific asset.",
         "operationId": "updateAsset",
         "parameters": [
           {
@@ -2324,15 +2379,16 @@
             "api_key": []
           }
         ],
+        "summary": "Update an asset",
         "tags": [
           "Assets"
         ],
-        "x-immich-permission": "asset.update",
-        "description": "This endpoint requires the `asset.update` permission."
+        "x-immich-permission": "asset.update"
       }
     },
     "/assets/{id}/metadata": {
       "get": {
+        "description": "Retrieve all metadata key-value pairs associated with the specified asset.",
         "operationId": "getAssetMetadata",
         "parameters": [
           {
@@ -2371,13 +2427,14 @@
             "api_key": []
           }
         ],
+        "summary": "Get asset metadata",
         "tags": [
           "Assets"
         ],
-        "x-immich-permission": "asset.read",
-        "description": "This endpoint requires the `asset.read` permission."
+        "x-immich-permission": "asset.read"
       },
       "put": {
+        "description": "Update or add metadata key-value pairs for the specified asset.",
         "operationId": "updateAssetMetadata",
         "parameters": [
           {
@@ -2426,15 +2483,16 @@
             "api_key": []
           }
         ],
+        "summary": "Update asset metadata",
         "tags": [
           "Assets"
         ],
-        "x-immich-permission": "asset.update",
-        "description": "This endpoint requires the `asset.update` permission."
+        "x-immich-permission": "asset.update"
       }
     },
     "/assets/{id}/metadata/{key}": {
       "delete": {
+        "description": "Delete a specific metadata key-value pair associated with the specified asset.",
         "operationId": "deleteAssetMetadata",
         "parameters": [
           {
@@ -2471,13 +2529,14 @@
             "api_key": []
           }
         ],
+        "summary": "Delete asset metadata by key",
         "tags": [
           "Assets"
         ],
-        "x-immich-permission": "asset.update",
-        "description": "This endpoint requires the `asset.update` permission."
+        "x-immich-permission": "asset.update"
       },
       "get": {
+        "description": "Retrieve the value of a specific metadata key associated with the specified asset.",
         "operationId": "getAssetMetadataByKey",
         "parameters": [
           {
@@ -2521,15 +2580,16 @@
             "api_key": []
           }
         ],
+        "summary": "Retrieve asset metadata by key",
         "tags": [
           "Assets"
         ],
-        "x-immich-permission": "asset.read",
-        "description": "This endpoint requires the `asset.read` permission."
+        "x-immich-permission": "asset.read"
       }
     },
     "/assets/{id}/ocr": {
       "get": {
+        "description": "Retrieve all OCR (Optical Character Recognition) data associated with the specified asset.",
         "operationId": "getAssetOcr",
         "parameters": [
           {
@@ -2568,15 +2628,16 @@
             "api_key": []
           }
         ],
+        "summary": "Retrieve asset OCR data",
         "tags": [
           "Assets"
         ],
-        "x-immich-permission": "asset.read",
-        "description": "This endpoint requires the `asset.read` permission."
+        "x-immich-permission": "asset.read"
       }
     },
     "/assets/{id}/original": {
       "get": {
+        "description": "Downloads the original file of the specified asset.",
         "operationId": "downloadAsset",
         "parameters": [
           {
@@ -2629,15 +2690,15 @@
             "api_key": []
           }
         ],
+        "summary": "Download original asset",
         "tags": [
           "Assets"
         ],
-        "x-immich-permission": "asset.download",
-        "description": "This endpoint requires the `asset.download` permission."
+        "x-immich-permission": "asset.download"
       },
       "put": {
         "deprecated": true,
-        "description": "This property was deprecated in v1.142.0. Replace the asset with new file, without changing its id. This endpoint requires the `asset.replace` permission.",
+        "description": "This property was deprecated in v1.142.0. Replace the asset with new file, without changing its id.",
         "operationId": "replaceAsset",
         "parameters": [
           {
@@ -2699,7 +2760,7 @@
             "api_key": []
           }
         ],
-        "summary": "Replace the asset with new file, without changing its id",
+        "summary": "Replace asset",
         "tags": [
           "Assets",
           "Deprecated"
@@ -2713,6 +2774,7 @@
     },
     "/assets/{id}/thumbnail": {
       "get": {
+        "description": "Retrieve the thumbnail image for the specified asset.",
         "operationId": "viewAsset",
         "parameters": [
           {
@@ -2773,15 +2835,16 @@
             "api_key": []
           }
         ],
+        "summary": "View asset thumbnail",
         "tags": [
           "Assets"
         ],
-        "x-immich-permission": "asset.view",
-        "description": "This endpoint requires the `asset.view` permission."
+        "x-immich-permission": "asset.view"
       }
     },
     "/assets/{id}/video/playback": {
       "get": {
+        "description": "Streams the video file for the specified asset. This endpoint also supports byte range requests.",
         "operationId": "playAssetVideo",
         "parameters": [
           {
@@ -2834,15 +2897,16 @@
             "api_key": []
           }
         ],
+        "summary": "Play asset video",
         "tags": [
           "Assets"
         ],
-        "x-immich-permission": "asset.view",
-        "description": "This endpoint requires the `asset.view` permission."
+        "x-immich-permission": "asset.view"
       }
     },
     "/auth/admin-sign-up": {
       "post": {
+        "description": "Create the first admin user in the system.",
         "operationId": "signUpAdmin",
         "parameters": [],
         "requestBody": {
@@ -2867,6 +2931,7 @@
             "description": ""
           }
         },
+        "summary": "Register admin",
         "tags": [
           "Authentication"
         ]
@@ -2874,6 +2939,7 @@
     },
     "/auth/change-password": {
       "post": {
+        "description": "Change the password of the current user.",
         "operationId": "changePassword",
         "parameters": [],
         "requestBody": {
@@ -2909,15 +2975,16 @@
             "api_key": []
           }
         ],
+        "summary": "Change password",
         "tags": [
           "Authentication"
         ],
-        "x-immich-permission": "auth.changePassword",
-        "description": "This endpoint requires the `auth.changePassword` permission."
+        "x-immich-permission": "auth.changePassword"
       }
     },
     "/auth/login": {
       "post": {
+        "description": "Login with username and password and receive a session token.",
         "operationId": "login",
         "parameters": [],
         "requestBody": {
@@ -2942,6 +3009,7 @@
             "description": ""
           }
         },
+        "summary": "Login",
         "tags": [
           "Authentication"
         ]
@@ -2949,6 +3017,7 @@
     },
     "/auth/logout": {
       "post": {
+        "description": "Logout the current user and invalidate the session token.",
         "operationId": "logout",
         "parameters": [],
         "responses": {
@@ -2974,6 +3043,7 @@
             "api_key": []
           }
         ],
+        "summary": "Logout",
         "tags": [
           "Authentication"
         ]
@@ -2981,6 +3051,7 @@
     },
     "/auth/pin-code": {
       "delete": {
+        "description": "Reset the pin code for the current user by providing the account password",
         "operationId": "resetPinCode",
         "parameters": [],
         "requestBody": {
@@ -3009,13 +3080,14 @@
             "api_key": []
           }
         ],
+        "summary": "Reset pin code",
         "tags": [
           "Authentication"
         ],
-        "x-immich-permission": "pinCode.delete",
-        "description": "This endpoint requires the `pinCode.delete` permission."
+        "x-immich-permission": "pinCode.delete"
       },
       "post": {
+        "description": "Setup a new pin code for the current user.",
         "operationId": "setupPinCode",
         "parameters": [],
         "requestBody": {
@@ -3044,13 +3116,14 @@
             "api_key": []
           }
         ],
+        "summary": "Setup pin code",
         "tags": [
           "Authentication"
         ],
-        "x-immich-permission": "pinCode.create",
-        "description": "This endpoint requires the `pinCode.create` permission."
+        "x-immich-permission": "pinCode.create"
       },
       "put": {
+        "description": "Change the pin code for the current user.",
         "operationId": "changePinCode",
         "parameters": [],
         "requestBody": {
@@ -3079,15 +3152,16 @@
             "api_key": []
           }
         ],
+        "summary": "Change pin code",
         "tags": [
           "Authentication"
         ],
-        "x-immich-permission": "pinCode.update",
-        "description": "This endpoint requires the `pinCode.update` permission."
+        "x-immich-permission": "pinCode.update"
       }
     },
     "/auth/session/lock": {
       "post": {
+        "description": "Remove elevated access to locked assets from the current session.",
         "operationId": "lockAuthSession",
         "parameters": [],
         "responses": {
@@ -3106,6 +3180,7 @@
             "api_key": []
           }
         ],
+        "summary": "Lock auth session",
         "tags": [
           "Authentication"
         ]
@@ -3113,6 +3188,7 @@
     },
     "/auth/session/unlock": {
       "post": {
+        "description": "Temporarily grant the session elevated access to locked assets by providing the correct PIN code.",
         "operationId": "unlockAuthSession",
         "parameters": [],
         "requestBody": {
@@ -3141,6 +3217,7 @@
             "api_key": []
           }
         ],
+        "summary": "Unlock auth session",
         "tags": [
           "Authentication"
         ]
@@ -3148,6 +3225,7 @@
     },
     "/auth/status": {
       "get": {
+        "description": "Get information about the current session, including whether the user has a password, and if the session can access locked assets.",
         "operationId": "getAuthStatus",
         "parameters": [],
         "responses": {
@@ -3173,6 +3251,7 @@
             "api_key": []
           }
         ],
+        "summary": "Retrieve auth status",
         "tags": [
           "Authentication"
         ]
@@ -3180,6 +3259,7 @@
     },
     "/auth/validateToken": {
       "post": {
+        "description": "Validate the current authorization method is still valid.",
         "operationId": "validateAccessToken",
         "parameters": [],
         "responses": {
@@ -3205,6 +3285,7 @@
             "api_key": []
           }
         ],
+        "summary": "Validate access token",
         "tags": [
           "Authentication"
         ]
@@ -3212,6 +3293,7 @@
     },
     "/download/archive": {
       "post": {
+        "description": "Download a ZIP archive containing the specified assets. The assets must have been previously requested via the \"getDownloadInfo\" endpoint.",
         "operationId": "downloadArchive",
         "parameters": [
           {
@@ -3265,15 +3347,16 @@
             "api_key": []
           }
         ],
+        "summary": "Download asset archive",
         "tags": [
           "Download"
         ],
-        "x-immich-permission": "asset.download",
-        "description": "This endpoint requires the `asset.download` permission."
+        "x-immich-permission": "asset.download"
       }
     },
     "/download/info": {
       "post": {
+        "description": "Retrieve information about how to request a download for the specified assets or album. The response includes groups of assets that can be downloaded together.",
         "operationId": "getDownloadInfo",
         "parameters": [
           {
@@ -3326,15 +3409,16 @@
             "api_key": []
           }
         ],
+        "summary": "Retrieve download information",
         "tags": [
           "Download"
         ],
-        "x-immich-permission": "asset.download",
-        "description": "This endpoint requires the `asset.download` permission."
+        "x-immich-permission": "asset.download"
       }
     },
     "/duplicates": {
       "delete": {
+        "description": "Delete multiple duplicate assets specified by their IDs.",
         "operationId": "deleteDuplicates",
         "parameters": [],
         "requestBody": {
@@ -3363,13 +3447,14 @@
             "api_key": []
           }
         ],
+        "summary": "Delete duplicates",
         "tags": [
           "Duplicates"
         ],
-        "x-immich-permission": "duplicate.delete",
-        "description": "This endpoint requires the `duplicate.delete` permission."
+        "x-immich-permission": "duplicate.delete"
       },
       "get": {
+        "description": "Retrieve a list of duplicate assets available to the authenticated user.",
         "operationId": "getAssetDuplicates",
         "parameters": [],
         "responses": {
@@ -3398,15 +3483,16 @@
             "api_key": []
           }
         ],
+        "summary": "Retrieve duplicates",
         "tags": [
           "Duplicates"
         ],
-        "x-immich-permission": "duplicate.read",
-        "description": "This endpoint requires the `duplicate.read` permission."
+        "x-immich-permission": "duplicate.read"
       }
     },
     "/duplicates/{id}": {
       "delete": {
+        "description": "Delete a single duplicate asset specified by its ID.",
         "operationId": "deleteDuplicate",
         "parameters": [
           {
@@ -3435,15 +3521,16 @@
             "api_key": []
           }
         ],
+        "summary": "Delete a duplicate",
         "tags": [
           "Duplicates"
         ],
-        "x-immich-permission": "duplicate.delete",
-        "description": "This endpoint requires the `duplicate.delete` permission."
+        "x-immich-permission": "duplicate.delete"
       }
     },
     "/faces": {
       "get": {
+        "description": "Retrieve all faces belonging to an asset.",
         "operationId": "getFaces",
         "parameters": [
           {
@@ -3482,13 +3569,14 @@
             "api_key": []
           }
         ],
+        "summary": "Retrieve faces for asset",
         "tags": [
           "Faces"
         ],
-        "x-immich-permission": "face.read",
-        "description": "This endpoint requires the `face.read` permission."
+        "x-immich-permission": "face.read"
       },
       "post": {
+        "description": "Create a new face that has not been discovered by facial recognition. The content of the bounding box is considered a face.",
         "operationId": "createFace",
         "parameters": [],
         "requestBody": {
@@ -3517,15 +3605,16 @@
             "api_key": []
           }
         ],
+        "summary": "Create a face",
         "tags": [
           "Faces"
         ],
-        "x-immich-permission": "face.create",
-        "description": "This endpoint requires the `face.create` permission."
+        "x-immich-permission": "face.create"
       }
     },
     "/faces/{id}": {
       "delete": {
+        "description": "Delete a face identified by the id. Optionally can be force deleted.",
         "operationId": "deleteFace",
         "parameters": [
           {
@@ -3564,13 +3653,14 @@
             "api_key": []
           }
         ],
+        "summary": "Delete a face",
         "tags": [
           "Faces"
         ],
-        "x-immich-permission": "face.delete",
-        "description": "This endpoint requires the `face.delete` permission."
+        "x-immich-permission": "face.delete"
       },
       "put": {
+        "description": "Re-assign the face provided in the body to the person identified by the id in the path parameter.",
         "operationId": "reassignFacesById",
         "parameters": [
           {
@@ -3616,15 +3706,16 @@
             "api_key": []
           }
         ],
+        "summary": "Re-assign a face to another person",
         "tags": [
           "Faces"
         ],
-        "x-immich-permission": "face.update",
-        "description": "This endpoint requires the `face.update` permission."
+        "x-immich-permission": "face.update"
       }
     },
     "/jobs": {
       "get": {
+        "description": "Retrieve the counts of the current queue, as well as the current status.",
         "operationId": "getAllJobsStatus",
         "parameters": [],
         "responses": {
@@ -3650,14 +3741,15 @@
             "api_key": []
           }
         ],
+        "summary": "Retrieve queue counts and status",
         "tags": [
           "Jobs"
         ],
         "x-immich-admin-only": true,
-        "x-immich-permission": "job.read",
-        "description": "This endpoint is an admin-only route, and requires the `job.read` permission."
+        "x-immich-permission": "job.read"
       },
       "post": {
+        "description": "Run a specific job. Most jobs are queued automatically, but this endpoint allows for manual creation of a handful of jobs, including various cleanup tasks, as well as creating a new database backup.",
         "operationId": "createJob",
         "parameters": [],
         "requestBody": {
@@ -3686,16 +3778,17 @@
             "api_key": []
           }
         ],
+        "summary": "Create a manual job",
         "tags": [
           "Jobs"
         ],
         "x-immich-admin-only": true,
-        "x-immich-permission": "job.create",
-        "description": "This endpoint is an admin-only route, and requires the `job.create` permission."
+        "x-immich-permission": "job.create"
       }
     },
     "/jobs/{id}": {
       "put": {
+        "description": "Queue all assets for a specific job type. Defaults to only queueing assets that have not yet been processed, but the force command can be used to re-process all assets.",
         "operationId": "sendJobCommand",
         "parameters": [
           {
@@ -3740,16 +3833,17 @@
             "api_key": []
           }
         ],
+        "summary": "Run jobs",
         "tags": [
           "Jobs"
         ],
         "x-immich-admin-only": true,
-        "x-immich-permission": "job.create",
-        "description": "This endpoint is an admin-only route, and requires the `job.create` permission."
+        "x-immich-permission": "job.create"
       }
     },
     "/libraries": {
       "get": {
+        "description": "Retrieve a list of external libraries.",
         "operationId": "getAllLibraries",
         "parameters": [],
         "responses": {
@@ -3778,14 +3872,15 @@
             "api_key": []
           }
         ],
+        "summary": "Retrieve libraries",
         "tags": [
           "Libraries"
         ],
         "x-immich-admin-only": true,
-        "x-immich-permission": "library.read",
-        "description": "This endpoint is an admin-only route, and requires the `library.read` permission."
+        "x-immich-permission": "library.read"
       },
       "post": {
+        "description": "Create a new external library.",
         "operationId": "createLibrary",
         "parameters": [],
         "requestBody": {
@@ -3821,16 +3916,17 @@
             "api_key": []
           }
         ],
+        "summary": "Create a library",
         "tags": [
           "Libraries"
         ],
         "x-immich-admin-only": true,
-        "x-immich-permission": "library.create",
-        "description": "This endpoint is an admin-only route, and requires the `library.create` permission."
+        "x-immich-permission": "library.create"
       }
     },
     "/libraries/{id}": {
       "delete": {
+        "description": "Delete an external library by its ID.",
         "operationId": "deleteLibrary",
         "parameters": [
           {
@@ -3859,14 +3955,15 @@
             "api_key": []
           }
         ],
+        "summary": "Delete a library",
         "tags": [
           "Libraries"
         ],
         "x-immich-admin-only": true,
-        "x-immich-permission": "library.delete",
-        "description": "This endpoint is an admin-only route, and requires the `library.delete` permission."
+        "x-immich-permission": "library.delete"
       },
       "get": {
+        "description": "Retrieve an external library by its ID.",
         "operationId": "getLibrary",
         "parameters": [
           {
@@ -3902,14 +3999,15 @@
             "api_key": []
           }
         ],
+        "summary": "Retrieve a library",
         "tags": [
           "Libraries"
         ],
         "x-immich-admin-only": true,
-        "x-immich-permission": "library.read",
-        "description": "This endpoint is an admin-only route, and requires the `library.read` permission."
+        "x-immich-permission": "library.read"
       },
       "put": {
+        "description": "Update an existing external library.",
         "operationId": "updateLibrary",
         "parameters": [
           {
@@ -3955,16 +4053,17 @@
             "api_key": []
           }
         ],
+        "summary": "Update a library",
         "tags": [
           "Libraries"
         ],
         "x-immich-admin-only": true,
-        "x-immich-permission": "library.update",
-        "description": "This endpoint is an admin-only route, and requires the `library.update` permission."
+        "x-immich-permission": "library.update"
       }
     },
     "/libraries/{id}/scan": {
       "post": {
+        "description": "Queue a scan for the external library to find and import new assets.",
         "operationId": "scanLibrary",
         "parameters": [
           {
@@ -3993,16 +4092,17 @@
             "api_key": []
           }
         ],
+        "summary": "Scan a library",
         "tags": [
           "Libraries"
         ],
         "x-immich-admin-only": true,
-        "x-immich-permission": "library.update",
-        "description": "This endpoint is an admin-only route, and requires the `library.update` permission."
+        "x-immich-permission": "library.update"
       }
     },
     "/libraries/{id}/statistics": {
       "get": {
+        "description": "Retrieve statistics for a specific external library, including number of videos, images, and storage usage.",
         "operationId": "getLibraryStatistics",
         "parameters": [
           {
@@ -4038,16 +4138,17 @@
             "api_key": []
           }
         ],
+        "summary": "Retrieve library statistics",
         "tags": [
           "Libraries"
         ],
         "x-immich-admin-only": true,
-        "x-immich-permission": "library.statistics",
-        "description": "This endpoint is an admin-only route, and requires the `library.statistics` permission."
+        "x-immich-permission": "library.statistics"
       }
     },
     "/libraries/{id}/validate": {
       "post": {
+        "description": "Validate the settings of an external library.",
         "operationId": "validate",
         "parameters": [
           {
@@ -4093,6 +4194,7 @@
             "api_key": []
           }
         ],
+        "summary": "Validate library settings",
         "tags": [
           "Libraries"
         ],
@@ -4101,24 +4203,9 @@
     },
     "/map/markers": {
       "get": {
+        "description": "Retrieve a list of latitude and longitude coordinates for every asset with location data.",
         "operationId": "getMapMarkers",
         "parameters": [
-          {
-            "name": "isArchived",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "isFavorite",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
           {
             "name": "fileCreatedAfter",
             "required": false,
@@ -4135,6 +4222,22 @@
             "schema": {
               "format": "date-time",
               "type": "string"
+            }
+          },
+          {
+            "name": "isArchived",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "isFavorite",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
             }
           },
           {
@@ -4180,6 +4283,7 @@
             "api_key": []
           }
         ],
+        "summary": "Retrieve map markers",
         "tags": [
           "Map"
         ]
@@ -4187,6 +4291,7 @@
     },
     "/map/reverse-geocode": {
       "get": {
+        "description": "Retrieve location information (e.g., city, country) for given latitude and longitude coordinates.",
         "operationId": "reverseGeocode",
         "parameters": [
           {
@@ -4234,6 +4339,7 @@
             "api_key": []
           }
         ],
+        "summary": "Reverse geocode coordinates",
         "tags": [
           "Map"
         ]
@@ -4241,6 +4347,7 @@
     },
     "/memories": {
       "get": {
+        "description": "Retrieve a list of memories. Memories are sorted descending by creation date by default, although they can also be sorted in ascending order, or randomly.",
         "operationId": "searchMemories",
         "parameters": [
           {
@@ -4321,13 +4428,14 @@
             "api_key": []
           }
         ],
+        "summary": "Retrieve memories",
         "tags": [
           "Memories"
         ],
-        "x-immich-permission": "memory.read",
-        "description": "This endpoint requires the `memory.read` permission."
+        "x-immich-permission": "memory.read"
       },
       "post": {
+        "description": "Create a new memory by providing a name, description, and a list of asset IDs to include in the memory.",
         "operationId": "createMemory",
         "parameters": [],
         "requestBody": {
@@ -4363,15 +4471,16 @@
             "api_key": []
           }
         ],
+        "summary": "Create a memory",
         "tags": [
           "Memories"
         ],
-        "x-immich-permission": "memory.create",
-        "description": "This endpoint requires the `memory.create` permission."
+        "x-immich-permission": "memory.create"
       }
     },
     "/memories/statistics": {
       "get": {
+        "description": "Retrieve statistics about memories, such as total count and other relevant metrics.",
         "operationId": "memoriesStatistics",
         "parameters": [
           {
@@ -4449,15 +4558,16 @@
             "api_key": []
           }
         ],
+        "summary": "Retrieve memories statistics",
         "tags": [
           "Memories"
         ],
-        "x-immich-permission": "memory.statistics",
-        "description": "This endpoint requires the `memory.statistics` permission."
+        "x-immich-permission": "memory.statistics"
       }
     },
     "/memories/{id}": {
       "delete": {
+        "description": "Delete a specific memory by its ID.",
         "operationId": "deleteMemory",
         "parameters": [
           {
@@ -4486,13 +4596,14 @@
             "api_key": []
           }
         ],
+        "summary": "Delete a memory",
         "tags": [
           "Memories"
         ],
-        "x-immich-permission": "memory.delete",
-        "description": "This endpoint requires the `memory.delete` permission."
+        "x-immich-permission": "memory.delete"
       },
       "get": {
+        "description": "Retrieve a specific memory by its ID.",
         "operationId": "getMemory",
         "parameters": [
           {
@@ -4528,13 +4639,14 @@
             "api_key": []
           }
         ],
+        "summary": "Retrieve a memory",
         "tags": [
           "Memories"
         ],
-        "x-immich-permission": "memory.read",
-        "description": "This endpoint requires the `memory.read` permission."
+        "x-immich-permission": "memory.read"
       },
       "put": {
+        "description": "Update an existing memory by its ID.",
         "operationId": "updateMemory",
         "parameters": [
           {
@@ -4580,15 +4692,16 @@
             "api_key": []
           }
         ],
+        "summary": "Update a memory",
         "tags": [
           "Memories"
         ],
-        "x-immich-permission": "memory.update",
-        "description": "This endpoint requires the `memory.update` permission."
+        "x-immich-permission": "memory.update"
       }
     },
     "/memories/{id}/assets": {
       "delete": {
+        "description": "Remove a list of asset IDs from a specific memory.",
         "operationId": "removeMemoryAssets",
         "parameters": [
           {
@@ -4637,13 +4750,14 @@
             "api_key": []
           }
         ],
+        "summary": "Remove assets from a memory",
         "tags": [
           "Memories"
         ],
-        "x-immich-permission": "memoryAsset.delete",
-        "description": "This endpoint requires the `memoryAsset.delete` permission."
+        "x-immich-permission": "memoryAsset.delete"
       },
       "put": {
+        "description": "Add a list of asset IDs to a specific memory.",
         "operationId": "addMemoryAssets",
         "parameters": [
           {
@@ -4692,15 +4806,16 @@
             "api_key": []
           }
         ],
+        "summary": "Add assets to a memory",
         "tags": [
           "Memories"
         ],
-        "x-immich-permission": "memoryAsset.create",
-        "description": "This endpoint requires the `memoryAsset.create` permission."
+        "x-immich-permission": "memoryAsset.create"
       }
     },
     "/notifications": {
       "delete": {
+        "description": "Delete a list of notifications at once.",
         "operationId": "deleteNotifications",
         "parameters": [],
         "requestBody": {
@@ -4729,13 +4844,14 @@
             "api_key": []
           }
         ],
+        "summary": "Delete notifications",
         "tags": [
           "Notifications"
         ],
-        "x-immich-permission": "notification.delete",
-        "description": "This endpoint requires the `notification.delete` permission."
+        "x-immich-permission": "notification.delete"
       },
       "get": {
+        "description": "Retrieve a list of notifications.",
         "operationId": "getNotifications",
         "parameters": [
           {
@@ -4798,13 +4914,14 @@
             "api_key": []
           }
         ],
+        "summary": "Retrieve notifications",
         "tags": [
           "Notifications"
         ],
-        "x-immich-permission": "notification.read",
-        "description": "This endpoint requires the `notification.read` permission."
+        "x-immich-permission": "notification.read"
       },
       "put": {
+        "description": "Update a list of notifications. Allows to bulk-set the read status of notifications.",
         "operationId": "updateNotifications",
         "parameters": [],
         "requestBody": {
@@ -4833,15 +4950,16 @@
             "api_key": []
           }
         ],
+        "summary": "Update notifications",
         "tags": [
           "Notifications"
         ],
-        "x-immich-permission": "notification.update",
-        "description": "This endpoint requires the `notification.update` permission."
+        "x-immich-permission": "notification.update"
       }
     },
     "/notifications/{id}": {
       "delete": {
+        "description": "Delete a specific notification.",
         "operationId": "deleteNotification",
         "parameters": [
           {
@@ -4870,13 +4988,14 @@
             "api_key": []
           }
         ],
+        "summary": "Delete a notification",
         "tags": [
           "Notifications"
         ],
-        "x-immich-permission": "notification.delete",
-        "description": "This endpoint requires the `notification.delete` permission."
+        "x-immich-permission": "notification.delete"
       },
       "get": {
+        "description": "Retrieve a specific notification identified by id.",
         "operationId": "getNotification",
         "parameters": [
           {
@@ -4912,13 +5031,14 @@
             "api_key": []
           }
         ],
+        "summary": "Get a notification",
         "tags": [
           "Notifications"
         ],
-        "x-immich-permission": "notification.read",
-        "description": "This endpoint requires the `notification.read` permission."
+        "x-immich-permission": "notification.read"
       },
       "put": {
+        "description": "Update a specific notification to set its read status.",
         "operationId": "updateNotification",
         "parameters": [
           {
@@ -4964,15 +5084,16 @@
             "api_key": []
           }
         ],
+        "summary": "Update a notification",
         "tags": [
           "Notifications"
         ],
-        "x-immich-permission": "notification.update",
-        "description": "This endpoint requires the `notification.update` permission."
+        "x-immich-permission": "notification.update"
       }
     },
     "/oauth/authorize": {
       "post": {
+        "description": "Initiate the OAuth authorization process.",
         "operationId": "startOAuth",
         "parameters": [],
         "requestBody": {
@@ -4997,13 +5118,15 @@
             "description": ""
           }
         },
+        "summary": "Start OAuth",
         "tags": [
-          "OAuth"
+          "Authentication"
         ]
       }
     },
     "/oauth/callback": {
       "post": {
+        "description": "Complete the OAuth authorization process by exchanging the authorization code for a session token.",
         "operationId": "finishOAuth",
         "parameters": [],
         "requestBody": {
@@ -5028,13 +5151,15 @@
             "description": ""
           }
         },
+        "summary": "Finish OAuth",
         "tags": [
-          "OAuth"
+          "Authentication"
         ]
       }
     },
     "/oauth/link": {
       "post": {
+        "description": "Link an OAuth account to the authenticated user.",
         "operationId": "linkOAuthAccount",
         "parameters": [],
         "requestBody": {
@@ -5070,13 +5195,15 @@
             "api_key": []
           }
         ],
+        "summary": "Link OAuth account",
         "tags": [
-          "OAuth"
+          "Authentication"
         ]
       }
     },
     "/oauth/mobile-redirect": {
       "get": {
+        "description": "Requests to this URL are automatically forwarded to the mobile app, and is used in some cases for OAuth redirecting.",
         "operationId": "redirectOAuthToMobile",
         "parameters": [],
         "responses": {
@@ -5084,13 +5211,15 @@
             "description": ""
           }
         },
+        "summary": "Redirect OAuth to mobile",
         "tags": [
-          "OAuth"
+          "Authentication"
         ]
       }
     },
     "/oauth/unlink": {
       "post": {
+        "description": "Unlink the OAuth account from the authenticated user.",
         "operationId": "unlinkOAuthAccount",
         "parameters": [],
         "responses": {
@@ -5116,13 +5245,15 @@
             "api_key": []
           }
         ],
+        "summary": "Unlink OAuth account",
         "tags": [
-          "OAuth"
+          "Authentication"
         ]
       }
     },
     "/partners": {
       "get": {
+        "description": "Retrieve a list of partners with whom assets are shared.",
         "operationId": "getPartners",
         "parameters": [
           {
@@ -5160,13 +5291,14 @@
             "api_key": []
           }
         ],
+        "summary": "Retrieve partners",
         "tags": [
           "Partners"
         ],
-        "x-immich-permission": "partner.read",
-        "description": "This endpoint requires the `partner.read` permission."
+        "x-immich-permission": "partner.read"
       },
       "post": {
+        "description": "Create a new partner to share assets with.",
         "operationId": "createPartner",
         "parameters": [],
         "requestBody": {
@@ -5202,15 +5334,16 @@
             "api_key": []
           }
         ],
+        "summary": "Create a partner",
         "tags": [
           "Partners"
         ],
-        "x-immich-permission": "partner.create",
-        "description": "This endpoint requires the `partner.create` permission."
+        "x-immich-permission": "partner.create"
       }
     },
     "/partners/{id}": {
       "delete": {
+        "description": "Stop sharing assets with a partner.",
         "operationId": "removePartner",
         "parameters": [
           {
@@ -5239,15 +5372,15 @@
             "api_key": []
           }
         ],
+        "summary": "Remove a partner",
         "tags": [
           "Partners"
         ],
-        "x-immich-permission": "partner.delete",
-        "description": "This endpoint requires the `partner.delete` permission."
+        "x-immich-permission": "partner.delete"
       },
       "post": {
         "deprecated": true,
-        "description": "This property was deprecated in v1.141.0. This endpoint requires the `partner.create` permission.",
+        "description": "This property was deprecated in v1.141.0. Create a new partner to share assets with.",
         "operationId": "createPartnerDeprecated",
         "parameters": [
           {
@@ -5283,6 +5416,7 @@
             "api_key": []
           }
         ],
+        "summary": "Create a partner",
         "tags": [
           "Partners",
           "Deprecated"
@@ -5293,6 +5427,7 @@
         "x-immich-permission": "partner.create"
       },
       "put": {
+        "description": "Specify whether a partner's assets should appear in the user's timeline.",
         "operationId": "updatePartner",
         "parameters": [
           {
@@ -5338,15 +5473,16 @@
             "api_key": []
           }
         ],
+        "summary": "Update a partner",
         "tags": [
           "Partners"
         ],
-        "x-immich-permission": "partner.update",
-        "description": "This endpoint requires the `partner.update` permission."
+        "x-immich-permission": "partner.update"
       }
     },
     "/people": {
       "delete": {
+        "description": "Bulk delete a list of people at once.",
         "operationId": "deletePeople",
         "parameters": [],
         "requestBody": {
@@ -5375,13 +5511,14 @@
             "api_key": []
           }
         ],
+        "summary": "Delete people",
         "tags": [
           "People"
         ],
-        "x-immich-permission": "person.delete",
-        "description": "This endpoint requires the `person.delete` permission."
+        "x-immich-permission": "person.delete"
       },
       "get": {
+        "description": "Retrieve a list of all people.",
         "operationId": "getAllPeople",
         "parameters": [
           {
@@ -5457,13 +5594,14 @@
             "api_key": []
           }
         ],
+        "summary": "Get all people",
         "tags": [
           "People"
         ],
-        "x-immich-permission": "person.read",
-        "description": "This endpoint requires the `person.read` permission."
+        "x-immich-permission": "person.read"
       },
       "post": {
+        "description": "Create a new person that can have multiple faces assigned to them.",
         "operationId": "createPerson",
         "parameters": [],
         "requestBody": {
@@ -5499,13 +5637,14 @@
             "api_key": []
           }
         ],
+        "summary": "Create a person",
         "tags": [
           "People"
         ],
-        "x-immich-permission": "person.create",
-        "description": "This endpoint requires the `person.create` permission."
+        "x-immich-permission": "person.create"
       },
       "put": {
+        "description": "Bulk update multiple people at once.",
         "operationId": "updatePeople",
         "parameters": [],
         "requestBody": {
@@ -5544,15 +5683,16 @@
             "api_key": []
           }
         ],
+        "summary": "Update people",
         "tags": [
           "People"
         ],
-        "x-immich-permission": "person.update",
-        "description": "This endpoint requires the `person.update` permission."
+        "x-immich-permission": "person.update"
       }
     },
     "/people/{id}": {
       "delete": {
+        "description": "Delete an individual person.",
         "operationId": "deletePerson",
         "parameters": [
           {
@@ -5581,13 +5721,14 @@
             "api_key": []
           }
         ],
+        "summary": "Delete person",
         "tags": [
           "People"
         ],
-        "x-immich-permission": "person.delete",
-        "description": "This endpoint requires the `person.delete` permission."
+        "x-immich-permission": "person.delete"
       },
       "get": {
+        "description": "Retrieve a person by id.",
         "operationId": "getPerson",
         "parameters": [
           {
@@ -5623,13 +5764,14 @@
             "api_key": []
           }
         ],
+        "summary": "Get a person",
         "tags": [
           "People"
         ],
-        "x-immich-permission": "person.read",
-        "description": "This endpoint requires the `person.read` permission."
+        "x-immich-permission": "person.read"
       },
       "put": {
+        "description": "Update an individual person.",
         "operationId": "updatePerson",
         "parameters": [
           {
@@ -5675,15 +5817,16 @@
             "api_key": []
           }
         ],
+        "summary": "Update person",
         "tags": [
           "People"
         ],
-        "x-immich-permission": "person.update",
-        "description": "This endpoint requires the `person.update` permission."
+        "x-immich-permission": "person.update"
       }
     },
     "/people/{id}/merge": {
       "post": {
+        "description": "Merge a list of people into the person specified in the path parameter.",
         "operationId": "mergePerson",
         "parameters": [
           {
@@ -5732,15 +5875,16 @@
             "api_key": []
           }
         ],
+        "summary": "Merge people",
         "tags": [
           "People"
         ],
-        "x-immich-permission": "person.merge",
-        "description": "This endpoint requires the `person.merge` permission."
+        "x-immich-permission": "person.merge"
       }
     },
     "/people/{id}/reassign": {
       "put": {
+        "description": "Bulk reassign a list of faces to a different person.",
         "operationId": "reassignFaces",
         "parameters": [
           {
@@ -5789,15 +5933,16 @@
             "api_key": []
           }
         ],
+        "summary": "Reassign faces",
         "tags": [
           "People"
         ],
-        "x-immich-permission": "person.reassign",
-        "description": "This endpoint requires the `person.reassign` permission."
+        "x-immich-permission": "person.reassign"
       }
     },
     "/people/{id}/statistics": {
       "get": {
+        "description": "Retrieve statistics about a specific person.",
         "operationId": "getPersonStatistics",
         "parameters": [
           {
@@ -5833,15 +5978,16 @@
             "api_key": []
           }
         ],
+        "summary": "Get person statistics",
         "tags": [
           "People"
         ],
-        "x-immich-permission": "person.statistics",
-        "description": "This endpoint requires the `person.statistics` permission."
+        "x-immich-permission": "person.statistics"
       }
     },
     "/people/{id}/thumbnail": {
       "get": {
+        "description": "Retrieve the thumbnail file for a person.",
         "operationId": "getPersonThumbnail",
         "parameters": [
           {
@@ -5878,15 +6024,16 @@
             "api_key": []
           }
         ],
+        "summary": "Get person thumbnail",
         "tags": [
           "People"
         ],
-        "x-immich-permission": "person.read",
-        "description": "This endpoint requires the `person.read` permission."
+        "x-immich-permission": "person.read"
       }
     },
     "/search/cities": {
       "get": {
+        "description": "Retrieve a list of assets with each asset belonging to a different city. This endpoint is used on the places pages to show a single thumbnail for each city the user has assets in.",
         "operationId": "getAssetsByCity",
         "parameters": [],
         "responses": {
@@ -5915,15 +6062,16 @@
             "api_key": []
           }
         ],
+        "summary": "Retrieve assets by city",
         "tags": [
           "Search"
         ],
-        "x-immich-permission": "asset.read",
-        "description": "This endpoint requires the `asset.read` permission."
+        "x-immich-permission": "asset.read"
       }
     },
     "/search/explore": {
       "get": {
+        "description": "Retrieve data for the explore section, such as popular people and places.",
         "operationId": "getExploreData",
         "parameters": [],
         "responses": {
@@ -5952,15 +6100,16 @@
             "api_key": []
           }
         ],
+        "summary": "Retrieve explore data",
         "tags": [
           "Search"
         ],
-        "x-immich-permission": "asset.read",
-        "description": "This endpoint requires the `asset.read` permission."
+        "x-immich-permission": "asset.read"
       }
     },
     "/search/large-assets": {
       "post": {
+        "description": "Search for assets that are considered large based on specified criteria.",
         "operationId": "searchLargeAssets",
         "parameters": [
           {
@@ -6279,15 +6428,16 @@
             "api_key": []
           }
         ],
+        "summary": "Search large assets",
         "tags": [
           "Search"
         ],
-        "x-immich-permission": "asset.read",
-        "description": "This endpoint requires the `asset.read` permission."
+        "x-immich-permission": "asset.read"
       }
     },
     "/search/metadata": {
       "post": {
+        "description": "Search for assets based on various metadata criteria.",
         "operationId": "searchAssets",
         "parameters": [],
         "requestBody": {
@@ -6323,15 +6473,16 @@
             "api_key": []
           }
         ],
+        "summary": "Search assets by metadata",
         "tags": [
           "Search"
         ],
-        "x-immich-permission": "asset.read",
-        "description": "This endpoint requires the `asset.read` permission."
+        "x-immich-permission": "asset.read"
       }
     },
     "/search/person": {
       "get": {
+        "description": "Search for people by name.",
         "operationId": "searchPerson",
         "parameters": [
           {
@@ -6377,15 +6528,16 @@
             "api_key": []
           }
         ],
+        "summary": "Search people",
         "tags": [
           "Search"
         ],
-        "x-immich-permission": "person.read",
-        "description": "This endpoint requires the `person.read` permission."
+        "x-immich-permission": "person.read"
       }
     },
     "/search/places": {
       "get": {
+        "description": "Search for places by name.",
         "operationId": "searchPlaces",
         "parameters": [
           {
@@ -6423,15 +6575,16 @@
             "api_key": []
           }
         ],
+        "summary": "Search places",
         "tags": [
           "Search"
         ],
-        "x-immich-permission": "asset.read",
-        "description": "This endpoint requires the `asset.read` permission."
+        "x-immich-permission": "asset.read"
       }
     },
     "/search/random": {
       "post": {
+        "description": "Retrieve a random selection of assets based on the provided criteria.",
         "operationId": "searchRandom",
         "parameters": [],
         "requestBody": {
@@ -6470,15 +6623,16 @@
             "api_key": []
           }
         ],
+        "summary": "Search random assets",
         "tags": [
           "Search"
         ],
-        "x-immich-permission": "asset.read",
-        "description": "This endpoint requires the `asset.read` permission."
+        "x-immich-permission": "asset.read"
       }
     },
     "/search/smart": {
       "post": {
+        "description": "Perform a smart search for assets by using machine learning vectors to determine relevance.",
         "operationId": "searchSmart",
         "parameters": [],
         "requestBody": {
@@ -6514,15 +6668,16 @@
             "api_key": []
           }
         ],
+        "summary": "Smart asset search",
         "tags": [
           "Search"
         ],
-        "x-immich-permission": "asset.read",
-        "description": "This endpoint requires the `asset.read` permission."
+        "x-immich-permission": "asset.read"
       }
     },
     "/search/statistics": {
       "post": {
+        "description": "Retrieve statistical data about assets based on search criteria, such as the total matching count.",
         "operationId": "searchAssetStatistics",
         "parameters": [],
         "requestBody": {
@@ -6558,15 +6713,16 @@
             "api_key": []
           }
         ],
+        "summary": "Search asset statistics",
         "tags": [
           "Search"
         ],
-        "x-immich-permission": "asset.statistics",
-        "description": "This endpoint requires the `asset.statistics` permission."
+        "x-immich-permission": "asset.statistics"
       }
     },
     "/search/suggestions": {
       "get": {
+        "description": "Retrieve search suggestions based on partial input. This endpoint is used for typeahead search features.",
         "operationId": "getSearchSuggestions",
         "parameters": [
           {
@@ -6653,15 +6809,16 @@
             "api_key": []
           }
         ],
+        "summary": "Retrieve search suggestions",
         "tags": [
           "Search"
         ],
-        "x-immich-permission": "asset.read",
-        "description": "This endpoint requires the `asset.read` permission."
+        "x-immich-permission": "asset.read"
       }
     },
     "/server/about": {
       "get": {
+        "description": "Retrieve a list of information about the server.",
         "operationId": "getAboutInfo",
         "parameters": [],
         "responses": {
@@ -6687,15 +6844,16 @@
             "api_key": []
           }
         ],
+        "summary": "Get server information",
         "tags": [
           "Server"
         ],
-        "x-immich-permission": "server.about",
-        "description": "This endpoint requires the `server.about` permission."
+        "x-immich-permission": "server.about"
       }
     },
     "/server/apk-links": {
       "get": {
+        "description": "Retrieve links to the APKs for the current server version.",
         "operationId": "getApkLinks",
         "parameters": [],
         "responses": {
@@ -6721,15 +6879,16 @@
             "api_key": []
           }
         ],
+        "summary": "Get APK links",
         "tags": [
           "Server"
         ],
-        "x-immich-permission": "server.apkLinks",
-        "description": "This endpoint requires the `server.apkLinks` permission."
+        "x-immich-permission": "server.apkLinks"
       }
     },
     "/server/config": {
       "get": {
+        "description": "Retrieve the current server configuration.",
         "operationId": "getServerConfig",
         "parameters": [],
         "responses": {
@@ -6744,6 +6903,7 @@
             "description": ""
           }
         },
+        "summary": "Get config",
         "tags": [
           "Server"
         ]
@@ -6751,6 +6911,7 @@
     },
     "/server/features": {
       "get": {
+        "description": "Retrieve available features supported by this server.",
         "operationId": "getServerFeatures",
         "parameters": [],
         "responses": {
@@ -6765,6 +6926,7 @@
             "description": ""
           }
         },
+        "summary": "Get features",
         "tags": [
           "Server"
         ]
@@ -6772,6 +6934,7 @@
     },
     "/server/license": {
       "delete": {
+        "description": "Delete the currently set server product key.",
         "operationId": "deleteServerLicense",
         "parameters": [],
         "responses": {
@@ -6790,14 +6953,15 @@
             "api_key": []
           }
         ],
+        "summary": "Delete server product key",
         "tags": [
           "Server"
         ],
         "x-immich-admin-only": true,
-        "x-immich-permission": "serverLicense.delete",
-        "description": "This endpoint is an admin-only route, and requires the `serverLicense.delete` permission."
+        "x-immich-permission": "serverLicense.delete"
       },
       "get": {
+        "description": "Retrieve information about whether the server currently has a product key registered.",
         "operationId": "getServerLicense",
         "parameters": [],
         "responses": {
@@ -6826,14 +6990,15 @@
             "api_key": []
           }
         ],
+        "summary": "Get product key",
         "tags": [
           "Server"
         ],
         "x-immich-admin-only": true,
-        "x-immich-permission": "serverLicense.read",
-        "description": "This endpoint is an admin-only route, and requires the `serverLicense.read` permission."
+        "x-immich-permission": "serverLicense.read"
       },
       "put": {
+        "description": "Validate and set the server product key if successful.",
         "operationId": "setServerLicense",
         "parameters": [],
         "requestBody": {
@@ -6869,16 +7034,17 @@
             "api_key": []
           }
         ],
+        "summary": "Set server product key",
         "tags": [
           "Server"
         ],
         "x-immich-admin-only": true,
-        "x-immich-permission": "serverLicense.update",
-        "description": "This endpoint is an admin-only route, and requires the `serverLicense.update` permission."
+        "x-immich-permission": "serverLicense.update"
       }
     },
     "/server/media-types": {
       "get": {
+        "description": "Retrieve all media types supported by the server.",
         "operationId": "getSupportedMediaTypes",
         "parameters": [],
         "responses": {
@@ -6893,6 +7059,7 @@
             "description": ""
           }
         },
+        "summary": "Get supported media types",
         "tags": [
           "Server"
         ]
@@ -6900,6 +7067,7 @@
     },
     "/server/ping": {
       "get": {
+        "description": "Pong",
         "operationId": "pingServer",
         "parameters": [],
         "responses": {
@@ -6914,6 +7082,7 @@
             "description": ""
           }
         },
+        "summary": "Ping",
         "tags": [
           "Server"
         ]
@@ -6921,6 +7090,7 @@
     },
     "/server/statistics": {
       "get": {
+        "description": "Retrieve statistics about the entire Immich instance such as asset counts.",
         "operationId": "getServerStatistics",
         "parameters": [],
         "responses": {
@@ -6946,16 +7116,17 @@
             "api_key": []
           }
         ],
+        "summary": "Get statistics",
         "tags": [
           "Server"
         ],
         "x-immich-admin-only": true,
-        "x-immich-permission": "server.statistics",
-        "description": "This endpoint is an admin-only route, and requires the `server.statistics` permission."
+        "x-immich-permission": "server.statistics"
       }
     },
     "/server/storage": {
       "get": {
+        "description": "Retrieve the current storage utilization information of the server.",
         "operationId": "getStorage",
         "parameters": [],
         "responses": {
@@ -6981,15 +7152,16 @@
             "api_key": []
           }
         ],
+        "summary": "Get storage",
         "tags": [
           "Server"
         ],
-        "x-immich-permission": "server.storage",
-        "description": "This endpoint requires the `server.storage` permission."
+        "x-immich-permission": "server.storage"
       }
     },
     "/server/theme": {
       "get": {
+        "description": "Retrieve the custom CSS, if existent.",
         "operationId": "getTheme",
         "parameters": [],
         "responses": {
@@ -7004,6 +7176,7 @@
             "description": ""
           }
         },
+        "summary": "Get theme",
         "tags": [
           "Server"
         ]
@@ -7011,6 +7184,7 @@
     },
     "/server/version": {
       "get": {
+        "description": "Retrieve the current server version in semantic versioning (semver) format.",
         "operationId": "getServerVersion",
         "parameters": [],
         "responses": {
@@ -7025,6 +7199,7 @@
             "description": ""
           }
         },
+        "summary": "Get server version",
         "tags": [
           "Server"
         ]
@@ -7032,6 +7207,7 @@
     },
     "/server/version-check": {
       "get": {
+        "description": "Retrieve information about the last time the version check ran.",
         "operationId": "getVersionCheck",
         "parameters": [],
         "responses": {
@@ -7057,15 +7233,16 @@
             "api_key": []
           }
         ],
+        "summary": "Get version check status",
         "tags": [
           "Server"
         ],
-        "x-immich-permission": "server.versionCheck",
-        "description": "This endpoint requires the `server.versionCheck` permission."
+        "x-immich-permission": "server.versionCheck"
       }
     },
     "/server/version-history": {
       "get": {
+        "description": "Retrieve a list of past versions the server has been on.",
         "operationId": "getVersionHistory",
         "parameters": [],
         "responses": {
@@ -7083,6 +7260,7 @@
             "description": ""
           }
         },
+        "summary": "Get version history",
         "tags": [
           "Server"
         ]
@@ -7090,6 +7268,7 @@
     },
     "/sessions": {
       "delete": {
+        "description": "Delete all sessions for the user. This will not delete the current session.",
         "operationId": "deleteAllSessions",
         "parameters": [],
         "responses": {
@@ -7108,13 +7287,14 @@
             "api_key": []
           }
         ],
+        "summary": "Delete all sessions",
         "tags": [
           "Sessions"
         ],
-        "x-immich-permission": "session.delete",
-        "description": "This endpoint requires the `session.delete` permission."
+        "x-immich-permission": "session.delete"
       },
       "get": {
+        "description": "Retrieve a list of sessions for the user.",
         "operationId": "getSessions",
         "parameters": [],
         "responses": {
@@ -7143,13 +7323,14 @@
             "api_key": []
           }
         ],
+        "summary": "Retrieve sessions",
         "tags": [
           "Sessions"
         ],
-        "x-immich-permission": "session.read",
-        "description": "This endpoint requires the `session.read` permission."
+        "x-immich-permission": "session.read"
       },
       "post": {
+        "description": "Create a session as a child to the current session. This endpoint is used for casting.",
         "operationId": "createSession",
         "parameters": [],
         "requestBody": {
@@ -7185,15 +7366,16 @@
             "api_key": []
           }
         ],
+        "summary": "Create a session",
         "tags": [
           "Sessions"
         ],
-        "x-immich-permission": "session.create",
-        "description": "This endpoint requires the `session.create` permission."
+        "x-immich-permission": "session.create"
       }
     },
     "/sessions/{id}": {
       "delete": {
+        "description": "Delete a specific session by id.",
         "operationId": "deleteSession",
         "parameters": [
           {
@@ -7222,13 +7404,14 @@
             "api_key": []
           }
         ],
+        "summary": "Delete a session",
         "tags": [
           "Sessions"
         ],
-        "x-immich-permission": "session.delete",
-        "description": "This endpoint requires the `session.delete` permission."
+        "x-immich-permission": "session.delete"
       },
       "put": {
+        "description": "Update a specific session identified by id.",
         "operationId": "updateSession",
         "parameters": [
           {
@@ -7274,15 +7457,16 @@
             "api_key": []
           }
         ],
+        "summary": "Update a session",
         "tags": [
           "Sessions"
         ],
-        "x-immich-permission": "session.update",
-        "description": "This endpoint requires the `session.update` permission."
+        "x-immich-permission": "session.update"
       }
     },
     "/sessions/{id}/lock": {
       "post": {
+        "description": "Lock a specific session by id.",
         "operationId": "lockSession",
         "parameters": [
           {
@@ -7311,15 +7495,16 @@
             "api_key": []
           }
         ],
+        "summary": "Lock a session",
         "tags": [
           "Sessions"
         ],
-        "x-immich-permission": "session.lock",
-        "description": "This endpoint requires the `session.lock` permission."
+        "x-immich-permission": "session.lock"
       }
     },
     "/shared-links": {
       "get": {
+        "description": "Retrieve a list of all shared links.",
         "operationId": "getAllSharedLinks",
         "parameters": [
           {
@@ -7358,13 +7543,14 @@
             "api_key": []
           }
         ],
+        "summary": "Retrieve all shared links",
         "tags": [
-          "Shared Links"
+          "Shared links"
         ],
-        "x-immich-permission": "sharedLink.read",
-        "description": "This endpoint requires the `sharedLink.read` permission."
+        "x-immich-permission": "sharedLink.read"
       },
       "post": {
+        "description": "Create a new shared link.",
         "operationId": "createSharedLink",
         "parameters": [],
         "requestBody": {
@@ -7400,17 +7586,26 @@
             "api_key": []
           }
         ],
+        "summary": "Create a shared link",
         "tags": [
-          "Shared Links"
+          "Shared links"
         ],
-        "x-immich-permission": "sharedLink.create",
-        "description": "This endpoint requires the `sharedLink.create` permission."
+        "x-immich-permission": "sharedLink.create"
       }
     },
     "/shared-links/me": {
       "get": {
+        "description": "Retrieve the current shared link associated with authentication method.",
         "operationId": "getMySharedLink",
         "parameters": [
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
           {
             "name": "password",
             "required": false,
@@ -7421,23 +7616,15 @@
             }
           },
           {
-            "name": "token",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "key",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
             "name": "slug",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "token",
             "required": false,
             "in": "query",
             "schema": {
@@ -7468,13 +7655,15 @@
             "api_key": []
           }
         ],
+        "summary": "Retrieve current shared link",
         "tags": [
-          "Shared Links"
+          "Shared links"
         ]
       }
     },
     "/shared-links/{id}": {
       "delete": {
+        "description": "Delete a specific shared link by its ID.",
         "operationId": "removeSharedLink",
         "parameters": [
           {
@@ -7503,13 +7692,14 @@
             "api_key": []
           }
         ],
+        "summary": "Delete a shared link",
         "tags": [
-          "Shared Links"
+          "Shared links"
         ],
-        "x-immich-permission": "sharedLink.delete",
-        "description": "This endpoint requires the `sharedLink.delete` permission."
+        "x-immich-permission": "sharedLink.delete"
       },
       "get": {
+        "description": "Retrieve a specific shared link by its ID.",
         "operationId": "getSharedLinkById",
         "parameters": [
           {
@@ -7545,13 +7735,14 @@
             "api_key": []
           }
         ],
+        "summary": "Retrieve a shared link",
         "tags": [
-          "Shared Links"
+          "Shared links"
         ],
-        "x-immich-permission": "sharedLink.read",
-        "description": "This endpoint requires the `sharedLink.read` permission."
+        "x-immich-permission": "sharedLink.read"
       },
       "patch": {
+        "description": "Update an existing shared link by its ID.",
         "operationId": "updateSharedLink",
         "parameters": [
           {
@@ -7597,15 +7788,16 @@
             "api_key": []
           }
         ],
+        "summary": "Update a shared link",
         "tags": [
-          "Shared Links"
+          "Shared links"
         ],
-        "x-immich-permission": "sharedLink.update",
-        "description": "This endpoint requires the `sharedLink.update` permission."
+        "x-immich-permission": "sharedLink.update"
       }
     },
     "/shared-links/{id}/assets": {
       "delete": {
+        "description": "Remove assets from a specific shared link by its ID. This endpoint is only relevant for shared link of type individual.",
         "operationId": "removeSharedLinkAssets",
         "parameters": [
           {
@@ -7670,11 +7862,13 @@
             "api_key": []
           }
         ],
+        "summary": "Remove assets from a shared link",
         "tags": [
-          "Shared Links"
+          "Shared links"
         ]
       },
       "put": {
+        "description": "Add assets to a specific shared link by its ID. This endpoint is only relevant for shared link of type individual.",
         "operationId": "addSharedLinkAssets",
         "parameters": [
           {
@@ -7739,13 +7933,15 @@
             "api_key": []
           }
         ],
+        "summary": "Add assets to a shared link",
         "tags": [
-          "Shared Links"
+          "Shared links"
         ]
       }
     },
     "/stacks": {
       "delete": {
+        "description": "Delete multiple stacks by providing a list of stack IDs.",
         "operationId": "deleteStacks",
         "parameters": [],
         "requestBody": {
@@ -7774,13 +7970,14 @@
             "api_key": []
           }
         ],
+        "summary": "Delete stacks",
         "tags": [
           "Stacks"
         ],
-        "x-immich-permission": "stack.delete",
-        "description": "This endpoint requires the `stack.delete` permission."
+        "x-immich-permission": "stack.delete"
       },
       "get": {
+        "description": "Retrieve a list of stacks.",
         "operationId": "searchStacks",
         "parameters": [
           {
@@ -7819,13 +8016,14 @@
             "api_key": []
           }
         ],
+        "summary": "Retrieve stacks",
         "tags": [
           "Stacks"
         ],
-        "x-immich-permission": "stack.read",
-        "description": "This endpoint requires the `stack.read` permission."
+        "x-immich-permission": "stack.read"
       },
       "post": {
+        "description": "Create a new stack by providing a name and a list of asset IDs to include in the stack. If any of the provided asset IDs are primary assets of an existing stack, the existing stack will be merged into the newly created stack.",
         "operationId": "createStack",
         "parameters": [],
         "requestBody": {
@@ -7861,15 +8059,16 @@
             "api_key": []
           }
         ],
+        "summary": "Create a stack",
         "tags": [
           "Stacks"
         ],
-        "x-immich-permission": "stack.create",
-        "description": "This endpoint requires the `stack.create` permission."
+        "x-immich-permission": "stack.create"
       }
     },
     "/stacks/{id}": {
       "delete": {
+        "description": "Delete a specific stack by its ID.",
         "operationId": "deleteStack",
         "parameters": [
           {
@@ -7898,13 +8097,14 @@
             "api_key": []
           }
         ],
+        "summary": "Delete a stack",
         "tags": [
           "Stacks"
         ],
-        "x-immich-permission": "stack.delete",
-        "description": "This endpoint requires the `stack.delete` permission."
+        "x-immich-permission": "stack.delete"
       },
       "get": {
+        "description": "Retrieve a specific stack by its ID.",
         "operationId": "getStack",
         "parameters": [
           {
@@ -7940,13 +8140,14 @@
             "api_key": []
           }
         ],
+        "summary": "Retrieve a stack",
         "tags": [
           "Stacks"
         ],
-        "x-immich-permission": "stack.read",
-        "description": "This endpoint requires the `stack.read` permission."
+        "x-immich-permission": "stack.read"
       },
       "put": {
+        "description": "Update an existing stack by its ID.",
         "operationId": "updateStack",
         "parameters": [
           {
@@ -7992,15 +8193,16 @@
             "api_key": []
           }
         ],
+        "summary": "Update a stack",
         "tags": [
           "Stacks"
         ],
-        "x-immich-permission": "stack.update",
-        "description": "This endpoint requires the `stack.update` permission."
+        "x-immich-permission": "stack.update"
       }
     },
     "/stacks/{id}/assets/{assetId}": {
       "delete": {
+        "description": "Remove a specific asset from a stack by providing the stack ID and asset ID.",
         "operationId": "removeAssetFromStack",
         "parameters": [
           {
@@ -8038,15 +8240,16 @@
             "api_key": []
           }
         ],
+        "summary": "Remove an asset from a stack",
         "tags": [
           "Stacks"
         ],
-        "x-immich-permission": "stack.update",
-        "description": "This endpoint requires the `stack.update` permission."
+        "x-immich-permission": "stack.update"
       }
     },
     "/sync/ack": {
       "delete": {
+        "description": "Delete specific synchronization acknowledgments.",
         "operationId": "deleteSyncAck",
         "parameters": [],
         "requestBody": {
@@ -8075,13 +8278,14 @@
             "api_key": []
           }
         ],
+        "summary": "Delete acknowledgements",
         "tags": [
           "Sync"
         ],
-        "x-immich-permission": "syncCheckpoint.delete",
-        "description": "This endpoint requires the `syncCheckpoint.delete` permission."
+        "x-immich-permission": "syncCheckpoint.delete"
       },
       "get": {
+        "description": "Retrieve the synchronization acknowledgments for the current session.",
         "operationId": "getSyncAck",
         "parameters": [],
         "responses": {
@@ -8110,13 +8314,14 @@
             "api_key": []
           }
         ],
+        "summary": "Retrieve acknowledgements",
         "tags": [
           "Sync"
         ],
-        "x-immich-permission": "syncCheckpoint.read",
-        "description": "This endpoint requires the `syncCheckpoint.read` permission."
+        "x-immich-permission": "syncCheckpoint.read"
       },
       "post": {
+        "description": "Send a list of synchronization acknowledgements to confirm that the latest changes have been received.",
         "operationId": "sendSyncAck",
         "parameters": [],
         "requestBody": {
@@ -8145,15 +8350,17 @@
             "api_key": []
           }
         ],
+        "summary": "Acknowledge changes",
         "tags": [
           "Sync"
         ],
-        "x-immich-permission": "syncCheckpoint.update",
-        "description": "This endpoint requires the `syncCheckpoint.update` permission."
+        "x-immich-permission": "syncCheckpoint.update"
       }
     },
     "/sync/delta-sync": {
       "post": {
+        "deprecated": true,
+        "description": "This property was deprecated in v2.0.0. Retrieve changed assets since the last sync for the authenticated user.",
         "operationId": "getDeltaSync",
         "parameters": [],
         "requestBody": {
@@ -8189,13 +8396,20 @@
             "api_key": []
           }
         ],
+        "summary": "Get delta sync for user",
         "tags": [
-          "Sync"
-        ]
+          "Sync",
+          "Deprecated"
+        ],
+        "x-immich-lifecycle": {
+          "deprecatedAt": "v2.0.0"
+        }
       }
     },
     "/sync/full-sync": {
       "post": {
+        "deprecated": true,
+        "description": "This property was deprecated in v2.0.0. Retrieve all assets for a full synchronization for the authenticated user.",
         "operationId": "getFullSyncForUser",
         "parameters": [],
         "requestBody": {
@@ -8234,13 +8448,19 @@
             "api_key": []
           }
         ],
+        "summary": "Get full sync for user",
         "tags": [
-          "Sync"
-        ]
+          "Sync",
+          "Deprecated"
+        ],
+        "x-immich-lifecycle": {
+          "deprecatedAt": "v2.0.0"
+        }
       }
     },
     "/sync/stream": {
       "post": {
+        "description": "Retrieve a JSON lines streamed response of changes for synchronization. This endpoint is used by the mobile app to efficiently stay up to date with changes.",
         "operationId": "getSyncStream",
         "parameters": [],
         "requestBody": {
@@ -8269,15 +8489,16 @@
             "api_key": []
           }
         ],
+        "summary": "Stream sync changes",
         "tags": [
           "Sync"
         ],
-        "x-immich-permission": "sync.stream",
-        "description": "This endpoint requires the `sync.stream` permission."
+        "x-immich-permission": "sync.stream"
       }
     },
     "/system-config": {
       "get": {
+        "description": "Retrieve the current system configuration.",
         "operationId": "getConfig",
         "parameters": [],
         "responses": {
@@ -8303,14 +8524,15 @@
             "api_key": []
           }
         ],
+        "summary": "Get system configuration",
         "tags": [
-          "System Config"
+          "System config"
         ],
         "x-immich-admin-only": true,
-        "x-immich-permission": "systemConfig.read",
-        "description": "This endpoint is an admin-only route, and requires the `systemConfig.read` permission."
+        "x-immich-permission": "systemConfig.read"
       },
       "put": {
+        "description": "Update the system configuration with a new system configuration.",
         "operationId": "updateConfig",
         "parameters": [],
         "requestBody": {
@@ -8346,16 +8568,17 @@
             "api_key": []
           }
         ],
+        "summary": "Update system configuration",
         "tags": [
-          "System Config"
+          "System config"
         ],
         "x-immich-admin-only": true,
-        "x-immich-permission": "systemConfig.update",
-        "description": "This endpoint is an admin-only route, and requires the `systemConfig.update` permission."
+        "x-immich-permission": "systemConfig.update"
       }
     },
     "/system-config/defaults": {
       "get": {
+        "description": "Retrieve the default values for the system configuration.",
         "operationId": "getConfigDefaults",
         "parameters": [],
         "responses": {
@@ -8381,16 +8604,17 @@
             "api_key": []
           }
         ],
+        "summary": "Get system configuration defaults",
         "tags": [
-          "System Config"
+          "System config"
         ],
         "x-immich-admin-only": true,
-        "x-immich-permission": "systemConfig.read",
-        "description": "This endpoint is an admin-only route, and requires the `systemConfig.read` permission."
+        "x-immich-permission": "systemConfig.read"
       }
     },
     "/system-config/storage-template-options": {
       "get": {
+        "description": "Retrieve exemplary storage template options.",
         "operationId": "getStorageTemplateOptions",
         "parameters": [],
         "responses": {
@@ -8416,16 +8640,17 @@
             "api_key": []
           }
         ],
+        "summary": "Get storage template options",
         "tags": [
-          "System Config"
+          "System config"
         ],
         "x-immich-admin-only": true,
-        "x-immich-permission": "systemConfig.read",
-        "description": "This endpoint is an admin-only route, and requires the `systemConfig.read` permission."
+        "x-immich-permission": "systemConfig.read"
       }
     },
     "/system-metadata/admin-onboarding": {
       "get": {
+        "description": "Retrieve the current admin onboarding status.",
         "operationId": "getAdminOnboarding",
         "parameters": [],
         "responses": {
@@ -8451,14 +8676,15 @@
             "api_key": []
           }
         ],
+        "summary": "Retrieve admin onboarding",
         "tags": [
-          "System Metadata"
+          "System metadata"
         ],
         "x-immich-admin-only": true,
-        "x-immich-permission": "systemMetadata.read",
-        "description": "This endpoint is an admin-only route, and requires the `systemMetadata.read` permission."
+        "x-immich-permission": "systemMetadata.read"
       },
       "post": {
+        "description": "Update the admin onboarding status.",
         "operationId": "updateAdminOnboarding",
         "parameters": [],
         "requestBody": {
@@ -8487,16 +8713,17 @@
             "api_key": []
           }
         ],
+        "summary": "Update admin onboarding",
         "tags": [
-          "System Metadata"
+          "System metadata"
         ],
         "x-immich-admin-only": true,
-        "x-immich-permission": "systemMetadata.update",
-        "description": "This endpoint is an admin-only route, and requires the `systemMetadata.update` permission."
+        "x-immich-permission": "systemMetadata.update"
       }
     },
     "/system-metadata/reverse-geocoding-state": {
       "get": {
+        "description": "Retrieve the current state of the reverse geocoding import.",
         "operationId": "getReverseGeocodingState",
         "parameters": [],
         "responses": {
@@ -8522,16 +8749,17 @@
             "api_key": []
           }
         ],
+        "summary": "Retrieve reverse geocoding state",
         "tags": [
-          "System Metadata"
+          "System metadata"
         ],
         "x-immich-admin-only": true,
-        "x-immich-permission": "systemMetadata.read",
-        "description": "This endpoint is an admin-only route, and requires the `systemMetadata.read` permission."
+        "x-immich-permission": "systemMetadata.read"
       }
     },
     "/system-metadata/version-check-state": {
       "get": {
+        "description": "Retrieve the current state of the version check process.",
         "operationId": "getVersionCheckState",
         "parameters": [],
         "responses": {
@@ -8557,16 +8785,17 @@
             "api_key": []
           }
         ],
+        "summary": "Retrieve version check state",
         "tags": [
-          "System Metadata"
+          "System metadata"
         ],
         "x-immich-admin-only": true,
-        "x-immich-permission": "systemMetadata.read",
-        "description": "This endpoint is an admin-only route, and requires the `systemMetadata.read` permission."
+        "x-immich-permission": "systemMetadata.read"
       }
     },
     "/tags": {
       "get": {
+        "description": "Retrieve a list of all tags.",
         "operationId": "getAllTags",
         "parameters": [],
         "responses": {
@@ -8595,13 +8824,14 @@
             "api_key": []
           }
         ],
+        "summary": "Retrieve tags",
         "tags": [
           "Tags"
         ],
-        "x-immich-permission": "tag.read",
-        "description": "This endpoint requires the `tag.read` permission."
+        "x-immich-permission": "tag.read"
       },
       "post": {
+        "description": "Create a new tag by providing a name and optional color.",
         "operationId": "createTag",
         "parameters": [],
         "requestBody": {
@@ -8637,13 +8867,14 @@
             "api_key": []
           }
         ],
+        "summary": "Create a tag",
         "tags": [
           "Tags"
         ],
-        "x-immich-permission": "tag.create",
-        "description": "This endpoint requires the `tag.create` permission."
+        "x-immich-permission": "tag.create"
       },
       "put": {
+        "description": "Create or update multiple tags in a single request.",
         "operationId": "upsertTags",
         "parameters": [],
         "requestBody": {
@@ -8682,15 +8913,16 @@
             "api_key": []
           }
         ],
+        "summary": "Upsert tags",
         "tags": [
           "Tags"
         ],
-        "x-immich-permission": "tag.create",
-        "description": "This endpoint requires the `tag.create` permission."
+        "x-immich-permission": "tag.create"
       }
     },
     "/tags/assets": {
       "put": {
+        "description": "Add multiple tags to multiple assets in a single request.",
         "operationId": "bulkTagAssets",
         "parameters": [],
         "requestBody": {
@@ -8726,15 +8958,16 @@
             "api_key": []
           }
         ],
+        "summary": "Tag assets",
         "tags": [
           "Tags"
         ],
-        "x-immich-permission": "tag.asset",
-        "description": "This endpoint requires the `tag.asset` permission."
+        "x-immich-permission": "tag.asset"
       }
     },
     "/tags/{id}": {
       "delete": {
+        "description": "Delete a specific tag by its ID.",
         "operationId": "deleteTag",
         "parameters": [
           {
@@ -8763,13 +8996,14 @@
             "api_key": []
           }
         ],
+        "summary": "Delete a tag",
         "tags": [
           "Tags"
         ],
-        "x-immich-permission": "tag.delete",
-        "description": "This endpoint requires the `tag.delete` permission."
+        "x-immich-permission": "tag.delete"
       },
       "get": {
+        "description": "Retrieve a specific tag by its ID.",
         "operationId": "getTagById",
         "parameters": [
           {
@@ -8805,13 +9039,14 @@
             "api_key": []
           }
         ],
+        "summary": "Retrieve a tag",
         "tags": [
           "Tags"
         ],
-        "x-immich-permission": "tag.read",
-        "description": "This endpoint requires the `tag.read` permission."
+        "x-immich-permission": "tag.read"
       },
       "put": {
+        "description": "Update an existing tag identified by its ID.",
         "operationId": "updateTag",
         "parameters": [
           {
@@ -8857,15 +9092,16 @@
             "api_key": []
           }
         ],
+        "summary": "Update a tag",
         "tags": [
           "Tags"
         ],
-        "x-immich-permission": "tag.update",
-        "description": "This endpoint requires the `tag.update` permission."
+        "x-immich-permission": "tag.update"
       }
     },
     "/tags/{id}/assets": {
       "delete": {
+        "description": "Remove a tag from all the specified assets.",
         "operationId": "untagAssets",
         "parameters": [
           {
@@ -8914,13 +9150,14 @@
             "api_key": []
           }
         ],
+        "summary": "Untag assets",
         "tags": [
           "Tags"
         ],
-        "x-immich-permission": "tag.asset",
-        "description": "This endpoint requires the `tag.asset` permission."
+        "x-immich-permission": "tag.asset"
       },
       "put": {
+        "description": "Add a tag to all the specified assets.",
         "operationId": "tagAssets",
         "parameters": [
           {
@@ -8969,15 +9206,16 @@
             "api_key": []
           }
         ],
+        "summary": "Tag assets",
         "tags": [
           "Tags"
         ],
-        "x-immich-permission": "tag.asset",
-        "description": "This endpoint requires the `tag.asset` permission."
+        "x-immich-permission": "tag.asset"
       }
     },
     "/timeline/bucket": {
       "get": {
+        "description": "Retrieve a string of all asset ids in a given time bucket.",
         "operationId": "getTimeBucket",
         "parameters": [
           {
@@ -9133,15 +9371,16 @@
             "api_key": []
           }
         ],
+        "summary": "Get time bucket",
         "tags": [
           "Timeline"
         ],
-        "x-immich-permission": "asset.read",
-        "description": "This endpoint requires the `asset.read` permission."
+        "x-immich-permission": "asset.read"
       }
     },
     "/timeline/buckets": {
       "get": {
+        "description": "Retrieve a list of all minimal time buckets.",
         "operationId": "getTimeBuckets",
         "parameters": [
           {
@@ -9290,15 +9529,16 @@
             "api_key": []
           }
         ],
+        "summary": "Get time buckets",
         "tags": [
           "Timeline"
         ],
-        "x-immich-permission": "asset.read",
-        "description": "This endpoint requires the `asset.read` permission."
+        "x-immich-permission": "asset.read"
       }
     },
     "/trash/empty": {
       "post": {
+        "description": "Permanently delete all items in the trash.",
         "operationId": "emptyTrash",
         "parameters": [],
         "responses": {
@@ -9324,15 +9564,16 @@
             "api_key": []
           }
         ],
+        "summary": "Empty trash",
         "tags": [
           "Trash"
         ],
-        "x-immich-permission": "asset.delete",
-        "description": "This endpoint requires the `asset.delete` permission."
+        "x-immich-permission": "asset.delete"
       }
     },
     "/trash/restore": {
       "post": {
+        "description": "Restore all items in the trash.",
         "operationId": "restoreTrash",
         "parameters": [],
         "responses": {
@@ -9358,15 +9599,16 @@
             "api_key": []
           }
         ],
+        "summary": "Restore trash",
         "tags": [
           "Trash"
         ],
-        "x-immich-permission": "asset.delete",
-        "description": "This endpoint requires the `asset.delete` permission."
+        "x-immich-permission": "asset.delete"
       }
     },
     "/trash/restore/assets": {
       "post": {
+        "description": "Restore specific assets from the trash.",
         "operationId": "restoreAssets",
         "parameters": [],
         "requestBody": {
@@ -9402,15 +9644,16 @@
             "api_key": []
           }
         ],
+        "summary": "Restore assets",
         "tags": [
           "Trash"
         ],
-        "x-immich-permission": "asset.delete",
-        "description": "This endpoint requires the `asset.delete` permission."
+        "x-immich-permission": "asset.delete"
       }
     },
     "/users": {
       "get": {
+        "description": "Retrieve a list of all users on the server.",
         "operationId": "searchUsers",
         "parameters": [],
         "responses": {
@@ -9439,15 +9682,16 @@
             "api_key": []
           }
         ],
+        "summary": "Get all users",
         "tags": [
           "Users"
         ],
-        "x-immich-permission": "user.read",
-        "description": "This endpoint requires the `user.read` permission."
+        "x-immich-permission": "user.read"
       }
     },
     "/users/me": {
       "get": {
+        "description": "Retrieve information about the user making the API request.",
         "operationId": "getMyUser",
         "parameters": [],
         "responses": {
@@ -9473,13 +9717,14 @@
             "api_key": []
           }
         ],
+        "summary": "Get current user",
         "tags": [
           "Users"
         ],
-        "x-immich-permission": "user.read",
-        "description": "This endpoint requires the `user.read` permission."
+        "x-immich-permission": "user.read"
       },
       "put": {
+        "description": "Update the current user making teh API request.",
         "operationId": "updateMyUser",
         "parameters": [],
         "requestBody": {
@@ -9515,15 +9760,16 @@
             "api_key": []
           }
         ],
+        "summary": "Update current user",
         "tags": [
           "Users"
         ],
-        "x-immich-permission": "user.update",
-        "description": "This endpoint requires the `user.update` permission."
+        "x-immich-permission": "user.update"
       }
     },
     "/users/me/license": {
       "delete": {
+        "description": "Delete the registered product key for the current user.",
         "operationId": "deleteUserLicense",
         "parameters": [],
         "responses": {
@@ -9542,13 +9788,14 @@
             "api_key": []
           }
         ],
+        "summary": "Delete user product key",
         "tags": [
           "Users"
         ],
-        "x-immich-permission": "userLicense.delete",
-        "description": "This endpoint requires the `userLicense.delete` permission."
+        "x-immich-permission": "userLicense.delete"
       },
       "get": {
+        "description": "Retrieve information about whether the current user has a registered product key.",
         "operationId": "getUserLicense",
         "parameters": [],
         "responses": {
@@ -9574,13 +9821,14 @@
             "api_key": []
           }
         ],
+        "summary": "Retrieve user product key",
         "tags": [
           "Users"
         ],
-        "x-immich-permission": "userLicense.read",
-        "description": "This endpoint requires the `userLicense.read` permission."
+        "x-immich-permission": "userLicense.read"
       },
       "put": {
+        "description": "Register a product key for the current user.",
         "operationId": "setUserLicense",
         "parameters": [],
         "requestBody": {
@@ -9616,15 +9864,16 @@
             "api_key": []
           }
         ],
+        "summary": "Set user product key",
         "tags": [
           "Users"
         ],
-        "x-immich-permission": "userLicense.update",
-        "description": "This endpoint requires the `userLicense.update` permission."
+        "x-immich-permission": "userLicense.update"
       }
     },
     "/users/me/onboarding": {
       "delete": {
+        "description": "Delete the onboarding status of the current user.",
         "operationId": "deleteUserOnboarding",
         "parameters": [],
         "responses": {
@@ -9643,13 +9892,14 @@
             "api_key": []
           }
         ],
+        "summary": "Delete user onboarding",
         "tags": [
           "Users"
         ],
-        "x-immich-permission": "userOnboarding.delete",
-        "description": "This endpoint requires the `userOnboarding.delete` permission."
+        "x-immich-permission": "userOnboarding.delete"
       },
       "get": {
+        "description": "Retrieve the onboarding status of the current user.",
         "operationId": "getUserOnboarding",
         "parameters": [],
         "responses": {
@@ -9675,13 +9925,14 @@
             "api_key": []
           }
         ],
+        "summary": "Retrieve user onboarding",
         "tags": [
           "Users"
         ],
-        "x-immich-permission": "userOnboarding.read",
-        "description": "This endpoint requires the `userOnboarding.read` permission."
+        "x-immich-permission": "userOnboarding.read"
       },
       "put": {
+        "description": "Update the onboarding status of the current user.",
         "operationId": "setUserOnboarding",
         "parameters": [],
         "requestBody": {
@@ -9717,15 +9968,16 @@
             "api_key": []
           }
         ],
+        "summary": "Update user onboarding",
         "tags": [
           "Users"
         ],
-        "x-immich-permission": "userOnboarding.update",
-        "description": "This endpoint requires the `userOnboarding.update` permission."
+        "x-immich-permission": "userOnboarding.update"
       }
     },
     "/users/me/preferences": {
       "get": {
+        "description": "Retrieve the preferences for the current user.",
         "operationId": "getMyPreferences",
         "parameters": [],
         "responses": {
@@ -9751,13 +10003,14 @@
             "api_key": []
           }
         ],
+        "summary": "Get my preferences",
         "tags": [
           "Users"
         ],
-        "x-immich-permission": "userPreference.read",
-        "description": "This endpoint requires the `userPreference.read` permission."
+        "x-immich-permission": "userPreference.read"
       },
       "put": {
+        "description": "Update the preferences of the current user.",
         "operationId": "updateMyPreferences",
         "parameters": [],
         "requestBody": {
@@ -9793,15 +10046,16 @@
             "api_key": []
           }
         ],
+        "summary": "Update my preferences",
         "tags": [
           "Users"
         ],
-        "x-immich-permission": "userPreference.update",
-        "description": "This endpoint requires the `userPreference.update` permission."
+        "x-immich-permission": "userPreference.update"
       }
     },
     "/users/profile-image": {
       "delete": {
+        "description": "Delete the profile image of the current user.",
         "operationId": "deleteProfileImage",
         "parameters": [],
         "responses": {
@@ -9820,13 +10074,14 @@
             "api_key": []
           }
         ],
+        "summary": "Delete user profile image",
         "tags": [
           "Users"
         ],
-        "x-immich-permission": "userProfileImage.delete",
-        "description": "This endpoint requires the `userProfileImage.delete` permission."
+        "x-immich-permission": "userProfileImage.delete"
       },
       "post": {
+        "description": "Upload and set a new profile image for the current user.",
         "operationId": "createProfileImage",
         "parameters": [],
         "requestBody": {
@@ -9863,15 +10118,16 @@
             "api_key": []
           }
         ],
+        "summary": "Create user profile image",
         "tags": [
           "Users"
         ],
-        "x-immich-permission": "userProfileImage.update",
-        "description": "This endpoint requires the `userProfileImage.update` permission."
+        "x-immich-permission": "userProfileImage.update"
       }
     },
     "/users/{id}": {
       "get": {
+        "description": "Retrieve a specific user by their ID.",
         "operationId": "getUser",
         "parameters": [
           {
@@ -9907,15 +10163,16 @@
             "api_key": []
           }
         ],
+        "summary": "Retrieve a user",
         "tags": [
           "Users"
         ],
-        "x-immich-permission": "user.read",
-        "description": "This endpoint requires the `user.read` permission."
+        "x-immich-permission": "user.read"
       }
     },
     "/users/{id}/profile-image": {
       "get": {
+        "description": "Retrieve the profile image file for a user.",
         "operationId": "getProfileImage",
         "parameters": [
           {
@@ -9952,15 +10209,16 @@
             "api_key": []
           }
         ],
+        "summary": "Retrieve user profile image",
         "tags": [
           "Users"
         ],
-        "x-immich-permission": "userProfileImage.read",
-        "description": "This endpoint requires the `userProfileImage.read` permission."
+        "x-immich-permission": "userProfileImage.read"
       }
     },
     "/view/folder": {
       "get": {
+        "description": "Retrieve assets that are children of a specific folder.",
         "operationId": "getAssetsByOriginalPath",
         "parameters": [
           {
@@ -9998,13 +10256,15 @@
             "api_key": []
           }
         ],
+        "summary": "Retrieve assets by original path",
         "tags": [
-          "View"
+          "Views"
         ]
       }
     },
     "/view/folder/unique-paths": {
       "get": {
+        "description": "Retrieve a list of unique folder paths from asset original paths.",
         "operationId": "getUniqueOriginalPaths",
         "parameters": [],
         "responses": {
@@ -10033,8 +10293,9 @@
             "api_key": []
           }
         ],
+        "summary": "Retrieve unique paths",
         "tags": [
-          "View"
+          "Views"
         ]
       }
     }
@@ -10045,7 +10306,136 @@
     "version": "2.2.3",
     "contact": {}
   },
-  "tags": [],
+  "tags": [
+    {
+      "name": "Activities",
+      "description": "An activity is a like or a comment made by a user on an asset or album."
+    },
+    {
+      "name": "Albums",
+      "description": "An album is a collection of assets that can be shared with other users or via shared links."
+    },
+    {
+      "name": "API keys",
+      "description": "An api key can be used to programmatically access the Immich API."
+    },
+    {
+      "name": "Assets",
+      "description": "An asset is an image or video that has been uploaded to Immich."
+    },
+    {
+      "name": "Authentication",
+      "description": "Endpoints related to user authentication, including OAuth."
+    },
+    {
+      "name": "Authentication (admin)",
+      "description": "Administrative endpoints related to authentication."
+    },
+    {
+      "name": "Deprecated",
+      "description": "Deprecated endpoints that are planned for removal in the next major release."
+    },
+    {
+      "name": "Download",
+      "description": "Endpoints for downloading assets or collections of assets."
+    },
+    {
+      "name": "Duplicates",
+      "description": "Endpoints for managing and identifying duplicate assets."
+    },
+    {
+      "name": "Faces",
+      "description": "A face is a detected human face within an asset, which can be associated with a person. Faces are normally detected via machine learning, but can also be created via manually."
+    },
+    {
+      "name": "Jobs",
+      "description": "Queues and background jobs are used for processing tasks asynchronously. Queues can be paused and resumed as needed."
+    },
+    {
+      "name": "Libraries",
+      "description": "An external library is made up of input file paths or expressions that are scanned for asset files. Discovered files are automatically imported. Assets much be unique within a library, but can be duplicated across libraries. Each user has a default upload library, and can have one or more external libraries."
+    },
+    {
+      "name": "Map",
+      "description": "Map endpoints include supplemental functionality related to geolocation, such as reverse geocoding and retrieving map markers for assets with geolocation data."
+    },
+    {
+      "name": "Memories",
+      "description": "A memory is a specialized collection of assets with dedicated viewing implementations in the web and mobile clients. A memory includes fields related to visibility and are automatically generated per user via a background job."
+    },
+    {
+      "name": "Notifications",
+      "description": "A notification is a specialized message sent to users to inform them of important events. Currently, these notifications are only shown in the Immich web application."
+    },
+    {
+      "name": "Notifications (admin)",
+      "description": "Notification administrative endpoints."
+    },
+    {
+      "name": "Partners",
+      "description": "A partner is a link with another user that allows sharing of assets between two users."
+    },
+    {
+      "name": "People",
+      "description": "A person is a collection of faces, which can be favorited and named. A person can also be merged into another person. People are automatically created via the face recognition job."
+    },
+    {
+      "name": "Search",
+      "description": "Endpoints related to searching assets via text, smart search, optical character recognition (OCR), and other filters like person, album, and other metadata. Search endpoints usually support pagination and sorting."
+    },
+    {
+      "name": "Server",
+      "description": "Information about the current server deployment, including version and build information, available features, supported media types, and more."
+    },
+    {
+      "name": "Sessions",
+      "description": "A session represents an authenticated login session for a user. Sessions also appear in the web application as \"Authorized devices\"."
+    },
+    {
+      "name": "Shared links",
+      "description": "A shared link is a public url that provides access to a specific album, asset, or collection of assets. A shared link can be protected with a password, include a specific slug, allow or disallow downloads, and optionally include an expiration date."
+    },
+    {
+      "name": "Stacks",
+      "description": "A stack is a group of related assets. One asset is the \"primary\" asset, and the rest are \"child\" assets. On the main timeline, stack parents are included by default, while child assets are hidden."
+    },
+    {
+      "name": "Sync",
+      "description": "A collection of endpoints for the new mobile synchronization implementation."
+    },
+    {
+      "name": "System config",
+      "description": "Endpoints to view, modify, and validate the system configuration settings."
+    },
+    {
+      "name": "System metadata",
+      "description": "Endpoints to view, modify, and validate the system metadata, which includes information about things like admin onboarding status."
+    },
+    {
+      "name": "Tags",
+      "description": "A tag is a user-defined label that can be applied to assets for organizational purposes. Tags can also be hierarchical, allowing for parent-child relationships between tags."
+    },
+    {
+      "name": "Timeline",
+      "description": "Specialized endpoints related to the timeline implementation used in the web application. External applications or tools should not use or rely on these endpoints, as they are subject to change without notice."
+    },
+    {
+      "name": "Trash",
+      "description": "Endpoints for managing the trash can, which includes assets that have been discarded. Items in the trash are automatically deleted after a configured amount of time."
+    },
+    {
+      "name": "Users (admin)",
+      "description": "Administrative endpoints for managing users, including creating, updating, deleting, and restoring users. Also includes endpoints for resetting passwords and PIN codes."
+    },
+    {
+      "name": "Users",
+      "description": "Endpoints for viewing and updating the current users, including product key information, profile picture data, onboarding progress, and more."
+    },
+    {
+      "name": "Views",
+      "description": "Endpoints for specialized views, such as the folder view."
+    }
+  ],
   "servers": [
     {
       "url": "/api"

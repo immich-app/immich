@@ -16,7 +16,9 @@ class MemoriesApi {
 
   final ApiClient apiClient;
 
-  /// This endpoint requires the `memoryAsset.create` permission.
+  /// Add assets to a memory
+  ///
+  /// Add a list of asset IDs to a specific memory.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -51,7 +53,9 @@ class MemoriesApi {
     );
   }
 
-  /// This endpoint requires the `memoryAsset.create` permission.
+  /// Add assets to a memory
+  ///
+  /// Add a list of asset IDs to a specific memory.
   ///
   /// Parameters:
   ///
@@ -76,7 +80,9 @@ class MemoriesApi {
     return null;
   }
 
-  /// This endpoint requires the `memory.create` permission.
+  /// Create a memory
+  ///
+  /// Create a new memory by providing a name, description, and a list of asset IDs to include in the memory.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -108,7 +114,9 @@ class MemoriesApi {
     );
   }
 
-  /// This endpoint requires the `memory.create` permission.
+  /// Create a memory
+  ///
+  /// Create a new memory by providing a name, description, and a list of asset IDs to include in the memory.
   ///
   /// Parameters:
   ///
@@ -128,7 +136,9 @@ class MemoriesApi {
     return null;
   }
 
-  /// This endpoint requires the `memory.delete` permission.
+  /// Delete a memory
+  ///
+  /// Delete a specific memory by its ID.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -161,7 +171,9 @@ class MemoriesApi {
     );
   }
 
-  /// This endpoint requires the `memory.delete` permission.
+  /// Delete a memory
+  ///
+  /// Delete a specific memory by its ID.
   ///
   /// Parameters:
   ///
@@ -173,7 +185,9 @@ class MemoriesApi {
     }
   }
 
-  /// This endpoint requires the `memory.read` permission.
+  /// Retrieve a memory
+  ///
+  /// Retrieve a specific memory by its ID.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -206,7 +220,9 @@ class MemoriesApi {
     );
   }
 
-  /// This endpoint requires the `memory.read` permission.
+  /// Retrieve a memory
+  ///
+  /// Retrieve a specific memory by its ID.
   ///
   /// Parameters:
   ///
@@ -226,7 +242,9 @@ class MemoriesApi {
     return null;
   }
 
-  /// This endpoint requires the `memory.statistics` permission.
+  /// Retrieve memories statistics
+  ///
+  /// Retrieve statistics about memories, such as total count and other relevant metrics.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -288,7 +306,9 @@ class MemoriesApi {
     );
   }
 
-  /// This endpoint requires the `memory.statistics` permission.
+  /// Retrieve memories statistics
+  ///
+  /// Retrieve statistics about memories, such as total count and other relevant metrics.
   ///
   /// Parameters:
   ///
@@ -319,7 +339,9 @@ class MemoriesApi {
     return null;
   }
 
-  /// This endpoint requires the `memoryAsset.delete` permission.
+  /// Remove assets from a memory
+  ///
+  /// Remove a list of asset IDs from a specific memory.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -354,7 +376,9 @@ class MemoriesApi {
     );
   }
 
-  /// This endpoint requires the `memoryAsset.delete` permission.
+  /// Remove assets from a memory
+  ///
+  /// Remove a list of asset IDs from a specific memory.
   ///
   /// Parameters:
   ///
@@ -379,7 +403,9 @@ class MemoriesApi {
     return null;
   }
 
-  /// This endpoint requires the `memory.read` permission.
+  /// Retrieve memories
+  ///
+  /// Retrieve a list of memories. Memories are sorted descending by creation date by default, although they can also be sorted in ascending order, or randomly.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -441,7 +467,9 @@ class MemoriesApi {
     );
   }
 
-  /// This endpoint requires the `memory.read` permission.
+  /// Retrieve memories
+  ///
+  /// Retrieve a list of memories. Memories are sorted descending by creation date by default, although they can also be sorted in ascending order, or randomly.
   ///
   /// Parameters:
   ///
@@ -475,7 +503,9 @@ class MemoriesApi {
     return null;
   }
 
-  /// This endpoint requires the `memory.update` permission.
+  /// Update a memory
+  ///
+  /// Update an existing memory by its ID.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -510,7 +540,9 @@ class MemoriesApi {
     );
   }
 
-  /// This endpoint requires the `memory.update` permission.
+  /// Update a memory
+  ///
+  /// Update an existing memory by its ID.
   ///
   /// Parameters:
   ///
