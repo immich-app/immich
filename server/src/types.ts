@@ -19,6 +19,7 @@ import {
   UserMetadataKey,
   VideoCodec,
 } from 'src/enum';
+import { PluginTriggerType } from 'src/schema/tables/plugin.table';
 
 export type DeepPartial<T> = T extends object ? { [K in keyof T]?: DeepPartial<T[K]> } : T;
 
@@ -268,6 +269,22 @@ export interface IAssetCreateWorkflowJob {
   assetId: string;
 }
 
+export interface WorkflowData {
+  [PluginTriggerType.AssetCreate]: {
+    assetId: string;
+  };
+  [PluginTriggerType.PersonRecognized]: {
+    personId: string;
+    assetId: string;
+  };
+}
+
+export interface IWorkflowJob<T extends PluginTriggerType = PluginTriggerType> {
+  id: string;
+  type: T;
+  event: WorkflowData[T];
+}
+
 export interface JobCounts {
   active: number;
   completed: number;
@@ -382,7 +399,7 @@ export type JobItem =
   | { name: JobName.Ocr; data: IEntityJob }
 
   // Workflow
-  | { name: JobName.AssetCreateWorkflow; data: IAssetCreateWorkflowJob };
+  | { name: JobName.WorkflowRun; data: IWorkflowJob };
 
 export type VectorExtension = (typeof VECTOR_EXTENSIONS)[number];
 

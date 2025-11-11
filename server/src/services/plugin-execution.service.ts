@@ -8,7 +8,7 @@ import { ArgOf } from 'src/repositories/event.repository';
 import { PluginContext, pluginTriggers, PluginTriggerType } from 'src/schema/tables/plugin.table';
 import { BaseService } from 'src/services/base.service';
 import { PluginHostFunctions } from 'src/services/plugin-host.functions';
-import { JobItem, JobOf } from 'src/types';
+import { IWorkflowJob, JobItem, JobOf, WorkflowData } from 'src/types';
 import { TriggerConfig } from 'src/types/plugin-schema.types';
 
 interface WorkflowContext {
@@ -66,62 +66,73 @@ export class PluginExecutionService extends BaseService {
     }
 
     const jobs: JobItem[] = workflows.map((workflow) => ({
-      name: JobName.AssetCreateWorkflow,
+      name: JobName.WorkflowRun,
       data: {
-        workflowId: workflow.id,
-        assetId: asset.id,
-      },
+        id: workflow.id,
+        type: PluginTriggerType.AssetCreate,
+        event: {
+          assetId: asset.id,
+        },
+      } as IWorkflowJob<PluginTriggerType.AssetCreate>,
     }));
 
     await this.jobRepository.queueAll(jobs);
     this.logger.debug(`Queued ${jobs.length} workflow execution jobs for asset ${asset.id}`);
   }
 
-  @OnJob({ name: JobName.AssetCreateWorkflow, queue: QueueName.Workflow })
-  async handleAssetCreateWorkflow({ workflowId, assetId }: JobOf<JobName.AssetCreateWorkflow>): Promise<JobStatus> {
+  @OnJob({ name: JobName.WorkflowRun, queue: QueueName.Workflow })
+  async handleWorkflowRun({ id: workflowId, type, event }: JobOf<JobName.WorkflowRun>): Promise<JobStatus> {
     try {
-      const asset = await this.assetRepository.getById(assetId);
-      if (!asset) {
-        this.logger.error(`Asset ${assetId} not found`);
+      const workflow = await this.workflowRepository.getWorkflow(workflowId);
+      if (!workflow) {
+        this.logger.error(`Workflow ${workflowId} not found`);
         return JobStatus.Failed;
       }
 
-      const token = JSON.stringify({ userId: asset.ownerId });
+      const workflowFilters = await this.workflowRepository.getFilters(workflowId);
+      const workflowActions = await this.workflowRepository.getActions(workflowId);
 
-      await this.executeAssetCreateWorkflow(token, workflowId, asset);
-      return JobStatus.Success;
+      switch (type) {
+        case PluginTriggerType.AssetCreate: {
+          const workflowEvent = event as WorkflowData[PluginTriggerType.AssetCreate];
+          const asset = await this.assetRepository.getById(workflowEvent.assetId);
+          if (!asset) {
+            this.logger.error(`Asset ${workflowEvent.assetId} not found`);
+            return JobStatus.Failed;
+          }
+
+          const jwtToken = JSON.stringify({ userId: asset.ownerId });
+
+          const context = {
+            jwtToken,
+            asset,
+            triggerConfig: workflow.triggerConfig,
+          };
+
+          const filtersPassed = await this.executeFilters(workflowFilters, context);
+          if (!filtersPassed) {
+            return JobStatus.Failed;
+          }
+
+          await this.executeActions(workflowActions, context);
+          this.logger.debug(`Workflow ${workflowId} executed successfully`);
+          return JobStatus.Success;
+        }
+
+        case PluginTriggerType.PersonRecognized: {
+          this.logger.error('unimplemented');
+          return JobStatus.Skipped;
+        }
+
+        default: {
+          this.logger.error(`Unknown workflow trigger type: ${type}`);
+          return JobStatus.Failed;
+        }
+      }
     } catch (error) {
       this.logger.error(`Error executing workflow ${workflowId}:`, error);
       return JobStatus.Failed;
     }
-  }
-
-  private async executeAssetCreateWorkflow(jwtToken: string, workflowId: string, asset: Asset) {
-    this.logger.debug(`Executing AssetCreate workflow ${workflowId}`);
-
-    const workflow = await this.workflowRepository.getWorkflow(workflowId);
-    if (!workflow) {
-      this.logger.error(`Workflow ${workflowId} not found`);
-      return;
-    }
-
-    const workflowFilters = await this.workflowRepository.getFilters(workflowId);
-    const workflowActions = await this.workflowRepository.getActions(workflowId);
-
-    const context = {
-      jwtToken,
-      asset,
-      triggerConfig: workflow.triggerConfig,
-    };
-
-    const filtersPassed = await this.executeFilters(workflowFilters, context);
-    if (!filtersPassed) {
-      return;
-    }
-
-    await this.executeActions(workflowActions, context);
-
-    this.logger.log(`Workflow ${workflowId} executed successfully`);
   }
 
   private async executeFilters(workflowFilters: WorkflowFilter[], context: WorkflowContext): Promise<boolean> {
@@ -195,7 +206,6 @@ export class PluginExecutionService extends BaseService {
       const actionResult = await pluginInstance.call(action.name, actionInput);
       if (!actionResult) {
         this.logger.error(`Action ${action.name} returned null`);
-        continue;
       }
     }
   }
