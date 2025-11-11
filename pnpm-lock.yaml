@@ -63,7 +63,7 @@ importers:
         specifier: ^4.13.1
         version: 4.13.4
       '@types/node':
-        specifier: ^22.18.13
+        specifier: ^22.19.0
         version: 22.19.0
       '@vitest/coverage-v8':
         specifier: ^3.0.0
@@ -211,7 +211,7 @@ importers:
         specifier: ^3.4.2
         version: 3.7.1
       '@types/node':
-        specifier: ^22.18.13
+        specifier: ^22.19.0
         version: 22.19.0
       '@types/oidc-provider':
         specifier: ^9.0.0
@@ -239,7 +239,7 @@ importers:
         version: 60.0.0(eslint@9.38.0(jiti@2.6.1))
       exiftool-vendored:
         specifier: ^31.1.0
-        version: 31.1.0
+        version: 31.3.0
       globals:
         specifier: ^16.0.0
         version: 16.4.0
@@ -293,7 +293,7 @@ importers:
         version: 1.0.4
     devDependencies:
       '@types/node':
-        specifier: ^22.18.13
+        specifier: ^22.19.0
         version: 22.19.0
       typescript:
         specifier: ^5.3.3
@@ -423,7 +423,7 @@ importers:
         version: 4.3.3
       exiftool-vendored:
         specifier: ^31.1.0
-        version: 31.1.0
+        version: 31.3.0
       express:
         specifier: ^5.1.0
         version: 5.1.0
@@ -600,7 +600,7 @@ importers:
         specifier: ^2.0.0
         version: 2.0.0
       '@types/node':
-        specifier: ^22.18.13
+        specifier: ^22.19.0
         version: 22.19.0
       '@types/nodemailer':
         specifier: ^7.0.0
@@ -702,8 +702,8 @@ importers:
         specifier: file:../open-api/typescript-sdk
         version: link:../open-api/typescript-sdk
       '@immich/ui':
-        specifier: ^0.40.2
-        version: 0.40.2(@internationalized/date@3.8.2)(svelte@5.43.0)
+        specifier: ^0.43.0
+        version: 0.43.0(@internationalized/date@3.8.2)(svelte@5.43.0)
       '@mapbox/mapbox-gl-rtl-text':
         specifier: 0.2.3
         version: 0.2.3(mapbox-gl@1.13.3)
@@ -2800,13 +2800,13 @@ packages:
   '@immich/justified-layout-wasm@0.4.3':
     resolution: {integrity: sha512-fpcQ7zPhP3Cp1bEXhONVYSUeIANa2uzaQFGKufUZQo5FO7aFT77szTVChhlCy4XaVy5R4ZvgSkA/1TJmeORz7Q==}
 
-  '@immich/svelte-markdown-preprocess@0.0.1':
-    resolution: {integrity: sha512-1vWoT4LO6fEyxrKwLKiNFECEkRVbuvpYPDvA7LavObTt2ijnonPYBDgfTwCPTofjxcocIGYUayv3CzgOzFiMOA==}
+  '@immich/svelte-markdown-preprocess@0.1.0':
+    resolution: {integrity: sha512-jgSOJEGLPKEXQCNRI4r4YUayeM2b0ZYLdzgKGl891jZBhOQIetlY7rU44kPpV1AA3/8wGDwNFKduIQZZ/qJYzg==}
     peerDependencies:
       svelte: ^5.0.0
 
-  '@immich/ui@0.40.2':
-    resolution: {integrity: sha512-6NS4yVx0VoyH+AaM7TISDaoIzZe3RuDOi6xMkK2LrOPQbKwTuheD2iagxsRYzUtJ9IPrmCPrwRBc9Jq5BkvmBQ==}
+  '@immich/ui@0.43.0':
+    resolution: {integrity: sha512-dwWIURsGghsbeFnqxCqUyWslyRU2vQjih7uewNr0nsW68bJ5/esl+V/Kiw2opiNiwI4Q3HEcuTRY57k4Hq+X3Q==}
     peerDependencies:
       svelte: ^5.0.0
 
@@ -3574,8 +3574,8 @@ packages:
     peerDependencies:
       '@photo-sphere-viewer/core': 5.14.0
 
-  '@photostructure/tz-lookup@11.2.1':
-    resolution: {integrity: sha512-ugPtvpdLwGQ8IWezSGFgUCYOpO/XXetfKLNv+UN2jjTYyfIDq9dA21GydGyzXuoQ06nN3VGBd3JxmEu+ZtXScg==}
+  '@photostructure/tz-lookup@11.3.0':
+    resolution: {integrity: sha512-rYGy7ETBHTnXrwbzm47e3LJPKJmzpY7zXnbZhdosNU0lTGWVqzxptSjK4qZkJ1G+Kwy4F6XStNR9ZqMsXAoASQ==}
 
   '@pkgjs/parseargs@0.11.0':
     resolution: {integrity: sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==}
@@ -6651,17 +6651,17 @@ packages:
     resolution: {integrity: sha512-8uSpZZocAZRBAPIEINJj3Lo9HyGitllczc27Eh5YYojjMFMn8yHMDMaUHE2Jqfq05D/wucwI4JGURyXt1vchyg==}
     engines: {node: '>=10'}
 
-  exiftool-vendored.exe@13.38.0:
-    resolution: {integrity: sha512-oZx5enTAvSiIAXL+OEk7nNWrfUhEdKUpaGwDjCmz4VKwOa4HbisqyM808xPGPYj8X7XikcME/fq5hvevPeE3cw==}
+  exiftool-vendored.exe@13.41.0:
+    resolution: {integrity: sha512-7XG0PjZCm8HVsVUQAD4b/eBtvYBuGkySf2qslqHlnSR6jU1xoD1AgEprb2bCPqwhw0Jn3xzZoo/ihDo4F6fMyA==}
     os: [win32]
 
-  exiftool-vendored.pl@13.38.0:
-    resolution: {integrity: sha512-Q3xl1nnwswrsR5344z4NyqvI74fKwla+VJHY1N+32gcDgt8cs9KBsDUwcNzKHSOSa/MjEfniuCJVrQiqR05iag==}
+  exiftool-vendored.pl@13.41.0:
+    resolution: {integrity: sha512-JqqRuB8TggIOC983oTnOunB/baseGYw8XCkn7ylFGOmEv7oTQAK3uUTZV76vXE1X6c5H6IdHYt0abSgi8Kzc4g==}
     os: ['!win32']
     hasBin: true
 
-  exiftool-vendored@31.1.0:
-    resolution: {integrity: sha512-q8StxLawHLDvhqv/uoBYCfVbDskn49Cr5ouNCZhh4lgryGu1aymHwK9AvO6RcW2SbPm5MSnQDJOfGp2MW5Nnrw==}
+  exiftool-vendored@31.3.0:
+    resolution: {integrity: sha512-JQeyRvh7cV81fm9eKej2btdVh2z2Ak/sx89c4OCykeQnhnI81hk9TTraBtborYA+WcLM20cwYMPmpaW/sMy5Qw==}
     engines: {node: '>=20.0.0'}
 
   expect-type@1.2.1:
@@ -14379,13 +14379,13 @@ snapshots:
 
   '@immich/justified-layout-wasm@0.4.3': {}
 
-  '@immich/svelte-markdown-preprocess@0.0.1(svelte@5.43.0)':
+  '@immich/svelte-markdown-preprocess@0.1.0(svelte@5.43.0)':
     dependencies:
       svelte: 5.43.0
 
-  '@immich/ui@0.40.2(@internationalized/date@3.8.2)(svelte@5.43.0)':
+  '@immich/ui@0.43.0(@internationalized/date@3.8.2)(svelte@5.43.0)':
     dependencies:
-      '@immich/svelte-markdown-preprocess': 0.0.1(svelte@5.43.0)
+      '@immich/svelte-markdown-preprocess': 0.1.0(svelte@5.43.0)
       '@mdi/js': 7.4.47
       bits-ui: 2.9.8(@internationalized/date@3.8.2)(svelte@5.43.0)
       luxon: 3.7.2
@@ -15333,7 +15333,7 @@ snapshots:
       '@photo-sphere-viewer/core': 5.14.0
       three: 0.180.0
 
-  '@photostructure/tz-lookup@11.2.1': {}
+  '@photostructure/tz-lookup@11.3.0': {}
 
   '@pkgjs/parseargs@0.11.0':
     optional: true
@@ -18840,21 +18840,21 @@ snapshots:
       signal-exit: 3.0.7
       strip-final-newline: 2.0.0
 
-  exiftool-vendored.exe@13.38.0:
+  exiftool-vendored.exe@13.41.0:
     optional: true
 
-  exiftool-vendored.pl@13.38.0: {}
+  exiftool-vendored.pl@13.41.0: {}
 
-  exiftool-vendored@31.1.0:
+  exiftool-vendored@31.3.0:
     dependencies:
-      '@photostructure/tz-lookup': 11.2.1
+      '@photostructure/tz-lookup': 11.3.0
       '@types/luxon': 3.7.1
       batch-cluster: 15.0.1
-      exiftool-vendored.pl: 13.38.0
+      exiftool-vendored.pl: 13.41.0
       he: 1.2.0
       luxon: 3.7.2
     optionalDependencies:
-      exiftool-vendored.exe: 13.38.0
+      exiftool-vendored.exe: 13.41.0
 
   expect-type@1.2.1: {}
 
