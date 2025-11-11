@@ -103,24 +103,19 @@ export const handleUpdateSharedLink = async (sharedLink: SharedLinkResponseDto, 
 
 export const handleDeleteSharedLink = async (sharedLink: SharedLinkResponseDto): Promise<boolean> => {
   const $t = await getFormatter();
-
   const success = await modalManager.showDialog({
     title: $t('delete_shared_link'),
     prompt: $t('confirm_delete_shared_link'),
     confirmText: $t('delete'),
   });
-
   if (!success) {
     return false;
   }
 
   try {
     await removeSharedLink({ id: sharedLink.id });
-
     eventManager.emit('SharedLinkDelete', sharedLink);
-
     toastManager.success($t('deleted_shared_link'));
-
     return true;
   } catch (error) {
     handleError(error, $t('errors.unable_to_delete_shared_link'));
@@ -130,13 +125,11 @@ export const handleDeleteSharedLink = async (sharedLink: SharedLinkResponseDto):
 
 export const handleRemoveSharedLinkAssets = async (sharedLink: SharedLinkResponseDto, assetIds: string[]) => {
   const $t = await getFormatter();
-
   const success = await modalManager.showDialog({
     title: $t('remove_assets_title'),
     prompt: $t('remove_assets_shared_link_confirmation', { values: { count: assetIds.length } }),
     confirmText: $t('remove'),
   });
-
   if (!success) {
     return false;
   }
