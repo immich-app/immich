@@ -599,8 +599,8 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
     }
 
     final assetCountExp = _db.remoteAssetEntity.id.count();
-    //todo need to clarify witch date should be used for grouping
-    final dateExp = _db.remoteAssetEntity.deletedAt.dateFmt(groupBy);
+
+    final dateExp = _db.remoteAssetEntity.createdAt.dateFmt(groupBy);
 
     final query = _db.remoteAssetEntity.selectOnly()
       ..addColumns([assetCountExp, dateExp])
@@ -627,8 +627,6 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
   }
 
   Future<List<BaseAsset>> _getToTrashSyncBucketAssets({required int offset, required int count}) {
-    // todo maybe should be groupedBy on checksum+albumId
-
     final query =
         _db.remoteAssetEntity.select().join([
             innerJoin(
@@ -642,7 +640,7 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
                 _db.remoteAssetEntity.deletedAt.isNotNull() &
                 _db.remoteAssetEntity.visibility.equalsValue(AssetVisibility.timeline),
           )
-          ..orderBy([OrderingTerm.desc(_db.remoteAssetEntity.deletedAt)])
+          ..orderBy([OrderingTerm.desc(_db.remoteAssetEntity.createdAt)])
           ..limit(count, offset: offset);
     return query.map((row) => row.readTable(_db.remoteAssetEntity).toDto()).get();
   }
