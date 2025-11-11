@@ -16,7 +16,9 @@ class JobsApi {
 
   final ApiClient apiClient;
 
-  /// This endpoint is an admin-only route, and requires the `job.create` permission.
+  /// Create a manual job
+  ///
+  /// Run a specific job. Most jobs are queued automatically, but this endpoint allows for manual creation of a handful of jobs, including various cleanup tasks, as well as creating a new database backup.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -48,7 +50,9 @@ class JobsApi {
     );
   }
 
-  /// This endpoint is an admin-only route, and requires the `job.create` permission.
+  /// Create a manual job
+  ///
+  /// Run a specific job. Most jobs are queued automatically, but this endpoint allows for manual creation of a handful of jobs, including various cleanup tasks, as well as creating a new database backup.
   ///
   /// Parameters:
   ///
@@ -60,7 +64,9 @@ class JobsApi {
     }
   }
 
-  /// This endpoint is an admin-only route, and requires the `job.read` permission.
+  /// Retrieve queue counts and status
+  ///
+  /// Retrieve the counts of the current queue, as well as the current status.
   ///
   /// Note: This method returns the HTTP [Response].
   Future<Response> getAllJobsStatusWithHttpInfo() async {
@@ -88,7 +94,9 @@ class JobsApi {
     );
   }
 
-  /// This endpoint is an admin-only route, and requires the `job.read` permission.
+  /// Retrieve queue counts and status
+  ///
+  /// Retrieve the counts of the current queue, as well as the current status.
   Future<AllJobStatusResponseDto?> getAllJobsStatus() async {
     final response = await getAllJobsStatusWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -104,7 +112,9 @@ class JobsApi {
     return null;
   }
 
-  /// This endpoint is an admin-only route, and requires the `job.create` permission.
+  /// Run jobs
+  ///
+  /// Queue all assets for a specific job type. Defaults to only queueing assets that have not yet been processed, but the force command can be used to re-process all assets.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -139,7 +149,9 @@ class JobsApi {
     );
   }
 
-  /// This endpoint is an admin-only route, and requires the `job.create` permission.
+  /// Run jobs
+  ///
+  /// Queue all assets for a specific job type. Defaults to only queueing assets that have not yet been processed, but the force command can be used to re-process all assets.
   ///
   /// Parameters:
   ///
