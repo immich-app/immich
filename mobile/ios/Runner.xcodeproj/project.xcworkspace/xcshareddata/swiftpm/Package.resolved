@@ -6,8 +6,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/combine-schedulers",
       "state" : {
-        "revision" : "5928286acce13def418ec36d05a001a9641086f2",
-        "version" : "1.0.3"
+        "revision" : "fd16d76fd8b9a976d88bfb6cacc05ca8d19c91b6",
+        "version" : "1.1.0"
       }
     },
     {
@@ -17,6 +17,15 @@
       "state" : {
         "revision" : "18497b68fdbb3a09528d260a0a0e1e7e61c8c53d",
         "version" : "7.8.0"
+      }
+    },
+    {
+      "identity" : "opencombine",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/OpenCombine/OpenCombine.git",
+      "state" : {
+        "revision" : "8576f0d579b27020beccbccc3ea6844f3ddfc2c2",
+        "version" : "0.14.0"
       }
     },
     {
@@ -132,8 +141,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-structured-queries",
       "state" : {
-        "revision" : "1447ea20550f6f02c4b48cc80931c3ed40a9c756",
-        "version" : "0.25.0"
+        "revision" : "9c84335373bae5f5c9f7b5f0adf3ae10f2cab5b9",
+        "version" : "0.25.2"
       }
     },
     {
