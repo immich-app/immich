@@ -25,9 +25,6 @@ import 'package:immich_mobile/widgets/settings/settings_switch_list_tile.dart';
 import 'package:immich_mobile/widgets/settings/ssl_client_cert_settings.dart';
 import 'package:logging/logging.dart';
 
-//todo
-// enum TrashSyncMode {none, auto, review}
-
 class AdvancedSettings extends HookConsumerWidget {
   const AdvancedSettings({super.key});
 

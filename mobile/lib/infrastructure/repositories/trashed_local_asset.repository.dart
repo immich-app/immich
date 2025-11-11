@@ -218,7 +218,7 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
               ),
             ])..where(
               _db.localAlbumEntity.backupSelection.equalsValue(BackupSelection.selected) &
-                  (_db.remoteAssetEntity.deletedAt.isNotNull() | _db.remoteAssetEntity.id.isNull()),
+                  _db.remoteAssetEntity.deletedAt.isNotNull(),
             ))
             .get();
 
