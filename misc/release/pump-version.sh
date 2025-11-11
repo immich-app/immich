@@ -25,7 +25,7 @@ while getopts 's:m:' flag; do
   esac
 done
 
-CURRENT_SERVER=$(jq -r '.version' server/package.json)
+CURRENT_SERVER=$(cat version.txt)
 MAJOR=$(echo "$CURRENT_SERVER" | cut -d '.' -f1)
 MINOR=$(echo "$CURRENT_SERVER" | cut -d '.' -f2)
 PATCH=$(echo "$CURRENT_SERVER" | cut -d '.' -f3)
@@ -61,6 +61,7 @@ fi
 
 if [ "$CURRENT_SERVER" != "$NEXT_SERVER" ]; then
   echo "Pumping Server: $CURRENT_SERVER => $NEXT_SERVER"
+  echo "$NEXT_VERSION" > version.txt
   jq --arg version "$NEXT_SERVER" '.version = $version' server/package.json > server/package.json.tmp && mv server/package.json.tmp server/package.json
   pnpm install --frozen-lockfile --prefix server
   pnpm --prefix server run build
