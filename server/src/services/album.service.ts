@@ -39,7 +39,11 @@ export class AlbumService extends BaseService {
     };
   }
 
-  async getAll({ user: { id: ownerId } }: AuthDto, { assetId, shared }: GetAlbumsDto): Promise<AlbumResponseDto[]> {
+  async getAll(
+    { user: { id: ownerId } }: AuthDto,
+    { assetId, shared }: GetAlbumsDto,
+    slim: boolean = false,
+  ): Promise<AlbumResponseDto[]> {
     await this.albumRepository.updateThumbnails();
 
     let albums: MapAlbumDto[];
@@ -55,20 +59,24 @@ export class AlbumService extends BaseService {
 
     // Get asset count for each album. Then map the result to an object:
     // { [albumId]: assetCount }
-    const results = await this.albumRepository.getMetadataForIds(albums.map((album) => album.id));
     const albumMetadata: Record<string, AlbumAssetCount> = {};
-    for (const metadata of results) {
-      albumMetadata[metadata.albumId] = metadata;
+    if (!slim) {
+      const results = await this.albumRepository.getMetadataForIds(albums.map((album) => album.id));
+      for (const metadata of results) {
+        albumMetadata[metadata.albumId] = metadata;
+      }
     }
 
     return albums.map((album) => ({
       ...mapAlbumWithoutAssets(album),
       sharedLinks: undefined,
-      startDate: albumMetadata[album.id]?.startDate ?? undefined,
-      endDate: albumMetadata[album.id]?.endDate ?? undefined,
-      assetCount: albumMetadata[album.id]?.assetCount ?? 0,
-      // lastModifiedAssetTimestamp is only used in mobile app, please remove if not need
-      lastModifiedAssetTimestamp: albumMetadata[album.id]?.lastModifiedAssetTimestamp ?? undefined,
+      ...(!slim && {
+        startDate: albumMetadata[album.id]?.startDate ?? undefined,
+        endDate: albumMetadata[album.id]?.endDate ?? undefined,
+        assetCount: albumMetadata[album.id]?.assetCount ?? 0,
+        // lastModifiedAssetTimestamp is only used in mobile app, please remove if not need
+        lastModifiedAssetTimestamp: albumMetadata[album.id]?.lastModifiedAssetTimestamp ?? undefined,
+      }),
     }));
   }
 

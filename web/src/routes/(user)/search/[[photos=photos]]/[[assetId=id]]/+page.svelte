@@ -35,6 +35,7 @@
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import {
     type AlbumResponseDto,
+    getAlbumInfo,
     getPerson,
     getTagById,
     type MetadataSearchDto,
@@ -201,6 +202,7 @@
       model: $t('camera_model'),
       lensModel: $t('lens_model'),
       personIds: $t('people'),
+      albumIds: $t('albums'),
       tagIds: $t('tags'),
       originalFileName: $t('file_name'),
       description: $t('description'),
@@ -224,6 +226,18 @@
     );
 
     return personNames.join(', ');
+  }
+
+  async function getAlbumNames(albumIds: string[]) {
+    const albumNames = await Promise.all(
+      albumIds.map(async (albumId) => {
+        const album = await getAlbumInfo({ id: albumId, withoutAssets: true });
+
+        return album.albumName;
+      }),
+    );
+
+    return albumNames.join(', ');
   }
 
   async function getTagNames(tagIds: string[] | null) {
@@ -338,6 +352,10 @@
             {:else if searchKey === 'personIds' && Array.isArray(value)}
               {#await getPersonName(value) then personName}
                 {personName}
+              {/await}
+            {:else if searchKey === 'albumIds' && Array.isArray(value)}
+              {#await getAlbumNames(value) then albumNames}
+                {albumNames}
               {/await}
             {:else if searchKey === 'tagIds' && (Array.isArray(value) || value === null)}
               {#await getTagNames(value) then tagNames}

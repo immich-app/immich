@@ -9,6 +9,7 @@
     ocr?: string;
     queryType: 'smart' | 'metadata' | 'description' | 'ocr';
     personIds: SvelteSet<string>;
+    albumIds: SvelteSet<string>;
     tagIds: SvelteSet<string> | null;
     location: SearchLocationFilter;
     camera: SearchCameraFilter;
@@ -20,6 +21,7 @@
 </script>
 
 <script lang="ts">
+  import SearchAlbumsSection from '$lib/components/shared-components/search-bar/search-albums-section.svelte';
   import SearchCameraSection, {
     type SearchCameraFilter,
   } from '$lib/components/shared-components/search-bar/search-camera-section.svelte';
@@ -78,6 +80,7 @@
     ocr: searchQuery.ocr,
     queryType: defaultQueryType(),
     personIds: new SvelteSet('personIds' in searchQuery ? searchQuery.personIds : []),
+    albumIds: new SvelteSet('albumIds' in searchQuery ? searchQuery.albumIds : []),
     tagIds:
       'tagIds' in searchQuery
         ? searchQuery.tagIds === null
@@ -118,6 +121,7 @@
       ocr: undefined,
       queryType: defaultQueryType(), // retain from localStorage or default
       personIds: new SvelteSet(),
+      albumIds: new SvelteSet(),
       tagIds: new SvelteSet(),
       location: {},
       camera: {},
@@ -159,6 +163,7 @@
       isFavorite: filter.display.isFavorite || undefined,
       isNotInAlbum: filter.display.isNotInAlbum || undefined,
       personIds: filter.personIds.size > 0 ? [...filter.personIds] : undefined,
+      albumIds: filter.albumIds.size > 0 ? [...filter.albumIds] : undefined,
       tagIds: filter.tagIds === null ? null : filter.tagIds.size > 0 ? [...filter.tagIds] : undefined,
       type,
       rating: filter.rating,
@@ -194,8 +199,13 @@
         <!-- TEXT -->
         <SearchTextSection bind:query={filter.query} bind:queryType={filter.queryType} />
 
-        <!-- TAGS -->
-        <SearchTagsSection bind:selectedTags={filter.tagIds} />
+        <div class="grid grid-auto-fit-40 gap-5">
+          <!-- ALBUMS -->
+          <SearchAlbumsSection bind:selectedAlbums={filter.albumIds} />
+
+          <!-- TAGS -->
+          <SearchTagsSection bind:selectedTags={filter.tagIds} />
+        </div>
 
         <!-- LOCATION -->
         <SearchLocationSection bind:filters={filter.location} />
@@ -216,7 +226,7 @@
           <SearchMediaSection bind:filteredMedia={filter.mediaType} />
 
           <!-- DISPLAY OPTIONS -->
-          <SearchDisplaySection bind:filters={filter.display} />
+          <SearchDisplaySection bind:filters={filter.display} selectedAlbums={filter.albumIds} />
         </div>
       </div>
     </form>

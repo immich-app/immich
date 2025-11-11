@@ -1667,6 +1667,7 @@
   "remote_assets": "Remote Assets",
   "remote_media_summary": "Remote Media Summary",
   "remove": "Remove",
+  "remove_album": "Remove album",
   "remove_assets_album_confirmation": "Are you sure you want to remove {count, plural, one {# asset} other {# assets}} from the album?",
   "remove_assets_shared_link_confirmation": "Are you sure you want to remove {count, plural, one {# asset} other {# assets}} from this shared link?",
   "remove_assets_title": "Remove assets?",

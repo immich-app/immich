@@ -499,6 +499,74 @@ class AlbumsApi {
     return null;
   }
 
+  /// This endpoint requires the `album.read` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [String] assetId:
+  ///   Only returns albums that contain the asset Ignores the shared parameter undefined: get all albums
+  ///
+  /// * [bool] shared:
+  Future<Response> getAllAlbumsSlimWithHttpInfo({ String? assetId, bool? shared, }) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/albums/slim';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    if (assetId != null) {
+      queryParams.addAll(_queryParams('', 'assetId', assetId));
+    }
+    if (shared != null) {
+      queryParams.addAll(_queryParams('', 'shared', shared));
+    }
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// This endpoint requires the `album.read` permission.
+  ///
+  /// Parameters:
+  ///
+  /// * [String] assetId:
+  ///   Only returns albums that contain the asset Ignores the shared parameter undefined: get all albums
+  ///
+  /// * [bool] shared:
+  Future<List<AlbumResponseDto>?> getAllAlbumsSlim({ String? assetId, bool? shared, }) async {
+    final response = await getAllAlbumsSlimWithHttpInfo( assetId: assetId, shared: shared, );
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      final responseBody = await _decodeBodyBytes(response);
+      return (await apiClient.deserializeAsync(responseBody, 'List<AlbumResponseDto>') as List)
+        .cast<AlbumResponseDto>()
+        .toList(growable: false);
+
+    }
+    return null;
+  }
+
   /// This endpoint requires the `albumAsset.delete` permission.
   ///
   /// Note: This method returns the HTTP [Response].
