@@ -269,7 +269,7 @@ describe(AssetMediaService.name, () => {
       const pathFilename = 'invalid-file-name';
       const body = { filename: 'video.mov' };
       expect(() => sut.canUploadFile(uploadFile.filename(UploadFieldName.ASSET_DATA, pathFilename))).toThrowError(
-        BadRequestException
+        BadRequestException,
       );
       expect(sut.canUploadFile(uploadFile.filename(UploadFieldName.ASSET_DATA, pathFilename, body))).toEqual(true);
     });
