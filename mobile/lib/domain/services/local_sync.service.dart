@@ -306,6 +306,11 @@ class LocalSyncService {
 
   Future<void> _syncTrashedAssets() async {
     final trashedAssetMap = await _nativeSyncApi.getTrashedAssets();
+    await processTrashedAssets(trashedAssetMap);
+  }
+
+  @visibleForTesting
+  Future<void> processTrashedAssets(Map<String, List<PlatformAsset>> trashedAssetMap) async {
     if (trashedAssetMap.isEmpty) {
       _log.info("syncTrashedAssets, No trashed assets found");
     }
@@ -317,9 +322,6 @@ class LocalSyncService {
     await _trashedLocalAssetRepository.processTrashSnapshot(trashedAssets);
 
     final assetsToRestore = await _trashedLocalAssetRepository.getToRestore();
-
-
-
     if (assetsToRestore.isNotEmpty) {
       final restoredIds = await _localFilesManager.restoreAssetsFromTrash(assetsToRestore);
       await _trashedLocalAssetRepository.applyRestoredAssets(restoredIds);

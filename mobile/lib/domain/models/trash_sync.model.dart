@@ -46,7 +46,7 @@ class TrashSyncDecision {
       assetId: assetId ?? this.assetId,
       checksum: checksum ?? this.checksum,
       isSyncApproved: isSyncApproved ?? this.isSyncApproved,
-      actionType: syncActionType ?? this.actionType,
+      actionType: syncActionType ?? actionType,
     );
   }
 }

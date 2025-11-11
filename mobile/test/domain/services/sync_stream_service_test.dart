@@ -16,6 +16,7 @@ import 'package:immich_mobile/infrastructure/repositories/storage.repository.dar
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_api.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_stream.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/trash_sync.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/trashed_local_asset.repository.dart';
 import 'package:immich_mobile/repositories/local_files_manager.repository.dart';
 import 'package:mocktail/mocktail.dart';
@@ -48,6 +49,7 @@ void main() {
   late SyncApiRepository mockSyncApiRepo;
   late DriftLocalAssetRepository mockLocalAssetRepo;
   late DriftTrashedLocalAssetRepository mockTrashedLocalAssetRepo;
+  late DriftTrashSyncRepository mockTrashSyncRepo;
   late LocalFilesManagerRepository mockLocalFilesManagerRepo;
   late StorageRepository mockStorageRepo;
   late Future<void> Function(List<SyncEvent>, Function(), Function()) handleEventsCallback;
@@ -79,6 +81,7 @@ void main() {
     mockLocalAssetRepo = MockLocalAssetRepository();
     mockTrashedLocalAssetRepo = MockTrashedLocalAssetRepository();
     mockLocalFilesManagerRepo = MockLocalFilesManagerRepository();
+    mockTrashSyncRepo = MockTrashSyncRepository();
     mockStorageRepo = MockStorageRepository();
     mockAbortCallbackWrapper = _MockAbortCallbackWrapper();
     mockResetCallbackWrapper = _MockAbortCallbackWrapper();
@@ -135,6 +138,7 @@ void main() {
       trashedLocalAssetRepository: mockTrashedLocalAssetRepo,
       localFilesManager: mockLocalFilesManagerRepo,
       storageRepository: mockStorageRepo,
+      trashSyncRepository: mockTrashSyncRepo,
     );
 
     when(() => mockLocalAssetRepo.getAssetsFromBackupAlbums(any())).thenAnswer((_) async => {});
@@ -216,6 +220,7 @@ void main() {
         localFilesManager: mockLocalFilesManagerRepo,
         storageRepository: mockStorageRepo,
         cancelChecker: cancellationChecker.call,
+        trashSyncRepository: mockTrashSyncRepo,
       );
       await sut.sync();
 
@@ -255,6 +260,7 @@ void main() {
         localFilesManager: mockLocalFilesManagerRepo,
         storageRepository: mockStorageRepo,
         cancelChecker: cancellationChecker.call,
+        trashSyncRepository: mockTrashSyncRepo,
       );
 
       await sut.sync();
@@ -474,11 +480,7 @@ void main() {
       });
 
       final events = [
-        SyncStreamStub.assetModified(
-          id: 'remote-1',
-          checksum: 'checksum-trash',
-          ack: 'asset-remote-1-11',
-        ),
+        SyncStreamStub.assetModified(id: 'remote-1', checksum: 'checksum-trash', ack: 'asset-remote-1-11'),
       ];
 
       await simulateEvents(events);

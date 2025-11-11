@@ -1,7 +1,6 @@
 import 'package:immich_mobile/domain/models/trash_sync.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/trash_sync.repository.dart';
 
-typedef TrashSyncItem = ({String checksum, DateTime? deletedAt});
 typedef ReviewItem = ({String localAssetId, String checksum});
 
 class TrashSyncService {
