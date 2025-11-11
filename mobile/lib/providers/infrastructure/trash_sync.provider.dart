@@ -1,12 +1,10 @@
 import 'package:async/async.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/trash_sync.model.dart';
-import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/domain/services/trash_sync.service.dart';
 import 'package:immich_mobile/infrastructure/repositories/trash_sync.repository.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/storage.provider.dart';
-import 'package:immich_mobile/repositories/local_files_manager.repository.dart';
+import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 
 import 'db.provider.dart';
@@ -25,14 +23,7 @@ final trashedAssetsCountProvider = StreamProvider<TrashedAssetsCount>((ref) {
   return StreamZip<int>([total$, hashed$]).map((values) => (total: values[0], hashed: values[1]));
 });
 final trashSyncServiceProvider = Provider(
-  (ref) => TrashSyncService(
-    appSettingsService: ref.watch(appSettingsServiceProvider),
-    remoteAssetRepository: ref.watch(remoteAssetRepositoryProvider),
-    localAssetRepository: ref.watch(localAssetRepository),
-    localFilesManager: ref.watch(localFilesManagerRepositoryProvider),
-    storageRepository: ref.watch(storageRepositoryProvider),
-    trashSyncRepository: ref.watch(trashSyncRepositoryProvider),
-  ),
+  (ref) => TrashSyncService(trashSyncRepository: ref.watch(trashSyncRepositoryProvider)),
 );
 
 final outOfSyncCountProvider = StreamProvider<int>((ref) {
@@ -46,13 +37,11 @@ final outOfSyncCountProvider = StreamProvider<int>((ref) {
 });
 
 final restoredCountProvider = StreamProvider<int>((ref) {
-  return ref.read(trashSyncServiceProvider)
-      .watchPendingApprovalCount(actionType: TrashActionType.restored);
+  return ref.read(trashSyncServiceProvider).watchPendingApprovalCount(actionType: TrashActionType.restored);
 });
 
 final trashedCountProvider = StreamProvider<int>((ref) {
-  return ref.read(trashSyncServiceProvider)
-      .watchPendingApprovalCount(actionType: TrashActionType.trashed);
+  return ref.read(trashSyncServiceProvider).watchPendingApprovalCount(actionType: TrashActionType.trashed);
 });
 
 // final isApprovalPendingProvider = StreamProvider.autoDispose.family<bool, String?>((ref, checksum) async* {

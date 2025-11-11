@@ -14,13 +14,41 @@ import 'package:immich_mobile/widgets/common/immich_toast.dart';
 /// - Allows moving to the local trash those assets that are in the remote trash.
 ///
 /// This action is used when the asset is selected in multi-selection mode in the review out-of-sync changes
-class AllowMoveToTrashActionButton extends ConsumerWidget {
+class MoveToTrashActionButton extends ConsumerWidget {
   final ActionSource source;
 
-  const AllowMoveToTrashActionButton({super.key, required this.source});
+  const MoveToTrashActionButton({super.key, required this.source});
 
   void _onTap(BuildContext context, WidgetRef ref) async {
     if (!context.mounted) {
+      return;
+    }
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('asset_out_of_sync_trash_confirmation_title'.tr()),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [Text('asset_out_of_sync_trash_confirmation_text'.tr())],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text('cancel'.t(context: context)),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.error),
+              child: Text('control_bottom_app_bar_trash_from_immich'.tr()),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed != true) {
       return;
     }
 
@@ -51,7 +79,10 @@ class AllowMoveToTrashActionButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return TextButton(
-      child: Text("allow".tr(), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+      child: Text(
+        'control_bottom_app_bar_trash_from_immich'.tr(),
+        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+      ),
       onPressed: () => _onTap(context, ref),
     );
   }

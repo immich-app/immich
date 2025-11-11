@@ -318,23 +318,15 @@ class LocalSyncService {
 
     final assetsToRestore = await _trashedLocalAssetRepository.getToRestore();
 
-    final reviewMode = Store.get(StoreKey.reviewOutOfSyncChangesAndroid, false);
+
 
     if (assetsToRestore.isNotEmpty) {
-      if (reviewMode) {
-        final itemsToReview = assetsToRestore
-            .map<ReviewItem>((la) => (localAssetId: la.id, checksum: la.checksum ?? ''))
-            .where((la) => la.checksum.isNotEmpty);
-        _log.info("syncTrashedAssets, itemsToReview: $itemsToReview");
-        await _trashSyncRepository.upsertWithActionTypeCheck(itemsToReview, TrashActionType.restored);
-      } else {
-        final restoredIds = await _localFilesManager.restoreAssetsFromTrash(assetsToRestore);
-        await _trashedLocalAssetRepository.applyRestoredAssets(restoredIds);
-      }
+      final restoredIds = await _localFilesManager.restoreAssetsFromTrash(assetsToRestore);
+      await _trashedLocalAssetRepository.applyRestoredAssets(restoredIds);
     } else {
       _log.info("syncTrashedAssets, No remote assets found for restoration");
     }
-
+    final reviewMode = Store.get(StoreKey.reviewOutOfSyncChangesAndroid, false);
     final localAssetsToTrash = await _trashedLocalAssetRepository.getToTrash();
     if (localAssetsToTrash.isNotEmpty) {
       if (reviewMode) {
@@ -360,6 +352,7 @@ class LocalSyncService {
       _log.info("syncTrashedAssets, No assets found in backup-enabled albums for move to trash");
     }
     if (reviewMode) {
+      _log.info("syncTrashedAssets, deleteAlreadySynced");
       await _trashSyncRepository.deleteAlreadySynced();
     }
   }

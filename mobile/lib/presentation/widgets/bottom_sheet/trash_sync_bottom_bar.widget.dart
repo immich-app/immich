@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/allow_move_to_trash_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/deny_move_to_trash_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/keep_on_device_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/move_to_trash_action_button.widget.dart';
 
 class TrashSyncBottomBar extends ConsumerWidget {
   const TrashSyncBottomBar({super.key});
@@ -20,8 +20,8 @@ class TrashSyncBottomBar extends ConsumerWidget {
             child: const Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                DenyMoveToTrashActionButton(source: ActionSource.timeline),
-                AllowMoveToTrashActionButton(source: ActionSource.timeline),
+                KeepOnDeviceActionButton(source: ActionSource.timeline),
+                MoveToTrashActionButton(source: ActionSource.timeline),
               ],
             ),
           ),

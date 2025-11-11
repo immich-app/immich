@@ -67,8 +67,6 @@ class TimelineFactory {
 
   TimelineService toTrashSyncReview(String userId) => TimelineService(_timelineRepository.toTrashSyncReview(userId, groupBy));
 
-  TimelineService toRestoreSyncReview(String userId) => TimelineService(_timelineRepository.toRestoreSyncReview(userId, groupBy));
-
   TimelineService archive(String userId) => TimelineService(_timelineRepository.archived(userId, groupBy));
 
   TimelineService lockedFolder(String userId) => TimelineService(_timelineRepository.locked(userId, groupBy));

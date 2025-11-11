@@ -111,15 +111,14 @@ class SyncStreamService {
       case SyncEntityType.assetV1:
         final remoteSyncAssets = data.cast<SyncAssetV1>();
         await _syncStreamRepository.updateAssetsV1(remoteSyncAssets);
-        if (CurrentPlatform.isAndroid &&
-            Store.get(StoreKey.manageLocalMediaAndroid, false) ||
-                Store.get(StoreKey.reviewOutOfSyncChangesAndroid, false)) {
+        if (CurrentPlatform.isAndroid && Store.get(StoreKey.manageLocalMediaAndroid, false) ||
+            Store.get(StoreKey.reviewOutOfSyncChangesAndroid, false)) {
           final hasPermission = await _localFilesManager.hasManageMediaPermission();
           if (hasPermission) {
             final reviewMode = Store.get(StoreKey.reviewOutOfSyncChangesAndroid, false);
             final trashedChecksums = remoteSyncAssets.where((e) => e.deletedAt != null).map((e) => e.checksum);
             await _handleRemoteTrashed(trashedChecksums, reviewMode);
-            await _applyRemoteRestoreToLocal(reviewMode);
+            await _applyRemoteRestoreToLocal();
             if (reviewMode) {
               await _trashSyncRepository.deleteAlreadySynced();
             }
@@ -269,7 +268,7 @@ class SyncStreamService {
               .where((la) => la.checksum.isNotEmpty);
 
           _logger.info("Apply remote trash action to review for: $itemsToReview");
-          await _trashSyncRepository.upsertWithActionTypeCheck(itemsToReview,TrashActionType.trashed);
+          await _trashSyncRepository.upsertWithActionTypeCheck(itemsToReview, TrashActionType.trashed);
         } else {
           final mediaUrls = await Future.wait(
             localAssetsToTrash.values
@@ -290,19 +289,11 @@ class SyncStreamService {
     }
   }
 
-  Future<void> _applyRemoteRestoreToLocal(bool reviewMode) async {
+  Future<void> _applyRemoteRestoreToLocal() async {
     final assetsToRestore = await _trashedLocalAssetRepository.getToRestore();
     if (assetsToRestore.isNotEmpty) {
-      if (reviewMode) {
-        final itemsToReview = assetsToRestore
-            .map<ReviewItem>((la) => (localAssetId: la.id, checksum: la.checksum ?? ''))
-            .where((la) => la.checksum.isNotEmpty);
-        _logger.info("remote restored, itemsToReview: $itemsToReview");
-        await _trashSyncRepository.upsertWithActionTypeCheck(itemsToReview, TrashActionType.restored);
-      } else {
-        final restoredIds = await _localFilesManager.restoreAssetsFromTrash(assetsToRestore);
-        await _trashedLocalAssetRepository.applyRestoredAssets(restoredIds);
-      }
+      final restoredIds = await _localFilesManager.restoreAssetsFromTrash(assetsToRestore);
+      await _trashedLocalAssetRepository.applyRestoredAssets(restoredIds);
     } else {
       _logger.info("No remote assets found for restoration");
     }

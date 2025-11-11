@@ -6,7 +6,6 @@ import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
-import 'package:immich_mobile/domain/models/trash_sync.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.dart';
@@ -281,12 +280,6 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
   TimelineQuery toTrashSyncReview(String userId, GroupAssetsBy groupBy) => (
     bucketSource: () => _watchTrashSyncBucket(groupBy: groupBy),
     assetSource: (offset, count) => _getToTrashSyncBucketAssets(offset: offset, count: count),
-    origin: TimelineOrigin.syncTrash,
-  );
-
-  TimelineQuery toRestoreSyncReview(String userId, GroupAssetsBy groupBy) => (
-    bucketSource: () => _watchRestoreSyncBucket(groupBy: groupBy),
-    assetSource: (offset, count) => _getToRestoreSyncBucketAssets(offset: offset, count: count),
     origin: TimelineOrigin.syncTrash,
   );
 
@@ -650,66 +643,6 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
                 _db.remoteAssetEntity.visibility.equalsValue(AssetVisibility.timeline),
           )
           ..orderBy([OrderingTerm.desc(_db.remoteAssetEntity.deletedAt)])
-          ..limit(count, offset: offset);
-    return query.map((row) => row.readTable(_db.remoteAssetEntity).toDto()).get();
-  }
-
-  Stream<List<Bucket>> _watchRestoreSyncBucket({GroupAssetsBy groupBy = GroupAssetsBy.day}) {
-    if (groupBy == GroupAssetsBy.none) {
-      // TODO: implement GroupAssetBy for place
-      throw UnsupportedError("GroupAssetsBy.none is not supported for watchPlaceBucket");
-    }
-
-    final assetCountExp = _db.remoteAssetEntity.id.count();
-    //todo need to clarify witch date should be used for grouping
-    //todo check possibility of using deletedAt
-    final dateExp = _db.trashedLocalAssetEntity.createdAt.dateFmt(groupBy);
-
-    final query = _db.remoteAssetEntity.selectOnly()
-      ..addColumns([assetCountExp, dateExp])
-      ..join([
-        innerJoin(
-          _db.trashSyncEntity,
-          _db.trashSyncEntity.checksum.equalsExp(_db.remoteAssetEntity.checksum),
-          useColumns: false,
-        ),
-        innerJoin(_db.trashedLocalAssetEntity, _db.trashedLocalAssetEntity.checksum.equalsExp(_db.remoteAssetEntity.checksum)),
-      ])
-      ..addColumns([_db.trashedLocalAssetEntity.createdAt])
-      ..where(
-        _db.trashSyncEntity.isSyncApproved.isNull() &
-        _db.trashSyncEntity.actionType.equalsValue(TrashActionType.restored) &
-        _db.remoteAssetEntity.visibility.equalsValue(AssetVisibility.timeline),
-      )
-      ..groupBy([dateExp])
-      ..orderBy([OrderingTerm.desc(dateExp)]);
-
-    return query.map((row) {
-      final timeline = row.read(dateExp)!.truncateDate(groupBy);
-      final assetCount = row.read(assetCountExp)!;
-      return TimeBucket(date: timeline, assetCount: assetCount);
-    }).watch();
-  }
-
-  Future<List<BaseAsset>> _getToRestoreSyncBucketAssets({required int offset, required int count}) {
-    final query =
-        _db.remoteAssetEntity.select().join([
-            innerJoin(
-              _db.trashSyncEntity,
-              _db.trashSyncEntity.checksum.equalsExp(_db.remoteAssetEntity.checksum),
-              useColumns: false,
-            ),
-            innerJoin(_db.trashedLocalAssetEntity, _db.trashedLocalAssetEntity.checksum.equalsExp(_db.remoteAssetEntity.checksum)),
-          ])
-          ..addColumns([_db.trashedLocalAssetEntity.createdAt])
-          ..where(
-            _db.trashSyncEntity.isSyncApproved.isNull() &
-                _db.trashSyncEntity.actionType.equalsValue(TrashActionType.restored) &
-                _db.remoteAssetEntity.visibility.equalsValue(AssetVisibility.timeline),
-          )
-          //todo check possibility of using deletedAt
-          ..orderBy([OrderingTerm.desc(_db.trashedLocalAssetEntity.createdAt)])
-          ..distinct
           ..limit(count, offset: offset);
     return query.map((row) => row.readTable(_db.remoteAssetEntity).toDto()).get();
   }

@@ -108,25 +108,39 @@ class DriftTrashSyncRepository extends DriftDatabaseRepository {
   }
 
   Future<int> deleteAlreadySynced() async {
-    final remoteAlive = _db.selectOnly(_db.remoteAssetEntity)
+    final remoteAliveSelect = _db.selectOnly(_db.remoteAssetEntity)
       ..addColumns([_db.remoteAssetEntity.checksum])
       ..where(_db.remoteAssetEntity.deletedAt.isNull());
 
-    final remoteTrashed = _db.selectOnly(_db.remoteAssetEntity)
+    final remoteTrashedSelect = _db.selectOnly(_db.remoteAssetEntity)
       ..addColumns([_db.remoteAssetEntity.checksum])
       ..where(_db.remoteAssetEntity.deletedAt.isNotNull());
 
-    final localAlive = _db.selectOnly(_db.localAssetEntity)..addColumns([_db.localAssetEntity.checksum]);
+    final localAliveSelect = _db.selectOnly(_db.localAssetEntity)..addColumns([_db.localAssetEntity.checksum]);
 
-    final localTrashed = _db.selectOnly(_db.trashedLocalAssetEntity)
+    final localTrashedSelect = _db.selectOnly(_db.trashedLocalAssetEntity)
       ..addColumns([_db.trashedLocalAssetEntity.checksum]);
 
     return (_db.delete(_db.trashSyncEntity)..where((row) {
-          //todo need to clarify logic related to approval keeping
-          final notApproved = row.isSyncApproved.isNotValue(true);
-          final bothAlive = row.checksum.isInQuery(remoteAlive) & row.checksum.isInQuery(localAlive);
-          final bothTrashed = row.checksum.isInQuery(remoteTrashed) & row.checksum.isInQuery(localTrashed);
-          return notApproved & (bothAlive | bothTrashed);
+          final notApproved = row.isSyncApproved.isNull() | row.isSyncApproved.equals(false);
+
+          final remoteAlive = row.checksum.isInQuery(remoteAliveSelect);
+          final remoteTrashed = row.checksum.isInQuery(remoteTrashedSelect);
+          final localAlive = row.checksum.isInQuery(localAliveSelect);
+          final localTrashed = row.checksum.isInQuery(localTrashedSelect);
+
+          final bothAlive = remoteAlive & localAlive;
+          final bothTrashed = remoteTrashed & localTrashed;
+
+          final outdated =
+              (remoteAlive & row.actionType.equalsValue(TrashActionType.trashed)) |
+              (localAlive & row.actionType.equalsValue(TrashActionType.restored)) |
+              (remoteTrashed & localAlive & row.actionType.equalsValue(TrashActionType.restored)) |
+              (remoteAlive & localTrashed & row.actionType.equalsValue(TrashActionType.trashed));
+
+          final synced = bothAlive | bothTrashed;
+
+          return notApproved & (synced | outdated);
         }))
         .go();
   }

@@ -12,10 +12,10 @@ import 'package:immich_mobile/widgets/common/immich_toast.dart';
 /// - Deny moving to the local trash those assets that are in the remote trash.
 ///
 /// This action is used when the asset is selected in multi-selection mode in the trash page
-class DenyMoveToTrashActionButton extends ConsumerWidget {
+class KeepOnDeviceActionButton extends ConsumerWidget {
   final ActionSource source;
 
-  const DenyMoveToTrashActionButton({super.key, required this.source});
+  const KeepOnDeviceActionButton({super.key, required this.source});
 
   void _onTap(BuildContext context, WidgetRef ref) async {
     if (!context.mounted) {
@@ -44,7 +44,7 @@ class DenyMoveToTrashActionButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return TextButton(
-      child: Text("deny".tr(), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+      child: Text('keep_on_device'.tr(), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
       onPressed: () => _onTap(context, ref),
     );
   }

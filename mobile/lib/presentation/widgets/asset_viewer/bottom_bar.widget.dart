@@ -1,14 +1,13 @@
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/allow_move_to_trash_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/move_to_trash_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/archive_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_local_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/deny_move_to_trash_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/keep_on_device_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/edit_image_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/unarchive_action_button.widget.dart';
@@ -55,9 +54,8 @@ class ViewerBottomBar extends ConsumerWidget {
 
     final actions = <Widget>[
       if (isWaitingForSyncApproval) ...[
-        const Text("move_local_asset_to_trash").tr(),
-        const DenyMoveToTrashActionButton(source: ActionSource.viewer),
-        const AllowMoveToTrashActionButton(source: ActionSource.viewer),
+        const KeepOnDeviceActionButton(source: ActionSource.viewer),
+        const MoveToTrashActionButton(source: ActionSource.viewer),
       ] else ...[
         const ShareActionButton(source: ActionSource.viewer),
         if (asset.isLocalOnly) const UploadActionButton(source: ActionSource.viewer),
