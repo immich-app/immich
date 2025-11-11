@@ -65,9 +65,10 @@ export class ApiService {
     }
 
     return async (request: Request, res: Response, next: NextFunction) => {
+      const method = request.method.toLowerCase();
       if (
         request.url.startsWith('/api') ||
-        request.method.toLowerCase() !== 'get' ||
+        (method !== 'get' && method !== 'head') ||
         excludePaths.some((item) => request.url.startsWith(item))
       ) {
         return next();
