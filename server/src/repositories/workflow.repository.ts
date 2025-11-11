@@ -42,18 +42,22 @@ export class WorkflowRepository {
         .returningAll()
         .executeTakeFirstOrThrow();
 
-      const newFilters = filters.map((filter) => ({
-        ...filter,
-        workflowId: createdWorkflow.id,
-      }));
+      if (filters.length > 0) {
+        const newFilters = filters.map((filter) => ({
+          ...filter,
+          workflowId: createdWorkflow.id,
+        }));
 
-      await trx.insertInto('workflow_filter').values(newFilters).execute();
+        await trx.insertInto('workflow_filter').values(newFilters).execute();
+      }
 
-      const newActions = actions.map((action) => ({
-        ...action,
-        workflowId: createdWorkflow.id,
-      }));
-      await trx.insertInto('workflow_action').values(newActions).execute();
+      if (actions.length > 0) {
+        const newActions = actions.map((action) => ({
+          ...action,
+          workflowId: createdWorkflow.id,
+        }));
+        await trx.insertInto('workflow_action').values(newActions).execute();
+      }
 
       return createdWorkflow;
     });
@@ -114,13 +118,6 @@ export class WorkflowRepository {
   @GenerateSql({ params: [DummyValue.UUID] })
   async deleteFiltersByWorkflow(workflowId: string) {
     await this.db.deleteFrom('workflow_filter').where('workflowId', '=', workflowId).execute();
-  }
-
-  async createFilters(filters: Insertable<WorkflowFilterTable>[]) {
-    if (filters.length === 0) {
-      return [];
-    }
-    return this.db.insertInto('workflow_filter').values(filters).returningAll().execute();
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })

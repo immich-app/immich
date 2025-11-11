@@ -99,7 +99,7 @@ describe(WorkflowService.name, () => {
       });
     });
 
-    it.skip('should create a workflow with filters and actions', async () => {
+    it('should create a workflow with filters and actions', async () => {
       const { sut, ctx } = setup();
       const { user } = await ctx.newUser();
       const auth = { user: { id: user.id } } as any;
@@ -150,6 +150,491 @@ describe(WorkflowService.name, () => {
         actionConfig: { action: 'test' },
         order: 0,
       });
+    });
+
+    it('should throw error when creating workflow with invalid filter', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const auth = { user: { id: user.id } } as any;
+
+      await expect(
+        sut.create(auth, {
+          triggerType: PluginTriggerType.AssetCreate,
+          name: 'invalid-workflow',
+          displayName: 'Invalid Workflow',
+          description: 'A workflow with invalid filter',
+          enabled: true,
+          filters: [
+            {
+              filterId: '66da82df-e424-4bf4-b6f3-5d8e71620dae',
+              filterConfig: { key: 'value' },
+            },
+          ],
+          actions: [],
+        }),
+      ).rejects.toThrow('Invalid filter ID');
+    });
+
+    it('should throw error when creating workflow with invalid action', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const auth = { user: { id: user.id } } as any;
+
+      await expect(
+        sut.create(auth, {
+          triggerType: PluginTriggerType.AssetCreate,
+          name: 'invalid-workflow',
+          displayName: 'Invalid Workflow',
+          description: 'A workflow with invalid action',
+          enabled: true,
+          filters: [],
+          actions: [
+            {
+              actionId: '66da82df-e424-4bf4-b6f3-5d8e71620dae',
+              actionConfig: { action: 'test' },
+            },
+          ],
+        }),
+      ).rejects.toThrow('Invalid action ID');
+    });
+
+    it('should create workflow with multiple filters and actions in correct order', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const auth = { user: { id: user.id } } as any;
+
+      const workflow = await sut.create(auth, {
+        triggerType: PluginTriggerType.AssetCreate,
+        name: 'multi-step-workflow',
+        displayName: 'Multi-Step Workflow',
+        description: 'A workflow with multiple filters and actions',
+        enabled: true,
+        filters: [
+          { filterId: testFilterId, filterConfig: { step: 1 } },
+          { filterId: testFilterId, filterConfig: { step: 2 } },
+        ],
+        actions: [
+          { actionId: testActionId, actionConfig: { step: 1 } },
+          { actionId: testActionId, actionConfig: { step: 2 } },
+          { actionId: testActionId, actionConfig: { step: 3 } },
+        ],
+      });
+
+      expect(workflow.filters).toHaveLength(2);
+      expect(workflow.filters[0].order).toBe(0);
+      expect(workflow.filters[0].filterConfig).toEqual({ step: 1 });
+      expect(workflow.filters[1].order).toBe(1);
+      expect(workflow.filters[1].filterConfig).toEqual({ step: 2 });
+
+      expect(workflow.actions).toHaveLength(3);
+      expect(workflow.actions[0].order).toBe(0);
+      expect(workflow.actions[1].order).toBe(1);
+      expect(workflow.actions[2].order).toBe(2);
+    });
+  });
+
+  describe('getAll', () => {
+    it('should return all workflows for a user', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const auth = { user: { id: user.id } } as any;
+
+      const workflow1 = await sut.create(auth, {
+        triggerType: PluginTriggerType.AssetCreate,
+        name: 'workflow-1',
+        displayName: 'Workflow 1',
+        description: 'First workflow',
+        enabled: true,
+        filters: [],
+        actions: [],
+      });
+
+      const workflow2 = await sut.create(auth, {
+        triggerType: PluginTriggerType.AssetCreate,
+        name: 'workflow-2',
+        displayName: 'Workflow 2',
+        description: 'Second workflow',
+        enabled: false,
+        filters: [],
+        actions: [],
+      });
+
+      const workflows = await sut.getAll(auth);
+
+      expect(workflows).toHaveLength(2);
+      expect(workflows).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ id: workflow1.id, name: 'workflow-1' }),
+          expect.objectContaining({ id: workflow2.id, name: 'workflow-2' }),
+        ]),
+      );
+    });
+
+    it('should return empty array when user has no workflows', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const auth = { user: { id: user.id } } as any;
+
+      const workflows = await sut.getAll(auth);
+
+      expect(workflows).toEqual([]);
+    });
+
+    it('should not return workflows from other users', async () => {
+      const { sut, ctx } = setup();
+      const { user: user1 } = await ctx.newUser();
+      const { user: user2 } = await ctx.newUser();
+      const auth1 = { user: { id: user1.id } } as any;
+      const auth2 = { user: { id: user2.id } } as any;
+
+      await sut.create(auth1, {
+        triggerType: PluginTriggerType.AssetCreate,
+        name: 'user1-workflow',
+        displayName: 'User 1 Workflow',
+        description: 'User 1 workflow',
+        enabled: true,
+        filters: [],
+        actions: [],
+      });
+
+      const user2Workflows = await sut.getAll(auth2);
+
+      expect(user2Workflows).toEqual([]);
+    });
+  });
+
+  describe('get', () => {
+    it('should return a specific workflow by id', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const auth = { user: { id: user.id } } as any;
+
+      const created = await sut.create(auth, {
+        triggerType: PluginTriggerType.AssetCreate,
+        name: 'test-workflow',
+        displayName: 'Test Workflow',
+        description: 'A test workflow',
+        enabled: true,
+        filters: [{ filterId: testFilterId, filterConfig: { key: 'value' } }],
+        actions: [{ actionId: testActionId, actionConfig: { action: 'test' } }],
+      });
+
+      const workflow = await sut.get(auth, created.id);
+
+      expect(workflow).toMatchObject({
+        id: created.id,
+        name: 'test-workflow',
+        displayName: 'Test Workflow',
+        description: 'A test workflow',
+        enabled: true,
+      });
+      expect(workflow.filters).toHaveLength(1);
+      expect(workflow.actions).toHaveLength(1);
+    });
+
+    it('should throw error when workflow does not exist', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const auth = { user: { id: user.id } } as any;
+
+      await expect(sut.get(auth, '66da82df-e424-4bf4-b6f3-5d8e71620dae')).rejects.toThrow();
+    });
+
+    it('should throw error when user does not have access to workflow', async () => {
+      const { sut, ctx } = setup();
+      const { user: user1 } = await ctx.newUser();
+      const { user: user2 } = await ctx.newUser();
+      const auth1 = { user: { id: user1.id } } as any;
+      const auth2 = { user: { id: user2.id } } as any;
+
+      const workflow = await sut.create(auth1, {
+        triggerType: PluginTriggerType.AssetCreate,
+        name: 'private-workflow',
+        displayName: 'Private Workflow',
+        description: 'Private workflow',
+        enabled: true,
+        filters: [],
+        actions: [],
+      });
+
+      await expect(sut.get(auth2, workflow.id)).rejects.toThrow();
+    });
+  });
+
+  describe('update', () => {
+    it('should update workflow basic fields', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const auth = { user: { id: user.id } } as any;
+
+      const created = await sut.create(auth, {
+        triggerType: PluginTriggerType.AssetCreate,
+        name: 'original-workflow',
+        displayName: 'Original Workflow',
+        description: 'Original description',
+        enabled: true,
+        filters: [],
+        actions: [],
+      });
+
+      const updated = await sut.update(auth, created.id, {
+        name: 'updated-workflow',
+        displayName: 'Updated Workflow',
+        description: 'Updated description',
+        enabled: false,
+      });
+
+      expect(updated).toMatchObject({
+        id: created.id,
+        name: 'updated-workflow',
+        displayName: 'Updated Workflow',
+        description: 'Updated description',
+        enabled: false,
+      });
+    });
+
+    it('should update workflow filters', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const auth = { user: { id: user.id } } as any;
+
+      const created = await sut.create(auth, {
+        triggerType: PluginTriggerType.AssetCreate,
+        name: 'test-workflow',
+        displayName: 'Test Workflow',
+        description: 'Test',
+        enabled: true,
+        filters: [{ filterId: testFilterId, filterConfig: { old: 'config' } }],
+        actions: [],
+      });
+
+      const updated = await sut.update(auth, created.id, {
+        filters: [
+          { filterId: testFilterId, filterConfig: { new: 'config' } },
+          { filterId: testFilterId, filterConfig: { second: 'filter' } },
+        ],
+      });
+
+      expect(updated.filters).toHaveLength(2);
+      expect(updated.filters[0].filterConfig).toEqual({ new: 'config' });
+      expect(updated.filters[1].filterConfig).toEqual({ second: 'filter' });
+    });
+
+    it('should update workflow actions', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const auth = { user: { id: user.id } } as any;
+
+      const created = await sut.create(auth, {
+        triggerType: PluginTriggerType.AssetCreate,
+        name: 'test-workflow',
+        displayName: 'Test Workflow',
+        description: 'Test',
+        enabled: true,
+        filters: [],
+        actions: [{ actionId: testActionId, actionConfig: { old: 'config' } }],
+      });
+
+      const updated = await sut.update(auth, created.id, {
+        actions: [
+          { actionId: testActionId, actionConfig: { new: 'config' } },
+          { actionId: testActionId, actionConfig: { second: 'action' } },
+        ],
+      });
+
+      expect(updated.actions).toHaveLength(2);
+      expect(updated.actions[0].actionConfig).toEqual({ new: 'config' });
+      expect(updated.actions[1].actionConfig).toEqual({ second: 'action' });
+    });
+
+    it('should clear filters when updated with empty array', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const auth = { user: { id: user.id } } as any;
+
+      const created = await sut.create(auth, {
+        triggerType: PluginTriggerType.AssetCreate,
+        name: 'test-workflow',
+        displayName: 'Test Workflow',
+        description: 'Test',
+        enabled: true,
+        filters: [{ filterId: testFilterId, filterConfig: { key: 'value' } }],
+        actions: [],
+      });
+
+      const updated = await sut.update(auth, created.id, {
+        filters: [],
+      });
+
+      expect(updated.filters).toHaveLength(0);
+    });
+
+    it('should throw error when no fields to update', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const auth = { user: { id: user.id } } as any;
+
+      const created = await sut.create(auth, {
+        triggerType: PluginTriggerType.AssetCreate,
+        name: 'test-workflow',
+        displayName: 'Test Workflow',
+        description: 'Test',
+        enabled: true,
+        filters: [],
+        actions: [],
+      });
+
+      await expect(sut.update(auth, created.id, {})).rejects.toThrow('No fields to update');
+    });
+
+    it('should throw error when updating non-existent workflow', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const auth = { user: { id: user.id } } as any;
+
+      await expect(
+        sut.update(auth, 'non-existent-id', {
+          name: 'updated-name',
+        }),
+      ).rejects.toThrow();
+    });
+
+    it('should throw error when user does not have access to update workflow', async () => {
+      const { sut, ctx } = setup();
+      const { user: user1 } = await ctx.newUser();
+      const { user: user2 } = await ctx.newUser();
+      const auth1 = { user: { id: user1.id } } as any;
+      const auth2 = { user: { id: user2.id } } as any;
+
+      const workflow = await sut.create(auth1, {
+        triggerType: PluginTriggerType.AssetCreate,
+        name: 'private-workflow',
+        displayName: 'Private Workflow',
+        description: 'Private',
+        enabled: true,
+        filters: [],
+        actions: [],
+      });
+
+      await expect(
+        sut.update(auth2, workflow.id, {
+          name: 'hacked-workflow',
+        }),
+      ).rejects.toThrow();
+    });
+
+    it('should throw error when updating with invalid filter', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const auth = { user: { id: user.id } } as any;
+
+      const created = await sut.create(auth, {
+        triggerType: PluginTriggerType.AssetCreate,
+        name: 'test-workflow',
+        displayName: 'Test Workflow',
+        description: 'Test',
+        enabled: true,
+        filters: [],
+        actions: [],
+      });
+
+      await expect(
+        sut.update(auth, created.id, {
+          filters: [{ filterId: 'invalid-filter-id', filterConfig: {} }],
+        }),
+      ).rejects.toThrow();
+    });
+
+    it('should throw error when updating with invalid action', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const auth = { user: { id: user.id } } as any;
+
+      const created = await sut.create(auth, {
+        triggerType: PluginTriggerType.AssetCreate,
+        name: 'test-workflow',
+        displayName: 'Test Workflow',
+        description: 'Test',
+        enabled: true,
+        filters: [],
+        actions: [],
+      });
+
+      await expect(
+        sut.update(auth, created.id, {
+          actions: [{ actionId: 'invalid-action-id', actionConfig: {} }],
+        }),
+      ).rejects.toThrow();
+    });
+  });
+
+  describe('delete', () => {
+    it('should delete a workflow', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const auth = { user: { id: user.id } } as any;
+
+      const workflow = await sut.create(auth, {
+        triggerType: PluginTriggerType.AssetCreate,
+        name: 'test-workflow',
+        displayName: 'Test Workflow',
+        description: 'Test',
+        enabled: true,
+        filters: [],
+        actions: [],
+      });
+
+      await sut.delete(auth, workflow.id);
+
+      await expect(sut.get(auth, workflow.id)).rejects.toThrow('Not found or no workflow.read access');
+    });
+
+    it('should delete workflow with filters and actions', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const auth = { user: { id: user.id } } as any;
+
+      const workflow = await sut.create(auth, {
+        triggerType: PluginTriggerType.AssetCreate,
+        name: 'test-workflow',
+        displayName: 'Test Workflow',
+        description: 'Test',
+        enabled: true,
+        filters: [{ filterId: testFilterId, filterConfig: {} }],
+        actions: [{ actionId: testActionId, actionConfig: {} }],
+      });
+
+      await sut.delete(auth, workflow.id);
+
+      await expect(sut.get(auth, workflow.id)).rejects.toThrow('Not found or no workflow.read access');
+    });
+
+    it('should throw error when deleting non-existent workflow', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const auth = { user: { id: user.id } } as any;
+
+      await expect(sut.delete(auth, 'non-existent-id')).rejects.toThrow();
+    });
+
+    it('should throw error when user does not have access to delete workflow', async () => {
+      const { sut, ctx } = setup();
+      const { user: user1 } = await ctx.newUser();
+      const { user: user2 } = await ctx.newUser();
+      const auth1 = { user: { id: user1.id } } as any;
+      const auth2 = { user: { id: user2.id } } as any;
+
+      const workflow = await sut.create(auth1, {
+        triggerType: PluginTriggerType.AssetCreate,
+        name: 'private-workflow',
+        displayName: 'Private Workflow',
+        description: 'Private',
+        enabled: true,
+        filters: [],
+        actions: [],
+      });
+
+      await expect(sut.delete(auth2, workflow.id)).rejects.toThrow();
     });
   });
 });
