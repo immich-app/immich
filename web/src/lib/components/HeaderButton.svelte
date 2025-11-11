@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { ActionItem } from '$lib/types';
-  import { IconButton, type IconButtonProps } from '@immich/ui';
+  import { Button, type ButtonProps, Text } from '@immich/ui';
 
   type Props = {
     action: ActionItem;
@@ -12,5 +12,7 @@
 </script>
 
 {#if action.$if?.() ?? true}
-  <IconButton variant="ghost" {color} shape="round" {...other as IconButtonProps} {icon} aria-label={title} {onclick} />
+  <Button variant="ghost" size="small" {color} {...other as ButtonProps} leadingIcon={icon} {onclick}>
+    <Text class="hidden md:block">{title}</Text>
+  </Button>
 {/if}
