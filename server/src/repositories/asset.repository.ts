@@ -255,6 +255,96 @@ export class AssetRepository {
     return this.db.insertInto('asset').values(asset).returningAll().executeTakeFirstOrThrow();
   }
 
+  createWithMetadata(asset: Insertable<AssetTable> & { id: string }, size: number, metadata?: AssetMetadataItem[]) {
+    let query = this.db;
+    if (asset.livePhotoVideoId) {
+      (query as any) = query.with('motion_asset', (qb) =>
+        qb
+          .updateTable('asset')
+          .set({ visibility: AssetVisibility.Hidden })
+          .where('id', '=', asset.livePhotoVideoId!)
+          .where('type', '=', sql.lit(AssetType.Video))
+          .where('ownerId', '=', asset.ownerId)
+          .returning('id'),
+      );
+    }
+
+    (query as any) = query
+      .with('asset', (qb) =>
+        qb
+          .insertInto('asset')
+          .values(
+            asset.livePhotoVideoId ? { ...asset, livePhotoVideoId: sql<string>`(select id from motion_asset)` } : asset,
+          )
+          .returning(['id', 'ownerId']),
+      )
+      .with('exif', (qb) =>
+        qb
+          .insertInto('asset_exif')
+          .columns(['assetId', 'fileSizeInByte'])
+          .expression((eb) => eb.selectFrom('asset').select(['asset.id', eb.val(size).as('fileSizeInByte')])),
+      );
+
+    if (metadata && metadata.length > 0) {
+      (query as any) = query.with('metadata', (qb) =>
+        qb.insertInto('asset_metadata').values(metadata.map(({ key, value }) => ({ assetId: asset.id, key, value }))),
+      );
+    }
+
+    return query
+      .updateTable('user')
+      .from('asset')
+      .set({ quotaUsageInBytes: sql`"quotaUsageInBytes" + ${size}` })
+      .whereRef('user.id', '=', 'asset.ownerId')
+      .execute();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID] })
+  getCompletionMetadata(assetId: string, ownerId: string) {
+    return this.db
+      .selectFrom('asset')
+      .innerJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
+      .select(['originalPath as path', 'status', 'fileModifiedAt', 'createdAt', 'checksum', 'fileSizeInByte as size'])
+      .where('id', '=', assetId)
+      .where('ownerId', '=', ownerId)
+      .executeTakeFirst();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  async setComplete(assetId: string) {
+    await this.db
+      .updateTable('asset as complete_asset')
+      .set((eb) => ({
+        status: sql.lit(AssetStatus.Active),
+        visibility: eb
+          .case()
+          .when(
+            eb.and([
+              eb('complete_asset.type', '=', sql.lit(AssetType.Video)),
+              eb.exists(eb.selectFrom('asset').whereRef('complete_asset.id', '=', 'asset.livePhotoVideoId')),
+            ]),
+          )
+          .then(sql<AssetVisibility>`'hidden'::asset_visibility_enum`)
+          .else(sql<AssetVisibility>`'timeline'::asset_visibility_enum`)
+          .end(),
+      }))
+      .where('id', '=', assetId)
+      .where('status', '=', sql.lit(AssetStatus.Partial))
+      .execute();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  async removeAndDecrementQuota(id: string): Promise<void> {
+    await this.db
+      .with('asset_exif', (qb) => qb.selectFrom('asset_exif').where('assetId', '=', id).select('fileSizeInByte'))
+      .with('asset', (qb) => qb.deleteFrom('asset').where('id', '=', id).returning('ownerId'))
+      .updateTable('user')
+      .from(['asset_exif', 'asset'])
+      .set({ quotaUsageInBytes: sql`"quotaUsageInBytes" - "fileSizeInByte"` })
+      .whereRef('user.id', '=', 'asset.ownerId')
+      .execute();
+  }
+
   createAll(assets: Insertable<AssetTable>[]) {
     return this.db.insertInto('asset').values(assets).returningAll().execute();
   }
@@ -494,17 +584,15 @@ export class AssetRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.BUFFER] })
-  async getUploadAssetIdByChecksum(ownerId: string, checksum: Buffer): Promise<string | undefined> {
-    const asset = await this.db
+  getUploadAssetIdByChecksum(ownerId: string, checksum: Buffer) {
+    return this.db
       .selectFrom('asset')
-      .select('id')
+      .select(['id', 'status', 'createdAt'])
       .where('ownerId', '=', asUuid(ownerId))
       .where('checksum', '=', checksum)
       .where('libraryId', 'is', null)
       .limit(1)
       .executeTakeFirst();
-
-    return asset?.id;
   }
 
   findLivePhotoMatch(options: LivePhotoSearchOptions) {

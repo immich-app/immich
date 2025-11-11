@@ -22,6 +22,9 @@ export interface SystemConfig {
       cronExpression: string;
       keepLastAmount: number;
     };
+    upload: {
+      maxAgeHours: number;
+    };
   };
   ffmpeg: {
     crf: number;
@@ -140,6 +143,7 @@ export interface SystemConfig {
     clusterNewFaces: boolean;
     generateMemories: boolean;
     syncQuotaUsage: boolean;
+    removeStaleUploads: boolean;
   };
   trash: {
     enabled: boolean;
@@ -197,6 +201,9 @@ export const defaults = Object.freeze<SystemConfig>({
       enabled: true,
       cronExpression: CronExpression.EVERY_DAY_AT_2AM,
       keepLastAmount: 14,
+    },
+    upload: {
+      maxAgeHours: 72,
     },
   },
   ffmpeg: {
@@ -341,6 +348,7 @@ export const defaults = Object.freeze<SystemConfig>({
     syncQuotaUsage: true,
     missingThumbnails: true,
     clusterNewFaces: true,
+    removeStaleUploads: true,
   },
   trash: {
     enabled: true,

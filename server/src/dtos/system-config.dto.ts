@@ -55,11 +55,23 @@ export class DatabaseBackupConfig {
   keepLastAmount!: number;
 }
 
+export class UploadBackupConfig {
+  @IsInt()
+  @IsPositive()
+  @IsNotEmpty()
+  maxAgeHours!: number;
+}
+
 export class SystemConfigBackupsDto {
   @Type(() => DatabaseBackupConfig)
   @ValidateNested()
   @IsObject()
   database!: DatabaseBackupConfig;
+
+  @Type(() => UploadBackupConfig)
+  @ValidateNested()
+  @IsObject()
+  upload!: UploadBackupConfig;
 }
 
 export class SystemConfigFFmpegDto {
@@ -355,6 +367,9 @@ class SystemConfigNightlyTasksDto {
 
   @ValidateBoolean()
   syncQuotaUsage!: boolean;
+
+  @ValidateBoolean()
+  removeStaleUploads!: boolean;
 }
 
 class SystemConfigOAuthDto {

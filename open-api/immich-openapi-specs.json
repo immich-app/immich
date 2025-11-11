@@ -9409,6 +9409,324 @@
         "description": "This endpoint requires the `asset.delete` permission."
       }
     },
+    "/upload": {
+      "options": {
+        "operationId": "getUploadOptions",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Upload"
+        ]
+      },
+      "post": {
+        "operationId": "startUpload",
+        "parameters": [
+          {
+            "name": "content-length",
+            "in": "header",
+            "description": "Non-negative size of the request body in bytes.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "repr-digest",
+            "in": "header",
+            "description": "RFC 9651 structured dictionary containing an `sha` (bytesequence) checksum used to detect duplicate files and validate data integrity.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "upload-complete",
+            "in": "header",
+            "description": "Structured boolean indicating whether this request completes the file. Use Upload-Incomplete instead for version <= 3.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "upload-draft-interop-version",
+            "in": "header",
+            "description": "Indicates the version of the RUFH protocol supported by the client.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-immich-asset-data",
+            "in": "header",
+            "description": "RFC 9651 structured dictionary containing asset metadata with the following keys:\n- device-asset-id (string, required): Unique device asset identifier\n- device-id (string, required): Device identifier\n- file-created-at (string/date, required): ISO 8601 date string or Unix timestamp\n- file-modified-at (string/date, required): ISO 8601 date string or Unix timestamp\n- filename (string, required): Original filename\n- is-favorite (boolean, optional): Favorite status\n- live-photo-video-id (string, optional): Live photo ID for assets from iOS devices\n- icloud-id (string, optional): iCloud identifier for assets from iOS devices",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UploadOkDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Upload"
+        ],
+        "x-immich-permission": "asset.upload",
+        "description": "This endpoint requires the `asset.upload` permission."
+      }
+    },
+    "/upload/{id}": {
+      "delete": {
+        "operationId": "cancelUpload",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Upload"
+        ],
+        "x-immich-permission": "asset.upload",
+        "description": "This endpoint requires the `asset.upload` permission."
+      },
+      "head": {
+        "operationId": "getUploadStatus",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "upload-draft-interop-version",
+            "in": "header",
+            "description": "Indicates the version of the RUFH protocol supported by the client.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Upload"
+        ],
+        "x-immich-permission": "asset.upload",
+        "description": "This endpoint requires the `asset.upload` permission."
+      },
+      "patch": {
+        "operationId": "resumeUpload",
+        "parameters": [
+          {
+            "name": "content-length",
+            "in": "header",
+            "description": "Non-negative size of the request body in bytes.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "upload-complete",
+            "in": "header",
+            "description": "Structured boolean indicating whether this request completes the file. Use Upload-Incomplete instead for version <= 3.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "upload-draft-interop-version",
+            "in": "header",
+            "description": "Indicates the version of the RUFH protocol supported by the client.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "upload-offset",
+            "in": "header",
+            "description": "Non-negative byte offset indicating the starting position of the data in the request body within the entire file.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UploadOkDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Upload"
+        ],
+        "x-immich-permission": "asset.upload",
+        "description": "This endpoint requires the `asset.upload` permission."
+      }
+    },
     "/users": {
       "get": {
         "operationId": "searchUsers",
@@ -16393,10 +16711,14 @@
         "properties": {
           "database": {
             "$ref": "#/components/schemas/DatabaseBackupConfig"
+          },
+          "upload": {
+            "$ref": "#/components/schemas/UploadBackupConfig"
           }
         },
         "required": [
-          "database"
+          "database",
+          "upload"
         ],
         "type": "object"
       },
@@ -16929,6 +17251,9 @@
           "missingThumbnails": {
             "type": "boolean"
           },
+          "removeStaleUploads": {
+            "type": "boolean"
+          },
           "startTime": {
             "type": "string"
           },
@@ -16941,6 +17266,7 @@
           "databaseCleanup",
           "generateMemories",
           "missingThumbnails",
+          "removeStaleUploads",
           "startTime",
           "syncQuotaUsage"
         ],
@@ -17791,6 +18117,29 @@
             "type": "string"
           }
         },
+        "type": "object"
+      },
+      "UploadBackupConfig": {
+        "properties": {
+          "maxAgeHours": {
+            "minimum": 1,
+            "type": "number"
+          }
+        },
+        "required": [
+          "maxAgeHours"
+        ],
+        "type": "object"
+      },
+      "UploadOkDto": {
+        "properties": {
+          "id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ],
         "type": "object"
       },
       "UsageByUserDto": {

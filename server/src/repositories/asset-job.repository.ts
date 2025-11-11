@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { Kysely } from 'kysely';
+import { Kysely, sql } from 'kysely';
 import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
 import { Asset, columns } from 'src/database';
 import { DummyValue, GenerateSql } from 'src/decorators';
-import { AssetFileType, AssetType, AssetVisibility } from 'src/enum';
+import { AssetFileType, AssetStatus, AssetType, AssetVisibility } from 'src/enum';
 import { DB } from 'src/schema';
 import { StorageAsset } from 'src/types';
 import {
@@ -29,6 +29,7 @@ export class AssetJobRepository {
     return this.db
       .selectFrom('asset')
       .where('asset.id', '=', asUuid(id))
+      .where('asset.status', '!=', sql.lit(AssetStatus.Partial))
       .leftJoin('smart_search', 'asset.id', 'smart_search.assetId')
       .select(['id', 'type', 'ownerId', 'duplicateId', 'stackId', 'visibility', 'smart_search.embedding'])
       .limit(1)
@@ -40,6 +41,7 @@ export class AssetJobRepository {
     return this.db
       .selectFrom('asset')
       .where('asset.id', '=', asUuid(id))
+      .where('asset.status', '!=', sql.lit(AssetStatus.Partial))
       .select(['id', 'sidecarPath', 'originalPath'])
       .select((eb) =>
         jsonArrayFrom(
@@ -59,6 +61,7 @@ export class AssetJobRepository {
     return this.db
       .selectFrom('asset')
       .where('asset.id', '=', asUuid(id))
+      .where('asset.status', '!=', sql.lit(AssetStatus.Partial))
       .select(['id', 'sidecarPath', 'originalPath'])
       .limit(1)
       .executeTakeFirst();
@@ -70,6 +73,7 @@ export class AssetJobRepository {
       .selectFrom('asset')
       .select(['asset.id', 'asset.thumbhash'])
       .select(withFiles)
+      .where('asset.status', '!=', sql.lit(AssetStatus.Partial))
       .where('asset.deletedAt', 'is', null)
       .where('asset.visibility', '!=', AssetVisibility.Hidden)
       .$if(!force, (qb) =>
@@ -94,6 +98,7 @@ export class AssetJobRepository {
       .select(['asset.id', 'asset.ownerId', 'asset.encodedVideoPath'])
       .select(withFiles)
       .where('asset.id', '=', id)
+      .where('asset.status', '!=', sql.lit(AssetStatus.Partial))
       .executeTakeFirst();
   }
 
@@ -113,6 +118,7 @@ export class AssetJobRepository {
       .select(withFiles)
       .$call(withExifInner)
       .where('asset.id', '=', id)
+      .where('asset.status', '!=', sql.lit(AssetStatus.Partial))
       .executeTakeFirst();
   }
 
@@ -123,6 +129,7 @@ export class AssetJobRepository {
       .select(columns.asset)
       .select(withFaces)
       .where('asset.id', '=', id)
+      .where('asset.status', '!=', sql.lit(AssetStatus.Partial))
       .executeTakeFirst();
   }
 
@@ -140,6 +147,7 @@ export class AssetJobRepository {
     return this.db
       .selectFrom('asset')
       .where('asset.visibility', '!=', AssetVisibility.Hidden)
+      .where('asset.status', '!=', sql.lit(AssetStatus.Partial))
       .where('asset.deletedAt', 'is', null)
       .innerJoin('asset_job_status as job_status', 'assetId', 'asset.id')
       .where('job_status.previewAt', 'is not', null);
@@ -150,6 +158,7 @@ export class AssetJobRepository {
     return this.db
       .selectFrom('asset')
       .select(['asset.id'])
+      .where('asset.status', '!=', sql.lit(AssetStatus.Partial))
       .where('asset.deletedAt', 'is', null)
       .innerJoin('smart_search', 'asset.id', 'smart_search.assetId')
       .$call(withDefaultVisibility)
@@ -178,6 +187,7 @@ export class AssetJobRepository {
       .select(['asset.id', 'asset.visibility'])
       .select((eb) => withFiles(eb, AssetFileType.Preview))
       .where('asset.id', '=', id)
+      .where('asset.status', '!=', sql.lit(AssetStatus.Partial))
       .executeTakeFirst();
   }
 
@@ -190,6 +200,7 @@ export class AssetJobRepository {
       .select((eb) => withFaces(eb, true))
       .select((eb) => withFiles(eb, AssetFileType.Preview))
       .where('asset.id', '=', id)
+      .where('asset.status', '!=', sql.lit(AssetStatus.Partial))
       .executeTakeFirst();
   }
 
@@ -251,6 +262,7 @@ export class AssetJobRepository {
       )
       .select((eb) => toJson(eb, 'stacked_assets').as('stack'))
       .where('asset.id', '=', id)
+      .where('asset.status', '!=', sql.lit(AssetStatus.Partial))
       .executeTakeFirst();
   }
 
@@ -265,6 +277,7 @@ export class AssetJobRepository {
           .where((eb) => eb.or([eb('asset.encodedVideoPath', 'is', null), eb('asset.encodedVideoPath', '=', '')]))
           .where('asset.visibility', '!=', AssetVisibility.Hidden),
       )
+      .where('asset.status', '!=', sql.lit(AssetStatus.Partial))
       .where('asset.deletedAt', 'is', null)
       .stream();
   }
@@ -276,6 +289,7 @@ export class AssetJobRepository {
       .select(['asset.id', 'asset.ownerId', 'asset.originalPath', 'asset.encodedVideoPath'])
       .where('asset.id', '=', id)
       .where('asset.type', '=', AssetType.Video)
+      .where('asset.status', '!=', sql.lit(AssetStatus.Partial))
       .executeTakeFirst();
   }
 
@@ -291,6 +305,7 @@ export class AssetJobRepository {
             eb.or([eb('asset_job_status.metadataExtractedAt', 'is', null), eb('asset_job_status.assetId', 'is', null)]),
           ),
       )
+      .where('asset.status', '!=', sql.lit(AssetStatus.Partial))
       .where('asset.deletedAt', 'is', null)
       .stream();
   }
@@ -313,6 +328,7 @@ export class AssetJobRepository {
         'asset_exif.timeZone',
         'asset_exif.fileSizeInByte',
       ])
+      .where('asset.status', '!=', sql.lit(AssetStatus.Partial))
       .where('asset.deletedAt', 'is', null);
   }
 
@@ -334,6 +350,7 @@ export class AssetJobRepository {
       .selectFrom('asset')
       .select(['id', 'isOffline'])
       .where('asset.deletedAt', '<=', trashedBefore)
+      .where('asset.status', '!=', sql.lit(AssetStatus.Partial))
       .stream();
   }
 
@@ -346,6 +363,7 @@ export class AssetJobRepository {
         qb.where((eb) => eb.or([eb('asset.sidecarPath', '=', ''), eb('asset.sidecarPath', 'is', null)])),
       )
       .where('asset.visibility', '!=', AssetVisibility.Hidden)
+      .where('asset.status', '!=', sql.lit(AssetStatus.Partial))
       .stream();
   }
 
@@ -354,6 +372,7 @@ export class AssetJobRepository {
     return this.assetsWithPreviews()
       .$if(force === false, (qb) => qb.where('job_status.facesRecognizedAt', 'is', null))
       .select(['asset.id'])
+      .where('asset.status', '!=', sql.lit(AssetStatus.Partial))
       .orderBy('asset.fileCreatedAt', 'desc')
       .stream();
   }
@@ -375,6 +394,31 @@ export class AssetJobRepository {
 
   @GenerateSql({ params: [DummyValue.DATE], stream: true })
   streamForMigrationJob() {
-    return this.db.selectFrom('asset').select(['id']).where('asset.deletedAt', 'is', null).stream();
+    return this.db
+      .selectFrom('asset')
+      .select(['id'])
+      .where('asset.status', '!=', sql.lit(AssetStatus.Partial))
+      .where('asset.deletedAt', 'is', null)
+      .stream();
+  }
+
+  getForPartialAssetCleanupJob(assetId: string) {
+    return this.db
+      .selectFrom('asset')
+      .innerJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
+      .select(['originalPath as path', 'fileSizeInByte as size', 'checksum', 'fileModifiedAt'])
+      .where('id', '=', assetId)
+      .where('status', '=', sql.lit(AssetStatus.Partial))
+      .executeTakeFirst();
+  }
+
+  @GenerateSql({ params: [DummyValue.DATE], stream: true })
+  streamForPartialAssetCleanupJob(createdBefore: Date) {
+    return this.db
+      .selectFrom('asset')
+      .select(['id'])
+      .where('asset.status', '=', sql.lit(AssetStatus.Partial))
+      .where('asset.createdAt', '<', createdBefore)
+      .stream();
   }
 }

@@ -14,6 +14,7 @@ import {
 import _ from 'lodash';
 import { writeFileSync } from 'node:fs';
 import path from 'node:path';
+import { setTimeout } from 'node:timers/promises';
 import picomatch from 'picomatch';
 import parse from 'picomatch/lib/parse';
 import { SystemConfig } from 'src/config';
@@ -325,4 +326,19 @@ export const globToSqlPattern = (glob: string) => {
 
 export function clamp(value: number, min: number, max: number) {
   return Math.max(min, Math.min(max, value));
+}
+
+export async function withRetry<T>(operation: () => Promise<T>, retries: number = 2, delay: number = 100): Promise<T> {
+  let lastError: any;
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      return await operation();
+    } catch (error: any) {
+      lastError = error;
+    }
+    if (attempt < retries) {
+      await setTimeout(delay);
+    }
+  }
+  throw lastError;
 }

@@ -99,7 +99,7 @@ export const getKyselyConfig = (
       }),
     }),
     log(event) {
-      if (event.level === 'error') {
+      if (event.level === 'error' && (event.error as PostgresError).constraint_name !== ASSET_CHECKSUM_CONSTRAINT) {
         console.error('Query failed :', {
           durationMs: event.queryDurationMillis,
           error: event.error,
