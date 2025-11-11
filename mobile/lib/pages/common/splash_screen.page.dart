@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
@@ -65,7 +66,7 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
               if (Store.isBetaTimelineEnabled) {
                 bool syncSuccess = false;
                 await Future.wait([
-                  backgroundManager.syncLocal(full: true),
+                  backgroundManager.syncLocal(full: Platform.isAndroid ? true : false),
                   backgroundManager.syncRemote().then((success) => syncSuccess = success),
                 ]);
 
