@@ -9,6 +9,8 @@ concurrency:
   group: ${{ github.workflow }}
   cancel-in-progress: true
 
+permissions: {}
+
 jobs:
   bump:
     runs-on: ubuntu-latest
@@ -29,7 +31,7 @@ jobs:
 
       - name: Determine release type
         id: bump-type
-        uses: ietf-tools/semver-action@v1.11.0
+        uses: ietf-tools/semver-action@c90370b2958652d71c06a3484129a4d423a6d8a8 # v1.11.0
         with:
           token: ${{ steps.generate-token.outputs.token }}
 
