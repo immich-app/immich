@@ -802,14 +802,14 @@ class ApiClient {
           return VideoCodecTypeTransformer().decode(value);
         case 'VideoContainer':
           return VideoContainerTypeTransformer().decode(value);
-        case 'WorkflowActionCreateDto':
-          return WorkflowActionCreateDto.fromJson(value);
+        case 'WorkflowActionItemDto':
+          return WorkflowActionItemDto.fromJson(value);
         case 'WorkflowActionResponseDto':
           return WorkflowActionResponseDto.fromJson(value);
         case 'WorkflowCreateDto':
           return WorkflowCreateDto.fromJson(value);
-        case 'WorkflowFilterCreateDto':
-          return WorkflowFilterCreateDto.fromJson(value);
+        case 'WorkflowFilterItemDto':
+          return WorkflowFilterItemDto.fromJson(value);
         case 'WorkflowFilterResponseDto':
           return WorkflowFilterResponseDto.fromJson(value);
         case 'WorkflowResponseDto':

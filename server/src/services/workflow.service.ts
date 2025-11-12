@@ -54,8 +54,8 @@ export class WorkflowService extends BaseService {
     }
 
     const { filters, actions, ...workflowUpdate } = dto;
-    const filterInserts = filters !== undefined ? await this.validateAndMapFilters(filters) : undefined;
-    const actionInserts = actions !== undefined ? await this.validateAndMapActions(actions) : undefined;
+    const filterInserts = filters === undefined ? undefined : await this.validateAndMapFilters(filters);
+    const actionInserts = actions === undefined ? undefined : await this.validateAndMapActions(actions);
 
     const workflow = await this.workflowRepository.updateWorkflow(id, workflowUpdate, filterInserts, actionInserts);
 

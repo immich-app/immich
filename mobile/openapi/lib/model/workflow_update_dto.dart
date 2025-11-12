@@ -13,12 +13,16 @@ part of openapi.api;
 class WorkflowUpdateDto {
   /// Returns a new [WorkflowUpdateDto] instance.
   WorkflowUpdateDto({
+    this.actions = const [],
     this.description,
     this.displayName,
     this.enabled,
+    this.filters = const [],
     this.name,
     this.triggerConfig,
   });
+
+  List<WorkflowActionItemDto> actions;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -44,6 +48,8 @@ class WorkflowUpdateDto {
   ///
   bool? enabled;
 
+  List<WorkflowFilterItemDto> filters;
+
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -62,26 +68,31 @@ class WorkflowUpdateDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is WorkflowUpdateDto &&
+    _deepEquality.equals(other.actions, actions) &&
     other.description == description &&
     other.displayName == displayName &&
     other.enabled == enabled &&
+    _deepEquality.equals(other.filters, filters) &&
     other.name == name &&
     other.triggerConfig == triggerConfig;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (actions.hashCode) +
     (description == null ? 0 : description!.hashCode) +
     (displayName == null ? 0 : displayName!.hashCode) +
     (enabled == null ? 0 : enabled!.hashCode) +
+    (filters.hashCode) +
     (name == null ? 0 : name!.hashCode) +
     (triggerConfig == null ? 0 : triggerConfig!.hashCode);
 
   @override
-  String toString() => 'WorkflowUpdateDto[description=$description, displayName=$displayName, enabled=$enabled, name=$name, triggerConfig=$triggerConfig]';
+  String toString() => 'WorkflowUpdateDto[actions=$actions, description=$description, displayName=$displayName, enabled=$enabled, filters=$filters, name=$name, triggerConfig=$triggerConfig]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+      json[r'actions'] = this.actions;
     if (this.description != null) {
       json[r'description'] = this.description;
     } else {
@@ -97,6 +108,7 @@ class WorkflowUpdateDto {
     } else {
     //  json[r'enabled'] = null;
     }
+      json[r'filters'] = this.filters;
     if (this.name != null) {
       json[r'name'] = this.name;
     } else {
@@ -119,9 +131,11 @@ class WorkflowUpdateDto {
       final json = value.cast<String, dynamic>();
 
       return WorkflowUpdateDto(
+        actions: WorkflowActionItemDto.listFromJson(json[r'actions']),
         description: mapValueOfType<String>(json, r'description'),
         displayName: mapValueOfType<String>(json, r'displayName'),
         enabled: mapValueOfType<bool>(json, r'enabled'),
+        filters: WorkflowFilterItemDto.listFromJson(json[r'filters']),
         name: mapValueOfType<String>(json, r'name'),
         triggerConfig: mapValueOfType<Object>(json, r'triggerConfig'),
       );

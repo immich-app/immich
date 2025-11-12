@@ -13,13 +13,17 @@ part of openapi.api;
 class WorkflowCreateDto {
   /// Returns a new [WorkflowCreateDto] instance.
   WorkflowCreateDto({
+    this.actions = const [],
     this.description,
     required this.displayName,
     this.enabled,
+    this.filters = const [],
     required this.name,
     this.triggerConfig,
     required this.triggerType,
   });
+
+  List<WorkflowActionItemDto> actions;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -39,6 +43,8 @@ class WorkflowCreateDto {
   ///
   bool? enabled;
 
+  List<WorkflowFilterItemDto> filters;
+
   String name;
 
   ///
@@ -53,9 +59,11 @@ class WorkflowCreateDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is WorkflowCreateDto &&
+    _deepEquality.equals(other.actions, actions) &&
     other.description == description &&
     other.displayName == displayName &&
     other.enabled == enabled &&
+    _deepEquality.equals(other.filters, filters) &&
     other.name == name &&
     other.triggerConfig == triggerConfig &&
     other.triggerType == triggerType;
@@ -63,18 +71,21 @@ class WorkflowCreateDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (actions.hashCode) +
     (description == null ? 0 : description!.hashCode) +
     (displayName.hashCode) +
     (enabled == null ? 0 : enabled!.hashCode) +
+    (filters.hashCode) +
     (name.hashCode) +
     (triggerConfig == null ? 0 : triggerConfig!.hashCode) +
     (triggerType.hashCode);
 
   @override
-  String toString() => 'WorkflowCreateDto[description=$description, displayName=$displayName, enabled=$enabled, name=$name, triggerConfig=$triggerConfig, triggerType=$triggerType]';
+  String toString() => 'WorkflowCreateDto[actions=$actions, description=$description, displayName=$displayName, enabled=$enabled, filters=$filters, name=$name, triggerConfig=$triggerConfig, triggerType=$triggerType]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+      json[r'actions'] = this.actions;
     if (this.description != null) {
       json[r'description'] = this.description;
     } else {
@@ -86,6 +97,7 @@ class WorkflowCreateDto {
     } else {
     //  json[r'enabled'] = null;
     }
+      json[r'filters'] = this.filters;
       json[r'name'] = this.name;
     if (this.triggerConfig != null) {
       json[r'triggerConfig'] = this.triggerConfig;
@@ -105,9 +117,11 @@ class WorkflowCreateDto {
       final json = value.cast<String, dynamic>();
 
       return WorkflowCreateDto(
+        actions: WorkflowActionItemDto.listFromJson(json[r'actions']),
         description: mapValueOfType<String>(json, r'description'),
         displayName: mapValueOfType<String>(json, r'displayName')!,
         enabled: mapValueOfType<bool>(json, r'enabled'),
+        filters: WorkflowFilterItemDto.listFromJson(json[r'filters']),
         name: mapValueOfType<String>(json, r'name')!,
         triggerConfig: mapValueOfType<Object>(json, r'triggerConfig'),
         triggerType: PluginTriggerType.fromJson(json[r'triggerType'])!,
@@ -158,7 +172,9 @@ class WorkflowCreateDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
+    'actions',
     'displayName',
+    'filters',
     'name',
     'triggerType',
   };

@@ -1,49 +1,36 @@
 <script lang="ts">
   import SharedLinkExpiration from '$lib/components/SharedLinkExpiration.svelte';
-  import { handleCreateSharedLink } from '$lib/services/shared-link.service';
-  import { SharedLinkType } from '@immich/sdk';
+  import { handleUpdateSharedLink } from '$lib/services/shared-link.service';
+  import { SharedLinkType, type SharedLinkResponseDto } from '@immich/sdk';
   import { Button, Field, HStack, Input, Modal, ModalBody, ModalFooter, PasswordInput, Switch, Text } from '@immich/ui';
   import { mdiLink } from '@mdi/js';
-  import { DateTime } from 'luxon';
   import { t } from 'svelte-i18n';
 
   interface Props {
     onClose: (success?: boolean) => void;
-    albumId?: string;
-    assetIds?: string[];
+    sharedLink: SharedLinkResponseDto;
   }
 
-  let { onClose, albumId = $bindable(), assetIds = $bindable([]) }: Props = $props();
+  let { onClose, sharedLink }: Props = $props();
 
-  let description = $state('');
-  let allowDownload = $state(true);
-  let allowUpload = $state(false);
-  let showMetadata = $state(true);
-  let expirationOption: number = $state(0);
-  let password = $state('');
-  let slug = $state('');
-  let expiresAt = $state<string | null>(null);
+  let description = $state(sharedLink.description ?? '');
+  let allowDownload = $state(sharedLink.allowDownload);
+  let allowUpload = $state(sharedLink.allowUpload);
+  let showMetadata = $state(sharedLink.showMetadata);
+  let password = $state(sharedLink.password ?? '');
+  let slug = $state(sharedLink.slug ?? '');
+  let shareType = sharedLink.album ? SharedLinkType.Album : SharedLinkType.Individual;
+  let expiresAt = $state(sharedLink.expiresAt);
 
-  let shareType = $derived(albumId ? SharedLinkType.Album : SharedLinkType.Individual);
-
-  $effect(() => {
-    if (!showMetadata) {
-      allowDownload = false;
-    }
-  });
-
-  const onCreate = async () => {
-    const success = await handleCreateSharedLink({
-      type: shareType,
-      albumId,
-      assetIds,
-      expiresAt: expirationOption > 0 ? DateTime.now().plus(expirationOption).toISO() : undefined,
-      allowUpload,
+  const onUpdate = async () => {
+    const success = await handleUpdateSharedLink(sharedLink, {
       description,
-      password,
+      password: password ?? null,
+      expiresAt,
+      allowUpload,
       allowDownload,
       showMetadata,
-      slug,
+      slug: slug.trim() ?? null,
     });
 
     if (success) {
@@ -52,14 +39,20 @@
   };
 </script>
 
-<Modal title={$t('create_link_to_share')} icon={mdiLink} size="small" {onClose}>
+<Modal title={$t('edit_link')} icon={mdiLink} size="small" {onClose}>
   <ModalBody>
     {#if shareType === SharedLinkType.Album}
-      <div>{$t('album_with_link_access')}</div>
+      <div class="text-sm">
+        {$t('public_album')} |
+        <span class="text-primary">{sharedLink.album?.albumName}</span>
+      </div>
     {/if}
 
     {#if shareType === SharedLinkType.Individual}
-      <div>{$t('create_link_to_share_description')}</div>
+      <div class="text-sm">
+        {$t('individual_share')} |
+        <span class="text-primary">{sharedLink.description || ''}</span>
+      </div>
     {/if}
 
     <div class="flex flex-col gap-4 mt-4">
@@ -80,7 +73,7 @@
         <Input bind:value={description} autocomplete="off" />
       </Field>
 
-      <SharedLinkExpiration bind:expiresAt />
+      <SharedLinkExpiration createdAt={sharedLink.createdAt} bind:expiresAt />
 
       <Field label={$t('show_metadata')}>
         <Switch bind:checked={showMetadata} />
@@ -99,7 +92,7 @@
   <ModalFooter>
     <HStack fullWidth>
       <Button color="secondary" shape="round" fullWidth onclick={() => onClose()}>{$t('cancel')}</Button>
-      <Button fullWidth shape="round" onclick={onCreate}>{$t('create_link')}</Button>
+      <Button fullWidth shape="round" onclick={onUpdate}>{$t('confirm')}</Button>
     </HStack>
   </ModalFooter>
 </Modal>

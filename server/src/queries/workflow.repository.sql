@@ -42,10 +42,10 @@ where
 order by
   "order" asc
 
--- WorkflowRepository.deleteFilter
+-- WorkflowRepository.deleteFiltersByWorkflow
 delete from "workflow_filter"
 where
-  "id" = $1
+  "workflowId" = $1
 
 -- WorkflowRepository.getActions
 select
@@ -56,8 +56,3 @@ where
   "workflowId" = $1
 order by
   "order" asc
-
--- WorkflowRepository.deleteAction
-delete from "workflow_action"
-where
-  "id" = $1

@@ -1,43 +1,60 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { APIKeyCreateDto, APIKeyCreateResponseDto, APIKeyResponseDto, APIKeyUpdateDto } from 'src/dtos/api-key.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { Permission } from 'src/enum';
+import { ApiTag, Permission } from 'src/enum';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { ApiKeyService } from 'src/services/api-key.service';
 import { UUIDParamDto } from 'src/validation';
 
-@ApiTags('API Keys')
+@ApiTags(ApiTag.ApiKeys)
 @Controller('api-keys')
 export class ApiKeyController {
   constructor(private service: ApiKeyService) {}
 
   @Post()
   @Authenticated({ permission: Permission.ApiKeyCreate })
+  @ApiOperation({
+    summary: 'Create an API key',
+    description: 'Creates a new API key. It will be limited to the permissions specified.',
+  })
   createApiKey(@Auth() auth: AuthDto, @Body() dto: APIKeyCreateDto): Promise<APIKeyCreateResponseDto> {
     return this.service.create(auth, dto);
   }
 
   @Get()
   @Authenticated({ permission: Permission.ApiKeyRead })
+  @ApiOperation({ summary: 'List all API keys', description: 'Retrieve all API keys of the current user.' })
   getApiKeys(@Auth() auth: AuthDto): Promise<APIKeyResponseDto[]> {
     return this.service.getAll(auth);
   }
 
   @Get('me')
   @Authenticated({ permission: false })
+  @ApiOperation({
+    summary: 'Retrieve the current API key',
+    description: 'Retrieve the API key that is used to access this endpoint.',
+  })
   async getMyApiKey(@Auth() auth: AuthDto): Promise<APIKeyResponseDto> {
     return this.service.getMine(auth);
   }
 
   @Get(':id')
   @Authenticated({ permission: Permission.ApiKeyRead })
+  @ApiOperation({
+    summary: 'Retrieve an API key',
+    description: 'Retrieve an API key by its ID. The current user must own this API key.',
+  })
   getApiKey(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<APIKeyResponseDto> {
     return this.service.getById(auth, id);
   }
 
   @Put(':id')
   @Authenticated({ permission: Permission.ApiKeyUpdate })
+  @ApiOperation({
+    summary: 'Update an API key',
+    description: 'Updates the name and permissions of an API key by its ID. The current user must own this API key.',
+  })
   updateApiKey(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
@@ -49,6 +66,10 @@ export class ApiKeyController {
   @Delete(':id')
   @Authenticated({ permission: Permission.ApiKeyDelete })
   @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({
+    summary: 'Delete an API key',
+    description: 'Deletes an API key identified by its ID. The current user must own this API key.',
+  })
   deleteApiKey(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<void> {
     return this.service.delete(auth, id);
   }

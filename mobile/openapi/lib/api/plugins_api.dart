@@ -16,10 +16,7 @@ class PluginsApi {
 
   final ApiClient apiClient;
 
-  /// This endpoint requires the `plugin.read` permission.
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
+  /// Performs an HTTP 'GET /plugins/{id}' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -49,8 +46,6 @@ class PluginsApi {
     );
   }
 
-  /// This endpoint requires the `plugin.read` permission.
-  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -69,9 +64,7 @@ class PluginsApi {
     return null;
   }
 
-  /// This endpoint requires the `plugin.read` permission.
-  ///
-  /// Note: This method returns the HTTP [Response].
+  /// Performs an HTTP 'GET /plugins' operation and returns the [Response].
   Future<Response> getPluginsWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final apiPath = r'/plugins';
@@ -97,7 +90,6 @@ class PluginsApi {
     );
   }
 
-  /// This endpoint requires the `plugin.read` permission.
   Future<List<PluginResponseDto>?> getPlugins() async {
     final response = await getPluginsWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
