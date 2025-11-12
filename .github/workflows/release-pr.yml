@@ -29,6 +29,19 @@ jobs:
           persist-credentials: true
           ref: main
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@85856786d1ce8acfbcc2f13a5f3fbd6b938f9f41 # v7.1.2
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4.2.0
+
+      - name: Setup Node
+        uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6.0.0
+        with:
+          node-version-file: './server/.nvmrc'
+          cache: 'pnpm'
+          cache-dependency-path: '**/pnpm-lock.yaml'
+
       - name: Determine release type
         id: bump-type
         uses: ietf-tools/semver-action@c90370b2958652d71c06a3484129a4d423a6d8a8 # v1.11.0
@@ -53,31 +66,29 @@ jobs:
             const collectionId = 'e2910656-714c-4871-8721-447d9353bd73';
             const baseUrl = 'https://outline.immich.cloud';
 
-            // Search for existing "next" document
-            const searchResponse = await fetch(`${baseUrl}/api/documents.search`, {
+            const listResponse = await fetch(`${baseUrl}/api/documents.list`, {
               method: 'POST',
               headers: {
                 'Authorization': `Bearer ${outlineKey}`,
                 'Content-Type': 'application/json'
               },
-              body: JSON.stringify({
-                query: 'next',
-                documentId: parentDocumentId
-              })
+              body: JSON.stringify({ parentDocumentId })
             });
 
-            if (!searchResponse.ok) {
-              throw new Error(`Outline search failed: ${searchResponse.statusText}`);
+            if (!listResponse.ok) {
+              throw new Error(`Outline list failed: ${listResponse.statusText}`);
             }
 
-            const searchData = await searchResponse.json();
-            const documents = searchData.data || [];
+            const listData = await listResponse.json();
+            const allDocuments = listData.data || [];
+
+            const document = allDocuments.find(doc => doc.title === 'next');
 
             let documentId;
             let documentUrl;
             let documentText;
 
-            if (documents.length === 0) {
+            if (!document) {
               // Create new document
               console.log('No existing document found. Creating new one...');
               const createResponse = await fetch(`${baseUrl}/api/documents.create`, {
@@ -104,21 +115,12 @@ jobs:
               documentUrl = `${baseUrl}/doc/next-${urlId}`;
               documentText = createData.data.text || '';
               console.log(`Created new document: ${documentUrl}`);
-            } else if (documents.length === 1) {
-              documentId = documents[0].document.id;
-              const docPath = documents[0].document.url;
-              documentUrl = `${baseUrl}${docPath}`;
-              documentText = documents[0].document.text || '';
-              console.log(`Found existing document: ${documentUrl}`);
             } else {
-              // Error: multiple documents found
-              console.error(`Found ${documents.length} documents`);
-              console.error('Documents found:');
-              documents.forEach((doc, index) => {
-                const docUrl = `${baseUrl}${doc.document.url}`;
-                console.error(`  ${index + 1}. ${doc.document.title}: ${docUrl}`);
-              });
-              throw new Error(`Found ${documents.length} documents with query "next". Expected 0 or 1.`);
+              documentId = document.id;
+              const docPath = document.url;
+              documentUrl = `${baseUrl}${docPath}`;
+              documentText = document.text || '';
+              console.log(`Found existing document: ${documentUrl}`);
             }
 
             // Generate GitHub release notes
