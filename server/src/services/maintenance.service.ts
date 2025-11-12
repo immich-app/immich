@@ -18,10 +18,6 @@ export class MaintenanceService extends BaseService {
       .then((state) => state ?? { isMaintenanceMode: false });
   }
 
-  login(): MaintenanceAuthDto {
-    throw new BadRequestException('Not in maintenance mode');
-  }
-
   async startMaintenance(username: string): Promise<{ jwt: string }> {
     const { isMaintenanceMode } = await this.getMaintenanceMode();
     if (isMaintenanceMode) {
@@ -37,10 +33,6 @@ export class MaintenanceService extends BaseService {
         username,
       }),
     };
-  }
-
-  endMaintenance(): void {
-    throw new BadRequestException('Not in maintenance mode');
   }
 
   @OnEvent({ name: 'AppRestart', server: true })

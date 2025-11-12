@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { parse } from 'cookie';
 import { NextFunction, Request, Response } from 'express';
 import { jwtVerify } from 'jose';
@@ -145,10 +145,6 @@ export class MaintenanceWorkerService {
     } catch {
       throw new UnauthorizedException('Invalid JWT Token');
     }
-  }
-
-  startMaintenance(): void {
-    throw new BadRequestException('Already in maintenance mode');
   }
 
   async endMaintenance(): Promise<void> {
