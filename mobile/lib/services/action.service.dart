@@ -260,12 +260,12 @@ class ActionService {
     if (!allow) {
       return true;
     }
-    final localAssetsToTrash = await _localAssetRepository.getByChecksums(trashedChecksums);
-    if (localAssetsToTrash.isEmpty) {
+    final localAssets = await _localAssetRepository.getByChecksums(trashedChecksums);
+    if (localAssets.isEmpty) {
       return false;
     }
     final mediaUrls = await Future.wait(
-      localAssetsToTrash.map(
+      localAssets.map(
         (localAsset) => _storageRepository.getAssetEntityForAsset(localAsset).then((e) => e?.getMediaUrl()),
       ),
     );

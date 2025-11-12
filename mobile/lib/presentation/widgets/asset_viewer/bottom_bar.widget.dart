@@ -1,21 +1,24 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/move_to_trash_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/archive_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_local_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/keep_on_device_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/edit_image_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/keep_on_device_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/move_to_trash_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/unarchive_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/upload_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/trash_sync.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/trash_sync.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/widgets/asset_viewer/video_controls.dart';
@@ -39,11 +42,13 @@ class ViewerBottomBar extends ConsumerWidget {
     final isInLockedView = ref.watch(inLockedViewProvider);
     final isArchived = asset is RemoteAsset && asset.visibility == AssetVisibility.archive;
 
-    final pendingChecksums = ref.watch(pendingApprovalChecksumsProvider).value ?? const <String>{};
-    final isWaitingForSyncApproval = asset.checksum != null && pendingChecksums.contains(asset.checksum);
-    /****
+    final timelineOrigin = ref.read(timelineServiceProvider).origin;
+    final isSyncTrashTimeline = timelineOrigin == TimelineOrigin.syncTrash;
+    final isWaitingForSyncApproval = ref.watch(isWaitingForSyncApprovalProvider_Var1(asset.checksum!)).value == true;
+
+    /**** PeterO
      * 14/08/2025
-     * 1. on user makes decision - asset don`t disappear (but sometimes works)
+     * 1. when user makes decision - asset doesn’t disappear (but sometimes it does)
      * 2. should buttons have a different design (stile+icon) ?
      * 3. pendingChecksums.length!=TimelineService.trashSyncReview(String userId).length after what?
      *****/
@@ -53,12 +58,12 @@ class ViewerBottomBar extends ConsumerWidget {
     }
 
     final actions = <Widget>[
-      if (isWaitingForSyncApproval) ...[
-        const KeepOnDeviceActionButton(source: ActionSource.viewer),
-        const MoveToTrashActionButton(source: ActionSource.viewer),
+      if (isSyncTrashTimeline && isWaitingForSyncApproval) ...[
+        const KeepOnDeviceActionButton(source: ActionSource.viewer, isPreview: true),
+        const MoveToTrashActionButton(source: ActionSource.viewer, isPreview: true),
       ] else ...[
         const ShareActionButton(source: ActionSource.viewer),
-        if (asset.isLocalOnly) const UploadActionButton(source: ActionSource.viewer),
+        if (asset.isLocalOnly && !isWaitingForSyncApproval) const UploadActionButton(source: ActionSource.viewer),
         if (asset.type == AssetType.image) const EditImageActionButton(),
         if (isOwner) ...[
           if (asset.hasRemote && isOwner && isArchived)
@@ -68,6 +73,24 @@ class ViewerBottomBar extends ConsumerWidget {
           asset.isLocalOnly
               ? const DeleteLocalActionButton(source: ActionSource.viewer)
               : const DeleteActionButton(source: ActionSource.viewer, showConfirmation: true),
+        ],
+        if (isWaitingForSyncApproval) ...[
+          DecoratedBox(
+            decoration: BoxDecoration(
+            border: Border.all(color: const Color.fromARGB(155, 243, 188, 106), width: 0.5),
+            borderRadius: const BorderRadius.all(Radius.circular(24)),),
+            child: Column(
+              children: [
+                const Text('asset_out_of_sync_trash_confirmation_title').tr(),
+                const Row(
+                  children: [
+                    KeepOnDeviceActionButton(source: ActionSource.viewer, isPreview: true),
+                    MoveToTrashActionButton(source: ActionSource.viewer, isPreview: true),
+                  ],
+                ),
+              ],
+            ),
+          ),
         ],
       ],
     ];

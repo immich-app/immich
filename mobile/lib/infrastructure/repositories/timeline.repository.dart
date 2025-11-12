@@ -602,19 +602,17 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
 
     final dateExp = _db.remoteAssetEntity.createdAt.dateFmt(groupBy);
 
+    final pendingTrashChecksums = _db.trashSyncEntity.selectOnly()
+      ..addColumns([_db.trashSyncEntity.checksum])
+      ..where(_db.trashSyncEntity.isSyncApproved.isNull())
+      ..groupBy([_db.trashSyncEntity.checksum]);
+
     final query = _db.remoteAssetEntity.selectOnly()
       ..addColumns([assetCountExp, dateExp])
-      ..join([
-        innerJoin(
-          _db.trashSyncEntity,
-          _db.trashSyncEntity.checksum.equalsExp(_db.remoteAssetEntity.checksum),
-          useColumns: false,
-        ),
-      ])
       ..where(
-        _db.trashSyncEntity.isSyncApproved.isNull() &
-            _db.remoteAssetEntity.deletedAt.isNotNull() &
-            _db.remoteAssetEntity.visibility.equalsValue(AssetVisibility.timeline),
+        _db.remoteAssetEntity.deletedAt.isNotNull() &
+            _db.remoteAssetEntity.visibility.equalsValue(AssetVisibility.timeline) &
+            _db.remoteAssetEntity.checksum.isInQuery(pendingTrashChecksums),
       )
       ..groupBy([dateExp])
       ..orderBy([OrderingTerm.desc(dateExp)]);
@@ -627,22 +625,21 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
   }
 
   Future<List<BaseAsset>> _getToTrashSyncBucketAssets({required int offset, required int count}) {
-    final query =
-        _db.remoteAssetEntity.select().join([
-            innerJoin(
-              _db.trashSyncEntity,
-              _db.trashSyncEntity.checksum.equalsExp(_db.remoteAssetEntity.checksum),
-              useColumns: false,
-            ),
-          ])
-          ..where(
-            _db.trashSyncEntity.isSyncApproved.isNull() &
-                _db.remoteAssetEntity.deletedAt.isNotNull() &
-                _db.remoteAssetEntity.visibility.equalsValue(AssetVisibility.timeline),
-          )
-          ..orderBy([OrderingTerm.desc(_db.remoteAssetEntity.createdAt)])
-          ..limit(count, offset: offset);
-    return query.map((row) => row.readTable(_db.remoteAssetEntity).toDto()).get();
+    final pendingTrashChecksums = _db.trashSyncEntity.selectOnly()
+      ..addColumns([_db.trashSyncEntity.checksum])
+      ..where(_db.trashSyncEntity.isSyncApproved.isNull())
+      ..groupBy([_db.trashSyncEntity.checksum]);
+
+    final query = _db.remoteAssetEntity.select()
+      ..where(
+        (tbl) =>
+            tbl.deletedAt.isNotNull() &
+            tbl.visibility.equalsValue(AssetVisibility.timeline) &
+            tbl.checksum.isInQuery(pendingTrashChecksums),
+      )
+      ..orderBy([(tbl) => OrderingTerm.desc(tbl.createdAt)])
+      ..limit(count, offset: offset);
+    return query.map((row) => row.toDto()).get();
   }
 }
 

@@ -4,9 +4,12 @@ import 'local_asset.entity.dart';
 import 'local_album.entity.dart';
 import 'local_album_asset.entity.dart';
 
-mergedAsset: 
+mergedAsset:
 SELECT
-	rae.id as remote_id,
+	CASE
+      WHEN rae.deleted_at IS NULL THEN rae.id
+      ELSE NULL
+  END AS remote_id,
 	(SELECT lae.id FROM local_asset_entity lae WHERE lae.checksum = rae.checksum LIMIT 1) as local_id,
 	rae.name,
 	rae."type",
@@ -27,7 +30,13 @@ FROM
 LEFT JOIN
 	stack_entity se ON rae.stack_id = se.id
 WHERE
-	rae.deleted_at IS NULL
+	  (
+      rae.deleted_at IS NULL
+      OR EXISTS (
+        SELECT 1 FROM local_asset_entity lae
+        WHERE lae.checksum = rae.checksum
+      )
+    )
 	AND rae.visibility = 0 -- timeline visibility
 	AND rae.owner_id IN :user_ids
 	AND (

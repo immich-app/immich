@@ -20,8 +20,8 @@ class TrashSyncBottomBar extends ConsumerWidget {
             child: const Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                KeepOnDeviceActionButton(source: ActionSource.timeline),
-                MoveToTrashActionButton(source: ActionSource.timeline),
+                KeepOnDeviceActionButton(source: ActionSource.timeline, isPreview: false),
+                MoveToTrashActionButton(source: ActionSource.timeline, isPreview: false),
               ],
             ),
           ),

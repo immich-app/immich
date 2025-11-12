@@ -13,4 +13,6 @@ class TrashSyncService {
       _trashSyncRepository.watchPendingApprovalCount(actionType);
 
   Stream<Set<String>> watchPendingApprovalChecksums() => _trashSyncRepository.watchPendingApprovalChecksums();
+
+  Stream<bool> watchIsApprovalPending(String checksum) => _trashSyncRepository.watchIsApprovalPending(checksum);
 }

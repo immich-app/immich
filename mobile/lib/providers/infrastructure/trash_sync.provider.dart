@@ -11,7 +11,7 @@ import 'db.provider.dart';
 
 typedef TrashedAssetsCount = ({int total, int hashed});
 
-//todo need to clean-up!
+//todo need to clean-up! PeterO
 final trashSyncRepositoryProvider = Provider<DriftTrashSyncRepository>(
   (ref) => DriftTrashSyncRepository(ref.watch(driftProvider)),
 );
@@ -30,7 +30,7 @@ final outOfSyncCountProvider = StreamProvider<int>((ref) {
   final enabledReviewMode = ref.watch(appSettingStreamProvider(AppSettingsEnum.reviewOutOfSyncChangesAndroid));
   final service = ref.watch(trashSyncServiceProvider);
   return enabledReviewMode.when(
-    data: (enabled) => (enabled as bool? ?? false) ? service.watchPendingApprovalCount() : Stream<int>.value(0),
+    data: (enabled) => enabled ? service.watchPendingApprovalCount() : Stream<int>.value(0),
     loading: () => Stream<int>.value(0),
     error: (_, __) => Stream<int>.value(0),
   );
@@ -55,8 +55,42 @@ final pendingApprovalChecksumsProvider = StreamProvider<Set<String>>((ref) {
   final enabledReviewMode = ref.watch(appSettingStreamProvider(AppSettingsEnum.reviewOutOfSyncChangesAndroid));
   final service = ref.watch(trashSyncServiceProvider);
   return enabledReviewMode.when(
-    data: (enabled) => (enabled as bool? ?? false) ? service.watchPendingApprovalChecksums() : Stream.value(<String>{}),
+    data: (enabled) => enabled ? service.watchPendingApprovalChecksums() : Stream.value(<String>{}),
     loading: () => Stream.value(<String>{}),
     error: (_, __) => Stream.value(<String>{}),
+  );
+});
+
+//todo need to choose more efficient variant (isWaitingForSyncApprovalProvider_Var1, isWaitingForSyncApprovalProvider_Var2) PeterO
+final isWaitingForSyncApprovalProvider_Var1 = StreamProvider.family<bool, String?>((ref, checksum) {
+  final reviewModeSetting = ref.watch(appSettingStreamProvider(AppSettingsEnum.reviewOutOfSyncChangesAndroid));
+
+  Stream<bool> buildStream(bool isReviewModeEnabled) {
+    if (!isReviewModeEnabled || checksum == null) {
+      return Stream.value(false);
+    }
+    return ref
+        .watch(pendingApprovalChecksumsProvider)
+        .when(
+          data: (set) => Stream.value(set.contains(checksum)),
+          loading: () => Stream.value(false),
+          error: (_, __) => Stream.value(false),
+        );
+  }
+
+  return reviewModeSetting.when(
+    data: (enabled) => buildStream(enabled),
+    loading: () => Stream.value(false),
+    error: (_, __) => Stream.value(false),
+  );
+});
+
+final isWaitingForSyncApprovalProvider_Var2 = StreamProvider.family<bool, String?>((ref, checksum) {
+  final enabledReviewMode = ref.watch(appSettingStreamProvider(AppSettingsEnum.reviewOutOfSyncChangesAndroid));
+  final service = ref.watch(trashSyncServiceProvider);
+  return enabledReviewMode.when(
+    data: (enabled) => enabled && checksum != null ? service.watchIsApprovalPending(checksum) : Stream.value(false),
+    loading: () => Stream.value(false),
+    error: (_, __) => Stream.value(false),
   );
 });

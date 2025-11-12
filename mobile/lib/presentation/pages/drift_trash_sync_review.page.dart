@@ -16,9 +16,14 @@ class DriftTrashSyncReviewPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = context.router;
+
+    final assets = ref.read(pendingApprovalChecksumsProvider).value;
+    debugPrint('DriftTrashSyncReviewPage, assets: $assets');
     ref.listen(outOfSyncCountProvider, (previous, next) {
       final prevCount = previous?.asData?.value ?? 0;
-      final nextCount = next.asData?.value ?? 0;
+      final nextCount = next.asData?.value;
+      //todo PeterO
+      debugPrint('DriftTrashSyncReviewPage, $prevCount -> $nextCount, previous?.asData?.value: ${previous?.asData?.value}, next.asData?.value: ${next.asData?.value}');
       if (prevCount > 0 && nextCount == 0) {
         WidgetsBinding.instance.addPostFrameCallback((_) async {
           await Future.delayed(const Duration(milliseconds: 1600));
