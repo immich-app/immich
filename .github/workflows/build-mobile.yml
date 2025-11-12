@@ -304,10 +304,11 @@ jobs:
           APP_STORE_CONNECT_API_KEY_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
           ENVIRONMENT: ${{ inputs.environment || 'development' }}
           BUNDLE_ID_SUFFIX: ${{ inputs.environment == 'production' && '' || 'development' }}
+          GITHUB_REF: ${{ github.ref }}
         working-directory: ./mobile/ios
         run: |
           # Only upload to TestFlight on main branch
-          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+          if [[ "$GITHUB_REF" == "refs/heads/main" ]]; then
             if [[ "$ENVIRONMENT" == "development" ]]; then
               bundle exec fastlane gha_testflight_dev
             else
