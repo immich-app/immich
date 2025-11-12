@@ -38,7 +38,7 @@ jobs:
       - name: Bump versions
         env:
           TYPE: ${{ steps.bump-type.outputs.bump }}
-        run: misc/release/pump-version.sh -s $TYPE -m
+        run: misc/release/pump-version.sh -s $TYPE -m true
 
       - name: Manage Outline release document
         id: outline
