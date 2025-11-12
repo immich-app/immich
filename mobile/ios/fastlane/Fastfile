@@ -221,44 +221,31 @@ end
       install_provisioning_profile(path: "profile_dev_share.mobileprovision")
       install_provisioning_profile(path: "profile_dev_widget.mobileprovision")
       configure_code_signing(bundle_id_suffix: "development")
-      
-      # Build without incrementing version/build number or uploading
-      build_app(
-        scheme: "Runner",
-        workspace: "Runner.xcworkspace",
-        configuration: "Release",
-        export_method: "app-store",
-        skip_build_archive: false,
-        export_options: {
-          provisioningProfiles: {
-            "#{app_identifier}" => "#{app_identifier} AppStore",
-            "#{app_identifier}.ShareExtension" => "#{app_identifier}.ShareExtension AppStore",
-            "#{app_identifier}.Widget" => "#{app_identifier}.Widget AppStore"
-          }
-        }
-      )
     else
       install_provisioning_profile(path: "profile.mobileprovision")
       install_provisioning_profile(path: "profile_share.mobileprovision")
       install_provisioning_profile(path: "profile_widget.mobileprovision")
       configure_code_signing
-      
-      # Build without incrementing version/build number or uploading
-      build_app(
-        scheme: "Runner",
-        workspace: "Runner.xcworkspace",
-        configuration: "Release",
-        export_method: "app-store",
-        skip_build_archive: false,
-        export_options: {
-          provisioningProfiles: {
-            "#{app_identifier}" => "#{app_identifier} AppStore",
-            "#{app_identifier}.ShareExtension" => "#{app_identifier}.ShareExtension AppStore",
-            "#{app_identifier}.Widget" => "#{app_identifier}.Widget AppStore"
-          }
-        }
-      )
     end
+    
+    # Resolve Swift Package dependencies explicitly
+    sh("xcodebuild", "-resolvePackageDependencies", "-workspace", "Runner.xcworkspace", "-scheme", "Runner")
+    
+    # Build the archive
+    gym(
+      scheme: "Runner",
+      workspace: "Runner.xcworkspace",
+      configuration: "Release",
+      export_method: "app-store",
+      skip_package_ipa: false,
+      export_options: {
+        provisioningProfiles: {
+          "#{app_identifier}" => "#{app_identifier} AppStore",
+          "#{app_identifier}.ShareExtension" => "#{app_identifier}.ShareExtension AppStore",
+          "#{app_identifier}.Widget" => "#{app_identifier}.Widget AppStore"
+        }
+      }
+    )
   end
 
 end
