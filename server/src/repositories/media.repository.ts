@@ -218,6 +218,19 @@ export class MediaRepository {
     };
   }
 
+  captureFrame(input: string, timeInSeconds: number, output: string, scale = 640): Promise<void> {
+    return new Promise((resolve, reject) => {
+      ffmpeg(input, { niceness: 10 })
+        .setStartTime(Math.max(timeInSeconds, 0))
+        .frames(1)
+        .outputOptions([`-vf scale=${scale}:-1`])
+        .output(output)
+        .on('end', () => resolve())
+        .on('error', (error) => reject(error))
+        .run();
+    });
+  }
+
   transcode(input: string, output: string | Writable, options: TranscodeCommand): Promise<void> {
     if (!options.twoPass) {
       return new Promise((resolve, reject) => {

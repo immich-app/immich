@@ -51,6 +51,7 @@ import { TelemetryRepository } from 'src/repositories/telemetry.repository';
 import { TrashRepository } from 'src/repositories/trash.repository';
 import { UserRepository } from 'src/repositories/user.repository';
 import { VersionHistoryRepository } from 'src/repositories/version-history.repository';
+import { VideoSegmentRepository } from 'src/repositories/video-segment.repository';
 import { ViewRepository } from 'src/repositories/view-repository';
 import { WebsocketRepository } from 'src/repositories/websocket.repository';
 import { UserTable } from 'src/schema/tables/user.table';
@@ -104,6 +105,7 @@ export const BASE_SERVICE_DEPENDENCIES = [
   TrashRepository,
   UserRepository,
   VersionHistoryRepository,
+  VideoSegmentRepository,
   ViewRepository,
 ];
 
@@ -158,6 +160,7 @@ export class BaseService {
     protected trashRepository: TrashRepository,
     protected userRepository: UserRepository,
     protected versionRepository: VersionHistoryRepository,
+    protected videoSegmentRepository: VideoSegmentRepository,
     protected viewRepository: ViewRepository,
     protected websocketRepository: WebsocketRepository,
   ) {

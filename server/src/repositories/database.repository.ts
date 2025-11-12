@@ -48,6 +48,7 @@ export async function getVectorExtension(runner: Kysely<DB>): Promise<VectorExte
 export const probes: Record<VectorIndex, number> = {
   [VectorIndex.Clip]: 1,
   [VectorIndex.Face]: 1,
+  [VectorIndex.VideoSegment]: 1,
 };
 
 @Injectable()
@@ -305,30 +306,38 @@ export class DatabaseRepository {
       throw new Error(`Invalid CLIP dimension size: ${dimSize}`);
     }
 
-    // this is done in two transactions to handle concurrent writes
+    const tables: Array<{ table: string; constraint: string; index: VectorIndex }> = [
+      { table: 'smart_search', constraint: 'dim_size_constraint', index: VectorIndex.Clip },
+      { table: 'video_segment', constraint: 'video_segment_dim_size_constraint', index: VectorIndex.VideoSegment },
+    ];
+
     await this.db.transaction().execute(async (trx) => {
-      await sql`delete from ${sql.table('smart_search')}`.execute(trx);
-      await trx.schema.alterTable('smart_search').dropConstraint('dim_size_constraint').ifExists().execute();
-      await sql`alter table ${sql.table('smart_search')} add constraint dim_size_constraint check (array_length(embedding::real[], 1) = ${sql.lit(dimSize)})`.execute(
-        trx,
-      );
+      for (const { table, constraint } of tables) {
+        await sql`delete from ${sql.table(table)}`.execute(trx);
+        await trx.schema.alterTable(table).dropConstraint(constraint).ifExists().execute();
+        await sql`alter table ${sql.table(table)} add constraint ${sql.raw(constraint)} check (array_length(embedding::real[], 1) = ${sql.lit(dimSize)})`.execute(
+          trx,
+        );
+      }
     });
 
     const vectorExtension = await this.getVectorExtension();
     await this.db.transaction().execute(async (trx) => {
-      await sql`drop index if exists clip_index`.execute(trx);
-      await trx.schema
-        .alterTable('smart_search')
-        .alterColumn('embedding', (col) => col.setDataType(sql.raw(`vector(${dimSize})`)))
-        .execute();
-      await sql
-        .raw(vectorIndexQuery({ vectorExtension, table: 'smart_search', indexName: VectorIndex.Clip }))
-        .execute(trx);
-      await trx.schema.alterTable('smart_search').dropConstraint('dim_size_constraint').ifExists().execute();
+      for (const { table, constraint, index } of tables) {
+        await sql`drop index if exists ${sql.raw(index)}`.execute(trx);
+        await trx.schema
+          .alterTable(table)
+          .alterColumn('embedding', (col) => col.setDataType(sql.raw(`vector(${dimSize})`)))
+          .execute();
+        await sql.raw(vectorIndexQuery({ vectorExtension, table, indexName: index })).execute(trx);
+        await trx.schema.alterTable(table).dropConstraint(constraint).ifExists().execute();
+        probes[index] = 1;
+      }
     });
-    probes[VectorIndex.Clip] = 1;
 
-    await sql`vacuum analyze ${sql.table('smart_search')}`.execute(this.db);
+    for (const { table } of tables) {
+      await sql`vacuum analyze ${sql.table(table)}`.execute(this.db);
+    }
   }
 
   async deleteAllSearchEmbeddings(): Promise<void> {

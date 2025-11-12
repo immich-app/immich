@@ -171,11 +171,32 @@ export class AssetJobRepository {
       .stream();
   }
 
+  @GenerateSql({ params: [false], stream: true })
+  streamForVideoSegmentation(force?: boolean) {
+    return this.assetsWithPreviews()
+      .select(['asset.id'])
+      .where('asset.type', '=', AssetType.Video)
+      .$if(!force, (qb) =>
+        qb.where((eb) => eb.not((eb) => eb.exists(eb.selectFrom('video_segment').whereRef('assetId', '=', 'asset.id')))),
+      )
+      .stream();
+  }
+
   @GenerateSql({ params: [DummyValue.UUID] })
   getForClipEncoding(id: string) {
     return this.db
       .selectFrom('asset')
       .select(['asset.id', 'asset.visibility'])
+      .select((eb) => withFiles(eb, AssetFileType.Preview))
+      .where('asset.id', '=', id)
+      .executeTakeFirst();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  getForVideoSegmentation(id: string) {
+    return this.db
+      .selectFrom('asset')
+      .select(['asset.id', 'asset.originalPath', 'asset.duration', 'asset.visibility', 'asset.type'])
       .select((eb) => withFiles(eb, AssetFileType.Preview))
       .where('asset.id', '=', id)
       .executeTakeFirst();

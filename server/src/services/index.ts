@@ -41,6 +41,7 @@ import { TrashService } from 'src/services/trash.service';
 import { UserAdminService } from 'src/services/user-admin.service';
 import { UserService } from 'src/services/user.service';
 import { VersionService } from 'src/services/version.service';
+import { VideoSegmentationService } from 'src/services/video-segmentation.service';
 import { ViewService } from 'src/services/view.service';
 
 export const services = [
@@ -86,6 +87,7 @@ export const services = [
   TrashService,
   UserAdminService,
   UserService,
+  VideoSegmentationService,
   VersionService,
   ViewService,
 ];

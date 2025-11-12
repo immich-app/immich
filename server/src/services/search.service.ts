@@ -17,6 +17,8 @@ import {
   SearchSuggestionType,
   SmartSearchDto,
   StatisticsSearchDto,
+  VideoSegmentSearchDto,
+  VideoSegmentSearchResponseDto,
 } from 'src/dtos/search.dto';
 import { AssetOrder, AssetVisibility, Permission } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
@@ -71,6 +73,46 @@ export class SearchService extends BaseService {
     );
 
     return this.mapResponse(items, hasNextPage ? (page + 1).toString() : null, { auth });
+  }
+
+  async searchVideoSegments(auth: AuthDto, dto: VideoSegmentSearchDto): Promise<VideoSegmentSearchResponseDto> {
+    if (dto.visibility === AssetVisibility.Locked) {
+      requireElevatedPermission(auth);
+    }
+
+    const { machineLearning } = await this.getConfig({ withCache: false });
+    if (!isSmartSearchEnabled(machineLearning)) {
+      throw new BadRequestException('Smart search is not enabled');
+    }
+
+    const userIds = await this.getUserIdsToSearch(auth);
+    const key = `${machineLearning.clip.modelName}:segment:${dto.query}:${dto.language ?? ''}`;
+    let embedding = this.embeddingCache.get(key);
+    if (!embedding) {
+      embedding = await this.machineLearningRepository.encodeText(dto.query, {
+        modelName: machineLearning.clip.modelName,
+        language: dto.language,
+      });
+      this.embeddingCache.set(key, embedding);
+    }
+
+    const page = dto.page ?? 1;
+    const size = dto.size || 100;
+    const { hasNextPage, items } = await this.searchRepository.searchVideoSegments(
+      { page, size },
+      { embedding, userIds },
+    );
+
+    return {
+      items: items.map((item) => ({
+        segmentId: item.segmentId,
+        startTime: item.startTime,
+        endTime: item.endTime,
+        confidence: Math.max(0, 1 - item.distance),
+        asset: mapAsset(item, { auth }),
+      })),
+      nextPage: hasNextPage ? String(page + 1) : null,
+    };
   }
 
   async searchStatistics(auth: AuthDto, dto: StatisticsSearchDto): Promise<SearchStatisticsResponseDto> {

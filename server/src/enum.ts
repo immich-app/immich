@@ -513,6 +513,7 @@ export enum QueueName {
   FaceDetection = 'faceDetection',
   FacialRecognition = 'facialRecognition',
   SmartSearch = 'smartSearch',
+  VideoSegmentation = 'videoSegmentation',
   DuplicateDetection = 'duplicateDetection',
   BackgroundTask = 'backgroundTask',
   StorageTemplateMigration = 'storageTemplateMigration',
@@ -534,6 +535,8 @@ export enum JobName {
   AssetDetectDuplicates = 'AssetDetectDuplicates',
   AssetEncodeVideoQueueAll = 'AssetEncodeVideoQueueAll',
   AssetEncodeVideo = 'AssetEncodeVideo',
+  AssetSegmentVideoQueueAll = 'AssetSegmentVideoQueueAll',
+  AssetSegmentVideo = 'AssetSegmentVideo',
   AssetEmptyTrash = 'AssetEmptyTrash',
   AssetExtractMetadataQueueAll = 'AssetExtractMetadataQueueAll',
   AssetExtractMetadata = 'AssetExtractMetadata',
@@ -622,6 +625,7 @@ export enum QueueCleanType {
 export enum VectorIndex {
   Clip = 'clip_index',
   Face = 'face_index',
+  VideoSegment = 'video_segment_clip_index',
 }
 
 export enum DatabaseLock {

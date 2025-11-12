@@ -215,6 +215,33 @@ export class SmartSearchDto extends BaseSearchWithResultsDto {
   page?: number;
 }
 
+export class VideoSegmentSearchDto extends BaseSearchWithResultsDto {
+  @ValidateString({ trim: true })
+  query!: string;
+
+  @ValidateString({ optional: true, trim: true })
+  language?: string;
+
+  @IsInt()
+  @Min(1)
+  @Type(() => Number)
+  @Optional()
+  page?: number;
+}
+
+export class VideoSegmentResponseDto {
+  segmentId!: string;
+  startTime!: number;
+  endTime!: number;
+  confidence!: number;
+  asset!: AssetResponseDto;
+}
+
+export class VideoSegmentSearchResponseDto {
+  items!: VideoSegmentResponseDto[];
+  nextPage!: string | null;
+}
+
 export class SearchPlacesDto {
   @IsString()
   @IsNotEmpty()

@@ -34,11 +34,14 @@ export const VECTOR_EXTENSIONS = [
 export const VECTOR_INDEX_TABLES = {
   [VectorIndex.Clip]: 'smart_search',
   [VectorIndex.Face]: 'face_search',
+  [VectorIndex.VideoSegment]: 'video_segment',
 } as const;
 
 export const VECTORCHORD_LIST_SLACK_FACTOR = 1.2;
 
 export const SALT_ROUNDS = 10;
+
+export const VIDEO_SEGMENT_DURATION_SECONDS = 10;
 
 export const IWorker = 'IWorker';
 

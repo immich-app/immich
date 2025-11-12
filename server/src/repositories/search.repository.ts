@@ -84,6 +84,13 @@ export interface SearchEmbeddingOptions {
   userIds: string[];
 }
 
+export interface MapVideoSegment extends MapAsset {
+  segmentId: string;
+  startTime: number;
+  endTime: number;
+  distance: number;
+}
+
 export interface SearchOcrOptions {
   ocr?: string;
 }
@@ -304,6 +311,36 @@ export class SearchRepository {
         .limit(pagination.size + 1)
         .offset((pagination.page - 1) * pagination.size)
         .execute();
+      return paginationHelper(items, pagination.size);
+    });
+  }
+
+  @GenerateSql({
+    params: [
+      { page: 1, size: 100 },
+      { embedding: DummyValue.VECTOR, userIds: [DummyValue.UUID] },
+    ],
+  })
+  searchVideoSegments(pagination: SearchPaginationOptions, options: SearchEmbeddingOptions) {
+    if (!isValidInteger(pagination.size, { min: 1, max: 1000 })) {
+      throw new Error(`Invalid value for 'size': ${pagination.size}`);
+    }
+
+    return this.db.transaction().execute(async (trx) => {
+      await sql`set local vchordrq.probes = ${sql.lit(probes[VectorIndex.VideoSegment])}`.execute(trx);
+      const items = await searchAssetBuilder(trx, { userIds: options.userIds, type: AssetType.Video })
+        .selectAll('asset')
+        .innerJoin('video_segment', 'video_segment.assetId', 'asset.id')
+        .select([
+          sql<string>`video_segment.id`.as('segmentId'),
+          sql<number>`video_segment.startTime`.as('startTime'),
+          sql<number>`video_segment.endTime`.as('endTime'),
+          sql<number>`video_segment.embedding <=> ${options.embedding}`.as('distance'),
+        ])
+        .orderBy(sql`video_segment.embedding <=> ${options.embedding}`)
+        .limit(pagination.size + 1)
+        .offset((pagination.page - 1) * pagination.size)
+        .execute() as MapVideoSegment[];
       return paginationHelper(items, pagination.size);
     });
   }

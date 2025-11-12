@@ -192,6 +192,10 @@ export class JobService extends BaseService {
         return this.jobRepository.queue({ name: JobName.AssetEncodeVideoQueueAll, data: { force } });
       }
 
+      case QueueName.VideoSegmentation: {
+        return this.jobRepository.queue({ name: JobName.AssetSegmentVideoQueueAll, data: { force } });
+      }
+
       case QueueName.StorageTemplateMigration: {
         return this.jobRepository.queue({ name: JobName.StorageTemplateMigration });
       }
@@ -358,7 +362,10 @@ export class JobService extends BaseService {
         ];
 
         if (asset.type === AssetType.Video) {
-          jobs.push({ name: JobName.AssetEncodeVideo, data: item.data });
+          jobs.push(
+            { name: JobName.AssetEncodeVideo, data: item.data },
+            { name: JobName.AssetSegmentVideo, data: item.data },
+          );
         }
 
         await this.jobRepository.queueAll(jobs);

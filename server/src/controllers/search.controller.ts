@@ -16,6 +16,8 @@ import {
   SearchSuggestionRequestDto,
   SmartSearchDto,
   StatisticsSearchDto,
+  VideoSegmentSearchDto,
+  VideoSegmentSearchResponseDto,
 } from 'src/dtos/search.dto';
 import { ApiTag, Permission } from 'src/enum';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
@@ -79,6 +81,20 @@ export class SearchController {
   })
   searchSmart(@Auth() auth: AuthDto, @Body() dto: SmartSearchDto): Promise<SearchResponseDto> {
     return this.service.searchSmart(auth, dto);
+  }
+
+  @Post('video-segments')
+  @Authenticated({ permission: Permission.AssetRead })
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Search video segments',
+    description: 'Perform semantic search across indexed video segments and return matching clip ranges.',
+  })
+  searchVideoSegments(
+    @Auth() auth: AuthDto,
+    @Body() dto: VideoSegmentSearchDto,
+  ): Promise<VideoSegmentSearchResponseDto> {
+    return this.service.searchVideoSegments(auth, dto);
   }
 
   @Get('explore')

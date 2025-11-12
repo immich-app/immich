@@ -69,6 +69,7 @@ import { UserMetadataAuditTable } from 'src/schema/tables/user-metadata-audit.ta
 import { UserMetadataTable } from 'src/schema/tables/user-metadata.table';
 import { UserTable } from 'src/schema/tables/user.table';
 import { VersionHistoryTable } from 'src/schema/tables/version-history.table';
+import { VideoSegmentTable } from 'src/schema/tables/video-segment.table';
 import { Database, Extensions, Generated, Int8 } from 'src/sql-tools';
 
 @Extensions(['uuid-ossp', 'unaccent', 'cube', 'earthdistance', 'pg_trgm', 'plpgsql'])
@@ -113,6 +114,7 @@ export class ImmichDatabase {
     SharedLinkAssetTable,
     SharedLinkTable,
     SmartSearchTable,
+    VideoSegmentTable,
     StackTable,
     StackAuditTable,
     SessionSyncCheckpointTable,
@@ -215,6 +217,7 @@ export interface DB {
   shared_link_asset: SharedLinkAssetTable;
 
   smart_search: SmartSearchTable;
+  video_segment: VideoSegmentTable;
 
   stack: StackTable;
   stack_audit: StackAuditTable;

@@ -59,6 +59,9 @@ export class AllJobStatusResponseDto implements Record<QueueName, JobStatusDto> 
   [QueueName.VideoConversion]!: JobStatusDto;
 
   @ApiProperty({ type: JobStatusDto })
+  [QueueName.VideoSegmentation]!: JobStatusDto;
+
+  @ApiProperty({ type: JobStatusDto })
   [QueueName.SmartSearch]!: JobStatusDto;
 
   @ApiProperty({ type: JobStatusDto })

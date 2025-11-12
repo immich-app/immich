@@ -233,6 +233,7 @@ export const defaults = Object.freeze<SystemConfig>({
     [QueueName.Migration]: { concurrency: 5 },
     [QueueName.ThumbnailGeneration]: { concurrency: 3 },
     [QueueName.VideoConversion]: { concurrency: 1 },
+    [QueueName.VideoSegmentation]: { concurrency: 2 },
     [QueueName.Notification]: { concurrency: 5 },
     [QueueName.Ocr]: { concurrency: 1 },
   },
