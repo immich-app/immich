@@ -267,7 +267,8 @@ class ImmichAPI {
     guard
       let searchURL = buildRequestURL(
         serverConfig: serverConfig,
-        endpoint: "/albums"
+        endpoint: "/albums",
+        params: [URLQueryItem(name: "shared", value: "true")]
       )
     else {
       throw URLError(.badURL)
