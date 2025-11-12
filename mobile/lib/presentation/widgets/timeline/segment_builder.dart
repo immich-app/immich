@@ -24,7 +24,7 @@ abstract class SegmentBuilder {
     Size size = kTimelineFixedTileExtent,
     double spacing = kTimelineSpacing,
   }) => RepaintBoundary(
-    child: FixedTimelineRow(
+    child: TimelineRow.fixed(
       dimension: size.height,
       spacing: spacing,
       textDirection: Directionality.of(context),

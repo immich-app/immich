@@ -49,7 +49,7 @@ class RemoteAssetEntity extends Table with DriftDefaultsMixin, AssetEntityMixin 
 }
 
 extension RemoteAssetEntityDataDomainEx on RemoteAssetEntityData {
-  RemoteAsset toDto({String? localId}) => RemoteAsset(
+  RemoteAsset toDto({String? localId, int? width, int? height}) => RemoteAsset(
     id: id,
     name: name,
     ownerId: ownerId,
@@ -59,8 +59,8 @@ extension RemoteAssetEntityDataDomainEx on RemoteAssetEntityData {
     updatedAt: updatedAt,
     durationInSeconds: durationInSeconds,
     isFavorite: isFavorite,
-    height: height,
-    width: width,
+    height: height ?? this.height,
+    width: width ?? this.width,
     thumbHash: thumbHash,
     visibility: visibility,
     livePhotoVideoId: livePhotoVideoId,

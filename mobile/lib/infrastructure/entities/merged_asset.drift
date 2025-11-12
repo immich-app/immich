@@ -1,4 +1,5 @@
 import 'remote_asset.entity.dart';
+import 'exif.entity.dart';
 import 'stack.entity.dart';
 import 'local_asset.entity.dart';
 import 'local_album.entity.dart';
@@ -12,8 +13,8 @@ SELECT
 	rae."type",
 	rae.created_at as created_at,
 	rae.updated_at,
-	rae.width,
-	rae.height,
+	ree.width as width,
+	ree.height as height,
 	rae.duration_in_seconds,
 	rae.is_favorite,
 	rae.thumb_hash,
@@ -24,6 +25,8 @@ SELECT
 	rae.stack_id
 FROM
 	remote_asset_entity rae
+LEFT JOIN
+	remote_exif_entity ree ON ree.asset_id = rae.id
 LEFT JOIN
 	stack_entity se ON rae.stack_id = se.id
 WHERE
