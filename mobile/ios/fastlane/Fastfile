@@ -232,8 +232,9 @@ end
     build_app(
       scheme: "Runner",
       workspace: "Runner.xcworkspace",
-      configuration: bundle_suffix == "development" ? "Profile" : "Release",
+      configuration: "Release",
       export_method: "app-store",
+      skip_build_archive: false,
       xcargs: "CODE_SIGN_IDENTITY='#{CODE_SIGN_IDENTITY}' CODE_SIGN_STYLE=Manual",
       export_options: {
         provisioningProfiles: {
