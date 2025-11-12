@@ -66,31 +66,29 @@ jobs:
             const collectionId = 'e2910656-714c-4871-8721-447d9353bd73';
             const baseUrl = 'https://outline.immich.cloud';
 
-            // Search for existing "next" document
-            const searchResponse = await fetch(`${baseUrl}/api/documents.search`, {
+            const listResponse = await fetch(`${baseUrl}/api/documents.list`, {
               method: 'POST',
               headers: {
                 'Authorization': `Bearer ${outlineKey}`,
                 'Content-Type': 'application/json'
               },
-              body: JSON.stringify({
-                query: 'next',
-                documentId: parentDocumentId
-              })
+              body: JSON.stringify({ parentDocumentId })
             });
 
-            if (!searchResponse.ok) {
-              throw new Error(`Outline search failed: ${searchResponse.statusText}`);
+            if (!listResponse.ok) {
+              throw new Error(`Outline list failed: ${listResponse.statusText}`);
             }
 
-            const searchData = await searchResponse.json();
-            const documents = searchData.data || [];
+            const listData = await listResponse.json();
+            const allDocuments = listData.data || [];
+
+            const document = allDocuments.find(doc => doc.title === 'next');
 
             let documentId;
             let documentUrl;
             let documentText;
 
-            if (documents.length === 0) {
+            if (!document) {
               // Create new document
               console.log('No existing document found. Creating new one...');
               const createResponse = await fetch(`${baseUrl}/api/documents.create`, {
@@ -117,21 +115,12 @@ jobs:
               documentUrl = `${baseUrl}/doc/next-${urlId}`;
               documentText = createData.data.text || '';
               console.log(`Created new document: ${documentUrl}`);
-            } else if (documents.length === 1) {
-              documentId = documents[0].document.id;
-              const docPath = documents[0].document.url;
-              documentUrl = `${baseUrl}${docPath}`;
-              documentText = documents[0].document.text || '';
-              console.log(`Found existing document: ${documentUrl}`);
             } else {
-              // Error: multiple documents found
-              console.error(`Found ${documents.length} documents`);
-              console.error('Documents found:');
-              documents.forEach((doc, index) => {
-                const docUrl = `${baseUrl}${doc.document.url}`;
-                console.error(`  ${index + 1}. ${doc.document.title}: ${docUrl}`);
-              });
-              throw new Error(`Found ${documents.length} documents with query "next". Expected 0 or 1.`);
+              documentId = document.id;
+              const docPath = document.url;
+              documentUrl = `${baseUrl}${docPath}`;
+              documentText = document.text || '';
+              console.log(`Found existing document: ${documentUrl}`);
             }
 
             // Generate GitHub release notes
