@@ -61,8 +61,11 @@ class BackgroundWorkerFgService {
 
 class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
   ProviderContainer? _ref;
+  // ignore: unused_field
   final Isar _isar;
+  // ignore: unused_field
   final Drift _drift;
+  // ignore: unused_field
   final DriftLogger _driftLogger;
   final BackgroundWorkerBgHostApi _backgroundHostApi;
   final CancellationToken _cancellationToken = CancellationToken();
@@ -79,7 +82,14 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
       overrides: [
         dbProvider.overrideWithValue(isar),
         isarProvider.overrideWithValue(isar),
-        driftProvider.overrideWith(driftOverride(drift)),
+        // IMPORTANT: Do NOT use driftOverride here because it registers an onDispose
+        // callback that closes the database. Since the databases use shareAcrossIsolates: true,
+        // closing them from the background isolate will hang indefinitely.
+        // Instead, provide the drift instance directly without the dispose callback.
+        driftProvider.overrideWith((ref) {
+          ref.keepAlive();
+          return drift;
+        }),
       ],
     );
     BackgroundWorkerFlutterApi.setUp(this);
@@ -184,31 +194,38 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
 
     try {
       _isCleanedUp = true;
+      _logger.info("Cleaning up background worker");
+
       final backgroundSyncManager = _ref?.read(backgroundSyncProvider);
       final nativeSyncApi = _ref?.read(nativeSyncApiProvider);
+
+      _cancellationToken.cancel();
+      await backgroundSyncManager?.cancel();
+      await nativeSyncApi?.cancelHashing();
+
+      // Dispose ref to release all providers
+      // Note: We use a custom drift provider override (see constructor) that does NOT
+      // close the database on dispose, so this is safe and won't hang
       _ref?.dispose();
       _ref = null;
 
-      _cancellationToken.cancel();
-      _logger.info("Cleaning up background worker");
-      final cleanupFutures = [
-        nativeSyncApi?.cancelHashing(),
-        workerManagerPatch.dispose().catchError((_) async {
-          // Discard any errors on the dispose call
-          return;
-        }),
-        LogService.I.dispose(),
-        Store.dispose(),
-        _drift.close(),
-        _driftLogger.close(),
-        backgroundSyncManager?.cancel(),
-      ];
+      try {
+        await workerManagerPatch.dispose();
+      } catch (_) {}
 
-      if (_isar.isOpen) {
-        cleanupFutures.add(_isar.close());
+      try {
+        await LogService.I.dispose();
+      } catch (error) {
+        _logger.warning("Failed to dispose LogService: $error");
       }
-      await Future.wait(cleanupFutures.nonNulls);
-      _logger.info("Background worker resources cleaned up");
+
+      try {
+        await Store.dispose();
+      } catch (error) {
+        _logger.warning("Failed to dispose Store: $error");
+      }
+
+      _logger.info("Background worker resources cleaned up successfully");
     } catch (error, stack) {
       dPrint(() => 'Failed to cleanup background worker: $error with stack: $stack');
     }

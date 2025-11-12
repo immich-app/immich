@@ -133,9 +133,9 @@ class BackgroundWorker: BackgroundWorkerBgHostApi {
       self.complete(success: false)
     }
 
-    // Fallback safety mechanism: ensure completion is called within 2 seconds
+    // Fallback safety mechanism: ensure completion is called within 5 seconds
     // This prevents the background task from hanging indefinitely if Flutter doesn't respond
-    Timer.scheduledTimer(withTimeInterval: 2, repeats: false) { _ in
+    Timer.scheduledTimer(withTimeInterval: 5, repeats: false) { _ in
       self.complete(success: false)
     }
   }
