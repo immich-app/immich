@@ -74,7 +74,7 @@ class PartnersApi {
 
   /// Create a partner
   ///
-  /// This property was deprecated in v1.141.0. Create a new partner to share assets with.
+  /// Create a new partner to share assets with.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -109,7 +109,7 @@ class PartnersApi {
 
   /// Create a partner
   ///
-  /// This property was deprecated in v1.141.0. Create a new partner to share assets with.
+  /// Create a new partner to share assets with.
   ///
   /// Parameters:
   ///

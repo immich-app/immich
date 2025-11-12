@@ -12,8 +12,9 @@ import {
   Query,
   Res,
 } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
 import { NextFunction, Response } from 'express';
+import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
@@ -46,16 +47,21 @@ export class PersonController {
 
   @Get()
   @Authenticated({ permission: Permission.PersonRead })
-  @ApiOperation({ summary: 'Get all people', description: 'Retrieve a list of all people.' })
+  @Endpoint({
+    summary: 'Get all people',
+    description: 'Retrieve a list of all people.',
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
+  })
   getAllPeople(@Auth() auth: AuthDto, @Query() options: PersonSearchDto): Promise<PeopleResponseDto> {
     return this.service.getAll(auth, options);
   }
 
   @Post()
   @Authenticated({ permission: Permission.PersonCreate })
-  @ApiOperation({
+  @Endpoint({
     summary: 'Create a person',
     description: 'Create a new person that can have multiple faces assigned to them.',
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
   createPerson(@Auth() auth: AuthDto, @Body() dto: PersonCreateDto): Promise<PersonResponseDto> {
     return this.service.create(auth, dto);
@@ -63,7 +69,11 @@ export class PersonController {
 
   @Put()
   @Authenticated({ permission: Permission.PersonUpdate })
-  @ApiOperation({ summary: 'Update people', description: 'Bulk update multiple people at once.' })
+  @Endpoint({
+    summary: 'Update people',
+    description: 'Bulk update multiple people at once.',
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
+  })
   updatePeople(@Auth() auth: AuthDto, @Body() dto: PeopleUpdateDto): Promise<BulkIdResponseDto[]> {
     return this.service.updateAll(auth, dto);
   }
@@ -71,21 +81,33 @@ export class PersonController {
   @Delete()
   @Authenticated({ permission: Permission.PersonDelete })
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Delete people', description: 'Bulk delete a list of people at once.' })
+  @Endpoint({
+    summary: 'Delete people',
+    description: 'Bulk delete a list of people at once.',
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
+  })
   deletePeople(@Auth() auth: AuthDto, @Body() dto: BulkIdsDto): Promise<void> {
     return this.service.deleteAll(auth, dto);
   }
 
   @Get(':id')
   @Authenticated({ permission: Permission.PersonRead })
-  @ApiOperation({ summary: 'Get a person', description: 'Retrieve a person by id.' })
+  @Endpoint({
+    summary: 'Get a person',
+    description: 'Retrieve a person by id.',
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
+  })
   getPerson(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<PersonResponseDto> {
     return this.service.getById(auth, id);
   }
 
   @Put(':id')
   @Authenticated({ permission: Permission.PersonUpdate })
-  @ApiOperation({ summary: 'Update person', description: 'Update an individual person.' })
+  @Endpoint({
+    summary: 'Update person',
+    description: 'Update an individual person.',
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
+  })
   updatePerson(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
@@ -97,14 +119,22 @@ export class PersonController {
   @Delete(':id')
   @Authenticated({ permission: Permission.PersonDelete })
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Delete person', description: 'Delete an individual person.' })
+  @Endpoint({
+    summary: 'Delete person',
+    description: 'Delete an individual person.',
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
+  })
   deletePerson(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<void> {
     return this.service.delete(auth, id);
   }
 
   @Get(':id/statistics')
   @Authenticated({ permission: Permission.PersonStatistics })
-  @ApiOperation({ summary: 'Get person statistics', description: 'Retrieve statistics about a specific person.' })
+  @Endpoint({
+    summary: 'Get person statistics',
+    description: 'Retrieve statistics about a specific person.',
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
+  })
   getPersonStatistics(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<PersonStatisticsResponseDto> {
     return this.service.getStatistics(auth, id);
   }
@@ -112,7 +142,11 @@ export class PersonController {
   @Get(':id/thumbnail')
   @FileResponse()
   @Authenticated({ permission: Permission.PersonRead })
-  @ApiOperation({ summary: 'Get person thumbnail', description: 'Retrieve the thumbnail file for a person.' })
+  @Endpoint({
+    summary: 'Get person thumbnail',
+    description: 'Retrieve the thumbnail file for a person.',
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
+  })
   async getPersonThumbnail(
     @Res() res: Response,
     @Next() next: NextFunction,
@@ -124,7 +158,11 @@ export class PersonController {
 
   @Put(':id/reassign')
   @Authenticated({ permission: Permission.PersonReassign })
-  @ApiOperation({ summary: 'Reassign faces', description: 'Bulk reassign a list of faces to a different person.' })
+  @Endpoint({
+    summary: 'Reassign faces',
+    description: 'Bulk reassign a list of faces to a different person.',
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
+  })
   reassignFaces(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
@@ -136,9 +174,10 @@ export class PersonController {
   @Post(':id/merge')
   @Authenticated({ permission: Permission.PersonMerge })
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({
+  @Endpoint({
     summary: 'Merge people',
     description: 'Merge a list of people into the person specified in the path parameter.',
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
   mergePerson(
     @Auth() auth: AuthDto,

@@ -352,7 +352,7 @@ class AssetsApi {
 
   /// Retrieve assets by device ID
   ///
-  /// This property was deprecated in v2.0.0. Get all asset of a device that are in the database, ID only.
+  /// Get all asset of a device that are in the database, ID only.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -387,7 +387,7 @@ class AssetsApi {
 
   /// Retrieve assets by device ID
   ///
-  /// This property was deprecated in v2.0.0. Get all asset of a device that are in the database, ID only.
+  /// Get all asset of a device that are in the database, ID only.
   ///
   /// Parameters:
   ///
@@ -740,7 +740,7 @@ class AssetsApi {
 
   /// Get random assets
   ///
-  /// This property was deprecated in v1.116.0. Retrieve a specified number of random assets for the authenticated user.
+  /// Retrieve a specified number of random assets for the authenticated user.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -778,7 +778,7 @@ class AssetsApi {
 
   /// Get random assets
   ///
-  /// This property was deprecated in v1.116.0. Retrieve a specified number of random assets for the authenticated user.
+  /// Retrieve a specified number of random assets for the authenticated user.
   ///
   /// Parameters:
   ///
@@ -875,7 +875,7 @@ class AssetsApi {
 
   /// Replace asset
   ///
-  /// This property was deprecated in v1.142.0. Replace the asset with new file, without changing its id.
+  /// Replace the asset with new file, without changing its id.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -969,7 +969,7 @@ class AssetsApi {
 
   /// Replace asset
   ///
-  /// This property was deprecated in v1.142.0. Replace the asset with new file, without changing its id.
+  /// Replace the asset with new file, without changing its id.
   ///
   /// Parameters:
   ///

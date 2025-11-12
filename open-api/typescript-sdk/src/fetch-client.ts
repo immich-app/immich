@@ -302,16 +302,13 @@ export type AssetFaceWithoutPersonResponseDto = {
 };
 export type PersonWithFacesResponseDto = {
     birthDate: string | null;
-    /** This property was added in v1.126.0 */
     color?: string;
     faces: AssetFaceWithoutPersonResponseDto[];
     id: string;
-    /** This property was added in v1.126.0 */
     isFavorite?: boolean;
     isHidden: boolean;
     name: string;
     thumbnailPath: string;
-    /** This property was added in v1.107.0 */
     updatedAt?: string;
 };
 export type AssetStackResponseDto = {
@@ -348,7 +345,6 @@ export type AssetResponseDto = {
     isFavorite: boolean;
     isOffline: boolean;
     isTrashed: boolean;
-    /** This property was deprecated in v1.106.0 */
     libraryId?: string | null;
     livePhotoVideoId?: string | null;
     /** The local date and time when the photo/video was taken, derived from EXIF metadata. This represents the photographer's local time regardless of timezone, stored as a timezone-agnostic timestamp. Used for timeline grouping by "local" days and months. */
@@ -359,7 +355,6 @@ export type AssetResponseDto = {
     owner?: UserResponseDto;
     ownerId: string;
     people?: PersonWithFacesResponseDto[];
-    /** This property was deprecated in v1.113.0 */
     resized?: boolean;
     stack?: (AssetStackResponseDto) | null;
     tags?: TagResponseDto[];
@@ -669,15 +664,12 @@ export type DuplicateResponseDto = {
 };
 export type PersonResponseDto = {
     birthDate: string | null;
-    /** This property was added in v1.126.0 */
     color?: string;
     id: string;
-    /** This property was added in v1.126.0 */
     isFavorite?: boolean;
     isHidden: boolean;
     name: string;
     thumbnailPath: string;
-    /** This property was added in v1.107.0 */
     updatedAt?: string;
 };
 export type AssetFaceResponseDto = {
@@ -874,7 +866,6 @@ export type PartnerUpdateDto = {
     inTimeline: boolean;
 };
 export type PeopleResponseDto = {
-    /** This property was added in v1.110.0 */
     hasNextPage?: boolean;
     hidden: number;
     people: PersonResponseDto[];

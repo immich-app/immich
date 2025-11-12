@@ -1,5 +1,6 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
+import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
   AssetFaceCreateDto,
@@ -20,10 +21,11 @@ export class FaceController {
 
   @Post()
   @Authenticated({ permission: Permission.FaceCreate })
-  @ApiOperation({
+  @Endpoint({
     summary: 'Create a face',
     description:
       'Create a new face that has not been discovered by facial recognition. The content of the bounding box is considered a face.',
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
   createFace(@Auth() auth: AuthDto, @Body() dto: AssetFaceCreateDto) {
     return this.service.createFace(auth, dto);
@@ -31,9 +33,10 @@ export class FaceController {
 
   @Get()
   @Authenticated({ permission: Permission.FaceRead })
-  @ApiOperation({
+  @Endpoint({
     summary: 'Retrieve faces for asset',
     description: 'Retrieve all faces belonging to an asset.',
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
   getFaces(@Auth() auth: AuthDto, @Query() dto: FaceDto): Promise<AssetFaceResponseDto[]> {
     return this.service.getFacesById(auth, dto);
@@ -41,9 +44,10 @@ export class FaceController {
 
   @Put(':id')
   @Authenticated({ permission: Permission.FaceUpdate })
-  @ApiOperation({
+  @Endpoint({
     summary: 'Re-assign a face to another person',
     description: 'Re-assign the face provided in the body to the person identified by the id in the path parameter.',
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
   reassignFacesById(
     @Auth() auth: AuthDto,
@@ -56,9 +60,10 @@ export class FaceController {
   @Delete(':id')
   @Authenticated({ permission: Permission.FaceDelete })
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({
+  @Endpoint({
     summary: 'Delete a face',
     description: 'Delete a face identified by the id. Optionally can be force deleted.',
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
   deleteFace(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto, @Body() dto: AssetFaceDeleteDto): Promise<void> {
     return this.service.deleteFace(auth, id, dto);

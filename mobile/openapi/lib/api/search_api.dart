@@ -131,7 +131,6 @@ class SearchApi {
   /// * [String] country:
   ///
   /// * [bool] includeNull:
-  ///   This property was added in v111.0.0
   ///
   /// * [String] lensModel:
   ///
@@ -196,7 +195,6 @@ class SearchApi {
   /// * [String] country:
   ///
   /// * [bool] includeNull:
-  ///   This property was added in v111.0.0
   ///
   /// * [String] lensModel:
   ///
