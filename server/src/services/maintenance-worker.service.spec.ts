@@ -1,4 +1,4 @@
-import { BadRequestException, UnauthorizedException } from '@nestjs/common';
+import { UnauthorizedException } from '@nestjs/common';
 import { SignJWT } from 'jose';
 import { SystemMetadataKey } from 'src/enum';
 import { MaintenanceWorkerRepository } from 'src/repositories/maintenance-worker.repository';
@@ -103,12 +103,6 @@ describe(MaintenanceWorkerService.name, () => {
           _mockValue: true,
         }),
       );
-    });
-  });
-
-  describe('startMaintenance', () => {
-    it('should fail', () => {
-      expect(() => sut.startMaintenance()).toThrowError(BadRequestException);
     });
   });
 

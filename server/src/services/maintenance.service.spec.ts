@@ -48,12 +48,6 @@ describe(MaintenanceService.name, () => {
     });
   });
 
-  describe('login', () => {
-    it('should fail', () => {
-      expect(() => sut.login()).toThrowError(BadRequestException);
-    });
-  });
-
   describe('startMaintenance', () => {
     it('should fail if in maintenance mode', async () => {
       mocks.systemMetadata.get.mockResolvedValue({ isMaintenanceMode: true, secret: '' });
@@ -75,12 +69,6 @@ describe(MaintenanceService.name, () => {
       expect(mocks.event.emit).toHaveBeenCalledWith('AppRestart', {
         isMaintenanceMode: true,
       });
-    });
-  });
-
-  describe('endMaintenance', () => {
-    it('should fail', () => {
-      expect(() => sut.login()).toThrowError(BadRequestException);
     });
   });
 
