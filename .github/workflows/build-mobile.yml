@@ -188,8 +188,8 @@ jobs:
     needs: pre-job
     permissions:
       contents: read
-    # Run on main branch or workflow_dispatch
-    if: ${{ !github.event.pull_request.head.repo.fork && fromJSON(needs.pre-job.outputs.should_run).mobile == true && github.ref == 'refs/heads/main' }}
+    # Run on main branch or workflow_dispatch, or on PRs/other branches (build only, no upload)
+    if: ${{ !github.event.pull_request.head.repo.fork && fromJSON(needs.pre-job.outputs.should_run).mobile == true }}
     runs-on: macos-latest
 
     steps:
@@ -303,12 +303,19 @@ jobs:
           APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
           APP_STORE_CONNECT_API_KEY_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
           ENVIRONMENT: ${{ inputs.environment || 'development' }}
+          BUNDLE_ID_SUFFIX: ${{ inputs.environment == 'production' && '' || 'development' }}
         working-directory: ./mobile/ios
         run: |
-          if [[ "$ENVIRONMENT" == "development" ]]; then
-            bundle exec fastlane gha_testflight_dev
+          # Only upload to TestFlight on main branch
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            if [[ "$ENVIRONMENT" == "development" ]]; then
+              bundle exec fastlane gha_testflight_dev
+            else
+              bundle exec fastlane gha_release_prod
+            fi
           else
-            bundle exec fastlane gha_release_prod
+            # Build only, no TestFlight upload for non-main branches
+            bundle exec fastlane gha_build_only
           fi
 
       - name: Clean up keychain

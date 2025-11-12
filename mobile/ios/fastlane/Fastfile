@@ -210,4 +210,41 @@ end
     )
   end
 
+  desc "iOS Build Only (no TestFlight upload)"
+  lane :gha_build_only do
+    bundle_suffix = ENV["BUNDLE_ID_SUFFIX"] || ""
+    app_identifier = bundle_suffix.empty? ? BASE_BUNDLE_ID : "#{BASE_BUNDLE_ID}.#{bundle_suffix}"
+    
+    # Install provisioning profiles
+    if bundle_suffix == "development"
+      install_provisioning_profile(path: "profile_dev.mobileprovision")
+      install_provisioning_profile(path: "profile_dev_share.mobileprovision")
+      install_provisioning_profile(path: "profile_dev_widget.mobileprovision")
+      configure_code_signing(bundle_id_suffix: "development")
+    else
+      install_provisioning_profile(path: "profile.mobileprovision")
+      install_provisioning_profile(path: "profile_share.mobileprovision")
+      install_provisioning_profile(path: "profile_widget.mobileprovision")
+      configure_code_signing
+    end
+    
+    # Build without incrementing version/build number or uploading
+    build_app(
+      scheme: "Runner",
+      workspace: "Runner.xcworkspace",
+      configuration: bundle_suffix == "development" ? "Profile" : "Release",
+      export_method: "app-store",
+      xcargs: "CODE_SIGN_IDENTITY='#{CODE_SIGN_IDENTITY}' CODE_SIGN_STYLE=Manual",
+      export_options: {
+        provisioningProfiles: {
+          "#{app_identifier}" => "#{app_identifier} AppStore",
+          "#{app_identifier}.ShareExtension" => "#{app_identifier}.ShareExtension AppStore",
+          "#{app_identifier}.Widget" => "#{app_identifier}.Widget AppStore"
+        },
+        signingStyle: "manual",
+        signingCertificate: CODE_SIGN_IDENTITY
+      }
+    )
+  end
+
 end
