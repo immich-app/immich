@@ -86,6 +86,8 @@ const envData: EnvData = {
 
   workers: [ImmichWorker.Api, ImmichWorker.Microservices],
 
+  plugins: [],
+
   noColor: false,
 };
 

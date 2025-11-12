@@ -102,6 +102,11 @@ export interface EnvData {
 
   workers: ImmichWorker[];
 
+  plugins: Array<{
+    enabled: boolean;
+    manifestPath: string;
+  }>;
+
   noColor: boolean;
   nodeVersion?: string;
 }
@@ -215,6 +220,14 @@ const getEnv = (): EnvData => {
     }
   }
 
+  const plugins = [
+    // Core plugins
+    {
+      enabled: true,
+      manifestPath: join(process.cwd(), '..', 'plugins', 'manifest.json'),
+    },
+  ];
+
   return {
     host: dto.IMMICH_HOST,
     port: dto.IMMICH_PORT || 2283,
@@ -318,6 +331,8 @@ const getEnv = (): EnvData => {
     },
 
     workers,
+
+    plugins,
 
     noColor: !!dto.NO_COLOR,
   };

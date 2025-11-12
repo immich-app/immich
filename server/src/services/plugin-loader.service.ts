@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { validateOrReject } from 'class-validator';
-import path from 'node:path';
 import { OnEvent } from 'src/decorators';
 import { PluginManifestDto } from 'src/dtos/plugin-manifest.dto';
 import { BaseService } from 'src/services/base.service';
@@ -13,16 +12,21 @@ export class PluginLoaderService extends BaseService {
   }
 
   async loadPluginsFromManifests(): Promise<void> {
-    const manifestFilePath = path.join(process.cwd(), '..', 'plugins', 'manifest.json');
-    this.logger.debug(`Loading plugins from manifest file at: ${manifestFilePath}.`);
+    const { plugins } = this.configRepository.getEnv();
 
-    const manifest = await this.pluginRepository.readManifest(manifestFilePath);
+    for (const plugin of plugins) {
+      if (!plugin.enabled) {
+        continue;
+      }
 
-    await this.validateManifest(manifest);
+      this.logger.debug(`Loading plugin from manifest file at: ${plugin.manifestPath}.`);
+      const manifest = await this.pluginRepository.readManifest(plugin.manifestPath);
 
-    await this.loadPluginToDatabase(manifest);
+      await this.validateManifest(manifest);
+      await this.loadPluginToDatabase(manifest);
 
-    this.logger.log(`Successfully loaded plugin: ${manifest.name} (version ${manifest.version})`);
+      this.logger.log(`Successfully processed plugin: ${manifest.name} (version ${manifest.version})`);
+    }
   }
 
   private async loadPluginToDatabase(manifest: PluginManifestDto): Promise<void> {

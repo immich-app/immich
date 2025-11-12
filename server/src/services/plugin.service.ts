@@ -7,7 +7,7 @@ import { BaseService } from 'src/services/base.service';
 export class PluginService extends BaseService {
   async getAll(): Promise<PluginResponseDto[]> {
     const plugins = await this.pluginRepository.getAllPlugins();
-    return plugins.map(this.mapPlugin);
+    return plugins.map((plugin) => this.mapPlugin(plugin));
   }
 
   async get(id: string): Promise<PluginResponseDto> {
