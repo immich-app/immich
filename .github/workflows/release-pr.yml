@@ -43,6 +43,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
         env:
           OUTLINE_API_KEY: ${{ secrets.OUTLINE_API_KEY }}
+          NEXT_VERSION: ${{ steps.bump-type.outputs.next }}
         with:
           script: |
             const outlineKey = process.env.OUTLINE_API_KEY;
@@ -123,7 +124,7 @@ jobs:
             const releaseNotesResponse = await github.rest.repos.generateReleaseNotes({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              tag_name: '${{ steps.bump-type.outputs.next }}'
+              tag_name: `v${process.env.NEXT_VERSION}`,
             });
 
             const githubNotes = releaseNotesResponse.data.body;
