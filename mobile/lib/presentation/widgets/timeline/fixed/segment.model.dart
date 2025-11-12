@@ -142,43 +142,43 @@ class _FixedSegmentRow extends ConsumerWidget {
     TimelineService timelineService,
     bool isDynamicLayout,
   ) {
-    if (!isDynamicLayout) {
-      return TimelineRow.fixed(
-        dimension: tileHeight,
-        spacing: spacing,
-        textDirection: Directionality.of(context),
-        children: [
-          for (int i = 0; i < assets.length; i++)
-            TimelineAssetIndexWrapper(
-              assetIndex: assetIndex + i,
-              segmentIndex: 0, // For simplicity, using 0 for now
-              child: _AssetTileWidget(
-                key: ValueKey(Object.hash(assets[i].heroTag, assetIndex + i, timelineService.hashCode)),
-                asset: assets[i],
-                assetIndex: assetIndex + i,
-              ),
-            ),
-        ],
-      );
+    final children = [
+      for (int i = 0; i < assets.length; i++)
+        TimelineAssetIndexWrapper(
+          assetIndex: assetIndex + i,
+          segmentIndex: 0, // For simplicity, using 0 for now
+          child: _AssetTileWidget(
+            key: ValueKey(Object.hash(assets[i].heroTag, assetIndex + i, timelineService.hashCode)),
+            asset: assets[i],
+            assetIndex: assetIndex + i,
+          ),
+        ),
+    ];
+
+    final widths = List.filled(assets.length, tileHeight);
+
+    if (isDynamicLayout) {
+      final aspectRatios = assets.map((e) => (e.width ?? 1) / (e.height ?? 1)).toList();
+      final meanAspectRatio = aspectRatios.sum / assets.length;
+
+      // 1: mean width
+      // 0.5: width < mean - threshold
+      // 1.5: width > mean + threshold
+      final arConfiguration = aspectRatios.map((e) {
+        if (e - meanAspectRatio > 0.3) return 1.5;
+        if (e - meanAspectRatio < -0.3) return 0.5;
+        return 1.0;
+      });
+
+      // Normalize to get width distribution
+      final sum = arConfiguration.sum;
+
+      int index = 0;
+      for (final ratio in arConfiguration) {
+        // Distribute the available width proportionally based on aspect ratio configuration
+        widths[index++] = ((ratio * assets.length) / sum) * tileHeight;
+      }
     }
-
-    final aspectRatios = assets.map((e) => (e.width ?? 1) / (e.height ?? 1)).toList();
-    final meanAspectRatio = aspectRatios.sum / assets.length;
-
-    // 1: mean width
-    // 0.5: width < mean - threshold
-    // 1.5: width > mean + threshold
-    final arConfiguration = aspectRatios.map((e) {
-      if (e - meanAspectRatio > 0.3) return 1.5;
-      if (e - meanAspectRatio < -0.3) return 0.5;
-      return 1.0;
-    });
-
-    // Normalize to get width distribution
-    final sum = arConfiguration.sum;
-
-    // Distribute the available width proportionally based on aspect ratio configuration
-    final widths = arConfiguration.map((e) => ((e * assets.length) / sum) * tileHeight).toList();
 
     return TimelineDragRegion(
       child: TimelineRow(
@@ -186,18 +186,7 @@ class _FixedSegmentRow extends ConsumerWidget {
         widths: widths,
         spacing: spacing,
         textDirection: Directionality.of(context),
-        children: [
-          for (int i = 0; i < assets.length; i++)
-            TimelineAssetIndexWrapper(
-              assetIndex: assetIndex + i,
-              segmentIndex: 0, // For simplicity, using 0 for now
-              child: _AssetTileWidget(
-                key: ValueKey(Object.hash(assets[i].heroTag, assetIndex + i, timelineService.hashCode)),
-                asset: assets[i],
-                assetIndex: assetIndex + i,
-              ),
-            ),
-        ],
+        children: children,
       ),
     );
   }
