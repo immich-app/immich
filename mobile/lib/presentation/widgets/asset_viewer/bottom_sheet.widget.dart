@@ -127,13 +127,18 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
     if (exifInfo == null) {
       return null;
     }
-
-    final fNumber = exifInfo.fNumber.isNotEmpty ? 'ƒ/${exifInfo.fNumber}' : null;
     final exposureTime = exifInfo.exposureTime.isNotEmpty ? exifInfo.exposureTime : null;
-    final focalLength = exifInfo.focalLength.isNotEmpty ? '${exifInfo.focalLength} mm' : null;
     final iso = exifInfo.iso != null ? 'ISO ${exifInfo.iso}' : null;
+    return [exposureTime, iso].where((spec) => spec != null && spec.isNotEmpty).join(_kSeparator);
+  }
 
-    return [fNumber, exposureTime, focalLength, iso].where((spec) => spec != null && spec.isNotEmpty).join(_kSeparator);
+  String? _getLensInfoSubtitle(ExifInfo? exifInfo) {
+    if (exifInfo == null) {
+      return null;
+    }
+    final fNumber = exifInfo.fNumber.isNotEmpty ? 'ƒ/${exifInfo.fNumber}' : null;
+    final focalLength = exifInfo.focalLength.isNotEmpty ? '${exifInfo.focalLength} mm' : null;
+    return [fNumber, focalLength].where((spec) => spec != null && spec.isNotEmpty).join(_kSeparator);
   }
 
   Future<void> _editDateTime(BuildContext context, WidgetRef ref) async {
@@ -141,14 +146,28 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
   }
 
   Widget _buildAppearsInList(WidgetRef ref, BuildContext context) {
-    final isRemote = ref.watch(currentAssetNotifier)?.hasRemote ?? false;
-    if (!isRemote) {
+    final asset = ref.watch(currentAssetNotifier);
+    if (asset == null) {
       return const SizedBox.shrink();
     }
 
-    final remoteAsset = ref.watch(currentAssetNotifier) as RemoteAsset;
+    if (!asset.hasRemote) {
+      return const SizedBox.shrink();
+    }
+
+    String? remoteAssetId;
+    if (asset is RemoteAsset) {
+      remoteAssetId = asset.id;
+    } else if (asset is LocalAsset) {
+      remoteAssetId = asset.remoteAssetId;
+    }
+
+    if (remoteAssetId == null) {
+      return const SizedBox.shrink();
+    }
+
     final userId = ref.watch(currentUserProvider)?.id;
-    final assetAlbums = ref.watch(albumsContainingAssetProvider(remoteAsset.id));
+    final assetAlbums = ref.watch(albumsContainingAssetProvider(remoteAssetId));
 
     return assetAlbums.when(
       data: (albums) {
@@ -203,6 +222,7 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
 
     final exifInfo = ref.watch(currentAssetExifProvider).valueOrNull;
     final cameraTitle = _getCameraInfoTitle(exifInfo);
+    final lensTitle = exifInfo?.lens != null && exifInfo!.lens!.isNotEmpty ? exifInfo.lens : null;
     final isOwner = ref.watch(currentUserProvider)?.id == (asset is RemoteAsset ? asset.ownerId : null);
 
     // Build file info tile based on asset type
@@ -273,8 +293,19 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
           _SheetTile(
             title: cameraTitle,
             titleStyle: context.textTheme.labelLarge,
-            leading: Icon(Icons.camera_outlined, size: 24, color: context.textTheme.labelLarge?.color),
+            leading: Icon(Icons.camera_alt_outlined, size: 24, color: context.textTheme.labelLarge?.color),
             subtitle: _getCameraInfoSubtitle(exifInfo),
+            subtitleStyle: context.textTheme.bodyMedium?.copyWith(
+              color: context.textTheme.bodyMedium?.color?.withAlpha(155),
+            ),
+          ),
+        // Lens info
+        if (lensTitle != null)
+          _SheetTile(
+            title: lensTitle,
+            titleStyle: context.textTheme.labelLarge,
+            leading: Icon(Icons.camera_outlined, size: 24, color: context.textTheme.labelLarge?.color),
+            subtitle: _getLensInfoSubtitle(exifInfo),
             subtitleStyle: context.textTheme.bodyMedium?.copyWith(
               color: context.textTheme.bodyMedium?.color?.withAlpha(155),
             ),

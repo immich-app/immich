@@ -28,7 +28,7 @@
 
 <div class="flex place-items-center justify-between">
   <div>
-    <div class="flex h-[26px] place-items-center gap-1">
+    <div class="flex h-6.5 place-items-center gap-1">
       <label class="font-medium text-primary text-sm" for={title}>
         {title}
       </label>

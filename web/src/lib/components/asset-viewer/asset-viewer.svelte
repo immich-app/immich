@@ -593,7 +593,7 @@
 
             {#if stackedAsset.id === asset.id}
               <div class="w-full flex place-items-center place-content-center">
-                <div class="w-2 h-2 bg-white rounded-full flex mt-[2px]"></div>
+                <div class="w-2 h-2 bg-white rounded-full flex mt-0.5"></div>
               </div>
             {/if}
           </div>

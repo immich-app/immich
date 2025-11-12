@@ -1,5 +1,5 @@
 import { Body, Controller, HttpCode, HttpStatus, Param, Post } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
   NotificationCreateDto,
@@ -9,17 +9,22 @@ import {
   TestEmailResponseDto,
 } from 'src/dtos/notification.dto';
 import { SystemConfigSmtpDto } from 'src/dtos/system-config.dto';
+import { ApiTag } from 'src/enum';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { EmailTemplate } from 'src/repositories/email.repository';
 import { NotificationAdminService } from 'src/services/notification-admin.service';
 
-@ApiTags('Notifications (Admin)')
+@ApiTags(ApiTag.NotificationsAdmin)
 @Controller('admin/notifications')
 export class NotificationAdminController {
   constructor(private service: NotificationAdminService) {}
 
   @Post()
   @Authenticated({ admin: true })
+  @ApiOperation({
+    summary: 'Create a notification',
+    description: 'Create a new notification for a specific user.',
+  })
   createNotification(@Auth() auth: AuthDto, @Body() dto: NotificationCreateDto): Promise<NotificationDto> {
     return this.service.create(auth, dto);
   }
@@ -27,6 +32,10 @@ export class NotificationAdminController {
   @Post('test-email')
   @Authenticated({ admin: true })
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Send test email',
+    description: 'Send a test email using the provided SMTP configuration.',
+  })
   sendTestEmailAdmin(@Auth() auth: AuthDto, @Body() dto: SystemConfigSmtpDto): Promise<TestEmailResponseDto> {
     return this.service.sendTestEmail(auth.user.id, dto);
   }
@@ -34,6 +43,10 @@ export class NotificationAdminController {
   @Post('templates/:name')
   @Authenticated({ admin: true })
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Render email template',
+    description: 'Retrieve a preview of the provided email template.',
+  })
   getNotificationTemplateAdmin(
     @Auth() auth: AuthDto,
     @Param('name') name: EmailTemplate,

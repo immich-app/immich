@@ -51,6 +51,11 @@ dynamic upgradeDto(dynamic value, String targetType) {
         addDefault(value, 'ocr', false);
       }
       break;
+    case 'MemoriesResponse':
+      if (value is Map) {
+        addDefault(value, 'duration', 5);
+      }
+      break;
   }
 }
 

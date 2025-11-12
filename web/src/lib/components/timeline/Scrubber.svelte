@@ -528,7 +528,7 @@
   {#if usingMobileDevice && ((timelineManager.scrolling && scrollHoverLabel) || isHover || isDragging)}
     <div
       id="time-label"
-      class="rounded-s-full w-[32px] ps-2 text-white bg-immich-primary dark:bg-gray-600 hover:cursor-pointer select-none"
+      class="rounded-s-full w-8 ps-2 text-white bg-immich-primary dark:bg-gray-600 hover:cursor-pointer select-none"
       style:top="{PADDING_TOP + (scrollY - 50 / 2)}px"
       style:height="50px"
       style:right="0"
@@ -536,15 +536,15 @@
       in:fade={{ duration: 200 }}
       out:fade={{ duration: 200 }}
     >
-      <Icon icon={mdiPlay} size="20" class="-rotate-90 relative top-[9px] -end-[2px]" />
-      <Icon icon={mdiPlay} size="20" class="rotate-90 relative top-px -end-[2px]" />
+      <Icon icon={mdiPlay} size="20" class="-rotate-90 relative top-[9px] -end-0.5" />
+      <Icon icon={mdiPlay} size="20" class="rotate-90 relative top-px -end-0.5" />
       {#if (timelineManager.scrolling && scrollHoverLabel) || isHover || isDragging}
         <p
           transition:fade={{ duration: 200 }}
           style:bottom={50 / 2 - 30 / 2 + 'px'}
           style:right="36px"
           style:width="fit-content"
-          class="truncate pointer-events-none absolute text-sm rounded-full w-[32px] py-2 px-4 text-white bg-immich-primary/90 dark:bg-gray-500 hover:cursor-pointer select-none font-semibold"
+          class="truncate pointer-events-none absolute text-sm rounded-full w-8 py-2 px-4 text-white bg-immich-primary/90 dark:bg-gray-500 hover:cursor-pointer select-none font-semibold"
         >
           {scrollHoverLabel}
         </p>
@@ -553,7 +553,7 @@
   {/if}
   <!-- Scroll Position Indicator Line -->
   {#if !usingMobileDevice && !isDragging}
-    <div class="absolute end-0 h-[2px] w-10 bg-primary" style:top="{scrollY + PADDING_TOP - 2}px">
+    <div class="absolute end-0 h-0.5 w-10 bg-primary" style:top="{scrollY + PADDING_TOP - 2}px">
       {#if timelineManager.scrolling && scrollHoverLabel && !isHover}
         <p
           transition:fade={{ duration: 200 }}
@@ -586,7 +586,7 @@
           </div>
         {/if}
         {#if segment.hasDot}
-          <div class="absolute end-3 bottom-0 h-[4px] w-[4px] rounded-full bg-gray-300"></div>
+          <div class="absolute end-3 bottom-0 h-1 w-1 rounded-full bg-gray-300"></div>
         {/if}
       {/if}
     </div>

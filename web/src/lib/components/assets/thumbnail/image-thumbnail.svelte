@@ -20,6 +20,7 @@
     hiddenIconClass?: string;
     class?: ClassValue;
     brokenAssetClass?: ClassValue;
+    preload?: boolean;
     onComplete?: ((errored: boolean) => void) | undefined;
   }
 
@@ -38,6 +39,7 @@
     onComplete = undefined,
     class: imageClass = '',
     brokenAssetClass = '',
+    preload = true,
   }: Props = $props();
 
   let loaded = $state(false);
@@ -68,7 +70,7 @@
       circle && 'rounded-full',
       shadow && 'shadow-lg',
       (circle || !heightStyle) && 'aspect-square',
-      border && 'border-[3px] border-immich-dark-primary/80 hover:border-immich-primary',
+      border && 'border-3 border-immich-dark-primary/80 hover:border-immich-primary',
       brokenAssetClass,
     ]
       .filter(Boolean)
@@ -92,6 +94,7 @@
     {title}
     class={['object-cover', optionalClasses, imageClass]}
     draggable="false"
+    loading={preload ? 'eager' : 'lazy'}
   />
 {/if}
 

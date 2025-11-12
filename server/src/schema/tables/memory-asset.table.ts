@@ -25,7 +25,7 @@ export class MemoryAssetTable {
   memoriesId!: string;
 
   @ForeignKeyColumn(() => AssetTable, { onUpdate: 'CASCADE', onDelete: 'CASCADE', primary: true })
-  assetsId!: string;
+  assetId!: string;
 
   @CreateDateColumn()
   createdAt!: Generated<Timestamp>;

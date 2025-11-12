@@ -16,9 +16,7 @@ class MaintenanceAdminApi {
 
   final ApiClient apiClient;
 
-  /// This endpoint is an admin-only route, and requires the `maintenance` permission.
-  ///
-  /// Note: This method returns the HTTP [Response].
+  /// Performs an HTTP 'POST /admin/maintenance/end' operation and returns the [Response].
   Future<Response> endMaintenanceWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final apiPath = r'/admin/maintenance/end';
@@ -44,7 +42,6 @@ class MaintenanceAdminApi {
     );
   }
 
-  /// This endpoint is an admin-only route, and requires the `maintenance` permission.
   Future<void> endMaintenance() async {
     final response = await endMaintenanceWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -99,9 +96,7 @@ class MaintenanceAdminApi {
     return null;
   }
 
-  /// This endpoint is an admin-only route, and requires the `maintenance` permission.
-  ///
-  /// Note: This method returns the HTTP [Response].
+  /// Performs an HTTP 'POST /admin/maintenance/start' operation and returns the [Response].
   Future<Response> startMaintenanceWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final apiPath = r'/admin/maintenance/start';
@@ -127,7 +122,6 @@ class MaintenanceAdminApi {
     );
   }
 
-  /// This endpoint is an admin-only route, and requires the `maintenance` permission.
   Future<void> startMaintenance() async {
     final response = await startMaintenanceWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {

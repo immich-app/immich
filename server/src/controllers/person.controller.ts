@@ -12,7 +12,7 @@ import {
   Query,
   Res,
 } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { NextFunction, Response } from 'express';
 import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -27,14 +27,14 @@ import {
   PersonStatisticsResponseDto,
   PersonUpdateDto,
 } from 'src/dtos/person.dto';
-import { Permission } from 'src/enum';
+import { ApiTag, Permission } from 'src/enum';
 import { Auth, Authenticated, FileResponse } from 'src/middleware/auth.guard';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { PersonService } from 'src/services/person.service';
 import { sendFile } from 'src/utils/file';
 import { UUIDParamDto } from 'src/validation';
 
-@ApiTags('People')
+@ApiTags(ApiTag.People)
 @Controller('people')
 export class PersonController {
   constructor(
@@ -46,18 +46,24 @@ export class PersonController {
 
   @Get()
   @Authenticated({ permission: Permission.PersonRead })
+  @ApiOperation({ summary: 'Get all people', description: 'Retrieve a list of all people.' })
   getAllPeople(@Auth() auth: AuthDto, @Query() options: PersonSearchDto): Promise<PeopleResponseDto> {
     return this.service.getAll(auth, options);
   }
 
   @Post()
   @Authenticated({ permission: Permission.PersonCreate })
+  @ApiOperation({
+    summary: 'Create a person',
+    description: 'Create a new person that can have multiple faces assigned to them.',
+  })
   createPerson(@Auth() auth: AuthDto, @Body() dto: PersonCreateDto): Promise<PersonResponseDto> {
     return this.service.create(auth, dto);
   }
 
   @Put()
   @Authenticated({ permission: Permission.PersonUpdate })
+  @ApiOperation({ summary: 'Update people', description: 'Bulk update multiple people at once.' })
   updatePeople(@Auth() auth: AuthDto, @Body() dto: PeopleUpdateDto): Promise<BulkIdResponseDto[]> {
     return this.service.updateAll(auth, dto);
   }
@@ -65,18 +71,21 @@ export class PersonController {
   @Delete()
   @Authenticated({ permission: Permission.PersonDelete })
   @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Delete people', description: 'Bulk delete a list of people at once.' })
   deletePeople(@Auth() auth: AuthDto, @Body() dto: BulkIdsDto): Promise<void> {
     return this.service.deleteAll(auth, dto);
   }
 
   @Get(':id')
   @Authenticated({ permission: Permission.PersonRead })
+  @ApiOperation({ summary: 'Get a person', description: 'Retrieve a person by id.' })
   getPerson(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<PersonResponseDto> {
     return this.service.getById(auth, id);
   }
 
   @Put(':id')
   @Authenticated({ permission: Permission.PersonUpdate })
+  @ApiOperation({ summary: 'Update person', description: 'Update an individual person.' })
   updatePerson(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
@@ -88,12 +97,14 @@ export class PersonController {
   @Delete(':id')
   @Authenticated({ permission: Permission.PersonDelete })
   @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Delete person', description: 'Delete an individual person.' })
   deletePerson(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<void> {
     return this.service.delete(auth, id);
   }
 
   @Get(':id/statistics')
   @Authenticated({ permission: Permission.PersonStatistics })
+  @ApiOperation({ summary: 'Get person statistics', description: 'Retrieve statistics about a specific person.' })
   getPersonStatistics(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<PersonStatisticsResponseDto> {
     return this.service.getStatistics(auth, id);
   }
@@ -101,6 +112,7 @@ export class PersonController {
   @Get(':id/thumbnail')
   @FileResponse()
   @Authenticated({ permission: Permission.PersonRead })
+  @ApiOperation({ summary: 'Get person thumbnail', description: 'Retrieve the thumbnail file for a person.' })
   async getPersonThumbnail(
     @Res() res: Response,
     @Next() next: NextFunction,
@@ -112,6 +124,7 @@ export class PersonController {
 
   @Put(':id/reassign')
   @Authenticated({ permission: Permission.PersonReassign })
+  @ApiOperation({ summary: 'Reassign faces', description: 'Bulk reassign a list of faces to a different person.' })
   reassignFaces(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
@@ -123,6 +136,10 @@ export class PersonController {
   @Post(':id/merge')
   @Authenticated({ permission: Permission.PersonMerge })
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Merge people',
+    description: 'Merge a list of people into the person specified in the path parameter.',
+  })
   mergePerson(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,

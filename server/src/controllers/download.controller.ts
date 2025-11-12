@@ -1,20 +1,25 @@
 import { Body, Controller, HttpCode, HttpStatus, Post, StreamableFile } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AssetIdsDto } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { DownloadInfoDto, DownloadResponseDto } from 'src/dtos/download.dto';
-import { Permission } from 'src/enum';
+import { ApiTag, Permission } from 'src/enum';
 import { Auth, Authenticated, FileResponse } from 'src/middleware/auth.guard';
 import { DownloadService } from 'src/services/download.service';
 import { asStreamableFile } from 'src/utils/file';
 
-@ApiTags('Download')
+@ApiTags(ApiTag.Download)
 @Controller('download')
 export class DownloadController {
   constructor(private service: DownloadService) {}
 
   @Post('info')
   @Authenticated({ permission: Permission.AssetDownload, sharedLink: true })
+  @ApiOperation({
+    summary: 'Retrieve download information',
+    description:
+      'Retrieve information about how to request a download for the specified assets or album. The response includes groups of assets that can be downloaded together.',
+  })
   getDownloadInfo(@Auth() auth: AuthDto, @Body() dto: DownloadInfoDto): Promise<DownloadResponseDto> {
     return this.service.getDownloadInfo(auth, dto);
   }
@@ -23,6 +28,11 @@ export class DownloadController {
   @Authenticated({ permission: Permission.AssetDownload, sharedLink: true })
   @FileResponse()
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Download asset archive',
+    description:
+      'Download a ZIP archive containing the specified assets. The assets must have been previously requested via the "getDownloadInfo" endpoint.',
+  })
   downloadArchive(@Auth() auth: AuthDto, @Body() dto: AssetIdsDto): Promise<StreamableFile> {
     return this.service.downloadArchive(auth, dto).then(asStreamableFile);
   }

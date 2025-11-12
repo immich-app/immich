@@ -19,10 +19,9 @@
     websocketStore,
     type ReleaseEvent,
   } from '$lib/stores/websocket';
-  import { copyToClipboard, getReleaseType } from '$lib/utils';
+  import { copyToClipboard, getReleaseType, semverToName } from '$lib/utils';
   import { maintenanceShouldRedirect } from '$lib/utils/maintenance';
   import { isAssetViewerRoute } from '$lib/utils/navigation';
-  import type { ServerVersionResponseDto } from '@immich/sdk';
   import { modalManager, setTranslations } from '@immich/ui';
   import { onMount, type Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -61,7 +60,7 @@
     // if the browser theme changes, changes the Immich theme too
   });
 
-  eventManager.emit('app.init');
+  eventManager.emit('AppInit');
 
   beforeNavigate(({ from, to }) => {
     if (isAssetViewerRoute(from) && isAssetViewerRoute(to)) {
@@ -81,7 +80,6 @@
     }
   });
 
-  const semverToName = ({ major, minor, patch }: ServerVersionResponseDto) => `v${major}.${minor}.${patch}`;
   const { release, serverRestarting } = websocketStore;
 
   const handleRelease = async (release?: ReleaseEvent) => {
