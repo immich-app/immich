@@ -1,7 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { plainToInstance } from 'class-transformer';
 import { validateOrReject } from 'class-validator';
-import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { OnEvent } from 'src/decorators';
 import { PluginManifestDto } from 'src/dtos/plugin-manifest.dto';
@@ -18,10 +16,7 @@ export class PluginLoaderService extends BaseService {
     const manifestFilePath = path.join(process.cwd(), '..', 'plugins', 'manifest.json');
     this.logger.debug(`Loading plugins from manifest file at: ${manifestFilePath}.`);
 
-    const content = await readFile(manifestFilePath, { encoding: 'utf8' });
-
-    const manifestData = JSON.parse(content);
-    const manifest = plainToInstance(PluginManifestDto, manifestData);
+    const manifest = await this.pluginRepository.readManifest(manifestFilePath);
 
     await this.validateManifest(manifest);
 
