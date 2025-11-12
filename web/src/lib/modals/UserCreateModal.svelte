@@ -1,6 +1,6 @@
 <script lang="ts">
   import { handleCreateUserAdmin } from '$lib/services/user-admin.service';
-  import { featureFlags } from '$lib/stores/server-config.store';
+  import { featureFlags } from '$lib/stores/system-config-manager.svelte';
   import { userInteraction } from '$lib/stores/user.svelte';
   import { ByteUnit, convertToBytes } from '$lib/utils/byte-units';
   import {

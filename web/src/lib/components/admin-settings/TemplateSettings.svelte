@@ -3,6 +3,7 @@
   import SettingTextarea from '$lib/components/shared-components/settings/setting-textarea.svelte';
   import FormatMessage from '$lib/elements/FormatMessage.svelte';
   import EmailTemplatePreviewModal from '$lib/modals/EmailTemplatePreviewModal.svelte';
+  import { systemConfigManager } from '$lib/stores/system-config-manager.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { type SystemConfigDto, type SystemConfigTemplateEmailsDto, getNotificationTemplateAdmin } from '@immich/sdk';
   import { Button, Icon, LoadingSpinner, modalManager } from '@immich/ui';
@@ -11,11 +12,10 @@
   import { fade } from 'svelte/transition';
 
   interface Props {
-    savedConfig: SystemConfigDto;
     config: SystemConfigDto;
   }
 
-  let { savedConfig, config = $bindable() }: Props = $props();
+  let { config = $bindable() }: Props = $props();
 
   let loadingPreview = $state(false);
 
@@ -53,7 +53,7 @@
   ];
 
   const isEdited = (templateKey: keyof SystemConfigTemplateEmailsDto) =>
-    config.templates.email[templateKey] !== savedConfig.templates.email[templateKey];
+    config.templates.email[templateKey] !== systemConfigManager.value.templates.email[templateKey];
 
   const onsubmit = (event: Event) => {
     event.preventDefault();

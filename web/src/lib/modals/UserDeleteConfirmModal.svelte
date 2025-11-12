@@ -1,7 +1,7 @@
 <script lang="ts">
   import FormatMessage from '$lib/elements/FormatMessage.svelte';
   import { handleDeleteUserAdmin } from '$lib/services/user-admin.service';
-  import { serverConfig } from '$lib/stores/server-config.store';
+  import { serverConfig } from '$lib/stores/system-config-manager.svelte';
   import { type UserAdminResponseDto } from '@immich/sdk';
   import { Alert, Checkbox, ConfirmModal, Field, Input, Label, Text } from '@immich/ui';
   import { mdiTrashCanOutline } from '@mdi/js';

@@ -2,7 +2,7 @@
   import { goto } from '$app/navigation';
   import AuthPageLayout from '$lib/components/layouts/AuthPageLayout.svelte';
   import { AppRoute } from '$lib/constants';
-  import { retrieveServerConfig } from '$lib/stores/server-config.store';
+  import { retrieveServerConfig } from '$lib/stores/system-config-manager.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { signUpAdmin } from '@immich/sdk';
   import { Alert, Button, Field, Input, PasswordInput, Text } from '@immich/ui';

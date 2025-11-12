@@ -1,4 +1,4 @@
-import { retrieveServerConfig } from '$lib/stores/server-config.store';
+import { retrieveServerConfig } from '$lib/stores/system-config-manager.svelte';
 import { initLanguage } from '$lib/utils';
 import { defaults } from '@immich/sdk';
 import { memoize } from 'lodash-es';
