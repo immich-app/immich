@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { Kysely } from 'kysely';
+import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
+import { columns } from 'src/database';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { PluginManifestDto } from 'src/dtos/plugin-manifest.dto';
 import { DB } from 'src/schema';
@@ -105,17 +107,53 @@ export class PluginRepository {
 
   @GenerateSql({ params: [DummyValue.UUID] })
   getPlugin(id: string) {
-    return this.db.selectFrom('plugin').selectAll().where('id', '=', id).executeTakeFirst();
+    return this.db
+      .selectFrom('plugin')
+      .select((eb) => [
+        ...columns.plugin,
+        jsonArrayFrom(
+          eb.selectFrom('plugin_filter').selectAll().whereRef('plugin_filter.pluginId', '=', 'plugin.id'),
+        ).as('filters'),
+        jsonArrayFrom(
+          eb.selectFrom('plugin_action').selectAll().whereRef('plugin_action.pluginId', '=', 'plugin.id'),
+        ).as('actions'),
+      ])
+      .where('plugin.id', '=', id)
+      .executeTakeFirst();
   }
 
   @GenerateSql({ params: [DummyValue.STRING] })
   getPluginByName(name: string) {
-    return this.db.selectFrom('plugin').selectAll().where('name', '=', name).executeTakeFirst();
+    return this.db
+      .selectFrom('plugin')
+      .select((eb) => [
+        ...columns.plugin,
+        jsonArrayFrom(
+          eb.selectFrom('plugin_filter').selectAll().whereRef('plugin_filter.pluginId', '=', 'plugin.id'),
+        ).as('filters'),
+        jsonArrayFrom(
+          eb.selectFrom('plugin_action').selectAll().whereRef('plugin_action.pluginId', '=', 'plugin.id'),
+        ).as('actions'),
+      ])
+      .where('plugin.name', '=', name)
+      .executeTakeFirst();
   }
 
   @GenerateSql()
   getAllPlugins() {
-    return this.db.selectFrom('plugin').selectAll().orderBy('name').execute();
+    return this.db
+      .selectFrom('plugin')
+      .select((eb) => [
+        ...columns.plugin,
+        jsonArrayFrom(
+          eb.selectFrom('plugin_filter').selectAll().whereRef('plugin_filter.pluginId', '=', 'plugin.id'),
+        ).as('filters'),
+        jsonArrayFrom(
+          eb.selectFrom('plugin_action').selectAll().whereRef('plugin_action.pluginId', '=', 'plugin.id'),
+        ).as('actions'),
+      ])
+      .orderBy('plugin.name')
+      .execute();
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })

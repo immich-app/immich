@@ -2,27 +2,129 @@
 
 -- PluginRepository.getPlugin
 select
-  *
+  "plugin"."id" as "id",
+  "plugin"."name" as "name",
+  "plugin"."displayName" as "displayName",
+  "plugin"."description" as "description",
+  "plugin"."author" as "author",
+  "plugin"."version" as "version",
+  "plugin"."wasmPath" as "wasmPath",
+  "plugin"."createdAt" as "createdAt",
+  "plugin"."updatedAt" as "updatedAt",
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          *
+        from
+          "plugin_filter"
+        where
+          "plugin_filter"."pluginId" = "plugin"."id"
+      ) as agg
+  ) as "filters",
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          *
+        from
+          "plugin_action"
+        where
+          "plugin_action"."pluginId" = "plugin"."id"
+      ) as agg
+  ) as "actions"
 from
   "plugin"
 where
-  "id" = $1
+  "plugin"."id" = $1
 
 -- PluginRepository.getPluginByName
 select
-  *
+  "plugin"."id" as "id",
+  "plugin"."name" as "name",
+  "plugin"."displayName" as "displayName",
+  "plugin"."description" as "description",
+  "plugin"."author" as "author",
+  "plugin"."version" as "version",
+  "plugin"."wasmPath" as "wasmPath",
+  "plugin"."createdAt" as "createdAt",
+  "plugin"."updatedAt" as "updatedAt",
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          *
+        from
+          "plugin_filter"
+        where
+          "plugin_filter"."pluginId" = "plugin"."id"
+      ) as agg
+  ) as "filters",
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          *
+        from
+          "plugin_action"
+        where
+          "plugin_action"."pluginId" = "plugin"."id"
+      ) as agg
+  ) as "actions"
 from
   "plugin"
 where
-  "name" = $1
+  "plugin"."name" = $1
 
 -- PluginRepository.getAllPlugins
 select
-  *
+  "plugin"."id" as "id",
+  "plugin"."name" as "name",
+  "plugin"."displayName" as "displayName",
+  "plugin"."description" as "description",
+  "plugin"."author" as "author",
+  "plugin"."version" as "version",
+  "plugin"."wasmPath" as "wasmPath",
+  "plugin"."createdAt" as "createdAt",
+  "plugin"."updatedAt" as "updatedAt",
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          *
+        from
+          "plugin_filter"
+        where
+          "plugin_filter"."pluginId" = "plugin"."id"
+      ) as agg
+  ) as "filters",
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          *
+        from
+          "plugin_action"
+        where
+          "plugin_action"."pluginId" = "plugin"."id"
+      ) as agg
+  ) as "actions"
 from
   "plugin"
 order by
-  "name"
+  "plugin"."name"
 
 -- PluginRepository.getFilter
 select

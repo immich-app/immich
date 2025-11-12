@@ -1,4 +1,5 @@
 import { IsNotEmpty, IsString } from 'class-validator';
+import { PluginAction, PluginFilter } from 'src/database';
 import { PluginContext } from 'src/schema/tables/plugin.table';
 import type { JSONSchema } from 'src/types/plugin-schema.types';
 import { ValidateEnum } from 'src/validation';
@@ -56,3 +57,17 @@ export class PluginInstallDto {
   @IsNotEmpty()
   manifestPath!: string;
 }
+
+export type MapPlugin = {
+  id: string;
+  name: string;
+  displayName: string;
+  description: string;
+  author: string;
+  version: string;
+  wasmPath: string;
+  createdAt: Date;
+  updatedAt: Date;
+  filters: PluginFilter[];
+  actions: PluginAction[];
+};

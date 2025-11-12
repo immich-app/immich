@@ -468,4 +468,15 @@ export const columns = {
     'asset_exif.state',
     'asset_exif.timeZone',
   ],
+  plugin: [
+    'plugin.id as id',
+    'plugin.name as name',
+    'plugin.displayName as displayName',
+    'plugin.description as description',
+    'plugin.author as author',
+    'plugin.version as version',
+    'plugin.wasmPath as wasmPath',
+    'plugin.createdAt as createdAt',
+    'plugin.updatedAt as updatedAt',
+  ],
 } as const;
