@@ -60,6 +60,7 @@ jobs:
           OUTLINE_API_KEY: ${{ secrets.OUTLINE_API_KEY }}
           NEXT_VERSION: ${{ steps.bump-type.outputs.next }}
         with:
+          github-token: ${{ steps.generate-token.outputs.token }}
           script: |
             const outlineKey = process.env.OUTLINE_API_KEY;
             const parentDocumentId = 'da856355-0844-43df-bd71-f8edce5382d9'
@@ -128,7 +129,7 @@ jobs:
             const releaseNotesResponse = await github.rest.repos.generateReleaseNotes({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              tag_name: `v${process.env.NEXT_VERSION}`,
+              tag_name: `${process.env.NEXT_VERSION}`,
             });
 
             const githubNotes = releaseNotesResponse.data.body;
