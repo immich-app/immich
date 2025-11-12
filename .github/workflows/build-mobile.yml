@@ -229,6 +229,11 @@ jobs:
         run: |
           pod install
 
+      - name: Resolve Swift Package dependencies
+        working-directory: ./mobile/ios
+        run: |
+          xcodebuild -resolvePackageDependencies -workspace Runner.xcworkspace -scheme Runner
+
       - name: Install Fastlane
         working-directory: ./mobile/ios
         run: |
