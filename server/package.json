@@ -22,7 +22,6 @@
     "test:cov": "vitest --config test/vitest.config.mjs --coverage",
     "test:medium": "vitest --config test/vitest.config.medium.mjs",
     "typeorm": "typeorm",
-    "lifecycle": "node ./dist/utils/lifecycle.js",
     "migrations:debug": "node ./dist/bin/migrations.js debug",
     "migrations:generate": "node ./dist/bin/migrations.js generate",
     "migrations:create": "node ./dist/bin/migrations.js create",

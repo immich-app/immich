@@ -15,9 +15,9 @@ import {
   UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
-import { ApiBody, ApiConsumes, ApiHeader, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiConsumes, ApiHeader, ApiTags } from '@nestjs/swagger';
 import { NextFunction, Request, Response } from 'express';
-import { EndpointLifecycle } from 'src/decorators';
+import { Endpoint, HistoryBuilder } from 'src/decorators';
 import {
   AssetBulkUploadCheckResponseDto,
   AssetMediaResponseDto,
@@ -62,9 +62,10 @@ export class AssetMediaController {
     required: false,
   })
   @ApiBody({ description: 'Asset Upload Information', type: AssetMediaCreateDto })
-  @ApiOperation({
+  @Endpoint({
     summary: 'Upload asset',
     description: 'Uploads a new asset to the server.',
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
   async uploadAsset(
     @Auth() auth: AuthDto,
@@ -85,9 +86,10 @@ export class AssetMediaController {
   @Get(':id/original')
   @FileResponse()
   @Authenticated({ permission: Permission.AssetDownload, sharedLink: true })
-  @ApiOperation({
+  @Endpoint({
     summary: 'Download original asset',
     description: 'Downloads the original file of the specified asset.',
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
   async downloadAsset(
     @Auth() auth: AuthDto,
@@ -101,11 +103,10 @@ export class AssetMediaController {
   @Put(':id/original')
   @UseInterceptors(FileUploadInterceptor)
   @ApiConsumes('multipart/form-data')
-  @EndpointLifecycle({
-    addedAt: 'v1.106.0',
-    deprecatedAt: 'v1.142.0',
+  @Endpoint({
     summary: 'Replace asset',
     description: 'Replace the asset with new file, without changing its id.',
+    history: new HistoryBuilder().added('v1').deprecated('v1', { replacementId: 'copyAsset' }),
   })
   @Authenticated({ permission: Permission.AssetReplace, sharedLink: true })
   async replaceAsset(
@@ -127,9 +128,10 @@ export class AssetMediaController {
   @Get(':id/thumbnail')
   @FileResponse()
   @Authenticated({ permission: Permission.AssetView, sharedLink: true })
-  @ApiOperation({
+  @Endpoint({
     summary: 'View asset thumbnail',
     description: 'Retrieve the thumbnail image for the specified asset.',
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
   async viewAsset(
     @Auth() auth: AuthDto,
@@ -168,9 +170,10 @@ export class AssetMediaController {
   @Get(':id/video/playback')
   @FileResponse()
   @Authenticated({ permission: Permission.AssetView, sharedLink: true })
-  @ApiOperation({
+  @Endpoint({
     summary: 'Play asset video',
     description: 'Streams the video file for the specified asset. This endpoint also supports byte range requests.',
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
   async playAssetVideo(
     @Auth() auth: AuthDto,
@@ -181,14 +184,12 @@ export class AssetMediaController {
     await sendFile(res, next, () => this.service.playbackVideo(auth, id), this.logger);
   }
 
-  /**
-   * Checks if multiple assets exist on the server and returns all existing - used by background backup
-   */
   @Post('exist')
   @Authenticated()
-  @ApiOperation({
+  @Endpoint({
     summary: 'Check existing assets',
     description: 'Checks if multiple assets exist on the server and returns all existing - used by background backup',
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
   @HttpCode(HttpStatus.OK)
   checkExistingAssets(
@@ -198,14 +199,12 @@ export class AssetMediaController {
     return this.service.checkExistingAssets(auth, dto);
   }
 
-  /**
-   * Checks if assets exist by checksums
-   */
   @Post('bulk-upload-check')
   @Authenticated({ permission: Permission.AssetUpload })
-  @ApiOperation({
+  @Endpoint({
     summary: 'Check bulk upload',
     description: 'Determine which assets have already been uploaded to the server based on their SHA1 checksums.',
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
   @HttpCode(HttpStatus.OK)
   checkBulkUpload(
