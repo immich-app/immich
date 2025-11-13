@@ -109,7 +109,7 @@ class ImmichAPI(cfg: ServerConfig) {
   }
 
   suspend fun fetchAlbums(): List<Album> = withContext(Dispatchers.IO) {
-    val url = buildRequestURL("/albums", listOf(Pair("shared","true")))
+    val url = buildRequestURL("/albums", listOf("shared" to "true"))
     val connection = (url.openConnection() as HttpURLConnection).apply {
       requestMethod = "GET"
       applyCustomHeaders()
