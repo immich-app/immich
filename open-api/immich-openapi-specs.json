@@ -22740,9 +22740,6 @@
           "description": {
             "type": "string"
           },
-          "displayName": {
-            "type": "string"
-          },
           "enabled": {
             "type": "boolean"
           },

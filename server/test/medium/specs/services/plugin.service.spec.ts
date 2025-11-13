@@ -41,14 +41,17 @@ describe(PluginService.name, () => {
     it('should return plugin without filters and actions', async () => {
       const { sut } = setup();
 
-      const result = await pluginRepo.loadPlugin({
-        name: 'test-plugin',
-        title: 'Test Plugin',
-        description: 'A test plugin',
-        author: 'Test Author',
-        version: '1.0.0',
-        wasm: { path: '/path/to/test.wasm' },
-      });
+      const result = await pluginRepo.loadPlugin(
+        {
+          name: 'test-plugin',
+          title: 'Test Plugin',
+          description: 'A test plugin',
+          author: 'Test Author',
+          version: '1.0.0',
+          wasm: { path: '/path/to/test.wasm' },
+        },
+        '/test/base/path',
+      );
 
       const plugins = await sut.getAll();
 
@@ -56,11 +59,9 @@ describe(PluginService.name, () => {
       expect(plugins[0]).toMatchObject({
         id: result.plugin.id,
         name: 'test-plugin',
-        displayName: 'Test Plugin',
         description: 'A test plugin',
         author: 'Test Author',
         version: '1.0.0',
-        wasmPath: '/path/to/test.wasm',
         filters: [],
         actions: [],
       });
@@ -69,32 +70,35 @@ describe(PluginService.name, () => {
     it('should return plugin with filters and actions', async () => {
       const { sut } = setup();
 
-      const result = await pluginRepo.loadPlugin({
-        name: 'full-plugin',
-        title: 'Full Plugin',
-        description: 'A plugin with filters and actions',
-        author: 'Test Author',
-        version: '1.0.0',
-        wasm: { path: '/path/to/full.wasm' },
-        filters: [
-          {
-            name: 'test-filter',
-            displayName: 'Test Filter',
-            description: 'A test filter',
-            supportedContexts: [PluginContext.Asset],
-            schema: { type: 'object', properties: {} },
-          },
-        ],
-        actions: [
-          {
-            name: 'test-action',
-            displayName: 'Test Action',
-            description: 'A test action',
-            supportedContexts: [PluginContext.Asset],
-            schema: { type: 'object', properties: {} },
-          },
-        ],
-      });
+      const result = await pluginRepo.loadPlugin(
+        {
+          name: 'full-plugin',
+          title: 'Full Plugin',
+          description: 'A plugin with filters and actions',
+          author: 'Test Author',
+          version: '1.0.0',
+          wasm: { path: '/path/to/full.wasm' },
+          filters: [
+            {
+              name: 'test-filter',
+              displayName: 'Test Filter',
+              description: 'A test filter',
+              supportedContexts: [PluginContext.Asset],
+              schema: { type: 'object', properties: {} },
+            },
+          ],
+          actions: [
+            {
+              name: 'test-action',
+              displayName: 'Test Action',
+              description: 'A test action',
+              supportedContexts: [PluginContext.Asset],
+              schema: { type: 'object', properties: {} },
+            },
+          ],
+        },
+        '/test/base/path',
+      );
 
       const plugins = await sut.getAll();
 
@@ -102,7 +106,6 @@ describe(PluginService.name, () => {
       expect(plugins[0]).toMatchObject({
         id: result.plugin.id,
         name: 'full-plugin',
-        displayName: 'Full Plugin',
         filters: [
           {
             id: result.filters[0].id,
@@ -131,41 +134,47 @@ describe(PluginService.name, () => {
     it('should return multiple plugins with their respective filters and actions', async () => {
       const { sut } = setup();
 
-      await pluginRepo.loadPlugin({
-        name: 'plugin-1',
-        title: 'Plugin 1',
-        description: 'First plugin',
-        author: 'Author 1',
-        version: '1.0.0',
-        wasm: { path: '/path/to/plugin1.wasm' },
-        filters: [
-          {
-            name: 'filter-1',
-            displayName: 'Filter 1',
-            description: 'Filter for plugin 1',
-            supportedContexts: [PluginContext.Asset],
-            schema: undefined,
-          },
-        ],
-      });
+      await pluginRepo.loadPlugin(
+        {
+          name: 'plugin-1',
+          title: 'Plugin 1',
+          description: 'First plugin',
+          author: 'Author 1',
+          version: '1.0.0',
+          wasm: { path: '/path/to/plugin1.wasm' },
+          filters: [
+            {
+              name: 'filter-1',
+              displayName: 'Filter 1',
+              description: 'Filter for plugin 1',
+              supportedContexts: [PluginContext.Asset],
+              schema: undefined,
+            },
+          ],
+        },
+        '/test/base/path',
+      );
 
-      await pluginRepo.loadPlugin({
-        name: 'plugin-2',
-        title: 'Plugin 2',
-        description: 'Second plugin',
-        author: 'Author 2',
-        version: '2.0.0',
-        wasm: { path: '/path/to/plugin2.wasm' },
-        actions: [
-          {
-            name: 'action-2',
-            displayName: 'Action 2',
-            description: 'Action for plugin 2',
-            supportedContexts: [PluginContext.Album],
-            schema: undefined,
-          },
-        ],
-      });
+      await pluginRepo.loadPlugin(
+        {
+          name: 'plugin-2',
+          title: 'Plugin 2',
+          description: 'Second plugin',
+          author: 'Author 2',
+          version: '2.0.0',
+          wasm: { path: '/path/to/plugin2.wasm' },
+          actions: [
+            {
+              name: 'action-2',
+              displayName: 'Action 2',
+              description: 'Action for plugin 2',
+              supportedContexts: [PluginContext.Album],
+              schema: undefined,
+            },
+          ],
+        },
+        '/test/base/path',
+      );
 
       const plugins = await sut.getAll();
 
@@ -182,46 +191,49 @@ describe(PluginService.name, () => {
     it('should handle plugin with multiple filters and actions', async () => {
       const { sut } = setup();
 
-      await pluginRepo.loadPlugin({
-        name: 'multi-plugin',
-        title: 'Multi Plugin',
-        description: 'Plugin with multiple items',
-        author: 'Test Author',
-        version: '1.0.0',
-        wasm: { path: '/path/to/multi.wasm' },
-        filters: [
-          {
-            name: 'filter-a',
-            displayName: 'Filter A',
-            description: 'First filter',
-            supportedContexts: [PluginContext.Asset],
-            schema: undefined,
-          },
-          {
-            name: 'filter-b',
-            displayName: 'Filter B',
-            description: 'Second filter',
-            supportedContexts: [PluginContext.Album],
-            schema: undefined,
-          },
-        ],
-        actions: [
-          {
-            name: 'action-x',
-            displayName: 'Action X',
-            description: 'First action',
-            supportedContexts: [PluginContext.Asset],
-            schema: undefined,
-          },
-          {
-            name: 'action-y',
-            displayName: 'Action Y',
-            description: 'Second action',
-            supportedContexts: [PluginContext.Person],
-            schema: undefined,
-          },
-        ],
-      });
+      await pluginRepo.loadPlugin(
+        {
+          name: 'multi-plugin',
+          title: 'Multi Plugin',
+          description: 'Plugin with multiple items',
+          author: 'Test Author',
+          version: '1.0.0',
+          wasm: { path: '/path/to/multi.wasm' },
+          filters: [
+            {
+              name: 'filter-a',
+              displayName: 'Filter A',
+              description: 'First filter',
+              supportedContexts: [PluginContext.Asset],
+              schema: undefined,
+            },
+            {
+              name: 'filter-b',
+              displayName: 'Filter B',
+              description: 'Second filter',
+              supportedContexts: [PluginContext.Album],
+              schema: undefined,
+            },
+          ],
+          actions: [
+            {
+              name: 'action-x',
+              displayName: 'Action X',
+              description: 'First action',
+              supportedContexts: [PluginContext.Asset],
+              schema: undefined,
+            },
+            {
+              name: 'action-y',
+              displayName: 'Action Y',
+              description: 'Second action',
+              supportedContexts: [PluginContext.Person],
+              schema: undefined,
+            },
+          ],
+        },
+        '/test/base/path',
+      );
 
       const plugins = await sut.getAll();
 
@@ -241,39 +253,41 @@ describe(PluginService.name, () => {
     it('should return single plugin with filters and actions', async () => {
       const { sut } = setup();
 
-      const result = await pluginRepo.loadPlugin({
-        name: 'single-plugin',
-        title: 'Single Plugin',
-        description: 'A single plugin',
-        author: 'Test Author',
-        version: '1.0.0',
-        wasm: { path: '/path/to/single.wasm' },
-        filters: [
-          {
-            name: 'single-filter',
-            displayName: 'Single Filter',
-            description: 'A single filter',
-            supportedContexts: [PluginContext.Asset],
-            schema: undefined,
-          },
-        ],
-        actions: [
-          {
-            name: 'single-action',
-            displayName: 'Single Action',
-            description: 'A single action',
-            supportedContexts: [PluginContext.Asset],
-            schema: undefined,
-          },
-        ],
-      });
+      const result = await pluginRepo.loadPlugin(
+        {
+          name: 'single-plugin',
+          title: 'Single Plugin',
+          description: 'A single plugin',
+          author: 'Test Author',
+          version: '1.0.0',
+          wasm: { path: '/path/to/single.wasm' },
+          filters: [
+            {
+              name: 'single-filter',
+              displayName: 'Single Filter',
+              description: 'A single filter',
+              supportedContexts: [PluginContext.Asset],
+              schema: undefined,
+            },
+          ],
+          actions: [
+            {
+              name: 'single-action',
+              displayName: 'Single Action',
+              description: 'A single action',
+              supportedContexts: [PluginContext.Asset],
+              schema: undefined,
+            },
+          ],
+        },
+        '/test/base/path',
+      );
 
       const pluginResult = await sut.get(result.plugin.id);
 
       expect(pluginResult).toMatchObject({
         id: result.plugin.id,
         name: 'single-plugin',
-        displayName: 'Single Plugin',
         filters: [
           {
             id: result.filters[0].id,

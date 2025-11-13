@@ -1,7 +1,6 @@
 import { CurrentPlugin } from '@extism/extism';
 import { UnauthorizedException } from '@nestjs/common';
 import { Updateable } from 'kysely';
-import { PLUGIN_JWT_SECRET } from 'src/constants';
 import { Permission } from 'src/enum';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { AlbumRepository } from 'src/repositories/album.repository';
@@ -22,6 +21,7 @@ export class PluginHostFunctions {
     private accessRepository: AccessRepository,
     private cryptoRepository: CryptoRepository,
     private logger: LoggingRepository,
+    private pluginJwtSecret: string,
   ) {}
 
   /**
@@ -60,7 +60,7 @@ export class PluginHostFunctions {
    */
   private validateToken(jwtToken: string): { userId: string } {
     try {
-      const auth = this.cryptoRepository.verifyJwt<{ userId: string }>(jwtToken, PLUGIN_JWT_SECRET);
+      const auth = this.cryptoRepository.verifyJwt<{ userId: string }>(jwtToken, this.pluginJwtSecret);
       if (!auth.userId) {
         throw new UnauthorizedException('Invalid token: missing userId');
       }

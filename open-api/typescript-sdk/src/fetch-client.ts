@@ -1744,7 +1744,6 @@ export type WorkflowCreateDto = {
 export type WorkflowUpdateDto = {
     actions?: WorkflowActionItemDto[];
     description?: string;
-    displayName?: string;
     enabled?: boolean;
     filters?: WorkflowFilterItemDto[];
     name?: string;

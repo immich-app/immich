@@ -15,7 +15,6 @@ class WorkflowUpdateDto {
   WorkflowUpdateDto({
     this.actions = const [],
     this.description,
-    this.displayName,
     this.enabled,
     this.filters = const [],
     this.name,
@@ -31,14 +30,6 @@ class WorkflowUpdateDto {
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
   String? description;
-
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  String? displayName;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -70,7 +61,6 @@ class WorkflowUpdateDto {
   bool operator ==(Object other) => identical(this, other) || other is WorkflowUpdateDto &&
     _deepEquality.equals(other.actions, actions) &&
     other.description == description &&
-    other.displayName == displayName &&
     other.enabled == enabled &&
     _deepEquality.equals(other.filters, filters) &&
     other.name == name &&
@@ -81,14 +71,13 @@ class WorkflowUpdateDto {
     // ignore: unnecessary_parenthesis
     (actions.hashCode) +
     (description == null ? 0 : description!.hashCode) +
-    (displayName == null ? 0 : displayName!.hashCode) +
     (enabled == null ? 0 : enabled!.hashCode) +
     (filters.hashCode) +
     (name == null ? 0 : name!.hashCode) +
     (triggerConfig == null ? 0 : triggerConfig!.hashCode);
 
   @override
-  String toString() => 'WorkflowUpdateDto[actions=$actions, description=$description, displayName=$displayName, enabled=$enabled, filters=$filters, name=$name, triggerConfig=$triggerConfig]';
+  String toString() => 'WorkflowUpdateDto[actions=$actions, description=$description, enabled=$enabled, filters=$filters, name=$name, triggerConfig=$triggerConfig]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -97,11 +86,6 @@ class WorkflowUpdateDto {
       json[r'description'] = this.description;
     } else {
     //  json[r'description'] = null;
-    }
-    if (this.displayName != null) {
-      json[r'displayName'] = this.displayName;
-    } else {
-    //  json[r'displayName'] = null;
     }
     if (this.enabled != null) {
       json[r'enabled'] = this.enabled;
@@ -133,7 +117,6 @@ class WorkflowUpdateDto {
       return WorkflowUpdateDto(
         actions: WorkflowActionItemDto.listFromJson(json[r'actions']),
         description: mapValueOfType<String>(json, r'description'),
-        displayName: mapValueOfType<String>(json, r'displayName'),
         enabled: mapValueOfType<bool>(json, r'enabled'),
         filters: WorkflowFilterItemDto.listFromJson(json[r'filters']),
         name: mapValueOfType<String>(json, r'name'),

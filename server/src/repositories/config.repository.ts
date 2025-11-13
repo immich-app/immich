@@ -85,6 +85,7 @@ export interface EnvData {
       root: string;
       indexHtml: string;
     };
+    corePlugin: string;
   };
 
   redis: RedisOptions;
@@ -102,10 +103,10 @@ export interface EnvData {
 
   workers: ImmichWorker[];
 
-  plugins: Array<{
+  plugins: {
     enabled: boolean;
-    manifestPath: string;
-  }>;
+    installFolder?: string;
+  };
 
   noColor: boolean;
   nodeVersion?: string;
@@ -220,14 +221,6 @@ const getEnv = (): EnvData => {
     }
   }
 
-  const plugins = [
-    // Core plugins
-    {
-      enabled: true,
-      manifestPath: join(process.cwd(), '..', 'plugins', 'manifest.json'),
-    },
-  ];
-
   return {
     host: dto.IMMICH_HOST,
     port: dto.IMMICH_PORT || 2283,
@@ -317,6 +310,7 @@ const getEnv = (): EnvData => {
         root: folders.web,
         indexHtml: join(folders.web, 'index.html'),
       },
+      corePlugin: join(buildFolder, 'corePlugin'),
     },
 
     storage: {
@@ -332,7 +326,10 @@ const getEnv = (): EnvData => {
 
     workers,
 
-    plugins,
+    plugins: {
+      enabled: !!dto.IMMICH_PLUGINS_ENABLED,
+      installFolder: dto.IMMICH_PLUGINS_INSTALL_FOLDER,
+    },
 
     noColor: !!dto.NO_COLOR,
   };

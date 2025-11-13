@@ -16,8 +16,10 @@ export class PluginRepository {
   /**
    * Loads a plugin from a validated manifest file in a transaction.
    * This ensures all plugin, filter, and action operations are atomic.
+   * @param manifest The validated plugin manifest
+   * @param basePath The base directory path where the plugin is located
    */
-  async loadPlugin(manifest: PluginManifestDto) {
+  async loadPlugin(manifest: PluginManifestDto, basePath: string) {
     return this.db.transaction().execute(async (tx) => {
       // Upsert the plugin
       const plugin = await tx
@@ -28,7 +30,7 @@ export class PluginRepository {
           description: manifest.description,
           author: manifest.author,
           version: manifest.version,
-          wasmPath: manifest.wasm.path,
+          wasmPath: `${basePath}/${manifest.wasm.path}`,
         })
         .onConflict((oc) =>
           oc.column('name').doUpdateSet({
@@ -36,7 +38,7 @@ export class PluginRepository {
             description: manifest.description,
             author: manifest.author,
             version: manifest.version,
-            wasmPath: manifest.wasm.path,
+            wasmPath: `${basePath}/${manifest.wasm.path}`,
           }),
         )
         .returningAll()

@@ -1,7 +1,5 @@
 import { Plugin as ExtismPlugin, newPlugin } from '@extism/extism';
 import { Injectable } from '@nestjs/common';
-import { resolve } from 'node:path';
-import { PLUGIN_JWT_SECRET } from 'src/constants';
 import { Asset, WorkflowAction, WorkflowFilter } from 'src/database';
 import { OnEvent, OnJob } from 'src/decorators';
 import { JobName, JobStatus, PluginTriggerType, QueueName } from 'src/enum';
@@ -13,7 +11,7 @@ import { IWorkflowJob, JobItem, JobOf, WorkflowData } from 'src/types';
 import { TriggerConfig } from 'src/types/plugin-schema.types';
 
 interface WorkflowContext {
-  authToken: string;
+  jwtToken: string;
   asset: Asset;
   triggerConfig: TriggerConfig | null;
 }
@@ -22,6 +20,7 @@ interface WorkflowContext {
 export class PluginExecutionService extends BaseService {
   private loadedPlugins: Map<string, ExtismPlugin> = new Map();
   private hostFunctions!: PluginHostFunctions;
+  private readonly pluginJwtSecret: string = this.cryptoRepository.randomBytesAsText(32);
 
   @OnEvent({ name: 'AppBootstrap' })
   async onBootstrap() {
@@ -31,18 +30,18 @@ export class PluginExecutionService extends BaseService {
       this.accessRepository,
       this.cryptoRepository,
       this.logger,
+      this.pluginJwtSecret,
     );
-    await this.loadCorePlugins();
+    await this.loadPlugins();
   }
 
-  private async loadCorePlugins() {
+  private async loadPlugins() {
     const plugins = await this.pluginRepository.getAllPlugins();
     for (const plugin of plugins) {
       try {
-        const pluginPath = resolve(process.cwd(), '..', plugin.wasmPath);
-        this.logger.debug(`Loading plugin: ${plugin.name} from ${pluginPath}`);
+        this.logger.debug(`Loading plugin: ${plugin.name} from ${plugin.wasmPath}`);
 
-        const extismPlugin = await newPlugin(pluginPath, {
+        const extismPlugin = await newPlugin(plugin.wasmPath, {
           useWasi: true,
           functions: this.hostFunctions.getHostFunctions(),
         });
@@ -103,10 +102,10 @@ export class PluginExecutionService extends BaseService {
             return JobStatus.Failed;
           }
 
-          const authToken = this.cryptoRepository.signJwt({ userId: asset.ownerId }, PLUGIN_JWT_SECRET);
+          const jwtToken = this.cryptoRepository.signJwt({ userId: asset.ownerId }, this.pluginJwtSecret);
 
           const context = {
-            authToken,
+            jwtToken,
             asset,
             triggerConfig: workflow.triggerConfig,
           };
