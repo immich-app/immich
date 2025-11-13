@@ -7,7 +7,7 @@
   import UserPurchaseSettings from '$lib/components/user-settings-page/user-purchase-settings.svelte';
   import UserUsageStatistic from '$lib/components/user-settings-page/user-usage-statistic.svelte';
   import { OpenSettingQueryParameterValue, QueryParameter } from '$lib/constants';
-  import { featureFlags } from '$lib/stores/server-config.store';
+  import { featureFlags } from '$lib/stores/system-config-manager.svelte';
   import { user } from '$lib/stores/user.store';
   import { oauth } from '$lib/utils';
   import { type ApiKeyResponseDto, type SessionResponseDto } from '@immich/sdk';
@@ -20,9 +20,9 @@
     mdiDevices,
     mdiDownload,
     mdiFeatureSearchOutline,
+    mdiFormTextboxPassword,
     mdiKeyOutline,
     mdiLockSmart,
-    mdiFormTextboxPassword,
     mdiServerOutline,
     mdiTwoFactorAuthentication,
   } from '@mdi/js';
