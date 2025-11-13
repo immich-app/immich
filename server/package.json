@@ -26,6 +26,7 @@
     "migrations:generate": "node ./dist/bin/migrations.js generate",
     "migrations:create": "node ./dist/bin/migrations.js create",
     "migrations:run": "node ./dist/bin/migrations.js run",
+    "migrations:revert": "node ./dist/bin/migrations.js revert",
     "schema:drop": "node ./dist/bin/migrations.js query 'DROP schema public cascade; CREATE schema public;'",
     "schema:reset": "npm run schema:drop && npm run migrations:run",
     "sync:open-api": "node ./dist/bin/sync-open-api.js",
