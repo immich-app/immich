@@ -5,7 +5,6 @@
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { handlePromiseError } from '$lib/utils';
-  import { DuplicateSelection } from '$lib/utils/duplicate-utils';
   import { navigate } from '$lib/utils/navigation';
   import { getAssetInfo, type AssetResponseDto } from '@immich/sdk';
   import { Button } from '@immich/ui';
@@ -13,8 +12,8 @@
   import { onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { SvelteSet } from 'svelte/reactivity';
-  import { duplicateTiePreference, type DuplicateTiePreferences } from '$lib/stores/duplicate-tie-preferences';
-  import { get } from 'svelte/store';
+  import { duplicateTiePreference } from '$lib/stores/duplicate-tie-preferences.svelte';
+  import {suggestBestDuplicate} from "$lib/utils/duplicate-utils";
   interface Props {
     assets: AssetResponseDto[];
     onResolve: (duplicateAssetIds: string[], trashIds: string[]) => void;
@@ -25,24 +24,19 @@
   const { isViewing: showAssetViewer, asset: viewingAsset, setAsset } = assetViewingStore;
   const getAssetIndex = (id: string) => assets.findIndex((asset) => asset.id === id);
 
-  const duplicateSelector = new DuplicateSelection();
-  let tiePreferenceLocal: DuplicateTiePreferences | undefined = get(duplicateTiePreference);
-
   let selectedAssetIds = $state(new SvelteSet<string>());
   let trashCount = $derived(assets.length - selectedAssetIds.size);
 
-  const autoSelect = () => {
-    const suggested = duplicateSelector.suggestDuplicate(assets, tiePreferenceLocal) ?? assets[0];
-    selectedAssetIds = new SvelteSet([suggested.id]);
-  };
+  $effect(() => {
+    if (assets.length === 0) {
+      selectedAssetIds = new SvelteSet<string>();
+      return;
+    }
 
-  onMount(() => {
-    autoSelect();
-    const unsub = duplicateTiePreference.subscribe((newPref) => {
-      tiePreferenceLocal = newPref;
-      autoSelect();
-    });
-    onDestroy(unsub);
+    const suggestedAsset =
+      suggestBestDuplicate(assets, duplicateTiePreference.value) ?? assets[0];
+
+    selectedAssetIds = new SvelteSet<string>([suggestedAsset.id]);
   });
 
   onDestroy(() => {

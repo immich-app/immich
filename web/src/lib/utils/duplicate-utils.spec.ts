@@ -1,11 +1,10 @@
-import { DuplicateSelection } from '$lib/utils/duplicate-utils';
 import type { AssetResponseDto } from '@immich/sdk';
-import type { SourcePreference } from '$lib/stores/duplicate-tie-preferences';
+import type { SourcePreference } from '$lib/stores/duplicate-tie-preferences.svelte';
+import { suggestBestDuplicate } from '$lib/utils/duplicate-utils';
 
-const duplicateSelector = new DuplicateSelection();
 
-const suggestDuplicate = (assets: AssetResponseDto[], pref = undefined) =>
-  duplicateSelector.suggestDuplicate(assets, pref);
+const suggestDuplicate = (assets: AssetResponseDto[]) =>
+  suggestBestDuplicate(assets, undefined);
 
 describe('choosing a duplicate', () => {
   it('picks the asset with the largest file size', () => {
@@ -49,7 +48,7 @@ describe('choosing a duplicate', () => {
     const preference: SourcePreference[] = [
       { variant: 'source', priority: 'external' },
     ];
-    expect(duplicateSelector.suggestDuplicate(assets as AssetResponseDto[], preference)).toEqual(assets[1]);
+    expect(suggestBestDuplicate(assets as AssetResponseDto[], preference)).toEqual(assets[1]);
   });
 
   it('falls back to size and exif when source preference yields no candidates', () => {
@@ -60,7 +59,7 @@ describe('choosing a duplicate', () => {
     const preference: SourcePreference[] = [
       { variant: 'source', priority: 'external' },
     ];
-    expect(duplicateSelector.suggestDuplicate(assets as AssetResponseDto[], preference)).toEqual(assets[0]);
+    expect(suggestBestDuplicate(assets as AssetResponseDto[], preference)).toEqual(assets[0]);
   });
 
 

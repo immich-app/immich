@@ -1,5 +1,3 @@
-import { writable } from 'svelte/store';
-
 /**
  * Current (optional) rule: keep by source.
  * To add more rules later, extend `PreferenceItem` with new
@@ -8,15 +6,22 @@ import { writable } from 'svelte/store';
  */
 export type SourcePreference = { variant: 'source'; priority: 'internal' | 'external' };
 
+export type DuplicateTiePreferencesSvelte = PreferenceDuplicateTieItem[];
+
 export type PreferenceDuplicateTieItem = SourcePreference;
 
-export type DuplicateTiePreferences = PreferenceDuplicateTieItem[];
-export const duplicateTiePreference = writable<DuplicateTiePreferences | undefined>(undefined);
+export let duplicateTiePreference = $state<{
+  value: DuplicateTiePreferencesSvelte | undefined;
+}>({value: undefined});
 
 export const findDuplicateTiePreference = <T extends PreferenceDuplicateTieItem['variant']>(
-  preference: DuplicateTiePreferences | undefined,
+  preference: DuplicateTiePreferencesSvelte | undefined,
   variant: T,
 ): Extract<PreferenceDuplicateTieItem, { variant: T }> | undefined =>
   preference?.find(
     (preference): preference is Extract<PreferenceDuplicateTieItem, { variant: T }> => preference.variant === variant,
   );
+
+export function setDuplicateTiePreference(nextDuplicateTiePreferences: DuplicateTiePreferencesSvelte | undefined): void {
+  duplicateTiePreference.value = nextDuplicateTiePreferences;
+}

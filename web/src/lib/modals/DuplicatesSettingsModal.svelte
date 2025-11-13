@@ -3,15 +3,13 @@
   import { t } from 'svelte-i18n';
   import {
     duplicateTiePreference,
-    type DuplicateTiePreferences,
     findDuplicateTiePreference,
     type SourcePreference,
-  } from '$lib/stores/duplicate-tie-preferences';
-  import { get } from 'svelte/store';
+    setDuplicateTiePreference,
+  } from '$lib/stores/duplicate-tie-preferences.svelte';
   import { mdiCogOutline } from '@mdi/js';
 
-  const initialPref = get(duplicateTiePreference);
-  let tiePreferenceLocal = $state<DuplicateTiePreferences | undefined>(initialPref);
+  let tiePreferenceLocal = $state(duplicateTiePreference.value);
 
   interface Props {
     onClose: () => void;
@@ -19,18 +17,17 @@
 
   let { onClose }: Props = $props();
 
-  const cancel = () => onClose();
   const confirm = () => {
-    duplicateTiePreference.set(tiePreferenceLocal);
+    setDuplicateTiePreference(tiePreferenceLocal);
     onClose();
   };
+
   const resetToDefault = () => {
     tiePreferenceLocal = undefined;
   };
 
-  function makeSourcePref(priority: 'internal' | 'external'): SourcePreference {
-    return { variant: 'source', priority };
-  }
+  const makeSourcePref = (priority: 'internal' | 'external'): SourcePreference => ({variant: 'source', priority});
+
 </script>
 
 <Modal title={$t('duplicates_settings')} {onClose} icon={mdiCogOutline}>
@@ -90,7 +87,7 @@
         </Button>
 
         <div class="flex items-center gap-2">
-          <Button size="small" variant="ghost" color="secondary" onclick={cancel}>
+          <Button size="small" variant="ghost" color="secondary" onclick={onClose}>
             <Text>{$t('cancel')}</Text>
           </Button>
           <Button size="small" color="primary" onclick={confirm}>

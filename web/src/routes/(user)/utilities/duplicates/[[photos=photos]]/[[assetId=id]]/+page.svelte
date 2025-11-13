@@ -29,10 +29,10 @@
   } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
-  import { DuplicateSelection } from '$lib/utils/duplicate-utils';
-  import { duplicateTiePreference } from '$lib/stores/duplicate-tie-preferences';
+  import { duplicateTiePreference } from '$lib/stores/duplicate-tie-preferences.svelte';
+  import {suggestBestDuplicate} from "$lib/utils/duplicate-utils";
 
-  const duplicateSelector = new DuplicateSelection();
+
 
   interface Props {
     data: PageData;
@@ -130,13 +130,13 @@
 
   const handleDeduplicateAll = async () => {
     const keepCandidates = duplicates.map((group) =>
-      duplicateSelector.suggestDuplicate(group.assets, $duplicateTiePreference),
+      suggestBestDuplicate(group.assets, duplicateTiePreference.value),
     );
 
     const idsToKeep: (string | undefined)[] = keepCandidates.map((assets) => assets?.id);
 
     const idsToDelete = duplicates.flatMap((group, i) =>
-      group.assets.map((assets) => assets.id).filter((id) => id !== idsToKeep[i]),
+      group.assets.map((asset) => asset.id).filter((id) => id !== idsToKeep[i]),
     );
 
     const keptIds = idsToKeep.filter((id): id is string => id !== undefined);
@@ -232,7 +232,7 @@
       <Button
         size="small"
         variant="ghost"
-        color={($duplicateTiePreference ?? []).length > 0 ? 'primary' : 'secondary'}
+        color={(duplicateTiePreference.value ?? []).length > 0 ? 'primary' : 'secondary'}
         leadingIcon={mdiCogOutline}
         onclick={() => modalManager.show(DuplicatesSettingsModal)}
         title={$t('settings')}
@@ -240,7 +240,7 @@
         class="relative"
       >
         <Text class="hidden md:block">{$t('settings')}</Text>
-        {#if ($duplicateTiePreference ?? []).length > 0}
+        {#if (duplicateTiePreference.value ?? []).length > 0}
           <span class="ml-2 inline-block h-2 w-2 rounded-full bg-primary" aria-hidden="true"></span>
         {/if}
       </Button>
