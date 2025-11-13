@@ -13,8 +13,9 @@ import {
   Req,
   Res,
 } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
+import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AssetIdsResponseDto } from 'src/dtos/asset-ids.response.dto';
 import { AssetIdsDto } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -39,9 +40,10 @@ export class SharedLinkController {
 
   @Get()
   @Authenticated({ permission: Permission.SharedLinkRead })
-  @ApiOperation({
+  @Endpoint({
     summary: 'Retrieve all shared links',
     description: 'Retrieve a list of all shared links.',
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
   getAllSharedLinks(@Auth() auth: AuthDto, @Query() dto: SharedLinkSearchDto): Promise<SharedLinkResponseDto[]> {
     return this.service.getAll(auth, dto);
@@ -49,9 +51,10 @@ export class SharedLinkController {
 
   @Get('me')
   @Authenticated({ sharedLink: true })
-  @ApiOperation({
+  @Endpoint({
     summary: 'Retrieve current shared link',
     description: 'Retrieve the current shared link associated with authentication method.',
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
   async getMySharedLink(
     @Auth() auth: AuthDto,
@@ -73,9 +76,10 @@ export class SharedLinkController {
 
   @Get(':id')
   @Authenticated({ permission: Permission.SharedLinkRead })
-  @ApiOperation({
+  @Endpoint({
     summary: 'Retrieve a shared link',
     description: 'Retrieve a specific shared link by its ID.',
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
   getSharedLinkById(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<SharedLinkResponseDto> {
     return this.service.get(auth, id);
@@ -83,9 +87,10 @@ export class SharedLinkController {
 
   @Post()
   @Authenticated({ permission: Permission.SharedLinkCreate })
-  @ApiOperation({
+  @Endpoint({
     summary: 'Create a shared link',
     description: 'Create a new shared link.',
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
   createSharedLink(@Auth() auth: AuthDto, @Body() dto: SharedLinkCreateDto) {
     return this.service.create(auth, dto);
@@ -93,9 +98,10 @@ export class SharedLinkController {
 
   @Patch(':id')
   @Authenticated({ permission: Permission.SharedLinkUpdate })
-  @ApiOperation({
+  @Endpoint({
     summary: 'Update a shared link',
     description: 'Update an existing shared link by its ID.',
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
   updateSharedLink(
     @Auth() auth: AuthDto,
@@ -108,9 +114,10 @@ export class SharedLinkController {
   @Delete(':id')
   @Authenticated({ permission: Permission.SharedLinkDelete })
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({
+  @Endpoint({
     summary: 'Delete a shared link',
     description: 'Delete a specific shared link by its ID.',
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
   removeSharedLink(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<void> {
     return this.service.remove(auth, id);
@@ -118,10 +125,11 @@ export class SharedLinkController {
 
   @Put(':id/assets')
   @Authenticated({ sharedLink: true })
-  @ApiOperation({
+  @Endpoint({
     summary: 'Add assets to a shared link',
     description:
       'Add assets to a specific shared link by its ID. This endpoint is only relevant for shared link of type individual.',
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
   addSharedLinkAssets(
     @Auth() auth: AuthDto,
@@ -133,10 +141,11 @@ export class SharedLinkController {
 
   @Delete(':id/assets')
   @Authenticated({ sharedLink: true })
-  @ApiOperation({
+  @Endpoint({
     summary: 'Remove assets from a shared link',
     description:
       'Remove assets from a specific shared link by its ID. This endpoint is only relevant for shared link of type individual.',
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
   removeSharedLinkAssets(
     @Auth() auth: AuthDto,
