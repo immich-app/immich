@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { retrieveServerConfig } from '$lib/stores/server-config.store';
+  import { retrieveServerConfig } from '$lib/stores/system-config-manager.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { getConfig, getConfigDefaults, updateConfig, type SystemConfigDto } from '@immich/sdk';
   import { toastManager } from '@immich/ui';

@@ -3,7 +3,7 @@
   import AuthPageLayout from '$lib/components/layouts/AuthPageLayout.svelte';
   import { AppRoute } from '$lib/constants';
   import { eventManager } from '$lib/managers/event-manager.svelte';
-  import { featureFlags, serverConfig } from '$lib/stores/server-config.store';
+  import { featureFlags, serverConfig } from '$lib/stores/system-config-manager.svelte';
   import { oauth } from '$lib/utils';
   import { getServerErrorMessage, handleError } from '$lib/utils/handle-error';
   import { login, type LoginResponseDto } from '@immich/sdk';
@@ -27,7 +27,7 @@
 
   const onSuccess = async (user: LoginResponseDto) => {
     await goto(data.continueUrl, { invalidateAll: true });
-    eventManager.emit('auth.login', user);
+    eventManager.emit('AuthLogin', user);
   };
 
   const onFirstLogin = () => goto(AppRoute.AUTH_CHANGE_PASSWORD);

@@ -1,14 +1,15 @@
 <script lang="ts">
   import FormatMessage from '$lib/elements/FormatMessage.svelte';
-  import { serverConfig } from '$lib/stores/server-config.store';
-  import { handleError } from '$lib/utils/handle-error';
-  import { deleteUserAdmin, type UserAdminResponseDto, type UserResponseDto } from '@immich/sdk';
+  import { handleDeleteUserAdmin } from '$lib/services/user-admin.service';
+  import { serverConfig } from '$lib/stores/system-config-manager.svelte';
+  import { type UserAdminResponseDto } from '@immich/sdk';
   import { Alert, Checkbox, ConfirmModal, Field, Input, Label, Text } from '@immich/ui';
+  import { mdiTrashCanOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
   type Props = {
-    user: UserResponseDto;
-    onClose: (user?: UserAdminResponseDto) => void;
+    user: UserAdminResponseDto;
+    onClose: () => void;
   };
 
   let { user, onClose }: Props = $props();
@@ -17,22 +18,21 @@
   let email = $state('');
   let disabled = $derived(force && email !== user.email);
 
-  const handleClose = async (confirmed: boolean) => {
+  const handleClose = async (confirmed?: boolean) => {
     if (!confirmed) {
       onClose();
       return;
     }
 
-    try {
-      const result = await deleteUserAdmin({ id: user.id, userAdminDeleteDto: { force } });
-      onClose(result);
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_delete_user'));
+    const success = await handleDeleteUserAdmin(user, { force });
+    if (success) {
+      onClose();
     }
   };
 </script>
 
 <ConfirmModal
+  icon={mdiTrashCanOutline}
   title={$t('delete_user')}
   confirmText={force ? $t('permanently_delete') : $t('delete')}
   onClose={handleClose}

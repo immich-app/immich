@@ -1,11 +1,9 @@
 <script lang="ts">
-  import { featureFlags } from '$lib/stores/server-config.store';
+  import { handleCreateUserAdmin } from '$lib/services/user-admin.service';
+  import { featureFlags } from '$lib/stores/system-config-manager.svelte';
   import { userInteraction } from '$lib/stores/user.svelte';
   import { ByteUnit, convertToBytes } from '$lib/utils/byte-units';
-  import { handleError } from '$lib/utils/handle-error';
-  import { createUserAdmin, type UserAdminResponseDto } from '@immich/sdk';
   import {
-    Alert,
     Button,
     Field,
     HelperText,
@@ -20,13 +18,12 @@
   } from '@immich/ui';
   import { t } from 'svelte-i18n';
 
-  interface Props {
-    onClose: (user?: UserAdminResponseDto) => void;
-  }
+  type Props = {
+    onClose: () => void;
+  };
 
   let { onClose }: Props = $props();
 
-  let error = $state('');
   let success = $state(false);
 
   let email = $state('');
@@ -57,40 +54,28 @@
     }
 
     isCreatingUser = true;
-    error = '';
 
-    try {
-      const user = await createUserAdmin({
-        userAdminCreateDto: {
-          email,
-          password,
-          shouldChangePassword,
-          name,
-          quotaSizeInBytes,
-          notify,
-          isAdmin,
-        },
-      });
+    const success = await handleCreateUserAdmin({
+      email,
+      password,
+      shouldChangePassword,
+      name,
+      quotaSizeInBytes,
+      notify,
+      isAdmin,
+    });
 
-      success = true;
-
-      onClose(user);
-      return;
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_create_user'));
-    } finally {
-      isCreatingUser = false;
+    if (success) {
+      onClose();
     }
+
+    isCreatingUser = false;
   };
 </script>
 
 <Modal title={$t('create_new_user')} {onClose} size="small">
   <ModalBody>
     <form onsubmit={onSubmit} autocomplete="off" id="create-new-user-form">
-      {#if error}
-        <Alert color="danger" size="small" title={error} closable />
-      {/if}
-
       {#if success}
         <p class="text-sm text-immich-primary">{$t('new_user_created')}</p>
       {/if}

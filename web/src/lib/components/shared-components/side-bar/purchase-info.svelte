@@ -1,7 +1,5 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import ImmichLogo from '$lib/components/shared-components/immich-logo.svelte';
-  import SupporterBadge from '$lib/components/shared-components/side-bar/supporter-badge.svelte';
   import { AppRoute } from '$lib/constants';
   import Portal from '$lib/elements/Portal.svelte';
   import PurchaseModal from '$lib/modals/PurchaseModal.svelte';
@@ -11,7 +9,7 @@
   import { handleError } from '$lib/utils/handle-error';
   import { getButtonVisibility } from '$lib/utils/purchase-utils';
   import { updateMyPreferences } from '@immich/sdk';
-  import { Button, Icon, IconButton, modalManager } from '@immich/ui';
+  import { Button, Icon, IconButton, Logo, modalManager, SupporterBadge } from '@immich/ui';
   import { mdiClose, mdiInformationOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { SvelteDate } from 'svelte/reactivity';
@@ -93,9 +91,7 @@
     >
       <div class="flex justify-between w-full place-items-center place-content-center">
         <div class="flex place-items-center place-content-center gap-1">
-          <div class="h-6 w-6">
-            <ImmichLogo noText class="h-6" />
-          </div>
+          <Logo variant="icon" size="tiny" />
           <p class="flex text-primary font-medium">
             {$t('purchase_button_buy_immich')}
           </p>
@@ -122,7 +118,7 @@
     >
       <div class="flex justify-between place-items-center">
         <div class="h-10 w-10">
-          <ImmichLogo noText class="h-8" />
+          <Logo variant="icon" size="small" />
         </div>
         <IconButton
           shape="round"

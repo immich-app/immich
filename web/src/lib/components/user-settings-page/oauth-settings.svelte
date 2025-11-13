@@ -1,6 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { featureFlags } from '$lib/stores/server-config.store';
+  import { featureFlags } from '$lib/stores/system-config-manager.svelte';
   import { oauth } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { type UserAdminResponseDto } from '@immich/sdk';

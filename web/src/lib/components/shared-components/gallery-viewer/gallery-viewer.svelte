@@ -10,7 +10,7 @@
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { showDeleteModal } from '$lib/stores/preferences.store';
-  import { featureFlags } from '$lib/stores/server-config.store';
+  import { featureFlags } from '$lib/stores/system-config-manager.svelte';
   import { handlePromiseError } from '$lib/utils';
   import { deleteAssets } from '$lib/utils/actions';
   import { archiveAssets, cancelMultiselect } from '$lib/utils/asset-utils';
@@ -99,7 +99,7 @@
   let scrollTop = $state(0);
   let slidingWindow = $derived.by(() => {
     const top = (scrollTop || 0) - slidingWindowOffset;
-    const bottom = top + viewport.height;
+    const bottom = top + viewport.height + slidingWindowOffset;
     return {
       top,
       bottom,

@@ -1,5 +1,33 @@
 import type { ThemeSetting } from '$lib/managers/theme-manager.svelte';
-import type { LoginResponseDto } from '@immich/sdk';
+import type {
+  AlbumResponseDto,
+  LoginResponseDto,
+  SharedLinkResponseDto,
+  SystemConfigDto,
+  UserAdminResponseDto,
+} from '@immich/sdk';
+
+export type Events = {
+  AppInit: [];
+  UserLogin: [];
+  AuthLogin: [LoginResponseDto];
+  AuthLogout: [];
+  LanguageChange: [{ name: string; code: string; rtl?: boolean }];
+  ThemeChange: [ThemeSetting];
+
+  AlbumDelete: [AlbumResponseDto];
+
+  SharedLinkCreate: [SharedLinkResponseDto];
+  SharedLinkUpdate: [SharedLinkResponseDto];
+  SharedLinkDelete: [SharedLinkResponseDto];
+
+  UserAdminCreate: [UserAdminResponseDto];
+  UserAdminUpdate: [UserAdminResponseDto];
+  UserAdminDelete: [UserAdminResponseDto];
+  UserAdminRestore: [UserAdminResponseDto];
+
+  SystemConfigUpdate: [SystemConfigDto];
+};
 
 type Listener<EventMap extends Record<string, unknown[]>, K extends keyof EventMap> = (...params: EventMap[K]) => void;
 
@@ -51,11 +79,4 @@ class EventManager<EventMap extends Record<string, unknown[]>> {
   }
 }
 
-export const eventManager = new EventManager<{
-  'app.init': [];
-  'user.login': [];
-  'auth.login': [LoginResponseDto];
-  'auth.logout': [];
-  'language.change': [{ name: string; code: string; rtl?: boolean }];
-  'theme.change': [ThemeSetting];
-}>();
+export const eventManager = new EventManager<Events>();

@@ -14,7 +14,7 @@
   import { themeManager } from '$lib/managers/theme-manager.svelte';
   import MapSettingsModal from '$lib/modals/MapSettingsModal.svelte';
   import { mapSettings } from '$lib/stores/preferences.store';
-  import { serverConfig } from '$lib/stores/server-config.store';
+  import { serverConfig } from '$lib/stores/system-config-manager.svelte';
   import { getAssetThumbnailUrl, handlePromiseError } from '$lib/utils';
   import { getMapMarkers, type MapMarkerResponseDto } from '@immich/sdk';
   import { Icon, modalManager } from '@immich/ui';

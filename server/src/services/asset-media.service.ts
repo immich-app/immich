@@ -51,10 +51,10 @@ export class AssetMediaService extends BaseService {
     return { id: assetId, status: AssetMediaStatus.DUPLICATE };
   }
 
-  canUploadFile({ auth, fieldName, file }: UploadRequest): true {
+  canUploadFile({ auth, fieldName, file, body }: UploadRequest): true {
     requireUploadAccess(auth);
 
-    const filename = file.originalName;
+    const filename = body.filename || file.originalName;
 
     switch (fieldName) {
       case UploadFieldName.ASSET_DATA: {

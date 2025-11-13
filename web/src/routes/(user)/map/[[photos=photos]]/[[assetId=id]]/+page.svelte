@@ -4,7 +4,7 @@
   import { AppRoute, timeToLoadTheMap } from '$lib/constants';
   import Portal from '$lib/elements/Portal.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { featureFlags } from '$lib/stores/server-config.store';
+  import { featureFlags } from '$lib/stores/system-config-manager.svelte';
   import { handlePromiseError } from '$lib/utils';
   import { delay } from '$lib/utils/asset-utils';
   import { navigate } from '$lib/utils/navigation';
