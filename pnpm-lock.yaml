@@ -9,7 +9,7 @@ overrides:
   canvas: 2.11.2
   sharp: ^0.34.4
 
-packageExtensionsChecksum: sha256-DAYr0FTkvKYnvBH4muAER9UE1FVGKhqfRU4/QwA2xPQ=
+packageExtensionsChecksum: sha256-3l4AQg4iuprBDup+q+2JaPvbPg/7XodWCE0ZteH+s54=
 
 pnpmfileChecksum: sha256-AG/qwrPNpmy9q60PZwCpecoYVptglTHgH+N6RKQHOM0=
 
@@ -17278,7 +17278,10 @@ snapshots:
   bcrypt@6.0.0:
     dependencies:
       node-addon-api: 8.5.0
+      node-gyp: 11.3.0
       node-gyp-build: 4.8.4
+    transitivePeerDependencies:
+      - supports-color
 
   big.js@5.2.2: {}
 
