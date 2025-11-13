@@ -23,7 +23,9 @@ describe(SyncEntityType.AssetMetadataV1, () => {
 
     const assetRepo = ctx.get(AssetRepository);
     const { asset } = await ctx.newAsset({ ownerId: user.id });
-    await assetRepo.upsertMetadata(asset.id, [{ key: AssetMetadataKey.MobileApp, value: { iCloudId: 'abc123' } }]);
+    await assetRepo.upsertMetadata(asset.id, [
+      { key: AssetMetadataKey.MobileApp, value: { iCloudId: 'abc123', iCloudIdETag: 'etag123' } },
+    ]);
 
     const response = await ctx.syncStream(auth, [SyncRequestType.AssetMetadataV1]);
     expect(response).toEqual([
@@ -32,7 +34,7 @@ describe(SyncEntityType.AssetMetadataV1, () => {
         data: {
           key: AssetMetadataKey.MobileApp,
           assetId: asset.id,
-          value: { iCloudId: 'abc123' },
+          value: { iCloudId: 'abc123', iCloudIdETag: 'etag123' },
         },
         type: 'AssetMetadataV1',
       },
@@ -48,7 +50,9 @@ describe(SyncEntityType.AssetMetadataV1, () => {
 
     const assetRepo = ctx.get(AssetRepository);
     const { asset } = await ctx.newAsset({ ownerId: user.id });
-    await assetRepo.upsertMetadata(asset.id, [{ key: AssetMetadataKey.MobileApp, value: { iCloudId: 'abc123' } }]);
+    await assetRepo.upsertMetadata(asset.id, [
+      { key: AssetMetadataKey.MobileApp, value: { iCloudId: 'abc123', iCloudIdETag: 'etag123' } },
+    ]);
 
     const response = await ctx.syncStream(auth, [SyncRequestType.AssetMetadataV1]);
     expect(response).toEqual([
@@ -57,7 +61,7 @@ describe(SyncEntityType.AssetMetadataV1, () => {
         data: {
           key: AssetMetadataKey.MobileApp,
           assetId: asset.id,
-          value: { iCloudId: 'abc123' },
+          value: { iCloudId: 'abc123', iCloudIdETag: 'etag123' },
         },
         type: 'AssetMetadataV1',
       },
@@ -66,7 +70,9 @@ describe(SyncEntityType.AssetMetadataV1, () => {
 
     await ctx.syncAckAll(auth, response);
 
-    await assetRepo.upsertMetadata(asset.id, [{ key: AssetMetadataKey.MobileApp, value: { iCloudId: 'abc456' } }]);
+    await assetRepo.upsertMetadata(asset.id, [
+      { key: AssetMetadataKey.MobileApp, value: { iCloudId: 'abc456', iCloudIdETag: 'etag456' } },
+    ]);
 
     const updatedResponse = await ctx.syncStream(auth, [SyncRequestType.AssetMetadataV1]);
     expect(updatedResponse).toEqual([
@@ -75,7 +81,7 @@ describe(SyncEntityType.AssetMetadataV1, () => {
         data: {
           key: AssetMetadataKey.MobileApp,
           assetId: asset.id,
-          value: { iCloudId: 'abc456' },
+          value: { iCloudId: 'abc456', iCloudIdETag: 'etag456' },
         },
         type: 'AssetMetadataV1',
       },
@@ -93,7 +99,9 @@ describe(SyncEntityType.AssetMetadataDeleteV1, () => {
 
     const assetRepo = ctx.get(AssetRepository);
     const { asset } = await ctx.newAsset({ ownerId: user.id });
-    await assetRepo.upsertMetadata(asset.id, [{ key: AssetMetadataKey.MobileApp, value: { iCloudId: 'abc123' } }]);
+    await assetRepo.upsertMetadata(asset.id, [
+      { key: AssetMetadataKey.MobileApp, value: { iCloudId: 'abc123', iCloudIdETag: 'etag123' } },
+    ]);
 
     const response = await ctx.syncStream(auth, [SyncRequestType.AssetMetadataV1]);
     expect(response).toEqual([
@@ -102,7 +110,7 @@ describe(SyncEntityType.AssetMetadataDeleteV1, () => {
         data: {
           key: AssetMetadataKey.MobileApp,
           assetId: asset.id,
-          value: { iCloudId: 'abc123' },
+          value: { iCloudId: 'abc123', iCloudIdETag: 'etag123' },
         },
         type: 'AssetMetadataV1',
       },

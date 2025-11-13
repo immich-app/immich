@@ -551,5 +551,5 @@ export type AssetMetadataItem<T extends keyof AssetMetadata = AssetMetadataKey> 
 };
 
 export interface AssetMetadata extends Record<AssetMetadataKey, Record<string, any>> {
-  [AssetMetadataKey.MobileApp]: { iCloudId: string };
+  [AssetMetadataKey.MobileApp]: { iCloudId: string; iCloudIdETag: string };
 }

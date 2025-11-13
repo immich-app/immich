@@ -193,6 +193,28 @@ describe(AssetController.name, () => {
         const assetId = factory.uuid();
         const { status } = await request(ctx.getHttpServer())
           .put(`/assets/${assetId}/metadata`)
+          .send({ items: [{ key: 'mobile-app', value: { iCloudId: '123', iCloudIdETag: 'etag123' } }] });
+        expect(service.upsertMetadata).toHaveBeenCalledWith(undefined, assetId, {
+          items: [{ key: 'mobile-app', value: { iCloudId: '123', iCloudIdETag: 'etag123' } }],
+        });
+        expect(status).toBe(200);
+      });
+
+      it('should work without iCloudId', async () => {
+        const assetId = factory.uuid();
+        const { status } = await request(ctx.getHttpServer())
+          .put(`/assets/${assetId}/metadata`)
+          .send({ items: [{ key: 'mobile-app', value: { iCloudIdETag: 'etag123' } }] });
+        expect(service.upsertMetadata).toHaveBeenCalledWith(undefined, assetId, {
+          items: [{ key: 'mobile-app', value: { iCloudIdETag: 'etag123' } }],
+        });
+        expect(status).toBe(200);
+      });
+
+      it('should work without iCloudIdETag', async () => {
+        const assetId = factory.uuid();
+        const { status } = await request(ctx.getHttpServer())
+          .put(`/assets/${assetId}/metadata`)
           .send({ items: [{ key: 'mobile-app', value: { iCloudId: '123' } }] });
         expect(service.upsertMetadata).toHaveBeenCalledWith(undefined, assetId, {
           items: [{ key: 'mobile-app', value: { iCloudId: '123' } }],
@@ -200,7 +222,7 @@ describe(AssetController.name, () => {
         expect(status).toBe(200);
       });
 
-      it('should work without iCloudId', async () => {
+      it('should work with empty object', async () => {
         const assetId = factory.uuid();
         const { status } = await request(ctx.getHttpServer())
           .put(`/assets/${assetId}/metadata`)
