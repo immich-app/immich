@@ -9,7 +9,7 @@
   import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { locale } from '$lib/stores/preferences.store';
-  import { featureFlags } from '$lib/stores/server-config.store';
+  import { featureFlags } from '$lib/stores/system-config-manager.svelte';
   import { stackAssets } from '$lib/utils/asset-utils';
   import { suggestDuplicate } from '$lib/utils/duplicate-utils';
   import { handleError } from '$lib/utils/handle-error';
@@ -272,7 +272,7 @@
             handleResolve(duplicates[duplicatesIndex].duplicateId, duplicateAssetIds, trashIds)}
           onStack={(assets) => handleStack(duplicates[duplicatesIndex].duplicateId, assets)}
         />
-        <div class="max-w-256 mx-auto mb-16">
+        <div class="max-w-5xl mx-auto mb-16">
           <div class="flex mb-4 sm:px-6 w-full place-content-center justify-between items-center place-items-center">
             <div class="flex text-xs text-black">
               <Button

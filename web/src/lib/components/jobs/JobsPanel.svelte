@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { featureFlags } from '$lib/stores/server-config.store';
+  import { featureFlags } from '$lib/stores/system-config-manager.svelte';
   import { getJobName } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { JobCommand, JobName, sendJobCommand, type AllJobStatusResponseDto, type JobCommandDto } from '@immich/sdk';
@@ -12,10 +12,10 @@
     mdiFolderMove,
     mdiImageSearch,
     mdiLibraryShelves,
+    mdiOcr,
     mdiTable,
     mdiTagFaces,
     mdiVideo,
-    mdiOcr,
   } from '@mdi/js';
   import type { Component } from 'svelte';
   import { t } from 'svelte-i18n';
