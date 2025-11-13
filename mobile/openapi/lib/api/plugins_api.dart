@@ -16,7 +16,12 @@ class PluginsApi {
 
   final ApiClient apiClient;
 
-  /// Performs an HTTP 'GET /plugins/{id}' operation and returns the [Response].
+  /// Retrieve a plugin
+  ///
+  /// Retrieve information about a specific plugin by its ID.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -46,6 +51,10 @@ class PluginsApi {
     );
   }
 
+  /// Retrieve a plugin
+  ///
+  /// Retrieve information about a specific plugin by its ID.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -64,7 +73,11 @@ class PluginsApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /plugins' operation and returns the [Response].
+  /// List all plugins
+  ///
+  /// Retrieve a list of plugins available to the authenticated user.
+  ///
+  /// Note: This method returns the HTTP [Response].
   Future<Response> getPluginsWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final apiPath = r'/plugins';
@@ -90,6 +103,9 @@ class PluginsApi {
     );
   }
 
+  /// List all plugins
+  ///
+  /// Retrieve a list of plugins available to the authenticated user.
   Future<List<PluginResponseDto>?> getPlugins() async {
     final response = await getPluginsWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {

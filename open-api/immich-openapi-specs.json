@@ -7867,6 +7867,7 @@
     },
     "/plugins": {
       "get": {
+        "description": "Retrieve a list of plugins available to the authenticated user.",
         "operationId": "getPlugins",
         "parameters": [],
         "responses": {
@@ -7895,14 +7896,27 @@
             "api_key": []
           }
         ],
+        "summary": "List all plugins",
         "tags": [
           "Plugins"
         ],
-        "x-immich-permission": "plugin.read"
+        "x-immich-history": [
+          {
+            "version": "v2.3.0",
+            "state": "Added"
+          },
+          {
+            "version": "v2.3.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "plugin.read",
+        "x-immich-state": "Alpha"
       }
     },
     "/plugins/{id}": {
       "get": {
+        "description": "Retrieve information about a specific plugin by its ID.",
         "operationId": "getPlugin",
         "parameters": [
           {
@@ -7938,10 +7952,22 @@
             "api_key": []
           }
         ],
+        "summary": "Retrieve a plugin",
         "tags": [
           "Plugins"
         ],
-        "x-immich-permission": "plugin.read"
+        "x-immich-history": [
+          {
+            "version": "v2.3.0",
+            "state": "Added"
+          },
+          {
+            "version": "v2.3.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "plugin.read",
+        "x-immich-state": "Alpha"
       }
     },
     "/search/cities": {
@@ -13567,6 +13593,7 @@
     },
     "/workflows": {
       "get": {
+        "description": "Retrieve a list of workflows available to the authenticated user.",
         "operationId": "getWorkflows",
         "parameters": [],
         "responses": {
@@ -13595,12 +13622,25 @@
             "api_key": []
           }
         ],
+        "summary": "List all workflows",
         "tags": [
           "Workflows"
         ],
-        "x-immich-permission": "workflow.read"
+        "x-immich-history": [
+          {
+            "version": "v2.3.0",
+            "state": "Added"
+          },
+          {
+            "version": "v2.3.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "workflow.read",
+        "x-immich-state": "Alpha"
       },
       "post": {
+        "description": "Create a new workflow, the workflow can also be created with empty filters and actions.",
         "operationId": "createWorkflow",
         "parameters": [],
         "requestBody": {
@@ -13636,14 +13676,27 @@
             "api_key": []
           }
         ],
+        "summary": "Create a workflow for the authenticated user.",
         "tags": [
           "Workflows"
         ],
-        "x-immich-permission": "workflow.create"
+        "x-immich-history": [
+          {
+            "version": "v2.3.0",
+            "state": "Added"
+          },
+          {
+            "version": "v2.3.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "workflow.create",
+        "x-immich-state": "Alpha"
       }
     },
     "/workflows/{id}": {
       "delete": {
+        "description": "Delete a workflow by its ID.",
         "operationId": "deleteWorkflow",
         "parameters": [
           {
@@ -13672,12 +13725,25 @@
             "api_key": []
           }
         ],
+        "summary": "Delete a workflow",
         "tags": [
           "Workflows"
         ],
-        "x-immich-permission": "workflow.delete"
+        "x-immich-history": [
+          {
+            "version": "v2.3.0",
+            "state": "Added"
+          },
+          {
+            "version": "v2.3.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "workflow.delete",
+        "x-immich-state": "Alpha"
       },
       "get": {
+        "description": "Retrieve information about a specific workflow by its ID.",
         "operationId": "getWorkflow",
         "parameters": [
           {
@@ -13713,12 +13779,25 @@
             "api_key": []
           }
         ],
+        "summary": "Retrieve a workflow",
         "tags": [
           "Workflows"
         ],
-        "x-immich-permission": "workflow.read"
+        "x-immich-history": [
+          {
+            "version": "v2.3.0",
+            "state": "Added"
+          },
+          {
+            "version": "v2.3.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "workflow.read",
+        "x-immich-state": "Alpha"
       },
       "put": {
+        "description": "Update the information of a specific workflow by its ID. This endpoint can be used to update the workflow name, description, trigger type, filters and actions order, etc.",
         "operationId": "updateWorkflow",
         "parameters": [
           {
@@ -13764,10 +13843,22 @@
             "api_key": []
           }
         ],
+        "summary": "Update a workflow",
         "tags": [
           "Workflows"
         ],
-        "x-immich-permission": "workflow.update"
+        "x-immich-history": [
+          {
+            "version": "v2.3.0",
+            "state": "Added"
+          },
+          {
+            "version": "v2.3.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "workflow.update",
+        "x-immich-state": "Alpha"
       }
     }
   },
@@ -13851,6 +13942,10 @@
       "description": "A person is a collection of faces, which can be favorited and named. A person can also be merged into another person. People are automatically created via the face recognition job."
     },
     {
+      "name": "Plugins",
+      "description": "A plugin is an internal module that extends the functionality of Immich. Plugins can add new behavior on top of existing features, or introduce entirely new features."
+    },
+    {
       "name": "Search",
       "description": "Endpoints related to searching assets via text, smart search, optical character recognition (OCR), and other filters like person, album, and other metadata. Search endpoints usually support pagination and sorting."
     },
@@ -13905,6 +14000,10 @@
     {
       "name": "Views",
       "description": "Endpoints for specialized views, such as the folder view."
+    },
+    {
+      "name": "Workflows",
+      "description": "A workflow is an automated sequence of actions triggered by specific events and filters. Workflows can be created, updated, deleted, and retrieved via these endpoints."
     }
   ],
   "servers": [

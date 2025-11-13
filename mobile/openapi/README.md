@@ -194,8 +194,8 @@ Class | Method | HTTP request | Description
 *PeopleApi* | [**reassignFaces**](doc//PeopleApi.md#reassignfaces) | **PUT** /people/{id}/reassign | Reassign faces
 *PeopleApi* | [**updatePeople**](doc//PeopleApi.md#updatepeople) | **PUT** /people | Update people
 *PeopleApi* | [**updatePerson**](doc//PeopleApi.md#updateperson) | **PUT** /people/{id} | Update person
-*PluginsApi* | [**getPlugin**](doc//PluginsApi.md#getplugin) | **GET** /plugins/{id} | 
-*PluginsApi* | [**getPlugins**](doc//PluginsApi.md#getplugins) | **GET** /plugins | 
+*PluginsApi* | [**getPlugin**](doc//PluginsApi.md#getplugin) | **GET** /plugins/{id} | Retrieve a plugin
+*PluginsApi* | [**getPlugins**](doc//PluginsApi.md#getplugins) | **GET** /plugins | List all plugins
 *SearchApi* | [**getAssetsByCity**](doc//SearchApi.md#getassetsbycity) | **GET** /search/cities | Retrieve assets by city
 *SearchApi* | [**getExploreData**](doc//SearchApi.md#getexploredata) | **GET** /search/explore | Retrieve explore data
 *SearchApi* | [**getSearchSuggestions**](doc//SearchApi.md#getsearchsuggestions) | **GET** /search/suggestions | Retrieve search suggestions
@@ -297,11 +297,11 @@ Class | Method | HTTP request | Description
 *UsersAdminApi* | [**updateUserPreferencesAdmin**](doc//UsersAdminApi.md#updateuserpreferencesadmin) | **PUT** /admin/users/{id}/preferences | Update user preferences
 *ViewsApi* | [**getAssetsByOriginalPath**](doc//ViewsApi.md#getassetsbyoriginalpath) | **GET** /view/folder | Retrieve assets by original path
 *ViewsApi* | [**getUniqueOriginalPaths**](doc//ViewsApi.md#getuniqueoriginalpaths) | **GET** /view/folder/unique-paths | Retrieve unique paths
-*WorkflowsApi* | [**createWorkflow**](doc//WorkflowsApi.md#createworkflow) | **POST** /workflows | 
-*WorkflowsApi* | [**deleteWorkflow**](doc//WorkflowsApi.md#deleteworkflow) | **DELETE** /workflows/{id} | 
-*WorkflowsApi* | [**getWorkflow**](doc//WorkflowsApi.md#getworkflow) | **GET** /workflows/{id} | 
-*WorkflowsApi* | [**getWorkflows**](doc//WorkflowsApi.md#getworkflows) | **GET** /workflows | 
-*WorkflowsApi* | [**updateWorkflow**](doc//WorkflowsApi.md#updateworkflow) | **PUT** /workflows/{id} | 
+*WorkflowsApi* | [**createWorkflow**](doc//WorkflowsApi.md#createworkflow) | **POST** /workflows | Create a workflow for the authenticated user.
+*WorkflowsApi* | [**deleteWorkflow**](doc//WorkflowsApi.md#deleteworkflow) | **DELETE** /workflows/{id} | Delete a workflow
+*WorkflowsApi* | [**getWorkflow**](doc//WorkflowsApi.md#getworkflow) | **GET** /workflows/{id} | Retrieve a workflow
+*WorkflowsApi* | [**getWorkflows**](doc//WorkflowsApi.md#getworkflows) | **GET** /workflows | List all workflows
+*WorkflowsApi* | [**updateWorkflow**](doc//WorkflowsApi.md#updateworkflow) | **PUT** /workflows/{id} | Update a workflow
 
 
 ## Documentation For Models

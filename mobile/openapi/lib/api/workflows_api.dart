@@ -16,7 +16,12 @@ class WorkflowsApi {
 
   final ApiClient apiClient;
 
-  /// Performs an HTTP 'POST /workflows' operation and returns the [Response].
+  /// Create a workflow for the authenticated user.
+  ///
+  /// Create a new workflow, the workflow can also be created with empty filters and actions.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [WorkflowCreateDto] workflowCreateDto (required):
@@ -45,6 +50,10 @@ class WorkflowsApi {
     );
   }
 
+  /// Create a workflow for the authenticated user.
+  ///
+  /// Create a new workflow, the workflow can also be created with empty filters and actions.
+  ///
   /// Parameters:
   ///
   /// * [WorkflowCreateDto] workflowCreateDto (required):
@@ -63,7 +72,12 @@ class WorkflowsApi {
     return null;
   }
 
-  /// Performs an HTTP 'DELETE /workflows/{id}' operation and returns the [Response].
+  /// Delete a workflow
+  ///
+  /// Delete a workflow by its ID.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -93,6 +107,10 @@ class WorkflowsApi {
     );
   }
 
+  /// Delete a workflow
+  ///
+  /// Delete a workflow by its ID.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -103,7 +121,12 @@ class WorkflowsApi {
     }
   }
 
-  /// Performs an HTTP 'GET /workflows/{id}' operation and returns the [Response].
+  /// Retrieve a workflow
+  ///
+  /// Retrieve information about a specific workflow by its ID.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -133,6 +156,10 @@ class WorkflowsApi {
     );
   }
 
+  /// Retrieve a workflow
+  ///
+  /// Retrieve information about a specific workflow by its ID.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -151,7 +178,11 @@ class WorkflowsApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /workflows' operation and returns the [Response].
+  /// List all workflows
+  ///
+  /// Retrieve a list of workflows available to the authenticated user.
+  ///
+  /// Note: This method returns the HTTP [Response].
   Future<Response> getWorkflowsWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final apiPath = r'/workflows';
@@ -177,6 +208,9 @@ class WorkflowsApi {
     );
   }
 
+  /// List all workflows
+  ///
+  /// Retrieve a list of workflows available to the authenticated user.
   Future<List<WorkflowResponseDto>?> getWorkflows() async {
     final response = await getWorkflowsWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -195,7 +229,12 @@ class WorkflowsApi {
     return null;
   }
 
-  /// Performs an HTTP 'PUT /workflows/{id}' operation and returns the [Response].
+  /// Update a workflow
+  ///
+  /// Update the information of a specific workflow by its ID. This endpoint can be used to update the workflow name, description, trigger type, filters and actions order, etc.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -227,6 +266,10 @@ class WorkflowsApi {
     );
   }
 
+  /// Update a workflow
+  ///
+  /// Update the information of a specific workflow by its ID. This endpoint can be used to update the workflow name, description, trigger type, filters and actions order, etc.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):

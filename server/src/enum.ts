@@ -807,6 +807,7 @@ export enum ApiTag {
   NotificationsAdmin = 'Notifications (admin)',
   Partners = 'Partners',
   People = 'People',
+  Plugins = 'Plugins',
   Search = 'Search',
   Server = 'Server',
   Sessions = 'Sessions',
@@ -821,4 +822,5 @@ export enum ApiTag {
   UsersAdmin = 'Users (admin)',
   Users = 'Users',
   Views = 'Views',
+  Workflows = 'Workflows',
 }

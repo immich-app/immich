@@ -3604,6 +3604,9 @@ export function getPersonThumbnail({ id }: {
         ...opts
     }));
 }
+/**
+ * List all plugins
+ */
 export function getPlugins(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
@@ -3612,6 +3615,9 @@ export function getPlugins(opts?: Oazapfts.RequestOpts) {
         ...opts
     }));
 }
+/**
+ * Retrieve a plugin
+ */
 export function getPlugin({ id }: {
     id: string;
 }, opts?: Oazapfts.RequestOpts) {
@@ -4936,6 +4942,9 @@ export function getUniqueOriginalPaths(opts?: Oazapfts.RequestOpts) {
         ...opts
     }));
 }
+/**
+ * List all workflows
+ */
 export function getWorkflows(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
@@ -4944,6 +4953,9 @@ export function getWorkflows(opts?: Oazapfts.RequestOpts) {
         ...opts
     }));
 }
+/**
+ * Create a workflow for the authenticated user.
+ */
 export function createWorkflow({ workflowCreateDto }: {
     workflowCreateDto: WorkflowCreateDto;
 }, opts?: Oazapfts.RequestOpts) {
@@ -4956,6 +4968,9 @@ export function createWorkflow({ workflowCreateDto }: {
         body: workflowCreateDto
     })));
 }
+/**
+ * Delete a workflow
+ */
 export function deleteWorkflow({ id }: {
     id: string;
 }, opts?: Oazapfts.RequestOpts) {
@@ -4964,6 +4979,9 @@ export function deleteWorkflow({ id }: {
         method: "DELETE"
     }));
 }
+/**
+ * Retrieve a workflow
+ */
 export function getWorkflow({ id }: {
     id: string;
 }, opts?: Oazapfts.RequestOpts) {
@@ -4974,6 +4992,9 @@ export function getWorkflow({ id }: {
         ...opts
     }));
 }
+/**
+ * Update a workflow
+ */
 export function updateWorkflow({ id, workflowUpdateDto }: {
     id: string;
     workflowUpdateDto: WorkflowUpdateDto;
