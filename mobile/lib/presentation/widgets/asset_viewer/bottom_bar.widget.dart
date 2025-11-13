@@ -45,10 +45,6 @@ class ViewerBottomBar extends ConsumerWidget {
       if (asset.hasRemote) const AddActionButton(),
 
       if (isOwner) ...[
-        //        if (asset.hasRemote && isOwner && isArchived)
-        //          const UnArchiveActionButton(source: ActionSource.viewer)
-        //        else
-        //          const ArchiveActionButton(source: ActionSource.viewer),
         asset.isLocalOnly
             ? const DeleteLocalActionButton(source: ActionSource.viewer)
             : const DeleteActionButton(source: ActionSource.viewer, showConfirmation: true),

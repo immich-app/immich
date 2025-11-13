@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/unarchive_action_button.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/presentation/widgets/album/album_selector.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
@@ -14,94 +15,107 @@ import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 
-import '../../../constants/enums.dart';
-import 'archive_action_button.widget.dart';
-import 'move_to_lock_folder_action_button.widget.dart';
+import 'package:immich_mobile/constants/enums.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/archive_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/move_to_lock_folder_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
 
-enum _AddMenu { album, archive, lockedFolder }
+import '../../../providers/routes.provider.dart';
+
+enum _AddMenu { album, archive, unarchive, lockedFolder }
 
 class AddActionButton extends ConsumerWidget {
   const AddActionButton({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+
+    final asset = ref.watch(currentAssetNotifier);
+    if (asset == null) {
+      return const SizedBox.shrink();
+    }
     return Builder(
       builder: (buttonContext) {
         return BaseActionButton(
           iconData: Icons.add,
-          label: "add_to".tr(),
+          label: "add_to_bottom_bar".tr(),
           onPressed: () => _showAddOptions(buttonContext, ref),
         );
       },
     );
   }
 
-  void _showAddOptions(BuildContext context, WidgetRef ref) {
+  Future<void> _showAddOptions(BuildContext context, WidgetRef ref) async {
     final asset = ref.read(currentAssetNotifier);
     if (asset == null) return;
 
     final user = ref.read(currentUserProvider);
     final isOwner = asset is RemoteAsset && asset.ownerId == user?.id;
+    final isInLockedView = ref.watch(inLockedViewProvider);
+    final isArchived = asset is RemoteAsset && asset.visibility == AssetVisibility.archive;
+    final hasRemote = asset is RemoteAsset;
+    final showArchive = isOwner && !isInLockedView && hasRemote && !isArchived;
+    final showUnarchive = isOwner && !isInLockedView && hasRemote && isArchived;
 
     final List<PopupMenuEntry<_AddMenu>> items = [
       PopupMenuItem(
         value: _AddMenu.album,
-        child: ListTile(leading: const Icon(Icons.photo_album_outlined), title: Text("album".tr())),
-      ),
-      if (asset.hasRemote && isOwner) ...[
-        PopupMenuItem(
-          value: _AddMenu.archive,
-          child: ListTile(leading: const Icon(Icons.archive_outlined), title: Text("archive".tr())),
+        child: ListTile(
+          leading: const Icon(Icons.photo_album_outlined),
+          title: Text("album".tr()),
         ),
+      ),
+      if (isOwner) ...[
+        if (showArchive)
+          PopupMenuItem(
+            value: _AddMenu.archive,
+            child: ListTile(
+              leading: const Icon(Icons.archive_outlined),
+              title: Text("archive".tr()),
+            ),
+          ),
+        if (showUnarchive)
+          PopupMenuItem(
+            value: _AddMenu.unarchive,
+            child: ListTile(
+              leading: const Icon(Icons.unarchive_outlined),
+              title: Text("unarchive".tr()),
+            ),
+          ),
         PopupMenuItem(
           value: _AddMenu.lockedFolder,
-          child: ListTile(leading: const Icon(Icons.lock_outline), title: Text("locked_folder".tr())),
+          child: ListTile(
+            leading: const Icon(Icons.lock_outline),
+            title: Text("locked_folder".tr()),
+          ),
         ),
       ],
     ];
 
-    showMenu<_AddMenu>(
+    final _AddMenu? selected = await showMenu<_AddMenu>(
       context: context,
       color: context.themeData.scaffoldBackgroundColor,
       position: _menuPosition(context),
       items: items,
-    ).then((selected) {
-      if (selected == null) return;
+    );
 
-      // Safety re-check in case state changed while menu was open
-      final latest = ref.read(currentAssetNotifier);
-      final currentUser = ref.read(currentUserProvider);
-      final allowedOwner = latest is RemoteAsset && latest.ownerId == currentUser?.id;
-      final hasRemote = latest?.hasRemote == true;
+    if (selected == null) return;
 
-      switch (selected) {
-        case _AddMenu.album:
-          _openAlbumSelector(context, ref);
-          break;
-        case _AddMenu.archive:
-          if (hasRemote && allowedOwner) {
-            performArchiveAction(context, ref, source: ActionSource.viewer);
-          } else {
-            ImmichToast.show(
-              context: context,
-              msg: "Only the owner can archive this asset.",
-              toastType: ToastType.info,
-            );
-          }
-          break;
-        case _AddMenu.lockedFolder:
-          if (hasRemote && allowedOwner) {
-            performMoveToLockFolderAction(context, ref, source: ActionSource.viewer);
-          } else {
-            ImmichToast.show(
-              context: context,
-              msg: "Only the owner can move this asset to a locked folder.",
-              toastType: ToastType.info,
-            );
-          }
-          break;
-      }
-    });
+    switch (selected) {
+      case _AddMenu.album:
+        _openAlbumSelector(context, ref);
+        break;
+      case _AddMenu.archive:
+        await performArchiveAction(context, ref, source: ActionSource.viewer);
+        break;
+      case _AddMenu.unarchive:
+        await performUnArchiveAction(context, ref, source: ActionSource.viewer);
+        break;
+
+      case _AddMenu.lockedFolder:
+        await performMoveToLockFolderAction(context, ref, source: ActionSource.viewer);
+        break;
+    }
   }
 
   RelativeRect _menuPosition(BuildContext context) {
@@ -123,33 +137,23 @@ class AddActionButton extends ConsumerWidget {
       return;
     }
 
-    final List<Widget> slivers = currentAsset.hasRemote
-        ? [AlbumSelector(onAlbumSelected: (album) => _addCurrentAssetToAlbum(context, ref, album))]
-        : [
-            const SliverToBoxAdapter(
-              child: Padding(
-                padding: EdgeInsets.all(20),
-                child: Center(child: Text('This asset is not backed up to the server.', textAlign: TextAlign.center)),
-              ),
-            ),
-          ];
+    final List<Widget> slivers = [
+      AlbumSelector(onAlbumSelected: (album) => _addCurrentAssetToAlbum(context, ref, album)),
+    ];
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) {
-        return DraggableScrollableSheet(
+        return BaseBottomSheet(
+          actions: const [],
+          slivers: slivers,
           initialChildSize: 0.6,
           minChildSize: 0.3,
           maxChildSize: 0.95,
           expand: false,
-          builder: (_, scrollController) {
-            return Material(
-              color: context.themeData.scaffoldBackgroundColor,
-              child: CustomScrollView(controller: scrollController, slivers: slivers),
-            );
-          },
+          backgroundColor: context.isDarkTheme ? Colors.black : Colors.white,
         );
       },
     );
@@ -157,45 +161,29 @@ class AddActionButton extends ConsumerWidget {
 
   Future<void> _addCurrentAssetToAlbum(BuildContext context, WidgetRef ref, RemoteAlbum album) async {
     final latest = ref.read(currentAssetNotifier);
+
     if (latest == null) {
       ImmichToast.show(context: context, msg: "Cannot load asset information.", toastType: ToastType.error);
       return;
     }
 
-    if (!latest.hasRemote) {
-      ImmichToast.show(context: context, msg: "This asset is not backed up to the server.", toastType: ToastType.error);
-      return;
-    }
-
-    final id = _remoteIdOf(latest);
-    if (id == null) {
-      ImmichToast.show(context: context, msg: "Cannot determine remote asset id.", toastType: ToastType.error);
-      return;
-    }
-
-    final addedCount = await ref.read(remoteAlbumProvider.notifier).addAssets(album.id, [id]);
+    final addedCount = await ref.read(remoteAlbumProvider.notifier).addAssets(album.id, [latest.remoteId!]);
 
     if (!context.mounted) return;
 
     if (addedCount == 0) {
-      ImmichToast.show(context: context, msg: 'This photo is already in "${album.name}".');
+      ImmichToast.show(
+        context: context,
+        msg: 'add_to_album_bottom_sheet_already_exists'.tr(namedArgs: {'album': album.name}),
+      );
     } else {
-      ImmichToast.show(context: context, msg: 'Added to "${album.name}".');
+      ImmichToast.show(
+        context: context,
+        msg: 'add_to_album_bottom_sheet_added'.tr(namedArgs: {'album': album.name}),
+      );
     }
 
     if (!context.mounted) return;
     await Navigator.of(context).maybePop();
-  }
-
-  String? _remoteIdOf(Object asset) {
-    if (asset is RemoteAsset) return asset.id;
-
-    try {
-      final dyn = asset as dynamic;
-      final rid = dyn.remoteId ?? dyn.id;
-      return rid is String ? rid : null;
-    } catch (_) {
-      return null;
-    }
   }
 }
