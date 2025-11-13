@@ -51,7 +51,11 @@ jobs:
       - name: Bump versions
         env:
           TYPE: ${{ steps.bump-type.outputs.bump }}
-        run: misc/release/pump-version.sh -s $TYPE -m true
+        run: |
+          if [ "$TYPE" == "none" ]; then
+            exit 1 # TODO: Is there a cleaner way to abort the workflow?
+          fi
+          misc/release/pump-version.sh -s $TYPE -m true
 
       - name: Manage Outline release document
         id: outline
@@ -62,6 +66,8 @@ jobs:
         with:
           github-token: ${{ steps.generate-token.outputs.token }}
           script: |
+            const fs = require('fs');
+
             const outlineKey = process.env.OUTLINE_API_KEY;
             const parentDocumentId = 'da856355-0844-43df-bd71-f8edce5382d9'
             const collectionId = 'e2910656-714c-4871-8721-447d9353bd73';
@@ -92,6 +98,7 @@ jobs:
             if (!document) {
               // Create new document
               console.log('No existing document found. Creating new one...');
+              const notesTmpl = fs.readFileSync('misc/release/notes.tmpl', 'utf8');
               const createResponse = await fetch(`${baseUrl}/api/documents.create`, {
                 method: 'POST',
                 headers: {
@@ -100,6 +107,7 @@ jobs:
                 },
                 body: JSON.stringify({
                   title: 'next',
+                  text: notesTmpl,
                   collectionId: collectionId,
                   parentDocumentId: parentDocumentId,
                   publish: true
@@ -132,20 +140,21 @@ jobs:
               tag_name: `${process.env.NEXT_VERSION}`,
             });
 
-            const githubNotes = releaseNotesResponse.data.body;
-
             // Combine the content
-            const combinedContent = `${documentText}\n\n\n${githubNotes}`;
+            const changelog = `
+            # ${process.env.NEXT_VERSION}
 
-            // Write to temporary file
-            const fs = require('fs');
-            const path = require('path');
-            const tmpDir = process.env.RUNNER_TEMP || '/tmp';
-            const filePath = path.join(tmpDir, 'release-notes.md');
-            fs.writeFileSync(filePath, combinedContent, 'utf8');
-            console.log(`Release notes written to: ${filePath}`);
+            ${documentText}
 
-            core.setOutput('file_path', filePath);
+            ${releaseNotesResponse.data.body}
+
+            ---
+
+            `
+
+            const existingChangelog = fs.existsSync('CHANGELOG.md') ? fs.readFileSync('CHANGELOG.md', 'utf8') : '';
+            fs.writeFileSync('CHANGELOG.md', changelog + existingChangelog, 'utf8');
+
             core.setOutput('document_url', documentUrl);
 
       - name: Create PR
@@ -155,15 +164,7 @@ jobs:
           token: ${{ steps.generate-token.outputs.token }}
           commit-message: 'chore: release ${{ steps.bump-type.outputs.next }}'
           title: 'chore: release ${{ steps.bump-type.outputs.next }}'
-          body-path: ${{ steps.outline.outputs.file_path }}
+          body: 'Release notes: ${{ steps.outline.outputs.document_url }}'
+          labels: 'changelog:skip'
           branch: 'release/next'
           draft: true
-
-      - name: Comment with Outline document link
-        if: ${{ steps.create-pr.outputs.pull-request-number }}
-        uses: mshick/add-pr-comment@b8f338c590a895d50bcbfa6c5859251edc8952fc # v2.8.2
-        with:
-          repo-token: ${{ steps.generate-token.outputs.token }}
-          message: 'Release notes: ${{ steps.outline.outputs.document_url }}'
-          message-id: 'outline-link'
-          issue: ${{ steps.create-pr.outputs.pull-request-number }}
