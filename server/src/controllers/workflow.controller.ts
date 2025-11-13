@@ -16,7 +16,7 @@ export class WorkflowController {
   @Post()
   @Authenticated({ permission: Permission.WorkflowCreate })
   @Endpoint({
-    summary: 'Create a workflow for the authenticated user.',
+    summary: 'Create a workflow',
     description: 'Create a new workflow, the workflow can also be created with empty filters and actions.',
     history: new HistoryBuilder().added('v2.3.0').alpha('v2.3.0'),
   })

@@ -10,7 +10,7 @@
   },
   "keywords": [],
   "author": "",
-  "license": "BSD-3-Clause",
+  "license": "AGPL-3.0",
   "devDependencies": {
     "@extism/js-pdk": "^1.0.1",
     "esbuild": "^0.19.6",

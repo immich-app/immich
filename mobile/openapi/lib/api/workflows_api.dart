@@ -16,7 +16,7 @@ class WorkflowsApi {
 
   final ApiClient apiClient;
 
-  /// Create a workflow for the authenticated user.
+  /// Create a workflow
   ///
   /// Create a new workflow, the workflow can also be created with empty filters and actions.
   ///
@@ -50,7 +50,7 @@ class WorkflowsApi {
     );
   }
 
-  /// Create a workflow for the authenticated user.
+  /// Create a workflow
   ///
   /// Create a new workflow, the workflow can also be created with empty filters and actions.
   ///

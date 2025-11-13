@@ -492,8 +492,6 @@ class ApiClient {
           return PluginFilterResponseDto.fromJson(value);
         case 'PluginResponseDto':
           return PluginResponseDto.fromJson(value);
-        case 'PluginTriggerResponseDto':
-          return PluginTriggerResponseDto.fromJson(value);
         case 'PluginTriggerType':
           return PluginTriggerTypeTypeTransformer().decode(value);
         case 'PurchaseResponse':

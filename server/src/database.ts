@@ -7,6 +7,8 @@ import {
   AssetVisibility,
   MemoryType,
   Permission,
+  PluginContext,
+  PluginTriggerType,
   SharedLinkType,
   SourceType,
   UserAvatarColor,
@@ -14,16 +16,10 @@ import {
 } from 'src/enum';
 import { AlbumTable } from 'src/schema/tables/album.table';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
-import {
-  PluginActionTable,
-  PluginContext,
-  PluginFilterTable,
-  PluginTable,
-  PluginTriggerType,
-} from 'src/schema/tables/plugin.table';
+import { PluginActionTable, PluginFilterTable, PluginTable } from 'src/schema/tables/plugin.table';
 import { WorkflowActionTable, WorkflowFilterTable, WorkflowTable } from 'src/schema/tables/workflow.table';
 import { UserMetadataItem } from 'src/types';
-import type { ActionConfig, FilterConfig, JSONSchema, TriggerConfig } from 'src/types/plugin-schema.types';
+import type { ActionConfig, FilterConfig, JSONSchema } from 'src/types/plugin-schema.types';
 
 export type AuthUser = {
   id: string;
@@ -306,7 +302,6 @@ export type PluginAction = Selectable<PluginActionTable> & {
 
 export type Workflow = Selectable<WorkflowTable> & {
   triggerType: PluginTriggerType;
-  triggerConfig: TriggerConfig | null;
   name: string;
   displayName: string;
   description: string;

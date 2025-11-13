@@ -945,12 +945,6 @@ export type PluginFilterResponseDto = {
     schema: object | null;
     supportedContexts: PluginContext[];
 };
-export type PluginTriggerResponseDto = {
-    context: PluginContext;
-    description: string;
-    name: string;
-    schema: object | null;
-};
 export type PluginResponseDto = {
     actions: PluginActionResponseDto[];
     author: string;
@@ -960,10 +954,8 @@ export type PluginResponseDto = {
     filters: PluginFilterResponseDto[];
     id: string;
     name: string;
-    triggers: PluginTriggerResponseDto[];
     updatedAt: string;
     version: string;
-    wasmPath: string;
 };
 export type SearchExploreItem = {
     data: AssetResponseDto;
@@ -1749,7 +1741,6 @@ export type WorkflowCreateDto = {
     enabled?: boolean;
     filters: WorkflowFilterItemDto[];
     name: string;
-    triggerConfig?: object;
     triggerType: PluginTriggerType;
 };
 export type WorkflowUpdateDto = {
@@ -4954,7 +4945,7 @@ export function getWorkflows(opts?: Oazapfts.RequestOpts) {
     }));
 }
 /**
- * Create a workflow for the authenticated user.
+ * Create a workflow
  */
 export function createWorkflow({ workflowCreateDto }: {
     workflowCreateDto: WorkflowCreateDto;

@@ -18,9 +18,9 @@ export class PluginRepository {
    * This ensures all plugin, filter, and action operations are atomic.
    */
   async loadPlugin(manifest: PluginManifestDto) {
-    return this.db.transaction().execute(async (trx) => {
+    return this.db.transaction().execute(async (tx) => {
       // Upsert the plugin
-      const plugin = await trx
+      const plugin = await tx
         .insertInto('plugin')
         .values({
           name: manifest.name,
@@ -42,66 +42,57 @@ export class PluginRepository {
         .returningAll()
         .executeTakeFirstOrThrow();
 
-      const filters = [];
-      const actions = [];
-
-      // Upsert filters
-      if (manifest.filters) {
-        for (const filter of manifest.filters) {
-          const filterResult = await trx
+      const filters = manifest.filters
+        ? await tx
             .insertInto('plugin_filter')
-            .values({
-              pluginId: plugin.id,
-              name: filter.name,
-              displayName: filter.displayName,
-              description: filter.description,
-              supportedContexts: filter.supportedContexts,
-              schema: filter.schema,
-            })
-            .onConflict((oc) =>
-              oc.column('name').doUpdateSet({
+            .values(
+              manifest.filters.map((filter) => ({
                 pluginId: plugin.id,
+                name: filter.name,
                 displayName: filter.displayName,
                 description: filter.description,
                 supportedContexts: filter.supportedContexts,
                 schema: filter.schema,
-              }),
+              })),
+            )
+            .onConflict((oc) =>
+              oc.column('name').doUpdateSet((eb) => ({
+                pluginId: eb.ref('excluded.pluginId'),
+                displayName: eb.ref('excluded.displayName'),
+                description: eb.ref('excluded.description'),
+                supportedContexts: eb.ref('excluded.supportedContexts'),
+                schema: eb.ref('excluded.schema'),
+              })),
             )
             .returningAll()
-            .executeTakeFirstOrThrow();
+            .execute()
+        : [];
 
-          filters.push(filterResult);
-        }
-      }
-
-      // Upsert actions
-      if (manifest.actions) {
-        for (const action of manifest.actions) {
-          const actionResult = await trx
+      const actions = manifest.actions
+        ? await tx
             .insertInto('plugin_action')
-            .values({
-              pluginId: plugin.id,
-              name: action.name,
-              displayName: action.displayName,
-              description: action.description,
-              supportedContexts: action.supportedContexts,
-              schema: action.schema,
-            })
-            .onConflict((oc) =>
-              oc.column('name').doUpdateSet({
+            .values(
+              manifest.actions.map((action) => ({
                 pluginId: plugin.id,
+                name: action.name,
                 displayName: action.displayName,
                 description: action.description,
                 supportedContexts: action.supportedContexts,
                 schema: action.schema,
-              }),
+              })),
+            )
+            .onConflict((oc) =>
+              oc.column('name').doUpdateSet((eb) => ({
+                pluginId: eb.ref('excluded.pluginId'),
+                displayName: eb.ref('excluded.displayName'),
+                description: eb.ref('excluded.description'),
+                supportedContexts: eb.ref('excluded.supportedContexts'),
+                schema: eb.ref('excluded.schema'),
+              })),
             )
             .returningAll()
-            .executeTakeFirstOrThrow();
-
-          actions.push(actionResult);
-        }
-      }
+            .execute()
+        : [];
 
       return { plugin, filters, actions };
     });

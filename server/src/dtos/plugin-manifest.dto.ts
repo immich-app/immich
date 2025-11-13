@@ -6,12 +6,14 @@ import {
   IsNotEmpty,
   IsObject,
   IsOptional,
+  IsSemVer,
   IsString,
   Matches,
   ValidateNested,
 } from 'class-validator';
-import { PluginContext } from 'src/schema/tables/plugin.table';
+import { PluginContext } from 'src/enum';
 import { JSONSchema } from 'src/types/plugin-schema.types';
+import { ValidateEnum } from 'src/validation';
 
 class PluginManifestWasmDto {
   @IsString()
@@ -57,7 +59,7 @@ class PluginManifestActionDto {
 
   @IsArray()
   @ArrayMinSize(1)
-  @IsEnum(PluginContext, { each: true })
+  @ValidateEnum({ enum: PluginContext, name: 'PluginContext', each: true })
   supportedContexts!: PluginContext[];
 
   @IsObject()
@@ -68,16 +70,14 @@ class PluginManifestActionDto {
 export class PluginManifestDto {
   @IsString()
   @IsNotEmpty()
-  @Matches(/^[a-z0-9-]+$/, {
-    message: 'Plugin name must contain only lowercase letters, numbers, and hyphens',
+  @Matches(/^[a-z0-9-]+[a-z0-9]$/, {
+    message: 'Plugin name must contain only lowercase letters, numbers, and hyphens, and cannot end with a hyphen',
   })
   name!: string;
 
   @IsString()
   @IsNotEmpty()
-  @Matches(/^\d+\.\d+\.\d+$/, {
-    message: 'Version must be in semantic versioning format (e.g., 1.0.0)',
-  })
+  @IsSemVer()
   version!: string;
 
   @IsString()

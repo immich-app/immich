@@ -1,4 +1,5 @@
-import { PluginActionTable, PluginFilterTable, PluginTriggerType } from 'src/schema/tables/plugin.table';
+import { PluginTriggerType } from 'src/enum';
+import { PluginActionTable, PluginFilterTable } from 'src/schema/tables/plugin.table';
 import { UserTable } from 'src/schema/tables/user.table';
 import {
   Column,

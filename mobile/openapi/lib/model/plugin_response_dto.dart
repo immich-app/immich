@@ -21,10 +21,8 @@ class PluginResponseDto {
     this.filters = const [],
     required this.id,
     required this.name,
-    this.triggers = const [],
     required this.updatedAt,
     required this.version,
-    required this.wasmPath,
   });
 
   List<PluginActionResponseDto> actions;
@@ -43,13 +41,9 @@ class PluginResponseDto {
 
   String name;
 
-  List<PluginTriggerResponseDto> triggers;
-
   String updatedAt;
 
   String version;
-
-  String wasmPath;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is PluginResponseDto &&
@@ -61,10 +55,8 @@ class PluginResponseDto {
     _deepEquality.equals(other.filters, filters) &&
     other.id == id &&
     other.name == name &&
-    _deepEquality.equals(other.triggers, triggers) &&
     other.updatedAt == updatedAt &&
-    other.version == version &&
-    other.wasmPath == wasmPath;
+    other.version == version;
 
   @override
   int get hashCode =>
@@ -77,13 +69,11 @@ class PluginResponseDto {
     (filters.hashCode) +
     (id.hashCode) +
     (name.hashCode) +
-    (triggers.hashCode) +
     (updatedAt.hashCode) +
-    (version.hashCode) +
-    (wasmPath.hashCode);
+    (version.hashCode);
 
   @override
-  String toString() => 'PluginResponseDto[actions=$actions, author=$author, createdAt=$createdAt, description=$description, displayName=$displayName, filters=$filters, id=$id, name=$name, triggers=$triggers, updatedAt=$updatedAt, version=$version, wasmPath=$wasmPath]';
+  String toString() => 'PluginResponseDto[actions=$actions, author=$author, createdAt=$createdAt, description=$description, displayName=$displayName, filters=$filters, id=$id, name=$name, updatedAt=$updatedAt, version=$version]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -95,10 +85,8 @@ class PluginResponseDto {
       json[r'filters'] = this.filters;
       json[r'id'] = this.id;
       json[r'name'] = this.name;
-      json[r'triggers'] = this.triggers;
       json[r'updatedAt'] = this.updatedAt;
       json[r'version'] = this.version;
-      json[r'wasmPath'] = this.wasmPath;
     return json;
   }
 
@@ -119,10 +107,8 @@ class PluginResponseDto {
         filters: PluginFilterResponseDto.listFromJson(json[r'filters']),
         id: mapValueOfType<String>(json, r'id')!,
         name: mapValueOfType<String>(json, r'name')!,
-        triggers: PluginTriggerResponseDto.listFromJson(json[r'triggers']),
         updatedAt: mapValueOfType<String>(json, r'updatedAt')!,
         version: mapValueOfType<String>(json, r'version')!,
-        wasmPath: mapValueOfType<String>(json, r'wasmPath')!,
       );
     }
     return null;
@@ -178,10 +164,8 @@ class PluginResponseDto {
     'filters',
     'id',
     'name',
-    'triggers',
     'updatedAt',
     'version',
-    'wasmPath',
   };
 }
 

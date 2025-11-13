@@ -19,7 +19,6 @@ class WorkflowCreateDto {
     this.enabled,
     this.filters = const [],
     required this.name,
-    this.triggerConfig,
     required this.triggerType,
   });
 
@@ -47,14 +46,6 @@ class WorkflowCreateDto {
 
   String name;
 
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  Object? triggerConfig;
-
   PluginTriggerType triggerType;
 
   @override
@@ -65,7 +56,6 @@ class WorkflowCreateDto {
     other.enabled == enabled &&
     _deepEquality.equals(other.filters, filters) &&
     other.name == name &&
-    other.triggerConfig == triggerConfig &&
     other.triggerType == triggerType;
 
   @override
@@ -77,11 +67,10 @@ class WorkflowCreateDto {
     (enabled == null ? 0 : enabled!.hashCode) +
     (filters.hashCode) +
     (name.hashCode) +
-    (triggerConfig == null ? 0 : triggerConfig!.hashCode) +
     (triggerType.hashCode);
 
   @override
-  String toString() => 'WorkflowCreateDto[actions=$actions, description=$description, displayName=$displayName, enabled=$enabled, filters=$filters, name=$name, triggerConfig=$triggerConfig, triggerType=$triggerType]';
+  String toString() => 'WorkflowCreateDto[actions=$actions, description=$description, displayName=$displayName, enabled=$enabled, filters=$filters, name=$name, triggerType=$triggerType]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -99,11 +88,6 @@ class WorkflowCreateDto {
     }
       json[r'filters'] = this.filters;
       json[r'name'] = this.name;
-    if (this.triggerConfig != null) {
-      json[r'triggerConfig'] = this.triggerConfig;
-    } else {
-    //  json[r'triggerConfig'] = null;
-    }
       json[r'triggerType'] = this.triggerType;
     return json;
   }
@@ -123,7 +107,6 @@ class WorkflowCreateDto {
         enabled: mapValueOfType<bool>(json, r'enabled'),
         filters: WorkflowFilterItemDto.listFromJson(json[r'filters']),
         name: mapValueOfType<String>(json, r'name')!,
-        triggerConfig: mapValueOfType<Object>(json, r'triggerConfig'),
         triggerType: PluginTriggerType.fromJson(json[r'triggerType'])!,
       );
     }

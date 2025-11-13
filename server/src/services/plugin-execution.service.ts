@@ -4,16 +4,16 @@ import { resolve } from 'node:path';
 import { PLUGIN_JWT_SECRET } from 'src/constants';
 import { Asset, WorkflowAction, WorkflowFilter } from 'src/database';
 import { OnEvent, OnJob } from 'src/decorators';
-import { JobName, JobStatus, QueueName } from 'src/enum';
+import { JobName, JobStatus, PluginTriggerType, QueueName } from 'src/enum';
+import { pluginTriggers } from 'src/plugins';
 import { ArgOf } from 'src/repositories/event.repository';
-import { PluginContext, pluginTriggers, PluginTriggerType } from 'src/schema/tables/plugin.table';
 import { BaseService } from 'src/services/base.service';
 import { PluginHostFunctions } from 'src/services/plugin-host.functions';
 import { IWorkflowJob, JobItem, JobOf, WorkflowData } from 'src/types';
 import { TriggerConfig } from 'src/types/plugin-schema.types';
 
 interface WorkflowContext {
-  jwtToken: string;
+  authToken: string;
   asset: Asset;
   triggerConfig: TriggerConfig | null;
 }
@@ -103,10 +103,10 @@ export class PluginExecutionService extends BaseService {
             return JobStatus.Failed;
           }
 
-          const jwtToken = this.cryptoRepository.signJwt({ userId: asset.ownerId }, PLUGIN_JWT_SECRET);
+          const authToken = this.cryptoRepository.signJwt({ userId: asset.ownerId }, PLUGIN_JWT_SECRET);
 
           const context = {
-            jwtToken,
+            authToken,
             asset,
             triggerConfig: workflow.triggerConfig,
           };
@@ -151,11 +151,6 @@ export class PluginExecutionService extends BaseService {
         continue;
       }
 
-      if (!filter.supportedContexts.includes(PluginContext.Asset)) {
-        this.logger.warn(`Filter ${filter.name} does not support asset context`);
-        continue;
-      }
-
       this.logger.debug(`Executing filter: ${filter.name}`);
       const filterInput = JSON.stringify({
         context,
@@ -189,11 +184,6 @@ export class PluginExecutionService extends BaseService {
       const pluginInstance = this.loadedPlugins.get(action.pluginId);
       if (!pluginInstance) {
         this.logger.error(`Action ${action.pluginId} not loaded`);
-        continue;
-      }
-
-      if (!action.supportedContexts.includes(PluginContext.Asset)) {
-        this.logger.warn(`Action ${action.name} does not support asset context`);
         continue;
       }
 

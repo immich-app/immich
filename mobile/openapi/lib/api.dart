@@ -220,7 +220,6 @@ part 'model/plugin_action_response_dto.dart';
 part 'model/plugin_context.dart';
 part 'model/plugin_filter_response_dto.dart';
 part 'model/plugin_response_dto.dart';
-part 'model/plugin_trigger_response_dto.dart';
 part 'model/plugin_trigger_type.dart';
 part 'model/purchase_response.dart';
 part 'model/purchase_update.dart';

@@ -1,6 +1,7 @@
 import { Type } from 'class-transformer';
 import { IsNotEmpty, IsObject, IsString, IsUUID, ValidateNested } from 'class-validator';
-import { PluginTriggerType } from 'src/schema/tables/plugin.table';
+import { WorkflowAction, WorkflowFilter } from 'src/database';
+import { PluginTriggerType } from 'src/enum';
 import type { ActionConfig, FilterConfig, TriggerConfig } from 'src/types/plugin-schema.types';
 import { Optional, ValidateBoolean, ValidateEnum } from 'src/validation';
 
@@ -25,10 +26,6 @@ export class WorkflowActionItemDto {
 export class WorkflowCreateDto {
   @ValidateEnum({ enum: PluginTriggerType, name: 'PluginTriggerType' })
   triggerType!: PluginTriggerType;
-
-  @IsObject()
-  @Optional()
-  triggerConfig?: TriggerConfig;
 
   @IsString()
   @IsNotEmpty()
@@ -115,4 +112,24 @@ export class WorkflowActionResponseDto {
   actionId!: string;
   actionConfig!: ActionConfig | null;
   order!: number;
+}
+
+export function mapWorkflowFilter(filter: WorkflowFilter): WorkflowFilterResponseDto {
+  return {
+    id: filter.id,
+    workflowId: filter.workflowId,
+    filterId: filter.filterId,
+    filterConfig: filter.filterConfig,
+    order: filter.order,
+  };
+}
+
+export function mapWorkflowAction(action: WorkflowAction): WorkflowActionResponseDto {
+  return {
+    id: action.id,
+    workflowId: action.workflowId,
+    actionId: action.actionId,
+    actionConfig: action.actionConfig,
+    order: action.order,
+  };
 }

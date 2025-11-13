@@ -297,7 +297,7 @@ Class | Method | HTTP request | Description
 *UsersAdminApi* | [**updateUserPreferencesAdmin**](doc//UsersAdminApi.md#updateuserpreferencesadmin) | **PUT** /admin/users/{id}/preferences | Update user preferences
 *ViewsApi* | [**getAssetsByOriginalPath**](doc//ViewsApi.md#getassetsbyoriginalpath) | **GET** /view/folder | Retrieve assets by original path
 *ViewsApi* | [**getUniqueOriginalPaths**](doc//ViewsApi.md#getuniqueoriginalpaths) | **GET** /view/folder/unique-paths | Retrieve unique paths
-*WorkflowsApi* | [**createWorkflow**](doc//WorkflowsApi.md#createworkflow) | **POST** /workflows | Create a workflow for the authenticated user.
+*WorkflowsApi* | [**createWorkflow**](doc//WorkflowsApi.md#createworkflow) | **POST** /workflows | Create a workflow
 *WorkflowsApi* | [**deleteWorkflow**](doc//WorkflowsApi.md#deleteworkflow) | **DELETE** /workflows/{id} | Delete a workflow
 *WorkflowsApi* | [**getWorkflow**](doc//WorkflowsApi.md#getworkflow) | **GET** /workflows/{id} | Retrieve a workflow
 *WorkflowsApi* | [**getWorkflows**](doc//WorkflowsApi.md#getworkflows) | **GET** /workflows | List all workflows
@@ -461,7 +461,6 @@ Class | Method | HTTP request | Description
  - [PluginContext](doc//PluginContext.md)
  - [PluginFilterResponseDto](doc//PluginFilterResponseDto.md)
  - [PluginResponseDto](doc//PluginResponseDto.md)
- - [PluginTriggerResponseDto](doc//PluginTriggerResponseDto.md)
  - [PluginTriggerType](doc//PluginTriggerType.md)
  - [PurchaseResponse](doc//PurchaseResponse.md)
  - [PurchaseUpdate](doc//PurchaseUpdate.md)

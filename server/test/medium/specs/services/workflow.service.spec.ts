@@ -1,10 +1,10 @@
 import { Kysely } from 'kysely';
+import { PluginContext, PluginTriggerType } from 'src/enum';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { PluginRepository } from 'src/repositories/plugin.repository';
 import { WorkflowRepository } from 'src/repositories/workflow.repository';
 import { DB } from 'src/schema';
-import { PluginContext, PluginTriggerType } from 'src/schema/tables/plugin.table';
 import { WorkflowService } from 'src/services/workflow.service';
 import { newMediumService } from 'test/medium.factory';
 import { getKyselyDB } from 'test/utils';
@@ -28,8 +28,8 @@ describe(WorkflowService.name, () => {
   let testFilterId: string;
   let testActionId: string;
 
-  beforeEach(async () => {
-    // Create a test plugin with filters and actions before each test
+  beforeAll(async () => {
+    // Create a test plugin with filters and actions once for all tests
     const pluginRepo = new PluginRepository(defaultDatabase);
     const result = await pluginRepo.loadPlugin({
       name: 'test-core-plugin',
@@ -65,7 +65,7 @@ describe(WorkflowService.name, () => {
     testActionId = result.actions[0].id;
   });
 
-  afterEach(async () => {
+  afterAll(async () => {
     await defaultDatabase.deleteFrom('plugin').where('id', '=', testPluginId).execute();
   });
 
@@ -196,6 +196,82 @@ describe(WorkflowService.name, () => {
           ],
         }),
       ).rejects.toThrow('Invalid action ID');
+    });
+
+    it('should throw error when filter does not support trigger context', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const auth = { user: { id: user.id } } as any;
+
+      // Create a plugin with a filter that only supports Album context
+      const pluginRepo = new PluginRepository(defaultDatabase);
+      const result = await pluginRepo.loadPlugin({
+        name: 'album-only-plugin',
+        displayName: 'Album Only Plugin',
+        description: 'Plugin with album-only filter',
+        author: 'Test Author',
+        version: '1.0.0',
+        wasm: { path: '/test/album-plugin.wasm' },
+        filters: [
+          {
+            name: 'album-filter',
+            displayName: 'Album Filter',
+            description: 'A filter that only works with albums',
+            supportedContexts: [PluginContext.Album],
+            schema: undefined,
+          },
+        ],
+      });
+
+      await expect(
+        sut.create(auth, {
+          triggerType: PluginTriggerType.AssetCreate,
+          name: 'invalid-context-workflow',
+          displayName: 'Invalid Context Workflow',
+          description: 'A workflow with context mismatch',
+          enabled: true,
+          filters: [{ filterId: result.filters[0].id }],
+          actions: [],
+        }),
+      ).rejects.toThrow('does not support asset context');
+    });
+
+    it('should throw error when action does not support trigger context', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const auth = { user: { id: user.id } } as any;
+
+      // Create a plugin with an action that only supports Person context
+      const pluginRepo = new PluginRepository(defaultDatabase);
+      const result = await pluginRepo.loadPlugin({
+        name: 'person-only-plugin',
+        displayName: 'Person Only Plugin',
+        description: 'Plugin with person-only action',
+        author: 'Test Author',
+        version: '1.0.0',
+        wasm: { path: '/test/person-plugin.wasm' },
+        actions: [
+          {
+            name: 'person-action',
+            displayName: 'Person Action',
+            description: 'An action that only works with persons',
+            supportedContexts: [PluginContext.Person],
+            schema: undefined,
+          },
+        ],
+      });
+
+      await expect(
+        sut.create(auth, {
+          triggerType: PluginTriggerType.AssetCreate,
+          name: 'invalid-context-workflow',
+          displayName: 'Invalid Context Workflow',
+          description: 'A workflow with context mismatch',
+          enabled: true,
+          filters: [],
+          actions: [{ actionId: result.actions[0].id }],
+        }),
+      ).rejects.toThrow('does not support asset context');
     });
 
     it('should create workflow with multiple filters and actions in correct order', async () => {

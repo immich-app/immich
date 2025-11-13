@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { Insertable, Kysely, Updateable } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { DummyValue, GenerateSql } from 'src/decorators';
+import { PluginTriggerType } from 'src/enum';
 import { DB } from 'src/schema';
-import { PluginTriggerType } from 'src/schema/tables/plugin.table';
 import { WorkflowActionTable, WorkflowFilterTable, WorkflowTable } from 'src/schema/tables/workflow.table';
 
 @Injectable()
@@ -35,12 +35,8 @@ export class WorkflowRepository {
     filters: Omit<Insertable<WorkflowFilterTable>, 'workflowId'>[],
     actions: Omit<Insertable<WorkflowActionTable>, 'workflowId'>[],
   ) {
-    return await this.db.transaction().execute(async (trx) => {
-      const createdWorkflow = await trx
-        .insertInto('workflow')
-        .values(workflow)
-        .returningAll()
-        .executeTakeFirstOrThrow();
+    return await this.db.transaction().execute(async (tx) => {
+      const createdWorkflow = await tx.insertInto('workflow').values(workflow).returningAll().executeTakeFirstOrThrow();
 
       if (filters.length > 0) {
         const newFilters = filters.map((filter) => ({
@@ -48,7 +44,7 @@ export class WorkflowRepository {
           workflowId: createdWorkflow.id,
         }));
 
-        await trx.insertInto('workflow_filter').values(newFilters).execute();
+        await tx.insertInto('workflow_filter').values(newFilters).execute();
       }
 
       if (actions.length > 0) {
@@ -56,7 +52,7 @@ export class WorkflowRepository {
           ...action,
           workflowId: createdWorkflow.id,
         }));
-        await trx.insertInto('workflow_action').values(newActions).execute();
+        await tx.insertInto('workflow_action').values(newActions).execute();
       }
 
       return createdWorkflow;

@@ -13676,7 +13676,7 @@
             "api_key": []
           }
         ],
-        "summary": "Create a workflow for the authenticated user.",
+        "summary": "Create a workflow",
         "tags": [
           "Workflows"
         ],
@@ -13943,7 +13943,7 @@
     },
     {
       "name": "Plugins",
-      "description": "A plugin is an internal module that extends the functionality of Immich. Plugins can add new behavior on top of existing features, or introduce entirely new features."
+      "description": "A plugin is an installed module that makes filters and actions available for the workflow feature."
     },
     {
       "name": "Search",
@@ -14003,7 +14003,7 @@
     },
     {
       "name": "Workflows",
-      "description": "A workflow is an automated sequence of actions triggered by specific events and filters. Workflows can be created, updated, deleted, and retrieved via these endpoints."
+      "description": "A workflow is a set of actions that run whenever a triggering event occurs. Workflows also can include filters to further limit execution."
     }
   ],
   "servers": [
@@ -18047,19 +18047,10 @@
           "name": {
             "type": "string"
           },
-          "triggers": {
-            "items": {
-              "$ref": "#/components/schemas/PluginTriggerResponseDto"
-            },
-            "type": "array"
-          },
           "updatedAt": {
             "type": "string"
           },
           "version": {
-            "type": "string"
-          },
-          "wasmPath": {
             "type": "string"
           }
         },
@@ -18072,38 +18063,8 @@
           "filters",
           "id",
           "name",
-          "triggers",
           "updatedAt",
-          "version",
-          "wasmPath"
-        ],
-        "type": "object"
-      },
-      "PluginTriggerResponseDto": {
-        "properties": {
-          "context": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/PluginContext"
-              }
-            ]
-          },
-          "description": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "schema": {
-            "nullable": true,
-            "type": "object"
-          }
-        },
-        "required": [
-          "context",
-          "description",
-          "name",
-          "schema"
+          "version"
         ],
         "type": "object"
       },
@@ -22653,9 +22614,6 @@
           },
           "name": {
             "type": "string"
-          },
-          "triggerConfig": {
-            "type": "object"
           },
           "triggerType": {
             "allOf": [

@@ -164,7 +164,7 @@ export const endpointTags: Record<ApiTag, string> = {
   [ApiTag.People]:
     'A person is a collection of faces, which can be favorited and named. A person can also be merged into another person. People are automatically created via the face recognition job.',
   [ApiTag.Plugins]:
-    'A plugin is an internal module that extends the functionality of Immich. Plugins can add new behavior on top of existing features, or introduce entirely new features.',
+    'A plugin is an installed module that makes filters and actions available for the workflow feature.',
   [ApiTag.Search]:
     'Endpoints related to searching assets via text, smart search, optical character recognition (OCR), and other filters like person, album, and other metadata. Search endpoints usually support pagination and sorting.',
   [ApiTag.Server]:
@@ -191,5 +191,5 @@ export const endpointTags: Record<ApiTag, string> = {
     'Endpoints for viewing and updating the current users, including product key information, profile picture data, onboarding progress, and more.',
   [ApiTag.Views]: 'Endpoints for specialized views, such as the folder view.',
   [ApiTag.Workflows]:
-    'A workflow is an automated sequence of actions triggered by specific events and filters. Workflows can be created, updated, deleted, and retrieved via these endpoints.',
+    'A workflow is a set of actions that run whenever a triggering event occurs. Workflows also can include filters to further limit execution.',
 };

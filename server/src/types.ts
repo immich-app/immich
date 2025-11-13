@@ -11,6 +11,7 @@ import {
   ImageFormat,
   JobName,
   MemoryType,
+  PluginTriggerType,
   QueueName,
   StorageFolder,
   SyncEntityType,
@@ -19,7 +20,6 @@ import {
   UserMetadataKey,
   VideoCodec,
 } from 'src/enum';
-import { PluginTriggerType } from 'src/schema/tables/plugin.table';
 
 export type DeepPartial<T> = T extends object ? { [K in keyof T]?: DeepPartial<T[K]> } : T;
 
@@ -262,11 +262,6 @@ export interface INotifyAlbumInviteJob extends IEntityJob {
 
 export interface INotifyAlbumUpdateJob extends IEntityJob, IDelayedJob {
   recipientId: string;
-}
-
-export interface IAssetCreateWorkflowJob {
-  workflowId: string;
-  assetId: string;
 }
 
 export interface WorkflowData {

@@ -1,27 +1,29 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { Workflow, WorkflowAction, WorkflowFilter } from 'src/database';
+import { Workflow } from 'src/database';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
-  WorkflowActionResponseDto,
+  mapWorkflowAction,
+  mapWorkflowFilter,
   WorkflowCreateDto,
-  WorkflowFilterResponseDto,
   WorkflowResponseDto,
   WorkflowUpdateDto,
 } from 'src/dtos/workflow.dto';
-import { Permission } from 'src/enum';
+import { Permission, PluginContext, PluginTriggerType } from 'src/enum';
+import { pluginTriggers } from 'src/plugins';
+
 import { BaseService } from 'src/services/base.service';
 
 @Injectable()
 export class WorkflowService extends BaseService {
   async create(auth: AuthDto, dto: WorkflowCreateDto): Promise<WorkflowResponseDto> {
-    const filterInserts = await this.validateAndMapFilters(dto.filters);
-    const actionInserts = await this.validateAndMapActions(dto.actions);
+    const trigger = this.getTriggerOrFail(dto.triggerType);
+    const filterInserts = await this.validateAndMapFilters(dto.filters, trigger.context);
+    const actionInserts = await this.validateAndMapActions(dto.actions, trigger.context);
 
     const workflow = await this.workflowRepository.createWorkflow(
       {
         ownerId: auth.user.id,
         triggerType: dto.triggerType,
-        triggerConfig: dto.triggerConfig || null,
         name: dto.name,
         displayName: dto.displayName,
         description: dto.description || '',
@@ -53,13 +55,23 @@ export class WorkflowService extends BaseService {
       throw new BadRequestException('No fields to update');
     }
 
+    const workflow = await this.findOrFail(id);
+    const trigger = this.getTriggerOrFail(workflow.triggerType);
+
     const { filters, actions, ...workflowUpdate } = dto;
-    const filterInserts = filters === undefined ? undefined : await this.validateAndMapFilters(filters);
-    const actionInserts = actions === undefined ? undefined : await this.validateAndMapActions(actions);
+    const filterInserts =
+      filters === undefined ? undefined : await this.validateAndMapFilters(filters, trigger.context);
+    const actionInserts =
+      actions === undefined ? undefined : await this.validateAndMapActions(actions, trigger.context);
 
-    const workflow = await this.workflowRepository.updateWorkflow(id, workflowUpdate, filterInserts, actionInserts);
+    const updatedWorkflow = await this.workflowRepository.updateWorkflow(
+      id,
+      workflowUpdate,
+      filterInserts,
+      actionInserts,
+    );
 
-    return this.mapWorkflow(workflow);
+    return this.mapWorkflow(updatedWorkflow);
   }
 
   async delete(auth: AuthDto, id: string): Promise<void> {
@@ -67,7 +79,10 @@ export class WorkflowService extends BaseService {
     await this.workflowRepository.deleteWorkflow(id);
   }
 
-  private async validateAndMapFilters(filters: Array<{ filterId: string; filterConfig?: any }>) {
+  private async validateAndMapFilters(
+    filters: Array<{ filterId: string; filterConfig?: any }>,
+    requiredContext: PluginContext,
+  ) {
     if (filters.length === 0) {
       return [];
     }
@@ -76,6 +91,11 @@ export class WorkflowService extends BaseService {
       const filter = await this.pluginRepository.getFilter(dto.filterId);
       if (!filter) {
         throw new BadRequestException(`Invalid filter ID: ${dto.filterId}`);
+      }
+      if (!filter.supportedContexts.includes(requiredContext)) {
+        throw new BadRequestException(
+          `Filter "${filter.displayName}" does not support ${requiredContext} context. Supported contexts: ${filter.supportedContexts.join(', ')}`,
+        );
       }
     }
 
@@ -86,7 +106,10 @@ export class WorkflowService extends BaseService {
     }));
   }
 
-  private async validateAndMapActions(actions: Array<{ actionId: string; actionConfig?: any }>) {
+  private async validateAndMapActions(
+    actions: Array<{ actionId: string; actionConfig?: any }>,
+    requiredContext: PluginContext,
+  ) {
     if (actions.length === 0) {
       return [];
     }
@@ -96,6 +119,11 @@ export class WorkflowService extends BaseService {
       if (!action) {
         throw new BadRequestException(`Invalid action ID: ${dto.actionId}`);
       }
+      if (!action.supportedContexts.includes(requiredContext)) {
+        throw new BadRequestException(
+          `Action "${action.displayName}" does not support ${requiredContext} context. Supported contexts: ${action.supportedContexts.join(', ')}`,
+        );
+      }
     }
 
     return actions.map((dto, index) => ({
@@ -103,6 +131,14 @@ export class WorkflowService extends BaseService {
       actionConfig: dto.actionConfig || null,
       order: index,
     }));
+  }
+
+  private getTriggerOrFail(triggerType: PluginTriggerType) {
+    const trigger = pluginTriggers.find((t) => t.type === triggerType);
+    if (!trigger) {
+      throw new BadRequestException(`Invalid trigger type: ${triggerType}`);
+    }
+    return trigger;
   }
 
   private async findOrFail(id: string) {
@@ -127,28 +163,8 @@ export class WorkflowService extends BaseService {
       description: workflow.description,
       createdAt: workflow.createdAt.toISOString(),
       enabled: workflow.enabled,
-      filters: filters.map((f) => this.mapWorkflowFilter(f)),
-      actions: actions.map((a) => this.mapWorkflowAction(a)),
-    };
-  }
-
-  private mapWorkflowFilter(filter: WorkflowFilter): WorkflowFilterResponseDto {
-    return {
-      id: filter.id,
-      workflowId: filter.workflowId,
-      filterId: filter.filterId,
-      filterConfig: filter.filterConfig,
-      order: filter.order,
-    };
-  }
-
-  private mapWorkflowAction(action: WorkflowAction): WorkflowActionResponseDto {
-    return {
-      id: action.id,
-      workflowId: action.workflowId,
-      actionId: action.actionId,
-      actionConfig: action.actionConfig,
-      order: action.order,
+      filters: filters.map((f) => mapWorkflowFilter(f)),
+      actions: actions.map((a) => mapWorkflowAction(a)),
     };
   }
 }

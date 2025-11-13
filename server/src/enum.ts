@@ -824,3 +824,14 @@ export enum ApiTag {
   Views = 'Views',
   Workflows = 'Workflows',
 }
+
+export enum PluginContext {
+  Asset = 'asset',
+  Album = 'album',
+  Person = 'person',
+}
+
+export enum PluginTriggerType {
+  AssetCreate = 'AssetCreate',
+  PersonRecognized = 'PersonRecognized',
+}
