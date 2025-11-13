@@ -66,6 +66,8 @@ jobs:
         with:
           github-token: ${{ steps.generate-token.outputs.token }}
           script: |
+            const fs = require('fs');
+
             const outlineKey = process.env.OUTLINE_API_KEY;
             const parentDocumentId = 'da856355-0844-43df-bd71-f8edce5382d9'
             const collectionId = 'e2910656-714c-4871-8721-447d9353bd73';
@@ -96,6 +98,7 @@ jobs:
             if (!document) {
               // Create new document
               console.log('No existing document found. Creating new one...');
+              const notesTmpl = fs.readFileSync('misc/release/notes.tmpl', 'utf8');
               const createResponse = await fetch(`${baseUrl}/api/documents.create`, {
                 method: 'POST',
                 headers: {
@@ -104,6 +107,7 @@ jobs:
                 },
                 body: JSON.stringify({
                   title: 'next',
+                  text: notesTmpl,
                   collectionId: collectionId,
                   parentDocumentId: parentDocumentId,
                   publish: true
@@ -148,7 +152,6 @@ jobs:
 
             `
 
-            const fs = require('fs');
             const existingChangelog = fs.existsSync('CHANGELOG.md') ? fs.readFileSync('CHANGELOG.md', 'utf8') : '';
             fs.writeFileSync('CHANGELOG.md', changelog + existingChangelog, 'utf8');
 
