@@ -9,13 +9,13 @@
   } from '$lib/stores/duplicate-tie-preferences.svelte';
   import { mdiCogOutline } from '@mdi/js';
 
+  let { onClose }: Props = $props();
+
   let tiePreferenceLocal = $state(duplicateTiePreference.value);
 
   interface Props {
     onClose: () => void;
   }
-
-  let { onClose }: Props = $props();
 
   const confirm = () => {
     setDuplicateTiePreference(tiePreferenceLocal);
@@ -26,8 +26,7 @@
     tiePreferenceLocal = undefined;
   };
 
-  const makeSourcePref = (priority: 'internal' | 'external'): SourcePreference => ({variant: 'source', priority});
-
+  const makeSourcePref = (priority: 'internal' | 'external'): SourcePreference => ({ variant: 'source', priority });
 </script>
 
 <Modal title={$t('duplicates_settings')} {onClose} icon={mdiCogOutline}>

@@ -12,7 +12,7 @@ export type PreferenceDuplicateTieItem = SourcePreference;
 
 export let duplicateTiePreference = $state<{
   value: DuplicateTiePreferencesSvelte | undefined;
-}>({value: undefined});
+}>({ value: undefined });
 
 export const findDuplicateTiePreference = <T extends PreferenceDuplicateTieItem['variant']>(
   preference: DuplicateTiePreferencesSvelte | undefined,
@@ -22,6 +22,8 @@ export const findDuplicateTiePreference = <T extends PreferenceDuplicateTieItem[
     (preference): preference is Extract<PreferenceDuplicateTieItem, { variant: T }> => preference.variant === variant,
   );
 
-export function setDuplicateTiePreference(nextDuplicateTiePreferences: DuplicateTiePreferencesSvelte | undefined): void {
+export function setDuplicateTiePreference(
+  nextDuplicateTiePreferences: DuplicateTiePreferencesSvelte | undefined,
+): void {
   duplicateTiePreference.value = nextDuplicateTiePreferences;
 }

@@ -25,7 +25,7 @@ export function suggestBestDuplicate(
   assets: AssetResponseDto[],
   preference: DuplicateTiePreferencesSvelte | undefined,
 ): AssetResponseDto | undefined {
-  if (!assets.length){
+  if (!assets.length) {
     return;
   }
   let candidates = filterBySizeAndExif(assets);

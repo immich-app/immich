@@ -13,7 +13,7 @@
   import { t } from 'svelte-i18n';
   import { SvelteSet } from 'svelte/reactivity';
   import { duplicateTiePreference } from '$lib/stores/duplicate-tie-preferences.svelte';
-  import {suggestBestDuplicate} from "$lib/utils/duplicate-utils";
+  import { suggestBestDuplicate } from '$lib/utils/duplicate-utils';
   interface Props {
     assets: AssetResponseDto[];
     onResolve: (duplicateAssetIds: string[], trashIds: string[]) => void;
@@ -33,8 +33,7 @@
       return;
     }
 
-    const suggestedAsset =
-      suggestBestDuplicate(assets, duplicateTiePreference.value) ?? assets[0];
+    const suggestedAsset = suggestBestDuplicate(assets, duplicateTiePreference.value) ?? assets[0];
 
     selectedAssetIds = new SvelteSet<string>([suggestedAsset.id]);
   });

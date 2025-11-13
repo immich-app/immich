@@ -30,9 +30,7 @@
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
   import { duplicateTiePreference } from '$lib/stores/duplicate-tie-preferences.svelte';
-  import {suggestBestDuplicate} from "$lib/utils/duplicate-utils";
-
-
+  import { suggestBestDuplicate } from '$lib/utils/duplicate-utils';
 
   interface Props {
     data: PageData;
@@ -129,9 +127,7 @@
   };
 
   const handleDeduplicateAll = async () => {
-    const keepCandidates = duplicates.map((group) =>
-      suggestBestDuplicate(group.assets, duplicateTiePreference.value),
-    );
+    const keepCandidates = duplicates.map((group) => suggestBestDuplicate(group.assets, duplicateTiePreference.value));
 
     const idsToKeep: (string | undefined)[] = keepCandidates.map((assets) => assets?.id);
 
