@@ -132,6 +132,8 @@ describe('/server', () => {
         oauthButtonText: 'Login with OAuth',
         trashDays: 30,
         userDeleteDelay: 7,
+        sessionDeleteDelayBrowser: 90,
+        sessionDeleteDelayMobile: 90,
         isInitialized: true,
         externalDomain: '',
         publicUsers: true,

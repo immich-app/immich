@@ -33,6 +33,22 @@
           bind:value={config.user.deleteDelay}
           isEdited={config.user.deleteDelay !== savedConfig.user.deleteDelay}
         />
+        <SettingInputField
+          inputType={SettingInputFieldType.NUMBER}
+          min={1}
+          label={$t('admin.session_delete_delay_browser_settings')}
+          description={$t('admin.session_delete_delay_browser_settings_description')}
+          bind:value={config.user.sessionDeleteDelayBrowser}
+          isEdited={config.user.sessionDeleteDelayBrowser !== savedConfig.user.sessionDeleteDelayBrowser}
+        />
+        <SettingInputField
+          inputType={SettingInputFieldType.NUMBER}
+          min={1}
+          label={$t('admin.session_delete_delay_mobile_settings')}
+          description={$t('admin.session_delete_delay_mobile_settings_description')}
+          bind:value={config.user.sessionDeleteDelayMobile}
+          isEdited={config.user.sessionDeleteDelayMobile !== savedConfig.user.sessionDeleteDelayMobile}
+        />
       </div>
 
       <div class="ms-4">
