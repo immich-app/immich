@@ -268,7 +268,7 @@ make test-all           # Runs tests for all components
 make test-medium-dev    # End-to-end tests
 ```
 
-#### Using NPM Directly
+#### Using PNPM Directly
 
 ```bash
 # Server tests
@@ -308,7 +308,7 @@ make check-web          # Type check web
 make check-all          # Check all components
 
 # Complete hygiene check
-make hygiene-all        # Runs lint, format, check, SQL sync, and audit
+make hygiene-all        # Run lint, format, check, SQL sync, and audit
 ```
 
 ### Additional Make Commands
