@@ -19,7 +19,7 @@ from
       to_json("exifInfo") as "exifInfo"
     from
       "shared_link_asset"
-      inner join "asset" on "asset"."id" = "shared_link_asset"."assetsId"
+      inner join "asset" on "asset"."id" = "shared_link_asset"."assetId"
       inner join lateral (
         select
           "asset_exif".*
@@ -29,7 +29,7 @@ from
           "asset_exif"."assetId" = "asset"."id"
       ) as "exifInfo" on true
     where
-      "shared_link"."id" = "shared_link_asset"."sharedLinksId"
+      "shared_link"."id" = "shared_link_asset"."sharedLinkId"
       and "asset"."deletedAt" is null
     order by
       "asset"."fileCreatedAt" asc
@@ -51,7 +51,7 @@ from
       to_json("owner") as "owner"
     from
       "album"
-      left join "album_asset" on "album_asset"."albumsId" = "album"."id"
+      left join "album_asset" on "album_asset"."albumId" = "album"."id"
       left join lateral (
         select
           "asset".*,
@@ -67,7 +67,7 @@ from
               "asset_exif"."assetId" = "asset"."id"
           ) as "exifInfo" on true
         where
-          "album_asset"."assetsId" = "asset"."id"
+          "album_asset"."assetId" = "asset"."id"
           and "asset"."deletedAt" is null
         order by
           "asset"."fileCreatedAt" asc
@@ -108,14 +108,14 @@ select distinct
   to_json("album") as "album"
 from
   "shared_link"
-  left join "shared_link_asset" on "shared_link_asset"."sharedLinksId" = "shared_link"."id"
+  left join "shared_link_asset" on "shared_link_asset"."sharedLinkId" = "shared_link"."id"
   left join lateral (
     select
       json_agg("asset") as "assets"
     from
       "asset"
     where
-      "asset"."id" = "shared_link_asset"."assetsId"
+      "asset"."id" = "shared_link_asset"."assetId"
       and "asset"."deletedAt" is null
   ) as "assets" on true
   left join lateral (
