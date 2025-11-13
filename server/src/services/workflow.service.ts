@@ -25,7 +25,6 @@ export class WorkflowService extends BaseService {
         ownerId: auth.user.id,
         triggerType: dto.triggerType,
         name: dto.name,
-        displayName: dto.displayName,
         description: dto.description || '',
         enabled: dto.enabled ?? true,
       },
@@ -59,10 +58,8 @@ export class WorkflowService extends BaseService {
     const trigger = this.getTriggerOrFail(workflow.triggerType);
 
     const { filters, actions, ...workflowUpdate } = dto;
-    const filterInserts =
-      filters === undefined ? undefined : await this.validateAndMapFilters(filters, trigger.context);
-    const actionInserts =
-      actions === undefined ? undefined : await this.validateAndMapActions(actions, trigger.context);
+    const filterInserts = filters && (await this.validateAndMapFilters(filters, trigger.context));
+    const actionInserts = actions && (await this.validateAndMapActions(actions, trigger.context));
 
     const updatedWorkflow = await this.workflowRepository.updateWorkflow(
       id,
@@ -83,10 +80,6 @@ export class WorkflowService extends BaseService {
     filters: Array<{ filterId: string; filterConfig?: any }>,
     requiredContext: PluginContext,
   ) {
-    if (filters.length === 0) {
-      return [];
-    }
-
     for (const dto of filters) {
       const filter = await this.pluginRepository.getFilter(dto.filterId);
       if (!filter) {
@@ -110,10 +103,6 @@ export class WorkflowService extends BaseService {
     actions: Array<{ actionId: string; actionConfig?: any }>,
     requiredContext: PluginContext,
   ) {
-    if (actions.length === 0) {
-      return [];
-    }
-
     for (const dto of actions) {
       const action = await this.pluginRepository.getAction(dto.actionId);
       if (!action) {
@@ -158,8 +147,7 @@ export class WorkflowService extends BaseService {
       ownerId: workflow.ownerId,
       triggerType: workflow.triggerType,
       triggerConfig: workflow.triggerConfig,
-      name: workflow.name,
-      displayName: workflow.displayName,
+      name: workflow.name || '',
       description: workflow.description,
       createdAt: workflow.createdAt.toISOString(),
       enabled: workflow.enabled,

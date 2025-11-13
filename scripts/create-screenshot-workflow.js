@@ -114,8 +114,7 @@ async function createWorkflow() {
   console.log('\n📝 Creating workflow with filters and actions...');
   const workflowData = {
     triggerType: 'AssetCreate',
-    name: 'screenshot_organizer',
-    displayName: 'Screenshot Organizer',
+    name: 'Screenshot Organizer',
     description:
       'Automatically organize screenshots into an album and archive them',
     enabled: true,
@@ -147,9 +146,7 @@ async function createWorkflow() {
   };
 
   const workflow = await makeApiRequest('/workflows', 'POST', workflowData);
-  console.log(
-    `✓ Created workflow: ${workflow.displayName} (ID: ${workflow.id})`
-  );
+  console.log(`✓ Created workflow: ${workflow.name} (ID: ${workflow.id})`);
   console.log(`  Owner ID: ${workflow.ownerId}`);
   console.log(`  Filters: ${workflow.filters.length}`);
   console.log(`  Actions: ${workflow.actions.length}`);
@@ -159,7 +156,7 @@ async function createWorkflow() {
   console.log('==========================================');
   console.log('Workflow Summary:');
   console.log('==========================================');
-  console.log(`Name: ${workflow.displayName}`);
+  console.log(`Name: ${workflow.name}`);
   console.log(`Description: ${workflow.description}`);
   console.log(`Enabled: ${workflow.enabled}`);
   console.log(`Trigger: ${workflow.triggerType}`);

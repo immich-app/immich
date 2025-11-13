@@ -9,7 +9,7 @@
   import UploadPanel from '$lib/components/shared-components/upload-panel.svelte';
   import { eventManager } from '$lib/managers/event-manager.svelte';
   import VersionAnnouncementModal from '$lib/modals/VersionAnnouncementModal.svelte';
-  import { serverConfig } from '$lib/stores/server-config.store';
+  import { serverConfig } from '$lib/stores/system-config-manager.svelte';
   import { user } from '$lib/stores/user.store';
   import {
     closeWebsocketConnection,

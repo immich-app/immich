@@ -4,7 +4,7 @@ export async function up(db: Kysely<any>): Promise<void> {
   await sql`CREATE TABLE "plugin" (
   "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
   "name" character varying NOT NULL,
-  "displayName" character varying NOT NULL,
+  "title" character varying NOT NULL,
   "description" character varying NOT NULL,
   "author" character varying NOT NULL,
   "version" character varying NOT NULL,
@@ -54,8 +54,7 @@ export async function up(db: Kysely<any>): Promise<void> {
   "ownerId" uuid NOT NULL,
   "triggerType" character varying NOT NULL,
   "triggerConfig" jsonb,
-  "name" character varying NOT NULL,
-  "displayName" character varying NOT NULL,
+  "name" character varying,
   "description" character varying NOT NULL,
   "createdAt" timestamp with time zone NOT NULL DEFAULT now(),
   "enabled" boolean NOT NULL DEFAULT true,

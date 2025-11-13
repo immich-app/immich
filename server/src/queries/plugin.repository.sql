@@ -4,7 +4,7 @@
 select
   "plugin"."id" as "id",
   "plugin"."name" as "name",
-  "plugin"."displayName" as "displayName",
+  "plugin"."title" as "title",
   "plugin"."description" as "description",
   "plugin"."author" as "author",
   "plugin"."version" as "version",
@@ -46,7 +46,7 @@ where
 select
   "plugin"."id" as "id",
   "plugin"."name" as "name",
-  "plugin"."displayName" as "displayName",
+  "plugin"."title" as "title",
   "plugin"."description" as "description",
   "plugin"."author" as "author",
   "plugin"."version" as "version",
@@ -88,7 +88,7 @@ where
 select
   "plugin"."id" as "id",
   "plugin"."name" as "name",
-  "plugin"."displayName" as "displayName",
+  "plugin"."title" as "title",
   "plugin"."description" as "description",
   "plugin"."author" as "author",
   "plugin"."version" as "version",

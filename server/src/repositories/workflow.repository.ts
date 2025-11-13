@@ -32,8 +32,8 @@ export class WorkflowRepository {
 
   async createWorkflow(
     workflow: Insertable<WorkflowTable>,
-    filters: Omit<Insertable<WorkflowFilterTable>, 'workflowId'>[],
-    actions: Omit<Insertable<WorkflowActionTable>, 'workflowId'>[],
+    filters: Insertable<WorkflowFilterTable>[],
+    actions: Insertable<WorkflowActionTable>[],
   ) {
     return await this.db.transaction().execute(async (tx) => {
       const createdWorkflow = await tx.insertInto('workflow').values(workflow).returningAll().executeTakeFirstOrThrow();
@@ -62,8 +62,8 @@ export class WorkflowRepository {
   async updateWorkflow(
     id: string,
     workflow: Updateable<WorkflowTable>,
-    filters: Omit<Insertable<WorkflowFilterTable>, 'workflowId'>[] | undefined,
-    actions: Omit<Insertable<WorkflowActionTable>, 'workflowId'>[] | undefined,
+    filters: Insertable<WorkflowFilterTable>[] | undefined,
+    actions: Insertable<WorkflowActionTable>[] | undefined,
   ) {
     return await this.db.transaction().execute(async (trx) => {
       if (Object.keys(workflow).length > 0) {

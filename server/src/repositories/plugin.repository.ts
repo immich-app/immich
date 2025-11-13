@@ -24,7 +24,7 @@ export class PluginRepository {
         .insertInto('plugin')
         .values({
           name: manifest.name,
-          displayName: manifest.displayName,
+          title: manifest.title,
           description: manifest.description,
           author: manifest.author,
           version: manifest.version,
@@ -32,7 +32,7 @@ export class PluginRepository {
         })
         .onConflict((oc) =>
           oc.column('name').doUpdateSet({
-            displayName: manifest.displayName,
+            title: manifest.title,
             description: manifest.description,
             author: manifest.author,
             version: manifest.version,

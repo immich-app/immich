@@ -1,11 +1,14 @@
+import { eventManager } from '$lib/managers/event-manager.svelte';
 import {
   getConfig,
+  getConfigDefaults,
   getServerConfig,
   getServerFeatures,
   type ServerConfigDto,
   type ServerFeaturesDto,
   type SystemConfigDto,
 } from '@immich/sdk';
+import { cloneDeep } from 'lodash-es';
 import { writable } from 'svelte/store';
 
 export type FeatureFlags = ServerFeaturesDto & { loaded: boolean };
@@ -45,8 +48,55 @@ export const serverConfig = writable<ServerConfig>({
   publicUsers: true,
 });
 
-export type SystemConfig = SystemConfigDto & { loaded: boolean };
-export const systemConfig = writable<SystemConfig>();
+class SystemConfigManager {
+  #value?: SystemConfigDto = $state();
+  #defaultValue?: SystemConfigDto = $state();
+
+  constructor() {
+    eventManager.on('SystemConfigUpdate', (config) => (this.#value = config));
+  }
+
+  get value() {
+    if (!this.#value) {
+      throw new Error('System config dto must be initialized first');
+    }
+
+    return this.#value;
+  }
+
+  set value(config: SystemConfigDto) {
+    this.#value = config;
+  }
+
+  get defaultValue() {
+    if (!this.#defaultValue) {
+      throw new Error('System config dto must be initialized first');
+    }
+
+    return this.#defaultValue;
+  }
+
+  cloneValue() {
+    return cloneDeep(this.value);
+  }
+
+  cloneDefaultValue() {
+    return cloneDeep(this.defaultValue);
+  }
+
+  async init() {
+    await this.#loadConfig();
+    await this.#loadDefault();
+  }
+
+  async #loadConfig() {
+    this.#value = await getConfig();
+  }
+
+  async #loadDefault() {
+    this.#defaultValue = await getConfigDefaults();
+  }
+}
 
 export const retrieveServerConfig = async () => {
   const [flags, config] = await Promise.all([getServerFeatures(), getServerConfig()]);
@@ -55,7 +105,4 @@ export const retrieveServerConfig = async () => {
   serverConfig.update(() => ({ ...config, loaded: true }));
 };
 
-export const retrieveSystemConfig = async () => {
-  const config = await getConfig();
-  systemConfig.update(() => ({ ...config, loaded: true }));
-};
+export const systemConfigManager = new SystemConfigManager();

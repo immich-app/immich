@@ -302,8 +302,7 @@ export type PluginAction = Selectable<PluginActionTable> & {
 
 export type Workflow = Selectable<WorkflowTable> & {
   triggerType: PluginTriggerType;
-  name: string;
-  displayName: string;
+  name: string | null;
   description: string;
   enabled: boolean;
 };
@@ -466,7 +465,7 @@ export const columns = {
   plugin: [
     'plugin.id as id',
     'plugin.name as name',
-    'plugin.displayName as displayName',
+    'plugin.title as title',
     'plugin.description as description',
     'plugin.author as author',
     'plugin.version as version',

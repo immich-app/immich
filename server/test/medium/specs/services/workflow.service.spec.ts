@@ -33,7 +33,7 @@ describe(WorkflowService.name, () => {
     const pluginRepo = new PluginRepository(defaultDatabase);
     const result = await pluginRepo.loadPlugin({
       name: 'test-core-plugin',
-      displayName: 'Test Core Plugin',
+      title: 'Test Core Plugin',
       description: 'A test core plugin for workflow tests',
       author: 'Test Author',
       version: '1.0.0',
@@ -79,7 +79,6 @@ describe(WorkflowService.name, () => {
       const workflow = await sut.create(auth, {
         triggerType: PluginTriggerType.AssetCreate,
         name: 'test-workflow',
-        displayName: 'Test Workflow',
         description: 'A test workflow',
         enabled: true,
         filters: [],
@@ -91,7 +90,6 @@ describe(WorkflowService.name, () => {
         ownerId: user.id,
         triggerType: PluginTriggerType.AssetCreate,
         name: 'test-workflow',
-        displayName: 'Test Workflow',
         description: 'A test workflow',
         enabled: true,
         filters: [],
@@ -107,7 +105,6 @@ describe(WorkflowService.name, () => {
       const workflow = await sut.create(auth, {
         triggerType: PluginTriggerType.AssetCreate,
         name: 'test-workflow-with-relations',
-        displayName: 'Test Workflow With Relations',
         description: 'A test workflow with filters and actions',
         enabled: true,
         filters: [
@@ -129,7 +126,6 @@ describe(WorkflowService.name, () => {
         ownerId: user.id,
         triggerType: PluginTriggerType.AssetCreate,
         name: 'test-workflow-with-relations',
-        displayName: 'Test Workflow With Relations',
         enabled: true,
       });
 
@@ -161,7 +157,6 @@ describe(WorkflowService.name, () => {
         sut.create(auth, {
           triggerType: PluginTriggerType.AssetCreate,
           name: 'invalid-workflow',
-          displayName: 'Invalid Workflow',
           description: 'A workflow with invalid filter',
           enabled: true,
           filters: [
@@ -184,7 +179,6 @@ describe(WorkflowService.name, () => {
         sut.create(auth, {
           triggerType: PluginTriggerType.AssetCreate,
           name: 'invalid-workflow',
-          displayName: 'Invalid Workflow',
           description: 'A workflow with invalid action',
           enabled: true,
           filters: [],
@@ -207,7 +201,7 @@ describe(WorkflowService.name, () => {
       const pluginRepo = new PluginRepository(defaultDatabase);
       const result = await pluginRepo.loadPlugin({
         name: 'album-only-plugin',
-        displayName: 'Album Only Plugin',
+        title: 'Album Only Plugin',
         description: 'Plugin with album-only filter',
         author: 'Test Author',
         version: '1.0.0',
@@ -227,7 +221,6 @@ describe(WorkflowService.name, () => {
         sut.create(auth, {
           triggerType: PluginTriggerType.AssetCreate,
           name: 'invalid-context-workflow',
-          displayName: 'Invalid Context Workflow',
           description: 'A workflow with context mismatch',
           enabled: true,
           filters: [{ filterId: result.filters[0].id }],
@@ -245,7 +238,7 @@ describe(WorkflowService.name, () => {
       const pluginRepo = new PluginRepository(defaultDatabase);
       const result = await pluginRepo.loadPlugin({
         name: 'person-only-plugin',
-        displayName: 'Person Only Plugin',
+        title: 'Person Only Plugin',
         description: 'Plugin with person-only action',
         author: 'Test Author',
         version: '1.0.0',
@@ -265,7 +258,6 @@ describe(WorkflowService.name, () => {
         sut.create(auth, {
           triggerType: PluginTriggerType.AssetCreate,
           name: 'invalid-context-workflow',
-          displayName: 'Invalid Context Workflow',
           description: 'A workflow with context mismatch',
           enabled: true,
           filters: [],
@@ -282,7 +274,6 @@ describe(WorkflowService.name, () => {
       const workflow = await sut.create(auth, {
         triggerType: PluginTriggerType.AssetCreate,
         name: 'multi-step-workflow',
-        displayName: 'Multi-Step Workflow',
         description: 'A workflow with multiple filters and actions',
         enabled: true,
         filters: [
@@ -318,7 +309,6 @@ describe(WorkflowService.name, () => {
       const workflow1 = await sut.create(auth, {
         triggerType: PluginTriggerType.AssetCreate,
         name: 'workflow-1',
-        displayName: 'Workflow 1',
         description: 'First workflow',
         enabled: true,
         filters: [],
@@ -328,7 +318,6 @@ describe(WorkflowService.name, () => {
       const workflow2 = await sut.create(auth, {
         triggerType: PluginTriggerType.AssetCreate,
         name: 'workflow-2',
-        displayName: 'Workflow 2',
         description: 'Second workflow',
         enabled: false,
         filters: [],
@@ -366,7 +355,6 @@ describe(WorkflowService.name, () => {
       await sut.create(auth1, {
         triggerType: PluginTriggerType.AssetCreate,
         name: 'user1-workflow',
-        displayName: 'User 1 Workflow',
         description: 'User 1 workflow',
         enabled: true,
         filters: [],
@@ -388,7 +376,6 @@ describe(WorkflowService.name, () => {
       const created = await sut.create(auth, {
         triggerType: PluginTriggerType.AssetCreate,
         name: 'test-workflow',
-        displayName: 'Test Workflow',
         description: 'A test workflow',
         enabled: true,
         filters: [{ filterId: testFilterId, filterConfig: { key: 'value' } }],
@@ -400,7 +387,6 @@ describe(WorkflowService.name, () => {
       expect(workflow).toMatchObject({
         id: created.id,
         name: 'test-workflow',
-        displayName: 'Test Workflow',
         description: 'A test workflow',
         enabled: true,
       });
@@ -426,7 +412,6 @@ describe(WorkflowService.name, () => {
       const workflow = await sut.create(auth1, {
         triggerType: PluginTriggerType.AssetCreate,
         name: 'private-workflow',
-        displayName: 'Private Workflow',
         description: 'Private workflow',
         enabled: true,
         filters: [],
@@ -446,7 +431,6 @@ describe(WorkflowService.name, () => {
       const created = await sut.create(auth, {
         triggerType: PluginTriggerType.AssetCreate,
         name: 'original-workflow',
-        displayName: 'Original Workflow',
         description: 'Original description',
         enabled: true,
         filters: [],
@@ -455,7 +439,6 @@ describe(WorkflowService.name, () => {
 
       const updated = await sut.update(auth, created.id, {
         name: 'updated-workflow',
-        displayName: 'Updated Workflow',
         description: 'Updated description',
         enabled: false,
       });
@@ -463,7 +446,6 @@ describe(WorkflowService.name, () => {
       expect(updated).toMatchObject({
         id: created.id,
         name: 'updated-workflow',
-        displayName: 'Updated Workflow',
         description: 'Updated description',
         enabled: false,
       });
@@ -477,7 +459,6 @@ describe(WorkflowService.name, () => {
       const created = await sut.create(auth, {
         triggerType: PluginTriggerType.AssetCreate,
         name: 'test-workflow',
-        displayName: 'Test Workflow',
         description: 'Test',
         enabled: true,
         filters: [{ filterId: testFilterId, filterConfig: { old: 'config' } }],
@@ -504,7 +485,6 @@ describe(WorkflowService.name, () => {
       const created = await sut.create(auth, {
         triggerType: PluginTriggerType.AssetCreate,
         name: 'test-workflow',
-        displayName: 'Test Workflow',
         description: 'Test',
         enabled: true,
         filters: [],
@@ -531,7 +511,6 @@ describe(WorkflowService.name, () => {
       const created = await sut.create(auth, {
         triggerType: PluginTriggerType.AssetCreate,
         name: 'test-workflow',
-        displayName: 'Test Workflow',
         description: 'Test',
         enabled: true,
         filters: [{ filterId: testFilterId, filterConfig: { key: 'value' } }],
@@ -553,7 +532,6 @@ describe(WorkflowService.name, () => {
       const created = await sut.create(auth, {
         triggerType: PluginTriggerType.AssetCreate,
         name: 'test-workflow',
-        displayName: 'Test Workflow',
         description: 'Test',
         enabled: true,
         filters: [],
@@ -585,7 +563,6 @@ describe(WorkflowService.name, () => {
       const workflow = await sut.create(auth1, {
         triggerType: PluginTriggerType.AssetCreate,
         name: 'private-workflow',
-        displayName: 'Private Workflow',
         description: 'Private',
         enabled: true,
         filters: [],
@@ -607,7 +584,6 @@ describe(WorkflowService.name, () => {
       const created = await sut.create(auth, {
         triggerType: PluginTriggerType.AssetCreate,
         name: 'test-workflow',
-        displayName: 'Test Workflow',
         description: 'Test',
         enabled: true,
         filters: [],
@@ -629,7 +605,6 @@ describe(WorkflowService.name, () => {
       const created = await sut.create(auth, {
         triggerType: PluginTriggerType.AssetCreate,
         name: 'test-workflow',
-        displayName: 'Test Workflow',
         description: 'Test',
         enabled: true,
         filters: [],
@@ -653,7 +628,6 @@ describe(WorkflowService.name, () => {
       const workflow = await sut.create(auth, {
         triggerType: PluginTriggerType.AssetCreate,
         name: 'test-workflow',
-        displayName: 'Test Workflow',
         description: 'Test',
         enabled: true,
         filters: [],
@@ -673,7 +647,6 @@ describe(WorkflowService.name, () => {
       const workflow = await sut.create(auth, {
         triggerType: PluginTriggerType.AssetCreate,
         name: 'test-workflow',
-        displayName: 'Test Workflow',
         description: 'Test',
         enabled: true,
         filters: [{ filterId: testFilterId, filterConfig: {} }],
@@ -703,7 +676,6 @@ describe(WorkflowService.name, () => {
       const workflow = await sut.create(auth1, {
         triggerType: PluginTriggerType.AssetCreate,
         name: 'private-workflow',
-        displayName: 'Private Workflow',
         description: 'Private',
         enabled: true,
         filters: [],

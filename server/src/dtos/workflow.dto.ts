@@ -32,10 +32,6 @@ export class WorkflowCreateDto {
   name!: string;
 
   @IsString()
-  @IsNotEmpty()
-  displayName!: string;
-
-  @IsString()
   @Optional()
   description?: string;
 
@@ -56,11 +52,6 @@ export class WorkflowUpdateDto {
   @IsNotEmpty()
   @Optional()
   name?: string;
-
-  @IsString()
-  @IsNotEmpty()
-  @Optional()
-  displayName?: string;
 
   @IsString()
   @Optional()
@@ -90,7 +81,6 @@ export class WorkflowResponseDto {
   triggerType!: PluginTriggerType;
   triggerConfig!: TriggerConfig | null;
   name!: string;
-  displayName!: string;
   description!: string;
   createdAt!: string;
   enabled!: boolean;

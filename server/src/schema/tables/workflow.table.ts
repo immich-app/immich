@@ -15,7 +15,7 @@ import type { ActionConfig, FilterConfig, TriggerConfig } from 'src/types/plugin
 
 @Table('workflow')
 export class WorkflowTable {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn()
   id!: Generated<string>;
 
   @ForeignKeyColumn(() => UserTable, { onDelete: 'CASCADE', onUpdate: 'CASCADE', nullable: false })
@@ -27,11 +27,8 @@ export class WorkflowTable {
   @Column({ type: 'jsonb', nullable: true })
   triggerConfig!: TriggerConfig | null;
 
-  @Column()
-  name!: string;
-
-  @Column()
-  displayName!: string;
+  @Column({ nullable: true })
+  name!: string | null;
 
   @Column()
   description!: string;
@@ -51,7 +48,7 @@ export class WorkflowFilterTable {
   id!: Generated<string>;
 
   @ForeignKeyColumn(() => WorkflowTable, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
-  workflowId!: string;
+  workflowId!: Generated<string>;
 
   @ForeignKeyColumn(() => PluginFilterTable, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
   filterId!: string;
@@ -71,7 +68,7 @@ export class WorkflowActionTable {
   id!: Generated<string>;
 
   @ForeignKeyColumn(() => WorkflowTable, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
-  workflowId!: string;
+  workflowId!: Generated<string>;
 
   @ForeignKeyColumn(() => PluginActionTable, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
   actionId!: string;

@@ -43,7 +43,7 @@ describe(PluginService.name, () => {
 
       const result = await pluginRepo.loadPlugin({
         name: 'test-plugin',
-        displayName: 'Test Plugin',
+        title: 'Test Plugin',
         description: 'A test plugin',
         author: 'Test Author',
         version: '1.0.0',
@@ -71,7 +71,7 @@ describe(PluginService.name, () => {
 
       const result = await pluginRepo.loadPlugin({
         name: 'full-plugin',
-        displayName: 'Full Plugin',
+        title: 'Full Plugin',
         description: 'A plugin with filters and actions',
         author: 'Test Author',
         version: '1.0.0',
@@ -133,7 +133,7 @@ describe(PluginService.name, () => {
 
       await pluginRepo.loadPlugin({
         name: 'plugin-1',
-        displayName: 'Plugin 1',
+        title: 'Plugin 1',
         description: 'First plugin',
         author: 'Author 1',
         version: '1.0.0',
@@ -151,7 +151,7 @@ describe(PluginService.name, () => {
 
       await pluginRepo.loadPlugin({
         name: 'plugin-2',
-        displayName: 'Plugin 2',
+        title: 'Plugin 2',
         description: 'Second plugin',
         author: 'Author 2',
         version: '2.0.0',
@@ -184,7 +184,7 @@ describe(PluginService.name, () => {
 
       await pluginRepo.loadPlugin({
         name: 'multi-plugin',
-        displayName: 'Multi Plugin',
+        title: 'Multi Plugin',
         description: 'Plugin with multiple items',
         author: 'Test Author',
         version: '1.0.0',
@@ -243,7 +243,7 @@ describe(PluginService.name, () => {
 
       const result = await pluginRepo.loadPlugin({
         name: 'single-plugin',
-        displayName: 'Single Plugin',
+        title: 'Single Plugin',
         description: 'A single plugin',
         author: 'Test Author',
         version: '1.0.0',

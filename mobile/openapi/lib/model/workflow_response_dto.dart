@@ -16,7 +16,6 @@ class WorkflowResponseDto {
     this.actions = const [],
     required this.createdAt,
     required this.description,
-    required this.displayName,
     required this.enabled,
     this.filters = const [],
     required this.id,
@@ -31,8 +30,6 @@ class WorkflowResponseDto {
   String createdAt;
 
   String description;
-
-  String displayName;
 
   bool enabled;
 
@@ -53,7 +50,6 @@ class WorkflowResponseDto {
     _deepEquality.equals(other.actions, actions) &&
     other.createdAt == createdAt &&
     other.description == description &&
-    other.displayName == displayName &&
     other.enabled == enabled &&
     _deepEquality.equals(other.filters, filters) &&
     other.id == id &&
@@ -68,7 +64,6 @@ class WorkflowResponseDto {
     (actions.hashCode) +
     (createdAt.hashCode) +
     (description.hashCode) +
-    (displayName.hashCode) +
     (enabled.hashCode) +
     (filters.hashCode) +
     (id.hashCode) +
@@ -78,14 +73,13 @@ class WorkflowResponseDto {
     (triggerType.hashCode);
 
   @override
-  String toString() => 'WorkflowResponseDto[actions=$actions, createdAt=$createdAt, description=$description, displayName=$displayName, enabled=$enabled, filters=$filters, id=$id, name=$name, ownerId=$ownerId, triggerConfig=$triggerConfig, triggerType=$triggerType]';
+  String toString() => 'WorkflowResponseDto[actions=$actions, createdAt=$createdAt, description=$description, enabled=$enabled, filters=$filters, id=$id, name=$name, ownerId=$ownerId, triggerConfig=$triggerConfig, triggerType=$triggerType]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'actions'] = this.actions;
       json[r'createdAt'] = this.createdAt;
       json[r'description'] = this.description;
-      json[r'displayName'] = this.displayName;
       json[r'enabled'] = this.enabled;
       json[r'filters'] = this.filters;
       json[r'id'] = this.id;
@@ -112,7 +106,6 @@ class WorkflowResponseDto {
         actions: WorkflowActionResponseDto.listFromJson(json[r'actions']),
         createdAt: mapValueOfType<String>(json, r'createdAt')!,
         description: mapValueOfType<String>(json, r'description')!,
-        displayName: mapValueOfType<String>(json, r'displayName')!,
         enabled: mapValueOfType<bool>(json, r'enabled')!,
         filters: WorkflowFilterResponseDto.listFromJson(json[r'filters']),
         id: mapValueOfType<String>(json, r'id')!,
@@ -170,7 +163,6 @@ class WorkflowResponseDto {
     'actions',
     'createdAt',
     'description',
-    'displayName',
     'enabled',
     'filters',
     'id',

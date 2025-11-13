@@ -15,7 +15,6 @@ class WorkflowCreateDto {
   WorkflowCreateDto({
     this.actions = const [],
     this.description,
-    required this.displayName,
     this.enabled,
     this.filters = const [],
     required this.name,
@@ -31,8 +30,6 @@ class WorkflowCreateDto {
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
   String? description;
-
-  String displayName;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -52,7 +49,6 @@ class WorkflowCreateDto {
   bool operator ==(Object other) => identical(this, other) || other is WorkflowCreateDto &&
     _deepEquality.equals(other.actions, actions) &&
     other.description == description &&
-    other.displayName == displayName &&
     other.enabled == enabled &&
     _deepEquality.equals(other.filters, filters) &&
     other.name == name &&
@@ -63,14 +59,13 @@ class WorkflowCreateDto {
     // ignore: unnecessary_parenthesis
     (actions.hashCode) +
     (description == null ? 0 : description!.hashCode) +
-    (displayName.hashCode) +
     (enabled == null ? 0 : enabled!.hashCode) +
     (filters.hashCode) +
     (name.hashCode) +
     (triggerType.hashCode);
 
   @override
-  String toString() => 'WorkflowCreateDto[actions=$actions, description=$description, displayName=$displayName, enabled=$enabled, filters=$filters, name=$name, triggerType=$triggerType]';
+  String toString() => 'WorkflowCreateDto[actions=$actions, description=$description, enabled=$enabled, filters=$filters, name=$name, triggerType=$triggerType]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -80,7 +75,6 @@ class WorkflowCreateDto {
     } else {
     //  json[r'description'] = null;
     }
-      json[r'displayName'] = this.displayName;
     if (this.enabled != null) {
       json[r'enabled'] = this.enabled;
     } else {
@@ -103,7 +97,6 @@ class WorkflowCreateDto {
       return WorkflowCreateDto(
         actions: WorkflowActionItemDto.listFromJson(json[r'actions']),
         description: mapValueOfType<String>(json, r'description'),
-        displayName: mapValueOfType<String>(json, r'displayName')!,
         enabled: mapValueOfType<bool>(json, r'enabled'),
         filters: WorkflowFilterItemDto.listFromJson(json[r'filters']),
         name: mapValueOfType<String>(json, r'name')!,
@@ -156,7 +149,6 @@ class WorkflowCreateDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'actions',
-    'displayName',
     'filters',
     'name',
     'triggerType',

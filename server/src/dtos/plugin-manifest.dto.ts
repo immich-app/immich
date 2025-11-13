@@ -82,7 +82,7 @@ export class PluginManifestDto {
 
   @IsString()
   @IsNotEmpty()
-  displayName!: string;
+  title!: string;
 
   @IsString()
   @IsNotEmpty()

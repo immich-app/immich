@@ -950,10 +950,10 @@ export type PluginResponseDto = {
     author: string;
     createdAt: string;
     description: string;
-    displayName: string;
     filters: PluginFilterResponseDto[];
     id: string;
     name: string;
+    title: string;
     updatedAt: string;
     version: string;
 };
@@ -1717,7 +1717,6 @@ export type WorkflowResponseDto = {
     actions: WorkflowActionResponseDto[];
     createdAt: string;
     description: string;
-    displayName: string;
     enabled: boolean;
     filters: WorkflowFilterResponseDto[];
     id: string;
@@ -1737,7 +1736,6 @@ export type WorkflowFilterItemDto = {
 export type WorkflowCreateDto = {
     actions: WorkflowActionItemDto[];
     description?: string;
-    displayName: string;
     enabled?: boolean;
     filters: WorkflowFilterItemDto[];
     name: string;

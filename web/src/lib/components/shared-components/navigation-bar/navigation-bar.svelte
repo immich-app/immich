@@ -13,8 +13,8 @@
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { mobileDevice } from '$lib/stores/mobile-device.svelte';
   import { notificationManager } from '$lib/stores/notification-manager.svelte';
-  import { featureFlags } from '$lib/stores/server-config.store';
   import { sidebarStore } from '$lib/stores/sidebar.svelte';
+  import { featureFlags } from '$lib/stores/system-config-manager.svelte';
   import { user } from '$lib/stores/user.store';
   import { Button, IconButton, Logo } from '@immich/ui';
   import { mdiBellBadge, mdiBellOutline, mdiMagnify, mdiMenu, mdiTrayArrowUp } from '@mdi/js';

@@ -18032,9 +18032,6 @@
           "description": {
             "type": "string"
           },
-          "displayName": {
-            "type": "string"
-          },
           "filters": {
             "items": {
               "$ref": "#/components/schemas/PluginFilterResponseDto"
@@ -18045,6 +18042,9 @@
             "type": "string"
           },
           "name": {
+            "type": "string"
+          },
+          "title": {
             "type": "string"
           },
           "updatedAt": {
@@ -18059,10 +18059,10 @@
           "author",
           "createdAt",
           "description",
-          "displayName",
           "filters",
           "id",
           "name",
+          "title",
           "updatedAt",
           "version"
         ],
@@ -22600,9 +22600,6 @@
           "description": {
             "type": "string"
           },
-          "displayName": {
-            "type": "string"
-          },
           "enabled": {
             "type": "boolean"
           },
@@ -22625,7 +22622,6 @@
         },
         "required": [
           "actions",
-          "displayName",
           "filters",
           "name",
           "triggerType"
@@ -22689,9 +22685,6 @@
           "description": {
             "type": "string"
           },
-          "displayName": {
-            "type": "string"
-          },
           "enabled": {
             "type": "boolean"
           },
@@ -22726,7 +22719,6 @@
           "actions",
           "createdAt",
           "description",
-          "displayName",
           "enabled",
           "filters",
           "id",

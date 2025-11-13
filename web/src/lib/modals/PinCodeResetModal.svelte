@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { featureFlags } from '$lib/stores/server-config.store';
+  import { featureFlags } from '$lib/stores/system-config-manager.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { resetPinCode } from '@immich/sdk';
   import {

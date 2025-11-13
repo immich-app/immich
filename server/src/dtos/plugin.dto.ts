@@ -7,7 +7,7 @@ import { ValidateEnum } from 'src/validation';
 export class PluginResponseDto {
   id!: string;
   name!: string;
-  displayName!: string;
+  title!: string;
   description!: string;
   author!: string;
   version!: string;
@@ -59,7 +59,7 @@ export class PluginInstallDto {
 export type MapPlugin = {
   id: string;
   name: string;
-  displayName: string;
+  title: string;
   description: string;
   author: string;
   version: string;
@@ -74,7 +74,7 @@ export function mapPlugin(plugin: MapPlugin): PluginResponseDto {
   return {
     id: plugin.id,
     name: plugin.name,
-    displayName: plugin.displayName,
+    title: plugin.title,
     description: plugin.description,
     author: plugin.author,
     version: plugin.version,

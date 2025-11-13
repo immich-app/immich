@@ -1,6 +1,6 @@
 <script lang="ts">
   import RadioButton from '$lib/elements/RadioButton.svelte';
-  import { featureFlags } from '$lib/stores/server-config.store';
+  import { featureFlags } from '$lib/stores/system-config-manager.svelte';
   import { t } from 'svelte-i18n';
 
   interface Props {
@@ -72,7 +72,7 @@
 {:else if queryType === 'ocr'}
   <label for="ocr-input" class="immich-form-label">{$t('search_by_ocr')}</label>
   <input
-    class="immich-form-input hover:cursor-text w-full !mt-1"
+    class="immich-form-input hover:cursor-text w-full mt-1!"
     type="text"
     id="ocr-input"
     name="ocr"

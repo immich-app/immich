@@ -21,7 +21,7 @@ export class PluginTable {
   name!: string;
 
   @Column()
-  displayName!: string;
+  title!: string;
 
   @Column()
   description!: string;

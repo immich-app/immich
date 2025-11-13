@@ -17,10 +17,10 @@ class PluginResponseDto {
     required this.author,
     required this.createdAt,
     required this.description,
-    required this.displayName,
     this.filters = const [],
     required this.id,
     required this.name,
+    required this.title,
     required this.updatedAt,
     required this.version,
   });
@@ -33,13 +33,13 @@ class PluginResponseDto {
 
   String description;
 
-  String displayName;
-
   List<PluginFilterResponseDto> filters;
 
   String id;
 
   String name;
+
+  String title;
 
   String updatedAt;
 
@@ -51,10 +51,10 @@ class PluginResponseDto {
     other.author == author &&
     other.createdAt == createdAt &&
     other.description == description &&
-    other.displayName == displayName &&
     _deepEquality.equals(other.filters, filters) &&
     other.id == id &&
     other.name == name &&
+    other.title == title &&
     other.updatedAt == updatedAt &&
     other.version == version;
 
@@ -65,15 +65,15 @@ class PluginResponseDto {
     (author.hashCode) +
     (createdAt.hashCode) +
     (description.hashCode) +
-    (displayName.hashCode) +
     (filters.hashCode) +
     (id.hashCode) +
     (name.hashCode) +
+    (title.hashCode) +
     (updatedAt.hashCode) +
     (version.hashCode);
 
   @override
-  String toString() => 'PluginResponseDto[actions=$actions, author=$author, createdAt=$createdAt, description=$description, displayName=$displayName, filters=$filters, id=$id, name=$name, updatedAt=$updatedAt, version=$version]';
+  String toString() => 'PluginResponseDto[actions=$actions, author=$author, createdAt=$createdAt, description=$description, filters=$filters, id=$id, name=$name, title=$title, updatedAt=$updatedAt, version=$version]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -81,10 +81,10 @@ class PluginResponseDto {
       json[r'author'] = this.author;
       json[r'createdAt'] = this.createdAt;
       json[r'description'] = this.description;
-      json[r'displayName'] = this.displayName;
       json[r'filters'] = this.filters;
       json[r'id'] = this.id;
       json[r'name'] = this.name;
+      json[r'title'] = this.title;
       json[r'updatedAt'] = this.updatedAt;
       json[r'version'] = this.version;
     return json;
@@ -103,10 +103,10 @@ class PluginResponseDto {
         author: mapValueOfType<String>(json, r'author')!,
         createdAt: mapValueOfType<String>(json, r'createdAt')!,
         description: mapValueOfType<String>(json, r'description')!,
-        displayName: mapValueOfType<String>(json, r'displayName')!,
         filters: PluginFilterResponseDto.listFromJson(json[r'filters']),
         id: mapValueOfType<String>(json, r'id')!,
         name: mapValueOfType<String>(json, r'name')!,
+        title: mapValueOfType<String>(json, r'title')!,
         updatedAt: mapValueOfType<String>(json, r'updatedAt')!,
         version: mapValueOfType<String>(json, r'version')!,
       );
@@ -160,10 +160,10 @@ class PluginResponseDto {
     'author',
     'createdAt',
     'description',
-    'displayName',
     'filters',
     'id',
     'name',
+    'title',
     'updatedAt',
     'version',
   };
