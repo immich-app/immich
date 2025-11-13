@@ -9,6 +9,7 @@
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import AssetChangeDateModal from '$lib/modals/AssetChangeDateModal.svelte';
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
+  import { ocrBoxesArray } from '$lib/stores/ocr.store';
   import { boundingBoxesArray } from '$lib/stores/people.store';
   import { locale } from '$lib/stores/preferences.store';
   import { featureFlags } from '$lib/stores/server-config.store';
@@ -19,7 +20,7 @@
   import { getMetadataSearchQuery } from '$lib/utils/metadata-search';
   import { fromISODateTime, fromISODateTimeUTC, toTimelineAsset } from '$lib/utils/timeline-util';
   import { getParentPath } from '$lib/utils/tree-utils';
-  import { AssetMediaSize, getAssetInfo, type AlbumResponseDto, type AssetResponseDto } from '@immich/sdk';
+  import { AssetMediaSize, getAssetInfo, getAssetOcr, type AlbumResponseDto, type AssetResponseDto } from '@immich/sdk';
   import { Icon, IconButton, LoadingSpinner, modalManager } from '@immich/ui';
   import {
     mdiCalendar,
@@ -31,6 +32,7 @@
     mdiInformationOutline,
     mdiPencil,
     mdiPlus,
+    mdiTextBox,
   } from '@mdi/js';
   import { DateTime } from 'luxon';
   import { t } from 'svelte-i18n';
@@ -51,6 +53,8 @@
 
   let showAssetPath = $state(false);
   let showEditFaces = $state(false);
+  let showOcrTexts = $state(false);
+  let ocrData = $state<Awaited<ReturnType<typeof getAssetOcr>>>([]);
   let isOwner = $derived($user?.id === asset.ownerId);
   let people = $derived(asset.people || []);
   let unassignedFaces = $derived(asset.unassignedFaces || []);
@@ -80,6 +84,8 @@
     if (asset.id !== previousId) {
       showEditFaces = false;
       previousId = asset.id;
+      showOcrTexts = false;
+      ocrData = [];
     }
   });
 
@@ -114,6 +120,25 @@
     }
 
     await modalManager.show(AssetChangeDateModal, { asset: toTimelineAsset(asset), initialDate: dateTime });
+  };
+
+  const toggleOcrTexts = async () => {
+    showOcrTexts = !showOcrTexts;
+    if (showOcrTexts && ocrData.length === 0) {
+      try {
+        ocrData = await getAssetOcr({ id: asset.id });
+        ocrData.reverse(); // make the texts appear in the top-down order
+        $ocrBoxesArray = ocrData;
+      } catch (error) {
+        console.error('Failed to load OCR data:', error);
+      }
+    } else if (showOcrTexts) {
+      // If data is already loaded, display all boxes
+      $ocrBoxesArray = ocrData;
+    } else {
+      // Clear when hidden
+      $ocrBoxesArray = [];
+    }
   };
 </script>
 
@@ -255,6 +280,64 @@
           {/if}
         {/each}
       </div>
+    </section>
+  {/if}
+
+  {#if !authManager.isSharedLink}
+    <section class="px-4 pt-4 text-sm">
+      <div class="flex h-10 w-full items-center justify-between">
+        <h2 class="uppercase">{$t('ocr_text')}</h2>
+        <div class="flex gap-2 items-center">
+          {#if ocrData.length > 0}
+            <IconButton
+              aria-label={showOcrTexts ? $t('hide_ocr_boxes') : $t('show_ocr_boxes')}
+              icon={showOcrTexts ? mdiEyeOff : mdiEye}
+              size="medium"
+              shape="round"
+              color="secondary"
+              variant="ghost"
+              onclick={toggleOcrTexts}
+            />
+          {:else}
+            <IconButton
+              aria-label={$t('load_ocr_data')}
+              icon={mdiTextBox}
+              size="medium"
+              shape="round"
+              color="secondary"
+              variant="ghost"
+              onclick={toggleOcrTexts}
+            />
+          {/if}
+        </div>
+      </div>
+
+      {#if showOcrTexts}
+        <div class="mt-2" transition:slide={{ duration: 250 }}>
+          {#if ocrData.length > 0}
+            <div class="flex flex-col">
+              {#each ocrData as ocr, index (ocr.id)}
+                <button
+                  type="button"
+                  class="text-start p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors select-text"
+                  onfocus={() => ($ocrBoxesArray = [ocr])}
+                  onblur={() => ($ocrBoxesArray = [])}
+                  onmouseover={() => ($ocrBoxesArray = [ocr])}
+                  onmouseleave={() => ($ocrBoxesArray = ocrData)}
+                >
+                  <div class="flex items-start gap-2">
+                    <div class="flex-1 min-w-0">
+                      <p class="break-words text-sm">{ocr.text}</p>
+                    </div>
+                  </div>
+                </button>
+              {/each}
+            </div>
+          {:else}
+            <p class="text-sm text-gray-500 dark:text-gray-400">{$t('no_ocr_data')}</p>
+          {/if}
+        </div>
+      {/if}
     </section>
   {/if}
 

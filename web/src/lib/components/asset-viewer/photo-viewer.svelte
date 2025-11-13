@@ -8,6 +8,7 @@
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import { photoViewerImgElement } from '$lib/stores/assets-store.svelte';
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
+  import { ocrBoxesArray } from '$lib/stores/ocr.store';
   import { boundingBoxesArray } from '$lib/stores/people.store';
   import { alwaysLoadOriginalFile } from '$lib/stores/preferences.store';
   import { SlideshowLook, SlideshowState, slideshowLookCssMapping, slideshowStore } from '$lib/stores/slideshow.store';
@@ -15,7 +16,8 @@
   import { getAssetOriginalUrl, getAssetThumbnailUrl, handlePromiseError } from '$lib/utils';
   import { canCopyImageToClipboard, copyImageToClipboard, isWebCompatibleImage } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
-  import { getBoundingBox } from '$lib/utils/people-utils';
+  import { getOcrBoundingBox } from '$lib/utils/ocr-utils';
+  import { getFaceBoundingBox } from '$lib/utils/people-utils';
   import { cancelImageUrl } from '$lib/utils/sw-messaging';
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
@@ -69,6 +71,7 @@
 
   onDestroy(() => {
     $boundingBoxesArray = [];
+    $ocrBoxesArray = [];
   });
 
   const preload = (targetSize: AssetMediaSize | 'original', preloadAssets?: TimelineAsset[]) => {
@@ -201,6 +204,14 @@
 
   let containerWidth = $state(0);
   let containerHeight = $state(0);
+
+  // // Recompute box positions whenever container size changes to handle layout shifts
+  const ocrDisplayBoxes = $derived.by(() => {
+    // create explicit dependencies on container dimensions
+    void containerWidth;
+    void containerHeight;
+    return getOcrBoundingBox($ocrBoxesArray, $photoZoomState, $photoViewerImgElement);
+  });
 </script>
 
 <svelte:document
@@ -254,13 +265,54 @@
           : slideshowLookCssMapping[$slideshowLook]}"
         draggable="false"
       />
+      <!-- Face bounding boxes -->
       <!-- eslint-disable-next-line svelte/require-each-key -->
-      {#each getBoundingBox($boundingBoxesArray, $photoZoomState, $photoViewerImgElement) as boundingbox}
+      {#each getFaceBoundingBox($boundingBoxesArray, $photoZoomState, $photoViewerImgElement) as boundingbox}
         <div
           class="absolute border-solid border-white border-3 rounded-lg"
           style="top: {boundingbox.top}px; left: {boundingbox.left}px; height: {boundingbox.height}px; width: {boundingbox.width}px;"
         ></div>
       {/each}
+
+      <!-- OCR text bounding boxes -->
+      {#each ocrDisplayBoxes as ocrbox}
+        <div
+          class="absolute border-solid border-yellow-400 border-2 rounded"
+          style="top: {ocrbox.top}px; left: {ocrbox.left}px; height: {ocrbox.height}px; width: {ocrbox.width}px;"
+          title="{ocrbox.text} (box: {(ocrbox.boxScore * 100).toFixed(1)}%, text: {(ocrbox.textScore * 100).toFixed(
+            1,
+          )}%)"
+        ></div>
+      {/each}
+
+      <!-- OCR overlay mask for focused boxes -->
+      {#if $ocrBoxesArray.length === 1}
+        {@const focusedBox = ocrDisplayBoxes[0]}
+        {#if focusedBox}
+          <!-- Top mask -->
+          <div
+            class="absolute inset-x-0 top-0 pointer-events-none bg-black/60"
+            style="height: {focusedBox.top}px;"
+          ></div>
+          <!-- Bottom mask -->
+          <div
+            class="absolute inset-x-0 bottom-0 pointer-events-none bg-black/60"
+            style="height: {containerHeight - focusedBox.top - focusedBox.height}px;"
+          ></div>
+          <!-- Left mask -->
+          <div
+            class="absolute left-0 pointer-events-none bg-black/60"
+            style="top: {focusedBox.top}px; width: {focusedBox.left}px; height: {focusedBox.height}px;"
+          ></div>
+          <!-- Right mask -->
+          <div
+            class="absolute right-0 pointer-events-none bg-black/60"
+            style="top: {focusedBox.top}px; width: {containerWidth -
+              focusedBox.left -
+              focusedBox.width}px; height: {focusedBox.height}px;"
+          ></div>
+        {/if}
+      {/if}
     </div>
 
     {#if isFaceEditMode.value}
