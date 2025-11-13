@@ -2,7 +2,7 @@ import { SetMetadata, applyDecorators } from '@nestjs/common';
 import { ApiExtension, ApiOperation, ApiOperationOptions, ApiProperty, ApiTags } from '@nestjs/swagger';
 import _ from 'lodash';
 import { ADDED_IN_PREFIX, DEPRECATED_IN_PREFIX, LIFECYCLE_EXTENSION } from 'src/constants';
-import { ImmichWorker, JobName, MetadataKey, QueueName } from 'src/enum';
+import { ApiTag, ImmichWorker, JobName, MetadataKey, QueueName } from 'src/enum';
 import { EmitEvent } from 'src/repositories/event.repository';
 import { immich_uuid_v7, updated_at } from 'src/schema/functions';
 import { BeforeUpdateTrigger, Column, ColumnOptions } from 'src/sql-tools';
@@ -168,7 +168,7 @@ export const EndpointLifecycle = ({
   const decorators: MethodDecorator[] = [ApiExtension(LIFECYCLE_EXTENSION, { addedAt, deprecatedAt })];
   if (deprecatedAt) {
     decorators.push(
-      ApiTags('Deprecated'),
+      ApiTags(ApiTag.Deprecated),
       ApiOperation({
         deprecated: true,
         description: DEPRECATED_IN_PREFIX + deprecatedAt + (description ? `. ${description}` : ''),

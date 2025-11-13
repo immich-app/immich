@@ -6,7 +6,7 @@ from PIL import Image
 from rapidocr.ch_ppocr_rec import TextRecInput
 from rapidocr.ch_ppocr_rec import TextRecognizer as RapidTextRecognizer
 from rapidocr.inference_engine.base import FileInfo, InferSession
-from rapidocr.utils import DownloadFile, DownloadFileInput
+from rapidocr.utils.download_file import DownloadFile, DownloadFileInput
 from rapidocr.utils.typings import EngineType, LangRec, OCRVersion, TaskType
 from rapidocr.utils.typings import ModelType as RapidModelType
 from rapidocr.utils.vis_res import VisRes

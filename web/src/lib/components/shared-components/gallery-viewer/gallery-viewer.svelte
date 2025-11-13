@@ -99,7 +99,7 @@
   let scrollTop = $state(0);
   let slidingWindow = $derived.by(() => {
     const top = (scrollTop || 0) - slidingWindowOffset;
-    const bottom = top + viewport.height;
+    const bottom = top + viewport.height + slidingWindowOffset;
     return {
       top,
       bottom,

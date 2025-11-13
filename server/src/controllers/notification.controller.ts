@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Put, Query } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
   NotificationDeleteAllDto,
@@ -8,18 +8,22 @@ import {
   NotificationUpdateAllDto,
   NotificationUpdateDto,
 } from 'src/dtos/notification.dto';
-import { Permission } from 'src/enum';
+import { ApiTag, Permission } from 'src/enum';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { NotificationService } from 'src/services/notification.service';
 import { UUIDParamDto } from 'src/validation';
 
-@ApiTags('Notifications')
+@ApiTags(ApiTag.Notifications)
 @Controller('notifications')
 export class NotificationController {
   constructor(private service: NotificationService) {}
 
   @Get()
   @Authenticated({ permission: Permission.NotificationRead })
+  @ApiOperation({
+    summary: 'Retrieve notifications',
+    description: 'Retrieve a list of notifications.',
+  })
   getNotifications(@Auth() auth: AuthDto, @Query() dto: NotificationSearchDto): Promise<NotificationDto[]> {
     return this.service.search(auth, dto);
   }
@@ -27,6 +31,10 @@ export class NotificationController {
   @Put()
   @Authenticated({ permission: Permission.NotificationUpdate })
   @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({
+    summary: 'Update notifications',
+    description: 'Update a list of notifications. Allows to bulk-set the read status of notifications.',
+  })
   updateNotifications(@Auth() auth: AuthDto, @Body() dto: NotificationUpdateAllDto): Promise<void> {
     return this.service.updateAll(auth, dto);
   }
@@ -34,18 +42,30 @@ export class NotificationController {
   @Delete()
   @Authenticated({ permission: Permission.NotificationDelete })
   @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({
+    summary: 'Delete notifications',
+    description: 'Delete a list of notifications at once.',
+  })
   deleteNotifications(@Auth() auth: AuthDto, @Body() dto: NotificationDeleteAllDto): Promise<void> {
     return this.service.deleteAll(auth, dto);
   }
 
   @Get(':id')
   @Authenticated({ permission: Permission.NotificationRead })
+  @ApiOperation({
+    summary: 'Get a notification',
+    description: 'Retrieve a specific notification identified by id.',
+  })
   getNotification(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<NotificationDto> {
     return this.service.get(auth, id);
   }
 
   @Put(':id')
   @Authenticated({ permission: Permission.NotificationUpdate })
+  @ApiOperation({
+    summary: 'Update a notification',
+    description: 'Update a specific notification to set its read status.',
+  })
   updateNotification(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
@@ -57,6 +77,10 @@ export class NotificationController {
   @Delete(':id')
   @Authenticated({ permission: Permission.NotificationDelete })
   @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({
+    summary: 'Delete a notification',
+    description: 'Delete a specific notification.',
+  })
   deleteNotification(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<void> {
     return this.service.delete(auth, id);
   }
