@@ -274,6 +274,7 @@ make test-medium-dev    # End-to-end tests
 # Server tests
 cd /workspaces/immich/server
 pnpm test                # Run all tests
+pnpm run test:medium    # Medium tests (integration tests)
 pnpm run test:watch     # Watch mode
 pnpm run test:cov       # Coverage report
 
