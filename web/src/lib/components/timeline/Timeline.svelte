@@ -205,12 +205,10 @@
     }
     const scrollTarget = $gridScrollTarget?.at;
     let scrolled = false;
-    console.log(scrollTarget, scrolled);
     if (scrollTarget) {
       scrolled = await scrollAndLoadAsset(scrollTarget);
     }
     if (!scrolled) {
-      console.log('scrolling?');
       // if the asset is not found, scroll to the top
       timelineManager.scrollTo(0);
     }
@@ -226,7 +224,6 @@
   // and a new route is being navigated to. It will never be called on direct
   // navigations by the browser.
   beforeNavigate(({ from, to }) => {
-    console.log('before navigate');
     timelineManager.suspendTransitions = true;
     const isNavigatingToAssetViewer = isAssetViewerRoute(to);
     const isNavigatingFromAssetViewer = isAssetViewerRoute(from);
