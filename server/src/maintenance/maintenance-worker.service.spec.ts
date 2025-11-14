@@ -115,7 +115,11 @@ describe(MaintenanceWorkerService.name, () => {
         isMaintenanceMode: false,
       });
 
-      expect(maintenanceWorkerRepositoryMock.restartApp).toHaveBeenCalledWith({
+      expect(maintenanceWorkerRepositoryMock.clientBroadcast).toHaveBeenCalledWith('AppRestartV1', {
+        isMaintenanceMode: false,
+      });
+
+      expect(maintenanceWorkerRepositoryMock.serverSend).toHaveBeenCalledWith('AppRestart', {
         isMaintenanceMode: false,
       });
     });

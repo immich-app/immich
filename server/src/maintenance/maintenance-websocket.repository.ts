@@ -8,7 +8,7 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { AppRepository } from 'src/repositories/app.repository';
-import { AppRestartEvent } from 'src/repositories/event.repository';
+import { AppRestartEvent, ArgsOf } from 'src/repositories/event.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 
 export const serverEvents = ['AppRestart'] as const;
@@ -30,23 +30,23 @@ export class MaintenanceWebsocketRepository implements OnGatewayConnection, OnGa
 
   constructor(
     private logger: LoggingRepository,
-    private maintenanceRepository: AppRepository,
+    private appRepository: AppRepository,
   ) {
     this.logger.setContext(MaintenanceWebsocketRepository.name);
   }
 
   afterInit(websocketServer: Server) {
     this.logger.log('Initialized websocket server');
-    websocketServer.on('AppRestart', () => this.maintenanceRepository.exitApp());
+    websocketServer.on('AppRestart', () => this.appRepository.exitApp());
   }
 
-  restartApp(state: AppRestartEvent) {
-    // => corresponds to notification.service.ts#onAppRestart
-    this.websocketServer?.emit('AppRestartV1', state, () => {
-      this.websocketServer!.serverSideEmit('AppRestart', state, () => {
-        this.maintenanceRepository.exitApp();
-      });
-    });
+  clientBroadcast<T extends keyof ClientEventMap>(event: T, ...data: ClientEventMap[T]) {
+    this.websocketServer?.emit(event, ...data);
+  }
+
+  serverSend<T extends ServerEvents>(event: T, ...args: ArgsOf<T>): void {
+    this.logger.debug(`Server event: ${event} (send)`);
+    this.websocketServer?.serverSideEmit(event, ...args);
   }
 
   handleConnection(client: Socket) {
