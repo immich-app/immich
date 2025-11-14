@@ -62,11 +62,11 @@ class MoveToTrashActionButton extends ConsumerWidget {
     final result = await actionNotifier.resolveRemoteTrash(source, allow: true);
     multiSelectNotifier.reset();
 
-    //todo PeterO
-    debugPrint('MoveToTrashActionButton, source: $source');
     if (source == ActionSource.viewer) {
-      EventStream.shared.emit(const ViewerReloadAssetEvent());
-      EventStream.shared.emit(const TimelineReloadEvent());
+      Future.delayed(Durations.medium4, () {
+        EventStream.shared.emit(const ViewerReloadAssetEvent());
+        EventStream.shared.emit(const TimelineReloadEvent());
+      });
     }
 
     if (context.mounted) {

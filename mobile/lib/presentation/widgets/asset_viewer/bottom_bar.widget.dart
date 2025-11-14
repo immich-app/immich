@@ -58,7 +58,7 @@ class ViewerBottomBar extends ConsumerWidget {
     }
 
     final actions = <Widget>[
-      if (isSyncTrashTimeline && isWaitingForSyncApproval) ...[
+      if (isSyncTrashTimeline) ...[
         const KeepOnDeviceActionButton(source: ActionSource.viewer, isPreview: true),
         const MoveToTrashActionButton(source: ActionSource.viewer, isPreview: true),
       ] else ...[
@@ -77,8 +77,9 @@ class ViewerBottomBar extends ConsumerWidget {
         if (isWaitingForSyncApproval) ...[
           DecoratedBox(
             decoration: BoxDecoration(
-            border: Border.all(color: const Color.fromARGB(155, 243, 188, 106), width: 0.5),
-            borderRadius: const BorderRadius.all(Radius.circular(24)),),
+              border: Border.all(color: const Color.fromARGB(155, 243, 188, 106), width: 0.5),
+              borderRadius: const BorderRadius.all(Radius.circular(24)),
+            ),
             child: Column(
               children: [
                 const Text('asset_out_of_sync_trash_confirmation_title').tr(),

@@ -529,6 +529,7 @@
   "asset_out_of_sync_trash_confirmation_text": "Move selected assets to your device trash?",
   "asset_out_of_sync_trash_confirmation_title": "Sync trash change",
   "asset_out_of_sync_trash_subtitle": "Assets moved to the Immich cloud trash: choose to move them to local trash or keep them on this device.",
+  "asset_out_of_sync_trash_subtitle_result": "Nothing left to review — all decisions applied.",
   "asset_restored_successfully": "Asset restored successfully",
   "asset_skipped": "Skipped",
   "asset_skipped_in_trash": "In trash",

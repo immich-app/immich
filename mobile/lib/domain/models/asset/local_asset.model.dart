@@ -4,6 +4,7 @@ class LocalAsset extends BaseAsset {
   final String id;
   final String? remoteAssetId;
   final int orientation;
+  final DateTime? remoteDeletedAt; // could be used for ThumbnailImage widget, PeterO
 
   const LocalAsset({
     required this.id,
@@ -19,6 +20,7 @@ class LocalAsset extends BaseAsset {
     super.isFavorite = false,
     super.livePhotoVideoId,
     this.orientation = 0,
+    this.remoteDeletedAt,
   }) : remoteAssetId = remoteId;
 
   @override

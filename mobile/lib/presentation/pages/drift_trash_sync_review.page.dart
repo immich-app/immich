@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/trash_sync_bottom_bar.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
@@ -17,13 +18,10 @@ class DriftTrashSyncReviewPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final router = context.router;
 
-    final assets = ref.read(pendingApprovalChecksumsProvider).value;
-    debugPrint('DriftTrashSyncReviewPage, assets: $assets');
     ref.listen(outOfSyncCountProvider, (previous, next) {
       final prevCount = previous?.asData?.value ?? 0;
       final nextCount = next.asData?.value;
-      //todo PeterO
-      debugPrint('DriftTrashSyncReviewPage, $prevCount -> $nextCount, previous?.asData?.value: ${previous?.asData?.value}, next.asData?.value: ${next.asData?.value}');
+
       if (prevCount > 0 && nextCount == 0) {
         WidgetsBinding.instance.addPostFrameCallback((_) async {
           await Future.delayed(const Duration(milliseconds: 1600));
@@ -46,7 +44,6 @@ class DriftTrashSyncReviewPage extends ConsumerWidget {
         }),
       ],
       child: Timeline(
-        showStorageIndicator: true,
         appBar: SliverAppBar(
           title: Text('asset_out_of_sync_title'.tr()),
           floating: true,
@@ -56,15 +53,26 @@ class DriftTrashSyncReviewPage extends ConsumerWidget {
           elevation: 0,
         ),
         topSliverWidgetHeight: 24,
-        topSliverWidget: Consumer(
-          builder: (context, ref, child) {
-            return SliverPadding(
-              padding: const EdgeInsets.all(16.0),
-              sliver: SliverToBoxAdapter(
-                child: SizedBox(height: 72.0, child: const Text("asset_out_of_sync_trash_subtitle").tr()),
+        topSliverWidget: SliverPadding(
+          padding: const EdgeInsets.all(16.0),
+          sliver: SliverToBoxAdapter(
+            child: SizedBox(
+              height: 72.0,
+              child: Consumer(
+                builder: (context, ref, _) {
+                  final outOfSyncCount = ref.watch(outOfSyncCountProvider).maybeWhen(data: (v) => v, orElse: () => 0);
+                  return outOfSyncCount > 0
+                      ? const Text('asset_out_of_sync_trash_subtitle').tr()
+                      : Center(
+                          child: Text(
+                            'asset_out_of_sync_trash_subtitle_result',
+                            style: context.textTheme.bodyLarge,
+                          ).tr(),
+                        );
+                },
               ),
-            );
-          },
+            ),
+          ),
         ),
         bottomSheet: const TrashSyncBottomBar(),
       ),
