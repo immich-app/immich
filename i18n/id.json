@@ -1035,7 +1035,9 @@
     "unable_to_update_settings": "Tidak dapat memperbarui pengaturan",
     "unable_to_update_timeline_display_status": "Tidak dapat memperbarui status penampilan lini masa",
     "unable_to_update_user": "Tidak dapat memperbarui pengguna",
-    "unable_to_upload_file": "Tidak dapat mengunggah berkas"
+    "unable_to_upload_file": "Tidak dapat mengunggah berkas",
+    "unable_to_add_to_album": "Unable to add assets to album",
+    "unable_to_load_albums": "Unable to load albums"
   },
   "exif": "EXIF",
   "exif_bottom_sheet_description": "Tambahkan Deskripsi...",
@@ -2130,5 +2132,10 @@
   "you_dont_have_any_shared_links": "Anda tidak memiliki tautan terbagi",
   "your_wifi_name": "Nama Wi-Fi Anda",
   "zoom_image": "Perbesar Gambar",
-  "zoom_to_bounds": "Perbesar ke batas"
+  "zoom_to_bounds": "Perbesar ke batas",
+  "add_to_menu_no_selection": "Select assets to use Add to",
+  "add_to_menu_locked_assets_disabled": "Add to is unavailable for locked assets",
+  "add_to_menu_no_albums": "No albums available",
+  "add_to_menu_create_placeholder": "New album name",
+  "add_to_menu_partial_selection": "{count}/{total} selected"
 }

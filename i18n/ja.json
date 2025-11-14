@@ -1029,7 +1029,9 @@
     "unable_to_update_settings": "設定を更新できません",
     "unable_to_update_timeline_display_status": "タイムラインでの表示の設定状態を更新できません",
     "unable_to_update_user": "ユーザーを更新できません",
-    "unable_to_upload_file": "ファイルをアップロードできません"
+    "unable_to_upload_file": "ファイルをアップロードできません",
+    "unable_to_add_to_album": "Unable to add assets to album",
+    "unable_to_load_albums": "Unable to load albums"
   },
   "exif": "Exif",
   "exif_bottom_sheet_description": "説明を追加",
@@ -2124,5 +2126,10 @@
   "you_dont_have_any_shared_links": "共有リンクはありません",
   "your_wifi_name": "Wi-Fiの名前(SSID)",
   "zoom_image": "画像を拡大",
-  "zoom_to_bounds": "画面端までズーム"
+  "zoom_to_bounds": "画面端までズーム",
+  "add_to_menu_no_selection": "Select assets to use Add to",
+  "add_to_menu_locked_assets_disabled": "Add to is unavailable for locked assets",
+  "add_to_menu_no_albums": "No albums available",
+  "add_to_menu_create_placeholder": "New album name",
+  "add_to_menu_partial_selection": "{count}/{total} selected"
 }

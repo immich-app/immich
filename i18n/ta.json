@@ -1054,7 +1054,9 @@
     "unable_to_update_settings": "அமைப்புகளை புதுப்பிக்க முடியவில்லை",
     "unable_to_update_timeline_display_status": "காலவரிசை காட்சி நிலையை புதுப்பிக்க முடியவில்லை",
     "unable_to_update_user": "பயனரைப் புதுப்பிக்க முடியவில்லை",
-    "unable_to_upload_file": "கோப்பைப் பதிவேற்ற முடியவில்லை"
+    "unable_to_upload_file": "கோப்பைப் பதிவேற்ற முடியவில்லை",
+    "unable_to_add_to_album": "Unable to add assets to album",
+    "unable_to_load_albums": "Unable to load albums"
   },
   "exif": "Exif",
   "exif_bottom_sheet_description": "விளக்கத்தைச் சேர்க்கவும் ...",
@@ -2174,5 +2176,10 @@
   "you_dont_have_any_shared_links": "உங்களிடம் பகிரப்பட்ட இணைப்புகள் எதுவும் இல்லை",
   "your_wifi_name": "உங்கள் வைஃபை பெயர்",
   "zoom_image": "பெரிதாக்க படம்",
-  "zoom_to_bounds": "எல்லைக்கு பெரிதாக்கு"
+  "zoom_to_bounds": "எல்லைக்கு பெரிதாக்கு",
+  "add_to_menu_no_selection": "Select assets to use Add to",
+  "add_to_menu_locked_assets_disabled": "Add to is unavailable for locked assets",
+  "add_to_menu_no_albums": "No albums available",
+  "add_to_menu_create_placeholder": "New album name",
+  "add_to_menu_partial_selection": "{count}/{total} selected"
 }

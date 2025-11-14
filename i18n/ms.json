@@ -444,5 +444,14 @@
   "yes": "Ya",
   "you_dont_have_any_shared_links": "Anda tidak mempunyai apa-apa pautan yang dikongsi",
   "your_wifi_name": "Nama Wi-Fi anda",
-  "zoom_image": "Zum Gambar"
+  "zoom_image": "Zum Gambar",
+  "add_to_menu_no_selection": "Select assets to use Add to",
+  "add_to_menu_locked_assets_disabled": "Add to is unavailable for locked assets",
+  "add_to_menu_no_albums": "No albums available",
+  "add_to_menu_create_placeholder": "New album name",
+  "add_to_menu_partial_selection": "{count}/{total} selected",
+  "errors": {
+    "unable_to_add_to_album": "Unable to add assets to album",
+    "unable_to_load_albums": "Unable to load albums"
+  }
 }

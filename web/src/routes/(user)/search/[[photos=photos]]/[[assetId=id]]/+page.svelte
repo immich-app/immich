@@ -7,7 +7,7 @@
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
   import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
   import SearchBar from '$lib/components/shared-components/search-bar/search-bar.svelte';
-  import AddToAlbum from '$lib/components/timeline/actions/AddToAlbumAction.svelte';
+  import AddToMenuContent from '$lib/components/add-to/AddToMenuContent.svelte';
   import ArchiveAction from '$lib/components/timeline/actions/ArchiveAction.svelte';
   import AssetJobActions from '$lib/components/timeline/actions/AssetJobActions.svelte';
   import ChangeDate from '$lib/components/timeline/actions/ChangeDateAction.svelte';
@@ -275,8 +275,12 @@
           onclick={handleSelectAll}
         />
         <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
-          <AddToAlbum {onAddToAlbum} />
-          <AddToAlbum shared {onAddToAlbum} />
+          <AddToMenuContent assets={assetInteraction.selectedAssets} onAssetsAdded={onAddToAlbum} />
+          <li><hr /></li>
+          <ArchiveAction menuItem unarchive={assetInteraction.isAllArchived} />
+          {#if assetInteraction.isAllUserOwned}
+            <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />
+          {/if}
         </ButtonContextMenu>
         <FavoriteAction
           removeFavorite={assetInteraction.isAllFavorite}
@@ -294,7 +298,6 @@
           <DownloadAction menuItem />
           <ChangeDate menuItem />
           <ChangeLocation menuItem />
-          <ArchiveAction menuItem unarchive={assetInteraction.isAllArchived} />
           {#if $preferences.tags.enabled && assetInteraction.isAllUserOwned}
             <TagAction menuItem />
           {/if}
@@ -416,8 +419,12 @@
             onclick={handleSelectAll}
           />
           <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
-            <AddToAlbum {onAddToAlbum} />
-            <AddToAlbum shared {onAddToAlbum} />
+            <AddToMenuContent assets={assetInteraction.selectedAssets} onAssetsAdded={onAddToAlbum} />
+            <li><hr /></li>
+            <ArchiveAction menuItem unarchive={assetInteraction.isAllArchived} />
+            {#if assetInteraction.isAllUserOwned}
+              <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />
+            {/if}
           </ButtonContextMenu>
           <FavoriteAction
             removeFavorite={assetInteraction.isAllFavorite}
@@ -436,10 +443,6 @@
             <ChangeDate menuItem />
             <ChangeDescription menuItem />
             <ChangeLocation menuItem />
-            <ArchiveAction menuItem unarchive={assetInteraction.isAllArchived} />
-            {#if assetInteraction.isAllUserOwned}
-              <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />
-            {/if}
             {#if $preferences.tags.enabled && assetInteraction.isAllUserOwned}
               <TagAction menuItem />
             {/if}

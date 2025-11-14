@@ -1054,7 +1054,9 @@
     "unable_to_update_settings": "Die Einstellungen konnten nicht aktualisiert werden",
     "unable_to_update_timeline_display_status": "Status der Zeitleistenanzeige konnte nicht aktualisiert werden",
     "unable_to_update_user": "Der Nutzer konnte nicht aktualisiert werden",
-    "unable_to_upload_file": "Datei konnte nicht hochgeladen werden"
+    "unable_to_upload_file": "Datei konnte nicht hochgeladen werden",
+    "unable_to_add_to_album": "Unable to add assets to album",
+    "unable_to_load_albums": "Unable to load albums"
   },
   "exif": "EXIF",
   "exif_bottom_sheet_description": "Beschreibung hinzufügen...",
@@ -2174,5 +2176,10 @@
   "you_dont_have_any_shared_links": "Du hast keine geteilten Links",
   "your_wifi_name": "Dein WLAN-Name",
   "zoom_image": "Bild vergrößern",
-  "zoom_to_bounds": "In die Grenzen zoomen"
+  "zoom_to_bounds": "In die Grenzen zoomen",
+  "add_to_menu_no_selection": "Select assets to use Add to",
+  "add_to_menu_locked_assets_disabled": "Add to is unavailable for locked assets",
+  "add_to_menu_no_albums": "No albums available",
+  "add_to_menu_create_placeholder": "New album name",
+  "add_to_menu_partial_selection": "{count}/{total} selected"
 }
