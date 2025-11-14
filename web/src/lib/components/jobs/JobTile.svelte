@@ -1,7 +1,7 @@
 <script lang="ts">
   import Badge from '$lib/elements/Badge.svelte';
   import { locale } from '$lib/stores/preferences.store';
-  import { JobCommand, type JobCommandDto, type JobCountsDto, type QueueStatusDto } from '@immich/sdk';
+  import { QueueCommand, type QueueCommandDto, type QueueStatisticsDto, type QueueStatusDto } from '@immich/sdk';
   import { Icon, IconButton } from '@immich/ui';
   import {
     mdiAlertCircle,
@@ -22,21 +22,21 @@
     title: string;
     subtitle: string | undefined;
     description: Component | undefined;
-    jobCounts: JobCountsDto;
+    statistics: QueueStatisticsDto;
     queueStatus: QueueStatusDto;
     icon: string;
     disabled?: boolean;
     allText: string | undefined;
     refreshText: string | undefined;
     missingText: string;
-    onCommand: (command: JobCommandDto) => void;
+    onCommand: (command: QueueCommandDto) => void;
   }
 
   let {
     title,
     subtitle,
     description,
-    jobCounts,
+    statistics,
     queueStatus,
     icon,
     disabled = false,
@@ -46,7 +46,7 @@
     onCommand,
   }: Props = $props();
 
-  let waitingCount = $derived(jobCounts.waiting + jobCounts.paused + jobCounts.delayed);
+  let waitingCount = $derived(statistics.waiting + statistics.paused + statistics.delayed);
   let isIdle = $derived(!queueStatus.isActive && !queueStatus.isPaused);
   let multipleButtons = $derived(allText || refreshText);
 
@@ -67,11 +67,11 @@
           <span class="uppercase">{title}</span>
         </span>
         <div class="flex gap-2">
-          {#if jobCounts.failed > 0}
+          {#if statistics.failed > 0}
             <Badge>
               <div class="flex flex-row gap-1">
                 <span class="text-sm">
-                  {$t('admin.jobs_failed', { values: { jobCount: jobCounts.failed.toLocaleString($locale) } })}
+                  {$t('admin.jobs_failed', { values: { jobCount: statistics.failed.toLocaleString($locale) } })}
                 </span>
                 <IconButton
                   color="primary"
@@ -79,15 +79,15 @@
                   aria-label={$t('clear_message')}
                   size="tiny"
                   shape="round"
-                  onclick={() => onCommand({ command: JobCommand.ClearFailed, force: false })}
+                  onclick={() => onCommand({ command: QueueCommand.ClearFailed, force: false })}
                 />
               </div>
             </Badge>
           {/if}
-          {#if jobCounts.delayed > 0}
+          {#if statistics.delayed > 0}
             <Badge>
               <span class="text-sm">
-                {$t('admin.jobs_delayed', { values: { jobCount: jobCounts.delayed.toLocaleString($locale) } })}
+                {$t('admin.jobs_delayed', { values: { jobCount: statistics.delayed.toLocaleString($locale) } })}
               </span>
             </Badge>
           {/if}
@@ -111,7 +111,7 @@
         >
           <p>{$t('active')}</p>
           <p class="text-2xl">
-            {jobCounts.active.toLocaleString($locale)}
+            {statistics.active.toLocaleString($locale)}
           </p>
         </div>
 
@@ -131,7 +131,7 @@
       <JobTileButton
         disabled={true}
         color="light-gray"
-        onClick={() => onCommand({ command: JobCommand.Start, force: false })}
+        onClick={() => onCommand({ command: QueueCommand.Start, force: false })}
       >
         <Icon icon={mdiAlertCircle} size="36" />
         <span class="uppercase">{$t('disabled')}</span>
@@ -140,20 +140,20 @@
 
     {#if !disabled && !isIdle}
       {#if waitingCount > 0}
-        <JobTileButton color="gray" onClick={() => onCommand({ command: JobCommand.Empty, force: false })}>
+        <JobTileButton color="gray" onClick={() => onCommand({ command: QueueCommand.Empty, force: false })}>
           <Icon icon={mdiClose} size="24" />
           <span class="uppercase">{$t('clear')}</span>
         </JobTileButton>
       {/if}
       {#if queueStatus.isPaused}
         {@const size = waitingCount > 0 ? '24' : '48'}
-        <JobTileButton color="light-gray" onClick={() => onCommand({ command: JobCommand.Resume, force: false })}>
+        <JobTileButton color="light-gray" onClick={() => onCommand({ command: QueueCommand.Resume, force: false })}>
           <!-- size property is not reactive, so have to use width and height -->
           <Icon icon={mdiFastForward} {size} />
           <span class="uppercase">{$t('resume')}</span>
         </JobTileButton>
       {:else}
-        <JobTileButton color="light-gray" onClick={() => onCommand({ command: JobCommand.Pause, force: false })}>
+        <JobTileButton color="light-gray" onClick={() => onCommand({ command: QueueCommand.Pause, force: false })}>
           <Icon icon={mdiPause} size="24" />
           <span class="uppercase">{$t('pause')}</span>
         </JobTileButton>
@@ -162,25 +162,25 @@
 
     {#if !disabled && multipleButtons && isIdle}
       {#if allText}
-        <JobTileButton color="dark-gray" onClick={() => onCommand({ command: JobCommand.Start, force: true })}>
+        <JobTileButton color="dark-gray" onClick={() => onCommand({ command: QueueCommand.Start, force: true })}>
           <Icon icon={mdiAllInclusive} size="24" />
           <span class="uppercase">{allText}</span>
         </JobTileButton>
       {/if}
       {#if refreshText}
-        <JobTileButton color="gray" onClick={() => onCommand({ command: JobCommand.Start, force: undefined })}>
+        <JobTileButton color="gray" onClick={() => onCommand({ command: QueueCommand.Start, force: undefined })}>
           <Icon icon={mdiImageRefreshOutline} size="24" />
           <span class="uppercase">{refreshText}</span>
         </JobTileButton>
       {/if}
-      <JobTileButton color="light-gray" onClick={() => onCommand({ command: JobCommand.Start, force: false })}>
+      <JobTileButton color="light-gray" onClick={() => onCommand({ command: QueueCommand.Start, force: false })}>
         <Icon icon={mdiSelectionSearch} size="24" />
         <span class="uppercase">{missingText}</span>
       </JobTileButton>
     {/if}
 
     {#if !disabled && !multipleButtons && isIdle}
-      <JobTileButton color="light-gray" onClick={() => onCommand({ command: JobCommand.Start, force: false })}>
+      <JobTileButton color="light-gray" onClick={() => onCommand({ command: QueueCommand.Start, force: false })}>
         <Icon icon={mdiPlay} size="48" />
         <span class="uppercase">{missingText}</span>
       </JobTileButton>
