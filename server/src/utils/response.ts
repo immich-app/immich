@@ -2,17 +2,23 @@ import { CookieOptions, Response } from 'express';
 import { Duration } from 'luxon';
 import { CookieResponse } from 'src/dtos/auth.dto';
 import { ImmichCookie } from 'src/enum';
+import { ConfigRepository } from 'src/repositories/config.repository';
 
-export const respondWithCookie = <T>(res: Response, body: T, { isSecure, values }: CookieResponse) => {
+const configRepository = new ConfigRepository();
+
+const getCookieOptions = (isSecure: boolean): Record<ImmichCookie, CookieOptions> => {
+  const { security } = configRepository.getEnv();
+  const secureFlag = security.enforceSecureCookies ? true : isSecure;
+
   const defaults: CookieOptions = {
     path: '/',
     sameSite: 'lax',
     httpOnly: true,
-    secure: isSecure,
+    secure: secureFlag,
     maxAge: Duration.fromObject({ days: 400 }).toMillis(),
   };
 
-  const cookieOptions: Record<ImmichCookie, CookieOptions> = {
+  return {
     [ImmichCookie.AuthType]: defaults,
     [ImmichCookie.AccessToken]: defaults,
     [ImmichCookie.OAuthState]: defaults,
@@ -21,7 +27,10 @@ export const respondWithCookie = <T>(res: Response, body: T, { isSecure, values 
     [ImmichCookie.IsAuthenticated]: { ...defaults, httpOnly: false },
     [ImmichCookie.SharedLinkToken]: { ...defaults, maxAge: Duration.fromObject({ days: 1 }).toMillis() },
   };
+};
 
+export const respondWithCookie = <T>(res: Response, body: T, { isSecure, values }: CookieResponse) => {
+  const cookieOptions = getCookieOptions(isSecure);
   for (const { key, value } of values) {
     const options = cookieOptions[key];
     res.cookie(key, value, options);
@@ -30,10 +39,14 @@ export const respondWithCookie = <T>(res: Response, body: T, { isSecure, values 
   return body;
 };
 
-export const respondWithoutCookie = <T>(res: Response, body: T, cookies: ImmichCookie[]) => {
+export const clearCookies = (res: Response, cookies: ImmichCookie[], isSecure: boolean) => {
+  const cookieOptions = getCookieOptions(isSecure);
   for (const cookie of cookies) {
-    res.clearCookie(cookie);
+    res.clearCookie(cookie, cookieOptions[cookie]);
   }
+};
 
+export const respondWithoutCookie = <T>(res: Response, body: T, cookies: ImmichCookie[], isSecure: boolean) => {
+  clearCookies(res, cookies, isSecure);
   return body;
 };

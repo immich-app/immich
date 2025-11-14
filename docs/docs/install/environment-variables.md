@@ -44,6 +44,16 @@ These environment variables are used by the `docker-compose.yml` file and do **N
 | `IMMICH_TRUSTED_PROXIES`            | List of comma-separated IPs set as trusted proxies                                        |                              | server                   | api                |
 | `IMMICH_IGNORE_MOUNT_CHECK_ERRORS`  | See [System Integrity](/administration/system-integrity)                                  |                              | server                   | api, microservices |
 
+## Security
+
+| Variable                            | Description                                                                                                   | Default (production) | Containers | Workers |
+| :---------------------------------- | :------------------------------------------------------------------------------------------------------------ | :------------------: | :--------- | :------ |
+| `IMMICH_FORCE_SECURE_COOKIES`       | Force the `Secure` flag on all authentication cookies regardless of the inbound protocol                      |        `true`        | server     | api     |
+| `IMMICH_RATE_LIMIT_WINDOW_MS`       | Sliding-window size (ms) for the global API rate limiter                                                      |       `60000`        | server     | api     |
+| `IMMICH_RATE_LIMIT_MAX`             | Maximum number of API requests per IP within the global limiter window                                        |        `300`         | server     | api     |
+| `IMMICH_LOGIN_RATE_LIMIT_WINDOW_MS` | Sliding-window size (ms) for the stricter authentication (login/OAuth) rate limiter                           |       `60000`        | server     | api     |
+| `IMMICH_LOGIN_RATE_LIMIT_MAX`       | Maximum number of login/OAuth attempts per IP within the stricter authentication limiter window               |         `10`         | server     | api     |
+
 \*1: `TZ` should be set to a `TZ identifier` from [this list][tz-list]. For example, `TZ="Etc/UTC"`.
 `TZ` is used by `exiftool` as a fallback in case the timezone cannot be determined from the image metadata. It is also used for logfile timestamps and cron job execution.
 
