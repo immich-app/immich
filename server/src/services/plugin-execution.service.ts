@@ -3,7 +3,6 @@ import { Injectable } from '@nestjs/common';
 import { Asset, WorkflowAction, WorkflowFilter } from 'src/database';
 import { OnEvent, OnJob } from 'src/decorators';
 import { JobName, JobStatus, PluginTriggerType, QueueName } from 'src/enum';
-import { pluginTriggers } from 'src/plugins';
 import { ArgOf } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
 import { PluginHostFunctions } from 'src/services/plugin-host.functions';
@@ -56,12 +55,14 @@ export class PluginExecutionService extends BaseService {
 
   @OnEvent({ name: 'AssetCreate' })
   async handleAssetCreate({ asset }: ArgOf<'AssetCreate'>) {
-    const trigger = pluginTriggers.find((trigger) => trigger.type === PluginTriggerType.AssetCreate);
-    if (!trigger) {
-      return;
-    }
+    await this.handleTrigger(PluginTriggerType.AssetCreate, { ownerId: asset.ownerId, event: { asset } });
+  }
 
-    const workflows = await this.workflowRepository.getWorkflowsByTrigger(PluginTriggerType.AssetCreate);
+  private async handleTrigger<T extends PluginTriggerType>(
+    triggerType: T,
+    params: { ownerId: string; event: WorkflowData[T] },
+  ): Promise<void> {
+    const workflows = await this.workflowRepository.getWorkflowByOwnerAndTrigger(params.ownerId, triggerType);
     if (workflows.length === 0) {
       return;
     }
@@ -70,15 +71,13 @@ export class PluginExecutionService extends BaseService {
       name: JobName.WorkflowRun,
       data: {
         id: workflow.id,
-        type: PluginTriggerType.AssetCreate,
-        event: {
-          assetId: asset.id,
-        },
-      } as IWorkflowJob<PluginTriggerType.AssetCreate>,
+        type: triggerType,
+        event: params.event,
+      } as IWorkflowJob<T>,
     }));
 
     await this.jobRepository.queueAll(jobs);
-    this.logger.debug(`Queued ${jobs.length} workflow execution jobs for asset ${asset.id}`);
+    this.logger.debug(`Queued ${jobs.length} workflow execution jobs for trigger ${triggerType}`);
   }
 
   @OnJob({ name: JobName.WorkflowRun, queue: QueueName.Workflow })
@@ -96,11 +95,7 @@ export class PluginExecutionService extends BaseService {
       switch (type) {
         case PluginTriggerType.AssetCreate: {
           const data = event as WorkflowData[PluginTriggerType.AssetCreate];
-          const asset = await this.assetRepository.getById(data.assetId);
-          if (!asset) {
-            this.logger.error(`Asset ${data.assetId} not found`);
-            return JobStatus.Failed;
-          }
+          const asset = data.asset;
 
           const jwtToken = this.cryptoRepository.signJwt({ userId: asset.ownerId }, this.pluginJwtSecret);
 

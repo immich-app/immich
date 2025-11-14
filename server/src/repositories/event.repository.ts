@@ -4,6 +4,7 @@ import { ClassConstructor } from 'class-transformer';
 import _ from 'lodash';
 import { Socket } from 'socket.io';
 import { SystemConfig } from 'src/config';
+import { Asset } from 'src/database';
 import { EventConfig } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { ImmichWorker, JobStatus, MetadataKey, QueueName, UserAvatarColor, UserStatus } from 'src/enum';
@@ -19,11 +20,6 @@ type Item<T extends EmitEvent> = {
   priority: number;
   server: boolean;
   label: string;
-};
-
-type AssetCreateV1 = {
-  id: string;
-  ownerId: string;
 };
 
 type EventMap = {
@@ -46,7 +42,7 @@ type EventMap = {
   AlbumInvite: [{ id: string; userId: string }];
 
   // asset events
-  AssetCreate: [{ asset: AssetCreateV1 }];
+  AssetCreate: [{ asset: Asset }];
   AssetTag: [{ assetId: string }];
   AssetUntag: [{ assetId: string }];
   AssetHide: [{ assetId: string; userId: string }];

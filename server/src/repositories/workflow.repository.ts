@@ -20,11 +20,22 @@ export class WorkflowRepository {
     return this.db.selectFrom('workflow').selectAll().where('ownerId', '=', ownerId).orderBy('name').execute();
   }
 
-  @GenerateSql({ params: [DummyValue.UUID] })
+  @GenerateSql({ params: [PluginTriggerType.AssetCreate] })
   getWorkflowsByTrigger(type: PluginTriggerType) {
     return this.db
       .selectFrom('workflow')
       .selectAll()
+      .where('triggerType', '=', type)
+      .where('enabled', '=', true)
+      .execute();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, PluginTriggerType.AssetCreate] })
+  getWorkflowByOwnerAndTrigger(ownerId: string, type: PluginTriggerType) {
+    return this.db
+      .selectFrom('workflow')
+      .selectAll()
+      .where('ownerId', '=', ownerId)
       .where('triggerType', '=', type)
       .where('enabled', '=', true)
       .execute();

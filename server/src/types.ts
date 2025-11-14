@@ -1,5 +1,6 @@
 import { SystemConfig } from 'src/config';
 import { VECTOR_EXTENSIONS } from 'src/constants';
+import { Asset } from 'src/database';
 import { UploadFieldName } from 'src/dtos/asset-media.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
@@ -266,7 +267,7 @@ export interface INotifyAlbumUpdateJob extends IEntityJob, IDelayedJob {
 
 export interface WorkflowData {
   [PluginTriggerType.AssetCreate]: {
-    assetId: string;
+    asset: Asset;
   };
   [PluginTriggerType.PersonRecognized]: {
     personId: string;
