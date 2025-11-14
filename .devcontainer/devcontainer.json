@@ -29,6 +29,12 @@
       ]
     }
   },
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      // https://github.com/devcontainers/features/issues/1466
+      "moby": false
+    }
+  },
   "forwardPorts": [3000, 9231, 9230, 2283],
   "portsAttributes": {
     "3000": {
