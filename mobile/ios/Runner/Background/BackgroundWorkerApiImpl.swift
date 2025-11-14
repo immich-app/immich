@@ -110,8 +110,8 @@ class BackgroundWorkerApiImpl: BackgroundWorkerFgHostApi {
       }
       isSuccess = false
       
-      // Schedule a timer to signal the semaphore after 2 seconds
-      Timer.scheduledTimer(withTimeInterval: 2, repeats: false) { _ in
+      // Schedule a timer to signal the semaphore after 5 seconds
+      Timer.scheduledTimer(withTimeInterval: 5, repeats: false) { _ in
         semaphore.signal()
       }
     }
