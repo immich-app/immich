@@ -26,10 +26,6 @@ export interface JSONSchema {
 
 export type ConfigValue = string | number | boolean | null | ConfigValue[] | { [key: string]: ConfigValue };
 
-export interface TriggerConfig {
-  [key: string]: ConfigValue;
-}
-
 export interface FilterConfig {
   [key: string]: ConfigValue;
 }

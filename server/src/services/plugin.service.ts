@@ -11,12 +11,10 @@ import { ArgOf } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
 import { PluginHostFunctions } from 'src/services/plugin-host.functions';
 import { IWorkflowJob, JobItem, JobOf, WorkflowData } from 'src/types';
-import { TriggerConfig } from 'src/types/plugin-schema.types';
 
 interface WorkflowContext {
   authToken: string;
   asset: Asset;
-  triggerConfig: TriggerConfig | null;
 }
 
 interface PluginInput<T = unknown> {
@@ -216,7 +214,6 @@ export class PluginService extends BaseService {
           const context = {
             authToken,
             asset,
-            triggerConfig: workflow.triggerConfig,
           };
 
           const filtersPassed = await this.executeFilters(workflowFilters, context);

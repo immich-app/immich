@@ -2,7 +2,7 @@ import { Type } from 'class-transformer';
 import { IsNotEmpty, IsObject, IsString, IsUUID, ValidateNested } from 'class-validator';
 import { WorkflowAction, WorkflowFilter } from 'src/database';
 import { PluginTriggerType } from 'src/enum';
-import type { ActionConfig, FilterConfig, TriggerConfig } from 'src/types/plugin-schema.types';
+import type { ActionConfig, FilterConfig } from 'src/types/plugin-schema.types';
 import { Optional, ValidateBoolean, ValidateEnum } from 'src/validation';
 
 export class WorkflowFilterItemDto {
@@ -60,10 +60,6 @@ export class WorkflowUpdateDto {
   @ValidateBoolean({ optional: true })
   enabled?: boolean;
 
-  @IsObject()
-  @Optional()
-  triggerConfig?: TriggerConfig;
-
   @ValidateNested({ each: true })
   @Type(() => WorkflowFilterItemDto)
   @Optional()
@@ -79,8 +75,7 @@ export class WorkflowResponseDto {
   id!: string;
   ownerId!: string;
   triggerType!: PluginTriggerType;
-  triggerConfig!: TriggerConfig | null;
-  name!: string;
+  name!: string | null;
   description!: string;
   createdAt!: string;
   enabled!: boolean;

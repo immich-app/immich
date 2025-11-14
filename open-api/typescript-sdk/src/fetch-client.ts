@@ -1720,9 +1720,8 @@ export type WorkflowResponseDto = {
     enabled: boolean;
     filters: WorkflowFilterResponseDto[];
     id: string;
-    name: string;
+    name: string | null;
     ownerId: string;
-    triggerConfig: object | null;
     triggerType: TriggerType;
 };
 export type WorkflowActionItemDto = {
@@ -1747,7 +1746,6 @@ export type WorkflowUpdateDto = {
     enabled?: boolean;
     filters?: WorkflowFilterItemDto[];
     name?: string;
-    triggerConfig?: object;
 };
 /**
  * List all activities

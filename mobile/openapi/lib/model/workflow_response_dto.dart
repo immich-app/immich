@@ -21,7 +21,6 @@ class WorkflowResponseDto {
     required this.id,
     required this.name,
     required this.ownerId,
-    required this.triggerConfig,
     required this.triggerType,
   });
 
@@ -37,11 +36,9 @@ class WorkflowResponseDto {
 
   String id;
 
-  String name;
+  String? name;
 
   String ownerId;
-
-  Object? triggerConfig;
 
   WorkflowResponseDtoTriggerTypeEnum triggerType;
 
@@ -55,7 +52,6 @@ class WorkflowResponseDto {
     other.id == id &&
     other.name == name &&
     other.ownerId == ownerId &&
-    other.triggerConfig == triggerConfig &&
     other.triggerType == triggerType;
 
   @override
@@ -67,13 +63,12 @@ class WorkflowResponseDto {
     (enabled.hashCode) +
     (filters.hashCode) +
     (id.hashCode) +
-    (name.hashCode) +
+    (name == null ? 0 : name!.hashCode) +
     (ownerId.hashCode) +
-    (triggerConfig == null ? 0 : triggerConfig!.hashCode) +
     (triggerType.hashCode);
 
   @override
-  String toString() => 'WorkflowResponseDto[actions=$actions, createdAt=$createdAt, description=$description, enabled=$enabled, filters=$filters, id=$id, name=$name, ownerId=$ownerId, triggerConfig=$triggerConfig, triggerType=$triggerType]';
+  String toString() => 'WorkflowResponseDto[actions=$actions, createdAt=$createdAt, description=$description, enabled=$enabled, filters=$filters, id=$id, name=$name, ownerId=$ownerId, triggerType=$triggerType]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -83,13 +78,12 @@ class WorkflowResponseDto {
       json[r'enabled'] = this.enabled;
       json[r'filters'] = this.filters;
       json[r'id'] = this.id;
+    if (this.name != null) {
       json[r'name'] = this.name;
-      json[r'ownerId'] = this.ownerId;
-    if (this.triggerConfig != null) {
-      json[r'triggerConfig'] = this.triggerConfig;
     } else {
-    //  json[r'triggerConfig'] = null;
+    //  json[r'name'] = null;
     }
+      json[r'ownerId'] = this.ownerId;
       json[r'triggerType'] = this.triggerType;
     return json;
   }
@@ -109,9 +103,8 @@ class WorkflowResponseDto {
         enabled: mapValueOfType<bool>(json, r'enabled')!,
         filters: WorkflowFilterResponseDto.listFromJson(json[r'filters']),
         id: mapValueOfType<String>(json, r'id')!,
-        name: mapValueOfType<String>(json, r'name')!,
+        name: mapValueOfType<String>(json, r'name'),
         ownerId: mapValueOfType<String>(json, r'ownerId')!,
-        triggerConfig: mapValueOfType<Object>(json, r'triggerConfig'),
         triggerType: WorkflowResponseDtoTriggerTypeEnum.fromJson(json[r'triggerType'])!,
       );
     }
@@ -168,7 +161,6 @@ class WorkflowResponseDto {
     'id',
     'name',
     'ownerId',
-    'triggerConfig',
     'triggerType',
   };
 }

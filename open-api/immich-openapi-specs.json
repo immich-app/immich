@@ -22698,14 +22698,11 @@
             "type": "string"
           },
           "name": {
+            "nullable": true,
             "type": "string"
           },
           "ownerId": {
             "type": "string"
-          },
-          "triggerConfig": {
-            "nullable": true,
-            "type": "object"
           },
           "triggerType": {
             "enum": [
@@ -22724,7 +22721,6 @@
           "id",
           "name",
           "ownerId",
-          "triggerConfig",
           "triggerType"
         ],
         "type": "object"
@@ -22751,9 +22747,6 @@
           },
           "name": {
             "type": "string"
-          },
-          "triggerConfig": {
-            "type": "object"
           }
         },
         "type": "object"

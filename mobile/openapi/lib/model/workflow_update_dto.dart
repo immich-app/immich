@@ -18,7 +18,6 @@ class WorkflowUpdateDto {
     this.enabled,
     this.filters = const [],
     this.name,
-    this.triggerConfig,
   });
 
   List<WorkflowActionItemDto> actions;
@@ -49,22 +48,13 @@ class WorkflowUpdateDto {
   ///
   String? name;
 
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  Object? triggerConfig;
-
   @override
   bool operator ==(Object other) => identical(this, other) || other is WorkflowUpdateDto &&
     _deepEquality.equals(other.actions, actions) &&
     other.description == description &&
     other.enabled == enabled &&
     _deepEquality.equals(other.filters, filters) &&
-    other.name == name &&
-    other.triggerConfig == triggerConfig;
+    other.name == name;
 
   @override
   int get hashCode =>
@@ -73,11 +63,10 @@ class WorkflowUpdateDto {
     (description == null ? 0 : description!.hashCode) +
     (enabled == null ? 0 : enabled!.hashCode) +
     (filters.hashCode) +
-    (name == null ? 0 : name!.hashCode) +
-    (triggerConfig == null ? 0 : triggerConfig!.hashCode);
+    (name == null ? 0 : name!.hashCode);
 
   @override
-  String toString() => 'WorkflowUpdateDto[actions=$actions, description=$description, enabled=$enabled, filters=$filters, name=$name, triggerConfig=$triggerConfig]';
+  String toString() => 'WorkflowUpdateDto[actions=$actions, description=$description, enabled=$enabled, filters=$filters, name=$name]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -98,11 +87,6 @@ class WorkflowUpdateDto {
     } else {
     //  json[r'name'] = null;
     }
-    if (this.triggerConfig != null) {
-      json[r'triggerConfig'] = this.triggerConfig;
-    } else {
-    //  json[r'triggerConfig'] = null;
-    }
     return json;
   }
 
@@ -120,7 +104,6 @@ class WorkflowUpdateDto {
         enabled: mapValueOfType<bool>(json, r'enabled'),
         filters: WorkflowFilterItemDto.listFromJson(json[r'filters']),
         name: mapValueOfType<String>(json, r'name'),
-        triggerConfig: mapValueOfType<Object>(json, r'triggerConfig'),
       );
     }
     return null;

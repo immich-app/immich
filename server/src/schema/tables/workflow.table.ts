@@ -11,7 +11,7 @@ import {
   Table,
   Timestamp,
 } from 'src/sql-tools';
-import type { ActionConfig, FilterConfig, TriggerConfig } from 'src/types/plugin-schema.types';
+import type { ActionConfig, FilterConfig } from 'src/types/plugin-schema.types';
 
 @Table('workflow')
 export class WorkflowTable {
@@ -23,9 +23,6 @@ export class WorkflowTable {
 
   @Column()
   triggerType!: PluginTriggerType;
-
-  @Column({ type: 'jsonb', nullable: true })
-  triggerConfig!: TriggerConfig | null;
 
   @Column({ nullable: true })
   name!: string | null;
