@@ -1,6 +1,18 @@
-import { defineConfig, devices } from '@playwright/test';
+import { defineConfig, devices, PlaywrightTestConfig } from '@playwright/test';
+import dotenv from 'dotenv';
+import { resolve } from 'node:path';
 
-export default defineConfig({
+dotenv.config({ path: resolve(import.meta.dirname, '.env') });
+
+export const playwrightHost = process.env.PLAYWRIGHT_HOST ?? 'localhost';
+export const playwrightDbHost = process.env.PLAYWRIGHT_DB_HOST ?? 'localhost';
+export const playwriteBaseUrl = process.env.PLAYWRIGHT_BASE_URL ?? `http://${playwrightHost}:2285`;
+export const playwriteSlowMo = parseInt(process.env.PLAYWRIGHT_SLOW_MO ?? '0');
+export const playwrightDisableWebserver = process.env.PLAYWRIGHT_DISABLE_WEBSERVER;
+
+process.env.PW_EXPERIMENTAL_SERVICE_WORKER_NETWORK_EVENTS = '1';
+
+const config: PlaywrightTestConfig = {
   testDir: './src/web/specs',
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
@@ -8,8 +20,12 @@ export default defineConfig({
   workers: 1,
   reporter: 'html',
   use: {
-    baseURL: 'http://127.0.0.1:2285',
+    baseURL: playwriteBaseUrl,
     trace: 'on-first-retry',
+
+    launchOptions: {
+      slowMo: playwriteSlowMo,
+    },
   },
 
   testMatch: /.*\.e2e-spec\.ts/,
@@ -59,4 +75,8 @@ export default defineConfig({
     stderr: 'pipe',
     reuseExistingServer: true,
   },
-});
+};
+if (playwrightDisableWebserver) {
+  delete config.webServer;
+}
+export default defineConfig(config);
