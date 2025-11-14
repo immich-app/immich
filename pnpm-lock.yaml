@@ -305,8 +305,8 @@ importers:
         specifier: ^1.0.1
         version: 1.1.1
       esbuild:
-        specifier: ^0.19.6
-        version: 0.19.12
+        specifier: ^0.25.0
+        version: 0.25.12
       typescript:
         specifier: ^5.3.2
         version: 5.9.3
