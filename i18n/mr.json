@@ -1011,7 +1011,9 @@
     "unable_to_update_settings": "सेटिंग्ज अद्यतनित करता आले नाही",
     "unable_to_update_timeline_display_status": "टाइमलाइन स्थिती अद्यतनित करता आले नाही",
     "unable_to_update_user": "वापरकर्ता अद्यतनित करता आले नाही",
-    "unable_to_upload_file": "फाईल अपलोड करता आले नाही"
+    "unable_to_upload_file": "फाईल अपलोड करता आले नाही",
+    "unable_to_add_to_album": "Unable to add assets to album",
+    "unable_to_load_albums": "Unable to load albums"
   },
   "exif": "एक्सिफ",
   "exif_bottom_sheet_description": "वर्णन जोडा…",
@@ -1844,5 +1846,10 @@
   "yes": "हो",
   "you_dont_have_any_shared_links": "आपल्याकडे कोणतेही सामायिक दुवे नाहीत",
   "zoom_image": "प्रतिमा झूम करा",
-  "zoom_to_bounds": "सीमेपर्यंत झूम करा"
+  "zoom_to_bounds": "सीमेपर्यंत झूम करा",
+  "add_to_menu_no_selection": "Select assets to use Add to",
+  "add_to_menu_locked_assets_disabled": "Add to is unavailable for locked assets",
+  "add_to_menu_no_albums": "No albums available",
+  "add_to_menu_create_placeholder": "New album name",
+  "add_to_menu_partial_selection": "{count}/{total} selected"
 }

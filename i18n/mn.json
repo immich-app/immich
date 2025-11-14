@@ -117,7 +117,9 @@
   "empty_trash": "Хогийн сав хоослох",
   "errors": {
     "unable_to_empty_trash": "Хогийн савыг хоослож чадсангүй",
-    "unable_to_restore_trash": "Хогийн савнаас гаргаж чадсангүй"
+    "unable_to_restore_trash": "Хогийн савнаас гаргаж чадсангүй",
+    "unable_to_add_to_album": "Unable to add assets to album",
+    "unable_to_load_albums": "Unable to load albums"
   },
   "explore": "Эрж олох",
   "favorites": "Дуртай",
@@ -157,5 +159,10 @@
   "years_ago": "{years, plural, one {# year} other {# years}} өмнө",
   "yes": "Тийм",
   "you_dont_have_any_shared_links": "Танд хуваалцсан холбоос алга",
-  "zoom_image": "Зургийг томруулж харах"
+  "zoom_image": "Зургийг томруулж харах",
+  "add_to_menu_no_selection": "Select assets to use Add to",
+  "add_to_menu_locked_assets_disabled": "Add to is unavailable for locked assets",
+  "add_to_menu_no_albums": "No albums available",
+  "add_to_menu_create_placeholder": "New album name",
+  "add_to_menu_partial_selection": "{count}/{total} selected"
 }

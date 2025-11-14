@@ -3,6 +3,7 @@ import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/advanced_info_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/add_to_album_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/archive_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_local_action_button.widget.dart';
@@ -30,6 +31,8 @@ class ActionButtonContext {
   final RemoteAlbum? currentAlbum;
   final bool advancedTroubleshooting;
   final ActionSource source;
+    final bool canEditAlbums;
+    final bool canToggleLockedFolder;
 
   const ActionButtonContext({
     required this.asset,
@@ -40,7 +43,9 @@ class ActionButtonContext {
     required this.isInLockedView,
     required this.currentAlbum,
     required this.advancedTroubleshooting,
-    required this.source,
+      required this.source,
+      this.canEditAlbums = false,
+      this.canToggleLockedFolder = false,
   });
 }
 
@@ -48,7 +53,8 @@ enum ActionButtonType {
   advancedInfo,
   share,
   shareLink,
-  similarPhotos,
+    similarPhotos,
+    addTo,
   archive,
   unarchive,
   download,
@@ -98,10 +104,11 @@ enum ActionButtonType {
         context.isOwner && //
             !context.isInLockedView && //
             context.asset.hasRemote,
-      ActionButtonType.moveToLockFolder =>
-        context.isOwner && //
-            !context.isInLockedView && //
-            context.asset.hasRemote,
+        ActionButtonType.moveToLockFolder =>
+          context.isOwner && //
+              !context.isInLockedView && //
+              context.asset.hasRemote &&
+              !context.canToggleLockedFolder,
       ActionButtonType.removeFromLockFolder =>
         context.isOwner && //
             context.isInLockedView && //
@@ -126,8 +133,11 @@ enum ActionButtonType {
             context.currentAlbum!.isActivityEnabled &&
             context.currentAlbum!.isShared,
       ActionButtonType.similarPhotos =>
-        !context.isInLockedView && //
-            context.asset is RemoteAsset,
+          !context.isInLockedView && context.asset is RemoteAsset,
+        ActionButtonType.addTo =>
+          !context.isInLockedView && //
+              context.asset.hasRemote && //
+              (context.canEditAlbums || context.canToggleLockedFolder),
     };
   }
 
@@ -153,6 +163,12 @@ enum ActionButtonType {
       ActionButtonType.likeActivity => const LikeActivityActionButton(),
       ActionButtonType.unstack => UnStackActionButton(source: context.source),
       ActionButtonType.similarPhotos => SimilarPhotosActionButton(assetId: (context.asset as RemoteAsset).id),
+        ActionButtonType.addTo => AddToAlbumActionButton(
+            asset: context.asset,
+            source: context.source,
+            canManageAlbums: context.canEditAlbums,
+            canToggleLockedFolder: context.canToggleLockedFolder,
+          ),
     };
   }
 }

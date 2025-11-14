@@ -1042,7 +1042,9 @@
     "unable_to_update_settings": "설정을 변경할 수 없습니다.",
     "unable_to_update_timeline_display_status": "타임라인 표시 상태를 변경할 수 없습니다.",
     "unable_to_update_user": "사용자를 업데이트할 수 없습니다.",
-    "unable_to_upload_file": "파일을 업로드할 수 없습니다."
+    "unable_to_upload_file": "파일을 업로드할 수 없습니다.",
+    "unable_to_add_to_album": "Unable to add assets to album",
+    "unable_to_load_albums": "Unable to load albums"
   },
   "exif": "EXIF",
   "exif_bottom_sheet_description": "설명 추가...",
@@ -2154,5 +2156,10 @@
   "you_dont_have_any_shared_links": "공유 링크가 없습니다.",
   "your_wifi_name": "Wi-Fi 네트워크 이름",
   "zoom_image": "이미지 확대",
-  "zoom_to_bounds": "화면에 맞춰 확대"
+  "zoom_to_bounds": "화면에 맞춰 확대",
+  "add_to_menu_no_selection": "Select assets to use Add to",
+  "add_to_menu_locked_assets_disabled": "Add to is unavailable for locked assets",
+  "add_to_menu_no_albums": "No albums available",
+  "add_to_menu_create_placeholder": "New album name",
+  "add_to_menu_partial_selection": "{count}/{total} selected"
 }

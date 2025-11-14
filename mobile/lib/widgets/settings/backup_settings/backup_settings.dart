@@ -7,12 +7,23 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/providers/backup/backup_verification.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/services/asset.service.dart';
+import 'package:immich_mobile/utils/bytes_units.dart';
 import 'package:immich_mobile/widgets/settings/backup_settings/background_settings.dart';
 import 'package:immich_mobile/widgets/settings/backup_settings/foreground_settings.dart';
 import 'package:immich_mobile/widgets/settings/settings_button_list_tile.dart';
 import 'package:immich_mobile/widgets/settings/settings_sub_page_scaffold.dart';
 import 'package:immich_mobile/widgets/settings/settings_switch_list_tile.dart';
 import 'package:immich_mobile/utils/hooks/app_settings_update_hook.dart';
+
+const List<int> _uploadLimitOptions = [
+  0,
+  10 * 1024 * 1024,
+  50 * 1024 * 1024,
+  100 * 1024 * 1024,
+  1024 * 1024 * 1024,
+  5 * 1024 * 1024 * 1024,
+  10 * 1024 * 1024 * 1024,
+];
 
 class BackupSettings extends HookConsumerWidget {
   const BackupSettings({super.key});
@@ -37,8 +48,46 @@ class BackupSettings extends HookConsumerWidget {
       }
     }
 
-    final backupSettings = [
+      int resolveLimitIndex(int value) {
+        final idx = _uploadLimitOptions.indexOf(value);
+        return idx >= 0 ? idx : 0;
+      }
+
+      final uploadLimitSetting = useAppSettingsState(AppSettingsEnum.maxUploadFileSize);
+      final uploadLimitIndex = useState(resolveLimitIndex(uploadLimitSetting.value));
+      useValueChanged(uploadLimitSetting.value, (_, __) {
+        final next = resolveLimitIndex(uploadLimitSetting.value);
+        if (uploadLimitIndex.value != next) {
+          uploadLimitIndex.value = next;
+        }
+      });
+
+      String formatLimitLabel(int bytes) {
+        return bytes <= 0 ? 'backup_upload_limit_unlimited'.tr() : formatBytes(bytes);
+      }
+
+      final backupSettings = [
       const ForegroundBackupSettings(),
+        SettingsSliderListTile(
+          valueNotifier: uploadLimitIndex,
+          text: 'backup_upload_limit_title'.tr(
+            args: {'size': formatLimitLabel(_uploadLimitOptions[uploadLimitIndex.value])},
+          ),
+          maxValue: (_uploadLimitOptions.length - 1).toDouble(),
+          noDivisons: _uploadLimitOptions.length - 1,
+          label: formatLimitLabel(_uploadLimitOptions[uploadLimitIndex.value]),
+          onChangeEnd: (value) => uploadLimitSetting.value = _uploadLimitOptions[value],
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              'backup_upload_limit_description'.tr(),
+              style: context.textTheme.bodySmall,
+            ),
+          ),
+        ),
       const BackgroundBackupSettings(),
       if (Platform.isIOS)
         SettingsSwitchListTile(

@@ -324,6 +324,17 @@ class ActionNotifier extends Notifier<void> {
     }
   }
 
+  Future<ActionResult> addToAlbum(ActionSource source, String albumId) async {
+    final ids = _getRemoteIdsForSource(source);
+    try {
+      final addedCount = await _service.addToAlbum(ids, albumId);
+      return ActionResult(count: addedCount, success: true);
+    } catch (error, stack) {
+      _logger.severe('Failed to add assets to album', error, stack);
+      return ActionResult(count: ids.length, success: false, error: error.toString());
+    }
+  }
+
   Future<ActionResult> removeFromAlbum(ActionSource source, String albumId) async {
     final ids = _getRemoteIdsForSource(source);
     try {

@@ -200,6 +200,14 @@ class ActionService {
     return true;
   }
 
+  Future<int> addToAlbum(List<String> remoteIds, String albumId) async {
+    final result = await _albumApiRepository.addAssets(albumId, remoteIds);
+    if (result.added.isNotEmpty) {
+      await _remoteAlbumRepository.addAssets(albumId, result.added);
+    }
+    return result.added.length;
+  }
+
   Future<int> removeFromAlbum(List<String> remoteIds, String albumId) async {
     final result = await _albumApiRepository.removeAssets(albumId, remoteIds);
     if (result.removed.isNotEmpty) {
