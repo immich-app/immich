@@ -8,6 +8,7 @@ export type AssetApiGetTimeBucketsRequest = Parameters<typeof import('@immich/sd
 export type TimelineManagerOptions = Omit<AssetApiGetTimeBucketsRequest, 'size'> & {
   timelineAlbumId?: string;
   deferInit?: boolean;
+  withoutGps?: boolean;
 };
 
 export type AssetDescriptor = { id: string };
