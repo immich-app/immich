@@ -265,7 +265,15 @@ export class UserRepository {
             eb.fn
               .sum<number>('asset_exif.fileSizeInByte')
               .filterWhere((eb) =>
-                eb.and([eb('asset.libraryId', 'is', null), eb('asset.type', '=', sql.lit(AssetType.Image))]),
+                eb.and([
+                  eb('asset.libraryId', 'is', null),
+                  eb.or([
+                    eb('asset.type', '=', sql.lit(AssetType.Image)),
+                    eb.exists(
+                      eb.selectFrom('asset as a').select('a.id').whereRef('a.livePhotoVideoId', '=', 'asset.id'),
+                    ),
+                  ]),
+                ]),
               ),
             eb.lit(0),
           )
@@ -275,7 +283,15 @@ export class UserRepository {
             eb.fn
               .sum<number>('asset_exif.fileSizeInByte')
               .filterWhere((eb) =>
-                eb.and([eb('asset.libraryId', 'is', null), eb('asset.type', '=', sql.lit(AssetType.Video))]),
+                eb.and([
+                  eb('asset.libraryId', 'is', null),
+                  eb('asset.type', '=', sql.lit(AssetType.Video)),
+                  eb.not(
+                    eb.exists(
+                      eb.selectFrom('asset as a').select('a.id').whereRef('a.livePhotoVideoId', '=', 'asset.id'),
+                    ),
+                  ),
+                ]),
               ),
             eb.lit(0),
           )
