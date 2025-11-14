@@ -47,8 +47,11 @@ class _AssetAlbumMembershipSheet extends HookConsumerWidget {
     final userId = ref.watch(currentUserProvider)?.id;
     final remoteAlbumState = ref.watch(remoteAlbumProvider);
     final editableAlbums = remoteAlbumState.albums
-        .where((album) => album.ownerId == userId)
-        .where((album) => !publicOnly || album.isShared)
+        .where(
+          (album) =>
+              (album.ownerId == userId || album.isShared) && //
+              (!publicOnly || album.isShared),
+        )
         .sortedBy((album) => album.name.toLowerCase());
 
     useEffect(() {
