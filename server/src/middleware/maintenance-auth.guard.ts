@@ -51,7 +51,7 @@ export class MaintenanceAuthGuard implements CanActivate {
     }
 
     const request = context.switchToHttp().getRequest<MaintenanceAuthRequest>();
-    request['auth'] = await this.service.authenticate(request.headers);
+    request.auth = await this.service.authenticate(request.headers);
 
     return true;
   }

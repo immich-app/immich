@@ -18,16 +18,12 @@ class Workers {
   /**
    * Currently running workers
    */
-  workers: Partial<Record<ImmichWorker, Worker | ChildProcess>>;
+  workers: Partial<Record<ImmichWorker, { kill: () => void }>> = {};
 
   /**
    * Fail-safe in case anything dies during restart
    */
   restarting = false;
-
-  constructor() {
-    this.workers = {};
-  }
 
   /**
    * Boot all enabled workers
@@ -80,17 +76,27 @@ class Workers {
     const basePath = dirname(__filename);
     const workerFile = join(basePath, 'workers', `${name}.js`);
 
-    const worker: Worker | ChildProcess =
-      name === ImmichWorker.Api
-        ? fork(workerFile, [], {
-            execArgv: process.execArgv.map((arg) => (arg.startsWith('--inspect') ? '--inspect=0.0.0.0:9231' : arg)),
-          })
-        : new Worker(workerFile);
+    let anyWorker: Worker | ChildProcess;
+    let kill: () => void;
 
-    worker.on('error', (error) => this.onError(name, error));
-    worker.on('exit', (exitCode) => this.onExit(name, exitCode));
+    if (name === ImmichWorker.Api) {
+      const worker = fork(workerFile, [], {
+        execArgv: process.execArgv.map((arg) => (arg.startsWith('--inspect') ? '--inspect=0.0.0.0:9231' : arg)),
+      });
 
-    this.workers[name] = worker;
+      kill = () => worker.kill();
+      anyWorker = worker;
+    } else {
+      const worker = new Worker(workerFile);
+
+      kill = () => worker.terminate();
+      anyWorker = worker;
+    }
+
+    anyWorker.on('error', (error) => this.onError(name, error));
+    anyWorker.on('exit', (exitCode) => this.onExit(name, exitCode));
+
+    this.workers[name] = { kill };
   }
 
   onError(name: ImmichWorker, error: Error) {

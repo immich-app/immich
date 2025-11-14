@@ -796,6 +796,7 @@ export enum ApiTag {
   Faces = 'Faces',
   Jobs = 'Jobs',
   Libraries = 'Libraries',
+  Maintenance = 'Maintenance (admin)',
   Map = 'Map',
   Memories = 'Memories',
   Notifications = 'Notifications',

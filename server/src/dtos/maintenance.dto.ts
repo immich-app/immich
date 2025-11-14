@@ -1,4 +1,9 @@
-import { ValidateString } from 'src/validation';
+import { ValidateBoolean, ValidateString } from 'src/validation';
+
+export class SetMaintenanceModeDto {
+  @ValidateBoolean()
+  maintenanceMode!: boolean;
+}
 
 export class MaintenanceLoginDto {
   @ValidateString({ optional: true })

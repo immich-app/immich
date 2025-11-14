@@ -1,6 +1,6 @@
 <script lang="ts">
   import { handleError } from '$lib/utils/handle-error';
-  import { startMaintenance } from '@immich/sdk';
+  import { setMaintenanceMode } from '@immich/sdk';
   import { Button } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
@@ -13,7 +13,11 @@
 
   async function start() {
     try {
-      await startMaintenance();
+      await setMaintenanceMode({
+        setMaintenanceModeDto: {
+          maintenanceMode: true,
+        },
+      });
     } catch (error) {
       handleError(error, $t('admin.maintenance_start_error'));
     }

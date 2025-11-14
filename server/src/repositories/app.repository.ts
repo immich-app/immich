@@ -2,10 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { ExitCode } from 'src/enum';
 
 @Injectable()
-export class MaintenanceRepository {
+export class AppRepository {
   private closeFn?: () => Promise<void>;
-
-  constructor() {}
 
   exitApp() {
     /* eslint-disable unicorn/no-process-exit */

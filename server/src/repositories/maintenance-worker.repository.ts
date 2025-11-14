@@ -7,9 +7,9 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { AppRepository } from 'src/repositories/app.repository';
 import { AppRestartEvent } from 'src/repositories/event.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
-import { MaintenanceRepository } from 'src/repositories/maintenance.repository';
 
 export const serverEvents = ['AppRestart'] as const;
 export type ServerEvents = (typeof serverEvents)[number];
@@ -30,7 +30,7 @@ export class MaintenanceWorkerRepository implements OnGatewayConnection, OnGatew
 
   constructor(
     private logger: LoggingRepository,
-    private maintenanceRepository: MaintenanceRepository,
+    private maintenanceRepository: AppRepository,
   ) {
     this.logger.setContext(MaintenanceWorkerRepository.name);
   }

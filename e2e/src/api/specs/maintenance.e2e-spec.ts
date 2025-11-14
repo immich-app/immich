@@ -34,41 +34,41 @@ describe('/admin/maintenance', () => {
     });
   });
 
-  describe('POST /end', async () => {
-    it('should not work out of maintenance mode', async () => {
-      const { status, body } = await request(app)
-        .post('/admin/maintenance/end')
-        .set('Authorization', `Bearer ${admin.accessToken}`)
-        .send();
-      expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest('Not in maintenance mode'));
-    });
-  });
-
   // => enter maintenance mode
 
-  describe.sequential('POST /start', () => {
+  describe.sequential('POST /', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(app).post('/admin/maintenance/start').send();
+      const { status, body } = await request(app).post('/admin/maintenance').send({
+        maintenanceMode: false
+      });
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
     });
 
     it('should only work for admins', async () => {
       const { status, body } = await request(app)
-        .post('/admin/maintenance/start')
+        .post('/admin/maintenance')
         .set('Authorization', `Bearer ${nonAdmin.accessToken}`)
-        .send();
+        .send({ maintenanceMode: false });
       expect(status).toBe(403);
       expect(body).toEqual(errorDto.forbidden);
     });
 
+    it('should be a no-op if try to exit maintenance mode', async () => {
+      const { status } = await request(app)
+        .post('/admin/maintenance')
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send({ maintenanceMode: false });
+      expect(status).toBe(201);
+    });
+
     it('should enter maintenance mode', async () => {
       const { status, headers } = await request(app)
-        .post('/admin/maintenance/start')
+        .post('/admin/maintenance')
         .set('Authorization', `Bearer ${admin.accessToken}`)
-        .send();
-
+        .send({
+          maintenaceMode: true
+        });
       expect(status).toBe(201);
 
       cookie = headers['set-cookie'][0].split(';')[0];
@@ -134,21 +134,25 @@ describe('/admin/maintenance', () => {
       });
     });
 
-    describe('POST /start', async () => {
-      it('should not work in maintenance mode', async () => {
-        const { status, body } = await request(app).post('/admin/maintenance/start').set('cookie', cookie!).send();
-        expect(status).toBe(400);
-        expect(body).toEqual(errorDto.badRequest('Already in maintenance mode'));
+    describe('POST /', async () => {
+      it('should be a no-op if try to enter maintenance mode', async () => {
+        const { status } = await request(app)
+          .post('/admin/maintenance')
+          .set('cookie', cookie!)
+          .send({ maintenanceMode: true });
+        expect(status).toBe(201);
       });
     });
   });
 
   // => exit maintenance mode
 
-  describe.sequential('POST /end', () => {
+  describe.sequential('POST /', () => {
     it('should exit maintenance mode', async () => {
       console.info('using', cookie!);
-      const { status } = await request(app).post('/admin/maintenance/end').set('cookie', cookie!).send();
+      const { status } = await request(app).post('/admin/maintenance').set('cookie', cookie!).send({
+        maintenanceMode: false
+      });
 
       expect(status).toBe(201);
 

@@ -3,7 +3,7 @@
   import FormatMessage from '$lib/elements/FormatMessage.svelte';
   import { maintenanceAuth } from '$lib/stores/maintenance.store';
   import { handleError } from '$lib/utils/handle-error';
-  import { endMaintenance } from '@immich/sdk';
+  import { setMaintenanceMode } from '@immich/sdk';
   import { Button, Heading, Link } from '@immich/ui';
   import { t } from 'svelte-i18n';
 
@@ -16,7 +16,11 @@
 
   async function end() {
     try {
-      await endMaintenance();
+      await setMaintenanceMode({
+        setMaintenanceModeDto: {
+          maintenanceMode: false,
+        },
+      });
     } catch (error) {
       handleError(error, $t('maintenance_end_error'));
     }

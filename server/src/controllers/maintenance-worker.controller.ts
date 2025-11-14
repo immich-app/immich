@@ -1,13 +1,12 @@
-import { BadRequestException, Body, Controller, Get, Post, Req, Res } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Get, Post, Req, Res } from '@nestjs/common';
 import { Request, Response } from 'express';
-import { MaintenanceAuthDto, MaintenanceLoginDto } from 'src/dtos/maintenance.dto';
+import { MaintenanceAuthDto, MaintenanceLoginDto, SetMaintenanceModeDto } from 'src/dtos/maintenance.dto';
 import { ServerConfigDto } from 'src/dtos/server.dto';
 import { ImmichCookie } from 'src/enum';
 import { MaintenanceRoute } from 'src/middleware/maintenance-auth.guard';
 import { MaintenanceWorkerService } from 'src/services/maintenance-worker.service';
+import { respondWithCookie } from 'src/utils/response';
 
-@ApiTags('Maintenance (admin)')
 @Controller()
 export class MaintenanceWorkerController {
   constructor(private service: MaintenanceWorkerService) {}
@@ -21,23 +20,21 @@ export class MaintenanceWorkerController {
   async maintenanceLogin(
     @Req() request: Request,
     @Body() dto: MaintenanceLoginDto,
-    @Res({ passthrough: true }) response: Response,
+    @Res({ passthrough: true }) res: Response,
   ): Promise<MaintenanceAuthDto> {
     const token = dto.token ?? request.cookies[ImmichCookie.MaintenanceToken];
     const auth = await this.service.login(token);
-    response.cookie(ImmichCookie.MaintenanceToken, token);
-    return auth;
+    return respondWithCookie(res, auth, {
+      isSecure: true,
+      values: [{ key: ImmichCookie.MaintenanceToken, value: token }],
+    });
   }
 
-  @Post('admin/maintenance/start')
+  @Post('admin/maintenance')
   @MaintenanceRoute()
-  startMaintenance(): void {
-    throw new BadRequestException('Already in maintenance mode');
-  }
-
-  @Post('admin/maintenance/end')
-  @MaintenanceRoute()
-  async endMaintenance(): Promise<void> {
-    await this.service.endMaintenance();
+  async setMaintenanceMode(@Body() dto: SetMaintenanceModeDto): Promise<void> {
+    if (!dto.maintenanceMode) {
+      await this.service.endMaintenance();
+    }
   }
 }

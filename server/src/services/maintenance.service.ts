@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { OnEvent } from 'src/decorators';
 import { MaintenanceAuthDto } from 'src/dtos/maintenance.dto';
 import { SystemMetadataKey } from 'src/enum';
@@ -19,11 +19,6 @@ export class MaintenanceService extends BaseService {
   }
 
   async startMaintenance(username: string): Promise<{ jwt: string }> {
-    const { isMaintenanceMode } = await this.getMaintenanceMode();
-    if (isMaintenanceMode) {
-      throw new BadRequestException('Already in maintenance mode');
-    }
-
     const secret = generateMaintenanceSecret();
     await this.systemMetadataRepository.set(SystemMetadataKey.MaintenanceMode, { isMaintenanceMode: true, secret });
     await this.eventRepository.emit('AppRestart', { isMaintenanceMode: true });
@@ -37,7 +32,7 @@ export class MaintenanceService extends BaseService {
 
   @OnEvent({ name: 'AppRestart', server: true })
   onRestart(): void {
-    this.maintenanceRepository.exitApp();
+    this.appRepository.exitApp();
   }
 
   async createLoginUrl(auth: MaintenanceAuthDto, secret?: string): Promise<string> {
