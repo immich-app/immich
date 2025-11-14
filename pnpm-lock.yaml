@@ -17278,7 +17278,7 @@ snapshots:
   bcrypt@6.0.0:
     dependencies:
       node-addon-api: 8.5.0
-      node-gyp: 11.3.0
+      node-gyp: 11.5.0
       node-gyp-build: 4.8.4
     transitivePeerDependencies:
       - supports-color
