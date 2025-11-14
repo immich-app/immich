@@ -18,7 +18,7 @@ class Workers {
   /**
    * Currently running workers
    */
-  workers: Partial<Record<ImmichWorker, { kill: () => void }>> = {};
+  workers: Partial<Record<ImmichWorker, { kill: (signal: NodeJS.Signals) => Promise<void> | void }>> = {};
 
   /**
    * Fail-safe in case anything dies during restart
@@ -77,19 +77,19 @@ class Workers {
     const workerFile = join(basePath, 'workers', `${name}.js`);
 
     let anyWorker: Worker | ChildProcess;
-    let kill: () => void;
+    let kill: (signal?: NodeJS.Signals) => Promise<void> | void;
 
     if (name === ImmichWorker.Api) {
       const worker = fork(workerFile, [], {
         execArgv: process.execArgv.map((arg) => (arg.startsWith('--inspect') ? '--inspect=0.0.0.0:9231' : arg)),
       });
 
-      kill = () => worker.kill();
+      kill = (signal) => void worker.kill(signal);
       anyWorker = worker;
     } else {
       const worker = new Worker(workerFile);
 
-      kill = () => worker.terminate();
+      kill = async () => void (await worker.terminate());
       anyWorker = worker;
     }
 
@@ -128,7 +128,7 @@ class Workers {
 
       if (this.workers[ImmichWorker.Api] && name !== ImmichWorker.Api) {
         console.error('Killing api process');
-        (this.workers[ImmichWorker.Api] as ChildProcess).kill('SIGTERM');
+        void this.workers[ImmichWorker.Api].kill('SIGTERM');
       }
     }
 

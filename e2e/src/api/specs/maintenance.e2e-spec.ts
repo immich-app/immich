@@ -39,7 +39,7 @@ describe('/admin/maintenance', () => {
   describe.sequential('POST /', () => {
     it('should require authentication', async () => {
       const { status, body } = await request(app).post('/admin/maintenance').send({
-        maintenanceMode: false
+        maintenanceMode: false,
       });
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
@@ -67,7 +67,7 @@ describe('/admin/maintenance', () => {
         .post('/admin/maintenance')
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .send({
-          maintenaceMode: true
+          maintenaceMode: true,
         });
       expect(status).toBe(201);
 
@@ -151,7 +151,7 @@ describe('/admin/maintenance', () => {
     it('should exit maintenance mode', async () => {
       console.info('using', cookie!);
       const { status } = await request(app).post('/admin/maintenance').set('cookie', cookie!).send({
-        maintenanceMode: false
+        maintenanceMode: false,
       });
 
       expect(status).toBe(201);
