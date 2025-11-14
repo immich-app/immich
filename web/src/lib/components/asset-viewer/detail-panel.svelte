@@ -503,7 +503,7 @@
 {/if}
 
 {#if albums.length > 0}
-  <section class="px-6 pt-6 dark:text-immich-dark-fg">
+  <section class="px-6 py-6 dark:text-immich-dark-fg">
     <p class="uppercase pb-4 text-sm">{$t('appears_in')}</p>
     {#each albums as album (album.id)}
       <a href={resolve(`${AppRoute.ALBUMS}/${album.id}`)}>
