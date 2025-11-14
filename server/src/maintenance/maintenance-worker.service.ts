@@ -150,6 +150,9 @@ export class MaintenanceWorkerService {
   async endMaintenance(): Promise<void> {
     const state: MaintenanceModeState = { isMaintenanceMode: false as const };
     await this.systemMetadataRepository.set(SystemMetadataKey.MaintenanceMode, state);
-    this.maintenanceWorkerRepository.restartApp(state);
+
+    // => corresponds to notification.service.ts#onAppRestart
+    this.maintenanceWorkerRepository.clientBroadcast('AppRestartV1', state);
+    this.maintenanceWorkerRepository.serverSend('AppRestart', state);
   }
 }
