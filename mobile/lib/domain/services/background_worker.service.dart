@@ -177,6 +177,12 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
   }
 
   Future<void> _cleanup() async {
+    await runZonedGuarded(_handleCleanup, (error, stack) {
+      dPrint(() => "Error during background worker cleanup: $error, $stack");
+    });
+  }
+
+  Future<void> _handleCleanup() async {
     // If ref is null, it means the service was never initialized properly
     if (_isCleanedUp || _ref == null) {
       return;
@@ -186,11 +192,16 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
       _isCleanedUp = true;
       final backgroundSyncManager = _ref?.read(backgroundSyncProvider);
       final nativeSyncApi = _ref?.read(nativeSyncApiProvider);
+
+      await _drift.close();
+      await _driftLogger.close();
+
       _ref?.dispose();
       _ref = null;
 
       _cancellationToken.cancel();
       _logger.info("Cleaning up background worker");
+
       final cleanupFutures = [
         nativeSyncApi?.cancelHashing(),
         workerManagerPatch.dispose().catchError((_) async {
@@ -199,8 +210,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
         }),
         LogService.I.dispose(),
         Store.dispose(),
-        _drift.close(),
-        _driftLogger.close(),
+
         backgroundSyncManager?.cancel(),
       ];
 
