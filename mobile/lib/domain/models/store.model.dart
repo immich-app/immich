@@ -81,7 +81,8 @@ enum StoreKey<T> {
   useWifiForUploadPhotos<bool>._(1005),
   needBetaMigration<bool>._(1006),
   // TODO: Remove this after patching open-api
-  shouldResetSync<bool>._(1007);
+    shouldResetSync<bool>._(1007),
+    maxUploadFileSize<int>._(1008);
 
   const StoreKey._(this.id);
   final int id;

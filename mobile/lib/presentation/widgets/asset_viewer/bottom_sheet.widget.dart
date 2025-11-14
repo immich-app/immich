@@ -22,7 +22,9 @@ import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/remote_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
+import 'package:immich_mobile/providers/partner.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
@@ -30,6 +32,7 @@ import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/action_button.utils.dart';
 import 'package:immich_mobile/utils/bytes_units.dart';
+import 'package:immich_mobile/widgets/asset_viewer/asset_album_membership_sheet.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
 const _kSeparator = '  •  ';
@@ -54,7 +57,15 @@ class AssetDetailBottomSheet extends ConsumerWidget {
     final isArchived = asset is RemoteAsset && asset.visibility == AssetVisibility.archive;
     final advancedTroubleshooting = ref.watch(settingsProvider.notifier).get(Setting.advancedTroubleshooting);
 
-    final buttonContext = ActionButtonContext(
+      final partners = ref.watch(partnerSharedWithProvider);
+      final isPartnerOwner = asset is RemoteAsset && partners.any((user) => user.id == asset.ownerId);
+      final remoteAlbums = ref.watch(remoteAlbumProvider).albums;
+      final currentUserId = ref.watch(currentUserProvider)?.id;
+      final editableAlbums = remoteAlbums.where((album) => album.ownerId == currentUserId).toList();
+      final canEditAlbums = asset is RemoteAsset && !isInLockedView && (isOwner || isPartnerOwner);
+      final hasPublicAlbumTargets = editableAlbums.any((album) => album.isShared);
+
+      final buttonContext = ActionButtonContext(
       asset: asset,
       isOwner: isOwner,
       isArchived: isArchived,
@@ -64,6 +75,8 @@ class AssetDetailBottomSheet extends ConsumerWidget {
       currentAlbum: currentAlbum,
       advancedTroubleshooting: advancedTroubleshooting,
       source: ActionSource.viewer,
+        canEditAlbums: canEditAlbums,
+        hasPublicAlbumTargets: hasPublicAlbumTargets,
     );
 
     final actions = ActionButtonBuilder.build(buttonContext);
@@ -145,12 +158,12 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
     await ref.read(actionProvider.notifier).editDateTime(ActionSource.viewer, context);
   }
 
-  Widget _buildAppearsInList(WidgetRef ref, BuildContext context) {
-    final asset = ref.watch(currentAssetNotifier);
-    if (asset == null) {
-      return const SizedBox.shrink();
-    }
-
+  Widget _buildAppearsInList(
+    WidgetRef ref,
+    BuildContext context,
+    BaseAsset asset,
+    bool canEditAlbums,
+  ) {
     if (!asset.hasRemote) {
       return const SizedBox.shrink();
     }
@@ -169,42 +182,67 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
     final userId = ref.watch(currentUserProvider)?.id;
     final assetAlbums = ref.watch(albumsContainingAssetProvider(remoteAssetId));
 
+    Future<void> onManagePressed() async {
+      await manageAssetAlbumMembership(
+        context: context,
+        ref: ref,
+        asset: asset,
+        source: ActionSource.viewer,
+      );
+    }
+
     return assetAlbums.when(
       data: (albums) {
-        if (albums.isEmpty) {
-          return const SizedBox.shrink();
-        }
-
         albums.sortBy((a) => a.name);
 
         return Column(
           spacing: 12,
           children: [
-            if (albums.isNotEmpty)
-              _SheetTile(
-                title: 'appears_in'.t(context: context).toUpperCase(),
-                titleStyle: context.textTheme.labelMedium?.copyWith(
-                  color: context.textTheme.labelMedium?.color?.withAlpha(200),
-                  fontWeight: FontWeight.w600,
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    'appears_in'.t(context: context).toUpperCase(),
+                    style: context.textTheme.labelMedium?.copyWith(
+                      color: context.textTheme.labelMedium?.color?.withAlpha(200),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                if (canEditAlbums)
+                  TextButton.icon(
+                    onPressed: onManagePressed,
+                    icon: const Icon(Icons.edit_outlined, size: 18),
+                    label: Text('asset_album_membership_manage'.tr()),
+                  ),
+              ],
+            ),
+            if (albums.isEmpty)
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Text('asset_album_membership_none'.tr()),
+                ),
+              )
+            else
+              Padding(
+                padding: const EdgeInsets.only(left: 24),
+                child: Column(
+                  spacing: 12,
+                  children: albums.map((album) {
+                    final isOwner = album.ownerId == userId;
+                    return AlbumTile(
+                      album: album,
+                      isOwner: isOwner,
+                      onAlbumSelected: (album) async {
+                        ref.invalidate(assetViewerProvider);
+                        unawaited(context.router.popAndPush(RemoteAlbumRoute(album: album)));
+                      },
+                    );
+                  }).toList(),
                 ),
               ),
-            Padding(
-              padding: const EdgeInsets.only(left: 24),
-              child: Column(
-                spacing: 12,
-                children: albums.map((album) {
-                  final isOwner = album.ownerId == userId;
-                  return AlbumTile(
-                    album: album,
-                    isOwner: isOwner,
-                    onAlbumSelected: (album) async {
-                      ref.invalidate(assetViewerProvider);
-                      unawaited(context.router.popAndPush(RemoteAlbumRoute(album: album)));
-                    },
-                  );
-                }).toList(),
-              ),
-            ),
           ],
         );
       },
@@ -311,7 +349,7 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
             ),
           ),
         // Appears in (Albums)
-        _buildAppearsInList(ref, context),
+          _buildAppearsInList(ref, context, asset, canEditAlbums),
         // padding at the bottom to avoid cut-off
         const SizedBox(height: 100),
       ],

@@ -22,6 +22,7 @@ import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/repositories/upload.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
+import 'package:immich_mobile/utils/bytes_units.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:logging/logging.dart';
 import 'package:path/path.dart' as p;
@@ -275,6 +276,9 @@ class UploadService {
     if (file == null) {
       return null;
     }
+    if (await _exceedsUploadLimit(file)) {
+      return null;
+    }
 
     final originalFileName = entity.isLivePhoto ? p.setExtension(asset.name, p.extension(file.path)) : asset.name;
 
@@ -329,6 +333,9 @@ class UploadService {
     if (file == null) {
       return null;
     }
+    if (await _exceedsUploadLimit(file)) {
+      return null;
+    }
 
     final fileName = await _assetMediaRepository.getOriginalFilename(asset.id) ?? asset.name;
     final originalFileName = entity.isLivePhoto ? p.setExtension(fileName, p.extension(file.path)) : fileName;
@@ -366,6 +373,9 @@ class UploadService {
     if (file == null) {
       return null;
     }
+    if (await _exceedsUploadLimit(file)) {
+      return null;
+    }
 
     final fields = {'livePhotoVideoId': livePhotoVideoId};
 
@@ -396,6 +406,21 @@ class UploadService {
     }
 
     return requiresWiFi;
+  }
+
+  Future<bool> _exceedsUploadLimit(File file) async {
+    final limit = _appSettingsService.getSetting(AppSettingsEnum.maxUploadFileSize);
+    if (limit <= 0) {
+      return false;
+    }
+    final size = await file.length();
+    final exceeds = size > limit;
+    if (exceeds) {
+      _logger.warning(
+        'Skipping ${file.path} (${formatBytes(size)}) because it exceeds the upload limit of ${formatBytes(limit)}',
+      );
+    }
+    return exceeds;
   }
 
   Future<UploadTask> buildUploadTask(
