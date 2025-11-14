@@ -149,8 +149,8 @@ Class | Method | HTTP request | Description
 *FacesApi* | [**getFaces**](doc//FacesApi.md#getfaces) | **GET** /faces | Retrieve faces for asset
 *FacesApi* | [**reassignFacesById**](doc//FacesApi.md#reassignfacesbyid) | **PUT** /faces/{id} | Re-assign a face to another person
 *JobsApi* | [**createJob**](doc//JobsApi.md#createjob) | **POST** /jobs | Create a manual job
-*JobsApi* | [**getAllJobsStatus**](doc//JobsApi.md#getalljobsstatus) | **GET** /jobs | Retrieve queue counts and status
-*JobsApi* | [**sendJobCommand**](doc//JobsApi.md#sendjobcommand) | **PUT** /jobs/{id} | Run jobs
+*JobsApi* | [**getQueuesLegacy**](doc//JobsApi.md#getqueueslegacy) | **GET** /jobs | Retrieve queue counts and status
+*JobsApi* | [**runQueueCommandLegacy**](doc//JobsApi.md#runqueuecommandlegacy) | **PUT** /jobs/{name} | Run jobs
 *LibrariesApi* | [**createLibrary**](doc//LibrariesApi.md#createlibrary) | **POST** /libraries | Create a library
 *LibrariesApi* | [**deleteLibrary**](doc//LibrariesApi.md#deletelibrary) | **DELETE** /libraries/{id} | Delete a library
 *LibrariesApi* | [**getAllLibraries**](doc//LibrariesApi.md#getalllibraries) | **GET** /libraries | Retrieve libraries
@@ -318,7 +318,6 @@ Class | Method | HTTP request | Description
  - [AlbumsAddAssetsResponseDto](doc//AlbumsAddAssetsResponseDto.md)
  - [AlbumsResponse](doc//AlbumsResponse.md)
  - [AlbumsUpdate](doc//AlbumsUpdate.md)
- - [AllJobStatusResponseDto](doc//AllJobStatusResponseDto.md)
  - [AssetBulkDeleteDto](doc//AssetBulkDeleteDto.md)
  - [AssetBulkUpdateDto](doc//AssetBulkUpdateDto.md)
  - [AssetBulkUploadCheckDto](doc//AssetBulkUploadCheckDto.md)
@@ -387,13 +386,8 @@ Class | Method | HTTP request | Description
  - [FoldersResponse](doc//FoldersResponse.md)
  - [FoldersUpdate](doc//FoldersUpdate.md)
  - [ImageFormat](doc//ImageFormat.md)
- - [JobCommand](doc//JobCommand.md)
- - [JobCommandDto](doc//JobCommandDto.md)
- - [JobCountsDto](doc//JobCountsDto.md)
  - [JobCreateDto](doc//JobCreateDto.md)
- - [JobName](doc//JobName.md)
  - [JobSettingsDto](doc//JobSettingsDto.md)
- - [JobStatusDto](doc//JobStatusDto.md)
  - [LibraryResponseDto](doc//LibraryResponseDto.md)
  - [LibraryStatsResponseDto](doc//LibraryStatsResponseDto.md)
  - [LicenseKeyDto](doc//LicenseKeyDto.md)
@@ -452,7 +446,13 @@ Class | Method | HTTP request | Description
  - [PlacesResponseDto](doc//PlacesResponseDto.md)
  - [PurchaseResponse](doc//PurchaseResponse.md)
  - [PurchaseUpdate](doc//PurchaseUpdate.md)
+ - [QueueCommand](doc//QueueCommand.md)
+ - [QueueCommandDto](doc//QueueCommandDto.md)
+ - [QueueName](doc//QueueName.md)
+ - [QueueResponseDto](doc//QueueResponseDto.md)
+ - [QueueStatisticsDto](doc//QueueStatisticsDto.md)
  - [QueueStatusDto](doc//QueueStatusDto.md)
+ - [QueuesResponseDto](doc//QueuesResponseDto.md)
  - [RandomSearchDto](doc//RandomSearchDto.md)
  - [RatingsResponse](doc//RatingsResponse.md)
  - [RatingsUpdate](doc//RatingsUpdate.md)
