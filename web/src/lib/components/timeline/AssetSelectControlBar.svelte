@@ -3,9 +3,8 @@
   import { t } from 'svelte-i18n';
 
   export interface AssetControlContext {
-    // Wrap assets in a function, because context isn't reactive.
-    getAssets: () => TimelineAsset[]; // All assets includes partners' assets
-    getOwnedAssets: () => TimelineAsset[]; // Only assets owned by the user
+    getAssets: () => TimelineAsset[];
+    getOwnedAssets: () => TimelineAsset[];
     clearSelect: () => void;
   }
 
@@ -14,8 +13,17 @@
 </script>
 
 <script lang="ts">
+  import type { Action } from '$lib/components/asset-viewer/actions/action';
+  import {
+    NotificationType,
+    notificationController,
+  } from '$lib/components/shared-components/notification/notification';
+  import { AssetAction } from '$lib/constants';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-  import { mdiClose } from '@mdi/js';
+  import { toTimelineAsset } from '$lib/utils/timeline-util';
+  import { getBaseUrl, type AssetResponseDto } from '@immich/sdk';
+  import { IconButton } from '@immich/ui';
+  import { mdiClose, mdiEye, mdiEyeOff } from '@mdi/js';
   import type { Snippet } from 'svelte';
   import ControlAppBar from '../shared-components/control-app-bar.svelte';
 
@@ -25,15 +33,58 @@
     ownerId?: string | undefined;
     children?: Snippet;
     forceDark?: boolean;
+    onAction?: (action: Action) => void;
   }
 
-  let { assets, clearSelect, ownerId = undefined, children, forceDark }: Props = $props();
+  let { assets, clearSelect, ownerId = undefined, children, forceDark, onAction }: Props = $props();
 
   setContext({
     getAssets: () => assets,
     getOwnedAssets: () => (ownerId === undefined ? assets : assets.filter((asset) => asset.ownerId === ownerId)),
     clearSelect,
   });
+
+  const toggleBlurForSelected = async () => {
+    if (!assets.length) return;
+
+    try {
+      const response = await fetch(`${getBaseUrl()}/assets/blur/bulk`, {
+        method: 'PATCH',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ assetIds: assets.map((a) => a.id) }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Blur update failed');
+      }
+
+      const updatedAssets: AssetResponseDto[] = await response.json();
+      const updatedTimelineAssets: TimelineAsset[] = updatedAssets.map(
+        (asset: AssetResponseDto): TimelineAsset => toTimelineAsset(asset),
+      );
+
+      if (onAction) {
+        for (const updatedAsset of updatedTimelineAssets) {
+          onAction({
+            type: AssetAction.BLUR,
+            asset: updatedAsset,
+          });
+        }
+      }
+
+      notificationController.show({
+        type: NotificationType.Info,
+        message: `Blur update on ${updatedAssets.length} item${updatedAssets.length > 1 ? 's' : ''}.`,
+      });
+    } catch (error) {
+      console.error('Error in toggleBlurForSelected:', error);
+      notificationController.show({
+        type: NotificationType.Error,
+        message: 'It is not possible to modify the blur on the selected items.',
+      });
+    }
+  };
 </script>
 
 <ControlAppBar onClose={clearSelect} {forceDark} backIcon={mdiClose} tailwindClasses="bg-white shadow-md">
@@ -44,6 +95,18 @@
     </div>
   {/snippet}
   {#snippet trailing()}
+    {@const allBlurred = assets.every((a) => a.isBlurred)}
+    {@const someBlurred = assets.some((a) => a.isBlurred)}
+
+    <IconButton
+      color="secondary"
+      shape="round"
+      variant="ghost"
+      icon={allBlurred ? mdiEye : mdiEyeOff}
+      aria-label={allBlurred ? 'Unblur all' : someBlurred ? 'Toggle blur for selection' : 'Blur all'}
+      onclick={toggleBlurForSelected}
+    />
+
     {@render children?.()}
   {/snippet}
 </ControlAppBar>

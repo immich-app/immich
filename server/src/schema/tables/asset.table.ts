@@ -140,4 +140,7 @@ export class AssetTable {
 
   @Column({ enum: asset_visibility_enum, default: AssetVisibility.Timeline })
   visibility!: Generated<AssetVisibility>;
+
+  @Column({ type: 'boolean', default: false })
+  isBlurred!: Generated<boolean>;
 }

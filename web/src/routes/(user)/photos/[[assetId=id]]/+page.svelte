@@ -1,5 +1,6 @@
 <script lang="ts">
   import { beforeNavigate } from '$app/navigation';
+  import type { Action } from '$lib/components/asset-viewer/actions/action';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import MemoryLane from '$lib/components/photos-page/memory-lane.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
@@ -57,6 +58,21 @@
 
     return assetInteraction.isAllUserOwned && (isLivePhoto || isLivePhotoCandidate);
   });
+
+  const handleAssetAction = (action: Action) => {
+    console.log('🎪 Photos page handling action:', action.type);
+
+    switch (action.type) {
+      case AssetAction.BLUR: {
+        if ('asset' in action) {
+          console.log('🎯 Updating asset in timeline:', action.asset.id, 'isBlurred:', action.asset.isBlurred);
+          timelineManager.updateAssets([action.asset]);
+        }
+        break;
+      }
+    }
+  };
+
   const handleEscape = () => {
     if ($showAssetViewer) {
       return;
@@ -111,6 +127,7 @@
     ownerId={$user.id}
     assets={assetInteraction.selectedAssets}
     clearSelect={() => assetInteraction.clearMultiselect()}
+    onAction={handleAssetAction}
   >
     <CreateSharedLink />
     <SelectAllAssets {timelineManager} {assetInteraction} />

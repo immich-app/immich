@@ -217,6 +217,54 @@ export class AssetService extends BaseService {
   }
 
   @OnJob({ name: JobName.AssetDelete, queue: QueueName.BackgroundTask })
+  async toggleBlur(auth: AuthDto, id: string): Promise<AssetResponseDto> {
+    await this.requireAccess({ auth, permission: Permission.AssetUpdate, ids: [id] });
+    
+    const asset = await this.assetRepository.getById(id);
+    if (!asset) {
+      throw new BadRequestException('Asset not found');
+    }
+
+    const updatedAsset = await this.assetRepository.update({
+      id,
+      isBlurred: !asset.isBlurred,
+    });
+
+    if (!updatedAsset) {
+      throw new BadRequestException('Failed to update asset');
+    }
+
+    return mapAsset(updatedAsset, { auth });
+  }
+
+  async toggleBlurBulk(auth: AuthDto, ids: string[]): Promise<AssetResponseDto[]> {
+    await this.requireAccess({ auth, permission: Permission.AssetUpdate, ids });
+
+    const assets = await this.assetRepository.getByIds(ids);
+    if (!assets.length) {
+      throw new BadRequestException('No valid assets found');
+    }
+
+    const updatedAssets: AssetResponseDto[] = [];
+
+    for (const asset of assets) {
+      if (asset.ownerId !== auth.user.id && !auth.user.isAdmin) {
+        throw new BadRequestException('Cannot update assets that do not belong to you');
+      }
+
+      const updatedAsset = await this.assetRepository.update({
+        id: asset.id,
+        isBlurred: !asset.isBlurred,
+      });
+
+      if (updatedAsset) {
+        updatedAssets.push(mapAsset(updatedAsset, { auth }));
+      }
+    }
+
+    return updatedAssets;
+  }
+
   async handleAssetDeletion(job: JobOf<JobName.AssetDelete>): Promise<JobStatus> {
     const { id, deleteOnDisk } = job;
 

@@ -1901,6 +1901,53 @@
         "description": "This endpoint requires the `asset.update` permission."
       }
     },
+    "/assets/blur/bulk": {
+      "patch": {
+        "operationId": "toggleBlurBulk",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssetBulkIdDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AssetResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Assets"
+        ],
+        "x-immich-permission": "asset.update",
+        "description": "This endpoint requires the `asset.update` permission."
+      }
+    },
     "/assets/bulk-upload-check": {
       "post": {
         "description": "Checks if assets exist by checksums. This endpoint requires the `asset.upload` permission.",
@@ -2264,6 +2311,50 @@
           },
           "required": true
         },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Assets"
+        ],
+        "x-immich-permission": "asset.update",
+        "description": "This endpoint requires the `asset.update` permission."
+      }
+    },
+    "/assets/{id}/blur": {
+      "patch": {
+        "operationId": "toggleBlur",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "content": {
@@ -10464,6 +10555,26 @@
         ],
         "type": "object"
       },
+      "AssetBulkIdDto": {
+        "properties": {
+          "assetIds": {
+            "description": "Array of asset IDs to process in bulk",
+            "example": [
+              "123e4567-e89b-12d3-a456-426614174000",
+              "123e4567-e89b-12d3-a456-426614174001"
+            ],
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "assetIds"
+        ],
+        "type": "object"
+      },
       "AssetBulkUpdateDto": {
         "properties": {
           "dateTimeOriginal": {
@@ -11161,6 +11272,9 @@
           "isArchived": {
             "type": "boolean"
           },
+          "isBlurred": {
+            "type": "boolean"
+          },
           "isFavorite": {
             "type": "boolean"
           },
@@ -11268,6 +11382,7 @@
           "hasMetadata",
           "id",
           "isArchived",
+          "isBlurred",
           "isFavorite",
           "isOffline",
           "isTrashed",

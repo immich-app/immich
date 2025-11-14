@@ -1,4 +1,5 @@
 <script lang="ts">
+  import type { Action } from '$lib/components/asset-viewer/actions/action';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
@@ -9,11 +10,10 @@
   import DownloadAction from '$lib/components/timeline/actions/DownloadAction.svelte';
   import FavoriteAction from '$lib/components/timeline/actions/FavoriteAction.svelte';
   import SelectAllAssets from '$lib/components/timeline/actions/SelectAllAction.svelte';
+  import SetVisibilityAction from '$lib/components/timeline/actions/SetVisibilityAction.svelte';
   import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import Timeline from '$lib/components/timeline/Timeline.svelte';
   import { AssetAction } from '$lib/constants';
-
-  import SetVisibilityAction from '$lib/components/timeline/actions/SetVisibilityAction.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { AssetVisibility } from '@immich/sdk';
@@ -30,6 +30,15 @@
   const options = { visibility: AssetVisibility.Archive };
 
   const assetInteraction = new AssetInteraction();
+
+  const handleAssetAction = (action: Action) => {
+    switch (action.type) {
+      case AssetAction.BLUR: {
+        timelineManager.updateAssets([action.asset]);
+        break;
+      }
+    }
+  };
 
   const handleEscape = () => {
     if (assetInteraction.selectionActive) {
@@ -63,6 +72,7 @@
   <AssetSelectControlBar
     assets={assetInteraction.selectedAssets}
     clearSelect={() => assetInteraction.clearMultiselect()}
+    onAction={handleAssetAction}
   >
     <ArchiveAction
       unarchive

@@ -80,6 +80,7 @@ export class AssetResponseDto extends SanitizedAssetResponseDto {
   isArchived!: boolean;
   isTrashed!: boolean;
   isOffline!: boolean;
+  isBlurred!: boolean;
   @ValidateEnum({ enum: AssetVisibility, name: 'AssetVisibility' })
   visibility!: AssetVisibility;
   exifInfo?: ExifResponseDto;
@@ -116,6 +117,7 @@ export type MapAsset = {
   isExternal: boolean;
   isFavorite: boolean;
   isOffline: boolean;
+  isBlurred: boolean;
   visibility: AssetVisibility;
   libraryId: string | null;
   livePhotoVideoId: string | null;
@@ -225,6 +227,7 @@ export function mapAsset(entity: MapAsset, options: AssetMapOptions = {}): Asset
     checksum: hexOrBufferToBase64(entity.checksum)!,
     stack: withStack ? mapStack(entity) : undefined,
     isOffline: entity.isOffline,
+    isBlurred: entity.isBlurred,
     hasMetadata: true,
     duplicateId: entity.duplicateId,
     resized: true,

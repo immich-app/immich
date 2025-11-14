@@ -1,6 +1,7 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Put, Query } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { EndpointLifecycle } from 'src/decorators';
+import { AssetBulkIdDto } from 'src/dtos/asset-bulk.dto';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import {
   AssetBulkDeleteDto,
@@ -93,6 +94,22 @@ export class AssetController {
   @Authenticated({ permission: Permission.AssetRead })
   getAssetMetadata(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<AssetMetadataResponseDto[]> {
     return this.service.getMetadata(auth, id);
+  }
+
+  @Patch(':id/blur')
+  @Authenticated({ permission: Permission.AssetUpdate })
+  toggleBlur(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<AssetResponseDto> {
+    return this.service.toggleBlur(auth, id);
+  }
+
+  @Patch('blur/bulk')
+  @Authenticated({ permission: Permission.AssetUpdate })
+  @HttpCode(HttpStatus.OK)
+  async toggleBlurBulk(
+    @Auth() auth: AuthDto,
+    @Body() dto: AssetBulkIdDto,
+  ): Promise<AssetResponseDto[]> {
+    return this.service.toggleBlurBulk(auth, dto.assetIds);
   }
 
   @Put(':id/metadata')

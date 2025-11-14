@@ -9,6 +9,7 @@
     mdiArchiveArrowDownOutline,
     mdiCameraBurst,
     mdiCheckCircle,
+    mdiEyeOffOutline,
     mdiHeart,
     mdiMotionPauseOutline,
     mdiMotionPlayOutline,
@@ -310,39 +311,51 @@
         </a>
       {/if}
 
-      <ImageThumbnail
-        class={imageClass}
-        {brokenAssetClass}
-        url={getAssetThumbnailUrl({ id: asset.id, size: AssetMediaSize.Thumbnail, cacheKey: asset.thumbhash })}
-        altText={$getAltText(asset)}
-        widthStyle="{width}px"
-        heightStyle="{height}px"
-        curve={selected}
-        onComplete={(errored) => ((loaded = true), (thumbError = errored))}
-      />
-      {#if asset.isVideo}
-        <div class="absolute top-0 h-full w-full pointer-events-none">
-          <VideoThumbnail
-            url={getAssetPlaybackUrl({ id: asset.id, cacheKey: asset.thumbhash })}
-            enablePlayback={mouseOver && $playVideoThumbnailOnHover}
-            curve={selected}
-            durationInSeconds={asset.duration ? timeToSeconds(asset.duration) : 0}
-            playbackOnIconHover={!$playVideoThumbnailOnHover}
-          />
-        </div>
-      {:else if asset.isImage && asset.livePhotoVideoId}
-        <div class="absolute top-0 h-full w-full pointer-events-none">
-          <VideoThumbnail
-            url={getAssetPlaybackUrl({ id: asset.livePhotoVideoId, cacheKey: asset.thumbhash })}
-            enablePlayback={mouseOver && $playVideoThumbnailOnHover}
-            pauseIcon={mdiMotionPauseOutline}
-            playIcon={mdiMotionPlayOutline}
-            showTime={false}
-            curve={selected}
-            playbackOnIconHover={!$playVideoThumbnailOnHover}
-          />
-        </div>
-      {/if}
+      <div
+        class="relative w-full h-full"
+        style:filter={asset.isBlurred ? 'blur(10px)' : 'none'}
+        style:transition="filter 0.3s ease"
+      >
+        <ImageThumbnail
+          class={imageClass}
+          {brokenAssetClass}
+          url={getAssetThumbnailUrl({ id: asset.id, size: AssetMediaSize.Thumbnail, cacheKey: asset.thumbhash })}
+          altText={$getAltText(asset)}
+          widthStyle="{width}px"
+          heightStyle="{height}px"
+          curve={selected}
+          onComplete={(errored) => ((loaded = true), (thumbError = errored))}
+        />
+        {#if asset.isVideo}
+          <div class="absolute top-0 h-full w-full pointer-events-none">
+            <VideoThumbnail
+              url={getAssetPlaybackUrl({ id: asset.id, cacheKey: asset.thumbhash })}
+              enablePlayback={mouseOver && $playVideoThumbnailOnHover}
+              curve={selected}
+              durationInSeconds={asset.duration ? timeToSeconds(asset.duration) : 0}
+              playbackOnIconHover={!$playVideoThumbnailOnHover}
+            />
+          </div>
+        {:else if asset.isImage && asset.livePhotoVideoId}
+          <div class="absolute top-0 h-full w-full pointer-events-none">
+            <VideoThumbnail
+              url={getAssetPlaybackUrl({ id: asset.livePhotoVideoId, cacheKey: asset.thumbhash })}
+              enablePlayback={mouseOver && $playVideoThumbnailOnHover}
+              pauseIcon={mdiMotionPauseOutline}
+              playIcon={mdiMotionPlayOutline}
+              showTime={false}
+              curve={selected}
+              playbackOnIconHover={!$playVideoThumbnailOnHover}
+            />
+          </div>
+        {/if}
+
+        {#if asset.isBlurred}
+          <div class="absolute inset-0 flex items-center justify-center bg-black/30 rounded-xl">
+            <Icon icon={mdiEyeOffOutline} size="2em" class="text-white opacity-80" />
+          </div>
+        {/if}
+      </div>
 
       {#if (!loaded || thumbError) && asset.thumbhash}
         <canvas

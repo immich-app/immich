@@ -110,6 +110,10 @@
       case AssetAction.ARCHIVE:
       case AssetAction.UNARCHIVE:
       case AssetAction.FAVORITE:
+      case AssetAction.BLUR: {
+        timelineManager.updateAssets([action.asset]);
+        break;
+      }
       case AssetAction.UNFAVORITE: {
         timelineManager.updateAssets([action.asset]);
         break;

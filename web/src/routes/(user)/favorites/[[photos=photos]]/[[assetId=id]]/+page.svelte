@@ -1,4 +1,5 @@
 <script lang="ts">
+  import type { Action } from '$lib/components/asset-viewer/actions/action';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
@@ -35,6 +36,15 @@
 
   const assetInteraction = new AssetInteraction();
 
+  const handleAssetAction = (action: Action) => {
+    switch (action.type) {
+      case AssetAction.BLUR: {
+        timelineManager.updateAssets([action.asset]);
+        break;
+      }
+    }
+  };
+
   const handleEscape = () => {
     if (assetInteraction.selectionActive) {
       assetInteraction.clearMultiselect();
@@ -69,6 +79,7 @@
   <AssetSelectControlBar
     assets={assetInteraction.selectedAssets}
     clearSelect={() => assetInteraction.clearMultiselect()}
+    onAction={handleAssetAction}
   >
     <FavoriteAction removeFavorite onFavorite={(assetIds) => timelineManager.removeAssets(assetIds)} />
     <CreateSharedLink />

@@ -35,6 +35,7 @@ export type TimelineAsset = {
   people: string[] | null;
   latitude?: number | null;
   longitude?: number | null;
+  isBlurred?: boolean;
 };
 
 export type AssetOperation = (asset: TimelineAsset) => { remove: boolean };

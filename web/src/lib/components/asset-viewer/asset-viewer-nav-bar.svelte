@@ -6,6 +6,7 @@
   import AddToAlbumAction from '$lib/components/asset-viewer/actions/add-to-album-action.svelte';
   import AddToStackAction from '$lib/components/asset-viewer/actions/add-to-stack-action.svelte';
   import ArchiveAction from '$lib/components/asset-viewer/actions/archive-action.svelte';
+  import BlurAction from '$lib/components/asset-viewer/actions/blur-action.svelte';
   import CloseAction from '$lib/components/asset-viewer/actions/close-action.svelte';
   import DeleteAction from '$lib/components/asset-viewer/actions/delete-action.svelte';
   import DownloadAction from '$lib/components/asset-viewer/actions/download-action.svelte';
@@ -179,6 +180,10 @@
 
     {#if isOwner}
       <FavoriteAction {asset} {onAction} />
+    {/if}
+
+    {#if isOwner}
+      <BlurAction {asset} {onAction} />
     {/if}
 
     {#if isOwner}

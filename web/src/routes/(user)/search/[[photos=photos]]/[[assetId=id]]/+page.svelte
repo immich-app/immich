@@ -3,6 +3,7 @@
   import { page } from '$app/state';
   import { shortcut } from '$lib/actions/shortcut';
   import AlbumCardGroup from '$lib/components/album-page/album-card-group.svelte';
+  import type { Action } from '$lib/components/asset-viewer/actions/action';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
   import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
@@ -20,7 +21,7 @@
   import SetVisibilityAction from '$lib/components/timeline/actions/SetVisibilityAction.svelte';
   import TagAction from '$lib/components/timeline/actions/TagAction.svelte';
   import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
-  import { AppRoute, QueryParameter } from '$lib/constants';
+  import { AppRoute, AssetAction, QueryParameter } from '$lib/constants';
   import type { TimelineAsset, Viewport } from '$lib/managers/timeline-manager/types';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
@@ -77,6 +78,23 @@
       handlePromiseError(onSearchQueryUpdate());
     });
   });
+
+  const handleAssetAction = (action: Action) => {
+    switch (action.type) {
+      case AssetAction.BLUR: {
+        if ('asset' in action) {
+          for (const asset of searchResultAssets) {
+            if (asset.id === action.asset.id) {
+              asset.isBlurred = action.asset.isBlurred;
+              break;
+            }
+          }
+          searchResultAssets = [...searchResultAssets];
+        }
+        break;
+      }
+    }
+  };
 
   const onEscape = () => {
     if ($showAssetViewer) {
@@ -263,6 +281,7 @@
       <AssetSelectControlBar
         assets={assetInteraction.selectedAssets}
         clearSelect={() => cancelMultiselect(assetInteraction)}
+        onAction={handleAssetAction}
       >
         <CreateSharedLink />
         <IconButton
@@ -404,6 +423,7 @@
         <AssetSelectControlBar
           assets={assetInteraction.selectedAssets}
           clearSelect={() => cancelMultiselect(assetInteraction)}
+          onAction={handleAssetAction}
         >
           <CreateSharedLink />
           <IconButton

@@ -616,6 +616,7 @@ export class AssetRepository {
             'asset_exif.city',
             'asset_exif.country',
             'asset_exif.projectionType',
+            'asset.isBlurred', 
             eb.fn
               .coalesce(
                 eb
@@ -703,6 +704,7 @@ export class AssetRepository {
             eb.fn.coalesce(eb.fn('array_agg', ['ratio']), sql.lit('{}')).as('ratio'),
             eb.fn.coalesce(eb.fn('array_agg', ['status']), sql.lit('{}')).as('status'),
             eb.fn.coalesce(eb.fn('array_agg', ['thumbhash']), sql.lit('{}')).as('thumbhash'),
+            eb.fn.coalesce(eb.fn('array_agg', ['isBlurred']), sql.lit('{}')).as('isBlurred'),
           ])
           .$if(!!options.withCoordinates, (qb) =>
             qb.select((eb) => [

@@ -6,6 +6,7 @@ type ActionMap = {
   [AssetAction.ARCHIVE]: { asset: TimelineAsset };
   [AssetAction.UNARCHIVE]: { asset: TimelineAsset };
   [AssetAction.FAVORITE]: { asset: TimelineAsset };
+  [AssetAction.BLUR]: { asset: TimelineAsset };
   [AssetAction.UNFAVORITE]: { asset: TimelineAsset };
   [AssetAction.TRASH]: { asset: TimelineAsset };
   [AssetAction.DELETE]: { asset: TimelineAsset };
