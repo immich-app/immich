@@ -38,6 +38,13 @@
 
   let { assets, clearSelect, ownerId = undefined, children, forceDark, onAction }: Props = $props();
 
+  let blurState = $derived.by(() => {
+    return {
+      allBlurred: assets.every((a) => a.isBlurred),
+      someBlurred: assets.some((a) => a.isBlurred),
+    };
+  });
+
   setContext({
     getAssets: () => assets,
     getOwnedAssets: () => (ownerId === undefined ? assets : assets.filter((asset) => asset.ownerId === ownerId)),
@@ -48,6 +55,10 @@
     if (!assets.length) return;
 
     try {
+      for (const asset of assets) {
+        asset.isBlurred = !asset.isBlurred;
+      }
+
       const response = await fetch(`${getBaseUrl()}/assets/blur/bulk`, {
         method: 'PATCH',
         credentials: 'include',
@@ -64,6 +75,10 @@
         (asset: AssetResponseDto): TimelineAsset => toTimelineAsset(asset),
       );
 
+      for (let i = 0; i < assets.length; i++) {
+        assets[i].isBlurred = updatedTimelineAssets[i].isBlurred;
+      }
+
       if (onAction) {
         for (const updatedAsset of updatedTimelineAssets) {
           onAction({
@@ -78,6 +93,9 @@
         message: `Blur update on ${updatedAssets.length} item${updatedAssets.length > 1 ? 's' : ''}.`,
       });
     } catch (error) {
+      for (const asset of assets) {
+        asset.isBlurred = !asset.isBlurred;
+      }
       console.error('Error in toggleBlurForSelected:', error);
       notificationController.show({
         type: NotificationType.Error,
@@ -95,15 +113,16 @@
     </div>
   {/snippet}
   {#snippet trailing()}
-    {@const allBlurred = assets.every((a) => a.isBlurred)}
-    {@const someBlurred = assets.some((a) => a.isBlurred)}
-
     <IconButton
       color="secondary"
       shape="round"
       variant="ghost"
-      icon={allBlurred ? mdiEye : mdiEyeOff}
-      aria-label={allBlurred ? 'Unblur all' : someBlurred ? 'Toggle blur for selection' : 'Blur all'}
+      icon={blurState.allBlurred ? mdiEyeOff : mdiEye}
+      aria-label={blurState.allBlurred
+        ? 'Unblur all'
+        : blurState.someBlurred
+          ? 'Toggle blur for selection'
+          : 'Blur all'}
       onclick={toggleBlurForSelected}
     />
 
