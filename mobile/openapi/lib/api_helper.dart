@@ -121,6 +121,12 @@ String parameterToString(dynamic value) {
   if (value is Permission) {
     return PermissionTypeTransformer().encode(value).toString();
   }
+  if (value is PluginContext) {
+    return PluginContextTypeTransformer().encode(value).toString();
+  }
+  if (value is PluginTriggerType) {
+    return PluginTriggerTypeTypeTransformer().encode(value).toString();
+  }
   if (value is QueueCommand) {
     return QueueCommandTypeTransformer().encode(value).toString();
   }

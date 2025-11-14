@@ -48,6 +48,24 @@ RUN --mount=type=cache,id=pnpm-cli,target=/buildcache/pnpm-store \
   pnpm --filter @immich/sdk --filter @immich/cli build && \
   pnpm --filter @immich/cli --prod --no-optional deploy /output/cli-pruned
 
+FROM builder AS plugins
+
+COPY --from=ghcr.io/jdx/mise:2025.11.3 /usr/local/bin/mise /usr/local/bin/mise
+
+WORKDIR /usr/src/app
+COPY ./plugins/mise.toml ./plugins/
+ENV MISE_TRUSTED_CONFIG_PATHS=/usr/src/app/plugins/mise.toml
+RUN mise install --cd plugins
+
+COPY ./plugins ./plugins/
+# Build plugins
+RUN --mount=type=cache,id=pnpm-plugins,target=/buildcache/pnpm-store \
+  --mount=type=bind,source=package.json,target=package.json \
+  --mount=type=bind,source=.pnpmfile.cjs,target=.pnpmfile.cjs \
+  --mount=type=bind,source=pnpm-lock.yaml,target=pnpm-lock.yaml \
+  --mount=type=bind,source=pnpm-workspace.yaml,target=pnpm-workspace.yaml \
+  cd plugins && mise run build
+
 FROM ghcr.io/immich-app/base-server-prod:202511041104@sha256:57c0379977fd5521d83cdf661aecd1497c83a9a661ebafe0a5243a09fc1064cb
 
 WORKDIR /usr/src/app
@@ -58,6 +76,8 @@ ENV NODE_ENV=production \
 COPY --from=server /output/server-pruned ./server
 COPY --from=web /usr/src/app/web/build /build/www
 COPY --from=cli /output/cli-pruned ./cli
+COPY --from=plugins /usr/src/app/plugins/dist /build/corePlugin/dist
+COPY --from=plugins /usr/src/app/plugins/manifest.json /build/corePlugin/manifest.json
 RUN ln -s ../../cli/bin/immich server/bin/immich
 COPY LICENSE /licenses/LICENSE.txt
 COPY LICENSE /LICENSE

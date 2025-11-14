@@ -194,6 +194,8 @@ Class | Method | HTTP request | Description
 *PeopleApi* | [**reassignFaces**](doc//PeopleApi.md#reassignfaces) | **PUT** /people/{id}/reassign | Reassign faces
 *PeopleApi* | [**updatePeople**](doc//PeopleApi.md#updatepeople) | **PUT** /people | Update people
 *PeopleApi* | [**updatePerson**](doc//PeopleApi.md#updateperson) | **PUT** /people/{id} | Update person
+*PluginsApi* | [**getPlugin**](doc//PluginsApi.md#getplugin) | **GET** /plugins/{id} | Retrieve a plugin
+*PluginsApi* | [**getPlugins**](doc//PluginsApi.md#getplugins) | **GET** /plugins | List all plugins
 *SearchApi* | [**getAssetsByCity**](doc//SearchApi.md#getassetsbycity) | **GET** /search/cities | Retrieve assets by city
 *SearchApi* | [**getExploreData**](doc//SearchApi.md#getexploredata) | **GET** /search/explore | Retrieve explore data
 *SearchApi* | [**getSearchSuggestions**](doc//SearchApi.md#getsearchsuggestions) | **GET** /search/suggestions | Retrieve search suggestions
@@ -295,6 +297,11 @@ Class | Method | HTTP request | Description
 *UsersAdminApi* | [**updateUserPreferencesAdmin**](doc//UsersAdminApi.md#updateuserpreferencesadmin) | **PUT** /admin/users/{id}/preferences | Update user preferences
 *ViewsApi* | [**getAssetsByOriginalPath**](doc//ViewsApi.md#getassetsbyoriginalpath) | **GET** /view/folder | Retrieve assets by original path
 *ViewsApi* | [**getUniqueOriginalPaths**](doc//ViewsApi.md#getuniqueoriginalpaths) | **GET** /view/folder/unique-paths | Retrieve unique paths
+*WorkflowsApi* | [**createWorkflow**](doc//WorkflowsApi.md#createworkflow) | **POST** /workflows | Create a workflow
+*WorkflowsApi* | [**deleteWorkflow**](doc//WorkflowsApi.md#deleteworkflow) | **DELETE** /workflows/{id} | Delete a workflow
+*WorkflowsApi* | [**getWorkflow**](doc//WorkflowsApi.md#getworkflow) | **GET** /workflows/{id} | Retrieve a workflow
+*WorkflowsApi* | [**getWorkflows**](doc//WorkflowsApi.md#getworkflows) | **GET** /workflows | List all workflows
+*WorkflowsApi* | [**updateWorkflow**](doc//WorkflowsApi.md#updateworkflow) | **PUT** /workflows/{id} | Update a workflow
 
 
 ## Documentation For Models
@@ -444,6 +451,11 @@ Class | Method | HTTP request | Description
  - [PinCodeResetDto](doc//PinCodeResetDto.md)
  - [PinCodeSetupDto](doc//PinCodeSetupDto.md)
  - [PlacesResponseDto](doc//PlacesResponseDto.md)
+ - [PluginActionResponseDto](doc//PluginActionResponseDto.md)
+ - [PluginContext](doc//PluginContext.md)
+ - [PluginFilterResponseDto](doc//PluginFilterResponseDto.md)
+ - [PluginResponseDto](doc//PluginResponseDto.md)
+ - [PluginTriggerType](doc//PluginTriggerType.md)
  - [PurchaseResponse](doc//PurchaseResponse.md)
  - [PurchaseUpdate](doc//PurchaseUpdate.md)
  - [QueueCommand](doc//QueueCommand.md)
@@ -603,6 +615,13 @@ Class | Method | HTTP request | Description
  - [VersionCheckStateResponseDto](doc//VersionCheckStateResponseDto.md)
  - [VideoCodec](doc//VideoCodec.md)
  - [VideoContainer](doc//VideoContainer.md)
+ - [WorkflowActionItemDto](doc//WorkflowActionItemDto.md)
+ - [WorkflowActionResponseDto](doc//WorkflowActionResponseDto.md)
+ - [WorkflowCreateDto](doc//WorkflowCreateDto.md)
+ - [WorkflowFilterItemDto](doc//WorkflowFilterItemDto.md)
+ - [WorkflowFilterResponseDto](doc//WorkflowFilterResponseDto.md)
+ - [WorkflowResponseDto](doc//WorkflowResponseDto.md)
+ - [WorkflowUpdateDto](doc//WorkflowUpdateDto.md)
 
 
 ## Documentation For Authorization

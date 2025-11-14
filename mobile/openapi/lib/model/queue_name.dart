@@ -39,6 +39,7 @@ class QueueName {
   static const notifications = QueueName._(r'notifications');
   static const backupDatabase = QueueName._(r'backupDatabase');
   static const ocr = QueueName._(r'ocr');
+  static const workflow = QueueName._(r'workflow');
 
   /// List of all possible values in this [enum][QueueName].
   static const values = <QueueName>[
@@ -58,6 +59,7 @@ class QueueName {
     notifications,
     backupDatabase,
     ocr,
+    workflow,
   ];
 
   static QueueName? fromJson(dynamic value) => QueueNameTypeTransformer().decode(value);
@@ -112,6 +114,7 @@ class QueueNameTypeTransformer {
         case r'notifications': return QueueName.notifications;
         case r'backupDatabase': return QueueName.backupDatabase;
         case r'ocr': return QueueName.ocr;
+        case r'workflow': return QueueName.workflow;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');

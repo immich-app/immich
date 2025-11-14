@@ -472,6 +472,16 @@ class ApiClient {
           return PinCodeSetupDto.fromJson(value);
         case 'PlacesResponseDto':
           return PlacesResponseDto.fromJson(value);
+        case 'PluginActionResponseDto':
+          return PluginActionResponseDto.fromJson(value);
+        case 'PluginContext':
+          return PluginContextTypeTransformer().decode(value);
+        case 'PluginFilterResponseDto':
+          return PluginFilterResponseDto.fromJson(value);
+        case 'PluginResponseDto':
+          return PluginResponseDto.fromJson(value);
+        case 'PluginTriggerType':
+          return PluginTriggerTypeTypeTransformer().decode(value);
         case 'PurchaseResponse':
           return PurchaseResponse.fromJson(value);
         case 'PurchaseUpdate':
@@ -790,6 +800,20 @@ class ApiClient {
           return VideoCodecTypeTransformer().decode(value);
         case 'VideoContainer':
           return VideoContainerTypeTransformer().decode(value);
+        case 'WorkflowActionItemDto':
+          return WorkflowActionItemDto.fromJson(value);
+        case 'WorkflowActionResponseDto':
+          return WorkflowActionResponseDto.fromJson(value);
+        case 'WorkflowCreateDto':
+          return WorkflowCreateDto.fromJson(value);
+        case 'WorkflowFilterItemDto':
+          return WorkflowFilterItemDto.fromJson(value);
+        case 'WorkflowFilterResponseDto':
+          return WorkflowFilterResponseDto.fromJson(value);
+        case 'WorkflowResponseDto':
+          return WorkflowResponseDto.fromJson(value);
+        case 'WorkflowUpdateDto':
+          return WorkflowUpdateDto.fromJson(value);
         default:
           dynamic match;
           if (value is List && (match = _regList.firstMatch(targetType)?.group(1)) != null) {

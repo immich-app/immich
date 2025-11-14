@@ -85,6 +85,7 @@ export interface EnvData {
       root: string;
       indexHtml: string;
     };
+    corePlugin: string;
   };
 
   redis: RedisOptions;
@@ -101,6 +102,11 @@ export interface EnvData {
   };
 
   workers: ImmichWorker[];
+
+  plugins: {
+    enabled: boolean;
+    installFolder?: string;
+  };
 
   noColor: boolean;
   nodeVersion?: string;
@@ -304,6 +310,7 @@ const getEnv = (): EnvData => {
         root: folders.web,
         indexHtml: join(folders.web, 'index.html'),
       },
+      corePlugin: join(buildFolder, 'corePlugin'),
     },
 
     storage: {
@@ -318,6 +325,11 @@ const getEnv = (): EnvData => {
     },
 
     workers,
+
+    plugins: {
+      enabled: !!dto.IMMICH_PLUGINS_ENABLED,
+      installFolder: dto.IMMICH_PLUGINS_INSTALL_FOLDER,
+    },
 
     noColor: !!dto.NO_COLOR,
   };

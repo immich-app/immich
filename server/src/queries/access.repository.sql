@@ -243,3 +243,12 @@ from
 where
   "partner"."sharedById" in ($1)
   and "partner"."sharedWithId" = $2
+
+-- AccessRepository.workflow.checkOwnerAccess
+select
+  "workflow"."id"
+from
+  "workflow"
+where
+  "workflow"."id" in ($1)
+  and "workflow"."ownerId" = $2

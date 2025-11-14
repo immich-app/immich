@@ -4,6 +4,7 @@ packages:
   - e2e
   - open-api/typescript-sdk
   - server
+  - plugins
   - web
   - .github
 ignoredBuiltDependencies:

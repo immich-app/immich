@@ -34,6 +34,7 @@
     "email:dev": "email dev -p 3050 --dir src/emails"
   },
   "dependencies": {
+    "@extism/extism": "2.0.0-rc13",
     "@nestjs/bullmq": "^11.0.1",
     "@nestjs/common": "^11.0.4",
     "@nestjs/core": "^11.0.4",
@@ -56,6 +57,7 @@
     "@react-email/components": "^0.5.0",
     "@react-email/render": "^1.1.2",
     "@socket.io/redis-adapter": "^8.3.0",
+    "ajv": "^8.17.1",
     "archiver": "^7.0.0",
     "async-lock": "^1.4.0",
     "bcrypt": "^6.0.0",
@@ -77,6 +79,7 @@
     "i18n-iso-countries": "^7.6.0",
     "ioredis": "^5.8.2",
     "js-yaml": "^4.1.0",
+    "jsonwebtoken": "^9.0.2",
     "kysely": "0.28.2",
     "kysely-postgres-js": "^3.0.0",
     "lodash": "^4.17.21",
@@ -124,6 +127,7 @@
     "@types/cookie-parser": "^1.4.8",
     "@types/express": "^5.0.0",
     "@types/fluent-ffmpeg": "^2.1.21",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/js-yaml": "^4.0.9",
     "@types/lodash": "^4.14.197",
     "@types/luxon": "^3.6.2",

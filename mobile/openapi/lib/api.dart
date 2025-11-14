@@ -48,6 +48,7 @@ part 'api/notifications_api.dart';
 part 'api/notifications_admin_api.dart';
 part 'api/partners_api.dart';
 part 'api/people_api.dart';
+part 'api/plugins_api.dart';
 part 'api/search_api.dart';
 part 'api/server_api.dart';
 part 'api/sessions_api.dart';
@@ -62,6 +63,7 @@ part 'api/trash_api.dart';
 part 'api/users_api.dart';
 part 'api/users_admin_api.dart';
 part 'api/views_api.dart';
+part 'api/workflows_api.dart';
 
 part 'model/api_key_create_dto.dart';
 part 'model/api_key_create_response_dto.dart';
@@ -208,6 +210,11 @@ part 'model/pin_code_change_dto.dart';
 part 'model/pin_code_reset_dto.dart';
 part 'model/pin_code_setup_dto.dart';
 part 'model/places_response_dto.dart';
+part 'model/plugin_action_response_dto.dart';
+part 'model/plugin_context.dart';
+part 'model/plugin_filter_response_dto.dart';
+part 'model/plugin_response_dto.dart';
+part 'model/plugin_trigger_type.dart';
 part 'model/purchase_response.dart';
 part 'model/purchase_update.dart';
 part 'model/queue_command.dart';
@@ -367,6 +374,13 @@ part 'model/validate_library_response_dto.dart';
 part 'model/version_check_state_response_dto.dart';
 part 'model/video_codec.dart';
 part 'model/video_container.dart';
+part 'model/workflow_action_item_dto.dart';
+part 'model/workflow_action_response_dto.dart';
+part 'model/workflow_create_dto.dart';
+part 'model/workflow_filter_item_dto.dart';
+part 'model/workflow_filter_response_dto.dart';
+part 'model/workflow_response_dto.dart';
+part 'model/workflow_update_dto.dart';
 
 
 /// An [ApiClient] instance that uses the default values obtained from
