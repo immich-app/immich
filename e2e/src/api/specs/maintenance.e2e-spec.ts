@@ -149,7 +149,6 @@ describe('/admin/maintenance', () => {
 
   describe.sequential('POST /', () => {
     it('should exit maintenance mode', async () => {
-      console.info('using', cookie!);
       const { status } = await request(app).post('/admin/maintenance').set('cookie', cookie!).send({
         action: 'end',
       });
