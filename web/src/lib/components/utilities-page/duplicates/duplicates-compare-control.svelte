@@ -5,7 +5,6 @@
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { handlePromiseError } from '$lib/utils';
-  import { suggestDuplicate } from '$lib/utils/duplicate-utils';
   import { navigate } from '$lib/utils/navigation';
   import { getAssetInfo, type AssetResponseDto } from '@immich/sdk';
   import { Button } from '@immich/ui';
@@ -13,7 +12,8 @@
   import { onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { SvelteSet } from 'svelte/reactivity';
-
+  import { duplicateTiePreference } from '$lib/stores/duplicate-tie-preferences.svelte';
+  import { suggestBestDuplicate } from '$lib/utils/duplicate-utils';
   interface Props {
     assets: AssetResponseDto[];
     onResolve: (duplicateAssetIds: string[], trashIds: string[]) => void;
@@ -24,19 +24,18 @@
   const { isViewing: showAssetViewer, asset: viewingAsset, setAsset } = assetViewingStore;
   const getAssetIndex = (id: string) => assets.findIndex((asset) => asset.id === id);
 
-  // eslint-disable-next-line svelte/no-unnecessary-state-wrap
   let selectedAssetIds = $state(new SvelteSet<string>());
   let trashCount = $derived(assets.length - selectedAssetIds.size);
 
-  onMount(() => {
-    const suggestedAsset = suggestDuplicate(assets);
-
-    if (!suggestedAsset) {
-      selectedAssetIds = new SvelteSet(assets[0].id);
+  $effect(() => {
+    if (assets.length === 0) {
+      selectedAssetIds = new SvelteSet<string>();
       return;
     }
 
-    selectedAssetIds.add(suggestedAsset.id);
+    const suggestedAsset = suggestBestDuplicate(assets, duplicateTiePreference.value) ?? assets[0];
+
+    selectedAssetIds = new SvelteSet<string>([suggestedAsset.id]);
   });
 
   onDestroy(() => {
