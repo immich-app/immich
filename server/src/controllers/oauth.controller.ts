@@ -13,7 +13,7 @@ import { UserAdminResponseDto } from 'src/dtos/user.dto';
 import { ApiTag, AuthType, ImmichCookie } from 'src/enum';
 import { Auth, Authenticated, GetLoginDetails } from 'src/middleware/auth.guard';
 import { AuthService, LoginDetails } from 'src/services/auth.service';
-import { respondWithCookie } from 'src/utils/response';
+import { clearCookies, respondWithCookie } from 'src/utils/response';
 
 @ApiTags(ApiTag.Authentication)
 @Controller('oauth')
@@ -73,8 +73,7 @@ export class OAuthController {
     @GetLoginDetails() loginDetails: LoginDetails,
   ): Promise<LoginResponseDto> {
     const body = await this.service.callback(dto, request.headers, loginDetails);
-    res.clearCookie(ImmichCookie.OAuthState);
-    res.clearCookie(ImmichCookie.OAuthCodeVerifier);
+    clearCookies(res, [ImmichCookie.OAuthState, ImmichCookie.OAuthCodeVerifier], loginDetails.isSecure);
     return respondWithCookie(res, body, {
       isSecure: loginDetails.isSecure,
       values: [

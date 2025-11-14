@@ -66,9 +66,19 @@ export interface EnvData {
     server: string;
   };
 
-  network: {
-    trustedProxies: string[];
-  };
+    network: {
+      trustedProxies: string[];
+    };
+
+    security: {
+      enforceSecureCookies: boolean;
+      rateLimit: {
+        windowMs: number;
+        max: number;
+        loginWindowMs: number;
+        loginMax: number;
+      };
+    };
 
   otel: OpenTelemetryModuleOptions;
 
@@ -251,33 +261,43 @@ const getEnv = (): EnvData => {
       queues: Object.values(QueueName).map((name) => ({ name })),
     },
 
-    cls: {
-      config: {
-        middleware: {
-          mount: true,
-          generateId: true,
-          setup: (cls, req: Request, res: Response) => {
-            const headerValues = req.headers[ImmichHeader.Cid];
-            const headerValue = Array.isArray(headerValues) ? headerValues[0] : headerValues;
-            const cid = headerValue || cls.get(CLS_ID);
-            cls.set(CLS_ID, cid);
-            res.header(ImmichHeader.Cid, cid);
+      cls: {
+        config: {
+          middleware: {
+            mount: true,
+            generateId: true,
+            setup: (cls, req: Request, res: Response) => {
+              const headerValues = req.headers[ImmichHeader.Cid];
+              const headerValue = Array.isArray(headerValues) ? headerValues[0] : headerValues;
+              const cid = headerValue || cls.get(CLS_ID);
+              cls.set(CLS_ID, cid);
+              res.header(ImmichHeader.Cid, cid);
+            },
           },
         },
       },
-    },
 
-    database: {
-      config: databaseConnection,
-      skipMigrations: dto.DB_SKIP_MIGRATIONS ?? false,
-      vectorExtension,
-    },
+      database: {
+        config: databaseConnection,
+        skipMigrations: dto.DB_SKIP_MIGRATIONS ?? false,
+        vectorExtension,
+      },
 
-    licensePublicKey: isProd ? productionKeys : stagingKeys,
+      licensePublicKey: isProd ? productionKeys : stagingKeys,
 
-    network: {
-      trustedProxies: dto.IMMICH_TRUSTED_PROXIES ?? ['linklocal', 'uniquelocal'],
-    },
+      network: {
+        trustedProxies: dto.IMMICH_TRUSTED_PROXIES ?? ['linklocal', 'uniquelocal'],
+      },
+
+      security: {
+        enforceSecureCookies: dto.IMMICH_FORCE_SECURE_COOKIES ?? isProd,
+        rateLimit: {
+          windowMs: dto.IMMICH_RATE_LIMIT_WINDOW_MS ?? 60_000,
+          max: dto.IMMICH_RATE_LIMIT_MAX ?? 300,
+          loginWindowMs: dto.IMMICH_LOGIN_RATE_LIMIT_WINDOW_MS ?? 60_000,
+          loginMax: dto.IMMICH_LOGIN_RATE_LIMIT_MAX ?? 10,
+        },
+      },
 
     otel: {
       metrics: {

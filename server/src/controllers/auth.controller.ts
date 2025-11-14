@@ -95,15 +95,17 @@ export class AuthController {
     @Req() request: Request,
     @Res({ passthrough: true }) res: Response,
     @Auth() auth: AuthDto,
+    @GetLoginDetails() loginDetails: LoginDetails,
   ): Promise<LogoutResponseDto> {
     const authType = (request.cookies || {})[ImmichCookie.AuthType];
 
     const body = await this.service.logout(auth, authType);
-    return respondWithoutCookie(res, body, [
-      ImmichCookie.AccessToken,
-      ImmichCookie.AuthType,
-      ImmichCookie.IsAuthenticated,
-    ]);
+    return respondWithoutCookie(
+      res,
+      body,
+      [ImmichCookie.AccessToken, ImmichCookie.AuthType, ImmichCookie.IsAuthenticated],
+      loginDetails.isSecure,
+    );
   }
 
   @Get('status')

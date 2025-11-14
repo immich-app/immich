@@ -118,6 +118,29 @@ export class EnvDto {
   @Optional()
   IMMICH_TRUSTED_PROXIES?: string[];
 
+  @ValidateBoolean({ optional: true })
+  IMMICH_FORCE_SECURE_COOKIES?: boolean;
+
+  @IsInt()
+  @Optional()
+  @Type(() => Number)
+  IMMICH_RATE_LIMIT_WINDOW_MS?: number;
+
+  @IsInt()
+  @Optional()
+  @Type(() => Number)
+  IMMICH_RATE_LIMIT_MAX?: number;
+
+  @IsInt()
+  @Optional()
+  @Type(() => Number)
+  IMMICH_LOGIN_RATE_LIMIT_WINDOW_MS?: number;
+
+  @IsInt()
+  @Optional()
+  @Type(() => Number)
+  IMMICH_LOGIN_RATE_LIMIT_MAX?: number;
+
   @IsString()
   @Optional()
   IMMICH_WORKERS_INCLUDE?: string;

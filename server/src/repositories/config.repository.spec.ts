@@ -12,6 +12,11 @@ const resetEnv = () => {
     'IMMICH_WORKERS_INCLUDE',
     'IMMICH_WORKERS_EXCLUDE',
     'IMMICH_TRUSTED_PROXIES',
+    'IMMICH_FORCE_SECURE_COOKIES',
+    'IMMICH_RATE_LIMIT_WINDOW_MS',
+    'IMMICH_RATE_LIMIT_MAX',
+    'IMMICH_LOGIN_RATE_LIMIT_WINDOW_MS',
+    'IMMICH_LOGIN_RATE_LIMIT_MAX',
     'IMMICH_API_METRICS_PORT',
     'IMMICH_MEDIA_LOCATION',
     'IMMICH_MICROSERVICES_METRICS_PORT',
@@ -74,6 +79,43 @@ describe('getEnv', () => {
       environment: 'production',
       configFile: undefined,
       logLevel: undefined,
+    });
+
+    describe('security', () => {
+      it('should default to secure cookies and sane rate limits', () => {
+        const { security } = getEnv();
+
+        expect(security).toEqual({
+          enforceSecureCookies: true,
+          rateLimit: {
+            windowMs: 60_000,
+            max: 300,
+            loginWindowMs: 60_000,
+            loginMax: 10,
+          },
+        });
+      });
+
+      it('should respect overrides', () => {
+        process.env.IMMICH_ENV = 'development';
+        process.env.IMMICH_FORCE_SECURE_COOKIES = 'false';
+        process.env.IMMICH_RATE_LIMIT_WINDOW_MS = '120000';
+        process.env.IMMICH_RATE_LIMIT_MAX = '500';
+        process.env.IMMICH_LOGIN_RATE_LIMIT_WINDOW_MS = '60000';
+        process.env.IMMICH_LOGIN_RATE_LIMIT_MAX = '4';
+
+        const { security } = getEnv();
+
+        expect(security).toEqual({
+          enforceSecureCookies: false,
+          rateLimit: {
+            windowMs: 120_000,
+            max: 500,
+            loginWindowMs: 60_000,
+            loginMax: 4,
+          },
+        });
+      });
     });
   });
 

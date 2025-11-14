@@ -3,7 +3,9 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { json } from 'body-parser';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
+import rateLimit from 'express-rate-limit';
 import { existsSync } from 'node:fs';
+import helmet from 'helmet';
 import sirv from 'sirv';
 import { ApiModule } from 'src/app.module';
 import { excludePaths, serverVersion } from 'src/constants';
@@ -24,8 +26,7 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(ApiModule, { bufferLogs: true });
   const logger = await app.resolve(LoggingRepository);
   const configRepository = app.get(ConfigRepository);
-
-  const { environment, host, port, resourcePaths } = configRepository.getEnv();
+  const { environment, host, port, resourcePaths, security } = configRepository.getEnv();
 
   logger.setContext('Bootstrap');
   app.useLogger(logger);
@@ -33,13 +34,42 @@ async function bootstrap() {
   app.set('etag', 'strong');
   app.use(cookieParser());
   app.use(json({ limit: '10mb' }));
+  app.use(
+    helmet({
+      contentSecurityPolicy: false,
+      crossOriginEmbedderPolicy: false,
+      referrerPolicy: { policy: 'no-referrer' },
+      hsts: security.enforceSecureCookies
+        ? { maxAge: 60 * 60 * 24 * 180, includeSubDomains: true, preload: true }
+        : false,
+    }),
+  );
   if (configRepository.isDev()) {
     app.enableCors();
   }
   app.useWebSocketAdapter(new WebSocketAdapter(app));
   useSwagger(app, { write: configRepository.isDev() });
 
+  const globalRateLimiter = rateLimit({
+    windowMs: security.rateLimit.windowMs,
+    limit: security.rateLimit.max,
+    max: security.rateLimit.max,
+    standardHeaders: 'draft-7',
+    legacyHeaders: false,
+  });
+
+  const loginRateLimiter = rateLimit({
+    windowMs: security.rateLimit.loginWindowMs,
+    limit: security.rateLimit.loginMax,
+    max: security.rateLimit.loginMax,
+    standardHeaders: 'draft-7',
+    legacyHeaders: false,
+  });
+
   app.setGlobalPrefix('api', { exclude: excludePaths });
+  app.use('/api', globalRateLimiter);
+  app.use('/api/auth/login', loginRateLimiter);
+  app.use('/api/oauth/callback', loginRateLimiter);
   if (existsSync(resourcePaths.web.root)) {
     // copied from https://github.com/sveltejs/kit/blob/679b5989fe62e3964b9a73b712d7b41831aa1f07/packages/adapter-node/src/handler.js#L46
     // provides serving of precompressed assets and caching of immutable assets
