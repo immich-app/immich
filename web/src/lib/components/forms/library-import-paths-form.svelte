@@ -1,5 +1,5 @@
 <script lang="ts">
-  import LibraryImportPathModal from '$lib/modals/LibraryImportPathModal.svelte';
+  import LibraryImportPathModal from '$lib/modals/LibraryImportPathAddModal.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import type { ValidateLibraryImportPathResponseDto } from '@immich/sdk';
   import { validate, type LibraryResponseDto } from '@immich/sdk';

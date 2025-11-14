@@ -1,33 +1,31 @@
 <script lang="ts">
   import LibraryImportPathsForm from '$lib/components/forms/library-import-paths-form.svelte';
   import LibraryScanSettingsForm from '$lib/components/forms/library-scan-settings-form.svelte';
+  import HeaderButton from '$lib/components/HeaderButton.svelte';
   import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
+  import OnEvents from '$lib/components/OnEvents.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
-  import LibraryImportPathModal from '$lib/modals/LibraryImportPathModal.svelte';
+  import TableButton from '$lib/components/TableButton.svelte';
   import LibraryRenameModal from '$lib/modals/LibraryRenameModal.svelte';
-  import LibraryUserPickerModal from '$lib/modals/LibraryUserPickerModal.svelte';
+  import { getLibrariesActions, getLibraryActions, handleLibraryCreate } from '$lib/services/library.service';
   import { locale } from '$lib/stores/preferences.store';
   import { ByteUnit, getBytesWithUnit } from '$lib/utils/byte-units';
   import { handleError } from '$lib/utils/handle-error';
   import {
-    createLibrary,
     deleteLibrary,
     getAllLibraries,
     getLibraryStatistics,
     getUserAdmin,
-    JobCommand,
-    JobName,
     scanLibrary,
-    sendJobCommand,
     updateLibrary,
     type LibraryResponseDto,
     type LibraryStatsResponseDto,
     type UserResponseDto,
   } from '@immich/sdk';
-  import { Button, LoadingSpinner, modalManager, Text, toastManager } from '@immich/ui';
-  import { mdiDotsVertical, mdiPlusBoxOutline, mdiSync } from '@mdi/js';
+  import { LoadingSpinner, modalManager, toastManager } from '@immich/ui';
+  import { mdiDotsVertical } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { fade, slide } from 'svelte/transition';
@@ -84,60 +82,6 @@
     }
   }
 
-  const handleCreate = async (ownerId: string) => {
-    let createdLibrary: LibraryResponseDto | undefined;
-    try {
-      createdLibrary = await createLibrary({ createLibraryDto: { ownerId } });
-      toastManager.success($t('admin.library_created', { values: { library: createdLibrary.name } }));
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_create_library'));
-    } finally {
-      await readLibraryList();
-    }
-
-    if (createdLibrary) {
-      // Open the import paths form for the newly created library
-      const createdLibraryIndex = libraries.findIndex((library) => library.id === createdLibrary.id);
-      const result = await modalManager.show(LibraryImportPathModal, {
-        title: $t('add_import_path'),
-        submitText: $t('add'),
-        importPath: null,
-      });
-
-      if (!result) {
-        if (createdLibraryIndex !== null) {
-          onEditImportPathClicked(createdLibraryIndex);
-        }
-        return;
-      }
-
-      switch (result.action) {
-        case 'submit': {
-          handleAddImportPath(result.importPath, createdLibraryIndex);
-          break;
-        }
-        case 'delete': {
-          await handleDelete(libraries[createdLibraryIndex], createdLibraryIndex);
-          break;
-        }
-      }
-    }
-  };
-
-  const handleAddImportPath = (newImportPath: string | null, libraryIndex: number) => {
-    if ((libraryIndex !== 0 && !libraryIndex) || !newImportPath) {
-      return;
-    }
-
-    try {
-      onEditImportPathClicked(libraryIndex);
-
-      libraries[libraryIndex].importPaths.push(newImportPath);
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_add_import_path'));
-    }
-  };
-
   const handleUpdate = async (library: Partial<LibraryResponseDto>, libraryIndex: number) => {
     try {
       const libraryId = libraries[libraryIndex].id;
@@ -146,16 +90,6 @@
       await readLibraryList();
     } catch (error) {
       handleError(error, $t('errors.unable_to_update_library'));
-    }
-  };
-
-  const handleScanAll = async () => {
-    try {
-      await sendJobCommand({ id: JobName.Library, jobCommandDto: { command: JobCommand.Start } });
-
-      toastManager.info($t('admin.refreshing_all_libraries'));
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_scan_libraries'));
     }
   };
 
@@ -188,13 +122,6 @@
 
     if (library) {
       await handleScan(library.id);
-    }
-  };
-
-  const onCreateNewLibraryClicked = async () => {
-    const result = await modalManager.show(LibraryUserPickerModal);
-    if (result) {
-      await handleCreate(result);
     }
   };
 
@@ -238,25 +165,24 @@
       await readLibraryList();
     }
   };
+
+  const { Create, ScanAll } = $derived(getLibrariesActions($t));
 </script>
+
+<!-- TODO fetching everything again is overkill, we know what's new -->
+<OnEvents
+  onLibraryCreate={() => readLibraryList()}
+  onLibraryUpdate={() => readLibraryList()}
+  onLibraryDelete={() => readLibraryList()}
+/>
 
 <AdminPageLayout title={data.meta.title}>
   {#snippet buttons()}
     <div class="flex justify-end gap-2">
       {#if libraries.length > 0}
-        <Button leadingIcon={mdiSync} onclick={handleScanAll} size="small" variant="ghost" color="secondary">
-          <Text class="hidden md:block">{$t('scan_all_libraries')}</Text>
-        </Button>
+        <HeaderButton action={ScanAll} />
       {/if}
-      <Button
-        leadingIcon={mdiPlusBoxOutline}
-        onclick={onCreateNewLibraryClicked}
-        size="small"
-        variant="ghost"
-        color="secondary"
-      >
-        <Text class="hidden md:block">{$t('create_library')}</Text>
-      </Button>
+      <HeaderButton action={Create} />
     </div>
   {/snippet}
   <section class="my-4">
@@ -277,6 +203,7 @@
           </thead>
           <tbody class="block overflow-y-auto rounded-md border dark:border-immich-dark-gray">
             {#each libraries as library, index (library.id)}
+              {@const { View, Delete } = getLibraryActions($t, library)}
               <tr
                 class="grid grid-cols-6 h-20 w-full place-items-center text-center dark:text-immich-dark-fg even:bg-subtle/20 odd:bg-subtle/80"
               >
@@ -309,7 +236,8 @@
                   {/if}
                 </td>
 
-                <td class="text-ellipsis px-4 text-sm">
+                <td class="flex gap-2 text-ellipsis px-4 text-sm">
+                  <TableButton action={View} />
                   <ButtonContextMenu
                     align="top-right"
                     direction="left"
@@ -325,12 +253,7 @@
                     <MenuOption onClick={() => onEditImportPathClicked(index)} text={$t('edit_import_paths')} />
                     <MenuOption onClick={() => onScanSettingClicked(index)} text={$t('scan_settings')} />
                     <hr />
-                    <MenuOption
-                      onClick={() => handleDelete(library, index)}
-                      activeColor="bg-red-200"
-                      textColor="text-red-600"
-                      text={$t('delete_library')}
-                    />
+                    <TableButton action={Delete} />
                   </ButtonContextMenu>
                 </td>
               </tr>
@@ -360,7 +283,7 @@
 
         <!-- Empty message -->
       {:else}
-        <EmptyPlaceholder text={$t('no_libraries_message')} onClick={onCreateNewLibraryClicked} />
+        <EmptyPlaceholder text={$t('no_libraries_message')} onClick={handleLibraryCreate} />
       {/if}
     </div>
   </section>

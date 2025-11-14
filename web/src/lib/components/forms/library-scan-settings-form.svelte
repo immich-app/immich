@@ -1,5 +1,5 @@
 <script lang="ts">
-  import LibraryExclusionPatternModal from '$lib/modals/LibraryExclusionPatternModal.svelte';
+  import LibraryExclusionPatternModal from '$lib/modals/LibraryExclusionPatternEditModal.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { type LibraryResponseDto } from '@immich/sdk';
   import { Button, IconButton, modalManager } from '@immich/ui';

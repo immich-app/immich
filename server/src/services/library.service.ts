@@ -319,16 +319,16 @@ export class LibraryService extends BaseService {
   async update(id: string, dto: UpdateLibraryDto): Promise<LibraryResponseDto> {
     await this.findOrFail(id);
 
-    if (dto.importPaths) {
-      const validation = await this.validate(id, { importPaths: dto.importPaths });
-      if (validation.importPaths) {
-        for (const path of validation.importPaths) {
-          if (!path.isValid) {
-            throw new BadRequestException(`Invalid import path: ${path.message}`);
-          }
-        }
-      }
-    }
+    // if (dto.importPaths) {
+    //   const validation = await this.validate(id, { importPaths: dto.importPaths });
+    //   if (validation.importPaths) {
+    //     for (const path of validation.importPaths) {
+    //       if (!path.isValid) {
+    //         throw new BadRequestException(`Invalid import path: ${path.message}`);
+    //       }
+    //     }
+    //   }
+    // }
 
     const library = await this.libraryRepository.update(id, dto);
     return mapLibrary(library);
