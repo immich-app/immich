@@ -16,7 +16,9 @@ class DownloadApi {
 
   final ApiClient apiClient;
 
-  /// This endpoint requires the `asset.download` permission.
+  /// Download asset archive
+  ///
+  /// Download a ZIP archive containing the specified assets. The assets must have been previously requested via the \"getDownloadInfo\" endpoint.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -59,7 +61,9 @@ class DownloadApi {
     );
   }
 
-  /// This endpoint requires the `asset.download` permission.
+  /// Download asset archive
+  ///
+  /// Download a ZIP archive containing the specified assets. The assets must have been previously requested via the \"getDownloadInfo\" endpoint.
   ///
   /// Parameters:
   ///
@@ -83,7 +87,9 @@ class DownloadApi {
     return null;
   }
 
-  /// This endpoint requires the `asset.download` permission.
+  /// Retrieve download information
+  ///
+  /// Retrieve information about how to request a download for the specified assets or album. The response includes groups of assets that can be downloaded together.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -126,7 +132,9 @@ class DownloadApi {
     );
   }
 
-  /// This endpoint requires the `asset.download` permission.
+  /// Retrieve download information
+  ///
+  /// Retrieve information about how to request a download for the specified assets or album. The response includes groups of assets that can be downloaded together.
   ///
   /// Parameters:
   ///

@@ -12,14 +12,12 @@ import 'package:immich_mobile/infrastructure/repositories/store.repository.dart'
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/services/upload.service.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:photo_manager/photo_manager.dart';
 
 import '../domain/service.mock.dart';
 import '../fixtures/asset.stub.dart';
 import '../infrastructure/repository.mock.dart';
 import '../repository.mocks.dart';
-
-class MockAssetEntity extends Mock implements AssetEntity {}
+import '../mocks/asset_entity.mock.dart';
 
 void main() {
   late UploadService sut;

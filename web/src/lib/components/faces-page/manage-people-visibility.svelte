@@ -157,6 +157,7 @@
           altText={person.name}
           widthStyle="100%"
           hiddenIconClass="text-white group-hover:text-black transition-colors"
+          preload={false}
         />
         {#if person.name}
           <span class="absolute bottom-2 start-0 w-full select-text px-1 text-center font-medium text-white">

@@ -4,6 +4,8 @@ import android.annotation.SuppressLint
 import android.content.ContentUris
 import android.content.Context
 import android.database.Cursor
+import android.net.Uri
+import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Base64
 import androidx.core.database.getStringOrNull
@@ -79,6 +81,16 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin() {
     selection,
     selectionArgs,
     sortOrder,
+  )
+
+  protected fun getCursor(
+    volume: String,
+    queryArgs: Bundle
+  ): Cursor? = ctx.contentResolver.query(
+    MediaStore.Files.getContentUri(volume),
+    ASSET_PROJECTION,
+    queryArgs,
+    null
   )
 
   protected fun getAssets(cursor: Cursor?): Sequence<AssetResult> {

@@ -220,8 +220,6 @@ class ApiClient {
           return AlbumsResponse.fromJson(value);
         case 'AlbumsUpdate':
           return AlbumsUpdate.fromJson(value);
-        case 'AllJobStatusResponseDto':
-          return AllJobStatusResponseDto.fromJson(value);
         case 'AssetBulkDeleteDto':
           return AssetBulkDeleteDto.fromJson(value);
         case 'AssetBulkUpdateDto':
@@ -358,20 +356,10 @@ class ApiClient {
           return FoldersUpdate.fromJson(value);
         case 'ImageFormat':
           return ImageFormatTypeTransformer().decode(value);
-        case 'JobCommand':
-          return JobCommandTypeTransformer().decode(value);
-        case 'JobCommandDto':
-          return JobCommandDto.fromJson(value);
-        case 'JobCountsDto':
-          return JobCountsDto.fromJson(value);
         case 'JobCreateDto':
           return JobCreateDto.fromJson(value);
-        case 'JobName':
-          return JobNameTypeTransformer().decode(value);
         case 'JobSettingsDto':
           return JobSettingsDto.fromJson(value);
-        case 'JobStatusDto':
-          return JobStatusDto.fromJson(value);
         case 'LibraryResponseDto':
           return LibraryResponseDto.fromJson(value);
         case 'LibraryStatsResponseDto':
@@ -404,6 +392,8 @@ class ApiClient {
           return MemoryCreateDto.fromJson(value);
         case 'MemoryResponseDto':
           return MemoryResponseDto.fromJson(value);
+        case 'MemorySearchOrder':
+          return MemorySearchOrderTypeTransformer().decode(value);
         case 'MemoryStatisticsResponseDto':
           return MemoryStatisticsResponseDto.fromJson(value);
         case 'MemoryType':
@@ -486,8 +476,20 @@ class ApiClient {
           return PurchaseResponse.fromJson(value);
         case 'PurchaseUpdate':
           return PurchaseUpdate.fromJson(value);
+        case 'QueueCommand':
+          return QueueCommandTypeTransformer().decode(value);
+        case 'QueueCommandDto':
+          return QueueCommandDto.fromJson(value);
+        case 'QueueName':
+          return QueueNameTypeTransformer().decode(value);
+        case 'QueueResponseDto':
+          return QueueResponseDto.fromJson(value);
+        case 'QueueStatisticsDto':
+          return QueueStatisticsDto.fromJson(value);
         case 'QueueStatusDto':
           return QueueStatusDto.fromJson(value);
+        case 'QueuesResponseDto':
+          return QueuesResponseDto.fromJson(value);
         case 'RandomSearchDto':
           return RandomSearchDto.fromJson(value);
         case 'RatingsResponse':

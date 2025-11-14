@@ -419,14 +419,16 @@ export interface UploadFile {
   size: number;
 }
 
+export interface UploadBody {
+  filename?: string;
+  [key: string]: unknown;
+}
+
 export type UploadRequest = {
   auth: AuthDto | null;
   fieldName: UploadFieldName;
   file: UploadFile;
-  body: {
-    filename?: string;
-    [key: string]: unknown;
-  };
+  body: UploadBody;
 };
 
 export interface UploadFiles {
@@ -497,6 +499,7 @@ export interface UserPreferences {
   };
   memories: {
     enabled: boolean;
+    duration: number;
   };
   people: {
     enabled: boolean;
