@@ -11,11 +11,10 @@ function returnOutput(output: any) {
 
 export function filterFileName() {
   const input = parseInput();
-  const { context, config } = input;
+  const { data, config } = input;
   const { pattern, matchType = 'contains', caseSensitive = false } = config;
 
-  const fileName =
-    context.asset.originalFileName || context.asset.fileName || '';
+  const fileName = data.asset.originalFileName || data.asset.fileName || '';
   const searchName = caseSensitive ? fileName : fileName.toLowerCase();
   const searchPattern = caseSensitive ? pattern : pattern.toLowerCase();
 
@@ -32,19 +31,18 @@ export function filterFileName() {
     passed = searchName.includes(searchPattern);
   }
 
-  return returnOutput({ passed, context });
+  return returnOutput({ passed });
 }
 
 export function actionAddToAlbum() {
-  console.log('Executing action action_add_to_album');
   const input = parseInput();
-  const { context, config } = input;
+  const { authToken, config, data } = input;
   const { albumId } = config;
 
   const ptr = Memory.fromString(
     JSON.stringify({
-      jwtToken: context.jwtToken,
-      assetId: context.asset.id,
+      authToken,
+      assetId: data.asset.id,
       albumId: albumId,
     })
   );
@@ -52,16 +50,16 @@ export function actionAddToAlbum() {
   addAssetToAlbum(ptr.offset);
   ptr.free();
 
-  return returnOutput({ success: true, context });
+  return returnOutput({ success: true });
 }
 
 export function actionArchive() {
   const input = parseInput();
-  const { context } = input;
+  const { authToken, data } = input;
   const ptr = Memory.fromString(
     JSON.stringify({
-      jwtToken: context.jwtToken,
-      id: context.asset.id,
+      authToken,
+      id: data.asset.id,
       visibility: 'archive',
     })
   );
@@ -69,5 +67,5 @@ export function actionArchive() {
   updateAsset(ptr.offset);
   ptr.free();
 
-  return returnOutput({ success: true, context });
+  return returnOutput({ success: true });
 }

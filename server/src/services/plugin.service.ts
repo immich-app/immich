@@ -266,6 +266,8 @@ export class PluginService extends BaseService {
         },
       };
 
+      this.logger.debug(`Calling action ${filter.name} with input: ${JSON.stringify(filterInput)}`);
+
       const filterResult = await pluginInstance.call(
         filter.name,
         new TextEncoder().encode(JSON.stringify(filterInput)),
@@ -306,7 +308,7 @@ export class PluginService extends BaseService {
         },
       };
 
-      this.logger.verbose(`Calling action ${action.name} with input: ${JSON.stringify(actionInput)}`);
+      this.logger.debug(`Calling action ${action.name} with input: ${JSON.stringify(actionInput)}`);
 
       await pluginInstance.call(action.name, JSON.stringify(actionInput));
     }
