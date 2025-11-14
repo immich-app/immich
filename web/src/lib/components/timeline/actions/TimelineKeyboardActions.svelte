@@ -7,6 +7,7 @@
     setFocusTo as setFocusToInit,
   } from '$lib/components/timeline/actions/focus-actions';
   import { AppRoute } from '$lib/constants';
+  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import NavigateToDateModal from '$lib/modals/NavigateToDateModal.svelte';
@@ -15,7 +16,6 @@
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { showDeleteModal } from '$lib/stores/preferences.store';
   import { searchStore } from '$lib/stores/search.svelte';
-  import { featureFlags } from '$lib/stores/system-config-manager.svelte';
   import { handlePromiseError } from '$lib/utils';
   import { deleteAssets, updateStackedAssetInTimeline } from '$lib/utils/actions';
   import { archiveAssets, cancelMultiselect, selectAllAssets, stackAssets } from '$lib/utils/asset-utils';
@@ -121,7 +121,7 @@
     }
   };
 
-  const isTrashEnabled = $derived($featureFlags.loaded && $featureFlags.trash);
+  const isTrashEnabled = $derived(featureFlagsManager.value.trash);
   const isEmpty = $derived(timelineManager.isInitialized && timelineManager.months.length === 0);
   const idsSelectedAssets = $derived(assetInteraction.selectedAssets.map(({ id }) => id));
   let isShortcutModalOpen = false;
