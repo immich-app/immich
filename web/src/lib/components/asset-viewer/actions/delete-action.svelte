@@ -3,8 +3,8 @@
   import DeleteAssetDialog from '$lib/components/photos-page/delete-asset-dialog.svelte';
   import { AssetAction } from '$lib/constants';
   import Portal from '$lib/elements/Portal.svelte';
+  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { showDeleteModal } from '$lib/stores/preferences.store';
-  import { featureFlags } from '$lib/stores/system-config-manager.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { deleteAssets, type AssetResponseDto } from '@immich/sdk';
@@ -24,7 +24,7 @@
   let showConfirmModal = $state(false);
 
   const trashOrDelete = async (force = false) => {
-    if (force || !$featureFlags.trash) {
+    if (force || !featureFlagsManager.value.trash) {
       if ($showDeleteModal) {
         showConfirmModal = true;
         return;

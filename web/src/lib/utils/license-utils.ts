@@ -1,8 +1,7 @@
 import { PUBLIC_IMMICH_BUY_HOST, PUBLIC_IMMICH_PAY_HOST } from '$env/static/public';
 import type { ImmichProduct } from '$lib/constants';
-import { serverConfig } from '$lib/stores/system-config-manager.svelte';
+import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
 import { setServerLicense, setUserLicense, type LicenseResponseDto } from '@immich/sdk';
-import { get } from 'svelte/store';
 import { loadUser } from './auth';
 
 export const activateProduct = async (licenseKey: string, activationKey: string): Promise<LicenseResponseDto> => {
@@ -24,6 +23,6 @@ export const getActivationKey = async (licenseKey: string): Promise<string> => {
 export const getLicenseLink = (license: ImmichProduct) => {
   const url = new URL('/', PUBLIC_IMMICH_BUY_HOST);
   url.searchParams.append('productId', license);
-  url.searchParams.append('instanceUrl', get(serverConfig).externalDomain || globalThis.origin);
+  url.searchParams.append('instanceUrl', serverConfigManager.value.externalDomain || globalThis.origin);
   return url.href;
 };

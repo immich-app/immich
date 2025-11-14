@@ -1,7 +1,7 @@
 <script lang="ts">
   import FormatMessage from '$lib/elements/FormatMessage.svelte';
+  import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
   import { handleDeleteUserAdmin } from '$lib/services/user-admin.service';
-  import { serverConfig } from '$lib/stores/system-config-manager.svelte';
   import { type UserAdminResponseDto } from '@immich/sdk';
   import { Alert, Checkbox, ConfirmModal, Field, Input, Label, Text } from '@immich/ui';
   import { mdiTrashCanOutline } from '@mdi/js';
@@ -50,7 +50,7 @@
         {:else}
           <FormatMessage
             key="admin.user_delete_delay"
-            values={{ user: user.name, delay: $serverConfig.userDeleteDelay }}
+            values={{ user: user.name, delay: serverConfigManager.value.userDeleteDelay }}
           >
             {#snippet children({ message })}
               <b>{message}</b>

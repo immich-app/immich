@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { featureFlags } from '$lib/stores/system-config-manager.svelte';
+  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { getJobName } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { JobCommand, JobName, sendJobCommand, type AllJobStatusResponseDto, type JobCommandDto } from '@immich/sdk';
@@ -27,8 +27,9 @@
   }
 
   let { jobs = $bindable() }: Props = $props();
+  const featureFlags = featureFlagsManager.value;
 
-  interface JobDetails {
+  type JobDetails = {
     title: string;
     subtitle?: string;
     description?: Component;
@@ -38,7 +39,7 @@
     disabled?: boolean;
     icon: string;
     handleCommand?: (jobId: JobName, jobCommand: JobCommandDto) => Promise<void>;
-  }
+  };
 
   const handleConfirmCommand = async (jobId: JobName, dto: JobCommandDto) => {
     if (dto.force) {
@@ -84,7 +85,7 @@
       subtitle: $t('admin.sidecar_job_description'),
       allText: $t('sync'),
       missingText: $t('discover'),
-      disabled: !$featureFlags.sidecar,
+      disabled: !featureFlags.sidecar,
     },
     [JobName.SmartSearch]: {
       icon: mdiImageSearch,
@@ -92,7 +93,7 @@
       subtitle: $t('admin.smart_search_job_description'),
       allText: $t('all'),
       missingText: $t('missing'),
-      disabled: !$featureFlags.smartSearch,
+      disabled: !featureFlags.smartSearch,
     },
     [JobName.DuplicateDetection]: {
       icon: mdiContentDuplicate,
@@ -100,7 +101,7 @@
       subtitle: $t('admin.duplicate_detection_job_description'),
       allText: $t('all'),
       missingText: $t('missing'),
-      disabled: !$featureFlags.duplicateDetection,
+      disabled: !featureFlags.duplicateDetection,
     },
     [JobName.FaceDetection]: {
       icon: mdiFaceRecognition,
@@ -110,7 +111,7 @@
       refreshText: $t('refresh'),
       missingText: $t('missing'),
       handleCommand: handleConfirmCommand,
-      disabled: !$featureFlags.facialRecognition,
+      disabled: !featureFlags.facialRecognition,
     },
     [JobName.FacialRecognition]: {
       icon: mdiTagFaces,
@@ -119,7 +120,7 @@
       allText: $t('reset'),
       missingText: $t('missing'),
       handleCommand: handleConfirmCommand,
-      disabled: !$featureFlags.facialRecognition,
+      disabled: !featureFlags.facialRecognition,
     },
     [JobName.Ocr]: {
       icon: mdiOcr,
@@ -127,7 +128,7 @@
       subtitle: $t('admin.ocr_job_description'),
       allText: $t('all'),
       missingText: $t('missing'),
-      disabled: !$featureFlags.ocr,
+      disabled: !featureFlags.ocr,
     },
     [JobName.VideoConversion]: {
       icon: mdiVideo,
