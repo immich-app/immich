@@ -122,11 +122,11 @@ export class PluginService extends BaseService {
     this.logger.log(`Upserted plugin: ${plugin.name} (ID: ${plugin.id}, version: ${plugin.version})`);
 
     for (const filter of filters) {
-      this.logger.log(`Upserted plugin filter: ${filter.name} (ID: ${filter.id})`);
+      this.logger.log(`Upserted plugin filter: ${filter.methodName} (ID: ${filter.id})`);
     }
 
     for (const action of actions) {
-      this.logger.log(`Upserted plugin action: ${action.name} (ID: ${action.id})`);
+      this.logger.log(`Upserted plugin action: ${action.methodName} (ID: ${action.id})`);
     }
   }
 
@@ -267,21 +267,21 @@ export class PluginService extends BaseService {
         },
       };
 
-      this.logger.debug(`Calling action ${filter.name} with input: ${JSON.stringify(filterInput)}`);
+      this.logger.debug(`Calling filter ${filter.methodName} with input: ${JSON.stringify(filterInput)}`);
 
       const filterResult = await pluginInstance.call(
-        filter.name,
+        filter.methodName,
         new TextEncoder().encode(JSON.stringify(filterInput)),
       );
 
       if (!filterResult) {
-        this.logger.error(`Filter ${filter.name} returned null`);
+        this.logger.error(`Filter ${filter.methodName} returned null`);
         return false;
       }
 
       const result = JSON.parse(filterResult.text());
       if (result.passed === false) {
-        this.logger.debug(`Filter ${filter.name} returned false, stopping workflow execution`);
+        this.logger.debug(`Filter ${filter.methodName} returned false, stopping workflow execution`);
         return false;
       }
     }
@@ -309,9 +309,9 @@ export class PluginService extends BaseService {
         },
       };
 
-      this.logger.debug(`Calling action ${action.name} with input: ${JSON.stringify(actionInput)}`);
+      this.logger.debug(`Calling action ${action.methodName} with input: ${JSON.stringify(actionInput)}`);
 
-      await pluginInstance.call(action.name, JSON.stringify(actionInput));
+      await pluginInstance.call(action.methodName, JSON.stringify(actionInput));
     }
   }
 }

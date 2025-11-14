@@ -20,8 +20,8 @@ export class PluginResponseDto {
 export class PluginFilterResponseDto {
   id!: string;
   pluginId!: string;
-  name!: string;
-  displayName!: string;
+  methodName!: string;
+  title!: string;
   description!: string;
 
   @ValidateEnum({ enum: PluginContext, name: 'PluginContext' })
@@ -32,8 +32,8 @@ export class PluginFilterResponseDto {
 export class PluginActionResponseDto {
   id!: string;
   pluginId!: string;
-  name!: string;
-  displayName!: string;
+  methodName!: string;
+  title!: string;
   description!: string;
 
   @ValidateEnum({ enum: PluginContext, name: 'PluginContext' })

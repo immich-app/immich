@@ -43,8 +43,8 @@ describe(WorkflowService.name, () => {
         },
         filters: [
           {
-            name: 'test-filter',
-            displayName: 'Test Filter',
+            methodName: 'test-filter',
+            title: 'Test Filter',
             description: 'A test filter',
             supportedContexts: [PluginContext.Asset],
             schema: undefined,
@@ -52,8 +52,8 @@ describe(WorkflowService.name, () => {
         ],
         actions: [
           {
-            name: 'test-action',
-            displayName: 'Test Action',
+            methodName: 'test-action',
+            title: 'Test Action',
             description: 'A test action',
             supportedContexts: [PluginContext.Asset],
             schema: undefined,
@@ -212,8 +212,8 @@ describe(WorkflowService.name, () => {
           wasm: { path: '/test/album-plugin.wasm' },
           filters: [
             {
-              name: 'album-filter',
-              displayName: 'Album Filter',
+              methodName: 'album-filter',
+              title: 'Album Filter',
               description: 'A filter that only works with albums',
               supportedContexts: [PluginContext.Album],
               schema: undefined,
@@ -252,8 +252,8 @@ describe(WorkflowService.name, () => {
           wasm: { path: '/test/person-plugin.wasm' },
           actions: [
             {
-              name: 'person-action',
-              displayName: 'Person Action',
+              methodName: 'person-action',
+              title: 'Person Action',
               description: 'An action that only works with persons',
               supportedContexts: [PluginContext.Person],
               schema: undefined,

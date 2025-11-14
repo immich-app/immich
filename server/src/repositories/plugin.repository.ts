@@ -49,17 +49,17 @@ export class PluginRepository {
             .values(
               manifest.filters.map((filter) => ({
                 pluginId: plugin.id,
-                name: filter.name,
-                displayName: filter.displayName,
+                methodName: filter.methodName,
+                title: filter.title,
                 description: filter.description,
                 supportedContexts: filter.supportedContexts,
                 schema: filter.schema,
               })),
             )
             .onConflict((oc) =>
-              oc.column('name').doUpdateSet((eb) => ({
+              oc.column('methodName').doUpdateSet((eb) => ({
                 pluginId: eb.ref('excluded.pluginId'),
-                displayName: eb.ref('excluded.displayName'),
+                title: eb.ref('excluded.title'),
                 description: eb.ref('excluded.description'),
                 supportedContexts: eb.ref('excluded.supportedContexts'),
                 schema: eb.ref('excluded.schema'),
@@ -75,17 +75,17 @@ export class PluginRepository {
             .values(
               manifest.actions.map((action) => ({
                 pluginId: plugin.id,
-                name: action.name,
-                displayName: action.displayName,
+                methodName: action.methodName,
+                title: action.title,
                 description: action.description,
                 supportedContexts: action.supportedContexts,
                 schema: action.schema,
               })),
             )
             .onConflict((oc) =>
-              oc.column('name').doUpdateSet((eb) => ({
+              oc.column('methodName').doUpdateSet((eb) => ({
                 pluginId: eb.ref('excluded.pluginId'),
-                displayName: eb.ref('excluded.displayName'),
+                title: eb.ref('excluded.title'),
                 description: eb.ref('excluded.description'),
                 supportedContexts: eb.ref('excluded.supportedContexts'),
                 schema: eb.ref('excluded.schema'),

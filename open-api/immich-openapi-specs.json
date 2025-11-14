@@ -17934,13 +17934,10 @@
           "description": {
             "type": "string"
           },
-          "displayName": {
-            "type": "string"
-          },
           "id": {
             "type": "string"
           },
-          "name": {
+          "methodName": {
             "type": "string"
           },
           "pluginId": {
@@ -17955,16 +17952,19 @@
               "$ref": "#/components/schemas/PluginContext"
             },
             "type": "array"
+          },
+          "title": {
+            "type": "string"
           }
         },
         "required": [
           "description",
-          "displayName",
           "id",
-          "name",
+          "methodName",
           "pluginId",
           "schema",
-          "supportedContexts"
+          "supportedContexts",
+          "title"
         ],
         "type": "object"
       },
@@ -17981,13 +17981,10 @@
           "description": {
             "type": "string"
           },
-          "displayName": {
-            "type": "string"
-          },
           "id": {
             "type": "string"
           },
-          "name": {
+          "methodName": {
             "type": "string"
           },
           "pluginId": {
@@ -18002,16 +17999,19 @@
               "$ref": "#/components/schemas/PluginContext"
             },
             "type": "array"
+          },
+          "title": {
+            "type": "string"
           }
         },
         "required": [
           "description",
-          "displayName",
           "id",
-          "name",
+          "methodName",
           "pluginId",
           "schema",
-          "supportedContexts"
+          "supportedContexts",
+          "title"
         ],
         "type": "object"
       },

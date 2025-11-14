@@ -80,8 +80,8 @@ describe(PluginService.name, () => {
           wasm: { path: '/path/to/full.wasm' },
           filters: [
             {
-              name: 'test-filter',
-              displayName: 'Test Filter',
+              methodName: 'test-filter',
+              title: 'Test Filter',
               description: 'A test filter',
               supportedContexts: [PluginContext.Asset],
               schema: { type: 'object', properties: {} },
@@ -89,8 +89,8 @@ describe(PluginService.name, () => {
           ],
           actions: [
             {
-              name: 'test-action',
-              displayName: 'Test Action',
+              methodName: 'test-action',
+              title: 'Test Action',
               description: 'A test action',
               supportedContexts: [PluginContext.Asset],
               schema: { type: 'object', properties: {} },
@@ -110,8 +110,8 @@ describe(PluginService.name, () => {
           {
             id: result.filters[0].id,
             pluginId: result.plugin.id,
-            name: 'test-filter',
-            displayName: 'Test Filter',
+            methodName: 'test-filter',
+            title: 'Test Filter',
             description: 'A test filter',
             supportedContexts: [PluginContext.Asset],
             schema: { type: 'object', properties: {} },
@@ -121,8 +121,8 @@ describe(PluginService.name, () => {
           {
             id: result.actions[0].id,
             pluginId: result.plugin.id,
-            name: 'test-action',
-            displayName: 'Test Action',
+            methodName: 'test-action',
+            title: 'Test Action',
             description: 'A test action',
             supportedContexts: [PluginContext.Asset],
             schema: { type: 'object', properties: {} },
@@ -144,8 +144,8 @@ describe(PluginService.name, () => {
           wasm: { path: '/path/to/plugin1.wasm' },
           filters: [
             {
-              name: 'filter-1',
-              displayName: 'Filter 1',
+              methodName: 'filter-1',
+              title: 'Filter 1',
               description: 'Filter for plugin 1',
               supportedContexts: [PluginContext.Asset],
               schema: undefined,
@@ -165,8 +165,8 @@ describe(PluginService.name, () => {
           wasm: { path: '/path/to/plugin2.wasm' },
           actions: [
             {
-              name: 'action-2',
-              displayName: 'Action 2',
+              methodName: 'action-2',
+              title: 'Action 2',
               description: 'Action for plugin 2',
               supportedContexts: [PluginContext.Album],
               schema: undefined,
@@ -201,15 +201,15 @@ describe(PluginService.name, () => {
           wasm: { path: '/path/to/multi.wasm' },
           filters: [
             {
-              name: 'filter-a',
-              displayName: 'Filter A',
+              methodName: 'filter-a',
+              title: 'Filter A',
               description: 'First filter',
               supportedContexts: [PluginContext.Asset],
               schema: undefined,
             },
             {
-              name: 'filter-b',
-              displayName: 'Filter B',
+              methodName: 'filter-b',
+              title: 'Filter B',
               description: 'Second filter',
               supportedContexts: [PluginContext.Album],
               schema: undefined,
@@ -217,15 +217,15 @@ describe(PluginService.name, () => {
           ],
           actions: [
             {
-              name: 'action-x',
-              displayName: 'Action X',
+              methodName: 'action-x',
+              title: 'Action X',
               description: 'First action',
               supportedContexts: [PluginContext.Asset],
               schema: undefined,
             },
             {
-              name: 'action-y',
-              displayName: 'Action Y',
+              methodName: 'action-y',
+              title: 'Action Y',
               description: 'Second action',
               supportedContexts: [PluginContext.Person],
               schema: undefined,
@@ -263,8 +263,8 @@ describe(PluginService.name, () => {
           wasm: { path: '/path/to/single.wasm' },
           filters: [
             {
-              name: 'single-filter',
-              displayName: 'Single Filter',
+              methodName: 'single-filter',
+              title: 'Single Filter',
               description: 'A single filter',
               supportedContexts: [PluginContext.Asset],
               schema: undefined,
@@ -272,8 +272,8 @@ describe(PluginService.name, () => {
           ],
           actions: [
             {
-              name: 'single-action',
-              displayName: 'Single Action',
+              methodName: 'single-action',
+              title: 'Single Action',
               description: 'A single action',
               supportedContexts: [PluginContext.Asset],
               schema: undefined,
@@ -291,15 +291,15 @@ describe(PluginService.name, () => {
         filters: [
           {
             id: result.filters[0].id,
-            name: 'single-filter',
-            displayName: 'Single Filter',
+            methodName: 'single-filter',
+            title: 'Single Filter',
           },
         ],
         actions: [
           {
             id: result.actions[0].id,
-            name: 'single-action',
-            displayName: 'Single Action',
+            methodName: 'single-action',
+            title: 'Single Action',
           },
         ],
       });

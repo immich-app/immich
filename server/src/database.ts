@@ -285,16 +285,16 @@ export type AssetFace = {
 export type Plugin = Selectable<PluginTable>;
 
 export type PluginFilter = Selectable<PluginFilterTable> & {
-  name: string;
-  displayName: string;
+  methodName: string;
+  title: string;
   description: string;
   supportedContexts: PluginContext[];
   schema: JSONSchema | null;
 };
 
 export type PluginAction = Selectable<PluginActionTable> & {
-  name: string;
-  displayName: string;
+  methodName: string;
+  title: string;
   description: string;
   supportedContexts: PluginContext[];
   schema: JSONSchema | null;

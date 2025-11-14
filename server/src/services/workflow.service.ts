@@ -89,7 +89,7 @@ export class WorkflowService extends BaseService {
 
       if (!filter.supportedContexts.includes(requiredContext)) {
         throw new BadRequestException(
-          `Filter "${filter.displayName}" does not support ${requiredContext} context. Supported contexts: ${filter.supportedContexts.join(', ')}`,
+          `Filter "${filter.title}" does not support ${requiredContext} context. Supported contexts: ${filter.supportedContexts.join(', ')}`,
         );
       }
     }
@@ -112,7 +112,7 @@ export class WorkflowService extends BaseService {
       }
       if (!action.supportedContexts.includes(requiredContext)) {
         throw new BadRequestException(
-          `Action "${action.displayName}" does not support ${requiredContext} context. Supported contexts: ${action.supportedContexts.join(', ')}`,
+          `Action "${action.title}" does not support ${requiredContext} context. Supported contexts: ${action.supportedContexts.join(', ')}`,
         );
       }
     }

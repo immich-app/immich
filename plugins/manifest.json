@@ -11,8 +11,8 @@
 
   "filters": [
     {
-      "name": "filterFileName",
-      "displayName": "Filter by filename",
+      "methodName": "filterFileName",
+      "title": "Filter by filename",
       "description": "Filter assets by filename pattern using text matching or regular expressions",
       "supportedContexts": ["asset"],
       "schema": {
@@ -38,8 +38,8 @@
       }
     },
     {
-      "name": "filterFileType",
-      "displayName": "Filter by file type",
+      "methodName": "filterFileType",
+      "title": "Filter by file type",
       "description": "Filter assets by file type",
       "supportedContexts": ["asset"],
       "schema": {
@@ -58,8 +58,8 @@
       }
     },
     {
-      "name": "filterPerson",
-      "displayName": "Filter by person",
+      "methodName": "filterPerson",
+      "title": "Filter by person",
       "description": "Filter by detected person",
       "supportedContexts": ["person"],
       "schema": {
@@ -85,15 +85,15 @@
 
   "actions": [
     {
-      "name": "actionArchive",
-      "displayName": "Archive",
+      "methodName": "actionArchive",
+      "title": "Archive",
       "description": "Move the asset to archive",
       "supportedContexts": ["asset"],
       "schema": {}
     },
     {
-      "name": "actionFavorite",
-      "displayName": "Favorite",
+      "methodName": "actionFavorite",
+      "title": "Favorite",
       "description": "Mark the asset as favorite or unfavorite",
       "supportedContexts": ["asset"],
       "schema": {
@@ -108,8 +108,8 @@
       }
     },
     {
-      "name": "actionAddToAlbum",
-      "displayName": "Add to Album",
+      "methodName": "actionAddToAlbum",
+      "title": "Add to Album",
       "description": "Add the item to a specified album",
       "supportedContexts": ["asset", "person"],
       "schema": {

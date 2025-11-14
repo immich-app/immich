@@ -24,11 +24,11 @@ class PluginManifestWasmDto {
 class PluginManifestFilterDto {
   @IsString()
   @IsNotEmpty()
-  name!: string;
+  methodName!: string;
 
   @IsString()
   @IsNotEmpty()
-  displayName!: string;
+  title!: string;
 
   @IsString()
   @IsNotEmpty()
@@ -47,11 +47,11 @@ class PluginManifestFilterDto {
 class PluginManifestActionDto {
   @IsString()
   @IsNotEmpty()
-  name!: string;
+  methodName!: string;
 
   @IsString()
   @IsNotEmpty()
-  displayName!: string;
+  title!: string;
 
   @IsString()
   @IsNotEmpty()

@@ -53,10 +53,10 @@ export class PluginFilterTable {
   pluginId!: string;
 
   @Column({ index: true, unique: true })
-  name!: string;
+  methodName!: string;
 
   @Column()
-  displayName!: string;
+  title!: string;
 
   @Column()
   description!: string;
@@ -79,10 +79,10 @@ export class PluginActionTable {
   pluginId!: string;
 
   @Column({ index: true, unique: true })
-  name!: string;
+  methodName!: string;
 
   @Column()
-  displayName!: string;
+  title!: string;
 
   @Column()
   description!: string;

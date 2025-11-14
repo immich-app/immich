@@ -14,21 +14,19 @@ class PluginFilterResponseDto {
   /// Returns a new [PluginFilterResponseDto] instance.
   PluginFilterResponseDto({
     required this.description,
-    required this.displayName,
     required this.id,
-    required this.name,
+    required this.methodName,
     required this.pluginId,
     required this.schema,
     this.supportedContexts = const [],
+    required this.title,
   });
 
   String description;
 
-  String displayName;
-
   String id;
 
-  String name;
+  String methodName;
 
   String pluginId;
 
@@ -36,36 +34,37 @@ class PluginFilterResponseDto {
 
   List<PluginContext> supportedContexts;
 
+  String title;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is PluginFilterResponseDto &&
     other.description == description &&
-    other.displayName == displayName &&
     other.id == id &&
-    other.name == name &&
+    other.methodName == methodName &&
     other.pluginId == pluginId &&
     other.schema == schema &&
-    _deepEquality.equals(other.supportedContexts, supportedContexts);
+    _deepEquality.equals(other.supportedContexts, supportedContexts) &&
+    other.title == title;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (description.hashCode) +
-    (displayName.hashCode) +
     (id.hashCode) +
-    (name.hashCode) +
+    (methodName.hashCode) +
     (pluginId.hashCode) +
     (schema == null ? 0 : schema!.hashCode) +
-    (supportedContexts.hashCode);
+    (supportedContexts.hashCode) +
+    (title.hashCode);
 
   @override
-  String toString() => 'PluginFilterResponseDto[description=$description, displayName=$displayName, id=$id, name=$name, pluginId=$pluginId, schema=$schema, supportedContexts=$supportedContexts]';
+  String toString() => 'PluginFilterResponseDto[description=$description, id=$id, methodName=$methodName, pluginId=$pluginId, schema=$schema, supportedContexts=$supportedContexts, title=$title]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'description'] = this.description;
-      json[r'displayName'] = this.displayName;
       json[r'id'] = this.id;
-      json[r'name'] = this.name;
+      json[r'methodName'] = this.methodName;
       json[r'pluginId'] = this.pluginId;
     if (this.schema != null) {
       json[r'schema'] = this.schema;
@@ -73,6 +72,7 @@ class PluginFilterResponseDto {
     //  json[r'schema'] = null;
     }
       json[r'supportedContexts'] = this.supportedContexts;
+      json[r'title'] = this.title;
     return json;
   }
 
@@ -86,12 +86,12 @@ class PluginFilterResponseDto {
 
       return PluginFilterResponseDto(
         description: mapValueOfType<String>(json, r'description')!,
-        displayName: mapValueOfType<String>(json, r'displayName')!,
         id: mapValueOfType<String>(json, r'id')!,
-        name: mapValueOfType<String>(json, r'name')!,
+        methodName: mapValueOfType<String>(json, r'methodName')!,
         pluginId: mapValueOfType<String>(json, r'pluginId')!,
         schema: mapValueOfType<Object>(json, r'schema'),
         supportedContexts: PluginContext.listFromJson(json[r'supportedContexts']),
+        title: mapValueOfType<String>(json, r'title')!,
       );
     }
     return null;
@@ -140,12 +140,12 @@ class PluginFilterResponseDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'description',
-    'displayName',
     'id',
-    'name',
+    'methodName',
     'pluginId',
     'schema',
     'supportedContexts',
+    'title',
   };
 }
 

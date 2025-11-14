@@ -929,21 +929,21 @@ export type PersonStatisticsResponseDto = {
 };
 export type PluginActionResponseDto = {
     description: string;
-    displayName: string;
     id: string;
-    name: string;
+    methodName: string;
     pluginId: string;
     schema: object | null;
     supportedContexts: PluginContext[];
+    title: string;
 };
 export type PluginFilterResponseDto = {
     description: string;
-    displayName: string;
     id: string;
-    name: string;
+    methodName: string;
     pluginId: string;
     schema: object | null;
     supportedContexts: PluginContext[];
+    title: string;
 };
 export type PluginResponseDto = {
     actions: PluginActionResponseDto[];

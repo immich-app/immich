@@ -18,37 +18,37 @@ export async function up(db: Kysely<any>): Promise<void> {
   await sql`CREATE TABLE "plugin_filter" (
   "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
   "pluginId" uuid NOT NULL,
-  "name" character varying NOT NULL,
-  "displayName" character varying NOT NULL,
+  "methodName" character varying NOT NULL,
+  "title" character varying NOT NULL,
   "description" character varying NOT NULL,
   "supportedContexts" character varying[] NOT NULL,
   "schema" jsonb,
   CONSTRAINT "plugin_filter_pluginId_fkey" FOREIGN KEY ("pluginId") REFERENCES "plugin" ("id") ON UPDATE CASCADE ON DELETE CASCADE,
-  CONSTRAINT "plugin_filter_name_uq" UNIQUE ("name"),
+  CONSTRAINT "plugin_filter_methodName_uq" UNIQUE ("methodName"),
   CONSTRAINT "plugin_filter_pkey" PRIMARY KEY ("id")
 );`.execute(db);
   await sql`CREATE INDEX "plugin_filter_supportedContexts_idx" ON "plugin_filter" USING gin ("supportedContexts");`.execute(
     db,
   );
   await sql`CREATE INDEX "plugin_filter_pluginId_idx" ON "plugin_filter" ("pluginId");`.execute(db);
-  await sql`CREATE INDEX "plugin_filter_name_idx" ON "plugin_filter" ("name");`.execute(db);
+  await sql`CREATE INDEX "plugin_filter_methodName_idx" ON "plugin_filter" ("methodName");`.execute(db);
   await sql`CREATE TABLE "plugin_action" (
   "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
   "pluginId" uuid NOT NULL,
-  "name" character varying NOT NULL,
-  "displayName" character varying NOT NULL,
+  "methodName" character varying NOT NULL,
+  "title" character varying NOT NULL,
   "description" character varying NOT NULL,
   "supportedContexts" character varying[] NOT NULL,
   "schema" jsonb,
   CONSTRAINT "plugin_action_pluginId_fkey" FOREIGN KEY ("pluginId") REFERENCES "plugin" ("id") ON UPDATE CASCADE ON DELETE CASCADE,
-  CONSTRAINT "plugin_action_name_uq" UNIQUE ("name"),
+  CONSTRAINT "plugin_action_methodName_uq" UNIQUE ("methodName"),
   CONSTRAINT "plugin_action_pkey" PRIMARY KEY ("id")
 );`.execute(db);
   await sql`CREATE INDEX "plugin_action_supportedContexts_idx" ON "plugin_action" USING gin ("supportedContexts");`.execute(
     db,
   );
   await sql`CREATE INDEX "plugin_action_pluginId_idx" ON "plugin_action" ("pluginId");`.execute(db);
-  await sql`CREATE INDEX "plugin_action_name_idx" ON "plugin_action" ("name");`.execute(db);
+  await sql`CREATE INDEX "plugin_action_methodName_idx" ON "plugin_action" ("methodName");`.execute(db);
   await sql`CREATE TABLE "workflow" (
   "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
   "ownerId" uuid NOT NULL,
@@ -65,6 +65,7 @@ export async function up(db: Kysely<any>): Promise<void> {
   "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
   "workflowId" uuid NOT NULL,
   "filterId" uuid NOT NULL,
+  "filterConfig" jsonb,
   "order" integer NOT NULL,
   CONSTRAINT "workflow_filter_workflowId_fkey" FOREIGN KEY ("workflowId") REFERENCES "workflow" ("id") ON UPDATE CASCADE ON DELETE CASCADE,
   CONSTRAINT "workflow_filter_filterId_fkey" FOREIGN KEY ("filterId") REFERENCES "plugin_filter" ("id") ON UPDATE CASCADE ON DELETE CASCADE,
