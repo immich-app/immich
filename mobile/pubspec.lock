@@ -664,6 +664,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.27"
+  flutter_reorderable_grid_view:
+    dependency: "direct main"
+    description:
+      name: flutter_reorderable_grid_view
+      sha256: beb85f95325c83515d8953e8612dc70d287a69d1437c14262b7d738070133a87
+      url: "https://pub.dev"
+    source: hosted
+    version: "5.5.2"
   flutter_riverpod:
     dependency: transitive
     description:

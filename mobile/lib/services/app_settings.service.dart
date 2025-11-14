@@ -1,6 +1,7 @@
 import 'package:immich_mobile/constants/colors.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/utils/action_button.utils.dart';
 
 enum AppSettingsEnum<T> {
   loadPreview<bool>(StoreKey.loadPreview, "loadPreview", true),
@@ -70,5 +71,21 @@ class AppSettingsService {
 
   Future<void> setSetting<T>(AppSettingsEnum<T> setting, T value) {
     return Store.put(setting.storeKey, value);
+  }
+
+  List<ActionButtonType> getViewerQuickActionOrder() {
+    final stored = Store.get(StoreKey.viewerQuickActionOrder, ActionButtonBuilder.defaultQuickActionOrderStorageValue);
+    return ActionButtonBuilder.parseQuickActionOrder(stored);
+  }
+
+  Stream<List<ActionButtonType>> watchViewerQuickActionOrder() {
+    return Store.watch(StoreKey.viewerQuickActionOrder).map(
+      (value) =>
+          ActionButtonBuilder.parseQuickActionOrder(value ?? ActionButtonBuilder.defaultQuickActionOrderStorageValue),
+    );
+  }
+
+  Future<void> setViewerQuickActionOrder(List<ActionButtonType> order) {
+    return Store.put(StoreKey.viewerQuickActionOrder, ActionButtonBuilder.encodeQuickActionOrder(order));
   }
 }

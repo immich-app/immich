@@ -8,6 +8,7 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/delete_action_
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_local_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_permanent_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/download_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/edit_image_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/like_activity_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/move_to_lock_folder_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/remove_from_album_action_button.widget.dart';
@@ -47,6 +48,7 @@ class ActionButtonContext {
 enum ActionButtonType {
   advancedInfo,
   share,
+  edit,
   shareLink,
   similarPhotos,
   archive,
@@ -67,6 +69,9 @@ enum ActionButtonType {
     return switch (this) {
       ActionButtonType.advancedInfo => context.advancedTroubleshooting,
       ActionButtonType.share => true,
+      ActionButtonType.edit =>
+        !context.isInLockedView && //
+            context.asset.isImage,
       ActionButtonType.shareLink =>
         !context.isInLockedView && //
             context.asset.hasRemote,
@@ -135,6 +140,7 @@ enum ActionButtonType {
     return switch (this) {
       ActionButtonType.advancedInfo => AdvancedInfoActionButton(source: context.source),
       ActionButtonType.share => ShareActionButton(source: context.source),
+      ActionButtonType.edit => const EditImageActionButton(),
       ActionButtonType.shareLink => ShareLinkActionButton(source: context.source),
       ActionButtonType.archive => ArchiveActionButton(source: context.source),
       ActionButtonType.unarchive => UnArchiveActionButton(source: context.source),
@@ -160,7 +166,143 @@ enum ActionButtonType {
 class ActionButtonBuilder {
   static const List<ActionButtonType> _actionTypes = ActionButtonType.values;
 
+  static const int defaultQuickActionLimit = 4;
+  static const String quickActionStorageDelimiter = ',';
+
+  static const List<ActionButtonType> _defaultQuickActionSeed = [
+    ActionButtonType.share,
+    ActionButtonType.upload,
+    ActionButtonType.edit,
+    ActionButtonType.archive,
+    ActionButtonType.delete,
+    ActionButtonType.removeFromAlbum,
+    ActionButtonType.likeActivity,
+  ];
+
+  static final Set<ActionButtonType> _quickActionSet = Set<ActionButtonType>.unmodifiable(_defaultQuickActionSeed);
+
+  static final List<ActionButtonType> defaultQuickActionOrder = List<ActionButtonType>.unmodifiable(
+    _defaultQuickActionSeed,
+  );
+
+  static final String defaultQuickActionOrderStorageValue = defaultQuickActionOrder
+      .map((type) => type.name)
+      .join(quickActionStorageDelimiter);
+
+  static List<ActionButtonType> get quickActionOptions => defaultQuickActionOrder;
+
+  static List<ActionButtonType> parseQuickActionOrder(String? stored) {
+    final parsed = <ActionButtonType>[];
+
+    if (stored != null && stored.trim().isNotEmpty) {
+      for (final name in stored.split(quickActionStorageDelimiter)) {
+        final type = _typeByName(name.trim());
+        if (type != null) {
+          parsed.add(type);
+        }
+      }
+    }
+
+    return normalizeQuickActionOrder(parsed);
+  }
+
+  static String encodeQuickActionOrder(List<ActionButtonType> order) {
+    final unique = <ActionButtonType>{};
+    final buffer = <String>[];
+
+    for (final type in order) {
+      if (unique.add(type)) {
+        buffer.add(type.name);
+      }
+    }
+
+    final result = buffer.join(quickActionStorageDelimiter);
+    return result;
+  }
+
+  static List<ActionButtonType> buildQuickActionTypes(
+    ActionButtonContext context, {
+    List<ActionButtonType>? quickActionOrder,
+    int limit = defaultQuickActionLimit,
+  }) {
+    final normalized = normalizeQuickActionOrder(
+      quickActionOrder == null || quickActionOrder.isEmpty ? defaultQuickActionOrder : quickActionOrder,
+    );
+
+    final seen = <ActionButtonType>{};
+    final result = <ActionButtonType>[];
+
+    for (final type in normalized) {
+      if (!_quickActionSet.contains(type)) {
+        continue;
+      }
+
+      final resolved = _resolveQuickActionType(type, context);
+      if (!seen.add(resolved) || !resolved.shouldShow(context)) {
+        continue;
+      }
+
+      result.add(resolved);
+      if (result.length >= limit) {
+        break;
+      }
+    }
+
+    return result;
+  }
+
+  static List<Widget> buildQuickActions(
+    ActionButtonContext context, {
+    List<ActionButtonType>? quickActionOrder,
+    int limit = defaultQuickActionLimit,
+  }) {
+    final types = buildQuickActionTypes(context, quickActionOrder: quickActionOrder, limit: limit);
+    return types.map((type) => type.buildButton(context)).toList();
+  }
+
+  static ActionButtonType? _typeByName(String name) {
+    if (name.isEmpty) {
+      return null;
+    }
+
+    for (final type in ActionButtonType.values) {
+      if (type.name == name) {
+        return type;
+      }
+    }
+
+    return null;
+  }
+
   static List<Widget> build(ActionButtonContext context) {
     return _actionTypes.where((type) => type.shouldShow(context)).map((type) => type.buildButton(context)).toList();
   }
+
+  static List<ActionButtonType> normalizeQuickActionOrder(List<ActionButtonType> order) {
+    final ordered = <ActionButtonType>{};
+
+    for (final type in order) {
+      if (_quickActionSet.contains(type)) {
+        ordered.add(type);
+      }
+    }
+
+    ordered.addAll(_defaultQuickActionSeed);
+
+    return ordered.toList(growable: false);
+  }
+
+  static ActionButtonType _resolveQuickActionType(ActionButtonType type, ActionButtonContext context) {
+    if (type == ActionButtonType.archive && context.isArchived) {
+      return ActionButtonType.unarchive;
+    }
+
+    if (type == ActionButtonType.delete && context.asset.isLocalOnly) {
+      return ActionButtonType.deleteLocal;
+    }
+
+    return type;
+  }
+
+  static bool isSupportedQuickAction(ActionButtonType type) => _quickActionSet.contains(type);
 }
