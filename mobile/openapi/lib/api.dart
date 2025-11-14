@@ -251,6 +251,7 @@ part 'model/session_create_response_dto.dart';
 part 'model/session_response_dto.dart';
 part 'model/session_unlock_dto.dart';
 part 'model/session_update_dto.dart';
+part 'model/set_maintenance_mode_dto.dart';
 part 'model/shared_link_create_dto.dart';
 part 'model/shared_link_edit_dto.dart';
 part 'model/shared_link_response_dto.dart';

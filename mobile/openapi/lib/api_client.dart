@@ -556,6 +556,8 @@ class ApiClient {
           return SessionUnlockDto.fromJson(value);
         case 'SessionUpdateDto':
           return SessionUpdateDto.fromJson(value);
+        case 'SetMaintenanceModeDto':
+          return SetMaintenanceModeDto.fromJson(value);
         case 'SharedLinkCreateDto':
           return SharedLinkCreateDto.fromJson(value);
         case 'SharedLinkEditDto':

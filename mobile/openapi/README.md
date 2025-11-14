@@ -159,9 +159,8 @@ Class | Method | HTTP request | Description
 *LibrariesApi* | [**scanLibrary**](doc//LibrariesApi.md#scanlibrary) | **POST** /libraries/{id}/scan | Scan a library
 *LibrariesApi* | [**updateLibrary**](doc//LibrariesApi.md#updatelibrary) | **PUT** /libraries/{id} | Update a library
 *LibrariesApi* | [**validate**](doc//LibrariesApi.md#validate) | **POST** /libraries/{id}/validate | Validate library settings
-*MaintenanceAdminApi* | [**endMaintenance**](doc//MaintenanceAdminApi.md#endmaintenance) | **POST** /admin/maintenance/end | 
-*MaintenanceAdminApi* | [**maintenanceLogin**](doc//MaintenanceAdminApi.md#maintenancelogin) | **POST** /admin/maintenance/login | 
-*MaintenanceAdminApi* | [**startMaintenance**](doc//MaintenanceAdminApi.md#startmaintenance) | **POST** /admin/maintenance/start | 
+*MaintenanceAdminApi* | [**maintenanceLogin**](doc//MaintenanceAdminApi.md#maintenancelogin) | **POST** /admin/maintenance/login | Log into maintenance mode
+*MaintenanceAdminApi* | [**setMaintenanceMode**](doc//MaintenanceAdminApi.md#setmaintenancemode) | **POST** /admin/maintenance | Set maintenance mode
 *MapApi* | [**getMapMarkers**](doc//MapApi.md#getmapmarkers) | **GET** /map/markers | Retrieve map markers
 *MapApi* | [**reverseGeocode**](doc//MapApi.md#reversegeocode) | **GET** /map/reverse-geocode | Reverse geocode coordinates
 *MemoriesApi* | [**addMemoryAssets**](doc//MemoriesApi.md#addmemoryassets) | **PUT** /memories/{id}/assets | Add assets to a memory
@@ -489,6 +488,7 @@ Class | Method | HTTP request | Description
  - [SessionResponseDto](doc//SessionResponseDto.md)
  - [SessionUnlockDto](doc//SessionUnlockDto.md)
  - [SessionUpdateDto](doc//SessionUpdateDto.md)
+ - [SetMaintenanceModeDto](doc//SetMaintenanceModeDto.md)
  - [SharedLinkCreateDto](doc//SharedLinkCreateDto.md)
  - [SharedLinkEditDto](doc//SharedLinkEditDto.md)
  - [SharedLinkResponseDto](doc//SharedLinkResponseDto.md)
