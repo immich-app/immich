@@ -1054,7 +1054,9 @@
     "unable_to_update_settings": "无法更新设置",
     "unable_to_update_timeline_display_status": "无法更新时间轴显示状态",
     "unable_to_update_user": "无法更新用户",
-    "unable_to_upload_file": "无法上传文件"
+    "unable_to_upload_file": "无法上传文件",
+    "unable_to_add_to_album": "Unable to add assets to album",
+    "unable_to_load_albums": "Unable to load albums"
   },
   "exif": "Exif 信息",
   "exif_bottom_sheet_description": "添加描述...",
@@ -2174,5 +2176,10 @@
   "you_dont_have_any_shared_links": "您没有任何共享链接",
   "your_wifi_name": "您的 Wi-Fi 名称",
   "zoom_image": "缩放图像",
-  "zoom_to_bounds": "缩放到边界"
+  "zoom_to_bounds": "缩放到边界",
+  "add_to_menu_no_selection": "Select assets to use Add to",
+  "add_to_menu_locked_assets_disabled": "Add to is unavailable for locked assets",
+  "add_to_menu_no_albums": "No albums available",
+  "add_to_menu_create_placeholder": "New album name",
+  "add_to_menu_partial_selection": "{count}/{total} selected"
 }

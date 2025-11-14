@@ -1054,7 +1054,9 @@
     "unable_to_update_settings": "Asetusten päivitys epäonnistui",
     "unable_to_update_timeline_display_status": "Aikajanalla näyttämisen asetusta ei voitu tallettaa",
     "unable_to_update_user": "Käyttäjän muokkaus epäonnistui",
-    "unable_to_upload_file": "Tiedostoa ei voitu ladata"
+    "unable_to_upload_file": "Tiedostoa ei voitu ladata",
+    "unable_to_add_to_album": "Unable to add assets to album",
+    "unable_to_load_albums": "Unable to load albums"
   },
   "exif": "Exif",
   "exif_bottom_sheet_description": "Lisää kuvaus…",
@@ -2173,5 +2175,10 @@
   "you_dont_have_any_shared_links": "Sinulla ei ole jaettuja linkkejä",
   "your_wifi_name": "Wi-Fi-verkkosi nimi",
   "zoom_image": "Zoomaa kuvaa",
-  "zoom_to_bounds": "Zoomaa reunoihin"
+  "zoom_to_bounds": "Zoomaa reunoihin",
+  "add_to_menu_no_selection": "Select assets to use Add to",
+  "add_to_menu_locked_assets_disabled": "Add to is unavailable for locked assets",
+  "add_to_menu_no_albums": "No albums available",
+  "add_to_menu_create_placeholder": "New album name",
+  "add_to_menu_partial_selection": "{count}/{total} selected"
 }

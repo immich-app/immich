@@ -11,7 +11,7 @@
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
-  import AddToAlbum from '$lib/components/timeline/actions/AddToAlbumAction.svelte';
+  import AddToMenuContent from '$lib/components/add-to/AddToMenuContent.svelte';
   import ArchiveAction from '$lib/components/timeline/actions/ArchiveAction.svelte';
   import ChangeDate from '$lib/components/timeline/actions/ChangeDateAction.svelte';
   import ChangeDescription from '$lib/components/timeline/actions/ChangeDescriptionAction.svelte';
@@ -487,8 +487,14 @@
       <CreateSharedLink />
       <SelectAllAssets {timelineManager} {assetInteraction} />
       <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
-        <AddToAlbum />
-        <AddToAlbum shared />
+        <AddToMenuContent assets={assetInteraction.selectedAssets} />
+        <li><hr /></li>
+        <ArchiveAction
+          menuItem
+          unarchive={assetInteraction.isAllArchived}
+          onArchive={(assetIds) => timelineManager.removeAssets(assetIds)}
+        />
+        <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />
       </ButtonContextMenu>
       <FavoriteAction
         removeFavorite={assetInteraction.isAllFavorite}
@@ -508,15 +514,9 @@
         <ChangeDate menuItem />
         <ChangeDescription menuItem />
         <ChangeLocation menuItem />
-        <ArchiveAction
-          menuItem
-          unarchive={assetInteraction.isAllArchived}
-          onArchive={(assetIds) => timelineManager.removeAssets(assetIds)}
-        />
         {#if $preferences.tags.enabled && assetInteraction.isAllUserOwned}
           <TagAction menuItem />
         {/if}
-        <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />
         <DeleteAssets
           menuItem
           onAssetDelete={(assetIds) => handleDeleteAssets(assetIds)}

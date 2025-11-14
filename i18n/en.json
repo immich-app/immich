@@ -1071,7 +1071,9 @@
     "unable_to_update_settings": "Unable to update settings",
     "unable_to_update_timeline_display_status": "Unable to update timeline display status",
     "unable_to_update_user": "Unable to update user",
-    "unable_to_upload_file": "Unable to upload file"
+    "unable_to_upload_file": "Unable to upload file",
+    "unable_to_add_to_album": "Unable to add assets to album",
+    "unable_to_load_albums": "Unable to load albums"
   },
   "exif": "Exif",
   "exif_bottom_sheet_description": "Add Description...",
@@ -2204,5 +2206,10 @@
   "you_dont_have_any_shared_links": "You don't have any shared links",
   "your_wifi_name": "Your Wi-Fi name",
   "zoom_image": "Zoom Image",
-  "zoom_to_bounds": "Zoom to bounds"
+  "zoom_to_bounds": "Zoom to bounds",
+  "add_to_menu_no_selection": "Select assets to use Add to",
+  "add_to_menu_locked_assets_disabled": "Add to is unavailable for locked assets",
+  "add_to_menu_no_albums": "No albums available",
+  "add_to_menu_create_placeholder": "New album name",
+  "add_to_menu_partial_selection": "{count}/{total} selected"
 }

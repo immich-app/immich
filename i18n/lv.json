@@ -791,7 +791,9 @@
     "unable_to_scan_libraries": "Bibliotēku skenēšana neizdevās",
     "unable_to_scan_library": "Bibliotēkas skenēšana neizdevās",
     "unable_to_trash_asset": "Neizdevās pārvietot failu uz atkritni",
-    "unable_to_update_album_cover": "Nevar atjaunināt albuma vāciņu"
+    "unable_to_update_album_cover": "Nevar atjaunināt albuma vāciņu",
+    "unable_to_add_to_album": "Unable to add assets to album",
+    "unable_to_load_albums": "Unable to load albums"
   },
   "exif": "Exif",
   "exif_bottom_sheet_description": "Pievienot Aprakstu...",
@@ -1643,5 +1645,10 @@
   "years_ago": "Pirms {years, plural, one {# gada} other {# gadiem}}",
   "yes": "Jā",
   "your_wifi_name": "Tava Wi-Fi nosaukums",
-  "zoom_image": "Pietuvināt attēlu"
+  "zoom_image": "Pietuvināt attēlu",
+  "add_to_menu_no_selection": "Select assets to use Add to",
+  "add_to_menu_locked_assets_disabled": "Add to is unavailable for locked assets",
+  "add_to_menu_no_albums": "No albums available",
+  "add_to_menu_create_placeholder": "New album name",
+  "add_to_menu_partial_selection": "{count}/{total} selected"
 }

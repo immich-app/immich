@@ -1030,7 +1030,9 @@
     "unable_to_update_settings": "غير قادر على تحديث الإعدادات",
     "unable_to_update_timeline_display_status": "غير قادر على تحديث حالة عرض المخطط الزمني",
     "unable_to_update_user": "غير قادر على تحديث المستخدم",
-    "unable_to_upload_file": "تعذر رفع الملف"
+    "unable_to_upload_file": "تعذر رفع الملف",
+    "unable_to_add_to_album": "Unable to add assets to album",
+    "unable_to_load_albums": "Unable to load albums"
   },
   "exif": "Exif (صيغة ملف صوري قابل للتبادل)",
   "exif_bottom_sheet_description": "اضف وصفا...",
@@ -2125,5 +2127,10 @@
   "you_dont_have_any_shared_links": "ليس لديك أي روابط مشتركة",
   "your_wifi_name": "اسم شبكة Wi-Fi الخاص بك",
   "zoom_image": "تكبير الصورة",
-  "zoom_to_bounds": "تكبير حتى حدود المنطقة"
+  "zoom_to_bounds": "تكبير حتى حدود المنطقة",
+  "add_to_menu_no_selection": "Select assets to use Add to",
+  "add_to_menu_locked_assets_disabled": "Add to is unavailable for locked assets",
+  "add_to_menu_no_albums": "No albums available",
+  "add_to_menu_create_placeholder": "New album name",
+  "add_to_menu_partial_selection": "{count}/{total} selected"
 }

@@ -953,7 +953,9 @@
     "unable_to_update_settings": "ไม่สามารถอัพเดทการตั้งค่าได้",
     "unable_to_update_timeline_display_status": "ไม่สามารถแก้ไขสถานะการแสดงลำดับเวลาได้",
     "unable_to_update_user": "ไม่สามารถอัพเดทผู้ใช้ได้",
-    "unable_to_upload_file": "ไม่สามารถอัปโหลดได้"
+    "unable_to_upload_file": "ไม่สามารถอัปโหลดได้",
+    "unable_to_add_to_album": "Unable to add assets to album",
+    "unable_to_load_albums": "Unable to load albums"
   },
   "exif": "Exif",
   "exif_bottom_sheet_description": "เพิ่มคำอธิบาย",
@@ -1853,5 +1855,10 @@
   "yes": "ใช่",
   "you_dont_have_any_shared_links": "คุณไม่ได้มีลิงก์ที่แชร์",
   "your_wifi_name": "ชื่อ Wi-Fi",
-  "zoom_image": "ซูมรูปภาพ"
+  "zoom_image": "ซูมรูปภาพ",
+  "add_to_menu_no_selection": "Select assets to use Add to",
+  "add_to_menu_locked_assets_disabled": "Add to is unavailable for locked assets",
+  "add_to_menu_no_albums": "No albums available",
+  "add_to_menu_create_placeholder": "New album name",
+  "add_to_menu_partial_selection": "{count}/{total} selected"
 }
