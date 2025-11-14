@@ -22,7 +22,6 @@ import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/remote_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
 import 'package:immich_mobile/providers/partner.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
@@ -59,11 +58,8 @@ class AssetDetailBottomSheet extends ConsumerWidget {
 
       final partners = ref.watch(partnerSharedWithProvider);
       final isPartnerOwner = asset is RemoteAsset && partners.any((user) => user.id == asset.ownerId);
-      final remoteAlbums = ref.watch(remoteAlbumProvider).albums;
-      final currentUserId = ref.watch(currentUserProvider)?.id;
-      final editableAlbums = remoteAlbums.where((album) => album.ownerId == currentUserId).toList();
-      final canEditAlbums = asset is RemoteAsset && !isInLockedView && (isOwner || isPartnerOwner);
-      final hasPublicAlbumTargets = editableAlbums.any((album) => album.isShared);
+      final canEditAlbums = asset.hasRemote && !isInLockedView;
+      final canToggleLockedFolder = asset is RemoteAsset && isOwner && !isInLockedView;
 
       final buttonContext = ActionButtonContext(
       asset: asset,
@@ -76,7 +72,7 @@ class AssetDetailBottomSheet extends ConsumerWidget {
       advancedTroubleshooting: advancedTroubleshooting,
       source: ActionSource.viewer,
         canEditAlbums: canEditAlbums,
-        hasPublicAlbumTargets: hasPublicAlbumTargets,
+        canToggleLockedFolder: canToggleLockedFolder,
     );
 
     final actions = ActionButtonBuilder.build(buttonContext);
