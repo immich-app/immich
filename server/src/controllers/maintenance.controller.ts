@@ -39,7 +39,7 @@ export class MaintenanceController {
     if (dto.maintenanceMode) {
       const { jwt } = await this.service.startMaintenance(auth.user.name);
       return respondWithCookie(res, undefined, {
-        isSecure: true,
+        isSecure: false,
         values: [{ key: ImmichCookie.MaintenanceToken, value: jwt }],
       });
     }

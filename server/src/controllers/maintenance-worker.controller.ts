@@ -25,7 +25,7 @@ export class MaintenanceWorkerController {
     const token = dto.token ?? request.cookies[ImmichCookie.MaintenanceToken];
     const auth = await this.service.login(token);
     return respondWithCookie(res, auth, {
-      isSecure: true,
+      isSecure: false,
       values: [{ key: ImmichCookie.MaintenanceToken, value: token }],
     });
   }
