@@ -1,5 +1,6 @@
 import { Plugin as ExtismPlugin, newPlugin } from '@extism/extism';
 import { BadRequestException, Injectable } from '@nestjs/common';
+import { plainToInstance } from 'class-transformer';
 import { validateOrReject } from 'class-validator';
 import { join } from 'node:path';
 import { Asset, WorkflowAction, WorkflowFilter } from 'src/database';
@@ -73,9 +74,7 @@ export class PluginService extends BaseService {
     const { resourcePaths, plugins } = this.configRepository.getEnv();
     const coreManifestPath = `${resourcePaths.corePlugin}/manifest.json`;
 
-    const coreManifest = await this.pluginRepository.readManifest(coreManifestPath);
-
-    await this.validateManifest(coreManifest);
+    const coreManifest = await this.readAndValidateManifest(coreManifestPath);
     await this.loadPluginToDatabase(coreManifest, resourcePaths.corePlugin);
 
     this.logger.log(`Successfully processed core plugin: ${coreManifest.name} (version ${coreManifest.version})`);
@@ -98,9 +97,7 @@ export class PluginService extends BaseService {
         const pluginFolder = join(installFolder, entry.name);
         const manifestPath = join(pluginFolder, 'manifest.json');
         try {
-          const manifest = await this.pluginRepository.readManifest(manifestPath);
-
-          await this.validateManifest(manifest);
+          const manifest = await this.readAndValidateManifest(manifestPath);
           await this.loadPluginToDatabase(manifest, pluginFolder);
 
           this.logger.log(`Successfully processed external plugin: ${manifest.name} (version ${manifest.version})`);
@@ -133,11 +130,17 @@ export class PluginService extends BaseService {
     }
   }
 
-  private async validateManifest(manifest: PluginManifestDto): Promise<void> {
+  private async readAndValidateManifest(manifestPath: string): Promise<PluginManifestDto> {
+    const content = await this.storageRepository.readTextFile(manifestPath);
+    const manifestData = JSON.parse(content);
+    const manifest = plainToInstance(PluginManifestDto, manifestData);
+
     await validateOrReject(manifest, {
       whitelist: true,
       forbidNonWhitelisted: true,
     });
+
+    return manifest;
   }
 
   ///////////////////////////////////////////
