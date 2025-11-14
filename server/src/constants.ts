@@ -9,11 +9,6 @@ export const VECTORCHORD_VERSION_RANGE = '>=0.3 <0.6';
 export const VECTORS_VERSION_RANGE = '>=0.2 <0.4';
 export const VECTOR_VERSION_RANGE = '>=0.5 <1';
 
-export const NEXT_RELEASE = 'NEXT_RELEASE';
-export const LIFECYCLE_EXTENSION = 'x-immich-lifecycle';
-export const DEPRECATED_IN_PREFIX = 'This property was deprecated in ';
-export const ADDED_IN_PREFIX = 'This property was added in ';
-
 export const JOBS_ASSET_PAGINATION_SIZE = 1000;
 export const JOBS_LIBRARY_PAGINATION_SIZE = 10_000;
 

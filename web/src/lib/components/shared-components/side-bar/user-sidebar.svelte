@@ -4,7 +4,7 @@
   import RecentAlbums from '$lib/components/shared-components/side-bar/recent-albums.svelte';
   import Sidebar from '$lib/components/sidebar/sidebar.svelte';
   import { recentAlbumsDropdown } from '$lib/stores/preferences.store';
-  import { featureFlags } from '$lib/stores/server-config.store';
+  import { featureFlags } from '$lib/stores/system-config-manager.svelte';
   import { preferences } from '$lib/stores/user.store';
   import {
     mdiAccount,

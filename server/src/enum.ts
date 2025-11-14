@@ -434,6 +434,8 @@ export enum LogLevel {
 export enum ApiCustomExtension {
   Permission = 'x-immich-permission',
   AdminOnly = 'x-immich-admin-only',
+  History = 'x-immich-history',
+  State = 'x-immich-state',
 }
 
 export enum MetadataKey {

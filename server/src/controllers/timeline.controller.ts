@@ -1,5 +1,6 @@
 import { Controller, Get, Header, Query } from '@nestjs/common';
-import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { TimeBucketAssetDto, TimeBucketAssetResponseDto, TimeBucketDto } from 'src/dtos/time-bucket.dto';
 import { ApiTag, Permission } from 'src/enum';
@@ -13,7 +14,11 @@ export class TimelineController {
 
   @Get('buckets')
   @Authenticated({ permission: Permission.AssetRead, sharedLink: true })
-  @ApiOperation({ summary: 'Get time buckets', description: 'Retrieve a list of all minimal time buckets.' })
+  @Endpoint({
+    summary: 'Get time buckets',
+    description: 'Retrieve a list of all minimal time buckets.',
+    history: new HistoryBuilder().added('v1').internal('v1'),
+  })
   getTimeBuckets(@Auth() auth: AuthDto, @Query() dto: TimeBucketDto) {
     return this.service.getTimeBuckets(auth, dto);
   }
@@ -22,9 +27,10 @@ export class TimelineController {
   @Authenticated({ permission: Permission.AssetRead, sharedLink: true })
   @ApiOkResponse({ type: TimeBucketAssetResponseDto })
   @Header('Content-Type', 'application/json')
-  @ApiOperation({
+  @Endpoint({
     summary: 'Get time bucket',
     description: 'Retrieve a string of all asset ids in a given time bucket.',
+    history: new HistoryBuilder().added('v1').internal('v1'),
   })
   getTimeBucket(@Auth() auth: AuthDto, @Query() dto: TimeBucketAssetDto) {
     return this.service.getTimeBucket(auth, dto);

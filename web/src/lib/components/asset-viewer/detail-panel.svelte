@@ -11,7 +11,7 @@
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import { boundingBoxesArray } from '$lib/stores/people.store';
   import { locale } from '$lib/stores/preferences.store';
-  import { featureFlags } from '$lib/stores/server-config.store';
+  import { featureFlags } from '$lib/stores/system-config-manager.svelte';
   import { preferences, user } from '$lib/stores/user.store';
   import { getAssetThumbnailUrl, getPeopleThumbnailUrl } from '$lib/utils';
   import { delay, getDimensions } from '$lib/utils/asset-utils';

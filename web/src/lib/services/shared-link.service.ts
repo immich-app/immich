@@ -3,7 +3,7 @@ import { AppRoute } from '$lib/constants';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import QrCodeModal from '$lib/modals/QrCodeModal.svelte';
-import { serverConfig } from '$lib/stores/server-config.store';
+import { serverConfig } from '$lib/stores/system-config-manager.svelte';
 import { copyToClipboard } from '$lib/utils';
 import { handleError } from '$lib/utils/handle-error';
 import { getFormatter } from '$lib/utils/i18n';
@@ -91,7 +91,6 @@ export const handleUpdateSharedLink = async (sharedLink: SharedLinkResponseDto, 
     const response = await updateSharedLink({ id: sharedLink.id, sharedLinkEditDto: dto });
 
     eventManager.emit('SharedLinkUpdate', { album: sharedLink.album, ...response });
-
     toastManager.success($t('saved'));
 
     return true;

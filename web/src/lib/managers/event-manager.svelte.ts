@@ -1,5 +1,11 @@
 import type { ThemeSetting } from '$lib/managers/theme-manager.svelte';
-import type { AlbumResponseDto, LoginResponseDto, SharedLinkResponseDto, UserAdminResponseDto } from '@immich/sdk';
+import type {
+  AlbumResponseDto,
+  LoginResponseDto,
+  SharedLinkResponseDto,
+  SystemConfigDto,
+  UserAdminResponseDto,
+} from '@immich/sdk';
 
 export type Events = {
   AppInit: [];
@@ -19,6 +25,8 @@ export type Events = {
   UserAdminUpdate: [UserAdminResponseDto];
   UserAdminDelete: [UserAdminResponseDto];
   UserAdminRestore: [UserAdminResponseDto];
+
+  SystemConfigUpdate: [SystemConfigDto];
 };
 
 type Listener<EventMap extends Record<string, unknown[]>, K extends keyof EventMap> = (...params: EventMap[K]) => void;
