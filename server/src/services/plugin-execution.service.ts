@@ -10,9 +10,17 @@ import { IWorkflowJob, JobItem, JobOf, WorkflowData } from 'src/types';
 import { TriggerConfig } from 'src/types/plugin-schema.types';
 
 interface WorkflowContext {
-  jwtToken: string;
+  authToken: string;
   asset: Asset;
   triggerConfig: TriggerConfig | null;
+}
+
+interface PluginInput<TConfig = unknown> {
+  authToken: string;
+  config: TConfig;
+  data: {
+    asset: Asset;
+  };
 }
 
 @Injectable()
@@ -55,7 +63,10 @@ export class PluginExecutionService extends BaseService {
 
   @OnEvent({ name: 'AssetCreate' })
   async handleAssetCreate({ asset }: ArgOf<'AssetCreate'>) {
-    await this.handleTrigger(PluginTriggerType.AssetCreate, { ownerId: asset.ownerId, event: { asset } });
+    await this.handleTrigger(PluginTriggerType.AssetCreate, {
+      ownerId: asset.ownerId,
+      event: { userId: asset.ownerId, asset },
+    });
   }
 
   private async handleTrigger<T extends PluginTriggerType>(
@@ -97,17 +108,17 @@ export class PluginExecutionService extends BaseService {
           const data = event as WorkflowData[PluginTriggerType.AssetCreate];
           const asset = data.asset;
 
-          const jwtToken = this.cryptoRepository.signJwt({ userId: asset.ownerId }, this.pluginJwtSecret);
+          const authToken = this.cryptoRepository.signJwt({ userId: data.userId }, this.pluginJwtSecret);
 
           const context = {
-            jwtToken,
+            authToken,
             asset,
             triggerConfig: workflow.triggerConfig,
           };
 
           const filtersPassed = await this.executeFilters(workflowFilters, context);
           if (!filtersPassed) {
-            return JobStatus.Failed;
+            return JobStatus.Skipped;
           }
 
           await this.executeActions(workflowActions, context);
@@ -145,13 +156,19 @@ export class PluginExecutionService extends BaseService {
         return false;
       }
 
-      this.logger.debug(`Executing filter: ${filter.name}`);
-      const filterInput = JSON.stringify({
-        context,
+      const filterInput: PluginInput = {
+        authToken: context.authToken,
         config: workflowFilter.filterConfig,
-      });
+        data: {
+          asset: context.asset,
+        },
+      };
 
-      const filterResult = await pluginInstance.call(filter.name, new TextEncoder().encode(filterInput));
+      const filterResult = await pluginInstance.call(
+        filter.name,
+        new TextEncoder().encode(JSON.stringify(filterInput)),
+      );
+
       if (!filterResult) {
         this.logger.error(`Filter ${filter.name} returned null`);
         return false;
@@ -179,15 +196,17 @@ export class PluginExecutionService extends BaseService {
         throw new Error(`Plugin ${action.pluginId} not loaded`);
       }
 
-      this.logger.debug(`Executing action: ${action.name}`);
-      const actionInput = JSON.stringify({
-        context,
+      const actionInput: PluginInput = {
+        authToken: context.authToken,
         config: workflowAction.actionConfig,
-      });
+        data: {
+          asset: context.asset,
+        },
+      };
 
-      this.logger.debug(`Calling action ${action.name} with input: ${actionInput}`);
+      this.logger.verbose(`Calling action ${action.name} with input: ${JSON.stringify(actionInput)}`);
 
-      await pluginInstance.call(action.name, actionInput);
+      await pluginInstance.call(action.name, JSON.stringify(actionInput));
     }
   }
 }

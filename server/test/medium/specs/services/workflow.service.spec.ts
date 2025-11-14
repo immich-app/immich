@@ -31,34 +31,37 @@ describe(WorkflowService.name, () => {
   beforeAll(async () => {
     // Create a test plugin with filters and actions once for all tests
     const pluginRepo = new PluginRepository(defaultDatabase);
-    const result = await pluginRepo.loadPlugin({
-      name: 'test-core-plugin',
-      title: 'Test Core Plugin',
-      description: 'A test core plugin for workflow tests',
-      author: 'Test Author',
-      version: '1.0.0',
-      wasm: {
-        path: '/test/path.wasm',
+    const result = await pluginRepo.loadPlugin(
+      {
+        name: 'test-core-plugin',
+        title: 'Test Core Plugin',
+        description: 'A test core plugin for workflow tests',
+        author: 'Test Author',
+        version: '1.0.0',
+        wasm: {
+          path: '/test/path.wasm',
+        },
+        filters: [
+          {
+            name: 'test-filter',
+            displayName: 'Test Filter',
+            description: 'A test filter',
+            supportedContexts: [PluginContext.Asset],
+            schema: undefined,
+          },
+        ],
+        actions: [
+          {
+            name: 'test-action',
+            displayName: 'Test Action',
+            description: 'A test action',
+            supportedContexts: [PluginContext.Asset],
+            schema: undefined,
+          },
+        ],
       },
-      filters: [
-        {
-          name: 'test-filter',
-          displayName: 'Test Filter',
-          description: 'A test filter',
-          supportedContexts: [PluginContext.Asset],
-          schema: undefined,
-        },
-      ],
-      actions: [
-        {
-          name: 'test-action',
-          displayName: 'Test Action',
-          description: 'A test action',
-          supportedContexts: [PluginContext.Asset],
-          schema: undefined,
-        },
-      ],
-    });
+      '/plugins/test-core-plugin',
+    );
 
     testPluginId = result.plugin.id;
     testFilterId = result.filters[0].id;
@@ -199,23 +202,26 @@ describe(WorkflowService.name, () => {
 
       // Create a plugin with a filter that only supports Album context
       const pluginRepo = new PluginRepository(defaultDatabase);
-      const result = await pluginRepo.loadPlugin({
-        name: 'album-only-plugin',
-        title: 'Album Only Plugin',
-        description: 'Plugin with album-only filter',
-        author: 'Test Author',
-        version: '1.0.0',
-        wasm: { path: '/test/album-plugin.wasm' },
-        filters: [
-          {
-            name: 'album-filter',
-            displayName: 'Album Filter',
-            description: 'A filter that only works with albums',
-            supportedContexts: [PluginContext.Album],
-            schema: undefined,
-          },
-        ],
-      });
+      const result = await pluginRepo.loadPlugin(
+        {
+          name: 'album-only-plugin',
+          title: 'Album Only Plugin',
+          description: 'Plugin with album-only filter',
+          author: 'Test Author',
+          version: '1.0.0',
+          wasm: { path: '/test/album-plugin.wasm' },
+          filters: [
+            {
+              name: 'album-filter',
+              displayName: 'Album Filter',
+              description: 'A filter that only works with albums',
+              supportedContexts: [PluginContext.Album],
+              schema: undefined,
+            },
+          ],
+        },
+        '/plugins/test-core-plugin',
+      );
 
       await expect(
         sut.create(auth, {
@@ -236,23 +242,26 @@ describe(WorkflowService.name, () => {
 
       // Create a plugin with an action that only supports Person context
       const pluginRepo = new PluginRepository(defaultDatabase);
-      const result = await pluginRepo.loadPlugin({
-        name: 'person-only-plugin',
-        title: 'Person Only Plugin',
-        description: 'Plugin with person-only action',
-        author: 'Test Author',
-        version: '1.0.0',
-        wasm: { path: '/test/person-plugin.wasm' },
-        actions: [
-          {
-            name: 'person-action',
-            displayName: 'Person Action',
-            description: 'An action that only works with persons',
-            supportedContexts: [PluginContext.Person],
-            schema: undefined,
-          },
-        ],
-      });
+      const result = await pluginRepo.loadPlugin(
+        {
+          name: 'person-only-plugin',
+          title: 'Person Only Plugin',
+          description: 'Plugin with person-only action',
+          author: 'Test Author',
+          version: '1.0.0',
+          wasm: { path: '/test/person-plugin.wasm' },
+          actions: [
+            {
+              name: 'person-action',
+              displayName: 'Person Action',
+              description: 'An action that only works with persons',
+              supportedContexts: [PluginContext.Person],
+              schema: undefined,
+            },
+          ],
+        },
+        '/plugins/test-core-plugin',
+      );
 
       await expect(
         sut.create(auth, {

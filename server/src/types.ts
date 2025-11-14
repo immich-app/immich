@@ -267,6 +267,7 @@ export interface INotifyAlbumUpdateJob extends IEntityJob, IDelayedJob {
 
 export interface WorkflowData {
   [PluginTriggerType.AssetCreate]: {
+    userId: string;
     asset: Asset;
   };
   [PluginTriggerType.PersonRecognized]: {

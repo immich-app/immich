@@ -17,6 +17,7 @@ import { BaseService } from 'src/services/base.service';
 export class WorkflowService extends BaseService {
   async create(auth: AuthDto, dto: WorkflowCreateDto): Promise<WorkflowResponseDto> {
     const trigger = this.getTriggerOrFail(dto.triggerType);
+
     const filterInserts = await this.validateAndMapFilters(dto.filters, trigger.context);
     const actionInserts = await this.validateAndMapActions(dto.actions, trigger.context);
 
@@ -85,6 +86,7 @@ export class WorkflowService extends BaseService {
       if (!filter) {
         throw new BadRequestException(`Invalid filter ID: ${dto.filterId}`);
       }
+
       if (!filter.supportedContexts.includes(requiredContext)) {
         throw new BadRequestException(
           `Filter "${filter.displayName}" does not support ${requiredContext} context. Supported contexts: ${filter.supportedContexts.join(', ')}`,
