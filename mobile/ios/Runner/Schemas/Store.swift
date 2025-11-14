@@ -4,6 +4,7 @@ enum StoreError: Error {
   case invalidJSON(String)
   case invalidURL(String)
   case encodingFailed
+  case notFound
 }
 
 protocol StoreConvertible {
@@ -77,70 +78,34 @@ extension Dictionary: StoreConvertible where Key == String, Value: Codable {
   typealias StorageType = String
 }
 
-class StoreRepository {
-  private let db: DatabasePool
-
-  init(db: DatabasePool) {
-    self.db = db
-  }
-
-  func get<T: StoreConvertible>(_ key: StoreKey.Typed<T>) throws -> T? where T.StorageType == Int {
+extension Store {
+  static func get<T: StoreConvertible>(_ conn: Database, _ key: StoreKey.Typed<T>) throws -> T?
+  where T.StorageType == Int {
     let query = Store.select(\.intValue).where { $0.id.eq(key.rawValue) }
-    if let value = try db.read({ conn in try query.fetchOne(conn) }) ?? nil {
+    if let value = try query.fetchOne(conn) ?? nil {
       return try T.fromValue(value)
     }
     return nil
   }
 
-  func get<T: StoreConvertible>(_ key: StoreKey.Typed<T>) throws -> T? where T.StorageType == String {
+  static func get<T: StoreConvertible>(_ conn: Database, _ key: StoreKey.Typed<T>) throws -> T?
+  where T.StorageType == String {
     let query = Store.select(\.stringValue).where { $0.id.eq(key.rawValue) }
-    if let value = try db.read({ conn in try query.fetchOne(conn) }) ?? nil {
+    if let value = try query.fetchOne(conn) ?? nil {
       return try T.fromValue(value)
     }
     return nil
   }
 
-  func get<T: StoreConvertible>(_ key: StoreKey.Typed<T>) async throws -> T? where T.StorageType == Int {
-    let query = Store.select(\.intValue).where { $0.id.eq(key.rawValue) }
-    if let value = try await db.read({ conn in try query.fetchOne(conn) }) ?? nil {
-      return try T.fromValue(value)
-    }
-    return nil
-  }
-
-  func get<T: StoreConvertible>(_ key: StoreKey.Typed<T>) async throws -> T? where T.StorageType == String {
-    let query = Store.select(\.stringValue).where { $0.id.eq(key.rawValue) }
-    if let value = try await db.read({ conn in try query.fetchOne(conn) }) ?? nil {
-      return try T.fromValue(value)
-    }
-    return nil
-  }
-
-  func set<T: StoreConvertible>(_ key: StoreKey.Typed<T>, value: T) throws where T.StorageType == Int {
+  static func set<T: StoreConvertible>(_ conn: Database, _ key: StoreKey.Typed<T>, value: T) throws
+  where T.StorageType == Int {
     let value = try T.toValue(value)
-    try db.write { conn in
-      try Store.upsert { Store(id: key.rawValue, stringValue: nil, intValue: value) }.execute(conn)
-    }
+    try Store.upsert { Store(id: key.rawValue, stringValue: nil, intValue: value) }.execute(conn)
   }
 
-  func set<T: StoreConvertible>(_ key: StoreKey.Typed<T>, value: T) throws where T.StorageType == String {
+  static func set<T: StoreConvertible>(_ conn: Database, _ key: StoreKey.Typed<T>, value: T) throws
+  where T.StorageType == String {
     let value = try T.toValue(value)
-    try db.write { conn in
-      try Store.upsert { Store(id: key.rawValue, stringValue: value, intValue: nil) }.execute(conn)
-    }
-  }
-
-  func set<T: StoreConvertible>(_ key: StoreKey.Typed<T>, value: T) async throws where T.StorageType == Int {
-    let value = try T.toValue(value)
-    try await db.write { conn in
-      try Store.upsert { Store(id: key.rawValue, stringValue: nil, intValue: value) }.execute(conn)
-    }
-  }
-
-  func set<T: StoreConvertible>(_ key: StoreKey.Typed<T>, value: T) async throws where T.StorageType == String {
-    let value = try T.toValue(value)
-    try await db.write { conn in
-      try Store.upsert { Store(id: key.rawValue, stringValue: value, intValue: nil) }.execute(conn)
-    }
+    try Store.upsert { Store(id: key.rawValue, stringValue: value, intValue: nil) }.execute(conn)
   }
 }
