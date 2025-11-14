@@ -1,6 +1,6 @@
 <script lang="ts">
   import DateInput from '$lib/elements/DateInput.svelte';
-  import type { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
+  import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import { getPreferredTimeZone, getTimezones, toDatetime, type ZoneOption } from '$lib/modals/timezone-utils';
   import { Button, HStack, Modal, ModalBody, ModalFooter, VStack } from '@immich/ui';

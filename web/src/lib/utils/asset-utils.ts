@@ -3,7 +3,7 @@ import ToastAction from '$lib/components/ToastAction.svelte';
 import { AppRoute } from '$lib/constants';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { downloadManager } from '$lib/managers/download-manager.svelte';
-import type { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
+import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
 import { assetsSnapshot } from '$lib/managers/timeline-manager/utils.svelte';
 import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';

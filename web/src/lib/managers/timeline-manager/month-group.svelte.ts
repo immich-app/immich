@@ -9,7 +9,7 @@ import {
   fromTimelinePlainDateTime,
   fromTimelinePlainYearMonth,
   getTimes,
-  setDifference,
+  setDifferenceInPlace,
   type TimelineDateTime,
   type TimelineYearMonth,
 } from '$lib/utils/timeline-util';
@@ -17,11 +17,11 @@ import {
 import { t } from 'svelte-i18n';
 import { get } from 'svelte/store';
 
-import { SvelteSet } from 'svelte/reactivity';
+import { onCreateMonthGroup } from '$lib/managers/timeline-manager/internal/TestHooks.svelte';
 import { DayGroup } from './day-group.svelte';
 import { GroupInsertionCache } from './group-insertion-cache.svelte';
-import type { TimelineManager } from './timeline-manager.svelte';
-import type { AssetDescriptor, AssetOperation, Direction, MoveAsset, TimelineAsset } from './types';
+import { TimelineManager } from './timeline-manager.svelte';
+import type { AssetDescriptor, AssetOperation, Direction, TimelineAsset } from './types';
 import { ViewerAsset } from './viewer-asset.svelte';
 
 export class MonthGroup {
@@ -50,12 +50,13 @@ export class MonthGroup {
   readonly yearMonth: TimelineYearMonth;
 
   constructor(
-    store: TimelineManager,
+    timelineManager: TimelineManager,
     yearMonth: TimelineYearMonth,
     initialCount: number,
+    loaded: boolean,
     order: AssetOrder = AssetOrder.Desc,
   ) {
-    this.timelineManager = store;
+    this.timelineManager = timelineManager;
     this.#initialCount = initialCount;
     this.#sortOrder = order;
 
@@ -72,6 +73,12 @@ export class MonthGroup {
       },
       this.#handleLoadError,
     );
+    if (loaded) {
+      this.isLoaded = true;
+    }
+    if (import.meta.env.DEV) {
+      onCreateMonthGroup(this);
+    }
   }
 
   set intersecting(newValue: boolean) {
@@ -115,26 +122,29 @@ export class MonthGroup {
   runAssetOperation(ids: Set<string>, operation: AssetOperation) {
     if (ids.size === 0) {
       return {
-        moveAssets: [] as MoveAsset[],
-        processedIds: new SvelteSet<string>(),
+        moveAssets: [] as TimelineAsset[],
+        // eslint-disable-next-line svelte/prefer-svelte-reactivity
+        processedIds: new Set<string>(),
         unprocessedIds: ids,
         changedGeometry: false,
       };
     }
     const { dayGroups } = this;
     let combinedChangedGeometry = false;
-    let idsToProcess = new SvelteSet(ids);
-    const idsProcessed = new SvelteSet<string>();
-    const combinedMoveAssets: MoveAsset[][] = [];
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity
+    const idsToProcess = new Set(ids);
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity
+    const idsProcessed = new Set<string>();
+    const combinedMoveAssets: TimelineAsset[] = [];
     let index = dayGroups.length;
     while (index--) {
       if (idsToProcess.size > 0) {
         const group = dayGroups[index];
         const { moveAssets, processedIds, changedGeometry } = group.runAssetOperation(ids, operation);
         if (moveAssets.length > 0) {
-          combinedMoveAssets.push(moveAssets);
+          combinedMoveAssets.push(...moveAssets);
         }
-        idsToProcess = setDifference(idsToProcess, processedIds);
+        setDifferenceInPlace(idsToProcess, processedIds);
         for (const id of processedIds) {
           idsProcessed.add(id);
         }
@@ -146,14 +156,14 @@ export class MonthGroup {
       }
     }
     return {
-      moveAssets: combinedMoveAssets.flat(),
+      moveAssets: combinedMoveAssets,
       unprocessedIds: idsToProcess,
       processedIds: idsProcessed,
       changedGeometry: combinedChangedGeometry,
     };
   }
 
-  addAssets(bucketAssets: TimeBucketAssetResponseDto) {
+  addAssets(bucketAssets: TimeBucketAssetResponseDto, preSorted: boolean) {
     const addContext = new GroupInsertionCache();
     for (let i = 0; i < bucketAssets.id.length; i++) {
       const { localDateTime, fileCreatedAt } = getTimes(
@@ -194,17 +204,17 @@ export class MonthGroup {
       }
       this.addTimelineAsset(timelineAsset, addContext);
     }
+    if (!preSorted) {
+      for (const group of addContext.existingDayGroups) {
+        group.sortAssets(this.#sortOrder);
+      }
 
-    for (const group of addContext.existingDayGroups) {
-      group.sortAssets(this.#sortOrder);
+      if (addContext.newDayGroups.size > 0) {
+        this.sortDayGroups();
+      }
+
+      addContext.sort(this, this.#sortOrder);
     }
-
-    if (addContext.newDayGroups.size > 0) {
-      this.sortDayGroups();
-    }
-
-    addContext.sort(this, this.#sortOrder);
-
     return addContext.unprocessedAssets;
   }
 

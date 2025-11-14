@@ -3,7 +3,6 @@ import { locale } from '$lib/stores/preferences.store';
 import { getAssetRatio } from '$lib/utils/asset-utils';
 import { AssetTypeEnum, type AssetResponseDto } from '@immich/sdk';
 import { DateTime, type LocaleOptions } from 'luxon';
-import { SvelteSet } from 'svelte/reactivity';
 import { get } from 'svelte/store';
 
 // Move type definitions to the top
@@ -222,12 +221,27 @@ export const plainDateTimeCompare = (ascending: boolean, a: TimelineDateTime, b:
   return aDateTime.millisecond - bDateTime.millisecond;
 };
 
-export function setDifference<T>(setA: Set<T>, setB: Set<T>): SvelteSet<T> {
-  const result = new SvelteSet<T>();
+export function setDifference<T>(setA: Set<T>, setB: Set<T>): Set<T> {
+  // Check if native Set.prototype.difference is available (ES2025)
+  const setWithDifference = setA as unknown as Set<T> & { difference?: (other: Set<T>) => Set<T> };
+  if (setWithDifference.difference && typeof setWithDifference.difference === 'function') {
+    return setWithDifference.difference(setB);
+  }
+  const result = new Set<T>();
   for (const value of setA) {
     if (!setB.has(value)) {
       result.add(value);
     }
   }
   return result;
+}
+
+/**
+ * Removes all elements of setB from setA in-place (mutates setA).
+ */
+export function setDifferenceInPlace<T>(setA: Set<T>, setB: Set<T>): Set<T> {
+  for (const value of setB) {
+    setA.delete(value);
+  }
+  return setA;
 }

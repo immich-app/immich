@@ -4,9 +4,9 @@ import type { CommonLayoutOptions } from '$lib/utils/layout-utils';
 import { getJustifiedLayoutFromAssets } from '$lib/utils/layout-utils';
 import { plainDateTimeCompare } from '$lib/utils/timeline-util';
 
-import { SvelteSet } from 'svelte/reactivity';
+import { onCreateDayGroup } from '$lib/managers/timeline-manager/internal/TestHooks.svelte';
 import type { MonthGroup } from './month-group.svelte';
-import type { AssetOperation, Direction, MoveAsset, TimelineAsset } from './types';
+import type { AssetOperation, Direction, TimelineAsset } from './types';
 import { ViewerAsset } from './viewer-asset.svelte';
 
 export class DayGroup {
@@ -31,6 +31,9 @@ export class DayGroup {
     this.monthGroup = monthGroup;
     this.day = day;
     this.groupTitle = groupTitle;
+    if (import.meta.env.DEV) {
+      onCreateDayGroup(this);
+    }
   }
 
   get top() {
@@ -104,15 +107,18 @@ export class DayGroup {
   runAssetOperation(ids: Set<string>, operation: AssetOperation) {
     if (ids.size === 0) {
       return {
-        moveAssets: [] as MoveAsset[],
-        processedIds: new SvelteSet<string>(),
+        moveAssets: [] as TimelineAsset[],
+        // eslint-disable-next-line svelte/prefer-svelte-reactivity
+        processedIds: new Set<string>(),
         unprocessedIds: ids,
         changedGeometry: false,
       };
     }
-    const unprocessedIds = new SvelteSet<string>(ids);
-    const processedIds = new SvelteSet<string>();
-    const moveAssets: MoveAsset[] = [];
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity
+    const unprocessedIds = new Set<string>(ids);
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity
+    const processedIds = new Set<string>();
+    const moveAssets: TimelineAsset[] = [];
     let changedGeometry = false;
     for (const assetId of unprocessedIds) {
       const index = this.viewerAssets.findIndex((viewAsset) => viewAsset.id == assetId);
@@ -121,13 +127,20 @@ export class DayGroup {
       }
 
       const asset = this.viewerAssets[index].asset!;
+      // save old time, pre-mutating operation
       const oldTime = { ...asset.localDateTime };
-      let { remove } = operation(asset);
+      const opResult = operation(asset);
+      let remove = false;
+      if (opResult) {
+        remove = (opResult as { remove: boolean }).remove ?? false;
+      }
       const newTime = asset.localDateTime;
-      if (oldTime.year !== newTime.year || oldTime.month !== newTime.month || oldTime.day !== newTime.day) {
-        const { year, month, day } = newTime;
+      if (
+        !remove &&
+        (oldTime.year !== newTime.year || oldTime.month !== newTime.month || oldTime.day !== newTime.day)
+      ) {
         remove = true;
-        moveAssets.push({ asset, date: { year, month, day } });
+        moveAssets.push(asset);
       }
       unprocessedIds.delete(assetId);
       processedIds.add(assetId);

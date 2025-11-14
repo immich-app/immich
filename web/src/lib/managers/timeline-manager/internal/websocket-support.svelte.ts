@@ -1,4 +1,4 @@
-import type { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
+import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
 import type { PendingChange, TimelineAsset } from '$lib/managers/timeline-manager/types';
 import { websocketEvents } from '$lib/stores/websocket';
 import { toTimelineAsset } from '$lib/utils/timeline-util';
@@ -13,10 +13,10 @@ export class WebsocketSupport {
   #processPendingChanges = throttle(() => {
     const { add, update, remove } = this.#getPendingChangeBatches();
     if (add.length > 0) {
-      this.#timelineManager.addAssets(add);
+      this.#timelineManager.upsertAssets(add);
     }
     if (update.length > 0) {
-      this.#timelineManager.updateAssets(update);
+      this.#timelineManager.upsertAssets(update);
     }
     if (remove.length > 0) {
       this.#timelineManager.removeAssets(remove);

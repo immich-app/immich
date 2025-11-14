@@ -1,10 +1,14 @@
 import { sdkMock } from '$lib/__mocks__/sdk.mock';
+import type { DayGroup } from '$lib/managers/timeline-manager/day-group.svelte';
 import { getMonthGroupByDate } from '$lib/managers/timeline-manager/internal/search-support.svelte';
+import { setTestHooks } from '$lib/managers/timeline-manager/internal/TestHooks.svelte';
+import type { MonthGroup } from '$lib/managers/timeline-manager/month-group.svelte';
 import { AbortError } from '$lib/utils';
 import { fromISODateTimeUTCToObject } from '$lib/utils/timeline-util';
-import { type AssetResponseDto, type TimeBucketAssetResponseDto } from '@immich/sdk';
+import { AssetVisibility, type AssetResponseDto, type TimeBucketAssetResponseDto } from '@immich/sdk';
 import { timelineAssetFactory, toResponseDto } from '@test-data/factories/asset-factory';
 import { tick } from 'svelte';
+import type { MockInstance } from 'vitest';
 import { TimelineManager } from './timeline-manager.svelte';
 import type { TimelineAsset } from './types';
 
@@ -175,7 +179,7 @@ describe('TimelineManager', () => {
     });
   });
 
-  describe('addAssets', () => {
+  describe('upsertAssets', () => {
     let timelineManager: TimelineManager;
 
     beforeEach(async () => {
@@ -196,7 +200,7 @@ describe('TimelineManager', () => {
           fileCreatedAt: fromISODateTimeUTCToObject('2024-01-20T12:00:00.000Z'),
         }),
       );
-      timelineManager.addAssets([asset]);
+      timelineManager.upsertAssets([asset]);
 
       expect(timelineManager.months.length).toEqual(1);
       expect(timelineManager.assetCount).toEqual(1);
@@ -212,8 +216,8 @@ describe('TimelineManager', () => {
           fileCreatedAt: fromISODateTimeUTCToObject('2024-01-20T12:00:00.000Z'),
         })
         .map((asset) => deriveLocalDateTimeFromFileCreatedAt(asset));
-      timelineManager.addAssets([assetOne]);
-      timelineManager.addAssets([assetTwo]);
+      timelineManager.upsertAssets([assetOne]);
+      timelineManager.upsertAssets([assetTwo]);
 
       expect(timelineManager.months.length).toEqual(1);
       expect(timelineManager.assetCount).toEqual(2);
@@ -238,7 +242,7 @@ describe('TimelineManager', () => {
           fileCreatedAt: fromISODateTimeUTCToObject('2024-01-16T12:00:00.000Z'),
         }),
       );
-      timelineManager.addAssets([assetOne, assetTwo, assetThree]);
+      timelineManager.upsertAssets([assetOne, assetTwo, assetThree]);
 
       const month = getMonthGroupByDate(timelineManager, { year: 2024, month: 1 });
       expect(month).not.toBeNull();
@@ -264,7 +268,7 @@ describe('TimelineManager', () => {
           fileCreatedAt: fromISODateTimeUTCToObject('2023-01-20T12:00:00.000Z'),
         }),
       );
-      timelineManager.addAssets([assetOne, assetTwo, assetThree]);
+      timelineManager.upsertAssets([assetOne, assetTwo, assetThree]);
 
       expect(timelineManager.months.length).toEqual(3);
       expect(timelineManager.months[0].yearMonth.year).toEqual(2024);
@@ -278,11 +282,11 @@ describe('TimelineManager', () => {
     });
 
     it('updates existing asset', () => {
-      const updateAssetsSpy = vi.spyOn(timelineManager, 'updateAssets');
+      const updateAssetsSpy = vi.spyOn(timelineManager, 'upsertAssets');
       const asset = deriveLocalDateTimeFromFileCreatedAt(timelineAssetFactory.build());
-      timelineManager.addAssets([asset]);
+      timelineManager.upsertAssets([asset]);
 
-      timelineManager.addAssets([asset]);
+      timelineManager.upsertAssets([asset]);
       expect(updateAssetsSpy).toBeCalledWith([asset]);
       expect(timelineManager.assetCount).toEqual(1);
     });
@@ -294,12 +298,128 @@ describe('TimelineManager', () => {
 
       const timelineManager = new TimelineManager();
       await timelineManager.updateOptions({ isTrashed: true });
-      timelineManager.addAssets([asset, trashedAsset]);
+      timelineManager.upsertAssets([asset, trashedAsset]);
       expect(await getAssets(timelineManager)).toEqual([trashedAsset]);
     });
   });
 
-  describe('updateAssets', () => {
+  describe('ensure efficient timeline operations', () => {
+    let timelineManager: TimelineManager;
+
+    let month1day1asset1: TimelineAsset,
+      month1day2asset1: TimelineAsset,
+      month1day2asset2: TimelineAsset,
+      month1day3asset1: TimelineAsset,
+      month2day1asset1: TimelineAsset,
+      month2day2asset1: TimelineAsset,
+      month2day2asset2: TimelineAsset;
+
+    type DayMocks = {
+      layoutFn: MockInstance;
+      sortAssetsFn: MockInstance;
+    };
+    type MonthMocks = {
+      sortDayGroupsFn: MockInstance;
+    };
+
+    const dayGroups = new Map<DayGroup, DayMocks>();
+    const monthGroups = new Map<MonthGroup, MonthMocks>();
+
+    beforeEach(async () => {
+      timelineManager = new TimelineManager();
+      setTestHooks({
+        onCreateDayGroup: (dayGroup: DayGroup) => {
+          dayGroups.set(dayGroup, {
+            layoutFn: vi.spyOn(dayGroup, 'layout'),
+            sortAssetsFn: vi.spyOn(dayGroup, 'sortAssets'),
+          });
+        },
+        onCreateMonthGroup: (monthGroup: MonthGroup) => {
+          monthGroups.set(monthGroup, {
+            sortDayGroupsFn: vi.spyOn(monthGroup, 'sortDayGroups'),
+          });
+        },
+      });
+      sdkMock.getTimeBuckets.mockResolvedValue([]);
+      month1day1asset1 = deriveLocalDateTimeFromFileCreatedAt(
+        timelineAssetFactory.build({
+          fileCreatedAt: fromISODateTimeUTCToObject('2024-01-20T12:00:00.000Z'),
+        }),
+      );
+      month1day2asset1 = deriveLocalDateTimeFromFileCreatedAt(
+        timelineAssetFactory.build({
+          fileCreatedAt: fromISODateTimeUTCToObject('2024-01-15T12:00:00.000Z'),
+        }),
+      );
+      month1day2asset2 = deriveLocalDateTimeFromFileCreatedAt(
+        timelineAssetFactory.build({
+          fileCreatedAt: fromISODateTimeUTCToObject('2024-01-15T13:00:00.000Z'),
+        }),
+      );
+      month1day3asset1 = deriveLocalDateTimeFromFileCreatedAt(
+        timelineAssetFactory.build({
+          fileCreatedAt: fromISODateTimeUTCToObject('2024-01-16T12:00:00.000Z'),
+        }),
+      );
+      month2day1asset1 = deriveLocalDateTimeFromFileCreatedAt(
+        timelineAssetFactory.build({
+          fileCreatedAt: fromISODateTimeUTCToObject('2024-02-16T12:00:00.000Z'),
+        }),
+      );
+      month2day2asset1 = deriveLocalDateTimeFromFileCreatedAt(
+        timelineAssetFactory.build({
+          fileCreatedAt: fromISODateTimeUTCToObject('2024-02-18T12:00:00.000Z'),
+        }),
+      );
+      month2day2asset2 = deriveLocalDateTimeFromFileCreatedAt(
+        timelineAssetFactory.build({
+          fileCreatedAt: fromISODateTimeUTCToObject('2024-02-18T13:00:00.000Z'),
+        }),
+      );
+
+      await timelineManager.updateViewport({ width: 1588, height: 1000 });
+      timelineManager.upsertAssets([
+        month1day1asset1,
+        month1day2asset1,
+        month1day2asset2,
+        month1day3asset1,
+        month2day1asset1,
+        month2day2asset1,
+        month2day2asset2,
+      ]);
+      vitest.resetAllMocks();
+    });
+    it.skip('Not Ready Yet - optimizations not complete: moving asset between months only sorts/layout the affected months once', () => {
+      // move from 2024-01-15 to 2024-01-16
+      timelineManager.updateAssetOperation([month1day2asset1.id], (asset) => {
+        asset.localDateTime.day = asset.localDateTime.day + 1;
+      });
+      for (const [day, mocks] of dayGroups) {
+        if (day.day === 15 && day.monthGroup.yearMonth.month === 1) {
+          // source - should be layout once
+          expect.soft(mocks.layoutFn).toBeCalledTimes(1);
+          expect.soft(mocks.sortAssetsFn).toBeCalledTimes(1);
+        }
+        if (day.day === 16 && day.monthGroup.yearMonth.month === 1) {
+          // target - should be layout once
+          expect.soft(mocks.layoutFn).toBeCalledTimes(1);
+          expect.soft(mocks.sortAssetsFn).toBeCalledTimes(1);
+        }
+        // everything else - should not be layed-out
+        expect.soft(mocks.layoutFn).toBeCalledTimes(0);
+        expect.soft(mocks.sortAssetsFn).toBeCalledTimes(0);
+      }
+      for (const [_, mocks] of monthGroups) {
+        // if the day itself did not change, probably no need to sort it
+        // in the timeline manager, the day-group identity is immutable - you will never
+        // "move" a whole day to another day - only the assets inside will be moved from
+        // one to the other.
+        expect.soft(mocks.sortDayGroupsFn).toBeCalledTimes(0);
+      }
+    });
+  });
+
+  describe('upsertAssets', () => {
     let timelineManager: TimelineManager;
 
     beforeEach(async () => {
@@ -309,22 +429,15 @@ describe('TimelineManager', () => {
       await timelineManager.updateViewport({ width: 1588, height: 1000 });
     });
 
-    it('ignores non-existing assets', () => {
-      timelineManager.updateAssets([deriveLocalDateTimeFromFileCreatedAt(timelineAssetFactory.build())]);
-
-      expect(timelineManager.months.length).toEqual(0);
-      expect(timelineManager.assetCount).toEqual(0);
-    });
-
-    it('updates an asset', () => {
+    it('upserts an asset', () => {
       const asset = deriveLocalDateTimeFromFileCreatedAt(timelineAssetFactory.build({ isFavorite: false }));
       const updatedAsset = { ...asset, isFavorite: true };
 
-      timelineManager.addAssets([asset]);
+      timelineManager.upsertAssets([asset]);
       expect(timelineManager.assetCount).toEqual(1);
       expect(timelineManager.months[0].getFirstAsset().isFavorite).toEqual(false);
 
-      timelineManager.updateAssets([updatedAsset]);
+      timelineManager.upsertAssets([updatedAsset]);
       expect(timelineManager.assetCount).toEqual(1);
       expect(timelineManager.months[0].getFirstAsset().isFavorite).toEqual(true);
     });
@@ -340,17 +453,80 @@ describe('TimelineManager', () => {
         fileCreatedAt: fromISODateTimeUTCToObject('2024-03-20T12:00:00.000Z'),
       });
 
-      timelineManager.addAssets([asset]);
+      timelineManager.upsertAssets([asset]);
       expect(timelineManager.months.length).toEqual(1);
       expect(getMonthGroupByDate(timelineManager, { year: 2024, month: 1 })).not.toBeUndefined();
       expect(getMonthGroupByDate(timelineManager, { year: 2024, month: 1 })?.getAssets().length).toEqual(1);
 
-      timelineManager.updateAssets([updatedAsset]);
+      timelineManager.upsertAssets([updatedAsset]);
       expect(timelineManager.months.length).toEqual(2);
       expect(getMonthGroupByDate(timelineManager, { year: 2024, month: 1 })).not.toBeUndefined();
       expect(getMonthGroupByDate(timelineManager, { year: 2024, month: 1 })?.getAssets().length).toEqual(0);
       expect(getMonthGroupByDate(timelineManager, { year: 2024, month: 3 })).not.toBeUndefined();
       expect(getMonthGroupByDate(timelineManager, { year: 2024, month: 3 })?.getAssets().length).toEqual(1);
+    });
+
+    it('asset is removed during upsert when TimelineManager if visibility changes', async () => {
+      await timelineManager.updateOptions({
+        visibility: AssetVisibility.Archive,
+      });
+      const fixture = deriveLocalDateTimeFromFileCreatedAt(
+        timelineAssetFactory.build({
+          visibility: AssetVisibility.Archive,
+        }),
+      );
+
+      timelineManager.upsertAssets([fixture]);
+      expect(timelineManager.assetCount).toEqual(1);
+
+      const updated = Object.freeze({ ...fixture, visibility: AssetVisibility.Timeline });
+      timelineManager.upsertAssets([updated]);
+      expect(timelineManager.assetCount).toEqual(0);
+
+      timelineManager.upsertAssets([{ ...fixture, visibility: AssetVisibility.Archive }]);
+      expect(timelineManager.assetCount).toEqual(1);
+    });
+
+    it('asset is removed during upsert when TimelineManager if isFavorite changes', async () => {
+      await timelineManager.updateOptions({
+        isFavorite: true,
+      });
+      const fixture = deriveLocalDateTimeFromFileCreatedAt(
+        timelineAssetFactory.build({
+          isFavorite: true,
+        }),
+      );
+
+      timelineManager.upsertAssets([fixture]);
+      expect(timelineManager.assetCount).toEqual(1);
+
+      const updated = Object.freeze({ ...fixture, isFavorite: false });
+      timelineManager.upsertAssets([updated]);
+      expect(timelineManager.assetCount).toEqual(0);
+
+      timelineManager.upsertAssets([{ ...fixture, isFavorite: true }]);
+      expect(timelineManager.assetCount).toEqual(1);
+    });
+
+    it('asset is removed during upsert when TimelineManager if isTrashed changes', async () => {
+      await timelineManager.updateOptions({
+        isTrashed: true,
+      });
+      const fixture = deriveLocalDateTimeFromFileCreatedAt(
+        timelineAssetFactory.build({
+          isTrashed: true,
+        }),
+      );
+
+      timelineManager.upsertAssets([fixture]);
+      expect(timelineManager.assetCount).toEqual(1);
+
+      const updated = Object.freeze({ ...fixture, isTrashed: false });
+      timelineManager.upsertAssets([updated]);
+      expect(timelineManager.assetCount).toEqual(0);
+
+      timelineManager.upsertAssets([{ ...fixture, isTrashed: true }]);
+      expect(timelineManager.assetCount).toEqual(1);
     });
   });
 
@@ -365,7 +541,7 @@ describe('TimelineManager', () => {
     });
 
     it('ignores invalid IDs', () => {
-      timelineManager.addAssets(
+      timelineManager.upsertAssets(
         timelineAssetFactory
           .buildList(2, {
             fileCreatedAt: fromISODateTimeUTCToObject('2024-01-20T12:00:00.000Z'),
@@ -385,7 +561,7 @@ describe('TimelineManager', () => {
           fileCreatedAt: fromISODateTimeUTCToObject('2024-01-20T12:00:00.000Z'),
         })
         .map((asset) => deriveLocalDateTimeFromFileCreatedAt(asset));
-      timelineManager.addAssets([assetOne, assetTwo]);
+      timelineManager.upsertAssets([assetOne, assetTwo]);
       timelineManager.removeAssets([assetOne.id]);
 
       expect(timelineManager.assetCount).toEqual(1);
@@ -399,7 +575,7 @@ describe('TimelineManager', () => {
           fileCreatedAt: fromISODateTimeUTCToObject('2024-01-20T12:00:00.000Z'),
         })
         .map((asset) => deriveLocalDateTimeFromFileCreatedAt(asset));
-      timelineManager.addAssets(assets);
+      timelineManager.upsertAssets(assets);
       timelineManager.removeAssets(assets.map((asset) => asset.id));
 
       expect(timelineManager.assetCount).toEqual(0);
@@ -431,7 +607,7 @@ describe('TimelineManager', () => {
           fileCreatedAt: fromISODateTimeUTCToObject('2024-01-15T12:00:00.000Z'),
         }),
       );
-      timelineManager.addAssets([assetOne, assetTwo]);
+      timelineManager.upsertAssets([assetOne, assetTwo]);
       expect(timelineManager.getFirstAsset()).toEqual(assetOne);
     });
   });
@@ -556,7 +732,7 @@ describe('TimelineManager', () => {
           fileCreatedAt: fromISODateTimeUTCToObject('2024-02-15T12:00:00.000Z'),
         }),
       );
-      timelineManager.addAssets([assetOne, assetTwo]);
+      timelineManager.upsertAssets([assetOne, assetTwo]);
 
       expect(timelineManager.getMonthGroupByAssetId(assetTwo.id)?.yearMonth.year).toEqual(2024);
       expect(timelineManager.getMonthGroupByAssetId(assetTwo.id)?.yearMonth.month).toEqual(2);
@@ -575,7 +751,7 @@ describe('TimelineManager', () => {
           fileCreatedAt: fromISODateTimeUTCToObject('2024-02-15T12:00:00.000Z'),
         }),
       );
-      timelineManager.addAssets([assetOne, assetTwo]);
+      timelineManager.upsertAssets([assetOne, assetTwo]);
 
       timelineManager.removeAssets([assetTwo.id]);
       expect(timelineManager.getMonthGroupByAssetId(assetOne.id)?.yearMonth.year).toEqual(2024);
