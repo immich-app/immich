@@ -136,13 +136,13 @@ export class PluginExecutionService extends BaseService {
       const filter = await this.pluginRepository.getFilter(workflowFilter.filterId);
       if (!filter) {
         this.logger.error(`Filter ${workflowFilter.filterId} not found`);
-        continue;
+        return false;
       }
 
       const pluginInstance = this.loadedPlugins.get(filter.pluginId);
       if (!pluginInstance) {
         this.logger.error(`Plugin ${filter.pluginId} not loaded`);
-        continue;
+        return false;
       }
 
       this.logger.debug(`Executing filter: ${filter.name}`);
@@ -171,14 +171,12 @@ export class PluginExecutionService extends BaseService {
     for (const workflowAction of workflowActions) {
       const action = await this.pluginRepository.getAction(workflowAction.actionId);
       if (!action) {
-        this.logger.error(`Action ${workflowAction.actionId} not found`);
-        continue;
+        throw new Error(`Action ${workflowAction.actionId} not found`);
       }
 
       const pluginInstance = this.loadedPlugins.get(action.pluginId);
       if (!pluginInstance) {
-        this.logger.error(`Action ${action.pluginId} not loaded`);
-        continue;
+        throw new Error(`Plugin ${action.pluginId} not loaded`);
       }
 
       this.logger.debug(`Executing action: ${action.name}`);
@@ -189,10 +187,7 @@ export class PluginExecutionService extends BaseService {
 
       this.logger.debug(`Calling action ${action.name} with input: ${actionInput}`);
 
-      const actionResult = await pluginInstance.call(action.name, actionInput);
-      if (!actionResult) {
-        this.logger.error(`Action ${action.name} returned null`);
-      }
+      await pluginInstance.call(action.name, actionInput);
     }
   }
 }
