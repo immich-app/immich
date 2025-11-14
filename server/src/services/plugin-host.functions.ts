@@ -58,9 +58,9 @@ export class PluginHostFunctions {
   /**
    * Validates the JWT token and returns the auth context.
    */
-  private validateToken(jwtToken: string): { userId: string } {
+  private validateToken(authToken: string): { userId: string } {
     try {
-      const auth = this.cryptoRepository.verifyJwt<{ userId: string }>(jwtToken, this.pluginJwtSecret);
+      const auth = this.cryptoRepository.verifyJwt<{ userId: string }>(authToken, this.pluginJwtSecret);
       if (!auth.userId) {
         throw new UnauthorizedException('Invalid token: missing userId');
       }
@@ -74,11 +74,11 @@ export class PluginHostFunctions {
   /**
    * Updates an asset with the given properties.
    */
-  async updateAsset(input: { jwtToken: string } & Updateable<AssetTable> & { id: string }) {
-    const { jwtToken, id, ...assetData } = input;
+  async updateAsset(input: { authToken: string } & Updateable<AssetTable> & { id: string }) {
+    const { authToken, id, ...assetData } = input;
 
     // Validate token
-    const auth = this.validateToken(jwtToken);
+    const auth = this.validateToken(authToken);
 
     // Check access to the asset
     await requireAccess(this.accessRepository, {
@@ -94,11 +94,11 @@ export class PluginHostFunctions {
   /**
    * Adds an asset to an album.
    */
-  async addAssetToAlbum(input: { jwtToken: string; assetId: string; albumId: string }) {
-    const { jwtToken, assetId, albumId } = input;
+  async addAssetToAlbum(input: { authToken: string; assetId: string; albumId: string }) {
+    const { authToken, assetId, albumId } = input;
 
     // Validate token
-    const auth = this.validateToken(jwtToken);
+    const auth = this.validateToken(authToken);
 
     // Check access to both the asset and the album
     await requireAccess(this.accessRepository, {
