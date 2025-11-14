@@ -11,7 +11,7 @@
   import { eventManager } from '$lib/managers/event-manager.svelte';
   import ServerRestartingModal from '$lib/modals/ServerRestartingModal.svelte';
   import VersionAnnouncementModal from '$lib/modals/VersionAnnouncementModal.svelte';
-  import { serverConfig } from '$lib/stores/server-config.store';
+  import { serverConfig } from '$lib/stores/system-config-manager.svelte';
   import { user } from '$lib/stores/user.store';
   import {
     closeWebsocketConnection,

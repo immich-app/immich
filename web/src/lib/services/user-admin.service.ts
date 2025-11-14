@@ -5,7 +5,7 @@ import UserCreateModal from '$lib/modals/UserCreateModal.svelte';
 import UserDeleteConfirmModal from '$lib/modals/UserDeleteConfirmModal.svelte';
 import UserEditModal from '$lib/modals/UserEditModal.svelte';
 import UserRestoreConfirmModal from '$lib/modals/UserRestoreConfirmModal.svelte';
-import { serverConfig } from '$lib/stores/server-config.store';
+import { serverConfig } from '$lib/stores/system-config-manager.svelte';
 import { user as authUser } from '$lib/stores/user.store';
 import type { ActionItem } from '$lib/types';
 import { handleError } from '$lib/utils/handle-error';

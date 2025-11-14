@@ -12,7 +12,7 @@
   import OnboardingUserPrivacy from '$lib/components/onboarding-page/onboarding-user-privacy.svelte';
   import { AppRoute, QueryParameter } from '$lib/constants';
   import { OnboardingRole } from '$lib/models/onboarding-role';
-  import { retrieveServerConfig, retrieveSystemConfig, serverConfig } from '$lib/stores/server-config.store';
+  import { retrieveServerConfig, serverConfig, systemConfigManager } from '$lib/stores/system-config-manager.svelte';
   import { user } from '$lib/stores/user.store';
   import { setUserOnboarding, updateAdminOnboarding } from '@immich/sdk';
   import {
@@ -152,11 +152,13 @@
     );
   };
 
-  onMount(async () => {
-    await retrieveSystemConfig();
-  });
-
   const OnboardingStep = $derived(onboardingSteps[index].component);
+
+  onMount(async () => {
+    if (userRole === OnboardingRole.SERVER) {
+      await systemConfigManager.init();
+    }
+  });
 </script>
 
 <section id="onboarding-page" class="min-w-dvw flex min-h-dvh p-4">

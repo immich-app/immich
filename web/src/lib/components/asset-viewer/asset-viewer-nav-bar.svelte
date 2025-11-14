@@ -25,7 +25,7 @@
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import { AppRoute } from '$lib/constants';
   import { photoViewerImgElement } from '$lib/stores/assets-store.svelte';
-  import { featureFlags } from '$lib/stores/server-config.store';
+  import { featureFlags } from '$lib/stores/system-config-manager.svelte';
   import { user } from '$lib/stores/user.store';
   import { photoZoomState } from '$lib/stores/zoom-image.store';
   import { getAssetJobName, getSharedLink } from '$lib/utils';

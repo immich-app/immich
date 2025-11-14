@@ -80,7 +80,22 @@
         "tags": [
           "Activities"
         ],
-        "x-immich-permission": "activity.read"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "activity.read",
+        "x-immich-state": "Stable"
       },
       "post": {
         "description": "Create a like or a comment for an album, or an asset in an album.",
@@ -123,7 +138,22 @@
         "tags": [
           "Activities"
         ],
-        "x-immich-permission": "activity.create"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "activity.create",
+        "x-immich-state": "Stable"
       }
     },
     "/activities/statistics": {
@@ -177,7 +207,22 @@
         "tags": [
           "Activities"
         ],
-        "x-immich-permission": "activity.statistics"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "activity.statistics",
+        "x-immich-state": "Stable"
       }
     },
     "/activities/{id}": {
@@ -215,7 +260,22 @@
         "tags": [
           "Activities"
         ],
-        "x-immich-permission": "activity.delete"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "activity.delete",
+        "x-immich-state": "Stable"
       }
     },
     "/admin/auth/unlink-all": {
@@ -244,7 +304,22 @@
           "Authentication (admin)"
         ],
         "x-immich-admin-only": true,
-        "x-immich-permission": "adminAuth.unlinkAll"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "adminAuth.unlinkAll",
+        "x-immich-state": "Stable"
       }
     },
     "/admin/maintenance/end": {
@@ -374,7 +449,22 @@
         "tags": [
           "Notifications (admin)"
         ],
-        "x-immich-admin-only": true
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-state": "Stable"
       }
     },
     "/admin/notifications/templates/{name}": {
@@ -428,7 +518,22 @@
         "tags": [
           "Notifications (admin)"
         ],
-        "x-immich-admin-only": true
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-state": "Stable"
       }
     },
     "/admin/notifications/test-email": {
@@ -473,7 +578,22 @@
         "tags": [
           "Notifications (admin)"
         ],
-        "x-immich-admin-only": true
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-state": "Stable"
       }
     },
     "/admin/users": {
@@ -530,7 +650,22 @@
           "Users (admin)"
         ],
         "x-immich-admin-only": true,
-        "x-immich-permission": "adminUser.read"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "adminUser.read",
+        "x-immich-state": "Stable"
       },
       "post": {
         "description": "Create a new user.",
@@ -574,7 +709,22 @@
           "Users (admin)"
         ],
         "x-immich-admin-only": true,
-        "x-immich-permission": "adminUser.create"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "adminUser.create",
+        "x-immich-state": "Stable"
       }
     },
     "/admin/users/{id}": {
@@ -630,7 +780,22 @@
           "Users (admin)"
         ],
         "x-immich-admin-only": true,
-        "x-immich-permission": "adminUser.delete"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "adminUser.delete",
+        "x-immich-state": "Stable"
       },
       "get": {
         "description": "Retrieve  a specific user by their ID.",
@@ -674,7 +839,22 @@
           "Users (admin)"
         ],
         "x-immich-admin-only": true,
-        "x-immich-permission": "adminUser.read"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "adminUser.read",
+        "x-immich-state": "Stable"
       },
       "put": {
         "description": "Update an existing user.",
@@ -728,7 +908,22 @@
           "Users (admin)"
         ],
         "x-immich-admin-only": true,
-        "x-immich-permission": "adminUser.update"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "adminUser.update",
+        "x-immich-state": "Stable"
       }
     },
     "/admin/users/{id}/preferences": {
@@ -774,7 +969,22 @@
           "Users (admin)"
         ],
         "x-immich-admin-only": true,
-        "x-immich-permission": "adminUser.read"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "adminUser.read",
+        "x-immich-state": "Stable"
       },
       "put": {
         "description": "Update the preferences of a specific user.",
@@ -828,7 +1038,22 @@
           "Users (admin)"
         ],
         "x-immich-admin-only": true,
-        "x-immich-permission": "adminUser.update"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "adminUser.update",
+        "x-immich-state": "Stable"
       }
     },
     "/admin/users/{id}/restore": {
@@ -874,7 +1099,22 @@
           "Users (admin)"
         ],
         "x-immich-admin-only": true,
-        "x-immich-permission": "adminUser.delete"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "adminUser.delete",
+        "x-immich-state": "Stable"
       }
     },
     "/admin/users/{id}/sessions": {
@@ -923,7 +1163,22 @@
           "Users (admin)"
         ],
         "x-immich-admin-only": true,
-        "x-immich-permission": "adminSession.read"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "adminSession.read",
+        "x-immich-state": "Stable"
       }
     },
     "/admin/users/{id}/statistics": {
@@ -993,7 +1248,22 @@
           "Users (admin)"
         ],
         "x-immich-admin-only": true,
-        "x-immich-permission": "adminUser.read"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "adminUser.read",
+        "x-immich-state": "Stable"
       }
     },
     "/albums": {
@@ -1050,7 +1320,22 @@
         "tags": [
           "Albums"
         ],
-        "x-immich-permission": "album.read"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "album.read",
+        "x-immich-state": "Stable"
       },
       "post": {
         "description": "Create a new album. The album can also be created with initial users and assets.",
@@ -1093,7 +1378,22 @@
         "tags": [
           "Albums"
         ],
-        "x-immich-permission": "album.create"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "album.create",
+        "x-immich-state": "Stable"
       }
     },
     "/albums/assets": {
@@ -1155,7 +1455,22 @@
         "tags": [
           "Albums"
         ],
-        "x-immich-permission": "albumAsset.create"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "albumAsset.create",
+        "x-immich-state": "Stable"
       }
     },
     "/albums/statistics": {
@@ -1190,7 +1505,22 @@
         "tags": [
           "Albums"
         ],
-        "x-immich-permission": "album.statistics"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "album.statistics",
+        "x-immich-state": "Stable"
       }
     },
     "/albums/{id}": {
@@ -1228,7 +1558,22 @@
         "tags": [
           "Albums"
         ],
-        "x-immich-permission": "album.delete"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "album.delete",
+        "x-immich-state": "Stable"
       },
       "get": {
         "description": "Retrieve information about a specific album by its ID.",
@@ -1295,7 +1640,22 @@
         "tags": [
           "Albums"
         ],
-        "x-immich-permission": "album.read"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "album.read",
+        "x-immich-state": "Stable"
       },
       "patch": {
         "description": "Update the information of a specific album by its ID. This endpoint can be used to update the album name, description, sort order, etc. However, it is not used to add or remove assets or users from the album.",
@@ -1348,7 +1708,22 @@
         "tags": [
           "Albums"
         ],
-        "x-immich-permission": "album.update"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "album.update",
+        "x-immich-state": "Stable"
       }
     },
     "/albums/{id}/assets": {
@@ -1406,7 +1781,22 @@
         "tags": [
           "Albums"
         ],
-        "x-immich-permission": "albumAsset.delete"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "albumAsset.delete",
+        "x-immich-state": "Stable"
       },
       "put": {
         "description": "Add multiple assets to a specific album by its ID.",
@@ -1478,7 +1868,22 @@
         "tags": [
           "Albums"
         ],
-        "x-immich-permission": "albumAsset.create"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "albumAsset.create",
+        "x-immich-state": "Stable"
       }
     },
     "/albums/{id}/user/{userId}": {
@@ -1524,7 +1929,22 @@
         "tags": [
           "Albums"
         ],
-        "x-immich-permission": "albumUser.delete"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "albumUser.delete",
+        "x-immich-state": "Stable"
       },
       "put": {
         "description": "Change the role for a specific user in a specific album.",
@@ -1578,7 +1998,22 @@
         "tags": [
           "Albums"
         ],
-        "x-immich-permission": "albumUser.update"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "albumUser.update",
+        "x-immich-state": "Stable"
       }
     },
     "/albums/{id}/users": {
@@ -1633,7 +2068,22 @@
         "tags": [
           "Albums"
         ],
-        "x-immich-permission": "albumUser.create"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "albumUser.create",
+        "x-immich-state": "Stable"
       }
     },
     "/api-keys": {
@@ -1671,7 +2121,22 @@
         "tags": [
           "API keys"
         ],
-        "x-immich-permission": "apiKey.read"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "apiKey.read",
+        "x-immich-state": "Stable"
       },
       "post": {
         "description": "Creates a new API key. It will be limited to the permissions specified.",
@@ -1714,7 +2179,22 @@
         "tags": [
           "API keys"
         ],
-        "x-immich-permission": "apiKey.create"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "apiKey.create",
+        "x-immich-state": "Stable"
       }
     },
     "/api-keys/me": {
@@ -1748,7 +2228,22 @@
         "summary": "Retrieve the current API key",
         "tags": [
           "API keys"
-        ]
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-state": "Stable"
       }
     },
     "/api-keys/{id}": {
@@ -1786,7 +2281,22 @@
         "tags": [
           "API keys"
         ],
-        "x-immich-permission": "apiKey.delete"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "apiKey.delete",
+        "x-immich-state": "Stable"
       },
       "get": {
         "description": "Retrieve an API key by its ID. The current user must own this API key.",
@@ -1829,7 +2339,22 @@
         "tags": [
           "API keys"
         ],
-        "x-immich-permission": "apiKey.read"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "apiKey.read",
+        "x-immich-state": "Stable"
       },
       "put": {
         "description": "Updates the name and permissions of an API key by its ID. The current user must own this API key.",
@@ -1882,7 +2407,22 @@
         "tags": [
           "API keys"
         ],
-        "x-immich-permission": "apiKey.update"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "apiKey.update",
+        "x-immich-state": "Stable"
       }
     },
     "/assets": {
@@ -1920,7 +2460,22 @@
         "tags": [
           "Assets"
         ],
-        "x-immich-permission": "asset.delete"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "asset.delete",
+        "x-immich-state": "Stable"
       },
       "post": {
         "description": "Uploads a new asset to the server.",
@@ -1990,7 +2545,22 @@
         "tags": [
           "Assets"
         ],
-        "x-immich-permission": "asset.upload"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "asset.upload",
+        "x-immich-state": "Stable"
       },
       "put": {
         "description": "Updates multiple assets at the same time.",
@@ -2026,7 +2596,22 @@
         "tags": [
           "Assets"
         ],
-        "x-immich-permission": "asset.update"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "asset.update",
+        "x-immich-state": "Stable"
       }
     },
     "/assets/bulk-upload-check": {
@@ -2071,7 +2656,22 @@
         "tags": [
           "Assets"
         ],
-        "x-immich-permission": "asset.upload"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "asset.upload",
+        "x-immich-state": "Stable"
       }
     },
     "/assets/copy": {
@@ -2109,13 +2709,28 @@
         "tags": [
           "Assets"
         ],
-        "x-immich-permission": "asset.copy"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "asset.copy",
+        "x-immich-state": "Stable"
       }
     },
     "/assets/device/{deviceId}": {
       "get": {
         "deprecated": true,
-        "description": "This property was deprecated in v2.0.0. Get all asset of a device that are in the database, ID only.",
+        "description": "Get all asset of a device that are in the database, ID only.",
         "operationId": "getAllUserAssetsByDeviceId",
         "parameters": [
           {
@@ -2158,9 +2773,17 @@
           "Assets",
           "Deprecated"
         ],
-        "x-immich-lifecycle": {
-          "deprecatedAt": "v2.0.0"
-        }
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v2",
+            "state": "Deprecated"
+          }
+        ],
+        "x-immich-state": "Deprecated"
       }
     },
     "/assets/exist": {
@@ -2204,7 +2827,22 @@
         "summary": "Check existing assets",
         "tags": [
           "Assets"
-        ]
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-state": "Stable"
       }
     },
     "/assets/jobs": {
@@ -2241,13 +2879,28 @@
         "summary": "Run an asset job",
         "tags": [
           "Assets"
-        ]
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-state": "Stable"
       }
     },
     "/assets/random": {
       "get": {
         "deprecated": true,
-        "description": "This property was deprecated in v1.116.0. Retrieve a specified number of random assets for the authenticated user.",
+        "description": "Retrieve a specified number of random assets for the authenticated user.",
         "operationId": "getRandom",
         "parameters": [
           {
@@ -2291,10 +2944,19 @@
           "Assets",
           "Deprecated"
         ],
-        "x-immich-lifecycle": {
-          "deprecatedAt": "v1.116.0"
-        },
-        "x-immich-permission": "asset.read"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Deprecated",
+            "replacementId": "searchAssets"
+          }
+        ],
+        "x-immich-permission": "asset.read",
+        "x-immich-state": "Deprecated"
       }
     },
     "/assets/statistics": {
@@ -2354,7 +3016,22 @@
         "tags": [
           "Assets"
         ],
-        "x-immich-permission": "asset.statistics"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "asset.statistics",
+        "x-immich-state": "Stable"
       }
     },
     "/assets/{id}": {
@@ -2415,7 +3092,22 @@
         "tags": [
           "Assets"
         ],
-        "x-immich-permission": "asset.read"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "asset.read",
+        "x-immich-state": "Stable"
       },
       "put": {
         "description": "Update information of a specific asset.",
@@ -2468,7 +3160,22 @@
         "tags": [
           "Assets"
         ],
-        "x-immich-permission": "asset.update"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "asset.update",
+        "x-immich-state": "Stable"
       }
     },
     "/assets/{id}/metadata": {
@@ -2516,7 +3223,22 @@
         "tags": [
           "Assets"
         ],
-        "x-immich-permission": "asset.read"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "asset.read",
+        "x-immich-state": "Stable"
       },
       "put": {
         "description": "Update or add metadata key-value pairs for the specified asset.",
@@ -2572,7 +3294,22 @@
         "tags": [
           "Assets"
         ],
-        "x-immich-permission": "asset.update"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "asset.update",
+        "x-immich-state": "Stable"
       }
     },
     "/assets/{id}/metadata/{key}": {
@@ -2618,7 +3355,22 @@
         "tags": [
           "Assets"
         ],
-        "x-immich-permission": "asset.update"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "asset.update",
+        "x-immich-state": "Stable"
       },
       "get": {
         "description": "Retrieve the value of a specific metadata key associated with the specified asset.",
@@ -2669,7 +3421,22 @@
         "tags": [
           "Assets"
         ],
-        "x-immich-permission": "asset.read"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "asset.read",
+        "x-immich-state": "Stable"
       }
     },
     "/assets/{id}/ocr": {
@@ -2717,7 +3484,22 @@
         "tags": [
           "Assets"
         ],
-        "x-immich-permission": "asset.read"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "asset.read",
+        "x-immich-state": "Stable"
       }
     },
     "/assets/{id}/original": {
@@ -2779,11 +3561,26 @@
         "tags": [
           "Assets"
         ],
-        "x-immich-permission": "asset.download"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "asset.download",
+        "x-immich-state": "Stable"
       },
       "put": {
         "deprecated": true,
-        "description": "This property was deprecated in v1.142.0. Replace the asset with new file, without changing its id.",
+        "description": "Replace the asset with new file, without changing its id.",
         "operationId": "replaceAsset",
         "parameters": [
           {
@@ -2850,11 +3647,19 @@
           "Assets",
           "Deprecated"
         ],
-        "x-immich-lifecycle": {
-          "addedAt": "v1.106.0",
-          "deprecatedAt": "v1.142.0"
-        },
-        "x-immich-permission": "asset.replace"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Deprecated",
+            "replacementId": "copyAsset"
+          }
+        ],
+        "x-immich-permission": "asset.replace",
+        "x-immich-state": "Deprecated"
       }
     },
     "/assets/{id}/thumbnail": {
@@ -2924,7 +3729,22 @@
         "tags": [
           "Assets"
         ],
-        "x-immich-permission": "asset.view"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "asset.view",
+        "x-immich-state": "Stable"
       }
     },
     "/assets/{id}/video/playback": {
@@ -2986,7 +3806,22 @@
         "tags": [
           "Assets"
         ],
-        "x-immich-permission": "asset.view"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "asset.view",
+        "x-immich-state": "Stable"
       }
     },
     "/auth/admin-sign-up": {
@@ -3019,7 +3854,22 @@
         "summary": "Register admin",
         "tags": [
           "Authentication"
-        ]
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-state": "Stable"
       }
     },
     "/auth/change-password": {
@@ -3064,7 +3914,22 @@
         "tags": [
           "Authentication"
         ],
-        "x-immich-permission": "auth.changePassword"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "auth.changePassword",
+        "x-immich-state": "Stable"
       }
     },
     "/auth/login": {
@@ -3097,7 +3962,22 @@
         "summary": "Login",
         "tags": [
           "Authentication"
-        ]
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-state": "Stable"
       }
     },
     "/auth/logout": {
@@ -3131,7 +4011,22 @@
         "summary": "Logout",
         "tags": [
           "Authentication"
-        ]
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-state": "Stable"
       }
     },
     "/auth/pin-code": {
@@ -3169,7 +4064,22 @@
         "tags": [
           "Authentication"
         ],
-        "x-immich-permission": "pinCode.delete"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "pinCode.delete",
+        "x-immich-state": "Stable"
       },
       "post": {
         "description": "Setup a new pin code for the current user.",
@@ -3205,7 +4115,22 @@
         "tags": [
           "Authentication"
         ],
-        "x-immich-permission": "pinCode.create"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "pinCode.create",
+        "x-immich-state": "Stable"
       },
       "put": {
         "description": "Change the pin code for the current user.",
@@ -3241,7 +4166,22 @@
         "tags": [
           "Authentication"
         ],
-        "x-immich-permission": "pinCode.update"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "pinCode.update",
+        "x-immich-state": "Stable"
       }
     },
     "/auth/session/lock": {
@@ -3268,7 +4208,22 @@
         "summary": "Lock auth session",
         "tags": [
           "Authentication"
-        ]
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-state": "Stable"
       }
     },
     "/auth/session/unlock": {
@@ -3305,7 +4260,22 @@
         "summary": "Unlock auth session",
         "tags": [
           "Authentication"
-        ]
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-state": "Stable"
       }
     },
     "/auth/status": {
@@ -3373,7 +4343,22 @@
         "summary": "Validate access token",
         "tags": [
           "Authentication"
-        ]
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-state": "Stable"
       }
     },
     "/download/archive": {
@@ -3436,7 +4421,22 @@
         "tags": [
           "Download"
         ],
-        "x-immich-permission": "asset.download"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "asset.download",
+        "x-immich-state": "Stable"
       }
     },
     "/download/info": {
@@ -3498,7 +4498,22 @@
         "tags": [
           "Download"
         ],
-        "x-immich-permission": "asset.download"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "asset.download",
+        "x-immich-state": "Stable"
       }
     },
     "/duplicates": {
@@ -3536,7 +4551,22 @@
         "tags": [
           "Duplicates"
         ],
-        "x-immich-permission": "duplicate.delete"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "duplicate.delete",
+        "x-immich-state": "Stable"
       },
       "get": {
         "description": "Retrieve a list of duplicate assets available to the authenticated user.",
@@ -3572,7 +4602,22 @@
         "tags": [
           "Duplicates"
         ],
-        "x-immich-permission": "duplicate.read"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "duplicate.read",
+        "x-immich-state": "Stable"
       }
     },
     "/duplicates/{id}": {
@@ -3610,7 +4655,22 @@
         "tags": [
           "Duplicates"
         ],
-        "x-immich-permission": "duplicate.delete"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "duplicate.delete",
+        "x-immich-state": "Stable"
       }
     },
     "/faces": {
@@ -3658,7 +4718,22 @@
         "tags": [
           "Faces"
         ],
-        "x-immich-permission": "face.read"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "face.read",
+        "x-immich-state": "Stable"
       },
       "post": {
         "description": "Create a new face that has not been discovered by facial recognition. The content of the bounding box is considered a face.",
@@ -3694,7 +4769,22 @@
         "tags": [
           "Faces"
         ],
-        "x-immich-permission": "face.create"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "face.create",
+        "x-immich-state": "Stable"
       }
     },
     "/faces/{id}": {
@@ -3742,7 +4832,22 @@
         "tags": [
           "Faces"
         ],
-        "x-immich-permission": "face.delete"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "face.delete",
+        "x-immich-state": "Stable"
       },
       "put": {
         "description": "Re-assign the face provided in the body to the person identified by the id in the path parameter.",
@@ -3795,7 +4900,22 @@
         "tags": [
           "Faces"
         ],
-        "x-immich-permission": "face.update"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "face.update",
+        "x-immich-state": "Stable"
       }
     },
     "/jobs": {
@@ -3831,7 +4951,22 @@
           "Jobs"
         ],
         "x-immich-admin-only": true,
-        "x-immich-permission": "job.read"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "job.read",
+        "x-immich-state": "Stable"
       },
       "post": {
         "description": "Run a specific job. Most jobs are queued automatically, but this endpoint allows for manual creation of a handful of jobs, including various cleanup tasks, as well as creating a new database backup.",
@@ -3868,7 +5003,22 @@
           "Jobs"
         ],
         "x-immich-admin-only": true,
-        "x-immich-permission": "job.create"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "job.create",
+        "x-immich-state": "Stable"
       }
     },
     "/jobs/{id}": {
@@ -3923,7 +5073,22 @@
           "Jobs"
         ],
         "x-immich-admin-only": true,
-        "x-immich-permission": "job.create"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "job.create",
+        "x-immich-state": "Stable"
       }
     },
     "/libraries": {
@@ -3962,7 +5127,22 @@
           "Libraries"
         ],
         "x-immich-admin-only": true,
-        "x-immich-permission": "library.read"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "library.read",
+        "x-immich-state": "Stable"
       },
       "post": {
         "description": "Create a new external library.",
@@ -4006,7 +5186,22 @@
           "Libraries"
         ],
         "x-immich-admin-only": true,
-        "x-immich-permission": "library.create"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "library.create",
+        "x-immich-state": "Stable"
       }
     },
     "/libraries/{id}": {
@@ -4045,7 +5240,22 @@
           "Libraries"
         ],
         "x-immich-admin-only": true,
-        "x-immich-permission": "library.delete"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "library.delete",
+        "x-immich-state": "Stable"
       },
       "get": {
         "description": "Retrieve an external library by its ID.",
@@ -4089,7 +5299,22 @@
           "Libraries"
         ],
         "x-immich-admin-only": true,
-        "x-immich-permission": "library.read"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "library.read",
+        "x-immich-state": "Stable"
       },
       "put": {
         "description": "Update an existing external library.",
@@ -4143,7 +5368,22 @@
           "Libraries"
         ],
         "x-immich-admin-only": true,
-        "x-immich-permission": "library.update"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "library.update",
+        "x-immich-state": "Stable"
       }
     },
     "/libraries/{id}/scan": {
@@ -4182,7 +5422,22 @@
           "Libraries"
         ],
         "x-immich-admin-only": true,
-        "x-immich-permission": "library.update"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "library.update",
+        "x-immich-state": "Stable"
       }
     },
     "/libraries/{id}/statistics": {
@@ -4228,7 +5483,22 @@
           "Libraries"
         ],
         "x-immich-admin-only": true,
-        "x-immich-permission": "library.statistics"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "library.statistics",
+        "x-immich-state": "Stable"
       }
     },
     "/libraries/{id}/validate": {
@@ -4283,7 +5553,22 @@
         "tags": [
           "Libraries"
         ],
-        "x-immich-admin-only": true
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-state": "Stable"
       }
     },
     "/map/markers": {
@@ -4371,7 +5656,22 @@
         "summary": "Retrieve map markers",
         "tags": [
           "Map"
-        ]
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-state": "Stable"
       }
     },
     "/map/reverse-geocode": {
@@ -4427,7 +5727,22 @@
         "summary": "Reverse geocode coordinates",
         "tags": [
           "Map"
-        ]
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-state": "Stable"
       }
     },
     "/memories": {
@@ -4517,7 +5832,22 @@
         "tags": [
           "Memories"
         ],
-        "x-immich-permission": "memory.read"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "memory.read",
+        "x-immich-state": "Stable"
       },
       "post": {
         "description": "Create a new memory by providing a name, description, and a list of asset IDs to include in the memory.",
@@ -4560,7 +5890,22 @@
         "tags": [
           "Memories"
         ],
-        "x-immich-permission": "memory.create"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "memory.create",
+        "x-immich-state": "Stable"
       }
     },
     "/memories/statistics": {
@@ -4647,7 +5992,22 @@
         "tags": [
           "Memories"
         ],
-        "x-immich-permission": "memory.statistics"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "memory.statistics",
+        "x-immich-state": "Stable"
       }
     },
     "/memories/{id}": {
@@ -4685,7 +6045,22 @@
         "tags": [
           "Memories"
         ],
-        "x-immich-permission": "memory.delete"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "memory.delete",
+        "x-immich-state": "Stable"
       },
       "get": {
         "description": "Retrieve a specific memory by its ID.",
@@ -4728,7 +6103,22 @@
         "tags": [
           "Memories"
         ],
-        "x-immich-permission": "memory.read"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "memory.read",
+        "x-immich-state": "Stable"
       },
       "put": {
         "description": "Update an existing memory by its ID.",
@@ -4781,7 +6171,22 @@
         "tags": [
           "Memories"
         ],
-        "x-immich-permission": "memory.update"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "memory.update",
+        "x-immich-state": "Stable"
       }
     },
     "/memories/{id}/assets": {
@@ -4839,7 +6244,22 @@
         "tags": [
           "Memories"
         ],
-        "x-immich-permission": "memoryAsset.delete"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "memoryAsset.delete",
+        "x-immich-state": "Stable"
       },
       "put": {
         "description": "Add a list of asset IDs to a specific memory.",
@@ -4895,7 +6315,22 @@
         "tags": [
           "Memories"
         ],
-        "x-immich-permission": "memoryAsset.create"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "memoryAsset.create",
+        "x-immich-state": "Stable"
       }
     },
     "/notifications": {
@@ -4933,7 +6368,22 @@
         "tags": [
           "Notifications"
         ],
-        "x-immich-permission": "notification.delete"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "notification.delete",
+        "x-immich-state": "Stable"
       },
       "get": {
         "description": "Retrieve a list of notifications.",
@@ -5003,7 +6453,22 @@
         "tags": [
           "Notifications"
         ],
-        "x-immich-permission": "notification.read"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "notification.read",
+        "x-immich-state": "Stable"
       },
       "put": {
         "description": "Update a list of notifications. Allows to bulk-set the read status of notifications.",
@@ -5039,7 +6504,22 @@
         "tags": [
           "Notifications"
         ],
-        "x-immich-permission": "notification.update"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "notification.update",
+        "x-immich-state": "Stable"
       }
     },
     "/notifications/{id}": {
@@ -5077,7 +6557,22 @@
         "tags": [
           "Notifications"
         ],
-        "x-immich-permission": "notification.delete"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "notification.delete",
+        "x-immich-state": "Stable"
       },
       "get": {
         "description": "Retrieve a specific notification identified by id.",
@@ -5120,7 +6615,22 @@
         "tags": [
           "Notifications"
         ],
-        "x-immich-permission": "notification.read"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "notification.read",
+        "x-immich-state": "Stable"
       },
       "put": {
         "description": "Update a specific notification to set its read status.",
@@ -5173,7 +6683,22 @@
         "tags": [
           "Notifications"
         ],
-        "x-immich-permission": "notification.update"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "notification.update",
+        "x-immich-state": "Stable"
       }
     },
     "/oauth/authorize": {
@@ -5206,7 +6731,22 @@
         "summary": "Start OAuth",
         "tags": [
           "Authentication"
-        ]
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-state": "Stable"
       }
     },
     "/oauth/callback": {
@@ -5239,7 +6779,22 @@
         "summary": "Finish OAuth",
         "tags": [
           "Authentication"
-        ]
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-state": "Stable"
       }
     },
     "/oauth/link": {
@@ -5283,7 +6838,22 @@
         "summary": "Link OAuth account",
         "tags": [
           "Authentication"
-        ]
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-state": "Stable"
       }
     },
     "/oauth/mobile-redirect": {
@@ -5299,7 +6869,22 @@
         "summary": "Redirect OAuth to mobile",
         "tags": [
           "Authentication"
-        ]
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-state": "Stable"
       }
     },
     "/oauth/unlink": {
@@ -5333,7 +6918,22 @@
         "summary": "Unlink OAuth account",
         "tags": [
           "Authentication"
-        ]
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-state": "Stable"
       }
     },
     "/partners": {
@@ -5380,7 +6980,22 @@
         "tags": [
           "Partners"
         ],
-        "x-immich-permission": "partner.read"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "partner.read",
+        "x-immich-state": "Stable"
       },
       "post": {
         "description": "Create a new partner to share assets with.",
@@ -5423,7 +7038,22 @@
         "tags": [
           "Partners"
         ],
-        "x-immich-permission": "partner.create"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "partner.create",
+        "x-immich-state": "Stable"
       }
     },
     "/partners/{id}": {
@@ -5461,11 +7091,26 @@
         "tags": [
           "Partners"
         ],
-        "x-immich-permission": "partner.delete"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "partner.delete",
+        "x-immich-state": "Stable"
       },
       "post": {
         "deprecated": true,
-        "description": "This property was deprecated in v1.141.0. Create a new partner to share assets with.",
+        "description": "Create a new partner to share assets with.",
         "operationId": "createPartnerDeprecated",
         "parameters": [
           {
@@ -5506,10 +7151,19 @@
           "Partners",
           "Deprecated"
         ],
-        "x-immich-lifecycle": {
-          "deprecatedAt": "v1.141.0"
-        },
-        "x-immich-permission": "partner.create"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Deprecated",
+            "replacementId": "createPartner"
+          }
+        ],
+        "x-immich-permission": "partner.create",
+        "x-immich-state": "Deprecated"
       },
       "put": {
         "description": "Specify whether a partner's assets should appear in the user's timeline.",
@@ -5562,7 +7216,22 @@
         "tags": [
           "Partners"
         ],
-        "x-immich-permission": "partner.update"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "partner.update",
+        "x-immich-state": "Stable"
       }
     },
     "/people": {
@@ -5600,7 +7269,22 @@
         "tags": [
           "People"
         ],
-        "x-immich-permission": "person.delete"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "person.delete",
+        "x-immich-state": "Stable"
       },
       "get": {
         "description": "Retrieve a list of all people.",
@@ -5683,7 +7367,22 @@
         "tags": [
           "People"
         ],
-        "x-immich-permission": "person.read"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "person.read",
+        "x-immich-state": "Stable"
       },
       "post": {
         "description": "Create a new person that can have multiple faces assigned to them.",
@@ -5726,7 +7425,22 @@
         "tags": [
           "People"
         ],
-        "x-immich-permission": "person.create"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "person.create",
+        "x-immich-state": "Stable"
       },
       "put": {
         "description": "Bulk update multiple people at once.",
@@ -5772,7 +7486,22 @@
         "tags": [
           "People"
         ],
-        "x-immich-permission": "person.update"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "person.update",
+        "x-immich-state": "Stable"
       }
     },
     "/people/{id}": {
@@ -5810,7 +7539,22 @@
         "tags": [
           "People"
         ],
-        "x-immich-permission": "person.delete"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "person.delete",
+        "x-immich-state": "Stable"
       },
       "get": {
         "description": "Retrieve a person by id.",
@@ -5853,7 +7597,22 @@
         "tags": [
           "People"
         ],
-        "x-immich-permission": "person.read"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "person.read",
+        "x-immich-state": "Stable"
       },
       "put": {
         "description": "Update an individual person.",
@@ -5906,7 +7665,22 @@
         "tags": [
           "People"
         ],
-        "x-immich-permission": "person.update"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "person.update",
+        "x-immich-state": "Stable"
       }
     },
     "/people/{id}/merge": {
@@ -5964,7 +7738,22 @@
         "tags": [
           "People"
         ],
-        "x-immich-permission": "person.merge"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "person.merge",
+        "x-immich-state": "Stable"
       }
     },
     "/people/{id}/reassign": {
@@ -6022,7 +7811,22 @@
         "tags": [
           "People"
         ],
-        "x-immich-permission": "person.reassign"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "person.reassign",
+        "x-immich-state": "Stable"
       }
     },
     "/people/{id}/statistics": {
@@ -6067,7 +7871,22 @@
         "tags": [
           "People"
         ],
-        "x-immich-permission": "person.statistics"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "person.statistics",
+        "x-immich-state": "Stable"
       }
     },
     "/people/{id}/thumbnail": {
@@ -6113,7 +7932,22 @@
         "tags": [
           "People"
         ],
-        "x-immich-permission": "person.read"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "person.read",
+        "x-immich-state": "Stable"
       }
     },
     "/search/cities": {
@@ -6151,7 +7985,22 @@
         "tags": [
           "Search"
         ],
-        "x-immich-permission": "asset.read"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "asset.read",
+        "x-immich-state": "Stable"
       }
     },
     "/search/explore": {
@@ -6189,7 +8038,22 @@
         "tags": [
           "Search"
         ],
-        "x-immich-permission": "asset.read"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "asset.read",
+        "x-immich-state": "Stable"
       }
     },
     "/search/large-assets": {
@@ -6517,7 +8381,22 @@
         "tags": [
           "Search"
         ],
-        "x-immich-permission": "asset.read"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "asset.read",
+        "x-immich-state": "Stable"
       }
     },
     "/search/metadata": {
@@ -6562,7 +8441,22 @@
         "tags": [
           "Search"
         ],
-        "x-immich-permission": "asset.read"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "asset.read",
+        "x-immich-state": "Stable"
       }
     },
     "/search/person": {
@@ -6617,7 +8511,22 @@
         "tags": [
           "Search"
         ],
-        "x-immich-permission": "person.read"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "person.read",
+        "x-immich-state": "Stable"
       }
     },
     "/search/places": {
@@ -6664,7 +8573,22 @@
         "tags": [
           "Search"
         ],
-        "x-immich-permission": "asset.read"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "asset.read",
+        "x-immich-state": "Stable"
       }
     },
     "/search/random": {
@@ -6712,7 +8636,22 @@
         "tags": [
           "Search"
         ],
-        "x-immich-permission": "asset.read"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "asset.read",
+        "x-immich-state": "Stable"
       }
     },
     "/search/smart": {
@@ -6757,7 +8696,22 @@
         "tags": [
           "Search"
         ],
-        "x-immich-permission": "asset.read"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "asset.read",
+        "x-immich-state": "Stable"
       }
     },
     "/search/statistics": {
@@ -6802,7 +8756,22 @@
         "tags": [
           "Search"
         ],
-        "x-immich-permission": "asset.statistics"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "asset.statistics",
+        "x-immich-state": "Stable"
       }
     },
     "/search/suggestions": {
@@ -6822,7 +8791,17 @@
             "name": "includeNull",
             "required": false,
             "in": "query",
-            "description": "This property was added in v111.0.0",
+            "x-immich-history": [
+              {
+                "version": "v1.111.0",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              }
+            ],
+            "x-immich-state": "Stable",
             "schema": {
               "type": "boolean"
             }
@@ -6898,7 +8877,22 @@
         "tags": [
           "Search"
         ],
-        "x-immich-permission": "asset.read"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "asset.read",
+        "x-immich-state": "Stable"
       }
     },
     "/server/about": {
@@ -6933,7 +8927,22 @@
         "tags": [
           "Server"
         ],
-        "x-immich-permission": "server.about"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "server.about",
+        "x-immich-state": "Stable"
       }
     },
     "/server/apk-links": {
@@ -6968,7 +8977,22 @@
         "tags": [
           "Server"
         ],
-        "x-immich-permission": "server.apkLinks"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "server.apkLinks",
+        "x-immich-state": "Stable"
       }
     },
     "/server/config": {
@@ -6991,7 +9015,22 @@
         "summary": "Get config",
         "tags": [
           "Server"
-        ]
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-state": "Stable"
       }
     },
     "/server/features": {
@@ -7014,7 +9053,22 @@
         "summary": "Get features",
         "tags": [
           "Server"
-        ]
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-state": "Stable"
       }
     },
     "/server/license": {
@@ -7043,7 +9097,22 @@
           "Server"
         ],
         "x-immich-admin-only": true,
-        "x-immich-permission": "serverLicense.delete"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "serverLicense.delete",
+        "x-immich-state": "Stable"
       },
       "get": {
         "description": "Retrieve information about whether the server currently has a product key registered.",
@@ -7080,7 +9149,22 @@
           "Server"
         ],
         "x-immich-admin-only": true,
-        "x-immich-permission": "serverLicense.read"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "serverLicense.read",
+        "x-immich-state": "Stable"
       },
       "put": {
         "description": "Validate and set the server product key if successful.",
@@ -7124,7 +9208,22 @@
           "Server"
         ],
         "x-immich-admin-only": true,
-        "x-immich-permission": "serverLicense.update"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "serverLicense.update",
+        "x-immich-state": "Stable"
       }
     },
     "/server/media-types": {
@@ -7147,7 +9246,22 @@
         "summary": "Get supported media types",
         "tags": [
           "Server"
-        ]
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-state": "Stable"
       }
     },
     "/server/ping": {
@@ -7170,7 +9284,22 @@
         "summary": "Ping",
         "tags": [
           "Server"
-        ]
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-state": "Stable"
       }
     },
     "/server/statistics": {
@@ -7206,7 +9335,22 @@
           "Server"
         ],
         "x-immich-admin-only": true,
-        "x-immich-permission": "server.statistics"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "server.statistics",
+        "x-immich-state": "Stable"
       }
     },
     "/server/storage": {
@@ -7241,7 +9385,22 @@
         "tags": [
           "Server"
         ],
-        "x-immich-permission": "server.storage"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "server.storage",
+        "x-immich-state": "Stable"
       }
     },
     "/server/theme": {
@@ -7264,7 +9423,22 @@
         "summary": "Get theme",
         "tags": [
           "Server"
-        ]
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-state": "Stable"
       }
     },
     "/server/version": {
@@ -7287,7 +9461,22 @@
         "summary": "Get server version",
         "tags": [
           "Server"
-        ]
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-state": "Stable"
       }
     },
     "/server/version-check": {
@@ -7322,7 +9511,22 @@
         "tags": [
           "Server"
         ],
-        "x-immich-permission": "server.versionCheck"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "server.versionCheck",
+        "x-immich-state": "Stable"
       }
     },
     "/server/version-history": {
@@ -7348,7 +9552,22 @@
         "summary": "Get version history",
         "tags": [
           "Server"
-        ]
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-state": "Stable"
       }
     },
     "/sessions": {
@@ -7376,7 +9595,22 @@
         "tags": [
           "Sessions"
         ],
-        "x-immich-permission": "session.delete"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "session.delete",
+        "x-immich-state": "Stable"
       },
       "get": {
         "description": "Retrieve a list of sessions for the user.",
@@ -7412,7 +9646,22 @@
         "tags": [
           "Sessions"
         ],
-        "x-immich-permission": "session.read"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "session.read",
+        "x-immich-state": "Stable"
       },
       "post": {
         "description": "Create a session as a child to the current session. This endpoint is used for casting.",
@@ -7455,7 +9704,22 @@
         "tags": [
           "Sessions"
         ],
-        "x-immich-permission": "session.create"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "session.create",
+        "x-immich-state": "Stable"
       }
     },
     "/sessions/{id}": {
@@ -7493,7 +9757,22 @@
         "tags": [
           "Sessions"
         ],
-        "x-immich-permission": "session.delete"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "session.delete",
+        "x-immich-state": "Stable"
       },
       "put": {
         "description": "Update a specific session identified by id.",
@@ -7546,7 +9825,22 @@
         "tags": [
           "Sessions"
         ],
-        "x-immich-permission": "session.update"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "session.update",
+        "x-immich-state": "Stable"
       }
     },
     "/sessions/{id}/lock": {
@@ -7584,7 +9878,22 @@
         "tags": [
           "Sessions"
         ],
-        "x-immich-permission": "session.lock"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "session.lock",
+        "x-immich-state": "Stable"
       }
     },
     "/shared-links": {
@@ -7632,7 +9941,22 @@
         "tags": [
           "Shared links"
         ],
-        "x-immich-permission": "sharedLink.read"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "sharedLink.read",
+        "x-immich-state": "Stable"
       },
       "post": {
         "description": "Create a new shared link.",
@@ -7675,7 +9999,22 @@
         "tags": [
           "Shared links"
         ],
-        "x-immich-permission": "sharedLink.create"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "sharedLink.create",
+        "x-immich-state": "Stable"
       }
     },
     "/shared-links/me": {
@@ -7743,7 +10082,22 @@
         "summary": "Retrieve current shared link",
         "tags": [
           "Shared links"
-        ]
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-state": "Stable"
       }
     },
     "/shared-links/{id}": {
@@ -7781,7 +10135,22 @@
         "tags": [
           "Shared links"
         ],
-        "x-immich-permission": "sharedLink.delete"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "sharedLink.delete",
+        "x-immich-state": "Stable"
       },
       "get": {
         "description": "Retrieve a specific shared link by its ID.",
@@ -7824,7 +10193,22 @@
         "tags": [
           "Shared links"
         ],
-        "x-immich-permission": "sharedLink.read"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "sharedLink.read",
+        "x-immich-state": "Stable"
       },
       "patch": {
         "description": "Update an existing shared link by its ID.",
@@ -7877,7 +10261,22 @@
         "tags": [
           "Shared links"
         ],
-        "x-immich-permission": "sharedLink.update"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "sharedLink.update",
+        "x-immich-state": "Stable"
       }
     },
     "/shared-links/{id}/assets": {
@@ -7950,7 +10349,22 @@
         "summary": "Remove assets from a shared link",
         "tags": [
           "Shared links"
-        ]
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-state": "Stable"
       },
       "put": {
         "description": "Add assets to a specific shared link by its ID. This endpoint is only relevant for shared link of type individual.",
@@ -8021,7 +10435,22 @@
         "summary": "Add assets to a shared link",
         "tags": [
           "Shared links"
-        ]
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-state": "Stable"
       }
     },
     "/stacks": {
@@ -8059,7 +10488,22 @@
         "tags": [
           "Stacks"
         ],
-        "x-immich-permission": "stack.delete"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "stack.delete",
+        "x-immich-state": "Stable"
       },
       "get": {
         "description": "Retrieve a list of stacks.",
@@ -8105,7 +10549,22 @@
         "tags": [
           "Stacks"
         ],
-        "x-immich-permission": "stack.read"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "stack.read",
+        "x-immich-state": "Stable"
       },
       "post": {
         "description": "Create a new stack by providing a name and a list of asset IDs to include in the stack. If any of the provided asset IDs are primary assets of an existing stack, the existing stack will be merged into the newly created stack.",
@@ -8148,7 +10607,22 @@
         "tags": [
           "Stacks"
         ],
-        "x-immich-permission": "stack.create"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "stack.create",
+        "x-immich-state": "Stable"
       }
     },
     "/stacks/{id}": {
@@ -8186,7 +10660,22 @@
         "tags": [
           "Stacks"
         ],
-        "x-immich-permission": "stack.delete"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "stack.delete",
+        "x-immich-state": "Stable"
       },
       "get": {
         "description": "Retrieve a specific stack by its ID.",
@@ -8229,7 +10718,22 @@
         "tags": [
           "Stacks"
         ],
-        "x-immich-permission": "stack.read"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "stack.read",
+        "x-immich-state": "Stable"
       },
       "put": {
         "description": "Update an existing stack by its ID.",
@@ -8282,7 +10786,22 @@
         "tags": [
           "Stacks"
         ],
-        "x-immich-permission": "stack.update"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "stack.update",
+        "x-immich-state": "Stable"
       }
     },
     "/stacks/{id}/assets/{assetId}": {
@@ -8329,7 +10848,22 @@
         "tags": [
           "Stacks"
         ],
-        "x-immich-permission": "stack.update"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "stack.update",
+        "x-immich-state": "Stable"
       }
     },
     "/sync/ack": {
@@ -8367,7 +10901,22 @@
         "tags": [
           "Sync"
         ],
-        "x-immich-permission": "syncCheckpoint.delete"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "syncCheckpoint.delete",
+        "x-immich-state": "Stable"
       },
       "get": {
         "description": "Retrieve the synchronization acknowledgments for the current session.",
@@ -8403,7 +10952,22 @@
         "tags": [
           "Sync"
         ],
-        "x-immich-permission": "syncCheckpoint.read"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "syncCheckpoint.read",
+        "x-immich-state": "Stable"
       },
       "post": {
         "description": "Send a list of synchronization acknowledgements to confirm that the latest changes have been received.",
@@ -8439,13 +11003,28 @@
         "tags": [
           "Sync"
         ],
-        "x-immich-permission": "syncCheckpoint.update"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "syncCheckpoint.update",
+        "x-immich-state": "Stable"
       }
     },
     "/sync/delta-sync": {
       "post": {
         "deprecated": true,
-        "description": "This property was deprecated in v2.0.0. Retrieve changed assets since the last sync for the authenticated user.",
+        "description": "Retrieve changed assets since the last sync for the authenticated user.",
         "operationId": "getDeltaSync",
         "parameters": [],
         "requestBody": {
@@ -8486,15 +11065,23 @@
           "Sync",
           "Deprecated"
         ],
-        "x-immich-lifecycle": {
-          "deprecatedAt": "v2.0.0"
-        }
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v2",
+            "state": "Deprecated"
+          }
+        ],
+        "x-immich-state": "Deprecated"
       }
     },
     "/sync/full-sync": {
       "post": {
         "deprecated": true,
-        "description": "This property was deprecated in v2.0.0. Retrieve all assets for a full synchronization for the authenticated user.",
+        "description": "Retrieve all assets for a full synchronization for the authenticated user.",
         "operationId": "getFullSyncForUser",
         "parameters": [],
         "requestBody": {
@@ -8538,9 +11125,17 @@
           "Sync",
           "Deprecated"
         ],
-        "x-immich-lifecycle": {
-          "deprecatedAt": "v2.0.0"
-        }
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v2",
+            "state": "Deprecated"
+          }
+        ],
+        "x-immich-state": "Deprecated"
       }
     },
     "/sync/stream": {
@@ -8578,7 +11173,22 @@
         "tags": [
           "Sync"
         ],
-        "x-immich-permission": "sync.stream"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "sync.stream",
+        "x-immich-state": "Stable"
       }
     },
     "/system-config": {
@@ -8614,7 +11224,22 @@
           "System config"
         ],
         "x-immich-admin-only": true,
-        "x-immich-permission": "systemConfig.read"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "systemConfig.read",
+        "x-immich-state": "Stable"
       },
       "put": {
         "description": "Update the system configuration with a new system configuration.",
@@ -8658,7 +11283,22 @@
           "System config"
         ],
         "x-immich-admin-only": true,
-        "x-immich-permission": "systemConfig.update"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "systemConfig.update",
+        "x-immich-state": "Stable"
       }
     },
     "/system-config/defaults": {
@@ -8694,7 +11334,22 @@
           "System config"
         ],
         "x-immich-admin-only": true,
-        "x-immich-permission": "systemConfig.read"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "systemConfig.read",
+        "x-immich-state": "Stable"
       }
     },
     "/system-config/storage-template-options": {
@@ -8730,7 +11385,22 @@
           "System config"
         ],
         "x-immich-admin-only": true,
-        "x-immich-permission": "systemConfig.read"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "systemConfig.read",
+        "x-immich-state": "Stable"
       }
     },
     "/system-metadata/admin-onboarding": {
@@ -8766,7 +11436,22 @@
           "System metadata"
         ],
         "x-immich-admin-only": true,
-        "x-immich-permission": "systemMetadata.read"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "systemMetadata.read",
+        "x-immich-state": "Stable"
       },
       "post": {
         "description": "Update the admin onboarding status.",
@@ -8803,7 +11488,22 @@
           "System metadata"
         ],
         "x-immich-admin-only": true,
-        "x-immich-permission": "systemMetadata.update"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "systemMetadata.update",
+        "x-immich-state": "Stable"
       }
     },
     "/system-metadata/reverse-geocoding-state": {
@@ -8839,7 +11539,22 @@
           "System metadata"
         ],
         "x-immich-admin-only": true,
-        "x-immich-permission": "systemMetadata.read"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "systemMetadata.read",
+        "x-immich-state": "Stable"
       }
     },
     "/system-metadata/version-check-state": {
@@ -8875,7 +11590,22 @@
           "System metadata"
         ],
         "x-immich-admin-only": true,
-        "x-immich-permission": "systemMetadata.read"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "systemMetadata.read",
+        "x-immich-state": "Stable"
       }
     },
     "/tags": {
@@ -8913,7 +11643,22 @@
         "tags": [
           "Tags"
         ],
-        "x-immich-permission": "tag.read"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "tag.read",
+        "x-immich-state": "Stable"
       },
       "post": {
         "description": "Create a new tag by providing a name and optional color.",
@@ -8956,7 +11701,22 @@
         "tags": [
           "Tags"
         ],
-        "x-immich-permission": "tag.create"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "tag.create",
+        "x-immich-state": "Stable"
       },
       "put": {
         "description": "Create or update multiple tags in a single request.",
@@ -9002,7 +11762,22 @@
         "tags": [
           "Tags"
         ],
-        "x-immich-permission": "tag.create"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "tag.create",
+        "x-immich-state": "Stable"
       }
     },
     "/tags/assets": {
@@ -9047,7 +11822,22 @@
         "tags": [
           "Tags"
         ],
-        "x-immich-permission": "tag.asset"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "tag.asset",
+        "x-immich-state": "Stable"
       }
     },
     "/tags/{id}": {
@@ -9085,7 +11875,22 @@
         "tags": [
           "Tags"
         ],
-        "x-immich-permission": "tag.delete"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "tag.delete",
+        "x-immich-state": "Stable"
       },
       "get": {
         "description": "Retrieve a specific tag by its ID.",
@@ -9128,7 +11933,22 @@
         "tags": [
           "Tags"
         ],
-        "x-immich-permission": "tag.read"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "tag.read",
+        "x-immich-state": "Stable"
       },
       "put": {
         "description": "Update an existing tag identified by its ID.",
@@ -9181,7 +12001,22 @@
         "tags": [
           "Tags"
         ],
-        "x-immich-permission": "tag.update"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "tag.update",
+        "x-immich-state": "Stable"
       }
     },
     "/tags/{id}/assets": {
@@ -9239,7 +12074,22 @@
         "tags": [
           "Tags"
         ],
-        "x-immich-permission": "tag.asset"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "tag.asset",
+        "x-immich-state": "Stable"
       },
       "put": {
         "description": "Add a tag to all the specified assets.",
@@ -9295,7 +12145,22 @@
         "tags": [
           "Tags"
         ],
-        "x-immich-permission": "tag.asset"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "tag.asset",
+        "x-immich-state": "Stable"
       }
     },
     "/timeline/bucket": {
@@ -9460,7 +12325,18 @@
         "tags": [
           "Timeline"
         ],
-        "x-immich-permission": "asset.read"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-permission": "asset.read",
+        "x-immich-state": "Internal"
       }
     },
     "/timeline/buckets": {
@@ -9618,7 +12494,18 @@
         "tags": [
           "Timeline"
         ],
-        "x-immich-permission": "asset.read"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Internal"
+          }
+        ],
+        "x-immich-permission": "asset.read",
+        "x-immich-state": "Internal"
       }
     },
     "/trash/empty": {
@@ -9653,7 +12540,22 @@
         "tags": [
           "Trash"
         ],
-        "x-immich-permission": "asset.delete"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "asset.delete",
+        "x-immich-state": "Stable"
       }
     },
     "/trash/restore": {
@@ -9688,7 +12590,22 @@
         "tags": [
           "Trash"
         ],
-        "x-immich-permission": "asset.delete"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "asset.delete",
+        "x-immich-state": "Stable"
       }
     },
     "/trash/restore/assets": {
@@ -9733,7 +12650,22 @@
         "tags": [
           "Trash"
         ],
-        "x-immich-permission": "asset.delete"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "asset.delete",
+        "x-immich-state": "Stable"
       }
     },
     "/users": {
@@ -9771,7 +12703,22 @@
         "tags": [
           "Users"
         ],
-        "x-immich-permission": "user.read"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "user.read",
+        "x-immich-state": "Stable"
       }
     },
     "/users/me": {
@@ -9806,7 +12753,22 @@
         "tags": [
           "Users"
         ],
-        "x-immich-permission": "user.read"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "user.read",
+        "x-immich-state": "Stable"
       },
       "put": {
         "description": "Update the current user making teh API request.",
@@ -9849,7 +12811,22 @@
         "tags": [
           "Users"
         ],
-        "x-immich-permission": "user.update"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "user.update",
+        "x-immich-state": "Stable"
       }
     },
     "/users/me/license": {
@@ -9877,7 +12854,22 @@
         "tags": [
           "Users"
         ],
-        "x-immich-permission": "userLicense.delete"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "userLicense.delete",
+        "x-immich-state": "Stable"
       },
       "get": {
         "description": "Retrieve information about whether the current user has a registered product key.",
@@ -9910,7 +12902,22 @@
         "tags": [
           "Users"
         ],
-        "x-immich-permission": "userLicense.read"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "userLicense.read",
+        "x-immich-state": "Stable"
       },
       "put": {
         "description": "Register a product key for the current user.",
@@ -9953,7 +12960,22 @@
         "tags": [
           "Users"
         ],
-        "x-immich-permission": "userLicense.update"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "userLicense.update",
+        "x-immich-state": "Stable"
       }
     },
     "/users/me/onboarding": {
@@ -9981,7 +13003,22 @@
         "tags": [
           "Users"
         ],
-        "x-immich-permission": "userOnboarding.delete"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "userOnboarding.delete",
+        "x-immich-state": "Stable"
       },
       "get": {
         "description": "Retrieve the onboarding status of the current user.",
@@ -10014,7 +13051,22 @@
         "tags": [
           "Users"
         ],
-        "x-immich-permission": "userOnboarding.read"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "userOnboarding.read",
+        "x-immich-state": "Stable"
       },
       "put": {
         "description": "Update the onboarding status of the current user.",
@@ -10057,7 +13109,22 @@
         "tags": [
           "Users"
         ],
-        "x-immich-permission": "userOnboarding.update"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "userOnboarding.update",
+        "x-immich-state": "Stable"
       }
     },
     "/users/me/preferences": {
@@ -10092,7 +13159,22 @@
         "tags": [
           "Users"
         ],
-        "x-immich-permission": "userPreference.read"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "userPreference.read",
+        "x-immich-state": "Stable"
       },
       "put": {
         "description": "Update the preferences of the current user.",
@@ -10135,7 +13217,22 @@
         "tags": [
           "Users"
         ],
-        "x-immich-permission": "userPreference.update"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "userPreference.update",
+        "x-immich-state": "Stable"
       }
     },
     "/users/profile-image": {
@@ -10163,7 +13260,22 @@
         "tags": [
           "Users"
         ],
-        "x-immich-permission": "userProfileImage.delete"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "userProfileImage.delete",
+        "x-immich-state": "Stable"
       },
       "post": {
         "description": "Upload and set a new profile image for the current user.",
@@ -10207,7 +13319,22 @@
         "tags": [
           "Users"
         ],
-        "x-immich-permission": "userProfileImage.update"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "userProfileImage.update",
+        "x-immich-state": "Stable"
       }
     },
     "/users/{id}": {
@@ -10252,7 +13379,22 @@
         "tags": [
           "Users"
         ],
-        "x-immich-permission": "user.read"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "user.read",
+        "x-immich-state": "Stable"
       }
     },
     "/users/{id}/profile-image": {
@@ -10298,7 +13440,22 @@
         "tags": [
           "Users"
         ],
-        "x-immich-permission": "userProfileImage.read"
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "userProfileImage.read",
+        "x-immich-state": "Stable"
       }
     },
     "/view/folder": {
@@ -10344,7 +13501,22 @@
         "summary": "Retrieve assets by original path",
         "tags": [
           "Views"
-        ]
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-state": "Stable"
       }
     },
     "/view/folder/unique-paths": {
@@ -10381,7 +13553,22 @@
         "summary": "Retrieve unique paths",
         "tags": [
           "Views"
-        ]
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-state": "Stable"
       }
     }
   },
@@ -11898,9 +15085,19 @@
           },
           "libraryId": {
             "deprecated": true,
-            "description": "This property was deprecated in v1.106.0",
             "nullable": true,
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v1",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "livePhotoVideoId": {
             "nullable": true,
@@ -11935,8 +15132,18 @@
           },
           "resized": {
             "deprecated": true,
-            "description": "This property was deprecated in v1.113.0",
-            "type": "boolean"
+            "type": "boolean",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v1.113.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "stack": {
             "allOf": [
@@ -13912,8 +17119,18 @@
       "PeopleResponseDto": {
         "properties": {
           "hasNextPage": {
-            "description": "This property was added in v1.110.0",
-            "type": "boolean"
+            "type": "boolean",
+            "x-immich-history": [
+              {
+                "version": "v1.110.0",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              }
+            ],
+            "x-immich-state": "Stable"
           },
           "hidden": {
             "type": "integer"
@@ -14168,15 +17385,35 @@
             "type": "string"
           },
           "color": {
-            "description": "This property was added in v1.126.0",
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1.126.0",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              }
+            ],
+            "x-immich-state": "Stable"
           },
           "id": {
             "type": "string"
           },
           "isFavorite": {
-            "description": "This property was added in v1.126.0",
-            "type": "boolean"
+            "type": "boolean",
+            "x-immich-history": [
+              {
+                "version": "v1.126.0",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              }
+            ],
+            "x-immich-state": "Stable"
           },
           "isHidden": {
             "type": "boolean"
@@ -14188,9 +17425,19 @@
             "type": "string"
           },
           "updatedAt": {
-            "description": "This property was added in v1.107.0",
             "format": "date-time",
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1.107.0",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              }
+            ],
+            "x-immich-state": "Stable"
           }
         },
         "required": [
@@ -14252,8 +17499,18 @@
             "type": "string"
           },
           "color": {
-            "description": "This property was added in v1.126.0",
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1.126.0",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              }
+            ],
+            "x-immich-state": "Stable"
           },
           "faces": {
             "items": {
@@ -14265,8 +17522,18 @@
             "type": "string"
           },
           "isFavorite": {
-            "description": "This property was added in v1.126.0",
-            "type": "boolean"
+            "type": "boolean",
+            "x-immich-history": [
+              {
+                "version": "v1.126.0",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              }
+            ],
+            "x-immich-state": "Stable"
           },
           "isHidden": {
             "type": "boolean"
@@ -14278,9 +17545,19 @@
             "type": "string"
           },
           "updatedAt": {
-            "description": "This property was added in v1.107.0",
             "format": "date-time",
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1.107.0",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              }
+            ],
+            "x-immich-state": "Stable"
           }
         },
         "required": [

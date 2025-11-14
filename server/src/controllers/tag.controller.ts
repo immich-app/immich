@@ -1,5 +1,6 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
+import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
@@ -22,9 +23,10 @@ export class TagController {
 
   @Post()
   @Authenticated({ permission: Permission.TagCreate })
-  @ApiOperation({
+  @Endpoint({
     summary: 'Create a tag',
     description: 'Create a new tag by providing a name and optional color.',
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
   createTag(@Auth() auth: AuthDto, @Body() dto: TagCreateDto): Promise<TagResponseDto> {
     return this.service.create(auth, dto);
@@ -32,9 +34,10 @@ export class TagController {
 
   @Get()
   @Authenticated({ permission: Permission.TagRead })
-  @ApiOperation({
+  @Endpoint({
     summary: 'Retrieve tags',
     description: 'Retrieve a list of all tags.',
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
   getAllTags(@Auth() auth: AuthDto): Promise<TagResponseDto[]> {
     return this.service.getAll(auth);
@@ -42,9 +45,10 @@ export class TagController {
 
   @Put()
   @Authenticated({ permission: Permission.TagCreate })
-  @ApiOperation({
+  @Endpoint({
     summary: 'Upsert tags',
     description: 'Create or update multiple tags in a single request.',
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
   upsertTags(@Auth() auth: AuthDto, @Body() dto: TagUpsertDto): Promise<TagResponseDto[]> {
     return this.service.upsert(auth, dto);
@@ -52,9 +56,10 @@ export class TagController {
 
   @Put('assets')
   @Authenticated({ permission: Permission.TagAsset })
-  @ApiOperation({
+  @Endpoint({
     summary: 'Tag assets',
     description: 'Add multiple tags to multiple assets in a single request.',
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
   bulkTagAssets(@Auth() auth: AuthDto, @Body() dto: TagBulkAssetsDto): Promise<TagBulkAssetsResponseDto> {
     return this.service.bulkTagAssets(auth, dto);
@@ -62,9 +67,10 @@ export class TagController {
 
   @Get(':id')
   @Authenticated({ permission: Permission.TagRead })
-  @ApiOperation({
+  @Endpoint({
     summary: 'Retrieve a tag',
     description: 'Retrieve a specific tag by its ID.',
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
   getTagById(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<TagResponseDto> {
     return this.service.get(auth, id);
@@ -72,9 +78,10 @@ export class TagController {
 
   @Put(':id')
   @Authenticated({ permission: Permission.TagUpdate })
-  @ApiOperation({
+  @Endpoint({
     summary: 'Update a tag',
     description: 'Update an existing tag identified by its ID.',
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
   updateTag(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto, @Body() dto: TagUpdateDto): Promise<TagResponseDto> {
     return this.service.update(auth, id, dto);
@@ -83,9 +90,10 @@ export class TagController {
   @Delete(':id')
   @Authenticated({ permission: Permission.TagDelete })
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({
+  @Endpoint({
     summary: 'Delete a tag',
     description: 'Delete a specific tag by its ID.',
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
   deleteTag(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<void> {
     return this.service.remove(auth, id);
@@ -93,9 +101,10 @@ export class TagController {
 
   @Put(':id/assets')
   @Authenticated({ permission: Permission.TagAsset })
-  @ApiOperation({
+  @Endpoint({
     summary: 'Tag assets',
     description: 'Add a tag to all the specified assets.',
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
   tagAssets(
     @Auth() auth: AuthDto,
@@ -107,9 +116,10 @@ export class TagController {
 
   @Delete(':id/assets')
   @Authenticated({ permission: Permission.TagAsset })
-  @ApiOperation({
+  @Endpoint({
     summary: 'Untag assets',
     description: 'Remove a tag from all the specified assets.',
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
   untagAssets(
     @Auth() auth: AuthDto,

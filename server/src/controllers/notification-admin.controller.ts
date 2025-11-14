@@ -1,5 +1,6 @@
 import { Body, Controller, HttpCode, HttpStatus, Param, Post } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
+import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
   NotificationCreateDto,
@@ -21,9 +22,10 @@ export class NotificationAdminController {
 
   @Post()
   @Authenticated({ admin: true })
-  @ApiOperation({
+  @Endpoint({
     summary: 'Create a notification',
     description: 'Create a new notification for a specific user.',
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
   createNotification(@Auth() auth: AuthDto, @Body() dto: NotificationCreateDto): Promise<NotificationDto> {
     return this.service.create(auth, dto);
@@ -32,9 +34,10 @@ export class NotificationAdminController {
   @Post('test-email')
   @Authenticated({ admin: true })
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({
+  @Endpoint({
     summary: 'Send test email',
     description: 'Send a test email using the provided SMTP configuration.',
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
   sendTestEmailAdmin(@Auth() auth: AuthDto, @Body() dto: SystemConfigSmtpDto): Promise<TestEmailResponseDto> {
     return this.service.sendTestEmail(auth.user.id, dto);
@@ -43,9 +46,10 @@ export class NotificationAdminController {
   @Post('templates/:name')
   @Authenticated({ admin: true })
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({
+  @Endpoint({
     summary: 'Render email template',
     description: 'Retrieve a preview of the provided email template.',
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
   getNotificationTemplateAdmin(
     @Auth() auth: AuthDto,

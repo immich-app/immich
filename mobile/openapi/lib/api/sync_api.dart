@@ -66,7 +66,7 @@ class SyncApi {
 
   /// Get delta sync for user
   ///
-  /// This property was deprecated in v2.0.0. Retrieve changed assets since the last sync for the authenticated user.
+  /// Retrieve changed assets since the last sync for the authenticated user.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -100,7 +100,7 @@ class SyncApi {
 
   /// Get delta sync for user
   ///
-  /// This property was deprecated in v2.0.0. Retrieve changed assets since the last sync for the authenticated user.
+  /// Retrieve changed assets since the last sync for the authenticated user.
   ///
   /// Parameters:
   ///
@@ -122,7 +122,7 @@ class SyncApi {
 
   /// Get full sync for user
   ///
-  /// This property was deprecated in v2.0.0. Retrieve all assets for a full synchronization for the authenticated user.
+  /// Retrieve all assets for a full synchronization for the authenticated user.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -156,7 +156,7 @@ class SyncApi {
 
   /// Get full sync for user
   ///
-  /// This property was deprecated in v2.0.0. Retrieve all assets for a full synchronization for the authenticated user.
+  /// Retrieve all assets for a full synchronization for the authenticated user.
   ///
   /// Parameters:
   ///

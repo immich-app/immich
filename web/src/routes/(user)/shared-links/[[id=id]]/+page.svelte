@@ -6,7 +6,7 @@
   import SharedLinkCard from '$lib/components/sharedlinks-page/shared-link-card.svelte';
   import { AppRoute } from '$lib/constants';
   import GroupTab from '$lib/elements/GroupTab.svelte';
-  import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
+  import SharedLinkUpdateModal from '$lib/modals/SharedLinkUpdateModal.svelte';
   import { getAllSharedLinks, SharedLinkType, type SharedLinkResponseDto } from '@immich/sdk';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -96,7 +96,7 @@
     {/if}
 
     {#if sharedLink}
-      <SharedLinkCreateModal editingLink={sharedLink} onClose={() => goto(AppRoute.SHARED_LINKS)} />
+      <SharedLinkUpdateModal {sharedLink} onClose={() => goto(AppRoute.SHARED_LINKS)} />
     {/if}
   </div>
 </UserPageLayout>

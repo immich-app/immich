@@ -1,5 +1,5 @@
 import { AppRoute } from '$lib/constants';
-import { serverConfig } from '$lib/stores/server-config.store';
+import { serverConfig } from '$lib/stores/system-config-manager.svelte';
 import { getFormatter } from '$lib/utils/i18n';
 import { init } from '$lib/utils/server';
 

@@ -1,6 +1,7 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Post, Redirect, Req, Res } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
+import { Endpoint, HistoryBuilder } from 'src/decorators';
 import {
   AuthDto,
   LoginResponseDto,
@@ -21,10 +22,11 @@ export class OAuthController {
 
   @Get('mobile-redirect')
   @Redirect()
-  @ApiOperation({
+  @Endpoint({
     summary: 'Redirect OAuth to mobile',
     description:
       'Requests to this URL are automatically forwarded to the mobile app, and is used in some cases for OAuth redirecting.',
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
   redirectOAuthToMobile(@Req() request: Request) {
     return {
@@ -34,9 +36,10 @@ export class OAuthController {
   }
 
   @Post('authorize')
-  @ApiOperation({
+  @Endpoint({
     summary: 'Start OAuth',
     description: 'Initiate the OAuth authorization process.',
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
   async startOAuth(
     @Body() dto: OAuthConfigDto,
@@ -58,9 +61,10 @@ export class OAuthController {
   }
 
   @Post('callback')
-  @ApiOperation({
+  @Endpoint({
     summary: 'Finish OAuth',
     description: 'Complete the OAuth authorization process by exchanging the authorization code for a session token.',
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
   async finishOAuth(
     @Req() request: Request,
@@ -84,9 +88,10 @@ export class OAuthController {
   @Post('link')
   @Authenticated()
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({
+  @Endpoint({
     summary: 'Link OAuth account',
     description: 'Link an OAuth account to the authenticated user.',
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
   linkOAuthAccount(
     @Req() request: Request,
@@ -99,9 +104,10 @@ export class OAuthController {
   @Post('unlink')
   @Authenticated()
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({
+  @Endpoint({
     summary: 'Unlink OAuth account',
     description: 'Unlink the OAuth account from the authenticated user.',
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
   unlinkOAuthAccount(@Auth() auth: AuthDto): Promise<UserAdminResponseDto> {
     return this.service.unlink(auth);
