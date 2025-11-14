@@ -15,6 +15,7 @@ describe(MaintenanceWorkerService.name, () => {
     maintenanceWorkerRepositoryMock = automock(MaintenanceWebsocketRepository, { args: [mocks.logger], strict: false });
     sut = new MaintenanceWorkerService(
       mocks.logger as never,
+      mocks.app,
       mocks.config,
       mocks.systemMetadata as never,
       maintenanceWorkerRepositoryMock,
