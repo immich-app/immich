@@ -5,12 +5,12 @@ import cookieParser from 'cookie-parser';
 import { existsSync } from 'node:fs';
 import sirv from 'sirv';
 import { excludePaths, serverVersion } from 'src/constants';
+import { MaintenanceWorkerService } from 'src/maintenance/maintenance-worker.service';
 import { WebSocketAdapter } from 'src/middleware/websocket.adapter';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { bootstrapTelemetry } from 'src/repositories/telemetry.repository';
 import { ApiService } from 'src/services/api.service';
-import { MaintenanceWorkerService } from 'src/services/maintenance-worker.service';
 import { useSwagger } from 'src/utils/misc';
 
 export function configureTelemetry() {

@@ -24,7 +24,7 @@ export interface ClientEventMap {
   transports: ['websocket'],
 })
 @Injectable()
-export class MaintenanceWorkerRepository implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit {
+export class MaintenanceWebsocketRepository implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit {
   @WebSocketServer()
   private websocketServer?: Server;
 
@@ -32,7 +32,7 @@ export class MaintenanceWorkerRepository implements OnGatewayConnection, OnGatew
     private logger: LoggingRepository,
     private maintenanceRepository: AppRepository,
   ) {
-    this.logger.setContext(MaintenanceWorkerRepository.name);
+    this.logger.setContext(MaintenanceWebsocketRepository.name);
   }
 
   afterInit(websocketServer: Server) {

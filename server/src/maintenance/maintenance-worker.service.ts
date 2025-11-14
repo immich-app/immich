@@ -6,9 +6,9 @@ import { readFileSync } from 'node:fs';
 import { IncomingHttpHeaders } from 'node:http';
 import { MaintenanceAuthDto } from 'src/dtos/maintenance.dto';
 import { ImmichCookie, SystemMetadataKey } from 'src/enum';
+import { MaintenanceWebsocketRepository } from 'src/maintenance/maintenance-websocket.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
-import { MaintenanceWorkerRepository } from 'src/repositories/maintenance-worker.repository';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
 import { type ApiService as _ApiService } from 'src/services/api.service';
 import { type BaseService as _BaseService } from 'src/services/base.service';
@@ -27,7 +27,7 @@ export class MaintenanceWorkerService {
     protected logger: LoggingRepository,
     private configRepository: ConfigRepository,
     private systemMetadataRepository: SystemMetadataRepository,
-    private maintenanceWorkerRepository: MaintenanceWorkerRepository,
+    private maintenanceWorkerRepository: MaintenanceWebsocketRepository,
   ) {
     this.logger.setContext(this.constructor.name);
   }

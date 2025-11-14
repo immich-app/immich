@@ -8,20 +8,21 @@ import { OpenTelemetryModule } from 'nestjs-otel';
 import { commandsAndQuestions } from 'src/commands';
 import { IWorker } from 'src/constants';
 import { controllers } from 'src/controllers';
-import { MaintenanceWorkerController } from 'src/controllers/maintenance-worker.controller';
 import { ImmichWorker } from 'src/enum';
+import { MaintenanceAuthGuard } from 'src/maintenance/maintenance-auth.guard';
+import { MaintenanceWebsocketRepository } from 'src/maintenance/maintenance-websocket.repository';
+import { MaintenanceWorkerController } from 'src/maintenance/maintenance-worker.controller';
+import { MaintenanceWorkerService } from 'src/maintenance/maintenance-worker.service';
 import { AuthGuard } from 'src/middleware/auth.guard';
 import { ErrorInterceptor } from 'src/middleware/error.interceptor';
 import { FileUploadInterceptor } from 'src/middleware/file-upload.interceptor';
 import { GlobalExceptionFilter } from 'src/middleware/global-exception.filter';
 import { LoggingInterceptor } from 'src/middleware/logging.interceptor';
-import { MaintenanceAuthGuard } from 'src/middleware/maintenance-auth.guard';
 import { repositories } from 'src/repositories';
 import { AppRepository } from 'src/repositories/app.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { EventRepository } from 'src/repositories/event.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
-import { MaintenanceWorkerRepository } from 'src/repositories/maintenance-worker.repository';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
 import { teardownTelemetry, TelemetryRepository } from 'src/repositories/telemetry.repository';
 import { WebsocketRepository } from 'src/repositories/websocket.repository';
@@ -29,7 +30,6 @@ import { services } from 'src/services';
 import { AuthService } from 'src/services/auth.service';
 import { CliService } from 'src/services/cli.service';
 import { JobService } from 'src/services/job.service';
-import { MaintenanceWorkerService } from 'src/services/maintenance-worker.service';
 import { getKyselyConfig } from 'src/utils/database';
 
 const common = [...repositories, ...services, GlobalExceptionFilter];
@@ -105,7 +105,7 @@ export class ApiModule extends BaseModule {}
     LoggingRepository,
     SystemMetadataRepository,
     AppRepository,
-    MaintenanceWorkerRepository,
+    MaintenanceWebsocketRepository,
     MaintenanceWorkerService,
     ...commonMiddleware,
     { provide: APP_GUARD, useClass: MaintenanceAuthGuard },

@@ -67,7 +67,7 @@ describe('/admin/maintenance', () => {
         .post('/admin/maintenance')
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .send({
-          maintenaceMode: true,
+          maintenanceMode: true,
         });
       expect(status).toBe(201);
 

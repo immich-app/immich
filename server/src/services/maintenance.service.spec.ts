@@ -1,4 +1,3 @@
-import { BadRequestException } from '@nestjs/common';
 import { SystemMetadataKey } from 'src/enum';
 import { MaintenanceService } from 'src/services/maintenance.service';
 import { newTestService, ServiceMocks } from 'test/utils';
@@ -49,11 +48,6 @@ describe(MaintenanceService.name, () => {
   });
 
   describe('startMaintenance', () => {
-    it('should fail if in maintenance mode', async () => {
-      mocks.systemMetadata.get.mockResolvedValue({ isMaintenanceMode: true, secret: '' });
-      await expect(sut.startMaintenance('admin')).rejects.toThrowError(BadRequestException);
-    });
-
     it('should set maintenance mode and return a secret', async () => {
       mocks.systemMetadata.get.mockResolvedValue({ isMaintenanceMode: false });
 

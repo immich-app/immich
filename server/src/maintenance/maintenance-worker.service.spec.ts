@@ -1,18 +1,18 @@
 import { UnauthorizedException } from '@nestjs/common';
 import { SignJWT } from 'jose';
 import { SystemMetadataKey } from 'src/enum';
-import { MaintenanceWorkerRepository } from 'src/repositories/maintenance-worker.repository';
-import { MaintenanceWorkerService } from 'src/services/maintenance-worker.service';
+import { MaintenanceWebsocketRepository } from 'src/maintenance/maintenance-websocket.repository';
+import { MaintenanceWorkerService } from 'src/maintenance/maintenance-worker.service';
 import { automock, getMocks, ServiceMocks } from 'test/utils';
 
 describe(MaintenanceWorkerService.name, () => {
   let sut: MaintenanceWorkerService;
   let mocks: ServiceMocks;
-  let maintenanceWorkerRepositoryMock: MaintenanceWorkerRepository;
+  let maintenanceWorkerRepositoryMock: MaintenanceWebsocketRepository;
 
   beforeEach(() => {
     mocks = getMocks();
-    maintenanceWorkerRepositoryMock = automock(MaintenanceWorkerRepository, { args: [mocks.logger], strict: false });
+    maintenanceWorkerRepositoryMock = automock(MaintenanceWebsocketRepository, { args: [mocks.logger], strict: false });
     sut = new MaintenanceWorkerService(
       mocks.logger as never,
       mocks.config,
