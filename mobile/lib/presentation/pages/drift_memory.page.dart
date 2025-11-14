@@ -202,6 +202,12 @@ class DriftMemoryPage extends HookConsumerWidget {
               if (pageNumber < memories.length) {
                 currentMemoryIndex.value = pageNumber;
                 currentMemory.value = memories[pageNumber];
+
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  final firstAsset = memories[pageNumber].assets.first;
+                  currentAsset.value = firstAsset;
+                  ref.read(currentAssetNotifier.notifier).setAsset(firstAsset);
+                });
               }
 
               currentAssetPage.value = 0;
