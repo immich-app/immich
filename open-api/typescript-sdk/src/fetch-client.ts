@@ -41,7 +41,7 @@ export type ActivityStatisticsResponseDto = {
     likes: number;
 };
 export type SetMaintenanceModeDto = {
-    maintenanceMode: boolean;
+    action: MaintenanceAction;
 };
 export type MaintenanceLoginDto = {
     token?: string;
@@ -4880,6 +4880,10 @@ export enum UserAvatarColor {
     Orange = "orange",
     Gray = "gray",
     Amber = "amber"
+}
+export enum MaintenanceAction {
+    Start = "start",
+    End = "end"
 }
 export enum NotificationLevel {
     Success = "success",

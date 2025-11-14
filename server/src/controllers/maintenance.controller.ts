@@ -4,7 +4,7 @@ import { Response } from 'express';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { MaintenanceAuthDto, MaintenanceLoginDto, SetMaintenanceModeDto } from 'src/dtos/maintenance.dto';
-import { ApiTag, ImmichCookie, Permission } from 'src/enum';
+import { ApiTag, ImmichCookie, MaintenanceAction, Permission } from 'src/enum';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { MaintenanceService } from 'src/services/maintenance.service';
 import { respondWithCookie } from 'src/utils/response';
@@ -36,7 +36,7 @@ export class MaintenanceController {
     @Body() dto: SetMaintenanceModeDto,
     @Res({ passthrough: true }) res: Response,
   ): Promise<void> {
-    if (dto.maintenanceMode) {
+    if (dto.action === MaintenanceAction.Start) {
       const { jwt } = await this.service.startMaintenance(auth.user.name);
       return respondWithCookie(res, undefined, {
         isSecure: false,

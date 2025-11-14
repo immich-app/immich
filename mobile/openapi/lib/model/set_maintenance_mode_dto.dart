@@ -13,26 +13,26 @@ part of openapi.api;
 class SetMaintenanceModeDto {
   /// Returns a new [SetMaintenanceModeDto] instance.
   SetMaintenanceModeDto({
-    required this.maintenanceMode,
+    required this.action,
   });
 
-  bool maintenanceMode;
+  MaintenanceAction action;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SetMaintenanceModeDto &&
-    other.maintenanceMode == maintenanceMode;
+    other.action == action;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (maintenanceMode.hashCode);
+    (action.hashCode);
 
   @override
-  String toString() => 'SetMaintenanceModeDto[maintenanceMode=$maintenanceMode]';
+  String toString() => 'SetMaintenanceModeDto[action=$action]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'maintenanceMode'] = this.maintenanceMode;
+      json[r'action'] = this.action;
     return json;
   }
 
@@ -45,7 +45,7 @@ class SetMaintenanceModeDto {
       final json = value.cast<String, dynamic>();
 
       return SetMaintenanceModeDto(
-        maintenanceMode: mapValueOfType<bool>(json, r'maintenanceMode')!,
+        action: MaintenanceAction.fromJson(json[r'action'])!,
       );
     }
     return null;
@@ -93,7 +93,7 @@ class SetMaintenanceModeDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'maintenanceMode',
+    'action',
   };
 }
 

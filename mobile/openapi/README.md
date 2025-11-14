@@ -405,6 +405,7 @@ Class | Method | HTTP request | Description
  - [LoginResponseDto](doc//LoginResponseDto.md)
  - [LogoutResponseDto](doc//LogoutResponseDto.md)
  - [MachineLearningAvailabilityChecksDto](doc//MachineLearningAvailabilityChecksDto.md)
+ - [MaintenanceAction](doc//MaintenanceAction.md)
  - [MaintenanceAuthDto](doc//MaintenanceAuthDto.md)
  - [MaintenanceLoginDto](doc//MaintenanceLoginDto.md)
  - [ManualJobName](doc//ManualJobName.md)

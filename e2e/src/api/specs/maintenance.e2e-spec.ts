@@ -39,7 +39,7 @@ describe('/admin/maintenance', () => {
   describe.sequential('POST /', () => {
     it('should require authentication', async () => {
       const { status, body } = await request(app).post('/admin/maintenance').send({
-        maintenanceMode: false,
+        action: 'end',
       });
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
@@ -49,7 +49,7 @@ describe('/admin/maintenance', () => {
       const { status, body } = await request(app)
         .post('/admin/maintenance')
         .set('Authorization', `Bearer ${nonAdmin.accessToken}`)
-        .send({ maintenanceMode: false });
+        .send({ action: 'end' });
       expect(status).toBe(403);
       expect(body).toEqual(errorDto.forbidden);
     });
@@ -58,7 +58,7 @@ describe('/admin/maintenance', () => {
       const { status } = await request(app)
         .post('/admin/maintenance')
         .set('Authorization', `Bearer ${admin.accessToken}`)
-        .send({ maintenanceMode: false });
+        .send({ action: 'end' });
       expect(status).toBe(201);
     });
 
@@ -67,7 +67,7 @@ describe('/admin/maintenance', () => {
         .post('/admin/maintenance')
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .send({
-          maintenanceMode: true,
+          action: 'start',
         });
       expect(status).toBe(201);
 
@@ -139,7 +139,7 @@ describe('/admin/maintenance', () => {
         const { status } = await request(app)
           .post('/admin/maintenance')
           .set('cookie', cookie!)
-          .send({ maintenanceMode: true });
+          .send({ action: 'start' });
         expect(status).toBe(201);
       });
     });
@@ -151,7 +151,7 @@ describe('/admin/maintenance', () => {
     it('should exit maintenance mode', async () => {
       console.info('using', cookie!);
       const { status } = await request(app).post('/admin/maintenance').set('cookie', cookie!).send({
-        maintenanceMode: false,
+        action: 'end',
       });
 
       expect(status).toBe(201);

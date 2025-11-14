@@ -1,6 +1,6 @@
 <script lang="ts">
   import { handleError } from '$lib/utils/handle-error';
-  import { setMaintenanceMode } from '@immich/sdk';
+  import { MaintenanceAction, setMaintenanceMode } from '@immich/sdk';
   import { Button } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
@@ -15,7 +15,7 @@
     try {
       await setMaintenanceMode({
         setMaintenanceModeDto: {
-          maintenanceMode: true,
+          action: MaintenanceAction.Start,
         },
       });
     } catch (error) {

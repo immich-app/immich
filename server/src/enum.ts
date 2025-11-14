@@ -646,6 +646,11 @@ export enum DatabaseLock {
   MemoryCreation = 777,
 }
 
+export enum MaintenanceAction {
+  Start = 'start',
+  End = 'end',
+}
+
 export enum ExitCode {
   AppRestart = 7,
 }

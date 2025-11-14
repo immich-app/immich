@@ -1,8 +1,9 @@
-import { ValidateBoolean, ValidateString } from 'src/validation';
+import { MaintenanceAction } from 'src/enum';
+import { ValidateEnum, ValidateString } from 'src/validation';
 
 export class SetMaintenanceModeDto {
-  @ValidateBoolean()
-  maintenanceMode!: boolean;
+  @ValidateEnum({ enum: MaintenanceAction, name: 'MaintenanceAction' })
+  action!: MaintenanceAction;
 }
 
 export class MaintenanceLoginDto {

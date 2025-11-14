@@ -16306,6 +16306,13 @@
         ],
         "type": "object"
       },
+      "MaintenanceAction": {
+        "enum": [
+          "start",
+          "end"
+        ],
+        "type": "string"
+      },
       "MaintenanceAuthDto": {
         "properties": {
           "username": {
@@ -18578,12 +18585,16 @@
       },
       "SetMaintenanceModeDto": {
         "properties": {
-          "maintenanceMode": {
-            "type": "boolean"
+          "action": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MaintenanceAction"
+              }
+            ]
           }
         },
         "required": [
-          "maintenanceMode"
+          "action"
         ],
         "type": "object"
       },

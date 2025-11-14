@@ -2,7 +2,7 @@ import { Body, Controller, Get, Post, Req, Res } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { MaintenanceAuthDto, MaintenanceLoginDto, SetMaintenanceModeDto } from 'src/dtos/maintenance.dto';
 import { ServerConfigDto } from 'src/dtos/server.dto';
-import { ImmichCookie } from 'src/enum';
+import { ImmichCookie, MaintenanceAction } from 'src/enum';
 import { MaintenanceRoute } from 'src/maintenance/maintenance-auth.guard';
 import { MaintenanceWorkerService } from 'src/maintenance/maintenance-worker.service';
 import { respondWithCookie } from 'src/utils/response';
@@ -33,7 +33,7 @@ export class MaintenanceWorkerController {
   @Post('admin/maintenance')
   @MaintenanceRoute()
   async setMaintenanceMode(@Body() dto: SetMaintenanceModeDto): Promise<void> {
-    if (!dto.maintenanceMode) {
+    if (dto.action === MaintenanceAction.End) {
       await this.service.endMaintenance();
     }
   }
