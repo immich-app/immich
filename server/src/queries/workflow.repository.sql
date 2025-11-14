@@ -27,6 +27,16 @@ where
   "triggerType" = $1
   and "enabled" = $2
 
+-- WorkflowRepository.getWorkflowByOwnerAndTrigger
+select
+  *
+from
+  "workflow"
+where
+  "ownerId" = $1
+  and "triggerType" = $2
+  and "enabled" = $3
+
 -- WorkflowRepository.deleteWorkflow
 delete from "workflow"
 where

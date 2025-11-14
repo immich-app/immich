@@ -3,7 +3,7 @@ import { plainToInstance } from 'class-transformer';
 import { Kysely } from 'kysely';
 import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
-import { readFile } from 'node:fs/promises';
+import { readdir, readFile } from 'node:fs/promises';
 import { columns } from 'src/database';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { PluginManifestDto } from 'src/dtos/plugin-manifest.dto';
@@ -98,6 +98,10 @@ export class PluginRepository {
 
       return { plugin, filters, actions };
     });
+  }
+
+  async readDirectory(path: string) {
+    return readdir(path, { withFileTypes: true });
   }
 
   async readManifest(manifestFilePath: string): Promise<PluginManifestDto> {

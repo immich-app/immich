@@ -1,8 +1,7 @@
 import { Plugin as ExtismPlugin, newPlugin } from '@extism/extism';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { validateOrReject } from 'class-validator';
-import { readdir } from 'node:fs/promises';
-import { join } from 'path';
+import { join } from 'node:path';
 import { Asset, WorkflowAction, WorkflowFilter } from 'src/database';
 import { OnEvent, OnJob } from 'src/decorators';
 import { PluginManifestDto } from 'src/dtos/plugin-manifest.dto';
@@ -30,12 +29,14 @@ interface PluginInput<T = unknown> {
 
 @Injectable()
 export class PluginService extends BaseService {
-  private readonly pluginJwtSecret: string = this.cryptoRepository.randomBytesAsText(32);
+  private pluginJwtSecret!: string;
   private loadedPlugins: Map<string, ExtismPlugin> = new Map();
   private hostFunctions!: PluginHostFunctions;
 
   @OnEvent({ name: 'AppBootstrap' })
   async onBootstrap() {
+    this.pluginJwtSecret = this.cryptoRepository.randomBytesAsText(32);
+
     await this.loadPluginsFromManifests();
 
     this.hostFunctions = new PluginHostFunctions(
@@ -89,7 +90,7 @@ export class PluginService extends BaseService {
 
   private async loadExternalPlugins(installFolder: string): Promise<void> {
     try {
-      const entries = await readdir(installFolder, { withFileTypes: true });
+      const entries = await this.pluginRepository.readDirectory(installFolder);
 
       for (const entry of entries) {
         if (!entry.isDirectory()) {
