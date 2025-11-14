@@ -74,6 +74,13 @@ export interface SystemConfig {
       minFaces: number;
       maxDistance: number;
     };
+    ocr: {
+      enabled: boolean;
+      modelName: string;
+      minDetectionScore: number;
+      minRecognitionScore: number;
+      maxResolution: number;
+    };
   };
   map: {
     enabled: boolean;
@@ -227,6 +234,7 @@ export const defaults = Object.freeze<SystemConfig>({
     [QueueName.ThumbnailGeneration]: { concurrency: 3 },
     [QueueName.VideoConversion]: { concurrency: 1 },
     [QueueName.Notification]: { concurrency: 5 },
+    [QueueName.Ocr]: { concurrency: 1 },
   },
   logging: {
     enabled: true,
@@ -254,6 +262,13 @@ export const defaults = Object.freeze<SystemConfig>({
       minScore: 0.7,
       maxDistance: 0.5,
       minFaces: 3,
+    },
+    ocr: {
+      enabled: true,
+      modelName: 'PP-OCRv5_mobile',
+      minDetectionScore: 0.5,
+      minRecognitionScore: 0.8,
+      maxResolution: 736,
     },
   },
   map: {

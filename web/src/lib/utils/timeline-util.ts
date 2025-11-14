@@ -195,6 +195,9 @@ export const toTimelineAsset = (unknownAsset: AssetResponseDto | TimelineAsset):
 export const isTimelineAsset = (unknownAsset: AssetResponseDto | TimelineAsset): unknownAsset is TimelineAsset =>
   (unknownAsset as TimelineAsset).ratio !== undefined;
 
+export const isTimelineAssets = (assets: AssetResponseDto[] | TimelineAsset[]): assets is TimelineAsset[] =>
+  assets.length === 0 || 'ratio' in assets[0];
+
 export const plainDateTimeCompare = (ascending: boolean, a: TimelineDateTime, b: TimelineDateTime) => {
   const [aDateTime, bDateTime] = ascending ? [a, b] : [b, a];
 

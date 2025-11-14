@@ -174,7 +174,7 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           TF_STATE_POSTGRES_CONN_STR: ${{ secrets.TF_STATE_POSTGRES_CONN_STR }}
         working-directory: 'deployment/modules/cloudflare/docs'
-        run: 'mise run tf apply'
+        run: 'mise run //deployment:tf apply'
 
       - name: Deploy Docs Subdomain Output
         id: docs-output
@@ -185,15 +185,11 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           TF_STATE_POSTGRES_CONN_STR: ${{ secrets.TF_STATE_POSTGRES_CONN_STR }}
         working-directory: 'deployment/modules/cloudflare/docs'
-        run: 'mise run tf output -- -json'
-
-      - name: Output Cleaning
-        id: clean
-        env:
-          TG_OUTPUT: ${{ steps.docs-output.outputs.tg_action_output }}
         run: |
-          CLEANED=$(echo "$TG_OUTPUT" | sed 's|%0A|\n|g ; s|%3C|<|g' | jq -c .)
-          echo "output=$CLEANED" >> $GITHUB_OUTPUT
+          mise run //deployment:tf output -- -json | jq -r '
+            "projectName=\(.pages_project_name.value)",
+            "subdomain=\(.immich_app_branch_subdomain.value)"
+          ' >> $GITHUB_OUTPUT
 
       - name: Publish to Cloudflare Pages
         # TODO: Action is deprecated
@@ -201,7 +197,7 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN_PAGES_UPLOAD }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: ${{ fromJson(steps.clean.outputs.output).pages_project_name.value }}
+          projectName: ${{ steps.docs-output.outputs.projectName }}
           workingDirectory: 'docs'
           directory: 'build'
           branch: ${{ steps.parameters.outputs.name }}
@@ -215,7 +211,7 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           TF_STATE_POSTGRES_CONN_STR: ${{ secrets.TF_STATE_POSTGRES_CONN_STR }}
         working-directory: 'deployment/modules/cloudflare/docs-release'
-        run: 'mise run tf apply'
+        run: 'mise run //deployment:tf apply'
 
       - name: Comment
         uses: actions-cool/maintain-one-comment@4b2dbf086015f892dcb5e8c1106f5fccd6c1476b # v3.2.0
@@ -224,6 +220,6 @@ jobs:
           token: ${{ steps.token.outputs.token }}
           number: ${{ fromJson(needs.checks.outputs.parameters).pr_number }}
           body: |
-            📖 Documentation deployed to [${{ fromJson(steps.clean.outputs.output).immich_app_branch_subdomain.value }}](https://${{ fromJson(steps.clean.outputs.output).immich_app_branch_subdomain.value }})
+            📖 Documentation deployed to [${{ steps.docs-output.outputs.subdomain }}](https://${{ steps.docs-output.outputs.subdomain }})
           emojis: 'rocket'
           body-include: '<!-- Docs PR URL -->'

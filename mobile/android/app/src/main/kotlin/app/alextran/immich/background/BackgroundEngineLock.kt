@@ -2,12 +2,13 @@ package app.alextran.immich.background
 
 import android.content.Context
 import android.util.Log
+import app.alextran.immich.core.ImmichPlugin
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import java.util.concurrent.atomic.AtomicInteger
 
 private const val TAG = "BackgroundEngineLock"
 
-class BackgroundEngineLock(context: Context) : BackgroundWorkerLockApi, FlutterPlugin {
+class BackgroundEngineLock(context: Context) : BackgroundWorkerLockApi, ImmichPlugin() {
   private val ctx: Context = context.applicationContext
 
   companion object {
@@ -41,12 +42,14 @@ class BackgroundEngineLock(context: Context) : BackgroundWorkerLockApi, FlutterP
   }
 
   override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
+    super.onAttachedToEngine(binding)
     checkAndEnforceBackgroundLock(binding.applicationContext)
     engineCount.incrementAndGet()
     Log.i(TAG, "Flutter engine attached. Attached Engines count: $engineCount")
   }
 
   override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
+    super.onDetachedFromEngine(binding)
     engineCount.decrementAndGet()
     Log.i(TAG, "Flutter engine detached. Attached Engines count: $engineCount")
   }

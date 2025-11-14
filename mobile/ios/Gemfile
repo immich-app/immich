@@ -1,3 +1,5 @@
 source "https://rubygems.org"
 
 gem "fastlane"
+gem "cocoapods"
+gem "abbrev" # Required for Ruby 3.4+

@@ -71,6 +71,14 @@ export enum MemoryType {
   OnThisDay = 'on_this_day',
 }
 
+export enum AssetOrderWithRandom {
+  // Include existing values
+  Asc = AssetOrder.Asc,
+  Desc = AssetOrder.Desc,
+  /** Randomly Ordered */
+  Random = 'random',
+}
+
 export enum Permission {
   All = 'all',
 
@@ -95,6 +103,7 @@ export enum Permission {
   AssetDownload = 'asset.download',
   AssetUpload = 'asset.upload',
   AssetReplace = 'asset.replace',
+  AssetCopy = 'asset.copy',
 
   AlbumCreate = 'album.create',
   AlbumRead = 'album.read',
@@ -425,6 +434,8 @@ export enum LogLevel {
 export enum ApiCustomExtension {
   Permission = 'x-immich-permission',
   AdminOnly = 'x-immich-admin-only',
+  History = 'x-immich-history',
+  State = 'x-immich-state',
 }
 
 export enum MetadataKey {
@@ -513,6 +524,7 @@ export enum QueueName {
   Library = 'library',
   Notification = 'notifications',
   BackupDatabase = 'backupDatabase',
+  Ocr = 'ocr',
 }
 
 export enum JobName {
@@ -585,6 +597,10 @@ export enum JobName {
   TagCleanup = 'TagCleanup',
 
   VersionCheck = 'VersionCheck',
+
+  // OCR
+  OcrQueueAll = 'OcrQueueAll',
+  Ocr = 'Ocr',
 }
 
 export enum JobCommand {
@@ -756,4 +772,39 @@ export enum AssetVisibility {
 export enum CronJob {
   LibraryScan = 'LibraryScan',
   NightlyJobs = 'NightlyJobs',
+}
+
+export enum ApiTag {
+  Activities = 'Activities',
+  Albums = 'Albums',
+  ApiKeys = 'API keys',
+  Authentication = 'Authentication',
+  AuthenticationAdmin = 'Authentication (admin)',
+  Assets = 'Assets',
+  Deprecated = 'Deprecated',
+  Download = 'Download',
+  Duplicates = 'Duplicates',
+  Faces = 'Faces',
+  Jobs = 'Jobs',
+  Libraries = 'Libraries',
+  Map = 'Map',
+  Memories = 'Memories',
+  Notifications = 'Notifications',
+  NotificationsAdmin = 'Notifications (admin)',
+  Partners = 'Partners',
+  People = 'People',
+  Search = 'Search',
+  Server = 'Server',
+  Sessions = 'Sessions',
+  SharedLinks = 'Shared links',
+  Stacks = 'Stacks',
+  Sync = 'Sync',
+  SystemConfig = 'System config',
+  SystemMetadata = 'System metadata',
+  Tags = 'Tags',
+  Timeline = 'Timeline',
+  Trash = 'Trash',
+  UsersAdmin = 'Users (admin)',
+  Users = 'Users',
+  Views = 'Views',
 }

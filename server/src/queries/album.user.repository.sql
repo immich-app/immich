@@ -2,12 +2,12 @@
 
 -- AlbumUserRepository.create
 insert into
-  "album_user" ("usersId", "albumsId")
+  "album_user" ("userId", "albumId")
 values
   ($1, $2)
 returning
-  "usersId",
-  "albumsId",
+  "userId",
+  "albumId",
   "role"
 
 -- AlbumUserRepository.update
@@ -15,13 +15,13 @@ update "album_user"
 set
   "role" = $1
 where
-  "usersId" = $2
-  and "albumsId" = $3
+  "userId" = $2
+  and "albumId" = $3
 returning
   *
 
 -- AlbumUserRepository.delete
 delete from "album_user"
 where
-  "usersId" = $1
-  and "albumsId" = $2
+  "userId" = $1
+  and "albumId" = $2

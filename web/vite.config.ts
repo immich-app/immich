@@ -4,7 +4,7 @@ import tailwindcss from '@tailwindcss/vite';
 import { svelteTesting } from '@testing-library/svelte/vite';
 import path from 'node:path';
 import { visualizer } from 'rollup-plugin-visualizer';
-import { defineConfig, type UserConfig } from 'vite';
+import { defineConfig, type ProxyOptions, type UserConfig } from 'vite';
 
 const upstream = {
   target: process.env.IMMICH_SERVER_URL || 'http://immich-server:2283/',
@@ -12,6 +12,12 @@ const upstream = {
   changeOrigin: true,
   logLevel: 'info',
   ws: true,
+};
+
+const proxy: Record<string, string | ProxyOptions> = {
+  '/api': upstream,
+  '/.well-known/immich': upstream,
+  '/custom.css': upstream,
 };
 
 export default defineConfig({
@@ -28,12 +34,11 @@ export default defineConfig({
   },
   server: {
     // connect to a remote backend during web-only development
-    proxy: {
-      '/api': upstream,
-      '/.well-known/immich': upstream,
-      '/custom.css': upstream,
-    },
+    proxy,
     allowedHosts: true,
+  },
+  preview: {
+    proxy,
   },
   plugins: [
     enhancedImages(),

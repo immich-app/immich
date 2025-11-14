@@ -25,7 +25,7 @@
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import { AppRoute } from '$lib/constants';
   import { photoViewerImgElement } from '$lib/stores/assets-store.svelte';
-  import { featureFlags } from '$lib/stores/server-config.store';
+  import { featureFlags } from '$lib/stores/system-config-manager.svelte';
   import { user } from '$lib/stores/user.store';
   import { photoZoomState } from '$lib/stores/zoom-image.store';
   import { getAssetJobName, getSharedLink } from '$lib/utils';
@@ -56,6 +56,7 @@
     mdiMagnifyPlusOutline,
     mdiPresentationPlay,
     mdiUpload,
+    mdiVideoOutline,
   } from '@mdi/js';
   import type { Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -78,6 +79,8 @@
     // export let showEditorHandler: () => void;
     onClose: () => void;
     motionPhoto?: Snippet;
+    playOriginalVideo: boolean;
+    setPlayOriginalVideo: (value: boolean) => void;
   }
 
   let {
@@ -97,6 +100,8 @@
     onShowDetail,
     onClose,
     motionPhoto,
+    playOriginalVideo = false,
+    setPlayOriginalVideo,
   }: Props = $props();
 
   const sharedLink = getSharedLink();
@@ -245,6 +250,15 @@
           {#if !asset.isTrashed}
             <SetVisibilityAction asset={toTimelineAsset(asset)} {onAction} {preAction} />
           {/if}
+
+          {#if asset.type === AssetTypeEnum.Video}
+            <MenuOption
+              icon={mdiVideoOutline}
+              onClick={() => setPlayOriginalVideo(!playOriginalVideo)}
+              text={playOriginalVideo ? $t('play_transcoded_video') : $t('play_original_video')}
+            />
+          {/if}
+
           <hr />
           <MenuOption
             icon={mdiHeadSyncOutline}

@@ -1,9 +1,5 @@
 <script lang="ts">
-  import {
-    notificationController,
-    NotificationType,
-  } from '$lib/components/shared-components/notification/notification';
-  import { featureFlags } from '$lib/stores/server-config.store';
+  import { featureFlags } from '$lib/stores/system-config-manager.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { resetPinCode } from '@immich/sdk';
   import {
@@ -17,6 +13,7 @@
     PasswordInput,
     Stack,
     Text,
+    toastManager,
   } from '@immich/ui';
   import { mdiLockReset } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -33,7 +30,7 @@
   const handleReset = async () => {
     try {
       await resetPinCode({ pinCodeResetDto: { password } });
-      notificationController.show({ message: $t('pin_code_reset_successfully'), type: NotificationType.Info });
+      toastManager.success($t('pin_code_reset_successfully'));
       onClose(true);
     } catch (error) {
       handleError(error, $t('errors.failed_to_reset_pin_code'));

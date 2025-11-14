@@ -5,6 +5,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
@@ -13,6 +14,7 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/extensions/scroll_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/download_status_floating_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/asset_viewer/activities_bottom_sheet.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_stack.provider.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_stack.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
@@ -20,7 +22,6 @@ import 'package:immich_mobile/presentation/widgets/asset_viewer/bottom_bar.widge
 import 'package:immich_mobile/presentation/widgets/asset_viewer/bottom_sheet.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/top_app_bar.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/video_viewer.widget.dart';
-import 'package:immich_mobile/presentation/widgets/asset_viewer/activities_bottom_sheet.widget.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
 import 'package:immich_mobile/providers/asset_viewer/is_motion_video_playing.provider.dart';
@@ -28,6 +29,7 @@ import 'package:immich_mobile/providers/asset_viewer/video_player_controls_provi
 import 'package:immich_mobile/providers/asset_viewer/video_player_value_provider.dart';
 import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_loading_indicator.dart';
@@ -39,15 +41,25 @@ class AssetViewerPage extends StatelessWidget {
   final int initialIndex;
   final TimelineService timelineService;
   final int? heroOffset;
+  final RemoteAlbum? currentAlbum;
 
-  const AssetViewerPage({super.key, required this.initialIndex, required this.timelineService, this.heroOffset});
+  const AssetViewerPage({
+    super.key,
+    required this.initialIndex,
+    required this.timelineService,
+    this.heroOffset,
+    this.currentAlbum,
+  });
 
   @override
   Widget build(BuildContext context) {
     // This is necessary to ensure that the timeline service is available
     // since the Timeline and AssetViewer are on different routes / Widget subtrees.
     return ProviderScope(
-      overrides: [timelineServiceProvider.overrideWithValue(timelineService)],
+      overrides: [
+        timelineServiceProvider.overrideWithValue(timelineService),
+        currentRemoteAlbumScopedProvider.overrideWithValue(currentAlbum),
+      ],
       child: AssetViewer(initialIndex: initialIndex, heroOffset: heroOffset),
     );
   }
@@ -615,10 +627,10 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     // Rebuild the widget when the asset viewer state changes
     // Using multiple selectors to avoid unnecessary rebuilds for other state changes
     ref.watch(assetViewerProvider.select((s) => s.showingBottomSheet));
-    ref.watch(assetViewerProvider.select((s) => s.showingControls));
     ref.watch(assetViewerProvider.select((s) => s.backgroundOpacity));
     ref.watch(assetViewerProvider.select((s) => s.stackIndex));
     ref.watch(isPlayingMotionVideoProvider);
+    final showingControls = ref.watch(assetViewerProvider.select((s) => s.showingControls));
 
     // Listen for casting changes and send initial asset to the cast provider
     ref.listen(castProvider.select((value) => value.isCasting), (_, isCasting) async {
@@ -635,9 +647,9 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     // Listen for control visibility changes and change system UI mode accordingly
     ref.listen(assetViewerProvider.select((value) => value.showingControls), (_, showingControls) async {
       if (showingControls) {
-        SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+        unawaited(SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge));
       } else {
-        SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+        unawaited(SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky));
       }
     });
 
@@ -651,7 +663,14 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
         appBar: const ViewerTopAppBar(),
         extendBody: true,
         extendBodyBehindAppBar: true,
-        floatingActionButton: const DownloadStatusFloatingButton(),
+        floatingActionButton: IgnorePointer(
+          ignoring: !showingControls,
+          child: AnimatedOpacity(
+            opacity: showingControls ? 1.0 : 0.0,
+            duration: Durations.short2,
+            child: const DownloadStatusFloatingButton(),
+          ),
+        ),
         body: Stack(
           children: [
             PhotoViewGallery.builder(

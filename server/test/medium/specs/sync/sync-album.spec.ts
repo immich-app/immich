@@ -217,7 +217,7 @@ describe(SyncRequestType.AlbumsV1, () => {
       await ctx.syncAckAll(auth, response);
       await ctx.assertSyncIsComplete(auth, [SyncRequestType.AlbumsV1]);
 
-      await albumUserRepo.delete({ albumsId: album.id, usersId: auth.user.id });
+      await albumUserRepo.delete({ albumId: album.id, userId: auth.user.id });
       const newResponse = await ctx.syncStream(auth, [SyncRequestType.AlbumsV1]);
       expect(newResponse).toEqual([
         {

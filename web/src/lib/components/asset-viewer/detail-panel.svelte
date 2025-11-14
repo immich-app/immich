@@ -11,7 +11,7 @@
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import { boundingBoxesArray } from '$lib/stores/people.store';
   import { locale } from '$lib/stores/preferences.store';
-  import { featureFlags } from '$lib/stores/server-config.store';
+  import { featureFlags } from '$lib/stores/system-config-manager.svelte';
   import { preferences, user } from '$lib/stores/user.store';
   import { getAssetThumbnailUrl, getPeopleThumbnailUrl } from '$lib/utils';
   import { delay, getDimensions } from '$lib/utils/asset-utils';
@@ -199,7 +199,7 @@
         {#each people as person, index (person.id)}
           {#if showingHiddenPeople || !person.isHidden}
             <a
-              class="w-[90px]"
+              class="w-22"
               href={resolve(
                 `${AppRoute.PEOPLE}/${person.id}?${QueryParameter.PREVIOUS_ROUTE}=${
                   currentAlbum?.id ? `${AppRoute.ALBUMS}/${currentAlbum?.id}` : AppRoute.PHOTOS
@@ -439,16 +439,16 @@
 </section>
 
 {#if latlng && $featureFlags.loaded && $featureFlags.map}
-  <div class="h-[360px]">
-    {#await import('../shared-components/map/map.svelte')}
+  <div class="h-90">
+    {#await import('$lib/components/shared-components/map/map.svelte')}
       {#await delay(timeToLoadTheMap) then}
         <!-- show the loading spinner only if loading the map takes too much time -->
         <div class="flex items-center justify-center h-full w-full">
           <LoadingSpinner />
         </div>
       {/await}
-    {:then component}
-      <component.default
+    {:then { default: Map }}
+      <Map
         mapMarkers={[
           {
             lat: latlng.lat,
@@ -480,7 +480,7 @@
             </a>
           </div>
         {/snippet}
-      </component.default>
+      </Map>
     {/await}
   </div>
 {/if}
@@ -511,7 +511,7 @@
           <div>
             <img
               alt={album.albumName}
-              class="h-[50px] w-[50px] rounded object-cover"
+              class="h-12.5 w-12.5 rounded object-cover"
               src={album.albumThumbnailAssetId &&
                 getAssetThumbnailUrl({ id: album.albumThumbnailAssetId, size: AssetMediaSize.Preview })}
               draggable="false"

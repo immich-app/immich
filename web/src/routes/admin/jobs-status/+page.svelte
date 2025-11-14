@@ -95,7 +95,7 @@
     </HStack>
   {/snippet}
   <section id="setting-content" class="flex place-content-center sm:mx-4">
-    <section class="w-full pb-28 sm:w-5/6 md:w-[850px]">
+    <section class="w-full pb-28 sm:w-5/6 md:w-212.5">
       {#if jobs}
         <JobsPanel {jobs} />
       {/if}

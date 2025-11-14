@@ -1,13 +1,9 @@
 <script lang="ts">
-  import {
-    notificationController,
-    NotificationType,
-  } from '$lib/components/shared-components/notification/notification';
-  import { featureFlags } from '$lib/stores/server-config.store';
+  import { featureFlags } from '$lib/stores/system-config-manager.svelte';
   import { getJobName } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { JobCommand, JobName, sendJobCommand, type AllJobStatusResponseDto, type JobCommandDto } from '@immich/sdk';
-  import { modalManager } from '@immich/ui';
+  import { modalManager, toastManager } from '@immich/ui';
   import {
     mdiContentDuplicate,
     mdiFaceRecognition,
@@ -16,6 +12,7 @@
     mdiFolderMove,
     mdiImageSearch,
     mdiLibraryShelves,
+    mdiOcr,
     mdiTable,
     mdiTagFaces,
     mdiVideo,
@@ -124,6 +121,14 @@
       handleCommand: handleConfirmCommand,
       disabled: !$featureFlags.facialRecognition,
     },
+    [JobName.Ocr]: {
+      icon: mdiOcr,
+      title: $getJobName(JobName.Ocr),
+      subtitle: $t('admin.ocr_job_description'),
+      allText: $t('all'),
+      missingText: $t('missing'),
+      disabled: !$featureFlags.ocr,
+    },
     [JobName.VideoConversion]: {
       icon: mdiVideo,
       title: $getJobName(JobName.VideoConversion),
@@ -155,10 +160,7 @@
 
       switch (jobCommand.command) {
         case JobCommand.Empty: {
-          notificationController.show({
-            message: $t('admin.cleared_jobs', { values: { job: title } }),
-            type: NotificationType.Info,
-          });
+          toastManager.success($t('admin.cleared_jobs', { values: { job: title } }));
           break;
         }
       }

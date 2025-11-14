@@ -4,9 +4,12 @@ import android.annotation.SuppressLint
 import android.content.ContentUris
 import android.content.Context
 import android.database.Cursor
+import android.net.Uri
+import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Base64
 import androidx.core.database.getStringOrNull
+import app.alextran.immich.core.ImmichPlugin
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -27,7 +30,7 @@ sealed class AssetResult {
 }
 
 @SuppressLint("InlinedApi")
-open class NativeSyncApiImplBase(context: Context) {
+open class NativeSyncApiImplBase(context: Context) : ImmichPlugin() {
   private val ctx: Context = context.applicationContext
 
   private var hashTask: Job? = null
@@ -80,6 +83,16 @@ open class NativeSyncApiImplBase(context: Context) {
     sortOrder,
   )
 
+  protected fun getCursor(
+    volume: String,
+    queryArgs: Bundle
+  ): Cursor? = ctx.contentResolver.query(
+    MediaStore.Files.getContentUri(volume),
+    ASSET_PROJECTION,
+    queryArgs,
+    null
+  )
+
   protected fun getAssets(cursor: Cursor?): Sequence<AssetResult> {
     return sequence {
       cursor?.use { c ->
@@ -100,9 +113,15 @@ open class NativeSyncApiImplBase(context: Context) {
 
         while (c.moveToNext()) {
           val id = c.getLong(idColumn).toString()
+          val name = c.getStringOrNull(nameColumn)
+          val bucketId = c.getStringOrNull(bucketIdColumn)
+          val path = c.getStringOrNull(dataColumn)
 
-          val path = c.getString(dataColumn)
-          if (path.isNullOrBlank() || !File(path).exists()) {
+          // Skip assets with invalid metadata
+          if (
+            name.isNullOrBlank() || bucketId.isNullOrBlank() ||
+            path.isNullOrBlank() || !File(path).exists()
+          ) {
             yield(AssetResult.InvalidAsset(id))
             continue
           }
@@ -112,7 +131,6 @@ open class NativeSyncApiImplBase(context: Context) {
             MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO -> 2
             else -> 0
           }
-          val name = c.getString(nameColumn)
           // Date taken is milliseconds since epoch, Date added is seconds since epoch
           val createdAt = (c.getLong(dateTakenColumn).takeIf { it > 0 }?.div(1000))
             ?: c.getLong(dateAddedColumn)
@@ -123,7 +141,6 @@ open class NativeSyncApiImplBase(context: Context) {
           // Duration is milliseconds
           val duration = if (mediaType == MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE) 0
           else c.getLong(durationColumn) / 1000
-          val bucketId = c.getString(bucketIdColumn)
           val orientation = c.getInt(orientationColumn)
           val isFavorite = if (favoriteColumn == -1) false else c.getInt(favoriteColumn) != 0
 
@@ -237,7 +254,7 @@ open class NativeSyncApiImplBase(context: Context) {
     callback: (Result<List<HashResult>>) -> Unit
   ) {
     if (assetIds.isEmpty()) {
-      callback(Result.success(emptyList()))
+      completeWhenActive(callback, Result.success(emptyList()))
       return
     }
 
@@ -253,10 +270,10 @@ open class NativeSyncApiImplBase(context: Context) {
           }
         }.awaitAll()
 
-        callback(Result.success(results))
+        completeWhenActive(callback, Result.success(results))
       } catch (e: CancellationException) {
-        callback(
-          Result.failure(
+        completeWhenActive(
+          callback, Result.failure(
             FlutterError(
               HASHING_CANCELLED_CODE,
               "Hashing operation was cancelled",
@@ -265,7 +282,7 @@ open class NativeSyncApiImplBase(context: Context) {
           )
         )
       } catch (e: Exception) {
-        callback(Result.failure(e))
+        completeWhenActive(callback, Result.failure(e))
       }
     }
   }

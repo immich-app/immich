@@ -1,8 +1,6 @@
-import { NotificationType, notificationController } from '$lib/components/shared-components/notification/notification';
 import { defaultLang, langs, locales } from '$lib/constants';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { lang } from '$lib/stores/preferences.store';
-import { serverConfig } from '$lib/stores/server-config.store';
 import { handleError } from '$lib/utils/handle-error';
 import {
   AssetJobName,
@@ -25,6 +23,7 @@ import {
   type SharedLinkResponseDto,
   type UserResponseDto,
 } from '@immich/sdk';
+import { toastManager } from '@immich/ui';
 import { mdiCogRefreshOutline, mdiDatabaseRefreshOutline, mdiHeadSyncOutline, mdiImageRefreshOutline } from '@mdi/js';
 import { init, register, t } from 'svelte-i18n';
 import { derived, get } from 'svelte/store';
@@ -162,6 +161,7 @@ export const getJobName = derived(t, ($t) => {
       [JobName.Library]: $t('external_libraries'),
       [JobName.Notifications]: $t('notifications'),
       [JobName.BackupDatabase]: $t('admin.backup_database'),
+      [JobName.Ocr]: $t('admin.machine_learning_ocr'),
     };
 
     return names[jobName];
@@ -262,15 +262,10 @@ export const copyToClipboard = async (secret: string) => {
 
   try {
     await navigator.clipboard.writeText(secret);
-    notificationController.show({ message: $t('copied_to_clipboard'), type: NotificationType.Info });
+    toastManager.info($t('copied_to_clipboard'));
   } catch (error) {
     handleError(error, $t('errors.unable_to_copy_to_clipboard'));
   }
-};
-
-export const makeSharedLinkUrl = (sharedLink: SharedLinkResponseDto) => {
-  const path = sharedLink.slug ? `s/${sharedLink.slug}` : `share/${sharedLink.key}`;
-  return new URL(path, get(serverConfig).externalDomain || globalThis.location.origin).href;
 };
 
 export const oauth = {
@@ -405,3 +400,5 @@ export const getReleaseType = (
 
   return 'none';
 };
+
+export const semverToName = ({ major, minor, patch }: ServerVersionResponseDto) => `v${major}.${minor}.${patch}`;

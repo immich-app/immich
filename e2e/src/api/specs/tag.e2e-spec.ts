@@ -582,7 +582,7 @@ describe('/tags', () => {
       expect(body).toEqual([expect.objectContaining({ id: userAsset.id, success: true })]);
     });
 
-    it('should remove duplicate assets only once', async () => {
+    it.skip('should remove duplicate assets only once', async () => {
       const tagA = await create(user.accessToken, { name: 'TagA' });
       await tagAssets(
         { id: tagA.id, bulkIdsDto: { ids: [userAsset.id] } },

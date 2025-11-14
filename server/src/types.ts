@@ -370,7 +370,11 @@ export type JobItem =
   | { name: JobName.NotifyUserSignup; data: INotifySignupJob }
 
   // Version check
-  | { name: JobName.VersionCheck; data: IBaseJob };
+  | { name: JobName.VersionCheck; data: IBaseJob }
+
+  // OCR
+  | { name: JobName.OcrQueueAll; data: IBaseJob }
+  | { name: JobName.Ocr; data: IEntityJob };
 
 export type VectorExtension = (typeof VECTOR_EXTENSIONS)[number];
 
@@ -415,14 +419,16 @@ export interface UploadFile {
   size: number;
 }
 
+export interface UploadBody {
+  filename?: string;
+  [key: string]: unknown;
+}
+
 export type UploadRequest = {
   auth: AuthDto | null;
   fieldName: UploadFieldName;
   file: UploadFile;
-  body: {
-    filename?: string;
-    [key: string]: unknown;
-  };
+  body: UploadBody;
 };
 
 export interface UploadFiles {
@@ -493,6 +499,7 @@ export interface UserPreferences {
   };
   memories: {
     enabled: boolean;
+    duration: number;
   };
   people: {
     enabled: boolean;
