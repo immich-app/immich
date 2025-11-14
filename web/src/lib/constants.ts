@@ -59,6 +59,8 @@ export enum AppRoute {
   FOLDERS = '/folders',
   TAGS = '/tags',
   LOCKED = '/locked',
+
+  MAINTENANCE = '/maintenance',
 }
 
 export enum ProjectionType {

@@ -25,6 +25,7 @@ type EventMap = {
   // app events
   AppBootstrap: [];
   AppShutdown: [];
+  AppRestart: [AppRestartEvent];
 
   ConfigInit: [{ newConfig: SystemConfig }];
   // config events
@@ -92,6 +93,10 @@ type EventMap = {
 
   // websocket events
   WebsocketConnect: [{ userId: string }];
+};
+
+export type AppRestartEvent = {
+  isMaintenanceMode: boolean;
 };
 
 type JobSuccessEvent = { job: JobItem; response?: JobStatus };

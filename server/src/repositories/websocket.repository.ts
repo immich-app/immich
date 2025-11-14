@@ -12,11 +12,11 @@ import { AuthDto } from 'src/dtos/auth.dto';
 import { NotificationDto } from 'src/dtos/notification.dto';
 import { ReleaseNotification, ServerVersionResponseDto } from 'src/dtos/server.dto';
 import { SyncAssetExifV1, SyncAssetV1 } from 'src/dtos/sync.dto';
-import { ArgsOf, EventRepository } from 'src/repositories/event.repository';
+import { AppRestartEvent, ArgsOf, EventRepository } from 'src/repositories/event.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { handlePromiseError } from 'src/utils/misc';
 
-export const serverEvents = ['ConfigUpdate'] as const;
+export const serverEvents = ['ConfigUpdate', 'AppRestart'] as const;
 export type ServerEvents = (typeof serverEvents)[number];
 
 export interface ClientEventMap {
@@ -36,6 +36,7 @@ export interface ClientEventMap {
   on_session_delete: [string];
 
   AssetUploadReadyV1: [{ asset: SyncAssetV1; exif: SyncAssetExifV1 }];
+  AppRestartV1: [AppRestartEvent];
 }
 
 export type AuthFn = (client: Socket) => Promise<AuthDto>;

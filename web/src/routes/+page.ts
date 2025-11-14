@@ -13,7 +13,11 @@ export const csr = true;
 
 export const load = (async ({ fetch }) => {
   try {
-    await init(fetch);
+    const { maintenanceMode } = await init(fetch);
+    if (maintenanceMode) {
+      redirect(302, AppRoute.MAINTENANCE);
+    }
+
     const authenticated = await loadUser();
     if (authenticated) {
       redirect(302, AppRoute.PHOTOS);

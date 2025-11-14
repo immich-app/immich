@@ -19,6 +19,7 @@ import { ActivityRepository } from 'src/repositories/activity.repository';
 import { AlbumUserRepository } from 'src/repositories/album-user.repository';
 import { AlbumRepository } from 'src/repositories/album.repository';
 import { ApiKeyRepository } from 'src/repositories/api-key.repository';
+import { AppRepository } from 'src/repositories/app.repository';
 import { AssetJobRepository } from 'src/repositories/asset-job.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
 import { AuditRepository } from 'src/repositories/audit.repository';
@@ -210,6 +211,7 @@ export type ServiceOverrides = {
   album: AlbumRepository;
   albumUser: AlbumUserRepository;
   apiKey: ApiKeyRepository;
+  app: AppRepository;
   audit: AuditRepository;
   asset: AssetRepository;
   assetJob: AssetJobRepository;
@@ -267,10 +269,7 @@ type Constructor<Type, Args extends Array<any>> = {
   new (...deps: Args): Type;
 };
 
-export const newTestService = <T extends BaseService>(
-  Service: Constructor<T, BaseServiceArgs>,
-  overrides: Partial<ServiceOverrides> = {},
-) => {
+export const getMocks = () => {
   const loggerMock = { setContext: () => {} };
   const configMock = { getEnv: () => ({}) };
 
@@ -287,6 +286,7 @@ export const newTestService = <T extends BaseService>(
     albumUser: automock(AlbumUserRepository),
     asset: newAssetRepositoryMock(),
     assetJob: automock(AssetJobRepository),
+    app: automock(AppRepository, { strict: false }),
     config: newConfigRepositoryMock(),
     database: newDatabaseRepositoryMock(),
     downloadRepository: automock(DownloadRepository, { strict: false }),
@@ -332,6 +332,15 @@ export const newTestService = <T extends BaseService>(
     websocket: automock(WebsocketRepository, { args: [, loggerMock], strict: false }),
   };
 
+  return mocks;
+};
+
+export const newTestService = <T extends BaseService>(
+  Service: Constructor<T, BaseServiceArgs>,
+  overrides: Partial<ServiceOverrides> = {},
+) => {
+  const mocks = getMocks();
+
   const sut = new Service(
     overrides.logger || (mocks.logger as As<LoggingRepository>),
     overrides.access || (mocks.access as IAccessRepository as AccessRepository),
@@ -339,6 +348,7 @@ export const newTestService = <T extends BaseService>(
     overrides.album || (mocks.album as As<AlbumRepository>),
     overrides.albumUser || (mocks.albumUser as As<AlbumUserRepository>),
     overrides.apiKey || (mocks.apiKey as As<ApiKeyRepository>),
+    overrides.app || (mocks.app as As<AppRepository>),
     overrides.asset || (mocks.asset as As<AssetRepository>),
     overrides.assetJob || (mocks.assetJob as As<AssetJobRepository>),
     overrides.audit || (mocks.audit as As<AuditRepository>),

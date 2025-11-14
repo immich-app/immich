@@ -514,6 +514,20 @@ export const utils = {
       },
     ]),
 
+  setMaintenanceAuthCookie: async (context: BrowserContext, token: string, domain = '127.0.0.1') =>
+    await context.addCookies([
+      {
+        name: 'immich_maintenance_token',
+        value: token,
+        domain,
+        path: '/',
+        expires: 2_058_028_213,
+        httpOnly: true,
+        secure: false,
+        sameSite: 'Lax',
+      },
+    ]),
+
   resetTempFolder: () => {
     rmSync(`${testAssetDir}/temp`, { recursive: true, force: true });
     mkdirSync(`${testAssetDir}/temp`, { recursive: true });
