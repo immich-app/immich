@@ -7,11 +7,11 @@
   import DetailPanelTags from '$lib/components/asset-viewer/detail-panel-tags.svelte';
   import { AppRoute, QueryParameter, timeToLoadTheMap } from '$lib/constants';
   import { authManager } from '$lib/managers/auth-manager.svelte';
+  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import AssetChangeDateModal from '$lib/modals/AssetChangeDateModal.svelte';
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import { boundingBoxesArray } from '$lib/stores/people.store';
   import { locale } from '$lib/stores/preferences.store';
-  import { featureFlags } from '$lib/stores/system-config-manager.svelte';
   import { preferences, user } from '$lib/stores/user.store';
   import { getAssetThumbnailUrl, getPeopleThumbnailUrl } from '$lib/utils';
   import { delay, getDimensions } from '$lib/utils/asset-utils';
@@ -438,7 +438,7 @@
   </div>
 </section>
 
-{#if latlng && $featureFlags.loaded && $featureFlags.map}
+{#if latlng && featureFlagsManager.value.map}
   <div class="h-90">
     {#await import('$lib/components/shared-components/map/map.svelte')}
       {#await delay(timeToLoadTheMap) then}

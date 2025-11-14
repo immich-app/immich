@@ -7,8 +7,9 @@
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import { AppRoute, SettingInputFieldType } from '$lib/constants';
   import FormatMessage from '$lib/elements/FormatMessage.svelte';
+  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
+  import { systemConfigManager } from '$lib/managers/system-config-manager.svelte';
   import { handleSystemConfigSave } from '$lib/services/system-config.service';
-  import { featureFlags, systemConfigManager } from '$lib/stores/system-config-manager.svelte';
   import { user } from '$lib/stores/user.store';
   import { getStorageTemplateOptions, type SystemConfigTemplateStorageOptionDto } from '@immich/sdk';
   import { LoadingSpinner } from '@immich/ui';
@@ -27,7 +28,7 @@
 
   const { minified = false, duration = 500, saveOnClose = false }: Props = $props();
 
-  const disabled = $featureFlags.configFile;
+  const disabled = $derived(featureFlagsManager.value.configFile);
   const config = $derived(systemConfigManager.value);
   let configToEdit = $state(systemConfigManager.cloneValue());
 

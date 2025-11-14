@@ -6,8 +6,9 @@
   import SettingButtonsRow from '$lib/components/shared-components/settings/SystemConfigButtonRow.svelte';
   import { SettingInputFieldType } from '$lib/constants';
   import FormatMessage from '$lib/elements/FormatMessage.svelte';
+  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
+  import { systemConfigManager } from '$lib/managers/system-config-manager.svelte';
   import AuthDisableLoginConfirmModal from '$lib/modals/AuthDisableLoginConfirmModal.svelte';
-  import { featureFlags, systemConfigManager } from '$lib/stores/system-config-manager.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { OAuthTokenEndpointAuthMethod, unlinkAllOAuthAccountsAdmin } from '@immich/sdk';
   import { Button, modalManager, Text, toastManager } from '@immich/ui';
@@ -15,7 +16,7 @@
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
 
-  const disabled = $featureFlags.configFile;
+  const disabled = $derived(featureFlagsManager.value.configFile);
   const config = $derived(systemConfigManager.value);
   let configToEdit = $state(systemConfigManager.cloneValue());
 

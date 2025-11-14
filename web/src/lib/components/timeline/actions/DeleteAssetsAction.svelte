@@ -1,7 +1,7 @@
 <script lang="ts">
   import DeleteAssetDialog from '$lib/components/photos-page/delete-asset-dialog.svelte';
   import { getAssetControlContext } from '$lib/components/timeline/AssetSelectControlBar.svelte';
-  import { featureFlags } from '$lib/stores/system-config-manager.svelte';
+  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { type OnDelete, type OnUndoDelete, deleteAssets } from '$lib/utils/actions';
   import { IconButton } from '@immich/ui';
   import { mdiDeleteForeverOutline, mdiDeleteOutline, mdiTimerSand } from '@mdi/js';
@@ -15,7 +15,12 @@
     force?: boolean;
   }
 
-  let { onAssetDelete, onUndoDelete = undefined, menuItem = false, force = !$featureFlags.trash }: Props = $props();
+  let {
+    onAssetDelete,
+    onUndoDelete = undefined,
+    menuItem = false,
+    force = !featureFlagsManager.value.trash,
+  }: Props = $props();
 
   const { clearSelect, getOwnedAssets } = getAssetControlContext();
 

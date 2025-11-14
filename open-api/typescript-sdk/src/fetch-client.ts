@@ -699,7 +699,7 @@ export type AssetFaceDeleteDto = {
 export type FaceDto = {
     id: string;
 };
-export type JobCountsDto = {
+export type QueueStatisticsDto = {
     active: number;
     completed: number;
     delayed: number;
@@ -711,34 +711,34 @@ export type QueueStatusDto = {
     isActive: boolean;
     isPaused: boolean;
 };
-export type JobStatusDto = {
-    jobCounts: JobCountsDto;
+export type QueueResponseDto = {
+    jobCounts: QueueStatisticsDto;
     queueStatus: QueueStatusDto;
 };
-export type AllJobStatusResponseDto = {
-    backgroundTask: JobStatusDto;
-    backupDatabase: JobStatusDto;
-    duplicateDetection: JobStatusDto;
-    faceDetection: JobStatusDto;
-    facialRecognition: JobStatusDto;
-    library: JobStatusDto;
-    metadataExtraction: JobStatusDto;
-    migration: JobStatusDto;
-    notifications: JobStatusDto;
-    ocr: JobStatusDto;
-    search: JobStatusDto;
-    sidecar: JobStatusDto;
-    smartSearch: JobStatusDto;
-    storageTemplateMigration: JobStatusDto;
-    thumbnailGeneration: JobStatusDto;
-    videoConversion: JobStatusDto;
-    workflow: JobStatusDto;
+export type QueuesResponseDto = {
+    backgroundTask: QueueResponseDto;
+    backupDatabase: QueueResponseDto;
+    duplicateDetection: QueueResponseDto;
+    faceDetection: QueueResponseDto;
+    facialRecognition: QueueResponseDto;
+    library: QueueResponseDto;
+    metadataExtraction: QueueResponseDto;
+    migration: QueueResponseDto;
+    notifications: QueueResponseDto;
+    ocr: QueueResponseDto;
+    search: QueueResponseDto;
+    sidecar: QueueResponseDto;
+    smartSearch: QueueResponseDto;
+    storageTemplateMigration: QueueResponseDto;
+    thumbnailGeneration: QueueResponseDto;
+    videoConversion: QueueResponseDto;
+    workflow: QueueResponseDto;
 };
 export type JobCreateDto = {
     name: ManualJobName;
 };
-export type JobCommandDto = {
-    command: JobCommand;
+export type QueueCommandDto = {
+    command: QueueCommand;
     force?: boolean;
 };
 export type LibraryResponseDto = {
@@ -2885,10 +2885,10 @@ export function reassignFacesById({ id, faceDto }: {
 /**
  * Retrieve queue counts and status
  */
-export function getAllJobsStatus(opts?: Oazapfts.RequestOpts) {
+export function getQueuesLegacy(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
-        data: AllJobStatusResponseDto;
+        data: QueuesResponseDto;
     }>("/jobs", {
         ...opts
     }));
@@ -2908,17 +2908,17 @@ export function createJob({ jobCreateDto }: {
 /**
  * Run jobs
  */
-export function sendJobCommand({ id, jobCommandDto }: {
-    id: JobName;
-    jobCommandDto: JobCommandDto;
+export function runQueueCommandLegacy({ name, queueCommandDto }: {
+    name: QueueName;
+    queueCommandDto: QueueCommandDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
-        data: JobStatusDto;
-    }>(`/jobs/${encodeURIComponent(id)}`, oazapfts.json({
+        data: QueueResponseDto;
+    }>(`/jobs/${encodeURIComponent(name)}`, oazapfts.json({
         ...opts,
         method: "PUT",
-        body: jobCommandDto
+        body: queueCommandDto
     })));
 }
 /**
@@ -5245,7 +5245,7 @@ export enum ManualJobName {
     MemoryCreate = "memory-create",
     BackupDatabase = "backup-database"
 }
-export enum JobName {
+export enum QueueName {
     ThumbnailGeneration = "thumbnailGeneration",
     MetadataExtraction = "metadataExtraction",
     VideoConversion = "videoConversion",
@@ -5264,7 +5264,7 @@ export enum JobName {
     Ocr = "ocr",
     Workflow = "workflow"
 }
-export enum JobCommand {
+export enum QueueCommand {
     Start = "start",
     Pause = "pause",
     Resume = "resume",

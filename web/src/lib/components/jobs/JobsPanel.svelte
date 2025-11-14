@@ -1,8 +1,14 @@
 <script lang="ts">
-  import { featureFlags } from '$lib/stores/system-config-manager.svelte';
-  import { getJobName } from '$lib/utils';
+  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
+  import { getQueueName } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
-  import { JobCommand, JobName, sendJobCommand, type AllJobStatusResponseDto, type JobCommandDto } from '@immich/sdk';
+  import {
+    QueueCommand,
+    type QueueCommandDto,
+    QueueName,
+    type QueuesResponseDto,
+    runQueueCommandLegacy,
+  } from '@immich/sdk';
   import { modalManager, toastManager } from '@immich/ui';
   import {
     mdiContentDuplicate,
@@ -23,12 +29,13 @@
   import StorageMigrationDescription from './StorageMigrationDescription.svelte';
 
   interface Props {
-    jobs: AllJobStatusResponseDto;
+    jobs: QueuesResponseDto;
   }
 
   let { jobs = $bindable() }: Props = $props();
+  const featureFlags = featureFlagsManager.value;
 
-  interface JobDetails {
+  type JobDetails = {
     title: string;
     subtitle?: string;
     description?: Component;
@@ -37,17 +44,17 @@
     missingText: string;
     disabled?: boolean;
     icon: string;
-    handleCommand?: (jobId: JobName, jobCommand: JobCommandDto) => Promise<void>;
-  }
+    handleCommand?: (jobId: QueueName, jobCommand: QueueCommandDto) => Promise<void>;
+  };
 
-  const handleConfirmCommand = async (jobId: JobName, dto: JobCommandDto) => {
+  const handleConfirmCommand = async (jobId: QueueName, dto: QueueCommandDto) => {
     if (dto.force) {
       const isConfirmed = await modalManager.showDialog({
         prompt: $t('admin.confirm_reprocess_all_faces'),
       });
 
       if (isConfirmed) {
-        await handleCommand(jobId, { command: JobCommand.Start, force: true });
+        await handleCommand(jobId, { command: QueueCommand.Start, force: true });
         return;
       }
 
@@ -57,122 +64,122 @@
     await handleCommand(jobId, dto);
   };
 
-  let jobDetails: Partial<Record<JobName, JobDetails>> = {
-    [JobName.ThumbnailGeneration]: {
+  let jobDetails: Partial<Record<QueueName, JobDetails>> = {
+    [QueueName.ThumbnailGeneration]: {
       icon: mdiFileJpgBox,
-      title: $getJobName(JobName.ThumbnailGeneration),
+      title: $getQueueName(QueueName.ThumbnailGeneration),
       subtitle: $t('admin.thumbnail_generation_job_description'),
       allText: $t('all'),
       missingText: $t('missing'),
     },
-    [JobName.MetadataExtraction]: {
+    [QueueName.MetadataExtraction]: {
       icon: mdiTable,
-      title: $getJobName(JobName.MetadataExtraction),
+      title: $getQueueName(QueueName.MetadataExtraction),
       subtitle: $t('admin.metadata_extraction_job_description'),
       allText: $t('all'),
       missingText: $t('missing'),
     },
-    [JobName.Library]: {
+    [QueueName.Library]: {
       icon: mdiLibraryShelves,
-      title: $getJobName(JobName.Library),
+      title: $getQueueName(QueueName.Library),
       subtitle: $t('admin.library_tasks_description'),
       missingText: $t('rescan'),
     },
-    [JobName.Sidecar]: {
-      title: $getJobName(JobName.Sidecar),
+    [QueueName.Sidecar]: {
+      title: $getQueueName(QueueName.Sidecar),
       icon: mdiFileXmlBox,
       subtitle: $t('admin.sidecar_job_description'),
       allText: $t('sync'),
       missingText: $t('discover'),
-      disabled: !$featureFlags.sidecar,
+      disabled: !featureFlags.sidecar,
     },
-    [JobName.SmartSearch]: {
+    [QueueName.SmartSearch]: {
       icon: mdiImageSearch,
-      title: $getJobName(JobName.SmartSearch),
+      title: $getQueueName(QueueName.SmartSearch),
       subtitle: $t('admin.smart_search_job_description'),
       allText: $t('all'),
       missingText: $t('missing'),
-      disabled: !$featureFlags.smartSearch,
+      disabled: !featureFlags.smartSearch,
     },
-    [JobName.DuplicateDetection]: {
+    [QueueName.DuplicateDetection]: {
       icon: mdiContentDuplicate,
-      title: $getJobName(JobName.DuplicateDetection),
+      title: $getQueueName(QueueName.DuplicateDetection),
       subtitle: $t('admin.duplicate_detection_job_description'),
       allText: $t('all'),
       missingText: $t('missing'),
-      disabled: !$featureFlags.duplicateDetection,
+      disabled: !featureFlags.duplicateDetection,
     },
-    [JobName.FaceDetection]: {
+    [QueueName.FaceDetection]: {
       icon: mdiFaceRecognition,
-      title: $getJobName(JobName.FaceDetection),
+      title: $getQueueName(QueueName.FaceDetection),
       subtitle: $t('admin.face_detection_description'),
       allText: $t('reset'),
       refreshText: $t('refresh'),
       missingText: $t('missing'),
       handleCommand: handleConfirmCommand,
-      disabled: !$featureFlags.facialRecognition,
+      disabled: !featureFlags.facialRecognition,
     },
-    [JobName.FacialRecognition]: {
+    [QueueName.FacialRecognition]: {
       icon: mdiTagFaces,
-      title: $getJobName(JobName.FacialRecognition),
+      title: $getQueueName(QueueName.FacialRecognition),
       subtitle: $t('admin.facial_recognition_job_description'),
       allText: $t('reset'),
       missingText: $t('missing'),
       handleCommand: handleConfirmCommand,
-      disabled: !$featureFlags.facialRecognition,
+      disabled: !featureFlags.facialRecognition,
     },
-    [JobName.Ocr]: {
+    [QueueName.Ocr]: {
       icon: mdiOcr,
-      title: $getJobName(JobName.Ocr),
+      title: $getQueueName(QueueName.Ocr),
       subtitle: $t('admin.ocr_job_description'),
       allText: $t('all'),
       missingText: $t('missing'),
-      disabled: !$featureFlags.ocr,
+      disabled: !featureFlags.ocr,
     },
-    [JobName.VideoConversion]: {
+    [QueueName.VideoConversion]: {
       icon: mdiVideo,
-      title: $getJobName(JobName.VideoConversion),
+      title: $getQueueName(QueueName.VideoConversion),
       subtitle: $t('admin.video_conversion_job_description'),
       allText: $t('all'),
       missingText: $t('missing'),
     },
-    [JobName.StorageTemplateMigration]: {
+    [QueueName.StorageTemplateMigration]: {
       icon: mdiFolderMove,
-      title: $getJobName(JobName.StorageTemplateMigration),
+      title: $getQueueName(QueueName.StorageTemplateMigration),
       missingText: $t('start'),
       description: StorageMigrationDescription,
     },
-    [JobName.Migration]: {
+    [QueueName.Migration]: {
       icon: mdiFolderMove,
-      title: $getJobName(JobName.Migration),
+      title: $getQueueName(QueueName.Migration),
       subtitle: $t('admin.migration_job_description'),
       missingText: $t('start'),
     },
   };
 
-  let jobList = Object.entries(jobDetails) as [JobName, JobDetails][];
+  let jobList = Object.entries(jobDetails) as [QueueName, JobDetails][];
 
-  async function handleCommand(jobId: JobName, jobCommand: JobCommandDto) {
-    const title = jobDetails[jobId]?.title;
+  async function handleCommand(name: QueueName, dto: QueueCommandDto) {
+    const title = jobDetails[name]?.title;
 
     try {
-      jobs[jobId] = await sendJobCommand({ id: jobId, jobCommandDto: jobCommand });
+      jobs[name] = await runQueueCommandLegacy({ name, queueCommandDto: dto });
 
-      switch (jobCommand.command) {
-        case JobCommand.Empty: {
+      switch (dto.command) {
+        case QueueCommand.Empty: {
           toastManager.success($t('admin.cleared_jobs', { values: { job: title } }));
           break;
         }
       }
     } catch (error) {
-      handleError(error, $t('admin.failed_job_command', { values: { command: jobCommand.command, job: title } }));
+      handleError(error, $t('admin.failed_job_command', { values: { command: dto.command, job: title } }));
     }
   }
 </script>
 
 <div class="flex flex-col gap-7">
   {#each jobList as [jobName, { title, subtitle, description, disabled, allText, refreshText, missingText, icon, handleCommand: handleCommandOverride }] (jobName)}
-    {@const { jobCounts, queueStatus } = jobs[jobName]}
+    {@const { jobCounts: statistics, queueStatus } = jobs[jobName]}
     <JobTile
       {icon}
       {title}
@@ -182,7 +189,7 @@
       {allText}
       {refreshText}
       {missingText}
-      {jobCounts}
+      {statistics}
       {queueStatus}
       onCommand={(command) => (handleCommandOverride || handleCommand)(jobName, command)}
     />

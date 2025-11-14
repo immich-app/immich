@@ -617,7 +617,7 @@ export enum JobName {
   WorkflowRun = 'WorkflowRun',
 }
 
-export enum JobCommand {
+export enum QueueCommand {
   Start = 'start',
   Pause = 'pause',
   Resume = 'resume',

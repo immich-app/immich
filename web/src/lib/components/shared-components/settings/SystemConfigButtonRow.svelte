@@ -1,6 +1,6 @@
 <script lang="ts">
+  import { systemConfigManager } from '$lib/managers/system-config-manager.svelte';
   import { handleSystemConfigSave } from '$lib/services/system-config.service';
-  import { systemConfigManager } from '$lib/stores/system-config-manager.svelte';
   import type { SystemConfigDto } from '@immich/sdk';
   import { Button, toastManager } from '@immich/ui';
   import { isEqual, pick } from 'lodash-es';

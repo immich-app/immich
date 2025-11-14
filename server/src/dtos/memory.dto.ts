@@ -5,7 +5,7 @@ import { Memory } from 'src/database';
 import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { AssetOrderWithRandom, MemoryType } from 'src/enum';
-import { ValidateBoolean, ValidateDate, ValidateEnum, ValidateUUID } from 'src/validation';
+import { Optional, ValidateBoolean, ValidateDate, ValidateEnum, ValidateUUID } from 'src/validation';
 
 class MemoryBaseDto {
   @ValidateBoolean({ optional: true })
@@ -31,6 +31,7 @@ export class MemorySearchDto {
   @IsInt()
   @IsPositive()
   @Type(() => Number)
+  @Optional()
   @ApiProperty({ type: 'integer', description: 'Number of memories to return' })
   size?: number;
 
