@@ -23,9 +23,10 @@
   interface Props {
     shared: boolean;
     onClose: (albums?: AlbumResponseDto[]) => void;
+    titleKey?: string;
   }
 
-  let { shared, onClose }: Props = $props();
+  let { shared, onClose, titleKey = undefined }: Props = $props();
 
   onMount(async () => {
     albums = await getAllAlbums({ shared: shared || undefined });
@@ -146,7 +147,7 @@
   };
 </script>
 
-<Modal title={shared ? $t('add_to_shared_album') : $t('add_to_album')} {onClose} size="small">
+<Modal title={titleKey ? $t(titleKey) : shared ? $t('add_to_shared_album') : $t('add_to_album')} {onClose} size="small">
   <ModalBody>
     <div class="mb-2 flex max-h-100 flex-col">
       {#if loading}

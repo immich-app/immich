@@ -8,6 +8,7 @@
   import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
   import SearchBar from '$lib/components/shared-components/search-bar/search-bar.svelte';
   import AddToAlbum from '$lib/components/timeline/actions/AddToAlbumAction.svelte';
+  import MoveToAlbumAction from '$lib/components/timeline/actions/MoveToAlbumAction.svelte';
   import ArchiveAction from '$lib/components/timeline/actions/ArchiveAction.svelte';
   import AssetJobActions from '$lib/components/timeline/actions/AssetJobActions.svelte';
   import ChangeDate from '$lib/components/timeline/actions/ChangeDateAction.svelte';
@@ -277,6 +278,7 @@
         <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
           <AddToAlbum {onAddToAlbum} />
           <AddToAlbum shared {onAddToAlbum} />
+          <MoveToAlbumAction />
         </ButtonContextMenu>
         <FavoriteAction
           removeFavorite={assetInteraction.isAllFavorite}
@@ -292,8 +294,8 @@
 
         <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
           <DownloadAction menuItem />
-          <ChangeDate menuItem />
-          <ChangeLocation menuItem />
+            <ChangeDate menuItem />
+            <ChangeLocation menuItem />
           <ArchiveAction menuItem unarchive={assetInteraction.isAllArchived} />
           {#if $preferences.tags.enabled && assetInteraction.isAllUserOwned}
             <TagAction menuItem />
@@ -418,6 +420,7 @@
           <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
             <AddToAlbum {onAddToAlbum} />
             <AddToAlbum shared {onAddToAlbum} />
+            <MoveToAlbumAction />
           </ButtonContextMenu>
           <FavoriteAction
             removeFavorite={assetInteraction.isAllFavorite}
