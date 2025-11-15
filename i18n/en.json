@@ -1118,6 +1118,7 @@
   "folders_feature_description": "Browsing the folder view for the photos and videos on the file system",
   "forgot_pin_code_question": "Forgot your PIN?",
   "forward": "Forward",
+  "full_path": "Full path: {path}",
   "gcast_enabled": "Google Cast",
   "gcast_enabled_description": "This feature loads external resources from Google in order to work.",
   "general": "General",
