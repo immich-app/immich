@@ -67,7 +67,7 @@ class _SheetLocationDetailsState extends ConsumerState<SheetLocationDetails> {
     }
 
     // Guard local assets
-    if (asset is! RemoteAsset) {
+    if (asset != null && asset is LocalAsset && asset!.hasRemote) {
       return const SizedBox.shrink();
     }
 
