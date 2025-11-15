@@ -153,6 +153,37 @@ describe(BackupService.name, () => {
       mocks.storage.createWriteStream.mockReturnValue(new PassThrough());
     });
 
+    it('should sanitize DB_URL (remove uselibpqcompat) before calling pg_dumpall', async () => {
+      // create a service instance with a URL connection that includes libpqcompat
+      const dbUrl = 'postgresql://postgres:pwd@host:5432/immich?sslmode=require&uselibpqcompat=true';
+      const configMock = {
+        getEnv: () => ({ database: { config: { connectionType: 'url', url: dbUrl }, skipMigrations: false } }),
+        getWorker: () => ImmichWorker.Api,
+        isDev: () => false,
+      } as unknown as any;
+
+      ({ sut, mocks } = newTestService(BackupService, { config: configMock }));
+
+      mocks.storage.readdir.mockResolvedValue([]);
+      mocks.process.spawn.mockReturnValue(mockSpawn(0, 'data', ''));
+      mocks.storage.rename.mockResolvedValue();
+      mocks.storage.unlink.mockResolvedValue();
+      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.backupEnabled);
+      mocks.storage.createWriteStream.mockReturnValue(new PassThrough());
+      mocks.database.getPostgresVersion.mockResolvedValue('14.10');
+
+      await sut.handleBackupDatabase();
+
+      expect(mocks.process.spawn).toHaveBeenCalled();
+      const call = mocks.process.spawn.mock.calls[0];
+      const args = call[1] as string[];
+      // ['--dbname', '<url>', '--clean', '--if-exists']
+      expect(args[0]).toBe('--dbname');
+      const passedUrl = args[1];
+      expect(passedUrl).not.toContain('uselibpqcompat');
+      expect(passedUrl).toContain('sslmode=require');
+    });
+
     it('should run a database backup successfully', async () => {
       const result = await sut.handleBackupDatabase();
       expect(result).toBe(JobStatus.Success);
