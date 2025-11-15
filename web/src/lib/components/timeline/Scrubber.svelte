@@ -326,6 +326,7 @@
     const lower = 0;
     const upper = rect?.height - (PADDING_TOP + PADDING_BOTTOM);
     hoverY = clamp(clientY - rect?.top - PADDING_TOP, lower, upper);
+    const hoverAtScrubberBottom = hoverY === rect?.height - (PADDING_TOP + PADDING_BOTTOM);
     const x = rect!.left + rect!.width / 2;
     const { segment, monthGroupPercentY, isOnPaddingTop, isOnPaddingBottom } = getActive(x, clientY);
     activeSegment = segment;
@@ -334,7 +335,7 @@
 
     const scrubData = {
       scrubberMonth: segmentDate,
-      overallScrollPercent: toTimelineY(hoverY),
+      overallScrollPercent: hoverAtScrubberBottom ? 1 : toTimelineY(hoverY),
       scrubberMonthScrollPercent: monthGroupPercentY,
     };
     if (wasDragging === false && isDragging) {
