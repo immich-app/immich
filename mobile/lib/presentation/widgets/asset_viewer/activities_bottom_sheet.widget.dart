@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
@@ -9,16 +10,19 @@ import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_shee
 import 'package:immich_mobile/providers/activity.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 class ActivitiesBottomSheet extends HookConsumerWidget {
   final DraggableScrollableController controller;
   final double initialChildSize;
   final bool scrollToBottomInitially;
+  final String? activityId;
 
   const ActivitiesBottomSheet({
     required this.controller,
     this.initialChildSize = 0.35,
     this.scrollToBottomInitially = true,
+    this.activityId,
     super.key,
   });
 
@@ -30,33 +34,57 @@ class ActivitiesBottomSheet extends HookConsumerWidget {
     final activityNotifier = ref.read(albumActivityProvider(album.id, asset?.id).notifier);
     final activities = ref.watch(albumActivityProvider(album.id, asset?.id));
 
+    final itemScrollController = useMemoized(() => ItemScrollController(), []);
+    final itemPositionsListener = useMemoized(() => ItemPositionsListener.create(), []);
+
+    useEffect(() {
+      if (activityId == null) {
+        return null;
+      }
+
+      if (!activities.hasValue) {
+        return null;
+      }
+
+      final data = activities.value!;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final activityIndex = data.indexWhere((activity) => activity.id == activityId);
+        if (activityIndex != -1) {
+          final displayIndex = data.length - 1 - activityIndex;
+          itemScrollController.scrollTo(
+            index: displayIndex,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+            alignment: 0.1,
+          );
+        }
+      });
+      return null;
+    }, [activityId, activities, itemScrollController]);
+
     Future<void> onAddComment(String comment) async {
       await activityNotifier.addComment(comment);
     }
 
-    Widget buildActivitiesSliver() {
-      return activities.widgetWhen(
-        onLoading: () => const SliverToBoxAdapter(child: SizedBox.shrink()),
-        onData: (data) {
-          return SliverList(
-            delegate: SliverChildBuilderDelegate((context, index) {
-              if (index == data.length) {
-                return const SizedBox.shrink();
-              }
-              final activity = data[data.length - 1 - index];
-              return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                child: CommentBubble(activity: activity, isAssetActivity: true),
-              );
-            }, childCount: data.length + 1),
-          );
-        },
-      );
-    }
+    final activitiesWidget = activities.widgetWhen(
+      onLoading: () => const Center(child: CircularProgressIndicator()),
+      onData: (data) {
+        return ScrollablePositionedList.builder(
+          itemScrollController: itemScrollController,
+          itemPositionsListener: itemPositionsListener,
+          itemCount: data.length,
+          itemBuilder: (context, index) {
+            final activity = data[data.length - 1 - index];
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              child: CommentBubble(activity: activity, isAssetActivity: true),
+            );
+          },
+        );
+      },
+    );
 
     return BaseBottomSheet(
-      actions: [],
-      slivers: [buildActivitiesSliver()],
       footer: Padding(
         // TODO: avoid fixed padding, use context.padding.bottom
         padding: const EdgeInsets.only(bottom: 32),
@@ -80,6 +108,7 @@ class ActivitiesBottomSheet extends HookConsumerWidget {
       shouldCloseOnMinExtent: false,
       resizeOnScroll: false,
       backgroundColor: context.isDarkTheme ? Colors.black : Colors.white,
+      child: activitiesWidget,
     );
   }
 }
