@@ -24,7 +24,7 @@ describe(SyncRequestType.AlbumToAssetsV1, () => {
     const { user: user2 } = await ctx.newUser();
     const { asset } = await ctx.newAsset({ ownerId: user2.id });
     const { album } = await ctx.newAlbum({ ownerId: user2.id });
-    await ctx.newAlbumAsset({ albumId: album.id, assetId: asset.id });
+    await ctx.newAlbumAsset({ albumId: album.id, assetId: asset.id, createdBy: user2.id });
     await ctx.newAlbumUser({ albumId: album.id, userId: auth.user.id });
 
     const response = await ctx.syncStream(auth, [SyncRequestType.AlbumToAssetsV1]);
@@ -48,7 +48,7 @@ describe(SyncRequestType.AlbumToAssetsV1, () => {
     const { auth, ctx } = await setup();
     const { asset } = await ctx.newAsset({ ownerId: auth.user.id });
     const { album } = await ctx.newAlbum({ ownerId: auth.user.id });
-    await ctx.newAlbumAsset({ albumId: album.id, assetId: asset.id });
+    await ctx.newAlbumAsset({ albumId: album.id, assetId: asset.id, createdBy: auth.user.id });
 
     const response = await ctx.syncStream(auth, [SyncRequestType.AlbumToAssetsV1]);
     expect(response).toEqual([
@@ -72,7 +72,7 @@ describe(SyncRequestType.AlbumToAssetsV1, () => {
     const { user: user2 } = await ctx.newUser();
     const { asset } = await ctx.newAsset({ ownerId: auth.user.id });
     const { album } = await ctx.newAlbum({ ownerId: user2.id });
-    await ctx.newAlbumAsset({ albumId: album.id, assetId: asset.id });
+    await ctx.newAlbumAsset({ albumId: album.id, assetId: asset.id, createdBy: auth.user.id });
     await ctx.newAlbumUser({ albumId: album.id, userId: auth.user.id, role: AlbumUserRole.Editor });
 
     const response = await ctx.syncStream(auth, [SyncRequestType.AlbumToAssetsV1]);
@@ -97,7 +97,7 @@ describe(SyncRequestType.AlbumToAssetsV1, () => {
     const { user: user2 } = await ctx.newUser();
     const { asset } = await ctx.newAsset({ ownerId: user2.id });
     const { album } = await ctx.newAlbum({ ownerId: user2.id });
-    await ctx.newAlbumAsset({ albumId: album.id, assetId: asset.id });
+    await ctx.newAlbumAsset({ albumId: album.id, assetId: asset.id, createdBy: user2.id });
     await ctx.assertSyncIsComplete(auth, [SyncRequestType.AlbumToAssetsV1]);
   });
 
@@ -108,10 +108,10 @@ describe(SyncRequestType.AlbumToAssetsV1, () => {
     const { asset: album2Asset } = await ctx.newAsset({ ownerId: auth.user.id });
     // Backfill album
     const { album: album2 } = await ctx.newAlbum({ ownerId: user2.id });
-    await ctx.newAlbumAsset({ albumId: album2.id, assetId: album2Asset.id });
+    await ctx.newAlbumAsset({ albumId: album2.id, assetId: album2Asset.id, createdBy: user2.id });
     await wait(2);
     const { album: album1 } = await ctx.newAlbum({ ownerId: auth.user.id });
-    await ctx.newAlbumAsset({ albumId: album1.id, assetId: album1Asset.id });
+    await ctx.newAlbumAsset({ albumId: album1.id, assetId: album1Asset.id, createdBy: auth.user.id });
 
     const response = await ctx.syncStream(auth, [SyncRequestType.AlbumToAssetsV1]);
     expect(response).toEqual([
@@ -160,7 +160,7 @@ describe(SyncRequestType.AlbumToAssetsV1, () => {
     const albumRepo = ctx.get(AlbumRepository);
     const { asset } = await ctx.newAsset({ ownerId: auth.user.id });
     const { album } = await ctx.newAlbum({ ownerId: auth.user.id });
-    await ctx.newAlbumAsset({ albumId: album.id, assetId: asset.id });
+    await ctx.newAlbumAsset({ albumId: album.id, assetId: asset.id, createdBy: auth.user.id });
 
     const response = await ctx.syncStream(auth, [SyncRequestType.AlbumToAssetsV1]);
     expect(response).toEqual([
@@ -201,7 +201,7 @@ describe(SyncRequestType.AlbumToAssetsV1, () => {
     const assetRepo = ctx.get(AssetRepository);
     const { asset } = await ctx.newAsset({ ownerId: auth.user.id });
     const { album } = await ctx.newAlbum({ ownerId: auth.user.id });
-    await ctx.newAlbumAsset({ albumId: album.id, assetId: asset.id });
+    await ctx.newAlbumAsset({ albumId: album.id, assetId: asset.id, createdBy: auth.user.id });
 
     const response = await ctx.syncStream(auth, [SyncRequestType.AlbumToAssetsV1]);
     expect(response).toEqual([
@@ -242,7 +242,7 @@ describe(SyncRequestType.AlbumToAssetsV1, () => {
     const albumRepo = ctx.get(AlbumRepository);
     const { asset } = await ctx.newAsset({ ownerId: auth.user.id });
     const { album } = await ctx.newAlbum({ ownerId: auth.user.id });
-    await ctx.newAlbumAsset({ albumId: album.id, assetId: asset.id });
+    await ctx.newAlbumAsset({ albumId: album.id, assetId: asset.id, createdBy: auth.user.id });
 
     const response = await ctx.syncStream(auth, [SyncRequestType.AlbumToAssetsV1]);
     expect(response).toEqual([
