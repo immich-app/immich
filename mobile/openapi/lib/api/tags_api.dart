@@ -16,7 +16,9 @@ class TagsApi {
 
   final ApiClient apiClient;
 
-  /// This endpoint requires the `tag.asset` permission.
+  /// Tag assets
+  ///
+  /// Add multiple tags to multiple assets in a single request.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -48,7 +50,9 @@ class TagsApi {
     );
   }
 
-  /// This endpoint requires the `tag.asset` permission.
+  /// Tag assets
+  ///
+  /// Add multiple tags to multiple assets in a single request.
   ///
   /// Parameters:
   ///
@@ -68,7 +72,9 @@ class TagsApi {
     return null;
   }
 
-  /// This endpoint requires the `tag.create` permission.
+  /// Create a tag
+  ///
+  /// Create a new tag by providing a name and optional color.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -100,7 +106,9 @@ class TagsApi {
     );
   }
 
-  /// This endpoint requires the `tag.create` permission.
+  /// Create a tag
+  ///
+  /// Create a new tag by providing a name and optional color.
   ///
   /// Parameters:
   ///
@@ -120,7 +128,9 @@ class TagsApi {
     return null;
   }
 
-  /// This endpoint requires the `tag.delete` permission.
+  /// Delete a tag
+  ///
+  /// Delete a specific tag by its ID.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -153,7 +163,9 @@ class TagsApi {
     );
   }
 
-  /// This endpoint requires the `tag.delete` permission.
+  /// Delete a tag
+  ///
+  /// Delete a specific tag by its ID.
   ///
   /// Parameters:
   ///
@@ -165,7 +177,9 @@ class TagsApi {
     }
   }
 
-  /// This endpoint requires the `tag.read` permission.
+  /// Retrieve tags
+  ///
+  /// Retrieve a list of all tags.
   ///
   /// Note: This method returns the HTTP [Response].
   Future<Response> getAllTagsWithHttpInfo() async {
@@ -193,7 +207,9 @@ class TagsApi {
     );
   }
 
-  /// This endpoint requires the `tag.read` permission.
+  /// Retrieve tags
+  ///
+  /// Retrieve a list of all tags.
   Future<List<TagResponseDto>?> getAllTags() async {
     final response = await getAllTagsWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -212,7 +228,9 @@ class TagsApi {
     return null;
   }
 
-  /// This endpoint requires the `tag.read` permission.
+  /// Retrieve a tag
+  ///
+  /// Retrieve a specific tag by its ID.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -245,7 +263,9 @@ class TagsApi {
     );
   }
 
-  /// This endpoint requires the `tag.read` permission.
+  /// Retrieve a tag
+  ///
+  /// Retrieve a specific tag by its ID.
   ///
   /// Parameters:
   ///
@@ -265,7 +285,9 @@ class TagsApi {
     return null;
   }
 
-  /// This endpoint requires the `tag.asset` permission.
+  /// Tag assets
+  ///
+  /// Add a tag to all the specified assets.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -300,7 +322,9 @@ class TagsApi {
     );
   }
 
-  /// This endpoint requires the `tag.asset` permission.
+  /// Tag assets
+  ///
+  /// Add a tag to all the specified assets.
   ///
   /// Parameters:
   ///
@@ -325,7 +349,9 @@ class TagsApi {
     return null;
   }
 
-  /// This endpoint requires the `tag.asset` permission.
+  /// Untag assets
+  ///
+  /// Remove a tag from all the specified assets.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -360,7 +386,9 @@ class TagsApi {
     );
   }
 
-  /// This endpoint requires the `tag.asset` permission.
+  /// Untag assets
+  ///
+  /// Remove a tag from all the specified assets.
   ///
   /// Parameters:
   ///
@@ -385,7 +413,9 @@ class TagsApi {
     return null;
   }
 
-  /// This endpoint requires the `tag.update` permission.
+  /// Update a tag
+  ///
+  /// Update an existing tag identified by its ID.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -420,7 +450,9 @@ class TagsApi {
     );
   }
 
-  /// This endpoint requires the `tag.update` permission.
+  /// Update a tag
+  ///
+  /// Update an existing tag identified by its ID.
   ///
   /// Parameters:
   ///
@@ -442,7 +474,9 @@ class TagsApi {
     return null;
   }
 
-  /// This endpoint requires the `tag.create` permission.
+  /// Upsert tags
+  ///
+  /// Create or update multiple tags in a single request.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -474,7 +508,9 @@ class TagsApi {
     );
   }
 
-  /// This endpoint requires the `tag.create` permission.
+  /// Upsert tags
+  ///
+  /// Create or update multiple tags in a single request.
   ///
   /// Parameters:
   ///

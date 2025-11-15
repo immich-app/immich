@@ -15,9 +15,9 @@ import {
   UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
-import { ApiBody, ApiConsumes, ApiHeader, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiConsumes, ApiHeader, ApiTags } from '@nestjs/swagger';
 import { NextFunction, Request, Response } from 'express';
-import { EndpointLifecycle } from 'src/decorators';
+import { Endpoint, HistoryBuilder } from 'src/decorators';
 import {
   AssetBulkUploadCheckResponseDto,
   AssetMediaResponseDto,
@@ -34,7 +34,7 @@ import {
   UploadFieldName,
 } from 'src/dtos/asset-media.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { ImmichHeader, Permission, RouteKey } from 'src/enum';
+import { ApiTag, ImmichHeader, Permission, RouteKey } from 'src/enum';
 import { AssetUploadInterceptor } from 'src/middleware/asset-upload.interceptor';
 import { Auth, Authenticated, FileResponse } from 'src/middleware/auth.guard';
 import { FileUploadInterceptor, getFiles } from 'src/middleware/file-upload.interceptor';
@@ -44,7 +44,7 @@ import { UploadFiles } from 'src/types';
 import { ImmichFileResponse, sendFile } from 'src/utils/file';
 import { FileNotEmptyValidator, UUIDParamDto } from 'src/validation';
 
-@ApiTags('Assets')
+@ApiTags(ApiTag.Assets)
 @Controller(RouteKey.Asset)
 export class AssetMediaController {
   constructor(
@@ -53,6 +53,7 @@ export class AssetMediaController {
   ) {}
 
   @Post()
+  @Authenticated({ permission: Permission.AssetUpload, sharedLink: true })
   @UseInterceptors(AssetUploadInterceptor, FileUploadInterceptor)
   @ApiConsumes('multipart/form-data')
   @ApiHeader({
@@ -61,7 +62,11 @@ export class AssetMediaController {
     required: false,
   })
   @ApiBody({ description: 'Asset Upload Information', type: AssetMediaCreateDto })
-  @Authenticated({ permission: Permission.AssetUpload, sharedLink: true })
+  @Endpoint({
+    summary: 'Upload asset',
+    description: 'Uploads a new asset to the server.',
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
+  })
   async uploadAsset(
     @Auth() auth: AuthDto,
     @UploadedFiles(new ParseFilePipe({ validators: [new FileNotEmptyValidator(['assetData'])] })) files: UploadFiles,
@@ -81,6 +86,11 @@ export class AssetMediaController {
   @Get(':id/original')
   @FileResponse()
   @Authenticated({ permission: Permission.AssetDownload, sharedLink: true })
+  @Endpoint({
+    summary: 'Download original asset',
+    description: 'Downloads the original file of the specified asset.',
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
+  })
   async downloadAsset(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
@@ -90,17 +100,13 @@ export class AssetMediaController {
     await sendFile(res, next, () => this.service.downloadOriginal(auth, id), this.logger);
   }
 
-  /**
-   *  Replace the asset with new file, without changing its id
-   */
   @Put(':id/original')
   @UseInterceptors(FileUploadInterceptor)
   @ApiConsumes('multipart/form-data')
-  @EndpointLifecycle({
-    addedAt: 'v1.106.0',
-    deprecatedAt: 'v1.142.0',
-    summary: 'replaceAsset',
-    description: 'Replace the asset with new file, without changing its id',
+  @Endpoint({
+    summary: 'Replace asset',
+    description: 'Replace the asset with new file, without changing its id.',
+    history: new HistoryBuilder().added('v1').deprecated('v1', { replacementId: 'copyAsset' }),
   })
   @Authenticated({ permission: Permission.AssetReplace, sharedLink: true })
   async replaceAsset(
@@ -122,6 +128,11 @@ export class AssetMediaController {
   @Get(':id/thumbnail')
   @FileResponse()
   @Authenticated({ permission: Permission.AssetView, sharedLink: true })
+  @Endpoint({
+    summary: 'View asset thumbnail',
+    description: 'Retrieve the thumbnail image for the specified asset.',
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
+  })
   async viewAsset(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
@@ -159,6 +170,11 @@ export class AssetMediaController {
   @Get(':id/video/playback')
   @FileResponse()
   @Authenticated({ permission: Permission.AssetView, sharedLink: true })
+  @Endpoint({
+    summary: 'Play asset video',
+    description: 'Streams the video file for the specified asset. This endpoint also supports byte range requests.',
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
+  })
   async playAssetVideo(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
@@ -168,14 +184,12 @@ export class AssetMediaController {
     await sendFile(res, next, () => this.service.playbackVideo(auth, id), this.logger);
   }
 
-  /**
-   * Checks if multiple assets exist on the server and returns all existing - used by background backup
-   */
   @Post('exist')
   @Authenticated()
-  @ApiOperation({
-    summary: 'checkExistingAssets',
+  @Endpoint({
+    summary: 'Check existing assets',
     description: 'Checks if multiple assets exist on the server and returns all existing - used by background backup',
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
   @HttpCode(HttpStatus.OK)
   checkExistingAssets(
@@ -185,14 +199,12 @@ export class AssetMediaController {
     return this.service.checkExistingAssets(auth, dto);
   }
 
-  /**
-   * Checks if assets exist by checksums
-   */
   @Post('bulk-upload-check')
   @Authenticated({ permission: Permission.AssetUpload })
-  @ApiOperation({
-    summary: 'checkBulkUpload',
-    description: 'Checks if assets exist by checksums',
+  @Endpoint({
+    summary: 'Check bulk upload',
+    description: 'Determine which assets have already been uploaded to the server based on their SHA1 checksums.',
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
   @HttpCode(HttpStatus.OK)
   checkBulkUpload(

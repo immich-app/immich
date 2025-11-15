@@ -2,7 +2,15 @@ experimental_monorepo_root = true
 
 [tools]
 node = "24.11.0"
-pnpm = "10.19.0"
+flutter = "3.35.7"
+pnpm = "10.20.0"
+terragrunt = "0.91.2"
+opentofu = "1.10.6"
+
+[tools."github:CQLabs/homebrew-dcm"]
+version = "1.30.0"
+bin = "dcm"
+postinstall = "chmod +x $MISE_TOOL_INSTALL_PATH/dcm"
 
 [settings]
 experimental = true

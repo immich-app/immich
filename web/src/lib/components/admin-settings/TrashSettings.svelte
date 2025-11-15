@@ -1,35 +1,27 @@
 <script lang="ts">
-  import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
+  import SettingButtonsRow from '$lib/components/shared-components/settings/SystemConfigButtonRow.svelte';
   import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import { SettingInputFieldType } from '$lib/constants';
-  import type { SystemConfigDto } from '@immich/sdk';
-  import { isEqual } from 'lodash-es';
+  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
+  import { systemConfigManager } from '$lib/managers/system-config-manager.svelte';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
-  import type { SettingsResetEvent, SettingsSaveEvent } from './admin-settings';
 
-  interface Props {
-    savedConfig: SystemConfigDto;
-    defaultConfig: SystemConfigDto;
-    config: SystemConfigDto;
-    disabled?: boolean;
-    onReset: SettingsResetEvent;
-    onSave: SettingsSaveEvent;
-  }
-
-  let { savedConfig, defaultConfig, config = $bindable(), disabled = false, onReset, onSave }: Props = $props();
-
-  const onsubmit = (event: Event) => {
-    event.preventDefault();
-  };
+  const disabled = $derived(featureFlagsManager.value.configFile);
+  const config = $derived(systemConfigManager.value);
+  let configToEdit = $state(systemConfigManager.cloneValue());
 </script>
 
 <div>
   <div in:fade={{ duration: 500 }}>
-    <form autocomplete="off" {onsubmit}>
+    <form autocomplete="off" onsubmit={(event) => event.preventDefault()}>
       <div class="ms-4 mt-4 flex flex-col gap-4">
-        <SettingSwitch title={$t('admin.trash_enabled_description')} {disabled} bind:checked={config.trash.enabled} />
+        <SettingSwitch
+          title={$t('admin.trash_enabled_description')}
+          {disabled}
+          bind:checked={configToEdit.trash.enabled}
+        />
 
         <hr />
 
@@ -37,18 +29,13 @@
           inputType={SettingInputFieldType.NUMBER}
           label={$t('admin.trash_number_of_days')}
           description={$t('admin.trash_number_of_days_description')}
-          bind:value={config.trash.days}
+          bind:value={configToEdit.trash.days}
           required={true}
-          disabled={disabled || !config.trash.enabled}
-          isEdited={config.trash.days !== savedConfig.trash.days}
+          disabled={disabled || !configToEdit.trash.enabled}
+          isEdited={configToEdit.trash.days !== config.trash.days}
         />
 
-        <SettingButtonsRow
-          onReset={(options) => onReset({ ...options, configKeys: ['trash'] })}
-          onSave={() => onSave({ trash: config.trash })}
-          showResetToDefault={!isEqual(savedConfig.trash, defaultConfig.trash)}
-          {disabled}
-        />
+        <SettingButtonsRow bind:configToEdit keys={['trash']} {disabled} />
       </div>
     </form>
   </div>

@@ -94,12 +94,6 @@ String parameterToString(dynamic value) {
   if (value is ImageFormat) {
     return ImageFormatTypeTransformer().encode(value).toString();
   }
-  if (value is JobCommand) {
-    return JobCommandTypeTransformer().encode(value).toString();
-  }
-  if (value is JobName) {
-    return JobNameTypeTransformer().encode(value).toString();
-  }
   if (value is LogLevel) {
     return LogLevelTypeTransformer().encode(value).toString();
   }
@@ -126,6 +120,18 @@ String parameterToString(dynamic value) {
   }
   if (value is Permission) {
     return PermissionTypeTransformer().encode(value).toString();
+  }
+  if (value is PluginContext) {
+    return PluginContextTypeTransformer().encode(value).toString();
+  }
+  if (value is PluginTriggerType) {
+    return PluginTriggerTypeTypeTransformer().encode(value).toString();
+  }
+  if (value is QueueCommand) {
+    return QueueCommandTypeTransformer().encode(value).toString();
+  }
+  if (value is QueueName) {
+    return QueueNameTypeTransformer().encode(value).toString();
   }
   if (value is ReactionLevel) {
     return ReactionLevelTypeTransformer().encode(value).toString();
