@@ -43,6 +43,7 @@ export enum AssetFileType {
   FullSize = 'fullsize',
   Preview = 'preview',
   Thumbnail = 'thumbnail',
+  Sidecar = 'sidecar',
 }
 
 export enum AlbumUserRole {
