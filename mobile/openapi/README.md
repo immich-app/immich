@@ -196,6 +196,7 @@ Class | Method | HTTP request | Description
 *PeopleApi* | [**updatePerson**](doc//PeopleApi.md#updateperson) | **PUT** /people/{id} | Update person
 *PluginsApi* | [**getPlugin**](doc//PluginsApi.md#getplugin) | **GET** /plugins/{id} | Retrieve a plugin
 *PluginsApi* | [**getPlugins**](doc//PluginsApi.md#getplugins) | **GET** /plugins | List all plugins
+*PluginsApi* | [**getTriggers**](doc//PluginsApi.md#gettriggers) | **GET** /plugins/triggers | List all plugin triggers
 *SearchApi* | [**getAssetsByCity**](doc//SearchApi.md#getassetsbycity) | **GET** /search/cities | Retrieve assets by city
 *SearchApi* | [**getExploreData**](doc//SearchApi.md#getexploredata) | **GET** /search/explore | Retrieve explore data
 *SearchApi* | [**getSearchSuggestions**](doc//SearchApi.md#getsearchsuggestions) | **GET** /search/suggestions | Retrieve search suggestions
@@ -455,6 +456,7 @@ Class | Method | HTTP request | Description
  - [PluginContext](doc//PluginContext.md)
  - [PluginFilterResponseDto](doc//PluginFilterResponseDto.md)
  - [PluginResponseDto](doc//PluginResponseDto.md)
+ - [PluginTriggerResponseDto](doc//PluginTriggerResponseDto.md)
  - [PluginTriggerType](doc//PluginTriggerType.md)
  - [PurchaseResponse](doc//PurchaseResponse.md)
  - [PurchaseUpdate](doc//PurchaseUpdate.md)
