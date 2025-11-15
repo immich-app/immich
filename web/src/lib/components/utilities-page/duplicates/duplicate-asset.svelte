@@ -172,7 +172,7 @@
       {asset.originalFileName}
     </InfoRow>
 
-   <InfoRow icon={mdiFolderOutline} highlight={hasDifferentValues.originalPath} title="{$t('original_path')}: {asset.originalPath}">
+   <InfoRow icon={mdiFolderOutline} highlight={hasDifferentValues.originalPath} title={$t('full_path', { values: { path: asset.originalPath } })}>
       {truncateMiddle(getBasePath(asset.originalPath, asset.originalFileName)) || $t('unknown')}
     </InfoRow>
 
