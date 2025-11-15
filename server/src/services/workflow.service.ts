@@ -125,7 +125,7 @@ export class WorkflowService extends BaseService {
   }
 
   private getTriggerOrFail(triggerType: PluginTriggerType) {
-    const trigger = pluginTriggers.find((t) => t.type === triggerType);
+    const trigger = pluginTriggers.find((t) => t.triggerType === triggerType);
     if (!trigger) {
       throw new BadRequestException(`Invalid trigger type: ${triggerType}`);
     }

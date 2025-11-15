@@ -4,6 +4,7 @@
   import ObtainiumConfigModal from '$lib/modals/ObtainiumConfigModal.svelte';
   import { Icon, modalManager } from '@immich/ui';
   import {
+    mdiAutoFix,
     mdiCellphoneArrowDownVariant,
     mdiContentDuplicate,
     mdiCrosshairsGps,
@@ -16,6 +17,7 @@
     { href: AppRoute.DUPLICATES, icon: mdiContentDuplicate, label: $t('review_duplicates') },
     { href: AppRoute.LARGE_FILES, icon: mdiImageSizeSelectLarge, label: $t('review_large_files') },
     { href: AppRoute.GEOLOCATION, icon: mdiCrosshairsGps, label: $t('manage_geolocation') },
+    { href: AppRoute.WORKFLOWS, icon: mdiAutoFix, label: $t('workflow') },
   ];
 </script>
 

@@ -708,8 +708,8 @@ importers:
         specifier: file:../open-api/typescript-sdk
         version: link:../open-api/typescript-sdk
       '@immich/ui':
-        specifier: ^0.43.0
-        version: 0.43.0(@internationalized/date@3.8.2)(svelte@5.43.0)
+        specifier: ^0.44.0
+        version: 0.44.0(@internationalized/date@3.8.2)(svelte@5.43.0)
       '@mapbox/mapbox-gl-rtl-text':
         specifier: 0.2.3
         version: 0.2.3(mapbox-gl@1.13.3)
@@ -2811,8 +2811,8 @@ packages:
     peerDependencies:
       svelte: ^5.0.0
 
-  '@immich/ui@0.43.0':
-    resolution: {integrity: sha512-dwWIURsGghsbeFnqxCqUyWslyRU2vQjih7uewNr0nsW68bJ5/esl+V/Kiw2opiNiwI4Q3HEcuTRY57k4Hq+X3Q==}
+  '@immich/ui@0.44.0':
+    resolution: {integrity: sha512-APlSvNdaHNyD20hncJH5d0TDS1eGMhn0XeTr01UdR02FJvlfBBIEHCug0LG57p3pWZecbow2JjtU2GBhNDQb6g==}
     peerDependencies:
       svelte: ^5.0.0
 
@@ -14429,7 +14429,7 @@ snapshots:
     dependencies:
       svelte: 5.43.0
 
-  '@immich/ui@0.43.0(@internationalized/date@3.8.2)(svelte@5.43.0)':
+  '@immich/ui@0.44.0(@internationalized/date@3.8.2)(svelte@5.43.0)':
     dependencies:
       '@immich/svelte-markdown-preprocess': 0.1.0(svelte@5.43.0)
       '@mdi/js': 7.4.47

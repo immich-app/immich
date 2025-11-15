@@ -3,7 +3,7 @@ import { JSONSchema } from 'src/types/plugin-schema.types';
 
 export type PluginTrigger = {
   name: string;
-  type: PluginTriggerType;
+  triggerType: PluginTriggerType;
   description: string;
   context: PluginContext;
   schema: JSONSchema | null;
@@ -12,25 +12,15 @@ export type PluginTrigger = {
 export const pluginTriggers: PluginTrigger[] = [
   {
     name: 'Asset Uploaded',
-    type: PluginTriggerType.AssetCreate,
+    triggerType: PluginTriggerType.AssetCreate,
     description: 'Triggered when a new asset is uploaded',
     context: PluginContext.Asset,
-    schema: {
-      type: 'object',
-      properties: {
-        assetType: {
-          type: 'string',
-          description: 'Type of the asset',
-          default: 'ALL',
-          enum: ['Image', 'Video', 'All'],
-        },
-      },
-    },
+    schema: null,
   },
   {
     name: 'Person Recognized',
-    type: PluginTriggerType.PersonRecognized,
-    description: 'Triggered when a person is detected in an asset',
+    triggerType: PluginTriggerType.PersonRecognized,
+    description: 'Triggered when a person is detected',
     context: PluginContext.Person,
     schema: null,
   },

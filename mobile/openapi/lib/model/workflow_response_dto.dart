@@ -40,7 +40,7 @@ class WorkflowResponseDto {
 
   String ownerId;
 
-  WorkflowResponseDtoTriggerTypeEnum triggerType;
+  PluginTriggerType triggerType;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is WorkflowResponseDto &&
@@ -105,7 +105,7 @@ class WorkflowResponseDto {
         id: mapValueOfType<String>(json, r'id')!,
         name: mapValueOfType<String>(json, r'name'),
         ownerId: mapValueOfType<String>(json, r'ownerId')!,
-        triggerType: WorkflowResponseDtoTriggerTypeEnum.fromJson(json[r'triggerType'])!,
+        triggerType: PluginTriggerType.fromJson(json[r'triggerType'])!,
       );
     }
     return null;
@@ -164,78 +164,4 @@ class WorkflowResponseDto {
     'triggerType',
   };
 }
-
-
-class WorkflowResponseDtoTriggerTypeEnum {
-  /// Instantiate a new enum with the provided [value].
-  const WorkflowResponseDtoTriggerTypeEnum._(this.value);
-
-  /// The underlying value of this enum member.
-  final String value;
-
-  @override
-  String toString() => value;
-
-  String toJson() => value;
-
-  static const assetCreate = WorkflowResponseDtoTriggerTypeEnum._(r'AssetCreate');
-  static const personRecognized = WorkflowResponseDtoTriggerTypeEnum._(r'PersonRecognized');
-
-  /// List of all possible values in this [enum][WorkflowResponseDtoTriggerTypeEnum].
-  static const values = <WorkflowResponseDtoTriggerTypeEnum>[
-    assetCreate,
-    personRecognized,
-  ];
-
-  static WorkflowResponseDtoTriggerTypeEnum? fromJson(dynamic value) => WorkflowResponseDtoTriggerTypeEnumTypeTransformer().decode(value);
-
-  static List<WorkflowResponseDtoTriggerTypeEnum> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <WorkflowResponseDtoTriggerTypeEnum>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = WorkflowResponseDtoTriggerTypeEnum.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
-  }
-}
-
-/// Transformation class that can [encode] an instance of [WorkflowResponseDtoTriggerTypeEnum] to String,
-/// and [decode] dynamic data back to [WorkflowResponseDtoTriggerTypeEnum].
-class WorkflowResponseDtoTriggerTypeEnumTypeTransformer {
-  factory WorkflowResponseDtoTriggerTypeEnumTypeTransformer() => _instance ??= const WorkflowResponseDtoTriggerTypeEnumTypeTransformer._();
-
-  const WorkflowResponseDtoTriggerTypeEnumTypeTransformer._();
-
-  String encode(WorkflowResponseDtoTriggerTypeEnum data) => data.value;
-
-  /// Decodes a [dynamic value][data] to a WorkflowResponseDtoTriggerTypeEnum.
-  ///
-  /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
-  /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
-  /// cannot be decoded successfully, then an [UnimplementedError] is thrown.
-  ///
-  /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
-  /// and users are still using an old app with the old code.
-  WorkflowResponseDtoTriggerTypeEnum? decode(dynamic data, {bool allowNull = true}) {
-    if (data != null) {
-      switch (data) {
-        case r'AssetCreate': return WorkflowResponseDtoTriggerTypeEnum.assetCreate;
-        case r'PersonRecognized': return WorkflowResponseDtoTriggerTypeEnum.personRecognized;
-        default:
-          if (!allowNull) {
-            throw ArgumentError('Unknown enum value to decode: $data');
-          }
-      }
-    }
-    return null;
-  }
-
-  /// Singleton [WorkflowResponseDtoTriggerTypeEnumTypeTransformer] instance.
-  static WorkflowResponseDtoTriggerTypeEnumTypeTransformer? _instance;
-}
-
 

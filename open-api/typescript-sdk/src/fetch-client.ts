@@ -957,6 +957,13 @@ export type PluginResponseDto = {
     updatedAt: string;
     version: string;
 };
+export type PluginTriggerResponseDto = {
+    context: PluginContext;
+    description: string;
+    name: string;
+    schema: object | null;
+    triggerType: PluginTriggerType;
+};
 export type SearchExploreItem = {
     data: AssetResponseDto;
     value: string;
@@ -1722,7 +1729,7 @@ export type WorkflowResponseDto = {
     id: string;
     name: string | null;
     ownerId: string;
-    triggerType: TriggerType;
+    triggerType: PluginTriggerType;
 };
 export type WorkflowActionItemDto = {
     actionConfig?: object;
@@ -3602,6 +3609,17 @@ export function getPlugins(opts?: Oazapfts.RequestOpts) {
     }));
 }
 /**
+ * List all plugin triggers
+ */
+export function getTriggers(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: PluginTriggerResponseDto[];
+    }>("/plugins/triggers", {
+        ...opts
+    }));
+}
+/**
  * Retrieve a plugin
  */
 export function getPlugin({ id }: {
@@ -5288,6 +5306,10 @@ export enum PluginContext {
     Album = "album",
     Person = "person"
 }
+export enum PluginTriggerType {
+    AssetCreate = "AssetCreate",
+    PersonRecognized = "PersonRecognized"
+}
 export enum SearchSuggestionType {
     Country = "country",
     State = "state",
@@ -5438,12 +5460,4 @@ export enum LogLevel {
 export enum OAuthTokenEndpointAuthMethod {
     ClientSecretPost = "client_secret_post",
     ClientSecretBasic = "client_secret_basic"
-}
-export enum TriggerType {
-    AssetCreate = "AssetCreate",
-    PersonRecognized = "PersonRecognized"
-}
-export enum PluginTriggerType {
-    AssetCreate = "AssetCreate",
-    PersonRecognized = "PersonRecognized"
 }
