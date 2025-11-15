@@ -64,6 +64,7 @@ fun RandomConfiguration(context: Context, appWidgetId: Int, glanceId: GlanceId, 
 
   var selectedAlbum by remember { mutableStateOf<DropdownItem?>(null) }
   var showAlbumName by remember { mutableStateOf(false) }
+  var selectedFilter by remember { mutableStateOf<DropdownItem?>(null) }
   var availableAlbums by remember { mutableStateOf<List<DropdownItem>>(listOf()) }
   var state by remember { mutableStateOf(WidgetConfigState.LOADING) }
 
@@ -104,6 +105,16 @@ fun RandomConfiguration(context: Context, appWidgetId: Int, glanceId: GlanceId, 
     val albumEntity = availableAlbums.firstOrNull { it.id == currentAlbumId }
     selectedAlbum = albumEntity ?: availableAlbums.first()
 
+    // load filter configuration
+    val availableFilters = listOf(
+      DropdownItem("None", WidgetImageFilter.NONE.name), 
+      DropdownItem("Black & White", WidgetImageFilter.BLACK_WHITE.name)
+    )
+    
+    val savedFilterId = currentState[kImageFilter] ?: WidgetImageFilter.NONE.name
+    val selectedFilterItem = availableFilters.firstOrNull { it.id == savedFilterId }
+    selectedFilter = selectedFilterItem ?: availableFilters.first()
+
     // load showAlbumName
     showAlbumName = currentState[kShowAlbumName] == true
   }
@@ -113,6 +124,7 @@ fun RandomConfiguration(context: Context, appWidgetId: Int, glanceId: GlanceId, 
       prefs[kSelectedAlbum] = selectedAlbum?.id ?: ""
       prefs[kSelectedAlbumName] = selectedAlbum?.label ?: ""
       prefs[kShowAlbumName] = showAlbumName
+      prefs[kImageFilter] = selectedFilter?.id ?: WidgetImageFilter.NONE.name
     }
 
     ImageDownloadWorker.singleShot(context, appWidgetId, WidgetType.RANDOM)
@@ -184,6 +196,17 @@ fun RandomConfiguration(context: Context, appWidgetId: Int, glanceId: GlanceId, 
                   items = availableAlbums,
                   selectedItem = selectedAlbum,
                   onItemSelected = { selectedAlbum = it },
+                  enabled = (state != WidgetConfigState.NO_CONNECTION)
+                )
+
+                Text("Filter")
+                Dropdown(
+                  items = listOf(
+                    DropdownItem("None", WidgetImageFilter.NONE.name), 
+                    DropdownItem("Black & White", WidgetImageFilter.BLACK_WHITE.name)
+                  ),
+                  selectedItem = selectedFilter,
+                  onItemSelected = { selectedFilter = it },
                   enabled = (state != WidgetConfigState.NO_CONNECTION)
                 )
 
