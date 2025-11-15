@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/exif.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/presentation/widgets/asset_viewer/sheet_tile.widget.dart';
+import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/widgets/asset_viewer/detail_panel/exif_map.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
@@ -59,41 +62,76 @@ class _SheetLocationDetailsState extends ConsumerState<SheetLocationDetails> {
   Widget build(BuildContext context) {
     final hasCoordinates = exifInfo?.hasCoordinates ?? false;
 
-    // Guard no lat/lng
-    if (!hasCoordinates || (asset != null && asset is LocalAsset && asset!.hasRemote)) {
+    void editLocation() async {
+      await ref.read(actionProvider.notifier).editLocation(ActionSource.viewer, context);
+    }
+
+    // Guard local assets
+    if (asset is! RemoteAsset) {
       return const SizedBox.shrink();
     }
 
     final remoteId = asset is LocalAsset ? (asset as LocalAsset).remoteId : (asset as RemoteAsset).id;
     final locationName = _getLocationName(exifInfo);
-    final coordinates = "${exifInfo!.latitude!.toStringAsFixed(4)}, ${exifInfo!.longitude!.toStringAsFixed(4)}";
+    final coordinates = "${exifInfo?.latitude?.toStringAsFixed(4)}, ${exifInfo?.longitude?.toStringAsFixed(4)}";
 
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: 16.0, horizontal: context.isMobile ? 16.0 : 56.0),
+      padding: const EdgeInsets.symmetric(vertical: 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.only(bottom: 16),
-            child: Text(
-              "exif_bottom_sheet_location".t(context: context),
-              style: context.textTheme.labelMedium?.copyWith(
-                color: context.textTheme.labelMedium?.color?.withAlpha(200),
-                fontWeight: FontWeight.w600,
+            padding: EdgeInsets.symmetric(horizontal: context.isMobile ? 16.0 : 56.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  "exif_bottom_sheet_location".t(context: context),
+                  style: context.textTheme.labelMedium?.copyWith(
+                    color: context.textTheme.labelMedium?.color?.withAlpha(200),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                if (hasCoordinates) IconButton(onPressed: editLocation, icon: const Icon(Icons.edit), iconSize: 20),
+              ],
+            ),
+          ),
+          if (hasCoordinates)
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: context.isMobile ? 16.0 : 56.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ExifMap(exifInfo: exifInfo!, markerId: remoteId, onMapCreated: _onMapCreated),
+                  const SizedBox(height: 15),
+                  if (locationName != null)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 4.0),
+                      child: Text(locationName, style: context.textTheme.labelLarge),
+                    ),
+                  Text(
+                    coordinates,
+                    style: context.textTheme.labelMedium?.copyWith(
+                      color: context.textTheme.labelMedium?.color?.withAlpha(150),
+                    ),
+                  ),
+                ],
               ),
             ),
-          ),
-          ExifMap(exifInfo: exifInfo!, markerId: remoteId, onMapCreated: _onMapCreated),
-          const SizedBox(height: 15),
-          if (locationName != null)
+          if (!hasCoordinates)
             Padding(
-              padding: const EdgeInsets.only(bottom: 4.0),
-              child: Text(locationName, style: context.textTheme.labelLarge),
+              padding: const EdgeInsets.only(top: 12),
+              child: SheetTile(
+                title: "add_a_location".t(context: context),
+                titleStyle: context.textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: context.primaryColor,
+                ),
+                leading: const Icon(Icons.location_off),
+                onTap: editLocation,
+              ),
             ),
-          Text(
-            coordinates,
-            style: context.textTheme.labelMedium?.copyWith(color: context.textTheme.labelMedium?.color?.withAlpha(150)),
-          ),
         ],
       ),
     );
