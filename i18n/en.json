@@ -1440,6 +1440,7 @@
   "no_favorites_message": "Add favorites to quickly find your best pictures and videos",
   "no_libraries_message": "Create an external library to view your photos and videos",
   "no_local_assets_found": "No local assets found with this checksum",
+  "no_location_set": "No location set",
   "no_locked_photos_message": "Photos and videos in the locked folder are hidden and won't show up as you browse or search your library.",
   "no_name": "No Name",
   "no_notifications": "No notifications",
