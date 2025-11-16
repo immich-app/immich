@@ -57,8 +57,12 @@ test.describe('User Administration', () => {
     await page.getByText('Admin User').click();
     await expect(page.getByLabel('Admin User')).toBeChecked();
     await page.getByRole('button', { name: 'Confirm' }).click();
+
     await expect
-      .poll(async () => (await getUserAdmin({ id: user.userId }, { headers: asBearerAuth(admin.accessToken) })).isAdmin)
+      .poll(async () => {
+        const userAdmin = await getUserAdmin({ id: user.userId }, { headers: asBearerAuth(admin.accessToken) });
+        return userAdmin.isAdmin;
+      })
       .toBe(true);
   });
 
@@ -83,9 +87,11 @@ test.describe('User Administration', () => {
     await expect(page.getByLabel('Admin User')).not.toBeChecked();
     await page.getByRole('button', { name: 'Confirm' }).click();
 
-    const updated = await getUserAdmin({ id: user.userId }, { headers: asBearerAuth(admin.accessToken) });
     await expect
-      .poll(async () => (await getUserAdmin({ id: user.userId }, { headers: asBearerAuth(admin.accessToken) })).isAdmin)
+      .poll(async () => {
+        const userAdmin = await getUserAdmin({ id: user.userId }, { headers: asBearerAuth(admin.accessToken) });
+        return userAdmin.isAdmin;
+      })
       .toBe(false);
   });
 });
