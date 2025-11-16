@@ -1,11 +1,13 @@
 <script lang="ts">
+  import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
   import { OnboardingRole } from '$lib/models/onboarding-role';
-  import { serverConfig } from '$lib/stores/system-config-manager.svelte';
   import { user } from '$lib/stores/user.store';
   import { Logo } from '@immich/ui';
   import { t } from 'svelte-i18n';
 
-  let userRole = $derived($user.isAdmin && !$serverConfig.isOnboarded ? OnboardingRole.SERVER : OnboardingRole.USER);
+  let userRole = $derived(
+    $user.isAdmin && !serverConfigManager.value.isOnboarded ? OnboardingRole.SERVER : OnboardingRole.USER,
+  );
 </script>
 
 <div class="gap-4">

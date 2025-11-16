@@ -5,12 +5,12 @@
   import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
   import { AppRoute, AssetAction } from '$lib/constants';
   import Portal from '$lib/elements/Portal.svelte';
+  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import type { TimelineAsset, Viewport } from '$lib/managers/timeline-manager/types';
   import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { showDeleteModal } from '$lib/stores/preferences.store';
-  import { featureFlags } from '$lib/stores/system-config-manager.svelte';
   import { handlePromiseError } from '$lib/utils';
   import { deleteAssets } from '$lib/utils/actions';
   import { archiveAssets, cancelMultiselect } from '$lib/utils/asset-utils';
@@ -405,7 +405,7 @@
     }
   };
 
-  let isTrashEnabled = $derived($featureFlags.loaded && $featureFlags.trash);
+  let isTrashEnabled = $derived(featureFlagsManager.value.trash);
 
   $effect(() => {
     if (!lastAssetMouseEvent) {

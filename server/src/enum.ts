@@ -177,6 +177,11 @@ export enum Permission {
   PinCodeUpdate = 'pinCode.update',
   PinCodeDelete = 'pinCode.delete',
 
+  PluginCreate = 'plugin.create',
+  PluginRead = 'plugin.read',
+  PluginUpdate = 'plugin.update',
+  PluginDelete = 'plugin.delete',
+
   ServerAbout = 'server.about',
   ServerApkLinks = 'server.apkLinks',
   ServerStorage = 'server.storage',
@@ -239,6 +244,11 @@ export enum Permission {
   UserProfileImageRead = 'userProfileImage.read',
   UserProfileImageUpdate = 'userProfileImage.update',
   UserProfileImageDelete = 'userProfileImage.delete',
+
+  WorkflowCreate = 'workflow.create',
+  WorkflowRead = 'workflow.read',
+  WorkflowUpdate = 'workflow.update',
+  WorkflowDelete = 'workflow.delete',
 
   AdminUserCreate = 'adminUser.create',
   AdminUserRead = 'adminUser.read',
@@ -525,6 +535,7 @@ export enum QueueName {
   Notification = 'notifications',
   BackupDatabase = 'backupDatabase',
   Ocr = 'ocr',
+  Workflow = 'workflow',
 }
 
 export enum JobName {
@@ -601,9 +612,12 @@ export enum JobName {
   // OCR
   OcrQueueAll = 'OcrQueueAll',
   Ocr = 'Ocr',
+
+  // Workflow
+  WorkflowRun = 'WorkflowRun',
 }
 
-export enum JobCommand {
+export enum QueueCommand {
   Start = 'start',
   Pause = 'pause',
   Resume = 'resume',
@@ -793,6 +807,7 @@ export enum ApiTag {
   NotificationsAdmin = 'Notifications (admin)',
   Partners = 'Partners',
   People = 'People',
+  Plugins = 'Plugins',
   Search = 'Search',
   Server = 'Server',
   Sessions = 'Sessions',
@@ -807,4 +822,16 @@ export enum ApiTag {
   UsersAdmin = 'Users (admin)',
   Users = 'Users',
   Views = 'Views',
+  Workflows = 'Workflows',
+}
+
+export enum PluginContext {
+  Asset = 'asset',
+  Album = 'album',
+  Person = 'person',
+}
+
+export enum PluginTriggerType {
+  AssetCreate = 'AssetCreate',
+  PersonRecognized = 'PersonRecognized',
 }

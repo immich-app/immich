@@ -2,28 +2,29 @@
   import SettingButtonsRow from '$lib/components/shared-components/settings/SystemConfigButtonRow.svelte';
   import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
   import { SettingInputFieldType } from '$lib/constants';
-  import { featureFlags, systemConfigManager } from '$lib/stores/system-config-manager.svelte';
-  import { getJobName } from '$lib/utils';
-  import { JobName, type SystemConfigJobDto } from '@immich/sdk';
+  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
+  import { systemConfigManager } from '$lib/managers/system-config-manager.svelte';
+  import { getQueueName } from '$lib/utils';
+  import { QueueName, type SystemConfigJobDto } from '@immich/sdk';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
 
-  const disabled = $featureFlags.configFile;
+  const disabled = $derived(featureFlagsManager.value.configFile);
   const config = $derived(systemConfigManager.value);
   let configToEdit = $state(systemConfigManager.cloneValue());
 
-  const jobNames = [
-    JobName.ThumbnailGeneration,
-    JobName.MetadataExtraction,
-    JobName.Library,
-    JobName.Sidecar,
-    JobName.SmartSearch,
-    JobName.FaceDetection,
-    JobName.FacialRecognition,
-    JobName.VideoConversion,
-    JobName.StorageTemplateMigration,
-    JobName.Migration,
-    JobName.Ocr,
+  const queueNames = [
+    QueueName.ThumbnailGeneration,
+    QueueName.MetadataExtraction,
+    QueueName.Library,
+    QueueName.Sidecar,
+    QueueName.SmartSearch,
+    QueueName.FaceDetection,
+    QueueName.FacialRecognition,
+    QueueName.VideoConversion,
+    QueueName.StorageTemplateMigration,
+    QueueName.Migration,
+    QueueName.Ocr,
   ];
 
   function isSystemConfigJobDto(jobName: string): jobName is keyof SystemConfigJobDto {
@@ -34,22 +35,22 @@
 <div>
   <div in:fade={{ duration: 500 }}>
     <form autocomplete="off" onsubmit={(event) => event.preventDefault()}>
-      {#each jobNames as jobName (jobName)}
+      {#each queueNames as queueName (queueName)}
         <div class="ms-4 mt-4 flex flex-col gap-4">
-          {#if isSystemConfigJobDto(jobName)}
+          {#if isSystemConfigJobDto(queueName)}
             <SettingInputField
               inputType={SettingInputFieldType.NUMBER}
               {disabled}
-              label={$t('admin.job_concurrency', { values: { job: $getJobName(jobName) } })}
+              label={$t('admin.job_concurrency', { values: { job: $getQueueName(queueName) } })}
               description=""
-              bind:value={configToEdit.job[jobName].concurrency}
+              bind:value={configToEdit.job[queueName].concurrency}
               required={true}
-              isEdited={!(configToEdit.job[jobName].concurrency == config.job[jobName].concurrency)}
+              isEdited={!(configToEdit.job[queueName].concurrency == config.job[queueName].concurrency)}
             />
           {:else}
             <SettingInputField
               inputType={SettingInputFieldType.NUMBER}
-              label={$t('admin.job_concurrency', { values: { job: $getJobName(jobName) } })}
+              label={$t('admin.job_concurrency', { values: { job: $getQueueName(queueName) } })}
               description=""
               value={1}
               disabled={true}

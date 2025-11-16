@@ -2,8 +2,8 @@ import { goto } from '$app/navigation';
 import { AppRoute } from '$lib/constants';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { eventManager } from '$lib/managers/event-manager.svelte';
+import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
 import QrCodeModal from '$lib/modals/QrCodeModal.svelte';
-import { serverConfig } from '$lib/stores/system-config-manager.svelte';
 import { copyToClipboard } from '$lib/utils';
 import { handleError } from '$lib/utils/handle-error';
 import { getFormatter } from '$lib/utils/i18n';
@@ -19,7 +19,6 @@ import {
 import { MenuItemType, menuManager, modalManager, toastManager, type MenuItem } from '@immich/ui';
 import { mdiCircleEditOutline, mdiContentCopy, mdiDelete, mdiDotsVertical, mdiQrcode } from '@mdi/js';
 import type { MessageFormatter } from 'svelte-i18n';
-import { get } from 'svelte/store';
 
 export const getSharedLinkActions = ($t: MessageFormatter, sharedLink: SharedLinkResponseDto) => {
   const Edit: MenuItem = {
@@ -63,7 +62,7 @@ export const getSharedLinkActions = ($t: MessageFormatter, sharedLink: SharedLin
 
 const asUrl = (sharedLink: SharedLinkResponseDto) => {
   const path = sharedLink.slug ? `s/${sharedLink.slug}` : `share/${sharedLink.key}`;
-  return new URL(path, get(serverConfig).externalDomain || globalThis.location.origin).href;
+  return new URL(path, serverConfigManager.value.externalDomain || globalThis.location.origin).href;
 };
 
 export const handleCreateSharedLink = async (dto: SharedLinkCreateDto) => {

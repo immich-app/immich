@@ -1,6 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { featureFlags } from '$lib/stores/system-config-manager.svelte';
+  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { oauth } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { type UserAdminResponseDto } from '@immich/sdk';
@@ -50,7 +50,7 @@
         <div class="flex place-content-center place-items-center">
           <LoadingSpinner />
         </div>
-      {:else if $featureFlags.oauth}
+      {:else if featureFlagsManager.value.oauth}
         {#if user.oauthId}
           <Button shape="round" size="small" onclick={() => handleUnlink()}>{$t('unlink_oauth')}</Button>
         {:else}

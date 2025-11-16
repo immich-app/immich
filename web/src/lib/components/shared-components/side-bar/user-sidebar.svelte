@@ -3,8 +3,8 @@
   import BottomInfo from '$lib/components/shared-components/side-bar/bottom-info.svelte';
   import RecentAlbums from '$lib/components/shared-components/side-bar/recent-albums.svelte';
   import Sidebar from '$lib/components/sidebar/sidebar.svelte';
+  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { recentAlbumsDropdown } from '$lib/stores/preferences.store';
-  import { featureFlags } from '$lib/stores/system-config-manager.svelte';
   import { preferences } from '$lib/stores/user.store';
   import {
     mdiAccount,
@@ -54,11 +54,11 @@
     icon={isPhotosSelected ? mdiImageMultiple : mdiImageMultipleOutline}
   ></SideBarLink>
 
-  {#if $featureFlags.search}
+  {#if featureFlagsManager.value.search}
     <SideBarLink title={$t('explore')} href={resolve('/(user)/explore')} icon={mdiMagnify} />
   {/if}
 
-  {#if $featureFlags.map}
+  {#if featureFlagsManager.value.map}
     <SideBarLink
       title={$t('map')}
       href={resolve('/(user)/map')}
@@ -139,7 +139,7 @@
     icon={isLockedFolderSelected ? mdiLock : mdiLockOutline}
   ></SideBarLink>
 
-  {#if $featureFlags.trash}
+  {#if featureFlagsManager.value.trash}
     <SideBarLink
       title={$t('trash')}
       href={resolve('/(user)/trash')}

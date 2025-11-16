@@ -149,8 +149,8 @@ Class | Method | HTTP request | Description
 *FacesApi* | [**getFaces**](doc//FacesApi.md#getfaces) | **GET** /faces | Retrieve faces for asset
 *FacesApi* | [**reassignFacesById**](doc//FacesApi.md#reassignfacesbyid) | **PUT** /faces/{id} | Re-assign a face to another person
 *JobsApi* | [**createJob**](doc//JobsApi.md#createjob) | **POST** /jobs | Create a manual job
-*JobsApi* | [**getAllJobsStatus**](doc//JobsApi.md#getalljobsstatus) | **GET** /jobs | Retrieve queue counts and status
-*JobsApi* | [**sendJobCommand**](doc//JobsApi.md#sendjobcommand) | **PUT** /jobs/{id} | Run jobs
+*JobsApi* | [**getQueuesLegacy**](doc//JobsApi.md#getqueueslegacy) | **GET** /jobs | Retrieve queue counts and status
+*JobsApi* | [**runQueueCommandLegacy**](doc//JobsApi.md#runqueuecommandlegacy) | **PUT** /jobs/{name} | Run jobs
 *LibrariesApi* | [**createLibrary**](doc//LibrariesApi.md#createlibrary) | **POST** /libraries | Create a library
 *LibrariesApi* | [**deleteLibrary**](doc//LibrariesApi.md#deletelibrary) | **DELETE** /libraries/{id} | Delete a library
 *LibrariesApi* | [**getAllLibraries**](doc//LibrariesApi.md#getalllibraries) | **GET** /libraries | Retrieve libraries
@@ -194,6 +194,8 @@ Class | Method | HTTP request | Description
 *PeopleApi* | [**reassignFaces**](doc//PeopleApi.md#reassignfaces) | **PUT** /people/{id}/reassign | Reassign faces
 *PeopleApi* | [**updatePeople**](doc//PeopleApi.md#updatepeople) | **PUT** /people | Update people
 *PeopleApi* | [**updatePerson**](doc//PeopleApi.md#updateperson) | **PUT** /people/{id} | Update person
+*PluginsApi* | [**getPlugin**](doc//PluginsApi.md#getplugin) | **GET** /plugins/{id} | Retrieve a plugin
+*PluginsApi* | [**getPlugins**](doc//PluginsApi.md#getplugins) | **GET** /plugins | List all plugins
 *SearchApi* | [**getAssetsByCity**](doc//SearchApi.md#getassetsbycity) | **GET** /search/cities | Retrieve assets by city
 *SearchApi* | [**getExploreData**](doc//SearchApi.md#getexploredata) | **GET** /search/explore | Retrieve explore data
 *SearchApi* | [**getSearchSuggestions**](doc//SearchApi.md#getsearchsuggestions) | **GET** /search/suggestions | Retrieve search suggestions
@@ -295,6 +297,11 @@ Class | Method | HTTP request | Description
 *UsersAdminApi* | [**updateUserPreferencesAdmin**](doc//UsersAdminApi.md#updateuserpreferencesadmin) | **PUT** /admin/users/{id}/preferences | Update user preferences
 *ViewsApi* | [**getAssetsByOriginalPath**](doc//ViewsApi.md#getassetsbyoriginalpath) | **GET** /view/folder | Retrieve assets by original path
 *ViewsApi* | [**getUniqueOriginalPaths**](doc//ViewsApi.md#getuniqueoriginalpaths) | **GET** /view/folder/unique-paths | Retrieve unique paths
+*WorkflowsApi* | [**createWorkflow**](doc//WorkflowsApi.md#createworkflow) | **POST** /workflows | Create a workflow
+*WorkflowsApi* | [**deleteWorkflow**](doc//WorkflowsApi.md#deleteworkflow) | **DELETE** /workflows/{id} | Delete a workflow
+*WorkflowsApi* | [**getWorkflow**](doc//WorkflowsApi.md#getworkflow) | **GET** /workflows/{id} | Retrieve a workflow
+*WorkflowsApi* | [**getWorkflows**](doc//WorkflowsApi.md#getworkflows) | **GET** /workflows | List all workflows
+*WorkflowsApi* | [**updateWorkflow**](doc//WorkflowsApi.md#updateworkflow) | **PUT** /workflows/{id} | Update a workflow
 
 
 ## Documentation For Models
@@ -318,7 +325,6 @@ Class | Method | HTTP request | Description
  - [AlbumsAddAssetsResponseDto](doc//AlbumsAddAssetsResponseDto.md)
  - [AlbumsResponse](doc//AlbumsResponse.md)
  - [AlbumsUpdate](doc//AlbumsUpdate.md)
- - [AllJobStatusResponseDto](doc//AllJobStatusResponseDto.md)
  - [AssetBulkDeleteDto](doc//AssetBulkDeleteDto.md)
  - [AssetBulkUpdateDto](doc//AssetBulkUpdateDto.md)
  - [AssetBulkUploadCheckDto](doc//AssetBulkUploadCheckDto.md)
@@ -387,13 +393,8 @@ Class | Method | HTTP request | Description
  - [FoldersResponse](doc//FoldersResponse.md)
  - [FoldersUpdate](doc//FoldersUpdate.md)
  - [ImageFormat](doc//ImageFormat.md)
- - [JobCommand](doc//JobCommand.md)
- - [JobCommandDto](doc//JobCommandDto.md)
- - [JobCountsDto](doc//JobCountsDto.md)
  - [JobCreateDto](doc//JobCreateDto.md)
- - [JobName](doc//JobName.md)
  - [JobSettingsDto](doc//JobSettingsDto.md)
- - [JobStatusDto](doc//JobStatusDto.md)
  - [LibraryResponseDto](doc//LibraryResponseDto.md)
  - [LibraryStatsResponseDto](doc//LibraryStatsResponseDto.md)
  - [LicenseKeyDto](doc//LicenseKeyDto.md)
@@ -450,9 +451,20 @@ Class | Method | HTTP request | Description
  - [PinCodeResetDto](doc//PinCodeResetDto.md)
  - [PinCodeSetupDto](doc//PinCodeSetupDto.md)
  - [PlacesResponseDto](doc//PlacesResponseDto.md)
+ - [PluginActionResponseDto](doc//PluginActionResponseDto.md)
+ - [PluginContext](doc//PluginContext.md)
+ - [PluginFilterResponseDto](doc//PluginFilterResponseDto.md)
+ - [PluginResponseDto](doc//PluginResponseDto.md)
+ - [PluginTriggerType](doc//PluginTriggerType.md)
  - [PurchaseResponse](doc//PurchaseResponse.md)
  - [PurchaseUpdate](doc//PurchaseUpdate.md)
+ - [QueueCommand](doc//QueueCommand.md)
+ - [QueueCommandDto](doc//QueueCommandDto.md)
+ - [QueueName](doc//QueueName.md)
+ - [QueueResponseDto](doc//QueueResponseDto.md)
+ - [QueueStatisticsDto](doc//QueueStatisticsDto.md)
  - [QueueStatusDto](doc//QueueStatusDto.md)
+ - [QueuesResponseDto](doc//QueuesResponseDto.md)
  - [RandomSearchDto](doc//RandomSearchDto.md)
  - [RatingsResponse](doc//RatingsResponse.md)
  - [RatingsUpdate](doc//RatingsUpdate.md)
@@ -603,6 +615,13 @@ Class | Method | HTTP request | Description
  - [VersionCheckStateResponseDto](doc//VersionCheckStateResponseDto.md)
  - [VideoCodec](doc//VideoCodec.md)
  - [VideoContainer](doc//VideoContainer.md)
+ - [WorkflowActionItemDto](doc//WorkflowActionItemDto.md)
+ - [WorkflowActionResponseDto](doc//WorkflowActionResponseDto.md)
+ - [WorkflowCreateDto](doc//WorkflowCreateDto.md)
+ - [WorkflowFilterItemDto](doc//WorkflowFilterItemDto.md)
+ - [WorkflowFilterResponseDto](doc//WorkflowFilterResponseDto.md)
+ - [WorkflowResponseDto](doc//WorkflowResponseDto.md)
+ - [WorkflowUpdateDto](doc//WorkflowUpdateDto.md)
 
 
 ## Documentation For Authorization

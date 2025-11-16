@@ -24,8 +24,8 @@
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import { AppRoute } from '$lib/constants';
+  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { photoViewerImgElement } from '$lib/stores/assets-store.svelte';
-  import { featureFlags } from '$lib/stores/system-config-manager.svelte';
   import { user } from '$lib/stores/user.store';
   import { photoZoomState } from '$lib/stores/zoom-image.store';
   import { getAssetJobName, getSharedLink } from '$lib/utils';
@@ -108,7 +108,7 @@
   let isOwner = $derived($user && asset.ownerId === $user?.id);
   let showDownloadButton = $derived(sharedLink ? sharedLink.allowDownload : !asset.isOffline);
   let isLocked = $derived(asset.visibility === AssetVisibility.Locked);
-  let smartSearchEnabled = $derived($featureFlags.loaded && $featureFlags.smartSearch);
+  let smartSearchEnabled = $derived(featureFlagsManager.value.smartSearch);
 
   // $: showEditorButton =
   //   isOwner &&
