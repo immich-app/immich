@@ -59,7 +59,6 @@ class _SheetLocationDetailsState extends ConsumerState<SheetLocationDetails> {
 
   @override
   Widget build(BuildContext context) {
-    // Watch the providers to ensure widget rebuilds when data changes
     final asset = ref.watch(currentAssetNotifier);
     final exifInfo = ref.watch(currentAssetExifProvider).valueOrNull;
     final hasCoordinates = exifInfo?.hasCoordinates ?? false;
