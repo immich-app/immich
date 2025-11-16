@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/domain/services/remote_album.service.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
@@ -48,7 +47,7 @@ class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
   List<RemoteAlbum> shownAlbums = [];
 
   AlbumFilter filter = AlbumFilter(query: "", mode: QuickFilterMode.all);
-  AlbumSort sort = AlbumSort(mode: RemoteAlbumSortMode.lastModified, isReverse: true);
+  AlbumSort sort = AlbumSort(mode: AlbumSortMode.lastModified, isReverse: true);
 
   @override
   void initState() {
@@ -66,7 +65,7 @@ class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
       );
 
       setState(() {
-        sort = AlbumSort(mode: toRemoteAlbumSortMode(albumSortMode), isReverse: savedIsReverse);
+        sort = AlbumSort(mode: albumSortMode, isReverse: savedIsReverse);
         isGrid = savedIsGrid;
       });
 
@@ -116,8 +115,7 @@ class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
     });
 
     final appSettings = ref.read(appSettingsServiceProvider);
-    final albumSortMode = toAlbumSortMode(sort.mode);
-    await appSettings.setSetting(AppSettingsEnum.selectedAlbumSortOrder, albumSortMode.storeIndex);
+    await appSettings.setSetting(AppSettingsEnum.selectedAlbumSortOrder, sort.mode.storeIndex);
     await appSettings.setSetting(AppSettingsEnum.selectedAlbumSortReverse, sort.isReverse);
 
     await sortAlbums();
@@ -226,7 +224,7 @@ class _SortButton extends ConsumerStatefulWidget {
 
   final Future<void> Function(AlbumSort) onSortChanged;
   final MenuController? controller;
-  final RemoteAlbumSortMode initialSortMode;
+  final AlbumSortMode initialSortMode;
   final bool initialIsReverse;
 
   @override
@@ -234,7 +232,7 @@ class _SortButton extends ConsumerStatefulWidget {
 }
 
 class _SortButtonState extends ConsumerState<_SortButton> {
-  late RemoteAlbumSortMode albumSortOption;
+  late AlbumSortMode albumSortOption;
   late bool albumSortIsReverse;
   bool isSorting = false;
 
@@ -256,7 +254,7 @@ class _SortButtonState extends ConsumerState<_SortButton> {
     }
   }
 
-  Future<void> onMenuTapped(RemoteAlbumSortMode sortMode) async {
+  Future<void> onMenuTapped(AlbumSortMode sortMode) async {
     final selected = albumSortOption == sortMode;
     // Switch direction
     if (selected) {
@@ -290,7 +288,7 @@ class _SortButtonState extends ConsumerState<_SortButton> {
         padding: const WidgetStatePropertyAll(EdgeInsets.all(4)),
       ),
       consumeOutsideTap: true,
-      menuChildren: RemoteAlbumSortMode.values
+      menuChildren: AlbumSortMode.values
           .map(
             (sortMode) => MenuItemButton(
               leadingIcon: albumSortOption == sortMode
@@ -319,7 +317,7 @@ class _SortButtonState extends ConsumerState<_SortButton> {
                 ),
               ),
               child: Text(
-                sortMode.key.t(context: context),
+                sortMode.label.tr(),
                 style: context.textTheme.titleSmall?.copyWith(
                   fontWeight: FontWeight.w600,
                   color: albumSortOption == sortMode
@@ -348,7 +346,7 @@ class _SortButtonState extends ConsumerState<_SortButton> {
                     : const Icon(Icons.keyboard_arrow_up_rounded),
               ),
               Text(
-                albumSortOption.key.t(context: context),
+                albumSortOption.label.tr(),
                 style: context.textTheme.bodyLarge?.copyWith(
                   fontWeight: FontWeight.w500,
                   color: context.colorScheme.onSurface.withAlpha(225),
@@ -524,7 +522,7 @@ class _QuickSortAndViewMode extends StatelessWidget {
   final VoidCallback onToggleViewMode;
   final MenuController? controller;
   final Future<void> Function(AlbumSort) onSortChanged;
-  final RemoteAlbumSortMode currentSortMode;
+  final AlbumSortMode currentSortMode;
   final bool currentIsReverse;
 
   @override

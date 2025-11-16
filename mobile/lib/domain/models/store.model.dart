@@ -70,7 +70,6 @@ enum StoreKey<T> {
   // Read-only Mode settings
   readonlyModeEnabled<bool>._(138),
 
-  // Album grid/list view settings
   autoPlayVideo<bool>._(139),
   albumGridView<bool>._(140),
 
