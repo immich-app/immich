@@ -48,9 +48,6 @@ test.describe('Timeline', () => {
     utils.initSdk();
     adminUserId = faker.string.uuid();
     testContext.adminId = adminUserId;
-    // await utils.resetDatabase();
-    // admin = await utils.adminSetup({ onboarding: true });
-    // await setUserOnboarding({ onboardingDto: { isOnboarded: true } }, { headers: asBearerAuth(admin.accessToken) });
     timelineRestData = generateTimelineData({ ...createDefaultTimelineConfig(), ownerId: adminUserId });
     for (const timeBucket of timelineRestData.buckets.values()) {
       assets.push(...timeBucket);
