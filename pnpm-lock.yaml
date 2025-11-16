@@ -195,6 +195,9 @@ importers:
       '@eslint/js':
         specifier: ^9.8.0
         version: 9.38.0
+      '@faker-js/faker':
+        specifier: ^10.1.0
+        version: 10.1.0
       '@immich/cli':
         specifier: file:../cli
         version: link:../cli
@@ -225,6 +228,9 @@ importers:
       '@types/supertest':
         specifier: ^6.0.2
         version: 6.0.3
+      dotenv:
+        specifier: ^17.2.3
+        version: 17.2.3
       eslint:
         specifier: ^9.14.0
         version: 9.38.0(jiti@2.6.1)
