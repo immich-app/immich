@@ -19,8 +19,6 @@ class SheetLocationDetails extends ConsumerStatefulWidget {
 }
 
 class _SheetLocationDetailsState extends ConsumerState<SheetLocationDetails> {
-  BaseAsset? asset;
-  ExifInfo? exifInfo;
   MapLibreMapController? _mapController;
 
   String? _getLocationName(ExifInfo? exifInfo) {
@@ -42,14 +40,20 @@ class _SheetLocationDetailsState extends ConsumerState<SheetLocationDetails> {
   }
 
   void _onExifChanged(AsyncValue<ExifInfo?>? previous, AsyncValue<ExifInfo?> current) {
-    asset = ref.read(currentAssetNotifier);
-    setState(() {
-      exifInfo = current.valueOrNull;
-      final hasCoordinates = exifInfo?.hasCoordinates ?? false;
-      if (exifInfo != null && hasCoordinates) {
-        _mapController?.moveCamera(CameraUpdate.newLatLng(LatLng(exifInfo!.latitude!, exifInfo!.longitude!)));
+    final prevExif = previous?.valueOrNull;
+    final currentExif = current.valueOrNull;
+
+    // Update map camera if coordinates changed
+    if (currentExif != null && currentExif.hasCoordinates) {
+      final prevLat = prevExif?.latitude;
+      final prevLon = prevExif?.longitude;
+      final currentLat = currentExif.latitude;
+      final currentLon = currentExif.longitude;
+
+      if (prevLat != currentLat || prevLon != currentLon) {
+        _mapController?.moveCamera(CameraUpdate.newLatLng(LatLng(currentLat!, currentLon!)));
       }
-    });
+    }
   }
 
   @override
@@ -58,25 +62,28 @@ class _SheetLocationDetailsState extends ConsumerState<SheetLocationDetails> {
     ref.listenManual(currentAssetExifProvider, _onExifChanged, fireImmediately: true);
   }
 
+  void editLocation() async {
+    await ref.read(actionProvider.notifier).editLocation(ActionSource.viewer, context);
+  }
+
   @override
   Widget build(BuildContext context) {
+    // Watch the providers to ensure widget rebuilds when data changes
+    final asset = ref.watch(currentAssetNotifier);
+    final exifInfo = ref.watch(currentAssetExifProvider).valueOrNull;
     final hasCoordinates = exifInfo?.hasCoordinates ?? false;
 
-    void editLocation() async {
-      await ref.read(actionProvider.notifier).editLocation(ActionSource.viewer, context);
-    }
-
     // Guard local assets
-    if (asset != null && asset is LocalAsset && asset!.hasRemote) {
+    if (asset != null && asset is LocalAsset && asset.hasRemote) {
       return const SizedBox.shrink();
     }
 
-    final remoteId = asset is LocalAsset ? (asset as LocalAsset).remoteId : (asset as RemoteAsset).id;
+    final remoteId = asset is LocalAsset ? asset.remoteId : (asset as RemoteAsset).id;
     final locationName = _getLocationName(exifInfo);
     final coordinates = "${exifInfo?.latitude?.toStringAsFixed(4)}, ${exifInfo?.longitude?.toStringAsFixed(4)}";
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12),
+      padding: const EdgeInsets.only(bottom: 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -93,7 +100,8 @@ class _SheetLocationDetailsState extends ConsumerState<SheetLocationDetails> {
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                if (hasCoordinates) IconButton(onPressed: editLocation, icon: const Icon(Icons.edit), iconSize: 20),
+                if (hasCoordinates)
+                  IconButton(onPressed: editLocation, icon: const Icon(Icons.edit_location_alt), iconSize: 20),
               ],
             ),
           ),
