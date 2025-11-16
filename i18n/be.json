@@ -398,6 +398,8 @@
   "partner_list_user_photos": "Фота карыстальніка {user}",
   "pause": "Прыпыніць",
   "people": "Людзі",
+  "permanent_deletion_warning": "Папярэджанне аб канчатковым выдаленні",
+  "permanent_deletion_warning_setting_description": "Паказаць папярэджанне пры канчатковым выдаленні рэсурсаў",
   "permission_onboarding_back": "Назад",
   "permission_onboarding_continue_anyway": "Усё адно працягнуць",
   "photos": "Фота",
