@@ -42,6 +42,7 @@ class Permission {
   static const assetPeriodDownload = Permission._(r'asset.download');
   static const assetPeriodUpload = Permission._(r'asset.upload');
   static const assetPeriodReplace = Permission._(r'asset.replace');
+  static const assetPeriodCopy = Permission._(r'asset.copy');
   static const albumPeriodCreate = Permission._(r'album.create');
   static const albumPeriodRead = Permission._(r'album.read');
   static const albumPeriodUpdate = Permission._(r'album.update');
@@ -97,6 +98,10 @@ class Permission {
   static const pinCodePeriodCreate = Permission._(r'pinCode.create');
   static const pinCodePeriodUpdate = Permission._(r'pinCode.update');
   static const pinCodePeriodDelete = Permission._(r'pinCode.delete');
+  static const pluginPeriodCreate = Permission._(r'plugin.create');
+  static const pluginPeriodRead = Permission._(r'plugin.read');
+  static const pluginPeriodUpdate = Permission._(r'plugin.update');
+  static const pluginPeriodDelete = Permission._(r'plugin.delete');
   static const serverPeriodAbout = Permission._(r'server.about');
   static const serverPeriodApkLinks = Permission._(r'server.apkLinks');
   static const serverPeriodStorage = Permission._(r'server.storage');
@@ -146,10 +151,15 @@ class Permission {
   static const userProfileImagePeriodRead = Permission._(r'userProfileImage.read');
   static const userProfileImagePeriodUpdate = Permission._(r'userProfileImage.update');
   static const userProfileImagePeriodDelete = Permission._(r'userProfileImage.delete');
+  static const workflowPeriodCreate = Permission._(r'workflow.create');
+  static const workflowPeriodRead = Permission._(r'workflow.read');
+  static const workflowPeriodUpdate = Permission._(r'workflow.update');
+  static const workflowPeriodDelete = Permission._(r'workflow.delete');
   static const adminUserPeriodCreate = Permission._(r'adminUser.create');
   static const adminUserPeriodRead = Permission._(r'adminUser.read');
   static const adminUserPeriodUpdate = Permission._(r'adminUser.update');
   static const adminUserPeriodDelete = Permission._(r'adminUser.delete');
+  static const adminSessionPeriodRead = Permission._(r'adminSession.read');
   static const adminAuthPeriodUnlinkAll = Permission._(r'adminAuth.unlinkAll');
 
   /// List of all possible values in this [enum][Permission].
@@ -173,6 +183,7 @@ class Permission {
     assetPeriodDownload,
     assetPeriodUpload,
     assetPeriodReplace,
+    assetPeriodCopy,
     albumPeriodCreate,
     albumPeriodRead,
     albumPeriodUpdate,
@@ -228,6 +239,10 @@ class Permission {
     pinCodePeriodCreate,
     pinCodePeriodUpdate,
     pinCodePeriodDelete,
+    pluginPeriodCreate,
+    pluginPeriodRead,
+    pluginPeriodUpdate,
+    pluginPeriodDelete,
     serverPeriodAbout,
     serverPeriodApkLinks,
     serverPeriodStorage,
@@ -277,10 +292,15 @@ class Permission {
     userProfileImagePeriodRead,
     userProfileImagePeriodUpdate,
     userProfileImagePeriodDelete,
+    workflowPeriodCreate,
+    workflowPeriodRead,
+    workflowPeriodUpdate,
+    workflowPeriodDelete,
     adminUserPeriodCreate,
     adminUserPeriodRead,
     adminUserPeriodUpdate,
     adminUserPeriodDelete,
+    adminSessionPeriodRead,
     adminAuthPeriodUnlinkAll,
   ];
 
@@ -339,6 +359,7 @@ class PermissionTypeTransformer {
         case r'asset.download': return Permission.assetPeriodDownload;
         case r'asset.upload': return Permission.assetPeriodUpload;
         case r'asset.replace': return Permission.assetPeriodReplace;
+        case r'asset.copy': return Permission.assetPeriodCopy;
         case r'album.create': return Permission.albumPeriodCreate;
         case r'album.read': return Permission.albumPeriodRead;
         case r'album.update': return Permission.albumPeriodUpdate;
@@ -394,6 +415,10 @@ class PermissionTypeTransformer {
         case r'pinCode.create': return Permission.pinCodePeriodCreate;
         case r'pinCode.update': return Permission.pinCodePeriodUpdate;
         case r'pinCode.delete': return Permission.pinCodePeriodDelete;
+        case r'plugin.create': return Permission.pluginPeriodCreate;
+        case r'plugin.read': return Permission.pluginPeriodRead;
+        case r'plugin.update': return Permission.pluginPeriodUpdate;
+        case r'plugin.delete': return Permission.pluginPeriodDelete;
         case r'server.about': return Permission.serverPeriodAbout;
         case r'server.apkLinks': return Permission.serverPeriodApkLinks;
         case r'server.storage': return Permission.serverPeriodStorage;
@@ -443,10 +468,15 @@ class PermissionTypeTransformer {
         case r'userProfileImage.read': return Permission.userProfileImagePeriodRead;
         case r'userProfileImage.update': return Permission.userProfileImagePeriodUpdate;
         case r'userProfileImage.delete': return Permission.userProfileImagePeriodDelete;
+        case r'workflow.create': return Permission.workflowPeriodCreate;
+        case r'workflow.read': return Permission.workflowPeriodRead;
+        case r'workflow.update': return Permission.workflowPeriodUpdate;
+        case r'workflow.delete': return Permission.workflowPeriodDelete;
         case r'adminUser.create': return Permission.adminUserPeriodCreate;
         case r'adminUser.read': return Permission.adminUserPeriodRead;
         case r'adminUser.update': return Permission.adminUserPeriodUpdate;
         case r'adminUser.delete': return Permission.adminUserPeriodDelete;
+        case r'adminSession.read': return Permission.adminSessionPeriodRead;
         case r'adminAuth.unlinkAll': return Permission.adminAuthPeriodUnlinkAll;
         default:
           if (!allowNull) {

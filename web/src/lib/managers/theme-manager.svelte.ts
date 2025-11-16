@@ -36,7 +36,7 @@ class ThemeManager {
   isDark = $derived(this.value === Theme.DARK);
 
   constructor() {
-    eventManager.on('app.init', () => this.#onAppInit());
+    eventManager.on('AppInit', () => this.#onAppInit());
   }
 
   setSystem(system: boolean) {
@@ -67,15 +67,11 @@ class ThemeManager {
     const theme: ThemeSetting =
       value === 'system' ? { system: true, value: getDefaultTheme() } : { system: false, value };
 
-    if (theme.value === Theme.LIGHT) {
-      document.documentElement.classList.remove('dark');
-    } else {
-      document.documentElement.classList.add('dark');
-    }
+    document.documentElement.classList.toggle('dark', !(theme.value === Theme.LIGHT));
 
     this.#theme.current = theme;
 
-    eventManager.emit('theme.change', theme);
+    eventManager.emit('ThemeChange', theme);
   }
 }
 

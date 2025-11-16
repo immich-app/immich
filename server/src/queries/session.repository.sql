@@ -23,6 +23,7 @@ select
   "session"."id",
   "session"."updatedAt",
   "session"."pinExpiresAt",
+  "session"."appVersion",
   (
     select
       to_json(obj)
@@ -72,6 +73,12 @@ order by
 delete from "session"
 where
   "id" = $1::uuid
+
+-- SessionRepository.invalidate
+delete from "session"
+where
+  "userId" = $1
+  and "id" != $2
 
 -- SessionRepository.lockAll
 update "session"

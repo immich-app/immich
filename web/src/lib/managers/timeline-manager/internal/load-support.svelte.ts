@@ -4,7 +4,6 @@ import { getTimeBucket } from '@immich/sdk';
 import type { MonthGroup } from '../month-group.svelte';
 import type { TimelineManager } from '../timeline-manager.svelte';
 import type { TimelineManagerOptions } from '../types';
-import { layoutMonthGroup } from './layout-support.svelte';
 
 export async function loadFromTimeBuckets(
   timelineManager: TimelineManager,
@@ -55,6 +54,4 @@ export async function loadFromTimeBuckets(
       )}`,
     );
   }
-
-  layoutMonthGroup(timelineManager, monthGroup);
 }

@@ -75,10 +75,24 @@ _INSIGHTFACE_MODELS = {
 }
 
 
+_PADDLE_MODELS = {
+    "PP-OCRv5_server",
+    "PP-OCRv5_mobile",
+    "CH__PP-OCRv5_server",
+    "CH__PP-OCRv5_mobile",
+    "EL__PP-OCRv5_mobile",
+    "EN__PP-OCRv5_mobile",
+    "ESLAV__PP-OCRv5_mobile",
+    "KOREAN__PP-OCRv5_mobile",
+    "LATIN__PP-OCRv5_mobile",
+    "TH__PP-OCRv5_mobile",
+}
+
 SUPPORTED_PROVIDERS = [
     "CUDAExecutionProvider",
     "ROCMExecutionProvider",
     "OpenVINOExecutionProvider",
+    "CoreMLExecutionProvider",
     "CPUExecutionProvider",
 ]
 
@@ -157,5 +171,8 @@ def get_model_source(model_name: str) -> ModelSource | None:
 
     if cleaned_name in _OPENCLIP_MODELS:
         return ModelSource.OPENCLIP
+
+    if cleaned_name in _PADDLE_MODELS:
+        return ModelSource.PADDLE
 
     return None

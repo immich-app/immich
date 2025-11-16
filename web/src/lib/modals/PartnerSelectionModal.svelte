@@ -36,7 +36,7 @@
 
 <Modal title={$t('add_partner')} {onClose} size="small">
   <ModalBody>
-    <div class="immich-scrollbar max-h-[300px] overflow-y-auto">
+    <div class="immich-scrollbar max-h-75 overflow-y-auto">
       {#if availableUsers.length > 0}
         {#each availableUsers as user (user.id)}
           <button

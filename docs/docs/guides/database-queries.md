@@ -7,7 +7,7 @@ Keep in mind that mucking around in the database might set the Moon on fire. Avo
 :::tip
 Run `docker exec -it immich_postgres psql --dbname=<DB_DATABASE_NAME> --username=<DB_USERNAME>` to connect to the database via the container directly.
 
-(Replace `<DB_DATABASE_NAME>` and `<DB_USERNAME>` with the values from your [`.env` file](/docs/install/environment-variables#database)).
+(Replace `<DB_DATABASE_NAME>` and `<DB_USERNAME>` with the values from your [`.env` file](/install/environment-variables#database)).
 :::
 
 ## Assets
@@ -106,14 +106,14 @@ SELECT "user"."email", "asset"."type", COUNT(*) FROM "asset"
 
 ```sql title="Count by tag"
 SELECT "t"."value" AS "tag_name", COUNT(*) AS "number_assets" FROM "tag" "t"
-  JOIN "tag_asset" "ta" ON "t"."id" = "ta"."tagsId" JOIN "asset" "a" ON "ta"."assetsId" = "a"."id"
+  JOIN "tag_asset" "ta" ON "t"."id" = "ta"."tagId" JOIN "asset" "a" ON "ta"."assetId" = "a"."id"
   WHERE "a"."visibility" != 'hidden'
   GROUP BY "t"."value" ORDER BY "number_assets" DESC;
 ```
 
 ```sql title="Count by tag (per user)"
 SELECT "t"."value" AS "tag_name", "u"."email" as "user_email", COUNT(*) AS "number_assets" FROM "tag" "t"
-  JOIN "tag_asset" "ta" ON "t"."id" = "ta"."tagsId" JOIN "asset" "a" ON "ta"."assetsId" = "a"."id" JOIN "user" "u" ON "a"."ownerId" = "u"."id"
+  JOIN "tag_asset" "ta" ON "t"."id" = "ta"."tagId" JOIN "asset" "a" ON "ta"."assetId" = "a"."id" JOIN "user" "u" ON "a"."ownerId" = "u"."id"
   WHERE "a"."visibility" != 'hidden'
   GROUP BY "t"."value", "u"."email" ORDER BY "number_assets" DESC;
 ```
@@ -142,7 +142,7 @@ DELETE FROM "person" WHERE "name" = 'PersonNameHere';
 SELECT "key", "value" FROM "system_metadata" WHERE "key" = 'system-config';
 ```
 
-(Only used when not using the [config file](/docs/install/config-file))
+(Only used when not using the [config file](/install/config-file))
 
 ### File properties
 

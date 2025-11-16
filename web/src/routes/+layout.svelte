@@ -6,11 +6,10 @@
   import ErrorLayout from '$lib/components/layouts/ErrorLayout.svelte';
   import AppleHeader from '$lib/components/shared-components/apple-header.svelte';
   import NavigationLoadingBar from '$lib/components/shared-components/navigation-loading-bar.svelte';
-  import NotificationList from '$lib/components/shared-components/notification/notification-list.svelte';
   import UploadPanel from '$lib/components/shared-components/upload-panel.svelte';
   import { eventManager } from '$lib/managers/event-manager.svelte';
+  import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
   import VersionAnnouncementModal from '$lib/modals/VersionAnnouncementModal.svelte';
-  import { serverConfig } from '$lib/stores/server-config.store';
   import { user } from '$lib/stores/user.store';
   import {
     closeWebsocketConnection,
@@ -18,9 +17,8 @@
     websocketStore,
     type ReleaseEvent,
   } from '$lib/stores/websocket';
-  import { copyToClipboard } from '$lib/utils';
+  import { copyToClipboard, getReleaseType, semverToName } from '$lib/utils';
   import { isAssetViewerRoute } from '$lib/utils/navigation';
-  import type { ServerVersionResponseDto } from '@immich/sdk';
   import { modalManager, setTranslations } from '@immich/ui';
   import { onMount, type Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -38,6 +36,10 @@
       hide_password: $t('hide_password'),
       confirm: $t('confirm'),
       cancel: $t('cancel'),
+      toast_success_title: $t('success'),
+      toast_info_title: $t('info'),
+      toast_warning_title: $t('warning'),
+      toast_danger_title: $t('error'),
     });
   });
 
@@ -55,7 +57,7 @@
     // if the browser theme changes, changes the Immich theme too
   });
 
-  eventManager.emit('app.init');
+  eventManager.emit('AppInit');
 
   beforeNavigate(({ from, to }) => {
     if (isAssetViewerRoute(from) && isAssetViewerRoute(to)) {
@@ -75,7 +77,6 @@
     }
   });
 
-  const semverToName = ({ major, minor, patch }: ServerVersionResponseDto) => `v${major}.${minor}.${patch}`;
   const { release } = websocketStore;
 
   const handleRelease = async (release?: ReleaseEvent) => {
@@ -85,8 +86,9 @@
 
     const releaseVersion = semverToName(release.releaseVersion);
     const serverVersion = semverToName(release.serverVersion);
+    const type = getReleaseType(release.serverVersion, release.releaseVersion);
 
-    if (localStorage.getItem('appVersion') === releaseVersion) {
+    if (type === 'none' || type === 'patch' || localStorage.getItem('appVersion') === releaseVersion) {
       return;
     }
 
@@ -118,7 +120,10 @@
     {#if page.data.meta.imageUrl}
       <meta
         property="og:image"
-        content={new URL(page.data.meta.imageUrl, $serverConfig.externalDomain || globalThis.location.origin).href}
+        content={new URL(
+          page.data.meta.imageUrl,
+          serverConfigManager.value.externalDomain || globalThis.location.origin,
+        ).href}
       />
     {/if}
 
@@ -129,7 +134,10 @@
     {#if page.data.meta.imageUrl}
       <meta
         name="twitter:image"
-        content={new URL(page.data.meta.imageUrl, $serverConfig.externalDomain || globalThis.location.origin).href}
+        content={new URL(
+          page.data.meta.imageUrl,
+          serverConfigManager.value.externalDomain || globalThis.location.origin,
+        ).href}
       />
     {/if}
   {/if}
@@ -154,4 +162,3 @@
 
 <DownloadPanel />
 <UploadPanel />
-<NotificationList />

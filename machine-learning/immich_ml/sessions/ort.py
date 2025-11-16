@@ -14,6 +14,8 @@ from ..config import log, settings
 
 
 class OrtSession:
+    session: ort.InferenceSession
+
     def __init__(
         self,
         model_path: Path | str,
@@ -91,10 +93,20 @@ class OrtSession:
                 case "CUDAExecutionProvider" | "ROCMExecutionProvider":
                     options = {"arena_extend_strategy": "kSameAsRequested", "device_id": settings.device_id}
                 case "OpenVINOExecutionProvider":
+                    openvino_dir = self.model_path.parent / "openvino"
+                    device = f"GPU.{settings.device_id}"
                     options = {
-                        "device_type": f"GPU.{settings.device_id}",
-                        "precision": "FP32",
-                        "cache_dir": (self.model_path.parent / "openvino").as_posix(),
+                        "device_type": device,
+                        "precision": settings.openvino_precision.value,
+                        "cache_dir": openvino_dir.as_posix(),
+                    }
+                case "CoreMLExecutionProvider":
+                    options = {
+                        "ModelFormat": "MLProgram",
+                        "MLComputeUnits": "ALL",
+                        "SpecializationStrategy": "FastPrediction",
+                        "AllowLowPrecisionAccumulationOnGPU": "1",
+                        "ModelCacheDirectory": (self.model_path.parent / "coreml").as_posix(),
                     }
                 case _:
                     options = {}
@@ -115,7 +127,7 @@ class OrtSession:
     @property
     def _sess_options_default(self) -> ort.SessionOptions:
         sess_options = ort.SessionOptions()
-        sess_options.enable_cpu_mem_arena = False
+        sess_options.enable_cpu_mem_arena = settings.model_arena
 
         # avoid thread contention between models
         if settings.model_inter_op_threads > 0:

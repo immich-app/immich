@@ -175,10 +175,12 @@ export class SharedLinkService extends BaseService {
       throw new BadRequestException('Invalid shared link type');
     }
 
+    const removedAssetIds = await this.sharedLinkAssetRepository.remove(id, dto.assetIds);
+
     const results: AssetIdsResponseDto[] = [];
     for (const assetId of dto.assetIds) {
-      const hasAsset = sharedLink.assets.find((asset) => asset.id === assetId);
-      if (!hasAsset) {
+      const wasRemoved = removedAssetIds.find((id) => id === assetId);
+      if (!wasRemoved) {
         results.push({ assetId, success: false, error: AssetIdErrorReason.NOT_FOUND });
         continue;
       }

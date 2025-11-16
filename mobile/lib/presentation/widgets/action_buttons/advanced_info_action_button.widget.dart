@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
@@ -15,7 +17,7 @@ class AdvancedInfoActionButton extends ConsumerWidget {
       return;
     }
 
-    ref.read(actionProvider.notifier).troubleshoot(source, context);
+    unawaited(ref.read(actionProvider.notifier).troubleshoot(source, context));
   }
 
   @override

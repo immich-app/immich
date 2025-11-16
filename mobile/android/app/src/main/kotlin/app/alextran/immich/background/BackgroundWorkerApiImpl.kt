@@ -20,6 +20,10 @@ class BackgroundWorkerApiImpl(context: Context) : BackgroundWorkerFgHostApi {
     enqueueMediaObserver(ctx)
   }
 
+  override fun saveNotificationMessage(title: String, body: String) {
+    BackgroundWorkerPreferences(ctx).updateNotificationConfig(title, body)
+  }
+
   override fun configure(settings: BackgroundWorkerSettings) {
     BackgroundWorkerPreferences(ctx).updateSettings(settings)
     enqueueMediaObserver(ctx)
@@ -47,7 +51,7 @@ class BackgroundWorkerApiImpl(context: Context) : BackgroundWorkerFgHostApi {
         addContentUriTrigger(MediaStore.Video.Media.INTERNAL_CONTENT_URI, true)
         addContentUriTrigger(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, true)
         setTriggerContentUpdateDelay(settings.minimumDelaySeconds, TimeUnit.SECONDS)
-        setTriggerContentMaxDelay(settings.minimumDelaySeconds * 10, TimeUnit.MINUTES)
+        setTriggerContentMaxDelay(settings.minimumDelaySeconds * 10, TimeUnit.SECONDS)
         setRequiresCharging(settings.requiresCharging)
       }.build()
 

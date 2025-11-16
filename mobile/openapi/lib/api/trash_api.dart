@@ -16,7 +16,9 @@ class TrashApi {
 
   final ApiClient apiClient;
 
-  /// This endpoint requires the `asset.delete` permission.
+  /// Empty trash
+  ///
+  /// Permanently delete all items in the trash.
   ///
   /// Note: This method returns the HTTP [Response].
   Future<Response> emptyTrashWithHttpInfo() async {
@@ -44,7 +46,9 @@ class TrashApi {
     );
   }
 
-  /// This endpoint requires the `asset.delete` permission.
+  /// Empty trash
+  ///
+  /// Permanently delete all items in the trash.
   Future<TrashResponseDto?> emptyTrash() async {
     final response = await emptyTrashWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -60,7 +64,9 @@ class TrashApi {
     return null;
   }
 
-  /// This endpoint requires the `asset.delete` permission.
+  /// Restore assets
+  ///
+  /// Restore specific assets from the trash.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -92,7 +98,9 @@ class TrashApi {
     );
   }
 
-  /// This endpoint requires the `asset.delete` permission.
+  /// Restore assets
+  ///
+  /// Restore specific assets from the trash.
   ///
   /// Parameters:
   ///
@@ -112,7 +120,9 @@ class TrashApi {
     return null;
   }
 
-  /// This endpoint requires the `asset.delete` permission.
+  /// Restore trash
+  ///
+  /// Restore all items in the trash.
   ///
   /// Note: This method returns the HTTP [Response].
   Future<Response> restoreTrashWithHttpInfo() async {
@@ -140,7 +150,9 @@ class TrashApi {
     );
   }
 
-  /// This endpoint requires the `asset.delete` permission.
+  /// Restore trash
+  ///
+  /// Restore all items in the trash.
   Future<TrashResponseDto?> restoreTrash() async {
     final response = await restoreTrashWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {

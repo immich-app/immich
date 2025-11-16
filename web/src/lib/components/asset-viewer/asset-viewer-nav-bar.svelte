@@ -4,6 +4,7 @@
   import CastButton from '$lib/cast/cast-button.svelte';
   import type { OnAction, PreAction } from '$lib/components/asset-viewer/actions/action';
   import AddToAlbumAction from '$lib/components/asset-viewer/actions/add-to-album-action.svelte';
+  import AddToStackAction from '$lib/components/asset-viewer/actions/add-to-stack-action.svelte';
   import ArchiveAction from '$lib/components/asset-viewer/actions/archive-action.svelte';
   import CloseAction from '$lib/components/asset-viewer/actions/close-action.svelte';
   import DeleteAction from '$lib/components/asset-viewer/actions/delete-action.svelte';
@@ -23,8 +24,8 @@
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import { AppRoute } from '$lib/constants';
+  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { photoViewerImgElement } from '$lib/stores/assets-store.svelte';
-  import { featureFlags } from '$lib/stores/server-config.store';
   import { user } from '$lib/stores/user.store';
   import { photoZoomState } from '$lib/stores/zoom-image.store';
   import { getAssetJobName, getSharedLink } from '$lib/utils';
@@ -55,6 +56,7 @@
     mdiMagnifyPlusOutline,
     mdiPresentationPlay,
     mdiUpload,
+    mdiVideoOutline,
   } from '@mdi/js';
   import type { Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -77,6 +79,8 @@
     // export let showEditorHandler: () => void;
     onClose: () => void;
     motionPhoto?: Snippet;
+    playOriginalVideo: boolean;
+    setPlayOriginalVideo: (value: boolean) => void;
   }
 
   let {
@@ -96,13 +100,15 @@
     onShowDetail,
     onClose,
     motionPhoto,
+    playOriginalVideo = false,
+    setPlayOriginalVideo,
   }: Props = $props();
 
   const sharedLink = getSharedLink();
   let isOwner = $derived($user && asset.ownerId === $user?.id);
   let showDownloadButton = $derived(sharedLink ? sharedLink.allowDownload : !asset.isOffline);
   let isLocked = $derived(asset.visibility === AssetVisibility.Locked);
-  let smartSearchEnabled = $derived($featureFlags.loaded && $featureFlags.smartSearch);
+  let smartSearchEnabled = $derived(featureFlagsManager.value.smartSearch);
 
   // $: showEditorButton =
   //   isOwner &&
@@ -196,6 +202,7 @@
         {/if}
 
         {#if isOwner}
+          <AddToStackAction {asset} {stack} {onAction} />
           {#if stack}
             <UnstackAction {stack} {onAction} />
             <KeepThisDeleteOthersAction {stack} {asset} {onAction} />
@@ -243,6 +250,15 @@
           {#if !asset.isTrashed}
             <SetVisibilityAction asset={toTimelineAsset(asset)} {onAction} {preAction} />
           {/if}
+
+          {#if asset.type === AssetTypeEnum.Video}
+            <MenuOption
+              icon={mdiVideoOutline}
+              onClick={() => setPlayOriginalVideo(!playOriginalVideo)}
+              text={playOriginalVideo ? $t('play_transcoded_video') : $t('play_original_video')}
+            />
+          {/if}
+
           <hr />
           <MenuOption
             icon={mdiHeadSyncOutline}

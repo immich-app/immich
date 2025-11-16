@@ -10,6 +10,7 @@ import 'package:immich_mobile/infrastructure/entities/exif.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/trashed_local_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/memory.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/memory_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/partner.entity.dart';
@@ -62,6 +63,7 @@ class IsarDatabaseRepository implements IDatabaseRepository {
     PersonEntity,
     AssetFaceEntity,
     StoreEntity,
+    TrashedLocalAssetEntity,
   ],
   include: {'package:immich_mobile/infrastructure/entities/merged_asset.drift'},
 )
@@ -93,7 +95,7 @@ class Drift extends $Drift implements IDatabaseRepository {
   }
 
   @override
-  int get schemaVersion => 11;
+  int get schemaVersion => 13;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -158,6 +160,30 @@ class Drift extends $Drift implements IDatabaseRepository {
           },
           from10To11: (m, v11) async {
             await m.addColumn(v11.localAlbumAssetEntity, v11.localAlbumAssetEntity.marker_);
+          },
+          from11To12: (m, v12) async {
+            final localToUTCMapping = {
+              v12.localAssetEntity: [v12.localAssetEntity.createdAt, v12.localAssetEntity.updatedAt],
+              v12.localAlbumEntity: [v12.localAlbumEntity.updatedAt],
+            };
+
+            for (final entry in localToUTCMapping.entries) {
+              final table = entry.key;
+              await m.alterTable(
+                TableMigration(
+                  table,
+                  columnTransformer: {
+                    for (final column in entry.value)
+                      column: column.modify(const DateTimeModifier.utc()).strftime('%Y-%m-%dT%H:%M:%fZ'),
+                  },
+                ),
+              );
+            }
+          },
+          from12To13: (m, v13) async {
+            await m.create(v13.trashedLocalAssetEntity);
+            await m.createIndex(v13.idxTrashedLocalAssetChecksum);
+            await m.createIndex(v13.idxTrashedLocalAssetAlbum);
           },
         ),
       );

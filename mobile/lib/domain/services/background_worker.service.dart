@@ -11,8 +11,6 @@ import 'package:immich_mobile/domain/services/log.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/network_capability_extensions.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
-import 'package:immich_mobile/generated/intl_keys.g.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/logger_db.repository.dart';
 import 'package:immich_mobile/platform/background_worker_api.g.dart';
@@ -28,14 +26,13 @@ import 'package:immich_mobile/repositories/file_media.repository.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/services/auth.service.dart';
 import 'package:immich_mobile/services/localization.service.dart';
-import 'package:immich_mobile/services/server_info.service.dart';
 import 'package:immich_mobile/services/upload.service.dart';
 import 'package:immich_mobile/utils/bootstrap.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:immich_mobile/utils/http_ssl_options.dart';
+import 'package:immich_mobile/wm_executor.dart';
 import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
-import 'package:worker_manager/worker_manager.dart';
 
 class BackgroundWorkerFgService {
   final BackgroundWorkerFgHostApi _foregroundHostApi;
@@ -44,6 +41,9 @@ class BackgroundWorkerFgService {
 
   // TODO: Move this call to native side once old timeline is removed
   Future<void> enable() => _foregroundHostApi.enable();
+
+  Future<void> saveNotificationMessage(String title, String body) =>
+      _foregroundHostApi.saveNotificationMessage(title, body);
 
   Future<void> configure({int? minimumDelaySeconds, bool? requireCharging}) => _foregroundHostApi.configure(
     BackgroundWorkerSettings(
@@ -94,7 +94,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
       await Future.wait(
         [
           loadTranslations(),
-          workerManager.init(dynamicSpawning: true),
+          workerManagerPatch.init(dynamicSpawning: true),
           _ref?.read(authServiceProvider).setOpenApiServiceEndpoint(),
           // Initialize the file downloader
           FileDownloader().configure(
@@ -113,47 +113,43 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
 
       configureFileDownloaderNotifications();
 
-      if (Platform.isAndroid) {
-        await _backgroundHostApi.showNotification(
-          IntlKeys.uploading_media.t(),
-          IntlKeys.backup_background_service_in_progress_notification.t(),
-        );
-      }
-
       // Notify the host that the background worker service has been initialized and is ready to use
-      _backgroundHostApi.onInitialized();
+      unawaited(_backgroundHostApi.onInitialized());
     } catch (error, stack) {
       _logger.severe("Failed to initialize background worker", error, stack);
-      _backgroundHostApi.close();
+      unawaited(_backgroundHostApi.close());
     }
   }
 
   @override
   Future<void> onAndroidUpload() async {
+    _logger.info('Android background processing started');
+    final sw = Stopwatch()..start();
     try {
-      _logger.info('Android background processing started');
-      final sw = Stopwatch()..start();
-
-      await _syncAssets(hashTimeout: Duration(minutes: _isBackupEnabled ? 3 : 6));
+      if (!await _syncAssets(hashTimeout: Duration(minutes: _isBackupEnabled ? 3 : 6))) {
+        _logger.warning("Remote sync did not complete successfully, skipping backup");
+        return;
+      }
       await _handleBackup();
-
-      sw.stop();
-      _logger.info("Android background processing completed in ${sw.elapsed.inSeconds}s");
     } catch (error, stack) {
       _logger.severe("Failed to complete Android background processing", error, stack);
     } finally {
+      sw.stop();
+      _logger.info("Android background processing completed in ${sw.elapsed.inSeconds}s");
       await _cleanup();
     }
   }
 
   @override
   Future<void> onIosUpload(bool isRefresh, int? maxSeconds) async {
+    _logger.info('iOS background upload started with maxSeconds: ${maxSeconds}s');
+    final sw = Stopwatch()..start();
     try {
-      _logger.info('iOS background upload started with maxSeconds: ${maxSeconds}s');
-      final sw = Stopwatch()..start();
-
       final timeout = isRefresh ? const Duration(seconds: 5) : Duration(minutes: _isBackupEnabled ? 3 : 6);
-      await _syncAssets(hashTimeout: timeout);
+      if (!await _syncAssets(hashTimeout: timeout)) {
+        _logger.warning("Remote sync did not complete successfully, skipping backup");
+        return;
+      }
 
       final backupFuture = _handleBackup();
       if (maxSeconds != null) {
@@ -161,12 +157,11 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
       } else {
         await backupFuture;
       }
-
-      sw.stop();
-      _logger.info("iOS background upload completed in ${sw.elapsed.inSeconds}s");
     } catch (error, stack) {
       _logger.severe("Failed to complete iOS background upload", error, stack);
     } finally {
+      sw.stop();
+      _logger.info("iOS background upload completed in ${sw.elapsed.inSeconds}s");
       await _cleanup();
     }
   }
@@ -197,7 +192,8 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
       _cancellationToken.cancel();
       _logger.info("Cleaning up background worker");
       final cleanupFutures = [
-        workerManager.dispose().catchError((_) async {
+        nativeSyncApi?.cancelHashing(),
+        workerManagerPatch.dispose().catchError((_) async {
           // Discard any errors on the dispose call
           return;
         }),
@@ -206,7 +202,6 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
         _drift.close(),
         _driftLogger.close(),
         backgroundSyncManager?.cancel(),
-        nativeSyncApi?.cancelHashing(),
       ];
 
       if (_isar.isOpen) {
@@ -227,33 +222,24 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
         }
 
         if (!_isBackupEnabled) {
-          _logger.info("[_handleBackup 1] Backup is disabled. Skipping backup routine");
+          _logger.info("Backup is disabled. Skipping backup routine");
           return;
         }
-
-        _logger.info("[_handleBackup 2] Enqueuing assets for backup from the background service");
 
         final currentUser = _ref?.read(currentUserProvider);
         if (currentUser == null) {
-          _logger.warning("[_handleBackup 3] No current user found. Skipping backup from background");
+          _logger.warning("No current user found. Skipping backup from background");
           return;
         }
 
-        _logger.info("[_handleBackup 4] Resume backup from background");
         if (Platform.isIOS) {
           return _ref?.read(driftBackupProvider.notifier).handleBackupResume(currentUser.id);
-        }
-
-        final canPing = await _ref?.read(serverInfoServiceProvider).ping() ?? false;
-        if (!canPing) {
-          _logger.warning("[_handleBackup 5] Server is not reachable. Skipping backup from background");
-          return;
         }
 
         final networkCapabilities = await _ref?.read(connectivityApiProvider).getCapabilities() ?? [];
         return _ref
             ?.read(uploadServiceProvider)
-            .startBackupWithHttpClient(currentUser.id, networkCapabilities.hasWifi, _cancellationToken);
+            .startBackupWithHttpClient(currentUser.id, networkCapabilities.isUnmetered, _cancellationToken);
       },
       (error, stack) {
         dPrint(() => "Error in backup zone $error, $stack");
@@ -261,15 +247,15 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
     );
   }
 
-  Future<void> _syncAssets({Duration? hashTimeout}) async {
+  Future<bool> _syncAssets({Duration? hashTimeout}) async {
     await _ref?.read(backgroundSyncProvider).syncLocal();
     if (_isCleanedUp) {
-      return;
+      return false;
     }
 
-    await _ref?.read(backgroundSyncProvider).syncRemote();
+    final isSuccess = await _ref?.read(backgroundSyncProvider).syncRemote() ?? false;
     if (_isCleanedUp) {
-      return;
+      return isSuccess;
     }
 
     var hashFuture = _ref?.read(backgroundSyncProvider).hashAssets();
@@ -283,6 +269,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
     }
 
     await hashFuture;
+    return isSuccess;
   }
 }
 

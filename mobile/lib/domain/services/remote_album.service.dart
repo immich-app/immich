@@ -120,6 +120,10 @@ class RemoteAlbumService {
     return _repository.getSharedUsers(albumId);
   }
 
+  Future<AlbumUserRole?> getUserRole(String albumId, String userId) {
+    return _repository.getUserRole(albumId, userId);
+  }
+
   Future<List<RemoteAsset>> getAssets(String albumId) {
     return _repository.getAssets(albumId);
   }
@@ -158,6 +162,10 @@ class RemoteAlbumService {
 
   Future<int> getCount() {
     return _repository.getCount();
+  }
+
+  Future<List<RemoteAlbum>> getAlbumsContainingAsset(String assetId) {
+    return _repository.getAlbumsContainingAsset(assetId);
   }
 
   Future<List<RemoteAlbum>> _sortByNewestAsset(List<RemoteAlbum> albums) async {

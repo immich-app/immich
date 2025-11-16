@@ -72,6 +72,7 @@ enum StoreKey<T> {
 
   // Album grid/list view settings
   albumGridView<bool>._(139),
+  autoPlayVideo<bool>._(140),
 
   // Experimental stuff
   photoManagerCustomFilter<bool>._(1000),

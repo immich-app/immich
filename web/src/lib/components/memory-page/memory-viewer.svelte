@@ -10,10 +10,6 @@
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
   import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
-  import {
-    notificationController,
-    NotificationType,
-  } from '$lib/components/shared-components/notification/notification';
   import AddToAlbum from '$lib/components/timeline/actions/AddToAlbumAction.svelte';
   import ArchiveAction from '$lib/components/timeline/actions/ArchiveAction.svelte';
   import ChangeDate from '$lib/components/timeline/actions/ChangeDateAction.svelte';
@@ -37,7 +33,7 @@
   import { cancelMultiselect } from '$lib/utils/asset-utils';
   import { fromISODateTimeUTC, toTimelineAsset } from '$lib/utils/timeline-util';
   import { AssetMediaSize, getAssetInfo } from '@immich/sdk';
-  import { IconButton } from '@immich/ui';
+  import { IconButton, toastManager } from '@immich/ui';
   import {
     mdiCardsOutline,
     mdiChevronDown,
@@ -106,7 +102,7 @@
       });
     } else {
       progressBarController = new Tween<number>(0, {
-        duration: (from: number, to: number) => (to ? 5000 * (to - from) : 0),
+        duration: (from: number, to: number) => (to ? $preferences.memories.duration * 1000 * (to - from) : 0),
       });
     }
   };
@@ -205,7 +201,7 @@
     }
 
     await memoryStore.deleteMemory(current.memory.id);
-    notificationController.show({ message: $t('removed_memory'), type: NotificationType.Info });
+    toastManager.success($t('removed_memory'));
     init(page);
   };
 
@@ -216,10 +212,7 @@
 
     const newSavedState = !current.memory.isSaved;
     await memoryStore.updateMemorySaved(current.memory.id, newSavedState);
-    notificationController.show({
-      message: newSavedState ? $t('added_to_favorites') : $t('removed_from_favorites'),
-      type: NotificationType.Info,
-    });
+    toastManager.success(newSavedState ? $t('added_to_favorites') : $t('removed_from_favorites'));
     init(page);
   };
 
@@ -379,7 +372,7 @@
       {/snippet}
 
       <div class="flex place-content-center place-items-center gap-2 overflow-hidden">
-        <div class="w-[50px] dark">
+        <div class="w-12.5 dark">
           <IconButton
             shape="round"
             variant="ghost"
@@ -392,8 +385,8 @@
 
         {#each current.memory.assets as asset, index (asset.id)}
           <a class="relative w-full py-2" href={asHref(asset)} aria-label={$t('view')}>
-            <span class="absolute start-0 h-[2px] w-full bg-gray-500"></span>
-            <span class="absolute start-0 h-[2px] bg-white" style:width={`${toProgressPercentage(index)}%`}></span>
+            <span class="absolute start-0 h-0.5 w-full bg-gray-500"></span>
+            <span class="absolute start-0 h-0.5 bg-white" style:width={`${toProgressPercentage(index)}%`}></span>
           </a>
         {/each}
 
@@ -403,16 +396,18 @@
           </p>
         </div>
 
-        <div class="w-[50px] dark">
-          <IconButton
-            shape="round"
-            variant="ghost"
-            color="secondary"
-            aria-label={$videoViewerMuted ? $t('unmute_memories') : $t('mute_memories')}
-            icon={$videoViewerMuted ? mdiVolumeOff : mdiVolumeHigh}
-            onclick={() => ($videoViewerMuted = !$videoViewerMuted)}
-          />
-        </div>
+        {#if currentTimelineAssets.some(({ isVideo }) => isVideo)}
+          <div class="w-12.5 dark">
+            <IconButton
+              shape="round"
+              variant="ghost"
+              color="secondary"
+              aria-label={$videoViewerMuted ? $t('unmute_memories') : $t('mute_memories')}
+              icon={$videoViewerMuted ? mdiVolumeOff : mdiVolumeHigh}
+              onclick={() => ($videoViewerMuted = !$videoViewerMuted)}
+            />
+          </div>
+        {/if}
       </div>
     </ControlAppBar>
 
@@ -507,7 +502,7 @@
                   color="secondary"
                   aria-label={isSaved ? $t('unfavorite') : $t('favorite')}
                   onclick={() => handleSaveMemory()}
-                  class="w-[48px] h-[48px]"
+                  class="w-12 h-12"
                 />
                 <!-- <IconButton
                   icon={mdiShareVariantOutline}

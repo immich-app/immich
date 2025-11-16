@@ -148,17 +148,21 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
     final isAlbumLinkedSyncEnable = _ref.read(appSettingsServiceProvider).getSetting(AppSettingsEnum.syncAlbums);
 
     try {
+      bool syncSuccess = false;
       await Future.wait([
         _safeRun(backgroundManager.syncLocal(), "syncLocal"),
-        _safeRun(backgroundManager.syncRemote(), "syncRemote"),
+        _safeRun(backgroundManager.syncRemote().then((success) => syncSuccess = success), "syncRemote"),
       ]);
-
-      await Future.wait([
-        _safeRun(backgroundManager.hashAssets(), "hashAssets").then((_) {
-          _resumeBackup();
-        }),
-        _resumeBackup(),
-      ]);
+      if (syncSuccess) {
+        await Future.wait([
+          _safeRun(backgroundManager.hashAssets(), "hashAssets").then((_) {
+            _resumeBackup();
+          }),
+          _resumeBackup(),
+        ]);
+      } else {
+        await _safeRun(backgroundManager.hashAssets(), "hashAssets");
+      }
 
       if (isAlbumLinkedSyncEnable) {
         await _safeRun(backgroundManager.syncLinkedAlbum(), "syncLinkedAlbum");
@@ -238,7 +242,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
     }
 
     try {
-      LogService.I.flush();
+      await LogService.I.flush();
     } catch (_) {}
   }
 
@@ -251,7 +255,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
 
     // Flush logs before closing database
     try {
-      LogService.I.flush();
+      await LogService.I.flush();
     } catch (_) {}
 
     // Close Isar database safely

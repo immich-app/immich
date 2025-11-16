@@ -39,6 +39,8 @@ const updatedConfig = Object.freeze<SystemConfig>({
     [QueueName.ThumbnailGeneration]: { concurrency: 3 },
     [QueueName.VideoConversion]: { concurrency: 1 },
     [QueueName.Notification]: { concurrency: 5 },
+    [QueueName.Ocr]: { concurrency: 1 },
+    [QueueName.Workflow]: { concurrency: 5 },
   },
   backup: {
     database: {
@@ -101,6 +103,13 @@ const updatedConfig = Object.freeze<SystemConfig>({
       minScore: 0.7,
       maxDistance: 0.5,
       minFaces: 3,
+    },
+    ocr: {
+      enabled: true,
+      modelName: 'PP-OCRv5_mobile',
+      minDetectionScore: 0.5,
+      minRecognitionScore: 0.8,
+      maxResolution: 736,
     },
   },
   map: {
@@ -197,6 +206,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
       transport: {
         host: '',
         port: 587,
+        secure: false,
         username: '',
         password: '',
         ignoreCert: false,

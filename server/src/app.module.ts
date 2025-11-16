@@ -19,10 +19,11 @@ import { ConfigRepository } from 'src/repositories/config.repository';
 import { EventRepository } from 'src/repositories/event.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { teardownTelemetry, TelemetryRepository } from 'src/repositories/telemetry.repository';
+import { WebsocketRepository } from 'src/repositories/websocket.repository';
 import { services } from 'src/services';
 import { AuthService } from 'src/services/auth.service';
 import { CliService } from 'src/services/cli.service';
-import { JobService } from 'src/services/job.service';
+import { QueueService } from 'src/services/queue.service';
 import { getKyselyConfig } from 'src/utils/database';
 
 const common = [...repositories, ...services, GlobalExceptionFilter];
@@ -51,10 +52,11 @@ class BaseModule implements OnModuleInit, OnModuleDestroy {
   constructor(
     @Inject(IWorker) private worker: ImmichWorker,
     logger: LoggingRepository,
-    private eventRepository: EventRepository,
-    private jobService: JobService,
-    private telemetryRepository: TelemetryRepository,
     private authService: AuthService,
+    private eventRepository: EventRepository,
+    private queueService: QueueService,
+    private telemetryRepository: TelemetryRepository,
+    private websocketRepository: WebsocketRepository,
   ) {
     logger.setAppName(this.worker);
   }
@@ -62,9 +64,9 @@ class BaseModule implements OnModuleInit, OnModuleDestroy {
   async onModuleInit() {
     this.telemetryRepository.setup({ repositories });
 
-    this.jobService.setServices(services);
+    this.queueService.setServices(services);
 
-    this.eventRepository.setAuthFn(async (client) =>
+    this.websocketRepository.setAuthFn(async (client) =>
       this.authService.authenticate({
         headers: client.request.headers,
         queryParams: {},
