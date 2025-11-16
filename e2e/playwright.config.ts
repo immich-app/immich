@@ -4,8 +4,8 @@ import { resolve } from 'node:path';
 
 dotenv.config({ path: resolve(import.meta.dirname, '.env') });
 
-export const playwrightHost = process.env.PLAYWRIGHT_HOST ?? 'localhost';
-export const playwrightDbHost = process.env.PLAYWRIGHT_DB_HOST ?? 'localhost';
+export const playwrightHost = process.env.PLAYWRIGHT_HOST ?? '127.0.0.1';
+export const playwrightDbHost = process.env.PLAYWRIGHT_DB_HOST ?? '127.0.0.1';
 export const playwriteBaseUrl = process.env.PLAYWRIGHT_BASE_URL ?? `http://${playwrightHost}:2285`;
 export const playwriteSlowMo = parseInt(process.env.PLAYWRIGHT_SLOW_MO ?? '0');
 export const playwrightDisableWebserver = process.env.PLAYWRIGHT_DISABLE_WEBSERVER;
@@ -17,12 +17,11 @@ const config: PlaywrightTestConfig = {
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: 1,
   reporter: 'html',
   use: {
     baseURL: playwriteBaseUrl,
     trace: 'on-first-retry',
-
+    screenshot: 'only-on-failure',
     launchOptions: {
       slowMo: playwriteSlowMo,
     },
@@ -34,6 +33,15 @@ const config: PlaywrightTestConfig = {
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
+      testMatch: /.*\.e2e-spec\.ts/,
+      workers: 1,
+    },
+    {
+      name: 'parallel tests',
+      use: { ...devices['Desktop Chrome'] },
+      testMatch: /.*\.parallel-e2e-spec\.ts/,
+      fullyParallel: true,
+      workers: process.env.CI ? 4 : undefined,
     },
 
     // {

@@ -49,13 +49,17 @@ export const poll = async <T>(
     } catch {
       // ignore
     }
-    if (page.isClosed()) {
-      return result;
+    if (signal.aborted) {
+      return;
     }
-    await page.waitForTimeout(50);
-  }
-  if (signal.aborted) {
-    return;
+    if (page.isClosed()) {
+      return;
+    }
+    try {
+      await page.waitForTimeout(50);
+    } catch {
+      return;
+    }
   }
   if (!result) {
     // rerun to trigger error if any
@@ -160,8 +164,8 @@ export const timelineUtils = {
     return page.locator('#asset-grid');
   },
   async waitForTimelineLoad(page: Page) {
-    await timelineUtils.locator(page).waitFor({ state: 'visible' });
-    await thumbnailUtils.locator(page).count();
+    await expect(timelineUtils.locator(page)).toBeInViewport();
+    await expect.poll(() => thumbnailUtils.locator(page).count()).toBeGreaterThan(0);
   },
   async getScrollTop(page: Page) {
     const queryTop = () =>
@@ -213,8 +217,8 @@ export const pageUtils = {
     await timelineUtils.waitForTimelineLoad(page);
   },
   async goToAsset(page: Page, assetDate: string) {
-    await page.locator('html').hover();
-    const stringDate = DateTime.fromISO(assetDate).toFormat('MM/dd/yyyy,hh:mm:ss.SSSa');
+    await timelineUtils.locator(page).hover();
+    const stringDate = DateTime.fromISO(assetDate).toFormat('MMddyyyy,hh:mm:ss.SSSa');
     await page.keyboard.press('g');
     await page.locator('#datetime').pressSequentially(stringDate);
     await page.getByText('Confirm').click();
@@ -222,5 +226,9 @@ export const pageUtils = {
   async selectDay(page: Page, day: string) {
     await page.getByTitle(day).hover();
     await page.locator('[data-group] .w-8').click();
+  },
+  async pauseTestDebug() {
+    console.log('NOTE: pausing test indefinately for debug');
+    await new Promise(() => void 0);
   },
 };

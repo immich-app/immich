@@ -1,4 +1,4 @@
-import { LoginResponseDto, setUserOnboarding } from '@immich/sdk';
+import { faker } from '@faker-js/faker';
 import { expect, test } from '@playwright/test';
 import { DateTime } from 'luxon';
 import {
@@ -13,8 +13,9 @@ import {
   TimelineAssetConfig,
   TimelineData,
 } from 'src/generators/timeline';
-import { asBearerAuth, utils } from 'src/utils';
-import { pageRoutePromise, setupRoutes, TimelineTestContext } from 'src/web/specs/timeline-mock-network';
+import { setupBaseMockApiRoutes } from 'src/mock-network/base-network';
+import { pageRoutePromise, setupTimelineMockApiRoutes, TimelineTestContext } from 'src/mock-network/timeline-network';
+import { utils } from 'src/utils';
 import {
   assetViewerUtils,
   cancelAllPollers,
@@ -23,10 +24,11 @@ import {
   poll,
   thumbnailUtils,
   timelineUtils,
-} from 'src/web/specs/timeline-utils.spec';
+} from 'src/web/specs/timeline/utils';
 
+test.describe.configure({ mode: 'parallel' });
 test.describe('Timeline', () => {
-  let admin: LoginResponseDto;
+  let adminUserId: string;
   let timelineRestData: TimelineData;
   const assets: TimelineAssetConfig[] = [];
   const yearMonths: string[] = [];
@@ -44,10 +46,12 @@ test.describe('Timeline', () => {
       'This test requires env var: PW_EXPERIMENTAL_SERVICE_WORKER_NETWORK_EVENTS=1',
     );
     utils.initSdk();
-    await utils.resetDatabase();
-    admin = await utils.adminSetup({ onboarding: true });
-    await setUserOnboarding({ onboardingDto: { isOnboarded: true } }, { headers: asBearerAuth(admin.accessToken) });
-    timelineRestData = generateTimelineData({ ...createDefaultTimelineConfig(), ownerId: admin.userId });
+    adminUserId = faker.string.uuid();
+    testContext.adminId = adminUserId;
+    // await utils.resetDatabase();
+    // admin = await utils.adminSetup({ onboarding: true });
+    // await setUserOnboarding({ onboardingDto: { isOnboarded: true } }, { headers: asBearerAuth(admin.accessToken) });
+    timelineRestData = generateTimelineData({ ...createDefaultTimelineConfig(), ownerId: adminUserId });
     for (const timeBucket of timelineRestData.buckets.values()) {
       assets.push(...timeBucket);
     }
@@ -55,12 +59,11 @@ test.describe('Timeline', () => {
       const [year, month] = yearMonth.split('-');
       yearMonths.push(`${year}-${Number(month)}`);
     }
-    testContext.adminId = admin.userId;
   });
 
   test.beforeEach(async ({ context }) => {
-    await utils.setAuthCookies(context, admin.accessToken);
-    await setupRoutes(context, timelineRestData, changes, testContext);
+    await setupBaseMockApiRoutes(context, adminUserId);
+    await setupTimelineMockApiRoutes(context, timelineRestData, changes, testContext);
   });
 
   test.afterEach(() => {
@@ -84,16 +87,15 @@ test.describe('Timeline', () => {
       await thumbnailUtils.expectTimelineHasOnScreenAssets(page);
       await thumbnailUtils.expectInViewport(page, lastAsset.id);
     });
-    test('Deep link to 5 random assets', async ({ page }) => {
-      test.slow();
-      const rng = new SeededRandom(529);
-      for (let i = 0; i < 10; i++) {
+    const rng = new SeededRandom(529);
+    for (let i = 0; i < 10; i++) {
+      test('Deep link to random asset ' + i, async ({ page }) => {
         const asset = selectRandom(assets, rng);
         await pageUtils.deepLinkPhotosPage(page, asset.id);
         await thumbnailUtils.expectTimelineHasOnScreenAssets(page);
         await thumbnailUtils.expectInViewport(page, asset.id);
-      }
-    });
+      });
+    }
     test('Open /photos, open asset-viewer, browser back', async ({ page }) => {
       const rng = new SeededRandom(22);
       const asset = selectRandom(assets, rng);
@@ -162,9 +164,10 @@ test.describe('Timeline', () => {
      */
     test('Next/previous asset - ArrowRight/ArrowLeft', async ({ page }) => {
       await pageUtils.openPhotosPage(page);
+      await thumbnailUtils.withAssetId(page, assets[0].id).focus();
       const rightKey = 'ArrowRight';
       const leftKey = 'ArrowLeft';
-      for (let i = 0; i < 15; i++) {
+      for (let i = 1; i < 15; i++) {
         await page.keyboard.press(rightKey);
         await assetViewerUtils.expectActiveAssetToBe(page, assets[i].id);
       }
@@ -187,11 +190,9 @@ test.describe('Timeline', () => {
     test('Next/previous asset - Tab/Shift+Tab', async ({ page }) => {
       await pageUtils.openPhotosPage(page);
       await thumbnailUtils.withAssetId(page, assets[0].id).focus();
-      // position tab right before first asset
-      await page.keyboard.press('Shift+Tab');
       const rightKey = 'Tab';
       const leftKey = 'Shift+Tab';
-      for (let i = 0; i < 15; i++) {
+      for (let i = 1; i < 15; i++) {
         await page.keyboard.press(rightKey);
         await assetViewerUtils.expectActiveAssetToBe(page, assets[i].id);
       }
@@ -212,6 +213,7 @@ test.describe('Timeline', () => {
     test('Next/previous day - d, Shift+D', async ({ page }) => {
       await pageUtils.openPhotosPage(page);
       let asset = assets[0];
+      await timelineUtils.locator(page).hover();
       await page.keyboard.press('d');
       await assetViewerUtils.expectActiveAssetToBe(page, asset.id);
       for (let i = 0; i < 15; i++) {
@@ -230,6 +232,7 @@ test.describe('Timeline', () => {
     test('Next/previous month - m, Shift+M', async ({ page }) => {
       await pageUtils.openPhotosPage(page);
       let asset = assets[0];
+      await timelineUtils.locator(page).hover();
       await page.keyboard.press('m');
       await assetViewerUtils.expectActiveAssetToBe(page, asset.id);
       for (let i = 0; i < 15; i++) {
@@ -248,6 +251,7 @@ test.describe('Timeline', () => {
     test('Next/previous year - y, Shift+Y', async ({ page }) => {
       await pageUtils.openPhotosPage(page);
       let asset = assets[0];
+      await timelineUtils.locator(page).hover();
       await page.keyboard.press('y');
       await assetViewerUtils.expectActiveAssetToBe(page, asset.id);
       for (let i = 0; i < 15; i++) {
@@ -269,7 +273,7 @@ test.describe('Timeline', () => {
       for (let i = 0; i < 10; i++) {
         const asset = selectRandom(assets, rng);
         await pageUtils.goToAsset(page, asset.fileCreatedAt);
-        expect(thumbnailUtils.expectInViewport(page, asset.id));
+        await thumbnailUtils.expectInViewport(page, asset.id);
       }
     });
   });
@@ -332,8 +336,7 @@ test.describe('Timeline', () => {
       const rng = new SeededRandom(6637);
       const selectedMonths = selectRandomMultiple(yearMonths, 20, rng);
       for (const month of selectedMonths) {
-        await page.locator(`[data-segment-year-month="${month}"]`).click({ position: { x: 1, y: 1 }, force: true });
-
+        await page.locator(`[data-segment-year-month="${month}"]`).click({ force: true });
         const visibleMockAssetsYearMonths = await poll(page, async () => {
           const assetIds = await thumbnailUtils.getAllInViewport(
             page,
@@ -357,12 +360,14 @@ test.describe('Timeline', () => {
     test('Deep link to last bucket, scroll up', async ({ page }) => {
       const lastAsset = assets.at(-1)!;
       await pageUtils.deepLinkPhotosPage(page, lastAsset.id);
+
       await timelineUtils.locator(page).hover();
       for (let i = 0; i < 100; i++) {
         await page.mouse.wheel(0, -100);
         await page.waitForTimeout(25);
       }
-      expect(thumbnailUtils.expectInViewport(page, '973224e0-f56f-47fc-be8c-3be9839e9dd5'));
+
+      await thumbnailUtils.expectInViewport(page, '14e5901f-fd7f-40c0-b186-4d7e7fc67968');
     });
     test('Deep link to first bucket, scroll down', async ({ page }) => {
       const lastAsset = assets.at(0)!;
@@ -432,7 +437,6 @@ test.describe('Timeline', () => {
       const lastAsset = album.assetIds.at(-1);
       await pageUtils.deepLinkAlbumPage(page, album.id, lastAsset!);
       await thumbnailUtils.expectInViewport(page, album.assetIds.at(-1)!);
-      // await new Promise(() => void 0);
     });
     test('Add photos to album pre-selects existing', async ({ page }) => {
       const album = timelineRestData.album;
@@ -446,7 +450,7 @@ test.describe('Timeline', () => {
     test('Add photos to album', async ({ page }) => {
       const album = timelineRestData.album;
       await pageUtils.openAlbumPage(page, album.id);
-      await page.getByLabel('Add photos').click();
+      await page.locator('nav button[aria-label="Add photos"]').click();
       const asset = getAsset(timelineRestData, album.assetIds[0])!;
       await pageUtils.goToAsset(page, asset.fileCreatedAt);
       await thumbnailUtils.expectInViewport(page, asset.id);
@@ -527,12 +531,12 @@ test.describe('Timeline', () => {
       await page.getByLabel('Menu').click();
       const deleteRequest = pageRoutePromise(page, '**/api/assets', async (route, request) => {
         const requestJson = request.postDataJSON();
+        changes.assetDeletions.push(...requestJson.ids);
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
           json: requestJson.ids.map((id: string) => ({ id, success: true })),
         });
-        changes.assetDeletions.push(...requestJson.ids);
       });
       await page.getByRole('menuitem').getByText('Delete').click();
       await expect(deleteRequest).resolves.toEqual({

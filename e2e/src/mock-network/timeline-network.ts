@@ -10,14 +10,14 @@ import {
   randomThumbnail,
   TimelineData,
 } from 'src/generators/timeline';
-import { sleep } from 'src/web/specs/timeline-utils.spec';
+import { sleep } from 'src/web/specs/timeline/utils';
 
 export class TimelineTestContext {
   slowBucket = false;
   adminId = '';
 }
 
-export const setupRoutes = async (
+export const setupTimelineMockApiRoutes = async (
   context: BrowserContext,
   timelineRestData: TimelineData,
   changes: Changes,
