@@ -58,8 +58,12 @@ test.describe('User Administration', () => {
     await expect(page.getByLabel('Admin User')).toBeChecked();
     await page.getByRole('button', { name: 'Confirm' }).click();
 
-    const updated = await getUserAdmin({ id: user.userId }, { headers: asBearerAuth(admin.accessToken) });
-    expect(updated.isAdmin).toBe(true);
+    await expect
+      .poll(async () => {
+        const userAdmin = await getUserAdmin({ id: user.userId }, { headers: asBearerAuth(admin.accessToken) });
+        return userAdmin.isAdmin;
+      })
+      .toBe(true);
   });
 
   test('revoke admin access', async ({ context, page }) => {
@@ -83,7 +87,11 @@ test.describe('User Administration', () => {
     await expect(page.getByLabel('Admin User')).not.toBeChecked();
     await page.getByRole('button', { name: 'Confirm' }).click();
 
-    const updated = await getUserAdmin({ id: user.userId }, { headers: asBearerAuth(admin.accessToken) });
-    expect(updated.isAdmin).toBe(false);
+    await expect
+      .poll(async () => {
+        const userAdmin = await getUserAdmin({ id: user.userId }, { headers: asBearerAuth(admin.accessToken) });
+        return userAdmin.isAdmin;
+      })
+      .toBe(false);
   });
 });
