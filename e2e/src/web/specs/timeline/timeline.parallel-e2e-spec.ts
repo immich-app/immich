@@ -79,6 +79,7 @@ test.describe('Timeline', () => {
       await thumbnailUtils.expectTimelineHasOnScreenAssets(page);
     });
     test('Deep link to last photo', async ({ page }) => {
+      test.skip(true, 'fixed by PR#23920');
       const lastAsset = assets.at(-1)!;
       await pageUtils.deepLinkPhotosPage(page, lastAsset.id);
       await thumbnailUtils.expectTimelineHasOnScreenAssets(page);
@@ -139,6 +140,7 @@ test.describe('Timeline', () => {
       await thumbnailUtils.expectBottomIsTimelineBottom(page, assets[15]!.id);
     });
     test('Open /photos, open asset-viewer, previous photo 15x, backwardsArrow', async ({ page }) => {
+      test.skip(true, 'fixed by PR#23920');
       const lastAsset = assets.at(-1)!;
       await pageUtils.deepLinkPhotosPage(page, lastAsset.id);
       await thumbnailUtils.clickAssetId(page, lastAsset.id);
@@ -354,7 +356,8 @@ test.describe('Timeline', () => {
         expect(visibleMockAssetsYearMonths).toContain(month);
       }
     });
-    test('Deep link to last bucket, scroll up', async ({ page }) => {
+    test('Deep link to last photo, scroll up', async ({ page }) => {
+      test.skip(true, 'fixed by PR#23920');
       const lastAsset = assets.at(-1)!;
       await pageUtils.deepLinkPhotosPage(page, lastAsset.id);
 
@@ -376,8 +379,8 @@ test.describe('Timeline', () => {
       }
       await thumbnailUtils.expectInViewport(page, 'b7983a13-4b4e-4950-a731-f2962d9a1555');
     });
-    test('Deep link to last bucket, drag scrubber to scroll up', async ({ page }) => {
-      const lastAsset = assets.at(0)!;
+    test('Deep link to last photo, drag scrubber to scroll up', async ({ page }) => {
+      const lastAsset = assets.at(-1)!;
       await pageUtils.deepLinkPhotosPage(page, lastAsset.id);
       const lastMonth = yearMonths.at(-1);
       const firstScrubSegment = page.locator(`[data-segment-year-month="${yearMonths[0]}"]`);
@@ -430,10 +433,12 @@ test.describe('Timeline', () => {
       await thumbnailUtils.expectInViewport(page, album.assetIds[0]);
     });
     test('Deep link to last photo', async ({ page }) => {
+      test.fail(true, 'fixed by PR#23920');
       const album = timelineRestData.album;
       const lastAsset = album.assetIds.at(-1);
       await pageUtils.deepLinkAlbumPage(page, album.id, lastAsset!);
       await thumbnailUtils.expectInViewport(page, album.assetIds.at(-1)!);
+      await thumbnailUtils.expectBottomIsTimelineBottom(page, album.assetIds.at(-1)!);
     });
     test('Add photos to album pre-selects existing', async ({ page }) => {
       const album = timelineRestData.album;

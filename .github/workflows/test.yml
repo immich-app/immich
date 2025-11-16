@@ -500,6 +500,8 @@ jobs:
         run: docker compose build
         if: ${{ !cancelled() }}
       - name: Run e2e tests (web)
+        env:
+          CI: true
         run: npx playwright test
         if: ${{ !cancelled() }}
       - name: Archive test results

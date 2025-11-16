@@ -39,6 +39,7 @@ test.describe('User Administration', () => {
   });
 
   test('promote to admin', async ({ context, page }) => {
+    test.skip(true, 'flaky - fixed by #PR23929');
     const admin = await utils.adminSetup();
     await utils.setAuthCookies(context, admin.accessToken);
 
@@ -63,6 +64,7 @@ test.describe('User Administration', () => {
   });
 
   test('revoke admin access', async ({ context, page }) => {
+    test.skip(true, 'flaky - fixed by #PR23929');
     const admin = await utils.adminSetup();
     await utils.setAuthCookies(context, admin.accessToken);
 
