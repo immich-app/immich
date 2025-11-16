@@ -507,7 +507,7 @@ jobs:
         if: success() || failure()
         with:
           name: e2e-web-test-results-${{ matrix.runner }}
-          path: playwright-report/
+          path: e2e/playwright-report/
   success-check-e2e:
     name: End-to-End Tests Success
     needs: [e2e-tests-server-cli, e2e-tests-web]
