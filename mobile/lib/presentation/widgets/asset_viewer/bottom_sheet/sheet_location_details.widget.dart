@@ -40,19 +40,10 @@ class _SheetLocationDetailsState extends ConsumerState<SheetLocationDetails> {
   }
 
   void _onExifChanged(AsyncValue<ExifInfo?>? previous, AsyncValue<ExifInfo?> current) {
-    final prevExif = previous?.valueOrNull;
     final currentExif = current.valueOrNull;
 
-    // Update map camera if coordinates changed
     if (currentExif != null && currentExif.hasCoordinates) {
-      final prevLat = prevExif?.latitude;
-      final prevLon = prevExif?.longitude;
-      final currentLat = currentExif.latitude;
-      final currentLon = currentExif.longitude;
-
-      if (prevLat != currentLat || prevLon != currentLon) {
-        _mapController?.moveCamera(CameraUpdate.newLatLng(LatLng(currentLat!, currentLon!)));
-      }
+      _mapController?.moveCamera(CameraUpdate.newLatLng(LatLng(currentExif.latitude!, currentExif.longitude!)));
     }
   }
 
