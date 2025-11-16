@@ -52,10 +52,9 @@ enum AppSettingsEnum<T> {
   useCellularForUploadVideos<bool>(StoreKey.useWifiForUploadVideos, null, false),
   useCellularForUploadPhotos<bool>(StoreKey.useWifiForUploadPhotos, null, false),
   readonlyModeEnabled<bool>(StoreKey.readonlyModeEnabled, "readonlyModeEnabled", false),
-  albumGridView<bool>(StoreKey.albumGridView, "albumGridView", false);
+  albumGridView<bool>(StoreKey.albumGridView, "albumGridView", false),
   backupRequireCharging<bool>(StoreKey.backupRequireCharging, null, false),
-  backupTriggerDelay<int>(StoreKey.backupTriggerDelay, null, 30),
-  readonlyModeEnabled<bool>(StoreKey.readonlyModeEnabled, "readonlyModeEnabled", false);
+  backupTriggerDelay<int>(StoreKey.backupTriggerDelay, null, 30);
 
   const AppSettingsEnum(this.storeKey, this.hiveKey, this.defaultValue);
 
