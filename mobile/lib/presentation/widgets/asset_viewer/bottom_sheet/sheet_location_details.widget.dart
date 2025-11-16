@@ -87,23 +87,14 @@ class _SheetLocationDetailsState extends ConsumerState<SheetLocationDetails> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: context.isMobile ? 16.0 : 56.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Text(
-                  "exif_bottom_sheet_location".t(context: context),
-                  style: context.textTheme.labelMedium?.copyWith(
-                    color: context.textTheme.labelMedium?.color?.withAlpha(200),
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                if (hasCoordinates)
-                  IconButton(onPressed: editLocation, icon: const Icon(Icons.edit_location_alt), iconSize: 20),
-              ],
+          SheetTile(
+            title: 'exif_bottom_sheet_location'.t(context: context),
+            titleStyle: context.textTheme.labelMedium?.copyWith(
+              color: context.textTheme.labelMedium?.color?.withAlpha(200),
+              fontWeight: FontWeight.w600,
             ),
+            trailing: hasCoordinates ? const Icon(Icons.edit_location_alt, size: 20) : null,
+            onTap: editLocation,
           ),
           if (hasCoordinates)
             Padding(
@@ -112,7 +103,7 @@ class _SheetLocationDetailsState extends ConsumerState<SheetLocationDetails> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   ExifMap(exifInfo: exifInfo!, markerId: remoteId, onMapCreated: _onMapCreated),
-                  const SizedBox(height: 15),
+                  const SizedBox(height: 16),
                   if (locationName != null)
                     Padding(
                       padding: const EdgeInsets.only(bottom: 4.0),
@@ -128,17 +119,14 @@ class _SheetLocationDetailsState extends ConsumerState<SheetLocationDetails> {
               ),
             ),
           if (!hasCoordinates)
-            Padding(
-              padding: const EdgeInsets.only(top: 12),
-              child: SheetTile(
-                title: "add_a_location".t(context: context),
-                titleStyle: context.textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: context.primaryColor,
-                ),
-                leading: const Icon(Icons.location_off),
-                onTap: editLocation,
+            SheetTile(
+              title: "add_a_location".t(context: context),
+              titleStyle: context.textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+                color: context.primaryColor,
               ),
+              leading: const Icon(Icons.location_off),
+              onTap: editLocation,
             ),
         ],
       ),
