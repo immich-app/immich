@@ -16,7 +16,9 @@ class TimelineApi {
 
   final ApiClient apiClient;
 
-  /// This endpoint requires the `asset.read` permission.
+  /// Get time bucket
+  ///
+  /// Retrieve a string of all asset ids in a given time bucket.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -133,7 +135,9 @@ class TimelineApi {
     );
   }
 
-  /// This endpoint requires the `asset.read` permission.
+  /// Get time bucket
+  ///
+  /// Retrieve a string of all asset ids in a given time bucket.
   ///
   /// Parameters:
   ///
@@ -194,7 +198,9 @@ class TimelineApi {
     return null;
   }
 
-  /// This endpoint requires the `asset.read` permission.
+  /// Get time buckets
+  ///
+  /// Retrieve a list of all minimal time buckets.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -307,7 +313,9 @@ class TimelineApi {
     );
   }
 
-  /// This endpoint requires the `asset.read` permission.
+  /// Get time buckets
+  ///
+  /// Retrieve a list of all minimal time buckets.
   ///
   /// Parameters:
   ///

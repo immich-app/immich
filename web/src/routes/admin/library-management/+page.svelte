@@ -17,10 +17,10 @@
     getAllLibraries,
     getLibraryStatistics,
     getUserAdmin,
-    JobCommand,
-    JobName,
+    QueueCommand,
+    QueueName,
+    runQueueCommandLegacy,
     scanLibrary,
-    sendJobCommand,
     updateLibrary,
     type LibraryResponseDto,
     type LibraryStatsResponseDto,
@@ -151,7 +151,7 @@
 
   const handleScanAll = async () => {
     try {
-      await sendJobCommand({ id: JobName.Library, jobCommandDto: { command: JobCommand.Start } });
+      await runQueueCommandLegacy({ name: QueueName.Library, queueCommandDto: { command: QueueCommand.Start } });
 
       toastManager.info($t('admin.refreshing_all_libraries'));
     } catch (error) {

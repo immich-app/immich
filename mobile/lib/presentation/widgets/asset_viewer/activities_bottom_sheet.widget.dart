@@ -3,14 +3,12 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/widgets/activities/comment_bubble.dart';
 import 'package:immich_mobile/presentation/widgets/album/drift_activity_text_field.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
 import 'package:immich_mobile/providers/activity.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
-import 'package:immich_mobile/providers/user.provider.dart';
-import 'package:immich_mobile/widgets/activities/activity_tile.dart';
-import 'package:immich_mobile/widgets/activities/dismissible_activity.dart';
 
 class ActivitiesBottomSheet extends HookConsumerWidget {
   final DraggableScrollableController controller;
@@ -28,7 +26,6 @@ class ActivitiesBottomSheet extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final album = ref.watch(currentRemoteAlbumProvider)!;
     final asset = ref.watch(currentAssetNotifier) as RemoteAsset?;
-    final user = ref.watch(currentUserProvider);
 
     final activityNotifier = ref.read(albumActivityProvider(album.id, asset?.id).notifier);
     final activities = ref.watch(albumActivityProvider(album.id, asset?.id));
@@ -47,16 +44,9 @@ class ActivitiesBottomSheet extends HookConsumerWidget {
                 return const SizedBox.shrink();
               }
               final activity = data[data.length - 1 - index];
-              final canDelete = activity.user.id == user?.id || album.ownerId == user?.id;
               return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 1),
-                child: DismissibleActivity(
-                  activity.id,
-                  ActivityTile(activity, isBottomSheet: true),
-                  onDismiss: canDelete
-                      ? (activityId) async => await activityNotifier.removeActivity(activity.id)
-                      : null,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                child: CommentBubble(activity: activity, isAssetActivity: true),
               );
             }, childCount: data.length + 1),
           );

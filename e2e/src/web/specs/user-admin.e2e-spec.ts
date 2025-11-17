@@ -52,7 +52,7 @@ test.describe('User Administration', () => {
 
     await page.goto(`/admin/users/${user.userId}`);
 
-    await page.getByRole('button', { name: 'Edit user' }).click();
+    await page.getByRole('button', { name: 'Edit' }).click();
     await expect(page.getByLabel('Admin User')).not.toBeChecked();
     await page.getByText('Admin User').click();
     await expect(page.getByLabel('Admin User')).toBeChecked();
@@ -77,7 +77,7 @@ test.describe('User Administration', () => {
 
     await page.goto(`/admin/users/${user.userId}`);
 
-    await page.getByRole('button', { name: 'Edit user' }).click();
+    await page.getByRole('button', { name: 'Edit' }).click();
     await expect(page.getByLabel('Admin User')).toBeChecked();
     await page.getByText('Admin User').click();
     await expect(page.getByLabel('Admin User')).not.toBeChecked();

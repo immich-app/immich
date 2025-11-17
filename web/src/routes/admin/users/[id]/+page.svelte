@@ -1,22 +1,18 @@
 <script lang="ts">
+  import HeaderButton from '$lib/components/HeaderButton.svelte';
   import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
+  import OnEvents from '$lib/components/OnEvents.svelte';
   import ServerStatisticsCard from '$lib/components/server-statistics/ServerStatisticsCard.svelte';
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
   import DeviceCard from '$lib/components/user-settings-page/device-card.svelte';
   import FeatureSetting from '$lib/components/users/FeatureSetting.svelte';
-  import PasswordResetSuccessModal from '$lib/modals/PasswordResetSuccessModal.svelte';
-  import UserDeleteConfirmModal from '$lib/modals/UserDeleteConfirmModal.svelte';
-  import UserEditModal from '$lib/modals/UserEditModal.svelte';
-  import UserRestoreConfirmModal from '$lib/modals/UserRestoreConfirmModal.svelte';
+  import { getUserAdminActions } from '$lib/services/user-admin.service';
   import { locale } from '$lib/stores/preferences.store';
-  import { user as authUser } from '$lib/stores/user.store';
   import { createDateFormatter, findLocale } from '$lib/utils';
   import { getBytesWithUnit } from '$lib/utils/byte-units';
-  import { handleError } from '$lib/utils/handle-error';
-  import { updateUserAdmin } from '@immich/sdk';
+  import { type UserAdminResponseDto } from '@immich/sdk';
   import {
     Alert,
-    Button,
     Card,
     CardBody,
     CardHeader,
@@ -27,23 +23,17 @@
     Heading,
     HStack,
     Icon,
-    modalManager,
     Stack,
     Text,
-    toastManager,
   } from '@immich/ui';
   import {
     mdiAccountOutline,
-    mdiAppsBox,
     mdiCameraIris,
     mdiChartPie,
     mdiChartPieOutline,
     mdiCheckCircle,
-    mdiDeleteRestore,
+    mdiDevices,
     mdiFeatureSearchOutline,
-    mdiLockSmart,
-    mdiOnepassword,
-    mdiPencilOutline,
     mdiPlayCircle,
     mdiTrashCanOutline,
   } from '@mdi/js';
@@ -66,35 +56,12 @@
   const usedBytes = $derived(user.quotaUsageInBytes ?? 0);
   const availableBytes = $derived(user.quotaSizeInBytes ?? 1);
   let usedPercentage = $derived(Math.min(Math.round((usedBytes / availableBytes) * 100), 100));
-  let canResetPassword = $derived($authUser.id !== user.id);
-  let newPassword = $state<string>('');
 
   let editedLocale = $derived(findLocale($locale).code);
   let createAtDate: Date = $derived(new Date(user.createdAt));
   let updatedAtDate: Date = $derived(new Date(user.updatedAt));
   let userCreatedAtDateAndTime: string = $derived(createDateFormatter(editedLocale).formatDateTime(createAtDate));
   let userUpdatedAtDateAndTime: string = $derived(createDateFormatter(editedLocale).formatDateTime(updatedAtDate));
-
-  const handleEdit = async () => {
-    const result = await modalManager.show(UserEditModal, { user: { ...user } });
-    if (result) {
-      user = result;
-    }
-  };
-
-  const handleDelete = async () => {
-    const result = await modalManager.show(UserDeleteConfirmModal, { user });
-    if (result) {
-      user = result;
-    }
-  };
-
-  const handleRestore = async () => {
-    const result = await modalManager.show(UserRestoreConfirmModal, { user });
-    if (result) {
-      user = result;
-    }
-  };
 
   const getUsageClass = () => {
     if (usedPercentage >= 95) {
@@ -108,122 +75,25 @@
     return 'bg-primary';
   };
 
-  const handleResetPassword = async () => {
-    const isConfirmed = await modalManager.showDialog({
-      prompt: $t('admin.confirm_user_password_reset', { values: { user: user.name } }),
-    });
+  const UserAdminActions = $derived(getUserAdminActions($t, user));
 
-    if (!isConfirmed) {
-      return;
-    }
-
-    try {
-      newPassword = generatePassword();
-
-      await updateUserAdmin({
-        id: user.id,
-        userAdminUpdateDto: {
-          password: newPassword,
-          shouldChangePassword: true,
-        },
-      });
-
-      await modalManager.show(PasswordResetSuccessModal, { newPassword });
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_reset_password'));
+  const onUpdate = (update: UserAdminResponseDto) => {
+    if (update.id === user.id) {
+      user = update;
     }
   };
-
-  const handleResetUserPinCode = async () => {
-    const isConfirmed = await modalManager.showDialog({
-      prompt: $t('admin.confirm_user_pin_code_reset', { values: { user: user.name } }),
-    });
-
-    if (!isConfirmed) {
-      return;
-    }
-
-    try {
-      await updateUserAdmin({ id: user.id, userAdminUpdateDto: { pinCode: null } });
-      toastManager.success($t('pin_code_reset_successfully'));
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_reset_pin_code'));
-    }
-  };
-
-  // TODO move password reset server-side
-  function generatePassword(length: number = 16) {
-    let generatedPassword = '';
-
-    const characterSet = '0123456789' + 'abcdefghijklmnopqrstuvwxyz' + 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' + ',.-{}+!#$%/()=?';
-
-    for (let i = 0; i < length; i++) {
-      let randomNumber = crypto.getRandomValues(new Uint32Array(1))[0];
-      randomNumber = randomNumber / 2 ** 32;
-      randomNumber = Math.floor(randomNumber * characterSet.length);
-
-      generatedPassword += characterSet[randomNumber];
-    }
-
-    return generatedPassword;
-  }
 </script>
+
+<OnEvents onUserAdminUpdate={onUpdate} onUserAdminDelete={onUpdate} onUserAdminRestore={onUpdate} />
 
 <AdminPageLayout title={data.meta.title}>
   {#snippet buttons()}
     <HStack gap={0}>
-      {#if canResetPassword}
-        <Button
-          color="secondary"
-          size="small"
-          variant="ghost"
-          leadingIcon={mdiOnepassword}
-          onclick={handleResetPassword}
-        >
-          <Text class="hidden md:block">{$t('reset_password')}</Text>
-        </Button>
-      {/if}
-
-      <Button
-        color="secondary"
-        size="small"
-        variant="ghost"
-        leadingIcon={mdiLockSmart}
-        onclick={handleResetUserPinCode}
-      >
-        <Text class="hidden md:block">{$t('reset_pin_code')}</Text>
-      </Button>
-      <Button
-        color="secondary"
-        size="small"
-        variant="ghost"
-        leadingIcon={mdiPencilOutline}
-        onclick={() => handleEdit()}
-      >
-        <Text class="hidden md:block">{$t('edit_user')}</Text>
-      </Button>
-      {#if user.deletedAt}
-        <Button
-          color="primary"
-          size="small"
-          variant="ghost"
-          leadingIcon={mdiDeleteRestore}
-          class="ms-1"
-          onclick={() => handleRestore()}
-        >
-          <Text class="hidden md:block">{$t('restore_user')}</Text>
-        </Button>
-      {:else}
-        <Button
-          color="danger"
-          size="small"
-          variant="ghost"
-          leadingIcon={mdiTrashCanOutline}
-          onclick={() => handleDelete()}
-        >
-          <Text class="hidden md:block">{$t('delete_user')}</Text>
-        </Button>
-      {/if}
+      <HeaderButton action={UserAdminActions.ResetPassword} />
+      <HeaderButton action={UserAdminActions.ResetPinCode} />
+      <HeaderButton action={UserAdminActions.Update} />
+      <HeaderButton action={UserAdminActions.Restore} />
+      <HeaderButton action={UserAdminActions.Delete} />
     </HStack>
   {/snippet}
   <div>
@@ -350,8 +220,8 @@
         <Card color="secondary">
           <CardHeader>
             <div class="flex items-center gap-2 px-4 py-2 text-primary">
-              <Icon icon={mdiAppsBox} size="1.5rem" />
-              <CardTitle>Sessions</CardTitle>
+              <Icon icon={mdiDevices} size="1.5rem" />
+              <CardTitle>{$t('authorized_devices')}</CardTitle>
             </div>
           </CardHeader>
           <CardBody>
@@ -360,7 +230,7 @@
                 {#each userSessions as session (session.id)}
                   <DeviceCard {session} />
                 {:else}
-                  <span class="text-dark">No mobile devices</span>
+                  <span class="text-dark">{$t('no_devices')}</span>
                 {/each}
               </Stack>
             </div>

@@ -1,15 +1,17 @@
 <script lang="ts">
-  import ImmichLogo from '$lib/components/shared-components/immich-logo.svelte';
+  import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
   import { OnboardingRole } from '$lib/models/onboarding-role';
-  import { serverConfig } from '$lib/stores/server-config.store';
   import { user } from '$lib/stores/user.store';
+  import { Logo } from '@immich/ui';
   import { t } from 'svelte-i18n';
 
-  let userRole = $derived($user.isAdmin && !$serverConfig.isOnboarded ? OnboardingRole.SERVER : OnboardingRole.USER);
+  let userRole = $derived(
+    $user.isAdmin && !serverConfigManager.value.isOnboarded ? OnboardingRole.SERVER : OnboardingRole.USER,
+  );
 </script>
 
 <div class="gap-4">
-  <ImmichLogo noText class="h-25 mb-2" />
+  <Logo variant="icon" size="giant" class="mb-2" />
   <p class="font-medium mb-6 text-6xl text-primary">
     {$t('onboarding_welcome_user', { values: { user: $user.name } })}
   </p>

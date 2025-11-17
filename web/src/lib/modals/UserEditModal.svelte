@@ -1,10 +1,10 @@
 <script lang="ts">
   import { AppRoute } from '$lib/constants';
+  import { handleUpdateUserAdmin } from '$lib/services/user-admin.service';
   import { user as authUser } from '$lib/stores/user.store';
   import { userInteraction } from '$lib/stores/user.svelte';
   import { ByteUnit, convertFromBytes, convertToBytes } from '$lib/utils/byte-units';
-  import { handleError } from '$lib/utils/handle-error';
-  import { updateUserAdmin, type UserAdminResponseDto } from '@immich/sdk';
+  import { type UserAdminResponseDto } from '@immich/sdk';
   import {
     Button,
     Field,
@@ -23,7 +23,7 @@
 
   interface Props {
     user: UserAdminResponseDto;
-    onClose: (data?: UserAdminResponseDto) => void;
+    onClose: () => void;
   }
 
   let { user, onClose }: Props = $props();
@@ -48,28 +48,20 @@
       quotaSizeBytes > userInteraction.serverInfo.diskSizeRaw,
   );
 
-  const handleEditUser = async () => {
-    try {
-      const newUser = await updateUserAdmin({
-        id: user.id,
-        userAdminUpdateDto: {
-          email,
-          name,
-          storageLabel,
-          quotaSizeInBytes: typeof quotaSize === 'number' ? convertToBytes(quotaSize, ByteUnit.GiB) : null,
-          isAdmin,
-        },
-      });
-
-      onClose(newUser);
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_update_user'));
-    }
-  };
-
   const onSubmit = async (event: Event) => {
     event.preventDefault();
-    await handleEditUser();
+
+    const success = await handleUpdateUserAdmin(user, {
+      email,
+      name,
+      storageLabel,
+      quotaSizeInBytes: typeof quotaSize === 'number' ? convertToBytes(quotaSize, ByteUnit.GiB) : null,
+      isAdmin,
+    });
+
+    if (success) {
+      onClose();
+    }
   };
 </script>
 
