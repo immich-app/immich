@@ -316,8 +316,16 @@ export class PersonRepository {
         eb.and([
           eb('person.ownerId', '=', userId),
           eb.or([
-            eb(eb.fn('lower', ['person.name']), 'like', `${personName.toLowerCase()}%`),
-            eb(eb.fn('lower', ['person.name']), 'like', `% ${personName.toLowerCase()}%`),
+            eb(
+              eb.fn('f_unaccent', [eb.fn('lower', ['person.name'])]),
+              'like',
+              `${eb.fn('f_unaccent', [personName.toLowerCase()])}%`,
+            ),
+            eb(
+              eb.fn('f_unaccent', [eb.fn('lower', ['person.name'])]),
+              'like',
+              `% ${eb.fn('f_unaccent', [personName.toLowerCase()])}%`,
+            ),
           ]),
         ]),
       )
