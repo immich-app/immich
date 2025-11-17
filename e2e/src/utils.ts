@@ -533,18 +533,21 @@ export const utils = {
   enterMaintenance: async (accessToken: string) => {
     let setCookie: string[] | undefined;
 
-    await setMaintenanceMode({
-      setMaintenanceModeDto: {
-        action: MaintenanceAction.Start
-      }
-    }, {
-      headers: asBearerAuth(accessToken),
-      fetch: (...args: Parameters<typeof fetch>) => fetch(...args)
-        .then(response => {
-          setCookie = response.headers.getSetCookie();
-          return response;
-        })
-    });
+    await setMaintenanceMode(
+      {
+        setMaintenanceModeDto: {
+          action: MaintenanceAction.Start,
+        },
+      },
+      {
+        headers: asBearerAuth(accessToken),
+        fetch: (...args: Parameters<typeof fetch>) =>
+          fetch(...args).then((response) => {
+            setCookie = response.headers.getSetCookie();
+            return response;
+          }),
+      },
+    );
 
     return setCookie;
   },
