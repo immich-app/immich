@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/add_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/advanced_info_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/archive_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_action_button.widget.dart';
@@ -49,6 +50,7 @@ enum ActionButtonType {
   advancedInfo,
   share,
   edit,
+  add,
   shareLink,
   similarPhotos,
   archive,
@@ -72,6 +74,7 @@ enum ActionButtonType {
       ActionButtonType.edit =>
         !context.isInLockedView && //
             context.asset.isImage,
+      ActionButtonType.add => context.asset.hasRemote,
       ActionButtonType.shareLink =>
         !context.isInLockedView && //
             context.asset.hasRemote,
@@ -141,6 +144,7 @@ enum ActionButtonType {
       ActionButtonType.advancedInfo => AdvancedInfoActionButton(source: context.source),
       ActionButtonType.share => ShareActionButton(source: context.source),
       ActionButtonType.edit => const EditImageActionButton(),
+      ActionButtonType.add => const AddActionButton(),
       ActionButtonType.shareLink => ShareLinkActionButton(source: context.source),
       ActionButtonType.archive => ArchiveActionButton(source: context.source),
       ActionButtonType.unarchive => UnArchiveActionButton(source: context.source),
@@ -173,6 +177,7 @@ class ActionButtonBuilder {
     ActionButtonType.share,
     ActionButtonType.upload,
     ActionButtonType.edit,
+    ActionButtonType.add,
     ActionButtonType.archive,
     ActionButtonType.delete,
     ActionButtonType.removeFromAlbum,
