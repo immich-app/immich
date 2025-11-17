@@ -118,7 +118,7 @@ describe('/shared-links', () => {
       const resp = await request(shareUrl).get(`/${linkWithAssets.key}`);
       expect(resp.status).toBe(200);
       expect(resp.header['content-type']).toContain('text/html');
-      expect(resp.text).toContain(`<meta property="og:image" content="http://localhost:2285`);
+      expect(resp.text).toContain(`<meta property="og:image" content="http://127.0.0.1:2285`);
     });
 
     it('should fall back to my.immich.app og:image meta tag for shared asset if Host header is not present', async () => {

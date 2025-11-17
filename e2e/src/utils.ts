@@ -6,6 +6,7 @@ import {
   CheckExistingAssetsDto,
   CreateAlbumDto,
   CreateLibraryDto,
+  MaintenanceAction,
   MetadataSearchDto,
   Permission,
   PersonCreateDto,
@@ -36,6 +37,7 @@ import {
   scanLibrary,
   searchAssets,
   setBaseUrl,
+  setMaintenanceMode,
   signUpAdmin,
   tagAssets,
   updateAdminOnboarding,
@@ -69,7 +71,7 @@ type AdminSetupOptions = { onboarding?: boolean };
 type FileData = { bytes?: Buffer; filename: string };
 
 const dbUrl = 'postgres://postgres:postgres@127.0.0.1:5435/immich';
-export const baseUrl = 'http://localhost:2285';
+export const baseUrl = 'http://127.0.0.1:2285';
 export const shareUrl = `${baseUrl}/share`;
 export const app = `${baseUrl}/api`;
 // TODO move test assets into e2e/assets
@@ -480,7 +482,7 @@ export const utils = {
   queueCommand: async (accessToken: string, name: QueueName, queueCommandDto: QueueCommandDto) =>
     runQueueCommandLegacy({ name, queueCommandDto }, { headers: asBearerAuth(accessToken) }),
 
-  setAuthCookies: async (context: BrowserContext, accessToken: string, domain = 'localhost') =>
+  setAuthCookies: async (context: BrowserContext, accessToken: string, domain = '127.0.0.1') =>
     await context.addCookies([
       {
         name: 'immich_access_token',
@@ -514,7 +516,7 @@ export const utils = {
       },
     ]),
 
-  setMaintenanceAuthCookie: async (context: BrowserContext, token: string, domain = 'localhost') =>
+  setMaintenanceAuthCookie: async (context: BrowserContext, token: string, domain = '127.0.0.1') =>
     await context.addCookies([
       {
         name: 'immich_maintenance_token',
@@ -527,6 +529,25 @@ export const utils = {
         sameSite: 'Lax',
       },
     ]),
+
+  enterMaintenance: async (accessToken: string) => {
+    let setCookie: string[] | undefined;
+
+    await setMaintenanceMode({
+      setMaintenanceModeDto: {
+        action: MaintenanceAction.Start
+      }
+    }, {
+      headers: asBearerAuth(accessToken),
+      fetch: (...args: Parameters<typeof fetch>) => fetch(...args)
+        .then(response => {
+          setCookie = response.headers.getSetCookie();
+          return response;
+        })
+    });
+
+    return setCookie;
+  },
 
   resetTempFolder: () => {
     rmSync(`${testAssetDir}/temp`, { recursive: true, force: true });
