@@ -57,7 +57,7 @@ const getClaims = (sub: string) => claims.find((user) => user.sub === sub) || wi
 const setup = async () => {
   const { privateKey, publicKey } = await generateKeyPair('RS256');
 
-  const redirectUris = ['http://127.0.0.1:2285/auth/login', 'https://photos.immich.app/oauth/mobile-redirect'];
+  const redirectUris = ['http://localhost:2285/auth/login', 'https://photos.immich.app/oauth/mobile-redirect'];
   const port = 2286;
   const host = '0.0.0.0';
   const oidc = new Provider(`http://${host}:${port}`, {
