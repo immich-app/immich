@@ -36,6 +36,7 @@ import { OAuthRepository } from 'src/repositories/oauth.repository';
 import { OcrRepository } from 'src/repositories/ocr.repository';
 import { PartnerRepository } from 'src/repositories/partner.repository';
 import { PersonRepository } from 'src/repositories/person.repository';
+import { PluginRepository } from 'src/repositories/plugin.repository';
 import { ProcessRepository } from 'src/repositories/process.repository';
 import { SearchRepository } from 'src/repositories/search.repository';
 import { ServerInfoRepository } from 'src/repositories/server-info.repository';
@@ -54,6 +55,7 @@ import { UserRepository } from 'src/repositories/user.repository';
 import { VersionHistoryRepository } from 'src/repositories/version-history.repository';
 import { ViewRepository } from 'src/repositories/view-repository';
 import { WebsocketRepository } from 'src/repositories/websocket.repository';
+import { WorkflowRepository } from 'src/repositories/workflow.repository';
 import { UserTable } from 'src/schema/tables/user.table';
 import { AccessRequest, checkAccess, requireAccess } from 'src/utils/access';
 import { getConfig, updateConfig } from 'src/utils/config';
@@ -90,6 +92,7 @@ export const BASE_SERVICE_DEPENDENCIES = [
   OcrRepository,
   PartnerRepository,
   PersonRepository,
+  PluginRepository,
   ProcessRepository,
   SearchRepository,
   ServerInfoRepository,
@@ -107,6 +110,8 @@ export const BASE_SERVICE_DEPENDENCIES = [
   UserRepository,
   VersionHistoryRepository,
   ViewRepository,
+  WebsocketRepository,
+  WorkflowRepository,
 ];
 
 @Injectable()
@@ -145,6 +150,7 @@ export class BaseService {
     protected ocrRepository: OcrRepository,
     protected partnerRepository: PartnerRepository,
     protected personRepository: PersonRepository,
+    protected pluginRepository: PluginRepository,
     protected processRepository: ProcessRepository,
     protected searchRepository: SearchRepository,
     protected serverInfoRepository: ServerInfoRepository,
@@ -163,6 +169,7 @@ export class BaseService {
     protected versionRepository: VersionHistoryRepository,
     protected viewRepository: ViewRepository,
     protected websocketRepository: WebsocketRepository,
+    protected workflowRepository: WorkflowRepository,
   ) {
     this.logger.setContext(this.constructor.name);
     this.storageCore = StorageCore.create(

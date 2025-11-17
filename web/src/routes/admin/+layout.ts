@@ -1,4 +1,4 @@
-import { systemConfigManager } from '$lib/stores/system-config-manager.svelte';
+import { systemConfigManager } from '$lib/managers/system-config-manager.svelte';
 import type { LayoutLoad } from './$types';
 
 export const load = (async () => {

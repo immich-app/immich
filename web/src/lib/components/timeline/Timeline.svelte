@@ -233,7 +233,6 @@
   // afterNavigate is only called after navigation to a new URL, {complete} will resolve
   // after successful navigation.
   afterNavigate(({ complete }) => {
-    console.log('after navigate');
     void complete.finally(() => {
       const isAssetViewerPage = isAssetViewerRoute(page);
 

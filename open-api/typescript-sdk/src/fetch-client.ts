@@ -708,7 +708,7 @@ export type AssetFaceDeleteDto = {
 export type FaceDto = {
     id: string;
 };
-export type JobCountsDto = {
+export type QueueStatisticsDto = {
     active: number;
     completed: number;
     delayed: number;
@@ -720,33 +720,34 @@ export type QueueStatusDto = {
     isActive: boolean;
     isPaused: boolean;
 };
-export type JobStatusDto = {
-    jobCounts: JobCountsDto;
+export type QueueResponseDto = {
+    jobCounts: QueueStatisticsDto;
     queueStatus: QueueStatusDto;
 };
-export type AllJobStatusResponseDto = {
-    backgroundTask: JobStatusDto;
-    backupDatabase: JobStatusDto;
-    duplicateDetection: JobStatusDto;
-    faceDetection: JobStatusDto;
-    facialRecognition: JobStatusDto;
-    library: JobStatusDto;
-    metadataExtraction: JobStatusDto;
-    migration: JobStatusDto;
-    notifications: JobStatusDto;
-    ocr: JobStatusDto;
-    search: JobStatusDto;
-    sidecar: JobStatusDto;
-    smartSearch: JobStatusDto;
-    storageTemplateMigration: JobStatusDto;
-    thumbnailGeneration: JobStatusDto;
-    videoConversion: JobStatusDto;
+export type QueuesResponseDto = {
+    backgroundTask: QueueResponseDto;
+    backupDatabase: QueueResponseDto;
+    duplicateDetection: QueueResponseDto;
+    faceDetection: QueueResponseDto;
+    facialRecognition: QueueResponseDto;
+    library: QueueResponseDto;
+    metadataExtraction: QueueResponseDto;
+    migration: QueueResponseDto;
+    notifications: QueueResponseDto;
+    ocr: QueueResponseDto;
+    search: QueueResponseDto;
+    sidecar: QueueResponseDto;
+    smartSearch: QueueResponseDto;
+    storageTemplateMigration: QueueResponseDto;
+    thumbnailGeneration: QueueResponseDto;
+    videoConversion: QueueResponseDto;
+    workflow: QueueResponseDto;
 };
 export type JobCreateDto = {
     name: ManualJobName;
 };
-export type JobCommandDto = {
-    command: JobCommand;
+export type QueueCommandDto = {
+    command: QueueCommand;
     force?: boolean;
 };
 export type LibraryResponseDto = {
@@ -934,6 +935,36 @@ export type AssetFaceUpdateDto = {
 };
 export type PersonStatisticsResponseDto = {
     assets: number;
+};
+export type PluginActionResponseDto = {
+    description: string;
+    id: string;
+    methodName: string;
+    pluginId: string;
+    schema: object | null;
+    supportedContexts: PluginContext[];
+    title: string;
+};
+export type PluginFilterResponseDto = {
+    description: string;
+    id: string;
+    methodName: string;
+    pluginId: string;
+    schema: object | null;
+    supportedContexts: PluginContext[];
+    title: string;
+};
+export type PluginResponseDto = {
+    actions: PluginActionResponseDto[];
+    author: string;
+    createdAt: string;
+    description: string;
+    filters: PluginFilterResponseDto[];
+    id: string;
+    name: string;
+    title: string;
+    updatedAt: string;
+    version: string;
 };
 export type SearchExploreItem = {
     data: AssetResponseDto;
@@ -1421,6 +1452,7 @@ export type SystemConfigJobDto = {
     smartSearch: JobSettingsDto;
     thumbnailGeneration: JobSettingsDto;
     videoConversion: JobSettingsDto;
+    workflow: JobSettingsDto;
 };
 export type SystemConfigLibraryScanDto = {
     cronExpression: string;
@@ -1676,6 +1708,54 @@ export type CreateProfileImageResponseDto = {
     profileChangedAt: string;
     profileImagePath: string;
     userId: string;
+};
+export type WorkflowActionResponseDto = {
+    actionConfig: object | null;
+    actionId: string;
+    id: string;
+    order: number;
+    workflowId: string;
+};
+export type WorkflowFilterResponseDto = {
+    filterConfig: object | null;
+    filterId: string;
+    id: string;
+    order: number;
+    workflowId: string;
+};
+export type WorkflowResponseDto = {
+    actions: WorkflowActionResponseDto[];
+    createdAt: string;
+    description: string;
+    enabled: boolean;
+    filters: WorkflowFilterResponseDto[];
+    id: string;
+    name: string | null;
+    ownerId: string;
+    triggerType: TriggerType;
+};
+export type WorkflowActionItemDto = {
+    actionConfig?: object;
+    actionId: string;
+};
+export type WorkflowFilterItemDto = {
+    filterConfig?: object;
+    filterId: string;
+};
+export type WorkflowCreateDto = {
+    actions: WorkflowActionItemDto[];
+    description?: string;
+    enabled?: boolean;
+    filters: WorkflowFilterItemDto[];
+    name: string;
+    triggerType: PluginTriggerType;
+};
+export type WorkflowUpdateDto = {
+    actions?: WorkflowActionItemDto[];
+    description?: string;
+    enabled?: boolean;
+    filters?: WorkflowFilterItemDto[];
+    name?: string;
 };
 /**
  * List all activities
@@ -2842,10 +2922,10 @@ export function reassignFacesById({ id, faceDto }: {
 /**
  * Retrieve queue counts and status
  */
-export function getAllJobsStatus(opts?: Oazapfts.RequestOpts) {
+export function getQueuesLegacy(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
-        data: AllJobStatusResponseDto;
+        data: QueuesResponseDto;
     }>("/jobs", {
         ...opts
     }));
@@ -2865,17 +2945,17 @@ export function createJob({ jobCreateDto }: {
 /**
  * Run jobs
  */
-export function sendJobCommand({ id, jobCommandDto }: {
-    id: JobName;
-    jobCommandDto: JobCommandDto;
+export function runQueueCommandLegacy({ name, queueCommandDto }: {
+    name: QueueName;
+    queueCommandDto: QueueCommandDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
-        data: JobStatusDto;
-    }>(`/jobs/${encodeURIComponent(id)}`, oazapfts.json({
+        data: QueueResponseDto;
+    }>(`/jobs/${encodeURIComponent(name)}`, oazapfts.json({
         ...opts,
         method: "PUT",
-        body: jobCommandDto
+        body: queueCommandDto
     })));
 }
 /**
@@ -3544,6 +3624,30 @@ export function getPersonThumbnail({ id }: {
         status: 200;
         data: Blob;
     }>(`/people/${encodeURIComponent(id)}/thumbnail`, {
+        ...opts
+    }));
+}
+/**
+ * List all plugins
+ */
+export function getPlugins(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: PluginResponseDto[];
+    }>("/plugins", {
+        ...opts
+    }));
+}
+/**
+ * Retrieve a plugin
+ */
+export function getPlugin({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: PluginResponseDto;
+    }>(`/plugins/${encodeURIComponent(id)}`, {
         ...opts
     }));
 }
@@ -4861,6 +4965,72 @@ export function getUniqueOriginalPaths(opts?: Oazapfts.RequestOpts) {
         ...opts
     }));
 }
+/**
+ * List all workflows
+ */
+export function getWorkflows(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: WorkflowResponseDto[];
+    }>("/workflows", {
+        ...opts
+    }));
+}
+/**
+ * Create a workflow
+ */
+export function createWorkflow({ workflowCreateDto }: {
+    workflowCreateDto: WorkflowCreateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: WorkflowResponseDto;
+    }>("/workflows", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: workflowCreateDto
+    })));
+}
+/**
+ * Delete a workflow
+ */
+export function deleteWorkflow({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/workflows/${encodeURIComponent(id)}`, {
+        ...opts,
+        method: "DELETE"
+    }));
+}
+/**
+ * Retrieve a workflow
+ */
+export function getWorkflow({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: WorkflowResponseDto;
+    }>(`/workflows/${encodeURIComponent(id)}`, {
+        ...opts
+    }));
+}
+/**
+ * Update a workflow
+ */
+export function updateWorkflow({ id, workflowUpdateDto }: {
+    id: string;
+    workflowUpdateDto: WorkflowUpdateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: WorkflowResponseDto;
+    }>(`/workflows/${encodeURIComponent(id)}`, oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: workflowUpdateDto
+    })));
+}
 export enum ReactionLevel {
     Album = "album",
     Asset = "asset"
@@ -5018,6 +5188,10 @@ export enum Permission {
     PinCodeCreate = "pinCode.create",
     PinCodeUpdate = "pinCode.update",
     PinCodeDelete = "pinCode.delete",
+    PluginCreate = "plugin.create",
+    PluginRead = "plugin.read",
+    PluginUpdate = "plugin.update",
+    PluginDelete = "plugin.delete",
     ServerAbout = "server.about",
     ServerApkLinks = "server.apkLinks",
     ServerStorage = "server.storage",
@@ -5067,6 +5241,10 @@ export enum Permission {
     UserProfileImageRead = "userProfileImage.read",
     UserProfileImageUpdate = "userProfileImage.update",
     UserProfileImageDelete = "userProfileImage.delete",
+    WorkflowCreate = "workflow.create",
+    WorkflowRead = "workflow.read",
+    WorkflowUpdate = "workflow.update",
+    WorkflowDelete = "workflow.delete",
     AdminUserCreate = "adminUser.create",
     AdminUserRead = "adminUser.read",
     AdminUserUpdate = "adminUser.update",
@@ -5109,7 +5287,7 @@ export enum ManualJobName {
     MemoryCreate = "memory-create",
     BackupDatabase = "backup-database"
 }
-export enum JobName {
+export enum QueueName {
     ThumbnailGeneration = "thumbnailGeneration",
     MetadataExtraction = "metadataExtraction",
     VideoConversion = "videoConversion",
@@ -5125,9 +5303,10 @@ export enum JobName {
     Library = "library",
     Notifications = "notifications",
     BackupDatabase = "backupDatabase",
-    Ocr = "ocr"
+    Ocr = "ocr",
+    Workflow = "workflow"
 }
-export enum JobCommand {
+export enum QueueCommand {
     Start = "start",
     Pause = "pause",
     Resume = "resume",
@@ -5145,6 +5324,11 @@ export enum MemoryType {
 export enum PartnerDirection {
     SharedBy = "shared-by",
     SharedWith = "shared-with"
+}
+export enum PluginContext {
+    Asset = "asset",
+    Album = "album",
+    Person = "person"
 }
 export enum SearchSuggestionType {
     Country = "country",
@@ -5296,4 +5480,12 @@ export enum LogLevel {
 export enum OAuthTokenEndpointAuthMethod {
     ClientSecretPost = "client_secret_post",
     ClientSecretBasic = "client_secret_basic"
+}
+export enum TriggerType {
+    AssetCreate = "AssetCreate",
+    PersonRecognized = "PersonRecognized"
+}
+export enum PluginTriggerType {
+    AssetCreate = "AssetCreate",
+    PersonRecognized = "PersonRecognized"
 }

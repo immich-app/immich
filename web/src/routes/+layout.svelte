@@ -9,9 +9,9 @@
   import UploadPanel from '$lib/components/shared-components/upload-panel.svelte';
   import { AppRoute } from '$lib/constants';
   import { eventManager } from '$lib/managers/event-manager.svelte';
+  import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
   import ServerRestartingModal from '$lib/modals/ServerRestartingModal.svelte';
   import VersionAnnouncementModal from '$lib/modals/VersionAnnouncementModal.svelte';
-  import { serverConfig } from '$lib/stores/system-config-manager.svelte';
   import { user } from '$lib/stores/user.store';
   import {
     closeWebsocketConnection,
@@ -144,7 +144,10 @@
     {#if page.data.meta.imageUrl}
       <meta
         property="og:image"
-        content={new URL(page.data.meta.imageUrl, $serverConfig.externalDomain || globalThis.location.origin).href}
+        content={new URL(
+          page.data.meta.imageUrl,
+          serverConfigManager.value.externalDomain || globalThis.location.origin,
+        ).href}
       />
     {/if}
 
@@ -155,7 +158,10 @@
     {#if page.data.meta.imageUrl}
       <meta
         name="twitter:image"
-        content={new URL(page.data.meta.imageUrl, $serverConfig.externalDomain || globalThis.location.origin).href}
+        content={new URL(
+          page.data.meta.imageUrl,
+          serverConfigManager.value.externalDomain || globalThis.location.origin,
+        ).href}
       />
     {/if}
   {/if}

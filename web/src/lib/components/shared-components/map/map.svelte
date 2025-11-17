@@ -11,10 +11,10 @@
 <script lang="ts">
   import { afterNavigate } from '$app/navigation';
   import { Theme } from '$lib/constants';
+  import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
   import { themeManager } from '$lib/managers/theme-manager.svelte';
   import MapSettingsModal from '$lib/modals/MapSettingsModal.svelte';
   import { mapSettings } from '$lib/stores/preferences.store';
-  import { serverConfig } from '$lib/stores/system-config-manager.svelte';
   import { getAssetThumbnailUrl, handlePromiseError } from '$lib/utils';
   import { getMapMarkers, type MapMarkerResponseDto } from '@immich/sdk';
   import { Icon, modalManager } from '@immich/ui';
@@ -103,7 +103,9 @@
   let abortController: AbortController;
 
   const theme = $derived($mapSettings.allowDarkMode ? themeManager.value : Theme.LIGHT);
-  const styleUrl = $derived(theme === Theme.DARK ? $serverConfig.mapDarkStyleUrl : $serverConfig.mapLightStyleUrl);
+  const styleUrl = $derived(
+    theme === Theme.DARK ? serverConfigManager.value.mapDarkStyleUrl : serverConfigManager.value.mapLightStyleUrl,
+  );
 
   export function addClipMapMarker(lng: number, lat: number) {
     if (map) {
