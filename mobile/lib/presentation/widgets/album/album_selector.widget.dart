@@ -317,7 +317,7 @@ class _SortButtonState extends ConsumerState<_SortButton> {
                 ),
               ),
               child: Text(
-                sortMode.label.tr(),
+                sortMode.label.t(context: context),
                 style: context.textTheme.titleSmall?.copyWith(
                   fontWeight: FontWeight.w600,
                   color: albumSortOption == sortMode
@@ -346,7 +346,7 @@ class _SortButtonState extends ConsumerState<_SortButton> {
                     : const Icon(Icons.keyboard_arrow_up_rounded),
               ),
               Text(
-                albumSortOption.label.tr(),
+                albumSortOption.label.t(context: context),
                 style: context.textTheme.bodyLarge?.copyWith(
                   fontWeight: FontWeight.w500,
                   color: context.colorScheme.onSurface.withAlpha(225),
