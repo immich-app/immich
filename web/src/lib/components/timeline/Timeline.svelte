@@ -176,12 +176,24 @@
   };
 
   const scrollAndLoadAsset = async (assetId: string) => {
-    const monthGroup = await timelineManager.findMonthGroupForAsset(assetId);
-    if (!monthGroup) {
-      return false;
+    try {
+      // This flag prevents layout deferral to fix scroll positioning issues.
+      // When layouts are deferred and we scroll to an asset at the end of the timeline,
+      // we can calculate the asset's position, but the scrollableElement's scrollHeight
+      // hasn't been updated yet to reflect the new layout. This creates a mismatch that
+      // breaks scroll positioning. By disabling layout deferral in this case, we maintain
+      // the performance benefits of deferred layouts while still supporting deep linking
+      // to assets at the end of the timeline.
+      timelineManager.isScrollingOnLoad = true;
+      const monthGroup = await timelineManager.findMonthGroupForAsset(assetId);
+      if (!monthGroup) {
+        return false;
+      }
+      scrollToAssetPosition(assetId, monthGroup);
+      return true;
+    } finally {
+      timelineManager.isScrollingOnLoad = false;
     }
-    scrollToAssetPosition(assetId, monthGroup);
-    return true;
   };
 
   const scrollToAsset = (asset: TimelineAsset) => {
