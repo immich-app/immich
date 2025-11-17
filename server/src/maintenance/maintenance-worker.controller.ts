@@ -22,7 +22,7 @@ export class MaintenanceWorkerController {
   async maintenanceLogin(
     @Req() request: Request,
     @Body() dto: MaintenanceLoginDto,
-        @GetLoginDetails() loginDetails: LoginDetails,
+    @GetLoginDetails() loginDetails: LoginDetails,
     @Res({ passthrough: true }) res: Response,
   ): Promise<MaintenanceAuthDto> {
     const token = dto.token ?? request.cookies[ImmichCookie.MaintenanceToken];
