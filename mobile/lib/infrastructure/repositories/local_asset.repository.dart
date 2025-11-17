@@ -99,14 +99,14 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
     return query.map((localAlbum) => localAlbum.toDto()).get();
   }
 
-  Future<Map<String, List<LocalAsset>>> getAssetsFromBackupAlbums(Iterable<String> checksums) async {
-    if (checksums.isEmpty) {
+  Future<Map<String, List<LocalAsset>>> getAssetsFromBackupAlbums(Map<String, DateTime> trashedAssetsMap) async {
+    if (trashedAssetsMap.isEmpty) {
       return {};
     }
 
     final result = <String, List<LocalAsset>>{};
 
-    for (final slice in checksums.toSet().slices(kDriftMaxChunk)) {
+    for (final slice in trashedAssetsMap.keys.toSet().slices(kDriftMaxChunk)) {
       final rows =
           await (_db.select(_db.localAlbumAssetEntity).join([
                 innerJoin(_db.localAlbumEntity, _db.localAlbumAssetEntity.albumId.equalsExp(_db.localAlbumEntity.id)),
@@ -120,13 +120,12 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
       for (final row in rows) {
         final albumId = row.readTable(_db.localAlbumAssetEntity).albumId;
         final assetData = row.readTable(_db.localAssetEntity);
-        final asset = assetData.toDto();
+        final asset = assetData.toDto().copyWith(remoteDeletedAt: trashedAssetsMap[assetData.checksum]);
         (result[albumId] ??= <LocalAsset>[]).add(asset);
       }
     }
     return result;
   }
-
 
   Future<List<LocalAsset>> getByChecksums(Iterable<String> checksums) {
     if (checksums.isEmpty) return Future.value([]);

@@ -3,8 +3,6 @@ import 'dart:async';
 import 'package:collection/collection.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/models/sync_event.model.dart';
-import 'package:immich_mobile/domain/models/trash_sync.model.dart';
-import 'package:immich_mobile/domain/services/trash_sync.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
@@ -116,8 +114,10 @@ class SyncStreamService {
           final hasPermission = await _localFilesManager.hasManageMediaPermission();
           if (hasPermission) {
             final reviewMode = Store.get(StoreKey.reviewOutOfSyncChangesAndroid, false);
-            final trashedChecksums = remoteSyncAssets.where((e) => e.deletedAt != null).map((e) => e.checksum);
-            await _handleRemoteTrashed(trashedChecksums, reviewMode);
+            final trashedAssetsMap = Map<String, DateTime>.fromEntries(
+              remoteSyncAssets.where((e) => e.deletedAt != null).map((e) => MapEntry(e.checksum, e.deletedAt!)),
+            );
+            await _handleRemoteTrashed(trashedAssetsMap, reviewMode);
             await _applyRemoteRestoreToLocal();
             if (reviewMode) {
               await _trashSyncRepository.deleteAlreadySynced();
@@ -256,19 +256,17 @@ class SyncStreamService {
     }
   }
 
-  Future<void> _handleRemoteTrashed(Iterable<String> checksums, bool reviewMode) async {
-    if (checksums.isEmpty) {
+  Future<void> _handleRemoteTrashed(Map<String, DateTime> trashedAssetsMap, bool reviewMode) async {
+    if (trashedAssetsMap.isEmpty) {
       return Future.value();
     } else {
-      final localAssetsToTrash = await _localAssetRepository.getAssetsFromBackupAlbums(checksums);
+      final localAssetsToTrash = await _localAssetRepository.getAssetsFromBackupAlbums(trashedAssetsMap);
       if (localAssetsToTrash.isNotEmpty) {
         if (reviewMode) {
-          final itemsToReview = localAssetsToTrash.values.flattened
-              .map<ReviewItem>((la) => (localAssetId: la.id, checksum: la.checksum ?? ''))
-              .where((la) => la.checksum.isNotEmpty);
+          final itemsToReview = localAssetsToTrash.values.flattened.where((la) => la.checksum?.isNotEmpty == true);
 
           _logger.info("Apply remote trash action to review for: $itemsToReview");
-          await _trashSyncRepository.upsertWithActionTypeCheck(itemsToReview, TrashActionType.trashed);
+          await _trashSyncRepository.upsertWithActionTypeCheck(itemsToReview);
         } else {
           final mediaUrls = await Future.wait(
             localAssetsToTrash.values
@@ -284,7 +282,7 @@ class SyncStreamService {
           }
         }
       } else {
-        _logger.info("No assets found in backup-enabled albums for assets: $checksums");
+        _logger.info("No assets found in backup-enabled albums for assets: $trashedAssetsMap");
       }
     }
   }

@@ -76,6 +76,7 @@ class LocalAsset extends BaseAsset {
     int? durationInSeconds,
     bool? isFavorite,
     int? orientation,
+    DateTime? remoteDeletedAt,
   }) {
     return LocalAsset(
       id: id ?? this.id,
@@ -90,6 +91,7 @@ class LocalAsset extends BaseAsset {
       durationInSeconds: durationInSeconds ?? this.durationInSeconds,
       isFavorite: isFavorite ?? this.isFavorite,
       orientation: orientation ?? this.orientation,
+      remoteDeletedAt: remoteDeletedAt ?? this.remoteDeletedAt,
     );
   }
 }

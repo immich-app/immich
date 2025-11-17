@@ -1,6 +1,5 @@
 import 'package:async/async.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/domain/models/trash_sync.model.dart';
 import 'package:immich_mobile/domain/services/trash_sync.service.dart';
 import 'package:immich_mobile/infrastructure/repositories/trash_sync.repository.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
@@ -11,7 +10,6 @@ import 'db.provider.dart';
 
 typedef TrashedAssetsCount = ({int total, int hashed});
 
-//todo need to clean-up! PeterO
 final trashSyncRepositoryProvider = Provider<DriftTrashSyncRepository>(
   (ref) => DriftTrashSyncRepository(ref.watch(driftProvider)),
 );
@@ -35,21 +33,6 @@ final outOfSyncCountProvider = StreamProvider<int>((ref) {
     error: (_, __) => Stream<int>.value(0),
   );
 });
-
-final restoredCountProvider = StreamProvider<int>((ref) {
-  return ref.read(trashSyncServiceProvider).watchPendingApprovalCount(actionType: TrashActionType.restored);
-});
-
-final trashedCountProvider = StreamProvider<int>((ref) {
-  return ref.read(trashSyncServiceProvider).watchPendingApprovalCount(actionType: TrashActionType.trashed);
-});
-
-// final isApprovalPendingProvider = StreamProvider.autoDispose.family<bool, String?>((ref, checksum) async* {
-//   yield false;
-//   if (checksum != null) {
-//     yield* ref.watch(trashSyncServiceProvider).watchIsApprovalPending(checksum);
-//   }
-// });
 
 final pendingApprovalChecksumsProvider = StreamProvider<Set<String>>((ref) {
   final enabledReviewMode = ref.watch(appSettingStreamProvider(AppSettingsEnum.reviewOutOfSyncChangesAndroid));

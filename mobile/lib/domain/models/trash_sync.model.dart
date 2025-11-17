@@ -1,17 +1,11 @@
-enum TrashActionType { trashed, restored }
+enum OutSyncType { trash, upload, etc }
 
 class TrashSyncDecision {
   final String assetId;
   final String checksum;
   final bool? isSyncApproved;
-  final TrashActionType actionType;
 
-  const TrashSyncDecision({
-    required this.assetId,
-    required this.checksum,
-    this.isSyncApproved,
-    required this.actionType,
-  });
+  const TrashSyncDecision({required this.assetId, required this.checksum, this.isSyncApproved});
 
   @override
   String toString() {
@@ -19,7 +13,6 @@ class TrashSyncDecision {
   assetId: $assetId,
   checksum: $checksum,
   isSyncApproved: $isSyncApproved,
-  syncActionType: $actionType,
 }''';
   }
 
@@ -27,26 +20,17 @@ class TrashSyncDecision {
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     if (other is! TrashSyncDecision) return false;
-    return assetId == other.assetId &&
-        checksum == other.checksum &&
-        isSyncApproved == other.isSyncApproved &&
-        actionType == other.actionType;
+    return assetId == other.assetId && checksum == other.checksum && isSyncApproved == other.isSyncApproved;
   }
 
   @override
-  int get hashCode => assetId.hashCode ^ checksum.hashCode ^ (isSyncApproved?.hashCode ?? 0) ^ actionType.hashCode;
+  int get hashCode => assetId.hashCode ^ checksum.hashCode ^ (isSyncApproved?.hashCode ?? 0);
 
-  TrashSyncDecision copyWith({
-    String? assetId,
-    String? checksum,
-    bool? isSyncApproved,
-    TrashActionType? syncActionType,
-  }) {
+  TrashSyncDecision copyWith({String? assetId, String? checksum, bool? isSyncApproved}) {
     return TrashSyncDecision(
       assetId: assetId ?? this.assetId,
       checksum: checksum ?? this.checksum,
       isSyncApproved: isSyncApproved ?? this.isSyncApproved,
-      actionType: syncActionType ?? actionType,
     );
   }
 }

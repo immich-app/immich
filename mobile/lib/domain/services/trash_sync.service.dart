@@ -1,7 +1,4 @@
-import 'package:immich_mobile/domain/models/trash_sync.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/trash_sync.repository.dart';
-
-typedef ReviewItem = ({String localAssetId, String checksum});
 
 class TrashSyncService {
   final DriftTrashSyncRepository _trashSyncRepository;
@@ -9,8 +6,7 @@ class TrashSyncService {
   TrashSyncService({required DriftTrashSyncRepository trashSyncRepository})
     : _trashSyncRepository = trashSyncRepository;
 
-  Stream<int> watchPendingApprovalCount({TrashActionType? actionType}) =>
-      _trashSyncRepository.watchPendingApprovalCount(actionType);
+  Stream<int> watchPendingApprovalCount() => _trashSyncRepository.watchPendingApprovalCount();
 
   Stream<Set<String>> watchPendingApprovalChecksums() => _trashSyncRepository.watchPendingApprovalChecksums();
 

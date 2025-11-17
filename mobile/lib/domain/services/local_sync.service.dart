@@ -5,8 +5,6 @@ import 'package:flutter/foundation.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
-import 'package:immich_mobile/domain/models/trash_sync.model.dart';
-import 'package:immich_mobile/domain/services/trash_sync.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
@@ -333,11 +331,10 @@ class LocalSyncService {
     if (localAssetsToTrash.isNotEmpty) {
       if (reviewMode) {
         final itemsToReview = localAssetsToTrash.values.flattened
-            .map<ReviewItem>((la) => (localAssetId: la.id, checksum: la.checksum ?? ''))
-            .where((la) => la.checksum.isNotEmpty);
+            .where((la) => la.checksum?.isNotEmpty == true);
 
         _log.info("Apply remote trash action to review for: $itemsToReview");
-        await _trashSyncRepository.upsertWithActionTypeCheck(itemsToReview, TrashActionType.trashed);
+        await _trashSyncRepository.upsertWithActionTypeCheck(itemsToReview);
       } else {
         final mediaUrls = await Future.wait(
           localAssetsToTrash.values

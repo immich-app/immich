@@ -3,23 +3,23 @@
 import 'package:drift/drift.dart' as i0;
 import 'package:immich_mobile/infrastructure/entities/trash_sync.entity.drift.dart'
     as i1;
-import 'package:immich_mobile/domain/models/trash_sync.model.dart' as i2;
 import 'package:immich_mobile/infrastructure/entities/trash_sync.entity.dart'
-    as i3;
+    as i2;
+import 'package:drift/src/runtime/query_builder/query_builder.dart' as i3;
 
 typedef $$TrashSyncEntityTableCreateCompanionBuilder =
     i1.TrashSyncEntityCompanion Function({
       required String assetId,
       required String checksum,
       i0.Value<bool?> isSyncApproved,
-      required i2.TrashActionType actionType,
+      i0.Value<DateTime> createdAt,
     });
 typedef $$TrashSyncEntityTableUpdateCompanionBuilder =
     i1.TrashSyncEntityCompanion Function({
       i0.Value<String> assetId,
       i0.Value<String> checksum,
       i0.Value<bool?> isSyncApproved,
-      i0.Value<i2.TrashActionType> actionType,
+      i0.Value<DateTime> createdAt,
     });
 
 class $$TrashSyncEntityTableFilterComposer
@@ -46,10 +46,9 @@ class $$TrashSyncEntityTableFilterComposer
     builder: (column) => i0.ColumnFilters(column),
   );
 
-  i0.ColumnWithTypeConverterFilters<i2.TrashActionType, i2.TrashActionType, int>
-  get actionType => $composableBuilder(
-    column: $table.actionType,
-    builder: (column) => i0.ColumnWithTypeConverterFilters(column),
+  i0.ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => i0.ColumnFilters(column),
   );
 }
 
@@ -77,8 +76,8 @@ class $$TrashSyncEntityTableOrderingComposer
     builder: (column) => i0.ColumnOrderings(column),
   );
 
-  i0.ColumnOrderings<int> get actionType => $composableBuilder(
-    column: $table.actionType,
+  i0.ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
     builder: (column) => i0.ColumnOrderings(column),
   );
 }
@@ -103,11 +102,8 @@ class $$TrashSyncEntityTableAnnotationComposer
     builder: (column) => column,
   );
 
-  i0.GeneratedColumnWithTypeConverter<i2.TrashActionType, int> get actionType =>
-      $composableBuilder(
-        column: $table.actionType,
-        builder: (column) => column,
-      );
+  i0.GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
 }
 
 class $$TrashSyncEntityTableTableManager
@@ -150,25 +146,24 @@ class $$TrashSyncEntityTableTableManager
                 i0.Value<String> assetId = const i0.Value.absent(),
                 i0.Value<String> checksum = const i0.Value.absent(),
                 i0.Value<bool?> isSyncApproved = const i0.Value.absent(),
-                i0.Value<i2.TrashActionType> actionType =
-                    const i0.Value.absent(),
+                i0.Value<DateTime> createdAt = const i0.Value.absent(),
               }) => i1.TrashSyncEntityCompanion(
                 assetId: assetId,
                 checksum: checksum,
                 isSyncApproved: isSyncApproved,
-                actionType: actionType,
+                createdAt: createdAt,
               ),
           createCompanionCallback:
               ({
                 required String assetId,
                 required String checksum,
                 i0.Value<bool?> isSyncApproved = const i0.Value.absent(),
-                required i2.TrashActionType actionType,
+                i0.Value<DateTime> createdAt = const i0.Value.absent(),
               }) => i1.TrashSyncEntityCompanion.insert(
                 assetId: assetId,
                 checksum: checksum,
                 isSyncApproved: isSyncApproved,
-                actionType: actionType,
+                createdAt: createdAt,
               ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), i0.BaseReferences(db, table, e)))
@@ -204,7 +199,7 @@ i0.Index get idxTrashSyncChecksum => i0.Index(
   'CREATE INDEX idx_trash_sync_checksum ON trash_sync_entity (checksum)',
 );
 
-class $TrashSyncEntityTable extends i3.TrashSyncEntity
+class $TrashSyncEntityTable extends i2.TrashSyncEntity
     with i0.TableInfo<$TrashSyncEntityTable, i1.TrashSyncEntityData> {
   @override
   final i0.GeneratedDatabase attachedDatabase;
@@ -245,24 +240,25 @@ class $TrashSyncEntityTable extends i3.TrashSyncEntity
       'CHECK ("is_sync_approved" IN (0, 1))',
     ),
   );
+  static const i0.VerificationMeta _createdAtMeta = const i0.VerificationMeta(
+    'createdAt',
+  );
   @override
-  late final i0.GeneratedColumnWithTypeConverter<i2.TrashActionType, int>
-  actionType =
-      i0.GeneratedColumn<int>(
-        'action_type',
+  late final i0.GeneratedColumn<DateTime> createdAt =
+      i0.GeneratedColumn<DateTime>(
+        'created_at',
         aliasedName,
         false,
-        type: i0.DriftSqlType.int,
-        requiredDuringInsert: true,
-      ).withConverter<i2.TrashActionType>(
-        i1.$TrashSyncEntityTable.$converteractionType,
+        type: i0.DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+        defaultValue: i3.currentDateAndTime,
       );
   @override
   List<i0.GeneratedColumn> get $columns => [
     assetId,
     checksum,
     isSyncApproved,
-    actionType,
+    createdAt,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -301,6 +297,12 @@ class $TrashSyncEntityTable extends i3.TrashSyncEntity
         ),
       );
     }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
     return context;
   }
 
@@ -322,12 +324,10 @@ class $TrashSyncEntityTable extends i3.TrashSyncEntity
         i0.DriftSqlType.bool,
         data['${effectivePrefix}is_sync_approved'],
       ),
-      actionType: i1.$TrashSyncEntityTable.$converteractionType.fromSql(
-        attachedDatabase.typeMapping.read(
-          i0.DriftSqlType.int,
-          data['${effectivePrefix}action_type'],
-        )!,
-      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        i0.DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
     );
   }
 
@@ -336,10 +336,6 @@ class $TrashSyncEntityTable extends i3.TrashSyncEntity
     return $TrashSyncEntityTable(attachedDatabase, alias);
   }
 
-  static i0.JsonTypeConverter2<i2.TrashActionType, int, int>
-  $converteractionType = const i0.EnumIndexConverter<i2.TrashActionType>(
-    i2.TrashActionType.values,
-  );
   @override
   bool get withoutRowId => true;
   @override
@@ -351,12 +347,12 @@ class TrashSyncEntityData extends i0.DataClass
   final String assetId;
   final String checksum;
   final bool? isSyncApproved;
-  final i2.TrashActionType actionType;
+  final DateTime createdAt;
   const TrashSyncEntityData({
     required this.assetId,
     required this.checksum,
     this.isSyncApproved,
-    required this.actionType,
+    required this.createdAt,
   });
   @override
   Map<String, i0.Expression> toColumns(bool nullToAbsent) {
@@ -366,11 +362,7 @@ class TrashSyncEntityData extends i0.DataClass
     if (!nullToAbsent || isSyncApproved != null) {
       map['is_sync_approved'] = i0.Variable<bool>(isSyncApproved);
     }
-    {
-      map['action_type'] = i0.Variable<int>(
-        i1.$TrashSyncEntityTable.$converteractionType.toSql(actionType),
-      );
-    }
+    map['created_at'] = i0.Variable<DateTime>(createdAt);
     return map;
   }
 
@@ -383,9 +375,7 @@ class TrashSyncEntityData extends i0.DataClass
       assetId: serializer.fromJson<String>(json['assetId']),
       checksum: serializer.fromJson<String>(json['checksum']),
       isSyncApproved: serializer.fromJson<bool?>(json['isSyncApproved']),
-      actionType: i1.$TrashSyncEntityTable.$converteractionType.fromJson(
-        serializer.fromJson<int>(json['actionType']),
-      ),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
     );
   }
   @override
@@ -395,9 +385,7 @@ class TrashSyncEntityData extends i0.DataClass
       'assetId': serializer.toJson<String>(assetId),
       'checksum': serializer.toJson<String>(checksum),
       'isSyncApproved': serializer.toJson<bool?>(isSyncApproved),
-      'actionType': serializer.toJson<int>(
-        i1.$TrashSyncEntityTable.$converteractionType.toJson(actionType),
-      ),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
     };
   }
 
@@ -405,14 +393,14 @@ class TrashSyncEntityData extends i0.DataClass
     String? assetId,
     String? checksum,
     i0.Value<bool?> isSyncApproved = const i0.Value.absent(),
-    i2.TrashActionType? actionType,
+    DateTime? createdAt,
   }) => i1.TrashSyncEntityData(
     assetId: assetId ?? this.assetId,
     checksum: checksum ?? this.checksum,
     isSyncApproved: isSyncApproved.present
         ? isSyncApproved.value
         : this.isSyncApproved,
-    actionType: actionType ?? this.actionType,
+    createdAt: createdAt ?? this.createdAt,
   );
   TrashSyncEntityData copyWithCompanion(i1.TrashSyncEntityCompanion data) {
     return TrashSyncEntityData(
@@ -421,9 +409,7 @@ class TrashSyncEntityData extends i0.DataClass
       isSyncApproved: data.isSyncApproved.present
           ? data.isSyncApproved.value
           : this.isSyncApproved,
-      actionType: data.actionType.present
-          ? data.actionType.value
-          : this.actionType,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
     );
   }
 
@@ -433,14 +419,13 @@ class TrashSyncEntityData extends i0.DataClass
           ..write('assetId: $assetId, ')
           ..write('checksum: $checksum, ')
           ..write('isSyncApproved: $isSyncApproved, ')
-          ..write('actionType: $actionType')
+          ..write('createdAt: $createdAt')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode =>
-      Object.hash(assetId, checksum, isSyncApproved, actionType);
+  int get hashCode => Object.hash(assetId, checksum, isSyncApproved, createdAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -448,7 +433,7 @@ class TrashSyncEntityData extends i0.DataClass
           other.assetId == this.assetId &&
           other.checksum == this.checksum &&
           other.isSyncApproved == this.isSyncApproved &&
-          other.actionType == this.actionType);
+          other.createdAt == this.createdAt);
 }
 
 class TrashSyncEntityCompanion
@@ -456,32 +441,31 @@ class TrashSyncEntityCompanion
   final i0.Value<String> assetId;
   final i0.Value<String> checksum;
   final i0.Value<bool?> isSyncApproved;
-  final i0.Value<i2.TrashActionType> actionType;
+  final i0.Value<DateTime> createdAt;
   const TrashSyncEntityCompanion({
     this.assetId = const i0.Value.absent(),
     this.checksum = const i0.Value.absent(),
     this.isSyncApproved = const i0.Value.absent(),
-    this.actionType = const i0.Value.absent(),
+    this.createdAt = const i0.Value.absent(),
   });
   TrashSyncEntityCompanion.insert({
     required String assetId,
     required String checksum,
     this.isSyncApproved = const i0.Value.absent(),
-    required i2.TrashActionType actionType,
+    this.createdAt = const i0.Value.absent(),
   }) : assetId = i0.Value(assetId),
-       checksum = i0.Value(checksum),
-       actionType = i0.Value(actionType);
+       checksum = i0.Value(checksum);
   static i0.Insertable<i1.TrashSyncEntityData> custom({
     i0.Expression<String>? assetId,
     i0.Expression<String>? checksum,
     i0.Expression<bool>? isSyncApproved,
-    i0.Expression<int>? actionType,
+    i0.Expression<DateTime>? createdAt,
   }) {
     return i0.RawValuesInsertable({
       if (assetId != null) 'asset_id': assetId,
       if (checksum != null) 'checksum': checksum,
       if (isSyncApproved != null) 'is_sync_approved': isSyncApproved,
-      if (actionType != null) 'action_type': actionType,
+      if (createdAt != null) 'created_at': createdAt,
     });
   }
 
@@ -489,13 +473,13 @@ class TrashSyncEntityCompanion
     i0.Value<String>? assetId,
     i0.Value<String>? checksum,
     i0.Value<bool?>? isSyncApproved,
-    i0.Value<i2.TrashActionType>? actionType,
+    i0.Value<DateTime>? createdAt,
   }) {
     return i1.TrashSyncEntityCompanion(
       assetId: assetId ?? this.assetId,
       checksum: checksum ?? this.checksum,
       isSyncApproved: isSyncApproved ?? this.isSyncApproved,
-      actionType: actionType ?? this.actionType,
+      createdAt: createdAt ?? this.createdAt,
     );
   }
 
@@ -511,10 +495,8 @@ class TrashSyncEntityCompanion
     if (isSyncApproved.present) {
       map['is_sync_approved'] = i0.Variable<bool>(isSyncApproved.value);
     }
-    if (actionType.present) {
-      map['action_type'] = i0.Variable<int>(
-        i1.$TrashSyncEntityTable.$converteractionType.toSql(actionType.value),
-      );
+    if (createdAt.present) {
+      map['created_at'] = i0.Variable<DateTime>(createdAt.value);
     }
     return map;
   }
@@ -525,7 +507,7 @@ class TrashSyncEntityCompanion
           ..write('assetId: $assetId, ')
           ..write('checksum: $checksum, ')
           ..write('isSyncApproved: $isSyncApproved, ')
-          ..write('actionType: $actionType')
+          ..write('createdAt: $createdAt')
           ..write(')'))
         .toString();
   }

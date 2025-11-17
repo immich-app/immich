@@ -13,7 +13,7 @@ class TrashSyncEntity extends Table with DriftDefaultsMixin {
 
   BoolColumn get isSyncApproved => boolean().nullable()();
 
-  IntColumn get actionType => intEnum<TrashActionType>()();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
 
   @override
   Set<Column> get primaryKey => {assetId};
@@ -24,6 +24,5 @@ extension LocalAssetEntityDataDomainEx on TrashSyncEntityData {
     assetId: assetId,
     checksum: checksum,
     isSyncApproved: isSyncApproved,
-    actionType: actionType,
   );
 }
