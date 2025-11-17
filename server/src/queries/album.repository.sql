@@ -43,13 +43,13 @@ select
                 from
                   "user"
                 where
-                  "user"."id" = "album_user"."usersId"
+                  "user"."id" = "album_user"."userId"
               ) as obj
           ) as "user"
         from
           "album_user"
         where
-          "album_user"."albumsId" = "album"."id"
+          "album_user"."albumId" = "album"."id"
       ) as agg
   ) as "albumUsers",
   (
@@ -76,9 +76,9 @@ select
         from
           "asset"
           left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
-          inner join "album_asset" on "album_asset"."assetsId" = "asset"."id"
+          inner join "album_asset" on "album_asset"."assetId" = "asset"."id"
         where
-          "album_asset"."albumsId" = "album"."id"
+          "album_asset"."albumId" = "album"."id"
           and "asset"."deletedAt" is null
           and "asset"."visibility" in ('archive', 'timeline')
         order by
@@ -134,18 +134,18 @@ select
                 from
                   "user"
                 where
-                  "user"."id" = "album_user"."usersId"
+                  "user"."id" = "album_user"."userId"
               ) as obj
           ) as "user"
         from
           "album_user"
         where
-          "album_user"."albumsId" = "album"."id"
+          "album_user"."albumId" = "album"."id"
       ) as agg
   ) as "albumUsers"
 from
   "album"
-  inner join "album_asset" on "album_asset"."albumsId" = "album"."id"
+  inner join "album_asset" on "album_asset"."albumId" = "album"."id"
 where
   (
     "album"."ownerId" = $1
@@ -154,11 +154,11 @@ where
       from
         "album_user"
       where
-        "album_user"."albumsId" = "album"."id"
-        and "album_user"."usersId" = $2
+        "album_user"."albumId" = "album"."id"
+        and "album_user"."userId" = $2
     )
   )
-  and "album_asset"."assetsId" = $3
+  and "album_asset"."assetId" = $3
   and "album"."deletedAt" is null
 order by
   "album"."createdAt" desc,
@@ -166,7 +166,7 @@ order by
 
 -- AlbumRepository.getMetadataForIds
 select
-  "album_asset"."albumsId" as "albumId",
+  "album_asset"."albumId" as "albumId",
   min(
     ("asset"."localDateTime" AT TIME ZONE 'UTC'::text)::date
   ) as "startDate",
@@ -177,13 +177,13 @@ select
   count("asset"."id")::int as "assetCount"
 from
   "asset"
-  inner join "album_asset" on "album_asset"."assetsId" = "asset"."id"
+  inner join "album_asset" on "album_asset"."assetId" = "asset"."id"
 where
   "asset"."visibility" in ('archive', 'timeline')
-  and "album_asset"."albumsId" in ($1)
+  and "album_asset"."albumId" in ($1)
   and "asset"."deletedAt" is null
 group by
-  "album_asset"."albumsId"
+  "album_asset"."albumId"
 
 -- AlbumRepository.getOwned
 select
@@ -228,13 +228,13 @@ select
                 from
                   "user"
                 where
-                  "user"."id" = "album_user"."usersId"
+                  "user"."id" = "album_user"."userId"
               ) as obj
           ) as "user"
         from
           "album_user"
         where
-          "album_user"."albumsId" = "album"."id"
+          "album_user"."albumId" = "album"."id"
       ) as agg
   ) as "albumUsers",
   (
@@ -283,13 +283,13 @@ select
                 from
                   "user"
                 where
-                  "user"."id" = "album_user"."usersId"
+                  "user"."id" = "album_user"."userId"
               ) as obj
           ) as "user"
         from
           "album_user"
         where
-          "album_user"."albumsId" = "album"."id"
+          "album_user"."albumId" = "album"."id"
       ) as agg
   ) as "albumUsers",
   (
@@ -332,10 +332,10 @@ where
       from
         "album_user"
       where
-        "album_user"."albumsId" = "album"."id"
+        "album_user"."albumId" = "album"."id"
         and (
           "album"."ownerId" = $1
-          or "album_user"."usersId" = $2
+          or "album_user"."userId" = $2
         )
     )
     or exists (
@@ -382,7 +382,7 @@ where
     from
       "album_user"
     where
-      "album_user"."albumsId" = "album"."id"
+      "album_user"."albumId" = "album"."id"
   )
   and not exists (
     select
@@ -397,7 +397,7 @@ order by
 -- AlbumRepository.removeAssetsFromAll
 delete from "album_asset"
 where
-  "album_asset"."assetsId" in ($1)
+  "album_asset"."assetId" in ($1)
 
 -- AlbumRepository.getAssetIds
 select
@@ -405,8 +405,8 @@ select
 from
   "album_asset"
 where
-  "album_asset"."albumsId" = $1
-  and "album_asset"."assetsId" in ($2)
+  "album_asset"."albumId" = $1
+  and "album_asset"."assetId" in ($2)
 
 -- AlbumRepository.getContributorCounts
 select
@@ -414,10 +414,10 @@ select
   count(*) as "assetCount"
 from
   "album_asset"
-  inner join "asset" on "asset"."id" = "assetsId"
+  inner join "asset" on "asset"."id" = "assetId"
 where
   "asset"."deletedAt" is null
-  and "album_asset"."albumsId" = $1
+  and "album_asset"."albumId" = $1
 group by
   "asset"."ownerId"
 order by
@@ -427,10 +427,10 @@ order by
 insert into
   "album_asset"
 select
-  "album_asset"."albumsId",
-  $1 as "assetsId"
+  "album_asset"."albumId",
+  $1 as "assetId"
 from
   "album_asset"
 where
-  "album_asset"."assetsId" = $2
+  "album_asset"."assetId" = $2
 on conflict do nothing

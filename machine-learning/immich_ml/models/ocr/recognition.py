@@ -6,7 +6,7 @@ from PIL import Image
 from rapidocr.ch_ppocr_rec import TextRecInput
 from rapidocr.ch_ppocr_rec import TextRecognizer as RapidTextRecognizer
 from rapidocr.inference_engine.base import FileInfo, InferSession
-from rapidocr.utils import DownloadFile, DownloadFileInput
+from rapidocr.utils.download_file import DownloadFile, DownloadFileInput
 from rapidocr.utils.typings import EngineType, LangRec, OCRVersion, TaskType
 from rapidocr.utils.typings import ModelType as RapidModelType
 from rapidocr.utils.vis_res import VisRes
@@ -25,6 +25,7 @@ class TextRecognizer(InferenceModel):
     identity = (ModelType.RECOGNITION, ModelTask.OCR)
 
     def __init__(self, model_name: str, **model_kwargs: Any) -> None:
+        self.language = LangRec[model_name.split("__")[0]] if "__" in model_name else LangRec.CH
         self.min_score = model_kwargs.get("minScore", 0.9)
         self._empty: TextRecognitionOutput = {
             "box": np.empty(0, dtype=np.float32),
@@ -41,7 +42,7 @@ class TextRecognizer(InferenceModel):
                 engine_type=EngineType.ONNXRUNTIME,
                 ocr_version=OCRVersion.PPOCRV5,
                 task_type=TaskType.REC,
-                lang_type=LangRec.CH,
+                lang_type=self.language,
                 model_type=RapidModelType.MOBILE if "mobile" in self.model_name else RapidModelType.SERVER,
             )
         )
@@ -61,6 +62,7 @@ class TextRecognizer(InferenceModel):
                 session=session.session,
                 rec_batch_num=settings.max_batch_size.text_recognition if settings.max_batch_size is not None else 6,
                 rec_img_shape=(3, 48, 320),
+                lang_type=self.language,
             )
         )
         return session

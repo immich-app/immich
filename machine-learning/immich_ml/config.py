@@ -13,6 +13,8 @@ from rich.logging import RichHandler
 from uvicorn import Server
 from uvicorn.workers import UvicornWorker
 
+from .schemas import ModelPrecision
+
 
 class ClipSettings(BaseModel):
     textual: str | None = None
@@ -20,6 +22,11 @@ class ClipSettings(BaseModel):
 
 
 class FacialRecognitionSettings(BaseModel):
+    recognition: str | None = None
+    detection: str | None = None
+
+
+class OcrSettings(BaseModel):
     recognition: str | None = None
     detection: str | None = None
 
@@ -37,6 +44,7 @@ class PreloadModelData(BaseModel):
         del os.environ["MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION"]
     clip: ClipSettings = ClipSettings()
     facial_recognition: FacialRecognitionSettings = FacialRecognitionSettings()
+    ocr: OcrSettings = OcrSettings()
 
 
 class MaxBatchSize(BaseModel):
@@ -70,6 +78,7 @@ class Settings(BaseSettings):
     rknn_threads: int = 1
     preload: PreloadModelData | None = None
     max_batch_size: MaxBatchSize | None = None
+    openvino_precision: ModelPrecision = ModelPrecision.FP32
 
     @property
     def device_id(self) -> str:

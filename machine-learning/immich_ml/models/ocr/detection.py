@@ -6,7 +6,7 @@ from numpy.typing import NDArray
 from PIL import Image
 from rapidocr.ch_ppocr_det.utils import DBPostProcess
 from rapidocr.inference_engine.base import FileInfo, InferSession
-from rapidocr.utils import DownloadFile, DownloadFileInput
+from rapidocr.utils.download_file import DownloadFile, DownloadFileInput
 from rapidocr.utils.typings import EngineType, LangDet, OCRVersion, TaskType
 from rapidocr.utils.typings import ModelType as RapidModelType
 
@@ -23,7 +23,7 @@ class TextDetector(InferenceModel):
     identity = (ModelType.DETECTION, ModelTask.OCR)
 
     def __init__(self, model_name: str, **model_kwargs: Any) -> None:
-        super().__init__(model_name, **model_kwargs, model_format=ModelFormat.ONNX)
+        super().__init__(model_name.split("__")[-1], **model_kwargs, model_format=ModelFormat.ONNX)
         self.max_resolution = 736
         self.mean = np.array([0.5, 0.5, 0.5], dtype=np.float32)
         self.std_inv = np.float32(1.0) / (np.array([0.5, 0.5, 0.5], dtype=np.float32) * 255.0)

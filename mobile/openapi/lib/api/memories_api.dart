@@ -16,7 +16,9 @@ class MemoriesApi {
 
   final ApiClient apiClient;
 
-  /// This endpoint requires the `memoryAsset.create` permission.
+  /// Add assets to a memory
+  ///
+  /// Add a list of asset IDs to a specific memory.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -51,7 +53,9 @@ class MemoriesApi {
     );
   }
 
-  /// This endpoint requires the `memoryAsset.create` permission.
+  /// Add assets to a memory
+  ///
+  /// Add a list of asset IDs to a specific memory.
   ///
   /// Parameters:
   ///
@@ -76,7 +80,9 @@ class MemoriesApi {
     return null;
   }
 
-  /// This endpoint requires the `memory.create` permission.
+  /// Create a memory
+  ///
+  /// Create a new memory by providing a name, description, and a list of asset IDs to include in the memory.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -108,7 +114,9 @@ class MemoriesApi {
     );
   }
 
-  /// This endpoint requires the `memory.create` permission.
+  /// Create a memory
+  ///
+  /// Create a new memory by providing a name, description, and a list of asset IDs to include in the memory.
   ///
   /// Parameters:
   ///
@@ -128,7 +136,9 @@ class MemoriesApi {
     return null;
   }
 
-  /// This endpoint requires the `memory.delete` permission.
+  /// Delete a memory
+  ///
+  /// Delete a specific memory by its ID.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -161,7 +171,9 @@ class MemoriesApi {
     );
   }
 
-  /// This endpoint requires the `memory.delete` permission.
+  /// Delete a memory
+  ///
+  /// Delete a specific memory by its ID.
   ///
   /// Parameters:
   ///
@@ -173,7 +185,9 @@ class MemoriesApi {
     }
   }
 
-  /// This endpoint requires the `memory.read` permission.
+  /// Retrieve a memory
+  ///
+  /// Retrieve a specific memory by its ID.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -206,7 +220,9 @@ class MemoriesApi {
     );
   }
 
-  /// This endpoint requires the `memory.read` permission.
+  /// Retrieve a memory
+  ///
+  /// Retrieve a specific memory by its ID.
   ///
   /// Parameters:
   ///
@@ -226,7 +242,9 @@ class MemoriesApi {
     return null;
   }
 
-  /// This endpoint requires the `memory.statistics` permission.
+  /// Retrieve memories statistics
+  ///
+  /// Retrieve statistics about memories, such as total count and other relevant metrics.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -238,8 +256,13 @@ class MemoriesApi {
   ///
   /// * [bool] isTrashed:
   ///
+  /// * [MemorySearchOrder] order:
+  ///
+  /// * [int] size:
+  ///   Number of memories to return
+  ///
   /// * [MemoryType] type:
-  Future<Response> memoriesStatisticsWithHttpInfo({ DateTime? for_, bool? isSaved, bool? isTrashed, MemoryType? type, }) async {
+  Future<Response> memoriesStatisticsWithHttpInfo({ DateTime? for_, bool? isSaved, bool? isTrashed, MemorySearchOrder? order, int? size, MemoryType? type, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/memories/statistics';
 
@@ -259,6 +282,12 @@ class MemoriesApi {
     if (isTrashed != null) {
       queryParams.addAll(_queryParams('', 'isTrashed', isTrashed));
     }
+    if (order != null) {
+      queryParams.addAll(_queryParams('', 'order', order));
+    }
+    if (size != null) {
+      queryParams.addAll(_queryParams('', 'size', size));
+    }
     if (type != null) {
       queryParams.addAll(_queryParams('', 'type', type));
     }
@@ -277,7 +306,9 @@ class MemoriesApi {
     );
   }
 
-  /// This endpoint requires the `memory.statistics` permission.
+  /// Retrieve memories statistics
+  ///
+  /// Retrieve statistics about memories, such as total count and other relevant metrics.
   ///
   /// Parameters:
   ///
@@ -287,9 +318,14 @@ class MemoriesApi {
   ///
   /// * [bool] isTrashed:
   ///
+  /// * [MemorySearchOrder] order:
+  ///
+  /// * [int] size:
+  ///   Number of memories to return
+  ///
   /// * [MemoryType] type:
-  Future<MemoryStatisticsResponseDto?> memoriesStatistics({ DateTime? for_, bool? isSaved, bool? isTrashed, MemoryType? type, }) async {
-    final response = await memoriesStatisticsWithHttpInfo( for_: for_, isSaved: isSaved, isTrashed: isTrashed, type: type, );
+  Future<MemoryStatisticsResponseDto?> memoriesStatistics({ DateTime? for_, bool? isSaved, bool? isTrashed, MemorySearchOrder? order, int? size, MemoryType? type, }) async {
+    final response = await memoriesStatisticsWithHttpInfo( for_: for_, isSaved: isSaved, isTrashed: isTrashed, order: order, size: size, type: type, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -303,7 +339,9 @@ class MemoriesApi {
     return null;
   }
 
-  /// This endpoint requires the `memoryAsset.delete` permission.
+  /// Remove assets from a memory
+  ///
+  /// Remove a list of asset IDs from a specific memory.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -338,7 +376,9 @@ class MemoriesApi {
     );
   }
 
-  /// This endpoint requires the `memoryAsset.delete` permission.
+  /// Remove assets from a memory
+  ///
+  /// Remove a list of asset IDs from a specific memory.
   ///
   /// Parameters:
   ///
@@ -363,7 +403,9 @@ class MemoriesApi {
     return null;
   }
 
-  /// This endpoint requires the `memory.read` permission.
+  /// Retrieve memories
+  ///
+  /// Retrieve a list of memories. Memories are sorted descending by creation date by default, although they can also be sorted in ascending order, or randomly.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -375,8 +417,13 @@ class MemoriesApi {
   ///
   /// * [bool] isTrashed:
   ///
+  /// * [MemorySearchOrder] order:
+  ///
+  /// * [int] size:
+  ///   Number of memories to return
+  ///
   /// * [MemoryType] type:
-  Future<Response> searchMemoriesWithHttpInfo({ DateTime? for_, bool? isSaved, bool? isTrashed, MemoryType? type, }) async {
+  Future<Response> searchMemoriesWithHttpInfo({ DateTime? for_, bool? isSaved, bool? isTrashed, MemorySearchOrder? order, int? size, MemoryType? type, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/memories';
 
@@ -396,6 +443,12 @@ class MemoriesApi {
     if (isTrashed != null) {
       queryParams.addAll(_queryParams('', 'isTrashed', isTrashed));
     }
+    if (order != null) {
+      queryParams.addAll(_queryParams('', 'order', order));
+    }
+    if (size != null) {
+      queryParams.addAll(_queryParams('', 'size', size));
+    }
     if (type != null) {
       queryParams.addAll(_queryParams('', 'type', type));
     }
@@ -414,7 +467,9 @@ class MemoriesApi {
     );
   }
 
-  /// This endpoint requires the `memory.read` permission.
+  /// Retrieve memories
+  ///
+  /// Retrieve a list of memories. Memories are sorted descending by creation date by default, although they can also be sorted in ascending order, or randomly.
   ///
   /// Parameters:
   ///
@@ -424,9 +479,14 @@ class MemoriesApi {
   ///
   /// * [bool] isTrashed:
   ///
+  /// * [MemorySearchOrder] order:
+  ///
+  /// * [int] size:
+  ///   Number of memories to return
+  ///
   /// * [MemoryType] type:
-  Future<List<MemoryResponseDto>?> searchMemories({ DateTime? for_, bool? isSaved, bool? isTrashed, MemoryType? type, }) async {
-    final response = await searchMemoriesWithHttpInfo( for_: for_, isSaved: isSaved, isTrashed: isTrashed, type: type, );
+  Future<List<MemoryResponseDto>?> searchMemories({ DateTime? for_, bool? isSaved, bool? isTrashed, MemorySearchOrder? order, int? size, MemoryType? type, }) async {
+    final response = await searchMemoriesWithHttpInfo( for_: for_, isSaved: isSaved, isTrashed: isTrashed, order: order, size: size, type: type, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -443,7 +503,9 @@ class MemoriesApi {
     return null;
   }
 
-  /// This endpoint requires the `memory.update` permission.
+  /// Update a memory
+  ///
+  /// Update an existing memory by its ID.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -478,7 +540,9 @@ class MemoriesApi {
     );
   }
 
-  /// This endpoint requires the `memory.update` permission.
+  /// Update a memory
+  ///
+  /// Update an existing memory by its ID.
   ///
   /// Parameters:
   ///

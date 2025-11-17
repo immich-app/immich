@@ -64,7 +64,7 @@ with
               from
                 asset
             ),
-            date_part('year', current_date)::int - 1
+            $3
           ) as "year"
       )
     select
@@ -81,21 +81,21 @@ with
         where
           "asset_job_status"."previewAt" is not null
           and (asset."localDateTime" at time zone 'UTC')::date = today.date
-          and "asset"."ownerId" = any ($3::uuid[])
-          and "asset"."visibility" = $4
+          and "asset"."ownerId" = any ($4::uuid[])
+          and "asset"."visibility" = $5
           and exists (
             select
             from
               "asset_file"
             where
               "assetId" = "asset"."id"
-              and "asset_file"."type" = $5
+              and "asset_file"."type" = $6
           )
           and "asset"."deletedAt" is null
         order by
           (asset."localDateTime" at time zone 'UTC')::date desc
         limit
-          $6
+          $7
       ) as "a" on true
       inner join "asset_exif" on "a"."id" = "asset_exif"."assetId"
   )
@@ -160,9 +160,9 @@ select
           "tag"."parentId"
         from
           "tag"
-          inner join "tag_asset" on "tag"."id" = "tag_asset"."tagsId"
+          inner join "tag_asset" on "tag"."id" = "tag_asset"."tagId"
         where
-          "asset"."id" = "tag_asset"."assetsId"
+          "asset"."id" = "tag_asset"."assetId"
       ) as agg
   ) as "tags",
   to_json("asset_exif") as "exifInfo"
