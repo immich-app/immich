@@ -5,6 +5,8 @@ import { ServerConfigDto } from 'src/dtos/server.dto';
 import { ImmichCookie, MaintenanceAction } from 'src/enum';
 import { MaintenanceRoute } from 'src/maintenance/maintenance-auth.guard';
 import { MaintenanceWorkerService } from 'src/maintenance/maintenance-worker.service';
+import { GetLoginDetails } from 'src/middleware/auth.guard';
+import { LoginDetails } from 'src/services/auth.service';
 import { respondWithCookie } from 'src/utils/response';
 
 @Controller()
@@ -20,12 +22,13 @@ export class MaintenanceWorkerController {
   async maintenanceLogin(
     @Req() request: Request,
     @Body() dto: MaintenanceLoginDto,
+        @GetLoginDetails() loginDetails: LoginDetails,
     @Res({ passthrough: true }) res: Response,
   ): Promise<MaintenanceAuthDto> {
     const token = dto.token ?? request.cookies[ImmichCookie.MaintenanceToken];
     const auth = await this.service.login(token);
     return respondWithCookie(res, auth, {
-      isSecure: true,
+      isSecure: loginDetails.isSecure,
       values: [{ key: ImmichCookie.MaintenanceToken, value: token }],
     });
   }
