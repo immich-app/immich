@@ -22,24 +22,29 @@ export function sendOneShotAppRestart(state: AppRestartEvent): void {
    *
    * This issue only occurs with this method.
    */
-  async function tryTerminate(cb: () => void) {
-    try {
-      const responses = await server.serverSideEmitWithAck('AppRestart', state);
-      if (responses.length === 0) {
-        console.info(
-          "\nIt doesn't appear that Immich stopped, trying again in a moment.\nIf Immich is already not running, you can ignore this error.",
-        );
-
-        setTimeout(() => tryTerminate(cb), 1e3);
+  async function tryTerminate() {
+    while (true) {
+      try {
+        const responses = await server.serverSideEmitWithAck('AppRestart', state);
+        if (responses.length > 0) {
+          return;
+        }
+      } catch (error) {
+        console.error(error);
+        console.error('Encountered an error while telling Immich to stop.');
       }
-    } catch (error) {
-      cb();
+
+      console.info(
+        "\nIt doesn't appear that Immich stopped, trying again in a moment.\nIf Immich is already not running, you can ignore this error.",
+      );
+
+      await new Promise((r) => setTimeout(r, 1e3));
     }
   }
 
   // => corresponds to notification.service.ts#onAppRestart
   server.emit('AppRestartV1', state, () => {
-    tryTerminate(() => {
+    void tryTerminate().finally(() => {
       pubClient.disconnect();
       subClient.disconnect();
     });
