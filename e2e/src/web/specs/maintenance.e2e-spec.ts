@@ -22,6 +22,7 @@ test.describe('Maintenance', () => {
 
     await page.waitForURL('/maintenance?**');
     await expect(page.getByText('Temporarily Unavailable')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'End maintenance mode' })).toBeVisible();
 
     const cookies = await context.cookies(page.url());
     cookie = cookies.find(({ name }) => name === 'immich_maintenance_token')?.value;

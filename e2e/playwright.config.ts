@@ -8,7 +8,7 @@ export default defineConfig({
   workers: 1,
   reporter: 'html',
   use: {
-    baseURL: 'http://127.0.0.1:2285',
+    baseURL: 'http://localhost:2285',
     trace: 'on-first-retry',
   },
 
@@ -54,7 +54,7 @@ export default defineConfig({
   /* Run your local dev server before starting the tests */
   webServer: {
     command: 'docker compose up --build --renew-anon-volumes --force-recreate --remove-orphans',
-    url: 'http://127.0.0.1:2285',
+    url: 'http://localhost:2285',
     stdout: 'pipe',
     stderr: 'pipe',
     reuseExistingServer: true,

@@ -69,7 +69,7 @@ type AdminSetupOptions = { onboarding?: boolean };
 type FileData = { bytes?: Buffer; filename: string };
 
 const dbUrl = 'postgres://postgres:postgres@127.0.0.1:5435/immich';
-export const baseUrl = 'http://127.0.0.1:2285';
+export const baseUrl = 'http://localhost:2285';
 export const shareUrl = `${baseUrl}/share`;
 export const app = `${baseUrl}/api`;
 // TODO move test assets into e2e/assets
@@ -480,7 +480,7 @@ export const utils = {
   jobCommand: async (accessToken: string, jobName: JobName, jobCommandDto: JobCommandDto) =>
     sendJobCommand({ id: jobName, jobCommandDto }, { headers: asBearerAuth(accessToken) }),
 
-  setAuthCookies: async (context: BrowserContext, accessToken: string, domain = '127.0.0.1') =>
+  setAuthCookies: async (context: BrowserContext, accessToken: string, domain = 'localhost') =>
     await context.addCookies([
       {
         name: 'immich_access_token',
@@ -514,7 +514,7 @@ export const utils = {
       },
     ]),
 
-  setMaintenanceAuthCookie: async (context: BrowserContext, token: string, domain = '127.0.0.1') =>
+  setMaintenanceAuthCookie: async (context: BrowserContext, token: string, domain = 'localhost') =>
     await context.addCookies([
       {
         name: 'immich_maintenance_token',

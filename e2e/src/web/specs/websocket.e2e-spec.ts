@@ -13,7 +13,7 @@ test.describe('Websocket', () => {
 
   test('connects using ipv4', async ({ page, context }) => {
     await utils.setAuthCookies(context, admin.accessToken);
-    await page.goto('http://127.0.0.1:2285/');
+    await page.goto('http://localhost:2285/');
     await expect(page.locator('#sidebar')).toContainText('Server Online');
   });
 
