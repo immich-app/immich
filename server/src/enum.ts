@@ -5,6 +5,7 @@ export enum AuthType {
 
 export enum ImmichCookie {
   AccessToken = 'immich_access_token',
+  MaintenanceToken = 'immich_maintenance_token',
   AuthType = 'immich_auth_type',
   IsAuthenticated = 'immich_is_authenticated',
   SharedLinkToken = 'immich_shared_link_token',
@@ -146,6 +147,8 @@ export enum Permission {
   TimelineRead = 'timeline.read',
   TimelineDownload = 'timeline.download',
 
+  Maintenance = 'maintenance',
+
   MemoryCreate = 'memory.create',
   MemoryRead = 'memory.read',
   MemoryUpdate = 'memory.update',
@@ -285,6 +288,7 @@ export enum SystemMetadataKey {
   FacialRecognitionState = 'facial-recognition-state',
   MemoriesState = 'memories-state',
   AdminOnboarding = 'admin-onboarding',
+  MaintenanceMode = 'maintenance-mode',
   SystemConfig = 'system-config',
   SystemFlags = 'system-flags',
   VersionCheckState = 'version-check-state',
@@ -477,6 +481,7 @@ export enum ImmichEnvironment {
 
 export enum ImmichWorker {
   Api = 'api',
+  Maintenance = 'maintenance',
   Microservices = 'microservices',
 }
 
@@ -655,6 +660,15 @@ export enum DatabaseLock {
   MemoryCreation = 777,
 }
 
+export enum MaintenanceAction {
+  Start = 'start',
+  End = 'end',
+}
+
+export enum ExitCode {
+  AppRestart = 7,
+}
+
 export enum SyncRequestType {
   AlbumsV1 = 'AlbumsV1',
   AlbumUsersV1 = 'AlbumUsersV1',
@@ -801,6 +815,7 @@ export enum ApiTag {
   Faces = 'Faces',
   Jobs = 'Jobs',
   Libraries = 'Libraries',
+  Maintenance = 'Maintenance (admin)',
   Map = 'Map',
   Memories = 'Memories',
   Notifications = 'Notifications',

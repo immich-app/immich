@@ -12,8 +12,11 @@ async function _init(fetch: Fetch) {
   // https://github.com/oazapfts/oazapfts/blob/main/README.md#fetch-options
   defaults.fetch = fetch;
   await initLanguage();
-  await featureFlagsManager.init();
   await serverConfigManager.init();
+
+  if (!serverConfigManager.value.maintenanceMode) {
+    await featureFlagsManager.init();
+  }
 }
 
 export const init = memoize(_init, () => 'singlevalue');
