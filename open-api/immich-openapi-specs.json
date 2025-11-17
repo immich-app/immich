@@ -4836,14 +4836,14 @@
     "/jobs": {
       "get": {
         "description": "Retrieve the counts of the current queue, as well as the current status.",
-        "operationId": "getAllJobsStatus",
+        "operationId": "getQueuesLegacy",
         "parameters": [],
         "responses": {
           "200": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AllJobStatusResponseDto"
+                  "$ref": "#/components/schemas/QueuesResponseDto"
                 }
               }
             },
@@ -4936,17 +4936,17 @@
         "x-immich-state": "Stable"
       }
     },
-    "/jobs/{id}": {
+    "/jobs/{name}": {
       "put": {
         "description": "Queue all assets for a specific job type. Defaults to only queueing assets that have not yet been processed, but the force command can be used to re-process all assets.",
-        "operationId": "sendJobCommand",
+        "operationId": "runQueueCommandLegacy",
         "parameters": [
           {
-            "name": "id",
+            "name": "name",
             "required": true,
             "in": "path",
             "schema": {
-              "$ref": "#/components/schemas/JobName"
+              "$ref": "#/components/schemas/QueueName"
             }
           }
         ],
@@ -4954,7 +4954,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/JobCommandDto"
+                "$ref": "#/components/schemas/QueueCommandDto"
               }
             }
           },
@@ -4965,7 +4965,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/JobStatusDto"
+                  "$ref": "#/components/schemas/QueueResponseDto"
                 }
               }
             },
@@ -7863,6 +7863,111 @@
         ],
         "x-immich-permission": "person.read",
         "x-immich-state": "Stable"
+      }
+    },
+    "/plugins": {
+      "get": {
+        "description": "Retrieve a list of plugins available to the authenticated user.",
+        "operationId": "getPlugins",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PluginResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "List all plugins",
+        "tags": [
+          "Plugins"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v2.3.0",
+            "state": "Added"
+          },
+          {
+            "version": "v2.3.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "plugin.read",
+        "x-immich-state": "Alpha"
+      }
+    },
+    "/plugins/{id}": {
+      "get": {
+        "description": "Retrieve information about a specific plugin by its ID.",
+        "operationId": "getPlugin",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PluginResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Retrieve a plugin",
+        "tags": [
+          "Plugins"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v2.3.0",
+            "state": "Added"
+          },
+          {
+            "version": "v2.3.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "plugin.read",
+        "x-immich-state": "Alpha"
       }
     },
     "/search/cities": {
@@ -13485,6 +13590,276 @@
         ],
         "x-immich-state": "Stable"
       }
+    },
+    "/workflows": {
+      "get": {
+        "description": "Retrieve a list of workflows available to the authenticated user.",
+        "operationId": "getWorkflows",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/WorkflowResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "List all workflows",
+        "tags": [
+          "Workflows"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v2.3.0",
+            "state": "Added"
+          },
+          {
+            "version": "v2.3.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "workflow.read",
+        "x-immich-state": "Alpha"
+      },
+      "post": {
+        "description": "Create a new workflow, the workflow can also be created with empty filters and actions.",
+        "operationId": "createWorkflow",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WorkflowCreateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkflowResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Create a workflow",
+        "tags": [
+          "Workflows"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v2.3.0",
+            "state": "Added"
+          },
+          {
+            "version": "v2.3.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "workflow.create",
+        "x-immich-state": "Alpha"
+      }
+    },
+    "/workflows/{id}": {
+      "delete": {
+        "description": "Delete a workflow by its ID.",
+        "operationId": "deleteWorkflow",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Delete a workflow",
+        "tags": [
+          "Workflows"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v2.3.0",
+            "state": "Added"
+          },
+          {
+            "version": "v2.3.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "workflow.delete",
+        "x-immich-state": "Alpha"
+      },
+      "get": {
+        "description": "Retrieve information about a specific workflow by its ID.",
+        "operationId": "getWorkflow",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkflowResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Retrieve a workflow",
+        "tags": [
+          "Workflows"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v2.3.0",
+            "state": "Added"
+          },
+          {
+            "version": "v2.3.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "workflow.read",
+        "x-immich-state": "Alpha"
+      },
+      "put": {
+        "description": "Update the information of a specific workflow by its ID. This endpoint can be used to update the workflow name, description, trigger type, filters and actions order, etc.",
+        "operationId": "updateWorkflow",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WorkflowUpdateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkflowResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Update a workflow",
+        "tags": [
+          "Workflows"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v2.3.0",
+            "state": "Added"
+          },
+          {
+            "version": "v2.3.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "workflow.update",
+        "x-immich-state": "Alpha"
+      }
     }
   },
   "info": {
@@ -13567,6 +13942,10 @@
       "description": "A person is a collection of faces, which can be favorited and named. A person can also be merged into another person. People are automatically created via the face recognition job."
     },
     {
+      "name": "Plugins",
+      "description": "A plugin is an installed module that makes filters and actions available for the workflow feature."
+    },
+    {
       "name": "Search",
       "description": "Endpoints related to searching assets via text, smart search, optical character recognition (OCR), and other filters like person, album, and other metadata. Search endpoints usually support pagination and sorting."
     },
@@ -13621,6 +14000,10 @@
     {
       "name": "Views",
       "description": "Endpoints for specialized views, such as the folder view."
+    },
+    {
+      "name": "Workflows",
+      "description": "A workflow is a set of actions that run whenever a triggering event occurs. Workflows also can include filters to further limit execution."
     }
   ],
   "servers": [
@@ -14082,77 +14465,6 @@
             ]
           }
         },
-        "type": "object"
-      },
-      "AllJobStatusResponseDto": {
-        "properties": {
-          "backgroundTask": {
-            "$ref": "#/components/schemas/JobStatusDto"
-          },
-          "backupDatabase": {
-            "$ref": "#/components/schemas/JobStatusDto"
-          },
-          "duplicateDetection": {
-            "$ref": "#/components/schemas/JobStatusDto"
-          },
-          "faceDetection": {
-            "$ref": "#/components/schemas/JobStatusDto"
-          },
-          "facialRecognition": {
-            "$ref": "#/components/schemas/JobStatusDto"
-          },
-          "library": {
-            "$ref": "#/components/schemas/JobStatusDto"
-          },
-          "metadataExtraction": {
-            "$ref": "#/components/schemas/JobStatusDto"
-          },
-          "migration": {
-            "$ref": "#/components/schemas/JobStatusDto"
-          },
-          "notifications": {
-            "$ref": "#/components/schemas/JobStatusDto"
-          },
-          "ocr": {
-            "$ref": "#/components/schemas/JobStatusDto"
-          },
-          "search": {
-            "$ref": "#/components/schemas/JobStatusDto"
-          },
-          "sidecar": {
-            "$ref": "#/components/schemas/JobStatusDto"
-          },
-          "smartSearch": {
-            "$ref": "#/components/schemas/JobStatusDto"
-          },
-          "storageTemplateMigration": {
-            "$ref": "#/components/schemas/JobStatusDto"
-          },
-          "thumbnailGeneration": {
-            "$ref": "#/components/schemas/JobStatusDto"
-          },
-          "videoConversion": {
-            "$ref": "#/components/schemas/JobStatusDto"
-          }
-        },
-        "required": [
-          "backgroundTask",
-          "backupDatabase",
-          "duplicateDetection",
-          "faceDetection",
-          "facialRecognition",
-          "library",
-          "metadataExtraction",
-          "migration",
-          "notifications",
-          "ocr",
-          "search",
-          "sidecar",
-          "smartSearch",
-          "storageTemplateMigration",
-          "thumbnailGeneration",
-          "videoConversion"
-        ],
         "type": "object"
       },
       "AssetBulkDeleteDto": {
@@ -15866,65 +16178,6 @@
         ],
         "type": "string"
       },
-      "JobCommand": {
-        "enum": [
-          "start",
-          "pause",
-          "resume",
-          "empty",
-          "clear-failed"
-        ],
-        "type": "string"
-      },
-      "JobCommandDto": {
-        "properties": {
-          "command": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/JobCommand"
-              }
-            ]
-          },
-          "force": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "command"
-        ],
-        "type": "object"
-      },
-      "JobCountsDto": {
-        "properties": {
-          "active": {
-            "type": "integer"
-          },
-          "completed": {
-            "type": "integer"
-          },
-          "delayed": {
-            "type": "integer"
-          },
-          "failed": {
-            "type": "integer"
-          },
-          "paused": {
-            "type": "integer"
-          },
-          "waiting": {
-            "type": "integer"
-          }
-        },
-        "required": [
-          "active",
-          "completed",
-          "delayed",
-          "failed",
-          "paused",
-          "waiting"
-        ],
-        "type": "object"
-      },
       "JobCreateDto": {
         "properties": {
           "name": {
@@ -15940,27 +16193,6 @@
         ],
         "type": "object"
       },
-      "JobName": {
-        "enum": [
-          "thumbnailGeneration",
-          "metadataExtraction",
-          "videoConversion",
-          "faceDetection",
-          "facialRecognition",
-          "smartSearch",
-          "duplicateDetection",
-          "backgroundTask",
-          "storageTemplateMigration",
-          "migration",
-          "search",
-          "sidecar",
-          "library",
-          "notifications",
-          "backupDatabase",
-          "ocr"
-        ],
-        "type": "string"
-      },
       "JobSettingsDto": {
         "properties": {
           "concurrency": {
@@ -15970,21 +16202,6 @@
         },
         "required": [
           "concurrency"
-        ],
-        "type": "object"
-      },
-      "JobStatusDto": {
-        "properties": {
-          "jobCounts": {
-            "$ref": "#/components/schemas/JobCountsDto"
-          },
-          "queueStatus": {
-            "$ref": "#/components/schemas/QueueStatusDto"
-          }
-        },
-        "required": [
-          "jobCounts",
-          "queueStatus"
         ],
         "type": "object"
       },
@@ -17188,6 +17405,10 @@
           "pinCode.create",
           "pinCode.update",
           "pinCode.delete",
+          "plugin.create",
+          "plugin.read",
+          "plugin.update",
+          "plugin.delete",
           "server.about",
           "server.apkLinks",
           "server.storage",
@@ -17237,6 +17458,10 @@
           "userProfileImage.read",
           "userProfileImage.update",
           "userProfileImage.delete",
+          "workflow.create",
+          "workflow.read",
+          "workflow.update",
+          "workflow.delete",
           "adminUser.create",
           "adminUser.read",
           "adminUser.update",
@@ -17533,6 +17758,152 @@
         ],
         "type": "object"
       },
+      "PluginActionResponseDto": {
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "methodName": {
+            "type": "string"
+          },
+          "pluginId": {
+            "type": "string"
+          },
+          "schema": {
+            "nullable": true,
+            "type": "object"
+          },
+          "supportedContexts": {
+            "items": {
+              "$ref": "#/components/schemas/PluginContext"
+            },
+            "type": "array"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "description",
+          "id",
+          "methodName",
+          "pluginId",
+          "schema",
+          "supportedContexts",
+          "title"
+        ],
+        "type": "object"
+      },
+      "PluginContext": {
+        "enum": [
+          "asset",
+          "album",
+          "person"
+        ],
+        "type": "string"
+      },
+      "PluginFilterResponseDto": {
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "methodName": {
+            "type": "string"
+          },
+          "pluginId": {
+            "type": "string"
+          },
+          "schema": {
+            "nullable": true,
+            "type": "object"
+          },
+          "supportedContexts": {
+            "items": {
+              "$ref": "#/components/schemas/PluginContext"
+            },
+            "type": "array"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "description",
+          "id",
+          "methodName",
+          "pluginId",
+          "schema",
+          "supportedContexts",
+          "title"
+        ],
+        "type": "object"
+      },
+      "PluginResponseDto": {
+        "properties": {
+          "actions": {
+            "items": {
+              "$ref": "#/components/schemas/PluginActionResponseDto"
+            },
+            "type": "array"
+          },
+          "author": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "filters": {
+            "items": {
+              "$ref": "#/components/schemas/PluginFilterResponseDto"
+            },
+            "type": "array"
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "actions",
+          "author",
+          "createdAt",
+          "description",
+          "filters",
+          "id",
+          "name",
+          "title",
+          "updatedAt",
+          "version"
+        ],
+        "type": "object"
+      },
+      "PluginTriggerType": {
+        "enum": [
+          "AssetCreate",
+          "PersonRecognized"
+        ],
+        "type": "string"
+      },
       "PurchaseResponse": {
         "properties": {
           "hideBuyButtonUntil": {
@@ -17559,6 +17930,102 @@
         },
         "type": "object"
       },
+      "QueueCommand": {
+        "enum": [
+          "start",
+          "pause",
+          "resume",
+          "empty",
+          "clear-failed"
+        ],
+        "type": "string"
+      },
+      "QueueCommandDto": {
+        "properties": {
+          "command": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/QueueCommand"
+              }
+            ]
+          },
+          "force": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "command"
+        ],
+        "type": "object"
+      },
+      "QueueName": {
+        "enum": [
+          "thumbnailGeneration",
+          "metadataExtraction",
+          "videoConversion",
+          "faceDetection",
+          "facialRecognition",
+          "smartSearch",
+          "duplicateDetection",
+          "backgroundTask",
+          "storageTemplateMigration",
+          "migration",
+          "search",
+          "sidecar",
+          "library",
+          "notifications",
+          "backupDatabase",
+          "ocr",
+          "workflow"
+        ],
+        "type": "string"
+      },
+      "QueueResponseDto": {
+        "properties": {
+          "jobCounts": {
+            "$ref": "#/components/schemas/QueueStatisticsDto"
+          },
+          "queueStatus": {
+            "$ref": "#/components/schemas/QueueStatusDto"
+          }
+        },
+        "required": [
+          "jobCounts",
+          "queueStatus"
+        ],
+        "type": "object"
+      },
+      "QueueStatisticsDto": {
+        "properties": {
+          "active": {
+            "type": "integer"
+          },
+          "completed": {
+            "type": "integer"
+          },
+          "delayed": {
+            "type": "integer"
+          },
+          "failed": {
+            "type": "integer"
+          },
+          "paused": {
+            "type": "integer"
+          },
+          "waiting": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "active",
+          "completed",
+          "delayed",
+          "failed",
+          "paused",
+          "waiting"
+        ],
+        "type": "object"
+      },
       "QueueStatusDto": {
         "properties": {
           "isActive": {
@@ -17571,6 +18038,81 @@
         "required": [
           "isActive",
           "isPaused"
+        ],
+        "type": "object"
+      },
+      "QueuesResponseDto": {
+        "properties": {
+          "backgroundTask": {
+            "$ref": "#/components/schemas/QueueResponseDto"
+          },
+          "backupDatabase": {
+            "$ref": "#/components/schemas/QueueResponseDto"
+          },
+          "duplicateDetection": {
+            "$ref": "#/components/schemas/QueueResponseDto"
+          },
+          "faceDetection": {
+            "$ref": "#/components/schemas/QueueResponseDto"
+          },
+          "facialRecognition": {
+            "$ref": "#/components/schemas/QueueResponseDto"
+          },
+          "library": {
+            "$ref": "#/components/schemas/QueueResponseDto"
+          },
+          "metadataExtraction": {
+            "$ref": "#/components/schemas/QueueResponseDto"
+          },
+          "migration": {
+            "$ref": "#/components/schemas/QueueResponseDto"
+          },
+          "notifications": {
+            "$ref": "#/components/schemas/QueueResponseDto"
+          },
+          "ocr": {
+            "$ref": "#/components/schemas/QueueResponseDto"
+          },
+          "search": {
+            "$ref": "#/components/schemas/QueueResponseDto"
+          },
+          "sidecar": {
+            "$ref": "#/components/schemas/QueueResponseDto"
+          },
+          "smartSearch": {
+            "$ref": "#/components/schemas/QueueResponseDto"
+          },
+          "storageTemplateMigration": {
+            "$ref": "#/components/schemas/QueueResponseDto"
+          },
+          "thumbnailGeneration": {
+            "$ref": "#/components/schemas/QueueResponseDto"
+          },
+          "videoConversion": {
+            "$ref": "#/components/schemas/QueueResponseDto"
+          },
+          "workflow": {
+            "$ref": "#/components/schemas/QueueResponseDto"
+          }
+        },
+        "required": [
+          "backgroundTask",
+          "backupDatabase",
+          "duplicateDetection",
+          "faceDetection",
+          "facialRecognition",
+          "library",
+          "metadataExtraction",
+          "migration",
+          "notifications",
+          "ocr",
+          "search",
+          "sidecar",
+          "smartSearch",
+          "storageTemplateMigration",
+          "thumbnailGeneration",
+          "videoConversion",
+          "workflow"
         ],
         "type": "object"
       },
@@ -20420,6 +20962,9 @@
           },
           "videoConversion": {
             "$ref": "#/components/schemas/JobSettingsDto"
+          },
+          "workflow": {
+            "$ref": "#/components/schemas/JobSettingsDto"
           }
         },
         "required": [
@@ -20434,7 +20979,8 @@
           "sidecar",
           "smartSearch",
           "thumbnailGeneration",
-          "videoConversion"
+          "videoConversion",
+          "workflow"
         ],
         "type": "object"
       },
@@ -21999,6 +22545,211 @@
           "webm"
         ],
         "type": "string"
+      },
+      "WorkflowActionItemDto": {
+        "properties": {
+          "actionConfig": {
+            "type": "object"
+          },
+          "actionId": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "actionId"
+        ],
+        "type": "object"
+      },
+      "WorkflowActionResponseDto": {
+        "properties": {
+          "actionConfig": {
+            "nullable": true,
+            "type": "object"
+          },
+          "actionId": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "order": {
+            "type": "number"
+          },
+          "workflowId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "actionConfig",
+          "actionId",
+          "id",
+          "order",
+          "workflowId"
+        ],
+        "type": "object"
+      },
+      "WorkflowCreateDto": {
+        "properties": {
+          "actions": {
+            "items": {
+              "$ref": "#/components/schemas/WorkflowActionItemDto"
+            },
+            "type": "array"
+          },
+          "description": {
+            "type": "string"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "filters": {
+            "items": {
+              "$ref": "#/components/schemas/WorkflowFilterItemDto"
+            },
+            "type": "array"
+          },
+          "name": {
+            "type": "string"
+          },
+          "triggerType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PluginTriggerType"
+              }
+            ]
+          }
+        },
+        "required": [
+          "actions",
+          "filters",
+          "name",
+          "triggerType"
+        ],
+        "type": "object"
+      },
+      "WorkflowFilterItemDto": {
+        "properties": {
+          "filterConfig": {
+            "type": "object"
+          },
+          "filterId": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "filterId"
+        ],
+        "type": "object"
+      },
+      "WorkflowFilterResponseDto": {
+        "properties": {
+          "filterConfig": {
+            "nullable": true,
+            "type": "object"
+          },
+          "filterId": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "order": {
+            "type": "number"
+          },
+          "workflowId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "filterConfig",
+          "filterId",
+          "id",
+          "order",
+          "workflowId"
+        ],
+        "type": "object"
+      },
+      "WorkflowResponseDto": {
+        "properties": {
+          "actions": {
+            "items": {
+              "$ref": "#/components/schemas/WorkflowActionResponseDto"
+            },
+            "type": "array"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "filters": {
+            "items": {
+              "$ref": "#/components/schemas/WorkflowFilterResponseDto"
+            },
+            "type": "array"
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "nullable": true,
+            "type": "string"
+          },
+          "ownerId": {
+            "type": "string"
+          },
+          "triggerType": {
+            "enum": [
+              "AssetCreate",
+              "PersonRecognized"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "actions",
+          "createdAt",
+          "description",
+          "enabled",
+          "filters",
+          "id",
+          "name",
+          "ownerId",
+          "triggerType"
+        ],
+        "type": "object"
+      },
+      "WorkflowUpdateDto": {
+        "properties": {
+          "actions": {
+            "items": {
+              "$ref": "#/components/schemas/WorkflowActionItemDto"
+            },
+            "type": "array"
+          },
+          "description": {
+            "type": "string"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "filters": {
+            "items": {
+              "$ref": "#/components/schemas/WorkflowFilterItemDto"
+            },
+            "type": "array"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "type": "object"
       }
     }
   }

@@ -5,15 +5,14 @@ import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/archive_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_local_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/edit_image_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/keep_on_device_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/move_to_trash_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/unarchive_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/upload_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/add_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
@@ -40,7 +39,6 @@ class ViewerBottomBar extends ConsumerWidget {
     int opacity = ref.watch(assetViewerProvider.select((state) => state.backgroundOpacity));
     final showControls = ref.watch(assetViewerProvider.select((s) => s.showingControls));
     final isInLockedView = ref.watch(inLockedViewProvider);
-    final isArchived = asset is RemoteAsset && asset.visibility == AssetVisibility.archive;
 
     final timelineOrigin = ref.read(timelineServiceProvider).origin;
     final isSyncTrashTimeline = timelineOrigin == TimelineOrigin.syncTrash;
@@ -65,11 +63,10 @@ class ViewerBottomBar extends ConsumerWidget {
         const ShareActionButton(source: ActionSource.viewer),
         if (asset.isLocalOnly && !isWaitingForSyncApproval) const UploadActionButton(source: ActionSource.viewer),
         if (asset.type == AssetType.image) const EditImageActionButton(),
-        if (isOwner) ...[
-          if (asset.hasRemote && isOwner && isArchived)
-            const UnArchiveActionButton(source: ActionSource.viewer)
-          else
-            const ArchiveActionButton(source: ActionSource.viewer),
+        if (asset.hasRemote)
+            const AddActionButton(),
+
+            if (isOwner) ...[
           asset.isLocalOnly
               ? const DeleteLocalActionButton(source: ActionSource.viewer)
               : const DeleteActionButton(source: ActionSource.viewer, showConfirmation: true),

@@ -1,5 +1,6 @@
 import { SystemConfig } from 'src/config';
 import { VECTOR_EXTENSIONS } from 'src/constants';
+import { Asset } from 'src/database';
 import { UploadFieldName } from 'src/dtos/asset-media.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
@@ -11,6 +12,7 @@ import {
   ImageFormat,
   JobName,
   MemoryType,
+  PluginTriggerType,
   QueueName,
   StorageFolder,
   SyncEntityType,
@@ -263,6 +265,23 @@ export interface INotifyAlbumUpdateJob extends IEntityJob, IDelayedJob {
   recipientId: string;
 }
 
+export interface WorkflowData {
+  [PluginTriggerType.AssetCreate]: {
+    userId: string;
+    asset: Asset;
+  };
+  [PluginTriggerType.PersonRecognized]: {
+    personId: string;
+    assetId: string;
+  };
+}
+
+export interface IWorkflowJob<T extends PluginTriggerType = PluginTriggerType> {
+  id: string;
+  type: T;
+  event: WorkflowData[T];
+}
+
 export interface JobCounts {
   active: number;
   completed: number;
@@ -374,7 +393,10 @@ export type JobItem =
 
   // OCR
   | { name: JobName.OcrQueueAll; data: IBaseJob }
-  | { name: JobName.Ocr; data: IEntityJob };
+  | { name: JobName.Ocr; data: IEntityJob }
+
+  // Workflow
+  | { name: JobName.WorkflowRun; data: IWorkflowJob };
 
 export type VectorExtension = (typeof VECTOR_EXTENSIONS)[number];
 

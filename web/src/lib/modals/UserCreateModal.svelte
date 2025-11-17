@@ -1,6 +1,6 @@
 <script lang="ts">
+  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { handleCreateUserAdmin } from '$lib/services/user-admin.service';
-  import { featureFlags } from '$lib/stores/system-config-manager.svelte';
   import { userInteraction } from '$lib/stores/user.svelte';
   import { ByteUnit, convertToBytes } from '$lib/utils/byte-units';
   import {
@@ -85,17 +85,17 @@
           <Input bind:value={email} type="email" />
         </Field>
 
-        {#if $featureFlags.email}
+        {#if featureFlagsManager.value.email}
           <Field label={$t('admin.send_welcome_email')}>
             <Switch id="send-welcome-email" bind:checked={notify} class="text-sm" />
           </Field>
         {/if}
 
-        <Field label={$t('password')} required={!$featureFlags.oauth}>
+        <Field label={$t('password')} required={!featureFlagsManager.value.oauth}>
           <PasswordInput id="password" bind:value={password} autocomplete="new-password" />
         </Field>
 
-        <Field label={$t('confirm_password')} required={!$featureFlags.oauth}>
+        <Field label={$t('confirm_password')} required={!featureFlagsManager.value.oauth}>
           <PasswordInput id="confirmPassword" bind:value={passwordConfirm} autocomplete="new-password" />
           <HelperText color="danger">{passwordMismatchMessage}</HelperText>
         </Field>

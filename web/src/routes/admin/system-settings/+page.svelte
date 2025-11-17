@@ -23,8 +23,9 @@
   import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
   import { QueryParameter } from '$lib/constants';
   import SearchBar from '$lib/elements/SearchBar.svelte';
+  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
+  import { systemConfigManager } from '$lib/managers/system-config-manager.svelte';
   import { getSystemConfigActions } from '$lib/services/system-config.service';
-  import { featureFlags, systemConfigManager } from '$lib/stores/system-config-manager.svelte';
   import { Alert, HStack } from '@immich/ui';
   import {
     mdiAccountOutline,
@@ -201,7 +202,7 @@
   );
 
   const { CopyToClipboard, Upload, Download } = $derived(
-    getSystemConfigActions($t, $featureFlags, systemConfigManager.value),
+    getSystemConfigActions($t, featureFlagsManager.value, systemConfigManager.value),
   );
 </script>
 
@@ -219,7 +220,7 @@
 
   <section id="setting-content" class="flex place-content-center sm:mx-4">
     <section class="w-full pb-28 sm:w-5/6 md:w-4xl">
-      {#if $featureFlags.configFile}
+      {#if featureFlagsManager.value.configFile}
         <Alert color="warning" class="text-dark my-4" title={$t('admin.config_set_by_file')} />
       {/if}
       <div class="block lg:hidden">
