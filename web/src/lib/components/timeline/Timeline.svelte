@@ -193,7 +193,7 @@
     return true;
   };
 
-  export const scrollAfterNavigate = async ({ scrollToAssetQueryParam }: { scrollToAssetQueryParam: boolean }) => {
+  export const scrollAfterNavigate = async () => {
     if (timelineManager.viewportHeight === 0 || timelineManager.viewportWidth === 0) {
       // this can happen if you do the following navigation order
       // /photos?at=<id>, /photos/<id>, http://example.com, browser back, browser back
@@ -203,16 +203,14 @@
         timelineManager.viewportWidth = rect.width;
       }
     }
-    if (scrollToAssetQueryParam) {
-      const scrollTarget = $gridScrollTarget?.at;
-      let scrolled = false;
-      if (scrollTarget) {
-        scrolled = await scrollAndLoadAsset(scrollTarget);
-      }
-      if (!scrolled) {
-        // if the asset is not found, scroll to the top
-        timelineManager.scrollTo(0);
-      }
+    const scrollTarget = $gridScrollTarget?.at;
+    let scrolled = false;
+    if (scrollTarget) {
+      scrolled = await scrollAndLoadAsset(scrollTarget);
+    }
+    if (!scrolled) {
+      // if the asset is not found, scroll to the top
+      timelineManager.scrollTo(0);
     }
     invisible = false;
   };
@@ -245,11 +243,7 @@
         initialLoadWasAssetViewer = isAssetViewerPage && !hasNavigatedToOrFromAssetViewer;
       }
 
-      const isDirectTimelineLoad = isDirectNavigation && !isAssetViewerPage;
-      const isNavigatingFromAssetViewer = !isDirectNavigation && hasNavigatedToOrFromAssetViewer;
-      const scrollToAssetQueryParam = isDirectTimelineLoad || isNavigatingFromAssetViewer;
-
-      void scrollAfterNavigate({ scrollToAssetQueryParam });
+      void scrollAfterNavigate();
     });
   });
 
@@ -306,7 +300,7 @@
     }
   };
 
-  // note: don't throttle, debounch, or otherwise make this function async - it causes flicker
+  // note: don't throttle, debounce, or otherwise make this function async - it causes flicker
   const handleTimelineScroll = () => {
     if (!scrollableElement) {
       return;
@@ -544,7 +538,7 @@
     if (asset) {
       $gridScrollTarget = { at: asset };
     }
-    void scrollAfterNavigate({ scrollToAssetQueryParam: true });
+    void scrollAfterNavigate();
   }}
   onBeforeUpdate={(payload: UpdatePayload) => {
     const timelineUpdate = payload.updates.some((update) => update.path.endsWith('Timeline.svelte'));

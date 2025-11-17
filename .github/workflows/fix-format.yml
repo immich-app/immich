@@ -39,7 +39,7 @@ jobs:
           cache-dependency-path: '**/pnpm-lock.yaml'
 
       - name: Fix formatting
-        run: make install-all && make format-all
+        run: pnpm --recursive install && pnpm run --recursive --parallel fix:format
 
       - name: Commit and push
         uses: EndBug/add-and-commit@a94899bca583c204427a224a7af87c02f9b325d5 # v9.1.4

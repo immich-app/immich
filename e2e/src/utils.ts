@@ -1,5 +1,4 @@
 import {
-  AllJobStatusResponseDto,
   AssetMediaCreateDto,
   AssetMediaResponseDto,
   AssetResponseDto,
@@ -7,11 +6,12 @@ import {
   CheckExistingAssetsDto,
   CreateAlbumDto,
   CreateLibraryDto,
-  JobCommandDto,
-  JobName,
   MetadataSearchDto,
   Permission,
   PersonCreateDto,
+  QueueCommandDto,
+  QueueName,
+  QueuesResponseDto,
   SharedLinkCreateDto,
   UpdateLibraryDto,
   UserAdminCreateDto,
@@ -27,14 +27,14 @@ import {
   createStack,
   createUserAdmin,
   deleteAssets,
-  getAllJobsStatus,
   getAssetInfo,
   getConfig,
   getConfigDefaults,
+  getQueuesLegacy,
   login,
+  runQueueCommandLegacy,
   scanLibrary,
   searchAssets,
-  sendJobCommand,
   setBaseUrl,
   signUpAdmin,
   tagAssets,
@@ -477,8 +477,8 @@ export const utils = {
   tagAssets: (accessToken: string, tagId: string, assetIds: string[]) =>
     tagAssets({ id: tagId, bulkIdsDto: { ids: assetIds } }, { headers: asBearerAuth(accessToken) }),
 
-  jobCommand: async (accessToken: string, jobName: JobName, jobCommandDto: JobCommandDto) =>
-    sendJobCommand({ id: jobName, jobCommandDto }, { headers: asBearerAuth(accessToken) }),
+  queueCommand: async (accessToken: string, name: QueueName, queueCommandDto: QueueCommandDto) =>
+    runQueueCommandLegacy({ name, queueCommandDto }, { headers: asBearerAuth(accessToken) }),
 
   setAuthCookies: async (context: BrowserContext, accessToken: string, domain = '127.0.0.1') =>
     await context.addCookies([
@@ -524,13 +524,13 @@ export const utils = {
     await updateConfig({ systemConfigDto: defaultConfig }, { headers: asBearerAuth(accessToken) });
   },
 
-  isQueueEmpty: async (accessToken: string, queue: keyof AllJobStatusResponseDto) => {
-    const queues = await getAllJobsStatus({ headers: asBearerAuth(accessToken) });
+  isQueueEmpty: async (accessToken: string, queue: keyof QueuesResponseDto) => {
+    const queues = await getQueuesLegacy({ headers: asBearerAuth(accessToken) });
     const jobCounts = queues[queue].jobCounts;
     return !jobCounts.active && !jobCounts.waiting;
   },
 
-  waitForQueueFinish: (accessToken: string, queue: keyof AllJobStatusResponseDto, ms?: number) => {
+  waitForQueueFinish: (accessToken: string, queue: keyof QueuesResponseDto, ms?: number) => {
     // eslint-disable-next-line no-async-promise-executor
     return new Promise<void>(async (resolve, reject) => {
       const timeout = setTimeout(() => reject(new Error('Timed out waiting for queue to empty')), ms || 10_000);

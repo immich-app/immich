@@ -16,7 +16,12 @@ class SharedLinksApi {
 
   final ApiClient apiClient;
 
-  /// Performs an HTTP 'PUT /shared-links/{id}/assets' operation and returns the [Response].
+  /// Add assets to a shared link
+  ///
+  /// Add assets to a specific shared link by its ID. This endpoint is only relevant for shared link of type individual.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -59,6 +64,10 @@ class SharedLinksApi {
     );
   }
 
+  /// Add assets to a shared link
+  ///
+  /// Add assets to a specific shared link by its ID. This endpoint is only relevant for shared link of type individual.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -86,7 +95,9 @@ class SharedLinksApi {
     return null;
   }
 
-  /// This endpoint requires the `sharedLink.create` permission.
+  /// Create a shared link
+  ///
+  /// Create a new shared link.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -118,7 +129,9 @@ class SharedLinksApi {
     );
   }
 
-  /// This endpoint requires the `sharedLink.create` permission.
+  /// Create a shared link
+  ///
+  /// Create a new shared link.
   ///
   /// Parameters:
   ///
@@ -138,7 +151,9 @@ class SharedLinksApi {
     return null;
   }
 
-  /// This endpoint requires the `sharedLink.read` permission.
+  /// Retrieve all shared links
+  ///
+  /// Retrieve a list of all shared links.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -174,7 +189,9 @@ class SharedLinksApi {
     );
   }
 
-  /// This endpoint requires the `sharedLink.read` permission.
+  /// Retrieve all shared links
+  ///
+  /// Retrieve a list of all shared links.
   ///
   /// Parameters:
   ///
@@ -197,17 +214,22 @@ class SharedLinksApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /shared-links/me' operation and returns the [Response].
+  /// Retrieve current shared link
+  ///
+  /// Retrieve the current shared link associated with authentication method.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
-  ///
-  /// * [String] password:
-  ///
-  /// * [String] token:
   ///
   /// * [String] key:
   ///
+  /// * [String] password:
+  ///
   /// * [String] slug:
-  Future<Response> getMySharedLinkWithHttpInfo({ String? password, String? token, String? key, String? slug, }) async {
+  ///
+  /// * [String] token:
+  Future<Response> getMySharedLinkWithHttpInfo({ String? key, String? password, String? slug, String? token, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/shared-links/me';
 
@@ -218,17 +240,17 @@ class SharedLinksApi {
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
-    if (password != null) {
-      queryParams.addAll(_queryParams('', 'password', password));
-    }
-    if (token != null) {
-      queryParams.addAll(_queryParams('', 'token', token));
-    }
     if (key != null) {
       queryParams.addAll(_queryParams('', 'key', key));
     }
+    if (password != null) {
+      queryParams.addAll(_queryParams('', 'password', password));
+    }
     if (slug != null) {
       queryParams.addAll(_queryParams('', 'slug', slug));
+    }
+    if (token != null) {
+      queryParams.addAll(_queryParams('', 'token', token));
     }
 
     const contentTypes = <String>[];
@@ -245,17 +267,21 @@ class SharedLinksApi {
     );
   }
 
+  /// Retrieve current shared link
+  ///
+  /// Retrieve the current shared link associated with authentication method.
+  ///
   /// Parameters:
-  ///
-  /// * [String] password:
-  ///
-  /// * [String] token:
   ///
   /// * [String] key:
   ///
+  /// * [String] password:
+  ///
   /// * [String] slug:
-  Future<SharedLinkResponseDto?> getMySharedLink({ String? password, String? token, String? key, String? slug, }) async {
-    final response = await getMySharedLinkWithHttpInfo( password: password, token: token, key: key, slug: slug, );
+  ///
+  /// * [String] token:
+  Future<SharedLinkResponseDto?> getMySharedLink({ String? key, String? password, String? slug, String? token, }) async {
+    final response = await getMySharedLinkWithHttpInfo( key: key, password: password, slug: slug, token: token, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -269,7 +295,9 @@ class SharedLinksApi {
     return null;
   }
 
-  /// This endpoint requires the `sharedLink.read` permission.
+  /// Retrieve a shared link
+  ///
+  /// Retrieve a specific shared link by its ID.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -302,7 +330,9 @@ class SharedLinksApi {
     );
   }
 
-  /// This endpoint requires the `sharedLink.read` permission.
+  /// Retrieve a shared link
+  ///
+  /// Retrieve a specific shared link by its ID.
   ///
   /// Parameters:
   ///
@@ -322,7 +352,9 @@ class SharedLinksApi {
     return null;
   }
 
-  /// This endpoint requires the `sharedLink.delete` permission.
+  /// Delete a shared link
+  ///
+  /// Delete a specific shared link by its ID.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -355,7 +387,9 @@ class SharedLinksApi {
     );
   }
 
-  /// This endpoint requires the `sharedLink.delete` permission.
+  /// Delete a shared link
+  ///
+  /// Delete a specific shared link by its ID.
   ///
   /// Parameters:
   ///
@@ -367,7 +401,12 @@ class SharedLinksApi {
     }
   }
 
-  /// Performs an HTTP 'DELETE /shared-links/{id}/assets' operation and returns the [Response].
+  /// Remove assets from a shared link
+  ///
+  /// Remove assets from a specific shared link by its ID. This endpoint is only relevant for shared link of type individual.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -410,6 +449,10 @@ class SharedLinksApi {
     );
   }
 
+  /// Remove assets from a shared link
+  ///
+  /// Remove assets from a specific shared link by its ID. This endpoint is only relevant for shared link of type individual.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -437,7 +480,9 @@ class SharedLinksApi {
     return null;
   }
 
-  /// This endpoint requires the `sharedLink.update` permission.
+  /// Update a shared link
+  ///
+  /// Update an existing shared link by its ID.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -472,7 +517,9 @@ class SharedLinksApi {
     );
   }
 
-  /// This endpoint requires the `sharedLink.update` permission.
+  /// Update a shared link
+  ///
+  /// Update an existing shared link by its ID.
   ///
   /// Parameters:
   ///

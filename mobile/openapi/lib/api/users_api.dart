@@ -16,7 +16,9 @@ class UsersApi {
 
   final ApiClient apiClient;
 
-  /// This endpoint requires the `userProfileImage.update` permission.
+  /// Create user profile image
+  ///
+  /// Upload and set a new profile image for the current user.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -58,7 +60,9 @@ class UsersApi {
     );
   }
 
-  /// This endpoint requires the `userProfileImage.update` permission.
+  /// Create user profile image
+  ///
+  /// Upload and set a new profile image for the current user.
   ///
   /// Parameters:
   ///
@@ -78,7 +82,9 @@ class UsersApi {
     return null;
   }
 
-  /// This endpoint requires the `userProfileImage.delete` permission.
+  /// Delete user profile image
+  ///
+  /// Delete the profile image of the current user.
   ///
   /// Note: This method returns the HTTP [Response].
   Future<Response> deleteProfileImageWithHttpInfo() async {
@@ -106,7 +112,9 @@ class UsersApi {
     );
   }
 
-  /// This endpoint requires the `userProfileImage.delete` permission.
+  /// Delete user profile image
+  ///
+  /// Delete the profile image of the current user.
   Future<void> deleteProfileImage() async {
     final response = await deleteProfileImageWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -114,7 +122,9 @@ class UsersApi {
     }
   }
 
-  /// This endpoint requires the `userLicense.delete` permission.
+  /// Delete user product key
+  ///
+  /// Delete the registered product key for the current user.
   ///
   /// Note: This method returns the HTTP [Response].
   Future<Response> deleteUserLicenseWithHttpInfo() async {
@@ -142,7 +152,9 @@ class UsersApi {
     );
   }
 
-  /// This endpoint requires the `userLicense.delete` permission.
+  /// Delete user product key
+  ///
+  /// Delete the registered product key for the current user.
   Future<void> deleteUserLicense() async {
     final response = await deleteUserLicenseWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -150,7 +162,9 @@ class UsersApi {
     }
   }
 
-  /// This endpoint requires the `userOnboarding.delete` permission.
+  /// Delete user onboarding
+  ///
+  /// Delete the onboarding status of the current user.
   ///
   /// Note: This method returns the HTTP [Response].
   Future<Response> deleteUserOnboardingWithHttpInfo() async {
@@ -178,7 +192,9 @@ class UsersApi {
     );
   }
 
-  /// This endpoint requires the `userOnboarding.delete` permission.
+  /// Delete user onboarding
+  ///
+  /// Delete the onboarding status of the current user.
   Future<void> deleteUserOnboarding() async {
     final response = await deleteUserOnboardingWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -186,7 +202,9 @@ class UsersApi {
     }
   }
 
-  /// This endpoint requires the `userPreference.read` permission.
+  /// Get my preferences
+  ///
+  /// Retrieve the preferences for the current user.
   ///
   /// Note: This method returns the HTTP [Response].
   Future<Response> getMyPreferencesWithHttpInfo() async {
@@ -214,7 +232,9 @@ class UsersApi {
     );
   }
 
-  /// This endpoint requires the `userPreference.read` permission.
+  /// Get my preferences
+  ///
+  /// Retrieve the preferences for the current user.
   Future<UserPreferencesResponseDto?> getMyPreferences() async {
     final response = await getMyPreferencesWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -230,7 +250,9 @@ class UsersApi {
     return null;
   }
 
-  /// This endpoint requires the `user.read` permission.
+  /// Get current user
+  ///
+  /// Retrieve information about the user making the API request.
   ///
   /// Note: This method returns the HTTP [Response].
   Future<Response> getMyUserWithHttpInfo() async {
@@ -258,7 +280,9 @@ class UsersApi {
     );
   }
 
-  /// This endpoint requires the `user.read` permission.
+  /// Get current user
+  ///
+  /// Retrieve information about the user making the API request.
   Future<UserAdminResponseDto?> getMyUser() async {
     final response = await getMyUserWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -274,7 +298,9 @@ class UsersApi {
     return null;
   }
 
-  /// This endpoint requires the `userProfileImage.read` permission.
+  /// Retrieve user profile image
+  ///
+  /// Retrieve the profile image file for a user.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -307,7 +333,9 @@ class UsersApi {
     );
   }
 
-  /// This endpoint requires the `userProfileImage.read` permission.
+  /// Retrieve user profile image
+  ///
+  /// Retrieve the profile image file for a user.
   ///
   /// Parameters:
   ///
@@ -327,7 +355,9 @@ class UsersApi {
     return null;
   }
 
-  /// This endpoint requires the `user.read` permission.
+  /// Retrieve a user
+  ///
+  /// Retrieve a specific user by their ID.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -360,7 +390,9 @@ class UsersApi {
     );
   }
 
-  /// This endpoint requires the `user.read` permission.
+  /// Retrieve a user
+  ///
+  /// Retrieve a specific user by their ID.
   ///
   /// Parameters:
   ///
@@ -380,7 +412,9 @@ class UsersApi {
     return null;
   }
 
-  /// This endpoint requires the `userLicense.read` permission.
+  /// Retrieve user product key
+  ///
+  /// Retrieve information about whether the current user has a registered product key.
   ///
   /// Note: This method returns the HTTP [Response].
   Future<Response> getUserLicenseWithHttpInfo() async {
@@ -408,7 +442,9 @@ class UsersApi {
     );
   }
 
-  /// This endpoint requires the `userLicense.read` permission.
+  /// Retrieve user product key
+  ///
+  /// Retrieve information about whether the current user has a registered product key.
   Future<LicenseResponseDto?> getUserLicense() async {
     final response = await getUserLicenseWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -424,7 +460,9 @@ class UsersApi {
     return null;
   }
 
-  /// This endpoint requires the `userOnboarding.read` permission.
+  /// Retrieve user onboarding
+  ///
+  /// Retrieve the onboarding status of the current user.
   ///
   /// Note: This method returns the HTTP [Response].
   Future<Response> getUserOnboardingWithHttpInfo() async {
@@ -452,7 +490,9 @@ class UsersApi {
     );
   }
 
-  /// This endpoint requires the `userOnboarding.read` permission.
+  /// Retrieve user onboarding
+  ///
+  /// Retrieve the onboarding status of the current user.
   Future<OnboardingResponseDto?> getUserOnboarding() async {
     final response = await getUserOnboardingWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -468,7 +508,9 @@ class UsersApi {
     return null;
   }
 
-  /// This endpoint requires the `user.read` permission.
+  /// Get all users
+  ///
+  /// Retrieve a list of all users on the server.
   ///
   /// Note: This method returns the HTTP [Response].
   Future<Response> searchUsersWithHttpInfo() async {
@@ -496,7 +538,9 @@ class UsersApi {
     );
   }
 
-  /// This endpoint requires the `user.read` permission.
+  /// Get all users
+  ///
+  /// Retrieve a list of all users on the server.
   Future<List<UserResponseDto>?> searchUsers() async {
     final response = await searchUsersWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -515,7 +559,9 @@ class UsersApi {
     return null;
   }
 
-  /// This endpoint requires the `userLicense.update` permission.
+  /// Set user product key
+  ///
+  /// Register a product key for the current user.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -547,7 +593,9 @@ class UsersApi {
     );
   }
 
-  /// This endpoint requires the `userLicense.update` permission.
+  /// Set user product key
+  ///
+  /// Register a product key for the current user.
   ///
   /// Parameters:
   ///
@@ -567,7 +615,9 @@ class UsersApi {
     return null;
   }
 
-  /// This endpoint requires the `userOnboarding.update` permission.
+  /// Update user onboarding
+  ///
+  /// Update the onboarding status of the current user.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -599,7 +649,9 @@ class UsersApi {
     );
   }
 
-  /// This endpoint requires the `userOnboarding.update` permission.
+  /// Update user onboarding
+  ///
+  /// Update the onboarding status of the current user.
   ///
   /// Parameters:
   ///
@@ -619,7 +671,9 @@ class UsersApi {
     return null;
   }
 
-  /// This endpoint requires the `userPreference.update` permission.
+  /// Update my preferences
+  ///
+  /// Update the preferences of the current user.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -651,7 +705,9 @@ class UsersApi {
     );
   }
 
-  /// This endpoint requires the `userPreference.update` permission.
+  /// Update my preferences
+  ///
+  /// Update the preferences of the current user.
   ///
   /// Parameters:
   ///
@@ -671,7 +727,9 @@ class UsersApi {
     return null;
   }
 
-  /// This endpoint requires the `user.update` permission.
+  /// Update current user
+  ///
+  /// Update the current user making teh API request.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -703,7 +761,9 @@ class UsersApi {
     );
   }
 
-  /// This endpoint requires the `user.update` permission.
+  /// Update current user
+  ///
+  /// Update the current user making teh API request.
   ///
   /// Parameters:
   ///
