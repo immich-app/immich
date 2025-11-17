@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-if [ "$IMMICH_ENV" != "development" ]; then
+if [[ "$IMMICH_ENV" == "production" ]]; then
   echo "This command can only be run in development environments"
   exit 1
 fi

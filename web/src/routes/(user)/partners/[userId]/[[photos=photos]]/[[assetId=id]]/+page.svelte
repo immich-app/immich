@@ -8,11 +8,9 @@
   import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import Timeline from '$lib/components/timeline/Timeline.svelte';
   import { AppRoute } from '$lib/constants';
-  import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { AssetVisibility } from '@immich/sdk';
   import { mdiArrowLeft, mdiPlus } from '@mdi/js';
-  import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
 
@@ -22,16 +20,12 @@
 
   let { data }: Props = $props();
 
-  const timelineManager = new TimelineManager();
-  $effect(
-    () =>
-      void timelineManager.updateOptions({
-        userId: data.partner.id,
-        visibility: AssetVisibility.Timeline,
-        withStacked: true,
-      }),
-  );
-  onDestroy(() => timelineManager.destroy());
+  const options = $derived({
+    userId: data.partner.id,
+    visibility: AssetVisibility.Timeline,
+    withStacked: true,
+  });
+
   const assetInteraction = new AssetInteraction();
 
   const handleEscape = () => {
@@ -43,7 +37,7 @@
 </script>
 
 <main class="relative h-dvh overflow-hidden px-2 md:px-6 max-md:pt-(--navbar-height-md) pt-(--navbar-height)">
-  <Timeline enableRouting={true} {timelineManager} {assetInteraction} onEscape={handleEscape} />
+  <Timeline enableRouting={true} {options} {assetInteraction} onEscape={handleEscape} />
 </main>
 
 {#if assetInteraction.selectionActive}

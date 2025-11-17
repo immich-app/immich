@@ -2,50 +2,35 @@
   import { resolve } from '$app/paths';
   import SupportedDatetimePanel from '$lib/components/admin-settings/SupportedDatetimePanel.svelte';
   import SupportedVariablesPanel from '$lib/components/admin-settings/SupportedVariablesPanel.svelte';
-  import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
+  import SettingButtonsRow from '$lib/components/shared-components/settings/SystemConfigButtonRow.svelte';
   import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import { AppRoute, SettingInputFieldType } from '$lib/constants';
   import FormatMessage from '$lib/elements/FormatMessage.svelte';
+  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
+  import { systemConfigManager } from '$lib/managers/system-config-manager.svelte';
+  import { handleSystemConfigSave } from '$lib/services/system-config.service';
   import { user } from '$lib/stores/user.store';
-  import {
-    getStorageTemplateOptions,
-    type SystemConfigDto,
-    type SystemConfigTemplateStorageOptionDto,
-  } from '@immich/sdk';
+  import { getStorageTemplateOptions, type SystemConfigTemplateStorageOptionDto } from '@immich/sdk';
   import { LoadingSpinner } from '@immich/ui';
   import handlebar from 'handlebars';
-  import { isEqual } from 'lodash-es';
   import * as luxon from 'luxon';
-  import type { Snippet } from 'svelte';
+  import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
   import { createBubbler, preventDefault } from 'svelte/legacy';
   import { fade } from 'svelte/transition';
-  import type { SettingsResetEvent, SettingsSaveEvent } from './admin-settings';
 
-  interface Props {
-    savedConfig: SystemConfigDto;
-    defaultConfig: SystemConfigDto;
-    config: SystemConfigDto;
-    disabled?: boolean;
+  type Props = {
     minified?: boolean;
-    onReset: SettingsResetEvent;
-    onSave: SettingsSaveEvent;
     duration?: number;
-    children?: Snippet;
-  }
+    saveOnClose?: boolean;
+  };
 
-  let {
-    savedConfig,
-    defaultConfig,
-    config = $bindable(),
-    disabled = false,
-    minified = false,
-    onReset,
-    onSave,
-    duration = 500,
-    children,
-  }: Props = $props();
+  const { minified = false, duration = 500, saveOnClose = false }: Props = $props();
+
+  const disabled = $derived(featureFlagsManager.value.configFile);
+  const config = $derived(systemConfigManager.value);
+  let configToEdit = $state(systemConfigManager.cloneValue());
 
   const bubble = createBubbler();
   let templateOptions: SystemConfigTemplateStorageOptionDto | undefined = $state();
@@ -53,7 +38,7 @@
 
   const getTemplateOptions = async () => {
     templateOptions = await getStorageTemplateOptions();
-    selectedPreset = savedConfig.storageTemplate.template;
+    selectedPreset = config.storageTemplate.template;
   };
 
   const getSupportDateTimeFormat = () => getStorageTemplateOptions();
@@ -101,13 +86,19 @@
   };
 
   const handlePresetSelection = () => {
-    config.storageTemplate.template = selectedPreset;
+    configToEdit.storageTemplate.template = selectedPreset;
   };
   let parsedTemplate = $derived(() => {
     try {
-      return renderTemplate(config.storageTemplate.template);
+      return renderTemplate(configToEdit.storageTemplate.template);
     } catch {
       return 'error';
+    }
+  });
+
+  onDestroy(async () => {
+    if (saveOnClose) {
+      await handleSystemConfigSave({ storageTemplate: configToEdit.storageTemplate });
     }
   });
 </script>
@@ -145,8 +136,8 @@
       <SettingSwitch
         title={$t('admin.storage_template_enable_description')}
         {disabled}
-        bind:checked={config.storageTemplate.enabled}
-        isEdited={!(config.storageTemplate.enabled === savedConfig.storageTemplate.enabled)}
+        bind:checked={configToEdit.storageTemplate.enabled}
+        isEdited={!(configToEdit.storageTemplate.enabled === config.storageTemplate.enabled)}
       />
 
       {#if !minified}
@@ -154,14 +145,14 @@
           title={$t('admin.storage_template_hash_verification_enabled')}
           {disabled}
           subtitle={$t('admin.storage_template_hash_verification_enabled_description')}
-          bind:checked={config.storageTemplate.hashVerificationEnabled}
+          bind:checked={configToEdit.storageTemplate.hashVerificationEnabled}
           isEdited={!(
-            config.storageTemplate.hashVerificationEnabled === savedConfig.storageTemplate.hashVerificationEnabled
+            configToEdit.storageTemplate.hashVerificationEnabled === config.storageTemplate.hashVerificationEnabled
           )}
         />
       {/if}
 
-      {#if config.storageTemplate.enabled}
+      {#if configToEdit.storageTemplate.enabled}
         <hr />
 
         <h3 class="text-base font-medium text-primary">{$t('variables')}</h3>
@@ -220,7 +211,7 @@
                 </label>
                 <select
                   class="immich-form-input p-2 mt-2 text-sm rounded-lg bg-slate-200 hover:cursor-pointer dark:bg-gray-600"
-                  disabled={disabled || !config.storageTemplate.enabled}
+                  disabled={disabled || !configToEdit.storageTemplate.enabled}
                   name="presets"
                   id="preset-select"
                   bind:value={selectedPreset}
@@ -236,11 +227,11 @@
             <div class="flex gap-2 align-bottom">
               <SettingInputField
                 label={$t('template')}
-                disabled={disabled || !config.storageTemplate.enabled}
+                disabled={disabled || !configToEdit.storageTemplate.enabled}
                 required
                 inputType={SettingInputFieldType.TEXT}
-                bind:value={config.storageTemplate.template}
-                isEdited={!(config.storageTemplate.template === savedConfig.storageTemplate.template)}
+                bind:value={configToEdit.storageTemplate.template}
+                isEdited={!(configToEdit.storageTemplate.template === config.storageTemplate.template)}
               />
 
               <div class="flex-0">
@@ -276,15 +267,8 @@
         </div>
       {/if}
 
-      {#if minified}
-        {@render children?.()}
-      {:else}
-        <SettingButtonsRow
-          onReset={(options) => onReset({ ...options, configKeys: ['storageTemplate'] })}
-          onSave={() => onSave({ storageTemplate: config.storageTemplate })}
-          showResetToDefault={!isEqual(savedConfig.storageTemplate, defaultConfig.storageTemplate) && !minified}
-          {disabled}
-        />
+      {#if !minified}
+        <SettingButtonsRow bind:configToEdit keys={['storageTemplate']} {disabled} />
       {/if}
     </div>
   {/await}

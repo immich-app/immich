@@ -93,7 +93,8 @@ ENV LD_PRELOAD=/usr/lib/libmimalloc.so.2 \
     MACHINE_LEARNING_MODEL_ARENA=false
 
 RUN apt-get update && \
-    apt-get install --no-install-recommends -yqq libcudnn9-cuda-12 && \
+    # Pascal support was dropped in 9.11
+    apt-get install --no-install-recommends -yqq libcudnn9-cuda-12=9.10.2.21-1 && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
@@ -140,7 +141,7 @@ FROM prod-${DEVICE} AS prod
 ARG DEVICE
 
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends tini $(if ! [ "$DEVICE" = "openvino" ] && ! [ "$DEVICE" = "rocm" ]; then echo "libmimalloc2.0"; fi) && \
+    apt-get install -y --no-install-recommends tini ccache libgl1 libglib2.0-0 libgomp1 $(if ! [ "$DEVICE" = "openvino" ] && ! [ "$DEVICE" = "rocm" ]; then echo "libmimalloc2.0"; fi) && \
     apt-get autoremove -yqq && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*

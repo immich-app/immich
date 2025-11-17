@@ -66,42 +66,6 @@ describe(MetadataService.name, () => {
         },
       },
       {
-        description: 'should handle no time zone information and server behind UTC',
-        serverTimeZone: 'America/Los_Angeles',
-        exifData: {
-          DateTimeOriginal: '2022:01:01 00:00:00',
-        },
-        expected: {
-          localDateTime: '2022-01-01T00:00:00.000Z',
-          dateTimeOriginal: '2022-01-01T08:00:00.000Z',
-          timeZone: null,
-        },
-      },
-      {
-        description: 'should handle no time zone information and server ahead of UTC',
-        serverTimeZone: 'Europe/Brussels',
-        exifData: {
-          DateTimeOriginal: '2022:01:01 00:00:00',
-        },
-        expected: {
-          localDateTime: '2022-01-01T00:00:00.000Z',
-          dateTimeOriginal: '2021-12-31T23:00:00.000Z',
-          timeZone: null,
-        },
-      },
-      {
-        description: 'should handle no time zone information and server ahead of UTC in the summer',
-        serverTimeZone: 'Europe/Brussels',
-        exifData: {
-          DateTimeOriginal: '2022:06:01 00:00:00',
-        },
-        expected: {
-          localDateTime: '2022-06-01T00:00:00.000Z',
-          dateTimeOriginal: '2022-05-31T22:00:00.000Z',
-          timeZone: null,
-        },
-      },
-      {
         description: 'should handle a +13:00 time zone',
         exifData: {
           DateTimeOriginal: '2022:01:01 00:00:00+13:00',

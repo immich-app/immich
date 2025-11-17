@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -42,7 +44,7 @@ class BetaTimelineListTile extends ConsumerWidget {
               ElevatedButton(
                 onPressed: () async {
                   Navigator.of(context).pop();
-                  context.router.replaceAll([ChangeExperienceRoute(switchingToBeta: value)]);
+                  unawaited(context.router.replaceAll([ChangeExperienceRoute(switchingToBeta: value)]));
                 },
                 child: Text("ok".t(context: context)),
               ),

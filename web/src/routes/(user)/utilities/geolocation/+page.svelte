@@ -30,13 +30,13 @@
   let location = $state<{ latitude: number; longitude: number }>({ latitude: 0, longitude: 0 });
   let locationUpdated = $state(false);
 
-  const timelineManager = new TimelineManager();
-  void timelineManager.updateOptions({
+  let timelineManager = $state<TimelineManager>() as TimelineManager;
+  const options = {
     visibility: AssetVisibility.Timeline,
     withStacked: true,
     withPartners: true,
     withCoordinates: true,
-  });
+  };
 
   const handleUpdate = async () => {
     const confirmed = await modalManager.show(GeolocationUpdateConfirmModal, {
@@ -188,7 +188,8 @@
   <Timeline
     isSelectionMode={true}
     enableRouting={true}
-    {timelineManager}
+    bind:timelineManager
+    {options}
     {assetInteraction}
     removeAction={AssetAction.ARCHIVE}
     onEscape={handleEscape}

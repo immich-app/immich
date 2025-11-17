@@ -1,11 +1,8 @@
 <script lang="ts">
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
-  import {
-    notificationController,
-    NotificationType,
-  } from '$lib/components/shared-components/notification/notification';
   import { handleError } from '$lib/utils/handle-error';
   import { updateAlbumInfo, type AlbumResponseDto, type AssetResponseDto } from '@immich/sdk';
+  import { toastManager } from '@immich/ui';
   import { mdiImageOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
@@ -24,11 +21,7 @@
           albumThumbnailAssetId: asset.id,
         },
       });
-      notificationController.show({
-        type: NotificationType.Info,
-        message: $t('album_cover_updated'),
-        timeout: 1500,
-      });
+      toastManager.success($t('album_cover_updated'));
     } catch (error) {
       handleError(error, $t('errors.unable_to_update_album_cover'));
     }

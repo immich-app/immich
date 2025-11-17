@@ -28,7 +28,7 @@ You can read this guide to learn more about [partner sharing](/features/partner-
 
 ## Public sharing
 
-You can create a public link to share a group of photos or videos, or an album, with anyone. The public link can be shared via email, social media, or any other method. There are a varierity of options to customize the public link, such as setting an expiration date, password protection, and more. Public shared link is handy when you want to share a group of photos or videos with someone who doesn't have an Immich account and allow the shared user to upload their photos or videos to your account.
+You can create a public link to share a group of photos or videos, or an album, with anyone. The public link can be shared via email, social media, or any other method. There are a variety of options to customize the public link, such as setting an expiration date, password protection, and more. Public shared link is handy when you want to share a group of photos or videos with someone who doesn't have an Immich account and allow the shared user to upload their photos or videos to your account.
 
 The public shared link is generated with a random URL, which acts as as a secret to avoid the link being guessed by unwanted parties, for instance.
 

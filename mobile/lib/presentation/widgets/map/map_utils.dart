@@ -73,7 +73,7 @@ class MapUtils {
     try {
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled && !silent) {
-        showDialog(context: context, builder: (context) => _LocationServiceDisabledDialog(context));
+        unawaited(showDialog(context: context, builder: (context) => _LocationServiceDisabledDialog(context)));
         return (null, LocationPermission.deniedForever);
       }
 

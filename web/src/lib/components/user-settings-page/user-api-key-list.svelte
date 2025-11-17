@@ -1,15 +1,15 @@
 <script lang="ts">
   import { dateFormats } from '$lib/constants';
-  import ApiKeyModal from '$lib/modals/ApiKeyModal.svelte';
+  import ApiKeyCreateModal from '$lib/modals/ApiKeyCreateModal.svelte';
   import ApiKeySecretModal from '$lib/modals/ApiKeySecretModal.svelte';
+  import ApiKeyUpdateModal from '$lib/modals/ApiKeyUpdateModal.svelte';
   import { locale } from '$lib/stores/preferences.store';
-  import { createApiKey, deleteApiKey, getApiKeys, updateApiKey, type ApiKeyResponseDto } from '@immich/sdk';
-  import { Button, IconButton, modalManager } from '@immich/ui';
+  import { handleError } from '$lib/utils/handle-error';
+  import { deleteApiKey, getApiKeys, type ApiKeyResponseDto } from '@immich/sdk';
+  import { Button, IconButton, modalManager, toastManager } from '@immich/ui';
   import { mdiPencilOutline, mdiTrashCanOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
-  import { handleError } from '../../utils/handle-error';
-  import { notificationController, NotificationType } from '../shared-components/notification/notification';
 
   interface Props {
     keys: ApiKeyResponseDto[];
@@ -22,52 +22,22 @@
   }
 
   const handleCreate = async () => {
-    const result = await modalManager.show(ApiKeyModal, {
-      title: $t('new_api_key'),
-      apiKey: { name: 'API Key', permissions: [] },
-      submitText: $t('create'),
-    });
+    const secret = await modalManager.show(ApiKeyCreateModal);
 
-    if (!result) {
+    if (!secret) {
       return;
     }
 
-    try {
-      const { secret } = await createApiKey({
-        apiKeyCreateDto: {
-          name: result.name,
-          permissions: result.permissions,
-        },
-      });
-
-      await modalManager.show(ApiKeySecretModal, { secret });
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_create_api_key'));
-    } finally {
-      await refreshKeys();
-    }
+    await modalManager.show(ApiKeySecretModal, { secret });
+    await refreshKeys();
   };
 
   const handleUpdate = async (key: ApiKeyResponseDto) => {
-    const result = await modalManager.show(ApiKeyModal, {
-      title: $t('api_key'),
-      submitText: $t('save'),
+    const success = await modalManager.show(ApiKeyUpdateModal, {
       apiKey: key,
     });
 
-    if (!result) {
-      return;
-    }
-
-    try {
-      await updateApiKey({ id: key.id, apiKeyUpdateDto: { name: result.name, permissions: result.permissions } });
-      notificationController.show({
-        message: $t('saved_api_key'),
-        type: NotificationType.Info,
-      });
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_save_api_key'));
-    } finally {
+    if (success) {
       await refreshKeys();
     }
   };
@@ -80,10 +50,7 @@
 
     try {
       await deleteApiKey({ id: key.id });
-      notificationController.show({
-        message: $t('removed_api_key', { values: { name: key.name } }),
-        type: NotificationType.Info,
-      });
+      toastManager.success($t('removed_api_key', { values: { name: key.name } }));
     } catch (error) {
       handleError(error, $t('errors.unable_to_remove_api_key'));
     } finally {
@@ -113,7 +80,7 @@
         <tbody class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
           {#each keys as key (key.id)}
             <tr
-              class="flex h-[80px] w-full place-items-center text-center dark:text-immich-dark-fg even:bg-subtle/20 odd:bg-subtle/80"
+              class="flex h-20 w-full place-items-center text-center dark:text-immich-dark-fg even:bg-subtle/20 odd:bg-subtle/80"
             >
               <td class="w-1/4 text-ellipsis px-4 text-sm overflow-hidden">{key.name}</td>
               <td

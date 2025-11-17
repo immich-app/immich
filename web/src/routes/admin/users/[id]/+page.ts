@@ -1,7 +1,7 @@
 import { AppRoute } from '$lib/constants';
 import { authenticate, requestServerInfo } from '$lib/utils/auth';
 import { getFormatter } from '$lib/utils/i18n';
-import { getUserPreferencesAdmin, getUserStatisticsAdmin, searchUsersAdmin } from '@immich/sdk';
+import { getUserPreferencesAdmin, getUserSessionsAdmin, getUserStatisticsAdmin, searchUsersAdmin } from '@immich/sdk';
 import { redirect } from '@sveltejs/kit';
 import type { PageLoad } from './$types';
 
@@ -13,9 +13,10 @@ export const load = (async ({ params, url }) => {
     redirect(302, AppRoute.ADMIN_USERS);
   }
 
-  const [userPreferences, userStatistics] = await Promise.all([
+  const [userPreferences, userStatistics, userSessions] = await Promise.all([
     getUserPreferencesAdmin({ id: user.id }),
     getUserStatisticsAdmin({ id: user.id }),
+    getUserSessionsAdmin({ id: user.id }),
   ]);
 
   const $t = await getFormatter();
@@ -24,6 +25,7 @@ export const load = (async ({ params, url }) => {
     user,
     userPreferences,
     userStatistics,
+    userSessions,
     meta: {
       title: $t('admin.user_details'),
     },

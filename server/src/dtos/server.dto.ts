@@ -154,6 +154,7 @@ export class ServerConfigDto {
   publicUsers!: boolean;
   mapDarkStyleUrl!: string;
   mapLightStyleUrl!: string;
+  maintenanceMode!: boolean;
 }
 
 export class ServerFeaturesDto {
@@ -171,6 +172,7 @@ export class ServerFeaturesDto {
   sidecar!: boolean;
   search!: boolean;
   email!: boolean;
+  ocr!: boolean;
 }
 
 export interface ReleaseNotification {

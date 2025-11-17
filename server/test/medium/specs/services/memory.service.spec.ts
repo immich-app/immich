@@ -153,6 +153,46 @@ describe(MemoryService.name, () => {
       );
     });
 
+    it('should create a memory from an asset - in advance', async () => {
+      const { sut, ctx } = setup();
+      const assetRepo = ctx.get(AssetRepository);
+      const memoryRepo = ctx.get(MemoryRepository);
+      const now = DateTime.fromObject({ year: 2035, month: 2, day: 26 }, { zone: 'utc' }) as DateTime<true>;
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id, localDateTime: now.minus({ years: 1 }).toISO() });
+      await Promise.all([
+        ctx.newExif({ assetId: asset.id, make: 'Canon' }),
+        ctx.newJobStatus({ assetId: asset.id }),
+        assetRepo.upsertFiles([
+          { assetId: asset.id, type: AssetFileType.Preview, path: '/path/to/preview.jpg' },
+          { assetId: asset.id, type: AssetFileType.Thumbnail, path: '/path/to/thumbnail.jpg' },
+        ]),
+      ]);
+
+      vi.setSystemTime(now.toJSDate());
+      await sut.onMemoriesCreate();
+
+      const memories = await memoryRepo.search(user.id, {});
+      expect(memories.length).toBe(1);
+      expect(memories[0]).toEqual(
+        expect.objectContaining({
+          id: expect.any(String),
+          createdAt: expect.any(Date),
+          memoryAt: expect.any(Date),
+          updatedAt: expect.any(Date),
+          deletedAt: null,
+          ownerId: user.id,
+          assets: expect.arrayContaining([expect.objectContaining({ id: asset.id })]),
+          isSaved: false,
+          showAt: now.startOf('day').toJSDate(),
+          hideAt: now.endOf('day').toJSDate(),
+          seenAt: null,
+          type: 'on_this_day',
+          data: { year: 2034 },
+        }),
+      );
+    });
+
     it('should not generate a memory twice for the same day', async () => {
       const { sut, ctx } = setup();
       const assetRepo = ctx.get(AssetRepository);

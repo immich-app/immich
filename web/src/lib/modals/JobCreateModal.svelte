@@ -1,12 +1,8 @@
 <script lang="ts">
   import Combobox, { type ComboBoxOption } from '$lib/components/shared-components/combobox.svelte';
-  import {
-    notificationController,
-    NotificationType,
-  } from '$lib/components/shared-components/notification/notification';
   import { handleError } from '$lib/utils/handle-error';
   import { createJob, ManualJobName } from '@immich/sdk';
-  import { ConfirmModal } from '@immich/ui';
+  import { ConfirmModal, toastManager } from '@immich/ui';
   import { t } from 'svelte-i18n';
 
   type Props = { onClose: (confirmed: boolean) => void };
@@ -36,7 +32,7 @@
 
     try {
       await createJob({ jobCreateDto: { name: selectedJob.value as ManualJobName } });
-      notificationController.show({ message: $t('admin.job_created'), type: NotificationType.Info });
+      toastManager.success($t('admin.job_created'));
       onClose(true);
     } catch (error) {
       handleError(error, $t('errors.unable_to_submit_job'));

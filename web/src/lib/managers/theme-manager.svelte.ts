@@ -36,7 +36,7 @@ class ThemeManager {
   isDark = $derived(this.value === Theme.DARK);
 
   constructor() {
-    eventManager.on('app.init', () => this.#onAppInit());
+    eventManager.on('AppInit', () => this.#onAppInit());
   }
 
   setSystem(system: boolean) {
@@ -71,7 +71,7 @@ class ThemeManager {
 
     this.#theme.current = theme;
 
-    eventManager.emit('theme.change', theme);
+    eventManager.emit('ThemeChange', theme);
   }
 }
 

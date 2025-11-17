@@ -20,7 +20,7 @@
   <AppShellHeader>
     <NavigationBar showUploadButton={false} noBorder />
   </AppShellHeader>
-  <AppShellSidebar bind:open={sidebarStore.isOpen}>
+  <AppShellSidebar bind:open={sidebarStore.isOpen} class="border-none shadow-none">
     <AdminSidebar />
   </AppShellSidebar>
 

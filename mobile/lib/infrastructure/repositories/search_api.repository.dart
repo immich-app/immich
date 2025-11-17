@@ -5,6 +5,7 @@ import 'package:openapi/api.dart';
 
 class SearchApiRepository extends ApiRepository {
   final SearchApi _api;
+
   const SearchApiRepository(this._api);
 
   Future<SearchResponseDto?> search(SearchFilter filter, int page) {
@@ -15,10 +16,12 @@ class SearchApiRepository extends ApiRepository {
       type = AssetTypeEnum.VIDEO;
     }
 
-    if (filter.context != null && filter.context!.isNotEmpty) {
+    if ((filter.context != null && filter.context!.isNotEmpty) ||
+        (filter.assetId != null && filter.assetId!.isNotEmpty)) {
       return _api.searchSmart(
         SmartSearchDto(
-          query: filter.context!,
+          query: filter.context,
+          queryAssetId: filter.assetId,
           language: filter.language,
           country: filter.location.country,
           state: filter.location.state,
@@ -43,6 +46,7 @@ class SearchApiRepository extends ApiRepository {
         originalFileName: filter.filename != null && filter.filename!.isNotEmpty ? filter.filename : null,
         country: filter.location.country,
         description: filter.description != null && filter.description!.isNotEmpty ? filter.description : null,
+        ocr: filter.ocr != null && filter.ocr!.isNotEmpty ? filter.ocr : null,
         state: filter.location.state,
         city: filter.location.city,
         make: filter.camera.make,

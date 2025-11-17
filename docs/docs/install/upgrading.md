@@ -87,7 +87,7 @@ After making a backup, please modify your `docker-compose.yml` file with the fol
 If you deviated from the defaults of pg14 or pgvectors0.2.0, you must adjust the pg major version and pgvecto.rs version. If you are still using the default `docker.io/tensorchord/pgvecto-rs:pg14-v0.2.0` image, you can just follow the changes above. For example, if the previous image is `docker.io/tensorchord/pgvecto-rs:pg16-v0.3.0`, the new image should be `ghcr.io/immich-app/postgres:16-vectorchord0.3.0-pgvectors0.3.0` instead of the image specified in the diff.
 :::
 
-After making these changes, you can start Immich as normal. Immich will make some changes to the DB during startup, which can take seconds to minutes to finish, depending on hardware and library size. In particular, it’s normal for the server logs to be seemingly stuck at `Reindexing clip_index` and `Reindexing face_index`for some time if you have over 100k assets in Immich and/or Immich is on a relatively weak server. If you see these logs and there are no errors, just give it time.
+After making these changes, you can start Immich as normal. Immich will make some changes to the DB during startup, which can take seconds to minutes to finish, depending on hardware and library size. In particular, it’s normal for the server logs to be seemingly stuck at `Reindexing clip_index` and `Reindexing face_index` for some time if you have over 100k assets in Immich and/or Immich is on a relatively weak server. If you see these logs and there are no errors, just give it time.
 
 :::danger
 After switching to VectorChord, you should not downgrade Immich below 1.133.0.

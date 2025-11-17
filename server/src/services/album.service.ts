@@ -79,12 +79,17 @@ export class AlbumService extends BaseService {
     const album = await this.findOrFail(id, { withAssets });
     const [albumMetadataForIds] = await this.albumRepository.getMetadataForIds([album.id]);
 
+    const hasSharedUsers = album.albumUsers && album.albumUsers.length > 0;
+    const hasSharedLink = album.sharedLinks && album.sharedLinks.length > 0;
+    const isShared = hasSharedUsers || hasSharedLink;
+
     return {
       ...mapAlbum(album, withAssets, auth),
       startDate: albumMetadataForIds?.startDate ?? undefined,
       endDate: albumMetadataForIds?.endDate ?? undefined,
       assetCount: albumMetadataForIds?.assetCount ?? 0,
       lastModifiedAssetTimestamp: albumMetadataForIds?.lastModifiedAssetTimestamp ?? undefined,
+      contributorCounts: isShared ? await this.albumRepository.getContributorCounts(album.id) : undefined,
     };
   }
 
@@ -210,7 +215,7 @@ export class AlbumService extends BaseService {
       return results;
     }
 
-    const albumAssetValues: { albumsId: string; assetsId: string }[] = [];
+    const albumAssetValues: { albumId: string; assetId: string }[] = [];
     const events: { id: string; recipients: string[] }[] = [];
     for (const albumId of allowedAlbumIds) {
       const existingAssetIds = await this.albumRepository.getAssetIds(albumId, [...allowedAssetIds]);
@@ -223,7 +228,7 @@ export class AlbumService extends BaseService {
       results.success = true;
 
       for (const assetId of notPresentAssetIds) {
-        albumAssetValues.push({ albumsId: albumId, assetsId: assetId });
+        albumAssetValues.push({ albumId, assetId });
       }
       await this.albumRepository.update(albumId, {
         id: albumId,
@@ -284,7 +289,7 @@ export class AlbumService extends BaseService {
         throw new BadRequestException('User not found');
       }
 
-      await this.albumUserRepository.create({ usersId: userId, albumsId: id, role });
+      await this.albumUserRepository.create({ userId, albumId: id, role });
       await this.eventRepository.emit('AlbumInvite', { id, userId });
     }
 
@@ -312,12 +317,12 @@ export class AlbumService extends BaseService {
       await this.requireAccess({ auth, permission: Permission.AlbumShare, ids: [id] });
     }
 
-    await this.albumUserRepository.delete({ albumsId: id, usersId: userId });
+    await this.albumUserRepository.delete({ albumId: id, userId });
   }
 
   async updateUser(auth: AuthDto, id: string, userId: string, dto: UpdateAlbumUserDto): Promise<void> {
     await this.requireAccess({ auth, permission: Permission.AlbumShare, ids: [id] });
-    await this.albumUserRepository.update({ albumsId: id, usersId: userId }, { role: dto.role });
+    await this.albumUserRepository.update({ albumId: id, userId }, { role: dto.role });
   }
 
   private async findOrFail(id: string, options: AlbumInfoOptions) {

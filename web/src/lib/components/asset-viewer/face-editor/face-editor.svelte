@@ -1,12 +1,11 @@
 <script lang="ts">
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
-  import { notificationController } from '$lib/components/shared-components/notification/notification';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { createFace, getAllPeople, type PersonResponseDto } from '@immich/sdk';
-  import { Button, Input, modalManager } from '@immich/ui';
+  import { Button, Input, modalManager, toastManager } from '@immich/ui';
   import { Canvas, InteractiveFabricObject, Rect } from 'fabric';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -278,9 +277,7 @@
     try {
       const data = getFaceCroppedCoordinates();
       if (!data) {
-        notificationController.show({
-          message: $t('error_tag_face_bounding_box'),
-        });
+        toastManager.warning($t('error_tag_face_bounding_box'));
         return;
       }
 
@@ -325,7 +322,7 @@
       <Input placeholder={$t('search_people')} bind:value={searchTerm} size="tiny" />
     </div>
 
-    <div class="h-[250px] overflow-y-auto mt-2">
+    <div class="h-62.5 overflow-y-auto mt-2">
       {#if filteredCandidates.length > 0}
         <div class="mt-2 rounded-lg">
           {#each filteredCandidates as person (person.id)}

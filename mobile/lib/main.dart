@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:background_downloader/background_downloader.dart';
@@ -40,10 +41,10 @@ import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:immich_mobile/utils/http_ssl_options.dart';
 import 'package:immich_mobile/utils/licenses.dart';
 import 'package:immich_mobile/utils/migration.dart';
+import 'package:immich_mobile/wm_executor.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:logging/logging.dart';
 import 'package:timezone/data/latest.dart';
-import 'package:worker_manager/worker_manager.dart';
 
 void main() async {
   ImmichWidgetsBinding();
@@ -52,7 +53,7 @@ void main() async {
   await Bootstrap.initDomain(isar, drift, logDb);
   await initApp();
   // Warm-up isolate pool for worker manager
-  await workerManager.init(dynamicSpawning: true);
+  await workerManagerPatch.init(dynamicSpawning: true, isolatesCount: max(Platform.numberOfProcessors - 1, 5));
   await migrateDatabaseIfNeeded(isar, drift);
   HttpSSLOptions.apply();
 
@@ -158,7 +159,7 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
     WidgetsBinding.instance.addObserver(this);
 
     // Draw the app from edge to edge
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    unawaited(SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge));
 
     // Sets the navigation bar color
     SystemUiOverlayStyle overlayStyle = const SystemUiOverlayStyle(systemNavigationBarColor: Colors.transparent);

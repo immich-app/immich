@@ -4,8 +4,13 @@
   import { assetViewerFadeDuration } from '$lib/constants';
   import { castManager } from '$lib/managers/cast-manager.svelte';
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
-  import { loopVideo as loopVideoPreference, videoViewerMuted, videoViewerVolume } from '$lib/stores/preferences.store';
-  import { getAssetPlaybackUrl, getAssetThumbnailUrl } from '$lib/utils';
+  import {
+    autoPlayVideo,
+    loopVideo as loopVideoPreference,
+    videoViewerMuted,
+    videoViewerVolume,
+  } from '$lib/stores/preferences.store';
+  import { getAssetOriginalUrl, getAssetPlaybackUrl, getAssetThumbnailUrl } from '$lib/utils';
   import { AssetMediaSize } from '@immich/sdk';
   import { LoadingSpinner } from '@immich/ui';
   import { onDestroy, onMount } from 'svelte';
@@ -16,6 +21,7 @@
     assetId: string;
     loopVideo: boolean;
     cacheKey: string | null;
+    playOriginalVideo: boolean;
     onPreviousAsset?: () => void;
     onNextAsset?: () => void;
     onVideoEnded?: () => void;
@@ -27,6 +33,7 @@
     assetId,
     loopVideo,
     cacheKey,
+    playOriginalVideo,
     onPreviousAsset = () => {},
     onNextAsset = () => {},
     onVideoEnded = () => {},
@@ -43,7 +50,12 @@
   onMount(() => {
     // Show video after mount to ensure fading in.
     showVideo = true;
-    assetFileUrl = getAssetPlaybackUrl({ id: assetId, cacheKey });
+  });
+
+  $effect(() => {
+    assetFileUrl = playOriginalVideo
+      ? getAssetOriginalUrl({ id: assetId, cacheKey })
+      : getAssetPlaybackUrl({ id: assetId, cacheKey });
     if (videoPlayer) {
       videoPlayer.load();
     }
@@ -125,9 +137,10 @@
       <video
         bind:this={videoPlayer}
         loop={$loopVideoPreference && loopVideo}
-        autoplay
+        autoplay={$autoPlayVideo}
         playsinline
         controls
+        disablePictureInPicture
         class="h-full object-contain"
         {...useSwipe(onSwipe)}
         oncanplay={(e) => handleCanPlay(e.currentTarget)}

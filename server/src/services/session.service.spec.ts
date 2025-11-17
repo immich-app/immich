@@ -43,17 +43,13 @@ describe('SessionService', () => {
   describe('logoutDevices', () => {
     it('should logout all devices', async () => {
       const currentSession = factory.session();
-      const otherSession = factory.session();
       const auth = factory.auth({ session: currentSession });
 
-      mocks.session.getByUserId.mockResolvedValue([currentSession, otherSession]);
-      mocks.session.delete.mockResolvedValue();
+      mocks.session.invalidate.mockResolvedValue();
 
       await sut.deleteAll(auth);
 
-      expect(mocks.session.getByUserId).toHaveBeenCalledWith(auth.user.id);
-      expect(mocks.session.delete).toHaveBeenCalledWith(otherSession.id);
-      expect(mocks.session.delete).not.toHaveBeenCalledWith(currentSession.id);
+      expect(mocks.session.invalidate).toHaveBeenCalledWith({ userId: auth.user.id, excludeId: currentSession.id });
     });
   });
 

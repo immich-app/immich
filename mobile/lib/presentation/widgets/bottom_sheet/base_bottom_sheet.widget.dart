@@ -8,6 +8,7 @@ class BaseBottomSheet extends ConsumerStatefulWidget {
   final List<Widget> actions;
   final DraggableScrollableController? controller;
   final List<Widget>? slivers;
+  final Widget? footer;
   final double initialChildSize;
   final double minChildSize;
   final double maxChildSize;
@@ -20,6 +21,7 @@ class BaseBottomSheet extends ConsumerStatefulWidget {
     super.key,
     required this.actions,
     this.slivers,
+    this.footer,
     this.controller,
     this.initialChildSize = 0.35,
     double? minChildSize,
@@ -73,24 +75,31 @@ class _BaseDraggableScrollableSheetState extends ConsumerState<BaseBottomSheet> 
           elevation: 3.0,
           shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(18))),
           margin: const EdgeInsets.symmetric(horizontal: 0),
-          child: CustomScrollView(
-            controller: scrollController,
-            slivers: [
-              const SliverPersistentHeader(delegate: _DragHandleDelegate(), pinned: true),
-              if (widget.actions.isNotEmpty)
-                SliverToBoxAdapter(
-                  child: Column(
-                    children: [
-                      SizedBox(
-                        height: 115,
-                        child: ListView(shrinkWrap: true, scrollDirection: Axis.horizontal, children: widget.actions),
+          child: Column(
+            children: [
+              Expanded(
+                child: CustomScrollView(
+                  controller: scrollController,
+                  slivers: [
+                    const SliverPersistentHeader(delegate: _DragHandleDelegate(), pinned: true),
+                    if (widget.actions.isNotEmpty)
+                      SliverToBoxAdapter(
+                        child: Column(
+                          children: [
+                            SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: widget.actions),
+                            ),
+                            const Divider(indent: 16, endIndent: 16),
+                            const SizedBox(height: 16),
+                          ],
+                        ),
                       ),
-                      const Divider(indent: 16, endIndent: 16),
-                      const SizedBox(height: 16),
-                    ],
-                  ),
+                    if (widget.slivers != null) ...widget.slivers!,
+                  ],
                 ),
-              if (widget.slivers != null) ...widget.slivers!,
+              ),
+              if (widget.footer != null) widget.footer!,
             ],
           ),
         );

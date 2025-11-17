@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -12,7 +14,7 @@ class AppNavigationObserver extends AutoRouterObserver {
 
   @override
   Future<void> didChangeTabRoute(TabPageRoute route, TabPageRoute previousRoute) async {
-    Future(() => ref.read(inLockedViewProvider.notifier).state = false);
+    unawaited(Future(() => ref.read(inLockedViewProvider.notifier).state = false));
   }
 
   @override

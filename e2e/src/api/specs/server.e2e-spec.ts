@@ -113,6 +113,7 @@ describe('/server', () => {
         importFaces: false,
         oauth: false,
         oauthAutoLaunch: false,
+        ocr: false,
         passwordLogin: true,
         search: true,
         sidecar: true,
@@ -135,6 +136,7 @@ describe('/server', () => {
         externalDomain: '',
         publicUsers: true,
         isOnboarded: false,
+        maintenanceMode: false,
         mapDarkStyleUrl: 'https://tiles.immich.cloud/v1/style/dark.json',
         mapLightStyleUrl: 'https://tiles.immich.cloud/v1/style/light.json',
       });

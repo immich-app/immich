@@ -15,7 +15,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { SystemConfig } from 'src/config';
-import { CLIPConfig, DuplicateDetectionConfig, FacialRecognitionConfig } from 'src/dtos/model-config.dto';
+import { CLIPConfig, DuplicateDetectionConfig, FacialRecognitionConfig, OcrConfig } from 'src/dtos/model-config.dto';
 import {
   AudioCodec,
   CQMode,
@@ -205,6 +205,12 @@ class SystemConfigJobDto implements Record<ConcurrentQueueName, JobSettingsDto> 
   @ValidateNested()
   @IsObject()
   @Type(() => JobSettingsDto)
+  [QueueName.Ocr]!: JobSettingsDto;
+
+  @ApiProperty({ type: JobSettingsDto })
+  @ValidateNested()
+  @IsObject()
+  @Type(() => JobSettingsDto)
   [QueueName.Sidecar]!: JobSettingsDto;
 
   @ApiProperty({ type: JobSettingsDto })
@@ -218,6 +224,12 @@ class SystemConfigJobDto implements Record<ConcurrentQueueName, JobSettingsDto> 
   @IsObject()
   @Type(() => JobSettingsDto)
   [QueueName.Notification]!: JobSettingsDto;
+
+  @ApiProperty({ type: JobSettingsDto })
+  @ValidateNested()
+  @IsObject()
+  @Type(() => JobSettingsDto)
+  [QueueName.Workflow]!: JobSettingsDto;
 }
 
 class SystemConfigLibraryScanDto {
@@ -296,6 +308,11 @@ class SystemConfigMachineLearningDto {
   @ValidateNested()
   @IsObject()
   facialRecognition!: FacialRecognitionConfig;
+
+  @Type(() => OcrConfig)
+  @ValidateNested()
+  @IsObject()
+  ocr!: OcrConfig;
 }
 
 enum MapTheme {
@@ -462,6 +479,9 @@ class SystemConfigSmtpTransportDto {
   @Min(0)
   @Max(65_535)
   port!: number;
+
+  @ValidateBoolean()
+  secure!: boolean;
 
   @IsString()
   username!: string;

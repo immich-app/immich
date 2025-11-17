@@ -16,48 +16,76 @@ The default configuration looks like this:
 
 ```json
 {
-  "ffmpeg": {
-    "crf": 23,
-    "threads": 0,
-    "preset": "ultrafast",
-    "targetVideoCodec": "h264",
-    "acceptedVideoCodecs": ["h264"],
-    "targetAudioCodec": "aac",
-    "acceptedAudioCodecs": ["aac", "mp3", "libopus", "pcm_s16le"],
-    "acceptedContainers": ["mov", "ogg", "webm"],
-    "targetResolution": "720",
-    "maxBitrate": "0",
-    "bframes": -1,
-    "refs": 0,
-    "gopSize": 0,
-    "temporalAQ": false,
-    "cqMode": "auto",
-    "twoPass": false,
-    "preferredHwDevice": "auto",
-    "transcode": "required",
-    "tonemap": "hable",
-    "accel": "disabled",
-    "accelDecode": false
-  },
   "backup": {
     "database": {
-      "enabled": true,
       "cronExpression": "0 02 * * *",
+      "enabled": true,
       "keepLastAmount": 14
+    }
+  },
+  "ffmpeg": {
+    "accel": "disabled",
+    "accelDecode": false,
+    "acceptedAudioCodecs": ["aac", "mp3", "libopus"],
+    "acceptedContainers": ["mov", "ogg", "webm"],
+    "acceptedVideoCodecs": ["h264"],
+    "bframes": -1,
+    "cqMode": "auto",
+    "crf": 23,
+    "gopSize": 0,
+    "maxBitrate": "0",
+    "preferredHwDevice": "auto",
+    "preset": "ultrafast",
+    "refs": 0,
+    "targetAudioCodec": "aac",
+    "targetResolution": "720",
+    "targetVideoCodec": "h264",
+    "temporalAQ": false,
+    "threads": 0,
+    "tonemap": "hable",
+    "transcode": "required",
+    "twoPass": false
+  },
+  "image": {
+    "colorspace": "p3",
+    "extractEmbedded": false,
+    "fullsize": {
+      "enabled": false,
+      "format": "jpeg",
+      "quality": 80
+    },
+    "preview": {
+      "format": "jpeg",
+      "quality": 80,
+      "size": 1440
+    },
+    "thumbnail": {
+      "format": "webp",
+      "quality": 80,
+      "size": 250
     }
   },
   "job": {
     "backgroundTask": {
       "concurrency": 5
     },
-    "smartSearch": {
+    "faceDetection": {
       "concurrency": 2
+    },
+    "library": {
+      "concurrency": 5
     },
     "metadataExtraction": {
       "concurrency": 5
     },
-    "faceDetection": {
-      "concurrency": 2
+    "migration": {
+      "concurrency": 5
+    },
+    "notifications": {
+      "concurrency": 5
+    },
+    "ocr": {
+      "concurrency": 1
     },
     "search": {
       "concurrency": 5
@@ -65,20 +93,23 @@ The default configuration looks like this:
     "sidecar": {
       "concurrency": 5
     },
-    "library": {
-      "concurrency": 5
-    },
-    "migration": {
-      "concurrency": 5
+    "smartSearch": {
+      "concurrency": 2
     },
     "thumbnailGeneration": {
       "concurrency": 3
     },
     "videoConversion": {
       "concurrency": 1
+    }
+  },
+  "library": {
+    "scan": {
+      "cronExpression": "0 0 * * *",
+      "enabled": true
     },
-    "notifications": {
-      "concurrency": 5
+    "watch": {
+      "enabled": false
     }
   },
   "logging": {
@@ -86,8 +117,11 @@ The default configuration looks like this:
     "level": "log"
   },
   "machineLearning": {
-    "enabled": true,
-    "urls": ["http://immich-machine-learning:3003"],
+    "availabilityChecks": {
+      "enabled": true,
+      "interval": 30000,
+      "timeout": 2000
+    },
     "clip": {
       "enabled": true,
       "modelName": "ViT-B-32__openai"
@@ -96,25 +130,57 @@ The default configuration looks like this:
       "enabled": true,
       "maxDistance": 0.01
     },
+    "enabled": true,
     "facialRecognition": {
       "enabled": true,
-      "modelName": "buffalo_l",
-      "minScore": 0.7,
       "maxDistance": 0.5,
-      "minFaces": 3
-    }
+      "minFaces": 3,
+      "minScore": 0.7,
+      "modelName": "buffalo_l"
+    },
+    "ocr": {
+      "enabled": true,
+      "maxResolution": 736,
+      "minDetectionScore": 0.5,
+      "minRecognitionScore": 0.8,
+      "modelName": "PP-OCRv5_mobile"
+    },
+    "urls": ["http://immich-machine-learning:3003"]
   },
   "map": {
+    "darkStyle": "https://tiles.immich.cloud/v1/style/dark.json",
     "enabled": true,
-    "lightStyle": "https://tiles.immich.cloud/v1/style/light.json",
-    "darkStyle": "https://tiles.immich.cloud/v1/style/dark.json"
-  },
-  "reverseGeocoding": {
-    "enabled": true
+    "lightStyle": "https://tiles.immich.cloud/v1/style/light.json"
   },
   "metadata": {
     "faces": {
       "import": false
+    }
+  },
+  "newVersionCheck": {
+    "enabled": true
+  },
+  "nightlyTasks": {
+    "clusterNewFaces": true,
+    "databaseCleanup": true,
+    "generateMemories": true,
+    "missingThumbnails": true,
+    "startTime": "00:00",
+    "syncQuotaUsage": true
+  },
+  "notifications": {
+    "smtp": {
+      "enabled": false,
+      "from": "",
+      "replyTo": "",
+      "transport": {
+        "host": "",
+        "ignoreCert": false,
+        "password": "",
+        "port": 587,
+        "secure": false,
+        "username": ""
+      }
     }
   },
   "oauth": {
@@ -128,70 +194,44 @@ The default configuration looks like this:
     "issuerUrl": "",
     "mobileOverrideEnabled": false,
     "mobileRedirectUri": "",
+    "profileSigningAlgorithm": "none",
+    "roleClaim": "immich_role",
     "scope": "openid email profile",
     "signingAlgorithm": "RS256",
-    "profileSigningAlgorithm": "none",
     "storageLabelClaim": "preferred_username",
-    "storageQuotaClaim": "immich_quota"
+    "storageQuotaClaim": "immich_quota",
+    "timeout": 30000,
+    "tokenEndpointAuthMethod": "client_secret_post"
   },
   "passwordLogin": {
     "enabled": true
+  },
+  "reverseGeocoding": {
+    "enabled": true
+  },
+  "server": {
+    "externalDomain": "",
+    "loginPageMessage": "",
+    "publicUsers": true
   },
   "storageTemplate": {
     "enabled": false,
     "hashVerificationEnabled": true,
     "template": "{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}"
   },
-  "image": {
-    "thumbnail": {
-      "format": "webp",
-      "size": 250,
-      "quality": 80
-    },
-    "preview": {
-      "format": "jpeg",
-      "size": 1440,
-      "quality": 80
-    },
-    "colorspace": "p3",
-    "extractEmbedded": false
-  },
-  "newVersionCheck": {
-    "enabled": true
-  },
-  "trash": {
-    "enabled": true,
-    "days": 30
+  "templates": {
+    "email": {
+      "albumInviteTemplate": "",
+      "albumUpdateTemplate": "",
+      "welcomeTemplate": ""
+    }
   },
   "theme": {
     "customCss": ""
   },
-  "library": {
-    "scan": {
-      "enabled": true,
-      "cronExpression": "0 0 * * *"
-    },
-    "watch": {
-      "enabled": false
-    }
-  },
-  "server": {
-    "externalDomain": "",
-    "loginPageMessage": ""
-  },
-  "notifications": {
-    "smtp": {
-      "enabled": false,
-      "from": "",
-      "replyTo": "",
-      "transport": {
-        "ignoreCert": false,
-        "host": "",
-        "port": 587,
-        "username": "",
-        "password": ""
-      }
-    }
+  "trash": {
+    "days": 30,
+    "enabled": true
   },
   "user": {
     "deleteDelay": 7

@@ -26,6 +26,12 @@
       "matchPackageNames": ["ghcr.io/immich-app/postgres"],
       "matchUpdateTypes": ["major"],
       "enabled": false
+    },
+    {
+      "matchPackageNames": ["ruby"],
+      "groupName": "ruby",
+      "matchCurrentVersion": "< 3.4",
+      "enabled": false
     }
   ],
   "ignorePaths": [

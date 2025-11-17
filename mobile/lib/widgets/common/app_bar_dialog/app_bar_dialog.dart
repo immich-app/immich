@@ -1,19 +1,21 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
-import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/models/backup/backup_state.model.dart';
 import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/backup/manual_upload.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/locale_provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/bytes_units.dart';
 import 'package:immich_mobile/widgets/common/app_bar_dialog/app_bar_profile_info.dart';
@@ -44,19 +46,24 @@ class ImmichAppBarDialog extends HookConsumerWidget {
     }, []);
 
     buildTopRow() {
-      return Stack(
-        children: [
-          Align(
-            alignment: Alignment.topLeft,
-            child: InkWell(onTap: () => context.pop(), child: const Icon(Icons.close, size: 20)),
-          ),
-          Center(
-            child: Image.asset(
-              context.isDarkTheme ? 'assets/immich-text-dark.png' : 'assets/immich-text-light.png',
-              height: 16,
+      return SizedBox(
+        height: 56,
+        child: Stack(
+          alignment: Alignment.centerLeft,
+          children: [
+            IconButton(onPressed: () => context.pop(), icon: const Icon(Icons.close, size: 20)),
+            Align(
+              alignment: Alignment.center,
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Image.asset(
+                  context.isDarkTheme ? 'assets/immich-text-dark.png' : 'assets/immich-text-light.png',
+                  height: 16,
+                ),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       );
     }
 
@@ -97,25 +104,27 @@ class ImmichAppBarDialog extends HookConsumerWidget {
             return;
           }
 
-          showDialog(
-            context: context,
-            builder: (BuildContext ctx) {
-              return ConfirmDialog(
-                title: "app_bar_signout_dialog_title",
-                content: "app_bar_signout_dialog_content",
-                ok: "yes",
-                onOk: () async {
-                  isLoggingOut.value = true;
-                  await ref.read(authProvider.notifier).logout().whenComplete(() => isLoggingOut.value = false);
+          unawaited(
+            showDialog(
+              context: context,
+              builder: (BuildContext ctx) {
+                return ConfirmDialog(
+                  title: "app_bar_signout_dialog_title",
+                  content: "app_bar_signout_dialog_content",
+                  ok: "yes",
+                  onOk: () async {
+                    isLoggingOut.value = true;
+                    await ref.read(authProvider.notifier).logout().whenComplete(() => isLoggingOut.value = false);
 
-                  ref.read(manualUploadProvider.notifier).cancelBackup();
-                  ref.read(backupProvider.notifier).cancelBackup();
-                  ref.read(assetProvider.notifier).clearAllAssets();
-                  ref.read(websocketProvider.notifier).disconnect();
-                  context.replaceRoute(const LoginRoute());
-                },
-              );
-            },
+                    ref.read(manualUploadProvider.notifier).cancelBackup();
+                    ref.read(backupProvider.notifier).cancelBackup();
+                    unawaited(ref.read(assetProvider.notifier).clearAllAssets());
+                    ref.read(websocketProvider.notifier).disconnect();
+                    unawaited(context.replaceRoute(const LoginRoute()));
+                  },
+                );
+              },
+            ),
           );
         },
         trailing: isLoggingOut.value
@@ -256,7 +265,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Container(padding: const EdgeInsets.all(20), child: buildTopRow()),
+                Container(padding: const EdgeInsets.symmetric(horizontal: 8), child: buildTopRow()),
                 const AppBarProfileInfoBox(),
                 buildStorageInformation(),
                 const AppBarServerInfo(),

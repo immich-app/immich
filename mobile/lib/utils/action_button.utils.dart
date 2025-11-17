@@ -14,6 +14,7 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/remove_from_al
 import 'package:immich_mobile/presentation/widgets/action_buttons/remove_from_lock_folder_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_link_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/similar_photos_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/trash_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/unarchive_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/unstack_action_button.widget.dart';
@@ -47,6 +48,7 @@ enum ActionButtonType {
   advancedInfo,
   share,
   shareLink,
+  similarPhotos,
   archive,
   unarchive,
   download,
@@ -123,6 +125,9 @@ enum ActionButtonType {
             context.currentAlbum != null &&
             context.currentAlbum!.isActivityEnabled &&
             context.currentAlbum!.isShared,
+      ActionButtonType.similarPhotos =>
+        !context.isInLockedView && //
+            context.asset is RemoteAsset,
     };
   }
 
@@ -147,6 +152,7 @@ enum ActionButtonType {
       ),
       ActionButtonType.likeActivity => const LikeActivityActionButton(),
       ActionButtonType.unstack => UnStackActionButton(source: context.source),
+      ActionButtonType.similarPhotos => SimilarPhotosActionButton(assetId: (context.asset as RemoteAsset).id),
     };
   }
 }

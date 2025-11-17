@@ -7,7 +7,7 @@
 </div>
 
 <div class="p-4 mt-2 text-xs bg-gray-200 rounded-lg dark:bg-gray-700 dark:text-immich-dark-fg">
-  <div class="flex gap-[50px]">
+  <div class="flex gap-12">
     <div>
       <p class="uppercase font-medium text-primary">{$t('filename')}</p>
       <ul>

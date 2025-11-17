@@ -24,7 +24,7 @@ class FaceDetector(InferenceModel):
 
         return session
 
-    def _predict(self, inputs: NDArray[np.uint8] | bytes, **kwargs: Any) -> FaceDetectionOutput:
+    def _predict(self, inputs: NDArray[np.uint8] | bytes) -> FaceDetectionOutput:
         inputs = decode_cv2(inputs)
 
         bboxes, landmarks = self._detect(inputs)

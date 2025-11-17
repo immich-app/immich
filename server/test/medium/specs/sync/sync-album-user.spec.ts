@@ -74,7 +74,7 @@ describe(SyncRequestType.AlbumUsersV1, () => {
       await ctx.syncAckAll(auth, response);
       await ctx.assertSyncIsComplete(auth, [SyncRequestType.AlbumUsersV1]);
 
-      await albumUserRepo.update({ albumsId: album.id, usersId: user1.id }, { role: AlbumUserRole.Viewer });
+      await albumUserRepo.update({ albumId: album.id, userId: user1.id }, { role: AlbumUserRole.Viewer });
       const newResponse = await ctx.syncStream(auth, [SyncRequestType.AlbumUsersV1]);
       expect(newResponse).toEqual([
         {
@@ -104,7 +104,7 @@ describe(SyncRequestType.AlbumUsersV1, () => {
       await ctx.syncAckAll(auth, response);
       await ctx.assertSyncIsComplete(auth, [SyncRequestType.AlbumUsersV1]);
 
-      await albumUserRepo.delete({ albumsId: album.id, usersId: user1.id });
+      await albumUserRepo.delete({ albumId: album.id, userId: user1.id });
       const newResponse = await ctx.syncStream(auth, [SyncRequestType.AlbumUsersV1]);
       expect(newResponse).toEqual([
         {
@@ -171,7 +171,7 @@ describe(SyncRequestType.AlbumUsersV1, () => {
       await ctx.syncAckAll(auth, response);
       await ctx.assertSyncIsComplete(auth, [SyncRequestType.AlbumUsersV1]);
 
-      await albumUserRepo.update({ albumsId: album.id, usersId: user.id }, { role: AlbumUserRole.Viewer });
+      await albumUserRepo.update({ albumId: album.id, userId: user.id }, { role: AlbumUserRole.Viewer });
       const newResponse = await ctx.syncStream(auth, [SyncRequestType.AlbumUsersV1]);
       expect(newResponse).toEqual([
         {
@@ -208,7 +208,7 @@ describe(SyncRequestType.AlbumUsersV1, () => {
       await ctx.syncAckAll(auth, response);
 
       await ctx.assertSyncIsComplete(auth, [SyncRequestType.AlbumUsersV1]);
-      await albumUserRepo.delete({ albumsId: album.id, usersId: user.id });
+      await albumUserRepo.delete({ albumId: album.id, userId: user.id });
 
       const newResponse = await ctx.syncStream(auth, [SyncRequestType.AlbumUsersV1]);
       expect(newResponse).toEqual([

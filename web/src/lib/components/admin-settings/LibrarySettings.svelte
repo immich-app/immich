@@ -1,36 +1,19 @@
 <script lang="ts">
   import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
-  import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
   import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
   import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
+  import SettingButtonsRow from '$lib/components/shared-components/settings/SystemConfigButtonRow.svelte';
   import { SettingInputFieldType } from '$lib/constants';
   import FormatMessage from '$lib/elements/FormatMessage.svelte';
-  import type { SystemConfigDto } from '@immich/sdk';
-  import { isEqual } from 'lodash-es';
+  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
+  import { systemConfigManager } from '$lib/managers/system-config-manager.svelte';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
-  import type { SettingsResetEvent, SettingsSaveEvent } from './admin-settings';
 
-  interface Props {
-    savedConfig: SystemConfigDto;
-    defaultConfig: SystemConfigDto;
-    config: SystemConfigDto;
-    disabled?: boolean;
-    onReset: SettingsResetEvent;
-    onSave: SettingsSaveEvent;
-    openByDefault?: boolean;
-  }
-
-  let {
-    savedConfig,
-    defaultConfig,
-    config = $bindable(),
-    disabled = false,
-    onReset,
-    onSave,
-    openByDefault = false,
-  }: Props = $props();
+  const disabled = $derived(featureFlagsManager.value.configFile);
+  const config = $derived(systemConfigManager.value);
+  let configToEdit = $state(systemConfigManager.cloneValue());
 
   let cronExpressionOptions = $derived([
     { text: $t('interval.night_at_midnight'), value: '0 0 * * *' },
@@ -38,27 +21,22 @@
     { text: $t('interval.day_at_onepm'), value: '0 13 * * *' },
     { text: $t('interval.hours', { values: { hours: 6 } }), value: '0 */6 * * *' },
   ]);
-
-  const onsubmit = (event: Event) => {
-    event.preventDefault();
-  };
 </script>
 
 <div>
   <div in:fade={{ duration: 500 }}>
-    <form autocomplete="off" {onsubmit}>
+    <form autocomplete="off" onsubmit={(event) => event.preventDefault()}>
       <div class="ms-4 mt-4 flex flex-col gap-4">
         <SettingAccordion
           key="library-watching"
           title={$t('admin.library_watching_settings')}
           subtitle={$t('admin.library_watching_settings_description')}
-          isOpen={openByDefault}
         >
           <div class="ms-4 mt-4 flex flex-col gap-4">
             <SettingSwitch
               title={$t('admin.library_watching_enable_description')}
               {disabled}
-              bind:checked={config.library.watch.enabled}
+              bind:checked={configToEdit.library.watch.enabled}
             />
           </div>
         </SettingAccordion>
@@ -67,37 +45,36 @@
           key="library-scanning"
           title={$t('admin.library_scanning')}
           subtitle={$t('admin.library_scanning_description')}
-          isOpen={openByDefault}
         >
           <div class="ms-4 mt-4 flex flex-col gap-4">
             <SettingSwitch
               title={$t('admin.library_scanning_enable_description')}
               {disabled}
-              bind:checked={config.library.scan.enabled}
+              bind:checked={configToEdit.library.scan.enabled}
             />
 
             <SettingSelect
               options={cronExpressionOptions}
-              disabled={disabled || !config.library.scan.enabled}
+              disabled={disabled || !configToEdit.library.scan.enabled}
               name="expression"
               label={$t('admin.cron_expression_presets')}
-              bind:value={config.library.scan.cronExpression}
+              bind:value={configToEdit.library.scan.cronExpression}
             />
 
             <SettingInputField
               inputType={SettingInputFieldType.TEXT}
               required={true}
-              disabled={disabled || !config.library.scan.enabled}
+              disabled={disabled || !configToEdit.library.scan.enabled}
               label={$t('admin.cron_expression')}
-              bind:value={config.library.scan.cronExpression}
-              isEdited={config.library.scan.cronExpression !== savedConfig.library.scan.cronExpression}
+              bind:value={configToEdit.library.scan.cronExpression}
+              isEdited={configToEdit.library.scan.cronExpression !== config.library.scan.cronExpression}
             >
               {#snippet descriptionSnippet()}
                 <p class="text-sm dark:text-immich-dark-fg">
                   <FormatMessage key="admin.cron_expression_description">
                     {#snippet children({ message })}
                       <a
-                        href="https://crontab.guru/#{config.library.scan.cronExpression.replaceAll(' ', '_')}"
+                        href="https://crontab.guru/#{configToEdit.library.scan.cronExpression.replaceAll(' ', '_')}"
                         class="underline"
                         target="_blank"
                         rel="noreferrer"
@@ -112,12 +89,7 @@
           </div>
         </SettingAccordion>
 
-        <SettingButtonsRow
-          onReset={(options) => onReset({ ...options, configKeys: ['library'] })}
-          onSave={() => onSave({ library: config.library })}
-          showResetToDefault={!isEqual(savedConfig.library, defaultConfig.library)}
-          {disabled}
-        />
+        <SettingButtonsRow bind:configToEdit keys={['library']} {disabled} />
       </div>
     </form>
   </div>

@@ -2,17 +2,12 @@ import { Duration } from 'luxon';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { SemVer } from 'semver';
-import { DatabaseExtension, ExifOrientation, VectorIndex } from 'src/enum';
+import { ApiTag, DatabaseExtension, ExifOrientation, VectorIndex } from 'src/enum';
 
 export const POSTGRES_VERSION_RANGE = '>=14.0.0';
 export const VECTORCHORD_VERSION_RANGE = '>=0.3 <0.6';
 export const VECTORS_VERSION_RANGE = '>=0.2 <0.4';
 export const VECTOR_VERSION_RANGE = '>=0.5 <1';
-
-export const NEXT_RELEASE = 'NEXT_RELEASE';
-export const LIFECYCLE_EXTENSION = 'x-immich-lifecycle';
-export const DEPRECATED_IN_PREFIX = 'This property was deprecated in ';
-export const ADDED_IN_PREFIX = 'This property was added in ';
 
 export const JOBS_ASSET_PAGINATION_SIZE = 1000;
 export const JOBS_LIBRARY_PAGINATION_SIZE = 10_000;
@@ -138,3 +133,61 @@ export const ORIENTATION_TO_SHARP_ROTATION: Record<ExifOrientation, SharpRotatio
   [ExifOrientation.MirrorHorizontalRotate90CW]: { angle: 90, flip: true },
   [ExifOrientation.Rotate270CW]: { angle: 270 },
 } as const;
+
+export const endpointTags: Record<ApiTag, string> = {
+  [ApiTag.Activities]: 'An activity is a like or a comment made by a user on an asset or album.',
+  [ApiTag.Albums]: 'An album is a collection of assets that can be shared with other users or via shared links.',
+  [ApiTag.ApiKeys]: 'An api key can be used to programmatically access the Immich API.',
+  [ApiTag.Assets]: 'An asset is an image or video that has been uploaded to Immich.',
+  [ApiTag.Authentication]: 'Endpoints related to user authentication, including OAuth.',
+  [ApiTag.AuthenticationAdmin]: 'Administrative endpoints related to authentication.',
+  [ApiTag.Deprecated]: 'Deprecated endpoints that are planned for removal in the next major release.',
+  [ApiTag.Download]: 'Endpoints for downloading assets or collections of assets.',
+  [ApiTag.Duplicates]: 'Endpoints for managing and identifying duplicate assets.',
+  [ApiTag.Faces]:
+    'A face is a detected human face within an asset, which can be associated with a person. Faces are normally detected via machine learning, but can also be created via manually.',
+  [ApiTag.Jobs]:
+    'Queues and background jobs are used for processing tasks asynchronously. Queues can be paused and resumed as needed.',
+  [ApiTag.Libraries]:
+    'An external library is made up of input file paths or expressions that are scanned for asset files. Discovered files are automatically imported. Assets much be unique within a library, but can be duplicated across libraries. Each user has a default upload library, and can have one or more external libraries.',
+  [ApiTag.Maintenance]: 'Maintenance mode allows you to put Immich in a read-only state to perform various operations.',
+  [ApiTag.Map]:
+    'Map endpoints include supplemental functionality related to geolocation, such as reverse geocoding and retrieving map markers for assets with geolocation data.',
+  [ApiTag.Memories]:
+    'A memory is a specialized collection of assets with dedicated viewing implementations in the web and mobile clients. A memory includes fields related to visibility and are automatically generated per user via a background job.',
+  [ApiTag.Notifications]:
+    'A notification is a specialized message sent to users to inform them of important events. Currently, these notifications are only shown in the Immich web application.',
+  [ApiTag.NotificationsAdmin]: 'Notification administrative endpoints.',
+  [ApiTag.Partners]: 'A partner is a link with another user that allows sharing of assets between two users.',
+  [ApiTag.People]:
+    'A person is a collection of faces, which can be favorited and named. A person can also be merged into another person. People are automatically created via the face recognition job.',
+  [ApiTag.Plugins]:
+    'A plugin is an installed module that makes filters and actions available for the workflow feature.',
+  [ApiTag.Search]:
+    'Endpoints related to searching assets via text, smart search, optical character recognition (OCR), and other filters like person, album, and other metadata. Search endpoints usually support pagination and sorting.',
+  [ApiTag.Server]:
+    'Information about the current server deployment, including version and build information, available features, supported media types, and more.',
+  [ApiTag.Sessions]:
+    'A session represents an authenticated login session for a user. Sessions also appear in the web application as "Authorized devices".',
+  [ApiTag.SharedLinks]:
+    'A shared link is a public url that provides access to a specific album, asset, or collection of assets. A shared link can be protected with a password, include a specific slug, allow or disallow downloads, and optionally include an expiration date.',
+  [ApiTag.Stacks]:
+    'A stack is a group of related assets. One asset is the "primary" asset, and the rest are "child" assets. On the main timeline, stack parents are included by default, while child assets are hidden.',
+  [ApiTag.Sync]: 'A collection of endpoints for the new mobile synchronization implementation.',
+  [ApiTag.SystemConfig]: 'Endpoints to view, modify, and validate the system configuration settings.',
+  [ApiTag.SystemMetadata]:
+    'Endpoints to view, modify, and validate the system metadata, which includes information about things like admin onboarding status.',
+  [ApiTag.Tags]:
+    'A tag is a user-defined label that can be applied to assets for organizational purposes. Tags can also be hierarchical, allowing for parent-child relationships between tags.',
+  [ApiTag.Timeline]:
+    'Specialized endpoints related to the timeline implementation used in the web application. External applications or tools should not use or rely on these endpoints, as they are subject to change without notice.',
+  [ApiTag.Trash]:
+    'Endpoints for managing the trash can, which includes assets that have been discarded. Items in the trash are automatically deleted after a configured amount of time.',
+  [ApiTag.UsersAdmin]:
+    'Administrative endpoints for managing users, including creating, updating, deleting, and restoring users. Also includes endpoints for resetting passwords and PIN codes.',
+  [ApiTag.Users]:
+    'Endpoints for viewing and updating the current users, including product key information, profile picture data, onboarding progress, and more.',
+  [ApiTag.Views]: 'Endpoints for specialized views, such as the folder view.',
+  [ApiTag.Workflows]:
+    'A workflow is a set of actions that run whenever a triggering event occurs. Workflows also can include filters to further limit execution.',
+};

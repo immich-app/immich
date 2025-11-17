@@ -1,5 +1,5 @@
 import { isHttpError } from '@immich/sdk';
-import { notificationController, NotificationType } from '../components/shared-components/notification/notification';
+import { toastManager } from '@immich/ui';
 
 export function getServerErrorMessage(error: unknown) {
   if (!isHttpError(error)) {
@@ -34,7 +34,7 @@ export function handleError(error: unknown, message: string) {
 
     const errorMessage = serverMessage || message;
 
-    notificationController.show({ message: errorMessage, type: NotificationType.Error });
+    toastManager.danger(errorMessage);
 
     return errorMessage;
   } catch (error) {

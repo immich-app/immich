@@ -1,6 +1,6 @@
 <script lang="ts">
   import { copyToClipboard } from '$lib/utils';
-  import { Button, HStack, Modal, ModalBody, ModalFooter } from '@immich/ui';
+  import { Button, HStack, Modal, ModalBody, ModalFooter, Text, Textarea } from '@immich/ui';
   import { mdiKeyVariant } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
@@ -14,16 +14,8 @@
 
 <Modal title={$t('api_key')} icon={mdiKeyVariant} {onClose} size="small">
   <ModalBody>
-    <div class="text-primary">
-      <p class="text-sm dark:text-immich-dark-fg">
-        {$t('api_key_description')}
-      </p>
-    </div>
-
-    <div class="my-4 flex flex-col gap-2">
-      <!-- <label class="immich-form-label" for="secret">{ $t("api_key") }</label> -->
-      <textarea class="immich-form-input" id="secret" name="secret" readonly={true} value={secret}></textarea>
-    </div>
+    <Text size="small" class="mb-4">{$t('api_key_description')}</Text>
+    <Textarea bind:value={secret} readonly />
   </ModalBody>
 
   <ModalFooter>

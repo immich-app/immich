@@ -1,14 +1,12 @@
-import { NotificationType, notificationController } from '$lib/components/shared-components/notification/notification';
 import { defaultLang, langs, locales } from '$lib/constants';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { lang } from '$lib/stores/preferences.store';
-import { serverConfig } from '$lib/stores/server-config.store';
 import { handleError } from '$lib/utils/handle-error';
 import {
   AssetJobName,
   AssetMediaSize,
-  JobName,
   MemoryType,
+  QueueName,
   finishOAuth,
   getAssetOriginalPath,
   getAssetPlaybackPath,
@@ -25,6 +23,7 @@ import {
   type SharedLinkResponseDto,
   type UserResponseDto,
 } from '@immich/sdk';
+import { toastManager } from '@immich/ui';
 import { mdiCogRefreshOutline, mdiDatabaseRefreshOutline, mdiHeadSyncOutline, mdiImageRefreshOutline } from '@mdi/js';
 import { init, register, t } from 'svelte-i18n';
 import { derived, get } from 'svelte/store';
@@ -60,14 +59,14 @@ interface UploadRequestOptions {
 }
 
 export class AbortError extends Error {
-  name = 'AbortError';
+  override name = 'AbortError';
 }
 
 class ApiError extends Error {
-  name = 'ApiError';
+  override name = 'ApiError';
 
   constructor(
-    public message: string,
+    public override message: string,
     public statusCode: number,
     public details: string,
   ) {
@@ -144,27 +143,29 @@ export const downloadRequest = <TBody = unknown>(options: DownloadRequestOptions
   });
 };
 
-export const getJobName = derived(t, ($t) => {
-  return (jobName: JobName) => {
-    const names: Record<JobName, string> = {
-      [JobName.ThumbnailGeneration]: $t('admin.thumbnail_generation_job'),
-      [JobName.MetadataExtraction]: $t('admin.metadata_extraction_job'),
-      [JobName.Sidecar]: $t('admin.sidecar_job'),
-      [JobName.SmartSearch]: $t('admin.machine_learning_smart_search'),
-      [JobName.DuplicateDetection]: $t('admin.machine_learning_duplicate_detection'),
-      [JobName.FaceDetection]: $t('admin.face_detection'),
-      [JobName.FacialRecognition]: $t('admin.machine_learning_facial_recognition'),
-      [JobName.VideoConversion]: $t('admin.video_conversion_job'),
-      [JobName.StorageTemplateMigration]: $t('admin.storage_template_migration'),
-      [JobName.Migration]: $t('admin.migration_job'),
-      [JobName.BackgroundTask]: $t('admin.background_task_job'),
-      [JobName.Search]: $t('search'),
-      [JobName.Library]: $t('external_libraries'),
-      [JobName.Notifications]: $t('notifications'),
-      [JobName.BackupDatabase]: $t('admin.backup_database'),
+export const getQueueName = derived(t, ($t) => {
+  return (name: QueueName) => {
+    const names: Record<QueueName, string> = {
+      [QueueName.ThumbnailGeneration]: $t('admin.thumbnail_generation_job'),
+      [QueueName.MetadataExtraction]: $t('admin.metadata_extraction_job'),
+      [QueueName.Sidecar]: $t('admin.sidecar_job'),
+      [QueueName.SmartSearch]: $t('admin.machine_learning_smart_search'),
+      [QueueName.DuplicateDetection]: $t('admin.machine_learning_duplicate_detection'),
+      [QueueName.FaceDetection]: $t('admin.face_detection'),
+      [QueueName.FacialRecognition]: $t('admin.machine_learning_facial_recognition'),
+      [QueueName.VideoConversion]: $t('admin.video_conversion_job'),
+      [QueueName.StorageTemplateMigration]: $t('admin.storage_template_migration'),
+      [QueueName.Migration]: $t('admin.migration_job'),
+      [QueueName.BackgroundTask]: $t('admin.background_task_job'),
+      [QueueName.Search]: $t('search'),
+      [QueueName.Library]: $t('external_libraries'),
+      [QueueName.Notifications]: $t('notifications'),
+      [QueueName.BackupDatabase]: $t('admin.backup_database'),
+      [QueueName.Ocr]: $t('admin.machine_learning_ocr'),
+      [QueueName.Workflow]: $t('workflow'),
     };
 
-    return names[jobName];
+    return names[name];
   };
 });
 
@@ -262,15 +263,10 @@ export const copyToClipboard = async (secret: string) => {
 
   try {
     await navigator.clipboard.writeText(secret);
-    notificationController.show({ message: $t('copied_to_clipboard'), type: NotificationType.Info });
+    toastManager.info($t('copied_to_clipboard'));
   } catch (error) {
     handleError(error, $t('errors.unable_to_copy_to_clipboard'));
   }
-};
-
-export const makeSharedLinkUrl = (sharedLink: SharedLinkResponseDto) => {
-  const path = sharedLink.slug ? `s/${sharedLink.slug}` : `share/${sharedLink.key}`;
-  return new URL(path, get(serverConfig).externalDomain || globalThis.location.origin).href;
 };
 
 export const oauth = {
@@ -405,3 +401,5 @@ export const getReleaseType = (
 
   return 'none';
 };
+
+export const semverToName = ({ major, minor, patch }: ServerVersionResponseDto) => `v${major}.${minor}.${patch}`;

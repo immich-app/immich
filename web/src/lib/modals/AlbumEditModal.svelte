@@ -39,7 +39,7 @@
   <ModalBody>
     <form onsubmit={handleSubmit} autocomplete="off" id="edit-album-form">
       <div class="flex items-center gap-8 m-4">
-        <AlbumCover {album} class="h-[200px] w-[200px] shadow-lg hidden sm:flex" />
+        <AlbumCover {album} class="h-50 w-50 shadow-lg hidden sm:flex" />
 
         <div class="grow flex flex-col gap-4">
           <Field label={$t('name')}>

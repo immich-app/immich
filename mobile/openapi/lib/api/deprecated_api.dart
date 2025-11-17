@@ -16,7 +16,9 @@ class DeprecatedApi {
 
   final ApiClient apiClient;
 
-  /// This property was deprecated in v1.141.0. This endpoint requires the `partner.create` permission.
+  /// Create a partner
+  ///
+  /// Create a new partner to share assets with.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -49,7 +51,9 @@ class DeprecatedApi {
     );
   }
 
-  /// This property was deprecated in v1.141.0. This endpoint requires the `partner.create` permission.
+  /// Create a partner
+  ///
+  /// Create a new partner to share assets with.
   ///
   /// Parameters:
   ///
@@ -69,7 +73,184 @@ class DeprecatedApi {
     return null;
   }
 
-  /// This property was deprecated in v1.116.0. This endpoint requires the `asset.read` permission.
+  /// Retrieve assets by device ID
+  ///
+  /// Get all asset of a device that are in the database, ID only.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [String] deviceId (required):
+  Future<Response> getAllUserAssetsByDeviceIdWithHttpInfo(String deviceId,) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/assets/device/{deviceId}'
+      .replaceAll('{deviceId}', deviceId);
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Retrieve assets by device ID
+  ///
+  /// Get all asset of a device that are in the database, ID only.
+  ///
+  /// Parameters:
+  ///
+  /// * [String] deviceId (required):
+  Future<List<String>?> getAllUserAssetsByDeviceId(String deviceId,) async {
+    final response = await getAllUserAssetsByDeviceIdWithHttpInfo(deviceId,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      final responseBody = await _decodeBodyBytes(response);
+      return (await apiClient.deserializeAsync(responseBody, 'List<String>') as List)
+        .cast<String>()
+        .toList(growable: false);
+
+    }
+    return null;
+  }
+
+  /// Get delta sync for user
+  ///
+  /// Retrieve changed assets since the last sync for the authenticated user.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [AssetDeltaSyncDto] assetDeltaSyncDto (required):
+  Future<Response> getDeltaSyncWithHttpInfo(AssetDeltaSyncDto assetDeltaSyncDto,) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/sync/delta-sync';
+
+    // ignore: prefer_final_locals
+    Object? postBody = assetDeltaSyncDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'POST',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Get delta sync for user
+  ///
+  /// Retrieve changed assets since the last sync for the authenticated user.
+  ///
+  /// Parameters:
+  ///
+  /// * [AssetDeltaSyncDto] assetDeltaSyncDto (required):
+  Future<AssetDeltaSyncResponseDto?> getDeltaSync(AssetDeltaSyncDto assetDeltaSyncDto,) async {
+    final response = await getDeltaSyncWithHttpInfo(assetDeltaSyncDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'AssetDeltaSyncResponseDto',) as AssetDeltaSyncResponseDto;
+    
+    }
+    return null;
+  }
+
+  /// Get full sync for user
+  ///
+  /// Retrieve all assets for a full synchronization for the authenticated user.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [AssetFullSyncDto] assetFullSyncDto (required):
+  Future<Response> getFullSyncForUserWithHttpInfo(AssetFullSyncDto assetFullSyncDto,) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/sync/full-sync';
+
+    // ignore: prefer_final_locals
+    Object? postBody = assetFullSyncDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'POST',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Get full sync for user
+  ///
+  /// Retrieve all assets for a full synchronization for the authenticated user.
+  ///
+  /// Parameters:
+  ///
+  /// * [AssetFullSyncDto] assetFullSyncDto (required):
+  Future<List<AssetResponseDto>?> getFullSyncForUser(AssetFullSyncDto assetFullSyncDto,) async {
+    final response = await getFullSyncForUserWithHttpInfo(assetFullSyncDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      final responseBody = await _decodeBodyBytes(response);
+      return (await apiClient.deserializeAsync(responseBody, 'List<AssetResponseDto>') as List)
+        .cast<AssetResponseDto>()
+        .toList(growable: false);
+
+    }
+    return null;
+  }
+
+  /// Get random assets
+  ///
+  /// Retrieve a specified number of random assets for the authenticated user.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -105,7 +286,9 @@ class DeprecatedApi {
     );
   }
 
-  /// This property was deprecated in v1.116.0. This endpoint requires the `asset.read` permission.
+  /// Get random assets
+  ///
+  /// Retrieve a specified number of random assets for the authenticated user.
   ///
   /// Parameters:
   ///
@@ -128,9 +311,9 @@ class DeprecatedApi {
     return null;
   }
 
-  /// Replace the asset with new file, without changing its id
+  /// Replace asset
   ///
-  /// This property was deprecated in v1.142.0. Replace the asset with new file, without changing its id. This endpoint requires the `asset.replace` permission.
+  /// Replace the asset with new file, without changing its id.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -222,9 +405,9 @@ class DeprecatedApi {
     );
   }
 
-  /// Replace the asset with new file, without changing its id
+  /// Replace asset
   ///
-  /// This property was deprecated in v1.142.0. Replace the asset with new file, without changing its id. This endpoint requires the `asset.replace` permission.
+  /// Replace the asset with new file, without changing its id.
   ///
   /// Parameters:
   ///

@@ -1,19 +1,18 @@
 <script lang="ts">
-  import SharedLinkCopy from '$lib/components/sharedlinks-page/actions/shared-link-copy.svelte';
+  import ActionButton from '$lib/components/ActionButton.svelte';
+  import { getSharedLinkActions } from '$lib/services/shared-link.service';
   import { locale } from '$lib/stores/preferences.store';
   import type { AlbumResponseDto, SharedLinkResponseDto } from '@immich/sdk';
-  import { IconButton, Text } from '@immich/ui';
-  import { mdiQrcode } from '@mdi/js';
+  import { Text } from '@immich/ui';
   import { DateTime } from 'luxon';
   import { t } from 'svelte-i18n';
 
   type Props = {
     album: AlbumResponseDto;
     sharedLink: SharedLinkResponseDto;
-    onViewQrCode: () => void;
   };
 
-  const { album, sharedLink, onViewQrCode }: Props = $props();
+  const { album, sharedLink }: Props = $props();
 
   const getShareProperties = () =>
     [
@@ -32,6 +31,8 @@
     ]
       .filter(Boolean)
       .join(' • ');
+
+  const SharedLinkActions = $derived(getSharedLinkActions($t, sharedLink));
 </script>
 
 <div class="flex justify-between items-center">
@@ -40,14 +41,7 @@
     <Text size="tiny" color="muted">{getShareProperties()}</Text>
   </div>
   <div class="flex">
-    <IconButton
-      aria-label={$t('view_qr_code')}
-      shape="round"
-      color="secondary"
-      variant="ghost"
-      icon={mdiQrcode}
-      onclick={onViewQrCode}
-    />
-    <SharedLinkCopy link={sharedLink} />
+    <ActionButton action={SharedLinkActions.ViewQrCode} />
+    <ActionButton action={SharedLinkActions.Copy} />
   </div>
 </div>

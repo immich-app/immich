@@ -1,12 +1,8 @@
 <script lang="ts">
-  import {
-    notificationController,
-    NotificationType,
-  } from '$lib/components/shared-components/notification/notification';
   import DateInput from '$lib/elements/DateInput.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { updatePerson, type PersonResponseDto } from '@immich/sdk';
-  import { Button, HStack, Modal, ModalBody, ModalFooter } from '@immich/ui';
+  import { Button, HStack, Modal, ModalBody, ModalFooter, toastManager } from '@immich/ui';
   import { mdiCake } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
@@ -27,7 +23,7 @@
         personUpdateDto: { birthDate },
       });
 
-      notificationController.show({ message: $t('date_of_birth_saved'), type: NotificationType.Info });
+      toastManager.success($t('date_of_birth_saved'));
       onClose(updatedPerson);
     } catch (error) {
       handleError(error, $t('errors.unable_to_save_date_of_birth'));

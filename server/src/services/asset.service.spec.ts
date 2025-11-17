@@ -700,6 +700,42 @@ describe(AssetService.name, () => {
     });
   });
 
+  describe('getOcr', () => {
+    it('should require asset read permission', async () => {
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set());
+
+      await expect(sut.getOcr(authStub.admin, 'asset-1')).rejects.toBeInstanceOf(BadRequestException);
+
+      expect(mocks.ocr.getByAssetId).not.toHaveBeenCalled();
+    });
+
+    it('should return OCR data for an asset', async () => {
+      const ocr1 = factory.assetOcr({ text: 'Hello World' });
+      const ocr2 = factory.assetOcr({ text: 'Test Image' });
+
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
+      mocks.ocr.getByAssetId.mockResolvedValue([ocr1, ocr2]);
+
+      await expect(sut.getOcr(authStub.admin, 'asset-1')).resolves.toEqual([ocr1, ocr2]);
+
+      expect(mocks.access.asset.checkOwnerAccess).toHaveBeenCalledWith(
+        authStub.admin.user.id,
+        new Set(['asset-1']),
+        undefined,
+      );
+      expect(mocks.ocr.getByAssetId).toHaveBeenCalledWith('asset-1');
+    });
+
+    it('should return empty array when no OCR data exists', async () => {
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
+      mocks.ocr.getByAssetId.mockResolvedValue([]);
+
+      await expect(sut.getOcr(authStub.admin, 'asset-1')).resolves.toEqual([]);
+
+      expect(mocks.ocr.getByAssetId).toHaveBeenCalledWith('asset-1');
+    });
+  });
+
   describe('run', () => {
     it('should run the refresh faces job', async () => {
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));

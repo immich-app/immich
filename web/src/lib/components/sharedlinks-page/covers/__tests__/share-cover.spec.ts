@@ -10,7 +10,7 @@ vi.mock('$lib/utils');
 describe('ShareCover component', () => {
   it('renders an image when the shared link is an album', () => {
     const component = render(ShareCover, {
-      link: sharedLinkFactory.build({ album: albumFactory.build({ albumName: '123' }) }),
+      sharedLink: sharedLinkFactory.build({ album: albumFactory.build({ albumName: '123' }) }),
       preload: false,
       class: 'text',
     });
@@ -23,7 +23,7 @@ describe('ShareCover component', () => {
   it('renders an image when the shared link is an individual share', () => {
     vi.mocked(getAssetThumbnailUrl).mockReturnValue('/asdf');
     const component = render(ShareCover, {
-      link: sharedLinkFactory.build({ assets: [assetFactory.build({ id: 'someId' })] }),
+      sharedLink: sharedLinkFactory.build({ assets: [assetFactory.build({ id: 'someId' })] }),
       preload: false,
       class: 'text',
     });
@@ -37,7 +37,7 @@ describe('ShareCover component', () => {
 
   it('renders an image when the shared link has no album or assets', () => {
     const component = render(ShareCover, {
-      link: sharedLinkFactory.build(),
+      sharedLink: sharedLinkFactory.build(),
       preload: false,
       class: 'text',
     });
@@ -48,9 +48,9 @@ describe('ShareCover component', () => {
   });
 
   it.skip('renders fallback image when asset is not resized', () => {
-    const link = sharedLinkFactory.build({ assets: [assetFactory.build()] });
+    const sharedLink = sharedLinkFactory.build({ assets: [assetFactory.build()] });
     render(ShareCover, {
-      link,
+      sharedLink,
       preload: false,
     });
 

@@ -33,7 +33,7 @@ class ActivitiesPage extends HookConsumerWidget {
     Future<void> onAddComment(String comment) async {
       await activityNotifier.addComment(comment);
       // Scroll to the end of the list to show the newly added activity
-      listViewScrollController.animateTo(
+      await listViewScrollController.animateTo(
         listViewScrollController.position.maxScrollExtent + 200,
         duration: const Duration(milliseconds: 600),
         curve: Curves.fastOutSlowIn,

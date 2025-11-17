@@ -209,6 +209,7 @@ describe(BackupService.name, () => {
       ${'15.3.3'}                           | ${15}
       ${'16.4.2'}                           | ${16}
       ${'17.15.1'}                          | ${17}
+      ${'18.0.0'}                           | ${18}
     `(
       `should use pg_dumpall $expectedVersion with postgres version $postgresVersion`,
       async ({ postgresVersion, expectedVersion }) => {
@@ -224,7 +225,7 @@ describe(BackupService.name, () => {
     it.each`
       postgresVersion
       ${'13.99.99'}
-      ${'18.0.0'}
+      ${'19.0.0'}
     `(`should fail if postgres version $postgresVersion is not supported`, async ({ postgresVersion }) => {
       mocks.database.getPostgresVersion.mockResolvedValue(postgresVersion);
       const result = await sut.handleBackupDatabase();

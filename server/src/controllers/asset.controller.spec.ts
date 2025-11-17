@@ -57,6 +57,28 @@ describe(AssetController.name, () => {
     });
   });
 
+  describe('PUT /assets/copy', () => {
+    it('should be an authenticated route', async () => {
+      await request(ctx.getHttpServer()).get(`/assets/copy`);
+      expect(ctx.authenticate).toHaveBeenCalled();
+    });
+
+    it('should require target and source id', async () => {
+      const { status, body } = await request(ctx.getHttpServer()).put('/assets/copy').send({});
+      expect(status).toBe(400);
+      expect(body).toEqual(
+        factory.responses.badRequest(expect.arrayContaining(['sourceId must be a UUID', 'targetId must be a UUID'])),
+      );
+    });
+
+    it('should work', async () => {
+      const { status } = await request(ctx.getHttpServer())
+        .put('/assets/copy')
+        .send({ sourceId: factory.uuid(), targetId: factory.uuid() });
+      expect(status).toBe(204);
+    });
+  });
+
   describe('PUT /assets/:id', () => {
     it('should be an authenticated route', async () => {
       await request(ctx.getHttpServer()).get(`/assets/123`);

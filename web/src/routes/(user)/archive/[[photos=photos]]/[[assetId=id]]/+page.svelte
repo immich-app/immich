@@ -18,7 +18,6 @@
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { AssetVisibility } from '@immich/sdk';
   import { mdiDotsVertical, mdiPlus } from '@mdi/js';
-  import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
 
@@ -27,9 +26,8 @@
   }
 
   let { data }: Props = $props();
-  const timelineManager = new TimelineManager();
-  void timelineManager.updateOptions({ visibility: AssetVisibility.Archive });
-  onDestroy(() => timelineManager.destroy());
+  let timelineManager = $state<TimelineManager>() as TimelineManager;
+  const options = { visibility: AssetVisibility.Archive };
 
   const assetInteraction = new AssetInteraction();
 
@@ -49,7 +47,8 @@
 <UserPageLayout hideNavbar={assetInteraction.selectionActive} title={data.meta.title} scrollbar={false}>
   <Timeline
     enableRouting={true}
-    {timelineManager}
+    bind:timelineManager
+    {options}
     {assetInteraction}
     removeAction={AssetAction.UNARCHIVE}
     onEscape={handleEscape}

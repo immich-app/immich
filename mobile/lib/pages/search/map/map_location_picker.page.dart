@@ -8,9 +8,9 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/maplibrecontroller_extensions.dart';
+import 'package:immich_mobile/utils/map_utils.dart';
 import 'package:immich_mobile/widgets/map/map_theme_override.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
-import 'package:immich_mobile/utils/map_utils.dart';
 
 @RoutePage()
 class MapLocationPickerPage extends HookConsumerWidget {
@@ -30,7 +30,7 @@ class MapLocationPickerPage extends HookConsumerWidget {
 
     Future<void> onMapClick(Point<num> point, LatLng centre) async {
       selectedLatLng.value = centre;
-      controller.value?.animateCamera(CameraUpdate.newLatLng(centre));
+      await controller.value?.animateCamera(CameraUpdate.newLatLng(centre));
       if (marker.value != null) {
         await controller.value?.updateSymbol(marker.value!, SymbolOptions(geometry: centre));
       }
@@ -49,7 +49,7 @@ class MapLocationPickerPage extends HookConsumerWidget {
 
       var currentLatLng = LatLng(currentLocation.latitude, currentLocation.longitude);
       selectedLatLng.value = currentLatLng;
-      controller.value?.animateCamera(CameraUpdate.newLatLng(currentLatLng));
+      await controller.value?.animateCamera(CameraUpdate.newLatLng(currentLatLng));
     }
 
     return MapThemeOverride(

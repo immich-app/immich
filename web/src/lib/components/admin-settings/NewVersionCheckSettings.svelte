@@ -1,44 +1,26 @@
 <script lang="ts">
-  import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
+  import SettingButtonsRow from '$lib/components/shared-components/settings/SystemConfigButtonRow.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
-  import type { SystemConfigDto } from '@immich/sdk';
-  import { isEqual } from 'lodash-es';
+  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
+  import { systemConfigManager } from '$lib/managers/system-config-manager.svelte';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
-  import type { SettingsResetEvent, SettingsSaveEvent } from './admin-settings';
 
-  interface Props {
-    savedConfig: SystemConfigDto;
-    defaultConfig: SystemConfigDto;
-    config: SystemConfigDto;
-    disabled?: boolean;
-    onReset: SettingsResetEvent;
-    onSave: SettingsSaveEvent;
-  }
-
-  let { savedConfig, defaultConfig, config = $bindable(), disabled = false, onReset, onSave }: Props = $props();
-
-  const onsubmit = (event: Event) => {
-    event.preventDefault();
-  };
+  const disabled = $derived(featureFlagsManager.value.configFile);
+  let configToEdit = $state(systemConfigManager.cloneValue());
 </script>
 
 <div>
   <div in:fade={{ duration: 500 }}>
-    <form autocomplete="off" {onsubmit}>
+    <form autocomplete="off" onsubmit={(event) => event.preventDefault()}>
       <div class="ms-4 mt-4">
         <SettingSwitch
           title={$t('admin.version_check_enabled_description')}
           subtitle={$t('admin.version_check_implications')}
-          bind:checked={config.newVersionCheck.enabled}
+          bind:checked={configToEdit.newVersionCheck.enabled}
           {disabled}
         />
-        <SettingButtonsRow
-          onReset={(options) => onReset({ ...options, configKeys: ['newVersionCheck'] })}
-          onSave={() => onSave({ newVersionCheck: config.newVersionCheck })}
-          showResetToDefault={!isEqual(savedConfig.newVersionCheck, defaultConfig.newVersionCheck)}
-          {disabled}
-        />
+        <SettingButtonsRow bind:configToEdit keys={['newVersionCheck']} {disabled} />
       </div>
     </form>
   </div>

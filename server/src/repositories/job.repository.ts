@@ -89,7 +89,7 @@ export class JobRepository {
       this.logger.debug(`Starting worker for queue: ${queueName}`);
       this.workers[queueName] = new Worker(
         queueName,
-        (job) => this.eventRepository.emit('JobStart', queueName, job as JobItem),
+        (job) => this.eventRepository.emit('JobRun', queueName, job as JobItem),
         { ...bull.config, concurrency: 1 },
       );
     }

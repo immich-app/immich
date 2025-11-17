@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:auto_route/auto_route.dart';
@@ -15,8 +16,9 @@ import 'package:immich_mobile/presentation/widgets/timeline/timeline.state.dart'
 import 'package:immich_mobile/presentation/widgets/timeline/timeline_drag_region.dart';
 import 'package:immich_mobile/providers/asset_viewer/is_motion_video_playing.provider.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 
@@ -156,11 +158,14 @@ class _AssetTileWidget extends ConsumerWidget {
       await ref.read(timelineServiceProvider).loadAssets(assetIndex, 1);
       ref.read(isPlayingMotionVideoProvider.notifier).playing = false;
       AssetViewer.setAsset(ref, asset);
-      ctx.pushRoute(
-        AssetViewerRoute(
-          initialIndex: assetIndex,
-          timelineService: ref.read(timelineServiceProvider),
-          heroOffset: heroOffset,
+      unawaited(
+        ctx.pushRoute(
+          AssetViewerRoute(
+            initialIndex: assetIndex,
+            timelineService: ref.read(timelineServiceProvider),
+            heroOffset: heroOffset,
+            currentAlbum: ref.read(currentRemoteAlbumProvider),
+          ),
         ),
       );
     }

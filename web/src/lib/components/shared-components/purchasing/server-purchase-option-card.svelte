@@ -20,7 +20,7 @@
     <p>{$t('purchase_per_server')}</p>
   </div>
 
-  <div class="flex flex-col justify-between h-[200px] dark:text-immich-gray">
+  <div class="flex flex-col justify-between h-50 dark:text-immich-gray">
     <div class="mt-6 flex flex-col gap-1">
       <div class="grid grid-cols-[36px_auto]">
         <Icon icon={mdiCheckCircleOutline} size="24" class="text-green-500 self-center" />

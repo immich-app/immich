@@ -16,7 +16,9 @@ class FacesApi {
 
   final ApiClient apiClient;
 
-  /// This endpoint requires the `face.create` permission.
+  /// Create a face
+  ///
+  /// Create a new face that has not been discovered by facial recognition. The content of the bounding box is considered a face.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -48,7 +50,9 @@ class FacesApi {
     );
   }
 
-  /// This endpoint requires the `face.create` permission.
+  /// Create a face
+  ///
+  /// Create a new face that has not been discovered by facial recognition. The content of the bounding box is considered a face.
   ///
   /// Parameters:
   ///
@@ -60,7 +64,9 @@ class FacesApi {
     }
   }
 
-  /// This endpoint requires the `face.delete` permission.
+  /// Delete a face
+  ///
+  /// Delete a face identified by the id. Optionally can be force deleted.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -95,7 +101,9 @@ class FacesApi {
     );
   }
 
-  /// This endpoint requires the `face.delete` permission.
+  /// Delete a face
+  ///
+  /// Delete a face identified by the id. Optionally can be force deleted.
   ///
   /// Parameters:
   ///
@@ -109,7 +117,9 @@ class FacesApi {
     }
   }
 
-  /// This endpoint requires the `face.read` permission.
+  /// Retrieve faces for asset
+  ///
+  /// Retrieve all faces belonging to an asset.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -143,7 +153,9 @@ class FacesApi {
     );
   }
 
-  /// This endpoint requires the `face.read` permission.
+  /// Retrieve faces for asset
+  ///
+  /// Retrieve all faces belonging to an asset.
   ///
   /// Parameters:
   ///
@@ -166,7 +178,9 @@ class FacesApi {
     return null;
   }
 
-  /// This endpoint requires the `face.update` permission.
+  /// Re-assign a face to another person
+  ///
+  /// Re-assign the face provided in the body to the person identified by the id in the path parameter.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -201,7 +215,9 @@ class FacesApi {
     );
   }
 
-  /// This endpoint requires the `face.update` permission.
+  /// Re-assign a face to another person
+  ///
+  /// Re-assign the face provided in the body to the person identified by the id in the path parameter.
   ///
   /// Parameters:
   ///

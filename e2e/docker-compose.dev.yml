@@ -1,0 +1,105 @@
+name: immich-e2e
+
+services:
+  immich-server:
+    container_name: immich-e2e-server
+    command: ['immich-dev']
+    image: immich-server-dev:latest
+    build:
+      context: ../
+      dockerfile: server/Dockerfile.dev
+      target: dev
+    environment:
+      - DB_HOSTNAME=database
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=postgres
+      - DB_DATABASE_NAME=immich
+      - IMMICH_MACHINE_LEARNING_ENABLED=false
+      - IMMICH_TELEMETRY_INCLUDE=all
+      - IMMICH_ENV=testing
+      - IMMICH_PORT=2285
+      - IMMICH_IGNORE_MOUNT_CHECK_ERRORS=true
+    volumes:
+      - ./test-assets:/test-assets
+      - ..:/usr/src/app
+      - ${UPLOAD_LOCATION}/photos:/data
+      - /etc/localtime:/etc/localtime:ro
+      - pnpm-store:/usr/src/app/.pnpm-store
+      - server-node_modules:/usr/src/app/server/node_modules
+      - web-node_modules:/usr/src/app/web/node_modules
+      - github-node_modules:/usr/src/app/.github/node_modules
+      - cli-node_modules:/usr/src/app/cli/node_modules
+      - docs-node_modules:/usr/src/app/docs/node_modules
+      - e2e-node_modules:/usr/src/app/e2e/node_modules
+      - sdk-node_modules:/usr/src/app/open-api/typescript-sdk/node_modules
+      - app-node_modules:/usr/src/app/node_modules
+      - sveltekit:/usr/src/app/web/.svelte-kit
+      - coverage:/usr/src/app/web/coverage
+      - ../plugins:/build/corePlugin
+    depends_on:
+      redis:
+        condition: service_started
+      database:
+        condition: service_healthy
+
+  immich-web:
+    container_name: immich-e2e-web
+    image: immich-web-dev:latest
+    build:
+      context: ../
+      dockerfile: server/Dockerfile.dev
+      target: dev
+    command: ['immich-web']
+    ports:
+      - 2285:3000
+    environment:
+      - IMMICH_SERVER_URL=http://immich-server:2285/
+    volumes:
+      - ..:/usr/src/app
+      - pnpm-store:/usr/src/app/.pnpm-store
+      - server-node_modules:/usr/src/app/server/node_modules
+      - web-node_modules:/usr/src/app/web/node_modules
+      - github-node_modules:/usr/src/app/.github/node_modules
+      - cli-node_modules:/usr/src/app/cli/node_modules
+      - docs-node_modules:/usr/src/app/docs/node_modules
+      - e2e-node_modules:/usr/src/app/e2e/node_modules
+      - sdk-node_modules:/usr/src/app/open-api/typescript-sdk/node_modules
+      - app-node_modules:/usr/src/app/node_modules
+      - sveltekit:/usr/src/app/web/.svelte-kit
+      - coverage:/usr/src/app/web/coverage
+    restart: unless-stopped
+
+  redis:
+    image: redis:6.2-alpine@sha256:37e002448575b32a599109664107e374c8709546905c372a34d64919043b9ceb
+
+  database:
+    image: ghcr.io/immich-app/postgres:14-vectorchord0.3.0@sha256:6f3e9d2c2177af16c2988ff71425d79d89ca630ec2f9c8db03209ab716542338
+    command: -c fsync=off -c shared_preload_libraries=vchord.so -c config_file=/var/lib/postgresql/data/postgresql.conf
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_DB: immich
+    ports:
+      - 5435:5432
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d immich']
+      interval: 1s
+      timeout: 5s
+      retries: 30
+      start_period: 10s
+
+volumes:
+  model-cache:
+  prometheus-data:
+  grafana-data:
+  pnpm-store:
+  server-node_modules:
+  web-node_modules:
+  github-node_modules:
+  cli-node_modules:
+  docs-node_modules:
+  e2e-node_modules:
+  sdk-node_modules:
+  app-node_modules:
+  sveltekit:
+  coverage:

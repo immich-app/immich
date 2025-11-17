@@ -14,11 +14,10 @@
     type AlbumResponseDto,
     type UserResponseDto,
   } from '@immich/sdk';
-  import { Icon, Modal, ModalBody, modalManager } from '@immich/ui';
+  import { Icon, Modal, ModalBody, modalManager, toastManager } from '@immich/ui';
   import { mdiArrowDownThin, mdiArrowUpThin, mdiDotsVertical, mdiPlus } from '@mdi/js';
   import { findKey } from 'lodash-es';
   import { t } from 'svelte-i18n';
-  import { notificationController, NotificationType } from '../components/shared-components/notification/notification';
   import SettingDropdown from '../components/shared-components/settings/setting-dropdown.svelte';
 
   interface Props {
@@ -68,10 +67,7 @@
         },
       });
 
-      notificationController.show({
-        type: NotificationType.Info,
-        message: $t('activity_changed', { values: { enabled: album.isActivityEnabled } }),
-      });
+      toastManager.success($t('activity_changed', { values: { enabled: album.isActivityEnabled } }));
     } catch (error) {
       handleError(error, $t('errors.cant_change_activity', { values: { enabled: album.isActivityEnabled } }));
     }
@@ -91,10 +87,7 @@
     try {
       await removeUserFromAlbum({ id: album.id, userId: user.id });
       onClose({ action: 'refreshAlbum' });
-      notificationController.show({
-        type: NotificationType.Info,
-        message: $t('album_user_removed', { values: { user: user.name } }),
-      });
+      toastManager.success($t('album_user_removed', { values: { user: user.name } }));
     } catch (error) {
       handleError(error, $t('errors.unable_to_remove_album_users'));
     }
@@ -107,7 +100,7 @@
         values: { user: user.name, role: role == AlbumUserRole.Viewer ? $t('role_viewer') : $t('role_editor') },
       });
       onClose({ action: 'refreshAlbum' });
-      notificationController.show({ type: NotificationType.Info, message });
+      toastManager.success(message);
     } catch (error) {
       handleError(error, $t('errors.unable_to_change_album_user_role'));
     }

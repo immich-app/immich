@@ -31,9 +31,9 @@ select
           "tag"."value"
         from
           "tag"
-          inner join "tag_asset" on "tag"."id" = "tag_asset"."tagsId"
+          inner join "tag_asset" on "tag"."id" = "tag_asset"."tagId"
         where
-          "asset"."id" = "tag_asset"."assetsId"
+          "asset"."id" = "tag_asset"."assetId"
       ) as agg
   ) as "tags"
 from
@@ -285,6 +285,23 @@ from
 where
   "asset"."id" = $2
 
+-- AssetJobRepository.getForOcr
+select
+  "asset"."visibility",
+  (
+    select
+      "asset_file"."path"
+    from
+      "asset_file"
+    where
+      "asset_file"."assetId" = "asset"."id"
+      and "asset_file"."type" = $1
+  ) as "previewFile"
+from
+  "asset"
+where
+  "asset"."id" = $2
+
 -- AssetJobRepository.getForSyncAssets
 select
   "asset"."id",
@@ -482,6 +499,17 @@ where
   and "job_status"."previewAt" is not null
 order by
   "asset"."fileCreatedAt" desc
+
+-- AssetJobRepository.streamForOcrJob
+select
+  "asset"."id"
+from
+  "asset"
+  inner join "asset_job_status" on "asset_job_status"."assetId" = "asset"."id"
+where
+  "asset_job_status"."ocrAt" is null
+  and "asset"."deletedAt" is null
+  and "asset"."visibility" != $1
 
 -- AssetJobRepository.streamForMigrationJob
 select

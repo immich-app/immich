@@ -1,12 +1,8 @@
 <script lang="ts">
-  import {
-    notificationController,
-    NotificationType,
-  } from '$lib/components/shared-components/notification/notification';
   import PinCodeInput from '$lib/components/user-settings-page/PinCodeInput.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { setupPinCode } from '@immich/sdk';
-  import { Button, Heading } from '@immich/ui';
+  import { Button, Heading, toastManager } from '@immich/ui';
   import { t } from 'svelte-i18n';
 
   interface Props {
@@ -30,12 +26,7 @@
     isLoading = true;
     try {
       await setupPinCode({ pinCodeSetupDto: { pinCode: newPinCode } });
-
-      notificationController.show({
-        message: $t('pin_code_setup_successfully'),
-        type: NotificationType.Info,
-      });
-
+      toastManager.success($t('pin_code_setup_successfully'));
       onCreated?.(newPinCode);
       resetForm();
     } catch (error) {

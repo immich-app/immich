@@ -2,12 +2,11 @@
   import { locale } from '$lib/stores/preferences.store';
   import { uploadAssetsStore } from '$lib/stores/upload';
   import { uploadExecutionQueue } from '$lib/utils/file-uploader';
-  import { Icon, IconButton } from '@immich/ui';
+  import { Icon, IconButton, toastManager } from '@immich/ui';
   import { mdiCancel, mdiCloudUploadOutline, mdiCog, mdiWindowMinimize } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { quartInOut } from 'svelte/easing';
   import { fade, scale } from 'svelte/transition';
-  import { notificationController, NotificationType } from './notification/notification';
   import UploadAssetPreview from './upload-asset-preview.svelte';
 
   let showDetail = $state(false);
@@ -29,21 +28,12 @@
     out:fade={{ duration: 250 }}
     onoutroend={() => {
       if ($stats.errors > 0) {
-        notificationController.show({
-          message: $t('upload_errors', { values: { count: $stats.errors } }),
-          type: NotificationType.Warning,
-        });
+        toastManager.danger($t('upload_errors', { values: { count: $stats.errors } }));
       } else if ($stats.success > 0) {
-        notificationController.show({
-          message: $t('upload_success'),
-          type: NotificationType.Info,
-        });
+        toastManager.success($t('upload_success'));
       }
       if ($stats.duplicates > 0) {
-        notificationController.show({
-          message: $t('upload_skipped_duplicates', { values: { count: $stats.duplicates } }),
-          type: NotificationType.Warning,
-        });
+        toastManager.warning($t('upload_skipped_duplicates', { values: { count: $stats.duplicates } }));
       }
       uploadAssetsStore.reset();
     }}
@@ -52,7 +42,7 @@
     {#if showDetail}
       <div
         in:scale={{ duration: 250, easing: quartInOut }}
-        class="w-[300px] rounded-lg border bg-gray-100 p-4 text-sm shadow-sm dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-white"
+        class="w-81 rounded-xl border border-gray-200 dark:border-subtle p-4 text-sm shadow-xs bg-subtle"
       >
         <div class="place-item-center mb-4 flex justify-between">
           <div class="flex flex-col gap-1">
@@ -111,8 +101,8 @@
           </div>
         </div>
         {#if showOptions}
-          <div class="immich-scrollbar mb-4 max-h-[400px] overflow-y-auto rounded-lg">
-            <div class="flex h-[26px] place-items-center gap-1">
+          <div class="immich-scrollbar mb-4 max-h-100 overflow-y-auto rounded-lg">
+            <div class="flex h-6.5 place-items-center gap-1">
               <label class="immich-form-label" for="upload-concurrency">{$t('upload_concurrency')}</label>
             </div>
             <input

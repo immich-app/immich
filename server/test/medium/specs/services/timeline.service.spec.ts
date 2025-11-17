@@ -4,6 +4,7 @@ import { AssetVisibility } from 'src/enum';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
+import { PartnerRepository } from 'src/repositories/partner.repository';
 import { DB } from 'src/schema';
 import { TimelineService } from 'src/services/timeline.service';
 import { newMediumService } from 'test/medium.factory';
@@ -15,7 +16,7 @@ let defaultDatabase: Kysely<DB>;
 const setup = (db?: Kysely<DB>) => {
   return newMediumService(TimelineService, {
     database: db || defaultDatabase,
-    real: [AssetRepository, AccessRepository],
+    real: [AssetRepository, AccessRepository, PartnerRepository],
     mock: [LoggingRepository],
   });
 };
@@ -154,6 +155,55 @@ describe(TimelineService.name, () => {
       const rawResponse = await sut.getTimeBucket(auth, { timeBucket: '1970-02-01', isTrashed: true });
       const response = JSON.parse(rawResponse);
       expect(response).toEqual(expect.objectContaining({ isTrashed: [true] }));
+    });
+
+    it('should return false for favorite status unless asset owner', async () => {
+      const { sut, ctx } = setup();
+      const [{ asset: asset1 }, { asset: asset2 }] = await Promise.all([
+        ctx.newUser().then(async ({ user }) => {
+          const result = await ctx.newAsset({
+            ownerId: user.id,
+            fileCreatedAt: new Date('1970-02-12'),
+            localDateTime: new Date('1970-02-12'),
+            isFavorite: true,
+          });
+          await ctx.newExif({ assetId: result.asset.id, make: 'Canon' });
+          return result;
+        }),
+        ctx.newUser().then(async ({ user }) => {
+          const result = await ctx.newAsset({
+            ownerId: user.id,
+            fileCreatedAt: new Date('1970-02-13'),
+            localDateTime: new Date('1970-02-13'),
+            isFavorite: true,
+          });
+          await ctx.newExif({ assetId: result.asset.id, make: 'Canon' });
+          return result;
+        }),
+      ]);
+
+      await Promise.all([
+        ctx.newPartner({ sharedById: asset1.ownerId, sharedWithId: asset2.ownerId }),
+        ctx.newPartner({ sharedById: asset2.ownerId, sharedWithId: asset1.ownerId }),
+      ]);
+
+      const auth1 = factory.auth({ user: { id: asset1.ownerId } });
+      const rawResponse1 = await sut.getTimeBucket(auth1, {
+        timeBucket: '1970-02-01',
+        withPartners: true,
+        visibility: AssetVisibility.Timeline,
+      });
+      const response1 = JSON.parse(rawResponse1);
+      expect(response1).toEqual(expect.objectContaining({ id: [asset2.id, asset1.id], isFavorite: [false, true] }));
+
+      const auth2 = factory.auth({ user: { id: asset2.ownerId } });
+      const rawResponse2 = await sut.getTimeBucket(auth2, {
+        timeBucket: '1970-02-01',
+        withPartners: true,
+        visibility: AssetVisibility.Timeline,
+      });
+      const response2 = JSON.parse(rawResponse2);
+      expect(response2).toEqual(expect.objectContaining({ id: [asset2.id, asset1.id], isFavorite: [true, false] }));
     });
   });
 });

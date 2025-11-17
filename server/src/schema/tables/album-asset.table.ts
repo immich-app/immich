@@ -22,10 +22,10 @@ import {
 })
 export class AlbumAssetTable {
   @ForeignKeyColumn(() => AlbumTable, { onDelete: 'CASCADE', onUpdate: 'CASCADE', nullable: false, primary: true })
-  albumsId!: string;
+  albumId!: string;
 
   @ForeignKeyColumn(() => AssetTable, { onDelete: 'CASCADE', onUpdate: 'CASCADE', nullable: false, primary: true })
-  assetsId!: string;
+  assetId!: string;
 
   @CreateDateColumn()
   createdAt!: Generated<Timestamp>;

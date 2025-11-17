@@ -13,7 +13,7 @@ import { AuthDto } from 'src/dtos/auth.dto';
 import { ApiCustomExtension, ImmichQuery, MetadataKey, Permission } from 'src/enum';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { AuthService, LoginDetails } from 'src/services/auth.service';
-import { UAParser } from 'ua-parser-js';
+import { getUserAgentDetails } from 'src/utils/request';
 
 type AdminRoute = { admin?: true };
 type SharedLinkRoute = { sharedLink?: true };
@@ -56,13 +56,14 @@ export const FileResponse = () =>
 
 export const GetLoginDetails = createParamDecorator((data, context: ExecutionContext): LoginDetails => {
   const request = context.switchToHttp().getRequest<Request>();
-  const userAgent = UAParser(request.headers['user-agent']);
+  const { deviceType, deviceOS, appVersion } = getUserAgentDetails(request.headers);
 
   return {
     clientIp: request.ip ?? '',
     isSecure: request.secure,
-    deviceType: userAgent.browser.name || userAgent.device.type || (request.headers.devicemodel as string) || '',
-    deviceOS: userAgent.os.name || (request.headers.devicetype as string) || '',
+    deviceType,
+    deviceOS,
+    appVersion,
   };
 });
 
@@ -86,7 +87,6 @@ export class AuthGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const targets = [context.getHandler()];
-
     const options = this.reflector.getAllAndOverride<AuthenticatedOptions | undefined>(MetadataKey.AuthRoute, targets);
     if (!options) {
       return true;

@@ -1,26 +1,22 @@
 <script lang="ts">
-  import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
-  import SharedLinkCopy from '$lib/components/sharedlinks-page/actions/shared-link-copy.svelte';
-  import SharedLinkDelete from '$lib/components/sharedlinks-page/actions/shared-link-delete.svelte';
-  import SharedLinkEdit from '$lib/components/sharedlinks-page/actions/shared-link-edit.svelte';
+  import ActionButton from '$lib/components/ActionButton.svelte';
   import ShareCover from '$lib/components/sharedlinks-page/covers/share-cover.svelte';
   import { AppRoute } from '$lib/constants';
   import Badge from '$lib/elements/Badge.svelte';
+  import { getSharedLinkActions } from '$lib/services/shared-link.service';
   import { locale } from '$lib/stores/preferences.store';
   import { SharedLinkType, type SharedLinkResponseDto } from '@immich/sdk';
-  import { mdiDotsVertical } from '@mdi/js';
   import { DateTime, type ToRelativeUnit } from 'luxon';
   import { t } from 'svelte-i18n';
 
   interface Props {
-    link: SharedLinkResponseDto;
-    onDelete: () => void;
+    sharedLink: SharedLinkResponseDto;
   }
 
-  let { link, onDelete }: Props = $props();
+  let { sharedLink }: Props = $props();
 
   let now = DateTime.now();
-  let expiresAt = $derived(link.expiresAt ? DateTime.fromISO(link.expiresAt) : undefined);
+  let expiresAt = $derived(sharedLink.expiresAt ? DateTime.fromISO(sharedLink.expiresAt) : undefined);
   let isExpired = $derived(expiresAt ? now > expiresAt : false);
 
   const getCountDownExpirationDate = (expiresAtDate: DateTime, now: DateTime) => {
@@ -34,6 +30,8 @@
       }
     }
   };
+
+  const SharedLinkActions = $derived(getSharedLinkActions($t, sharedLink));
 </script>
 
 <div
@@ -41,10 +39,10 @@
 >
   <svelte:element
     this={isExpired ? 'div' : 'a'}
-    href={isExpired ? undefined : `${AppRoute.SHARE}/${link.key}`}
+    href={isExpired ? undefined : `${AppRoute.SHARE}/${sharedLink.key}`}
     class="flex gap-4 w-full py-4"
   >
-    <ShareCover class="transition-all duration-300 hover:shadow-lg" {link} />
+    <ShareCover class="transition-all duration-300 hover:shadow-lg" {sharedLink} />
 
     <div class="flex flex-col justify-between">
       <div class="info-top">
@@ -62,34 +60,34 @@
 
         <div class="text-sm pb-2">
           <p class="flex place-items-center gap-2 text-primary break-all uppercase">
-            {#if link.type === SharedLinkType.Album}
-              {link.album?.albumName}
-            {:else if link.type === SharedLinkType.Individual}
+            {#if sharedLink.type === SharedLinkType.Album}
+              {sharedLink.album?.albumName}
+            {:else if sharedLink.type === SharedLinkType.Individual}
               {$t('individual_share')}
             {/if}
           </p>
 
-          <p class="text-sm">{link.description ?? ''}</p>
+          <p class="text-sm">{sharedLink.description ?? ''}</p>
         </div>
       </div>
 
       <div class="flex flex-wrap gap-2 text-xl">
-        {#if link.allowUpload}
+        {#if sharedLink.allowUpload}
           <Badge rounded="full"><span class="text-xs px-1">{$t('upload')}</span></Badge>
         {/if}
 
-        {#if link.allowDownload}
+        {#if sharedLink.allowDownload}
           <Badge rounded="full"><span class="text-xs px-1">{$t('download')}</span></Badge>
         {/if}
 
-        {#if link.showMetadata}
+        {#if sharedLink.showMetadata}
           <Badge rounded="full"><span class="uppercase text-xs px-1">{$t('exif')}</span></Badge>
         {/if}
 
-        {#if link.password}
+        {#if sharedLink.password}
           <Badge rounded="full"><span class="text-xs px-1">{$t('password')}</span></Badge>
         {/if}
-        {#if link.slug}
+        {#if sharedLink.slug}
           <Badge rounded="full"><span class="text-xs px-1">{$t('custom_url')}</span></Badge>
         {/if}
       </div>
@@ -97,23 +95,13 @@
   </svelte:element>
   <div class="flex flex-auto flex-col place-content-center place-items-end text-end ms-4">
     <div class="sm:flex hidden">
-      <SharedLinkEdit sharedLink={link} />
-      <SharedLinkCopy {link} />
-      <SharedLinkDelete {onDelete} />
+      <ActionButton action={SharedLinkActions.Edit} />
+      <ActionButton action={SharedLinkActions.Copy} />
+      <ActionButton action={SharedLinkActions.Delete} />
     </div>
 
     <div class="sm:hidden">
-      <ButtonContextMenu
-        color="primary"
-        title={$t('shared_link_options')}
-        icon={mdiDotsVertical}
-        size="large"
-        hideContent
-      >
-        <SharedLinkEdit menuItem sharedLink={link} />
-        <SharedLinkCopy menuItem {link} />
-        <SharedLinkDelete menuItem {onDelete} />
-      </ButtonContextMenu>
+      <ActionButton action={SharedLinkActions.ContextMenu} />
     </div>
   </div>
 </div>

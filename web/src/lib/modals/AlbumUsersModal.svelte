@@ -1,10 +1,6 @@
 <script lang="ts">
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
-  import {
-    NotificationType,
-    notificationController,
-  } from '$lib/components/shared-components/notification/notification';
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import {
@@ -15,7 +11,7 @@
     type AlbumResponseDto,
     type UserResponseDto,
   } from '@immich/sdk';
-  import { Button, Modal, ModalBody, Text, modalManager } from '@immich/ui';
+  import { Button, Modal, ModalBody, Text, modalManager, toastManager } from '@immich/ui';
   import { mdiDotsVertical } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -30,6 +26,14 @@
   let currentUser: UserResponseDto | undefined = $state();
 
   let isOwned = $derived(currentUser?.id == album.ownerId);
+
+  // Build a map of contributor counts by user id; avoid casts/derived
+  const contributorCounts: Record<string, number> = {};
+  if (album.contributorCounts) {
+    for (const { userId, assetCount } of album.contributorCounts) {
+      contributorCounts[userId] = assetCount;
+    }
+  }
 
   onMount(async () => {
     try {
@@ -72,21 +76,20 @@
         userId === 'me'
           ? $t('album_user_left', { values: { album: album.albumName } })
           : $t('album_user_removed', { values: { user: user.name } });
-      notificationController.show({ type: NotificationType.Info, message });
+      toastManager.success(message);
       onClose(true);
     } catch (error) {
       handleError(error, $t('errors.unable_to_remove_album_users'));
     }
   };
 
-  const handleSetReadonly = async (user: UserResponseDto, role: AlbumUserRole) => {
+  const handleChangeRole = async (user: UserResponseDto, role: AlbumUserRole) => {
     try {
       await updateAlbumUser({ id: album.id, userId: user.id, updateAlbumUserDto: { role } });
       const message = $t('user_role_set', {
         values: { user: user.name, role: role == AlbumUserRole.Viewer ? $t('role_viewer') : $t('role_editor') },
       });
-
-      notificationController.show({ type: NotificationType.Info, message });
+      toastManager.success(message);
       onClose(true);
     } catch (error) {
       handleError(error, $t('errors.unable_to_change_album_user_role'));
@@ -96,7 +99,7 @@
 
 <Modal title={$t('options')} size="small" {onClose}>
   <ModalBody>
-    <section class="immich-scrollbar max-h-[400px] overflow-y-auto pb-4">
+    <section class="immich-scrollbar max-h-100 overflow-y-auto pb-4">
       {#each [{ user: album.owner, role: 'owner' }, ...album.albumUsers] as { user, role } (user.id)}
         <div class="flex w-full place-items-center justify-between gap-4 p-5 rounded-xl transition-colors">
           <div class="flex place-items-center gap-4">
@@ -111,6 +114,10 @@
                 {:else}
                   {$t('role_editor')}
                 {/if}
+                {#if user.id in contributorCounts}
+                  <span>-</span>
+                  {$t('items_count', { values: { count: contributorCounts[user.id] } })}
+                {/if}
               </Text>
             </div>
           </div>
@@ -119,10 +126,10 @@
             {#if isOwned}
               <ButtonContextMenu icon={mdiDotsVertical} size="medium" title={$t('options')}>
                 {#if role === AlbumUserRole.Viewer}
-                  <MenuOption onClick={() => handleSetReadonly(user, AlbumUserRole.Editor)} text={$t('allow_edits')} />
+                  <MenuOption onClick={() => handleChangeRole(user, AlbumUserRole.Editor)} text={$t('allow_edits')} />
                 {:else}
                   <MenuOption
-                    onClick={() => handleSetReadonly(user, AlbumUserRole.Viewer)}
+                    onClick={() => handleChangeRole(user, AlbumUserRole.Viewer)}
                     text={$t('disallow_edits')}
                   />
                 {/if}

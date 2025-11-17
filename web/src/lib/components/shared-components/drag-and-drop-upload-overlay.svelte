@@ -5,9 +5,9 @@
   import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
   import { fileUploadHandler } from '$lib/utils/file-uploader';
   import { isAlbumsRoute, isLockedFolderRoute } from '$lib/utils/navigation';
+  import { Logo } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
-  import ImmichLogo from './immich-logo.svelte';
 
   let albumId = $derived(isAlbumsRoute(page.route?.id) ? page.params.albumId : undefined);
   let isInLockedFolder = $derived(isLockedFolderRoute(page.route.id));
@@ -168,7 +168,7 @@
     transition:fade={{ duration: 250 }}
     ondragover={onDragOver}
   >
-    <ImmichLogo noText class="m-16 h-48 animate-bounce" />
+    <Logo variant="icon" size="giant" class="m-16 animate-bounce" />
     <div class="text-2xl">{$t('drop_files_to_upload')}</div>
   </div>
 {/if}

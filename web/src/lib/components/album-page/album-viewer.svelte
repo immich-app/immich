@@ -6,21 +6,20 @@
   import SelectAllAssets from '$lib/components/timeline/actions/SelectAllAction.svelte';
   import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import Timeline from '$lib/components/timeline/Timeline.svelte';
+  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
+  import { handleDownloadAlbum } from '$lib/services/album.service';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
-  import { featureFlags } from '$lib/stores/server-config.store';
   import { handlePromiseError } from '$lib/utils';
-  import { cancelMultiselect, downloadAlbum } from '$lib/utils/asset-utils';
+  import { cancelMultiselect } from '$lib/utils/asset-utils';
   import { fileUploadHandler, openFileUploadDialog } from '$lib/utils/file-uploader';
   import type { AlbumResponseDto, SharedLinkResponseDto, UserResponseDto } from '@immich/sdk';
-  import { IconButton } from '@immich/ui';
+  import { IconButton, Logo } from '@immich/ui';
   import { mdiDownload, mdiFileImagePlusOutline } from '@mdi/js';
-  import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
   import ControlAppBar from '../shared-components/control-app-bar.svelte';
-  import ImmichLogoSmallLink from '../shared-components/immich-logo-small-link.svelte';
   import ThemeButton from '../shared-components/theme-button.svelte';
   import AlbumSummary from './album-summary.svelte';
 
@@ -35,9 +34,8 @@
 
   let { isViewing: showAssetViewer } = assetViewingStore;
 
-  const timelineManager = new TimelineManager();
-  $effect(() => void timelineManager.updateOptions({ albumId: album.id, order: album.order }));
-  onDestroy(() => timelineManager.destroy());
+  const options = $derived({ albumId: album.id, order: album.order });
+  let timelineManager = $state<TimelineManager>() as TimelineManager;
 
   const assetInteraction = new AssetInteraction();
 
@@ -61,7 +59,7 @@
 />
 
 <main class="relative h-dvh overflow-hidden px-2 md:px-6 max-md:pt-(--navbar-height-md) pt-(--navbar-height)">
-  <Timeline enableRouting={true} {album} {timelineManager} {assetInteraction}>
+  <Timeline enableRouting={true} {album} bind:timelineManager {options} {assetInteraction}>
     <section class="pt-8 md:pt-24 px-2 md:px-0">
       <!-- ALBUM TITLE -->
       <h1 class="text-2xl md:text-4xl lg:text-6xl text-primary outline-none transition-all">
@@ -99,7 +97,9 @@
   {:else}
     <ControlAppBar showBackButton={false}>
       {#snippet leading()}
-        <ImmichLogoSmallLink />
+        <a data-sveltekit-preload-data="hover" class="ms-4" href="/">
+          <Logo variant="inline" />
+        </a>
       {/snippet}
 
       {#snippet trailing()}
@@ -122,11 +122,11 @@
             color="secondary"
             variant="ghost"
             aria-label={$t('download')}
-            onclick={() => downloadAlbum(album)}
+            onclick={() => handleDownloadAlbum(album)}
             icon={mdiDownload}
           />
         {/if}
-        {#if sharedLink.showMetadata && $featureFlags.loaded && $featureFlags.map}
+        {#if sharedLink.showMetadata && featureFlagsManager.value.map}
           <AlbumMap {album} />
         {/if}
         <ThemeButton />

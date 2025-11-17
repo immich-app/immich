@@ -52,6 +52,7 @@
         title={person.name}
         widthStyle="100%"
         circle
+        preload={false}
       />
       {#if person.isFavorite}
         <div class="absolute top-4 start-4">

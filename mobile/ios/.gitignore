@@ -33,3 +33,4 @@ Runner/GeneratedPluginRegistrant.*
 !default.perspectivev3
 
 fastlane/report.xml
+Gemfile.lock

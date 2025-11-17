@@ -303,7 +303,7 @@ class AppRouter extends RootStackRouter {
     AutoRoute(page: DriftBackupAlbumSelectionRoute.page, guards: [_authGuard, _duplicateGuard]),
     AutoRoute(page: LocalTimelineRoute.page, guards: [_authGuard, _duplicateGuard]),
     AutoRoute(page: MainTimelineRoute.page, guards: [_authGuard, _duplicateGuard]),
-    AutoRoute(page: RemoteAlbumRoute.page, guards: [_authGuard, _duplicateGuard]),
+    AutoRoute(page: RemoteAlbumRoute.page, guards: [_authGuard]),
     AutoRoute(
       page: AssetViewerRoute.page,
       guards: [_authGuard, _duplicateGuard],
@@ -313,6 +313,7 @@ class AppRouter extends RootStackRouter {
           settings: page,
           pageBuilder: (_, __, ___) => child,
           opaque: false,
+          transitionsBuilder: TransitionsBuilders.fadeIn,
         ),
       ),
     ),

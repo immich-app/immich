@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/presentation/widgets/album/album_selector.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/common/immich_sliver_app_bar.dart';
 
@@ -43,7 +42,6 @@ class _DriftAlbumsPageState extends ConsumerState<DriftAlbumsPage> {
           ),
           AlbumSelector(
             onAlbumSelected: (album) {
-              ref.read(currentRemoteAlbumProvider.notifier).setAlbum(album);
               context.router.push(RemoteAlbumRoute(album: album));
             },
           ),

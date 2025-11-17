@@ -1,11 +1,8 @@
 <script lang="ts">
-  import {
-    NotificationType,
-    notificationController,
-  } from '$lib/components/shared-components/notification/notification';
   import { getAssetControlContext } from '$lib/components/timeline/AssetSelectControlBar.svelte';
+  import { handleError } from '$lib/utils/handle-error';
   import { getAlbumInfo, removeAssetFromAlbum, type AlbumResponseDto } from '@immich/sdk';
-  import { IconButton, modalManager } from '@immich/ui';
+  import { IconButton, modalManager, toastManager } from '@immich/ui';
   import { mdiDeleteOutline, mdiImageRemoveOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import MenuOption from '../../shared-components/context-menu/menu-option.svelte';
@@ -41,18 +38,11 @@
       onRemove?.(ids);
 
       const count = results.filter(({ success }) => success).length;
-      notificationController.show({
-        type: NotificationType.Info,
-        message: $t('assets_removed_count', { values: { count } }),
-      });
+      toastManager.success($t('assets_removed_count', { values: { count } }));
 
       clearSelect();
     } catch (error) {
-      console.error('Error [album-viewer] [removeAssetFromAlbum]', error);
-      notificationController.show({
-        type: NotificationType.Error,
-        message: $t('errors.error_removing_assets_from_album'),
-      });
+      handleError(error, $t('errors.error_removing_assets_from_album'));
     }
   };
 </script>

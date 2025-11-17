@@ -177,6 +177,9 @@ export class SearchService extends BaseService {
       case SearchSuggestionType.CAMERA_MODEL: {
         return this.searchRepository.getCameraModels(userIds, dto);
       }
+      case SearchSuggestionType.CAMERA_LENS_MODEL: {
+        return this.searchRepository.getCameraLensModels(userIds, dto);
+      }
       default: {
         return Promise.resolve([]);
       }

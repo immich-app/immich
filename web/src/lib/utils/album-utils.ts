@@ -12,7 +12,6 @@ import {
 import { handleError } from '$lib/utils/handle-error';
 import type { AlbumResponseDto } from '@immich/sdk';
 import * as sdk from '@immich/sdk';
-import { modalManager } from '@immich/ui';
 import { orderBy } from 'lodash-es';
 import { t } from 'svelte-i18n';
 import { get } from 'svelte/store';
@@ -201,19 +200,6 @@ export const collapseAllAlbumGroups = (groupIds: string[]) => {
 
 export const expandAllAlbumGroups = () => {
   collapseAllAlbumGroups([]);
-};
-
-export const confirmAlbumDelete = async (album: AlbumResponseDto) => {
-  const $t = get(t);
-  const confirmation =
-    album.albumName.length > 0
-      ? $t('album_delete_confirmation', { values: { album: album.albumName } })
-      : $t('unnamed_album_delete_confirmation');
-
-  const description = $t('album_delete_confirmation_description');
-  const prompt = `${confirmation} ${description}`;
-
-  return modalManager.showDialog({ prompt });
 };
 
 interface AlbumSortOption {

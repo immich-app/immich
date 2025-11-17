@@ -83,7 +83,7 @@ class AlbumService {
       if (selectedIds.isEmpty) {
         final numLocal = await _albumRepository.count(local: true);
         if (numLocal > 0) {
-          _syncService.removeAllLocalAlbumsAndAssets();
+          await _syncService.removeAllLocalAlbumsAndAssets();
         }
         return false;
       }

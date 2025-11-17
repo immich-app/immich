@@ -1,5 +1,6 @@
 import { plainDateTimeCompare, type TimelineYearMonth } from '$lib/utils/timeline-util';
 import { AssetOrder } from '@immich/sdk';
+import { DateTime } from 'luxon';
 import type { MonthGroup } from '../month-group.svelte';
 import type { TimelineManager } from '../timeline-manager.svelte';
 import type { AssetDescriptor, Direction, TimelineAsset } from '../types';
@@ -142,4 +143,23 @@ export function findMonthGroupForDate(timelineManager: TimelineManager, targetYe
       return month;
     }
   }
+}
+
+export function findClosestGroupForDate(months: MonthGroup[], targetYearMonth: TimelineYearMonth) {
+  const targetDate = DateTime.fromObject({ year: targetYearMonth.year, month: targetYearMonth.month });
+
+  let closestMonth: MonthGroup | undefined;
+  let minDifference = Number.MAX_SAFE_INTEGER;
+
+  for (const month of months) {
+    const monthDate = DateTime.fromObject({ year: month.yearMonth.year, month: month.yearMonth.month });
+    const totalDiff = Math.abs(monthDate.diff(targetDate, 'months').months);
+
+    if (totalDiff < minDifference) {
+      minDifference = totalDiff;
+      closestMonth = month;
+    }
+  }
+
+  return closestMonth;
 }

@@ -75,7 +75,7 @@ class DriftFilterImagePage extends HookWidget {
             icon: Icon(Icons.done_rounded, color: context.primaryColor, size: 24),
             onPressed: () async {
               final filteredImage = await applyFilterAndConvert(colorFilter.value);
-              context.pushRoute(DriftEditImageRoute(asset: asset, image: filteredImage, isEdited: true));
+              unawaited(context.pushRoute(DriftEditImageRoute(asset: asset, image: filteredImage, isEdited: true)));
             },
           ),
         ],

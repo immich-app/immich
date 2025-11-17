@@ -15,10 +15,10 @@ import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/sync.service.dart';
 import 'package:immich_mobile/utils/debounce.dart';
+import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 import 'package:socket_io_client/socket_io_client.dart';
-import 'package:immich_mobile/utils/debug_print.dart';
 
 enum PendingAction { assetDelete, assetUploaded, assetHidden, assetTrash }
 
@@ -307,7 +307,7 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
 
     final serverVersion = ServerVersion.fromDto(serverVersionDto);
     final releaseVersion = ServerVersion.fromDto(releaseVersionDto);
-    _ref.read(serverInfoProvider.notifier).handleNewRelease(serverVersion, releaseVersion);
+    _ref.read(serverInfoProvider.notifier).handleReleaseInfo(serverVersion, releaseVersion);
   }
 
   void _handleSyncAssetUploadReady(dynamic data) {

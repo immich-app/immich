@@ -2,12 +2,11 @@
   export interface SearchCameraFilter {
     make?: string;
     model?: string;
+    lensModel?: string;
   }
 </script>
 
 <script lang="ts">
-  import { run } from 'svelte/legacy';
-
   import Combobox, { asComboboxOptions, asSelectedOption } from '$lib/components/shared-components/combobox.svelte';
   import { handlePromiseError } from '$lib/utils';
   import { SearchSuggestionType, getSearchSuggestions } from '@immich/sdk';
@@ -21,6 +20,7 @@
 
   let makes: string[] = $state([]);
   let models: string[] = $state([]);
+  let lensModels: string[] = $state([]);
 
   async function updateMakes() {
     const results: Array<string | null> = await getSearchSuggestions({
@@ -48,13 +48,34 @@
       filters.model = undefined;
     }
   }
+
+  async function updateLensModels(make?: string, model?: string) {
+    const results: Array<string | null> = await getSearchSuggestions({
+      $type: SearchSuggestionType.CameraLensModel,
+      make,
+      model,
+      includeNull: true,
+    });
+
+    lensModels = results.map((result) => result ?? '');
+
+    if (filters.lensModel && !lensModels.includes(filters.lensModel)) {
+      filters.lensModel = undefined;
+    }
+  }
+
   let makeFilter = $derived(filters.make);
   let modelFilter = $derived(filters.model);
-  run(() => {
+  let lensModelFilter = $derived(filters.lensModel);
+
+  $effect(() => {
     handlePromiseError(updateMakes());
   });
-  run(() => {
+  $effect(() => {
     handlePromiseError(updateModels(makeFilter));
+  });
+  $effect(() => {
+    handlePromiseError(updateLensModels(makeFilter, modelFilter));
   });
 </script>
 
@@ -79,6 +100,16 @@
         options={asComboboxOptions(models)}
         placeholder={$t('search_camera_model')}
         selectedOption={asSelectedOption(modelFilter)}
+      />
+    </div>
+
+    <div class="w-full">
+      <Combobox
+        label={$t('lens_model')}
+        onSelect={(option) => (filters.lensModel = option?.value)}
+        options={asComboboxOptions(lensModels)}
+        placeholder={$t('search_camera_lens_model')}
+        selectedOption={asSelectedOption(lensModelFilter)}
       />
     </div>
   </div>

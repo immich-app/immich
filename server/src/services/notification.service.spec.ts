@@ -40,6 +40,7 @@ const configs = {
           ignoreCert: false,
           host: 'localhost',
           port: 587,
+          secure: false,
           username: 'test',
           password: 'test',
         },
@@ -64,8 +65,8 @@ describe(NotificationService.name, () => {
     it('should emit client and server events', () => {
       const update = { oldConfig: defaults, newConfig: defaults };
       expect(sut.onConfigUpdate(update)).toBeUndefined();
-      expect(mocks.event.clientBroadcast).toHaveBeenCalledWith('on_config_update');
-      expect(mocks.event.serverSend).toHaveBeenCalledWith('ConfigUpdate', update);
+      expect(mocks.websocket.clientBroadcast).toHaveBeenCalledWith('on_config_update');
+      expect(mocks.websocket.serverSend).toHaveBeenCalledWith('ConfigUpdate', update);
     });
   });
 
@@ -124,7 +125,7 @@ describe(NotificationService.name, () => {
   describe('onAssetHide', () => {
     it('should send connected clients an event', () => {
       sut.onAssetHide({ assetId: 'asset-id', userId: 'user-id' });
-      expect(mocks.event.clientSend).toHaveBeenCalledWith('on_asset_hidden', 'user-id', 'asset-id');
+      expect(mocks.websocket.clientSend).toHaveBeenCalledWith('on_asset_hidden', 'user-id', 'asset-id');
     });
   });
 
@@ -177,67 +178,67 @@ describe(NotificationService.name, () => {
     it('should send a on_session_delete client event', () => {
       vi.useFakeTimers();
       sut.onSessionDelete({ sessionId: 'id' });
-      expect(mocks.event.clientSend).not.toHaveBeenCalled();
+      expect(mocks.websocket.clientSend).not.toHaveBeenCalled();
 
       vi.advanceTimersByTime(500);
 
-      expect(mocks.event.clientSend).toHaveBeenCalledWith('on_session_delete', 'id', 'id');
+      expect(mocks.websocket.clientSend).toHaveBeenCalledWith('on_session_delete', 'id', 'id');
     });
   });
 
   describe('onAssetTrash', () => {
-    it('should send connected clients an event', () => {
+    it('should send connected clients an websocket', () => {
       sut.onAssetTrash({ assetId: 'asset-id', userId: 'user-id' });
-      expect(mocks.event.clientSend).toHaveBeenCalledWith('on_asset_trash', 'user-id', ['asset-id']);
+      expect(mocks.websocket.clientSend).toHaveBeenCalledWith('on_asset_trash', 'user-id', ['asset-id']);
     });
   });
 
   describe('onAssetDelete', () => {
     it('should send connected clients an event', () => {
       sut.onAssetDelete({ assetId: 'asset-id', userId: 'user-id' });
-      expect(mocks.event.clientSend).toHaveBeenCalledWith('on_asset_delete', 'user-id', 'asset-id');
+      expect(mocks.websocket.clientSend).toHaveBeenCalledWith('on_asset_delete', 'user-id', 'asset-id');
     });
   });
 
   describe('onAssetsTrash', () => {
     it('should send connected clients an event', () => {
       sut.onAssetsTrash({ assetIds: ['asset-id'], userId: 'user-id' });
-      expect(mocks.event.clientSend).toHaveBeenCalledWith('on_asset_trash', 'user-id', ['asset-id']);
+      expect(mocks.websocket.clientSend).toHaveBeenCalledWith('on_asset_trash', 'user-id', ['asset-id']);
     });
   });
 
   describe('onAssetsRestore', () => {
     it('should send connected clients an event', () => {
       sut.onAssetsRestore({ assetIds: ['asset-id'], userId: 'user-id' });
-      expect(mocks.event.clientSend).toHaveBeenCalledWith('on_asset_restore', 'user-id', ['asset-id']);
+      expect(mocks.websocket.clientSend).toHaveBeenCalledWith('on_asset_restore', 'user-id', ['asset-id']);
     });
   });
 
   describe('onStackCreate', () => {
     it('should send connected clients an event', () => {
       sut.onStackCreate({ stackId: 'stack-id', userId: 'user-id' });
-      expect(mocks.event.clientSend).toHaveBeenCalledWith('on_asset_stack_update', 'user-id');
+      expect(mocks.websocket.clientSend).toHaveBeenCalledWith('on_asset_stack_update', 'user-id');
     });
   });
 
   describe('onStackUpdate', () => {
     it('should send connected clients an event', () => {
       sut.onStackUpdate({ stackId: 'stack-id', userId: 'user-id' });
-      expect(mocks.event.clientSend).toHaveBeenCalledWith('on_asset_stack_update', 'user-id');
+      expect(mocks.websocket.clientSend).toHaveBeenCalledWith('on_asset_stack_update', 'user-id');
     });
   });
 
   describe('onStackDelete', () => {
     it('should send connected clients an event', () => {
       sut.onStackDelete({ stackId: 'stack-id', userId: 'user-id' });
-      expect(mocks.event.clientSend).toHaveBeenCalledWith('on_asset_stack_update', 'user-id');
+      expect(mocks.websocket.clientSend).toHaveBeenCalledWith('on_asset_stack_update', 'user-id');
     });
   });
 
   describe('onStacksDelete', () => {
     it('should send connected clients an event', () => {
       sut.onStacksDelete({ stackIds: ['stack-id'], userId: 'user-id' });
-      expect(mocks.event.clientSend).toHaveBeenCalledWith('on_asset_stack_update', 'user-id');
+      expect(mocks.websocket.clientSend).toHaveBeenCalledWith('on_asset_stack_update', 'user-id');
     });
   });
 

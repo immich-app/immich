@@ -14,6 +14,7 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/favorite_actio
 import 'package:immich_mobile/presentation/widgets/action_buttons/motion_photo_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/unfavorite_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
+import 'package:immich_mobile/providers/activity.provider.dart';
 import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
@@ -53,6 +54,10 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
     int opacity = ref.watch(assetViewerProvider.select((state) => state.backgroundOpacity));
     final showControls = ref.watch(assetViewerProvider.select((s) => s.showingControls));
 
+    if (album != null && album.isActivityEnabled && album.isShared && asset is RemoteAsset) {
+      ref.watch(albumActivityProvider(album.id, asset.id));
+    }
+
     if (!showControls) {
       opacity = 0;
     }
@@ -66,7 +71,7 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
         IconButton(
           icon: const Icon(Icons.chat_outlined),
           onPressed: () {
-            context.navigateTo(const DriftActivitiesRoute());
+            EventStream.shared.emit(const ViewerOpenBottomSheetEvent(activitiesMode: true));
           },
         ),
       if (showViewInTimelineButton)

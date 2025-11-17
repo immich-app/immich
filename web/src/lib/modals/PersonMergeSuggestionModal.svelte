@@ -1,12 +1,8 @@
 <script lang="ts">
-  import {
-    notificationController,
-    NotificationType,
-  } from '$lib/components/shared-components/notification/notification';
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { mergePerson, type PersonResponseDto } from '@immich/sdk';
-  import { Button, HStack, Icon, IconButton, Modal, ModalBody, ModalFooter } from '@immich/ui';
+  import { Button, HStack, Icon, IconButton, Modal, ModalBody, ModalFooter, toastManager } from '@immich/ui';
   import { mdiArrowLeft, mdiCallMerge, mdiSwapHorizontal } from '@mdi/js';
   import { onMount, tick } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -42,11 +38,7 @@
         id: personToBeMergedInto.id,
         mergePersonDto: { ids: [personToMerge.id] },
       });
-
-      notificationController.show({
-        message: $t('merge_people_successfully'),
-        type: NotificationType.Info,
-      });
+      toastManager.success($t('merge_people_successfully'));
       onClose([personToMerge, personToBeMergedInto]);
     } catch (error) {
       handleError(error, $t('errors.unable_to_save_name'));

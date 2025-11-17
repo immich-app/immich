@@ -1,46 +1,28 @@
 <script lang="ts">
-  import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
+  import SettingButtonsRow from '$lib/components/shared-components/settings/SystemConfigButtonRow.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
-  import type { SystemConfigDto } from '@immich/sdk';
-  import { isEqual } from 'lodash-es';
+  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
+  import { systemConfigManager } from '$lib/managers/system-config-manager.svelte';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
-  import type { SettingsResetEvent, SettingsSaveEvent } from './admin-settings';
 
-  interface Props {
-    savedConfig: SystemConfigDto;
-    defaultConfig: SystemConfigDto;
-    config: SystemConfigDto;
-    disabled?: boolean;
-    onReset: SettingsResetEvent;
-    onSave: SettingsSaveEvent;
-  }
-
-  let { savedConfig, defaultConfig, config = $bindable(), disabled = false, onReset, onSave }: Props = $props();
-
-  const onsubmit = (event: Event) => {
-    event.preventDefault();
-  };
+  const disabled = $derived(featureFlagsManager.value.configFile);
+  let configToEdit = $state(systemConfigManager.cloneValue());
 </script>
 
 <div class="mt-2">
   <div in:fade={{ duration: 500 }}>
-    <form autocomplete="off" {onsubmit} class="mx-4 mt-4">
+    <form autocomplete="off" class="mx-4 mt-4" onsubmit={(event) => event.preventDefault()}>
       <div class="ms-4 mt-4 flex flex-col gap-4">
         <SettingSwitch
           title={$t('admin.metadata_faces_import_setting')}
           subtitle={$t('admin.metadata_faces_import_setting_description')}
-          bind:checked={config.metadata.faces.import}
+          bind:checked={configToEdit.metadata.faces.import}
           {disabled}
         />
       </div>
 
-      <SettingButtonsRow
-        onReset={(options) => onReset({ ...options, configKeys: ['metadata'] })}
-        onSave={() => onSave({ metadata: config.metadata })}
-        showResetToDefault={!isEqual(savedConfig.metadata.faces.import, defaultConfig.metadata.faces.import)}
-        {disabled}
-      />
+      <SettingButtonsRow bind:configToEdit keys={['metadata']} {disabled} />
     </form>
   </div>
 </div>

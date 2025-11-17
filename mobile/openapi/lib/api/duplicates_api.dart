@@ -16,7 +16,9 @@ class DuplicatesApi {
 
   final ApiClient apiClient;
 
-  /// This endpoint requires the `duplicate.delete` permission.
+  /// Delete a duplicate
+  ///
+  /// Delete a single duplicate asset specified by its ID.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -49,7 +51,9 @@ class DuplicatesApi {
     );
   }
 
-  /// This endpoint requires the `duplicate.delete` permission.
+  /// Delete a duplicate
+  ///
+  /// Delete a single duplicate asset specified by its ID.
   ///
   /// Parameters:
   ///
@@ -61,7 +65,9 @@ class DuplicatesApi {
     }
   }
 
-  /// This endpoint requires the `duplicate.delete` permission.
+  /// Delete duplicates
+  ///
+  /// Delete multiple duplicate assets specified by their IDs.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -93,7 +99,9 @@ class DuplicatesApi {
     );
   }
 
-  /// This endpoint requires the `duplicate.delete` permission.
+  /// Delete duplicates
+  ///
+  /// Delete multiple duplicate assets specified by their IDs.
   ///
   /// Parameters:
   ///
@@ -105,7 +113,9 @@ class DuplicatesApi {
     }
   }
 
-  /// This endpoint requires the `duplicate.read` permission.
+  /// Retrieve duplicates
+  ///
+  /// Retrieve a list of duplicate assets available to the authenticated user.
   ///
   /// Note: This method returns the HTTP [Response].
   Future<Response> getAssetDuplicatesWithHttpInfo() async {
@@ -133,7 +143,9 @@ class DuplicatesApi {
     );
   }
 
-  /// This endpoint requires the `duplicate.read` permission.
+  /// Retrieve duplicates
+  ///
+  /// Retrieve a list of duplicate assets available to the authenticated user.
   Future<List<DuplicateResponseDto>?> getAssetDuplicates() async {
     final response = await getAssetDuplicatesWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {

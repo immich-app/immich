@@ -16,7 +16,9 @@ class SystemConfigApi {
 
   final ApiClient apiClient;
 
-  /// This endpoint is an admin-only route, and requires the `systemConfig.read` permission.
+  /// Get system configuration
+  ///
+  /// Retrieve the current system configuration.
   ///
   /// Note: This method returns the HTTP [Response].
   Future<Response> getConfigWithHttpInfo() async {
@@ -44,7 +46,9 @@ class SystemConfigApi {
     );
   }
 
-  /// This endpoint is an admin-only route, and requires the `systemConfig.read` permission.
+  /// Get system configuration
+  ///
+  /// Retrieve the current system configuration.
   Future<SystemConfigDto?> getConfig() async {
     final response = await getConfigWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -60,7 +64,9 @@ class SystemConfigApi {
     return null;
   }
 
-  /// This endpoint is an admin-only route, and requires the `systemConfig.read` permission.
+  /// Get system configuration defaults
+  ///
+  /// Retrieve the default values for the system configuration.
   ///
   /// Note: This method returns the HTTP [Response].
   Future<Response> getConfigDefaultsWithHttpInfo() async {
@@ -88,7 +94,9 @@ class SystemConfigApi {
     );
   }
 
-  /// This endpoint is an admin-only route, and requires the `systemConfig.read` permission.
+  /// Get system configuration defaults
+  ///
+  /// Retrieve the default values for the system configuration.
   Future<SystemConfigDto?> getConfigDefaults() async {
     final response = await getConfigDefaultsWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -104,7 +112,9 @@ class SystemConfigApi {
     return null;
   }
 
-  /// This endpoint is an admin-only route, and requires the `systemConfig.read` permission.
+  /// Get storage template options
+  ///
+  /// Retrieve exemplary storage template options.
   ///
   /// Note: This method returns the HTTP [Response].
   Future<Response> getStorageTemplateOptionsWithHttpInfo() async {
@@ -132,7 +142,9 @@ class SystemConfigApi {
     );
   }
 
-  /// This endpoint is an admin-only route, and requires the `systemConfig.read` permission.
+  /// Get storage template options
+  ///
+  /// Retrieve exemplary storage template options.
   Future<SystemConfigTemplateStorageOptionDto?> getStorageTemplateOptions() async {
     final response = await getStorageTemplateOptionsWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -148,7 +160,9 @@ class SystemConfigApi {
     return null;
   }
 
-  /// This endpoint is an admin-only route, and requires the `systemConfig.update` permission.
+  /// Update system configuration
+  ///
+  /// Update the system configuration with a new system configuration.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -180,7 +194,9 @@ class SystemConfigApi {
     );
   }
 
-  /// This endpoint is an admin-only route, and requires the `systemConfig.update` permission.
+  /// Update system configuration
+  ///
+  /// Update the system configuration with a new system configuration.
   ///
   /// Parameters:
   ///

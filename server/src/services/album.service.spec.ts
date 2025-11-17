@@ -402,16 +402,16 @@ describe(AlbumService.name, () => {
       mocks.album.update.mockResolvedValue(albumStub.sharedWithAdmin);
       mocks.user.get.mockResolvedValue(userStub.user2);
       mocks.albumUser.create.mockResolvedValue({
-        usersId: userStub.user2.id,
-        albumsId: albumStub.sharedWithAdmin.id,
+        userId: userStub.user2.id,
+        albumId: albumStub.sharedWithAdmin.id,
         role: AlbumUserRole.Editor,
       });
       await sut.addUsers(authStub.user1, albumStub.sharedWithAdmin.id, {
         albumUsers: [{ userId: authStub.user2.user.id }],
       });
       expect(mocks.albumUser.create).toHaveBeenCalledWith({
-        usersId: authStub.user2.user.id,
-        albumsId: albumStub.sharedWithAdmin.id,
+        userId: authStub.user2.user.id,
+        albumId: albumStub.sharedWithAdmin.id,
       });
       expect(mocks.event.emit).toHaveBeenCalledWith('AlbumInvite', {
         id: albumStub.sharedWithAdmin.id,
@@ -439,8 +439,8 @@ describe(AlbumService.name, () => {
 
       expect(mocks.albumUser.delete).toHaveBeenCalledTimes(1);
       expect(mocks.albumUser.delete).toHaveBeenCalledWith({
-        albumsId: albumStub.sharedWithUser.id,
-        usersId: userStub.user1.id,
+        albumId: albumStub.sharedWithUser.id,
+        userId: userStub.user1.id,
       });
       expect(mocks.album.getById).toHaveBeenCalledWith(albumStub.sharedWithUser.id, { withAssets: false });
     });
@@ -467,8 +467,8 @@ describe(AlbumService.name, () => {
 
       expect(mocks.albumUser.delete).toHaveBeenCalledTimes(1);
       expect(mocks.albumUser.delete).toHaveBeenCalledWith({
-        albumsId: albumStub.sharedWithUser.id,
-        usersId: authStub.user1.user.id,
+        albumId: albumStub.sharedWithUser.id,
+        userId: authStub.user1.user.id,
       });
     });
 
@@ -480,8 +480,8 @@ describe(AlbumService.name, () => {
 
       expect(mocks.albumUser.delete).toHaveBeenCalledTimes(1);
       expect(mocks.albumUser.delete).toHaveBeenCalledWith({
-        albumsId: albumStub.sharedWithUser.id,
-        usersId: authStub.user1.user.id,
+        albumId: albumStub.sharedWithUser.id,
+        userId: authStub.user1.user.id,
       });
     });
 
@@ -515,7 +515,7 @@ describe(AlbumService.name, () => {
         role: AlbumUserRole.Editor,
       });
       expect(mocks.albumUser.update).toHaveBeenCalledWith(
-        { albumsId: albumStub.sharedWithAdmin.id, usersId: userStub.admin.id },
+        { albumId: albumStub.sharedWithAdmin.id, userId: userStub.admin.id },
         { role: AlbumUserRole.Editor },
       );
     });
@@ -804,12 +804,12 @@ describe(AlbumService.name, () => {
         albumThumbnailAssetId: 'asset-1',
       });
       expect(mocks.album.addAssetIdsToAlbums).toHaveBeenCalledWith([
-        { albumsId: 'album-123', assetsId: 'asset-1' },
-        { albumsId: 'album-123', assetsId: 'asset-2' },
-        { albumsId: 'album-123', assetsId: 'asset-3' },
-        { albumsId: 'album-321', assetsId: 'asset-1' },
-        { albumsId: 'album-321', assetsId: 'asset-2' },
-        { albumsId: 'album-321', assetsId: 'asset-3' },
+        { albumId: 'album-123', assetId: 'asset-1' },
+        { albumId: 'album-123', assetId: 'asset-2' },
+        { albumId: 'album-123', assetId: 'asset-3' },
+        { albumId: 'album-321', assetId: 'asset-1' },
+        { albumId: 'album-321', assetId: 'asset-2' },
+        { albumId: 'album-321', assetId: 'asset-3' },
       ]);
     });
 
@@ -840,12 +840,12 @@ describe(AlbumService.name, () => {
         albumThumbnailAssetId: 'asset-id',
       });
       expect(mocks.album.addAssetIdsToAlbums).toHaveBeenCalledWith([
-        { albumsId: 'album-123', assetsId: 'asset-1' },
-        { albumsId: 'album-123', assetsId: 'asset-2' },
-        { albumsId: 'album-123', assetsId: 'asset-3' },
-        { albumsId: 'album-321', assetsId: 'asset-1' },
-        { albumsId: 'album-321', assetsId: 'asset-2' },
-        { albumsId: 'album-321', assetsId: 'asset-3' },
+        { albumId: 'album-123', assetId: 'asset-1' },
+        { albumId: 'album-123', assetId: 'asset-2' },
+        { albumId: 'album-123', assetId: 'asset-3' },
+        { albumId: 'album-321', assetId: 'asset-1' },
+        { albumId: 'album-321', assetId: 'asset-2' },
+        { albumId: 'album-321', assetId: 'asset-3' },
       ]);
     });
 
@@ -876,12 +876,12 @@ describe(AlbumService.name, () => {
         albumThumbnailAssetId: 'asset-1',
       });
       expect(mocks.album.addAssetIdsToAlbums).toHaveBeenCalledWith([
-        { albumsId: 'album-123', assetsId: 'asset-1' },
-        { albumsId: 'album-123', assetsId: 'asset-2' },
-        { albumsId: 'album-123', assetsId: 'asset-3' },
-        { albumsId: 'album-321', assetsId: 'asset-1' },
-        { albumsId: 'album-321', assetsId: 'asset-2' },
-        { albumsId: 'album-321', assetsId: 'asset-3' },
+        { albumId: 'album-123', assetId: 'asset-1' },
+        { albumId: 'album-123', assetId: 'asset-2' },
+        { albumId: 'album-123', assetId: 'asset-3' },
+        { albumId: 'album-321', assetId: 'asset-1' },
+        { albumId: 'album-321', assetId: 'asset-2' },
+        { albumId: 'album-321', assetId: 'asset-3' },
       ]);
       expect(mocks.event.emit).toHaveBeenCalledWith('AlbumUpdate', {
         id: 'album-123',
@@ -936,9 +936,9 @@ describe(AlbumService.name, () => {
         albumThumbnailAssetId: 'asset-1',
       });
       expect(mocks.album.addAssetIdsToAlbums).toHaveBeenCalledWith([
-        { albumsId: 'album-123', assetsId: 'asset-1' },
-        { albumsId: 'album-123', assetsId: 'asset-2' },
-        { albumsId: 'album-123', assetsId: 'asset-3' },
+        { albumId: 'album-123', assetId: 'asset-1' },
+        { albumId: 'album-123', assetId: 'asset-2' },
+        { albumId: 'album-123', assetId: 'asset-3' },
       ]);
       expect(mocks.event.emit).toHaveBeenCalledWith('AlbumUpdate', {
         id: 'album-123',
@@ -977,12 +977,12 @@ describe(AlbumService.name, () => {
         albumThumbnailAssetId: 'asset-1',
       });
       expect(mocks.album.addAssetIdsToAlbums).toHaveBeenCalledWith([
-        { albumsId: 'album-123', assetsId: 'asset-1' },
-        { albumsId: 'album-123', assetsId: 'asset-2' },
-        { albumsId: 'album-123', assetsId: 'asset-3' },
-        { albumsId: 'album-321', assetsId: 'asset-1' },
-        { albumsId: 'album-321', assetsId: 'asset-2' },
-        { albumsId: 'album-321', assetsId: 'asset-3' },
+        { albumId: 'album-123', assetId: 'asset-1' },
+        { albumId: 'album-123', assetId: 'asset-2' },
+        { albumId: 'album-123', assetId: 'asset-3' },
+        { albumId: 'album-321', assetId: 'asset-1' },
+        { albumId: 'album-321', assetId: 'asset-2' },
+        { albumId: 'album-321', assetId: 'asset-3' },
       ]);
       expect(mocks.access.asset.checkPartnerAccess).toHaveBeenCalledWith(
         authStub.admin.user.id,
@@ -1014,9 +1014,9 @@ describe(AlbumService.name, () => {
         albumThumbnailAssetId: 'asset-1',
       });
       expect(mocks.album.addAssetIdsToAlbums).toHaveBeenCalledWith([
-        { albumsId: 'album-321', assetsId: 'asset-1' },
-        { albumsId: 'album-321', assetsId: 'asset-2' },
-        { albumsId: 'album-321', assetsId: 'asset-3' },
+        { albumId: 'album-321', assetId: 'asset-1' },
+        { albumId: 'album-321', assetId: 'asset-2' },
+        { albumId: 'album-321', assetId: 'asset-3' },
       ]);
     });
 

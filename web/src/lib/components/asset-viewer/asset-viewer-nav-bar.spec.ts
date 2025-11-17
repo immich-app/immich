@@ -32,6 +32,10 @@ describe('AssetViewerNavBar component', () => {
       'ResizeObserver',
       vi.fn(() => ({ observe: vi.fn(), unobserve: vi.fn(), disconnect: vi.fn() })),
     );
+    vi.mock(import('$lib/managers/feature-flags-manager.svelte'), () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return { featureFlagsManager: { init: vi.fn(), loadFeatureFlags: vi.fn(), value: { smartSearch: true } } as any };
+    });
   });
 
   afterEach(() => {

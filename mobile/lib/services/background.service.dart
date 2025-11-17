@@ -291,7 +291,7 @@ class BackgroundService {
       case "backgroundProcessing":
       case "onAssetsChanged":
         try {
-          _clearErrorNotifications();
+          unawaited(_clearErrorNotifications());
 
           // iOS should time out after some threshold so it doesn't wait
           // indefinitely and can run later
@@ -342,7 +342,7 @@ class BackgroundService {
     );
 
     HttpSSLOptions.apply();
-    ref.read(apiServiceProvider).setAccessToken(Store.get(StoreKey.accessToken));
+    await ref.read(apiServiceProvider).setAccessToken(Store.get(StoreKey.accessToken));
     await ref.read(authServiceProvider).setOpenApiServiceEndpoint();
     dPrint(() => "[BG UPLOAD] Using endpoint: ${ref.read(apiServiceProvider).apiClient.basePath}");
 
@@ -385,7 +385,7 @@ class BackgroundService {
         await ref.read(backupAlbumRepositoryProvider).deleteAll(toDelete);
         await ref.read(backupAlbumRepositoryProvider).updateAll(toUpsert);
       } else if (Store.tryGet(StoreKey.backupFailedSince) == null) {
-        Store.put(StoreKey.backupFailedSince, DateTime.now());
+        await Store.put(StoreKey.backupFailedSince, DateTime.now());
         return false;
       }
       // Android should check for new assets added while performing backup
@@ -412,9 +412,11 @@ class BackgroundService {
     try {
       toUpload = await backupService.removeAlreadyUploadedAssets(toUpload);
     } catch (e) {
-      _showErrorNotification(
-        title: "backup_background_service_error_title".tr(),
-        content: "backup_background_service_connection_failed_message".tr(),
+      unawaited(
+        _showErrorNotification(
+          title: "backup_background_service_error_title".tr(),
+          content: "backup_background_service_connection_failed_message".tr(),
+        ),
       );
       return false;
     }
@@ -428,13 +430,15 @@ class BackgroundService {
     }
     _assetsToUploadCount = toUpload.length;
     _uploadedAssetsCount = 0;
-    _updateNotification(
-      title: "backup_background_service_in_progress_notification".tr(),
-      content: notifyTotalProgress ? formatAssetBackupProgress(_uploadedAssetsCount, _assetsToUploadCount) : null,
-      progress: 0,
-      max: notifyTotalProgress ? _assetsToUploadCount : 0,
-      indeterminate: !notifyTotalProgress,
-      onlyIfFG: !notifyTotalProgress,
+    unawaited(
+      _updateNotification(
+        title: "backup_background_service_in_progress_notification".tr(),
+        content: notifyTotalProgress ? formatAssetBackupProgress(_uploadedAssetsCount, _assetsToUploadCount) : null,
+        progress: 0,
+        max: notifyTotalProgress ? _assetsToUploadCount : 0,
+        indeterminate: !notifyTotalProgress,
+        onlyIfFG: !notifyTotalProgress,
+      ),
     );
 
     _cancellationToken = CancellationToken();
@@ -452,9 +456,11 @@ class BackgroundService {
     );
 
     if (!ok && !_cancellationToken!.isCancelled) {
-      _showErrorNotification(
-        title: "backup_background_service_error_title".tr(),
-        content: "backup_background_service_backup_failed_message".tr(),
+      unawaited(
+        _showErrorNotification(
+          title: "backup_background_service_error_title".tr(),
+          content: "backup_background_service_backup_failed_message".tr(),
+        ),
       );
     }
 

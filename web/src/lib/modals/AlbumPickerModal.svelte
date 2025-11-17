@@ -148,7 +148,7 @@
 
 <Modal title={shared ? $t('add_to_shared_album') : $t('add_to_album')} {onClose} size="small">
   <ModalBody>
-    <div class="mb-2 flex max-h-[400px] flex-col">
+    <div class="mb-2 flex max-h-100 flex-col">
       {#if loading}
         <!-- eslint-disable-next-line svelte/require-each-key -->
         {#each { length: 3 } as _}

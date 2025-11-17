@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -29,8 +31,8 @@ class AlbumSharedUserSelectionPage extends HookConsumerWidget {
 
       if (newAlbum != null) {
         ref.watch(albumTitleProvider.notifier).clearAlbumTitle();
-        context.maybePop(true);
-        context.navigateTo(const TabControllerRoute(children: [AlbumsRoute()]));
+        unawaited(context.maybePop(true));
+        unawaited(context.navigateTo(const TabControllerRoute(children: [AlbumsRoute()])));
       }
 
       ScaffoldMessenger(
@@ -109,8 +111,8 @@ class AlbumSharedUserSelectionPage extends HookConsumerWidget {
         centerTitle: false,
         leading: IconButton(
           icon: const Icon(Icons.close_rounded),
-          onPressed: () async {
-            context.maybePop();
+          onPressed: () {
+            unawaited(context.maybePop());
           },
         ),
         actions: [

@@ -16,10 +16,10 @@
 {#if downloadManager.isDownloading}
   <div
     transition:fly={{ x: -100, duration: 350 }}
-    class="fixed bottom-10 start-2 max-h-[270px] w-[315px] rounded-2xl border dark:border-white/10 p-4 shadow-lg bg-subtle"
+    class="fixed bottom-10 start-2 max-h-67.5 w-79 rounded-2xl border dark:border-white/10 p-4 shadow-lg bg-subtle"
   >
     <Heading size="tiny">{$t('downloading')}</Heading>
-    <div class="my-2 mb-2 flex max-h-[200px] flex-col overflow-y-auto text-sm">
+    <div class="my-2 mb-2 flex max-h-50 flex-col overflow-y-auto text-sm">
       {#each Object.keys(downloadManager.assets) as downloadKey (downloadKey)}
         {@const download = downloadManager.assets[downloadKey]}
         <div class="mb-2 flex place-items-center" transition:slide>
@@ -31,10 +31,10 @@
               {/if}
             </div>
             <div class="flex place-items-center gap-2">
-              <div class="h-[10px] w-full rounded-full bg-neutral-200 dark:bg-neutral-600">
-                <div class="h-[10px] rounded-full bg-primary" style={`width: ${download.percentage}%`}></div>
+              <div class="h-2.5 w-full rounded-full bg-neutral-200 dark:bg-neutral-600">
+                <div class="h-2.5 rounded-full bg-primary" style={`width: ${download.percentage}%`}></div>
               </div>
-              <p class="min-w-[4em] whitespace-nowrap text-right">
+              <p class="min-w-16 whitespace-nowrap text-right">
                 <span class="text-primary">
                   {(download.percentage / 100).toLocaleString($locale, { style: 'percent' })}
                 </span>

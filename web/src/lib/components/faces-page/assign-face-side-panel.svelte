@@ -73,7 +73,7 @@
 
 <section
   transition:fly={{ x: 360, duration: 100, easing: linear }}
-  class="absolute top-0 h-full w-[360px] overflow-x-hidden p-2 dark:text-immich-dark-fg bg-light"
+  class="absolute top-0 h-full w-90 overflow-x-hidden p-2 dark:text-immich-dark-fg bg-light"
 >
   <div class="flex place-items-center justify-between gap-2">
     {#if !searchFaces}
@@ -157,7 +157,7 @@
         {#each showPeople as person (person.id)}
           {#if !editedFace.person || person.id !== editedFace.person.id}
             <div class="w-fit">
-              <button type="button" class="w-[90px]" onclick={() => onReassign(person)}>
+              <button type="button" class="w-22.5" onclick={() => onReassign(person)}>
                 <div class="relative">
                   <ImageThumbnail
                     curve

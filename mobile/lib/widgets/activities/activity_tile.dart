@@ -1,16 +1,19 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/datetime_extensions.dart';
 import 'package:immich_mobile/models/activities/activity.model.dart';
+import 'package:immich_mobile/providers/activity_service.provider.dart';
 import 'package:immich_mobile/providers/image/immich_remote_thumbnail_provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/widgets/common/user_circle_avatar.dart';
 
 class ActivityTile extends HookConsumerWidget {
   final Activity activity;
+  final bool isBottomSheet;
 
-  const ActivityTile(this.activity, {super.key});
+  const ActivityTile(this.activity, {super.key, this.isBottomSheet = false});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -18,25 +21,35 @@ class ActivityTile extends HookConsumerWidget {
     final isLike = activity.type == ActivityType.like;
     // Asset thumbnail is displayed when we are accessing activities from the album page
     // currentAssetProvider will not be set until we open the gallery viewer
-    final showAssetThumbnail = asset == null && activity.assetId != null;
+    final showAssetThumbnail = asset == null && activity.assetId != null && !isBottomSheet;
+
+    onTap() async {
+      final activityService = ref.read(activityServiceProvider);
+      final route = await activityService.buildAssetViewerRoute(activity.assetId!, ref);
+      if (route != null) {
+        await context.pushRoute(route);
+      }
+    }
 
     return ListTile(
       minVerticalPadding: 15,
       leading: isLike
           ? Container(
-              width: 44,
+              width: isBottomSheet ? 30 : 44,
               alignment: Alignment.center,
               child: Icon(Icons.favorite_rounded, color: Colors.red[700]),
             )
+          : isBottomSheet
+          ? UserCircleAvatar(user: activity.user, size: 30, radius: 15)
           : UserCircleAvatar(user: activity.user),
       title: _ActivityTitle(
         userName: activity.user.name,
         createdAt: activity.createdAt.timeAgo(),
-        leftAlign: isLike || showAssetThumbnail,
+        leftAlign: isBottomSheet ? false : (isLike || showAssetThumbnail),
       ),
       // No subtitle for like, so center title
       titleAlignment: !isLike ? ListTileTitleAlignment.top : ListTileTitleAlignment.center,
-      trailing: showAssetThumbnail ? _ActivityAssetThumbnail(activity.assetId!) : null,
+      trailing: showAssetThumbnail ? _ActivityAssetThumbnail(activity.assetId!, onTap) : null,
       subtitle: !isLike ? Text(activity.comment!) : null,
     );
   }
@@ -75,22 +88,26 @@ class _ActivityTitle extends StatelessWidget {
 
 class _ActivityAssetThumbnail extends StatelessWidget {
   final String assetId;
+  final GestureTapCallback? onTap;
 
-  const _ActivityAssetThumbnail(this.assetId);
+  const _ActivityAssetThumbnail(this.assetId, this.onTap);
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 40,
-      height: 30,
-      decoration: BoxDecoration(
-        borderRadius: const BorderRadius.all(Radius.circular(4)),
-        image: DecorationImage(
-          image: ImmichRemoteThumbnailProvider(assetId: assetId),
-          fit: BoxFit.cover,
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 40,
+        height: 30,
+        decoration: BoxDecoration(
+          borderRadius: const BorderRadius.all(Radius.circular(4)),
+          image: DecorationImage(
+            image: ImmichRemoteThumbnailProvider(assetId: assetId),
+            fit: BoxFit.cover,
+          ),
         ),
+        child: const SizedBox.shrink(),
       ),
-      child: const SizedBox.shrink(),
     );
   }
 }

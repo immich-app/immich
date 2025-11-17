@@ -173,6 +173,7 @@ export function mapUserAdmin(entity: UserAdmin): UserAdminResponseDto {
   const license = metadata.find(
     (item): item is UserMetadataItem<UserMetadataKey.License> => item.key === UserMetadataKey.License,
   )?.value;
+
   return {
     ...mapUser(entity),
     storageLabel: entity.storageLabel,

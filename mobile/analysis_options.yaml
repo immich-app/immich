@@ -17,7 +17,7 @@ linter:
   # section below to disable rules from the `package:flutter_lints/flutter.yaml`
   # included above or to enable additional rules. A list of all available lints
   # and their documentation is published at
-  # https://dart-lang.github.io/linter/lints/index.html.
+  # https://dart.dev/tools/linter-rules
   #
   # Instead of disabling a lint rule for the entire project in the
   # section below, it can also be suppressed for a single line of code
@@ -28,6 +28,7 @@ linter:
   rules:
     # avoid_print: false  # Uncomment to disable the `avoid_print` rule
     # prefer_single_quotes: true # Uncomment to enable the `prefer_single_quotes` rule
+    unawaited_futures: true
     use_build_context_synchronously: false
     require_trailing_commas: true
     unrelated_type_equality_checks: true
@@ -46,6 +47,8 @@ analyzer:
   # TODO: Re-enable after upgrading custom_lint
   # plugins:
   #   - custom_lint
+  errors:
+    unawaited_futures: warning
 
 custom_lint:
   debug: true
@@ -152,160 +155,6 @@ dart_code_metrics:
   #  - avoid-passing-async-when-sync-expected
   #  - avoid-throw-in-catch-block
     - avoid-unused-parameters
-  #  - avoid-unnecessary-type-assertions
-  #  - avoid-unnecessary-type-casts
-  #  - avoid-unrelated-type-assertions
-  #  - avoid-unrelated-type-casts
-  #  - no-empty-block
-  #  - no-equal-then-else
-  #  - prefer-correct-test-file-name
     - prefer-const-border-radius
-  #  - prefer-match-file-name
-  #  - prefer-return-await
-  #  - avoid-self-assignment
-  #  - avoid-self-compare
-  #  - avoid-shadowing
-  #  - prefer-iterable-of
-  #  - no-equal-switch-case
-  #  - no-equal-conditions
-  #  - avoid-equal-expressions
-  #  - avoid-missed-calls
-  #  - avoid-unnecessary-negations
-  #  - avoid-unused-generics
-  #  - function-always-returns-null
-  #  - avoid-throw-objects-without-tostring
-  #  - avoid-unsafe-collection-methods
-  #  - prefer-wildcard-pattern
-  #  - no-equal-switch-expression-cases
-  #  - avoid-future-tostring
-  #  - avoid-unassigned-late-fields
-  #  - avoid-nested-futures
-  #  - avoid-generics-shadowing
-  #  - prefer-parentheses-with-if-null
-  #  - no-equal-nested-conditions
-  #  - avoid-shadowed-extension-methods
-  #  - avoid-unnecessary-conditionals
-  #  - avoid-double-slash-imports
-  #  - avoid-map-keys-contains
-  #  - prefer-correct-json-casts
-  #  - avoid-duplicate-mixins
-  #  - avoid-nullable-interpolation
-  #  - avoid-unused-instances
-  #  - prefer-correct-for-loop-increment
-  #  - prefer-public-exception-classes
-  #  - avoid-uncaught-future-errors
-  #  - always-remove-listener
-  #  - avoid-unnecessary-setstate
-  #  - check-for-equals-in-render-object-setters
-  #  - consistent-update-render-object
-  #  - use-setstate-synchronously
-  #  - avoid-incomplete-copy-with
-  #  - proper-super-calls
-  #  - dispose-fields
-  #  - avoid-empty-setstate
-  #  - avoid-state-constructors
-  #  - avoid-recursive-widget-calls
-  #  - avoid-missing-image-alt
-  #  - avoid-passing-self-as-argument
-  #  - avoid-unnecessary-if
-  #  - avoid-unconditional-break
-  #  - avoid-referencing-discarded-variables
-  #  - avoid-unnecessary-local-late
-  #  - avoid-wildcard-cases-with-enums
-  #  - match-getter-setter-field-names
-  #  - avoid-accessing-collections-by-constant-index
-  #  - prefer-unique-test-names
-  #  - avoid-duplicate-cascades
-  #  - prefer-specific-cases-first
-  #  - avoid-duplicate-switch-case-conditions
-  #  - prefer-explicit-function-type
-  #  - avoid-misused-test-matchers
-  #  - avoid-duplicate-test-assertions
-  #  - prefer-switch-with-enums
-  #  - prefer-any-or-every
-  #  - avoid-duplicate-map-keys
-  #  - avoid-nullable-tostring
-  #  - avoid-undisposed-instances
-  #  - avoid-duplicate-initializers
-  #  - avoid-unassigned-stream-subscriptions
-  #  - avoid-empty-test-groups
-  #  - avoid-not-encodable-in-to-json
-  #  - avoid-contradictory-expressions
-  #  - avoid-excessive-expressions
-  #  - prefer-private-extension-type-field
-  #  - avoid-renaming-representation-getters
-  #  - avoid-empty-spread
-  #  - avoid-unnecessary-gesture-detector
-  #  - avoid-missing-completer-stack-trace
-  #  - avoid-casting-to-extension-type
-  #  - prefer-overriding-parent-equality
-  #  - avoid-missing-controller
-  #  - avoid-unknown-pragma
-  #  - avoid-conditions-with-boolean-literals
-  #  - avoid-multi-assignment
-  #  - avoid-collection-equality-checks
-  #  - avoid-only-rethrow
-  #  - avoid-incorrect-image-opacity
-  #  - avoid-misused-set-literals
-  #  - dispose-class-fields
-  #  - avoid-suspicious-super-overrides
-  #  - avoid-assignments-as-conditions
-  #  - avoid-unused-assignment
-  #  - avoid-unnecessary-overrides
-  #  - avoid-implicitly-nullable-extension-types
-    # Enable with the next release
-    # - avoid-late-final-reassignment
-    # - avoid-duplicate-constant-values
-    # - function-always-returns-same-value
-    # - avoid-flexible-outside-flex
-    # - avoid-unnecessary-patterns
-    # - use-closest-build-context
-    # - avoid-commented-out-code
-    # - avoid-recursive-tostring
-    # - avoid-enum-values-by-index
-    # - avoid-constant-assert-conditions
-    # - avoid-inconsistent-digit-separators
-    # - pass-existing-future-to-future-builder
-    # - pass-existing-stream-to-stream-builder
-
-    # Code simplification
-  #  - avoid-redundant-async
-  #  - avoid-redundant-else
-  #  - avoid-unnecessary-nullable-return-type
-  #  - avoid-redundant-pragma-inline
-  #  - avoid-nested-records
-  #  - avoid-redundant-positional-field-name
-  #  - avoid-explicit-pattern-field-name
-  #  - prefer-simpler-patterns-null-check
-  #  - avoid-unnecessary-return
-  #  - avoid-duplicate-patterns
-  #  - avoid-keywords-in-wildcard-pattern
-  #  - avoid-unnecessary-futures
-  #  - avoid-unnecessary-reassignment
-  #  - avoid-unnecessary-call
-  #  - avoid-unnecessary-stateful-widgets
-  #  - prefer-dedicated-media-query-methods
-  #  - avoid-unnecessary-overrides-in-state
-  #  - move-variable-closer-to-its-usage
-  #  - avoid-nullable-parameters-with-default-values
-  #  - prefer-null-aware-spread
-  #  - avoid-inferrable-type-arguments
-  #  - avoid-unnecessary-super
-  #  - avoid-unnecessary-collections
-  #  - avoid-unnecessary-extends
-  #  - avoid-unnecessary-enum-arguments
-  #  - prefer-contains
-    # Enable with the next release
-    # - prefer-simpler-boolean-expressions
-    # - prefer-spacing
-    # - avoid-unnecessary-continue
-    # - avoid-unnecessary-compare-to
-
-    # Style
-  #  - prefer-trailing-comma
-  #  - unnecessary-trailing-comma
     - prefer-declaring-const-constructor
-  #  - prefer-single-widget-per-file
     - prefer-switch-expression
-  #  - prefer-prefixed-global-constants
-  #  - prefer-correct-callback-field-name

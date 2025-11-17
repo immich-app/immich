@@ -29,7 +29,7 @@ export const album_user_after_insert = registerFunction({
   body: `
     BEGIN
       UPDATE album SET "updatedAt" = clock_timestamp(), "updateId" = immich_uuid_v7(clock_timestamp())
-      WHERE "id" IN (SELECT DISTINCT "albumsId" FROM inserted_rows);
+      WHERE "id" IN (SELECT DISTINCT "albumId" FROM inserted_rows);
       RETURN NULL;
     END`,
 });
@@ -139,8 +139,8 @@ export const album_asset_delete_audit = registerFunction({
   body: `
     BEGIN
       INSERT INTO album_asset_audit ("albumId", "assetId")
-      SELECT "albumsId", "assetsId" FROM OLD
-      WHERE "albumsId" IN (SELECT "id" FROM album WHERE "id" IN (SELECT "albumsId" FROM OLD));
+      SELECT "albumId", "assetId" FROM OLD
+      WHERE "albumId" IN (SELECT "id" FROM album WHERE "id" IN (SELECT "albumId" FROM OLD));
       RETURN NULL;
     END`,
 });
@@ -152,12 +152,12 @@ export const album_user_delete_audit = registerFunction({
   body: `
     BEGIN
       INSERT INTO album_audit ("albumId", "userId")
-      SELECT "albumsId", "usersId"
+      SELECT "albumId", "userId"
       FROM OLD;
 
       IF pg_trigger_depth() = 1 THEN
         INSERT INTO album_user_audit ("albumId", "userId")
-        SELECT "albumsId", "usersId"
+        SELECT "albumId", "userId"
         FROM OLD;
       END IF;
 
@@ -185,7 +185,7 @@ export const memory_asset_delete_audit = registerFunction({
   body: `
     BEGIN
       INSERT INTO memory_asset_audit ("memoryId", "assetId")
-      SELECT "memoriesId", "assetsId" FROM OLD
+      SELECT "memoriesId", "assetId" FROM OLD
       WHERE "memoriesId" IN (SELECT "id" FROM memory WHERE "id" IN (SELECT "memoriesId" FROM OLD));
       RETURN NULL;
     END`,

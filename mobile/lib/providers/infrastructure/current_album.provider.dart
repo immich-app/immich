@@ -1,36 +1,30 @@
-import 'dart:async';
-
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 
-final currentRemoteAlbumProvider = AutoDisposeNotifierProvider<CurrentAlbumNotifier, RemoteAlbum?>(
+final currentRemoteAlbumScopedProvider = Provider<RemoteAlbum?>((ref) => null);
+final currentRemoteAlbumProvider = NotifierProvider<CurrentAlbumNotifier, RemoteAlbum?>(
   CurrentAlbumNotifier.new,
+  dependencies: [currentRemoteAlbumScopedProvider, remoteAlbumServiceProvider],
 );
 
-class CurrentAlbumNotifier extends AutoDisposeNotifier<RemoteAlbum?> {
-  KeepAliveLink? _keepAliveLink;
-  StreamSubscription<RemoteAlbum?>? _assetSubscription;
-
+class CurrentAlbumNotifier extends Notifier<RemoteAlbum?> {
   @override
-  RemoteAlbum? build() => null;
+  RemoteAlbum? build() {
+    final album = ref.watch(currentRemoteAlbumScopedProvider);
 
-  void setAlbum(RemoteAlbum album) {
-    _keepAliveLink?.close();
-    _assetSubscription?.cancel();
-    state = album;
+    if (album == null) {
+      return null;
+    }
 
-    _assetSubscription = ref.watch(remoteAlbumServiceProvider).watchAlbum(album.id).listen((updatedAlbum) {
+    final watcher = ref.watch(remoteAlbumServiceProvider).watchAlbum(album.id).listen((updatedAlbum) {
       if (updatedAlbum != null) {
         state = updatedAlbum;
       }
     });
-    _keepAliveLink = ref.keepAlive();
-  }
 
-  void dispose() {
-    _keepAliveLink?.close();
-    _assetSubscription?.cancel();
-    state = null;
+    ref.onDispose(watcher.cancel);
+
+    return album;
   }
 }

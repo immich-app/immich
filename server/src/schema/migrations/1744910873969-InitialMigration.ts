@@ -16,7 +16,9 @@ export async function up(db: Kysely<any>): Promise<void> {
       rows: [lastMigration],
     } = await lastMigrationSql.execute(db);
     if (lastMigration?.name !== 'AddMissingIndex1744910873956') {
-      throw new Error('Invalid upgrade path. For more information, see https://immich.app/errors#typeorm-upgrade');
+      throw new Error(
+        'Invalid upgrade path. For more information, see https://docs.immich.app/errors/#typeorm-upgrade',
+      );
     }
     logger.log('Database has up to date TypeORM migrations, skipping initial Kysely migration');
     return;

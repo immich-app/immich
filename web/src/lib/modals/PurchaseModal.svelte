@@ -13,7 +13,7 @@
   let showProductActivated = $state(false);
 </script>
 
-<Modal title="" {onClose} size="large">
+<Modal title=" " {onClose} size="large">
   <ModalBody>
     {#if showProductActivated}
       <PurchaseActivationSuccess onDone={onClose} />

@@ -44,7 +44,8 @@ beforeAll(async () => {
 describe(AuthService.name, () => {
   describe('adminSignUp', () => {
     it(`should sign up the admin`, async () => {
-      const { sut } = setup();
+      const { sut, ctx } = setup();
+      ctx.getMock(EventRepository).emit.mockResolvedValue();
       const dto = { name: 'Admin', email: 'admin@immich.cloud', password: 'password' };
 
       await expect(sut.adminSignUp(dto)).resolves.toEqual(
@@ -130,6 +131,7 @@ describe(AuthService.name, () => {
   describe('changePassword', () => {
     it('should change the password and login with it', async () => {
       const { sut, ctx } = setup();
+      ctx.getMock(EventRepository).emit.mockResolvedValue();
       const dto = { password: 'password', newPassword: 'new-password' };
       const passwordHashed = await hash(dto.password, 10);
       const { user } = await ctx.newUser({ password: passwordHashed });

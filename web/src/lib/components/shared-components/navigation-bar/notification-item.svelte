@@ -100,7 +100,7 @@
 </script>
 
 <button
-  class="min-h-[80px] p-2 py-3 hover:bg-immich-primary/10 dark:hover:bg-immich-dark-primary/10 border-b border-gray-200 dark:border-immich-dark-gray w-full"
+  class="min-h-20 p-2 py-3 hover:bg-immich-primary/10 dark:hover:bg-immich-dark-primary/10 border-b border-gray-200 dark:border-immich-dark-gray w-full"
   type="button"
   onclick={() => onclick(notification)}
   title={notification.createdAt}
