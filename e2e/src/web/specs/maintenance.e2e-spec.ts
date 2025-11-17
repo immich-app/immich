@@ -25,7 +25,7 @@ test.describe('Maintenance', () => {
     await page.waitForURL('/admin/system-settings');
   });
 
-  test('maintenance shows no options to users until they authenticate', async ({ context, page }) => {
+  test('maintenance shows no options to users until they authenticate', async ({ page }) => {
     const setCookie = await utils.enterMaintenance(admin.accessToken);
     const cookie = setCookie
       ?.map((cookie) => cookie.split(';')[0].split('='))
