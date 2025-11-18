@@ -5,6 +5,7 @@ import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/add_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_local_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/edit_image_action_button.widget.dart';
@@ -12,7 +13,6 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/keep_on_device
 import 'package:immich_mobile/presentation/widgets/action_buttons/move_to_trash_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/upload_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/add_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
@@ -42,31 +42,23 @@ class ViewerBottomBar extends ConsumerWidget {
 
     final timelineOrigin = ref.read(timelineServiceProvider).origin;
     final isSyncTrashTimeline = timelineOrigin == TimelineOrigin.syncTrash;
-    final isWaitingForSyncApproval = ref.watch(isWaitingForSyncApprovalProvider_Var1(asset.checksum!)).value == true;
-
-    /**** PeterO
-     * 14/08/2025
-     * 1. when user makes decision - asset doesn’t disappear (but sometimes it does)
-     * 2. should buttons have a different design (stile+icon) ?
-     * 3. pendingChecksums.length!=TimelineService.trashSyncReview(String userId).length after what?
-     *****/
+    final isWaitingForSyncApproval = ref.watch(isWaitingForSyncApprovalProvider(asset.checksum!)).value == true;
 
     if (!showControls) {
       opacity = 0;
     }
 
     final actions = <Widget>[
-      if (isSyncTrashTimeline) ...[
+      if (isSyncTrashTimeline || isWaitingForSyncApproval) ...[
+        const Text('asset_out_of_sync_actions_title').tr(),
         const KeepOnDeviceActionButton(source: ActionSource.viewer, isPreview: true),
         const MoveToTrashActionButton(source: ActionSource.viewer, isPreview: true),
       ] else ...[
         const ShareActionButton(source: ActionSource.viewer),
         if (asset.isLocalOnly && !isWaitingForSyncApproval) const UploadActionButton(source: ActionSource.viewer),
         if (asset.type == AssetType.image) const EditImageActionButton(),
-        if (asset.hasRemote)
-            const AddActionButton(),
-
-            if (isOwner) ...[
+        if (asset.hasRemote) const AddActionButton(),
+        if (isOwner) ...[
           asset.isLocalOnly
               ? const DeleteLocalActionButton(source: ActionSource.viewer)
               : const DeleteActionButton(source: ActionSource.viewer, showConfirmation: true),

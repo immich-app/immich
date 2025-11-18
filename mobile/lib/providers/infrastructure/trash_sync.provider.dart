@@ -34,41 +34,7 @@ final outOfSyncCountProvider = StreamProvider<int>((ref) {
   );
 });
 
-final pendingApprovalChecksumsProvider = StreamProvider<Set<String>>((ref) {
-  final enabledReviewMode = ref.watch(appSettingStreamProvider(AppSettingsEnum.reviewOutOfSyncChangesAndroid));
-  final service = ref.watch(trashSyncServiceProvider);
-  return enabledReviewMode.when(
-    data: (enabled) => enabled ? service.watchPendingApprovalChecksums() : Stream.value(<String>{}),
-    loading: () => Stream.value(<String>{}),
-    error: (_, __) => Stream.value(<String>{}),
-  );
-});
-
-//todo need to choose more efficient variant (isWaitingForSyncApprovalProvider_Var1, isWaitingForSyncApprovalProvider_Var2) PeterO
-final isWaitingForSyncApprovalProvider_Var1 = StreamProvider.family<bool, String?>((ref, checksum) {
-  final reviewModeSetting = ref.watch(appSettingStreamProvider(AppSettingsEnum.reviewOutOfSyncChangesAndroid));
-
-  Stream<bool> buildStream(bool isReviewModeEnabled) {
-    if (!isReviewModeEnabled || checksum == null) {
-      return Stream.value(false);
-    }
-    return ref
-        .watch(pendingApprovalChecksumsProvider)
-        .when(
-          data: (set) => Stream.value(set.contains(checksum)),
-          loading: () => Stream.value(false),
-          error: (_, __) => Stream.value(false),
-        );
-  }
-
-  return reviewModeSetting.when(
-    data: (enabled) => buildStream(enabled),
-    loading: () => Stream.value(false),
-    error: (_, __) => Stream.value(false),
-  );
-});
-
-final isWaitingForSyncApprovalProvider_Var2 = StreamProvider.family<bool, String?>((ref, checksum) {
+final isWaitingForSyncApprovalProvider = StreamProvider.family<bool, String?>((ref, checksum) {
   final enabledReviewMode = ref.watch(appSettingStreamProvider(AppSettingsEnum.reviewOutOfSyncChangesAndroid));
   final service = ref.watch(trashSyncServiceProvider);
   return enabledReviewMode.when(

@@ -66,7 +66,9 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
 
     final isCasting = ref.watch(castProvider.select((c) => c.isCasting));
 
-    final isWaitingForSyncApproval = ref.watch(isWaitingForSyncApprovalProvider_Var2(asset.checksum)).value == true;
+    final isWaitingForSyncApproval =
+        timelineOrigin == TimelineOrigin.syncTrash ||
+        ref.watch(isWaitingForSyncApprovalProvider(asset.checksum)).value == true;
 
     final actions = <Widget>[
       if (asset.isRemoteOnly && !isWaitingForSyncApproval)

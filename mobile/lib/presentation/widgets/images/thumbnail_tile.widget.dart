@@ -74,11 +74,16 @@ class ThumbnailTile extends ConsumerWidget {
                   ),
                 if (storageIndicator && asset != null)
                   switch (asset.storage) {
-                    AssetState.local => const Align(
+                    AssetState.local => Align(
                       alignment: Alignment.bottomRight,
                       child: Padding(
-                        padding: EdgeInsets.only(right: 10.0, bottom: 6.0),
-                        child: _TileOverlayIcon(Icons.cloud_off_outlined),
+                        padding: const EdgeInsets.only(right: 10.0, bottom: 6.0),
+                        child: _TileOverlayIcon(
+                              // todo EXPERIMENTAL (PeterO)
+                          (asset as LocalAsset).remoteDeletedAt == null
+                              ? Icons.cloud_off_outlined
+                              : Icons.sync_problem_rounded,
+                        ),
                       ),
                     ),
                     AssetState.remote => const Align(

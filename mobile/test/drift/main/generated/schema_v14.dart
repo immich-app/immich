@@ -7697,19 +7697,20 @@ class TrashSyncEntity extends Table
       'CHECK ("is_sync_approved" IN (0, 1))',
     ),
   );
-  late final GeneratedColumn<int> actionType = GeneratedColumn<int>(
-    'action_type',
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
     aliasedName,
     false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: const CustomExpression('CURRENT_TIMESTAMP'),
   );
   @override
   List<GeneratedColumn> get $columns => [
     assetId,
     checksum,
     isSyncApproved,
-    actionType,
+    createdAt,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -7734,9 +7735,9 @@ class TrashSyncEntity extends Table
         DriftSqlType.bool,
         data['${effectivePrefix}is_sync_approved'],
       ),
-      actionType: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}action_type'],
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
       )!,
     );
   }
@@ -7757,12 +7758,12 @@ class TrashSyncEntityData extends DataClass
   final String assetId;
   final String checksum;
   final bool? isSyncApproved;
-  final int actionType;
+  final DateTime createdAt;
   const TrashSyncEntityData({
     required this.assetId,
     required this.checksum,
     this.isSyncApproved,
-    required this.actionType,
+    required this.createdAt,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -7772,7 +7773,7 @@ class TrashSyncEntityData extends DataClass
     if (!nullToAbsent || isSyncApproved != null) {
       map['is_sync_approved'] = Variable<bool>(isSyncApproved);
     }
-    map['action_type'] = Variable<int>(actionType);
+    map['created_at'] = Variable<DateTime>(createdAt);
     return map;
   }
 
@@ -7785,7 +7786,7 @@ class TrashSyncEntityData extends DataClass
       assetId: serializer.fromJson<String>(json['assetId']),
       checksum: serializer.fromJson<String>(json['checksum']),
       isSyncApproved: serializer.fromJson<bool?>(json['isSyncApproved']),
-      actionType: serializer.fromJson<int>(json['actionType']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
     );
   }
   @override
@@ -7795,7 +7796,7 @@ class TrashSyncEntityData extends DataClass
       'assetId': serializer.toJson<String>(assetId),
       'checksum': serializer.toJson<String>(checksum),
       'isSyncApproved': serializer.toJson<bool?>(isSyncApproved),
-      'actionType': serializer.toJson<int>(actionType),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
     };
   }
 
@@ -7803,14 +7804,14 @@ class TrashSyncEntityData extends DataClass
     String? assetId,
     String? checksum,
     Value<bool?> isSyncApproved = const Value.absent(),
-    int? actionType,
+    DateTime? createdAt,
   }) => TrashSyncEntityData(
     assetId: assetId ?? this.assetId,
     checksum: checksum ?? this.checksum,
     isSyncApproved: isSyncApproved.present
         ? isSyncApproved.value
         : this.isSyncApproved,
-    actionType: actionType ?? this.actionType,
+    createdAt: createdAt ?? this.createdAt,
   );
   TrashSyncEntityData copyWithCompanion(TrashSyncEntityCompanion data) {
     return TrashSyncEntityData(
@@ -7819,9 +7820,7 @@ class TrashSyncEntityData extends DataClass
       isSyncApproved: data.isSyncApproved.present
           ? data.isSyncApproved.value
           : this.isSyncApproved,
-      actionType: data.actionType.present
-          ? data.actionType.value
-          : this.actionType,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
     );
   }
 
@@ -7831,14 +7830,13 @@ class TrashSyncEntityData extends DataClass
           ..write('assetId: $assetId, ')
           ..write('checksum: $checksum, ')
           ..write('isSyncApproved: $isSyncApproved, ')
-          ..write('actionType: $actionType')
+          ..write('createdAt: $createdAt')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode =>
-      Object.hash(assetId, checksum, isSyncApproved, actionType);
+  int get hashCode => Object.hash(assetId, checksum, isSyncApproved, createdAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -7846,39 +7844,38 @@ class TrashSyncEntityData extends DataClass
           other.assetId == this.assetId &&
           other.checksum == this.checksum &&
           other.isSyncApproved == this.isSyncApproved &&
-          other.actionType == this.actionType);
+          other.createdAt == this.createdAt);
 }
 
 class TrashSyncEntityCompanion extends UpdateCompanion<TrashSyncEntityData> {
   final Value<String> assetId;
   final Value<String> checksum;
   final Value<bool?> isSyncApproved;
-  final Value<int> actionType;
+  final Value<DateTime> createdAt;
   const TrashSyncEntityCompanion({
     this.assetId = const Value.absent(),
     this.checksum = const Value.absent(),
     this.isSyncApproved = const Value.absent(),
-    this.actionType = const Value.absent(),
+    this.createdAt = const Value.absent(),
   });
   TrashSyncEntityCompanion.insert({
     required String assetId,
     required String checksum,
     this.isSyncApproved = const Value.absent(),
-    required int actionType,
+    this.createdAt = const Value.absent(),
   }) : assetId = Value(assetId),
-       checksum = Value(checksum),
-       actionType = Value(actionType);
+       checksum = Value(checksum);
   static Insertable<TrashSyncEntityData> custom({
     Expression<String>? assetId,
     Expression<String>? checksum,
     Expression<bool>? isSyncApproved,
-    Expression<int>? actionType,
+    Expression<DateTime>? createdAt,
   }) {
     return RawValuesInsertable({
       if (assetId != null) 'asset_id': assetId,
       if (checksum != null) 'checksum': checksum,
       if (isSyncApproved != null) 'is_sync_approved': isSyncApproved,
-      if (actionType != null) 'action_type': actionType,
+      if (createdAt != null) 'created_at': createdAt,
     });
   }
 
@@ -7886,13 +7883,13 @@ class TrashSyncEntityCompanion extends UpdateCompanion<TrashSyncEntityData> {
     Value<String>? assetId,
     Value<String>? checksum,
     Value<bool?>? isSyncApproved,
-    Value<int>? actionType,
+    Value<DateTime>? createdAt,
   }) {
     return TrashSyncEntityCompanion(
       assetId: assetId ?? this.assetId,
       checksum: checksum ?? this.checksum,
       isSyncApproved: isSyncApproved ?? this.isSyncApproved,
-      actionType: actionType ?? this.actionType,
+      createdAt: createdAt ?? this.createdAt,
     );
   }
 
@@ -7908,8 +7905,8 @@ class TrashSyncEntityCompanion extends UpdateCompanion<TrashSyncEntityData> {
     if (isSyncApproved.present) {
       map['is_sync_approved'] = Variable<bool>(isSyncApproved.value);
     }
-    if (actionType.present) {
-      map['action_type'] = Variable<int>(actionType.value);
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
     }
     return map;
   }
@@ -7920,7 +7917,7 @@ class TrashSyncEntityCompanion extends UpdateCompanion<TrashSyncEntityData> {
           ..write('assetId: $assetId, ')
           ..write('checksum: $checksum, ')
           ..write('isSyncApproved: $isSyncApproved, ')
-          ..write('actionType: $actionType')
+          ..write('createdAt: $createdAt')
           ..write(')'))
         .toString();
   }

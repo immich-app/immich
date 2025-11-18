@@ -88,6 +88,7 @@ class DriftTrashSyncRepository extends DriftDatabaseRepository {
 
   Stream<bool> watchIsApprovalPending(String checksum) {
     final query = _db.selectOnly(_db.trashSyncEntity)
+      ..addColumns([_db.trashSyncEntity.checksum])
       ..where((_db.trashSyncEntity.checksum.equals(checksum) & _db.trashSyncEntity.isSyncApproved.isNull()))
       ..limit(1);
     return query.watchSingleOrNull().map((row) => row != null).distinct();

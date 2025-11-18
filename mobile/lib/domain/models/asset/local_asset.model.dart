@@ -4,7 +4,7 @@ class LocalAsset extends BaseAsset {
   final String id;
   final String? remoteAssetId;
   final int orientation;
-  final DateTime? remoteDeletedAt; // could be used for ThumbnailImage widget, PeterO
+  final DateTime? remoteDeletedAt;
 
   const LocalAsset({
     required this.id,
@@ -48,7 +48,8 @@ class LocalAsset extends BaseAsset {
    durationInSeconds: ${durationInSeconds ?? "<NA>"},
    remoteId: ${remoteId ?? "<NA>"}
    isFavorite: $isFavorite,
-  orientation: $orientation,
+   orientation: $orientation,
+   remoteDeletedAt: $remoteDeletedAt
  }''';
   }
 

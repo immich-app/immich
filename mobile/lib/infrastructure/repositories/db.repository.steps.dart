@@ -5893,7 +5893,7 @@ final class Schema14 extends i0.VersionedSchema {
       withoutRowId: true,
       isStrict: true,
       tableConstraints: ['PRIMARY KEY(asset_id)'],
-      columns: [_column_96, _column_13, _column_97, _column_98],
+      columns: [_column_96, _column_13, _column_97, _column_9],
       attachedDatabase: database,
     ),
     alias: null,
@@ -5924,8 +5924,8 @@ class Shape24 extends i0.VersionedTable {
       columnsByName['checksum']! as i1.GeneratedColumn<String>;
   i1.GeneratedColumn<bool> get isSyncApproved =>
       columnsByName['is_sync_approved']! as i1.GeneratedColumn<bool>;
-  i1.GeneratedColumn<int> get actionType =>
-      columnsByName['action_type']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<DateTime> get createdAt =>
+      columnsByName['created_at']! as i1.GeneratedColumn<DateTime>;
 }
 
 i1.GeneratedColumn<String> _column_96(String aliasedName) =>
@@ -5944,13 +5944,6 @@ i1.GeneratedColumn<bool> _column_97(String aliasedName) =>
       defaultConstraints: i1.GeneratedColumn.constraintIsAlways(
         'CHECK ("is_sync_approved" IN (0, 1))',
       ),
-    );
-i1.GeneratedColumn<int> _column_98(String aliasedName) =>
-    i1.GeneratedColumn<int>(
-      'action_type',
-      aliasedName,
-      false,
-      type: i1.DriftSqlType.int,
     );
 i0.MigrationStepWithVersion migrationSteps({
   required Future<void> Function(i1.Migrator m, Schema2 schema) from1To2,

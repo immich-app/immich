@@ -264,8 +264,7 @@ class SyncStreamService {
       if (localAssetsToTrash.isNotEmpty) {
         if (reviewMode) {
           final itemsToReview = localAssetsToTrash.values.flattened.where((la) => la.checksum?.isNotEmpty == true);
-
-          _logger.info("Apply remote trash action to review for: $itemsToReview");
+          _logger.info("Apply remote trash action to review for: ${itemsToReview.map((e)=>'id:${e.id}, name:${e.name}, remoteDeletedAt:${e.remoteDeletedAt}').join('*')}");
           await _trashSyncRepository.upsertWithActionTypeCheck(itemsToReview);
         } else {
           final mediaUrls = await Future.wait(
