@@ -79,7 +79,6 @@ test.describe('Timeline', () => {
       await thumbnailUtils.expectTimelineHasOnScreenAssets(page);
     });
     test('Deep link to last photo', async ({ page }) => {
-      test.skip(true, 'fixed by PR#23920');
       const lastAsset = assets.at(-1)!;
       await pageUtils.deepLinkPhotosPage(page, lastAsset.id);
       await thumbnailUtils.expectTimelineHasOnScreenAssets(page);
@@ -140,7 +139,6 @@ test.describe('Timeline', () => {
       await thumbnailUtils.expectBottomIsTimelineBottom(page, assets[15]!.id);
     });
     test('Open /photos, open asset-viewer, previous photo 15x, backwardsArrow', async ({ page }) => {
-      test.skip(true, 'fixed by PR#23920');
       const lastAsset = assets.at(-1)!;
       await pageUtils.deepLinkPhotosPage(page, lastAsset.id);
       await thumbnailUtils.clickAssetId(page, lastAsset.id);
@@ -357,7 +355,6 @@ test.describe('Timeline', () => {
       }
     });
     test('Deep link to last photo, scroll up', async ({ page }) => {
-      test.skip(true, 'fixed by PR#23920');
       const lastAsset = assets.at(-1)!;
       await pageUtils.deepLinkPhotosPage(page, lastAsset.id);
 
@@ -433,7 +430,6 @@ test.describe('Timeline', () => {
       await thumbnailUtils.expectInViewport(page, album.assetIds[0]);
     });
     test('Deep link to last photo', async ({ page }) => {
-      test.fail(true, 'fixed by PR#23920');
       const album = timelineRestData.album;
       const lastAsset = album.assetIds.at(-1);
       await pageUtils.deepLinkAlbumPage(page, album.id, lastAsset!);

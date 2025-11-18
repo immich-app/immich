@@ -1,5 +1,6 @@
 import { defineConfig, devices, PlaywrightTestConfig } from '@playwright/test';
 import dotenv from 'dotenv';
+import { cpus } from 'node:os';
 import { resolve } from 'node:path';
 
 dotenv.config({ path: resolve(import.meta.dirname, '.env') });
@@ -29,6 +30,8 @@ const config: PlaywrightTestConfig = {
 
   testMatch: /.*\.e2e-spec\.ts/,
 
+  workers: process.env.CI ? 4 : Math.round(cpus().length * 0.75),
+
   projects: [
     {
       name: 'chromium',
@@ -41,7 +44,7 @@ const config: PlaywrightTestConfig = {
       use: { ...devices['Desktop Chrome'] },
       testMatch: /.*\.parallel-e2e-spec\.ts/,
       fullyParallel: true,
-      workers: process.env.CI ? 4 : undefined,
+      workers: process.env.CI ? 3 : Math.max(1, Math.round(cpus().length * 0.75) - 1),
     },
 
     // {
