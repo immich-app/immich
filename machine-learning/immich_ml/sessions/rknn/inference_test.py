@@ -87,12 +87,11 @@ def main() -> None:
 		total_requests = 5 * args.num_workers
 		print(f"[pool] submitting {total_requests} requests with {args.num_workers} worker contexts")
 		batch_t0 = time.perf_counter()
+		futures = []
 		for _ in range(total_requests):
-			session.rknnpool.put([x])
-		for idx in range(total_requests):
-			res = session.rknnpool.get(raw=True)
-			if res is None:
-				raise RuntimeError("Pool returned no outputs")
+			futures.append(session.rknnpool.put([x]))
+		for idx, fut in enumerate(futures):
+			res = fut.result()
 			outs = res.outputs
 			lat_ms = res.duration_s * 1000.0
 			print(f"[parallel {idx+1}] dur_ms={lat_ms:.2f} shapes={[getattr(o, 'shape', None) for o in outs]}")

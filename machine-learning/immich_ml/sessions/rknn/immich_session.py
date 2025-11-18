@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-import queue
 import time
 from concurrent.futures import Future, ThreadPoolExecutor
 from pathlib import Path
-from typing import Any, Callable, NamedTuple, Optional, Sequence
+from typing import Any, NamedTuple, Optional, Protocol, Sequence
 
 import numpy as np
 from numpy.typing import NDArray
@@ -20,7 +19,6 @@ NativeRKNNExecutor = _native_mod.NativeRKNNExecutor  # type: ignore[attr-defined
 __all__ = [
 	"RknnSession",
 	"RknnPoolExecutor",
-	"RknnNode",
 	"run_inference",
 	"is_available",
 	"soc_name",
@@ -41,16 +39,12 @@ def get_soc(device_tree_path: Path | str) -> str | None:
 
 
 soc_name = get_soc("/proc/device-tree/compatible")
-is_available = bool(soc_name) and getattr(settings, "rknn", True)
-model_prefix = Path("rknpu") / soc_name if is_available and soc_name is not None else None
-
+is_available = soc_name is not None and settings.rknn
+model_prefix = Path("rknpu") / soc_name if is_available and soc_name else None
 
 class SessionNode(NamedTuple):
 	name: Optional[str]
 	shape: tuple[int, ...]
-
-
-RknnNode = SessionNode
 
 
 class RKNNInferenceResult(NamedTuple):
@@ -58,86 +52,51 @@ class RKNNInferenceResult(NamedTuple):
 	start_time: float
 	end_time: float
 	duration_s: float
-	outputs: Sequence[Any]
+	outputs: list[NDArray[np.float32]]
 
 
-def run_inference(executor: Any, inputs: list[NDArray[np.float32]]) -> list[NDArray[np.float32]]:
-	if hasattr(executor, "infer"):
-		return executor.infer(inputs)
-	if callable(executor):
-		return executor(inputs)
-	raise RuntimeError("Executor does not support inference")
+class InferenceExecutor(Protocol):
+	def infer(self, inputs: list[NDArray[np.float32]]) -> list[NDArray[np.float32]]: ...
+
+
+def run_inference(executor: InferenceExecutor, inputs: list[NDArray[np.float32]]) -> list[NDArray[np.float32]]:
+	return executor.infer(inputs)
 
 
 class RknnPoolExecutor:
-	def __init__(
-		self,
-		model_path: str | Path,
-		tpes: int,
-		func: Callable[[Any, list[NDArray[np.float32]]], list[NDArray[np.float32]]] | None = None,
-	) -> None:
+	def __init__(self, model_path: str | Path, tpes: int) -> None:
 		if tpes < 1:
 			raise ValueError("tpes must be >= 1")
-		self._model_path = Path(model_path)
-		self.tpes = tpes
-		self.func = func or run_inference
-		self._native = NativeRKNNExecutor(self._model_path.as_posix(), num_workers=tpes)
-		self._pool = ThreadPoolExecutor(max_workers=tpes, thread_name_prefix="rknn-worker")
-		self._ordered_futures: "queue.Queue[Future]" = queue.Queue()
+		model_path_str = Path(model_path).as_posix()
+		self._native = NativeRKNNExecutor(model_path_str, num_workers=tpes)
+		self._executor = ThreadPoolExecutor(max_workers=tpes, thread_name_prefix="rknn-worker")
 		self._closed = False
 
-	def submit(self, *inputs: Sequence[Any], tag: Any = None) -> Future:
+	def _run_inference(self, inputs: list[NDArray[np.float32]], tag: Any) -> RKNNInferenceResult:
+		start = time.perf_counter()
+		outputs = self._native.infer(inputs)
+		end = time.perf_counter()
+		return RKNNInferenceResult(
+			tag=tag,
+			start_time=start,
+			end_time=end,
+			duration_s=end - start,
+			outputs=outputs,
+		)
+
+	def submit(self, *inputs: Sequence[NDArray[np.float32]], tag: Any = None) -> Future[RKNNInferenceResult]:
 		if self._closed:
 			raise RuntimeError("Pool is closed")
-		if not inputs:
-			raise ValueError("At least one input tensor must be provided")
-		task_inputs = [np.ascontiguousarray(arr) for arr in inputs]
+		return self._executor.submit(self._run_inference, list(inputs), tag)
 
-		def _task() -> RKNNInferenceResult:
-			start = time.perf_counter()
-			outputs = self.func(self._native, task_inputs)
-			end = time.perf_counter()
-			return RKNNInferenceResult(
-				tag=tag,
-				start_time=start,
-				end_time=end,
-				duration_s=end - start,
-				outputs=outputs,
-			)
-
-		fut = self._pool.submit(_task)
-		self._ordered_futures.put(fut)
-		return fut
-
-	def put(self, inputs: Sequence[Any], *, tag: Any = None) -> Future:
+	def put(self, inputs: Sequence[NDArray[np.float32]], *, tag: Any = None) -> Future[RKNNInferenceResult]:
 		return self.submit(*inputs, tag=tag)
-
-	def get(self, *, raw: bool = False, block: bool = False, timeout: Optional[float] = None) -> Any:
-		if not block and self._ordered_futures.empty():
-			return None
-		try:
-			fut: Future = self._ordered_futures.get(block=block, timeout=timeout)
-		except queue.Empty:
-			return None
-		result: RKNNInferenceResult = fut.result()
-		return result if raw else list(result.outputs)
 
 	def close(self, *, wait: bool = True) -> None:
 		if self._closed:
 			return
-		self._pool.shutdown(wait=wait)
-		if hasattr(self._native, "close"):
-			try:
-				self._native.close()
-			except Exception:
-				pass
 		self._closed = True
-
-	def release(self) -> None:
-		self.close()
-
-	def shutdown(self, wait: bool = True) -> None:
-		self.close(wait=wait)
+		self._executor.shutdown(wait=wait)
 
 	@property
 	def executor(self) -> NativeRKNNExecutor:
@@ -148,12 +107,6 @@ class RknnPoolExecutor:
 
 	def __exit__(self, exc_type, exc_val, exc_tb) -> None:  # noqa: ANN001
 		self.close()
-
-	def __del__(self) -> None:  # pragma: no cover - defensive
-		try:
-			self.close(wait=False)
-		except Exception:
-			pass
 
 
 class RknnSession:
@@ -167,24 +120,21 @@ class RknnSession:
 		if not is_available:
 			raise RuntimeError("RKNN is not available on this device")
 		self.model_path = Path(model_path)
-		self.model_type = "detection" if "detection" in self.model_path.parts else "recognition"
 		self.log = logger or log
-		default_workers = 3 #getattr(settings, "rknn_threads", 1)
+		default_workers = getattr(settings, "rknn_threads", 1)
 		self.tpe = num_workers or default_workers
 		if self.tpe < 1:
 			raise ValueError("num_workers must be >= 1")
-		if self.log:
-			self.log.info(
-				"Loading RKNN model from %s with %s worker(s).",
-				self.model_path,
-				self.tpe,
-			)
+		self.log.info(
+			"Loading RKNN model from %s with %s worker(s).",
+			self.model_path,
+			self.tpe,
+		)
 		self.rknnpool = RknnPoolExecutor(self.model_path, self.tpe)
 		self._io_info = self._normalize_io_info(self.rknnpool.executor.get_io_info())
 		self._input_nodes = self._build_nodes("inputs")
 		self._output_nodes = self._build_nodes("outputs")
-		if self.log:
-			self.log.info("Loaded RKNN model from %s.", self.model_path)
+		self.log.info("Loaded RKNN model from %s.", self.model_path)
 
 	@property
 	def io_info(self) -> dict:
@@ -198,81 +148,61 @@ class RknnSession:
 
 	def run(
 		self,
-		output_names: Sequence[str] | None,
+		_output_names: Sequence[str] | None,
 		input_feed: dict[str, NDArray[np.float32]] | dict[str, NDArray[np.int32]],
-		run_options: Any = None,
+		_run_options: Any = None,
 	) -> list[NDArray[np.float32]]:
-		del output_names, run_options
-		if not input_feed:
-			raise ValueError("input_feed must not be empty")
-		input_data = [np.ascontiguousarray(v) for v in input_feed.values()]
-		self.rknnpool.put(input_data)
-		outputs = self.rknnpool.get()
-		if outputs is None:
-			raise RuntimeError("RKNN inference failed – no result available")
-		return [np.asarray(out) for out in outputs]
+		return self.run_async(_output_names, input_feed, _run_options).result().outputs
+
+	def run_async(
+		self,
+		_output_names: Sequence[str] | None,
+		input_feed: dict[str, NDArray[np.float32]] | dict[str, NDArray[np.int32]],
+		_run_options: Any = None,
+	) -> Future[RKNNInferenceResult]:
+		return self.rknnpool.put(list(input_feed.values()))
 
 	def close(self) -> None:
 		self.rknnpool.close()
 
-	def __del__(self) -> None:  # pragma: no cover - defensive
-		try:
-			self.close()
-		except Exception:
-			pass
-
 	def _build_nodes(self, key: str) -> list[SessionNode]:
-		entries = self._io_info.get(key, [])
-		nodes: list[SessionNode] = []
-		for entry in entries:
-			nodes.append(SessionNode(name=entry.get("name"), shape=self._shape_from_entry(entry)))
-		return nodes
+		return [
+			SessionNode(name=entry.get("name"), shape=self._shape_from_entry(entry))
+			for entry in self._io_info.get(key, [])
+		]
 
 	@staticmethod
-	def _shape_from_entry(entry: dict) -> tuple[int, ...]:
-		dims = entry.get("dims")
-		if dims:
-			try:
-				return tuple(int(dim) for dim in dims)
-			except (TypeError, ValueError):
-				return tuple()
-		dyn = entry.get("dynamic")
-		if isinstance(dyn, dict):
-			ranges = dyn.get("ranges")
-			if isinstance(ranges, (list, tuple)) and ranges:
-				try:
-					return tuple(int(dim) for dim in ranges[-1])
-				except (TypeError, ValueError):
-					return tuple()
-		return ()
-		return ()
+	def _shape_from_entry(entry: dict[str, Any]) -> tuple[int, ...]:
+		if dims := entry.get("dims"):
+			return tuple(int(dim) for dim in dims)
+		dyn = entry.get("dynamic", {})
+		ranges = dyn.get("ranges", [])
+		if ranges:
+			return tuple(int(dim) for dim in ranges[-1])
+		raise ValueError(f"Cannot determine shape from entry: {entry}")
 
 	def _normalize_io_info(self, info: dict[str, Any]) -> dict[str, Any]:
-		info = dict(info)
-		info["inputs"] = [self._normalize_tensor_desc(tensor) for tensor in info.get("inputs", [])]
-		info["outputs"] = [self._normalize_tensor_desc(tensor) for tensor in info.get("outputs", [])]
-		return info
+		return {
+			**info,
+			"inputs": [self._normalize_tensor_desc(t) for t in info.get("inputs", [])],
+			"outputs": [self._normalize_tensor_desc(t) for t in info.get("outputs", [])],
+		}
 
 	@staticmethod
 	def _normalize_tensor_desc(tensor: dict[str, Any]) -> dict[str, Any]:
-		desc = dict(tensor)
-		desc["dims"] = list(RknnSession._shape_from_entry(tensor))
-		desc["n_dims"] = len(desc["dims"])
+		dims = list(RknnSession._shape_from_entry(tensor))
+		desc = {**tensor, "dims": dims, "n_dims": len(dims)}
 		# Force NCHW format if the runtime reports NHWC tensors
-		if tensor.get("fmt") == 1 and len(desc["dims"]) == 4:
-			n, h, w, c = desc["dims"]
+		if tensor.get("fmt") == 1 and len(dims) == 4:
+			n, h, w, c = dims
 			desc["dims"] = [n, c, h, w]
 			desc["fmt"] = 0
-			dyn = desc.get("dynamic")
-			if isinstance(dyn, dict) and "ranges" in dyn:
-				new_ranges = []
-				for shape in dyn["ranges"]:
-					if len(shape) == 4:
-						nr = [shape[0], shape[3], shape[1], shape[2]]
-						new_ranges.append(nr)
-					else:
-						new_ranges.append(shape)
-				dyn["ranges"] = new_ranges
+			dyn = desc.get("dynamic", {})
+			if "ranges" in dyn:
+				dyn["ranges"] = [
+					[shape[0], shape[3], shape[1], shape[2]] if len(shape) == 4 else shape
+					for shape in dyn["ranges"]
+				]
 		return desc
 
 
