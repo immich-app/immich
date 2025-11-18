@@ -241,7 +241,7 @@
       {@const label = component.title || component.label || key}
 
       <div
-        class="flex flex-col gap-1 bg-gray-50 dark:bg-subtle border border-gray-200 dark:border-gray-700 p-4 rounded-xl"
+        class="flex flex-col gap-1 bg-gray-100 dark:bg-subtle border border-gray-200 dark:border-gray-700 p-4 rounded-xl"
       >
         <!-- Select component -->
         {#if component.type === 'select'}
