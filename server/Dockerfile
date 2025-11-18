@@ -50,7 +50,7 @@ RUN --mount=type=cache,id=pnpm-cli,target=/buildcache/pnpm-store \
 
 FROM builder AS plugins
 
-COPY --from=ghcr.io/jdx/mise:2025.11.3 /usr/local/bin/mise /usr/local/bin/mise
+COPY --from=ghcr.io/jdx/mise:2025.11.3@sha256:ac26f5978c0e2783f3e68e58ce75eddb83e41b89bf8747c503bac2aa9baf22c5 /usr/local/bin/mise /usr/local/bin/mise
 
 WORKDIR /usr/src/app
 COPY ./plugins/mise.toml ./plugins/
