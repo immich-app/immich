@@ -116,8 +116,8 @@ dev_dependencies:
 dependency_overrides:
   drift:
     git:
-      url: https://github.com/shenlong-tanwen/drift
-      ref: 'e7c909f0483b84510a9a60da8b020adc82ff16a3'
+      url: https://github.com/immich-app/drift
+      ref: '53ef7e9f19fe8f68416251760b4b99fe43f1c575'
       path: drift/
 
 flutter:

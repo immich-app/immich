@@ -453,9 +453,9 @@ packages:
     dependency: "direct main"
     description:
       path: drift
-      ref: e7c909f0483b84510a9a60da8b020adc82ff16a3
-      resolved-ref: e7c909f0483b84510a9a60da8b020adc82ff16a3
-      url: "https://github.com/shenlong-tanwen/drift"
+      ref: "53ef7e9f19fe8f68416251760b4b99fe43f1c575"
+      resolved-ref: "53ef7e9f19fe8f68416251760b4b99fe43f1c575"
+      url: "https://github.com/immich-app/drift"
     source: git
     version: "2.26.0"
   drift_dev:
