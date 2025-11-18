@@ -7,7 +7,6 @@ import { ONE_HOUR } from 'src/constants';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { AuthService } from 'src/services/auth.service';
-import { JobService } from 'src/services/job.service';
 import { SharedLinkService } from 'src/services/shared-link.service';
 import { VersionService } from 'src/services/version.service';
 import { OpenGraphTags } from 'src/utils/misc';
@@ -40,7 +39,6 @@ const render = (index: string, meta: OpenGraphTags) => {
 export class ApiService {
   constructor(
     private authService: AuthService,
-    private jobService: JobService,
     private sharedLinkService: SharedLinkService,
     private versionService: VersionService,
     private configRepository: ConfigRepository,

@@ -1,10 +1,8 @@
 import { AppRoute } from '$lib/constants';
-import { serverConfig } from '$lib/stores/system-config-manager.svelte';
+import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
 import { getFormatter } from '$lib/utils/i18n';
 import { init } from '$lib/utils/server';
-
 import { redirect } from '@sveltejs/kit';
-import { get } from 'svelte/store';
 import { loadUser } from '../lib/utils/auth';
 import type { PageLoad } from './$types';
 
@@ -19,8 +17,7 @@ export const load = (async ({ fetch }) => {
       redirect(302, AppRoute.PHOTOS);
     }
 
-    const { isInitialized } = get(serverConfig);
-    if (isInitialized) {
+    if (serverConfigManager.value.isInitialized) {
       // Redirect to login page if there exists an admin account (i.e. server is initialized)
       redirect(302, AppRoute.AUTH_LOGIN);
     }

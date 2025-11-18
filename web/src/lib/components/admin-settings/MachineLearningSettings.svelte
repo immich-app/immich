@@ -6,14 +6,15 @@
   import SettingButtonsRow from '$lib/components/shared-components/settings/SystemConfigButtonRow.svelte';
   import { SettingInputFieldType } from '$lib/constants';
   import FormatMessage from '$lib/elements/FormatMessage.svelte';
-  import { featureFlags, systemConfigManager } from '$lib/stores/system-config-manager.svelte';
+  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
+  import { systemConfigManager } from '$lib/managers/system-config-manager.svelte';
   import { Button, IconButton } from '@immich/ui';
   import { mdiPlus, mdiTrashCanOutline } from '@mdi/js';
   import { isEqual } from 'lodash-es';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
 
-  const disabled = $featureFlags.configFile;
+  const disabled = $derived(featureFlagsManager.value.configFile);
   const config = $derived(systemConfigManager.value);
   let configToEdit = $state(systemConfigManager.cloneValue());
 </script>
@@ -167,7 +168,7 @@
             min={0.001}
             max={0.1}
             description={$t('admin.machine_learning_max_detection_distance_description')}
-            disabled={disabled || !$featureFlags.duplicateDetection}
+            disabled={disabled || !featureFlagsManager.value.duplicateDetection}
             isEdited={configToEdit.machineLearning.duplicateDetection.maxDistance !==
               config.machineLearning.duplicateDetection.maxDistance}
           />

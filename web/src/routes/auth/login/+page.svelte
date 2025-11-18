@@ -3,7 +3,8 @@
   import AuthPageLayout from '$lib/components/layouts/AuthPageLayout.svelte';
   import { AppRoute } from '$lib/constants';
   import { eventManager } from '$lib/managers/event-manager.svelte';
-  import { featureFlags, serverConfig } from '$lib/stores/system-config-manager.svelte';
+  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
+  import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
   import { oauth } from '$lib/utils';
   import { getServerErrorMessage, handleError } from '$lib/utils/handle-error';
   import { login, type LoginResponseDto } from '@immich/sdk';
@@ -25,6 +26,8 @@
   let loading = $state(false);
   let oauthLoading = $state(true);
 
+  const serverConfig = $derived(serverConfigManager.value);
+
   const onSuccess = async (user: LoginResponseDto) => {
     await goto(data.continueUrl, { invalidateAll: true });
     eventManager.emit('AuthLogin', user);
@@ -34,7 +37,7 @@
   const onOnboarding = () => goto(AppRoute.AUTH_ONBOARDING);
 
   onMount(async () => {
-    if (!$featureFlags.oauth) {
+    if (!featureFlagsManager.value.oauth) {
       oauthLoading = false;
       return;
     }
@@ -60,7 +63,7 @@
 
     try {
       if (
-        ($featureFlags.oauthAutoLaunch && !oauth.isAutoLaunchDisabled(globalThis.location)) ||
+        (featureFlagsManager.value.oauthAutoLaunch && !oauth.isAutoLaunchDisabled(globalThis.location)) ||
         oauth.isAutoLaunchEnabled(globalThis.location)
       ) {
         await goto(`${AppRoute.AUTH_LOGIN}?autoLaunch=0`, { replaceState: true });
@@ -80,7 +83,7 @@
       loading = true;
       const user = await login({ loginCredentialDto: { email, password } });
 
-      if (user.isAdmin && !$serverConfig.isOnboarded) {
+      if (user.isAdmin && !serverConfig.isOnboarded) {
         await onOnboarding();
         return;
       }
@@ -123,64 +126,62 @@
   };
 </script>
 
-{#if $featureFlags.loaded}
-  <AuthPageLayout title={data.meta.title}>
-    <Stack gap={4}>
-      {#if $serverConfig.loginPageMessage}
-        <Alert color="primary" class="mb-6">
-          <!-- eslint-disable-next-line svelte/no-at-html-tags -->
-          {@html $serverConfig.loginPageMessage}
-        </Alert>
-      {/if}
+<AuthPageLayout title={data.meta.title}>
+  <Stack gap={4}>
+    {#if serverConfig.loginPageMessage}
+      <Alert color="primary" class="mb-6">
+        <!-- eslint-disable-next-line svelte/no-at-html-tags -->
+        {@html serverConfig.loginPageMessage}
+      </Alert>
+    {/if}
 
-      {#if !oauthLoading && $featureFlags.passwordLogin}
-        <form {onsubmit} class="flex flex-col gap-4">
-          {#if errorMessage}
-            <Alert color="danger" title={errorMessage} closable />
-          {/if}
-
-          <Field label={$t('email')}>
-            <Input id="email" name="email" type="email" autocomplete="email" bind:value={email} />
-          </Field>
-
-          <Field label={$t('password')}>
-            <PasswordInput id="password" bind:value={password} autocomplete="current-password" />
-          </Field>
-
-          <Button type="submit" size="large" shape="round" fullWidth {loading} class="mt-6">{$t('to_login')}</Button>
-        </form>
-      {/if}
-
-      {#if $featureFlags.oauth}
-        {#if $featureFlags.passwordLogin}
-          <div class="inline-flex w-full items-center justify-center my-4">
-            <hr class="my-4 h-px w-3/4 border-0 bg-gray-200 dark:bg-gray-600" />
-            <span
-              class="absolute start-1/2 -translate-x-1/2 bg-gray-50 px-3 font-medium text-gray-900 dark:bg-neutral-900 dark:text-white uppercase"
-            >
-              {$t('or')}
-            </span>
-          </div>
+    {#if !oauthLoading && featureFlagsManager.value.passwordLogin}
+      <form {onsubmit} class="flex flex-col gap-4">
+        {#if errorMessage}
+          <Alert color="danger" title={errorMessage} closable />
         {/if}
-        {#if oauthError}
-          <Alert color="danger" title={oauthError} closable />
-        {/if}
-        <Button
-          shape="round"
-          loading={loading || oauthLoading}
-          disabled={loading || oauthLoading}
-          size="large"
-          fullWidth
-          color={$featureFlags.passwordLogin ? 'secondary' : 'primary'}
-          onclick={handleOAuthLogin}
-        >
-          {$serverConfig.oauthButtonText}
-        </Button>
-      {/if}
 
-      {#if !$featureFlags.passwordLogin && !$featureFlags.oauth}
-        <Alert color="warning" title={$t('login_has_been_disabled')} />
+        <Field label={$t('email')}>
+          <Input id="email" name="email" type="email" autocomplete="email" bind:value={email} />
+        </Field>
+
+        <Field label={$t('password')}>
+          <PasswordInput id="password" bind:value={password} autocomplete="current-password" />
+        </Field>
+
+        <Button type="submit" size="large" shape="round" fullWidth {loading} class="mt-6">{$t('to_login')}</Button>
+      </form>
+    {/if}
+
+    {#if featureFlagsManager.value.oauth}
+      {#if featureFlagsManager.value.passwordLogin}
+        <div class="inline-flex w-full items-center justify-center my-4">
+          <hr class="my-4 h-px w-3/4 border-0 bg-gray-200 dark:bg-gray-600" />
+          <span
+            class="absolute start-1/2 -translate-x-1/2 bg-gray-50 px-3 font-medium text-gray-900 dark:bg-neutral-900 dark:text-white uppercase"
+          >
+            {$t('or')}
+          </span>
+        </div>
       {/if}
-    </Stack>
-  </AuthPageLayout>
-{/if}
+      {#if oauthError}
+        <Alert color="danger" title={oauthError} closable />
+      {/if}
+      <Button
+        shape="round"
+        loading={loading || oauthLoading}
+        disabled={loading || oauthLoading}
+        size="large"
+        fullWidth
+        color={featureFlagsManager.value.passwordLogin ? 'secondary' : 'primary'}
+        onclick={handleOAuthLogin}
+      >
+        {serverConfig.oauthButtonText}
+      </Button>
+    {/if}
+
+    {#if !featureFlagsManager.value.passwordLogin && !featureFlagsManager.value.oauth}
+      <Alert color="warning" title={$t('login_has_been_disabled')} />
+    {/if}
+  </Stack>
+</AuthPageLayout>
