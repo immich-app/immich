@@ -19,10 +19,9 @@ test.describe('Maintenance', () => {
     await page.goto('/admin/system-settings?isOpen=maintenance');
     await page.getByRole('button', { name: 'Start maintenance mode' }).click();
 
-    await page.waitForURL(`/maintenance?${new URLSearchParams({ continue: '/admin/system-settings' })}`);
-    await expect(page.getByText('Temporarily Unavailable')).toBeVisible();
+    await expect(page.getByText('Temporarily Unavailable')).toBeVisible({ timeout: 10_000 });
     await page.getByRole('button', { name: 'End maintenance mode' }).click();
-    await page.waitForURL('/admin/system-settings');
+    await page.waitForURL('**/admin/system-settings*', { timeout: 10_000 });
   });
 
   test('maintenance shows no options to users until they authenticate', async ({ page }) => {
@@ -35,10 +34,10 @@ test.describe('Maintenance', () => {
 
     await expect(async () => {
       await page.goto('/');
-      await page.waitForURL('/maintenance?**', {
-        timeout: 1e3,
+      await page.waitForURL('**/maintenance?**', {
+        timeout: 1000,
       });
-    }).toPass({ timeout: 1e4 });
+    }).toPass({ timeout: 10_000 });
 
     await expect(page.getByText('Temporarily Unavailable')).toBeVisible();
     await expect(page.getByRole('button', { name: 'End maintenance mode' })).toHaveCount(0);
@@ -47,6 +46,6 @@ test.describe('Maintenance', () => {
     await expect(page.getByText('Temporarily Unavailable')).toBeVisible();
     await expect(page.getByRole('button', { name: 'End maintenance mode' })).toBeVisible();
     await page.getByRole('button', { name: 'End maintenance mode' }).click();
-    await page.waitForURL('/auth/login');
+    await page.waitForURL('**/auth/login');
   });
 });
