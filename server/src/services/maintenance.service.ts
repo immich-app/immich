@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { OnEvent } from 'src/decorators';
-import { MaintenanceAuthDto } from 'src/dtos/maintenance.dto';
+import { MaintenanceAuthDto, SetMaintenanceModeDto } from 'src/dtos/maintenance.dto';
 import { SystemMetadataKey } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
 import { MaintenanceModeState } from 'src/types';
+import { deleteBackup, listBackups } from 'src/utils/backups';
 import { createMaintenanceLoginUrl, generateMaintenanceSecret, signMaintenanceJwt } from 'src/utils/maintenance';
 import { getExternalDomain } from 'src/utils/misc';
 
@@ -18,9 +19,14 @@ export class MaintenanceService extends BaseService {
       .then((state) => state ?? { isMaintenanceMode: false });
   }
 
-  async startMaintenance(username: string): Promise<{ jwt: string }> {
+  async startMaintenance(action: SetMaintenanceModeDto, username: string): Promise<{ jwt: string }> {
     const secret = generateMaintenanceSecret();
-    await this.systemMetadataRepository.set(SystemMetadataKey.MaintenanceMode, { isMaintenanceMode: true, secret });
+    await this.systemMetadataRepository.set(SystemMetadataKey.MaintenanceMode, {
+      isMaintenanceMode: true,
+      secret,
+      action,
+    });
+
     await this.eventRepository.emit('AppRestart', { isMaintenanceMode: true });
 
     return {
@@ -49,5 +55,27 @@ export class MaintenanceService extends BaseService {
     }
 
     return await createMaintenanceLoginUrl(baseUrl, auth, secret);
+  }
+
+  /**
+   * Backups
+   */
+
+  async listBackups(): Promise<Record<'backups' | 'failedBackups', string[]>> {
+    return listBackups(this.backupRepos);
+  }
+
+  async deleteBackup(filename: string): Promise<void> {
+    return deleteBackup(this.backupRepos, filename);
+  }
+
+  private get backupRepos() {
+    return {
+      logger: this.logger,
+      storage: this.storageRepository,
+      config: this.configRepository,
+      process: this.processRepository,
+      database: this.databaseRepository,
+    };
   }
 }

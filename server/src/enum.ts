@@ -664,7 +664,6 @@ export enum DatabaseLock {
 export enum MaintenanceAction {
   Start = 'start',
   End = 'end',
-  RestoreFlow = 'restore_flow',
   RestoreDatabase = 'restore_database',
 }
 

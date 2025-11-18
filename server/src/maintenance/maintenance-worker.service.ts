@@ -9,12 +9,16 @@ import { ImmichCookie, SystemMetadataKey } from 'src/enum';
 import { MaintenanceWebsocketRepository } from 'src/maintenance/maintenance-websocket.repository';
 import { AppRepository } from 'src/repositories/app.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
+import { DatabaseRepository } from 'src/repositories/database.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
+import { ProcessRepository } from 'src/repositories/process.repository';
+import { StorageRepository } from 'src/repositories/storage.repository';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
 import { type ApiService as _ApiService } from 'src/services/api.service';
 import { type BaseService as _BaseService } from 'src/services/base.service';
 import { type ServerService as _ServerService } from 'src/services/server.service';
 import { MaintenanceModeState } from 'src/types';
+import { deleteBackup, listBackups } from 'src/utils/backups';
 import { getConfig } from 'src/utils/config';
 import { createMaintenanceLoginUrl } from 'src/utils/maintenance';
 import { getExternalDomain } from 'src/utils/misc';
@@ -30,6 +34,9 @@ export class MaintenanceWorkerService {
     private configRepository: ConfigRepository,
     private systemMetadataRepository: SystemMetadataRepository,
     private maintenanceWorkerRepository: MaintenanceWebsocketRepository,
+    private storageRepository: StorageRepository,
+    private processRepository: ProcessRepository,
+    private databaseRepository: DatabaseRepository,
   ) {
     this.logger.setContext(this.constructor.name);
   }
@@ -157,5 +164,27 @@ export class MaintenanceWorkerService {
     this.maintenanceWorkerRepository.clientBroadcast('AppRestartV1', state);
     this.maintenanceWorkerRepository.serverSend('AppRestart', state);
     this.appRepository.exitApp();
+  }
+
+  /**
+   * Backups
+   */
+
+  async listBackups(): Promise<Record<'backups' | 'failedBackups', string[]>> {
+    return listBackups(this.backupRepos);
+  }
+
+  async deleteBackup(filename: string): Promise<void> {
+    return deleteBackup(this.backupRepos, filename);
+  }
+
+  private get backupRepos() {
+    return {
+      logger: this.logger,
+      storage: this.storageRepository,
+      config: this.configRepository,
+      process: this.processRepository,
+      database: this.databaseRepository,
+    };
   }
 }

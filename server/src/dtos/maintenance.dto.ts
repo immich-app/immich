@@ -4,6 +4,9 @@ import { ValidateEnum, ValidateString } from 'src/validation';
 export class SetMaintenanceModeDto {
   @ValidateEnum({ enum: MaintenanceAction, name: 'MaintenanceAction' })
   action!: MaintenanceAction;
+
+  @ValidateString({ optional: true })
+  restoreBackupFilename?: string;
 }
 
 export class MaintenanceLoginDto {

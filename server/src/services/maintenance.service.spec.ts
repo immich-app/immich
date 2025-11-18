@@ -1,4 +1,6 @@
-import { SystemMetadataKey } from 'src/enum';
+import { DateTime } from 'luxon';
+import { StorageCore } from 'src/cores/storage.core';
+import { MaintenanceAction, StorageFolder, SystemMetadataKey } from 'src/enum';
 import { MaintenanceService } from 'src/services/maintenance.service';
 import { newTestService, ServiceMocks } from 'test/utils';
 
@@ -36,11 +38,18 @@ describe(MaintenanceService.name, () => {
     });
 
     it('should return true if enabled', async () => {
-      mocks.systemMetadata.get.mockResolvedValue({ isMaintenanceMode: true, secret: '' });
+      mocks.systemMetadata.get.mockResolvedValue({
+        isMaintenanceMode: true,
+        secret: '',
+        action: { action: MaintenanceAction.Start },
+      });
 
       await expect(sut.getMaintenanceMode()).resolves.toEqual({
         isMaintenanceMode: true,
         secret: '',
+        action: {
+          action: 'start',
+        },
       });
 
       expect(mocks.systemMetadata.get).toHaveBeenCalled();
@@ -51,13 +60,23 @@ describe(MaintenanceService.name, () => {
     it('should set maintenance mode and return a secret', async () => {
       mocks.systemMetadata.get.mockResolvedValue({ isMaintenanceMode: false });
 
-      await expect(sut.startMaintenance('admin')).resolves.toMatchObject({
+      await expect(
+        sut.startMaintenance(
+          {
+            action: MaintenanceAction.Start,
+          },
+          'admin',
+        ),
+      ).resolves.toMatchObject({
         jwt: expect.any(String),
       });
 
       expect(mocks.systemMetadata.set).toHaveBeenCalledWith(SystemMetadataKey.MaintenanceMode, {
         isMaintenanceMode: true,
         secret: expect.stringMatching(/^\w{128}$/),
+        action: {
+          action: 'start',
+        },
       });
 
       expect(mocks.event.emit).toHaveBeenCalledWith('AppRestart', {
@@ -78,7 +97,13 @@ describe(MaintenanceService.name, () => {
     });
 
     it('should generate a login url with JWT', async () => {
-      mocks.systemMetadata.get.mockResolvedValue({ isMaintenanceMode: true, secret: 'secret' });
+      mocks.systemMetadata.get.mockResolvedValue({
+        isMaintenanceMode: true,
+        secret: 'secret',
+        action: {
+          action: MaintenanceAction.Start,
+        },
+      });
 
       await expect(
         sut.createLoginUrl({
@@ -104,6 +129,38 @@ describe(MaintenanceService.name, () => {
       ).resolves.toEqual(expect.stringMatching(/./));
 
       expect(mocks.systemMetadata.get).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  /**
+   * Backups
+   */
+
+  describe('listBackups', () => {
+    it('should give us all valid and failed backups', async () => {
+      mocks.storage.readdir.mockResolvedValue([
+        `immich-db-backup-${DateTime.fromISO('2025-07-25T11:02:16Z').toFormat("yyyyLLdd'T'HHmmss")}-v1.234.5-pg14.5.sql.gz.tmp`,
+        `immich-db-backup-${DateTime.fromISO('2025-07-27T11:01:16Z').toFormat("yyyyLLdd'T'HHmmss")}-v1.234.5-pg14.5.sql.gz`,
+        'immich-db-backup-1753789649000.sql.gz',
+        `immich-db-backup-${DateTime.fromISO('2025-07-29T11:01:16Z').toFormat("yyyyLLdd'T'HHmmss")}-v1.234.5-pg14.5.sql.gz`,
+      ]);
+
+      await expect(sut.listBackups()).resolves.toMatchObject({
+        backups: [
+          'immich-db-backup-20250729T110116-v1.234.5-pg14.5.sql.gz',
+          'immich-db-backup-20250727T110116-v1.234.5-pg14.5.sql.gz',
+          'immich-db-backup-1753789649000.sql.gz',
+        ],
+        failedBackups: ['immich-db-backup-20250725T110216-v1.234.5-pg14.5.sql.gz.tmp'],
+      });
+    });
+  });
+
+  describe('deleteBackup', () => {
+    it('should unlink the target file', async () => {
+      await sut.deleteBackup('filename');
+      expect(mocks.storage.unlink).toHaveBeenCalledTimes(1);
+      expect(mocks.storage.unlink).toHaveBeenCalledWith(`${StorageCore.getBaseFolder(StorageFolder.Backups)}/filename`);
     });
   });
 });

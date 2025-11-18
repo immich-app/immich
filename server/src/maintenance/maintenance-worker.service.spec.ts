@@ -1,6 +1,6 @@
 import { UnauthorizedException } from '@nestjs/common';
 import { SignJWT } from 'jose';
-import { SystemMetadataKey } from 'src/enum';
+import { MaintenanceAction, SystemMetadataKey } from 'src/enum';
 import { MaintenanceWebsocketRepository } from 'src/maintenance/maintenance-websocket.repository';
 import { MaintenanceWorkerService } from 'src/maintenance/maintenance-worker.service';
 import { automock, getMocks, ServiceMocks } from 'test/utils';
@@ -19,6 +19,9 @@ describe(MaintenanceWorkerService.name, () => {
       mocks.config,
       mocks.systemMetadata as never,
       maintenanceWorkerRepositoryMock,
+      mocks.storage as never,
+      mocks.process,
+      mocks.database as never,
     );
   });
 
@@ -42,7 +45,14 @@ describe(MaintenanceWorkerService.name, () => {
     const RE_LOGIN_URL = /https:\/\/my.immich.app\/maintenance\?token=([A-Za-z0-9-_]*\.[A-Za-z0-9-_]*\.[A-Za-z0-9-_]*)/;
 
     it('should log a valid login URL', async () => {
-      mocks.systemMetadata.get.mockResolvedValue({ isMaintenanceMode: true, secret: 'secret' });
+      mocks.systemMetadata.get.mockResolvedValue({
+        isMaintenanceMode: true,
+        secret: 'secret',
+        action: {
+          action: MaintenanceAction.Start,
+        },
+      });
+
       await expect(sut.logSecret()).resolves.toBeUndefined();
       expect(mocks.logger.log).toHaveBeenCalledWith(expect.stringMatching(RE_LOGIN_URL));
 
@@ -63,7 +73,13 @@ describe(MaintenanceWorkerService.name, () => {
     });
 
     it('should parse cookie properly', async () => {
-      mocks.systemMetadata.get.mockResolvedValue({ isMaintenanceMode: true, secret: 'secret' });
+      mocks.systemMetadata.get.mockResolvedValue({
+        isMaintenanceMode: true,
+        secret: 'secret',
+        action: {
+          action: MaintenanceAction.Start,
+        },
+      });
 
       await expect(
         sut.authenticate({
@@ -79,7 +95,13 @@ describe(MaintenanceWorkerService.name, () => {
     });
 
     it('should fail with expired JWT', async () => {
-      mocks.systemMetadata.get.mockResolvedValue({ isMaintenanceMode: true, secret: 'secret' });
+      mocks.systemMetadata.get.mockResolvedValue({
+        isMaintenanceMode: true,
+        secret: 'secret',
+        action: {
+          action: MaintenanceAction.Start,
+        },
+      });
 
       const jwt = await new SignJWT({})
         .setProtectedHeader({ alg: 'HS256' })
@@ -91,7 +113,13 @@ describe(MaintenanceWorkerService.name, () => {
     });
 
     it('should succeed with valid JWT', async () => {
-      mocks.systemMetadata.get.mockResolvedValue({ isMaintenanceMode: true, secret: 'secret' });
+      mocks.systemMetadata.get.mockResolvedValue({
+        isMaintenanceMode: true,
+        secret: 'secret',
+        action: {
+          action: MaintenanceAction.Start,
+        },
+      });
 
       const jwt = await new SignJWT({ _mockValue: true })
         .setProtectedHeader({ alg: 'HS256' })
