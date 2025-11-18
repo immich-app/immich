@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { handleAddExclusionPattern } from '$lib/services/library.service';
+  import { handleAddLibraryExclusionPattern } from '$lib/services/library.service';
   import type { LibraryResponseDto } from '@immich/sdk';
   import { Button, Field, HStack, Input, Modal, ModalBody, ModalFooter, Text } from '@immich/ui';
   import { mdiFolderSync } from '@mdi/js';
@@ -14,8 +14,7 @@
   let exclusionPattern = $state('');
 
   const onsubmit = async () => {
-    const success = await handleAddExclusionPattern(library, exclusionPattern);
-
+    const success = await handleAddLibraryExclusionPattern(library, exclusionPattern);
     if (success) {
       onClose();
     }

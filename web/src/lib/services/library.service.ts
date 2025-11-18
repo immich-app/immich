@@ -21,7 +21,7 @@ import {
   type LibraryResponseDto,
 } from '@immich/sdk';
 import { modalManager, toastManager } from '@immich/ui';
-import { mdiFormTextbox, mdiPencilOutline, mdiPlusBoxOutline, mdiSync, mdiTrashCanOutline } from '@mdi/js';
+import { mdiPencilOutline, mdiPlusBoxOutline, mdiSync, mdiTrashCanOutline } from '@mdi/js';
 import type { MessageFormatter } from 'svelte-i18n';
 
 export const getLibrariesActions = ($t: MessageFormatter) => {
@@ -34,21 +34,15 @@ export const getLibrariesActions = ($t: MessageFormatter) => {
   const Create: ActionItem = {
     title: $t('create_library'),
     icon: mdiPlusBoxOutline,
-    onSelect: () => void handleLibraryCreate(),
+    onSelect: () => void handleCreateLibrary(),
   };
 
   return { ScanAll, Create };
 };
 
 export const getLibraryActions = ($t: MessageFormatter, library: LibraryResponseDto) => {
-  const Edit: ActionItem = {
-    icon: mdiPencilOutline,
-    title: $t('edit'),
-    onSelect: () => void goto(`${AppRoute.ADMIN_LIBRARY_MANAGEMENT}/${library.id}`),
-  };
-
   const Rename: ActionItem = {
-    icon: mdiFormTextbox,
+    icon: mdiPencilOutline,
     title: $t('rename'),
     onSelect: () => void modalManager.show(LibraryRenameModal, { library }),
   };
@@ -57,7 +51,7 @@ export const getLibraryActions = ($t: MessageFormatter, library: LibraryResponse
     icon: mdiTrashCanOutline,
     title: $t('delete'),
     color: 'danger',
-    onSelect: () => void handleLibraryDelete(library),
+    onSelect: () => void handleDeleteLibrary(library),
   };
 
   const AddFolder: ActionItem = {
@@ -75,10 +69,10 @@ export const getLibraryActions = ($t: MessageFormatter, library: LibraryResponse
   const Scan: ActionItem = {
     icon: mdiSync,
     title: $t('scan_library'),
-    onSelect: () => void handleLibraryScan(library),
+    onSelect: () => void handleScanLibrary(library),
   };
 
-  return { Edit, Rename, Delete, AddFolder, AddExclusionPattern, Scan };
+  return { Rename, Delete, AddFolder, AddExclusionPattern, Scan };
 };
 
 export const getLibraryFolderActions = ($t: MessageFormatter, library: LibraryResponseDto, folder: string) => {
@@ -91,7 +85,7 @@ export const getLibraryFolderActions = ($t: MessageFormatter, library: LibraryRe
   const Delete: ActionItem = {
     icon: mdiTrashCanOutline,
     title: $t('delete'),
-    onSelect: () => void handleLibraryDeleteFolder(library, folder),
+    onSelect: () => void handleDeleteLibraryFolder(library, folder),
   };
 
   return { Edit, Delete };
@@ -128,7 +122,7 @@ const handleScanAllLibraries = async () => {
   }
 };
 
-const handleLibraryScan = async (library: LibraryResponseDto) => {
+const handleScanLibrary = async (library: LibraryResponseDto) => {
   const $t = await getFormatter();
   try {
     await scanLibrary({ id: library.id });
@@ -138,7 +132,11 @@ const handleLibraryScan = async (library: LibraryResponseDto) => {
   }
 };
 
-export const handleLibraryCreate = async () => {
+export const handleViewLibrary = async (library: LibraryResponseDto) => {
+  await goto(`${AppRoute.ADMIN_LIBRARY_MANAGEMENT}/${library.id}`);
+};
+
+export const handleCreateLibrary = async () => {
   const $t = await getFormatter();
 
   const ownerId = await modalManager.show(LibraryUserPickerModal, {});
@@ -155,7 +153,7 @@ export const handleLibraryCreate = async () => {
   }
 };
 
-export const handleLibraryRename = async (library: { id: string }, name?: string) => {
+export const handleRenameLibrary = async (library: { id: string }, name?: string) => {
   const $t = await getFormatter();
 
   if (!name) {
@@ -177,7 +175,7 @@ export const handleLibraryRename = async (library: { id: string }, name?: string
   return true;
 };
 
-const handleLibraryDelete = async (library: LibraryResponseDto) => {
+const handleDeleteLibrary = async (library: LibraryResponseDto) => {
   const $t = await getFormatter();
 
   const confirmed = await modalManager.showDialog({
@@ -206,7 +204,7 @@ const handleLibraryDelete = async (library: LibraryResponseDto) => {
   }
 };
 
-export const handleLibraryAddFolder = async (library: LibraryResponseDto, folder: string) => {
+export const handleAddLibraryFolder = async (library: LibraryResponseDto, folder: string) => {
   const $t = await getFormatter();
 
   if (library.importPaths.includes(folder)) {
@@ -229,7 +227,7 @@ export const handleLibraryAddFolder = async (library: LibraryResponseDto, folder
   return true;
 };
 
-export const handleLibraryEditFolder = async (library: LibraryResponseDto, oldFolder: string, newFolder: string) => {
+export const handleEditLibraryFolder = async (library: LibraryResponseDto, oldFolder: string, newFolder: string) => {
   const $t = await getFormatter();
 
   if (oldFolder === newFolder) {
@@ -250,10 +248,13 @@ export const handleLibraryEditFolder = async (library: LibraryResponseDto, oldFo
   return true;
 };
 
-const handleLibraryDeleteFolder = async (library: LibraryResponseDto, folder: string) => {
+const handleDeleteLibraryFolder = async (library: LibraryResponseDto, folder: string) => {
   const $t = await getFormatter();
 
-  const confirmed = await modalManager.showDialog({ prompt: $t('admin.library_delete_folder_prompt') });
+  const confirmed = await modalManager.showDialog({
+    prompt: $t('admin.library_remove_folder_prompt'),
+    confirmText: $t('remove'),
+  });
 
   if (!confirmed) {
     return false;
@@ -274,7 +275,7 @@ const handleLibraryDeleteFolder = async (library: LibraryResponseDto, folder: st
   return true;
 };
 
-export const handleAddExclusionPattern = async (library: LibraryResponseDto, exclusionPattern: string) => {
+export const handleAddLibraryExclusionPattern = async (library: LibraryResponseDto, exclusionPattern: string) => {
   const $t = await getFormatter();
 
   if (library.exclusionPatterns.includes(exclusionPattern)) {
@@ -327,7 +328,7 @@ export const handleEditExclusionPattern = async (
 const handleDeleteExclusionPattern = async (library: LibraryResponseDto, exclusionPattern: string) => {
   const $t = await getFormatter();
 
-  const confirmed = await modalManager.showDialog({ prompt: $t('admin.library_delete_exclusion_pattern_prompt') });
+  const confirmed = await modalManager.showDialog({ prompt: $t('admin.library_remove_exclusion_pattern_prompt') });
 
   if (!confirmed) {
     return false;

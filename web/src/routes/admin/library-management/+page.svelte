@@ -5,13 +5,11 @@
   import OnEvents from '$lib/components/OnEvents.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import { AppRoute } from '$lib/constants';
-  import { getLibrariesActions, getLibraryActions, handleLibraryCreate } from '$lib/services/library.service';
+  import { getLibrariesActions, handleCreateLibrary, handleViewLibrary } from '$lib/services/library.service';
   import { locale } from '$lib/stores/preferences.store';
-  import type { ActionItem } from '$lib/types';
   import { getBytesWithUnit } from '$lib/utils/byte-units';
   import { getLibrary, getLibraryStatistics, getUserAdmin, type LibraryResponseDto } from '@immich/sdk';
-  import { IconButton, MenuItemType, menuManager } from '@immich/ui';
-  import { mdiDotsVertical } from '@mdi/js';
+  import { Button } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
   import type { PageData } from './$types';
@@ -25,10 +23,6 @@
   let libraries = $state(data.libraries);
   let statistics = $state(data.statistics);
   let owners = $state(data.owners);
-
-  const handleOpen = async (event: Event, items: Array<ActionItem | MenuItemType>) => {
-    await menuManager.show({ target: event.target as HTMLElement, items });
-  };
 
   const handleLibraryAdd = async (library: LibraryResponseDto) => {
     statistics[library.id] = await getLibraryStatistics({ id: library.id });
@@ -49,7 +43,7 @@
     statistics[library.id] = await getLibraryStatistics({ id: library.id });
   };
 
-  const handleLibraryDelete = ({ id }: { id: string }) => {
+  const handleDeleteLibrary = ({ id }: { id: string }) => {
     libraries = libraries.filter((library) => library.id !== id);
     delete statistics[id];
     delete owners[id];
@@ -61,7 +55,7 @@
 <OnEvents
   onLibraryCreate={handleLibraryAdd}
   onLibraryUpdate={handleLibraryUpdate}
-  onLibraryDelete={handleLibraryDelete}
+  onLibraryDelete={handleDeleteLibrary}
 />
 
 <AdminPageLayout title={data.meta.title}>
@@ -93,7 +87,6 @@
             {#each libraries as library (library.id + library.name)}
               {@const { photos, usage, videos } = statistics[library.id]}
               {@const [diskUsage, diskUsageUnit] = getBytesWithUnit(usage, 0)}
-              {@const { Edit, Delete, Scan, Rename } = getLibraryActions($t, library)}
               <tr
                 class="grid grid-cols-6 h-20 w-full place-items-center text-center dark:text-immich-dark-fg even:bg-subtle/20 odd:bg-subtle/80"
               >
@@ -113,20 +106,14 @@
                 </td>
 
                 <td class="flex gap-2 text-ellipsis px-4 text-sm">
-                  <IconButton
-                    shape="round"
-                    color="primary"
-                    icon={mdiDotsVertical}
-                    aria-label={$t('library_options')}
-                    onclick={(event: Event) => handleOpen(event, [Edit, Scan, Rename, MenuItemType.Divider, Delete])}
-                  />
+                  <Button size="small" onclick={() => handleViewLibrary(library)}>{$t('view')}</Button>
                 </td>
               </tr>
             {/each}
           </tbody>
         </table>
       {:else}
-        <EmptyPlaceholder text={$t('no_libraries_message')} onClick={handleLibraryCreate} />
+        <EmptyPlaceholder text={$t('no_libraries_message')} onClick={handleCreateLibrary} class="mt-10 mx-auto" />
       {/if}
     </div>
   </section>

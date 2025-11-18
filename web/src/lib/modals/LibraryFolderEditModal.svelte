@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { handleLibraryEditFolder } from '$lib/services/library.service';
+  import { handleEditLibraryFolder } from '$lib/services/library.service';
   import type { LibraryResponseDto } from '@immich/sdk';
   import { Button, Field, HStack, Input, Modal, ModalBody, ModalFooter, Text } from '@immich/ui';
   import { mdiFolderSync } from '@mdi/js';
@@ -16,7 +16,7 @@
   let newFolder = $state(folder);
 
   const onsubmit = async () => {
-    const success = await handleLibraryEditFolder(library, folder, newFolder);
+    const success = await handleEditLibraryFolder(library, folder, newFolder);
     if (success) {
       onClose();
     }

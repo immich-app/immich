@@ -67,30 +67,31 @@
         </CardHeader>
         <CardBody>
           <div class="px-4 pb-7">
-            <table class="w-full">
-              <tbody>
-                {#each library.importPaths as folder (folder)}
-                  {@const { Edit, Delete } = getLibraryFolderActions($t, library, folder)}
-                  <tr class="h-12">
-                    <td>
-                      <Code>{folder}</Code>
-                    </td>
-                    <td class="flex gap-2 justify-end">
-                      <TableButton action={Edit} />
-                      <TableButton action={Delete} />
-                    </td>
-                  </tr>
-                {:else}
-                  <EmptyPlaceholder
-                    src={emptyFoldersUrl}
-                    text={$t('admin.library_folder_description')}
-                    fullWidth
-                    margin=""
-                    onClick={() => modalManager.show(LibraryFolderAddModal, { library })}
-                  />
-                {/each}
-              </tbody>
-            </table>
+            {#if library.importPaths.length === 0}
+              <EmptyPlaceholder
+                src={emptyFoldersUrl}
+                text={$t('admin.library_folder_description')}
+                fullWidth
+                onClick={() => modalManager.show(LibraryFolderAddModal, { library })}
+              />
+            {:else}
+              <table class="w-full">
+                <tbody>
+                  {#each library.importPaths as folder (folder)}
+                    {@const { Edit, Delete } = getLibraryFolderActions($t, library, folder)}
+                    <tr class="h-12">
+                      <td>
+                        <Code>{folder}</Code>
+                      </td>
+                      <td class="flex gap-2 justify-end">
+                        <TableButton action={Edit} />
+                        <TableButton action={Delete} />
+                      </td>
+                    </tr>
+                  {/each}
+                </tbody>
+              </table>
+            {/if}
           </div>
         </CardBody>
       </Card>

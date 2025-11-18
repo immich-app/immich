@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { handleLibraryRename } from '$lib/services/library.service';
+  import { handleRenameLibrary } from '$lib/services/library.service';
   import type { LibraryResponseDto } from '@immich/sdk';
   import { Button, Field, HStack, Input, Modal, ModalBody, ModalFooter } from '@immich/ui';
   import { mdiRenameOutline } from '@mdi/js';
@@ -15,7 +15,7 @@
   let newName = $state(library.name);
 
   const onsubmit = async () => {
-    const success = await handleLibraryRename(library, newName);
+    const success = await handleRenameLibrary(library, newName);
 
     if (success) {
       onClose();

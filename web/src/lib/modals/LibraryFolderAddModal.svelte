@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { handleLibraryAddFolder } from '$lib/services/library.service';
+  import { handleAddLibraryFolder } from '$lib/services/library.service';
   import type { LibraryResponseDto } from '@immich/sdk';
   import { Button, Field, HStack, Input, Modal, ModalBody, ModalFooter, Text } from '@immich/ui';
   import { mdiFolderSync } from '@mdi/js';
@@ -14,7 +14,7 @@
   let folder = $state('');
 
   const onsubmit = async () => {
-    const success = await handleLibraryAddFolder(library, folder);
+    const success = await handleAddLibraryFolder(library, folder);
 
     if (success) {
       onClose();
