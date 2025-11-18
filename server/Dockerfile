@@ -55,7 +55,9 @@ COPY --from=ghcr.io/jdx/mise:2025.11.3 /usr/local/bin/mise /usr/local/bin/mise
 WORKDIR /usr/src/app
 COPY ./plugins/mise.toml ./plugins/
 ENV MISE_TRUSTED_CONFIG_PATHS=/usr/src/app/plugins/mise.toml
-RUN mise install --cd plugins
+ENV MISE_DATA_DIR=/buildcache/mise
+RUN --mount=type=cache,id=mise-tools,target=/buildcache/mise \
+  mise install --cd plugins
 
 COPY ./plugins ./plugins/
 # Build plugins
