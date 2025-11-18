@@ -264,9 +264,8 @@ class ActionNotifier extends Notifier<void> {
   }
 
   Future<ActionResult?> deleteLocal(ActionSource source, BuildContext context) async {
-    // Always perform the operation if there is only one merged asset
     final assets = _getAssets(source);
-    bool? backedUpOnly = assets.length == 1 && assets.first.storage == AssetState.merged
+    bool? backedUpOnly = assets.every((asset) => asset.storage == AssetState.merged)
         ? true
         : await showDialog<bool>(
             context: context,

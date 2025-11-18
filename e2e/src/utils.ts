@@ -6,6 +6,7 @@ import {
   CheckExistingAssetsDto,
   CreateAlbumDto,
   CreateLibraryDto,
+  MaintenanceAction,
   MetadataSearchDto,
   Permission,
   PersonCreateDto,
@@ -36,6 +37,7 @@ import {
   scanLibrary,
   searchAssets,
   setBaseUrl,
+  setMaintenanceMode,
   signUpAdmin,
   tagAssets,
   updateAdminOnboarding,
@@ -515,6 +517,42 @@ export const utils = {
         sameSite: 'Lax',
       },
     ]),
+
+  setMaintenanceAuthCookie: async (context: BrowserContext, token: string, domain = '127.0.0.1') =>
+    await context.addCookies([
+      {
+        name: 'immich_maintenance_token',
+        value: token,
+        domain,
+        path: '/',
+        expires: 2_058_028_213,
+        httpOnly: true,
+        secure: false,
+        sameSite: 'Lax',
+      },
+    ]),
+
+  enterMaintenance: async (accessToken: string) => {
+    let setCookie: string[] | undefined;
+
+    await setMaintenanceMode(
+      {
+        setMaintenanceModeDto: {
+          action: MaintenanceAction.Start,
+        },
+      },
+      {
+        headers: asBearerAuth(accessToken),
+        fetch: (...args: Parameters<typeof fetch>) =>
+          fetch(...args).then((response) => {
+            setCookie = response.headers.getSetCookie();
+            return response;
+          }),
+      },
+    );
+
+    return setCookie;
+  },
 
   resetTempFolder: () => {
     rmSync(`${testAssetDir}/temp`, { recursive: true, force: true });
