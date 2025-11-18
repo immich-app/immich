@@ -25,11 +25,13 @@ class MaintenanceAction {
 
   static const start = MaintenanceAction._(r'start');
   static const end = MaintenanceAction._(r'end');
+  static const restoreDatabase = MaintenanceAction._(r'restore_database');
 
   /// List of all possible values in this [enum][MaintenanceAction].
   static const values = <MaintenanceAction>[
     start,
     end,
+    restoreDatabase,
   ];
 
   static MaintenanceAction? fromJson(dynamic value) => MaintenanceActionTypeTransformer().decode(value);
@@ -70,6 +72,7 @@ class MaintenanceActionTypeTransformer {
       switch (data) {
         case r'start': return MaintenanceAction.start;
         case r'end': return MaintenanceAction.end;
+        case r'restore_database': return MaintenanceAction.restoreDatabase;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');

@@ -42,6 +42,7 @@ export type ActivityStatisticsResponseDto = {
 };
 export type SetMaintenanceModeDto = {
     action: MaintenanceAction;
+    restoreBackupFilename?: string;
 };
 export type MaintenanceLoginDto = {
     token?: string;
@@ -5053,7 +5054,8 @@ export enum UserAvatarColor {
 }
 export enum MaintenanceAction {
     Start = "start",
-    End = "end"
+    End = "end",
+    RestoreDatabase = "restore_database"
 }
 export enum NotificationLevel {
     Success = "success",

@@ -16526,7 +16526,8 @@
       "MaintenanceAction": {
         "enum": [
           "start",
-          "end"
+          "end",
+          "restore_database"
         ],
         "type": "string"
       },
@@ -19133,6 +19134,9 @@
                 "$ref": "#/components/schemas/MaintenanceAction"
               }
             ]
+          },
+          "restoreBackupFilename": {
+            "type": "string"
           }
         },
         "required": [
