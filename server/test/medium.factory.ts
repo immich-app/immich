@@ -36,6 +36,7 @@ import { NotificationRepository } from 'src/repositories/notification.repository
 import { OcrRepository } from 'src/repositories/ocr.repository';
 import { PartnerRepository } from 'src/repositories/partner.repository';
 import { PersonRepository } from 'src/repositories/person.repository';
+import { PluginRepository } from 'src/repositories/plugin.repository';
 import { SearchRepository } from 'src/repositories/search.repository';
 import { SessionRepository } from 'src/repositories/session.repository';
 import { SharedLinkAssetRepository } from 'src/repositories/shared-link-asset.repository';
@@ -49,6 +50,7 @@ import { TagRepository } from 'src/repositories/tag.repository';
 import { TelemetryRepository } from 'src/repositories/telemetry.repository';
 import { UserRepository } from 'src/repositories/user.repository';
 import { VersionHistoryRepository } from 'src/repositories/version-history.repository';
+import { WorkflowRepository } from 'src/repositories/workflow.repository';
 import { DB } from 'src/schema';
 import { AlbumTable } from 'src/schema/tables/album.table';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
@@ -380,6 +382,7 @@ const newRealRepository = <T>(key: ClassConstructor<T>, db: Kysely<DB>): T => {
     case OcrRepository:
     case PartnerRepository:
     case PersonRepository:
+    case PluginRepository:
     case SearchRepository:
     case SessionRepository:
     case SharedLinkRepository:
@@ -389,7 +392,8 @@ const newRealRepository = <T>(key: ClassConstructor<T>, db: Kysely<DB>): T => {
     case SyncCheckpointRepository:
     case SystemMetadataRepository:
     case UserRepository:
-    case VersionHistoryRepository: {
+    case VersionHistoryRepository:
+    case WorkflowRepository: {
       return new key(db);
     }
 
@@ -441,13 +445,15 @@ const newMockRepository = <T>(key: ClassConstructor<T>) => {
     case OcrRepository:
     case PartnerRepository:
     case PersonRepository:
+    case PluginRepository:
     case SessionRepository:
     case SyncRepository:
     case SyncCheckpointRepository:
     case SystemMetadataRepository:
     case UserRepository:
     case VersionHistoryRepository:
-    case TagRepository: {
+    case TagRepository:
+    case WorkflowRepository: {
       return automock(key);
     }
 

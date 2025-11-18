@@ -12,7 +12,7 @@ export function updateGeometry(timelineManager: TimelineManager, month: MonthGro
     if (!month.isHeightActual) {
       const unwrappedWidth = (3 / 2) * month.assetsCount * timelineManager.rowHeight * (7 / 10);
       const rows = Math.ceil(unwrappedWidth / viewportWidth);
-      const height = 51 + Math.max(1, rows) * timelineManager.rowHeight;
+      const height = timelineManager.headerHeight + Math.max(1, rows) * timelineManager.rowHeight;
       month.height = height;
     }
     return;

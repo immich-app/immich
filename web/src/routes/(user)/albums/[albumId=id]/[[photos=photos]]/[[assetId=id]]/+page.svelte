@@ -30,6 +30,7 @@
   import Timeline from '$lib/components/timeline/Timeline.svelte';
   import { AlbumPageViewMode, AppRoute } from '$lib/constants';
   import { activityManager } from '$lib/managers/activity-manager.svelte';
+  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import AlbumOptionsModal from '$lib/modals/AlbumOptionsModal.svelte';
@@ -39,7 +40,6 @@
   import { handleDeleteAlbum, handleDownloadAlbum } from '$lib/services/album.service';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { featureFlags } from '$lib/stores/server-config.store';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { preferences, user } from '$lib/stores/user.store';
   import { handlePromiseError } from '$lib/utils';
@@ -298,9 +298,6 @@
 
   let timelineManager = $state<TimelineManager>() as TimelineManager;
   const options = $derived.by(() => {
-    if (viewMode === AlbumPageViewMode.VIEW) {
-      return { albumId, order: albumOrder };
-    }
     if (viewMode === AlbumPageViewMode.SELECT_ASSETS) {
       return {
         visibility: AssetVisibility.Timeline,
@@ -308,7 +305,7 @@
         timelineAlbumId: albumId,
       };
     }
-    return {};
+    return { albumId, order: albumOrder };
   });
 
   const isShared = $derived(viewMode === AlbumPageViewMode.SELECT_ASSETS ? false : album.albumUsers.length > 0);
@@ -622,7 +619,7 @@
               />
             {/if}
 
-            {#if $featureFlags.loaded && $featureFlags.map}
+            {#if featureFlagsManager.value.map}
               <AlbumMap {album} />
             {/if}
 

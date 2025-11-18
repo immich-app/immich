@@ -18,7 +18,7 @@ class DeprecatedApi {
 
   /// Create a partner
   ///
-  /// This property was deprecated in v1.141.0. Create a new partner to share assets with.
+  /// Create a new partner to share assets with.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -53,7 +53,7 @@ class DeprecatedApi {
 
   /// Create a partner
   ///
-  /// This property was deprecated in v1.141.0. Create a new partner to share assets with.
+  /// Create a new partner to share assets with.
   ///
   /// Parameters:
   ///
@@ -75,7 +75,7 @@ class DeprecatedApi {
 
   /// Retrieve assets by device ID
   ///
-  /// This property was deprecated in v2.0.0. Get all asset of a device that are in the database, ID only.
+  /// Get all asset of a device that are in the database, ID only.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -110,7 +110,7 @@ class DeprecatedApi {
 
   /// Retrieve assets by device ID
   ///
-  /// This property was deprecated in v2.0.0. Get all asset of a device that are in the database, ID only.
+  /// Get all asset of a device that are in the database, ID only.
   ///
   /// Parameters:
   ///
@@ -135,7 +135,7 @@ class DeprecatedApi {
 
   /// Get delta sync for user
   ///
-  /// This property was deprecated in v2.0.0. Retrieve changed assets since the last sync for the authenticated user.
+  /// Retrieve changed assets since the last sync for the authenticated user.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -169,7 +169,7 @@ class DeprecatedApi {
 
   /// Get delta sync for user
   ///
-  /// This property was deprecated in v2.0.0. Retrieve changed assets since the last sync for the authenticated user.
+  /// Retrieve changed assets since the last sync for the authenticated user.
   ///
   /// Parameters:
   ///
@@ -191,7 +191,7 @@ class DeprecatedApi {
 
   /// Get full sync for user
   ///
-  /// This property was deprecated in v2.0.0. Retrieve all assets for a full synchronization for the authenticated user.
+  /// Retrieve all assets for a full synchronization for the authenticated user.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -225,7 +225,7 @@ class DeprecatedApi {
 
   /// Get full sync for user
   ///
-  /// This property was deprecated in v2.0.0. Retrieve all assets for a full synchronization for the authenticated user.
+  /// Retrieve all assets for a full synchronization for the authenticated user.
   ///
   /// Parameters:
   ///
@@ -250,7 +250,7 @@ class DeprecatedApi {
 
   /// Get random assets
   ///
-  /// This property was deprecated in v1.116.0. Retrieve a specified number of random assets for the authenticated user.
+  /// Retrieve a specified number of random assets for the authenticated user.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -288,7 +288,7 @@ class DeprecatedApi {
 
   /// Get random assets
   ///
-  /// This property was deprecated in v1.116.0. Retrieve a specified number of random assets for the authenticated user.
+  /// Retrieve a specified number of random assets for the authenticated user.
   ///
   /// Parameters:
   ///
@@ -313,7 +313,7 @@ class DeprecatedApi {
 
   /// Replace asset
   ///
-  /// This property was deprecated in v1.142.0. Replace the asset with new file, without changing its id.
+  /// Replace the asset with new file, without changing its id.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -407,7 +407,7 @@ class DeprecatedApi {
 
   /// Replace asset
   ///
-  /// This property was deprecated in v1.142.0. Replace the asset with new file, without changing its id.
+  /// Replace the asset with new file, without changing its id.
   ///
   /// Parameters:
   ///
