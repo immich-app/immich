@@ -43,6 +43,8 @@ services:
       - model-cache:/cache
     env_file:
       - .env
+    ports:
+      - '3003:3003'
     restart: always
     healthcheck:
       disable: false
