@@ -59,7 +59,7 @@
     onEscape={handleEscape}
   >
     {#snippet empty()}
-      <EmptyPlaceholder text={$t('no_favorites_message')} />
+      <EmptyPlaceholder text={$t('no_favorites_message')} class="mt-10 mx-auto" />
     {/snippet}
   </Timeline>
 </UserPageLayout>
