@@ -5,6 +5,7 @@ import 'package:immich_mobile/domain/models/memory.model.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/pages/drift_memory.page.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
+import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/memory.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 
@@ -28,8 +29,11 @@ class DriftMemoryLane extends ConsumerWidget {
         backgroundColor: Colors.black,
         overlayColor: WidgetStateProperty.all(Colors.white.withValues(alpha: 0.1)),
         onTap: (index) {
-          final asset = memories[index].assets[0];
-          DriftMemoryPage.setCurrentAsset(ref, asset);
+          ref.read(hapticFeedbackProvider.notifier).heavyImpact();
+          if (memories[index].assets.isNotEmpty) {
+            final asset = memories[index].assets.first;
+            DriftMemoryPage.setMemory(ref, asset);
+          }
           context.pushRoute(DriftMemoryRoute(memories: memories, memoryIndex: index));
         },
         children: memories
