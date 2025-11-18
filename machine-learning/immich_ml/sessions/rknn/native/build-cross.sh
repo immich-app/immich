@@ -55,7 +55,7 @@ echo "[build-cross] Building ${OUTPUT_PATH}"
     -Wall -Wextra -Wno-unused-parameter \
     -D_DEFAULT_SOURCE -D_GNU_SOURCE \
     -Wl,-z,relro,-z,now \
-    -Wl,-rpath,'\$ORIGIN' -Wl,-rpath,'\$ORIGIN/.' \
+    -Wl,-rpath,"\$ORIGIN" -Wl,-rpath,"\$ORIGIN/." \
     "${PYBIND_FLAGS[@]}" \
     -I "$INCLUDE_DIR" \
     -L"$LIB_DIR" -l"$LIB_NAME" \
