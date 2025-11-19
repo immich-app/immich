@@ -20,7 +20,6 @@ describe(MaintenanceWorkerService.name, () => {
     });
 
     maintenanceEphemeralStateRepositoryMock = automock(MaintenanceEphemeralStateRepository, {
-      args: [mocks.logger],
       strict: false,
     });
 
@@ -49,7 +48,7 @@ describe(MaintenanceWorkerService.name, () => {
         }),
       );
 
-      expect(mocks.systemMetadata.get).toHaveBeenCalled();
+      expect(mocks.systemMetadata.get).toHaveBeenCalledTimes(0);
     });
   });
 
