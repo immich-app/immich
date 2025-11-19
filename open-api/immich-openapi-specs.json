@@ -372,6 +372,40 @@
         "x-immich-state": "Alpha"
       }
     },
+    "/admin/maintenance/admin/maintenance/status": {
+      "get": {
+        "description": "Fetch information about the currently running maintenance action.",
+        "operationId": "maintenanceStatus",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MaintenanceStatusResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Get maintenance mode status",
+        "tags": [
+          "Maintenance (admin)"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v9.9.9",
+            "state": "Added"
+          },
+          {
+            "version": "v9.9.9",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-state": "Alpha"
+      }
+    },
     "/admin/maintenance/login": {
       "post": {
         "description": "Login with maintenance token or cookie to receive current information and perform further actions.",
@@ -16545,6 +16579,28 @@
       "MaintenanceLoginDto": {
         "properties": {
           "token": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "MaintenanceStatusResponseDto": {
+        "properties": {
+          "action": {
+            "enum": [
+              "start",
+              "end",
+              "restore_database"
+            ],
+            "type": "string"
+          },
+          "error": {
+            "type": "string"
+          },
+          "progress": {
+            "type": "number"
+          },
+          "task": {
             "type": "string"
           }
         },

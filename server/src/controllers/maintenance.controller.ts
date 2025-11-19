@@ -1,9 +1,14 @@
-import { BadRequestException, Body, Controller, Post, Res } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Post, Res } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { MaintenanceAuthDto, MaintenanceLoginDto, SetMaintenanceModeDto } from 'src/dtos/maintenance.dto';
+import {
+  MaintenanceAuthDto,
+  MaintenanceLoginDto,
+  MaintenanceStatusResponseDto,
+  SetMaintenanceModeDto,
+} from 'src/dtos/maintenance.dto';
 import { ApiTag, ImmichCookie, MaintenanceAction, Permission } from 'src/enum';
 import { Auth, Authenticated, GetLoginDetails } from 'src/middleware/auth.guard';
 import { LoginDetails } from 'src/services/auth.service';
@@ -14,6 +19,16 @@ import { respondWithCookie } from 'src/utils/response';
 @Controller('admin/maintenance')
 export class MaintenanceController {
   constructor(private service: MaintenanceService) {}
+
+  @Get('admin/maintenance/status')
+  @Endpoint({
+    summary: 'Get maintenance mode status',
+    description: 'Fetch information about the currently running maintenance action.',
+    history: new HistoryBuilder().added('v9.9.9').alpha('v9.9.9'),
+  })
+  maintenanceStatus(): MaintenanceStatusResponseDto {
+    return {};
+  }
 
   @Post('login')
   @Endpoint({

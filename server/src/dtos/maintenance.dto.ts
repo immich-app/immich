@@ -17,3 +17,11 @@ export class MaintenanceLoginDto {
 export class MaintenanceAuthDto {
   username!: string;
 }
+
+export class MaintenanceStatusResponseDto {
+  action?: MaintenanceAction;
+
+  progress?: number;
+  task?: string;
+  error?: string;
+}

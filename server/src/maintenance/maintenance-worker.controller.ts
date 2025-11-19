@@ -1,6 +1,11 @@
 import { Body, Controller, Get, Post, Req, Res } from '@nestjs/common';
 import { Request, Response } from 'express';
-import { MaintenanceAuthDto, MaintenanceLoginDto, SetMaintenanceModeDto } from 'src/dtos/maintenance.dto';
+import {
+  MaintenanceAuthDto,
+  MaintenanceLoginDto,
+  MaintenanceStatusResponseDto,
+  SetMaintenanceModeDto,
+} from 'src/dtos/maintenance.dto';
 import { ServerConfigDto } from 'src/dtos/server.dto';
 import { ImmichCookie, MaintenanceAction } from 'src/enum';
 import { MaintenanceRoute } from 'src/maintenance/maintenance-auth.guard';
@@ -16,6 +21,11 @@ export class MaintenanceWorkerController {
   @Get('server/config')
   getServerConfig(): Promise<ServerConfigDto> {
     return this.service.getSystemConfig();
+  }
+
+  @Get('admin/maintenance/status')
+  maintenanceStatus(@Req() request: Request): Promise<MaintenanceStatusResponseDto> {
+    return this.service.status(request.cookies[ImmichCookie.MaintenanceToken]);
   }
 
   @Post('admin/maintenance/login')

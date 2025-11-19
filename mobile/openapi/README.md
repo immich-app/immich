@@ -160,6 +160,7 @@ Class | Method | HTTP request | Description
 *LibrariesApi* | [**updateLibrary**](doc//LibrariesApi.md#updatelibrary) | **PUT** /libraries/{id} | Update a library
 *LibrariesApi* | [**validate**](doc//LibrariesApi.md#validate) | **POST** /libraries/{id}/validate | Validate library settings
 *MaintenanceAdminApi* | [**maintenanceLogin**](doc//MaintenanceAdminApi.md#maintenancelogin) | **POST** /admin/maintenance/login | Log into maintenance mode
+*MaintenanceAdminApi* | [**maintenanceStatus**](doc//MaintenanceAdminApi.md#maintenancestatus) | **GET** /admin/maintenance/admin/maintenance/status | Get maintenance mode status
 *MaintenanceAdminApi* | [**setMaintenanceMode**](doc//MaintenanceAdminApi.md#setmaintenancemode) | **POST** /admin/maintenance | Set maintenance mode
 *MapApi* | [**getMapMarkers**](doc//MapApi.md#getmapmarkers) | **GET** /map/markers | Retrieve map markers
 *MapApi* | [**reverseGeocode**](doc//MapApi.md#reversegeocode) | **GET** /map/reverse-geocode | Reverse geocode coordinates
@@ -409,6 +410,7 @@ Class | Method | HTTP request | Description
  - [MaintenanceAction](doc//MaintenanceAction.md)
  - [MaintenanceAuthDto](doc//MaintenanceAuthDto.md)
  - [MaintenanceLoginDto](doc//MaintenanceLoginDto.md)
+ - [MaintenanceStatusResponseDto](doc//MaintenanceStatusResponseDto.md)
  - [ManualJobName](doc//ManualJobName.md)
  - [MapMarkerResponseDto](doc//MapMarkerResponseDto.md)
  - [MapReverseGeocodeResponseDto](doc//MapReverseGeocodeResponseDto.md)
