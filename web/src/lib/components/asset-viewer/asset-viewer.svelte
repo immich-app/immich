@@ -1,11 +1,13 @@
 <script lang="ts">
+  import { goto } from '$app/navigation';
   import { focusTrap } from '$lib/actions/focus-trap';
   import type { Action, OnAction, PreAction } from '$lib/components/asset-viewer/actions/action';
   import MotionPhotoAction from '$lib/components/asset-viewer/actions/motion-photo-action.svelte';
   import NextAssetAction from '$lib/components/asset-viewer/actions/next-asset-action.svelte';
   import PreviousAssetAction from '$lib/components/asset-viewer/actions/previous-asset-action.svelte';
   import AssetViewerNavBar from '$lib/components/asset-viewer/asset-viewer-nav-bar.svelte';
-  import { AssetAction, ProjectionType } from '$lib/constants';
+  import OnEvents from '$lib/components/OnEvents.svelte';
+  import { AppRoute, AssetAction, ProjectionType } from '$lib/constants';
   import { activityManager } from '$lib/managers/activity-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
@@ -363,6 +365,15 @@
     selectedEditType = type;
   };
 
+  const handleAssetReplace = async ({ oldAssetId, newAssetId }: { oldAssetId: string; newAssetId: string }) => {
+    if (oldAssetId !== asset.id) {
+      return;
+    }
+
+    await new Promise((promise) => setTimeout(promise, 500));
+    await goto(`${AppRoute.PHOTOS}/${newAssetId}`);
+  };
+
   let isFullScreen = $derived(fullscreenElement !== null);
 
   $effect(() => {
@@ -387,6 +398,8 @@
     }
   });
 </script>
+
+<OnEvents onAssetReplace={handleAssetReplace} />
 
 <svelte:document bind:fullscreenElement />
 
