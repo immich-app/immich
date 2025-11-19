@@ -2,9 +2,9 @@
   import type { OcrBox } from '$lib/utils/ocr-utils';
   import { calculateBoundingBoxDimensions } from '$lib/utils/ocr-utils';
 
-  interface Props {
+  type Props = {
     ocrBox: OcrBox;
-  }
+  };
 
   let { ocrBox }: Props = $props();
 

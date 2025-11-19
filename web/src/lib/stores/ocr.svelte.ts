@@ -1,6 +1,6 @@
 import { getAssetOcr } from '@immich/sdk';
 
-export interface OcrBoundingBox {
+export type OcrBoundingBox = {
   id: string;
   assetId: string;
   x1: number;
@@ -14,20 +14,24 @@ export interface OcrBoundingBox {
   boxScore: number;
   textScore: number;
   text: string;
-}
+};
 
-class OcrStore {
-  data = $state<OcrBoundingBox[]>([]);
+class OcrManager {
+  #data = $state<OcrBoundingBox[]>([]);
   showOverlay = $state(false);
   hasOcrData = $state(false);
 
+  get data() {
+    return this.#data;
+  }
+
   async getAssetOcr(id: string) {
-    this.data = await getAssetOcr({ id });
-    this.hasOcrData = this.data.length > 0;
+    this.#data = await getAssetOcr({ id });
+    this.hasOcrData = this.#data.length > 0;
   }
 
   clear() {
-    this.data = [];
+    this.#data = [];
     this.showOverlay = false;
     this.hasOcrData = false;
   }
@@ -37,4 +41,4 @@ class OcrStore {
   }
 }
 
-export const ocrStore = new OcrStore();
+export const ocrManager = new OcrManager();

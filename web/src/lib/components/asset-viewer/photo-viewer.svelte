@@ -9,7 +9,7 @@
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import { photoViewerImgElement } from '$lib/stores/assets-store.svelte';
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
-  import { ocrStore } from '$lib/stores/ocr.svelte';
+  import { ocrManager } from '$lib/stores/ocr.svelte';
   import { boundingBoxesArray } from '$lib/stores/people.store';
   import { alwaysLoadOriginalFile } from '$lib/stores/preferences.store';
   import { SlideshowLook, SlideshowState, slideshowLookCssMapping, slideshowStore } from '$lib/stores/slideshow.store';
@@ -75,12 +75,12 @@
   });
 
   let ocrBoxes = $derived(
-    ocrStore.showOverlay && $photoViewerImgElement
-      ? getOcrBoundingBoxes(ocrStore.data, $photoZoomState, $photoViewerImgElement)
+    ocrManager.showOverlay && $photoViewerImgElement
+      ? getOcrBoundingBoxes(ocrManager.data, $photoZoomState, $photoViewerImgElement)
       : [],
   );
 
-  let isOcrActive = $derived(ocrStore.showOverlay);
+  let isOcrActive = $derived(ocrManager.showOverlay);
 
   const preload = (targetSize: AssetMediaSize | 'original', preloadAssets?: TimelineAsset[]) => {
     for (const preloadAsset of preloadAssets || []) {
@@ -142,7 +142,7 @@
       return;
     }
 
-    if (ocrStore.showOverlay) {
+    if (ocrManager.showOverlay) {
       return;
     }
 
@@ -282,11 +282,9 @@
         ></div>
       {/each}
 
-      {#if ocrStore.showOverlay}
-        {#each ocrBoxes as ocrBox (ocrBox.id)}
-          <OcrBoundingBox {ocrBox} />
-        {/each}
-      {/if}
+      {#each ocrBoxes as ocrBox (ocrBox.id)}
+        <OcrBoundingBox {ocrBox} />
+      {/each}
     </div>
 
     {#if isFaceEditMode.value}

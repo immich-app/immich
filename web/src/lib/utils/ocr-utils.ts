@@ -39,6 +39,7 @@ export interface BoundingBoxDimensions {
  * @returns Dimensions, rotation, and skew values for the bounding box
  */
 export const calculateBoundingBoxDimensions = (points: { x: number; y: number }[]): BoundingBoxDimensions => {
+  const [topLeft, topRight, bottomRight, bottomLeft] = points;
   const minX = Math.min(...points.map(({ x }) => x));
   const maxX = Math.max(...points.map(({ x }) => x));
   const minY = Math.min(...points.map(({ y }) => y));
@@ -48,18 +49,18 @@ export const calculateBoundingBoxDimensions = (points: { x: number; y: number }[
   const centerX = (minX + maxX) / 2;
   const centerY = (minY + maxY) / 2;
 
-  // Calculate rotation angle from the bottom edge (points[3] to points[2])
-  const rotation = Math.atan2(points[2].y - points[3].y, points[2].x - points[3].x) * (180 / Math.PI);
+  // Calculate rotation angle from the bottom edge (bottomLeft to bottomRight)
+  const rotation = Math.atan2(bottomRight.y - bottomLeft.y, bottomRight.x - bottomLeft.x) * (180 / Math.PI);
 
   // Calculate skew angles to handle perspective distortion
   // SkewX: compare left and right edges
-  const leftEdgeAngle = Math.atan2(points[3].y - points[0].y, points[3].x - points[0].x);
-  const rightEdgeAngle = Math.atan2(points[2].y - points[1].y, points[2].x - points[1].x);
+  const leftEdgeAngle = Math.atan2(bottomLeft.y - topLeft.y, bottomLeft.x - topLeft.x);
+  const rightEdgeAngle = Math.atan2(bottomRight.y - topRight.y, bottomRight.x - topRight.x);
   const skewX = (rightEdgeAngle - leftEdgeAngle) * (180 / Math.PI);
 
   // SkewY: compare top and bottom edges
-  const topEdgeAngle = Math.atan2(points[1].y - points[0].y, points[1].x - points[0].x);
-  const bottomEdgeAngle = Math.atan2(points[2].y - points[3].y, points[2].x - points[3].x);
+  const topEdgeAngle = Math.atan2(topRight.y - topLeft.y, topRight.x - topLeft.x);
+  const bottomEdgeAngle = Math.atan2(bottomRight.y - bottomLeft.y, bottomRight.x - bottomLeft.x);
   const skewY = (bottomEdgeAngle - topEdgeAngle) * (180 / Math.PI);
 
   return {
