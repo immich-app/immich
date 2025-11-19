@@ -85,6 +85,7 @@ jobs:
           tag_name: ${{ steps.version.outputs.result }}
           token: ${{ steps.generate-token.outputs.token }}
           body_path: ${{ steps.changelog.outputs.path }}
+          draft: true
           files: |
             docker/docker-compose.yml
             docker/example.env
