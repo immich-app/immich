@@ -9,8 +9,9 @@ import { commandsAndQuestions } from 'src/commands';
 import { IWorker } from 'src/constants';
 import { controllers } from 'src/controllers';
 import { StorageCore } from 'src/cores/storage.core';
-import { ImmichWorker } from 'src/enum';
+import { ImmichWorker, SystemMetadataKey } from 'src/enum';
 import { MaintenanceAuthGuard } from 'src/maintenance/maintenance-auth.guard';
+import { MaintenanceEphemeralStateRepository } from 'src/maintenance/maintenance-ephemeral-state.repository';
 import { MaintenanceWebsocketRepository } from 'src/maintenance/maintenance-websocket.repository';
 import { MaintenanceWorkerController } from 'src/maintenance/maintenance-worker.controller';
 import { MaintenanceWorkerService } from 'src/maintenance/maintenance-worker.service';
@@ -34,6 +35,7 @@ import { services } from 'src/services';
 import { AuthService } from 'src/services/auth.service';
 import { CliService } from 'src/services/cli.service';
 import { QueueService } from 'src/services/queue.service';
+import { MaintenanceModeState } from 'src/types';
 import { getKyselyConfig } from 'src/utils/database';
 
 const common = [...repositories, ...services, GlobalExceptionFilter];
@@ -113,6 +115,7 @@ export class ApiModule extends BaseModule {}
     SystemMetadataRepository,
     AppRepository,
     MaintenanceWebsocketRepository,
+    MaintenanceEphemeralStateRepository,
     MaintenanceWorkerService,
     ...commonMiddleware,
     { provide: APP_GUARD, useClass: MaintenanceAuthGuard },
@@ -123,13 +126,20 @@ export class MaintenanceModule {
   constructor(
     @Inject(IWorker) private worker: ImmichWorker,
     logger: LoggingRepository,
+    private systemMetadataRepository: SystemMetadataRepository,
     private maintenanceWorkerService: MaintenanceWorkerService,
     private maintenanceWebsocketRepository: MaintenanceWebsocketRepository,
+    private maintenanceEphemeralStateRepository: MaintenanceEphemeralStateRepository,
   ) {
     logger.setAppName(this.worker);
   }
 
   async onModuleInit() {
+    const state = (await this.systemMetadataRepository.get(
+      SystemMetadataKey.MaintenanceMode,
+    )) as MaintenanceModeState & { isMaintenanceMode: true };
+
+    this.maintenanceEphemeralStateRepository.setSecret(state.secret);
     StorageCore.setMediaLocation(this.maintenanceWorkerService.detectMediaLocation());
 
     this.maintenanceWebsocketRepository.setAuthFn(async (client) =>

@@ -1,6 +1,7 @@
 import { UnauthorizedException } from '@nestjs/common';
 import { SignJWT } from 'jose';
 import { MaintenanceAction, SystemMetadataKey } from 'src/enum';
+import { MaintenanceEphemeralStateRepository } from 'src/maintenance/maintenance-ephemeral-state.repository';
 import { MaintenanceWebsocketRepository } from 'src/maintenance/maintenance-websocket.repository';
 import { MaintenanceWorkerService } from 'src/maintenance/maintenance-worker.service';
 import { automock, getMocks, ServiceMocks } from 'test/utils';
@@ -8,17 +9,28 @@ import { automock, getMocks, ServiceMocks } from 'test/utils';
 describe(MaintenanceWorkerService.name, () => {
   let sut: MaintenanceWorkerService;
   let mocks: ServiceMocks;
-  let maintenanceWorkerRepositoryMock: MaintenanceWebsocketRepository;
+  let maintenanceWebsocketRepositoryMock: MaintenanceWebsocketRepository;
+  let maintenanceEphemeralStateRepositoryMock: MaintenanceEphemeralStateRepository;
 
   beforeEach(() => {
     mocks = getMocks();
-    maintenanceWorkerRepositoryMock = automock(MaintenanceWebsocketRepository, { args: [mocks.logger], strict: false });
+    maintenanceWebsocketRepositoryMock = automock(MaintenanceWebsocketRepository, {
+      args: [mocks.logger],
+      strict: false,
+    });
+
+    maintenanceEphemeralStateRepositoryMock = automock(MaintenanceEphemeralStateRepository, {
+      args: [mocks.logger],
+      strict: false,
+    });
+
     sut = new MaintenanceWorkerService(
       mocks.logger as never,
       mocks.app,
       mocks.config,
       mocks.systemMetadata as never,
-      maintenanceWorkerRepositoryMock,
+      maintenanceWebsocketRepositoryMock,
+      maintenanceEphemeralStateRepositoryMock,
       mocks.storage as never,
       mocks.process,
       mocks.database as never,
@@ -144,11 +156,11 @@ describe(MaintenanceWorkerService.name, () => {
         isMaintenanceMode: false,
       });
 
-      expect(maintenanceWorkerRepositoryMock.clientBroadcast).toHaveBeenCalledWith('AppRestartV1', {
+      expect(maintenanceWebsocketRepositoryMock.clientBroadcast).toHaveBeenCalledWith('AppRestartV1', {
         isMaintenanceMode: false,
       });
 
-      expect(maintenanceWorkerRepositoryMock.serverSend).toHaveBeenCalledWith('AppRestart', {
+      expect(maintenanceWebsocketRepositoryMock.serverSend).toHaveBeenCalledWith('AppRestart', {
         isMaintenanceMode: false,
       });
     });

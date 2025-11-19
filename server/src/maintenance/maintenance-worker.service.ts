@@ -5,7 +5,9 @@ import { jwtVerify } from 'jose';
 import { readFileSync } from 'node:fs';
 import { IncomingHttpHeaders } from 'node:http';
 import { MaintenanceAuthDto } from 'src/dtos/maintenance.dto';
+import { ServerConfigDto } from 'src/dtos/server.dto';
 import { ImmichCookie, SystemMetadataKey } from 'src/enum';
+import { MaintenanceEphemeralStateRepository } from 'src/maintenance/maintenance-ephemeral-state.repository';
 import { MaintenanceWebsocketRepository } from 'src/maintenance/maintenance-websocket.repository';
 import { AppRepository } from 'src/repositories/app.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
@@ -34,6 +36,7 @@ export class MaintenanceWorkerService {
     private configRepository: ConfigRepository,
     private systemMetadataRepository: SystemMetadataRepository,
     private maintenanceWorkerRepository: MaintenanceWebsocketRepository,
+    private maintenanceEphemeralStateRepository: MaintenanceEphemeralStateRepository,
     private storageRepository: StorageRepository,
     private processRepository: ProcessRepository,
     private databaseRepository: DatabaseRepository,
@@ -63,21 +66,9 @@ export class MaintenanceWorkerService {
    * {@link _ServerService.getSystemConfig}
    */
   async getSystemConfig() {
-    const config = await this.getConfig({ withCache: false });
-
     return {
-      loginPageMessage: config.server.loginPageMessage,
-      trashDays: config.trash.days,
-      userDeleteDelay: config.user.deleteDelay,
-      oauthButtonText: config.oauth.buttonText,
-      isInitialized: true,
-      isOnboarded: true,
-      externalDomain: config.server.externalDomain,
-      publicUsers: config.server.publicUsers,
-      mapDarkStyleUrl: config.map.darkStyle,
-      mapLightStyleUrl: config.map.lightStyle,
       maintenanceMode: true,
-    };
+    } as ServerConfigDto;
   }
 
   /**
@@ -139,14 +130,6 @@ export class MaintenanceWorkerService {
     return '/usr/src/app/upload';
   }
 
-  private async secret(): Promise<string> {
-    const state = (await this.systemMetadataRepository.get(SystemMetadataKey.MaintenanceMode)) as {
-      secret: string;
-    };
-
-    return state.secret;
-  }
-
   async logSecret(): Promise<void> {
     const { server } = await this.getConfig({ withCache: true });
 
@@ -156,7 +139,7 @@ export class MaintenanceWorkerService {
       {
         username: 'immich-admin',
       },
-      await this.secret(),
+      this.maintenanceEphemeralStateRepository.getSecret(),
     );
 
     this.logger.log(`\n\n🚧 Immich is in maintenance mode, you can log in using the following URL:\n${url}\n`);
@@ -172,7 +155,7 @@ export class MaintenanceWorkerService {
       throw new UnauthorizedException('Missing JWT Token');
     }
 
-    const secret = await this.secret();
+    const secret = this.maintenanceEphemeralStateRepository.getSecret();
 
     try {
       const result = await jwtVerify<MaintenanceAuthDto>(jwt, new TextEncoder().encode(secret));
