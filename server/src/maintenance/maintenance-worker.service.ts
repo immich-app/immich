@@ -113,6 +113,32 @@ export class MaintenanceWorkerService {
     };
   }
 
+  /**
+   * {@link _StorageService.detectMediaLocation}
+   */
+  detectMediaLocation(): string {
+    const envData = this.configRepository.getEnv();
+    if (envData.storage.mediaLocation) {
+      return envData.storage.mediaLocation;
+    }
+
+    const targets: string[] = [];
+    const candidates = ['/data', '/usr/src/app/upload'];
+
+    for (const candidate of candidates) {
+      const exists = this.storageRepository.existsSync(candidate);
+      if (exists) {
+        targets.push(candidate);
+      }
+    }
+
+    if (targets.length === 1) {
+      return targets[0];
+    }
+
+    return '/usr/src/app/upload';
+  }
+
   private async secret(): Promise<string> {
     const state = (await this.systemMetadataRepository.get(SystemMetadataKey.MaintenanceMode)) as {
       secret: string;

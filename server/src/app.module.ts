@@ -8,6 +8,7 @@ import { OpenTelemetryModule } from 'nestjs-otel';
 import { commandsAndQuestions } from 'src/commands';
 import { IWorker } from 'src/constants';
 import { controllers } from 'src/controllers';
+import { StorageCore } from 'src/cores/storage.core';
 import { ImmichWorker } from 'src/enum';
 import { MaintenanceAuthGuard } from 'src/maintenance/maintenance-auth.guard';
 import { MaintenanceWebsocketRepository } from 'src/maintenance/maintenance-websocket.repository';
@@ -128,6 +129,8 @@ export class MaintenanceModule {
   }
 
   async onModuleInit() {
+    StorageCore.setMediaLocation(this.maintenanceWorkerService.detectMediaLocation());
+
     await this.maintenanceWorkerService.logSecret();
   }
 }
