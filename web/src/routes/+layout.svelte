@@ -7,9 +7,11 @@
   import AppleHeader from '$lib/components/shared-components/apple-header.svelte';
   import NavigationLoadingBar from '$lib/components/shared-components/navigation-loading-bar.svelte';
   import UploadPanel from '$lib/components/shared-components/upload-panel.svelte';
+  import { AppRoute } from '$lib/constants';
   import { eventManager } from '$lib/managers/event-manager.svelte';
+  import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
+  import ServerRestartingModal from '$lib/modals/ServerRestartingModal.svelte';
   import VersionAnnouncementModal from '$lib/modals/VersionAnnouncementModal.svelte';
-  import { serverConfig } from '$lib/stores/server-config.store';
   import { user } from '$lib/stores/user.store';
   import {
     closeWebsocketConnection,
@@ -17,9 +19,9 @@
     websocketStore,
     type ReleaseEvent,
   } from '$lib/stores/websocket';
-  import { copyToClipboard, getReleaseType } from '$lib/utils';
+  import { copyToClipboard, getReleaseType, semverToName } from '$lib/utils';
+  import { maintenanceShouldRedirect } from '$lib/utils/maintenance';
   import { isAssetViewerRoute } from '$lib/utils/navigation';
-  import type { ServerVersionResponseDto } from '@immich/sdk';
   import { modalManager, setTranslations } from '@immich/ui';
   import { onMount, type Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -58,7 +60,7 @@
     // if the browser theme changes, changes the Immich theme too
   });
 
-  eventManager.emit('app.init');
+  eventManager.emit('AppInit');
 
   beforeNavigate(({ from, to }) => {
     if (isAssetViewerRoute(from) && isAssetViewerRoute(to)) {
@@ -71,15 +73,14 @@
     showNavigationLoadingBar = false;
   });
   run(() => {
-    if ($user) {
+    if ($user || page.url.pathname.startsWith(AppRoute.MAINTENANCE)) {
       openWebsocketConnection();
     } else {
       closeWebsocketConnection();
     }
   });
 
-  const semverToName = ({ major, minor, patch }: ServerVersionResponseDto) => `v${major}.${minor}.${patch}`;
-  const { release } = websocketStore;
+  const { release, serverRestarting } = websocketStore;
 
   const handleRelease = async (release?: ReleaseEvent) => {
     if (!release?.isAvailable || !$user.isAdmin) {
@@ -104,6 +105,27 @@
   };
 
   $effect(() => void handleRelease($release));
+
+  serverRestarting.subscribe((isRestarting) => {
+    if (!isRestarting) {
+      return;
+    }
+
+    if (maintenanceShouldRedirect(isRestarting.isMaintenanceMode, location)) {
+      modalManager.show(ServerRestartingModal, {}).catch((error) => console.error('Error [ServerRestartBox]:', error));
+
+      // we will be disconnected momentarily
+      // wait for reconnect then reload
+      let waiting = false;
+      websocketStore.connected.subscribe((connected) => {
+        if (!connected) {
+          waiting = true;
+        } else if (connected && waiting) {
+          location.reload();
+        }
+      });
+    }
+  });
 </script>
 
 <svelte:head>
@@ -122,7 +144,10 @@
     {#if page.data.meta.imageUrl}
       <meta
         property="og:image"
-        content={new URL(page.data.meta.imageUrl, $serverConfig.externalDomain || globalThis.location.origin).href}
+        content={new URL(
+          page.data.meta.imageUrl,
+          serverConfigManager.value.externalDomain || globalThis.location.origin,
+        ).href}
       />
     {/if}
 
@@ -133,7 +158,10 @@
     {#if page.data.meta.imageUrl}
       <meta
         name="twitter:image"
-        content={new URL(page.data.meta.imageUrl, $serverConfig.externalDomain || globalThis.location.origin).href}
+        content={new URL(
+          page.data.meta.imageUrl,
+          serverConfigManager.value.externalDomain || globalThis.location.origin,
+        ).href}
       />
     {/if}
   {/if}

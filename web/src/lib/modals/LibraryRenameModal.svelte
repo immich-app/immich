@@ -1,21 +1,25 @@
 <script lang="ts">
+  import { handleRenameLibrary } from '$lib/services/library.service';
   import type { LibraryResponseDto } from '@immich/sdk';
   import { Button, Field, HStack, Input, Modal, ModalBody, ModalFooter } from '@immich/ui';
   import { mdiRenameOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
-  interface Props {
-    library: Partial<LibraryResponseDto>;
-    onClose: (library?: Partial<LibraryResponseDto>) => void;
-  }
+  type Props = {
+    library: LibraryResponseDto;
+    onClose: () => void;
+  };
 
   let { library, onClose }: Props = $props();
 
   let newName = $state(library.name);
 
-  const onsubmit = (event: Event) => {
-    event.preventDefault();
-    onClose({ ...library, name: newName });
+  const onsubmit = async () => {
+    const success = await handleRenameLibrary(library, newName);
+
+    if (success) {
+      onClose();
+    }
   };
 </script>
 

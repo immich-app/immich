@@ -1,11 +1,9 @@
 <script lang="ts">
-  import { featureFlags } from '$lib/stores/server-config.store';
+  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
+  import { handleCreateUserAdmin } from '$lib/services/user-admin.service';
   import { userInteraction } from '$lib/stores/user.svelte';
   import { ByteUnit, convertToBytes } from '$lib/utils/byte-units';
-  import { handleError } from '$lib/utils/handle-error';
-  import { createUserAdmin, type UserAdminResponseDto } from '@immich/sdk';
   import {
-    Alert,
     Button,
     Field,
     HelperText,
@@ -20,13 +18,12 @@
   } from '@immich/ui';
   import { t } from 'svelte-i18n';
 
-  interface Props {
-    onClose: (user?: UserAdminResponseDto) => void;
-  }
+  type Props = {
+    onClose: () => void;
+  };
 
   let { onClose }: Props = $props();
 
-  let error = $state('');
   let success = $state(false);
 
   let email = $state('');
@@ -57,40 +54,28 @@
     }
 
     isCreatingUser = true;
-    error = '';
 
-    try {
-      const user = await createUserAdmin({
-        userAdminCreateDto: {
-          email,
-          password,
-          shouldChangePassword,
-          name,
-          quotaSizeInBytes,
-          notify,
-          isAdmin,
-        },
-      });
+    const success = await handleCreateUserAdmin({
+      email,
+      password,
+      shouldChangePassword,
+      name,
+      quotaSizeInBytes,
+      notify,
+      isAdmin,
+    });
 
-      success = true;
-
-      onClose(user);
-      return;
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_create_user'));
-    } finally {
-      isCreatingUser = false;
+    if (success) {
+      onClose();
     }
+
+    isCreatingUser = false;
   };
 </script>
 
 <Modal title={$t('create_new_user')} {onClose} size="small">
   <ModalBody>
     <form onsubmit={onSubmit} autocomplete="off" id="create-new-user-form">
-      {#if error}
-        <Alert color="danger" size="small" title={error} closable />
-      {/if}
-
       {#if success}
         <p class="text-sm text-immich-primary">{$t('new_user_created')}</p>
       {/if}
@@ -100,17 +85,17 @@
           <Input bind:value={email} type="email" />
         </Field>
 
-        {#if $featureFlags.email}
+        {#if featureFlagsManager.value.email}
           <Field label={$t('admin.send_welcome_email')}>
             <Switch id="send-welcome-email" bind:checked={notify} class="text-sm" />
           </Field>
         {/if}
 
-        <Field label={$t('password')} required={!$featureFlags.oauth}>
+        <Field label={$t('password')} required={!featureFlagsManager.value.oauth}>
           <PasswordInput id="password" bind:value={password} autocomplete="new-password" />
         </Field>
 
-        <Field label={$t('confirm_password')} required={!$featureFlags.oauth}>
+        <Field label={$t('confirm_password')} required={!featureFlagsManager.value.oauth}>
           <PasswordInput id="confirmPassword" bind:value={passwordConfirm} autocomplete="new-password" />
           <HelperText color="danger">{passwordMismatchMessage}</HelperText>
         </Field>

@@ -12,6 +12,7 @@ import 'package:maplibre_gl/maplibre_gl.dart';
 
 class RemoteAssetRepository extends DriftDatabaseRepository {
   final Drift _db;
+
   const RemoteAssetRepository(this._db) : super(_db);
 
   /// For testing purposes
