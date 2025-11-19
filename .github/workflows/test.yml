@@ -500,8 +500,16 @@ jobs:
         run: docker compose build
         if: ${{ !cancelled() }}
       - name: Run e2e tests (web)
+        env:
+          CI: true
         run: npx playwright test
         if: ${{ !cancelled() }}
+      - name: Archive test results
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
+        if: success() || failure()
+        with:
+          name: e2e-web-test-results-${{ matrix.runner }}
+          path: e2e/playwright-report/
   success-check-e2e:
     name: End-to-End Tests Success
     needs: [e2e-tests-server-cli, e2e-tests-web]
