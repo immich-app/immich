@@ -111,7 +111,7 @@
         })}
       </p>
       {#snippet empty()}
-        <EmptyPlaceholder text={$t('trash_no_results_message')} src={empty3Url} />
+        <EmptyPlaceholder text={$t('trash_no_results_message')} src={empty3Url} class="mt-10 mx-auto" />
       {/snippet}
     </Timeline>
   </UserPageLayout>

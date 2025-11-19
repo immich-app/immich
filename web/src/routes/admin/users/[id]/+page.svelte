@@ -102,7 +102,7 @@
         <Alert color="danger" class="my-4" title={$t('user_has_been_deleted')} icon={mdiTrashCanOutline} />
       {/if}
 
-      <div class="grid gap-4 grod-cols-1 lg:grid-cols-2 w-full">
+      <div class="grid gap-4 grid-cols-1 lg:grid-cols-2 w-full">
         <div class="col-span-full flex gap-4 items-center my-4">
           <UserAvatar {user} size="md" />
           <Heading tag="h1" size="large">{user.name}</Heading>

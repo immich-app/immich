@@ -97,8 +97,8 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
   }
 
   String _getFileInfo(BaseAsset asset, ExifInfo? exifInfo) {
-    final height = asset.height ?? exifInfo?.height;
-    final width = asset.width ?? exifInfo?.width;
+    final height = asset.height;
+    final width = asset.width;
     final resolution = (width != null && height != null) ? "${width.toInt()} x ${height.toInt()}" : null;
     final fileSize = exifInfo?.fileSize != null ? formatBytes(exifInfo!.fileSize!) : null;
 
