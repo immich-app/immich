@@ -63,7 +63,7 @@ class Timeline extends StatelessWidget {
         builder: (_, constraints) => ProviderScope(
           overrides: [
             timelineArgsProvider.overrideWith(
-                  (ref) => TimelineArgs(
+              (ref) => TimelineArgs(
                 maxWidth: constraints.maxWidth,
                 maxHeight: constraints.maxHeight,
                 columnCount: ref.watch(settingsProvider.select((s) => s.get(Setting.tilesPerRow))),
@@ -209,13 +209,13 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
       // If exact date not found, try to find the closest month
       final fallbackSegment =
           targetSegment ??
-              segments.firstWhereOrNull((segment) {
-                if (segment.bucket is TimeBucket) {
-                  final segmentDate = (segment.bucket as TimeBucket).date;
-                  return segmentDate.year == date.year && segmentDate.month == date.month;
-                }
-                return false;
-              });
+          segments.firstWhereOrNull((segment) {
+            if (segment.bucket is TimeBucket) {
+              final segmentDate = (segment.bucket as TimeBucket).date;
+              return segmentDate.year == date.year && segmentDate.month == date.month;
+            }
+            return false;
+          });
 
       if (fallbackSegment != null) {
         // Scroll to the segment with a small offset to show the header
@@ -223,10 +223,10 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
         ref.read(timelineStateProvider.notifier).setScrubbing(true);
         _scrollController
             .animateTo(
-          targetOffset.clamp(0.0, _scrollController.position.maxScrollExtent),
-          duration: const Duration(milliseconds: 500),
-          curve: Curves.easeInOut,
-        )
+              targetOffset.clamp(0.0, _scrollController.position.maxScrollExtent),
+              duration: const Duration(milliseconds: 500),
+              curve: Curves.easeInOut,
+            )
             .whenComplete(() => ref.read(timelineStateProvider.notifier).setScrubbing(false));
       } else {
         ref.read(timelineStateProvider.notifier).setScrubbing(false);
@@ -335,7 +335,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
               _SliverSegmentedList(
                 segments: segments,
                 delegate: SliverChildBuilderDelegate(
-                      (ctx, index) {
+                  (ctx, index) {
                     if (index >= childCount) return null;
                     final segment = segments.findByIndex(index);
                     return segment?.builder(ctx, index) ?? const SizedBox.shrink();
@@ -371,8 +371,8 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
             child: RawGestureDetector(
               gestures: {
                 CustomScaleGestureRecognizer: GestureRecognizerFactoryWithHandlers<CustomScaleGestureRecognizer>(
-                      () => CustomScaleGestureRecognizer(),
-                      (CustomScaleGestureRecognizer scale) {
+                  () => CustomScaleGestureRecognizer(),
+                  (CustomScaleGestureRecognizer scale) {
                     scale.onStart = (details) {
                       _baseScaleFactor = _scaleFactor;
                     };
@@ -474,7 +474,7 @@ class _RenderSliverTimelineBoxAdaptor extends RenderSliverMultiBoxAdaptor {
   }
 
   _RenderSliverTimelineBoxAdaptor({required super.childManager, required List<Segment> segments})
-      : _segments = segments;
+    : _segments = segments;
 
   int getMinChildIndexForScrollOffset(double offset) =>
       _segments.findByOffset(offset)?.getMinChildIndexForScrollOffset(offset) ?? 0;
@@ -580,9 +580,9 @@ class _RenderSliverTimelineBoxAdaptor extends RenderSliverMultiBoxAdaptor {
     double calculatedMaxScrollOffset = double.infinity;
 
     for (
-    int currentIndex = indexOf(mostRecentlyLaidOutChild!) + 1;
-    lastRequiredChildIndex == null || currentIndex <= lastRequiredChildIndex;
-    ++currentIndex
+      int currentIndex = indexOf(mostRecentlyLaidOutChild!) + 1;
+      lastRequiredChildIndex == null || currentIndex <= lastRequiredChildIndex;
+      ++currentIndex
     ) {
       RenderBox? child = childAfter(mostRecentlyLaidOutChild!);
 
@@ -608,8 +608,8 @@ class _RenderSliverTimelineBoxAdaptor extends RenderSliverMultiBoxAdaptor {
     final double trailingScrollOffset = indexToLayoutOffset(lastLaidOutChildIndex + 1);
 
     assert(
-    firstRequiredChildIndex == 0 ||
-        (childScrollOffset(firstChild!) ?? -1.0) - scrollOffset <= precisionErrorTolerance,
+      firstRequiredChildIndex == 0 ||
+          (childScrollOffset(firstChild!) ?? -1.0) - scrollOffset <= precisionErrorTolerance,
     );
     assert(debugAssertChildListIsNonEmptyAndContiguous());
     assert(indexOf(firstChild!) == firstRequiredChildIndex);
@@ -636,7 +636,7 @@ class _RenderSliverTimelineBoxAdaptor extends RenderSliverMultiBoxAdaptor {
       // This is true if the last child needed for painting is actually laid out,
       // or if the first child is partially visible.
       hasVisualOverflow:
-      (targetLastIndexForPaint != null && lastLaidOutChildIndex >= targetLastIndexForPaint) ||
+          (targetLastIndexForPaint != null && lastLaidOutChildIndex >= targetLastIndexForPaint) ||
           constraints.scrollOffset > 0.0,
       cacheExtent: cacheExtent,
     );
