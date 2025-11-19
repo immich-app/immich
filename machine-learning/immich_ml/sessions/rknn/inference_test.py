@@ -63,6 +63,7 @@ def main() -> None:
     session_t0 = time.perf_counter()
     session = RknnSession(args.model.as_posix(), num_workers=args.num_workers)
     session_t1 = time.perf_counter()
+    print(session.get_inputs())
     print(f"[timing] session init took {(session_t1-session_t0)*1000:.2f} ms")
     try:
         print("IO description:", session.io_info)
@@ -80,6 +81,36 @@ def main() -> None:
                 f"[serial {i+1}] start={t0:.6f}s end={t1:.6f}s "
                 f"dur_ms={(t1-t0)*1000:.2f} shapes={[getattr(o, 'shape', None) for o in outs]}"
             )
+
+        # Batch demo (single RKNN session call with batched input to exercise batch mode)
+        batch_repeats = 3
+        if shape[0] == 1:
+            batch_shape = [batch_repeats, *shape[1:]]
+        else:
+            batch_shape = shape
+
+        if args.dtype == "float32":
+            x_batch = np.random.rand(*batch_shape).astype(np.float32)
+        elif args.dtype == "float16":
+            x_batch = np.random.rand(*batch_shape).astype(np.float16)
+        elif args.dtype == "int32":
+            x_batch = np.random.randint(0, 1000, size=tuple(batch_shape), dtype=np.int32)
+        elif args.dtype == "int8":
+            x_batch = np.random.randint(-128, 128, size=tuple(batch_shape), dtype=np.int8)
+        elif args.dtype == "uint8":
+            x_batch = np.random.randint(0, 256, size=tuple(batch_shape), dtype=np.uint8)
+        else:
+            raise ValueError(f"Unsupported dtype: {args.dtype}")
+
+        for i in range(3):
+            t0 = time.perf_counter()
+            outs = session.run(None, {input_name: x_batch})
+            t1 = time.perf_counter()
+            print(
+                f"[batch {i+1}] start={t0:.6f}s end={t1:.6f}s "
+                f"dur_ms={(t1-t0)*1000:.2f} shapes={[getattr(o, 'shape', None) for o in outs]}"
+            )
+
         time.sleep(1)
         # Parallel demo using Immich-style pool
         total_requests = 5 * args.num_workers
@@ -95,6 +126,7 @@ def main() -> None:
             print(f"[parallel {idx+1}] dur_ms={lat_ms:.2f} shapes={[getattr(o, 'shape', None) for o in outs]}")
         batch_t1 = time.perf_counter()
         print(f"[parallel batch] total_ms={(batch_t1-batch_t0)*1000:.2f}")
+        time.sleep(1)
     finally:
         session.close()
 

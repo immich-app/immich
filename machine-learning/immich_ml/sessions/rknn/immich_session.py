@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import threading
 import time
 from concurrent.futures import Future, ThreadPoolExecutor
 from pathlib import Path
@@ -45,7 +46,7 @@ model_prefix = Path("rknpu") / soc_name if is_available and soc_name else None
 
 class SessionNode(NamedTuple):
     name: Optional[str]
-    shape: tuple[int, ...]
+    shape: tuple[Any, ...]
 
 
 class RKNNInferenceResult(NamedTuple):
@@ -161,16 +162,60 @@ class RknnSession:
         input_feed: dict[str, NDArray[np.float32]] | dict[str, NDArray[np.int32]],
         _run_options: Any = None,
     ) -> Future[RKNNInferenceResult]:
-        return self.rknnpool.put(list(input_feed.values()))
+        inputs_list = list(input_feed.values())
+        if not inputs_list:
+            raise ValueError("input_feed must not be empty")
+
+        batch_sizes = {int(x.shape[0]) for x in inputs_list}
+        if len(batch_sizes) != 1:
+            raise ValueError(f"All inputs must have the same batch size, got {sorted(batch_sizes)}")
+
+        batch_size = batch_sizes.pop()
+        if batch_size <= 1:
+            return self.rknnpool.put(inputs_list)
+
+        # Split each input tensor into per-sample slices of shape (1, ...)
+        per_sample_inputs = [[inp[i : i + 1] for inp in inputs_list] for i in range(batch_size)]
+        sub_futures = [self.rknnpool.put(sample) for sample in per_sample_inputs]
+
+        parent_future: Future[RKNNInferenceResult] = Future()
+
+        def _aggregate() -> None:
+            try:
+                results = [f.result() for f in sub_futures]
+                num_outputs = len(results[0].outputs)
+                stacked_outputs = [np.concatenate([r.outputs[j] for r in results], axis=0) for j in range(num_outputs)]
+                start_time = min(r.start_time for r in results)
+                end_time = max(r.end_time for r in results)
+                parent_future.set_result(
+                    RKNNInferenceResult(
+                        tag=None,
+                        start_time=start_time,
+                        end_time=end_time,
+                        duration_s=end_time - start_time,
+                        outputs=stacked_outputs,
+                    ),
+                )
+            except Exception as exc:  # noqa: BLE001
+                if not parent_future.done():
+                    parent_future.set_exception(exc)
+
+        threading.Thread(target=_aggregate, daemon=True).start()
+        return parent_future
 
     def close(self) -> None:
         self.rknnpool.close()
 
     def _build_nodes(self, key: str) -> list[SessionNode]:
-        return [
-            SessionNode(name=entry.get("name"), shape=self._shape_from_entry(entry))
-            for entry in self._io_info.get(key, [])
-        ]
+        nodes: list[SessionNode] = []
+        for entry in self._io_info.get(key, []):
+            shape = self._shape_from_entry(entry)
+            if key == "inputs" and shape:
+                symbolic_shape: tuple[Any, ...] = ("batch", *shape[1:])
+            else:
+                symbolic_shape = shape
+            nodes.append(SessionNode(name=entry.get("name"), shape=symbolic_shape))
+        return nodes
 
     @staticmethod
     def _shape_from_entry(entry: dict[str, Any]) -> tuple[int, ...]:
