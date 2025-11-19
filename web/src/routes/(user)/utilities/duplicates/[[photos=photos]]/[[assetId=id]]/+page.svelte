@@ -16,15 +16,7 @@
   import { suggestDuplicate } from '$lib/utils/duplicate-utils';
   import { handleError } from '$lib/utils/handle-error';
   import type { AssetBulkUpdateDto, AssetResponseDto } from '@immich/sdk';
-  import {
-    AssetVisibility,
-    copyAsset,
-    deleteAssets,
-    deleteDuplicates,
-    getAllAlbums,
-    getAssetInfo,
-    updateAssets,
-  } from '@immich/sdk';
+  import { AssetVisibility, copyAsset, deleteAssets, deleteDuplicates, getAssetInfo, updateAssets } from '@immich/sdk';
   import { Button, HStack, IconButton, modalManager, Text, toastManager } from '@immich/ui';
   import {
     mdiCheckOutline,
@@ -120,11 +112,8 @@
     const allAssetsInfo = await Promise.all(
       assetIds.map((assetId) => getAssetInfo({ ...authManager.params, id: assetId })),
     );
-    const allAssetsAlbums = await Promise.all(assetIds.map((assetId) => getAllAlbums({ assetId })));
     // If any of the assets is favorite, we consider the synced info as favorite
     const isFavorite = allAssetsInfo.some((asset) => asset.isFavorite);
-    // Create a list of all album ids the assets are in
-    const albumIds = allAssetsAlbums.flat().map((album) => album.id);
     // Choose the most restrictive visibility level among the assets
     const visibility = [
       AssetVisibility.Locked,
@@ -142,13 +131,13 @@
     const latitude = latitudes.size === 1 ? Array.from(latitudes)[0] : null;
     const longitude = longitudes.size === 1 ? Array.from(longitudes)[0] : null;
 
-    return { isFavorite, albumIds, visibility, rating, description, latitude, longitude };
+    return { isFavorite, visibility, rating, description, latitude, longitude };
   };
 
   const handleResolve = async (duplicateId: string, duplicateAssetIds: string[], trashIds: string[]) => {
     return withConfirmation(
       async () => {
-        const { isFavorite, albumIds, visibility, rating, description, latitude, longitude } =
+        const { isFavorite, visibility, rating, description, latitude, longitude } =
           await getSyncedInfo(duplicateAssetIds);
         let assetBulkUpdate: AssetBulkUpdateDto = {
           ids: duplicateAssetIds,
