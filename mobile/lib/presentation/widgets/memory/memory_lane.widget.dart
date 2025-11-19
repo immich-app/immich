@@ -31,8 +31,7 @@ class DriftMemoryLane extends ConsumerWidget {
         onTap: (index) {
           ref.read(hapticFeedbackProvider.notifier).heavyImpact();
           if (memories[index].assets.isNotEmpty) {
-            final asset = memories[index].assets.first;
-            DriftMemoryPage.setMemory(ref, asset);
+            DriftMemoryPage.setMemory(ref, memories[index]);
           }
           context.pushRoute(DriftMemoryRoute(memories: memories, memoryIndex: index));
         },

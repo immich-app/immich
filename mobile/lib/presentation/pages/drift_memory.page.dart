@@ -24,10 +24,12 @@ class DriftMemoryPage extends HookConsumerWidget {
 
   const DriftMemoryPage({required this.memories, required this.memoryIndex, super.key});
 
-  static void setMemory(WidgetRef ref, BaseAsset asset) {
-    ref.read(currentAssetNotifier.notifier).setAsset(asset);
+  static void setMemory(WidgetRef ref, DriftMemory memory) {
+    if (memory.assets.isNotEmpty) {
+      ref.read(currentAssetNotifier.notifier).setAsset(memory.assets.first);
+    }
 
-    if (asset.isVideo) {
+    if (memory.assets.first.isVideo) {
       ref.read(videoPlaybackValueProvider.notifier).reset();
     }
   }
@@ -212,10 +214,7 @@ class DriftMemoryPage extends HookConsumerWidget {
                 currentMemory.value = memories[pageNumber];
 
                 WidgetsBinding.instance.addPostFrameCallback((_) {
-                  if (memories[pageNumber].assets.isNotEmpty) {
-                    final firstAsset = memories[pageNumber].assets.first;
-                    DriftMemoryPage.setMemory(ref, firstAsset);
-                  }
+                  DriftMemoryPage.setMemory(ref, memories[pageNumber]);
                 });
               }
 
