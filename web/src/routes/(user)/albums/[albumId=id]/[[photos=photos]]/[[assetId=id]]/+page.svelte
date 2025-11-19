@@ -244,7 +244,7 @@
   };
 
   const handleUndoRemoveAssets = async (assets: TimelineAsset[]) => {
-    timelineManager.addAssets(assets);
+    timelineManager.upsertAssets(assets);
     await refreshAlbum();
   };
 
