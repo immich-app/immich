@@ -1,36 +1,17 @@
 <script lang="ts">
-  import LibraryImportPathsForm from '$lib/components/forms/library-import-paths-form.svelte';
-  import LibraryScanSettingsForm from '$lib/components/forms/library-scan-settings-form.svelte';
+  import { goto } from '$app/navigation';
+  import HeaderButton from '$lib/components/HeaderButton.svelte';
   import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
-  import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
-  import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
+  import OnEvents from '$lib/components/OnEvents.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
-  import LibraryImportPathModal from '$lib/modals/LibraryImportPathModal.svelte';
-  import LibraryRenameModal from '$lib/modals/LibraryRenameModal.svelte';
-  import LibraryUserPickerModal from '$lib/modals/LibraryUserPickerModal.svelte';
+  import { AppRoute } from '$lib/constants';
+  import { getLibrariesActions, handleCreateLibrary, handleViewLibrary } from '$lib/services/library.service';
   import { locale } from '$lib/stores/preferences.store';
-  import { ByteUnit, getBytesWithUnit } from '$lib/utils/byte-units';
-  import { handleError } from '$lib/utils/handle-error';
-  import {
-    createLibrary,
-    deleteLibrary,
-    getAllLibraries,
-    getLibraryStatistics,
-    getUserAdmin,
-    QueueCommand,
-    QueueName,
-    runQueueCommandLegacy,
-    scanLibrary,
-    updateLibrary,
-    type LibraryResponseDto,
-    type LibraryStatsResponseDto,
-    type UserResponseDto,
-  } from '@immich/sdk';
-  import { Button, LoadingSpinner, modalManager, Text, toastManager } from '@immich/ui';
-  import { mdiDotsVertical, mdiPlusBoxOutline, mdiSync } from '@mdi/js';
-  import { onMount } from 'svelte';
+  import { getBytesWithUnit } from '$lib/utils/byte-units';
+  import { getLibrary, getLibraryStatistics, getUserAdmin, type LibraryResponseDto } from '@immich/sdk';
+  import { Button } from '@immich/ui';
   import { t } from 'svelte-i18n';
-  import { fade, slide } from 'svelte/transition';
+  import { fade } from 'svelte/transition';
   import type { PageData } from './$types';
 
   interface Props {
@@ -39,230 +20,57 @@
 
   let { data }: Props = $props();
 
-  let libraries: LibraryResponseDto[] = $state([]);
+  let libraries = $state(data.libraries);
+  let statistics = $state(data.statistics);
+  let owners = $state(data.owners);
 
-  let stats: LibraryStatsResponseDto[] = [];
-  let owner: UserResponseDto[] = $state([]);
-  let photos: number[] = $state([]);
-  let videos: number[] = $state([]);
-  let totalCount: number[] = $state([]);
-  let diskUsage: number[] = $state([]);
-  let diskUsageUnit: ByteUnit[] = $state([]);
-  let editImportPaths: number | undefined = $state();
-  let editScanSettings: number | undefined = $state();
-  let dropdownOpen: boolean[] = [];
+  const handleLibraryAdd = async (library: LibraryResponseDto) => {
+    statistics[library.id] = await getLibraryStatistics({ id: library.id });
+    owners[library.id] = await getUserAdmin({ id: library.ownerId });
+    libraries.push(library);
 
-  onMount(async () => {
-    await readLibraryList();
-  });
-
-  const closeAll = () => {
-    editImportPaths = undefined;
-    editScanSettings = undefined;
-
-    for (let index = 0; index < dropdownOpen.length; index++) {
-      dropdownOpen[index] = false;
-    }
+    await goto(`${AppRoute.ADMIN_LIBRARY_MANAGEMENT}/${library.id}`);
   };
 
-  const refreshStats = async (listIndex: number) => {
-    stats[listIndex] = await getLibraryStatistics({ id: libraries[listIndex].id });
-    owner[listIndex] = await getUserAdmin({ id: libraries[listIndex].ownerId });
-    photos[listIndex] = stats[listIndex].photos;
-    videos[listIndex] = stats[listIndex].videos;
-    totalCount[listIndex] = stats[listIndex].total;
-    [diskUsage[listIndex], diskUsageUnit[listIndex]] = getBytesWithUnit(stats[listIndex].usage, 0);
-  };
+  const handleLibraryUpdate = async (library: LibraryResponseDto) => {
+    const index = libraries.findIndex(({ id }) => id === library.id);
 
-  async function readLibraryList() {
-    libraries = await getAllLibraries();
-    dropdownOpen.length = libraries.length;
-
-    for (let index = 0; index < libraries.length; index++) {
-      await refreshStats(index);
-      dropdownOpen[index] = false;
-    }
-  }
-
-  const handleCreate = async (ownerId: string) => {
-    let createdLibrary: LibraryResponseDto | undefined;
-    try {
-      createdLibrary = await createLibrary({ createLibraryDto: { ownerId } });
-      toastManager.success($t('admin.library_created', { values: { library: createdLibrary.name } }));
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_create_library'));
-    } finally {
-      await readLibraryList();
-    }
-
-    if (createdLibrary) {
-      // Open the import paths form for the newly created library
-      const createdLibraryIndex = libraries.findIndex((library) => library.id === createdLibrary.id);
-      const result = await modalManager.show(LibraryImportPathModal, {
-        title: $t('add_import_path'),
-        submitText: $t('add'),
-        importPath: null,
-      });
-
-      if (!result) {
-        if (createdLibraryIndex !== null) {
-          onEditImportPathClicked(createdLibraryIndex);
-        }
-        return;
-      }
-
-      switch (result.action) {
-        case 'submit': {
-          handleAddImportPath(result.importPath, createdLibraryIndex);
-          break;
-        }
-        case 'delete': {
-          await handleDelete(libraries[createdLibraryIndex], createdLibraryIndex);
-          break;
-        }
-      }
-    }
-  };
-
-  const handleAddImportPath = (newImportPath: string | null, libraryIndex: number) => {
-    if ((libraryIndex !== 0 && !libraryIndex) || !newImportPath) {
+    if (index === -1) {
       return;
     }
 
-    try {
-      onEditImportPathClicked(libraryIndex);
-
-      libraries[libraryIndex].importPaths.push(newImportPath);
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_add_import_path'));
-    }
+    libraries[index] = await getLibrary({ id: library.id });
+    statistics[library.id] = await getLibraryStatistics({ id: library.id });
   };
 
-  const handleUpdate = async (library: Partial<LibraryResponseDto>, libraryIndex: number) => {
-    try {
-      const libraryId = libraries[libraryIndex].id;
-      await updateLibrary({ id: libraryId, updateLibraryDto: library });
-      closeAll();
-      await readLibraryList();
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_update_library'));
-    }
+  const handleDeleteLibrary = ({ id }: { id: string }) => {
+    libraries = libraries.filter((library) => library.id !== id);
+    delete statistics[id];
+    delete owners[id];
   };
 
-  const handleScanAll = async () => {
-    try {
-      await runQueueCommandLegacy({ name: QueueName.Library, queueCommandDto: { command: QueueCommand.Start } });
-
-      toastManager.info($t('admin.refreshing_all_libraries'));
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_scan_libraries'));
-    }
-  };
-
-  const handleScan = async (libraryId: string) => {
-    try {
-      await scanLibrary({ id: libraryId });
-      toastManager.info($t('admin.scanning_library'));
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_scan_library'));
-    }
-  };
-
-  const onRenameClicked = async (index: number) => {
-    closeAll();
-    const result = await modalManager.show(LibraryRenameModal, {
-      library: libraries[index],
-    });
-    if (result) {
-      await handleUpdate(result, index);
-    }
-  };
-
-  const onEditImportPathClicked = (index: number) => {
-    closeAll();
-    editImportPaths = index;
-  };
-
-  const onScanClicked = async (library: LibraryResponseDto) => {
-    closeAll();
-
-    if (library) {
-      await handleScan(library.id);
-    }
-  };
-
-  const onCreateNewLibraryClicked = async () => {
-    const result = await modalManager.show(LibraryUserPickerModal);
-    if (result) {
-      await handleCreate(result);
-    }
-  };
-
-  const onScanSettingClicked = (index: number) => {
-    closeAll();
-    editScanSettings = index;
-  };
-
-  const handleDelete = async (library: LibraryResponseDto, index: number) => {
-    closeAll();
-
-    if (!library) {
-      return;
-    }
-
-    const isConfirmed = await modalManager.showDialog({
-      prompt: $t('admin.confirm_delete_library', { values: { library: library.name } }),
-    });
-
-    if (!isConfirmed) {
-      return;
-    }
-
-    await refreshStats(index);
-    const assetCount = totalCount[index];
-    if (assetCount > 0) {
-      const isConfirmed = await modalManager.showDialog({
-        prompt: $t('admin.confirm_delete_library_assets', { values: { count: assetCount } }),
-      });
-      if (!isConfirmed) {
-        return;
-      }
-    }
-
-    try {
-      await deleteLibrary({ id: library.id });
-      toastManager.success($t('admin.library_deleted'));
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_remove_library'));
-    } finally {
-      await readLibraryList();
-    }
-  };
+  const { Create, ScanAll } = $derived(getLibrariesActions($t));
 </script>
+
+<OnEvents
+  onLibraryCreate={handleLibraryAdd}
+  onLibraryUpdate={handleLibraryUpdate}
+  onLibraryDelete={handleDeleteLibrary}
+/>
 
 <AdminPageLayout title={data.meta.title}>
   {#snippet buttons()}
     <div class="flex justify-end gap-2">
       {#if libraries.length > 0}
-        <Button leadingIcon={mdiSync} onclick={handleScanAll} size="small" variant="ghost" color="secondary">
-          <Text class="hidden md:block">{$t('scan_all_libraries')}</Text>
-        </Button>
+        <HeaderButton action={ScanAll} />
       {/if}
-      <Button
-        leadingIcon={mdiPlusBoxOutline}
-        onclick={onCreateNewLibraryClicked}
-        size="small"
-        variant="ghost"
-        color="secondary"
-      >
-        <Text class="hidden md:block">{$t('create_library')}</Text>
-      </Button>
+      <HeaderButton action={Create} />
     </div>
   {/snippet}
   <section class="my-4">
-    <div class="flex flex-col gap-2" in:fade={{ duration: 500 }}>
+    <div class="flex flex-col items-center gap-2" in:fade={{ duration: 500 }}>
       {#if libraries.length > 0}
-        <table class="w-full text-start">
+        <table class="w-3/4 text-start">
           <thead
             class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray"
           >
@@ -276,91 +84,36 @@
             </tr>
           </thead>
           <tbody class="block overflow-y-auto rounded-md border dark:border-immich-dark-gray">
-            {#each libraries as library, index (library.id)}
+            {#each libraries as library (library.id + library.name)}
+              {@const { photos, usage, videos } = statistics[library.id]}
+              {@const [diskUsage, diskUsageUnit] = getBytesWithUnit(usage, 0)}
               <tr
                 class="grid grid-cols-6 h-20 w-full place-items-center text-center dark:text-immich-dark-fg even:bg-subtle/20 odd:bg-subtle/80"
               >
                 <td class="text-ellipsis px-4 text-sm">{library.name}</td>
                 <td class="text-ellipsis px-4 text-sm">
-                  {#if owner[index] == undefined}
-                    <LoadingSpinner size="large" />
-                  {:else}{owner[index].name}{/if}
+                  {owners[library.id].name}
                 </td>
                 <td class="text-ellipsis px-4 text-sm">
-                  {#if photos[index] == undefined}
-                    <LoadingSpinner size="large" />
-                  {:else}
-                    {photos[index].toLocaleString($locale)}
-                  {/if}
+                  {photos.toLocaleString($locale)}
                 </td>
                 <td class="text-ellipsis px-4 text-sm">
-                  {#if videos[index] == undefined}
-                    <LoadingSpinner size="large" />
-                  {:else}
-                    {videos[index].toLocaleString($locale)}
-                  {/if}
+                  {videos.toLocaleString($locale)}
                 </td>
                 <td class="text-ellipsis px-4 text-sm">
-                  {#if diskUsage[index] == undefined}
-                    <LoadingSpinner size="large" />
-                  {:else}
-                    {diskUsage[index]}
-                    {diskUsageUnit[index]}
-                  {/if}
+                  {diskUsage}
+                  {diskUsageUnit}
                 </td>
 
-                <td class="text-ellipsis px-4 text-sm">
-                  <ButtonContextMenu
-                    align="top-right"
-                    direction="left"
-                    color="primary"
-                    size="medium"
-                    icon={mdiDotsVertical}
-                    title={$t('library_options')}
-                    variant="filled"
-                  >
-                    <MenuOption onClick={() => onScanClicked(library)} text={$t('scan_library')} />
-                    <hr />
-                    <MenuOption onClick={() => onRenameClicked(index)} text={$t('rename')} />
-                    <MenuOption onClick={() => onEditImportPathClicked(index)} text={$t('edit_import_paths')} />
-                    <MenuOption onClick={() => onScanSettingClicked(index)} text={$t('scan_settings')} />
-                    <hr />
-                    <MenuOption
-                      onClick={() => handleDelete(library, index)}
-                      activeColor="bg-red-200"
-                      textColor="text-red-600"
-                      text={$t('delete_library')}
-                    />
-                  </ButtonContextMenu>
+                <td class="flex gap-2 text-ellipsis px-4 text-sm">
+                  <Button size="small" onclick={() => handleViewLibrary(library)}>{$t('view')}</Button>
                 </td>
               </tr>
-              {#if editImportPaths === index}
-                <!-- svelte-ignore node_invalid_placement_ssr -->
-                <div transition:slide={{ duration: 250 }}>
-                  <LibraryImportPathsForm
-                    {library}
-                    onSubmit={(lib) => handleUpdate(lib, index)}
-                    onCancel={() => (editImportPaths = undefined)}
-                  />
-                </div>
-              {/if}
-              {#if editScanSettings === index}
-                <!-- svelte-ignore node_invalid_placement_ssr -->
-                <div transition:slide={{ duration: 250 }} class="mb-4 ms-4 me-4">
-                  <LibraryScanSettingsForm
-                    {library}
-                    onSubmit={(lib) => handleUpdate(lib, index)}
-                    onCancel={() => (editScanSettings = undefined)}
-                  />
-                </div>
-              {/if}
             {/each}
           </tbody>
         </table>
-
-        <!-- Empty message -->
       {:else}
-        <EmptyPlaceholder text={$t('no_libraries_message')} onClick={onCreateNewLibraryClicked} />
+        <EmptyPlaceholder text={$t('no_libraries_message')} onClick={handleCreateLibrary} class="mt-10 mx-auto" />
       {/if}
     </div>
   </section>
