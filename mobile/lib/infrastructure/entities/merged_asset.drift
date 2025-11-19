@@ -3,6 +3,7 @@ import 'stack.entity.dart';
 import 'local_asset.entity.dart';
 import 'local_album.entity.dart';
 import 'local_album_asset.entity.dart';
+import 'trash_sync.entity.dart';
 
 mergedAsset:
 SELECT
@@ -12,7 +13,13 @@ SELECT
 	rae."type",
 	rae.created_at as created_at,
 	rae.updated_at,
-  rae.deleted_at,
+	CASE
+		WHEN EXISTS (
+			SELECT 1 FROM trash_sync_entity tse
+			WHERE tse.checksum = rae.checksum AND tse.is_sync_approved = 1
+		) THEN NULL
+		ELSE rae.deleted_at
+	END as deleted_at,
 	rae.width,
 	rae.height,
 	rae.duration_in_seconds,
@@ -51,7 +58,7 @@ SELECT
 	lae."type",
 	lae.created_at as created_at,
 	lae.updated_at,
-	NULL as remote_id,
+	NULL as deleted_at,
 	lae.width,
 	lae.height,
 	lae.duration_in_seconds,
