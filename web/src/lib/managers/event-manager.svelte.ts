@@ -16,6 +16,8 @@ export type Events = {
   LanguageChange: [{ name: string; code: string; rtl?: boolean }];
   ThemeChange: [ThemeSetting];
 
+  AssetReplace: [{ oldAssetId: string; newAssetId: string }];
+
   AlbumDelete: [AlbumResponseDto];
 
   SharedLinkCreate: [SharedLinkResponseDto];
