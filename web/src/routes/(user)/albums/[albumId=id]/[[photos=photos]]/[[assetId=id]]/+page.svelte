@@ -567,7 +567,15 @@
                 onClick={() => updateThumbnailUsingCurrentSelection()}
               />
             {/if}
-            <ArchiveAction menuItem unarchive={assetInteraction.isAllArchived} />
+            <ArchiveAction
+              menuItem
+              unarchive={assetInteraction.isAllArchived}
+              onArchive={(ids, visibility) =>
+                timelineManager.updateAssetOperation(ids, (asset) => {
+                  asset.visibility = visibility;
+                  return { remove: false };
+                })}
+            />
             <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />
           {/if}
 
