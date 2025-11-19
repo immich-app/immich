@@ -29,13 +29,14 @@ export interface BoundingBoxDimensions {
   centerX: number;
   centerY: number;
   rotation: number;
-  pathData: string;
+  skewX: number;
+  skewY: number;
 }
 
 /**
  * Calculate bounding box dimensions and properties from OCR points
  * @param points - Array of 4 corner points of the bounding box
- * @returns Dimensions, rotation, and SVG path data for the bounding box
+ * @returns Dimensions, rotation, and skew values for the bounding box
  */
 export const calculateBoundingBoxDimensions = (points: { x: number; y: number }[]): BoundingBoxDimensions => {
   const minX = Math.min(...points.map(({ x }) => x));
@@ -50,8 +51,16 @@ export const calculateBoundingBoxDimensions = (points: { x: number; y: number }[
   // Calculate rotation angle from the bottom edge (points[3] to points[2])
   const rotation = Math.atan2(points[2].y - points[3].y, points[2].x - points[3].x) * (180 / Math.PI);
 
-  // Create SVG path data for the quadrilateral
-  const pathData = `M ${points[0].x} ${points[0].y} L ${points[1].x} ${points[1].y} L ${points[2].x} ${points[2].y} L ${points[3].x} ${points[3].y} Z`;
+  // Calculate skew angles to handle perspective distortion
+  // SkewX: compare left and right edges
+  const leftEdgeAngle = Math.atan2(points[3].y - points[0].y, points[3].x - points[0].x);
+  const rightEdgeAngle = Math.atan2(points[2].y - points[1].y, points[2].x - points[1].x);
+  const skewX = (rightEdgeAngle - leftEdgeAngle) * (180 / Math.PI);
+
+  // SkewY: compare top and bottom edges
+  const topEdgeAngle = Math.atan2(points[1].y - points[0].y, points[1].x - points[0].x);
+  const bottomEdgeAngle = Math.atan2(points[2].y - points[3].y, points[2].x - points[3].x);
+  const skewY = (bottomEdgeAngle - topEdgeAngle) * (180 / Math.PI);
 
   return {
     minX,
@@ -63,7 +72,8 @@ export const calculateBoundingBoxDimensions = (points: { x: number; y: number }[
     centerX,
     centerY,
     rotation,
-    pathData,
+    skewX,
+    skewY,
   };
 };
 
