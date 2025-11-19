@@ -141,7 +141,7 @@ void main() {
       trashSyncRepository: mockTrashSyncRepo,
     );
 
-    when(() => mockLocalAssetRepo.getAssetsFromBackupAlbums(any())).thenAnswer((_) async => {});
+    when(() => mockLocalAssetRepo.getAssetsFromBackupAlbums(any<Map<String, DateTime>>())).thenAnswer((_) async => {});
     when(() => mockTrashedLocalAssetRepo.trashLocalAsset(any())).thenAnswer((_) async {});
     when(() => mockTrashedLocalAssetRepo.getToRestore()).thenAnswer((_) async => []);
     when(() => mockTrashedLocalAssetRepo.applyRestoredAssets(any())).thenAnswer((_) async {});
@@ -392,9 +392,16 @@ void main() {
         'album-a': [localAsset],
         'album-b': [mergedAsset],
       };
-      when(() => mockLocalAssetRepo.getAssetsFromBackupAlbums(any())).thenAnswer((invocation) async {
-        final Iterable<String> requestedChecksums = invocation.positionalArguments.first as Iterable<String>;
-        expect(requestedChecksums.toSet(), equals({'checksum-local', 'checksum-merged', 'checksum-remote-only'}));
+      when(() => mockLocalAssetRepo.getAssetsFromBackupAlbums(any<Map<String, DateTime>>())).thenAnswer((invocation) async {
+        final Map<String, DateTime> trashedAssetsMap = invocation.positionalArguments.first as Map<String, DateTime>;
+        expect(
+          trashedAssetsMap,
+          equals({
+            localAsset.checksum!: DateTime(2025, 5, 1),
+            mergedAsset.checksum!: DateTime(2025, 5, 2),
+            'checksum-remote-only': DateTime(2025, 5, 3),
+          }),
+        );
         return assetsByAlbum;
       });
 
@@ -451,7 +458,7 @@ void main() {
 
       await simulateEvents(events);
 
-      verify(() => mockLocalAssetRepo.getAssetsFromBackupAlbums(any())).called(1);
+      verify(() => mockLocalAssetRepo.getAssetsFromBackupAlbums(any<Map<String, DateTime>>())).called(1);
       verifyNever(() => mockLocalFilesManagerRepo.moveToTrash(any()));
       verifyNever(() => mockTrashedLocalAssetRepo.trashLocalAsset(any()));
     });
@@ -461,7 +468,7 @@ void main() {
 
       await simulateEvents(events);
 
-      verifyNever(() => mockLocalAssetRepo.getAssetsFromBackupAlbums(any()));
+      verifyNever(() => mockLocalAssetRepo.getAssetsFromBackupAlbums(any<Map<String, DateTime>>()));
       verifyNever(() => mockLocalFilesManagerRepo.moveToTrash(any()));
       verify(() => mockSyncStreamRepo.deleteAssetsV1(any())).called(1);
     });

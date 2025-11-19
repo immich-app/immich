@@ -79,7 +79,7 @@ class ThumbnailTile extends ConsumerWidget {
                       child: Padding(
                         padding: const EdgeInsets.only(right: 10.0, bottom: 6.0),
                         child: _TileOverlayIcon(
-                              // todo EXPERIMENTAL (PeterO)
+                          // todo EXPERIMENTAL (PeterO)
                           (asset as LocalAsset).remoteDeletedAt == null
                               ? Icons.cloud_off_outlined
                               : Icons.sync_problem_rounded,
@@ -162,6 +162,7 @@ class _SelectionIndicator extends StatelessWidget {
 
 class _VideoIndicator extends StatelessWidget {
   final Duration duration;
+
   const _VideoIndicator(this.duration);
 
   @override
