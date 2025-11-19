@@ -9,13 +9,13 @@
   let { ocrBox }: Props = $props();
 
   const dimensions = $derived(calculateBoundingBoxDimensions(ocrBox.points));
-  
+
   const transform = $derived(
-    `translate(${dimensions.minX}px, ${dimensions.minY}px) rotate(${dimensions.rotation}deg) skew(${dimensions.skewX}deg, ${dimensions.skewY}deg)`
+    `translate(${dimensions.minX}px, ${dimensions.minY}px) rotate(${dimensions.rotation}deg) skew(${dimensions.skewX}deg, ${dimensions.skewY}deg)`,
   );
-  
+
   const transformOrigin = $derived(
-    `${dimensions.centerX - dimensions.minX}px ${dimensions.centerY - dimensions.minY}px`
+    `${dimensions.centerX - dimensions.minX}px ${dimensions.centerY - dimensions.minY}px`,
   );
 </script>
 
@@ -25,12 +25,12 @@
     class="absolute border-2 border-blue-500 bg-blue-500/10 cursor-pointer pointer-events-auto transition-all group-hover:bg-blue-500/30 group-hover:border-blue-600 group-hover:border-[3px]"
     style="width: {dimensions.width}px; height: {dimensions.height}px; transform: {transform}; transform-origin: {transformOrigin};"
   ></div>
-  
-  <!-- Tooltip overlay -->
-  <p
-    class="absolute hidden group-hover:flex items-center justify-center bg-black/75 text-white text-sm px-2 py-1 pointer-events-auto cursor-text whitespace-pre-wrap wrap-break-word z-10 select-text"
+
+  <!-- Text overlay - always rendered but invisible, allows text selection and copy -->
+  <div
+    class="absolute flex items-center justify-center text-transparent text-sm px-2 py-1 pointer-events-auto cursor-text whitespace-pre-wrap wrap-break-word select-text group-hover:text-white group-hover:bg-black/75 group-hover:z-10"
     style="width: {dimensions.width}px; height: {dimensions.height}px; transform: {transform}; transform-origin: {transformOrigin};"
   >
     {ocrBox.text}
-  </p>
+  </div>
 </div>
