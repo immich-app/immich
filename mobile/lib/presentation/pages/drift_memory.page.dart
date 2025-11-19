@@ -27,10 +27,10 @@ class DriftMemoryPage extends HookConsumerWidget {
   static void setMemory(WidgetRef ref, DriftMemory memory) {
     if (memory.assets.isNotEmpty) {
       ref.read(currentAssetNotifier.notifier).setAsset(memory.assets.first);
-    }
 
-    if (memory.assets.first.isVideo) {
-      ref.read(videoPlaybackValueProvider.notifier).reset();
+      if (memory.assets.first.isVideo) {
+        ref.read(videoPlaybackValueProvider.notifier).reset();
+      }
     }
   }
 
