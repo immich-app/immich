@@ -12,12 +12,12 @@
     mdiClock,
     mdiFile,
     mdiFitToScreen,
+    mdiFolderOutline,
     mdiHeart,
     mdiImageMultipleOutline,
     mdiImageOutline,
     mdiMagnifyPlus,
     mdiMapMarkerOutline,
-    mdiFolderOutline
   } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import InfoRow from './info-row.svelte';
@@ -172,7 +172,11 @@
       {asset.originalFileName}
     </InfoRow>
 
-   <InfoRow icon={mdiFolderOutline} highlight={hasDifferentValues.originalPath} title={$t('full_path', { values: { path: asset.originalPath } })}>
+    <InfoRow
+      icon={mdiFolderOutline}
+      highlight={hasDifferentValues.originalPath}
+      title={$t('full_path', { values: { path: asset.originalPath } })}
+    >
       {truncateMiddle(getBasePath(asset.originalPath, asset.originalFileName)) || $t('unknown')}
     </InfoRow>
 
