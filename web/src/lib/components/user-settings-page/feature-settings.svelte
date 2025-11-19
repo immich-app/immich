@@ -6,13 +6,17 @@
   import { SettingInputFieldType } from '$lib/constants';
   import { preferences } from '$lib/stores/user.store';
   import { handleError } from '$lib/utils/handle-error';
-  import { AssetOrder, updateMyPreferences } from '@immich/sdk';
+  import { AssetOrder, TimelineSortBy, updateMyPreferences } from '@immich/sdk';
   import { Button, toastManager } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
 
   // Albums
   let defaultAssetOrder = $state($preferences?.albums?.defaultAssetOrder ?? AssetOrder.Desc);
+
+  // Timeline
+  let timelineSortBy = $state($preferences?.timeline?.sortBy ?? TimelineSortBy.Captured);
+  let timelineSortOrder = $state($preferences?.timeline?.sortOrder ?? AssetOrder.Desc);
 
   // Folders
   let foldersEnabled = $state($preferences?.folders?.enabled ?? false);
@@ -45,6 +49,7 @@
       const data = await updateMyPreferences({
         userPreferencesUpdateDto: {
           albums: { defaultAssetOrder },
+          timeline: { sortBy: timelineSortBy, sortOrder: timelineSortOrder },
           folders: { enabled: foldersEnabled, sidebarWeb: foldersSidebar },
           memories: { enabled: memoriesEnabled, duration: memoriesDuration },
           people: { enabled: peopleEnabled, sidebarWeb: peopleSidebar },
@@ -82,6 +87,31 @@
                 { value: AssetOrder.Desc, text: $t('newest_first') },
               ]}
               bind:value={defaultAssetOrder}
+            />
+          </div>
+        </SettingAccordion>
+
+        <SettingAccordion key="timeline" title={$t('timeline')} subtitle={$t('timeline_settings_description')}>
+          <div class="ms-4 mt-6">
+            <SettingSelect
+              label={$t('sort_by')}
+              desc={$t('timeline_sort_by_description')}
+              options={[
+                { value: TimelineSortBy.Captured, text: $t('capture_date') },
+                { value: TimelineSortBy.Uploaded, text: $t('upload_date') },
+              ]}
+              bind:value={timelineSortBy}
+            />
+          </div>
+          <div class="ms-4 mt-6">
+            <SettingSelect
+              label={$t('order')}
+              desc={$t('timeline_sort_order_description')}
+              options={[
+                { value: AssetOrder.Desc, text: $t('newest_first') },
+                { value: AssetOrder.Asc, text: $t('oldest_first') },
+              ]}
+              bind:value={timelineSortOrder}
             />
           </div>
         </SettingAccordion>

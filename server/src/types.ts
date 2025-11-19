@@ -17,6 +17,7 @@ import {
   StorageFolder,
   SyncEntityType,
   SystemMetadataKey,
+  TimelineSortBy,
   TranscodeTarget,
   UserMetadataKey,
   VideoCodec,
@@ -539,6 +540,10 @@ export interface UserPreferences {
   tags: {
     enabled: boolean;
     sidebarWeb: boolean;
+  };
+  timeline: {
+    sortBy: TimelineSortBy;
+    sortOrder: AssetOrder;
   };
   emailNotifications: {
     enabled: boolean;

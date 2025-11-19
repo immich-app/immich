@@ -56,6 +56,11 @@ export enum AssetOrder {
   Desc = 'desc',
 }
 
+export enum TimelineSortBy {
+  Captured = 'captured',
+  Uploaded = 'uploaded',
+}
+
 export enum DatabaseAction {
   Create = 'CREATE',
   Update = 'UPDATE',

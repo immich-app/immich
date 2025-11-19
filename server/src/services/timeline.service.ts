@@ -6,6 +6,7 @@ import { TimeBucketOptions } from 'src/repositories/asset.repository';
 import { BaseService } from 'src/services/base.service';
 import { requireElevatedPermission } from 'src/utils/access';
 import { getMyPartnerIds } from 'src/utils/asset.util';
+import { getPreferences } from 'src/utils/preferences';
 
 @Injectable()
 export class TimelineService extends BaseService {
@@ -41,7 +42,15 @@ export class TimelineService extends BaseService {
       }
     }
 
-    return { ...options, userIds };
+    const metadata = await this.userRepository.getMetadata(auth.user.id);
+    const preferences = getPreferences(metadata);
+
+    return {
+      ...options,
+      userIds,
+      sortBy: options.sortBy ?? preferences.timeline.sortBy,
+      order: options.order ?? preferences.timeline.sortOrder,
+    };
   }
 
   private async timeBucketChecks(auth: AuthDto, dto: TimeBucketDto) {

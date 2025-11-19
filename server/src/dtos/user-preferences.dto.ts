@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsDateString, IsInt, IsPositive, ValidateNested } from 'class-validator';
-import { AssetOrder, UserAvatarColor } from 'src/enum';
+import { AssetOrder, TimelineSortBy, UserAvatarColor } from 'src/enum';
 import { UserPreferences } from 'src/types';
 import { Optional, ValidateBoolean, ValidateEnum } from 'src/validation';
 
@@ -61,6 +61,14 @@ class TagsUpdate {
 
   @ValidateBoolean({ optional: true })
   sidebarWeb?: boolean;
+}
+
+class TimelineUpdate {
+  @ValidateEnum({ enum: TimelineSortBy, name: 'TimelineSortBy', optional: true })
+  sortBy?: TimelineSortBy;
+
+  @ValidateEnum({ enum: AssetOrder, name: 'AssetOrder', optional: true })
+  sortOrder?: AssetOrder;
 }
 
 class EmailNotificationsUpdate {
@@ -137,6 +145,11 @@ export class UserPreferencesUpdateDto {
 
   @Optional()
   @ValidateNested()
+  @Type(() => TimelineUpdate)
+  timeline?: TimelineUpdate;
+
+  @Optional()
+  @ValidateNested()
   @Type(() => AvatarUpdate)
   avatar?: AvatarUpdate;
 
@@ -192,6 +205,14 @@ class TagsResponse {
   sidebarWeb: boolean = true;
 }
 
+class TimelineResponse {
+  @ValidateEnum({ enum: TimelineSortBy, name: 'TimelineSortBy' })
+  sortBy: TimelineSortBy = TimelineSortBy.Captured;
+
+  @ValidateEnum({ enum: AssetOrder, name: 'AssetOrder' })
+  sortOrder: AssetOrder = AssetOrder.Desc;
+}
+
 class SharedLinksResponse {
   enabled: boolean = true;
   sidebarWeb: boolean = false;
@@ -227,6 +248,7 @@ export class UserPreferencesResponseDto implements UserPreferences {
   ratings!: RatingsResponse;
   sharedLinks!: SharedLinksResponse;
   tags!: TagsResponse;
+  timeline!: TimelineResponse;
   emailNotifications!: EmailNotificationsResponse;
   download!: DownloadResponse;
   purchase!: PurchaseResponse;

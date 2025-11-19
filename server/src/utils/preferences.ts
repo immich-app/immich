@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import { UserPreferencesUpdateDto } from 'src/dtos/user-preferences.dto';
-import { AssetOrder, UserMetadataKey } from 'src/enum';
+import { AssetOrder, TimelineSortBy, UserMetadataKey } from 'src/enum';
 import { DeepPartial, UserMetadataItem, UserPreferences } from 'src/types';
 import { HumanReadableSize } from 'src/utils/bytes';
 import { getKeysDeep } from 'src/utils/misc';
@@ -32,6 +32,10 @@ const getDefaultPreferences = (): UserPreferences => {
     tags: {
       enabled: false,
       sidebarWeb: false,
+    },
+    timeline: {
+      sortBy: TimelineSortBy.Captured,
+      sortOrder: AssetOrder.Desc,
     },
     emailNotifications: {
       enabled: true,

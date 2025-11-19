@@ -23,6 +23,7 @@
   import Timeline from '$lib/components/timeline/Timeline.svelte';
   import { AssetAction } from '$lib/constants';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
+  import TimelineSortModal from '$lib/modals/TimelineSortModal.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
@@ -35,8 +36,9 @@
   } from '$lib/utils/actions';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
   import { AssetVisibility } from '@immich/sdk';
+  import { IconButton, modalManager } from '@immich/ui';
 
-  import { mdiDotsVertical, mdiPlus } from '@mdi/js';
+  import { mdiDotsVertical, mdiPlus, mdiSort } from '@mdi/js';
 
   import { t } from 'svelte-i18n';
 
@@ -82,12 +84,22 @@
     assetInteraction.clearMultiselect();
   };
 
+  const handleSort = async () => {
+    const result = await modalManager.show(TimelineSortModal);
+    if (result && timelineManager) {
+      await timelineManager.reset(true);
+    }
+  };
+
   beforeNavigate(() => {
     isFaceEditMode.value = false;
   });
 </script>
 
 <UserPageLayout hideNavbar={assetInteraction.selectionActive} showUploadButton scrollbar={false}>
+  {#snippet buttons()}
+    <IconButton icon={mdiSort} title={$t('sort')} on:click={handleSort} />
+  {/snippet}
   <Timeline
     enableRouting={true}
     bind:timelineManager
