@@ -21,8 +21,11 @@ import { LoggingInterceptor } from 'src/middleware/logging.interceptor';
 import { repositories } from 'src/repositories';
 import { AppRepository } from 'src/repositories/app.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
+import { DatabaseRepository } from 'src/repositories/database.repository';
 import { EventRepository } from 'src/repositories/event.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
+import { ProcessRepository } from 'src/repositories/process.repository';
+import { StorageRepository } from 'src/repositories/storage.repository';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
 import { teardownTelemetry, TelemetryRepository } from 'src/repositories/telemetry.repository';
 import { WebsocketRepository } from 'src/repositories/websocket.repository';
@@ -103,6 +106,9 @@ export class ApiModule extends BaseModule {}
   providers: [
     ConfigRepository,
     LoggingRepository,
+    StorageRepository,
+    ProcessRepository,
+    DatabaseRepository,
     SystemMetadataRepository,
     AppRepository,
     MaintenanceWebsocketRepository,
