@@ -12,6 +12,7 @@
     mdiClock,
     mdiFile,
     mdiFitToScreen,
+    mdiFolderOutline,
     mdiHeart,
     mdiImageMultipleOutline,
     mdiImageOutline,
@@ -51,6 +52,7 @@
     fileName: isDifferent((a) => a.originalFileName),
     fileSize: isDifferent((a) => getFileSize(a)),
     resolution: isDifferent((a) => getAssetResolution(a)),
+    originalPath: isDifferent((a) => a.originalPath ?? $t('unknown')),
     date: isDifferent((a) => {
       const tz = a.exifInfo?.timeZone;
       const dt =
@@ -79,6 +81,24 @@
       (a) => [a.exifInfo?.city, a.exifInfo?.state, a.exifInfo?.country].filter(Boolean).join(', ') || 'unknown',
     ),
   });
+
+  const getBasePath = (fullpath: string, fileName: string): string => {
+    if (fileName && fullpath.endsWith(fileName)) {
+      return fullpath.slice(0, -(fileName.length + 1));
+    }
+    return fullpath;
+  };
+
+  function truncateMiddle(path: string, maxLength: number = 50): string {
+    if (path.length <= maxLength) {
+      return path;
+    }
+
+    const start = Math.floor(maxLength / 2) - 2;
+    const end = Math.floor(maxLength / 2) - 2;
+
+    return path.slice(0, Math.max(0, start)) + '...' + path.slice(Math.max(0, path.length - end));
+  }
 </script>
 
 <div class="min-w-60 transition-colors border rounded-lg">
@@ -150,6 +170,14 @@
   >
     <InfoRow icon={mdiImageOutline} highlight={hasDifferentValues.fileName} title={$t('file_name')}>
       {asset.originalFileName}
+    </InfoRow>
+
+    <InfoRow
+      icon={mdiFolderOutline}
+      highlight={hasDifferentValues.originalPath}
+      title={$t('full_path', { values: { path: asset.originalPath } })}
+    >
+      {truncateMiddle(getBasePath(asset.originalPath, asset.originalFileName)) || $t('unknown')}
     </InfoRow>
 
     <InfoRow icon={mdiFile} highlight={hasDifferentValues.fileSize} title={$t('file_size')}>
