@@ -607,8 +607,7 @@ test.describe('Timeline', () => {
         visibility: 'timeline',
         ids: [assetToArchive.id],
       });
-      console.log('Skipping assertion - TODO - fix bug with not removing asset from timeline-manager after unarchive');
-      // await expect(thumbnail.withAssetId(page, assetToArchive.id)).toHaveCount(0);
+      await expect(thumbnailUtils.withAssetId(page, assetToArchive.id)).toHaveCount(0);
       await page.getByText('Photos', { exact: true }).click();
       await thumbnailUtils.expectInViewport(page, assetToArchive.id);
     });
