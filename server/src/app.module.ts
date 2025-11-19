@@ -122,8 +122,13 @@ export class MaintenanceModule {
   constructor(
     @Inject(IWorker) private worker: ImmichWorker,
     logger: LoggingRepository,
+    private maintenanceWorkerService: MaintenanceWorkerService,
   ) {
     logger.setAppName(this.worker);
+  }
+
+  async onModuleInit() {
+    await this.maintenanceWorkerService.logSecret();
   }
 }
 
