@@ -7,6 +7,7 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { MaintenanceAuthDto } from 'src/dtos/maintenance.dto';
 import { AppRepository } from 'src/repositories/app.repository';
 import { AppRestartEvent, ArgsOf } from 'src/repositories/event.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
@@ -18,6 +19,8 @@ export interface ClientEventMap {
   AppRestartV1: [AppRestartEvent];
 }
 
+type AuthFn = (client: Socket) => Promise<MaintenanceAuthDto>;
+
 @WebSocketGateway({
   cors: true,
   path: '/api/socket.io',
@@ -25,6 +28,8 @@ export interface ClientEventMap {
 })
 @Injectable()
 export class MaintenanceWebsocketRepository implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit {
+  private authFn?: AuthFn;
+
   @WebSocketServer()
   private websocketServer?: Server;
 
@@ -49,11 +54,23 @@ export class MaintenanceWebsocketRepository implements OnGatewayConnection, OnGa
     this.websocketServer?.serverSideEmit(event, ...args);
   }
 
-  handleConnection(client: Socket) {
-    this.logger.log(`Websocket Connect:    ${client.id}`);
+  async handleConnection(client: Socket) {
+    try {
+      await this.authFn!(client);
+      await client.join('private');
+      this.logger.log(`Websocket Connect:    ${client.id} (private)`);
+    } catch {
+      await client.join('public');
+      this.logger.log(`Websocket Connect:    ${client.id} (public)`);
+    }
   }
 
-  handleDisconnect(client: Socket) {
+  async handleDisconnect(client: Socket) {
     this.logger.log(`Websocket Disconnect: ${client.id}`);
+    await Promise.allSettled([client.leave('private'), client.leave('public')]);
+  }
+
+  setAuthFn(fn: (client: Socket) => Promise<MaintenanceAuthDto>) {
+    this.authFn = fn;
   }
 }

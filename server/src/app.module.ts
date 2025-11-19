@@ -124,12 +124,17 @@ export class MaintenanceModule {
     @Inject(IWorker) private worker: ImmichWorker,
     logger: LoggingRepository,
     private maintenanceWorkerService: MaintenanceWorkerService,
+    private maintenanceWebsocketRepository: MaintenanceWebsocketRepository,
   ) {
     logger.setAppName(this.worker);
   }
 
   async onModuleInit() {
     StorageCore.setMediaLocation(this.maintenanceWorkerService.detectMediaLocation());
+
+    this.maintenanceWebsocketRepository.setAuthFn(async (client) =>
+      this.maintenanceWorkerService.authenticate(client.request.headers),
+    );
 
     await this.maintenanceWorkerService.logSecret();
   }
