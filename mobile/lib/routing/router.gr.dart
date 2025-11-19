@@ -1458,41 +1458,18 @@ class DriftRecentlyTakenRoute extends PageRouteInfo<void> {
 
 /// generated route for
 /// [DriftSearchPage]
-class DriftSearchRoute extends PageRouteInfo<DriftSearchRouteArgs> {
-  DriftSearchRoute({
-    Key? key,
-    SearchFilter? preFilter,
-    List<PageRouteInfo>? children,
-  }) : super(
-         DriftSearchRoute.name,
-         args: DriftSearchRouteArgs(key: key, preFilter: preFilter),
-         initialChildren: children,
-       );
+class DriftSearchRoute extends PageRouteInfo<void> {
+  const DriftSearchRoute({List<PageRouteInfo>? children})
+    : super(DriftSearchRoute.name, initialChildren: children);
 
   static const String name = 'DriftSearchRoute';
 
   static PageInfo page = PageInfo(
     name,
     builder: (data) {
-      final args = data.argsAs<DriftSearchRouteArgs>(
-        orElse: () => const DriftSearchRouteArgs(),
-      );
-      return DriftSearchPage(key: args.key, preFilter: args.preFilter);
+      return const DriftSearchPage();
     },
   );
-}
-
-class DriftSearchRouteArgs {
-  const DriftSearchRouteArgs({this.key, this.preFilter});
-
-  final Key? key;
-
-  final SearchFilter? preFilter;
-
-  @override
-  String toString() {
-    return 'DriftSearchRouteArgs{key: $key, preFilter: $preFilter}';
-  }
 }
 
 /// generated route for

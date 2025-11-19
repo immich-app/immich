@@ -59,7 +59,7 @@ test.describe('Asset Viewer Navbar', () => {
       await page.goto(`/photos/${asset.id}`);
       await page.waitForSelector('#immich-asset-viewer');
       await page.keyboard.press('f');
-      await expect(page.locator('#notification-list').getByTestId('message')).toHaveText('Added to favorites');
+      await expect(page.getByText('Added to favorites')).toBeVisible();
     });
   });
 });

@@ -26,7 +26,7 @@ from immich_ml.models.clip.textual import MClipTextualEncoder, OpenClipTextualEn
 from immich_ml.models.clip.visual import OpenClipVisualEncoder
 from immich_ml.models.facial_recognition.detection import FaceDetector
 from immich_ml.models.facial_recognition.recognition import FaceRecognizer
-from immich_ml.schemas import ModelFormat, ModelTask, ModelType
+from immich_ml.schemas import ModelFormat, ModelPrecision, ModelTask, ModelType
 from immich_ml.sessions.ann import AnnSession
 from immich_ml.sessions.ort import OrtSession
 from immich_ml.sessions.rknn import RknnSession, run_inference
@@ -240,11 +240,16 @@ class TestOrtSession:
 
     @pytest.mark.ov_device_ids(["GPU.0", "CPU"])
     def test_sets_default_provider_options(self, ov_device_ids: list[str]) -> None:
-        model_path = "/cache/ViT-B-32__openai/model.onnx"
+        model_path = "/cache/ViT-B-32__openai/textual/model.onnx"
+
         session = OrtSession(model_path, providers=["OpenVINOExecutionProvider", "CPUExecutionProvider"])
 
         assert session.provider_options == [
-            {"device_type": "GPU.0", "precision": "FP32", "cache_dir": "/cache/ViT-B-32__openai/openvino"},
+            {
+                "device_type": "GPU.0",
+                "precision": "FP32",
+                "cache_dir": "/cache/ViT-B-32__openai/textual/openvino",
+            },
             {"arena_extend_strategy": "kSameAsRequested"},
         ]
 
@@ -258,6 +263,21 @@ class TestOrtSession:
             {
                 "device_type": "GPU.1",
                 "precision": "FP32",
+                "cache_dir": "/cache/ViT-B-32__openai/textual/openvino",
+            }
+        ]
+
+    def test_sets_openvino_to_fp16_if_enabled(self, mocker: MockerFixture) -> None:
+        model_path = "/cache/ViT-B-32__openai/textual/model.onnx"
+        os.environ["MACHINE_LEARNING_DEVICE_ID"] = "1"
+        mocker.patch.object(settings, "openvino_precision", ModelPrecision.FP16)
+
+        session = OrtSession(model_path, providers=["OpenVINOExecutionProvider"])
+
+        assert session.provider_options == [
+            {
+                "device_type": "GPU.1",
+                "precision": "FP16",
                 "cache_dir": "/cache/ViT-B-32__openai/textual/openvino",
             }
         ]
@@ -417,7 +437,7 @@ class TestRknnSession:
         session.run(None, input_feed)
 
         rknn_session.return_value.put.assert_called_once_with([input1, input2])
-        np_spy.call_count == 2
+        assert np_spy.call_count == 2
         np_spy.assert_has_calls([mock.call(input1), mock.call(input2)])
 
 
@@ -925,11 +945,34 @@ class TestCache:
             any_order=True,
         )
 
+    async def test_preloads_ocr_models(self, monkeypatch: MonkeyPatch, mock_get_model: mock.Mock) -> None:
+        os.environ["MACHINE_LEARNING_PRELOAD__OCR__DETECTION"] = "PP-OCRv5_mobile"
+        os.environ["MACHINE_LEARNING_PRELOAD__OCR__RECOGNITION"] = "PP-OCRv5_mobile"
+
+        settings = Settings()
+        assert settings.preload is not None
+        assert settings.preload.ocr.detection == "PP-OCRv5_mobile"
+        assert settings.preload.ocr.recognition == "PP-OCRv5_mobile"
+
+        model_cache = ModelCache()
+        monkeypatch.setattr("immich_ml.main.model_cache", model_cache)
+
+        await preload_models(settings.preload)
+        mock_get_model.assert_has_calls(
+            [
+                mock.call("PP-OCRv5_mobile", ModelType.DETECTION, ModelTask.OCR),
+                mock.call("PP-OCRv5_mobile", ModelType.RECOGNITION, ModelTask.OCR),
+            ],
+            any_order=True,
+        )
+
     async def test_preloads_all_models(self, monkeypatch: MonkeyPatch, mock_get_model: mock.Mock) -> None:
         os.environ["MACHINE_LEARNING_PRELOAD__CLIP__TEXTUAL"] = "ViT-B-32__openai"
         os.environ["MACHINE_LEARNING_PRELOAD__CLIP__VISUAL"] = "ViT-B-32__openai"
         os.environ["MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION__RECOGNITION"] = "buffalo_s"
         os.environ["MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION__DETECTION"] = "buffalo_s"
+        os.environ["MACHINE_LEARNING_PRELOAD__OCR__DETECTION"] = "PP-OCRv5_mobile"
+        os.environ["MACHINE_LEARNING_PRELOAD__OCR__RECOGNITION"] = "PP-OCRv5_mobile"
 
         settings = Settings()
         assert settings.preload is not None
@@ -937,6 +980,8 @@ class TestCache:
         assert settings.preload.clip.textual == "ViT-B-32__openai"
         assert settings.preload.facial_recognition.recognition == "buffalo_s"
         assert settings.preload.facial_recognition.detection == "buffalo_s"
+        assert settings.preload.ocr.detection == "PP-OCRv5_mobile"
+        assert settings.preload.ocr.recognition == "PP-OCRv5_mobile"
 
         model_cache = ModelCache()
         monkeypatch.setattr("immich_ml.main.model_cache", model_cache)
@@ -948,6 +993,8 @@ class TestCache:
                 mock.call("ViT-B-32__openai", ModelType.VISUAL, ModelTask.SEARCH),
                 mock.call("buffalo_s", ModelType.DETECTION, ModelTask.FACIAL_RECOGNITION),
                 mock.call("buffalo_s", ModelType.RECOGNITION, ModelTask.FACIAL_RECOGNITION),
+                mock.call("PP-OCRv5_mobile", ModelType.DETECTION, ModelTask.OCR),
+                mock.call("PP-OCRv5_mobile", ModelType.RECOGNITION, ModelTask.OCR),
             ],
             any_order=True,
         )

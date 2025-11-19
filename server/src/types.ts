@@ -1,5 +1,6 @@
 import { SystemConfig } from 'src/config';
 import { VECTOR_EXTENSIONS } from 'src/constants';
+import { Asset } from 'src/database';
 import { UploadFieldName } from 'src/dtos/asset-media.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
@@ -11,6 +12,7 @@ import {
   ImageFormat,
   JobName,
   MemoryType,
+  PluginTriggerType,
   QueueName,
   StorageFolder,
   SyncEntityType,
@@ -263,6 +265,23 @@ export interface INotifyAlbumUpdateJob extends IEntityJob, IDelayedJob {
   recipientId: string;
 }
 
+export interface WorkflowData {
+  [PluginTriggerType.AssetCreate]: {
+    userId: string;
+    asset: Asset;
+  };
+  [PluginTriggerType.PersonRecognized]: {
+    personId: string;
+    assetId: string;
+  };
+}
+
+export interface IWorkflowJob<T extends PluginTriggerType = PluginTriggerType> {
+  id: string;
+  type: T;
+  event: WorkflowData[T];
+}
+
 export interface JobCounts {
   active: number;
   completed: number;
@@ -374,7 +393,10 @@ export type JobItem =
 
   // OCR
   | { name: JobName.OcrQueueAll; data: IBaseJob }
-  | { name: JobName.Ocr; data: IEntityJob };
+  | { name: JobName.Ocr; data: IEntityJob }
+
+  // Workflow
+  | { name: JobName.WorkflowRun; data: IWorkflowJob };
 
 export type VectorExtension = (typeof VECTOR_EXTENSIONS)[number];
 
@@ -419,14 +441,16 @@ export interface UploadFile {
   size: number;
 }
 
+export interface UploadBody {
+  filename?: string;
+  [key: string]: unknown;
+}
+
 export type UploadRequest = {
   auth: AuthDto | null;
   fieldName: UploadFieldName;
   file: UploadFile;
-  body: {
-    filename?: string;
-    [key: string]: unknown;
-  };
+  body: UploadBody;
 };
 
 export interface UploadFiles {
@@ -469,6 +493,7 @@ export interface MemoryData {
 
 export type VersionCheckMetadata = { checkedAt: string; releaseVersion: string };
 export type SystemFlags = { mountChecks: Record<StorageFolder, boolean> };
+export type MaintenanceModeState = { isMaintenanceMode: true; secret: string } | { isMaintenanceMode: false };
 export type MemoriesState = {
   /** memories have already been created through this date */
   lastOnThisDayDate: string;
@@ -479,6 +504,7 @@ export interface SystemMetadata extends Record<SystemMetadataKey, Record<string,
   [SystemMetadataKey.AdminOnboarding]: { isOnboarded: boolean };
   [SystemMetadataKey.FacialRecognitionState]: { lastRun?: string };
   [SystemMetadataKey.License]: { licenseKey: string; activationKey: string; activatedAt: Date };
+  [SystemMetadataKey.MaintenanceMode]: MaintenanceModeState;
   [SystemMetadataKey.MediaLocation]: MediaLocation;
   [SystemMetadataKey.ReverseGeocodingState]: { lastUpdate?: string; lastImportFileName?: string };
   [SystemMetadataKey.SystemConfig]: DeepPartial<SystemConfig>;
@@ -497,6 +523,7 @@ export interface UserPreferences {
   };
   memories: {
     enabled: boolean;
+    duration: number;
   };
   people: {
     enabled: boolean;

@@ -61,6 +61,7 @@ export class TimelineManager extends VirtualScrollManager {
   });
 
   isInitialized = $state(false);
+  isScrollingOnLoad = false;
   months: MonthGroup[] = $state([]);
   albumAssets: Set<string> = new SvelteSet();
   scrubberMonths: ScrubberMonth[] = $state([]);
@@ -234,6 +235,7 @@ export class TimelineManager extends VirtualScrollManager {
     await this.initTask.reset();
     await this.#init(options);
     this.updateViewportGeometry(false);
+    this.#createScrubberMonths();
   }
 
   async #init(options: TimelineManagerOptions) {

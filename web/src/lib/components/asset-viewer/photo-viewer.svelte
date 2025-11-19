@@ -19,13 +19,12 @@
   import { cancelImageUrl } from '$lib/utils/sw-messaging';
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
-  import { AssetMediaSize, type AssetResponseDto, type SharedLinkResponseDto } from '@immich/sdk';
-  import { LoadingSpinner } from '@immich/ui';
+  import { AssetMediaSize, AssetTypeEnum, type AssetResponseDto, type SharedLinkResponseDto } from '@immich/sdk';
+  import { LoadingSpinner, toastManager } from '@immich/ui';
   import { onDestroy, onMount } from 'svelte';
   import { useSwipe, type SwipeCustomEvent } from 'svelte-gestures';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
-  import { NotificationType, notificationController } from '../shared-components/notification/notification';
 
   interface Props {
     asset: AssetResponseDto;
@@ -98,7 +97,7 @@
 
     try {
       await copyImageToClipboard($photoViewerImgElement);
-      notificationController.show({ type: NotificationType.Info, message: $t('copied_image_to_clipboard') });
+      toastManager.info($t('copied_image_to_clipboard'));
     } catch (error) {
       handleError(error, $t('copy_error'));
     }
@@ -140,7 +139,10 @@
   };
 
   // when true, will force loading of the original image
-  let forceUseOriginal: boolean = $derived(asset.originalMimeType === 'image/gif' || $photoZoomState.currentZoom > 1);
+  let forceUseOriginal: boolean = $derived(
+    (asset.type === AssetTypeEnum.Image && asset.duration && !asset.duration.includes('0:00:00.000')) ||
+      $photoZoomState.currentZoom > 1,
+  );
 
   const targetImageSize = $derived.by(() => {
     if ($alwaysLoadOriginalFile || forceUseOriginal || originalImageLoaded) {
@@ -258,7 +260,7 @@
       <!-- eslint-disable-next-line svelte/require-each-key -->
       {#each getBoundingBox($boundingBoxesArray, $photoZoomState, $photoViewerImgElement) as boundingbox}
         <div
-          class="absolute border-solid border-white border-[3px] rounded-lg"
+          class="absolute border-solid border-white border-3 rounded-lg"
           style="top: {boundingbox.top}px; left: {boundingbox.left}px; height: {boundingbox.height}px; width: {boundingbox.width}px;"
         ></div>
       {/each}

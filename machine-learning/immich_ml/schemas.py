@@ -46,6 +46,11 @@ class ModelSource(StrEnum):
     PADDLE = "paddle"
 
 
+class ModelPrecision(StrEnum):
+    FP16 = "FP16"
+    FP32 = "FP32"
+
+
 ModelIdentity = tuple[ModelType, ModelTask]
 
 

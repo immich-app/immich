@@ -1100,7 +1100,6 @@ dependencies = [
     { name = "python-multipart" },
     { name = "rapidocr" },
     { name = "rich" },
-    { name = "setuptools" },
     { name = "tokenizers" },
     { name = "uvicorn", extra = ["standard"] },
 ]
@@ -1188,7 +1187,6 @@ requires-dist = [
     { name = "rapidocr", specifier = ">=3.1.0" },
     { name = "rich", specifier = ">=13.4.2" },
     { name = "rknn-toolkit-lite2", marker = "extra == 'rknn'", specifier = ">=2.3.0,<3" },
-    { name = "setuptools", specifier = ">=78.1.0" },
     { name = "tokenizers", specifier = ">=0.15.0,<1.0" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.22.0,<1.0" },
 ]

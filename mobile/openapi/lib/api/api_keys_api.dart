@@ -16,7 +16,9 @@ class APIKeysApi {
 
   final ApiClient apiClient;
 
-  /// This endpoint requires the `apiKey.create` permission.
+  /// Create an API key
+  ///
+  /// Creates a new API key. It will be limited to the permissions specified.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -48,7 +50,9 @@ class APIKeysApi {
     );
   }
 
-  /// This endpoint requires the `apiKey.create` permission.
+  /// Create an API key
+  ///
+  /// Creates a new API key. It will be limited to the permissions specified.
   ///
   /// Parameters:
   ///
@@ -68,7 +72,9 @@ class APIKeysApi {
     return null;
   }
 
-  /// This endpoint requires the `apiKey.delete` permission.
+  /// Delete an API key
+  ///
+  /// Deletes an API key identified by its ID. The current user must own this API key.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -101,7 +107,9 @@ class APIKeysApi {
     );
   }
 
-  /// This endpoint requires the `apiKey.delete` permission.
+  /// Delete an API key
+  ///
+  /// Deletes an API key identified by its ID. The current user must own this API key.
   ///
   /// Parameters:
   ///
@@ -113,7 +121,9 @@ class APIKeysApi {
     }
   }
 
-  /// This endpoint requires the `apiKey.read` permission.
+  /// Retrieve an API key
+  ///
+  /// Retrieve an API key by its ID. The current user must own this API key.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -146,7 +156,9 @@ class APIKeysApi {
     );
   }
 
-  /// This endpoint requires the `apiKey.read` permission.
+  /// Retrieve an API key
+  ///
+  /// Retrieve an API key by its ID. The current user must own this API key.
   ///
   /// Parameters:
   ///
@@ -166,7 +178,9 @@ class APIKeysApi {
     return null;
   }
 
-  /// This endpoint requires the `apiKey.read` permission.
+  /// List all API keys
+  ///
+  /// Retrieve all API keys of the current user.
   ///
   /// Note: This method returns the HTTP [Response].
   Future<Response> getApiKeysWithHttpInfo() async {
@@ -194,7 +208,9 @@ class APIKeysApi {
     );
   }
 
-  /// This endpoint requires the `apiKey.read` permission.
+  /// List all API keys
+  ///
+  /// Retrieve all API keys of the current user.
   Future<List<APIKeyResponseDto>?> getApiKeys() async {
     final response = await getApiKeysWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -213,7 +229,11 @@ class APIKeysApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /api-keys/me' operation and returns the [Response].
+  /// Retrieve the current API key
+  ///
+  /// Retrieve the API key that is used to access this endpoint.
+  ///
+  /// Note: This method returns the HTTP [Response].
   Future<Response> getMyApiKeyWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final apiPath = r'/api-keys/me';
@@ -239,6 +259,9 @@ class APIKeysApi {
     );
   }
 
+  /// Retrieve the current API key
+  ///
+  /// Retrieve the API key that is used to access this endpoint.
   Future<APIKeyResponseDto?> getMyApiKey() async {
     final response = await getMyApiKeyWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -254,7 +277,9 @@ class APIKeysApi {
     return null;
   }
 
-  /// This endpoint requires the `apiKey.update` permission.
+  /// Update an API key
+  ///
+  /// Updates the name and permissions of an API key by its ID. The current user must own this API key.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -289,7 +314,9 @@ class APIKeysApi {
     );
   }
 
-  /// This endpoint requires the `apiKey.update` permission.
+  /// Update an API key
+  ///
+  /// Updates the name and permissions of an API key by its ID. The current user must own this API key.
   ///
   /// Parameters:
   ///

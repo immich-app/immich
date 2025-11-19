@@ -38,6 +38,9 @@ export async function loadFromTimeBuckets(
       },
       { signal },
     );
+    if (!albumAssets) {
+      return;
+    }
     for (const id of albumAssets.id) {
       timelineManager.albumAssets.add(id);
     }

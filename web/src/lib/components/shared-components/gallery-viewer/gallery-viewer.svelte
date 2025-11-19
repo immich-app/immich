@@ -5,12 +5,12 @@
   import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
   import { AppRoute, AssetAction } from '$lib/constants';
   import Portal from '$lib/elements/Portal.svelte';
+  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import type { TimelineAsset, Viewport } from '$lib/managers/timeline-manager/types';
   import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { showDeleteModal } from '$lib/stores/preferences.store';
-  import { featureFlags } from '$lib/stores/server-config.store';
   import { handlePromiseError } from '$lib/utils';
   import { deleteAssets } from '$lib/utils/actions';
   import { archiveAssets, cancelMultiselect } from '$lib/utils/asset-utils';
@@ -96,18 +96,18 @@
 
   let shiftKeyIsDown = $state(false);
   let lastAssetMouseEvent: TimelineAsset | null = $state(null);
-  let slidingWindow = $state({ top: 0, bottom: 0 });
-
-  const updateSlidingWindow = () => {
-    const v = $state.snapshot(viewport);
-    const top = (document.scrollingElement?.scrollTop || 0) - slidingWindowOffset;
-    const bottom = top + v.height;
-    const w = {
+  let scrollTop = $state(0);
+  let slidingWindow = $derived.by(() => {
+    const top = (scrollTop || 0) - slidingWindowOffset;
+    const bottom = top + viewport.height + slidingWindowOffset;
+    return {
       top,
       bottom,
     };
-    slidingWindow = w;
-  };
+  });
+
+  const updateSlidingWindow = () => (scrollTop = document.scrollingElement?.scrollTop ?? 0);
+
   const debouncedOnIntersected = debounce(() => onIntersected?.(), 750, { maxWait: 100, leading: true });
 
   let lastIntersectedHeight = 0;
@@ -405,7 +405,7 @@
     }
   };
 
-  let isTrashEnabled = $derived($featureFlags.loaded && $featureFlags.trash);
+  let isTrashEnabled = $derived(featureFlagsManager.value.trash);
 
   $effect(() => {
     if (!lastAssetMouseEvent) {

@@ -1,24 +1,16 @@
 <script lang="ts">
-  import { type SystemConfigDto } from '@immich/sdk';
-  import { isEqual } from 'lodash-es';
   import { fade } from 'svelte/transition';
-  import type { SettingsResetEvent, SettingsSaveEvent } from './admin-settings';
 
-  import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
+  import SettingButtonsRow from '$lib/components/shared-components/settings/SystemConfigButtonRow.svelte';
   import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
   import { SettingInputFieldType } from '$lib/constants';
+  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
+  import { systemConfigManager } from '$lib/managers/system-config-manager.svelte';
   import { t } from 'svelte-i18n';
 
-  interface Props {
-    savedConfig: SystemConfigDto;
-    defaultConfig: SystemConfigDto;
-    config: SystemConfigDto;
-    disabled?: boolean;
-    onReset: SettingsResetEvent;
-    onSave: SettingsSaveEvent;
-  }
-
-  let { savedConfig, defaultConfig, config = $bindable(), disabled = false, onReset, onSave }: Props = $props();
+  const disabled = $derived(featureFlagsManager.value.configFile);
+  const config = $derived(systemConfigManager.value);
+  let configToEdit = $state(systemConfigManager.cloneValue());
 </script>
 
 <div>
@@ -30,18 +22,13 @@
           min={1}
           label={$t('admin.user_delete_delay_settings')}
           description={$t('admin.user_delete_delay_settings_description')}
-          bind:value={config.user.deleteDelay}
-          isEdited={config.user.deleteDelay !== savedConfig.user.deleteDelay}
+          bind:value={configToEdit.user.deleteDelay}
+          isEdited={configToEdit.user.deleteDelay !== config.user.deleteDelay}
         />
       </div>
 
       <div class="ms-4">
-        <SettingButtonsRow
-          onReset={(options) => onReset({ ...options, configKeys: ['user'] })}
-          onSave={() => onSave({ user: config.user })}
-          showResetToDefault={!isEqual(savedConfig.user, defaultConfig.user)}
-          {disabled}
-        />
+        <SettingButtonsRow bind:configToEdit keys={['user']} {disabled} />
       </div>
     </form>
   </div>

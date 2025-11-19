@@ -1,6 +1,6 @@
 /**
  * Immich
- * 2.1.0
+ * 2.2.3
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -39,6 +39,15 @@ export type ActivityCreateDto = {
 export type ActivityStatisticsResponseDto = {
     comments: number;
     likes: number;
+};
+export type SetMaintenanceModeDto = {
+    action: MaintenanceAction;
+};
+export type MaintenanceLoginDto = {
+    token?: string;
+};
+export type MaintenanceAuthDto = {
+    username: string;
 };
 export type NotificationCreateDto = {
     data?: object;
@@ -152,6 +161,7 @@ export type FoldersResponse = {
     sidebarWeb: boolean;
 };
 export type MemoriesResponse = {
+    duration: number;
     enabled: boolean;
 };
 export type PeopleResponse = {
@@ -209,6 +219,7 @@ export type FoldersUpdate = {
     sidebarWeb?: boolean;
 };
 export type MemoriesUpdate = {
+    duration?: number;
     enabled?: boolean;
 };
 export type PeopleUpdate = {
@@ -300,16 +311,13 @@ export type AssetFaceWithoutPersonResponseDto = {
 };
 export type PersonWithFacesResponseDto = {
     birthDate: string | null;
-    /** This property was added in v1.126.0 */
     color?: string;
     faces: AssetFaceWithoutPersonResponseDto[];
     id: string;
-    /** This property was added in v1.126.0 */
     isFavorite?: boolean;
     isHidden: boolean;
     name: string;
     thumbnailPath: string;
-    /** This property was added in v1.107.0 */
     updatedAt?: string;
 };
 export type AssetStackResponseDto = {
@@ -346,7 +354,6 @@ export type AssetResponseDto = {
     isFavorite: boolean;
     isOffline: boolean;
     isTrashed: boolean;
-    /** This property was deprecated in v1.106.0 */
     libraryId?: string | null;
     livePhotoVideoId?: string | null;
     /** The local date and time when the photo/video was taken, derived from EXIF metadata. This represents the photographer's local time regardless of timezone, stored as a timezone-agnostic timestamp. Used for timeline grouping by "local" days and months. */
@@ -357,7 +364,6 @@ export type AssetResponseDto = {
     owner?: UserResponseDto;
     ownerId: string;
     people?: PersonWithFacesResponseDto[];
-    /** This property was deprecated in v1.113.0 */
     resized?: boolean;
     stack?: (AssetStackResponseDto) | null;
     tags?: TagResponseDto[];
@@ -517,6 +523,15 @@ export type AssetBulkUploadCheckResult = {
 export type AssetBulkUploadCheckResponseDto = {
     results: AssetBulkUploadCheckResult[];
 };
+export type AssetCopyDto = {
+    albums?: boolean;
+    favorite?: boolean;
+    sharedLinks?: boolean;
+    sidecar?: boolean;
+    sourceId: string;
+    stack?: boolean;
+    targetId: string;
+};
 export type CheckExistingAssetsDto = {
     deviceAssetIds: string[];
     deviceId: string;
@@ -545,6 +560,32 @@ export type AssetMetadataResponseDto = {
 };
 export type AssetMetadataUpsertDto = {
     items: AssetMetadataUpsertItemDto[];
+};
+export type AssetOcrResponseDto = {
+    assetId: string;
+    /** Confidence score for text detection box */
+    boxScore: number;
+    id: string;
+    /** Recognized text */
+    text: string;
+    /** Confidence score for text recognition */
+    textScore: number;
+    /** Normalized x coordinate of box corner 1 (0-1) */
+    x1: number;
+    /** Normalized x coordinate of box corner 2 (0-1) */
+    x2: number;
+    /** Normalized x coordinate of box corner 3 (0-1) */
+    x3: number;
+    /** Normalized x coordinate of box corner 4 (0-1) */
+    x4: number;
+    /** Normalized y coordinate of box corner 1 (0-1) */
+    y1: number;
+    /** Normalized y coordinate of box corner 2 (0-1) */
+    y2: number;
+    /** Normalized y coordinate of box corner 3 (0-1) */
+    y3: number;
+    /** Normalized y coordinate of box corner 4 (0-1) */
+    y4: number;
 };
 export type AssetMediaReplaceDto = {
     assetData: Blob;
@@ -632,15 +673,12 @@ export type DuplicateResponseDto = {
 };
 export type PersonResponseDto = {
     birthDate: string | null;
-    /** This property was added in v1.126.0 */
     color?: string;
     id: string;
-    /** This property was added in v1.126.0 */
     isFavorite?: boolean;
     isHidden: boolean;
     name: string;
     thumbnailPath: string;
-    /** This property was added in v1.107.0 */
     updatedAt?: string;
 };
 export type AssetFaceResponseDto = {
@@ -670,7 +708,7 @@ export type AssetFaceDeleteDto = {
 export type FaceDto = {
     id: string;
 };
-export type JobCountsDto = {
+export type QueueStatisticsDto = {
     active: number;
     completed: number;
     delayed: number;
@@ -682,33 +720,34 @@ export type QueueStatusDto = {
     isActive: boolean;
     isPaused: boolean;
 };
-export type JobStatusDto = {
-    jobCounts: JobCountsDto;
+export type QueueResponseDto = {
+    jobCounts: QueueStatisticsDto;
     queueStatus: QueueStatusDto;
 };
-export type AllJobStatusResponseDto = {
-    backgroundTask: JobStatusDto;
-    backupDatabase: JobStatusDto;
-    duplicateDetection: JobStatusDto;
-    faceDetection: JobStatusDto;
-    facialRecognition: JobStatusDto;
-    library: JobStatusDto;
-    metadataExtraction: JobStatusDto;
-    migration: JobStatusDto;
-    notifications: JobStatusDto;
-    ocr: JobStatusDto;
-    search: JobStatusDto;
-    sidecar: JobStatusDto;
-    smartSearch: JobStatusDto;
-    storageTemplateMigration: JobStatusDto;
-    thumbnailGeneration: JobStatusDto;
-    videoConversion: JobStatusDto;
+export type QueuesResponseDto = {
+    backgroundTask: QueueResponseDto;
+    backupDatabase: QueueResponseDto;
+    duplicateDetection: QueueResponseDto;
+    faceDetection: QueueResponseDto;
+    facialRecognition: QueueResponseDto;
+    library: QueueResponseDto;
+    metadataExtraction: QueueResponseDto;
+    migration: QueueResponseDto;
+    notifications: QueueResponseDto;
+    ocr: QueueResponseDto;
+    search: QueueResponseDto;
+    sidecar: QueueResponseDto;
+    smartSearch: QueueResponseDto;
+    storageTemplateMigration: QueueResponseDto;
+    thumbnailGeneration: QueueResponseDto;
+    videoConversion: QueueResponseDto;
+    workflow: QueueResponseDto;
 };
 export type JobCreateDto = {
     name: ManualJobName;
 };
-export type JobCommandDto = {
-    command: JobCommand;
+export type QueueCommandDto = {
+    command: QueueCommand;
     force?: boolean;
 };
 export type LibraryResponseDto = {
@@ -837,7 +876,6 @@ export type PartnerUpdateDto = {
     inTimeline: boolean;
 };
 export type PeopleResponseDto = {
-    /** This property was added in v1.110.0 */
     hasNextPage?: boolean;
     hidden: number;
     people: PersonResponseDto[];
@@ -897,6 +935,36 @@ export type AssetFaceUpdateDto = {
 };
 export type PersonStatisticsResponseDto = {
     assets: number;
+};
+export type PluginActionResponseDto = {
+    description: string;
+    id: string;
+    methodName: string;
+    pluginId: string;
+    schema: object | null;
+    supportedContexts: PluginContext[];
+    title: string;
+};
+export type PluginFilterResponseDto = {
+    description: string;
+    id: string;
+    methodName: string;
+    pluginId: string;
+    schema: object | null;
+    supportedContexts: PluginContext[];
+    title: string;
+};
+export type PluginResponseDto = {
+    actions: PluginActionResponseDto[];
+    author: string;
+    createdAt: string;
+    description: string;
+    filters: PluginFilterResponseDto[];
+    id: string;
+    name: string;
+    title: string;
+    updatedAt: string;
+    version: string;
 };
 export type SearchExploreItem = {
     data: AssetResponseDto;
@@ -1124,6 +1192,7 @@ export type ServerConfigDto = {
     isInitialized: boolean;
     isOnboarded: boolean;
     loginPageMessage: string;
+    maintenanceMode: boolean;
     mapDarkStyleUrl: string;
     mapLightStyleUrl: string;
     oauthButtonText: string;
@@ -1383,6 +1452,7 @@ export type SystemConfigJobDto = {
     smartSearch: JobSettingsDto;
     thumbnailGeneration: JobSettingsDto;
     videoConversion: JobSettingsDto;
+    workflow: JobSettingsDto;
 };
 export type SystemConfigLibraryScanDto = {
     cronExpression: string;
@@ -1639,8 +1709,56 @@ export type CreateProfileImageResponseDto = {
     profileImagePath: string;
     userId: string;
 };
+export type WorkflowActionResponseDto = {
+    actionConfig: object | null;
+    actionId: string;
+    id: string;
+    order: number;
+    workflowId: string;
+};
+export type WorkflowFilterResponseDto = {
+    filterConfig: object | null;
+    filterId: string;
+    id: string;
+    order: number;
+    workflowId: string;
+};
+export type WorkflowResponseDto = {
+    actions: WorkflowActionResponseDto[];
+    createdAt: string;
+    description: string;
+    enabled: boolean;
+    filters: WorkflowFilterResponseDto[];
+    id: string;
+    name: string | null;
+    ownerId: string;
+    triggerType: TriggerType;
+};
+export type WorkflowActionItemDto = {
+    actionConfig?: object;
+    actionId: string;
+};
+export type WorkflowFilterItemDto = {
+    filterConfig?: object;
+    filterId: string;
+};
+export type WorkflowCreateDto = {
+    actions: WorkflowActionItemDto[];
+    description?: string;
+    enabled?: boolean;
+    filters: WorkflowFilterItemDto[];
+    name: string;
+    triggerType: PluginTriggerType;
+};
+export type WorkflowUpdateDto = {
+    actions?: WorkflowActionItemDto[];
+    description?: string;
+    enabled?: boolean;
+    filters?: WorkflowFilterItemDto[];
+    name?: string;
+};
 /**
- * This endpoint requires the `activity.read` permission.
+ * List all activities
  */
 export function getActivities({ albumId, assetId, level, $type, userId }: {
     albumId: string;
@@ -1663,7 +1781,7 @@ export function getActivities({ albumId, assetId, level, $type, userId }: {
     }));
 }
 /**
- * This endpoint requires the `activity.create` permission.
+ * Create an activity
  */
 export function createActivity({ activityCreateDto }: {
     activityCreateDto: ActivityCreateDto;
@@ -1678,7 +1796,7 @@ export function createActivity({ activityCreateDto }: {
     })));
 }
 /**
- * This endpoint requires the `activity.statistics` permission.
+ * Retrieve activity statistics
  */
 export function getActivityStatistics({ albumId, assetId }: {
     albumId: string;
@@ -1695,7 +1813,7 @@ export function getActivityStatistics({ albumId, assetId }: {
     }));
 }
 /**
- * This endpoint requires the `activity.delete` permission.
+ * Delete an activity
  */
 export function deleteActivity({ id }: {
     id: string;
@@ -1706,7 +1824,7 @@ export function deleteActivity({ id }: {
     }));
 }
 /**
- * This endpoint is an admin-only route, and requires the `adminAuth.unlinkAll` permission.
+ * Unlink all OAuth accounts
  */
 export function unlinkAllOAuthAccountsAdmin(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchText("/admin/auth/unlink-all", {
@@ -1714,6 +1832,36 @@ export function unlinkAllOAuthAccountsAdmin(opts?: Oazapfts.RequestOpts) {
         method: "POST"
     }));
 }
+/**
+ * Set maintenance mode
+ */
+export function setMaintenanceMode({ setMaintenanceModeDto }: {
+    setMaintenanceModeDto: SetMaintenanceModeDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/admin/maintenance", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: setMaintenanceModeDto
+    })));
+}
+/**
+ * Log into maintenance mode
+ */
+export function maintenanceLogin({ maintenanceLoginDto }: {
+    maintenanceLoginDto: MaintenanceLoginDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: MaintenanceAuthDto;
+    }>("/admin/maintenance/login", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: maintenanceLoginDto
+    })));
+}
+/**
+ * Create a notification
+ */
 export function createNotification({ notificationCreateDto }: {
     notificationCreateDto: NotificationCreateDto;
 }, opts?: Oazapfts.RequestOpts) {
@@ -1726,6 +1874,9 @@ export function createNotification({ notificationCreateDto }: {
         body: notificationCreateDto
     })));
 }
+/**
+ * Render email template
+ */
 export function getNotificationTemplateAdmin({ name, templateDto }: {
     name: string;
     templateDto: TemplateDto;
@@ -1739,6 +1890,9 @@ export function getNotificationTemplateAdmin({ name, templateDto }: {
         body: templateDto
     })));
 }
+/**
+ * Send test email
+ */
 export function sendTestEmailAdmin({ systemConfigSmtpDto }: {
     systemConfigSmtpDto: SystemConfigSmtpDto;
 }, opts?: Oazapfts.RequestOpts) {
@@ -1752,7 +1906,7 @@ export function sendTestEmailAdmin({ systemConfigSmtpDto }: {
     })));
 }
 /**
- * This endpoint is an admin-only route, and requires the `adminUser.read` permission.
+ * Search users
  */
 export function searchUsersAdmin({ id, withDeleted }: {
     id?: string;
@@ -1769,7 +1923,7 @@ export function searchUsersAdmin({ id, withDeleted }: {
     }));
 }
 /**
- * This endpoint is an admin-only route, and requires the `adminUser.create` permission.
+ * Create a user
  */
 export function createUserAdmin({ userAdminCreateDto }: {
     userAdminCreateDto: UserAdminCreateDto;
@@ -1784,7 +1938,7 @@ export function createUserAdmin({ userAdminCreateDto }: {
     })));
 }
 /**
- * This endpoint is an admin-only route, and requires the `adminUser.delete` permission.
+ * Delete a user
  */
 export function deleteUserAdmin({ id, userAdminDeleteDto }: {
     id: string;
@@ -1800,7 +1954,7 @@ export function deleteUserAdmin({ id, userAdminDeleteDto }: {
     })));
 }
 /**
- * This endpoint is an admin-only route, and requires the `adminUser.read` permission.
+ * Retrieve a user
  */
 export function getUserAdmin({ id }: {
     id: string;
@@ -1813,7 +1967,7 @@ export function getUserAdmin({ id }: {
     }));
 }
 /**
- * This endpoint is an admin-only route, and requires the `adminUser.update` permission.
+ * Update a user
  */
 export function updateUserAdmin({ id, userAdminUpdateDto }: {
     id: string;
@@ -1829,7 +1983,7 @@ export function updateUserAdmin({ id, userAdminUpdateDto }: {
     })));
 }
 /**
- * This endpoint is an admin-only route, and requires the `adminUser.read` permission.
+ * Retrieve user preferences
  */
 export function getUserPreferencesAdmin({ id }: {
     id: string;
@@ -1842,7 +1996,7 @@ export function getUserPreferencesAdmin({ id }: {
     }));
 }
 /**
- * This endpoint is an admin-only route, and requires the `adminUser.update` permission.
+ * Update user preferences
  */
 export function updateUserPreferencesAdmin({ id, userPreferencesUpdateDto }: {
     id: string;
@@ -1858,7 +2012,7 @@ export function updateUserPreferencesAdmin({ id, userPreferencesUpdateDto }: {
     })));
 }
 /**
- * This endpoint is an admin-only route, and requires the `adminUser.delete` permission.
+ * Restore a deleted user
  */
 export function restoreUserAdmin({ id }: {
     id: string;
@@ -1872,7 +2026,7 @@ export function restoreUserAdmin({ id }: {
     }));
 }
 /**
- * This endpoint is an admin-only route, and requires the `adminSession.read` permission.
+ * Retrieve user sessions
  */
 export function getUserSessionsAdmin({ id }: {
     id: string;
@@ -1885,7 +2039,7 @@ export function getUserSessionsAdmin({ id }: {
     }));
 }
 /**
- * This endpoint is an admin-only route, and requires the `adminUser.read` permission.
+ * Retrieve user statistics
  */
 export function getUserStatisticsAdmin({ id, isFavorite, isTrashed, visibility }: {
     id: string;
@@ -1905,7 +2059,7 @@ export function getUserStatisticsAdmin({ id, isFavorite, isTrashed, visibility }
     }));
 }
 /**
- * This endpoint requires the `album.read` permission.
+ * List all albums
  */
 export function getAllAlbums({ assetId, shared }: {
     assetId?: string;
@@ -1922,7 +2076,7 @@ export function getAllAlbums({ assetId, shared }: {
     }));
 }
 /**
- * This endpoint requires the `album.create` permission.
+ * Create an album
  */
 export function createAlbum({ createAlbumDto }: {
     createAlbumDto: CreateAlbumDto;
@@ -1937,7 +2091,7 @@ export function createAlbum({ createAlbumDto }: {
     })));
 }
 /**
- * This endpoint requires the `albumAsset.create` permission.
+ * Add assets to albums
  */
 export function addAssetsToAlbums({ key, slug, albumsAddAssetsDto }: {
     key?: string;
@@ -1957,7 +2111,7 @@ export function addAssetsToAlbums({ key, slug, albumsAddAssetsDto }: {
     })));
 }
 /**
- * This endpoint requires the `album.statistics` permission.
+ * Retrieve album statistics
  */
 export function getAlbumStatistics(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
@@ -1968,7 +2122,7 @@ export function getAlbumStatistics(opts?: Oazapfts.RequestOpts) {
     }));
 }
 /**
- * This endpoint requires the `album.delete` permission.
+ * Delete an album
  */
 export function deleteAlbum({ id }: {
     id: string;
@@ -1979,7 +2133,7 @@ export function deleteAlbum({ id }: {
     }));
 }
 /**
- * This endpoint requires the `album.read` permission.
+ * Retrieve an album
  */
 export function getAlbumInfo({ id, key, slug, withoutAssets }: {
     id: string;
@@ -1999,7 +2153,7 @@ export function getAlbumInfo({ id, key, slug, withoutAssets }: {
     }));
 }
 /**
- * This endpoint requires the `album.update` permission.
+ * Update an album
  */
 export function updateAlbumInfo({ id, updateAlbumDto }: {
     id: string;
@@ -2015,7 +2169,7 @@ export function updateAlbumInfo({ id, updateAlbumDto }: {
     })));
 }
 /**
- * This endpoint requires the `albumAsset.delete` permission.
+ * Remove assets from an album
  */
 export function removeAssetFromAlbum({ id, bulkIdsDto }: {
     id: string;
@@ -2031,7 +2185,7 @@ export function removeAssetFromAlbum({ id, bulkIdsDto }: {
     })));
 }
 /**
- * This endpoint requires the `albumAsset.create` permission.
+ * Add assets to an album
  */
 export function addAssetsToAlbum({ id, key, slug, bulkIdsDto }: {
     id: string;
@@ -2052,7 +2206,7 @@ export function addAssetsToAlbum({ id, key, slug, bulkIdsDto }: {
     })));
 }
 /**
- * This endpoint requires the `albumUser.delete` permission.
+ * Remove user from album
  */
 export function removeUserFromAlbum({ id, userId }: {
     id: string;
@@ -2064,7 +2218,7 @@ export function removeUserFromAlbum({ id, userId }: {
     }));
 }
 /**
- * This endpoint requires the `albumUser.update` permission.
+ * Update user role
  */
 export function updateAlbumUser({ id, userId, updateAlbumUserDto }: {
     id: string;
@@ -2078,7 +2232,7 @@ export function updateAlbumUser({ id, userId, updateAlbumUserDto }: {
     })));
 }
 /**
- * This endpoint requires the `albumUser.create` permission.
+ * Share album with users
  */
 export function addUsersToAlbum({ id, addUsersDto }: {
     id: string;
@@ -2094,7 +2248,7 @@ export function addUsersToAlbum({ id, addUsersDto }: {
     })));
 }
 /**
- * This endpoint requires the `apiKey.read` permission.
+ * List all API keys
  */
 export function getApiKeys(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
@@ -2105,7 +2259,7 @@ export function getApiKeys(opts?: Oazapfts.RequestOpts) {
     }));
 }
 /**
- * This endpoint requires the `apiKey.create` permission.
+ * Create an API key
  */
 export function createApiKey({ apiKeyCreateDto }: {
     apiKeyCreateDto: ApiKeyCreateDto;
@@ -2119,6 +2273,9 @@ export function createApiKey({ apiKeyCreateDto }: {
         body: apiKeyCreateDto
     })));
 }
+/**
+ * Retrieve the current API key
+ */
 export function getMyApiKey(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
@@ -2128,7 +2285,7 @@ export function getMyApiKey(opts?: Oazapfts.RequestOpts) {
     }));
 }
 /**
- * This endpoint requires the `apiKey.delete` permission.
+ * Delete an API key
  */
 export function deleteApiKey({ id }: {
     id: string;
@@ -2139,7 +2296,7 @@ export function deleteApiKey({ id }: {
     }));
 }
 /**
- * This endpoint requires the `apiKey.read` permission.
+ * Retrieve an API key
  */
 export function getApiKey({ id }: {
     id: string;
@@ -2152,7 +2309,7 @@ export function getApiKey({ id }: {
     }));
 }
 /**
- * This endpoint requires the `apiKey.update` permission.
+ * Update an API key
  */
 export function updateApiKey({ id, apiKeyUpdateDto }: {
     id: string;
@@ -2168,7 +2325,7 @@ export function updateApiKey({ id, apiKeyUpdateDto }: {
     })));
 }
 /**
- * This endpoint requires the `asset.delete` permission.
+ * Delete assets
  */
 export function deleteAssets({ assetBulkDeleteDto }: {
     assetBulkDeleteDto: AssetBulkDeleteDto;
@@ -2180,7 +2337,7 @@ export function deleteAssets({ assetBulkDeleteDto }: {
     })));
 }
 /**
- * This endpoint requires the `asset.upload` permission.
+ * Upload asset
  */
 export function uploadAsset({ key, slug, xImmichChecksum, assetMediaCreateDto }: {
     key?: string;
@@ -2204,7 +2361,7 @@ export function uploadAsset({ key, slug, xImmichChecksum, assetMediaCreateDto }:
     })));
 }
 /**
- * This endpoint requires the `asset.update` permission.
+ * Update assets
  */
 export function updateAssets({ assetBulkUpdateDto }: {
     assetBulkUpdateDto: AssetBulkUpdateDto;
@@ -2216,7 +2373,7 @@ export function updateAssets({ assetBulkUpdateDto }: {
     })));
 }
 /**
- * checkBulkUpload
+ * Check bulk upload
  */
 export function checkBulkUpload({ assetBulkUploadCheckDto }: {
     assetBulkUploadCheckDto: AssetBulkUploadCheckDto;
@@ -2231,7 +2388,19 @@ export function checkBulkUpload({ assetBulkUploadCheckDto }: {
     })));
 }
 /**
- * getAllUserAssetsByDeviceId
+ * Copy asset
+ */
+export function copyAsset({ assetCopyDto }: {
+    assetCopyDto: AssetCopyDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/assets/copy", oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: assetCopyDto
+    })));
+}
+/**
+ * Retrieve assets by device ID
  */
 export function getAllUserAssetsByDeviceId({ deviceId }: {
     deviceId: string;
@@ -2244,7 +2413,7 @@ export function getAllUserAssetsByDeviceId({ deviceId }: {
     }));
 }
 /**
- * checkExistingAssets
+ * Check existing assets
  */
 export function checkExistingAssets({ checkExistingAssetsDto }: {
     checkExistingAssetsDto: CheckExistingAssetsDto;
@@ -2258,6 +2427,9 @@ export function checkExistingAssets({ checkExistingAssetsDto }: {
         body: checkExistingAssetsDto
     })));
 }
+/**
+ * Run an asset job
+ */
 export function runAssetJobs({ assetJobsDto }: {
     assetJobsDto: AssetJobsDto;
 }, opts?: Oazapfts.RequestOpts) {
@@ -2268,7 +2440,7 @@ export function runAssetJobs({ assetJobsDto }: {
     })));
 }
 /**
- * This property was deprecated in v1.116.0. This endpoint requires the `asset.read` permission.
+ * Get random assets
  */
 export function getRandom({ count }: {
     count?: number;
@@ -2283,7 +2455,7 @@ export function getRandom({ count }: {
     }));
 }
 /**
- * This endpoint requires the `asset.statistics` permission.
+ * Get asset statistics
  */
 export function getAssetStatistics({ isFavorite, isTrashed, visibility }: {
     isFavorite?: boolean;
@@ -2302,7 +2474,7 @@ export function getAssetStatistics({ isFavorite, isTrashed, visibility }: {
     }));
 }
 /**
- * This endpoint requires the `asset.read` permission.
+ * Retrieve an asset
  */
 export function getAssetInfo({ id, key, slug }: {
     id: string;
@@ -2320,7 +2492,7 @@ export function getAssetInfo({ id, key, slug }: {
     }));
 }
 /**
- * This endpoint requires the `asset.update` permission.
+ * Update an asset
  */
 export function updateAsset({ id, updateAssetDto }: {
     id: string;
@@ -2336,7 +2508,7 @@ export function updateAsset({ id, updateAssetDto }: {
     })));
 }
 /**
- * This endpoint requires the `asset.read` permission.
+ * Get asset metadata
  */
 export function getAssetMetadata({ id }: {
     id: string;
@@ -2349,7 +2521,7 @@ export function getAssetMetadata({ id }: {
     }));
 }
 /**
- * This endpoint requires the `asset.update` permission.
+ * Update asset metadata
  */
 export function updateAssetMetadata({ id, assetMetadataUpsertDto }: {
     id: string;
@@ -2365,7 +2537,7 @@ export function updateAssetMetadata({ id, assetMetadataUpsertDto }: {
     })));
 }
 /**
- * This endpoint requires the `asset.update` permission.
+ * Delete asset metadata by key
  */
 export function deleteAssetMetadata({ id, key }: {
     id: string;
@@ -2377,7 +2549,7 @@ export function deleteAssetMetadata({ id, key }: {
     }));
 }
 /**
- * This endpoint requires the `asset.read` permission.
+ * Retrieve asset metadata by key
  */
 export function getAssetMetadataByKey({ id, key }: {
     id: string;
@@ -2391,7 +2563,20 @@ export function getAssetMetadataByKey({ id, key }: {
     }));
 }
 /**
- * This endpoint requires the `asset.download` permission.
+ * Retrieve asset OCR data
+ */
+export function getAssetOcr({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AssetOcrResponseDto[];
+    }>(`/assets/${encodeURIComponent(id)}/ocr`, {
+        ...opts
+    }));
+}
+/**
+ * Download original asset
  */
 export function downloadAsset({ id, key, slug }: {
     id: string;
@@ -2409,7 +2594,7 @@ export function downloadAsset({ id, key, slug }: {
     }));
 }
 /**
- * Replace the asset with new file, without changing its id
+ * Replace asset
  */
 export function replaceAsset({ id, key, slug, assetMediaReplaceDto }: {
     id: string;
@@ -2430,7 +2615,7 @@ export function replaceAsset({ id, key, slug, assetMediaReplaceDto }: {
     })));
 }
 /**
- * This endpoint requires the `asset.view` permission.
+ * View asset thumbnail
  */
 export function viewAsset({ id, key, size, slug }: {
     id: string;
@@ -2450,7 +2635,7 @@ export function viewAsset({ id, key, size, slug }: {
     }));
 }
 /**
- * This endpoint requires the `asset.view` permission.
+ * Play asset video
  */
 export function playAssetVideo({ id, key, slug }: {
     id: string;
@@ -2467,6 +2652,9 @@ export function playAssetVideo({ id, key, slug }: {
         ...opts
     }));
 }
+/**
+ * Register admin
+ */
 export function signUpAdmin({ signUpDto }: {
     signUpDto: SignUpDto;
 }, opts?: Oazapfts.RequestOpts) {
@@ -2480,7 +2668,7 @@ export function signUpAdmin({ signUpDto }: {
     })));
 }
 /**
- * This endpoint requires the `auth.changePassword` permission.
+ * Change password
  */
 export function changePassword({ changePasswordDto }: {
     changePasswordDto: ChangePasswordDto;
@@ -2494,6 +2682,9 @@ export function changePassword({ changePasswordDto }: {
         body: changePasswordDto
     })));
 }
+/**
+ * Login
+ */
 export function login({ loginCredentialDto }: {
     loginCredentialDto: LoginCredentialDto;
 }, opts?: Oazapfts.RequestOpts) {
@@ -2506,6 +2697,9 @@ export function login({ loginCredentialDto }: {
         body: loginCredentialDto
     })));
 }
+/**
+ * Logout
+ */
 export function logout(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
@@ -2516,7 +2710,7 @@ export function logout(opts?: Oazapfts.RequestOpts) {
     }));
 }
 /**
- * This endpoint requires the `pinCode.delete` permission.
+ * Reset pin code
  */
 export function resetPinCode({ pinCodeResetDto }: {
     pinCodeResetDto: PinCodeResetDto;
@@ -2528,7 +2722,7 @@ export function resetPinCode({ pinCodeResetDto }: {
     })));
 }
 /**
- * This endpoint requires the `pinCode.create` permission.
+ * Setup pin code
  */
 export function setupPinCode({ pinCodeSetupDto }: {
     pinCodeSetupDto: PinCodeSetupDto;
@@ -2540,7 +2734,7 @@ export function setupPinCode({ pinCodeSetupDto }: {
     })));
 }
 /**
- * This endpoint requires the `pinCode.update` permission.
+ * Change pin code
  */
 export function changePinCode({ pinCodeChangeDto }: {
     pinCodeChangeDto: PinCodeChangeDto;
@@ -2551,12 +2745,18 @@ export function changePinCode({ pinCodeChangeDto }: {
         body: pinCodeChangeDto
     })));
 }
+/**
+ * Lock auth session
+ */
 export function lockAuthSession(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchText("/auth/session/lock", {
         ...opts,
         method: "POST"
     }));
 }
+/**
+ * Unlock auth session
+ */
 export function unlockAuthSession({ sessionUnlockDto }: {
     sessionUnlockDto: SessionUnlockDto;
 }, opts?: Oazapfts.RequestOpts) {
@@ -2566,6 +2766,9 @@ export function unlockAuthSession({ sessionUnlockDto }: {
         body: sessionUnlockDto
     })));
 }
+/**
+ * Retrieve auth status
+ */
 export function getAuthStatus(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
@@ -2574,6 +2777,9 @@ export function getAuthStatus(opts?: Oazapfts.RequestOpts) {
         ...opts
     }));
 }
+/**
+ * Validate access token
+ */
 export function validateAccessToken(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
@@ -2584,7 +2790,7 @@ export function validateAccessToken(opts?: Oazapfts.RequestOpts) {
     }));
 }
 /**
- * This endpoint requires the `asset.download` permission.
+ * Download asset archive
  */
 export function downloadArchive({ key, slug, assetIdsDto }: {
     key?: string;
@@ -2604,7 +2810,7 @@ export function downloadArchive({ key, slug, assetIdsDto }: {
     })));
 }
 /**
- * This endpoint requires the `asset.download` permission.
+ * Retrieve download information
  */
 export function getDownloadInfo({ key, slug, downloadInfoDto }: {
     key?: string;
@@ -2624,7 +2830,7 @@ export function getDownloadInfo({ key, slug, downloadInfoDto }: {
     })));
 }
 /**
- * This endpoint requires the `duplicate.delete` permission.
+ * Delete duplicates
  */
 export function deleteDuplicates({ bulkIdsDto }: {
     bulkIdsDto: BulkIdsDto;
@@ -2636,7 +2842,7 @@ export function deleteDuplicates({ bulkIdsDto }: {
     })));
 }
 /**
- * This endpoint requires the `duplicate.read` permission.
+ * Retrieve duplicates
  */
 export function getAssetDuplicates(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
@@ -2647,7 +2853,7 @@ export function getAssetDuplicates(opts?: Oazapfts.RequestOpts) {
     }));
 }
 /**
- * This endpoint requires the `duplicate.delete` permission.
+ * Delete a duplicate
  */
 export function deleteDuplicate({ id }: {
     id: string;
@@ -2658,7 +2864,7 @@ export function deleteDuplicate({ id }: {
     }));
 }
 /**
- * This endpoint requires the `face.read` permission.
+ * Retrieve faces for asset
  */
 export function getFaces({ id }: {
     id: string;
@@ -2673,7 +2879,7 @@ export function getFaces({ id }: {
     }));
 }
 /**
- * This endpoint requires the `face.create` permission.
+ * Create a face
  */
 export function createFace({ assetFaceCreateDto }: {
     assetFaceCreateDto: AssetFaceCreateDto;
@@ -2685,7 +2891,7 @@ export function createFace({ assetFaceCreateDto }: {
     })));
 }
 /**
- * This endpoint requires the `face.delete` permission.
+ * Delete a face
  */
 export function deleteFace({ id, assetFaceDeleteDto }: {
     id: string;
@@ -2698,7 +2904,7 @@ export function deleteFace({ id, assetFaceDeleteDto }: {
     })));
 }
 /**
- * This endpoint requires the `face.update` permission.
+ * Re-assign a face to another person
  */
 export function reassignFacesById({ id, faceDto }: {
     id: string;
@@ -2714,18 +2920,18 @@ export function reassignFacesById({ id, faceDto }: {
     })));
 }
 /**
- * This endpoint is an admin-only route, and requires the `job.read` permission.
+ * Retrieve queue counts and status
  */
-export function getAllJobsStatus(opts?: Oazapfts.RequestOpts) {
+export function getQueuesLegacy(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
-        data: AllJobStatusResponseDto;
+        data: QueuesResponseDto;
     }>("/jobs", {
         ...opts
     }));
 }
 /**
- * This endpoint is an admin-only route, and requires the `job.create` permission.
+ * Create a manual job
  */
 export function createJob({ jobCreateDto }: {
     jobCreateDto: JobCreateDto;
@@ -2737,23 +2943,23 @@ export function createJob({ jobCreateDto }: {
     })));
 }
 /**
- * This endpoint is an admin-only route, and requires the `job.create` permission.
+ * Run jobs
  */
-export function sendJobCommand({ id, jobCommandDto }: {
-    id: JobName;
-    jobCommandDto: JobCommandDto;
+export function runQueueCommandLegacy({ name, queueCommandDto }: {
+    name: QueueName;
+    queueCommandDto: QueueCommandDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
-        data: JobStatusDto;
-    }>(`/jobs/${encodeURIComponent(id)}`, oazapfts.json({
+        data: QueueResponseDto;
+    }>(`/jobs/${encodeURIComponent(name)}`, oazapfts.json({
         ...opts,
         method: "PUT",
-        body: jobCommandDto
+        body: queueCommandDto
     })));
 }
 /**
- * This endpoint is an admin-only route, and requires the `library.read` permission.
+ * Retrieve libraries
  */
 export function getAllLibraries(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
@@ -2764,7 +2970,7 @@ export function getAllLibraries(opts?: Oazapfts.RequestOpts) {
     }));
 }
 /**
- * This endpoint is an admin-only route, and requires the `library.create` permission.
+ * Create a library
  */
 export function createLibrary({ createLibraryDto }: {
     createLibraryDto: CreateLibraryDto;
@@ -2779,7 +2985,7 @@ export function createLibrary({ createLibraryDto }: {
     })));
 }
 /**
- * This endpoint is an admin-only route, and requires the `library.delete` permission.
+ * Delete a library
  */
 export function deleteLibrary({ id }: {
     id: string;
@@ -2790,7 +2996,7 @@ export function deleteLibrary({ id }: {
     }));
 }
 /**
- * This endpoint is an admin-only route, and requires the `library.read` permission.
+ * Retrieve a library
  */
 export function getLibrary({ id }: {
     id: string;
@@ -2803,7 +3009,7 @@ export function getLibrary({ id }: {
     }));
 }
 /**
- * This endpoint is an admin-only route, and requires the `library.update` permission.
+ * Update a library
  */
 export function updateLibrary({ id, updateLibraryDto }: {
     id: string;
@@ -2819,7 +3025,7 @@ export function updateLibrary({ id, updateLibraryDto }: {
     })));
 }
 /**
- * This endpoint is an admin-only route, and requires the `library.update` permission.
+ * Scan a library
  */
 export function scanLibrary({ id }: {
     id: string;
@@ -2830,7 +3036,7 @@ export function scanLibrary({ id }: {
     }));
 }
 /**
- * This endpoint is an admin-only route, and requires the `library.statistics` permission.
+ * Retrieve library statistics
  */
 export function getLibraryStatistics({ id }: {
     id: string;
@@ -2842,6 +3048,9 @@ export function getLibraryStatistics({ id }: {
         ...opts
     }));
 }
+/**
+ * Validate library settings
+ */
 export function validate({ id, validateLibraryDto }: {
     id: string;
     validateLibraryDto: ValidateLibraryDto;
@@ -2855,11 +3064,14 @@ export function validate({ id, validateLibraryDto }: {
         body: validateLibraryDto
     })));
 }
-export function getMapMarkers({ isArchived, isFavorite, fileCreatedAfter, fileCreatedBefore, withPartners, withSharedAlbums }: {
-    isArchived?: boolean;
-    isFavorite?: boolean;
+/**
+ * Retrieve map markers
+ */
+export function getMapMarkers({ fileCreatedAfter, fileCreatedBefore, isArchived, isFavorite, withPartners, withSharedAlbums }: {
     fileCreatedAfter?: string;
     fileCreatedBefore?: string;
+    isArchived?: boolean;
+    isFavorite?: boolean;
     withPartners?: boolean;
     withSharedAlbums?: boolean;
 }, opts?: Oazapfts.RequestOpts) {
@@ -2867,16 +3079,19 @@ export function getMapMarkers({ isArchived, isFavorite, fileCreatedAfter, fileCr
         status: 200;
         data: MapMarkerResponseDto[];
     }>(`/map/markers${QS.query(QS.explode({
-        isArchived,
-        isFavorite,
         fileCreatedAfter,
         fileCreatedBefore,
+        isArchived,
+        isFavorite,
         withPartners,
         withSharedAlbums
     }))}`, {
         ...opts
     }));
 }
+/**
+ * Reverse geocode coordinates
+ */
 export function reverseGeocode({ lat, lon }: {
     lat: number;
     lon: number;
@@ -2892,12 +3107,14 @@ export function reverseGeocode({ lat, lon }: {
     }));
 }
 /**
- * This endpoint requires the `memory.read` permission.
+ * Retrieve memories
  */
-export function searchMemories({ $for, isSaved, isTrashed, $type }: {
+export function searchMemories({ $for, isSaved, isTrashed, order, size, $type }: {
     $for?: string;
     isSaved?: boolean;
     isTrashed?: boolean;
+    order?: MemorySearchOrder;
+    size?: number;
     $type?: MemoryType;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
@@ -2907,13 +3124,15 @@ export function searchMemories({ $for, isSaved, isTrashed, $type }: {
         "for": $for,
         isSaved,
         isTrashed,
+        order,
+        size,
         "type": $type
     }))}`, {
         ...opts
     }));
 }
 /**
- * This endpoint requires the `memory.create` permission.
+ * Create a memory
  */
 export function createMemory({ memoryCreateDto }: {
     memoryCreateDto: MemoryCreateDto;
@@ -2928,12 +3147,14 @@ export function createMemory({ memoryCreateDto }: {
     })));
 }
 /**
- * This endpoint requires the `memory.statistics` permission.
+ * Retrieve memories statistics
  */
-export function memoriesStatistics({ $for, isSaved, isTrashed, $type }: {
+export function memoriesStatistics({ $for, isSaved, isTrashed, order, size, $type }: {
     $for?: string;
     isSaved?: boolean;
     isTrashed?: boolean;
+    order?: MemorySearchOrder;
+    size?: number;
     $type?: MemoryType;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
@@ -2943,13 +3164,15 @@ export function memoriesStatistics({ $for, isSaved, isTrashed, $type }: {
         "for": $for,
         isSaved,
         isTrashed,
+        order,
+        size,
         "type": $type
     }))}`, {
         ...opts
     }));
 }
 /**
- * This endpoint requires the `memory.delete` permission.
+ * Delete a memory
  */
 export function deleteMemory({ id }: {
     id: string;
@@ -2960,7 +3183,7 @@ export function deleteMemory({ id }: {
     }));
 }
 /**
- * This endpoint requires the `memory.read` permission.
+ * Retrieve a memory
  */
 export function getMemory({ id }: {
     id: string;
@@ -2973,7 +3196,7 @@ export function getMemory({ id }: {
     }));
 }
 /**
- * This endpoint requires the `memory.update` permission.
+ * Update a memory
  */
 export function updateMemory({ id, memoryUpdateDto }: {
     id: string;
@@ -2989,7 +3212,7 @@ export function updateMemory({ id, memoryUpdateDto }: {
     })));
 }
 /**
- * This endpoint requires the `memoryAsset.delete` permission.
+ * Remove assets from a memory
  */
 export function removeMemoryAssets({ id, bulkIdsDto }: {
     id: string;
@@ -3005,7 +3228,7 @@ export function removeMemoryAssets({ id, bulkIdsDto }: {
     })));
 }
 /**
- * This endpoint requires the `memoryAsset.create` permission.
+ * Add assets to a memory
  */
 export function addMemoryAssets({ id, bulkIdsDto }: {
     id: string;
@@ -3021,7 +3244,7 @@ export function addMemoryAssets({ id, bulkIdsDto }: {
     })));
 }
 /**
- * This endpoint requires the `notification.delete` permission.
+ * Delete notifications
  */
 export function deleteNotifications({ notificationDeleteAllDto }: {
     notificationDeleteAllDto: NotificationDeleteAllDto;
@@ -3033,7 +3256,7 @@ export function deleteNotifications({ notificationDeleteAllDto }: {
     })));
 }
 /**
- * This endpoint requires the `notification.read` permission.
+ * Retrieve notifications
  */
 export function getNotifications({ id, level, $type, unread }: {
     id?: string;
@@ -3054,7 +3277,7 @@ export function getNotifications({ id, level, $type, unread }: {
     }));
 }
 /**
- * This endpoint requires the `notification.update` permission.
+ * Update notifications
  */
 export function updateNotifications({ notificationUpdateAllDto }: {
     notificationUpdateAllDto: NotificationUpdateAllDto;
@@ -3066,7 +3289,7 @@ export function updateNotifications({ notificationUpdateAllDto }: {
     })));
 }
 /**
- * This endpoint requires the `notification.delete` permission.
+ * Delete a notification
  */
 export function deleteNotification({ id }: {
     id: string;
@@ -3077,7 +3300,7 @@ export function deleteNotification({ id }: {
     }));
 }
 /**
- * This endpoint requires the `notification.read` permission.
+ * Get a notification
  */
 export function getNotification({ id }: {
     id: string;
@@ -3090,7 +3313,7 @@ export function getNotification({ id }: {
     }));
 }
 /**
- * This endpoint requires the `notification.update` permission.
+ * Update a notification
  */
 export function updateNotification({ id, notificationUpdateDto }: {
     id: string;
@@ -3105,6 +3328,9 @@ export function updateNotification({ id, notificationUpdateDto }: {
         body: notificationUpdateDto
     })));
 }
+/**
+ * Start OAuth
+ */
 export function startOAuth({ oAuthConfigDto }: {
     oAuthConfigDto: OAuthConfigDto;
 }, opts?: Oazapfts.RequestOpts) {
@@ -3117,6 +3343,9 @@ export function startOAuth({ oAuthConfigDto }: {
         body: oAuthConfigDto
     })));
 }
+/**
+ * Finish OAuth
+ */
 export function finishOAuth({ oAuthCallbackDto }: {
     oAuthCallbackDto: OAuthCallbackDto;
 }, opts?: Oazapfts.RequestOpts) {
@@ -3129,6 +3358,9 @@ export function finishOAuth({ oAuthCallbackDto }: {
         body: oAuthCallbackDto
     })));
 }
+/**
+ * Link OAuth account
+ */
 export function linkOAuthAccount({ oAuthCallbackDto }: {
     oAuthCallbackDto: OAuthCallbackDto;
 }, opts?: Oazapfts.RequestOpts) {
@@ -3141,11 +3373,17 @@ export function linkOAuthAccount({ oAuthCallbackDto }: {
         body: oAuthCallbackDto
     })));
 }
+/**
+ * Redirect OAuth to mobile
+ */
 export function redirectOAuthToMobile(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchText("/oauth/mobile-redirect", {
         ...opts
     }));
 }
+/**
+ * Unlink OAuth account
+ */
 export function unlinkOAuthAccount(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
@@ -3156,7 +3394,7 @@ export function unlinkOAuthAccount(opts?: Oazapfts.RequestOpts) {
     }));
 }
 /**
- * This endpoint requires the `partner.read` permission.
+ * Retrieve partners
  */
 export function getPartners({ direction }: {
     direction: PartnerDirection;
@@ -3171,7 +3409,7 @@ export function getPartners({ direction }: {
     }));
 }
 /**
- * This endpoint requires the `partner.create` permission.
+ * Create a partner
  */
 export function createPartner({ partnerCreateDto }: {
     partnerCreateDto: PartnerCreateDto;
@@ -3186,7 +3424,7 @@ export function createPartner({ partnerCreateDto }: {
     })));
 }
 /**
- * This endpoint requires the `partner.delete` permission.
+ * Remove a partner
  */
 export function removePartner({ id }: {
     id: string;
@@ -3197,7 +3435,7 @@ export function removePartner({ id }: {
     }));
 }
 /**
- * This property was deprecated in v1.141.0. This endpoint requires the `partner.create` permission.
+ * Create a partner
  */
 export function createPartnerDeprecated({ id }: {
     id: string;
@@ -3211,7 +3449,7 @@ export function createPartnerDeprecated({ id }: {
     }));
 }
 /**
- * This endpoint requires the `partner.update` permission.
+ * Update a partner
  */
 export function updatePartner({ id, partnerUpdateDto }: {
     id: string;
@@ -3227,7 +3465,7 @@ export function updatePartner({ id, partnerUpdateDto }: {
     })));
 }
 /**
- * This endpoint requires the `person.delete` permission.
+ * Delete people
  */
 export function deletePeople({ bulkIdsDto }: {
     bulkIdsDto: BulkIdsDto;
@@ -3239,7 +3477,7 @@ export function deletePeople({ bulkIdsDto }: {
     })));
 }
 /**
- * This endpoint requires the `person.read` permission.
+ * Get all people
  */
 export function getAllPeople({ closestAssetId, closestPersonId, page, size, withHidden }: {
     closestAssetId?: string;
@@ -3262,7 +3500,7 @@ export function getAllPeople({ closestAssetId, closestPersonId, page, size, with
     }));
 }
 /**
- * This endpoint requires the `person.create` permission.
+ * Create a person
  */
 export function createPerson({ personCreateDto }: {
     personCreateDto: PersonCreateDto;
@@ -3277,7 +3515,7 @@ export function createPerson({ personCreateDto }: {
     })));
 }
 /**
- * This endpoint requires the `person.update` permission.
+ * Update people
  */
 export function updatePeople({ peopleUpdateDto }: {
     peopleUpdateDto: PeopleUpdateDto;
@@ -3292,7 +3530,7 @@ export function updatePeople({ peopleUpdateDto }: {
     })));
 }
 /**
- * This endpoint requires the `person.delete` permission.
+ * Delete person
  */
 export function deletePerson({ id }: {
     id: string;
@@ -3303,7 +3541,7 @@ export function deletePerson({ id }: {
     }));
 }
 /**
- * This endpoint requires the `person.read` permission.
+ * Get a person
  */
 export function getPerson({ id }: {
     id: string;
@@ -3316,7 +3554,7 @@ export function getPerson({ id }: {
     }));
 }
 /**
- * This endpoint requires the `person.update` permission.
+ * Update person
  */
 export function updatePerson({ id, personUpdateDto }: {
     id: string;
@@ -3332,7 +3570,7 @@ export function updatePerson({ id, personUpdateDto }: {
     })));
 }
 /**
- * This endpoint requires the `person.merge` permission.
+ * Merge people
  */
 export function mergePerson({ id, mergePersonDto }: {
     id: string;
@@ -3348,7 +3586,7 @@ export function mergePerson({ id, mergePersonDto }: {
     })));
 }
 /**
- * This endpoint requires the `person.reassign` permission.
+ * Reassign faces
  */
 export function reassignFaces({ id, assetFaceUpdateDto }: {
     id: string;
@@ -3364,7 +3602,7 @@ export function reassignFaces({ id, assetFaceUpdateDto }: {
     })));
 }
 /**
- * This endpoint requires the `person.statistics` permission.
+ * Get person statistics
  */
 export function getPersonStatistics({ id }: {
     id: string;
@@ -3377,7 +3615,7 @@ export function getPersonStatistics({ id }: {
     }));
 }
 /**
- * This endpoint requires the `person.read` permission.
+ * Get person thumbnail
  */
 export function getPersonThumbnail({ id }: {
     id: string;
@@ -3390,7 +3628,31 @@ export function getPersonThumbnail({ id }: {
     }));
 }
 /**
- * This endpoint requires the `asset.read` permission.
+ * List all plugins
+ */
+export function getPlugins(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: PluginResponseDto[];
+    }>("/plugins", {
+        ...opts
+    }));
+}
+/**
+ * Retrieve a plugin
+ */
+export function getPlugin({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: PluginResponseDto;
+    }>(`/plugins/${encodeURIComponent(id)}`, {
+        ...opts
+    }));
+}
+/**
+ * Retrieve assets by city
  */
 export function getAssetsByCity(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
@@ -3401,7 +3663,7 @@ export function getAssetsByCity(opts?: Oazapfts.RequestOpts) {
     }));
 }
 /**
- * This endpoint requires the `asset.read` permission.
+ * Retrieve explore data
  */
 export function getExploreData(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
@@ -3412,7 +3674,7 @@ export function getExploreData(opts?: Oazapfts.RequestOpts) {
     }));
 }
 /**
- * This endpoint requires the `asset.read` permission.
+ * Search large assets
  */
 export function searchLargeAssets({ albumIds, city, country, createdAfter, createdBefore, deviceId, isEncoded, isFavorite, isMotion, isNotInAlbum, isOffline, lensModel, libraryId, make, minFileSize, model, ocr, personIds, rating, size, state, tagIds, takenAfter, takenBefore, trashedAfter, trashedBefore, $type, updatedAfter, updatedBefore, visibility, withDeleted, withExif }: {
     albumIds?: string[];
@@ -3490,7 +3752,7 @@ export function searchLargeAssets({ albumIds, city, country, createdAfter, creat
     }));
 }
 /**
- * This endpoint requires the `asset.read` permission.
+ * Search assets by metadata
  */
 export function searchAssets({ metadataSearchDto }: {
     metadataSearchDto: MetadataSearchDto;
@@ -3505,7 +3767,7 @@ export function searchAssets({ metadataSearchDto }: {
     })));
 }
 /**
- * This endpoint requires the `person.read` permission.
+ * Search people
  */
 export function searchPerson({ name, withHidden }: {
     name: string;
@@ -3522,7 +3784,7 @@ export function searchPerson({ name, withHidden }: {
     }));
 }
 /**
- * This endpoint requires the `asset.read` permission.
+ * Search places
  */
 export function searchPlaces({ name }: {
     name: string;
@@ -3537,7 +3799,7 @@ export function searchPlaces({ name }: {
     }));
 }
 /**
- * This endpoint requires the `asset.read` permission.
+ * Search random assets
  */
 export function searchRandom({ randomSearchDto }: {
     randomSearchDto: RandomSearchDto;
@@ -3552,7 +3814,7 @@ export function searchRandom({ randomSearchDto }: {
     })));
 }
 /**
- * This endpoint requires the `asset.read` permission.
+ * Smart asset search
  */
 export function searchSmart({ smartSearchDto }: {
     smartSearchDto: SmartSearchDto;
@@ -3567,7 +3829,7 @@ export function searchSmart({ smartSearchDto }: {
     })));
 }
 /**
- * This endpoint requires the `asset.statistics` permission.
+ * Search asset statistics
  */
 export function searchAssetStatistics({ statisticsSearchDto }: {
     statisticsSearchDto: StatisticsSearchDto;
@@ -3582,7 +3844,7 @@ export function searchAssetStatistics({ statisticsSearchDto }: {
     })));
 }
 /**
- * This endpoint requires the `asset.read` permission.
+ * Retrieve search suggestions
  */
 export function getSearchSuggestions({ country, includeNull, lensModel, make, model, state, $type }: {
     country?: string;
@@ -3609,7 +3871,7 @@ export function getSearchSuggestions({ country, includeNull, lensModel, make, mo
     }));
 }
 /**
- * This endpoint requires the `server.about` permission.
+ * Get server information
  */
 export function getAboutInfo(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
@@ -3620,7 +3882,7 @@ export function getAboutInfo(opts?: Oazapfts.RequestOpts) {
     }));
 }
 /**
- * This endpoint requires the `server.apkLinks` permission.
+ * Get APK links
  */
 export function getApkLinks(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
@@ -3630,6 +3892,9 @@ export function getApkLinks(opts?: Oazapfts.RequestOpts) {
         ...opts
     }));
 }
+/**
+ * Get config
+ */
 export function getServerConfig(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
@@ -3638,6 +3903,9 @@ export function getServerConfig(opts?: Oazapfts.RequestOpts) {
         ...opts
     }));
 }
+/**
+ * Get features
+ */
 export function getServerFeatures(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
@@ -3647,7 +3915,7 @@ export function getServerFeatures(opts?: Oazapfts.RequestOpts) {
     }));
 }
 /**
- * This endpoint is an admin-only route, and requires the `serverLicense.delete` permission.
+ * Delete server product key
  */
 export function deleteServerLicense(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchText("/server/license", {
@@ -3656,7 +3924,7 @@ export function deleteServerLicense(opts?: Oazapfts.RequestOpts) {
     }));
 }
 /**
- * This endpoint is an admin-only route, and requires the `serverLicense.read` permission.
+ * Get product key
  */
 export function getServerLicense(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
@@ -3669,7 +3937,7 @@ export function getServerLicense(opts?: Oazapfts.RequestOpts) {
     }));
 }
 /**
- * This endpoint is an admin-only route, and requires the `serverLicense.update` permission.
+ * Set server product key
  */
 export function setServerLicense({ licenseKeyDto }: {
     licenseKeyDto: LicenseKeyDto;
@@ -3683,6 +3951,9 @@ export function setServerLicense({ licenseKeyDto }: {
         body: licenseKeyDto
     })));
 }
+/**
+ * Get supported media types
+ */
 export function getSupportedMediaTypes(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
@@ -3691,6 +3962,9 @@ export function getSupportedMediaTypes(opts?: Oazapfts.RequestOpts) {
         ...opts
     }));
 }
+/**
+ * Ping
+ */
 export function pingServer(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
@@ -3700,7 +3974,7 @@ export function pingServer(opts?: Oazapfts.RequestOpts) {
     }));
 }
 /**
- * This endpoint is an admin-only route, and requires the `server.statistics` permission.
+ * Get statistics
  */
 export function getServerStatistics(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
@@ -3711,7 +3985,7 @@ export function getServerStatistics(opts?: Oazapfts.RequestOpts) {
     }));
 }
 /**
- * This endpoint requires the `server.storage` permission.
+ * Get storage
  */
 export function getStorage(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
@@ -3721,6 +3995,9 @@ export function getStorage(opts?: Oazapfts.RequestOpts) {
         ...opts
     }));
 }
+/**
+ * Get theme
+ */
 export function getTheme(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
@@ -3729,6 +4006,9 @@ export function getTheme(opts?: Oazapfts.RequestOpts) {
         ...opts
     }));
 }
+/**
+ * Get server version
+ */
 export function getServerVersion(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
@@ -3738,7 +4018,7 @@ export function getServerVersion(opts?: Oazapfts.RequestOpts) {
     }));
 }
 /**
- * This endpoint requires the `server.versionCheck` permission.
+ * Get version check status
  */
 export function getVersionCheck(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
@@ -3748,6 +4028,9 @@ export function getVersionCheck(opts?: Oazapfts.RequestOpts) {
         ...opts
     }));
 }
+/**
+ * Get version history
+ */
 export function getVersionHistory(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
@@ -3757,7 +4040,7 @@ export function getVersionHistory(opts?: Oazapfts.RequestOpts) {
     }));
 }
 /**
- * This endpoint requires the `session.delete` permission.
+ * Delete all sessions
  */
 export function deleteAllSessions(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchText("/sessions", {
@@ -3766,7 +4049,7 @@ export function deleteAllSessions(opts?: Oazapfts.RequestOpts) {
     }));
 }
 /**
- * This endpoint requires the `session.read` permission.
+ * Retrieve sessions
  */
 export function getSessions(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
@@ -3777,7 +4060,7 @@ export function getSessions(opts?: Oazapfts.RequestOpts) {
     }));
 }
 /**
- * This endpoint requires the `session.create` permission.
+ * Create a session
  */
 export function createSession({ sessionCreateDto }: {
     sessionCreateDto: SessionCreateDto;
@@ -3792,7 +4075,7 @@ export function createSession({ sessionCreateDto }: {
     })));
 }
 /**
- * This endpoint requires the `session.delete` permission.
+ * Delete a session
  */
 export function deleteSession({ id }: {
     id: string;
@@ -3803,7 +4086,7 @@ export function deleteSession({ id }: {
     }));
 }
 /**
- * This endpoint requires the `session.update` permission.
+ * Update a session
  */
 export function updateSession({ id, sessionUpdateDto }: {
     id: string;
@@ -3819,7 +4102,7 @@ export function updateSession({ id, sessionUpdateDto }: {
     })));
 }
 /**
- * This endpoint requires the `session.lock` permission.
+ * Lock a session
  */
 export function lockSession({ id }: {
     id: string;
@@ -3830,7 +4113,7 @@ export function lockSession({ id }: {
     }));
 }
 /**
- * This endpoint requires the `sharedLink.read` permission.
+ * Retrieve all shared links
  */
 export function getAllSharedLinks({ albumId }: {
     albumId?: string;
@@ -3845,7 +4128,7 @@ export function getAllSharedLinks({ albumId }: {
     }));
 }
 /**
- * This endpoint requires the `sharedLink.create` permission.
+ * Create a shared link
  */
 export function createSharedLink({ sharedLinkCreateDto }: {
     sharedLinkCreateDto: SharedLinkCreateDto;
@@ -3859,26 +4142,29 @@ export function createSharedLink({ sharedLinkCreateDto }: {
         body: sharedLinkCreateDto
     })));
 }
-export function getMySharedLink({ password, token, key, slug }: {
-    password?: string;
-    token?: string;
+/**
+ * Retrieve current shared link
+ */
+export function getMySharedLink({ key, password, slug, token }: {
     key?: string;
+    password?: string;
     slug?: string;
+    token?: string;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: SharedLinkResponseDto;
     }>(`/shared-links/me${QS.query(QS.explode({
-        password,
-        token,
         key,
-        slug
+        password,
+        slug,
+        token
     }))}`, {
         ...opts
     }));
 }
 /**
- * This endpoint requires the `sharedLink.delete` permission.
+ * Delete a shared link
  */
 export function removeSharedLink({ id }: {
     id: string;
@@ -3889,7 +4175,7 @@ export function removeSharedLink({ id }: {
     }));
 }
 /**
- * This endpoint requires the `sharedLink.read` permission.
+ * Retrieve a shared link
  */
 export function getSharedLinkById({ id }: {
     id: string;
@@ -3902,7 +4188,7 @@ export function getSharedLinkById({ id }: {
     }));
 }
 /**
- * This endpoint requires the `sharedLink.update` permission.
+ * Update a shared link
  */
 export function updateSharedLink({ id, sharedLinkEditDto }: {
     id: string;
@@ -3917,6 +4203,9 @@ export function updateSharedLink({ id, sharedLinkEditDto }: {
         body: sharedLinkEditDto
     })));
 }
+/**
+ * Remove assets from a shared link
+ */
 export function removeSharedLinkAssets({ id, key, slug, assetIdsDto }: {
     id: string;
     key?: string;
@@ -3935,6 +4224,9 @@ export function removeSharedLinkAssets({ id, key, slug, assetIdsDto }: {
         body: assetIdsDto
     })));
 }
+/**
+ * Add assets to a shared link
+ */
 export function addSharedLinkAssets({ id, key, slug, assetIdsDto }: {
     id: string;
     key?: string;
@@ -3954,7 +4246,7 @@ export function addSharedLinkAssets({ id, key, slug, assetIdsDto }: {
     })));
 }
 /**
- * This endpoint requires the `stack.delete` permission.
+ * Delete stacks
  */
 export function deleteStacks({ bulkIdsDto }: {
     bulkIdsDto: BulkIdsDto;
@@ -3966,7 +4258,7 @@ export function deleteStacks({ bulkIdsDto }: {
     })));
 }
 /**
- * This endpoint requires the `stack.read` permission.
+ * Retrieve stacks
  */
 export function searchStacks({ primaryAssetId }: {
     primaryAssetId?: string;
@@ -3981,7 +4273,7 @@ export function searchStacks({ primaryAssetId }: {
     }));
 }
 /**
- * This endpoint requires the `stack.create` permission.
+ * Create a stack
  */
 export function createStack({ stackCreateDto }: {
     stackCreateDto: StackCreateDto;
@@ -3996,7 +4288,7 @@ export function createStack({ stackCreateDto }: {
     })));
 }
 /**
- * This endpoint requires the `stack.delete` permission.
+ * Delete a stack
  */
 export function deleteStack({ id }: {
     id: string;
@@ -4007,7 +4299,7 @@ export function deleteStack({ id }: {
     }));
 }
 /**
- * This endpoint requires the `stack.read` permission.
+ * Retrieve a stack
  */
 export function getStack({ id }: {
     id: string;
@@ -4020,7 +4312,7 @@ export function getStack({ id }: {
     }));
 }
 /**
- * This endpoint requires the `stack.update` permission.
+ * Update a stack
  */
 export function updateStack({ id, stackUpdateDto }: {
     id: string;
@@ -4036,7 +4328,7 @@ export function updateStack({ id, stackUpdateDto }: {
     })));
 }
 /**
- * This endpoint requires the `stack.update` permission.
+ * Remove an asset from a stack
  */
 export function removeAssetFromStack({ assetId, id }: {
     assetId: string;
@@ -4048,7 +4340,7 @@ export function removeAssetFromStack({ assetId, id }: {
     }));
 }
 /**
- * This endpoint requires the `syncCheckpoint.delete` permission.
+ * Delete acknowledgements
  */
 export function deleteSyncAck({ syncAckDeleteDto }: {
     syncAckDeleteDto: SyncAckDeleteDto;
@@ -4060,7 +4352,7 @@ export function deleteSyncAck({ syncAckDeleteDto }: {
     })));
 }
 /**
- * This endpoint requires the `syncCheckpoint.read` permission.
+ * Retrieve acknowledgements
  */
 export function getSyncAck(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
@@ -4071,7 +4363,7 @@ export function getSyncAck(opts?: Oazapfts.RequestOpts) {
     }));
 }
 /**
- * This endpoint requires the `syncCheckpoint.update` permission.
+ * Acknowledge changes
  */
 export function sendSyncAck({ syncAckSetDto }: {
     syncAckSetDto: SyncAckSetDto;
@@ -4082,6 +4374,9 @@ export function sendSyncAck({ syncAckSetDto }: {
         body: syncAckSetDto
     })));
 }
+/**
+ * Get delta sync for user
+ */
 export function getDeltaSync({ assetDeltaSyncDto }: {
     assetDeltaSyncDto: AssetDeltaSyncDto;
 }, opts?: Oazapfts.RequestOpts) {
@@ -4094,6 +4389,9 @@ export function getDeltaSync({ assetDeltaSyncDto }: {
         body: assetDeltaSyncDto
     })));
 }
+/**
+ * Get full sync for user
+ */
 export function getFullSyncForUser({ assetFullSyncDto }: {
     assetFullSyncDto: AssetFullSyncDto;
 }, opts?: Oazapfts.RequestOpts) {
@@ -4107,7 +4405,7 @@ export function getFullSyncForUser({ assetFullSyncDto }: {
     })));
 }
 /**
- * This endpoint requires the `sync.stream` permission.
+ * Stream sync changes
  */
 export function getSyncStream({ syncStreamDto }: {
     syncStreamDto: SyncStreamDto;
@@ -4119,7 +4417,7 @@ export function getSyncStream({ syncStreamDto }: {
     })));
 }
 /**
- * This endpoint is an admin-only route, and requires the `systemConfig.read` permission.
+ * Get system configuration
  */
 export function getConfig(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
@@ -4130,7 +4428,7 @@ export function getConfig(opts?: Oazapfts.RequestOpts) {
     }));
 }
 /**
- * This endpoint is an admin-only route, and requires the `systemConfig.update` permission.
+ * Update system configuration
  */
 export function updateConfig({ systemConfigDto }: {
     systemConfigDto: SystemConfigDto;
@@ -4145,7 +4443,7 @@ export function updateConfig({ systemConfigDto }: {
     })));
 }
 /**
- * This endpoint is an admin-only route, and requires the `systemConfig.read` permission.
+ * Get system configuration defaults
  */
 export function getConfigDefaults(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
@@ -4156,7 +4454,7 @@ export function getConfigDefaults(opts?: Oazapfts.RequestOpts) {
     }));
 }
 /**
- * This endpoint is an admin-only route, and requires the `systemConfig.read` permission.
+ * Get storage template options
  */
 export function getStorageTemplateOptions(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
@@ -4167,7 +4465,7 @@ export function getStorageTemplateOptions(opts?: Oazapfts.RequestOpts) {
     }));
 }
 /**
- * This endpoint is an admin-only route, and requires the `systemMetadata.read` permission.
+ * Retrieve admin onboarding
  */
 export function getAdminOnboarding(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
@@ -4178,7 +4476,7 @@ export function getAdminOnboarding(opts?: Oazapfts.RequestOpts) {
     }));
 }
 /**
- * This endpoint is an admin-only route, and requires the `systemMetadata.update` permission.
+ * Update admin onboarding
  */
 export function updateAdminOnboarding({ adminOnboardingUpdateDto }: {
     adminOnboardingUpdateDto: AdminOnboardingUpdateDto;
@@ -4190,7 +4488,7 @@ export function updateAdminOnboarding({ adminOnboardingUpdateDto }: {
     })));
 }
 /**
- * This endpoint is an admin-only route, and requires the `systemMetadata.read` permission.
+ * Retrieve reverse geocoding state
  */
 export function getReverseGeocodingState(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
@@ -4201,7 +4499,7 @@ export function getReverseGeocodingState(opts?: Oazapfts.RequestOpts) {
     }));
 }
 /**
- * This endpoint is an admin-only route, and requires the `systemMetadata.read` permission.
+ * Retrieve version check state
  */
 export function getVersionCheckState(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
@@ -4212,7 +4510,7 @@ export function getVersionCheckState(opts?: Oazapfts.RequestOpts) {
     }));
 }
 /**
- * This endpoint requires the `tag.read` permission.
+ * Retrieve tags
  */
 export function getAllTags(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
@@ -4223,7 +4521,7 @@ export function getAllTags(opts?: Oazapfts.RequestOpts) {
     }));
 }
 /**
- * This endpoint requires the `tag.create` permission.
+ * Create a tag
  */
 export function createTag({ tagCreateDto }: {
     tagCreateDto: TagCreateDto;
@@ -4238,7 +4536,7 @@ export function createTag({ tagCreateDto }: {
     })));
 }
 /**
- * This endpoint requires the `tag.create` permission.
+ * Upsert tags
  */
 export function upsertTags({ tagUpsertDto }: {
     tagUpsertDto: TagUpsertDto;
@@ -4253,7 +4551,7 @@ export function upsertTags({ tagUpsertDto }: {
     })));
 }
 /**
- * This endpoint requires the `tag.asset` permission.
+ * Tag assets
  */
 export function bulkTagAssets({ tagBulkAssetsDto }: {
     tagBulkAssetsDto: TagBulkAssetsDto;
@@ -4268,7 +4566,7 @@ export function bulkTagAssets({ tagBulkAssetsDto }: {
     })));
 }
 /**
- * This endpoint requires the `tag.delete` permission.
+ * Delete a tag
  */
 export function deleteTag({ id }: {
     id: string;
@@ -4279,7 +4577,7 @@ export function deleteTag({ id }: {
     }));
 }
 /**
- * This endpoint requires the `tag.read` permission.
+ * Retrieve a tag
  */
 export function getTagById({ id }: {
     id: string;
@@ -4292,7 +4590,7 @@ export function getTagById({ id }: {
     }));
 }
 /**
- * This endpoint requires the `tag.update` permission.
+ * Update a tag
  */
 export function updateTag({ id, tagUpdateDto }: {
     id: string;
@@ -4308,7 +4606,7 @@ export function updateTag({ id, tagUpdateDto }: {
     })));
 }
 /**
- * This endpoint requires the `tag.asset` permission.
+ * Untag assets
  */
 export function untagAssets({ id, bulkIdsDto }: {
     id: string;
@@ -4324,7 +4622,7 @@ export function untagAssets({ id, bulkIdsDto }: {
     })));
 }
 /**
- * This endpoint requires the `tag.asset` permission.
+ * Tag assets
  */
 export function tagAssets({ id, bulkIdsDto }: {
     id: string;
@@ -4340,7 +4638,7 @@ export function tagAssets({ id, bulkIdsDto }: {
     })));
 }
 /**
- * This endpoint requires the `asset.read` permission.
+ * Get time bucket
  */
 export function getTimeBucket({ albumId, isFavorite, isTrashed, key, order, personId, slug, tagId, timeBucket, userId, visibility, withCoordinates, withPartners, withStacked }: {
     albumId?: string;
@@ -4381,7 +4679,7 @@ export function getTimeBucket({ albumId, isFavorite, isTrashed, key, order, pers
     }));
 }
 /**
- * This endpoint requires the `asset.read` permission.
+ * Get time buckets
  */
 export function getTimeBuckets({ albumId, isFavorite, isTrashed, key, order, personId, slug, tagId, userId, visibility, withCoordinates, withPartners, withStacked }: {
     albumId?: string;
@@ -4420,7 +4718,7 @@ export function getTimeBuckets({ albumId, isFavorite, isTrashed, key, order, per
     }));
 }
 /**
- * This endpoint requires the `asset.delete` permission.
+ * Empty trash
  */
 export function emptyTrash(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
@@ -4432,7 +4730,7 @@ export function emptyTrash(opts?: Oazapfts.RequestOpts) {
     }));
 }
 /**
- * This endpoint requires the `asset.delete` permission.
+ * Restore trash
  */
 export function restoreTrash(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
@@ -4444,7 +4742,7 @@ export function restoreTrash(opts?: Oazapfts.RequestOpts) {
     }));
 }
 /**
- * This endpoint requires the `asset.delete` permission.
+ * Restore assets
  */
 export function restoreAssets({ bulkIdsDto }: {
     bulkIdsDto: BulkIdsDto;
@@ -4459,7 +4757,7 @@ export function restoreAssets({ bulkIdsDto }: {
     })));
 }
 /**
- * This endpoint requires the `user.read` permission.
+ * Get all users
  */
 export function searchUsers(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
@@ -4470,7 +4768,7 @@ export function searchUsers(opts?: Oazapfts.RequestOpts) {
     }));
 }
 /**
- * This endpoint requires the `user.read` permission.
+ * Get current user
  */
 export function getMyUser(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
@@ -4481,7 +4779,7 @@ export function getMyUser(opts?: Oazapfts.RequestOpts) {
     }));
 }
 /**
- * This endpoint requires the `user.update` permission.
+ * Update current user
  */
 export function updateMyUser({ userUpdateMeDto }: {
     userUpdateMeDto: UserUpdateMeDto;
@@ -4496,7 +4794,7 @@ export function updateMyUser({ userUpdateMeDto }: {
     })));
 }
 /**
- * This endpoint requires the `userLicense.delete` permission.
+ * Delete user product key
  */
 export function deleteUserLicense(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchText("/users/me/license", {
@@ -4505,7 +4803,7 @@ export function deleteUserLicense(opts?: Oazapfts.RequestOpts) {
     }));
 }
 /**
- * This endpoint requires the `userLicense.read` permission.
+ * Retrieve user product key
  */
 export function getUserLicense(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
@@ -4516,7 +4814,7 @@ export function getUserLicense(opts?: Oazapfts.RequestOpts) {
     }));
 }
 /**
- * This endpoint requires the `userLicense.update` permission.
+ * Set user product key
  */
 export function setUserLicense({ licenseKeyDto }: {
     licenseKeyDto: LicenseKeyDto;
@@ -4531,7 +4829,7 @@ export function setUserLicense({ licenseKeyDto }: {
     })));
 }
 /**
- * This endpoint requires the `userOnboarding.delete` permission.
+ * Delete user onboarding
  */
 export function deleteUserOnboarding(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchText("/users/me/onboarding", {
@@ -4540,7 +4838,7 @@ export function deleteUserOnboarding(opts?: Oazapfts.RequestOpts) {
     }));
 }
 /**
- * This endpoint requires the `userOnboarding.read` permission.
+ * Retrieve user onboarding
  */
 export function getUserOnboarding(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
@@ -4551,7 +4849,7 @@ export function getUserOnboarding(opts?: Oazapfts.RequestOpts) {
     }));
 }
 /**
- * This endpoint requires the `userOnboarding.update` permission.
+ * Update user onboarding
  */
 export function setUserOnboarding({ onboardingDto }: {
     onboardingDto: OnboardingDto;
@@ -4566,7 +4864,7 @@ export function setUserOnboarding({ onboardingDto }: {
     })));
 }
 /**
- * This endpoint requires the `userPreference.read` permission.
+ * Get my preferences
  */
 export function getMyPreferences(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
@@ -4577,7 +4875,7 @@ export function getMyPreferences(opts?: Oazapfts.RequestOpts) {
     }));
 }
 /**
- * This endpoint requires the `userPreference.update` permission.
+ * Update my preferences
  */
 export function updateMyPreferences({ userPreferencesUpdateDto }: {
     userPreferencesUpdateDto: UserPreferencesUpdateDto;
@@ -4592,7 +4890,7 @@ export function updateMyPreferences({ userPreferencesUpdateDto }: {
     })));
 }
 /**
- * This endpoint requires the `userProfileImage.delete` permission.
+ * Delete user profile image
  */
 export function deleteProfileImage(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchText("/users/profile-image", {
@@ -4601,7 +4899,7 @@ export function deleteProfileImage(opts?: Oazapfts.RequestOpts) {
     }));
 }
 /**
- * This endpoint requires the `userProfileImage.update` permission.
+ * Create user profile image
  */
 export function createProfileImage({ createProfileImageDto }: {
     createProfileImageDto: CreateProfileImageDto;
@@ -4616,7 +4914,7 @@ export function createProfileImage({ createProfileImageDto }: {
     })));
 }
 /**
- * This endpoint requires the `user.read` permission.
+ * Retrieve a user
  */
 export function getUser({ id }: {
     id: string;
@@ -4629,7 +4927,7 @@ export function getUser({ id }: {
     }));
 }
 /**
- * This endpoint requires the `userProfileImage.read` permission.
+ * Retrieve user profile image
  */
 export function getProfileImage({ id }: {
     id: string;
@@ -4641,6 +4939,9 @@ export function getProfileImage({ id }: {
         ...opts
     }));
 }
+/**
+ * Retrieve assets by original path
+ */
 export function getAssetsByOriginalPath({ path }: {
     path: string;
 }, opts?: Oazapfts.RequestOpts) {
@@ -4653,6 +4954,9 @@ export function getAssetsByOriginalPath({ path }: {
         ...opts
     }));
 }
+/**
+ * Retrieve unique paths
+ */
 export function getUniqueOriginalPaths(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
@@ -4660,6 +4964,72 @@ export function getUniqueOriginalPaths(opts?: Oazapfts.RequestOpts) {
     }>("/view/folder/unique-paths", {
         ...opts
     }));
+}
+/**
+ * List all workflows
+ */
+export function getWorkflows(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: WorkflowResponseDto[];
+    }>("/workflows", {
+        ...opts
+    }));
+}
+/**
+ * Create a workflow
+ */
+export function createWorkflow({ workflowCreateDto }: {
+    workflowCreateDto: WorkflowCreateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: WorkflowResponseDto;
+    }>("/workflows", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: workflowCreateDto
+    })));
+}
+/**
+ * Delete a workflow
+ */
+export function deleteWorkflow({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/workflows/${encodeURIComponent(id)}`, {
+        ...opts,
+        method: "DELETE"
+    }));
+}
+/**
+ * Retrieve a workflow
+ */
+export function getWorkflow({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: WorkflowResponseDto;
+    }>(`/workflows/${encodeURIComponent(id)}`, {
+        ...opts
+    }));
+}
+/**
+ * Update a workflow
+ */
+export function updateWorkflow({ id, workflowUpdateDto }: {
+    id: string;
+    workflowUpdateDto: WorkflowUpdateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: WorkflowResponseDto;
+    }>(`/workflows/${encodeURIComponent(id)}`, oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: workflowUpdateDto
+    })));
 }
 export enum ReactionLevel {
     Album = "album",
@@ -4680,6 +5050,10 @@ export enum UserAvatarColor {
     Orange = "orange",
     Gray = "gray",
     Amber = "amber"
+}
+export enum MaintenanceAction {
+    Start = "start",
+    End = "end"
 }
 export enum NotificationLevel {
     Success = "success",
@@ -4757,6 +5131,7 @@ export enum Permission {
     AssetDownload = "asset.download",
     AssetUpload = "asset.upload",
     AssetReplace = "asset.replace",
+    AssetCopy = "asset.copy",
     AlbumCreate = "album.create",
     AlbumRead = "album.read",
     AlbumUpdate = "album.update",
@@ -4787,6 +5162,7 @@ export enum Permission {
     LibraryStatistics = "library.statistics",
     TimelineRead = "timeline.read",
     TimelineDownload = "timeline.download",
+    Maintenance = "maintenance",
     MemoryCreate = "memory.create",
     MemoryRead = "memory.read",
     MemoryUpdate = "memory.update",
@@ -4812,6 +5188,10 @@ export enum Permission {
     PinCodeCreate = "pinCode.create",
     PinCodeUpdate = "pinCode.update",
     PinCodeDelete = "pinCode.delete",
+    PluginCreate = "plugin.create",
+    PluginRead = "plugin.read",
+    PluginUpdate = "plugin.update",
+    PluginDelete = "plugin.delete",
     ServerAbout = "server.about",
     ServerApkLinks = "server.apkLinks",
     ServerStorage = "server.storage",
@@ -4861,6 +5241,10 @@ export enum Permission {
     UserProfileImageRead = "userProfileImage.read",
     UserProfileImageUpdate = "userProfileImage.update",
     UserProfileImageDelete = "userProfileImage.delete",
+    WorkflowCreate = "workflow.create",
+    WorkflowRead = "workflow.read",
+    WorkflowUpdate = "workflow.update",
+    WorkflowDelete = "workflow.delete",
     AdminUserCreate = "adminUser.create",
     AdminUserRead = "adminUser.read",
     AdminUserUpdate = "adminUser.update",
@@ -4903,7 +5287,7 @@ export enum ManualJobName {
     MemoryCreate = "memory-create",
     BackupDatabase = "backup-database"
 }
-export enum JobName {
+export enum QueueName {
     ThumbnailGeneration = "thumbnailGeneration",
     MetadataExtraction = "metadataExtraction",
     VideoConversion = "videoConversion",
@@ -4919,14 +5303,20 @@ export enum JobName {
     Library = "library",
     Notifications = "notifications",
     BackupDatabase = "backupDatabase",
-    Ocr = "ocr"
+    Ocr = "ocr",
+    Workflow = "workflow"
 }
-export enum JobCommand {
+export enum QueueCommand {
     Start = "start",
     Pause = "pause",
     Resume = "resume",
     Empty = "empty",
     ClearFailed = "clear-failed"
+}
+export enum MemorySearchOrder {
+    Asc = "asc",
+    Desc = "desc",
+    Random = "random"
 }
 export enum MemoryType {
     OnThisDay = "on_this_day"
@@ -4934,6 +5324,11 @@ export enum MemoryType {
 export enum PartnerDirection {
     SharedBy = "shared-by",
     SharedWith = "shared-with"
+}
+export enum PluginContext {
+    Asset = "asset",
+    Album = "album",
+    Person = "person"
 }
 export enum SearchSuggestionType {
     Country = "country",
@@ -5085,4 +5480,12 @@ export enum LogLevel {
 export enum OAuthTokenEndpointAuthMethod {
     ClientSecretPost = "client_secret_post",
     ClientSecretBasic = "client_secret_basic"
+}
+export enum TriggerType {
+    AssetCreate = "AssetCreate",
+    PersonRecognized = "PersonRecognized"
+}
+export enum PluginTriggerType {
+    AssetCreate = "AssetCreate",
+    PersonRecognized = "PersonRecognized"
 }

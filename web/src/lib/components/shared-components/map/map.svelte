@@ -11,10 +11,10 @@
 <script lang="ts">
   import { afterNavigate } from '$app/navigation';
   import { Theme } from '$lib/constants';
+  import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
   import { themeManager } from '$lib/managers/theme-manager.svelte';
   import MapSettingsModal from '$lib/modals/MapSettingsModal.svelte';
   import { mapSettings } from '$lib/stores/preferences.store';
-  import { serverConfig } from '$lib/stores/server-config.store';
   import { getAssetThumbnailUrl, handlePromiseError } from '$lib/utils';
   import { getMapMarkers, type MapMarkerResponseDto } from '@immich/sdk';
   import { Icon, modalManager } from '@immich/ui';
@@ -103,7 +103,9 @@
   let abortController: AbortController;
 
   const theme = $derived($mapSettings.allowDarkMode ? themeManager.value : Theme.LIGHT);
-  const styleUrl = $derived(theme === Theme.DARK ? $serverConfig.mapDarkStyleUrl : $serverConfig.mapLightStyleUrl);
+  const styleUrl = $derived(
+    theme === Theme.DARK ? serverConfigManager.value.mapDarkStyleUrl : serverConfigManager.value.mapLightStyleUrl,
+  );
 
   export function addClipMapMarker(lng: number, lat: number) {
     if (map) {
@@ -359,7 +361,7 @@
       >
         {#snippet children({ feature })}
           <div
-            class="rounded-full w-[40px] h-[40px] bg-immich-primary text-white flex justify-center items-center font-mono font-bold shadow-lg hover:bg-immich-dark-primary transition-all duration-200 hover:text-immich-dark-bg opacity-90"
+            class="rounded-full w-10 h-10 bg-immich-primary text-white flex justify-center items-center font-mono font-bold shadow-lg hover:bg-immich-dark-primary transition-all duration-200 hover:text-immich-dark-bg opacity-90"
           >
             {feature.properties?.point_count?.toLocaleString()}
           </div>
@@ -380,7 +382,7 @@
           {:else}
             <img
               src={getAssetThumbnailUrl(feature.properties?.id)}
-              class="rounded-full w-[60px] h-[60px] border-2 border-immich-primary shadow-lg hover:border-immich-dark-primary transition-all duration-200 hover:scale-150 object-cover bg-immich-primary"
+              class="rounded-full w-15 h-15 border-2 border-immich-primary shadow-lg hover:border-immich-dark-primary transition-all duration-200 hover:scale-150 object-cover bg-immich-primary"
               alt={feature.properties?.city && feature.properties.country
                 ? $t('map_marker_for_images', {
                     values: { city: feature.properties.city, country: feature.properties.country },
