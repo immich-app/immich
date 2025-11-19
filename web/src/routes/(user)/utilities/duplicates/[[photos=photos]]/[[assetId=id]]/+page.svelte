@@ -12,12 +12,13 @@
   import { Route } from '$lib/route';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { duplicateSettings, locale } from '$lib/stores/preferences.store';
-  import { addAssetsToAlbums, stackAssets } from '$lib/utils/asset-utils';
+  import { stackAssets } from '$lib/utils/asset-utils';
   import { suggestDuplicate } from '$lib/utils/duplicate-utils';
   import { handleError } from '$lib/utils/handle-error';
   import type { AssetBulkUpdateDto, AssetResponseDto } from '@immich/sdk';
   import {
     AssetVisibility,
+    copyAsset,
     deleteAssets,
     deleteDuplicates,
     getAllAlbums,
@@ -170,7 +171,12 @@
           assetBulkUpdate.longitude = longitude;
         }
         if ($duplicateSettings.synchronizeAlbums) {
-          await addAssetsToAlbums(albumIds, [duplicateId], true);
+          const idsToKeep = duplicateAssetIds.filter((id) => !trashIds.includes(id));
+          for (const sourceId of trashIds) {
+            for (const targetId of idsToKeep) {
+              await copyAsset({ assetCopyDto: { sourceId, targetId, albums: true } });
+            }
+          }
         }
 
         await deleteAssets({ assetBulkDeleteDto: { ids: trashIds, force: !featureFlagsManager.value.trash } });
