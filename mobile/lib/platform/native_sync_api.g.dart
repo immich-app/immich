@@ -41,6 +41,9 @@ class PlatformAsset {
     required this.durationInSeconds,
     required this.orientation,
     required this.isFavorite,
+    this.adjustmentTime,
+    this.latitude,
+    this.longitude,
   });
 
   String id;
@@ -63,8 +66,28 @@ class PlatformAsset {
 
   bool isFavorite;
 
+  int? adjustmentTime;
+
+  double? latitude;
+
+  double? longitude;
+
   List<Object?> _toList() {
-    return <Object?>[id, name, type, createdAt, updatedAt, width, height, durationInSeconds, orientation, isFavorite];
+    return <Object?>[
+      id,
+      name,
+      type,
+      createdAt,
+      updatedAt,
+      width,
+      height,
+      durationInSeconds,
+      orientation,
+      isFavorite,
+      adjustmentTime,
+      latitude,
+      longitude,
+    ];
   }
 
   Object encode() {
@@ -84,6 +107,9 @@ class PlatformAsset {
       durationInSeconds: result[7]! as int,
       orientation: result[8]! as int,
       isFavorite: result[9]! as bool,
+      adjustmentTime: result[10] as int?,
+      latitude: result[11] as double?,
+      longitude: result[12] as double?,
     );
   }
 

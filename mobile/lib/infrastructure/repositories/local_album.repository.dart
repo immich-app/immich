@@ -244,12 +244,12 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
     return query.map((row) => row.readTable(_db.localAssetEntity).toDto()).get();
   }
 
-  Future<void> _upsertAssets(Iterable<LocalAsset> localAssets) {
+  Future<void> _upsertAssets(Iterable<LocalAsset> localAssets) async {
     if (localAssets.isEmpty) {
       return Future.value();
     }
 
-    return _db.batch((batch) async {
+    await _db.batch((batch) async {
       for (final asset in localAssets) {
         final companion = LocalAssetEntityCompanion.insert(
           name: asset.name,
@@ -262,11 +262,35 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
           id: asset.id,
           orientation: Value(asset.orientation),
           isFavorite: Value(asset.isFavorite),
+          adjustmentTime: Value(asset.adjustmentTime),
+          latitude: Value(asset.latitude),
+          longitude: Value(asset.longitude),
         );
         batch.insert<$LocalAssetEntityTable, LocalAssetEntityData>(
           _db.localAssetEntity,
+          companion.copyWith(checksum: const Value(null)),
+          onConflict: DoUpdate(
+            (old) => companion,
+            where: (old) => CurrentPlatform.isAndroid
+                ? old.updatedAt.isNotValue(asset.updatedAt)
+                : old.latitude.equalsNullable(asset.latitude).not() |
+                      old.longitude.equalsNullable(asset.longitude).not() |
+                      old.createdAt.isNotValue(asset.createdAt),
+          ),
+        );
+      }
+    });
+
+    // Reset checksum if asset changed
+    return _db.batch((batch) async {
+      for (final asset in localAssets) {
+        final companion = const LocalAssetEntityCompanion(checksum: Value(null));
+        batch.update(
+          _db.localAssetEntity,
           companion,
-          onConflict: DoUpdate((_) => companion, where: (old) => old.updatedAt.isNotValue(asset.updatedAt)),
+          where: (row) => CurrentPlatform.isIOS
+              ? row.adjustmentTime.equalsNullable(asset.adjustmentTime).not()
+              : row.updatedAt.isNotValue(asset.updatedAt),
         );
       }
     });
