@@ -133,9 +133,11 @@ class _AssetPropertiesSectionState extends ConsumerState<_AssetPropertiesSection
     if (CurrentPlatform.isIOS) {
       properties.add(_PropertyItem(label: 'Adjustment Time', value: asset.adjustmentTime?.toString()));
     }
-    _PropertyItem(
-      label: 'GPS Coordinates',
-      value: asset.hasCoordinates ? '${asset.latitude}, ${asset.longitude}' : null,
+    properties.add(
+      _PropertyItem(
+        label: 'GPS Coordinates',
+        value: asset.hasCoordinates ? '${asset.latitude}, ${asset.longitude}' : null,
+      ),
     );
   }
 
