@@ -103,7 +103,6 @@ class OrtSession:
                         "load_config": orjson.dumps(
                             {
                                 "CPU": {"CPU_RUNTIME_CACHE_CAPACITY": str(settings.openvino_cache_capacity)},
-                                "GPU": {"GPU_ENABLE_KERNELS_REUSE": "true"},
                             }
                         ).decode(),
                     }
