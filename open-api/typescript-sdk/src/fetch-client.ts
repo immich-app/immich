@@ -44,8 +44,12 @@ export type SetMaintenanceModeDto = {
     action: MaintenanceAction;
     restoreBackupFilename?: string;
 };
+export type MaintenanceListBackupsResponseDto = {
+    backups: string[];
+    failedBackups: string[];
+};
 export type MaintenanceStatusResponseDto = {
-    action?: Action;
+    action: MaintenanceAction;
     error?: string;
     progress?: number;
     task?: string;
@@ -521,7 +525,7 @@ export type AssetBulkUploadCheckDto = {
     assets: AssetBulkUploadCheckItem[];
 };
 export type AssetBulkUploadCheckResult = {
-    action: Action2;
+    action: Action;
     assetId?: string;
     id: string;
     isTrashed?: boolean;
@@ -1850,6 +1854,28 @@ export function setMaintenanceMode({ setMaintenanceModeDto }: {
         method: "POST",
         body: setMaintenanceModeDto
     })));
+}
+/**
+ * List backups
+ */
+export function listBackups(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: MaintenanceListBackupsResponseDto;
+    }>("/admin/maintenance/admin/maintenance/backups/list", {
+        ...opts
+    }));
+}
+/**
+ * Delete backup
+ */
+export function deleteBackup({ filename }: {
+    filename: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/admin/maintenance/admin/maintenance/backups/${encodeURIComponent(filename)}`, {
+        ...opts,
+        method: "DELETE"
+    }));
 }
 /**
  * Get maintenance mode status
@@ -5074,11 +5100,6 @@ export enum MaintenanceAction {
     End = "end",
     RestoreDatabase = "restore_database"
 }
-export enum Action {
-    Start = "start",
-    End = "end",
-    RestoreDatabase = "restore_database"
-}
 export enum NotificationLevel {
     Success = "success",
     Error = "error",
@@ -5284,7 +5305,7 @@ export enum AssetMediaStatus {
     Replaced = "replaced",
     Duplicate = "duplicate"
 }
-export enum Action2 {
+export enum Action {
     Accept = "accept",
     Reject = "reject"
 }

@@ -1,9 +1,16 @@
 import { page } from '$app/state';
 import { AppRoute } from '$lib/constants';
 import { authManager } from '$lib/managers/auth-manager.svelte';
+import { maintenanceStore } from '$lib/stores/maintenance.store';
 import { notificationManager } from '$lib/stores/notification-manager.svelte';
 import { createEventEmitter } from '$lib/utils/eventemitter';
-import { type AssetResponseDto, type NotificationDto, type ServerVersionResponseDto } from '@immich/sdk';
+import {
+  MaintenanceAction,
+  type AssetResponseDto,
+  type MaintenanceStatusResponseDto,
+  type NotificationDto,
+  type ServerVersionResponseDto,
+} from '@immich/sdk';
 import { io, type Socket } from 'socket.io-client';
 import { get, writable } from 'svelte/store';
 import { user } from './user.store';
@@ -37,6 +44,8 @@ export interface Events {
   on_notification: (notification: NotificationDto) => void;
 
   AppRestartV1: (event: AppRestartEvent) => void;
+
+  MaintenanceStatusV1: (event: MaintenanceStatusResponseDto) => void;
 }
 
 const websocket: Socket<Events> = io({
@@ -61,6 +70,15 @@ websocket
   .on('disconnect', () => websocketStore.connected.set(false))
   .on('on_server_version', (serverVersion) => websocketStore.serverVersion.set(serverVersion))
   .on('AppRestartV1', (mode) => websocketStore.serverRestarting.set(mode))
+  .on('MaintenanceStatusV1', (status) => {
+    maintenanceStore.status.set(status);
+
+    if (status.action === MaintenanceAction.End) {
+      websocketStore.serverRestarting.set({
+        isMaintenanceMode: false,
+      });
+    }
+  })
   .on('on_new_release', (releaseVersion) => websocketStore.release.set(releaseVersion))
   .on('on_session_delete', () => authManager.logout())
   .on('on_notification', () => notificationManager.refresh())
@@ -68,7 +86,7 @@ websocket
 
 export const openWebsocketConnection = () => {
   try {
-    if (get(user) || page.url.pathname.startsWith(AppRoute.MAINTENANCE)) {
+    if (get(user) || get(websocketStore.serverRestarting) || page.url.pathname.startsWith(AppRoute.MAINTENANCE)) {
       websocket.connect();
     }
   } catch (error) {

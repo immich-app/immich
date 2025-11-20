@@ -16705,12 +16705,11 @@
       "MaintenanceStatusResponseDto": {
         "properties": {
           "action": {
-            "enum": [
-              "start",
-              "end",
-              "restore_database"
-            ],
-            "type": "string"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MaintenanceAction"
+              }
+            ]
           },
           "error": {
             "type": "string"

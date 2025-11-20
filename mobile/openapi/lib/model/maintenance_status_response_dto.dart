@@ -13,13 +13,13 @@ part of openapi.api;
 class MaintenanceStatusResponseDto {
   /// Returns a new [MaintenanceStatusResponseDto] instance.
   MaintenanceStatusResponseDto({
-    this.action,
+    required this.action,
     this.error,
     this.progress,
     this.task,
   });
 
-  MaintenanceStatusResponseDtoActionEnum? action;
+  MaintenanceAction action;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -55,7 +55,7 @@ class MaintenanceStatusResponseDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (action == null ? 0 : action!.hashCode) +
+    (action.hashCode) +
     (error == null ? 0 : error!.hashCode) +
     (progress == null ? 0 : progress!.hashCode) +
     (task == null ? 0 : task!.hashCode);
@@ -65,11 +65,7 @@ class MaintenanceStatusResponseDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.action != null) {
       json[r'action'] = this.action;
-    } else {
-    //  json[r'action'] = null;
-    }
     if (this.error != null) {
       json[r'error'] = this.error;
     } else {
@@ -97,7 +93,7 @@ class MaintenanceStatusResponseDto {
       final json = value.cast<String, dynamic>();
 
       return MaintenanceStatusResponseDto(
-        action: MaintenanceStatusResponseDtoActionEnum.fromJson(json[r'action']),
+        action: MaintenanceAction.fromJson(json[r'action'])!,
         error: mapValueOfType<String>(json, r'error'),
         progress: num.parse('${json[r'progress']}'),
         task: mapValueOfType<String>(json, r'task'),
@@ -148,83 +144,7 @@ class MaintenanceStatusResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
+    'action',
   };
 }
-
-
-class MaintenanceStatusResponseDtoActionEnum {
-  /// Instantiate a new enum with the provided [value].
-  const MaintenanceStatusResponseDtoActionEnum._(this.value);
-
-  /// The underlying value of this enum member.
-  final String value;
-
-  @override
-  String toString() => value;
-
-  String toJson() => value;
-
-  static const start = MaintenanceStatusResponseDtoActionEnum._(r'start');
-  static const end = MaintenanceStatusResponseDtoActionEnum._(r'end');
-  static const restoreDatabase = MaintenanceStatusResponseDtoActionEnum._(r'restore_database');
-
-  /// List of all possible values in this [enum][MaintenanceStatusResponseDtoActionEnum].
-  static const values = <MaintenanceStatusResponseDtoActionEnum>[
-    start,
-    end,
-    restoreDatabase,
-  ];
-
-  static MaintenanceStatusResponseDtoActionEnum? fromJson(dynamic value) => MaintenanceStatusResponseDtoActionEnumTypeTransformer().decode(value);
-
-  static List<MaintenanceStatusResponseDtoActionEnum> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <MaintenanceStatusResponseDtoActionEnum>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = MaintenanceStatusResponseDtoActionEnum.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
-  }
-}
-
-/// Transformation class that can [encode] an instance of [MaintenanceStatusResponseDtoActionEnum] to String,
-/// and [decode] dynamic data back to [MaintenanceStatusResponseDtoActionEnum].
-class MaintenanceStatusResponseDtoActionEnumTypeTransformer {
-  factory MaintenanceStatusResponseDtoActionEnumTypeTransformer() => _instance ??= const MaintenanceStatusResponseDtoActionEnumTypeTransformer._();
-
-  const MaintenanceStatusResponseDtoActionEnumTypeTransformer._();
-
-  String encode(MaintenanceStatusResponseDtoActionEnum data) => data.value;
-
-  /// Decodes a [dynamic value][data] to a MaintenanceStatusResponseDtoActionEnum.
-  ///
-  /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
-  /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
-  /// cannot be decoded successfully, then an [UnimplementedError] is thrown.
-  ///
-  /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
-  /// and users are still using an old app with the old code.
-  MaintenanceStatusResponseDtoActionEnum? decode(dynamic data, {bool allowNull = true}) {
-    if (data != null) {
-      switch (data) {
-        case r'start': return MaintenanceStatusResponseDtoActionEnum.start;
-        case r'end': return MaintenanceStatusResponseDtoActionEnum.end;
-        case r'restore_database': return MaintenanceStatusResponseDtoActionEnum.restoreDatabase;
-        default:
-          if (!allowNull) {
-            throw ArgumentError('Unknown enum value to decode: $data');
-          }
-      }
-    }
-    return null;
-  }
-
-  /// Singleton [MaintenanceStatusResponseDtoActionEnumTypeTransformer] instance.
-  static MaintenanceStatusResponseDtoActionEnumTypeTransformer? _instance;
-}
-
 

@@ -16,6 +16,103 @@ class MaintenanceAdminApi {
 
   final ApiClient apiClient;
 
+  /// Delete backup
+  ///
+  /// Delete a backup by its filename
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [String] filename (required):
+  Future<Response> deleteBackupWithHttpInfo(String filename,) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/admin/maintenance/admin/maintenance/backups/{filename}'
+      .replaceAll('{filename}', filename);
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'DELETE',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Delete backup
+  ///
+  /// Delete a backup by its filename
+  ///
+  /// Parameters:
+  ///
+  /// * [String] filename (required):
+  Future<void> deleteBackup(String filename,) async {
+    final response = await deleteBackupWithHttpInfo(filename,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
+  /// List backups
+  ///
+  /// Get the list of the successful and failed backups
+  ///
+  /// Note: This method returns the HTTP [Response].
+  Future<Response> listBackupsWithHttpInfo() async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/admin/maintenance/admin/maintenance/backups/list';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// List backups
+  ///
+  /// Get the list of the successful and failed backups
+  Future<MaintenanceListBackupsResponseDto?> listBackups() async {
+    final response = await listBackupsWithHttpInfo();
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'MaintenanceListBackupsResponseDto',) as MaintenanceListBackupsResponseDto;
+    
+    }
+    return null;
+  }
+
   /// Log into maintenance mode
   ///
   /// Login with maintenance token or cookie to receive current information and perform further actions.

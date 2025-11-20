@@ -382,6 +382,8 @@ class ApiClient {
           return MaintenanceActionTypeTransformer().decode(value);
         case 'MaintenanceAuthDto':
           return MaintenanceAuthDto.fromJson(value);
+        case 'MaintenanceListBackupsResponseDto':
+          return MaintenanceListBackupsResponseDto.fromJson(value);
         case 'MaintenanceLoginDto':
           return MaintenanceLoginDto.fromJson(value);
         case 'MaintenanceStatusResponseDto':
