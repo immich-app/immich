@@ -57,11 +57,15 @@ import {
 import { BrowserContext } from '@playwright/test';
 import { exec, spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { existsSync, mkdirSync, renameSync, rmSync, writeFileSync } from 'node:fs';
+import { createWriteStream, existsSync, mkdirSync, renameSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtemp } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { dirname, resolve } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
+import { Readable } from 'node:stream';
+import { pipeline } from 'node:stream/promises';
 import { setTimeout as setAsyncTimeout } from 'node:timers/promises';
 import { promisify } from 'node:util';
+import { createGzip } from 'node:zlib';
 import pg from 'pg';
 import { io, type Socket } from 'socket.io-client';
 import { loginDto, signupDto } from 'src/fixtures';
@@ -601,10 +605,16 @@ export const utils = {
     }
   },
 
-  prepareTestBackup: async (testBackup: 'corrupted.sql') => {
-    await dockerExec(['cp', `${testAssetDirInternal}/backups/${testBackup}`, `/data/backups/development-${testBackup}`])
-      .promise;
-    await dockerExec(['gzip', `/data/backups/development-${testBackup}`]).promise;
+  prepareTestBackup: async (generate: 'corrupted') => {
+    const dir = await mkdtemp(join(tmpdir(), 'test-'));
+    const fn = join(dir, 'file');
+
+    const sql = Readable.from('IM CORRUPTED;');
+    const gzip = createGzip();
+    const writeStream = createWriteStream(fn);
+    await pipeline(sql, gzip, writeStream);
+
+    await dockerExec(['cp', fn, `/data/backups/development-${generate}.sql.gz`]).promise;
   },
 
   resetAdminConfig: async (accessToken: string) => {

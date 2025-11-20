@@ -259,9 +259,9 @@ describe('/admin/maintenance', () => {
 
   // => action: restore database flow
 
-  describe.sequential('POST /start/restore', () => {
+  describe.sequential('POST /backups/restore', () => {
     afterAll(async () => {
-      await request(app).post('/admin/maintenance/end').set('cookie', cookie!).send();
+      await request(app).post('/admin/maintenance').set('cookie', cookie!).send({ action: 'end' });
       await utils.poll(
         () => request(app).get('/server/config'),
         ({ status, body }) => status === 200 && !body.maintenanceMode,
@@ -272,7 +272,7 @@ describe('/admin/maintenance', () => {
     });
 
     it.sequential('should not work when the server is configured', async () => {
-      const { status, body } = await request(app).post('/admin/maintenance/start/restore').send();
+      const { status, body } = await request(app).post('/admin/maintenance/backups/restore').send();
 
       expect(status).toBe(400);
       expect(body).toEqual(errorDto.badRequest('The server already has an admin'));
@@ -281,12 +281,7 @@ describe('/admin/maintenance', () => {
     it.sequential('should enter maintenance mode in "database restore mode"', async () => {
       await utils.resetDatabase(); // reset database before running this test
 
-      const { status, headers } = await request(app)
-        .post('/admin/maintenance')
-        .set('Authorization', `Bearer ${admin.accessToken}`)
-        .send({
-          action: 'restore_database',
-        });
+      const { status, headers } = await request(app).post('/admin/maintenance/backups/restore').send();
 
       expect(status).toBe(201);
 
@@ -309,7 +304,7 @@ describe('/admin/maintenance', () => {
       const { status: status2, body } = await request(app).get('/admin/maintenance/status').send({ token: 'token' });
       expect(status2).toBe(200);
       expect(body).toEqual({
-        operation: 'restore-database-flow',
+        action: 'start',
       });
     });
   });
@@ -356,7 +351,7 @@ describe('/admin/maintenance', () => {
       expect(status2).toBe(200);
       expect(body).toEqual(
         expect.objectContaining({
-          operation: 'restore-database',
+          action: 'restore_database',
         }),
       );
 
@@ -376,7 +371,7 @@ describe('/admin/maintenance', () => {
     });
 
     it.sequential('fail to restore a corrupted backup', { timeout: 6e4 }, async () => {
-      await utils.prepareTestBackup('corrupted.sql');
+      await utils.prepareTestBackup('corrupted');
 
       const { status, headers } = await request(app)
         .post('/admin/maintenance')
@@ -417,7 +412,7 @@ describe('/admin/maintenance', () => {
         )
         .toEqual(
           expect.objectContaining({
-            operation: 'restore-database',
+            action: 'restore_database',
             error: 'Something went wrong, see logs!',
           }),
         );
@@ -429,7 +424,7 @@ describe('/admin/maintenance', () => {
       expect(status2).toBe(200);
       expect(body2).toEqual(
         expect.objectContaining({
-          operation: 'restore-database',
+          action: 'restore_database',
           error: expect.stringContaining('IM CORRUPTED'),
         }),
       );
