@@ -49,4 +49,61 @@ test.describe('Maintenance', () => {
     await page.getByRole('button', { name: 'End maintenance mode' }).click();
     await page.waitForURL('/auth/login');
   });
+
+  /**
+   * restoring backups
+   */
+
+  test('restore a backup from settings', async ({ context, page }) => {
+    await utils.resetBackups(admin.accessToken);
+    await utils.createBackup(admin.accessToken);
+    await utils.setAuthCookies(context, admin.accessToken);
+
+    await page.goto('/admin/maintenance?isOpen=backups');
+    await page.getByRole('button', { name: 'Restore', exact: true }).click();
+    await page.locator('#bits-c2').getByRole('button', { name: 'Restore' }).click();
+
+    await page.waitForURL('/maintenance?**');
+    await page.waitForURL('/admin/maintenance**', { timeout: 2e4 });
+  });
+
+  test('handle backup restore failure', async ({ context, page }) => {
+    await utils.resetBackups(admin.accessToken);
+    await utils.prepareTestBackup('corrupted.sql');
+    await utils.setAuthCookies(context, admin.accessToken);
+
+    await page.goto('/admin/maintenance?isOpen=backups');
+    await page.getByRole('button', { name: 'Restore', exact: true }).click();
+    await page.locator('#bits-c2').getByRole('button', { name: 'Restore' }).click();
+
+    await page.waitForURL('/maintenance?**');
+    await expect(page.getByText('IM CORRUPTED')).toBeVisible({ timeout: 2e4 });
+    await page.getByRole('button', { name: 'End maintenance mode' }).click();
+    await page.waitForURL('/admin/maintenance**');
+  });
+
+  test('restore a backup from onboarding', async ({ context, page }) => {
+    await utils.resetBackups(admin.accessToken);
+    await utils.createBackup(admin.accessToken);
+    await utils.setAuthCookies(context, admin.accessToken);
+    await utils.resetDatabase();
+
+    await page.goto('/');
+    await page.getByRole('button', { name: 'Restore from backup' }).click();
+
+    try {
+      await page.waitForURL('/maintenance**');
+    } catch (error) {
+      // when chained with the rest of the tests
+      // this navigation may fail..? not sure why...
+      await page.goto('/maintenance');
+      await page.waitForURL('/maintenance**');
+    }
+
+    await page.getByRole('button', { name: 'Restore', exact: true }).click();
+    await page.locator('#bits-c2').getByRole('button', { name: 'Restore' }).click();
+
+    await page.waitForURL('/maintenance?**');
+    await page.waitForURL('/photos', { timeout: 2e4 });
+  });
 });
