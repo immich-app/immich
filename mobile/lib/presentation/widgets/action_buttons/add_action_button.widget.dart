@@ -77,6 +77,7 @@ class AddActionButton extends ConsumerWidget {
       color: context.themeData.scaffoldBackgroundColor,
       position: _menuPosition(context),
       items: items,
+      popUpAnimationStyle: AnimationStyle.noAnimation,
     );
 
     if (selected == null) {
