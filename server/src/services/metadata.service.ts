@@ -778,6 +778,7 @@ export class MetadataService extends BaseService {
     const existingNameMap = new Map(existingNames.map(({ id, name }) => [name.toLowerCase(), id]));
     const missing: (Insertable<PersonTable> & { ownerId: string })[] = [];
     const missingWithFaceAsset: { id: string; ownerId: string; faceAssetId: string }[] = [];
+    let newPersonIds: string[] = [];
 
     const adjustedRegionInfo = this.orientRegionInfo(tags.RegionInfo, tags.Orientation);
     const imageWidth = adjustedRegionInfo.AppliedToDimensions.W;
@@ -813,7 +814,7 @@ export class MetadataService extends BaseService {
 
     if (missing.length > 0) {
       this.logger.debugFn(() => `Creating missing persons: ${missing.map((p) => `${p.name}/${p.id}`)}`);
-      const newPersonIds = await this.personRepository.createAll(missing);
+      newPersonIds = await this.personRepository.createAll(missing);
       const jobs = newPersonIds.map((id) => ({ name: JobName.PersonGenerateThumbnail, data: { id } }) as const);
       await this.jobRepository.queueAll(jobs);
     }
@@ -834,7 +835,24 @@ export class MetadataService extends BaseService {
     }
 
     if (missingWithFaceAsset.length > 0) {
+      const updatePersonIds = [...new Set(missingWithFaceAsset.map(({ id }) => id))];
+      const previousPersons = (await this.personRepository.getByIds(updatePersonIds)) ?? [];
       await this.personRepository.updateAll(missingWithFaceAsset);
+      const updatedPersons = (await this.personRepository.getByIds(updatePersonIds)) ?? [];
+      const previousMap = new Map(previousPersons.map((person) => [person.id, person]));
+      for (const person of updatedPersons) {
+        const previous = previousMap.get(person.id);
+        if (previous) {
+          await this.eventRepository.emit('PersonUpdate', { person, previous, actorId: asset.ownerId });
+        }
+      }
+    }
+
+    if (newPersonIds.length > 0) {
+      const createdPersons = (await this.personRepository.getByIds(newPersonIds)) ?? [];
+      for (const person of createdPersons) {
+        await this.eventRepository.emit('PersonCreate', { person, actorId: asset.ownerId });
+      }
     }
   }
 

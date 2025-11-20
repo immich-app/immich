@@ -89,7 +89,15 @@ export class MediaService extends BaseService {
           continue;
         }
 
-        await this.personRepository.update({ id: person.id, faceAssetId: face.id });
+        const previous = await this.personRepository.getById(person.id);
+        if (previous) {
+          const updated = await this.personRepository.update({ id: person.id, faceAssetId: face.id });
+          await this.eventRepository.emit('PersonUpdate', {
+            person: updated,
+            previous,
+            actorId: previous.ownerId,
+          });
+        }
       }
 
       jobs.push({ name: JobName.PersonGenerateThumbnail, data: { id: person.id } });
@@ -381,7 +389,15 @@ export class MediaService extends BaseService {
     };
 
     await this.mediaRepository.generateThumbnail(decodedImage, thumbnailOptions, thumbnailPath);
-    await this.personRepository.update({ id, thumbnailPath });
+    const previousPerson = await this.personRepository.getById(id);
+    const updatedPerson = await this.personRepository.update({ id, thumbnailPath });
+    if (previousPerson) {
+      await this.eventRepository.emit('PersonUpdate', {
+        person: updatedPerson,
+        previous: previousPerson,
+        actorId: ownerId,
+      });
+    }
 
     return JobStatus.Success;
   }

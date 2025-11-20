@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ExpressionBuilder, Insertable, Kysely, NotNull, Selectable, sql, Updateable } from 'kysely';
 import { jsonObjectFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
+import { Person } from 'src/database';
 import { Chunked, ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
 import { AssetFileType, AssetVisibility, SourceType } from 'src/enum';
 import { DB } from 'src/schema';
@@ -531,12 +532,16 @@ export class PersonRepository {
     }
   }
 
+  getForPeopleDelete(ids: string[]) {
+    return this.getByIds(ids);
+  }
+
   @GenerateSql({ params: [[DummyValue.UUID]] })
   @Chunked()
-  getForPeopleDelete(ids: string[]) {
+  getByIds(ids: string[]): Promise<Person[]> {
     if (ids.length === 0) {
       return Promise.resolve([]);
     }
-    return this.db.selectFrom('person').select(['id', 'thumbnailPath']).where('id', 'in', ids).execute();
+    return this.db.selectFrom('person').selectAll('person').where('person.id', 'in', ids).execute();
   }
 }

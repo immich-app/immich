@@ -4,7 +4,7 @@ import { ClassConstructor } from 'class-transformer';
 import _ from 'lodash';
 import { Socket } from 'socket.io';
 import { SystemConfig } from 'src/config';
-import { Asset } from 'src/database';
+import { Asset, Person } from 'src/database';
 import { EventConfig } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { ImmichWorker, JobStatus, MetadataKey, QueueName, UserAvatarColor, UserStatus } from 'src/enum';
@@ -12,7 +12,7 @@ import { ConfigRepository } from 'src/repositories/config.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { JobItem, JobSource } from 'src/types';
 
-type EmitHandlers = Partial<{ [T in EmitEvent]: Array<EventItem<T>> }>;
+type EmitHandlers = Partial<{ [T in EmitEvent]: Array<Item<T>> }>;
 
 type Item<T extends EmitEvent> = {
   event: T;
@@ -82,6 +82,11 @@ type EventMap = {
   // stack bulk events
   StackDeleteAll: [{ stackIds: string[]; userId: string }];
 
+  // person events
+  PersonCreate: [PersonEvent];
+  PersonUpdate: [PersonUpdateEvent];
+  PersonDelete: [PersonEvent];
+
   // user events
   UserSignup: [{ notify: boolean; id: string; password?: string }];
   UserCreate: [UserEvent];
@@ -106,6 +111,15 @@ type JobErrorEvent = { job: JobItem; error: Error | any };
 
 type QueueStartEvent = {
   name: QueueName;
+};
+
+type PersonEvent = {
+  person: Person;
+  actorId?: string;
+};
+
+type PersonUpdateEvent = PersonEvent & {
+  previous: Person;
 };
 
 type UserEvent = {
@@ -203,14 +217,28 @@ export class EventRepository {
     }
   }
 
+  addListener<T extends EmitEvent>(
+    event: T,
+    handler: EmitHandler<T>,
+    options?: { priority?: number; server?: boolean; label?: string },
+  ): void {
+    this.addHandler({
+      event,
+      handler,
+      priority: options?.priority ?? 0,
+      server: options?.server ?? false,
+      label: options?.label ?? `Dynamic.${event}`,
+    });
+  }
+
   private addHandler<T extends EmitEvent>(item: Item<T>): void {
-    const event = item.event;
-
-    if (!this.emitHandlers[event]) {
-      this.emitHandlers[event] = [];
+    const handlers = (this.emitHandlers[item.event] ||= []) as Array<Item<T>>;
+    const index = handlers.findIndex((existing) => existing.priority > item.priority);
+    if (index === -1) {
+      handlers.push(item);
+    } else {
+      handlers.splice(index, 0, item);
     }
-
-    this.emitHandlers[event].push(item);
   }
 
   emit<T extends EmitEvent>(event: T, ...args: ArgsOf<T>): Promise<void> {

@@ -95,6 +95,8 @@ describe(MediaService.name, () => {
     it('should queue all people with missing thumbnail path', async () => {
       mocks.assetJob.streamForThumbnailJob.mockReturnValue(makeStream([assetStub.image]));
       mocks.person.getAll.mockReturnValue(makeStream([personStub.noThumbnail, personStub.noThumbnail]));
+      mocks.person.getById.mockResolvedValue(personStub.noThumbnail);
+      mocks.person.update.mockResolvedValue(personStub.newThumbnail);
       mocks.person.getRandomFace.mockResolvedValueOnce(faceStub.face1);
 
       await sut.handleQueueGenerateThumbnails({ force: false });

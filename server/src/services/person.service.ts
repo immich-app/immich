@@ -139,7 +139,12 @@ export class PersonService extends BaseService {
       const assetFace = await this.personRepository.getRandomFace(personId);
 
       if (assetFace) {
-        await this.personRepository.update({ id: personId, faceAssetId: assetFace.id });
+        const previous = await this.personRepository.getById(personId);
+        if (!previous) {
+          continue;
+        }
+        const updated = await this.personRepository.update({ id: personId, faceAssetId: assetFace.id });
+        await this.eventRepository.emit('PersonUpdate', { person: updated, previous, actorId: previous.ownerId });
         jobs.push({ name: JobName.PersonGenerateThumbnail, data: { id: personId } });
       }
     }
@@ -181,11 +186,15 @@ export class PersonService extends BaseService {
       color: dto.color,
     });
 
+    await this.eventRepository.emit('PersonCreate', { person, actorId: auth.user.id });
+
     return mapPerson(person);
   }
 
   async update(auth: AuthDto, id: string, dto: PersonUpdateDto): Promise<PersonResponseDto> {
     await this.requireAccess({ auth, permission: Permission.PersonUpdate, ids: [id] });
+
+    const currentPerson = await this.findOrFail(id);
 
     const { name, birthDate, isHidden, featureFaceAssetId: assetId, isFavorite, color } = dto;
     // TODO: set by faceId directly
@@ -218,6 +227,12 @@ export class PersonService extends BaseService {
       await this.jobRepository.queue({ name: JobName.PersonGenerateThumbnail, data: { id } });
     }
 
+    await this.eventRepository.emit('PersonUpdate', {
+      person,
+      previous: currentPerson,
+      actorId: auth.user.id,
+    });
+
     return mapPerson(person);
   }
 
@@ -248,19 +263,31 @@ export class PersonService extends BaseService {
   async deleteAll(auth: AuthDto, { ids }: BulkIdsDto): Promise<void> {
     await this.requireAccess({ auth, permission: Permission.PersonDelete, ids });
     const people = await this.personRepository.getForPeopleDelete(ids);
+    for (const person of people) {
+      await this.eventRepository.emit('PersonDelete', { person, actorId: auth.user.id });
+    }
     await this.removeAllPeople(people);
   }
 
   @Chunked()
-  private async removeAllPeople(people: { id: string; thumbnailPath: string }[]) {
-    await Promise.all(people.map((person) => this.storageRepository.unlink(person.thumbnailPath)));
-    await this.personRepository.delete(people.map((person) => person.id));
+  private async removeAllPeople(people: Person[]) {
+    await Promise.all(
+      people.map(async (person) => {
+        if (person.thumbnailPath) {
+          await this.storageRepository.unlink(person.thumbnailPath);
+        }
+      }),
+    );
+    await this.personRepository.delete(people.map(({ id }) => id));
     this.logger.debug(`Deleted ${people.length} people`);
   }
 
   @OnJob({ name: JobName.PersonCleanup, queue: QueueName.BackgroundTask })
   async handlePersonCleanup(): Promise<JobStatus> {
     const people = await this.personRepository.getAllWithoutFaces();
+    for (const person of people) {
+      await this.eventRepository.emit('PersonDelete', { person, actorId: undefined });
+    }
     await this.removeAllPeople(people);
     return JobStatus.Success;
   }
@@ -530,6 +557,7 @@ export class PersonService extends BaseService {
       this.logger.log(`Creating new person for face ${id}`);
       const newPerson = await this.personRepository.create({ ownerId: face.asset.ownerId, faceAssetId: face.id });
       await this.jobRepository.queue({ name: JobName.PersonGenerateThumbnail, data: { id: newPerson.id } });
+      await this.eventRepository.emit('PersonCreate', { person: newPerson, actorId: face.asset.ownerId });
       personId = newPerson.id;
     }
 
@@ -548,7 +576,16 @@ export class PersonService extends BaseService {
       return JobStatus.Failed;
     }
 
+    const previous = person;
     await this.storageCore.movePersonFile(person, PersonPathType.Face);
+    const updated = await this.personRepository.getById(id);
+    if (updated) {
+      await this.eventRepository.emit('PersonUpdate', {
+        previous,
+        person: updated,
+        actorId: previous.ownerId,
+      });
+    }
 
     return JobStatus.Success;
   }
@@ -595,7 +632,13 @@ export class PersonService extends BaseService {
         }
 
         if (Object.keys(update).length > 0) {
+          const previousPrimary = primaryPerson;
           primaryPerson = await this.personRepository.update(update);
+          await this.eventRepository.emit('PersonUpdate', {
+            person: primaryPerson,
+            previous: previousPrimary,
+            actorId: auth.user.id,
+          });
         }
 
         const mergeName = mergePerson.name || mergePerson.id;
@@ -603,6 +646,7 @@ export class PersonService extends BaseService {
         this.logger.log(`Merging ${mergeName} into ${primaryName}`);
 
         await this.personRepository.reassignFaces(mergeData);
+        await this.eventRepository.emit('PersonDelete', { person: mergePerson, actorId: auth.user.id });
         await this.removeAllPeople([mergePerson]);
 
         this.logger.log(`Merged ${mergeName} into ${primaryName}`);

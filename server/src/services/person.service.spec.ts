@@ -209,6 +209,7 @@ describe(PersonService.name, () => {
     });
 
     it("should update a person's name", async () => {
+      mocks.person.getById.mockResolvedValue(personStub.withName);
       mocks.person.update.mockResolvedValue(personStub.withName);
       mocks.access.person.checkOwnerAccess.mockResolvedValue(new Set(['person-1']));
 
@@ -219,6 +220,7 @@ describe(PersonService.name, () => {
     });
 
     it("should update a person's date of birth", async () => {
+      mocks.person.getById.mockResolvedValue(personStub.withName);
       mocks.person.update.mockResolvedValue(personStub.withBirthDate);
       mocks.access.person.checkOwnerAccess.mockResolvedValue(new Set(['person-1']));
 
@@ -239,6 +241,7 @@ describe(PersonService.name, () => {
     });
 
     it('should update a person visibility', async () => {
+      mocks.person.getById.mockResolvedValue(personStub.withName);
       mocks.person.update.mockResolvedValue(personStub.withName);
       mocks.access.person.checkOwnerAccess.mockResolvedValue(new Set(['person-1']));
 
@@ -249,6 +252,7 @@ describe(PersonService.name, () => {
     });
 
     it('should update a person favorite status', async () => {
+      mocks.person.getById.mockResolvedValue(personStub.withName);
       mocks.person.update.mockResolvedValue(personStub.withName);
       mocks.access.person.checkOwnerAccess.mockResolvedValue(new Set(['person-1']));
 
@@ -259,6 +263,7 @@ describe(PersonService.name, () => {
     });
 
     it("should update a person's thumbnailPath", async () => {
+      mocks.person.getById.mockResolvedValue(personStub.withName);
       mocks.person.update.mockResolvedValue(personStub.withName);
       mocks.person.getFacesByIds.mockResolvedValue([faceStub.face1]);
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([assetStub.image.id]));
@@ -369,6 +374,8 @@ describe(PersonService.name, () => {
 
   describe('createNewFeaturePhoto', () => {
     it('should change person feature photo', async () => {
+      mocks.person.getById.mockResolvedValue(personStub.noName);
+      mocks.person.update.mockResolvedValue(personStub.newThumbnail);
       mocks.person.getRandomFace.mockResolvedValue(faceStub.primaryFace1);
       await sut.createNewFeaturePhoto([personStub.newThumbnail.id]);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
