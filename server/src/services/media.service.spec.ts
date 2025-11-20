@@ -865,6 +865,7 @@ describe(MediaService.name, () => {
       mocks.systemMetadata.get.mockResolvedValue({ image: { fullsize: { enabled: false } } });
       mocks.media.extract.mockResolvedValue({ buffer: extractedBuffer, format: RawExtractedFormat.Jpeg });
       mocks.media.getImageDimensions.mockResolvedValue({ width: 3840, height: 2160 });
+      mocks.media.copyTagGroup.mockResolvedValue(true);
 
       mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.panoramaTif);
 
@@ -888,6 +889,13 @@ describe(MediaService.name, () => {
           processInvalidImages: false,
           raw: rawInfo,
         },
+        expect.any(String),
+      );
+
+      expect(mocks.media.copyTagGroup).toHaveBeenCalledTimes(2);
+      expect(mocks.media.copyTagGroup).toHaveBeenCalledWith(
+        'XMP-GPano',
+        assetStub.panoramaTif.originalPath,
         expect.any(String),
       );
     });
