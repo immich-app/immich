@@ -9,6 +9,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
   Res,
   UploadedFile,
   UseInterceptors,
@@ -21,6 +22,10 @@ import { LicenseKeyDto, LicenseResponseDto } from 'src/dtos/license.dto';
 import { OnboardingDto, OnboardingResponseDto } from 'src/dtos/onboarding.dto';
 import { UserPreferencesResponseDto, UserPreferencesUpdateDto } from 'src/dtos/user-preferences.dto';
 import { CreateProfileImageDto, CreateProfileImageResponseDto } from 'src/dtos/user-profile.dto';
+import {
+  UserUploadsStatsQueryDto,
+  UserUploadsStatsResponseDto,
+} from 'src/dtos/user-stats.dto';
 import { UserAdminResponseDto, UserResponseDto, UserUpdateMeDto } from 'src/dtos/user.dto';
 import { ApiTag, Permission, RouteKey } from 'src/enum';
 import { Auth, Authenticated, FileResponse } from 'src/middleware/auth.guard';
@@ -29,6 +34,7 @@ import { LoggingRepository } from 'src/repositories/logging.repository';
 import { UserService } from 'src/services/user.service';
 import { sendFile } from 'src/utils/file';
 import { UUIDParamDto } from 'src/validation';
+
 
 @ApiTags(ApiTag.Users)
 @Controller(RouteKey.User)
@@ -162,6 +168,23 @@ export class UserController {
   })
   async deleteUserOnboarding(@Auth() auth: AuthDto): Promise<void> {
     await this.service.deleteOnboarding(auth);
+  }
+
+  
+  @Get('me/stats/uploads')
+  @Authenticated({ permission: Permission.UserRead })
+  @Endpoint({
+    summary: 'Get my upload activity (daily)',
+    description:
+      'Return daily upload counts between the given dates for the current user (used by the Account Usage heatmap). ' +
+      'Query params: from=YYYY-MM-DD (optional), to=YYYY-MM-DD (exclusive, optional), tz=IANA timezone like "Europe/Berlin" (optional, default UTC).',
+    history: new HistoryBuilder().added('v2'),
+  })
+  getMyUploadStatsUploads(
+    @Auth() auth: AuthDto,
+    @Query() query: UserUploadsStatsQueryDto,
+  ): Promise<UserUploadsStatsResponseDto> {
+    return this.service.getMyUploadStatsUploads(auth.user.id, query);
   }
 
   @Get(':id')
