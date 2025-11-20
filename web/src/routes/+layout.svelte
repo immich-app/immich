@@ -11,7 +11,6 @@
   import { eventManager } from '$lib/managers/event-manager.svelte';
   import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
   import ServerRestartingModal from '$lib/modals/ServerRestartingModal.svelte';
-  import VersionAnnouncementModal from '$lib/modals/VersionAnnouncementModal.svelte';
   import { user } from '$lib/stores/user.store';
   import {
     closeWebsocketConnection,
@@ -82,13 +81,13 @@
 
   const { release, serverRestarting } = websocketStore;
 
-  const handleRelease = async (release?: ReleaseEvent) => {
+  const handleRelease = (release?: ReleaseEvent) => {
     if (!release?.isAvailable || !$user.isAdmin) {
       return;
     }
 
     const releaseVersion = semverToName(release.releaseVersion);
-    const serverVersion = semverToName(release.serverVersion);
+    // const serverVersion = semverToName(release.serverVersion);
     const type = getReleaseType(release.serverVersion, release.releaseVersion);
 
     if (type === 'none' || type === 'patch' || localStorage.getItem('appVersion') === releaseVersion) {
@@ -96,8 +95,7 @@
     }
 
     try {
-      await modalManager.show(VersionAnnouncementModal, { serverVersion, releaseVersion });
-
+      // await modalManager.show(VersionAnnouncementModal, { serverVersion, releaseVersion });
       localStorage.setItem('appVersion', releaseVersion);
     } catch (error) {
       console.error('Error [VersionAnnouncementBox]:', error);

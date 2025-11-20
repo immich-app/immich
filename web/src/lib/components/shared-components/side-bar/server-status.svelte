@@ -38,7 +38,7 @@
   );
 
   const releaseInfo = $derived.by(() => {
-    if ($release == undefined || $release?.isAvailable || !$user.isAdmin) {
+    if ($release == undefined || !$release?.isAvailable || !$user.isAdmin) {
       return;
     }
 
