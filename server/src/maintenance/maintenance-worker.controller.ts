@@ -47,8 +47,8 @@ export class MaintenanceWorkerController {
 
   @Post('admin/maintenance')
   @MaintenanceRoute()
-  async setMaintenanceMode(@Body() dto: SetMaintenanceModeDto): Promise<void> {
-    await this.service.runAction(dto);
+  setMaintenanceMode(@Body() dto: SetMaintenanceModeDto): void {
+    void this.service.setAction(dto);
   }
 
   @Get('admin/maintenance/backups/list')

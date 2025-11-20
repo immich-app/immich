@@ -151,6 +151,7 @@ export class MaintenanceModule {
     );
 
     await this.maintenanceWorkerService.logSecret();
+    void this.maintenanceWorkerService.runAction(state.action);
   }
 }
 

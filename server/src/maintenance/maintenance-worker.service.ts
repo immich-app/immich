@@ -185,6 +185,14 @@ export class MaintenanceWorkerService {
     }
   }
 
+  async setAction(action: SetMaintenanceModeDto) {
+    this.setStatus({
+      action: action.action,
+    });
+
+    await this.runAction(action);
+  }
+
   async runAction(action: SetMaintenanceModeDto) {
     switch (action.action) {
       case MaintenanceAction.Start:
@@ -225,7 +233,7 @@ export class MaintenanceWorkerService {
     }
   }
 
-  async endMaintenance(): Promise<void> {
+  private async endMaintenance(): Promise<void> {
     const state: MaintenanceModeState = { isMaintenanceMode: false as const };
     await this.systemMetadataRepository.set(SystemMetadataKey.MaintenanceMode, state);
 
@@ -253,11 +261,9 @@ export class MaintenanceWorkerService {
       }),
     );
 
-    this.setStatus({
+    await this.runAction({
       action: MaintenanceAction.End,
     });
-
-    await this.endMaintenance();
   }
 
   async listBackups(): Promise<Record<'backups' | 'failedBackups', string[]>> {
