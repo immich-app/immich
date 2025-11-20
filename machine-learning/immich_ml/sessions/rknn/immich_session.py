@@ -4,7 +4,8 @@ import threading
 import time
 from concurrent.futures import Future, ThreadPoolExecutor
 from pathlib import Path
-from typing import Any, NamedTuple, Optional, Protocol, Sequence
+from types import TracebackType
+from typing import TYPE_CHECKING, Any, NamedTuple, Optional, Protocol, Sequence, cast
 
 import numpy as np
 from numpy.typing import NDArray
@@ -14,7 +15,13 @@ from immich_ml.models.constants import RKNN_SUPPORTED_SOCS
 
 from .native import rknn_pool as _native_mod  # pragma: no cover - compiled extension load
 
-NativeRKNNExecutor = _native_mod.NativeRKNNExecutor  # type: ignore[attr-defined]
+if TYPE_CHECKING:
+    class NativeRKNNExecutor(Protocol):
+        def infer(self, inputs: list[NDArray[np.float32]]) -> list[NDArray[np.float32]]: ...
+
+        def get_io_info(self) -> dict[str, Any]: ...
+else:
+    NativeRKNNExecutor = _native_mod.NativeRKNNExecutor
 
 
 __all__ = [
@@ -46,7 +53,7 @@ model_prefix = Path("rknpu") / soc_name if is_available and soc_name else None
 
 class SessionNode(NamedTuple):
     name: Optional[str]
-    shape: tuple[Any, ...]
+    shape: tuple[int, ...]
 
 
 class RKNNInferenceResult(NamedTuple):
@@ -86,13 +93,13 @@ class RknnPoolExecutor:
             outputs=outputs,
         )
 
-    def submit(self, *inputs: Sequence[NDArray[np.float32]], tag: Any = None) -> Future[RKNNInferenceResult]:
+    def submit(self, inputs: Sequence[NDArray[np.float32]], *, tag: Any = None) -> Future[RKNNInferenceResult]:
         if self._closed:
             raise RuntimeError("Pool is closed")
         return self._executor.submit(self._run_inference, list(inputs), tag)
 
     def put(self, inputs: Sequence[NDArray[np.float32]], *, tag: Any = None) -> Future[RKNNInferenceResult]:
-        return self.submit(*inputs, tag=tag)
+        return self.submit(inputs, tag=tag)
 
     def close(self, *, wait: bool = True) -> None:
         if self._closed:
@@ -107,7 +114,12 @@ class RknnPoolExecutor:
     def __enter__(self) -> "RknnPoolExecutor":
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb) -> None:  # noqa: ANN001
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: TracebackType | None,
+    ) -> None:
         self.close()
 
 
@@ -139,7 +151,7 @@ class RknnSession:
         self.log.info("Loaded RKNN model from %s.", self.model_path)
 
     @property
-    def io_info(self) -> dict:
+    def io_info(self) -> dict[str, Any]:
         return self._io_info
 
     def get_inputs(self) -> list[SessionNode]:
@@ -211,7 +223,10 @@ class RknnSession:
         for entry in self._io_info.get(key, []):
             shape = self._shape_from_entry(entry)
             if key == "inputs" and shape:
-                symbolic_shape: tuple[Any, ...] = ("batch", *shape[1:])
+                # Represent the batch dimension symbolically for readability while
+                # keeping the static type compatible with the ModelSession protocol.
+                symbolic_shape_any: tuple[Any, ...] = ("batch", *shape[1:])
+                symbolic_shape = cast(tuple[int, ...], symbolic_shape_any)
             else:
                 symbolic_shape = shape
             nodes.append(SessionNode(name=entry.get("name"), shape=symbolic_shape))
