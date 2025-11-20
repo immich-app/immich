@@ -595,6 +595,7 @@ export enum JobName {
   PersonCleanup = 'PersonCleanup',
   PersonFileMigration = 'PersonFileMigration',
   PersonGenerateThumbnail = 'PersonGenerateThumbnail',
+  WebhookDelivery = 'WebhookDelivery',
 
   SessionCleanup = 'SessionCleanup',
 

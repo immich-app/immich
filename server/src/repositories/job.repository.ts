@@ -220,6 +220,14 @@ export class JobRepository {
       case JobName.FacialRecognitionQueueAll: {
         return { jobId: JobName.FacialRecognitionQueueAll };
       }
+      case JobName.WebhookDelivery: {
+        const retries = Math.max(1, item.data?.webhook?.retries ?? 3);
+        const delay = Math.max(0, item.data?.webhook?.backoffMs ?? 2000);
+        return {
+          attempts: retries,
+          backoff: { type: 'exponential', delay },
+        };
+      }
       default: {
         return null;
       }

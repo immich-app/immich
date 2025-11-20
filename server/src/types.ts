@@ -21,6 +21,7 @@ import {
   UserMetadataKey,
   VideoCodec,
 } from 'src/enum';
+import { EmitEvent } from 'src/repositories/event.repository';
 
 export type DeepPartial<T> = T extends object ? { [K in keyof T]?: DeepPartial<T[K]> } : T;
 
@@ -282,6 +283,22 @@ export interface IWorkflowJob<T extends PluginTriggerType = PluginTriggerType> {
   event: WorkflowData[T];
 }
 
+export interface IWebhookJob {
+  webhook: {
+    id: string;
+    url: string;
+    method: string;
+    headers: Record<string, string>;
+    timeout: number;
+    retries: number;
+    backoffMs: number;
+  };
+  eventName: EmitEvent;
+  payload: unknown;
+  timestamp: string;
+  deliveryId: string;
+}
+
 export interface JobCounts {
   active: number;
   completed: number;
@@ -343,6 +360,7 @@ export type JobItem =
   | { name: JobName.FacialRecognitionQueueAll; data: INightlyJob }
   | { name: JobName.FacialRecognition; data: IDeferrableJob }
   | { name: JobName.PersonGenerateThumbnail; data: IEntityJob }
+  | { name: JobName.WebhookDelivery; data: IWebhookJob }
 
   // Smart Search
   | { name: JobName.SmartSearchQueueAll; data: IBaseJob }
