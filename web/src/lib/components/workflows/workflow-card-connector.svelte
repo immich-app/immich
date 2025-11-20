@@ -12,7 +12,6 @@
     {#if animated}
       <div class="absolute inset-0 bg-linear-to-b from-transparent via-primary to-transparent flow-pulse"></div>
     {/if}
-    <!-- Connection nodes -->
     <div class="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2">
       <div class="h-2 w-2 rounded-full bg-primary shadow-sm shadow-primary/50"></div>
     </div>

@@ -3,7 +3,7 @@
   import PeoplePickerModal from '$lib/modals/PeoplePickerModal.svelte';
   import { getAssetThumbnailUrl, getPeopleThumbnailUrl } from '$lib/utils';
   import { formatLabel, getComponentFromSchema } from '$lib/utils/workflow';
-  import type { AlbumResponseDto, PersonResponseDto } from '@immich/sdk';
+  import { getAlbumInfo, getPerson, type AlbumResponseDto, type PersonResponseDto } from '@immich/sdk';
   import { Button, Field, Input, MultiSelect, Select, Switch, modalManager, type SelectItem } from '@immich/ui';
   import { mdiPlus } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -36,6 +36,64 @@
   let pickerMetadata = $state<
     Record<string, AlbumResponseDto | PersonResponseDto | AlbumResponseDto[] | PersonResponseDto[]>
   >({});
+
+  // Fetch metadata for existing picker values (albums/people)
+  $effect(() => {
+    if (!components) {
+      return;
+    }
+
+    const fetchMetadata = async () => {
+      const metadataUpdates: Record<
+        string,
+        AlbumResponseDto | PersonResponseDto | AlbumResponseDto[] | PersonResponseDto[]
+      > = {};
+
+      for (const [key, component] of Object.entries(components)) {
+        const value = actualConfig[key];
+        if (!value || pickerMetadata[key]) {
+          continue; // Skip if no value or already loaded
+        }
+
+        const isAlbumPicker = component.subType === 'album-picker';
+        const isPeoplePicker = component.subType === 'people-picker';
+
+        if (!isAlbumPicker && !isPeoplePicker) {
+          continue;
+        }
+
+        try {
+          if (Array.isArray(value) && value.length > 0) {
+            // Multiple selection
+            if (isAlbumPicker) {
+              const albums = await Promise.all(value.map((id) => getAlbumInfo({ id })));
+              metadataUpdates[key] = albums;
+            } else if (isPeoplePicker) {
+              const people = await Promise.all(value.map((id) => getPerson({ id })));
+              metadataUpdates[key] = people;
+            }
+          } else if (typeof value === 'string' && value) {
+            // Single selection
+            if (isAlbumPicker) {
+              const album = await getAlbumInfo({ id: value });
+              metadataUpdates[key] = album;
+            } else if (isPeoplePicker) {
+              const person = await getPerson({ id: value });
+              metadataUpdates[key] = person;
+            }
+          }
+        } catch (error) {
+          console.error(`Failed to fetch metadata for ${key}:`, error);
+        }
+      }
+
+      if (Object.keys(metadataUpdates).length > 0) {
+        pickerMetadata = { ...pickerMetadata, ...metadataUpdates };
+      }
+    };
+
+    void fetchMetadata();
+  });
 
   $effect(() => {
     // Initialize config for actions/filters with empty schemas

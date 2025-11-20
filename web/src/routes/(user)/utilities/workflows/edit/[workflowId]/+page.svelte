@@ -3,7 +3,10 @@
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import SchemaFormFields from '$lib/components/workflow/schema-form/SchemaFormFields.svelte';
   import WorkflowCardConnector from '$lib/components/workflows/workflow-card-connector.svelte';
+  import WorkflowJsonEditor from '$lib/components/workflows/workflow-json-editor.svelte';
   import WorkflowTriggerCard from '$lib/components/workflows/workflow-trigger-card.svelte';
+  import AddWorkflowStepModal from '$lib/modals/AddWorkflowStepModal.svelte';
+  import { WorkflowService, type WorkflowPayload } from '$lib/services/workflow.service';
   import type { PluginActionResponseDto, PluginFilterResponseDto } from '@immich/sdk';
   import {
     Button,
@@ -21,16 +24,19 @@
     Text,
     Textarea,
     VStack,
+    modalManager,
   } from '@immich/ui';
   import {
+    mdiCodeJson,
     mdiContentSave,
-    mdiDragVertical,
     mdiFilterOutline,
     mdiFlashOutline,
     mdiInformationOutline,
     mdiPlayCircleOutline,
+    mdiPlus,
+    mdiTrashCanOutline,
+    mdiViewDashboard,
   } from '@mdi/js';
-  import { isEqual } from 'lodash-es';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
   interface Props {
@@ -41,33 +47,134 @@
 
   const triggers = data.triggers;
   const filters = data.plugins.flatMap((plugin) => plugin.filters);
-  const action = data.plugins.flatMap((plugin) => plugin.actions);
+  const actions = data.plugins.flatMap((plugin) => plugin.actions);
+  const workflowService = new WorkflowService(triggers, filters, actions);
 
   let previousWorkflow = data.workflow;
   let editWorkflow = $state(data.workflow);
 
-  let name: string = $state(editWorkflow.name ?? '');
-  let description: string = $state(editWorkflow.description ?? '');
+  let viewMode: 'visual' | 'json' = $state('visual');
+
+  let name: string = $derived(editWorkflow.name ?? '');
+  let description: string = $derived(editWorkflow.description ?? '');
 
   let selectedTrigger = $state(triggers.find((t) => t.triggerType === editWorkflow.triggerType) ?? triggers[0]);
+
   let triggerType = $derived(selectedTrigger.triggerType);
 
-  let supportFilters = $derived(filters.filter((filter) => filter.supportedContexts.includes(selectedTrigger.context)));
-  let supportActions = $derived(action.filter((action) => action.supportedContexts.includes(selectedTrigger.context)));
+  let supportFilters = $derived(workflowService.getFiltersByContext(selectedTrigger.context));
+  let supportActions = $derived(workflowService.getActionsByContext(selectedTrigger.context));
 
-  let orderedFilters: PluginFilterResponseDto[] = $derived(supportFilters);
-  let orderedActions: PluginActionResponseDto[] = $derived(supportActions);
+  let orderedFilters: PluginFilterResponseDto[] = $derived(
+    workflowService.initializeOrderedFilters(editWorkflow, supportFilters),
+  );
+  let orderedActions: PluginActionResponseDto[] = $derived(
+    workflowService.initializeOrderedActions(editWorkflow, supportActions),
+  );
+  let filterConfigs: Record<string, unknown> = $derived(
+    workflowService.initializeFilterConfigs(editWorkflow, supportFilters),
+  );
+  let actionConfigs: Record<string, unknown> = $derived(
+    workflowService.initializeActionConfigs(editWorkflow, supportActions),
+  );
 
   $effect(() => {
     editWorkflow.triggerType = triggerType;
   });
 
-  const updateWorkflow = async () => {};
+  // Clear filters and actions when trigger changes (context changes)
+  let previousContext = $state<string | undefined>(undefined);
+  $effect(() => {
+    const currentContext = selectedTrigger.context;
+    if (previousContext !== undefined && previousContext !== currentContext) {
+      orderedFilters = [];
+      orderedActions = [];
+      filterConfigs = {};
+      actionConfigs = {};
+    }
+    previousContext = currentContext;
+  });
 
-  let canSave: boolean = $derived(!isEqual(previousWorkflow, editWorkflow));
+  const updateWorkflow = async () => {
+    try {
+      const updated = await workflowService.updateWorkflow(
+        editWorkflow.id,
+        name,
+        description,
+        editWorkflow.enabled,
+        triggerType,
+        orderedFilters,
+        orderedActions,
+        filterConfigs,
+        actionConfigs,
+      );
 
-  let filterConfigs: Record<string, unknown> = $state({});
-  let actionConfigs: Record<string, unknown> = $state({});
+      // Update the previous workflow state to the new values
+      previousWorkflow = updated;
+      editWorkflow = updated;
+    } catch (error) {
+      console.error('Failed to update workflow:', error);
+    }
+  };
+
+  const jsonContent = $derived(
+    workflowService.buildWorkflowPayload(
+      name,
+      description,
+      editWorkflow.enabled,
+      triggerType,
+      orderedFilters,
+      orderedActions,
+      filterConfigs,
+      actionConfigs,
+    ),
+  );
+
+  let jsonEditorContent: WorkflowPayload = $state({
+    name: '',
+    description: '',
+    enabled: false,
+    triggerType: '',
+    filters: [],
+    actions: [],
+  });
+
+  const syncFromJson = () => {
+    const result = workflowService.parseWorkflowJson(JSON.stringify(jsonEditorContent));
+
+    if (!result.success) {
+      return;
+    }
+
+    if (result.data) {
+      name = result.data.name;
+      description = result.data.description;
+      editWorkflow.enabled = result.data.enabled;
+
+      if (result.data.trigger) {
+        selectedTrigger = result.data.trigger;
+      }
+
+      orderedFilters = result.data.filters;
+      orderedActions = result.data.actions;
+      filterConfigs = result.data.filterConfigs;
+      actionConfigs = result.data.actionConfigs;
+    }
+  };
+
+  let hasChanges: boolean = $derived(
+    workflowService.hasWorkflowChanged(
+      previousWorkflow,
+      editWorkflow.enabled,
+      name,
+      description,
+      triggerType,
+      orderedFilters,
+      orderedActions,
+      filterConfigs,
+      actionConfigs,
+    ),
+  );
 
   // Drag and drop handlers
   let draggedFilterIndex: number | null = $state(null);
@@ -128,6 +235,32 @@
     draggedActionIndex = null;
     dragOverActionIndex = null;
   };
+
+  const handleAddStep = async (type?: 'action' | 'filter') => {
+    const result = (await modalManager.show(AddWorkflowStepModal, {
+      filters: supportFilters,
+      actions: supportActions,
+      addedFilters: orderedFilters,
+      addedActions: orderedActions,
+      type,
+    })) as { type: 'filter' | 'action'; item: PluginFilterResponseDto | PluginActionResponseDto } | undefined;
+
+    if (result) {
+      if (result.type === 'filter') {
+        orderedFilters = [...orderedFilters, result.item as PluginFilterResponseDto];
+      } else if (result.type === 'action') {
+        orderedActions = [...orderedActions, result.item as PluginActionResponseDto];
+      }
+    }
+  };
+
+  const handleRemoveFilter = (index: number) => {
+    orderedFilters = orderedFilters.filter((_, i) => i !== index);
+  };
+
+  const handleRemoveAction = (index: number) => {
+    orderedActions = orderedActions.filter((_, i) => i !== index);
+  };
 </script>
 
 {#snippet cardOrder(index: number)}
@@ -151,174 +284,257 @@
   </div>
 {/snippet}
 
+{#snippet emptyCreateButton(title: string, description: string, onclick: () => Promise<void>)}
+  <button
+    type="button"
+    {onclick}
+    class="w-full p-8 rounded-lg border-2 border-dashed border-gray-300 hover:bg-gray-50 dark:hover:bg-gray-900 dark:border-gray-600 transition-all flex flex-col items-center justify-center gap-2"
+  >
+    <Icon icon={mdiPlus} size="32" />
+    <p class="text-sm font-medium">{title}</p>
+    <p class="text-xs">{description}</p>
+  </button>
+{/snippet}
+
 <UserPageLayout title={data.meta.title} scrollbar={false}>
   <!-- <WorkflowSummarySidebar trigger={selectedTrigger} filters={orderedFilters} actions={orderedActions} /> -->
 
   {#snippet buttons()}
     <HStack gap={4} class="me-4">
+      <HStack gap={1} class="border rounded-lg p-1 dark:border-gray-600">
+        <Button
+          size="small"
+          variant={viewMode === 'visual' ? 'outline' : 'ghost'}
+          color={viewMode === 'visual' ? 'primary' : 'secondary'}
+          leadingIcon={mdiViewDashboard}
+          onclick={() => (viewMode = 'visual')}
+        >
+          Visual
+        </Button>
+        <Button
+          size="small"
+          variant={viewMode === 'json' ? 'outline' : 'ghost'}
+          color={viewMode === 'json' ? 'primary' : 'secondary'}
+          leadingIcon={mdiCodeJson}
+          onclick={() => {
+            viewMode = 'json';
+            jsonEditorContent = jsonContent;
+          }}
+        >
+          JSON
+        </Button>
+      </HStack>
+
       <HStack gap={2}>
         <Text class="text-sm">{editWorkflow.enabled ? 'ON' : 'OFF'}</Text>
         <Switch bind:checked={editWorkflow.enabled} />
       </HStack>
-      <Button
-        leadingIcon={mdiContentSave}
-        size="small"
-        shape="round"
-        color="primary"
-        onclick={updateWorkflow}
-        disabled={!canSave}
-      >
+
+      <Button leadingIcon={mdiContentSave} size="small" color="primary" onclick={updateWorkflow} disabled={!hasChanges}>
         {$t('save')}
       </Button>
     </HStack>
   {/snippet}
 
   <Container size="medium" class="p-4" center>
-    <VStack gap={0}>
-      <Card expandable expanded={false}>
-        <CardHeader>
-          <div class="flex place-items-start gap-3">
-            <Icon icon={mdiInformationOutline} size="20" class="mt-1" />
-            <div class="flex flex-col">
-              <CardTitle>Basic information</CardTitle>
-              <CardDescription>Describing the workflow</CardDescription>
-            </div>
-          </div>
-        </CardHeader>
-
-        <CardBody>
-          <VStack gap={6}>
-            <Field class="text-sm" label="Name" for="workflow-name" required>
-              <Input placeholder="Workflow name" bind:value={name} />
-            </Field>
-            <Field class="text-sm" label="Description" for="workflow-description">
-              <Textarea placeholder="Workflow description" bind:value={description} />
-            </Field>
-          </VStack>
-        </CardBody>
-      </Card>
-
-      <div class="my-10 h-px w-[98%] bg-gray-200 dark:bg-gray-700"></div>
-
-      <Card expandable expanded={true}>
-        <CardHeader class="bg-indigo-50 dark:bg-primary-800">
-          <div class="flex items-start gap-3">
-            <Icon icon={mdiFlashOutline} size="20" class="mt-1 text-primary" />
-            <div class="flex flex-col">
-              <CardTitle class="text-left text-primary">Trigger</CardTitle>
-              <CardDescription>An event that kick off the workflow</CardDescription>
-            </div>
-          </div>
-        </CardHeader>
-
-        <CardBody>
-          <div class="grid grid-cols-2 gap-4">
-            {#each triggers as trigger (trigger.name)}
-              <WorkflowTriggerCard
-                {trigger}
-                selected={selectedTrigger.triggerType === trigger.triggerType}
-                onclick={() => (selectedTrigger = trigger)}
-              />
-            {/each}
-          </div>
-        </CardBody>
-      </Card>
-
-      <WorkflowCardConnector />
-
-      <Card expandable expanded={true}>
-        <CardHeader class="bg-amber-50 dark:bg-[#5e4100]">
-          <div class="flex items-start gap-3">
-            <Icon icon={mdiFilterOutline} size="20" class="mt-1 text-warning" />
-            <div class="flex flex-col">
-              <CardTitle class="text-left text-warning">Filter</CardTitle>
-              <CardDescription>Conditions to filter the target assets</CardDescription>
-            </div>
-          </div>
-        </CardHeader>
-
-        <CardBody>
-          <!-- <div class="my-4">
-            <p>Payload</p>
-            <CodeBlock code={JSON.stringify(orderedFilterPayload, null, 2)} lineNumbers></CodeBlock>
-          </div> -->
-
-          {#each orderedFilters as filter, index (filter.id)}
-            {#if index > 0}
-              {@render stepSeparator()}
-            {/if}
-            <div
-              use:dragAndDrop={{
-                index,
-                onDragStart: handleFilterDragStart,
-                onDragEnter: handleFilterDragEnter,
-                onDrop: handleFilterDrop,
-                onDragEnd: handleFilterDragEnd,
-                isDragging: draggedFilterIndex === index,
-                isDragOver: dragOverFilterIndex === index,
-              }}
-              class="mb-4 cursor-move rounded-lg border-2 p-4 transition-all bg-gray-50 dark:bg-subtle border-dashed border-transparent hover:border-gray-300 dark:hover:border-gray-600"
-            >
-              <div class="flex items-start gap-4">
-                {@render cardOrder(index)}
-                <div class="flex-1">
-                  <h1 class="font-bold text-lg mb-3">{filter.title}</h1>
-                  <SchemaFormFields schema={filter.schema} bind:config={filterConfigs} configKey={filter.methodName} />
-                </div>
-                <Icon icon={mdiDragVertical} class="mt-1 text-primary shrink-0" />
+    {#if viewMode === 'json'}
+      <WorkflowJsonEditor
+        jsonContent={jsonEditorContent}
+        onApply={syncFromJson}
+        onContentChange={(content) => (jsonEditorContent = content)}
+      />
+    {:else}
+      <VStack gap={0}>
+        <Card expandable expanded={false}>
+          <CardHeader>
+            <div class="flex place-items-start gap-3">
+              <Icon icon={mdiInformationOutline} size="20" class="mt-1" />
+              <div class="flex flex-col">
+                <CardTitle>Basic information</CardTitle>
+                <CardDescription>Describing the workflow</CardDescription>
               </div>
             </div>
-          {/each}
-        </CardBody>
-      </Card>
+          </CardHeader>
 
-      <WorkflowCardConnector />
+          <CardBody>
+            <VStack gap={6}>
+              <Field class="text-sm" label="Name" for="workflow-name" required>
+                <Input placeholder="Workflow name" bind:value={name} />
+              </Field>
+              <Field class="text-sm" label="Description" for="workflow-description">
+                <Textarea placeholder="Workflow description" bind:value={description} />
+              </Field>
+            </VStack>
+          </CardBody>
+        </Card>
 
-      <Card expandable expanded>
-        <CardHeader class="bg-success/10 dark:bg-teal-950">
-          <div class="flex items-start gap-3">
-            <Icon icon={mdiPlayCircleOutline} size="20" class="mt-1 text-success" />
-            <div class="flex flex-col">
-              <CardTitle class="text-left text-success">Action</CardTitle>
-              <CardDescription>A set of action to perform on the filtered assets</CardDescription>
-            </div>
-          </div>
-        </CardHeader>
+        <div class="my-10 h-px w-[98%] bg-gray-200 dark:bg-gray-700"></div>
 
-        <CardBody>
-          <!-- <div class="my-4">
-            <p>Payload</p>
-            <CodeBlock code={JSON.stringify(orderedActionPayload, null, 2)} lineNumbers></CodeBlock>
-          </div> -->
-
-          {#each orderedActions as action, index (action.id)}
-            {#if index > 0}
-              {@render stepSeparator()}
-            {/if}
-            <div
-              use:dragAndDrop={{
-                index,
-                onDragStart: handleActionDragStart,
-                onDragEnter: handleActionDragEnter,
-                onDrop: handleActionDrop,
-                onDragEnd: handleActionDragEnd,
-                isDragging: draggedActionIndex === index,
-                isDragOver: dragOverActionIndex === index,
-              }}
-              class="mb-4 cursor-move rounded-lg border-2 p-4 transition-all bg-gray-50 dark:bg-subtle border-dashed border-transparent hover:border-gray-300 dark:hover:border-gray-600"
-            >
-              <div class="flex items-start gap-4">
-                {@render cardOrder(index)}
-                <div class="flex-1">
-                  <h1 class="font-bold text-lg mb-3">{action.title}</h1>
-                  <SchemaFormFields schema={action.schema} bind:config={actionConfigs} configKey={action.methodName} />
-                </div>
-                <Icon icon={mdiDragVertical} class="mt-1 text-primary shrink-0" />
+        <Card expandable expanded={true}>
+          <CardHeader class="bg-indigo-50 dark:bg-primary-800">
+            <div class="flex items-start gap-3">
+              <Icon icon={mdiFlashOutline} size="20" class="mt-1 text-primary" />
+              <div class="flex flex-col">
+                <CardTitle class="text-left text-primary">Trigger</CardTitle>
+                <CardDescription>An event that kick off the workflow</CardDescription>
               </div>
             </div>
-          {/each}
-        </CardBody>
-      </Card>
-    </VStack>
+          </CardHeader>
+
+          <CardBody>
+            <div class="grid grid-cols-2 gap-4">
+              {#each triggers as trigger (trigger.name)}
+                <WorkflowTriggerCard
+                  {trigger}
+                  selected={selectedTrigger.triggerType === trigger.triggerType}
+                  onclick={() => (selectedTrigger = trigger)}
+                />
+              {/each}
+            </div>
+          </CardBody>
+        </Card>
+
+        <WorkflowCardConnector />
+
+        <Card expandable expanded={true}>
+          <CardHeader class="bg-amber-50 dark:bg-[#5e4100]">
+            <div class="flex items-start gap-3">
+              <Icon icon={mdiFilterOutline} size="20" class="mt-1 text-warning" />
+              <div class="flex flex-col">
+                <CardTitle class="text-left text-warning">Filter</CardTitle>
+                <CardDescription>Conditions to filter the target assets</CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+
+          <CardBody>
+            {#if orderedFilters.length === 0}
+              {@render emptyCreateButton('Add Filter', 'Click to add a filter condition', () =>
+                handleAddStep('filter'),
+              )}
+            {:else}
+              {#each orderedFilters as filter, index (filter.id)}
+                {#if index > 0}
+                  {@render stepSeparator()}
+                {/if}
+                <div
+                  use:dragAndDrop={{
+                    index,
+                    onDragStart: handleFilterDragStart,
+                    onDragEnter: handleFilterDragEnter,
+                    onDrop: handleFilterDrop,
+                    onDragEnd: handleFilterDragEnd,
+                    isDragging: draggedFilterIndex === index,
+                    isDragOver: dragOverFilterIndex === index,
+                  }}
+                  class="mb-4 cursor-move rounded-lg border-2 p-4 transition-all bg-gray-50 dark:bg-subtle border-dashed border-transparent hover:border-gray-300 dark:hover:border-gray-600"
+                >
+                  <div class="flex items-start gap-4">
+                    {@render cardOrder(index)}
+                    <div class="flex-1">
+                      <h1 class="font-bold text-lg mb-3">{filter.title}</h1>
+                      <SchemaFormFields
+                        schema={filter.schema}
+                        bind:config={filterConfigs}
+                        configKey={filter.methodName}
+                      />
+                    </div>
+                    <div class="flex flex-col gap-2">
+                      <Button
+                        size="medium"
+                        variant="ghost"
+                        color="danger"
+                        onclick={() => handleRemoveFilter(index)}
+                        leadingIcon={mdiTrashCanOutline}
+                      />
+                    </div>
+                  </div>
+                </div>
+              {/each}
+
+              <Button
+                size="small"
+                fullWidth
+                variant="ghost"
+                leadingIcon={mdiPlus}
+                onclick={() => handleAddStep('filter')}
+              >
+                Add more
+              </Button>
+            {/if}
+          </CardBody>
+        </Card>
+
+        <WorkflowCardConnector />
+
+        <Card expandable expanded>
+          <CardHeader class="bg-success/10 dark:bg-teal-950">
+            <div class="flex items-start gap-3">
+              <Icon icon={mdiPlayCircleOutline} size="20" class="mt-1 text-success" />
+              <div class="flex flex-col">
+                <CardTitle class="text-left text-success">Action</CardTitle>
+                <CardDescription>A set of action to perform on the filtered assets</CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+
+          <CardBody>
+            {#if orderedActions.length === 0}
+              {@render emptyCreateButton('Add Action', 'Click to add an action to perform', () =>
+                handleAddStep('action'),
+              )}
+            {:else}
+              {#each orderedActions as action, index (action.id)}
+                {#if index > 0}
+                  {@render stepSeparator()}
+                {/if}
+                <div
+                  use:dragAndDrop={{
+                    index,
+                    onDragStart: handleActionDragStart,
+                    onDragEnter: handleActionDragEnter,
+                    onDrop: handleActionDrop,
+                    onDragEnd: handleActionDragEnd,
+                    isDragging: draggedActionIndex === index,
+                    isDragOver: dragOverActionIndex === index,
+                  }}
+                  class="mb-4 cursor-move rounded-lg border-2 p-4 transition-all bg-gray-50 dark:bg-subtle border-dashed border-transparent hover:border-gray-300 dark:hover:border-gray-600"
+                >
+                  <div class="flex items-start gap-4">
+                    {@render cardOrder(index)}
+                    <div class="flex-1">
+                      <h1 class="font-bold text-lg mb-3">{action.title}</h1>
+                      <SchemaFormFields
+                        schema={action.schema}
+                        bind:config={actionConfigs}
+                        configKey={action.methodName}
+                      />
+                    </div>
+                    <div class="flex flex-col gap-2">
+                      <Button
+                        size="medium"
+                        variant="ghost"
+                        color="danger"
+                        onclick={() => handleRemoveAction(index)}
+                        leadingIcon={mdiTrashCanOutline}
+                      />
+                    </div>
+                  </div>
+                </div>
+              {/each}
+              <Button
+                size="small"
+                fullWidth
+                variant="ghost"
+                leadingIcon={mdiPlus}
+                onclick={() => handleAddStep('action')}
+              >
+                Add more
+              </Button>
+            {/if}
+          </CardBody>
+        </Card>
+      </VStack>
+    {/if}
   </Container>
 </UserPageLayout>

@@ -76,7 +76,7 @@
   };
 
   const handleEditWorkflow = async (workflow: WorkflowResponseDto) => {
-    await goto(`${AppRoute.WORKFLOWS_EDIT}/${workflow.id}`);
+    await goto(`${AppRoute.WORKFLOWS_EDIT}/${workflow.id}?editMode=visual`);
   };
 
   const handleCreateWorkflow = async () => {
@@ -90,7 +90,7 @@
       },
     });
 
-    await goto(`${AppRoute.WORKFLOWS_EDIT}/${workflow.id}`);
+    await goto(`${AppRoute.WORKFLOWS_EDIT}/${workflow.id}?editMode=visual`);
   };
 
   const getTriggerLabel = (triggerType: string) => {

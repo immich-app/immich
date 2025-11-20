@@ -1763,6 +1763,7 @@ export type WorkflowUpdateDto = {
     enabled?: boolean;
     filters?: WorkflowFilterItemDto[];
     name?: string;
+    triggerType: PluginTriggerType;
 };
 /**
  * List all activities

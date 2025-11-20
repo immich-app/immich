@@ -48,6 +48,9 @@ export class WorkflowCreateDto {
 }
 
 export class WorkflowUpdateDto {
+  @ValidateEnum({ enum: PluginTriggerType, name: 'PluginTriggerType' })
+  triggerType!: PluginTriggerType;
+
   @IsString()
   @IsNotEmpty()
   @Optional()

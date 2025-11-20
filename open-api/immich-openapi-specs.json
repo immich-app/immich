@@ -22976,8 +22976,18 @@
           },
           "name": {
             "type": "string"
+          },
+          "triggerType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PluginTriggerType"
+              }
+            ]
           }
         },
+        "required": [
+          "triggerType"
+        ],
         "type": "object"
       }
     }

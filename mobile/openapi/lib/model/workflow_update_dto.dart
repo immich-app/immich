@@ -18,6 +18,7 @@ class WorkflowUpdateDto {
     this.enabled,
     this.filters = const [],
     this.name,
+    required this.triggerType,
   });
 
   List<WorkflowActionItemDto> actions;
@@ -48,13 +49,16 @@ class WorkflowUpdateDto {
   ///
   String? name;
 
+  PluginTriggerType triggerType;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is WorkflowUpdateDto &&
     _deepEquality.equals(other.actions, actions) &&
     other.description == description &&
     other.enabled == enabled &&
     _deepEquality.equals(other.filters, filters) &&
-    other.name == name;
+    other.name == name &&
+    other.triggerType == triggerType;
 
   @override
   int get hashCode =>
@@ -63,10 +67,11 @@ class WorkflowUpdateDto {
     (description == null ? 0 : description!.hashCode) +
     (enabled == null ? 0 : enabled!.hashCode) +
     (filters.hashCode) +
-    (name == null ? 0 : name!.hashCode);
+    (name == null ? 0 : name!.hashCode) +
+    (triggerType.hashCode);
 
   @override
-  String toString() => 'WorkflowUpdateDto[actions=$actions, description=$description, enabled=$enabled, filters=$filters, name=$name]';
+  String toString() => 'WorkflowUpdateDto[actions=$actions, description=$description, enabled=$enabled, filters=$filters, name=$name, triggerType=$triggerType]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -87,6 +92,7 @@ class WorkflowUpdateDto {
     } else {
     //  json[r'name'] = null;
     }
+      json[r'triggerType'] = this.triggerType;
     return json;
   }
 
@@ -104,6 +110,7 @@ class WorkflowUpdateDto {
         enabled: mapValueOfType<bool>(json, r'enabled'),
         filters: WorkflowFilterItemDto.listFromJson(json[r'filters']),
         name: mapValueOfType<String>(json, r'name'),
+        triggerType: PluginTriggerType.fromJson(json[r'triggerType'])!,
       );
     }
     return null;
@@ -151,6 +158,7 @@ class WorkflowUpdateDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
+    'triggerType',
   };
 }
 
