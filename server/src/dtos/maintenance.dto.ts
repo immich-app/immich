@@ -19,7 +19,7 @@ export class MaintenanceAuthDto {
 }
 
 export class MaintenanceStatusResponseDto {
-  action?: MaintenanceAction;
+  action!: MaintenanceAction;
 
   progress?: number;
   task?: string;

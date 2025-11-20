@@ -27,7 +27,9 @@ export class MaintenanceController {
     history: new HistoryBuilder().added('v9.9.9').alpha('v9.9.9'),
   })
   maintenanceStatus(): MaintenanceStatusResponseDto {
-    return {};
+    return {
+      action: MaintenanceAction.End,
+    };
   }
 
   @Post('login')

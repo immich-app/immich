@@ -146,6 +146,10 @@ export class MaintenanceModule {
       this.maintenanceWorkerService.authenticate(client.request.headers),
     );
 
+    this.maintenanceWebsocketRepository.setStatusUpdateFn((status) =>
+      this.maintenanceEphemeralStateRepository.setStatus(status),
+    );
+
     await this.maintenanceWorkerService.logSecret();
   }
 }

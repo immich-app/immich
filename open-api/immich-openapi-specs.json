@@ -16604,6 +16604,9 @@
             "type": "string"
           }
         },
+        "required": [
+          "action"
+        ],
         "type": "object"
       },
       "ManualJobName": {

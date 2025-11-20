@@ -7,7 +7,7 @@ import {
   SetMaintenanceModeDto,
 } from 'src/dtos/maintenance.dto';
 import { ServerConfigDto } from 'src/dtos/server.dto';
-import { ImmichCookie, MaintenanceAction } from 'src/enum';
+import { ImmichCookie } from 'src/enum';
 import { MaintenanceRoute } from 'src/maintenance/maintenance-auth.guard';
 import { MaintenanceWorkerService } from 'src/maintenance/maintenance-worker.service';
 import { GetLoginDetails } from 'src/middleware/auth.guard';
@@ -46,8 +46,6 @@ export class MaintenanceWorkerController {
   @Post('admin/maintenance')
   @MaintenanceRoute()
   async setMaintenanceMode(@Body() dto: SetMaintenanceModeDto): Promise<void> {
-    if (dto.action === MaintenanceAction.End) {
-      await this.service.endMaintenance();
-    }
+    await this.service.runAction(dto);
   }
 }

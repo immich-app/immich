@@ -4,9 +4,9 @@ import { NextFunction, Request, Response } from 'express';
 import { jwtVerify } from 'jose';
 import { readFileSync } from 'node:fs';
 import { IncomingHttpHeaders } from 'node:http';
-import { MaintenanceAuthDto, MaintenanceStatusResponseDto } from 'src/dtos/maintenance.dto';
+import { MaintenanceAuthDto, MaintenanceStatusResponseDto, SetMaintenanceModeDto } from 'src/dtos/maintenance.dto';
 import { ServerConfigDto } from 'src/dtos/server.dto';
-import { ImmichCookie, SystemMetadataKey } from 'src/enum';
+import { DatabaseLock, ImmichCookie, MaintenanceAction, SystemMetadataKey } from 'src/enum';
 import { MaintenanceEphemeralStateRepository } from 'src/maintenance/maintenance-ephemeral-state.repository';
 import { MaintenanceWebsocketRepository } from 'src/maintenance/maintenance-websocket.repository';
 import { AppRepository } from 'src/repositories/app.repository';
@@ -20,7 +20,7 @@ import { type ApiService as _ApiService } from 'src/services/api.service';
 import { type BaseService as _BaseService } from 'src/services/base.service';
 import { type ServerService as _ServerService } from 'src/services/server.service';
 import { MaintenanceModeState } from 'src/types';
-import { deleteBackup, listBackups } from 'src/utils/backups';
+import { deleteBackup, listBackups, restoreBackup } from 'src/utils/backups';
 import { getConfig } from 'src/utils/config';
 import { createMaintenanceLoginUrl } from 'src/utils/maintenance';
 import { getExternalDomain } from 'src/utils/misc';
@@ -35,7 +35,7 @@ export class MaintenanceWorkerService {
     private appRepository: AppRepository,
     private configRepository: ConfigRepository,
     private systemMetadataRepository: SystemMetadataRepository,
-    private maintenanceWorkerRepository: MaintenanceWebsocketRepository,
+    private maintenanceWebsocketRepository: MaintenanceWebsocketRepository,
     private maintenanceEphemeralStateRepository: MaintenanceEphemeralStateRepository,
     private storageRepository: StorageRepository,
     private processRepository: ProcessRepository,
@@ -130,6 +130,17 @@ export class MaintenanceWorkerService {
     return '/usr/src/app/upload';
   }
 
+  setStatus(status: MaintenanceStatusResponseDto): void {
+    this.maintenanceEphemeralStateRepository.setStatus(status);
+    this.maintenanceWebsocketRepository.serverSend('MaintenanceStatus', status);
+    this.maintenanceWebsocketRepository.clientSend('MaintenanceStatusV1', 'private', status);
+    this.maintenanceWebsocketRepository.clientSend(
+      'MaintenanceStatusV1',
+      'public',
+      this.maintenanceEphemeralStateRepository.getPublicStatus(),
+    );
+  }
+
   async logSecret(): Promise<void> {
     const { server } = await this.getConfig({ withCache: true });
 
@@ -153,9 +164,9 @@ export class MaintenanceWorkerService {
   async status(potentiallyJwt?: string): Promise<MaintenanceStatusResponseDto> {
     try {
       await this.login(potentiallyJwt);
-      return this.maintenanceEphemeralStateRepository.getState();
+      return this.maintenanceEphemeralStateRepository.getStatus();
     } catch {
-      return this.maintenanceEphemeralStateRepository.getPublicState();
+      return this.maintenanceEphemeralStateRepository.getPublicStatus();
     }
   }
 
@@ -174,19 +185,84 @@ export class MaintenanceWorkerService {
     }
   }
 
+  async runAction(action: SetMaintenanceModeDto) {
+    switch (action.action) {
+      case MaintenanceAction.Start:
+        return;
+      case MaintenanceAction.End:
+        return this.endMaintenance();
+      case MaintenanceAction.RestoreDatabase:
+        if (!action.restoreBackupFilename) return;
+    }
+
+    const lock = await this.databaseRepository.tryLock(DatabaseLock.MaintenanceOperation);
+    if (!lock) {
+      return;
+    }
+
+    this.logger.log(`Running maintenance action ${action.action}`);
+
+    await this.systemMetadataRepository.set(SystemMetadataKey.MaintenanceMode, {
+      isMaintenanceMode: true,
+      secret: this.maintenanceEphemeralStateRepository.getSecret(),
+      action: {
+        action: MaintenanceAction.Start,
+      },
+    });
+
+    try {
+      switch (action.action) {
+        case MaintenanceAction.RestoreDatabase:
+          await this.restoreBackup(action.restoreBackupFilename);
+          break;
+      }
+    } catch (error) {
+      this.logger.error(`Encountered error running action: ${error}`);
+      this.setStatus({
+        action: action.action,
+        error: '' + error,
+      });
+    }
+  }
+
   async endMaintenance(): Promise<void> {
     const state: MaintenanceModeState = { isMaintenanceMode: false as const };
     await this.systemMetadataRepository.set(SystemMetadataKey.MaintenanceMode, state);
 
     // => corresponds to notification.service.ts#onAppRestart
-    this.maintenanceWorkerRepository.clientBroadcast('AppRestartV1', state);
-    this.maintenanceWorkerRepository.serverSend('AppRestart', state);
+    this.maintenanceWebsocketRepository.clientBroadcast('AppRestartV1', state);
+    this.maintenanceWebsocketRepository.serverSend('AppRestart', state);
     this.appRepository.exitApp();
   }
 
   /**
    * Backups
    */
+
+  private async restoreBackup(filename: string): Promise<void> {
+    this.setStatus({
+      action: MaintenanceAction.RestoreDatabase,
+      progress: 0,
+    });
+
+    await restoreBackup(this.backupRepos, filename, (task, progress) =>
+      this.setStatus({
+        action: MaintenanceAction.RestoreDatabase,
+        progress,
+        task,
+      }),
+    );
+
+    this.setStatus({
+      action: MaintenanceAction.End,
+    });
+
+    // => corresponds to notification.service.ts#onAppRestart
+    const state: MaintenanceModeState = { isMaintenanceMode: false };
+    this.maintenanceWebsocketRepository.clientBroadcast('AppRestartV1', state);
+    this.maintenanceWebsocketRepository.serverSend('AppRestart', state);
+    this.appRepository.exitApp();
+  }
 
   async listBackups(): Promise<Record<'backups' | 'failedBackups', string[]>> {
     return listBackups(this.backupRepos);

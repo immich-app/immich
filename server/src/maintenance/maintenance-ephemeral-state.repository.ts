@@ -1,10 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { MaintenanceStatusResponseDto } from 'src/dtos/maintenance.dto';
+import { MaintenanceAction } from 'src/enum';
 
 @Injectable()
 export class MaintenanceEphemeralStateRepository {
   #secret: string = null!;
-  #state: MaintenanceStatusResponseDto = {};
+  #state: MaintenanceStatusResponseDto = {
+    action: MaintenanceAction.Start,
+  };
 
   setSecret(secret: string) {
     this.#secret = secret;
@@ -14,15 +17,15 @@ export class MaintenanceEphemeralStateRepository {
     return this.#secret;
   }
 
-  setState(state: MaintenanceStatusResponseDto) {
+  setStatus(state: MaintenanceStatusResponseDto) {
     this.#state = state;
   }
 
-  getState(): MaintenanceStatusResponseDto {
+  getStatus(): MaintenanceStatusResponseDto {
     return this.#state;
   }
 
-  getPublicState(): MaintenanceStatusResponseDto {
+  getPublicStatus(): MaintenanceStatusResponseDto {
     const state = structuredClone(this.#state);
 
     if (state.error) {
