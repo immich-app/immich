@@ -436,6 +436,7 @@ export class AssetRepository {
                     .whereRef('stacked.id', '!=', 'stack.primaryAssetId')
                     .where('stacked.deletedAt', 'is', null)
                     .where('stacked.visibility', '=', AssetVisibility.Timeline)
+                    .orderBy('stacked.fileCreatedAt', 'asc')
                     .groupBy('stack.id')
                     .as('stacked_assets'),
                 (join) => join.on('stack.id', 'is not', null),
