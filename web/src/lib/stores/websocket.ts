@@ -1,6 +1,7 @@
 import { page } from '$app/state';
 import { AppRoute } from '$lib/constants';
 import { authManager } from '$lib/managers/auth-manager.svelte';
+import { eventManager } from '$lib/managers/event-manager.svelte';
 import { notificationManager } from '$lib/stores/notification-manager.svelte';
 import { createEventEmitter } from '$lib/utils/eventemitter';
 import { type AssetResponseDto, type NotificationDto, type ServerVersionResponseDto } from '@immich/sdk';
@@ -63,6 +64,7 @@ websocket
   .on('AppRestartV1', (mode) => websocketStore.serverRestarting.set(mode))
   .on('on_new_release', (releaseVersion) => websocketStore.release.set(releaseVersion))
   .on('on_session_delete', () => authManager.logout())
+  .on('on_user_delete', (id) => eventManager.emit('UserAdminDeleted', { id }))
   .on('on_notification', () => notificationManager.refresh())
   .on('connect_error', (e) => console.log('Websocket Connect Error', e));
 

@@ -1,45 +1,35 @@
 <script lang="ts">
-  import { page } from '$app/stores';
   import HeaderButton from '$lib/components/HeaderButton.svelte';
   import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
   import OnEvents from '$lib/components/OnEvents.svelte';
   import TableButton from '$lib/components/TableButton.svelte';
   import { getUserAdminActions, getUserAdminsActions } from '$lib/services/user-admin.service';
   import { locale } from '$lib/stores/preferences.store';
-  import { websocketEvents } from '$lib/stores/websocket';
   import { getByteUnitString } from '$lib/utils/byte-units';
   import { searchUsersAdmin, type UserAdminResponseDto } from '@immich/sdk';
-  import { HStack, Icon, toastManager } from '@immich/ui';
+  import { HStack, Icon } from '@immich/ui';
   import { mdiInfinity } from '@mdi/js';
-  import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
 
-  interface Props {
+  type Props = {
     data: PageData;
-  }
+  };
 
   let { data }: Props = $props();
 
-  let allUsers: UserAdminResponseDto[] = $state([]);
+  let allUsers: UserAdminResponseDto[] = $derived(data.allUsers);
 
   const refresh = async () => {
     allUsers = await searchUsersAdmin({ withDeleted: true });
   };
 
-  const onDeleteSuccess = (userId: string) => {
+  const onUserAdminDeleted = ({ id: userId }: { id: string }) => {
     const user = allUsers.find(({ id }) => id === userId);
     if (user) {
       allUsers = allUsers.filter((user) => user.id !== userId);
-      toastManager.success($t('admin.user_successfully_removed', { values: { email: user.email } }));
     }
   };
-
-  onMount(() => {
-    allUsers = $page.data.allUsers;
-
-    return websocketEvents.on('on_user_delete', onDeleteSuccess);
-  });
 
   const UserAdminsActions = $derived(getUserAdminsActions($t));
 
@@ -53,6 +43,7 @@
   onUserAdminUpdate={onUpdate}
   onUserAdminDelete={onUpdate}
   onUserAdminRestore={onUpdate}
+  {onUserAdminDeleted}
 />
 
 <AdminPageLayout title={data.meta.title}>

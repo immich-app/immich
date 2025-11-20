@@ -26,8 +26,11 @@ export type Events = {
 
   UserAdminCreate: [UserAdminResponseDto];
   UserAdminUpdate: [UserAdminResponseDto];
-  UserAdminDelete: [UserAdminResponseDto];
   UserAdminRestore: [UserAdminResponseDto];
+  // soft deleted
+  UserAdminDelete: [UserAdminResponseDto];
+  // confirmed permanently deleted from server
+  UserAdminDeleted: [{ id: string }];
 
   SystemConfigUpdate: [SystemConfigDto];
 
