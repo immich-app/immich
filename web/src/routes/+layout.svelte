@@ -4,6 +4,7 @@
   import { shortcut } from '$lib/actions/shortcut';
   import DownloadPanel from '$lib/components/asset-viewer/download-panel.svelte';
   import ErrorLayout from '$lib/components/layouts/ErrorLayout.svelte';
+  import OnEvents from '$lib/components/OnEvents.svelte';
   import AppleHeader from '$lib/components/shared-components/apple-header.svelte';
   import NavigationLoadingBar from '$lib/components/shared-components/navigation-loading-bar.svelte';
   import UploadPanel from '$lib/components/shared-components/upload-panel.svelte';
@@ -11,13 +12,10 @@
   import { eventManager } from '$lib/managers/event-manager.svelte';
   import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
   import ServerRestartingModal from '$lib/modals/ServerRestartingModal.svelte';
+  import VersionAnnouncementModal from '$lib/modals/VersionAnnouncementModal.svelte';
   import { user } from '$lib/stores/user.store';
-  import {
-    closeWebsocketConnection,
-    openWebsocketConnection,
-    websocketStore,
-    type ReleaseEvent,
-  } from '$lib/stores/websocket';
+  import { closeWebsocketConnection, openWebsocketConnection, websocketStore } from '$lib/stores/websocket';
+  import type { ReleaseEvent } from '$lib/types';
   import { copyToClipboard, getReleaseType, semverToName } from '$lib/utils';
   import { maintenanceShouldRedirect } from '$lib/utils/maintenance';
   import { isAssetViewerRoute } from '$lib/utils/navigation';
@@ -79,15 +77,15 @@
     }
   });
 
-  const { release, serverRestarting } = websocketStore;
+  const { serverRestarting } = websocketStore;
 
-  const handleRelease = (release?: ReleaseEvent) => {
-    if (!release?.isAvailable || !$user.isAdmin) {
+  const onReleaseEvent = async (release: ReleaseEvent) => {
+    if (!release.isAvailable || !$user.isAdmin) {
       return;
     }
 
     const releaseVersion = semverToName(release.releaseVersion);
-    // const serverVersion = semverToName(release.serverVersion);
+    const serverVersion = semverToName(release.serverVersion);
     const type = getReleaseType(release.serverVersion, release.releaseVersion);
 
     if (type === 'none' || type === 'patch' || localStorage.getItem('appVersion') === releaseVersion) {
@@ -95,14 +93,12 @@
     }
 
     try {
-      // await modalManager.show(VersionAnnouncementModal, { serverVersion, releaseVersion });
+      await modalManager.show(VersionAnnouncementModal, { serverVersion, releaseVersion });
       localStorage.setItem('appVersion', releaseVersion);
     } catch (error) {
       console.error('Error [VersionAnnouncementBox]:', error);
     }
   };
-
-  $effect(() => void handleRelease($release));
 
   serverRestarting.subscribe((isRestarting) => {
     if (!isRestarting) {
@@ -125,6 +121,8 @@
     }
   });
 </script>
+
+<OnEvents {onReleaseEvent} />
 
 <svelte:head>
   <title>{page.data.meta?.title || 'Web'} - Immich</title>

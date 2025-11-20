@@ -1,4 +1,5 @@
 import type { ThemeSetting } from '$lib/managers/theme-manager.svelte';
+import type { ReleaseEvent } from '$lib/types';
 import type {
   AlbumResponseDto,
   LibraryResponseDto,
@@ -34,6 +35,8 @@ export type Events = {
   LibraryCreate: [LibraryResponseDto];
   LibraryUpdate: [LibraryResponseDto];
   LibraryDelete: [{ id: string }];
+
+  ReleaseEvent: [ReleaseEvent];
 };
 
 type Listener<EventMap extends Record<string, unknown[]>, K extends keyof EventMap> = (...params: EventMap[K]) => void;
