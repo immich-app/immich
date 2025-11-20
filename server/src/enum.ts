@@ -5,6 +5,7 @@ export enum AuthType {
 
 export enum ImmichCookie {
   AccessToken = 'immich_access_token',
+  MaintenanceToken = 'immich_maintenance_token',
   AuthType = 'immich_auth_type',
   IsAuthenticated = 'immich_is_authenticated',
   SharedLinkToken = 'immich_shared_link_token',
@@ -146,6 +147,8 @@ export enum Permission {
   TimelineRead = 'timeline.read',
   TimelineDownload = 'timeline.download',
 
+  Maintenance = 'maintenance',
+
   MemoryCreate = 'memory.create',
   MemoryRead = 'memory.read',
   MemoryUpdate = 'memory.update',
@@ -176,6 +179,11 @@ export enum Permission {
   PinCodeCreate = 'pinCode.create',
   PinCodeUpdate = 'pinCode.update',
   PinCodeDelete = 'pinCode.delete',
+
+  PluginCreate = 'plugin.create',
+  PluginRead = 'plugin.read',
+  PluginUpdate = 'plugin.update',
+  PluginDelete = 'plugin.delete',
 
   ServerAbout = 'server.about',
   ServerApkLinks = 'server.apkLinks',
@@ -240,6 +248,11 @@ export enum Permission {
   UserProfileImageUpdate = 'userProfileImage.update',
   UserProfileImageDelete = 'userProfileImage.delete',
 
+  WorkflowCreate = 'workflow.create',
+  WorkflowRead = 'workflow.read',
+  WorkflowUpdate = 'workflow.update',
+  WorkflowDelete = 'workflow.delete',
+
   AdminUserCreate = 'adminUser.create',
   AdminUserRead = 'adminUser.read',
   AdminUserUpdate = 'adminUser.update',
@@ -275,6 +288,7 @@ export enum SystemMetadataKey {
   FacialRecognitionState = 'facial-recognition-state',
   MemoriesState = 'memories-state',
   AdminOnboarding = 'admin-onboarding',
+  MaintenanceMode = 'maintenance-mode',
   SystemConfig = 'system-config',
   SystemFlags = 'system-flags',
   VersionCheckState = 'version-check-state',
@@ -467,6 +481,7 @@ export enum ImmichEnvironment {
 
 export enum ImmichWorker {
   Api = 'api',
+  Maintenance = 'maintenance',
   Microservices = 'microservices',
 }
 
@@ -525,6 +540,7 @@ export enum QueueName {
   Notification = 'notifications',
   BackupDatabase = 'backupDatabase',
   Ocr = 'ocr',
+  Workflow = 'workflow',
 }
 
 export enum JobName {
@@ -601,9 +617,12 @@ export enum JobName {
   // OCR
   OcrQueueAll = 'OcrQueueAll',
   Ocr = 'Ocr',
+
+  // Workflow
+  WorkflowRun = 'WorkflowRun',
 }
 
-export enum JobCommand {
+export enum QueueCommand {
   Start = 'start',
   Pause = 'pause',
   Resume = 'resume',
@@ -639,6 +658,15 @@ export enum DatabaseLock {
   GetSystemConfig = 69,
   BackupDatabase = 42,
   MemoryCreation = 777,
+}
+
+export enum MaintenanceAction {
+  Start = 'start',
+  End = 'end',
+}
+
+export enum ExitCode {
+  AppRestart = 7,
 }
 
 export enum SyncRequestType {
@@ -787,12 +815,14 @@ export enum ApiTag {
   Faces = 'Faces',
   Jobs = 'Jobs',
   Libraries = 'Libraries',
+  Maintenance = 'Maintenance (admin)',
   Map = 'Map',
   Memories = 'Memories',
   Notifications = 'Notifications',
   NotificationsAdmin = 'Notifications (admin)',
   Partners = 'Partners',
   People = 'People',
+  Plugins = 'Plugins',
   Search = 'Search',
   Server = 'Server',
   Sessions = 'Sessions',
@@ -807,4 +837,16 @@ export enum ApiTag {
   UsersAdmin = 'Users (admin)',
   Users = 'Users',
   Views = 'Views',
+  Workflows = 'Workflows',
+}
+
+export enum PluginContext {
+  Asset = 'asset',
+  Album = 'album',
+  Person = 'person',
+}
+
+export enum PluginTriggerType {
+  AssetCreate = 'AssetCreate',
+  PersonRecognized = 'PersonRecognized',
 }

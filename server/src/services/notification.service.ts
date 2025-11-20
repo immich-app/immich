@@ -114,6 +114,15 @@ export class NotificationService extends BaseService {
     this.websocketRepository.serverSend('ConfigUpdate', { oldConfig, newConfig });
   }
 
+  @OnEvent({ name: 'AppRestart' })
+  onAppRestart(state: ArgOf<'AppRestart'>) {
+    this.websocketRepository.clientBroadcast('AppRestartV1', {
+      isMaintenanceMode: state.isMaintenanceMode,
+    });
+
+    this.websocketRepository.serverSend('AppRestart', state);
+  }
+
   @OnEvent({ name: 'ConfigValidate', priority: -100 })
   async onConfigValidate({ oldConfig, newConfig }: ArgOf<'ConfigValidate'>) {
     try {

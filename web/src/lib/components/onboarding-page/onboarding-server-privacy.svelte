@@ -1,7 +1,7 @@
 <script lang="ts">
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
+  import { systemConfigManager } from '$lib/managers/system-config-manager.svelte';
   import { handleSystemConfigSave } from '$lib/services/system-config.service';
-  import { systemConfigManager } from '$lib/stores/system-config-manager.svelte';
   import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
 

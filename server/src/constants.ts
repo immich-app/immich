@@ -150,6 +150,7 @@ export const endpointTags: Record<ApiTag, string> = {
     'Queues and background jobs are used for processing tasks asynchronously. Queues can be paused and resumed as needed.',
   [ApiTag.Libraries]:
     'An external library is made up of input file paths or expressions that are scanned for asset files. Discovered files are automatically imported. Assets much be unique within a library, but can be duplicated across libraries. Each user has a default upload library, and can have one or more external libraries.',
+  [ApiTag.Maintenance]: 'Maintenance mode allows you to put Immich in a read-only state to perform various operations.',
   [ApiTag.Map]:
     'Map endpoints include supplemental functionality related to geolocation, such as reverse geocoding and retrieving map markers for assets with geolocation data.',
   [ApiTag.Memories]:
@@ -160,6 +161,8 @@ export const endpointTags: Record<ApiTag, string> = {
   [ApiTag.Partners]: 'A partner is a link with another user that allows sharing of assets between two users.',
   [ApiTag.People]:
     'A person is a collection of faces, which can be favorited and named. A person can also be merged into another person. People are automatically created via the face recognition job.',
+  [ApiTag.Plugins]:
+    'A plugin is an installed module that makes filters and actions available for the workflow feature.',
   [ApiTag.Search]:
     'Endpoints related to searching assets via text, smart search, optical character recognition (OCR), and other filters like person, album, and other metadata. Search endpoints usually support pagination and sorting.',
   [ApiTag.Server]:
@@ -185,4 +188,6 @@ export const endpointTags: Record<ApiTag, string> = {
   [ApiTag.Users]:
     'Endpoints for viewing and updating the current users, including product key information, profile picture data, onboarding progress, and more.',
   [ApiTag.Views]: 'Endpoints for specialized views, such as the folder view.',
+  [ApiTag.Workflows]:
+    'A workflow is a set of actions that run whenever a triggering event occurs. Workflows also can include filters to further limit execution.',
 };

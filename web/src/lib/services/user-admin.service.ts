@@ -1,11 +1,11 @@
 import { goto } from '$app/navigation';
 import { eventManager } from '$lib/managers/event-manager.svelte';
+import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
 import PasswordResetSuccessModal from '$lib/modals/PasswordResetSuccessModal.svelte';
 import UserCreateModal from '$lib/modals/UserCreateModal.svelte';
 import UserDeleteConfirmModal from '$lib/modals/UserDeleteConfirmModal.svelte';
 import UserEditModal from '$lib/modals/UserEditModal.svelte';
 import UserRestoreConfirmModal from '$lib/modals/UserRestoreConfirmModal.svelte';
-import { serverConfig } from '$lib/stores/system-config-manager.svelte';
 import { user as authUser } from '$lib/stores/user.store';
 import type { ActionItem } from '$lib/types';
 import { handleError } from '$lib/utils/handle-error';
@@ -37,9 +37,7 @@ import type { MessageFormatter } from 'svelte-i18n';
 import { get } from 'svelte/store';
 
 const getDeleteDate = (deletedAt: string): Date =>
-  DateTime.fromISO(deletedAt)
-    .plus({ days: get(serverConfig).userDeleteDelay })
-    .toJSDate();
+  DateTime.fromISO(deletedAt).plus({ days: serverConfigManager.value.userDeleteDelay }).toJSDate();
 
 export const getUserAdminsActions = ($t: MessageFormatter) => {
   const Create: ActionItem = {

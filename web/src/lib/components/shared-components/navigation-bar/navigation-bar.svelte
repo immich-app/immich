@@ -11,10 +11,10 @@
   import { AppRoute } from '$lib/constants';
   import SkipLink from '$lib/elements/SkipLink.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
+  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { mobileDevice } from '$lib/stores/mobile-device.svelte';
   import { notificationManager } from '$lib/stores/notification-manager.svelte';
   import { sidebarStore } from '$lib/stores/sidebar.svelte';
-  import { featureFlags } from '$lib/stores/system-config-manager.svelte';
   import { user } from '$lib/stores/user.store';
   import { Button, IconButton, Logo } from '@immich/ui';
   import { mdiBellBadge, mdiBellOutline, mdiMagnify, mdiMenu, mdiTrayArrowUp } from '@mdi/js';
@@ -82,13 +82,13 @@
     </div>
     <div class="flex justify-between gap-4 lg:gap-8 pe-6">
       <div class="hidden w-full max-w-5xl flex-1 tall:ps-0 sm:block">
-        {#if $featureFlags.search}
+        {#if featureFlagsManager.value.search}
           <SearchBar grayTheme={true} />
         {/if}
       </div>
 
       <section class="flex place-items-center justify-end gap-1 md:gap-2 w-full sm:w-auto">
-        {#if $featureFlags.search}
+        {#if featureFlagsManager.value.search}
           <IconButton
             color="secondary"
             shape="round"

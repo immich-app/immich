@@ -5,11 +5,11 @@
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import DuplicatesCompareControl from '$lib/components/utilities-page/duplicates/duplicates-compare-control.svelte';
   import { AppRoute } from '$lib/constants';
+  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import DuplicatesInformationModal from '$lib/modals/DuplicatesInformationModal.svelte';
   import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { locale } from '$lib/stores/preferences.store';
-  import { featureFlags } from '$lib/stores/system-config-manager.svelte';
   import { stackAssets } from '$lib/utils/asset-utils';
   import { suggestDuplicate } from '$lib/utils/duplicate-utils';
   import { handleError } from '$lib/utils/handle-error';
@@ -92,7 +92,7 @@
       return;
     }
 
-    const message = $featureFlags.trash
+    const message = featureFlagsManager.value.trash
       ? $t('assets_moved_to_trash_count', { values: { count: trashedCount } })
       : $t('permanently_deleted_assets_count', { values: { count: trashedCount } });
     toastManager.success(message);
@@ -101,7 +101,7 @@
   const handleResolve = async (duplicateId: string, duplicateAssetIds: string[], trashIds: string[]) => {
     return withConfirmation(
       async () => {
-        await deleteAssets({ assetBulkDeleteDto: { ids: trashIds, force: !$featureFlags.trash } });
+        await deleteAssets({ assetBulkDeleteDto: { ids: trashIds, force: !featureFlagsManager.value.trash } });
         await updateAssets({ assetBulkUpdateDto: { ids: duplicateAssetIds, duplicateId: null } });
 
         duplicates = duplicates.filter((duplicate) => duplicate.duplicateId !== duplicateId);
@@ -109,8 +109,8 @@
         deletedNotification(trashIds.length);
         await correctDuplicatesIndexAndGo(duplicatesIndex);
       },
-      trashIds.length > 0 && !$featureFlags.trash ? $t('delete_duplicates_confirmation') : undefined,
-      trashIds.length > 0 && !$featureFlags.trash ? $t('permanently_delete') : undefined,
+      trashIds.length > 0 && !featureFlagsManager.value.trash ? $t('delete_duplicates_confirmation') : undefined,
+      trashIds.length > 0 && !featureFlagsManager.value.trash ? $t('permanently_delete') : undefined,
     );
   };
 
@@ -129,7 +129,7 @@
     );
 
     let prompt, confirmText;
-    if ($featureFlags.trash) {
+    if (featureFlagsManager.value.trash) {
       prompt = $t('bulk_trash_duplicates_confirmation', { values: { count: idsToDelete.length } });
       confirmText = $t('confirm');
     } else {
@@ -139,7 +139,7 @@
 
     return withConfirmation(
       async () => {
-        await deleteAssets({ assetBulkDeleteDto: { ids: idsToDelete, force: !$featureFlags.trash } });
+        await deleteAssets({ assetBulkDeleteDto: { ids: idsToDelete, force: !featureFlagsManager.value.trash } });
         await updateAssets({
           assetBulkUpdateDto: {
             ids: [...idsToDelete, ...idsToKeep.filter((id): id is string => !!id)],

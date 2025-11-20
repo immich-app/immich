@@ -65,7 +65,7 @@
     removeAction={AssetAction.SET_VISIBILITY_TIMELINE}
   >
     {#snippet empty()}
-      <EmptyPlaceholder text={$t('no_locked_photos_message')} title={$t('nothing_here_yet')} />
+      <EmptyPlaceholder text={$t('no_locked_photos_message')} title={$t('nothing_here_yet')} class="mt-10 mx-auto" />
     {/snippet}
   </Timeline>
 </UserPageLayout>

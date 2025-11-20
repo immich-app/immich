@@ -1,18 +1,21 @@
 import { downloadManager } from '$lib/managers/download-manager.svelte';
 import { eventManager } from '$lib/managers/event-manager.svelte';
-import { type FeatureFlags } from '$lib/stores/system-config-manager.svelte';
 import type { ActionItem } from '$lib/types';
 import { copyToClipboard } from '$lib/utils';
 import { downloadBlob } from '$lib/utils/asset-utils';
 import { handleError } from '$lib/utils/handle-error';
 import { getFormatter } from '$lib/utils/i18n';
-import { getConfig, updateConfig, type SystemConfigDto } from '@immich/sdk';
+import { getConfig, updateConfig, type ServerFeaturesDto, type SystemConfigDto } from '@immich/sdk';
 import { toastManager } from '@immich/ui';
 import { mdiContentCopy, mdiDownload, mdiUpload } from '@mdi/js';
 import { isEqual } from 'lodash-es';
 import type { MessageFormatter } from 'svelte-i18n';
 
-export const getSystemConfigActions = ($t: MessageFormatter, $featureFlags: FeatureFlags, config: SystemConfigDto) => {
+export const getSystemConfigActions = (
+  $t: MessageFormatter,
+  featureFlags: ServerFeaturesDto,
+  config: SystemConfigDto,
+) => {
   const CopyToClipboard: ActionItem = {
     title: $t('copy_to_clipboard'),
     icon: mdiContentCopy,
@@ -28,7 +31,7 @@ export const getSystemConfigActions = ($t: MessageFormatter, $featureFlags: Feat
   const Upload: ActionItem = {
     title: $t('import_from_json'),
     icon: mdiUpload,
-    $if: () => !$featureFlags.configFile,
+    $if: () => !featureFlags.configFile,
     onSelect: () => handleUploadConfig(),
   };
 

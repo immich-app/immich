@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { featureFlags } from '$lib/stores/system-config-manager.svelte';
+  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { resetPinCode } from '@immich/sdk';
   import {
@@ -24,7 +24,7 @@
 
   let { onClose }: Props = $props();
 
-  let passwordLoginEnabled = $derived($featureFlags.passwordLogin);
+  let passwordLoginEnabled = $derived(featureFlagsManager.value.passwordLogin);
   let password = $state('');
 
   const handleReset = async () => {
