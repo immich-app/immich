@@ -1,5 +1,5 @@
 import { Kysely } from 'kysely';
-import { JobName, SharedLinkType } from 'src/enum';
+import { AssetFileType, JobName, SharedLinkType } from 'src/enum';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { AlbumRepository } from 'src/repositories/album.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
@@ -184,7 +184,17 @@ describe(AssetService.name, () => {
       jobRepo.queue.mockResolvedValue();
 
       const { user } = await ctx.newUser();
-      const { asset: oldAsset } = await ctx.newAsset({ ownerId: user.id, sidecarPath: '/path/to/my/sidecar.xmp' });
+
+      const { asset: oldAssetWithoutSidecar } = await ctx.newAsset({ ownerId: user.id });
+
+      const sidecarFile = await ctx.newAssetFile({
+        assetId: oldAssetWithoutSidecar.id,
+        path: '/path/to/my/sidecar.xmp',
+        type: AssetFileType.Sidecar,
+      });
+
+      const oldAsset = { ...oldAssetWithoutSidecar, files: [sidecarFile] };
+
       const { asset: newAsset } = await ctx.newAsset({ ownerId: user.id });
 
       await ctx.newExif({ assetId: oldAsset.id, description: 'foo' });

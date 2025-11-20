@@ -8,9 +8,10 @@ import { constants } from 'node:fs/promises';
 import { join, parse } from 'node:path';
 import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
-import { Asset, AssetFace } from 'src/database';
+import { Asset, AssetFace, AssetFile } from 'src/database';
 import { OnEvent, OnJob } from 'src/decorators';
 import {
+  AssetFileType,
   AssetType,
   AssetVisibility,
   DatabaseLock,
@@ -29,6 +30,7 @@ import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
 import { PersonTable } from 'src/schema/tables/person.table';
 import { BaseService } from 'src/services/base.service';
 import { JobItem, JobOf } from 'src/types';
+import { getAssetFiles } from 'src/utils/asset.util';
 import { isAssetChecksumConstraint } from 'src/utils/database';
 import { isFaceImportEnabled } from 'src/utils/misc';
 import { upsertTags } from 'src/utils/tag';
@@ -360,17 +362,21 @@ export class MetadataService extends BaseService {
       break;
     }
 
-    const isChanged = sidecarPath !== asset.sidecarPath;
+    const existingSidecar = asset.files?.find((file) => file.type === AssetFileType.Sidecar) ?? null;
+
+    const isChanged = sidecarPath !== existingSidecar?.path;
 
     this.logger.debug(
-      `Sidecar check found old=${asset.sidecarPath}, new=${sidecarPath} will ${isChanged ? 'update' : 'do nothing for'}  asset ${asset.id}: ${asset.originalPath}`,
+      `Sidecar check found old=${existingSidecar?.path}, new=${sidecarPath} will ${isChanged ? 'update' : 'do nothing for'}  asset ${asset.id}: ${asset.originalPath}`,
     );
 
     if (!isChanged) {
       return JobStatus.Skipped;
     }
 
-    await this.assetRepository.update({ id: asset.id, sidecarPath });
+    await (sidecarPath === null
+      ? this.assetRepository.deleteFile({ assetId: asset.id, type: AssetFileType.Sidecar })
+      : this.assetRepository.upsertFile({ assetId: asset.id, type: AssetFileType.Sidecar, path: sidecarPath }));
 
     return JobStatus.Success;
   }
@@ -395,7 +401,7 @@ export class MetadataService extends BaseService {
 
     const tagsList = (asset.tags || []).map((tag) => tag.value);
 
-    const sidecarPath = asset.sidecarPath || `${asset.originalPath}.xmp`;
+    const sidecarPath = asset.files[0]?.path || `${asset.originalPath}.xmp`;
     const exif = _.omitBy(
       <Tags>{
         Description: description,
@@ -415,18 +421,20 @@ export class MetadataService extends BaseService {
 
     await this.metadataRepository.writeTags(sidecarPath, exif);
 
-    if (!asset.sidecarPath) {
-      await this.assetRepository.update({ id, sidecarPath });
+    if (asset.files.length === 0) {
+      await this.assetRepository.upsertFile({ assetId: id, type: AssetFileType.Sidecar, path: sidecarPath });
     }
 
     return JobStatus.Success;
   }
 
-  private getSidecarCandidates({ sidecarPath, originalPath }: { sidecarPath: string | null; originalPath: string }) {
+  private getSidecarCandidates({ files, originalPath }: { files: AssetFile[] | null; originalPath: string }) {
     const candidates: string[] = [];
 
-    if (sidecarPath) {
-      candidates.push(sidecarPath);
+    const existingSidecar = files?.find((file) => file.type === AssetFileType.Sidecar);
+
+    if (existingSidecar) {
+      candidates.push(existingSidecar.path);
     }
 
     const assetPath = parse(originalPath);
@@ -457,26 +465,24 @@ export class MetadataService extends BaseService {
     return { width, height };
   }
 
-  private getExifTags(asset: {
-    originalPath: string;
-    sidecarPath: string | null;
-    type: AssetType;
-  }): Promise<ImmichTags> {
-    if (!asset.sidecarPath && asset.type === AssetType.Image) {
-      return this.metadataRepository.readTags(asset.originalPath);
+  private async getExifTags(asset: { originalPath: string; files: AssetFile[]; type: AssetType }): Promise<ImmichTags> {
+    if (asset.type === AssetType.Image) {
+      const hasSidecar = asset.files?.some(({ type }) => type === AssetFileType.Sidecar);
+
+      if (!hasSidecar) {
+        return this.metadataRepository.readTags(asset.originalPath);
+      }
     }
 
-    return this.mergeExifTags(asset);
-  }
+    if (asset.files && asset.files.length > 1) {
+      throw new Error(`Asset ${asset.originalPath} has multiple sidecar files`);
+    }
 
-  private async mergeExifTags(asset: {
-    originalPath: string;
-    sidecarPath: string | null;
-    type: AssetType;
-  }): Promise<ImmichTags> {
+    const sidecarFile = getAssetFiles(asset.files).sidecarFile;
+
     const [mediaTags, sidecarTags, videoTags] = await Promise.all([
       this.metadataRepository.readTags(asset.originalPath),
-      asset.sidecarPath ? this.metadataRepository.readTags(asset.sidecarPath) : null,
+      sidecarFile ? this.metadataRepository.readTags(sidecarFile.path) : null,
       asset.type === AssetType.Video ? this.getVideoTags(asset.originalPath) : null,
     ]);
 
