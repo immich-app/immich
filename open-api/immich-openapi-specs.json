@@ -372,6 +372,103 @@
         "x-immich-state": "Alpha"
       }
     },
+    "/admin/maintenance/admin/maintenance/backups/list": {
+      "get": {
+        "description": "Get the list of the successful and failed backups",
+        "operationId": "listBackups",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MaintenanceListBackupsResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "List backups",
+        "tags": [
+          "Maintenance (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v9.9.9",
+            "state": "Added"
+          },
+          {
+            "version": "v9.9.9",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "maintenance",
+        "x-immich-state": "Alpha"
+      }
+    },
+    "/admin/maintenance/admin/maintenance/backups/{filename}": {
+      "delete": {
+        "description": "Delete a backup by its filename",
+        "operationId": "deleteBackup",
+        "parameters": [
+          {
+            "name": "filename",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Delete backup",
+        "tags": [
+          "Maintenance (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v9.9.9",
+            "state": "Added"
+          },
+          {
+            "version": "v9.9.9",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "maintenance",
+        "x-immich-state": "Alpha"
+      }
+    },
     "/admin/maintenance/admin/maintenance/status": {
       "get": {
         "description": "Fetch information about the currently running maintenance action.",
@@ -16573,6 +16670,27 @@
         },
         "required": [
           "username"
+        ],
+        "type": "object"
+      },
+      "MaintenanceListBackupsResponseDto": {
+        "properties": {
+          "backups": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "failedBackups": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "backups",
+          "failedBackups"
         ],
         "type": "object"
       },

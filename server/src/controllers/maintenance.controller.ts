@@ -1,10 +1,11 @@
-import { BadRequestException, Body, Controller, Get, Post, Res } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, Param, Post, Res } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
   MaintenanceAuthDto,
+  MaintenanceListBackupsResponseDto,
   MaintenanceLoginDto,
   MaintenanceStatusResponseDto,
   SetMaintenanceModeDto,
@@ -14,6 +15,7 @@ import { Auth, Authenticated, GetLoginDetails } from 'src/middleware/auth.guard'
 import { LoginDetails } from 'src/services/auth.service';
 import { MaintenanceService } from 'src/services/maintenance.service';
 import { respondWithCookie } from 'src/utils/response';
+import { FilenameParamDto } from 'src/validation';
 
 @ApiTags(ApiTag.Maintenance)
 @Controller('admin/maintenance')
@@ -62,5 +64,27 @@ export class MaintenanceController {
         values: [{ key: ImmichCookie.MaintenanceToken, value: jwt }],
       });
     }
+  }
+
+  @Get('admin/maintenance/backups/list')
+  @Endpoint({
+    summary: 'List backups',
+    description: 'Get the list of the successful and failed backups',
+    history: new HistoryBuilder().added('v9.9.9').alpha('v9.9.9'),
+  })
+  @Authenticated({ permission: Permission.Maintenance, admin: true })
+  listBackups(): Promise<MaintenanceListBackupsResponseDto> {
+    return this.service.listBackups();
+  }
+
+  @Delete('admin/maintenance/backups/:filename')
+  @Endpoint({
+    summary: 'Delete backup',
+    description: 'Delete a backup by its filename',
+    history: new HistoryBuilder().added('v9.9.9').alpha('v9.9.9'),
+  })
+  @Authenticated({ permission: Permission.Maintenance, admin: true })
+  async deleteBackup(@Param() { filename }: FilenameParamDto): Promise<void> {
+    return this.service.deleteBackup(filename);
   }
 }

@@ -25,3 +25,8 @@ export class MaintenanceStatusResponseDto {
   task?: string;
   error?: string;
 }
+
+export class MaintenanceListBackupsResponseDto {
+  backups!: string[];
+  failedBackups!: string[];
+}

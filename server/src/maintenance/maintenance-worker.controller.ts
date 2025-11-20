@@ -1,7 +1,8 @@
-import { Body, Controller, Get, Post, Req, Res } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Req, Res } from '@nestjs/common';
 import { Request, Response } from 'express';
 import {
   MaintenanceAuthDto,
+  MaintenanceListBackupsResponseDto,
   MaintenanceLoginDto,
   MaintenanceStatusResponseDto,
   SetMaintenanceModeDto,
@@ -13,6 +14,7 @@ import { MaintenanceWorkerService } from 'src/maintenance/maintenance-worker.ser
 import { GetLoginDetails } from 'src/middleware/auth.guard';
 import { LoginDetails } from 'src/services/auth.service';
 import { respondWithCookie } from 'src/utils/response';
+import { FilenameParamDto } from 'src/validation';
 
 @Controller()
 export class MaintenanceWorkerController {
@@ -47,5 +49,17 @@ export class MaintenanceWorkerController {
   @MaintenanceRoute()
   async setMaintenanceMode(@Body() dto: SetMaintenanceModeDto): Promise<void> {
     await this.service.runAction(dto);
+  }
+
+  @Get('admin/maintenance/backups/list')
+  @MaintenanceRoute()
+  listBackups(): Promise<MaintenanceListBackupsResponseDto> {
+    return this.service.listBackups();
+  }
+
+  @Delete('admin/maintenance/backups/:filename')
+  @MaintenanceRoute()
+  async deleteBackup(@Param() { filename }: FilenameParamDto): Promise<void> {
+    return this.service.deleteBackup(filename);
   }
 }

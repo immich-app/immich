@@ -96,6 +96,13 @@ export class UUIDAssetIDParamDto {
   assetId!: string;
 }
 
+export class FilenameParamDto {
+  @IsNotEmpty()
+  @IsString()
+  @ApiProperty({ format: 'string' })
+  filename!: string;
+}
+
 type PinCodeOptions = { optional?: boolean } & OptionalOptions;
 export const PinCode = (options?: PinCodeOptions & ApiPropertyOptions) => {
   const { optional, nullable, emptyToNull, ...apiPropertyOptions } = {
