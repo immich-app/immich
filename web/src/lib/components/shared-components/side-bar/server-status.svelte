@@ -1,8 +1,10 @@
 <script lang="ts">
+  import { releaseManager } from '$lib/managers/release-manager.svelte';
   import ServerAboutModal from '$lib/modals/ServerAboutModal.svelte';
   import { user } from '$lib/stores/user.store';
   import { userInteraction } from '$lib/stores/user.svelte';
   import { websocketStore } from '$lib/stores/websocket';
+  import type { ReleaseEvent } from '$lib/types';
   import { semverToName } from '$lib/utils';
   import { requestServerInfo } from '$lib/utils/auth';
   import {
@@ -16,7 +18,7 @@
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
 
-  const { serverVersion, connected, release } = websocketStore;
+  const { serverVersion, connected } = websocketStore;
 
   let info: ServerAboutResponseDto | undefined = $state();
   let versions: ServerVersionHistoryResponseDto[] = $state([]);
@@ -37,20 +39,22 @@
     $serverVersion ? `v${$serverVersion.major}.${$serverVersion.minor}.${$serverVersion.patch}` : null,
   );
 
-  const releaseInfo = $derived.by(() => {
-    if ($release == undefined || $release?.isAvailable || !$user.isAdmin) {
+  const getReleaseInfo = (release?: ReleaseEvent) => {
+    if (!release || !release?.isAvailable || !$user.isAdmin) {
       return;
     }
 
-    const availableVersion = semverToName($release.releaseVersion);
-    const serverVersion = semverToName($release.serverVersion);
+    const availableVersion = semverToName(release.releaseVersion);
+    const serverVersion = semverToName(release.serverVersion);
 
     if (serverVersion === availableVersion) {
       return;
     }
 
     return { availableVersion, releaseUrl: `https://github.com/immich-app/immich/releases/tag/${availableVersion}` };
-  });
+  };
+
+  const releaseInfo = $derived(getReleaseInfo(releaseManager.value));
 </script>
 
 <div
