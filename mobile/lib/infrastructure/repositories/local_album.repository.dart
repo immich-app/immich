@@ -300,7 +300,22 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
       return Future.value();
     }
 
+    // Reset checksum if asset changed
     await _db.batch((batch) async {
+      for (final asset in localAssets) {
+        final companion = LocalAssetEntityCompanion(
+          checksum: const Value(null),
+          adjustmentTime: Value(asset.adjustmentTime),
+        );
+        batch.update(
+          _db.localAssetEntity,
+          companion,
+          where: (row) => row.id.equals(asset.id) & row.adjustmentTime.equalsNullable(asset.adjustmentTime).not(),
+        );
+      }
+    });
+
+    return _db.batch((batch) async {
       for (final asset in localAssets) {
         final companion = LocalAssetEntityCompanion.insert(
           name: asset.name,
@@ -314,35 +329,43 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
           checksum: const Value(null),
           orientation: Value(asset.orientation),
           isFavorite: Value(asset.isFavorite),
-          adjustmentTime: Value(asset.adjustmentTime),
           latitude: Value(asset.latitude),
           longitude: Value(asset.longitude),
+          adjustmentTime: Value(asset.adjustmentTime),
         );
         batch.insert<$LocalAssetEntityTable, LocalAssetEntityData>(
           _db.localAssetEntity,
           companion.copyWith(checksum: const Value(null)),
-          onConflict: DoUpdate(
-            (old) => companion,
-            where: (old) => CurrentPlatform.isAndroid
-                ? old.updatedAt.isNotValue(asset.updatedAt)
-                : old.latitude.equalsNullable(asset.latitude).not() |
-                      old.longitude.equalsNullable(asset.longitude).not() |
-                      old.createdAt.isNotValue(asset.createdAt),
-          ),
+          onConflict: DoUpdate((old) => companion),
         );
       }
     });
+  }
 
-    // Reset checksum if asset changed
+  Future<void> _upsertAssetsAndroid(Iterable<LocalAsset> localAssets) async {
+    if (localAssets.isEmpty) {
+      return Future.value();
+    }
+
     return _db.batch((batch) async {
       for (final asset in localAssets) {
-        final companion = const LocalAssetEntityCompanion(checksum: Value(null));
-        batch.update(
+        final companion = LocalAssetEntityCompanion.insert(
+          name: asset.name,
+          type: asset.type,
+          createdAt: Value(asset.createdAt),
+          updatedAt: Value(asset.updatedAt),
+          width: Value(asset.width),
+          height: Value(asset.height),
+          durationInSeconds: Value(asset.durationInSeconds),
+          id: asset.id,
+          checksum: const Value(null),
+          orientation: Value(asset.orientation),
+          isFavorite: Value(asset.isFavorite),
+        );
+        batch.insert<$LocalAssetEntityTable, LocalAssetEntityData>(
           _db.localAssetEntity,
           companion,
-          where: (row) => CurrentPlatform.isIOS
-              ? row.adjustmentTime.equalsNullable(asset.adjustmentTime).not()
-              : row.updatedAt.isNotValue(asset.updatedAt),
+          onConflict: DoUpdate((_) => companion, where: (old) => old.updatedAt.isNotValue(asset.updatedAt)),
         );
       }
     });
