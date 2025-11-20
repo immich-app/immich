@@ -27,7 +27,7 @@ class MaintenanceAdminApi {
   /// * [String] filename (required):
   Future<Response> deleteBackupWithHttpInfo(String filename,) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/admin/maintenance/admin/maintenance/backups/{filename}'
+    final apiPath = r'/admin/maintenance/backups/{filename}'
       .replaceAll('{filename}', filename);
 
     // ignore: prefer_final_locals
@@ -72,7 +72,7 @@ class MaintenanceAdminApi {
   /// Note: This method returns the HTTP [Response].
   Future<Response> listBackupsWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/admin/maintenance/admin/maintenance/backups/list';
+    final apiPath = r'/admin/maintenance/backups/list';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -176,7 +176,7 @@ class MaintenanceAdminApi {
   /// Note: This method returns the HTTP [Response].
   Future<Response> maintenanceStatusWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/admin/maintenance/admin/maintenance/status';
+    final apiPath = r'/admin/maintenance/status';
 
     // ignore: prefer_final_locals
     Object? postBody;

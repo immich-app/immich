@@ -48,17 +48,17 @@ export type MaintenanceListBackupsResponseDto = {
     backups: string[];
     failedBackups: string[];
 };
-export type MaintenanceStatusResponseDto = {
-    action: MaintenanceAction;
-    error?: string;
-    progress?: number;
-    task?: string;
-};
 export type MaintenanceLoginDto = {
     token?: string;
 };
 export type MaintenanceAuthDto = {
     username: string;
+};
+export type MaintenanceStatusResponseDto = {
+    action: MaintenanceAction;
+    error?: string;
+    progress?: number;
+    task?: string;
 };
 export type NotificationCreateDto = {
     data?: object;
@@ -1862,7 +1862,7 @@ export function listBackups(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: MaintenanceListBackupsResponseDto;
-    }>("/admin/maintenance/admin/maintenance/backups/list", {
+    }>("/admin/maintenance/backups/list", {
         ...opts
     }));
 }
@@ -1872,20 +1872,9 @@ export function listBackups(opts?: Oazapfts.RequestOpts) {
 export function deleteBackup({ filename }: {
     filename: string;
 }, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchText(`/admin/maintenance/admin/maintenance/backups/${encodeURIComponent(filename)}`, {
+    return oazapfts.ok(oazapfts.fetchText(`/admin/maintenance/backups/${encodeURIComponent(filename)}`, {
         ...opts,
         method: "DELETE"
-    }));
-}
-/**
- * Get maintenance mode status
- */
-export function maintenanceStatus(opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: MaintenanceStatusResponseDto;
-    }>("/admin/maintenance/admin/maintenance/status", {
-        ...opts
     }));
 }
 /**
@@ -1902,6 +1891,17 @@ export function maintenanceLogin({ maintenanceLoginDto }: {
         method: "POST",
         body: maintenanceLoginDto
     })));
+}
+/**
+ * Get maintenance mode status
+ */
+export function maintenanceStatus(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: MaintenanceStatusResponseDto;
+    }>("/admin/maintenance/status", {
+        ...opts
+    }));
 }
 /**
  * Create a notification

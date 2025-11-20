@@ -3,5 +3,5 @@ import { writable } from 'svelte/store';
 
 export const maintenanceStore = {
   auth: writable<MaintenanceAuthDto>(),
-  status: writable<MaintenanceStatusResponseDto>(),
+  status: writable<MaintenanceStatusResponseDto | undefined>(),
 };

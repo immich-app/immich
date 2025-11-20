@@ -22,7 +22,7 @@ import { FilenameParamDto } from 'src/validation';
 export class MaintenanceController {
   constructor(private service: MaintenanceService) {}
 
-  @Get('admin/maintenance/status')
+  @Get('status')
   @Endpoint({
     summary: 'Get maintenance mode status',
     description: 'Fetch information about the currently running maintenance action.',
@@ -66,7 +66,7 @@ export class MaintenanceController {
     }
   }
 
-  @Get('admin/maintenance/backups/list')
+  @Get('backups/list')
   @Endpoint({
     summary: 'List backups',
     description: 'Get the list of the successful and failed backups',
@@ -77,7 +77,7 @@ export class MaintenanceController {
     return this.service.listBackups();
   }
 
-  @Delete('admin/maintenance/backups/:filename')
+  @Delete('backups/:filename')
   @Endpoint({
     summary: 'Delete backup',
     description: 'Delete a backup by its filename',

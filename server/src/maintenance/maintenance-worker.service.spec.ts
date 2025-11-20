@@ -245,6 +245,7 @@ describe(MaintenanceWorkerService.name, () => {
 
       expect(maintenanceEphemeralStateRepositoryMock.setStatus).toHaveBeenCalledWith({
         action: MaintenanceAction.RestoreDatabase,
+        task: 'ready',
         progress: expect.any(Number),
       });
 

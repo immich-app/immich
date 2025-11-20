@@ -250,6 +250,7 @@ export class MaintenanceWorkerService {
   private async restoreBackup(filename: string): Promise<void> {
     this.setStatus({
       action: MaintenanceAction.RestoreDatabase,
+      task: 'ready',
       progress: 0,
     });
 

@@ -1326,6 +1326,8 @@
   "maintenance_end": "End maintenance mode",
   "maintenance_end_error": "Failed to end maintenance mode.",
   "maintenance_logged_in_as": "Currently logged in as {user}",
+  "maintenance_task_backup": "Creating a backup of the existing database...",
+  "maintenance_task_restore": "Restoring the chosen backup...",
   "maintenance_title": "Temporarily Unavailable",
   "make": "Make",
   "manage_geolocation": "Manage location",
