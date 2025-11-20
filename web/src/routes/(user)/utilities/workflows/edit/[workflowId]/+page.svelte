@@ -3,7 +3,6 @@
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import SchemaFormFields from '$lib/components/workflow/schema-form/SchemaFormFields.svelte';
   import WorkflowCardConnector from '$lib/components/workflows/workflow-card-connector.svelte';
-  import WorkflowSummarySidebar from '$lib/components/workflows/workflow-summary-sidebar.svelte';
   import WorkflowTriggerCard from '$lib/components/workflows/workflow-trigger-card.svelte';
   import type { PluginActionResponseDto, PluginFilterResponseDto } from '@immich/sdk';
   import {
@@ -131,8 +130,29 @@
   };
 </script>
 
+{#snippet cardOrder(index: number)}
+  <div
+    class="h-8 w-8 rounded-lg borderflex place-items-center place-content-center shrink-0 border dark:border-gray-500"
+  >
+    <p class="font-mono text-sm font-bold">
+      {index + 1}
+    </p>
+  </div>
+{/snippet}
+
+{#snippet stepSeparator()}
+  <div class="relative flex justify-center py-4">
+    <div class="absolute inset-0 flex items-center" aria-hidden="true">
+      <div class="w-full border-t-2 border-dashed border-gray-300 dark:border-gray-700"></div>
+    </div>
+    <div class="relative flex justify-center text-xs uppercase">
+      <span class="bg-white dark:bg-black px-2 font-semibold text-gray-500">THEN</span>
+    </div>
+  </div>
+{/snippet}
+
 <UserPageLayout title={data.meta.title} scrollbar={false}>
-  <WorkflowSummarySidebar trigger={selectedTrigger} filters={orderedFilters} actions={orderedActions} />
+  <!-- <WorkflowSummarySidebar trigger={selectedTrigger} filters={orderedFilters} actions={orderedActions} /> -->
 
   {#snippet buttons()}
     <HStack gap={4} class="me-4">
@@ -181,7 +201,7 @@
       <div class="my-10 h-px w-[98%] bg-gray-200 dark:bg-gray-700"></div>
 
       <Card expandable expanded={true}>
-        <CardHeader class="bg-indigo-50 dark:bg-primary/20">
+        <CardHeader class="bg-indigo-50 dark:bg-primary-800">
           <div class="flex items-start gap-3">
             <Icon icon={mdiFlashOutline} size="20" class="mt-1 text-primary" />
             <div class="flex flex-col">
@@ -206,7 +226,7 @@
 
       <WorkflowCardConnector />
 
-      <Card expandable expanded={false}>
+      <Card expandable expanded={true}>
         <CardHeader class="bg-amber-50 dark:bg-[#5e4100]">
           <div class="flex items-start gap-3">
             <Icon icon={mdiFilterOutline} size="20" class="mt-1 text-warning" />
@@ -225,14 +245,7 @@
 
           {#each orderedFilters as filter, index (filter.id)}
             {#if index > 0}
-              <div class="relative flex justify-center py-4">
-                <div class="absolute inset-0 flex items-center" aria-hidden="true">
-                  <div class="w-full border-t-2 border-dashed border-muted"></div>
-                </div>
-                <div class="relative flex justify-center text-xs uppercase">
-                  <span class="bg-white dark:bg-gray-900 px-2 font-semibold">THEN</span>
-                </div>
-              </div>
+              {@render stepSeparator()}
             {/if}
             <div
               use:dragAndDrop={{
@@ -244,14 +257,10 @@
                 isDragging: draggedFilterIndex === index,
                 isDragOver: dragOverFilterIndex === index,
               }}
-              class="mb-4 cursor-move rounded-lg border-2 p-4 transition-all bg-gray-50 dark:bg-gray-950/20 border-dashed border-transparent hover:border-gray-300 dark:hover:border-gray-600"
+              class="mb-4 cursor-move rounded-lg border-2 p-4 transition-all bg-gray-50 dark:bg-subtle border-dashed border-transparent hover:border-gray-300 dark:hover:border-gray-600"
             >
               <div class="flex items-start gap-4">
-                <div class="h-8 w-8 rounded-lg borderflex place-items-center place-content-center shrink-0 border">
-                  <p class="font-mono text-sm font-bold">
-                    {index + 1}
-                  </p>
-                </div>
+                {@render cardOrder(index)}
                 <div class="flex-1">
                   <h1 class="font-bold text-lg mb-3">{filter.title}</h1>
                   <SchemaFormFields schema={filter.schema} bind:config={filterConfigs} configKey={filter.methodName} />
@@ -265,7 +274,7 @@
 
       <WorkflowCardConnector />
 
-      <Card expandable>
+      <Card expandable expanded>
         <CardHeader class="bg-success/10 dark:bg-teal-950">
           <div class="flex items-start gap-3">
             <Icon icon={mdiPlayCircleOutline} size="20" class="mt-1 text-success" />
@@ -284,14 +293,7 @@
 
           {#each orderedActions as action, index (action.id)}
             {#if index > 0}
-              <div class="relative flex justify-center py-4">
-                <div class="absolute inset-0 flex items-center" aria-hidden="true">
-                  <div class="w-full border-t-2 border-dashed border-muted"></div>
-                </div>
-                <div class="relative flex justify-center text-xs uppercase">
-                  <span class="bg-white dark:bg-gray-900 px-2 font-semibold">THEN</span>
-                </div>
-              </div>
+              {@render stepSeparator()}
             {/if}
             <div
               use:dragAndDrop={{
@@ -303,14 +305,10 @@
                 isDragging: draggedActionIndex === index,
                 isDragOver: dragOverActionIndex === index,
               }}
-              class="mb-4 cursor-move rounded-lg border-2 p-4 transition-all bg-gray-50 dark:bg-gray-950/20 border-dashed border-transparent hover:border-gray-300 dark:hover:border-gray-600"
+              class="mb-4 cursor-move rounded-lg border-2 p-4 transition-all bg-gray-50 dark:bg-subtle border-dashed border-transparent hover:border-gray-300 dark:hover:border-gray-600"
             >
               <div class="flex items-start gap-4">
-                <div class="h-8 w-8 rounded-lg borderflex place-items-center place-content-center shrink-0 border">
-                  <p class="font-mono text-sm font-bold">
-                    {index + 1}
-                  </p>
-                </div>
+                {@render cardOrder(index)}
                 <div class="flex-1">
                   <h1 class="font-bold text-lg mb-3">{action.title}</h1>
                   <SchemaFormFields schema={action.schema} bind:config={actionConfigs} configKey={action.methodName} />
