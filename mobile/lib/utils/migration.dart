@@ -81,7 +81,7 @@ Future<void> migrateDatabaseIfNeeded(Isar db, Drift drift) async {
   }
 
   if (version < 19 && Store.isBetaTimelineEnabled) {
-    if (!await _populateUpdatedAtTime(drift)) {
+    if (!await _populateLocalAssetTime(drift)) {
       return;
     }
   }
@@ -229,7 +229,7 @@ Future<void> _migrateDeviceAsset(Isar db) async {
   });
 }
 
-Future<bool> _populateUpdatedAtTime(Drift db) async {
+Future<bool> _populateLocalAssetTime(Drift db) async {
   try {
     final nativeApi = NativeSyncApi();
     final albums = await nativeApi.getAlbums();
@@ -240,6 +240,9 @@ Future<bool> _populateUpdatedAtTime(Drift db) async {
           batch.update(
             db.localAssetEntity,
             LocalAssetEntityCompanion(
+              longitude: Value(asset.longitude),
+              latitude: Value(asset.latitude),
+              adjustmentTime: Value(tryFromSecondsSinceEpoch(asset.adjustmentTime, isUtc: true)),
               updatedAt: Value(tryFromSecondsSinceEpoch(asset.updatedAt, isUtc: true) ?? DateTime.timestamp()),
             ),
             where: (t) => t.id.equals(asset.id),
@@ -250,7 +253,7 @@ Future<bool> _populateUpdatedAtTime(Drift db) async {
 
     return true;
   } catch (error) {
-    dPrint(() => "[MIGRATION] Error while populating updatedAt time: $error");
+    dPrint(() => "[MIGRATION] Error while populating asset time: $error");
     return false;
   }
 }
