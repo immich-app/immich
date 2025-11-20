@@ -3,6 +3,10 @@ import { Readable, Writable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 import { ProcessRepository } from 'src/repositories/process.repository';
 
+function* data() {
+  yield 'Hello, world!';
+}
+
 describe(ProcessRepository.name, () => {
   let sut: ProcessRepository;
   let sink: Writable;
@@ -39,10 +43,6 @@ describe(ProcessRepository.name, () => {
     });
 
     it('should accept stdin / output stdout', async () => {
-      async function* data() {
-        yield 'Hello, world!';
-      }
-
       let output = '';
       const sink = new Writable({
         write(chunk, _encoding, callback) {
