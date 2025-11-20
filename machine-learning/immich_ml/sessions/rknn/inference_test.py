@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import List
 
 import numpy as np
+import numpy.typing as npt
 
 try:
     from .immich_session import RknnSession
@@ -43,6 +44,7 @@ def main() -> None:
 
     gen_t0 = time.perf_counter()
     # Generate a random input tensor with the requested dtype
+    x: npt.NDArray[np.generic]
     if args.dtype == "float32":
         x = np.random.rand(*shape).astype(np.float32)
     elif args.dtype == "float16":
@@ -89,6 +91,7 @@ def main() -> None:
         else:
             batch_shape = shape
 
+        x_batch: npt.NDArray[np.generic]
         if args.dtype == "float32":
             x_batch = np.random.rand(*batch_shape).astype(np.float32)
         elif args.dtype == "float16":
