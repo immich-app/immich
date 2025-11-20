@@ -407,7 +407,6 @@
     "user_restore_scheduled_removal": "Restore user - scheduled removal on {date, date, long}",
     "user_settings": "User Settings",
     "user_settings_description": "Manage user settings",
-    "user_successfully_removed": "User {email} has been successfully removed.",
     "version_check_enabled_description": "Enable version check",
     "version_check_implications": "The version check feature relies on periodic communication with github.com",
     "version_check_settings": "Version Check",
