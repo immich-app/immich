@@ -11,6 +11,7 @@ import { DuplicateController } from 'src/controllers/duplicate.controller';
 import { FaceController } from 'src/controllers/face.controller';
 import { JobController } from 'src/controllers/job.controller';
 import { LibraryController } from 'src/controllers/library.controller';
+import { MaintenanceController } from 'src/controllers/maintenance.controller';
 import { MapController } from 'src/controllers/map.controller';
 import { MemoryController } from 'src/controllers/memory.controller';
 import { NotificationAdminController } from 'src/controllers/notification-admin.controller';
@@ -49,6 +50,7 @@ export const controllers = [
   FaceController,
   JobController,
   LibraryController,
+  MaintenanceController,
   MapController,
   MemoryController,
   NotificationController,

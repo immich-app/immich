@@ -1,6 +1,7 @@
 import type { ThemeSetting } from '$lib/managers/theme-manager.svelte';
 import type {
   AlbumResponseDto,
+  LibraryResponseDto,
   LoginResponseDto,
   SharedLinkResponseDto,
   SystemConfigDto,
@@ -15,6 +16,8 @@ export type Events = {
   LanguageChange: [{ name: string; code: string; rtl?: boolean }];
   ThemeChange: [ThemeSetting];
 
+  AssetReplace: [{ oldAssetId: string; newAssetId: string }];
+
   AlbumDelete: [AlbumResponseDto];
 
   SharedLinkCreate: [SharedLinkResponseDto];
@@ -27,6 +30,10 @@ export type Events = {
   UserAdminRestore: [UserAdminResponseDto];
 
   SystemConfigUpdate: [SystemConfigDto];
+
+  LibraryCreate: [LibraryResponseDto];
+  LibraryUpdate: [LibraryResponseDto];
+  LibraryDelete: [{ id: string }];
 };
 
 type Listener<EventMap extends Record<string, unknown[]>, K extends keyof EventMap> = (...params: EventMap[K]) => void;

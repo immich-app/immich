@@ -6,6 +6,7 @@ import {
   CheckExistingAssetsDto,
   CreateAlbumDto,
   CreateLibraryDto,
+  MaintenanceAction,
   MetadataSearchDto,
   Permission,
   PersonCreateDto,
@@ -36,6 +37,7 @@ import {
   scanLibrary,
   searchAssets,
   setBaseUrl,
+  setMaintenanceMode,
   signUpAdmin,
   tagAssets,
   updateAdminOnboarding,
@@ -52,7 +54,7 @@ import { exec, spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import path, { dirname } from 'node:path';
+import { dirname, resolve } from 'node:path';
 import { setTimeout as setAsyncTimeout } from 'node:timers/promises';
 import { promisify } from 'node:util';
 import pg from 'pg';
@@ -60,6 +62,8 @@ import { io, type Socket } from 'socket.io-client';
 import { loginDto, signupDto } from 'src/fixtures';
 import { makeRandomImage } from 'src/generators';
 import request from 'supertest';
+import { playwrightDbHost, playwrightHost, playwriteBaseUrl } from '../playwright.config';
+
 export type { Emitter } from '@socket.io/component-emitter';
 
 type CommandResponse = { stdout: string; stderr: string; exitCode: number | null };
@@ -68,12 +72,12 @@ type WaitOptions = { event: EventType; id?: string; total?: number; timeout?: nu
 type AdminSetupOptions = { onboarding?: boolean };
 type FileData = { bytes?: Buffer; filename: string };
 
-const dbUrl = 'postgres://postgres:postgres@127.0.0.1:5435/immich';
-export const baseUrl = 'http://127.0.0.1:2285';
+const dbUrl = `postgres://postgres:postgres@${playwrightDbHost}:5435/immich`;
+export const baseUrl = playwriteBaseUrl;
 export const shareUrl = `${baseUrl}/share`;
 export const app = `${baseUrl}/api`;
 // TODO move test assets into e2e/assets
-export const testAssetDir = path.resolve('./test-assets');
+export const testAssetDir = resolve(import.meta.dirname, '../test-assets');
 export const testAssetDirInternal = '/test-assets';
 export const tempDir = tmpdir();
 export const asBearerAuth = (accessToken: string) => ({ Authorization: `Bearer ${accessToken}` });
@@ -480,7 +484,7 @@ export const utils = {
   queueCommand: async (accessToken: string, name: QueueName, queueCommandDto: QueueCommandDto) =>
     runQueueCommandLegacy({ name, queueCommandDto }, { headers: asBearerAuth(accessToken) }),
 
-  setAuthCookies: async (context: BrowserContext, accessToken: string, domain = '127.0.0.1') =>
+  setAuthCookies: async (context: BrowserContext, accessToken: string, domain = playwrightHost) =>
     await context.addCookies([
       {
         name: 'immich_access_token',
@@ -513,6 +517,42 @@ export const utils = {
         sameSite: 'Lax',
       },
     ]),
+
+  setMaintenanceAuthCookie: async (context: BrowserContext, token: string, domain = '127.0.0.1') =>
+    await context.addCookies([
+      {
+        name: 'immich_maintenance_token',
+        value: token,
+        domain,
+        path: '/',
+        expires: 2_058_028_213,
+        httpOnly: true,
+        secure: false,
+        sameSite: 'Lax',
+      },
+    ]),
+
+  enterMaintenance: async (accessToken: string) => {
+    let setCookie: string[] | undefined;
+
+    await setMaintenanceMode(
+      {
+        setMaintenanceModeDto: {
+          action: MaintenanceAction.Start,
+        },
+      },
+      {
+        headers: asBearerAuth(accessToken),
+        fetch: (...args: Parameters<typeof fetch>) =>
+          fetch(...args).then((response) => {
+            setCookie = response.headers.getSetCookie();
+            return response;
+          }),
+      },
+    );
+
+    return setCookie;
+  },
 
   resetTempFolder: () => {
     rmSync(`${testAssetDir}/temp`, { recursive: true, force: true });

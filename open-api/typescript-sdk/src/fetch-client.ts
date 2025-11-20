@@ -1,6 +1,6 @@
 /**
  * Immich
- * 2.2.3
+ * 2.3.1
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -39,6 +39,15 @@ export type ActivityCreateDto = {
 export type ActivityStatisticsResponseDto = {
     comments: number;
     likes: number;
+};
+export type SetMaintenanceModeDto = {
+    action: MaintenanceAction;
+};
+export type MaintenanceLoginDto = {
+    token?: string;
+};
+export type MaintenanceAuthDto = {
+    username: string;
 };
 export type NotificationCreateDto = {
     data?: object;
@@ -1183,6 +1192,7 @@ export type ServerConfigDto = {
     isInitialized: boolean;
     isOnboarded: boolean;
     loginPageMessage: string;
+    maintenanceMode: boolean;
     mapDarkStyleUrl: string;
     mapLightStyleUrl: string;
     oauthButtonText: string;
@@ -1821,6 +1831,33 @@ export function unlinkAllOAuthAccountsAdmin(opts?: Oazapfts.RequestOpts) {
         ...opts,
         method: "POST"
     }));
+}
+/**
+ * Set maintenance mode
+ */
+export function setMaintenanceMode({ setMaintenanceModeDto }: {
+    setMaintenanceModeDto: SetMaintenanceModeDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/admin/maintenance", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: setMaintenanceModeDto
+    })));
+}
+/**
+ * Log into maintenance mode
+ */
+export function maintenanceLogin({ maintenanceLoginDto }: {
+    maintenanceLoginDto: MaintenanceLoginDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: MaintenanceAuthDto;
+    }>("/admin/maintenance/login", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: maintenanceLoginDto
+    })));
 }
 /**
  * Create a notification
@@ -5014,6 +5051,10 @@ export enum UserAvatarColor {
     Gray = "gray",
     Amber = "amber"
 }
+export enum MaintenanceAction {
+    Start = "start",
+    End = "end"
+}
 export enum NotificationLevel {
     Success = "success",
     Error = "error",
@@ -5121,6 +5162,7 @@ export enum Permission {
     LibraryStatistics = "library.statistics",
     TimelineRead = "timeline.read",
     TimelineDownload = "timeline.download",
+    Maintenance = "maintenance",
     MemoryCreate = "memory.create",
     MemoryRead = "memory.read",
     MemoryUpdate = "memory.update",

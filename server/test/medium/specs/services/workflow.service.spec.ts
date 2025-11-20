@@ -7,6 +7,7 @@ import { WorkflowRepository } from 'src/repositories/workflow.repository';
 import { DB } from 'src/schema';
 import { WorkflowService } from 'src/services/workflow.service';
 import { newMediumService } from 'test/medium.factory';
+import { factory } from 'test/small.factory';
 import { getKyselyDB } from 'test/utils';
 
 let defaultDatabase: Kysely<DB>;
@@ -77,7 +78,7 @@ describe(WorkflowService.name, () => {
       const { sut, ctx } = setup();
       const { user } = await ctx.newUser();
 
-      const auth = { user: { id: user.id } } as any;
+      const auth = factory.auth({ user });
 
       const workflow = await sut.create(auth, {
         triggerType: PluginTriggerType.AssetCreate,
@@ -103,7 +104,7 @@ describe(WorkflowService.name, () => {
     it('should create a workflow with filters and actions', async () => {
       const { sut, ctx } = setup();
       const { user } = await ctx.newUser();
-      const auth = { user: { id: user.id } } as any;
+      const auth = factory.auth({ user });
 
       const workflow = await sut.create(auth, {
         triggerType: PluginTriggerType.AssetCreate,
@@ -154,7 +155,7 @@ describe(WorkflowService.name, () => {
     it('should throw error when creating workflow with invalid filter', async () => {
       const { sut, ctx } = setup();
       const { user } = await ctx.newUser();
-      const auth = { user: { id: user.id } } as any;
+      const auth = factory.auth({ user });
 
       await expect(
         sut.create(auth, {
@@ -162,12 +163,7 @@ describe(WorkflowService.name, () => {
           name: 'invalid-workflow',
           description: 'A workflow with invalid filter',
           enabled: true,
-          filters: [
-            {
-              filterId: '66da82df-e424-4bf4-b6f3-5d8e71620dae',
-              filterConfig: { key: 'value' },
-            },
-          ],
+          filters: [{ filterId: factory.uuid(), filterConfig: { key: 'value' } }],
           actions: [],
         }),
       ).rejects.toThrow('Invalid filter ID');
@@ -176,7 +172,7 @@ describe(WorkflowService.name, () => {
     it('should throw error when creating workflow with invalid action', async () => {
       const { sut, ctx } = setup();
       const { user } = await ctx.newUser();
-      const auth = { user: { id: user.id } } as any;
+      const auth = factory.auth({ user });
 
       await expect(
         sut.create(auth, {
@@ -185,12 +181,7 @@ describe(WorkflowService.name, () => {
           description: 'A workflow with invalid action',
           enabled: true,
           filters: [],
-          actions: [
-            {
-              actionId: '66da82df-e424-4bf4-b6f3-5d8e71620dae',
-              actionConfig: { action: 'test' },
-            },
-          ],
+          actions: [{ actionId: factory.uuid(), actionConfig: { action: 'test' } }],
         }),
       ).rejects.toThrow('Invalid action ID');
     });
@@ -198,7 +189,7 @@ describe(WorkflowService.name, () => {
     it('should throw error when filter does not support trigger context', async () => {
       const { sut, ctx } = setup();
       const { user } = await ctx.newUser();
-      const auth = { user: { id: user.id } } as any;
+      const auth = factory.auth({ user });
 
       // Create a plugin with a filter that only supports Album context
       const pluginRepo = new PluginRepository(defaultDatabase);
@@ -238,7 +229,7 @@ describe(WorkflowService.name, () => {
     it('should throw error when action does not support trigger context', async () => {
       const { sut, ctx } = setup();
       const { user } = await ctx.newUser();
-      const auth = { user: { id: user.id } } as any;
+      const auth = factory.auth({ user });
 
       // Create a plugin with an action that only supports Person context
       const pluginRepo = new PluginRepository(defaultDatabase);
@@ -278,7 +269,7 @@ describe(WorkflowService.name, () => {
     it('should create workflow with multiple filters and actions in correct order', async () => {
       const { sut, ctx } = setup();
       const { user } = await ctx.newUser();
-      const auth = { user: { id: user.id } } as any;
+      const auth = factory.auth({ user });
 
       const workflow = await sut.create(auth, {
         triggerType: PluginTriggerType.AssetCreate,
@@ -313,7 +304,7 @@ describe(WorkflowService.name, () => {
     it('should return all workflows for a user', async () => {
       const { sut, ctx } = setup();
       const { user } = await ctx.newUser();
-      const auth = { user: { id: user.id } } as any;
+      const auth = factory.auth({ user });
 
       const workflow1 = await sut.create(auth, {
         triggerType: PluginTriggerType.AssetCreate,
@@ -347,7 +338,7 @@ describe(WorkflowService.name, () => {
     it('should return empty array when user has no workflows', async () => {
       const { sut, ctx } = setup();
       const { user } = await ctx.newUser();
-      const auth = { user: { id: user.id } } as any;
+      const auth = factory.auth({ user });
 
       const workflows = await sut.getAll(auth);
 
@@ -358,8 +349,8 @@ describe(WorkflowService.name, () => {
       const { sut, ctx } = setup();
       const { user: user1 } = await ctx.newUser();
       const { user: user2 } = await ctx.newUser();
-      const auth1 = { user: { id: user1.id } } as any;
-      const auth2 = { user: { id: user2.id } } as any;
+      const auth1 = factory.auth({ user: user1 });
+      const auth2 = factory.auth({ user: user2 });
 
       await sut.create(auth1, {
         triggerType: PluginTriggerType.AssetCreate,
@@ -380,7 +371,7 @@ describe(WorkflowService.name, () => {
     it('should return a specific workflow by id', async () => {
       const { sut, ctx } = setup();
       const { user } = await ctx.newUser();
-      const auth = { user: { id: user.id } } as any;
+      const auth = factory.auth({ user });
 
       const created = await sut.create(auth, {
         triggerType: PluginTriggerType.AssetCreate,
@@ -406,7 +397,7 @@ describe(WorkflowService.name, () => {
     it('should throw error when workflow does not exist', async () => {
       const { sut, ctx } = setup();
       const { user } = await ctx.newUser();
-      const auth = { user: { id: user.id } } as any;
+      const auth = factory.auth({ user });
 
       await expect(sut.get(auth, '66da82df-e424-4bf4-b6f3-5d8e71620dae')).rejects.toThrow();
     });
@@ -415,8 +406,8 @@ describe(WorkflowService.name, () => {
       const { sut, ctx } = setup();
       const { user: user1 } = await ctx.newUser();
       const { user: user2 } = await ctx.newUser();
-      const auth1 = { user: { id: user1.id } } as any;
-      const auth2 = { user: { id: user2.id } } as any;
+      const auth1 = factory.auth({ user: user1 });
+      const auth2 = factory.auth({ user: user2 });
 
       const workflow = await sut.create(auth1, {
         triggerType: PluginTriggerType.AssetCreate,
@@ -435,7 +426,7 @@ describe(WorkflowService.name, () => {
     it('should update workflow basic fields', async () => {
       const { sut, ctx } = setup();
       const { user } = await ctx.newUser();
-      const auth = { user: { id: user.id } } as any;
+      const auth = factory.auth({ user });
 
       const created = await sut.create(auth, {
         triggerType: PluginTriggerType.AssetCreate,
@@ -463,7 +454,7 @@ describe(WorkflowService.name, () => {
     it('should update workflow filters', async () => {
       const { sut, ctx } = setup();
       const { user } = await ctx.newUser();
-      const auth = { user: { id: user.id } } as any;
+      const auth = factory.auth({ user });
 
       const created = await sut.create(auth, {
         triggerType: PluginTriggerType.AssetCreate,
@@ -489,7 +480,7 @@ describe(WorkflowService.name, () => {
     it('should update workflow actions', async () => {
       const { sut, ctx } = setup();
       const { user } = await ctx.newUser();
-      const auth = { user: { id: user.id } } as any;
+      const auth = factory.auth({ user });
 
       const created = await sut.create(auth, {
         triggerType: PluginTriggerType.AssetCreate,
@@ -515,7 +506,7 @@ describe(WorkflowService.name, () => {
     it('should clear filters when updated with empty array', async () => {
       const { sut, ctx } = setup();
       const { user } = await ctx.newUser();
-      const auth = { user: { id: user.id } } as any;
+      const auth = factory.auth({ user });
 
       const created = await sut.create(auth, {
         triggerType: PluginTriggerType.AssetCreate,
@@ -536,7 +527,7 @@ describe(WorkflowService.name, () => {
     it('should throw error when no fields to update', async () => {
       const { sut, ctx } = setup();
       const { user } = await ctx.newUser();
-      const auth = { user: { id: user.id } } as any;
+      const auth = factory.auth({ user });
 
       const created = await sut.create(auth, {
         triggerType: PluginTriggerType.AssetCreate,
@@ -553,21 +544,17 @@ describe(WorkflowService.name, () => {
     it('should throw error when updating non-existent workflow', async () => {
       const { sut, ctx } = setup();
       const { user } = await ctx.newUser();
-      const auth = { user: { id: user.id } } as any;
+      const auth = factory.auth({ user });
 
-      await expect(
-        sut.update(auth, 'non-existent-id', {
-          name: 'updated-name',
-        }),
-      ).rejects.toThrow();
+      await expect(sut.update(auth, factory.uuid(), { name: 'updated-name' })).rejects.toThrow();
     });
 
     it('should throw error when user does not have access to update workflow', async () => {
       const { sut, ctx } = setup();
       const { user: user1 } = await ctx.newUser();
       const { user: user2 } = await ctx.newUser();
-      const auth1 = { user: { id: user1.id } } as any;
-      const auth2 = { user: { id: user2.id } } as any;
+      const auth1 = factory.auth({ user: user1 });
+      const auth2 = factory.auth({ user: user2 });
 
       const workflow = await sut.create(auth1, {
         triggerType: PluginTriggerType.AssetCreate,
@@ -588,7 +575,7 @@ describe(WorkflowService.name, () => {
     it('should throw error when updating with invalid filter', async () => {
       const { sut, ctx } = setup();
       const { user } = await ctx.newUser();
-      const auth = { user: { id: user.id } } as any;
+      const auth = factory.auth({ user });
 
       const created = await sut.create(auth, {
         triggerType: PluginTriggerType.AssetCreate,
@@ -601,7 +588,7 @@ describe(WorkflowService.name, () => {
 
       await expect(
         sut.update(auth, created.id, {
-          filters: [{ filterId: 'invalid-filter-id', filterConfig: {} }],
+          filters: [{ filterId: factory.uuid(), filterConfig: {} }],
         }),
       ).rejects.toThrow();
     });
@@ -609,7 +596,7 @@ describe(WorkflowService.name, () => {
     it('should throw error when updating with invalid action', async () => {
       const { sut, ctx } = setup();
       const { user } = await ctx.newUser();
-      const auth = { user: { id: user.id } } as any;
+      const auth = factory.auth({ user });
 
       const created = await sut.create(auth, {
         triggerType: PluginTriggerType.AssetCreate,
@@ -621,9 +608,7 @@ describe(WorkflowService.name, () => {
       });
 
       await expect(
-        sut.update(auth, created.id, {
-          actions: [{ actionId: 'invalid-action-id', actionConfig: {} }],
-        }),
+        sut.update(auth, created.id, { actions: [{ actionId: factory.uuid(), actionConfig: {} }] }),
       ).rejects.toThrow();
     });
   });
@@ -632,7 +617,7 @@ describe(WorkflowService.name, () => {
     it('should delete a workflow', async () => {
       const { sut, ctx } = setup();
       const { user } = await ctx.newUser();
-      const auth = { user: { id: user.id } } as any;
+      const auth = factory.auth({ user });
 
       const workflow = await sut.create(auth, {
         triggerType: PluginTriggerType.AssetCreate,
@@ -651,7 +636,7 @@ describe(WorkflowService.name, () => {
     it('should delete workflow with filters and actions', async () => {
       const { sut, ctx } = setup();
       const { user } = await ctx.newUser();
-      const auth = { user: { id: user.id } } as any;
+      const auth = factory.auth({ user });
 
       const workflow = await sut.create(auth, {
         triggerType: PluginTriggerType.AssetCreate,
@@ -670,17 +655,17 @@ describe(WorkflowService.name, () => {
     it('should throw error when deleting non-existent workflow', async () => {
       const { sut, ctx } = setup();
       const { user } = await ctx.newUser();
-      const auth = { user: { id: user.id } } as any;
+      const auth = factory.auth({ user });
 
-      await expect(sut.delete(auth, 'non-existent-id')).rejects.toThrow();
+      await expect(sut.delete(auth, factory.uuid())).rejects.toThrow();
     });
 
     it('should throw error when user does not have access to delete workflow', async () => {
       const { sut, ctx } = setup();
       const { user: user1 } = await ctx.newUser();
       const { user: user2 } = await ctx.newUser();
-      const auth1 = { user: { id: user1.id } } as any;
-      const auth2 = { user: { id: user2.id } } as any;
+      const auth1 = factory.auth({ user: user1 });
+      const auth2 = factory.auth({ user: user2 });
 
       const workflow = await sut.create(auth1, {
         triggerType: PluginTriggerType.AssetCreate,

@@ -322,6 +322,100 @@
         "x-immich-state": "Stable"
       }
     },
+    "/admin/maintenance": {
+      "post": {
+        "description": "Put Immich into or take it out of maintenance mode",
+        "operationId": "setMaintenanceMode",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetMaintenanceModeDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Set maintenance mode",
+        "tags": [
+          "Maintenance (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v2.3.0",
+            "state": "Added"
+          },
+          {
+            "version": "v2.3.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "maintenance",
+        "x-immich-state": "Alpha"
+      }
+    },
+    "/admin/maintenance/login": {
+      "post": {
+        "description": "Login with maintenance token or cookie to receive current information and perform further actions.",
+        "operationId": "maintenanceLogin",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MaintenanceLoginDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MaintenanceAuthDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Log into maintenance mode",
+        "tags": [
+          "Maintenance (admin)"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v2.3.0",
+            "state": "Added"
+          },
+          {
+            "version": "v2.3.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-state": "Alpha"
+      }
+    },
     "/admin/notifications": {
       "post": {
         "description": "Create a new notification for a specific user.",
@@ -13865,7 +13959,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "2.2.3",
+    "version": "2.3.1",
     "contact": {}
   },
   "tags": [
@@ -13916,6 +14010,10 @@
     {
       "name": "Libraries",
       "description": "An external library is made up of input file paths or expressions that are scanned for asset files. Discovered files are automatically imported. Assets much be unique within a library, but can be duplicated across libraries. Each user has a default upload library, and can have one or more external libraries."
+    },
+    {
+      "name": "Maintenance (admin)",
+      "description": "Maintenance mode allows you to put Immich in a read-only state to perform various operations."
     },
     {
       "name": "Map",
@@ -16425,6 +16523,32 @@
         ],
         "type": "object"
       },
+      "MaintenanceAction": {
+        "enum": [
+          "start",
+          "end"
+        ],
+        "type": "string"
+      },
+      "MaintenanceAuthDto": {
+        "properties": {
+          "username": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "username"
+        ],
+        "type": "object"
+      },
+      "MaintenanceLoginDto": {
+        "properties": {
+          "token": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "ManualJobName": {
         "enum": [
           "person-cleanup",
@@ -17380,6 +17504,7 @@
           "library.statistics",
           "timeline.read",
           "timeline.download",
+          "maintenance",
           "memory.create",
           "memory.read",
           "memory.update",
@@ -18587,6 +18712,9 @@
           "loginPageMessage": {
             "type": "string"
           },
+          "maintenanceMode": {
+            "type": "boolean"
+          },
           "mapDarkStyleUrl": {
             "type": "string"
           },
@@ -18611,6 +18739,7 @@
           "isInitialized",
           "isOnboarded",
           "loginPageMessage",
+          "maintenanceMode",
           "mapDarkStyleUrl",
           "mapLightStyleUrl",
           "oauthButtonText",
@@ -18994,6 +19123,21 @@
             "type": "boolean"
           }
         },
+        "type": "object"
+      },
+      "SetMaintenanceModeDto": {
+        "properties": {
+          "action": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MaintenanceAction"
+              }
+            ]
+          }
+        },
+        "required": [
+          "action"
+        ],
         "type": "object"
       },
       "SharedLinkCreateDto": {

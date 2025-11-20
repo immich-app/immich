@@ -110,13 +110,9 @@
       case AssetAction.ARCHIVE:
       case AssetAction.UNARCHIVE:
       case AssetAction.FAVORITE:
-      case AssetAction.UNFAVORITE: {
-        timelineManager.updateAssets([action.asset]);
-        break;
-      }
-
+      case AssetAction.UNFAVORITE:
       case AssetAction.ADD: {
-        timelineManager.addAssets([action.asset]);
+        timelineManager.upsertAssets([action.asset]);
         break;
       }
 
@@ -135,7 +131,7 @@
         break;
       }
       case AssetAction.REMOVE_ASSET_FROM_STACK: {
-        timelineManager.addAssets([toTimelineAsset(action.asset)]);
+        timelineManager.upsertAssets([toTimelineAsset(action.asset)]);
         if (action.stack) {
           //Have to unstack then restack assets in timeline in order to update the stack count in the timeline.
           updateUnstackedAssetInTimeline(

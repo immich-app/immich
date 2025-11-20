@@ -7,9 +7,10 @@
   import AppleHeader from '$lib/components/shared-components/apple-header.svelte';
   import NavigationLoadingBar from '$lib/components/shared-components/navigation-loading-bar.svelte';
   import UploadPanel from '$lib/components/shared-components/upload-panel.svelte';
+  import { AppRoute } from '$lib/constants';
   import { eventManager } from '$lib/managers/event-manager.svelte';
   import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
-  import VersionAnnouncementModal from '$lib/modals/VersionAnnouncementModal.svelte';
+  import ServerRestartingModal from '$lib/modals/ServerRestartingModal.svelte';
   import { user } from '$lib/stores/user.store';
   import {
     closeWebsocketConnection,
@@ -18,6 +19,7 @@
     type ReleaseEvent,
   } from '$lib/stores/websocket';
   import { copyToClipboard, getReleaseType, semverToName } from '$lib/utils';
+  import { maintenanceShouldRedirect } from '$lib/utils/maintenance';
   import { isAssetViewerRoute } from '$lib/utils/navigation';
   import { modalManager, setTranslations } from '@immich/ui';
   import { onMount, type Snippet } from 'svelte';
@@ -70,22 +72,22 @@
     showNavigationLoadingBar = false;
   });
   run(() => {
-    if ($user) {
+    if ($user || page.url.pathname.startsWith(AppRoute.MAINTENANCE)) {
       openWebsocketConnection();
     } else {
       closeWebsocketConnection();
     }
   });
 
-  const { release } = websocketStore;
+  const { release, serverRestarting } = websocketStore;
 
-  const handleRelease = async (release?: ReleaseEvent) => {
+  const handleRelease = (release?: ReleaseEvent) => {
     if (!release?.isAvailable || !$user.isAdmin) {
       return;
     }
 
     const releaseVersion = semverToName(release.releaseVersion);
-    const serverVersion = semverToName(release.serverVersion);
+    // const serverVersion = semverToName(release.serverVersion);
     const type = getReleaseType(release.serverVersion, release.releaseVersion);
 
     if (type === 'none' || type === 'patch' || localStorage.getItem('appVersion') === releaseVersion) {
@@ -93,8 +95,7 @@
     }
 
     try {
-      await modalManager.show(VersionAnnouncementModal, { serverVersion, releaseVersion });
-
+      // await modalManager.show(VersionAnnouncementModal, { serverVersion, releaseVersion });
       localStorage.setItem('appVersion', releaseVersion);
     } catch (error) {
       console.error('Error [VersionAnnouncementBox]:', error);
@@ -102,6 +103,27 @@
   };
 
   $effect(() => void handleRelease($release));
+
+  serverRestarting.subscribe((isRestarting) => {
+    if (!isRestarting) {
+      return;
+    }
+
+    if (maintenanceShouldRedirect(isRestarting.isMaintenanceMode, location)) {
+      modalManager.show(ServerRestartingModal, {}).catch((error) => console.error('Error [ServerRestartBox]:', error));
+
+      // we will be disconnected momentarily
+      // wait for reconnect then reload
+      let waiting = false;
+      websocketStore.connected.subscribe((connected) => {
+        if (!connected) {
+          waiting = true;
+        } else if (connected && waiting) {
+          location.reload();
+        }
+      });
+    }
+  });
 </script>
 
 <svelte:head>
