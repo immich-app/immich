@@ -87,4 +87,21 @@ export class MaintenanceController {
   async deleteBackup(@Param() { filename }: FilenameParamDto): Promise<void> {
     return this.service.deleteBackup(filename);
   }
+
+  @Post('backups/restore')
+  @Endpoint({
+    summary: 'Start backup restore flow',
+    description: 'Put Immich into maintenance mode to restore a backup (Immich must not be configured)',
+    history: new HistoryBuilder().added('v9.9.9').alpha('v9.9.9'),
+  })
+  async startRestoreFlow(
+    @GetLoginDetails() loginDetails: LoginDetails,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<void> {
+    const { jwt } = await this.service.startRestoreFlow();
+    return respondWithCookie(res, undefined, {
+      isSecure: loginDetails.isSecure,
+      values: [{ key: ImmichCookie.MaintenanceToken, value: jwt }],
+    });
+  }
 }

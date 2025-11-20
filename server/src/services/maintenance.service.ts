@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { OnEvent } from 'src/decorators';
 import { MaintenanceAuthDto, SetMaintenanceModeDto } from 'src/dtos/maintenance.dto';
-import { SystemMetadataKey } from 'src/enum';
+import { MaintenanceAction, SystemMetadataKey } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
 import { MaintenanceModeState } from 'src/types';
 import { deleteBackup, listBackups } from 'src/utils/backups';
@@ -34,6 +34,20 @@ export class MaintenanceService extends BaseService {
         username,
       }),
     };
+  }
+
+  async startRestoreFlow(): Promise<{ jwt: string }> {
+    const adminUser = await this.userRepository.getAdmin();
+    if (adminUser) {
+      throw new BadRequestException('The server already has an admin');
+    }
+
+    return this.startMaintenance(
+      {
+        action: MaintenanceAction.RestoreDatabase,
+      },
+      'admin',
+    );
   }
 
   @OnEvent({ name: 'AppRestart', server: true })
