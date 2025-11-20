@@ -15,9 +15,9 @@
 
   let assets = getOwnedAssets();
   let dateTime = $derived(
-    timeZone && asset[0]?.exifInfo?.dateTimeOriginal
-      ? fromISODateTime(asset[0]?.exifInfo.dateTimeOriginal, timeZone)
-      : fromISODateTimeUTC(asset[0]?.localDateTime),
+    timeZone && assets[0]?.exifInfo?.dateTimeOriginal
+      ? fromISODateTime(assets[0]?.exifInfo.dateTimeOriginal, timeZone)
+      : fromISODateTimeUTC(assets[0]?.localDateTime),
   );
 
   const handleChangeDate = async () => {
