@@ -1,5 +1,5 @@
 import { AppRoute } from '$lib/constants';
-import { maintenanceAuth as maintenanceAuth$ } from '$lib/stores/maintenance.store';
+import { maintenanceStore } from '$lib/stores/maintenance.store';
 import { maintenanceLogin } from '@immich/sdk';
 
 export function maintenanceCreateUrl(url: URL) {
@@ -26,7 +26,7 @@ export const loadMaintenanceAuth = async () => {
       },
     });
 
-    maintenanceAuth$.set(auth);
+    maintenanceStore.auth.set(auth);
   } catch {
     // silently fail
   }

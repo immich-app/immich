@@ -1,11 +1,13 @@
 <script lang="ts">
   import AuthPageLayout from '$lib/components/layouts/AuthPageLayout.svelte';
   import FormatMessage from '$lib/elements/FormatMessage.svelte';
-  import { maintenanceAuth } from '$lib/stores/maintenance.store';
+  import { maintenanceStore } from '$lib/stores/maintenance.store';
   import { handleError } from '$lib/utils/handle-error';
   import { MaintenanceAction, setMaintenanceMode } from '@immich/sdk';
   import { Button, Heading, Link } from '@immich/ui';
   import { t } from 'svelte-i18n';
+
+  const { auth } = maintenanceStore;
 
   // strip token from URL after load
   const url = new URL(location.href);
@@ -41,11 +43,11 @@
         {/snippet}
       </FormatMessage>
     </p>
-    {#if $maintenanceAuth}
+    {#if $auth}
       <p>
         {$t('maintenance_logged_in_as', {
           values: {
-            user: $maintenanceAuth.username,
+            user: $auth.username,
           },
         })}
       </p>
