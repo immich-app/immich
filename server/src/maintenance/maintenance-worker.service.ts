@@ -261,7 +261,7 @@ export class MaintenanceWorkerService {
       }),
     );
 
-    await this.runAction({
+    await this.setAction({
       action: MaintenanceAction.End,
     });
   }

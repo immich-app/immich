@@ -154,7 +154,9 @@ describe(MaintenanceWorkerService.name, () => {
   describe('endMaintenance', () => {
     it('should set maintenance mode', async () => {
       mocks.systemMetadata.get.mockResolvedValue({ isMaintenanceMode: false });
-      await expect(sut.endMaintenance()).resolves.toBeUndefined();
+      await sut.runAction({
+        action: MaintenanceAction.End,
+      });
 
       expect(mocks.systemMetadata.set).toHaveBeenCalledWith(SystemMetadataKey.MaintenanceMode, {
         isMaintenanceMode: false,
