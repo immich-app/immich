@@ -1,6 +1,6 @@
 {
   "name": "immich-e2e",
-  "version": "2.2.3",
+  "version": "2.3.1",
   "description": "",
   "main": "index.js",
   "type": "module",
@@ -20,6 +20,7 @@
   "license": "GNU Affero General Public License version 3",
   "devDependencies": {
     "@eslint/js": "^9.8.0",
+    "@faker-js/faker": "^10.1.0",
     "@immich/cli": "file:../cli",
     "@immich/sdk": "file:../open-api/typescript-sdk",
     "@playwright/test": "^1.44.1",
@@ -30,6 +31,7 @@
     "@types/pg": "^8.15.1",
     "@types/pngjs": "^6.0.4",
     "@types/supertest": "^6.0.2",
+    "dotenv": "^17.2.3",
     "eslint": "^9.14.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.1.3",

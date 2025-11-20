@@ -1,6 +1,8 @@
 import type { ThemeSetting } from '$lib/managers/theme-manager.svelte';
+import type { ReleaseEvent } from '$lib/types';
 import type {
   AlbumResponseDto,
+  LibraryResponseDto,
   LoginResponseDto,
   SharedLinkResponseDto,
   SystemConfigDto,
@@ -15,6 +17,8 @@ export type Events = {
   LanguageChange: [{ name: string; code: string; rtl?: boolean }];
   ThemeChange: [ThemeSetting];
 
+  AssetReplace: [{ oldAssetId: string; newAssetId: string }];
+
   AlbumDelete: [AlbumResponseDto];
 
   SharedLinkCreate: [SharedLinkResponseDto];
@@ -23,10 +27,19 @@ export type Events = {
 
   UserAdminCreate: [UserAdminResponseDto];
   UserAdminUpdate: [UserAdminResponseDto];
-  UserAdminDelete: [UserAdminResponseDto];
   UserAdminRestore: [UserAdminResponseDto];
+  // soft deleted
+  UserAdminDelete: [UserAdminResponseDto];
+  // confirmed permanently deleted from server
+  UserAdminDeleted: [{ id: string }];
 
   SystemConfigUpdate: [SystemConfigDto];
+
+  LibraryCreate: [LibraryResponseDto];
+  LibraryUpdate: [LibraryResponseDto];
+  LibraryDelete: [{ id: string }];
+
+  ReleaseEvent: [ReleaseEvent];
 };
 
 type Listener<EventMap extends Record<string, unknown[]>, K extends keyof EventMap> = (...params: EventMap[K]) => void;

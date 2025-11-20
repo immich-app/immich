@@ -4,6 +4,7 @@
   import { shortcut } from '$lib/actions/shortcut';
   import DownloadPanel from '$lib/components/asset-viewer/download-panel.svelte';
   import ErrorLayout from '$lib/components/layouts/ErrorLayout.svelte';
+  import OnEvents from '$lib/components/OnEvents.svelte';
   import AppleHeader from '$lib/components/shared-components/apple-header.svelte';
   import NavigationLoadingBar from '$lib/components/shared-components/navigation-loading-bar.svelte';
   import UploadPanel from '$lib/components/shared-components/upload-panel.svelte';
@@ -13,12 +14,8 @@
   import ServerRestartingModal from '$lib/modals/ServerRestartingModal.svelte';
   import VersionAnnouncementModal from '$lib/modals/VersionAnnouncementModal.svelte';
   import { user } from '$lib/stores/user.store';
-  import {
-    closeWebsocketConnection,
-    openWebsocketConnection,
-    websocketStore,
-    type ReleaseEvent,
-  } from '$lib/stores/websocket';
+  import { closeWebsocketConnection, openWebsocketConnection, websocketStore } from '$lib/stores/websocket';
+  import type { ReleaseEvent } from '$lib/types';
   import { copyToClipboard, getReleaseType, semverToName } from '$lib/utils';
   import { maintenanceShouldRedirect } from '$lib/utils/maintenance';
   import { isAssetViewerRoute } from '$lib/utils/navigation';
@@ -73,7 +70,7 @@
     showNavigationLoadingBar = false;
   });
 
-  const { release, serverRestarting } = websocketStore;
+  const { serverRestarting } = websocketStore;
 
   run(() => {
     if ($user || $serverRestarting || page.url.pathname.startsWith(AppRoute.MAINTENANCE)) {
@@ -83,8 +80,8 @@
     }
   });
 
-  const handleRelease = async (release?: ReleaseEvent) => {
-    if (!release?.isAvailable || !$user.isAdmin) {
+  const onReleaseEvent = async (release: ReleaseEvent) => {
+    if (!release.isAvailable || !$user.isAdmin) {
       return;
     }
 
@@ -98,14 +95,11 @@
 
     try {
       await modalManager.show(VersionAnnouncementModal, { serverVersion, releaseVersion });
-
       localStorage.setItem('appVersion', releaseVersion);
     } catch (error) {
       console.error('Error [VersionAnnouncementBox]:', error);
     }
   };
-
-  $effect(() => void handleRelease($release));
 
   serverRestarting.subscribe((isRestarting) => {
     if (!isRestarting) {
@@ -128,6 +122,8 @@
     }
   });
 </script>
+
+<OnEvents {onReleaseEvent} />
 
 <svelte:head>
   <title>{page.data.meta?.title || 'Web'} - Immich</title>

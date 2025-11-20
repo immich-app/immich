@@ -2,7 +2,7 @@ import { authManager } from '$lib/managers/auth-manager.svelte';
 import { toISOYearMonthUTC } from '$lib/utils/timeline-util';
 import { getTimeBucket } from '@immich/sdk';
 import type { MonthGroup } from '../month-group.svelte';
-import type { TimelineManager } from '../timeline-manager.svelte';
+import { TimelineManager } from '../timeline-manager.svelte';
 import type { TimelineManagerOptions } from '../types';
 
 export async function loadFromTimeBuckets(
