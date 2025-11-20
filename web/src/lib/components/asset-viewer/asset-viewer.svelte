@@ -13,6 +13,7 @@
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import { closeEditorCofirm } from '$lib/stores/asset-editor.store';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
+  import { ocrManager } from '$lib/stores/ocr.svelte';
   import { alwaysLoadOriginalVideo, isShowDetail } from '$lib/stores/preferences.store';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { user } from '$lib/stores/user.store';
@@ -44,6 +45,7 @@
   import CropArea from './editor/crop-tool/crop-area.svelte';
   import EditorPanel from './editor/editor-panel.svelte';
   import ImagePanoramaViewer from './image-panorama-viewer.svelte';
+  import OcrButton from './ocr-button.svelte';
   import PhotoViewer from './photo-viewer.svelte';
   import SlideshowBar from './slideshow-bar.svelte';
   import VideoViewer from './video-wrapper-viewer.svelte';
@@ -392,9 +394,13 @@
       handlePromiseError(activityManager.init(album.id, asset.id));
     }
   });
+
+  let currentAssetId = $derived(asset.id);
   $effect(() => {
-    if (asset.id) {
-      handlePromiseError(handleGetAllAlbums());
+    if (currentAssetId) {
+      untrack(() => handlePromiseError(handleGetAllAlbums()));
+      ocrManager.clear();
+      handlePromiseError(ocrManager.getAssetOcr(currentAssetId));
     }
   });
 </script>
@@ -535,6 +541,7 @@
             {playOriginalVideo}
           />
         {/if}
+
         {#if $slideshowState === SlideshowState.None && isShared && ((album && album.isActivityEnabled) || activityManager.commentCount > 0) && !activityManager.isLoading}
           <div class="absolute bottom-0 end-0 mb-20 me-8">
             <ActivityStatus
@@ -545,6 +552,12 @@
               onFavorite={handleFavorite}
               onOpenActivityTab={handleOpenActivity}
             />
+          </div>
+        {/if}
+
+        {#if $slideshowState === SlideshowState.None && asset.type === AssetTypeEnum.Image && !isShowEditor && ocrManager.hasOcrData}
+          <div class="absolute bottom-0 end-0 mb-6 me-6">
+            <OcrButton />
           </div>
         {/if}
       {/key}
