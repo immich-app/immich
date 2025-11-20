@@ -65,7 +65,7 @@ export class MaintenanceWorkerService {
   /**
    * {@link _ServerService.getSystemConfig}
    */
-  async getSystemConfig() {
+  getSystemConfig() {
     return {
       maintenanceMode: true,
     } as ServerConfigDto;
@@ -195,12 +195,19 @@ export class MaintenanceWorkerService {
 
   async runAction(action: SetMaintenanceModeDto) {
     switch (action.action) {
-      case MaintenanceAction.Start:
+      case MaintenanceAction.Start: {
         return;
-      case MaintenanceAction.End:
+      }
+      case MaintenanceAction.End: {
         return this.endMaintenance();
-      case MaintenanceAction.RestoreDatabase:
-        if (!action.restoreBackupFilename) return;
+      }
+      case MaintenanceAction.RestoreDatabase: {
+        if (!action.restoreBackupFilename) {
+          return;
+        }
+
+        break;
+      }
     }
 
     const lock = await this.databaseRepository.tryLock(DatabaseLock.MaintenanceOperation);
@@ -220,9 +227,10 @@ export class MaintenanceWorkerService {
 
     try {
       switch (action.action) {
-        case MaintenanceAction.RestoreDatabase:
+        case MaintenanceAction.RestoreDatabase: {
           await this.restoreBackup(action.restoreBackupFilename);
           break;
+        }
       }
     } catch (error) {
       this.logger.error(`Encountered error running action: ${error}`);

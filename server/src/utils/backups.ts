@@ -230,7 +230,10 @@ export async function restoreBackup(
     });
 
     const [progressSource, progressSink] = createSqlProgressStreams((progress) => {
-      if (complete) return;
+      if (complete) {
+        return;
+      }
+
       logger.log(`Restore progress ~ ${(progress * 100).toFixed(2)}%`);
       progressCb?.('restore', progress);
     });

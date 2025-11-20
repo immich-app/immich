@@ -21,7 +21,7 @@ export class MaintenanceWorkerController {
   constructor(private service: MaintenanceWorkerService) {}
 
   @Get('server/config')
-  getServerConfig(): Promise<ServerConfigDto> {
+  getServerConfig(): ServerConfigDto {
     return this.service.getSystemConfig();
   }
 

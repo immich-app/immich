@@ -9,6 +9,10 @@ import { MaintenanceWebsocketRepository } from 'src/maintenance/maintenance-webs
 import { MaintenanceWorkerService } from 'src/maintenance/maintenance-worker.service';
 import { automock, AutoMocked, getMocks, mockDuplex, mockSpawn, ServiceMocks } from 'test/utils';
 
+function* mockData() {
+  yield '';
+}
+
 describe(MaintenanceWorkerService.name, () => {
   let sut: MaintenanceWorkerService;
   let mocks: ServiceMocks;
@@ -45,7 +49,7 @@ describe(MaintenanceWorkerService.name, () => {
 
   describe('getSystemConfig', () => {
     it('should respond the server is in maintenance mode', async () => {
-      await expect(sut.getSystemConfig()).resolves.toMatchObject(
+      expect(sut.getSystemConfig()).toMatchObject(
         expect.objectContaining({
           maintenanceMode: true,
         }),
@@ -188,10 +192,6 @@ describe(MaintenanceWorkerService.name, () => {
 
   describe('action: restore database', () => {
     beforeEach(() => {
-      function* mockData() {
-        yield '';
-      }
-
       mocks.database.tryLock.mockResolvedValueOnce(true);
 
       mocks.storage.readdir.mockResolvedValue([]);

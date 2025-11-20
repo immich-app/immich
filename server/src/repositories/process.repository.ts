@@ -94,10 +94,10 @@ export class ProcessRepository {
     process.on('exit', (code) => {
       console.info(`${command} exited (${code})`);
 
-      if (code !== 0) {
-        close(new Error(`${command} non-zero exit code (${code})\n${stderr}`));
-      } else {
+      if (code === 0) {
         close();
+      } else {
+        close(new Error(`${command} non-zero exit code (${code})\n${stderr}`));
       }
     });
 

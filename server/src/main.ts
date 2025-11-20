@@ -35,7 +35,7 @@ class Workers {
     if (isMaintenanceMode) {
       this.startWorker(ImmichWorker.Maintenance);
     } else {
-      this.waitForFreeLock();
+      await this.waitForFreeLock();
 
       for (const worker of workers) {
         this.startWorker(worker);
