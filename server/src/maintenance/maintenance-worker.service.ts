@@ -257,11 +257,7 @@ export class MaintenanceWorkerService {
       action: MaintenanceAction.End,
     });
 
-    // => corresponds to notification.service.ts#onAppRestart
-    const state: MaintenanceModeState = { isMaintenanceMode: false };
-    this.maintenanceWebsocketRepository.clientBroadcast('AppRestartV1', state);
-    this.maintenanceWebsocketRepository.serverSend('AppRestart', state);
-    this.appRepository.exitApp();
+    await this.endMaintenance();
   }
 
   async listBackups(): Promise<Record<'backups' | 'failedBackups', string[]>> {
