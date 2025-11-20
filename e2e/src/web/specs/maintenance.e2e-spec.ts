@@ -92,7 +92,7 @@ test.describe('Maintenance', () => {
 
     try {
       await page.waitForURL('/maintenance**');
-    } catch (error) {
+    } catch {
       // when chained with the rest of the tests
       // this navigation may fail..? not sure why...
       await page.goto('/maintenance');
