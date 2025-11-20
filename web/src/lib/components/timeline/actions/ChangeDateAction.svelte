@@ -14,15 +14,23 @@
   const { clearSelect, getOwnedAssets } = getAssetControlContext();
 
   let assets = getOwnedAssets();
-  let dateTime = $derived(
-    timeZone && assets[0]?.exifInfo?.dateTimeOriginal
-      ? fromISODateTime(assets[0]?.exifInfo.dateTimeOriginal, timeZone)
-      : fromISODateTimeUTC(assets[0]?.localDateTime),
-  );
+  let dateTime = $derived(() => {
+  for (const a of assets ?? []) {
+    const dt =
+      (a?.exifInfo?.dateTimeOriginal && timeZone
+        ? fromISODateTime(a.exifInfo.dateTimeOriginal, timeZone)
+        : a?.localDateTime
+        ? fromISODateTimeUTC(a.localDateTime)
+        : null);
+
+    if (dt) return dt;
+  }
+  return DateTime.now();
+});
 
   const handleChangeDate = async () => {
     const success = await modalManager.show(AssetSelectionChangeDateModal, {
-      initialDate: dateTime ?? DateTime.now(),
+      initialDate: dateTime,
       assets: assets,
     });
     if (success) {
