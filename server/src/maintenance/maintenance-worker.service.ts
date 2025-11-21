@@ -20,7 +20,7 @@ import { type ApiService as _ApiService } from 'src/services/api.service';
 import { type BaseService as _BaseService } from 'src/services/base.service';
 import { type ServerService as _ServerService } from 'src/services/server.service';
 import { MaintenanceModeState } from 'src/types';
-import { deleteBackup, listBackups, restoreBackup } from 'src/utils/backups';
+import { deleteBackup, listBackups, restoreBackup, uploadBackup } from 'src/utils/backups';
 import { getConfig } from 'src/utils/config';
 import { createMaintenanceLoginUrl } from 'src/utils/maintenance';
 import { getExternalDomain } from 'src/utils/misc';
@@ -281,6 +281,10 @@ export class MaintenanceWorkerService {
 
   async deleteBackup(filename: string): Promise<void> {
     return deleteBackup(this.backupRepos, filename);
+  }
+
+  async uploadBackup(file: Express.Multer.File): Promise<void> {
+    return uploadBackup(file);
   }
 
   private get backupRepos() {

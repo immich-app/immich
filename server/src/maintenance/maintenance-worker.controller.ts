@@ -1,4 +1,18 @@
-import { Body, Controller, Delete, Get, Param, Post, Req, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  FileTypeValidator,
+  Get,
+  Param,
+  ParseFilePipe,
+  Post,
+  Req,
+  Res,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { Request, Response } from 'express';
 import {
   MaintenanceAuthDto,
@@ -61,5 +75,15 @@ export class MaintenanceWorkerController {
   @MaintenanceRoute()
   async deleteBackup(@Param() { filename }: FilenameParamDto): Promise<void> {
     return this.service.deleteBackup(filename);
+  }
+
+  @Post('admin/maintenance/backups/upload')
+  @MaintenanceRoute()
+  @UseInterceptors(FileInterceptor('file'))
+  uploadBackup(
+    @UploadedFile(new ParseFilePipe({ validators: [new FileTypeValidator({ fileType: 'application/gzip' })] }))
+    file: Express.Multer.File,
+  ): Promise<void> {
+    return this.service.uploadBackup(file);
   }
 }

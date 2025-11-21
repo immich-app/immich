@@ -304,4 +304,62 @@ class MaintenanceAdminApi {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
   }
+
+  /// Upload asset
+  ///
+  /// Uploads a new asset to the server.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [MultipartFile] file:
+  Future<Response> uploadBackupWithHttpInfo({ MultipartFile? file, }) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/admin/maintenance/backups/upload';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['multipart/form-data'];
+
+    bool hasFields = false;
+    final mp = MultipartRequest('POST', Uri.parse(apiPath));
+    if (file != null) {
+      hasFields = true;
+      mp.fields[r'file'] = file.field;
+      mp.files.add(file);
+    }
+    if (hasFields) {
+      postBody = mp;
+    }
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'POST',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Upload asset
+  ///
+  /// Uploads a new asset to the server.
+  ///
+  /// Parameters:
+  ///
+  /// * [MultipartFile] file:
+  Future<void> uploadBackup({ MultipartFile? file, }) async {
+    final response = await uploadBackupWithHttpInfo( file: file, );
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
 }

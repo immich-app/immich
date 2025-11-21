@@ -48,6 +48,9 @@ export type MaintenanceListBackupsResponseDto = {
     backups: string[];
     failedBackups: string[];
 };
+export type MaintenanceUploadBackupDto = {
+    file?: Blob;
+};
 export type MaintenanceLoginDto = {
     token?: string;
 };
@@ -1874,6 +1877,18 @@ export function startRestoreFlow(opts?: Oazapfts.RequestOpts) {
         ...opts,
         method: "POST"
     }));
+}
+/**
+ * Upload asset
+ */
+export function uploadBackup({ maintenanceUploadBackupDto }: {
+    maintenanceUploadBackupDto: MaintenanceUploadBackupDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/admin/maintenance/backups/upload", oazapfts.multipart({
+        ...opts,
+        method: "POST",
+        body: maintenanceUploadBackupDto
+    })));
 }
 /**
  * Delete backup

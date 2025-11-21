@@ -1,5 +1,7 @@
+import { BadRequestException } from '@nestjs/common';
 import { debounce } from 'lodash';
 import { DateTime } from 'luxon';
+import { stat, writeFile } from 'node:fs/promises';
 import path, { join } from 'node:path';
 import { PassThrough, Readable, Writable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
@@ -267,6 +269,18 @@ export async function listBackups({
       .toReversed(),
     failedBackups: files.filter((fn) => isFailedBackupName(fn)),
   };
+}
+
+export async function uploadBackup(file: Express.Multer.File): Promise<void> {
+  const backupsFolder = StorageCore.getBaseFolder(StorageFolder.Backups);
+  const path = join(backupsFolder, file.originalname);
+
+  try {
+    await stat(path);
+    throw new BadRequestException('File already exists!');
+  } catch {
+    await writeFile(path, file.buffer);
+  }
 }
 
 function createSqlProgressStreams(cb: (progress: number) => void) {

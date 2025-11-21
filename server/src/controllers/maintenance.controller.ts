@@ -1,5 +1,19 @@
-import { BadRequestException, Body, Controller, Delete, Get, Param, Post, Res } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Delete,
+  FileTypeValidator,
+  Get,
+  Param,
+  ParseFilePipe,
+  Post,
+  Res,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -8,6 +22,7 @@ import {
   MaintenanceListBackupsResponseDto,
   MaintenanceLoginDto,
   MaintenanceStatusResponseDto,
+  MaintenanceUploadBackupDto,
   SetMaintenanceModeDto,
 } from 'src/dtos/maintenance.dto';
 import { ApiTag, ImmichCookie, MaintenanceAction, Permission } from 'src/enum';
@@ -103,5 +118,22 @@ export class MaintenanceController {
       isSecure: loginDetails.isSecure,
       values: [{ key: ImmichCookie.MaintenanceToken, value: jwt }],
     });
+  }
+
+  @Post('backups/upload')
+  @Authenticated({ permission: Permission.Maintenance, admin: true })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({ description: 'Backup Upload', type: MaintenanceUploadBackupDto })
+  @Endpoint({
+    summary: 'Upload asset',
+    description: 'Uploads a new asset to the server.',
+    history: new HistoryBuilder().added('v9.9.9').alpha('v9.9.9'),
+  })
+  @UseInterceptors(FileInterceptor('file'))
+  uploadBackup(
+    @UploadedFile(new ParseFilePipe({ validators: [new FileTypeValidator({ fileType: 'application/gzip' })] }))
+    file: Express.Multer.File,
+  ): Promise<void> {
+    return this.service.uploadBackup(file);
   }
 }

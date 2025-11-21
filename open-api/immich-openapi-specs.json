@@ -446,6 +446,57 @@
         "x-immich-state": "Alpha"
       }
     },
+    "/admin/maintenance/backups/upload": {
+      "post": {
+        "description": "Uploads a new asset to the server.",
+        "operationId": "uploadBackup",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/MaintenanceUploadBackupDto"
+              }
+            }
+          },
+          "description": "Backup Upload",
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Upload asset",
+        "tags": [
+          "Maintenance (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v9.9.9",
+            "state": "Added"
+          },
+          {
+            "version": "v9.9.9",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "maintenance",
+        "x-immich-state": "Alpha"
+      }
+    },
     "/admin/maintenance/backups/{filename}": {
       "delete": {
         "description": "Delete a backup by its filename",
@@ -16751,6 +16802,15 @@
         "required": [
           "action"
         ],
+        "type": "object"
+      },
+      "MaintenanceUploadBackupDto": {
+        "properties": {
+          "file": {
+            "format": "binary",
+            "type": "string"
+          }
+        },
         "type": "object"
       },
       "ManualJobName": {

@@ -1,6 +1,15 @@
 <script lang="ts">
+  import { uploadRequest } from '$lib/utils';
+  import { openFilePicker } from '$lib/utils/file-uploader';
   import { handleError } from '$lib/utils/handle-error';
-  import { deleteBackup, listBackups, MaintenanceAction, setMaintenanceMode } from '@immich/sdk';
+  import {
+    deleteBackup,
+    getBaseUrl,
+    listBackups,
+    MaintenanceAction,
+    setMaintenanceMode,
+    type MaintenanceUploadBackupDto,
+  } from '@immich/sdk';
   import { Button, Card, CardBody, HStack, modalManager, Stack, Text } from '@immich/ui';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -83,9 +92,50 @@
       }
     }
   }
+
+  let uploadProgress = $state(-1);
+
+  async function upload() {
+    const [file] = await openFilePicker({ multiple: false });
+    const formData = new FormData();
+    formData.append('file', file);
+
+    await uploadRequest<MaintenanceUploadBackupDto>({
+      url: getBaseUrl() + '/admin/maintenance/backups/upload',
+      data: formData,
+      onUploadProgress(event) {
+        uploadProgress = event.loaded / event.total;
+      },
+    });
+
+    uploadProgress = 1;
+
+    const { backups: newList } = await listBackups();
+    backups = mapBackups(newList);
+
+    uploadProgress = -1;
+  }
 </script>
 
 <Stack gap={2} class="mt-4 text-left">
+  <Card>
+    <CardBody>
+      {#if uploadProgress === -1}
+        <HStack>
+          <Text class="flex-grow">Upload database backup file</Text>
+          <Button size="small" onclick={upload}>Select file</Button>
+        </HStack>
+      {:else}
+        <HStack>
+          <Text class="flex-grow">Uploading...</Text>
+          <div class="flex-grow h-[10px] bg-gray-300 rounded-full overflow-hidden">
+            <div class="h-full bg-blue-600 transition-all duration-700" style="width: {uploadProgress * 100}%"></div>
+          </div>
+        </HStack>
+      {/if}
+    </CardBody>
+  </Card>
+
   {#each backups as backup (backup.filename)}
     <Card>
       <CardBody>
@@ -102,6 +152,7 @@
               {/if}
             {/if}
           </Stack>
+
           <Button size="small" disabled={deleting.has(backup.filename)} onclick={() => restore(backup.filename)}
             >Restore</Button
           >
