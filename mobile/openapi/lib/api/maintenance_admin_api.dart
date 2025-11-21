@@ -264,4 +264,44 @@ class MaintenanceAdminApi {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
   }
+
+  /// Start backup restore flow
+  ///
+  /// Put Immich into maintenance mode to restore a backup (Immich must not be configured)
+  ///
+  /// Note: This method returns the HTTP [Response].
+  Future<Response> startRestoreFlowWithHttpInfo() async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/admin/maintenance/backups/restore';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'POST',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Start backup restore flow
+  ///
+  /// Put Immich into maintenance mode to restore a backup (Immich must not be configured)
+  Future<void> startRestoreFlow() async {
+    final response = await startRestoreFlowWithHttpInfo();
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
 }

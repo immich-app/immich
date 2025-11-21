@@ -1867,6 +1867,15 @@ export function listBackups(opts?: Oazapfts.RequestOpts) {
     }));
 }
 /**
+ * Start backup restore flow
+ */
+export function startRestoreFlow(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/admin/maintenance/backups/restore", {
+        ...opts,
+        method: "POST"
+    }));
+}
+/**
  * Delete backup
  */
 export function deleteBackup({ filename }: {

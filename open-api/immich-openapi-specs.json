@@ -419,6 +419,33 @@
         "x-immich-state": "Alpha"
       }
     },
+    "/admin/maintenance/backups/restore": {
+      "post": {
+        "description": "Put Immich into maintenance mode to restore a backup (Immich must not be configured)",
+        "operationId": "startRestoreFlow",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "summary": "Start backup restore flow",
+        "tags": [
+          "Maintenance (admin)"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v9.9.9",
+            "state": "Added"
+          },
+          {
+            "version": "v9.9.9",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-state": "Alpha"
+      }
+    },
     "/admin/maintenance/backups/{filename}": {
       "delete": {
         "description": "Delete a backup by its filename",
