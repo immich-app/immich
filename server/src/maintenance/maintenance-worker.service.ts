@@ -1,20 +1,28 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { parse } from 'cookie';
 import { NextFunction, Request, Response } from 'express';
 import { jwtVerify } from 'jose';
 import { readFileSync } from 'node:fs';
 import { IncomingHttpHeaders } from 'node:http';
-import { MaintenanceAuthDto } from 'src/dtos/maintenance.dto';
-import { ImmichCookie, SystemMetadataKey } from 'src/enum';
+import { join } from 'node:path';
+import { StorageCore } from 'src/cores/storage.core';
+import { MaintenanceAuthDto, MaintenanceStatusResponseDto, SetMaintenanceModeDto } from 'src/dtos/maintenance.dto';
+import { ServerConfigDto } from 'src/dtos/server.dto';
+import { DatabaseLock, ImmichCookie, MaintenanceAction, StorageFolder, SystemMetadataKey } from 'src/enum';
+import { MaintenanceEphemeralStateRepository } from 'src/maintenance/maintenance-ephemeral-state.repository';
 import { MaintenanceWebsocketRepository } from 'src/maintenance/maintenance-websocket.repository';
 import { AppRepository } from 'src/repositories/app.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
+import { DatabaseRepository } from 'src/repositories/database.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
+import { ProcessRepository } from 'src/repositories/process.repository';
+import { StorageRepository } from 'src/repositories/storage.repository';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
 import { type ApiService as _ApiService } from 'src/services/api.service';
 import { type BaseService as _BaseService } from 'src/services/base.service';
 import { type ServerService as _ServerService } from 'src/services/server.service';
 import { MaintenanceModeState } from 'src/types';
+import { deleteBackup, isValidBackupName, listBackups, restoreBackup, uploadBackup } from 'src/utils/backups';
 import { getConfig } from 'src/utils/config';
 import { createMaintenanceLoginUrl } from 'src/utils/maintenance';
 import { getExternalDomain } from 'src/utils/misc';
@@ -29,7 +37,11 @@ export class MaintenanceWorkerService {
     private appRepository: AppRepository,
     private configRepository: ConfigRepository,
     private systemMetadataRepository: SystemMetadataRepository,
-    private maintenanceWorkerRepository: MaintenanceWebsocketRepository,
+    private maintenanceWebsocketRepository: MaintenanceWebsocketRepository,
+    private maintenanceEphemeralStateRepository: MaintenanceEphemeralStateRepository,
+    private storageRepository: StorageRepository,
+    private processRepository: ProcessRepository,
+    private databaseRepository: DatabaseRepository,
   ) {
     this.logger.setContext(this.constructor.name);
   }
@@ -55,22 +67,10 @@ export class MaintenanceWorkerService {
   /**
    * {@link _ServerService.getSystemConfig}
    */
-  async getSystemConfig() {
-    const config = await this.getConfig({ withCache: false });
-
+  getSystemConfig() {
     return {
-      loginPageMessage: config.server.loginPageMessage,
-      trashDays: config.trash.days,
-      userDeleteDelay: config.user.deleteDelay,
-      oauthButtonText: config.oauth.buttonText,
-      isInitialized: true,
-      isOnboarded: true,
-      externalDomain: config.server.externalDomain,
-      publicUsers: config.server.publicUsers,
-      mapDarkStyleUrl: config.map.darkStyle,
-      mapLightStyleUrl: config.map.lightStyle,
       maintenanceMode: true,
-    };
+    } as ServerConfigDto;
   }
 
   /**
@@ -106,12 +106,41 @@ export class MaintenanceWorkerService {
     };
   }
 
-  private async secret(): Promise<string> {
-    const state = (await this.systemMetadataRepository.get(SystemMetadataKey.MaintenanceMode)) as {
-      secret: string;
-    };
+  /**
+   * {@link _StorageService.detectMediaLocation}
+   */
+  detectMediaLocation(): string {
+    const envData = this.configRepository.getEnv();
+    if (envData.storage.mediaLocation) {
+      return envData.storage.mediaLocation;
+    }
 
-    return state.secret;
+    const targets: string[] = [];
+    const candidates = ['/data', '/usr/src/app/upload'];
+
+    for (const candidate of candidates) {
+      const exists = this.storageRepository.existsSync(candidate);
+      if (exists) {
+        targets.push(candidate);
+      }
+    }
+
+    if (targets.length === 1) {
+      return targets[0];
+    }
+
+    return '/usr/src/app/upload';
+  }
+
+  setStatus(status: MaintenanceStatusResponseDto): void {
+    this.maintenanceEphemeralStateRepository.setStatus(status);
+    this.maintenanceWebsocketRepository.serverSend('MaintenanceStatus', status);
+    this.maintenanceWebsocketRepository.clientSend('MaintenanceStatusV1', 'private', status);
+    this.maintenanceWebsocketRepository.clientSend(
+      'MaintenanceStatusV1',
+      'public',
+      this.maintenanceEphemeralStateRepository.getPublicStatus(),
+    );
   }
 
   async logSecret(): Promise<void> {
@@ -123,7 +152,7 @@ export class MaintenanceWorkerService {
       {
         username: 'immich-admin',
       },
-      await this.secret(),
+      this.maintenanceEphemeralStateRepository.getSecret(),
     );
 
     this.logger.log(`\n\n🚧 Immich is in maintenance mode, you can log in using the following URL:\n${url}\n`);
@@ -134,12 +163,21 @@ export class MaintenanceWorkerService {
     return this.login(jwtToken);
   }
 
+  async status(potentiallyJwt?: string): Promise<MaintenanceStatusResponseDto> {
+    try {
+      await this.login(potentiallyJwt);
+      return this.maintenanceEphemeralStateRepository.getStatus();
+    } catch {
+      return this.maintenanceEphemeralStateRepository.getPublicStatus();
+    }
+  }
+
   async login(jwt?: string): Promise<MaintenanceAuthDto> {
     if (!jwt) {
       throw new UnauthorizedException('Missing JWT Token');
     }
 
-    const secret = await this.secret();
+    const secret = this.maintenanceEphemeralStateRepository.getSecret();
 
     try {
       const result = await jwtVerify<MaintenanceAuthDto>(jwt, new TextEncoder().encode(secret));
@@ -149,13 +187,124 @@ export class MaintenanceWorkerService {
     }
   }
 
-  async endMaintenance(): Promise<void> {
+  async setAction(action: SetMaintenanceModeDto) {
+    this.setStatus({
+      action: action.action,
+    });
+
+    await this.runAction(action);
+  }
+
+  async runAction(action: SetMaintenanceModeDto) {
+    switch (action.action) {
+      case MaintenanceAction.Start: {
+        return;
+      }
+      case MaintenanceAction.End: {
+        return this.endMaintenance();
+      }
+      case MaintenanceAction.RestoreDatabase: {
+        if (!action.restoreBackupFilename) {
+          return;
+        }
+
+        break;
+      }
+    }
+
+    const lock = await this.databaseRepository.tryLock(DatabaseLock.MaintenanceOperation);
+    if (!lock) {
+      return;
+    }
+
+    this.logger.log(`Running maintenance action ${action.action}`);
+
+    await this.systemMetadataRepository.set(SystemMetadataKey.MaintenanceMode, {
+      isMaintenanceMode: true,
+      secret: this.maintenanceEphemeralStateRepository.getSecret(),
+      action: {
+        action: MaintenanceAction.Start,
+      },
+    });
+
+    try {
+      switch (action.action) {
+        case MaintenanceAction.RestoreDatabase: {
+          await this.restoreBackup(action.restoreBackupFilename);
+          break;
+        }
+      }
+    } catch (error) {
+      this.logger.error(`Encountered error running action: ${error}`);
+      this.setStatus({
+        action: action.action,
+        task: 'error',
+        error: '' + error,
+      });
+    }
+  }
+
+  private async endMaintenance(): Promise<void> {
     const state: MaintenanceModeState = { isMaintenanceMode: false as const };
     await this.systemMetadataRepository.set(SystemMetadataKey.MaintenanceMode, state);
 
     // => corresponds to notification.service.ts#onAppRestart
-    this.maintenanceWorkerRepository.clientBroadcast('AppRestartV1', state);
-    this.maintenanceWorkerRepository.serverSend('AppRestart', state);
+    this.maintenanceWebsocketRepository.clientBroadcast('AppRestartV1', state);
+    this.maintenanceWebsocketRepository.serverSend('AppRestart', state);
     this.appRepository.exitApp();
+  }
+
+  /**
+   * Backups
+   */
+
+  private async restoreBackup(filename: string): Promise<void> {
+    this.setStatus({
+      action: MaintenanceAction.RestoreDatabase,
+      task: 'ready',
+      progress: 0,
+    });
+
+    await restoreBackup(this.backupRepos, filename, (task, progress) =>
+      this.setStatus({
+        action: MaintenanceAction.RestoreDatabase,
+        progress,
+        task,
+      }),
+    );
+
+    await this.setAction({
+      action: MaintenanceAction.End,
+    });
+  }
+
+  async listBackups(): Promise<{ backups: string[] }> {
+    return { backups: await listBackups(this.backupRepos) };
+  }
+
+  async deleteBackup(filename: string): Promise<void> {
+    return deleteBackup(this.backupRepos, filename);
+  }
+
+  async uploadBackup(file: Express.Multer.File): Promise<void> {
+    return uploadBackup(file);
+  }
+
+  getBackupPath(filename: string): string {
+    if (!isValidBackupName(filename)) {
+      throw new BadRequestException('Invalid backup name!');
+    }
+
+    return join(StorageCore.getBaseFolder(StorageFolder.Backups), filename);
+  }
+
+  private get backupRepos() {
+    return {
+      logger: this.logger,
+      storage: this.storageRepository,
+      config: this.configRepository,
+      process: this.processRepository,
+      database: this.databaseRepository,
+    };
   }
 }

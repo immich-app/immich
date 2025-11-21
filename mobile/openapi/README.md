@@ -159,8 +159,15 @@ Class | Method | HTTP request | Description
 *LibrariesApi* | [**scanLibrary**](doc//LibrariesApi.md#scanlibrary) | **POST** /libraries/{id}/scan | Scan a library
 *LibrariesApi* | [**updateLibrary**](doc//LibrariesApi.md#updatelibrary) | **PUT** /libraries/{id} | Update a library
 *LibrariesApi* | [**validate**](doc//LibrariesApi.md#validate) | **POST** /libraries/{id}/validate | Validate library settings
+*MaintenanceAdminApi* | [**deleteBackup**](doc//MaintenanceAdminApi.md#deletebackup) | **DELETE** /admin/maintenance/backups/{filename} | Delete backup
+*MaintenanceAdminApi* | [**downloadBackup**](doc//MaintenanceAdminApi.md#downloadbackup) | **GET** /admin/maintenance/backups/{filename} | Download backup
+*MaintenanceAdminApi* | [**integrityCheck**](doc//MaintenanceAdminApi.md#integritycheck) | **GET** /admin/maintenance/integrity | Get integrity and heuristics
+*MaintenanceAdminApi* | [**listBackups**](doc//MaintenanceAdminApi.md#listbackups) | **GET** /admin/maintenance/backups/list | List backups
 *MaintenanceAdminApi* | [**maintenanceLogin**](doc//MaintenanceAdminApi.md#maintenancelogin) | **POST** /admin/maintenance/login | Log into maintenance mode
+*MaintenanceAdminApi* | [**maintenanceStatus**](doc//MaintenanceAdminApi.md#maintenancestatus) | **GET** /admin/maintenance/status | Get maintenance mode status
 *MaintenanceAdminApi* | [**setMaintenanceMode**](doc//MaintenanceAdminApi.md#setmaintenancemode) | **POST** /admin/maintenance | Set maintenance mode
+*MaintenanceAdminApi* | [**startRestoreFlow**](doc//MaintenanceAdminApi.md#startrestoreflow) | **POST** /admin/maintenance/backups/restore | Start backup restore flow
+*MaintenanceAdminApi* | [**uploadBackup**](doc//MaintenanceAdminApi.md#uploadbackup) | **POST** /admin/maintenance/backups/upload | Upload asset
 *MapApi* | [**getMapMarkers**](doc//MapApi.md#getmapmarkers) | **GET** /map/markers | Retrieve map markers
 *MapApi* | [**reverseGeocode**](doc//MapApi.md#reversegeocode) | **GET** /map/reverse-geocode | Reverse geocode coordinates
 *MemoriesApi* | [**addMemoryAssets**](doc//MemoriesApi.md#addmemoryassets) | **PUT** /memories/{id}/assets | Add assets to a memory
@@ -408,7 +415,10 @@ Class | Method | HTTP request | Description
  - [MachineLearningAvailabilityChecksDto](doc//MachineLearningAvailabilityChecksDto.md)
  - [MaintenanceAction](doc//MaintenanceAction.md)
  - [MaintenanceAuthDto](doc//MaintenanceAuthDto.md)
+ - [MaintenanceIntegrityResponseDto](doc//MaintenanceIntegrityResponseDto.md)
+ - [MaintenanceListBackupsResponseDto](doc//MaintenanceListBackupsResponseDto.md)
  - [MaintenanceLoginDto](doc//MaintenanceLoginDto.md)
+ - [MaintenanceStatusResponseDto](doc//MaintenanceStatusResponseDto.md)
  - [ManualJobName](doc//ManualJobName.md)
  - [MapMarkerResponseDto](doc//MapMarkerResponseDto.md)
  - [MapReverseGeocodeResponseDto](doc//MapReverseGeocodeResponseDto.md)

@@ -11,6 +11,7 @@
     <NavbarItem title={$t('users')} href={AppRoute.ADMIN_USERS} icon={mdiAccountMultipleOutline} />
     <NavbarItem title={$t('jobs')} href={AppRoute.ADMIN_JOBS} icon={mdiSync} />
     <NavbarItem title={$t('settings')} href={AppRoute.ADMIN_SETTINGS} icon={mdiCog} />
+    <NavbarItem title={$t('admin.maintenance_settings')} href={AppRoute.ADMIN_MAINTENANCE} icon={mdiCog} />
     <NavbarItem title={$t('external_libraries')} href={AppRoute.ADMIN_LIBRARY_MANAGEMENT} icon={mdiBookshelf} />
     <NavbarItem title={$t('server_stats')} href={AppRoute.ADMIN_STATS} icon={mdiServer} />
   </div>

@@ -2,10 +2,14 @@ import { createAdapter } from '@socket.io/redis-adapter';
 import Redis from 'ioredis';
 import { SignJWT } from 'jose';
 import { randomBytes } from 'node:crypto';
+import { join } from 'node:path';
 import { Server as SocketIO } from 'socket.io';
-import { MaintenanceAuthDto } from 'src/dtos/maintenance.dto';
+import { StorageCore } from 'src/cores/storage.core';
+import { MaintenanceAuthDto, MaintenanceIntegrityResponseDto } from 'src/dtos/maintenance.dto';
+import { StorageFolder } from 'src/enum';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { AppRestartEvent } from 'src/repositories/event.repository';
+import { StorageRepository } from 'src/repositories/storage.repository';
 
 export function sendOneShotAppRestart(state: AppRestartEvent): void {
   const server = new SocketIO();
@@ -71,4 +75,48 @@ export async function signMaintenanceJwt(secret: string, data: MaintenanceAuthDt
 
 export function generateMaintenanceSecret(): string {
   return randomBytes(64).toString('hex');
+}
+
+export async function integrityCheck(storageRepository: StorageRepository): Promise<MaintenanceIntegrityResponseDto> {
+  return {
+    storageIntegrity: Object.fromEntries(
+      await Promise.all(
+        Object.values(StorageFolder).map(async (folder) => {
+          const path = join(StorageCore.getBaseFolder(folder), '.immich');
+
+          try {
+            await storageRepository.readFile(path);
+
+            try {
+              await storageRepository.overwriteFile(path, Buffer.from(`${Date.now()}`));
+              return [folder, { readable: true, writable: true }];
+            } catch {
+              return [folder, { readable: true, writable: false }];
+            }
+          } catch {
+            return [folder, { readable: false, writable: false }];
+          }
+        }),
+      ),
+    ),
+    storageHeuristics: Object.fromEntries(
+      await Promise.all(
+        Object.values(StorageFolder).map(async (folder) => {
+          const path = StorageCore.getBaseFolder(folder);
+          const files = await storageRepository.readdir(path);
+
+          try {
+            return [
+              folder,
+              {
+                files: files.filter((fn) => fn !== '.immich').length,
+              },
+            ];
+          } catch {
+            return [folder, { files: 0 }];
+          }
+        }),
+      ),
+    ),
+  };
 }

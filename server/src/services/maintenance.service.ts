@@ -1,9 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { join } from 'node:path';
+import { StorageCore } from 'src/cores/storage.core';
 import { OnEvent } from 'src/decorators';
-import { MaintenanceAuthDto } from 'src/dtos/maintenance.dto';
-import { SystemMetadataKey } from 'src/enum';
+import { MaintenanceAuthDto, SetMaintenanceModeDto } from 'src/dtos/maintenance.dto';
+import { MaintenanceAction, StorageFolder, SystemMetadataKey } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
 import { MaintenanceModeState } from 'src/types';
+import { deleteBackup, isValidBackupName, listBackups, uploadBackup } from 'src/utils/backups';
 import { createMaintenanceLoginUrl, generateMaintenanceSecret, signMaintenanceJwt } from 'src/utils/maintenance';
 import { getExternalDomain } from 'src/utils/misc';
 
@@ -18,9 +21,14 @@ export class MaintenanceService extends BaseService {
       .then((state) => state ?? { isMaintenanceMode: false });
   }
 
-  async startMaintenance(username: string): Promise<{ jwt: string }> {
+  async startMaintenance(action: SetMaintenanceModeDto, username: string): Promise<{ jwt: string }> {
     const secret = generateMaintenanceSecret();
-    await this.systemMetadataRepository.set(SystemMetadataKey.MaintenanceMode, { isMaintenanceMode: true, secret });
+    await this.systemMetadataRepository.set(SystemMetadataKey.MaintenanceMode, {
+      isMaintenanceMode: true,
+      secret,
+      action,
+    });
+
     await this.eventRepository.emit('AppRestart', { isMaintenanceMode: true });
 
     return {
@@ -28,6 +36,20 @@ export class MaintenanceService extends BaseService {
         username,
       }),
     };
+  }
+
+  async startRestoreFlow(): Promise<{ jwt: string }> {
+    const adminUser = await this.userRepository.getAdmin();
+    if (adminUser) {
+      throw new BadRequestException('The server already has an admin');
+    }
+
+    return this.startMaintenance(
+      {
+        action: MaintenanceAction.RestoreDatabase,
+      },
+      'admin',
+    );
   }
 
   @OnEvent({ name: 'AppRestart', server: true })
@@ -49,5 +71,39 @@ export class MaintenanceService extends BaseService {
     }
 
     return await createMaintenanceLoginUrl(baseUrl, auth, secret);
+  }
+
+  /**
+   * Backups
+   */
+
+  async listBackups(): Promise<{ backups: string[] }> {
+    return { backups: await listBackups(this.backupRepos) };
+  }
+
+  async deleteBackup(filename: string): Promise<void> {
+    return deleteBackup(this.backupRepos, filename);
+  }
+
+  async uploadBackup(file: Express.Multer.File): Promise<void> {
+    return uploadBackup(file);
+  }
+
+  getBackupPath(filename: string): string {
+    if (!isValidBackupName(filename)) {
+      throw new BadRequestException('Invalid backup name!');
+    }
+
+    return join(StorageCore.getBaseFolder(StorageFolder.Backups), filename);
+  }
+
+  private get backupRepos() {
+    return {
+      logger: this.logger,
+      storage: this.storageRepository,
+      config: this.configRepository,
+      process: this.processRepository,
+      database: this.databaseRepository,
+    };
   }
 }
