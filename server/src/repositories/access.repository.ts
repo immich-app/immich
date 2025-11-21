@@ -462,6 +462,27 @@ class TagAccess {
   }
 }
 
+class EventAccess {
+  constructor(private db: Kysely<DB>) {}
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
+  @ChunkedSet({ paramIndex: 1 })
+  async checkOwnerAccess(userId: string, eventIds: Set<string>) {
+    if (eventIds.size === 0) {
+      return new Set<string>();
+    }
+
+    return this.db
+      .selectFrom('event')
+      .select('event.id')
+      .where('event.id', 'in', [...eventIds])
+      .where('event.ownerId', '=', userId)
+      .where('event.deletedAt', 'is', null)
+      .execute()
+      .then((events) => new Set(events.map((event) => event.id)));
+  }
+}
+
 class WorkflowAccess {
   constructor(private db: Kysely<DB>) {}
 
@@ -488,6 +509,7 @@ export class AccessRepository {
   album: AlbumAccess;
   asset: AssetAccess;
   authDevice: AuthDeviceAccess;
+  event: EventAccess;
   memory: MemoryAccess;
   notification: NotificationAccess;
   person: PersonAccess;
@@ -503,6 +525,7 @@ export class AccessRepository {
     this.album = new AlbumAccess(db);
     this.asset = new AssetAccess(db);
     this.authDevice = new AuthDeviceAccess(db);
+    this.event = new EventAccess(db);
     this.memory = new MemoryAccess(db);
     this.notification = new NotificationAccess(db);
     this.person = new PersonAccess(db);

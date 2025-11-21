@@ -3,7 +3,8 @@ import { getFormatter } from '$lib/utils/i18n';
 import { getAllAlbums } from '@immich/sdk';
 import type { PageLoad } from './$types';
 
-export const load = (async ({ url }) => {
+export const load = (async ({ url, depends }) => {
+  depends('app:albums');
   await authenticate(url);
   const sharedAlbums = await getAllAlbums({ shared: true });
   const albums = await getAllAlbums({});

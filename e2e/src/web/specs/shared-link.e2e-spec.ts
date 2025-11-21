@@ -4,10 +4,9 @@ import {
   LoginResponseDto,
   SharedLinkResponseDto,
   SharedLinkType,
-  createAlbum,
 } from '@immich/sdk';
 import { expect, test } from '@playwright/test';
-import { asBearerAuth, utils } from 'src/utils';
+import { utils } from 'src/utils';
 
 test.describe('Shared Links', () => {
   let admin: LoginResponseDto;
@@ -21,15 +20,10 @@ test.describe('Shared Links', () => {
     await utils.resetDatabase();
     admin = await utils.adminSetup();
     asset = await utils.createAsset(admin.accessToken);
-    album = await createAlbum(
-      {
-        createAlbumDto: {
-          albumName: 'Test Album',
-          assetIds: [asset.id],
-        },
-      },
-      { headers: asBearerAuth(admin.accessToken) },
-    );
+    album = await utils.createAlbum(admin.accessToken, {
+      albumName: 'Test Album',
+      assetIds: [asset.id],
+    });
     sharedLink = await utils.createSharedLink(admin.accessToken, {
       type: SharedLinkType.Album,
       albumId: album.id,

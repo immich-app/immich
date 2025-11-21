@@ -27,6 +27,7 @@ export enum AppRoute {
   ADMIN_REPAIR = '/admin/repair',
 
   ALBUMS = '/albums',
+  EVENTS = '/events',
   LIBRARIES = '/libraries',
   ARCHIVE = '/archive',
   FAVORITES = '/favorites',

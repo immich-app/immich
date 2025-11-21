@@ -8,6 +8,7 @@ import { AuthAdminController } from 'src/controllers/auth-admin.controller';
 import { AuthController } from 'src/controllers/auth.controller';
 import { DownloadController } from 'src/controllers/download.controller';
 import { DuplicateController } from 'src/controllers/duplicate.controller';
+import { EventController } from 'src/controllers/event.controller';
 import { FaceController } from 'src/controllers/face.controller';
 import { JobController } from 'src/controllers/job.controller';
 import { LibraryController } from 'src/controllers/library.controller';
@@ -47,6 +48,7 @@ export const controllers = [
   AuthAdminController,
   DownloadController,
   DuplicateController,
+  EventController,
   FaceController,
   JobController,
   LibraryController,

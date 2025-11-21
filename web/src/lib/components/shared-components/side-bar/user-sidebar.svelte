@@ -13,6 +13,7 @@
     mdiAccountOutline,
     mdiArchiveArrowDown,
     mdiArchiveArrowDownOutline,
+    mdiCalendarBlank,
     mdiFolderOutline,
     mdiHeart,
     mdiHeartOutline,
@@ -109,6 +110,8 @@
       </span>
     {/snippet}
   </SideBarLink>
+
+  <SideBarLink title={$t('events')} href={resolve('/(user)/events')} icon={mdiCalendarBlank} flippedLogo />
 
   {#if $preferences.tags.enabled && $preferences.tags.sidebarWeb}
     <SideBarLink title={$t('tags')} href={resolve('/(user)/tags')} icon={mdiTagMultipleOutline} flippedLogo />

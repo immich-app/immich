@@ -6,7 +6,6 @@ import {
   LoginResponseDto,
   ReactionType,
   createActivity as create,
-  createAlbum,
   removeAssetFromAlbum,
 } from '@immich/sdk';
 import { createUserDto, uuidDto } from 'src/fixtures';
@@ -30,16 +29,11 @@ describe('/activities', () => {
     admin = await utils.adminSetup();
     nonOwner = await utils.userSetup(admin.accessToken, createUserDto.user1);
     asset = await utils.createAsset(admin.accessToken);
-    album = await createAlbum(
-      {
-        createAlbumDto: {
-          albumName: 'Album 1',
-          assetIds: [asset.id],
-          albumUsers: [{ userId: nonOwner.userId, role: AlbumUserRole.Editor }],
-        },
-      },
-      { headers: asBearerAuth(admin.accessToken) },
-    );
+    album = await utils.createAlbum(admin.accessToken, {
+      albumName: 'Album 1',
+      assetIds: [asset.id],
+      albumUsers: [{ userId: nonOwner.userId, role: AlbumUserRole.Editor }],
+    });
   });
 
   beforeEach(async () => {
@@ -57,15 +51,10 @@ describe('/activities', () => {
     });
 
     it('should filter by album id', async () => {
-      const album2 = await createAlbum(
-        {
-          createAlbumDto: {
-            albumName: 'Album 2',
-            assetIds: [asset.id],
-          },
-        },
-        { headers: asBearerAuth(admin.accessToken) },
-      );
+      const album2 = await utils.createAlbum(admin.accessToken, {
+        albumName: 'Album 2',
+        assetIds: [asset.id],
+      });
 
       const [reaction] = await Promise.all([
         createActivity({ albumId: album.id, type: ReactionType.Like }),

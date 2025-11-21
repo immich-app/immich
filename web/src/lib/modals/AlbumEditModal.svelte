@@ -1,9 +1,10 @@
 <script lang="ts">
   import AlbumCover from '$lib/components/album-page/album-cover.svelte';
   import { handleError } from '$lib/utils/handle-error';
-  import { updateAlbumInfo, type AlbumResponseDto } from '@immich/sdk';
+  import { getAllEvents, updateAlbumInfo, type AlbumResponseDto, type EventResponseDto } from '@immich/sdk';
   import { Button, Field, HStack, Input, Modal, ModalBody, ModalFooter, Textarea } from '@immich/ui';
   import { mdiRenameOutline } from '@mdi/js';
+  import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
 
   type Props = {
@@ -15,7 +16,17 @@
 
   let albumName = $state(album.albumName);
   let description = $state(album.description);
+  let eventId = $state(album.eventId);
   let isSubmitting = $state(false);
+  let events = $state<EventResponseDto[]>([]);
+
+  onMount(async () => {
+    try {
+      events = await getAllEvents();
+    } catch (error) {
+      handleError(error, $t('errors.unable_to_load_events'));
+    }
+  });
 
   const handleSubmit = async (event: Event) => {
     event.preventDefault();
@@ -23,9 +34,13 @@
     isSubmitting = true;
 
     try {
-      await updateAlbumInfo({ id: album.id, updateAlbumDto: { albumName, description } });
+      await updateAlbumInfo({
+        id: album.id,
+        updateAlbumDto: { albumName, description, eventId: eventId || undefined },
+      });
       album.albumName = albumName;
       album.description = description;
+      album.eventId = eventId;
       onClose(album);
     } catch (error) {
       handleError(error, $t('errors.unable_to_update_album_info'));
@@ -44,6 +59,16 @@
         <div class="grow flex flex-col gap-4">
           <Field label={$t('name')}>
             <Input bind:value={albumName} />
+          </Field>
+
+          <Field label={$t('event')}>
+            <Select
+              bind:value={eventId}
+              options={[
+                { value: '', label: 'None' },
+                ...events.map((event) => ({ value: event.id, label: event.eventName })),
+              ]}
+            />
           </Field>
 
           <Field label={$t('description')}>

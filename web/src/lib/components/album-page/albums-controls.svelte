@@ -42,9 +42,11 @@
   interface Props {
     albumGroups: string[];
     searchQuery: string;
+    eventId?: string;
+    eventName?: string;
   }
 
-  let { albumGroups, searchQuery = $bindable() }: Props = $props();
+  let { albumGroups, searchQuery = $bindable(), eventId, eventName }: Props = $props();
 
   const flipOrdering = (ordering: string) => {
     return ordering === SortOrder.Asc ? SortOrder.Desc : SortOrder.Asc;
@@ -130,7 +132,7 @@
 <!-- Create Album -->
 <Button
   leadingIcon={mdiPlusBoxOutline}
-  onclick={() => createAlbumAndRedirect()}
+  onclick={() => createAlbumAndRedirect(undefined, undefined, eventId, eventName)}
   size="small"
   variant="ghost"
   color="secondary"

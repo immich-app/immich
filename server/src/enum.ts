@@ -121,6 +121,12 @@ export enum Permission {
   AlbumUserUpdate = 'albumUser.update',
   AlbumUserDelete = 'albumUser.delete',
 
+  EventCreate = 'event.create',
+  EventRead = 'event.read',
+  EventUpdate = 'event.update',
+  EventDelete = 'event.delete',
+  EventStatistics = 'event.statistics',
+
   AuthChangePassword = 'auth.changePassword',
 
   AuthDeviceDelete = 'authDevice.delete',
@@ -812,6 +818,7 @@ export enum ApiTag {
   Deprecated = 'Deprecated',
   Download = 'Download',
   Duplicates = 'Duplicates',
+  Events = 'Events',
   Faces = 'Faces',
   Jobs = 'Jobs',
   Libraries = 'Libraries',

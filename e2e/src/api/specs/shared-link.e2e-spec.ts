@@ -4,7 +4,6 @@ import {
   LoginResponseDto,
   SharedLinkResponseDto,
   SharedLinkType,
-  createAlbum,
   deleteUserAdmin,
 } from '@immich/sdk';
 import { createUserDto, uuidDto } from 'src/fixtures';
@@ -42,17 +41,9 @@ describe('/shared-links', () => {
     [asset1, asset2] = await Promise.all([utils.createAsset(user1.accessToken), utils.createAsset(user1.accessToken)]);
 
     [album, deletedAlbum, metadataAlbum] = await Promise.all([
-      createAlbum({ createAlbumDto: { albumName: 'album' } }, { headers: asBearerAuth(user1.accessToken) }),
-      createAlbum({ createAlbumDto: { albumName: 'deleted album' } }, { headers: asBearerAuth(user2.accessToken) }),
-      createAlbum(
-        {
-          createAlbumDto: {
-            albumName: 'metadata album',
-            assetIds: [asset1.id],
-          },
-        },
-        { headers: asBearerAuth(user1.accessToken) },
-      ),
+      utils.createAlbum(user1.accessToken, { albumName: 'album' }),
+      utils.createAlbum(user2.accessToken, { albumName: 'deleted album' }),
+      utils.createAlbum(user1.accessToken, { albumName: 'metadata album', assetIds: [asset1.id] }),
     ]);
 
     [linkWithDeletedAlbum, linkWithAlbum, linkWithAssets, linkWithPassword, linkWithMetadata, linkWithoutMetadata] =

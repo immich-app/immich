@@ -1291,6 +1291,16 @@
             }
           },
           {
+            "name": "eventId",
+            "required": false,
+            "in": "query",
+            "description": "Only returns albums that belong to the event\nundefined: get all albums",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
             "name": "shared",
             "required": false,
             "in": "query",
@@ -4680,6 +4690,292 @@
         ],
         "x-immich-permission": "duplicate.delete",
         "x-immich-state": "Stable"
+      }
+    },
+    "/events": {
+      "get": {
+        "description": "Retrieve a list of events available to the authenticated user.",
+        "operationId": "getAllEvents",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/EventResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "List all events",
+        "tags": [
+          "Events"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3",
+            "state": "Added"
+          }
+        ],
+        "x-immich-permission": "event.read"
+      },
+      "post": {
+        "description": "Create a new event.",
+        "operationId": "createEvent",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateEventDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Create an event",
+        "tags": [
+          "Events"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3",
+            "state": "Added"
+          }
+        ],
+        "x-immich-permission": "event.create"
+      }
+    },
+    "/events/statistics": {
+      "get": {
+        "description": "Returns statistics about the events available to the authenticated user.",
+        "operationId": "getEventStatistics",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventStatisticsResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Retrieve event statistics",
+        "tags": [
+          "Events"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3",
+            "state": "Added"
+          }
+        ],
+        "x-immich-permission": "event.statistics"
+      }
+    },
+    "/events/{id}": {
+      "delete": {
+        "description": "Delete a specific event by its ID.",
+        "operationId": "deleteEvent",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Delete an event",
+        "tags": [
+          "Events"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3",
+            "state": "Added"
+          }
+        ],
+        "x-immich-permission": "event.delete"
+      },
+      "get": {
+        "description": "Retrieve information about a specific event by its ID.",
+        "operationId": "getEventInfo",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Retrieve an event",
+        "tags": [
+          "Events"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3",
+            "state": "Added"
+          }
+        ],
+        "x-immich-permission": "event.read"
+      },
+      "patch": {
+        "description": "Update the information of a specific event by its ID.",
+        "operationId": "updateEventInfo",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateEventDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Update an event",
+        "tags": [
+          "Events"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3",
+            "state": "Added"
+          }
+        ],
+        "x-immich-permission": "event.update"
       }
     },
     "/faces": {
@@ -14000,6 +14296,10 @@
       "description": "Endpoints for managing and identifying duplicate assets."
     },
     {
+      "name": "Events",
+      "description": "An event is a collection of albums that can be used to organize albums into larger groups."
+    },
+    {
       "name": "Faces",
       "description": "A face is a detected human face within an asset, which can be associated with a person. Faces are normally detected via machine learning, but can also be created via manually."
     },
@@ -14355,6 +14655,10 @@
             "format": "date-time",
             "type": "string"
           },
+          "eventId": {
+            "nullable": true,
+            "type": "string"
+          },
           "hasSharedLink": {
             "type": "boolean"
           },
@@ -14401,6 +14705,7 @@
           "assets",
           "createdAt",
           "description",
+          "eventId",
           "hasSharedLink",
           "id",
           "isActivityEnabled",
@@ -15830,10 +16135,33 @@
           },
           "description": {
             "type": "string"
+          },
+          "eventId": {
+            "format": "uuid",
+            "type": "string"
           }
         },
         "required": [
-          "albumName"
+          "albumName",
+          "eventId"
+        ],
+        "type": "object"
+      },
+      "CreateEventDto": {
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "eventName": {
+            "type": "string"
+          },
+          "eventThumbnailAssetId": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "eventName"
         ],
         "type": "object"
       },
@@ -16075,6 +16403,63 @@
             "type": "boolean"
           }
         },
+        "type": "object"
+      },
+      "EventResponseDto": {
+        "properties": {
+          "albumCount": {
+            "type": "integer"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "eventName": {
+            "type": "string"
+          },
+          "eventThumbnailAssetId": {
+            "nullable": true,
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "owner": {
+            "$ref": "#/components/schemas/UserResponseDto"
+          },
+          "ownerId": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "albumCount",
+          "createdAt",
+          "description",
+          "eventName",
+          "eventThumbnailAssetId",
+          "id",
+          "owner",
+          "ownerId",
+          "updatedAt"
+        ],
+        "type": "object"
+      },
+      "EventStatisticsResponseDto": {
+        "properties": {
+          "owned": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "owned"
+        ],
         "type": "object"
       },
       "ExifResponseDto": {
@@ -17486,6 +17871,11 @@
           "albumUser.create",
           "albumUser.update",
           "albumUser.delete",
+          "event.create",
+          "event.read",
+          "event.update",
+          "event.delete",
+          "event.statistics",
           "auth.changePassword",
           "authDevice.delete",
           "archive.read",
@@ -22061,6 +22451,10 @@
           "description": {
             "type": "string"
           },
+          "eventId": {
+            "format": "uuid",
+            "type": "string"
+          },
           "isActivityEnabled": {
             "type": "boolean"
           },
@@ -22122,6 +22516,21 @@
                 "$ref": "#/components/schemas/AssetVisibility"
               }
             ]
+          }
+        },
+        "type": "object"
+      },
+      "UpdateEventDto": {
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "eventName": {
+            "type": "string"
+          },
+          "eventThumbnailAssetId": {
+            "format": "uuid",
+            "type": "string"
           }
         },
         "type": "object"

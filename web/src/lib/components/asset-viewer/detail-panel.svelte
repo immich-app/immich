@@ -14,6 +14,7 @@
   import { locale } from '$lib/stores/preferences.store';
   import { preferences, user } from '$lib/stores/user.store';
   import { getAssetThumbnailUrl, getPeopleThumbnailUrl } from '$lib/utils';
+  import { buildAlbumRoute } from '$lib/utils/album-utils';
   import { delay, getDimensions } from '$lib/utils/asset-utils';
   import { getByteUnitString } from '$lib/utils/byte-units';
   import { getMetadataSearchQuery } from '$lib/utils/metadata-search';
@@ -202,7 +203,7 @@
               class="w-22"
               href={resolve(
                 `${AppRoute.PEOPLE}/${person.id}?${QueryParameter.PREVIOUS_ROUTE}=${
-                  currentAlbum?.id ? `${AppRoute.ALBUMS}/${currentAlbum?.id}` : AppRoute.PHOTOS
+                  currentAlbum?.id ? buildAlbumRoute(currentAlbum.id, currentAlbum.eventId) : AppRoute.PHOTOS
                 }`,
               )}
               onfocus={() => ($boundingBoxesArray = people[index].faces)}
@@ -506,7 +507,7 @@
   <section class="px-6 pt-6 dark:text-immich-dark-fg">
     <p class="uppercase pb-4 text-sm">{$t('appears_in')}</p>
     {#each albums as album (album.id)}
-      <a href={resolve(`${AppRoute.ALBUMS}/${album.id}`)}>
+      <a href={resolve(buildAlbumRoute(album.id, album.eventId))}>
         <div class="flex gap-4 pt-2 hover:cursor-pointer items-center">
           <div>
             <img

@@ -7,7 +7,6 @@
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import RightClickContextMenu from '$lib/components/shared-components/context-menu/right-click-context-menu.svelte';
   import ToastAction from '$lib/components/ToastAction.svelte';
-  import { AppRoute } from '$lib/constants';
   import AlbumEditModal from '$lib/modals/AlbumEditModal.svelte';
   import AlbumShareModal from '$lib/modals/AlbumShareModal.svelte';
   import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
@@ -23,7 +22,13 @@
   } from '$lib/stores/preferences.store';
   import { user } from '$lib/stores/user.store';
   import { userInteraction } from '$lib/stores/user.svelte';
-  import { getSelectedAlbumGroupOption, sortAlbums, stringToSortOrder, type AlbumGroup } from '$lib/utils/album-utils';
+  import {
+    buildAlbumRoute,
+    getSelectedAlbumGroupOption,
+    sortAlbums,
+    stringToSortOrder,
+    type AlbumGroup,
+  } from '$lib/utils/album-utils';
   import type { ContextMenuPosition } from '$lib/utils/context-menu';
   import { handleError } from '$lib/utils/handle-error';
   import { normalizeSearchString } from '$lib/utils/string-utils';
@@ -290,7 +295,7 @@
           text: $t('view_album'),
           color: 'primary',
           onClick() {
-            return goto(resolve(`${AppRoute.ALBUMS}/${album.id}`));
+            return goto(resolve(buildAlbumRoute(album.id, album.eventId)));
           },
         },
       },

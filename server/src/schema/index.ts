@@ -1,23 +1,24 @@
 import { asset_face_source_type, asset_visibility_enum, assets_status_enum } from 'src/schema/enums';
 import {
-  album_delete_audit,
-  album_user_after_insert,
-  album_user_delete_audit,
-  asset_delete_audit,
-  asset_face_audit,
-  asset_metadata_audit,
-  f_concat_ws,
-  f_unaccent,
-  immich_uuid_v7,
-  ll_to_earth_public,
-  memory_asset_delete_audit,
-  memory_delete_audit,
-  partner_delete_audit,
-  person_delete_audit,
-  stack_delete_audit,
-  updated_at,
-  user_delete_audit,
-  user_metadata_audit,
+    album_delete_audit,
+    album_user_after_insert,
+    album_user_delete_audit,
+    asset_delete_audit,
+    asset_face_audit,
+    asset_metadata_audit,
+    event_delete_audit,
+    f_concat_ws,
+    f_unaccent,
+    immich_uuid_v7,
+    ll_to_earth_public,
+    memory_asset_delete_audit,
+    memory_delete_audit,
+    partner_delete_audit,
+    person_delete_audit,
+    stack_delete_audit,
+    updated_at,
+    user_delete_audit,
+    user_metadata_audit,
 } from 'src/schema/functions';
 import { ActivityTable } from 'src/schema/tables/activity.table';
 import { AlbumAssetAuditTable } from 'src/schema/tables/album-asset-audit.table';
@@ -38,6 +39,8 @@ import { AssetMetadataTable } from 'src/schema/tables/asset-metadata.table';
 import { AssetOcrTable } from 'src/schema/tables/asset-ocr.table';
 import { AssetTable } from 'src/schema/tables/asset.table';
 import { AuditTable } from 'src/schema/tables/audit.table';
+import { EventAuditTable } from 'src/schema/tables/event-audit.table';
+import { EventTable } from 'src/schema/tables/event.table';
 import { FaceSearchTable } from 'src/schema/tables/face-search.table';
 import { GeodataPlacesTable } from 'src/schema/tables/geodata-places.table';
 import { LibraryTable } from 'src/schema/tables/library.table';
@@ -96,6 +99,8 @@ export class ImmichDatabase {
     AssetFileTable,
     AuditTable,
     AssetExifTable,
+    EventTable,
+    EventAuditTable,
     FaceSearchTable,
     GeodataPlacesTable,
     LibraryTable,
@@ -145,6 +150,7 @@ export class ImmichDatabase {
     partner_delete_audit,
     asset_delete_audit,
     album_delete_audit,
+    event_delete_audit,
     album_user_after_insert,
     album_user_delete_audit,
     memory_delete_audit,
@@ -190,6 +196,9 @@ export interface DB {
   ocr_search: OcrSearchTable;
 
   audit: AuditTable;
+
+  event: EventTable;
+  event_audit: EventAuditTable;
 
   face_search: FaceSearchTable;
 

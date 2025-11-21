@@ -97,4 +97,4 @@ where
 delete from "session_sync_checkpoint"
 where
   "sessionId" = $1
-commit
+rollback

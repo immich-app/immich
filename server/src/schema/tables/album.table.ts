@@ -2,6 +2,7 @@ import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
 import { AssetOrder } from 'src/enum';
 import { album_delete_audit } from 'src/schema/functions';
 import { AssetTable } from 'src/schema/tables/asset.table';
+import { EventTable } from 'src/schema/tables/event.table';
 import { UserTable } from 'src/schema/tables/user.table';
 import {
   AfterDeleteTrigger,
@@ -59,6 +60,13 @@ export class AlbumTable {
 
   @Column({ default: AssetOrder.Desc })
   order!: Generated<AssetOrder>;
+
+  @ForeignKeyColumn(() => EventTable, {
+    nullable: false,
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  })
+  eventId!: string;
 
   @UpdateIdColumn({ index: true })
   updateId!: Generated<string>;

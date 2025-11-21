@@ -21,6 +21,7 @@ import {
   checkExistingAssets,
   createAlbum,
   createApiKey,
+  createEvent,
   createLibrary,
   createPartner,
   createPerson,
@@ -294,8 +295,18 @@ export const utils = {
     return createApiKey({ apiKeyCreateDto: { name: 'e2e', permissions } }, { headers: asBearerAuth(accessToken) });
   },
 
-  createAlbum: (accessToken: string, dto: CreateAlbumDto) =>
-    createAlbum({ createAlbumDto: dto }, { headers: asBearerAuth(accessToken) }),
+  createAlbum: async (accessToken: string, dto: CreateAlbumDto) => {
+    const createAlbumDto: CreateAlbumDto = { ...dto };
+    if (!createAlbumDto.eventId) {
+      const event = await createEvent(
+        { createEventDto: { eventName: createAlbumDto.albumName || 'Untitled Event' } },
+        { headers: asBearerAuth(accessToken) },
+      );
+      createAlbumDto.eventId = event.id;
+    }
+
+    return createAlbum({ createAlbumDto }, { headers: asBearerAuth(accessToken) });
+  },
 
   updateAlbumUser: (accessToken: string, args: Parameters<typeof updateAlbumUser>[0]) =>
     updateAlbumUser(args, { headers: asBearerAuth(accessToken) }),

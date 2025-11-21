@@ -615,6 +615,7 @@
         assetType={asset.type}
         albumOwnerId={album.ownerId}
         albumId={album.id}
+        eventId={album.eventId}
         assetId={asset.id}
         onClose={() => (isShowActivity = false)}
       />

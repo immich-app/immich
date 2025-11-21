@@ -4,10 +4,11 @@
   import { shortcut } from '$lib/actions/shortcut';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
-  import { AppRoute, timeBeforeShowLoadingSpinner } from '$lib/constants';
+  import { timeBeforeShowLoadingSpinner } from '$lib/constants';
   import { activityManager } from '$lib/managers/activity-manager.svelte';
   import { locale } from '$lib/stores/preferences.store';
   import { getAssetThumbnailUrl } from '$lib/utils';
+  import { buildAlbumRoute } from '$lib/utils/album-utils';
   import { getAssetType } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
   import { isTenMinutesApart } from '$lib/utils/timesince';
@@ -41,13 +42,23 @@
     user: UserResponseDto;
     assetId?: string | undefined;
     albumId: string;
+    eventId?: string | null;
     assetType?: AssetTypeEnum | undefined;
     albumOwnerId: string;
     disabled: boolean;
     onClose: () => void;
   }
 
-  let { user, assetId = undefined, albumId, assetType = undefined, albumOwnerId, disabled, onClose }: Props = $props();
+  let {
+    user,
+    assetId = undefined,
+    albumId,
+    eventId = undefined,
+    assetType = undefined,
+    albumOwnerId,
+    disabled,
+    onClose,
+  }: Props = $props();
 
   let innerHeight: number = $state(0);
   let activityHeight: number = $state(0);
@@ -145,7 +156,7 @@
               {#if assetId === undefined && reaction.assetId}
                 <a
                   class="aspect-square w-19 h-19"
-                  href={resolve(`${AppRoute.ALBUMS}/${albumId}/photos/${reaction.assetId}`)}
+                  href={resolve(buildAlbumRoute(albumId, eventId, `/photos/${reaction.assetId}`))}
                 >
                   <img
                     class="rounded-lg w-19 h-19 object-cover"
@@ -198,7 +209,7 @@
                 {#if assetId === undefined && reaction.assetId}
                   <a
                     class="aspect-square w-19 h-19"
-                    href={resolve(`${AppRoute.ALBUMS}/${albumId}/photos/${reaction.assetId}`)}
+                    href={resolve(buildAlbumRoute(albumId, eventId, `/photos/${reaction.assetId}`))}
                   >
                     <img
                       class="rounded-lg w-19 h-19 object-cover"

@@ -89,13 +89,20 @@
   }
 
   let { data = $bindable() }: Props = $props();
+  const event = $derived(data.event);
+  let album = $derived(data.album);
+  let albumId = $derived(album.id);
+  const getDefaultBackUrl = () => {
+    const targetEventId = album.eventId ?? event?.id;
+    return targetEventId ? `${AppRoute.EVENTS}/${targetEventId}/albums` : AppRoute.ALBUMS;
+  };
 
   let { isViewing: showAssetViewer, setAssetId, gridScrollTarget } = assetViewingStore;
   let { slideshowState, slideshowNavigation } = slideshowStore;
 
   let oldAt: AssetGridRouteSearchParams | null | undefined = $state();
 
-  let backUrl: string = $state(AppRoute.ALBUMS);
+  let backUrl: string = $state(getDefaultBackUrl());
   let viewMode: AlbumPageViewMode = $state(AlbumPageViewMode.VIEW);
   let isCreatingSharedAlbum = $state(false);
   let isShowActivity = $state(false);
@@ -116,12 +123,12 @@
       url = AppRoute.ALBUMS;
     }
 
-    backUrl = url || AppRoute.ALBUMS;
+    backUrl = url || getDefaultBackUrl();
 
     if (backUrl === AppRoute.SHARING && album.albumUsers.length === 0 && !album.hasSharedLink) {
       isCreatingSharedAlbum = true;
     } else if (backUrl === AppRoute.SHARED_LINKS) {
-      backUrl = history.state?.backUrl || AppRoute.ALBUMS;
+      backUrl = history.state?.backUrl || getDefaultBackUrl();
     }
   });
 
@@ -287,9 +294,6 @@
     }
   });
 
-  let album = $derived(data.album);
-  let albumId = $derived(album.id);
-
   $effect(() => {
     if (!album.isActivityEnabled && activityManager.commentCount === 0) {
       isShowActivity = false;
@@ -430,18 +434,18 @@
       >
         {#if viewMode !== AlbumPageViewMode.SELECT_ASSETS}
           {#if viewMode !== AlbumPageViewMode.SELECT_THUMBNAIL}
-            <!-- ALBUM TITLE -->
-            <section class="pt-8 md:pt-24">
+            <!-- ALBUM HEADER -->
+            <section class="pt-8 md:pt-24 mb-6">
+              {#if album.assetCount > 0 || event}
+                <AlbumSummary {album} {event} />
+              {/if}
+
               <AlbumTitle
                 id={album.id}
                 albumName={album.albumName}
                 {isOwned}
                 onUpdate={(albumName) => (album.albumName = albumName)}
               />
-
-              {#if album.assetCount > 0}
-                <AlbumSummary {album} />
-              {/if}
 
               <!-- ALBUM SHARING -->
               {#if album.albumUsers.length > 0 || (album.hasSharedLink && isOwned)}
@@ -718,6 +722,7 @@
           disabled={!album.isActivityEnabled}
           albumOwnerId={album.ownerId}
           albumId={album.id}
+          eventId={album.eventId ?? event?.id}
           onClose={handleOpenAndCloseActivityTab}
         />
       </div>

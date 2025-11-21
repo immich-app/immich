@@ -7,6 +7,7 @@ import {
   addAssetsToAlbum,
   checkBulkUpload,
   createAlbum,
+  createEvent,
   defaults,
   getAllAlbums,
   getSupportedMediaTypes,
@@ -459,6 +460,15 @@ const updateAlbums = async (assets: Asset[], options: UploadOptionsDto) => {
 
   const albums = await getAllAlbums({});
   const existingAlbums = new Map(albums.map((album) => [album.albumName, album.id]));
+  const albumEventIds = new Map<string, string>();
+  const ensureEventId = async (albumName: string) => {
+    if (albumEventIds.has(albumName)) {
+      return albumEventIds.get(albumName)!;
+    }
+    const event = await createEvent({ createEventDto: { eventName: albumName || 'Untitled Event' } });
+    albumEventIds.set(albumName, event.id);
+    return event.id;
+  };
   const newAlbums: Set<string> = new Set();
   for (const { filepath } of assets) {
     const albumName = getAlbumName(filepath, options);
@@ -483,7 +493,10 @@ const updateAlbums = async (assets: Asset[], options: UploadOptionsDto) => {
   try {
     for (const albumNames of chunk([...newAlbums], concurrency)) {
       const items = await Promise.all(
-        albumNames.map((albumName: string) => createAlbum({ createAlbumDto: { albumName } })),
+        albumNames.map(async (albumName: string) => {
+          const eventId = await ensureEventId(albumName);
+          return createAlbum({ createAlbumDto: { albumName, eventId } });
+        }),
       );
       for (const { id, albumName } of items) {
         existingAlbums.set(albumName, id);

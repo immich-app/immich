@@ -1,4 +1,4 @@
-import { goto } from '$app/navigation';
+import { goto, invalidate } from '$app/navigation';
 import { AppRoute } from '$lib/constants';
 import {
   AlbumFilter,
@@ -12,6 +12,7 @@ import {
 import { handleError } from '$lib/utils/handle-error';
 import type { AlbumResponseDto } from '@immich/sdk';
 import * as sdk from '@immich/sdk';
+import { toastManager } from '@immich/ui';
 import { orderBy } from 'lodash-es';
 import { t } from 'svelte-i18n';
 import { get } from 'svelte/store';
@@ -21,12 +22,18 @@ import { get } from 'svelte/store';
  * Albums General Management
  * -------------------------
  */
-export const createAlbum = async (name?: string, assetIds?: string[]) => {
+export const buildAlbumRoute = (albumId: string, eventId?: string | null, suffix = '') => {
+  const path = `${AppRoute.ALBUMS}/${albumId}${suffix}`;
+  return eventId ? `${path}?eventId=${eventId}` : path;
+};
+
+export const createAlbum = async (name?: string, assetIds?: string[], eventId: string) => {
   try {
     const newAlbum: AlbumResponseDto = await sdk.createAlbum({
       createAlbumDto: {
         albumName: name ?? '',
         assetIds,
+        eventId,
       },
     });
     return newAlbum;
@@ -36,10 +43,30 @@ export const createAlbum = async (name?: string, assetIds?: string[]) => {
   }
 };
 
-export const createAlbumAndRedirect = async (name?: string, assetIds?: string[]) => {
-  const newAlbum = await createAlbum(name, assetIds);
+export const createAlbumAndRedirect = async (
+  name?: string,
+  assetIds?: string[],
+  eventId?: string,
+  eventName?: string,
+) => {
+  const $t = get(t);
+  if (!eventId) {
+    toastManager.warning($t('select_event_before_creating_album'));
+    await goto(AppRoute.EVENTS);
+    return;
+  }
+  const newAlbum = await createAlbum(name, assetIds, eventId);
   if (newAlbum) {
-    await goto(`${AppRoute.ALBUMS}/${newAlbum.id}`);
+    const targetEventId = newAlbum.eventId ?? eventId;
+    await invalidate('app:albums');
+    if (targetEventId) {
+      await invalidate(`app:event:${targetEventId}:albums`);
+      const eventLabel = eventName?.trim() || targetEventId;
+      toastManager.info($t('album_created_for_event', { values: { event: eventLabel } }));
+    } else {
+      toastManager.info($t('album_created_without_event'));
+    }
+    await goto(buildAlbumRoute(newAlbum.id, targetEventId ?? undefined));
   }
 };
 

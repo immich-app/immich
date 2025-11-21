@@ -43,7 +43,8 @@
   const selectableRowCount = $derived(albumModalRows.filter((row) => isSelectableRowType(row.type)).length);
 
   const onNewAlbum = async (name: string) => {
-    const album = await createAlbum({ createAlbumDto: { albumName: name } });
+    const event = await createEvent({ createEventDto: { eventName: name || 'Untitled Event' } });
+    const album = await createAlbum({ createAlbumDto: { albumName: name, eventId: event.id } });
     onClose([album]);
   };
 

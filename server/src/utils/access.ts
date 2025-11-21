@@ -298,6 +298,12 @@ const checkOtherAccess = async (access: AccessRepository, request: OtherAccessRe
       return access.stack.checkOwnerAccess(auth.user.id, ids);
     }
 
+    case Permission.EventRead:
+    case Permission.EventUpdate:
+    case Permission.EventDelete: {
+      return access.event.checkOwnerAccess(auth.user.id, ids);
+    }
+
     case Permission.WorkflowRead:
     case Permission.WorkflowUpdate:
     case Permission.WorkflowDelete: {

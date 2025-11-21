@@ -14,6 +14,7 @@ import { DatabaseRepository } from 'src/repositories/database.repository';
 import { DownloadRepository } from 'src/repositories/download.repository';
 import { DuplicateRepository } from 'src/repositories/duplicate.repository';
 import { EmailRepository } from 'src/repositories/email.repository';
+import { EventEntityRepository } from 'src/repositories/event-entity.repository';
 import { EventRepository } from 'src/repositories/event.repository';
 import { JobRepository } from 'src/repositories/job.repository';
 import { LibraryRepository } from 'src/repositories/library.repository';
@@ -67,6 +68,7 @@ export const repositories = [
   DownloadRepository,
   DuplicateRepository,
   EmailRepository,
+  EventEntityRepository,
   EventRepository,
   JobRepository,
   LibraryRepository,
