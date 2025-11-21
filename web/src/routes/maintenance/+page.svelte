@@ -39,31 +39,29 @@
 
 <AuthPageLayout withBackdrop={$status?.action === MaintenanceAction.Start}>
   <div class="flex flex-col place-items-center text-center gap-4">
-    {#if $status?.action === MaintenanceAction.RestoreDatabase}
-      {#if $status.task}
-        <Heading size="large" color="primary" tag="h1">Restoring Database</Heading>
-        {#if $status.error}
-          <Scrollable class="max-h-[320px]">
-            <pre class="text-left"><code>{error}</code></pre>
-          </Scrollable>
-        {:else}
-          <div class="w-[240px] h-[10px] bg-gray-300 rounded-full overflow-hidden">
-            <div
-              class="h-full bg-blue-600 transition-all duration-700"
-              style="width: {($status.progress || 0) * 100}%"
-            ></div>
-          </div>
-          {#if $status.task !== 'ready'}
-            <Text>{$t(`maintenance_task_${$status.task as 'backup' | 'restore'}`)}</Text>
-          {/if}
-        {/if}
-      {:else}
-        <Heading size="large" color="primary" tag="h1">Restore From Backup</Heading>
+    {#if $status?.action === MaintenanceAction.RestoreDatabase && $status.task}
+      <Heading size="large" color="primary" tag="h1">Restoring Database</Heading>
+      {#if $status.error}
         <Scrollable class="max-h-[320px]">
-          <MaintenanceBackupsList />
+          <pre class="text-left"><code>{error}</code></pre>
         </Scrollable>
-        <Button onclick={end}>Cancel</Button>
+      {:else}
+        <div class="w-[240px] h-[10px] bg-gray-300 rounded-full overflow-hidden">
+          <div
+            class="h-full bg-blue-600 transition-all duration-700"
+            style="width: {($status.progress || 0) * 100}%"
+          ></div>
+        </div>
+        {#if $status.task !== 'ready'}
+          <Text>{$t(`maintenance_task_${$status.task as 'backup' | 'restore'}`)}</Text>
+        {/if}
       {/if}
+    {:else if $status?.action === MaintenanceAction.RestoreDatabase && $auth}
+      <Heading size="large" color="primary" tag="h1">Restore From Backup</Heading>
+      <Scrollable class="max-h-[320px]">
+        <MaintenanceBackupsList />
+      </Scrollable>
+      <Button onclick={end}>Cancel</Button>
     {:else}
       <Heading size="large" color="primary" tag="h1">{$t('maintenance_title')}</Heading>
       <p>
