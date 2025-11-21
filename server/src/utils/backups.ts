@@ -198,9 +198,14 @@ export async function restoreBackup(
 
     logger.log(`Database Restore Starting. Database Version: ${databaseMajorVersion}`);
 
-    const fileStream = storage.createPlainReadStream(backupFilePath);
-    const gunzip = storage.createGunzip();
-    fileStream.pipe(gunzip);
+    let inputStream: Readable;
+    if (backupFilePath.endsWith('.gz')) {
+      const fileStream = storage.createPlainReadStream(backupFilePath);
+      const inputStream = storage.createGunzip();
+      fileStream.pipe(inputStream);
+    } else {
+      inputStream = storage.createPlainReadStream(backupFilePath);
+    }
 
     async function* sql() {
       yield `
@@ -219,7 +224,7 @@ export async function restoreBackup(
         GRANT ALL ON SCHEMA public TO public;
       `;
 
-      for await (const chunk of gunzip) {
+      for await (const chunk of inputStream) {
         yield chunk;
       }
     }
