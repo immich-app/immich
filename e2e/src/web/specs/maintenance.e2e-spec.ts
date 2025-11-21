@@ -99,6 +99,7 @@ test.describe('Maintenance', () => {
       await page.waitForURL('/maintenance**');
     }
 
+    await page.getByRole('button', { name: 'Next' }).click();
     await page.getByRole('button', { name: 'Restore', exact: true }).click();
     await page.locator('#bits-c2').getByRole('button', { name: 'Restore' }).click();
 
