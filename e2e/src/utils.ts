@@ -599,8 +599,8 @@ export const utils = {
   },
 
   resetBackups: async (accessToken: string) => {
-    const { backups, failedBackups } = await listBackups({ headers: asBearerAuth(accessToken) });
-    for (const filename of [...backups, ...failedBackups]) {
+    const { backups } = await listBackups({ headers: asBearerAuth(accessToken) });
+    for (const filename of backups) {
       await deleteBackup({ filename }, { headers: asBearerAuth(accessToken) });
     }
   },
