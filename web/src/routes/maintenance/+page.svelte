@@ -37,7 +37,7 @@
   );
 </script>
 
-<AuthPageLayout>
+<AuthPageLayout withBackdrop={$status?.action === MaintenanceAction.Start}>
   <div class="flex flex-col place-items-center text-center gap-4">
     {#if $status?.action === MaintenanceAction.RestoreDatabase}
       {#if $status.task}
