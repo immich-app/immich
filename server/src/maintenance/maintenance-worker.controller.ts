@@ -1,17 +1,4 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  FileTypeValidator,
-  Get,
-  Param,
-  ParseFilePipe,
-  Post,
-  Req,
-  Res,
-  UploadedFile,
-  UseInterceptors,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Req, Res, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Request, Response } from 'express';
 import {
@@ -88,7 +75,7 @@ export class MaintenanceWorkerController {
   @MaintenanceRoute()
   @UseInterceptors(FileInterceptor('file'))
   uploadBackup(
-    @UploadedFile(new ParseFilePipe({ validators: [new FileTypeValidator({ fileType: 'application/gzip' })] }))
+    @UploadedFile()
     file: Express.Multer.File,
   ): Promise<void> {
     return this.service.uploadBackup(file);

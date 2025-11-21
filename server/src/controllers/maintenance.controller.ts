@@ -3,10 +3,8 @@ import {
   Body,
   Controller,
   Delete,
-  FileTypeValidator,
   Get,
   Param,
-  ParseFilePipe,
   Post,
   Res,
   UploadedFile,
@@ -144,7 +142,7 @@ export class MaintenanceController {
   })
   @UseInterceptors(FileInterceptor('file'))
   uploadBackup(
-    @UploadedFile(new ParseFilePipe({ validators: [new FileTypeValidator({ fileType: 'application/gzip' })] }))
+    @UploadedFile()
     file: Express.Multer.File,
   ): Promise<void> {
     return this.service.uploadBackup(file);
