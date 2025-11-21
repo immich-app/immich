@@ -68,7 +68,7 @@ test.describe('Maintenance', () => {
 
   test('handle backup restore failure', async ({ context, page }) => {
     await utils.resetBackups(admin.accessToken);
-    await utils.prepareTestBackup('corrupted.sql');
+    await utils.prepareTestBackup('corrupted');
     await utils.setAuthCookies(context, admin.accessToken);
 
     await page.goto('/admin/maintenance?isOpen=backups');
