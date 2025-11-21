@@ -96,6 +96,16 @@ export class JobService extends BaseService {
         break;
       }
 
+      case JobName.AssetEditThumbnailGeneration: {
+        const asset = await this.assetRepository.getById(item.data.id);
+
+        if (asset) {
+          this.websocketRepository.clientSend('AssetEditReadyV1', asset.ownerId, { assetId: item.data.id });
+        }
+
+        break;
+      }
+
       case JobName.AssetGenerateThumbnails: {
         if (!item.data.notify && item.data.source !== 'upload') {
           break;

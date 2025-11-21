@@ -565,6 +565,9 @@ importers:
       thumbhash:
         specifier: ^0.1.1
         version: 0.1.1
+      transformation-matrix:
+        specifier: ^3.1.0
+        version: 3.1.0
       ua-parser-js:
         specifier: ^2.0.0
         version: 2.0.7
@@ -11331,6 +11334,9 @@ packages:
   tr46@5.1.1:
     resolution: {integrity: sha512-hdF5ZgjTqgAntKkklYw0R03MG2x/bSzTtkxmIRw/sTNV8YXsCJ1tfLAX23lhxhHJlEf3CRCOCGGWw3vI3GaSPw==}
     engines: {node: '>=18'}
+
+  transformation-matrix@3.1.0:
+    resolution: {integrity: sha512-oYubRWTi2tYFHAL2J8DLvPIqIYcYZ0fSOi2vmSy042Ho4jBW2ce6VP7QfD44t65WQz6bw5w1Pk22J7lcUpaTKA==}
 
   tree-dump@1.1.0:
     resolution: {integrity: sha512-rMuvhU4MCDbcbnleZTFezWsaZXRFemSqAM+7jPnzUl1fo9w3YEKOxAeui0fz3OI4EU4hf23iyA7uQRVko+UaBA==}
@@ -24875,6 +24881,8 @@ snapshots:
     dependencies:
       punycode: 2.3.1
     optional: true
+
+  transformation-matrix@3.1.0: {}
 
   tree-dump@1.1.0(tslib@2.8.1):
     dependencies:

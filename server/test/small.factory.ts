@@ -1,6 +1,7 @@
 import {
   Activity,
   ApiKey,
+  AssetFile,
   AuthApiKey,
   AuthSharedLink,
   AuthUser,
@@ -360,6 +361,7 @@ const assetOcrFactory = (
     boxScore?: number;
     textScore?: number;
     text?: string;
+    isVisible?: boolean;
   } = {},
 ) => ({
   id: newUuid(),
@@ -375,13 +377,22 @@ const assetOcrFactory = (
   boxScore: 0.95,
   textScore: 0.92,
   text: 'Sample Text',
+  isVisible: true,
   ...ocr,
+});
+
+const assetFileFactory = (file: Partial<AssetFile> = {}): AssetFile => ({
+  id: newUuid(),
+  type: AssetFileType.Preview,
+  path: '/uploads/user-id/thumbs/path.jpg',
+  ...file,
 });
 
 export const factory = {
   activity: activityFactory,
   apiKey: apiKeyFactory,
   asset: assetFactory,
+  assetFile: assetFileFactory,
   assetOcr: assetOcrFactory,
   auth: authFactory,
   authApiKey: authApiKeyFactory,

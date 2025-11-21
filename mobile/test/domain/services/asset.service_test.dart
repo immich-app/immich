@@ -22,6 +22,42 @@ void main() {
   });
 
   group('getAspectRatio', () {
+    test('flips dimensions on Android for 90° and 270° orientations', () async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.android;
+      addTearDown(() => debugDefaultTargetPlatformOverride = null);
+
+      for (final orientation in [90, 270]) {
+        final localAsset = TestUtils.createLocalAsset(
+          id: 'local-$orientation',
+          width: 1920,
+          height: 1080,
+          orientation: orientation,
+        );
+
+        final result = await sut.getAspectRatio(localAsset);
+
+        expect(result, 1080 / 1920, reason: 'Orientation $orientation should flip on Android');
+      }
+    });
+
+    test('does not flip dimensions on iOS regardless of orientation', () async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+      addTearDown(() => debugDefaultTargetPlatformOverride = null);
+
+      for (final orientation in [0, 90, 270]) {
+        final localAsset = TestUtils.createLocalAsset(
+          id: 'local-$orientation',
+          width: 1920,
+          height: 1080,
+          orientation: orientation,
+        );
+
+        final result = await sut.getAspectRatio(localAsset);
+
+        expect(result, 1920 / 1080, reason: 'iOS should never flip dimensions');
+      }
+    });
+
     test('fetches dimensions from remote repository when missing from asset', () async {
       final remoteAsset = TestUtils.createRemoteAsset(id: 'remote-1', width: null, height: null);
 
@@ -101,8 +137,8 @@ void main() {
       final localAsset = TestUtils.createLocalAsset(
         id: 'local-1',
         remoteId: 'remote-1',
-        width: null,
-        height: null,
+        width: 1920,
+        height: 1080,
         orientation: 0,
       );
 
@@ -126,9 +162,24 @@ void main() {
       );
 
       final result = await sut.getAspectRatio(localAsset);
-      verify(() => mockRemoteAssetRepository.get('remote-1')).called(1);
 
-      expect(result, 1920 / 1080);
+      expect(result, 1080 / 1920);
+    });
+
+    test('should not flip remote asset dimensions', () async {
+      final flippedOrientations = ['1', '2', '3', '4', '5', '6', '7', '8', '90', '-90'];
+
+      for (final orientation in flippedOrientations) {
+        final remoteAsset = TestUtils.createRemoteAsset(id: 'remote-$orientation', width: 1920, height: 1080);
+
+        final exif = ExifInfo(orientation: orientation);
+
+        when(() => mockRemoteAssetRepository.getExif('remote-$orientation')).thenAnswer((_) async => exif);
+
+        final result = await sut.getAspectRatio(remoteAsset);
+
+        expect(result, 1920 / 1080, reason: 'Should not flipped remote asset dimensions for orientation $orientation');
+      }
     });
   });
 }

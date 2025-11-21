@@ -20,6 +20,7 @@ import {
   CheckExistingAssetsDto,
   UploadFieldName,
 } from 'src/dtos/asset-media.dto';
+import { AssetDownloadOriginalDto } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
   AssetFileType,
@@ -193,10 +194,25 @@ export class AssetMediaService extends BaseService {
     }
   }
 
-  async downloadOriginal(auth: AuthDto, id: string): Promise<ImmichFileResponse> {
+  async downloadOriginal(auth: AuthDto, id: string, dto: AssetDownloadOriginalDto): Promise<ImmichFileResponse> {
     await this.requireAccess({ auth, permission: Permission.AssetDownload, ids: [id] });
 
     const asset = await this.findOrFail(id);
+
+    if (asset.edits!.length > 0 && (dto.edited ?? false)) {
+      const { editedFullsizeFile } = getAssetFiles(asset.files ?? []);
+
+      if (!editedFullsizeFile) {
+        throw new NotFoundException('Edited asset media not found');
+      }
+
+      return new ImmichFileResponse({
+        path: editedFullsizeFile.path,
+        fileName: getFileNameWithoutExtension(asset.originalFileName) + getFilenameExtension(editedFullsizeFile.path),
+        contentType: mimeTypes.lookup(editedFullsizeFile.path),
+        cacheControl: CacheControl.PrivateWithCache,
+      });
+    }
 
     return new ImmichFileResponse({
       path: asset.originalPath,
@@ -216,12 +232,20 @@ export class AssetMediaService extends BaseService {
     const asset = await this.findOrFail(id);
     const size = dto.size ?? AssetMediaSize.THUMBNAIL;
 
-    const { thumbnailFile, previewFile, fullsizeFile } = getAssetFiles(asset.files ?? []);
+    const files = getAssetFiles(asset.files ?? []);
+
+    const requestingEdited = (dto.edited ?? false) && asset.edits!.length > 0;
+    const { fullsizeFile, previewFile, thumbnailFile } = {
+      fullsizeFile: requestingEdited ? files.editedFullsizeFile : files.fullsizeFile,
+      previewFile: requestingEdited ? files.editedPreviewFile : files.previewFile,
+      thumbnailFile: requestingEdited ? files.editedThumbnailFile : files.thumbnailFile,
+    };
+
     let filepath = previewFile?.path;
     if (size === AssetMediaSize.THUMBNAIL && thumbnailFile) {
       filepath = thumbnailFile.path;
     } else if (size === AssetMediaSize.FULLSIZE) {
-      if (mimeTypes.isWebSupportedImage(asset.originalPath)) {
+      if (mimeTypes.isWebSupportedImage(asset.originalPath) && !dto.edited) {
         // use original file for web supported images
         return { targetSize: 'original' };
       }
@@ -465,7 +489,7 @@ export class AssetMediaService extends BaseService {
   }
 
   private async findOrFail(id: string) {
-    const asset = await this.assetRepository.getById(id, { files: true });
+    const asset = await this.assetRepository.getById(id, { files: true, edits: true });
     if (!asset) {
       throw new NotFoundException('Asset not found');
     }

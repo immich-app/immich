@@ -1,6 +1,5 @@
 import { UserAdmin } from 'src/database';
 import { MapAsset } from 'src/dtos/asset-response.dto';
-import { ExifResponseDto } from 'src/dtos/exif.dto';
 import { SharedLinkResponseDto } from 'src/dtos/shared-link.dto';
 import { AssetStatus, AssetType, AssetVisibility, SharedLinkType } from 'src/enum';
 import { assetStub } from 'test/fixtures/asset.stub';
@@ -158,6 +157,8 @@ export const sharedLinkStub = {
         libraryId: null,
         stackId: null,
         visibility: AssetVisibility.Timeline,
+        width: 500,
+        height: 500,
       },
     ],
     albumId: null,

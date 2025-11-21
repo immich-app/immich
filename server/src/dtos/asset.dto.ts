@@ -228,6 +228,11 @@ export class AssetCopyDto {
   favorite?: boolean;
 }
 
+export class AssetDownloadOriginalDto {
+  @ValidateBoolean({ optional: true, default: false })
+  edited?: boolean;
+}
+
 export const mapStats = (stats: AssetStats): AssetStatsResponseDto => {
   return {
     images: stats[AssetType.Image],

@@ -20,6 +20,7 @@ import {
   truncatedDate,
   unnest,
   withDefaultVisibility,
+  withEdits,
   withExif,
   withFaces,
   withFacesAndPeople,
@@ -112,6 +113,7 @@ interface GetByIdsRelations {
   smartSearch?: boolean;
   stack?: { assets?: boolean };
   tags?: boolean;
+  edits?: boolean;
 }
 
 const distinctLocked = <T extends LockableProperty[] | null>(eb: ExpressionBuilder<DB, 'asset_exif'>, columns: T) =>
@@ -472,7 +474,10 @@ export class AssetRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
-  getById(id: string, { exifInfo, faces, files, library, owner, smartSearch, stack, tags }: GetByIdsRelations = {}) {
+  getById(
+    id: string,
+    { exifInfo, faces, files, library, owner, smartSearch, stack, tags, edits }: GetByIdsRelations = {},
+  ) {
     return this.db
       .selectFrom('asset')
       .selectAll('asset')
@@ -509,6 +514,7 @@ export class AssetRepository {
       )
       .$if(!!files, (qb) => qb.select(withFiles))
       .$if(!!tags, (qb) => qb.select(withTags))
+      .$if(!!edits, (qb) => qb.select(withEdits))
       .limit(1)
       .executeTakeFirst();
   }
@@ -536,10 +542,11 @@ export class AssetRepository {
         .selectAll('asset')
         .$call(withExif)
         .$call((qb) => qb.select(withFacesAndPeople))
+        .$call((qb) => qb.select(withEdits))
         .executeTakeFirst();
     }
 
-    return this.getById(asset.id, { exifInfo: true, faces: { person: true } });
+    return this.getById(asset.id, { exifInfo: true, faces: { person: true }, edits: true });
   }
 
   async remove(asset: { id: string }): Promise<void> {

@@ -272,6 +272,7 @@ export type AssetFace = {
   person?: Person | null;
   updatedAt: Date;
   updateId: string;
+  isVisible: boolean;
 };
 
 export type Plugin = Selectable<PluginTable>;
