@@ -201,8 +201,9 @@ export async function restoreBackup(
     let inputStream: Readable;
     if (backupFilePath.endsWith('.gz')) {
       const fileStream = storage.createPlainReadStream(backupFilePath);
-      const inputStream = storage.createGunzip();
-      fileStream.pipe(inputStream);
+      const gunzip = storage.createGunzip();
+      fileStream.pipe(gunzip);
+      inputStream = gunzip;
     } else {
       inputStream = storage.createPlainReadStream(backupFilePath);
     }
