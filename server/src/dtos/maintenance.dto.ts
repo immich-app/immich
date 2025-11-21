@@ -30,7 +30,6 @@ export class MaintenanceStatusResponseDto {
 
 export class MaintenanceListBackupsResponseDto {
   backups!: string[];
-  failedBackups!: string[];
 }
 
 export class MaintenanceUploadBackupDto {

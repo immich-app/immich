@@ -16,14 +16,18 @@ import { ProcessRepository } from 'src/repositories/process.repository';
 import { StorageRepository } from 'src/repositories/storage.repository';
 
 export function isValidBackupName(filename: string) {
-  const oldBackupStyle = filename.match(/immich-db-backup-\d+\.sql\.gz$/);
+  return filename.match(/^[\d\w-.]+\.sql(?:\.gz)?$/);
+}
+
+export function isValidRoutineBackupName(filename: string) {
+  const oldBackupStyle = filename.match(/^immich-db-backup-\d+\.sql\.gz$/);
   //immich-db-backup-20250729T114018-v1.136.0-pg14.17.sql.gz
-  const newBackupStyle = filename.match(/immich-db-backup-\d{8}T\d{6}-v.*-pg.*\.sql\.gz$/);
+  const newBackupStyle = filename.match(/^immich-db-backup-\d{8}T\d{6}-v.*-pg.*\.sql\.gz$/);
   return oldBackupStyle || newBackupStyle;
 }
 
 export function isFailedBackupName(filename: string) {
-  return filename.match(/immich-db-backup-.*\.sql\.gz\.tmp$/);
+  return filename.match(/^immich-db-backup-.*\.sql\.gz\.tmp$/);
 }
 
 type BackupRepos = {
@@ -127,7 +131,7 @@ export async function buildPostgresLaunchArguments(
 
 export async function createBackup(
   { logger, storage, process: processRepository, ...pgRepos }: BackupRepos,
-  filenameSuffix: string = '',
+  filenamePrefix: string = '',
 ): Promise<void> {
   logger.debug(`Database Backup Started`);
 
@@ -140,7 +144,7 @@ export async function createBackup(
 
   const backupFilePath = join(
     StorageCore.getBaseFolder(StorageFolder.Backups),
-    `immich-db-backup-${DateTime.now().toFormat("yyyyLLdd'T'HHmmss")}-v${serverVersion.toString()}-pg${databaseVersion.split(' ')[0]}${filenameSuffix}.sql.gz.tmp`,
+    `${filenamePrefix}immich-db-backup-${DateTime.now().toFormat("yyyyLLdd'T'HHmmss")}-v${serverVersion.toString()}-pg${databaseVersion.split(' ')[0]}.sql.gz.tmp`,
   );
 
   try {
@@ -176,10 +180,7 @@ export async function restoreBackup(
 
   let complete = false;
   try {
-    if (!isValidBackupName(filename) && !filename.startsWith('development-')) {
-      // if we want to allow custom file names
-      // replace this with a check that we aren't
-      // traversing out of the backup directory
+    if (!isValidBackupName(filename)) {
       throw new Error('Invalid backup file format!');
     }
 
@@ -193,7 +194,7 @@ export async function restoreBackup(
 
     progressCb?.('backup', 0.05);
 
-    await createBackup({ logger, storage, process: processRepository, ...pgRepos }, '-maintenance');
+    await createBackup({ logger, storage, process: processRepository, ...pgRepos }, 'restore-point-');
 
     logger.log(`Database Restore Starting. Database Version: ${databaseMajorVersion}`);
 
@@ -256,24 +257,23 @@ export async function deleteBackup({ storage }: Pick<BackupRepos, 'storage'>, fi
   await storage.unlink(path.join(backupsFolder, filename));
 }
 
-export async function listBackups({
-  storage,
-}: Pick<BackupRepos, 'storage'>): Promise<Record<'backups' | 'failedBackups', string[]>> {
+export async function listBackups({ storage }: Pick<BackupRepos, 'storage'>): Promise<string[]> {
   const backupsFolder = StorageCore.getBaseFolder(StorageFolder.Backups);
   const files = await storage.readdir(backupsFolder);
-
-  return {
-    backups: files
-      .filter((fn) => isValidBackupName(fn) || fn.startsWith('development-'))
-      .sort()
-      .toReversed(),
-    failedBackups: files.filter((fn) => isFailedBackupName(fn)),
-  };
+  return files
+    .filter(isValidBackupName)
+    .sort((a, b) => (a.startsWith('uploaded-') !== b.startsWith('uploaded-') ? 1 : a.localeCompare(b)))
+    .toReversed();
 }
 
 export async function uploadBackup(file: Express.Multer.File): Promise<void> {
   const backupsFolder = StorageCore.getBaseFolder(StorageFolder.Backups);
-  const path = join(backupsFolder, file.originalname);
+  const fn = file.originalname;
+  if (!isValidBackupName(fn)) {
+    throw new BadRequestException('Not a valid backup name!');
+  }
+
+  const path = join(backupsFolder, `uploaded-${fn}`);
 
   try {
     await stat(path);

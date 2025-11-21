@@ -96,24 +96,28 @@
   let uploadProgress = $state(-1);
 
   async function upload() {
-    const [file] = await openFilePicker({ multiple: false });
-    const formData = new FormData();
-    formData.append('file', file);
+    try {
+      const [file] = await openFilePicker({ multiple: false });
+      const formData = new FormData();
+      formData.append('file', file);
 
-    await uploadRequest<MaintenanceUploadBackupDto>({
-      url: getBaseUrl() + '/admin/maintenance/backups/upload',
-      data: formData,
-      onUploadProgress(event) {
-        uploadProgress = event.loaded / event.total;
-      },
-    });
+      await uploadRequest<MaintenanceUploadBackupDto>({
+        url: getBaseUrl() + '/admin/maintenance/backups/upload',
+        data: formData,
+        onUploadProgress(event) {
+          uploadProgress = event.loaded / event.total;
+        },
+      });
 
-    uploadProgress = 1;
+      uploadProgress = 1;
 
-    const { backups: newList } = await listBackups();
-    backups = mapBackups(newList);
-
-    uploadProgress = -1;
+      const { backups: newList } = await listBackups();
+      backups = mapBackups(newList);
+    } catch (error) {
+      handleError(error, 'Could not upload backup, is it an .sql/.sql.gz file?');
+    } finally {
+      uploadProgress = -1;
+    }
   }
 </script>
 

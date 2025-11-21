@@ -75,8 +75,8 @@ export class MaintenanceService extends BaseService {
    * Backups
    */
 
-  async listBackups(): Promise<Record<'backups' | 'failedBackups', string[]>> {
-    return listBackups(this.backupRepos);
+  async listBackups(): Promise<{ backups: string[] }> {
+    return { backups: await listBackups(this.backupRepos) };
   }
 
   async deleteBackup(filename: string): Promise<void> {

@@ -5,7 +5,12 @@ import { OnEvent, OnJob } from 'src/decorators';
 import { DatabaseLock, ImmichWorker, JobName, JobStatus, QueueName, StorageFolder } from 'src/enum';
 import { ArgOf } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
-import { createBackup, listBackups, UnsupportedPostgresError } from 'src/utils/backups';
+import {
+  createBackup,
+  isFailedBackupName,
+  isValidRoutineBackupName,
+  UnsupportedPostgresError,
+} from 'src/utils/backups';
 import { handlePromiseError } from 'src/utils/misc';
 
 @Injectable()
@@ -50,7 +55,9 @@ export class BackupService extends BaseService {
     } = await this.getConfig({ withCache: false });
 
     const backupsFolder = StorageCore.getBaseFolder(StorageFolder.Backups);
-    const { backups, failedBackups } = await listBackups(this.backupRepos);
+    const files = await this.storageRepository.readdir(backupsFolder);
+    const backups = files.filter(isValidRoutineBackupName);
+    const failedBackups = files.filter(isFailedBackupName);
 
     const toDelete = backups.slice(config.keepLastAmount);
     toDelete.push(...failedBackups);
