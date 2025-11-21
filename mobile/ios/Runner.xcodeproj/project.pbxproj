@@ -29,6 +29,7 @@
 		FAC6F89B2D287C890078CB2F /* ShareExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = FAC6F8902D287C890078CB2F /* ShareExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		FAC6F8B72D287F120078CB2F /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAC6F8B52D287F120078CB2F /* ShareViewController.swift */; };
 		FAC6F8B92D287F120078CB2F /* MainInterface.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FAC6F8B32D287F120078CB2F /* MainInterface.storyboard */; };
+		FE30A0D02ECF97B8007AFDD7 /* Algorithms in Frameworks */ = {isa = PBXBuildFile; productRef = FE30A0CF2ECF97B8007AFDD7 /* Algorithms */; };
 		FEAFA8732E4D42F4001E47FE /* Thumbhash.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEAFA8722E4D42F4001E47FE /* Thumbhash.swift */; };
 		FED3B1962E253E9B0030FD97 /* ThumbnailsImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = FED3B1942E253E9B0030FD97 /* ThumbnailsImpl.swift */; };
 		FED3B1972E253E9B0030FD97 /* Thumbnails.g.swift in Sources */ = {isa = PBXBuildFile; fileRef = FED3B1932E253E9B0030FD97 /* Thumbnails.g.swift */; };
@@ -187,6 +188,7 @@
 				FEE084F82EC172460045228E /* SQLiteData in Frameworks */,
 				FEE084FB2EC1725A0045228E /* RawStructuredFieldValues in Frameworks */,
 				FEE084FD2EC1725A0045228E /* StructuredFieldValues in Frameworks */,
+				FE30A0D02ECF97B8007AFDD7 /* Algorithms in Frameworks */,
 				D218389C4A4C4693F141F7D1 /* Pods_Runner.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -456,6 +458,7 @@
 			packageReferences = (
 				FEE084F62EC172460045228E /* XCRemoteSwiftPackageReference "sqlite-data" */,
 				FEE084F92EC1725A0045228E /* XCRemoteSwiftPackageReference "swift-http-structured-headers" */,
+				FE30A0CE2ECF97B8007AFDD7 /* XCRemoteSwiftPackageReference "swift-algorithms" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 97C146EF1CF9000F007C117D /* Products */;
@@ -1252,6 +1255,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		FE30A0CE2ECF97B8007AFDD7 /* XCRemoteSwiftPackageReference "swift-algorithms" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-algorithms.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.2.1;
+			};
+		};
 		FEE084F62EC172460045228E /* XCRemoteSwiftPackageReference "sqlite-data" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/pointfreeco/sqlite-data";
@@ -1271,6 +1282,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		FE30A0CF2ECF97B8007AFDD7 /* Algorithms */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = FE30A0CE2ECF97B8007AFDD7 /* XCRemoteSwiftPackageReference "swift-algorithms" */;
+			productName = Algorithms;
+		};
 		FEE084F72EC172460045228E /* SQLiteData */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = FEE084F62EC172460045228E /* XCRemoteSwiftPackageReference "sqlite-data" */;

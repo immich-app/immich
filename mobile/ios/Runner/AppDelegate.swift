@@ -54,7 +54,6 @@ import shared_preferences_foundation
   }
 
   public static func registerPlugins(with engine: FlutterEngine) {
-    NativeSyncApiImpl.register(with: engine.registrar(forPlugin: NativeSyncApiImpl.name)!)
     ThumbnailApiSetup.setUp(binaryMessenger: engine.binaryMessenger, api: ThumbnailApiImpl())
     BackgroundWorkerFgHostApiSetup.setUp(binaryMessenger: engine.binaryMessenger, api: BackgroundWorkerApiImpl())
     
@@ -66,9 +65,5 @@ import shared_preferences_foundation
       binaryMessenger: engine.binaryMessenger,
       api: UploadApiImpl(statusListener: statusListener, progressListener: progressListener)
     )
-  }
-
-  public static func cancelPlugins(with engine: FlutterEngine) {
-    (engine.valuePublished(byPlugin: NativeSyncApiImpl.name) as? NativeSyncApiImpl)?.detachFromEngine()
   }
 }

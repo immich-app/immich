@@ -100,6 +100,16 @@ extension LocalAlbumAsset {
   static let excluded = Self.where {
     $0.id.assetId.eq(LocalAsset.columns.id) && $0.id.albumId.in(LocalAlbum.excluded.select(\.id))
   }
+  
+  /// Get all asset ids that are only in this album and not in other albums.
+  /// This is useful in cases where the album is a smart album or a user-created album, especially on iOS
+  static func uniqueAssetIds(albumId: String) -> Select<String, Self, ()> {
+    return Self.select(\.id.assetId)
+      .where { laa in
+        laa.id.albumId.eq(albumId)
+          && !LocalAlbumAsset.where { $0.id.assetId.eq(laa.id.assetId) && $0.id.albumId.neq(albumId) }.exists()
+      }
+  }
 }
 
 @Table("local_asset_entity")
@@ -109,7 +119,7 @@ struct LocalAsset: Identifiable {
   @Column("created_at")
   let createdAt: String
   @Column("duration_in_seconds")
-  let durationInSeconds: Int?
+  let durationInSeconds: Int64?
   let height: Int?
   @Column("is_favorite")
   let isFavorite: Bool

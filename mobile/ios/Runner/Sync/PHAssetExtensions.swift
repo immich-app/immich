@@ -1,21 +1,6 @@
 import Photos
 
 extension PHAsset {
-  func toPlatformAsset() -> PlatformAsset {
-    return PlatformAsset(
-      id: localIdentifier,
-      name: title,
-      type: Int64(mediaType.rawValue),
-      createdAt: creationDate.map { Int64($0.timeIntervalSince1970) },
-      updatedAt: modificationDate.map { Int64($0.timeIntervalSince1970) },
-      width: Int64(pixelWidth),
-      height: Int64(pixelHeight),
-      durationInSeconds: Int64(duration),
-      orientation: 0,
-      isFavorite: isFavorite
-    )
-  }
-
   var title: String {
     return filename ?? originalFilename ?? "<unknown>"
   }
@@ -90,5 +75,39 @@ extension PHAsset {
     default:
       return false
     }
+  }
+}
+
+extension PHAssetCollection {
+  private static let latestAssetOptions: PHFetchOptions = {
+    let options = PHFetchOptions()
+    options.includeHiddenAssets = false
+    options.sortDescriptors = [NSSortDescriptor(key: "modificationDate", ascending: false)]
+    options.fetchLimit = 1
+    return options
+  }()
+
+  var isCloud: Bool { assetCollectionSubtype == .albumCloudShared || assetCollectionSubtype == .albumMyPhotoStream }
+
+  var updatedAt: Date? {
+    let result: PHFetchResult<PHAsset>
+    if assetCollectionSubtype == .smartAlbumUserLibrary {
+      result = PHAsset.fetchAssets(with: Self.latestAssetOptions)
+    } else {
+      result = PHAsset.fetchAssets(in: self, options: Self.latestAssetOptions)
+    }
+
+    return result.firstObject?.modificationDate
+  }
+
+  static func fetchAssetCollection(albumId: String, options: PHFetchOptions? = nil) -> PHAssetCollection? {
+    let albums = PHAssetCollection.fetchAssetCollections(withLocalIdentifiers: [albumId], options: options)
+    return albums.firstObject
+  }
+
+  static func fetchAssets(in album: PHAssetCollection, options: PHFetchOptions) -> PHFetchResult<PHAsset> {
+    album.assetCollectionSubtype == .smartAlbumUserLibrary
+      ? PHAsset.fetchAssets(with: options)
+      : PHAsset.fetchAssets(in: album, options: options)
   }
 }
