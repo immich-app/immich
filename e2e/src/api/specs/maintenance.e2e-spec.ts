@@ -303,7 +303,7 @@ describe('/admin/maintenance', () => {
       const { status: status2, body } = await request(app).get('/admin/maintenance/status').send({ token: 'token' });
       expect(status2).toBe(200);
       expect(body).toEqual({
-        action: 'start',
+        action: 'restore_database',
       });
     });
   });
@@ -428,7 +428,10 @@ describe('/admin/maintenance', () => {
         }),
       );
 
-      await request(app).post('/admin/maintenance/end').set('cookie', cookie!).send();
+      await request(app).post('/admin/maintenance').set('cookie', cookie!).send({
+        action: 'end',
+      });
+
       await utils.poll(
         () => request(app).get('/server/config'),
         ({ status, body }) => status === 200 && !body.maintenanceMode,
