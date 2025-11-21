@@ -39,7 +39,7 @@
     <CardBody>
       <Stack>
         {#if integrity}
-          {#each Object.entries(integrity.storageIntegrity) as [folder, { readable, writable }]}
+          {#each Object.entries(integrity.storageIntegrity) as [folder, { readable, writable }] (folder)}
             <HStack>
               <Icon
                 icon={writable ? mdiCheck : mdiClose}
@@ -54,7 +54,7 @@
               >
             </HStack>
           {/each}
-          {#each Object.entries(integrity.storageHeuristics) as [folder, { files }]}
+          {#each Object.entries(integrity.storageHeuristics) as [folder, { files }] (folder)}
             {#if folder !== 'backups'}
               <HStack class="items-start">
                 <Icon

@@ -71,7 +71,7 @@ export class MaintenanceWorkerController {
 
   @Get('admin/maintenance/backups/:filename')
   @MaintenanceRoute()
-  async downloadBackup(@Param() { filename }: FilenameParamDto, @Res() res: Response) {
+  downloadBackup(@Param() { filename }: FilenameParamDto, @Res() res: Response) {
     res.header('Content-Disposition', 'attachment');
     res.sendFile(this.service.getBackupPath(filename));
   }

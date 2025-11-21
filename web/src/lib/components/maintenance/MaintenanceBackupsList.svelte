@@ -104,7 +104,7 @@
     }
   }
 
-  async function download(filename: string) {
+  function download(filename: string) {
     location.href = getBaseUrl() + '/admin/maintenance/backups/' + filename;
   }
 
@@ -117,7 +117,7 @@
           title: 'Download',
           icon: mdiDownload,
           onSelect() {
-            download(filename);
+            void download(filename);
           },
         },
         {
@@ -125,7 +125,7 @@
           icon: mdiTrashCanOutline,
           color: 'danger',
           onSelect() {
-            remove(filename);
+            void remove(filename);
           },
         },
       ],

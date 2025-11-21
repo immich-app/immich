@@ -267,8 +267,8 @@ export async function listBackups({ storage }: Pick<BackupRepos, 'storage'>): Pr
   const backupsFolder = StorageCore.getBaseFolder(StorageFolder.Backups);
   const files = await storage.readdir(backupsFolder);
   return files
-    .filter(isValidBackupName)
-    .sort((a, b) => (a.startsWith('uploaded-') !== b.startsWith('uploaded-') ? 1 : a.localeCompare(b)))
+    .filter((fn) => isValidBackupName(fn))
+    .sort((a, b) => (a.startsWith('uploaded-') === b.startsWith('uploaded-') ? a.localeCompare(b) : 1))
     .toReversed();
 }
 

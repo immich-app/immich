@@ -114,7 +114,7 @@ export class MaintenanceController {
     history: new HistoryBuilder().added('v9.9.9').alpha('v9.9.9'),
   })
   @Authenticated({ permission: Permission.Maintenance, admin: true })
-  async downloadBackup(@Param() { filename }: FilenameParamDto, @Res() res: Response) {
+  downloadBackup(@Param() { filename }: FilenameParamDto, @Res() res: Response) {
     res.header('Content-Disposition', 'attachment');
     res.sendFile(this.service.getBackupPath(filename));
   }
