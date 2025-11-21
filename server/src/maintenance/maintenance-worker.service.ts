@@ -1,12 +1,14 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { parse } from 'cookie';
 import { NextFunction, Request, Response } from 'express';
 import { jwtVerify } from 'jose';
 import { readFileSync } from 'node:fs';
 import { IncomingHttpHeaders } from 'node:http';
+import { join } from 'node:path';
+import { StorageCore } from 'src/cores/storage.core';
 import { MaintenanceAuthDto, MaintenanceStatusResponseDto, SetMaintenanceModeDto } from 'src/dtos/maintenance.dto';
 import { ServerConfigDto } from 'src/dtos/server.dto';
-import { DatabaseLock, ImmichCookie, MaintenanceAction, SystemMetadataKey } from 'src/enum';
+import { DatabaseLock, ImmichCookie, MaintenanceAction, StorageFolder, SystemMetadataKey } from 'src/enum';
 import { MaintenanceEphemeralStateRepository } from 'src/maintenance/maintenance-ephemeral-state.repository';
 import { MaintenanceWebsocketRepository } from 'src/maintenance/maintenance-websocket.repository';
 import { AppRepository } from 'src/repositories/app.repository';
@@ -20,7 +22,7 @@ import { type ApiService as _ApiService } from 'src/services/api.service';
 import { type BaseService as _BaseService } from 'src/services/base.service';
 import { type ServerService as _ServerService } from 'src/services/server.service';
 import { MaintenanceModeState } from 'src/types';
-import { deleteBackup, listBackups, restoreBackup, uploadBackup } from 'src/utils/backups';
+import { deleteBackup, isValidBackupName, listBackups, restoreBackup, uploadBackup } from 'src/utils/backups';
 import { getConfig } from 'src/utils/config';
 import { createMaintenanceLoginUrl } from 'src/utils/maintenance';
 import { getExternalDomain } from 'src/utils/misc';
@@ -285,6 +287,14 @@ export class MaintenanceWorkerService {
 
   async uploadBackup(file: Express.Multer.File): Promise<void> {
     return uploadBackup(file);
+  }
+
+  getBackupPath(filename: string): string {
+    if (!isValidBackupName(filename)) {
+      throw new BadRequestException('Invalid backup name!');
+    }
+
+    return join(StorageCore.getBaseFolder(StorageFolder.Backups), filename);
   }
 
   private get backupRepos() {

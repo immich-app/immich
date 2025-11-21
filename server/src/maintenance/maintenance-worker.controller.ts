@@ -71,6 +71,13 @@ export class MaintenanceWorkerController {
     return this.service.listBackups();
   }
 
+  @Get('admin/maintenance/backups/:filename')
+  @MaintenanceRoute()
+  async downloadBackup(@Param() { filename }: FilenameParamDto, @Res() res: Response) {
+    res.header('Content-Disposition', 'attachment');
+    res.sendFile(this.service.getBackupPath(filename));
+  }
+
   @Delete('admin/maintenance/backups/:filename')
   @MaintenanceRoute()
   async deleteBackup(@Param() { filename }: FilenameParamDto): Promise<void> {

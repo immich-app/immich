@@ -26,7 +26,7 @@ import {
   SetMaintenanceModeDto,
 } from 'src/dtos/maintenance.dto';
 import { ApiTag, ImmichCookie, MaintenanceAction, Permission } from 'src/enum';
-import { Auth, Authenticated, GetLoginDetails } from 'src/middleware/auth.guard';
+import { Auth, Authenticated, FileResponse, GetLoginDetails } from 'src/middleware/auth.guard';
 import { LoginDetails } from 'src/services/auth.service';
 import { MaintenanceService } from 'src/services/maintenance.service';
 import { respondWithCookie } from 'src/utils/response';
@@ -90,6 +90,19 @@ export class MaintenanceController {
   @Authenticated({ permission: Permission.Maintenance, admin: true })
   listBackups(): Promise<MaintenanceListBackupsResponseDto> {
     return this.service.listBackups();
+  }
+
+  @Get('backups/:filename')
+  @FileResponse()
+  @Endpoint({
+    summary: 'Download backup',
+    description: 'Downloads the database backup file',
+    history: new HistoryBuilder().added('v9.9.9').alpha('v9.9.9'),
+  })
+  @Authenticated({ permission: Permission.Maintenance, admin: true })
+  async downloadBackup(@Param() { filename }: FilenameParamDto, @Res() res: Response) {
+    res.header('Content-Disposition', 'attachment');
+    res.sendFile(this.service.getBackupPath(filename));
   }
 
   @Delete('backups/:filename')

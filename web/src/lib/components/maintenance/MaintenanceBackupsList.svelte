@@ -10,14 +10,25 @@
     setMaintenanceMode,
     type MaintenanceUploadBackupDto,
   } from '@immich/sdk';
-  import { Button, Card, CardBody, HStack, modalManager, Stack, Text } from '@immich/ui';
+  import {
+    Button,
+    Card,
+    CardBody,
+    HStack,
+    IconButton,
+    menuManager,
+    modalManager,
+    Stack,
+    Text,
+    type ContextMenuBaseProps,
+  } from '@immich/ui';
+  import { mdiDotsVertical, mdiDownload, mdiTrashCanOutline } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { SvelteSet } from 'svelte/reactivity';
 
   interface Props {
     backups?: string[];
-    showDelete?: boolean;
   }
 
   let props: Props = $props();
@@ -93,6 +104,34 @@
     }
   }
 
+  async function download(filename: string) {
+    location.href = getBaseUrl() + '/admin/maintenance/backups/' + filename;
+  }
+
+  const handleOpen = async (event: Event, props: Partial<ContextMenuBaseProps>, filename: string) => {
+    await menuManager.show({
+      ...props,
+      target: event.currentTarget as HTMLElement,
+      items: [
+        {
+          title: 'Download',
+          icon: mdiDownload,
+          onSelect() {
+            download(filename);
+          },
+        },
+        {
+          title: 'Delete',
+          icon: mdiTrashCanOutline,
+          color: 'danger',
+          onSelect() {
+            remove(filename);
+          },
+        },
+      ],
+    });
+  };
+
   let uploadProgress = $state(-1);
 
   async function upload() {
@@ -160,14 +199,16 @@
           <Button size="small" disabled={deleting.has(backup.filename)} onclick={() => restore(backup.filename)}
             >Restore</Button
           >
-          {#if props.showDelete}
-            <Button
-              size="small"
-              color="danger"
-              disabled={deleting.has(backup.filename)}
-              onclick={() => remove(backup.filename)}>Delete</Button
-            >
-          {/if}
+          <IconButton
+            shape="round"
+            variant="ghost"
+            color="secondary"
+            icon={mdiDotsVertical}
+            class="flex-shrink-0"
+            disabled={deleting.has(backup.filename)}
+            onclick={(event: Event) => handleOpen(event, { position: 'top-right' }, backup.filename)}
+            aria-label="Open menu"
+          />
         </HStack>
       </CardBody>
     </Card>

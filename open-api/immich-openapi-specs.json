@@ -545,6 +545,62 @@
         ],
         "x-immich-permission": "maintenance",
         "x-immich-state": "Alpha"
+      },
+      "get": {
+        "description": "Downloads the database backup file",
+        "operationId": "downloadBackup",
+        "parameters": [
+          {
+            "name": "filename",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Download backup",
+        "tags": [
+          "Maintenance (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v9.9.9",
+            "state": "Added"
+          },
+          {
+            "version": "v9.9.9",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "maintenance",
+        "x-immich-state": "Alpha"
       }
     },
     "/admin/maintenance/login": {
@@ -16758,17 +16814,10 @@
               "type": "string"
             },
             "type": "array"
-          },
-          "failedBackups": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array"
           }
         },
         "required": [
-          "backups",
-          "failedBackups"
+          "backups"
         ],
         "type": "object"
       },
