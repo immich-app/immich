@@ -614,7 +614,8 @@ export const utils = {
     const writeStream = createWriteStream(fn);
     await pipeline(sql, gzip, writeStream);
 
-    await dockerExec(['cp', fn, `/data/backups/development-${generate}.sql.gz`]).promise;
+    await executeCommand('docker', ['cp', fn, `immich-e2e-server:/data/backups/development-${generate}.sql.gz`])
+      .promise;
   },
 
   resetAdminConfig: async (accessToken: string) => {
