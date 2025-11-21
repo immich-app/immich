@@ -726,19 +726,22 @@ importers:
         specifier: ^7.4.47
         version: 7.4.47
       '@photo-sphere-viewer/core':
-        specifier: ^5.11.5
+        specifier: ^5.14.0
         version: 5.14.0
       '@photo-sphere-viewer/equirectangular-video-adapter':
-        specifier: ^5.11.5
+        specifier: ^5.14.0
         version: 5.14.0(@photo-sphere-viewer/core@5.14.0)(@photo-sphere-viewer/video-plugin@5.14.0(@photo-sphere-viewer/core@5.14.0))
+      '@photo-sphere-viewer/markers-plugin':
+        specifier: ^5.14.0
+        version: 5.14.0(@photo-sphere-viewer/core@5.14.0)
       '@photo-sphere-viewer/resolution-plugin':
-        specifier: ^5.11.5
+        specifier: ^5.14.0
         version: 5.14.0(@photo-sphere-viewer/core@5.14.0)(@photo-sphere-viewer/settings-plugin@5.14.0(@photo-sphere-viewer/core@5.14.0))
       '@photo-sphere-viewer/settings-plugin':
-        specifier: ^5.11.5
+        specifier: ^5.14.0
         version: 5.14.0(@photo-sphere-viewer/core@5.14.0)
       '@photo-sphere-viewer/video-plugin':
-        specifier: ^5.11.5
+        specifier: ^5.14.0
         version: 5.14.0(@photo-sphere-viewer/core@5.14.0)
       '@types/geojson':
         specifier: ^7946.0.16
@@ -3572,6 +3575,11 @@ packages:
     peerDependencies:
       '@photo-sphere-viewer/core': 5.14.0
       '@photo-sphere-viewer/video-plugin': 5.14.0
+
+  '@photo-sphere-viewer/markers-plugin@5.14.0':
+    resolution: {integrity: sha512-w7txVHtLxXMS61m0EbNjgvdNXQYRh6Aa0oatft5oruKgoXLg/UlCu1mG6Btg+zrNsG05W2zl4gRM3fcWoVdneA==}
+    peerDependencies:
+      '@photo-sphere-viewer/core': 5.14.0
 
   '@photo-sphere-viewer/resolution-plugin@5.14.0':
     resolution: {integrity: sha512-PvDMX1h+8FzWdySxiorQ2bSmyBGTPsZjNNFRBqIfmb5C+01aWCIE7kuXodXGHwpXQNcOojsVX9IiX0Vz4CiW4A==}
@@ -15373,6 +15381,10 @@ snapshots:
       '@photo-sphere-viewer/core': 5.14.0
       '@photo-sphere-viewer/video-plugin': 5.14.0(@photo-sphere-viewer/core@5.14.0)
       three: 0.180.0
+
+  '@photo-sphere-viewer/markers-plugin@5.14.0(@photo-sphere-viewer/core@5.14.0)':
+    dependencies:
+      '@photo-sphere-viewer/core': 5.14.0
 
   '@photo-sphere-viewer/resolution-plugin@5.14.0(@photo-sphere-viewer/core@5.14.0)(@photo-sphere-viewer/settings-plugin@5.14.0(@photo-sphere-viewer/core@5.14.0))':
     dependencies:
