@@ -1,7 +1,9 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import _ from 'lodash';
 import { DateTime, Duration } from 'luxon';
+import { dirname } from 'path';
 import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
+import { StorageCore } from 'src/cores/storage.core';
 import { OnJob } from 'src/decorators';
 import { AssetResponseDto, MapAsset, SanitizedAssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
 import {
@@ -17,8 +19,19 @@ import {
   mapStats,
 } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
+import { EditActionListDto } from 'src/dtos/editing.dto';
 import { AssetOcrResponseDto } from 'src/dtos/ocr.dto';
-import { AssetMetadataKey, AssetStatus, AssetVisibility, JobName, JobStatus, Permission, QueueName } from 'src/enum';
+import {
+  AssetMetadataKey,
+  AssetStatus,
+  AssetType,
+  AssetVisibility,
+  JobName,
+  JobStatus,
+  Permission,
+  QueueName,
+  StorageFolder,
+} from 'src/enum';
 import { BaseService } from 'src/services/base.service';
 import { ISidecarWriteJob, JobItem, JobOf } from 'src/types';
 import { requireElevatedPermission } from 'src/utils/access';
@@ -447,5 +460,24 @@ export class AssetService extends BaseService {
       await this.assetRepository.upsertExif({ assetId: id, ...writes });
       await this.jobRepository.queue({ name: JobName.SidecarWrite, data: { id, ...writes } });
     }
+  }
+
+  public async createDerivedEditAsset(auth: AuthDto, id: string, dto: EditActionListDto): Promise<AssetResponseDto> {
+    await this.requireAccess({ auth, permission: Permission.AssetDerive, ids: [id] });
+
+    const asset = await this.assetRepository.getById(id);
+    if (!asset) {
+      throw new BadRequestException('Asset not found');
+    }
+
+    if (asset.type !== AssetType.Image) {
+      throw new BadRequestException('Only images can be edited');
+    }
+
+    const uuid = this.cryptoRepository.randomUUID();
+    const outputFile = StorageCore.getNestedPath(StorageFolder.Upload, auth.user.id, uuid);
+    this.storageRepository.mkdirSync(dirname(outputFile));
+
+    this.storageRepository.copyFile(asset.originalPath, outputFile);
   }
 }

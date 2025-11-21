@@ -105,6 +105,8 @@ export enum Permission {
   AssetUpload = 'asset.upload',
   AssetReplace = 'asset.replace',
   AssetCopy = 'asset.copy',
+  AssetDerive = 'asset.derive',
+  AssetEdit = 'asset.edit',
 
   AlbumCreate = 'album.create',
   AlbumRead = 'album.read',
