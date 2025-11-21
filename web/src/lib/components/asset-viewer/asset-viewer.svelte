@@ -395,13 +395,11 @@
     }
   });
 
-  let currentAssetId = $derived(asset.id);
+  // primarily, this is reactive on `asset`
   $effect(() => {
-    if (currentAssetId) {
-      untrack(() => handlePromiseError(handleGetAllAlbums()));
-      ocrManager.clear();
-      handlePromiseError(ocrManager.getAssetOcr(currentAssetId));
-    }
+    handlePromiseError(handleGetAllAlbums());
+    ocrManager.clear();
+    handlePromiseError(ocrManager.getAssetOcr(asset.id));
   });
 </script>
 

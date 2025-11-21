@@ -1,8 +1,6 @@
 <script lang="ts">
-  import { run } from 'svelte/legacy';
-
-  import UploadCover from '$lib/components/shared-components/drag-and-drop-upload-overlay.svelte';
   import { page } from '$app/stores';
+  import UploadCover from '$lib/components/shared-components/drag-and-drop-upload-overlay.svelte';
 
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import type { Snippet } from 'svelte';
@@ -15,7 +13,7 @@
 
   // $page.data.asset is loaded by route specific +page.ts loaders if that
   // route contains the assetId path.
-  run(() => {
+  $effect.pre(() => {
     if ($page.data.asset) {
       setAsset($page.data.asset);
     } else {

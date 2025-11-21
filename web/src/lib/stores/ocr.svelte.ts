@@ -19,21 +19,23 @@ export type OcrBoundingBox = {
 class OcrManager {
   #data = $state<OcrBoundingBox[]>([]);
   showOverlay = $state(false);
-  hasOcrData = $state(false);
+  #hasOcrData = $derived(this.#data.length > 0);
 
   get data() {
     return this.#data;
   }
 
+  get hasOcrData() {
+    return this.#hasOcrData;
+  }
+
   async getAssetOcr(id: string) {
     this.#data = await getAssetOcr({ id });
-    this.hasOcrData = this.#data.length > 0;
   }
 
   clear() {
     this.#data = [];
     this.showOverlay = false;
-    this.hasOcrData = false;
   }
 
   toggleOcrBoundingBox() {

@@ -52,7 +52,7 @@
   let innerHeight: number = $state(0);
   let activityHeight: number = $state(0);
   let chatHeight: number = $state(0);
-  let divHeight: number = $state(0);
+  let divHeight = $derived(innerHeight - activityHeight);
   let previousAssetId: string | undefined = $state(assetId);
   let message = $state('');
   let isSendingMessage = $state(false);
@@ -96,11 +96,7 @@
     }
     isSendingMessage = false;
   };
-  $effect(() => {
-    if (innerHeight && activityHeight) {
-      divHeight = innerHeight - activityHeight;
-    }
-  });
+
   $effect(() => {
     if (assetId && previousAssetId != assetId) {
       previousAssetId = assetId;

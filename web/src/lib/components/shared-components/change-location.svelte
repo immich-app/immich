@@ -27,7 +27,7 @@
   let { asset = undefined, point: initialPoint, onClose }: Props = $props();
 
   let places: PlacesResponseDto[] = $state([]);
-  let suggestedPlaces: PlacesResponseDto[] = $state([]);
+  let suggestedPlaces: PlacesResponseDto[] = $derived(places.slice(0, 5));
   let searchWord: string = $state('');
   let latestSearchTimeout: number;
   let showLoadingSpinner = $state(false);
@@ -52,9 +52,6 @@
   });
 
   $effect(() => {
-    if (places) {
-      suggestedPlaces = places.slice(0, 5);
-    }
     if (searchWord === '') {
       suggestedPlaces = [];
     }
