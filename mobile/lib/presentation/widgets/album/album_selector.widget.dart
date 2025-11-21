@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/domain/services/remote_album.service.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
@@ -17,6 +16,9 @@ import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart'
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
+import 'package:immich_mobile/providers/album/album_sort_by_options.provider.dart';
+import 'package:immich_mobile/providers/app_settings.provider.dart';
+import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/album_filter.utils.dart';
 import 'package:immich_mobile/widgets/common/confirm_dialog.dart';
@@ -45,14 +47,28 @@ class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
   List<RemoteAlbum> shownAlbums = [];
 
   AlbumFilter filter = AlbumFilter(query: "", mode: QuickFilterMode.all);
-  AlbumSort sort = AlbumSort(mode: RemoteAlbumSortMode.lastModified, isReverse: true);
+  AlbumSort sort = AlbumSort(mode: AlbumSortMode.lastModified, isReverse: true);
 
   @override
   void initState() {
     super.initState();
 
-    // Load albums when component mounts
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      final appSettings = ref.read(appSettingsServiceProvider);
+      final savedSortMode = appSettings.getSetting(AppSettingsEnum.selectedAlbumSortOrder);
+      final savedIsReverse = appSettings.getSetting(AppSettingsEnum.selectedAlbumSortReverse);
+      final savedIsGrid = appSettings.getSetting(AppSettingsEnum.albumGridView);
+
+      final albumSortMode = AlbumSortMode.values.firstWhere(
+        (e) => e.storeIndex == savedSortMode,
+        orElse: () => AlbumSortMode.lastModified,
+      );
+
+      setState(() {
+        sort = AlbumSort(mode: albumSortMode, isReverse: savedIsReverse);
+        isGrid = savedIsGrid;
+      });
+
       ref.read(remoteAlbumProvider.notifier).refresh();
     });
 
@@ -82,6 +98,7 @@ class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
     setState(() {
       isGrid = !isGrid;
     });
+    ref.read(appSettingsServiceProvider).setSetting(AppSettingsEnum.albumGridView, isGrid);
   }
 
   void changeFilter(QuickFilterMode mode) {
@@ -96,6 +113,10 @@ class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
     setState(() {
       this.sort = sort;
     });
+
+    final appSettings = ref.read(appSettingsServiceProvider);
+    await appSettings.setSetting(AppSettingsEnum.selectedAlbumSortOrder, sort.mode.storeIndex);
+    await appSettings.setSetting(AppSettingsEnum.selectedAlbumSortReverse, sort.isReverse);
 
     await sortAlbums();
   }
@@ -181,6 +202,8 @@ class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
             onToggleViewMode: toggleViewMode,
             onSortChanged: changeSort,
             controller: menuController,
+            currentSortMode: sort.mode,
+            currentIsReverse: sort.isReverse,
           ),
           isGrid
               ? _AlbumGrid(albums: shownAlbums, userId: userId, onAlbumSelected: widget.onAlbumSelected)
@@ -192,21 +215,46 @@ class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
 }
 
 class _SortButton extends ConsumerStatefulWidget {
-  const _SortButton(this.onSortChanged, {this.controller});
+  const _SortButton(
+    this.onSortChanged, {
+    required this.initialSortMode,
+    required this.initialIsReverse,
+    this.controller,
+  });
 
   final Future<void> Function(AlbumSort) onSortChanged;
   final MenuController? controller;
+  final AlbumSortMode initialSortMode;
+  final bool initialIsReverse;
 
   @override
   ConsumerState<_SortButton> createState() => _SortButtonState();
 }
 
 class _SortButtonState extends ConsumerState<_SortButton> {
-  RemoteAlbumSortMode albumSortOption = RemoteAlbumSortMode.lastModified;
-  bool albumSortIsReverse = true;
+  late AlbumSortMode albumSortOption;
+  late bool albumSortIsReverse;
   bool isSorting = false;
 
-  Future<void> onMenuTapped(RemoteAlbumSortMode sortMode) async {
+  @override
+  void initState() {
+    super.initState();
+    albumSortOption = widget.initialSortMode;
+    albumSortIsReverse = widget.initialIsReverse;
+  }
+
+  @override
+  void didUpdateWidget(_SortButton oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.initialSortMode != widget.initialSortMode || oldWidget.initialIsReverse != widget.initialIsReverse) {
+      setState(() {
+        albumSortOption = widget.initialSortMode;
+        albumSortIsReverse = widget.initialIsReverse;
+      });
+    }
+  }
+
+  Future<void> onMenuTapped(AlbumSortMode sortMode) async {
     final selected = albumSortOption == sortMode;
     // Switch direction
     if (selected) {
@@ -240,7 +288,7 @@ class _SortButtonState extends ConsumerState<_SortButton> {
         padding: const WidgetStatePropertyAll(EdgeInsets.all(4)),
       ),
       consumeOutsideTap: true,
-      menuChildren: RemoteAlbumSortMode.values
+      menuChildren: AlbumSortMode.values
           .map(
             (sortMode) => MenuItemButton(
               leadingIcon: albumSortOption == sortMode
@@ -269,7 +317,7 @@ class _SortButtonState extends ConsumerState<_SortButton> {
                 ),
               ),
               child: Text(
-                sortMode.key.t(context: context),
+                sortMode.label.t(context: context),
                 style: context.textTheme.titleSmall?.copyWith(
                   fontWeight: FontWeight.w600,
                   color: albumSortOption == sortMode
@@ -298,7 +346,7 @@ class _SortButtonState extends ConsumerState<_SortButton> {
                     : const Icon(Icons.keyboard_arrow_up_rounded),
               ),
               Text(
-                albumSortOption.key.t(context: context),
+                albumSortOption.label.t(context: context),
                 style: context.textTheme.bodyLarge?.copyWith(
                   fontWeight: FontWeight.w500,
                   color: context.colorScheme.onSurface.withAlpha(225),
@@ -465,6 +513,8 @@ class _QuickSortAndViewMode extends StatelessWidget {
     required this.isGrid,
     required this.onToggleViewMode,
     required this.onSortChanged,
+    required this.currentSortMode,
+    required this.currentIsReverse,
     this.controller,
   });
 
@@ -472,6 +522,8 @@ class _QuickSortAndViewMode extends StatelessWidget {
   final VoidCallback onToggleViewMode;
   final MenuController? controller;
   final Future<void> Function(AlbumSort) onSortChanged;
+  final AlbumSortMode currentSortMode;
+  final bool currentIsReverse;
 
   @override
   Widget build(BuildContext context) {
@@ -481,7 +533,12 @@ class _QuickSortAndViewMode extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            _SortButton(onSortChanged, controller: controller),
+            _SortButton(
+              onSortChanged,
+              controller: controller,
+              initialSortMode: currentSortMode,
+              initialIsReverse: currentIsReverse,
+            ),
             IconButton(
               icon: Icon(isGrid ? Icons.view_list_outlined : Icons.grid_view_outlined, size: 24),
               onPressed: onToggleViewMode,
