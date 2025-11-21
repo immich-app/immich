@@ -17,6 +17,7 @@ import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
   MaintenanceAuthDto,
+  MaintenanceIntegrityResponseDto,
   MaintenanceListBackupsResponseDto,
   MaintenanceLoginDto,
   MaintenanceStatusResponseDto,
@@ -25,15 +26,20 @@ import {
 } from 'src/dtos/maintenance.dto';
 import { ApiTag, ImmichCookie, MaintenanceAction, Permission } from 'src/enum';
 import { Auth, Authenticated, FileResponse, GetLoginDetails } from 'src/middleware/auth.guard';
+import { StorageRepository } from 'src/repositories/storage.repository';
 import { LoginDetails } from 'src/services/auth.service';
 import { MaintenanceService } from 'src/services/maintenance.service';
+import { integrityCheck } from 'src/utils/maintenance';
 import { respondWithCookie } from 'src/utils/response';
 import { FilenameParamDto } from 'src/validation';
 
 @ApiTags(ApiTag.Maintenance)
 @Controller('admin/maintenance')
 export class MaintenanceController {
-  constructor(private service: MaintenanceService) {}
+  constructor(
+    private service: MaintenanceService,
+    private storageRepository: StorageRepository,
+  ) {}
 
   @Get('status')
   @Endpoint({
@@ -45,6 +51,16 @@ export class MaintenanceController {
     return {
       action: MaintenanceAction.End,
     };
+  }
+
+  @Get('integrity')
+  @Endpoint({
+    summary: 'Get integrity and heuristics',
+    description: 'Collect integrity checks and other heuristics about local data.',
+    history: new HistoryBuilder().added('v9.9.9').alpha('v9.9.9'),
+  })
+  integrityCheck(): Promise<MaintenanceIntegrityResponseDto> {
+    return integrityCheck(this.storageRepository);
   }
 
   @Post('login')

@@ -46,10 +46,13 @@ export type SetMaintenanceModeDto = {
 };
 export type MaintenanceListBackupsResponseDto = {
     backups: string[];
-    failedBackups: string[];
 };
 export type MaintenanceUploadBackupDto = {
     file?: Blob;
+};
+export type MaintenanceIntegrityResponseDto = {
+    storageHeuristics: object;
+    storageIntegrity: object;
 };
 export type MaintenanceLoginDto = {
     token?: string;
@@ -1899,6 +1902,30 @@ export function deleteBackup({ filename }: {
     return oazapfts.ok(oazapfts.fetchText(`/admin/maintenance/backups/${encodeURIComponent(filename)}`, {
         ...opts,
         method: "DELETE"
+    }));
+}
+/**
+ * Download backup
+ */
+export function downloadBackup({ filename }: {
+    filename: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchBlob<{
+        status: 200;
+        data: Blob;
+    }>(`/admin/maintenance/backups/${encodeURIComponent(filename)}`, {
+        ...opts
+    }));
+}
+/**
+ * Get integrity and heuristics
+ */
+export function integrityCheck(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: MaintenanceIntegrityResponseDto;
+    }>("/admin/maintenance/integrity", {
+        ...opts
     }));
 }
 /**

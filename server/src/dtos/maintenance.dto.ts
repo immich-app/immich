@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { MaintenanceAction } from 'src/enum';
+import { MaintenanceAction, StorageFolder } from 'src/enum';
 import { ValidateEnum, ValidateString } from 'src/validation';
 
 export class SetMaintenanceModeDto {
@@ -26,6 +26,22 @@ export class MaintenanceStatusResponseDto {
   progress?: number;
   task?: string;
   error?: string;
+}
+
+export class MaintenanceIntegrityResponseDto {
+  storageIntegrity!: Record<
+    StorageFolder,
+    {
+      readable: boolean;
+      writable: boolean;
+    }
+  >;
+  storageHeuristics!: Record<
+    StorageFolder,
+    {
+      files: number;
+    }
+  >;
 }
 
 export class MaintenanceListBackupsResponseDto {

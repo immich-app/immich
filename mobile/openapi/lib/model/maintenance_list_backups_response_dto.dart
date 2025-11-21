@@ -14,31 +14,25 @@ class MaintenanceListBackupsResponseDto {
   /// Returns a new [MaintenanceListBackupsResponseDto] instance.
   MaintenanceListBackupsResponseDto({
     this.backups = const [],
-    this.failedBackups = const [],
   });
 
   List<String> backups;
 
-  List<String> failedBackups;
-
   @override
   bool operator ==(Object other) => identical(this, other) || other is MaintenanceListBackupsResponseDto &&
-    _deepEquality.equals(other.backups, backups) &&
-    _deepEquality.equals(other.failedBackups, failedBackups);
+    _deepEquality.equals(other.backups, backups);
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (backups.hashCode) +
-    (failedBackups.hashCode);
+    (backups.hashCode);
 
   @override
-  String toString() => 'MaintenanceListBackupsResponseDto[backups=$backups, failedBackups=$failedBackups]';
+  String toString() => 'MaintenanceListBackupsResponseDto[backups=$backups]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'backups'] = this.backups;
-      json[r'failedBackups'] = this.failedBackups;
     return json;
   }
 
@@ -53,9 +47,6 @@ class MaintenanceListBackupsResponseDto {
       return MaintenanceListBackupsResponseDto(
         backups: json[r'backups'] is Iterable
             ? (json[r'backups'] as Iterable).cast<String>().toList(growable: false)
-            : const [],
-        failedBackups: json[r'failedBackups'] is Iterable
-            ? (json[r'failedBackups'] as Iterable).cast<String>().toList(growable: false)
             : const [],
       );
     }
@@ -105,7 +96,6 @@ class MaintenanceListBackupsResponseDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'backups',
-    'failedBackups',
   };
 }
 

@@ -160,6 +160,8 @@ Class | Method | HTTP request | Description
 *LibrariesApi* | [**updateLibrary**](doc//LibrariesApi.md#updatelibrary) | **PUT** /libraries/{id} | Update a library
 *LibrariesApi* | [**validate**](doc//LibrariesApi.md#validate) | **POST** /libraries/{id}/validate | Validate library settings
 *MaintenanceAdminApi* | [**deleteBackup**](doc//MaintenanceAdminApi.md#deletebackup) | **DELETE** /admin/maintenance/backups/{filename} | Delete backup
+*MaintenanceAdminApi* | [**downloadBackup**](doc//MaintenanceAdminApi.md#downloadbackup) | **GET** /admin/maintenance/backups/{filename} | Download backup
+*MaintenanceAdminApi* | [**integrityCheck**](doc//MaintenanceAdminApi.md#integritycheck) | **GET** /admin/maintenance/integrity | Get integrity and heuristics
 *MaintenanceAdminApi* | [**listBackups**](doc//MaintenanceAdminApi.md#listbackups) | **GET** /admin/maintenance/backups/list | List backups
 *MaintenanceAdminApi* | [**maintenanceLogin**](doc//MaintenanceAdminApi.md#maintenancelogin) | **POST** /admin/maintenance/login | Log into maintenance mode
 *MaintenanceAdminApi* | [**maintenanceStatus**](doc//MaintenanceAdminApi.md#maintenancestatus) | **GET** /admin/maintenance/status | Get maintenance mode status
@@ -413,6 +415,7 @@ Class | Method | HTTP request | Description
  - [MachineLearningAvailabilityChecksDto](doc//MachineLearningAvailabilityChecksDto.md)
  - [MaintenanceAction](doc//MaintenanceAction.md)
  - [MaintenanceAuthDto](doc//MaintenanceAuthDto.md)
+ - [MaintenanceIntegrityResponseDto](doc//MaintenanceIntegrityResponseDto.md)
  - [MaintenanceListBackupsResponseDto](doc//MaintenanceListBackupsResponseDto.md)
  - [MaintenanceLoginDto](doc//MaintenanceLoginDto.md)
  - [MaintenanceStatusResponseDto](doc//MaintenanceStatusResponseDto.md)

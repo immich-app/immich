@@ -603,6 +603,40 @@
         "x-immich-state": "Alpha"
       }
     },
+    "/admin/maintenance/integrity": {
+      "get": {
+        "description": "Collect integrity checks and other heuristics about local data.",
+        "operationId": "integrityCheck",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MaintenanceIntegrityResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Get integrity and heuristics",
+        "tags": [
+          "Maintenance (admin)"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v9.9.9",
+            "state": "Added"
+          },
+          {
+            "version": "v9.9.9",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-state": "Alpha"
+      }
+    },
     "/admin/maintenance/login": {
       "post": {
         "description": "Login with maintenance token or cookie to receive current information and perform further actions.",
@@ -16804,6 +16838,21 @@
         },
         "required": [
           "username"
+        ],
+        "type": "object"
+      },
+      "MaintenanceIntegrityResponseDto": {
+        "properties": {
+          "storageHeuristics": {
+            "type": "object"
+          },
+          "storageIntegrity": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "storageHeuristics",
+          "storageIntegrity"
         ],
         "type": "object"
       },

@@ -3,6 +3,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { Request, Response } from 'express';
 import {
   MaintenanceAuthDto,
+  MaintenanceIntegrityResponseDto,
   MaintenanceListBackupsResponseDto,
   MaintenanceLoginDto,
   MaintenanceStatusResponseDto,
@@ -13,13 +14,18 @@ import { ImmichCookie } from 'src/enum';
 import { MaintenanceRoute } from 'src/maintenance/maintenance-auth.guard';
 import { MaintenanceWorkerService } from 'src/maintenance/maintenance-worker.service';
 import { GetLoginDetails } from 'src/middleware/auth.guard';
+import { StorageRepository } from 'src/repositories/storage.repository';
 import { LoginDetails } from 'src/services/auth.service';
+import { integrityCheck } from 'src/utils/maintenance';
 import { respondWithCookie } from 'src/utils/response';
 import { FilenameParamDto } from 'src/validation';
 
 @Controller()
 export class MaintenanceWorkerController {
-  constructor(private service: MaintenanceWorkerService) {}
+  constructor(
+    private service: MaintenanceWorkerService,
+    private storageRepository: StorageRepository,
+  ) {}
 
   @Get('server/config')
   getServerConfig(): ServerConfigDto {
@@ -29,6 +35,11 @@ export class MaintenanceWorkerController {
   @Get('admin/maintenance/status')
   maintenanceStatus(@Req() request: Request): Promise<MaintenanceStatusResponseDto> {
     return this.service.status(request.cookies[ImmichCookie.MaintenanceToken]);
+  }
+
+  @Get('admin/maintenance/integrity')
+  integrityCheck(): Promise<MaintenanceIntegrityResponseDto> {
+    return integrityCheck(this.storageRepository);
   }
 
   @Post('admin/maintenance/login')

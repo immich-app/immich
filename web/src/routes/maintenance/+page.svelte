@@ -1,6 +1,6 @@
 <script lang="ts">
   import AuthPageLayout from '$lib/components/layouts/AuthPageLayout.svelte';
-  import MaintenanceBackupsList from '$lib/components/maintenance/MaintenanceBackupsList.svelte';
+  import MaintenanceRestoreFlow from '$lib/components/maintenance/MaintenanceRestoreFlow.svelte';
   import FormatMessage from '$lib/elements/FormatMessage.svelte';
   import { maintenanceStore } from '$lib/stores/maintenance.store';
   import { handleError } from '$lib/utils/handle-error';
@@ -37,7 +37,10 @@
   );
 </script>
 
-<AuthPageLayout withBackdrop={$status?.action === MaintenanceAction.Start}>
+<AuthPageLayout
+  withHeader={$status?.action !== MaintenanceAction.RestoreDatabase && !$status?.task}
+  withBackdrop={$status?.action === MaintenanceAction.Start}
+>
   <div class="flex flex-col place-items-center text-center gap-4">
     {#if $status?.action === MaintenanceAction.RestoreDatabase && $status.task}
       <Heading size="large" color="primary" tag="h1">Restoring Database</Heading>
@@ -57,11 +60,7 @@
         {/if}
       {/if}
     {:else if $status?.action === MaintenanceAction.RestoreDatabase && $auth}
-      <Heading size="large" color="primary" tag="h1">Restore From Backup</Heading>
-      <Scrollable class="max-h-[320px]">
-        <MaintenanceBackupsList />
-      </Scrollable>
-      <Button onclick={end}>Cancel</Button>
+      <MaintenanceRestoreFlow {end} />
     {:else}
       <Heading size="large" color="primary" tag="h1">{$t('maintenance_title')}</Heading>
       <p>

@@ -166,6 +166,7 @@ part 'model/logout_response_dto.dart';
 part 'model/machine_learning_availability_checks_dto.dart';
 part 'model/maintenance_action.dart';
 part 'model/maintenance_auth_dto.dart';
+part 'model/maintenance_integrity_response_dto.dart';
 part 'model/maintenance_list_backups_response_dto.dart';
 part 'model/maintenance_login_dto.dart';
 part 'model/maintenance_status_response_dto.dart';
