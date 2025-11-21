@@ -151,7 +151,6 @@ describe(MaintenanceService.name, () => {
           'immich-db-backup-20250727T110116-v1.234.5-pg14.5.sql.gz',
           'immich-db-backup-1753789649000.sql.gz',
         ],
-        failedBackups: ['immich-db-backup-20250725T110216-v1.234.5-pg14.5.sql.gz.tmp'],
       });
     });
   });

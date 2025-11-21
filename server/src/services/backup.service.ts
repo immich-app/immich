@@ -56,7 +56,10 @@ export class BackupService extends BaseService {
 
     const backupsFolder = StorageCore.getBaseFolder(StorageFolder.Backups);
     const files = await this.storageRepository.readdir(backupsFolder);
-    const backups = files.filter((fn) => isValidRoutineBackupName(fn));
+    const backups = files
+      .filter((fn) => isValidRoutineBackupName(fn))
+      .toSorted()
+      .toReversed();
     const failedBackups = files.filter((fn) => isFailedBackupName(fn));
 
     const toDelete = backups.slice(config.keepLastAmount);
