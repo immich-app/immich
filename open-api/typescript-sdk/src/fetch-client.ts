@@ -555,6 +555,45 @@ export type UpdateAssetDto = {
     rating?: number;
     visibility?: AssetVisibility;
 };
+export type CropParameters = {
+    /** Height of the crop */
+    height: number;
+    /** Width of the crop */
+    width: number;
+    /** Top-Left X coordinate of crop */
+    x: number;
+    /** Top-Left Y coordinate of crop */
+    y: number;
+};
+export type EditActionCrop = {
+    action: EditAction;
+    parameters: CropParameters;
+};
+export type RotateParameters = {
+    /** Rotation angle in degrees */
+    angle: number;
+};
+export type EditActionRotate = {
+    action: EditAction;
+    parameters: RotateParameters;
+};
+export type MirrorParameters = {
+    /** Axis to mirror along */
+    axis: MirrorAxis;
+};
+export type EditActionMirror = {
+    action: EditAction;
+    parameters: MirrorParameters;
+};
+export type AssetEditsDto = {
+    assetId: string;
+    /** list of edits */
+    edits: (EditActionCrop | EditActionRotate | EditActionMirror)[];
+};
+export type EditActionListDto = {
+    /** list of edits */
+    edits: (EditActionCrop | EditActionRotate | EditActionMirror)[];
+};
 export type AssetMetadataResponseDto = {
     key: AssetMetadataKey;
     updatedAt: string;
@@ -2533,6 +2572,46 @@ export function updateAsset({ id, updateAssetDto }: {
     })));
 }
 /**
+ * Remove edits from an existing asset
+ */
+export function removeAssetEdits({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/assets/${encodeURIComponent(id)}/edits`, {
+        ...opts,
+        method: "DELETE"
+    }));
+}
+/**
+ * Retrieve edits for an existing asset
+ */
+export function getAssetEdits({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AssetEditsDto;
+    }>(`/assets/${encodeURIComponent(id)}/edits`, {
+        ...opts
+    }));
+}
+/**
+ * Applies edits to an existing asset
+ */
+export function editAsset({ id, editActionListDto }: {
+    id: string;
+    editActionListDto: EditActionListDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AssetEditsDto;
+    }>(`/assets/${encodeURIComponent(id)}/edits`, oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: editActionListDto
+    })));
+}
+/**
  * Get asset metadata
  */
 export function getAssetMetadata({ id }: {
@@ -2603,7 +2682,8 @@ export function getAssetOcr({ id }: {
 /**
  * Download original asset
  */
-export function downloadAsset({ id, key, slug }: {
+export function downloadAsset({ edited, id, key, slug }: {
+    edited?: boolean;
     id: string;
     key?: string;
     slug?: string;
@@ -2612,6 +2692,7 @@ export function downloadAsset({ id, key, slug }: {
         status: 200;
         data: Blob;
     }>(`/assets/${encodeURIComponent(id)}/original${QS.query(QS.explode({
+        edited,
         key,
         slug
     }))}`, {
@@ -2642,7 +2723,8 @@ export function replaceAsset({ id, key, slug, assetMediaReplaceDto }: {
 /**
  * View asset thumbnail
  */
-export function viewAsset({ id, key, size, slug }: {
+export function viewAsset({ edited, id, key, size, slug }: {
+    edited?: boolean;
     id: string;
     key?: string;
     size?: AssetMediaSize;
@@ -2652,6 +2734,7 @@ export function viewAsset({ id, key, size, slug }: {
         status: 200;
         data: Blob;
     }>(`/assets/${encodeURIComponent(id)}/thumbnail${QS.query(QS.explode({
+        edited,
         key,
         size,
         slug
@@ -5239,6 +5322,8 @@ export enum Permission {
     AssetUpload = "asset.upload",
     AssetReplace = "asset.replace",
     AssetCopy = "asset.copy",
+    AssetDerive = "asset.derive",
+    AssetEdit = "asset.edit",
     AlbumCreate = "album.create",
     AlbumRead = "album.read",
     AlbumUpdate = "album.update",
@@ -5386,6 +5471,15 @@ export enum AssetJobName {
     RefreshMetadata = "refresh-metadata",
     RegenerateThumbnail = "regenerate-thumbnail",
     TranscodeVideo = "transcode-video"
+}
+export enum EditAction {
+    Crop = "crop",
+    Rotate = "rotate",
+    Mirror = "mirror"
+}
+export enum MirrorAxis {
+    Horizontal = "horizontal",
+    Vertical = "vertical"
 }
 export enum AssetMediaSize {
     Fullsize = "fullsize",

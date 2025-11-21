@@ -313,6 +313,7 @@ describe(MediaService.name, () => {
           quality: 80,
           processInvalidImages: false,
           raw: rawInfo,
+          edits: [],
         },
         expect.any(String),
       );
@@ -325,6 +326,7 @@ describe(MediaService.name, () => {
           quality: 80,
           processInvalidImages: false,
           raw: rawInfo,
+          edits: [],
         },
         expect.any(String),
       );
@@ -334,6 +336,7 @@ describe(MediaService.name, () => {
         colorspace: Colorspace.P3,
         processInvalidImages: false,
         raw: rawInfo,
+        edits: [],
       });
 
       expect(mocks.asset.upsertFiles).toHaveBeenCalledWith([
@@ -527,6 +530,7 @@ describe(MediaService.name, () => {
           quality: 80,
           processInvalidImages: false,
           raw: rawInfo,
+          edits: [],
         },
         previewPath,
       );
@@ -539,6 +543,7 @@ describe(MediaService.name, () => {
           quality: 80,
           processInvalidImages: false,
           raw: rawInfo,
+          edits: [],
         },
         thumbnailPath,
       );
@@ -572,6 +577,7 @@ describe(MediaService.name, () => {
           quality: 80,
           processInvalidImages: false,
           raw: rawInfo,
+          edits: [],
         },
         previewPath,
       );
@@ -584,6 +590,7 @@ describe(MediaService.name, () => {
           quality: 80,
           processInvalidImages: false,
           raw: rawInfo,
+          edits: [],
         },
         thumbnailPath,
       );
@@ -641,7 +648,6 @@ describe(MediaService.name, () => {
         processInvalidImages: false,
         size: 1440,
       });
-      expect(mocks.media.getImageDimensions).not.toHaveBeenCalled();
     });
 
     it('should resize original image if embedded image extraction is not enabled', async () => {
@@ -657,7 +663,6 @@ describe(MediaService.name, () => {
         processInvalidImages: false,
         size: 1440,
       });
-      expect(mocks.media.getImageDimensions).not.toHaveBeenCalled();
     });
 
     it('should process invalid images if enabled', async () => {
@@ -691,7 +696,6 @@ describe(MediaService.name, () => {
         expect.objectContaining({ processInvalidImages: false }),
       );
 
-      expect(mocks.media.getImageDimensions).not.toHaveBeenCalled();
       vi.unstubAllEnvs();
     });
 
@@ -722,6 +726,7 @@ describe(MediaService.name, () => {
           quality: 80,
           processInvalidImages: false,
           raw: rawInfo,
+          edits: [],
         },
         expect.any(String),
       );
@@ -752,6 +757,7 @@ describe(MediaService.name, () => {
           quality: 80,
           processInvalidImages: false,
           raw: rawInfo,
+          edits: [],
         },
         expect.any(String),
       );
@@ -764,6 +770,7 @@ describe(MediaService.name, () => {
           quality: 80,
           processInvalidImages: false,
           raw: rawInfo,
+          edits: [],
         },
         expect.any(String),
       );
@@ -792,6 +799,7 @@ describe(MediaService.name, () => {
           quality: 80,
           processInvalidImages: false,
           raw: rawInfo,
+          edits: [],
         },
         expect.any(String),
       );
@@ -804,6 +812,7 @@ describe(MediaService.name, () => {
           size: 1440,
           processInvalidImages: false,
           raw: rawInfo,
+          edits: [],
         },
         expect.any(String),
       );
@@ -833,6 +842,7 @@ describe(MediaService.name, () => {
           quality: 80,
           processInvalidImages: false,
           raw: rawInfo,
+          edits: [],
         },
         expect.any(String),
       );
@@ -888,6 +898,7 @@ describe(MediaService.name, () => {
           quality: 80,
           processInvalidImages: false,
           raw: rawInfo,
+          edits: [],
         },
         expect.any(String),
       );
@@ -926,9 +937,161 @@ describe(MediaService.name, () => {
           quality: 90,
           processInvalidImages: false,
           raw: rawInfo,
+          edits: [],
         },
         expect.any(String),
       );
+    });
+
+    it('should apply edits when generating thumbnails', async () => {
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue({
+        ...assetStub.withCropEdit,
+      });
+
+      await sut.handleGenerateThumbnails({ id: assetStub.image.id, source: 'edit' });
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
+        rawBuffer,
+        expect.objectContaining({
+          edits: [
+            {
+              action: 'crop',
+              parameters: { height: 1152, width: 1512, x: 216, y: 1512 },
+            },
+          ],
+        }),
+        expect.any(String),
+      );
+    });
+
+    it('should not generate edited files when job source is not edit', async () => {
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue({
+        ...assetStub.withCropEdit,
+      });
+
+      await sut.handleGenerateThumbnails({ id: assetStub.image.id, source: 'upload' });
+
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
+        rawBuffer,
+        expect.objectContaining({
+          edits: [],
+        }),
+        expect.any(String),
+      );
+    });
+
+    it('should clean up edited files if an asset has no edits', async () => {
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue({
+        ...assetStub.withRevertedEdits,
+      });
+
+      const status = await sut.handleGenerateThumbnails({ id: assetStub.image.id, source: 'edit' });
+      expect(mocks.storage.unlink).toHaveBeenCalledWith('/uploads/user-id/fullsize/path_edited.jpg');
+      expect(mocks.storage.unlink).toHaveBeenCalledWith('/uploads/user-id/thumbnail/path_edited.jpg');
+      expect(mocks.storage.unlink).toHaveBeenCalledWith('/uploads/user-id/preview/path_edited.jpg');
+
+      expect(mocks.asset.deleteFiles).toHaveBeenCalledWith(
+        expect.arrayContaining([
+          expect.objectContaining({ path: '/uploads/user-id/fullsize/path_edited.jpg' }),
+          expect.objectContaining({ path: '/uploads/user-id/preview/path_edited.jpg' }),
+          expect.objectContaining({ path: '/uploads/user-id/thumbnail/path_edited.jpg' }),
+        ]),
+      );
+
+      expect(status).toBe(JobStatus.Success);
+      expect(mocks.media.generateThumbnail).toHaveBeenCalled();
+
+      // ensure that we switched to non-edit mode
+      expect(mocks.asset.upsertFiles).toHaveBeenCalledWith(
+        expect.arrayContaining([
+          expect.objectContaining({ type: AssetFileType.Preview }),
+          expect.objectContaining({ type: AssetFileType.Thumbnail }),
+        ]),
+      );
+    });
+
+    it('should generate all 3 edited files if an asset has edits', async () => {
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue({
+        ...assetStub.withCropEdit,
+      });
+
+      await sut.handleGenerateThumbnails({ id: assetStub.image.id, source: 'edit' });
+
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(3);
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
+        rawBuffer,
+        expect.anything(),
+        expect.stringContaining('edited_preview.jpeg'),
+      );
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
+        rawBuffer,
+        expect.anything(),
+        expect.stringContaining('edited_thumbnail.webp'),
+      );
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
+        rawBuffer,
+        expect.anything(),
+        expect.stringContaining('edited_fullsize.jpeg'),
+      );
+    });
+
+    it('should skip thumbhash saving if job source is not edit and edits exist', async () => {
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue({
+        ...assetStub.withCropEdit,
+      });
+      const thumbhashBuffer = Buffer.from('a thumbhash', 'utf8');
+      mocks.media.generateThumbhash.mockResolvedValue(thumbhashBuffer);
+
+      await sut.handleGenerateThumbnails({ id: assetStub.image.id, source: 'upload' });
+
+      expect(mocks.asset.update).not.toHaveBeenCalledWith(
+        expect.objectContaining({
+          thumbhash: thumbhashBuffer,
+        }),
+      );
+    });
+
+    it('should apply thumbhash if job source is edit and edits exist', async () => {
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue({
+        ...assetStub.withCropEdit,
+      });
+      const thumbhashBuffer = Buffer.from('a thumbhash', 'utf8');
+      mocks.media.generateThumbhash.mockResolvedValue(thumbhashBuffer);
+
+      await sut.handleGenerateThumbnails({ id: assetStub.image.id, source: 'edit' });
+
+      expect(mocks.asset.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          thumbhash: thumbhashBuffer,
+        }),
+      );
+    });
+
+    it('should upsert 3 edited files for edit jobs', async () => {
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue({
+        ...assetStub.withCropEdit,
+      });
+      const thumbhashBuffer = Buffer.from('a thumbhash', 'utf8');
+      mocks.media.generateThumbhash.mockResolvedValue(thumbhashBuffer);
+
+      await sut.handleGenerateThumbnails({ id: assetStub.image.id, source: 'edit' });
+
+      expect(mocks.asset.upsertFiles).toHaveBeenCalledWith(
+        expect.arrayContaining([
+          expect.objectContaining({ type: AssetFileType.EditedFullSize }),
+          expect.objectContaining({ type: AssetFileType.EditedPreview }),
+          expect.objectContaining({ type: AssetFileType.EditedThumbnail }),
+        ]),
+      );
+    });
+
+    it('should reject videos for edit thumbnail jobs', async () => {
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.video);
+
+      await expect(sut.handleGenerateThumbnails({ id: assetStub.video.id, source: 'edit' })).resolves.toBe(
+        JobStatus.Skipped,
+      );
+
+      expect(mocks.media.generateThumbnail).not.toHaveBeenCalled();
     });
   });
 
@@ -981,12 +1144,17 @@ describe(MediaService.name, () => {
           colorspace: Colorspace.P3,
           format: ImageFormat.Jpeg,
           quality: 80,
-          crop: {
-            left: 238,
-            top: 163,
-            width: 274,
-            height: 274,
-          },
+          edits: [
+            {
+              action: 'crop',
+              parameters: {
+                height: 274,
+                width: 274,
+                x: 238,
+                y: 163,
+              },
+            },
+          ],
           raw: info,
           processInvalidImages: false,
           size: 250,
@@ -1020,12 +1188,17 @@ describe(MediaService.name, () => {
           colorspace: Colorspace.P3,
           format: ImageFormat.Jpeg,
           quality: 80,
-          crop: {
-            left: 238,
-            top: 163,
-            width: 274,
-            height: 274,
-          },
+          edits: [
+            {
+              action: 'crop',
+              parameters: {
+                height: 274,
+                width: 274,
+                x: 238,
+                y: 163,
+              },
+            },
+          ],
           raw: info,
           processInvalidImages: false,
           size: 250,
@@ -1057,12 +1230,17 @@ describe(MediaService.name, () => {
           colorspace: Colorspace.P3,
           format: ImageFormat.Jpeg,
           quality: 80,
-          crop: {
-            left: 0,
-            top: 85,
-            width: 510,
-            height: 510,
-          },
+          edits: [
+            {
+              action: 'crop',
+              parameters: {
+                height: 510,
+                width: 510,
+                x: 0,
+                y: 85,
+              },
+            },
+          ],
           raw: info,
           processInvalidImages: false,
           size: 250,
@@ -1094,12 +1272,17 @@ describe(MediaService.name, () => {
           colorspace: Colorspace.P3,
           format: ImageFormat.Jpeg,
           quality: 80,
-          crop: {
-            left: 591,
-            top: 591,
-            width: 408,
-            height: 408,
-          },
+          edits: [
+            {
+              action: 'crop',
+              parameters: {
+                height: 408,
+                width: 408,
+                x: 591,
+                y: 591,
+              },
+            },
+          ],
           raw: info,
           processInvalidImages: false,
           size: 250,
@@ -1131,12 +1314,17 @@ describe(MediaService.name, () => {
           colorspace: Colorspace.P3,
           format: ImageFormat.Jpeg,
           quality: 80,
-          crop: {
-            left: 0,
-            top: 62,
-            width: 412,
-            height: 412,
-          },
+          edits: [
+            {
+              action: 'crop',
+              parameters: {
+                height: 412,
+                width: 412,
+                x: 0,
+                y: 62,
+              },
+            },
+          ],
           raw: info,
           processInvalidImages: false,
           size: 250,
@@ -1168,12 +1356,17 @@ describe(MediaService.name, () => {
           colorspace: Colorspace.P3,
           format: ImageFormat.Jpeg,
           quality: 80,
-          crop: {
-            left: 4485,
-            top: 94,
-            width: 138,
-            height: 138,
-          },
+          edits: [
+            {
+              action: 'crop',
+              parameters: {
+                height: 138,
+                width: 138,
+                x: 4485,
+                y: 94,
+              },
+            },
+          ],
           raw: info,
           processInvalidImages: false,
           size: 250,
@@ -1210,12 +1403,17 @@ describe(MediaService.name, () => {
           colorspace: Colorspace.P3,
           format: ImageFormat.Jpeg,
           quality: 80,
-          crop: {
-            height: 844,
-            left: 388,
-            top: 730,
-            width: 844,
-          },
+          edits: [
+            {
+              action: 'crop',
+              parameters: {
+                height: 844,
+                width: 844,
+                x: 388,
+                y: 730,
+              },
+            },
+          ],
           raw: info,
           processInvalidImages: false,
           size: 250,

@@ -42,4 +42,7 @@ export class AssetOcrTable {
 
   @Column({ type: 'text' })
   text!: string;
+
+  @Column({ type: 'boolean', default: true })
+  isVisible!: Generated<boolean>;
 }

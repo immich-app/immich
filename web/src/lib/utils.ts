@@ -189,14 +189,14 @@ const createUrl = (path: string, parameters?: Record<string, unknown>) => {
   return getBaseUrl() + url.pathname + url.search + url.hash;
 };
 
-type AssetUrlOptions = { id: string; cacheKey?: string | null };
+type AssetUrlOptions = { id: string; cacheKey?: string | null; edited?: boolean };
 
 export const getAssetOriginalUrl = (options: string | AssetUrlOptions) => {
   if (typeof options === 'string') {
     options = { id: options };
   }
-  const { id, cacheKey } = options;
-  return createUrl(getAssetOriginalPath(id), { ...authManager.params, c: cacheKey });
+  const { id, cacheKey, edited } = options;
+  return createUrl(getAssetOriginalPath(id), { ...authManager.params, c: cacheKey, edited });
 };
 
 export const getAssetThumbnailUrl = (options: string | (AssetUrlOptions & { size?: AssetMediaSize })) => {

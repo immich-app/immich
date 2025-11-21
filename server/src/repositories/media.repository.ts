@@ -6,7 +6,9 @@ import fs from 'node:fs/promises';
 import { Writable } from 'node:stream';
 import sharp from 'sharp';
 import { ORIENTATION_TO_SHARP_ROTATION } from 'src/constants';
-import { Exif } from 'src/database';
+import { AssetFace, Exif } from 'src/database';
+import { EditActionCrop, EditActionItem } from 'src/dtos/editing.dto';
+import { AssetOcrResponseDto } from 'src/dtos/ocr.dto';
 import { Colorspace, LogLevel, RawExtractedFormat } from 'src/enum';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import {
@@ -19,6 +21,7 @@ import {
   VideoInfo,
 } from 'src/types';
 import { handlePromiseError } from 'src/utils/misc';
+import { createAffineMatrix } from 'src/utils/transform';
 
 const probe = (input: string, options: string[]): Promise<FfprobeData> =>
   new Promise((resolve, reject) =>
@@ -138,21 +141,48 @@ export class MediaRepository {
     }
   }
 
-  decodeImage(input: string | Buffer, options: DecodeToBufferOptions) {
-    return this.getImageDecodingPipeline(input, options).raw().toBuffer({ resolveWithObject: true });
+  async decodeImage(input: string | Buffer, options: DecodeToBufferOptions) {
+    const pipeline = await this.getImageDecodingPipeline(input, options);
+    return pipeline.raw().toBuffer({ resolveWithObject: true });
+  }
+
+  private async applyEdits(pipeline: sharp.Sharp, edits: EditActionItem[]): Promise<sharp.Sharp> {
+    const affineEditOperations = edits.filter((edit) => edit.action !== 'crop');
+    const matrix = createAffineMatrix(affineEditOperations);
+
+    const crop = edits.find((edit) => edit.action === 'crop');
+    const dimensions = await pipeline.metadata();
+
+    if (crop) {
+      pipeline = pipeline.extract({
+        left: crop ? Math.round(crop.parameters.x) : 0,
+        top: crop ? Math.round(crop.parameters.y) : 0,
+        width: crop ? Math.round(crop.parameters.width) : dimensions.width || 0,
+        height: crop ? Math.round(crop.parameters.height) : dimensions.height || 0,
+      });
+    }
+
+    const { a, b, c, d } = matrix;
+    pipeline = pipeline.affine([
+      [a, b],
+      [c, d],
+    ]);
+
+    return pipeline;
   }
 
   async generateThumbnail(input: string | Buffer, options: GenerateThumbnailOptions, output: string): Promise<void> {
-    await this.getImageDecodingPipeline(input, options)
-      .toFormat(options.format, {
-        quality: options.quality,
-        // this is default in libvips (except the threshold is 90), but we need to set it manually in sharp
-        chromaSubsampling: options.quality >= 80 ? '4:4:4' : '4:2:0',
-      })
-      .toFile(output);
+    const pipeline = await this.getImageDecodingPipeline(input, options);
+    const decoded = pipeline.toFormat(options.format, {
+      quality: options.quality,
+      // this is default in libvips (except the threshold is 90), but we need to set it manually in sharp
+      chromaSubsampling: options.quality >= 80 ? '4:4:4' : '4:2:0',
+    });
+
+    await decoded.toFile(output);
   }
 
-  private getImageDecodingPipeline(input: string | Buffer, options: DecodeToBufferOptions) {
+  private async getImageDecodingPipeline(input: string | Buffer, options: DecodeToBufferOptions) {
     let pipeline = sharp(input, {
       // some invalid images can still be processed by sharp, but we want to fail on them by default to avoid crashes
       failOn: options.processInvalidImages ? 'none' : 'error',
@@ -175,8 +205,8 @@ export class MediaRepository {
       }
     }
 
-    if (options.crop) {
-      pipeline = pipeline.extract(options.crop);
+    if (options.edits && options.edits.length > 0) {
+      pipeline = await this.applyEdits(pipeline, options.edits);
     }
 
     if (options.size !== undefined) {
@@ -186,15 +216,125 @@ export class MediaRepository {
   }
 
   async generateThumbhash(input: string | Buffer, options: GenerateThumbhashOptions): Promise<Buffer> {
-    const [{ rgbaToThumbHash }, { data, info }] = await Promise.all([
+    const [{ rgbaToThumbHash }, decodingPipeline] = await Promise.all([
       import('thumbhash'),
-      sharp(input, options)
-        .resize(100, 100, { fit: 'inside', withoutEnlargement: true })
-        .raw()
-        .ensureAlpha()
-        .toBuffer({ resolveWithObject: true }),
+      this.getImageDecodingPipeline(input, {
+        colorspace: options.colorspace,
+        processInvalidImages: options.processInvalidImages,
+        raw: options.raw,
+        edits: options.edits,
+      }),
     ]);
+
+    const pipeline = decodingPipeline.resize(100, 100, { fit: 'inside', withoutEnlargement: true }).raw().ensureAlpha();
+
+    const { data, info } = await pipeline.toBuffer({ resolveWithObject: true });
+
     return Buffer.from(rgbaToThumbHash(info.width, info.height, data));
+  }
+
+  private boundingBoxOverlap(
+    boxA: { x1: number; y1: number; x2: number; y2: number },
+    boxB: { x1: number; y1: number; x2: number; y2: number },
+  ) {
+    const overlapX1 = Math.max(boxA.x1, boxB.x1);
+    const overlapY1 = Math.max(boxA.y1, boxB.y1);
+    const overlapX2 = Math.min(boxA.x2, boxB.x2);
+    const overlapY2 = Math.min(boxA.y2, boxB.y2);
+
+    const overlapArea = Math.max(0, overlapX2 - overlapX1) * Math.max(0, overlapY2 - overlapY1);
+    const faceArea = (boxA.x2 - boxA.x1) * (boxA.y2 - boxA.y1);
+    return overlapArea / faceArea;
+  }
+
+  checkFaceVisibility(
+    faces: AssetFace[],
+    assetDimensions: ImageDimensions,
+    crop?: EditActionCrop,
+  ): { visible: AssetFace[]; hidden: AssetFace[] } {
+    if (!crop) {
+      return {
+        visible: faces,
+        hidden: [],
+      };
+    }
+
+    const cropArea = {
+      x1: crop.parameters.x,
+      y1: crop.parameters.y,
+      x2: crop.parameters.x + crop.parameters.width,
+      y2: crop.parameters.y + crop.parameters.height,
+    };
+
+    const status = faces.map((face) => {
+      const faceArea = {
+        x1: (face.boundingBoxX1 / face.imageWidth) * assetDimensions.width,
+        y1: (face.boundingBoxY1 / face.imageHeight) * assetDimensions.height,
+        x2: (face.boundingBoxX2 / face.imageWidth) * assetDimensions.width,
+        y2: (face.boundingBoxY2 / face.imageHeight) * assetDimensions.height,
+      };
+
+      const overlapPercentage = this.boundingBoxOverlap(faceArea, cropArea);
+
+      return {
+        face,
+        isVisible: overlapPercentage >= 0.5,
+      };
+    });
+
+    return {
+      visible: status.filter((s) => s.isVisible).map((s) => s.face),
+      hidden: status.filter((s) => !s.isVisible).map((s) => s.face),
+    };
+  }
+
+  checkOcrVisibility(
+    ocrs: AssetOcrResponseDto[],
+    assetDimensions: ImageDimensions,
+    crop?: EditActionCrop,
+  ): { visible: AssetOcrResponseDto[]; hidden: AssetOcrResponseDto[] } {
+    if (!crop) {
+      return {
+        visible: ocrs,
+        hidden: [],
+      };
+    }
+
+    const cropArea = {
+      x1: crop.parameters.x,
+      y1: crop.parameters.y,
+      x2: crop.parameters.x + crop.parameters.width,
+      y2: crop.parameters.y + crop.parameters.height,
+    };
+
+    const status = ocrs.map((ocr) => {
+      // ocr use coordinates of a scaled image for ML
+      const ocrPolygon = [
+        { x: ocr.x1 * assetDimensions.width, y: ocr.y1 * assetDimensions.height },
+        { x: ocr.x2 * assetDimensions.width, y: ocr.y2 * assetDimensions.height },
+        { x: ocr.x3 * assetDimensions.width, y: ocr.y3 * assetDimensions.height },
+        { x: ocr.x4 * assetDimensions.width, y: ocr.y4 * assetDimensions.height },
+      ];
+
+      const ocrBox = {
+        x1: Math.min(ocrPolygon[0].x, ocrPolygon[1].x, ocrPolygon[2].x, ocrPolygon[3].x),
+        y1: Math.min(ocrPolygon[0].y, ocrPolygon[1].y, ocrPolygon[2].y, ocrPolygon[3].y),
+        x2: Math.max(ocrPolygon[0].x, ocrPolygon[1].x, ocrPolygon[2].x, ocrPolygon[3].x),
+        y2: Math.max(ocrPolygon[0].y, ocrPolygon[1].y, ocrPolygon[2].y, ocrPolygon[3].y),
+      };
+
+      const overlapPercentage = this.boundingBoxOverlap(ocrBox, cropArea);
+
+      return {
+        ocr,
+        isVisible: overlapPercentage >= 0.5,
+      };
+    });
+
+    return {
+      visible: status.filter((s) => s.isVisible).map((s) => s.ocr),
+      hidden: status.filter((s) => !s.isVisible).map((s) => s.ocr),
+    };
   }
 
   async probe(input: string, options?: ProbeOptions): Promise<VideoInfo> {

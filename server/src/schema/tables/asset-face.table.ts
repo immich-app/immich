@@ -78,4 +78,7 @@ export class AssetFaceTable {
 
   @UpdateIdColumn()
   updateId!: Generated<string>;
+
+  @Column({ type: 'boolean', default: true })
+  isVisible!: Generated<boolean>;
 }
