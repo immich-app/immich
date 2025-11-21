@@ -238,6 +238,7 @@ export class MaintenanceWorkerService {
       this.logger.error(`Encountered error running action: ${error}`);
       this.setStatus({
         action: action.action,
+        task: 'error',
         error: '' + error,
       });
     }
