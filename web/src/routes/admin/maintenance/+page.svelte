@@ -54,7 +54,7 @@
           icon={mdiRefresh}
           key="backups"
         >
-          <MaintenanceBackupsList backups={data.backups} showDelete />
+          <MaintenanceBackupsList backups={data.backups} />
         </SettingAccordion>
       </SettingAccordionState>
     </section>
