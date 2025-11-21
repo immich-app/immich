@@ -120,7 +120,7 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
       for (final row in rows) {
         final albumId = row.readTable(_db.localAlbumAssetEntity).albumId;
         final assetData = row.readTable(_db.localAssetEntity);
-        final asset = assetData.toDto().copyWith(remoteDeletedAt: trashedAssetsMap[assetData.checksum]);
+        final asset = assetData.toDto().copyWith(deletedAt: trashedAssetsMap[assetData.checksum]);
         (result[albumId] ??= <LocalAsset>[]).add(asset);
       }
     }

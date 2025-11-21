@@ -330,10 +330,11 @@ class LocalSyncService {
     final localAssetsToTrash = await _trashedLocalAssetRepository.getToTrash();
     if (localAssetsToTrash.isNotEmpty) {
       if (reviewMode) {
-        final itemsToReview = localAssetsToTrash.values.flattened
-            .where((la) => la.checksum?.isNotEmpty == true);
-        _log.info("Apply remote trash action to review for: ${itemsToReview.map((e)=>'id:${e.id}, name:${e.name}, remoteDeletedAt:${e.remoteDeletedAt}').join('*')}");
-        await _trashSyncRepository.upsertWithActionTypeCheck(itemsToReview);
+        final itemsToReview = localAssetsToTrash.values.flattened.where((la) => la.checksum?.isNotEmpty == true);
+        _log.info(
+          "Apply remote trash action to review for: ${itemsToReview.map((e) => 'id:${e.id}, name:${e.name}, deletedAt:${e.deletedAt}').join('|')}",
+        );
+        await _trashSyncRepository.upsertReviewCandidates(itemsToReview);
       } else {
         final mediaUrls = await Future.wait(
           localAssetsToTrash.values
@@ -350,8 +351,8 @@ class LocalSyncService {
       _log.info("syncTrashedAssets, No assets found in backup-enabled albums for move to trash");
     }
     if (reviewMode) {
-      _log.info("syncTrashedAssets, deleteAlreadySynced");
-      await _trashSyncRepository.deleteAlreadySynced();
+      final result = await _trashSyncRepository.deleteOutdated();
+      _log.info("syncTrashedAssets, outdated deleted: $result");
     }
   }
 }

@@ -9,9 +9,9 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/models/server_info/server_info.model.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/providers/cast.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/trash_sync.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/sync_status.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
@@ -161,8 +161,7 @@ class _ProfileIndicator extends ConsumerWidget {
         ),
         backgroundColor: Colors.transparent,
         alignment: Alignment.bottomRight,
-        isLabelVisible: versionWarningPresent ||
-            outOfSyncCount > 0,
+        isLabelVisible: versionWarningPresent || outOfSyncCount > 0,
         offset: const Offset(-2, -12),
         child: user == null
             ? const Icon(Icons.face_outlined, size: widgetSize)

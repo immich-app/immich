@@ -102,6 +102,8 @@ abstract class $Drift extends i0.GeneratedDatabase {
     localAlbumEntity,
     localAlbumAssetEntity,
     i5.idxTrashSyncChecksum,
+    i5.idxTrashSyncStatus,
+    i5.idxTrashSyncChecksumStatus,
     i4.idxLocalAssetChecksum,
     i2.idxRemoteAssetOwnerChecksum,
     i2.uQRemoteAssetsOwnerChecksum,

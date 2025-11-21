@@ -4,7 +4,6 @@ class LocalAsset extends BaseAsset {
   final String id;
   final String? remoteAssetId;
   final int orientation;
-  final DateTime? remoteDeletedAt;
 
   const LocalAsset({
     required this.id,
@@ -14,13 +13,13 @@ class LocalAsset extends BaseAsset {
     required super.type,
     required super.createdAt,
     required super.updatedAt,
+    super.deletedAt,
     super.width,
     super.height,
     super.durationInSeconds,
     super.isFavorite = false,
     super.livePhotoVideoId,
     this.orientation = 0,
-    this.remoteDeletedAt,
   }) : remoteAssetId = remoteId;
 
   @override
@@ -43,13 +42,13 @@ class LocalAsset extends BaseAsset {
    type: $type,
    createdAt: $createdAt,
    updatedAt: $updatedAt,
+   deletedAt: $deletedAt,
    width: ${width ?? "<NA>"},
    height: ${height ?? "<NA>"},
    durationInSeconds: ${durationInSeconds ?? "<NA>"},
    remoteId: ${remoteId ?? "<NA>"}
    isFavorite: $isFavorite,
    orientation: $orientation,
-   remoteDeletedAt: $remoteDeletedAt
  }''';
   }
 
@@ -77,7 +76,7 @@ class LocalAsset extends BaseAsset {
     int? durationInSeconds,
     bool? isFavorite,
     int? orientation,
-    DateTime? remoteDeletedAt,
+    DateTime? deletedAt,
   }) {
     return LocalAsset(
       id: id ?? this.id,
@@ -92,7 +91,7 @@ class LocalAsset extends BaseAsset {
       durationInSeconds: durationInSeconds ?? this.durationInSeconds,
       isFavorite: isFavorite ?? this.isFavorite,
       orientation: orientation ?? this.orientation,
-      remoteDeletedAt: remoteDeletedAt ?? this.remoteDeletedAt,
+      deletedAt: deletedAt ?? this.deletedAt,
     );
   }
 }

@@ -80,7 +80,9 @@ class ImmichAppBarDialog extends HookConsumerWidget {
         ),
         title: Text(
           text,
-          style: theme.textTheme.labelLarge?.copyWith(color: btnColor ?? theme.textTheme.labelLarge?.color?.withAlpha(250)),
+          style: theme.textTheme.labelLarge?.copyWith(
+            color: btnColor ?? theme.textTheme.labelLarge?.color?.withAlpha(250),
+          ),
         ).tr(),
         onTap: onTap,
         trailing: trailing,
@@ -104,10 +106,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
             Icons.warning_amber_rounded,
             'review_out_of_sync_changes'.t(),
             () => context.pushRoute(const DriftTrashSyncReviewRoute()),
-            trailing: Text(
-              '($count)',
-              style: theme.textTheme.labelLarge?.copyWith(color: btnColor),
-            ),
+            trailing: Text('($count)', style: theme.textTheme.labelLarge?.copyWith(color: btnColor)),
             btnColor: btnColor,
           );
         },

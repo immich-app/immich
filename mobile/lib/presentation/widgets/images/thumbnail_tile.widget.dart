@@ -74,16 +74,11 @@ class ThumbnailTile extends ConsumerWidget {
                   ),
                 if (storageIndicator && asset != null)
                   switch (asset.storage) {
-                    AssetState.local => Align(
+                    AssetState.local => const Align(
                       alignment: Alignment.bottomRight,
                       child: Padding(
-                        padding: const EdgeInsets.only(right: 10.0, bottom: 6.0),
-                        child: _TileOverlayIcon(
-                          // todo EXPERIMENTAL (PeterO)
-                          (asset as LocalAsset).remoteDeletedAt == null
-                              ? Icons.cloud_off_outlined
-                              : Icons.sync_problem_rounded,
-                        ),
+                        padding: EdgeInsets.only(right: 10.0, bottom: 6.0),
+                        child: _TileOverlayIcon(Icons.cloud_off_outlined),
                       ),
                     ),
                     AssetState.remote => const Align(
@@ -93,11 +88,15 @@ class ThumbnailTile extends ConsumerWidget {
                         child: _TileOverlayIcon(Icons.cloud_outlined),
                       ),
                     ),
-                    AssetState.merged => const Align(
+                    AssetState.merged => Align(
                       alignment: Alignment.bottomRight,
                       child: Padding(
-                        padding: EdgeInsets.only(right: 10.0, bottom: 6.0),
-                        child: _TileOverlayIcon(Icons.cloud_done_outlined),
+                        padding: const EdgeInsets.only(right: 10.0, bottom: 6.0),
+                        child: _TileOverlayIcon(
+                          (asset as RemoteAsset).deletedAt != null
+                              ? Icons.sync_problem_rounded
+                              : Icons.cloud_done_outlined,
+                        ),
                       ),
                     ),
                   },

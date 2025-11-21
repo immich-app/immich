@@ -13,13 +13,7 @@ SELECT
 	rae."type",
 	rae.created_at as created_at,
 	rae.updated_at,
-	CASE
-		WHEN EXISTS (
-			SELECT 1 FROM trash_sync_entity tse
-			WHERE tse.checksum = rae.checksum AND tse.is_sync_approved = 1
-		) THEN NULL
-		ELSE rae.deleted_at
-	END as deleted_at,
+	rae.deleted_at,
 	rae.width,
 	rae.height,
 	rae.duration_in_seconds,
@@ -29,17 +23,20 @@ SELECT
 	rae.owner_id,
 	rae.live_photo_video_id,
 	0 as orientation,
-	rae.stack_id
+	rae.stack_id,
+	COALESCE(
+  	  (SELECT ts.is_sync_approved = 0	FROM trash_sync_entity ts	WHERE ts.checksum = rae.checksum LIMIT 1),
+  	  FALSE
+    ) AS sync_rejected
 FROM
 	remote_asset_entity rae
 LEFT JOIN
 	stack_entity se ON rae.stack_id = se.id
 WHERE
-	  (
+	(
       rae.deleted_at IS NULL
       OR EXISTS (
-        SELECT 1 FROM local_asset_entity lae
-        WHERE lae.checksum = rae.checksum
+        SELECT 1 FROM local_asset_entity lae WHERE lae.checksum = rae.checksum
       )
     )
 	AND rae.visibility = 0 -- timeline visibility
@@ -47,6 +44,9 @@ WHERE
 	AND (
 		rae.stack_id IS NULL
 		OR rae.id = se.primary_asset_id
+	)
+	AND NOT EXISTS (
+		SELECT 1 FROM trash_sync_entity ts WHERE ts.checksum = rae.checksum AND ts.is_sync_approved = 1
 	)
 
 UNION ALL
@@ -68,7 +68,8 @@ SELECT
 	NULL as owner_id,
 	NULL as live_photo_video_id,
 	lae.orientation,
-	NULL as stack_id
+	NULL as stack_id,
+	false as sync_rejected
 FROM
 	local_asset_entity lae
 WHERE NOT EXISTS (
@@ -104,17 +105,19 @@ FROM
         stack_entity se ON rae.stack_id = se.id
 	WHERE
 		(
-      rae.deleted_at IS NULL
-      OR EXISTS (
-        SELECT 1 FROM local_asset_entity lae
-        WHERE lae.checksum = rae.checksum
-      )
-    )
+          rae.deleted_at IS NULL
+          OR EXISTS (
+            SELECT 1 FROM local_asset_entity lae WHERE lae.checksum = rae.checksum
+          )
+        )
 		AND rae.visibility = 0 -- timeline visibility
 		AND rae.owner_id in :user_ids
 		AND (
 			rae.stack_id IS NULL
 			OR rae.id = se.primary_asset_id
+		)
+		AND NOT EXISTS (
+			SELECT 1 FROM trash_sync_entity ts WHERE ts.checksum = rae.checksum AND ts.is_sync_approved = 1
 		)
 	UNION ALL
 	SELECT

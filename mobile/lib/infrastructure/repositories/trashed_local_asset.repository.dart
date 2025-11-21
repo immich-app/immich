@@ -225,7 +225,7 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
     for (final row in rows) {
       final albumId = row.readTable(_db.localAlbumAssetEntity).albumId;
       final remoteDeletedAt = row.read(_db.remoteAssetEntity.deletedAt);
-      final asset = row.readTable(_db.localAssetEntity).toDto().copyWith(remoteDeletedAt: remoteDeletedAt);
+      final asset = row.readTable(_db.localAssetEntity).toDto().copyWith(deletedAt: remoteDeletedAt);
       (result[albumId] ??= <LocalAsset>[]).add(asset);
     }
 

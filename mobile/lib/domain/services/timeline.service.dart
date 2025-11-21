@@ -34,7 +34,7 @@ enum TimelineOrigin {
   search,
   deepLink,
   albumActivities,
-  syncTrash
+  syncTrash,
 }
 
 class TimelineFactory {
@@ -65,7 +65,8 @@ class TimelineFactory {
 
   TimelineService trash(String userId) => TimelineService(_timelineRepository.trash(userId, groupBy));
 
-  TimelineService toTrashSyncReview(String userId) => TimelineService(_timelineRepository.toTrashSyncReview(userId, groupBy));
+  TimelineService toTrashSyncReview(String userId) =>
+      TimelineService(_timelineRepository.toTrashSyncReview(userId, groupBy));
 
   TimelineService archive(String userId) => TimelineService(_timelineRepository.archived(userId, groupBy));
 
@@ -95,6 +96,7 @@ class TimelineService {
   StreamSubscription? _bucketSubscription;
 
   int _totalAssets = 0;
+
   int get totalAssets => _totalAssets;
 
   TimelineService(TimelineQuery query)

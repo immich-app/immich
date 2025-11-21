@@ -4,6 +4,8 @@ import 'package:immich_mobile/infrastructure/entities/trash_sync.entity.drift.da
 import 'package:immich_mobile/infrastructure/utils/drift_default.mixin.dart';
 
 @TableIndex(name: 'idx_trash_sync_checksum', columns: {#checksum})
+@TableIndex(name: 'idx_trash_sync_status', columns: {#isSyncApproved})
+@TableIndex(name: 'idx_trash_sync_checksum_status', columns: {#checksum, #isSyncApproved})
 class TrashSyncEntity extends Table with DriftDefaultsMixin {
   const TrashSyncEntity();
 
@@ -16,13 +18,9 @@ class TrashSyncEntity extends Table with DriftDefaultsMixin {
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
 
   @override
-  Set<Column> get primaryKey => {assetId};
+  Set<Column> get primaryKey => {checksum};
 }
 
 extension LocalAssetEntityDataDomainEx on TrashSyncEntityData {
-  TrashSyncDecision toDto() => TrashSyncDecision(
-    assetId: assetId,
-    checksum: checksum,
-    isSyncApproved: isSyncApproved,
-  );
+  TrashSyncDecision toDto() => TrashSyncDecision(assetId: assetId, checksum: checksum, isSyncApproved: isSyncApproved);
 }

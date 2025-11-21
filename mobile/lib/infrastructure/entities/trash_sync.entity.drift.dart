@@ -1,11 +1,11 @@
 // dart format width=80
 // ignore_for_file: type=lint
 import 'package:drift/drift.dart' as i0;
-import 'package:immich_mobile/infrastructure/entities/trash_sync.entity.drift.dart'
-    as i1;
+import 'package:drift/src/runtime/query_builder/query_builder.dart' as i3;
 import 'package:immich_mobile/infrastructure/entities/trash_sync.entity.dart'
     as i2;
-import 'package:drift/src/runtime/query_builder/query_builder.dart' as i3;
+import 'package:immich_mobile/infrastructure/entities/trash_sync.entity.drift.dart'
+    as i1;
 
 typedef $$TrashSyncEntityTableCreateCompanionBuilder =
     i1.TrashSyncEntityCompanion Function({
@@ -307,7 +307,7 @@ class $TrashSyncEntityTable extends i2.TrashSyncEntity
   }
 
   @override
-  Set<i0.GeneratedColumn> get $primaryKey => {assetId};
+  Set<i0.GeneratedColumn> get $primaryKey => {checksum};
   @override
   i1.TrashSyncEntityData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
@@ -512,3 +512,13 @@ class TrashSyncEntityCompanion
         .toString();
   }
 }
+
+i0.Index get idxTrashSyncStatus => i0.Index(
+  'idx_trash_sync_status',
+  'CREATE INDEX idx_trash_sync_status ON trash_sync_entity (is_sync_approved)',
+);
+
+i0.Index get idxTrashSyncChecksumStatus => i0.Index(
+  'idx_trash_sync_checksum_status',
+  'CREATE INDEX idx_trash_sync_checksum_status ON trash_sync_entity (checksum, is_sync_approved)',
+);
