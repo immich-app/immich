@@ -53,7 +53,6 @@ describe('/admin/maintenance', () => {
       expect(status).toBe(200);
       expect(body).toEqual({
         backups: [],
-        failedBackups: [],
       });
     });
 
