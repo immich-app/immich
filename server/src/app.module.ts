@@ -140,6 +140,9 @@ export class MaintenanceModule {
     )) as MaintenanceModeState & { isMaintenanceMode: true };
 
     this.maintenanceEphemeralStateRepository.setSecret(state.secret);
+    this.maintenanceEphemeralStateRepository.setStatus({
+      action: state.action.action,
+    });
     StorageCore.setMediaLocation(this.maintenanceWorkerService.detectMediaLocation());
 
     this.maintenanceWebsocketRepository.setAuthFn(async (client) =>
