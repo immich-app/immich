@@ -1,3 +1,5 @@
+import { HasWebsocket } from '$lib/managers/timeline-manager/internal/websocket-support.svelte';
+import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
 import type { TimelineDate, TimelineDateTime, TimelineYearMonth } from '$lib/utils/timeline-util';
 import type { AssetStackResponseDto, AssetVisibility } from '@immich/sdk';
 
@@ -96,3 +98,8 @@ export interface UpdateGeometryOptions {
   invalidateHeight: boolean;
   noDefer?: boolean;
 }
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type GenericConstructor<T = {}> = new (...args: any[]) => T;
+export type GenericTimeManager = GenericConstructor<TimelineManager>;
+export const ExtendedTimelineManager = HasWebsocket(TimelineManager);

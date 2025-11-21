@@ -13,7 +13,12 @@
   import { isIntersecting } from '$lib/managers/timeline-manager/internal/intersection-support.svelte';
   import type { MonthGroup } from '$lib/managers/timeline-manager/month-group.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
-  import type { TimelineAsset, TimelineManagerOptions, ViewportTopMonth } from '$lib/managers/timeline-manager/types';
+  import {
+    ExtendedTimelineManager,
+    type TimelineAsset,
+    type TimelineManagerOptions,
+    type ViewportTopMonth,
+  } from '$lib/managers/timeline-manager/types';
   import { assetsSnapshot } from '$lib/managers/timeline-manager/utils.svelte';
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
@@ -90,7 +95,7 @@
     onThumbnailClick,
   }: Props = $props();
 
-  timelineManager = new TimelineManager();
+  timelineManager = new ExtendedTimelineManager();
   onDestroy(() => timelineManager.destroy());
   $effect(() => options && void timelineManager.updateOptions(options));
 
