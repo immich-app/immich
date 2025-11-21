@@ -1,24 +1,8 @@
 <script lang="ts">
-  import { getAssetOriginalUrl } from '$lib/utils';
-  import { handleError } from '$lib/utils/handle-error';
+  import { transformManager } from '$lib/managers/edit/transform-manager.svelte';
   import { getAltText } from '$lib/utils/thumbnail-util';
-  import { onDestroy, onMount, tick } from 'svelte';
-  import { t } from 'svelte-i18n';
-
-  import {
-    changedOriention,
-    cropAspectRatio,
-    cropSettings,
-    resetGlobalCropStore,
-    rotateDegrees,
-  } from '$lib/stores/asset-editor.store';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import type { AssetResponseDto } from '@immich/sdk';
-  import { animateCropChange, recalculateCrop } from './crop-settings';
-  import { cropAreaEl, cropFrame, imgElement, isResizingOrDragging, overlayEl, resetCropStore } from './crop-store';
-  import { draw } from './drawing';
-  import { onImageLoad, resizeCanvas } from './image-loading';
-  import { handleMouseDown, handleMouseMove, handleMouseUp } from './mouse-handlers';
 
   interface Props {
     asset: AssetResponseDto;
@@ -26,69 +10,50 @@
 
   let { asset }: Props = $props();
 
-  let img = $state<HTMLImageElement>();
+  let canvasContainer = $state<HTMLElement | null>(null);
 
   $effect(() => {
-    if (!img) {
+    if (!canvasContainer) {
       return;
     }
 
-    imgElement.set(img);
-  });
+    const resizeObserver = new ResizeObserver(() => {
+      transformManager.resizeCanvas();
+    });
 
-  cropAspectRatio.subscribe((value) => {
-    if (!img || !$cropAreaEl) {
-      return;
-    }
-    const newCrop = recalculateCrop($cropSettings, $cropAreaEl, value, true);
-    if (newCrop) {
-      animateCropChange($cropSettings, newCrop, () => draw($cropSettings));
-    }
-  });
+    resizeObserver.observe(canvasContainer);
 
-  onMount(async () => {
-    resetGlobalCropStore();
-    img = new Image();
-    await tick();
-
-    img.src = getAssetOriginalUrl({ id: asset.id, cacheKey: asset.thumbhash });
-
-    img.addEventListener('load', () => onImageLoad(true), { passive: true });
-    img.addEventListener('error', (error) => handleError(error, $t('error_loading_image')), { passive: true });
-
-    globalThis.addEventListener('mousemove', handleMouseMove, { passive: true });
-  });
-
-  onDestroy(() => {
-    globalThis.removeEventListener('mousemove', handleMouseMove);
-    resetCropStore();
-    resetGlobalCropStore();
-  });
-
-  $effect(() => {
-    resizeCanvas();
+    return () => {
+      resizeObserver.disconnect();
+    };
   });
 </script>
 
-<div class="canvas-container">
+<div class="canvas-container" bind:this={canvasContainer}>
   <button
-    class={`crop-area ${$changedOriention ? 'changedOriention' : ''}`}
-    style={`rotate:${$rotateDegrees}deg`}
-    bind:this={$cropAreaEl}
-    onmousedown={handleMouseDown}
-    onmouseup={handleMouseUp}
+    class={`crop-area ${transformManager.orientationChanged ? 'changedOriention' : ''}`}
+    style={`rotate:${transformManager.imageRotation}deg`}
+    bind:this={transformManager.cropAreaEl}
+    onmousedown={(e) => transformManager.handleMouseDown(e)}
+    onmouseup={() => transformManager.handleMouseUp()}
     aria-label="Crop area"
     type="button"
   >
-    <img draggable="false" src={img?.src} alt={$getAltText(toTimelineAsset(asset))} />
-    <div class={`${$isResizingOrDragging ? 'resizing' : ''} crop-frame`} bind:this={$cropFrame}>
+    <img draggable="false" src={transformManager.imgElement?.src} alt={$getAltText(toTimelineAsset(asset))} />
+    <div
+      class={`${transformManager.isInteracting ? 'resizing' : ''} crop-frame`}
+      bind:this={transformManager.cropFrame}
+    >
       <div class="grid"></div>
       <div class="corner top-left"></div>
       <div class="corner top-right"></div>
       <div class="corner bottom-left"></div>
       <div class="corner bottom-right"></div>
     </div>
-    <div class={`${$isResizingOrDragging ? 'light' : ''} overlay`} bind:this={$overlayEl}></div>
+    <div
+      class={`${transformManager.isInteracting ? 'light' : ''} overlay`}
+      bind:this={transformManager.overlayEl}
+    ></div>
   </button>
 </div>
 

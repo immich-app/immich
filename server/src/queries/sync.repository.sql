@@ -544,6 +544,7 @@ where
   "asset_face"."updateId" < $1
   and "asset_face"."updateId" > $2
   and "asset"."ownerId" = $3
+  and "asset_face"."isVisible" = $4
 order by
   "asset_face"."updateId" asc
 

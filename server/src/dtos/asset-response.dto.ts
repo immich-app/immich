@@ -3,6 +3,7 @@ import { Selectable } from 'kysely';
 import { AssetFace, AssetFile, Exif, Stack, Tag, User } from 'src/database';
 import { HistoryBuilder, Property } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
+import { EditActionItem } from 'src/dtos/editing.dto';
 import { ExifResponseDto, mapExif } from 'src/dtos/exif.dto';
 import {
   AssetFaceWithoutPersonResponseDto,
@@ -13,6 +14,8 @@ import {
 import { TagResponseDto, mapTag } from 'src/dtos/tag.dto';
 import { UserResponseDto, mapUser } from 'src/dtos/user.dto';
 import { AssetStatus, AssetType, AssetVisibility } from 'src/enum';
+import { ImageDimensions } from 'src/types';
+import { getDimensions } from 'src/utils/asset.util';
 import { hexOrBufferToBase64 } from 'src/utils/bytes';
 import { mimeTypes } from 'src/utils/mime-types';
 import { ValidateEnum } from 'src/validation';
@@ -109,6 +112,7 @@ export type MapAsset = {
   deviceId: string;
   duplicateId: string | null;
   duration: string | null;
+  edits?: EditActionItem[];
   encodedVideoPath: string | null;
   exifInfo?: Selectable<Exif> | null;
   faces?: AssetFace[];
@@ -151,16 +155,20 @@ export type AssetMapOptions = {
 };
 
 // TODO: this is inefficient
-const peopleWithFaces = (faces?: AssetFace[]): PersonWithFacesResponseDto[] => {
+const peopleWithFaces = (
+  faces?: AssetFace[],
+  edits?: EditActionItem[],
+  assetDimensions?: ImageDimensions,
+): PersonWithFacesResponseDto[] => {
   const result: PersonWithFacesResponseDto[] = [];
-  if (faces) {
+  if (faces && edits && assetDimensions) {
     for (const face of faces) {
       if (face.person) {
         const existingPersonEntry = result.find((item) => item.id === face.person!.id);
         if (existingPersonEntry) {
           existingPersonEntry.faces.push(face);
         } else {
-          result.push({ ...mapPerson(face.person!), faces: [mapFacesWithoutPerson(face)] });
+          result.push({ ...mapPerson(face.person!), faces: [mapFacesWithoutPerson(face, edits, assetDimensions)] });
         }
       }
     }
@@ -200,6 +208,8 @@ export function mapAsset(entity: MapAsset, options: AssetMapOptions = {}): Asset
     return sanitizedAssetResponse as AssetResponseDto;
   }
 
+  const assetDimensions = entity.exifInfo ? getDimensions(entity.exifInfo) : undefined;
+
   return {
     id: entity.id,
     createdAt: entity.createdAt,
@@ -225,7 +235,7 @@ export function mapAsset(entity: MapAsset, options: AssetMapOptions = {}): Asset
     exifInfo: entity.exifInfo ? mapExif(entity.exifInfo) : undefined,
     livePhotoVideoId: entity.livePhotoVideoId,
     tags: entity.tags?.map((tag) => mapTag(tag)),
-    people: peopleWithFaces(entity.faces),
+    people: peopleWithFaces(entity.faces, entity.edits, assetDimensions),
     unassignedFaces: entity.faces?.filter((face) => !face.person).map((a) => mapFacesWithoutPerson(a)),
     checksum: hexOrBufferToBase64(entity.checksum)!,
     stack: withStack ? mapStack(entity) : undefined,

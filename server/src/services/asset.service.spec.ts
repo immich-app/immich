@@ -585,6 +585,9 @@ describe(AssetService.name, () => {
                 '/uploads/user-id/webp/path.ext',
                 '/uploads/user-id/thumbs/path.jpg',
                 '/uploads/user-id/fullsize/path.webp',
+                undefined,
+                undefined,
+                undefined,
                 assetWithFace.originalPath,
               ],
             },
@@ -646,6 +649,11 @@ describe(AssetService.name, () => {
                 '/uploads/user-id/webp/path.ext',
                 '/uploads/user-id/thumbs/path.jpg',
                 '/uploads/user-id/fullsize/path.webp',
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
                 'fake_path/asset_1.jpeg',
               ],
             },
@@ -672,6 +680,11 @@ describe(AssetService.name, () => {
                 '/uploads/user-id/webp/path.ext',
                 '/uploads/user-id/thumbs/path.jpg',
                 '/uploads/user-id/fullsize/path.webp',
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
                 'fake_path/asset_1.jpeg',
               ],
             },
@@ -709,6 +722,7 @@ describe(AssetService.name, () => {
 
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
       mocks.ocr.getByAssetId.mockResolvedValue([ocr1, ocr2]);
+      mocks.asset.getById.mockResolvedValue(assetStub.image);
 
       await expect(sut.getOcr(authStub.admin, 'asset-1')).resolves.toEqual([ocr1, ocr2]);
 
@@ -723,7 +737,7 @@ describe(AssetService.name, () => {
     it('should return empty array when no OCR data exists', async () => {
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
       mocks.ocr.getByAssetId.mockResolvedValue([]);
-
+      mocks.asset.getById.mockResolvedValue(assetStub.image);
       await expect(sut.getOcr(authStub.admin, 'asset-1')).resolves.toEqual([]);
 
       expect(mocks.ocr.getByAssetId).toHaveBeenCalledWith('asset-1');

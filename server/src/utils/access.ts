@@ -157,6 +157,14 @@ const checkOtherAccess = async (access: AccessRepository, request: OtherAccessRe
       return await access.asset.checkOwnerAccess(auth.user.id, ids, auth.session?.hasElevatedPermission);
     }
 
+    case Permission.AssetEdit: {
+      return await access.asset.checkOwnerAccess(auth.user.id, ids, auth.session?.hasElevatedPermission);
+    }
+
+    case Permission.AssetDerive: {
+      return await access.asset.checkOwnerAccess(auth.user.id, ids, auth.session?.hasElevatedPermission);
+    }
+
     case Permission.AlbumRead: {
       const isOwner = await access.album.checkOwnerAccess(auth.user.id, ids);
       const isShared = await access.album.checkSharedAlbumAccess(

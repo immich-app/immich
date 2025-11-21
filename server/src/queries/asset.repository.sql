@@ -144,6 +144,7 @@ select
         where
           "asset_face"."assetId" = "asset"."id"
           and "asset_face"."deletedAt" is null
+          and "asset_face"."isVisible" is true
       ) as agg
   ) as "faces",
   (
