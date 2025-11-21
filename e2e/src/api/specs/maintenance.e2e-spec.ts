@@ -72,8 +72,8 @@ describe('/admin/maintenance', () => {
             return body;
           },
           {
-            interval: 5e2,
-            timeout: 1e4,
+            interval: 500,
+            timeout: 10_000,
           },
         )
         .toEqual(
@@ -158,8 +158,8 @@ describe('/admin/maintenance', () => {
             return body.maintenanceMode;
           },
           {
-            interval: 5e2,
-            timeout: 1e4,
+            interval: 500,
+            timeout: 10_000,
           },
         )
         .toBeTruthy();
@@ -248,8 +248,8 @@ describe('/admin/maintenance', () => {
             return body.maintenanceMode;
           },
           {
-            interval: 5e2,
-            timeout: 1e4,
+            interval: 500,
+            timeout: 10_000,
           },
         )
         .toBeFalsy();
@@ -294,8 +294,8 @@ describe('/admin/maintenance', () => {
             return body.maintenanceMode;
           },
           {
-            interval: 5e2,
-            timeout: 1e4,
+            interval: 500,
+            timeout: 10_000,
           },
         )
         .toBeTruthy();
@@ -319,7 +319,7 @@ describe('/admin/maintenance', () => {
       await utils.connectDatabase();
     });
 
-    it.sequential('should restore a backup', { timeout: 6e4 }, async () => {
+    it.sequential('should restore a backup', { timeout: 60_000 }, async () => {
       const filename = await utils.createBackup(admin.accessToken);
 
       const { status } = await request(app)
@@ -340,8 +340,8 @@ describe('/admin/maintenance', () => {
             return body.maintenanceMode;
           },
           {
-            interval: 5e2,
-            timeout: 1e4,
+            interval: 500,
+            timeout: 10_000,
           },
         )
         .toBeTruthy();
@@ -362,14 +362,14 @@ describe('/admin/maintenance', () => {
             return body.maintenanceMode;
           },
           {
-            interval: 5e2,
-            timeout: 6e4,
+            interval: 500,
+            timeout: 6_000,
           },
         )
         .toBeFalsy();
     });
 
-    it.sequential('fail to restore a corrupted backup', { timeout: 6e4 }, async () => {
+    it.sequential('fail to restore a corrupted backup', { timeout: 60_000 }, async () => {
       await utils.prepareTestBackup('corrupted');
 
       const { status, headers } = await request(app)
@@ -391,8 +391,8 @@ describe('/admin/maintenance', () => {
             return body.maintenanceMode;
           },
           {
-            interval: 5e2,
-            timeout: 1e4,
+            interval: 500,
+            timeout: 10_000,
           },
         )
         .toBeTruthy();
@@ -405,8 +405,8 @@ describe('/admin/maintenance', () => {
             return body;
           },
           {
-            interval: 5e2,
-            timeout: 1e4,
+            interval: 500,
+            timeout: 10_000,
           },
         )
         .toEqual(

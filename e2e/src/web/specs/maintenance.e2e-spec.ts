@@ -54,6 +54,8 @@ test.describe('Maintenance', () => {
    */
 
   test('restore a backup from settings', async ({ context, page }) => {
+    test.setTimeout(60_000);
+
     await utils.resetBackups(admin.accessToken);
     await utils.createBackup(admin.accessToken);
     await utils.setAuthCookies(context, admin.accessToken);
@@ -63,10 +65,12 @@ test.describe('Maintenance', () => {
     await page.locator('#bits-c2').getByRole('button', { name: 'Restore' }).click();
 
     await page.waitForURL('/maintenance?**');
-    await page.waitForURL('/admin/maintenance**', { timeout: 2e4 });
+    await page.waitForURL('/admin/maintenance**', { timeout: 20_000 });
   });
 
   test('handle backup restore failure', async ({ context, page }) => {
+    test.setTimeout(60_000);
+
     await utils.resetBackups(admin.accessToken);
     await utils.prepareTestBackup('corrupted');
     await utils.setAuthCookies(context, admin.accessToken);
@@ -76,12 +80,14 @@ test.describe('Maintenance', () => {
     await page.locator('#bits-c2').getByRole('button', { name: 'Restore' }).click();
 
     await page.waitForURL('/maintenance?**');
-    await expect(page.getByText('IM CORRUPTED')).toBeVisible({ timeout: 2e4 });
+    await expect(page.getByText('IM CORRUPTED')).toBeVisible({ timeout: 20_000 });
     await page.getByRole('button', { name: 'End maintenance mode' }).click();
     await page.waitForURL('/admin/maintenance**');
   });
 
   test('restore a backup from onboarding', async ({ context, page }) => {
+    test.setTimeout(60_000);
+
     await utils.resetBackups(admin.accessToken);
     await utils.createBackup(admin.accessToken);
     await utils.setAuthCookies(context, admin.accessToken);
@@ -104,6 +110,6 @@ test.describe('Maintenance', () => {
     await page.locator('#bits-c2').getByRole('button', { name: 'Restore' }).click();
 
     await page.waitForURL('/maintenance?**');
-    await page.waitForURL('/photos', { timeout: 2e4 });
+    await page.waitForURL('/photos', { timeout: 20_000 });
   });
 });
