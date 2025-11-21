@@ -26,8 +26,10 @@ import {
   where: '("isLiked" = true)',
 })
 @Check({
-  name: 'activity_like_check',
-  expression: `(comment IS NULL AND "isLiked" = true) OR (comment IS NOT NULL AND "isLiked" = false)`,
+  name: 'activity_check',
+  expression:
+    `(("aggregationId" IS NULL) AND ((comment IS NULL AND "isLiked" = true) OR (comment IS NOT NULL AND "isLiked" = false))) ` +
+    `OR ("aggregationId" IS NOT NULL AND comment IS NULL AND "isLiked" = false)`,
 })
 @ForeignKeyConstraint({
   columns: ['albumId', 'assetId'],
@@ -60,6 +62,12 @@ export class ActivityTable {
 
   @Column({ type: 'boolean', default: false })
   isLiked!: Generated<boolean>;
+
+  @Column({ type: 'uuid', nullable: true, unique: true })
+  aggregationId!: Generated<string | null>;
+
+  @Column({ type: 'uuid', array: true, nullable: true })
+  assetIds!: string[] | null;
 
   @UpdateIdColumn({ index: true })
   updateId!: Generated<string>;

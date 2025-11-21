@@ -256,8 +256,13 @@ export class AlbumRepository {
       .then((results) => new Set(results.map(({ assetId }) => assetId)));
   }
 
-  async addAssetIds(albumId: string, assetIds: string[]): Promise<void> {
-    await this.addAssets(this.db, albumId, assetIds);
+  async addAssetIds(albumId: string, assetIds: string[], options?: { createdBy?: string }): Promise<void> {
+    const createdBy = options?.createdBy;
+    if (!createdBy) {
+      throw new Error('createdBy is required when adding assets to an album');
+    }
+
+    await this.addAssets(this.db, albumId, assetIds, createdBy);
   }
 
   create(album: Insertable<AlbumTable>, assetIds: string[], albumUsers: AlbumUserCreateDto[]) {
@@ -269,7 +274,11 @@ export class AlbumRepository {
       }
 
       if (assetIds.length > 0) {
-        await this.addAssets(tx, newAlbum.id, assetIds);
+        const createdBy = album.ownerId;
+        if (!createdBy) {
+          throw new Error('ownerId is required when adding assets to a new album');
+        }
+        await this.addAssets(tx, newAlbum.id, assetIds, createdBy);
       }
 
       if (albumUsers.length > 0) {
@@ -310,19 +319,19 @@ export class AlbumRepository {
   }
 
   @Chunked({ paramIndex: 2, chunkSize: 30_000 })
-  private async addAssets(db: Kysely<DB>, albumId: string, assetIds: string[]): Promise<void> {
+  private async addAssets(db: Kysely<DB>, albumId: string, assetIds: string[], createdBy: string): Promise<void> {
     if (assetIds.length === 0) {
       return;
     }
 
     await db
       .insertInto('album_asset')
-      .values(assetIds.map((assetId) => ({ albumId, assetId })))
+      .values(assetIds.map((assetId) => ({ albumId, assetId, createdBy })))
       .execute();
   }
 
   @Chunked({ chunkSize: 30_000 })
-  async addAssetIdsToAlbums(values: { albumId: string; assetId: string }[]): Promise<void> {
+  async addAssetIdsToAlbums(values: { albumId: string; assetId: string; createdBy: string }[]): Promise<void> {
     if (values.length === 0) {
       return;
     }

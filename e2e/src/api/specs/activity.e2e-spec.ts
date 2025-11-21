@@ -158,6 +158,76 @@ describe('/activities', () => {
       expect(body.length).toBe(1);
       expect(body[0]).toEqual(reaction);
     });
+
+    it('asset activity: add 2 assets to album, get activity with both asset ids', async () => {
+      const asset1 = await utils.createAsset(admin.accessToken);
+      const asset2 = await utils.createAsset(admin.accessToken);
+
+      const album1 = await createAlbum(
+        {
+          createAlbumDto: {
+            albumName: 'Album 1',
+            assetIds: [asset1.id, asset2.id],
+            albumUsers: [{ userId: nonOwner.userId, role: AlbumUserRole.Editor }],
+          },
+        },
+        { headers: asBearerAuth(admin.accessToken) },
+      );
+
+      const { status, body } = await request(app)
+        .get('/activities')
+        .query({ albumId: album1.id, includeAlbumUpdate: true })
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+      expect(status).toBe(200);
+      expect(body.length).toBe(1);
+      expect(body[0].type).toBe('album_update');
+      expect(body[0].albumUpdate.assetIds).toEqual(expect.arrayContaining([asset1.id, asset2.id]));
+      expect(body[0].albumUpdate.totalAssets).toBe(2);
+
+      // includeAlbumUpdate: false should return no activities
+      const { status: status2, body: body2 } = await request(app)
+        .get('/activities')
+        .query({ albumId: album1.id, includeAlbumUpdate: false })
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+      expect(status2).toBe(200);
+      expect(body2.length).toBe(0);
+    });
+
+    it('asset activity: add 2 assets and remove 1 asset, get activity with remaining asset id', async () => {
+      const asset1 = await utils.createAsset(admin.accessToken);
+      const asset2 = await utils.createAsset(admin.accessToken);
+
+      const album1 = await createAlbum(
+        {
+          createAlbumDto: {
+            albumName: 'Album 1',
+            assetIds: [asset1.id, asset2.id],
+            albumUsers: [{ userId: nonOwner.userId, role: AlbumUserRole.Editor }],
+          },
+        },
+        { headers: asBearerAuth(admin.accessToken) },
+      );
+
+      await removeAssetFromAlbum(
+        {
+          id: album1.id,
+          bulkIdsDto: {
+            ids: [asset1.id],
+          },
+        },
+        { headers: asBearerAuth(admin.accessToken) },
+      );
+
+      const { status, body } = await request(app)
+        .get('/activities')
+        .query({ albumId: album1.id, includeAlbumUpdate: true })
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+      expect(status).toBe(200);
+      expect(body.length).toBe(1);
+      expect(body[0].type).toBe('album_update');
+      expect(body[0].albumUpdate.assetIds).toEqual(expect.arrayContaining([asset2.id]));
+      expect(body[0].albumUpdate.totalAssets).toBe(1);
+    });
   });
 
   describe('POST /activities', () => {
