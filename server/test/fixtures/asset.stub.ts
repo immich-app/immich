@@ -90,6 +90,8 @@ export const assetStub = {
     stackId: null,
     updateId: '42',
     visibility: AssetVisibility.Timeline,
+    width: null,
+    height: null,
   }),
 
   noWebpPath: Object.freeze({
@@ -129,6 +131,8 @@ export const assetStub = {
     stackId: null,
     updateId: '42',
     visibility: AssetVisibility.Timeline,
+    width: null,
+    height: null,
   }),
 
   noThumbhash: Object.freeze({
@@ -165,6 +169,8 @@ export const assetStub = {
     stackId: null,
     updateId: '42',
     visibility: AssetVisibility.Timeline,
+    width: null,
+    height: null,
   }),
 
   primaryImage: Object.freeze({
@@ -211,6 +217,8 @@ export const assetStub = {
     updateId: '42',
     libraryId: null,
     visibility: AssetVisibility.Timeline,
+    width: null,
+    height: null,
   }),
 
   image: Object.freeze({
@@ -298,6 +306,8 @@ export const assetStub = {
     stackId: null,
     updateId: '42',
     visibility: AssetVisibility.Timeline,
+    width: null,
+    height: null,
   }),
 
   trashedOffline: Object.freeze({
@@ -339,6 +349,8 @@ export const assetStub = {
     stackId: null,
     updateId: '42',
     visibility: AssetVisibility.Timeline,
+    width: null,
+    height: null,
   }),
   archived: Object.freeze({
     id: 'asset-id',
@@ -379,6 +391,8 @@ export const assetStub = {
     stackId: null,
     updateId: '42',
     visibility: AssetVisibility.Timeline,
+    width: null,
+    height: null,
   }),
 
   external: Object.freeze({
@@ -419,6 +433,8 @@ export const assetStub = {
     stackId: null,
     stack: null,
     visibility: AssetVisibility.Timeline,
+    width: null,
+    height: null,
   }),
 
   image1: Object.freeze({
@@ -459,6 +475,8 @@ export const assetStub = {
     libraryId: null,
     stack: null,
     visibility: AssetVisibility.Timeline,
+    width: null,
+    height: null,
   }),
 
   imageFrom2015: Object.freeze({
@@ -498,6 +516,8 @@ export const assetStub = {
     duplicateId: null,
     isOffline: false,
     visibility: AssetVisibility.Timeline,
+    width: null,
+    height: null,
   }),
 
   video: Object.freeze({
@@ -539,6 +559,8 @@ export const assetStub = {
     libraryId: null,
     stackId: null,
     visibility: AssetVisibility.Timeline,
+    width: null,
+    height: null,
   }),
 
   livePhotoMotionAsset: Object.freeze({
@@ -555,6 +577,8 @@ export const assetStub = {
     },
     libraryId: null,
     visibility: AssetVisibility.Hidden,
+    width: null,
+    height: null,
   } as MapAsset & { faces: AssetFace[]; files: AssetFile[]; exifInfo: Exif }),
 
   livePhotoStillAsset: Object.freeze({
@@ -573,6 +597,8 @@ export const assetStub = {
     files,
     faces: [] as AssetFace[],
     visibility: AssetVisibility.Timeline,
+    width: null,
+    height: null,
   } as MapAsset & { faces: AssetFace[] }),
 
   livePhotoWithOriginalFileName: Object.freeze({
@@ -592,6 +618,8 @@ export const assetStub = {
     libraryId: null,
     faces: [] as AssetFace[],
     visibility: AssetVisibility.Timeline,
+    width: null,
+    height: null,
   } as MapAsset & { faces: AssetFace[] }),
 
   withLocation: Object.freeze({
@@ -637,6 +665,8 @@ export const assetStub = {
     isOffline: false,
     tags: [],
     visibility: AssetVisibility.Timeline,
+    width: null,
+    height: null,
   }),
 
   sidecar: Object.freeze({
@@ -673,6 +703,8 @@ export const assetStub = {
     libraryId: null,
     stackId: null,
     visibility: AssetVisibility.Timeline,
+    width: null,
+    height: null,
   }),
 
   sidecarWithoutExt: Object.freeze({
@@ -706,6 +738,8 @@ export const assetStub = {
     duplicateId: null,
     isOffline: false,
     visibility: AssetVisibility.Timeline,
+    width: null,
+    height: null,
   }),
 
   hasEncodedVideo: Object.freeze({
@@ -746,6 +780,8 @@ export const assetStub = {
     stackId: null,
     stack: null,
     visibility: AssetVisibility.Timeline,
+    width: null,
+    height: null,
   }),
 
   hasFileExtension: Object.freeze({
@@ -783,6 +819,8 @@ export const assetStub = {
     duplicateId: null,
     isOffline: false,
     visibility: AssetVisibility.Timeline,
+    width: null,
+    height: null,
   }),
 
   imageDng: Object.freeze({
@@ -824,6 +862,8 @@ export const assetStub = {
     libraryId: null,
     stackId: null,
     visibility: AssetVisibility.Timeline,
+    width: null,
+    height: null,
   }),
 
   imageHif: Object.freeze({
@@ -865,6 +905,8 @@ export const assetStub = {
     libraryId: null,
     stackId: null,
     visibility: AssetVisibility.Timeline,
+    width: null,
+    height: null,
   }),
   panoramaTif: Object.freeze({
     id: 'asset-id',
@@ -904,5 +946,7 @@ export const assetStub = {
     libraryId: null,
     stackId: null,
     visibility: AssetVisibility.Timeline,
+    width: null,
+    height: null,
   }),
 };

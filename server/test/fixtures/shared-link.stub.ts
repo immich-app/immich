@@ -72,6 +72,8 @@ const assetResponse: AssetResponseDto = {
   libraryId: 'library-id',
   hasMetadata: true,
   visibility: AssetVisibility.Timeline,
+  width: null,
+  height: null,
 };
 
 const assetResponseWithoutMetadata = {
@@ -257,6 +259,8 @@ export const sharedLinkStub = {
           libraryId: null,
           stackId: null,
           visibility: AssetVisibility.Timeline,
+          width: 500,
+          height: 500,
         },
       ],
     },

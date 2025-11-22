@@ -599,7 +599,6 @@ export class AssetRepository {
       .with('cte', (qb) =>
         qb
           .selectFrom('asset')
-          .innerJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
           .select((eb) => [
             'asset.duration',
             'asset.id',
@@ -615,24 +614,34 @@ export class AssetRepository {
             'asset.status',
             sql`asset."fileCreatedAt" at time zone 'utc'`.as('fileCreatedAt'),
             eb.fn('encode', ['asset.thumbhash', sql.lit('base64')]).as('thumbhash'),
-            'asset_exif.city',
-            'asset_exif.country',
-            'asset_exif.projectionType',
             eb.fn
               .coalesce(
                 eb
                   .case()
-                  .when(sql`asset_exif."exifImageHeight" = 0 or asset_exif."exifImageWidth" = 0`)
+                  .when(sql`asset."height" = 0 or asset."width" = 0`)
                   .then(eb.lit(1))
-                  .when('asset_exif.orientation', 'in', sql<string>`('5', '6', '7', '8', '-90', '90')`)
-                  .then(sql`round(asset_exif."exifImageHeight"::numeric / asset_exif."exifImageWidth"::numeric, 3)`)
-                  .else(sql`round(asset_exif."exifImageWidth"::numeric / asset_exif."exifImageHeight"::numeric, 3)`)
+                  .else(sql`round(asset."width"::numeric / asset."height"::numeric, 3)`)
                   .end(),
                 eb.lit(1),
               )
               .as('ratio'),
           ])
-          .$if(!!options.withCoordinates, (qb) => qb.select(['asset_exif.latitude', 'asset_exif.longitude']))
+          .$if(!!options.withCoordinates, (qb) =>
+            qb
+              .innerJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
+              .select([
+                'asset_exif.latitude',
+                'asset_exif.longitude',
+                'asset_exif.city',
+                'asset_exif.country',
+                'asset_exif.projectionType',
+              ]),
+          )
+          .$if(!options.withCoordinates, (qb) =>
+            qb
+              .innerJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
+              .select(['asset_exif.city', 'asset_exif.country', 'asset_exif.projectionType']),
+          )
           .where('asset.deletedAt', options.isTrashed ? 'is not' : 'is', null)
           .$if(options.visibility == undefined, withDefaultVisibility)
           .$if(!!options.visibility, (qb) => qb.where('asset.visibility', '=', options.visibility!))
