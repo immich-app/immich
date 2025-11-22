@@ -349,7 +349,7 @@
             min={2}
             step="1"
             disabled={disabled || !config.machineLearning.enabled || !config.machineLearning.autoStack.enabled}
-            isEdited={config.machineLearning.autoStack.minAssets !== savedConfig.machineLearning.autoStack.minAssets}
+            isEdited={config.machineLearning.autoStack.minAssets !== configToEdit.machineLearning.autoStack.minAssets}
           />
 
           <SettingInputField
@@ -361,7 +361,7 @@
             step="1"
             disabled={disabled || !config.machineLearning.enabled || !config.machineLearning.autoStack.enabled}
             isEdited={config.machineLearning.autoStack.timeWindowSeconds !==
-              savedConfig.machineLearning.autoStack.timeWindowSeconds}
+              configToEdit.machineLearning.autoStack.timeWindowSeconds}
           />
 
           <SettingInputField
@@ -373,7 +373,7 @@
             step="1"
             disabled={disabled || !config.machineLearning.enabled || !config.machineLearning.autoStack.enabled}
             isEdited={config.machineLearning.autoStack.delaySeconds !==
-              savedConfig.machineLearning.autoStack.delaySeconds}
+              configToEdit.machineLearning.autoStack.delaySeconds}
           />
 
           <SettingInputField
@@ -386,20 +386,20 @@
             max={1}
             disabled={disabled || !config.machineLearning.enabled || !config.machineLearning.autoStack.enabled}
             isEdited={config.machineLearning.autoStack.clipMaxDistance !==
-              savedConfig.machineLearning.autoStack.clipMaxDistance}
+              configToEdit.machineLearning.autoStack.clipMaxDistance}
           />
 
           <SettingInputField
             inputType={SettingInputFieldType.NUMBER}
-            label={$t('admin.machine_learning_auto_stack_phash_distance')}
-            description={$t('admin.machine_learning_auto_stack_phash_distance_description')}
-            bind:value={config.machineLearning.autoStack.phashMaxDistance}
+            label={$t('admin.machine_learning_auto_stack_phash_min_match')}
+            description={$t('admin.machine_learning_auto_stack_phash_min_match_description')}
+            bind:value={config.machineLearning.autoStack.phashMinMatch}
             min={0}
-            max={256}
-            step="1"
+            max={1}
+            step="0.01"
             disabled={disabled || !config.machineLearning.enabled || !config.machineLearning.autoStack.enabled}
-            isEdited={config.machineLearning.autoStack.phashMaxDistance !==
-              savedConfig.machineLearning.autoStack.phashMaxDistance}
+            isEdited={config.machineLearning.autoStack.phashMinMatch !==
+              configToEdit.machineLearning.autoStack.phashMinMatch}
           />
 
           <SettingInputField
@@ -412,7 +412,7 @@
             max={1}
             disabled={disabled || !config.machineLearning.enabled || !config.machineLearning.autoStack.enabled}
             isEdited={config.machineLearning.autoStack.outlierSimilarityThreshold !==
-              savedConfig.machineLearning.autoStack.outlierSimilarityThreshold}
+              configToEdit.machineLearning.autoStack.outlierSimilarityThreshold}
           />
 
           <SettingSwitch
