@@ -4,6 +4,7 @@ import { AssetTable } from 'src/schema/tables/asset.table';
 import { UserTable } from 'src/schema/tables/user.table';
 import {
   AfterDeleteTrigger,
+  Column,
   CreateDateColumn,
   ForeignKeyColumn,
   Generated,
@@ -40,4 +41,7 @@ export class StackTable {
 
   @ForeignKeyColumn(() => UserTable, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
   ownerId!: string;
+
+  @Column({ type: 'text', default: 'MANUAL' })
+  source!: Generated<string>;
 }

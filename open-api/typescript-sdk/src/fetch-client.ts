@@ -725,11 +725,13 @@ export type QueueResponseDto = {
     queueStatus: QueueStatusDto;
 };
 export type QueuesResponseDto = {
+    autoStack: QueueResponseDto;
     backgroundTask: QueueResponseDto;
     backupDatabase: QueueResponseDto;
     duplicateDetection: QueueResponseDto;
     faceDetection: QueueResponseDto;
     facialRecognition: QueueResponseDto;
+    hashComputation: QueueResponseDto;
     library: QueueResponseDto;
     metadataExtraction: QueueResponseDto;
     migration: QueueResponseDto;
@@ -1351,6 +1353,7 @@ export type StackResponseDto = {
     assets: AssetResponseDto[];
     id: string;
     primaryAssetId: string;
+    source: string;
 };
 export type StackCreateDto = {
     /** first asset becomes the primary */
@@ -1440,8 +1443,10 @@ export type JobSettingsDto = {
     concurrency: number;
 };
 export type SystemConfigJobDto = {
+    autoStack: JobSettingsDto;
     backgroundTask: JobSettingsDto;
     faceDetection: JobSettingsDto;
+    hashComputation: JobSettingsDto;
     library: JobSettingsDto;
     metadataExtraction: JobSettingsDto;
     migration: JobSettingsDto;
@@ -1468,6 +1473,18 @@ export type SystemConfigLibraryDto = {
 export type SystemConfigLoggingDto = {
     enabled: boolean;
     level: LogLevel;
+};
+export type AutoStackConfig = {
+    clipMaxDistance: number;
+    delaySeconds: number;
+    enabled: boolean;
+    minAssets: number;
+    outlierSimilarityThreshold: number;
+    phashMinMatch: number;
+    preferBurstIds: boolean;
+    requireSameDevice: boolean;
+    requireSameOrientation: boolean;
+    timeWindowSeconds: number;
 };
 export type MachineLearningAvailabilityChecksDto = {
     enabled: boolean;
@@ -1497,6 +1514,7 @@ export type OcrConfig = {
     modelName: string;
 };
 export type SystemConfigMachineLearningDto = {
+    autoStack: AutoStackConfig;
     availabilityChecks: MachineLearningAvailabilityChecksDto;
     clip: ClipConfig;
     duplicateDetection: DuplicateDetectionConfig;
@@ -4287,6 +4305,12 @@ export function createStack({ stackCreateDto }: {
         body: stackCreateDto
     })));
 }
+export function clearAutoStacks(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/stacks/auto", {
+        ...opts,
+        method: "DELETE"
+    }));
+}
 /**
  * Delete a stack
  */
@@ -5295,6 +5319,8 @@ export enum QueueName {
     FacialRecognition = "facialRecognition",
     SmartSearch = "smartSearch",
     DuplicateDetection = "duplicateDetection",
+    AutoStack = "autoStack",
+    HashComputation = "hashComputation",
     BackgroundTask = "backgroundTask",
     StorageTemplateMigration = "storageTemplateMigration",
     Migration = "migration",

@@ -68,3 +68,53 @@ export class OcrConfig extends ModelConfig {
   @ApiProperty({ type: 'number', format: 'double' })
   minRecognitionScore!: number;
 }
+
+export class AutoStackConfig extends TaskConfig {
+  @IsNumber()
+  @Min(2)
+  @Type(() => Number)
+  @ApiProperty({ type: 'integer' })
+  minAssets!: number;
+
+  @IsNumber()
+  @Min(1)
+  @Type(() => Number)
+  @ApiProperty({ type: 'integer' })
+  timeWindowSeconds!: number;
+
+  @IsNumber()
+  @Min(0)
+  @Type(() => Number)
+  @ApiProperty({ type: 'integer' })
+  delaySeconds!: number;
+
+  @IsNumber()
+  @Min(0)
+  @Max(1)
+  @Type(() => Number)
+  @ApiProperty({ type: 'number', format: 'double' })
+  clipMaxDistance!: number;
+
+  @IsNumber()
+  @Min(0)
+  @Max(1)
+  @Type(() => Number)
+  @ApiProperty({ type: 'number', format: 'double' })
+  phashMinMatch!: number;
+
+  @IsNumber()
+  @Min(0)
+  @Max(1)
+  @Type(() => Number)
+  @ApiProperty({ type: 'number', format: 'double' })
+  outlierSimilarityThreshold!: number;
+
+  @ValidateBoolean()
+  preferBurstIds!: boolean;
+
+  @ValidateBoolean()
+  requireSameDevice!: boolean;
+
+  @ValidateBoolean()
+  requireSameOrientation!: boolean;
+}

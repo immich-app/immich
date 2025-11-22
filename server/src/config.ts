@@ -67,6 +67,18 @@ export interface SystemConfig {
       enabled: boolean;
       maxDistance: number;
     };
+    autoStack: {
+      enabled: boolean;
+      minAssets: number;
+      timeWindowSeconds: number;
+      delaySeconds: number;
+      clipMaxDistance: number;
+      phashMinMatch: number;
+      outlierSimilarityThreshold: number;
+      preferBurstIds: boolean;
+      requireSameDevice: boolean;
+      requireSameOrientation: boolean;
+    };
     facialRecognition: {
       enabled: boolean;
       modelName: string;
@@ -224,6 +236,8 @@ export const defaults = Object.freeze<SystemConfig>({
   },
   job: {
     [QueueName.BackgroundTask]: { concurrency: 5 },
+    [QueueName.AutoStack]: { concurrency: 1 },
+    [QueueName.HashComputation]: { concurrency: 3 },
     [QueueName.SmartSearch]: { concurrency: 2 },
     [QueueName.MetadataExtraction]: { concurrency: 5 },
     [QueueName.FaceDetection]: { concurrency: 2 },
@@ -256,6 +270,18 @@ export const defaults = Object.freeze<SystemConfig>({
     duplicateDetection: {
       enabled: true,
       maxDistance: 0.01,
+    },
+    autoStack: {
+      enabled: true,
+      minAssets: 2,
+      timeWindowSeconds: 120,
+      delaySeconds: 2,
+      clipMaxDistance: 0.15,
+      phashMinMatch: 0.5,
+      outlierSimilarityThreshold: 0.2,
+      preferBurstIds: true,
+      requireSameDevice: true,
+      requireSameOrientation: true,
     },
     facialRecognition: {
       enabled: true,
