@@ -511,7 +511,11 @@
         <ArchiveAction
           menuItem
           unarchive={assetInteraction.isAllArchived}
-          onArchive={(assetIds) => timelineManager.removeAssets(assetIds)}
+          onArchive={(ids, visibility) =>
+            timelineManager.updateAssetOperation(ids, (asset) => {
+              asset.visibility = visibility;
+              return { remove: false };
+            })}
         />
         {#if $preferences.tags.enabled && assetInteraction.isAllUserOwned}
           <TagAction menuItem />
