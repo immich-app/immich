@@ -20,6 +20,7 @@ import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asse
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/trash_sync.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -48,6 +49,7 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
         timelineOrigin != TimelineOrigin.trash &&
         timelineOrigin != TimelineOrigin.archive &&
         timelineOrigin != TimelineOrigin.localAlbum &&
+        timelineOrigin != TimelineOrigin.syncTrash &&
         isOwner;
 
     final isShowingSheet = ref.watch(assetViewerProvider.select((state) => state.showingBottomSheet));
@@ -64,8 +66,13 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
 
     final isCasting = ref.watch(castProvider.select((c) => c.isCasting));
 
+    final isWaitingForSyncApproval =
+        timelineOrigin == TimelineOrigin.syncTrash ||
+        ref.watch(isWaitingForSyncApprovalProvider(asset.checksum)).value == true;
+
     final actions = <Widget>[
-      if (asset.isRemoteOnly) const DownloadActionButton(source: ActionSource.viewer, menuItem: true),
+      if (asset.isRemoteOnly && !isWaitingForSyncApproval)
+        const DownloadActionButton(source: ActionSource.viewer, menuItem: true),
       if (isCasting || (asset.hasRemote)) const CastActionButton(menuItem: true),
       if (album != null && album.isActivityEnabled && album.isShared)
         IconButton(
@@ -84,9 +91,9 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
           icon: const Icon(Icons.image_search),
           tooltip: 'view_in_timeline'.t(context: context),
         ),
-      if (asset.hasRemote && isOwner && !asset.isFavorite)
+      if (asset.hasRemote && isOwner && !asset.isFavorite && !isWaitingForSyncApproval)
         const FavoriteActionButton(source: ActionSource.viewer, menuItem: true),
-      if (asset.hasRemote && isOwner && asset.isFavorite)
+      if (asset.hasRemote && isOwner && asset.isFavorite && !isWaitingForSyncApproval)
         const UnFavoriteActionButton(source: ActionSource.viewer, menuItem: true),
       if (asset.isMotionPhoto) const MotionPhotoActionButton(menuItem: true),
       const _KebabMenu(),

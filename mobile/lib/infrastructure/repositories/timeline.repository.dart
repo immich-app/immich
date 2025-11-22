@@ -53,7 +53,7 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
     return _db.mergedAssetDrift
         .mergedAsset(userIds: userIds, limit: (_) => Limit(count, offset))
         .map(
-          (row) => row.remoteId != null && row.ownerId != null
+          (row) => row.remoteId != null && row.ownerId != null && !row.syncRejected
               ? RemoteAsset(
                   id: row.remoteId!,
                   localId: row.localId,
@@ -63,6 +63,7 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
                   type: row.type,
                   createdAt: row.createdAt,
                   updatedAt: row.updatedAt,
+                  deletedAt: row.deletedAt,
                   thumbHash: row.thumbHash,
                   width: row.width,
                   height: row.height,
@@ -73,12 +74,13 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
                 )
               : LocalAsset(
                   id: row.localId!,
-                  remoteId: row.remoteId,
+                  remoteId: row.syncRejected ? null : row.remoteId,
                   name: row.name,
                   checksum: row.checksum,
                   type: row.type,
                   createdAt: row.createdAt,
                   updatedAt: row.updatedAt,
+                  deletedAt: row.deletedAt,
                   width: row.width,
                   height: row.height,
                   isFavorite: row.isFavorite,
@@ -275,6 +277,12 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
     groupBy: groupBy,
     origin: TimelineOrigin.trash,
     joinLocal: true,
+  );
+
+  TimelineQuery toTrashSyncReview(String userId, GroupAssetsBy groupBy) => (
+    bucketSource: () => _watchTrashSyncBucket(groupBy: groupBy),
+    assetSource: (offset, count) => _getToTrashSyncBucketAssets(offset: offset, count: count),
+    origin: TimelineOrigin.syncTrash,
   );
 
   TimelineQuery archived(String userId, GroupAssetsBy groupBy) => _remoteQueryBuilder(
@@ -584,6 +592,56 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
 
       return query.map((row) => row.toDto()).get();
     }
+  }
+
+  Stream<List<Bucket>> _watchTrashSyncBucket({GroupAssetsBy groupBy = GroupAssetsBy.day}) {
+    if (groupBy == GroupAssetsBy.none) {
+      // TODO: implement GroupAssetBy for place
+      throw UnsupportedError("GroupAssetsBy.none is not supported for watchPlaceBucket");
+    }
+
+    final assetCountExp = _db.remoteAssetEntity.id.count();
+
+    final dateExp = _db.remoteAssetEntity.createdAt.dateFmt(groupBy);
+
+    final pendingTrashChecksums = _db.trashSyncEntity.selectOnly()
+      ..addColumns([_db.trashSyncEntity.checksum])
+      ..where(_db.trashSyncEntity.isSyncApproved.isNull())
+      ..groupBy([_db.trashSyncEntity.checksum]);
+
+    final query = _db.remoteAssetEntity.selectOnly()
+      ..addColumns([assetCountExp, dateExp])
+      ..where(
+        _db.remoteAssetEntity.deletedAt.isNotNull() &
+            _db.remoteAssetEntity.visibility.equalsValue(AssetVisibility.timeline) &
+            _db.remoteAssetEntity.checksum.isInQuery(pendingTrashChecksums),
+      )
+      ..groupBy([dateExp])
+      ..orderBy([OrderingTerm.desc(dateExp)]);
+
+    return query.map((row) {
+      final timeline = row.read(dateExp)!.truncateDate(groupBy);
+      final assetCount = row.read(assetCountExp)!;
+      return TimeBucket(date: timeline, assetCount: assetCount);
+    }).watch();
+  }
+
+  Future<List<BaseAsset>> _getToTrashSyncBucketAssets({required int offset, required int count}) {
+    final pendingTrashChecksums = _db.trashSyncEntity.selectOnly()
+      ..addColumns([_db.trashSyncEntity.checksum])
+      ..where(_db.trashSyncEntity.isSyncApproved.isNull())
+      ..groupBy([_db.trashSyncEntity.checksum]);
+
+    final query = _db.remoteAssetEntity.select()
+      ..where(
+        (tbl) =>
+            tbl.deletedAt.isNotNull() &
+            tbl.visibility.equalsValue(AssetVisibility.timeline) &
+            tbl.checksum.isInQuery(pendingTrashChecksums),
+      )
+      ..orderBy([(tbl) => OrderingTerm.desc(tbl.createdAt)])
+      ..limit(count, offset: offset);
+    return query.map((row) => row.toDto()).get();
   }
 }
 

@@ -11,6 +11,7 @@ import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/trash_sync.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/trashed_local_asset.repository.dart';
 import 'package:immich_mobile/platform/native_sync_api.g.dart';
 import 'package:immich_mobile/repositories/local_files_manager.repository.dart';
@@ -26,6 +27,7 @@ void main() {
   late LocalSyncService sut;
   late DriftLocalAlbumRepository mockLocalAlbumRepository;
   late DriftTrashedLocalAssetRepository mockTrashedLocalAssetRepository;
+  late DriftTrashSyncRepository mockTrashSyncRepo;
   late LocalFilesManagerRepository mockLocalFilesManager;
   late StorageRepository mockStorageRepository;
   late MockNativeSyncApi mockNativeSyncApi;
@@ -48,6 +50,7 @@ void main() {
   setUp(() async {
     mockLocalAlbumRepository = MockLocalAlbumRepository();
     mockTrashedLocalAssetRepository = MockTrashedLocalAssetRepository();
+    mockTrashSyncRepo = MockTrashSyncRepository();
     mockLocalFilesManager = MockLocalFilesManagerRepository();
     mockStorageRepository = MockStorageRepository();
     mockNativeSyncApi = MockNativeSyncApi();
@@ -75,6 +78,7 @@ void main() {
       localFilesManager: mockLocalFilesManager,
       storageRepository: mockStorageRepository,
       nativeSyncApi: mockNativeSyncApi,
+      trashSyncRepository: mockTrashSyncRepo,
     );
 
     await Store.put(StoreKey.manageLocalMediaAndroid, false);

@@ -88,11 +88,15 @@ class ThumbnailTile extends ConsumerWidget {
                         child: _TileOverlayIcon(Icons.cloud_outlined),
                       ),
                     ),
-                    AssetState.merged => const Align(
+                    AssetState.merged => Align(
                       alignment: Alignment.bottomRight,
                       child: Padding(
-                        padding: EdgeInsets.only(right: 10.0, bottom: 6.0),
-                        child: _TileOverlayIcon(Icons.cloud_done_outlined),
+                        padding: const EdgeInsets.only(right: 10.0, bottom: 6.0),
+                        child: _TileOverlayIcon(
+                          (asset as RemoteAsset).deletedAt != null
+                              ? Icons.sync_problem_rounded
+                              : Icons.cloud_done_outlined,
+                        ),
                       ),
                     ),
                   },
@@ -157,6 +161,7 @@ class _SelectionIndicator extends StatelessWidget {
 
 class _VideoIndicator extends StatelessWidget {
   final Duration duration;
+
   const _VideoIndicator(this.duration);
 
   @override
