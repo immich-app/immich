@@ -23,6 +23,7 @@ class AssetResponseDto {
     required this.fileCreatedAt,
     required this.fileModifiedAt,
     required this.hasMetadata,
+    required this.height,
     required this.id,
     required this.isArchived,
     required this.isFavorite,
@@ -45,6 +46,7 @@ class AssetResponseDto {
     this.unassignedFaces = const [],
     required this.updatedAt,
     required this.visibility,
+    required this.width,
   });
 
   /// base64 encoded sha1 hash
@@ -76,6 +78,8 @@ class AssetResponseDto {
   DateTime fileModifiedAt;
 
   bool hasMetadata;
+
+  num? height;
 
   String id;
 
@@ -141,6 +145,8 @@ class AssetResponseDto {
 
   AssetVisibility visibility;
 
+  num? width;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetResponseDto &&
     other.checksum == checksum &&
@@ -153,6 +159,7 @@ class AssetResponseDto {
     other.fileCreatedAt == fileCreatedAt &&
     other.fileModifiedAt == fileModifiedAt &&
     other.hasMetadata == hasMetadata &&
+    other.height == height &&
     other.id == id &&
     other.isArchived == isArchived &&
     other.isFavorite == isFavorite &&
@@ -174,7 +181,8 @@ class AssetResponseDto {
     other.type == type &&
     _deepEquality.equals(other.unassignedFaces, unassignedFaces) &&
     other.updatedAt == updatedAt &&
-    other.visibility == visibility;
+    other.visibility == visibility &&
+    other.width == width;
 
   @override
   int get hashCode =>
@@ -189,6 +197,7 @@ class AssetResponseDto {
     (fileCreatedAt.hashCode) +
     (fileModifiedAt.hashCode) +
     (hasMetadata.hashCode) +
+    (height == null ? 0 : height!.hashCode) +
     (id.hashCode) +
     (isArchived.hashCode) +
     (isFavorite.hashCode) +
@@ -210,10 +219,11 @@ class AssetResponseDto {
     (type.hashCode) +
     (unassignedFaces.hashCode) +
     (updatedAt.hashCode) +
-    (visibility.hashCode);
+    (visibility.hashCode) +
+    (width == null ? 0 : width!.hashCode);
 
   @override
-  String toString() => 'AssetResponseDto[checksum=$checksum, createdAt=$createdAt, deviceAssetId=$deviceAssetId, deviceId=$deviceId, duplicateId=$duplicateId, duration=$duration, exifInfo=$exifInfo, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, hasMetadata=$hasMetadata, id=$id, isArchived=$isArchived, isFavorite=$isFavorite, isOffline=$isOffline, isTrashed=$isTrashed, libraryId=$libraryId, livePhotoVideoId=$livePhotoVideoId, localDateTime=$localDateTime, originalFileName=$originalFileName, originalMimeType=$originalMimeType, originalPath=$originalPath, owner=$owner, ownerId=$ownerId, people=$people, resized=$resized, stack=$stack, tags=$tags, thumbhash=$thumbhash, type=$type, unassignedFaces=$unassignedFaces, updatedAt=$updatedAt, visibility=$visibility]';
+  String toString() => 'AssetResponseDto[checksum=$checksum, createdAt=$createdAt, deviceAssetId=$deviceAssetId, deviceId=$deviceId, duplicateId=$duplicateId, duration=$duration, exifInfo=$exifInfo, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, hasMetadata=$hasMetadata, height=$height, id=$id, isArchived=$isArchived, isFavorite=$isFavorite, isOffline=$isOffline, isTrashed=$isTrashed, libraryId=$libraryId, livePhotoVideoId=$livePhotoVideoId, localDateTime=$localDateTime, originalFileName=$originalFileName, originalMimeType=$originalMimeType, originalPath=$originalPath, owner=$owner, ownerId=$ownerId, people=$people, resized=$resized, stack=$stack, tags=$tags, thumbhash=$thumbhash, type=$type, unassignedFaces=$unassignedFaces, updatedAt=$updatedAt, visibility=$visibility, width=$width]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -235,6 +245,11 @@ class AssetResponseDto {
       json[r'fileCreatedAt'] = this.fileCreatedAt.toUtc().toIso8601String();
       json[r'fileModifiedAt'] = this.fileModifiedAt.toUtc().toIso8601String();
       json[r'hasMetadata'] = this.hasMetadata;
+    if (this.height != null) {
+      json[r'height'] = this.height;
+    } else {
+    //  json[r'height'] = null;
+    }
       json[r'id'] = this.id;
       json[r'isArchived'] = this.isArchived;
       json[r'isFavorite'] = this.isFavorite;
@@ -285,6 +300,11 @@ class AssetResponseDto {
       json[r'unassignedFaces'] = this.unassignedFaces;
       json[r'updatedAt'] = this.updatedAt.toUtc().toIso8601String();
       json[r'visibility'] = this.visibility;
+    if (this.width != null) {
+      json[r'width'] = this.width;
+    } else {
+    //  json[r'width'] = null;
+    }
     return json;
   }
 
@@ -307,6 +327,9 @@ class AssetResponseDto {
         fileCreatedAt: mapDateTime(json, r'fileCreatedAt', r'')!,
         fileModifiedAt: mapDateTime(json, r'fileModifiedAt', r'')!,
         hasMetadata: mapValueOfType<bool>(json, r'hasMetadata')!,
+        height: json[r'height'] == null
+            ? null
+            : num.parse('${json[r'height']}'),
         id: mapValueOfType<String>(json, r'id')!,
         isArchived: mapValueOfType<bool>(json, r'isArchived')!,
         isFavorite: mapValueOfType<bool>(json, r'isFavorite')!,
@@ -329,6 +352,9 @@ class AssetResponseDto {
         unassignedFaces: AssetFaceWithoutPersonResponseDto.listFromJson(json[r'unassignedFaces']),
         updatedAt: mapDateTime(json, r'updatedAt', r'')!,
         visibility: AssetVisibility.fromJson(json[r'visibility'])!,
+        width: json[r'width'] == null
+            ? null
+            : num.parse('${json[r'width']}'),
       );
     }
     return null;
@@ -384,6 +410,7 @@ class AssetResponseDto {
     'fileCreatedAt',
     'fileModifiedAt',
     'hasMetadata',
+    'height',
     'id',
     'isArchived',
     'isFavorite',
@@ -397,6 +424,7 @@ class AssetResponseDto {
     'type',
     'updatedAt',
     'visibility',
+    'width',
   };
 }
 
