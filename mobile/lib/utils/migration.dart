@@ -13,6 +13,7 @@ import 'package:immich_mobile/entities/backup_album.entity.dart' as isar_backup_
 import 'package:immich_mobile/entities/etag.entity.dart';
 import 'package:immich_mobile/entities/ios_device_asset.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/infrastructure/entities/device_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/exif.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album.entity.drift.dart';
@@ -22,14 +23,16 @@ import 'package:immich_mobile/infrastructure/entities/store.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_stream.repository.dart';
+import 'package:immich_mobile/platform/native_sync_api.g.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
+import 'package:immich_mobile/utils/datetime_helpers.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:immich_mobile/utils/diff.dart';
 import 'package:isar/isar.dart';
 // ignore: import_rule_photo_manager
 import 'package:photo_manager/photo_manager.dart';
 
-const int targetVersion = 18;
+const int targetVersion = 19;
 
 Future<void> migrateDatabaseIfNeeded(Isar db, Drift drift) async {
   final hasVersion = Store.tryGet(StoreKey.version) != null;
@@ -76,6 +79,12 @@ Future<void> migrateDatabaseIfNeeded(Isar db, Drift drift) async {
   if (version < 18 && Store.isBetaTimelineEnabled) {
     await syncStreamRepository.reset();
     await Store.put(StoreKey.shouldResetSync, true);
+  }
+
+  if (version < 19 && Store.isBetaTimelineEnabled) {
+    if (!await _populateAdjustmentTime(drift)) {
+      return;
+    }
   }
 
   if (targetVersion >= 12) {
@@ -219,6 +228,39 @@ Future<void> _migrateDeviceAsset(Isar db) async {
   await db.writeTxn(() async {
     await db.deviceAssetEntitys.putAll(toAdd);
   });
+}
+
+Future<bool> _populateAdjustmentTime(Drift db) async {
+  if (CurrentPlatform.isAndroid) {
+    // Adjustment time is an iOS-only feature
+    return true;
+  }
+
+  try {
+    final nativeApi = NativeSyncApi();
+    final albums = await nativeApi.getAlbums();
+    for (final album in albums) {
+      final assets = await nativeApi.getAssetsForAlbum(album.id);
+      await db.batch((batch) async {
+        for (final asset in assets) {
+          batch.update(
+            db.localAssetEntity,
+            LocalAssetEntityCompanion(
+              adjustmentTime: Value(tryFromSecondsSinceEpoch(asset.adjustmentTime, isUtc: true)),
+              longitude: Value(asset.longitude),
+              latitude: Value(asset.latitude),
+            ),
+            where: (t) => t.id.equals(asset.id),
+          );
+        }
+      });
+    }
+
+    return true;
+  } catch (error) {
+    dPrint(() => "[MIGRATION] Error while populating adjustment time: $error");
+    return false;
+  }
 }
 
 Future<void> migrateDeviceAssetToSqlite(Isar db, Drift drift) async {
