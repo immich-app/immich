@@ -31,6 +31,8 @@
   let isSearchSuggestions = $state(false);
   let selectedId: string | undefined = $state();
   let close: (() => Promise<void>) | undefined;
+  let showSearchTypeDropdown = $state(false);
+  let currentSearchType = $state('smart');
 
   const listboxId = generateId();
   const searchTypeId = generateId();
@@ -70,6 +72,8 @@
 
   const onFocusIn = () => {
     searchStore.isSearchEnabled = true;
+    // Refresh search type when component regains focus
+    getSearchType();
   };
 
   const onFocusOut = () => {
@@ -97,6 +101,9 @@
 
     const searchResult = await result.onClose;
     close = undefined;
+
+    // Refresh search type after modal closes
+    getSearchType();
 
     if (!searchResult) {
       return;
@@ -139,6 +146,7 @@
 
   const onEscape = () => {
     closeDropdown();
+    closeSearchTypeDropdown();
   };
 
   const onArrow = async (direction: 1 | -1) => {
@@ -168,6 +176,20 @@
     searchHistoryBox?.clearSelection();
   };
 
+  const toggleSearchTypeDropdown = () => {
+    showSearchTypeDropdown = !showSearchTypeDropdown;
+  };
+
+  const closeSearchTypeDropdown = () => {
+    showSearchTypeDropdown = false;
+  };
+
+  const selectSearchType = (type: string) => {
+    localStorage.setItem('searchQueryType', type);
+    currentSearchType = type;
+    showSearchTypeDropdown = false;
+  };
+
   const onsubmit = (event: Event) => {
     event.preventDefault();
     onSubmit();
@@ -180,17 +202,18 @@
       case 'metadata':
       case 'description':
       case 'ocr': {
+        currentSearchType = searchType;
         return searchType;
       }
       default: {
+        currentSearchType = 'smart';
         return 'smart';
       }
     }
   }
 
   function getSearchTypeText(): string {
-    const searchType = getSearchType();
-    switch (searchType) {
+    switch (currentSearchType) {
       case 'smart': {
         return $t('context');
       }
@@ -203,8 +226,23 @@
       case 'ocr': {
         return $t('ocr');
       }
+      default: {
+        return $t('context');
+      }
     }
   }
+
+  // Initialize currentSearchType on component mount
+  $effect(() => {
+    getSearchType();
+  });
+
+  const searchTypes = [
+    { value: 'smart', label: () => $t('context') },
+    { value: 'metadata', label: () => $t('filename') },
+    { value: 'description', label: () => $t('description') },
+    { value: 'ocr', label: () => $t('ocr') },
+  ] as const;
 </script>
 
 <svelte:document
@@ -293,11 +331,35 @@
         class:max-md:hidden={value}
         class:end-28={value.length > 0}
       >
-        <p
-          class="bg-immich-primary text-white dark:bg-immich-dark-primary/90 dark:text-black/75 rounded-full px-3 py-1 text-xs"
-        >
-          {getSearchTypeText()}
-        </p>
+        <div class="relative">
+          <button
+            type="button"
+            class="bg-immich-primary text-white dark:bg-immich-dark-primary/90 dark:text-black/75 rounded-full px-3 py-1 text-xs hover:opacity-80 transition-opacity cursor-pointer"
+            onclick={toggleSearchTypeDropdown}
+            aria-expanded={showSearchTypeDropdown}
+            aria-haspopup="listbox"
+          >
+            {getSearchTypeText()}
+          </button>
+
+          {#if showSearchTypeDropdown}
+            <div
+              class="absolute top-full right-0 mt-1 bg-white dark:bg-immich-dark-gray border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg py-1 min-w-32 z-9999"
+              use:focusOutside={{ onFocusOut: closeSearchTypeDropdown }}
+            >
+              {#each searchTypes as searchType}
+                <button
+                  type="button"
+                  class="w-full text-left px-3 py-2 text-xs hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors
+                         {currentSearchType === searchType.value ? 'bg-gray-100 dark:bg-gray-700' : ''}"
+                  onclick={() => selectSearchType(searchType.value)}
+                >
+                  {searchType.label()}
+                </button>
+              {/each}
+            </div>
+          {/if}
+        </div>
       </div>
     {/if}
 
