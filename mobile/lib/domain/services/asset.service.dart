@@ -1,10 +1,8 @@
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/exif.model.dart';
-import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_asset.repository.dart';
-import 'package:immich_mobile/infrastructure/utils/exif.converter.dart';
 
 class AssetService {
   final RemoteAssetRepository _remoteAssetRepository;
@@ -58,22 +56,11 @@ class AssetService {
   }
 
   Future<double> getAspectRatio(BaseAsset asset) async {
-    bool isFlipped;
     double? width;
     double? height;
 
-    if (asset.hasRemote) {
-      final exif = await getExif(asset);
-      isFlipped = ExifDtoConverter.isOrientationFlipped(exif?.orientation);
-      width = asset.width?.toDouble();
-      height = asset.height?.toDouble();
-    } else if (asset is LocalAsset) {
-      isFlipped = CurrentPlatform.isAndroid && (asset.orientation == 90 || asset.orientation == 270);
-      width = asset.width?.toDouble();
-      height = asset.height?.toDouble();
-    } else {
-      isFlipped = false;
-    }
+    width = asset.width?.toDouble();
+    height = asset.height?.toDouble();
 
     if (width == null || height == null) {
       if (asset.hasRemote) {
@@ -89,10 +76,8 @@ class AssetService {
       }
     }
 
-    final orientedWidth = isFlipped ? height : width;
-    final orientedHeight = isFlipped ? width : height;
-    if (orientedWidth != null && orientedHeight != null && orientedHeight > 0) {
-      return orientedWidth / orientedHeight;
+    if (width != null && height != null && height > 0) {
+      return width / height;
     }
 
     return 1.0;

@@ -249,6 +249,8 @@ const assetFactory = (asset: Partial<MapAsset> = {}) => ({
   thumbhash: null,
   type: AssetType.Image,
   visibility: AssetVisibility.Timeline,
+  width: null,
+  height: null,
   ...asset,
 });
 
