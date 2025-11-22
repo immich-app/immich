@@ -177,6 +177,10 @@ export class AssetMetadataMobileAppDto {
   @IsString()
   @Optional()
   iCloudId?: string;
+
+  @IsString()
+  @Optional()
+  iCloudIdETag?: string;
 }
 
 export class AssetMetadataResponseDto {
