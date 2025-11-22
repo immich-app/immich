@@ -17,7 +17,6 @@
   "add_birthday": "Aggiungi compleanno",
   "add_endpoint": "Aggiungi un endpoint",
   "add_exclusion_pattern": "Aggiungi un pattern di esclusione",
-  "add_import_path": "Aggiungi un percorso per l’importazione",
   "add_location": "Aggiungi posizione",
   "add_more_users": "Aggiungi altri utenti",
   "add_partner": "Aggiungi partner",
@@ -32,6 +31,7 @@
   "add_to_album_toggle": "Attiva/disattiva selezione per {album}",
   "add_to_albums": "Aggiungi ad album",
   "add_to_albums_count": "Aggiungi ad album ({count})",
+  "add_to_bottom_bar": "Aggiungi a",
   "add_to_shared_album": "Aggiungi ad album condiviso",
   "add_upload_to_stack": "Aggiungi caricamento allo stack",
   "add_url": "Aggiungi URL",
@@ -80,7 +80,7 @@
     "exclusion_pattern_description": "I modelli di esclusione ti permettono di ignorare file e cartelle durante la scansione della tua libreria. Questo è utile se hai cartelle che contengono file che non vuoi importare, come ad esempio, i file RAW.",
     "external_library_management": "Gestione Librerie Esterne",
     "face_detection": "Rilevamento Volti",
-    "face_detection_description": "Rileva i volti presenti negli assets utilizzando il machine learning. Per i video, viene presa in considerazione solo la miniatura. \"Aggiorna\" (ri-)processerà tutti gli assets. \"Reset\" inoltre elimina tutti i dati dei volti correnti. \"Mancanti\" seleziona solo gli assets che non sono ancora stati processati. I volti rilevati verranno selezionati per il riconoscimento facciale dopo che il rilevamento dei volti sarà stato completato, raggruppandoli in persone esistenti e/o nuove.",
+    "face_detection_description": "Rileva i volti presenti negli asset utilizzando il machine-learning. Per i video, viene presa in considerazione solo la miniatura. Utilizzare \"Ripristina\" per cancellare tutti i volti presenti, \"Ricarica\" per processare di nuovo tutti gli asset, \"Mancanti\" processa solo gli asset che non sono ancora stati processati. I volti rilevati verranno selezionati per il riconoscimento facciale dopo che il rilevamento dei volti sarà stato completato, raggruppandoli in persone esistenti e/o nuove.",
     "facial_recognition_job_description": "Raggruppa i volti rilevati in persone. Questo processo viene eseguito dopo che il rilevamento volti è stato completato. \"Reset\" (ri-)unisce tutti i volti. \"Mancanti\" processa i volti che non hanno una persona assegnata.",
     "failed_job_command": "Il comando {command} è fallito per il processo: {job}",
     "force_delete_user_warning": "ATTENZIONE: Questo rimuoverà immediatamente l'utente e tutti i suoi assets. Non è possibile tornare indietro e i file non potranno essere recuperati.",
@@ -116,7 +116,6 @@
     "jobs_failed": "{jobCount, plural, one {# fallito} other {# falliti}}",
     "library_created": "Creata libreria: {library}",
     "library_deleted": "Libreria eliminata",
-    "library_import_path_description": "Specifica una cartella da importare. Questa cartella e le sue sottocartelle, verranno analizzate per cercare immagini e video.",
     "library_scanning": "Scansione periodica",
     "library_scanning_description": "Configura la scansione periodica della libreria",
     "library_scanning_enable_description": "Attiva la scansione periodica della libreria",
@@ -199,6 +198,10 @@
     "machine_learning_smart_search_enabled": "Attiva ricerca intelligente",
     "machine_learning_smart_search_enabled_description": "Se disabilitato le immagini non saranno codificate per la ricerca intelligente.",
     "machine_learning_url_description": "URL del server machine learning. Se sono stati forniti più di un URL, verrà testato un server alla volta finché uno non risponderà, in ordine dal primo all'ultimo. I server che non rispondono saranno temporaneamente ignorati finché non torneranno online.",
+    "maintenance_settings": "Manutenzione",
+    "maintenance_settings_description": "Metti Immich in modalità manutenzione.",
+    "maintenance_start": "Avvia modalità manutenzione",
+    "maintenance_start_error": "Errore nell'avvio della modalità manutenzione.",
     "manage_concurrency": "Gestisci Concorrenza",
     "manage_log_settings": "Gestisci le impostazioni dei log",
     "map_dark_style": "Tema scuro",
@@ -456,6 +459,7 @@
   "age_months": "Età {months, plural, one {# mese} other {# mesi}}",
   "age_year_months": "Età 1 anno, {months, plural, one {# mese} other {# mesi}}",
   "age_years": "{years, plural, other {Età #}}",
+  "album": "Album",
   "album_added": "Album aggiunto",
   "album_added_notification_setting_description": "Ricevi una notifica email quando sei aggiunto ad un album condiviso",
   "album_cover_updated": "Copertina dell'album aggiornata",
@@ -501,6 +505,7 @@
   "allow_edits": "Permetti modifiche",
   "allow_public_user_to_download": "Permetti agli utenti pubblici di scaricare",
   "allow_public_user_to_upload": "Permetti agli utenti pubblici di caricare",
+  "allowed": "Consentito",
   "alt_text_qr_code": "Immagine QR",
   "anti_clockwise": "Senso anti-orario",
   "api_key": "Chiave API",
@@ -920,8 +925,6 @@
   "edit_description_prompt": "Selezionare una nuova descrizione:",
   "edit_exclusion_pattern": "Modifica pattern di esclusione",
   "edit_faces": "Modifica volti",
-  "edit_import_path": "Modifica percorso di importazione",
-  "edit_import_paths": "Modifica Percorsi di Importazione",
   "edit_key": "Modifica chiave",
   "edit_link": "Modifica link",
   "edit_location": "Modifica posizione",
@@ -960,488 +963,124 @@
   "error_saving_image": "Errore: {error}",
   "error_tag_face_bounding_box": "Errore durante il tag del volto - impossibile ricavare le coordinate del riquadro",
   "error_title": "Errore - Qualcosa è andato storto",
-  "errors": [
-    [
-      "cannot_navigate_next_asset",
-      "Impossibile passare alla risorsa successiva"
-    ],
-    [
-      "cannot_navigate_previous_asset",
-      "Impossibile passare alla risorsa precedente"
-    ],
-    [
-      "cant_apply_changes",
-      "Impossibile applicare le modifiche"
-    ],
-    [
-      "cant_change_activity",
-      "Impossibile {enabled, select, true {disabilitare} other {abilitare}} l'attività"
-    ],
-    [
-      "cant_change_asset_favorite",
-      "Impossibile cambiare il preferito per l'asset"
-    ],
-    [
-      "cant_change_metadata_assets_count",
-      "Impossibile cambiare i metadati di {count, plural, one {# asset} other {# assets}}"
-    ],
-    [
-      "cant_get_faces",
-      "Impossibile ottenere i volti"
-    ],
-    [
-      "cant_get_number_of_comments",
-      "Impossibile ottenere il numero di commenti"
-    ],
-    [
-      "cant_search_people",
-      "Impossibile cercare persone"
-    ],
-    [
-      "cant_search_places",
-      "Impossibile cercare luoghi"
-    ],
-    [
-      "error_adding_assets_to_album",
-      "Errore aggiungendo le risorse all'album"
-    ],
-    [
-      "error_adding_users_to_album",
-      "Errore aggiungendo gli utenti all'album"
-    ],
-    [
-      "error_deleting_shared_user",
-      "Errore durante la cancellazione dell'utente condiviso"
-    ],
-    [
-      "error_downloading",
-      "Errore scaricando {filename}"
-    ],
-    [
-      "error_hiding_buy_button",
-      "Errore nel nascondere il pulsante di acquisto"
-    ],
-    [
-      "error_removing_assets_from_album",
-      "Errore rimuovendo le risorse dall'album, controlla la console per ulteriori dettagli"
-    ],
-    [
-      "error_selecting_all_assets",
-      "Errore selezionando tutte le risorse"
-    ],
-    [
-      "exclusion_pattern_already_exists",
-      "Questo pattern di esclusione è già presente."
-    ],
-    [
-      "failed_to_create_album",
-      "Creazione dell'album non riuscita"
-    ],
-    [
-      "failed_to_create_shared_link",
-      "Creazione del link condivisibile non riuscita"
-    ],
-    [
-      "failed_to_edit_shared_link",
-      "Errore durante la modifica del link condivisibile"
-    ],
-    [
-      "failed_to_get_people",
-      "Impossibile ottenere le persone"
-    ],
-    [
-      "failed_to_keep_this_delete_others",
-      "Impossibile conservare questa risorsa ed eliminare le altre risorse"
-    ],
-    [
-      "failed_to_load_asset",
-      "Errore durante il caricamento della risorsa"
-    ],
-    [
-      "failed_to_load_assets",
-      "Errore durante il caricamento delle risorse"
-    ],
-    [
-      "failed_to_load_notifications",
-      "Errore nel caricamento delle notifiche"
-    ],
-    [
-      "failed_to_load_people",
-      "Caricamento delle persone non riuscito"
-    ],
-    [
-      "failed_to_remove_product_key",
-      "Rimozione del codice del prodotto fallita"
-    ],
-    [
-      "failed_to_reset_pin_code",
-      "Impossibile reimpostare il codice PIN"
-    ],
-    [
-      "failed_to_stack_assets",
-      "Errore durante il raggruppamento degli assets"
-    ],
-    [
-      "failed_to_unstack_assets",
-      "Errore durante la separazione degli assets"
-    ],
-    [
-      "failed_to_update_notification_status",
-      "Aggiornamento stato notifiche fallito"
-    ],
-    [
-      "import_path_already_exists",
-      "Questo percorso di importazione già esiste."
-    ],
-    [
-      "incorrect_email_or_password",
-      "Email o password non corretta"
-    ],
-    [
-      "paths_validation_failed",
-      "{paths, plural, one {# percorso} other {# percorsi}} hanno fallito la validazione"
-    ],
-    [
-      "profile_picture_transparent_pixels",
-      "Le foto profilo non possono avere pixel trasparenti. Riprova ingrandendo e/o muovendo l'immagine."
-    ],
-    [
-      "quota_higher_than_disk_size",
-      "Hai impostato un limite più alto della dimensione del disco"
-    ],
-    [
-      "something_went_wrong",
-      "Qualcosa è andato storto"
-    ],
-    [
-      "unable_to_add_album_users",
-      "Impossibile aggiungere utenti all'album"
-    ],
-    [
-      "unable_to_add_assets_to_shared_link",
-      "Impossibile aggiungere gli assets al link condiviso"
-    ],
-    [
-      "unable_to_add_comment",
-      "Impossibile aggiungere commento"
-    ],
-    [
-      "unable_to_add_exclusion_pattern",
-      "Impossibile aggiungere pattern di esclusione"
-    ],
-    [
-      "unable_to_add_import_path",
-      "Impossibile aggiungere percorso di importazione"
-    ],
-    [
-      "unable_to_add_partners",
-      "Impossibile aggiungere compagni"
-    ],
-    [
-      "unable_to_add_remove_archive",
-      "Impossibile {archived, select, true {rimuovere l'asset dall'archivio} other {aggiungere l'asset all'archivio}}"
-    ],
-    [
-      "unable_to_add_remove_favorites",
-      "Impossibile {favorite, select, true {rimuovere l'asset dai} other {aggiungere l'asset ai}} preferiti"
-    ],
-    [
-      "unable_to_archive_unarchive",
-      "Impossible {archived, select, true {archiviare} other {rimuovere dall'archivio}}"
-    ],
-    [
-      "unable_to_change_album_user_role",
-      "Impossibile modificare il ruolo dell'utente nell'album"
-    ],
-    [
-      "unable_to_change_date",
-      "Impossibile modificare la data"
-    ],
-    [
-      "unable_to_change_description",
-      "Impossibile modificare la descrizione"
-    ],
-    [
-      "unable_to_change_favorite",
-      "Errore durante il cambio dello stato preferito dell'asset"
-    ],
-    [
-      "unable_to_change_location",
-      "Impossibile modificare posizione"
-    ],
-    [
-      "unable_to_change_password",
-      "Impossibile modificare password"
-    ],
-    [
-      "unable_to_change_visibility",
-      "Errore durante la modifica della visibilità per {count, plural, one {# persona} other {# persone}}"
-    ],
-    [
-      "unable_to_complete_oauth_login",
-      "Errore durante l'accesso tramite OAuth"
-    ],
-    [
-      "unable_to_connect",
-      "Impossibile connettersi"
-    ],
-    [
-      "unable_to_copy_to_clipboard",
-      "Impossibile copiare negli appunti, assicurati di aver aperto la pagina in https"
-    ],
-    [
-      "unable_to_create_admin_account",
-      "Impossibile creare un account admin"
-    ],
-    [
-      "unable_to_create_api_key",
-      "Impossibile creare una nuova chiave API"
-    ],
-    [
-      "unable_to_create_library",
-      "Impossibile creare la libreria"
-    ],
-    [
-      "unable_to_create_user",
-      "Impossibile creare utente"
-    ],
-    [
-      "unable_to_delete_album",
-      "Impossibile cancellare album"
-    ],
-    [
-      "unable_to_delete_asset",
-      "Impossibile cancellare asset"
-    ],
-    [
-      "unable_to_delete_assets",
-      "Errore durante l'eliminazione degli asset"
-    ],
-    [
-      "unable_to_delete_exclusion_pattern",
-      "Impossibile cancellare pattern di esclusione"
-    ],
-    [
-      "unable_to_delete_import_path",
-      "Impossibile cancellare percorso di importazione"
-    ],
-    [
-      "unable_to_delete_shared_link",
-      "Impossibile cancellare link condiviso"
-    ],
-    [
-      "unable_to_delete_user",
-      "Impossibile cancellare utente"
-    ],
-    [
-      "unable_to_download_files",
-      "Impossibile scaricare i file"
-    ],
-    [
-      "unable_to_edit_exclusion_pattern",
-      "Impossibile modificare pattern di esclusione"
-    ],
-    [
-      "unable_to_edit_import_path",
-      "Impossibile cambiare percorso di importazione"
-    ],
-    [
-      "unable_to_empty_trash",
-      "Impossibile svuotare il cestino"
-    ],
-    [
-      "unable_to_enter_fullscreen",
-      "Impossibile aprire l'applicazione a schermo intero"
-    ],
-    [
-      "unable_to_exit_fullscreen",
-      "Impossibile uscire dallo schermo intero"
-    ],
-    [
-      "unable_to_get_comments_number",
-      "Impossibile ottenere il numero di commenti"
-    ],
-    [
-      "unable_to_get_shared_link",
-      "Impossibile ottenere il link condiviso"
-    ],
-    [
-      "unable_to_hide_person",
-      "Impossibile nascondere persona"
-    ],
-    [
-      "unable_to_link_motion_video",
-      "Impossibile collegare video in movimento"
-    ],
-    [
-      "unable_to_link_oauth_account",
-      "Impossibile collegare l'account OAuth"
-    ],
-    [
-      "unable_to_log_out_all_devices",
-      "Impossibile eseguire il logout da tutti i dispositivi"
-    ],
-    [
-      "unable_to_log_out_device",
-      "Impossibile eseguire il logout dal dispositivo"
-    ],
-    [
-      "unable_to_login_with_oauth",
-      "Impossibile effettuare l'accesso tramite OAuth"
-    ],
-    [
-      "unable_to_play_video",
-      "Impossibile riprodurre il video"
-    ],
-    [
-      "unable_to_reassign_assets_existing_person",
-      "Errore durante la riassegnazione degli assets a {name, select, null {una persona esistente} other {{name}}}"
-    ],
-    [
-      "unable_to_reassign_assets_new_person",
-      "Errore durante la riassegnazione degli assets ad una nuova persona"
-    ],
-    [
-      "unable_to_refresh_user",
-      "Impossibile aggiornare l'utente"
-    ],
-    [
-      "unable_to_remove_album_users",
-      "Impossibile rimuovere gli utenti dall'album"
-    ],
-    [
-      "unable_to_remove_api_key",
-      "Impossibile rimuovere la chiave API"
-    ],
-    [
-      "unable_to_remove_assets_from_shared_link",
-      "Errore durante la rimozione degli assets da un link condiviso"
-    ],
-    [
-      "unable_to_remove_library",
-      "Impossibile rimuovere libreria"
-    ],
-    [
-      "unable_to_remove_partner",
-      "Impossibile rimuovere compagno"
-    ],
-    [
-      "unable_to_remove_reaction",
-      "Impossibile rimuovere reazione"
-    ],
-    [
-      "unable_to_reset_password",
-      "Impossibile reimpostare la password"
-    ],
-    [
-      "unable_to_reset_pin_code",
-      "Impossibile resettare il codice PIN"
-    ],
-    [
-      "unable_to_resolve_duplicate",
-      "Impossibile risolvere duplicato"
-    ],
-    [
-      "unable_to_restore_assets",
-      "Impossibile ripristinare gli asset"
-    ],
-    [
-      "unable_to_restore_trash",
-      "Impossibile ripristinare cestino"
-    ],
-    [
-      "unable_to_restore_user",
-      "Impossibile ripristinare utente"
-    ],
-    [
-      "unable_to_save_album",
-      "Impossibile salvare album"
-    ],
-    [
-      "unable_to_save_api_key",
-      "Impossibile salvare chiave API"
-    ],
-    [
-      "unable_to_save_date_of_birth",
-      "Impossible salvare la data di nascita"
-    ],
-    [
-      "unable_to_save_name",
-      "Impossibile salvare il nome"
-    ],
-    [
-      "unable_to_save_profile",
-      "Impossibile salvare il profilo"
-    ],
-    [
-      "unable_to_save_settings",
-      "Impossibile salvare le impostazioni"
-    ],
-    [
-      "unable_to_scan_libraries",
-      "Impossibile analizzare le librerie"
-    ],
-    [
-      "unable_to_scan_library",
-      "Impossibile analizzare la libreria"
-    ],
-    [
-      "unable_to_set_feature_photo",
-      "Impossibile impostare la foto in evidenza"
-    ],
-    [
-      "unable_to_set_profile_picture",
-      "Impossibile impostare la foto profilo"
-    ],
-    [
-      "unable_to_submit_job",
-      "Impossibile eseguire l'attività"
-    ],
-    [
-      "unable_to_trash_asset",
-      "Impossibile cestinare l'asset"
-    ],
-    [
-      "unable_to_unlink_account",
-      "Impossibile scollegare l'account"
-    ],
-    [
-      "unable_to_unlink_motion_video",
-      "Impossibile scollegare video in movimento"
-    ],
-    [
-      "unable_to_update_album_cover",
-      "Errore durante l'aggiornamento della copertina dell'album"
-    ],
-    [
-      "unable_to_update_album_info",
-      "Impossibile aggiornare le informazioni sull'album"
-    ],
-    [
-      "unable_to_update_library",
-      "Impossibile aggiornare la libreria"
-    ],
-    [
-      "unable_to_update_location",
-      "Impossibile aggiornare la posizione"
-    ],
-    [
-      "unable_to_update_settings",
-      "Impossibile aggiornare le impostazioni"
-    ],
-    [
-      "unable_to_update_timeline_display_status",
-      "Impossibile aggiornare lo stato di visualizzazione della sequenza temporale"
-    ],
-    [
-      "unable_to_update_user",
-      "Impossibile aggiornare l'utente"
-    ],
-    [
-      "unable_to_upload_file",
-      "Impossibile caricare il file"
-    ]
-  ],
+  "errors": {
+    "cannot_navigate_next_asset": "Impossibile passare alla risorsa successiva",
+    "cannot_navigate_previous_asset": "Impossibile passare alla risorsa precedente",
+    "cant_apply_changes": "Impossibile applicare le modifiche",
+    "cant_change_activity": "Impossibile {enabled, select, true {disabilitare} other {abilitare}} l'attività",
+    "cant_change_asset_favorite": "Impossibile cambiare il preferito per l'asset",
+    "cant_change_metadata_assets_count": "Impossibile cambiare i metadati di {count, plural, one {# asset} other {# assets}}",
+    "cant_get_faces": "Impossibile ottenere i volti",
+    "cant_get_number_of_comments": "Impossibile ottenere il numero di commenti",
+    "cant_search_people": "Impossibile cercare persone",
+    "cant_search_places": "Impossibile cercare luoghi",
+    "error_adding_assets_to_album": "Errore aggiungendo le risorse all'album",
+    "error_adding_users_to_album": "Errore aggiungendo gli utenti all'album",
+    "error_deleting_shared_user": "Errore durante la cancellazione dell'utente condiviso",
+    "error_downloading": "Errore scaricando {filename}",
+    "error_hiding_buy_button": "Errore nel nascondere il pulsante di acquisto",
+    "error_removing_assets_from_album": "Errore rimuovendo le risorse dall'album, controlla la console per ulteriori dettagli",
+    "error_selecting_all_assets": "Errore selezionando tutte le risorse",
+    "exclusion_pattern_already_exists": "Questo pattern di esclusione è già presente.",
+    "failed_to_create_album": "Creazione dell'album non riuscita",
+    "failed_to_create_shared_link": "Creazione del link condivisibile non riuscita",
+    "failed_to_edit_shared_link": "Errore durante la modifica del link condivisibile",
+    "failed_to_get_people": "Impossibile ottenere le persone",
+    "failed_to_keep_this_delete_others": "Impossibile conservare questa risorsa ed eliminare le altre risorse",
+    "failed_to_load_asset": "Errore durante il caricamento della risorsa",
+    "failed_to_load_assets": "Errore durante il caricamento delle risorse",
+    "failed_to_load_notifications": "Errore nel caricamento delle notifiche",
+    "failed_to_load_people": "Caricamento delle persone non riuscito",
+    "failed_to_remove_product_key": "Rimozione del codice del prodotto fallita",
+    "failed_to_reset_pin_code": "Impossibile reimpostare il codice PIN",
+    "failed_to_stack_assets": "Errore durante il raggruppamento degli assets",
+    "failed_to_unstack_assets": "Errore durante la separazione degli assets",
+    "failed_to_update_notification_status": "Aggiornamento stato notifiche fallito",
+    "incorrect_email_or_password": "Email o password non corretta",
+    "paths_validation_failed": "{paths, plural, one {# percorso} other {# percorsi}} hanno fallito la validazione",
+    "profile_picture_transparent_pixels": "Le foto profilo non possono avere pixel trasparenti. Riprova ingrandendo e/o muovendo l'immagine.",
+    "quota_higher_than_disk_size": "Hai impostato un limite più alto della dimensione del disco",
+    "something_went_wrong": "Qualcosa è andato storto",
+    "unable_to_add_album_users": "Impossibile aggiungere utenti all'album",
+    "unable_to_add_assets_to_shared_link": "Impossibile aggiungere gli assets al link condiviso",
+    "unable_to_add_comment": "Impossibile aggiungere commento",
+    "unable_to_add_exclusion_pattern": "Impossibile aggiungere pattern di esclusione",
+    "unable_to_add_partners": "Impossibile aggiungere compagni",
+    "unable_to_add_remove_archive": "Impossibile {archived, select, true {rimuovere l'asset dall'archivio} other {aggiungere l'asset all'archivio}}",
+    "unable_to_add_remove_favorites": "Impossibile {favorite, select, true {rimuovere l'asset dai} other {aggiungere l'asset ai}} preferiti",
+    "unable_to_archive_unarchive": "Impossible {archived, select, true {archiviare} other {rimuovere dall'archivio}}",
+    "unable_to_change_album_user_role": "Impossibile modificare il ruolo dell'utente nell'album",
+    "unable_to_change_date": "Impossibile modificare la data",
+    "unable_to_change_description": "Impossibile modificare la descrizione",
+    "unable_to_change_favorite": "Errore durante il cambio dello stato preferito dell'asset",
+    "unable_to_change_location": "Impossibile modificare posizione",
+    "unable_to_change_password": "Impossibile modificare password",
+    "unable_to_change_visibility": "Errore durante la modifica della visibilità per {count, plural, one {# persona} other {# persone}}",
+    "unable_to_complete_oauth_login": "Errore durante l'accesso tramite OAuth",
+    "unable_to_connect": "Impossibile connettersi",
+    "unable_to_copy_to_clipboard": "Impossibile copiare negli appunti, assicurati di aver aperto la pagina in https",
+    "unable_to_create_admin_account": "Impossibile creare un account admin",
+    "unable_to_create_api_key": "Impossibile creare una nuova chiave API",
+    "unable_to_create_library": "Impossibile creare la libreria",
+    "unable_to_create_user": "Impossibile creare utente",
+    "unable_to_delete_album": "Impossibile cancellare album",
+    "unable_to_delete_asset": "Impossibile cancellare asset",
+    "unable_to_delete_assets": "Errore durante l'eliminazione degli asset",
+    "unable_to_delete_exclusion_pattern": "Impossibile cancellare pattern di esclusione",
+    "unable_to_delete_shared_link": "Impossibile cancellare link condiviso",
+    "unable_to_delete_user": "Impossibile cancellare utente",
+    "unable_to_download_files": "Impossibile scaricare i file",
+    "unable_to_edit_exclusion_pattern": "Impossibile modificare pattern di esclusione",
+    "unable_to_empty_trash": "Impossibile svuotare il cestino",
+    "unable_to_enter_fullscreen": "Impossibile aprire l'applicazione a schermo intero",
+    "unable_to_exit_fullscreen": "Impossibile uscire dallo schermo intero",
+    "unable_to_get_comments_number": "Impossibile ottenere il numero di commenti",
+    "unable_to_get_shared_link": "Impossibile ottenere il link condiviso",
+    "unable_to_hide_person": "Impossibile nascondere persona",
+    "unable_to_link_motion_video": "Impossibile collegare video in movimento",
+    "unable_to_link_oauth_account": "Impossibile collegare l'account OAuth",
+    "unable_to_log_out_all_devices": "Impossibile eseguire il logout da tutti i dispositivi",
+    "unable_to_log_out_device": "Impossibile eseguire il logout dal dispositivo",
+    "unable_to_login_with_oauth": "Impossibile effettuare l'accesso tramite OAuth",
+    "unable_to_play_video": "Impossibile riprodurre il video",
+    "unable_to_reassign_assets_existing_person": "Errore durante la riassegnazione degli assets a {name, select, null {una persona esistente} other {{name}}}",
+    "unable_to_reassign_assets_new_person": "Errore durante la riassegnazione degli assets ad una nuova persona",
+    "unable_to_refresh_user": "Impossibile aggiornare l'utente",
+    "unable_to_remove_album_users": "Impossibile rimuovere gli utenti dall'album",
+    "unable_to_remove_api_key": "Impossibile rimuovere la chiave API",
+    "unable_to_remove_assets_from_shared_link": "Errore durante la rimozione degli assets da un link condiviso",
+    "unable_to_remove_library": "Impossibile rimuovere libreria",
+    "unable_to_remove_partner": "Impossibile rimuovere compagno",
+    "unable_to_remove_reaction": "Impossibile rimuovere reazione",
+    "unable_to_reset_password": "Impossibile reimpostare la password",
+    "unable_to_reset_pin_code": "Impossibile resettare il codice PIN",
+    "unable_to_resolve_duplicate": "Impossibile risolvere duplicato",
+    "unable_to_restore_assets": "Impossibile ripristinare gli asset",
+    "unable_to_restore_trash": "Impossibile ripristinare cestino",
+    "unable_to_restore_user": "Impossibile ripristinare utente",
+    "unable_to_save_album": "Impossibile salvare album",
+    "unable_to_save_api_key": "Impossibile salvare chiave API",
+    "unable_to_save_date_of_birth": "Impossible salvare la data di nascita",
+    "unable_to_save_name": "Impossibile salvare il nome",
+    "unable_to_save_profile": "Impossibile salvare il profilo",
+    "unable_to_save_settings": "Impossibile salvare le impostazioni",
+    "unable_to_scan_libraries": "Impossibile analizzare le librerie",
+    "unable_to_scan_library": "Impossibile analizzare la libreria",
+    "unable_to_set_feature_photo": "Impossibile impostare la foto in evidenza",
+    "unable_to_set_profile_picture": "Impossibile impostare la foto profilo",
+    "unable_to_submit_job": "Impossibile eseguire l'attività",
+    "unable_to_trash_asset": "Impossibile cestinare l'asset",
+    "unable_to_unlink_account": "Impossibile scollegare l'account",
+    "unable_to_unlink_motion_video": "Impossibile scollegare video in movimento",
+    "unable_to_update_album_cover": "Errore durante l'aggiornamento della copertina dell'album",
+    "unable_to_update_album_info": "Impossibile aggiornare le informazioni sull'album",
+    "unable_to_update_library": "Impossibile aggiornare la libreria",
+    "unable_to_update_location": "Impossibile aggiornare la posizione",
+    "unable_to_update_settings": "Impossibile aggiornare le impostazioni",
+    "unable_to_update_timeline_display_status": "Impossibile aggiornare lo stato di visualizzazione della sequenza temporale",
+    "unable_to_update_user": "Impossibile aggiornare l'utente",
+    "unable_to_upload_file": "Impossibile caricare il file"
+  },
   "exif": "Exif",
   "exif_bottom_sheet_description": "Aggiungi una descrizione...",
   "exif_bottom_sheet_description_error": "Errore durante l'aggiornamento della descrizione",
@@ -1582,6 +1221,8 @@
   "import_path": "Importa percorso",
   "in_albums": "In {count, plural, one {# album} other {# album}}",
   "in_archive": "In archivio",
+  "in_year": "Nel {year}",
+  "in_year_selector": "Nel",
   "include_archived": "Includi Archiviati",
   "include_shared_albums": "Includi album condivisi",
   "include_shared_partner_assets": "Includi elementi condivisi dai compagni",
@@ -1630,6 +1271,7 @@
   "language_setting_description": "Seleziona la tua lingua predefinita",
   "large_files": "File pesanti",
   "last": "Ultimo",
+  "last_months": "{count, plural, one {Ultimo mese} other {Ultimi # mesi}}",
   "last_seen": "Ultimo accesso",
   "latest_version": "Ultima Versione",
   "latitude": "Latitudine",
@@ -1710,8 +1352,17 @@
   "loop_videos_description": "Abilita per riprodurre automaticamente un video in loop nel visualizzatore dei dettagli.",
   "main_branch_warning": "Stai utilizzando una versione di sviluppo. Ti consigliamo vivamente di utilizzare una versione di rilascio!",
   "main_menu": "Menu Principale",
+  "maintenance_description": "Immich è stato posto in <link>modalità manutenzione</link>.",
+  "maintenance_end": "Termina modalità manutenzione",
+  "maintenance_end_error": "Errore nel terminare la modalità manutenzione.",
+  "maintenance_logged_in_as": "Accesso effettuato come {user}",
+  "maintenance_title": "Temporaneamente non disponibile",
   "make": "Produttore",
   "manage_geolocation": "Gestisci posizione",
+  "manage_media_access_rationale": "Questo permesso è richiesto per gestire correttamente lo spostamento del materiale nel cestino e per recuperarlo da esso.",
+  "manage_media_access_settings": "Apri impostazioni",
+  "manage_media_access_subtitle": "Permetti all'app di Immich di gestire e spostare file multimediali.",
+  "manage_media_access_title": "Accesso alla gestione di contenuti multimediali",
   "manage_shared_links": "Gestisci link condivisi",
   "manage_sharing_with_partners": "Gestisci la condivisione con i compagni",
   "manage_the_app_settings": "Gestisci le impostazioni dell'applicazione",
@@ -1775,6 +1426,7 @@
   "more": "Di più",
   "move": "Sposta",
   "move_off_locked_folder": "Sposta al di fuori della cartella privata",
+  "move_to": "Sposta in",
   "move_to_lock_folder_action_prompt": "{count} elementi aggiunti alla cartella sicura",
   "move_to_locked_folder": "Sposta nella cartella privata",
   "move_to_locked_folder_confirmation": "Queste foto e video verranno rimossi da tutti gli album, e saranno visibili solo dalla cartella privata",
@@ -1804,6 +1456,7 @@
   "new_pin_code": "Nuovo codice PIN",
   "new_pin_code_subtitle": "Questa è la prima volta che accedi alla cartella privata. Crea un codice PIN per accedere in modo sicuro a questa pagina",
   "new_timeline": "Nuova Timeline",
+  "new_update": "Nuovo aggiornamento",
   "new_user_created": "Nuovo utente creato",
   "new_version_available": "NUOVA VERSIONE DISPONIBILE",
   "newest_first": "Prima recenti",
@@ -1819,6 +1472,7 @@
   "no_cast_devices_found": "Nessun dispositivo di trasmissione trovato",
   "no_checksum_local": "Nessun checksum disponibile: impossibile recuperare gli assets locali",
   "no_checksum_remote": "Nessun checksum disponibile: impossibile recuperare l'asset remoto",
+  "no_devices": "Nessun device autorizzato",
   "no_duplicates_found": "Nessun duplicato trovato.",
   "no_exif_info_available": "Nessuna informazione exif disponibile",
   "no_explore_results_message": "Carica più foto per esplorare la tua collezione.",
@@ -1835,6 +1489,7 @@
   "no_results_description": "Prova ad usare un sinonimo oppure una parola chiave più generica",
   "no_shared_albums_message": "Crea un album per condividere foto e video con le persone nella tua rete",
   "no_uploads_in_progress": "Nessun upload in corso",
+  "not_allowed": "Non permesso",
   "not_available": "N/A",
   "not_in_any_album": "In nessun album",
   "not_selected": "Non selezionato",
@@ -1954,6 +1609,8 @@
   "photos_count": "{count, plural, one {{count, number} Foto} other {{count, number} Foto}}",
   "photos_from_previous_years": "Foto dagli anni scorsi",
   "pick_a_location": "Scegli una posizione",
+  "pick_custom_range": "Intervallo personalizzato",
+  "pick_date_range": "Seleziona un periodo temporale",
   "pin_code_changed_successfully": "Codice PIN cambiato correttamente",
   "pin_code_reset_successfully": "Codice PIN resettato con successo",
   "pin_code_setup_successfully": "Codice PIN impostato correttamente",
@@ -2123,6 +1780,7 @@
   "running": "In esecuzione",
   "save": "Salva",
   "save_to_gallery": "Salva in galleria",
+  "saved": "Salvato",
   "saved_api_key": "Chiave API salvata",
   "saved_profile": "Profilo salvato",
   "saved_settings": "Impostazioni salvate",
@@ -2220,6 +1878,8 @@
   "server_offline": "Server Offline",
   "server_online": "Server Online",
   "server_privacy": "Privacy del Server",
+  "server_restarting_description": "Questa pagina si aggiornerà per un momento.",
+  "server_restarting_title": "Il server si sta riavviando",
   "server_stats": "Statistiche Server",
   "server_update_available": "Aggiornamento Server disponibile",
   "server_version": "Versione Server",
@@ -2433,6 +2093,7 @@
   "third_party_resources": "Risorse di Terze Parti",
   "time": "Orario",
   "time_based_memories": "Ricordi basati sul tempo",
+  "time_based_memories_duration": "Numero di secondi per visualizzare ciascuna immagine.",
   "timeline": "Linea temporale",
   "timezone": "Fuso orario",
   "to_archive": "Archivio",
@@ -2573,6 +2234,7 @@
   "welcome": "Benvenuto",
   "welcome_to_immich": "Benvenuto in Immich",
   "wifi_name": "Nome rete Wi-Fi",
+  "workflow": "Flusso di lavoro",
   "wrong_pin_code": "Codice PIN errato",
   "year": "Anno",
   "years_ago": "{years, plural, one {# anno} other {# anni}} fa",

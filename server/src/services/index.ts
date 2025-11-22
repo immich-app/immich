@@ -15,6 +15,7 @@ import { DownloadService } from 'src/services/download.service';
 import { DuplicateService } from 'src/services/duplicate.service';
 import { JobService } from 'src/services/job.service';
 import { LibraryService } from 'src/services/library.service';
+import { MaintenanceService } from 'src/services/maintenance.service';
 import { MapService } from 'src/services/map.service';
 import { MediaService } from 'src/services/media.service';
 import { MemoryService } from 'src/services/memory.service';
@@ -24,6 +25,8 @@ import { NotificationService } from 'src/services/notification.service';
 import { OcrService } from 'src/services/ocr.service';
 import { PartnerService } from 'src/services/partner.service';
 import { PersonService } from 'src/services/person.service';
+import { PluginService } from 'src/services/plugin.service';
+import { QueueService } from 'src/services/queue.service';
 import { SearchService } from 'src/services/search.service';
 import { ServerService } from 'src/services/server.service';
 import { SessionService } from 'src/services/session.service';
@@ -43,6 +46,7 @@ import { UserAdminService } from 'src/services/user-admin.service';
 import { UserService } from 'src/services/user.service';
 import { VersionService } from 'src/services/version.service';
 import { ViewService } from 'src/services/view.service';
+import { WorkflowService } from 'src/services/workflow.service';
 
 export const services = [
   ApiKeyService,
@@ -62,6 +66,7 @@ export const services = [
   DuplicateService,
   JobService,
   LibraryService,
+  MaintenanceService,
   MapService,
   MediaService,
   MemoryService,
@@ -71,6 +76,8 @@ export const services = [
   OcrService,
   PartnerService,
   PersonService,
+  PluginService,
+  QueueService,
   SearchService,
   ServerService,
   SessionService,
@@ -90,4 +97,5 @@ export const services = [
   UserService,
   VersionService,
   ViewService,
+  WorkflowService,
 ];

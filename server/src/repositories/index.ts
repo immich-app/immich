@@ -3,6 +3,7 @@ import { ActivityRepository } from 'src/repositories/activity.repository';
 import { AlbumUserRepository } from 'src/repositories/album-user.repository';
 import { AlbumRepository } from 'src/repositories/album.repository';
 import { ApiKeyRepository } from 'src/repositories/api-key.repository';
+import { AppRepository } from 'src/repositories/app.repository';
 import { AssetHashRepository } from 'src/repositories/asset-hash.repository';
 import { AssetJobRepository } from 'src/repositories/asset-job.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
@@ -29,6 +30,7 @@ import { OAuthRepository } from 'src/repositories/oauth.repository';
 import { OcrRepository } from 'src/repositories/ocr.repository';
 import { PartnerRepository } from 'src/repositories/partner.repository';
 import { PersonRepository } from 'src/repositories/person.repository';
+import { PluginRepository } from 'src/repositories/plugin.repository';
 import { ProcessRepository } from 'src/repositories/process.repository';
 import { SearchRepository } from 'src/repositories/search.repository';
 import { ServerInfoRepository } from 'src/repositories/server-info.repository';
@@ -47,6 +49,7 @@ import { UserRepository } from 'src/repositories/user.repository';
 import { VersionHistoryRepository } from 'src/repositories/version-history.repository';
 import { ViewRepository } from 'src/repositories/view-repository';
 import { WebsocketRepository } from 'src/repositories/websocket.repository';
+import { WorkflowRepository } from 'src/repositories/workflow.repository';
 
 export const repositories = [
   AccessRepository,
@@ -55,6 +58,7 @@ export const repositories = [
   AlbumUserRepository,
   AuditRepository,
   ApiKeyRepository,
+  AppRepository,
   AssetHashRepository,
   AssetRepository,
   AssetJobRepository,
@@ -80,6 +84,7 @@ export const repositories = [
   OcrRepository,
   PartnerRepository,
   PersonRepository,
+  PluginRepository,
   ProcessRepository,
   SearchRepository,
   SessionRepository,
@@ -98,4 +103,5 @@ export const repositories = [
   ViewRepository,
   VersionHistoryRepository,
   WebsocketRepository,
+  WorkflowRepository,
 ];

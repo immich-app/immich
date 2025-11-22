@@ -1,4 +1,4 @@
-FROM ghcr.io/immich-app/base-server-dev:202510281104@sha256:e2f94c2e92cbae5982b014e610ff29731c0fbcb4bf69022c7fe27594e40c9f83 AS builder
+FROM ghcr.io/immich-app/base-server-dev:202511181104@sha256:fd445b91d4db131aae71b143b647d2262818dac80946078ce231c79cb9acecba AS builder
 ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0 \
   CI=1 \
   COREPACK_HOME=/tmp \
@@ -48,7 +48,28 @@ RUN --mount=type=cache,id=pnpm-cli,target=/buildcache/pnpm-store \
   pnpm --filter @immich/sdk --filter @immich/cli build && \
   pnpm --filter @immich/cli --prod --no-optional deploy /output/cli-pruned
 
-FROM ghcr.io/immich-app/base-server-prod:202510281104@sha256:84f8f3eb4cfafc5e624235f7db703e1222fd60831bef1d488d8d8cad2be5023d
+FROM builder AS plugins
+
+COPY --from=ghcr.io/jdx/mise:2025.11.3@sha256:ac26f5978c0e2783f3e68e58ce75eddb83e41b89bf8747c503bac2aa9baf22c5 /usr/local/bin/mise /usr/local/bin/mise
+
+WORKDIR /usr/src/app
+COPY ./plugins/mise.toml ./plugins/
+ENV MISE_TRUSTED_CONFIG_PATHS=/usr/src/app/plugins/mise.toml
+ENV MISE_DATA_DIR=/buildcache/mise
+RUN --mount=type=cache,id=mise-tools,target=/buildcache/mise \
+  mise install --cd plugins
+
+COPY ./plugins ./plugins/
+# Build plugins
+RUN --mount=type=cache,id=pnpm-plugins,target=/buildcache/pnpm-store \
+  --mount=type=bind,source=package.json,target=package.json \
+  --mount=type=bind,source=.pnpmfile.cjs,target=.pnpmfile.cjs \
+  --mount=type=bind,source=pnpm-lock.yaml,target=pnpm-lock.yaml \
+  --mount=type=bind,source=pnpm-workspace.yaml,target=pnpm-workspace.yaml \
+  --mount=type=cache,id=mise-tools,target=/buildcache/mise \
+  cd plugins && mise run build
+
+FROM ghcr.io/immich-app/base-server-prod:202511181104@sha256:1bc2b7cebc4fd3296dc33a5779411e1c7d854ea713066c1e024d54f45f176f89
 
 WORKDIR /usr/src/app
 ENV NODE_ENV=production \
@@ -58,6 +79,8 @@ ENV NODE_ENV=production \
 COPY --from=server /output/server-pruned ./server
 COPY --from=web /usr/src/app/web/build /build/www
 COPY --from=cli /output/cli-pruned ./cli
+COPY --from=plugins /usr/src/app/plugins/dist /build/corePlugin/dist
+COPY --from=plugins /usr/src/app/plugins/manifest.json /build/corePlugin/manifest.json
 RUN ln -s ../../cli/bin/immich server/bin/immich
 COPY LICENSE /licenses/LICENSE.txt
 COPY LICENSE /LICENSE
