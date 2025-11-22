@@ -397,7 +397,6 @@
     "user_restore_scheduled_removal": "שחזר משתמש - מחיקה מתוזמנת ב-{date, date, long}",
     "user_settings": "הגדרות משתמש",
     "user_settings_description": "ניהול הגדרות משתמש",
-    "user_successfully_removed": "המשתמש {email} הוסר בהצלחה.",
     "version_check_enabled_description": "אפשר בדיקת גרסה",
     "version_check_implications": "תכונת בדיקת הגרסה מסתמכת על תקשורת תקופתית עם github.com",
     "version_check_settings": "בדיקת גרסה",

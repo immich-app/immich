@@ -402,7 +402,6 @@
     "user_restore_scheduled_removal": "Ripristina utente - rimozione programmata per il {date, date, long}",
     "user_settings": "Impostazione Utente",
     "user_settings_description": "Gestisci impostazioni utente",
-    "user_successfully_removed": "L'utente {email} è stato rimosso con successo.",
     "version_check_enabled_description": "Abilita controllo della versione",
     "version_check_implications": "La funzione di controllo della versione fa uso di una comunicazione periodica con github.com",
     "version_check_settings": "Controllo Versione",

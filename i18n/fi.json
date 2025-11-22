@@ -398,7 +398,6 @@
     "user_restore_scheduled_removal": "Palauta käyttäjä - Aikataulutettu poisto tapahtuu {date, date, long}",
     "user_settings": "Käyttäjäasetukset",
     "user_settings_description": "Hallitse käyttäjäasetuksia",
-    "user_successfully_removed": "Käyttäjä {email} on poistettu.",
     "version_check_enabled_description": "Ota käyttöön versiotarkastus",
     "version_check_implications": "Versiotarkistus vaatii säännöllisen yhteyden github.comiin",
     "version_check_settings": "Versiotarkistus",

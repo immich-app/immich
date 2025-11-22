@@ -397,7 +397,6 @@
     "user_restore_scheduled_removal": "Felhasználó visszaállítása - törlésre jelölve: {date, date, long}",
     "user_settings": "Felhasználó Beállítások",
     "user_settings_description": "Felhasználó beállítások kezelése",
-    "user_successfully_removed": "{email} felhasználó sikeresen törlésre került.",
     "version_check_enabled_description": "Új verziók elérhetőségének ellenőrzése",
     "version_check_implications": "Az új verziók ellenőrzése időszakos kommunikációt igényel a github.com oldallal",
     "version_check_settings": "Verzió Ellenőrzés",

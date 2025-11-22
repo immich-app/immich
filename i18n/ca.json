@@ -398,7 +398,6 @@
     "user_restore_scheduled_removal": "Restaura l'usuari - eliminació programada el {date, date, long}",
     "user_settings": "Configuració d'usuaris",
     "user_settings_description": "Gestiona la configuració dels usuaris",
-    "user_successfully_removed": "L'usuari {email} s'ha eliminat correctament.",
     "version_check_enabled_description": "Activa la comprovació de la versió",
     "version_check_implications": "La funció de comprovació de versions depèn de comunicacions periòdiques amb github.com",
     "version_check_settings": "Comprovació de versió",

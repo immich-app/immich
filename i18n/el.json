@@ -383,7 +383,6 @@
     "user_restore_scheduled_removal": "Αποκατάσταση χρήστη - προγραμματισμένη διαγραφή στις {date, date, long}",
     "user_settings": "Ρυθμίσεις χρήστη",
     "user_settings_description": "Διαχείριση ρυθμίσεων χρήστη",
-    "user_successfully_removed": "Ο χρήστης {email} έχει αφαιρεθεί με επιτυχία.",
     "version_check_enabled_description": "Ενεργοποίηση ελέγχου έκδοσης",
     "version_check_implications": "Η λειτουργία ελέγχου έκδοσης, εξαρτάται από την περιοδική επικοινωνία με το github.com",
     "version_check_settings": "Έλεγχος Έκδοσης",

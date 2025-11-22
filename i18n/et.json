@@ -407,7 +407,6 @@
     "user_restore_scheduled_removal": "Taasta kasutaja - eemaldamine planeeritud {date, date, long}",
     "user_settings": "Kasutajate seaded",
     "user_settings_description": "Halda kasutajate seadeid",
-    "user_successfully_removed": "Kasutaja {email} on eemaldatud.",
     "version_check_enabled_description": "Luba versioonikontroll",
     "version_check_implications": "Versioonikontroll vajab perioodilist ühendumist github.com-iga",
     "version_check_settings": "Versioonikontroll",

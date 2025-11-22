@@ -365,7 +365,6 @@
     "user_restore_scheduled_removal": "Pulihkan pengguna – pemadaman dijadualkan pada {date, date, long}",
     "user_settings": "Tetapan Pengguna",
     "user_settings_description": "Urus tetapan pengguna",
-    "user_successfully_removed": "Pengguna {email} telah berjaya dipadam.",
     "version_check_enabled_description": "Dayakan semakan versi",
     "version_check_implications": "Ciri semakan versi bergantung kepada komunikasi berkala dengan github.com",
     "version_check_settings": "Semakan Versi",

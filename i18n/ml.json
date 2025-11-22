@@ -381,7 +381,6 @@
     "user_restore_scheduled_removal": "ഉപയോക്താവിനെ പുനഃസ്ഥാപിക്കുക - {date, date, long}-ന് നീക്കംചെയ്യാൻ ഷെഡ്യൂൾ ചെയ്‌തിരിക്കുന്നു",
     "user_settings": "ഉപയോക്താവിന്റെ ക്രമീകരണങ്ങൾ",
     "user_settings_description": "ഉപയോക്തൃ ക്രമീകരണങ്ങൾ കൈകാര്യം ചെയ്യുക",
-    "user_successfully_removed": "{email} എന്ന ഉപയോക്താവിനെ വിജയകരമായി നീക്കംചെയ്തു.",
     "version_check_enabled_description": "പതിപ്പ് പരിശോധന പ്രവർത്തനക്ഷമമാക്കുക",
     "version_check_implications": "പതിപ്പ് പരിശോധന ഫീച്ചർ github.com-മായി ആനുകാലിക ആശയവിനിമയത്തെ ആശ്രയിച്ചിരിക്കുന്നു",
     "version_check_settings": "പതിപ്പ് പരിശോധന",

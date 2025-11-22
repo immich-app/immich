@@ -360,7 +360,6 @@
     "user_restore_scheduled_removal": "Khôi phục người dùng - đã lên lịch xóa vào {date, date, long}",
     "user_settings": "Người dùng",
     "user_settings_description": "Quản lý cài đặt người dùng",
-    "user_successfully_removed": "Người dùng {email} đã được xóa thành công.",
     "version_check_enabled_description": "Bật kiểm tra phiên bản",
     "version_check_implications": "Tính năng kiểm tra phiên bản yêu cầu kết nối thường xuyên đến github.com",
     "version_check_settings": "Kiểm tra phiên bản",
