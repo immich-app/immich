@@ -23,7 +23,6 @@
     mdiFormTextboxPassword,
     mdiLockSmart,
     mdiServerOutline,
-    mdiTwoFactorAuthentication,
   } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import SettingAccordionState from '../shared-components/settings/setting-accordion-state.svelte';
@@ -31,8 +30,6 @@
   import AppSettings from './app-settings.svelte';
   import DeviceList from './device-list.svelte';
   import PartnerSettings from './partner-settings.svelte';
-  import PuChangePasswordSettingsOauth from './pu-change-password-settings-oauth.svelte';
-  import PuOAuthSettings from './pu-oauth-settings.svelte';
   import PuUserProfileSettings from './pu-user-profile-settings.svelte';
   import UserAPIKeyList from './user-api-key-list.svelte';
   import UserProfileSettings from './user-profile-settings.svelte';
@@ -117,26 +114,6 @@
   >
     <NotificationsSettings />
   </SettingAccordion>
-
-  {#if $featureFlags.loaded && $featureFlags.oauth}
-    <SettingAccordion
-      icon={mdiTwoFactorAuthentication}
-      key="oauth"
-      title={$t('oauth')}
-      subtitle={$t('manage_your_oauth_connection')}
-      isOpen={oauthOpen || undefined}
-    >
-      <PuOAuthSettings user={$user} />
-    </SettingAccordion>
-    <SettingAccordion
-      icon={mdiFormTextboxPassword}
-      key="password"
-      title={$t('password')}
-      subtitle={$t('change_your_password')}
-    >
-      <PuChangePasswordSettingsOauth />
-    </SettingAccordion>
-  {/if}
 
   {#if $featureFlags.loaded && !$featureFlags.oauth}
     <SettingAccordion
