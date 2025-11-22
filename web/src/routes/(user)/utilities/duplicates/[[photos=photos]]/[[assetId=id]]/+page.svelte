@@ -11,10 +11,10 @@
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { locale } from '$lib/stores/preferences.store';
   import { stackAssets } from '$lib/utils/asset-utils';
-  import { suggestDuplicate } from '$lib/utils/duplicate-utils';
   import { handleError } from '$lib/utils/handle-error';
   import type { AssetResponseDto } from '@immich/sdk';
   import { deleteAssets, deleteDuplicates, updateAssets } from '@immich/sdk';
+  import DuplicatesSettingsModal from '$lib/modals/DuplicatesSettingsModal.svelte';
   import { Button, HStack, IconButton, modalManager, Text, toastManager } from '@immich/ui';
   import {
     mdiCheckOutline,
@@ -25,9 +25,12 @@
     mdiPageFirst,
     mdiPageLast,
     mdiTrashCanOutline,
+    mdiCogOutline,
   } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
+  import { duplicateTiePreference } from '$lib/stores/duplicate-tie-preferences.svelte';
+  import { suggestBestDuplicate } from '$lib/utils/duplicate-utils';
 
   interface Props {
     data: PageData;
@@ -39,6 +42,7 @@
     general: ExplainedShortcut[];
     actions: ExplainedShortcut[];
   }
+
   interface ExplainedShortcut {
     key: string[];
     action: string;
@@ -123,10 +127,15 @@
   };
 
   const handleDeduplicateAll = async () => {
-    const idsToKeep = duplicates.map((group) => suggestDuplicate(group.assets)).map((asset) => asset?.id);
+    const keepCandidates = duplicates.map((group) => suggestBestDuplicate(group.assets, duplicateTiePreference.value));
+
+    const idsToKeep: (string | undefined)[] = keepCandidates.map((assets) => assets?.id);
+
     const idsToDelete = duplicates.flatMap((group, i) =>
-      group.assets.map((asset) => asset.id).filter((asset) => asset !== idsToKeep[i]),
+      group.assets.map((asset) => asset.id).filter((id) => id !== idsToKeep[i]),
     );
+
+    const keptIds = idsToKeep.filter((id): id is string => id !== undefined);
 
     let prompt, confirmText;
     if (featureFlagsManager.value.trash) {
@@ -142,7 +151,7 @@
         await deleteAssets({ assetBulkDeleteDto: { ids: idsToDelete, force: !featureFlagsManager.value.trash } });
         await updateAssets({
           assetBulkUpdateDto: {
-            ids: [...idsToDelete, ...idsToKeep.filter((id): id is string => !!id)],
+            ids: [...idsToDelete, ...keptIds],
             duplicateId: null,
           },
         });
@@ -216,6 +225,22 @@
 <UserPageLayout title={data.meta.title + ` (${duplicates.length.toLocaleString($locale)})`} scrollbar={true}>
   {#snippet buttons()}
     <HStack gap={0}>
+      <Button
+        size="small"
+        variant="ghost"
+        color={(duplicateTiePreference.value ?? []).length > 0 ? 'primary' : 'secondary'}
+        leadingIcon={mdiCogOutline}
+        onclick={() => modalManager.show(DuplicatesSettingsModal)}
+        title={$t('settings')}
+        aria-label={$t('settings')}
+        class="relative"
+      >
+        <Text class="hidden md:block">{$t('settings')}</Text>
+        {#if (duplicateTiePreference.value ?? []).length > 0}
+          <span class="ml-2 inline-block h-2 w-2 rounded-full bg-primary" aria-hidden="true"></span>
+        {/if}
+      </Button>
+
       <Button
         leadingIcon={mdiTrashCanOutline}
         onclick={() => handleDeduplicateAll()}
