@@ -35,6 +35,12 @@ export class AutoStackService extends BaseService {
       return;
     }
 
+    // Queue the AssetComputeHash job for this specific asset
+    await this.jobRepository.queue({
+      name: JobName.AssetComputeHash,
+      data: { id: assetId },
+    });
+
     // Queue the AutoStack job for this specific asset
     await this.jobRepository.queue({
       name: JobName.AssetAutoStack,
