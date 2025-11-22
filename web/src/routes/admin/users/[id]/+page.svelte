@@ -9,7 +9,6 @@
   import UserEditModal from '$lib/modals/UserEditModal.svelte';
   import UserRestoreConfirmModal from '$lib/modals/UserRestoreConfirmModal.svelte';
   import { locale } from '$lib/stores/preferences.store';
-  import { user as authUser } from '$lib/stores/user.store';
   import { createDateFormatter, findLocale } from '$lib/utils';
   import { getBytesWithUnit } from '$lib/utils/byte-units';
   import { handleError } from '$lib/utils/handle-error';
@@ -66,7 +65,7 @@
   const usedBytes = $derived(user.quotaUsageInBytes ?? 0);
   const availableBytes = $derived(user.quotaSizeInBytes ?? 1);
   let usedPercentage = $derived(Math.min(Math.round((usedBytes / availableBytes) * 100), 100));
-  let canResetPassword = $derived($authUser.id !== user.id);
+  let canResetPassword = false;
   let newPassword = $state<string>('');
 
   let editedLocale = $derived(findLocale($locale).code);

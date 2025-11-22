@@ -14,7 +14,6 @@
     Modal,
     ModalBody,
     ModalFooter,
-    PasswordInput,
     Stack,
     Switch,
   } from '@immich/ui';
@@ -30,8 +29,8 @@
   let success = $state(false);
 
   let email = $state('');
-  let password = $state('');
-  let passwordConfirm = $state('');
+  let password = 'DummyValueNeverUsed';
+  let passwordConfirm = 'DummyValueNeverUsed';
   let name = $state('');
   let shouldChangePassword = $state(true);
   let notify = $state(true);
@@ -105,19 +104,6 @@
             <Switch id="send-welcome-email" bind:checked={notify} class="text-sm" />
           </Field>
         {/if}
-
-        <Field label={$t('password')} required={!$featureFlags.oauth}>
-          <PasswordInput id="password" bind:value={password} autocomplete="new-password" />
-        </Field>
-
-        <Field label={$t('confirm_password')} required={!$featureFlags.oauth}>
-          <PasswordInput id="confirmPassword" bind:value={passwordConfirm} autocomplete="new-password" />
-          <HelperText color="danger">{passwordMismatchMessage}</HelperText>
-        </Field>
-
-        <Field label={$t('admin.require_password_change_on_login')}>
-          <Switch id="require-password-change" bind:checked={shouldChangePassword} class="text-sm text-start" />
-        </Field>
 
         <Field label={$t('name')} required>
           <Input bind:value={name} />
