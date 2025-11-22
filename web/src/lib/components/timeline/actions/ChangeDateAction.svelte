@@ -13,10 +13,25 @@
   let { menuItem = false }: Props = $props();
   const { clearSelect, getOwnedAssets } = getAssetControlContext();
 
+  let assets = getOwnedAssets();
+  let dateTime = $derived(() => {
+  for (const a of assets ?? []) {
+    const dt =
+      (a?.exifInfo?.dateTimeOriginal && timeZone
+        ? fromISODateTime(a.exifInfo.dateTimeOriginal, timeZone)
+        : a?.localDateTime
+        ? fromISODateTimeUTC(a.localDateTime)
+        : null);
+
+    if (dt) return dt;
+  }
+  return DateTime.now();
+});
+
   const handleChangeDate = async () => {
     const success = await modalManager.show(AssetSelectionChangeDateModal, {
-      initialDate: DateTime.now(),
-      assets: getOwnedAssets(),
+      initialDate: dateTime,
+      assets: assets,
     });
     if (success) {
       clearSelect();
