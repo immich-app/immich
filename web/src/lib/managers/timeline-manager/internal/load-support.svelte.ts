@@ -46,7 +46,7 @@ export async function loadFromTimeBuckets(
     }
   }
 
-  const unprocessedAssets = monthGroup.addAssets(bucketResponse);
+  const unprocessedAssets = monthGroup.addAssets(bucketResponse, true);
   if (unprocessedAssets.length > 0) {
     console.error(
       `Warning: getTimeBucket API returning assets not in requested month: ${monthGroup.yearMonth.month}, ${JSON.stringify(

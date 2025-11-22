@@ -153,7 +153,7 @@ export class MonthGroup {
     };
   }
 
-  addAssets(bucketAssets: TimeBucketAssetResponseDto) {
+  addAssets(bucketAssets: TimeBucketAssetResponseDto, preSorted: boolean) {
     const addContext = new GroupInsertionCache();
     for (let i = 0; i < bucketAssets.id.length; i++) {
       const { localDateTime, fileCreatedAt } = getTimes(
@@ -193,6 +193,9 @@ export class MonthGroup {
         timelineAsset.longitude = bucketAssets.longitude?.[i];
       }
       this.addTimelineAsset(timelineAsset, addContext);
+    }
+    if (preSorted) {
+      return addContext.unprocessedAssets;
     }
 
     for (const group of addContext.existingDayGroups) {
