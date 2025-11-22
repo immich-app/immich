@@ -29,6 +29,7 @@ const partialConfig = {
 const updatedConfig = Object.freeze<SystemConfig>({
   job: {
     [QueueName.BackgroundTask]: { concurrency: 5 },
+    [QueueName.AutoStack]: { concurrency: 2 },
     [QueueName.SmartSearch]: { concurrency: 2 },
     [QueueName.MetadataExtraction]: { concurrency: 5 },
     [QueueName.FaceDetection]: { concurrency: 2 },
@@ -95,6 +96,17 @@ const updatedConfig = Object.freeze<SystemConfig>({
     duplicateDetection: {
       enabled: true,
       maxDistance: 0.01,
+    },
+    autoStack: {
+      enabled: true,
+      minAssets: 2,
+      timeWindowSeconds: 120,
+      delaySeconds: 120,
+      clipMaxDistance: 0.2,
+      phashMaxDistance: 5,
+      preferBurstIds: true,
+      requireSameDevice: true,
+      requireSameOrientation: true,
     },
     facialRecognition: {
       enabled: true,

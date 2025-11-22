@@ -7832,6 +7832,33 @@
         "description": "This endpoint requires the `stack.create` permission."
       }
     },
+    "/stacks/auto": {
+      "delete": {
+        "operationId": "clearAutoStacks",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Stacks"
+        ],
+        "x-immich-permission": "stack.delete",
+        "description": "This endpoint requires the `stack.delete` permission."
+      }
+    },
     "/stacks/{id}": {
       "delete": {
         "operationId": "deleteStack",
@@ -10473,6 +10500,9 @@
       },
       "AllJobStatusResponseDto": {
         "properties": {
+          "autoStack": {
+            "$ref": "#/components/schemas/JobStatusDto"
+          },
           "backgroundTask": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
@@ -10486,6 +10516,9 @@
             "$ref": "#/components/schemas/JobStatusDto"
           },
           "facialRecognition": {
+            "$ref": "#/components/schemas/JobStatusDto"
+          },
+          "hashComputation": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
           "library": {
@@ -10523,11 +10556,13 @@
           }
         },
         "required": [
+          "autoStack",
           "backgroundTask",
           "backupDatabase",
           "duplicateDetection",
           "faceDetection",
           "facialRecognition",
+          "hashComputation",
           "library",
           "metadataExtraction",
           "migration",
@@ -11587,6 +11622,65 @@
         ],
         "type": "object"
       },
+      "AutoStackConfig": {
+        "properties": {
+          "clipMaxDistance": {
+            "format": "double",
+            "maximum": 1,
+            "minimum": 0,
+            "type": "number"
+          },
+          "delaySeconds": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "minAssets": {
+            "minimum": 2,
+            "type": "integer"
+          },
+          "outlierSimilarityThreshold": {
+            "format": "double",
+            "maximum": 1,
+            "minimum": 0,
+            "type": "number"
+          },
+          "phashMinMatch": {
+            "format": "double",
+            "maximum": 1,
+            "minimum": 0,
+            "type": "number"
+          },
+          "preferBurstIds": {
+            "type": "boolean"
+          },
+          "requireSameDevice": {
+            "type": "boolean"
+          },
+          "requireSameOrientation": {
+            "type": "boolean"
+          },
+          "timeWindowSeconds": {
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "clipMaxDistance",
+          "delaySeconds",
+          "enabled",
+          "minAssets",
+          "outlierSimilarityThreshold",
+          "phashMinMatch",
+          "preferBurstIds",
+          "requireSameDevice",
+          "requireSameOrientation",
+          "timeWindowSeconds"
+        ],
+        "type": "object"
+      },
       "AvatarUpdate": {
         "properties": {
           "color": {
@@ -12316,6 +12410,8 @@
           "facialRecognition",
           "smartSearch",
           "duplicateDetection",
+          "autoStack",
+          "hashComputation",
           "backgroundTask",
           "storageTemplateMigration",
           "migration",
@@ -15151,12 +15247,16 @@
           },
           "primaryAssetId": {
             "type": "string"
+          },
+          "source": {
+            "type": "string"
           }
         },
         "required": [
           "assets",
           "id",
-          "primaryAssetId"
+          "primaryAssetId",
+          "source"
         ],
         "type": "object"
       },
@@ -16665,10 +16765,16 @@
       },
       "SystemConfigJobDto": {
         "properties": {
+          "autoStack": {
+            "$ref": "#/components/schemas/JobSettingsDto"
+          },
           "backgroundTask": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
           "faceDetection": {
+            "$ref": "#/components/schemas/JobSettingsDto"
+          },
+          "hashComputation": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
           "library": {
@@ -16703,8 +16809,10 @@
           }
         },
         "required": [
+          "autoStack",
           "backgroundTask",
           "faceDetection",
+          "hashComputation",
           "library",
           "metadataExtraction",
           "migration",
@@ -16780,6 +16888,9 @@
       },
       "SystemConfigMachineLearningDto": {
         "properties": {
+          "autoStack": {
+            "$ref": "#/components/schemas/AutoStackConfig"
+          },
           "availabilityChecks": {
             "$ref": "#/components/schemas/MachineLearningAvailabilityChecksDto"
           },
@@ -16809,6 +16920,7 @@
           }
         },
         "required": [
+          "autoStack",
           "availabilityChecks",
           "clip",
           "duplicateDetection",

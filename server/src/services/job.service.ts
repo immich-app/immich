@@ -208,6 +208,15 @@ export class JobService extends BaseService {
         return this.jobRepository.queue({ name: JobName.AssetDetectDuplicatesQueueAll, data: { force } });
       }
 
+      case QueueName.AutoStack: {
+        await this.jobRepository.queue({ name: JobName.AssetComputeHashQueueAll, data: { force: false } });
+        return this.jobRepository.queue({ name: JobName.AssetAutoStackQueueAll, data: { force } });
+      }
+
+      case QueueName.HashComputation: {
+        return this.jobRepository.queue({ name: JobName.AssetComputeHashQueueAll, data: { force } });
+      }
+
       case QueueName.MetadataExtraction: {
         return this.jobRepository.queue({ name: JobName.AssetExtractMetadataQueueAll, data: { force } });
       }

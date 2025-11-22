@@ -722,11 +722,13 @@ export type JobStatusDto = {
     queueStatus: QueueStatusDto;
 };
 export type AllJobStatusResponseDto = {
+    autoStack: JobStatusDto;
     backgroundTask: JobStatusDto;
     backupDatabase: JobStatusDto;
     duplicateDetection: JobStatusDto;
     faceDetection: JobStatusDto;
     facialRecognition: JobStatusDto;
+    hashComputation: JobStatusDto;
     library: JobStatusDto;
     metadataExtraction: JobStatusDto;
     migration: JobStatusDto;
@@ -1406,8 +1408,10 @@ export type JobSettingsDto = {
     concurrency: number;
 };
 export type SystemConfigJobDto = {
+    autoStack: JobSettingsDto;
     backgroundTask: JobSettingsDto;
     faceDetection: JobSettingsDto;
+    hashComputation: JobSettingsDto;
     library: JobSettingsDto;
     metadataExtraction: JobSettingsDto;
     migration: JobSettingsDto;
@@ -1433,6 +1437,18 @@ export type SystemConfigLibraryDto = {
 export type SystemConfigLoggingDto = {
     enabled: boolean;
     level: LogLevel;
+};
+export type AutoStackConfig = {
+    clipMaxDistance: number;
+    delaySeconds: number;
+    enabled: boolean;
+    minAssets: number;
+    outlierSimilarityThreshold: number;
+    phashMaxDistance: number;
+    preferBurstIds: boolean;
+    requireSameDevice: boolean;
+    requireSameOrientation: boolean;
+    timeWindowSeconds: number;
 };
 export type MachineLearningAvailabilityChecksDto = {
     enabled: boolean;
@@ -1462,6 +1478,7 @@ export type OcrConfig = {
     modelName: string;
 };
 export type SystemConfigMachineLearningDto = {
+    autoStack: AutoStackConfig;
     availabilityChecks: MachineLearningAvailabilityChecksDto;
     clip: ClipConfig;
     duplicateDetection: DuplicateDetectionConfig;
@@ -4972,6 +4989,8 @@ export enum JobName {
     FacialRecognition = "facialRecognition",
     SmartSearch = "smartSearch",
     DuplicateDetection = "duplicateDetection",
+    AutoStack = "autoStack",
+    HashComputation = "hashComputation",
     BackgroundTask = "backgroundTask",
     StorageTemplateMigration = "storageTemplateMigration",
     Migration = "migration",

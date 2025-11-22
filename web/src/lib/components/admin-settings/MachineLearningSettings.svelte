@@ -319,6 +319,120 @@
           />
         </div>
       </SettingAccordion>
+
+      <SettingAccordion
+        key="auto-stack"
+        title={$t('admin.machine_learning_auto_stack')}
+        subtitle={$t('admin.machine_learning_auto_stack_description')}
+      >
+        <div class="ms-4 mt-4 flex flex-col gap-4">
+          <SettingSwitch
+            title={$t('admin.machine_learning_auto_stack_enabled')}
+            subtitle={$t('admin.machine_learning_auto_stack_enabled_description')}
+            bind:checked={config.machineLearning.autoStack.enabled}
+            disabled={disabled || !config.machineLearning.enabled}
+          />
+
+          <hr />
+
+          <SettingInputField
+            inputType={SettingInputFieldType.NUMBER}
+            label={$t('admin.machine_learning_auto_stack_min_assets')}
+            description={$t('admin.machine_learning_auto_stack_min_assets_description')}
+            bind:value={config.machineLearning.autoStack.minAssets}
+            min={2}
+            step="1"
+            disabled={disabled || !config.machineLearning.enabled || !config.machineLearning.autoStack.enabled}
+            isEdited={config.machineLearning.autoStack.minAssets !==
+              savedConfig.machineLearning.autoStack.minAssets}
+          />
+
+          <SettingInputField
+            inputType={SettingInputFieldType.NUMBER}
+            label={$t('admin.machine_learning_auto_stack_time_window')}
+            description={$t('admin.machine_learning_auto_stack_time_window_description')}
+            bind:value={config.machineLearning.autoStack.timeWindowSeconds}
+            min={1}
+            step="1"
+            disabled={disabled || !config.machineLearning.enabled || !config.machineLearning.autoStack.enabled}
+            isEdited={config.machineLearning.autoStack.timeWindowSeconds !==
+              savedConfig.machineLearning.autoStack.timeWindowSeconds}
+          />
+
+          <SettingInputField
+            inputType={SettingInputFieldType.NUMBER}
+            label={$t('admin.machine_learning_auto_stack_delay')}
+            description={$t('admin.machine_learning_auto_stack_delay_description')}
+            bind:value={config.machineLearning.autoStack.delaySeconds}
+            min={0}
+            step="1"
+            disabled={disabled || !config.machineLearning.enabled || !config.machineLearning.autoStack.enabled}
+            isEdited={config.machineLearning.autoStack.delaySeconds !==
+              savedConfig.machineLearning.autoStack.delaySeconds}
+          />
+
+          <SettingInputField
+            inputType={SettingInputFieldType.NUMBER}
+            label={$t('admin.machine_learning_auto_stack_clip_distance')}
+            description={$t('admin.machine_learning_auto_stack_clip_distance_description')}
+            bind:value={config.machineLearning.autoStack.clipMaxDistance}
+            step="0.01"
+            min={0}
+            max={1}
+            disabled={disabled || !config.machineLearning.enabled || !config.machineLearning.autoStack.enabled}
+            isEdited={config.machineLearning.autoStack.clipMaxDistance !==
+              savedConfig.machineLearning.autoStack.clipMaxDistance}
+          />
+
+          <SettingInputField
+            inputType={SettingInputFieldType.NUMBER}
+            label={$t('admin.machine_learning_auto_stack_phash_distance')}
+            description={$t('admin.machine_learning_auto_stack_phash_distance_description')}
+            bind:value={config.machineLearning.autoStack.phashMaxDistance}
+            min={0}
+            max={256}
+            step="1"
+            disabled={disabled || !config.machineLearning.enabled || !config.machineLearning.autoStack.enabled}
+            isEdited={config.machineLearning.autoStack.phashMaxDistance !==
+              savedConfig.machineLearning.autoStack.phashMaxDistance}
+          />
+
+          <SettingInputField
+            inputType={SettingInputFieldType.NUMBER}
+            label={$t('admin.machine_learning_auto_stack_outlier_threshold')}
+            description={$t('admin.machine_learning_auto_stack_outlier_threshold_description')}
+            bind:value={config.machineLearning.autoStack.outlierSimilarityThreshold}
+            step="0.1"
+            min={0}
+            max={1}
+            disabled={disabled || !config.machineLearning.enabled || !config.machineLearning.autoStack.enabled}
+            isEdited={config.machineLearning.autoStack.outlierSimilarityThreshold !==
+              savedConfig.machineLearning.autoStack.outlierSimilarityThreshold}
+          />
+
+          <SettingSwitch
+            title={$t('admin.machine_learning_auto_stack_prefer_burst')}
+            subtitle={$t('admin.machine_learning_auto_stack_prefer_burst_description')}
+            bind:checked={config.machineLearning.autoStack.preferBurstIds}
+            disabled={disabled || !config.machineLearning.enabled || !config.machineLearning.autoStack.enabled}
+          />
+
+          <SettingSwitch
+            title={$t('admin.machine_learning_auto_stack_same_device')}
+            subtitle={$t('admin.machine_learning_auto_stack_same_device_description')}
+            bind:checked={config.machineLearning.autoStack.requireSameDevice}
+            disabled={disabled || !config.machineLearning.enabled || !config.machineLearning.autoStack.enabled}
+          />
+
+          <SettingSwitch
+            title={$t('admin.machine_learning_auto_stack_same_orientation')}
+            subtitle={$t('admin.machine_learning_auto_stack_same_orientation_description')}
+            bind:checked={config.machineLearning.autoStack.requireSameOrientation}
+            disabled={disabled || !config.machineLearning.enabled || !config.machineLearning.autoStack.enabled}
+          />
+        </div>
+      </SettingAccordion>
+
       <SettingButtonsRow
         onReset={(options) => onReset({ ...options, configKeys: ['machineLearning'] })}
         onSave={() => onSave({ machineLearning: config.machineLearning })}

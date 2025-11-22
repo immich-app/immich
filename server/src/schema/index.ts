@@ -1,23 +1,23 @@
 import { asset_face_source_type, asset_visibility_enum, assets_status_enum } from 'src/schema/enums';
 import {
-  album_delete_audit,
-  album_user_after_insert,
-  album_user_delete_audit,
-  asset_delete_audit,
-  asset_face_audit,
-  asset_metadata_audit,
-  f_concat_ws,
-  f_unaccent,
-  immich_uuid_v7,
-  ll_to_earth_public,
-  memory_asset_delete_audit,
-  memory_delete_audit,
-  partner_delete_audit,
-  person_delete_audit,
-  stack_delete_audit,
-  updated_at,
-  user_delete_audit,
-  user_metadata_audit,
+    album_delete_audit,
+    album_user_after_insert,
+    album_user_delete_audit,
+    asset_delete_audit,
+    asset_face_audit,
+    asset_metadata_audit,
+    f_concat_ws,
+    f_unaccent,
+    immich_uuid_v7,
+    ll_to_earth_public,
+    memory_asset_delete_audit,
+    memory_delete_audit,
+    partner_delete_audit,
+    person_delete_audit,
+    stack_delete_audit,
+    updated_at,
+    user_delete_audit,
+    user_metadata_audit,
 } from 'src/schema/functions';
 import { ActivityTable } from 'src/schema/tables/activity.table';
 import { AlbumAssetAuditTable } from 'src/schema/tables/album-asset-audit.table';
@@ -32,6 +32,7 @@ import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
 import { AssetFaceAuditTable } from 'src/schema/tables/asset-face-audit.table';
 import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
 import { AssetFileTable } from 'src/schema/tables/asset-file.table';
+import { AssetHashTable } from 'src/schema/tables/asset-hash.table';
 import { AssetJobStatusTable } from 'src/schema/tables/asset-job-status.table';
 import { AssetMetadataAuditTable } from 'src/schema/tables/asset-metadata-audit.table';
 import { AssetMetadataTable } from 'src/schema/tables/asset-metadata.table';
@@ -86,6 +87,7 @@ export class ImmichDatabase {
     AssetAuditTable,
     AssetFaceTable,
     AssetFaceAuditTable,
+    AssetHashTable,
     AssetMetadataTable,
     AssetMetadataAuditTable,
     AssetJobStatusTable,
@@ -174,6 +176,7 @@ export interface DB {
   asset_exif: AssetExifTable;
   asset_face: AssetFaceTable;
   asset_face_audit: AssetFaceAuditTable;
+  asset_hash: AssetHashTable;
   asset_file: AssetFileTable;
   asset_metadata: AssetMetadataTable;
   asset_metadata_audit: AssetMetadataAuditTable;

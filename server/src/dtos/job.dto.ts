@@ -71,6 +71,12 @@ export class AllJobStatusResponseDto implements Record<QueueName, JobStatusDto> 
   [QueueName.BackgroundTask]!: JobStatusDto;
 
   @ApiProperty({ type: JobStatusDto })
+  [QueueName.AutoStack]!: JobStatusDto;
+
+  @ApiProperty({ type: JobStatusDto })
+  [QueueName.HashComputation]!: JobStatusDto;
+
+  @ApiProperty({ type: JobStatusDto })
   [QueueName.Search]!: JobStatusDto;
 
   @ApiProperty({ type: JobStatusDto })

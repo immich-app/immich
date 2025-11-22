@@ -24,6 +24,7 @@ export class StackUpdateDto {
 export class StackResponseDto {
   id!: string;
   primaryAssetId!: string;
+  source!: string;
   assets!: AssetResponseDto[];
 }
 
@@ -34,6 +35,7 @@ export const mapStack = (stack: Stack, { auth }: { auth?: AuthDto }) => {
   return {
     id: stack.id,
     primaryAssetId: stack.primaryAssetId,
+    source: stack.source,
     assets: [...primary, ...others].map((asset) => mapAsset(asset, { auth })),
   };
 };

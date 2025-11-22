@@ -13,22 +13,22 @@ import { AssetJobStatusTable } from 'src/schema/tables/asset-job-status.table';
 import { AssetTable } from 'src/schema/tables/asset.table';
 import { AssetMetadataItem } from 'src/types';
 import {
-  anyUuid,
-  asUuid,
-  hasPeople,
-  removeUndefinedKeys,
-  truncatedDate,
-  unnest,
-  withDefaultVisibility,
-  withExif,
-  withFaces,
-  withFacesAndPeople,
-  withFiles,
-  withLibrary,
-  withOwner,
-  withSmartSearch,
-  withTagId,
-  withTags,
+    anyUuid,
+    asUuid,
+    hasPeople,
+    removeUndefinedKeys,
+    truncatedDate,
+    unnest,
+    withDefaultVisibility,
+    withExif,
+    withFaces,
+    withFacesAndPeople,
+    withFiles,
+    withLibrary,
+    withOwner,
+    withSmartSearch,
+    withTagId,
+    withTags,
 } from 'src/utils/database';
 import { globToSqlPattern } from 'src/utils/misc';
 
@@ -910,5 +910,106 @@ export class AssetRepository {
       .executeTakeFirstOrThrow();
 
     return count;
+  }
+
+  /**
+   * Find assets for AutoStack by EXIF burst ID (autoStackId).
+   * Returns assets with matching autoStackId, excluding those already in stacks.
+   */
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID, 'burst-id'] })
+  async getCandidatesByBurstId(ownerId: string, libraryId: string | null, autoStackId: string) {
+    return this.db
+      .selectFrom('asset')
+      .innerJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
+      .select([
+        'asset.id',
+        'asset.localDateTime',
+        'asset_exif.make',
+        'asset_exif.model',
+        'asset_exif.orientation',
+        'asset_exif.exifImageWidth',
+        'asset_exif.exifImageHeight',
+        'asset_exif.iso',
+        'asset_exif.fNumber',
+        'asset_exif.rating',
+      ])
+      .where('asset.ownerId', '=', asUuid(ownerId))
+      .where('asset.libraryId', libraryId ? '=' : 'is', libraryId ? asUuid(libraryId) : null)
+      .where('asset_exif.autoStackId', '=', autoStackId)
+      .where('asset.stackId', 'is', null)
+      .where('asset.deletedAt', 'is', null)
+      .where('asset.visibility', '!=', AssetVisibility.Hidden)
+      .orderBy('asset.localDateTime', 'asc')
+      .execute();
+  }
+
+  /**
+   * Find assets for AutoStack within a time window.
+   * Returns assets captured within ±timeWindowSeconds, optionally matching device.
+   */
+  @GenerateSql({
+    params: [
+      DummyValue.UUID,
+      DummyValue.UUID,
+      new Date(),
+      3,
+      { make: 'Canon', model: 'EOS R5' },
+    ],
+  })
+  async getCandidatesByTimeWindow(
+    ownerId: string,
+    libraryId: string | null,
+    localDateTime: Date,
+    timeWindowSeconds: number,
+    deviceFilter?: { make?: string; model?: string },
+    referenceOrientation?: string | null,
+    requireOrientation?: boolean,
+  ) {
+    const startTime = new Date(localDateTime.getTime() - timeWindowSeconds * 1000);
+    const endTime = new Date(localDateTime.getTime() + timeWindowSeconds * 1000);
+
+    let query = this.db
+      .selectFrom('asset')
+      .innerJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
+      .select([
+        'asset.id',
+        'asset.localDateTime',
+        'asset.type',
+        'asset_exif.make',
+        'asset_exif.model',
+        'asset_exif.orientation',
+        'asset_exif.exifImageWidth',
+        'asset_exif.exifImageHeight',
+        'asset_exif.iso',
+        'asset_exif.fNumber',
+        'asset_exif.rating',
+      ])
+      .where('asset.ownerId', '=', asUuid(ownerId))
+      .where('asset.libraryId', libraryId ? '=' : 'is', libraryId ? asUuid(libraryId) : null)
+      .where('asset.localDateTime', '>=', startTime)
+      .where('asset.localDateTime', '<=', endTime)
+      .where('asset.stackId', 'is', null)
+      .where('asset.deletedAt', 'is', null)
+      .where('asset.visibility', '!=', AssetVisibility.Hidden);
+
+    if (deviceFilter?.make) {
+      query = query.where('asset_exif.make', '=', deviceFilter.make);
+    }
+    if (deviceFilter?.model) {
+      query = query.where('asset_exif.model', '=', deviceFilter.model);
+    }
+
+    // Filter by orientation if required
+    if (requireOrientation && referenceOrientation !== undefined) {
+      if (referenceOrientation === null) {
+        // If reference has no orientation, only match other assets with no orientation
+        query = query.where('asset_exif.orientation', 'is', null);
+      } else {
+        // Match same orientation (including case where both are null)
+        query = query.where('asset_exif.orientation', '=', referenceOrientation);
+      }
+    }
+
+    return query.orderBy('asset.localDateTime', 'asc').execute();
   }
 }

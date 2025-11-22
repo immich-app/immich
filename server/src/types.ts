@@ -3,21 +3,21 @@ import { VECTOR_EXTENSIONS } from 'src/constants';
 import { UploadFieldName } from 'src/dtos/asset-media.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
-  AssetMetadataKey,
-  AssetOrder,
-  AssetType,
-  DatabaseSslMode,
-  ExifOrientation,
-  ImageFormat,
-  JobName,
-  MemoryType,
-  QueueName,
-  StorageFolder,
-  SyncEntityType,
-  SystemMetadataKey,
-  TranscodeTarget,
-  UserMetadataKey,
-  VideoCodec,
+    AssetMetadataKey,
+    AssetOrder,
+    AssetType,
+    DatabaseSslMode,
+    ExifOrientation,
+    ImageFormat,
+    JobName,
+    MemoryType,
+    QueueName,
+    StorageFolder,
+    SyncEntityType,
+    SystemMetadataKey,
+    TranscodeTarget,
+    UserMetadataKey,
+    VideoCodec,
 } from 'src/enum';
 
 export type DeepPartial<T> = T extends object ? { [K in keyof T]?: DeepPartial<T[K]> } : T;
@@ -263,6 +263,8 @@ export interface INotifyAlbumUpdateJob extends IEntityJob, IDelayedJob {
   recipientId: string;
 }
 
+export interface IAssetAutoStackTimeWindowJob extends IEntityJob, IDelayedJob {}
+
 export interface JobCounts {
   active: number;
   completed: number;
@@ -291,6 +293,13 @@ export type JobItem =
   // Thumbnails
   | { name: JobName.AssetGenerateThumbnailsQueueAll; data: IBaseJob }
   | { name: JobName.AssetGenerateThumbnails; data: IEntityJob }
+
+  // AutoStack
+  | { name: JobName.AssetAutoStackQueueAll; data: IBaseJob }
+  | { name: JobName.AssetAutoStack; data: IEntityJob }
+  | { name: JobName.AssetAutoStackTimeWindow; data: IAssetAutoStackTimeWindowJob }
+  | { name: JobName.AssetComputeHashQueueAll; data: IBaseJob }
+  | { name: JobName.AssetComputeHash; data: IEntityJob }
 
   // User
   | { name: JobName.UserDeleteCheck; data?: IBaseJob }
