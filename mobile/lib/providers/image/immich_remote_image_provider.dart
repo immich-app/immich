@@ -44,6 +44,7 @@ class ImmichRemoteImageProvider extends ImageProvider<ImmichRemoteImageProvider>
 
   /// Whether to show the original file or load a compressed version
   bool get _useOriginal => Store.get(AppSettingsEnum.loadOriginal.storeKey, AppSettingsEnum.loadOriginal.defaultValue);
+  bool get _loadPreview => Store.get(AppSettingsEnum.loadPreview.storeKey, AppSettingsEnum.loadPreview.defaultValue);
 
   // Streams in each stage of the image as we ask for it
   Stream<ui.Codec> _codec(
@@ -56,6 +57,13 @@ class ImmichRemoteImageProvider extends ImageProvider<ImmichRemoteImageProvider>
     final url = getThumbnailUrlForRemoteId(key.assetId, type: api.AssetMediaSize.preview);
     final codec = await ImageLoader.loadImageFromCache(url, cache: cache, decode: decode, chunkEvents: chunkEvents);
     yield codec;
+
+    if (_loadPreview) {
+      // Load the full resolution version of the image
+      final url = getThumbnailUrlForRemoteId(key.assetId, type: api.AssetMediaSize.fullsize);
+      final codec = await ImageLoader.loadImageFromCache(url, cache: cache, decode: decode, chunkEvents: chunkEvents);
+      yield codec;
+    }
 
     // Load the final remote image
     if (_useOriginal) {
