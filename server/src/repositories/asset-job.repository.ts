@@ -89,17 +89,19 @@ export class AssetJobRepository {
 
   @GenerateSql({ params: [], stream: true })
   streamForAutoStack() {
-    return this.db
-      .selectFrom('asset')
-      .select(['asset.id'])
-      .where('asset.deletedAt', 'is', null)
-      .where('asset.visibility', '!=', AssetVisibility.Hidden)
-      .where('asset.type', '=', AssetType.Image)
-      .where('asset.stackId', 'is', null) // Only process unstacked assets
-      // Ensure metadata is extracted (required for AutoStack)
-      .innerJoin('asset_job_status', 'asset_job_status.assetId', 'asset.id')
-      .where('asset_job_status.metadataExtractedAt', 'is not', null)
-      .stream();
+    return (
+      this.db
+        .selectFrom('asset')
+        .select(['asset.id'])
+        .where('asset.deletedAt', 'is', null)
+        .where('asset.visibility', '!=', AssetVisibility.Hidden)
+        .where('asset.type', '=', AssetType.Image)
+        .where('asset.stackId', 'is', null) // Only process unstacked assets
+        // Ensure metadata is extracted (required for AutoStack)
+        .innerJoin('asset_job_status', 'asset_job_status.assetId', 'asset.id')
+        .where('asset_job_status.metadataExtractedAt', 'is not', null)
+        .stream()
+    );
   }
 
   @GenerateSql({ params: [false], stream: true })

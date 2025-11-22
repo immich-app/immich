@@ -30,7 +30,7 @@ export class AutoStackService extends BaseService {
   @OnEvent({ name: 'AssetMetadataExtracted' })
   async onMetadataExtracted({ assetId }: ArgOf<'AssetMetadataExtracted'>) {
     const { machineLearning } = await this.getConfig({ withCache: true });
-    
+
     if (!machineLearning.autoStack.enabled) {
       return;
     }
@@ -161,11 +161,7 @@ export class AutoStackService extends BaseService {
     // PHASE 1: Try EXIF burst ID only (immediate, reliable grouping)
     if (config.preferBurstIds && exif?.autoStackId) {
       this.logger.debug(`[Phase 1] Checking burst ID ${exif.autoStackId} for asset ${id}`);
-      candidates = await this.assetRepository.getCandidatesByBurstId(
-        asset.ownerId,
-        asset.libraryId,
-        exif.autoStackId,
-      );
+      candidates = await this.assetRepository.getCandidatesByBurstId(asset.ownerId, asset.libraryId, exif.autoStackId);
     }
 
     // If we found burst candidates, create stack immediately
@@ -211,11 +207,12 @@ export class AutoStackService extends BaseService {
 
     const exif = asset.exifInfo;
     this.logger.debug(`[Phase 2] Checking time window (±${config.timeWindowSeconds}s) for asset ${id}`);
-    
+
     // Prepare device filter (if requireSameDevice is enabled)
-    const deviceFilter = (config.requireSameDevice && (exif?.make || exif?.model))
-      ? { make: exif.make || undefined, model: exif.model || undefined }
-      : undefined;
+    const deviceFilter =
+      config.requireSameDevice && (exif?.make || exif?.model)
+        ? { make: exif.make || undefined, model: exif.model || undefined }
+        : undefined;
 
     const candidates = await this.assetRepository.getCandidatesByTimeWindow(
       asset.ownerId,
@@ -233,28 +230,30 @@ export class AutoStackService extends BaseService {
     }
 
     // Log constraint filtering results
-    const afterDeviceFilter = deviceFilter ? candidates.filter((c: AutoStackCandidate) => {
-      if (deviceFilter.make && c.make !== deviceFilter.make) return false;
-      if (deviceFilter.model && c.model !== deviceFilter.model) return false;
-      return true;
-    }).length : candidates.length;
+    const afterDeviceFilter = deviceFilter
+      ? candidates.filter((c: AutoStackCandidate) => {
+          if (deviceFilter.make && c.make !== deviceFilter.make) return false;
+          if (deviceFilter.model && c.model !== deviceFilter.model) return false;
+          return true;
+        }).length
+      : candidates.length;
 
-    const afterOrientationFilter = config.requireSameOrientation ? candidates.filter((c: AutoStackCandidate) => {
-      if (exif?.orientation === null) return c.orientation === null;
-      return c.orientation === exif?.orientation;
-    }).length : candidates.length;
+    const afterOrientationFilter = config.requireSameOrientation
+      ? candidates.filter((c: AutoStackCandidate) => {
+          if (exif?.orientation === null) return c.orientation === null;
+          return c.orientation === exif?.orientation;
+        }).length
+      : candidates.length;
 
     this.logger.log(
       `[Phase 2] Constraint filtering: ${candidates.length} candidates → ` +
-      `${afterDeviceFilter} after device filter → ` +
-      `${afterOrientationFilter} after orientation filter`,
+        `${afterDeviceFilter} after device filter → ` +
+        `${afterOrientationFilter} after orientation filter`,
     );
 
     // Filter by visual similarity
     const filtered = await this.filterByVisualSimilarity(id, asset.ownerId, candidates, config);
-    const uniqueCandidates = Array.from(
-      new Map(filtered.map((c) => [c.id, c])).values(),
-    ).filter((c) => c.id !== id);
+    const uniqueCandidates = Array.from(new Map(filtered.map((c) => [c.id, c])).values()).filter((c) => c.id !== id);
 
     // Apply pairwise outlier filtering to remove dissimilar images
     const allCandidatesPreFilter = [asset, ...uniqueCandidates];
@@ -273,14 +272,13 @@ export class AutoStackService extends BaseService {
     const finalCandidates = allCandidatesFiltered.filter((c) => c.id !== id);
 
     this.logger.debug(
-      `[Phase 2] Outlier filtering: ${allCandidatesPreFilter.length} assets → ${allCandidatesFiltered.length} after removal`
+      `[Phase 2] Outlier filtering: ${allCandidatesPreFilter.length} assets → ${allCandidatesFiltered.length} after removal`,
     );
-        
 
     // Ensure minimum stack size
     if (finalCandidates.length + 1 < config.minAssets) {
       this.logger.debug(
-        `[Phase 2] Insufficient candidates after outlier filtering for asset ${id}: ${finalCandidates.length + 1} < ${config.minAssets}`
+        `[Phase 2] Insufficient candidates after outlier filtering for asset ${id}: ${finalCandidates.length + 1} < ${config.minAssets}`,
       );
       return JobStatus.Skipped;
     }
@@ -294,7 +292,13 @@ export class AutoStackService extends BaseService {
 
     // Create the stack
     const allAssets = [asset, ...uniqueCandidates];
-    const success = await this.createStackWithFallback('Phase 2', asset.ownerId, id, allAssets, StackSource.AutoTimeWindow);
+    const success = await this.createStackWithFallback(
+      'Phase 2',
+      asset.ownerId,
+      id,
+      allAssets,
+      StackSource.AutoTimeWindow,
+    );
     return success ? JobStatus.Success : JobStatus.Failed;
   }
 
@@ -401,11 +405,7 @@ export class AutoStackService extends BaseService {
     try {
       // Standard pHash: resize to 32x32
       // Use 'fill' (stretch) - DCT is insensitive to minor aspect ratio distortions
-      const resized = await sharp(imagePath)
-        .resize(32, 32, { fit: 'fill' })
-        .grayscale()
-        .raw()
-        .toBuffer();
+      const resized = await sharp(imagePath).resize(32, 32, { fit: 'fill' }).grayscale().raw().toBuffer();
 
       // Convert buffer to 2D array (32x32)
       const pixels: number[][] = [];
@@ -454,7 +454,7 @@ export class AutoStackService extends BaseService {
   /**
    * Filter candidates by visual similarity using CLIP and/or pHash.
    * Google Photos uses visual analysis to avoid grouping different scenes.
-   * 
+   *
    * Logic:
    * - If both CLIP and pHash are enabled: both must match (AND)
    * - If only CLIP is enabled: CLIP must match
@@ -517,7 +517,9 @@ export class AutoStackService extends BaseService {
           );
 
           phashMatches = new Set(similarByPhash.map((s: any) => s.assetId));
-          this.logger.debug(`[Visual] pHash: ${phashMatches.size}/${candidateIds.length} matches (minMatch: ${config.phashMinMatch})`);
+          this.logger.debug(
+            `[Visual] pHash: ${phashMatches.size}/${candidateIds.length} matches (minMatch: ${config.phashMinMatch})`,
+          );
         }
       } catch (error) {
         this.logger.debug(`[Visual] pHash failed: ${error}`);
@@ -574,7 +576,9 @@ export class AutoStackService extends BaseService {
       return allCandidates;
     }
 
-    this.logger.debug(`[Outlier] Analyzing ${allCandidates.length} candidates (threshold: ${config.outlierSimilarityThreshold})`);
+    this.logger.debug(
+      `[Outlier] Analyzing ${allCandidates.length} candidates (threshold: ${config.outlierSimilarityThreshold})`,
+    );
 
     // Step 1: Fetch all pHash values upfront
     const hashMap = new Map<string, string>();
@@ -629,7 +633,9 @@ export class AutoStackService extends BaseService {
     const sortedMatches = [...allMatchRatios].sort((a, b) => a - b);
     const medianMatch = sortedMatches[Math.floor(sortedMatches.length / 2)];
 
-    this.logger.debug(`[Outlier] Match ratios: min=${sortedMatches[0].toFixed(2)}, median=${medianMatch.toFixed(2)}, max=${sortedMatches[sortedMatches.length - 1].toFixed(2)}`);
+    this.logger.debug(
+      `[Outlier] Match ratios: min=${sortedMatches[0].toFixed(2)}, median=${medianMatch.toFixed(2)}, max=${sortedMatches[sortedMatches.length - 1].toFixed(2)}`,
+    );
 
     // Step 4: For each candidate, calculate ratio of matches ≥ median
     const similarityScores = new Map<string, number>();
@@ -656,7 +662,9 @@ export class AutoStackService extends BaseService {
       const similarityRatio = aboveMedianCount / matches.size;
       similarityScores.set(candidate.id, similarityRatio);
 
-      this.logger.debug(`[Outlier] ${candidate.id.substring(0, 8)}: ${aboveMedianCount}/${matches.size} ≥ median = ${similarityRatio.toFixed(2)} [${matchDetails.join(', ')}]`);
+      this.logger.debug(
+        `[Outlier] ${candidate.id.substring(0, 8)}: ${aboveMedianCount}/${matches.size} ≥ median = ${similarityRatio.toFixed(2)} [${matchDetails.join(', ')}]`,
+      );
     }
 
     // Step 5: Filter out candidates below the threshold
@@ -665,7 +673,9 @@ export class AutoStackService extends BaseService {
       const keep = ratio >= config.outlierSimilarityThreshold;
 
       if (!keep) {
-        this.logger.debug(`[Outlier] Removing ${c.id.substring(0, 8)}: ${ratio.toFixed(2)} < ${config.outlierSimilarityThreshold}`);
+        this.logger.debug(
+          `[Outlier] Removing ${c.id.substring(0, 8)}: ${ratio.toFixed(2)} < ${config.outlierSimilarityThreshold}`,
+        );
       }
 
       return keep;
@@ -695,7 +705,7 @@ export class AutoStackService extends BaseService {
    * Prepare asset IDs for stack creation with best primary asset selected.
    * Always selects the highest quality asset as primary, based on comprehensive quality metrics.
    * Logs quality scores for debugging.
-   * 
+   *
    * Returns array with primary asset first, followed by others.
    */
   private prepareStackAssetIds(allAssets: AutoStackCandidate[], phase: 'Phase 1' | 'Phase 2'): string[] {
@@ -718,7 +728,7 @@ export class AutoStackService extends BaseService {
    * Always selects the best quality asset as primary.
    * If the selected primary asset is already primary of another stack,
    * tries selecting a fallback primary and retrying.
-   * 
+   *
    * The stack.create() method will merge overlapping stacks automatically.
    */
   private async createStackWithFallback(
@@ -746,7 +756,7 @@ export class AutoStackService extends BaseService {
       ) {
         this.logger.debug(
           `[${phase}] Primary asset ${primaryAssetId} is already primary of another stack. ` +
-          `Attempting to find alternative primary and merge.`,
+            `Attempting to find alternative primary and merge.`,
         );
 
         // Try selecting a different primary from remaining assets
@@ -779,7 +789,7 @@ export class AutoStackService extends BaseService {
   /**
    * Calculate image quality score based on Google Photos criteria.
    * Combines multiple quality metrics into a 0-100 score.
-   * 
+   *
    * Scoring breakdown:
    * - Resolution (40%): Higher pixel count = better
    * - ISO (30%): Lower ISO = less noise = better

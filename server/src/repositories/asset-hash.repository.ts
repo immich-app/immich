@@ -17,11 +17,7 @@ export class AssetHashRepository {
 
   @GenerateSql({ params: [DummyValue.UUID] })
   async getByAssetId(assetId: string) {
-    return this.db
-      .selectFrom('asset_hash')
-      .selectAll()
-      .where('assetId', '=', asUuid(assetId))
-      .executeTakeFirst();
+    return this.db.selectFrom('asset_hash').selectAll().where('assetId', '=', asUuid(assetId)).executeTakeFirst();
   }
 
   async upsert(hash: Insertable<AssetHashTable>) {
@@ -59,20 +55,15 @@ export class AssetHashRepository {
     const results = await this.db
       .selectFrom('asset_hash')
       .select(['assetId'])
-      .select((eb) =>
-        sql<number>`(64 - bit_count(phash # ${targetPhash}::bit(64))) / 64.0`.as('matchRatio'),
-      )
+      .select((eb) => sql<number>`(64 - bit_count(phash # ${targetPhash}::bit(64))) / 64.0`.as('matchRatio'))
       .where('assetId', 'in', candidateAssetIds)
       .where('assetId', '!=', asUuid(excludeAssetId))
       .where('phash', 'is not', null)
-      .where((eb) =>
-        eb(sql<number>`bit_count(phash # ${targetPhash}::bit(64))`, '<=', maxHammingDistance),
-      )
+      .where((eb) => eb(sql<number>`bit_count(phash # ${targetPhash}::bit(64))`, '<=', maxHammingDistance))
       .execute();
 
     return results;
   }
-
 
   @GenerateSql({ params: [[DummyValue.UUID]] })
   async deleteByAssetIds(assetIds: string[]): Promise<void> {

@@ -13,22 +13,22 @@ import { AssetJobStatusTable } from 'src/schema/tables/asset-job-status.table';
 import { AssetTable } from 'src/schema/tables/asset.table';
 import { AssetMetadataItem } from 'src/types';
 import {
-    anyUuid,
-    asUuid,
-    hasPeople,
-    removeUndefinedKeys,
-    truncatedDate,
-    unnest,
-    withDefaultVisibility,
-    withExif,
-    withFaces,
-    withFacesAndPeople,
-    withFiles,
-    withLibrary,
-    withOwner,
-    withSmartSearch,
-    withTagId,
-    withTags,
+  anyUuid,
+  asUuid,
+  hasPeople,
+  removeUndefinedKeys,
+  truncatedDate,
+  unnest,
+  withDefaultVisibility,
+  withExif,
+  withFaces,
+  withFacesAndPeople,
+  withFiles,
+  withLibrary,
+  withOwner,
+  withSmartSearch,
+  withTagId,
+  withTags,
 } from 'src/utils/database';
 import { globToSqlPattern } from 'src/utils/misc';
 
@@ -949,13 +949,7 @@ export class AssetRepository {
    * Returns assets captured within ±timeWindowSeconds, optionally matching device.
    */
   @GenerateSql({
-    params: [
-      DummyValue.UUID,
-      DummyValue.UUID,
-      new Date(),
-      3,
-      { make: 'Canon', model: 'EOS R5' },
-    ],
+    params: [DummyValue.UUID, DummyValue.UUID, new Date(), 3, { make: 'Canon', model: 'EOS R5' }],
   })
   async getCandidatesByTimeWindow(
     ownerId: string,

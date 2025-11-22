@@ -1,34 +1,40 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
-    ArrayMinSize,
-    IsInt,
-    IsNotEmpty,
-    IsNumber,
-    IsObject,
-    IsPositive,
-    IsString,
-    IsUrl,
-    Max,
-    Min,
-    ValidateIf,
-    ValidateNested,
+  ArrayMinSize,
+  IsInt,
+  IsNotEmpty,
+  IsNumber,
+  IsObject,
+  IsPositive,
+  IsString,
+  IsUrl,
+  Max,
+  Min,
+  ValidateIf,
+  ValidateNested,
 } from 'class-validator';
 import { SystemConfig } from 'src/config';
-import { AutoStackConfig, CLIPConfig, DuplicateDetectionConfig, FacialRecognitionConfig, OcrConfig } from 'src/dtos/model-config.dto';
 import {
-    AudioCodec,
-    CQMode,
-    Colorspace,
-    ImageFormat,
-    LogLevel,
-    OAuthTokenEndpointAuthMethod,
-    QueueName,
-    ToneMapping,
-    TranscodeHardwareAcceleration,
-    TranscodePolicy,
-    VideoCodec,
-    VideoContainer,
+  AutoStackConfig,
+  CLIPConfig,
+  DuplicateDetectionConfig,
+  FacialRecognitionConfig,
+  OcrConfig,
+} from 'src/dtos/model-config.dto';
+import {
+  AudioCodec,
+  CQMode,
+  Colorspace,
+  ImageFormat,
+  LogLevel,
+  OAuthTokenEndpointAuthMethod,
+  QueueName,
+  ToneMapping,
+  TranscodeHardwareAcceleration,
+  TranscodePolicy,
+  VideoCodec,
+  VideoContainer,
 } from 'src/enum';
 import { ConcurrentQueueName } from 'src/types';
 import { IsCronExpression, IsDateStringFormat, Optional, ValidateBoolean, ValidateEnum } from 'src/validation';

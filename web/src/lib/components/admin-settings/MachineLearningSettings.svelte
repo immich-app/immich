@@ -349,8 +349,7 @@
             min={2}
             step="1"
             disabled={disabled || !config.machineLearning.enabled || !config.machineLearning.autoStack.enabled}
-            isEdited={config.machineLearning.autoStack.minAssets !==
-              savedConfig.machineLearning.autoStack.minAssets}
+            isEdited={config.machineLearning.autoStack.minAssets !== savedConfig.machineLearning.autoStack.minAssets}
           />
 
           <SettingInputField
