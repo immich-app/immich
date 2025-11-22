@@ -1,33 +1,74 @@
 <script lang="ts">
-  import { Button, Icon } from '@immich/ui';
-  import { mdiOpenInNew } from '@mdi/js';
+  import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
+  import { SettingInputFieldType } from '$lib/constants';
+  import { user } from '$lib/stores/user.store';
+  import { handleError } from '$lib/utils/handle-error';
+  import { updateMyUser } from '@immich/sdk';
+  import { Button, toastManager } from '@immich/ui';
+  import { cloneDeep } from 'lodash-es';
+  import { t } from 'svelte-i18n';
+  import { createBubbler, preventDefault } from 'svelte/legacy';
   import { fade } from 'svelte/transition';
+
+  let editedUser = $state(cloneDeep($user));
+  const bubble = createBubbler();
+
+  const handleSaveProfile = async () => {
+    try {
+      const data = await updateMyUser({
+        userUpdateMeDto: {
+          email: editedUser.email,
+          name: editedUser.name,
+        },
+      });
+
+      Object.assign(editedUser, data);
+      $user = data;
+
+      toastManager.success($t('saved_profile'));
+    } catch (error) {
+      handleError(error, $t('errors.unable_to_save_profile'));
+    }
+  };
 </script>
 
 <section class="my-4">
   <div in:fade={{ duration: 500 }}>
-    <div
-      class="bg-gradient-to-r from-immich-primary to-blue-600 dark:from-immich-dark-primary dark:to-blue-400 p-4 sm:p-6 md:p-8 rounded-2xl shadow-lg text-white"
-    >
-      <div class="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
-        <div class="flex-1 text-center sm:text-left">
-          <h2 class="text-xl sm:text-2xl font-bold mb-2">PixelUnion Portal</h2>
-          <p class="text-white/90 mb-4 text-sm sm:text-base leading-relaxed">
-            Manage your account password and two-factor authentication settings in the PixelUnion portal.
-          </p>
+    <form autocomplete="off" onsubmit={preventDefault(bubble('submit'))}>
+      <div class="ms-4 mt-4 flex flex-col gap-4">
+        <SettingInputField
+          inputType={SettingInputFieldType.TEXT}
+          label={$t('user_id')}
+          bind:value={editedUser.id}
+          disabled={true}
+        />
 
-          <Button
-            size="large"
-            class="bg-white text-immich-primary hover:bg-white/90 active:bg-white/80 font-semibold shadow-md transition-all duration-200 hover:shadow-lg touch-manipulation w-full sm:w-auto min-h-[48px]"
-            onclick={() => window.open('https://portal.pixelunion.eu/account', '_blank')}
-          >
-            <div class="flex items-center justify-center gap-2">
-              <span>Open Portal</span>
-              <Icon icon={mdiOpenInNew} size="20" />
-            </div>
-          </Button>
+        <SettingInputField
+          inputType={SettingInputFieldType.EMAIL}
+          label={$t('email')}
+          bind:value={editedUser.email}
+          disabled={true}
+        />
+
+        <SettingInputField
+          inputType={SettingInputFieldType.TEXT}
+          label={$t('name')}
+          bind:value={editedUser.name}
+          required={true}
+        />
+
+        <SettingInputField
+          inputType={SettingInputFieldType.TEXT}
+          label={$t('storage_label')}
+          disabled={true}
+          value={editedUser.storageLabel || ''}
+          required={false}
+        />
+
+        <div class="flex justify-end">
+          <Button shape="round" type="submit" size="small" onclick={() => handleSaveProfile()}>{$t('save')}</Button>
         </div>
       </div>
-    </div>
+    </form>
   </div>
 </section>
