@@ -15959,6 +15959,10 @@
           "hasMetadata": {
             "type": "boolean"
           },
+          "height": {
+            "nullable": true,
+            "type": "number"
+          },
           "id": {
             "type": "string"
           },
@@ -16079,6 +16083,10 @@
                 "$ref": "#/components/schemas/AssetVisibility"
               }
             ]
+          },
+          "width": {
+            "nullable": true,
+            "type": "number"
           }
         },
         "required": [
@@ -16090,6 +16098,7 @@
           "fileCreatedAt",
           "fileModifiedAt",
           "hasMetadata",
+          "height",
           "id",
           "isArchived",
           "isFavorite",
@@ -16102,7 +16111,8 @@
           "thumbhash",
           "type",
           "updatedAt",
-          "visibility"
+          "visibility",
+          "width"
         ],
         "type": "object"
       },
@@ -20892,6 +20902,10 @@
             "nullable": true,
             "type": "string"
           },
+          "height": {
+            "nullable": true,
+            "type": "integer"
+          },
           "id": {
             "type": "string"
           },
@@ -20938,6 +20952,10 @@
                 "$ref": "#/components/schemas/AssetVisibility"
               }
             ]
+          },
+          "width": {
+            "nullable": true,
+            "type": "integer"
           }
         },
         "required": [
@@ -20946,6 +20964,7 @@
           "duration",
           "fileCreatedAt",
           "fileModifiedAt",
+          "height",
           "id",
           "isFavorite",
           "libraryId",
@@ -20956,7 +20975,8 @@
           "stackId",
           "thumbhash",
           "type",
-          "visibility"
+          "visibility",
+          "width"
         ],
         "type": "object"
       },

@@ -349,6 +349,7 @@ export type AssetResponseDto = {
     /** The UTC timestamp when the file was last modified on the filesystem. This reflects the last time the physical file was changed, which may be different from when the photo was originally taken. */
     fileModifiedAt: string;
     hasMetadata: boolean;
+    height: number | null;
     id: string;
     isArchived: boolean;
     isFavorite: boolean;
@@ -373,6 +374,7 @@ export type AssetResponseDto = {
     /** The UTC timestamp when the asset record was last updated in the database. This is automatically maintained by the database and reflects when any field in the asset was last modified. */
     updatedAt: string;
     visibility: AssetVisibility;
+    width: number | null;
 };
 export type ContributorCountResponseDto = {
     assetCount: number;

@@ -264,8 +264,8 @@ export const assetStub = {
     stack: null,
     orientation: '',
     projectionType: null,
-    height: 3840,
-    width: 2160,
+    height: null,
+    width: null,
     visibility: AssetVisibility.Timeline,
   }),
 
