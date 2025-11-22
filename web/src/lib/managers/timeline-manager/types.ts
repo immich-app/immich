@@ -37,7 +37,23 @@ export type TimelineAsset = {
   longitude?: number | null;
 };
 
-export type AssetOperation = (asset: TimelineAsset) => { remove: boolean };
+/**
+ * Operation function that mutates a timeline asset.
+ *
+ * The operation can optionally return `{ remove: true }` to remove the asset from the timeline.
+ * If no return value or any other value is returned, the asset is kept with mutations applied.
+ * However, if the mutation updates the asset such that it no longer matches the timeline manager's
+ * filtering criteria, it will be removed automatically, no need to explicitly return `{ remove: true }`.
+ *
+ * @example
+ * // Update asset visibility property
+ * (asset) => asset.visibility = AssetVisibility.Timeline
+ *
+ * @example
+ * // Explicitly remove asset
+ * (asset) => ({ remove: true })
+ */
+export type AssetOperation = (asset: TimelineAsset) => void | { remove?: boolean };
 
 export type MoveAsset = { asset: TimelineAsset; date: TimelineDate };
 
