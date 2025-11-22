@@ -53,7 +53,10 @@ cpu = ["onnxruntime>=1.15.0,<2"]
 cuda = ["onnxruntime-gpu>=1.17.0,<2"]
 openvino = ["onnxruntime-openvino>=1.17.1,<1.19.0"]
 armnn = ["onnxruntime>=1.15.0,<2"]
-rknn = ["onnxruntime>=1.15.0,<2", "rknn-toolkit-lite2>=2.3.0,<3"]
+rknn = [
+    "onnxruntime>=1.15.0,<2",
+    "pybind11>=2.11.0,<4.0",
+]
 rocm = []
 
 [tool.uv]
