@@ -73,11 +73,6 @@ struct LocalAlbum: Identifiable {
   let updatedAt: Date
 }
 
-extension LocalAlbum {
-  static let selected = Self.where { $0.backupSelection.eq(BackupSelection.selected) }
-  static let excluded = Self.where { $0.backupSelection.eq(BackupSelection.excluded) }
-}
-
 @Table("local_album_asset_entity")
 struct LocalAlbumAsset {
   let id: ID
@@ -90,15 +85,6 @@ struct LocalAlbumAsset {
     let assetId: String
     @Column("album_id")
     let albumId: String
-  }
-}
-
-extension LocalAlbumAsset {
-  static let selected = Self.where {
-    $0.id.assetId.eq(LocalAsset.columns.id) && $0.id.albumId.in(LocalAlbum.selected.select(\.id))
-  }
-  static let excluded = Self.where {
-    $0.id.assetId.eq(LocalAsset.columns.id) && $0.id.albumId.in(LocalAlbum.excluded.select(\.id))
   }
 }
 
@@ -119,18 +105,6 @@ struct LocalAsset: Identifiable {
   @Column("updated_at")
   let updatedAt: String
   let width: Int?
-
-  static func getCandidates() -> Where<LocalAsset> {
-    return Self.where { local in
-      LocalAlbumAsset.selected.exists()
-        && !LocalAlbumAsset.excluded.exists()
-        && !RemoteAsset.where {
-          local.checksum.eq($0.checksum)
-            && $0.ownerId.eq(Store.select(\.stringValue).where { $0.id.eq(StoreKey.currentUser.rawValue) }.unwrapped)
-        }.exists()
-        && !UploadTask.where { $0.localId.eq(local.id) }.exists()
-    }
-  }
 }
 
 @Selection
@@ -143,6 +117,7 @@ struct LocalAssetCandidate {
 struct LocalAssetDownloadData {
   let checksum: String?
   let createdAt: String
+  let filename: String
   let livePhotoVideoId: RemoteAsset.ID?
   let localId: LocalAsset.ID
   let taskId: UploadTask.ID
@@ -151,6 +126,7 @@ struct LocalAssetDownloadData {
 
 @Selection
 struct LocalAssetUploadData {
+  let filename: String
   let filePath: URL
   let priority: Float
   let taskId: UploadTask.ID
@@ -375,16 +351,7 @@ struct UploadTask: Identifiable {
   var priority: Float
   @Column("retry_after", as: Date?.UnixTimeRepresentation.self)
   let retryAfter: Date?
-  let status: TaskStatus
-
-  static func retryOrFail(code: UploadErrorCode, status: TaskStatus) -> Update<UploadTask, ()> {
-    return Self.update { row in
-      row.status = Case().when(row.attempts.lte(TaskConfig.maxRetries), then: TaskStatus.downloadPending).else(status)
-      row.attempts += 1
-      row.lastError = code
-      row.retryAfter = #sql("unixepoch('now') + (\(4 << row.attempts))")
-    }
-  }
+  var status: TaskStatus
 }
 
 @Table("upload_task_stats")

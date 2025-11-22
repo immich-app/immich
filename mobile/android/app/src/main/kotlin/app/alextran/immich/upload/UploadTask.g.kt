@@ -90,18 +90,19 @@ enum class UploadApiErrorCode(val raw: Int) {
   NETWORK_ERROR(8),
   PHOTOS_INTERNAL_ERROR(9),
   PHOTOS_UNKNOWN_ERROR(10),
-  NO_SERVER_URL(11),
-  NO_DEVICE_ID(12),
-  NO_ACCESS_TOKEN(13),
-  INTERRUPTED(14),
-  CANCELLED(15),
-  DOWNLOAD_STALLED(16),
-  FORCE_QUIT(17),
-  OUT_OF_RESOURCES(18),
-  BACKGROUND_UPDATES_DISABLED(19),
-  UPLOAD_TIMEOUT(20),
-  I_CLOUD_RATE_LIMIT(21),
-  I_CLOUD_THROTTLED(22);
+  INTERRUPTED(11),
+  CANCELLED(12),
+  DOWNLOAD_STALLED(13),
+  FORCE_QUIT(14),
+  OUT_OF_RESOURCES(15),
+  BACKGROUND_UPDATES_DISABLED(16),
+  UPLOAD_TIMEOUT(17),
+  I_CLOUD_RATE_LIMIT(18),
+  I_CLOUD_THROTTLED(19),
+  INVALID_RESPONSE(20),
+  BAD_REQUEST(21),
+  INTERNAL_SERVER_ERROR(22),
+  UNAUTHORIZED(23);
 
   companion object {
     fun ofRaw(raw: Int): UploadApiErrorCode? {
@@ -262,6 +263,7 @@ interface UploadApi {
   fun cancelAll(callback: (Result<Unit>) -> Unit)
   fun enqueueAssets(localIds: List<String>, callback: (Result<Unit>) -> Unit)
   fun enqueueFiles(paths: List<String>, callback: (Result<Unit>) -> Unit)
+  fun onConfigChange(key: Long, callback: (Result<Unit>) -> Unit)
 
   companion object {
     /** The codec used by UploadApi. */
@@ -349,6 +351,25 @@ interface UploadApi {
             val args = message as List<Any?>
             val pathsArg = args[0] as List<String>
             api.enqueueFiles(pathsArg) { result: Result<Unit> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(UploadTaskPigeonUtils.wrapError(error))
+              } else {
+                reply.reply(UploadTaskPigeonUtils.wrapResult(null))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.UploadApi.onConfigChange$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val keyArg = args[0] as Long
+            api.onConfigChange(keyArg) { result: Result<Unit> ->
               val error = result.exceptionOrNull()
               if (error != null) {
                 reply.reply(UploadTaskPigeonUtils.wrapError(error))

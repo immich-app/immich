@@ -2,6 +2,8 @@ import SQLiteData
 
 extension Notification.Name {
   static let networkDidConnect = Notification.Name("networkDidConnect")
+  static let downloadTaskDidComplete = Notification.Name("downloadTaskDidComplete")
+  static let uploadTaskDidComplete = Notification.Name("uploadTaskDidComplete")
 }
 
 enum TaskConfig {
@@ -12,6 +14,7 @@ enum TaskConfig {
   static let sessionId = "app.mertalev.immich.upload"
   static let downloadCheckIntervalNs: UInt64 = 30_000_000_000  // 30 seconds
   static let downloadTimeoutS = TimeInterval(60)
+  static let progressThrottleInterval = TimeInterval(0.1)
   static let transferSpeedAlpha = 0.4
   static let originalsDir = FileManager.default.temporaryDirectory.appendingPathComponent(
     "originals",
@@ -214,6 +217,18 @@ enum UploadError: Error {
   case fileCreationFailed
   case iCloudError(UploadErrorCode)
   case photosError(UploadErrorCode)
+  case unknown
+
+  var code: UploadErrorCode {
+    switch self {
+    case .iCloudError(let code), .photosError(let code):
+      return code
+    case .unknown:
+      return .unknown
+    case .fileCreationFailed:
+      return .writeFailed
+    }
+  }
 }
 
 enum UploadErrorCode: Int, QueryBindable {
@@ -228,9 +243,6 @@ enum UploadErrorCode: Int, QueryBindable {
   case networkError
   case photosInternalError
   case photosUnknownError
-  case noServerUrl
-  case noDeviceId
-  case noAccessToken
   case interrupted
   case cancelled
   case downloadStalled
@@ -243,6 +255,9 @@ enum UploadErrorCode: Int, QueryBindable {
   case invalidResponse
   case badRequest
   case internalServerError
+  case unauthorized
+
+  static let fatal: [UploadErrorCode] = [.assetNotFound, .resourceNotFound, .invalidResource, .badRequest, .unauthorized]
 }
 
 enum AssetType: Int, QueryBindable {

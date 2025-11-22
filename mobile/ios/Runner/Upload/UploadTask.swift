@@ -1,5 +1,4 @@
 import SQLiteData
-import StructuredFieldValues
 
 extension FileHandle {
   static func createOrOverwrite(atPath path: String) throws -> FileHandle {
@@ -11,33 +10,41 @@ extension FileHandle {
   }
 }
 
-class UploadApiImpl: ImmichPlugin, UploadApi {
-  private let db: DatabasePool
-  private let downloadQueue: DownloadQueue
-  private let uploadQueue: UploadQueue
+final class UploadApiImpl<
+  StoreRepo: StoreProtocol,
+  TaskRepo: TaskProtocol,
+  StatusListener: TaskStatusListener,
+  ProgressListener: TaskProgressListener
+>: ImmichPlugin, UploadApi {
+  private let storeRepository: StoreRepo
+  private let taskRepository: TaskRepo
+  private let downloadQueue: DownloadQueue<StoreRepo, TaskRepo, StatusListener, ProgressListener>
+  private let uploadQueue: UploadQueue<StoreRepo, TaskRepo, StatusListener>
 
   private var isInitialized = false
   private let initLock = NSLock()
 
   private var backupTask: Task<Void, Never>?
   private let backupLock = NSLock()
-
   private let cellularSession: URLSession
   private let wifiOnlySession: URLSession
 
-  init(statusListener: StatusEventListener, progressListener: ProgressEventListener) {
-    let dbUrl = try! FileManager.default.url(
-      for: .documentDirectory,
-      in: .userDomainMask,
-      appropriateFor: nil,
-      create: true
-    ).appendingPathComponent("immich.sqlite")
-
-    self.db = try! DatabasePool(path: dbUrl.path)
+  init(
+    storeRepository: StoreRepo,
+    taskRepository: TaskRepo,
+    statusListener: StatusListener,
+    progressListener: ProgressListener
+  ) {
+    self.taskRepository = taskRepository
+    let delegate = UploadApiDelegate(
+      taskRepository: taskRepository,
+      statusListener: statusListener,
+      progressListener: progressListener
+    )
     let cellularConfig = URLSessionConfiguration.background(withIdentifier: "\(TaskConfig.sessionId).cellular")
     cellularConfig.allowsCellularAccess = true
     cellularConfig.waitsForConnectivity = true
-    let delegate = UploadApiDelegate(db: db, statusListener: statusListener, progressListener: progressListener)
+
     self.cellularSession = URLSession(configuration: cellularConfig, delegate: delegate, delegateQueue: nil)
 
     let wifiOnlyConfig = URLSessionConfiguration.background(withIdentifier: "\(TaskConfig.sessionId).wifi")
@@ -45,28 +52,26 @@ class UploadApiImpl: ImmichPlugin, UploadApi {
     wifiOnlyConfig.waitsForConnectivity = true
     self.wifiOnlySession = URLSession(configuration: wifiOnlyConfig, delegate: delegate, delegateQueue: nil)
 
+    self.storeRepository = storeRepository
     self.uploadQueue = UploadQueue(
-      db: db,
+      storeRepository: storeRepository,
+      taskRepository: taskRepository,
+      statusListener: statusListener,
       cellularSession: cellularSession,
-      wifiOnlySession: wifiOnlySession,
-      statusListener: statusListener
+      wifiOnlySession: wifiOnlySession
     )
     self.downloadQueue = DownloadQueue(
-      db: db,
-      uploadQueue: uploadQueue,
+      storeRepository: storeRepository,
+      taskRepository: taskRepository,
       statusListener: statusListener,
       progressListener: progressListener
     )
-    delegate.downloadQueue = downloadQueue
-    delegate.uploadQueue = uploadQueue
   }
 
   func initialize(completion: @escaping (Result<Void, any Error>) -> Void) {
     Task(priority: .high) {
       do {
-        async let dbIds = db.read { conn in
-          try UploadTask.select(\.id).where { $0.status.eq(TaskStatus.uploadQueued) }.fetchAll(conn)
-        }
+        async let dbIds = taskRepository.getTaskIds(status: .uploadQueued)
         async let cellularTasks = cellularSession.allTasks
         async let wifiTasks = wifiOnlySession.allTasks
 
@@ -84,15 +89,7 @@ class UploadApiImpl: ImmichPlugin, UploadApi {
         validateTasks(await cellularTasks)
         validateTasks(await wifiTasks)
 
-        let orphanIds = Array(dbTaskIds)
-        try await db.write { conn in
-          try UploadTask.update {
-            $0.filePath = nil
-            $0.status = .downloadPending
-          }
-          .where { row in row.status.in([TaskStatus.downloadQueued, TaskStatus.uploadPending]) || row.id.in(orphanIds) }
-          .execute(conn)
-        }
+        try await taskRepository.markOrphansPending(ids: Array(dbTaskIds))
 
         try? FileManager.default.removeItem(at: TaskConfig.originalsDir)
         initLock.withLock { isInitialized = true }
@@ -139,9 +136,9 @@ class UploadApiImpl: ImmichPlugin, UploadApi {
     Task {
       do {
         try await downloadQueue.enqueueAssets(localIds: localIds)
-        completion(.success(()))
+        self.completeWhenActive(for: completion, with: .success(()))
       } catch {
-        completion(.failure(error))
+        self.completeWhenActive(for: completion, with: .failure(error))
       }
     }
   }
@@ -150,10 +147,21 @@ class UploadApiImpl: ImmichPlugin, UploadApi {
     Task {
       do {
         try await uploadQueue.enqueueFiles(paths: paths)
-        completion(.success(()))
+        self.completeWhenActive(for: completion, with: .success(()))
       } catch {
-        completion(.failure(error))
+        self.completeWhenActive(for: completion, with: .failure(error))
       }
+    }
+  }
+
+  func onConfigChange(key: Int64, completion: @escaping (Result<Void, any Error>) -> Void) {
+    storeRepository.invalidateCache()
+    Task {
+      if let key = StoreKey(rawValue: Int(key)), key == ._accessToken {
+        try? await taskRepository.resolveError(code: .unauthorized)
+      }
+      startBackup()
+      self.completeWhenActive(for: completion, with: .success(()))
     }
   }
 
@@ -165,107 +173,20 @@ class UploadApiImpl: ImmichPlugin, UploadApi {
   }
 
   private func _startBackup() async {
-    defer { downloadQueue.startQueueProcessing() }
+    defer {
+      downloadQueue.startQueueProcessing()
+      uploadQueue.startQueueProcessing()
+    }
+
     do {
-      let candidates = try await db.read { conn in
-        return try LocalAsset.getCandidates()
-          .where { asset in !UploadTask.where { task in task.localId.eq(asset.id) }.exists() }
-          .select { LocalAssetCandidate.Columns(id: $0.id, type: $0.type) }
-          .limit { _ in UploadTaskStat.availableSlots }
-          .fetchAll(conn)
-      }
+      let candidates = try await taskRepository.getBackupCandidates()
 
       guard !candidates.isEmpty else { return dPrint("No candidates for backup") }
 
-      try await db.write { conn in
-        var draft = UploadTask.Draft(
-          attempts: 0,
-          createdAt: Date(),
-          filePath: nil,
-          isLivePhoto: nil,
-          lastError: nil,
-          livePhotoVideoId: nil,
-          localId: "",
-          method: .multipart,
-          priority: 0.5,
-          retryAfter: nil,
-          status: .downloadPending,
-        )
-        for candidate in candidates {
-          draft.localId = candidate.id
-          draft.priority = candidate.type == .image ? 0.5 : 0.3
-          try UploadTask.insert {
-            draft
-          } onConflict: {
-            ($0.localId, $0.livePhotoVideoId)
-          }
-          .execute(conn)
-        }
-      }
+      try await taskRepository.enqueue(assets: candidates, imagePriority: 0.5, videoPriority: 0.3)
       dPrint("Backup enqueued \(candidates.count) assets for upload")
     } catch {
       print("Backup queue error: \(error)")
     }
-  }
-}
-
-struct AssetData: StructuredFieldValue {
-  static let structuredFieldType: StructuredFieldType = .dictionary
-
-  let deviceAssetId: String
-  let deviceId: String
-  let fileCreatedAt: String
-  let fileModifiedAt: String
-  let fileName: String
-  let isFavorite: Bool
-  let livePhotoVideoId: String?
-
-  static let boundary = "Boundary-\(UUID().uuidString)"
-  static let deviceAssetIdField = "--\(boundary)\r\nContent-Disposition: form-data; name=\"deviceAssetId\"\r\n\r\n"
-    .data(using: .utf8)!
-  static let deviceIdField = "\r\n--\(boundary)\r\nContent-Disposition: form-data; name=\"deviceId\"\r\n\r\n"
-    .data(using: .utf8)!
-  static let fileCreatedAtField =
-    "\r\n--\(boundary)\r\nContent-Disposition: form-data; name=\"fileCreatedAt\"\r\n\r\n"
-    .data(using: .utf8)!
-  static let fileModifiedAtField =
-    "\r\n--\(boundary)\r\nContent-Disposition: form-data; name=\"fileModifiedAt\"\r\n\r\n"
-    .data(using: .utf8)!
-  static let isFavoriteField = "\r\n--\(boundary)\r\nContent-Disposition: form-data; name=\"isFavorite\"\r\n\r\n"
-    .data(using: .utf8)!
-  static let livePhotoVideoIdField =
-    "\r\n--\(boundary)\r\nContent-Disposition: form-data; name=\"livePhotoVideoId\"\r\n\r\n"
-    .data(using: .utf8)!
-  static let trueData = "true".data(using: .utf8)!
-  static let falseData = "false".data(using: .utf8)!
-  static let footer = "\r\n--\(boundary)--\r\n".data(using: .utf8)!
-  static let contentType = "multipart/form-data; boundary=\(boundary)"
-
-  func multipart() -> (Data, Data) {
-    var header = Data()
-    header.append(Self.deviceAssetIdField)
-    header.append(deviceAssetId.data(using: .utf8)!)
-
-    header.append(Self.deviceIdField)
-    header.append(deviceId.data(using: .utf8)!)
-
-    header.append(Self.fileCreatedAtField)
-    header.append(fileCreatedAt.data(using: .utf8)!)
-
-    header.append(Self.fileModifiedAtField)
-    header.append(fileModifiedAt.data(using: .utf8)!)
-
-    header.append(Self.isFavoriteField)
-    header.append(isFavorite ? Self.trueData : Self.falseData)
-
-    if let livePhotoVideoId {
-      header.append(Self.livePhotoVideoIdField)
-      header.append(livePhotoVideoId.data(using: .utf8)!)
-    }
-    header.append(
-      "\r\n--\(Self.boundary)\r\nContent-Disposition: form-data; name=\"assetData\"; filename=\"\(fileName)\"\r\nContent-Type: application/octet-stream\r\n\r\n"
-        .data(using: .utf8)!
-    )
-    return (header, Self.footer)
   }
 }

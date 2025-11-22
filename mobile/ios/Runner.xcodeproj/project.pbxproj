@@ -167,6 +167,11 @@
 			path = Upload;
 			sourceTree = "<group>";
 		};
+		FEA74CE22ED223690014C832 /* Repositories */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Repositories;
+			sourceTree = "<group>";
+		};
 		FEB3BA112EBD52860081A5EB /* Schemas */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = Schemas;
@@ -281,6 +286,7 @@
 		97C146F01CF9000F007C117D /* Runner */ = {
 			isa = PBXGroup;
 			children = (
+				FEA74CE22ED223690014C832 /* Repositories */,
 				FE14355D2EC446E90009D5AC /* Upload */,
 				FEE084F22EC172080045228E /* Schemas */,
 				FEB3BA112EBD52860081A5EB /* Schemas */,
@@ -373,6 +379,7 @@
 				B231F52D2E93A44A00BC45D1 /* Core */,
 				B2CF7F8C2DDE4EBB00744BF6 /* Sync */,
 				FE14355D2EC446E90009D5AC /* Upload */,
+				FEA74CE22ED223690014C832 /* Repositories */,
 				FEB3BA112EBD52860081A5EB /* Schemas */,
 				FEE084F22EC172080045228E /* Schemas */,
 			);

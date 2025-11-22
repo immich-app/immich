@@ -122,18 +122,19 @@ enum UploadApiErrorCode: Int {
   case networkError = 8
   case photosInternalError = 9
   case photosUnknownError = 10
-  case noServerUrl = 11
-  case noDeviceId = 12
-  case noAccessToken = 13
-  case interrupted = 14
-  case cancelled = 15
-  case downloadStalled = 16
-  case forceQuit = 17
-  case outOfResources = 18
-  case backgroundUpdatesDisabled = 19
-  case uploadTimeout = 20
-  case iCloudRateLimit = 21
-  case iCloudThrottled = 22
+  case interrupted = 11
+  case cancelled = 12
+  case downloadStalled = 13
+  case forceQuit = 14
+  case outOfResources = 15
+  case backgroundUpdatesDisabled = 16
+  case uploadTimeout = 17
+  case iCloudRateLimit = 18
+  case iCloudThrottled = 19
+  case invalidResponse = 20
+  case badRequest = 21
+  case internalServerError = 22
+  case unauthorized = 23
 }
 
 enum UploadApiStatus: Int {
@@ -294,6 +295,7 @@ protocol UploadApi {
   func cancelAll(completion: @escaping (Result<Void, Error>) -> Void)
   func enqueueAssets(localIds: [String], completion: @escaping (Result<Void, Error>) -> Void)
   func enqueueFiles(paths: [String], completion: @escaping (Result<Void, Error>) -> Void)
+  func onConfigChange(key: Int64, completion: @escaping (Result<Void, Error>) -> Void)
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -380,6 +382,23 @@ class UploadApiSetup {
       }
     } else {
       enqueueFilesChannel.setMessageHandler(nil)
+    }
+    let onConfigChangeChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.UploadApi.onConfigChange\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      onConfigChangeChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let keyArg = args[0] as! Int64
+        api.onConfigChange(key: keyArg) { result in
+          switch result {
+          case .success:
+            reply(wrapResult(nil))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      onConfigChangeChannel.setMessageHandler(nil)
     }
   }
 }

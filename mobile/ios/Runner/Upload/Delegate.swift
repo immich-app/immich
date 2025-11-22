@@ -1,19 +1,33 @@
 import SQLiteData
 
-class UploadApiDelegate: NSObject, URLSessionDataDelegate, URLSessionTaskDelegate {
-  private static let stateLock = NSLock()
-  private static var transferStates: [Int64: NetworkTransferState] = [:]
-  private static var responseData: [Int64: Data] = [:]
-  private static let jsonDecoder = JSONDecoder()
+private let stateLock = NSLock()
+private var transferStates: [Int64: NetworkTransferState] = [:]
+private var responseData: [Int64: Data] = [:]
+private let jsonDecoder = JSONDecoder()
 
-  private let db: DatabasePool
-  private let statusListener: StatusEventListener
-  private let progressListener: ProgressEventListener
-  weak var downloadQueue: DownloadQueue?
-  weak var uploadQueue: UploadQueue?
+private class NetworkTransferState {
+  var lastUpdateTime: Date
+  var totalBytesTransferred: Int64
+  var currentSpeed: Double?
 
-  init(db: DatabasePool, statusListener: StatusEventListener, progressListener: ProgressEventListener) {
-    self.db = db
+  init(lastUpdateTime: Date, totalBytesTransferred: Int64, currentSpeed: Double?) {
+    self.lastUpdateTime = lastUpdateTime
+    self.totalBytesTransferred = totalBytesTransferred
+    self.currentSpeed = currentSpeed
+  }
+}
+
+final class UploadApiDelegate<
+  TaskRepo: TaskProtocol,
+  StatusListener: TaskStatusListener,
+  ProgressListener: TaskProgressListener
+>: NSObject, URLSessionDataDelegate, URLSessionTaskDelegate {
+  private let taskRepository: TaskRepo
+  private let statusListener: StatusListener
+  private let progressListener: ProgressListener
+
+  init(taskRepository: TaskRepo, statusListener: StatusListener, progressListener: ProgressListener) {
+    self.taskRepository = taskRepository
     self.statusListener = statusListener
     self.progressListener = progressListener
   }
@@ -30,11 +44,11 @@ class UploadApiDelegate: NSObject, URLSessionDataDelegate, URLSessionTaskDelegat
       let taskId = Int64(taskIdStr)
     else { return }
 
-    Self.stateLock.withLock {
-      if var response = Self.responseData[taskId] {
+    stateLock.withLock {
+      if var response = responseData[taskId] {
         response.append(data)
       } else {
-        Self.responseData[taskId] = data
+        responseData[taskId] = data
       }
     }
   }
@@ -42,8 +56,7 @@ class UploadApiDelegate: NSObject, URLSessionDataDelegate, URLSessionTaskDelegat
   func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
     Task {
       defer {
-        downloadQueue?.startQueueProcessing()
-        uploadQueue?.startQueueProcessing()
+        NotificationCenter.default.post(name: .uploadTaskDidComplete, object: nil)
       }
 
       guard let taskDescriptionId = task.taskDescription,
@@ -53,25 +66,27 @@ class UploadApiDelegate: NSObject, URLSessionDataDelegate, URLSessionTaskDelegat
       }
 
       defer {
-        Self.stateLock.withLock { let _ = Self.transferStates.removeValue(forKey: taskId) }
+        stateLock.withLock { let _ = transferStates.removeValue(forKey: taskId) }
       }
 
-      if let responseData = Self.stateLock.withLock({ Self.responseData.removeValue(forKey: taskId) }),
-        let httpResponse = task.response as? HTTPURLResponse
+      if let body = stateLock.withLock({ responseData.removeValue(forKey: taskId) }),
+        let response = task.response as? HTTPURLResponse
       {
-        switch httpResponse.statusCode {
+        switch response.statusCode {
         case 200, 201:
           do {
-            let response = try Self.jsonDecoder.decode(UploadSuccessResponse.self, from: responseData)
+            let response = try jsonDecoder.decode(UploadSuccessResponse.self, from: body)
             return await handleSuccess(taskId: taskId, response: response)
           } catch {
             return await handleFailure(taskId: taskId, code: .invalidResponse)
           }
+        case 401: return await handleFailure(taskId: taskId, code: .unauthorized)
         case 400..<500:
-          dPrint(
-            "Response \(httpResponse.statusCode): \(String(data: responseData, encoding: .utf8) ?? "No response body")"
-          )
+          dPrint("Response \(response.statusCode): \(String(data: body, encoding: .utf8) ?? "No response body")")
           return await handleFailure(taskId: taskId, code: .badRequest)
+        case 500..<600:
+          dPrint("Response \(response.statusCode): \(String(data: body, encoding: .utf8) ?? "No response body")")
+          return await handleFailure(taskId: taskId, code: .internalServerError)
         default:
           break
         }
@@ -111,8 +126,8 @@ class UploadApiDelegate: NSObject, URLSessionDataDelegate, URLSessionTaskDelegat
   ) {
     guard let sessionTaskId = task.taskDescription, let taskId = Int64(sessionTaskId) else { return }
     let currentTime = Date()
-    let state = Self.stateLock.withLock {
-      if let existing = Self.transferStates[taskId] {
+    let state = stateLock.withLock {
+      if let existing = transferStates[taskId] {
         return existing
       }
       let new = NetworkTransferState(
@@ -120,7 +135,7 @@ class UploadApiDelegate: NSObject, URLSessionDataDelegate, URLSessionTaskDelegat
         totalBytesTransferred: totalBytesSent,
         currentSpeed: nil
       )
-      Self.transferStates[taskId] = new
+      transferStates[taskId] = new
       return new
     }
 
@@ -147,30 +162,29 @@ class UploadApiDelegate: NSObject, URLSessionDataDelegate, URLSessionTaskDelegat
     )
   }
 
+  func urlSessionDidFinishEvents(forBackgroundURLSession session: URLSession) {
+    dPrint("All background events delivered for session: \(session.configuration.identifier ?? "unknown")")
+    DispatchQueue.main.async {
+      if let identifier = session.configuration.identifier,
+        let appDelegate = UIApplication.shared.delegate as? AppDelegate,
+        let completionHandler = appDelegate.completionHandler(forSession: identifier)
+      {
+        completionHandler()
+      }
+    }
+  }
+
   private func handleSuccess(taskId: Int64, response: UploadSuccessResponse) async {
     dPrint("Upload succeeded for task \(taskId), server ID: \(response.id)")
     do {
-      try await db.write { conn in
-        let task = try UploadTask.update { $0.status = .uploadComplete }.where({ $0.id.eq(taskId) })
-          .returning(\.self).fetchOne(conn)
-        guard let task, let isLivePhoto = task.isLivePhoto, isLivePhoto, task.livePhotoVideoId == nil else { return }
-        try UploadTask.insert {
-          UploadTask.Draft(
-            attempts: 0,
-            createdAt: Date(),
-            filePath: nil,
-            isLivePhoto: true,
-            lastError: nil,
-            livePhotoVideoId: response.id,
-            localId: task.localId,
-            method: .multipart,
-            priority: 0.7,
-            retryAfter: nil,
-            status: .downloadPending,
-          )
-        }.execute(conn)
-      }
-      dPrint("Updated upload success status for session task \(taskId)")
+      try await taskRepository.markUploadSuccess(taskId: taskId, livePhotoVideoId: response.id)
+      statusListener.onTaskStatus(
+        UploadApiTaskStatus(
+          id: String(taskId),
+          filename: (try? await taskRepository.getFilename(taskId: taskId)) ?? "",
+          status: .uploadComplete
+        )
+      )
     } catch {
       dPrint(
         "Failed to update upload success status for session task \(taskId): \(error.localizedDescription)"
@@ -180,10 +194,14 @@ class UploadApiDelegate: NSObject, URLSessionDataDelegate, URLSessionTaskDelegat
 
   private func handleFailure(taskId: Int64, code: UploadErrorCode = .unknown) async {
     dPrint("Upload failed for task \(taskId) with code \(code)")
-    try? await db.write { conn in
-      try UploadTask.retryOrFail(code: code, status: .uploadFailed).where { $0.id.eq(taskId) }
-        .execute(conn)
-    }
+    try? await taskRepository.retryOrFail(taskId: taskId, code: code, status: .uploadFailed)
+    statusListener.onTaskStatus(
+      UploadApiTaskStatus(
+        id: String(taskId),
+        filename: (try? await taskRepository.getFilename(taskId: taskId)) ?? "",
+        status: .uploadFailed
+      )
+    )
   }
 
   @available(iOS 17, *)
@@ -192,17 +210,5 @@ class UploadApiDelegate: NSObject, URLSessionDataDelegate, URLSessionTaskDelegat
     let resumeTask = session.uploadTask(withResumeData: resumeData)
     resumeTask.taskDescription = taskDescriptionId
     resumeTask.resume()
-  }
-
-  private class NetworkTransferState {
-    var lastUpdateTime: Date
-    var totalBytesTransferred: Int64
-    var currentSpeed: Double?
-
-    init(lastUpdateTime: Date, totalBytesTransferred: Int64, currentSpeed: Double?) {
-      self.lastUpdateTime = lastUpdateTime
-      self.totalBytesTransferred = totalBytesTransferred
-      self.currentSpeed = currentSpeed
-    }
   }
 }

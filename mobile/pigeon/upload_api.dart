@@ -12,9 +12,6 @@ enum UploadApiErrorCode {
   networkError("Network error"),
   photosInternalError("Apple Photos internal error"),
   photosUnknownError("Apple Photos unknown error"),
-  noServerUrl("Server URL is not set"),
-  noDeviceId("Device ID is not set"),
-  noAccessToken("Access token is not set"),
   interrupted("Upload interrupted"),
   cancelled("Upload cancelled"),
   downloadStalled("Download stalled"),
@@ -23,7 +20,11 @@ enum UploadApiErrorCode {
   backgroundUpdatesDisabled("Background updates are disabled"),
   uploadTimeout("Upload timed out"),
   iCloudRateLimit("iCloud rate limit reached"),
-  iCloudThrottled("iCloud requests are being throttled");
+  iCloudThrottled("iCloud requests are being throttled"),
+  invalidResponse("Invalid response from server"),
+  badRequest("Server rejected the upload request"),
+  internalServerError("Internal server error"),
+  unauthorized("Unauthorized access");
 
   final String message;
 
@@ -87,6 +88,9 @@ abstract class UploadApi {
 
   @async
   void enqueueFiles(List<String> paths);
+
+  @async
+  void onConfigChange(int key);
 }
 
 @EventChannelApi()

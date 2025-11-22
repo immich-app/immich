@@ -1,5 +1,6 @@
 import BackgroundTasks
 import Flutter
+import SQLiteData
 import UIKit
 import network_info_plus
 import path_provider_foundation
@@ -9,6 +10,8 @@ import shared_preferences_foundation
 
 @main
 @objc class AppDelegate: FlutterAppDelegate {
+  private var backgroundCompletionHandlers: [String: () -> Void] = [:]
+
   override func application(
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
@@ -53,18 +56,46 @@ import shared_preferences_foundation
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 
+  override func application(
+    _ application: UIApplication,
+    handleEventsForBackgroundURLSession identifier: String,
+    completionHandler: @escaping () -> Void
+  ) {
+    backgroundCompletionHandlers[identifier] = completionHandler
+  }
+
+  func completionHandler(forSession identifier: String) -> (() -> Void)? {
+    return backgroundCompletionHandlers.removeValue(forKey: identifier)
+  }
+
   public static func registerPlugins(with engine: FlutterEngine) {
     NativeSyncApiImpl.register(with: engine.registrar(forPlugin: NativeSyncApiImpl.name)!)
     ThumbnailApiSetup.setUp(binaryMessenger: engine.binaryMessenger, api: ThumbnailApiImpl())
     BackgroundWorkerFgHostApiSetup.setUp(binaryMessenger: engine.binaryMessenger, api: BackgroundWorkerApiImpl())
-    
+
     let statusListener = StatusEventListener()
     StreamStatusStreamHandler.register(with: engine.binaryMessenger, streamHandler: statusListener)
     let progressListener = ProgressEventListener()
     StreamProgressStreamHandler.register(with: engine.binaryMessenger, streamHandler: progressListener)
+
+    let dbUrl = try! FileManager.default.url(
+      for: .documentDirectory,
+      in: .userDomainMask,
+      appropriateFor: nil,
+      create: true
+    ).appendingPathComponent("immich.sqlite")
+    let db = try! DatabasePool(path: dbUrl.path)
+    let storeRepository = StoreRepository(db: db)
+    let taskRepository = TaskRepository(db: db)
+
     UploadApiSetup.setUp(
       binaryMessenger: engine.binaryMessenger,
-      api: UploadApiImpl(statusListener: statusListener, progressListener: progressListener)
+      api: UploadApiImpl(
+        storeRepository: storeRepository,
+        taskRepository: taskRepository,
+        statusListener: statusListener,
+        progressListener: progressListener
+      )
     )
   }
 

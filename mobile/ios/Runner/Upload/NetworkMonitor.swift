@@ -1,6 +1,6 @@
 import Network
 
-class NetworkMonitor {
+final class NetworkMonitor {
   static let shared = NetworkMonitor()
   private let monitor = NWPathMonitor()
   private(set) var isConnected = false
@@ -17,6 +17,6 @@ class NetworkMonitor {
         NotificationCenter.default.post(name: .networkDidConnect, object: nil)
       }
     }
-    monitor.start(queue: .global(qos: .utility))
+    monitor.start(queue: .global(qos: .default))
   }
 }
