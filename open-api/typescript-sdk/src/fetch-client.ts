@@ -2818,6 +2818,24 @@ export function downloadArchive({ key, slug, assetIdsDto }: {
     })));
 }
 /**
+ * Download asset archive from download request
+ */
+export function downloadRequestArchive({ id, key, slug }: {
+    id: string;
+    key?: string;
+    slug?: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchBlob<{
+        status: 200;
+        data: Blob;
+    }>(`/download/archive/${encodeURIComponent(id)}${QS.query(QS.explode({
+        key,
+        slug
+    }))}`, {
+        ...opts
+    }));
+}
+/**
  * Retrieve download information
  */
 export function getDownloadInfo({ key, slug, downloadInfoDto }: {
