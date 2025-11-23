@@ -108,10 +108,9 @@ class SyncStatusAndActions extends HookConsumerWidget {
       );
     }
 
-    return Padding(
-      padding: const EdgeInsets.only(top: 16, bottom: 32),
-      child: ListView(
-        children: [
+    return ListView(
+      padding: const EdgeInsets.only(top: 16, bottom: 96),
+      children: [
           const _SyncStatsCounts(),
           const Divider(height: 1, indent: 16, endIndent: 16),
           const SizedBox(height: 24),
@@ -183,7 +182,6 @@ class SyncStatusAndActions extends HookConsumerWidget {
             },
           ),
         ],
-      ),
     );
   }
 }
