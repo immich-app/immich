@@ -667,6 +667,14 @@ export type DownloadResponseDto = {
     archives: DownloadArchiveInfo[];
     totalSize: number;
 };
+export type PrepareDownloadArchiveInfo = {
+    downloadRequestId: string;
+    size: number;
+};
+export type PrepareDownloadResponseDto = {
+    archives: PrepareDownloadArchiveInfo[];
+    totalSize: number;
+};
 export type DuplicateResponseDto = {
     assets: AssetResponseDto[];
     duplicateId: string;
@@ -2821,6 +2829,26 @@ export function getDownloadInfo({ key, slug, downloadInfoDto }: {
         status: 201;
         data: DownloadResponseDto;
     }>(`/download/info${QS.query(QS.explode({
+        key,
+        slug
+    }))}`, oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: downloadInfoDto
+    })));
+}
+/**
+ * Prepare download archive
+ */
+export function prepareDownload({ key, slug, downloadInfoDto }: {
+    key?: string;
+    slug?: string;
+    downloadInfoDto: DownloadInfoDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: PrepareDownloadResponseDto;
+    }>(`/download/request${QS.query(QS.explode({
         key,
         slug
     }))}`, oazapfts.json({

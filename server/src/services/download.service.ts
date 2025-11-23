@@ -1,9 +1,15 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
+import { DateTime } from 'luxon';
 import { parse } from 'node:path';
 import { StorageCore } from 'src/cores/storage.core';
 import { AssetIdsDto } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { DownloadArchiveInfo, DownloadInfoDto, DownloadResponseDto } from 'src/dtos/download.dto';
+import {
+  DownloadArchiveInfo,
+  DownloadInfoDto,
+  DownloadResponseDto,
+  PrepareDownloadResponseDto,
+} from 'src/dtos/download.dto';
 import { Permission } from 'src/enum';
 import { ImmichReadStream } from 'src/repositories/storage.repository';
 import { BaseService } from 'src/services/base.service';
@@ -80,6 +86,19 @@ export class DownloadService extends BaseService {
     return { totalSize, archives };
   }
 
+  async prepareDownload(auth: AuthDto, dto: DownloadInfoDto): Promise<PrepareDownloadResponseDto> {
+    const info = await this.getDownloadInfo(auth, dto);
+    const expiresAt = DateTime.now().plus({ hours: 24 }).toJSDate();
+
+    const newArchives = [];
+    for (const archive of info.archives) {
+      const downloadRequest = await this.downloadRequestRepository.create({ expiresAt, assetIds: archive.assetIds });
+      newArchives.push({ size: archive.size, downloadRequestId: downloadRequest.id });
+    }
+
+    return { totalSize: info.totalSize, archives: newArchives };
+  }
+
   async downloadArchive(auth: AuthDto, dto: AssetIdsDto): Promise<ImmichReadStream> {
     await this.requireAccess({ auth, permission: Permission.AssetDownload, ids: dto.assetIds });
 
@@ -117,5 +136,11 @@ export class DownloadService extends BaseService {
     void zip.finalize();
 
     return { stream: zip.stream };
+  }
+
+  async downloadRequestArchive(auth: AuthDto, downloadRequestId: string): Promise<ImmichReadStream> {
+    const downloadRequest = await this.downloadRequestRepository.get(downloadRequestId);
+    const dto = { assetIds: downloadRequest.assetIds };
+    return this.downloadArchive(auth, dto);
   }
 }
