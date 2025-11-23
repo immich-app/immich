@@ -14,6 +14,10 @@ When contributing code through a pull request, please check the following:
 - [ ] `pnpm run check:typescript` (check typescript)
 - [ ] `pnpm test` (unit tests)
 
+:::tip AIO
+Run all web checks with `pnpm run check:all`
+:::
+
 ## Documentation
 
 - [ ] `pnpm run format` (formatting via Prettier)
