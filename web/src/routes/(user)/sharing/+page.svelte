@@ -39,7 +39,7 @@
 <UserPageLayout title={data.meta.title}>
   {#snippet buttons()}
     <HStack gap={0}>
-      <Button
+      <!-- <Button
         leadingIcon={mdiPlusBoxOutline}
         onclick={() => createAlbumAndRedirect()}
         size="small"
@@ -47,9 +47,9 @@
         color="secondary"
       >
         <Text class="hidden md:block">{$t('create_album')}</Text>
-      </Button>
-      <Button leadingIcon={mdiLink} href={AppRoute.SHARED_LINKS} size="small" variant="ghost" color="secondary">
-        <Text class="hidden md:block">{$t('shared_links')}</Text>
+      </Button> -->
+      <Button leadingIcon={mdiLink} href={AppRoute.SHARED_LINKS} size="medium" variant="ghost" color="secondary">
+        <Text class="md:block px-1">{$t('shared_links')}</Text>
       </Button>
     </HStack>
   {/snippet}

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Insertable, Kysely, NotNull, sql, Updateable } from 'kysely';
-import { jsonObjectFrom } from 'kysely/helpers/postgres';
+import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
 import _ from 'lodash';
 import { InjectKysely } from 'nestjs-kysely';
 import { Album, columns } from 'src/database';
@@ -98,6 +98,23 @@ export class SharedLinkRepository {
                 .as('assets'),
             )
             .select((eb) => eb.fn.toJson('owner').as('owner'))
+            .select((eb) =>
+              jsonArrayFrom(
+                eb
+                  .selectFrom('album_user')
+                  .select('album_user.role')
+                  .select((eb) =>
+                    jsonObjectFrom(
+                      eb.selectFrom('user').select(columns.user).whereRef('user.id', '=', 'album_user.userId'),
+                    )
+                      .$notNull()
+                      .as('user'),
+                  )
+                  .whereRef('album_user.albumId', '=', 'album.id'),
+              )
+                .$notNull()
+                .as('albumUsers'),
+            )
             .groupBy(['album.id', sql`"owner".*`])
             .as('album'),
         (join) => join.onTrue(),

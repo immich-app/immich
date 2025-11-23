@@ -41,6 +41,8 @@ export class EventResponseDto {
   owner!: UserResponseDto;
   @ApiProperty({ type: 'integer' })
   albumCount!: number;
+  @ApiProperty({ type: 'boolean' })
+  isOwner?: boolean;
 }
 
 export class EventStatisticsResponseDto {

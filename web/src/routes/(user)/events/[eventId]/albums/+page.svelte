@@ -14,14 +14,20 @@
   import type { PageData } from './$types';
 
   let { data }: { data: PageData } = $props();
-  const { event, albums } = data;
+  const { event, ownedAlbums, sharedAlbums } = data;
 
   let searchQuery = $state('');
   let albumGroups: string[] = $state([]);
 
-  // Filter albums to only show owned albums from this event
-  // The event owner "owns" all albums in the event for display purposes
-  let eventAlbums = $derived(albums);
+  // For non-owners (accessing through shared albums), only show All and Shared filters
+  const availableFilters = $derived(event.isOwner ? Object.keys(AlbumFilter) : [AlbumFilter.All, AlbumFilter.Shared]);
+
+  // If user is not owner and filter is set to Owned, default to Shared
+  $effect(() => {
+    if (!event.isOwner && $albumViewSettings.filter === AlbumFilter.Owned) {
+      $albumViewSettings.filter = AlbumFilter.Shared;
+    }
+  });
 </script>
 
 <UserPageLayout
@@ -32,7 +38,13 @@
 >
   {#snippet buttons()}
     <div class="flex place-items-center gap-2">
-      <AlbumsControls {albumGroups} bind:searchQuery eventId={event.id} eventName={event.eventName} />
+      <AlbumsControls
+        {albumGroups}
+        bind:searchQuery
+        eventId={event.id}
+        eventName={event.eventName}
+        isEventOwner={event.isOwner ?? true}
+      />
     </div>
   {/snippet}
 
@@ -46,7 +58,7 @@
     <div class="w-fit h-10 dark:text-immich-dark-fg">
       <GroupTab
         label={$t('show_albums')}
-        filters={Object.keys(AlbumFilter)}
+        filters={availableFilters}
         selected={$albumViewSettings.filter}
         onSelect={(selected) => ($albumViewSettings.filter = selected)}
       />
@@ -57,8 +69,8 @@
   </div>
 
   <Albums
-    ownedAlbums={eventAlbums}
-    sharedAlbums={[]}
+    {ownedAlbums}
+    {sharedAlbums}
     userSettings={$albumViewSettings}
     allowEdit={false}
     showOwner={true}

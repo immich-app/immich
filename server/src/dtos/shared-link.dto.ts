@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString } from 'class-validator';
+import { IsOptional, IsString } from 'class-validator';
 import _ from 'lodash';
 import { SharedLink } from 'src/database';
 import { AlbumResponseDto, mapAlbumWithoutAssets } from 'src/dtos/album.dto';
@@ -45,6 +45,9 @@ export class SharedLinkCreateDto {
 
   @ValidateBoolean({ optional: true })
   showMetadata?: boolean = true;
+
+  @ValidateBoolean({ optional: true })
+  allowSubscribe?: boolean = false;
 }
 
 export class SharedLinkEditDto {
@@ -72,6 +75,9 @@ export class SharedLinkEditDto {
   @ValidateBoolean({ optional: true })
   showMetadata?: boolean;
 
+  @ValidateBoolean({ optional: true })
+  allowSubscribe?: boolean;
+
   /**
    * Few clients cannot send null to set the expiryTime to never.
    * Setting this flag and not sending expiryAt is considered as null instead.
@@ -91,6 +97,25 @@ export class SharedLinkPasswordDto {
   @Optional()
   token?: string;
 }
+
+export class SharedLinkSubscribeDto {
+  @IsOptional()
+  @IsString()
+  email?: string;
+
+  @IsOptional()
+  @IsString()
+  name?: string;
+
+  @IsOptional()
+  @IsString()
+  password?: string;
+
+  @IsOptional()
+  @IsString()
+  subscriberUserId?: string;
+}
+
 export class SharedLinkResponseDto {
   id!: string;
   description!: string | null;
@@ -109,6 +134,7 @@ export class SharedLinkResponseDto {
 
   allowDownload!: boolean;
   showMetadata!: boolean;
+  allowSubscribe!: boolean;
 
   slug!: string | null;
 }
@@ -130,6 +156,7 @@ export function mapSharedLink(sharedLink: SharedLink): SharedLinkResponseDto {
     allowUpload: sharedLink.allowUpload,
     allowDownload: sharedLink.allowDownload,
     showMetadata: sharedLink.showExif,
+    allowSubscribe: sharedLink.allowSubscribe || false,
     slug: sharedLink.slug,
   };
 }
@@ -154,6 +181,7 @@ export function mapSharedLinkWithoutMetadata(sharedLink: SharedLink): SharedLink
     allowUpload: sharedLink.allowUpload,
     allowDownload: sharedLink.allowDownload,
     showMetadata: sharedLink.showExif,
+    allowSubscribe: sharedLink.allowSubscribe || false,
     slug: sharedLink.slug,
   };
 }

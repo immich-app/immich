@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { Card, CardBody, CardHeader, Heading, immichLogo, Logo, VStack } from '@immich/ui';
+  import FotographLogo from '$lib/components/shared-components/fotograph-logo.svelte';
+  import { Card, CardBody, CardHeader, Heading, immichLogo, VStack } from '@immich/ui';
   import type { Snippet } from 'svelte';
   interface Props {
     title?: string;
@@ -15,7 +16,7 @@
     <img
       src={immichLogo}
       class="max-w-(--breakpoint-md) mx-auto h-full mb-2 antialiased overflow-hidden"
-      alt="Immich logo"
+      alt="Fotograph logo"
     />
     <div
       class="w-full h-[99%] absolute start-0 top-0 backdrop-blur-[200px] bg-transparent dark:bg-immich-dark-bg/20"
@@ -26,7 +27,7 @@
     {#if withHeader}
       <CardHeader class="mt-6">
         <VStack>
-          <Logo variant="icon" size="giant" />
+          <FotographLogo variant="icon" size="giant" />
           <Heading size="large" class="font-semibold" color="primary" tag="h1">{title}</Heading>
         </VStack>
       </CardHeader>

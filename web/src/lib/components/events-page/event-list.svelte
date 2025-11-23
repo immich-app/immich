@@ -9,7 +9,7 @@
   let { events }: Props = $props();
 </script>
 
-<div class="grid w-full gap-3 sm:gap-4 md:gap-5 grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+<div class="grid w-full gap-4 grid-cols-[repeat(auto-fill,minmax(240px,1fr))]">
   {#each events as event (event.id)}
     <EventCard {event} />
   {/each}

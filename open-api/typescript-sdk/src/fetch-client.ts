@@ -681,6 +681,7 @@ export type EventResponseDto = {
     eventName: string;
     eventThumbnailAssetId: string | null;
     id: string;
+    isOwner?: boolean;
     owner: UserResponseDto;
     ownerId: string;
     updatedAt: string;
@@ -1330,6 +1331,7 @@ export type SessionUpdateDto = {
 export type SharedLinkResponseDto = {
     album?: AlbumResponseDto;
     allowDownload: boolean;
+    allowSubscribe: boolean;
     allowUpload: boolean;
     assets: AssetResponseDto[];
     createdAt: string;
@@ -1347,6 +1349,7 @@ export type SharedLinkResponseDto = {
 export type SharedLinkCreateDto = {
     albumId?: string;
     allowDownload?: boolean;
+    allowSubscribe?: boolean;
     allowUpload?: boolean;
     assetIds?: string[];
     description?: string | null;
@@ -1356,8 +1359,15 @@ export type SharedLinkCreateDto = {
     slug?: string | null;
     "type": SharedLinkType;
 };
+export type SharedLinkSubscribeDto = {
+    email?: string;
+    name?: string;
+    password?: string;
+    subscriberUserId?: string;
+};
 export type SharedLinkEditDto = {
     allowDownload?: boolean;
+    allowSubscribe?: boolean;
     allowUpload?: boolean;
     /** Few clients cannot send null to set the expiryTime to never.
     Setting this flag and not sending expiryAt is considered as null instead.
@@ -2793,6 +2803,21 @@ export function unlockAuthSession({ sessionUnlockDto }: {
         ...opts,
         method: "POST",
         body: sessionUnlockDto
+    })));
+}
+/**
+ * Register user
+ */
+export function signUp({ signUpDto }: {
+    signUpDto: SignUpDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: UserAdminResponseDto;
+    }>("/auth/sign-up", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: signUpDto
     })));
 }
 /**
@@ -4268,6 +4293,26 @@ export function getMySharedLink({ key, password, slug, token }: {
     }))}`, {
         ...opts
     }));
+}
+/**
+ * Subscribe to a shared link
+ */
+export function subscribeToSharedLink({ key, slug, sharedLinkSubscribeDto }: {
+    key?: string;
+    slug?: string;
+    sharedLinkSubscribeDto: SharedLinkSubscribeDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: UserAdminResponseDto;
+    }>(`/shared-links/subscribe${QS.query(QS.explode({
+        key,
+        slug
+    }))}`, oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: sharedLinkSubscribeDto
+    })));
 }
 /**
  * Delete a shared link

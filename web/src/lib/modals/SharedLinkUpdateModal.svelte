@@ -2,7 +2,7 @@
   import SharedLinkExpiration from '$lib/components/SharedLinkExpiration.svelte';
   import { handleUpdateSharedLink } from '$lib/services/shared-link.service';
   import { SharedLinkType, type SharedLinkResponseDto } from '@immich/sdk';
-  import { Button, Field, HStack, Input, Modal, ModalBody, ModalFooter, PasswordInput, Switch, Text } from '@immich/ui';
+  import { Button, Field, HStack, Input, Modal, ModalBody, ModalFooter, PasswordInput, Switch } from '@immich/ui';
   import { mdiLink } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
@@ -17,8 +17,8 @@
   let allowDownload = $state(sharedLink.allowDownload);
   let allowUpload = $state(sharedLink.allowUpload);
   let showMetadata = $state(sharedLink.showMetadata);
+  let allowSubscribe = $state(sharedLink.allowSubscribe);
   let password = $state(sharedLink.password ?? '');
-  let slug = $state(sharedLink.slug ?? '');
   let shareType = sharedLink.album ? SharedLinkType.Album : SharedLinkType.Individual;
   let expiresAt = $state(sharedLink.expiresAt);
 
@@ -30,7 +30,7 @@
       allowUpload,
       allowDownload,
       showMetadata,
-      slug: slug.trim() ?? null,
+      allowSubscribe,
     });
 
     if (success) {
@@ -56,15 +56,6 @@
     {/if}
 
     <div class="flex flex-col gap-4 mt-4">
-      <div>
-        <Field label={$t('custom_url')} description={$t('shared_link_custom_url_description')}>
-          <Input bind:value={slug} autocomplete="off" />
-        </Field>
-        {#if slug}
-          <Text size="tiny" color="muted" class="pt-2">/s/{encodeURIComponent(slug)}</Text>
-        {/if}
-      </div>
-
       <Field label={$t('password')} description={$t('shared_link_password_description')}>
         <PasswordInput bind:value={password} autocomplete="new-password" />
       </Field>
@@ -85,6 +76,10 @@
 
       <Field label={$t('allow_public_user_to_upload')}>
         <Switch bind:checked={allowUpload} />
+      </Field>
+
+      <Field label={$t('allow_user_to_subscribe')} description={$t('allow_user_to_subscribe_description')}>
+        <Switch bind:checked={allowSubscribe} />
       </Field>
     </div>
   </ModalBody>

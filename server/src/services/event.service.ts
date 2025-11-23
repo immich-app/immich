@@ -1,12 +1,12 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
-    CreateEventDto,
-    EventResponseDto,
-    EventStatisticsResponseDto,
-    mapEvent,
-    MapEventDto,
-    UpdateEventDto,
+  CreateEventDto,
+  EventResponseDto,
+  EventStatisticsResponseDto,
+  mapEvent,
+  MapEventDto,
+  UpdateEventDto,
 } from 'src/dtos/event.dto';
 import { Permission } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
@@ -21,14 +21,20 @@ export class EventService extends BaseService {
   }
 
   async getAll(auth: AuthDto): Promise<EventResponseDto[]> {
-    const events = await this.eventEntityRepository.getOwned(auth.user.id);
-    return events.map((event) => mapEvent(event as MapEventDto));
+    const events = await this.eventEntityRepository.getAllAccessible(auth.user.id);
+    return events.map((event) => {
+      const dto = mapEvent(event as MapEventDto);
+      dto.isOwner = event.ownerId === auth.user.id;
+      return dto;
+    });
   }
 
   async get(auth: AuthDto, id: string): Promise<EventResponseDto> {
     await this.requireAccess({ auth, permission: Permission.EventRead, ids: [id] });
     const event = await this.findOrFail(id);
-    return mapEvent(event as MapEventDto);
+    const dto = mapEvent(event as MapEventDto);
+    dto.isOwner = event.ownerId === auth.user.id;
+    return dto;
   }
 
   async create(auth: AuthDto, dto: CreateEventDto): Promise<EventResponseDto> {

@@ -99,7 +99,7 @@
 {/if}
 
 {#if !passwordRequired && sharedLink?.type == SharedLinkType.Album}
-  <AlbumViewer {sharedLink} />
+  <AlbumViewer {sharedLink}/>
 {/if}
 {#if !passwordRequired && sharedLink?.type == SharedLinkType.Individual}
   <div class="immich-scrollbar">

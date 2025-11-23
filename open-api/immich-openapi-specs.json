@@ -4297,6 +4297,54 @@
         "x-immich-state": "Stable"
       }
     },
+    "/auth/sign-up": {
+      "post": {
+        "description": "Create a new user account. Public registration endpoint.",
+        "operationId": "signUp",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignUpDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserAdminResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Register user",
+        "tags": [
+          "Authentication"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-state": "Stable"
+      }
+    },
     "/auth/status": {
       "get": {
         "description": "Get information about the current session, including whether the user has a password, and if the session can access locked assets.",
@@ -10510,6 +10558,73 @@
         "x-immich-state": "Stable"
       }
     },
+    "/shared-links/subscribe": {
+      "post": {
+        "description": "Subscribe to a shared link by creating a new viewer user account. Only works if allowSubscribe is enabled on the shared link.",
+        "operationId": "subscribeToSharedLink",
+        "parameters": [
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SharedLinkSubscribeDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserAdminResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Subscribe to a shared link",
+        "tags": [
+          "Shared links"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1.119.0",
+            "state": "Added"
+          }
+        ]
+      }
+    },
     "/shared-links/{id}": {
       "delete": {
         "description": "Delete a specific shared link by its ID.",
@@ -16427,6 +16542,9 @@
           "id": {
             "type": "string"
           },
+          "isOwner": {
+            "type": "boolean"
+          },
           "owner": {
             "$ref": "#/components/schemas/UserResponseDto"
           },
@@ -19540,6 +19658,10 @@
             "default": true,
             "type": "boolean"
           },
+          "allowSubscribe": {
+            "default": false,
+            "type": "boolean"
+          },
           "allowUpload": {
             "type": "boolean"
           },
@@ -19590,6 +19712,9 @@
           "allowDownload": {
             "type": "boolean"
           },
+          "allowSubscribe": {
+            "type": "boolean"
+          },
           "allowUpload": {
             "type": "boolean"
           },
@@ -19626,6 +19751,9 @@
             "$ref": "#/components/schemas/AlbumResponseDto"
           },
           "allowDownload": {
+            "type": "boolean"
+          },
+          "allowSubscribe": {
             "type": "boolean"
           },
           "allowUpload": {
@@ -19684,6 +19812,7 @@
         },
         "required": [
           "allowDownload",
+          "allowSubscribe",
           "allowUpload",
           "assets",
           "createdAt",
@@ -19697,6 +19826,23 @@
           "type",
           "userId"
         ],
+        "type": "object"
+      },
+      "SharedLinkSubscribeDto": {
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          },
+          "subscriberUserId": {
+            "type": "string"
+          }
+        },
         "type": "object"
       },
       "SharedLinkType": {

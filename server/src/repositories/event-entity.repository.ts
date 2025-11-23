@@ -77,6 +77,42 @@ export class EventEntityRepository {
       .execute();
   }
 
+  @GenerateSql({ params: [DummyValue.UUID] })
+  async getAllAccessible(userId: string) {
+    // Get events that are either owned by the user OR have albums shared with the user
+    return this.db
+      .selectFrom('event')
+      .selectAll('event')
+      .where('event.deletedAt', 'is', null)
+      .where((eb) =>
+        eb.or([
+          // User owns the event
+          eb('event.ownerId', '=', userId),
+          // User has access to albums in this event
+          eb.exists((eb) =>
+            eb
+              .selectFrom('album')
+              .innerJoin('album_user', 'album_user.albumId', 'album.id')
+              .whereRef('album.eventId', '=', 'event.id')
+              .where('album.deletedAt', 'is', null)
+              .where('album_user.userId', '=', userId)
+              .select(sql`1`.as('exists')),
+          ),
+        ]),
+      )
+      .select(withOwner)
+      .select((eb) =>
+        eb
+          .selectFrom('album')
+          .select((eb) => eb.fn.count<number>('album.id').as('albumCount'))
+          .whereRef('album.eventId', '=', 'event.id')
+          .where('album.deletedAt', 'is', null)
+          .as('albumCount'),
+      )
+      .orderBy('event.createdAt', 'desc')
+      .execute();
+  }
+
   @GenerateSql({ params: [{ eventName: DummyValue.STRING, ownerId: DummyValue.UUID, description: DummyValue.STRING }] })
   async create(event: Insertable<EventTable>) {
     const created = await this.db.insertInto('event').values(event).returningAll().executeTakeFirstOrThrow();

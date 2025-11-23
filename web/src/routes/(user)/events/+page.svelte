@@ -1,9 +1,13 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
+  import EventCardGroup from '$lib/components/events-page/event-card-group.svelte';
+  import EventControls from '$lib/components/events-page/event-controls.svelte';
   import EventList from '$lib/components/events-page/event-list.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import { AppRoute } from '$lib/constants';
+  import { EventGroupBy, eventViewSettings } from '$lib/stores/preferences.store';
+  import { getSelectedEventGroupOption, groupEvents, sortEvents } from '$lib/utils/event-utils';
   import { Button } from '@immich/ui';
   import { mdiPlusBoxMultiple } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -11,6 +15,21 @@
 
   let { data }: { data: PageData } = $props();
   let events = $derived(data.events);
+
+  let searchQuery = $state('');
+
+  let filteredEvents = $derived.by(() => {
+    if (!searchQuery) {
+      return events;
+    }
+    const query = searchQuery.toLowerCase();
+    return events.filter((event) => event.eventName.toLowerCase().includes(query));
+  });
+
+  let sortedEvents = $derived(sortEvents(filteredEvents, $eventViewSettings));
+  let groupedEvents = $derived(groupEvents(sortedEvents, $eventViewSettings));
+  let eventGroupNames = $derived(groupedEvents.map((group) => group.id));
+  let isGrouped = $derived(getSelectedEventGroupOption($eventViewSettings) !== EventGroupBy.None);
 
   const handleCreateEvent = (event?: Event) => {
     event?.preventDefault();
@@ -20,6 +39,7 @@
 
 <UserPageLayout class="pl-4" title={$t('events')} description={$t('events_description')}>
   {#snippet buttons()}
+    <EventControls {eventGroupNames} bind:searchQuery />
     <Button
       leadingIcon={mdiPlusBoxMultiple}
       size="small"
@@ -43,8 +63,12 @@
           onClick={handleCreateEvent}
         />
       </div>
+    {:else if isGrouped}
+      {#each groupedEvents as eventGroup (eventGroup.id)}
+        <EventCardGroup {eventGroup} />
+      {/each}
     {:else}
-      <EventList {events} />
+      <EventList events={sortedEvents} />
     {/if}
   </section>
 </UserPageLayout>

@@ -181,6 +181,24 @@ export class AuthService extends BaseService {
     return mapUserAdmin(admin);
   }
 
+  async signUp(dto: SignUpDto): Promise<UserAdminResponseDto> {
+    const existingUser = await this.userRepository.getByEmail(dto.email);
+    if (existingUser) {
+      throw new BadRequestException('User with this email already exists');
+    }
+
+    const user = await this.createUser({
+      isAdmin: false,
+      email: dto.email,
+      name: dto.name,
+      password: dto.password,
+      storageLabel: null,
+      shouldChangePassword: false,
+    });
+
+    return mapUserAdmin(user);
+  }
+
   async authenticate({ headers, queryParams, metadata }: ValidateRequest): Promise<AuthDto> {
     const authDto = await this.validate({ headers, queryParams });
     const { adminRoute, sharedLinkRoute, uri } = metadata;

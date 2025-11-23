@@ -25,7 +25,9 @@ import {
   SharedLinkPasswordDto,
   SharedLinkResponseDto,
   SharedLinkSearchDto,
+  SharedLinkSubscribeDto,
 } from 'src/dtos/shared-link.dto';
+import { UserAdminResponseDto } from 'src/dtos/user.dto';
 import { ApiTag, ImmichCookie, Permission } from 'src/enum';
 import { Auth, Authenticated, GetLoginDetails } from 'src/middleware/auth.guard';
 import { LoginDetails } from 'src/services/auth.service';
@@ -153,5 +155,17 @@ export class SharedLinkController {
     @Body() dto: AssetIdsDto,
   ): Promise<AssetIdsResponseDto[]> {
     return this.service.removeAssets(auth, id, dto);
+  }
+
+  @Post('subscribe')
+  @Authenticated({ sharedLink: true })
+  @Endpoint({
+    summary: 'Subscribe to a shared link',
+    description:
+      'Subscribe to a shared link by creating a new viewer user account. Only works if allowSubscribe is enabled on the shared link.',
+    history: new HistoryBuilder().added('v1.119.0'),
+  })
+  subscribeToSharedLink(@Auth() auth: AuthDto, @Body() dto: SharedLinkSubscribeDto,): Promise<UserAdminResponseDto> {
+    return this.service.subscribe(auth, dto);
   }
 }

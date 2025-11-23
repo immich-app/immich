@@ -52,8 +52,11 @@ export class AlbumService extends BaseService {
       albums = await this.albumRepository.getShared(ownerId, eventId);
     } else if (shared === false) {
       albums = await this.albumRepository.getNotShared(ownerId);
+    } else if (eventId) {
+      // When eventId is specified without shared flag, get all accessible albums for that event
+      albums = await this.albumRepository.getAccessibleForEvent(ownerId, eventId);
     } else {
-      albums = await this.albumRepository.getOwned(ownerId, eventId);
+      albums = await this.albumRepository.getOwned(ownerId);
     }
 
     // Get asset count for each album. Then map the result to an object:

@@ -196,6 +196,36 @@ export class AlbumRepository {
   }
 
   /**
+   * Get all albums accessible to user for an event (owned or shared with user)
+   */
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID] })
+  async getAccessibleForEvent(userId: string, eventId: string) {
+    return this.db
+      .selectFrom('album')
+      .selectAll('album')
+      .where('album.eventId', '=', eventId)
+      .where('album.deletedAt', 'is', null)
+      .where((eb) =>
+        eb.or([
+          // User owns the album
+          eb('album.ownerId', '=', userId),
+          // User has access via album_user
+          eb.exists(
+            eb
+              .selectFrom('album_user')
+              .whereRef('album_user.albumId', '=', 'album.id')
+              .where('album_user.userId', '=', userId),
+          ),
+        ]),
+      )
+      .select(withAlbumUsers)
+      .select(withOwner)
+      .select(withSharedLink)
+      .orderBy('album.createdAt', 'desc')
+      .execute();
+  }
+
+  /**
    * Get albums of owner that are _not_ shared
    */
   @GenerateSql({ params: [DummyValue.UUID] })

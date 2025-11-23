@@ -19,7 +19,7 @@ export const load = (async ({ fetch }) => {
 
     const authenticated = await loadUser();
     if (authenticated) {
-      redirect(302, AppRoute.PHOTOS);
+      redirect(302, AppRoute.EVENTS);
     }
 
     if (serverConfigManager.value.isInitialized) {

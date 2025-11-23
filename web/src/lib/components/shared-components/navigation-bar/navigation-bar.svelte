@@ -20,10 +20,10 @@
   import { mdiBellBadge, mdiBellOutline, mdiMagnify, mdiMenu, mdiTrayArrowUp } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
+  import FotographLogo from '../fotograph-logo.svelte';
   import ThemeButton from '../theme-button.svelte';
   import UserAvatar from '../user-avatar.svelte';
   import AccountInfoPanel from './account-info-panel.svelte';
-  import FotographLogo from '../fotograph-logo.svelte';
 
   interface Props {
     showUploadButton?: boolean;
@@ -77,7 +77,7 @@
         }}
         class="sidebar:hidden"
       />
-      <a data-sveltekit-preload-data="hover" href={AppRoute.PHOTOS}>
+      <a data-sveltekit-preload-data="hover" href={AppRoute.EVENTS}>
         <FotographLogo variant={mobileDevice.isFullSidebar ? 'inline' : 'icon'} class="max-md:h-12" />
       </a>
     </div>

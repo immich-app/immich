@@ -1,10 +1,8 @@
 <script lang="ts">
   import { resolve } from '$app/paths';
   import BottomInfo from '$lib/components/shared-components/side-bar/bottom-info.svelte';
-  import RecentAlbums from '$lib/components/shared-components/side-bar/recent-albums.svelte';
   import Sidebar from '$lib/components/sidebar/sidebar.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
-  import { recentAlbumsDropdown } from '$lib/stores/preferences.store';
   import { preferences } from '$lib/stores/user.store';
   import {
     mdiAccount,
@@ -17,7 +15,6 @@
     mdiFolderOutline,
     mdiHeart,
     mdiHeartOutline,
-    mdiImageAlbum,
     mdiImageMultiple,
     mdiImageMultipleOutline,
     mdiLink,
@@ -33,7 +30,6 @@
     mdiTrashCanOutline,
   } from '@mdi/js';
   import { t } from 'svelte-i18n';
-  import { fly } from 'svelte/transition';
   import SideBarLink from './side-bar-link.svelte';
 
   let isArchiveSelected: boolean = $state(false);
@@ -48,12 +44,13 @@
 </script>
 
 <Sidebar ariaLabel={$t('primary')}>
-  <SideBarLink
+ <SideBarLink title={$t('events')} href={resolve('/(user)/events')} icon={mdiCalendarBlank} flippedLogo />
+  <!-- <SideBarLink
     title={$t('photos')}
     href={resolve('/(user)/photos')}
     bind:isSelected={isPhotosSelected}
     icon={isPhotosSelected ? mdiImageMultiple : mdiImageMultipleOutline}
-  ></SideBarLink>
+  ></SideBarLink> -->
 
   {#if featureFlagsManager.value.search}
     <SideBarLink title={$t('explore')} href={resolve('/(user)/explore')} icon={mdiMagnify} />
@@ -97,7 +94,7 @@
     bind:isSelected={isFavoritesSelected}
   ></SideBarLink>
 
-  <SideBarLink
+  <!-- <SideBarLink
     title={$t('albums')}
     href={resolve('/(user)/albums')}
     icon={mdiImageAlbum}
@@ -109,9 +106,9 @@
         <RecentAlbums />
       </span>
     {/snippet}
-  </SideBarLink>
+  </SideBarLink> -->
 
-  <SideBarLink title={$t('events')} href={resolve('/(user)/events')} icon={mdiCalendarBlank} flippedLogo />
+ 
 
   {#if $preferences.tags.enabled && $preferences.tags.sidebarWeb}
     <SideBarLink title={$t('tags')} href={resolve('/(user)/tags')} icon={mdiTagMultipleOutline} flippedLogo />
@@ -121,26 +118,26 @@
     <SideBarLink title={$t('folders')} href={resolve('/(user)/folders')} icon={mdiFolderOutline} flippedLogo />
   {/if}
 
-  <SideBarLink
+  <!-- <SideBarLink
     title={$t('utilities')}
     href={resolve('/(user)/utilities')}
     bind:isSelected={isUtilitiesSelected}
     icon={isUtilitiesSelected ? mdiToolbox : mdiToolboxOutline}
-  ></SideBarLink>
+  ></SideBarLink> -->
 
-  <SideBarLink
+  <!-- <SideBarLink
     title={$t('archive')}
     href={resolve('/(user)/archive')}
     bind:isSelected={isArchiveSelected}
     icon={isArchiveSelected ? mdiArchiveArrowDown : mdiArchiveArrowDownOutline}
-  ></SideBarLink>
+  ></SideBarLink> -->
 
-  <SideBarLink
+  <!-- <SideBarLink
     title={$t('locked_folder')}
     href={resolve('/(user)/locked')}
     bind:isSelected={isLockedFolderSelected}
     icon={isLockedFolderSelected ? mdiLock : mdiLockOutline}
-  ></SideBarLink>
+  ></SideBarLink> -->
 
   {#if featureFlagsManager.value.trash}
     <SideBarLink

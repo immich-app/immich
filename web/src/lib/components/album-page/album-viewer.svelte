@@ -8,6 +8,7 @@
   import Timeline from '$lib/components/timeline/Timeline.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
+  import SharedLinkLoginChoiceModal from '$lib/modals/SharedLinkLoginChoiceModal.svelte';
   import { handleDownloadAlbum } from '$lib/services/album.service';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
@@ -15,11 +16,12 @@
   import { handlePromiseError } from '$lib/utils';
   import { cancelMultiselect } from '$lib/utils/asset-utils';
   import { fileUploadHandler, openFileUploadDialog } from '$lib/utils/file-uploader';
-  import type { AlbumResponseDto, SharedLinkResponseDto, UserResponseDto } from '@immich/sdk';
-  import { IconButton, Logo } from '@immich/ui';
-  import { mdiDownload, mdiFileImagePlusOutline } from '@mdi/js';
+  import { type AlbumResponseDto, type SharedLinkResponseDto, type UserResponseDto } from '@immich/sdk';
+  import { IconButton } from '@immich/ui';
+  import { mdiAccountPlus, mdiDownload, mdiFileImagePlusOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import ControlAppBar from '../shared-components/control-app-bar.svelte';
+  import FotographLogo from '../shared-components/fotograph-logo.svelte';
   import ThemeButton from '../shared-components/theme-button.svelte';
   import AlbumSummary from './album-summary.svelte';
 
@@ -38,6 +40,18 @@
   let timelineManager = $state<TimelineManager>() as TimelineManager;
 
   const assetInteraction = new AssetInteraction();
+
+  let showLoginChoiceModal = $state(false);
+
+  // Check if the current user is already a member of the album
+  const isUserAlbumMember = $derived(
+    user ? album.albumUsers.some((albumUser) => albumUser.user.id === user.id) || album.owner.id === user.id : false,
+  );
+
+  const handleSubscribeClick = async () => {
+    // Always show the modal for subscription confirmation
+    showLoginChoiceModal = true;
+  };
 
   dragAndDropFilesStore.subscribe((value) => {
     if (value.isDragging && value.files.length > 0) {
@@ -98,8 +112,13 @@
     <ControlAppBar showBackButton={false}>
       {#snippet leading()}
         <a data-sveltekit-preload-data="hover" class="ms-4" href="/">
-          <Logo variant="inline" />
+          <FotographLogo variant="inline" size="small" />
         </a>
+        {#if user}
+          <p class="ms-4 text-sm text-gray-600 dark:text-gray-400">
+            {$t('logged_in_as', { values: { user: user.name } })}
+          </p>
+        {/if}
       {/snippet}
 
       {#snippet trailing()}
@@ -126,6 +145,18 @@
             icon={mdiDownload}
           />
         {/if}
+
+        {#if sharedLink.allowSubscribe && !isUserAlbumMember}
+          <IconButton
+            shape="round"
+            color="secondary"
+            variant="ghost"
+            aria-label={$t('subscribe')}
+            onclick={handleSubscribeClick}
+            icon={mdiAccountPlus}
+          />
+        {/if}
+
         {#if sharedLink.showMetadata && featureFlagsManager.value.map}
           <AlbumMap {album} />
         {/if}
@@ -134,3 +165,7 @@
     </ControlAppBar>
   {/if}
 </header>
+
+{#if showLoginChoiceModal}
+  <SharedLinkLoginChoiceModal {sharedLink} onClose={() => (showLoginChoiceModal = false)} />
+{/if}

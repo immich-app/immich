@@ -2,7 +2,7 @@
   import SharedLinkExpiration from '$lib/components/SharedLinkExpiration.svelte';
   import { handleCreateSharedLink } from '$lib/services/shared-link.service';
   import { SharedLinkType } from '@immich/sdk';
-  import { Button, Field, HStack, Input, Modal, ModalBody, ModalFooter, PasswordInput, Switch, Text } from '@immich/ui';
+  import { Button, Field, HStack, Input, Modal, ModalBody, ModalFooter, PasswordInput, Switch } from '@immich/ui';
   import { mdiLink } from '@mdi/js';
   import { DateTime } from 'luxon';
   import { t } from 'svelte-i18n';
@@ -19,9 +19,9 @@
   let allowDownload = $state(true);
   let allowUpload = $state(false);
   let showMetadata = $state(true);
+  let allowSubscribe = $state(false);
   let expirationOption: number = $state(0);
   let password = $state('');
-  let slug = $state('');
   let expiresAt = $state<string | null>(null);
 
   let shareType = $derived(albumId ? SharedLinkType.Album : SharedLinkType.Individual);
@@ -43,7 +43,7 @@
       password,
       allowDownload,
       showMetadata,
-      slug,
+      allowSubscribe,
     });
 
     if (success) {
@@ -63,15 +63,6 @@
     {/if}
 
     <div class="flex flex-col gap-4 mt-4">
-      <div>
-        <Field label={$t('custom_url')} description={$t('shared_link_custom_url_description')}>
-          <Input bind:value={slug} autocomplete="off" />
-        </Field>
-        {#if slug}
-          <Text size="tiny" color="muted" class="pt-2 break-all">/s/{encodeURIComponent(slug)}</Text>
-        {/if}
-      </div>
-
       <Field label={$t('password')} description={$t('shared_link_password_description')}>
         <PasswordInput bind:value={password} autocomplete="new-password" />
       </Field>
@@ -92,6 +83,10 @@
 
       <Field label={$t('allow_public_user_to_upload')}>
         <Switch bind:checked={allowUpload} />
+      </Field>
+
+      <Field label={$t('allow_user_to_subscribe')} description={$t('allow_user_to_subscribe_description')}>
+        <Switch bind:checked={allowSubscribe} />
       </Field>
     </div>
   </ModalBody>

@@ -7,7 +7,6 @@
   import AlbumSummary from '$lib/components/album-page/album-summary.svelte';
   import AlbumTitle from '$lib/components/album-page/album-title.svelte';
   import ActivityStatus from '$lib/components/asset-viewer/activity-status.svelte';
-  import ActivityViewer from '$lib/components/asset-viewer/activity-viewer.svelte';
   import OnEvents from '$lib/components/OnEvents.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
@@ -81,7 +80,6 @@
   } from '@mdi/js';
   import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
-  import { fly } from 'svelte/transition';
   import type { PageData } from './$types';
 
   interface Props {
@@ -111,7 +109,12 @@
   const assetInteraction = new AssetInteraction();
   const timelineInteraction = new AssetInteraction();
 
-  afterNavigate(({ from }) => {
+  afterNavigate(({ from, to }) => {
+    // If navigating within the same album page (e.g., after upload), preserve backUrl
+    if (from?.route?.id === to?.route?.id && from?.params?.albumId === to?.params?.albumId) {
+      return;
+    }
+
     let url: string | undefined = from?.url?.pathname;
 
     const route = from?.route?.id;
@@ -119,7 +122,10 @@
       url = from?.url.href;
     }
 
-    if (isAlbumsRoute(route) || isPeopleRoute(route)) {
+    // Don't override to /albums if coming from event routes
+    const isFromEventRoute = from?.url?.pathname?.includes('/events/');
+
+    if (!isFromEventRoute && (isAlbumsRoute(route) || isPeopleRoute(route))) {
       url = AppRoute.ALBUMS;
     }
 
@@ -505,18 +511,27 @@
 
           {#if album.assetCount === 0}
             <section id="empty-album" class=" mt-50 flex place-content-center place-items-center">
-              <div class="w-75">
-                <p class="uppercase text-xs dark:text-immich-dark-fg">{$t('add_photos')}</p>
-                <button
-                  type="button"
-                  onclick={() => (viewMode = AlbumPageViewMode.SELECT_ASSETS)}
-                  class="mt-5 bg-subtle flex w-full place-items-center gap-6 rounded-2xl border px-8 py-8 text-immich-fg transition-all hover:bg-gray-100 dark:hover:bg-gray-500/20 hover:text-immich-primary dark:border-none dark:text-immich-dark-fg dark:hover:text-immich-dark-primary"
-                >
-                  <span class="text-primary">
-                    <Icon icon={mdiPlus} size="24" />
-                  </span>
-                  <span class="text-lg">{$t('select_photos')}</span>
-                </button>
+              <div class="w-full max-w-2xl">
+                <p class="uppercase text-xs dark:text-immich-dark-fg mb-4">{$t('add_photos')}</p>
+                <div class="flex flex-col gap-4">
+                  <button
+                    type="button"
+                    onclick={handleSelectFromComputer}
+                    class="bg-subtle flex w-full place-items-center gap-6 rounded-2xl border px-8 py-8 text-immich-fg transition-all hover:bg-gray-100 dark:hover:bg-gray-500/20 hover:text-immich-primary dark:border-none dark:text-immich-dark-fg dark:hover:text-immich-dark-primary"
+                  >
+                    <span class="text-primary">
+                      <Icon icon={mdiUpload} size="24" />
+                    </span>
+                    <span class="text-lg">{$t('upload_from_computer')}</span>
+                  </button>
+                  {#if event}
+                    <div class="flex justify-end mt-4">
+                      <Button onclick={() => goto(`${AppRoute.EVENTS}/${event.id}/albums`)}>
+                        {$t('save')}
+                      </Button>
+                    </div>
+                  {/if}
+                </div>
               </div>
             </section>
           {/if}
@@ -599,15 +614,7 @@
                 shape="round"
                 color="secondary"
                 aria-label={$t('add_photos')}
-                onclick={async () => {
-                  timelineManager.suspendTransitions = true;
-                  viewMode = AlbumPageViewMode.SELECT_ASSETS;
-                  oldAt = { at: $gridScrollTarget?.at };
-                  await navigate(
-                    { targetRoute: 'current', assetId: null, assetGridRouteSearchParams: { at: null } },
-                    { replaceState: true },
-                  );
-                }}
+                onclick={handleSelectFromComputer}
                 icon={mdiImagePlusOutline}
               />
             {/if}

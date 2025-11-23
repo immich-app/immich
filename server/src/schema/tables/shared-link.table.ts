@@ -51,4 +51,7 @@ export class SharedLinkTable {
 
   @Column({ type: 'character varying', nullable: true, unique: true })
   slug!: string | null;
+
+  @Column({ type: 'boolean', default: false })
+  allowSubscribe!: Generated<boolean>;
 }

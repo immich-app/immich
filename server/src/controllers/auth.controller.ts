@@ -59,6 +59,16 @@ export class AuthController {
     return this.service.adminSignUp(dto);
   }
 
+  @Post('sign-up')
+  @Endpoint({
+    summary: 'Register user',
+    description: 'Create a new user account. Public registration endpoint.',
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
+  })
+  signUp(@Body() dto: SignUpDto): Promise<UserAdminResponseDto> {
+    return this.service.signUp(dto);
+  }
+
   @Post('validateToken')
   @Endpoint({
     summary: 'Validate access token',

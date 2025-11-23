@@ -481,6 +481,33 @@ class EventAccess {
       .execute()
       .then((events) => new Set(events.map((event) => event.id)));
   }
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
+  @ChunkedSet({ paramIndex: 1 })
+  async checkSharedAlbumAccess(userId: string, eventIds: Set<string>) {
+    if (eventIds.size === 0) {
+      return new Set<string>();
+    }
+
+    return this.db
+      .selectFrom('event')
+      .select('event.id')
+      .where('event.id', 'in', [...eventIds])
+      .where('event.deletedAt', 'is', null)
+      .where((eb) =>
+        eb.exists((eb) =>
+          eb
+            .selectFrom('album')
+            .innerJoin('album_user', 'album_user.albumId', 'album.id')
+            .whereRef('album.eventId', '=', 'event.id')
+            .where('album.deletedAt', 'is', null)
+            .where('album_user.userId', '=', userId)
+            .select(sql`1`.as('exists')),
+        ),
+      )
+      .execute()
+      .then((events) => new Set(events.map((event) => event.id)));
+  }
 }
 
 class WorkflowAccess {

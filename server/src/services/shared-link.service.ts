@@ -12,8 +12,10 @@ import {
   SharedLinkPasswordDto,
   SharedLinkResponseDto,
   SharedLinkSearchDto,
+  SharedLinkSubscribeDto,
 } from 'src/dtos/shared-link.dto';
-import { Permission, SharedLinkType } from 'src/enum';
+import { mapUserAdmin } from 'src/dtos/user.dto';
+import { AlbumUserRole, Permission, SharedLinkType } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
 import { getExternalDomain, OpenGraphTags } from 'src/utils/misc';
 
@@ -78,6 +80,7 @@ export class SharedLinkService extends BaseService {
         allowUpload: dto.allowUpload ?? true,
         allowDownload: dto.showMetadata === false ? false : (dto.allowDownload ?? true),
         showExif: dto.showMetadata ?? true,
+        allowSubscribe: dto.allowSubscribe ?? false,
         slug: dto.slug || null,
       });
 
@@ -106,6 +109,7 @@ export class SharedLinkService extends BaseService {
         allowUpload: dto.allowUpload,
         allowDownload: dto.allowDownload,
         showExif: dto.showMetadata,
+        allowSubscribe: dto.allowSubscribe,
         slug: dto.slug || null,
       });
       return this.mapToSharedLink(sharedLink, { withExif: true });
@@ -192,6 +196,53 @@ export class SharedLinkService extends BaseService {
     await this.sharedLinkRepository.update(sharedLink);
 
     return results;
+  }
+
+  async subscribe(auth: AuthDto, dto: SharedLinkSubscribeDto) {
+    if (!auth.sharedLink) {
+      throw new ForbiddenException();
+    }
+
+    const sharedLink = await this.sharedLinkRepository.get(auth.sharedLink.userId, auth.sharedLink.id);
+    if (!sharedLink) {
+      throw new BadRequestException('Shared link not found');
+    }
+
+    if (!sharedLink.allowSubscribe) {
+      throw new BadRequestException('Subscription is not allowed for this shared link');
+    }
+
+    // Only allow logged-in users to subscribe
+    if (!auth.user) {
+      throw new UnauthorizedException('You must be logged in to subscribe to this album');
+    }
+
+    if (!sharedLink.album) {
+      throw new BadRequestException('Shared link is not associated with an album');
+    }
+
+    const albumId = sharedLink.album.id;
+    // Use subscriberUserId from DTO if provided, otherwise use authenticated user's ID
+    const userId = dto.subscriberUserId || auth.user.id;
+
+    // Check if user is already a member or owner
+    const isOwner = sharedLink.album.owner.id === userId;
+    const isMember = sharedLink.album.albumUsers?.some((albumUser) => albumUser.user.id === userId);
+
+    if (isOwner || isMember) {
+      throw new BadRequestException('User is already a member of this album');
+    }
+
+    // Add the logged-in user to the album as a viewer
+    await this.albumUserRepository.create({ albumId, userId, role: AlbumUserRole.Viewer });
+
+    // Get the full user object to return
+    const user = await this.userRepository.get(userId, {});
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+
+    return mapUserAdmin(user);
   }
 
   async getMetadataTags(auth: AuthDto, defaultDomain?: string): Promise<null | OpenGraphTags> {

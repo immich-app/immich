@@ -87,7 +87,7 @@
   });
 </script>
 
-<UserPageLayout hideNavbar={assetInteraction.selectionActive} showUploadButton scrollbar={false}>
+<UserPageLayout hideNavbar={assetInteraction.selectionActive} scrollbar={false}>
   <Timeline
     enableRouting={true}
     bind:timelineManager

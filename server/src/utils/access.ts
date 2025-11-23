@@ -298,7 +298,15 @@ const checkOtherAccess = async (access: AccessRepository, request: OtherAccessRe
       return access.stack.checkOwnerAccess(auth.user.id, ids);
     }
 
-    case Permission.EventRead:
+    case Permission.EventRead: {
+      // For read access, allow if user owns the event OR has access via shared albums
+      const [owned, shared] = await Promise.all([
+        access.event.checkOwnerAccess(auth.user.id, ids),
+        access.event.checkSharedAlbumAccess(auth.user.id, ids),
+      ]);
+      return new Set([...owned, ...shared]);
+    }
+
     case Permission.EventUpdate:
     case Permission.EventDelete: {
       return access.event.checkOwnerAccess(auth.user.id, ids);

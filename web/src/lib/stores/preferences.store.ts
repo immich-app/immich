@@ -138,6 +138,36 @@ export const placesViewSettings = persisted<PlacesViewSettings>('places-view-set
   collapsedGroups: {},
 });
 
+export enum EventGroupBy {
+  None = 'None',
+  Year = 'Year',
+}
+
+export enum EventSortBy {
+  Name = 'Name',
+  AlbumCount = 'AlbumCount',
+  DateModified = 'DateModified',
+  DateCreated = 'DateCreated',
+}
+
+export interface EventViewSettings {
+  groupBy: string;
+  groupOrder: string;
+  sortBy: string;
+  sortOrder: string;
+  collapsedGroups: {
+    [group: string]: string[];
+  };
+}
+
+export const eventViewSettings = persisted<EventViewSettings>('event-view-settings', {
+  groupBy: EventGroupBy.None,
+  groupOrder: SortOrder.Desc,
+  sortBy: EventSortBy.DateCreated,
+  sortOrder: SortOrder.Desc,
+  collapsedGroups: {},
+});
+
 export const showDeleteModal = persisted<boolean>('delete-confirm-dialog', true, {});
 
 export const alwaysLoadOriginalFile = persisted<boolean>('always-load-original-file', false, {});

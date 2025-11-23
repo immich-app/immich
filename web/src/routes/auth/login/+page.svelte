@@ -7,8 +7,8 @@
   import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
   import { oauth } from '$lib/utils';
   import { getServerErrorMessage, handleError } from '$lib/utils/handle-error';
-  import { login, type LoginResponseDto } from '@immich/sdk';
-  import { Alert, Button, Field, Input, PasswordInput, Stack } from '@immich/ui';
+  import { login, type LoginResponseDto, signUp } from '@immich/sdk';
+  import { Alert, Button, Field, HelperText, Input, PasswordInput, Stack } from '@immich/ui';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
@@ -19,12 +19,23 @@
 
   let { data }: Props = $props();
 
+  let activeTab: 'login' | 'signup' = $state('login');
   let errorMessage: string = $state('');
+  let signupError: string = $state('');
   let email = $state('');
   let password = $state('');
+  let signupEmail = $state('');
+  let signupPassword = $state('');
+  let signupPasswordConfirm = $state('');
+  let signupName = $state('');
   let oauthError = $state('');
   let loading = $state(false);
   let oauthLoading = $state(true);
+  let isCreatingUser = $state(false);
+
+  const passwordMismatch = $derived(signupPassword !== signupPasswordConfirm && signupPasswordConfirm.length > 0);
+  const passwordMismatchMessage = $derived(passwordMismatch ? $t('password_does_not_match') : '');
+  const signupValid = $derived(!passwordMismatch && !isCreatingUser && signupEmail && signupPassword && signupName);
 
   const serverConfig = $derived(serverConfigManager.value);
 
@@ -124,9 +135,42 @@
     event.preventDefault();
     await handleLogin();
   };
+
+  const onSignupSubmit = async (event: Event) => {
+    event.preventDefault();
+
+    if (!signupValid) {
+      return;
+    }
+
+    isCreatingUser = true;
+    signupError = '';
+
+    try {
+      await signUp({
+        signUpDto: {
+          email: signupEmail,
+          password: signupPassword,
+          name: signupName,
+        },
+      });
+
+      // Switch to login tab and pre-fill email
+      activeTab = 'login';
+      email = signupEmail;
+      signupEmail = '';
+      signupPassword = '';
+      signupPasswordConfirm = '';
+      signupName = '';
+    } catch (error) {
+      signupError = getServerErrorMessage(error) || $t('errors.unable_to_create_user');
+    } finally {
+      isCreatingUser = false;
+    }
+  };
 </script>
 
-<AuthPageLayout title={data.meta.title}>
+<AuthPageLayout title="fotograph">
   <Stack gap={4}>
     {#if serverConfig.loginPageMessage}
       <Alert color="primary" class="mb-6">
@@ -136,21 +180,86 @@
     {/if}
 
     {#if !oauthLoading && featureFlagsManager.value.passwordLogin}
-      <form {onsubmit} class="flex flex-col gap-4">
-        {#if errorMessage}
-          <Alert color="danger" title={errorMessage} closable />
-        {/if}
+      <!-- Tabs -->
+      <div class="flex border-b border-gray-200 dark:border-gray-700 mb-6">
+        <button
+          type="button"
+          onclick={() => (activeTab = 'login')}
+          class="flex-1 py-3 px-4 text-center border-b-2 transition-colors {activeTab === 'login'
+            ? 'border-immich-primary text-immich-primary font-medium'
+            : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'}"
+        >
+          {$t('to_login')}
+        </button>
+        <button
+          type="button"
+          onclick={() => (activeTab = 'signup')}
+          class="flex-1 py-3 px-4 text-center border-b-2 transition-colors {activeTab === 'signup'
+            ? 'border-immich-primary text-immich-primary font-medium'
+            : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'}"
+        >
+          {$t('sign_up')}
+        </button>
+      </div>
 
-        <Field label={$t('email')}>
-          <Input id="email" name="email" type="email" autocomplete="email" bind:value={email} />
-        </Field>
+      <!-- Login Form -->
+      {#if activeTab === 'login'}
+        <form {onsubmit} class="flex flex-col gap-4">
+          {#if errorMessage}
+            <Alert color="danger" title={errorMessage} closable />
+          {/if}
 
-        <Field label={$t('password')}>
-          <PasswordInput id="password" bind:value={password} autocomplete="current-password" />
-        </Field>
+          <Field label={$t('email')}>
+            <Input id="email" name="email" type="email" autocomplete="email" bind:value={email} />
+          </Field>
 
-        <Button type="submit" size="large" shape="round" fullWidth {loading} class="mt-6">{$t('to_login')}</Button>
-      </form>
+          <Field label={$t('password')}>
+            <PasswordInput id="password" bind:value={password} autocomplete="current-password" />
+          </Field>
+
+          <Button type="submit" size="large" shape="round" fullWidth {loading} class="mt-6">
+            {$t('to_login')}
+          </Button>
+        </form>
+      {/if}
+
+      <!-- Sign Up Form -->
+      {#if activeTab === 'signup'}
+        <form onsubmit={onSignupSubmit} class="flex flex-col gap-4">
+          {#if signupError}
+            <Alert color="danger" title={signupError} closable />
+          {/if}
+
+          <Field label={$t('email')} required>
+            <Input bind:value={signupEmail} type="email" autocomplete="email" />
+          </Field>
+
+          <Field label={$t('name')} required>
+            <Input bind:value={signupName} autocomplete="name" />
+          </Field>
+
+          <Field label={$t('password')} required>
+            <PasswordInput id="signup-password" bind:value={signupPassword} autocomplete="new-password" />
+          </Field>
+
+          <Field label={$t('confirm_password')} required>
+            <PasswordInput id="signup-confirmPassword" bind:value={signupPasswordConfirm} autocomplete="new-password" />
+            <HelperText color="danger">{passwordMismatchMessage}</HelperText>
+          </Field>
+
+          <Button
+            type="submit"
+            size="large"
+            shape="round"
+            fullWidth
+            loading={isCreatingUser}
+            disabled={!signupValid}
+            class="mt-6"
+          >
+            {$t('sign_up')}
+          </Button>
+        </form>
+      {/if}
     {/if}
 
     {#if featureFlagsManager.value.oauth}
