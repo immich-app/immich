@@ -23,10 +23,6 @@ Run all web checks with `pnpm run check:all`
 - [ ] `pnpm run format` (formatting via Prettier)
 - [ ] Update the `_redirects` file if you have renamed a page or removed it from the documentation.
 
-:::tip AIO
-Run all web checks with `pnpm run check:all`
-:::
-
 ## Server Checks
 
 - [ ] `pnpm run lint` (linting via ESLint)
