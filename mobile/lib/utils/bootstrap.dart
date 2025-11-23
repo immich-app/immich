@@ -39,20 +39,6 @@ void configureFileDownloaderNotifications() {
     complete: TaskNotification('download_finished'.t(), '${'file_name'.t()}: {filename}'),
     progressBar: true,
   );
-
-  FileDownloader().configureNotificationForGroup(
-    kManualUploadGroup,
-    running: TaskNotification('uploading_media'.t(), 'backup_background_service_in_progress_notification'.t()),
-    complete: TaskNotification('upload_finished'.t(), 'backup_background_service_complete_notification'.t()),
-    groupNotificationId: kManualUploadGroup,
-  );
-
-  FileDownloader().configureNotificationForGroup(
-    kBackupGroup,
-    running: TaskNotification('uploading_media'.t(), 'backup_background_service_in_progress_notification'.t()),
-    complete: TaskNotification('upload_finished'.t(), 'backup_background_service_complete_notification'.t()),
-    groupNotificationId: kBackupGroup,
-  );
 }
 
 abstract final class Bootstrap {

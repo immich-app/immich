@@ -3,7 +3,6 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:auto_route/auto_route.dart';
-import 'package:background_downloader/background_downloader.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
@@ -11,7 +10,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/constants/locales.dart';
 import 'package:immich_mobile/domain/services/background_worker.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
@@ -55,6 +53,9 @@ void main() async {
   // Warm-up isolate pool for worker manager
   await workerManagerPatch.init(dynamicSpawning: true, isolatesCount: max(Platform.numberOfProcessors - 1, 5));
   await migrateDatabaseIfNeeded(isar, drift);
+  if (Store.isBetaTimelineEnabled) {
+    await uploadApi.initialize();
+  }
   HttpSSLOptions.apply();
 
   runApp(
@@ -101,18 +102,6 @@ Future<void> initApp() async {
   };
 
   initializeTimeZones();
-
-  // Initialize the file downloader
-  await FileDownloader().configure(
-    // maxConcurrent: 6, maxConcurrentByHost(server):6, maxConcurrentByGroup: 3
-
-    // On Android, if files are larger than 256MB, run in foreground service
-    globalConfig: [(Config.holdingQueue, (6, 6, 3)), (Config.runInForegroundIfFileLargerThan, 256)],
-  );
-
-  await FileDownloader().trackTasksInGroup(kDownloadGroupLivePhoto, markDownloadedComplete: false);
-
-  await FileDownloader().trackTasks();
 
   LicenseRegistry.addLicense(() async* {
     for (final license in nonPubLicenses.entries) {
@@ -199,9 +188,6 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
   void didChangeDependencies() {
     super.didChangeDependencies();
     Intl.defaultLocale = context.locale.toLanguageTag();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      configureFileDownloaderNotifications();
-    });
   }
 
   @override

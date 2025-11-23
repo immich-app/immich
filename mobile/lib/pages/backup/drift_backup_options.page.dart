@@ -63,7 +63,7 @@ class DriftBackupOptionsPage extends ConsumerWidget {
             backupNotifier.cancel().whenComplete(
               () => backgroundSync.syncRemote().then((success) {
                 if (success) {
-                  return backupNotifier.startBackup(currentUser.id);
+                  return backupNotifier.startBackup();
                 } else {
                   Logger('DriftBackupOptionsPage').warning('Background sync failed, not starting backup');
                 }

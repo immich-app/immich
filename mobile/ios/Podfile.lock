@@ -88,9 +88,9 @@ PODS:
     - Flutter
     - FlutterMacOS
   - SAMKeychain (1.5.3)
-  - SDWebImage (5.21.0):
-    - SDWebImage/Core (= 5.21.0)
-  - SDWebImage/Core (5.21.0)
+  - SDWebImage (5.21.3):
+    - SDWebImage/Core (= 5.21.3)
+  - SDWebImage/Core (5.21.3)
   - share_handler_ios (0.0.14):
     - Flutter
     - share_handler_ios/share_handler_ios_models (= 0.0.14)
@@ -107,16 +107,16 @@ PODS:
   - sqflite_darwin (0.0.4):
     - Flutter
     - FlutterMacOS
-  - sqlite3 (3.49.1):
-    - sqlite3/common (= 3.49.1)
-  - sqlite3/common (3.49.1)
-  - sqlite3/dbstatvtab (3.49.1):
+  - sqlite3 (3.49.2):
+    - sqlite3/common (= 3.49.2)
+  - sqlite3/common (3.49.2)
+  - sqlite3/dbstatvtab (3.49.2):
     - sqlite3/common
-  - sqlite3/fts5 (3.49.1):
+  - sqlite3/fts5 (3.49.2):
     - sqlite3/common
-  - sqlite3/perf-threadsafe (3.49.1):
+  - sqlite3/perf-threadsafe (3.49.2):
     - sqlite3/common
-  - sqlite3/rtree (3.49.1):
+  - sqlite3/rtree (3.49.2):
     - sqlite3/common
   - sqlite3_flutter_libs (0.0.1):
     - Flutter
@@ -275,18 +275,18 @@ SPEC CHECKSUMS:
   permission_handler_apple: 4ed2196e43d0651e8ff7ca3483a069d469701f2d
   photo_manager: 1d80ae07a89a67dfbcae95953a1e5a24af7c3e62
   SAMKeychain: 483e1c9f32984d50ca961e26818a534283b4cd5c
-  SDWebImage: f84b0feeb08d2d11e6a9b843cb06d75ebf5b8868
+  SDWebImage: 16309af6d214ba3f77a7c6f6fdda888cb313a50a
   share_handler_ios: e2244e990f826b2c8eaa291ac3831569438ba0fb
   share_handler_ios_models: fc638c9b4330dc7f082586c92aee9dfa0b87b871
   share_plus: 50da8cb520a8f0f65671c6c6a99b3617ed10a58a
   shared_preferences_foundation: 9e1978ff2562383bd5676f64ec4e9aa8fa06a6f7
   sqflite_darwin: 20b2a3a3b70e43edae938624ce550a3cbf66a3d0
-  sqlite3: fc1400008a9b3525f5914ed715a5d1af0b8f4983
+  sqlite3: 3c950dc86011117c307eb0b28c4a7bb449dce9f1
   sqlite3_flutter_libs: f8fc13346870e73fe35ebf6dbb997fbcd156b241
   SwiftyGif: 706c60cf65fa2bc5ee0313beece843c8eb8194d4
   url_launcher_ios: 694010445543906933d732453a59da0a173ae33d
   wakelock_plus: e29112ab3ef0b318e58cfa5c32326458be66b556
 
-PODFILE CHECKSUM: 7ce312f2beab01395db96f6969d90a447279cf45
+PODFILE CHECKSUM: 95621706d175fee669455a5946a602e2a775019c
 
 COCOAPODS: 1.16.2

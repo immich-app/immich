@@ -350,16 +350,12 @@ class BackgroundServicePlugin: NSObject, FlutterPlugin {
         
         // If we have required Wi-Fi, we can check the isExpensive property
         let requireWifi = defaults.value(forKey: "require_wifi") as? Bool ?? false
-        if (requireWifi) {
-            let wifiMonitor = NWPathMonitor(requiredInterfaceType: .wifi)
-            let isExpensive = wifiMonitor.currentPath.isExpensive
-            if (isExpensive) {
-                // The network is expensive and we have required Wi-Fi
-                // Therefore, we will simply complete the task without
-                // running it
-                task.setTaskCompleted(success: true)
-                return
-            }
+        
+        // The network is expensive and we have required Wi-Fi
+        // Therefore, we will simply complete the task without
+        // running it
+        if (requireWifi && NetworkMonitor.shared.isExpensive) {
+            return task.setTaskCompleted(success: true)
         }
         
         // Schedule the next sync task so we can run this again later

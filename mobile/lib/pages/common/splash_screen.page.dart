@@ -8,8 +8,8 @@ import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
-import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/providers/gallery_permission.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -53,7 +53,6 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
       final infoProvider = ref.read(serverInfoProvider.notifier);
       final wsProvider = ref.read(websocketProvider.notifier);
       final backgroundManager = ref.read(backgroundSyncProvider);
-      final backupProvider = ref.read(driftBackupProvider.notifier);
 
       unawaited(
         ref.read(authProvider.notifier).saveAuthInfo(accessToken: accessToken).then(
@@ -63,22 +62,13 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
               unawaited(infoProvider.getServerInfo());
 
               if (Store.isBetaTimelineEnabled) {
-                bool syncSuccess = false;
                 await Future.wait([
                   backgroundManager.syncLocal(full: true),
-                  backgroundManager.syncRemote().then((success) => syncSuccess = success),
+                  backgroundManager.syncRemote(),
                 ]);
 
-                if (syncSuccess) {
-                  await Future.wait([
-                    backgroundManager.hashAssets().then((_) {
-                      _resumeBackup(backupProvider);
-                    }),
-                    _resumeBackup(backupProvider),
-                  ]);
-                } else {
-                  await backgroundManager.hashAssets();
-                }
+                await backgroundManager.hashAssets();
+                await uploadApi.refresh();
 
                 if (Store.get(StoreKey.syncAlbums, false)) {
                   await backgroundManager.syncLinkedAlbum();
@@ -123,17 +113,6 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
     if (hasPermission) {
       // Resume backup (if enable) then navigate
       await ref.watch(backupProvider.notifier).resumeBackup();
-    }
-  }
-
-  Future<void> _resumeBackup(DriftBackupNotifier notifier) async {
-    final isEnableBackup = Store.get(StoreKey.enableBackup, false);
-
-    if (isEnableBackup) {
-      final currentUser = Store.tryGet(StoreKey.currentUser);
-      if (currentUser != null) {
-        unawaited(notifier.handleBackupResume(currentUser.id));
-      }
     }
   }
 
