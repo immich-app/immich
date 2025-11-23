@@ -58,7 +58,7 @@ class SettingsPage extends StatelessWidget {
     context.locale;
     return Scaffold(
       appBar: AppBar(centerTitle: false, title: const Text('settings').tr()),
-      body: context.isMobile ? const SafeArea(child: _MobileLayout()) : const SafeArea(child: _TabletLayout()),
+      body: context.isMobile ? const _MobileLayout() : const _TabletLayout(),
     );
   }
 }
@@ -90,7 +90,6 @@ class _MobileLayout extends StatelessWidget {
         )
         .toList();
     return ListView(
-      physics: const ClampingScrollPhysics(),
       padding: const EdgeInsets.only(top: 10.0, bottom: 16),
       children: [...settings],
     );
