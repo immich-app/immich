@@ -34,20 +34,25 @@ export const loadMaintenanceAuth = async () => {
 };
 
 export const loadMaintenanceStatus = async () => {
-  try {
-    const status = await maintenanceStatus();
-    maintenanceStore.status.set(status);
+  let loaded = false;
+  while (!loaded) {
+    try {
+      const status = await maintenanceStatus();
+      maintenanceStore.status.set(status);
 
-    if (status.action === MaintenanceAction.End) {
-      websocketStore.serverRestarting.set({
-        isMaintenanceMode: false,
-      });
-    }
-  } catch (error) {
-    const status = (error as { status: number })?.status;
-    if (status && status >= 500 && status < 600) {
-      await new Promise((r) => setTimeout(r, 1e3));
-      await loadMaintenanceStatus();
+      if (status.action === MaintenanceAction.End) {
+        websocketStore.serverRestarting.set({
+          isMaintenanceMode: false,
+        });
+      }
+    } catch (error) {
+      const status = (error as { status: number })?.status;
+      if (status && status >= 500 && status < 600) {
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        continue;
+      }
+
+      throw error;
     }
   }
 };
