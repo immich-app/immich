@@ -165,13 +165,13 @@
     <CardBody>
       {#if uploadProgress === -1}
         <HStack>
-          <Text class="flex-grow">Upload database backup file</Text>
+          <Text class="grow">Upload database backup file</Text>
           <Button size="small" onclick={upload}>Select file</Button>
         </HStack>
       {:else}
         <HStack>
-          <Text class="flex-grow">Uploading...</Text>
-          <div class="flex-grow h-[10px] bg-gray-300 rounded-full overflow-hidden">
+          <Text class="grow">Uploading...</Text>
+          <div class="grow h-2.5 bg-gray-300 rounded-full overflow-hidden">
             <div class="h-full bg-blue-600 transition-all duration-700" style="width: {uploadProgress * 100}%"></div>
           </div>
         </HStack>
@@ -183,7 +183,7 @@
     <Card>
       <CardBody>
         <HStack>
-          <Stack class="flex-grow">
+          <Stack class="grow">
             <Text>{backup.filename}</Text>
             {#if typeof backup.hoursAgo === 'number'}
               {#if backup.hoursAgo <= 24}
@@ -204,7 +204,7 @@
             variant="ghost"
             color="secondary"
             icon={mdiDotsVertical}
-            class="flex-shrink-0"
+            class="shrink-0"
             disabled={deleting.has(backup.filename)}
             onclick={(event: Event) => handleOpen(event, { position: 'top-right' }, backup.filename)}
             aria-label="Open menu"

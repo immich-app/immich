@@ -101,7 +101,7 @@
   </HStack>
 {:else}
   <Heading size="large" color="primary" tag="h1">Restore From Backup</Heading>
-  <Scrollable class="max-h-[320px]">
+  <Scrollable class="max-h-80">
     <MaintenanceBackupsList />
   </Scrollable>
   <HStack>
