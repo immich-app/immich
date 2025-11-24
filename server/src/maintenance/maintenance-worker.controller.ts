@@ -16,7 +16,6 @@ import { MaintenanceWorkerService } from 'src/maintenance/maintenance-worker.ser
 import { GetLoginDetails } from 'src/middleware/auth.guard';
 import { StorageRepository } from 'src/repositories/storage.repository';
 import { LoginDetails } from 'src/services/auth.service';
-import { integrityCheck } from 'src/utils/maintenance';
 import { respondWithCookie } from 'src/utils/response';
 import { FilenameParamDto } from 'src/validation';
 
@@ -39,7 +38,7 @@ export class MaintenanceWorkerController {
 
   @Get('admin/maintenance/integrity')
   integrityCheck(): Promise<MaintenanceIntegrityResponseDto> {
-    return integrityCheck(this.storageRepository);
+    return this.service.integrityCheck();
   }
 
   @Post('admin/maintenance/login')

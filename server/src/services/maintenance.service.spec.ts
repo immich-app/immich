@@ -1,3 +1,4 @@
+import { BadRequestException } from '@nestjs/common';
 import { DateTime } from 'luxon';
 import { StorageCore } from 'src/cores/storage.core';
 import { MaintenanceAction, StorageFolder, SystemMetadataKey } from 'src/enum';
@@ -53,6 +54,57 @@ describe(MaintenanceService.name, () => {
       });
 
       expect(mocks.systemMetadata.get).toHaveBeenCalled();
+    });
+  });
+
+  describe('integrityCheck', () => {
+    it('generate integrity report', async () => {
+      mocks.storage.readdir.mockResolvedValue(['.immich', 'file1', 'file2']);
+      mocks.storage.readFile.mockResolvedValue(undefined as never);
+      mocks.storage.overwriteFile.mockRejectedValue(undefined as never);
+
+      await expect(sut.integrityCheck()).resolves.toMatchInlineSnapshot(`
+        {
+          "storage": [
+            {
+              "files": 2,
+              "folder": "encoded-video",
+              "readable": true,
+              "writable": false,
+            },
+            {
+              "files": 2,
+              "folder": "library",
+              "readable": true,
+              "writable": false,
+            },
+            {
+              "files": 2,
+              "folder": "upload",
+              "readable": true,
+              "writable": false,
+            },
+            {
+              "files": 2,
+              "folder": "profile",
+              "readable": true,
+              "writable": false,
+            },
+            {
+              "files": 2,
+              "folder": "thumbs",
+              "readable": true,
+              "writable": false,
+            },
+            {
+              "files": 2,
+              "folder": "backups",
+              "readable": true,
+              "writable": false,
+            },
+          ],
+        }
+      `);
     });
   });
 
@@ -137,7 +189,7 @@ describe(MaintenanceService.name, () => {
    */
 
   describe('listBackups', () => {
-    it('should give us all valid and failed backups', async () => {
+    it('should give us all backups', async () => {
       mocks.storage.readdir.mockResolvedValue([
         `immich-db-backup-${DateTime.fromISO('2025-07-25T11:02:16Z').toFormat("yyyyLLdd'T'HHmmss")}-v1.234.5-pg14.5.sql.gz.tmp`,
         `immich-db-backup-${DateTime.fromISO('2025-07-27T11:01:16Z').toFormat("yyyyLLdd'T'HHmmss")}-v1.234.5-pg14.5.sql.gz`,
@@ -160,6 +212,29 @@ describe(MaintenanceService.name, () => {
       await sut.deleteBackup('filename');
       expect(mocks.storage.unlink).toHaveBeenCalledTimes(1);
       expect(mocks.storage.unlink).toHaveBeenCalledWith(`${StorageCore.getBaseFolder(StorageFolder.Backups)}/filename`);
+    });
+  });
+
+  describe('uploadBackup', () => {
+    it('should reject invalid file names', async () => {
+      await expect(sut.uploadBackup({ originalname: 'invalid backup' } as never)).rejects.toThrowError(
+        new BadRequestException('Not a valid backup name!'),
+      );
+    });
+
+    it('should write file', async () => {
+      await sut.uploadBackup({ originalname: 'path.sql.gz' } as never);
+      expect(mocks.storage.overwriteFile).toBeCalledWith('/data/backups/uploaded-path.sql.gz', undefined);
+    });
+  });
+
+  describe('getBackupPath', () => {
+    it('should reject invalid file names', () => {
+      expect(() => sut.getBackupPath('invalid backup')).toThrowError(new BadRequestException('Invalid backup name!'));
+    });
+
+    it('should get backup path', () => {
+      expect(sut.getBackupPath('hello.sql.gz')).toEqual('/data/backups/hello.sql.gz');
     });
   });
 });

@@ -2,12 +2,17 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { basename, join } from 'node:path';
 import { StorageCore } from 'src/cores/storage.core';
 import { OnEvent } from 'src/decorators';
-import { MaintenanceAuthDto, SetMaintenanceModeDto } from 'src/dtos/maintenance.dto';
+import { MaintenanceAuthDto, MaintenanceIntegrityResponseDto, SetMaintenanceModeDto } from 'src/dtos/maintenance.dto';
 import { MaintenanceAction, StorageFolder, SystemMetadataKey } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
 import { MaintenanceModeState } from 'src/types';
 import { deleteBackup, isValidBackupName, listBackups, uploadBackup } from 'src/utils/backups';
-import { createMaintenanceLoginUrl, generateMaintenanceSecret, signMaintenanceJwt } from 'src/utils/maintenance';
+import {
+  createMaintenanceLoginUrl,
+  generateMaintenanceSecret,
+  integrityCheck,
+  signMaintenanceJwt,
+} from 'src/utils/maintenance';
 import { getExternalDomain } from 'src/utils/misc';
 
 /**
@@ -19,6 +24,10 @@ export class MaintenanceService extends BaseService {
     return this.systemMetadataRepository
       .get(SystemMetadataKey.MaintenanceMode)
       .then((state) => state ?? { isMaintenanceMode: false });
+  }
+
+  integrityCheck(): Promise<MaintenanceIntegrityResponseDto> {
+    return integrityCheck(this.storageRepository);
   }
 
   async startMaintenance(action: SetMaintenanceModeDto, username: string): Promise<{ jwt: string }> {
@@ -86,7 +95,7 @@ export class MaintenanceService extends BaseService {
   }
 
   async uploadBackup(file: Express.Multer.File): Promise<void> {
-    return uploadBackup(file);
+    return uploadBackup(this.backupRepos, file);
   }
 
   getBackupPath(filename: string): string {

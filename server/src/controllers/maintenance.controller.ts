@@ -29,7 +29,6 @@ import { Auth, Authenticated, FileResponse, GetLoginDetails } from 'src/middlewa
 import { StorageRepository } from 'src/repositories/storage.repository';
 import { LoginDetails } from 'src/services/auth.service';
 import { MaintenanceService } from 'src/services/maintenance.service';
-import { integrityCheck } from 'src/utils/maintenance';
 import { respondWithCookie } from 'src/utils/response';
 import { FilenameParamDto } from 'src/validation';
 
@@ -60,7 +59,7 @@ export class MaintenanceController {
     history: new HistoryBuilder().added('v9.9.9').alpha('v9.9.9'),
   })
   integrityCheck(): Promise<MaintenanceIntegrityResponseDto> {
-    return integrityCheck(this.storageRepository);
+    return this.service.integrityCheck();
   }
 
   @Post('login')

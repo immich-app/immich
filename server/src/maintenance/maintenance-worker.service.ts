@@ -6,7 +6,12 @@ import { readFileSync } from 'node:fs';
 import { IncomingHttpHeaders } from 'node:http';
 import { join } from 'node:path';
 import { StorageCore } from 'src/cores/storage.core';
-import { MaintenanceAuthDto, MaintenanceStatusResponseDto, SetMaintenanceModeDto } from 'src/dtos/maintenance.dto';
+import {
+  MaintenanceAuthDto,
+  MaintenanceIntegrityResponseDto,
+  MaintenanceStatusResponseDto,
+  SetMaintenanceModeDto,
+} from 'src/dtos/maintenance.dto';
 import { ServerConfigDto } from 'src/dtos/server.dto';
 import { DatabaseLock, ImmichCookie, MaintenanceAction, StorageFolder, SystemMetadataKey } from 'src/enum';
 import { MaintenanceEphemeralStateRepository } from 'src/maintenance/maintenance-ephemeral-state.repository';
@@ -24,7 +29,7 @@ import { type ServerService as _ServerService } from 'src/services/server.servic
 import { MaintenanceModeState } from 'src/types';
 import { deleteBackup, isValidBackupName, listBackups, restoreBackup, uploadBackup } from 'src/utils/backups';
 import { getConfig } from 'src/utils/config';
-import { createMaintenanceLoginUrl } from 'src/utils/maintenance';
+import { createMaintenanceLoginUrl, integrityCheck } from 'src/utils/maintenance';
 import { getExternalDomain } from 'src/utils/misc';
 
 /**
@@ -172,6 +177,10 @@ export class MaintenanceWorkerService {
     }
   }
 
+  integrityCheck(): Promise<MaintenanceIntegrityResponseDto> {
+    return integrityCheck(this.storageRepository);
+  }
+
   async login(jwt?: string): Promise<MaintenanceAuthDto> {
     if (!jwt) {
       throw new UnauthorizedException('Missing JWT Token');
@@ -287,7 +296,7 @@ export class MaintenanceWorkerService {
   }
 
   async uploadBackup(file: Express.Multer.File): Promise<void> {
-    return uploadBackup(file);
+    return uploadBackup(this.backupRepos, file);
   }
 
   getBackupPath(filename: string): string {

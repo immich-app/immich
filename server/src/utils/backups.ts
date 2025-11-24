@@ -1,8 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
 import { debounce } from 'lodash';
 import { DateTime } from 'luxon';
-import { stat, writeFile } from 'node:fs/promises';
-import path, { join } from 'node:path';
+import path, { basename, join } from 'node:path';
 import { PassThrough, Readable, Writable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 import semver from 'semver';
@@ -273,21 +272,18 @@ export async function listBackups({ storage }: Pick<BackupRepos, 'storage'>): Pr
     .toReversed();
 }
 
-export async function uploadBackup(file: Express.Multer.File): Promise<void> {
+export async function uploadBackup(
+  { storage }: Pick<BackupRepos, 'storage'>,
+  file: Express.Multer.File,
+): Promise<void> {
   const backupsFolder = StorageCore.getBaseFolder(StorageFolder.Backups);
-  const fn = file.originalname;
+  const fn = basename(file.originalname);
   if (!isValidBackupName(fn)) {
     throw new BadRequestException('Not a valid backup name!');
   }
 
   const path = join(backupsFolder, `uploaded-${fn}`);
-
-  try {
-    await stat(path);
-    throw new BadRequestException('File already exists!');
-  } catch {
-    await writeFile(path, file.buffer);
-  }
+  await storage.overwriteFile(path, file.buffer);
 }
 
 function createSqlProgressStreams(cb: (progress: number) => void) {

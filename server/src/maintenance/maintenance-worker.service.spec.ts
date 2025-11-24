@@ -1,4 +1,4 @@
-import { UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { SignJWT } from 'jose';
 import { DateTime } from 'luxon';
 import { PassThrough, Readable } from 'node:stream';
@@ -59,6 +59,32 @@ describe(MaintenanceWorkerService.name, () => {
     });
   });
 
+  describe.skip('ssr');
+  describe.skip('detectMediaLocation');
+
+  describe('setStatus', () => {
+    it('should broadcast status', async () => {
+      maintenanceEphemeralStateRepositoryMock.getPublicStatus.mockReturnValue({
+        action: MaintenanceAction.Start,
+        error: 'mock',
+      });
+
+      sut.setStatus({
+        action: MaintenanceAction.Start,
+        task: 'abc',
+        error: 'def',
+      });
+
+      expect(maintenanceEphemeralStateRepositoryMock.setStatus).toHaveBeenCalled();
+      expect(maintenanceWebsocketRepositoryMock.serverSend).toHaveBeenCalled();
+      expect(maintenanceWebsocketRepositoryMock.clientSend).toHaveBeenCalledTimes(2);
+      expect(maintenanceWebsocketRepositoryMock.clientSend).toHaveBeenCalledWith('MaintenanceStatusV1', 'public', {
+        action: 'start',
+        error: 'mock',
+      });
+    });
+  });
+
   describe('logSecret', () => {
     const RE_LOGIN_URL = /https:\/\/my.immich.app\/maintenance\?token=([A-Za-z0-9-_]*\.[A-Za-z0-9-_]*\.[A-Za-z0-9-_]*)/;
 
@@ -104,6 +130,95 @@ describe(MaintenanceWorkerService.name, () => {
           cookie: 'immich_maintenance_token=invalid-jwt',
         }),
       ).rejects.toThrowError(new UnauthorizedException('Invalid JWT Token'));
+    });
+  });
+
+  describe('status', () => {
+    beforeEach(() => {
+      maintenanceEphemeralStateRepositoryMock.getStatus.mockResolvedValue({
+        action: MaintenanceAction.Start,
+        error: 'secret value!',
+      });
+
+      maintenanceEphemeralStateRepositoryMock.getPublicStatus.mockResolvedValue({
+        action: MaintenanceAction.Start,
+        error: 'public mock',
+      });
+    });
+
+    it('generates private status', async () => {
+      maintenanceEphemeralStateRepositoryMock.getSecret.mockReturnValue('secret');
+
+      const jwt = await new SignJWT({ _mockValue: true })
+        .setProtectedHeader({ alg: 'HS256' })
+        .setIssuedAt()
+        .setExpirationTime('4h')
+        .sign(new TextEncoder().encode('secret'));
+
+      await expect(sut.status(jwt)).resolves.toEqual(
+        expect.objectContaining({
+          error: 'secret value!',
+        }),
+      );
+    });
+
+    it('generates public status', async () => {
+      await expect(sut.status()).resolves.toEqual(
+        expect.objectContaining({
+          error: 'public mock',
+        }),
+      );
+    });
+  });
+
+  describe('integrityCheck', () => {
+    it('generate integrity report', async () => {
+      mocks.storage.readdir.mockResolvedValue(['.immich', 'file1', 'file2']);
+      mocks.storage.readFile.mockResolvedValue(undefined as never);
+      mocks.storage.overwriteFile.mockRejectedValue(undefined as never);
+
+      await expect(sut.integrityCheck()).resolves.toMatchInlineSnapshot(`
+        {
+          "storage": [
+            {
+              "files": 2,
+              "folder": "encoded-video",
+              "readable": true,
+              "writable": false,
+            },
+            {
+              "files": 2,
+              "folder": "library",
+              "readable": true,
+              "writable": false,
+            },
+            {
+              "files": 2,
+              "folder": "upload",
+              "readable": true,
+              "writable": false,
+            },
+            {
+              "files": 2,
+              "folder": "profile",
+              "readable": true,
+              "writable": false,
+            },
+            {
+              "files": 2,
+              "folder": "thumbs",
+              "readable": true,
+              "writable": false,
+            },
+            {
+              "files": 2,
+              "folder": "backups",
+              "readable": true,
+              "writable": false,
+            },
+          ],
+        }
+      `);
     });
   });
 
@@ -155,7 +270,23 @@ describe(MaintenanceWorkerService.name, () => {
     });
   });
 
-  describe('endMaintenance', () => {
+  describe.skip('setAction'); // just calls setStatus+runAction
+
+  /**
+   * Actions
+   */
+
+  describe('action: start', () => {
+    it('should not do anything', async () => {
+      await sut.runAction({
+        action: MaintenanceAction.Start,
+      });
+
+      expect(mocks.logger.log).toHaveBeenCalledTimes(0);
+    });
+  });
+
+  describe('action: end', () => {
     it('should set maintenance mode', async () => {
       mocks.systemMetadata.get.mockResolvedValue({ isMaintenanceMode: false });
       await sut.runAction({
@@ -173,20 +304,6 @@ describe(MaintenanceWorkerService.name, () => {
       expect(maintenanceWebsocketRepositoryMock.serverSend).toHaveBeenCalledWith('AppRestart', {
         isMaintenanceMode: false,
       });
-    });
-  });
-
-  /**
-   * Actions
-   */
-
-  describe('action: start', () => {
-    it('should not do anything', async () => {
-      await sut.runAction({
-        action: MaintenanceAction.Start,
-      });
-
-      expect(mocks.logger.log).toHaveBeenCalledTimes(0);
     });
   });
 
@@ -317,6 +434,29 @@ describe(MaintenanceWorkerService.name, () => {
       await sut.deleteBackup('filename');
       expect(mocks.storage.unlink).toHaveBeenCalledTimes(1);
       expect(mocks.storage.unlink).toHaveBeenCalledWith(`${StorageCore.getBaseFolder(StorageFolder.Backups)}/filename`);
+    });
+  });
+
+  describe('uploadBackup', () => {
+    it('should reject invalid file names', async () => {
+      await expect(sut.uploadBackup({ originalname: 'invalid backup' } as never)).rejects.toThrowError(
+        new BadRequestException('Not a valid backup name!'),
+      );
+    });
+
+    it('should write file', async () => {
+      await sut.uploadBackup({ originalname: 'path.sql.gz' } as never);
+      expect(mocks.storage.overwriteFile).toBeCalledWith('/data/backups/uploaded-path.sql.gz', undefined);
+    });
+  });
+
+  describe('getBackupPath', () => {
+    it('should reject invalid file names', () => {
+      expect(() => sut.getBackupPath('invalid backup')).toThrowError(new BadRequestException('Invalid backup name!'));
+    });
+
+    it('should get backup path', () => {
+      expect(sut.getBackupPath('hello.sql.gz')).toEqual('/data/backups/hello.sql.gz');
     });
   });
 });
