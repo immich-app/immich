@@ -13,15 +13,15 @@
   import { mdiCheckCircle, mdiCircleOutline } from '@mdi/js';
   import type { Snippet } from 'svelte';
 
-  interface Props {
+  type Props = {
     thumbnail: Snippet<[{ asset: TimelineAsset; position: CommonPosition; dayGroup: DayGroup; groupIndex: number }]>;
     customThumbnailLayout?: Snippet<[TimelineAsset]>;
     singleSelect: boolean;
     assetInteraction: AssetInteraction;
     monthGroup: MonthGroup;
     manager: VirtualScrollManager;
-    onDayGroupSelect: (daygroup: DayGroup, assets: TimelineAsset[]) => void;
-  }
+    onDayGroupSelect: (dayGroup: DayGroup, assets: TimelineAsset[]) => void;
+  };
   let {
     thumbnail: thumbnailWithGroup,
     customThumbnailLayout,
@@ -33,14 +33,15 @@
   }: Props = $props();
 
   let { isUploading } = uploadAssetsStore;
-  let isMouseOverGroup = $state(false);
-  let hoveredDayGroup = $state();
-  const transitionDuration = $derived.by(() =>
-    monthGroup.timelineManager.suspendTransitions && !$isUploading ? 0 : 150,
-  );
-  function filterIntersecting<R extends { intersecting: boolean }>(intersectables: R[]) {
-    return intersectables.filter((intersectable) => intersectable.intersecting);
-  }
+  let hoveredDayGroup = $state<string | null>(null);
+
+  const isMouseOverGroup = $derived(hoveredDayGroup !== null);
+  const transitionDuration = $derived(monthGroup.timelineManager.suspendTransitions && !$isUploading ? 0 : 150);
+
+  const filterIntersecting = <T extends { intersecting: boolean }>(intersectables: T[]) => {
+    return intersectables.filter(({ intersecting }) => intersecting);
+  };
+
   const getDayGroupFullDate = (dayGroup: DayGroup): string => {
     const { month, year } = dayGroup.monthGroup.yearMonth;
     const date = fromTimelinePlainDate({
@@ -64,14 +65,8 @@
     data-group
     style:position="absolute"
     style:transform={`translate3d(${absoluteWidth}px,${dayGroup.top}px,0)`}
-    onmouseenter={() => {
-      isMouseOverGroup = true;
-      hoveredDayGroup = dayGroup.groupTitle;
-    }}
-    onmouseleave={() => {
-      isMouseOverGroup = false;
-      hoveredDayGroup = null;
-    }}
+    onmouseenter={() => (hoveredDayGroup = dayGroup.groupTitle)}
+    onmouseleave={() => (hoveredDayGroup = null)}
   >
     <!-- Month title -->
     <div

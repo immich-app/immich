@@ -10,7 +10,7 @@
 
   let { isUploading } = uploadAssetsStore;
 
-  interface Props {
+  type Props = {
     viewerAssets: ViewerAsset[];
     width: number;
     height: number;
@@ -24,16 +24,16 @@
       ]
     >;
     customThumbnailLayout?: Snippet<[asset: TimelineAsset]>;
-  }
+  };
 
-  let { viewerAssets, width, height, manager, thumbnail, customThumbnailLayout }: Props = $props();
+  const { viewerAssets, width, height, manager, thumbnail, customThumbnailLayout }: Props = $props();
 
-  const transitionDuration = $derived.by(() => (manager.suspendTransitions && !$isUploading ? 0 : 150));
+  const transitionDuration = $derived(manager.suspendTransitions && !$isUploading ? 0 : 150);
   const scaleDuration = $derived(transitionDuration === 0 ? 0 : transitionDuration + 100);
 
-  function filterIntersecting<R extends { intersecting: boolean }>(intersectables: R[]) {
-    return intersectables.filter((intersectable) => intersectable.intersecting);
-  }
+  const filterIntersecting = <T extends { intersecting: boolean }>(intersectables: T[]) => {
+    return intersectables.filter(({ intersecting }) => intersecting);
+  };
 </script>
 
 <!-- Image grid -->

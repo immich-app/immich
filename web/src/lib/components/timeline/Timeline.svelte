@@ -552,22 +552,16 @@
     void onSelectAssets(asset);
 
     // Check if all assets are selected in a group to toggle the group selection's icon
-    let selectedAssetsInGroupCount = assetsInDayGroup.filter((asset) =>
-      assetInteraction.hasSelectedAsset(asset.id),
-    ).length;
+    let selectedAssetsInGroupCount = assetsInDayGroup.filter(({ id }) => assetInteraction.hasSelectedAsset(id)).length;
 
     // if all assets are selected in a group, add the group to selected group
-    if (selectedAssetsInGroupCount == assetsInDayGroup.length) {
+    if (selectedAssetsInGroupCount === assetsInDayGroup.length) {
       assetInteraction.addGroupToMultiselectGroup(groupTitle);
     } else {
       assetInteraction.removeGroupFromMultiselectGroup(groupTitle);
     }
 
-    if (timelineManager.assetCount == assetInteraction.selectedAssets.length) {
-      isSelectingAllAssets.set(true);
-    } else {
-      isSelectingAllAssets.set(false);
-    }
+    isSelectingAllAssets.set(timelineManager.assetCount === assetInteraction.selectedAssets.length);
   };
 
   const _onClick = (
