@@ -318,13 +318,13 @@ export class PersonRepository {
           eb.or([
             eb(
               eb.fn('f_unaccent', [eb.fn('lower', ['person.name'])]),
-              'like',
-              `${eb.fn('f_unaccent', [personName.toLowerCase()])}%`,
+              'ilike',
+              `${eb.fn('f_unaccent', [personName])}%`,
             ),
             eb(
               eb.fn('f_unaccent', [eb.fn('lower', ['person.name'])]),
-              'like',
-              `% ${eb.fn('f_unaccent', [personName.toLowerCase()])}%`,
+              'ilike',
+              `% ${eb.fn('f_unaccent', [personName])}%`,
             ),
           ]),
         ]),
