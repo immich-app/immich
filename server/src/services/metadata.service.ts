@@ -193,6 +193,15 @@ export class MetadataService extends BaseService {
     await this.eventRepository.emit('AssetHide', { assetId: motionAsset.id, userId: motionAsset.ownerId });
   }
 
+  private isOrientationSidewards(orientation: ExifOrientation | number): boolean {
+    return [
+      ExifOrientation.MirrorHorizontalRotate270CW,
+      ExifOrientation.Rotate90CW,
+      ExifOrientation.MirrorHorizontalRotate90CW,
+      ExifOrientation.Rotate270CW,
+    ].includes(orientation);
+  }
+
   @OnJob({ name: JobName.AssetExtractMetadataQueueAll, queue: QueueName.MetadataExtraction })
   async handleQueueMetadataExtraction(job: JobOf<JobName.AssetExtractMetadataQueueAll>): Promise<JobStatus> {
     const { force } = job;
@@ -286,16 +295,7 @@ export class MetadataService extends BaseService {
       autoStackId: this.getAutoStackId(exifTags),
     };
 
-    // Calculate orientation-aware width and height
-    const isSidewards =
-      exifTags.Orientation !== undefined &&
-      [
-        ExifOrientation.MirrorHorizontalRotate270CW,
-        ExifOrientation.Rotate90CW,
-        ExifOrientation.MirrorHorizontalRotate90CW,
-        ExifOrientation.Rotate270CW,
-      ].includes(exifTags.Orientation);
-
+    const isSidewards = exifTags.Orientation && this.isOrientationSidewards(exifTags.Orientation);
     const assetWidth = isSidewards ? validate(height) : validate(width);
     const assetHeight = isSidewards ? validate(width) : validate(height);
 
@@ -706,12 +706,7 @@ export class MetadataService extends BaseService {
       return regionInfo;
     }
 
-    const isSidewards = [
-      ExifOrientation.MirrorHorizontalRotate270CW,
-      ExifOrientation.Rotate90CW,
-      ExifOrientation.MirrorHorizontalRotate90CW,
-      ExifOrientation.Rotate270CW,
-    ].includes(orientation);
+    const isSidewards = this.isOrientationSidewards(orientation);
 
     // swap image dimensions in AppliedToDimensions if orientation is sidewards
     const adjustedAppliedToDimensions = isSidewards
