@@ -97,45 +97,60 @@ void main() {
 
   group('SyncStreamRepository - Dimension swapping based on orientation', () {
     test('swaps dimensions for asset with rotated orientation', () async {
-      const assetId = 'asset-270-degrees';
+      final flippedOrientations = ['5', '6', '7', '8', '90', '-90'];
 
-      await sut.updateUsersV1([_createUser()]);
+      for (final orientation in flippedOrientations) {
+        final assetId = 'asset-$orientation-degrees';
 
-      final asset = _createAsset(id: assetId, checksum: 'checksum-270', fileName: 'rotated_270.jpg');
-      await sut.updateAssetsV1([asset]);
+        await sut.updateUsersV1([_createUser()]);
 
-      final exif = _createExif(
-        assetId: assetId,
-        width: 1920,
-        height: 1080,
-        orientation: '6', // EXIF orientation value for 90 degrees CW
-      );
-      await sut.updateAssetsExifV1([exif]);
+        final asset = _createAsset(
+          id: assetId,
+          checksum: 'checksum-$orientation',
+          fileName: 'rotated_$orientation.jpg',
+        );
+        await sut.updateAssetsV1([asset]);
 
-      final query = db.remoteAssetEntity.select()..where((tbl) => tbl.id.equals(assetId));
-      final result = await query.getSingle();
+        final exif = _createExif(
+          assetId: assetId,
+          width: 1920,
+          height: 1080,
+          orientation: orientation, // EXIF orientation value for 90 degrees CW
+        );
+        await sut.updateAssetsExifV1([exif]);
 
-      expect(result.width, equals(1080));
-      expect(result.height, equals(1920));
+        final query = db.remoteAssetEntity.select()..where((tbl) => tbl.id.equals(assetId));
+        final result = await query.getSingle();
+
+        expect(result.width, equals(1080));
+        expect(result.height, equals(1920));
+      }
     });
 
     test('does not swap dimensions for asset with normal orientation', () async {
-      const assetId = 'asset-normal';
+      final nonFlippedOrientations = ['1', '2', '3', '4'];
+      for (final orientation in nonFlippedOrientations) {
+        final assetId = 'asset-$orientation-degrees';
 
-      await sut.updateUsersV1([_createUser()]);
+        await sut.updateUsersV1([_createUser()]);
 
-      final asset = _createAsset(id: assetId, checksum: 'checksum-normal', fileName: 'normal.jpg');
-      await sut.updateAssetsV1([asset]);
+        final asset = _createAsset(id: assetId, checksum: 'checksum-$orientation', fileName: 'normal_$orientation.jpg');
+        await sut.updateAssetsV1([asset]);
 
-      final exif = _createExif(assetId: assetId, width: 1920, height: 1080, orientation: '1');
-      await sut.updateAssetsExifV1([exif]);
+        final exif = _createExif(
+          assetId: assetId,
+          width: 1920,
+          height: 1080,
+          orientation: orientation, // EXIF orientation value for normal
+        );
+        await sut.updateAssetsExifV1([exif]);
 
-      // Verify the asset has original dimensions (not swapped)
-      final query = db.remoteAssetEntity.select()..where((tbl) => tbl.id.equals(assetId));
-      final result = await query.getSingle();
+        final query = db.remoteAssetEntity.select()..where((tbl) => tbl.id.equals(assetId));
+        final result = await query.getSingle();
 
-      expect(result.width, equals(1920));
-      expect(result.height, equals(1080));
+        expect(result.width, equals(1920));
+        expect(result.height, equals(1080));
+      }
     });
 
     test('does not update dimensions if asset already has width and height', () async {
