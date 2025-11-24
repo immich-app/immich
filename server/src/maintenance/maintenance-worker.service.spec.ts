@@ -234,13 +234,14 @@ describe(MaintenanceWorkerService.name, () => {
       expect(maintenanceEphemeralStateRepositoryMock.setStatus).toHaveBeenCalledWith({
         action: MaintenanceAction.RestoreDatabase,
         error: 'Error: Invalid backup file format!',
+        task: 'error',
       });
     });
 
     it('should successfully run a backup', async () => {
       await sut.runAction({
         action: MaintenanceAction.RestoreDatabase,
-        restoreBackupFilename: 'development-filename',
+        restoreBackupFilename: 'development-filename.sql',
       });
 
       expect(maintenanceEphemeralStateRepositoryMock.setStatus).toHaveBeenCalledWith({
@@ -259,12 +260,13 @@ describe(MaintenanceWorkerService.name, () => {
 
       await sut.runAction({
         action: MaintenanceAction.RestoreDatabase,
-        restoreBackupFilename: 'development-filename',
+        restoreBackupFilename: 'development-filename.sql',
       });
 
       expect(maintenanceEphemeralStateRepositoryMock.setStatus).toHaveBeenLastCalledWith({
         action: MaintenanceAction.RestoreDatabase,
         error: 'Error: pg_dump non-zero exit code (1)\nerror',
+        task: 'error',
       });
     });
 
@@ -276,12 +278,13 @@ describe(MaintenanceWorkerService.name, () => {
 
       await sut.runAction({
         action: MaintenanceAction.RestoreDatabase,
-        restoreBackupFilename: 'development-filename',
+        restoreBackupFilename: 'development-filename.sql',
       });
 
       expect(maintenanceEphemeralStateRepositoryMock.setStatus).toHaveBeenLastCalledWith({
         action: MaintenanceAction.RestoreDatabase,
         error: 'Error: psql non-zero exit code (1)\nerror',
+        task: 'error',
       });
     });
   });
@@ -291,7 +294,7 @@ describe(MaintenanceWorkerService.name, () => {
    */
 
   describe('listBackups', () => {
-    it('should give us all valid and failed backups', async () => {
+    it('should give us all backups', async () => {
       mocks.storage.readdir.mockResolvedValue([
         `immich-db-backup-${DateTime.fromISO('2025-07-25T11:02:16Z').toFormat("yyyyLLdd'T'HHmmss")}-v1.234.5-pg14.5.sql.gz.tmp`,
         `immich-db-backup-${DateTime.fromISO('2025-07-27T11:01:16Z').toFormat("yyyyLLdd'T'HHmmss")}-v1.234.5-pg14.5.sql.gz`,
@@ -305,7 +308,6 @@ describe(MaintenanceWorkerService.name, () => {
           'immich-db-backup-20250727T110116-v1.234.5-pg14.5.sql.gz',
           'immich-db-backup-1753789649000.sql.gz',
         ],
-        failedBackups: ['immich-db-backup-20250725T110216-v1.234.5-pg14.5.sql.gz.tmp'],
       });
     });
   });
