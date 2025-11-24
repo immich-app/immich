@@ -134,8 +134,6 @@
 
   let albumGroupOption: string = $state(AlbumGroupBy.None);
 
-  let albumToShare: AlbumResponseDto | null = $state(null);
-
   let contextMenuPosition: ContextMenuPosition = $state({ x: 0, y: 0 });
   let selectedAlbum: AlbumResponseDto | undefined = $state();
   let isOpen = $state(false);
@@ -231,7 +229,7 @@
         const result = await modalManager.show(AlbumShareModal, { album: selectedAlbum });
         switch (result?.action) {
           case 'sharedUsers': {
-            await handleAddUsers(result.data);
+            await handleAddUsers(selectedAlbum, result.data);
             break;
           }
 
@@ -300,22 +298,17 @@
     updateRecentAlbumInfo(album);
   };
 
-  const handleAddUsers = async (albumUsers: AlbumUserAddDto[]) => {
-    if (!albumToShare) {
-      return;
-    }
+  const handleAddUsers = async (album: AlbumResponseDto, albumUsers: AlbumUserAddDto[]) => {
     try {
-      const album = await addUsersToAlbum({
-        id: albumToShare.id,
+      const updatedAlbum = await addUsersToAlbum({
+        id: album.id,
         addUsersDto: {
           albumUsers,
         },
       });
-      updateAlbumInfo(album);
+      updateAlbumInfo(updatedAlbum);
     } catch (error) {
       handleError(error, $t('errors.unable_to_add_album_users'));
-    } finally {
-      albumToShare = null;
     }
   };
 
