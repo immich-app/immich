@@ -110,6 +110,7 @@ export async function buildPostgresLaunchArguments(
         'ON_ERROR_STOP=on',
         // used for progress monitoring
         '--echo-all',
+        '--output=/dev/null',
       );
       break;
     }
@@ -296,27 +297,34 @@ function createSqlProgressStreams(cb: (progress: number) => void) {
   let readingStdin = false;
   let sequenceIdx = 0;
 
-  let bytesSent = 0;
-  let bytesProcessed = 0;
+  let linesSent = 0;
+  let linesProcessed = 0;
 
   const startedAt = +Date.now();
   const cbDebounced = debounce(
     () => {
       const progress = source.writableEnded
-        ? Math.max(1, bytesProcessed / bytesSent)
+        ? Math.min(1, linesProcessed / linesSent)
         : // progress simulation while we're in an indeterminate state
           Math.min(0.3, 0.1 + (Date.now() - startedAt) / 1e4);
       cb(progress);
     },
     100,
     {
-      maxWait: 200,
+      maxWait: 100,
     },
   );
 
+  let lastByte = -1;
   const source = new PassThrough({
     transform(chunk, _encoding, callback) {
       for (const byte of chunk) {
+        if (!readingStdin && byte === 10 && lastByte !== 10) {
+          linesSent += 1;
+        }
+
+        lastByte = byte;
+
         const sequence = readingStdin ? STDIN_END_MARKER : STDIN_START_MARKER;
         if (sequence[sequenceIdx] === byte) {
           sequenceIdx += 1;
@@ -330,11 +338,7 @@ function createSqlProgressStreams(cb: (progress: number) => void) {
         }
       }
 
-      if (!readingStdin) {
-        bytesSent += chunk.length;
-        cbDebounced();
-      }
-
+      cbDebounced();
       this.push(chunk);
       callback();
     },
@@ -342,7 +346,13 @@ function createSqlProgressStreams(cb: (progress: number) => void) {
 
   const sink = new Writable({
     write(chunk, _encoding, callback) {
-      bytesProcessed += chunk.length;
+      for (const byte of chunk) {
+        if (byte === 10) {
+          linesProcessed++;
+        }
+      }
+
+      cbDebounced();
       callback();
     },
   });
