@@ -65,8 +65,7 @@ class TimelineFactory {
 
   TimelineService trash(String userId) => TimelineService(_timelineRepository.trash(userId, groupBy));
 
-  TimelineService toTrashSyncReview(String userId) =>
-      TimelineService(_timelineRepository.toTrashSyncReview(userId, groupBy));
+  TimelineService toTrashSyncReview() => TimelineService(_timelineRepository.toTrashSyncReview(groupBy));
 
   TimelineService archive(String userId) => TimelineService(_timelineRepository.archived(userId, groupBy));
 

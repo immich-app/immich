@@ -107,11 +107,4 @@ class DriftTrashSyncRepository extends DriftDatabaseRepository {
     return query.watchSingleOrNull().map((row) => row != null).distinct();
   }
 
-  Stream<Set<String>> watchPendingApprovalChecksums() {
-    final query = _db.select(_db.trashSyncEntity)..where((t) => t.isSyncApproved.isNull());
-    return query
-        .watch()
-        .map((rows) => rows.map((e) => e.checksum).toSet())
-        .distinct((previous, next) => const SetEquality<String>().equals(previous, next));
-  }
 }

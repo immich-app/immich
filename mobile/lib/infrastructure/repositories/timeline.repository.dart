@@ -279,7 +279,7 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
     joinLocal: true,
   );
 
-  TimelineQuery toTrashSyncReview(String userId, GroupAssetsBy groupBy) => (
+  TimelineQuery toTrashSyncReview(GroupAssetsBy groupBy) => (
     bucketSource: () => _watchTrashSyncBucket(groupBy: groupBy),
     assetSource: (offset, count) => _getToTrashSyncBucketAssets(offset: offset, count: count),
     origin: TimelineOrigin.syncTrash,

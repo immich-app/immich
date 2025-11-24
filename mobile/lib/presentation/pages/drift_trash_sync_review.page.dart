@@ -38,7 +38,7 @@ class DriftTrashSyncReviewPage extends ConsumerWidget {
           if (user == null) {
             throw Exception('User must be logged in to access trash');
           }
-          final timelineService = ref.watch(timelineFactoryProvider).toTrashSyncReview(user.id);
+          final timelineService = ref.watch(timelineFactoryProvider).toTrashSyncReview();
           ref.onDispose(timelineService.dispose);
           return timelineService;
         }),

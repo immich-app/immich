@@ -24,7 +24,7 @@ class TrashSyncDecision {
   @override
   int get hashCode => checksum.hashCode ^ (isSyncApproved?.hashCode ?? 0);
 
-  TrashSyncDecision copyWith({String? assetId, String? checksum, bool? isSyncApproved}) {
+  TrashSyncDecision copyWith({String? checksum, bool? isSyncApproved}) {
     return TrashSyncDecision(
       checksum: checksum ?? this.checksum,
       isSyncApproved: isSyncApproved ?? this.isSyncApproved,
