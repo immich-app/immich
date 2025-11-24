@@ -599,6 +599,7 @@ export class AssetRepository {
       .with('cte', (qb) =>
         qb
           .selectFrom('asset')
+          .innerJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
           .select((eb) => [
             'asset.duration',
             'asset.id',
@@ -614,6 +615,9 @@ export class AssetRepository {
             'asset.status',
             sql`asset."fileCreatedAt" at time zone 'utc'`.as('fileCreatedAt'),
             eb.fn('encode', ['asset.thumbhash', sql.lit('base64')]).as('thumbhash'),
+            'asset_exif.city',
+            'asset_exif.country',
+            'asset_exif.projectionType',
             eb.fn
               .coalesce(
                 eb
@@ -626,22 +630,7 @@ export class AssetRepository {
               )
               .as('ratio'),
           ])
-          .$if(!!options.withCoordinates, (qb) =>
-            qb
-              .innerJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
-              .select([
-                'asset_exif.latitude',
-                'asset_exif.longitude',
-                'asset_exif.city',
-                'asset_exif.country',
-                'asset_exif.projectionType',
-              ]),
-          )
-          .$if(!options.withCoordinates, (qb) =>
-            qb
-              .innerJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
-              .select(['asset_exif.city', 'asset_exif.country', 'asset_exif.projectionType']),
-          )
+          .$if(!!options.withCoordinates, (qb) => qb.select(['asset_exif.latitude', 'asset_exif.longitude']))
           .where('asset.deletedAt', options.isTrashed ? 'is not' : 'is', null)
           .$if(options.visibility == undefined, withDefaultVisibility)
           .$if(!!options.visibility, (qb) => qb.where('asset.visibility', '=', options.visibility!))
