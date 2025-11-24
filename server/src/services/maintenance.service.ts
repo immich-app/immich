@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { join } from 'node:path';
+import { basename, join } from 'node:path';
 import { StorageCore } from 'src/cores/storage.core';
 import { OnEvent } from 'src/decorators';
 import { MaintenanceAuthDto, SetMaintenanceModeDto } from 'src/dtos/maintenance.dto';
@@ -82,7 +82,7 @@ export class MaintenanceService extends BaseService {
   }
 
   async deleteBackup(filename: string): Promise<void> {
-    return deleteBackup(this.backupRepos, filename);
+    return deleteBackup(this.backupRepos, basename(filename));
   }
 
   async uploadBackup(file: Express.Multer.File): Promise<void> {
@@ -94,7 +94,7 @@ export class MaintenanceService extends BaseService {
       throw new BadRequestException('Invalid backup name!');
     }
 
-    return join(StorageCore.getBaseFolder(StorageFolder.Backups), filename);
+    return join(StorageCore.getBaseFolder(StorageFolder.Backups), basename(filename));
   }
 
   private get backupRepos() {
