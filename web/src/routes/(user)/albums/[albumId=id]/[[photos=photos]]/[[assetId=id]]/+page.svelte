@@ -291,10 +291,10 @@
 
   let album = $derived(data.album);
   let albumId = $derived(album.id);
+
+  const containsEditors = $derived(album?.shared && album.albumUsers.some(({ role }) => role === AlbumUserRole.Editor));
   const albumUsers = $derived(
-    showAlbumUsers && album?.shared && album.albumUsers.some(({ role }) => role === AlbumUserRole.Editor)
-      ? [album.owner, ...album.albumUsers.map(({ user }) => user)]
-      : [],
+    showAlbumUsers && containsEditors ? [album.owner, ...album.albumUsers.map(({ user }) => user)] : [],
   );
 
   $effect(() => {
@@ -597,14 +597,16 @@
           {#snippet trailing()}
             <CastButton />
 
-            <IconButton
-              variant="ghost"
-              shape="round"
-              color="secondary"
-              aria-label="view asset owners"
-              icon={mdiAccountEyeOutline}
-              onclick={() => (showAlbumUsers = !showAlbumUsers)}
-            />
+            {#if containsEditors}
+              <IconButton
+                variant="ghost"
+                shape="round"
+                color="secondary"
+                aria-label="view asset owners"
+                icon={mdiAccountEyeOutline}
+                onclick={() => (showAlbumUsers = !showAlbumUsers)}
+              />
+            {/if}
 
             {#if isEditor}
               <IconButton
