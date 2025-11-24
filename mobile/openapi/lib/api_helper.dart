@@ -94,6 +94,9 @@ String parameterToString(dynamic value) {
   if (value is ImageFormat) {
     return ImageFormatTypeTransformer().encode(value).toString();
   }
+  if (value is JobName) {
+    return JobNameTypeTransformer().encode(value).toString();
+  }
   if (value is LogLevel) {
     return LogLevelTypeTransformer().encode(value).toString();
   }
@@ -132,6 +135,9 @@ String parameterToString(dynamic value) {
   }
   if (value is QueueCommand) {
     return QueueCommandTypeTransformer().encode(value).toString();
+  }
+  if (value is QueueJobStatus) {
+    return QueueJobStatusTypeTransformer().encode(value).toString();
   }
   if (value is QueueName) {
     return QueueNameTypeTransformer().encode(value).toString();

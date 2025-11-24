@@ -14,6 +14,7 @@ import {
 } from 'src/database';
 import { MapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
+import { QueueStatisticsDto } from 'src/dtos/queue.dto';
 import { AssetStatus, AssetType, AssetVisibility, MemoryType, Permission, UserMetadataKey, UserStatus } from 'src/enum';
 import { OnThisDayData, UserMetadataItem } from 'src/types';
 import { v4, v7 } from 'uuid';
@@ -137,6 +138,16 @@ const sessionFactory = (session: Partial<Session> = {}) => ({
   isPendingSyncReset: false,
   appVersion: session.appVersion ?? null,
   ...session,
+});
+
+const queueStatisticsFactory = (dto?: Partial<QueueStatisticsDto>) => ({
+  active: 0,
+  completed: 0,
+  failed: 0,
+  delayed: 0,
+  waiting: 0,
+  paused: 0,
+  ...(dto || {}),
 });
 
 const stackFactory = () => ({
@@ -353,6 +364,7 @@ export const factory = {
   library: libraryFactory,
   memory: memoryFactory,
   partner: partnerFactory,
+  queueStatistics: queueStatisticsFactory,
   session: sessionFactory,
   stack: stackFactory,
   user: userFactory,

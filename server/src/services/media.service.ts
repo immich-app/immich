@@ -156,6 +156,15 @@ export class MediaService extends BaseService {
 
   @OnJob({ name: JobName.AssetGenerateThumbnails, queue: QueueName.ThumbnailGeneration })
   async handleGenerateThumbnails({ id }: JobOf<JobName.AssetGenerateThumbnails>): Promise<JobStatus> {
+    const random = Math.random() * 100;
+    if (random < 5) {
+      throw new Error(`Random value was ${random}`);
+    }
+    // let test = true;
+    // if (test) {
+    //   throw new Error('Something went wrong!');
+    // }
+
     const asset = await this.assetJobRepository.getForGenerateThumbnailJob(id);
     if (!asset) {
       this.logger.warn(`Thumbnail generation failed for asset ${id}: not found`);

@@ -452,10 +452,11 @@ packages:
   drift:
     dependency: "direct main"
     description:
-      name: drift
-      sha256: "14a61af39d4584faf1d73b5b35e4b758a43008cf4c0fdb0576ec8e7032c0d9a5"
-      url: "https://pub.dev"
-    source: hosted
+      path: drift
+      ref: "53ef7e9f19fe8f68416251760b4b99fe43f1c575"
+      resolved-ref: "53ef7e9f19fe8f68416251760b4b99fe43f1c575"
+      url: "https://github.com/immich-app/drift"
+    source: git
     version: "2.26.0"
   drift_dev:
     dependency: "direct dev"

@@ -13,32 +13,38 @@ part of openapi.api;
 class QueueResponseDto {
   /// Returns a new [QueueResponseDto] instance.
   QueueResponseDto({
-    required this.jobCounts,
-    required this.queueStatus,
+    required this.isPaused,
+    required this.name,
+    required this.statistics,
   });
 
-  QueueStatisticsDto jobCounts;
+  bool isPaused;
 
-  QueueStatusDto queueStatus;
+  QueueName name;
+
+  QueueStatisticsDto statistics;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is QueueResponseDto &&
-    other.jobCounts == jobCounts &&
-    other.queueStatus == queueStatus;
+    other.isPaused == isPaused &&
+    other.name == name &&
+    other.statistics == statistics;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (jobCounts.hashCode) +
-    (queueStatus.hashCode);
+    (isPaused.hashCode) +
+    (name.hashCode) +
+    (statistics.hashCode);
 
   @override
-  String toString() => 'QueueResponseDto[jobCounts=$jobCounts, queueStatus=$queueStatus]';
+  String toString() => 'QueueResponseDto[isPaused=$isPaused, name=$name, statistics=$statistics]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'jobCounts'] = this.jobCounts;
-      json[r'queueStatus'] = this.queueStatus;
+      json[r'isPaused'] = this.isPaused;
+      json[r'name'] = this.name;
+      json[r'statistics'] = this.statistics;
     return json;
   }
 
@@ -51,8 +57,9 @@ class QueueResponseDto {
       final json = value.cast<String, dynamic>();
 
       return QueueResponseDto(
-        jobCounts: QueueStatisticsDto.fromJson(json[r'jobCounts'])!,
-        queueStatus: QueueStatusDto.fromJson(json[r'queueStatus'])!,
+        isPaused: mapValueOfType<bool>(json, r'isPaused')!,
+        name: QueueName.fromJson(json[r'name'])!,
+        statistics: QueueStatisticsDto.fromJson(json[r'statistics'])!,
       );
     }
     return null;
@@ -100,8 +107,9 @@ class QueueResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'jobCounts',
-    'queueStatus',
+    'isPaused',
+    'name',
+    'statistics',
   };
 }
 

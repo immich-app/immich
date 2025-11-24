@@ -113,6 +113,13 @@ dev_dependencies:
   riverpod_generator: ^2.6.1
   riverpod_lint: ^2.6.1
 
+dependency_overrides:
+  drift:
+    git:
+      url: https://github.com/immich-app/drift
+      ref: '53ef7e9f19fe8f68416251760b4b99fe43f1c575'
+      path: drift/
+
 flutter:
   uses-material-design: true
   assets:
