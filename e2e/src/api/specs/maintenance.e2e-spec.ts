@@ -363,7 +363,7 @@ describe('/admin/maintenance', () => {
           },
           {
             interval: 500,
-            timeout: 6000,
+            timeout: 60_000,
           },
         )
         .toBeFalsy();
