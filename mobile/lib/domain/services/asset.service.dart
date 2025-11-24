@@ -58,21 +58,15 @@ class AssetService {
   }
 
   Future<double> getAspectRatio(BaseAsset asset) async {
-    bool isFlipped;
     double? width;
     double? height;
 
     if (asset.hasRemote) {
-      final exif = await getExif(asset);
-      isFlipped = ExifDtoConverter.isOrientationFlipped(exif?.orientation);
       width = asset.width?.toDouble();
       height = asset.height?.toDouble();
     } else if (asset is LocalAsset) {
-      isFlipped = CurrentPlatform.isAndroid && (asset.orientation == 90 || asset.orientation == 270);
       width = asset.width?.toDouble();
       height = asset.height?.toDouble();
-    } else {
-      isFlipped = false;
     }
 
     if (width == null || height == null) {
@@ -89,10 +83,8 @@ class AssetService {
       }
     }
 
-    final orientedWidth = isFlipped ? height : width;
-    final orientedHeight = isFlipped ? width : height;
-    if (orientedWidth != null && orientedHeight != null && orientedHeight > 0) {
-      return orientedWidth / orientedHeight;
+    if (width != null && height != null && height > 0) {
+      return width / height;
     }
 
     return 1.0;
