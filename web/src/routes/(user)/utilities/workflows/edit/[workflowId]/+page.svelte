@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { beforeNavigate, goto } from '$app/navigation';
   import { dragAndDrop } from '$lib/actions/drag-and-drop';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import SchemaFormFields from '$lib/components/workflow/schema-form/SchemaFormFields.svelte';
@@ -6,8 +7,11 @@
   import WorkflowJsonEditor from '$lib/components/workflows/workflow-json-editor.svelte';
   import WorkflowTriggerCard from '$lib/components/workflows/workflow-trigger-card.svelte';
   import AddWorkflowStepModal from '$lib/modals/AddWorkflowStepModal.svelte';
+  import WorkflowNavigationConfirmModal from '$lib/modals/WorkflowNavigationConfirmModal.svelte';
+  import WorkflowTriggerUpdateConfirmModal from '$lib/modals/WorkflowTriggerUpdateConfirmModal.svelte';
   import { WorkflowService, type WorkflowPayload } from '$lib/services/workflow.service';
-  import type { PluginActionResponseDto, PluginFilterResponseDto } from '@immich/sdk';
+  import { handleError } from '$lib/utils/handle-error';
+  import type { PluginActionResponseDto, PluginFilterResponseDto, PluginTriggerResponseDto } from '@immich/sdk';
   import {
     Button,
     Card,
@@ -39,6 +43,7 @@
   } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
+
   interface Props {
     data: PageData;
   }
@@ -97,6 +102,18 @@
 
   const updateWorkflow = async () => {
     try {
+      console.log('Updating workflow with:', {
+        id: editWorkflow.id,
+        name,
+        description,
+        enabled: editWorkflow.enabled,
+        triggerType,
+        orderedFilters: orderedFilters.map((f) => ({ id: f.id, methodName: f.methodName })),
+        orderedActions: orderedActions.map((a) => ({ id: a.id, methodName: a.methodName })),
+        filterConfigs,
+        actionConfigs,
+      });
+
       const updated = await workflowService.updateWorkflow(
         editWorkflow.id,
         name,
@@ -113,7 +130,8 @@
       previousWorkflow = updated;
       editWorkflow = updated;
     } catch (error) {
-      console.error('Failed to update workflow:', error);
+      console.log('error', error);
+      handleError(error, 'Failed to update workflow');
     }
   };
 
@@ -261,6 +279,34 @@
   const handleRemoveAction = (index: number) => {
     orderedActions = orderedActions.filter((_, i) => i !== index);
   };
+
+  const handleTriggerChange = async (newTrigger: PluginTriggerResponseDto) => {
+    const isConfirmed = await modalManager.show(WorkflowTriggerUpdateConfirmModal);
+
+    if (!isConfirmed) {
+      return;
+    }
+
+    selectedTrigger = newTrigger;
+  };
+
+  let allowNavigation = $state(false);
+
+  beforeNavigate(({ cancel, to }) => {
+    if (hasChanges && !allowNavigation) {
+      cancel();
+
+      modalManager
+        .show(WorkflowNavigationConfirmModal)
+        .then((isConfirmed) => {
+          if (isConfirmed && to) {
+            allowNavigation = true;
+            void goto(to.url);
+          }
+        })
+        .catch(() => {});
+    }
+  });
 </script>
 
 {#snippet cardOrder(index: number)}
@@ -387,7 +433,7 @@
                 <WorkflowTriggerCard
                   {trigger}
                   selected={selectedTrigger.triggerType === trigger.triggerType}
-                  onclick={() => (selectedTrigger = trigger)}
+                  onclick={() => handleTriggerChange(trigger)}
                 />
               {/each}
             </div>

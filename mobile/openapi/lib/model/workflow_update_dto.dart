@@ -18,7 +18,7 @@ class WorkflowUpdateDto {
     this.enabled,
     this.filters = const [],
     this.name,
-    required this.triggerType,
+    this.triggerType,
   });
 
   List<WorkflowActionItemDto> actions;
@@ -49,7 +49,13 @@ class WorkflowUpdateDto {
   ///
   String? name;
 
-  PluginTriggerType triggerType;
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  PluginTriggerType? triggerType;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is WorkflowUpdateDto &&
@@ -68,7 +74,7 @@ class WorkflowUpdateDto {
     (enabled == null ? 0 : enabled!.hashCode) +
     (filters.hashCode) +
     (name == null ? 0 : name!.hashCode) +
-    (triggerType.hashCode);
+    (triggerType == null ? 0 : triggerType!.hashCode);
 
   @override
   String toString() => 'WorkflowUpdateDto[actions=$actions, description=$description, enabled=$enabled, filters=$filters, name=$name, triggerType=$triggerType]';
@@ -92,7 +98,11 @@ class WorkflowUpdateDto {
     } else {
     //  json[r'name'] = null;
     }
+    if (this.triggerType != null) {
       json[r'triggerType'] = this.triggerType;
+    } else {
+    //  json[r'triggerType'] = null;
+    }
     return json;
   }
 
@@ -110,7 +120,7 @@ class WorkflowUpdateDto {
         enabled: mapValueOfType<bool>(json, r'enabled'),
         filters: WorkflowFilterItemDto.listFromJson(json[r'filters']),
         name: mapValueOfType<String>(json, r'name'),
-        triggerType: PluginTriggerType.fromJson(json[r'triggerType'])!,
+        triggerType: PluginTriggerType.fromJson(json[r'triggerType']),
       );
     }
     return null;
@@ -158,7 +168,6 @@ class WorkflowUpdateDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'triggerType',
   };
 }
 

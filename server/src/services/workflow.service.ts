@@ -56,7 +56,7 @@ export class WorkflowService extends BaseService {
     }
 
     const workflow = await this.findOrFail(id);
-    const trigger = this.getTriggerOrFail(workflow.triggerType);
+    const trigger = this.getTriggerOrFail(dto.triggerType ?? workflow.triggerType);
 
     const { filters, actions, ...workflowUpdate } = dto;
     const filterInserts = filters && (await this.validateAndMapFilters(filters, trigger.context));

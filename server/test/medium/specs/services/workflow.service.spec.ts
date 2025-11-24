@@ -611,6 +611,52 @@ describe(WorkflowService.name, () => {
         sut.update(auth, created.id, { actions: [{ actionId: factory.uuid(), actionConfig: {} }] }),
       ).rejects.toThrow();
     });
+
+    it('should update trigger type', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+
+      const created = await sut.create(auth, {
+        triggerType: PluginTriggerType.PersonRecognized,
+        name: 'test-workflow',
+        description: 'Test',
+        enabled: true,
+        filters: [],
+        actions: [],
+      });
+
+      const updated = await sut.update(auth, created.id, {
+        triggerType: PluginTriggerType.AssetCreate,
+      });
+
+      expect(updated.triggerType).toBe(PluginTriggerType.AssetCreate);
+    });
+
+    it('should use existing trigger type when triggerType not provided in update', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+
+      const created = await sut.create(auth, {
+        triggerType: PluginTriggerType.AssetCreate,
+        name: 'test-workflow',
+        description: 'Test',
+        enabled: true,
+        filters: [{ filterId: testFilterId }],
+        actions: [],
+      });
+
+      const updated = await sut.update(auth, created.id, {
+        filters: [
+          { filterId: testFilterId, filterConfig: { updated: true } },
+          { filterId: testFilterId, filterConfig: { second: true } },
+        ],
+      });
+
+      expect(updated.triggerType).toBe(PluginTriggerType.AssetCreate);
+      expect(updated.filters).toHaveLength(2);
+    });
   });
 
   describe('delete', () => {

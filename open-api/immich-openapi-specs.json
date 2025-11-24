@@ -22985,9 +22985,6 @@
             ]
           }
         },
-        "required": [
-          "triggerType"
-        ],
         "type": "object"
       }
     }
