@@ -1,6 +1,8 @@
 import 'package:flutter/widgets.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/advanced_info_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/archive_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_local_action_button.widget.dart';
@@ -12,10 +14,11 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/remove_from_al
 import 'package:immich_mobile/presentation/widgets/action_buttons/remove_from_lock_folder_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_link_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/similar_photos_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/trash_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/unarchive_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/unstack_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/upload_action_button.widget.dart';
-import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 
 class ActionButtonContext {
   final BaseAsset asset;
@@ -23,7 +26,9 @@ class ActionButtonContext {
   final bool isArchived;
   final bool isTrashEnabled;
   final bool isInLockedView;
+  final bool isStacked;
   final RemoteAlbum? currentAlbum;
+  final bool advancedTroubleshooting;
   final ActionSource source;
 
   const ActionButtonContext({
@@ -31,15 +36,19 @@ class ActionButtonContext {
     required this.isOwner,
     required this.isArchived,
     required this.isTrashEnabled,
+    required this.isStacked,
     required this.isInLockedView,
     required this.currentAlbum,
+    required this.advancedTroubleshooting,
     required this.source,
   });
 }
 
 enum ActionButtonType {
+  advancedInfo,
   share,
   shareLink,
+  similarPhotos,
   archive,
   unarchive,
   download,
@@ -51,10 +60,12 @@ enum ActionButtonType {
   deleteLocal,
   upload,
   removeFromAlbum,
+  unstack,
   likeActivity;
 
   bool shouldShow(ActionButtonContext context) {
     return switch (this) {
+      ActionButtonType.advancedInfo => context.advancedTroubleshooting,
       ActionButtonType.share => true,
       ActionButtonType.shareLink =>
         !context.isInLockedView && //
@@ -97,7 +108,7 @@ enum ActionButtonType {
             context.asset.hasRemote,
       ActionButtonType.deleteLocal =>
         !context.isInLockedView && //
-            context.asset.storage == AssetState.local,
+            context.asset.hasLocal,
       ActionButtonType.upload =>
         !context.isInLockedView && //
             context.asset.storage == AssetState.local,
@@ -105,16 +116,24 @@ enum ActionButtonType {
         context.isOwner && //
             !context.isInLockedView && //
             context.currentAlbum != null,
+      ActionButtonType.unstack =>
+        context.isOwner && //
+            !context.isInLockedView && //
+            context.isStacked,
       ActionButtonType.likeActivity =>
         !context.isInLockedView &&
             context.currentAlbum != null &&
             context.currentAlbum!.isActivityEnabled &&
             context.currentAlbum!.isShared,
+      ActionButtonType.similarPhotos =>
+        !context.isInLockedView && //
+            context.asset is RemoteAsset,
     };
   }
 
   Widget buildButton(ActionButtonContext context) {
     return switch (this) {
+      ActionButtonType.advancedInfo => AdvancedInfoActionButton(source: context.source),
       ActionButtonType.share => ShareActionButton(source: context.source),
       ActionButtonType.shareLink => ShareLinkActionButton(source: context.source),
       ActionButtonType.archive => ArchiveActionButton(source: context.source),
@@ -132,27 +151,14 @@ enum ActionButtonType {
         source: context.source,
       ),
       ActionButtonType.likeActivity => const LikeActivityActionButton(),
+      ActionButtonType.unstack => UnStackActionButton(source: context.source),
+      ActionButtonType.similarPhotos => SimilarPhotosActionButton(assetId: (context.asset as RemoteAsset).id),
     };
   }
 }
 
 class ActionButtonBuilder {
-  static const List<ActionButtonType> _actionTypes = [
-    ActionButtonType.share,
-    ActionButtonType.shareLink,
-    ActionButtonType.likeActivity,
-    ActionButtonType.archive,
-    ActionButtonType.unarchive,
-    ActionButtonType.download,
-    ActionButtonType.trash,
-    ActionButtonType.deletePermanent,
-    ActionButtonType.delete,
-    ActionButtonType.moveToLockFolder,
-    ActionButtonType.removeFromLockFolder,
-    ActionButtonType.deleteLocal,
-    ActionButtonType.upload,
-    ActionButtonType.removeFromAlbum,
-  ];
+  static const List<ActionButtonType> _actionTypes = ActionButtonType.values;
 
   static List<Widget> build(ActionButtonContext context) {
     return _actionTypes.where((type) => type.shouldShow(context)).map((type) => type.buildButton(context)).toList();

@@ -11,7 +11,7 @@ run_cmd pnpm --filter immich install
 log "Starting Nest API Server"
 log ""
 cd "${IMMICH_WORKSPACE}/server" || (
-    log "Immich workspace not found"jj
+    log "Immich workspace not found"
     exit 1
 )
 

@@ -8,6 +8,7 @@ import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/providers/infrastructure/people.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:scroll_date_picker/scroll_date_picker.dart';
+import 'package:immich_mobile/utils/debug_print.dart';
 
 class DriftPersonBirthdayEditForm extends ConsumerStatefulWidget {
   final DriftPerson person;
@@ -36,7 +37,7 @@ class _DriftPersonNameEditFormState extends ConsumerState<DriftPersonBirthdayEdi
         context.pop<DateTime>(_selectedDate);
       }
     } catch (error) {
-      debugPrint('Error updating birthday: $error');
+      dPrint(() => 'Error updating birthday: $error');
 
       if (!context.mounted) {
         return;

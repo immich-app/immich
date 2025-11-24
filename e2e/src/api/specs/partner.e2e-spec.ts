@@ -23,8 +23,8 @@ describe('/partners', () => {
     ]);
 
     await Promise.all([
-      createPartner({ id: user2.userId }, { headers: asBearerAuth(user1.accessToken) }),
-      createPartner({ id: user1.userId }, { headers: asBearerAuth(user2.accessToken) }),
+      createPartner({ partnerCreateDto: { sharedWithId: user2.userId } }, { headers: asBearerAuth(user1.accessToken) }),
+      createPartner({ partnerCreateDto: { sharedWithId: user1.userId } }, { headers: asBearerAuth(user2.accessToken) }),
     ]);
   });
 

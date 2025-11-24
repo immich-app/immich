@@ -14,6 +14,7 @@ const smtpTransport = Object.freeze<SystemConfig>({
         ignoreCert: false,
         host: 'localhost',
         port: 587,
+        secure: false,
         username: 'test',
         password: 'test',
       },

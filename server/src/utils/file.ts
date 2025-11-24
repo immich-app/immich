@@ -73,7 +73,7 @@ export const sendFile = async (
 
     // log non-http errors
     if (error instanceof HttpException === false) {
-      logger.error(`Unable to send file: ${error.name}`, error.stack);
+      logger.error(`Unable to send file: ${error}`, error.stack);
     }
 
     res.header('Cache-Control', 'none');

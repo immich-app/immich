@@ -1,8 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { isAbsolute } from 'node:path';
 import { SALT_ROUNDS } from 'src/constants';
+import { MaintenanceAuthDto } from 'src/dtos/maintenance.dto';
 import { UserAdminResponseDto, mapUserAdmin } from 'src/dtos/user.dto';
+import { SystemMetadataKey } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
+import { createMaintenanceLoginUrl, generateMaintenanceSecret, sendOneShotAppRestart } from 'src/utils/maintenance';
+import { getExternalDomain } from 'src/utils/misc';
 
 @Injectable()
 export class CliService extends BaseService {
@@ -36,6 +40,63 @@ export class CliService extends BaseService {
     const config = await this.getConfig({ withCache: false });
     config.passwordLogin.enabled = true;
     await this.updateConfig(config);
+  }
+
+  async disableMaintenanceMode(): Promise<{ alreadyDisabled: boolean }> {
+    const currentState = await this.systemMetadataRepository
+      .get(SystemMetadataKey.MaintenanceMode)
+      .then((state) => state ?? { isMaintenanceMode: false as const });
+
+    if (!currentState.isMaintenanceMode) {
+      return {
+        alreadyDisabled: true,
+      };
+    }
+
+    const state = { isMaintenanceMode: false as const };
+    await this.systemMetadataRepository.set(SystemMetadataKey.MaintenanceMode, state);
+
+    sendOneShotAppRestart(state);
+
+    return {
+      alreadyDisabled: false,
+    };
+  }
+
+  async enableMaintenanceMode(): Promise<{ authUrl: string; alreadyEnabled: boolean }> {
+    const { server } = await this.getConfig({ withCache: true });
+    const baseUrl = getExternalDomain(server);
+
+    const payload: MaintenanceAuthDto = {
+      username: 'cli-admin',
+    };
+
+    const state = await this.systemMetadataRepository
+      .get(SystemMetadataKey.MaintenanceMode)
+      .then((state) => state ?? { isMaintenanceMode: false as const });
+
+    if (state.isMaintenanceMode) {
+      return {
+        authUrl: await createMaintenanceLoginUrl(baseUrl, payload, state.secret),
+        alreadyEnabled: true,
+      };
+    }
+
+    const secret = generateMaintenanceSecret();
+
+    await this.systemMetadataRepository.set(SystemMetadataKey.MaintenanceMode, {
+      isMaintenanceMode: true,
+      secret,
+    });
+
+    sendOneShotAppRestart({
+      isMaintenanceMode: true,
+    });
+
+    return {
+      authUrl: await createMaintenanceLoginUrl(baseUrl, payload, secret),
+      alreadyEnabled: false,
+    };
   }
 
   async grantAdminAccess(email: string): Promise<void> {

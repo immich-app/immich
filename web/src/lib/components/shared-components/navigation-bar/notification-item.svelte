@@ -1,12 +1,19 @@
 <script lang="ts">
   import { NotificationLevel, NotificationType, type NotificationDto } from '@immich/sdk';
   import { IconButton, Stack, Text } from '@immich/ui';
-  import { mdiBackupRestore, mdiInformationOutline, mdiMessageBadgeOutline, mdiSync } from '@mdi/js';
+  import {
+    mdiBackupRestore,
+    mdiImageAlbum,
+    mdiImagePlus,
+    mdiInformationOutline,
+    mdiMessageBadgeOutline,
+    mdiSync,
+  } from '@mdi/js';
   import { DateTime } from 'luxon';
 
   interface Props {
     notification: NotificationDto;
-    onclick: (id: string) => void;
+    onclick: (notification: NotificationDto) => void;
   }
 
   let { notification, onclick }: Props = $props();
@@ -62,6 +69,18 @@
       case NotificationType.Custom: {
         return mdiInformationOutline;
       }
+
+      case NotificationType.AlbumInvite: {
+        return mdiImageAlbum;
+      }
+
+      case NotificationType.AlbumUpdate: {
+        return mdiImagePlus;
+      }
+
+      default: {
+        return mdiInformationOutline;
+      }
     }
   };
 
@@ -81,9 +100,9 @@
 </script>
 
 <button
-  class="min-h-[80px] p-2 py-3 hover:bg-immich-primary/10 dark:hover:bg-immich-dark-primary/10 border-b border-gray-200 dark:border-immich-dark-gray w-full"
+  class="min-h-20 p-2 py-3 hover:bg-immich-primary/10 dark:hover:bg-immich-dark-primary/10 border-b border-gray-200 dark:border-immich-dark-gray w-full"
   type="button"
-  onclick={() => onclick(notification.id)}
+  onclick={() => onclick(notification)}
   title={notification.createdAt}
 >
   <div class="grid grid-cols-[56px_1fr_32px] items-center gap-2">
@@ -99,7 +118,7 @@
     </div>
 
     <Stack class="text-left" gap={1}>
-      <Text size="tiny" class="uppercase text-black dark:text-white font-semibold">{notification.title}</Text>
+      <Text size="tiny" class="text-black dark:text-white font-semibold text-base">{notification.title}</Text>
       {#if notification.description}
         <Text class="overflow-hidden text-gray-600 dark:text-gray-300">{notification.description}</Text>
       {/if}

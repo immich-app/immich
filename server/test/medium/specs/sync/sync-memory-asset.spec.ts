@@ -25,7 +25,6 @@ describe(SyncEntityType.MemoryToAssetV1, () => {
     await ctx.newMemoryAsset({ memoryId: memory.id, assetId: asset.id });
 
     const response = await ctx.syncStream(auth, [SyncRequestType.MemoryToAssetsV1]);
-    expect(response).toHaveLength(1);
     expect(response).toEqual([
       {
         ack: expect.any(String),
@@ -35,10 +34,11 @@ describe(SyncEntityType.MemoryToAssetV1, () => {
         },
         type: 'MemoryToAssetV1',
       },
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
     ]);
 
     await ctx.syncAckAll(auth, response);
-    await expect(ctx.syncStream(auth, [SyncRequestType.MemoryToAssetsV1])).resolves.toEqual([]);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.MemoryToAssetsV1]);
   });
 
   it('should detect and sync a deleted memory to asset relation', async () => {
@@ -50,7 +50,6 @@ describe(SyncEntityType.MemoryToAssetV1, () => {
     await memoryRepo.removeAssetIds(memory.id, [asset.id]);
 
     const response = await ctx.syncStream(auth, [SyncRequestType.MemoryToAssetsV1]);
-    expect(response).toHaveLength(1);
     expect(response).toEqual([
       {
         ack: expect.any(String),
@@ -60,10 +59,11 @@ describe(SyncEntityType.MemoryToAssetV1, () => {
         },
         type: 'MemoryToAssetDeleteV1',
       },
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
     ]);
 
     await ctx.syncAckAll(auth, response);
-    await expect(ctx.syncStream(auth, [SyncRequestType.MemoryToAssetsV1])).resolves.toEqual([]);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.MemoryToAssetsV1]);
   });
 
   it('should not sync a memory to asset relation or delete for an unrelated user', async () => {
@@ -74,11 +74,18 @@ describe(SyncEntityType.MemoryToAssetV1, () => {
     const { memory } = await ctx.newMemory({ ownerId: user2.id });
     await ctx.newMemoryAsset({ memoryId: memory.id, assetId: asset.id });
 
-    expect(await ctx.syncStream(auth, [SyncRequestType.MemoryToAssetsV1])).toHaveLength(0);
-    expect(await ctx.syncStream(auth2, [SyncRequestType.MemoryToAssetsV1])).toHaveLength(1);
+    expect(await ctx.syncStream(auth2, [SyncRequestType.MemoryToAssetsV1])).toEqual([
+      expect.objectContaining({ type: SyncEntityType.MemoryToAssetV1 }),
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
+    ]);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.MemoryToAssetsV1]);
 
     await memoryRepo.removeAssetIds(memory.id, [asset.id]);
-    expect(await ctx.syncStream(auth, [SyncRequestType.MemoryToAssetsV1])).toHaveLength(0);
-    expect(await ctx.syncStream(auth2, [SyncRequestType.MemoryToAssetsV1])).toHaveLength(1);
+
+    expect(await ctx.syncStream(auth2, [SyncRequestType.MemoryToAssetsV1])).toEqual([
+      expect.objectContaining({ type: SyncEntityType.MemoryToAssetDeleteV1 }),
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
+    ]);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.MemoryToAssetsV1]);
   });
 });

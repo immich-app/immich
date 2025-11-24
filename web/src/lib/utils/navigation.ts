@@ -145,3 +145,16 @@ export const clearQueryParam = async (queryParam: string, url: URL) => {
     await goto(url, { keepFocus: true });
   }
 };
+
+export const getQueryValue = (queryKey: string) => {
+  const url = globalThis.location.href;
+  const urlObject = new URL(url);
+  return urlObject.searchParams.get(queryKey);
+};
+
+export const setQueryValue = async (queryKey: string, queryValue: string) => {
+  const url = globalThis.location.href;
+  const urlObject = new URL(url);
+  urlObject.searchParams.set(queryKey, queryValue);
+  await goto(urlObject, { keepFocus: true });
+};

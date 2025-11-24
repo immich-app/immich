@@ -5,8 +5,7 @@
     "immich-server",
     "redis",
     "database",
-    "immich-machine-learning",
-    "init"
+    "immich-machine-learning"
   ],
   "dockerComposeFile": [
     "../docker/docker-compose.dev.yml",
@@ -28,6 +27,12 @@
         "ms-playwright.playwright",
         "ms-azuretools.vscode-docker"
       ]
+    }
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      // https://github.com/devcontainers/features/issues/1466
+      "moby": false
     }
   },
   "forwardPorts": [3000, 9231, 9230, 2283],

@@ -1,7 +1,6 @@
 <script lang="ts">
-  import Icon from '$lib/components/elements/icon.svelte';
   import type { CropAspectRatio } from '$lib/stores/asset-editor.store';
-  import { Button, type Color } from '@immich/ui';
+  import { Button, Icon, type Color } from '@immich/ui';
 
   interface Props {
     size: {
@@ -38,7 +37,7 @@
 
 <li>
   <Button shape="round" color={buttonColor} class="flex-col gap-1" size="small" onclick={() => selectType(size.name)}>
-    <Icon size="1.75em" path={size.icon} viewBox={size.viewBox} class={toRotate(size.rotate) ? 'rotate-90' : ''} />
+    <Icon size="1.75em" icon={size.icon} viewBox={size.viewBox} class={toRotate(size.rotate) ? 'rotate-90' : ''} />
     <span>{rotatedTitle(size.name, rotateHorizontal)}</span>
   </Button>
 </li>

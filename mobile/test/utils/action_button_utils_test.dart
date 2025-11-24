@@ -81,6 +81,8 @@ void main() {
         isTrashEnabled: true,
         isInLockedView: false,
         currentAlbum: null,
+        advancedTroubleshooting: false,
+        isStacked: false,
         source: ActionSource.timeline,
       );
 
@@ -110,6 +112,8 @@ void main() {
           isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: null,
+          advancedTroubleshooting: false,
+          isStacked: false,
           source: ActionSource.timeline,
         );
 
@@ -124,6 +128,8 @@ void main() {
           isTrashEnabled: true,
           isInLockedView: true,
           currentAlbum: null,
+          advancedTroubleshooting: false,
+          isStacked: false,
           source: ActionSource.timeline,
         );
 
@@ -141,6 +147,8 @@ void main() {
           isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: null,
+          advancedTroubleshooting: false,
+          isStacked: false,
           source: ActionSource.timeline,
         );
 
@@ -156,6 +164,8 @@ void main() {
           isTrashEnabled: true,
           isInLockedView: true,
           currentAlbum: null,
+          advancedTroubleshooting: false,
+          isStacked: false,
           source: ActionSource.timeline,
         );
 
@@ -171,6 +181,8 @@ void main() {
           isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: null,
+          advancedTroubleshooting: false,
+          isStacked: false,
           source: ActionSource.timeline,
         );
 
@@ -188,6 +200,8 @@ void main() {
           isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: null,
+          advancedTroubleshooting: false,
+          isStacked: false,
           source: ActionSource.timeline,
         );
 
@@ -203,6 +217,8 @@ void main() {
           isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: null,
+          advancedTroubleshooting: false,
+          isStacked: false,
           source: ActionSource.timeline,
         );
 
@@ -218,6 +234,8 @@ void main() {
           isTrashEnabled: true,
           isInLockedView: true,
           currentAlbum: null,
+          advancedTroubleshooting: false,
+          isStacked: false,
           source: ActionSource.timeline,
         );
 
@@ -233,6 +251,8 @@ void main() {
           isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: null,
+          advancedTroubleshooting: false,
+          isStacked: false,
           source: ActionSource.timeline,
         );
 
@@ -248,6 +268,8 @@ void main() {
           isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: null,
+          advancedTroubleshooting: false,
+          isStacked: false,
           source: ActionSource.timeline,
         );
 
@@ -265,6 +287,8 @@ void main() {
           isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: null,
+          advancedTroubleshooting: false,
+          isStacked: false,
           source: ActionSource.timeline,
         );
 
@@ -280,6 +304,8 @@ void main() {
           isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: null,
+          advancedTroubleshooting: false,
+          isStacked: false,
           source: ActionSource.timeline,
         );
 
@@ -295,6 +321,8 @@ void main() {
           isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: null,
+          advancedTroubleshooting: false,
+          isStacked: false,
           source: ActionSource.timeline,
         );
 
@@ -312,6 +340,8 @@ void main() {
           isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: null,
+          advancedTroubleshooting: false,
+          isStacked: false,
           source: ActionSource.timeline,
         );
 
@@ -327,6 +357,8 @@ void main() {
           isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: null,
+          advancedTroubleshooting: false,
+          isStacked: false,
           source: ActionSource.timeline,
         );
 
@@ -342,10 +374,48 @@ void main() {
           isTrashEnabled: true,
           isInLockedView: true,
           currentAlbum: null,
+          advancedTroubleshooting: false,
+          isStacked: false,
           source: ActionSource.timeline,
         );
 
         expect(ActionButtonType.download.shouldShow(context), isFalse);
+      });
+    });
+
+    group('similar photos button', () {
+      test('should show when not locked and has remote', () {
+        final remoteAsset = createRemoteAsset();
+        final context = ActionButtonContext(
+          asset: remoteAsset,
+          isOwner: true,
+          isArchived: false,
+          isTrashEnabled: true,
+          isInLockedView: false,
+          isStacked: false,
+          currentAlbum: null,
+          advancedTroubleshooting: false,
+          source: ActionSource.timeline,
+        );
+
+        expect(ActionButtonType.similarPhotos.shouldShow(context), isTrue);
+      });
+
+      test('should not show when in locked view', () {
+        final remoteAsset = createRemoteAsset();
+        final context = ActionButtonContext(
+          asset: remoteAsset,
+          isOwner: true,
+          isArchived: false,
+          isTrashEnabled: true,
+          isInLockedView: true,
+          currentAlbum: null,
+          isStacked: false,
+          advancedTroubleshooting: false,
+          source: ActionSource.timeline,
+        );
+
+        expect(ActionButtonType.similarPhotos.shouldShow(context), isFalse);
       });
     });
 
@@ -359,6 +429,8 @@ void main() {
           isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: null,
+          advancedTroubleshooting: false,
+          isStacked: false,
           source: ActionSource.timeline,
         );
 
@@ -374,6 +446,8 @@ void main() {
           isTrashEnabled: false,
           isInLockedView: false,
           currentAlbum: null,
+          advancedTroubleshooting: false,
+          isStacked: false,
           source: ActionSource.timeline,
         );
 
@@ -391,6 +465,8 @@ void main() {
           isTrashEnabled: false,
           isInLockedView: false,
           currentAlbum: null,
+          advancedTroubleshooting: false,
+          isStacked: false,
           source: ActionSource.timeline,
         );
 
@@ -406,6 +482,8 @@ void main() {
           isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: null,
+          advancedTroubleshooting: false,
+          isStacked: false,
           source: ActionSource.timeline,
         );
 
@@ -423,6 +501,8 @@ void main() {
           isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: null,
+          advancedTroubleshooting: false,
+          isStacked: false,
           source: ActionSource.timeline,
         );
 
@@ -440,6 +520,8 @@ void main() {
           isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: null,
+          advancedTroubleshooting: false,
+          isStacked: false,
           source: ActionSource.timeline,
         );
 
@@ -457,6 +539,8 @@ void main() {
           isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: null,
+          advancedTroubleshooting: false,
+          isStacked: false,
           source: ActionSource.timeline,
         );
 
@@ -472,10 +556,28 @@ void main() {
           isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: null,
+          advancedTroubleshooting: false,
+          isStacked: false,
           source: ActionSource.timeline,
         );
 
         expect(ActionButtonType.deleteLocal.shouldShow(context), isFalse);
+      });
+
+      test('should show when asset is merged', () {
+        final context = ActionButtonContext(
+          asset: mergedAsset,
+          isOwner: true,
+          isArchived: false,
+          isTrashEnabled: true,
+          isInLockedView: false,
+          currentAlbum: null,
+          advancedTroubleshooting: false,
+          isStacked: false,
+          source: ActionSource.timeline,
+        );
+
+        expect(ActionButtonType.deleteLocal.shouldShow(context), isTrue);
       });
     });
 
@@ -489,6 +591,8 @@ void main() {
           isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: null,
+          advancedTroubleshooting: false,
+          isStacked: false,
           source: ActionSource.timeline,
         );
 
@@ -506,6 +610,8 @@ void main() {
           isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: album,
+          advancedTroubleshooting: false,
+          isStacked: false,
           source: ActionSource.timeline,
         );
 
@@ -520,6 +626,8 @@ void main() {
           isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: null,
+          advancedTroubleshooting: false,
+          isStacked: false,
           source: ActionSource.timeline,
         );
 
@@ -537,6 +645,8 @@ void main() {
           isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: album,
+          advancedTroubleshooting: false,
+          isStacked: false,
           source: ActionSource.timeline,
         );
 
@@ -552,6 +662,8 @@ void main() {
           isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: album,
+          advancedTroubleshooting: false,
+          isStacked: false,
           source: ActionSource.timeline,
         );
 
@@ -567,6 +679,8 @@ void main() {
           isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: album,
+          advancedTroubleshooting: false,
+          isStacked: false,
           source: ActionSource.timeline,
         );
 
@@ -581,11 +695,100 @@ void main() {
           isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: null,
+          advancedTroubleshooting: false,
+          isStacked: false,
           source: ActionSource.timeline,
         );
 
         expect(ActionButtonType.likeActivity.shouldShow(context), isFalse);
       });
+    });
+
+    group('advancedTroubleshooting button', () {
+      test('should show when in advanced troubleshooting mode', () {
+        final context = ActionButtonContext(
+          asset: mergedAsset,
+          isOwner: true,
+          isArchived: false,
+          isTrashEnabled: true,
+          isInLockedView: false,
+          currentAlbum: null,
+          advancedTroubleshooting: true,
+          isStacked: false,
+          source: ActionSource.timeline,
+        );
+
+        expect(ActionButtonType.advancedInfo.shouldShow(context), isTrue);
+      });
+
+      test('should not show when not in advanced troubleshooting mode', () {
+        final context = ActionButtonContext(
+          asset: mergedAsset,
+          isOwner: true,
+          isArchived: false,
+          isTrashEnabled: true,
+          isInLockedView: false,
+          currentAlbum: null,
+          advancedTroubleshooting: false,
+          isStacked: false,
+          source: ActionSource.timeline,
+        );
+
+        expect(ActionButtonType.advancedInfo.shouldShow(context), isFalse);
+      });
+    });
+  });
+
+  group('unstack button', () {
+    test('should show when owner, not locked, has remote, and is stacked', () {
+      final remoteAsset = createRemoteAsset();
+      final context = ActionButtonContext(
+        asset: remoteAsset,
+        isOwner: true,
+        isArchived: false,
+        isTrashEnabled: true,
+        isInLockedView: false,
+        currentAlbum: null,
+        advancedTroubleshooting: false,
+        isStacked: true,
+        source: ActionSource.timeline,
+      );
+
+      expect(ActionButtonType.unstack.shouldShow(context), isTrue);
+    });
+
+    test('should not show when not stacked', () {
+      final remoteAsset = createRemoteAsset();
+      final context = ActionButtonContext(
+        asset: remoteAsset,
+        isOwner: true,
+        isArchived: false,
+        isTrashEnabled: true,
+        isInLockedView: false,
+        currentAlbum: null,
+        advancedTroubleshooting: false,
+        isStacked: false,
+        source: ActionSource.timeline,
+      );
+
+      expect(ActionButtonType.unstack.shouldShow(context), isFalse);
+    });
+
+    test('should not show when not owner', () {
+      final remoteAsset = createRemoteAsset();
+      final context = ActionButtonContext(
+        asset: remoteAsset,
+        isOwner: false,
+        isArchived: true,
+        isTrashEnabled: true,
+        isInLockedView: false,
+        currentAlbum: null,
+        advancedTroubleshooting: false,
+        isStacked: false,
+        source: ActionSource.timeline,
+      );
+
+      expect(ActionButtonType.unstack.shouldShow(context), isFalse);
     });
   });
 
@@ -602,12 +805,16 @@ void main() {
         isTrashEnabled: true,
         isInLockedView: false,
         currentAlbum: null,
+        advancedTroubleshooting: false,
+        isStacked: false,
         source: ActionSource.timeline,
       );
     });
 
     test('should build correct widget for each button type', () {
       for (final buttonType in ActionButtonType.values) {
+        var buttonContext = context;
+
         if (buttonType == ActionButtonType.removeFromAlbum) {
           final album = createRemoteAlbum();
           final contextWithAlbum = ActionButtonContext(
@@ -617,12 +824,43 @@ void main() {
             isTrashEnabled: true,
             isInLockedView: false,
             currentAlbum: album,
+            advancedTroubleshooting: false,
+            isStacked: false,
+            source: ActionSource.timeline,
+          );
+          final widget = buttonType.buildButton(contextWithAlbum);
+          expect(widget, isA<Widget>());
+        } else if (buttonType == ActionButtonType.similarPhotos) {
+          final contextWithAlbum = ActionButtonContext(
+            asset: createRemoteAsset(),
+            isOwner: true,
+            isArchived: false,
+            isTrashEnabled: true,
+            isInLockedView: false,
+            currentAlbum: null,
+            advancedTroubleshooting: false,
+            isStacked: false,
+            source: ActionSource.timeline,
+          );
+          final widget = buttonType.buildButton(contextWithAlbum);
+          expect(widget, isA<Widget>());
+        } else if (buttonType == ActionButtonType.unstack) {
+          final album = createRemoteAlbum();
+          final contextWithAlbum = ActionButtonContext(
+            asset: asset,
+            isOwner: true,
+            isArchived: false,
+            isTrashEnabled: true,
+            isInLockedView: false,
+            currentAlbum: album,
+            advancedTroubleshooting: false,
+            isStacked: true,
             source: ActionSource.timeline,
           );
           final widget = buttonType.buildButton(contextWithAlbum);
           expect(widget, isA<Widget>());
         } else {
-          final widget = buttonType.buildButton(context);
+          final widget = buttonType.buildButton(buttonContext);
           expect(widget, isA<Widget>());
         }
       }
@@ -639,6 +877,8 @@ void main() {
         isTrashEnabled: true,
         isInLockedView: false,
         currentAlbum: null,
+        advancedTroubleshooting: false,
+        isStacked: false,
         source: ActionSource.timeline,
       );
 
@@ -658,6 +898,8 @@ void main() {
         isTrashEnabled: true,
         isInLockedView: false,
         currentAlbum: album,
+        advancedTroubleshooting: false,
+        isStacked: false,
         source: ActionSource.timeline,
       );
 
@@ -675,6 +917,8 @@ void main() {
         isTrashEnabled: true,
         isInLockedView: false,
         currentAlbum: null,
+        advancedTroubleshooting: false,
+        isStacked: false,
         source: ActionSource.timeline,
       );
 
@@ -693,6 +937,8 @@ void main() {
         isTrashEnabled: true,
         isInLockedView: false,
         currentAlbum: null,
+        advancedTroubleshooting: false,
+        isStacked: false,
         source: ActionSource.timeline,
       );
 
@@ -705,6 +951,8 @@ void main() {
         isTrashEnabled: true,
         isInLockedView: false,
         currentAlbum: null,
+        advancedTroubleshooting: false,
+        isStacked: false,
         source: ActionSource.timeline,
       );
 

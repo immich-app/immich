@@ -4,7 +4,7 @@ import 'package:immich_mobile/providers/asset_viewer/video_player_value_provider
 class VideoPlaybackControls {
   const VideoPlaybackControls({required this.position, required this.pause, this.restarted = false});
 
-  final double position;
+  final Duration position;
   final bool pause;
   final bool restarted;
 }
@@ -13,7 +13,7 @@ final videoPlayerControlsProvider = StateNotifierProvider<VideoPlayerControls, V
   return VideoPlayerControls(ref);
 });
 
-const videoPlayerControlsDefault = VideoPlaybackControls(position: 0, pause: false);
+const videoPlayerControlsDefault = VideoPlaybackControls(position: Duration.zero, pause: false);
 
 class VideoPlayerControls extends StateNotifier<VideoPlaybackControls> {
   VideoPlayerControls(this.ref) : super(videoPlayerControlsDefault);
@@ -30,10 +30,10 @@ class VideoPlayerControls extends StateNotifier<VideoPlaybackControls> {
     state = videoPlayerControlsDefault;
   }
 
-  double get position => state.position;
+  Duration get position => state.position;
   bool get paused => state.pause;
 
-  set position(double value) {
+  set position(Duration value) {
     if (state.position == value) {
       return;
     }
@@ -62,7 +62,7 @@ class VideoPlayerControls extends StateNotifier<VideoPlaybackControls> {
   }
 
   void restart() {
-    state = const VideoPlaybackControls(position: 0, pause: false, restarted: true);
+    state = const VideoPlaybackControls(position: Duration.zero, pause: false, restarted: true);
     ref.read(videoPlaybackValueProvider.notifier).value = ref
         .read(videoPlaybackValueProvider.notifier)
         .value

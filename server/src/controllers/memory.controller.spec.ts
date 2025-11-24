@@ -24,6 +24,11 @@ describe(MemoryController.name, () => {
       await request(ctx.getHttpServer()).get('/memories');
       expect(ctx.authenticate).toHaveBeenCalled();
     });
+
+    it('should not require any parameters', async () => {
+      await request(ctx.getHttpServer()).get('/memories').query({});
+      expect(service.search).toHaveBeenCalled();
+    });
   });
 
   describe('POST /memories', () => {

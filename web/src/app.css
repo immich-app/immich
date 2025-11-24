@@ -169,3 +169,13 @@
     filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.8));
   }
 }
+
+.maplibregl-popup {
+  .maplibregl-popup-tip {
+    @apply border-t-subtle! translate-y-[-1px];
+  }
+
+  .maplibregl-popup-content {
+    @apply bg-subtle rounded-lg;
+  }
+}

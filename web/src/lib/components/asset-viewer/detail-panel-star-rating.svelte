@@ -1,5 +1,5 @@
 <script lang="ts">
-  import StarRating from '$lib/components/shared-components/star-rating.svelte';
+  import StarRating from '$lib/elements/StarRating.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { preferences } from '$lib/stores/user.store';
   import { handlePromiseError } from '$lib/utils';

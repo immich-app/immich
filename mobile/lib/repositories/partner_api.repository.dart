@@ -22,14 +22,14 @@ class PartnerApiRepository extends ApiRepository {
   }
 
   Future<UserDto> create(String id) async {
-    final dto = await checkNull(_api.createPartner(id));
+    final dto = await checkNull(_api.createPartnerDeprecated(id));
     return UserConverter.fromPartnerDto(dto);
   }
 
   Future<void> delete(String id) => _api.removePartner(id);
 
   Future<UserDto> update(String id, {required bool inTimeline}) async {
-    final dto = await checkNull(_api.updatePartner(id, UpdatePartnerDto(inTimeline: inTimeline)));
+    final dto = await checkNull(_api.updatePartner(id, PartnerUpdateDto(inTimeline: inTimeline)));
     return UserConverter.fromPartnerDto(dto);
   }
 }

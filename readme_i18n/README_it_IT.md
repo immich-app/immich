@@ -28,7 +28,8 @@
   <a href="README_de_DE.md">Deutsch</a>
   <a href="README_nl_NL.md">Nederlands</a>
   <a href="README_tr_TR.md">Türkçe</a>
-  <a href="README_zh_CN.md">中文</a>
+  <a href="README_zh_CN.md">简体中文</a>
+  <a href="README_zh_TW.md">正體中文</a>
   <a href="README_uk_UA.md">Українська</a>
   <a href="README_ru_RU.md">Русский</a>
   <a href="README_pt_BR.md">Português Brasileiro</a>
@@ -49,14 +50,14 @@
 
 ## Link utili
 
-- [Documentazione](https://immich.app/docs)  
-- [Informazioni](https://immich.app/docs/overview/introduction)  
-- [Installazione](https://immich.app/docs/install/requirements)  
+- [Documentazione](https://docs.immich.app)  
+- [Informazioni](https://docs.immich.app/overview/introduction)  
+- [Installazione](https://docs.immich.app/install/requirements)  
 - [Roadmap](https://immich.app/roadmap)  
 - [Demo](#demo)  
 - [Funzionalità](#funzionalità)  
-- [Traduzioni](https://immich.app/docs/developer/translations)  
-- [Contribuire](https://immich.app/docs/overview/support-the-project)  
+- [Traduzioni](https://docs.immich.app/developer/translations)  
+- [Contribuire](https://docs.immich.app/overview/support-the-project)  
 
 ## Demo
 
@@ -106,7 +107,7 @@ Per l’app mobile puoi usare `https://demo.immich.app` come `Server Endpoint UR
 
 ## Traduzioni
 
-Scopri di più sulle traduzioni [qui](https://immich.app/docs/developer/translations).  
+Scopri di più sulle traduzioni [qui](https://docs.immich.app/developer/translations).  
 
 <a href="https://hosted.weblate.org/engage/immich/">
 <img src="https://hosted.weblate.org/widget/immich/immich/multi-auto.svg" alt="Stato traduzioni" />

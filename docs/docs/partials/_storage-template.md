@@ -1,7 +1,7 @@
-Immich allows the admin user to set the uploaded filename pattern at the directory and filename level as well as the [storage label for a user](/docs/administration/user-management/#set-storage-label-for-user).
+Immich allows the admin user to set the uploaded filename pattern at the directory and filename level as well as the [storage label for a user](/administration/user-management/#set-storage-label-for-user).
 
 :::tip
-You can read more about the differences between storage template engine on and off [here](/docs/administration/backup-and-restore#asset-types-and-storage-locations)
+You can read more about the differences between storage template engine on and off [here](/administration/backup-and-restore#asset-types-and-storage-locations)
 :::
 
 The admin user can set the template by using the template builder in the `Administration -> Settings -> Storage Template`. Immich provides a set of variables that you can use in constructing the template, along with additional custom text. If the template produces [multiple files with the same filename, they won't be overwritten](https://github.com/immich-app/immich/discussions/3324) as a sequence number is appended to the filename.

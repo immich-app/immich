@@ -1,4 +1,3 @@
-import { randomUUID } from 'node:crypto';
 import {
   Activity,
   ApiKey,
@@ -17,14 +16,15 @@ import { MapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { AssetStatus, AssetType, AssetVisibility, MemoryType, Permission, UserMetadataKey, UserStatus } from 'src/enum';
 import { OnThisDayData, UserMetadataItem } from 'src/types';
+import { v4, v7 } from 'uuid';
 
-export const newUuid = () => randomUUID() as string;
+export const newUuid = () => v4();
 export const newUuids = () =>
   Array.from({ length: 100 })
     .fill(0)
     .map(() => newUuid());
 export const newDate = () => new Date();
-export const newUuidV7 = () => 'uuid-v7';
+export const newUuidV7 = () => v7();
 export const newSha1 = () => Buffer.from('this is a fake hash');
 export const newEmbedding = () => {
   const embedding = Array.from({ length: 512 })
@@ -135,6 +135,7 @@ const sessionFactory = (session: Partial<Session> = {}) => ({
   userId: newUuid(),
   pinExpiresAt: newDate(),
   isPendingSyncReset: false,
+  appVersion: session.appVersion ?? null,
   ...session,
 });
 
@@ -308,10 +309,44 @@ const assetSidecarWriteFactory = (asset: Partial<SidecarWriteAsset> = {}) => ({
   ...asset,
 });
 
+const assetOcrFactory = (
+  ocr: {
+    id?: string;
+    assetId?: string;
+    x1?: number;
+    y1?: number;
+    x2?: number;
+    y2?: number;
+    x3?: number;
+    y3?: number;
+    x4?: number;
+    y4?: number;
+    boxScore?: number;
+    textScore?: number;
+    text?: string;
+  } = {},
+) => ({
+  id: newUuid(),
+  assetId: newUuid(),
+  x1: 0.1,
+  y1: 0.2,
+  x2: 0.3,
+  y2: 0.2,
+  x3: 0.3,
+  y3: 0.4,
+  x4: 0.1,
+  y4: 0.4,
+  boxScore: 0.95,
+  textScore: 0.92,
+  text: 'Sample Text',
+  ...ocr,
+});
+
 export const factory = {
   activity: activityFactory,
   apiKey: apiKeyFactory,
   asset: assetFactory,
+  assetOcr: assetOcrFactory,
   auth: authFactory,
   authApiKey: authApiKeyFactory,
   authUser: authUserFactory,

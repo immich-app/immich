@@ -95,7 +95,7 @@ class GalleryViewerPage extends HookConsumerWidget {
       } catch (e) {
         // swallow error silently
         log.severe('Error precaching next image: $e');
-        context.maybePop();
+        await context.maybePop();
       }
     }
 

@@ -1,19 +1,19 @@
 <script lang="ts">
-  import { slide } from 'svelte/transition';
-  import type { AlbumResponseDto } from '@immich/sdk';
-  import { AlbumGroupBy, albumViewSettings } from '$lib/stores/preferences.store';
-  import type { ContextMenuPosition } from '$lib/utils/context-menu';
-  import { mdiChevronRight } from '@mdi/js';
   import AlbumTableHeader from '$lib/components/album-page/albums-table-header.svelte';
   import AlbumTableRow from '$lib/components/album-page/albums-table-row.svelte';
-  import Icon from '$lib/components/elements/icon.svelte';
+  import { AlbumGroupBy, albumViewSettings } from '$lib/stores/preferences.store';
   import {
     isAlbumGroupCollapsed,
-    toggleAlbumGroupCollapsing,
     sortOptionsMetadata,
+    toggleAlbumGroupCollapsing,
     type AlbumGroup,
   } from '$lib/utils/album-utils';
+  import type { ContextMenuPosition } from '$lib/utils/context-menu';
+  import type { AlbumResponseDto } from '@immich/sdk';
+  import { Icon } from '@immich/ui';
+  import { mdiChevronRight } from '@mdi/js';
   import { t } from 'svelte-i18n';
+  import { slide } from 'svelte/transition';
 
   interface Props {
     groupedAlbums: AlbumGroup[];
@@ -26,7 +26,7 @@
 
 <table class="mt-2 w-full text-start">
   <thead
-    class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-primary"
+    class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray"
   >
     <tr class="flex w-full place-items-center p-2 md:p-5">
       {#each sortOptionsMetadata as option, index (index)}
@@ -54,7 +54,7 @@
         >
           <td class="text-md text-start -mb-1">
             <Icon
-              path={mdiChevronRight}
+              icon={mdiChevronRight}
               size="20"
               class="inline-block -mt-2 transition-all duration-250 {iconRotation}"
             />

@@ -78,7 +78,7 @@
 </script>
 
 <div id="location-selection">
-  <p class="immich-form-label">{$t('place').toUpperCase()}</p>
+  <p class="uppercase immich-form-label">{$t('place')}</p>
 
   <div class="grid grid-auto-fit-40 gap-5 mt-1">
     <div class="w-full">

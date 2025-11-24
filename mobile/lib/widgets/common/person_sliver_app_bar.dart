@@ -378,9 +378,17 @@ class _RandomAssetBackgroundState extends State<_RandomAssetBackground> with Tic
   void initState() {
     super.initState();
 
-    _zoomController = AnimationController(duration: const Duration(seconds: 12), vsync: this);
+    _zoomController = AnimationController(
+      duration: const Duration(seconds: 12),
+      vsync: this,
+      animationBehavior: AnimationBehavior.preserve,
+    );
 
-    _crossFadeController = AnimationController(duration: const Duration(milliseconds: 1200), vsync: this);
+    _crossFadeController = AnimationController(
+      duration: const Duration(milliseconds: 1200),
+      vsync: this,
+      animationBehavior: AnimationBehavior.preserve,
+    );
 
     _zoomAnimation = Tween<double>(
       begin: 1.0,

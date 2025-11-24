@@ -1,26 +1,26 @@
 <script lang="ts">
   import { beforeNavigate } from '$app/navigation';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-  import AddToAlbum from '$lib/components/photos-page/actions/add-to-album.svelte';
-  import ArchiveAction from '$lib/components/photos-page/actions/archive-action.svelte';
-  import AssetJobActions from '$lib/components/photos-page/actions/asset-job-actions.svelte';
-  import ChangeDate from '$lib/components/photos-page/actions/change-date-action.svelte';
-  import ChangeDescription from '$lib/components/photos-page/actions/change-description-action.svelte';
-  import ChangeLocation from '$lib/components/photos-page/actions/change-location-action.svelte';
-  import CreateSharedLink from '$lib/components/photos-page/actions/create-shared-link.svelte';
-  import DeleteAssets from '$lib/components/photos-page/actions/delete-assets.svelte';
-  import DownloadAction from '$lib/components/photos-page/actions/download-action.svelte';
-  import FavoriteAction from '$lib/components/photos-page/actions/favorite-action.svelte';
-  import LinkLivePhotoAction from '$lib/components/photos-page/actions/link-live-photo-action.svelte';
-  import SelectAllAssets from '$lib/components/photos-page/actions/select-all-assets.svelte';
-  import SetVisibilityAction from '$lib/components/photos-page/actions/set-visibility-action.svelte';
-  import StackAction from '$lib/components/photos-page/actions/stack-action.svelte';
-  import TagAction from '$lib/components/photos-page/actions/tag-action.svelte';
-  import AssetGrid from '$lib/components/photos-page/asset-grid.svelte';
-  import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
   import MemoryLane from '$lib/components/photos-page/memory-lane.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
+  import AddToAlbum from '$lib/components/timeline/actions/AddToAlbumAction.svelte';
+  import ArchiveAction from '$lib/components/timeline/actions/ArchiveAction.svelte';
+  import AssetJobActions from '$lib/components/timeline/actions/AssetJobActions.svelte';
+  import ChangeDate from '$lib/components/timeline/actions/ChangeDateAction.svelte';
+  import ChangeDescription from '$lib/components/timeline/actions/ChangeDescriptionAction.svelte';
+  import ChangeLocation from '$lib/components/timeline/actions/ChangeLocationAction.svelte';
+  import CreateSharedLink from '$lib/components/timeline/actions/CreateSharedLinkAction.svelte';
+  import DeleteAssets from '$lib/components/timeline/actions/DeleteAssetsAction.svelte';
+  import DownloadAction from '$lib/components/timeline/actions/DownloadAction.svelte';
+  import FavoriteAction from '$lib/components/timeline/actions/FavoriteAction.svelte';
+  import LinkLivePhotoAction from '$lib/components/timeline/actions/LinkLivePhotoAction.svelte';
+  import SelectAllAssets from '$lib/components/timeline/actions/SelectAllAction.svelte';
+  import SetVisibilityAction from '$lib/components/timeline/actions/SetVisibilityAction.svelte';
+  import StackAction from '$lib/components/timeline/actions/StackAction.svelte';
+  import TagAction from '$lib/components/timeline/actions/TagAction.svelte';
+  import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
+  import Timeline from '$lib/components/timeline/Timeline.svelte';
   import { AssetAction } from '$lib/constants';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
@@ -37,13 +37,12 @@
   import { AssetVisibility } from '@immich/sdk';
 
   import { mdiDotsVertical, mdiPlus } from '@mdi/js';
-  import { onDestroy } from 'svelte';
+
   import { t } from 'svelte-i18n';
 
   let { isViewing: showAssetViewer } = assetViewingStore;
-  const timelineManager = new TimelineManager();
-  void timelineManager.updateOptions({ visibility: AssetVisibility.Timeline, withStacked: true, withPartners: true });
-  onDestroy(() => timelineManager.destroy());
+  let timelineManager = $state<TimelineManager>() as TimelineManager;
+  const options = { visibility: AssetVisibility.Timeline, withStacked: true, withPartners: true };
 
   const assetInteraction = new AssetInteraction();
 
@@ -70,12 +69,12 @@
 
   const handleLink: OnLink = ({ still, motion }) => {
     timelineManager.removeAssets([motion.id]);
-    timelineManager.updateAssets([still]);
+    timelineManager.upsertAssets([still]);
   };
 
   const handleUnlink: OnUnlink = ({ still, motion }) => {
-    timelineManager.addAssets([motion]);
-    timelineManager.updateAssets([still]);
+    timelineManager.upsertAssets([motion]);
+    timelineManager.upsertAssets([still]);
   };
 
   const handleSetVisibility = (assetIds: string[]) => {
@@ -89,9 +88,10 @@
 </script>
 
 <UserPageLayout hideNavbar={assetInteraction.selectionActive} showUploadButton scrollbar={false}>
-  <AssetGrid
+  <Timeline
     enableRouting={true}
-    {timelineManager}
+    bind:timelineManager
+    {options}
     {assetInteraction}
     removeAction={AssetAction.ARCHIVE}
     onEscape={handleEscape}
@@ -101,9 +101,9 @@
       <MemoryLane />
     {/if}
     {#snippet empty()}
-      <EmptyPlaceholder text={$t('no_assets_message')} onClick={() => openFileUploadDialog()} />
+      <EmptyPlaceholder text={$t('no_assets_message')} onClick={() => openFileUploadDialog()} class="mt-10 mx-auto" />
     {/snippet}
-  </AssetGrid>
+  </Timeline>
 </UserPageLayout>
 
 {#if assetInteraction.selectionActive}
@@ -153,7 +153,7 @@
       <DeleteAssets
         menuItem
         onAssetDelete={(assetIds) => timelineManager.removeAssets(assetIds)}
-        onUndoDelete={(assets) => timelineManager.addAssets(assets)}
+        onUndoDelete={(assets) => timelineManager.upsertAssets(assets)}
       />
       <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />
       <hr />

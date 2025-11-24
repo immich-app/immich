@@ -1,11 +1,12 @@
-import 'package:easy_localization/easy_localization.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/models/server_info/server_config.model.dart';
 import 'package:immich_mobile/models/server_info/server_disk_info.model.dart';
 import 'package:immich_mobile/models/server_info/server_features.model.dart';
 import 'package:immich_mobile/models/server_info/server_info.model.dart';
 import 'package:immich_mobile/models/server_info/server_version.model.dart';
 import 'package:immich_mobile/services/server_info.service.dart';
+import 'package:immich_mobile/utils/semver.dart';
 import 'package:logging/logging.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
@@ -24,9 +25,7 @@ class ServerInfoNotifier extends StateNotifier<ServerInfo> {
             mapDarkStyleUrl: 'https://tiles.immich.cloud/v1/style/dark.json',
           ),
           serverDiskInfo: ServerDiskInfo(diskAvailable: "0", diskSize: "0", diskUse: "0", diskUsagePercentage: 0),
-          isVersionMismatch: false,
-          isNewReleaseAvailable: false,
-          versionMismatchErrorMessage: "",
+          versionStatus: VersionStatus.upToDate,
         ),
       );
 
@@ -43,73 +42,42 @@ class ServerInfoNotifier extends StateNotifier<ServerInfo> {
     try {
       final serverVersion = await _serverInfoService.getServerVersion();
 
+      // using isClientOutOfDate since that will show to users reguardless of if they are an admin
       if (serverVersion == null) {
-        state = state.copyWith(isVersionMismatch: true, versionMismatchErrorMessage: "common_server_error".tr());
+        state = state.copyWith(versionStatus: VersionStatus.error);
         return;
       }
 
       await _checkServerVersionMismatch(serverVersion);
     } catch (e, stackTrace) {
       _log.severe("Failed to get server version", e, stackTrace);
-      state = state.copyWith(isVersionMismatch: true);
+      state = state.copyWith(versionStatus: VersionStatus.error);
       return;
     }
   }
 
-  _checkServerVersionMismatch(ServerVersion serverVersion) async {
-    state = state.copyWith(serverVersion: serverVersion);
+  _checkServerVersionMismatch(ServerVersion serverVersion, {ServerVersion? latestVersion}) async {
+    state = state.copyWith(serverVersion: serverVersion, latestVersion: latestVersion);
 
     var packageInfo = await PackageInfo.fromPlatform();
+    SemVer clientVersion = SemVer.fromString(packageInfo.version);
 
-    Map<String, int> appVersion = _getDetailVersion(packageInfo.version);
-
-    if (appVersion["major"]! > serverVersion.major) {
-      state = state.copyWith(
-        isVersionMismatch: true,
-        versionMismatchErrorMessage: "profile_drawer_server_out_of_date_major".tr(),
-      );
+    if (serverVersion < clientVersion || (latestVersion != null && serverVersion < latestVersion)) {
+      state = state.copyWith(versionStatus: VersionStatus.serverOutOfDate);
       return;
     }
 
-    if (appVersion["major"]! < serverVersion.major) {
-      state = state.copyWith(
-        isVersionMismatch: true,
-        versionMismatchErrorMessage: "profile_drawer_client_out_of_date_major".tr(),
-      );
+    if (clientVersion < serverVersion && clientVersion.differenceType(serverVersion) != SemVerType.patch) {
+      state = state.copyWith(versionStatus: VersionStatus.clientOutOfDate);
       return;
     }
 
-    if (appVersion["minor"]! > serverVersion.minor) {
-      state = state.copyWith(
-        isVersionMismatch: true,
-        versionMismatchErrorMessage: "profile_drawer_server_out_of_date_minor".tr(),
-      );
-      return;
-    }
-
-    if (appVersion["minor"]! < serverVersion.minor) {
-      state = state.copyWith(
-        isVersionMismatch: true,
-        versionMismatchErrorMessage: "profile_drawer_client_out_of_date_minor".tr(),
-      );
-      return;
-    }
-
-    state = state.copyWith(isVersionMismatch: false, versionMismatchErrorMessage: "");
+    state = state.copyWith(versionStatus: VersionStatus.upToDate);
   }
 
-  handleNewRelease(ServerVersion serverVersion, ServerVersion latestVersion) {
+  handleReleaseInfo(ServerVersion serverVersion, ServerVersion latestVersion) {
     // Update local server version
-    _checkServerVersionMismatch(serverVersion);
-
-    final majorEqual = latestVersion.major == serverVersion.major;
-    final minorEqual = majorEqual && latestVersion.minor == serverVersion.minor;
-    final newVersionAvailable =
-        latestVersion.major > serverVersion.major ||
-        (majorEqual && latestVersion.minor > serverVersion.minor) ||
-        (minorEqual && latestVersion.patch > serverVersion.patch);
-
-    state = state.copyWith(latestVersion: latestVersion, isNewReleaseAvailable: newVersionAvailable);
+    _checkServerVersionMismatch(serverVersion, latestVersion: latestVersion);
   }
 
   getServerFeatures() async {
@@ -127,18 +95,15 @@ class ServerInfoNotifier extends StateNotifier<ServerInfo> {
     }
     state = state.copyWith(serverConfig: serverConfig);
   }
-
-  Map<String, int> _getDetailVersion(String version) {
-    List<String> detail = version.split(".");
-
-    var major = detail[0];
-    var minor = detail[1];
-    var patch = detail[2];
-
-    return {"major": int.parse(major), "minor": int.parse(minor), "patch": int.parse(patch.replaceAll("-DEBUG", ""))};
-  }
 }
 
 final serverInfoProvider = StateNotifierProvider<ServerInfoNotifier, ServerInfo>((ref) {
   return ServerInfoNotifier(ref.read(serverInfoServiceProvider));
+});
+
+final versionWarningPresentProvider = Provider.family<bool, UserDto?>((ref, user) {
+  final serverInfo = ref.watch(serverInfoProvider);
+  return serverInfo.versionStatus == VersionStatus.clientOutOfDate ||
+      serverInfo.versionStatus == VersionStatus.error ||
+      ((user?.isAdmin ?? false) && serverInfo.versionStatus == VersionStatus.serverOutOfDate);
 });

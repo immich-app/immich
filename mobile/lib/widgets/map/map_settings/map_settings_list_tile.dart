@@ -13,7 +13,7 @@ class MapSettingsListTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SwitchListTile.adaptive(
-      activeColor: context.primaryColor,
+      activeThumbColor: context.primaryColor,
       title: Text(title, style: context.textTheme.labelLarge?.copyWith(fontWeight: FontWeight.bold)).tr(),
       value: selected,
       onChanged: onChanged,

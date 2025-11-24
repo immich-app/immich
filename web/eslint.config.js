@@ -1,5 +1,6 @@
 import js from '@eslint/js';
 import tslintPluginCompat from '@koddsson/eslint-plugin-tscompat';
+import prettier from 'eslint-config-prettier';
 import eslintPluginCompat from 'eslint-plugin-compat';
 import eslintPluginSvelte from 'eslint-plugin-svelte';
 import eslintPluginUnicorn from 'eslint-plugin-unicorn';
@@ -17,6 +18,7 @@ export default typescriptEslint.config(
   ...eslintPluginSvelte.configs.recommended,
   eslintPluginUnicorn.configs.recommended,
   js.configs.recommended,
+  prettier,
   {
     plugins: {
       tscompat: tslintPluginCompat,
@@ -119,12 +121,15 @@ export default typescriptEslint.config(
       'unicorn/filename-case': 'off',
       'unicorn/prefer-top-level-await': 'off',
       'unicorn/import-style': 'off',
+      'unicorn/no-array-sort': 'off',
+      'unicorn/no-for-loop': 'off',
       'svelte/button-has-type': 'error',
       '@typescript-eslint/await-thenable': 'error',
       '@typescript-eslint/no-floating-promises': 'error',
       '@typescript-eslint/no-misused-promises': 'error',
       '@typescript-eslint/require-await': 'error',
       'object-shorthand': ['error', 'always'],
+      'svelte/no-navigation-without-resolve': 'off',
     },
   },
   {
