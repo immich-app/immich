@@ -2,6 +2,7 @@
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import { getAssetControlContext } from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import AssetSelectionChangeDateModal from '$lib/modals/AssetSelectionChangeDateModal.svelte';
+  import { fromISODateTime, fromISODateTimeUTC } from '$lib/utils/timeline-util';
   import { modalManager } from '@immich/ui';
   import { mdiCalendarEditOutline } from '@mdi/js';
   import { DateTime } from 'luxon';
@@ -15,15 +16,19 @@
 
   let assets = getOwnedAssets();
   let dateTime = $derived(() => {
-  for (const a of assets ?? []) {
-    const dt =
-      (a?.exifInfo?.dateTimeOriginal && timeZone
-        ? fromISODateTime(a.exifInfo.dateTimeOriginal, timeZone)
-        : a?.localDateTime
-        ? fromISODateTimeUTC(a.localDateTime)
+  for (const asset of assets ?? []) {
+    const timeZone = $derived(asset.exifInfo?.timeZone ?? undefined);
+    const dateTime =
+      (asset?.exifInfo?.dateTimeOriginal && timeZone
+        ? fromISODateTime(asset.exifInfo.dateTimeOriginal, timeZone)
+        : asset?.localDateTime
+        ? fromISODateTimeUTC(asset.localDateTime)
         : null);
 
-    if (dt) return dt;
+    if (dateTime) {
+      return dateTime;
+    }
+     
   }
   return DateTime.now();
 });
