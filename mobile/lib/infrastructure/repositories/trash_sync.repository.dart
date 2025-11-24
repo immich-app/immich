@@ -16,12 +16,9 @@ class DriftTrashSyncRepository extends DriftDatabaseRepository {
     }
 
     final existingEntities = <TrashSyncEntityData>[];
-    final checksums = itemsToReview
-        .map((e) => e.checksum)
-        .nonNulls;
+    final checksums = itemsToReview.map((e) => e.checksum).nonNulls;
     for (final slice in checksums.slices(kDriftMaxChunk)) {
-      final sliceResult = await (_db.trashSyncEntity.select()
-        ..where((tbl) => tbl.checksum.isIn(slice))).get();
+      final sliceResult = await (_db.trashSyncEntity.select()..where((tbl) => tbl.checksum.isIn(slice))).get();
       existingEntities.addAll(sliceResult);
     }
 
@@ -32,10 +29,7 @@ class DriftTrashSyncRepository extends DriftDatabaseRepository {
         if (existing == null || (existing.isSyncApproved == false && item.deletedAt!.isAfter(existing.updatedAt))) {
           batch.insert(
             _db.trashSyncEntity,
-            TrashSyncEntityCompanion.insert(
-              checksum: item.checksum!,
-              updatedAt: Value(item.deletedAt!),
-            ),
+            TrashSyncEntityCompanion.insert(checksum: item.checksum!, updatedAt: Value(item.deletedAt!)),
             onConflict: DoUpdate(
               (_) => TrashSyncEntityCompanion.custom(
                 updatedAt: Variable(item.deletedAt),
