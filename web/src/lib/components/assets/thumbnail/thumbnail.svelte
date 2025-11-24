@@ -273,9 +273,11 @@
         {/if}
 
         {#if !!assetOwner}
-          <div class="absolute bottom-0 end-1">
-            <span class="text-white font-light text-sm">{assetOwner.name}</span>
-          </div>
+          <div class="absolute bottom-1 end-2 max-w-[50%]">  
+            <p class="text-xs font-medium text-white drop-shadow-lg max-w-[100%] truncate">  
+              {assetOwner.name}  
+            </p>  
+          </div>  
         {/if}
 
         {#if !authManager.isSharedLink && showArchiveIcon && asset.visibility === AssetVisibility.Archive}
