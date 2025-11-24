@@ -363,7 +363,7 @@ extension on Iterable<PlatformAsset> {
   }
 }
 
-extension on PlatformAsset {
+extension PlatformToLocalAsset on PlatformAsset {
   LocalAsset toLocalAsset() => LocalAsset(
     id: id,
     name: name,
