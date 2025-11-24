@@ -48,6 +48,7 @@
     showArchiveIcon?: boolean;
     isShared?: boolean;
     album?: AlbumResponseDto | null;
+    albumUsers?: UserResponseDto[];
     person?: PersonResponseDto | null;
     isShowDeleteConfirmation?: boolean;
     onSelect?: (asset: TimelineAsset) => void;
@@ -80,6 +81,7 @@
     showArchiveIcon = false,
     isShared = false,
     album = null,
+    albumUsers = [],
     person = null,
     isShowDeleteConfirmation = $bindable(false),
     onSelect = () => {},
@@ -657,6 +659,7 @@
             {isSelectionMode}
             {singleSelect}
             {monthGroup}
+            {albumUsers}
             onSelect={({ title, assets }) => handleGroupSelect(timelineManager, title, assets)}
             onSelectAssetCandidates={handleSelectAssetCandidates}
             onSelectAssets={handleSelectAssets}
