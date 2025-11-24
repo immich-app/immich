@@ -33,7 +33,6 @@
   import { groupBy } from 'lodash-es';
   import { onMount, type Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
-  import { run } from 'svelte/legacy';
 
   interface Props {
     ownedAlbums?: AlbumResponseDto[];
@@ -128,65 +127,45 @@
     },
   };
 
-  let albums: AlbumResponseDto[] = $state([]);
-  let filteredAlbums: AlbumResponseDto[] = $state([]);
-  let groupedAlbums: AlbumGroup[] = $state([]);
+  let albums = $derived.by(() => {
+    switch (userSettings.filter) {
+      case AlbumFilter.Owned: {
+        return ownedAlbums;
+      }
+      case AlbumFilter.Shared: {
+        return sharedAlbums;
+      }
+      default: {
+        const nonOwnedAlbums = sharedAlbums.filter((album) => album.ownerId !== $user.id);
+        return nonOwnedAlbums.length > 0 ? ownedAlbums.concat(nonOwnedAlbums) : ownedAlbums;
+      }
+    }
+  });
+  const normalizedSearchQuery = $derived(normalizeSearchString(searchQuery));
+  let filteredAlbums = $derived(
+    normalizedSearchQuery
+      ? albums.filter(({ albumName }) => normalizeSearchString(albumName).includes(normalizedSearchQuery))
+      : albums,
+  );
 
-  let albumGroupOption: string = $state(AlbumGroupBy.None);
+  let albumGroupOption = $derived(getSelectedAlbumGroupOption(userSettings));
+  let groupedAlbums = $derived.by(() => {
+    const groupFunc = groupOptions[albumGroupOption] ?? groupOptions[AlbumGroupBy.None];
+    const groupedAlbums = groupFunc(stringToSortOrder(userSettings.groupOrder), filteredAlbums);
 
-  let albumToShare: AlbumResponseDto | null = $state(null);
+    return groupedAlbums.map((group) => ({
+      id: group.id,
+      name: group.name,
+      albums: sortAlbums(group.albums, { sortBy: userSettings.sortBy, orderBy: userSettings.sortOrder }),
+    }));
+  });
 
   let contextMenuPosition: ContextMenuPosition = $state({ x: 0, y: 0 });
   let selectedAlbum: AlbumResponseDto | undefined = $state();
   let isOpen = $state(false);
 
-  // Step 1: Filter between Owned and Shared albums, or both.
-  run(() => {
-    switch (userSettings.filter) {
-      case AlbumFilter.Owned: {
-        albums = ownedAlbums;
-        break;
-      }
-      case AlbumFilter.Shared: {
-        albums = sharedAlbums;
-        break;
-      }
-      default: {
-        const userId = $user.id;
-        const nonOwnedAlbums = sharedAlbums.filter((album) => album.ownerId !== userId);
-        albums = nonOwnedAlbums.length > 0 ? ownedAlbums.concat(nonOwnedAlbums) : ownedAlbums;
-      }
-    }
-  });
-
-  // Step 2: Filter using the given search query.
-  run(() => {
-    if (searchQuery) {
-      const searchAlbumNormalized = normalizeSearchString(searchQuery);
-
-      filteredAlbums = albums.filter((album) => {
-        return normalizeSearchString(album.albumName).includes(searchAlbumNormalized);
-      });
-    } else {
-      filteredAlbums = albums;
-    }
-  });
-
-  // Step 3: Group albums.
-  run(() => {
-    albumGroupOption = getSelectedAlbumGroupOption(userSettings);
-    const groupFunc = groupOptions[albumGroupOption] ?? groupOptions[AlbumGroupBy.None];
-    groupedAlbums = groupFunc(stringToSortOrder(userSettings.groupOrder), filteredAlbums);
-  });
-
-  // Step 4: Sort albums amongst each group.
-  run(() => {
-    groupedAlbums = groupedAlbums.map((group) => ({
-      id: group.id,
-      name: group.name,
-      albums: sortAlbums(group.albums, { sortBy: userSettings.sortBy, orderBy: userSettings.sortOrder }),
-    }));
-
+  // TODO get rid of this
+  $effect(() => {
     albumGroupIds = groupedAlbums.map(({ id }) => id);
   });
 
@@ -231,7 +210,7 @@
         const result = await modalManager.show(AlbumShareModal, { album: selectedAlbum });
         switch (result?.action) {
           case 'sharedUsers': {
-            await handleAddUsers(result.data);
+            await handleAddUsers(selectedAlbum, result.data);
             break;
           }
 
@@ -300,22 +279,17 @@
     updateRecentAlbumInfo(album);
   };
 
-  const handleAddUsers = async (albumUsers: AlbumUserAddDto[]) => {
-    if (!albumToShare) {
-      return;
-    }
+  const handleAddUsers = async (album: AlbumResponseDto, albumUsers: AlbumUserAddDto[]) => {
     try {
-      const album = await addUsersToAlbum({
-        id: albumToShare.id,
+      const updatedAlbum = await addUsersToAlbum({
+        id: album.id,
         addUsersDto: {
           albumUsers,
         },
       });
-      updateAlbumInfo(album);
+      updateAlbumInfo(updatedAlbum);
     } catch (error) {
       handleError(error, $t('errors.unable_to_add_album_users'));
-    } finally {
-      albumToShare = null;
     }
   };
 
