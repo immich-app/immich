@@ -21,7 +21,7 @@
   import { mobileDevice } from '$lib/stores/mobile-device.svelte';
   import { isAssetViewerRoute } from '$lib/utils/navigation';
   import { getTimes, type ScrubberListener } from '$lib/utils/timeline-util';
-  import { type AlbumResponseDto, type PersonResponseDto } from '@immich/sdk';
+  import { type AlbumResponseDto, type PersonResponseDto, type UserResponseDto } from '@immich/sdk';
   import { DateTime } from 'luxon';
   import { onDestroy, onMount, type Snippet } from 'svelte';
   import type { UpdatePayload } from 'vite';
