@@ -69,11 +69,15 @@ export async function buildPostgresLaunchArguments(
       args.push('--dbname');
     }
 
-    const url = new URL(databaseConfig.url);
-    // remove known bad parameters
-    url.searchParams.delete('uselibpqcompat');
+    let url = databaseConfig.url;
+    if (URL.canParse(databaseConfig.url)) {
+      const parsedUrl = new URL(databaseConfig.url);
+      // remove known bad parameters
+      parsedUrl.searchParams.delete('uselibpqcompat');
+      url = parsedUrl.toString();
+    }
 
-    args.push(url.toString());
+    args.push(url);
   } else {
     args.push(
       '--username',
