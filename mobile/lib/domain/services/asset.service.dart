@@ -61,13 +61,8 @@ class AssetService {
     double? width;
     double? height;
 
-    if (asset.hasRemote) {
-      width = asset.width?.toDouble();
-      height = asset.height?.toDouble();
-    } else if (asset is LocalAsset) {
-      width = asset.width?.toDouble();
-      height = asset.height?.toDouble();
-    }
+    width = asset.width?.toDouble();
+    height = asset.height?.toDouble();
 
     if (width == null || height == null) {
       if (asset.hasRemote) {
