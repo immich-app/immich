@@ -417,9 +417,7 @@
           {#if asset.exifInfo?.lensModel}
             <p>
               <a
-                href={resolve(
-                  `${AppRoute.SEARCH}?${getMetadataSearchQuery({ lensModel: asset.exifInfo.lensModel })}`,
-                )}
+                href={resolve(`${AppRoute.SEARCH}?${getMetadataSearchQuery({ lensModel: asset.exifInfo.lensModel })}`)}
                 title="{$t('search_for')} {asset.exifInfo.lensModel}"
                 class="hover:text-primary line-clamp-1"
               >
