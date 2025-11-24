@@ -50,9 +50,14 @@ export type MaintenanceListBackupsResponseDto = {
 export type MaintenanceUploadBackupDto = {
     file?: Blob;
 };
+export type MaintenanceStorageFolderIntegrityDto = {
+    files: number;
+    folder: StorageFolder;
+    readable: boolean;
+    writable: boolean;
+};
 export type MaintenanceIntegrityResponseDto = {
-    storageHeuristics: object;
-    storageIntegrity: object;
+    storage: MaintenanceStorageFolderIntegrityDto[];
 };
 export type MaintenanceLoginDto = {
     token?: string;
@@ -5150,6 +5155,14 @@ export enum MaintenanceAction {
     Start = "start",
     End = "end",
     RestoreDatabase = "restore_database"
+}
+export enum StorageFolder {
+    EncodedVideo = "encoded-video",
+    Library = "library",
+    Upload = "upload",
+    Profile = "profile",
+    Thumbs = "thumbs",
+    Backups = "backups"
 }
 export enum NotificationLevel {
     Success = "success",

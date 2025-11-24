@@ -16843,16 +16843,15 @@
       },
       "MaintenanceIntegrityResponseDto": {
         "properties": {
-          "storageHeuristics": {
-            "type": "object"
-          },
-          "storageIntegrity": {
-            "type": "object"
+          "storage": {
+            "items": {
+              "$ref": "#/components/schemas/MaintenanceStorageFolderIntegrityDto"
+            },
+            "type": "array"
           }
         },
         "required": [
-          "storageHeuristics",
-          "storageIntegrity"
+          "storage"
         ],
         "type": "object"
       },
@@ -16899,6 +16898,33 @@
         },
         "required": [
           "action"
+        ],
+        "type": "object"
+      },
+      "MaintenanceStorageFolderIntegrityDto": {
+        "properties": {
+          "files": {
+            "type": "number"
+          },
+          "folder": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/StorageFolder"
+              }
+            ]
+          },
+          "readable": {
+            "type": "boolean"
+          },
+          "writable": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "files",
+          "folder",
+          "readable",
+          "writable"
         ],
         "type": "object"
       },
@@ -20069,6 +20095,17 @@
           }
         },
         "type": "object"
+      },
+      "StorageFolder": {
+        "enum": [
+          "encoded-video",
+          "library",
+          "upload",
+          "profile",
+          "thumbs",
+          "backups"
+        ],
+        "type": "string"
       },
       "SyncAckDeleteDto": {
         "properties": {

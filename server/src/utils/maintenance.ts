@@ -79,44 +79,36 @@ export function generateMaintenanceSecret(): string {
 
 export async function integrityCheck(storageRepository: StorageRepository): Promise<MaintenanceIntegrityResponseDto> {
   return {
-    storageIntegrity: Object.fromEntries(
-      await Promise.all(
-        Object.values(StorageFolder).map(async (folder) => {
-          const path = join(StorageCore.getBaseFolder(folder), '.immich');
+    storage: await Promise.all(
+      Object.values(StorageFolder).map(async (folder) => {
+        const path = StorageCore.getBaseFolder(folder);
+        const files = await storageRepository.readdir(path);
+        const fn = join(StorageCore.getBaseFolder(folder), '.immich');
+
+        let readable = false,
+          writable = false;
+
+        try {
+          await storageRepository.readFile(fn);
+          readable = true;
 
           try {
-            await storageRepository.readFile(path);
-
-            try {
-              await storageRepository.overwriteFile(path, Buffer.from(`${Date.now()}`));
-              return [folder, { readable: true, writable: true }];
-            } catch {
-              return [folder, { readable: true, writable: false }];
-            }
+            await storageRepository.overwriteFile(fn, Buffer.from(`${Date.now()}`));
+            writable = true;
           } catch {
-            return [folder, { readable: false, writable: false }];
+            // no-op
           }
-        }),
-      ),
-    ),
-    storageHeuristics: Object.fromEntries(
-      await Promise.all(
-        Object.values(StorageFolder).map(async (folder) => {
-          const path = StorageCore.getBaseFolder(folder);
-          const files = await storageRepository.readdir(path);
+        } catch {
+          // no-op
+        }
 
-          try {
-            return [
-              folder,
-              {
-                files: files.filter((fn) => fn !== '.immich').length,
-              },
-            ];
-          } catch {
-            return [folder, { files: 0 }];
-          }
-        }),
-      ),
+        return {
+          folder,
+          readable,
+          writable,
+          files: files.filter((fn) => fn !== '.immich').length,
+        };
+      }),
     ),
   };
 }

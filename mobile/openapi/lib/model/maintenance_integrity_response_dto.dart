@@ -13,32 +13,26 @@ part of openapi.api;
 class MaintenanceIntegrityResponseDto {
   /// Returns a new [MaintenanceIntegrityResponseDto] instance.
   MaintenanceIntegrityResponseDto({
-    required this.storageHeuristics,
-    required this.storageIntegrity,
+    this.storage = const [],
   });
 
-  Object storageHeuristics;
-
-  Object storageIntegrity;
+  List<MaintenanceStorageFolderIntegrityDto> storage;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is MaintenanceIntegrityResponseDto &&
-    other.storageHeuristics == storageHeuristics &&
-    other.storageIntegrity == storageIntegrity;
+    _deepEquality.equals(other.storage, storage);
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (storageHeuristics.hashCode) +
-    (storageIntegrity.hashCode);
+    (storage.hashCode);
 
   @override
-  String toString() => 'MaintenanceIntegrityResponseDto[storageHeuristics=$storageHeuristics, storageIntegrity=$storageIntegrity]';
+  String toString() => 'MaintenanceIntegrityResponseDto[storage=$storage]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'storageHeuristics'] = this.storageHeuristics;
-      json[r'storageIntegrity'] = this.storageIntegrity;
+      json[r'storage'] = this.storage;
     return json;
   }
 
@@ -51,8 +45,7 @@ class MaintenanceIntegrityResponseDto {
       final json = value.cast<String, dynamic>();
 
       return MaintenanceIntegrityResponseDto(
-        storageHeuristics: mapValueOfType<Object>(json, r'storageHeuristics')!,
-        storageIntegrity: mapValueOfType<Object>(json, r'storageIntegrity')!,
+        storage: MaintenanceStorageFolderIntegrityDto.listFromJson(json[r'storage']),
       );
     }
     return null;
@@ -100,8 +93,7 @@ class MaintenanceIntegrityResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'storageHeuristics',
-    'storageIntegrity',
+    'storage',
   };
 }
 

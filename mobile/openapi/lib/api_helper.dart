@@ -151,6 +151,9 @@ String parameterToString(dynamic value) {
   if (value is SourceType) {
     return SourceTypeTypeTransformer().encode(value).toString();
   }
+  if (value is StorageFolder) {
+    return StorageFolderTypeTransformer().encode(value).toString();
+  }
   if (value is SyncEntityType) {
     return SyncEntityTypeTypeTransformer().encode(value).toString();
   }

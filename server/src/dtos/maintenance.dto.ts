@@ -28,20 +28,16 @@ export class MaintenanceStatusResponseDto {
   error?: string;
 }
 
+export class MaintenanceStorageFolderIntegrityDto {
+  @ValidateEnum({ enum: StorageFolder, name: 'StorageFolder' })
+  folder!: StorageFolder;
+  readable!: boolean;
+  writable!: boolean;
+  files!: number;
+}
+
 export class MaintenanceIntegrityResponseDto {
-  storageIntegrity!: Record<
-    StorageFolder,
-    {
-      readable: boolean;
-      writable: boolean;
-    }
-  >;
-  storageHeuristics!: Record<
-    StorageFolder,
-    {
-      files: number;
-    }
-  >;
+  storage!: MaintenanceStorageFolderIntegrityDto[];
 }
 
 export class MaintenanceListBackupsResponseDto {
