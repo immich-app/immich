@@ -2,6 +2,7 @@
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import { getAssetControlContext } from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import AssetSelectionChangeDateModal from '$lib/modals/AssetSelectionChangeDateModal.svelte';
+  import { fromISODateTime, fromISODateTimeUTC } from '$lib/utils/timeline-util';
   import { modalManager } from '@immich/ui';
   import { mdiCalendarEditOutline } from '@mdi/js';
   import { DateTime } from 'luxon';
@@ -13,10 +14,29 @@
   let { menuItem = false }: Props = $props();
   const { clearSelect, getOwnedAssets } = getAssetControlContext();
 
+  let assets = getOwnedAssets();
+  let dateTime = $derived(() => {
+  for (const asset of assets ?? []) {
+    const timeZone = $derived(asset.exifInfo?.timeZone ?? undefined);
+    const dateTime =
+      (asset?.exifInfo?.dateTimeOriginal && timeZone
+        ? fromISODateTime(asset.exifInfo.dateTimeOriginal, timeZone)
+        : asset?.localDateTime
+        ? fromISODateTimeUTC(asset.localDateTime)
+        : null);
+
+    if (dateTime) {
+      return dateTime;
+    }
+     
+  }
+  return DateTime.now();
+});
+
   const handleChangeDate = async () => {
     const success = await modalManager.show(AssetSelectionChangeDateModal, {
-      initialDate: DateTime.now(),
-      assets: getOwnedAssets(),
+      initialDate: dateTime,
+      assets: assets,
     });
     if (success) {
       clearSelect();
