@@ -38,6 +38,29 @@ class BaseActionButton extends StatelessWidget {
       );
     }
 
+    if (context.findAncestorWidgetOfExactType<MenuAnchor>() != null) {
+      final theme = context.themeData;
+      final textStyle = theme.textTheme.bodyMedium;
+      final defaultTextColor = theme.colorScheme.onSurfaceVariant;
+      final effectiveStyle = (textStyle ?? theme.textTheme.bodyMedium)?.copyWith(
+        color: (textStyle?.color ?? defaultTextColor),
+      );
+      final effectiveIconColor = iconColor ?? theme.iconTheme.color ?? theme.colorScheme.onSurfaceVariant;
+
+      return MenuItemButton(
+        style: MenuItemButton.styleFrom(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          visualDensity: const VisualDensity(vertical: -2.5),
+        ),
+        trailingIcon: Icon(iconData, size: 18, color: effectiveIconColor),
+        onPressed: onPressed,
+        child: Align(
+          alignment: Alignment.centerLeft,
+          child: Text(label, style: effectiveStyle),
+        ),
+      );
+    }
+
     return ConstrainedBox(
       constraints: BoxConstraints(maxWidth: maxWidth),
       child: MaterialButton(
