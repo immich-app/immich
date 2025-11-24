@@ -2,6 +2,7 @@ import type { ThemeSetting } from '$lib/managers/theme-manager.svelte';
 import type {
   AlbumResponseDto,
   LoginResponseDto,
+  QueueResponseDto,
   SharedLinkResponseDto,
   SystemConfigDto,
   UserAdminResponseDto,
@@ -16,6 +17,8 @@ export type Events = {
   ThemeChange: [ThemeSetting];
 
   AlbumDelete: [AlbumResponseDto];
+
+  QueueUpdate: [QueueResponseDto];
 
   SharedLinkCreate: [SharedLinkResponseDto];
   SharedLinkUpdate: [SharedLinkResponseDto];

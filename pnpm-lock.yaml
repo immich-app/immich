@@ -711,8 +711,8 @@ importers:
         specifier: file:../open-api/typescript-sdk
         version: link:../open-api/typescript-sdk
       '@immich/ui':
-        specifier: ^0.43.0
-        version: 0.43.0(@internationalized/date@3.8.2)(svelte@5.43.0)
+        specifier: ^0.45.1
+        version: 0.45.1(svelte@5.43.0)
       '@mapbox/mapbox-gl-rtl-text':
         specifier: 0.2.3
         version: 0.2.3(mapbox-gl@1.13.3)
@@ -809,6 +809,9 @@ importers:
       thumbhash:
         specifier: ^0.1.1
         version: 0.1.1
+      uplot:
+        specifier: ^1.6.32
+        version: 1.6.32
     devDependencies:
       '@eslint/js':
         specifier: ^9.36.0
@@ -2814,8 +2817,8 @@ packages:
     peerDependencies:
       svelte: ^5.0.0
 
-  '@immich/ui@0.43.0':
-    resolution: {integrity: sha512-dwWIURsGghsbeFnqxCqUyWslyRU2vQjih7uewNr0nsW68bJ5/esl+V/Kiw2opiNiwI4Q3HEcuTRY57k4Hq+X3Q==}
+  '@immich/ui@0.45.1':
+    resolution: {integrity: sha512-LanpfRI7cJLXExRxaYd4xMRvq/SWZlHmBhSsw56l0aAI6Mltm+IcFMD6LF+jvSzGOSLGLcNxIAYsqqWAPmn8+g==}
     peerDependencies:
       svelte: ^5.0.0
 
@@ -2958,8 +2961,8 @@ packages:
       '@types/node':
         optional: true
 
-  '@internationalized/date@3.8.2':
-    resolution: {integrity: sha512-/wENk7CbvLbkUvX1tu0mwq49CVkkWpkXubGel6birjRPyo6uQ4nQpnq5xZu823zRCwwn82zgHrvgF1vZyvmVgA==}
+  '@internationalized/date@3.10.0':
+    resolution: {integrity: sha512-oxDR/NTEJ1k+UFVQElaNIk65E/Z83HK1z1WI3lQyhTtnNg4R5oVXaPzK3jcpKG8UHKDVuDQHzn+wsxSz8RP3aw==}
 
   '@ioredis/commands@1.4.0':
     resolution: {integrity: sha512-aFT2yemJJo+TZCmieA7qnYGQooOS7QfNmYrzGtsYd3g9j5iDP8AimYYAesf79ohjbLG12XxC4nG5DyEnC88AsQ==}
@@ -11096,6 +11099,9 @@ packages:
     resolution: {integrity: sha512-EDxhTEVPZZRLWYcJ4ZXjGFN0oP7qYvbXWzEgRm/Yql4dHX5wDbvh89YHP6PK1lzZJYrMtXUuZZz8XGK+U6U1og==}
     engines: {node: '>=14.16'}
 
+  uplot@1.6.32:
+    resolution: {integrity: sha512-KIMVnG68zvu5XXUbC4LQEPnhwOxBuLyW1AHtpm6IKTXImkbLgkMy+jabjLgSLMasNuGGzQm/ep3tOkyTxpiQIw==}
+
   uri-js@4.4.1:
     resolution: {integrity: sha512-7rKUyy33Q1yc98pQ1DAmLtwX109F7TIfWlW1Ydo8Wl1ii1SeHieeh0HHfPeL2fMXK6z0s8ecKs9frCuLJvndBg==}
 
@@ -14432,11 +14438,12 @@ snapshots:
     dependencies:
       svelte: 5.43.0
 
-  '@immich/ui@0.43.0(@internationalized/date@3.8.2)(svelte@5.43.0)':
+  '@immich/ui@0.45.1(svelte@5.43.0)':
     dependencies:
       '@immich/svelte-markdown-preprocess': 0.1.0(svelte@5.43.0)
+      '@internationalized/date': 3.10.0
       '@mdi/js': 7.4.47
-      bits-ui: 2.9.8(@internationalized/date@3.8.2)(svelte@5.43.0)
+      bits-ui: 2.9.8(@internationalized/date@3.10.0)(svelte@5.43.0)
       luxon: 3.7.2
       simple-icons: 15.18.0
       svelte: 5.43.0
@@ -14444,8 +14451,6 @@ snapshots:
       tailwind-merge: 3.3.1
       tailwind-variants: 3.1.1(tailwind-merge@3.3.1)(tailwindcss@4.1.16)
       tailwindcss: 4.1.16
-    transitivePeerDependencies:
-      - '@internationalized/date'
 
   '@inquirer/checkbox@4.2.1(@types/node@22.19.1)':
     dependencies:
@@ -14585,7 +14590,7 @@ snapshots:
     optionalDependencies:
       '@types/node': 22.19.1
 
-  '@internationalized/date@3.8.2':
+  '@internationalized/date@3.10.0':
     dependencies:
       '@swc/helpers': 0.5.17
 
@@ -17374,11 +17379,11 @@ snapshots:
 
   binary-extensions@2.3.0: {}
 
-  bits-ui@2.9.8(@internationalized/date@3.8.2)(svelte@5.43.0):
+  bits-ui@2.9.8(@internationalized/date@3.10.0)(svelte@5.43.0):
     dependencies:
       '@floating-ui/core': 1.7.3
       '@floating-ui/dom': 1.7.4
-      '@internationalized/date': 3.8.2
+      '@internationalized/date': 3.10.0
       esm-env: 1.2.2
       runed: 0.29.2(svelte@5.43.0)
       svelte: 5.43.0
@@ -24251,6 +24256,8 @@ snapshots:
       semver: 7.7.3
       semver-diff: 4.0.0
       xdg-basedir: 5.1.0
+
+  uplot@1.6.32: {}
 
   uri-js@4.4.1:
     dependencies:

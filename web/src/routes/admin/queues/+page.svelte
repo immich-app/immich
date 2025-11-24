@@ -1,56 +1,54 @@
 <script lang="ts">
-  import JobsPanel from '$lib/components/jobs/JobsPanel.svelte';
   import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
+  import OnEvents from '$lib/components/OnEvents.svelte';
+  import QueueCard from '$lib/components/QueueCard.svelte';
   import { AppRoute } from '$lib/constants';
+  import { queueManager } from '$lib/managers/queue-manager.svelte';
   import JobCreateModal from '$lib/modals/JobCreateModal.svelte';
-  import { asyncTimeout } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
-  import { getQueuesLegacy, QueueCommand, QueueName, runQueueCommandLegacy, type QueuesResponseDto } from '@immich/sdk';
-  import { Button, HStack, modalManager, Text } from '@immich/ui';
+  import { QueueCommand, runQueueCommandLegacy, type QueueResponseDto } from '@immich/sdk';
+  import { Button, Container, HStack, modalManager, Text } from '@immich/ui';
   import { mdiCog, mdiPlay, mdiPlus } from '@mdi/js';
-  import { onDestroy, onMount } from 'svelte';
+  import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
 
-  interface Props {
+  type Props = {
     data: PageData;
-  }
+  };
 
   let { data }: Props = $props();
 
-  let jobs: QueuesResponseDto | undefined = $state();
+  let queues = $derived<QueueResponseDto[]>(queueManager.queues);
 
-  let running = true;
+  onMount(() => {
+    return queueManager.listen();
+  });
 
-  const pausedJobs = $derived(
-    Object.entries(jobs ?? {})
-      .filter(([_, queue]) => queue.queueStatus?.isPaused)
-      .map(([name]) => name as QueueName),
-  );
+  const pausedJobs = $derived(queues.filter(({ isPaused }) => isPaused).map(({ name }) => name));
 
   const handleResumePausedJobs = async () => {
     try {
       for (const name of pausedJobs) {
         await runQueueCommandLegacy({ name, queueCommandDto: { command: QueueCommand.Resume, force: false } });
       }
-      // Refresh jobs status immediately after resuming
-      jobs = await getQueuesLegacy();
+      await queueManager.refresh();
     } catch (error) {
       handleError(error, $t('admin.failed_job_command', { values: { command: 'resume', job: 'paused jobs' } }));
     }
   };
 
-  onMount(async () => {
-    while (running) {
-      jobs = await getQueuesLegacy();
-      await asyncTimeout(5000);
-    }
-  });
-
-  onDestroy(() => {
-    running = false;
-  });
+  const onQueueUpdate = (update: QueueResponseDto) => {
+    queues = queues.map((queue) => {
+      if (queue.name === update.name) {
+        return update;
+      }
+      return queue;
+    });
+  };
 </script>
+
+<OnEvents {onQueueUpdate} />
 
 <AdminPageLayout title={data.meta.title}>
   {#snippet buttons()}
@@ -88,11 +86,12 @@
       </Button>
     </HStack>
   {/snippet}
-  <section id="setting-content" class="flex place-content-center sm:mx-4">
-    <section class="w-full pb-28 sm:w-5/6 md:w-212.5">
-      {#if jobs}
-        <JobsPanel {jobs} />
-      {/if}
-    </section>
-  </section>
+
+  <Container size="large" center>
+    <div class="flex flex-col gap-2">
+      {#each queues as queue (queue.name)}
+        <QueueCard {queue} />
+      {/each}
+    </div>
+  </Container>
 </AdminPageLayout>

@@ -28,7 +28,7 @@
     "@formatjs/icu-messageformat-parser": "^2.9.8",
     "@immich/justified-layout-wasm": "^0.4.3",
     "@immich/sdk": "file:../open-api/typescript-sdk",
-    "@immich/ui": "^0.43.0",
+    "@immich/ui": "^0.45.1",
     "@mapbox/mapbox-gl-rtl-text": "0.2.3",
     "@mdi/js": "^7.4.47",
     "@photo-sphere-viewer/core": "^5.11.5",
@@ -60,7 +60,8 @@
     "svelte-maplibre": "^1.2.5",
     "svelte-persisted-store": "^0.12.0",
     "tabbable": "^6.2.0",
-    "thumbhash": "^0.1.1"
+    "thumbhash": "^0.1.1",
+    "uplot": "^1.6.32"
   },
   "devDependencies": {
     "@eslint/js": "^9.36.0",
