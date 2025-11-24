@@ -69,12 +69,12 @@
 
   const handleLink: OnLink = ({ still, motion }) => {
     timelineManager.removeAssets([motion.id]);
-    timelineManager.updateAssets([still]);
+    timelineManager.upsertAssets([still]);
   };
 
   const handleUnlink: OnUnlink = ({ still, motion }) => {
-    timelineManager.addAssets([motion]);
-    timelineManager.updateAssets([still]);
+    timelineManager.upsertAssets([motion]);
+    timelineManager.upsertAssets([still]);
   };
 
   const handleSetVisibility = (assetIds: string[]) => {
@@ -101,7 +101,7 @@
       <MemoryLane />
     {/if}
     {#snippet empty()}
-      <EmptyPlaceholder text={$t('no_assets_message')} onClick={() => openFileUploadDialog()} />
+      <EmptyPlaceholder text={$t('no_assets_message')} onClick={() => openFileUploadDialog()} class="mt-10 mx-auto" />
     {/snippet}
   </Timeline>
 </UserPageLayout>
@@ -153,7 +153,7 @@
       <DeleteAssets
         menuItem
         onAssetDelete={(assetIds) => timelineManager.removeAssets(assetIds)}
-        onUndoDelete={(assets) => timelineManager.addAssets(assets)}
+        onUndoDelete={(assets) => timelineManager.upsertAssets(assets)}
       />
       <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />
       <hr />

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { goto } from '$app/navigation';
   import empty3Url from '$lib/assets/empty-3.svg';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
@@ -7,10 +8,12 @@
   import SelectAllAssets from '$lib/components/timeline/actions/SelectAllAction.svelte';
   import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import Timeline from '$lib/components/timeline/Timeline.svelte';
+  import { AppRoute } from '$lib/constants';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
+  import { handlePromiseError } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { emptyTrash, restoreTrash } from '@immich/sdk';
   import { Button, HStack, modalManager, Text, toastManager } from '@immich/ui';
@@ -28,6 +31,10 @@
   const options = { isTrashed: true };
 
   const assetInteraction = new AssetInteraction();
+
+  if (!featureFlagsManager.value.trash) {
+    handlePromiseError(goto(AppRoute.PHOTOS));
+  }
 
   const handleEmptyTrash = async () => {
     const isConfirmed = await modalManager.showDialog({ prompt: $t('empty_trash_confirmation') });
@@ -104,7 +111,7 @@
         })}
       </p>
       {#snippet empty()}
-        <EmptyPlaceholder text={$t('trash_no_results_message')} src={empty3Url} />
+        <EmptyPlaceholder text={$t('trash_no_results_message')} src={empty3Url} class="mt-10 mx-auto" />
       {/snippet}
     </Timeline>
   </UserPageLayout>
