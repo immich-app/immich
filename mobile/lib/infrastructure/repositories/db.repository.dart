@@ -186,8 +186,7 @@ class Drift extends $Drift implements IDatabaseRepository {
             await m.createIndex(v13.idxTrashedLocalAssetAlbum);
           },
           from13To14: (m, v14) async {
-            await m.addColumn(v14.remoteAssetEntity, v14.remoteAssetEntity.height);
-            await m.addColumn(v14.remoteAssetEntity, v14.remoteAssetEntity.width);
+            await m.alterTable(TableMigration(v14.remoteAssetEntity));
           },
         ),
       );
