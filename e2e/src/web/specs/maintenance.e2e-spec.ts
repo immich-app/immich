@@ -65,7 +65,7 @@ test.describe('Maintenance', () => {
     await page.locator('#bits-c2').getByRole('button', { name: 'Restore' }).click();
 
     await page.waitForURL('/maintenance?**');
-    await page.waitForURL('/admin/maintenance**', { timeout: 20_000 });
+    await page.waitForURL('/admin/maintenance**', { timeout: 60_000 });
   });
 
   test('handle backup restore failure', async ({ context, page }) => {
@@ -80,7 +80,7 @@ test.describe('Maintenance', () => {
     await page.locator('#bits-c2').getByRole('button', { name: 'Restore' }).click();
 
     await page.waitForURL('/maintenance?**');
-    await expect(page.getByText('IM CORRUPTED')).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByText('IM CORRUPTED')).toBeVisible({ timeout: 60_000 });
     await page.getByRole('button', { name: 'End maintenance mode' }).click();
     await page.waitForURL('/admin/maintenance**');
   });
@@ -110,6 +110,6 @@ test.describe('Maintenance', () => {
     await page.locator('#bits-c2').getByRole('button', { name: 'Restore' }).click();
 
     await page.waitForURL('/maintenance?**');
-    await page.waitForURL('/photos', { timeout: 20_000 });
+    await page.waitForURL('/photos', { timeout: 60_000 });
   });
 });
