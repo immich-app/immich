@@ -82,6 +82,8 @@ class Workers {
 
         return isLocked;
       });
+
+      await new Promise((resolve) => setTimeout(resolve, 1000));
     }
 
     await kysely.destroy();
