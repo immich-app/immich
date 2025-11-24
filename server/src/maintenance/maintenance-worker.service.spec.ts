@@ -63,7 +63,7 @@ describe(MaintenanceWorkerService.name, () => {
   describe.skip('detectMediaLocation');
 
   describe('setStatus', () => {
-    it('should broadcast status', async () => {
+    it('should broadcast status', () => {
       maintenanceEphemeralStateRepositoryMock.getPublicStatus.mockReturnValue({
         action: MaintenanceAction.Start,
         error: 'mock',
@@ -446,7 +446,7 @@ describe(MaintenanceWorkerService.name, () => {
 
     it('should write file', async () => {
       await sut.uploadBackup({ originalname: 'path.sql.gz' } as never);
-      expect(mocks.storage.overwriteFile).toBeCalledWith('/data/backups/uploaded-path.sql.gz', undefined);
+      expect(mocks.storage.overwriteFile).toBeCalledWith('/data/backups/uploaded-path.sql.gz');
     });
   });
 

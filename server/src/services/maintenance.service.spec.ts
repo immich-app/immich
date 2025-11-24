@@ -224,7 +224,7 @@ describe(MaintenanceService.name, () => {
 
     it('should write file', async () => {
       await sut.uploadBackup({ originalname: 'path.sql.gz' } as never);
-      expect(mocks.storage.overwriteFile).toBeCalledWith('/data/backups/uploaded-path.sql.gz', undefined);
+      expect(mocks.storage.overwriteFile).toBeCalledWith('/data/backups/uploaded-path.sql.gz');
     });
   });
 

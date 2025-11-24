@@ -100,7 +100,7 @@ export class FilenameParamDto {
   @IsNotEmpty()
   @IsString()
   @ApiProperty({ format: 'string' })
-  @Matches(/^[a-zA-Z0-9_\-\.]+$/, {
+  @Matches(/^[a-zA-Z0-9_\-.]+$/, {
     message: 'Filename contains invalid characters',
   })
   filename!: string;
