@@ -631,6 +631,7 @@ export class AssetRepository {
                 eb.lit(1),
               )
               .as('ratio'),
+            'asset.originalFileName',
           ])
           .$if(!!options.withCoordinates, (qb) => qb.select(['asset_exif.latitude', 'asset_exif.longitude']))
           .where('asset.deletedAt', options.isTrashed ? 'is not' : 'is', null)
@@ -705,6 +706,7 @@ export class AssetRepository {
             eb.fn.coalesce(eb.fn('array_agg', ['ratio']), sql.lit('{}')).as('ratio'),
             eb.fn.coalesce(eb.fn('array_agg', ['status']), sql.lit('{}')).as('status'),
             eb.fn.coalesce(eb.fn('array_agg', ['thumbhash']), sql.lit('{}')).as('thumbhash'),
+            eb.fn.coalesce(eb.fn('array_agg', ['originalFileName']), sql.lit('{}')).as('originalFileName'),
           ])
           .$if(!!options.withCoordinates, (qb) =>
             qb.select((eb) => [

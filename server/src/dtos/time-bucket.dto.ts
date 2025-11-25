@@ -207,6 +207,13 @@ export class TimeBucketAssetResponseDto {
     description: 'Array of longitude coordinates extracted from EXIF GPS data',
   })
   longitude!: number[];
+
+  @ApiProperty({
+    type: 'array',
+    items: { type: 'string', nullable: true },
+    description: 'Array of original file names for each asset',
+  })
+  originalFileName!: (string | null)[];
 }
 
 export class TimeBucketsResponseDto {

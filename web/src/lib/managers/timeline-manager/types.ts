@@ -35,6 +35,8 @@ export type TimelineAsset = {
   people: string[] | null;
   latitude?: number | null;
   longitude?: number | null;
+  originalFileName?: string | null;
+  originalMimeType?: string | null;
 };
 
 export type AssetOperation = (asset: TimelineAsset) => { remove: boolean };
