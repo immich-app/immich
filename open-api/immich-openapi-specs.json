@@ -18465,10 +18465,6 @@
           "name": {
             "type": "string"
           },
-          "schema": {
-            "nullable": true,
-            "type": "object"
-          },
           "triggerType": {
             "allOf": [
               {
@@ -18481,7 +18477,6 @@
           "context",
           "description",
           "name",
-          "schema",
           "triggerType"
         ],
         "type": "object"

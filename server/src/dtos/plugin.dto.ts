@@ -11,7 +11,6 @@ export class PluginTriggerResponseDto {
   description!: string;
   @ValidateEnum({ enum: PluginContext, name: 'PluginContext' })
   context!: PluginContext;
-  schema!: JSONSchema | null;
 }
 
 export class PluginResponseDto {

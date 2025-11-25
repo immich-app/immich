@@ -58,7 +58,7 @@
   onLibraryDelete={handleDeleteLibrary}
 />
 
-<AdminPageLayout title={data.meta.title}>
+<AdminPageLayout breadcrumbs={[{ title: data.meta.title }]}>
   {#snippet buttons()}
     <div class="flex justify-end gap-2">
       {#if libraries.length > 0}

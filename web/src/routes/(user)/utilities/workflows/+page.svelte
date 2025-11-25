@@ -187,7 +187,7 @@
         <div class="flex flex-col items-center justify-center gap-4 py-20">
           <Icon icon={mdiPlay} size="64" class="text-immich-primary dark:text-immich-dark-primary" />
           <h2 class="text-2xl font-semibold">{$t('no_workflows_yet')}</h2>
-          <p class="text-center text-sm text-gray-600 dark:text-gray-400">
+          <p class="text-center text-sm text-muted">
             {$t('workflows_help_text')}
           </p>
           <Button shape="round" color="primary" onclick={handleCreateWorkflow}>
@@ -198,7 +198,7 @@
       {:else}
         <div class="my-6 grid gap-6">
           {#each workflows as workflow (workflow.id)}
-            <Card class="border border-gray-200/70 shadow-xl shadow-gray-900/5 dark:border-gray-700/60">
+            <Card class="border border-light-200">
               <CardHeader
                 class={`flex flex-col px-8 py-6 gap-4 sm:flex-row sm:items-center sm:gap-6 ${
                   workflow.enabled
@@ -220,7 +220,7 @@
 
                 <div class="flex items-center gap-4">
                   <div class="text-right">
-                    <Text size="tiny" class="text-gray-500 dark:text-gray-400">{$t('created_at')}</Text>
+                    <Text size="tiny">{$t('created_at')}</Text>
                     <Text size="small" class="font-medium">
                       {formatTimestamp(workflow.createdAt)}
                     </Text>
@@ -240,25 +240,25 @@
                             title: workflow.enabled ? $t('disable') : $t('enable'),
                             color: workflow.enabled ? 'danger' : 'primary',
                             icon: workflow.enabled ? mdiPause : mdiPlay,
-                            onSelect: () => void handleToggleEnabled(workflow),
+                            onAction: () => void handleToggleEnabled(workflow),
                           },
                           {
                             title: $t('edit'),
                             icon: mdiPencil,
-                            onSelect: () => void handleEditWorkflow(workflow),
+                            onAction: () => void handleEditWorkflow(workflow),
                           },
 
                           {
                             title: expandedWorkflows.has(workflow.id) ? $t('hide_schema') : $t('show_schema'),
                             icon: mdiCodeJson,
-                            onSelect: () => toggleShowingSchema(workflow.id),
+                            onAction: () => toggleShowingSchema(workflow.id),
                           },
                           MenuItemType.Divider,
                           {
                             title: $t('delete'),
                             icon: mdiDelete,
                             color: 'danger',
-                            onSelect: () => void handleDeleteWorkflow(workflow),
+                            onAction: () => void handleDeleteWorkflow(workflow),
                           },
                         ],
                       });
@@ -284,7 +284,7 @@
                     </div>
                     <div class="flex flex-wrap gap-2">
                       {#if workflow.filters.length === 0}
-                        <span class="text-sm text-gray-500 dark:text-gray-400">
+                        <span class="text-sm text-light-600">
                           {$t('no_filters_added')}
                         </span>
                       {:else}
@@ -303,7 +303,7 @@
 
                     <div>
                       {#if workflow.actions.length === 0}
-                        <span class="text-sm text-gray-500 dark:text-gray-400">
+                        <span class="text-sm text-light-600">
                           {$t('no_actions_added')}
                         </span>
                       {:else}

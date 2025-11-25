@@ -970,7 +970,6 @@ export type PluginTriggerResponseDto = {
     context: PluginContext;
     description: string;
     name: string;
-    schema: object | null;
     triggerType: PluginTriggerType;
 };
 export type QueueResponseDto = {

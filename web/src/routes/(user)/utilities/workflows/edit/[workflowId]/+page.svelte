@@ -7,6 +7,7 @@
   import WorkflowJsonEditor from '$lib/components/workflows/WorkflowJsonEditor.svelte';
   import WorkflowSummarySidebar from '$lib/components/workflows/WorkflowSummary.svelte';
   import WorkflowTriggerCard from '$lib/components/workflows/WorkflowTriggerCard.svelte';
+  import { AppRoute } from '$lib/constants';
   import AddWorkflowStepModal from '$lib/modals/AddWorkflowStepModal.svelte';
   import WorkflowNavigationConfirmModal from '$lib/modals/WorkflowNavigationConfirmModal.svelte';
   import WorkflowTriggerUpdateConfirmModal from '$lib/modals/WorkflowTriggerUpdateConfirmModal.svelte';
@@ -30,6 +31,7 @@
     Textarea,
     VStack,
     modalManager,
+    toastManager,
   } from '@immich/ui';
   import {
     mdiArrowLeft,
@@ -104,18 +106,6 @@
 
   const updateWorkflow = async () => {
     try {
-      console.log('Updating workflow with:', {
-        id: editWorkflow.id,
-        name,
-        description,
-        enabled: editWorkflow.enabled,
-        triggerType,
-        orderedFilters: orderedFilters.map((f) => ({ id: f.id, methodName: f.methodName })),
-        orderedActions: orderedActions.map((a) => ({ id: a.id, methodName: a.methodName })),
-        filterConfigs,
-        actionConfigs,
-      });
-
       const updated = await workflowService.updateWorkflow(
         editWorkflow.id,
         name,
@@ -131,8 +121,11 @@
       // Update the previous workflow state to the new values
       previousWorkflow = updated;
       editWorkflow = updated;
+
+      toastManager.success($t('workflow_update_success'), {
+        closable: true,
+      });
     } catch (error) {
-      console.log('error', error);
       handleError(error, 'Failed to update workflow');
     }
   };
@@ -312,22 +305,20 @@
 </script>
 
 {#snippet cardOrder(index: number)}
-  <div
-    class="h-8 w-8 rounded-lg borderflex place-items-center place-content-center shrink-0 border dark:border-gray-500"
-  >
-    <p class="font-mono text-sm font-bold">
+  <div class="h-8 w-8 rounded-lg flex place-items-center place-content-center shrink-0 border">
+    <Text size="small" class="font-mono font-bold">
       {index + 1}
-    </p>
+    </Text>
   </div>
 {/snippet}
 
 {#snippet stepSeparator()}
   <div class="relative flex justify-center py-4">
     <div class="absolute inset-0 flex items-center" aria-hidden="true">
-      <div class="w-full border-t-2 border-dashed border-gray-300 dark:border-gray-700"></div>
+      <div class="w-full border-t-2 border-dashed border-light-200"></div>
     </div>
     <div class="relative flex justify-center text-xs uppercase">
-      <span class="bg-white dark:bg-black px-2 font-semibold text-gray-500">THEN</span>
+      <span class="bg-white dark:bg-black px-2 font-semibold text-light-500">THEN</span>
     </div>
   </div>
 {/snippet}
@@ -336,11 +327,11 @@
   <button
     type="button"
     {onclick}
-    class="w-full p-8 rounded-lg border-2 border-dashed border-gray-300 hover:bg-gray-50 dark:hover:bg-gray-900 dark:border-gray-600 transition-all flex flex-col items-center justify-center gap-2"
+    class="w-full p-8 rounded-lg border-2 border-dashed hover:border-light-400 hover:bg-light-50 transition-all flex flex-col items-center justify-center gap-2"
   >
     <Icon icon={mdiPlus} size="32" />
-    <p class="text-sm font-medium">{title}</p>
-    <p class="text-xs">{description}</p>
+    <Text size="small" class="font-medium">{title}</Text>
+    <Text size="tiny">{description}</Text>
   </button>
 {/snippet}
 
@@ -373,25 +364,25 @@
 
           <CardBody>
             <VStack gap={6}>
-              <Field class="text-sm" label="Name" for="workflow-name" required>
-                <Input placeholder="Workflow name" bind:value={name} />
+              <Field class="text-sm" label={$t('name')} for="workflow-name" required>
+                <Input id="workflow-name" placeholder={$t('workflow_name')} bind:value={name} />
               </Field>
-              <Field class="text-sm" label="Description" for="workflow-description">
-                <Textarea placeholder="Workflow description" bind:value={description} />
+              <Field class="text-sm" label={$t('description')} for="workflow-description">
+                <Textarea id="workflow-description" placeholder={$t('workflow_description')} bind:value={description} />
               </Field>
             </VStack>
           </CardBody>
         </Card>
 
-        <div class="my-10 h-px w-[98%] bg-gray-200 dark:bg-gray-700"></div>
+        <div class="my-10 h-px w-[98%] bg-light-200"></div>
 
         <Card expandable>
           <CardHeader class="bg-primary-50">
             <div class="flex items-start gap-3">
               <Icon icon={mdiFlashOutline} size="20" class="mt-1 text-primary" />
               <div class="flex flex-col">
-                <CardTitle class="text-left text-primary">Trigger</CardTitle>
-                <CardDescription>An event that kick off the workflow</CardDescription>
+                <CardTitle class="text-left text-primary">{$t('trigger')}</CardTitle>
+                <CardDescription>{$t('trigger_description')}</CardDescription>
               </div>
             </div>
           </CardHeader>
@@ -416,17 +407,15 @@
             <div class="flex items-start gap-3">
               <Icon icon={mdiFilterOutline} size="20" class="mt-1 text-warning" />
               <div class="flex flex-col">
-                <CardTitle class="text-left text-warning">Filter</CardTitle>
-                <CardDescription>Conditions to filter the target assets</CardDescription>
+                <CardTitle class="text-left text-warning">{$t('filter')}</CardTitle>
+                <CardDescription>{$t('filter_description')}</CardDescription>
               </div>
             </div>
           </CardHeader>
 
           <CardBody>
             {#if orderedFilters.length === 0}
-              {@render emptyCreateButton('Add Filter', 'Click to add a filter condition', () =>
-                handleAddStep('filter'),
-              )}
+              {@render emptyCreateButton($t('add_filter'), $t('add_filter_description'), () => handleAddStep('filter'))}
             {:else}
               {#each orderedFilters as filter, index (filter.id)}
                 {#if index > 0}
@@ -442,7 +431,7 @@
                     isDragging: draggedFilterIndex === index,
                     isDragOver: dragOverFilterIndex === index,
                   }}
-                  class="mb-4 cursor-move rounded-lg border-2 p-4 transition-all bg-neutral-50 dark:bg-neutral-900/50 border-dashed border-transparent hover:border-gray-300 dark:hover:border-gray-600"
+                  class="mb-4 cursor-move rounded-lg border-2 p-4 transition-all bg-light-50 border-dashed border-transparent hover:border-light-300"
                 >
                   <div class="flex items-start gap-4">
                     {@render cardOrder(index)}
@@ -487,17 +476,15 @@
             <div class="flex items-start gap-3">
               <Icon icon={mdiPlayCircleOutline} size="20" class="mt-1 text-success" />
               <div class="flex flex-col">
-                <CardTitle class="text-left text-success">Action</CardTitle>
-                <CardDescription>A set of action to perform on the filtered assets</CardDescription>
+                <CardTitle class="text-left text-success">{$t('action')}</CardTitle>
+                <CardDescription>{$t('action_description')}</CardDescription>
               </div>
             </div>
           </CardHeader>
 
           <CardBody>
             {#if orderedActions.length === 0}
-              {@render emptyCreateButton('Add Action', 'Click to add an action to perform', () =>
-                handleAddStep('action'),
-              )}
+              {@render emptyCreateButton($t('add_action'), $t('add_action_description'), () => handleAddStep('action'))}
             {:else}
               {#each orderedActions as action, index (action.id)}
                 {#if index > 0}
@@ -513,7 +500,7 @@
                     isDragging: draggedActionIndex === index,
                     isDragOver: dragOverActionIndex === index,
                   }}
-                  class="mb-4 cursor-move rounded-lg border-2 p-4 transition-all bg-neutral-50 dark:bg-neutral-900/50 border-dashed border-transparent hover:border-gray-300 dark:hover:border-gray-600"
+                  class="mb-4 cursor-move rounded-lg border-2 p-4 transition-all bg-light-50 border-dashed border-transparent hover:border-light-300"
                 >
                   <div class="flex items-start gap-4">
                     {@render cardOrder(index)}
@@ -554,18 +541,14 @@
   </Container>
 </main>
 
-<ControlAppBar
-  onClose={() => goto('/utilities/workflows')}
-  backIcon={mdiArrowLeft}
-  tailwindClasses="fixed! top-0! w-full"
->
+<ControlAppBar onClose={() => goto(AppRoute.WORKFLOWS)} backIcon={mdiArrowLeft} tailwindClasses="fixed! top-0! w-full">
   {#snippet leading()}
     <p>{data.meta.title}</p>
   {/snippet}
 
   {#snippet trailing()}
     <HStack gap={4}>
-      <HStack gap={1} class="border rounded-lg p-1 dark:border-gray-600">
+      <HStack gap={1} class="border rounded-lg p-1 border-light-300">
         <Button
           size="small"
           variant={viewMode === 'visual' ? 'outline' : 'ghost'}

@@ -4,7 +4,7 @@
   import { getAssetThumbnailUrl, getPeopleThumbnailUrl } from '$lib/utils';
   import { formatLabel, getComponentFromSchema } from '$lib/utils/workflow';
   import { getAlbumInfo, getPerson, type AlbumResponseDto, type PersonResponseDto } from '@immich/sdk';
-  import { Button, Field, Input, MultiSelect, Select, Switch, modalManager, type SelectItem } from '@immich/ui';
+  import { Button, Field, Input, MultiSelect, Select, Switch, Text, modalManager, type SelectItem } from '@immich/ui';
   import { mdiPlus } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
@@ -298,9 +298,7 @@
     {#each Object.entries(components) as [key, component] (key)}
       {@const label = component.title || component.label || key}
 
-      <div
-        class="flex flex-col gap-1 bg-light dark:bg-black/50 border border-gray-200 dark:border-gray-700 p-4 rounded-xl"
-      >
+      <div class="flex flex-col gap-1 bg-light-50 border p-4 rounded-xl">
         <!-- Select component -->
         {#if component.type === 'select'}
           {#if component.subType === 'album-picker' || component.subType === 'people-picker'}
@@ -380,5 +378,5 @@
     {/each}
   </div>
 {:else}
-  <p class="text-sm text-gray-500">No configuration required</p>
+  <Text size="small" color="muted">No configuration required</Text>
 {/if}
