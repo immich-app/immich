@@ -3,7 +3,7 @@ from typing import Any
 import cv2
 import numpy as np
 from numpy.typing import NDArray
-from PIL import Image
+from PIL import Image, ImageOps
 from rapidocr.ch_ppocr_det.utils import DBPostProcess
 from rapidocr.inference_engine.base import FileInfo, InferSession
 from rapidocr.utils.download_file import DownloadFile, DownloadFileInput
@@ -78,18 +78,15 @@ class TextDetector(InferenceModel):
 
     # adapted from RapidOCR
     def _transform(self, img: Image.Image) -> NDArray[np.float32]:
-        if img.height < img.width:
-            ratio = float(self.max_resolution) / img.height
+        aspect_ratio = img.width / img.height
+        if aspect_ratio > 1.25:
+            target_dims = (self.max_resolution * 2, self.max_resolution)
+        elif aspect_ratio < 0.75:
+            target_dims = (self.max_resolution, self.max_resolution * 2)
         else:
-            ratio = float(self.max_resolution) / img.width
+            target_dims = (self.max_resolution, self.max_resolution)
 
-        resize_h = int(img.height * ratio)
-        resize_w = int(img.width * ratio)
-
-        resize_h = int(round(resize_h / 32) * 32)
-        resize_w = int(round(resize_w / 32) * 32)
-        resized_img = img.resize((int(resize_w), int(resize_h)), resample=Image.Resampling.LANCZOS)
-
+        resized_img = ImageOps.pad(img, target_dims, color=(0, 0, 0), method=Image.Resampling.LANCZOS)
         img_np: NDArray[np.float32] = cv2.cvtColor(np.array(resized_img, dtype=np.float32), cv2.COLOR_RGB2BGR)  # type: ignore
         img_np -= self.mean
         img_np *= self.std_inv
@@ -116,8 +113,8 @@ class TextDetector(InferenceModel):
         return sorted_boxes
 
     def configure(self, **kwargs: Any) -> None:
-        if (max_resolution := kwargs.get("maxResolution")) is not None:
-            self.max_resolution = max_resolution
+        if (max_resolution := kwargs.get("maxResolution")) is not None and max_resolution != self.max_resolution:
+            self.max_resolution = int(round(max_resolution / 32) * 32)
         if (min_score := kwargs.get("minScore")) is not None:
             self.postprocess.box_thresh = min_score
         if (score_mode := kwargs.get("scoreMode")) is not None:
