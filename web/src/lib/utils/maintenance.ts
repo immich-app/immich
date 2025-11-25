@@ -34,8 +34,7 @@ export const loadMaintenanceAuth = async () => {
 };
 
 export const loadMaintenanceStatus = async () => {
-  let loaded = false;
-  while (!loaded) {
+  while (true) {
     try {
       const status = await maintenanceStatus();
       maintenanceStore.status.set(status);
@@ -45,6 +44,8 @@ export const loadMaintenanceStatus = async () => {
           isMaintenanceMode: false,
         });
       }
+
+      break;
     } catch (error) {
       const status = (error as { status: number })?.status;
       if (status && status >= 500 && status < 600) {
