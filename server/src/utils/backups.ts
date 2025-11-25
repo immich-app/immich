@@ -291,7 +291,7 @@ export async function uploadBackup(
   }
 
   const path = join(backupsFolder, `uploaded-${fn}`);
-  await storage.overwriteFile(path, file.buffer);
+  await storage.createOrOverwriteFile(path, file.buffer);
 }
 
 function createSqlProgressStreams(cb: (progress: number) => void) {
