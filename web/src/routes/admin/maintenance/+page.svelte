@@ -40,7 +40,7 @@
         color="secondary"
         onclick={switchToMaintenance}
       >
-        <Text class="hidden md:block">Switch to maintenance mode</Text>
+        <Text class="hidden md:block">{$t('maintenance_start')}</Text>
       </Button>
     </HStack>
   {/snippet}

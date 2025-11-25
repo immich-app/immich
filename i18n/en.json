@@ -183,7 +183,7 @@
     "maintenance_restore_backup_description": "Immich will be wiped and restored from the chosen backup. A backup will be created before continuing.",
     "maintenance_settings": "Maintenance",
     "maintenance_settings_description": "Put Immich into maintenance mode.",
-    "maintenance_start": "Start maintenance mode",
+    "maintenance_start": "Switch to maintenance mode",
     "maintenance_upload_backup": "Upload database backup file",
     "maintenance_start_error": "Failed to start maintenance mode.",
     "maintenance_delete_error": "Failed to delete backup.",
