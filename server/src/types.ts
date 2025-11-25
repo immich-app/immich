@@ -291,11 +291,6 @@ export interface JobCounts {
   paused: number;
 }
 
-export interface QueueStatus {
-  isActive: boolean;
-  isPaused: boolean;
-}
-
 export type JobItem =
   // Audit
   | { name: JobName.AuditTableCleanup; data?: IBaseJob }

@@ -5,7 +5,13 @@
   import JobCreateModal from '$lib/modals/JobCreateModal.svelte';
   import { asyncTimeout } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
-  import { getQueuesLegacy, QueueCommand, QueueName, runQueueCommandLegacy, type QueuesResponseDto } from '@immich/sdk';
+  import {
+    getQueuesLegacy,
+    QueueCommand,
+    QueueName,
+    runQueueCommandLegacy,
+    type QueuesResponseLegacyDto,
+  } from '@immich/sdk';
   import { Button, HStack, modalManager, Text } from '@immich/ui';
   import { mdiCog, mdiPlay, mdiPlus } from '@mdi/js';
   import { onDestroy, onMount } from 'svelte';
@@ -18,7 +24,7 @@
 
   let { data }: Props = $props();
 
-  let jobs: QueuesResponseDto | undefined = $state();
+  let jobs: QueuesResponseLegacyDto | undefined = $state();
 
   let running = true;
 
