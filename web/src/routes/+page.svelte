@@ -28,7 +28,7 @@
         <span class="px-2 font-semibold">{$t('getting_started')}</span>
       </Button>
       <Button size="medium" shape="round" variant="ghost" onclick={switchToMaintenance}>
-        <span class="px-2 font-semibold">{$t('maintenance_restore_library')}</span>
+        <span class="px-2 font-semibold">{$t('maintenance_restore_from_backup')}</span>
       </Button>
     </Stack>
   </div>
