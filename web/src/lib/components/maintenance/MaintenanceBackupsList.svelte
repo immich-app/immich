@@ -18,6 +18,7 @@
     IconButton,
     menuManager,
     modalManager,
+    ProgressBar,
     Stack,
     Text,
     type ContextMenuBaseProps,
@@ -36,15 +37,15 @@
   function mapBackups(filenames: string[]) {
     return filenames.map((filename) => {
       const date = /(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})/.exec(filename);
-      const hoursAgo = date
+      const minutesAgo = date
         ? Math.floor(
-            (+Date.now() - +new Date(`${date[1]}-${date[2]}-${date[3]}T${date[4]}:${date[5]}:${date[6]}`)) / 36e5,
+            (+Date.now() - +new Date(`${date[1]}-${date[2]}-${date[3]}T${date[4]}:${date[5]}:${date[6]}`)) / 60_000,
           )
         : null;
 
       return {
         filename,
-        hoursAgo,
+        minutesAgo,
       };
     });
   }
@@ -61,9 +62,9 @@
 
   async function restore(filename: string) {
     const confirm = await modalManager.showDialog({
-      confirmText: 'Restore',
-      title: 'Restore Backup',
-      prompt: 'Immich will be wiped and restored from the chosen backup. A backup will be created before continuing.',
+      confirmText: $t('restore'),
+      title: $t('admin.maintenance_restore_backup'),
+      prompt: $t('admin.maintenance_restore_backup_description'),
     });
 
     if (confirm) {
@@ -82,9 +83,9 @@
 
   async function remove(filename: string) {
     const confirm = await modalManager.showDialog({
-      confirmText: 'Delete',
-      title: 'Delete Backup',
-      prompt: 'This file will be irrevocably deleted.',
+      confirmText: $t('delete'),
+      title: $t('admin.maintenance_delete_backup'),
+      prompt: $t('admin.maintenance_delete_backup_description'),
     });
 
     if (confirm) {
@@ -97,7 +98,7 @@
 
         backups = backups.filter((backup) => backup.filename !== filename);
       } catch (error) {
-        handleError(error, 'failed to delete backup i18n');
+        handleError(error, $t('admin.maintenance_delete_error'));
       } finally {
         deleting.delete(filename);
       }
@@ -114,14 +115,14 @@
       target: event.currentTarget as HTMLElement,
       items: [
         {
-          title: 'Download',
+          title: $t('download'),
           icon: mdiDownload,
           onSelect() {
             void download(filename);
           },
         },
         {
-          title: 'Delete',
+          title: $t('delete'),
           icon: mdiTrashCanOutline,
           color: 'danger',
           onSelect() {
@@ -153,7 +154,7 @@
       const { backups: newList } = await listBackups();
       backups = mapBackups(newList);
     } catch (error) {
-      handleError(error, 'Could not upload backup, is it an .sql/.sql.gz file?');
+      handleError(error, $t('admin.maintenance_upload_backup_error'));
     } finally {
       uploadProgress = -1;
     }
@@ -165,15 +166,13 @@
     <CardBody>
       {#if uploadProgress === -1}
         <HStack>
-          <Text class="grow">Upload database backup file</Text>
-          <Button size="small" onclick={upload}>Select file</Button>
+          <Text class="grow">{$t('admin.maintenance_upload_backup')}</Text>
+          <Button size="tiny" onclick={upload}>{$t('select_from_computer')}</Button>
         </HStack>
       {:else}
-        <HStack>
-          <Text class="grow">Uploading...</Text>
-          <div class="grow h-2.5 bg-gray-300 rounded-full overflow-hidden">
-            <div class="h-full bg-blue-600 transition-all duration-700" style="width: {uploadProgress * 100}%"></div>
-          </div>
+        <HStack gap={8}>
+          <Text class="grow">{$t('asset_uploading')}</Text>
+          <ProgressBar progress={uploadProgress} size="tiny" />
         </HStack>
       {/if}
     </CardBody>
@@ -185,20 +184,48 @@
         <HStack>
           <Stack class="grow">
             <Text>{backup.filename}</Text>
-            {#if typeof backup.hoursAgo === 'number'}
-              {#if backup.hoursAgo <= 24}
+            {#if typeof backup.minutesAgo === 'number'}
+              <Text color="info" size="small">
+                {#if backup.minutesAgo <= 1}
+                  {$t('created_minute_ago')}
+                {:else if backup.minutesAgo < 60}
+                  {$t('created_minutes_ago', {
+                    values: {
+                      count: backup.minutesAgo,
+                    },
+                  })}
+                {:else if backup.minutesAgo < 60 * 2}
+                  {$t('created_hour_ago')}
+                {:else if backup.minutesAgo < 60 * 24}
+                  {$t('created_hours_ago', {
+                    values: {
+                      count: Math.floor(backup.minutesAgo / 60),
+                    },
+                  })}
+                {:else if backup.minutesAgo < 60 * 24 * 2}
+                  {$t('created_day_ago')}
+                {:else}
+                  {$t('created_days_ago', {
+                    values: {
+                      count: Math.floor(backup.minutesAgo / (60 * 24)),
+                    },
+                  })}
+                {/if}
+              </Text>
+              <!-- {#if backup.hoursAgo <= 24}
                 <Text color="info" size="small">Created {backup.hoursAgo} hours ago</Text>
               {:else if backup.hoursAgo <= 48}
                 <Text color="info" size="small">Created 1 day ago</Text>
               {:else}
                 <Text color="info" size="small">Created {Math.floor(backup.hoursAgo / 24)} days ago</Text>
-              {/if}
+              {/if} -->
             {/if}
           </Stack>
 
           <Button size="small" disabled={deleting.has(backup.filename)} onclick={() => restore(backup.filename)}
-            >Restore</Button
+            >{$t('restore')}</Button
           >
+
           <IconButton
             shape="round"
             variant="ghost"
@@ -207,7 +234,7 @@
             class="shrink-0"
             disabled={deleting.has(backup.filename)}
             onclick={(event: Event) => handleOpen(event, { position: 'top-right' }, backup.filename)}
-            aria-label="Open menu"
+            aria-label={$t('open')}
           />
         </HStack>
       </CardBody>

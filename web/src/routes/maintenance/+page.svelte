@@ -43,7 +43,7 @@
 >
   <div class="flex flex-col place-items-center text-center gap-4">
     {#if $status?.action === MaintenanceAction.RestoreDatabase && $status.task}
-      <Heading size="large" color="primary" tag="h1">Restoring Database</Heading>
+      <Heading size="large" color="primary" tag="h1">{$t('maintenance_action_restore')}</Heading>
       {#if $status.error}
         <Scrollable class="max-h-80">
           <pre class="text-left"><code>{error}</code></pre>
