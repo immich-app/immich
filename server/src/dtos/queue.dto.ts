@@ -94,4 +94,10 @@ export class QueuesResponseDto implements Record<QueueName, QueueResponseDto> {
 
   @ApiProperty({ type: QueueResponseDto })
   [QueueName.Workflow]!: QueueResponseDto;
+
+  @ApiProperty({ type: QueueResponseDto })
+  [QueueName.AutoStack]!: QueueResponseDto;
+
+  @ApiProperty({ type: QueueResponseDto })
+  [QueueName.HashComputation]!: QueueResponseDto;
 }

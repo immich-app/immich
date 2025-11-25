@@ -205,6 +205,12 @@ export class JobRepository {
 
   private getJobOptions(item: JobItem): JobsOptions | null {
     switch (item.name) {
+      case JobName.AssetAutoStackTimeWindow: {
+        return {
+          jobId: item.data.id,
+          delay: item.data?.delay,
+        };
+      }
       case JobName.NotifyAlbumUpdate: {
         return {
           jobId: `${item.data.id}/${item.data.recipientId}`,

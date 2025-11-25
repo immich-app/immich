@@ -198,6 +198,15 @@ export class QueueService extends BaseService {
         return this.jobRepository.queue({ name: JobName.OcrQueueAll, data: { force } });
       }
 
+      case QueueName.AutoStack: {
+        await this.jobRepository.queue({ name: JobName.AssetComputeHashQueueAll, data: { force: false } });
+        return this.jobRepository.queue({ name: JobName.AssetAutoStackQueueAll, data: { force } });
+      }
+
+      case QueueName.HashComputation: {
+        return this.jobRepository.queue({ name: JobName.AssetComputeHashQueueAll, data: { force } });
+      }
+
       default: {
         throw new BadRequestException(`Invalid job name: ${name}`);
       }

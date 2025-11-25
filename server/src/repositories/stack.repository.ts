@@ -11,6 +11,7 @@ import { asUuid, withDefaultVisibility } from 'src/utils/database';
 export interface StackSearch {
   ownerId: string;
   primaryAssetId?: string;
+  source?: string | string[];
 }
 
 const withAssets = (eb: ExpressionBuilder<DB, 'stack'>, withTags = false) => {
@@ -57,6 +58,11 @@ export class StackRepository {
       .select(withAssets)
       .where('stack.ownerId', '=', query.ownerId)
       .$if(!!query.primaryAssetId, (eb) => eb.where('stack.primaryAssetId', '=', query.primaryAssetId!))
+      .$if(!!query.source, (eb) =>
+        Array.isArray(query.source)
+          ? eb.where('stack.source', 'in', query.source!)
+          : eb.where('stack.source', '=', query.source!),
+      )
       .execute();
   }
 
@@ -166,5 +172,20 @@ export class StackRepository {
   @GenerateSql({ params: [{ sourceId: DummyValue.UUID, targetId: DummyValue.UUID }] })
   merge({ sourceId, targetId }: { sourceId: string; targetId: string }) {
     return this.db.updateTable('asset').set({ stackId: targetId }).where('asset.stackId', '=', sourceId).execute();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, ['AUTO_BURST']] })
+  async deleteBySource(ownerId: string | undefined, sources: string[]): Promise<number> {
+    const result = await this.db
+      .deleteFrom('stack')
+      .$if(!!ownerId, (qb) => qb.where('ownerId', '=', asUuid(ownerId!)))
+      .where('source', 'in', sources)
+      .executeTakeFirst();
+    return Number(result.numDeletedRows || 0);
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, 'MANUAL'] })
+  async updateSource(id: string, source: string): Promise<void> {
+    await this.db.updateTable('stack').set({ source }).where('id', '=', asUuid(id)).execute();
   }
 }

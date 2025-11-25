@@ -388,6 +388,9 @@ importers:
       '@socket.io/redis-adapter':
         specifier: ^8.3.0
         version: 8.3.0(socket.io-adapter@2.5.5)
+      '@swnb/dct':
+        specifier: ^0.1.0
+        version: 0.1.0
       ajv:
         specifier: ^8.17.1
         version: 8.17.1
@@ -4321,6 +4324,9 @@ packages:
 
   '@swc/types@0.1.25':
     resolution: {integrity: sha512-iAoY/qRhNH8a/hBvm3zKj9qQ4oc2+3w1unPJa2XvTK3XjeLXtzcCingVPw/9e5mn1+0yPqxcBGp9Jf0pkfMb1g==}
+
+  '@swnb/dct@0.1.0':
+    resolution: {integrity: sha512-njwswflzBTyNsai/bLOFRk3t5AVDRTNZUWfizd3Uxqs5+GPELeXSaUnOB9S+FyBqsXmXpItihwkH7SGv6tBbOg==}
 
   '@szmarczak/http-timer@5.0.1':
     resolution: {integrity: sha512-+PmQX0PiAYPMeVYe237LJAYvOMYW1j2rH5YROyS3b4CTVJum34HfRvKvAzozHAQG0TnHNdUfY9nCeUyRAs//cw==}
@@ -16175,6 +16181,8 @@ snapshots:
   '@swc/types@0.1.25':
     dependencies:
       '@swc/counter': 0.1.3
+
+  '@swnb/dct@0.1.0': {}
 
   '@szmarczak/http-timer@5.0.1':
     dependencies:

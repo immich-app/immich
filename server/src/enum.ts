@@ -531,6 +531,8 @@ export enum QueueName {
   FacialRecognition = 'facialRecognition',
   SmartSearch = 'smartSearch',
   DuplicateDetection = 'duplicateDetection',
+  AutoStack = 'autoStack',
+  HashComputation = 'hashComputation',
   BackgroundTask = 'backgroundTask',
   StorageTemplateMigration = 'storageTemplateMigration',
   Migration = 'migration',
@@ -558,6 +560,11 @@ export enum JobName {
   AssetFileMigration = 'AssetFileMigration',
   AssetGenerateThumbnailsQueueAll = 'AssetGenerateThumbnailsQueueAll',
   AssetGenerateThumbnails = 'AssetGenerateThumbnails',
+  AssetAutoStackQueueAll = 'AssetAutoStackQueueAll',
+  AssetAutoStack = 'AssetAutoStack',
+  AssetAutoStackTimeWindow = 'AssetAutoStackTimeWindow',
+  AssetComputeHashQueueAll = 'AssetComputeHashQueueAll',
+  AssetComputeHash = 'AssetComputeHash',
 
   AuditLogCleanup = 'AuditLogCleanup',
   AuditTableCleanup = 'AuditTableCleanup',
@@ -634,6 +641,12 @@ export enum JobStatus {
   Success = 'success',
   Failed = 'failed',
   Skipped = 'skipped',
+}
+
+export enum StackSource {
+  Manual = 'MANUAL',
+  AutoBurst = 'AUTO_BURST',
+  AutoTimeWindow = 'AUTO_TIME',
 }
 
 export enum QueueCleanType {

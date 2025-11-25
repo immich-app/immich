@@ -58,6 +58,7 @@
     "@react-email/render": "^1.1.2",
     "@socket.io/redis-adapter": "^8.3.0",
     "ajv": "^8.17.1",
+    "@swnb/dct": "^0.1.0",
     "archiver": "^7.0.0",
     "async-lock": "^1.4.0",
     "bcrypt": "^6.0.0",

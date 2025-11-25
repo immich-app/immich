@@ -2,7 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { StackCreateDto, StackResponseDto, StackSearchDto, StackUpdateDto, mapStack } from 'src/dtos/stack.dto';
-import { Permission } from 'src/enum';
+import { Permission, StackSource } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
 import { UUIDAssetIDParamDto } from 'src/validation';
 
@@ -40,7 +40,12 @@ export class StackService extends BaseService {
       throw new BadRequestException('Primary asset must be in the stack');
     }
 
-    const updatedStack = await this.stackRepository.update(id, { id, primaryAssetId: dto.primaryAssetId });
+    // Mark stack as manual when user changes primary asset
+    const updatedStack = await this.stackRepository.update(id, {
+      id,
+      primaryAssetId: dto.primaryAssetId,
+      source: StackSource.Manual,
+    });
 
     await this.eventRepository.emit('StackUpdate', { stackId: id, userId: auth.user.id });
 
@@ -74,7 +79,20 @@ export class StackService extends BaseService {
     }
 
     await this.assetRepository.update({ id: assetId, stackId: null });
+
+    // Mark stack as manual when user removes an asset
+    await this.stackRepository.updateSource(stackId, StackSource.Manual);
+
     await this.eventRepository.emit('StackUpdate', { stackId, userId: auth.user.id });
+  }
+
+  async clearAutoStacks(auth: AuthDto): Promise<void> {
+    const deleted = await this.stackRepository.deleteBySource(auth.user.id, [
+      StackSource.AutoBurst,
+      StackSource.AutoTimeWindow,
+    ]);
+    this.logger.log(`Cleared ${deleted} auto-generated stacks for user ${auth.user.id}`);
+    await this.eventRepository.emit('StackDeleteAll', { stackIds: [], userId: auth.user.id });
   }
 
   private async findOrFail(id: string) {

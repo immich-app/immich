@@ -11,6 +11,7 @@ import { AlbumUserRepository } from 'src/repositories/album-user.repository';
 import { AlbumRepository } from 'src/repositories/album.repository';
 import { ApiKeyRepository } from 'src/repositories/api-key.repository';
 import { AppRepository } from 'src/repositories/app.repository';
+import { AssetHashRepository } from 'src/repositories/asset-hash.repository';
 import { AssetJobRepository } from 'src/repositories/asset-job.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
 import { AuditRepository } from 'src/repositories/audit.repository';
@@ -68,6 +69,7 @@ export const BASE_SERVICE_DEPENDENCIES = [
   AlbumUserRepository,
   ApiKeyRepository,
   AppRepository,
+  AssetHashRepository,
   AssetRepository,
   AssetJobRepository,
   AuditRepository,
@@ -126,6 +128,7 @@ export class BaseService {
     protected albumUserRepository: AlbumUserRepository,
     protected apiKeyRepository: ApiKeyRepository,
     protected appRepository: AppRepository,
+    protected assetHashRepository: AssetHashRepository,
     protected assetRepository: AssetRepository,
     protected assetJobRepository: AssetJobRepository,
     protected auditRepository: AuditRepository,

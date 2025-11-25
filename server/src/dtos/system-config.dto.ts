@@ -15,7 +15,13 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { SystemConfig } from 'src/config';
-import { CLIPConfig, DuplicateDetectionConfig, FacialRecognitionConfig, OcrConfig } from 'src/dtos/model-config.dto';
+import {
+  AutoStackConfig,
+  CLIPConfig,
+  DuplicateDetectionConfig,
+  FacialRecognitionConfig,
+  OcrConfig,
+} from 'src/dtos/model-config.dto';
 import {
   AudioCodec,
   CQMode,
@@ -193,6 +199,18 @@ class SystemConfigJobDto implements Record<ConcurrentQueueName, JobSettingsDto> 
   @ValidateNested()
   @IsObject()
   @Type(() => JobSettingsDto)
+  [QueueName.AutoStack]!: JobSettingsDto;
+
+  @ApiProperty({ type: JobSettingsDto })
+  @ValidateNested()
+  @IsObject()
+  @Type(() => JobSettingsDto)
+  [QueueName.HashComputation]!: JobSettingsDto;
+
+  @ApiProperty({ type: JobSettingsDto })
+  @ValidateNested()
+  @IsObject()
+  @Type(() => JobSettingsDto)
   [QueueName.Search]!: JobSettingsDto;
 
   @ApiProperty({ type: JobSettingsDto })
@@ -303,6 +321,11 @@ class SystemConfigMachineLearningDto {
   @ValidateNested()
   @IsObject()
   duplicateDetection!: DuplicateDetectionConfig;
+
+  @Type(() => AutoStackConfig)
+  @ValidateNested()
+  @IsObject()
+  autoStack!: AutoStackConfig;
 
   @Type(() => FacialRecognitionConfig)
   @ValidateNested()

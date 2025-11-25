@@ -157,6 +157,8 @@ export const getQueueName = derived(t, ($t) => {
       [QueueName.StorageTemplateMigration]: $t('admin.storage_template_migration'),
       [QueueName.Migration]: $t('admin.migration_job'),
       [QueueName.BackgroundTask]: $t('admin.background_task_job'),
+      [QueueName.AutoStack]: $t('admin.auto_stack_job'),
+      [QueueName.HashComputation]: $t('admin.hash_computation_job'),
       [QueueName.Search]: $t('search'),
       [QueueName.Library]: $t('external_libraries'),
       [QueueName.Notifications]: $t('notifications'),

@@ -166,6 +166,7 @@ export type SidecarWriteAsset = {
 export type Stack = {
   id: string;
   primaryAssetId: string;
+  source: string;
   owner?: User;
   ownerId: string;
   assets: MapAsset[];

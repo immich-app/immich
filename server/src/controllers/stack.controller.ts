@@ -49,6 +49,13 @@ export class StackController {
     return this.service.deleteAll(auth, dto);
   }
 
+  @Delete('auto')
+  @Authenticated({ permission: Permission.StackDelete })
+  @HttpCode(HttpStatus.NO_CONTENT)
+  clearAutoStacks(@Auth() auth: AuthDto): Promise<void> {
+    return this.service.clearAutoStacks(auth);
+  }
+
   @Get(':id')
   @Authenticated({ permission: Permission.StackRead })
   @Endpoint({
