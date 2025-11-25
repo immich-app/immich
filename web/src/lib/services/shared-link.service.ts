@@ -17,19 +17,19 @@ import {
   type SharedLinkResponseDto,
 } from '@immich/sdk';
 import { modalManager, toastManager, type ActionItem } from '@immich/ui';
-import { mdiCircleEditOutline, mdiContentCopy, mdiDelete, mdiQrcode } from '@mdi/js';
+import { mdiContentCopy, mdiPencilOutline, mdiQrcode, mdiTrashCanOutline } from '@mdi/js';
 import type { MessageFormatter } from 'svelte-i18n';
 
 export const getSharedLinkActions = ($t: MessageFormatter, sharedLink: SharedLinkResponseDto) => {
   const Edit: ActionItem = {
     title: $t('edit_link'),
-    icon: mdiCircleEditOutline,
+    icon: mdiPencilOutline,
     onAction: () => void goto(`${AppRoute.SHARED_LINKS}/${sharedLink.id}`),
   };
 
   const Delete: ActionItem = {
     title: $t('delete_link'),
-    icon: mdiDelete,
+    icon: mdiTrashCanOutline,
     color: 'danger',
     onAction: () => void handleDeleteSharedLink(sharedLink),
   };
