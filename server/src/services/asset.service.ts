@@ -19,7 +19,7 @@ import {
   mapStats,
 } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { EditActionListDto } from 'src/dtos/editing.dto';
+import { AssetEditsDto, EditActionListDto } from 'src/dtos/editing.dto';
 import { AssetOcrResponseDto } from 'src/dtos/ocr.dto';
 import {
   AssetMetadataKey,
@@ -462,8 +462,8 @@ export class AssetService extends BaseService {
     }
   }
 
-  public async createDerivedEditAsset(auth: AuthDto, id: string, dto: EditActionListDto): Promise<AssetResponseDto> {
-    await this.requireAccess({ auth, permission: Permission.AssetDerive, ids: [id] });
+  public async editAsset(auth: AuthDto, id: string, dto: EditActionListDto): Promise<AssetEditsDto> {
+    await this.requireAccess({ auth, permission: Permission.AssetEdit, ids: [id] });
 
     const asset = await this.assetRepository.getById(id);
     if (!asset) {
@@ -474,10 +474,23 @@ export class AssetService extends BaseService {
       throw new BadRequestException('Only images can be edited');
     }
 
-    const uuid = this.cryptoRepository.randomUUID();
-    const outputFile = StorageCore.getNestedPath(StorageFolder.Upload, auth.user.id, uuid);
-    this.storageRepository.mkdirSync(dirname(outputFile));
+    // verify that each edit has a unique index, with no gaps
+    const indices = dto.edits.map((edit) => edit.index);
+    const uniqueIndices = new Set(indices);
+    if (uniqueIndices.size !== indices.length) {
+      throw new BadRequestException('Each edit must have a unique index');
+    }
+    const maxIndex = Math.max(...indices);
+    if (maxIndex !== indices.length - 1) {
+      throw new BadRequestException('Edit indices must be continuous and start from 0');
+    }
 
-    this.storageRepository.copyFile(asset.originalPath, outputFile);
+    await this.editRepository.applyEdits(id, dto.edits);
+
+    // Return the asset and its applied edits
+    return {
+      assetId: id,
+      edits: dto.edits,
+    };
   }
 }

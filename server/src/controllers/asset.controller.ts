@@ -17,7 +17,7 @@ import {
   UpdateAssetDto,
 } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { EditActionListDto } from 'src/dtos/editing.dto';
+import { AssetEditsDto, EditActionListDto } from 'src/dtos/editing.dto';
 import { AssetOcrResponseDto } from 'src/dtos/ocr.dto';
 import { ApiTag, Permission, RouteKey } from 'src/enum';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
@@ -199,18 +199,18 @@ export class AssetController {
     return this.service.deleteMetadataByKey(auth, id, key);
   }
 
-  @Post(':id/derive')
-  @Authenticated({ permission: Permission.AssetDerive })
+  @Put(':id/edit')
+  @Authenticated({ permission: Permission.AssetEdit })
   @Endpoint({
-    summary: 'Create derived edit asset',
-    description: 'Create a new asset derived from edits applied to an existing asset.',
+    summary: 'Applies edits to an existing asset',
+    description: 'Applies a series of edit actions (crop, rotate, mirror) to the specified asset.',
     history: new HistoryBuilder().added('v2').beta('v2'),
   })
-  createDerivedEditAsset(
+  editAsset(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
     @Body() dto: EditActionListDto,
-  ): Promise<AssetResponseDto> {
-    return this.service.createDerivedEditAsset(auth, id, dto);
+  ): Promise<AssetEditsDto> {
+    return this.service.editAsset(auth, id, dto);
   }
 }

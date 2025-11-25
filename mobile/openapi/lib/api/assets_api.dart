@@ -350,6 +350,67 @@ class AssetsApi {
     return null;
   }
 
+  /// Applies edits to an existing asset
+  ///
+  /// Applies a series of edit actions (crop, rotate, mirror) to the specified asset.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [EditActionListDto] editActionListDto (required):
+  Future<Response> editAssetWithHttpInfo(String id, EditActionListDto editActionListDto,) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/assets/{id}/edit'
+      .replaceAll('{id}', id);
+
+    // ignore: prefer_final_locals
+    Object? postBody = editActionListDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'PUT',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Applies edits to an existing asset
+  ///
+  /// Applies a series of edit actions (crop, rotate, mirror) to the specified asset.
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [EditActionListDto] editActionListDto (required):
+  Future<AssetEditsDto?> editAsset(String id, EditActionListDto editActionListDto,) async {
+    final response = await editAssetWithHttpInfo(id, editActionListDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'AssetEditsDto',) as AssetEditsDto;
+    
+    }
+    return null;
+  }
+
   /// Retrieve assets by device ID
   ///
   /// Get all asset of a device that are in the database, ID only.

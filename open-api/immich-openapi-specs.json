@@ -3187,6 +3187,72 @@
         "x-immich-state": "Stable"
       }
     },
+    "/assets/{id}/edit": {
+      "put": {
+        "description": "Applies a series of edit actions (crop, rotate, mirror) to the specified asset.",
+        "operationId": "editAsset",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EditActionListDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetEditsDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Applies edits to an existing asset",
+        "tags": [
+          "Assets"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v2",
+            "state": "Added"
+          },
+          {
+            "version": "v2",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-permission": "asset.edit",
+        "x-immich-state": "Beta"
+      }
+    },
     "/assets/{id}/metadata": {
       "get": {
         "description": "Retrieve all metadata key-value pairs associated with the specified asset.",
@@ -15106,6 +15172,36 @@
         ],
         "type": "object"
       },
+      "AssetEditsDto": {
+        "properties": {
+          "assetId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "edits": {
+            "description": "list of edits",
+            "items": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/EditActionCrop"
+                },
+                {
+                  "$ref": "#/components/schemas/EditActionRotate"
+                },
+                {
+                  "$ref": "#/components/schemas/EditActionMirror"
+                }
+              ]
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "assetId",
+          "edits"
+        ],
+        "type": "object"
+      },
       "AssetFaceCreateDto": {
         "properties": {
           "assetId": {
@@ -16223,6 +16319,41 @@
         ],
         "type": "object"
       },
+      "CropParameters": {
+        "properties": {
+          "bottom": {
+            "description": "Bottom position of the crop",
+            "maximum": 1,
+            "minimum": 0,
+            "type": "number"
+          },
+          "left": {
+            "description": "Left position of the crop",
+            "maximum": 1,
+            "minimum": 0,
+            "type": "number"
+          },
+          "right": {
+            "description": "Right position of the crop",
+            "maximum": 1,
+            "minimum": 0,
+            "type": "number"
+          },
+          "top": {
+            "description": "Top position of the crop",
+            "maximum": 1,
+            "minimum": 0,
+            "type": "number"
+          }
+        },
+        "required": [
+          "bottom",
+          "left",
+          "right",
+          "top"
+        ],
+        "type": "object"
+      },
       "DatabaseBackupConfig": {
         "properties": {
           "cronExpression": {
@@ -16366,6 +16497,112 @@
           "duplicateId"
         ],
         "type": "object"
+      },
+      "EditActionCrop": {
+        "properties": {
+          "action": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/EditActionType"
+              }
+            ]
+          },
+          "index": {
+            "description": "Order of this edit in the sequence",
+            "minimum": 0,
+            "type": "number"
+          },
+          "parameters": {
+            "$ref": "#/components/schemas/CropParameters"
+          }
+        },
+        "required": [
+          "action",
+          "index",
+          "parameters"
+        ],
+        "type": "object"
+      },
+      "EditActionListDto": {
+        "properties": {
+          "edits": {
+            "description": "list of edits",
+            "items": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/EditActionCrop"
+                },
+                {
+                  "$ref": "#/components/schemas/EditActionRotate"
+                },
+                {
+                  "$ref": "#/components/schemas/EditActionMirror"
+                }
+              ]
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "edits"
+        ],
+        "type": "object"
+      },
+      "EditActionMirror": {
+        "properties": {
+          "action": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/EditActionType"
+              }
+            ]
+          },
+          "index": {
+            "description": "Order of this edit in the sequence",
+            "minimum": 0,
+            "type": "number"
+          },
+          "parameters": {
+            "$ref": "#/components/schemas/MirrorParameters"
+          }
+        },
+        "required": [
+          "action",
+          "index",
+          "parameters"
+        ],
+        "type": "object"
+      },
+      "EditActionRotate": {
+        "properties": {
+          "action": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/EditActionType"
+              }
+            ]
+          },
+          "index": {
+            "description": "Order of this edit in the sequence",
+            "minimum": 0,
+            "type": "number"
+          },
+          "parameters": {
+            "$ref": "#/components/schemas/RotateParameters"
+          }
+        },
+        "required": [
+          "action",
+          "index",
+          "parameters"
+        ],
+        "type": "object"
+      },
+      "EditActionType": {
+        "enum": [
+          "crop"
+        ],
+        "type": "string"
       },
       "EmailNotificationsResponse": {
         "properties": {
@@ -17377,6 +17614,30 @@
         },
         "type": "object"
       },
+      "MirrorAxis": {
+        "description": "Axis to mirror along",
+        "enum": [
+          "horizontal",
+          "vertical"
+        ],
+        "type": "string"
+      },
+      "MirrorParameters": {
+        "properties": {
+          "axis": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MirrorAxis"
+              }
+            ],
+            "description": "Axis to mirror along"
+          }
+        },
+        "required": [
+          "axis"
+        ],
+        "type": "object"
+      },
       "NotificationCreateDto": {
         "properties": {
           "data": {
@@ -17857,6 +18118,8 @@
           "asset.upload",
           "asset.replace",
           "asset.copy",
+          "asset.derive",
+          "asset.edit",
           "album.create",
           "album.read",
           "album.update",
@@ -18912,6 +19175,32 @@
           "lastUpdate"
         ],
         "type": "object"
+      },
+      "RotateParameters": {
+        "properties": {
+          "angle": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RotationAngle"
+              }
+            ],
+            "description": "Rotation angle in degrees"
+          }
+        },
+        "required": [
+          "angle"
+        ],
+        "type": "object"
+      },
+      "RotationAngle": {
+        "description": "Rotation angle in degrees",
+        "enum": [
+          0,
+          90,
+          180,
+          270
+        ],
+        "type": "number"
       },
       "SearchAlbumResponseDto": {
         "properties": {

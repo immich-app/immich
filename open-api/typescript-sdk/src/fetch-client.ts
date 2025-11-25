@@ -555,6 +555,51 @@ export type UpdateAssetDto = {
     rating?: number;
     visibility?: AssetVisibility;
 };
+export type CropParameters = {
+    /** Bottom position of the crop */
+    bottom: number;
+    /** Left position of the crop */
+    left: number;
+    /** Right position of the crop */
+    right: number;
+    /** Top position of the crop */
+    top: number;
+};
+export type EditActionCrop = {
+    action: EditActionType;
+    /** Order of this edit in the sequence */
+    index: number;
+    parameters: CropParameters;
+};
+export type RotateParameters = {
+    /** Rotation angle in degrees */
+    angle: RotationAngle;
+};
+export type EditActionRotate = {
+    action: EditActionType;
+    /** Order of this edit in the sequence */
+    index: number;
+    parameters: RotateParameters;
+};
+export type MirrorParameters = {
+    /** Axis to mirror along */
+    axis: MirrorAxis;
+};
+export type EditActionMirror = {
+    action: EditActionType;
+    /** Order of this edit in the sequence */
+    index: number;
+    parameters: MirrorParameters;
+};
+export type EditActionListDto = {
+    /** list of edits */
+    edits: (EditActionCrop | EditActionRotate | EditActionMirror)[];
+};
+export type AssetEditsDto = {
+    assetId: string;
+    /** list of edits */
+    edits: (EditActionCrop | EditActionRotate | EditActionMirror)[];
+};
 export type AssetMetadataResponseDto = {
     key: AssetMetadataKey;
     updatedAt: string;
@@ -2525,6 +2570,22 @@ export function updateAsset({ id, updateAssetDto }: {
         ...opts,
         method: "PUT",
         body: updateAssetDto
+    })));
+}
+/**
+ * Applies edits to an existing asset
+ */
+export function editAsset({ id, editActionListDto }: {
+    id: string;
+    editActionListDto: EditActionListDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AssetEditsDto;
+    }>(`/assets/${encodeURIComponent(id)}/edit`, oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: editActionListDto
     })));
 }
 /**
@@ -5221,6 +5282,8 @@ export enum Permission {
     AssetUpload = "asset.upload",
     AssetReplace = "asset.replace",
     AssetCopy = "asset.copy",
+    AssetDerive = "asset.derive",
+    AssetEdit = "asset.edit",
     AlbumCreate = "album.create",
     AlbumRead = "album.read",
     AlbumUpdate = "album.update",
@@ -5368,6 +5431,19 @@ export enum AssetJobName {
     RefreshMetadata = "refresh-metadata",
     RegenerateThumbnail = "regenerate-thumbnail",
     TranscodeVideo = "transcode-video"
+}
+export enum EditActionType {
+    Crop = "crop"
+}
+export enum RotationAngle {
+    $0 = 0,
+    $90 = 90,
+    $180 = 180,
+    $270 = 270
+}
+export enum MirrorAxis {
+    Horizontal = "horizontal",
+    Vertical = "vertical"
 }
 export enum AssetMediaSize {
     Fullsize = "fullsize",
