@@ -23,6 +23,7 @@
   import { Icon, IconButton, LoadingSpinner, modalManager } from '@immich/ui';
   import {
     mdiCalendar,
+    mdiCamera,
     mdiCameraIris,
     mdiClose,
     mdiEye,
@@ -372,9 +373,9 @@
       </div>
     </div>
 
-    {#if asset.exifInfo?.make || asset.exifInfo?.model || asset.exifInfo?.fNumber}
+    {#if asset.exifInfo?.make || asset.exifInfo?.model || asset.exifInfo?.exposureTime || asset.exifInfo?.iso}
       <div class="flex gap-4 py-4">
-        <div><Icon icon={mdiCameraIris} size="24" /></div>
+        <div><Icon icon={mdiCamera} size="24" /></div>
 
         <div>
           {#if asset.exifInfo?.make || asset.exifInfo?.model}
@@ -395,20 +396,34 @@
             </p>
           {/if}
 
+          <div class="flex gap-2 text-sm">
+            {#if asset.exifInfo.exposureTime}
+              <p>{`${asset.exifInfo.exposureTime} s`}</p>
+            {/if}
+
+            {#if asset.exifInfo.iso}
+              <p>{`ISO ${asset.exifInfo.iso}`}</p>
+            {/if}
+          </div>
+        </div>
+      </div>
+    {/if}
+
+    {#if asset.exifInfo?.lensModel || asset.exifInfo?.fNumber || asset.exifInfo?.focalLength}
+      <div class="flex gap-4 py-4">
+        <div><Icon icon={mdiCameraIris} size="24" /></div>
+
+        <div>
           {#if asset.exifInfo?.lensModel}
-            <div class="flex gap-2 text-sm">
-              <p>
-                <a
-                  href={resolve(
-                    `${AppRoute.SEARCH}?${getMetadataSearchQuery({ lensModel: asset.exifInfo.lensModel })}`,
-                  )}
-                  title="{$t('search_for')} {asset.exifInfo.lensModel}"
-                  class="hover:text-primary line-clamp-1"
-                >
-                  {asset.exifInfo.lensModel}
-                </a>
-              </p>
-            </div>
+            <p>
+              <a
+                href={resolve(`${AppRoute.SEARCH}?${getMetadataSearchQuery({ lensModel: asset.exifInfo.lensModel })}`)}
+                title="{$t('search_for')} {asset.exifInfo.lensModel}"
+                class="hover:text-primary line-clamp-1"
+              >
+                {asset.exifInfo.lensModel}
+              </a>
+            </p>
           {/if}
 
           <div class="flex gap-2 text-sm">
@@ -416,18 +431,8 @@
               <p>ƒ/{asset.exifInfo.fNumber.toLocaleString($locale)}</p>
             {/if}
 
-            {#if asset.exifInfo.exposureTime}
-              <p>{`${asset.exifInfo.exposureTime} s`}</p>
-            {/if}
-
             {#if asset.exifInfo.focalLength}
               <p>{`${asset.exifInfo.focalLength.toLocaleString($locale)} mm`}</p>
-            {/if}
-
-            {#if asset.exifInfo.iso}
-              <p>
-                {`ISO ${asset.exifInfo.iso}`}
-              </p>
             {/if}
           </div>
         </div>

@@ -1,0 +1,178 @@
+<script lang="ts">
+  import type { PluginActionResponseDto, PluginFilterResponseDto, PluginTriggerResponseDto } from '@immich/sdk';
+  import { Icon, IconButton } from '@immich/ui';
+  import {
+    mdiClose,
+    mdiDrag,
+    mdiFilterOutline,
+    mdiFlashOutline,
+    mdiPlayCircleOutline,
+    mdiViewDashboardOutline,
+  } from '@mdi/js';
+
+  interface Props {
+    trigger: PluginTriggerResponseDto;
+    filters: PluginFilterResponseDto[];
+    actions: PluginActionResponseDto[];
+  }
+
+  let { trigger, filters, actions }: Props = $props();
+
+  let isOpen = $state(false);
+  let position = $state({ x: 0, y: 0 });
+  let isDragging = $state(false);
+  let dragOffset = $state({ x: 0, y: 0 });
+  let containerEl: HTMLDivElement | undefined = $state();
+
+  const handleMouseDown = (e: MouseEvent) => {
+    if (!containerEl) {
+      return;
+    }
+    isDragging = true;
+    const rect = containerEl.getBoundingClientRect();
+    dragOffset = {
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    };
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+  };
+
+  const handleMouseMove = (e: MouseEvent) => {
+    if (!isDragging) {
+      return;
+    }
+    position = {
+      x: e.clientX - dragOffset.x,
+      y: e.clientY - dragOffset.y,
+    };
+  };
+
+  const handleMouseUp = () => {
+    isDragging = false;
+    document.removeEventListener('mousemove', handleMouseMove);
+    document.removeEventListener('mouseup', handleMouseUp);
+  };
+
+  $effect(() => {
+    // Initialize position to bottom-right on mount
+    if (globalThis.window && position.x === 0 && position.y === 0) {
+      position = {
+        x: globalThis.innerWidth - 280,
+        y: globalThis.innerHeight - 400,
+      };
+    }
+  });
+</script>
+
+{#if isOpen}
+  <!-- svelte-ignore a11y_no_static_element_interactions -->
+  <div
+    bind:this={containerEl}
+    class="hidden sm:block fixed w-64 z-50 hover:cursor-grab"
+    style="left: {position.x}px; top: {position.y}px;"
+    class:cursor-grabbing={isDragging}
+    onmousedown={handleMouseDown}
+  >
+    <div
+      class="rounded-xl border hover:shadow-xl hover:border-dashed bg-light-50 shadow-sm p-4 hover:border-primary-200 transition-all"
+    >
+      <div class="flex items-center justify-between mb-4 cursor-grab select-none">
+        <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300">Workflow Summary</h3>
+        <div class="flex items-center gap-1">
+          <Icon icon={mdiDrag} size="18" class="text-gray-400" />
+          <IconButton
+            icon={mdiClose}
+            size="small"
+            variant="ghost"
+            color="secondary"
+            title="Close summary"
+            aria-label="Close summary"
+            onclick={(e: MouseEvent) => {
+              e.stopPropagation();
+              isOpen = false;
+            }}
+          />
+        </div>
+      </div>
+
+      <div class="space-y-2">
+        <!-- Trigger -->
+        <div class="rounded-lg bg-light-100 border p-3">
+          <div class="flex items-center gap-2 mb-1">
+            <Icon icon={mdiFlashOutline} size="14" class="text-primary" />
+            <span class="text-[10px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400"
+              >Trigger</span
+            >
+          </div>
+          <p class="text-sm text-gray-900 dark:text-gray-100 truncate pl-5">{trigger.name}</p>
+        </div>
+
+        <!-- Connector -->
+        <div class="flex justify-center">
+          <div class="w-0.5 h-3 bg-gray-300 dark:bg-gray-600"></div>
+        </div>
+
+        <!-- Filters -->
+        {#if filters.length > 0}
+          <div class="rounded-lg bg-light-100 border p-3">
+            <div class="flex items-center gap-2 mb-2">
+              <Icon icon={mdiFilterOutline} size="14" class="text-warning" />
+              <span class="text-[10px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400"
+                >Filters ({filters.length})</span
+              >
+            </div>
+            <div class="space-y-1 pl-5">
+              {#each filters as filter, index (filter.id)}
+                <div class="flex items-center gap-2">
+                  <span
+                    class="shrink-0 h-4 w-4 rounded-full bg-gray-200 dark:bg-gray-700 text-[10px] font-medium text-gray-600 dark:text-gray-300 flex items-center justify-center"
+                    >{index + 1}</span
+                  >
+                  <p class="text-sm text-gray-700 dark:text-gray-300 truncate">{filter.title}</p>
+                </div>
+              {/each}
+            </div>
+          </div>
+
+          <!-- Connector -->
+          <div class="flex justify-center">
+            <div class="w-0.5 h-3 bg-gray-300 dark:bg-gray-600"></div>
+          </div>
+        {/if}
+
+        <!-- Actions -->
+        {#if actions.length > 0}
+          <div class="rounded-lg bg-light-100 border p-3">
+            <div class="flex items-center gap-2 mb-2">
+              <Icon icon={mdiPlayCircleOutline} size="14" class="text-success" />
+              <span class="text-[10px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400"
+                >Actions ({actions.length})</span
+              >
+            </div>
+            <div class="space-y-1 pl-5">
+              {#each actions as action, index (action.id)}
+                <div class="flex items-center gap-2">
+                  <span
+                    class="shrink-0 h-4 w-4 rounded-full bg-gray-200 dark:bg-gray-700 text-[10px] font-medium text-gray-600 dark:text-gray-300 flex items-center justify-center"
+                    >{index + 1}</span
+                  >
+                  <p class="text-sm text-gray-700 dark:text-gray-300 truncate">{action.title}</p>
+                </div>
+              {/each}
+            </div>
+          </div>
+        {/if}
+      </div>
+    </div>
+  </div>
+{:else}
+  <button
+    type="button"
+    class="hidden sm:flex fixed right-6 bottom-6 z-50 h-14 w-14 items-center justify-center rounded-full bg-primary text-light shadow-lg hover:bg-primary/90 transition-colors"
+    title="Show workflow summary"
+    onclick={() => (isOpen = true)}
+  >
+    <Icon icon={mdiViewDashboardOutline} size="24" />
+  </button>
+{/if}

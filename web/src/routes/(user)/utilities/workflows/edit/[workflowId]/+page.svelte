@@ -1,11 +1,12 @@
 <script lang="ts">
   import { beforeNavigate, goto } from '$app/navigation';
   import { dragAndDrop } from '$lib/actions/drag-and-drop';
-  import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-  import SchemaFormFields from '$lib/components/workflow/schema-form/SchemaFormFields.svelte';
-  import WorkflowCardConnector from '$lib/components/workflows/workflow-card-connector.svelte';
-  import WorkflowJsonEditor from '$lib/components/workflows/workflow-json-editor.svelte';
-  import WorkflowTriggerCard from '$lib/components/workflows/workflow-trigger-card.svelte';
+  import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
+  import SchemaFormFields from '$lib/components/workflows/SchemaFormFields.svelte';
+  import WorkflowCardConnector from '$lib/components/workflows/WorkflowCardConnector.svelte';
+  import WorkflowJsonEditor from '$lib/components/workflows/WorkflowJsonEditor.svelte';
+  import WorkflowSummarySidebar from '$lib/components/workflows/WorkflowSummary.svelte';
+  import WorkflowTriggerCard from '$lib/components/workflows/WorkflowTriggerCard.svelte';
   import AddWorkflowStepModal from '$lib/modals/AddWorkflowStepModal.svelte';
   import WorkflowNavigationConfirmModal from '$lib/modals/WorkflowNavigationConfirmModal.svelte';
   import WorkflowTriggerUpdateConfirmModal from '$lib/modals/WorkflowTriggerUpdateConfirmModal.svelte';
@@ -31,6 +32,7 @@
     modalManager,
   } from '@immich/ui';
   import {
+    mdiArrowLeft,
     mdiCodeJson,
     mdiContentSave,
     mdiFilterOutline,
@@ -281,9 +283,9 @@
   };
 
   const handleTriggerChange = async (newTrigger: PluginTriggerResponseDto) => {
-    const isConfirmed = await modalManager.show(WorkflowTriggerUpdateConfirmModal);
+    const confirmed = await modalManager.show(WorkflowTriggerUpdateConfirmModal);
 
-    if (!isConfirmed) {
+    if (!confirmed) {
       return;
     }
 
@@ -342,45 +344,12 @@
   </button>
 {/snippet}
 
-<UserPageLayout title={data.meta.title} scrollbar={false}>
-  <!-- <WorkflowSummarySidebar trigger={selectedTrigger} filters={orderedFilters} actions={orderedActions} /> -->
+<svelte:head>
+  <title>{data.meta.title} - Immich</title>
+</svelte:head>
 
-  {#snippet buttons()}
-    <HStack gap={4} class="me-4">
-      <HStack gap={1} class="border rounded-lg p-1 dark:border-gray-600">
-        <Button
-          size="small"
-          variant={viewMode === 'visual' ? 'outline' : 'ghost'}
-          color={viewMode === 'visual' ? 'primary' : 'secondary'}
-          leadingIcon={mdiViewDashboard}
-          onclick={() => (viewMode = 'visual')}
-        >
-          Visual
-        </Button>
-        <Button
-          size="small"
-          variant={viewMode === 'json' ? 'outline' : 'ghost'}
-          color={viewMode === 'json' ? 'primary' : 'secondary'}
-          leadingIcon={mdiCodeJson}
-          onclick={() => {
-            viewMode = 'json';
-            jsonEditorContent = jsonContent;
-          }}
-        >
-          JSON
-        </Button>
-      </HStack>
-
-      <HStack gap={2}>
-        <Text class="text-sm">{editWorkflow.enabled ? 'ON' : 'OFF'}</Text>
-        <Switch bind:checked={editWorkflow.enabled} />
-      </HStack>
-
-      <Button leadingIcon={mdiContentSave} size="small" color="primary" onclick={updateWorkflow} disabled={!hasChanges}>
-        {$t('save')}
-      </Button>
-    </HStack>
-  {/snippet}
+<main class="pt-24 immich-scrollbar">
+  <WorkflowSummarySidebar trigger={selectedTrigger} filters={orderedFilters} actions={orderedActions} />
 
   <Container size="medium" class="p-4" center>
     {#if viewMode === 'json'}
@@ -391,7 +360,7 @@
       />
     {:else}
       <VStack gap={0}>
-        <Card expandable expanded={false}>
+        <Card expandable>
           <CardHeader>
             <div class="flex place-items-start gap-3">
               <Icon icon={mdiInformationOutline} size="20" class="mt-1" />
@@ -416,8 +385,8 @@
 
         <div class="my-10 h-px w-[98%] bg-gray-200 dark:bg-gray-700"></div>
 
-        <Card expandable expanded={true}>
-          <CardHeader class="bg-indigo-50 dark:bg-primary-800">
+        <Card expandable>
+          <CardHeader class="bg-primary-50">
             <div class="flex items-start gap-3">
               <Icon icon={mdiFlashOutline} size="20" class="mt-1 text-primary" />
               <div class="flex flex-col">
@@ -442,8 +411,8 @@
 
         <WorkflowCardConnector />
 
-        <Card expandable expanded={true}>
-          <CardHeader class="bg-amber-50 dark:bg-[#5e4100]">
+        <Card expandable>
+          <CardHeader class="bg-warning-50">
             <div class="flex items-start gap-3">
               <Icon icon={mdiFilterOutline} size="20" class="mt-1 text-warning" />
               <div class="flex flex-col">
@@ -473,7 +442,7 @@
                     isDragging: draggedFilterIndex === index,
                     isDragOver: dragOverFilterIndex === index,
                   }}
-                  class="mb-4 cursor-move rounded-lg border-2 p-4 transition-all bg-gray-50 dark:bg-subtle border-dashed border-transparent hover:border-gray-300 dark:hover:border-gray-600"
+                  class="mb-4 cursor-move rounded-lg border-2 p-4 transition-all bg-neutral-50 dark:bg-neutral-900/50 border-dashed border-transparent hover:border-gray-300 dark:hover:border-gray-600"
                 >
                   <div class="flex items-start gap-4">
                     {@render cardOrder(index)}
@@ -514,7 +483,7 @@
         <WorkflowCardConnector />
 
         <Card expandable expanded>
-          <CardHeader class="bg-success/10 dark:bg-teal-950">
+          <CardHeader class="bg-success-50">
             <div class="flex items-start gap-3">
               <Icon icon={mdiPlayCircleOutline} size="20" class="mt-1 text-success" />
               <div class="flex flex-col">
@@ -544,7 +513,7 @@
                     isDragging: draggedActionIndex === index,
                     isDragOver: dragOverActionIndex === index,
                   }}
-                  class="mb-4 cursor-move rounded-lg border-2 p-4 transition-all bg-gray-50 dark:bg-subtle border-dashed border-transparent hover:border-gray-300 dark:hover:border-gray-600"
+                  class="mb-4 cursor-move rounded-lg border-2 p-4 transition-all bg-neutral-50 dark:bg-neutral-900/50 border-dashed border-transparent hover:border-gray-300 dark:hover:border-gray-600"
                 >
                   <div class="flex items-start gap-4">
                     {@render cardOrder(index)}
@@ -583,4 +552,51 @@
       </VStack>
     {/if}
   </Container>
-</UserPageLayout>
+</main>
+
+<ControlAppBar
+  onClose={() => goto('/utilities/workflows')}
+  backIcon={mdiArrowLeft}
+  tailwindClasses="fixed! top-0! w-full"
+>
+  {#snippet leading()}
+    <p>{data.meta.title}</p>
+  {/snippet}
+
+  {#snippet trailing()}
+    <HStack gap={4}>
+      <HStack gap={1} class="border rounded-lg p-1 dark:border-gray-600">
+        <Button
+          size="small"
+          variant={viewMode === 'visual' ? 'outline' : 'ghost'}
+          color={viewMode === 'visual' ? 'primary' : 'secondary'}
+          leadingIcon={mdiViewDashboard}
+          onclick={() => (viewMode = 'visual')}
+        >
+          Visual
+        </Button>
+        <Button
+          size="small"
+          variant={viewMode === 'json' ? 'outline' : 'ghost'}
+          color={viewMode === 'json' ? 'primary' : 'secondary'}
+          leadingIcon={mdiCodeJson}
+          onclick={() => {
+            viewMode = 'json';
+            jsonEditorContent = jsonContent;
+          }}
+        >
+          JSON
+        </Button>
+      </HStack>
+
+      <HStack gap={2}>
+        <Text class="text-sm">{editWorkflow.enabled ? 'ON' : 'OFF'}</Text>
+        <Switch bind:checked={editWorkflow.enabled} />
+      </HStack>
+
+      <Button leadingIcon={mdiContentSave} size="small" color="primary" onclick={updateWorkflow} disabled={!hasChanges}>
+        {$t('save')}
+      </Button>
+    </HStack>
+  {/snippet}
+</ControlAppBar>
