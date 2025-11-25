@@ -13,14 +13,14 @@ import { PartnerRepository } from 'src/repositories/partner.repository';
 import { IBulkAsset, ImmichFile, UploadFile, UploadRequest } from 'src/types';
 import { checkAccess } from 'src/utils/access';
 
-export const getAssetFile = (files: AssetFile[], type: AssetFileType | GeneratedImageType) => {
-  return files.find((file) => file.type === type);
+export const getAssetFile = (files: AssetFile[], type: AssetFileType | GeneratedImageType, edited: boolean) => {
+  return files.find((file) => file.type === type && file.edited === edited);
 };
 
-export const getAssetFiles = (files: AssetFile[]) => ({
-  fullsizeFile: getAssetFile(files, AssetFileType.FullSize),
-  previewFile: getAssetFile(files, AssetFileType.Preview),
-  thumbnailFile: getAssetFile(files, AssetFileType.Thumbnail),
+export const getAssetFiles = (files: AssetFile[], edited: boolean) => ({
+  fullsizeFile: getAssetFile(files, AssetFileType.FullSize, edited),
+  previewFile: getAssetFile(files, AssetFileType.Preview, edited),
+  thumbnailFile: getAssetFile(files, AssetFileType.Thumbnail, edited),
 });
 
 export const addAssets = async (

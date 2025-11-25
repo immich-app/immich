@@ -12,7 +12,7 @@ export class AssetEditRepository {
   @GenerateSql({
     params: [DummyValue.UUID],
   })
-  async applyEdits(assetId: string, edits: EditActionItem[]): Promise<void> {
+  async storeEdits(assetId: string, edits: EditActionItem[]): Promise<void> {
     await this.db.transaction().execute(async (trx) => {
       await trx.deleteFrom('asset_edit').where('assetId', '=', assetId).execute();
 

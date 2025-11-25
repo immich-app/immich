@@ -91,10 +91,27 @@ export class EditActionMirror extends EditActionBase {
   parameters!: MirrorParameters;
 }
 
-export type EditActionItem<T extends EditActionType = EditActionType> = {
-  action: T;
-  parameters: EditActionParameter[T];
-  index: number;
+export type EditActionItem =
+  | {
+      action: EditActionType.Crop;
+      parameters: CropParameters;
+      index: number;
+    }
+  | {
+      action: EditActionType.Rotate;
+      parameters: RotateParameters;
+      index: number;
+    }
+  | {
+      action: EditActionType.Mirror;
+      parameters: MirrorParameters;
+      index: number;
+    };
+
+export type EditActionParameter = {
+  [EditActionType.Crop]: CropParameters;
+  [EditActionType.Rotate]: RotateParameters;
+  [EditActionType.Mirror]: MirrorParameters;
 };
 
 type EditActions = EditActionCrop | EditActionRotate | EditActionMirror;
@@ -103,10 +120,6 @@ const actionToClass: Record<EditActionType, ClassConstructor<EditActions>> = {
   [EditActionType.Rotate]: EditActionRotate,
   [EditActionType.Mirror]: EditActionMirror,
 } as const;
-
-export type EditActionParameter = {
-  [K in keyof typeof actionToClass]: (typeof actionToClass)[K];
-};
 
 const getActionClass = (item: { action: EditActionType }): ClassConstructor<EditActions> => actionToClass[item.action];
 

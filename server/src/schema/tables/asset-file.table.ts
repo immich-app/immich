@@ -37,4 +37,7 @@ export class AssetFileTable {
 
   @UpdateIdColumn({ index: true })
   updateId!: Generated<string>;
+
+  @Column()
+  edited!: boolean;
 }

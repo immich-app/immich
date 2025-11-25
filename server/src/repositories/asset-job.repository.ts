@@ -12,6 +12,7 @@ import {
   asUuid,
   toJson,
   withDefaultVisibility,
+  withEdits,
   withExif,
   withExifInner,
   withFaces,
@@ -112,6 +113,7 @@ export class AssetJobRepository {
       ])
       .select(withFiles)
       .$call(withExifInner)
+      .select(withEdits)
       .where('asset.id', '=', id)
       .executeTakeFirst();
   }

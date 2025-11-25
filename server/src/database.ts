@@ -39,6 +39,7 @@ export type AssetFile = {
   id: string;
   type: AssetFileType;
   path: string;
+  edited: boolean;
 };
 
 export type Library = {
@@ -350,7 +351,7 @@ export const columns = {
     'asset.sidecarPath',
     'asset.type',
   ],
-  assetFiles: ['asset_file.id', 'asset_file.path', 'asset_file.type'],
+  assetFiles: ['asset_file.id', 'asset_file.path', 'asset_file.type', 'asset_file.edited'],
   authUser: ['user.id', 'user.name', 'user.email', 'user.isAdmin', 'user.quotaUsageInBytes', 'user.quotaSizeInBytes'],
   authApiKey: ['api_key.id', 'api_key.permissions'],
   authSession: ['session.id', 'session.updatedAt', 'session.pinExpiresAt', 'session.appVersion'],

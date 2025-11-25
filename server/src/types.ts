@@ -3,7 +3,6 @@ import { VECTOR_EXTENSIONS } from 'src/constants';
 import { Asset } from 'src/database';
 import { UploadFieldName } from 'src/dtos/asset-media.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { EditActionType } from 'src/dtos/editing.dto';
 import {
   AssetMetadataKey,
   AssetOrder,
@@ -188,7 +187,7 @@ export interface IDelayedJob extends IBaseJob {
   delay?: number;
 }
 
-export type JobSource = 'upload' | 'sidecar-write' | 'copy';
+export type JobSource = 'upload' | 'sidecar-write' | 'copy' | 'edit';
 export interface IEntityJob extends IBaseJob {
   id: string;
   source?: JobSource;

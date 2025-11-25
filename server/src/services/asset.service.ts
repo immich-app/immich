@@ -491,7 +491,11 @@ export class AssetService extends BaseService {
       throw new BadRequestException('Edit indices must be continuous and start from 0');
     }
 
-    await this.editRepository.applyEdits(id, dto.edits);
+    await this.editRepository.storeEdits(id, dto.edits);
+    await this.jobRepository.queue({
+      name: JobName.AssetGenerateThumbnails,
+      data: { id: id, source: 'edit' },
+    });
 
     // Return the asset and its applied edits
     return {

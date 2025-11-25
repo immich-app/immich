@@ -207,7 +207,7 @@ export class AssetMediaService extends BaseService {
     const asset = await this.findOrFail(id);
     const size = dto.size ?? AssetMediaSize.THUMBNAIL;
 
-    const { thumbnailFile, previewFile, fullsizeFile } = getAssetFiles(asset.files ?? []);
+    const { thumbnailFile, previewFile, fullsizeFile } = getAssetFiles(asset.files ?? [], dto.edited ?? true);
     let filepath = previewFile?.path;
     if (size === AssetMediaSize.THUMBNAIL && thumbnailFile) {
       filepath = thumbnailFile.path;

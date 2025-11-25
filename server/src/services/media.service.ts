@@ -45,6 +45,7 @@ interface UpsertFileOptions {
   assetId: string;
   type: AssetFileType;
   path: string;
+  edited: boolean;
 }
 
 @Injectable()
@@ -67,6 +68,7 @@ export class MediaService extends BaseService {
     };
 
     for await (const asset of this.assetJobRepository.streamForThumbnailJob(!!force)) {
+      // TODO: make this do both edited and original assets
       const { previewFile, thumbnailFile } = getAssetFiles(asset.files);
 
       if (!previewFile || !thumbnailFile || !asset.thumbhash || force) {
@@ -155,8 +157,10 @@ export class MediaService extends BaseService {
   }
 
   @OnJob({ name: JobName.AssetGenerateThumbnails, queue: QueueName.ThumbnailGeneration })
-  async handleGenerateThumbnails({ id }: JobOf<JobName.AssetGenerateThumbnails>): Promise<JobStatus> {
+  async handleGenerateThumbnails({ id, source }: JobOf<JobName.AssetGenerateThumbnails>): Promise<JobStatus> {
     const asset = await this.assetJobRepository.getForGenerateThumbnailJob(id);
+    const isEdit = source === 'edit';
+
     if (!asset) {
       this.logger.warn(`Thumbnail generation failed for asset ${id}: not found`);
       return JobStatus.Failed;
@@ -165,6 +169,21 @@ export class MediaService extends BaseService {
     if (asset.visibility === AssetVisibility.Hidden) {
       this.logger.verbose(`Thumbnail generation skipped for asset ${id}: not visible`);
       return JobStatus.Skipped;
+    }
+
+    if (asset.type !== AssetType.Image && isEdit) {
+      this.logger.warn(`Thumbnail generation for edits is only supported for images. Asset ${id} is a ${asset.type}`);
+      return JobStatus.Skipped;
+    }
+
+    // clean up edited files if no edits exist
+    if (isEdit && asset.edits.length === 0) {
+      const editedPaths = getAssetFiles(asset.files, true);
+      const files = Object.values(editedPaths).filter((file) => file !== undefined);
+
+      await this.assetRepository.deleteFiles(files);
+      await Promise.all(files.map((path) => this.storageRepository.unlink(path.path)));
+      return JobStatus.Success;
     }
 
     let generated: {
@@ -182,18 +201,33 @@ export class MediaService extends BaseService {
       return JobStatus.Skipped;
     }
 
-    const { previewFile, thumbnailFile, fullsizeFile } = getAssetFiles(asset.files);
+    const { previewFile, thumbnailFile, fullsizeFile } = getAssetFiles(asset.files, isEdit);
     const toUpsert: UpsertFileOptions[] = [];
     if (previewFile?.path !== generated.previewPath) {
-      toUpsert.push({ assetId: asset.id, path: generated.previewPath, type: AssetFileType.Preview });
+      toUpsert.push({
+        assetId: asset.id,
+        path: generated.previewPath,
+        type: AssetFileType.Preview,
+        edited: isEdit,
+      });
     }
 
     if (thumbnailFile?.path !== generated.thumbnailPath) {
-      toUpsert.push({ assetId: asset.id, path: generated.thumbnailPath, type: AssetFileType.Thumbnail });
+      toUpsert.push({
+        assetId: asset.id,
+        path: generated.thumbnailPath,
+        type: AssetFileType.Thumbnail,
+        edited: isEdit,
+      });
     }
 
     if (generated.fullsizePath && fullsizeFile?.path !== generated.fullsizePath) {
-      toUpsert.push({ assetId: asset.id, path: generated.fullsizePath, type: AssetFileType.FullSize });
+      toUpsert.push({
+        assetId: asset.id,
+        path: generated.fullsizePath,
+        type: AssetFileType.FullSize,
+        edited: isEdit,
+      });
     }
 
     if (toUpsert.length > 0) {

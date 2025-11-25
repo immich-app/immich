@@ -811,7 +811,7 @@ export class AssetRepository {
       .execute();
   }
 
-  async upsertFile(file: Pick<Insertable<AssetFileTable>, 'assetId' | 'path' | 'type'>): Promise<void> {
+  async upsertFile(file: Pick<Insertable<AssetFileTable>, 'assetId' | 'path' | 'type' | 'edited'>): Promise<void> {
     const value = { ...file, assetId: asUuid(file.assetId) };
     await this.db
       .insertInto('asset_file')
@@ -824,7 +824,7 @@ export class AssetRepository {
       .execute();
   }
 
-  async upsertFiles(files: Pick<Insertable<AssetFileTable>, 'assetId' | 'path' | 'type'>[]): Promise<void> {
+  async upsertFiles(files: Pick<Insertable<AssetFileTable>, 'assetId' | 'path' | 'type' | 'edited'>[]): Promise<void> {
     if (files.length === 0) {
       return;
     }

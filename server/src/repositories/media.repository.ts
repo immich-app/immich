@@ -7,6 +7,7 @@ import { Writable } from 'node:stream';
 import sharp from 'sharp';
 import { ORIENTATION_TO_SHARP_ROTATION } from 'src/constants';
 import { Exif } from 'src/database';
+import { EditActionItem } from 'src/dtos/editing.dto';
 import { Colorspace, LogLevel, RawExtractedFormat } from 'src/enum';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import {
@@ -142,14 +143,59 @@ export class MediaRepository {
     return this.getImageDecodingPipeline(input, options).raw().toBuffer({ resolveWithObject: true });
   }
 
-  async generateThumbnail(input: string | Buffer, options: GenerateThumbnailOptions, output: string): Promise<void> {
-    await this.getImageDecodingPipeline(input, options)
-      .toFormat(options.format, {
-        quality: options.quality,
-        // this is default in libvips (except the threshold is 90), but we need to set it manually in sharp
-        chromaSubsampling: options.quality >= 80 ? '4:4:4' : '4:2:0',
-      })
-      .toFile(output);
+  async applyEdit(input: sharp.Sharp, edit: EditActionItem): Promise<sharp.Sharp> {
+    switch (edit.action) {
+      case 'crop': {
+        const { left, top, right, bottom } = edit.parameters;
+        const { width, height } = await input.metadata();
+
+        const topPx = Math.round(top * height);
+        const leftPx = Math.round(left * width);
+        const bottomPx = Math.round(bottom * height);
+        const rightPx = Math.round(right * width);
+
+        const newWidth = rightPx - leftPx;
+        const newHeight = bottomPx - topPx;
+
+        return input.extract({ left: leftPx, top: topPx, width: newWidth, height: newHeight });
+      }
+      case 'rotate': {
+        const { angle } = edit.parameters;
+        return input.rotate(angle);
+      }
+      case 'mirror': {
+        const { axis } = edit.parameters;
+        if (axis === 'horizontal') {
+          return input.flop();
+        } else {
+          return input.flip();
+        }
+      }
+      default:
+        return input;
+    }
+  }
+
+  // TODO: update all calls of generateThumbnail to pass edits
+  async generateThumbnail(
+    input: string | Buffer,
+    options: GenerateThumbnailOptions,
+    output: string,
+    edits?: EditActionItem[],
+  ): Promise<void> {
+    const decoded = await this.getImageDecodingPipeline(input, options).toFormat(options.format, {
+      quality: options.quality,
+      // this is default in libvips (except the threshold is 90), but we need to set it manually in sharp
+      chromaSubsampling: options.quality >= 80 ? '4:4:4' : '4:2:0',
+    });
+
+    if (edits && edits.length > 0) {
+      for (const edit of edits) {
+        await this.applyEdit(decoded, edit);
+      }
+    }
+
+    await decoded.toFile(output);
   }
 
   private getImageDecodingPipeline(input: string | Buffer, options: DecodeToBufferOptions) {
