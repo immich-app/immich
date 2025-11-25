@@ -363,14 +363,14 @@ extension on Iterable<PlatformAsset> {
   }
 }
 
-extension on PlatformAsset {
+extension PlatformToLocalAsset on PlatformAsset {
   LocalAsset toLocalAsset() => LocalAsset(
     id: id,
     name: name,
     checksum: null,
     type: AssetType.values.elementAtOrNull(type) ?? AssetType.other,
     createdAt: tryFromSecondsSinceEpoch(createdAt, isUtc: true) ?? DateTime.timestamp(),
-    updatedAt: tryFromSecondsSinceEpoch(createdAt, isUtc: true) ?? DateTime.timestamp(),
+    updatedAt: tryFromSecondsSinceEpoch(updatedAt, isUtc: true) ?? DateTime.timestamp(),
     width: width,
     height: height,
     durationInSeconds: durationInSeconds,

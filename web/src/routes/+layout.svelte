@@ -22,7 +22,6 @@
   import { modalManager, setTranslations } from '@immich/ui';
   import { onMount, type Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
-  import { run } from 'svelte/legacy';
   import '../app.css';
 
   interface Props {
@@ -69,7 +68,8 @@
   afterNavigate(() => {
     showNavigationLoadingBar = false;
   });
-  run(() => {
+
+  $effect.pre(() => {
     if ($user || page.url.pathname.startsWith(AppRoute.MAINTENANCE)) {
       openWebsocketConnection();
     } else {

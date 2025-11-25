@@ -248,6 +248,14 @@ export enum Permission {
   UserProfileImageUpdate = 'userProfileImage.update',
   UserProfileImageDelete = 'userProfileImage.delete',
 
+  QueueRead = 'queue.read',
+  QueueUpdate = 'queue.update',
+
+  QueueJobCreate = 'queueJob.create',
+  QueueJobRead = 'queueJob.read',
+  QueueJobUpdate = 'queueJob.update',
+  QueueJobDelete = 'queueJob.delete',
+
   WorkflowCreate = 'workflow.create',
   WorkflowRead = 'workflow.read',
   WorkflowUpdate = 'workflow.update',
@@ -543,6 +551,15 @@ export enum QueueName {
   Workflow = 'workflow',
 }
 
+export enum QueueJobStatus {
+  Active = 'active',
+  Failed = 'failed',
+  Complete = 'completed',
+  Delayed = 'delayed',
+  Waiting = 'waiting',
+  Paused = 'paused',
+}
+
 export enum JobName {
   AssetDelete = 'AssetDelete',
   AssetDeleteCheck = 'AssetDeleteCheck',
@@ -624,9 +641,13 @@ export enum JobName {
 
 export enum QueueCommand {
   Start = 'start',
+  /** @deprecated Use `updateQueue` instead */
   Pause = 'pause',
+  /** @deprecated Use `updateQueue` instead */
   Resume = 'resume',
+  /** @deprecated Use `emptyQueue` instead */
   Empty = 'empty',
+  /** @deprecated Use `emptyQueue` instead */
   ClearFailed = 'clear-failed',
 }
 
@@ -823,6 +844,7 @@ export enum ApiTag {
   Partners = 'Partners',
   People = 'People',
   Plugins = 'Plugins',
+  Queues = 'Queues',
   Search = 'Search',
   Server = 'Server',
   Sessions = 'Sessions',
