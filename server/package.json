@@ -120,7 +120,7 @@
     "@nestjs/schematics": "^11.0.0",
     "@nestjs/testing": "^11.0.4",
     "@swc/core": "^1.4.14",
-    "@types/archiver": "^6.0.0",
+    "@types/archiver": "^7.0.0",
     "@types/async-lock": "^1.4.2",
     "@types/bcrypt": "^6.0.0",
     "@types/body-parser": "^1.19.6",
