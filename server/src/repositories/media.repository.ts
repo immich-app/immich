@@ -229,7 +229,7 @@ export class MediaRepository {
         .map((stream) => ({
           index: stream.index,
           codecType: stream.codec_type,
-          codecName: stream.codec_name,
+          codecName: stream.codec_name === 'opus' ? 'libopus' : stream.codec_name,
           bitrate: this.parseInt(stream.bit_rate),
         })),
     };
