@@ -377,11 +377,13 @@ describe(MediaService.name, () => {
           assetId: 'asset-id',
           type: AssetFileType.Preview,
           path: expect.any(String),
+          edited: false,
         },
         {
           assetId: 'asset-id',
           type: AssetFileType.Thumbnail,
           path: expect.any(String),
+          edited: false,
         },
       ]);
     });

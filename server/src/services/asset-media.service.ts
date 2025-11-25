@@ -189,14 +189,14 @@ export class AssetMediaService extends BaseService {
 
     const asset = await this.findOrFail(id);
 
-    if (asset.isEdited && edited) {
-      const { fullsizeFile } = getAssetFiles(asset.files ?? []).edited;
+    if (asset.edits!.length > 0 && edited) {
+      const { editedFullsizeFile } = getAssetFiles(asset.files ?? []);
 
-      if (fullsizeFile) {
+      if (editedFullsizeFile) {
         return new ImmichFileResponse({
-          path: fullsizeFile.path,
-          fileName: getFileNameWithoutExtension(asset.originalFileName) + getFilenameExtension(fullsizeFile.path),
-          contentType: mimeTypes.lookup(fullsizeFile.path),
+          path: editedFullsizeFile.path,
+          fileName: getFileNameWithoutExtension(asset.originalFileName) + getFilenameExtension(editedFullsizeFile.path),
+          contentType: mimeTypes.lookup(editedFullsizeFile.path),
           cacheControl: CacheControl.PrivateWithCache,
         });
       }
@@ -222,7 +222,12 @@ export class AssetMediaService extends BaseService {
 
     const files = getAssetFiles(asset.files ?? []);
 
-    const { fullsizeFile, previewFile, thumbnailFile } = dto.edited && asset.isEdited ? files.edited : files.regular;
+    const requestingEdited = dto.edited && asset.edits!.length > 0;
+    const { fullsizeFile, previewFile, thumbnailFile } = {
+      fullsizeFile: requestingEdited ? files.editedFullsizeFile : files.fullsizeFile,
+      previewFile: requestingEdited ? files.editedPreviewFile : files.previewFile,
+      thumbnailFile: requestingEdited ? files.editedThumbnailFile : files.thumbnailFile,
+    };
 
     let filepath = previewFile?.path;
     if (size === AssetMediaSize.THUMBNAIL && thumbnailFile) {
@@ -457,7 +462,7 @@ export class AssetMediaService extends BaseService {
   }
 
   private async findOrFail(id: string) {
-    const asset = await this.assetRepository.getById(id, { files: true });
+    const asset = await this.assetRepository.getById(id, { files: true, edits: true });
     if (!asset) {
       throw new NotFoundException('Asset not found');
     }

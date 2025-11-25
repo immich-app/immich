@@ -19,7 +19,6 @@ import {
   withFacesAndPeople,
   withFilePath,
   withFiles,
-  withIsEdited,
 } from 'src/utils/database';
 
 @Injectable()
@@ -72,7 +71,7 @@ export class AssetJobRepository {
       .selectFrom('asset')
       .select(['asset.id', 'asset.thumbhash'])
       .select(withFiles)
-      .select((eb) => withIsEdited(eb))
+      .select(withEdits)
       .where('asset.deletedAt', 'is', null)
       .where('asset.visibility', '!=', AssetVisibility.Hidden)
       .$if(!force, (qb) =>

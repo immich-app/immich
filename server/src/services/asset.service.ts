@@ -356,12 +356,12 @@ export class AssetService extends BaseService {
 
     const assetFiles = getAssetFiles(asset.files ?? []);
     const files = [
-      assetFiles.regular.thumbnailFile?.path,
-      assetFiles.regular.previewFile?.path,
-      assetFiles.regular.fullsizeFile?.path,
-      assetFiles.edited.thumbnailFile?.path,
-      assetFiles.edited.previewFile?.path,
-      assetFiles.edited.fullsizeFile?.path,
+      assetFiles.thumbnailFile?.path,
+      assetFiles.previewFile?.path,
+      assetFiles.fullsizeFile?.path,
+      assetFiles.editedFullsizeFile?.path,
+      assetFiles.editedPreviewFile?.path,
+      assetFiles.editedThumbnailFile?.path,
       asset.encodedVideoPath,
     ];
 

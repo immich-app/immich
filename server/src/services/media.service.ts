@@ -46,7 +46,6 @@ interface UpsertFileOptions {
   assetId: string;
   type: AssetFileType;
   path: string;
-  edited: boolean;
 }
 
 @Injectable()
@@ -71,14 +70,17 @@ export class MediaService extends BaseService {
     for await (const asset of this.assetJobRepository.streamForThumbnailJob(!!force)) {
       const assetFiles = getAssetFiles(asset.files);
 
-      const regular = assetFiles.regular;
-      if (!regular.previewFile || !regular.thumbnailFile || !asset.thumbhash || force) {
+      if (!assetFiles.previewFile || !assetFiles.thumbnailFile || !asset.thumbhash || force) {
         jobs.push({ name: JobName.AssetGenerateThumbnails, data: { id: asset.id } });
       }
 
-      if (asset.isEdited) {
-        const edited = assetFiles.edited;
-        if (!edited.previewFile || !edited.thumbnailFile || !edited.fullsizeFile || force) {
+      if (asset.edits.length > 0) {
+        if (
+          !assetFiles.editedPreviewFile ||
+          !assetFiles.editedThumbnailFile ||
+          !assetFiles.editedFullsizeFile ||
+          force
+        ) {
           jobs.push({ name: JobName.AssetGenerateThumbnails, data: { id: asset.id, source: 'edit' } });
         }
       }
@@ -186,8 +188,12 @@ export class MediaService extends BaseService {
 
     // clean up edited files if no edits exist
     if (isEditJob && asset.edits.length === 0) {
-      const editedPaths = getAssetFiles(asset.files).edited;
-      const files = Object.values(editedPaths).filter((file) => file !== undefined);
+      const assetFiles = getAssetFiles(asset.files);
+      const files = [
+        assetFiles.editedFullsizeFile,
+        assetFiles.editedPreviewFile,
+        assetFiles.editedThumbnailFile,
+      ].filter((file) => file !== undefined);
 
       if (files.length > 0) {
         await this.assetRepository.deleteFiles(files);
@@ -213,15 +219,16 @@ export class MediaService extends BaseService {
     }
 
     const assetFiles = getAssetFiles(asset.files);
-    const { previewFile, thumbnailFile, fullsizeFile } = isEditJob ? assetFiles.edited : assetFiles.regular;
+    const previewFile = isEditJob ? assetFiles.editedPreviewFile : assetFiles.previewFile;
+    const thumbnailFile = isEditJob ? assetFiles.editedThumbnailFile : assetFiles.thumbnailFile;
+    const fullsizeFile = isEditJob ? assetFiles.editedFullsizeFile : assetFiles.fullsizeFile;
 
     const toUpsert: UpsertFileOptions[] = [];
     if (previewFile?.path !== generated.previewPath) {
       toUpsert.push({
         assetId: asset.id,
         path: generated.previewPath,
-        type: AssetFileType.Preview,
-        edited: isEditJob,
+        type: isEditJob ? AssetFileType.EditedPreview : AssetFileType.Preview,
       });
     }
 
@@ -229,8 +236,7 @@ export class MediaService extends BaseService {
       toUpsert.push({
         assetId: asset.id,
         path: generated.thumbnailPath,
-        type: AssetFileType.Thumbnail,
-        edited: isEditJob,
+        type: isEditJob ? AssetFileType.EditedThumbnail : AssetFileType.Thumbnail,
       });
     }
 
@@ -238,8 +244,7 @@ export class MediaService extends BaseService {
       toUpsert.push({
         assetId: asset.id,
         path: generated.fullsizePath,
-        type: AssetFileType.FullSize,
-        edited: isEditJob,
+        type: isEditJob ? AssetFileType.EditedFullSize : AssetFileType.FullSize,
       });
     }
 

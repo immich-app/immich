@@ -13,21 +13,18 @@ import { PartnerRepository } from 'src/repositories/partner.repository';
 import { IBulkAsset, ImmichFile, UploadFile, UploadRequest } from 'src/types';
 import { checkAccess } from 'src/utils/access';
 
-export const getAssetFile = (files: AssetFile[], type: AssetFileType | GeneratedImageType, edited: boolean) => {
-  return files.find((file) => file.type === type && file.edited === edited);
+export const getAssetFile = (files: AssetFile[], type: AssetFileType | GeneratedImageType) => {
+  return files.find((file) => file.type === type);
 };
 
 export const getAssetFiles = (files: AssetFile[]) => ({
-  regular: {
-    fullsizeFile: getAssetFile(files, AssetFileType.FullSize, false),
-    previewFile: getAssetFile(files, AssetFileType.Preview, false),
-    thumbnailFile: getAssetFile(files, AssetFileType.Thumbnail, false),
-  },
-  edited: {
-    fullsizeFile: getAssetFile(files, AssetFileType.FullSize, true),
-    previewFile: getAssetFile(files, AssetFileType.Preview, true),
-    thumbnailFile: getAssetFile(files, AssetFileType.Thumbnail, true),
-  },
+  fullsizeFile: getAssetFile(files, AssetFileType.FullSize),
+  previewFile: getAssetFile(files, AssetFileType.Preview),
+  thumbnailFile: getAssetFile(files, AssetFileType.Thumbnail),
+
+  editedFullsizeFile: getAssetFile(files, AssetFileType.EditedFullSize),
+  editedPreviewFile: getAssetFile(files, AssetFileType.EditedPreview),
+  editedThumbnailFile: getAssetFile(files, AssetFileType.EditedThumbnail),
 });
 
 export const addAssets = async (

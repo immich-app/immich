@@ -1,5 +1,6 @@
 import { AssetFace, AssetFile, Exif } from 'src/database';
 import { MapAsset } from 'src/dtos/asset-response.dto';
+import { EditActionItem } from 'src/dtos/editing.dto';
 import { AssetFileType, AssetStatus, AssetType, AssetVisibility } from 'src/enum';
 import { StorageAsset } from 'src/types';
 import { authStub } from 'test/fixtures/auth.stub';
@@ -92,6 +93,7 @@ export const assetStub = {
     visibility: AssetVisibility.Timeline,
     width: null,
     height: null,
+    edits: [],
   }),
 
   noWebpPath: Object.freeze({
@@ -133,6 +135,7 @@ export const assetStub = {
     visibility: AssetVisibility.Timeline,
     width: null,
     height: null,
+    edits: [],
   }),
 
   noThumbhash: Object.freeze({
@@ -171,6 +174,7 @@ export const assetStub = {
     visibility: AssetVisibility.Timeline,
     width: null,
     height: null,
+    edits: [],
   }),
 
   primaryImage: Object.freeze({
@@ -219,6 +223,7 @@ export const assetStub = {
     visibility: AssetVisibility.Timeline,
     width: null,
     height: null,
+    edits: [],
   }),
 
   image: Object.freeze({
@@ -265,6 +270,7 @@ export const assetStub = {
     height: 3840,
     width: 2160,
     visibility: AssetVisibility.Timeline,
+    edits: [],
   }),
 
   trashed: Object.freeze({
@@ -308,6 +314,7 @@ export const assetStub = {
     visibility: AssetVisibility.Timeline,
     width: null,
     height: null,
+    edits: [],
   }),
 
   trashedOffline: Object.freeze({
@@ -351,6 +358,7 @@ export const assetStub = {
     visibility: AssetVisibility.Timeline,
     width: null,
     height: null,
+    edits: [],
   }),
   archived: Object.freeze({
     id: 'asset-id',
@@ -393,6 +401,7 @@ export const assetStub = {
     visibility: AssetVisibility.Timeline,
     width: null,
     height: null,
+    edits: [],
   }),
 
   external: Object.freeze({
@@ -435,6 +444,7 @@ export const assetStub = {
     visibility: AssetVisibility.Timeline,
     width: null,
     height: null,
+    edits: [],
   }),
 
   image1: Object.freeze({
@@ -477,6 +487,7 @@ export const assetStub = {
     visibility: AssetVisibility.Timeline,
     width: null,
     height: null,
+    edits: [],
   }),
 
   imageFrom2015: Object.freeze({
@@ -518,6 +529,7 @@ export const assetStub = {
     visibility: AssetVisibility.Timeline,
     width: null,
     height: null,
+    edits: [],
   }),
 
   video: Object.freeze({
@@ -561,6 +573,7 @@ export const assetStub = {
     visibility: AssetVisibility.Timeline,
     width: null,
     height: null,
+    edits: [],
   }),
 
   livePhotoMotionAsset: Object.freeze({
@@ -579,7 +592,8 @@ export const assetStub = {
     visibility: AssetVisibility.Hidden,
     width: null,
     height: null,
-  } as MapAsset & { faces: AssetFace[]; files: AssetFile[]; exifInfo: Exif }),
+    edits: [] as EditActionItem[],
+  } as MapAsset & { faces: AssetFace[]; files: AssetFile[]; exifInfo: Exif; edits: EditActionItem[] }),
 
   livePhotoStillAsset: Object.freeze({
     id: 'live-photo-still-asset',
@@ -599,7 +613,8 @@ export const assetStub = {
     visibility: AssetVisibility.Timeline,
     width: null,
     height: null,
-  } as MapAsset & { faces: AssetFace[] }),
+    edits: [] as EditActionItem[],
+  } as MapAsset & { faces: AssetFace[]; edits: EditActionItem[] }),
 
   livePhotoWithOriginalFileName: Object.freeze({
     id: 'live-photo-still-asset',
@@ -620,7 +635,8 @@ export const assetStub = {
     visibility: AssetVisibility.Timeline,
     width: null,
     height: null,
-  } as MapAsset & { faces: AssetFace[] }),
+    edits: [] as EditActionItem[],
+  } as MapAsset & { faces: AssetFace[]; edits: EditActionItem[] }),
 
   withLocation: Object.freeze({
     id: 'asset-with-favorite-id',
@@ -667,6 +683,7 @@ export const assetStub = {
     visibility: AssetVisibility.Timeline,
     width: null,
     height: null,
+    edits: [],
   }),
 
   sidecar: Object.freeze({
@@ -705,6 +722,7 @@ export const assetStub = {
     visibility: AssetVisibility.Timeline,
     width: null,
     height: null,
+    edits: [],
   }),
 
   sidecarWithoutExt: Object.freeze({
@@ -740,6 +758,7 @@ export const assetStub = {
     visibility: AssetVisibility.Timeline,
     width: null,
     height: null,
+    edits: [],
   }),
 
   hasEncodedVideo: Object.freeze({
@@ -782,6 +801,7 @@ export const assetStub = {
     visibility: AssetVisibility.Timeline,
     width: null,
     height: null,
+    edits: [],
   }),
 
   hasFileExtension: Object.freeze({
@@ -821,6 +841,7 @@ export const assetStub = {
     visibility: AssetVisibility.Timeline,
     width: null,
     height: null,
+    edits: [],
   }),
 
   imageDng: Object.freeze({
@@ -864,6 +885,7 @@ export const assetStub = {
     visibility: AssetVisibility.Timeline,
     width: null,
     height: null,
+    edits: [],
   }),
 
   imageHif: Object.freeze({
@@ -907,6 +929,7 @@ export const assetStub = {
     visibility: AssetVisibility.Timeline,
     width: null,
     height: null,
+    edits: [],
   }),
   panoramaTif: Object.freeze({
     id: 'asset-id',
@@ -948,5 +971,6 @@ export const assetStub = {
     visibility: AssetVisibility.Timeline,
     width: null,
     height: null,
+    edits: [],
   }),
 };

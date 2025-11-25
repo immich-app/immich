@@ -491,7 +491,7 @@ describe(AssetMediaService.name, () => {
 
   describe('downloadOriginal', () => {
     it('should require the asset.download permission', async () => {
-      await expect(sut.downloadOriginal(authStub.admin, 'asset-1')).rejects.toBeInstanceOf(BadRequestException);
+      await expect(sut.downloadOriginal(authStub.admin, 'asset-1', true)).rejects.toBeInstanceOf(BadRequestException);
 
       expect(mocks.access.asset.checkOwnerAccess).toHaveBeenCalledWith(
         authStub.admin.user.id,
@@ -505,16 +505,16 @@ describe(AssetMediaService.name, () => {
     it('should throw an error if the asset is not found', async () => {
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
 
-      await expect(sut.downloadOriginal(authStub.admin, 'asset-1')).rejects.toBeInstanceOf(NotFoundException);
+      await expect(sut.downloadOriginal(authStub.admin, 'asset-1', true)).rejects.toBeInstanceOf(NotFoundException);
 
-      expect(mocks.asset.getById).toHaveBeenCalledWith('asset-1', { files: true });
+      expect(mocks.asset.getById).toHaveBeenCalledWith('asset-1', { files: true, edits: true });
     });
 
     it('should download a file', async () => {
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
       mocks.asset.getById.mockResolvedValue(assetStub.image);
 
-      await expect(sut.downloadOriginal(authStub.admin, 'asset-1')).resolves.toEqual(
+      await expect(sut.downloadOriginal(authStub.admin, 'asset-1', true)).resolves.toEqual(
         new ImmichFileResponse({
           path: '/original/path.jpg',
           fileName: 'asset-id.jpg',

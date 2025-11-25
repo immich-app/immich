@@ -3,6 +3,7 @@ import { Selectable } from 'kysely';
 import { AssetFace, AssetFile, Exif, Stack, Tag, User } from 'src/database';
 import { HistoryBuilder, Property } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
+import { EditActionItem } from 'src/dtos/editing.dto';
 import { ExifResponseDto, mapExif } from 'src/dtos/exif.dto';
 import {
   AssetFaceWithoutPersonResponseDto,
