@@ -33,7 +33,7 @@
             <HStack>
               <Icon
                 icon={writable ? mdiCheck : mdiClose}
-                color={`rgb(var(--immich-ui-${writable ? 'success' : 'danger'}))`}
+                color={`var(--immich-ui-${writable ? 'success' : 'danger'}-500)`}
               />
               <Text
                 >{folder} ({$t(
@@ -48,7 +48,7 @@
                 <Icon
                   class="mt-1"
                   icon={files ? mdiCheck : folder === 'profile' || folder === 'upload' ? mdiClose : mdiAlert}
-                  color={`rgb(var(--immich-ui-${files ? 'success' : folder === 'profile' || folder === 'upload' ? 'danger' : 'warning'}))`}
+                  color={`var(--immich-ui-${files ? 'success' : folder === 'profile' || folder === 'upload' ? 'danger' : 'warning'}-500)`}
                 />
                 <Stack gap={0} class="items-start">
                   <Text>
