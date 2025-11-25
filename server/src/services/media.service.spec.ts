@@ -315,6 +315,7 @@ describe(MediaService.name, () => {
           raw: rawInfo,
         },
         expect.any(String),
+        [],
       );
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
         rawBuffer,
@@ -327,6 +328,7 @@ describe(MediaService.name, () => {
           raw: rawInfo,
         },
         expect.any(String),
+        [],
       );
 
       expect(mocks.media.generateThumbhash).toHaveBeenCalledOnce();
@@ -377,13 +379,11 @@ describe(MediaService.name, () => {
           assetId: 'asset-id',
           type: AssetFileType.Preview,
           path: expect.any(String),
-          edited: false,
         },
         {
           assetId: 'asset-id',
           type: AssetFileType.Thumbnail,
           path: expect.any(String),
-          edited: false,
         },
       ]);
     });
@@ -531,6 +531,7 @@ describe(MediaService.name, () => {
           raw: rawInfo,
         },
         previewPath,
+        [],
       );
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
         rawBuffer,
@@ -543,6 +544,7 @@ describe(MediaService.name, () => {
           raw: rawInfo,
         },
         thumbnailPath,
+        [],
       );
     });
 
@@ -576,6 +578,7 @@ describe(MediaService.name, () => {
           raw: rawInfo,
         },
         previewPath,
+        [],
       );
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
         rawBuffer,
@@ -588,6 +591,7 @@ describe(MediaService.name, () => {
           raw: rawInfo,
         },
         thumbnailPath,
+        [],
       );
     });
 
@@ -680,11 +684,13 @@ describe(MediaService.name, () => {
         rawBuffer,
         expect.objectContaining({ processInvalidImages: false }),
         expect.any(String),
+        [],
       );
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
         rawBuffer,
         expect.objectContaining({ processInvalidImages: false }),
         expect.any(String),
+        [],
       );
 
       expect(mocks.media.generateThumbhash).toHaveBeenCalledOnce();
@@ -726,6 +732,7 @@ describe(MediaService.name, () => {
           raw: rawInfo,
         },
         expect.any(String),
+        [],
       );
     });
 
@@ -768,6 +775,7 @@ describe(MediaService.name, () => {
           raw: rawInfo,
         },
         expect.any(String),
+        [],
       );
     });
 
@@ -808,6 +816,7 @@ describe(MediaService.name, () => {
           raw: rawInfo,
         },
         expect.any(String),
+        [],
       );
     });
 
