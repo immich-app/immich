@@ -6,7 +6,7 @@
   import { getUserAdminActions, getUserAdminsActions } from '$lib/services/user-admin.service';
   import { locale } from '$lib/stores/preferences.store';
   import { getByteUnitString } from '$lib/utils/byte-units';
-  import { searchUsersAdmin, type UserAdminResponseDto } from '@immich/sdk';
+  import { type UserAdminResponseDto } from '@immich/sdk';
   import { HStack, Icon } from '@immich/ui';
   import { mdiInfinity } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -18,24 +18,20 @@
 
   let { data }: Props = $props();
 
-  let allUsers: UserAdminResponseDto[] = $derived(data.allUsers);
+  let allUsers: UserAdminResponseDto[] = $state(data.allUsers);
 
-  const refresh = async () => {
-    allUsers = await searchUsersAdmin({ withDeleted: true });
-  };
-
-  const onUserAdminDeleted = ({ id: userId }: { id: string }) => {
-    const user = allUsers.find(({ id }) => id === userId);
-    if (user) {
-      allUsers = allUsers.filter((user) => user.id !== userId);
+  const onUpdate = (user: UserAdminResponseDto) => {
+    const index = allUsers.findIndex(({ id }) => id === user.id);
+    if (index !== -1) {
+      allUsers[index] = user;
     }
   };
 
-  const UserAdminsActions = $derived(getUserAdminsActions($t));
-
-  const onUpdate = async () => {
-    await refresh();
+  const onUserAdminDeleted = ({ id: userId }: { id: string }) => {
+    allUsers = allUsers.filter(({ id }) => id !== userId);
   };
+
+  const { Create } = $derived(getUserAdminsActions($t));
 </script>
 
 <OnEvents
@@ -49,7 +45,7 @@
 <AdminPageLayout title={data.meta.title}>
   {#snippet buttons()}
     <HStack gap={1}>
-      <HeaderButton action={UserAdminsActions.Create} />
+      <HeaderButton action={Create} />
     </HStack>
   {/snippet}
   <section id="setting-content" class="flex place-content-center sm:mx-4">
@@ -69,7 +65,7 @@
         </thead>
         <tbody class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
           {#each allUsers as user (user.id)}
-            {@const UserAdminActions = getUserAdminActions($t, user)}
+            {@const { View, ContextMenu } = getUserAdminActions($t, user)}
             <tr
               class="flex h-20 overflow-hidden w-full place-items-center text-center dark:text-immich-dark-fg {user.deletedAt
                 ? 'bg-red-300 dark:bg-red-900'
@@ -91,8 +87,8 @@
               <td
                 class="flex flex-row flex-wrap justify-center gap-x-2 gap-y-1 w-4/12 lg:w-3/12 xl:w-2/12 text-ellipsis break-all text-sm"
               >
-                <TableButton action={UserAdminActions.View} />
-                <TableButton action={UserAdminActions.ContextMenu} />
+                <TableButton action={View} />
+                <TableButton action={ContextMenu} />
               </td>
             </tr>
           {/each}
