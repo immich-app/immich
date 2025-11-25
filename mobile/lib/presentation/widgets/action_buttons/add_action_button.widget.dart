@@ -99,6 +99,7 @@ class AddActionButton extends ConsumerWidget {
     final showUnarchive = isOwner && !isInLockedView && hasRemote && isArchived;
 
     final theme = context.themeData;
+    final menuIconColor = theme.colorScheme.onSurfaceVariant;
     final menuChildren = <Widget>[];
 
     void addSection(String label, List<Widget> items) {
@@ -122,7 +123,7 @@ class AddActionButton extends ConsumerWidget {
       BaseActionButton(
         label: "album".tr(),
         iconData: Icons.photo_album_outlined,
-        iconColor: context.primaryColor,
+        iconColor: menuIconColor,
         onPressed: () => _openAlbumSelector(context, ref),
       ),
     ]);
@@ -134,7 +135,7 @@ class AddActionButton extends ConsumerWidget {
           BaseActionButton(
             label: "archive".tr(),
             iconData: Icons.archive_outlined,
-            iconColor: context.primaryColor,
+            iconColor: menuIconColor,
             onPressed: () => performArchiveAction(context, ref, source: ActionSource.viewer),
           ),
         );
@@ -145,7 +146,7 @@ class AddActionButton extends ConsumerWidget {
           BaseActionButton(
             label: "unarchive".tr(),
             iconData: Icons.unarchive_outlined,
-            iconColor: context.primaryColor,
+            iconColor: menuIconColor,
             onPressed: () => performUnArchiveAction(context, ref, source: ActionSource.viewer),
           ),
         );
@@ -155,7 +156,7 @@ class AddActionButton extends ConsumerWidget {
         BaseActionButton(
           label: "locked_folder".tr(),
           iconData: Icons.lock_outline,
-          iconColor: context.primaryColor,
+          iconColor: menuIconColor,
           onPressed: () => performMoveToLockFolderAction(context, ref, source: ActionSource.viewer),
         ),
       );
