@@ -489,14 +489,16 @@ export class AssetService extends BaseService {
     }
 
     // verify that each edit has a unique index, with no gaps
-    const indices = dto.edits.map((edit) => edit.index);
-    const uniqueIndices = new Set(indices);
-    if (uniqueIndices.size !== indices.length) {
-      throw new BadRequestException('Each edit must have a unique index');
-    }
-    const maxIndex = Math.max(...indices);
-    if (maxIndex !== indices.length - 1) {
-      throw new BadRequestException('Edit indices must be continuous and start from 0');
+    if (dto.edits.length > 0) {
+      const indices = dto.edits.map((edit) => edit.index);
+      const uniqueIndices = new Set(indices);
+      if (uniqueIndices.size !== indices.length) {
+        throw new BadRequestException('Each edit must have a unique index');
+      }
+      const maxIndex = Math.max(...indices);
+      if (maxIndex !== indices.length - 1) {
+        throw new BadRequestException('Edit indices must be continuous and start from 0');
+      }
     }
 
     await this.editRepository.storeEdits(id, dto.edits);

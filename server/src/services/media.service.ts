@@ -318,9 +318,10 @@ export class MediaService extends BaseService {
     originalFileName: string;
     originalPath: string;
     exifInfo: Exif;
-    edits: EditActionItem[];
+    edits?: EditActionItem[]; // TODO: update callers to conditionally include edits
   }) {
     const { image } = await this.getConfig({ withCache: true });
+    // TODO: handle paths for edits
     const previewPath = StorageCore.getImagePath(asset, AssetPathType.Preview, image.preview.format);
     const thumbnailPath = StorageCore.getImagePath(asset, AssetPathType.Thumbnail, image.thumbnail.format);
     this.storageCore.ensureFolders(previewPath);
@@ -347,11 +348,14 @@ export class MediaService extends BaseService {
       this.mediaRepository.generateThumbhash(data, thumbnailOptions),
       this.mediaRepository.generateThumbnail(
         data,
-        { ...image.thumbnail, ...thumbnailOptions },
+        { ...image.thumbnail, ...thumbnailOptions, edits: asset.edits },
         thumbnailPath,
-        asset.edits,
       ),
-      this.mediaRepository.generateThumbnail(data, { ...image.preview, ...thumbnailOptions }, previewPath, asset.edits),
+      this.mediaRepository.generateThumbnail(
+        data,
+        { ...image.preview, ...thumbnailOptions, edits: asset.edits },
+        previewPath,
+      ),
     ];
 
     let fullsizePath: string | undefined;

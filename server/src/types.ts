@@ -3,6 +3,7 @@ import { VECTOR_EXTENSIONS } from 'src/constants';
 import { Asset } from 'src/database';
 import { UploadFieldName } from 'src/dtos/asset-media.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
+import { EditActionItem } from 'src/dtos/editing.dto';
 import {
   AssetMetadataKey,
   AssetOrder,
@@ -61,6 +62,7 @@ interface DecodeImageOptions {
 export interface DecodeToBufferOptions extends DecodeImageOptions {
   size?: number;
   orientation?: ExifOrientation;
+  edits?: EditActionItem[];
 }
 
 export type GenerateThumbnailOptions = Pick<ImageOptions, 'format' | 'quality'> & DecodeToBufferOptions;

@@ -139,23 +139,55 @@ export class MediaRepository {
     }
   }
 
-  decodeImage(input: string | Buffer, options: DecodeToBufferOptions) {
-    return this.getImageDecodingPipeline(input, options).raw().toBuffer({ resolveWithObject: true });
+  async decodeImage(input: string | Buffer, options: DecodeToBufferOptions) {
+    return (await this.getImageDecodingPipeline(input, options)).raw().toBuffer({ resolveWithObject: true });
   }
 
-  async applyEdit(input: sharp.Sharp, edit: EditActionItem): Promise<sharp.Sharp> {
+  private calculateImageEditDimensions(dimensions: ImageDimensions, edit: EditActionItem): ImageDimensions {
     switch (edit.action) {
       case 'crop': {
         const { left, top, right, bottom } = edit.parameters;
-        const { width, height } = await input.metadata();
+        const leftPx = Math.round(left * dimensions.width);
+        const topPx = Math.round(top * dimensions.height);
+        const rightPx = Math.round(right * dimensions.width);
+        const bottomPx = Math.round(bottom * dimensions.height);
+        const width = dimensions.width - rightPx - leftPx;
+        const height = dimensions.height - bottomPx - topPx;
+        return { width, height };
+      }
+      case 'rotate': {
+        const { angle } = edit.parameters;
+        if (angle % 180 === 0) {
+          return dimensions;
+        } else {
+          return { width: dimensions.height, height: dimensions.width };
+        }
+      }
+      default:
+        return dimensions;
+    }
+  }
+
+  private applyEdit(input: sharp.Sharp, edit: EditActionItem, dimensions: ImageDimensions): sharp.Sharp {
+    switch (edit.action) {
+      case 'crop': {
+        const { left, top, right, bottom } = edit.parameters;
+        const { width, height } = dimensions;
+
+        console.log('Original dimensions:', { width, height });
+        console.log('Crop parameters (fractions):', { left, top, right, bottom });
 
         const topPx = Math.round(top * height);
         const leftPx = Math.round(left * width);
         const bottomPx = Math.round(bottom * height);
         const rightPx = Math.round(right * width);
 
-        const newWidth = rightPx - leftPx;
-        const newHeight = bottomPx - topPx;
+        console.log('Crop parameters in pixels:', { leftPx, topPx, rightPx, bottomPx });
+
+        const newWidth = width - rightPx - leftPx;
+        const newHeight = height - bottomPx - topPx;
+
+        console.log('Cropping to:', { leftPx, topPx, newWidth, newHeight });
 
         return input.extract({ left: leftPx, top: topPx, width: newWidth, height: newHeight });
       }
@@ -176,29 +208,34 @@ export class MediaRepository {
     }
   }
 
+  private async applyEdits(
+    input: sharp.Sharp,
+    edits: EditActionItem[],
+    initialDimensions: ImageDimensions,
+  ): Promise<sharp.Sharp> {
+    // we need intermediate dimensions to apply edits correctly
+    let currentDimensions: ImageDimensions = initialDimensions;
+
+    for (const edit of edits) {
+      input = this.applyEdit(input, edit, currentDimensions);
+      currentDimensions = this.calculateImageEditDimensions(currentDimensions, edit);
+    }
+
+    return input;
+  }
+
   // TODO: update all calls of generateThumbnail to pass edits
-  async generateThumbnail(
-    input: string | Buffer,
-    options: GenerateThumbnailOptions,
-    output: string,
-    edits?: EditActionItem[],
-  ): Promise<void> {
-    const decoded = await this.getImageDecodingPipeline(input, options).toFormat(options.format, {
+  async generateThumbnail(input: string | Buffer, options: GenerateThumbnailOptions, output: string): Promise<void> {
+    const decoded = (await this.getImageDecodingPipeline(input, options)).toFormat(options.format, {
       quality: options.quality,
       // this is default in libvips (except the threshold is 90), but we need to set it manually in sharp
       chromaSubsampling: options.quality >= 80 ? '4:4:4' : '4:2:0',
     });
 
-    if (edits && edits.length > 0) {
-      for (const edit of edits) {
-        await this.applyEdit(decoded, edit);
-      }
-    }
-
     await decoded.toFile(output);
   }
 
-  private getImageDecodingPipeline(input: string | Buffer, options: DecodeToBufferOptions) {
+  private async getImageDecodingPipeline(input: string | Buffer, options: DecodeToBufferOptions) {
     let pipeline = sharp(input, {
       // some invalid images can still be processed by sharp, but we want to fail on them by default to avoid crashes
       failOn: options.processInvalidImages ? 'none' : 'error',
@@ -209,6 +246,9 @@ export class MediaRepository {
       .pipelineColorspace(options.colorspace === Colorspace.Srgb ? 'srgb' : 'rgb16')
       .withIccProfile(options.colorspace);
 
+    const dimensions = await pipeline.metadata();
+
+    // TODO: convert these to edits
     if (!options.raw) {
       const { angle, flip, flop } = options.orientation ? ORIENTATION_TO_SHARP_ROTATION[options.orientation] : {};
       pipeline = pipeline.rotate(angle);
@@ -223,6 +263,10 @@ export class MediaRepository {
 
     if (options.crop) {
       pipeline = pipeline.extract(options.crop);
+    }
+
+    if (options.edits && options.edits.length > 0) {
+      this.applyEdits(pipeline, options.edits, dimensions);
     }
 
     if (options.size !== undefined) {
