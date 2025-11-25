@@ -5,7 +5,7 @@
   import { maintenanceStore } from '$lib/stores/maintenance.store';
   import { handleError } from '$lib/utils/handle-error';
   import { MaintenanceAction, setMaintenanceMode } from '@immich/sdk';
-  import { Button, Heading, Link, Scrollable, Text } from '@immich/ui';
+  import { Button, Heading, Link, ProgressBar, Scrollable, Text } from '@immich/ui';
   import { t } from 'svelte-i18n';
 
   const { auth, status } = maintenanceStore;
@@ -49,12 +49,7 @@
           <pre class="text-left"><code>{error}</code></pre>
         </Scrollable>
       {:else}
-        <div class="w-60 h-2.5 bg-gray-300 rounded-full overflow-hidden">
-          <div
-            class="h-full bg-blue-600 transition-all duration-700"
-            style="width: {($status.progress || 0) * 100}%"
-          ></div>
-        </div>
+        <ProgressBar progress={$status.progress || 0} />
         {#if $status.task !== 'ready'}
           <Text>{$t(`maintenance_task_${$status.task as 'backup' | 'restore'}`)}</Text>
         {/if}
