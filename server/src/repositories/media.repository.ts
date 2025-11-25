@@ -121,19 +121,29 @@ export class MediaRepository {
     }
   }
 
-  async copyTagGroup(tagGroup: string, source: string, target: string): Promise<boolean> {
+  async copyGPanoTags(source: string, target: string, ratio: number = 1): Promise<boolean> {
+    const tagsToWrite: Record<string, any> = {};
     try {
-      await exiftool.write(
-        target,
-        {},
-        {
-          ignoreMinorErrors: true,
-          writeArgs: ['-TagsFromFile', source, `-${tagGroup}:all>${tagGroup}:all`, '-overwrite_original'],
-        },
-      );
+      const metadata = await exiftool.readRaw(source, ['-XMP-GPano:all', '-G1', '-s']);
+
+      for (const [tag, val] of Object.entries(metadata)) {
+        if (tag.startsWith('XMP-GPano:')) {
+          tagsToWrite[tag] = tag.endsWith('Pixels') && typeof val === 'number' ? Math.round(val * ratio) : val;
+        }
+      }
+    } catch (error: any) {
+      this.logger.warn(`Could not read or parse GPano tag data from image: ${error.message}`);
+      return false;
+    }
+
+    try {
+      await exiftool.write(target, tagsToWrite, {
+        ignoreMinorErrors: true,
+        writeArgs: ['-overwrite_original'],
+      });
       return true;
     } catch (error: any) {
-      this.logger.warn(`Could not copy tag data to image: ${error.message}`);
+      this.logger.warn(`Could not write GPano tag data to image: ${error.message}`);
       return false;
     }
   }

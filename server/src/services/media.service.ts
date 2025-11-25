@@ -316,12 +316,13 @@ export class MediaService extends BaseService {
 
     const outputs = await Promise.all(promises);
 
-    if (asset.exifInfo.projectionType === 'EQUIRECTANGULAR') {
+    const originalSize = asset.exifInfo.exifImageHeight;
+    if (asset.exifInfo.projectionType === 'EQUIRECTANGULAR' && originalSize) {
+      // preview size is min(preview size, original size) so do the same for pano pixel adjustment
+      const pixelRatio = image.preview.size > originalSize ? 1 : image.preview.size / originalSize;
       const promises = [
-        this.mediaRepository.copyTagGroup('XMP-GPano', asset.originalPath, previewPath),
-        fullsizePath
-          ? this.mediaRepository.copyTagGroup('XMP-GPano', asset.originalPath, fullsizePath)
-          : Promise.resolve(),
+        this.mediaRepository.copyGPanoTags(asset.originalPath, previewPath, pixelRatio),
+        fullsizePath ? this.mediaRepository.copyGPanoTags(asset.originalPath, fullsizePath) : Promise.resolve(),
       ];
       await Promise.all(promises);
     }
