@@ -91,6 +91,9 @@ String parameterToString(dynamic value) {
   if (value is Colorspace) {
     return ColorspaceTypeTransformer().encode(value).toString();
   }
+  if (value is EditActionType) {
+    return EditActionTypeTypeTransformer().encode(value).toString();
+  }
   if (value is ImageFormat) {
     return ImageFormatTypeTransformer().encode(value).toString();
   }
@@ -111,6 +114,9 @@ String parameterToString(dynamic value) {
   }
   if (value is MemoryType) {
     return MemoryTypeTypeTransformer().encode(value).toString();
+  }
+  if (value is MirrorAxis) {
+    return MirrorAxisTypeTransformer().encode(value).toString();
   }
   if (value is NotificationLevel) {
     return NotificationLevelTypeTransformer().encode(value).toString();
@@ -147,6 +153,9 @@ String parameterToString(dynamic value) {
   }
   if (value is ReactionType) {
     return ReactionTypeTypeTransformer().encode(value).toString();
+  }
+  if (value is RotationAngle) {
+    return RotationAngleTypeTransformer().encode(value).toString();
   }
   if (value is SearchSuggestionType) {
     return SearchSuggestionTypeTypeTransformer().encode(value).toString();

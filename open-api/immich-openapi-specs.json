@@ -3637,6 +3637,15 @@
         "operationId": "downloadAsset",
         "parameters": [
           {
+            "name": "edited",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": true,
+              "type": "boolean"
+            }
+          },
+          {
             "name": "id",
             "required": true,
             "in": "path",
@@ -3796,6 +3805,14 @@
         "description": "Retrieve the thumbnail image for the specified asset.",
         "operationId": "viewAsset",
         "parameters": [
+          {
+            "name": "edited",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
           {
             "name": "id",
             "required": true,

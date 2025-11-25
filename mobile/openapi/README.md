@@ -101,7 +101,9 @@ Class | Method | HTTP request | Description
 *AssetsApi* | [**deleteAssetMetadata**](doc//AssetsApi.md#deleteassetmetadata) | **DELETE** /assets/{id}/metadata/{key} | Delete asset metadata by key
 *AssetsApi* | [**deleteAssets**](doc//AssetsApi.md#deleteassets) | **DELETE** /assets | Delete assets
 *AssetsApi* | [**downloadAsset**](doc//AssetsApi.md#downloadasset) | **GET** /assets/{id}/original | Download original asset
+*AssetsApi* | [**editAsset**](doc//AssetsApi.md#editasset) | **PUT** /assets/{id}/edit | Applies edits to an existing asset
 *AssetsApi* | [**getAllUserAssetsByDeviceId**](doc//AssetsApi.md#getalluserassetsbydeviceid) | **GET** /assets/device/{deviceId} | Retrieve assets by device ID
+*AssetsApi* | [**getAssetEdits**](doc//AssetsApi.md#getassetedits) | **GET** /assets/{id}/edit | Retrieve edits for an existing asset
 *AssetsApi* | [**getAssetInfo**](doc//AssetsApi.md#getassetinfo) | **GET** /assets/{id} | Retrieve an asset
 *AssetsApi* | [**getAssetMetadata**](doc//AssetsApi.md#getassetmetadata) | **GET** /assets/{id}/metadata | Get asset metadata
 *AssetsApi* | [**getAssetMetadataByKey**](doc//AssetsApi.md#getassetmetadatabykey) | **GET** /assets/{id}/metadata/{key} | Retrieve asset metadata by key
@@ -343,6 +345,8 @@ Class | Method | HTTP request | Description
  - [AssetCopyDto](doc//AssetCopyDto.md)
  - [AssetDeltaSyncDto](doc//AssetDeltaSyncDto.md)
  - [AssetDeltaSyncResponseDto](doc//AssetDeltaSyncResponseDto.md)
+ - [AssetEditsDto](doc//AssetEditsDto.md)
+ - [AssetEditsDtoEditsInner](doc//AssetEditsDtoEditsInner.md)
  - [AssetFaceCreateDto](doc//AssetFaceCreateDto.md)
  - [AssetFaceDeleteDto](doc//AssetFaceDeleteDto.md)
  - [AssetFaceResponseDto](doc//AssetFaceResponseDto.md)
@@ -386,6 +390,7 @@ Class | Method | HTTP request | Description
  - [CreateAlbumDto](doc//CreateAlbumDto.md)
  - [CreateLibraryDto](doc//CreateLibraryDto.md)
  - [CreateProfileImageResponseDto](doc//CreateProfileImageResponseDto.md)
+ - [CropParameters](doc//CropParameters.md)
  - [DatabaseBackupConfig](doc//DatabaseBackupConfig.md)
  - [DownloadArchiveInfo](doc//DownloadArchiveInfo.md)
  - [DownloadInfoDto](doc//DownloadInfoDto.md)
@@ -394,6 +399,11 @@ Class | Method | HTTP request | Description
  - [DownloadUpdate](doc//DownloadUpdate.md)
  - [DuplicateDetectionConfig](doc//DuplicateDetectionConfig.md)
  - [DuplicateResponseDto](doc//DuplicateResponseDto.md)
+ - [EditActionCrop](doc//EditActionCrop.md)
+ - [EditActionListDto](doc//EditActionListDto.md)
+ - [EditActionMirror](doc//EditActionMirror.md)
+ - [EditActionRotate](doc//EditActionRotate.md)
+ - [EditActionType](doc//EditActionType.md)
  - [EmailNotificationsResponse](doc//EmailNotificationsResponse.md)
  - [EmailNotificationsUpdate](doc//EmailNotificationsUpdate.md)
  - [ExifResponseDto](doc//ExifResponseDto.md)
@@ -430,6 +440,8 @@ Class | Method | HTTP request | Description
  - [MemoryUpdateDto](doc//MemoryUpdateDto.md)
  - [MergePersonDto](doc//MergePersonDto.md)
  - [MetadataSearchDto](doc//MetadataSearchDto.md)
+ - [MirrorAxis](doc//MirrorAxis.md)
+ - [MirrorParameters](doc//MirrorParameters.md)
  - [NotificationCreateDto](doc//NotificationCreateDto.md)
  - [NotificationDeleteAllDto](doc//NotificationDeleteAllDto.md)
  - [NotificationDto](doc//NotificationDto.md)
@@ -489,6 +501,8 @@ Class | Method | HTTP request | Description
  - [ReactionLevel](doc//ReactionLevel.md)
  - [ReactionType](doc//ReactionType.md)
  - [ReverseGeocodingStateResponseDto](doc//ReverseGeocodingStateResponseDto.md)
+ - [RotateParameters](doc//RotateParameters.md)
+ - [RotationAngle](doc//RotationAngle.md)
  - [SearchAlbumResponseDto](doc//SearchAlbumResponseDto.md)
  - [SearchAssetResponseDto](doc//SearchAssetResponseDto.md)
  - [SearchExploreItem](doc//SearchExploreItem.md)

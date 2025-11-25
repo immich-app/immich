@@ -238,6 +238,10 @@ class ApiClient {
           return AssetDeltaSyncDto.fromJson(value);
         case 'AssetDeltaSyncResponseDto':
           return AssetDeltaSyncResponseDto.fromJson(value);
+        case 'AssetEditsDto':
+          return AssetEditsDto.fromJson(value);
+        case 'AssetEditsDtoEditsInner':
+          return AssetEditsDtoEditsInner.fromJson(value);
         case 'AssetFaceCreateDto':
           return AssetFaceCreateDto.fromJson(value);
         case 'AssetFaceDeleteDto':
@@ -324,6 +328,8 @@ class ApiClient {
           return CreateLibraryDto.fromJson(value);
         case 'CreateProfileImageResponseDto':
           return CreateProfileImageResponseDto.fromJson(value);
+        case 'CropParameters':
+          return CropParameters.fromJson(value);
         case 'DatabaseBackupConfig':
           return DatabaseBackupConfig.fromJson(value);
         case 'DownloadArchiveInfo':
@@ -340,6 +346,16 @@ class ApiClient {
           return DuplicateDetectionConfig.fromJson(value);
         case 'DuplicateResponseDto':
           return DuplicateResponseDto.fromJson(value);
+        case 'EditActionCrop':
+          return EditActionCrop.fromJson(value);
+        case 'EditActionListDto':
+          return EditActionListDto.fromJson(value);
+        case 'EditActionMirror':
+          return EditActionMirror.fromJson(value);
+        case 'EditActionRotate':
+          return EditActionRotate.fromJson(value);
+        case 'EditActionType':
+          return EditActionTypeTypeTransformer().decode(value);
         case 'EmailNotificationsResponse':
           return EmailNotificationsResponse.fromJson(value);
         case 'EmailNotificationsUpdate':
@@ -412,6 +428,10 @@ class ApiClient {
           return MergePersonDto.fromJson(value);
         case 'MetadataSearchDto':
           return MetadataSearchDto.fromJson(value);
+        case 'MirrorAxis':
+          return MirrorAxisTypeTransformer().decode(value);
+        case 'MirrorParameters':
+          return MirrorParameters.fromJson(value);
         case 'NotificationCreateDto':
           return NotificationCreateDto.fromJson(value);
         case 'NotificationDeleteAllDto':
@@ -530,6 +550,10 @@ class ApiClient {
           return ReactionTypeTypeTransformer().decode(value);
         case 'ReverseGeocodingStateResponseDto':
           return ReverseGeocodingStateResponseDto.fromJson(value);
+        case 'RotateParameters':
+          return RotateParameters.fromJson(value);
+        case 'RotationAngle':
+          return RotationAngleTypeTransformer().decode(value);
         case 'SearchAlbumResponseDto':
           return SearchAlbumResponseDto.fromJson(value);
         case 'SearchAssetResponseDto':

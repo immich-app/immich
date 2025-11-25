@@ -288,10 +288,12 @@ class AssetsApi {
   ///
   /// * [String] id (required):
   ///
+  /// * [bool] edited:
+  ///
   /// * [String] key:
   ///
   /// * [String] slug:
-  Future<Response> downloadAssetWithHttpInfo(String id, { String? key, String? slug, }) async {
+  Future<Response> downloadAssetWithHttpInfo(String id, { bool? edited, String? key, String? slug, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/assets/{id}/original'
       .replaceAll('{id}', id);
@@ -303,6 +305,9 @@ class AssetsApi {
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
+    if (edited != null) {
+      queryParams.addAll(_queryParams('', 'edited', edited));
+    }
     if (key != null) {
       queryParams.addAll(_queryParams('', 'key', key));
     }
@@ -332,11 +337,13 @@ class AssetsApi {
   ///
   /// * [String] id (required):
   ///
+  /// * [bool] edited:
+  ///
   /// * [String] key:
   ///
   /// * [String] slug:
-  Future<MultipartFile?> downloadAsset(String id, { String? key, String? slug, }) async {
-    final response = await downloadAssetWithHttpInfo(id,  key: key, slug: slug, );
+  Future<MultipartFile?> downloadAsset(String id, { bool? edited, String? key, String? slug, }) async {
+    final response = await downloadAssetWithHttpInfo(id,  edited: edited, key: key, slug: slug, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -1536,12 +1543,14 @@ class AssetsApi {
   ///
   /// * [String] id (required):
   ///
+  /// * [bool] edited:
+  ///
   /// * [String] key:
   ///
   /// * [AssetMediaSize] size:
   ///
   /// * [String] slug:
-  Future<Response> viewAssetWithHttpInfo(String id, { String? key, AssetMediaSize? size, String? slug, }) async {
+  Future<Response> viewAssetWithHttpInfo(String id, { bool? edited, String? key, AssetMediaSize? size, String? slug, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/assets/{id}/thumbnail'
       .replaceAll('{id}', id);
@@ -1553,6 +1562,9 @@ class AssetsApi {
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
+    if (edited != null) {
+      queryParams.addAll(_queryParams('', 'edited', edited));
+    }
     if (key != null) {
       queryParams.addAll(_queryParams('', 'key', key));
     }
@@ -1585,13 +1597,15 @@ class AssetsApi {
   ///
   /// * [String] id (required):
   ///
+  /// * [bool] edited:
+  ///
   /// * [String] key:
   ///
   /// * [AssetMediaSize] size:
   ///
   /// * [String] slug:
-  Future<MultipartFile?> viewAsset(String id, { String? key, AssetMediaSize? size, String? slug, }) async {
-    final response = await viewAssetWithHttpInfo(id,  key: key, size: size, slug: slug, );
+  Future<MultipartFile?> viewAsset(String id, { bool? edited, String? key, AssetMediaSize? size, String? slug, }) async {
+    final response = await viewAssetWithHttpInfo(id,  edited: edited, key: key, size: size, slug: slug, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

@@ -2672,7 +2672,8 @@ export function getAssetOcr({ id }: {
 /**
  * Download original asset
  */
-export function downloadAsset({ id, key, slug }: {
+export function downloadAsset({ edited, id, key, slug }: {
+    edited?: boolean;
     id: string;
     key?: string;
     slug?: string;
@@ -2681,6 +2682,7 @@ export function downloadAsset({ id, key, slug }: {
         status: 200;
         data: Blob;
     }>(`/assets/${encodeURIComponent(id)}/original${QS.query(QS.explode({
+        edited,
         key,
         slug
     }))}`, {
@@ -2711,7 +2713,8 @@ export function replaceAsset({ id, key, slug, assetMediaReplaceDto }: {
 /**
  * View asset thumbnail
  */
-export function viewAsset({ id, key, size, slug }: {
+export function viewAsset({ edited, id, key, size, slug }: {
+    edited?: boolean;
     id: string;
     key?: string;
     size?: AssetMediaSize;
@@ -2721,6 +2724,7 @@ export function viewAsset({ id, key, size, slug }: {
         status: 200;
         data: Blob;
     }>(`/assets/${encodeURIComponent(id)}/thumbnail${QS.query(QS.explode({
+        edited,
         key,
         size,
         slug
