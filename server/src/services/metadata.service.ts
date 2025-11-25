@@ -291,7 +291,7 @@ export class MetadataService extends BaseService {
       this.assetRepository.upsertExif(exifData),
       this.assetRepository.update({
         id: asset.id,
-        duration: exifTags.Duration?.toString() ?? null,
+        duration: this.getDuration(exifTags),
         localDateTime: dates.localDateTime,
         fileCreatedAt: dates.dateTimeOriginal ?? undefined,
         fileModifiedAt: stats.mtime,
@@ -457,19 +457,7 @@ export class MetadataService extends BaseService {
     return { width, height };
   }
 
-  private getExifTags(asset: {
-    originalPath: string;
-    sidecarPath: string | null;
-    type: AssetType;
-  }): Promise<ImmichTags> {
-    if (!asset.sidecarPath && asset.type === AssetType.Image) {
-      return this.metadataRepository.readTags(asset.originalPath);
-    }
-
-    return this.mergeExifTags(asset);
-  }
-
-  private async mergeExifTags(asset: {
+  private async getExifTags(asset: {
     originalPath: string;
     sidecarPath: string | null;
     type: AssetType;
@@ -492,7 +480,11 @@ export class MetadataService extends BaseService {
     }
 
     // prefer duration from video tags
-    delete mediaTags.Duration;
+    if (videoTags) {
+      delete mediaTags.Duration;
+    }
+
+    // never use duration from sidecar
     delete sidecarTags?.Duration;
 
     return { ...mediaTags, ...videoTags, ...sidecarTags };
@@ -934,6 +926,20 @@ export class MetadataService extends BaseService {
     return bitsPerSample;
   }
 
+  private getDuration(tags: ImmichTags): string | null {
+    const duration = tags.Duration;
+
+    if (typeof duration === 'string') {
+      return duration;
+    }
+
+    if (typeof duration === 'number') {
+      return Duration.fromObject({ seconds: duration }).toFormat('hh:mm:ss.SSS');
+    }
+
+    return null;
+  }
+
   private async getVideoTags(originalPath: string) {
     const { videoStreams, format } = await this.mediaRepository.probe(originalPath);
 
@@ -961,7 +967,7 @@ export class MetadataService extends BaseService {
     }
 
     if (format.duration) {
-      tags.Duration = Duration.fromObject({ seconds: format.duration }).toFormat('hh:mm:ss.SSS');
+      tags.Duration = format.duration;
     }
 
     return tags;

@@ -29,22 +29,22 @@
 <button
   type="button"
   {onclick}
-  class="rounded-xl p-4 w-full text-left transition-all cursor-pointer border-2 {selected
+  class="group rounded-xl p-4 w-full text-left cursor-pointer border-2 {selected
     ? 'border-primary text-primary'
-    : 'border-gray-300 dark:border-gray-700 text-gray-600 dark:text-gray-200'}"
+    : 'border-light-100 hover:border-light-200 text-light-400 hover:text-light-700'}"
 >
   <div class="flex items-center gap-3">
     <div
-      class="rounded-xl p-2 bg-gray-200 {selected
+      class="rounded-xl p-2 {selected
         ? 'bg-primary text-light'
-        : 'text-gray-400 dark:text-gray-400 dark:bg-gray-900'}"
+        : 'text-light-100 bg-light-300 group-hover:bg-light-500'}"
     >
       <Icon icon={getTriggerIcon(trigger.triggerType)} size="24" />
     </div>
     <div class="flex-1">
       <Text class="font-semibold mb-1">{trigger.name}</Text>
       {#if trigger.description}
-        <Text class="text-sm text-muted-foreground">{trigger.description}</Text>
+        <Text class="text-sm">{trigger.description}</Text>
       {/if}
     </div>
   </div>

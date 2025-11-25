@@ -6,6 +6,7 @@
   import { getSharedLinkActions } from '$lib/services/shared-link.service';
   import { locale } from '$lib/stores/preferences.store';
   import { SharedLinkType, type SharedLinkResponseDto } from '@immich/sdk';
+  import { ContextMenuButton, MenuItemType } from '@immich/ui';
   import { DateTime, type ToRelativeUnit } from 'luxon';
   import { t } from 'svelte-i18n';
 
@@ -31,7 +32,7 @@
     }
   };
 
-  const SharedLinkActions = $derived(getSharedLinkActions($t, sharedLink));
+  const { Edit, Copy, Delete } = $derived(getSharedLinkActions($t, sharedLink));
 </script>
 
 <div
@@ -95,13 +96,17 @@
   </svelte:element>
   <div class="flex flex-auto flex-col place-content-center place-items-end text-end ms-4">
     <div class="sm:flex hidden">
-      <ActionButton action={SharedLinkActions.Edit} />
-      <ActionButton action={SharedLinkActions.Copy} />
-      <ActionButton action={SharedLinkActions.Delete} />
+      <ActionButton action={Edit} />
+      <ActionButton action={Copy} />
+      <ActionButton action={Delete} />
     </div>
 
     <div class="sm:hidden">
-      <ActionButton action={SharedLinkActions.ContextMenu} />
+      <ContextMenuButton
+        aria-label={$t('shared_link_options')}
+        position="top-right"
+        items={[Edit, Copy, MenuItemType.Divider, Delete]}
+      />
     </div>
   </div>
 </div>

@@ -39,7 +39,12 @@
   onLibraryDelete={({ id }) => id === library.id && goto(AppRoute.ADMIN_LIBRARY_MANAGEMENT)}
 />
 
-<AdminPageLayout title={data.meta.title}>
+<AdminPageLayout
+  breadcrumbs={[
+    { title: $t('admin.external_library_management'), href: AppRoute.ADMIN_LIBRARY_MANAGEMENT },
+    { title: library.name },
+  ]}
+>
   {#snippet buttons()}
     <div class="flex justify-end gap-2">
       <HeaderButton action={Scan} />

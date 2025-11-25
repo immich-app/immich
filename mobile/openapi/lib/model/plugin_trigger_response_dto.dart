@@ -16,7 +16,6 @@ class PluginTriggerResponseDto {
     required this.context,
     required this.description,
     required this.name,
-    required this.schema,
     required this.triggerType,
   });
 
@@ -26,8 +25,6 @@ class PluginTriggerResponseDto {
 
   String name;
 
-  Object? schema;
-
   PluginTriggerType triggerType;
 
   @override
@@ -35,7 +32,6 @@ class PluginTriggerResponseDto {
     other.context == context &&
     other.description == description &&
     other.name == name &&
-    other.schema == schema &&
     other.triggerType == triggerType;
 
   @override
@@ -44,22 +40,16 @@ class PluginTriggerResponseDto {
     (context.hashCode) +
     (description.hashCode) +
     (name.hashCode) +
-    (schema == null ? 0 : schema!.hashCode) +
     (triggerType.hashCode);
 
   @override
-  String toString() => 'PluginTriggerResponseDto[context=$context, description=$description, name=$name, schema=$schema, triggerType=$triggerType]';
+  String toString() => 'PluginTriggerResponseDto[context=$context, description=$description, name=$name, triggerType=$triggerType]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'context'] = this.context;
       json[r'description'] = this.description;
       json[r'name'] = this.name;
-    if (this.schema != null) {
-      json[r'schema'] = this.schema;
-    } else {
-    //  json[r'schema'] = null;
-    }
       json[r'triggerType'] = this.triggerType;
     return json;
   }
@@ -76,7 +66,6 @@ class PluginTriggerResponseDto {
         context: PluginContext.fromJson(json[r'context'])!,
         description: mapValueOfType<String>(json, r'description')!,
         name: mapValueOfType<String>(json, r'name')!,
-        schema: mapValueOfType<Object>(json, r'schema'),
         triggerType: PluginTriggerType.fromJson(json[r'triggerType'])!,
       );
     }
@@ -128,7 +117,6 @@ class PluginTriggerResponseDto {
     'context',
     'description',
     'name',
-    'schema',
     'triggerType',
   };
 }

@@ -1,18 +1,17 @@
 <script lang="ts">
-  import type { ActionItem } from '$lib/types';
-  import { Button, type ButtonProps, Text } from '@immich/ui';
+  import { type ActionItem, Button, Text } from '@immich/ui';
 
   type Props = {
     action: ActionItem;
+    title?: string;
   };
 
-  const { action }: Props = $props();
-  const { title, icon, color = 'secondary', props: other = {}, onSelect } = $derived(action);
-  const onclick = (event: Event) => onSelect?.({ event, item: action });
+  const { action, title: titleAttr }: Props = $props();
+  const { title, icon, color = 'secondary', onAction } = $derived(action);
 </script>
 
 {#if action.$if?.() ?? true}
-  <Button variant="ghost" size="small" {color} {...other as ButtonProps} leadingIcon={icon} {onclick}>
+  <Button variant="ghost" size="small" {color} leadingIcon={icon} onclick={() => onAction(action)} title={titleAttr}>
     <Text class="hidden md:block">{title}</Text>
   </Button>
 {/if}

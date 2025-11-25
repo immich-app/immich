@@ -1,14 +1,8 @@
 <script lang="ts">
   import type { PluginActionResponseDto, PluginFilterResponseDto, PluginTriggerResponseDto } from '@immich/sdk';
-  import { Icon, IconButton } from '@immich/ui';
-  import {
-    mdiClose,
-    mdiDrag,
-    mdiFilterOutline,
-    mdiFlashOutline,
-    mdiPlayCircleOutline,
-    mdiViewDashboardOutline,
-  } from '@mdi/js';
+  import { Icon, IconButton, Text } from '@immich/ui';
+  import { mdiClose, mdiFilterOutline, mdiFlashOutline, mdiPlayCircleOutline, mdiViewDashboardOutline } from '@mdi/js';
+  import { t } from 'svelte-i18n';
 
   interface Props {
     trigger: PluginTriggerResponseDto;
@@ -69,18 +63,17 @@
   <!-- svelte-ignore a11y_no_static_element_interactions -->
   <div
     bind:this={containerEl}
-    class="hidden sm:block fixed w-64 z-50 hover:cursor-grab"
+    class="hidden sm:block fixed w-64 z-50 hover:cursor-grab select-none"
     style="left: {position.x}px; top: {position.y}px;"
     class:cursor-grabbing={isDragging}
     onmousedown={handleMouseDown}
   >
     <div
-      class="rounded-xl border hover:shadow-xl hover:border-dashed bg-light-50 shadow-sm p-4 hover:border-primary-200 transition-all"
+      class="rounded-xl border-transparent border-2 hover:shadow-xl hover:border-dashed bg-light-50 shadow-sm p-4 hover:border-light-300 transition-all"
     >
       <div class="flex items-center justify-between mb-4 cursor-grab select-none">
-        <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300">Workflow Summary</h3>
+        <Text size="small" class="font-semibold">{$t('workflow_summary')}</Text>
         <div class="flex items-center gap-1">
-          <Icon icon={mdiDrag} size="18" class="text-gray-400" />
           <IconButton
             icon={mdiClose}
             size="small"
@@ -100,36 +93,32 @@
         <!-- Trigger -->
         <div class="rounded-lg bg-light-100 border p-3">
           <div class="flex items-center gap-2 mb-1">
-            <Icon icon={mdiFlashOutline} size="14" class="text-primary" />
-            <span class="text-[10px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400"
-              >Trigger</span
-            >
+            <Icon icon={mdiFlashOutline} size="18" class="text-primary" />
+            <span class="text-[10px] font-semibold uppercase tracking-wide">{$t('trigger')}</span>
           </div>
-          <p class="text-sm text-gray-900 dark:text-gray-100 truncate pl-5">{trigger.name}</p>
+          <p class="text-sm truncate pl-5">{trigger.name}</p>
         </div>
 
         <!-- Connector -->
         <div class="flex justify-center">
-          <div class="w-0.5 h-3 bg-gray-300 dark:bg-gray-600"></div>
+          <div class="w-0.5 h-3 bg-light-400"></div>
         </div>
 
         <!-- Filters -->
         {#if filters.length > 0}
           <div class="rounded-lg bg-light-100 border p-3">
             <div class="flex items-center gap-2 mb-2">
-              <Icon icon={mdiFilterOutline} size="14" class="text-warning" />
-              <span class="text-[10px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400"
-                >Filters ({filters.length})</span
-              >
+              <Icon icon={mdiFilterOutline} size="18" class="text-warning" />
+              <span class="text-[10px] font-semibold uppercase tracking-wide">{$t('filters')}</span>
             </div>
             <div class="space-y-1 pl-5">
               {#each filters as filter, index (filter.id)}
                 <div class="flex items-center gap-2">
                   <span
-                    class="shrink-0 h-4 w-4 rounded-full bg-gray-200 dark:bg-gray-700 text-[10px] font-medium text-gray-600 dark:text-gray-300 flex items-center justify-center"
+                    class="shrink-0 h-4 w-4 rounded-full bg-light-200 text-[10px] font-medium flex items-center justify-center"
                     >{index + 1}</span
                   >
-                  <p class="text-sm text-gray-700 dark:text-gray-300 truncate">{filter.title}</p>
+                  <p class="text-sm truncate">{filter.title}</p>
                 </div>
               {/each}
             </div>
@@ -137,7 +126,7 @@
 
           <!-- Connector -->
           <div class="flex justify-center">
-            <div class="w-0.5 h-3 bg-gray-300 dark:bg-gray-600"></div>
+            <div class="w-0.5 h-3 bg-light-400"></div>
           </div>
         {/if}
 
@@ -145,19 +134,17 @@
         {#if actions.length > 0}
           <div class="rounded-lg bg-light-100 border p-3">
             <div class="flex items-center gap-2 mb-2">
-              <Icon icon={mdiPlayCircleOutline} size="14" class="text-success" />
-              <span class="text-[10px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400"
-                >Actions ({actions.length})</span
-              >
+              <Icon icon={mdiPlayCircleOutline} size="18" class="text-success" />
+              <span class="text-[10px] font-semibold uppercase tracking-wide">{$t('actions')}</span>
             </div>
             <div class="space-y-1 pl-5">
               {#each actions as action, index (action.id)}
                 <div class="flex items-center gap-2">
                   <span
-                    class="shrink-0 h-4 w-4 rounded-full bg-gray-200 dark:bg-gray-700 text-[10px] font-medium text-gray-600 dark:text-gray-300 flex items-center justify-center"
+                    class="shrink-0 h-4 w-4 rounded-full bg-light-200 text-[10px] font-medium flex items-center justify-center"
                     >{index + 1}</span
                   >
-                  <p class="text-sm text-gray-700 dark:text-gray-300 truncate">{action.title}</p>
+                  <p class="text-sm truncate">{action.title}</p>
                 </div>
               {/each}
             </div>
@@ -170,7 +157,7 @@
   <button
     type="button"
     class="hidden sm:flex fixed right-6 bottom-6 z-50 h-14 w-14 items-center justify-center rounded-full bg-primary text-light shadow-lg hover:bg-primary/90 transition-colors"
-    title="Show workflow summary"
+    title={$t('workflow_summary')}
     onclick={() => (isOpen = true)}
   >
     <Icon icon={mdiViewDashboardOutline} size="24" />

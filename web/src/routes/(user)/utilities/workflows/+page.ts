@@ -12,7 +12,7 @@ export const load = (async ({ url }) => {
     workflows,
     plugins,
     meta: {
-      title: $t('workflow'),
+      title: $t('workflows'),
     },
   };
 }) satisfies PageLoad;
