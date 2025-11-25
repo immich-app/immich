@@ -106,5 +106,4 @@ class DriftTrashSyncRepository extends DriftDatabaseRepository {
       ..limit(1);
     return query.watchSingleOrNull().map((row) => row != null).distinct();
   }
-
 }

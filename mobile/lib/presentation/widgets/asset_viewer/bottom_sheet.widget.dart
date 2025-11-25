@@ -22,6 +22,7 @@ import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/trash_sync.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
@@ -52,6 +53,7 @@ class AssetDetailBottomSheet extends ConsumerWidget {
     final currentAlbum = ref.watch(currentRemoteAlbumProvider);
     final isArchived = asset is RemoteAsset && asset.visibility == AssetVisibility.archive;
     final advancedTroubleshooting = ref.watch(settingsProvider.notifier).get(Setting.advancedTroubleshooting);
+    final isWaitingForTrashApproval = ref.watch(isWaitingForSyncApprovalProvider(asset.checksum)).value == true;
 
     final buttonContext = ActionButtonContext(
       asset: asset,
@@ -62,6 +64,7 @@ class AssetDetailBottomSheet extends ConsumerWidget {
       isStacked: asset is RemoteAsset && asset.stackId != null,
       currentAlbum: currentAlbum,
       advancedTroubleshooting: advancedTroubleshooting,
+      isWaitingForTrashApproval: isWaitingForTrashApproval,
       source: ActionSource.viewer,
     );
 
