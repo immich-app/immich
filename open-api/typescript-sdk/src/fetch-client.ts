@@ -591,12 +591,12 @@ export type EditActionMirror = {
     index: number;
     parameters: MirrorParameters;
 };
-export type EditActionListDto = {
+export type AssetEditsDto = {
+    assetId: string;
     /** list of edits */
     edits: (EditActionCrop | EditActionRotate | EditActionMirror)[];
 };
-export type AssetEditsDto = {
-    assetId: string;
+export type EditActionListDto = {
     /** list of edits */
     edits: (EditActionCrop | EditActionRotate | EditActionMirror)[];
 };
@@ -2571,6 +2571,19 @@ export function updateAsset({ id, updateAssetDto }: {
         method: "PUT",
         body: updateAssetDto
     })));
+}
+/**
+ * Retrieve edits for an existing asset
+ */
+export function getAssetEdits({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AssetEditsDto;
+    }>(`/assets/${encodeURIComponent(id)}/edit`, {
+        ...opts
+    }));
 }
 /**
  * Applies edits to an existing asset

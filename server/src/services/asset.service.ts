@@ -1,9 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import _ from 'lodash';
 import { DateTime, Duration } from 'luxon';
-import { dirname } from 'path';
 import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
-import { StorageCore } from 'src/cores/storage.core';
 import { OnJob } from 'src/decorators';
 import { AssetResponseDto, MapAsset, SanitizedAssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
 import {
@@ -30,7 +28,6 @@ import {
   JobStatus,
   Permission,
   QueueName,
-  StorageFolder,
 } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
 import { ISidecarWriteJob, JobItem, JobOf } from 'src/types';
@@ -460,6 +457,15 @@ export class AssetService extends BaseService {
       await this.assetRepository.upsertExif({ assetId: id, ...writes });
       await this.jobRepository.queue({ name: JobName.SidecarWrite, data: { id, ...writes } });
     }
+  }
+
+  public async getAssetEdits(auth: AuthDto, id: string): Promise<AssetEditsDto> {
+    await this.requireAccess({ auth, permission: Permission.AssetRead, ids: [id] });
+    const edits = await this.editRepository.getEditsForAsset(id);
+    return {
+      assetId: id,
+      edits,
+    };
   }
 
   public async editAsset(auth: AuthDto, id: string, dto: EditActionListDto): Promise<AssetEditsDto> {

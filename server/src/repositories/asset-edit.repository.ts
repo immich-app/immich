@@ -28,7 +28,7 @@ export class AssetEditRepository {
   @GenerateSql({
     params: [DummyValue.UUID],
   })
-  async getEditsByAssetId(assetId: string): Promise<EditActionItem[]> {
+  async getEditsForAsset(assetId: string): Promise<EditActionItem[]> {
     return this.db
       .selectFrom('asset_edit')
       .select(['action', 'parameters', 'index'])

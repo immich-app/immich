@@ -213,4 +213,15 @@ export class AssetController {
   ): Promise<AssetEditsDto> {
     return this.service.editAsset(auth, id, dto);
   }
+
+  @Get(':id/edit')
+  @Authenticated({ permission: Permission.AssetRead })
+  @Endpoint({
+    summary: 'Retrieve edits for an existing asset',
+    description: 'Retrieve a series of edit actions (crop, rotate, mirror) associated with the specified asset.',
+    history: new HistoryBuilder().added('v2').beta('v2'),
+  })
+  getAssetEdits(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<AssetEditsDto> {
+    return this.service.getAssetEdits(auth, id);
+  }
 }
