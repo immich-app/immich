@@ -22,7 +22,6 @@
   import { modalManager, setTranslations } from '@immich/ui';
   import { onMount, type Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
-  import { run } from 'svelte/legacy';
   import '../app.css';
 
   interface Props {
@@ -72,7 +71,7 @@
 
   const { serverRestarting } = websocketStore;
 
-  run(() => {
+  $effect.pre(() => {
     if ($user || $serverRestarting || page.url.pathname.startsWith(AppRoute.MAINTENANCE)) {
       openWebsocketConnection();
     } else {
