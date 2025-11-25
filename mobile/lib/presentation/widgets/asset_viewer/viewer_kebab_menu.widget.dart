@@ -67,7 +67,9 @@ class ViewerKebabMenu extends ConsumerWidget {
       style: MenuStyle(
         backgroundColor: WidgetStatePropertyAll(theme.scaffoldBackgroundColor),
         elevation: const WidgetStatePropertyAll(4),
-        shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+        shape: const WidgetStatePropertyAll(
+          RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
+        ),
         padding: const WidgetStatePropertyAll(EdgeInsets.symmetric(vertical: 2)),
       ),
       menuChildren: menuChildren,
