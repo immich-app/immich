@@ -865,7 +865,12 @@ describe(MediaService.name, () => {
       mocks.systemMetadata.get.mockResolvedValue({ image: { fullsize: { enabled: false } } });
       mocks.media.extract.mockResolvedValue({ buffer: extractedBuffer, format: RawExtractedFormat.Jpeg });
       mocks.media.getImageDimensions.mockResolvedValue({ width: 3840, height: 2160 });
-      mocks.media.copyTagGroup.mockResolvedValue(true);
+      mocks.metadata.readTags.mockResolvedValue({
+        ProjectionType: 'equirectangular',
+        PoseHeadingDegrees: 127,
+        FullPanoWidthPixels: 3840,
+        FullPanoHeightPixels: 2160,
+      });
 
       mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.panoramaTif);
 
@@ -892,10 +897,14 @@ describe(MediaService.name, () => {
         expect.any(String),
       );
 
-      expect(mocks.media.copyTagGroup).toHaveBeenCalledTimes(2);
-      expect(mocks.media.copyTagGroup).toHaveBeenCalledWith(
-        'XMP-GPano',
-        assetStub.panoramaTif.originalPath,
+      expect(mocks.media.writeTags).toHaveBeenCalledTimes(2);
+      expect(mocks.media.writeTags).toHaveBeenCalledWith(
+        {
+          ProjectionType: 'equirectangular',
+          PoseHeadingDegrees: 127,
+          FullPanoWidthPixels: 2560,
+          FullPanoHeightPixels: 1440,
+        },
         expect.any(String),
       );
     });

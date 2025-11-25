@@ -47,6 +47,26 @@ interface UpsertFileOptions {
   path: string;
 }
 
+const PANORAMA_CONSTANTS = [
+  'UsePanoramaViewer',
+  'ProjectionType',
+  'PoseHeadingDegrees',
+  'PosePitchDegrees',
+  'PoseRollDegrees',
+  'InitialViewHeadingDegrees',
+  'InitialViewPitchDegrees',
+  'InitialViewRollDegrees',
+] as const;
+
+const PANORAMA_SCALABLES = [
+  'CroppedAreaImageWidthPixels',
+  'CroppedAreaImageHeightPixels',
+  'FullPanoWidthPixels',
+  'FullPanoHeightPixels',
+  'CroppedAreaLeftPixels',
+  'CroppedAreaTopPixels',
+] as const;
+
 @Injectable()
 export class MediaService extends BaseService {
   videoInterfaces: VideoInterfaces = { dri: [], mali: false };
@@ -316,17 +336,52 @@ export class MediaService extends BaseService {
 
     const outputs = await Promise.all(promises);
 
-    if (asset.exifInfo.projectionType === 'EQUIRECTANGULAR') {
-      const promises = [
-        this.mediaRepository.copyTagGroup('XMP-GPano', asset.originalPath, previewPath),
-        fullsizePath
-          ? this.mediaRepository.copyTagGroup('XMP-GPano', asset.originalPath, fullsizePath)
-          : Promise.resolve(),
-      ];
-      await Promise.all(promises);
+    const originalSize = asset.exifInfo.exifImageHeight;
+    if (asset.exifInfo.projectionType === 'EQUIRECTANGULAR' && originalSize) {
+      this.copyPanoramaMetadataToThumbnails(
+        asset.originalPath,
+        originalSize,
+        previewPath,
+        image.preview.size,
+        fullsizePath,
+      );
     }
 
     return { previewPath, thumbnailPath, fullsizePath, thumbhash: outputs[0] as Buffer };
+  }
+
+  private async copyPanoramaMetadataToThumbnails(
+    originalPath: string,
+    originalSize: number,
+    previewPath: string,
+    previewSize: number,
+    fullsizePath?: string,
+  ) {
+    const originalTags = await this.metadataRepository.readTags(originalPath);
+
+    const scaleAndWriteData = async (thumbnailPath: string, scaleRatio: number) => {
+      const newTags = {} as Record<string, string | number | boolean>;
+
+      for (const key of PANORAMA_CONSTANTS) {
+        if (key in originalTags && originalTags[key]) {
+          newTags[key] = originalTags[key];
+        }
+      }
+      for (const key of PANORAMA_SCALABLES) {
+        if (key in originalTags && originalTags[key]) {
+          newTags[key] = Math.round(originalTags[key] * scaleRatio);
+        }
+      }
+
+      return this.mediaRepository.writeTags(newTags, thumbnailPath);
+    };
+
+    const promises = [
+      // preview size is min(preview size, original size) so do the same for pano pixel adjustment
+      scaleAndWriteData(previewPath, Math.min(1, previewSize / originalSize)),
+      fullsizePath ? scaleAndWriteData(fullsizePath, 1) : Promise.resolve(),
+    ];
+    await Promise.all(promises);
   }
 
   @OnJob({ name: JobName.PersonGenerateThumbnail, queue: QueueName.ThumbnailGeneration })

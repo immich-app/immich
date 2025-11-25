@@ -121,19 +121,15 @@ export class MediaRepository {
     }
   }
 
-  async copyTagGroup(tagGroup: string, source: string, target: string): Promise<boolean> {
+  async writeTags(tags: WriteTags, output: string): Promise<boolean> {
     try {
-      await exiftool.write(
-        target,
-        {},
-        {
-          ignoreMinorErrors: true,
-          writeArgs: ['-TagsFromFile', source, `-${tagGroup}:all>${tagGroup}:all`, '-overwrite_original'],
-        },
-      );
+      await exiftool.write(output, tags, {
+        ignoreMinorErrors: true,
+        writeArgs: ['-overwrite_original'],
+      });
       return true;
     } catch (error: any) {
-      this.logger.warn(`Could not copy tag data to image: ${error.message}`);
+      this.logger.warn(`Could not write tags to image: ${error.message}`);
       return false;
     }
   }
