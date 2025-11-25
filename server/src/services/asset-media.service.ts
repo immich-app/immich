@@ -184,10 +184,23 @@ export class AssetMediaService extends BaseService {
     }
   }
 
-  async downloadOriginal(auth: AuthDto, id: string): Promise<ImmichFileResponse> {
+  async downloadOriginal(auth: AuthDto, id: string, edited: boolean): Promise<ImmichFileResponse> {
     await this.requireAccess({ auth, permission: Permission.AssetDownload, ids: [id] });
 
     const asset = await this.findOrFail(id);
+
+    if (asset.isEdited && edited) {
+      const { fullsizeFile } = getAssetFiles(asset.files ?? []).edited;
+
+      if (fullsizeFile) {
+        return new ImmichFileResponse({
+          path: fullsizeFile.path,
+          fileName: getFileNameWithoutExtension(asset.originalFileName) + getFilenameExtension(fullsizeFile.path),
+          contentType: mimeTypes.lookup(fullsizeFile.path),
+          cacheControl: CacheControl.PrivateWithCache,
+        });
+      }
+    }
 
     return new ImmichFileResponse({
       path: asset.originalPath,
@@ -207,12 +220,15 @@ export class AssetMediaService extends BaseService {
     const asset = await this.findOrFail(id);
     const size = dto.size ?? AssetMediaSize.THUMBNAIL;
 
-    const { thumbnailFile, previewFile, fullsizeFile } = getAssetFiles(asset.files ?? [], dto.edited ?? true);
+    const files = getAssetFiles(asset.files ?? []);
+
+    const { fullsizeFile, previewFile, thumbnailFile } = dto.edited && asset.isEdited ? files.edited : files.regular;
+
     let filepath = previewFile?.path;
     if (size === AssetMediaSize.THUMBNAIL && thumbnailFile) {
       filepath = thumbnailFile.path;
     } else if (size === AssetMediaSize.FULLSIZE) {
-      if (mimeTypes.isWebSupportedImage(asset.originalPath)) {
+      if (mimeTypes.isWebSupportedImage(asset.originalPath) && !dto.edited) {
         // use original file for web supported images
         return { targetSize: 'original' };
       }

@@ -306,17 +306,6 @@ export function withTagId<O>(qb: SelectQueryBuilder<DB, 'asset', O>, tagId: stri
   );
 }
 
-export function isEditedAsset<O>(qb: SelectQueryBuilder<DB, 'asset', O>, edited: boolean) {
-  return qb.where((eb) =>
-    eb.exists(
-      eb
-        .selectFrom('asset_file')
-        .whereRef('asset_file.assetId', '=', 'asset.id')
-        .where('asset_file.edited', '=', edited),
-    ),
-  );
-}
-
 export function withEdits(eb: ExpressionBuilder<DB, 'asset'>) {
   return jsonArrayFrom(
     eb
@@ -324,6 +313,13 @@ export function withEdits(eb: ExpressionBuilder<DB, 'asset'>) {
       .select(['asset_edit.action', 'asset_edit.parameters', 'asset_edit.index'])
       .whereRef('asset_edit.assetId', '=', 'asset.id'),
   ).as('edits');
+}
+
+export function withIsEdited(eb: ExpressionBuilder<DB, 'asset'>) {
+  return sql<boolean>`EXISTS(
+    SELECT 1 FROM asset_edit 
+    WHERE asset_edit."assetId" = asset.id
+  )`.as('isEdited');
 }
 
 const joinDeduplicationPlugin = new DeduplicateJoinsPlugin();

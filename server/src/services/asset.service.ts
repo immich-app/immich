@@ -354,8 +354,16 @@ export class AssetService extends BaseService {
       }
     }
 
-    const { fullsizeFile, previewFile, thumbnailFile } = getAssetFiles(asset.files ?? []);
-    const files = [thumbnailFile?.path, previewFile?.path, fullsizeFile?.path, asset.encodedVideoPath];
+    const assetFiles = getAssetFiles(asset.files ?? []);
+    const files = [
+      assetFiles.regular.thumbnailFile?.path,
+      assetFiles.regular.previewFile?.path,
+      assetFiles.regular.fullsizeFile?.path,
+      assetFiles.edited.thumbnailFile?.path,
+      assetFiles.edited.previewFile?.path,
+      assetFiles.edited.fullsizeFile?.path,
+      asset.encodedVideoPath,
+    ];
 
     if (deleteOnDisk) {
       files.push(asset.sidecarPath, asset.originalPath);

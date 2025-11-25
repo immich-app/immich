@@ -17,10 +17,17 @@ export const getAssetFile = (files: AssetFile[], type: AssetFileType | Generated
   return files.find((file) => file.type === type && file.edited === edited);
 };
 
-export const getAssetFiles = (files: AssetFile[], edited: boolean) => ({
-  fullsizeFile: getAssetFile(files, AssetFileType.FullSize, edited),
-  previewFile: getAssetFile(files, AssetFileType.Preview, edited),
-  thumbnailFile: getAssetFile(files, AssetFileType.Thumbnail, edited),
+export const getAssetFiles = (files: AssetFile[]) => ({
+  regular: {
+    fullsizeFile: getAssetFile(files, AssetFileType.FullSize, false),
+    previewFile: getAssetFile(files, AssetFileType.Preview, false),
+    thumbnailFile: getAssetFile(files, AssetFileType.Thumbnail, false),
+  },
+  edited: {
+    fullsizeFile: getAssetFile(files, AssetFileType.FullSize, true),
+    previewFile: getAssetFile(files, AssetFileType.Preview, true),
+    thumbnailFile: getAssetFile(files, AssetFileType.Thumbnail, true),
+  },
 });
 
 export const addAssets = async (

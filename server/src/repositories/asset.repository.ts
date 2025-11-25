@@ -24,6 +24,7 @@ import {
   withFaces,
   withFacesAndPeople,
   withFiles,
+  withIsEdited,
   withLibrary,
   withOwner,
   withSmartSearch,
@@ -435,6 +436,7 @@ export class AssetRepository {
       )
       .$if(!!files, (qb) => qb.select(withFiles))
       .$if(!!tags, (qb) => qb.select(withTags))
+      .select((eb) => withIsEdited(eb))
       .limit(1)
       .executeTakeFirst();
   }
