@@ -1,4 +1,5 @@
 import {
+  AliasedRawBuilder,
   DeduplicateJoinsPlugin,
   Expression,
   ExpressionBuilder,
@@ -16,6 +17,7 @@ import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
 import { parse } from 'pg-connection-string';
 import postgres, { Notice, PostgresError } from 'postgres';
 import { columns, Exif, Person } from 'src/database';
+import { EditActionItem } from 'src/dtos/editing.dto';
 import { AssetFileType, AssetVisibility, DatabaseExtension, DatabaseSslMode } from 'src/enum';
 import { AssetSearchBuilderOptions } from 'src/repositories/search.repository';
 import { DB } from 'src/schema';
@@ -306,13 +308,16 @@ export function withTagId<O>(qb: SelectQueryBuilder<DB, 'asset', O>, tagId: stri
   );
 }
 
-export function withEdits(eb: ExpressionBuilder<DB, 'asset'>) {
+// needed to properly type the return with the EditActionItem discriminated union type
+type AliasedEditActions = AliasedRawBuilder<EditActionItem[], 'edits'>;
+
+export function withEdits(eb: ExpressionBuilder<DB, 'asset'>): AliasedEditActions {
   return jsonArrayFrom(
     eb
       .selectFrom('asset_edit')
       .select(['asset_edit.action', 'asset_edit.parameters', 'asset_edit.index'])
       .whereRef('asset_edit.assetId', '=', 'asset.id'),
-  ).as('edits');
+  ).as('edits') as AliasedEditActions;
 }
 
 export function withIsEdited(eb: ExpressionBuilder<DB, 'asset'>) {
