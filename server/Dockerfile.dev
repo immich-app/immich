@@ -44,18 +44,18 @@ FROM dev-container-server AS dev-container-mobile
 USER root
 # Enable multiarch for arm64 if necessary
 RUN if [ "$(dpkg --print-architecture)" = "arm64" ]; then \
-    dpkg --add-architecture amd64 && \
-    apt-get update && \
-    apt-get install -y --no-install-recommends \
-    gnupg \
-    qemu-user-static \
-    libc6:amd64 \
-    libstdc++6:amd64 \
-    libgcc1:amd64; \
+  dpkg --add-architecture amd64 && \
+  apt-get update && \
+  apt-get install -y --no-install-recommends \
+  gnupg \
+  qemu-user-static \
+  libc6:amd64 \
+  libstdc++6:amd64 \
+  libgcc1:amd64; \
   else \
-    apt-get update && \
-    apt-get install -y --no-install-recommends \
-    gnupg; \
+  apt-get update && \
+  apt-get install -y --no-install-recommends \
+  gnupg; \
   fi
 
 # Flutter SDK
