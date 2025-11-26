@@ -399,7 +399,9 @@
   $effect(() => {
     handlePromiseError(handleGetAllAlbums());
     ocrManager.clear();
-    handlePromiseError(ocrManager.getAssetOcr(asset.id));
+    if (!sharedLink) {
+      handlePromiseError(ocrManager.getAssetOcr(asset.id));
+    }
   });
 </script>
 

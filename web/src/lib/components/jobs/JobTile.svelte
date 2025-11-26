@@ -1,7 +1,7 @@
 <script lang="ts">
   import Badge from '$lib/elements/Badge.svelte';
   import { locale } from '$lib/stores/preferences.store';
-  import { QueueCommand, type QueueCommandDto, type QueueStatisticsDto, type QueueStatusDto } from '@immich/sdk';
+  import { QueueCommand, type QueueCommandDto, type QueueStatisticsDto, type QueueStatusLegacyDto } from '@immich/sdk';
   import { Icon, IconButton } from '@immich/ui';
   import {
     mdiAlertCircle,
@@ -23,7 +23,7 @@
     subtitle: string | undefined;
     description: Component | undefined;
     statistics: QueueStatisticsDto;
-    queueStatus: QueueStatusDto;
+    queueStatus: QueueStatusLegacyDto;
     icon: string;
     disabled?: boolean;
     allText: string | undefined;
