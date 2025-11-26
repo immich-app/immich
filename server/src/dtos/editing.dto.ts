@@ -1,7 +1,7 @@
 import { ApiExtraModels, ApiProperty, getSchemaPath } from '@nestjs/swagger';
 import { ClassConstructor, plainToInstance, Transform, Type } from 'class-transformer';
 import { IsEnum, IsInt, IsNumber, Max, Min, ValidateNested } from 'class-validator';
-import { ValidateUUID } from 'src/validation';
+import { SumLessThan, ValidateUUID } from 'src/validation';
 
 export enum EditActionType {
   Crop = 'crop',
@@ -26,6 +26,7 @@ export class CropParameters {
   @Min(0)
   @Max(1)
   @ApiProperty({ description: 'Left position of the crop' })
+  @SumLessThan('right', 1)
   left!: number;
 
   @IsNumber()
@@ -38,6 +39,7 @@ export class CropParameters {
   @Min(0)
   @Max(1)
   @ApiProperty({ description: 'Top position of the crop' })
+  @SumLessThan('bottom', 1)
   top!: number;
 
   @IsNumber()

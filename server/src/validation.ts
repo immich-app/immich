@@ -29,6 +29,7 @@ import {
   buildMessage,
   isDateString,
   isDefined,
+  registerDecorator,
 } from 'class-validator';
 import { CronJob } from 'cron';
 import { DateTime } from 'luxon';
@@ -94,6 +95,32 @@ export class UUIDAssetIDParamDto {
 
   @ValidateUUID()
   assetId!: string;
+}
+
+export function SumLessThan(property: string, limit: number, validationOptions?: ValidationOptions) {
+  return function (target: any, propertyName: string) {
+    registerDecorator({
+      name: 'sumLessThan',
+      target: target.constructor,
+      propertyName,
+      constraints: [property, limit],
+      options: validationOptions,
+      validator: {
+        validate(value: any, args: ValidationArguments) {
+          const [otherProp, max] = args.constraints;
+          const otherValue = (args.object as any)[otherProp];
+          if (typeof value !== 'number' || typeof otherValue !== 'number') {
+            return false;
+          }
+          return value + otherValue < max;
+        },
+        defaultMessage(args: ValidationArguments) {
+          const [otherProp, max] = args.constraints;
+          return `${args.property} + ${otherProp} must be < ${max}`;
+        },
+      },
+    });
+  };
 }
 
 type PinCodeOptions = { optional?: boolean } & OptionalOptions;
