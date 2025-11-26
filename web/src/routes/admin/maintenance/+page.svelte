@@ -30,7 +30,7 @@
   }
 </script>
 
-<AdminPageLayout title={data.meta.title}>
+<AdminPageLayout breadcrumbs={[{ title: data.meta.title }]}>
   {#snippet buttons()}
     <HStack gap={1}>
       <Button

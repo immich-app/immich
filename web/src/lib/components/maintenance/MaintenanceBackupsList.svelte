@@ -117,7 +117,7 @@
         {
           title: $t('download'),
           icon: mdiDownload,
-          onSelect() {
+          onAction() {
             void download(filename);
           },
         },
@@ -125,7 +125,7 @@
           title: $t('delete'),
           icon: mdiTrashCanOutline,
           color: 'danger',
-          onSelect() {
+          onAction() {
             void remove(filename);
           },
         },
