@@ -111,7 +111,7 @@ class AddActionButton extends ConsumerWidget {
         menuChildren.add(const Divider(height: 0));
       }
 
-      menuChildren.add(_buildSectionLabel(context, theme, label));
+      menuChildren.add(_buildSectionLabel(theme, label));
 
       for (final item in items) {
         // menuChildren.add(const Divider(height: 0));
@@ -168,7 +168,9 @@ class AddActionButton extends ConsumerWidget {
       style: MenuStyle(
         backgroundColor: WidgetStatePropertyAll(theme.scaffoldBackgroundColor),
         elevation: const WidgetStatePropertyAll(4),
-        shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+        shape: const WidgetStatePropertyAll(
+          RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
+        ),
         padding: const WidgetStatePropertyAll(EdgeInsets.symmetric(vertical: 2)),
       ),
       menuChildren: menuChildren,
@@ -189,7 +191,7 @@ class AddActionButton extends ConsumerWidget {
     );
   }
 
-  Widget _buildSectionLabel(BuildContext context, ThemeData theme, String text) {
+  Widget _buildSectionLabel(ThemeData theme, String text) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
       child: Text(
