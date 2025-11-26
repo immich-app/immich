@@ -391,7 +391,11 @@ export type JobItem =
   | { name: JobName.Ocr; data: IEntityJob }
 
   // Workflow
-  | { name: JobName.WorkflowRun; data: IWorkflowJob };
+  | { name: JobName.WorkflowRun; data: IWorkflowJob }
+
+  // Integrity
+  | { name: JobName.IntegrityOrphanedAndMissingFiles; data: IBaseJob }
+  | { name: JobName.IntegrityChecksumFiles; data: IBaseJob };
 
 export type VectorExtension = (typeof VECTOR_EXTENSIONS)[number];
 

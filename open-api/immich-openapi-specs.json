@@ -16660,7 +16660,9 @@
           "VersionCheck",
           "OcrQueueAll",
           "Ocr",
-          "WorkflowRun"
+          "WorkflowRun",
+          "IntegrityOrphanedAndMissingFiles",
+          "IntegrityChecksumFiles"
         ],
         "type": "string"
       },

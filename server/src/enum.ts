@@ -637,6 +637,10 @@ export enum JobName {
 
   // Workflow
   WorkflowRun = 'WorkflowRun',
+
+  // Integrity
+  IntegrityOrphanedAndMissingFiles = 'IntegrityOrphanedAndMissingFiles',
+  IntegrityChecksumFiles = 'IntegrityChecksumFiles',
 }
 
 export enum QueueCommand {

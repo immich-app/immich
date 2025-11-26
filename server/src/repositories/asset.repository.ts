@@ -382,6 +382,14 @@ export class AssetRepository {
     return items.map((asset) => asset.deviceAssetId);
   }
 
+  async getAllAssetPaths() {
+    return this.db.selectFrom('asset').select(['originalPath', 'encodedVideoPath']).stream();
+  }
+
+  async getAllAssetFilePaths() {
+    return this.db.selectFrom('asset_file').select(['path']).stream();
+  }
+
   @GenerateSql({ params: [DummyValue.UUID] })
   async getLivePhotoCount(motionId: string): Promise<number> {
     const [{ count }] = await this.db
