@@ -268,7 +268,7 @@
         <!-- Favorite asset star -->
         {#if !authManager.isSharedLink && asset.isFavorite}
           <div class="absolute bottom-2 start-2">
-            <Icon icon={mdiHeart} size="24" class="text-white" />
+            <Icon data-icon-favorite icon={mdiHeart} size="24" class="text-white" />
           </div>
         {/if}
 
@@ -282,14 +282,14 @@
 
         {#if !authManager.isSharedLink && showArchiveIcon && asset.visibility === AssetVisibility.Archive}
           <div class={['absolute start-2', asset.isFavorite ? 'bottom-10' : 'bottom-2']}>
-            <Icon icon={mdiArchiveArrowDownOutline} size="24" class="text-white" />
+            <Icon data-icon-archive icon={mdiArchiveArrowDownOutline} size="24" class="text-white" />
           </div>
         {/if}
 
         {#if asset.isImage && asset.projectionType === ProjectionType.EQUIRECTANGULAR}
           <div class="absolute end-0 top-0 flex place-items-center gap-1 text-xs font-medium text-white">
             <span class="pe-2 pt-2">
-              <Icon icon={mdiRotate360} size="24" />
+              <Icon data-icon-equirectangular icon={mdiRotate360} size="24" />
             </span>
           </div>
         {/if}
@@ -297,7 +297,7 @@
         {#if asset.isImage && asset.duration && !asset.duration.includes('0:00:00.000')}
           <div class="absolute end-0 top-0 flex place-items-center gap-1 text-xs font-medium text-white">
             <span class="pe-2 pt-2">
-              <Icon icon={mdiFileGifBox} size="24" />
+              <Icon data-icon-playable icon={mdiFileGifBox} size="24" />
             </span>
           </div>
         {/if}
@@ -312,7 +312,7 @@
           >
             <span class="pe-2 pt-2 flex place-items-center gap-1">
               <p>{asset.stack.assetCount.toLocaleString($locale)}</p>
-              <Icon icon={mdiCameraBurst} size="24" />
+              <Icon data-icon-stack icon={mdiCameraBurst} size="24" />
             </span>
           </div>
         {/if}
@@ -378,7 +378,7 @@
           />
           <div class="absolute end-0 top-0 flex place-items-center gap-1 text-xs font-medium text-white">
             <span class="pe-2 pt-2">
-              <Icon icon={mdiMotionPauseOutline} size="24" />
+              <Icon data-icon-playable-pause icon={mdiMotionPauseOutline} size="24" />
             </span>
           </div>
         </div>
@@ -418,13 +418,13 @@
         {disabled}
       >
         {#if disabled}
-          <Icon icon={mdiCheckCircle} size="24" class="text-zinc-800" />
+          <Icon data-icon-select icon={mdiCheckCircle} size="24" class="text-zinc-800" />
         {:else if selected}
           <div class="rounded-full bg-[#D9DCEF] dark:bg-[#232932]">
-            <Icon icon={mdiCheckCircle} size="24" class="text-primary" />
+            <Icon data-icon-select icon={mdiCheckCircle} size="24" class="text-primary" />
           </div>
         {:else}
-          <Icon icon={mdiCheckCircle} size="24" class="text-white/80 hover:text-white" />
+          <Icon data-icon-select icon={mdiCheckCircle} size="24" class="text-white/80 hover:text-white" />
         {/if}
       </button>
     {/if}

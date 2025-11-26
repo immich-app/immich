@@ -6,7 +6,7 @@
     QueueCommand,
     type QueueCommandDto,
     QueueName,
-    type QueuesResponseDto,
+    type QueuesResponseLegacyDto,
     runQueueCommandLegacy,
   } from '@immich/sdk';
   import { modalManager, toastManager } from '@immich/ui';
@@ -29,7 +29,7 @@
   import StorageMigrationDescription from './StorageMigrationDescription.svelte';
 
   interface Props {
-    jobs: QueuesResponseDto;
+    jobs: QueuesResponseLegacyDto;
   }
 
   let { jobs = $bindable() }: Props = $props();
