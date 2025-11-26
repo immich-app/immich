@@ -16661,7 +16661,10 @@
           "OcrQueueAll",
           "Ocr",
           "WorkflowRun",
-          "IntegrityOrphanedAndMissingFiles",
+          "IntegrityOrphanedFilesQueueAll",
+          "IntegrityOrphanedFiles",
+          "IntegrityMissingFilesQueueAll",
+          "IntegrityMissingFiles",
           "IntegrityChecksumFiles"
         ],
         "type": "string"

@@ -254,6 +254,30 @@ export class AssetJobRepository {
       .executeTakeFirst();
   }
 
+  @GenerateSql({ params: [DummyValue.STRING] })
+  getAssetPathsByPaths(paths: string[]) {
+    return this.db
+      .selectFrom('asset')
+      .select(['originalPath', 'encodedVideoPath'])
+      .where((eb) => eb.or([eb('originalPath', 'in', paths), eb('encodedVideoPath', 'in', paths)]))
+      .execute();
+  }
+
+  @GenerateSql({ params: [DummyValue.STRING] })
+  getAssetFilePathsByPaths(paths: string[]) {
+    return this.db.selectFrom('asset_file').select(['path']).where('path', 'in', paths).execute();
+  }
+
+  @GenerateSql({ params: [], stream: true })
+  streamAssetPaths() {
+    return this.db.selectFrom('asset').select(['originalPath', 'encodedVideoPath']).stream();
+  }
+
+  @GenerateSql({ params: [], stream: true })
+  streamAssetFilePaths() {
+    return this.db.selectFrom('asset_file').select(['path']).stream();
+  }
+
   @GenerateSql({ params: [], stream: true })
   streamForVideoConversion(force?: boolean) {
     return this.db

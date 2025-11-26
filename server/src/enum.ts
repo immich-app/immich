@@ -639,7 +639,10 @@ export enum JobName {
   WorkflowRun = 'WorkflowRun',
 
   // Integrity
-  IntegrityOrphanedAndMissingFiles = 'IntegrityOrphanedAndMissingFiles',
+  IntegrityOrphanedFilesQueueAll = 'IntegrityOrphanedFilesQueueAll',
+  IntegrityOrphanedFiles = 'IntegrityOrphanedFiles',
+  IntegrityMissingFilesQueueAll = 'IntegrityMissingFilesQueueAll',
+  IntegrityMissingFiles = 'IntegrityMissingFiles',
   IntegrityChecksumFiles = 'IntegrityChecksumFiles',
 }
 
