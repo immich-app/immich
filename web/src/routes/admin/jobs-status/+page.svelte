@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { goto } from '$app/navigation';
   import JobsPanel from '$lib/components/jobs/JobsPanel.svelte';
   import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
   import { AppRoute } from '$lib/constants';
@@ -12,7 +13,7 @@
     runQueueCommandLegacy,
     type QueuesResponseLegacyDto,
   } from '@immich/sdk';
-  import { Button, HStack, modalManager, Text } from '@immich/ui';
+  import { Button, CommandPaletteContext, HStack, modalManager, Text, type ActionItem } from '@immich/ui';
   import { mdiCog, mdiPlay, mdiPlus } from '@mdi/js';
   import { onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -46,6 +47,27 @@
     }
   };
 
+  const handleCreateJob = () => modalManager.show(JobCreateModal);
+
+  const jobConcurrencyLink = `${AppRoute.ADMIN_SETTINGS}?isOpen=job`;
+
+  const commands: ActionItem[] = [
+    {
+      title: $t('admin.create_job'),
+      type: $t('command'),
+      icon: mdiPlus,
+      onAction: () => void handleCreateJob(),
+      shortcuts: { shift: true, key: 'n' },
+    },
+    {
+      title: $t('admin.manage_concurrency'),
+      description: $t('admin.manage_concurrency_description'),
+      type: $t('page'),
+      icon: mdiCog,
+      onAction: () => goto(jobConcurrencyLink),
+    },
+  ];
+
   onMount(async () => {
     while (running) {
       jobs = await getQueuesLegacy();
@@ -57,6 +79,8 @@
     running = false;
   });
 </script>
+
+<CommandPaletteContext {commands} />
 
 <AdminPageLayout breadcrumbs={[{ title: data.meta.title }]}>
   {#snippet buttons()}
@@ -74,22 +98,10 @@
           </Text>
         </Button>
       {/if}
-      <Button
-        leadingIcon={mdiPlus}
-        onclick={() => modalManager.show(JobCreateModal, {})}
-        size="small"
-        variant="ghost"
-        color="secondary"
-      >
+      <Button leadingIcon={mdiPlus} onclick={handleCreateJob} size="small" variant="ghost" color="secondary">
         <Text class="hidden md:block">{$t('admin.create_job')}</Text>
       </Button>
-      <Button
-        leadingIcon={mdiCog}
-        href="{AppRoute.ADMIN_SETTINGS}?isOpen=job"
-        size="small"
-        variant="ghost"
-        color="secondary"
-      >
+      <Button leadingIcon={mdiCog} href={jobConcurrencyLink} size="small" variant="ghost" color="secondary">
         <Text class="hidden md:block">{$t('admin.manage_concurrency')}</Text>
       </Button>
     </HStack>
