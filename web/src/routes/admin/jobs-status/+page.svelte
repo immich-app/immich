@@ -58,7 +58,7 @@
   });
 </script>
 
-<AdminPageLayout title={data.meta.title}>
+<AdminPageLayout breadcrumbs={[{ title: data.meta.title }]}>
   {#snippet buttons()}
     <HStack gap={0}>
       {#if pausedJobs.length > 0}

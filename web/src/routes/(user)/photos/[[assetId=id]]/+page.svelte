@@ -146,7 +146,14 @@
       <ChangeDate menuItem />
       <ChangeDescription menuItem />
       <ChangeLocation menuItem />
-      <ArchiveAction menuItem onArchive={(assetIds) => timelineManager.removeAssets(assetIds)} />
+      <ArchiveAction
+        menuItem
+        onArchive={(ids, visibility) =>
+          timelineManager.updateAssetOperation(ids, (asset) => {
+            asset.visibility = visibility;
+            return { remove: false };
+          })}
+      />
       {#if $preferences.tags.enabled}
         <TagAction menuItem />
       {/if}
