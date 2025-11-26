@@ -143,25 +143,6 @@ export class MediaRepository {
     return (await this.getImageDecodingPipeline(input, options)).raw().toBuffer({ resolveWithObject: true });
   }
 
-  private calculateImageEditDimensions(dimensions: ImageDimensions, edit: EditActionItem): ImageDimensions {
-    switch (edit.action) {
-      case 'crop': {
-        const { width, height } = this.cropLRTBtoTLWH(dimensions, edit.parameters);
-        return { width, height };
-      }
-      case 'rotate': {
-        const { angle } = edit.parameters;
-        if (angle % 180 === 0) {
-          return dimensions;
-        } else {
-          return { width: dimensions.height, height: dimensions.width };
-        }
-      }
-      default:
-        return dimensions;
-    }
-  }
-
   private cropLRTBtoTLWH(
     dimensions: ImageDimensions,
     crop: { left: number; top: number; right: number; bottom: number },
@@ -211,10 +192,10 @@ export class MediaRepository {
       // There is a bunch of weird behavior in sharp if
       // we try to chain edits in a single context
       // see: https://github.com/lovell/sharp/issues/241
-      const currentBuffer = await pipeline.png().toBuffer();
-      pipeline = sharp(currentBuffer);
+      const currentBuffer = await pipeline.png().toBuffer({ resolveWithObject: true });
+      pipeline = sharp(currentBuffer.data);
 
-      currentDimensions = this.calculateImageEditDimensions(currentDimensions, edit);
+      currentDimensions = currentBuffer.info;
     }
 
     return pipeline;
@@ -265,14 +246,23 @@ export class MediaRepository {
   }
 
   async generateThumbhash(input: string | Buffer, options: GenerateThumbhashOptions): Promise<Buffer> {
-    const [{ rgbaToThumbHash }, { data, info }] = await Promise.all([
+    const [{ rgbaToThumbHash }, pipeline] = await Promise.all([
       import('thumbhash'),
-      sharp(input, options)
+      (
+        await this.getImageDecodingPipeline(input, {
+          colorspace: options.colorspace,
+          processInvalidImages: options.processInvalidImages,
+          raw: options.raw,
+          edits: options.edits,
+        })
+      )
         .resize(100, 100, { fit: 'inside', withoutEnlargement: true })
         .raw()
-        .ensureAlpha()
-        .toBuffer({ resolveWithObject: true }),
+        .ensureAlpha(),
     ]);
+
+    const { data, info } = await pipeline.toBuffer({ resolveWithObject: true });
+
     return Buffer.from(rgbaToThumbHash(info.width, info.height, data));
   }
 
@@ -355,6 +345,21 @@ export class MediaRepository {
   async getImageDimensions(input: string | Buffer): Promise<ImageDimensions> {
     const { width = 0, height = 0 } = await sharp(input).metadata();
     return { width, height };
+  }
+
+  async getEditedImageDimensions(input: string | Buffer, edits: EditActionItem[]): Promise<ImageDimensions> {
+    let dimensions: ImageDimensions = await (
+      await this.getImageDecodingPipeline(input, {
+        colorspace: Colorspace.Srgb,
+        processInvalidImages: false,
+        edits: edits,
+      })
+    ).metadata();
+
+    return {
+      width: dimensions.width,
+      height: dimensions.height,
+    };
   }
 
   private configureFfmpegCall(input: string, output: string | Writable, options: TranscodeCommand) {

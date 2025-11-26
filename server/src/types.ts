@@ -56,12 +56,12 @@ interface DecodeImageOptions {
   colorspace: string;
   processInvalidImages: boolean;
   raw?: RawImageInfo;
+  edits?: EditActionItem[];
 }
 
 export interface DecodeToBufferOptions extends DecodeImageOptions {
   size?: number;
   orientation?: ExifOrientation;
-  edits?: EditActionItem[];
 }
 
 export type GenerateThumbnailOptions = Pick<ImageOptions, 'format' | 'quality'> & DecodeToBufferOptions;

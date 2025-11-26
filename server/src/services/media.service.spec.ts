@@ -336,6 +336,7 @@ describe(MediaService.name, () => {
         colorspace: Colorspace.P3,
         processInvalidImages: false,
         raw: rawInfo,
+        edits: [],
       });
 
       expect(mocks.asset.upsertFiles).toHaveBeenCalledWith([
@@ -1036,6 +1037,22 @@ describe(MediaService.name, () => {
       await sut.handleGenerateThumbnails({ id: assetStub.image.id, source: 'upload' });
 
       expect(mocks.asset.update).not.toHaveBeenCalledWith(
+        expect.objectContaining({
+          thumbhash: thumbhashBuffer,
+        }),
+      );
+    });
+
+    it('should apply thumbhash if job source is edit and edits exist', async () => {
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue({
+        ...assetStub.withCropEdit,
+      });
+      const thumbhashBuffer = Buffer.from('a thumbhash', 'utf8');
+      mocks.media.generateThumbhash.mockResolvedValue(thumbhashBuffer);
+
+      await sut.handleGenerateThumbnails({ id: assetStub.image.id, source: 'edit' });
+
+      expect(mocks.asset.update).toHaveBeenCalledWith(
         expect.objectContaining({
           thumbhash: thumbhashBuffer,
         }),

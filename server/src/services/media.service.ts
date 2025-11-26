@@ -199,6 +199,13 @@ export class MediaService extends BaseService {
         await Promise.all(files.map((path) => this.storageRepository.unlink(path.path)));
       }
 
+      // rerun the thumbnail generation for the original files now that edits are removed
+      // this is solely to update the thumbhash and dimensions
+      this.jobRepository.queue({
+        name: JobName.AssetGenerateThumbnails,
+        data: { id: asset.id },
+      });
+
       return JobStatus.Success;
     }
 
@@ -207,6 +214,7 @@ export class MediaService extends BaseService {
       thumbnailPath: string;
       fullsizePath?: string;
       thumbhash: Buffer;
+      originalDimensions: ImageDimensions;
     };
     if (asset.type === AssetType.Video || asset.originalFileName.toLowerCase().endsWith('.gif')) {
       generated = await this.generateVideoThumbnails(asset);
@@ -275,12 +283,13 @@ export class MediaService extends BaseService {
       await Promise.all(pathsToDelete.map((path) => this.storageRepository.unlink(path)));
     }
 
-    // We don't want a race condition where a non-edit job overwrites the thumbhash of an edit job
-    if (
-      (!asset.thumbhash || Buffer.compare(asset.thumbhash, generated.thumbhash) !== 0) &&
-      isEditJob === asset.edits.length > 0
-    ) {
-      await this.assetRepository.update({ id: asset.id, thumbhash: generated.thumbhash });
+    // We don't want the non-edit job overwriting the thumbhash/dimensions of an edit job
+    if (isEditJob === asset.edits.length > 0) {
+      if (!asset.thumbhash || Buffer.compare(asset.thumbhash, generated.thumbhash) !== 0) {
+        await this.assetRepository.update({ id: asset.id, thumbhash: generated.thumbhash });
+      }
+
+      await this.assetRepository.update({ id: asset.id, ...generated.originalDimensions });
     }
 
     await this.assetRepository.upsertJobStatus({ assetId: asset.id, previewAt: new Date(), thumbnailAt: new Date() });
@@ -352,7 +361,7 @@ export class MediaService extends BaseService {
     );
 
     // generate final images
-    const thumbnailOptions = { colorspace, processInvalidImages: false, raw: info };
+    const thumbnailOptions = { colorspace, processInvalidImages: false, raw: info, edits: useEdits ? asset.edits : [] };
     const promises = [
       this.mediaRepository.generateThumbhash(data, thumbnailOptions),
       this.mediaRepository.generateThumbnail(
@@ -379,7 +388,6 @@ export class MediaService extends BaseService {
       const fullsizeOptions = {
         format: image.fullsize.format,
         quality: image.fullsize.quality,
-        edits: asset.edits,
         ...thumbnailOptions,
       };
       promises.push(this.mediaRepository.generateThumbnail(data, fullsizeOptions, fullsizePath));
@@ -410,7 +418,13 @@ export class MediaService extends BaseService {
       await Promise.all(promises);
     }
 
-    return { previewPath, thumbnailPath, fullsizePath, thumbhash: outputs[0] as Buffer };
+    // TODO: should we get the image pipeline with edits once and then reuse it for all three operations?
+    const dims = await this.mediaRepository.getEditedImageDimensions(
+      asset.originalPath,
+      useEdits ? (asset.edits ?? []) : [],
+    );
+
+    return { previewPath, thumbnailPath, fullsizePath, thumbhash: outputs[0] as Buffer, originalDimensions: dims };
   }
 
   @OnJob({ name: JobName.PersonGenerateThumbnail, queue: QueueName.ThumbnailGeneration })
@@ -547,7 +561,12 @@ export class MediaService extends BaseService {
       processInvalidImages: process.env.IMMICH_PROCESS_INVALID_IMAGES === 'true',
     });
 
-    return { previewPath, thumbnailPath, thumbhash };
+    return {
+      previewPath,
+      thumbnailPath,
+      thumbhash,
+      originalDimensions: { width: mainVideoStream.width, height: mainVideoStream.height },
+    };
   }
 
   @OnJob({ name: JobName.AssetEncodeVideoQueueAll, queue: QueueName.VideoConversion })
