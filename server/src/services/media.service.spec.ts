@@ -944,7 +944,133 @@ describe(MediaService.name, () => {
         expect.any(String),
       );
     });
+
+    it('should apply edits when generating thumbnails', async () => {
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue({
+        ...assetStub.withCropEdit,
+      });
+
+      await sut.handleGenerateThumbnails({ id: assetStub.image.id, source: 'edit' });
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
+        rawBuffer,
+        expect.objectContaining({
+          edits: [
+            {
+              action: 'crop',
+              index: 0,
+              parameters: { left: 0.1, right: 0.2, top: 0.3, bottom: 0.4 },
+            },
+          ],
+        }),
+        expect.any(String),
+      );
+    });
+
+    it('should not generate edited files when job source is not edit', async () => {
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue({
+        ...assetStub.withCropEdit,
+      });
+
+      await sut.handleGenerateThumbnails({ id: assetStub.image.id, source: 'upload' });
+
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
+        rawBuffer,
+        expect.objectContaining({
+          edits: [],
+        }),
+        expect.any(String),
+      );
+    });
+
+    it('should delete all edited files if an asset has no edits', async () => {
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue({
+        ...assetStub.withRevertedEdits,
+      });
+
+      await sut.handleGenerateThumbnails({ id: assetStub.image.id, source: 'edit' });
+      expect(mocks.storage.unlink).toHaveBeenCalledWith('/uploads/user-id/fullsize/path_edited.jpg');
+      expect(mocks.storage.unlink).toHaveBeenCalledWith('/uploads/user-id/thumbnail/path_edited.jpg');
+      expect(mocks.storage.unlink).toHaveBeenCalledWith('/uploads/user-id/preview/path_edited.jpg');
+
+      expect(mocks.asset.deleteFiles).toHaveBeenCalledWith(
+        expect.arrayContaining([
+          expect.objectContaining({ path: '/uploads/user-id/fullsize/path_edited.jpg' }),
+          expect.objectContaining({ path: '/uploads/user-id/preview/path_edited.jpg' }),
+          expect.objectContaining({ path: '/uploads/user-id/thumbnail/path_edited.jpg' }),
+        ]),
+      );
+    });
+
+    it('should generate all 3 edited files if an asset has edits', async () => {
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue({
+        ...assetStub.withCropEdit,
+      });
+
+      await sut.handleGenerateThumbnails({ id: assetStub.image.id, source: 'edit' });
+
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(3);
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
+        rawBuffer,
+        expect.anything(),
+        expect.stringContaining('edited_preview.jpeg'),
+      );
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
+        rawBuffer,
+        expect.anything(),
+        expect.stringContaining('edited_thumbnail.webp'),
+      );
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
+        rawBuffer,
+        expect.anything(),
+        expect.stringContaining('edited_fullsize.jpeg'),
+      );
+    });
+
+    it('should skip thumbhash saving if job source is not edit and edits exist', async () => {
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue({
+        ...assetStub.withCropEdit,
+      });
+      const thumbhashBuffer = Buffer.from('a thumbhash', 'utf8');
+      mocks.media.generateThumbhash.mockResolvedValue(thumbhashBuffer);
+
+      await sut.handleGenerateThumbnails({ id: assetStub.image.id, source: 'upload' });
+
+      expect(mocks.asset.update).not.toHaveBeenCalledWith(
+        expect.objectContaining({
+          thumbhash: thumbhashBuffer,
+        }),
+      );
+    });
+
+    it('should upsert 3 edited files for edit jobs', async () => {
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue({
+        ...assetStub.withCropEdit,
+      });
+      const thumbhashBuffer = Buffer.from('a thumbhash', 'utf8');
+      mocks.media.generateThumbhash.mockResolvedValue(thumbhashBuffer);
+
+      await sut.handleGenerateThumbnails({ id: assetStub.image.id, source: 'edit' });
+
+      expect(mocks.asset.upsertFiles).toHaveBeenCalledWith(
+        expect.arrayContaining([
+          expect.objectContaining({ type: AssetFileType.EditedFullSize }),
+          expect.objectContaining({ type: AssetFileType.EditedPreview }),
+          expect.objectContaining({ type: AssetFileType.EditedThumbnail }),
+        ]),
+      );
+    });
+
+    it('should reject videos for edit thumbnail jobs', async () => {
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.video);
+
+      await expect(sut.handleGenerateThumbnails({ id: assetStub.video.id, source: 'edit' })).resolves.toBe(
+        JobStatus.Skipped,
+      );
+
+      expect(mocks.media.generateThumbnail).not.toHaveBeenCalled();
+    });
   });
+
   describe('handleGeneratePersonThumbnail', () => {
     it('should skip if machine learning is disabled', async () => {
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.machineLearningDisabled);

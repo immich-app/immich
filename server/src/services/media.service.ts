@@ -318,19 +318,19 @@ export class MediaService extends BaseService {
       originalFileName: string;
       originalPath: string;
       exifInfo: Exif;
-      edits?: EditActionItem[]; // TODO: update callers to conditionally include edits
+      edits?: EditActionItem[];
     },
-    isEdit: boolean,
+    useEdits: boolean,
   ) {
     const { image } = await this.getConfig({ withCache: true });
     const previewPath = StorageCore.getImagePath(
       asset,
-      isEdit ? AssetPathType.EditedPreview : AssetPathType.Preview,
+      useEdits ? AssetPathType.EditedPreview : AssetPathType.Preview,
       image.preview.format,
     );
     const thumbnailPath = StorageCore.getImagePath(
       asset,
-      isEdit ? AssetPathType.EditedThumbnail : AssetPathType.Thumbnail,
+      useEdits ? AssetPathType.EditedThumbnail : AssetPathType.Thumbnail,
       image.thumbnail.format,
     );
     this.storageCore.ensureFolders(previewPath);
@@ -357,23 +357,23 @@ export class MediaService extends BaseService {
       this.mediaRepository.generateThumbhash(data, thumbnailOptions),
       this.mediaRepository.generateThumbnail(
         data,
-        { ...image.thumbnail, ...thumbnailOptions, edits: asset.edits },
+        { ...image.thumbnail, ...thumbnailOptions, edits: useEdits ? asset.edits : [] },
         thumbnailPath,
       ),
       this.mediaRepository.generateThumbnail(
         data,
-        { ...image.preview, ...thumbnailOptions, edits: asset.edits },
+        { ...image.preview, ...thumbnailOptions, edits: useEdits ? asset.edits : [] },
         previewPath,
       ),
     ];
 
     let fullsizePath: string | undefined;
 
-    if (convertFullsize || isEdit) {
+    if (convertFullsize || useEdits) {
       // convert a new fullsize image from the same source as the thumbnail
       fullsizePath = StorageCore.getImagePath(
         asset,
-        isEdit ? AssetPathType.EditedFullSize : AssetPathType.FullSize,
+        useEdits ? AssetPathType.EditedFullSize : AssetPathType.FullSize,
         image.fullsize.format,
       );
       const fullsizeOptions = {

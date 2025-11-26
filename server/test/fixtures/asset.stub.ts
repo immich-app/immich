@@ -1,6 +1,6 @@
 import { AssetFace, AssetFile, Exif } from 'src/database';
 import { MapAsset } from 'src/dtos/asset-response.dto';
-import { EditActionItem } from 'src/dtos/editing.dto';
+import { EditActionItem, EditActionType } from 'src/dtos/editing.dto';
 import { AssetFileType, AssetStatus, AssetType, AssetVisibility } from 'src/enum';
 import { StorageAsset } from 'src/types';
 import { authStub } from 'test/fixtures/auth.stub';
@@ -25,7 +25,34 @@ const fullsizeFile: AssetFile = {
   path: '/uploads/user-id/fullsize/path.webp',
 };
 
+const editedPreviewFile: AssetFile = {
+  id: 'file-4',
+  type: AssetFileType.EditedPreview,
+  path: '/uploads/user-id/preview/path_edited.jpg',
+};
+
+const editedThumbnailFile: AssetFile = {
+  id: 'file-5',
+  type: AssetFileType.EditedThumbnail,
+  path: '/uploads/user-id/thumbnail/path_edited.jpg',
+};
+
+const editedFullsizeFile: AssetFile = {
+  id: 'file-6',
+  type: AssetFileType.EditedFullSize,
+  path: '/uploads/user-id/fullsize/path_edited.jpg',
+};
+
 const files: AssetFile[] = [fullsizeFile, previewFile, thumbnailFile];
+
+const editedFiles: AssetFile[] = [
+  fullsizeFile,
+  previewFile,
+  thumbnailFile,
+  editedFullsizeFile,
+  editedPreviewFile,
+  editedThumbnailFile,
+];
 
 export const stackStub = (stackId: string, assets: (MapAsset & { exifInfo: Exif })[]) => {
   return {
@@ -971,6 +998,109 @@ export const assetStub = {
     visibility: AssetVisibility.Timeline,
     width: null,
     height: null,
+    edits: [],
+  }),
+  withCropEdit: Object.freeze({
+    id: 'asset-id',
+    status: AssetStatus.Active,
+    deviceAssetId: 'device-asset-id',
+    fileModifiedAt: new Date('2023-02-23T05:06:29.716Z'),
+    fileCreatedAt: new Date('2023-02-23T05:06:29.716Z'),
+    owner: userStub.user1,
+    ownerId: 'user-id',
+    deviceId: 'device-id',
+    originalPath: '/original/path.jpg',
+    files,
+    checksum: Buffer.from('file hash', 'utf8'),
+    type: AssetType.Image,
+    thumbhash: Buffer.from('blablabla', 'base64'),
+    encodedVideoPath: null,
+    createdAt: new Date('2023-02-23T05:06:29.716Z'),
+    updatedAt: new Date('2023-02-23T05:06:29.716Z'),
+    localDateTime: new Date('2025-01-01T01:02:03.456Z'),
+    isFavorite: true,
+    duration: null,
+    isExternal: false,
+    livePhotoVideo: null,
+    livePhotoVideoId: null,
+    updateId: 'foo',
+    libraryId: null,
+    stackId: null,
+    sharedLinks: [],
+    originalFileName: 'asset-id.jpg',
+    faces: [],
+    deletedAt: null,
+    sidecarPath: null,
+    exifInfo: {
+      fileSizeInByte: 5000,
+      exifImageHeight: 3840,
+      exifImageWidth: 2160,
+    } as Exif,
+    duplicateId: null,
+    isOffline: false,
+    stack: null,
+    orientation: '',
+    projectionType: null,
+    height: 3840,
+    width: 2160,
+    visibility: AssetVisibility.Timeline,
+    edits: [
+      {
+        action: EditActionType.Crop,
+        parameters: {
+          left: 0.1,
+          right: 0.2,
+          top: 0.3,
+          bottom: 0.4,
+        },
+        index: 0,
+      },
+    ] as EditActionItem[],
+  }),
+  withRevertedEdits: Object.freeze({
+    id: 'asset-id',
+    status: AssetStatus.Active,
+    deviceAssetId: 'device-asset-id',
+    fileModifiedAt: new Date('2023-02-23T05:06:29.716Z'),
+    fileCreatedAt: new Date('2023-02-23T05:06:29.716Z'),
+    owner: userStub.user1,
+    ownerId: 'user-id',
+    deviceId: 'device-id',
+    originalPath: '/original/path.jpg',
+    files: editedFiles,
+    checksum: Buffer.from('file hash', 'utf8'),
+    type: AssetType.Image,
+    thumbhash: Buffer.from('blablabla', 'base64'),
+    encodedVideoPath: null,
+    createdAt: new Date('2023-02-23T05:06:29.716Z'),
+    updatedAt: new Date('2023-02-23T05:06:29.716Z'),
+    localDateTime: new Date('2025-01-01T01:02:03.456Z'),
+    isFavorite: true,
+    duration: null,
+    isExternal: false,
+    livePhotoVideo: null,
+    livePhotoVideoId: null,
+    updateId: 'foo',
+    libraryId: null,
+    stackId: null,
+    sharedLinks: [],
+    originalFileName: 'asset-id.jpg',
+    faces: [],
+    deletedAt: null,
+    sidecarPath: null,
+    exifInfo: {
+      fileSizeInByte: 5000,
+      exifImageHeight: 3840,
+      exifImageWidth: 2160,
+    } as Exif,
+    duplicateId: null,
+    isOffline: false,
+    stack: null,
+    orientation: '',
+    projectionType: null,
+    height: 3840,
+    width: 2160,
+    visibility: AssetVisibility.Timeline,
     edits: [],
   }),
 };

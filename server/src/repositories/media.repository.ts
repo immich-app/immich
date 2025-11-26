@@ -211,7 +211,7 @@ export class MediaRepository {
       // There is a bunch of weird behavior in sharp if
       // we try to chain edits in a single context
       // see: https://github.com/lovell/sharp/issues/241
-      const currentBuffer = await pipeline.toBuffer();
+      const currentBuffer = await pipeline.png().toBuffer();
       pipeline = sharp(currentBuffer);
 
       currentDimensions = this.calculateImageEditDimensions(currentDimensions, edit);
