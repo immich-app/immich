@@ -983,12 +983,12 @@ describe(MediaService.name, () => {
       );
     });
 
-    it('should delete all edited files if an asset has no edits', async () => {
+    it('should clean up edited files if an asset has no edits', async () => {
       mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue({
         ...assetStub.withRevertedEdits,
       });
 
-      await sut.handleGenerateThumbnails({ id: assetStub.image.id, source: 'edit' });
+      const status = await sut.handleGenerateThumbnails({ id: assetStub.image.id, source: 'edit' });
       expect(mocks.storage.unlink).toHaveBeenCalledWith('/uploads/user-id/fullsize/path_edited.jpg');
       expect(mocks.storage.unlink).toHaveBeenCalledWith('/uploads/user-id/thumbnail/path_edited.jpg');
       expect(mocks.storage.unlink).toHaveBeenCalledWith('/uploads/user-id/preview/path_edited.jpg');
@@ -1000,6 +1000,16 @@ describe(MediaService.name, () => {
           expect.objectContaining({ path: '/uploads/user-id/thumbnail/path_edited.jpg' }),
         ]),
       );
+
+      expect(status).toBe(JobStatus.Success);
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.AssetGenerateThumbnails,
+        data: {
+          id: assetStub.image.id,
+        },
+      });
+
+      expect(mocks.media.generateThumbnail).not.toHaveBeenCalled();
     });
 
     it('should generate all 3 edited files if an asset has edits', async () => {
