@@ -222,7 +222,7 @@ export class AssetMediaService extends BaseService {
 
     const files = getAssetFiles(asset.files ?? []);
 
-    const requestingEdited = dto.edited && asset.edits!.length > 0;
+    const requestingEdited = (dto.edited ?? true) && asset.edits!.length > 0;
     const { fullsizeFile, previewFile, thumbnailFile } = {
       fullsizeFile: requestingEdited ? files.editedFullsizeFile : files.fullsizeFile,
       previewFile: requestingEdited ? files.editedPreviewFile : files.previewFile,

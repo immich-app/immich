@@ -523,6 +523,8 @@ describe(AssetMediaService.name, () => {
         }),
       );
     });
+
+    // TODO: Edited asset tests
   });
 
   describe('viewThumbnail', () => {
@@ -622,6 +624,8 @@ describe(AssetMediaService.name, () => {
         }),
       );
     });
+
+    // TODO: Edited asset tests
   });
 
   describe('playbackVideo', () => {
