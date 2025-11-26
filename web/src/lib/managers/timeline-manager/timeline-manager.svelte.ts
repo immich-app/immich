@@ -28,7 +28,6 @@ import { isMismatched, updateObject } from './internal/utils.svelte';
 import { MonthGroup } from './month-group.svelte';
 import type {
   AssetDescriptor,
-  AssetOperation,
   Direction,
   MoveAsset,
   ScrubberMonth,
@@ -405,31 +404,16 @@ export class TimelineManager extends VirtualScrollManager {
   }
 
   /**
-   * Performs a mutating operation on assets matching the given IDs.
-   *
-   * This method is designed for incremental updates to already-loaded timeline segments,
-   * such as responding to websocket events or refreshing assets after user actions.
-   * For initial segment loading, use the more efficient bulk loading mechanisms instead.
-   *
-   * @param ids - Array of asset IDs to operate on
-   * @param operation - Operation to apply (can update or remove assets)
-   * @returns Object containing:
-   *   - `updated`: Set of asset IDs that were successfully processed
-   *   - `notUpdated`: Set of asset IDs that were not found in the timeline
-   *   - `changedGeometry`: Whether the operation changed the layout geometry
-   *
-   * Note: This operation can only update or remove assets. To add assets, use upsertAssets().
-   * The operation is performed efficiently in bulk. Assets may be moved to different segments
-   * if their properties change, or removed entirely if they no longer match filtering criteria.
+   * Executes callback on assets, handling moves between groups and removals due to filter criteria.
    */
-  updateAssetOperation(ids: string[], operation: AssetOperation) {
+  update(ids: string[], callback: (asset: TimelineAsset) => void) {
     // eslint-disable-next-line svelte/prefer-svelte-reactivity
-    return this.#runAssetOperation(new Set(ids), operation);
+    return this.#runAssetCallback(new Set(ids), callback);
   }
 
   removeAssets(ids: string[]) {
     // eslint-disable-next-line svelte/prefer-svelte-reactivity
-    const result = this.#runAssetOperation(new Set(ids), () => ({ remove: true }));
+    const result = this.#runAssetCallback(new Set(ids), () => ({ remove: true }));
     return [...result.notUpdated];
   }
 
@@ -469,7 +453,7 @@ export class TimelineManager extends VirtualScrollManager {
     const cache = new Map<string, TimelineAsset>(assets.map((asset) => [asset.id, asset]));
     // eslint-disable-next-line svelte/prefer-svelte-reactivity
     const idsToUpdate = new Set(cache.keys());
-    const result = this.#runAssetOperation(idsToUpdate, (asset) => void updateObject(asset, cache.get(asset.id)));
+    const result = this.#runAssetCallback(idsToUpdate, (asset) => void updateObject(asset, cache.get(asset.id)));
     const notUpdated: TimelineAsset[] = [];
     for (const assetId of result.notUpdated) {
       notUpdated.push(cache.get(assetId)!);
@@ -477,7 +461,7 @@ export class TimelineManager extends VirtualScrollManager {
     return notUpdated;
   }
 
-  #runAssetOperation(ids: Set<string>, operation: AssetOperation) {
+  #runAssetCallback(ids: Set<string>, callback: (asset: TimelineAsset) => void | { remove?: boolean }) {
     if (ids.size === 0) {
       // eslint-disable-next-line svelte/prefer-svelte-reactivity
       return { updated: new Set<string>(), notUpdated: ids, changedGeometry: false };
@@ -493,7 +477,7 @@ export class TimelineManager extends VirtualScrollManager {
       if (notUpdated.size === 0) {
         break;
       }
-      const result = month.runAssetOperation(notUpdated, operation);
+      const result = month.runAssetCallback(notUpdated, callback);
       if (result.moveAssets.length > 0) {
         assetsToMoveSegments.push(result.moveAssets);
       }

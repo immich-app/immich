@@ -6,7 +6,7 @@ import { plainDateTimeCompare } from '$lib/utils/timeline-util';
 
 import { SvelteSet } from 'svelte/reactivity';
 import type { MonthGroup } from './month-group.svelte';
-import type { AssetOperation, Direction, MoveAsset, TimelineAsset } from './types';
+import type { Direction, MoveAsset, TimelineAsset } from './types';
 import { ViewerAsset } from './viewer-asset.svelte';
 
 export class DayGroup {
@@ -101,7 +101,7 @@ export class DayGroup {
     return this.viewerAssets.map((viewerAsset) => viewerAsset.asset);
   }
 
-  runAssetOperation(ids: Set<string>, operation: AssetOperation) {
+  runAssetCallback(ids: Set<string>, callback: (asset: TimelineAsset) => void | { remove?: boolean }) {
     if (ids.size === 0) {
       return {
         moveAssets: [] as MoveAsset[],
@@ -122,8 +122,8 @@ export class DayGroup {
 
       const asset = this.viewerAssets[index].asset!;
       const oldTime = { ...asset.localDateTime };
-      const opResult = operation(asset);
-      let remove = (opResult as { remove?: boolean } | undefined)?.remove ?? false;
+      const callbackResult = callback(asset);
+      let remove = (callbackResult as { remove?: boolean } | undefined)?.remove ?? false;
       const newTime = asset.localDateTime;
       if (oldTime.year !== newTime.year || oldTime.month !== newTime.month || oldTime.day !== newTime.day) {
         const { year, month, day } = newTime;
