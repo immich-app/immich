@@ -113,8 +113,8 @@ export class AssetJobRepository {
         'asset.type',
       ])
       .select(withFiles)
-      .$call(withExifInner)
       .select(withEdits)
+      .$call(withExifInner)
       .where('asset.id', '=', id)
       .executeTakeFirst();
   }

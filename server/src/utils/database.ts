@@ -316,7 +316,8 @@ export function withEdits(eb: ExpressionBuilder<DB, 'asset'>): AliasedEditAction
     eb
       .selectFrom('asset_edit')
       .select(['asset_edit.action', 'asset_edit.parameters', 'asset_edit.index'])
-      .whereRef('asset_edit.assetId', '=', 'asset.id'),
+      .whereRef('asset_edit.assetId', '=', 'asset.id')
+      .orderBy('asset_edit.index', 'asc'),
   ).as('edits') as AliasedEditActions;
 }
 

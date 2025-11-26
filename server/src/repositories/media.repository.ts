@@ -146,13 +146,7 @@ export class MediaRepository {
   private calculateImageEditDimensions(dimensions: ImageDimensions, edit: EditActionItem): ImageDimensions {
     switch (edit.action) {
       case 'crop': {
-        const { left, top, right, bottom } = edit.parameters;
-        const leftPx = Math.round(left * dimensions.width);
-        const topPx = Math.round(top * dimensions.height);
-        const rightPx = Math.round(right * dimensions.width);
-        const bottomPx = Math.round(bottom * dimensions.height);
-        const width = dimensions.width - rightPx - leftPx;
-        const height = dimensions.height - bottomPx - topPx;
+        const { width, height } = this.cropLRTBtoTLWH(dimensions, edit.parameters);
         return { width, height };
       }
       case 'rotate': {
@@ -168,28 +162,27 @@ export class MediaRepository {
     }
   }
 
+  private cropLRTBtoTLWH(
+    dimensions: ImageDimensions,
+    crop: { left: number; top: number; right: number; bottom: number },
+  ): { left: number; top: number; width: number; height: number } {
+    const leftPx = Math.round(crop.left * dimensions.width);
+    const topPx = Math.round(crop.top * dimensions.height);
+    const rightPx = Math.round(crop.right * dimensions.width);
+    const bottomPx = Math.round(crop.bottom * dimensions.height);
+
+    const width = dimensions.width - rightPx - leftPx;
+    const height = dimensions.height - bottomPx - topPx;
+
+    return { left: leftPx, top: topPx, width, height };
+  }
+
   private applyEdit(input: sharp.Sharp, edit: EditActionItem, dimensions: ImageDimensions): sharp.Sharp {
     switch (edit.action) {
       case 'crop': {
-        const { left, top, right, bottom } = edit.parameters;
-        const { width, height } = dimensions;
-
-        console.log('Original dimensions:', { width, height });
-        console.log('Crop parameters (fractions):', { left, top, right, bottom });
-
-        const topPx = Math.round(top * height);
-        const leftPx = Math.round(left * width);
-        const bottomPx = Math.round(bottom * height);
-        const rightPx = Math.round(right * width);
-
-        console.log('Crop parameters in pixels:', { leftPx, topPx, rightPx, bottomPx });
-
-        const newWidth = width - rightPx - leftPx;
-        const newHeight = height - bottomPx - topPx;
-
-        console.log('Cropping to:', { leftPx, topPx, newWidth, newHeight });
-
-        return input.extract({ left: leftPx, top: topPx, width: newWidth, height: newHeight });
+        // Convert from relative LRTB to top left, width height
+        const { left, top, width, height } = this.cropLRTBtoTLWH(dimensions, edit.parameters);
+        return input.extract({ left, top, width, height });
       }
       case 'rotate': {
         const { angle } = edit.parameters;
@@ -208,23 +201,25 @@ export class MediaRepository {
     }
   }
 
-  private async applyEdits(
-    input: sharp.Sharp,
-    edits: EditActionItem[],
-    initialDimensions: ImageDimensions,
-  ): Promise<sharp.Sharp> {
-    // we need intermediate dimensions to apply edits correctly
-    let currentDimensions: ImageDimensions = initialDimensions;
+  private async applyEdits(pipeline: sharp.Sharp, edits: EditActionItem[]): Promise<sharp.Sharp> {
+    let currentDimensions: ImageDimensions = await pipeline.metadata();
 
     for (const edit of edits) {
-      input = this.applyEdit(input, edit, currentDimensions);
+      pipeline = this.applyEdit(pipeline, edit, currentDimensions);
+
+      // Each edit requires a new sharp context.
+      // There is a bunch of weird behavior in sharp if
+      // we try to chain edits in a single context
+      // see: https://github.com/lovell/sharp/issues/241
+      const currentBuffer = await pipeline.toBuffer();
+      pipeline = sharp(currentBuffer);
+
       currentDimensions = this.calculateImageEditDimensions(currentDimensions, edit);
     }
 
-    return input;
+    return pipeline;
   }
 
-  // TODO: update all calls of generateThumbnail to pass edits
   async generateThumbnail(input: string | Buffer, options: GenerateThumbnailOptions, output: string): Promise<void> {
     const decoded = (await this.getImageDecodingPipeline(input, options)).toFormat(options.format, {
       quality: options.quality,
@@ -246,9 +241,7 @@ export class MediaRepository {
       .pipelineColorspace(options.colorspace === Colorspace.Srgb ? 'srgb' : 'rgb16')
       .withIccProfile(options.colorspace);
 
-    const dimensions = await pipeline.metadata();
-
-    // TODO: convert these to edits
+    // TODO: convert these to edits or autoOrient option in sharp?
     if (!options.raw) {
       const { angle, flip, flop } = options.orientation ? ORIENTATION_TO_SHARP_ROTATION[options.orientation] : {};
       pipeline = pipeline.rotate(angle);
@@ -261,12 +254,8 @@ export class MediaRepository {
       }
     }
 
-    if (options.crop) {
-      pipeline = pipeline.extract(options.crop);
-    }
-
     if (options.edits && options.edits.length > 0) {
-      this.applyEdits(pipeline, options.edits, dimensions);
+      pipeline = await this.applyEdits(pipeline, options.edits);
     }
 
     if (options.size !== undefined) {

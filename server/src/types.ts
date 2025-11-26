@@ -54,7 +54,6 @@ export interface RawImageInfo {
 
 interface DecodeImageOptions {
   colorspace: string;
-  crop?: CropOptions;
   processInvalidImages: boolean;
   raw?: RawImageInfo;
 }
@@ -75,7 +74,6 @@ export type GenerateThumbhashFromBufferOptions = GenerateThumbhashOptions & { ra
 
 export interface GenerateThumbnailsOptions {
   colorspace: string;
-  crop?: CropOptions;
   preview?: ImageOptions;
   processInvalidImages: boolean;
   thumbhash?: boolean;

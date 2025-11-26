@@ -313,9 +313,9 @@ describe(MediaService.name, () => {
           quality: 80,
           processInvalidImages: false,
           raw: rawInfo,
+          edits: [],
         },
         expect.any(String),
-        [],
       );
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
         rawBuffer,
@@ -326,9 +326,9 @@ describe(MediaService.name, () => {
           quality: 80,
           processInvalidImages: false,
           raw: rawInfo,
+          edits: [],
         },
         expect.any(String),
-        [],
       );
 
       expect(mocks.media.generateThumbhash).toHaveBeenCalledOnce();
@@ -529,9 +529,9 @@ describe(MediaService.name, () => {
           quality: 80,
           processInvalidImages: false,
           raw: rawInfo,
+          edits: [],
         },
         previewPath,
-        [],
       );
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
         rawBuffer,
@@ -542,9 +542,9 @@ describe(MediaService.name, () => {
           quality: 80,
           processInvalidImages: false,
           raw: rawInfo,
+          edits: [],
         },
         thumbnailPath,
-        [],
       );
     });
 
@@ -576,9 +576,9 @@ describe(MediaService.name, () => {
           quality: 80,
           processInvalidImages: false,
           raw: rawInfo,
+          edits: [],
         },
         previewPath,
-        [],
       );
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
         rawBuffer,
@@ -589,9 +589,9 @@ describe(MediaService.name, () => {
           quality: 80,
           processInvalidImages: false,
           raw: rawInfo,
+          edits: [],
         },
         thumbnailPath,
-        [],
       );
     });
 
@@ -684,13 +684,11 @@ describe(MediaService.name, () => {
         rawBuffer,
         expect.objectContaining({ processInvalidImages: false }),
         expect.any(String),
-        [],
       );
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
         rawBuffer,
         expect.objectContaining({ processInvalidImages: false }),
         expect.any(String),
-        [],
       );
 
       expect(mocks.media.generateThumbhash).toHaveBeenCalledOnce();
@@ -730,9 +728,9 @@ describe(MediaService.name, () => {
           quality: 80,
           processInvalidImages: false,
           raw: rawInfo,
+          edits: [],
         },
         expect.any(String),
-        [],
       );
     });
 
@@ -761,6 +759,7 @@ describe(MediaService.name, () => {
           quality: 80,
           processInvalidImages: false,
           raw: rawInfo,
+          edits: [],
         },
         expect.any(String),
       );
@@ -773,9 +772,9 @@ describe(MediaService.name, () => {
           quality: 80,
           processInvalidImages: false,
           raw: rawInfo,
+          edits: [],
         },
         expect.any(String),
-        [],
       );
     });
 
@@ -802,6 +801,7 @@ describe(MediaService.name, () => {
           quality: 80,
           processInvalidImages: false,
           raw: rawInfo,
+          edits: [],
         },
         expect.any(String),
       );
@@ -814,9 +814,9 @@ describe(MediaService.name, () => {
           size: 1440,
           processInvalidImages: false,
           raw: rawInfo,
+          edits: [],
         },
         expect.any(String),
-        [],
       );
     });
 
@@ -844,6 +844,7 @@ describe(MediaService.name, () => {
           quality: 80,
           processInvalidImages: false,
           raw: rawInfo,
+          edits: [],
         },
         expect.any(String),
       );
@@ -899,6 +900,7 @@ describe(MediaService.name, () => {
           quality: 80,
           processInvalidImages: false,
           raw: rawInfo,
+          edits: [],
         },
         expect.any(String),
       );
@@ -937,12 +939,12 @@ describe(MediaService.name, () => {
           quality: 90,
           processInvalidImages: false,
           raw: rawInfo,
+          edits: [],
         },
         expect.any(String),
       );
     });
   });
-
   describe('handleGeneratePersonThumbnail', () => {
     it('should skip if machine learning is disabled', async () => {
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.machineLearningDisabled);
@@ -992,12 +994,18 @@ describe(MediaService.name, () => {
           colorspace: Colorspace.P3,
           format: ImageFormat.Jpeg,
           quality: 80,
-          crop: {
-            left: 238,
-            top: 163,
-            width: 274,
-            height: 274,
-          },
+          edits: [
+            {
+              action: 'crop',
+              index: 0,
+              parameters: {
+                bottom: 0.437,
+                left: 0.238,
+                right: 0.512,
+                top: 0.163,
+              },
+            },
+          ],
           raw: info,
           processInvalidImages: false,
           size: 250,
@@ -1031,12 +1039,18 @@ describe(MediaService.name, () => {
           colorspace: Colorspace.P3,
           format: ImageFormat.Jpeg,
           quality: 80,
-          crop: {
-            left: 238,
-            top: 163,
-            width: 274,
-            height: 274,
-          },
+          edits: [
+            {
+              action: 'crop',
+              index: 0,
+              parameters: {
+                bottom: 0.437,
+                left: 0.238,
+                right: 0.512,
+                top: 0.163,
+              },
+            },
+          ],
           raw: info,
           processInvalidImages: false,
           size: 250,
@@ -1068,12 +1082,18 @@ describe(MediaService.name, () => {
           colorspace: Colorspace.P3,
           format: ImageFormat.Jpeg,
           quality: 80,
-          crop: {
-            left: 0,
-            top: 85,
-            width: 510,
-            height: 510,
-          },
+          edits: [
+            {
+              action: 'crop',
+              index: 0,
+              parameters: {
+                bottom: 0.15494791666666666,
+                left: 0,
+                right: 0.2361111111111111,
+                top: 0.022135416666666668,
+              },
+            },
+          ],
           raw: info,
           processInvalidImages: false,
           size: 250,
@@ -1105,12 +1125,18 @@ describe(MediaService.name, () => {
           colorspace: Colorspace.P3,
           format: ImageFormat.Jpeg,
           quality: 80,
-          crop: {
-            left: 591,
-            top: 591,
-            width: 408,
-            height: 408,
-          },
+          edits: [
+            {
+              action: 'crop',
+              index: 0,
+              parameters: {
+                bottom: 0.999,
+                left: 0.591,
+                right: 0.999,
+                top: 0.591,
+              },
+            },
+          ],
           raw: info,
           processInvalidImages: false,
           size: 250,
@@ -1142,12 +1168,18 @@ describe(MediaService.name, () => {
           colorspace: Colorspace.P3,
           format: ImageFormat.Jpeg,
           quality: 80,
-          crop: {
-            left: 0,
-            top: 62,
-            width: 412,
-            height: 412,
-          },
+          edits: [
+            {
+              action: 'crop',
+              index: 0,
+              parameters: {
+                bottom: 0.1538961038961039,
+                left: 0,
+                right: 0.08910034602076125,
+                top: 0.02012987012987013,
+              },
+            },
+          ],
           raw: info,
           processInvalidImages: false,
           size: 250,
@@ -1179,12 +1211,18 @@ describe(MediaService.name, () => {
           colorspace: Colorspace.P3,
           format: ImageFormat.Jpeg,
           quality: 80,
-          crop: {
-            left: 4485,
-            top: 94,
-            width: 138,
-            height: 138,
-          },
+          edits: [
+            {
+              action: 'crop',
+              index: 0,
+              parameters: {
+                bottom: 0.07532467532467532,
+                left: 0.969939446366782,
+                right: 0.9997837370242214,
+                top: 0.03051948051948052,
+              },
+            },
+          ],
           raw: info,
           processInvalidImages: false,
           size: 250,
@@ -1221,12 +1259,18 @@ describe(MediaService.name, () => {
           colorspace: Colorspace.P3,
           format: ImageFormat.Jpeg,
           quality: 80,
-          crop: {
-            height: 844,
-            left: 388,
-            top: 730,
-            width: 844,
-          },
+          edits: [
+            {
+              action: 'crop',
+              index: 0,
+              parameters: {
+                bottom: 0.40989583333333335,
+                left: 0.17962962962962964,
+                right: 0.5703703703703704,
+                top: 0.19010416666666666,
+              },
+            },
+          ],
           raw: info,
           processInvalidImages: false,
           size: 250,
