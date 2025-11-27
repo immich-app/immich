@@ -80,6 +80,7 @@ export const BASE_SERVICE_DEPENDENCIES = [
   DuplicateRepository,
   EmailRepository,
   EventRepository,
+  IntegrityReportRepository,
   JobRepository,
   LibraryRepository,
   MachineLearningRepository,

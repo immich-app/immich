@@ -72,6 +72,22 @@ const updatedConfig = Object.freeze<SystemConfig>({
     accelDecode: false,
     tonemap: ToneMapping.Hable,
   },
+  integrityChecks: {
+    orphanedFiles: {
+      enabled: true,
+      cronExpression: '0 03 * * *',
+    },
+    missingFiles: {
+      enabled: true,
+      cronExpression: '0 03 * * *',
+    },
+    checksumFiles: {
+      enabled: true,
+      cronExpression: '0 03 * * *',
+      timeLimit: 60 * 60 * 1000,
+      percentageLimit: 1.0,
+    },
+  },
   logging: {
     enabled: true,
     level: LogLevel.Log,
