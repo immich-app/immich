@@ -7,7 +7,15 @@ import { pipeline } from 'node:stream/promises';
 import { JOBS_LIBRARY_PAGINATION_SIZE } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { OnEvent, OnJob } from 'src/decorators';
-import { ImmichWorker, JobName, JobStatus, QueueName, StorageFolder, SystemMetadataKey } from 'src/enum';
+import {
+  ImmichWorker,
+  IntegrityReportType,
+  JobName,
+  JobStatus,
+  QueueName,
+  StorageFolder,
+  SystemMetadataKey,
+} from 'src/enum';
 import { ArgOf } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
 import { IIntegrityMissingFilesJob, IIntegrityOrphanedFilesJob } from 'src/types';
@@ -31,16 +39,17 @@ export class IntegrityService extends BaseService {
     //     start: database.enabled,
     //   });
     // }
-    setTimeout(() => {
-      // this.jobRepository.queue({
-      //   name: JobName.IntegrityOrphanedFilesQueueAll,
-      //   data: {},
-      // });
 
-      // this.jobRepository.queue({
-      //   name: JobName.IntegrityMissingFilesQueueAll,
-      //   data: {},
-      // });
+    setTimeout(() => {
+      this.jobRepository.queue({
+        name: JobName.IntegrityOrphanedFilesQueueAll,
+        data: {},
+      });
+
+      this.jobRepository.queue({
+        name: JobName.IntegrityMissingFilesQueueAll,
+        data: {},
+      });
 
       this.jobRepository.queue({
         name: JobName.IntegrityChecksumFiles,
@@ -129,8 +138,12 @@ export class IntegrityService extends BaseService {
       }
     }
 
-    // todo: do something with orphanedFiles
-    console.info(orphanedFiles);
+    await this.integrityReportRepository.create(
+      [...orphanedFiles].map((path) => ({
+        type: IntegrityReportType.OrphanFile,
+        path,
+      })),
+    );
 
     this.logger.log(`Processed ${paths.length} and found ${orphanedFiles.size} orphaned file(s).`);
     return JobStatus.Success;
@@ -201,10 +214,14 @@ export class IntegrityService extends BaseService {
       ),
     );
 
-    const missingFiles = result.filter((path) => path);
+    const missingFiles = result.filter((path) => path) as string[];
 
-    // todo: do something with missingFiles
-    console.info(missingFiles);
+    await this.integrityReportRepository.create(
+      missingFiles.map((path) => ({
+        type: IntegrityReportType.MissingFile,
+        path,
+      })),
+    );
 
     this.logger.log(`Processed ${paths.length} and found ${missingFiles.length} missing file(s).`);
     return JobStatus.Success;
@@ -266,7 +283,10 @@ export class IntegrityService extends BaseService {
           }
         } catch (error) {
           this.logger.warn('Failed to process a file: ' + error);
-          // todo: do something with originalPath
+          await this.integrityReportRepository.create({
+            path: originalPath,
+            type: IntegrityReportType.ChecksumFail,
+          });
         }
 
         processed++;
