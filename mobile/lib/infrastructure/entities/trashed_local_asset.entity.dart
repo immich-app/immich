@@ -19,6 +19,8 @@ class TrashedLocalAssetEntity extends Table with DriftDefaultsMixin, AssetEntity
 
   IntColumn get orientation => integer().withDefault(const Constant(0))();
 
+  BoolColumn get isRestorable => boolean().withDefault(const Constant(false))();
+
   @override
   Set<Column> get primaryKey => {id, albumId};
 }
