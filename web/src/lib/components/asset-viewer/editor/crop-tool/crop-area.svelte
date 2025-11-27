@@ -2,7 +2,7 @@
   import { getAssetOriginalUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { getAltText } from '$lib/utils/thumbnail-util';
-  import { onDestroy, onMount, tick } from 'svelte';
+  import { onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
 
   import {
@@ -26,18 +26,8 @@
 
   let { asset }: Props = $props();
 
-  let img = $state<HTMLImageElement>();
-
-  $effect(() => {
-    if (!img) {
-      return;
-    }
-
-    imgElement.set(img);
-  });
-
   cropAspectRatio.subscribe((value) => {
-    if (!img || !$cropAreaEl) {
+    if (!$imgElement || !$cropAreaEl) {
       return;
     }
     const newCrop = recalculateCrop($cropSettings, $cropAreaEl, value, true);
@@ -46,15 +36,15 @@
     }
   });
 
-  onMount(async () => {
+  onMount(() => {
     resetGlobalCropStore();
-    img = new Image();
-    await tick();
+    const cropImg = new Image();
 
-    img.src = getAssetOriginalUrl({ id: asset.id, cacheKey: asset.thumbhash });
+    cropImg.src = getAssetOriginalUrl({ id: asset.id, cacheKey: asset.thumbhash });
 
-    img.addEventListener('load', () => onImageLoad(true), { passive: true });
-    img.addEventListener('error', (error) => handleError(error, $t('error_loading_image')), { passive: true });
+    cropImg.addEventListener('load', () => onImageLoad(true), { passive: true });
+    cropImg.addEventListener('error', (error) => handleError(error, $t('error_loading_image')), { passive: true });
+    imgElement.set(cropImg);
 
     globalThis.addEventListener('mousemove', handleMouseMove, { passive: true });
   });
@@ -80,7 +70,7 @@
     aria-label="Crop area"
     type="button"
   >
-    <img draggable="false" src={img?.src} alt={$getAltText(toTimelineAsset(asset))} />
+    <img draggable="false" src={$imgElement?.src} alt={$getAltText(toTimelineAsset(asset))} />
     <div class={`${$isResizingOrDragging ? 'resizing' : ''} crop-frame`} bind:this={$cropFrame}>
       <div class="grid"></div>
       <div class="corner top-left"></div>
