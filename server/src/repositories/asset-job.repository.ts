@@ -4,7 +4,7 @@ import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
 import { Asset, columns } from 'src/database';
 import { DummyValue, GenerateSql } from 'src/decorators';
-import { AssetFileType, AssetType, AssetVisibility } from 'src/enum';
+import { AssetFileType, AssetType, AssetVisibility, IntegrityReportType } from 'src/enum';
 import { DB } from 'src/schema';
 import { StorageAsset } from 'src/types';
 import {
@@ -278,19 +278,41 @@ export class AssetJobRepository {
 
   @GenerateSql({ params: [], stream: true })
   streamAssetPaths() {
-    return this.db.selectFrom('asset').select(['originalPath', 'encodedVideoPath']).stream();
-  }
-
-  @GenerateSql({ params: [], stream: true })
-  streamAssetFilePaths() {
-    return this.db.selectFrom('asset_file').select(['path']).stream();
+    return this.db
+      .selectFrom((eb) =>
+        eb
+          .selectFrom('asset')
+          .select(['originalPath as path'])
+          .unionAll(
+            eb
+              .selectFrom('asset')
+              .select(['encodedVideoPath as path'])
+              .where('encodedVideoPath', 'is not', null)
+              .where('encodedVideoPath', '!=', '')
+              .$castTo<{ path: string }>(),
+          )
+          .unionAll(eb.selectFrom('asset_file').select(['path']))
+          .as('allPaths'),
+      )
+      .leftJoin('integrity_report', (join) =>
+        join
+          .onRef('integrity_report.path', '=', 'allPaths.path')
+          .on('integrity_report.type', '=', IntegrityReportType.OrphanFile),
+      )
+      .select(['allPaths.path as path', 'integrity_report.path as reportId'])
+      .stream();
   }
 
   @GenerateSql({ params: [DummyValue.DATE, DummyValue.DATE], stream: true })
   streamAssetChecksums(startMarker?: Date, endMarker?: Date) {
     return this.db
       .selectFrom('asset')
-      .select(['originalPath', 'checksum', 'createdAt'])
+      .leftJoin('integrity_report', (join) =>
+        join
+          .onRef('integrity_report.path', '=', 'asset.originalPath')
+          .on('integrity_report.type', '=', IntegrityReportType.ChecksumFail),
+      )
+      .select(['asset.originalPath', 'asset.checksum', 'asset.createdAt', 'integrity_report.id as reportId'])
       .$if(startMarker !== undefined, (qb) => qb.where('createdAt', '>=', startMarker!))
       .$if(endMarker !== undefined, (qb) => qb.where('createdAt', '<=', endMarker!))
       .orderBy('createdAt', 'asc')

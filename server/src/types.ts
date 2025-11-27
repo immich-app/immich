@@ -288,7 +288,7 @@ export interface IIntegrityOrphanedFilesJob {
 }
 
 export interface IIntegrityMissingFilesJob {
-  paths: string[];
+  paths: { path: string; reportId: string | null }[];
 }
 
 export interface JobCounts {

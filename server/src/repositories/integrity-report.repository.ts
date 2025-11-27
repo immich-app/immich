@@ -16,4 +16,12 @@ export class IntegrityReportRepository {
       .returningAll()
       .executeTakeFirst();
   }
+
+  deleteById(id: string) {
+    return this.db.deleteFrom('integrity_report').where('id', '=', id).execute();
+  }
+
+  deleteByIds(ids: string[]) {
+    return this.db.deleteFrom('integrity_report').where('id', 'in', ids).execute();
+  }
 }

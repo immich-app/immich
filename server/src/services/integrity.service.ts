@@ -154,23 +154,8 @@ export class IntegrityService extends BaseService {
     this.logger.log(`Scanning for missing files...`);
 
     const assetPaths = this.assetJobRepository.streamAssetPaths();
-    const assetFilePaths = this.assetJobRepository.streamAssetFilePaths();
 
-    async function* paths() {
-      for await (const { originalPath, encodedVideoPath } of assetPaths) {
-        yield originalPath;
-
-        if (encodedVideoPath) {
-          yield encodedVideoPath;
-        }
-      }
-
-      for await (const { path } of assetFilePaths) {
-        yield path;
-      }
-    }
-
-    async function* chunk<T>(generator: AsyncGenerator<T>, n: number) {
+    async function* chunk<T>(generator: AsyncIterableIterator<T>, n: number) {
       let chunk: T[] = [];
       for await (const item of generator) {
         chunk.push(item);
@@ -187,7 +172,7 @@ export class IntegrityService extends BaseService {
     }
 
     let total = 0;
-    for await (const batchPaths of chunk(paths(), JOBS_LIBRARY_PAGINATION_SIZE)) {
+    for await (const batchPaths of chunk(assetPaths, JOBS_LIBRARY_PAGINATION_SIZE)) {
       await this.jobRepository.queue({
         name: JobName.IntegrityMissingFiles,
         data: {
@@ -206,22 +191,31 @@ export class IntegrityService extends BaseService {
   async handleMissingFiles({ paths }: IIntegrityMissingFilesJob): Promise<JobStatus> {
     this.logger.log(`Processing batch of ${paths.length} files to check if they are missing.`);
 
-    const result = await Promise.all(
-      paths.map((path) =>
-        stat(path)
-          .then(() => void 0)
-          .catch(() => path),
+    const results = await Promise.all(
+      paths.map((file) =>
+        stat(file.path)
+          .then(() => ({ ...file, exists: true }))
+          .catch(() => ({ ...file, exists: false })),
       ),
     );
 
-    const missingFiles = result.filter((path) => path) as string[];
+    const outdatedReports = results
+      .filter(({ exists, reportId }) => exists && reportId)
+      .map(({ reportId }) => reportId!);
 
-    await this.integrityReportRepository.create(
-      missingFiles.map((path) => ({
-        type: IntegrityReportType.MissingFile,
-        path,
-      })),
-    );
+    if (outdatedReports.length) {
+      await this.integrityReportRepository.deleteByIds(outdatedReports);
+    }
+
+    const missingFiles = results.filter(({ exists }) => !exists);
+    if (missingFiles.length) {
+      await this.integrityReportRepository.create(
+        missingFiles.map(({ path }) => ({
+          type: IntegrityReportType.MissingFile,
+          path,
+        })),
+      );
+    }
 
     this.logger.log(`Processed ${paths.length} and found ${missingFiles.length} missing file(s).`);
     return JobStatus.Success;
@@ -264,7 +258,7 @@ export class IntegrityService extends BaseService {
       endMarker = startMarker;
       startMarker = undefined;
 
-      for await (const { originalPath, checksum, createdAt } of assets) {
+      for await (const { originalPath, checksum, createdAt, reportId } of assets) {
         try {
           const hash = createHash('sha1');
 
@@ -278,10 +272,22 @@ export class IntegrityService extends BaseService {
             }),
           ]);
 
-          if (!checksum.equals(hash.digest())) {
+          if (checksum.equals(hash.digest())) {
+            if (reportId) {
+              await this.integrityReportRepository.deleteById(reportId);
+            }
+          } else {
             throw new Error('File failed checksum');
           }
         } catch (error) {
+          if ((error as { code?: string }).code === 'ENOENT') {
+            if (reportId) {
+              await this.integrityReportRepository.deleteById(reportId);
+            }
+            // missing file; handled by the missing files job
+            continue;
+          }
+
           this.logger.warn('Failed to process a file: ' + error);
           await this.integrityReportRepository.create({
             path: originalPath,
