@@ -15,6 +15,7 @@ import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/models/search/search_filter.model.dart';
 import 'package:immich_mobile/presentation/pages/search/paginated_search.provider.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/general_bottom_sheet.widget.dart';
+import 'package:immich_mobile/presentation/widgets/search/quick_date_picker.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/search/search_input_focus.provider.dart';
@@ -54,6 +55,7 @@ class DriftSearchPage extends HookConsumerWidget {
     );
 
     final previousFilter = useState<SearchFilter?>(null);
+    final dateInputFilter = useState<DateFilterInputModel?>(null);
 
     final peopleCurrentFilterWidget = useState<Widget?>(null);
     final dateRangeCurrentFilterWidget = useState<Widget?>(null);
@@ -73,26 +75,28 @@ class DriftSearchPage extends HookConsumerWidget {
       );
     }
 
-    search() async {
-      if (filter.value.isEmpty) {
+    searchFilter(SearchFilter filter) async {
+      if (filter.isEmpty) {
         return;
       }
 
-      if (preFilter == null && filter.value == previousFilter.value) {
+      if (preFilter == null && filter == previousFilter.value) {
         return;
       }
 
       isSearching.value = true;
       ref.watch(paginatedSearchProvider.notifier).clear();
-      final hasResult = await ref.watch(paginatedSearchProvider.notifier).search(filter.value);
+      final hasResult = await ref.watch(paginatedSearchProvider.notifier).search(filter);
 
       if (!hasResult) {
         context.showSnackBar(searchInfoSnackBar('search_no_result'.t(context: context)));
       }
 
-      previousFilter.value = filter.value;
+      previousFilter.value = filter;
       isSearching.value = false;
     }
+
+    search() => searchFilter(filter.value);
 
     loadMoreSearchResult() async {
       isSearching.value = true;
@@ -108,7 +112,7 @@ class DriftSearchPage extends HookConsumerWidget {
     searchPreFilter() {
       if (preFilter != null) {
         Future.delayed(Duration.zero, () {
-          search();
+          searchFilter(preFilter);
 
           if (preFilter.location.city != null) {
             locationCurrentFilterWidget.value = Text(preFilter.location.city!, style: context.textTheme.labelLarge);
@@ -122,7 +126,7 @@ class DriftSearchPage extends HookConsumerWidget {
       searchPreFilter();
 
       return null;
-    }, []);
+    }, [preFilter]);
 
     showPeoplePicker() {
       handleOnSelect(Set<PersonDto> value) {
@@ -243,19 +247,54 @@ class DriftSearchPage extends HookConsumerWidget {
       );
     }
 
+    datePicked(DateFilterInputModel? selectedDate) {
+      dateInputFilter.value = selectedDate;
+      if (selectedDate == null) {
+        filter.value = filter.value.copyWith(date: SearchDateFilter());
+
+        dateRangeCurrentFilterWidget.value = null;
+        unawaited(search());
+        return;
+      }
+
+      final date = selectedDate.asDateTimeRange();
+
+      filter.value = filter.value.copyWith(
+        date: SearchDateFilter(
+          takenAfter: date.start,
+          takenBefore: date.end.add(const Duration(hours: 23, minutes: 59, seconds: 59)),
+        ),
+      );
+
+      dateRangeCurrentFilterWidget.value = Text(
+        selectedDate.asHumanReadable(context),
+        style: context.textTheme.labelLarge,
+      );
+
+      unawaited(search());
+    }
+
     showDatePicker() async {
       final firstDate = DateTime(1900);
       final lastDate = DateTime.now();
+
+      var dateRange = DateTimeRange(
+        start: filter.value.date.takenAfter ?? lastDate,
+        end: filter.value.date.takenBefore ?? lastDate,
+      );
+
+      // datePicked() may increase the date, this will make the date picker fail an assertion
+      // Fixup the end date to be at most now.
+      if (dateRange.end.isAfter(lastDate)) {
+        dateRange = DateTimeRange(start: dateRange.start, end: lastDate);
+      }
 
       final date = await showDateRangePicker(
         context: context,
         firstDate: firstDate,
         lastDate: lastDate,
         currentDate: DateTime.now(),
-        initialDateRange: DateTimeRange(
-          start: filter.value.date.takenAfter ?? lastDate,
-          end: filter.value.date.takenBefore ?? lastDate,
-        ),
+        initialDateRange: dateRange,
         helpText: 'search_filter_date_title'.t(context: context),
         cancelText: 'cancel'.t(context: context),
         confirmText: 'select'.t(context: context),
@@ -269,40 +308,32 @@ class DriftSearchPage extends HookConsumerWidget {
       );
 
       if (date == null) {
-        filter.value = filter.value.copyWith(date: SearchDateFilter());
-
-        dateRangeCurrentFilterWidget.value = null;
-        unawaited(search());
-        return;
-      }
-
-      filter.value = filter.value.copyWith(
-        date: SearchDateFilter(
-          takenAfter: date.start,
-          takenBefore: date.end.add(const Duration(hours: 23, minutes: 59, seconds: 59)),
-        ),
-      );
-
-      // If date range is less than 24 hours, set the end date to the end of the day
-      if (date.end.difference(date.start).inHours < 24) {
-        dateRangeCurrentFilterWidget.value = Text(
-          DateFormat.yMMMd().format(date.start.toLocal()),
-          style: context.textTheme.labelLarge,
-        );
+        datePicked(null);
       } else {
-        dateRangeCurrentFilterWidget.value = Text(
-          'search_filter_date_interval'.t(
-            context: context,
-            args: {
-              "start": DateFormat.yMMMd().format(date.start.toLocal()),
-              "end": DateFormat.yMMMd().format(date.end.toLocal()),
+        datePicked(CustomDateFilter.fromRange(date));
+      }
+    }
+
+    showQuickDatePicker() {
+      showFilterBottomSheet(
+        context: context,
+        child: FilterBottomSheetScaffold(
+          title: "pick_date_range".tr(),
+          expanded: true,
+          onClear: () => datePicked(null),
+          child: QuickDatePicker(
+            currentInput: dateInputFilter.value,
+            onRequestPicker: () {
+              context.pop();
+              showDatePicker();
+            },
+            onSelect: (date) {
+              context.pop();
+              datePicked(date);
             },
           ),
-          style: context.textTheme.labelLarge,
-        );
-      }
-
-      unawaited(search());
+        ),
+      );
     }
 
     // MEDIA PICKER
@@ -587,7 +618,7 @@ class DriftSearchPage extends HookConsumerWidget {
                     ),
                     SearchFilterChip(
                       icon: Icons.date_range_outlined,
-                      onTap: showDatePicker,
+                      onTap: showQuickDatePicker,
                       label: 'search_filter_date'.t(context: context),
                       currentFilter: dateRangeCurrentFilterWidget.value,
                     ),

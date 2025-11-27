@@ -41,6 +41,7 @@ services:
       - app-node_modules:/usr/src/app/node_modules
       - sveltekit:/usr/src/app/web/.svelte-kit
       - coverage:/usr/src/app/web/coverage
+      - ../plugins:/build/corePlugin
     env_file:
       - .env
     environment:

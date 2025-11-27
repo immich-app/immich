@@ -7,20 +7,11 @@
   import { mdiCameraIris, mdiChartPie, mdiPlayCircle } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
-  interface Props {
-    stats?: ServerStatsResponseDto;
-  }
+  type Props = {
+    stats: ServerStatsResponseDto;
+  };
 
-  let {
-    stats = {
-      photos: 0,
-      videos: 0,
-      usage: 0,
-      usagePhotos: 0,
-      usageVideos: 0,
-      usageByUser: [],
-    },
-  }: Props = $props();
+  const { stats }: Props = $props();
 
   const zeros = (value: number) => {
     const maxLength = 13;
@@ -100,10 +91,10 @@
         </tr>
       </thead>
       <tbody
-        class="block max-h-[320px] w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray dark:text-immich-dark-fg"
+        class="block max-h-80 w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray dark:text-immich-dark-fg"
       >
         {#each stats.usageByUser as user (user.userId)}
-          <tr class="flex h-[50px] w-full place-items-center text-center even:bg-subtle/20 odd:bg-subtle/80">
+          <tr class="flex h-12.5 w-full place-items-center text-center even:bg-subtle/20 odd:bg-subtle/80">
             <td class="w-1/4 text-ellipsis px-2 text-sm">{user.userName}</td>
             <td class="w-1/4 text-ellipsis px-2 text-sm"
               >{user.photos.toLocaleString($locale)} ({getByteUnitString(user.usagePhotos, $locale, 0)})</td

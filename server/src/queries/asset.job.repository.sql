@@ -46,9 +46,9 @@ select
           "tag"."value"
         from
           "tag"
-          inner join "tag_asset" on "tag"."id" = "tag_asset"."tagsId"
+          inner join "tag_asset" on "tag"."id" = "tag_asset"."tagId"
         where
-          "asset"."id" = "tag_asset"."assetsId"
+          "asset"."id" = "tag_asset"."assetId"
       ) as agg
   ) as "tags"
 from

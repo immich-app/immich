@@ -185,15 +185,13 @@ describe(AssetService.name, () => {
 
       const { user } = await ctx.newUser();
 
-      const { asset: oldAssetWithoutSidecar } = await ctx.newAsset({ ownerId: user.id });
+      const { asset: oldAsset } = await ctx.newAsset({ ownerId: user.id });
 
-      const sidecarFile = await ctx.newAssetFile({
-        assetId: oldAssetWithoutSidecar.id,
+      await ctx.newAssetFile({
+        assetId: oldAsset.id,
         path: '/path/to/my/sidecar.xmp',
         type: AssetFileType.Sidecar,
       });
-
-      const oldAsset = { ...oldAssetWithoutSidecar, files: [sidecarFile] };
 
       const { asset: newAsset } = await ctx.newAsset({ ownerId: user.id });
 

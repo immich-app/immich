@@ -1,4 +1,5 @@
 import { BinaryField, ExifDateTime } from 'exiftool-vendored';
+import { DateTime } from 'luxon';
 import { randomBytes } from 'node:crypto';
 import { Stats } from 'node:fs';
 import { defaults } from 'src/config';
@@ -247,7 +248,7 @@ describe(MetadataService.name, () => {
       });
     });
 
-    it('should account for the server being in a non-UTC timezone', async () => {
+    it('should determine dateTimeOriginal regardless of the server time zone', async () => {
       process.env.TZ = 'America/Los_Angeles';
       mocks.assetJob.getForMetadataExtraction.mockResolvedValue(removeNonSidecarFiles(assetStub.sidecar));
       mockReadTags({ DateTimeOriginal: '2022:01:01 00:00:00' });
@@ -255,7 +256,7 @@ describe(MetadataService.name, () => {
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
       expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
         expect.objectContaining({
-          dateTimeOriginal: new Date('2022-01-01T08:00:00.000Z'),
+          dateTimeOriginal: new Date('2022-01-01T00:00:00.000Z'),
         }),
       );
 
@@ -872,6 +873,7 @@ describe(MetadataService.name, () => {
         tz: 'UTC-11:30',
         Rating: 3,
       };
+
       mocks.assetJob.getForMetadataExtraction.mockResolvedValue(assetStub.image);
       mockReadTags(tags);
 
@@ -913,7 +915,7 @@ describe(MetadataService.name, () => {
           id: assetStub.image.id,
           duration: null,
           fileCreatedAt: dateForTest,
-          localDateTime: dateForTest,
+          localDateTime: DateTime.fromISO('1970-01-01T00:00:00.000Z').toJSDate(),
         }),
       );
     });
@@ -1031,12 +1033,51 @@ describe(MetadataService.name, () => {
       );
     });
 
-    it('should ignore duration from exif data', async () => {
+    it('should use Duration from exif', async () => {
       mocks.assetJob.getForMetadataExtraction.mockResolvedValue(assetStub.image);
-      mockReadTags({}, { Duration: { Value: 123 } });
+      mockReadTags({ Duration: 123 }, {});
 
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
-      expect(mocks.asset.update).toHaveBeenCalledWith(expect.objectContaining({ duration: null }));
+
+      expect(mocks.metadata.readTags).toHaveBeenCalledTimes(1);
+      expect(mocks.asset.update).toHaveBeenCalledWith(expect.objectContaining({ duration: '00:02:03.000' }));
+    });
+
+    it('should prefer Duration from exif over sidecar', async () => {
+      mocks.assetJob.getForMetadataExtraction.mockResolvedValue({
+        ...assetStub.image,
+        files: [
+          {
+            id: 'some-id',
+            type: AssetFileType.Sidecar,
+            path: '/path/to/something',
+          },
+        ],
+      });
+
+      mockReadTags({ Duration: 123 }, { Duration: 456 });
+
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+
+      expect(mocks.metadata.readTags).toHaveBeenCalledTimes(2);
+      expect(mocks.asset.update).toHaveBeenCalledWith(expect.objectContaining({ duration: '00:02:03.000' }));
+    });
+
+    it('should ignore Duration from exif for videos', async () => {
+      mocks.assetJob.getForMetadataExtraction.mockResolvedValue(assetStub.video);
+      mockReadTags({ Duration: 123 }, {});
+      mocks.media.probe.mockResolvedValue({
+        ...probeStub.videoStreamH264,
+        format: {
+          ...probeStub.videoStreamH264.format,
+          duration: 456,
+        },
+      });
+
+      await sut.handleMetadataExtraction({ id: assetStub.video.id });
+
+      expect(mocks.metadata.readTags).toHaveBeenCalledTimes(1);
+      expect(mocks.asset.update).toHaveBeenCalledWith(expect.objectContaining({ duration: '00:07:36.000' }));
     });
 
     it('should trim whitespace from description', async () => {
@@ -1629,7 +1670,7 @@ describe(MetadataService.name, () => {
 
       const result = firstDateTime(tags);
       expect(result?.tag).toBe('SonyDateTime2');
-      expect(result?.dateTime?.toDate()?.toISOString()).toBe('2023-07-07T07:00:00.000Z');
+      expect(result?.dateTime?.toISOString()).toBe('2023-07-07T07:00:00');
     });
 
     it('should respect full priority order with all date tags present', () => {
@@ -1658,7 +1699,7 @@ describe(MetadataService.name, () => {
       const result = firstDateTime(tags);
       // Should use SubSecDateTimeOriginal as it has highest priority
       expect(result?.tag).toBe('SubSecDateTimeOriginal');
-      expect(result?.dateTime?.toDate()?.toISOString()).toBe('2023-01-01T01:00:00.000Z');
+      expect(result?.dateTime?.toISOString()).toBe('2023-01-01T01:00:00');
     });
 
     it('should handle missing SubSec tags and use available date tags', () => {
@@ -1678,7 +1719,7 @@ describe(MetadataService.name, () => {
       const result = firstDateTime(tags);
       // Should use CreationDate when available
       expect(result?.tag).toBe('CreationDate');
-      expect(result?.dateTime?.toDate()?.toISOString()).toBe('2023-07-07T07:00:00.000Z');
+      expect(result?.dateTime?.toISOString()).toBe('2023-07-07T07:00:00');
     });
 
     it('should handle invalid date formats gracefully', () => {
@@ -1692,7 +1733,7 @@ describe(MetadataService.name, () => {
       const result = firstDateTime(tags);
       // Should skip invalid dates and use the first valid one
       expect(result?.tag).toBe('GPSDateTime');
-      expect(result?.dateTime?.toDate()?.toISOString()).toBe('2023-10-10T10:00:00.000Z');
+      expect(result?.dateTime?.toISOString()).toBe('2023-10-10T10:00:00');
     });
 
     it('should prefer CreationDate over CreateDate', () => {

@@ -4,10 +4,12 @@ import 'package:immich_mobile/infrastructure/repositories/local_album.repository
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/log.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_album.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/remote_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_api.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_stream.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/trashed_local_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/user.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/user_api.repository.dart';
 import 'package:immich_mobile/repositories/drift_album_api_repository.dart';
@@ -33,6 +35,10 @@ class MockRemoteAlbumRepository extends Mock implements DriftRemoteAlbumReposito
 class MockLocalAssetRepository extends Mock implements DriftLocalAssetRepository {}
 
 class MockDriftLocalAssetRepository extends Mock implements DriftLocalAssetRepository {}
+
+class MockRemoteAssetRepository extends Mock implements RemoteAssetRepository {}
+
+class MockTrashedLocalAssetRepository extends Mock implements DriftTrashedLocalAssetRepository {}
 
 class MockStorageRepository extends Mock implements StorageRepository {}
 

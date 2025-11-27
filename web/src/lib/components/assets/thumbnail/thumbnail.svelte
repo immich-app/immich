@@ -1,7 +1,7 @@
 <script lang="ts">
   import { ProjectionType } from '$lib/constants';
   import { locale, playVideoThumbnailOnHover } from '$lib/stores/preferences.store';
-  import { getAssetPlaybackUrl, getAssetThumbnailUrl } from '$lib/utils';
+  import { getAssetOriginalUrl, getAssetPlaybackUrl, getAssetThumbnailUrl } from '$lib/utils';
   import { timeToSeconds } from '$lib/utils/date-time';
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { AssetMediaSize, AssetVisibility } from '@immich/sdk';
@@ -9,6 +9,7 @@
     mdiArchiveArrowDownOutline,
     mdiCameraBurst,
     mdiCheckCircle,
+    mdiFileGifBox,
     mdiHeart,
     mdiMotionPauseOutline,
     mdiMotionPlayOutline,
@@ -232,7 +233,7 @@
   ></div>
 
   <div
-    class={['group absolute -top-[0px] -bottom-[0px]', { 'cursor-not-allowed': disabled, 'cursor-pointer': !disabled }]}
+    class={['group absolute top-0 bottom-0', { 'cursor-not-allowed': disabled, 'cursor-pointer': !disabled }]}
     style:width="inherit"
     style:height="inherit"
   >
@@ -263,20 +264,28 @@
         <!-- Favorite asset star -->
         {#if !authManager.isSharedLink && asset.isFavorite}
           <div class="absolute bottom-2 start-2">
-            <Icon icon={mdiHeart} size="24" class="text-white" />
+            <Icon data-icon-favorite icon={mdiHeart} size="24" class="text-white" />
           </div>
         {/if}
 
         {#if !authManager.isSharedLink && showArchiveIcon && asset.visibility === AssetVisibility.Archive}
           <div class={['absolute start-2', asset.isFavorite ? 'bottom-10' : 'bottom-2']}>
-            <Icon icon={mdiArchiveArrowDownOutline} size="24" class="text-white" />
+            <Icon data-icon-archive icon={mdiArchiveArrowDownOutline} size="24" class="text-white" />
           </div>
         {/if}
 
         {#if asset.isImage && asset.projectionType === ProjectionType.EQUIRECTANGULAR}
           <div class="absolute end-0 top-0 flex place-items-center gap-1 text-xs font-medium text-white">
             <span class="pe-2 pt-2">
-              <Icon icon={mdiRotate360} size="24" />
+              <Icon data-icon-equirectangular icon={mdiRotate360} size="24" />
+            </span>
+          </div>
+        {/if}
+
+        {#if asset.isImage && asset.duration && !asset.duration.includes('0:00:00.000')}
+          <div class="absolute end-0 top-0 flex place-items-center gap-1 text-xs font-medium text-white">
+            <span class="pe-2 pt-2">
+              <Icon data-icon-playable icon={mdiFileGifBox} size="24" />
             </span>
           </div>
         {/if}
@@ -291,7 +300,7 @@
           >
             <span class="pe-2 pt-2 flex place-items-center gap-1">
               <p>{asset.stack.assetCount.toLocaleString($locale)}</p>
-              <Icon icon={mdiCameraBurst} size="24" />
+              <Icon data-icon-stack icon={mdiCameraBurst} size="24" />
             </span>
           </div>
         {/if}
@@ -342,6 +351,25 @@
             playbackOnIconHover={!$playVideoThumbnailOnHover}
           />
         </div>
+      {:else if asset.isImage && asset.duration && !asset.duration.includes('0:00:00.000') && mouseOver}
+        <!-- GIF -->
+        <div class="absolute top-0 h-full w-full pointer-events-none">
+          <div class="absolute h-full w-full bg-linear-to-b from-black/25 via-[transparent_25%]"></div>
+          <ImageThumbnail
+            class={imageClass}
+            {brokenAssetClass}
+            url={getAssetOriginalUrl({ id: asset.id, cacheKey: asset.thumbhash })}
+            altText={$getAltText(asset)}
+            widthStyle="{width}px"
+            heightStyle="{height}px"
+            curve={selected}
+          />
+          <div class="absolute end-0 top-0 flex place-items-center gap-1 text-xs font-medium text-white">
+            <span class="pe-2 pt-2">
+              <Icon data-icon-playable-pause icon={mdiMotionPauseOutline} size="24" />
+            </span>
+          </div>
+        </div>
       {/if}
 
       {#if (!loaded || thumbError) && asset.thumbhash}
@@ -378,13 +406,13 @@
         {disabled}
       >
         {#if disabled}
-          <Icon icon={mdiCheckCircle} size="24" class="text-zinc-800" />
+          <Icon data-icon-select icon={mdiCheckCircle} size="24" class="text-zinc-800" />
         {:else if selected}
           <div class="rounded-full bg-[#D9DCEF] dark:bg-[#232932]">
-            <Icon icon={mdiCheckCircle} size="24" class="text-primary" />
+            <Icon data-icon-select icon={mdiCheckCircle} size="24" class="text-primary" />
           </div>
         {:else}
-          <Icon icon={mdiCheckCircle} size="24" class="text-white/80 hover:text-white" />
+          <Icon data-icon-select icon={mdiCheckCircle} size="24" class="text-white/80 hover:text-white" />
         {/if}
       </button>
     {/if}

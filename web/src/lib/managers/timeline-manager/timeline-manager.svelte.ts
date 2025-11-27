@@ -61,6 +61,7 @@ export class TimelineManager extends VirtualScrollManager {
   });
 
   isInitialized = $state(false);
+  isScrollingOnLoad = false;
   months: MonthGroup[] = $state([]);
   albumAssets: Set<string> = new SvelteSet();
   scrubberMonths: ScrubberMonth[] = $state([]);
@@ -234,6 +235,7 @@ export class TimelineManager extends VirtualScrollManager {
     await this.initTask.reset();
     await this.#init(options);
     this.updateViewportGeometry(false);
+    this.#createScrubberMonths();
   }
 
   async #init(options: TimelineManagerOptions) {
@@ -318,10 +320,10 @@ export class TimelineManager extends VirtualScrollManager {
     }
   }
 
-  addAssets(assets: TimelineAsset[]) {
-    const assetsToUpdate = assets.filter((asset) => !this.isExcluded(asset));
-    const notUpdated = this.updateAssets(assetsToUpdate);
-    addAssetsToMonthGroups(this, [...notUpdated], { order: this.#options.order ?? AssetOrder.Desc });
+  upsertAssets(assets: TimelineAsset[]) {
+    const notUpdated = this.#updateAssets(assets);
+    const notExcluded = notUpdated.filter((asset) => !this.isExcluded(asset));
+    addAssetsToMonthGroups(this, [...notExcluded], { order: this.#options.order ?? AssetOrder.Desc });
   }
 
   async findMonthGroupForAsset(id: string) {
@@ -402,7 +404,7 @@ export class TimelineManager extends VirtualScrollManager {
     runAssetOperation(this, new SvelteSet(ids), operation, { order: this.#options.order ?? AssetOrder.Desc });
   }
 
-  updateAssets(assets: TimelineAsset[]) {
+  #updateAssets(assets: TimelineAsset[]) {
     const lookup = new SvelteMap<string, TimelineAsset>(assets.map((asset) => [asset.id, asset]));
     const { unprocessedIds } = runAssetOperation(
       this,

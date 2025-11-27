@@ -52,7 +52,7 @@
   let innerHeight: number = $state(0);
   let activityHeight: number = $state(0);
   let chatHeight: number = $state(0);
-  let divHeight: number = $state(0);
+  let divHeight = $derived(innerHeight - activityHeight);
   let previousAssetId: string | undefined = $state(assetId);
   let message = $state('');
   let isSendingMessage = $state(false);
@@ -96,11 +96,7 @@
     }
     isSendingMessage = false;
   };
-  $effect(() => {
-    if (innerHeight && activityHeight) {
-      divHeight = innerHeight - activityHeight;
-    }
-  });
+
   $effect(() => {
     if (assetId && previousAssetId != assetId) {
       previousAssetId = assetId;
@@ -141,14 +137,14 @@
                 <UserAvatar user={reaction.user} size="sm" />
               </div>
 
-              <div class="w-full leading-4 overflow-hidden self-center break-words text-sm">{reaction.comment}</div>
+              <div class="w-full leading-4 overflow-hidden self-center wrap-break-word text-sm">{reaction.comment}</div>
               {#if assetId === undefined && reaction.assetId}
                 <a
-                  class="aspect-square w-[75px] h-[75px]"
+                  class="aspect-square w-19 h-19"
                   href={resolve(`${AppRoute.ALBUMS}/${albumId}/photos/${reaction.assetId}`)}
                 >
                   <img
-                    class="rounded-lg w-[75px] h-[75px] object-cover"
+                    class="rounded-lg w-19 h-19 object-cover"
                     src={getAssetThumbnailUrl(reaction.assetId)}
                     alt="Profile picture of {reaction.user.name}, who commented on this asset"
                   />
@@ -197,11 +193,11 @@
                 </div>
                 {#if assetId === undefined && reaction.assetId}
                   <a
-                    class="aspect-square w-[75px] h-[75px]"
+                    class="aspect-square w-19 h-19"
                     href={resolve(`${AppRoute.ALBUMS}/${albumId}/photos/${reaction.assetId}`)}
                   >
                     <img
-                      class="rounded-lg w-[75px] h-[75px] object-cover"
+                      class="rounded-lg w-19 h-19 object-cover"
                       src={getAssetThumbnailUrl(reaction.assetId)}
                       alt="Profile picture of {reaction.user.name}, who liked this asset"
                     />
