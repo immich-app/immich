@@ -9,6 +9,8 @@
   import HotModuleReload from '$lib/elements/HotModuleReload.svelte';
   import Portal from '$lib/elements/Portal.svelte';
   import Skeleton from '$lib/elements/Skeleton.svelte';
+  import { viewTransitionManager } from '$lib/managers/ViewTransitionManager.svelte';
+
   import { eventManager } from '$lib/managers/event-manager.svelte';
   import type { DayGroup } from '$lib/managers/timeline-manager/day-group.svelte';
   import { isIntersecting } from '$lib/managers/timeline-manager/internal/intersection-support.svelte';
@@ -265,34 +267,14 @@
   // and a new route is being navigated to. It will never be called on direct
   // navigations by the browser.
   beforeNavigate(({ from, to }) => {
-    eventManager.on('asdf', () => void 0);
     timelineManager.suspendTransitions = true;
     const isNavigatingToAssetViewer = isAssetViewerRoute(to);
     const isNavigatingFromAssetViewer = isAssetViewerRoute(from);
     hasNavigatedToOrFromAssetViewer = isNavigatingToAssetViewer !== isNavigatingFromAssetViewer;
     if (!isNavigatingFromAssetViewer && isNavigatingToAssetViewer) {
-      const navigatingPromise = new Promise((resolve) => {
-        console.log('hi');
-        eventManager.once('AssetViewerLoaded', () => {
-          resolve();
-        });
-
-        console.log('BEFORE VIEW TRANS');
-        const transition = document.startViewTransition(async () => {
-          console.log('IN VIEW TRANS');
-          console.log('emit', 'StartViewTransition');
-          eventManager.emit('StartViewTransition');
-          console.log('starting');
-
-          await navigatingPromise;
-          console.log('AFTER VIEW TRANS!');
-        });
-        transition.updateCallbackDone.then(() => {
-          console.log('DONE VIEW TRANS!');
-          eventManager.emit('EndViewTransition');
-        });
-      });
-    } else if (isNavigatingFromAssetViewer && isNavigatingToAssetViewer) {
+      viewTransitionManager.startTransition(
+        new Promise<void>((resolve) => eventManager.once('AssetViewerLoaded', () => resolve())),
+      );
     }
   });
 
