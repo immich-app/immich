@@ -12,13 +12,20 @@
     resetGlobalCropStore,
     rotateDegrees,
   } from '$lib/stores/asset-editor.store';
+  import { animateCropChange, recalculateCrop } from '$lib/stores/editing/crop-settings.store';
+  import {
+    cropAreaEl,
+    cropFrame,
+    imgElement,
+    isResizingOrDragging,
+    overlayEl,
+    resetCropStore,
+  } from '$lib/stores/editing/crop.store';
+  import { draw } from '$lib/stores/editing/drawing.store';
+  import { onImageLoad, resizeCanvas } from '$lib/stores/editing/image-loading.store';
+  import { handleMouseDown, handleMouseMove, handleMouseUp } from '$lib/stores/editing/mouse-handlers.store';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import type { AssetResponseDto } from '@immich/sdk';
-  import { animateCropChange, recalculateCrop } from './crop-settings';
-  import { cropAreaEl, cropFrame, imgElement, isResizingOrDragging, overlayEl, resetCropStore } from './crop-store';
-  import { draw } from './drawing';
-  import { onImageLoad, resizeCanvas } from './image-loading';
-  import { handleMouseDown, handleMouseMove, handleMouseUp } from './mouse-handlers';
 
   interface Props {
     asset: AssetResponseDto;

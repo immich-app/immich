@@ -1,6 +1,6 @@
 import type { CropSettings } from '$lib/stores/asset-editor.store';
+import { cropFrame, overlayEl } from '$lib/stores/editing/crop.store';
 import { get } from 'svelte/store';
-import { cropFrame, overlayEl } from './crop-store';
 
 export function draw(crop: CropSettings) {
   const mCropFrame = get(cropFrame);

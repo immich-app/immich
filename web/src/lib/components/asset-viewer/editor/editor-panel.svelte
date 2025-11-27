@@ -3,8 +3,8 @@
   import { editTypes, showCancelConfirmDialog } from '$lib/stores/asset-editor.store';
   import { websocketEvents } from '$lib/stores/websocket';
   import { type AssetResponseDto } from '@immich/sdk';
-  import { ConfirmModal, IconButton } from '@immich/ui';
-  import { mdiClose } from '@mdi/js';
+  import { Button, ConfirmModal, IconButton, VStack } from '@immich/ui';
+  import { mdiArrowLeft, mdiClose, mdiFloppy } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
 
@@ -31,17 +31,12 @@
     onUpdateSelectedType(selectedType);
   }, 1);
 
-  function selectType(name: string) {
-    selectedType = name;
-    onUpdateSelectedType(selectedType);
-  }
-
   const onConfirm = () => (typeof $showCancelConfirmDialog === 'boolean' ? null : $showCancelConfirmDialog());
 </script>
 
 <svelte:document use:shortcut={{ shortcut: { key: 'Escape' }, onShortcut: onClose }} />
 
-<section class="relative p-2 dark:bg-immich-dark-bg dark:text-immich-dark-fg">
+<section class="relative flex flex-col h-full p-2 dark:bg-immich-dark-bg dark:text-immich-dark-fg">
   <div class="flex place-items-center gap-2">
     <IconButton
       shape="round"
@@ -53,23 +48,16 @@
     />
     <p class="text-lg text-immich-fg dark:text-immich-dark-fg capitalize">{$t('editor')}</p>
   </div>
-  <section class="px-4 py-4">
-    <ul class="flex w-full justify-around">
-      {#each editTypes as etype (etype.name)}
-        <li>
-          <IconButton
-            shape="round"
-            color={etype.name === selectedType ? 'primary' : 'secondary'}
-            icon={etype.icon}
-            aria-label={etype.name}
-            onclick={() => selectType(etype.name)}
-          />
-        </li>
-      {/each}
-    </ul>
-  </section>
+
   <section>
     <selectedTypeObj.component />
+  </section>
+  <div class="flex-1"></div>
+  <section class="p-4">
+    <VStack gap={4}>
+      <Button fullWidth leadingIcon={mdiFloppy} color="success">{$t('save')}</Button>
+      <Button fullWidth leadingIcon={mdiArrowLeft} color="secondary">{$t('Revert Changes')}</Button>
+    </VStack>
   </section>
 </section>
 

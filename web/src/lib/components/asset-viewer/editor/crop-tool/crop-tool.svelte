@@ -9,12 +9,12 @@
     rotateDegrees,
     type CropAspectRatio,
   } from '$lib/stores/asset-editor.store';
+  import { onImageLoad } from '$lib/stores/editing/image-loading.store';
   import { IconButton } from '@immich/ui';
   import { mdiBackupRestore, mdiCropFree, mdiRotateLeft, mdiRotateRight, mdiSquareOutline } from '@mdi/js';
   import { tick } from 'svelte';
   import { t } from 'svelte-i18n';
   import CropPreset from './crop-preset.svelte';
-  import { onImageLoad } from './image-loading';
 
   let rotateHorizontal = $derived([90, 270].includes($normaizedRorateDegrees));
   const icon_16_9 = `M200-280q-33 0-56.5-23.5T120-360v-240q0-33 23.5-56.5T200-680h560q33 0 56.5 23.5T840-600v240q0 33-23.5 56.5T760-280H200Zm0-80h560v-240H200v240Zm0 0v-240 240Z`;
@@ -104,9 +104,9 @@
     sizes.filter((s) => s.rotate === true),
   ]);
 
-  async function rotate(clock: boolean) {
+  async function rotate(angle: -90 | 90) {
     rotateDegrees.update((v) => {
-      return v + 90 * (clock ? 1 : -1);
+      return v + angle;
     });
 
     await tick();
@@ -133,7 +133,7 @@
   }
 </script>
 
-<div class="mt-3 px-4 py-4">
+<div class="mt-3 px-4">
   <div class="flex h-10 w-full items-center justify-between text-sm">
     <h2 class="uppercase">{$t('editor_crop_tool_h2_aspect_ratios')}</h2>
   </div>
@@ -154,7 +154,7 @@
         variant="ghost"
         color="secondary"
         aria-label={$t('anti_clockwise')}
-        onclick={() => rotate(false)}
+        onclick={() => rotate(-90)}
         icon={mdiRotateLeft}
       />
     </li>
@@ -164,7 +164,7 @@
         variant="ghost"
         color="secondary"
         aria-label={$t('clockwise')}
-        onclick={() => rotate(true)}
+        onclick={() => rotate(90)}
         icon={mdiRotateRight}
       />
     </li>

@@ -1,7 +1,7 @@
 import { cropImageScale, cropImageSize, cropSettings, type CropSettings } from '$lib/stores/asset-editor.store';
+import { cropAreaEl, cropFrame, imgElement } from '$lib/stores/editing/crop.store';
 import { get } from 'svelte/store';
-import { cropAreaEl, cropFrame, imgElement } from './crop-store';
-import { draw } from './drawing';
+import { draw } from './drawing.store';
 
 export function onImageLoad(resetSize: boolean = false) {
   const img = get(imgElement);

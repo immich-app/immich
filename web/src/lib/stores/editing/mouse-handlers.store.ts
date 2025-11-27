@@ -9,8 +9,7 @@ import {
   showCancelConfirmDialog,
   type CropSettings,
 } from '$lib/stores/asset-editor.store';
-import { get } from 'svelte/store';
-import { adjustDimensions, keepAspectRatio } from './crop-settings';
+import { adjustDimensions, keepAspectRatio } from '$lib/stores/editing/crop-settings.store';
 import {
   canvasCursor,
   cropAreaEl,
@@ -19,8 +18,10 @@ import {
   isResizingOrDragging,
   overlayEl,
   resizeSide,
-} from './crop-store';
-import { draw } from './drawing';
+} from '$lib/stores/editing/crop.store';
+import { draw } from '$lib/stores/editing/drawing.store';
+import { tick } from 'svelte';
+import { get } from 'svelte/store';
 
 export function handleMouseDown(e: MouseEvent) {
   const canvas = get(cropAreaEl);
@@ -500,15 +501,15 @@ function updateCursor(mouseX: number, mouseY: number) {
   }
 }
 
-function stopInteraction() {
+async function stopInteraction() {
   isResizingOrDragging.set(false);
   isDragging.set(false);
   resizeSide.set('');
   fadeOverlay(true); // Darken the background
 
-  setTimeout(() => {
-    checkEdits();
-  }, 1);
+  await tick();
+
+  checkEdits();
 }
 
 export function checkEdits() {

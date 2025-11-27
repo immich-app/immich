@@ -1,7 +1,7 @@
 import type { CropAspectRatio, CropSettings } from '$lib/stores/asset-editor.store';
+import { cropAreaEl } from '$lib/stores/editing/crop.store';
+import { checkEdits } from '$lib/stores/editing/mouse-handlers.store';
 import { get } from 'svelte/store';
-import { cropAreaEl } from './crop-store';
-import { checkEdits } from './mouse-handlers';
 
 export function recalculateCrop(
   crop: CropSettings,
