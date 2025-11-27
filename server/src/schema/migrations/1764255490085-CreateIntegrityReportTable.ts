@@ -5,6 +5,7 @@ export async function up(db: Kysely<any>): Promise<void> {
   "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
   "type" character varying NOT NULL,
   "path" character varying NOT NULL,
+  "createdAt" timestamp with time zone NOT NULL DEFAULT now(),
   CONSTRAINT "integrity_report_type_path_uq" UNIQUE ("type", "path"),
   CONSTRAINT "integrity_report_pkey" PRIMARY KEY ("id")
 );`.execute(db);

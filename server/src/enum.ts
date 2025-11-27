@@ -485,7 +485,7 @@ export enum CacheControl {
 export enum IntegrityReportType {
   OrphanFile = 'orphan_file',
   MissingFile = 'missing_file',
-  ChecksumFail = 'checksum_fail',
+  ChecksumFail = 'checksum_mismatch',
 }
 
 export enum ImmichEnvironment {

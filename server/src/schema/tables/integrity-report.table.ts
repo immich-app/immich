@@ -1,11 +1,5 @@
 import { IntegrityReportType } from 'src/enum';
-import {
-  Column,
-  Generated,
-  PrimaryGeneratedColumn,
-  Table,
-  Unique
-} from 'src/sql-tools';
+import { Column, CreateDateColumn, Generated, PrimaryGeneratedColumn, Table, Timestamp, Unique } from 'src/sql-tools';
 
 @Table('integrity_report')
 @Unique({ columns: ['type', 'path'] })
@@ -18,4 +12,7 @@ export class IntegrityReportTable {
 
   @Column()
   path!: string;
+
+  @CreateDateColumn()
+  createdAt!: Generated<Timestamp>;
 }
