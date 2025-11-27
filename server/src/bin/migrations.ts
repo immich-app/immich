@@ -62,10 +62,6 @@ const main = async () => {
 const getDatabaseClient = () => {
   const configRepository = new ConfigRepository();
   const { database } = configRepository.getEnv();
-  database.config = {
-    connectionType: 'url',
-    url: 'postgres://postgres:postgres@database:5432/immich',
-  };
   return new Kysely<any>(getKyselyConfig(database.config));
 };
 
@@ -134,10 +130,6 @@ const create = (path: string, up: string[], down: string[]) => {
 const compare = async () => {
   const configRepository = new ConfigRepository();
   const { database } = configRepository.getEnv();
-  database.config = {
-    connectionType: 'url',
-    url: 'postgres://postgres:postgres@database:5432/immich',
-  };
   const db = postgres(asPostgresConnectionConfig(database.config));
 
   const source = schemaFromCode({ overrides: true, namingStrategy: 'default' });
