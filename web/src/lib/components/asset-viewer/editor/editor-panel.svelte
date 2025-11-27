@@ -1,10 +1,10 @@
 <script lang="ts">
   import { shortcut } from '$lib/actions/shortcut';
-  import { editTypes, showCancelConfirmDialog } from '$lib/stores/asset-editor.store';
+  import { editManager } from '$lib/managers/edit/edit-manager.svelte';
   import { websocketEvents } from '$lib/stores/websocket';
   import { type AssetResponseDto } from '@immich/sdk';
-  import { Button, ConfirmModal, IconButton, VStack } from '@immich/ui';
-  import { mdiArrowLeft, mdiClose, mdiFloppy } from '@mdi/js';
+  import { Button, IconButton, VStack } from '@immich/ui';
+  import { mdiClose, mdiFloppy, mdiRefresh } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
 
@@ -18,20 +18,10 @@
 
   interface Props {
     asset: AssetResponseDto;
-    onUpdateSelectedType: (type: string) => void;
     onClose: () => void;
   }
 
-  let { asset = $bindable(), onUpdateSelectedType, onClose }: Props = $props();
-
-  let selectedType: string = $state(editTypes[0].name);
-  let selectedTypeObj = $derived(editTypes.find((t) => t.name === selectedType) || editTypes[0]);
-
-  setTimeout(() => {
-    onUpdateSelectedType(selectedType);
-  }, 1);
-
-  const onConfirm = () => (typeof $showCancelConfirmDialog === 'boolean' ? null : $showCancelConfirmDialog());
+  let { asset = $bindable(), onClose }: Props = $props();
 </script>
 
 <svelte:document use:shortcut={{ shortcut: { key: 'Escape' }, onShortcut: onClose }} />
@@ -50,23 +40,14 @@
   </div>
 
   <section>
-    <selectedTypeObj.component />
+    <editManager.selectedTool.component />
   </section>
   <div class="flex-1"></div>
   <section class="p-4">
     <VStack gap={4}>
       <Button fullWidth leadingIcon={mdiFloppy} color="success">{$t('save')}</Button>
-      <Button fullWidth leadingIcon={mdiArrowLeft} color="secondary">{$t('Revert Changes')}</Button>
+      <!-- TODO make this clear all edits -->
+      <Button fullWidth leadingIcon={mdiRefresh} color="danger">{$t('editor_reset_all_changes')}</Button>
     </VStack>
   </section>
 </section>
-
-{#if $showCancelConfirmDialog}
-  <ConfirmModal
-    title={$t('editor_close_without_save_title')}
-    prompt={$t('editor_close_without_save_prompt')}
-    confirmColor="danger"
-    confirmText={$t('close')}
-    onClose={(confirmed) => (confirmed ? onConfirm() : ($showCancelConfirmDialog = false))}
-  />
-{/if}

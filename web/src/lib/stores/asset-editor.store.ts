@@ -16,32 +16,7 @@ export const normaizedRorateDegrees = derived(rotateDegrees, (v) => {
 });
 export const changedOriention = derived(normaizedRorateDegrees, () => get(normaizedRorateDegrees) % 180 > 0);
 //-----other
-export const showCancelConfirmDialog = writable<boolean | CallableFunction>(false);
 export const lastChosenLocation = writable<{ lng: number; lat: number } | null>(null);
-
-export const editTypes = [
-  {
-    name: 'crop',
-    icon: mdiCropRotate,
-    component: CropTool,
-    changesFlag: cropSettingsChanged,
-  },
-];
-
-export function closeEditorCofirm(closeCallback: CallableFunction) {
-  if (get(hasChanges)) {
-    showCancelConfirmDialog.set(closeCallback);
-  } else {
-    closeCallback();
-  }
-}
-
-export const hasChanges = derived(
-  editTypes.map((t) => t.changesFlag),
-  ($flags) => {
-    return $flags.some(Boolean);
-  },
-);
 
 export function resetGlobalCropStore() {
   cropSettings.set({ x: 0, y: 0, width: 100, height: 100 });
@@ -49,7 +24,6 @@ export function resetGlobalCropStore() {
   cropImageScale.set(1);
   cropAspectRatio.set('free');
   cropSettingsChanged.set(false);
-  showCancelConfirmDialog.set(false);
   rotateDegrees.set(0);
 }
 

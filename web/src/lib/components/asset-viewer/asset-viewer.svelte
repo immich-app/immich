@@ -10,8 +10,8 @@
   import { AppRoute, AssetAction, ProjectionType } from '$lib/constants';
   import { activityManager } from '$lib/managers/activity-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
+  import { editManager, EditToolType } from '$lib/managers/edit/edit-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-  import { closeEditorCofirm } from '$lib/stores/asset-editor.store';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { ocrManager } from '$lib/stores/ocr.svelte';
   import { alwaysLoadOriginalVideo, isShowDetail } from '$lib/stores/preferences.store';
@@ -110,7 +110,6 @@
   let isShowEditor = $state(false);
   let fullscreenElement = $state<Element>();
   let unsubscribes: (() => void)[] = [];
-  let selectedEditType: string = $state('');
   let stack: StackResponseDto | null = $state(null);
 
   let zoomToggle = $state(() => void 0);
@@ -228,10 +227,10 @@
     onClose(asset);
   };
 
-  const closeEditor = () => {
-    closeEditorCofirm(() => {
+  const closeEditor = async () => {
+    if (await editManager.closeConfirm()) {
       isShowEditor = false;
-    });
+    }
   };
 
   const navigateAsset = async (order?: 'previous' | 'next', e?: Event) => {
@@ -361,10 +360,6 @@
     }
 
     onAction?.(action);
-  };
-
-  const handleUpdateSelectedEditType = (type: string) => {
-    selectedEditType = type;
   };
 
   const handleAssetReplace = async ({ oldAssetId, newAssetId }: { oldAssetId: string; newAssetId: string }) => {
@@ -514,7 +509,7 @@
                 .toLowerCase()
                 .endsWith('.insp'))}
             <ImagePanoramaViewer bind:zoomToggle {asset} />
-          {:else if isShowEditor && selectedEditType === 'crop'}
+          {:else if isShowEditor && editManager.selectedTool.type === EditToolType.CROP}
             <CropArea {asset} />
           {:else}
             <PhotoViewer
@@ -589,7 +584,7 @@
       class="row-start-1 row-span-4 w-[400px] overflow-y-auto transition-all dark:border-l dark:border-s-immich-dark-gray"
       translate="yes"
     >
-      <EditorPanel {asset} onUpdateSelectedType={handleUpdateSelectedEditType} onClose={closeEditor} />
+      <EditorPanel {asset} onClose={closeEditor} />
     </div>
   {/if}
 

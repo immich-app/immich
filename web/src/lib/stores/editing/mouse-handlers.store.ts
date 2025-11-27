@@ -1,3 +1,4 @@
+import { editManager } from '$lib/managers/edit/edit-manager.svelte';
 import {
   cropAspectRatio,
   cropImageScale,
@@ -6,7 +7,6 @@ import {
   cropSettingsChanged,
   normaizedRorateDegrees,
   rotateDegrees,
-  showCancelConfirmDialog,
   type CropSettings,
 } from '$lib/stores/asset-editor.store';
 import { adjustDimensions, keepAspectRatio } from '$lib/stores/editing/crop-settings.store';
@@ -493,7 +493,7 @@ function updateCursor(mouseX: number, mouseY: number) {
   }
 
   function setCursor(cursorName: string) {
-    if (get(canvasCursor) != cursorName && canvas && !get(showCancelConfirmDialog)) {
+    if (get(canvasCursor) != cursorName && canvas && !editManager.isShowingConfirmDialog) {
       canvasCursor.set(cursorName);
       document.body.style.cursor = cursorName;
       canvas.style.cursor = cursorName;

@@ -4,7 +4,6 @@
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
-
   import {
     changedOriention,
     cropAspectRatio,
