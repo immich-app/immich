@@ -14,7 +14,7 @@ import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 
 class SyncStreamService {
-  final Logger _logger = Logger('StreamSyncService');
+  final Logger _logger = Logger('SyncStreamService');
 
   final SyncApiRepository _syncApiRepository;
   final SyncStreamRepository _syncStreamRepository;
