@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Insertable, Kysely } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
+import { MaintenanceGetIntegrityReportDto, MaintenanceIntegrityReportResponseDto } from 'src/dtos/maintenance.dto';
 import { DB } from 'src/schema';
 import { IntegrityReportTable } from 'src/schema/tables/integrity-report.table';
 
@@ -15,6 +16,16 @@ export class IntegrityReportRepository {
       .onConflict((oc) => oc.doNothing())
       .returningAll()
       .executeTakeFirst();
+  }
+
+  async getIntegrityReport(_dto: MaintenanceGetIntegrityReportDto): Promise<MaintenanceIntegrityReportResponseDto> {
+    return {
+      items: await this.db
+        .selectFrom('integrity_report')
+        .select(['type', 'path'])
+        .orderBy('createdAt', 'desc')
+        .execute(),
+    };
   }
 
   deleteById(id: string) {

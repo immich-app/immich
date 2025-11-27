@@ -1,9 +1,15 @@
-import { BadRequestException, Body, Controller, Post, Res } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Post, Res } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { MaintenanceAuthDto, MaintenanceLoginDto, SetMaintenanceModeDto } from 'src/dtos/maintenance.dto';
+import {
+  MaintenanceAuthDto,
+  MaintenanceGetIntegrityReportDto,
+  MaintenanceIntegrityReportResponseDto,
+  MaintenanceLoginDto,
+  SetMaintenanceModeDto,
+} from 'src/dtos/maintenance.dto';
 import { ApiTag, ImmichCookie, MaintenanceAction, Permission } from 'src/enum';
 import { Auth, Authenticated, GetLoginDetails } from 'src/middleware/auth.guard';
 import { LoginDetails } from 'src/services/auth.service';
@@ -45,5 +51,16 @@ export class MaintenanceController {
         values: [{ key: ImmichCookie.MaintenanceToken, value: jwt }],
       });
     }
+  }
+
+  @Get()
+  @Endpoint({
+    summary: 'Get integrity report',
+    description: '...',
+    history: new HistoryBuilder().added('v9.9.9').alpha('v9.9.9'),
+  })
+  @Authenticated({ permission: Permission.Maintenance, admin: true })
+  getIntegrityReport(dto: MaintenanceGetIntegrityReportDto): Promise<MaintenanceIntegrityReportResponseDto> {
+    return this.service.getIntegrityReport(dto);
   }
 }

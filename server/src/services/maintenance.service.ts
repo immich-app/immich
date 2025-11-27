@@ -1,6 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { OnEvent } from 'src/decorators';
-import { MaintenanceAuthDto } from 'src/dtos/maintenance.dto';
+import {
+  MaintenanceAuthDto,
+  MaintenanceGetIntegrityReportDto,
+  MaintenanceIntegrityReportResponseDto,
+} from 'src/dtos/maintenance.dto';
 import { SystemMetadataKey } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
 import { MaintenanceModeState } from 'src/types';
@@ -49,5 +53,9 @@ export class MaintenanceService extends BaseService {
     }
 
     return await createMaintenanceLoginUrl(baseUrl, auth, secret);
+  }
+
+  getIntegrityReport(dto: MaintenanceGetIntegrityReportDto): Promise<MaintenanceIntegrityReportResponseDto> {
+    return this.integrityReportRepository.getIntegrityReport(dto);
   }
 }

@@ -382,11 +382,11 @@ export class AssetRepository {
     return items.map((asset) => asset.deviceAssetId);
   }
 
-  async getAllAssetPaths() {
+  getAllAssetPaths() {
     return this.db.selectFrom('asset').select(['originalPath', 'encodedVideoPath']).stream();
   }
 
-  async getAllAssetFilePaths() {
+  getAllAssetFilePaths() {
     return this.db.selectFrom('asset_file').select(['path']).stream();
   }
 

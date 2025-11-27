@@ -251,7 +251,7 @@ export const defaults = Object.freeze<SystemConfig>({
       enabled: true,
       cronExpression: CronExpression.EVERY_DAY_AT_3AM,
       timeLimit: 60 * 60 * 1000, // 1 hour
-      percentageLimit: 1.0, // 100% of assets
+      percentageLimit: 1, // 100% of assets
     },
   },
   job: {

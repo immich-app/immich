@@ -323,6 +323,51 @@
       }
     },
     "/admin/maintenance": {
+      "get": {
+        "description": "...",
+        "operationId": "getIntegrityReport",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MaintenanceIntegrityReportResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Get integrity report",
+        "tags": [
+          "Maintenance (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v9.9.9",
+            "state": "Added"
+          },
+          {
+            "version": "v9.9.9",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "maintenance",
+        "x-immich-state": "Alpha"
+      },
       "post": {
         "description": "Put Immich into or take it out of maintenance mode",
         "operationId": "setMaintenanceMode",
@@ -16917,6 +16962,40 @@
         },
         "required": [
           "username"
+        ],
+        "type": "object"
+      },
+      "MaintenanceIntegrityReportDto": {
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "type": {
+            "enum": [
+              "orphan_file",
+              "missing_file",
+              "checksum_mismatch"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "path",
+          "type"
+        ],
+        "type": "object"
+      },
+      "MaintenanceIntegrityReportResponseDto": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/MaintenanceIntegrityReportDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
         ],
         "type": "object"
       },

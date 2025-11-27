@@ -33,7 +33,7 @@ async function* chunk<T>(generator: AsyncIterableIterator<T>, n: number) {
     }
   }
 
-  if (chunk.length) {
+  if (chunk.length > 0) {
     yield chunk;
   }
 }
@@ -83,17 +83,17 @@ export class IntegrityService extends BaseService {
 
     // debug: run on boot
     setImmediate(() => {
-      this.jobRepository.queue({
+      void this.jobRepository.queue({
         name: JobName.IntegrityOrphanedFilesQueueAll,
         data: {},
       });
 
-      this.jobRepository.queue({
+      void this.jobRepository.queue({
         name: JobName.IntegrityMissingFilesQueueAll,
         data: {},
       });
 
-      this.jobRepository.queue({
+      void this.jobRepository.queue({
         name: JobName.IntegrityChecksumFiles,
         data: {},
       });
@@ -101,7 +101,7 @@ export class IntegrityService extends BaseService {
   }
 
   @OnEvent({ name: 'ConfigUpdate', server: true })
-  async onConfigUpdate({
+  onConfigUpdate({
     newConfig: {
       integrityChecks: { orphanedFiles, missingFiles, checksumFiles },
     },
@@ -237,9 +237,9 @@ export class IntegrityService extends BaseService {
       ),
     );
 
-    const reportIds = results.filter((reportId) => reportId) as string[];
+    const reportIds = results.filter(Boolean) as string[];
 
-    if (reportIds.length) {
+    if (reportIds.length > 0) {
       await this.integrityReportRepository.deleteByIds(reportIds);
     }
 
@@ -285,12 +285,12 @@ export class IntegrityService extends BaseService {
       .filter(({ exists, reportId }) => exists && reportId)
       .map(({ reportId }) => reportId!);
 
-    if (outdatedReports.length) {
+    if (outdatedReports.length > 0) {
       await this.integrityReportRepository.deleteByIds(outdatedReports);
     }
 
     const missingFiles = results.filter(({ exists }) => !exists);
-    if (missingFiles.length) {
+    if (missingFiles.length > 0) {
       await this.integrityReportRepository.create(
         missingFiles.map(({ path }) => ({
           type: IntegrityReportType.MissingFile,
@@ -306,7 +306,7 @@ export class IntegrityService extends BaseService {
   @OnJob({ name: JobName.IntegrityChecksumFiles, queue: QueueName.BackgroundTask })
   async handleChecksumFiles(): Promise<JobStatus> {
     const timeLimit = 60 * 60 * 1000; // 1000;
-    const percentageLimit = 1.0; // 0.25;
+    const percentageLimit = 1; // 0.25;
 
     this.logger.log(
       `Checking file checksums... (will run for up to ${(timeLimit / (60 * 60 * 1000)).toFixed(2)} hours or until ${(percentageLimit * 100).toFixed(2)}% of assets are processed)`,
@@ -390,7 +390,7 @@ export class IntegrityService extends BaseService {
       }
     } while (endMarker);
 
-    this.systemMetadataRepository.set(SystemMetadataKey.IntegrityChecksumCheckpoint, {
+    await this.systemMetadataRepository.set(SystemMetadataKey.IntegrityChecksumCheckpoint, {
       date: lastCreatedAt?.toISOString(),
     });
 
