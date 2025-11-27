@@ -56,7 +56,7 @@ export class WorkflowService extends BaseService {
     }
 
     const workflow = await this.findOrFail(id);
-    const trigger = this.getTriggerOrFail(workflow.triggerType);
+    const trigger = this.getTriggerOrFail(dto.triggerType ?? workflow.triggerType);
 
     const { filters, actions, ...workflowUpdate } = dto;
     const filterInserts = filters && (await this.validateAndMapFilters(filters, trigger.context));
@@ -125,7 +125,7 @@ export class WorkflowService extends BaseService {
   }
 
   private getTriggerOrFail(triggerType: PluginTriggerType) {
-    const trigger = pluginTriggers.find((t) => t.type === triggerType);
+    const trigger = pluginTriggers.find((t) => t.triggerType === triggerType);
     if (!trigger) {
       throw new BadRequestException(`Invalid trigger type: ${triggerType}`);
     }

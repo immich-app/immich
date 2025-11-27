@@ -1,8 +1,17 @@
 import { IsNotEmpty, IsString } from 'class-validator';
 import { PluginAction, PluginFilter } from 'src/database';
-import { PluginContext } from 'src/enum';
+import { PluginContext, PluginTriggerType } from 'src/enum';
 import type { JSONSchema } from 'src/types/plugin-schema.types';
 import { ValidateEnum } from 'src/validation';
+
+export class PluginTriggerResponseDto {
+  name!: string;
+  @ValidateEnum({ enum: PluginTriggerType, name: 'PluginTriggerType' })
+  triggerType!: PluginTriggerType;
+  description!: string;
+  @ValidateEnum({ enum: PluginContext, name: 'PluginContext' })
+  context!: PluginContext;
+}
 
 export class PluginResponseDto {
   id!: string;

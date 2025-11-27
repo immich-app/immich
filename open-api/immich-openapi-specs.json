@@ -8020,6 +8020,55 @@
         "x-immich-state": "Alpha"
       }
     },
+    "/plugins/triggers": {
+      "get": {
+        "description": "Retrieve a list of all available plugin triggers.",
+        "operationId": "getTriggers",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PluginTriggerResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "List all plugin triggers",
+        "tags": [
+          "Plugins"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v2.3.0",
+            "state": "Added"
+          },
+          {
+            "version": "v2.3.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "plugin.read",
+        "x-immich-state": "Alpha"
+      }
+    },
     "/plugins/{id}": {
       "get": {
         "description": "Retrieve information about a specific plugin by its ID.",
@@ -18401,6 +18450,37 @@
         ],
         "type": "object"
       },
+      "PluginTriggerResponseDto": {
+        "properties": {
+          "context": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PluginContext"
+              }
+            ]
+          },
+          "description": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "triggerType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PluginTriggerType"
+              }
+            ]
+          }
+        },
+        "required": [
+          "context",
+          "description",
+          "name",
+          "triggerType"
+        ],
+        "type": "object"
+      },
       "PluginTriggerType": {
         "enum": [
           "AssetCreate",
@@ -23316,11 +23396,11 @@
             "type": "string"
           },
           "triggerType": {
-            "enum": [
-              "AssetCreate",
-              "PersonRecognized"
-            ],
-            "type": "string"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PluginTriggerType"
+              }
+            ]
           }
         },
         "required": [
@@ -23358,6 +23438,13 @@
           },
           "name": {
             "type": "string"
+          },
+          "triggerType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PluginTriggerType"
+              }
+            ]
           }
         },
         "type": "object"

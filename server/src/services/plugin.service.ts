@@ -6,8 +6,9 @@ import { join } from 'node:path';
 import { Asset, WorkflowAction, WorkflowFilter } from 'src/database';
 import { OnEvent, OnJob } from 'src/decorators';
 import { PluginManifestDto } from 'src/dtos/plugin-manifest.dto';
-import { mapPlugin, PluginResponseDto } from 'src/dtos/plugin.dto';
+import { mapPlugin, PluginResponseDto, PluginTriggerResponseDto } from 'src/dtos/plugin.dto';
 import { JobName, JobStatus, PluginTriggerType, QueueName } from 'src/enum';
+import { pluginTriggers } from 'src/plugins';
 import { ArgOf } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
 import { PluginHostFunctions } from 'src/services/plugin-host.functions';
@@ -48,6 +49,10 @@ export class PluginService extends BaseService {
     );
 
     await this.loadPlugins();
+  }
+
+  getTriggers(): PluginTriggerResponseDto[] {
+    return pluginTriggers;
   }
 
   //
@@ -111,12 +116,12 @@ export class PluginService extends BaseService {
   }
 
   private async loadPluginToDatabase(manifest: PluginManifestDto, basePath: string): Promise<void> {
-    const currentPlugin = await this.pluginRepository.getPluginByName(manifest.name);
-    if (currentPlugin != null && currentPlugin.version === manifest.version) {
-      this.logger.log(`Plugin ${manifest.name} is up to date (version ${manifest.version}). Skipping`);
-      return;
-    }
-
+    // const currentPlugin = await this.pluginRepository.getPluginByName(manifest.name);
+    // if (currentPlugin != null && currentPlugin.version === manifest.version) {
+    //   this.logger.log(`Plugin ${manifest.name} is up to date (version ${manifest.version}). Skipping`);
+    //   return;
+    // }
+    //
     const { plugin, filters, actions } = await this.pluginRepository.loadPlugin(manifest, basePath);
 
     this.logger.log(`Upserted plugin: ${plugin.name} (ID: ${plugin.id}, version: ${plugin.version})`);

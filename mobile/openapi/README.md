@@ -200,6 +200,7 @@ Class | Method | HTTP request | Description
 *PeopleApi* | [**updatePerson**](doc//PeopleApi.md#updateperson) | **PUT** /people/{id} | Update person
 *PluginsApi* | [**getPlugin**](doc//PluginsApi.md#getplugin) | **GET** /plugins/{id} | Retrieve a plugin
 *PluginsApi* | [**getPlugins**](doc//PluginsApi.md#getplugins) | **GET** /plugins | List all plugins
+*PluginsApi* | [**getTriggers**](doc//PluginsApi.md#gettriggers) | **GET** /plugins/triggers | List all plugin triggers
 *QueuesApi* | [**emptyQueue**](doc//QueuesApi.md#emptyqueue) | **DELETE** /queues/{name}/jobs | Empty a queue
 *QueuesApi* | [**getQueue**](doc//QueuesApi.md#getqueue) | **GET** /queues/{name} | Retrieve a queue
 *QueuesApi* | [**getQueueJobs**](doc//QueuesApi.md#getqueuejobs) | **GET** /queues/{name}/jobs | Retrieve queue jobs
@@ -468,6 +469,7 @@ Class | Method | HTTP request | Description
  - [PluginContext](doc//PluginContext.md)
  - [PluginFilterResponseDto](doc//PluginFilterResponseDto.md)
  - [PluginResponseDto](doc//PluginResponseDto.md)
+ - [PluginTriggerResponseDto](doc//PluginTriggerResponseDto.md)
  - [PluginTriggerType](doc//PluginTriggerType.md)
  - [PurchaseResponse](doc//PurchaseResponse.md)
  - [PurchaseUpdate](doc//PurchaseUpdate.md)

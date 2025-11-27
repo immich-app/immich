@@ -58,6 +58,7 @@
     "socket.io-client": "~4.8.0",
     "svelte-gestures": "^5.2.2",
     "svelte-i18n": "^4.0.1",
+    "svelte-jsoneditor": "^3.10.0",
     "svelte-maplibre": "^1.2.5",
     "svelte-persisted-store": "^0.12.0",
     "tabbable": "^6.2.0",
