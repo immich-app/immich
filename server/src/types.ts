@@ -287,8 +287,8 @@ export interface IIntegrityOrphanedFilesJob {
   paths: string[];
 }
 
-export interface IIntegrityMissingFilesJob {
-  paths: { path: string; reportId: string | null }[];
+export interface IIntegrityPathWithReportJob {
+  items: { path: string; reportId: string | null }[];
 }
 
 export interface JobCounts {
@@ -405,8 +405,9 @@ export type JobItem =
   // Integrity
   | { name: JobName.IntegrityOrphanedFilesQueueAll; data: IBaseJob }
   | { name: JobName.IntegrityOrphanedFiles; data: IIntegrityOrphanedFilesJob }
+  | { name: JobName.IntegrityOrphanedCheckReports; data: IIntegrityPathWithReportJob }
   | { name: JobName.IntegrityMissingFilesQueueAll; data: IBaseJob }
-  | { name: JobName.IntegrityMissingFiles; data: IIntegrityMissingFilesJob }
+  | { name: JobName.IntegrityMissingFiles; data: IIntegrityPathWithReportJob }
   | { name: JobName.IntegrityChecksumFiles; data: IBaseJob };
 
 export type VectorExtension = (typeof VECTOR_EXTENSIONS)[number];

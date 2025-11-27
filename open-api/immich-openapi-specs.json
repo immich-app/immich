@@ -16663,6 +16663,7 @@
           "WorkflowRun",
           "IntegrityOrphanedFilesQueueAll",
           "IntegrityOrphanedFiles",
+          "IntegrityOrphanedCheckReports",
           "IntegrityMissingFilesQueueAll",
           "IntegrityMissingFiles",
           "IntegrityChecksumFiles"

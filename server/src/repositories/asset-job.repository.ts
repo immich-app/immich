@@ -319,6 +319,11 @@ export class AssetJobRepository {
       .stream();
   }
 
+  @GenerateSql({ params: [DummyValue.STRING], stream: true })
+  streamIntegrityReports(type: IntegrityReportType) {
+    return this.db.selectFrom('integrity_report').select(['id as reportId', 'path']).where('type', '=', type).stream();
+  }
+
   @GenerateSql({ params: [], stream: true })
   streamForVideoConversion(force?: boolean) {
     return this.db

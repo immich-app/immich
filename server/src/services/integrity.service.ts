@@ -18,7 +18,23 @@ import {
 } from 'src/enum';
 import { ArgOf } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
-import { IIntegrityMissingFilesJob, IIntegrityOrphanedFilesJob } from 'src/types';
+import { IIntegrityOrphanedFilesJob, IIntegrityPathWithReportJob } from 'src/types';
+
+async function* chunk<T>(generator: AsyncIterableIterator<T>, n: number) {
+  let chunk: T[] = [];
+  for await (const item of generator) {
+    chunk.push(item);
+
+    if (chunk.length === n) {
+      yield chunk;
+      chunk = [];
+    }
+  }
+
+  if (chunk.length) {
+    yield chunk;
+  }
+}
 
 @Injectable()
 export class IntegrityService extends BaseService {
@@ -72,6 +88,23 @@ export class IntegrityService extends BaseService {
 
   @OnJob({ name: JobName.IntegrityOrphanedFilesQueueAll, queue: QueueName.BackgroundTask })
   async handleOrphanedFilesQueueAll(): Promise<JobStatus> {
+    this.logger.log(`Checking for out of date orphaned file reports...`);
+
+    const reports = this.assetJobRepository.streamIntegrityReports(IntegrityReportType.OrphanFile);
+
+    let total = 0;
+    for await (const batchReports of chunk(reports, JOBS_LIBRARY_PAGINATION_SIZE)) {
+      await this.jobRepository.queue({
+        name: JobName.IntegrityOrphanedCheckReports,
+        data: {
+          items: batchReports,
+        },
+      });
+
+      total += batchReports.length;
+      this.logger.log(`Queued report check of ${batchReports.length} report(s) (${total} so far)`);
+    }
+
     this.logger.log(`Scanning for orphaned files...`);
 
     const assetPaths = this.storageRepository.walk({
@@ -98,7 +131,7 @@ export class IntegrityService extends BaseService {
       }
     }
 
-    let total = 0;
+    total = 0;
     for await (const [batchType, batchPaths] of paths()) {
       await this.jobRepository.queue({
         name: JobName.IntegrityOrphanedFiles,
@@ -149,34 +182,40 @@ export class IntegrityService extends BaseService {
     return JobStatus.Success;
   }
 
+  @OnJob({ name: JobName.IntegrityOrphanedCheckReports, queue: QueueName.BackgroundTask })
+  async handleOrphanedCheckReports({ items: paths }: IIntegrityPathWithReportJob): Promise<JobStatus> {
+    this.logger.log(`Processing batch of ${paths.length} reports to check if they are out of date.`);
+
+    const results = await Promise.all(
+      paths.map(({ reportId, path }) =>
+        stat(path)
+          .then(() => reportId)
+          .catch(() => void 0),
+      ),
+    );
+
+    const reportIds = results.filter((reportId) => reportId) as string[];
+
+    if (reportIds.length) {
+      await this.integrityReportRepository.deleteByIds(reportIds);
+    }
+
+    this.logger.log(`Processed ${paths.length} and found ${reportIds.length} orphaned file(s).`);
+    return JobStatus.Success;
+  }
+
   @OnJob({ name: JobName.IntegrityMissingFilesQueueAll, queue: QueueName.BackgroundTask })
   async handleMissingFilesQueueAll(): Promise<JobStatus> {
     this.logger.log(`Scanning for missing files...`);
 
     const assetPaths = this.assetJobRepository.streamAssetPaths();
 
-    async function* chunk<T>(generator: AsyncIterableIterator<T>, n: number) {
-      let chunk: T[] = [];
-      for await (const item of generator) {
-        chunk.push(item);
-
-        if (chunk.length === n) {
-          yield chunk;
-          chunk = [];
-        }
-      }
-
-      if (chunk.length) {
-        yield chunk;
-      }
-    }
-
     let total = 0;
     for await (const batchPaths of chunk(assetPaths, JOBS_LIBRARY_PAGINATION_SIZE)) {
       await this.jobRepository.queue({
         name: JobName.IntegrityMissingFiles,
         data: {
-          paths: batchPaths,
+          items: batchPaths,
         },
       });
 
@@ -188,7 +227,7 @@ export class IntegrityService extends BaseService {
   }
 
   @OnJob({ name: JobName.IntegrityMissingFiles, queue: QueueName.BackgroundTask })
-  async handleMissingFiles({ paths }: IIntegrityMissingFilesJob): Promise<JobStatus> {
+  async handleMissingFiles({ items: paths }: IIntegrityPathWithReportJob): Promise<JobStatus> {
     this.logger.log(`Processing batch of ${paths.length} files to check if they are missing.`);
 
     const results = await Promise.all(
