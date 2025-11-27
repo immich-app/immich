@@ -269,12 +269,12 @@
     }
   };
 
-  // const showEditorHandler = () => {
-  //   if (isShowActivity) {
-  //     isShowActivity = false;
-  //   }
-  //   isShowEditor = !isShowEditor;
-  // };
+  const showEditor = () => {
+    if (isShowActivity) {
+      isShowActivity = false;
+    }
+    isShowEditor = !isShowEditor;
+  };
 
   const handleRunJob = async (name: AssetJobName) => {
     try {
@@ -434,6 +434,7 @@
         onPlaySlideshow={() => ($slideshowState = SlideshowState.PlaySlideshow)}
         onShowDetail={toggleDetailPanel}
         onClose={closeViewer}
+        onEdit={showEditor}
         {playOriginalVideo}
         {setPlayOriginalVideo}
       >
