@@ -16967,6 +16967,9 @@
       },
       "MaintenanceIntegrityReportDto": {
         "properties": {
+          "id": {
+            "type": "string"
+          },
           "path": {
             "type": "string"
           },
@@ -16980,6 +16983,7 @@
           }
         },
         "required": [
+          "id",
           "path",
           "type"
         ],

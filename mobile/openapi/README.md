@@ -161,6 +161,7 @@ Class | Method | HTTP request | Description
 *LibrariesApi* | [**scanLibrary**](doc//LibrariesApi.md#scanlibrary) | **POST** /libraries/{id}/scan | Scan a library
 *LibrariesApi* | [**updateLibrary**](doc//LibrariesApi.md#updatelibrary) | **PUT** /libraries/{id} | Update a library
 *LibrariesApi* | [**validate**](doc//LibrariesApi.md#validate) | **POST** /libraries/{id}/validate | Validate library settings
+*MaintenanceAdminApi* | [**getIntegrityReport**](doc//MaintenanceAdminApi.md#getintegrityreport) | **GET** /admin/maintenance | Get integrity report
 *MaintenanceAdminApi* | [**maintenanceLogin**](doc//MaintenanceAdminApi.md#maintenancelogin) | **POST** /admin/maintenance/login | Log into maintenance mode
 *MaintenanceAdminApi* | [**setMaintenanceMode**](doc//MaintenanceAdminApi.md#setmaintenancemode) | **POST** /admin/maintenance | Set maintenance mode
 *MapApi* | [**getMapMarkers**](doc//MapApi.md#getmapmarkers) | **GET** /map/markers | Retrieve map markers
@@ -416,6 +417,8 @@ Class | Method | HTTP request | Description
  - [MachineLearningAvailabilityChecksDto](doc//MachineLearningAvailabilityChecksDto.md)
  - [MaintenanceAction](doc//MaintenanceAction.md)
  - [MaintenanceAuthDto](doc//MaintenanceAuthDto.md)
+ - [MaintenanceIntegrityReportDto](doc//MaintenanceIntegrityReportDto.md)
+ - [MaintenanceIntegrityReportResponseDto](doc//MaintenanceIntegrityReportResponseDto.md)
  - [MaintenanceLoginDto](doc//MaintenanceLoginDto.md)
  - [ManualJobName](doc//ManualJobName.md)
  - [MapMarkerResponseDto](doc//MapMarkerResponseDto.md)

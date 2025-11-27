@@ -26,6 +26,7 @@ export class MaintenanceGetIntegrityReportDto {
 }
 
 class MaintenanceIntegrityReportDto {
+  id!: string;
   @IsEnum(IntegrityReportType)
   type!: IntegrityReportType;
   path!: string;

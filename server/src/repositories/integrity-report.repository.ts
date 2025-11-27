@@ -22,7 +22,7 @@ export class IntegrityReportRepository {
     return {
       items: await this.db
         .selectFrom('integrity_report')
-        .select(['type', 'path'])
+        .select(['id', 'type', 'path'])
         .orderBy('createdAt', 'desc')
         .execute(),
     };

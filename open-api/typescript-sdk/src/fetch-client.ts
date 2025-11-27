@@ -40,6 +40,14 @@ export type ActivityStatisticsResponseDto = {
     comments: number;
     likes: number;
 };
+export type MaintenanceIntegrityReportDto = {
+    id: string;
+    path: string;
+    "type": Type;
+};
+export type MaintenanceIntegrityReportResponseDto = {
+    items: MaintenanceIntegrityReportDto[];
+};
 export type SetMaintenanceModeDto = {
     action: MaintenanceAction;
 };
@@ -1864,6 +1872,17 @@ export function unlinkAllOAuthAccountsAdmin(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchText("/admin/auth/unlink-all", {
         ...opts,
         method: "POST"
+    }));
+}
+/**
+ * Get integrity report
+ */
+export function getIntegrityReport(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: MaintenanceIntegrityReportResponseDto;
+    }>("/admin/maintenance", {
+        ...opts
     }));
 }
 /**
@@ -5153,6 +5172,11 @@ export enum UserAvatarColor {
     Orange = "orange",
     Gray = "gray",
     Amber = "amber"
+}
+export enum Type {
+    OrphanFile = "orphan_file",
+    MissingFile = "missing_file",
+    ChecksumMismatch = "checksum_mismatch"
 }
 export enum MaintenanceAction {
     Start = "start",
