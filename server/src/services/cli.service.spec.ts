@@ -1,3 +1,5 @@
+import { jwtVerify } from 'jose';
+import { SystemMetadataKey } from 'src/enum';
 import { CliService } from 'src/services/cli.service';
 import { factory } from 'test/small.factory';
 import { newTestService, ServiceMocks } from 'test/utils';
@@ -77,6 +79,82 @@ describe(CliService.name, () => {
     it('should enable password login', async () => {
       await sut.enablePasswordLogin();
       expect(mocks.systemMetadata.set).toHaveBeenCalledWith('system-config', {});
+    });
+  });
+
+  describe('disableMaintenanceMode', () => {
+    it('should not do anything if not in maintenance mode', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({ isMaintenanceMode: false });
+      await expect(sut.disableMaintenanceMode()).resolves.toEqual({
+        alreadyDisabled: true,
+      });
+
+      expect(mocks.systemMetadata.set).toHaveBeenCalledTimes(0);
+      expect(mocks.event.emit).toHaveBeenCalledTimes(0);
+    });
+
+    it('should disable maintenance mode', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({ isMaintenanceMode: true, secret: 'secret' });
+      await expect(sut.disableMaintenanceMode()).resolves.toEqual({
+        alreadyDisabled: false,
+      });
+
+      expect(mocks.systemMetadata.set).toHaveBeenCalledWith(SystemMetadataKey.MaintenanceMode, {
+        isMaintenanceMode: false,
+      });
+    });
+  });
+
+  describe('enableMaintenanceMode', () => {
+    it('should not do anything if in maintenance mode', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({ isMaintenanceMode: true, secret: 'secret' });
+      await expect(sut.enableMaintenanceMode()).resolves.toEqual(
+        expect.objectContaining({
+          alreadyEnabled: true,
+        }),
+      );
+
+      expect(mocks.systemMetadata.set).toHaveBeenCalledTimes(0);
+      expect(mocks.event.emit).toHaveBeenCalledTimes(0);
+    });
+
+    it('should enable maintenance mode', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({ isMaintenanceMode: false });
+      await expect(sut.enableMaintenanceMode()).resolves.toEqual(
+        expect.objectContaining({
+          alreadyEnabled: false,
+        }),
+      );
+
+      expect(mocks.systemMetadata.set).toHaveBeenCalledWith(SystemMetadataKey.MaintenanceMode, {
+        isMaintenanceMode: true,
+        secret: expect.stringMatching(/^\w{128}$/),
+      });
+    });
+
+    const RE_LOGIN_URL = /https:\/\/my.immich.app\/maintenance\?token=([A-Za-z0-9-_]*\.[A-Za-z0-9-_]*\.[A-Za-z0-9-_]*)/;
+
+    it('should return a valid login URL', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({ isMaintenanceMode: true, secret: 'secret' });
+
+      const result = await sut.enableMaintenanceMode();
+
+      expect(result).toEqual(
+        expect.objectContaining({
+          authUrl: expect.stringMatching(RE_LOGIN_URL),
+          alreadyEnabled: true,
+        }),
+      );
+
+      const token = RE_LOGIN_URL.exec(result.authUrl)![1];
+
+      await expect(jwtVerify(token, new TextEncoder().encode('secret'))).resolves.toEqual(
+        expect.objectContaining({
+          payload: expect.objectContaining({
+            username: 'cli-admin',
+          }),
+        }),
+      );
     });
   });
 

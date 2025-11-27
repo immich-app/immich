@@ -37,7 +37,7 @@ In the Immich web UI:
   <img src={require('./img/create-external-library.webp').default} width="50%" title="Create Library button" />
 
 - In the dialog, select which user should own the new library
-  <img src={require('./img/library-owner.webp').default} width="50%" title="Library owner diaglog" />
+  <img src={require('./img/library-owner.webp').default} width="50%" title="Library owner dialog" />
 
 - Click the three-dots menu and select **Edit Import Paths**
   <img src={require('./img/edit-import-paths.webp').default} width="50%" title="Edit Import Paths menu option" />

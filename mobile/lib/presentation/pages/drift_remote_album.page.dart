@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -139,7 +141,7 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
           toastType: ToastType.success,
         );
 
-        context.pushRoute(const DriftAlbumsRoute());
+        unawaited(context.pushRoute(const DriftAlbumsRoute()));
       } catch (e) {
         ImmichToast.show(
           context: context,
@@ -161,94 +163,98 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
       setState(() {
         _album = _album.copyWith(name: result.name, description: result.description ?? '');
       });
-      HapticFeedback.mediumImpact();
+      unawaited(HapticFeedback.mediumImpact());
     }
   }
 
   Future<void> showActivity(BuildContext context) async {
-    context.pushRoute(const DriftActivitiesRoute());
+    unawaited(context.pushRoute(DriftActivitiesRoute(album: _album)));
   }
 
-  void showOptionSheet(BuildContext context) {
+  Future<void> showOptionSheet(BuildContext context) async {
     final user = ref.watch(currentUserProvider);
     final isOwner = user != null ? user.id == _album.ownerId : false;
+    final canAddPhotos =
+        await ref.read(remoteAlbumServiceProvider).getUserRole(_album.id, user?.id ?? '') == AlbumUserRole.editor;
 
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: context.colorScheme.surface,
-      isScrollControlled: false,
-      builder: (context) {
-        return DriftRemoteAlbumOption(
-          onDeleteAlbum: isOwner
-              ? () async {
-                  await deleteAlbum(context);
-                  if (context.mounted) {
+    unawaited(
+      showModalBottomSheet(
+        context: context,
+        backgroundColor: context.colorScheme.surface,
+        isScrollControlled: false,
+        builder: (context) {
+          return DriftRemoteAlbumOption(
+            onDeleteAlbum: isOwner
+                ? () async {
+                    await deleteAlbum(context);
+                    if (context.mounted) {
+                      context.pop();
+                    }
+                  }
+                : null,
+            onAddUsers: isOwner
+                ? () async {
+                    await addUsers(context);
                     context.pop();
                   }
-                }
-              : null,
-          onAddUsers: isOwner
-              ? () async {
-                  await addUsers(context);
-                  context.pop();
-                }
-              : null,
-          onAddPhotos: () async {
-            await addAssets(context);
-            context.pop();
-          },
-          onToggleAlbumOrder: () async {
-            await toggleAlbumOrder();
-            context.pop();
-          },
-          onEditAlbum: () async {
-            context.pop();
-            await showEditTitleAndDescription(context);
-          },
-          onCreateSharedLink: () async {
-            context.pop();
-            context.pushRoute(SharedLinkEditRoute(albumId: _album.id));
-          },
-          onShowOptions: () {
-            context.pop();
-            context.pushRoute(const DriftAlbumOptionsRoute());
-          },
-        );
-      },
+                : null,
+            onAddPhotos: isOwner || canAddPhotos
+                ? () async {
+                    await addAssets(context);
+                    context.pop();
+                  }
+                : null,
+            onToggleAlbumOrder: isOwner
+                ? () async {
+                    await toggleAlbumOrder();
+                    context.pop();
+                  }
+                : null,
+            onEditAlbum: isOwner
+                ? () async {
+                    context.pop();
+                    await showEditTitleAndDescription(context);
+                  }
+                : null,
+            onCreateSharedLink: isOwner
+                ? () async {
+                    context.pop();
+                    unawaited(context.pushRoute(SharedLinkEditRoute(albumId: _album.id)));
+                  }
+                : null,
+            onShowOptions: () {
+              context.pop();
+              context.pushRoute(DriftAlbumOptionsRoute(album: _album));
+            },
+          );
+        },
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return PopScope(
-      onPopInvokedWithResult: (didPop, _) {
-        if (didPop) {
-          Future.microtask(() {
-            if (mounted) {
-              ref.read(currentRemoteAlbumProvider.notifier).dispose();
-              ref.read(remoteAlbumProvider.notifier).refresh();
-            }
-          });
-        }
-      },
-      child: ProviderScope(
-        overrides: [
-          timelineServiceProvider.overrideWith((ref) {
-            final timelineService = ref.watch(timelineFactoryProvider).remoteAlbum(albumId: _album.id);
-            ref.onDispose(timelineService.dispose);
-            return timelineService;
-          }),
-        ],
-        child: Timeline(
-          appBar: RemoteAlbumSliverAppBar(
-            icon: Icons.photo_album_outlined,
-            onShowOptions: () => showOptionSheet(context),
-            onToggleAlbumOrder: () => toggleAlbumOrder(),
-            onEditTitle: () => showEditTitleAndDescription(context),
-            onActivity: () => showActivity(context),
-          ),
-          bottomSheet: RemoteAlbumBottomSheet(album: _album),
+    final user = ref.watch(currentUserProvider);
+    final isOwner = user != null ? user.id == _album.ownerId : false;
+
+    return ProviderScope(
+      overrides: [
+        timelineServiceProvider.overrideWith((ref) {
+          final timelineService = ref.watch(timelineFactoryProvider).remoteAlbum(albumId: _album.id);
+          ref.onDispose(timelineService.dispose);
+          return timelineService;
+        }),
+        currentRemoteAlbumScopedProvider.overrideWithValue(_album),
+      ],
+      child: Timeline(
+        appBar: RemoteAlbumSliverAppBar(
+          icon: Icons.photo_album_outlined,
+          onShowOptions: () => showOptionSheet(context),
+          onToggleAlbumOrder: isOwner ? () => toggleAlbumOrder() : null,
+          onEditTitle: isOwner ? () => showEditTitleAndDescription(context) : null,
+          onActivity: () => showActivity(context),
         ),
+        bottomSheet: RemoteAlbumBottomSheet(album: _album),
       ),
     );
   }

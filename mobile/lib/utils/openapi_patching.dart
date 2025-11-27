@@ -46,6 +46,16 @@ dynamic upgradeDto(dynamic value, String targetType) {
         addDefault(value, 'profileChangedAt', DateTime.now().toIso8601String());
         addDefault(value, 'hasProfileImage', false);
       }
+    case 'ServerFeaturesDto':
+      if (value is Map) {
+        addDefault(value, 'ocr', false);
+      }
+      break;
+    case 'MemoriesResponse':
+      if (value is Map) {
+        addDefault(value, 'duration', 5);
+      }
+      break;
   }
 }
 

@@ -228,6 +228,8 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
               curve: Curves.easeInOut,
             )
             .whenComplete(() => ref.read(timelineStateProvider.notifier).setScrubbing(false));
+      } else {
+        ref.read(timelineStateProvider.notifier).setScrubbing(false);
       }
     });
   }

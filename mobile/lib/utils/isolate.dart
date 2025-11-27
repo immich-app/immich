@@ -11,6 +11,7 @@ import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/utils/bootstrap.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:immich_mobile/utils/http_ssl_options.dart';
+import 'package:immich_mobile/wm_executor.dart';
 import 'package:logging/logging.dart';
 import 'package:worker_manager/worker_manager.dart';
 
@@ -31,7 +32,7 @@ Cancelable<T?> runInIsolateGentle<T>({
     throw const InvalidIsolateUsageException();
   }
 
-  return workerManager.executeGentle((cancelledChecker) async {
+  return workerManagerPatch.executeGentle((cancelledChecker) async {
     T? result;
     await runZonedGuarded(
       () async {

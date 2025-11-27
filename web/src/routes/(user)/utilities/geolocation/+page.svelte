@@ -30,13 +30,13 @@
   let location = $state<{ latitude: number; longitude: number }>({ latitude: 0, longitude: 0 });
   let locationUpdated = $state(false);
 
-  const timelineManager = new TimelineManager();
-  void timelineManager.updateOptions({
+  let timelineManager = $state<TimelineManager>() as TimelineManager;
+  const options = {
     visibility: AssetVisibility.Timeline,
     withStacked: true,
     withPartners: true,
     withCoordinates: true,
-  });
+  };
 
   const handleUpdate = async () => {
     const confirmed = await modalManager.show(GeolocationUpdateConfirmModal, {
@@ -63,7 +63,7 @@
       }),
     );
 
-    timelineManager.updateAssets(updatedAssets);
+    timelineManager.upsertAssets(updatedAssets);
 
     handleDeselectAll();
   };
@@ -188,14 +188,15 @@
   <Timeline
     isSelectionMode={true}
     enableRouting={true}
-    {timelineManager}
+    bind:timelineManager
+    {options}
     {assetInteraction}
     removeAction={AssetAction.ARCHIVE}
     onEscape={handleEscape}
     withStacked
     onThumbnailClick={handleThumbnailClick}
   >
-    {#snippet customLayout(asset: TimelineAsset)}
+    {#snippet customThumbnailLayout(asset: TimelineAsset)}
       {#if hasGps(asset)}
         <div class="absolute bottom-1 end-3 px-4 py-1 rounded-xl text-xs transition-colors bg-success text-black">
           {asset.city || $t('gps')}
@@ -207,7 +208,7 @@
       {/if}
     {/snippet}
     {#snippet empty()}
-      <EmptyPlaceholder text={$t('no_assets_message')} onClick={() => {}} />
+      <EmptyPlaceholder text={$t('no_assets_message')} onClick={() => {}} class="mt-10 mx-auto" />
     {/snippet}
   </Timeline>
 </UserPageLayout>

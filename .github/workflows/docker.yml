@@ -22,10 +22,17 @@ jobs:
     outputs:
       should_run: ${{ steps.check.outputs.should_run }}
     steps:
+      - id: token
+        uses: immich-app/devtools/actions/create-workflow-token@da177fa133657503ddb7503f8ba53dccefec5da1 # create-workflow-token-action-v1.0.0
+        with:
+          app-id: ${{ secrets.PUSH_O_MATIC_APP_ID }}
+          private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
+
       - name: Check what should run
         id: check
-        uses: immich-app/devtools/actions/pre-job@5f91b52dfbb92b8d96ca411ab59c896cd59714ca # pre-job-action-v1.1.0
+        uses: immich-app/devtools/actions/pre-job@08bac802a312fc89808e0dd589271ca0974087b5 # pre-job-action-v2.0.0
         with:
+          github-token: ${{ steps.token.outputs.token }}
           filters: |
             server:
               - 'server/**'
@@ -58,6 +65,7 @@ jobs:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Re-tag image
         env:
           REGISTRY_NAME: 'ghcr.io'
@@ -87,6 +95,7 @@ jobs:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Re-tag image
         env:
           REGISTRY_NAME: 'ghcr.io'
@@ -107,24 +116,23 @@ jobs:
       matrix:
         include:
           - device: cpu
-            tag-suffix: ''
           - device: cuda
-            tag-suffix: '-cuda'
+            suffixes: '-cuda'
             platforms: linux/amd64
           - device: openvino
-            tag-suffix: '-openvino'
+            suffixes: '-openvino'
             platforms: linux/amd64
           - device: armnn
-            tag-suffix: '-armnn'
+            suffixes: '-armnn'
             platforms: linux/arm64
           - device: rknn
-            tag-suffix: '-rknn'
+            suffixes: '-rknn'
             platforms: linux/arm64
           - device: rocm
-            tag-suffix: '-rocm'
+            suffixes: '-rocm'
             platforms: linux/amd64
             runner-mapping: '{"linux/amd64": "mich"}'
-    uses: immich-app/devtools/.github/workflows/multi-runner-build.yml@129aeda75a450666ce96e8bc8126652e717917a7 # multi-runner-build-workflow-0.1.1
+    uses: immich-app/devtools/.github/workflows/multi-runner-build.yml@47a2ee86898ccff51592d6572391fb1abcd7f782 # multi-runner-build-workflow-v2.0.1
     permissions:
       contents: read
       actions: read
@@ -138,7 +146,7 @@ jobs:
       dockerfile: machine-learning/Dockerfile
       platforms: ${{ matrix.platforms }}
       runner-mapping: ${{ matrix.runner-mapping }}
-      tag-suffix: ${{ matrix.tag-suffix }}
+      suffixes: ${{ matrix.suffixes }}
       dockerhub-push: ${{ github.event_name == 'release' }}
       build-args: |
         DEVICE=${{ matrix.device }}
@@ -147,7 +155,7 @@ jobs:
     name: Build and Push Server
     needs: pre-job
     if: ${{ fromJSON(needs.pre-job.outputs.should_run).server == true }}
-    uses: immich-app/devtools/.github/workflows/multi-runner-build.yml@129aeda75a450666ce96e8bc8126652e717917a7 # multi-runner-build-workflow-0.1.1
+    uses: immich-app/devtools/.github/workflows/multi-runner-build.yml@47a2ee86898ccff51592d6572391fb1abcd7f782 # multi-runner-build-workflow-v2.0.1
     permissions:
       contents: read
       actions: read

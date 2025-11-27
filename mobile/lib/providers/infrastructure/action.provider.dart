@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:background_downloader/background_downloader.dart';
 import 'package:flutter/material.dart';
@@ -15,6 +17,7 @@ import 'package:immich_mobile/services/action.service.dart';
 import 'package:immich_mobile/services/download.service.dart';
 import 'package:immich_mobile/services/timeline.service.dart';
 import 'package:immich_mobile/services/upload.service.dart';
+import 'package:immich_mobile/widgets/asset_grid/delete_dialog.dart';
 import 'package:logging/logging.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -69,7 +72,7 @@ class ActionNotifier extends Notifier<void> {
   void _downloadLivePhotoCallback(TaskStatusUpdate update) async {
     if (update.status == TaskStatus.complete) {
       final livePhotosId = LivePhotosMetadata.fromJson(update.task.metaData).id;
-      _downloadService.saveLivePhotos(update.task, livePhotosId);
+      unawaited(_downloadService.saveLivePhotos(update.task, livePhotosId));
     }
   }
 
@@ -130,7 +133,7 @@ class ActionNotifier extends Notifier<void> {
     if (assets.length > 1) {
       return ActionResult(count: assets.length, success: false, error: 'Cannot troubleshoot multiple assets');
     }
-    context.pushRoute(AssetTroubleshootRoute(asset: assets.first));
+    unawaited(context.pushRoute(AssetTroubleshootRoute(asset: assets.first)));
 
     return ActionResult(count: assets.length, success: true);
   }
@@ -260,8 +263,27 @@ class ActionNotifier extends Notifier<void> {
     }
   }
 
-  Future<ActionResult> deleteLocal(ActionSource source) async {
-    final ids = _getLocalIdsForSource(source);
+  Future<ActionResult?> deleteLocal(ActionSource source, BuildContext context) async {
+    final assets = _getAssets(source);
+    bool? backedUpOnly = assets.every((asset) => asset.storage == AssetState.merged)
+        ? true
+        : await showDialog<bool>(
+            context: context,
+            builder: (BuildContext context) => DeleteLocalOnlyDialog(onDeleteLocal: (_) {}),
+          );
+
+    if (backedUpOnly == null) {
+      // User cancelled the dialog
+      return null;
+    }
+
+    final List<String> ids;
+    if (backedUpOnly) {
+      ids = assets.where((asset) => asset.storage == AssetState.merged).map((asset) => asset.localId!).toList();
+    } else {
+      ids = _getLocalIdsForSource(source);
+    }
+
     try {
       final deletedCount = await _service.deleteLocal(ids);
       return ActionResult(count: deletedCount, success: true);
@@ -277,6 +299,13 @@ class ActionNotifier extends Notifier<void> {
       final isEdited = await _service.editLocation(ids, context);
       if (!isEdited) {
         return null;
+      }
+
+      // This must be called since editing location
+      // does not update the currentAsset which means
+      // the exif provider will not be refreshed automatically
+      if (source == ActionSource.viewer) {
+        ref.invalidate(currentAssetExifProvider);
       }
 
       return ActionResult(count: ids.length, success: true);

@@ -2,17 +2,12 @@
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-  import {
-    notificationController,
-    NotificationType,
-  } from '$lib/components/shared-components/notification/notification';
+  import OnEvents from '$lib/components/OnEvents.svelte';
   import SharedLinkCard from '$lib/components/sharedlinks-page/shared-link-card.svelte';
   import { AppRoute } from '$lib/constants';
   import GroupTab from '$lib/elements/GroupTab.svelte';
-  import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
-  import { handleError } from '$lib/utils/handle-error';
-  import { getAllSharedLinks, removeSharedLink, SharedLinkType, type SharedLinkResponseDto } from '@immich/sdk';
-  import { modalManager } from '@immich/ui';
+  import SharedLinkUpdateModal from '$lib/modals/SharedLinkUpdateModal.svelte';
+  import { getAllSharedLinks, SharedLinkType, type SharedLinkResponseDto } from '@immich/sdk';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
@@ -33,31 +28,6 @@
   onMount(async () => {
     await refresh();
   });
-
-  const handleDeleteLink = async (id: string) => {
-    const isConfirmed = await modalManager.showDialog({
-      title: $t('delete_shared_link'),
-      prompt: $t('confirm_delete_shared_link'),
-      confirmText: $t('delete'),
-    });
-
-    if (!isConfirmed) {
-      return;
-    }
-
-    try {
-      await removeSharedLink({ id });
-      notificationController.show({ message: $t('deleted_shared_link'), type: NotificationType.Info });
-      await refresh();
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_delete_shared_link'));
-    }
-  };
-
-  const handleEditDone = async () => {
-    await refresh();
-    await goto(AppRoute.SHARED_LINKS);
-  };
 
   type Filter = 'all' | 'album' | 'individual';
 
@@ -88,7 +58,20 @@
         (type === SharedLinkType.Individual && selectedTab === 'individual'),
     ),
   );
+
+  const onSharedLinkUpdate = (sharedLink: SharedLinkResponseDto) => {
+    const index = sharedLinks.findIndex((link) => link.id === sharedLink.id);
+    if (index !== -1) {
+      sharedLinks[index] = sharedLink;
+    }
+  };
+
+  const onSharedLinkDelete = (sharedLink: SharedLinkResponseDto) => {
+    sharedLinks = sharedLinks.filter(({ id }) => id !== sharedLink.id);
+  };
 </script>
+
+<OnEvents {onSharedLinkUpdate} {onSharedLinkDelete} />
 
 <UserPageLayout title={data.meta.title}>
   {#snippet buttons()}
@@ -106,14 +89,14 @@
       </div>
     {:else}
       <div class="flex flex-col gap-2">
-        {#each filteredSharedLinks as link (link.id)}
-          <SharedLinkCard {link} onDelete={() => handleDeleteLink(link.id)} />
+        {#each filteredSharedLinks as sharedLink (sharedLink.id)}
+          <SharedLinkCard {sharedLink} />
         {/each}
       </div>
     {/if}
 
     {#if sharedLink}
-      <SharedLinkCreateModal editingLink={sharedLink} onClose={handleEditDone} />
+      <SharedLinkUpdateModal {sharedLink} onClose={() => goto(AppRoute.SHARED_LINKS)} />
     {/if}
   </div>
 </UserPageLayout>

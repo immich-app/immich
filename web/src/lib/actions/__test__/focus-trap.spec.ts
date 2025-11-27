@@ -24,7 +24,7 @@ describe('focusTrap action', () => {
   it('supports backward focus wrapping', async () => {
     render(FocusTrapTest, { show: true });
     await tick();
-    await user.keyboard('{Shift>}{Tab}{/Shift}');
+    await user.keyboard('{Shift}{Tab}{/Shift}');
     expect(document.activeElement).toEqual(screen.getByTestId('three'));
   });
 

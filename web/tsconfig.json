@@ -6,6 +6,7 @@
     "forceConsistentCasingInFileNames": true,
     "module": "es2022",
     "moduleResolution": "bundler",
+    "noImplicitOverride": true,
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "sourceMap": true,

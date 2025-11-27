@@ -4,6 +4,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
+import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
@@ -13,12 +14,13 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/favorite_actio
 import 'package:immich_mobile/presentation/widgets/action_buttons/motion_photo_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/unfavorite_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
+import 'package:immich_mobile/providers/activity.provider.dart';
 import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
-import 'package:immich_mobile/providers/tab.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 
@@ -39,17 +41,22 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
     final isInLockedView = ref.watch(inLockedViewProvider);
     final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
 
-    final previousRouteName = ref.watch(previousRouteNameProvider);
-    final tabRoute = ref.watch(tabProvider);
+    final timelineOrigin = ref.read(timelineServiceProvider).origin;
     final showViewInTimelineButton =
-        (previousRouteName != TabShellRoute.name || tabRoute == TabEnum.search) &&
-        previousRouteName != AssetViewerRoute.name &&
-        previousRouteName != null &&
-        previousRouteName != LocalTimelineRoute.name;
+        timelineOrigin != TimelineOrigin.main &&
+        timelineOrigin != TimelineOrigin.deepLink &&
+        timelineOrigin != TimelineOrigin.trash &&
+        timelineOrigin != TimelineOrigin.archive &&
+        timelineOrigin != TimelineOrigin.localAlbum &&
+        isOwner;
 
     final isShowingSheet = ref.watch(assetViewerProvider.select((state) => state.showingBottomSheet));
     int opacity = ref.watch(assetViewerProvider.select((state) => state.backgroundOpacity));
     final showControls = ref.watch(assetViewerProvider.select((s) => s.showingControls));
+
+    if (album != null && album.isActivityEnabled && album.isShared && asset is RemoteAsset) {
+      ref.watch(albumActivityProvider(album.id, asset.id));
+    }
 
     if (!showControls) {
       opacity = 0;
@@ -64,7 +71,7 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
         IconButton(
           icon: const Icon(Icons.chat_outlined),
           onPressed: () {
-            context.navigateTo(const DriftActivitiesRoute());
+            EventStream.shared.emit(const ViewerOpenBottomSheetEvent(activitiesMode: true));
           },
         ),
       if (showViewInTimelineButton)

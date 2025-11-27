@@ -32,7 +32,7 @@
 </script>
 
 <tr
-  class="flex h-[50px] w-full place-items-center border-[3px] border-transparent p-2 text-center even:bg-subtle/20 odd:bg-subtle/80 hover:cursor-pointer hover:border-immich-primary/75 odd:dark:bg-immich-dark-gray/75 even:dark:bg-immich-dark-gray/50 dark:hover:border-immich-dark-primary/75 md:p-5"
+  class="flex h-12 w-full place-items-center border-3 border-transparent p-2 text-center even:bg-subtle/20 odd:bg-subtle/80 hover:cursor-pointer hover:border-immich-primary/75 odd:dark:bg-immich-dark-gray/75 even:dark:bg-immich-dark-gray/50 dark:hover:border-immich-dark-primary/75 md:p-5"
   onclick={() => goto(resolve(`${AppRoute.ALBUMS}/${album.id}`))}
   {oncontextmenu}
 >

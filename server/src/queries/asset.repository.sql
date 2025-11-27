@@ -64,7 +64,7 @@ with
               from
                 asset
             ),
-            date_part('year', current_date)::int - 1
+            $3
           ) as "year"
       )
     select
@@ -81,21 +81,21 @@ with
         where
           "asset_job_status"."previewAt" is not null
           and (asset."localDateTime" at time zone 'UTC')::date = today.date
-          and "asset"."ownerId" = any ($3::uuid[])
-          and "asset"."visibility" = $4
+          and "asset"."ownerId" = any ($4::uuid[])
+          and "asset"."visibility" = $5
           and exists (
             select
             from
               "asset_file"
             where
               "assetId" = "asset"."id"
-              and "asset_file"."type" = $5
+              and "asset_file"."type" = $6
           )
           and "asset"."deletedAt" is null
         order by
           (asset."localDateTime" at time zone 'UTC')::date desc
         limit
-          $6
+          $7
       ) as "a" on true
       inner join "asset_exif" on "a"."id" = "asset_exif"."assetId"
   )
@@ -160,9 +160,9 @@ select
           "tag"."parentId"
         from
           "tag"
-          inner join "tag_asset" on "tag"."id" = "tag_asset"."tagsId"
+          inner join "tag_asset" on "tag"."id" = "tag_asset"."tagId"
         where
-          "asset"."id" = "tag_asset"."assetsId"
+          "asset"."id" = "tag_asset"."assetId"
       ) as agg
   ) as "tags",
   to_json("asset_exif") as "exifInfo"
@@ -296,7 +296,8 @@ with
       "asset"."duration",
       "asset"."id",
       "asset"."visibility",
-      "asset"."isFavorite",
+      asset."isFavorite"
+      and asset."ownerId" = $1 as "isFavorite",
       asset.type = 'IMAGE' as "isImage",
       asset."deletedAt" is not null as "isTrashed",
       "asset"."livePhotoVideoId",
@@ -341,14 +342,14 @@ with
         where
           "stacked"."stackId" = "asset"."stackId"
           and "stacked"."deletedAt" is null
-          and "stacked"."visibility" = $1
+          and "stacked"."visibility" = $2
         group by
           "stacked"."stackId"
       ) as "stacked_assets" on true
     where
       "asset"."deletedAt" is null
       and "asset"."visibility" in ('archive', 'timeline')
-      and date_trunc('MONTH', "localDateTime" AT TIME ZONE 'UTC') AT TIME ZONE 'UTC' = $2
+      and date_trunc('MONTH', "localDateTime" AT TIME ZONE 'UTC') AT TIME ZONE 'UTC' = $3
       and not exists (
         select
         from

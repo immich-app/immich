@@ -30,9 +30,9 @@ import 'package:immich_mobile/services/upload.service.dart';
 import 'package:immich_mobile/utils/bootstrap.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:immich_mobile/utils/http_ssl_options.dart';
+import 'package:immich_mobile/wm_executor.dart';
 import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
-import 'package:worker_manager/worker_manager.dart';
 
 class BackgroundWorkerFgService {
   final BackgroundWorkerFgHostApi _foregroundHostApi;
@@ -94,7 +94,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
       await Future.wait(
         [
           loadTranslations(),
-          workerManager.init(dynamicSpawning: true),
+          workerManagerPatch.init(dynamicSpawning: true),
           _ref?.read(authServiceProvider).setOpenApiServiceEndpoint(),
           // Initialize the file downloader
           FileDownloader().configure(
@@ -114,10 +114,10 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
       configureFileDownloaderNotifications();
 
       // Notify the host that the background worker service has been initialized and is ready to use
-      _backgroundHostApi.onInitialized();
+      unawaited(_backgroundHostApi.onInitialized());
     } catch (error, stack) {
       _logger.severe("Failed to initialize background worker", error, stack);
-      _backgroundHostApi.close();
+      unawaited(_backgroundHostApi.close());
     }
   }
 
@@ -177,6 +177,12 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
   }
 
   Future<void> _cleanup() async {
+    await runZonedGuarded(_handleCleanup, (error, stack) {
+      dPrint(() => "Error during background worker cleanup: $error, $stack");
+    });
+  }
+
+  Future<void> _handleCleanup() async {
     // If ref is null, it means the service was never initialized properly
     if (_isCleanedUp || _ref == null) {
       return;
@@ -186,22 +192,26 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
       _isCleanedUp = true;
       final backgroundSyncManager = _ref?.read(backgroundSyncProvider);
       final nativeSyncApi = _ref?.read(nativeSyncApiProvider);
+
+      await _drift.close();
+      await _driftLogger.close();
+
       _ref?.dispose();
       _ref = null;
 
       _cancellationToken.cancel();
       _logger.info("Cleaning up background worker");
+
       final cleanupFutures = [
-        workerManager.dispose().catchError((_) async {
+        nativeSyncApi?.cancelHashing(),
+        workerManagerPatch.dispose().catchError((_) async {
           // Discard any errors on the dispose call
           return;
         }),
         LogService.I.dispose(),
         Store.dispose(),
-        _drift.close(),
-        _driftLogger.close(),
+
         backgroundSyncManager?.cancel(),
-        nativeSyncApi?.cancelHashing(),
       ];
 
       if (_isar.isOpen) {
@@ -239,7 +249,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
         final networkCapabilities = await _ref?.read(connectivityApiProvider).getCapabilities() ?? [];
         return _ref
             ?.read(uploadServiceProvider)
-            .startBackupWithHttpClient(currentUser.id, networkCapabilities.hasWifi, _cancellationToken);
+            .startBackupWithHttpClient(currentUser.id, networkCapabilities.isUnmetered, _cancellationToken);
       },
       (error, stack) {
         dPrint(() => "Error in backup zone $error, $stack");

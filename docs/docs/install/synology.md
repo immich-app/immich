@@ -40,7 +40,7 @@ In the settings of your new project, set "**Project name**" to a name you'll rem
 
 ![Set path](../../static/img/synology-container-manager-set-path.png)
 
-The following screen will give you the option to further customize your `docker-compose.yml` file. Take note of `DB_STORAGE_TYPE: 'HDD'`and uncomment if applicable for your Synology setup.
+The following screen will give you the option to further customize your `docker-compose.yml` file. Take note of `DB_STORAGE_TYPE: 'HDD'` and uncomment if applicable for your Synology setup.
 
 ![DB storage](../../static/img/synology-container-manager-customize-docker-compose.png)
 

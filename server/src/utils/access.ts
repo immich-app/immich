@@ -153,6 +153,10 @@ const checkOtherAccess = async (access: AccessRepository, request: OtherAccessRe
       return await access.asset.checkOwnerAccess(auth.user.id, ids, auth.session?.hasElevatedPermission);
     }
 
+    case Permission.AssetCopy: {
+      return await access.asset.checkOwnerAccess(auth.user.id, ids, auth.session?.hasElevatedPermission);
+    }
+
     case Permission.AlbumRead: {
       const isOwner = await access.album.checkOwnerAccess(auth.user.id, ids);
       const isShared = await access.album.checkSharedAlbumAccess(
@@ -292,6 +296,12 @@ const checkOtherAccess = async (access: AccessRepository, request: OtherAccessRe
 
     case Permission.StackDelete: {
       return access.stack.checkOwnerAccess(auth.user.id, ids);
+    }
+
+    case Permission.WorkflowRead:
+    case Permission.WorkflowUpdate:
+    case Permission.WorkflowDelete: {
+      return access.workflow.checkOwnerAccess(auth.user.id, ids);
     }
 
     default: {

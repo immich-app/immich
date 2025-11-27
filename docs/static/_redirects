@@ -27,8 +27,10 @@
 /administration/password-login /administration/system-settings 307
 /features/search /features/searching 307
 /features/smart-search /features/searching 307
-/guides/api-album-sync /community-projects 307
-/guides/remove-offline-files /community-projects 307
+/guides/api-album-sync https://awesome.immich.app/ 307
+/guides/remove-offline-files https://awesome.immich.app/ 307
+/community-guides https://awesome.immich.app/ 307
+/community-projects https://awesome.immich.app/ 307
 /overview/introduction /overview/quick-start 307
 /overview/welcome /overview/quick-start 307
 /docs/* /:splat 307

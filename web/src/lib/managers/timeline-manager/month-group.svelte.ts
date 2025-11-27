@@ -153,7 +153,7 @@ export class MonthGroup {
     };
   }
 
-  addAssets(bucketAssets: TimeBucketAssetResponseDto) {
+  addAssets(bucketAssets: TimeBucketAssetResponseDto, preSorted: boolean) {
     const addContext = new GroupInsertionCache();
     for (let i = 0; i < bucketAssets.id.length; i++) {
       const { localDateTime, fileCreatedAt } = getTimes(
@@ -193,6 +193,9 @@ export class MonthGroup {
         timelineAsset.longitude = bucketAssets.longitude?.[i];
       }
       this.addTimelineAsset(timelineAsset, addContext);
+    }
+    if (preSorted) {
+      return addContext.unprocessedAssets;
     }
 
     for (const group of addContext.existingDayGroups) {
@@ -242,42 +245,40 @@ export class MonthGroup {
     if (this.#height === height) {
       return;
     }
-    const { timelineManager: store, percent } = this;
-    const index = store.months.indexOf(this);
+    const timelineManager = this.timelineManager;
+    const index = timelineManager.months.indexOf(this);
     const heightDelta = height - this.#height;
     this.#height = height;
-    const prevMonthGroup = store.months[index - 1];
+    const prevMonthGroup = timelineManager.months[index - 1];
     if (prevMonthGroup) {
       const newTop = prevMonthGroup.#top + prevMonthGroup.#height;
       if (this.#top !== newTop) {
         this.#top = newTop;
       }
     }
-    for (let cursor = index + 1; cursor < store.months.length; cursor++) {
+    if (heightDelta === 0) {
+      return;
+    }
+    for (let cursor = index + 1; cursor < timelineManager.months.length; cursor++) {
       const monthGroup = this.timelineManager.months[cursor];
       const newTop = monthGroup.#top + heightDelta;
       if (monthGroup.#top !== newTop) {
         monthGroup.#top = newTop;
       }
     }
-    if (store.topIntersectingMonthGroup) {
-      const currentIndex = store.months.indexOf(store.topIntersectingMonthGroup);
-      if (currentIndex > 0) {
-        if (index < currentIndex) {
-          store.scrollCompensation = {
-            heightDelta,
-            scrollTop: undefined,
-            monthGroup: this,
-          };
-        } else if (percent > 0) {
-          const top = this.top + height * percent;
-          store.scrollCompensation = {
-            heightDelta: undefined,
-            scrollTop: top,
-            monthGroup: this,
-          };
-        }
-      }
+    if (!timelineManager.viewportTopMonthIntersection) {
+      return;
+    }
+    const { month, monthBottomViewportRatio, viewportTopRatioInMonth } = timelineManager.viewportTopMonthIntersection;
+    const currentIndex = month ? timelineManager.months.indexOf(month) : -1;
+    if (!month || currentIndex <= 0 || index > currentIndex) {
+      return;
+    }
+    if (index < currentIndex || monthBottomViewportRatio < 1) {
+      timelineManager.scrollBy(heightDelta);
+    } else if (index === currentIndex) {
+      const scrollTo = this.top + height * viewportTopRatioInMonth;
+      timelineManager.scrollTo(scrollTo);
     }
   }
 
@@ -313,12 +314,14 @@ export class MonthGroup {
       if (viewerAsset) {
         if (!viewerAsset.position) {
           console.warn('No position for asset');
-          break;
+          return;
         }
-        return this.top + group.top + viewerAsset.position.top + this.timelineManager.headerHeight;
+        return {
+          top: this.top + group.top + viewerAsset.position.top + this.timelineManager.headerHeight,
+          height: viewerAsset.position.height,
+        };
       }
     }
-    return -1;
   }
 
   *assetsIterator(options?: { startDayGroup?: DayGroup; startAsset?: TimelineAsset; direction?: Direction }) {

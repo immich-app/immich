@@ -2,6 +2,7 @@ import { browser } from '$app/environment';
 import { Theme } from '$lib/constants';
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import { PersistedLocalStorage } from '$lib/utils/persisted';
+import { theme as uiTheme, type Theme as UiTheme } from '@immich/ui';
 
 export interface ThemeSetting {
   value: Theme;
@@ -36,7 +37,7 @@ class ThemeManager {
   isDark = $derived(this.value === Theme.DARK);
 
   constructor() {
-    eventManager.on('app.init', () => this.#onAppInit());
+    eventManager.on('AppInit', () => this.#onAppInit());
   }
 
   setSystem(system: boolean) {
@@ -71,7 +72,9 @@ class ThemeManager {
 
     this.#theme.current = theme;
 
-    eventManager.emit('theme.change', theme);
+    uiTheme.value = theme.value as unknown as UiTheme;
+
+    eventManager.emit('ThemeChange', theme);
   }
 }
 

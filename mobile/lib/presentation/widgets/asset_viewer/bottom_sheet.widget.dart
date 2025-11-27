@@ -1,6 +1,9 @@
+import 'dart:async';
+
+import 'package:auto_route/auto_route.dart';
+import 'package:collection/collection.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
@@ -8,17 +11,22 @@ import 'package:immich_mobile/domain/models/exif.model.dart';
 import 'package:immich_mobile/domain/models/setting.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/presentation/widgets/album/album_tile.dart';
+import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/bottom_sheet/sheet_location_details.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/bottom_sheet/sheet_people_details.widget.dart';
+import 'package:immich_mobile/presentation/widgets/asset_viewer/sheet_tile.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
-import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
+import 'package:immich_mobile/repositories/asset_media.repository.dart';
+import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/action_button.utils.dart';
 import 'package:immich_mobile/utils/bytes_units.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
@@ -88,8 +96,8 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
   }
 
   String _getFileInfo(BaseAsset asset, ExifInfo? exifInfo) {
-    final height = asset.height ?? exifInfo?.height;
-    final width = asset.width ?? exifInfo?.width;
+    final height = asset.height;
+    final width = asset.width;
     final resolution = (width != null && height != null) ? "${width.toInt()} x ${height.toInt()}" : null;
     final fileSize = exifInfo?.fileSize != null ? formatBytes(exifInfo!.fileSize!) : null;
 
@@ -118,17 +126,90 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
     if (exifInfo == null) {
       return null;
     }
-
-    final fNumber = exifInfo.fNumber.isNotEmpty ? 'ƒ/${exifInfo.fNumber}' : null;
     final exposureTime = exifInfo.exposureTime.isNotEmpty ? exifInfo.exposureTime : null;
-    final focalLength = exifInfo.focalLength.isNotEmpty ? '${exifInfo.focalLength} mm' : null;
     final iso = exifInfo.iso != null ? 'ISO ${exifInfo.iso}' : null;
+    return [exposureTime, iso].where((spec) => spec != null && spec.isNotEmpty).join(_kSeparator);
+  }
 
-    return [fNumber, exposureTime, focalLength, iso].where((spec) => spec != null && spec.isNotEmpty).join(_kSeparator);
+  String? _getLensInfoSubtitle(ExifInfo? exifInfo) {
+    if (exifInfo == null) {
+      return null;
+    }
+    final fNumber = exifInfo.fNumber.isNotEmpty ? 'ƒ/${exifInfo.fNumber}' : null;
+    final focalLength = exifInfo.focalLength.isNotEmpty ? '${exifInfo.focalLength} mm' : null;
+    return [fNumber, focalLength].where((spec) => spec != null && spec.isNotEmpty).join(_kSeparator);
   }
 
   Future<void> _editDateTime(BuildContext context, WidgetRef ref) async {
     await ref.read(actionProvider.notifier).editDateTime(ActionSource.viewer, context);
+  }
+
+  Widget _buildAppearsInList(WidgetRef ref, BuildContext context) {
+    final asset = ref.watch(currentAssetNotifier);
+    if (asset == null) {
+      return const SizedBox.shrink();
+    }
+
+    if (!asset.hasRemote) {
+      return const SizedBox.shrink();
+    }
+
+    String? remoteAssetId;
+    if (asset is RemoteAsset) {
+      remoteAssetId = asset.id;
+    } else if (asset is LocalAsset) {
+      remoteAssetId = asset.remoteAssetId;
+    }
+
+    if (remoteAssetId == null) {
+      return const SizedBox.shrink();
+    }
+
+    final userId = ref.watch(currentUserProvider)?.id;
+    final assetAlbums = ref.watch(albumsContainingAssetProvider(remoteAssetId));
+
+    return assetAlbums.when(
+      data: (albums) {
+        if (albums.isEmpty) {
+          return const SizedBox.shrink();
+        }
+
+        albums.sortBy((a) => a.name);
+
+        return Column(
+          spacing: 12,
+          children: [
+            if (albums.isNotEmpty)
+              SheetTile(
+                title: 'appears_in'.t(context: context).toUpperCase(),
+                titleStyle: context.textTheme.labelMedium?.copyWith(
+                  color: context.textTheme.labelMedium?.color?.withAlpha(200),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            Padding(
+              padding: const EdgeInsets.only(left: 24),
+              child: Column(
+                spacing: 12,
+                children: albums.map((album) {
+                  final isOwner = album.ownerId == userId;
+                  return AlbumTile(
+                    album: album,
+                    isOwner: isOwner,
+                    onAlbumSelected: (album) async {
+                      ref.invalidate(assetViewerProvider);
+                      unawaited(context.router.popAndPush(RemoteAlbumRoute(album: album)));
+                    },
+                  );
+                }).toList(),
+              ),
+            ),
+          ],
+        );
+      },
+      loading: () => const SizedBox.shrink(),
+      error: (_, __) => const SizedBox.shrink(),
+    );
   }
 
   @override
@@ -140,29 +221,35 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
 
     final exifInfo = ref.watch(currentAssetExifProvider).valueOrNull;
     final cameraTitle = _getCameraInfoTitle(exifInfo);
+    final lensTitle = exifInfo?.lens != null && exifInfo!.lens!.isNotEmpty ? exifInfo.lens : null;
+    final isOwner = ref.watch(currentUserProvider)?.id == (asset is RemoteAsset ? asset.ownerId : null);
 
-    return SliverList.list(
-      children: [
-        // Asset Date and Time
-        _SheetTile(
-          title: _getDateTime(context, asset),
-          titleStyle: context.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
-          trailing: asset.hasRemote ? const Icon(Icons.edit, size: 18) : null,
-          onTap: asset.hasRemote ? () async => await _editDateTime(context, ref) : null,
-        ),
-        if (exifInfo != null) _SheetAssetDescription(exif: exifInfo),
-        const SheetPeopleDetails(),
-        const SheetLocationDetails(),
-        // Details header
-        _SheetTile(
-          title: 'exif_bottom_sheet_details'.t(context: context),
-          titleStyle: context.textTheme.labelMedium?.copyWith(
-            color: context.textTheme.labelMedium?.color?.withAlpha(200),
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        // File info
-        _SheetTile(
+    // Build file info tile based on asset type
+    Widget buildFileInfoTile() {
+      if (asset is LocalAsset) {
+        final assetMediaRepository = ref.watch(assetMediaRepositoryProvider);
+        return FutureBuilder<String?>(
+          future: assetMediaRepository.getOriginalFilename(asset.id),
+          builder: (context, snapshot) {
+            final displayName = snapshot.data ?? asset.name;
+            return SheetTile(
+              title: displayName,
+              titleStyle: context.textTheme.labelLarge,
+              leading: Icon(
+                asset.isImage ? Icons.image_outlined : Icons.videocam_outlined,
+                size: 24,
+                color: context.textTheme.labelLarge?.color,
+              ),
+              subtitle: _getFileInfo(asset, exifInfo),
+              subtitleStyle: context.textTheme.bodyMedium?.copyWith(
+                color: context.textTheme.bodyMedium?.color?.withAlpha(155),
+              ),
+            );
+          },
+        );
+      } else {
+        // For remote assets, use the name directly
+        return SheetTile(
           title: asset.name,
           titleStyle: context.textTheme.labelLarge,
           leading: Icon(
@@ -174,99 +261,68 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
           subtitleStyle: context.textTheme.bodyMedium?.copyWith(
             color: context.textTheme.bodyMedium?.color?.withAlpha(155),
           ),
+        );
+      }
+    }
+
+    return SliverList.list(
+      children: [
+        // Asset Date and Time
+        SheetTile(
+          title: _getDateTime(context, asset),
+          titleStyle: context.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+          trailing: asset.hasRemote && isOwner ? const Icon(Icons.edit, size: 18) : null,
+          onTap: asset.hasRemote && isOwner ? () async => await _editDateTime(context, ref) : null,
         ),
+        if (exifInfo != null) _SheetAssetDescription(exif: exifInfo, isEditable: isOwner),
+        const SheetPeopleDetails(),
+        const SheetLocationDetails(),
+        // Details header
+        SheetTile(
+          title: 'exif_bottom_sheet_details'.t(context: context),
+          titleStyle: context.textTheme.labelMedium?.copyWith(
+            color: context.textTheme.labelMedium?.color?.withAlpha(200),
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        // File info
+        buildFileInfoTile(),
         // Camera info
         if (cameraTitle != null)
-          _SheetTile(
+          SheetTile(
             title: cameraTitle,
             titleStyle: context.textTheme.labelLarge,
-            leading: Icon(Icons.camera_outlined, size: 24, color: context.textTheme.labelLarge?.color),
+            leading: Icon(Icons.camera_alt_outlined, size: 24, color: context.textTheme.labelLarge?.color),
             subtitle: _getCameraInfoSubtitle(exifInfo),
             subtitleStyle: context.textTheme.bodyMedium?.copyWith(
               color: context.textTheme.bodyMedium?.color?.withAlpha(155),
             ),
           ),
-        const SizedBox(height: 64),
+        // Lens info
+        if (lensTitle != null)
+          SheetTile(
+            title: lensTitle,
+            titleStyle: context.textTheme.labelLarge,
+            leading: Icon(Icons.camera_outlined, size: 24, color: context.textTheme.labelLarge?.color),
+            subtitle: _getLensInfoSubtitle(exifInfo),
+            subtitleStyle: context.textTheme.bodyMedium?.copyWith(
+              color: context.textTheme.bodyMedium?.color?.withAlpha(155),
+            ),
+          ),
+        // Appears in (Albums)
+        _buildAppearsInList(ref, context),
+        // padding at the bottom to avoid cut-off
+        const SizedBox(height: 100),
       ],
-    );
-  }
-}
-
-class _SheetTile extends ConsumerWidget {
-  final String title;
-  final Widget? leading;
-  final Widget? trailing;
-  final String? subtitle;
-  final TextStyle? titleStyle;
-  final TextStyle? subtitleStyle;
-  final VoidCallback? onTap;
-
-  const _SheetTile({
-    required this.title,
-    this.titleStyle,
-    this.leading,
-    this.subtitle,
-    this.subtitleStyle,
-    this.trailing,
-    this.onTap,
-  });
-
-  void copyTitle(BuildContext context, WidgetRef ref) {
-    Clipboard.setData(ClipboardData(text: title));
-    ImmichToast.show(
-      context: context,
-      msg: 'copied_to_clipboard'.t(context: context),
-      toastType: ToastType.info,
-    );
-    ref.read(hapticFeedbackProvider.notifier).selectionClick();
-  }
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final Widget titleWidget;
-    if (leading == null) {
-      titleWidget = LimitedBox(
-        maxWidth: double.infinity,
-        child: Text(title, style: titleStyle),
-      );
-    } else {
-      titleWidget = Container(
-        width: double.infinity,
-        padding: const EdgeInsets.only(left: 15),
-        child: Text(title, style: titleStyle),
-      );
-    }
-
-    final Widget? subtitleWidget;
-    if (leading == null && subtitle != null) {
-      subtitleWidget = Text(subtitle!, style: subtitleStyle);
-    } else if (leading != null && subtitle != null) {
-      subtitleWidget = Padding(
-        padding: const EdgeInsets.only(left: 15),
-        child: Text(subtitle!, style: subtitleStyle),
-      );
-    } else {
-      subtitleWidget = null;
-    }
-
-    return ListTile(
-      dense: true,
-      visualDensity: VisualDensity.compact,
-      title: GestureDetector(onLongPress: () => copyTitle(context, ref), child: titleWidget),
-      titleAlignment: ListTileTitleAlignment.center,
-      leading: leading,
-      trailing: trailing,
-      contentPadding: leading == null ? null : const EdgeInsets.only(left: 25),
-      subtitle: subtitleWidget,
-      onTap: onTap,
     );
   }
 }
 
 class _SheetAssetDescription extends ConsumerStatefulWidget {
   final ExifInfo exif;
+  final bool isEditable;
 
-  const _SheetAssetDescription({required this.exif});
+  const _SheetAssetDescription({required this.exif, this.isEditable = true});
 
   @override
   ConsumerState<_SheetAssetDescription> createState() => _SheetAssetDescriptionState();
@@ -312,27 +368,33 @@ class _SheetAssetDescriptionState extends ConsumerState<_SheetAssetDescription> 
 
     // Update controller text when EXIF data changes
     final currentDescription = currentExifInfo?.description ?? '';
+    final hintText = (widget.isEditable ? 'exif_bottom_sheet_description' : 'exif_bottom_sheet_no_description').t(
+      context: context,
+    );
     if (_controller.text != currentDescription && !_descriptionFocus.hasFocus) {
       _controller.text = currentDescription;
     }
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
-      child: TextField(
-        controller: _controller,
-        keyboardType: TextInputType.multiline,
-        focusNode: _descriptionFocus,
-        maxLines: null, // makes it grow as text is added
-        decoration: InputDecoration(
-          hintText: 'exif_bottom_sheet_description'.t(context: context),
-          border: InputBorder.none,
-          enabledBorder: InputBorder.none,
-          focusedBorder: InputBorder.none,
-          disabledBorder: InputBorder.none,
-          errorBorder: InputBorder.none,
-          focusedErrorBorder: InputBorder.none,
+      child: IgnorePointer(
+        ignoring: !widget.isEditable,
+        child: TextField(
+          controller: _controller,
+          keyboardType: TextInputType.multiline,
+          focusNode: _descriptionFocus,
+          maxLines: null, // makes it grow as text is added
+          decoration: InputDecoration(
+            hintText: hintText,
+            border: InputBorder.none,
+            enabledBorder: InputBorder.none,
+            focusedBorder: InputBorder.none,
+            disabledBorder: InputBorder.none,
+            errorBorder: InputBorder.none,
+            focusedErrorBorder: InputBorder.none,
+          ),
+          onTapOutside: (_) => saveDescription(currentExifInfo?.description),
         ),
-        onTapOutside: (_) => saveDescription(currentExifInfo?.description),
       ),
     );
   }

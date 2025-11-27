@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:device_info_plus/device_info_plus.dart';
@@ -22,6 +23,7 @@ final assetMediaRepositoryProvider = Provider((ref) => AssetMediaRepository(ref.
 
 class AssetMediaRepository {
   final AssetApiRepository _assetApiRepository;
+
   static final Logger _log = Logger("AssetMediaRepository");
 
   const AssetMediaRepository(this._assetApiRepository);
@@ -87,9 +89,16 @@ class AssetMediaRepository {
       return null;
     }
 
-    // titleAsync gets the correct original filename for some assets on iOS
-    // otherwise using the `entity.title` would return a random GUID
-    return await entity.titleAsync;
+    try {
+      // titleAsync gets the correct original filename for some assets on iOS
+      // otherwise using the `entity.title` would return a random GUID
+      final originalFilename = await entity.titleAsync;
+      // treat empty filename as missing
+      return originalFilename.isNotEmpty ? originalFilename : null;
+    } catch (e) {
+      _log.warning("Failed to get original filename for asset: $id. Error: $e");
+      return null;
+    }
   }
 
   // TODO: make this more efficient
@@ -137,18 +146,20 @@ class AssetMediaRepository {
     // we dont want to await the share result since the
     // "preparing" dialog will not disappear until
     final size = context.sizeData;
-    Share.shareXFiles(
-      downloadedXFiles,
-      sharePositionOrigin: Rect.fromPoints(Offset.zero, Offset(size.width / 3, size.height)),
-    ).then((result) async {
-      for (var file in tempFiles) {
-        try {
-          await file.delete();
-        } catch (e) {
-          _log.warning("Failed to delete temporary file: ${file.path}", e);
+    unawaited(
+      Share.shareXFiles(
+        downloadedXFiles,
+        sharePositionOrigin: Rect.fromPoints(Offset.zero, Offset(size.width / 3, size.height)),
+      ).then((result) async {
+        for (var file in tempFiles) {
+          try {
+            await file.delete();
+          } catch (e) {
+            _log.warning("Failed to delete temporary file: ${file.path}", e);
+          }
         }
-      }
-    });
+      }),
+    );
 
     return downloadedXFiles.length;
   }

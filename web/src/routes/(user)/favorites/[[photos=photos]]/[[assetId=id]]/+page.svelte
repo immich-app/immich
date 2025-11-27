@@ -21,7 +21,6 @@
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { preferences } from '$lib/stores/user.store';
   import { mdiDotsVertical, mdiPlus } from '@mdi/js';
-  import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
 
@@ -31,9 +30,8 @@
 
   let { data }: Props = $props();
 
-  const timelineManager = new TimelineManager();
-  void timelineManager.updateOptions({ isFavorite: true, withStacked: true });
-  onDestroy(() => timelineManager.destroy());
+  let timelineManager = $state<TimelineManager>() as TimelineManager;
+  const options = { isFavorite: true, withStacked: true };
 
   const assetInteraction = new AssetInteraction();
 
@@ -54,13 +52,14 @@
   <Timeline
     enableRouting={true}
     withStacked={true}
-    {timelineManager}
+    bind:timelineManager
+    {options}
     {assetInteraction}
     removeAction={AssetAction.UNFAVORITE}
     onEscape={handleEscape}
   >
     {#snippet empty()}
-      <EmptyPlaceholder text={$t('no_favorites_message')} />
+      <EmptyPlaceholder text={$t('no_favorites_message')} class="mt-10 mx-auto" />
     {/snippet}
   </Timeline>
 </UserPageLayout>
@@ -86,7 +85,11 @@
       <ArchiveAction
         menuItem
         unarchive={assetInteraction.isAllArchived}
-        onArchive={(assetIds) => timelineManager.removeAssets(assetIds)}
+        onArchive={(ids, visibility) =>
+          timelineManager.updateAssetOperation(ids, (asset) => {
+            asset.visibility = visibility;
+            return { remove: false };
+          })}
       />
       {#if $preferences.tags.enabled}
         <TagAction menuItem />
@@ -95,7 +98,7 @@
       <DeleteAssets
         menuItem
         onAssetDelete={(assetIds) => timelineManager.removeAssets(assetIds)}
-        onUndoDelete={(assets) => timelineManager.addAssets(assets)}
+        onUndoDelete={(assets) => timelineManager.upsertAssets(assets)}
       />
     </ButtonContextMenu>
   </AssetSelectControlBar>
