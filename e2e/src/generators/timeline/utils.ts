@@ -61,7 +61,7 @@ export function selectRandomDays(daysInMonth: number, numDays: number, rng: Seed
     }
   }
 
-  return [...selectedDays].sort((a, b) => b - a);
+  return [...selectedDays].toSorted((a, b) => b - a);
 }
 
 /**

@@ -46,8 +46,7 @@ export class AlbumModalRowConverter {
   ): AlbumModalRow[] {
     // only show recent albums if no search was entered, or we're in the normal albums (non-shared) modal.
     const recentAlbumsToShow = !this.shared && search.length === 0 ? recentAlbums : [];
-    const rows: AlbumModalRow[] = [];
-    rows.push({ type: AlbumModalRowType.NEW_ALBUM, selected: selectedRowIndex === 0 });
+    const rows: AlbumModalRow[] = [{ type: AlbumModalRowType.NEW_ALBUM, selected: selectedRowIndex === 0 }];
 
     const filteredAlbums = sortAlbums(
       search.length > 0 && albums.length > 0
