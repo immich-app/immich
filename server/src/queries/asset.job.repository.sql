@@ -386,6 +386,84 @@ from
 where
   "asset"."id" = $2
 
+-- AssetJobRepository.getAssetPathsByPaths
+select
+  "originalPath",
+  "encodedVideoPath"
+from
+  "asset"
+where
+  (
+    "originalPath" in $1
+    or "encodedVideoPath" in $2
+  )
+
+-- AssetJobRepository.getAssetFilePathsByPaths
+select
+  "path"
+from
+  "asset_file"
+where
+  "path" in $1
+
+-- AssetJobRepository.getAssetCount
+select
+  count(*) as "count"
+from
+  "asset"
+
+-- AssetJobRepository.streamAssetPaths
+select
+  "allPaths"."path" as "path",
+  "integrity_report"."path" as "reportId"
+from
+  (
+    select
+      "originalPath" as "path"
+    from
+      "asset"
+    union all
+    select
+      "encodedVideoPath" as "path"
+    from
+      "asset"
+    where
+      "encodedVideoPath" is not null
+      and "encodedVideoPath" != $1
+    union all
+    select
+      "path"
+    from
+      "asset_file"
+  ) as "allPaths"
+  left join "integrity_report" on "integrity_report"."path" = "allPaths"."path"
+  and "integrity_report"."type" = $2
+
+-- AssetJobRepository.streamAssetChecksums
+select
+  "asset"."originalPath",
+  "asset"."checksum",
+  "asset"."createdAt",
+  "integrity_report"."id" as "reportId"
+from
+  "asset"
+  left join "integrity_report" on "integrity_report"."path" = "asset"."originalPath"
+  and "integrity_report"."type" = $1
+where
+  "createdAt" >= $2
+  and "createdAt" <= $3
+order by
+  "createdAt" asc
+
+-- AssetJobRepository.streamIntegrityReports
+select
+  "id" as "reportId",
+  "path"
+from
+  "integrity_report"
+where
+  "type" = $1
+
 -- AssetJobRepository.streamForVideoConversion
 select
   "asset"."id"
