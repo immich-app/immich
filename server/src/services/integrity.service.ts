@@ -8,6 +8,7 @@ import { JOBS_LIBRARY_PAGINATION_SIZE } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { OnEvent, OnJob } from 'src/decorators';
 import {
+  DatabaseLock,
   ImmichWorker,
   IntegrityReportType,
   JobName,
@@ -19,6 +20,7 @@ import {
 import { ArgOf } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
 import { IIntegrityOrphanedFilesJob, IIntegrityPathWithReportJob } from 'src/types';
+import { handlePromiseError } from 'src/utils/misc';
 
 async function* chunk<T>(generator: AsyncIterableIterator<T>, n: number) {
   let chunk: T[] = [];
@@ -38,25 +40,49 @@ async function* chunk<T>(generator: AsyncIterableIterator<T>, n: number) {
 
 @Injectable()
 export class IntegrityService extends BaseService {
-  // private backupLock = false;
+  private integrityLock = false;
 
   @OnEvent({ name: 'ConfigInit', workers: [ImmichWorker.Microservices] })
   async onConfigInit({
     newConfig: {
-      backup: { database },
+      integrityChecks: { orphanedFiles, missingFiles, checksumFiles },
     },
   }: ArgOf<'ConfigInit'>) {
-    // this.backupLock = await this.databaseRepository.tryLock(DatabaseLock.BackupDatabase);
-    // if (this.backupLock) {
-    //   this.cronRepository.create({
-    //     name: 'backupDatabase',
-    //     expression: database.cronExpression,
-    //     onTick: () => handlePromiseError(this.jobRepository.queue({ name: JobName.DatabaseBackup }), this.logger),
-    //     start: database.enabled,
-    //   });
-    // }
+    this.integrityLock = await this.databaseRepository.tryLock(DatabaseLock.IntegrityCheck);
+    if (this.integrityLock) {
+      this.cronRepository.create({
+        name: 'integrityOrphanedFiles',
+        expression: orphanedFiles.cronExpression,
+        onTick: () =>
+          handlePromiseError(
+            this.jobRepository.queue({ name: JobName.IntegrityOrphanedFilesQueueAll, data: {} }),
+            this.logger,
+          ),
+        start: orphanedFiles.enabled,
+      });
 
-    setTimeout(() => {
+      this.cronRepository.create({
+        name: 'integrityMissingFiles',
+        expression: missingFiles.cronExpression,
+        onTick: () =>
+          handlePromiseError(
+            this.jobRepository.queue({ name: JobName.IntegrityMissingFilesQueueAll, data: {} }),
+            this.logger,
+          ),
+        start: missingFiles.enabled,
+      });
+
+      this.cronRepository.create({
+        name: 'integrityChecksumFiles',
+        expression: checksumFiles.cronExpression,
+        onTick: () =>
+          handlePromiseError(this.jobRepository.queue({ name: JobName.IntegrityChecksumFiles, data: {} }), this.logger),
+        start: checksumFiles.enabled,
+      });
+    }
+
+    // debug: run on boot
+    setImmediate(() => {
       this.jobRepository.queue({
         name: JobName.IntegrityOrphanedFilesQueueAll,
         data: {},
@@ -71,19 +97,36 @@ export class IntegrityService extends BaseService {
         name: JobName.IntegrityChecksumFiles,
         data: {},
       });
-    }, 1000);
+    });
   }
 
   @OnEvent({ name: 'ConfigUpdate', server: true })
-  async onConfigUpdate({ newConfig: { backup } }: ArgOf<'ConfigUpdate'>) {
-    // if (!this.backupLock) {
-    //   return;
-    // }
-    // this.cronRepository.update({
-    //   name: 'backupDatabase',
-    //   expression: backup.database.cronExpression,
-    //   start: backup.database.enabled,
-    // });
+  async onConfigUpdate({
+    newConfig: {
+      integrityChecks: { orphanedFiles, missingFiles, checksumFiles },
+    },
+  }: ArgOf<'ConfigUpdate'>) {
+    if (!this.integrityLock) {
+      return;
+    }
+
+    this.cronRepository.update({
+      name: 'integrityOrphanedFiles',
+      expression: orphanedFiles.cronExpression,
+      start: orphanedFiles.enabled,
+    });
+
+    this.cronRepository.update({
+      name: 'integrityMissingFiles',
+      expression: missingFiles.cronExpression,
+      start: missingFiles.enabled,
+    });
+
+    this.cronRepository.update({
+      name: 'integrityChecksumFiles',
+      expression: checksumFiles.cronExpression,
+      start: checksumFiles.enabled,
+    });
   }
 
   @OnJob({ name: JobName.IntegrityOrphanedFilesQueueAll, queue: QueueName.BackgroundTask })

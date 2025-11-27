@@ -21237,6 +21237,9 @@
           "image": {
             "$ref": "#/components/schemas/SystemConfigImageDto"
           },
+          "integrityChecks": {
+            "$ref": "#/components/schemas/SystemConfigIntegrityChecks"
+          },
           "job": {
             "$ref": "#/components/schemas/SystemConfigJobDto"
           },
@@ -21296,6 +21299,7 @@
           "backup",
           "ffmpeg",
           "image",
+          "integrityChecks",
           "job",
           "library",
           "logging",
@@ -21539,6 +21543,63 @@
           "fullsize",
           "preview",
           "thumbnail"
+        ],
+        "type": "object"
+      },
+      "SystemConfigIntegrityChecks": {
+        "properties": {
+          "checksumFiles": {
+            "$ref": "#/components/schemas/SystemConfigIntegrityChecksumJob"
+          },
+          "missingFiles": {
+            "$ref": "#/components/schemas/SystemConfigIntegrityJob"
+          },
+          "orphanedFiles": {
+            "$ref": "#/components/schemas/SystemConfigIntegrityJob"
+          }
+        },
+        "required": [
+          "checksumFiles",
+          "missingFiles",
+          "orphanedFiles"
+        ],
+        "type": "object"
+      },
+      "SystemConfigIntegrityChecksumJob": {
+        "properties": {
+          "cronExpression": {
+            "type": "string"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "percentageLimit": {
+            "type": "number"
+          },
+          "timeLimit": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "cronExpression",
+          "enabled",
+          "percentageLimit",
+          "timeLimit"
+        ],
+        "type": "object"
+      },
+      "SystemConfigIntegrityJob": {
+        "properties": {
+          "cronExpression": {
+            "type": "string"
+          },
+          "enabled": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "cronExpression",
+          "enabled"
         ],
         "type": "object"
       },

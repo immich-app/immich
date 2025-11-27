@@ -1454,6 +1454,21 @@ export type SystemConfigImageDto = {
     preview: SystemConfigGeneratedImageDto;
     thumbnail: SystemConfigGeneratedImageDto;
 };
+export type SystemConfigIntegrityChecksumJob = {
+    cronExpression: string;
+    enabled: boolean;
+    percentageLimit: number;
+    timeLimit: number;
+};
+export type SystemConfigIntegrityJob = {
+    cronExpression: string;
+    enabled: boolean;
+};
+export type SystemConfigIntegrityChecks = {
+    checksumFiles: SystemConfigIntegrityChecksumJob;
+    missingFiles: SystemConfigIntegrityJob;
+    orphanedFiles: SystemConfigIntegrityJob;
+};
 export type JobSettingsDto = {
     concurrency: number;
 };
@@ -1606,6 +1621,7 @@ export type SystemConfigDto = {
     backup: SystemConfigBackupsDto;
     ffmpeg: SystemConfigFFmpegDto;
     image: SystemConfigImageDto;
+    integrityChecks: SystemConfigIntegrityChecks;
     job: SystemConfigJobDto;
     library: SystemConfigLibraryDto;
     logging: SystemConfigLoggingDto;

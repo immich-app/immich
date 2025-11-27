@@ -690,6 +690,12 @@ class ApiClient {
           return SystemConfigGeneratedImageDto.fromJson(value);
         case 'SystemConfigImageDto':
           return SystemConfigImageDto.fromJson(value);
+        case 'SystemConfigIntegrityChecks':
+          return SystemConfigIntegrityChecks.fromJson(value);
+        case 'SystemConfigIntegrityChecksumJob':
+          return SystemConfigIntegrityChecksumJob.fromJson(value);
+        case 'SystemConfigIntegrityJob':
+          return SystemConfigIntegrityJob.fromJson(value);
         case 'SystemConfigJobDto':
           return SystemConfigJobDto.fromJson(value);
         case 'SystemConfigLibraryDto':

@@ -694,6 +694,7 @@ export enum DatabaseLock {
   GetSystemConfig = 69,
   BackupDatabase = 42,
   MemoryCreation = 777,
+  IntegrityCheck = 67,
 }
 
 export enum MaintenanceAction {
