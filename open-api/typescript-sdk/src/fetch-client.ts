@@ -5486,7 +5486,12 @@ export enum JobName {
     VersionCheck = "VersionCheck",
     OcrQueueAll = "OcrQueueAll",
     Ocr = "Ocr",
-    WorkflowRun = "WorkflowRun"
+    WorkflowRun = "WorkflowRun",
+    IntegrityOrphanedFilesQueueAll = "IntegrityOrphanedFilesQueueAll",
+    IntegrityOrphanedFiles = "IntegrityOrphanedFiles",
+    IntegrityMissingFilesQueueAll = "IntegrityMissingFilesQueueAll",
+    IntegrityMissingFiles = "IntegrityMissingFiles",
+    IntegrityChecksumFiles = "IntegrityChecksumFiles"
 }
 export enum SearchSuggestionType {
     Country = "country",
