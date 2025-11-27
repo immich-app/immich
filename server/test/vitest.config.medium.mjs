@@ -14,5 +14,5 @@ export default defineConfig({
       },
     },
   },
-  plugins: [swc.vite(), tsconfigPaths()],
+  plugins: [swc.vite(), tsconfigPaths({ logFile: true })],
 });

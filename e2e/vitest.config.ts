@@ -14,10 +14,7 @@ export default defineConfig({
     globalSetup,
     testTimeout: 15_000,
     pool: 'threads',
-    poolOptions: {
-      threads: {
-        singleThread: true,
-      },
-    },
+    maxWorkers: 1,
+    isolate: false,
   },
 });
