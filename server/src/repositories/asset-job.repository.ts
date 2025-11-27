@@ -268,6 +268,14 @@ export class AssetJobRepository {
     return this.db.selectFrom('asset_file').select(['path']).where('path', 'in', paths).execute();
   }
 
+  @GenerateSql({ params: [] })
+  getAssetCount() {
+    return this.db
+      .selectFrom('asset')
+      .select((eb) => eb.fn.countAll<number>().as('count'))
+      .executeTakeFirstOrThrow();
+  }
+
   @GenerateSql({ params: [], stream: true })
   streamAssetPaths() {
     return this.db.selectFrom('asset').select(['originalPath', 'encodedVideoPath']).stream();
@@ -276,6 +284,17 @@ export class AssetJobRepository {
   @GenerateSql({ params: [], stream: true })
   streamAssetFilePaths() {
     return this.db.selectFrom('asset_file').select(['path']).stream();
+  }
+
+  @GenerateSql({ params: [DummyValue.DATE, DummyValue.DATE], stream: true })
+  streamAssetChecksums(startMarker?: Date, endMarker?: Date) {
+    return this.db
+      .selectFrom('asset')
+      .select(['originalPath', 'checksum', 'createdAt'])
+      .$if(startMarker !== undefined, (qb) => qb.where('createdAt', '>=', startMarker!))
+      .$if(endMarker !== undefined, (qb) => qb.where('createdAt', '<=', endMarker!))
+      .orderBy('createdAt', 'asc')
+      .stream();
   }
 
   @GenerateSql({ params: [], stream: true })

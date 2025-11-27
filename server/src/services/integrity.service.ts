@@ -1,9 +1,13 @@
 import { Injectable } from '@nestjs/common';
+import { createHash } from 'node:crypto';
+import { createReadStream } from 'node:fs';
 import { stat } from 'node:fs/promises';
+import { Writable } from 'node:stream';
+import { pipeline } from 'node:stream/promises';
 import { JOBS_LIBRARY_PAGINATION_SIZE } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { OnEvent, OnJob } from 'src/decorators';
-import { ImmichWorker, JobName, JobStatus, QueueName, StorageFolder } from 'src/enum';
+import { ImmichWorker, JobName, JobStatus, QueueName, StorageFolder, SystemMetadataKey } from 'src/enum';
 import { ArgOf } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
 import { IIntegrityMissingFilesJob, IIntegrityOrphanedFilesJob } from 'src/types';
@@ -28,13 +32,18 @@ export class IntegrityService extends BaseService {
     //   });
     // }
     setTimeout(() => {
-      this.jobRepository.queue({
-        name: JobName.IntegrityOrphanedFilesQueueAll,
-        data: {},
-      });
+      // this.jobRepository.queue({
+      //   name: JobName.IntegrityOrphanedFilesQueueAll,
+      //   data: {},
+      // });
+
+      // this.jobRepository.queue({
+      //   name: JobName.IntegrityMissingFilesQueueAll,
+      //   data: {},
+      // });
 
       this.jobRepository.queue({
-        name: JobName.IntegrityMissingFilesQueueAll,
+        name: JobName.IntegrityChecksumFiles,
         data: {},
       });
     }, 1000);
@@ -120,7 +129,7 @@ export class IntegrityService extends BaseService {
       }
     }
 
-    // do something with orphanedFiles
+    // todo: do something with orphanedFiles
     console.info(orphanedFiles);
 
     this.logger.log(`Processed ${paths.length} and found ${orphanedFiles.size} orphaned file(s).`);
@@ -129,6 +138,8 @@ export class IntegrityService extends BaseService {
 
   @OnJob({ name: JobName.IntegrityMissingFilesQueueAll, queue: QueueName.BackgroundTask })
   async handleMissingFilesQueueAll(): Promise<JobStatus> {
+    this.logger.log(`Scanning for missing files...`);
+
     const assetPaths = this.assetJobRepository.streamAssetPaths();
     const assetFilePaths = this.assetJobRepository.streamAssetFilePaths();
 
@@ -192,7 +203,7 @@ export class IntegrityService extends BaseService {
 
     const missingFiles = result.filter((path) => path);
 
-    // do something with missingFiles
+    // todo: do something with missingFiles
     console.info(missingFiles);
 
     this.logger.log(`Processed ${paths.length} and found ${missingFiles.length} missing file(s).`);
@@ -201,7 +212,88 @@ export class IntegrityService extends BaseService {
 
   @OnJob({ name: JobName.IntegrityChecksumFiles, queue: QueueName.BackgroundTask })
   async handleChecksumFiles(): Promise<JobStatus> {
-    // todo
+    const timeLimit = 60 * 60 * 1000; // 1000;
+    const percentageLimit = 1.0; // 0.25;
+
+    this.logger.log(
+      `Checking file checksums... (will run for up to ${(timeLimit / (60 * 60 * 1000)).toFixed(2)} hours or until ${(percentageLimit * 100).toFixed(2)}% of assets are processed)`,
+    );
+
+    let processed = 0;
+    const startedAt = Date.now();
+    const { count } = await this.assetJobRepository.getAssetCount();
+    const checkpoint = await this.systemMetadataRepository.get(SystemMetadataKey.IntegrityChecksumCheckpoint);
+
+    let startMarker: Date | undefined = checkpoint?.date ? new Date(checkpoint.date) : undefined;
+    let endMarker: Date | undefined; // todo
+
+    const printStats = () => {
+      const averageTime = ((Date.now() - startedAt) / processed).toFixed(2);
+      const completionProgress = ((processed / count) * 100).toFixed(2);
+
+      this.logger.log(
+        `Processed ${processed} files so far... (avg. ${averageTime} ms/asset, ${completionProgress}% of all assets)`,
+      );
+    };
+
+    let lastCreatedAt: Date | undefined;
+
+    finishEarly: do {
+      this.logger.log(
+        `Processing assets in range [${startMarker?.toISOString() ?? 'beginning'}, ${endMarker?.toISOString() ?? 'end'}]`,
+      );
+
+      const assets = this.assetJobRepository.streamAssetChecksums(startMarker, endMarker);
+      endMarker = startMarker;
+      startMarker = undefined;
+
+      for await (const { originalPath, checksum, createdAt } of assets) {
+        try {
+          const hash = createHash('sha1');
+
+          await pipeline([
+            createReadStream(originalPath),
+            new Writable({
+              write(chunk, _encoding, callback) {
+                hash.update(chunk);
+                callback();
+              },
+            }),
+          ]);
+
+          if (!checksum.equals(hash.digest())) {
+            throw new Error('File failed checksum');
+          }
+        } catch (error) {
+          this.logger.warn('Failed to process a file: ' + error);
+          // todo: do something with originalPath
+        }
+
+        processed++;
+        if (processed % 100 === 0) {
+          printStats();
+        }
+
+        if (Date.now() > startedAt + timeLimit || processed > count * percentageLimit) {
+          this.logger.log('Reached stop criteria.');
+          lastCreatedAt = createdAt;
+          break finishEarly;
+        }
+      }
+    } while (endMarker);
+
+    this.systemMetadataRepository.set(SystemMetadataKey.IntegrityChecksumCheckpoint, {
+      date: lastCreatedAt?.toISOString(),
+    });
+
+    printStats();
+
+    if (lastCreatedAt) {
+      this.logger.log(`Finished checksum job, will continue from ${lastCreatedAt.toISOString()}.`);
+    } else {
+      this.logger.log(`Finished checksum job, covered all assets.`);
+    }
+
     return JobStatus.Success;
   }
 }
