@@ -3,7 +3,7 @@ import { FACE_THUMBNAIL_SIZE, JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { StorageCore, ThumbnailPathEntity } from 'src/cores/storage.core';
 import { Exif } from 'src/database';
 import { OnEvent, OnJob } from 'src/decorators';
-import { EditActionCrop, EditActionItem, EditActionType } from 'src/dtos/editing.dto';
+import { EditActionItem, EditActionType } from 'src/dtos/editing.dto';
 import { SystemConfigFFmpegDto } from 'src/dtos/system-config.dto';
 import {
   AssetFileType,
@@ -73,15 +73,11 @@ export class MediaService extends BaseService {
         jobs.push({ name: JobName.AssetGenerateThumbnails, data: { id: asset.id } });
       }
 
-      if (asset.edits.length > 0) {
-        if (
-          !assetFiles.editedPreviewFile ||
-          !assetFiles.editedThumbnailFile ||
-          !assetFiles.editedFullsizeFile ||
-          force
-        ) {
-          jobs.push({ name: JobName.AssetGenerateThumbnails, data: { id: asset.id, source: 'edit' } });
-        }
+      if (
+        asset.edits.length > 0 &&
+        (!assetFiles.editedPreviewFile || !assetFiles.editedThumbnailFile || !assetFiles.editedFullsizeFile || force)
+      ) {
+        jobs.push({ name: JobName.AssetGenerateThumbnails, data: { id: asset.id, source: 'edit' } });
       }
 
       if (jobs.length >= JOBS_ASSET_PAGINATION_SIZE) {
@@ -516,14 +512,14 @@ export class MediaService extends BaseService {
       Math.min(dims.new.height - 1, middleY + targetHalfSize) - middleY,
     );
 
-    // convert to fractional LRTB crop action
+    // convert to fractional LRTB crop action (amount to crop from each edge)
     return {
       action: EditActionType.Crop,
       parameters: {
         left: (middleX - newHalfSize) / dims.new.width,
         top: (middleY - newHalfSize) / dims.new.height,
-        right: (middleX + newHalfSize) / dims.new.width,
-        bottom: (middleY + newHalfSize) / dims.new.height,
+        right: (dims.new.width - (middleX + newHalfSize)) / dims.new.width,
+        bottom: (dims.new.height - (middleY + newHalfSize)) / dims.new.height,
       },
       index: 0,
     };
