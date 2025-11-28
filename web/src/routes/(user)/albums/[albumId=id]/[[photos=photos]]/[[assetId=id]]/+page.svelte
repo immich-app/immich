@@ -30,6 +30,7 @@
   import Timeline from '$lib/components/timeline/Timeline.svelte';
   import { AlbumPageViewMode, AppRoute } from '$lib/constants';
   import { activityManager } from '$lib/managers/activity-manager.svelte';
+  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import AlbumOptionsModal from '$lib/modals/AlbumOptionsModal.svelte';
@@ -39,7 +40,6 @@
   import { handleDeleteAlbum, handleDownloadAlbum } from '$lib/services/album.service';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { featureFlags } from '$lib/stores/server-config.store';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { preferences, user } from '$lib/stores/user.store';
   import { handlePromiseError } from '$lib/utils';
@@ -244,7 +244,7 @@
   };
 
   const handleUndoRemoveAssets = async (assets: TimelineAsset[]) => {
-    timelineManager.addAssets(assets);
+    timelineManager.upsertAssets(assets);
     await refreshAlbum();
   };
 
@@ -567,7 +567,15 @@
                 onClick={() => updateThumbnailUsingCurrentSelection()}
               />
             {/if}
-            <ArchiveAction menuItem unarchive={assetInteraction.isAllArchived} />
+            <ArchiveAction
+              menuItem
+              unarchive={assetInteraction.isAllArchived}
+              onArchive={(ids, visibility) =>
+                timelineManager.updateAssetOperation(ids, (asset) => {
+                  asset.visibility = visibility;
+                  return { remove: false };
+                })}
+            />
             <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />
           {/if}
 
@@ -619,7 +627,7 @@
               />
             {/if}
 
-            {#if $featureFlags.loaded && $featureFlags.map}
+            {#if featureFlagsManager.value.map}
               <AlbumMap {album} />
             {/if}
 

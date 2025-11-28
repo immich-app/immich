@@ -114,6 +114,6 @@
   {/if}
 
   {#if !hasPeople && places.length === 0}
-    <EmptyPlaceholder text={$t('no_explore_results_message')} />
+    <EmptyPlaceholder text={$t('no_explore_results_message')} class="mt-10 mx-auto" />
   {/if}
 </UserPageLayout>

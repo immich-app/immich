@@ -2,8 +2,8 @@ import { goto } from '$app/navigation';
 import { AppRoute } from '$lib/constants';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { eventManager } from '$lib/managers/event-manager.svelte';
+import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
 import QrCodeModal from '$lib/modals/QrCodeModal.svelte';
-import { serverConfig } from '$lib/stores/server-config.store';
 import { copyToClipboard } from '$lib/utils';
 import { handleError } from '$lib/utils/handle-error';
 import { getFormatter } from '$lib/utils/i18n';
@@ -16,54 +16,42 @@ import {
   type SharedLinkEditDto,
   type SharedLinkResponseDto,
 } from '@immich/sdk';
-import { MenuItemType, menuManager, modalManager, toastManager, type MenuItem } from '@immich/ui';
-import { mdiCircleEditOutline, mdiContentCopy, mdiDelete, mdiDotsVertical, mdiQrcode } from '@mdi/js';
+import { modalManager, toastManager, type ActionItem } from '@immich/ui';
+import { mdiContentCopy, mdiPencilOutline, mdiQrcode, mdiTrashCanOutline } from '@mdi/js';
 import type { MessageFormatter } from 'svelte-i18n';
-import { get } from 'svelte/store';
 
 export const getSharedLinkActions = ($t: MessageFormatter, sharedLink: SharedLinkResponseDto) => {
-  const Edit: MenuItem = {
+  const Edit: ActionItem = {
     title: $t('edit_link'),
-    icon: mdiCircleEditOutline,
-    onSelect: () => void goto(`${AppRoute.SHARED_LINKS}/${sharedLink.id}`),
+    icon: mdiPencilOutline,
+    onAction: () => void goto(`${AppRoute.SHARED_LINKS}/${sharedLink.id}`),
   };
 
-  const Delete: MenuItem = {
+  const Delete: ActionItem = {
     title: $t('delete_link'),
-    icon: mdiDelete,
+    icon: mdiTrashCanOutline,
     color: 'danger',
-    onSelect: () => void handleDeleteSharedLink(sharedLink),
+    onAction: () => void handleDeleteSharedLink(sharedLink),
   };
 
-  const Copy: MenuItem = {
+  const Copy: ActionItem = {
     title: $t('copy_link'),
     icon: mdiContentCopy,
-    onSelect: () => void copyToClipboard(asUrl(sharedLink)),
+    onAction: () => void copyToClipboard(asUrl(sharedLink)),
   };
 
-  const ViewQrCode: MenuItem = {
+  const ViewQrCode: ActionItem = {
     title: $t('view_qr_code'),
     icon: mdiQrcode,
-    onSelect: () => void handleShowSharedLinkQrCode(sharedLink),
+    onAction: () => void handleShowSharedLinkQrCode(sharedLink),
   };
 
-  const ContextMenu: MenuItem = {
-    title: $t('shared_link_options'),
-    icon: mdiDotsVertical,
-    onSelect: ({ event }) =>
-      void menuManager.show({
-        target: event.currentTarget as HTMLElement,
-        position: 'top-right',
-        items: [Edit, Copy, MenuItemType.Divider, Delete],
-      }),
-  };
-
-  return { Edit, Delete, Copy, ViewQrCode, ContextMenu };
+  return { Edit, Delete, Copy, ViewQrCode };
 };
 
 const asUrl = (sharedLink: SharedLinkResponseDto) => {
   const path = sharedLink.slug ? `s/${sharedLink.slug}` : `share/${sharedLink.key}`;
-  return new URL(path, get(serverConfig).externalDomain || globalThis.location.origin).href;
+  return new URL(path, serverConfigManager.value.externalDomain || globalThis.location.origin).href;
 };
 
 export const handleCreateSharedLink = async (dto: SharedLinkCreateDto) => {
@@ -91,7 +79,6 @@ export const handleUpdateSharedLink = async (sharedLink: SharedLinkResponseDto, 
     const response = await updateSharedLink({ id: sharedLink.id, sharedLinkEditDto: dto });
 
     eventManager.emit('SharedLinkUpdate', { album: sharedLink.album, ...response });
-
     toastManager.success($t('saved'));
 
     return true;

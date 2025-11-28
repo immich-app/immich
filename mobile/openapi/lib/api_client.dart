@@ -220,8 +220,6 @@ class ApiClient {
           return AlbumsResponse.fromJson(value);
         case 'AlbumsUpdate':
           return AlbumsUpdate.fromJson(value);
-        case 'AllJobStatusResponseDto':
-          return AllJobStatusResponseDto.fromJson(value);
         case 'AssetBulkDeleteDto':
           return AssetBulkDeleteDto.fromJson(value);
         case 'AssetBulkUpdateDto':
@@ -358,20 +356,12 @@ class ApiClient {
           return FoldersUpdate.fromJson(value);
         case 'ImageFormat':
           return ImageFormatTypeTransformer().decode(value);
-        case 'JobCommand':
-          return JobCommandTypeTransformer().decode(value);
-        case 'JobCommandDto':
-          return JobCommandDto.fromJson(value);
-        case 'JobCountsDto':
-          return JobCountsDto.fromJson(value);
         case 'JobCreateDto':
           return JobCreateDto.fromJson(value);
         case 'JobName':
           return JobNameTypeTransformer().decode(value);
         case 'JobSettingsDto':
           return JobSettingsDto.fromJson(value);
-        case 'JobStatusDto':
-          return JobStatusDto.fromJson(value);
         case 'LibraryResponseDto':
           return LibraryResponseDto.fromJson(value);
         case 'LibraryStatsResponseDto':
@@ -390,6 +380,12 @@ class ApiClient {
           return LogoutResponseDto.fromJson(value);
         case 'MachineLearningAvailabilityChecksDto':
           return MachineLearningAvailabilityChecksDto.fromJson(value);
+        case 'MaintenanceAction':
+          return MaintenanceActionTypeTransformer().decode(value);
+        case 'MaintenanceAuthDto':
+          return MaintenanceAuthDto.fromJson(value);
+        case 'MaintenanceLoginDto':
+          return MaintenanceLoginDto.fromJson(value);
         case 'ManualJobName':
           return ManualJobNameTypeTransformer().decode(value);
         case 'MapMarkerResponseDto':
@@ -484,12 +480,44 @@ class ApiClient {
           return PinCodeSetupDto.fromJson(value);
         case 'PlacesResponseDto':
           return PlacesResponseDto.fromJson(value);
+        case 'PluginActionResponseDto':
+          return PluginActionResponseDto.fromJson(value);
+        case 'PluginContext':
+          return PluginContextTypeTransformer().decode(value);
+        case 'PluginFilterResponseDto':
+          return PluginFilterResponseDto.fromJson(value);
+        case 'PluginResponseDto':
+          return PluginResponseDto.fromJson(value);
+        case 'PluginTriggerType':
+          return PluginTriggerTypeTypeTransformer().decode(value);
         case 'PurchaseResponse':
           return PurchaseResponse.fromJson(value);
         case 'PurchaseUpdate':
           return PurchaseUpdate.fromJson(value);
-        case 'QueueStatusDto':
-          return QueueStatusDto.fromJson(value);
+        case 'QueueCommand':
+          return QueueCommandTypeTransformer().decode(value);
+        case 'QueueCommandDto':
+          return QueueCommandDto.fromJson(value);
+        case 'QueueDeleteDto':
+          return QueueDeleteDto.fromJson(value);
+        case 'QueueJobResponseDto':
+          return QueueJobResponseDto.fromJson(value);
+        case 'QueueJobStatus':
+          return QueueJobStatusTypeTransformer().decode(value);
+        case 'QueueName':
+          return QueueNameTypeTransformer().decode(value);
+        case 'QueueResponseDto':
+          return QueueResponseDto.fromJson(value);
+        case 'QueueResponseLegacyDto':
+          return QueueResponseLegacyDto.fromJson(value);
+        case 'QueueStatisticsDto':
+          return QueueStatisticsDto.fromJson(value);
+        case 'QueueStatusLegacyDto':
+          return QueueStatusLegacyDto.fromJson(value);
+        case 'QueueUpdateDto':
+          return QueueUpdateDto.fromJson(value);
+        case 'QueuesResponseLegacyDto':
+          return QueuesResponseLegacyDto.fromJson(value);
         case 'RandomSearchDto':
           return RandomSearchDto.fromJson(value);
         case 'RatingsResponse':
@@ -552,6 +580,8 @@ class ApiClient {
           return SessionUnlockDto.fromJson(value);
         case 'SessionUpdateDto':
           return SessionUpdateDto.fromJson(value);
+        case 'SetMaintenanceModeDto':
+          return SetMaintenanceModeDto.fromJson(value);
         case 'SharedLinkCreateDto':
           return SharedLinkCreateDto.fromJson(value);
         case 'SharedLinkEditDto':
@@ -790,6 +820,20 @@ class ApiClient {
           return VideoCodecTypeTransformer().decode(value);
         case 'VideoContainer':
           return VideoContainerTypeTransformer().decode(value);
+        case 'WorkflowActionItemDto':
+          return WorkflowActionItemDto.fromJson(value);
+        case 'WorkflowActionResponseDto':
+          return WorkflowActionResponseDto.fromJson(value);
+        case 'WorkflowCreateDto':
+          return WorkflowCreateDto.fromJson(value);
+        case 'WorkflowFilterItemDto':
+          return WorkflowFilterItemDto.fromJson(value);
+        case 'WorkflowFilterResponseDto':
+          return WorkflowFilterResponseDto.fromJson(value);
+        case 'WorkflowResponseDto':
+          return WorkflowResponseDto.fromJson(value);
+        case 'WorkflowUpdateDto':
+          return WorkflowUpdateDto.fromJson(value);
         default:
           dynamic match;
           if (value is List && (match = _regList.firstMatch(targetType)?.group(1)) != null) {

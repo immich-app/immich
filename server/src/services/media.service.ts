@@ -316,6 +316,16 @@ export class MediaService extends BaseService {
 
     const outputs = await Promise.all(promises);
 
+    if (asset.exifInfo.projectionType === 'EQUIRECTANGULAR') {
+      const promises = [
+        this.mediaRepository.copyTagGroup('XMP-GPano', asset.originalPath, previewPath),
+        fullsizePath
+          ? this.mediaRepository.copyTagGroup('XMP-GPano', asset.originalPath, fullsizePath)
+          : Promise.resolve(),
+      ];
+      await Promise.all(promises);
+    }
+
     return { previewPath, thumbnailPath, fullsizePath, thumbhash: outputs[0] as Buffer };
   }
 
@@ -551,7 +561,7 @@ export class MediaService extends BaseService {
   private getMainStream<T extends VideoStreamInfo | AudioStreamInfo>(streams: T[]): T {
     return streams
       .filter((stream) => stream.codecName !== 'unknown')
-      .sort((stream1, stream2) => stream2.bitrate - stream1.bitrate)[0];
+      .toSorted((stream1, stream2) => stream2.bitrate - stream1.bitrate)[0];
   }
 
   private getTranscodeTarget(

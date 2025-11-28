@@ -1,6 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { page } from '$app/stores';
+  import { page } from '$app/state';
   import OnboardingBackup from '$lib/components/onboarding-page/onboarding-backup.svelte';
   import OnboardingCard from '$lib/components/onboarding-page/onboarding-card.svelte';
   import OnboardingHello from '$lib/components/onboarding-page/onboarding-hello.svelte';
@@ -11,8 +11,9 @@
   import OnboardingTheme from '$lib/components/onboarding-page/onboarding-theme.svelte';
   import OnboardingUserPrivacy from '$lib/components/onboarding-page/onboarding-user-privacy.svelte';
   import { AppRoute, QueryParameter } from '$lib/constants';
+  import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
+  import { systemConfigManager } from '$lib/managers/system-config-manager.svelte';
   import { OnboardingRole } from '$lib/models/onboarding-role';
-  import { retrieveServerConfig, retrieveSystemConfig, serverConfig } from '$lib/stores/server-config.store';
   import { user } from '$lib/stores/user.store';
   import { setUserOnboarding, updateAdminOnboarding } from '@immich/sdk';
   import {
@@ -94,8 +95,14 @@
     },
   ]);
 
-  let index = $state(0);
-  let userRole = $derived($user.isAdmin && !$serverConfig.isOnboarded ? OnboardingRole.SERVER : OnboardingRole.USER);
+  const index = $derived.by(() => {
+    const stepState = page.url.searchParams.get('step');
+    const temporaryIndex = onboardingSteps.findIndex((step) => step.name === stepState);
+    return temporaryIndex === -1 ? 0 : temporaryIndex;
+  });
+  let userRole = $derived(
+    $user.isAdmin && !serverConfigManager.value.isOnboarded ? OnboardingRole.SERVER : OnboardingRole.USER,
+  );
 
   let onboardingStepCount = $derived(onboardingSteps.filter((step) => shouldRunStep(step.role, userRole)).length);
   let onboardingProgress = $derived(
@@ -105,15 +112,11 @@
   const shouldRunStep = (stepRole: OnboardingRole, userRole: OnboardingRole) => {
     return (
       stepRole === OnboardingRole.USER ||
-      (stepRole === OnboardingRole.SERVER && userRole === OnboardingRole.SERVER && !$serverConfig.isOnboarded)
+      (stepRole === OnboardingRole.SERVER &&
+        userRole === OnboardingRole.SERVER &&
+        !serverConfigManager.value.isOnboarded)
     );
   };
-
-  $effect(() => {
-    const stepState = $page.url.searchParams.get('step');
-    const temporaryIndex = onboardingSteps.findIndex((step) => step.name === stepState);
-    index = temporaryIndex === -1 ? 0 : temporaryIndex;
-  });
 
   const previousStepIndex = $derived(
     onboardingSteps.findLastIndex((step, i) => shouldRunStep(step.role, userRole) && i < index),
@@ -127,7 +130,7 @@
     if (nextStepIndex == -1) {
       if ($user.isAdmin) {
         await updateAdminOnboarding({ adminOnboardingUpdateDto: { isOnboarded: true } });
-        await retrieveServerConfig();
+        await serverConfigManager.loadServerConfig();
       }
 
       await setUserOnboarding({
@@ -152,11 +155,13 @@
     );
   };
 
-  onMount(async () => {
-    await retrieveSystemConfig();
-  });
-
   const OnboardingStep = $derived(onboardingSteps[index].component);
+
+  onMount(async () => {
+    if (userRole === OnboardingRole.SERVER) {
+      await systemConfigManager.init();
+    }
+  });
 </script>
 
 <section id="onboarding-page" class="min-w-dvw flex min-h-dvh p-4">

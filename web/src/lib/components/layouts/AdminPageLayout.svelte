@@ -4,16 +4,16 @@
   import NavigationBar from '$lib/components/shared-components/navigation-bar/navigation-bar.svelte';
   import AdminSidebar from '$lib/sidebars/AdminSidebar.svelte';
   import { sidebarStore } from '$lib/stores/sidebar.svelte';
-  import { AppShell, AppShellHeader, AppShellSidebar, Scrollable } from '@immich/ui';
+  import { AppShell, AppShellHeader, AppShellSidebar, Scrollable, type BreadcrumbItem } from '@immich/ui';
   import type { Snippet } from 'svelte';
 
   type Props = {
-    title: string;
+    breadcrumbs: BreadcrumbItem[];
     buttons?: Snippet;
     children?: Snippet;
   };
 
-  let { title, buttons, children }: Props = $props();
+  let { breadcrumbs, buttons, children }: Props = $props();
 </script>
 
 <AppShell>
@@ -24,7 +24,7 @@
     <AdminSidebar />
   </AppShellSidebar>
 
-  <TitleLayout {title} {buttons}>
+  <TitleLayout {breadcrumbs} {buttons}>
     <Scrollable class="grow">
       <PageContent>
         {@render children?.()}

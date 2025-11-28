@@ -1,6 +1,6 @@
 /**
  * Immich
- * 2.2.3
+ * 2.3.1
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -39,6 +39,15 @@ export type ActivityCreateDto = {
 export type ActivityStatisticsResponseDto = {
     comments: number;
     likes: number;
+};
+export type SetMaintenanceModeDto = {
+    action: MaintenanceAction;
+};
+export type MaintenanceLoginDto = {
+    token?: string;
+};
+export type MaintenanceAuthDto = {
+    username: string;
 };
 export type NotificationCreateDto = {
     data?: object;
@@ -699,7 +708,7 @@ export type AssetFaceDeleteDto = {
 export type FaceDto = {
     id: string;
 };
-export type JobCountsDto = {
+export type QueueStatisticsDto = {
     active: number;
     completed: number;
     delayed: number;
@@ -707,37 +716,38 @@ export type JobCountsDto = {
     paused: number;
     waiting: number;
 };
-export type QueueStatusDto = {
+export type QueueStatusLegacyDto = {
     isActive: boolean;
     isPaused: boolean;
 };
-export type JobStatusDto = {
-    jobCounts: JobCountsDto;
-    queueStatus: QueueStatusDto;
+export type QueueResponseLegacyDto = {
+    jobCounts: QueueStatisticsDto;
+    queueStatus: QueueStatusLegacyDto;
 };
-export type AllJobStatusResponseDto = {
-    backgroundTask: JobStatusDto;
-    backupDatabase: JobStatusDto;
-    duplicateDetection: JobStatusDto;
-    faceDetection: JobStatusDto;
-    facialRecognition: JobStatusDto;
-    library: JobStatusDto;
-    metadataExtraction: JobStatusDto;
-    migration: JobStatusDto;
-    notifications: JobStatusDto;
-    ocr: JobStatusDto;
-    search: JobStatusDto;
-    sidecar: JobStatusDto;
-    smartSearch: JobStatusDto;
-    storageTemplateMigration: JobStatusDto;
-    thumbnailGeneration: JobStatusDto;
-    videoConversion: JobStatusDto;
+export type QueuesResponseLegacyDto = {
+    backgroundTask: QueueResponseLegacyDto;
+    backupDatabase: QueueResponseLegacyDto;
+    duplicateDetection: QueueResponseLegacyDto;
+    faceDetection: QueueResponseLegacyDto;
+    facialRecognition: QueueResponseLegacyDto;
+    library: QueueResponseLegacyDto;
+    metadataExtraction: QueueResponseLegacyDto;
+    migration: QueueResponseLegacyDto;
+    notifications: QueueResponseLegacyDto;
+    ocr: QueueResponseLegacyDto;
+    search: QueueResponseLegacyDto;
+    sidecar: QueueResponseLegacyDto;
+    smartSearch: QueueResponseLegacyDto;
+    storageTemplateMigration: QueueResponseLegacyDto;
+    thumbnailGeneration: QueueResponseLegacyDto;
+    videoConversion: QueueResponseLegacyDto;
+    workflow: QueueResponseLegacyDto;
 };
 export type JobCreateDto = {
     name: ManualJobName;
 };
-export type JobCommandDto = {
-    command: JobCommand;
+export type QueueCommandDto = {
+    command: QueueCommand;
     force?: boolean;
 };
 export type LibraryResponseDto = {
@@ -925,6 +935,54 @@ export type AssetFaceUpdateDto = {
 };
 export type PersonStatisticsResponseDto = {
     assets: number;
+};
+export type PluginActionResponseDto = {
+    description: string;
+    id: string;
+    methodName: string;
+    pluginId: string;
+    schema: object | null;
+    supportedContexts: PluginContext[];
+    title: string;
+};
+export type PluginFilterResponseDto = {
+    description: string;
+    id: string;
+    methodName: string;
+    pluginId: string;
+    schema: object | null;
+    supportedContexts: PluginContext[];
+    title: string;
+};
+export type PluginResponseDto = {
+    actions: PluginActionResponseDto[];
+    author: string;
+    createdAt: string;
+    description: string;
+    filters: PluginFilterResponseDto[];
+    id: string;
+    name: string;
+    title: string;
+    updatedAt: string;
+    version: string;
+};
+export type QueueResponseDto = {
+    isPaused: boolean;
+    name: QueueName;
+    statistics: QueueStatisticsDto;
+};
+export type QueueUpdateDto = {
+    isPaused?: boolean;
+};
+export type QueueDeleteDto = {
+    /** If true, will also remove failed jobs from the queue. */
+    failed?: boolean;
+};
+export type QueueJobResponseDto = {
+    data: object;
+    id?: string;
+    name: JobName;
+    timestamp: number;
 };
 export type SearchExploreItem = {
     data: AssetResponseDto;
@@ -1152,6 +1210,7 @@ export type ServerConfigDto = {
     isInitialized: boolean;
     isOnboarded: boolean;
     loginPageMessage: string;
+    maintenanceMode: boolean;
     mapDarkStyleUrl: string;
     mapLightStyleUrl: string;
     oauthButtonText: string;
@@ -1411,6 +1470,7 @@ export type SystemConfigJobDto = {
     smartSearch: JobSettingsDto;
     thumbnailGeneration: JobSettingsDto;
     videoConversion: JobSettingsDto;
+    workflow: JobSettingsDto;
 };
 export type SystemConfigLibraryScanDto = {
     cronExpression: string;
@@ -1667,6 +1727,54 @@ export type CreateProfileImageResponseDto = {
     profileImagePath: string;
     userId: string;
 };
+export type WorkflowActionResponseDto = {
+    actionConfig: object | null;
+    actionId: string;
+    id: string;
+    order: number;
+    workflowId: string;
+};
+export type WorkflowFilterResponseDto = {
+    filterConfig: object | null;
+    filterId: string;
+    id: string;
+    order: number;
+    workflowId: string;
+};
+export type WorkflowResponseDto = {
+    actions: WorkflowActionResponseDto[];
+    createdAt: string;
+    description: string;
+    enabled: boolean;
+    filters: WorkflowFilterResponseDto[];
+    id: string;
+    name: string | null;
+    ownerId: string;
+    triggerType: TriggerType;
+};
+export type WorkflowActionItemDto = {
+    actionConfig?: object;
+    actionId: string;
+};
+export type WorkflowFilterItemDto = {
+    filterConfig?: object;
+    filterId: string;
+};
+export type WorkflowCreateDto = {
+    actions: WorkflowActionItemDto[];
+    description?: string;
+    enabled?: boolean;
+    filters: WorkflowFilterItemDto[];
+    name: string;
+    triggerType: PluginTriggerType;
+};
+export type WorkflowUpdateDto = {
+    actions?: WorkflowActionItemDto[];
+    description?: string;
+    enabled?: boolean;
+    filters?: WorkflowFilterItemDto[];
+    name?: string;
+};
 /**
  * List all activities
  */
@@ -1741,6 +1849,33 @@ export function unlinkAllOAuthAccountsAdmin(opts?: Oazapfts.RequestOpts) {
         ...opts,
         method: "POST"
     }));
+}
+/**
+ * Set maintenance mode
+ */
+export function setMaintenanceMode({ setMaintenanceModeDto }: {
+    setMaintenanceModeDto: SetMaintenanceModeDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/admin/maintenance", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: setMaintenanceModeDto
+    })));
+}
+/**
+ * Log into maintenance mode
+ */
+export function maintenanceLogin({ maintenanceLoginDto }: {
+    maintenanceLoginDto: MaintenanceLoginDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: MaintenanceAuthDto;
+    }>("/admin/maintenance/login", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: maintenanceLoginDto
+    })));
 }
 /**
  * Create a notification
@@ -2805,10 +2940,10 @@ export function reassignFacesById({ id, faceDto }: {
 /**
  * Retrieve queue counts and status
  */
-export function getAllJobsStatus(opts?: Oazapfts.RequestOpts) {
+export function getQueuesLegacy(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
-        data: AllJobStatusResponseDto;
+        data: QueuesResponseLegacyDto;
     }>("/jobs", {
         ...opts
     }));
@@ -2828,17 +2963,17 @@ export function createJob({ jobCreateDto }: {
 /**
  * Run jobs
  */
-export function sendJobCommand({ id, jobCommandDto }: {
-    id: JobName;
-    jobCommandDto: JobCommandDto;
+export function runQueueCommandLegacy({ name, queueCommandDto }: {
+    name: QueueName;
+    queueCommandDto: QueueCommandDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
-        data: JobStatusDto;
-    }>(`/jobs/${encodeURIComponent(id)}`, oazapfts.json({
+        data: QueueResponseLegacyDto;
+    }>(`/jobs/${encodeURIComponent(name)}`, oazapfts.json({
         ...opts,
         method: "PUT",
-        body: jobCommandDto
+        body: queueCommandDto
     })));
 }
 /**
@@ -3507,6 +3642,99 @@ export function getPersonThumbnail({ id }: {
         status: 200;
         data: Blob;
     }>(`/people/${encodeURIComponent(id)}/thumbnail`, {
+        ...opts
+    }));
+}
+/**
+ * List all plugins
+ */
+export function getPlugins(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: PluginResponseDto[];
+    }>("/plugins", {
+        ...opts
+    }));
+}
+/**
+ * Retrieve a plugin
+ */
+export function getPlugin({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: PluginResponseDto;
+    }>(`/plugins/${encodeURIComponent(id)}`, {
+        ...opts
+    }));
+}
+/**
+ * List all queues
+ */
+export function getQueues(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: QueueResponseDto[];
+    }>("/queues", {
+        ...opts
+    }));
+}
+/**
+ * Retrieve a queue
+ */
+export function getQueue({ name }: {
+    name: QueueName;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: QueueResponseDto;
+    }>(`/queues/${encodeURIComponent(name)}`, {
+        ...opts
+    }));
+}
+/**
+ * Update a queue
+ */
+export function updateQueue({ name, queueUpdateDto }: {
+    name: QueueName;
+    queueUpdateDto: QueueUpdateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: QueueResponseDto;
+    }>(`/queues/${encodeURIComponent(name)}`, oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: queueUpdateDto
+    })));
+}
+/**
+ * Empty a queue
+ */
+export function emptyQueue({ name, queueDeleteDto }: {
+    name: QueueName;
+    queueDeleteDto: QueueDeleteDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/queues/${encodeURIComponent(name)}/jobs`, oazapfts.json({
+        ...opts,
+        method: "DELETE",
+        body: queueDeleteDto
+    })));
+}
+/**
+ * Retrieve queue jobs
+ */
+export function getQueueJobs({ name, status }: {
+    name: QueueName;
+    status?: QueueJobStatus[];
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: QueueJobResponseDto[];
+    }>(`/queues/${encodeURIComponent(name)}/jobs${QS.query(QS.explode({
+        status
+    }))}`, {
         ...opts
     }));
 }
@@ -4824,6 +5052,72 @@ export function getUniqueOriginalPaths(opts?: Oazapfts.RequestOpts) {
         ...opts
     }));
 }
+/**
+ * List all workflows
+ */
+export function getWorkflows(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: WorkflowResponseDto[];
+    }>("/workflows", {
+        ...opts
+    }));
+}
+/**
+ * Create a workflow
+ */
+export function createWorkflow({ workflowCreateDto }: {
+    workflowCreateDto: WorkflowCreateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: WorkflowResponseDto;
+    }>("/workflows", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: workflowCreateDto
+    })));
+}
+/**
+ * Delete a workflow
+ */
+export function deleteWorkflow({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/workflows/${encodeURIComponent(id)}`, {
+        ...opts,
+        method: "DELETE"
+    }));
+}
+/**
+ * Retrieve a workflow
+ */
+export function getWorkflow({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: WorkflowResponseDto;
+    }>(`/workflows/${encodeURIComponent(id)}`, {
+        ...opts
+    }));
+}
+/**
+ * Update a workflow
+ */
+export function updateWorkflow({ id, workflowUpdateDto }: {
+    id: string;
+    workflowUpdateDto: WorkflowUpdateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: WorkflowResponseDto;
+    }>(`/workflows/${encodeURIComponent(id)}`, oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: workflowUpdateDto
+    })));
+}
 export enum ReactionLevel {
     Album = "album",
     Asset = "asset"
@@ -4843,6 +5137,10 @@ export enum UserAvatarColor {
     Orange = "orange",
     Gray = "gray",
     Amber = "amber"
+}
+export enum MaintenanceAction {
+    Start = "start",
+    End = "end"
 }
 export enum NotificationLevel {
     Success = "success",
@@ -4951,6 +5249,7 @@ export enum Permission {
     LibraryStatistics = "library.statistics",
     TimelineRead = "timeline.read",
     TimelineDownload = "timeline.download",
+    Maintenance = "maintenance",
     MemoryCreate = "memory.create",
     MemoryRead = "memory.read",
     MemoryUpdate = "memory.update",
@@ -4976,6 +5275,10 @@ export enum Permission {
     PinCodeCreate = "pinCode.create",
     PinCodeUpdate = "pinCode.update",
     PinCodeDelete = "pinCode.delete",
+    PluginCreate = "plugin.create",
+    PluginRead = "plugin.read",
+    PluginUpdate = "plugin.update",
+    PluginDelete = "plugin.delete",
     ServerAbout = "server.about",
     ServerApkLinks = "server.apkLinks",
     ServerStorage = "server.storage",
@@ -5025,6 +5328,16 @@ export enum Permission {
     UserProfileImageRead = "userProfileImage.read",
     UserProfileImageUpdate = "userProfileImage.update",
     UserProfileImageDelete = "userProfileImage.delete",
+    QueueRead = "queue.read",
+    QueueUpdate = "queue.update",
+    QueueJobCreate = "queueJob.create",
+    QueueJobRead = "queueJob.read",
+    QueueJobUpdate = "queueJob.update",
+    QueueJobDelete = "queueJob.delete",
+    WorkflowCreate = "workflow.create",
+    WorkflowRead = "workflow.read",
+    WorkflowUpdate = "workflow.update",
+    WorkflowDelete = "workflow.delete",
     AdminUserCreate = "adminUser.create",
     AdminUserRead = "adminUser.read",
     AdminUserUpdate = "adminUser.update",
@@ -5067,7 +5380,7 @@ export enum ManualJobName {
     MemoryCreate = "memory-create",
     BackupDatabase = "backup-database"
 }
-export enum JobName {
+export enum QueueName {
     ThumbnailGeneration = "thumbnailGeneration",
     MetadataExtraction = "metadataExtraction",
     VideoConversion = "videoConversion",
@@ -5083,9 +5396,10 @@ export enum JobName {
     Library = "library",
     Notifications = "notifications",
     BackupDatabase = "backupDatabase",
-    Ocr = "ocr"
+    Ocr = "ocr",
+    Workflow = "workflow"
 }
-export enum JobCommand {
+export enum QueueCommand {
     Start = "start",
     Pause = "pause",
     Resume = "resume",
@@ -5103,6 +5417,76 @@ export enum MemoryType {
 export enum PartnerDirection {
     SharedBy = "shared-by",
     SharedWith = "shared-with"
+}
+export enum PluginContext {
+    Asset = "asset",
+    Album = "album",
+    Person = "person"
+}
+export enum QueueJobStatus {
+    Active = "active",
+    Failed = "failed",
+    Completed = "completed",
+    Delayed = "delayed",
+    Waiting = "waiting",
+    Paused = "paused"
+}
+export enum JobName {
+    AssetDelete = "AssetDelete",
+    AssetDeleteCheck = "AssetDeleteCheck",
+    AssetDetectFacesQueueAll = "AssetDetectFacesQueueAll",
+    AssetDetectFaces = "AssetDetectFaces",
+    AssetDetectDuplicatesQueueAll = "AssetDetectDuplicatesQueueAll",
+    AssetDetectDuplicates = "AssetDetectDuplicates",
+    AssetEncodeVideoQueueAll = "AssetEncodeVideoQueueAll",
+    AssetEncodeVideo = "AssetEncodeVideo",
+    AssetEmptyTrash = "AssetEmptyTrash",
+    AssetExtractMetadataQueueAll = "AssetExtractMetadataQueueAll",
+    AssetExtractMetadata = "AssetExtractMetadata",
+    AssetFileMigration = "AssetFileMigration",
+    AssetGenerateThumbnailsQueueAll = "AssetGenerateThumbnailsQueueAll",
+    AssetGenerateThumbnails = "AssetGenerateThumbnails",
+    AuditLogCleanup = "AuditLogCleanup",
+    AuditTableCleanup = "AuditTableCleanup",
+    DatabaseBackup = "DatabaseBackup",
+    FacialRecognitionQueueAll = "FacialRecognitionQueueAll",
+    FacialRecognition = "FacialRecognition",
+    FileDelete = "FileDelete",
+    FileMigrationQueueAll = "FileMigrationQueueAll",
+    LibraryDeleteCheck = "LibraryDeleteCheck",
+    LibraryDelete = "LibraryDelete",
+    LibraryRemoveAsset = "LibraryRemoveAsset",
+    LibraryScanAssetsQueueAll = "LibraryScanAssetsQueueAll",
+    LibrarySyncAssets = "LibrarySyncAssets",
+    LibrarySyncFilesQueueAll = "LibrarySyncFilesQueueAll",
+    LibrarySyncFiles = "LibrarySyncFiles",
+    LibraryScanQueueAll = "LibraryScanQueueAll",
+    MemoryCleanup = "MemoryCleanup",
+    MemoryGenerate = "MemoryGenerate",
+    NotificationsCleanup = "NotificationsCleanup",
+    NotifyUserSignup = "NotifyUserSignup",
+    NotifyAlbumInvite = "NotifyAlbumInvite",
+    NotifyAlbumUpdate = "NotifyAlbumUpdate",
+    UserDelete = "UserDelete",
+    UserDeleteCheck = "UserDeleteCheck",
+    UserSyncUsage = "UserSyncUsage",
+    PersonCleanup = "PersonCleanup",
+    PersonFileMigration = "PersonFileMigration",
+    PersonGenerateThumbnail = "PersonGenerateThumbnail",
+    SessionCleanup = "SessionCleanup",
+    SendMail = "SendMail",
+    SidecarQueueAll = "SidecarQueueAll",
+    SidecarCheck = "SidecarCheck",
+    SidecarWrite = "SidecarWrite",
+    SmartSearchQueueAll = "SmartSearchQueueAll",
+    SmartSearch = "SmartSearch",
+    StorageTemplateMigration = "StorageTemplateMigration",
+    StorageTemplateMigrationSingle = "StorageTemplateMigrationSingle",
+    TagCleanup = "TagCleanup",
+    VersionCheck = "VersionCheck",
+    OcrQueueAll = "OcrQueueAll",
+    Ocr = "Ocr",
+    WorkflowRun = "WorkflowRun"
 }
 export enum SearchSuggestionType {
     Country = "country",
@@ -5254,4 +5638,12 @@ export enum LogLevel {
 export enum OAuthTokenEndpointAuthMethod {
     ClientSecretPost = "client_secret_post",
     ClientSecretBasic = "client_secret_basic"
+}
+export enum TriggerType {
+    AssetCreate = "AssetCreate",
+    PersonRecognized = "PersonRecognized"
+}
+export enum PluginTriggerType {
+    AssetCreate = "AssetCreate",
+    PersonRecognized = "PersonRecognized"
 }
