@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
   import { focusOutside } from '$lib/actions/focus-outside';
   import { shortcuts } from '$lib/actions/shortcut';
@@ -9,7 +10,7 @@
   import { generateId } from '$lib/utils/generate-id';
   import { getMetadataSearchQuery } from '$lib/utils/metadata-search';
   import type { MetadataSearchDto, SmartSearchDto } from '@immich/sdk';
-  import { IconButton, modalManager } from '@immich/ui';
+  import { Button, IconButton, modalManager } from '@immich/ui';
   import { mdiClose, mdiMagnify, mdiTune } from '@mdi/js';
   import { onDestroy, tick } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -72,7 +73,6 @@
 
   const onFocusIn = () => {
     searchStore.isSearchEnabled = true;
-    // Refresh search type when component regains focus
     getSearchType();
   };
 
@@ -232,8 +232,7 @@
     }
   }
 
-  // Initialize currentSearchType on component mount
-  $effect(() => {
+  onMount(() => {
     getSearchType();
   });
 
@@ -332,15 +331,14 @@
         class:end-28={value.length > 0}
       >
         <div class="relative">
-          <button
-            type="button"
+          <Button
             class="bg-immich-primary text-white dark:bg-immich-dark-primary/90 dark:text-black/75 rounded-full px-3 py-1 text-xs hover:opacity-80 transition-opacity cursor-pointer"
             onclick={toggleSearchTypeDropdown}
             aria-expanded={showSearchTypeDropdown}
             aria-haspopup="listbox"
           >
             {getSearchTypeText()}
-          </button>
+          </Button>
 
           {#if showSearchTypeDropdown}
             <div
