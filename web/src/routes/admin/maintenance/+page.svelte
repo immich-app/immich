@@ -49,8 +49,8 @@
     <section class="w-full pb-28 sm:w-5/6 md:w-[850px]">
       <SettingAccordionState queryParam={QueryParameter.IS_OPEN}>
         <SettingAccordion
-          title="Restore database backup"
-          subtitle="Rollback to an earlier database state using a backup file"
+          title={$t('admin.maintenance_restore_database_backup')}
+          subtitle={$t('admin.maintenance_restore_database_backup_description')}
           icon={mdiRefresh}
           key="backups"
         >

@@ -182,6 +182,8 @@
     "maintenance_delete_error": "Failed to delete backup.",
     "maintenance_restore_backup": "Restore Backup",
     "maintenance_restore_backup_description": "Immich will be wiped and restored from the chosen backup. A backup will be created before continuing.",
+    "maintenance_restore_database_backup": "Restore database backup",
+    "maintenance_restore_database_backup_description": "Rollback to an earlier database state using a backup file",
     "maintenance_settings": "Maintenance",
     "maintenance_settings_description": "Put Immich into maintenance mode.",
     "maintenance_start": "Switch to maintenance mode",
