@@ -1,7 +1,13 @@
-import { editManager, type EditActionTypes, type EditToolManager } from '$lib/managers/edit/edit-manager.svelte';
+import { editManager, type EditActionTypesNoIndex, type EditToolManager } from '$lib/managers/edit/edit-manager.svelte';
 import { getAssetOriginalUrl } from '$lib/utils';
 import { handleError } from '$lib/utils/handle-error';
-import type { AssetResponseDto } from '@immich/sdk';
+import {
+  EditActionType,
+  type AssetEditsDto,
+  type AssetResponseDto,
+  type CropParameters,
+  type RotateParameters,
+} from '@immich/sdk';
 import { tick } from 'svelte';
 
 export type CropAspectRatio =
@@ -24,7 +30,7 @@ export type CropSettings = {
   height: number;
 };
 
-class CropManager implements EditToolManager {
+class TransformManager implements EditToolManager {
   hasChanges: boolean = $derived.by(() => this.checkEdits());
 
   darkenLevel = $state(0.65);
@@ -53,6 +59,8 @@ class CropManager implements EditToolManager {
     aspectRatio: 'free' as CropAspectRatio,
   });
 
+  edits = $derived.by(() => this.getEdits());
+
   setAspectRatio(aspectRatio: CropAspectRatio) {
     this.settings.aspectRatio = aspectRatio;
 
@@ -60,9 +68,9 @@ class CropManager implements EditToolManager {
       return;
     }
 
-    const newCrop = cropManager.recalculateCrop(aspectRatio);
+    const newCrop = transformManager.recalculateCrop(aspectRatio);
     if (newCrop) {
-      cropManager.animateCropChange(this.cropAreaEl, this.region, newCrop);
+      transformManager.animateCropChange(this.cropAreaEl, this.region, newCrop);
       this.region = newCrop;
     }
   }
@@ -75,26 +83,56 @@ class CropManager implements EditToolManager {
     );
   }
 
-  getEdits(): EditActionTypes[] {
-    // TODO return crop edits
-    return [];
+  getEdits(): EditActionTypesNoIndex[] {
+    let edits: EditActionTypesNoIndex[] = [];
+
+    if (this.checkEdits()) {
+      const { left, right, top, bottom } = this.xywhToRelativeLRTB(this.region);
+
+      edits.push({
+        action: EditActionType.Crop,
+        parameters: {
+          left,
+          right,
+          top,
+          bottom,
+        },
+      });
+    }
+
+    if (this.normalizedRotation !== 0) {
+      edits.push({
+        action: 'rotate' as EditActionType.Rotate,
+        parameters: {
+          angle: this.normalizedRotation,
+        },
+      });
+    }
+
+    return edits;
   }
 
-  onActivate(asset: AssetResponseDto) {
-    // TODO
+  async onActivate(asset: AssetResponseDto, edits: AssetEditsDto) {
     this.imgElement = new Image();
-    this.imgElement.src = getAssetOriginalUrl({ id: asset.id, cacheKey: asset.thumbhash });
+    this.imgElement.src = getAssetOriginalUrl({ id: asset.id, cacheKey: asset.thumbhash, edited: false });
 
-    this.imgElement.addEventListener('load', () => cropManager.onImageLoad(true), { passive: true });
+    this.imgElement.addEventListener('load', () => transformManager.onImageLoad(edits), { passive: true });
     this.imgElement.addEventListener('error', (error) => handleError(error, 'ErrorLoadingImage'), {
       passive: true,
     });
 
-    globalThis.addEventListener('mousemove', (e) => cropManager.handleMouseMove(e), { passive: true });
+    globalThis.addEventListener('mousemove', (e) => transformManager.handleMouseMove(e), { passive: true });
+
+    // set the rotation before loading the image
+    const rotateEdit = edits.edits.find((e) => e.action === 'rotate');
+    if (rotateEdit) {
+      console.log('Found existing rotate edit:', rotateEdit);
+      this.imageRotation = (rotateEdit.parameters as RotateParameters).angle;
+    }
   }
 
   onDeactivate() {
-    globalThis.removeEventListener('mousemove', (e) => cropManager.handleMouseMove(e));
+    globalThis.removeEventListener('mousemove', (e) => transformManager.handleMouseMove(e));
 
     this.reset();
   }
@@ -110,6 +148,10 @@ class CropManager implements EditToolManager {
     this.cropAreaEl = null;
     this.isDragging = false;
     this.overlayEl = null;
+    this.imageRotation = 0;
+    this.region = { x: 0, y: 0, width: 100, height: 100 };
+    this.cropImageSize = [1000, 1000];
+    this.cropImageScale = 1;
   }
 
   async rotate(angle: number) {
@@ -290,7 +332,7 @@ class CropManager implements EditToolManager {
   `;
   }
 
-  onImageLoad(resetSize: boolean = false) {
+  onImageLoad(edits: AssetEditsDto | null = null) {
     const img = this.imgElement;
     const cropArea = this.cropAreaEl;
 
@@ -298,17 +340,23 @@ class CropManager implements EditToolManager {
       return;
     }
 
+    this.cropImageSize = [img.width, img.height];
     const scale = this.calculateScale();
 
-    this.cropImageSize = [img.width, img.height];
+    if (edits !== null) {
+      // prepopulate existing crop
+      const cropEdit = edits.edits.find((e) => e.action === EditActionType.Crop);
+      if (cropEdit) {
+        this.region = this.relativeLRTBToXYWH(cropEdit.parameters as CropParameters);
 
-    if (resetSize) {
-      this.region = {
-        x: 0,
-        y: 0,
-        width: img.width * scale,
-        height: img.height * scale,
-      };
+        const scale = this.calculateScale();
+        this.region = {
+          x: this.region.x * scale,
+          y: this.region.y * scale,
+          width: this.region.width * scale,
+          height: this.region.height * scale,
+        };
+      }
     } else {
       const cropFrameEl = this.cropFrame;
       cropFrameEl?.classList.add('transition');
@@ -387,31 +435,12 @@ class CropManager implements EditToolManager {
       return;
     }
 
-    const containerWidth = cropArea?.clientWidth ?? 0;
-    const containerHeight = cropArea?.clientHeight ?? 0;
-    const imageAspectRatio = img.width / img.height;
-
-    let scale;
-    if (imageAspectRatio > 1) {
-      scale = containerWidth / img.width;
-      if (img.height * scale > containerHeight) {
-        scale = containerHeight / img.height;
-      }
-    } else {
-      scale = containerHeight / img.height;
-      if (img.width * scale > containerWidth) {
-        scale = containerWidth / img.width;
-      }
-    }
+    const scale = this.calculateScale();
+    this.region = this.normalizeCropArea(scale);
+    this.cropImageScale = scale;
 
     img.style.width = `${img.width * scale}px`;
     img.style.height = `${img.height * scale}px`;
-
-    const cropFrame = cropArea.querySelector('.crop-frame') as HTMLElement;
-    if (cropFrame) {
-      cropFrame.style.width = `${img.width * scale}px`;
-      cropFrame.style.height = `${img.height * scale}px`;
-    }
 
     this.draw();
   }
@@ -896,6 +925,41 @@ class CropManager implements EditToolManager {
 
     this.isInteracting = !toDark;
   }
+
+  xywhToRelativeLRTB(crop: CropSettings): { left: number; right: number; top: number; bottom: number } {
+    const [imgW, imgH] = this.cropImageSize;
+    const relativeW = crop.width / this.cropImageScale / imgW;
+    const relativeH = crop.height / this.cropImageScale / imgH;
+
+    const relativeCropL = crop.x / this.cropImageScale / imgW;
+    const relativeCropR = 1 - relativeCropL - relativeW;
+    const relativeCropT = crop.y / this.cropImageScale / imgH;
+    const relativeCropB = 1 - relativeCropT - relativeH;
+
+    // Math.max is needed here because of float precision
+    return {
+      left: Math.max(0, relativeCropL),
+      right: Math.max(0, relativeCropR),
+      top: Math.max(0, relativeCropT),
+      bottom: Math.max(0, relativeCropB),
+    };
+  }
+
+  relativeLRTBToXYWH(relativeCrop: { left: number; right: number; top: number; bottom: number }): CropSettings {
+    const [imgW, imgH] = this.cropImageSize;
+
+    const width = imgW * this.cropImageScale * (1 - relativeCrop.left - relativeCrop.right);
+    const height = imgH * this.cropImageScale * (1 - relativeCrop.top - relativeCrop.bottom);
+    const x = imgW * this.cropImageScale * relativeCrop.left;
+    const y = imgH * this.cropImageScale * relativeCrop.top;
+
+    return {
+      x,
+      y,
+      width,
+      height,
+    };
+  }
 }
 
-export const cropManager = new CropManager();
+export const transformManager = new TransformManager();

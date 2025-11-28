@@ -504,7 +504,7 @@ export class AssetService extends BaseService {
     await this.editRepository.storeEdits(id, dto.edits);
     await this.jobRepository.queue({
       name: JobName.AssetGenerateThumbnails,
-      data: { id: id, source: 'edit' },
+      data: { id: id, source: 'edit', notify: true },
     });
 
     // Return the asset and its applied edits

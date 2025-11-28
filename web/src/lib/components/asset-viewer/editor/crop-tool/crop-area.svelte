@@ -1,49 +1,43 @@
 <script lang="ts">
-  import { cropManager } from '$lib/managers/edit/crop-manager.svelte';
+  import { transformManager } from '$lib/managers/edit/transform-manager.svelte';
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import type { AssetResponseDto } from '@immich/sdk';
-  import { onDestroy, onMount } from 'svelte';
 
   interface Props {
     asset: AssetResponseDto;
   }
 
   let { asset }: Props = $props();
-
-  // TODO: change this to
-  onMount(() => {
-    cropManager.onActivate(asset);
-  });
-
-  onDestroy(() => {
-    cropManager.onDeactivate();
-  });
-
-  $effect(() => {
-    cropManager.resizeCanvas();
-  });
 </script>
+
+<svelte:window on:resize={() => transformManager.resizeCanvas()} />
 
 <div class="canvas-container">
   <button
-    class={`crop-area ${cropManager.orientationChanged ? 'changedOriention' : ''}`}
-    style={`rotate:${cropManager.imageRotation}deg`}
-    bind:this={cropManager.cropAreaEl}
-    onmousedown={(e) => cropManager.handleMouseDown(e)}
-    onmouseup={() => cropManager.handleMouseUp()}
+    class={`crop-area ${transformManager.orientationChanged ? 'changedOriention' : ''}`}
+    style={`rotate:${transformManager.imageRotation}deg`}
+    bind:this={transformManager.cropAreaEl}
+    onmousedown={(e) => transformManager.handleMouseDown(e)}
+    onmouseup={() => transformManager.handleMouseUp()}
     aria-label="Crop area"
     type="button"
   >
-    <img draggable="false" src={cropManager.imgElement?.src} alt={$getAltText(toTimelineAsset(asset))} />
-    <div class={`${cropManager.isInteracting ? 'resizing' : ''} crop-frame`} bind:this={cropManager.cropFrame}>
+    <img draggable="false" src={transformManager.imgElement?.src} alt={$getAltText(toTimelineAsset(asset))} />
+    <div
+      class={`${transformManager.isInteracting ? 'resizing' : ''} crop-frame`}
+      bind:this={transformManager.cropFrame}
+    >
       <div class="grid"></div>
       <div class="corner top-left"></div>
       <div class="corner top-right"></div>
       <div class="corner bottom-left"></div>
       <div class="corner bottom-right"></div>
     </div>
-    <div class={`${cropManager.isInteracting ? 'light' : ''} overlay`} bind:this={cropManager.overlayEl}></div>
+    <div
+      class={`${transformManager.isInteracting ? 'light' : ''} overlay`}
+      bind:this={transformManager.overlayEl}
+    ></div>
   </button>
 </div>
 

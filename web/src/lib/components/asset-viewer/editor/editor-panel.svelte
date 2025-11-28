@@ -1,11 +1,11 @@
 <script lang="ts">
   import { shortcut } from '$lib/actions/shortcut';
-  import { editManager } from '$lib/managers/edit/edit-manager.svelte';
+  import { editManager, EditToolType } from '$lib/managers/edit/edit-manager.svelte';
   import { websocketEvents } from '$lib/stores/websocket';
-  import { type AssetResponseDto } from '@immich/sdk';
+  import { getAssetEdits, type AssetResponseDto } from '@immich/sdk';
   import { Button, IconButton, VStack } from '@immich/ui';
   import { mdiClose, mdiFloppy, mdiRefresh } from '@mdi/js';
-  import { onMount } from 'svelte';
+  import { onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
 
   onMount(() => {
@@ -19,6 +19,23 @@
   interface Props {
     asset: AssetResponseDto;
     onClose: () => void;
+  }
+
+  onMount(async () => {
+    const edits = await getAssetEdits({ id: asset.id });
+    await editManager.activateTool(EditToolType.Transform, asset, edits);
+  });
+
+  onDestroy(() => {
+    editManager.cleanup();
+  });
+
+  async function applyEdits() {
+    const success = await editManager.applyEdits();
+
+    if (success) {
+      onClose();
+    }
   }
 
   let { asset = $bindable(), onClose }: Props = $props();
@@ -40,12 +57,22 @@
   </div>
 
   <section>
-    <editManager.selectedTool.component />
+    {#if editManager.selectedTool}
+      <editManager.selectedTool.component />
+    {/if}
   </section>
   <div class="flex-1"></div>
   <section class="p-4">
     <VStack gap={4}>
-      <Button fullWidth leadingIcon={mdiFloppy} color="success">{$t('save')}</Button>
+      <Button
+        fullWidth
+        leadingIcon={mdiFloppy}
+        color="success"
+        onclick={() => applyEdits()}
+        loading={editManager.isApplyingEdits}
+      >
+        {$t('save')}
+      </Button>
       <!-- TODO make this clear all edits -->
       <Button fullWidth leadingIcon={mdiRefresh} color="danger">{$t('editor_reset_all_changes')}</Button>
     </VStack>

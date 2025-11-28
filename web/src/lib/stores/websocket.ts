@@ -29,6 +29,7 @@ export interface Events {
   on_new_release: (event: ReleaseEvent) => void;
   on_session_delete: (sessionId: string) => void;
   on_notification: (notification: NotificationDto) => void;
+  on_asset_edit_thumbnails: (assetId: string) => void;
 
   AppRestartV1: (event: AppRestartEvent) => void;
 }

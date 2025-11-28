@@ -107,6 +107,11 @@ export class JobService extends BaseService {
           break;
         }
 
+        if (item.data.source === 'edit') {
+          this.websocketRepository.clientSend('on_asset_edit_thumbnails', asset.ownerId, asset.id);
+          break;
+        }
+
         const jobs: JobItem[] = [
           { name: JobName.SmartSearch, data: item.data },
           { name: JobName.AssetDetectFaces, data: item.data },

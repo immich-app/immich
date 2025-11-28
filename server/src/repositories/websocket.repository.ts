@@ -34,6 +34,7 @@ export interface ClientEventMap {
   on_new_release: [ReleaseNotification];
   on_notification: [NotificationDto];
   on_session_delete: [string];
+  on_asset_edit_thumbnails: [string];
 
   AssetUploadReadyV1: [{ asset: SyncAssetV1; exif: SyncAssetExifV1 }];
   AppRestartV1: [AppRestartEvent];

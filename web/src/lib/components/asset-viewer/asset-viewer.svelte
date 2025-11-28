@@ -229,6 +229,11 @@
 
   const closeEditor = async () => {
     if (await editManager.closeConfirm()) {
+      // If edits were applied, refresh the asset to show the new image
+      if (editManager.hasAppliedEdits) {
+        const refreshedAsset = await getAssetInfo({ id: asset.id });
+        asset = refreshedAsset;
+      }
       isShowEditor = false;
     }
   };
@@ -509,7 +514,7 @@
                 .toLowerCase()
                 .endsWith('.insp'))}
             <ImagePanoramaViewer bind:zoomToggle {asset} />
-          {:else if isShowEditor && editManager.selectedTool.type === EditToolType.CROP}
+          {:else if isShowEditor && editManager.selectedTool?.type === EditToolType.Transform}
             <CropArea {asset} />
           {:else}
             <PhotoViewer
