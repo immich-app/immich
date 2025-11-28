@@ -75,13 +75,14 @@ export const closeWebsocketConnection = () => {
   websocket.disconnect();
 };
 
-export const waitForWebsocketEvent = (
-  event: keyof Events,
-  predicate?: (...args: any[]) => boolean,
-  timeout = 10000,
-): Promise<any[]> => {
+export const waitForWebsocketEvent = <T extends keyof Events>(
+  event: T,
+  predicate?: (...args: Parameters<Events[T]>) => boolean,
+  timeout: number = 10_000,
+): Promise<Parameters<Events[T]>> => {
   return new Promise((resolve, reject) => {
-    const cleanup = websocketEvents.on(event, (...args: any[]) => {
+    // @ts-expect-error: The typings are weird on this?
+    const cleanup = websocketEvents.on(event, (...args: Parameters<Events[T]>) => {
       if (!predicate || predicate(...args)) {
         cleanup();
         clearTimeout(timer);

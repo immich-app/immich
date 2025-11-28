@@ -89,7 +89,7 @@
 
   function selectType(size: CropAspectRatio) {
     if (size === 'reset') {
-      transformManager.settings.aspectRatio = 'free';
+      transformManager.cropAspectRatio = 'free';
       let cropImageSizeM = transformManager.cropImageSize;
       let cropImageScaleM = transformManager.cropImageScale;
       transformManager.region = {
@@ -112,7 +112,7 @@
   {#each sizesRows as sizesRow, index (index)}
     <ul class="flex-wrap flex-row flex gap-x-6 py-2 justify-evenly">
       {#each sizesRow as size (size.name)}
-        <CropPreset {size} selectedSize={transformManager.settings.aspectRatio} {rotateHorizontal} {selectType} />
+        <CropPreset {size} selectedSize={transformManager.cropAspectRatio} {rotateHorizontal} {selectType} />
       {/each}
     </ul>
   {/each}

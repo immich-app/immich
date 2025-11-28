@@ -124,6 +124,7 @@ export class EditManager {
       });
 
       await editCompleted;
+      await new Promise((r) => setTimeout(r, 500)); // small delay to ensure thumbnails are ready
       toastManager.success('Edits applied successfully');
       this.hasAppliedEdits = true;
 
