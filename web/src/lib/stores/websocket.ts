@@ -74,3 +74,24 @@ export const openWebsocketConnection = () => {
 export const closeWebsocketConnection = () => {
   websocket.disconnect();
 };
+
+export const waitForWebsocketEvent = (
+  event: keyof Events,
+  predicate?: (...args: any[]) => boolean,
+  timeout = 10000,
+): Promise<any[]> => {
+  return new Promise((resolve, reject) => {
+    const cleanup = websocketEvents.on(event, (...args: any[]) => {
+      if (!predicate || predicate(...args)) {
+        cleanup();
+        clearTimeout(timer);
+        resolve(args);
+      }
+    });
+
+    const timer = setTimeout(() => {
+      cleanup();
+      reject(new Error(`Timeout waiting for event: ${String(event)}`));
+    }, timeout);
+  });
+};

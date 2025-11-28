@@ -74,7 +74,9 @@
         {$t('save')}
       </Button>
       <!-- TODO make this clear all edits -->
-      <Button fullWidth leadingIcon={mdiRefresh} color="danger">{$t('editor_reset_all_changes')}</Button>
+      <Button fullWidth leadingIcon={mdiRefresh} color="danger" onclick={() => editManager.resetAllChanges()}>
+        {$t('editor_reset_all_changes')}
+      </Button>
     </VStack>
   </section>
 </section>

@@ -1,13 +1,12 @@
-import { editManager, type EditActionTypesNoIndex, type EditToolManager } from '$lib/managers/edit/edit-manager.svelte';
+import {
+  editManager,
+  type EditActionNoIndex,
+  type EditActions,
+  type EditToolManager,
+} from '$lib/managers/edit/edit-manager.svelte';
 import { getAssetOriginalUrl } from '$lib/utils';
 import { handleError } from '$lib/utils/handle-error';
-import {
-  EditActionType,
-  type AssetEditsDto,
-  type AssetResponseDto,
-  type CropParameters,
-  type RotateParameters,
-} from '@immich/sdk';
+import { EditActionType, type AssetResponseDto, type CropParameters, type RotateParameters } from '@immich/sdk';
 import { tick } from 'svelte';
 
 export type CropAspectRatio =
@@ -46,6 +45,8 @@ class TransformManager implements EditToolManager {
   cropFrame = $state<HTMLElement | null>(null);
   cropImageSize = $state([1000, 1000]);
   cropImageScale = $state(1);
+  cropAspectRatio = $state('free' as CropAspectRatio);
+  region = $state({ x: 0, y: 0, width: 100, height: 100 });
 
   imageRotation = $state(0);
   normalizedRotation = $derived.by(() => {
@@ -54,15 +55,10 @@ class TransformManager implements EditToolManager {
   });
   orientationChanged = $derived.by(() => this.normalizedRotation % 180 > 0);
 
-  region = $state({ x: 0, y: 0, width: 100, height: 100 });
-  settings = $state({
-    aspectRatio: 'free' as CropAspectRatio,
-  });
-
   edits = $derived.by(() => this.getEdits());
 
   setAspectRatio(aspectRatio: CropAspectRatio) {
-    this.settings.aspectRatio = aspectRatio;
+    this.cropAspectRatio = aspectRatio;
 
     if (!this.imgElement || !this.cropAreaEl) {
       return;
@@ -83,8 +79,8 @@ class TransformManager implements EditToolManager {
     );
   }
 
-  getEdits(): EditActionTypesNoIndex[] {
-    let edits: EditActionTypesNoIndex[] = [];
+  getEdits(): EditActionNoIndex[] {
+    let edits: EditActionNoIndex[] = [];
 
     if (this.checkEdits()) {
       const { left, right, top, bottom } = this.xywhToRelativeLRTB(this.region);
@@ -112,7 +108,14 @@ class TransformManager implements EditToolManager {
     return edits;
   }
 
-  async onActivate(asset: AssetResponseDto, edits: AssetEditsDto) {
+  async resetAllChanges() {
+    this.imageRotation = 0;
+    await tick();
+
+    this.onImageLoad([]);
+  }
+
+  async onActivate(asset: AssetResponseDto, edits: EditActions) {
     this.imgElement = new Image();
     this.imgElement.src = getAssetOriginalUrl({ id: asset.id, cacheKey: asset.thumbhash, edited: false });
 
@@ -124,7 +127,7 @@ class TransformManager implements EditToolManager {
     globalThis.addEventListener('mousemove', (e) => transformManager.handleMouseMove(e), { passive: true });
 
     // set the rotation before loading the image
-    const rotateEdit = edits.edits.find((e) => e.action === 'rotate');
+    const rotateEdit = edits.find((e) => e.action === 'rotate');
     if (rotateEdit) {
       console.log('Found existing rotate edit:', rotateEdit);
       this.imageRotation = (rotateEdit.parameters as RotateParameters).angle;
@@ -160,7 +163,7 @@ class TransformManager implements EditToolManager {
     this.onImageLoad();
   }
 
-  recalculateCrop(aspectRatio: CropAspectRatio = this.settings.aspectRatio): CropSettings {
+  recalculateCrop(aspectRatio: CropAspectRatio = this.cropAspectRatio): CropSettings {
     if (!this.cropAreaEl) {
       return this.region;
     }
@@ -225,7 +228,7 @@ class TransformManager implements EditToolManager {
     requestAnimationFrame(animate);
   }
 
-  keepAspectRatio(newWidth: number, newHeight: number, aspectRatio: CropAspectRatio = this.settings.aspectRatio) {
+  keepAspectRatio(newWidth: number, newHeight: number, aspectRatio: CropAspectRatio = this.cropAspectRatio) {
     const [widthRatio, heightRatio] = aspectRatio.split(':').map(Number);
 
     if (widthRatio && heightRatio) {
@@ -332,11 +335,9 @@ class TransformManager implements EditToolManager {
   `;
   }
 
-  onImageLoad(edits: AssetEditsDto | null = null) {
+  onImageLoad(edits: EditActions | null = null) {
     const img = this.imgElement;
-    const cropArea = this.cropAreaEl;
-
-    if (!cropArea || !img) {
+    if (!this.cropAreaEl || !img) {
       return;
     }
 
@@ -344,8 +345,8 @@ class TransformManager implements EditToolManager {
     const scale = this.calculateScale();
 
     if (edits !== null) {
-      // prepopulate existing crop
-      const cropEdit = edits.edits.find((e) => e.action === EditActionType.Crop);
+      const cropEdit = edits.find((e) => e.action === EditActionType.Crop);
+
       if (cropEdit) {
         this.region = this.relativeLRTBToXYWH(cropEdit.parameters as CropParameters);
         this.region = {
@@ -717,7 +718,7 @@ class TransformManager implements EditToolManager {
           const { newWidth: w, newHeight: h } = this.adjustDimensions(
             newWidth,
             newHeight,
-            this.settings.aspectRatio,
+            this.cropAspectRatio,
             canvas.clientWidth,
             canvas.clientHeight,
             minSize,
@@ -738,7 +739,7 @@ class TransformManager implements EditToolManager {
           const { newWidth: w, newHeight: h } = this.adjustDimensions(
             newWidth,
             newHeight,
-            this.settings.aspectRatio,
+            this.cropAspectRatio,
             canvas.clientWidth,
             canvas.clientHeight - y,
             minSize,
@@ -757,7 +758,7 @@ class TransformManager implements EditToolManager {
         const { newWidth: w, newHeight: h } = this.adjustDimensions(
           newWidth,
           newHeight,
-          this.settings.aspectRatio,
+          this.cropAspectRatio,
           canvas.clientWidth,
           canvas.clientHeight,
           minSize,
@@ -777,7 +778,7 @@ class TransformManager implements EditToolManager {
         const { newWidth: w, newHeight: h } = this.adjustDimensions(
           newWidth,
           newHeight,
-          this.settings.aspectRatio,
+          this.cropAspectRatio,
           canvas.clientWidth - x,
           y + height,
           minSize,
@@ -796,7 +797,7 @@ class TransformManager implements EditToolManager {
         const { newWidth: w, newHeight: h } = this.adjustDimensions(
           newWidth,
           newHeight,
-          this.settings.aspectRatio,
+          this.cropAspectRatio,
           canvas.clientWidth,
           canvas.clientHeight - y,
           minSize,
@@ -815,7 +816,7 @@ class TransformManager implements EditToolManager {
         const { newWidth: w, newHeight: h } = this.adjustDimensions(
           newWidth,
           newHeight,
-          this.settings.aspectRatio,
+          this.cropAspectRatio,
           canvas.clientWidth - x,
           canvas.clientHeight - y,
           minSize,
@@ -839,13 +840,9 @@ class TransformManager implements EditToolManager {
   }
 
   updateCursor(mouseX: number, mouseY: number) {
-    const canvas = this.cropAreaEl;
-    if (!canvas) {
+    if (!this.cropAreaEl) {
       return;
     }
-
-    const crop = this.region;
-    const rotateDeg = this.normalizedRotation;
 
     let {
       onLeftBoundary,
@@ -858,7 +855,7 @@ class TransformManager implements EditToolManager {
       onBottomRightCorner,
     } = this.isOnCropBoundary(mouseX, mouseY);
 
-    if (rotateDeg == 90) {
+    if (this.normalizedRotation == 90) {
       [onTopBoundary, onRightBoundary, onBottomBoundary, onLeftBoundary] = [
         onLeftBoundary,
         onTopBoundary,
@@ -872,13 +869,13 @@ class TransformManager implements EditToolManager {
         onTopRightCorner,
         onBottomRightCorner,
       ];
-    } else if (rotateDeg == 180) {
+    } else if (this.normalizedRotation == 180) {
       [onTopBoundary, onBottomBoundary] = [onBottomBoundary, onTopBoundary];
       [onLeftBoundary, onRightBoundary] = [onRightBoundary, onLeftBoundary];
 
       [onTopLeftCorner, onBottomRightCorner] = [onBottomRightCorner, onTopLeftCorner];
       [onTopRightCorner, onBottomLeftCorner] = [onBottomLeftCorner, onTopRightCorner];
-    } else if (rotateDeg == 270) {
+    } else if (this.normalizedRotation == 270) {
       [onTopBoundary, onRightBoundary, onBottomBoundary, onLeftBoundary] = [
         onRightBoundary,
         onBottomBoundary,
@@ -909,10 +906,10 @@ class TransformManager implements EditToolManager {
       cursorName = 'default';
     }
 
-    if (this.canvasCursor != cursorName && canvas && !editManager.isShowingConfirmDialog) {
+    if (this.canvasCursor != cursorName && this.cropAreaEl && !editManager.isShowingConfirmDialog) {
       this.canvasCursor = cursorName;
       document.body.style.cursor = cursorName;
-      canvas.style.cursor = cursorName;
+      this.cropAreaEl.style.cursor = cursorName;
     }
   }
 
