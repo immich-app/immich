@@ -5441,7 +5441,13 @@ export enum ManualJobName {
     UserCleanup = "user-cleanup",
     MemoryCleanup = "memory-cleanup",
     MemoryCreate = "memory-create",
-    BackupDatabase = "backup-database"
+    BackupDatabase = "backup-database",
+    IntegrityMissingFiles = "integrity-missing-files",
+    IntegrityOrphanFiles = "integrity-orphan-files",
+    IntegrityChecksumMismatch = "integrity-checksum-mismatch",
+    IntegrityMissingFilesRefresh = "integrity-missing-files-refresh",
+    IntegrityOrphanFilesRefresh = "integrity-orphan-files-refresh",
+    IntegrityChecksumMismatchRefresh = "integrity-checksum-mismatch-refresh"
 }
 export enum QueueName {
     ThumbnailGeneration = "thumbnailGeneration",

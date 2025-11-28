@@ -19,7 +19,7 @@ import {
 } from 'src/enum';
 import { ArgOf } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
-import { IIntegrityOrphanedFilesJob, IIntegrityPathWithReportJob } from 'src/types';
+import { IIntegrityJob, IIntegrityOrphanedFilesJob, IIntegrityPathWithReportJob } from 'src/types';
 import { handlePromiseError } from 'src/utils/misc';
 
 async function* chunk<T>(generator: AsyncIterableIterator<T>, n: number) {
@@ -130,7 +130,7 @@ export class IntegrityService extends BaseService {
   }
 
   @OnJob({ name: JobName.IntegrityOrphanedFilesQueueAll, queue: QueueName.BackgroundTask })
-  async handleOrphanedFilesQueueAll(): Promise<JobStatus> {
+  async handleOrphanedFilesQueueAll({ refreshOnly }: IIntegrityJob = {}): Promise<JobStatus> {
     this.logger.log(`Checking for out of date orphaned file reports...`);
 
     const reports = this.assetJobRepository.streamIntegrityReports(IntegrityReportType.OrphanFile);
@@ -146,6 +146,11 @@ export class IntegrityService extends BaseService {
 
       total += batchReports.length;
       this.logger.log(`Queued report check of ${batchReports.length} report(s) (${total} so far)`);
+    }
+
+    if (refreshOnly) {
+      this.logger.log('Refresh complete.');
+      return JobStatus.Success;
     }
 
     this.logger.log(`Scanning for orphaned files...`);
@@ -232,8 +237,8 @@ export class IntegrityService extends BaseService {
     const results = await Promise.all(
       paths.map(({ reportId, path }) =>
         stat(path)
-          .then(() => reportId)
-          .catch(() => void 0),
+          .then(() => void 0)
+          .catch(() => reportId),
       ),
     );
 
@@ -243,12 +248,18 @@ export class IntegrityService extends BaseService {
       await this.integrityReportRepository.deleteByIds(reportIds);
     }
 
-    this.logger.log(`Processed ${paths.length} and found ${reportIds.length} orphaned file(s).`);
+    this.logger.log(`Processed ${paths.length} paths and found ${reportIds.length} report(s) out of date.`);
     return JobStatus.Success;
   }
 
   @OnJob({ name: JobName.IntegrityMissingFilesQueueAll, queue: QueueName.BackgroundTask })
-  async handleMissingFilesQueueAll(): Promise<JobStatus> {
+  async handleMissingFilesQueueAll({ refreshOnly }: IIntegrityJob = {}): Promise<JobStatus> {
+    if (refreshOnly) {
+      // TODO
+      this.logger.log('Refresh complete.');
+      return JobStatus.Success;
+    }
+
     this.logger.log(`Scanning for missing files...`);
 
     const assetPaths = this.assetJobRepository.streamAssetPaths();
@@ -304,7 +315,13 @@ export class IntegrityService extends BaseService {
   }
 
   @OnJob({ name: JobName.IntegrityChecksumFiles, queue: QueueName.BackgroundTask })
-  async handleChecksumFiles(): Promise<JobStatus> {
+  async handleChecksumFiles({ refreshOnly }: IIntegrityJob = {}): Promise<JobStatus> {
+    if (refreshOnly) {
+      // TODO
+      this.logger.log('Refresh complete.');
+      return JobStatus.Success;
+    }
+
     const timeLimit = 60 * 60 * 1000; // 1000;
     const percentageLimit = 1; // 0.25;
 

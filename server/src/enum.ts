@@ -345,6 +345,12 @@ export enum SourceType {
   Manual = 'manual',
 }
 
+export enum IntegrityReportType {
+  OrphanFile = 'orphan_file',
+  MissingFile = 'missing_file',
+  ChecksumFail = 'checksum_mismatch',
+}
+
 export enum ManualJobName {
   PersonCleanup = 'person-cleanup',
   TagCleanup = 'tag-cleanup',
@@ -352,6 +358,12 @@ export enum ManualJobName {
   MemoryCleanup = 'memory-cleanup',
   MemoryCreate = 'memory-create',
   BackupDatabase = 'backup-database',
+  IntegrityMissingFiles = `integrity-missing-files`,
+  IntegrityOrphanFiles = `integrity-orphan-files`,
+  IntegrityChecksumFiles = `integrity-checksum-mismatch`,
+  IntegrityMissingFilesRefresh = `integrity-missing-files-refresh`,
+  IntegrityOrphanFilesRefresh = `integrity-orphan-files-refresh`,
+  IntegrityChecksumFilesRefresh = `integrity-checksum-mismatch-refresh`,
 }
 
 export enum AssetPathType {
@@ -480,12 +492,6 @@ export enum CacheControl {
   PrivateWithCache = 'private_with_cache',
   PrivateWithoutCache = 'private_without_cache',
   None = 'none',
-}
-
-export enum IntegrityReportType {
-  OrphanFile = 'orphan_file',
-  MissingFile = 'missing_file',
-  ChecksumFail = 'checksum_mismatch',
 }
 
 export enum ImmichEnvironment {

@@ -16,6 +16,30 @@
     { title: $t('admin.memory_cleanup_job'), value: ManualJobName.MemoryCleanup },
     { title: $t('admin.memory_generate_job'), value: ManualJobName.MemoryCreate },
     { title: $t('admin.backup_database'), value: ManualJobName.BackupDatabase },
+    {
+      title: $t('admin.maintenance_integrity_missing_file_job'),
+      value: ManualJobName.IntegrityMissingFiles,
+    },
+    {
+      title: $t('admin.maintenance_integrity_orphan_file_job'),
+      value: ManualJobName.IntegrityOrphanFiles,
+    },
+    {
+      title: $t('admin.maintenance_integrity_checksum_mismatch_job'),
+      value: ManualJobName.IntegrityChecksumMismatch,
+    },
+    {
+      title: $t('admin.maintenance_integrity_missing_file_refresh_job'),
+      value: ManualJobName.IntegrityMissingFilesRefresh,
+    },
+    {
+      title: $t('admin.maintenance_integrity_orphan_file_refresh_job'),
+      value: ManualJobName.IntegrityOrphanFilesRefresh,
+    },
+    {
+      title: $t('admin.maintenance_integrity_checksum_mismatch_refresh_job'),
+      value: ManualJobName.IntegrityChecksumMismatchRefresh,
+    },
   ].map(({ value, title }) => ({ id: value, label: title, value }));
 
   let selectedJob: ComboBoxOption | undefined = $state(undefined);

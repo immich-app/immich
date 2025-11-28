@@ -282,6 +282,10 @@ export interface IWorkflowJob<T extends PluginTriggerType = PluginTriggerType> {
   event: WorkflowData[T];
 }
 
+export interface IIntegrityJob {
+  refreshOnly?: boolean;
+}
+
 export interface IIntegrityOrphanedFilesJob {
   type: 'asset' | 'asset_file';
   paths: string[];
@@ -403,12 +407,12 @@ export type JobItem =
   | { name: JobName.WorkflowRun; data: IWorkflowJob }
 
   // Integrity
-  | { name: JobName.IntegrityOrphanedFilesQueueAll; data: IBaseJob }
+  | { name: JobName.IntegrityOrphanedFilesQueueAll; data?: IIntegrityJob }
   | { name: JobName.IntegrityOrphanedFiles; data: IIntegrityOrphanedFilesJob }
   | { name: JobName.IntegrityOrphanedCheckReports; data: IIntegrityPathWithReportJob }
-  | { name: JobName.IntegrityMissingFilesQueueAll; data: IBaseJob }
+  | { name: JobName.IntegrityMissingFilesQueueAll; data?: IIntegrityJob }
   | { name: JobName.IntegrityMissingFiles; data: IIntegrityPathWithReportJob }
-  | { name: JobName.IntegrityChecksumFiles; data: IBaseJob };
+  | { name: JobName.IntegrityChecksumFiles; data?: IIntegrityJob };
 
 export type VectorExtension = (typeof VECTOR_EXTENSIONS)[number];
 
