@@ -23,7 +23,7 @@
     <LoadingSpinner />
   {:then [PhotoSphereViewer, adapter, videoPlugin]}
     <PhotoSphereViewer
-      panorama={{ source: getAssetPlaybackUrl(assetId) }}
+      baseUrl={{ source: getAssetPlaybackUrl(assetId) }}
       originalPanorama={{ source: getAssetOriginalUrl(assetId) }}
       plugins={[videoPlugin]}
       {adapter}

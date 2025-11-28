@@ -152,6 +152,19 @@ export class MediaRepository {
       .toFile(output);
   }
 
+  /**
+   * For output file path 'output.dz', this creates an 'output.dzi' file and 'output_files' directory containing tiles
+   */
+  async generateTiles(input: string | Buffer, options: GenerateThumbnailOptions, output: string): Promise<void> {
+    await this.getImageDecodingPipeline(input, options)
+      .toFormat(options.format)
+      .tile({
+        depth: 'one',
+        size: options.size,
+      })
+      .toFile(output);
+  }
+
   private getImageDecodingPipeline(input: string | Buffer, options: DecodeToBufferOptions) {
     let pipeline = sharp(input, {
       // some invalid images can still be processed by sharp, but we want to fail on them by default to avoid crashes

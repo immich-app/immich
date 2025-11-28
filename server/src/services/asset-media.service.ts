@@ -239,6 +239,33 @@ export class AssetMediaService extends BaseService {
     });
   }
 
+  async getAssetTile(auth: AuthDto, id: string, level: number, col: number, row: number): Promise<ImmichFileResponse> {
+    await this.requireAccess({ auth, permission: Permission.AssetView, ids: [id] });
+
+    const asset = await this.findOrFail(id);
+    const { tilesPath } = getAssetFiles(asset.files ?? []);
+    if (!tilesPath) {
+      // TODO: placeholder tiles.
+      return new ImmichFileResponse({
+        fileName: `${level}_${col}_${row}.jpg`,
+        path: `/data/sluis_files/0/${col}_${row}.jpg`,
+        contentType: 'image/jpg',
+        cacheControl: CacheControl.None,
+      });
+      throw new NotFoundException('Asset tiles not found');
+    }
+
+    const tileName = getFileNameWithoutExtension(asset.originalFileName) + `_${level}_${col}_${row}.jpg`;
+    const tilePath = tilesPath.path.replace('.dz', '_files') + `/${level}/${col}_${row}.jpg`;
+
+    return new ImmichFileResponse({
+      fileName: tileName,
+      path: tilePath,
+      contentType: 'image/jpg',
+      cacheControl: CacheControl.PrivateWithCache,
+    });
+  }
+
   async playbackVideo(auth: AuthDto, id: string): Promise<ImmichFileResponse> {
     await this.requireAccess({ auth, permission: Permission.AssetView, ids: [id] });
 

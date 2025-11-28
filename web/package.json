@@ -32,6 +32,7 @@
     "@mapbox/mapbox-gl-rtl-text": "0.2.3",
     "@mdi/js": "^7.4.47",
     "@photo-sphere-viewer/core": "^5.14.0",
+    "@photo-sphere-viewer/equirectangular-tiles-adapter": "^5.14.0",
     "@photo-sphere-viewer/equirectangular-video-adapter": "^5.14.0",
     "@photo-sphere-viewer/markers-plugin": "^5.14.0",
     "@photo-sphere-viewer/resolution-plugin": "^5.14.0",

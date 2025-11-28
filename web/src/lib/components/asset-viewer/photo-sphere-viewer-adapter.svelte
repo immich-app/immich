@@ -1,14 +1,8 @@
 <script lang="ts">
   import { boundingBoxesArray, type Faces } from '$lib/stores/people.store';
-  import { alwaysLoadOriginalFile } from '$lib/stores/preferences.store';
-  import {
-    EquirectangularAdapter,
-    Viewer,
-    events,
-    type AdapterConstructor,
-    type PluginConstructor,
-  } from '@photo-sphere-viewer/core';
+  import { EquirectangularAdapter, Viewer, type PluginConstructor } from '@photo-sphere-viewer/core';
   import '@photo-sphere-viewer/core/index.css';
+  import { EquirectangularTilesAdapter } from '@photo-sphere-viewer/equirectangular-tiles-adapter';
   import { MarkersPlugin } from '@photo-sphere-viewer/markers-plugin';
   import '@photo-sphere-viewer/markers-plugin/index.css';
   import { ResolutionPlugin } from '@photo-sphere-viewer/resolution-plugin';
@@ -24,15 +18,30 @@
     strokeLinejoin: 'round',
   };
 
-  interface Props {
-    panorama: string | { source: string };
-    originalPanorama?: string | { source: string };
-    adapter?: AdapterConstructor | [AdapterConstructor, unknown];
-    plugins?: (PluginConstructor | [PluginConstructor, unknown])[];
-    navbar?: boolean;
-  }
+  const SHARED_VIEWER_CONFIG = {
+    touchmoveTwoFingers: false,
+    mousewheelCtrlKey: false,
+    navbar: false,
+    minFov: 15,
+    maxFov: 90,
+    zoomSpeed: 0.5,
+    fisheye: false,
+  };
 
-  let { panorama, originalPanorama, adapter = EquirectangularAdapter, plugins = [], navbar = false }: Props = $props();
+  type TileConfig = {
+    width: number;
+    cols: number;
+    rows: number;
+  };
+
+  type Props = {
+    baseUrl: string;
+    tileUrl: ((col: number, row: number, level: number) => string | null) | undefined;
+    tileconfig: TileConfig | undefined;
+    plugins?: (PluginConstructor | [PluginConstructor, unknown])[];
+  };
+
+  let { baseUrl, tileUrl, tileconfig, plugins = [] }: Props = $props();
 
   let container: HTMLDivElement | undefined = $state();
   let viewer: Viewer;
@@ -98,59 +107,29 @@
       return;
     }
 
-    viewer = new Viewer({
-      adapter,
-      plugins: [
-        MarkersPlugin,
-        SettingsPlugin,
-        [
-          ResolutionPlugin,
-          {
-            defaultResolution: $alwaysLoadOriginalFile && originalPanorama ? 'original' : 'default',
-            resolutions: [
-              {
-                id: 'default',
-                label: 'Default',
-                panorama,
-              },
-              ...(originalPanorama
-                ? [
-                    {
-                      id: 'original',
-                      label: 'Original',
-                      panorama: originalPanorama,
-                    },
-                  ]
-                : []),
-            ],
-          },
+    viewer = tileconfig ? new Viewer({
+        adapter: EquirectangularTilesAdapter,
+        panorama: {
+          ...tileconfig,
+          baseUrl,
+          tileUrl,
+        },
+        plugins: [
+          MarkersPlugin,
+          ...plugins,
         ],
-        ...plugins,
-      ],
-      container,
-      touchmoveTwoFingers: false,
-      mousewheelCtrlKey: false,
-      navbar,
-      minFov: 15,
-      maxFov: 90,
-      zoomSpeed: 0.5,
-      fisheye: false,
-    });
-    const resolutionPlugin = viewer.getPlugin<ResolutionPlugin>(ResolutionPlugin);
-    const zoomHandler = ({ zoomLevel }: events.ZoomUpdatedEvent) => {
-      // zoomLevel range: [0, 100]
-      if (Math.round(zoomLevel) >= 75) {
-        // Replace the preview with the original
-        void resolutionPlugin.setResolution('original');
-        viewer.removeEventListener(events.ZoomUpdatedEvent.type, zoomHandler);
-      }
-    };
-
-    if (originalPanorama && !$alwaysLoadOriginalFile) {
-      viewer.addEventListener(events.ZoomUpdatedEvent.type, zoomHandler, { passive: true });
-    }
-
-    return () => viewer.removeEventListener(events.ZoomUpdatedEvent.type, zoomHandler);
+        container,
+        ...SHARED_VIEWER_CONFIG,
+      }) : new Viewer({
+        adapter: EquirectangularAdapter,
+        panorama: baseUrl,
+        plugins: [
+          MarkersPlugin,
+          ...plugins,
+        ],
+        container,
+        ...SHARED_VIEWER_CONFIG,
+      });
   });
 
   onDestroy(() => {

@@ -44,6 +44,8 @@ export enum AssetFileType {
   FullSize = 'fullsize',
   Preview = 'preview',
   Thumbnail = 'thumbnail',
+  /** Folder structure containing tiles of the image */
+  Tiles = 'tiles',
 }
 
 export enum AlbumUserRole {
@@ -358,6 +360,8 @@ export enum AssetPathType {
   FullSize = 'fullsize',
   Preview = 'preview',
   Thumbnail = 'thumbnail',
+  /** Folder structure containing tiles of the image */
+  Tiles = 'tiles',
   EncodedVideo = 'encoded_video',
   Sidecar = 'sidecar',
 }
