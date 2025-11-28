@@ -348,13 +348,18 @@ class TransformManager implements EditToolManager {
       const cropEdit = edits.edits.find((e) => e.action === EditActionType.Crop);
       if (cropEdit) {
         this.region = this.relativeLRTBToXYWH(cropEdit.parameters as CropParameters);
-
-        const scale = this.calculateScale();
         this.region = {
           x: this.region.x * scale,
           y: this.region.y * scale,
           width: this.region.width * scale,
           height: this.region.height * scale,
+        };
+      } else {
+        this.region = {
+          x: 0,
+          y: 0,
+          width: img.width * scale,
+          height: img.height * scale,
         };
       }
     } else {
