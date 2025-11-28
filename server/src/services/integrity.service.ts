@@ -224,12 +224,14 @@ export class IntegrityService extends BaseService {
       }
     }
 
-    await this.integrityReportRepository.create(
-      [...orphanedFiles].map((path) => ({
-        type: IntegrityReportType.OrphanFile,
-        path,
-      })),
-    );
+    if (orphanedFiles.size) {
+      await this.integrityReportRepository.create(
+        [...orphanedFiles].map((path) => ({
+          type: IntegrityReportType.OrphanFile,
+          path,
+        })),
+      );
+    }
 
     this.logger.log(`Processed ${paths.length} and found ${orphanedFiles.size} orphaned file(s).`);
     return JobStatus.Success;
@@ -488,7 +490,6 @@ export class IntegrityService extends BaseService {
 
     const results = await Promise.all(
       paths.map(async ({ reportId, path, checksum }) => {
-        console.info('chekc', reportId, path, checksum);
         if (!checksum) return reportId;
 
         try {
@@ -504,7 +505,6 @@ export class IntegrityService extends BaseService {
             }),
           ]);
 
-          console.info('compare', checksum, hash.digest());
           if (checksum.equals(hash.digest())) {
             return reportId;
           }

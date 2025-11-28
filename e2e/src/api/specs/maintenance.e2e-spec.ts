@@ -4,10 +4,9 @@ import { createUserDto } from 'src/fixtures';
 import { errorDto } from 'src/responses';
 import { app, testAssetDir, utils } from 'src/utils';
 import request from 'supertest';
-import { beforeAll, describe, expect, it } from 'vitest';
+import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 
-const locationAssetFilepath = `${testAssetDir}/metadata/gps-position/thompson-springs.jpg`;
-const ratingAssetFilepath = `${testAssetDir}/metadata/rating/mongolels.jpg`;
+const assetFilepath = `${testAssetDir}/metadata/gps-position/thompson-springs.jpg`;
 
 describe('/admin/maintenance', () => {
   let cookie: string | undefined;
@@ -41,6 +40,22 @@ describe('/admin/maintenance', () => {
   describe('POST /integrity/summary (& jobs)', async () => {
     let baseline: Record<IntegrityReportType, number>;
 
+    beforeAll(async () => {
+      await utils.createAsset(admin.accessToken, {
+        assetData: {
+          filename: 'asset.jpg',
+          bytes: await readFile(assetFilepath),
+        },
+      });
+
+      await utils.copyFolder(`/data/upload/${admin.userId}`, `/data/upload/${admin.userId}-bak`);
+    });
+
+    afterEach(async () => {
+      await utils.deleteFolder(`/data/upload/${admin.userId}`);
+      await utils.copyFolder(`/data/upload/${admin.userId}-bak`, `/data/upload/${admin.userId}`);
+    });
+
     it.sequential('may report issues', async () => {
       await utils.createJob(admin.accessToken, {
         name: ManualJobName.IntegrityOrphanFiles,
@@ -72,7 +87,7 @@ describe('/admin/maintenance', () => {
     });
 
     it.sequential('should detect an orphan file (job: check orphan files)', async () => {
-      await utils.putTextFile('orphan', '/data/upload/orphan.png');
+      await utils.putTextFile('orphan', `/data/upload/${admin.userId}/orphan1.png`);
 
       await utils.createJob(admin.accessToken, {
         name: ManualJobName.IntegrityOrphanFiles,
@@ -94,9 +109,9 @@ describe('/admin/maintenance', () => {
     });
 
     it.sequential('should detect outdated orphan file reports (job: refresh orphan files)', async () => {
-      await utils.deleteFile('/data/upload/orphan.png');
-      await utils.putTextFile('orphan', '/data/upload/orphan1.png');
-      await utils.putTextFile('orphan', '/data/upload/orphan2.png');
+      // these should not be detected:
+      await utils.putTextFile('orphan', `/data/upload/${admin.userId}/orphan2.png`);
+      await utils.putTextFile('orphan', `/data/upload/${admin.userId}/orphan3.png`);
 
       await utils.createJob(admin.accessToken, {
         name: ManualJobName.IntegrityOrphanFilesRefresh,
@@ -118,14 +133,7 @@ describe('/admin/maintenance', () => {
     });
 
     it.sequential('should detect a missing file and not a checksum mismatch (job: check missing files)', async () => {
-      await utils.createAsset(admin.accessToken, {
-        assetData: {
-          filename: 'asset.jpg',
-          bytes: await readFile(locationAssetFilepath),
-        },
-      });
-
-      await utils.move(`/data/upload/${admin.userId}`, `/data/upload/${admin.userId}-tmp`);
+      await utils.deleteFolder(`/data/upload/${admin.userId}`);
 
       await utils.createJob(admin.accessToken, {
         name: ManualJobName.IntegrityMissingFiles,
@@ -147,9 +155,7 @@ describe('/admin/maintenance', () => {
       );
     });
 
-    it.sequential.skip('should detect outdated missing file reports (job: refresh missing files)', async () => {
-      await utils.move(`/data/upload/${admin.userId}-tmp`, `/data/upload/${admin.userId}`);
-
+    it.sequential('should detect outdated missing file reports (job: refresh missing files)', async () => {
       await utils.createJob(admin.accessToken, {
         name: ManualJobName.IntegrityMissingFilesRefresh,
       });
@@ -170,15 +176,7 @@ describe('/admin/maintenance', () => {
       );
     });
 
-    it.sequential('should detect a checksum mismatch', async () => {
-      await utils.createAsset(admin.accessToken, {
-        assetData: {
-          filename: 'asset.jpg',
-          bytes: await readFile(ratingAssetFilepath),
-        },
-      });
-
-      await utils.copyFolder(`/data/upload/${admin.userId}`, `/data/upload/${admin.userId}-tmp`);
+    it.sequential('should detect a checksum mismatch (job: check file checksums)', async () => {
       await utils.truncateFolder(`/data/upload/${admin.userId}`);
 
       await utils.createJob(admin.accessToken, {
@@ -200,10 +198,7 @@ describe('/admin/maintenance', () => {
       );
     });
 
-    it.sequential('should detect outdated checksum mismatch reports', async () => {
-      await utils.deleteFolder(`/data/upload/${admin.userId}`);
-      await utils.move(`/data/upload/${admin.userId}-tmp`, `/data/upload/${admin.userId}`);
-
+    it.sequential('should detect outdated checksum mismatch reports (job: refresh file checksums)', async () => {
       await utils.createJob(admin.accessToken, {
         name: ManualJobName.IntegrityChecksumMismatchRefresh,
       });
