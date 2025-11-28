@@ -4,6 +4,7 @@ import {
   MaintenanceAuthDto,
   MaintenanceGetIntegrityReportDto,
   MaintenanceIntegrityReportResponseDto,
+  MaintenanceIntegrityReportSummaryResponseDto,
 } from 'src/dtos/maintenance.dto';
 import { SystemMetadataKey } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
@@ -53,6 +54,10 @@ export class MaintenanceService extends BaseService {
     }
 
     return await createMaintenanceLoginUrl(baseUrl, auth, secret);
+  }
+
+  getIntegrityReportSummary(): Promise<MaintenanceIntegrityReportSummaryResponseDto> {
+    return this.integrityReportRepository.getIntegrityReportSummary();
   }
 
   getIntegrityReport(dto: MaintenanceGetIntegrityReportDto): Promise<MaintenanceIntegrityReportResponseDto> {

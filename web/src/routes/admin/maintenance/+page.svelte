@@ -1,12 +1,11 @@
 <script lang="ts">
   import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
-  import SettingAccordionState from '$lib/components/shared-components/settings/setting-accordion-state.svelte';
-  import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
-  import { QueryParameter } from '$lib/constants';
+  import ServerStatisticsCard from '$lib/components/server-statistics/ServerStatisticsCard.svelte';
+  import { AppRoute } from '$lib/constants';
   import { handleError } from '$lib/utils/handle-error';
   import { MaintenanceAction, setMaintenanceMode } from '@immich/sdk';
-  import { Button, HStack, IconButton, Text } from '@immich/ui';
-  import { mdiDotsVertical, mdiProgressWrench, mdiRefresh } from '@mdi/js';
+  import { Button, HStack, Text } from '@immich/ui';
+  import { mdiProgressWrench } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
 
@@ -46,7 +45,26 @@
 
   <section id="setting-content" class="flex place-content-center sm:mx-4">
     <section class="w-full pb-28 sm:w-5/6 md:w-[850px]">
-      <SettingAccordionState queryParam={QueryParameter.IS_OPEN}>
+      <p class="text-sm dark:text-immich-dark-fg uppercase">{$t('admin.maintenance_integrity_report')}</p>
+
+      <div class="mt-5 hidden justify-between lg:flex gap-4">
+        {#each ['orphan_file', 'missing_file', 'checksum_mismatch'] as const as reportType (reportType)}
+          <ServerStatisticsCard
+            title={$t(`admin.maintenance_integrity_${reportType}`)}
+            value={data.integrityReport[reportType]}
+          >
+            {#snippet footer()}
+              <Button
+                href={`${AppRoute.ADMIN_MAINTENANCE_INTEGRITY_REPORT + reportType}`}
+                size="tiny"
+                class="self-end mt-1">View Report</Button
+              >
+            {/snippet}
+          </ServerStatisticsCard>
+        {/each}
+      </div>
+
+      <!-- <SettingAccordionState queryParam={QueryParameter.IS_OPEN}>
         <SettingAccordion
           title="Integrity Report"
           subtitle={`There are ${data.integrityReport.items.length} unresolved issues!`}
@@ -86,7 +104,7 @@
             </tbody>
           </table>
         </SettingAccordion>
-      </SettingAccordionState>
+      </SettingAccordionState> -->
     </section>
   </section>
 </AdminPageLayout>

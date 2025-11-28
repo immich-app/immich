@@ -40,16 +40,24 @@ export type ActivityStatisticsResponseDto = {
     comments: number;
     likes: number;
 };
+export type SetMaintenanceModeDto = {
+    action: MaintenanceAction;
+};
+export type MaintenanceGetIntegrityReportDto = {
+    "type": IntegrityReportType;
+};
 export type MaintenanceIntegrityReportDto = {
     id: string;
     path: string;
-    "type": Type;
+    "type": IntegrityReportType;
 };
 export type MaintenanceIntegrityReportResponseDto = {
     items: MaintenanceIntegrityReportDto[];
 };
-export type SetMaintenanceModeDto = {
-    action: MaintenanceAction;
+export type MaintenanceIntegrityReportSummaryResponseDto = {
+    checksum_mismatch: number;
+    missing_file: number;
+    orphan_file: number;
 };
 export type MaintenanceLoginDto = {
     token?: string;
@@ -1875,17 +1883,6 @@ export function unlinkAllOAuthAccountsAdmin(opts?: Oazapfts.RequestOpts) {
     }));
 }
 /**
- * Get integrity report
- */
-export function getIntegrityReport(opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: MaintenanceIntegrityReportResponseDto;
-    }>("/admin/maintenance", {
-        ...opts
-    }));
-}
-/**
  * Set maintenance mode
  */
 export function setMaintenanceMode({ setMaintenanceModeDto }: {
@@ -1896,6 +1893,32 @@ export function setMaintenanceMode({ setMaintenanceModeDto }: {
         method: "POST",
         body: setMaintenanceModeDto
     })));
+}
+/**
+ * Get integrity report by type
+ */
+export function getIntegrityReport({ maintenanceGetIntegrityReportDto }: {
+    maintenanceGetIntegrityReportDto: MaintenanceGetIntegrityReportDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: MaintenanceIntegrityReportResponseDto;
+    }>("/admin/maintenance/integrity/report", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: maintenanceGetIntegrityReportDto
+    })));
+}
+/**
+ * Get integrity report summary
+ */
+export function getIntegrityReportSummary(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: MaintenanceIntegrityReportSummaryResponseDto;
+    }>("/admin/maintenance/integrity/summary", {
+        ...opts
+    }));
 }
 /**
  * Log into maintenance mode
@@ -5173,14 +5196,14 @@ export enum UserAvatarColor {
     Gray = "gray",
     Amber = "amber"
 }
-export enum Type {
-    OrphanFile = "orphan_file",
-    MissingFile = "missing_file",
-    ChecksumMismatch = "checksum_mismatch"
-}
 export enum MaintenanceAction {
     Start = "start",
     End = "end"
+}
+export enum IntegrityReportType {
+    OrphanFile = "orphan_file",
+    MissingFile = "missing_file",
+    ChecksumMismatch = "checksum_mismatch"
 }
 export enum NotificationLevel {
     Success = "success",

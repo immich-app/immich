@@ -1,4 +1,4 @@
-import { IsEnum } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
 import { IntegrityReportType, MaintenanceAction } from 'src/enum';
 import { ValidateEnum, ValidateString } from 'src/validation';
 
@@ -16,7 +16,19 @@ export class MaintenanceAuthDto {
   username!: string;
 }
 
+export class MaintenanceIntegrityReportSummaryResponseDto {
+  @ApiProperty({ type: 'integer' })
+  [IntegrityReportType.ChecksumFail]!: number;
+  @ApiProperty({ type: 'integer' })
+  [IntegrityReportType.MissingFile]!: number;
+  @ApiProperty({ type: 'integer' })
+  [IntegrityReportType.OrphanFile]!: number;
+}
+
 export class MaintenanceGetIntegrityReportDto {
+  @ValidateEnum({ enum: IntegrityReportType, name: 'IntegrityReportType' })
+  type!: IntegrityReportType;
+
   // todo: paginate
   // @IsInt()
   // @Min(1)
@@ -27,7 +39,7 @@ export class MaintenanceGetIntegrityReportDto {
 
 class MaintenanceIntegrityReportDto {
   id!: string;
-  @IsEnum(IntegrityReportType)
+  @ValidateEnum({ enum: IntegrityReportType, name: 'IntegrityReportType' })
   type!: IntegrityReportType;
   path!: string;
 }

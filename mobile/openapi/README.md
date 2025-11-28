@@ -161,7 +161,8 @@ Class | Method | HTTP request | Description
 *LibrariesApi* | [**scanLibrary**](doc//LibrariesApi.md#scanlibrary) | **POST** /libraries/{id}/scan | Scan a library
 *LibrariesApi* | [**updateLibrary**](doc//LibrariesApi.md#updatelibrary) | **PUT** /libraries/{id} | Update a library
 *LibrariesApi* | [**validate**](doc//LibrariesApi.md#validate) | **POST** /libraries/{id}/validate | Validate library settings
-*MaintenanceAdminApi* | [**getIntegrityReport**](doc//MaintenanceAdminApi.md#getintegrityreport) | **GET** /admin/maintenance | Get integrity report
+*MaintenanceAdminApi* | [**getIntegrityReport**](doc//MaintenanceAdminApi.md#getintegrityreport) | **POST** /admin/maintenance/integrity/report | Get integrity report by type
+*MaintenanceAdminApi* | [**getIntegrityReportSummary**](doc//MaintenanceAdminApi.md#getintegrityreportsummary) | **GET** /admin/maintenance/integrity/summary | Get integrity report summary
 *MaintenanceAdminApi* | [**maintenanceLogin**](doc//MaintenanceAdminApi.md#maintenancelogin) | **POST** /admin/maintenance/login | Log into maintenance mode
 *MaintenanceAdminApi* | [**setMaintenanceMode**](doc//MaintenanceAdminApi.md#setmaintenancemode) | **POST** /admin/maintenance | Set maintenance mode
 *MapApi* | [**getMapMarkers**](doc//MapApi.md#getmapmarkers) | **GET** /map/markers | Retrieve map markers
@@ -403,6 +404,7 @@ Class | Method | HTTP request | Description
  - [FoldersResponse](doc//FoldersResponse.md)
  - [FoldersUpdate](doc//FoldersUpdate.md)
  - [ImageFormat](doc//ImageFormat.md)
+ - [IntegrityReportType](doc//IntegrityReportType.md)
  - [JobCreateDto](doc//JobCreateDto.md)
  - [JobName](doc//JobName.md)
  - [JobSettingsDto](doc//JobSettingsDto.md)
@@ -417,8 +419,10 @@ Class | Method | HTTP request | Description
  - [MachineLearningAvailabilityChecksDto](doc//MachineLearningAvailabilityChecksDto.md)
  - [MaintenanceAction](doc//MaintenanceAction.md)
  - [MaintenanceAuthDto](doc//MaintenanceAuthDto.md)
+ - [MaintenanceGetIntegrityReportDto](doc//MaintenanceGetIntegrityReportDto.md)
  - [MaintenanceIntegrityReportDto](doc//MaintenanceIntegrityReportDto.md)
  - [MaintenanceIntegrityReportResponseDto](doc//MaintenanceIntegrityReportResponseDto.md)
+ - [MaintenanceIntegrityReportSummaryResponseDto](doc//MaintenanceIntegrityReportSummaryResponseDto.md)
  - [MaintenanceLoginDto](doc//MaintenanceLoginDto.md)
  - [ManualJobName](doc//ManualJobName.md)
  - [MapMarkerResponseDto](doc//MapMarkerResponseDto.md)

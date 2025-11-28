@@ -323,51 +323,6 @@
       }
     },
     "/admin/maintenance": {
-      "get": {
-        "description": "...",
-        "operationId": "getIntegrityReport",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MaintenanceIntegrityReportResponseDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "summary": "Get integrity report",
-        "tags": [
-          "Maintenance (admin)"
-        ],
-        "x-immich-admin-only": true,
-        "x-immich-history": [
-          {
-            "version": "v9.9.9",
-            "state": "Added"
-          },
-          {
-            "version": "v9.9.9",
-            "state": "Alpha"
-          }
-        ],
-        "x-immich-permission": "maintenance",
-        "x-immich-state": "Alpha"
-      },
       "post": {
         "description": "Put Immich into or take it out of maintenance mode",
         "operationId": "setMaintenanceMode",
@@ -410,6 +365,110 @@
           },
           {
             "version": "v2.3.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "maintenance",
+        "x-immich-state": "Alpha"
+      }
+    },
+    "/admin/maintenance/integrity/report": {
+      "post": {
+        "description": "...",
+        "operationId": "getIntegrityReport",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MaintenanceGetIntegrityReportDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MaintenanceIntegrityReportResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Get integrity report by type",
+        "tags": [
+          "Maintenance (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v9.9.9",
+            "state": "Added"
+          },
+          {
+            "version": "v9.9.9",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "maintenance",
+        "x-immich-state": "Alpha"
+      }
+    },
+    "/admin/maintenance/integrity/summary": {
+      "get": {
+        "description": "...",
+        "operationId": "getIntegrityReportSummary",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MaintenanceIntegrityReportSummaryResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Get integrity report summary",
+        "tags": [
+          "Maintenance (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v9.9.9",
+            "state": "Added"
+          },
+          {
+            "version": "v9.9.9",
             "state": "Alpha"
           }
         ],
@@ -16634,6 +16693,14 @@
         ],
         "type": "string"
       },
+      "IntegrityReportType": {
+        "enum": [
+          "orphan_file",
+          "missing_file",
+          "checksum_mismatch"
+        ],
+        "type": "string"
+      },
       "JobCreateDto": {
         "properties": {
           "name": {
@@ -16965,6 +17032,21 @@
         ],
         "type": "object"
       },
+      "MaintenanceGetIntegrityReportDto": {
+        "properties": {
+          "type": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/IntegrityReportType"
+              }
+            ]
+          }
+        },
+        "required": [
+          "type"
+        ],
+        "type": "object"
+      },
       "MaintenanceIntegrityReportDto": {
         "properties": {
           "id": {
@@ -16974,12 +17056,11 @@
             "type": "string"
           },
           "type": {
-            "enum": [
-              "orphan_file",
-              "missing_file",
-              "checksum_mismatch"
-            ],
-            "type": "string"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/IntegrityReportType"
+              }
+            ]
           }
         },
         "required": [
@@ -17000,6 +17081,25 @@
         },
         "required": [
           "items"
+        ],
+        "type": "object"
+      },
+      "MaintenanceIntegrityReportSummaryResponseDto": {
+        "properties": {
+          "checksum_mismatch": {
+            "type": "integer"
+          },
+          "missing_file": {
+            "type": "integer"
+          },
+          "orphan_file": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "checksum_mismatch",
+          "missing_file",
+          "orphan_file"
         ],
         "type": "object"
       },

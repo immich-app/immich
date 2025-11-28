@@ -356,6 +356,8 @@ class ApiClient {
           return FoldersUpdate.fromJson(value);
         case 'ImageFormat':
           return ImageFormatTypeTransformer().decode(value);
+        case 'IntegrityReportType':
+          return IntegrityReportTypeTypeTransformer().decode(value);
         case 'JobCreateDto':
           return JobCreateDto.fromJson(value);
         case 'JobName':
@@ -384,10 +386,14 @@ class ApiClient {
           return MaintenanceActionTypeTransformer().decode(value);
         case 'MaintenanceAuthDto':
           return MaintenanceAuthDto.fromJson(value);
+        case 'MaintenanceGetIntegrityReportDto':
+          return MaintenanceGetIntegrityReportDto.fromJson(value);
         case 'MaintenanceIntegrityReportDto':
           return MaintenanceIntegrityReportDto.fromJson(value);
         case 'MaintenanceIntegrityReportResponseDto':
           return MaintenanceIntegrityReportResponseDto.fromJson(value);
+        case 'MaintenanceIntegrityReportSummaryResponseDto':
+          return MaintenanceIntegrityReportSummaryResponseDto.fromJson(value);
         case 'MaintenanceLoginDto':
           return MaintenanceLoginDto.fromJson(value);
         case 'ManualJobName':

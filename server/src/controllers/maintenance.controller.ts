@@ -7,6 +7,7 @@ import {
   MaintenanceAuthDto,
   MaintenanceGetIntegrityReportDto,
   MaintenanceIntegrityReportResponseDto,
+  MaintenanceIntegrityReportSummaryResponseDto,
   MaintenanceLoginDto,
   SetMaintenanceModeDto,
 } from 'src/dtos/maintenance.dto';
@@ -53,14 +54,25 @@ export class MaintenanceController {
     }
   }
 
-  @Get()
+  @Get('integrity/summary')
   @Endpoint({
-    summary: 'Get integrity report',
+    summary: 'Get integrity report summary',
     description: '...',
     history: new HistoryBuilder().added('v9.9.9').alpha('v9.9.9'),
   })
   @Authenticated({ permission: Permission.Maintenance, admin: true })
-  getIntegrityReport(dto: MaintenanceGetIntegrityReportDto): Promise<MaintenanceIntegrityReportResponseDto> {
+  getIntegrityReportSummary(): Promise<MaintenanceIntegrityReportSummaryResponseDto> {
+    return this.service.getIntegrityReportSummary(); //
+  }
+
+  @Post('integrity/report')
+  @Endpoint({
+    summary: 'Get integrity report by type',
+    description: '...',
+    history: new HistoryBuilder().added('v9.9.9').alpha('v9.9.9'),
+  })
+  @Authenticated({ permission: Permission.Maintenance, admin: true })
+  getIntegrityReport(@Body() dto: MaintenanceGetIntegrityReportDto): Promise<MaintenanceIntegrityReportResponseDto> {
     return this.service.getIntegrityReport(dto);
   }
 }

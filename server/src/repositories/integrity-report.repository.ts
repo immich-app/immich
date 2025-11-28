@@ -1,7 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { Insertable, Kysely } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
-import { MaintenanceGetIntegrityReportDto, MaintenanceIntegrityReportResponseDto } from 'src/dtos/maintenance.dto';
+import {
+  MaintenanceGetIntegrityReportDto,
+  MaintenanceIntegrityReportResponseDto,
+  MaintenanceIntegrityReportSummaryResponseDto,
+} from 'src/dtos/maintenance.dto';
+import { IntegrityReportType } from 'src/enum';
 import { DB } from 'src/schema';
 import { IntegrityReportTable } from 'src/schema/tables/integrity-report.table';
 
@@ -18,11 +23,36 @@ export class IntegrityReportRepository {
       .executeTakeFirst();
   }
 
-  async getIntegrityReport(_dto: MaintenanceGetIntegrityReportDto): Promise<MaintenanceIntegrityReportResponseDto> {
+  async getIntegrityReportSummary(): Promise<MaintenanceIntegrityReportSummaryResponseDto> {
+    return await this.db
+      .selectFrom('integrity_report')
+      .select((eb) =>
+        eb.fn
+          .countAll<number>()
+          .filterWhere('type', '=', IntegrityReportType.ChecksumFail)
+          .as(IntegrityReportType.ChecksumFail),
+      )
+      .select((eb) =>
+        eb.fn
+          .countAll<number>()
+          .filterWhere('type', '=', IntegrityReportType.MissingFile)
+          .as(IntegrityReportType.MissingFile),
+      )
+      .select((eb) =>
+        eb.fn
+          .countAll<number>()
+          .filterWhere('type', '=', IntegrityReportType.OrphanFile)
+          .as(IntegrityReportType.OrphanFile),
+      )
+      .executeTakeFirstOrThrow();
+  }
+
+  async getIntegrityReport(dto: MaintenanceGetIntegrityReportDto): Promise<MaintenanceIntegrityReportResponseDto> {
     return {
       items: await this.db
         .selectFrom('integrity_report')
         .select(['id', 'type', 'path'])
+        .where('type', '=', dto.type)
         .orderBy('createdAt', 'desc')
         .execute(),
     };
