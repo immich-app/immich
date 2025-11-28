@@ -1,6 +1,5 @@
 <script lang="ts">
   import { cropManager, type CropAspectRatio } from '$lib/managers/edit/crop-manager.svelte';
-  import { onImageLoad } from '$lib/utils/crop-utils';
   import { IconButton } from '@immich/ui';
   import { mdiBackupRestore, mdiCropFree, mdiRotateLeft, mdiRotateRight, mdiSquareOutline } from '@mdi/js';
   import { tick } from 'svelte';
@@ -89,13 +88,6 @@
     sizes.filter((s) => s.rotate === true),
   ]);
 
-  async function rotate(angle: -90 | 90) {
-    cropManager.imageRotation += angle;
-
-    await tick();
-    onImageLoad();
-  }
-
   function selectType(size: CropAspectRatio) {
     if (size === 'reset') {
       cropManager.settings.aspectRatio = 'free';
@@ -135,7 +127,7 @@
         variant="ghost"
         color="secondary"
         aria-label={$t('anti_clockwise')}
-        onclick={() => rotate(-90)}
+        onclick={() => cropManager.rotate(-90)}
         icon={mdiRotateLeft}
       />
     </li>
@@ -145,7 +137,7 @@
         variant="ghost"
         color="secondary"
         aria-label={$t('clockwise')}
-        onclick={() => rotate(90)}
+        onclick={() => cropManager.rotate(90)}
         icon={mdiRotateRight}
       />
     </li>

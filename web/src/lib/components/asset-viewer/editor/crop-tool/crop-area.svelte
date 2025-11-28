@@ -1,6 +1,5 @@
 <script lang="ts">
   import { cropManager } from '$lib/managers/edit/crop-manager.svelte';
-  import { handleMouseDown, handleMouseUp, resizeCanvas } from '$lib/utils/crop-utils';
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import type { AssetResponseDto } from '@immich/sdk';
@@ -22,7 +21,7 @@
   });
 
   $effect(() => {
-    resizeCanvas();
+    cropManager.resizeCanvas();
   });
 </script>
 
@@ -31,8 +30,8 @@
     class={`crop-area ${cropManager.orientationChanged ? 'changedOriention' : ''}`}
     style={`rotate:${cropManager.imageRotation}deg`}
     bind:this={cropManager.cropAreaEl}
-    onmousedown={handleMouseDown}
-    onmouseup={handleMouseUp}
+    onmousedown={(e) => cropManager.handleMouseDown(e)}
+    onmouseup={() => cropManager.handleMouseUp()}
     aria-label="Crop area"
     type="button"
   >
