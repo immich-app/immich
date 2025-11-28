@@ -470,7 +470,6 @@ export class MediaService extends BaseService {
       format: ImageFormat.Jpeg,
       raw: info,
       quality: image.thumbnail.quality,
-      // TODO: change this to use EditActionCrop
       processInvalidImages: false,
       size: FACE_THUMBNAIL_SIZE,
       edits: [
@@ -490,7 +489,7 @@ export class MediaService extends BaseService {
   private getCrop(
     dims: { old: ImageDimensions; new: ImageDimensions },
     { x1, y1, x2, y2 }: BoundingBox,
-  ): EditActionCrop {
+  ): EditActionItem {
     // face bounding boxes can spill outside the image dimensions
     const clampedX1 = clamp(x1, 0, dims.old.width);
     const clampedY1 = clamp(y1, 0, dims.old.height);

@@ -5450,7 +5450,9 @@ export enum AssetJobName {
     TranscodeVideo = "transcode-video"
 }
 export enum EditActionType {
-    Crop = "crop"
+    Crop = "crop",
+    Rotate = "rotate",
+    Mirror = "mirror"
 }
 export enum RotationAngle {
     $0 = 0,

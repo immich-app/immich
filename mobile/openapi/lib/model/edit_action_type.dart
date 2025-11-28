@@ -24,10 +24,14 @@ class EditActionType {
   String toJson() => value;
 
   static const crop = EditActionType._(r'crop');
+  static const rotate = EditActionType._(r'rotate');
+  static const mirror = EditActionType._(r'mirror');
 
   /// List of all possible values in this [enum][EditActionType].
   static const values = <EditActionType>[
     crop,
+    rotate,
+    mirror,
   ];
 
   static EditActionType? fromJson(dynamic value) => EditActionTypeTypeTransformer().decode(value);
@@ -67,6 +71,8 @@ class EditActionTypeTypeTransformer {
     if (data != null) {
       switch (data) {
         case r'crop': return EditActionType.crop;
+        case r'rotate': return EditActionType.rotate;
+        case r'mirror': return EditActionType.mirror;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');

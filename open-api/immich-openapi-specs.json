@@ -16671,7 +16671,9 @@
       },
       "EditActionType": {
         "enum": [
-          "crop"
+          "crop",
+          "rotate",
+          "mirror"
         ],
         "type": "string"
       },

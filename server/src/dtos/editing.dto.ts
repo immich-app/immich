@@ -63,8 +63,8 @@ export class MirrorParameters {
 
 class EditActionBase {
   @IsEnum(EditActionType)
-  @ApiProperty({ enum: [EditActionType.Crop], enumName: 'EditActionType' })
-  action!: EditActionType.Crop;
+  @ApiProperty({ enum: EditActionType, enumName: 'EditActionType' })
+  action!: EditActionType;
 
   @IsInt()
   @Min(0)
