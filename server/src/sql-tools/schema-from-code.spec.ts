@@ -1,14 +1,16 @@
 import { readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { schemaFromCode } from 'src/sql-tools/schema-from-code';
-import { SchemaFromCodeOptions } from 'src/sql-tools/types';
+import { DatabaseSchema, SchemaFromCodeOptions } from 'src/sql-tools/types';
 import { describe, expect, it } from 'vitest';
 
-const importModule = async (filePath: string) => {
-  const module = await import(filePath);
-  const options: SchemaFromCodeOptions = module.options;
-
-  return { module, options };
+const importModule = (filePath: string) => {
+  return vi.importActual<{
+    description: string;
+    message: string;
+    schema: DatabaseSchema;
+    options: SchemaFromCodeOptions;
+  }>(filePath);
 };
 
 describe(schemaFromCode.name, () => {
@@ -31,10 +33,10 @@ describe(schemaFromCode.name, () => {
     for (const file of errorStubs) {
       const filePath = join(file.parentPath, file.name);
       it(filePath, async () => {
-        const { module, options } = await importModule(filePath);
+        const { message, options } = await importModule(filePath);
 
-        expect(module.message).toBeDefined();
-        expect(() => schemaFromCode({ ...options, reset: true })).toThrowError(module.message);
+        expect(message).toBeDefined();
+        expect(() => schemaFromCode({ ...options, reset: true })).toThrowError(message);
       });
     }
 
@@ -46,11 +48,11 @@ describe(schemaFromCode.name, () => {
 
       const filePath = join(file.parentPath, file.name);
       it(filePath, async () => {
-        const { module, options } = await importModule(filePath);
+        const { description, schema, options } = await importModule(filePath);
 
-        expect(module.description).toBeDefined();
-        expect(module.schema).toBeDefined();
-        expect(schemaFromCode({ ...options, reset: true }), module.description).toEqual(module.schema);
+        expect(description).toBeDefined();
+        expect(schema).toBeDefined();
+        expect(schemaFromCode({ ...options, reset: true }), description).toEqual(schema);
       });
     }
   });

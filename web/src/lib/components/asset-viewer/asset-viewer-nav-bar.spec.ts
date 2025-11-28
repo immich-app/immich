@@ -25,14 +25,18 @@ describe('AssetViewerNavBar component', () => {
   };
 
   beforeAll(() => {
-    Element.prototype.animate = vi.fn().mockImplementation(() => ({
-      cancel: () => {},
-    }));
+    Element.prototype.animate = vi.fn().mockImplementation(function () {
+      return {
+        cancel: () => {},
+      };
+    });
     vi.stubGlobal(
       'ResizeObserver',
-      vi.fn(() => ({ observe: vi.fn(), unobserve: vi.fn(), disconnect: vi.fn() })),
+      vi.fn(function () {
+        return { observe: vi.fn(), unobserve: vi.fn(), disconnect: vi.fn() };
+      }),
     );
-    vi.mock(import('$lib/managers/feature-flags-manager.svelte'), () => {
+    vi.mock(import('$lib/managers/feature-flags-manager.svelte'), function () {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return { featureFlagsManager: { init: vi.fn(), loadFeatureFlags: vi.fn(), value: { smartSearch: true } } as any };
     });

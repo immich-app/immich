@@ -2,7 +2,7 @@ import { tick } from 'svelte';
 import { vi } from 'vitest';
 
 export const getAnimateMock = () =>
-  vi.fn().mockImplementation(() => {
+  vi.fn().mockImplementation(function () {
     let onfinish: (() => void) | null = null;
     void tick().then(() => onfinish?.());
 

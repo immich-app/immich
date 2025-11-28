@@ -20,10 +20,8 @@ export default defineConfig({
         'src/services/index.ts',
       ],
     },
-    server: {
-      deps: {
-        fallbackCJS: true,
-      },
+    deps: {
+      fallbackCJS: true,
     },
   },
   plugins: [swc.vite(), tsconfigPaths()],

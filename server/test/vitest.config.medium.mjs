@@ -4,15 +4,12 @@ import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   test: {
-    root: './',
     globals: true,
-    include: ['test/medium/**/*.spec.ts'],
+    include: ['src/**/*.{js,ts}', 'test/medium/**/*.spec.ts'],
     globalSetup: ['test/medium/globalSetup.ts'],
-    server: {
-      deps: {
-        fallbackCJS: true,
-      },
+    deps: {
+      fallbackCJS: true,
     },
   },
-  plugins: [swc.vite(), tsconfigPaths()],
+  plugins: [swc.vite(), tsconfigPaths({ configNames: ['tsconfig.json'] })],
 });
