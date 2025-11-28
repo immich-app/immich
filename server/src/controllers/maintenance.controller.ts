@@ -62,7 +62,7 @@ export class MaintenanceController {
   })
   @Authenticated({ permission: Permission.Maintenance, admin: true })
   getIntegrityReportSummary(): Promise<MaintenanceIntegrityReportSummaryResponseDto> {
-    return this.service.getIntegrityReportSummary(); //
+    return this.service.getIntegrityReportSummary();
   }
 
   @Post('integrity/report')
