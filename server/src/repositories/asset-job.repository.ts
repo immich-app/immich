@@ -321,7 +321,14 @@ export class AssetJobRepository {
 
   @GenerateSql({ params: [DummyValue.STRING], stream: true })
   streamIntegrityReports(type: IntegrityReportType) {
-    return this.db.selectFrom('integrity_report').select(['id as reportId', 'path']).where('type', '=', type).stream();
+    return this.db
+      .selectFrom('integrity_report')
+      .select(['integrity_report.id as reportId', 'integrity_report.path'])
+      .where('integrity_report.type', '=', type)
+      .$if(type === IntegrityReportType.ChecksumFail, (eb) =>
+        eb.leftJoin('asset', 'integrity_report.path', 'asset.originalPath').select('asset.checksum'),
+      )
+      .stream();
   }
 
   @GenerateSql({ params: [], stream: true })

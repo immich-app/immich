@@ -19,7 +19,12 @@ import {
 } from 'src/enum';
 import { ArgOf } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
-import { IIntegrityJob, IIntegrityOrphanedFilesJob, IIntegrityPathWithReportJob } from 'src/types';
+import {
+  IIntegrityJob,
+  IIntegrityOrphanedFilesJob,
+  IIntegrityPathWithChecksumJob,
+  IIntegrityPathWithReportJob,
+} from 'src/types';
 import { handlePromiseError } from 'src/utils/misc';
 
 async function* chunk<T>(generator: AsyncIterableIterator<T>, n: number) {
@@ -138,7 +143,7 @@ export class IntegrityService extends BaseService {
     let total = 0;
     for await (const batchReports of chunk(reports, JOBS_LIBRARY_PAGINATION_SIZE)) {
       await this.jobRepository.queue({
-        name: JobName.IntegrityOrphanedCheckReports,
+        name: JobName.IntegrityOrphanedFilesRefresh,
         data: {
           items: batchReports,
         },
@@ -230,8 +235,8 @@ export class IntegrityService extends BaseService {
     return JobStatus.Success;
   }
 
-  @OnJob({ name: JobName.IntegrityOrphanedCheckReports, queue: QueueName.BackgroundTask })
-  async handleOrphanedCheckReports({ items: paths }: IIntegrityPathWithReportJob): Promise<JobStatus> {
+  @OnJob({ name: JobName.IntegrityOrphanedFilesRefresh, queue: QueueName.BackgroundTask })
+  async handleOrphanedRefresh({ items: paths }: IIntegrityPathWithReportJob): Promise<JobStatus> {
     this.logger.log(`Processing batch of ${paths.length} reports to check if they are out of date.`);
 
     const results = await Promise.all(
@@ -255,7 +260,23 @@ export class IntegrityService extends BaseService {
   @OnJob({ name: JobName.IntegrityMissingFilesQueueAll, queue: QueueName.BackgroundTask })
   async handleMissingFilesQueueAll({ refreshOnly }: IIntegrityJob = {}): Promise<JobStatus> {
     if (refreshOnly) {
-      // TODO
+      this.logger.log(`Checking for out of date missing file reports...`);
+
+      const reports = this.assetJobRepository.streamIntegrityReports(IntegrityReportType.MissingFile);
+
+      let total = 0;
+      for await (const batchReports of chunk(reports, JOBS_LIBRARY_PAGINATION_SIZE)) {
+        await this.jobRepository.queue({
+          name: JobName.IntegrityMissingFilesRefresh,
+          data: {
+            items: batchReports,
+          },
+        });
+
+        total += batchReports.length;
+        this.logger.log(`Queued report check of ${batchReports.length} report(s) (${total} so far)`);
+      }
+
       this.logger.log('Refresh complete.');
       return JobStatus.Success;
     }
@@ -314,10 +335,48 @@ export class IntegrityService extends BaseService {
     return JobStatus.Success;
   }
 
+  @OnJob({ name: JobName.IntegrityMissingFilesRefresh, queue: QueueName.BackgroundTask })
+  async handleMissingRefresh({ items: paths }: IIntegrityPathWithReportJob): Promise<JobStatus> {
+    this.logger.log(`Processing batch of ${paths.length} reports to check if they are out of date.`);
+
+    const results = await Promise.all(
+      paths.map(({ reportId, path }) =>
+        stat(path)
+          .then(() => reportId)
+          .catch(() => void 0),
+      ),
+    );
+
+    const reportIds = results.filter(Boolean) as string[];
+
+    if (reportIds.length > 0) {
+      await this.integrityReportRepository.deleteByIds(reportIds);
+    }
+
+    this.logger.log(`Processed ${paths.length} paths and found ${reportIds.length} report(s) out of date.`);
+    return JobStatus.Success;
+  }
+
   @OnJob({ name: JobName.IntegrityChecksumFiles, queue: QueueName.BackgroundTask })
   async handleChecksumFiles({ refreshOnly }: IIntegrityJob = {}): Promise<JobStatus> {
     if (refreshOnly) {
-      // TODO
+      this.logger.log(`Checking for out of date checksum file reports...`);
+
+      const reports = this.assetJobRepository.streamIntegrityReports(IntegrityReportType.ChecksumFail);
+
+      let total = 0;
+      for await (const batchReports of chunk(reports, JOBS_LIBRARY_PAGINATION_SIZE)) {
+        await this.jobRepository.queue({
+          name: JobName.IntegrityChecksumFilesRefresh,
+          data: {
+            items: batchReports,
+          },
+        });
+
+        total += batchReports.length;
+        this.logger.log(`Queued report check of ${batchReports.length} report(s) (${total} so far)`);
+      }
+
       this.logger.log('Refresh complete.');
       return JobStatus.Success;
     }
@@ -358,6 +417,8 @@ export class IntegrityService extends BaseService {
       startMarker = undefined;
 
       for await (const { originalPath, checksum, createdAt, reportId } of assets) {
+        processed++;
+
         try {
           const hash = createHash('sha1');
 
@@ -394,7 +455,6 @@ export class IntegrityService extends BaseService {
           });
         }
 
-        processed++;
         if (processed % 100 === 0) {
           printStats();
         }
@@ -419,6 +479,50 @@ export class IntegrityService extends BaseService {
       this.logger.log(`Finished checksum job, covered all assets.`);
     }
 
+    return JobStatus.Success;
+  }
+
+  @OnJob({ name: JobName.IntegrityChecksumFilesRefresh, queue: QueueName.BackgroundTask })
+  async handleChecksumRefresh({ items: paths }: IIntegrityPathWithChecksumJob): Promise<JobStatus> {
+    this.logger.log(`Processing batch of ${paths.length} reports to check if they are out of date.`);
+
+    const results = await Promise.all(
+      paths.map(async ({ reportId, path, checksum }) => {
+        console.info('chekc', reportId, path, checksum);
+        if (!checksum) return reportId;
+
+        try {
+          const hash = createHash('sha1');
+
+          await pipeline([
+            createReadStream(path),
+            new Writable({
+              write(chunk, _encoding, callback) {
+                hash.update(chunk);
+                callback();
+              },
+            }),
+          ]);
+
+          console.info('compare', checksum, hash.digest());
+          if (checksum.equals(hash.digest())) {
+            return reportId;
+          }
+        } catch (error) {
+          if ((error as { code?: string }).code === 'ENOENT') {
+            return reportId;
+          }
+        }
+      }),
+    );
+
+    const reportIds = results.filter(Boolean) as string[];
+
+    if (reportIds.length > 0) {
+      await this.integrityReportRepository.deleteByIds(reportIds);
+    }
+
+    this.logger.log(`Processed ${paths.length} paths and found ${reportIds.length} report(s) out of date.`);
     return JobStatus.Success;
   }
 }

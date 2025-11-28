@@ -295,6 +295,10 @@ export interface IIntegrityPathWithReportJob {
   items: { path: string; reportId: string | null }[];
 }
 
+export interface IIntegrityPathWithChecksumJob {
+  items: { path: string; reportId: string | null; checksum?: Buffer | null }[];
+}
+
 export interface JobCounts {
   active: number;
   completed: number;
@@ -409,10 +413,12 @@ export type JobItem =
   // Integrity
   | { name: JobName.IntegrityOrphanedFilesQueueAll; data?: IIntegrityJob }
   | { name: JobName.IntegrityOrphanedFiles; data: IIntegrityOrphanedFilesJob }
-  | { name: JobName.IntegrityOrphanedCheckReports; data: IIntegrityPathWithReportJob }
+  | { name: JobName.IntegrityOrphanedFilesRefresh; data: IIntegrityPathWithReportJob }
   | { name: JobName.IntegrityMissingFilesQueueAll; data?: IIntegrityJob }
   | { name: JobName.IntegrityMissingFiles; data: IIntegrityPathWithReportJob }
-  | { name: JobName.IntegrityChecksumFiles; data?: IIntegrityJob };
+  | { name: JobName.IntegrityMissingFilesRefresh; data: IIntegrityPathWithReportJob }
+  | { name: JobName.IntegrityChecksumFiles; data?: IIntegrityJob }
+  | { name: JobName.IntegrityChecksumFilesRefresh; data?: IIntegrityPathWithChecksumJob };
 
 export type VectorExtension = (typeof VECTOR_EXTENSIONS)[number];
 

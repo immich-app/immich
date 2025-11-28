@@ -654,10 +654,12 @@ export enum JobName {
   // Integrity
   IntegrityOrphanedFilesQueueAll = 'IntegrityOrphanedFilesQueueAll',
   IntegrityOrphanedFiles = 'IntegrityOrphanedFiles',
-  IntegrityOrphanedCheckReports = 'IntegrityOrphanedCheckReports',
+  IntegrityOrphanedFilesRefresh = 'IntegrityOrphanedRefresh',
   IntegrityMissingFilesQueueAll = 'IntegrityMissingFilesQueueAll',
   IntegrityMissingFiles = 'IntegrityMissingFiles',
+  IntegrityMissingFilesRefresh = 'IntegrityMissingFilesRefresh',
   IntegrityChecksumFiles = 'IntegrityChecksumFiles',
+  IntegrityChecksumFilesRefresh = 'IntegrityChecksumFilesRefresh',
 }
 
 export enum QueueCommand {

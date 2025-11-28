@@ -6,6 +6,7 @@ import {
   CheckExistingAssetsDto,
   CreateAlbumDto,
   CreateLibraryDto,
+  JobCreateDto,
   MaintenanceAction,
   MetadataSearchDto,
   Permission,
@@ -21,6 +22,7 @@ import {
   checkExistingAssets,
   createAlbum,
   createApiKey,
+  createJob,
   createLibrary,
   createPartner,
   createPerson,
@@ -52,9 +54,12 @@ import {
 import { BrowserContext } from '@playwright/test';
 import { exec, spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { existsSync, mkdirSync, renameSync, rmSync, writeFileSync } from 'node:fs';
+import { createWriteStream, existsSync, mkdirSync, renameSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtemp } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { dirname, resolve } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
+import { Readable } from 'node:stream';
+import { pipeline } from 'node:stream/promises';
 import { setTimeout as setAsyncTimeout } from 'node:timers/promises';
 import { promisify } from 'node:util';
 import pg from 'pg';
@@ -171,6 +176,7 @@ export const utils = {
         'user',
         'system_metadata',
         'tag',
+        'integrity_report',
       ];
 
       const sql: string[] = [];
@@ -481,6 +487,9 @@ export const utils = {
   tagAssets: (accessToken: string, tagId: string, assetIds: string[]) =>
     tagAssets({ id: tagId, bulkIdsDto: { ids: assetIds } }, { headers: asBearerAuth(accessToken) }),
 
+  createJob: async (accessToken: string, jobCreateDto: JobCreateDto) =>
+    createJob({ jobCreateDto }, { headers: asBearerAuth(accessToken) }),
+
   queueCommand: async (accessToken: string, name: QueueName, queueCommandDto: QueueCommandDto) =>
     runQueueCommandLegacy({ name, queueCommandDto }, { headers: asBearerAuth(accessToken) }),
 
@@ -557,6 +566,50 @@ export const utils = {
   resetTempFolder: () => {
     rmSync(`${testAssetDir}/temp`, { recursive: true, force: true });
     mkdirSync(`${testAssetDir}/temp`, { recursive: true });
+  },
+
+  putFile(source: string, dest: string) {
+    return executeCommand('docker', ['cp', source, `immich-e2e-server:${dest}`]).promise;
+  },
+
+  async putTextFile(contents: string, dest: string) {
+    const dir = await mkdtemp(join(tmpdir(), 'test-'));
+    const fn = join(dir, 'file');
+    await pipeline(Readable.from(contents), createWriteStream(fn));
+    return executeCommand('docker', ['cp', fn, `immich-e2e-server:${dest}`]).promise;
+  },
+
+  async move(source: string, dest: string) {
+    return executeCommand('docker', ['exec', 'immich-e2e-server', 'mv', source, dest]).promise;
+  },
+
+  async copyFolder(source: string, dest: string) {
+    return executeCommand('docker', ['exec', 'immich-e2e-server', 'cp', '-r', source, dest]).promise;
+  },
+
+  async deleteFile(path: string) {
+    return executeCommand('docker', ['exec', 'immich-e2e-server', 'rm', path]).promise;
+  },
+
+  async deleteFolder(path: string) {
+    return executeCommand('docker', ['exec', 'immich-e2e-server', 'rm', '-r', path]).promise;
+  },
+
+  async truncateFolder(path: string) {
+    return executeCommand('docker', [
+      'exec',
+      'immich-e2e-server',
+      'find',
+      path,
+      '-type',
+      'f',
+      '-exec',
+      'truncate',
+      '-s',
+      '1',
+      '{}',
+      '\;',
+    ]).promise;
   },
 
   resetAdminConfig: async (accessToken: string) => {
