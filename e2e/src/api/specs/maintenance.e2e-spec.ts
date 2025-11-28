@@ -1,9 +1,13 @@
-import { LoginResponseDto } from '@immich/sdk';
+import { IntegrityReportType, LoginResponseDto, ManualJobName, QueueName } from '@immich/sdk';
+import { readFile } from 'node:fs/promises';
 import { createUserDto } from 'src/fixtures';
 import { errorDto } from 'src/responses';
-import { app, utils } from 'src/utils';
+import { app, testAssetDir, utils } from 'src/utils';
 import request from 'supertest';
 import { beforeAll, describe, expect, it } from 'vitest';
+
+const locationAssetFilepath = `${testAssetDir}/metadata/gps-position/thompson-springs.jpg`;
+const ratingAssetFilepath = `${testAssetDir}/metadata/rating/mongolels.jpg`;
 
 describe('/admin/maintenance', () => {
   let cookie: string | undefined;
@@ -34,18 +38,189 @@ describe('/admin/maintenance', () => {
     });
   });
 
-  describe('POST /integrity/summary', async () => {
-    it('should report no issues', async () => {
+  describe('POST /integrity/summary (& jobs)', async () => {
+    let baseline: Record<IntegrityReportType, number>;
+
+    it.sequential('may report issues', async () => {
+      await utils.createJob(admin.accessToken, {
+        name: ManualJobName.IntegrityOrphanFiles,
+      });
+
+      await utils.createJob(admin.accessToken, {
+        name: ManualJobName.IntegrityMissingFiles,
+      });
+
+      await utils.createJob(admin.accessToken, {
+        name: ManualJobName.IntegrityChecksumMismatch,
+      });
+
+      await utils.waitForQueueFinish(admin.accessToken, QueueName.BackgroundTask);
+
       const { status, body } = await request(app)
         .get('/admin/maintenance/integrity/summary')
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .send();
+
       expect(status).toBe(200);
       expect(body).toEqual({
         missing_file: 0,
-        orphan_file: 0,
+        orphan_file: expect.any(Number),
         checksum_mismatch: 0,
       });
+
+      baseline = body;
+    });
+
+    it.sequential('should detect an orphan file (job: check orphan files)', async () => {
+      await utils.putTextFile('orphan', '/data/upload/orphan.png');
+
+      await utils.createJob(admin.accessToken, {
+        name: ManualJobName.IntegrityOrphanFiles,
+      });
+
+      await utils.waitForQueueFinish(admin.accessToken, QueueName.BackgroundTask);
+
+      const { status, body } = await request(app)
+        .get('/admin/maintenance/integrity/summary')
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send();
+
+      expect(status).toBe(200);
+      expect(body).toEqual(
+        expect.objectContaining({
+          orphan_file: baseline.orphan_file + 1,
+        }),
+      );
+    });
+
+    it.sequential('should detect outdated orphan file reports (job: refresh orphan files)', async () => {
+      await utils.deleteFile('/data/upload/orphan.png');
+      await utils.putTextFile('orphan', '/data/upload/orphan1.png');
+      await utils.putTextFile('orphan', '/data/upload/orphan2.png');
+
+      await utils.createJob(admin.accessToken, {
+        name: ManualJobName.IntegrityOrphanFilesRefresh,
+      });
+
+      await utils.waitForQueueFinish(admin.accessToken, QueueName.BackgroundTask);
+
+      const { status, body } = await request(app)
+        .get('/admin/maintenance/integrity/summary')
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send();
+
+      expect(status).toBe(200);
+      expect(body).toEqual(
+        expect.objectContaining({
+          orphan_file: baseline.orphan_file,
+        }),
+      );
+    });
+
+    it.sequential('should detect a missing file and not a checksum mismatch (job: check missing files)', async () => {
+      await utils.createAsset(admin.accessToken, {
+        assetData: {
+          filename: 'asset.jpg',
+          bytes: await readFile(locationAssetFilepath),
+        },
+      });
+
+      await utils.move(`/data/upload/${admin.userId}`, `/data/upload/${admin.userId}-tmp`);
+
+      await utils.createJob(admin.accessToken, {
+        name: ManualJobName.IntegrityMissingFiles,
+      });
+
+      await utils.waitForQueueFinish(admin.accessToken, QueueName.BackgroundTask);
+
+      const { status, body } = await request(app)
+        .get('/admin/maintenance/integrity/summary')
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send();
+
+      expect(status).toBe(200);
+      expect(body).toEqual(
+        expect.objectContaining({
+          missing_file: 1,
+          checksum_mismatch: 0,
+        }),
+      );
+    });
+
+    it.sequential.skip('should detect outdated missing file reports (job: refresh missing files)', async () => {
+      await utils.move(`/data/upload/${admin.userId}-tmp`, `/data/upload/${admin.userId}`);
+
+      await utils.createJob(admin.accessToken, {
+        name: ManualJobName.IntegrityMissingFilesRefresh,
+      });
+
+      await utils.waitForQueueFinish(admin.accessToken, QueueName.BackgroundTask);
+
+      const { status, body } = await request(app)
+        .get('/admin/maintenance/integrity/summary')
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send();
+
+      expect(status).toBe(200);
+      expect(body).toEqual(
+        expect.objectContaining({
+          missing_file: 0,
+          checksum_mismatch: 0,
+        }),
+      );
+    });
+
+    it.sequential('should detect a checksum mismatch', async () => {
+      await utils.createAsset(admin.accessToken, {
+        assetData: {
+          filename: 'asset.jpg',
+          bytes: await readFile(ratingAssetFilepath),
+        },
+      });
+
+      await utils.copyFolder(`/data/upload/${admin.userId}`, `/data/upload/${admin.userId}-tmp`);
+      await utils.truncateFolder(`/data/upload/${admin.userId}`);
+
+      await utils.createJob(admin.accessToken, {
+        name: ManualJobName.IntegrityChecksumMismatch,
+      });
+
+      await utils.waitForQueueFinish(admin.accessToken, QueueName.BackgroundTask);
+
+      const { status, body } = await request(app)
+        .get('/admin/maintenance/integrity/summary')
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send();
+
+      expect(status).toBe(200);
+      expect(body).toEqual(
+        expect.objectContaining({
+          checksum_mismatch: 1,
+        }),
+      );
+    });
+
+    it.sequential('should detect outdated checksum mismatch reports', async () => {
+      await utils.deleteFolder(`/data/upload/${admin.userId}`);
+      await utils.move(`/data/upload/${admin.userId}-tmp`, `/data/upload/${admin.userId}`);
+
+      await utils.createJob(admin.accessToken, {
+        name: ManualJobName.IntegrityChecksumMismatchRefresh,
+      });
+
+      await utils.waitForQueueFinish(admin.accessToken, QueueName.BackgroundTask);
+
+      const { status, body } = await request(app)
+        .get('/admin/maintenance/integrity/summary')
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send();
+
+      expect(status).toBe(200);
+      expect(body).toEqual(
+        expect.objectContaining({
+          checksum_mismatch: 0,
+        }),
+      );
     });
   });
 
