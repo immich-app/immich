@@ -46,7 +46,7 @@ export const setIsEqual = (source: Set<unknown>, target: Set<unknown>) =>
   source.size === target.size && [...source].every((x) => target.has(x));
 
 export const haveEqualColumns = (sourceColumns?: string[], targetColumns?: string[]) => {
-  return setIsEqual(new Set(sourceColumns ?? []), new Set(targetColumns ?? []));
+  return setIsEqual(new Set(sourceColumns), new Set(targetColumns));
 };
 
 export const haveEqualOverrides = <T extends { override?: DatabaseOverride }>(source: T, target: T) => {

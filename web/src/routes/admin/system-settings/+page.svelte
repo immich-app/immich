@@ -26,7 +26,7 @@
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { systemConfigManager } from '$lib/managers/system-config-manager.svelte';
   import { getSystemConfigActions } from '$lib/services/system-config.service';
-  import { Alert, HStack } from '@immich/ui';
+  import { Alert, CommandPaletteContext, HStack } from '@immich/ui';
   import {
     mdiAccountOutline,
     mdiBackupRestore,
@@ -205,6 +205,8 @@
     getSystemConfigActions($t, featureFlagsManager.value, systemConfigManager.value),
   );
 </script>
+
+<CommandPaletteContext commands={[CopyToClipboard, Upload, Download]} />
 
 <AdminPageLayout breadcrumbs={[{ title: data.meta.title }]}>
   {#snippet buttons()}

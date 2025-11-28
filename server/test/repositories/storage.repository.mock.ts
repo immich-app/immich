@@ -38,6 +38,7 @@ export const makeMockWatcher =
       return () => close();
     }
 
+    // eslint-disable-next-line unicorn/consistent-function-scoping
     return () => Promise.resolve();
   };
 

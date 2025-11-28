@@ -22,6 +22,7 @@
     CardHeader,
     CardTitle,
     Code,
+    CommandPaletteContext,
     Container,
     getByteUnitString,
     Heading,
@@ -104,6 +105,8 @@
   onUserAdminRestore={onUpdate}
   {onUserAdminDeleted}
 />
+
+<CommandPaletteContext commands={[ResetPassword, ResetPinCode, Update, Delete, Restore]} />
 
 <AdminPageLayout
   breadcrumbs={[{ title: $t('admin.user_management'), href: AppRoute.ADMIN_USERS }, { title: user.name }]}
