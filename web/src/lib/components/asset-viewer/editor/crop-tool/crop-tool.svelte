@@ -1,22 +1,13 @@
 <script lang="ts">
-  import {
-    cropAspectRatio,
-    cropImageScale,
-    cropImageSize,
-    cropSettings,
-    cropSettingsChanged,
-    normaizedRorateDegrees,
-    rotateDegrees,
-    type CropAspectRatio,
-  } from '$lib/stores/asset-editor.store';
-  import { onImageLoad } from '$lib/stores/editing/image-loading.store';
+  import { cropManager, type CropAspectRatio } from '$lib/managers/edit/crop-manager.svelte';
+  import { onImageLoad } from '$lib/utils/crop-utils';
   import { IconButton } from '@immich/ui';
   import { mdiBackupRestore, mdiCropFree, mdiRotateLeft, mdiRotateRight, mdiSquareOutline } from '@mdi/js';
   import { tick } from 'svelte';
   import { t } from 'svelte-i18n';
   import CropPreset from './crop-preset.svelte';
 
-  let rotateHorizontal = $derived([90, 270].includes($normaizedRorateDegrees));
+  let rotateHorizontal = $derived([90, 270].includes(cropManager.normalizedRotation));
   const icon_16_9 = `M200-280q-33 0-56.5-23.5T120-360v-240q0-33 23.5-56.5T200-680h560q33 0 56.5 23.5T840-600v240q0 33-23.5 56.5T760-280H200Zm0-80h560v-240H200v240Zm0 0v-240 240Z`;
   const icon_4_3 = `M19 5H5c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 12H5V7h14v10z`;
   const icon_3_2 = `M200-240q-33 0-56.5-23.5T120-320v-320q0-33 23.5-56.5T200-720h560q33 0 56.5 23.5T840-640v320q0 33-23.5 56.5T760-240H200Zm0-80h560v-320H200v320Zm0 0v-320 320Z`;
@@ -92,12 +83,6 @@
     },
   ];
 
-  let selectedSize: CropAspectRatio = $state('free');
-
-  $effect(() => {
-    $cropAspectRatio = selectedSize;
-  });
-
   let sizesRows = $derived([
     sizes.filter((s) => s.rotate === false),
     sizes.filter((s) => s.rotate === undefined),
@@ -105,9 +90,7 @@
   ]);
 
   async function rotate(angle: -90 | 90) {
-    rotateDegrees.update((v) => {
-      return v + angle;
-    });
+    cropManager.imageRotation += angle;
 
     await tick();
     onImageLoad();
@@ -115,32 +98,30 @@
 
   function selectType(size: CropAspectRatio) {
     if (size === 'reset') {
-      selectedSize = 'free';
-      let cropImageSizeM = $cropImageSize;
-      let cropImageScaleM = $cropImageScale;
-      $cropSettings = {
+      cropManager.settings.aspectRatio = 'free';
+      let cropImageSizeM = cropManager.cropImageSize;
+      let cropImageScaleM = cropManager.cropImageScale;
+      cropManager.region = {
         x: 0,
         y: 0,
         width: cropImageSizeM[0] * cropImageScaleM - 1,
         height: cropImageSizeM[1] * cropImageScaleM - 1,
       };
-      $cropAspectRatio = selectedSize;
-      $cropSettingsChanged = false;
-      return;
+      size = 'free';
     }
-    selectedSize = size;
-    $cropAspectRatio = size;
+
+    cropManager.setAspectRatio(size);
   }
 </script>
 
 <div class="mt-3 px-4">
   <div class="flex h-10 w-full items-center justify-between text-sm">
-    <h2 class="uppercase">{$t('editor_crop_tool_h2_aspect_ratios')}</h2>
+    <h2 class="uppercase">{$t('crop')}</h2>
   </div>
   {#each sizesRows as sizesRow, index (index)}
     <ul class="flex-wrap flex-row flex gap-x-6 py-2 justify-evenly">
       {#each sizesRow as size (size.name)}
-        <CropPreset {size} {selectedSize} {rotateHorizontal} {selectType} />
+        <CropPreset {size} selectedSize={cropManager.settings.aspectRatio} {rotateHorizontal} {selectType} />
       {/each}
     </ul>
   {/each}

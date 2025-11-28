@@ -1,30 +1,10 @@
 <script lang="ts">
-  import { getAssetOriginalUrl } from '$lib/utils';
-  import { handleError } from '$lib/utils/handle-error';
+  import { cropManager } from '$lib/managers/edit/crop-manager.svelte';
+  import { handleMouseDown, handleMouseUp, resizeCanvas } from '$lib/utils/crop-utils';
   import { getAltText } from '$lib/utils/thumbnail-util';
-  import { onDestroy, onMount } from 'svelte';
-  import { t } from 'svelte-i18n';
-  import {
-    changedOriention,
-    cropAspectRatio,
-    cropSettings,
-    resetGlobalCropStore,
-    rotateDegrees,
-  } from '$lib/stores/asset-editor.store';
-  import { animateCropChange, recalculateCrop } from '$lib/stores/editing/crop-settings.store';
-  import {
-    cropAreaEl,
-    cropFrame,
-    imgElement,
-    isResizingOrDragging,
-    overlayEl,
-    resetCropStore,
-  } from '$lib/stores/editing/crop.store';
-  import { draw } from '$lib/stores/editing/drawing.store';
-  import { onImageLoad, resizeCanvas } from '$lib/stores/editing/image-loading.store';
-  import { handleMouseDown, handleMouseMove, handleMouseUp } from '$lib/stores/editing/mouse-handlers.store';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import type { AssetResponseDto } from '@immich/sdk';
+  import { onDestroy, onMount } from 'svelte';
 
   interface Props {
     asset: AssetResponseDto;
@@ -32,33 +12,13 @@
 
   let { asset }: Props = $props();
 
-  cropAspectRatio.subscribe((value) => {
-    if (!$imgElement || !$cropAreaEl) {
-      return;
-    }
-    const newCrop = recalculateCrop($cropSettings, $cropAreaEl, value, true);
-    if (newCrop) {
-      animateCropChange($cropSettings, newCrop, () => draw($cropSettings));
-    }
-  });
-
+  // TODO: change this to
   onMount(() => {
-    resetGlobalCropStore();
-    const cropImg = new Image();
-
-    cropImg.src = getAssetOriginalUrl({ id: asset.id, cacheKey: asset.thumbhash });
-
-    cropImg.addEventListener('load', () => onImageLoad(true), { passive: true });
-    cropImg.addEventListener('error', (error) => handleError(error, $t('error_loading_image')), { passive: true });
-    imgElement.set(cropImg);
-
-    globalThis.addEventListener('mousemove', handleMouseMove, { passive: true });
+    cropManager.onActivate(asset);
   });
 
   onDestroy(() => {
-    globalThis.removeEventListener('mousemove', handleMouseMove);
-    resetCropStore();
-    resetGlobalCropStore();
+    cropManager.onDeactivate();
   });
 
   $effect(() => {
@@ -68,23 +28,23 @@
 
 <div class="canvas-container">
   <button
-    class={`crop-area ${$changedOriention ? 'changedOriention' : ''}`}
-    style={`rotate:${$rotateDegrees}deg`}
-    bind:this={$cropAreaEl}
+    class={`crop-area ${cropManager.orientationChanged ? 'changedOriention' : ''}`}
+    style={`rotate:${cropManager.imageRotation}deg`}
+    bind:this={cropManager.cropAreaEl}
     onmousedown={handleMouseDown}
     onmouseup={handleMouseUp}
     aria-label="Crop area"
     type="button"
   >
-    <img draggable="false" src={$imgElement?.src} alt={$getAltText(toTimelineAsset(asset))} />
-    <div class={`${$isResizingOrDragging ? 'resizing' : ''} crop-frame`} bind:this={$cropFrame}>
+    <img draggable="false" src={cropManager.imgElement?.src} alt={$getAltText(toTimelineAsset(asset))} />
+    <div class={`${cropManager.isInteracting ? 'resizing' : ''} crop-frame`} bind:this={cropManager.cropFrame}>
       <div class="grid"></div>
       <div class="corner top-left"></div>
       <div class="corner top-right"></div>
       <div class="corner bottom-left"></div>
       <div class="corner bottom-right"></div>
     </div>
-    <div class={`${$isResizingOrDragging ? 'light' : ''} overlay`} bind:this={$overlayEl}></div>
+    <div class={`${cropManager.isInteracting ? 'light' : ''} overlay`} bind:this={cropManager.overlayEl}></div>
   </button>
 </div>
 

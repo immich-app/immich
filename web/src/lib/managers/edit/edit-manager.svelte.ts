@@ -1,13 +1,13 @@
 import CropTool from '$lib/components/asset-viewer/editor/crop-tool/crop-tool.svelte';
 import { cropManager } from '$lib/managers/edit/crop-manager.svelte';
-import type { AssetEditsDto } from '@immich/sdk';
+import type { AssetEditsDto, AssetResponseDto } from '@immich/sdk';
 import { ConfirmModal, modalManager } from '@immich/ui';
 import { mdiCropRotate } from '@mdi/js';
 import type { Component } from 'svelte';
 
 export type EditActionTypes = AssetEditsDto['edits'][number];
 export interface EditToolManager {
-  onActivate?: () => void;
+  onActivate?: (asset: AssetResponseDto) => void;
   onDeactivate?: () => void;
   getEdits: () => EditActionTypes[];
   hasChanges: boolean;
@@ -66,7 +66,7 @@ export class EditManager {
     this.selectedTool = this.tools[0];
   }
 
-  async selectTool(toolType: EditToolType) {
+  async selectTool(toolType: EditToolType, asset: AssetResponseDto) {
     if (this.selectedTool.type === toolType) {
       return;
     }
@@ -74,7 +74,7 @@ export class EditManager {
     const newTool = this.tools.find((t) => t.type === toolType);
     if (newTool) {
       this.selectedTool = newTool;
-      newTool.manager.onActivate?.();
+      newTool.manager.onActivate?.(asset);
     }
   }
 }
