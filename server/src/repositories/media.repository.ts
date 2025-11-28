@@ -140,7 +140,8 @@ export class MediaRepository {
   }
 
   async decodeImage(input: string | Buffer, options: DecodeToBufferOptions) {
-    return (await this.getImageDecodingPipeline(input, options)).raw().toBuffer({ resolveWithObject: true });
+    const pipeline = await this.getImageDecodingPipeline(input, options);
+    return pipeline.raw().toBuffer({ resolveWithObject: true });
   }
 
   private cropLRTBtoTLWH(
@@ -171,14 +172,11 @@ export class MediaRepository {
       }
       case 'mirror': {
         const { axis } = edit.parameters;
-        if (axis === 'horizontal') {
-          return input.flop();
-        } else {
-          return input.flip();
-        }
+        return axis === 'horizontal' ? input.flop() : input.flip();
       }
-      default:
+      default: {
         return input;
+      }
     }
   }
 
@@ -192,8 +190,14 @@ export class MediaRepository {
       // There is a bunch of weird behavior in sharp if
       // we try to chain edits in a single context
       // see: https://github.com/lovell/sharp/issues/241
-      const currentBuffer = await pipeline.png().toBuffer({ resolveWithObject: true });
-      pipeline = sharp(currentBuffer.data);
+      const currentBuffer = await pipeline.raw().toBuffer({ resolveWithObject: true });
+      pipeline = sharp(currentBuffer.data, {
+        raw: {
+          width: currentBuffer.info.width,
+          height: currentBuffer.info.height,
+          channels: currentBuffer.info.channels,
+        },
+      });
 
       currentDimensions = currentBuffer.info;
     }
@@ -202,7 +206,8 @@ export class MediaRepository {
   }
 
   async generateThumbnail(input: string | Buffer, options: GenerateThumbnailOptions, output: string): Promise<void> {
-    const decoded = (await this.getImageDecodingPipeline(input, options)).toFormat(options.format, {
+    const pipeline = await this.getImageDecodingPipeline(input, options);
+    const decoded = pipeline.toFormat(options.format, {
       quality: options.quality,
       // this is default in libvips (except the threshold is 90), but we need to set it manually in sharp
       chromaSubsampling: options.quality >= 80 ? '4:4:4' : '4:2:0',
@@ -222,7 +227,6 @@ export class MediaRepository {
       .pipelineColorspace(options.colorspace === Colorspace.Srgb ? 'srgb' : 'rgb16')
       .withIccProfile(options.colorspace);
 
-    // TODO: convert these to edits or autoOrient option in sharp?
     if (!options.raw) {
       const { angle, flip, flop } = options.orientation ? ORIENTATION_TO_SHARP_ROTATION[options.orientation] : {};
       pipeline = pipeline.rotate(angle);
@@ -246,20 +250,17 @@ export class MediaRepository {
   }
 
   async generateThumbhash(input: string | Buffer, options: GenerateThumbhashOptions): Promise<Buffer> {
-    const [{ rgbaToThumbHash }, pipeline] = await Promise.all([
+    const [{ rgbaToThumbHash }, decodingPipeline] = await Promise.all([
       import('thumbhash'),
-      (
-        await this.getImageDecodingPipeline(input, {
-          colorspace: options.colorspace,
-          processInvalidImages: options.processInvalidImages,
-          raw: options.raw,
-          edits: options.edits,
-        })
-      )
-        .resize(100, 100, { fit: 'inside', withoutEnlargement: true })
-        .raw()
-        .ensureAlpha(),
+      this.getImageDecodingPipeline(input, {
+        colorspace: options.colorspace,
+        processInvalidImages: options.processInvalidImages,
+        raw: options.raw,
+        edits: options.edits,
+      }),
     ]);
+
+    const pipeline = decodingPipeline.resize(100, 100, { fit: 'inside', withoutEnlargement: true }).raw().ensureAlpha();
 
     const { data, info } = await pipeline.toBuffer({ resolveWithObject: true });
 
@@ -348,14 +349,13 @@ export class MediaRepository {
   }
 
   async getEditedImageDimensions(input: string | Buffer, edits: EditActionItem[]): Promise<ImageDimensions> {
-    let dimensions: ImageDimensions = await (
-      await this.getImageDecodingPipeline(input, {
-        colorspace: Colorspace.Srgb,
-        processInvalidImages: false,
-        edits: edits,
-      })
-    ).metadata();
+    const pipeline = await this.getImageDecodingPipeline(input, {
+      colorspace: Colorspace.Srgb,
+      processInvalidImages: false,
+      edits,
+    });
 
+    const dimensions: ImageDimensions = await pipeline.metadata();
     return {
       width: dimensions.width,
       height: dimensions.height,
