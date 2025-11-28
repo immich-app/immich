@@ -1,12 +1,11 @@
 import {
   type DuplicateTiePreferencesSvelte,
   findDuplicateTiePreference,
-} from '$lib/stores/duplicate-tie-preferences.svelte';
+} from '$lib/stores/duplicate-tie-preferences-manager.svelte';
 import { getExifCount } from '$lib/utils/exif-utils';
 import type { AssetResponseDto } from '@immich/sdk';
 
 const sizeOf = (asset: AssetResponseDto) => asset.exifInfo?.fileSizeInByte ?? 0;
-const isExternal = (asset: AssetResponseDto) => Boolean(asset.libraryId);
 
 /**
  * Suggests the best duplicate asset to keep from a list of duplicates.
@@ -16,16 +15,12 @@ const isExternal = (asset: AssetResponseDto) => Boolean(asset.libraryId);
  *  - Largest count of exif data
  *  - Optional source preference (internal vs external)
  *
- * @param assets List of duplicate assets
- * @param preference Preference for selecting duplicates
- * @returns The best asset to keep
- *
  */
 export function suggestBestDuplicate(
   assets: AssetResponseDto[],
   preference: DuplicateTiePreferencesSvelte | undefined,
 ): AssetResponseDto | undefined {
-  if (!assets.length) {
+  if (assets.length === 0) {
     return;
   }
   let candidates = filterBySizeAndExif(assets);
@@ -38,11 +33,11 @@ export function suggestBestDuplicate(
 }
 
 const filterBySizeAndExif = (assets: AssetResponseDto[]): AssetResponseDto[] => {
-  const maxSize = Math.max(...assets.map(sizeOf));
-  const sizeFiltered = assets.filter((assets) => sizeOf(assets) === maxSize);
+  const maxSize = Math.max(...assets.map((asset) => sizeOf(asset)));
+  const sizeFilteredAssets = assets.filter((assets) => sizeOf(assets) === maxSize);
 
-  const maxExif = Math.max(...sizeFiltered.map(getExifCount));
-  return sizeFiltered.filter((assets) => getExifCount(assets) === maxExif);
+  const maxExif = Math.max(...sizeFilteredAssets.map((asset) => getExifCount(asset)));
+  return sizeFilteredAssets.filter((assets) => getExifCount(assets) === maxExif);
 };
 
 const filterBySource = (assets: AssetResponseDto[], priority: 'internal' | 'external'): AssetResponseDto[] => {

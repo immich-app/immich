@@ -1,4 +1,4 @@
-import type { SourcePreference } from '$lib/stores/duplicate-tie-preferences.svelte';
+import type { SourcePreference } from '$lib/stores/duplicate-tie-preferences-manager.svelte';
 import { suggestBestDuplicate } from '$lib/utils/duplicate-utils';
 import type { AssetResponseDto } from '@immich/sdk';
 

@@ -7,30 +7,30 @@
   import { AppRoute } from '$lib/constants';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import DuplicatesInformationModal from '$lib/modals/DuplicatesInformationModal.svelte';
+  import DuplicatesSettingsModal from '$lib/modals/DuplicatesSettingsModal.svelte';
   import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
+  import { duplicateTiePreference } from '$lib/stores/duplicate-tie-preferences-manager.svelte';
   import { locale } from '$lib/stores/preferences.store';
   import { stackAssets } from '$lib/utils/asset-utils';
+  import { suggestBestDuplicate } from '$lib/utils/duplicate-utils';
   import { handleError } from '$lib/utils/handle-error';
   import type { AssetResponseDto } from '@immich/sdk';
   import { deleteAssets, deleteDuplicates, updateAssets } from '@immich/sdk';
-  import DuplicatesSettingsModal from '$lib/modals/DuplicatesSettingsModal.svelte';
   import { Button, HStack, IconButton, modalManager, Text, toastManager } from '@immich/ui';
   import {
     mdiCheckOutline,
     mdiChevronLeft,
     mdiChevronRight,
+    mdiCogOutline,
     mdiInformationOutline,
     mdiKeyboard,
     mdiPageFirst,
     mdiPageLast,
     mdiTrashCanOutline,
-    mdiCogOutline,
   } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
-  import { duplicateTiePreference } from '$lib/stores/duplicate-tie-preferences.svelte';
-  import { suggestBestDuplicate } from '$lib/utils/duplicate-utils';
 
   interface Props {
     data: PageData;
@@ -127,15 +127,11 @@
   };
 
   const handleDeduplicateAll = async () => {
-    const keepCandidates = duplicates.map((group) => suggestBestDuplicate(group.assets, duplicateTiePreference.value));
-
-    const idsToKeep: (string | undefined)[] = keepCandidates.map((assets) => assets?.id);
+    const idsToKeep = duplicates.map((group) => suggestBestDuplicate(group.assets, duplicateTiePreference.value)?.id);
 
     const idsToDelete = duplicates.flatMap((group, i) =>
-      group.assets.map((asset) => asset.id).filter((id) => id !== idsToKeep[i]),
+      group.assets.map(({ id }) => id).filter((id) => id !== idsToKeep[i]),
     );
-
-    const keptIds = idsToKeep.filter((id): id is string => id !== undefined);
 
     let prompt, confirmText;
     if (featureFlagsManager.value.trash) {
@@ -151,7 +147,7 @@
         await deleteAssets({ assetBulkDeleteDto: { ids: idsToDelete, force: !featureFlagsManager.value.trash } });
         await updateAssets({
           assetBulkUpdateDto: {
-            ids: [...idsToDelete, ...keptIds],
+            ids: [...idsToDelete, ...idsToKeep.filter((id) => id !== undefined)],
             duplicateId: null,
           },
         });
