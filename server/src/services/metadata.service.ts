@@ -37,7 +37,6 @@ import { upsertTags } from 'src/utils/tag';
 const EXIF_DATE_TAGS: Array<keyof ImmichTags> = [
   'SubSecDateTimeOriginal',
   'SubSecCreateDate',
-  'SubSecMediaCreateDate',
   'DateTimeOriginal',
   'CreationDate',
   'CreateDate',

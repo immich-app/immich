@@ -561,7 +561,7 @@ export class MediaService extends BaseService {
   private getMainStream<T extends VideoStreamInfo | AudioStreamInfo>(streams: T[]): T {
     return streams
       .filter((stream) => stream.codecName !== 'unknown')
-      .sort((stream1, stream2) => stream2.bitrate - stream1.bitrate)[0];
+      .toSorted((stream1, stream2) => stream2.bitrate - stream1.bitrate)[0];
   }
 
   private getTranscodeTarget(
