@@ -105,7 +105,7 @@ export class AssetMediaService extends BaseService {
       folder = StorageCore.getFolderLocation(StorageFolder.Profile, auth.user.id);
     }
 
-    this.storageRepository.mkdirSync(folder);
+    // Note: Directory creation is now handled by StorageRepository.uploadFromStream
 
     return folder;
   }
