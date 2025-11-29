@@ -9,48 +9,35 @@
     icon: string;
     expanded?: boolean;
     children?: Snippet;
-    isFirst?: boolean;
-    isLast?: boolean;
   }
 
-  let { title, icon, expanded = $bindable(false), children, isFirst = false, isLast = false }: Props = $props();
+  let { title, icon, expanded = $bindable(false), children }: Props = $props();
 </script>
 
-<div
-  class="border border-gray-200 dark:border-gray-700 overflow-hidden transition-all duration-200"
-  class:rounded-t-2xl={isFirst}
-  class:rounded-b-2xl={isLast}
->
+<section class="group">
   <button
     type="button"
     aria-expanded={expanded}
     onclick={() => (expanded = !expanded)}
-    class="flex w-full items-center justify-between gap-3 px-4 py-3 text-start bg-light-50 hover:bg-primary-50 dark:hover:bg-gray-800 transition-colors"
-    class:bg-light-200={expanded}
+    class={`flex w-full items-center gap-3 px-4 py-3 text-start bg-light-100 ${expanded ? '' : 'hover:bg-primary-50'}`}
   >
-    <div class="flex items-center gap-3">
-      <div
-        class="flex items-center justify-center w-8 h-8 rounded-lg bg-immich-primary/10 dark:bg-immich-dark-primary/20"
-      >
-        <Icon {icon} size="18" class="text-immich-primary dark:text-immich-dark-primary" />
-      </div>
-      <span class="font-medium text-gray-900 dark:text-gray-100">{title}</span>
-    </div>
-
-    <div
-      class="flex items-center justify-center w-7 h-7 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-    >
-      <Icon
-        icon={mdiChevronDown}
-        size="20"
-        class="text-gray-500 dark:text-gray-400 transition-transform duration-200 {expanded ? 'rotate-180' : ''}"
-      />
-    </div>
+    <Icon {icon} size="20" class="shrink-0 transition-colors {expanded ? 'text-primary' : 'text-dark'}" />
+    <span class="flex-1 text-sm font-medium transition-colors {expanded ? 'text-primary' : 'text-dark'}">
+      {title}
+    </span>
+    <Icon
+      icon={mdiChevronDown}
+      size="20"
+      class="transition-transform duration-200 {expanded ? 'text-primary rotate-180' : 'text-dark'}"
+    />
   </button>
 
   {#if expanded}
-    <div transition:slide={{ duration: 150 }} class="px-4 py-4">
+    <div
+      class="border-t border-gray-100 bg-white pt-4 pb-6 px-4 dark:border-neutral-700 dark:bg-neutral-900"
+      transition:slide={{ duration: 150 }}
+    >
       {@render children?.()}
     </div>
   {/if}
-</div>
+</section>
