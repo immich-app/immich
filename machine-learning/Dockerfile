@@ -129,12 +129,13 @@ COPY --from=builder-armnn \
 FROM prod-cpu AS prod-rknn
 
 # renovate: datasource=github-tags depName=airockchip/rknn-toolkit2
-ARG RKNN_TOOLKIT_VERSION="v2.3.0"
+ARG RKNN_TOOLKIT_VERSION="v2.3.2"
 
 ENV LD_PRELOAD=/usr/lib/libmimalloc.so.2 \
     MACHINE_LEARNING_MODEL_ARENA=false
 
-ADD --checksum=sha256:73993ed4b440460825f21611731564503cc1d5a0c123746477da6cd574f34885 "https://github.com/airockchip/rknn-toolkit2/raw/refs/tags/${RKNN_TOOLKIT_VERSION}/rknpu2/runtime/Linux/librknn_api/aarch64/librknnrt.so" /usr/lib/
+ADD --checksum=sha256:d31fc19c85b85f6091b2bd0f6af9d962d5264a4e410bfb536402ec92bac738e8 "https://github.com/airockchip/rknn-toolkit2/raw/refs/tags/${RKNN_TOOLKIT_VERSION}/rknpu2/runtime/Linux/librknn_api/aarch64/librknnrt.so" /usr/lib/
+ADD --checksum=sha256:c48e11a6f41b451a5fd1e4ad774ea60252d3d94f78bee9b21ea3d21b21deba9a "https://github.com/airockchip/rknn-toolkit2/raw/refs/tags/${RKNN_TOOLKIT_VERSION}/rknpu2/runtime/Linux/librknn_api/include/rknn_api.h" /usr/include/
 
 FROM prod-${DEVICE} AS prod
 
@@ -166,6 +167,21 @@ RUN echo "hard core 0" >> /etc/security/limits.conf && \
 COPY --from=builder /opt/venv /opt/venv
 COPY scripts/healthcheck.py .
 COPY immich_ml immich_ml
+
+RUN if [ "$DEVICE" = "rknn" ]; then \
+        apt-get update; \
+        apt-get install -y g++ libc6-dev; \
+        cd immich_ml/sessions/rknn/native; \
+        RKNN_HEADER=/usr/include/rknn_api.h \
+        RKNN_LIBRARY=/usr/lib/librknnrt.so \
+        ./build-cross.sh; \
+        apt-get purge -y --auto-remove \
+            g++ \
+            libc6-dev; \
+        apt-get clean; \
+        rm -rf /var/lib/apt/lists/*; \
+        rm /usr/include/rknn_api.h; \
+    fi
 
 ARG BUILD_ID
 ARG BUILD_IMAGE
