@@ -301,6 +301,7 @@ export enum SystemMetadataKey {
   SystemFlags = 'system-flags',
   VersionCheckState = 'version-check-state',
   License = 'license',
+  IntegrityChecksumCheckpoint = 'integrity-checksum-checkpoint',
 }
 
 export enum UserMetadataKey {
@@ -344,6 +345,12 @@ export enum SourceType {
   Manual = 'manual',
 }
 
+export enum IntegrityReportType {
+  OrphanFile = 'orphan_file',
+  MissingFile = 'missing_file',
+  ChecksumFail = 'checksum_mismatch',
+}
+
 export enum ManualJobName {
   PersonCleanup = 'person-cleanup',
   TagCleanup = 'tag-cleanup',
@@ -351,6 +358,12 @@ export enum ManualJobName {
   MemoryCleanup = 'memory-cleanup',
   MemoryCreate = 'memory-create',
   BackupDatabase = 'backup-database',
+  IntegrityMissingFiles = `integrity-missing-files`,
+  IntegrityOrphanFiles = `integrity-orphan-files`,
+  IntegrityChecksumFiles = `integrity-checksum-mismatch`,
+  IntegrityMissingFilesRefresh = `integrity-missing-files-refresh`,
+  IntegrityOrphanFilesRefresh = `integrity-orphan-files-refresh`,
+  IntegrityChecksumFilesRefresh = `integrity-checksum-mismatch-refresh`,
 }
 
 export enum AssetPathType {
@@ -637,6 +650,16 @@ export enum JobName {
 
   // Workflow
   WorkflowRun = 'WorkflowRun',
+
+  // Integrity
+  IntegrityOrphanedFilesQueueAll = 'IntegrityOrphanedFilesQueueAll',
+  IntegrityOrphanedFiles = 'IntegrityOrphanedFiles',
+  IntegrityOrphanedFilesRefresh = 'IntegrityOrphanedRefresh',
+  IntegrityMissingFilesQueueAll = 'IntegrityMissingFilesQueueAll',
+  IntegrityMissingFiles = 'IntegrityMissingFiles',
+  IntegrityMissingFilesRefresh = 'IntegrityMissingFilesRefresh',
+  IntegrityChecksumFiles = 'IntegrityChecksumFiles',
+  IntegrityChecksumFilesRefresh = 'IntegrityChecksumFilesRefresh',
 }
 
 export enum QueueCommand {
@@ -679,6 +702,7 @@ export enum DatabaseLock {
   GetSystemConfig = 69,
   BackupDatabase = 42,
   MemoryCreation = 777,
+  IntegrityCheck = 67,
 }
 
 export enum MaintenanceAction {

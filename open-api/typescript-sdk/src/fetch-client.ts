@@ -43,6 +43,22 @@ export type ActivityStatisticsResponseDto = {
 export type SetMaintenanceModeDto = {
     action: MaintenanceAction;
 };
+export type MaintenanceGetIntegrityReportDto = {
+    "type": IntegrityReportType;
+};
+export type MaintenanceIntegrityReportDto = {
+    id: string;
+    path: string;
+    "type": IntegrityReportType;
+};
+export type MaintenanceIntegrityReportResponseDto = {
+    items: MaintenanceIntegrityReportDto[];
+};
+export type MaintenanceIntegrityReportSummaryResponseDto = {
+    checksum_mismatch: number;
+    missing_file: number;
+    orphan_file: number;
+};
 export type MaintenanceLoginDto = {
     token?: string;
 };
@@ -1454,6 +1470,21 @@ export type SystemConfigImageDto = {
     preview: SystemConfigGeneratedImageDto;
     thumbnail: SystemConfigGeneratedImageDto;
 };
+export type SystemConfigIntegrityChecksumJob = {
+    cronExpression: string;
+    enabled: boolean;
+    percentageLimit: number;
+    timeLimit: number;
+};
+export type SystemConfigIntegrityJob = {
+    cronExpression: string;
+    enabled: boolean;
+};
+export type SystemConfigIntegrityChecks = {
+    checksumFiles: SystemConfigIntegrityChecksumJob;
+    missingFiles: SystemConfigIntegrityJob;
+    orphanedFiles: SystemConfigIntegrityJob;
+};
 export type JobSettingsDto = {
     concurrency: number;
 };
@@ -1606,6 +1637,7 @@ export type SystemConfigDto = {
     backup: SystemConfigBackupsDto;
     ffmpeg: SystemConfigFFmpegDto;
     image: SystemConfigImageDto;
+    integrityChecks: SystemConfigIntegrityChecks;
     job: SystemConfigJobDto;
     library: SystemConfigLibraryDto;
     logging: SystemConfigLoggingDto;
@@ -1861,6 +1893,32 @@ export function setMaintenanceMode({ setMaintenanceModeDto }: {
         method: "POST",
         body: setMaintenanceModeDto
     })));
+}
+/**
+ * Get integrity report by type
+ */
+export function getIntegrityReport({ maintenanceGetIntegrityReportDto }: {
+    maintenanceGetIntegrityReportDto: MaintenanceGetIntegrityReportDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: MaintenanceIntegrityReportResponseDto;
+    }>("/admin/maintenance/integrity/report", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: maintenanceGetIntegrityReportDto
+    })));
+}
+/**
+ * Get integrity report summary
+ */
+export function getIntegrityReportSummary(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: MaintenanceIntegrityReportSummaryResponseDto;
+    }>("/admin/maintenance/integrity/summary", {
+        ...opts
+    }));
 }
 /**
  * Log into maintenance mode
@@ -5142,6 +5200,11 @@ export enum MaintenanceAction {
     Start = "start",
     End = "end"
 }
+export enum IntegrityReportType {
+    OrphanFile = "orphan_file",
+    MissingFile = "missing_file",
+    ChecksumMismatch = "checksum_mismatch"
+}
 export enum NotificationLevel {
     Success = "success",
     Error = "error",
@@ -5378,7 +5441,13 @@ export enum ManualJobName {
     UserCleanup = "user-cleanup",
     MemoryCleanup = "memory-cleanup",
     MemoryCreate = "memory-create",
-    BackupDatabase = "backup-database"
+    BackupDatabase = "backup-database",
+    IntegrityMissingFiles = "integrity-missing-files",
+    IntegrityOrphanFiles = "integrity-orphan-files",
+    IntegrityChecksumMismatch = "integrity-checksum-mismatch",
+    IntegrityMissingFilesRefresh = "integrity-missing-files-refresh",
+    IntegrityOrphanFilesRefresh = "integrity-orphan-files-refresh",
+    IntegrityChecksumMismatchRefresh = "integrity-checksum-mismatch-refresh"
 }
 export enum QueueName {
     ThumbnailGeneration = "thumbnailGeneration",
@@ -5486,7 +5555,13 @@ export enum JobName {
     VersionCheck = "VersionCheck",
     OcrQueueAll = "OcrQueueAll",
     Ocr = "Ocr",
-    WorkflowRun = "WorkflowRun"
+    WorkflowRun = "WorkflowRun",
+    IntegrityOrphanedFilesQueueAll = "IntegrityOrphanedFilesQueueAll",
+    IntegrityOrphanedFiles = "IntegrityOrphanedFiles",
+    IntegrityOrphanedCheckReports = "IntegrityOrphanedCheckReports",
+    IntegrityMissingFilesQueueAll = "IntegrityMissingFilesQueueAll",
+    IntegrityMissingFiles = "IntegrityMissingFiles",
+    IntegrityChecksumFiles = "IntegrityChecksumFiles"
 }
 export enum SearchSuggestionType {
     Country = "country",

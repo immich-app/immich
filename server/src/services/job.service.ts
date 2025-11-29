@@ -34,6 +34,30 @@ const asJobItem = (dto: JobCreateDto): JobItem => {
       return { name: JobName.DatabaseBackup };
     }
 
+    case ManualJobName.IntegrityMissingFiles: {
+      return { name: JobName.IntegrityMissingFilesQueueAll };
+    }
+
+    case ManualJobName.IntegrityOrphanFiles: {
+      return { name: JobName.IntegrityOrphanedFilesQueueAll };
+    }
+
+    case ManualJobName.IntegrityChecksumFiles: {
+      return { name: JobName.IntegrityChecksumFiles };
+    }
+
+    case ManualJobName.IntegrityMissingFilesRefresh: {
+      return { name: JobName.IntegrityMissingFilesQueueAll, data: { refreshOnly: true } };
+    }
+
+    case ManualJobName.IntegrityOrphanFilesRefresh: {
+      return { name: JobName.IntegrityOrphanedFilesQueueAll, data: { refreshOnly: true } };
+    }
+
+    case ManualJobName.IntegrityChecksumFilesRefresh: {
+      return { name: JobName.IntegrityChecksumFiles, data: { refreshOnly: true } };
+    }
+
     default: {
       throw new BadRequestException('Invalid job name');
     }

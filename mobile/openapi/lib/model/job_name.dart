@@ -78,6 +78,12 @@ class JobName {
   static const ocrQueueAll = JobName._(r'OcrQueueAll');
   static const ocr = JobName._(r'Ocr');
   static const workflowRun = JobName._(r'WorkflowRun');
+  static const integrityOrphanedFilesQueueAll = JobName._(r'IntegrityOrphanedFilesQueueAll');
+  static const integrityOrphanedFiles = JobName._(r'IntegrityOrphanedFiles');
+  static const integrityOrphanedCheckReports = JobName._(r'IntegrityOrphanedCheckReports');
+  static const integrityMissingFilesQueueAll = JobName._(r'IntegrityMissingFilesQueueAll');
+  static const integrityMissingFiles = JobName._(r'IntegrityMissingFiles');
+  static const integrityChecksumFiles = JobName._(r'IntegrityChecksumFiles');
 
   /// List of all possible values in this [enum][JobName].
   static const values = <JobName>[
@@ -136,6 +142,12 @@ class JobName {
     ocrQueueAll,
     ocr,
     workflowRun,
+    integrityOrphanedFilesQueueAll,
+    integrityOrphanedFiles,
+    integrityOrphanedCheckReports,
+    integrityMissingFilesQueueAll,
+    integrityMissingFiles,
+    integrityChecksumFiles,
   ];
 
   static JobName? fromJson(dynamic value) => JobNameTypeTransformer().decode(value);
@@ -229,6 +241,12 @@ class JobNameTypeTransformer {
         case r'OcrQueueAll': return JobName.ocrQueueAll;
         case r'Ocr': return JobName.ocr;
         case r'WorkflowRun': return JobName.workflowRun;
+        case r'IntegrityOrphanedFilesQueueAll': return JobName.integrityOrphanedFilesQueueAll;
+        case r'IntegrityOrphanedFiles': return JobName.integrityOrphanedFiles;
+        case r'IntegrityOrphanedCheckReports': return JobName.integrityOrphanedCheckReports;
+        case r'IntegrityMissingFilesQueueAll': return JobName.integrityMissingFilesQueueAll;
+        case r'IntegrityMissingFiles': return JobName.integrityMissingFiles;
+        case r'IntegrityChecksumFiles': return JobName.integrityChecksumFiles;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');

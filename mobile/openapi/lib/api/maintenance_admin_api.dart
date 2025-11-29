@@ -16,6 +16,110 @@ class MaintenanceAdminApi {
 
   final ApiClient apiClient;
 
+  /// Get integrity report by type
+  ///
+  /// ...
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [MaintenanceGetIntegrityReportDto] maintenanceGetIntegrityReportDto (required):
+  Future<Response> getIntegrityReportWithHttpInfo(MaintenanceGetIntegrityReportDto maintenanceGetIntegrityReportDto,) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/admin/maintenance/integrity/report';
+
+    // ignore: prefer_final_locals
+    Object? postBody = maintenanceGetIntegrityReportDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'POST',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Get integrity report by type
+  ///
+  /// ...
+  ///
+  /// Parameters:
+  ///
+  /// * [MaintenanceGetIntegrityReportDto] maintenanceGetIntegrityReportDto (required):
+  Future<MaintenanceIntegrityReportResponseDto?> getIntegrityReport(MaintenanceGetIntegrityReportDto maintenanceGetIntegrityReportDto,) async {
+    final response = await getIntegrityReportWithHttpInfo(maintenanceGetIntegrityReportDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'MaintenanceIntegrityReportResponseDto',) as MaintenanceIntegrityReportResponseDto;
+    
+    }
+    return null;
+  }
+
+  /// Get integrity report summary
+  ///
+  /// ...
+  ///
+  /// Note: This method returns the HTTP [Response].
+  Future<Response> getIntegrityReportSummaryWithHttpInfo() async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/admin/maintenance/integrity/summary';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Get integrity report summary
+  ///
+  /// ...
+  Future<MaintenanceIntegrityReportSummaryResponseDto?> getIntegrityReportSummary() async {
+    final response = await getIntegrityReportSummaryWithHttpInfo();
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'MaintenanceIntegrityReportSummaryResponseDto',) as MaintenanceIntegrityReportSummaryResponseDto;
+    
+    }
+    return null;
+  }
+
   /// Log into maintenance mode
   ///
   /// Login with maintenance token or cookie to receive current information and perform further actions.
