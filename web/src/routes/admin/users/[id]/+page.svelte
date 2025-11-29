@@ -71,20 +71,13 @@
   let canResetPassword = $derived($authUser.id !== user.id);
   let newPassword = $state<string>('');
 
-  let lastUploadText = $derived(
-    user.lastAssetUploadedAt
-      ? (() => {
-          const dt = DateTime.fromJSDate(new Date(user.lastAssetUploadedAt));
-          const now = DateTime.now();
-          if (dt.hasSame(now, 'day')) {
-            return $t('today');
-          } else {
-            const days = Math.floor(now.diff(dt, 'days').days);
-            return $t('days_ago', { values: { days } });
-          }
-        })()
-      : $t('never_uploaded'),
-  );
+  let lastUploadText = $derived.by(() => {
+    if (!user.lastAssetUploadedAt) {
+      return $t('never_uploaded');
+    }
+
+    return DateTime.fromISO(user.lastAssetUploadedAt).toRelative({ locale: $locale }) ?? $t('unknown_time');
+  });
 
   let editedLocale = $derived(findLocale($locale).code);
   let createAtDate: Date = $derived(new Date(user.createdAt));
