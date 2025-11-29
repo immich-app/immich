@@ -150,8 +150,9 @@
       </div>
       <PeopleList {people} {peopleToNotShow} {screenHeight} {onSelect} {handleSearch} />
       {#if allPeopleViewModalOpen}
-        <Modal title="Modal Test Title" size="full" onClose={() => allPeopleViewModalOpen = false}>
+        <Modal title={$t('selected_people_to_merge')} size="full" onClose={() => allPeopleViewModalOpen = false}>
           <ModalBody>
+            <p class="mb-4 text-center dark:text-white">{$t('choose_people_to_unselect')}</p>
             <PeopleList people={peopleToNotShow} peopleToNotShow={[person]} {screenHeight} {onSelect} />
           </ModalBody>
         </Modal>
