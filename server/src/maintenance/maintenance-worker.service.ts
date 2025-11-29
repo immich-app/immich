@@ -62,6 +62,8 @@ export class MaintenanceWorkerService {
       loginPageMessage: config.server.loginPageMessage,
       trashDays: config.trash.days,
       userDeleteDelay: config.user.deleteDelay,
+      sessionDeleteDelayBrowser: config.user.sessionDeleteDelayBrowser,
+      sessionDeleteDelayMobile: config.user.sessionDeleteDelayMobile,
       oauthButtonText: config.oauth.buttonText,
       isInitialized: true,
       isOnboarded: true,
