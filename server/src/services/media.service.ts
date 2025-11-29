@@ -197,7 +197,7 @@ export class MediaService extends BaseService {
 
       // rerun the thumbnail generation for the original files now that edits are removed
       // this is solely to update the thumbhash and dimensions
-      this.jobRepository.queue({
+      await this.jobRepository.queue({
         name: JobName.AssetGenerateThumbnails,
         data: { id: asset.id },
       });
