@@ -165,7 +165,7 @@ export class MediaService extends BaseService {
   @OnJob({ name: JobName.AssetGenerateThumbnails, queue: QueueName.ThumbnailGeneration })
   async handleGenerateThumbnails({ id, source }: JobOf<JobName.AssetGenerateThumbnails>): Promise<JobStatus> {
     const asset = await this.assetJobRepository.getForGenerateThumbnailJob(id);
-    let isEditJob = source === 'edit';
+    let applyEdits = source === 'edit';
 
     if (!asset) {
       this.logger.warn(`Thumbnail generation failed for asset ${id}: not found`);
@@ -177,13 +177,13 @@ export class MediaService extends BaseService {
       return JobStatus.Skipped;
     }
 
-    if (asset.type !== AssetType.Image && isEditJob) {
+    if (asset.type !== AssetType.Image && applyEdits) {
       this.logger.warn(`Thumbnail generation for edits is only supported for images. Asset ${id} is a ${asset.type}`);
       return JobStatus.Skipped;
     }
 
     // clean up edited files if no edits exist
-    if (isEditJob && asset.edits.length === 0) {
+    if (applyEdits && asset.edits.length === 0) {
       const assetFiles = getAssetFiles(asset.files);
       const files = [
         assetFiles.editedFullsizeFile,
@@ -196,7 +196,7 @@ export class MediaService extends BaseService {
         await Promise.all(files.map((path) => this.storageRepository.unlink(path.path)));
       }
 
-      isEditJob = false;
+      applyEdits = false;
     }
 
     let generated: {
@@ -204,28 +204,28 @@ export class MediaService extends BaseService {
       thumbnailPath: string;
       fullsizePath?: string;
       thumbhash: Buffer;
-      originalDimensions: ImageDimensions;
+      fullsizeDimensions: ImageDimensions;
     };
     if (asset.type === AssetType.Video || asset.originalFileName.toLowerCase().endsWith('.gif')) {
       generated = await this.generateVideoThumbnails(asset);
     } else if (asset.type === AssetType.Image) {
-      generated = await this.generateImageThumbnails(asset, isEditJob);
+      generated = await this.generateImageThumbnails(asset, applyEdits);
     } else {
       this.logger.warn(`Skipping thumbnail generation for asset ${id}: ${asset.type} is not an image or video`);
       return JobStatus.Skipped;
     }
 
     const assetFiles = getAssetFiles(asset.files);
-    const previewFile = isEditJob ? assetFiles.editedPreviewFile : assetFiles.previewFile;
-    const thumbnailFile = isEditJob ? assetFiles.editedThumbnailFile : assetFiles.thumbnailFile;
-    const fullsizeFile = isEditJob ? assetFiles.editedFullsizeFile : assetFiles.fullsizeFile;
+    const previewFile = applyEdits ? assetFiles.editedPreviewFile : assetFiles.previewFile;
+    const thumbnailFile = applyEdits ? assetFiles.editedThumbnailFile : assetFiles.thumbnailFile;
+    const fullsizeFile = applyEdits ? assetFiles.editedFullsizeFile : assetFiles.fullsizeFile;
 
     const toUpsert: UpsertFileOptions[] = [];
     if (previewFile?.path !== generated.previewPath) {
       toUpsert.push({
         assetId: asset.id,
         path: generated.previewPath,
-        type: isEditJob ? AssetFileType.EditedPreview : AssetFileType.Preview,
+        type: applyEdits ? AssetFileType.EditedPreview : AssetFileType.Preview,
       });
     }
 
@@ -233,7 +233,7 @@ export class MediaService extends BaseService {
       toUpsert.push({
         assetId: asset.id,
         path: generated.thumbnailPath,
-        type: isEditJob ? AssetFileType.EditedThumbnail : AssetFileType.Thumbnail,
+        type: applyEdits ? AssetFileType.EditedThumbnail : AssetFileType.Thumbnail,
       });
     }
 
@@ -241,7 +241,7 @@ export class MediaService extends BaseService {
       toUpsert.push({
         assetId: asset.id,
         path: generated.fullsizePath,
-        type: isEditJob ? AssetFileType.EditedFullSize : AssetFileType.FullSize,
+        type: applyEdits ? AssetFileType.EditedFullSize : AssetFileType.FullSize,
       });
     }
 
@@ -274,15 +274,13 @@ export class MediaService extends BaseService {
     }
 
     // We don't want the non-edit job overwriting the thumbhash/dimensions of an edit job
-    if (isEditJob === asset.edits.length > 0) {
+    if (applyEdits === asset.edits.length > 0) {
       if (!asset.thumbhash || Buffer.compare(asset.thumbhash, generated.thumbhash) !== 0) {
         await this.assetRepository.update({ id: asset.id, thumbhash: generated.thumbhash });
       }
 
-      await this.assetRepository.update({ id: asset.id, ...generated.originalDimensions });
+      await this.assetRepository.update({ id: asset.id, ...generated.fullsizeDimensions });
     }
-
-    await this.assetRepository.upsertJobStatus({ assetId: asset.id, previewAt: new Date(), thumbnailAt: new Date() });
 
     return JobStatus.Success;
   }
@@ -414,7 +412,7 @@ export class MediaService extends BaseService {
       useEdits ? (asset.edits ?? []) : [],
     );
 
-    return { previewPath, thumbnailPath, fullsizePath, thumbhash: outputs[0] as Buffer, originalDimensions: dims };
+    return { previewPath, thumbnailPath, fullsizePath, thumbhash: outputs[0] as Buffer, fullsizeDimensions: dims };
   }
 
   @OnJob({ name: JobName.PersonGenerateThumbnail, queue: QueueName.ThumbnailGeneration })
@@ -553,7 +551,7 @@ export class MediaService extends BaseService {
       previewPath,
       thumbnailPath,
       thumbhash,
-      originalDimensions: { width: mainVideoStream.width, height: mainVideoStream.height },
+      fullsizeDimensions: { width: mainVideoStream.width, height: mainVideoStream.height },
     };
   }
 
