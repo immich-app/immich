@@ -5,6 +5,7 @@ import 'package:immich_mobile/infrastructure/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/store.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/user.repository.dart';
+import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:isar/isar.dart';
 
 // Temporary interface until Isar is removed to make the service work with both Isar and Sqlite
@@ -141,6 +142,7 @@ class DriftStoreRepository extends DriftDatabaseRepository implements IStoreRepo
   @override
   Future<bool> upsert<T>(StoreKey<T> key, T value) async {
     await _db.storeEntity.insertOnConflictUpdate(await _fromValue(key, value));
+    await uploadApi.onConfigChange(key.id);
     return true;
   }
 

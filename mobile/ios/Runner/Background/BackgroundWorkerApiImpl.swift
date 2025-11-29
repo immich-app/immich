@@ -29,15 +29,15 @@ class BackgroundWorkerApiImpl: BackgroundWorkerFgHostApi {
   public static func registerBackgroundWorkers() {
       BGTaskScheduler.shared.register(
           forTaskWithIdentifier: processingTaskID, using: nil) { task in
-          if task is BGProcessingTask {
-            handleBackgroundProcessing(task: task as! BGProcessingTask)
+          if case let task as BGProcessingTask = task {
+            handleBackgroundProcessing(task: task)
           }
       }
 
       BGTaskScheduler.shared.register(
           forTaskWithIdentifier: refreshTaskID, using: nil) { task in
-          if task is BGAppRefreshTask {
-            handleBackgroundRefresh(task: task as! BGAppRefreshTask)
+          if case let task as BGAppRefreshTask = task {
+            handleBackgroundRefresh(task: task)
           }
       }
   }

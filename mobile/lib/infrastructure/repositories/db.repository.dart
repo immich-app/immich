@@ -21,6 +21,7 @@ import 'package:immich_mobile/infrastructure/entities/remote_album_user.entity.d
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/stack.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/store.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/upload_tasks.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/user_metadata.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.steps.dart';
@@ -65,7 +66,10 @@ class IsarDatabaseRepository implements IDatabaseRepository {
     StoreEntity,
     TrashedLocalAssetEntity,
   ],
-  include: {'package:immich_mobile/infrastructure/entities/merged_asset.drift'},
+  include: {
+    'package:immich_mobile/infrastructure/entities/merged_asset.drift',
+    'package:immich_mobile/infrastructure/entities/upload_tasks.drift',
+  },
 )
 class Drift extends $Drift implements IDatabaseRepository {
   Drift([QueryExecutor? executor])
@@ -95,7 +99,7 @@ class Drift extends $Drift implements IDatabaseRepository {
   }
 
   @override
-  int get schemaVersion => 13;
+  int get schemaVersion => 14;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -184,6 +188,16 @@ class Drift extends $Drift implements IDatabaseRepository {
             await m.create(v13.trashedLocalAssetEntity);
             await m.createIndex(v13.idxTrashedLocalAssetChecksum);
             await m.createIndex(v13.idxTrashedLocalAssetAlbum);
+          },
+          from13To14: (m, v14) async {
+            await m.createTable(UploadTasks(m.database));
+            await m.createTable(UploadTaskStats(m.database));
+            await m.create($drift0);
+            await m.createTrigger(updateStatsInsert);
+            await m.createTrigger(updateStatsUpdate);
+            await m.createTrigger(updateStatsDelete);
+            await m.createIndex(idxUploadTasksLocalId);
+            await m.createIndex(idxUploadTasksAssetData);
           },
         ),
       );

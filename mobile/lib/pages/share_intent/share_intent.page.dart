@@ -37,10 +37,7 @@ class ShareIntentPage extends HookConsumerWidget {
     }
 
     void upload() async {
-      for (final attachment in candidates) {
-        await ref.read(shareIntentUploadProvider.notifier).upload(attachment.file);
-      }
-
+      await ref.read(shareIntentUploadProvider.notifier).upload(candidates);
       isUploaded.value = true;
     }
 
@@ -211,6 +208,11 @@ class UploadStatusIcon extends StatelessWidget {
         Icons.pause_circle_rounded,
         color: context.primaryColor,
         semanticLabel: 'paused'.tr(),
+      ),
+      UploadStatus.preparing => Icon(
+        Icons.hourglass_top_rounded,
+        color: context.primaryColor,
+        semanticLabel: 'preparing'.tr(),
       ),
     };
 
