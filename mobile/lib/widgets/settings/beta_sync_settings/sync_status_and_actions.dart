@@ -28,27 +28,21 @@ class SyncStatusAndActions extends HookConsumerWidget {
     Future<void> exportDatabase() async {
       try {
         // WAL Checkpoint to ensure all changes are written to the database
-        await ref
-            .read(driftProvider)
-            .customStatement("pragma wal_checkpoint(truncate)");
+        await ref.read(driftProvider).customStatement("pragma wal_checkpoint(truncate)");
         final documentsDir = await getApplicationDocumentsDirectory();
         final dbFile = File(path.join(documentsDir.path, 'immich.sqlite'));
 
         if (!await dbFile.exists()) {
           if (context.mounted) {
             context.scaffoldMessenger.showSnackBar(
-              SnackBar(
-                content: Text("Database file not found".t(context: context)),
-              ),
+              SnackBar(content: Text("Database file not found".t(context: context))),
             );
           }
           return;
         }
 
         final timestamp = DateTime.now().millisecondsSinceEpoch;
-        final exportFile = File(
-          path.join(documentsDir.path, 'immich_export_$timestamp.sqlite'),
-        );
+        final exportFile = File(path.join(documentsDir.path, 'immich_export_$timestamp.sqlite'));
 
         await dbFile.copy(exportFile.path);
 
@@ -56,10 +50,7 @@ class SyncStatusAndActions extends HookConsumerWidget {
         await Share.shareXFiles(
           [XFile(exportFile.path)],
           text: 'Immich Database Export',
-          sharePositionOrigin: Rect.fromPoints(
-            Offset.zero,
-            Offset(size.width / 3, size.height),
-          ),
+          sharePositionOrigin: Rect.fromPoints(Offset.zero, Offset(size.width / 3, size.height)),
         );
 
         Future.delayed(const Duration(seconds: 30), () async {
@@ -70,21 +61,13 @@ class SyncStatusAndActions extends HookConsumerWidget {
 
         if (context.mounted) {
           context.scaffoldMessenger.showSnackBar(
-            SnackBar(
-              content: Text(
-                "Database exported successfully".t(context: context),
-              ),
-            ),
+            SnackBar(content: Text("Database exported successfully".t(context: context))),
           );
         }
       } catch (e) {
         if (context.mounted) {
           context.scaffoldMessenger.showSnackBar(
-            SnackBar(
-              content: Text(
-                "Failed to export database: $e".t(context: context),
-              ),
-            ),
+            SnackBar(content: Text("Failed to export database: $e".t(context: context))),
           );
         }
       }
@@ -111,9 +94,7 @@ class SyncStatusAndActions extends HookConsumerWidget {
                   await ref.read(driftProvider).reset();
                   context.pop();
                   context.scaffoldMessenger.showSnackBar(
-                    SnackBar(
-                      content: Text("reset_sqlite_success".t(context: context)),
-                    ),
+                    SnackBar(content: Text("reset_sqlite_success".t(context: context))),
                   );
                 },
                 child: Text(
@@ -141,9 +122,7 @@ class SyncStatusAndActions extends HookConsumerWidget {
           ),
           subtitle: Text("tap_to_run_job".t(context: context)),
           leading: const Icon(Icons.sync),
-          trailing: _SyncStatusIcon(
-            status: ref.watch(syncStatusProvider).localSyncStatus,
-          ),
+          trailing: _SyncStatusIcon(status: ref.watch(syncStatusProvider).localSyncStatus),
           onTap: () {
             ref.read(backgroundSyncProvider).syncLocal(full: true);
           },
@@ -155,9 +134,7 @@ class SyncStatusAndActions extends HookConsumerWidget {
           ),
           subtitle: Text("tap_to_run_job".t(context: context)),
           leading: const Icon(Icons.cloud_sync),
-          trailing: _SyncStatusIcon(
-            status: ref.watch(syncStatusProvider).remoteSyncStatus,
-          ),
+          trailing: _SyncStatusIcon(status: ref.watch(syncStatusProvider).remoteSyncStatus),
           onTap: () {
             ref.read(backgroundSyncProvider).syncRemote();
           },
@@ -169,9 +146,7 @@ class SyncStatusAndActions extends HookConsumerWidget {
           ),
           leading: const Icon(Icons.tag),
           subtitle: Text("tap_to_run_job".t(context: context)),
-          trailing: _SyncStatusIcon(
-            status: ref.watch(syncStatusProvider).hashJobStatus,
-          ),
+          trailing: _SyncStatusIcon(status: ref.watch(syncStatusProvider).hashJobStatus),
           onTap: () {
             ref.read(backgroundSyncProvider).hashAssets();
           },
@@ -199,15 +174,9 @@ class SyncStatusAndActions extends HookConsumerWidget {
         ListTile(
           title: Text(
             "reset_sqlite".t(context: context),
-            style: TextStyle(
-              color: context.colorScheme.error,
-              fontWeight: FontWeight.w500,
-            ),
+            style: TextStyle(color: context.colorScheme.error, fontWeight: FontWeight.w500),
           ),
-          leading: Icon(
-            Icons.settings_backup_restore_rounded,
-            color: context.colorScheme.error,
-          ),
+          leading: Icon(Icons.settings_backup_restore_rounded, color: context.colorScheme.error),
           onTap: () async {
             await resetSqliteDb(context);
           },
@@ -226,19 +195,9 @@ class _SyncStatusIcon extends StatelessWidget {
   Widget build(BuildContext context) {
     return switch (status) {
       SyncStatus.idle => const Icon(Icons.pause_circle_outline_rounded),
-      SyncStatus.syncing => const SizedBox(
-        height: 24,
-        width: 24,
-        child: CircularProgressIndicator(strokeWidth: 2),
-      ),
-      SyncStatus.success => const Icon(
-        Icons.check_circle_outline,
-        color: Colors.green,
-      ),
-      SyncStatus.error => Icon(
-        Icons.error_outline,
-        color: context.colorScheme.error,
-      ),
+      SyncStatus.syncing => const SizedBox(height: 24, width: 24, child: CircularProgressIndicator(strokeWidth: 2)),
+      SyncStatus.success => const Icon(Icons.check_circle_outline, color: Colors.green),
+      SyncStatus.error => Icon(Icons.error_outline, color: context.colorScheme.error),
     };
   }
 }
@@ -281,26 +240,14 @@ class _SyncStatsCounts extends ConsumerWidget {
       final memoryCount = memoryService.getCount();
       final getLocalHashedCount = assetService.getLocalHashedCount();
 
-      return await Future.wait([
-        assetCounts,
-        localAlbumCounts,
-        remoteAlbumCounts,
-        memoryCount,
-        getLocalHashedCount,
-      ]);
+      return await Future.wait([assetCounts, localAlbumCounts, remoteAlbumCounts, memoryCount, getLocalHashedCount]);
     }
 
     return FutureBuilder(
       future: loadCounts(),
       builder: (context, snapshot) {
         if (snapshot.connectionState != ConnectionState.done) {
-          return const Center(
-            child: SizedBox(
-              height: 48,
-              width: 48,
-              child: CircularProgressIndicator(),
-            ),
-          );
+          return const Center(child: SizedBox(height: 48, width: 48, child: CircularProgressIndicator()));
         }
 
         if (snapshot.hasError) {
@@ -409,9 +356,7 @@ class _SyncStatsCounts extends ConsumerWidget {
             ),
             // To be removed once the experimental feature is stable
             if (CurrentPlatform.isAndroid &&
-                appSettingsService.getSetting<bool>(
-                  AppSettingsEnum.manageLocalMediaAndroid,
-                )) ...[
+                appSettingsService.getSetting<bool>(AppSettingsEnum.manageLocalMediaAndroid)) ...[
               _SectionHeaderText(text: "trash".t(context: context)),
               Consumer(
                 builder: (context, ref, _) {
