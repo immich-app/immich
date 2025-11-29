@@ -122,7 +122,7 @@
                         color="secondary"
                         aria-label={$t('show_all_selected_people')}
                         icon={mdiPlus}
-                        size="large"
+                        size="medium"
                         onclick={() => allPeopleViewModalOpen = true}
                       />
                     </div>
@@ -152,7 +152,7 @@
       {#if allPeopleViewModalOpen}
         <Modal title="Modal Test Title" size="full" onClose={() => allPeopleViewModalOpen = false}>
           <ModalBody>
-            <PeopleList people={peopleToNotShow} peopleToNotShow={[person]} {screenHeight} {onSelect} {handleSearch} />
+            <PeopleList people={peopleToNotShow} peopleToNotShow={[person]} {screenHeight} {onSelect} />
           </ModalBody>
         </Modal>
       {/if}
