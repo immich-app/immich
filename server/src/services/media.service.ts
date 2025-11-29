@@ -3,7 +3,7 @@ import { FACE_THUMBNAIL_SIZE, JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { StorageCore, ThumbnailPathEntity } from 'src/cores/storage.core';
 import { Exif } from 'src/database';
 import { OnEvent, OnJob } from 'src/decorators';
-import { EditActionItem, EditActionType } from 'src/dtos/editing.dto';
+import { CropParameters, EditActionItem, EditActionType } from 'src/dtos/editing.dto';
 import { SystemConfigFFmpegDto } from 'src/dtos/system-config.dto';
 import {
   AssetFileType,
@@ -30,6 +30,7 @@ import { BaseService } from 'src/services/base.service';
 import {
   AudioStreamInfo,
   DecodeToBufferOptions,
+  GenerateThumbnailOptions,
   ImageDimensions,
   JobItem,
   JobOf,
@@ -323,7 +324,7 @@ export class MediaService extends BaseService {
       originalFileName: string;
       originalPath: string;
       exifInfo: Exif;
-      edits?: EditActionItem[];
+      edits: EditActionItem[];
     },
     useEdits: boolean,
   ) {
@@ -353,7 +354,7 @@ export class MediaService extends BaseService {
       // only specify orientation to extracted images which don't have EXIF orientation data
       // or it can double rotate the image
       extracted ? asset.exifInfo : { ...asset.exifInfo, orientation: null },
-      convertFullsize ? undefined : image.preview.size,
+      convertFullsize || useEdits ? undefined : image.preview.size,
     );
 
     // generate final images
@@ -461,7 +462,7 @@ export class MediaService extends BaseService {
     const thumbnailPath = StorageCore.getPersonThumbnailPath({ id, ownerId });
     this.storageCore.ensureFolders(thumbnailPath);
 
-    const thumbnailOptions = {
+    const thumbnailOptions: GenerateThumbnailOptions = {
       colorspace: image.colorspace,
       format: ImageFormat.Jpeg,
       raw: info,
@@ -469,10 +470,14 @@ export class MediaService extends BaseService {
       processInvalidImages: false,
       size: FACE_THUMBNAIL_SIZE,
       edits: [
-        this.getCrop(
-          { old: { width: oldWidth, height: oldHeight }, new: { width: info.width, height: info.height } },
-          { x1, y1, x2, y2 },
-        ),
+        {
+          action: EditActionType.Crop,
+          parameters: this.getCrop(
+            { old: { width: oldWidth, height: oldHeight }, new: { width: info.width, height: info.height } },
+            { x1, y1, x2, y2 },
+          ),
+          index: 0,
+        },
       ],
     };
 
@@ -485,7 +490,7 @@ export class MediaService extends BaseService {
   private getCrop(
     dims: { old: ImageDimensions; new: ImageDimensions },
     { x1, y1, x2, y2 }: BoundingBox,
-  ): EditActionItem {
+  ): CropParameters {
     // face bounding boxes can spill outside the image dimensions
     const clampedX1 = clamp(x1, 0, dims.old.width);
     const clampedY1 = clamp(y1, 0, dims.old.height);
@@ -512,16 +517,11 @@ export class MediaService extends BaseService {
       Math.min(dims.new.height - 1, middleY + targetHalfSize) - middleY,
     );
 
-    // convert to fractional LRTB crop action (amount to crop from each edge)
     return {
-      action: EditActionType.Crop,
-      parameters: {
-        left: (middleX - newHalfSize) / dims.new.width,
-        top: (middleY - newHalfSize) / dims.new.height,
-        right: (dims.new.width - (middleX + newHalfSize)) / dims.new.width,
-        bottom: (dims.new.height - (middleY + newHalfSize)) / dims.new.height,
-      },
-      index: 0,
+      x: middleX - newHalfSize,
+      y: middleY - newHalfSize,
+      width: newHalfSize * 2,
+      height: newHalfSize * 2,
     };
   }
 

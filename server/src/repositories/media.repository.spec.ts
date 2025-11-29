@@ -5,7 +5,8 @@ import { MediaRepository } from 'src/repositories/media.repository';
 import { automock } from 'test/utils';
 
 const getPixelColor = async (buffer: Buffer, x: number, y: number) => {
-  const width = (await sharp(buffer).metadata()).width!;
+  const metadata = await sharp(buffer).metadata();
+  const width = metadata.width!;
   const { data } = await sharp(buffer).raw().toBuffer({ resolveWithObject: true });
   const idx = (y * width + x) * 4;
   return {
@@ -52,7 +53,8 @@ const buildTestQuadImage = async () => {
     { input: bl, left: 0, top: 500 }, // bottom-left
     { input: br, left: 500, top: 500 }, // bottom-right
   ]);
-  return image;
+
+  return image.png().toBuffer();
 };
 
 describe(MediaRepository.name, () => {
@@ -61,25 +63,6 @@ describe(MediaRepository.name, () => {
   beforeEach(() => {
     // eslint-disable-next-line no-sparse-arrays
     sut = new MediaRepository(automock(LoggingRepository, { args: [, { getEnv: () => ({}) }], strict: false }));
-  });
-
-  describe('cropLRTBtoTLWH', () => {
-    it('should convert LRTB to TLWH correctly', async () => {
-      const result = sut['cropLRTBtoTLWH'](
-        {
-          width: 1000,
-          height: 1000,
-        },
-        {
-          left: 0.1,
-          right: 0.2,
-          top: 0.3,
-          bottom: 0.4,
-        },
-      );
-
-      expect(result).toEqual({ left: 100, top: 300, width: 700, height: 300 });
-    });
   });
 
   describe('applyEdit', () => {
@@ -96,16 +79,12 @@ describe(MediaRepository.name, () => {
         {
           action: EditActionType.Crop,
           parameters: {
-            left: 0.1,
-            right: 0.2,
-            top: 0.3,
-            bottom: 0.4,
+            x: 100,
+            y: 200,
+            width: 700,
+            height: 300,
           },
           index: 0,
-        },
-        {
-          width: 1000,
-          height: 1000,
         },
       );
 
@@ -130,10 +109,6 @@ describe(MediaRepository.name, () => {
           },
           index: 0,
         },
-        {
-          width: 500,
-          height: 1000,
-        },
       );
 
       const metadata = await result.toBuffer().then((buf) => sharp(buf).metadata());
@@ -142,20 +117,13 @@ describe(MediaRepository.name, () => {
     });
 
     it('should apply mirror edit correctly', async () => {
-      const resultHorizontal = sut['applyEdit'](
-        sharp(await (await buildTestQuadImage()).toBuffer()),
-        {
-          action: EditActionType.Mirror,
-          parameters: {
-            axis: MirrorAxis.Horizontal,
-          },
-          index: 0,
+      const resultHorizontal = sut['applyEdit'](sharp(await buildTestQuadImage()), {
+        action: EditActionType.Mirror,
+        parameters: {
+          axis: MirrorAxis.Horizontal,
         },
-        {
-          width: 1000,
-          height: 1000,
-        },
-      );
+        index: 0,
+      });
 
       const bufferHorizontal = await resultHorizontal.toBuffer();
       const metadataHorizontal = await resultHorizontal.metadata();
@@ -171,20 +139,13 @@ describe(MediaRepository.name, () => {
       // bottom-right should now be bottom-left (blue)
       expect(await getPixelColor(bufferHorizontal, 990, 990)).toEqual({ r: 0, g: 0, b: 255, a: 255 });
 
-      const resultVertical = sut['applyEdit'](
-        sharp(await (await buildTestQuadImage()).toBuffer()),
-        {
-          action: EditActionType.Mirror,
-          parameters: {
-            axis: MirrorAxis.Vertical,
-          },
-          index: 0,
+      const resultVertical = sut['applyEdit'](sharp(await buildTestQuadImage()), {
+        action: EditActionType.Mirror,
+        parameters: {
+          axis: MirrorAxis.Vertical,
         },
-        {
-          width: 1000,
-          height: 1000,
-        },
-      );
+        index: 0,
+      });
 
       const bufferVertical = await resultVertical.toBuffer();
       const metadataVertical = await resultVertical.metadata();
@@ -204,13 +165,13 @@ describe(MediaRepository.name, () => {
 
   describe('applyEdits (multiple sequential edits)', () => {
     it('should apply horizontal mirror then vertical mirror (equivalent to 180° rotation)', async () => {
-      const imageBuffer = await (await buildTestQuadImage()).toBuffer();
+      const imageBuffer = await buildTestQuadImage();
       const result = await sut['applyEdits'](sharp(imageBuffer), [
         { action: EditActionType.Mirror, parameters: { axis: MirrorAxis.Horizontal }, index: 0 },
         { action: EditActionType.Mirror, parameters: { axis: MirrorAxis.Vertical }, index: 1 },
       ]);
 
-      const buffer = await result.toBuffer();
+      const buffer = await result.png().toBuffer();
       const metadata = await sharp(buffer).metadata();
       expect(metadata.width).toBe(1000);
       expect(metadata.height).toBe(1000);
@@ -224,13 +185,13 @@ describe(MediaRepository.name, () => {
     });
 
     it('should apply rotate 90° then horizontal mirror', async () => {
-      const imageBuffer = await (await buildTestQuadImage()).toBuffer();
+      const imageBuffer = await buildTestQuadImage();
       const result = await sut['applyEdits'](sharp(imageBuffer), [
         { action: EditActionType.Rotate, parameters: { angle: 90 }, index: 0 },
         { action: EditActionType.Mirror, parameters: { axis: MirrorAxis.Horizontal }, index: 1 },
       ]);
 
-      const buffer = await result.toBuffer();
+      const buffer = await result.png().toBuffer();
       const metadata = await sharp(buffer).metadata();
       expect(metadata.width).toBe(1000);
       expect(metadata.height).toBe(1000);
@@ -245,13 +206,13 @@ describe(MediaRepository.name, () => {
     });
 
     it('should apply multiple 90° rotations (90° + 90° = 180°)', async () => {
-      const imageBuffer = await (await buildTestQuadImage()).toBuffer();
+      const imageBuffer = await buildTestQuadImage();
       const result = await sut['applyEdits'](sharp(imageBuffer), [
         { action: EditActionType.Rotate, parameters: { angle: 90 }, index: 0 },
         { action: EditActionType.Rotate, parameters: { angle: 90 }, index: 1 },
       ]);
 
-      const buffer = await result.toBuffer();
+      const buffer = await result.png().toBuffer();
       const metadata = await sharp(buffer).metadata();
       expect(metadata.width).toBe(1000);
       expect(metadata.height).toBe(1000);
@@ -265,14 +226,14 @@ describe(MediaRepository.name, () => {
     });
 
     it('should apply three 90° rotations (270° total)', async () => {
-      const imageBuffer = await (await buildTestQuadImage()).toBuffer();
+      const imageBuffer = await buildTestQuadImage();
       const result = await sut['applyEdits'](sharp(imageBuffer), [
         { action: EditActionType.Rotate, parameters: { angle: 90 }, index: 0 },
         { action: EditActionType.Rotate, parameters: { angle: 90 }, index: 1 },
         { action: EditActionType.Rotate, parameters: { angle: 90 }, index: 2 },
       ]);
 
-      const buffer = await result.toBuffer();
+      const buffer = await result.png().toBuffer();
       const metadata = await sharp(buffer).metadata();
       expect(metadata.width).toBe(1000);
       expect(metadata.height).toBe(1000);
@@ -286,14 +247,14 @@ describe(MediaRepository.name, () => {
     });
 
     it('should apply crop then rotate 90°', async () => {
-      const imageBuffer = await (await buildTestQuadImage()).toBuffer();
+      const imageBuffer = await buildTestQuadImage();
       // Crop to keep only top half (TL=Red, TR=Green), result is 1000x500
       const result = await sut['applyEdits'](sharp(imageBuffer), [
-        { action: EditActionType.Crop, parameters: { left: 0, right: 0, top: 0, bottom: 0.5 }, index: 0 },
+        { action: EditActionType.Crop, parameters: { x: 0, y: 0, width: 1000, height: 500 }, index: 0 },
         { action: EditActionType.Rotate, parameters: { angle: 90 }, index: 1 },
       ]);
 
-      const buffer = await result.toBuffer();
+      const buffer = await result.png().toBuffer();
       const metadata = await sharp(buffer).metadata();
       // After crop: 1000x500, after 90° rotation: 500x1000
       expect(metadata.width).toBe(500);
@@ -306,15 +267,15 @@ describe(MediaRepository.name, () => {
     });
 
     it('should apply rotate 90° then crop', async () => {
-      const imageBuffer = await (await buildTestQuadImage()).toBuffer();
+      const imageBuffer = await buildTestQuadImage();
       // After 90° rotation: TL=Blue, TR=Red, BL=Yellow, BR=Green
       // Then crop left half to keep only TL=Blue, BL=Yellow
       const result = await sut['applyEdits'](sharp(imageBuffer), [
         { action: EditActionType.Rotate, parameters: { angle: 90 }, index: 0 },
-        { action: EditActionType.Crop, parameters: { left: 0, right: 0.5, top: 0, bottom: 0 }, index: 1 },
+        { action: EditActionType.Crop, parameters: { x: 0, y: 0, width: 500, height: 1000 }, index: 1 },
       ]);
 
-      const buffer = await result.toBuffer();
+      const buffer = await result.png().toBuffer();
       const metadata = await sharp(buffer).metadata();
       expect(metadata.width).toBe(500);
       expect(metadata.height).toBe(1000);
@@ -325,14 +286,14 @@ describe(MediaRepository.name, () => {
     });
 
     it('should apply vertical mirror then horizontal mirror then rotate 90°', async () => {
-      const imageBuffer = await (await buildTestQuadImage()).toBuffer();
+      const imageBuffer = await buildTestQuadImage();
       const result = await sut['applyEdits'](sharp(imageBuffer), [
         { action: EditActionType.Mirror, parameters: { axis: MirrorAxis.Vertical }, index: 0 },
         { action: EditActionType.Mirror, parameters: { axis: MirrorAxis.Horizontal }, index: 1 },
         { action: EditActionType.Rotate, parameters: { angle: 90 }, index: 2 },
       ]);
 
-      const buffer = await result.toBuffer();
+      const buffer = await result.png().toBuffer();
       const metadata = await sharp(buffer).metadata();
       expect(metadata.width).toBe(1000);
       expect(metadata.height).toBe(1000);
@@ -348,14 +309,14 @@ describe(MediaRepository.name, () => {
     });
 
     it('should apply crop to single quadrant then mirror', async () => {
-      const imageBuffer = await (await buildTestQuadImage()).toBuffer();
+      const imageBuffer = await buildTestQuadImage();
       // Crop to top-left quadrant (Red only), then mirror shouldn't change color
       const result = await sut['applyEdits'](sharp(imageBuffer), [
-        { action: EditActionType.Crop, parameters: { left: 0, right: 0.5, top: 0, bottom: 0.5 }, index: 0 },
+        { action: EditActionType.Crop, parameters: { x: 0, y: 0, width: 500, height: 500 }, index: 0 },
         { action: EditActionType.Mirror, parameters: { axis: MirrorAxis.Horizontal }, index: 1 },
       ]);
 
-      const buffer = await result.toBuffer();
+      const buffer = await result.png().toBuffer();
       const metadata = await sharp(buffer).metadata();
       expect(metadata.width).toBe(500);
       expect(metadata.height).toBe(500);
@@ -368,16 +329,16 @@ describe(MediaRepository.name, () => {
     });
 
     it('should apply four operations: crop, rotate, mirror, rotate', async () => {
-      const imageBuffer = await (await buildTestQuadImage()).toBuffer();
+      const imageBuffer = await buildTestQuadImage();
       // Crop to left half (TL=Red, BL=Blue), then rotate 90°, then mirror vertical, then rotate 90° again
       const result = await sut['applyEdits'](sharp(imageBuffer), [
-        { action: EditActionType.Crop, parameters: { left: 0, right: 0.5, top: 0, bottom: 0 }, index: 0 },
+        { action: EditActionType.Crop, parameters: { x: 0, y: 0, width: 500, height: 1000 }, index: 0 },
         { action: EditActionType.Rotate, parameters: { angle: 90 }, index: 1 },
         { action: EditActionType.Mirror, parameters: { axis: MirrorAxis.Vertical }, index: 2 },
         { action: EditActionType.Rotate, parameters: { angle: 90 }, index: 3 },
       ]);
 
-      const buffer = await result.toBuffer();
+      const buffer = await result.png().toBuffer();
       const metadata = await sharp(buffer).metadata();
       // Crop: 500xRotate 90°: 1000x500, Mirror: 1000x500, Rotate 90°: 500x1000
       expect(metadata.width).toBe(500);

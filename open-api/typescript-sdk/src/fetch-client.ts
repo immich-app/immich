@@ -556,14 +556,14 @@ export type UpdateAssetDto = {
     visibility?: AssetVisibility;
 };
 export type CropParameters = {
-    /** Bottom position of the crop */
-    bottom: number;
-    /** Left position of the crop */
-    left: number;
-    /** Right position of the crop */
-    right: number;
-    /** Top position of the crop */
-    top: number;
+    /** Height of the crop */
+    height: number;
+    /** Width of the crop */
+    width: number;
+    /** Top-Left X coordinate of crop */
+    x: number;
+    /** Top-Left Y coordinate of crop */
+    y: number;
 };
 export type EditActionCrop = {
     action: EditActionType;

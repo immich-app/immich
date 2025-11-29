@@ -16392,36 +16392,32 @@
       },
       "CropParameters": {
         "properties": {
-          "bottom": {
-            "description": "Bottom position of the crop",
-            "maximum": 1,
+          "height": {
+            "description": "Height of the crop",
+            "minimum": 1,
+            "type": "number"
+          },
+          "width": {
+            "description": "Width of the crop",
+            "minimum": 1,
+            "type": "number"
+          },
+          "x": {
+            "description": "Top-Left X coordinate of crop",
             "minimum": 0,
             "type": "number"
           },
-          "left": {
-            "description": "Left position of the crop",
-            "maximum": 1,
-            "minimum": 0,
-            "type": "number"
-          },
-          "right": {
-            "description": "Right position of the crop",
-            "maximum": 1,
-            "minimum": 0,
-            "type": "number"
-          },
-          "top": {
-            "description": "Top position of the crop",
-            "maximum": 1,
+          "y": {
+            "description": "Top-Left Y coordinate of crop",
             "minimum": 0,
             "type": "number"
           }
         },
         "required": [
-          "bottom",
-          "left",
-          "right",
-          "top"
+          "height",
+          "width",
+          "x",
+          "y"
         ],
         "type": "object"
       },

@@ -13,60 +13,56 @@ part of openapi.api;
 class CropParameters {
   /// Returns a new [CropParameters] instance.
   CropParameters({
-    required this.bottom,
-    required this.left,
-    required this.right,
-    required this.top,
+    required this.height,
+    required this.width,
+    required this.x,
+    required this.y,
   });
 
-  /// Bottom position of the crop
+  /// Height of the crop
   ///
-  /// Minimum value: 0
-  /// Maximum value: 1
-  num bottom;
+  /// Minimum value: 1
+  num height;
 
-  /// Left position of the crop
+  /// Width of the crop
   ///
-  /// Minimum value: 0
-  /// Maximum value: 1
-  num left;
+  /// Minimum value: 1
+  num width;
 
-  /// Right position of the crop
+  /// Top-Left X coordinate of crop
   ///
   /// Minimum value: 0
-  /// Maximum value: 1
-  num right;
+  num x;
 
-  /// Top position of the crop
+  /// Top-Left Y coordinate of crop
   ///
   /// Minimum value: 0
-  /// Maximum value: 1
-  num top;
+  num y;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is CropParameters &&
-    other.bottom == bottom &&
-    other.left == left &&
-    other.right == right &&
-    other.top == top;
+    other.height == height &&
+    other.width == width &&
+    other.x == x &&
+    other.y == y;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (bottom.hashCode) +
-    (left.hashCode) +
-    (right.hashCode) +
-    (top.hashCode);
+    (height.hashCode) +
+    (width.hashCode) +
+    (x.hashCode) +
+    (y.hashCode);
 
   @override
-  String toString() => 'CropParameters[bottom=$bottom, left=$left, right=$right, top=$top]';
+  String toString() => 'CropParameters[height=$height, width=$width, x=$x, y=$y]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'bottom'] = this.bottom;
-      json[r'left'] = this.left;
-      json[r'right'] = this.right;
-      json[r'top'] = this.top;
+      json[r'height'] = this.height;
+      json[r'width'] = this.width;
+      json[r'x'] = this.x;
+      json[r'y'] = this.y;
     return json;
   }
 
@@ -79,10 +75,10 @@ class CropParameters {
       final json = value.cast<String, dynamic>();
 
       return CropParameters(
-        bottom: num.parse('${json[r'bottom']}'),
-        left: num.parse('${json[r'left']}'),
-        right: num.parse('${json[r'right']}'),
-        top: num.parse('${json[r'top']}'),
+        height: num.parse('${json[r'height']}'),
+        width: num.parse('${json[r'width']}'),
+        x: num.parse('${json[r'x']}'),
+        y: num.parse('${json[r'y']}'),
       );
     }
     return null;
@@ -130,10 +126,10 @@ class CropParameters {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'bottom',
-    'left',
-    'right',
-    'top',
+    'height',
+    'width',
+    'x',
+    'y',
   };
 }
 

@@ -27,13 +27,6 @@ export type DeepPartial<T> = T extends object ? { [K in keyof T]?: DeepPartial<T
 
 export type RepositoryInterface<T extends object> = Pick<T, keyof T>;
 
-export interface CropOptions {
-  top: number;
-  left: number;
-  width: number;
-  height: number;
-}
-
 export interface FullsizeImageOptions {
   format: ImageFormat;
   quality: number;

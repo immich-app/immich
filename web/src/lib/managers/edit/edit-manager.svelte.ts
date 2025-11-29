@@ -11,7 +11,7 @@ export type EditActions = EditAction[];
 export type EditActionNoIndex = Omit<AssetEditsDto['edits'][number], 'index'>;
 
 export interface EditToolManager {
-  onActivate: (asset: AssetResponseDto, edits: EditActions) => void;
+  onActivate: (asset: AssetResponseDto, edits: EditActions) => Promise<void>;
   onDeactivate: () => void;
   resetAllChanges: () => Promise<void>;
   hasChanges: boolean;
@@ -50,8 +50,12 @@ export class EditManager {
 
   async closeConfirm(): Promise<boolean> {
     // Prevent multiple dialogs (usually happens with rapid escape key presses)
-    if (this.isShowingConfirmDialog) return false;
-    if (!this.hasChanges || this.hasAppliedEdits) return true;
+    if (this.isShowingConfirmDialog) {
+      return false;
+    }
+    if (!this.hasChanges || this.hasAppliedEdits) {
+      return true;
+    }
 
     this.isShowingConfirmDialog = true;
 
@@ -66,7 +70,7 @@ export class EditManager {
     return confirmed;
   }
 
-  async reset() {
+  reset() {
     for (const tool of this.tools) {
       tool.manager.onDeactivate?.();
     }
@@ -85,11 +89,11 @@ export class EditManager {
     const newTool = this.tools.find((t) => t.type === toolType);
     if (newTool) {
       this.selectedTool = newTool;
-      newTool.manager.onActivate?.(asset, edits.edits);
+      await newTool.manager.onActivate?.(asset, edits.edits);
     }
   }
 
-  async cleanup() {
+  cleanup() {
     for (const tool of this.tools) {
       tool.manager.onDeactivate?.();
     }
@@ -113,7 +117,7 @@ export class EditManager {
       const editCompleted = waitForWebsocketEvent(
         'on_asset_edit_thumbnails',
         (assetId) => assetId === this.currentAsset!.id,
-        10000,
+        10_000,
       );
 
       await editAsset({
@@ -123,13 +127,15 @@ export class EditManager {
         },
       });
 
+      const t = Date.now();
       await editCompleted;
+      console.log(`Edit completed in ${Date.now() - t}ms`);
       await new Promise((r) => setTimeout(r, 500)); // small delay to ensure thumbnails are ready
       toastManager.success('Edits applied successfully');
       this.hasAppliedEdits = true;
 
       return true;
-    } catch (error) {
+    } catch {
       toastManager.danger('Failed to apply edits');
       return false;
     } finally {

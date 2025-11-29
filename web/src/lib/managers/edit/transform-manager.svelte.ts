@@ -80,18 +80,18 @@ class TransformManager implements EditToolManager {
   }
 
   getEdits(): EditActionNoIndex[] {
-    let edits: EditActionNoIndex[] = [];
+    const edits: EditActionNoIndex[] = [];
 
     if (this.checkEdits()) {
-      const { left, right, top, bottom } = this.xywhToRelativeLRTB(this.region);
+      const { x, y, width, height } = this.region;
 
       edits.push({
         action: EditActionType.Crop,
         parameters: {
-          left,
-          right,
-          top,
-          bottom,
+          x: Math.round(x / this.cropImageScale),
+          y: Math.round(y / this.cropImageScale),
+          width: Math.round(width / this.cropImageScale),
+          height: Math.round(height / this.cropImageScale),
         },
       });
     }
@@ -115,7 +115,7 @@ class TransformManager implements EditToolManager {
     this.onImageLoad([]);
   }
 
-  async onActivate(asset: AssetResponseDto, edits: EditActions) {
+  async onActivate(asset: AssetResponseDto, edits: EditActions): Promise<void> {
     this.imgElement = new Image();
     this.imgElement.src = getAssetOriginalUrl({ id: asset.id, cacheKey: asset.thumbhash, edited: false });
 
@@ -129,13 +129,16 @@ class TransformManager implements EditToolManager {
     // set the rotation before loading the image
     const rotateEdit = edits.find((e) => e.action === 'rotate');
     if (rotateEdit) {
-      console.log('Found existing rotate edit:', rotateEdit);
       this.imageRotation = (rotateEdit.parameters as RotateParameters).angle;
     }
+
+    await tick();
+
+    this.resizeCanvas();
   }
 
   onDeactivate() {
-    globalThis.removeEventListener('mousemove', (e) => transformManager.handleMouseMove(e));
+    globalThis.removeEventListener('mousemove', transformManager.handleMouseMove);
 
     this.reset();
   }
@@ -344,16 +347,25 @@ class TransformManager implements EditToolManager {
     this.cropImageSize = [img.width, img.height];
     const scale = this.calculateScale();
 
-    if (edits !== null) {
+    if (edits === null) {
+      const cropFrameEl = this.cropFrame;
+      cropFrameEl?.classList.add('transition');
+      this.region = this.normalizeCropArea(scale);
+      cropFrameEl?.classList.add('transition');
+      cropFrameEl?.addEventListener('transitionend', () => cropFrameEl?.classList.remove('transition'), {
+        passive: true,
+      });
+    } else {
       const cropEdit = edits.find((e) => e.action === EditActionType.Crop);
 
       if (cropEdit) {
-        this.region = this.relativeLRTBToXYWH(cropEdit.parameters as CropParameters);
+        const params = cropEdit.parameters as CropParameters;
+        // Convert from absolute pixel coordinates to display coordinates
         this.region = {
-          x: this.region.x * scale,
-          y: this.region.y * scale,
-          width: this.region.width * scale,
-          height: this.region.height * scale,
+          x: params.x * scale,
+          y: params.y * scale,
+          width: params.width * scale,
+          height: params.height * scale,
         };
       } else {
         this.region = {
@@ -363,14 +375,6 @@ class TransformManager implements EditToolManager {
           height: img.height * scale,
         };
       }
-    } else {
-      const cropFrameEl = this.cropFrame;
-      cropFrameEl?.classList.add('transition');
-      this.region = this.normalizeCropArea(scale);
-      cropFrameEl?.classList.add('transition');
-      cropFrameEl?.addEventListener('transitionend', () => cropFrameEl?.classList.remove('transition'), {
-        passive: true,
-      });
     }
     this.cropImageScale = scale;
 
@@ -508,7 +512,7 @@ class TransformManager implements EditToolManager {
   }
 
   handleMouseUp() {
-    globalThis.removeEventListener('mouseup', () => this.handleMouseUp());
+    globalThis.removeEventListener('mouseup', this.handleMouseUp);
     document.body.style.userSelect = '';
 
     this.isInteracting = false;
@@ -606,7 +610,6 @@ class TransformManager implements EditToolManager {
   }
 
   setResizeSide(mouseX: number, mouseY: number) {
-    const crop = this.region;
     const {
       onLeftBoundary,
       onRightBoundary,
@@ -643,7 +646,6 @@ class TransformManager implements EditToolManager {
     this.isInteracting = true;
     this.dragOffset = { x: mouseX - crop.x, y: mouseY - crop.y };
     this.fadeOverlay(false);
-    console.log('start dragging');
   }
 
   moveCrop(mouseX: number, mouseY: number) {
@@ -926,41 +928,6 @@ class TransformManager implements EditToolManager {
     }
 
     this.isInteracting = !toDark;
-  }
-
-  xywhToRelativeLRTB(crop: CropSettings): { left: number; right: number; top: number; bottom: number } {
-    const [imgW, imgH] = this.cropImageSize;
-    const relativeW = crop.width / this.cropImageScale / imgW;
-    const relativeH = crop.height / this.cropImageScale / imgH;
-
-    const relativeCropL = crop.x / this.cropImageScale / imgW;
-    const relativeCropR = 1 - relativeCropL - relativeW;
-    const relativeCropT = crop.y / this.cropImageScale / imgH;
-    const relativeCropB = 1 - relativeCropT - relativeH;
-
-    // Math.max is needed here because of float precision
-    return {
-      left: Math.max(0, relativeCropL),
-      right: Math.max(0, relativeCropR),
-      top: Math.max(0, relativeCropT),
-      bottom: Math.max(0, relativeCropB),
-    };
-  }
-
-  relativeLRTBToXYWH(relativeCrop: { left: number; right: number; top: number; bottom: number }): CropSettings {
-    const [imgW, imgH] = this.cropImageSize;
-
-    const width = imgW * this.cropImageScale * (1 - relativeCrop.left - relativeCrop.right);
-    const height = imgH * this.cropImageScale * (1 - relativeCrop.top - relativeCrop.bottom);
-    const x = imgW * this.cropImageScale * relativeCrop.left;
-    const y = imgH * this.cropImageScale * relativeCrop.top;
-
-    return {
-      x,
-      y,
-      width,
-      height,
-    };
   }
 }
 

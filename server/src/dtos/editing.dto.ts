@@ -1,7 +1,7 @@
 import { ApiExtraModels, ApiProperty, getSchemaPath } from '@nestjs/swagger';
 import { ClassConstructor, plainToInstance, Transform, Type } from 'class-transformer';
-import { IsEnum, IsInt, IsNumber, Max, Min, ValidateNested } from 'class-validator';
-import { SumLessThan, ValidateUUID } from 'src/validation';
+import { IsEnum, IsInt, Min, ValidateNested } from 'class-validator';
+import { ValidateUUID } from 'src/validation';
 
 export enum EditActionType {
   Crop = 'crop',
@@ -22,31 +22,25 @@ export enum MirrorAxis {
 }
 
 export class CropParameters {
-  @IsNumber()
+  @IsInt()
   @Min(0)
-  @Max(1)
-  @ApiProperty({ description: 'Left position of the crop' })
-  @SumLessThan('right', 1)
-  left!: number;
+  @ApiProperty({ description: 'Top-Left X coordinate of crop' })
+  x!: number;
 
-  @IsNumber()
+  @IsInt()
   @Min(0)
-  @Max(1)
-  @ApiProperty({ description: 'Right position of the crop' })
-  right!: number;
+  @ApiProperty({ description: 'Top-Left Y coordinate of crop' })
+  y!: number;
 
-  @IsNumber()
-  @Min(0)
-  @Max(1)
-  @ApiProperty({ description: 'Top position of the crop' })
-  @SumLessThan('bottom', 1)
-  top!: number;
+  @IsInt()
+  @Min(1)
+  @ApiProperty({ description: 'Width of the crop' })
+  width!: number;
 
-  @IsNumber()
-  @Min(0)
-  @Max(1)
-  @ApiProperty({ description: 'Bottom position of the crop' })
-  bottom!: number;
+  @IsInt()
+  @Min(1)
+  @ApiProperty({ description: 'Height of the crop' })
+  height!: number;
 }
 
 export class RotateParameters {

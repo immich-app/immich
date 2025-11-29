@@ -144,26 +144,10 @@ export class MediaRepository {
     return pipeline.raw().toBuffer({ resolveWithObject: true });
   }
 
-  private cropLRTBtoTLWH(
-    dimensions: ImageDimensions,
-    crop: { left: number; top: number; right: number; bottom: number },
-  ): { left: number; top: number; width: number; height: number } {
-    const leftPx = Math.round(crop.left * dimensions.width);
-    const topPx = Math.round(crop.top * dimensions.height);
-    const rightPx = Math.round(crop.right * dimensions.width);
-    const bottomPx = Math.round(crop.bottom * dimensions.height);
-
-    const width = dimensions.width - rightPx - leftPx;
-    const height = dimensions.height - bottomPx - topPx;
-
-    return { left: leftPx, top: topPx, width, height };
-  }
-
-  private applyEdit(input: sharp.Sharp, edit: EditActionItem, dimensions: ImageDimensions): sharp.Sharp {
+  private applyEdit(input: sharp.Sharp, edit: EditActionItem): sharp.Sharp {
     switch (edit.action) {
       case 'crop': {
-        // Convert from relative LRTB to top left, width height
-        const { left, top, width, height } = this.cropLRTBtoTLWH(dimensions, edit.parameters);
+        const { x: left, y: top, width, height } = edit.parameters;
         return input.extract({ left, top, width, height });
       }
       case 'rotate': {
@@ -181,10 +165,8 @@ export class MediaRepository {
   }
 
   private async applyEdits(pipeline: sharp.Sharp, edits: EditActionItem[]): Promise<sharp.Sharp> {
-    let currentDimensions: ImageDimensions = await pipeline.metadata();
-
     for (const edit of edits) {
-      pipeline = this.applyEdit(pipeline, edit, currentDimensions);
+      pipeline = this.applyEdit(pipeline, edit);
 
       // Each edit requires a new sharp context.
       // There is a bunch of weird behavior in sharp if
@@ -198,8 +180,6 @@ export class MediaRepository {
           channels: currentBuffer.info.channels,
         },
       });
-
-      currentDimensions = currentBuffer.info;
     }
 
     return pipeline;
