@@ -15,7 +15,16 @@ import {
 import { MapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { QueueStatisticsDto } from 'src/dtos/queue.dto';
-import { AssetStatus, AssetType, AssetVisibility, MemoryType, Permission, UserMetadataKey, UserStatus } from 'src/enum';
+import {
+  AssetFileType,
+  AssetStatus,
+  AssetType,
+  AssetVisibility,
+  MemoryType,
+  Permission,
+  UserMetadataKey,
+  UserStatus,
+} from 'src/enum';
 import { OnThisDayData, UserMetadataItem } from 'src/types';
 import { v4, v7 } from 'uuid';
 
@@ -317,6 +326,13 @@ const assetSidecarWriteFactory = (asset: Partial<SidecarWriteAsset> = {}) => ({
   sidecarPath: '/path/to/original-path.jpg.xmp',
   originalPath: '/path/to/original-path.jpg.xmp',
   tags: [],
+  files: [
+    {
+      id: newUuid(),
+      path: '/path/to/original-path.jpg.xmp',
+      type: AssetFileType.Sidecar,
+    },
+  ],
   ...asset,
 });
 
