@@ -17,8 +17,18 @@ import {
   mapStats,
 } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
+import { AssetEditsDto, EditAction, EditActionListDto } from 'src/dtos/editing.dto';
 import { AssetOcrResponseDto } from 'src/dtos/ocr.dto';
-import { AssetMetadataKey, AssetStatus, AssetVisibility, JobName, JobStatus, Permission, QueueName } from 'src/enum';
+import {
+  AssetMetadataKey,
+  AssetStatus,
+  AssetType,
+  AssetVisibility,
+  JobName,
+  JobStatus,
+  Permission,
+  QueueName,
+} from 'src/enum';
 import { BaseService } from 'src/services/base.service';
 import { ISidecarWriteJob, JobItem, JobOf } from 'src/types';
 import { requireElevatedPermission } from 'src/utils/access';
@@ -344,8 +354,16 @@ export class AssetService extends BaseService {
       }
     }
 
-    const { fullsizeFile, previewFile, thumbnailFile } = getAssetFiles(asset.files ?? []);
-    const files = [thumbnailFile?.path, previewFile?.path, fullsizeFile?.path, asset.encodedVideoPath];
+    const assetFiles = getAssetFiles(asset.files ?? []);
+    const files = [
+      assetFiles.thumbnailFile?.path,
+      assetFiles.previewFile?.path,
+      assetFiles.fullsizeFile?.path,
+      assetFiles.editedFullsizeFile?.path,
+      assetFiles.editedPreviewFile?.path,
+      assetFiles.editedThumbnailFile?.path,
+      asset.encodedVideoPath,
+    ];
 
     if (deleteOnDisk) {
       files.push(asset.sidecarPath, asset.originalPath);
@@ -447,5 +465,61 @@ export class AssetService extends BaseService {
       await this.assetRepository.upsertExif({ assetId: id, ...writes });
       await this.jobRepository.queue({ name: JobName.SidecarWrite, data: { id, ...writes } });
     }
+  }
+
+  public async getAssetEdits(auth: AuthDto, id: string): Promise<AssetEditsDto> {
+    await this.requireAccess({ auth, permission: Permission.AssetRead, ids: [id] });
+    const edits = await this.editRepository.getEditsForAsset(id);
+    return {
+      assetId: id,
+      edits,
+    };
+  }
+
+  public async editAsset(auth: AuthDto, id: string, dto: EditActionListDto): Promise<AssetEditsDto> {
+    await this.requireAccess({ auth, permission: Permission.AssetEdit, ids: [id] });
+
+    const asset = await this.assetRepository.getById(id, { exifInfo: true });
+    if (!asset) {
+      throw new BadRequestException('Asset not found');
+    }
+
+    if (asset.type !== AssetType.Image) {
+      throw new BadRequestException('Only images can be edited');
+    }
+
+    // verify there are unique actions
+    // mirror can be duplicated but must have different parameters
+    const actionSet = new Set<string>();
+    for (const edit of dto.edits) {
+      const key = edit.action === EditAction.Mirror ? `${edit.action}-${JSON.stringify(edit.parameters)}` : edit.action;
+      if (actionSet.has(key)) {
+        throw new BadRequestException('Duplicate edit actions are not allowed');
+      }
+      actionSet.add(key);
+    }
+
+    // check that crop parameters will not go out of bounds
+    const assetWidth = asset.exifInfo?.exifImageWidth ?? 0;
+    const assetHeight = asset.exifInfo?.exifImageHeight ?? 0;
+    const crop = dto.edits.find((e) => e.action === EditAction.Crop)?.parameters;
+    if (crop) {
+      const { x, y, width, height } = crop;
+      if (x + width > assetWidth || y + height > assetHeight) {
+        throw new BadRequestException('Crop parameters are out of bounds');
+      }
+    }
+
+    await this.editRepository.storeEdits(id, dto.edits);
+    await this.jobRepository.queue({
+      name: JobName.AssetGenerateThumbnails,
+      data: { id, source: 'edit', notify: true },
+    });
+
+    // Return the asset and its applied edits
+    return {
+      assetId: id,
+      edits: dto.edits,
+    };
   }
 }

@@ -12,6 +12,7 @@ import {
   asUuid,
   toJson,
   withDefaultVisibility,
+  withEdits,
   withExif,
   withExifInner,
   withFaces,
@@ -70,6 +71,7 @@ export class AssetJobRepository {
       .selectFrom('asset')
       .select(['asset.id', 'asset.thumbhash'])
       .select(withFiles)
+      .select(withEdits)
       .where('asset.deletedAt', 'is', null)
       .where('asset.visibility', '!=', AssetVisibility.Hidden)
       .$if(!force, (qb) =>
@@ -111,6 +113,7 @@ export class AssetJobRepository {
         'asset.type',
       ])
       .select(withFiles)
+      .select(withEdits)
       .$call(withExifInner)
       .where('asset.id', '=', id)
       .executeTakeFirst();

@@ -929,6 +929,7 @@
   "editor_close_without_save_title": "Close editor?",
   "editor_crop_tool_h2_aspect_ratios": "Aspect ratios",
   "editor_crop_tool_h2_rotation": "Rotation",
+  "editor_reset_all_changes": "Reset all changes",
   "email": "Email",
   "email_notifications": "Email notifications",
   "empty_folder": "This folder is empty",

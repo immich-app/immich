@@ -44,6 +44,9 @@ export enum AssetFileType {
   FullSize = 'fullsize',
   Preview = 'preview',
   Thumbnail = 'thumbnail',
+  EditedFullSize = 'fullsize_edited',
+  EditedPreview = 'preview_edited',
+  EditedThumbnail = 'thumbnail_edited',
 }
 
 export enum AlbumUserRole {
@@ -105,6 +108,8 @@ export enum Permission {
   AssetUpload = 'asset.upload',
   AssetReplace = 'asset.replace',
   AssetCopy = 'asset.copy',
+  AssetDerive = 'asset.derive',
+  AssetEdit = 'asset.edit',
 
   AlbumCreate = 'album.create',
   AlbumRead = 'album.read',
@@ -357,6 +362,9 @@ export enum AssetPathType {
   Original = 'original',
   FullSize = 'fullsize',
   Preview = 'preview',
+  EditedFullSize = 'edited_fullsize',
+  EditedPreview = 'edited_preview',
+  EditedThumbnail = 'edited_thumbnail',
   Thumbnail = 'thumbnail',
   EncodedVideo = 'encoded_video',
   Sidecar = 'sidecar',

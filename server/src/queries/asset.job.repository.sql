@@ -73,7 +73,24 @@ select
         where
           "asset_file"."assetId" = "asset"."id"
       ) as agg
-  ) as "files"
+  ) as "files",
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "asset_edit"."action",
+          "asset_edit"."parameters",
+          "asset_edit"."index"
+        from
+          "asset_edit"
+        where
+          "asset_edit"."assetId" = "asset"."id"
+        order by
+          "asset_edit"."index" asc
+      ) as agg
+  ) as "edits"
 from
   "asset"
   inner join "asset_job_status" on "asset_job_status"."assetId" = "asset"."id"
@@ -135,6 +152,23 @@ select
           "asset_file"."assetId" = "asset"."id"
       ) as agg
   ) as "files",
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "asset_edit"."action",
+          "asset_edit"."parameters",
+          "asset_edit"."index"
+        from
+          "asset_edit"
+        where
+          "asset_edit"."assetId" = "asset"."id"
+        order by
+          "asset_edit"."index" asc
+      ) as agg
+  ) as "edits",
   to_json("asset_exif") as "exifInfo"
 from
   "asset"

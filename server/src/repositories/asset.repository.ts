@@ -20,6 +20,7 @@ import {
   truncatedDate,
   unnest,
   withDefaultVisibility,
+  withEdits,
   withExif,
   withFaces,
   withFacesAndPeople,
@@ -112,6 +113,7 @@ interface GetByIdsRelations {
   smartSearch?: boolean;
   stack?: { assets?: boolean };
   tags?: boolean;
+  edits?: boolean;
 }
 
 @Injectable()
@@ -398,7 +400,10 @@ export class AssetRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
-  getById(id: string, { exifInfo, faces, files, library, owner, smartSearch, stack, tags }: GetByIdsRelations = {}) {
+  getById(
+    id: string,
+    { exifInfo, faces, files, library, owner, smartSearch, stack, tags, edits }: GetByIdsRelations = {},
+  ) {
     return this.db
       .selectFrom('asset')
       .selectAll('asset')
@@ -435,6 +440,7 @@ export class AssetRepository {
       )
       .$if(!!files, (qb) => qb.select(withFiles))
       .$if(!!tags, (qb) => qb.select(withTags))
+      .$if(!!edits, (qb) => qb.select(withEdits))
       .limit(1)
       .executeTakeFirst();
   }
@@ -622,11 +628,9 @@ export class AssetRepository {
               .coalesce(
                 eb
                   .case()
-                  .when(sql`asset_exif."exifImageHeight" = 0 or asset_exif."exifImageWidth" = 0`)
+                  .when(sql`asset."height" = 0 or asset."width" = 0`)
                   .then(eb.lit(1))
-                  .when('asset_exif.orientation', 'in', sql<string>`('5', '6', '7', '8', '-90', '90')`)
-                  .then(sql`round(asset_exif."exifImageHeight"::numeric / asset_exif."exifImageWidth"::numeric, 3)`)
-                  .else(sql`round(asset_exif."exifImageWidth"::numeric / asset_exif."exifImageHeight"::numeric, 3)`)
+                  .else(sql`round(asset."width"::numeric / asset."height"::numeric, 3)`)
                   .end(),
                 eb.lit(1),
               )

@@ -205,6 +205,8 @@ describe(MetadataService.name, () => {
         fileCreatedAt: fileModifiedAt,
         fileModifiedAt,
         localDateTime: fileModifiedAt,
+        width: null,
+        height: null,
       });
     });
 
@@ -229,6 +231,8 @@ describe(MetadataService.name, () => {
         fileCreatedAt,
         fileModifiedAt,
         localDateTime: fileCreatedAt,
+        width: null,
+        height: null,
       });
     });
 
@@ -272,6 +276,8 @@ describe(MetadataService.name, () => {
         fileCreatedAt: assetStub.image.fileCreatedAt,
         fileModifiedAt: assetStub.image.fileCreatedAt,
         localDateTime: assetStub.image.fileCreatedAt,
+        width: null,
+        height: null,
       });
     });
 
@@ -301,6 +307,8 @@ describe(MetadataService.name, () => {
         fileCreatedAt: assetStub.withLocation.fileCreatedAt,
         fileModifiedAt: assetStub.withLocation.fileModifiedAt,
         localDateTime: new Date('2023-02-22T05:06:29.716Z'),
+        width: null,
+        height: null,
       });
     });
 
@@ -330,6 +338,8 @@ describe(MetadataService.name, () => {
         fileCreatedAt: assetStub.withLocation.fileCreatedAt,
         fileModifiedAt: assetStub.withLocation.fileModifiedAt,
         localDateTime: new Date('2023-02-22T05:06:29.716Z'),
+        width: null,
+        height: null,
       });
     });
 
@@ -1491,6 +1501,32 @@ describe(MetadataService.name, () => {
       expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
         expect.objectContaining({
           lensModel: expected,
+        }),
+      );
+    });
+
+    it('should properly set width/height for normal images', async () => {
+      mocks.assetJob.getForMetadataExtraction.mockResolvedValue(assetStub.image);
+      mockReadTags({ ImageWidth: 1000, ImageHeight: 2000 });
+
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+      expect(mocks.asset.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          width: 1000,
+          height: 2000,
+        }),
+      );
+    });
+
+    it('should properly swap asset width/height for rotated images', async () => {
+      mocks.assetJob.getForMetadataExtraction.mockResolvedValue(assetStub.image);
+      mockReadTags({ ImageWidth: 1000, ImageHeight: 2000, Orientation: 6 });
+
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+      expect(mocks.asset.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          width: 2000,
+          height: 1000,
         }),
       );
     });
