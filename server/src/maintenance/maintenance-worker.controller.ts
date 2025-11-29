@@ -1,21 +1,44 @@
-import { Body, Controller, Get, Post, Req, Res } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Req, Res, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { Request, Response } from 'express';
-import { MaintenanceAuthDto, MaintenanceLoginDto, SetMaintenanceModeDto } from 'src/dtos/maintenance.dto';
+import {
+  MaintenanceAuthDto,
+  MaintenanceIntegrityResponseDto,
+  MaintenanceListBackupsResponseDto,
+  MaintenanceLoginDto,
+  MaintenanceStatusResponseDto,
+  SetMaintenanceModeDto,
+} from 'src/dtos/maintenance.dto';
 import { ServerConfigDto } from 'src/dtos/server.dto';
-import { ImmichCookie, MaintenanceAction } from 'src/enum';
+import { ImmichCookie } from 'src/enum';
 import { MaintenanceRoute } from 'src/maintenance/maintenance-auth.guard';
 import { MaintenanceWorkerService } from 'src/maintenance/maintenance-worker.service';
 import { GetLoginDetails } from 'src/middleware/auth.guard';
+import { StorageRepository } from 'src/repositories/storage.repository';
 import { LoginDetails } from 'src/services/auth.service';
 import { respondWithCookie } from 'src/utils/response';
+import { FilenameParamDto } from 'src/validation';
 
 @Controller()
 export class MaintenanceWorkerController {
-  constructor(private service: MaintenanceWorkerService) {}
+  constructor(
+    private service: MaintenanceWorkerService,
+    private storageRepository: StorageRepository,
+  ) {}
 
   @Get('server/config')
-  getServerConfig(): Promise<ServerConfigDto> {
+  getServerConfig(): ServerConfigDto {
     return this.service.getSystemConfig();
+  }
+
+  @Get('admin/maintenance/status')
+  maintenanceStatus(@Req() request: Request): Promise<MaintenanceStatusResponseDto> {
+    return this.service.status(request.cookies[ImmichCookie.MaintenanceToken]);
+  }
+
+  @Get('admin/maintenance/integrity')
+  integrityCheck(): Promise<MaintenanceIntegrityResponseDto> {
+    return this.service.integrityCheck();
   }
 
   @Post('admin/maintenance/login')
@@ -35,9 +58,36 @@ export class MaintenanceWorkerController {
 
   @Post('admin/maintenance')
   @MaintenanceRoute()
-  async setMaintenanceMode(@Body() dto: SetMaintenanceModeDto): Promise<void> {
-    if (dto.action === MaintenanceAction.End) {
-      await this.service.endMaintenance();
-    }
+  setMaintenanceMode(@Body() dto: SetMaintenanceModeDto): void {
+    void this.service.setAction(dto);
+  }
+
+  @Get('admin/maintenance/backups/list')
+  @MaintenanceRoute()
+  listBackups(): Promise<MaintenanceListBackupsResponseDto> {
+    return this.service.listBackups();
+  }
+
+  @Get('admin/maintenance/backups/:filename')
+  @MaintenanceRoute()
+  downloadBackup(@Param() { filename }: FilenameParamDto, @Res() res: Response) {
+    res.header('Content-Disposition', 'attachment');
+    res.sendFile(this.service.getBackupPath(filename));
+  }
+
+  @Delete('admin/maintenance/backups/:filename')
+  @MaintenanceRoute()
+  async deleteBackup(@Param() { filename }: FilenameParamDto): Promise<void> {
+    return this.service.deleteBackup(filename);
+  }
+
+  @Post('admin/maintenance/backups/upload')
+  @MaintenanceRoute()
+  @UseInterceptors(FileInterceptor('file'))
+  uploadBackup(
+    @UploadedFile()
+    file: Express.Multer.File,
+  ): Promise<void> {
+    return this.service.uploadBackup(file);
   }
 }

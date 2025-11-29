@@ -1,9 +1,13 @@
-import { MaintenanceAction } from 'src/enum';
+import { ApiProperty } from '@nestjs/swagger';
+import { MaintenanceAction, StorageFolder } from 'src/enum';
 import { ValidateEnum, ValidateString } from 'src/validation';
 
 export class SetMaintenanceModeDto {
   @ValidateEnum({ enum: MaintenanceAction, name: 'MaintenanceAction' })
   action!: MaintenanceAction;
+
+  @ValidateString({ optional: true })
+  restoreBackupFilename?: string;
 }
 
 export class MaintenanceLoginDto {
@@ -13,4 +17,34 @@ export class MaintenanceLoginDto {
 
 export class MaintenanceAuthDto {
   username!: string;
+}
+
+export class MaintenanceStatusResponseDto {
+  @ValidateEnum({ enum: MaintenanceAction, name: 'MaintenanceAction' })
+  action!: MaintenanceAction;
+
+  progress?: number;
+  task?: string;
+  error?: string;
+}
+
+export class MaintenanceStorageFolderIntegrityDto {
+  @ValidateEnum({ enum: StorageFolder, name: 'StorageFolder' })
+  folder!: StorageFolder;
+  readable!: boolean;
+  writable!: boolean;
+  files!: number;
+}
+
+export class MaintenanceIntegrityResponseDto {
+  storage!: MaintenanceStorageFolderIntegrityDto[];
+}
+
+export class MaintenanceListBackupsResponseDto {
+  backups!: string[];
+}
+
+export class MaintenanceUploadBackupDto {
+  @ApiProperty({ type: 'string', format: 'binary', required: false })
+  file?: any;
 }

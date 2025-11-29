@@ -1,11 +1,14 @@
 <script lang="ts">
   import AuthPageLayout from '$lib/components/layouts/AuthPageLayout.svelte';
+  import MaintenanceRestoreFlow from '$lib/components/maintenance/MaintenanceRestoreFlow.svelte';
   import FormatMessage from '$lib/elements/FormatMessage.svelte';
-  import { maintenanceAuth } from '$lib/stores/maintenance.store';
+  import { maintenanceStore } from '$lib/stores/maintenance.store';
   import { handleError } from '$lib/utils/handle-error';
   import { MaintenanceAction, setMaintenanceMode } from '@immich/sdk';
-  import { Button, Heading, Link } from '@immich/ui';
+  import { Button, Heading, Link, ProgressBar, Scrollable, Text } from '@immich/ui';
   import { t } from 'svelte-i18n';
+
+  const { auth, status } = maintenanceStore;
 
   // strip token from URL after load
   const url = new URL(location.href);
@@ -25,30 +28,58 @@
       handleError(error, $t('maintenance_end_error'));
     }
   }
+
+  let error = $derived(
+    $status?.error
+      ?.split('\n')
+      .filter((line) => !line.includes('drop cascades'))
+      .join('\n'),
+  );
 </script>
 
-<AuthPageLayout>
+<AuthPageLayout
+  withHeader={$status?.action !== MaintenanceAction.RestoreDatabase}
+  withBackdrop={$status?.action === MaintenanceAction.Start}
+>
   <div class="flex flex-col place-items-center text-center gap-4">
-    <Heading size="large" color="primary" tag="h1">{$t('maintenance_title')}</Heading>
-    <p>
-      <FormatMessage key="maintenance_description">
-        {#snippet children({ tag, message })}
-          {#if tag === 'link'}
-            <Link href="https://docs.immich.app/administration/maintenance-mode">
-              {message}
-            </Link>
-          {/if}
-        {/snippet}
-      </FormatMessage>
-    </p>
-    {#if $maintenanceAuth}
+    {#if $status?.action === MaintenanceAction.RestoreDatabase && $status.task}
+      <Heading size="large" color="primary" tag="h1">{$t('maintenance_action_restore')}</Heading>
+      {#if $status.error}
+        <Scrollable class="max-h-80">
+          <pre class="text-left"><code>{error}</code></pre>
+        </Scrollable>
+      {:else}
+        <ProgressBar progress={$status.progress || 0} />
+        {#if $status.task !== 'ready'}
+          <Text>{$t(`maintenance_task_${$status.task as 'backup' | 'restore'}`)}</Text>
+        {/if}
+      {/if}
+    {:else if $status?.action === MaintenanceAction.RestoreDatabase && $auth}
+      <MaintenanceRestoreFlow {end} />
+    {:else}
+      <Heading size="large" color="primary" tag="h1">{$t('maintenance_title')}</Heading>
       <p>
-        {$t('maintenance_logged_in_as', {
-          values: {
-            user: $maintenanceAuth.username,
-          },
-        })}
+        <FormatMessage key="maintenance_description">
+          {#snippet children({ tag, message })}
+            {#if tag === 'link'}
+              <Link href="https://docs.immich.app/administration/maintenance-mode">
+                {message}
+              </Link>
+            {/if}
+          {/snippet}
+        </FormatMessage>
       </p>
+      {#if $auth}
+        <p>
+          {$t('maintenance_logged_in_as', {
+            values: {
+              user: $auth.username,
+            },
+          })}
+        </p>
+      {/if}
+    {/if}
+    {#if $auth && ($status?.action === MaintenanceAction.Start || $status?.error)}
       <Button onclick={end}>{$t('maintenance_end')}</Button>
     {/if}
   </div>

@@ -8,8 +8,10 @@ import { OpenTelemetryModule } from 'nestjs-otel';
 import { commandsAndQuestions } from 'src/commands';
 import { IWorker } from 'src/constants';
 import { controllers } from 'src/controllers';
-import { ImmichWorker } from 'src/enum';
+import { StorageCore } from 'src/cores/storage.core';
+import { ImmichWorker, SystemMetadataKey } from 'src/enum';
 import { MaintenanceAuthGuard } from 'src/maintenance/maintenance-auth.guard';
+import { MaintenanceEphemeralStateRepository } from 'src/maintenance/maintenance-ephemeral-state.repository';
 import { MaintenanceWebsocketRepository } from 'src/maintenance/maintenance-websocket.repository';
 import { MaintenanceWorkerController } from 'src/maintenance/maintenance-worker.controller';
 import { MaintenanceWorkerService } from 'src/maintenance/maintenance-worker.service';
@@ -21,8 +23,11 @@ import { LoggingInterceptor } from 'src/middleware/logging.interceptor';
 import { repositories } from 'src/repositories';
 import { AppRepository } from 'src/repositories/app.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
+import { DatabaseRepository } from 'src/repositories/database.repository';
 import { EventRepository } from 'src/repositories/event.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
+import { ProcessRepository } from 'src/repositories/process.repository';
+import { StorageRepository } from 'src/repositories/storage.repository';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
 import { teardownTelemetry, TelemetryRepository } from 'src/repositories/telemetry.repository';
 import { WebsocketRepository } from 'src/repositories/websocket.repository';
@@ -30,6 +35,7 @@ import { services } from 'src/services';
 import { AuthService } from 'src/services/auth.service';
 import { CliService } from 'src/services/cli.service';
 import { QueueService } from 'src/services/queue.service';
+import { MaintenanceModeState } from 'src/types';
 import { getKyselyConfig } from 'src/utils/database';
 
 const common = [...repositories, ...services, GlobalExceptionFilter];
@@ -103,9 +109,13 @@ export class ApiModule extends BaseModule {}
   providers: [
     ConfigRepository,
     LoggingRepository,
+    StorageRepository,
+    ProcessRepository,
+    DatabaseRepository,
     SystemMetadataRepository,
     AppRepository,
     MaintenanceWebsocketRepository,
+    MaintenanceEphemeralStateRepository,
     MaintenanceWorkerService,
     ...commonMiddleware,
     { provide: APP_GUARD, useClass: MaintenanceAuthGuard },
@@ -116,8 +126,35 @@ export class MaintenanceModule {
   constructor(
     @Inject(IWorker) private worker: ImmichWorker,
     logger: LoggingRepository,
+    private systemMetadataRepository: SystemMetadataRepository,
+    private maintenanceWorkerService: MaintenanceWorkerService,
+    private maintenanceWebsocketRepository: MaintenanceWebsocketRepository,
+    private maintenanceEphemeralStateRepository: MaintenanceEphemeralStateRepository,
   ) {
     logger.setAppName(this.worker);
+  }
+
+  async onModuleInit() {
+    const state = (await this.systemMetadataRepository.get(
+      SystemMetadataKey.MaintenanceMode,
+    )) as MaintenanceModeState & { isMaintenanceMode: true };
+
+    this.maintenanceEphemeralStateRepository.setSecret(state.secret);
+    this.maintenanceEphemeralStateRepository.setStatus({
+      action: state.action.action,
+    });
+    StorageCore.setMediaLocation(this.maintenanceWorkerService.detectMediaLocation());
+
+    this.maintenanceWebsocketRepository.setAuthFn(async (client) =>
+      this.maintenanceWorkerService.authenticate(client.request.headers),
+    );
+
+    this.maintenanceWebsocketRepository.setStatusUpdateFn((status) =>
+      this.maintenanceEphemeralStateRepository.setStatus(status),
+    );
+
+    await this.maintenanceWorkerService.logSecret();
+    void this.maintenanceWorkerService.runAction(state.action);
   }
 }
 

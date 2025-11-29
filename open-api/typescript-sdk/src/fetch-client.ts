@@ -42,12 +42,34 @@ export type ActivityStatisticsResponseDto = {
 };
 export type SetMaintenanceModeDto = {
     action: MaintenanceAction;
+    restoreBackupFilename?: string;
+};
+export type MaintenanceListBackupsResponseDto = {
+    backups: string[];
+};
+export type MaintenanceUploadBackupDto = {
+    file?: Blob;
+};
+export type MaintenanceStorageFolderIntegrityDto = {
+    files: number;
+    folder: StorageFolder;
+    readable: boolean;
+    writable: boolean;
+};
+export type MaintenanceIntegrityResponseDto = {
+    storage: MaintenanceStorageFolderIntegrityDto[];
 };
 export type MaintenanceLoginDto = {
     token?: string;
 };
 export type MaintenanceAuthDto = {
     username: string;
+};
+export type MaintenanceStatusResponseDto = {
+    action: MaintenanceAction;
+    error?: string;
+    progress?: number;
+    task?: string;
 };
 export type NotificationCreateDto = {
     data?: object;
@@ -1863,6 +1885,73 @@ export function setMaintenanceMode({ setMaintenanceModeDto }: {
     })));
 }
 /**
+ * List backups
+ */
+export function listBackups(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: MaintenanceListBackupsResponseDto;
+    }>("/admin/maintenance/backups/list", {
+        ...opts
+    }));
+}
+/**
+ * Start backup restore flow
+ */
+export function startRestoreFlow(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/admin/maintenance/backups/restore", {
+        ...opts,
+        method: "POST"
+    }));
+}
+/**
+ * Upload asset
+ */
+export function uploadBackup({ maintenanceUploadBackupDto }: {
+    maintenanceUploadBackupDto: MaintenanceUploadBackupDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/admin/maintenance/backups/upload", oazapfts.multipart({
+        ...opts,
+        method: "POST",
+        body: maintenanceUploadBackupDto
+    })));
+}
+/**
+ * Delete backup
+ */
+export function deleteBackup({ filename }: {
+    filename: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/admin/maintenance/backups/${encodeURIComponent(filename)}`, {
+        ...opts,
+        method: "DELETE"
+    }));
+}
+/**
+ * Download backup
+ */
+export function downloadBackup({ filename }: {
+    filename: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchBlob<{
+        status: 200;
+        data: Blob;
+    }>(`/admin/maintenance/backups/${encodeURIComponent(filename)}`, {
+        ...opts
+    }));
+}
+/**
+ * Get integrity and heuristics
+ */
+export function integrityCheck(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: MaintenanceIntegrityResponseDto;
+    }>("/admin/maintenance/integrity", {
+        ...opts
+    }));
+}
+/**
  * Log into maintenance mode
  */
 export function maintenanceLogin({ maintenanceLoginDto }: {
@@ -1876,6 +1965,17 @@ export function maintenanceLogin({ maintenanceLoginDto }: {
         method: "POST",
         body: maintenanceLoginDto
     })));
+}
+/**
+ * Get maintenance mode status
+ */
+export function maintenanceStatus(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: MaintenanceStatusResponseDto;
+    }>("/admin/maintenance/status", {
+        ...opts
+    }));
 }
 /**
  * Create a notification
@@ -5140,7 +5240,16 @@ export enum UserAvatarColor {
 }
 export enum MaintenanceAction {
     Start = "start",
-    End = "end"
+    End = "end",
+    RestoreDatabase = "restore_database"
+}
+export enum StorageFolder {
+    EncodedVideo = "encoded-video",
+    Library = "library",
+    Upload = "upload",
+    Profile = "profile",
+    Thumbs = "thumbs",
+    Backups = "backups"
 }
 export enum NotificationLevel {
     Success = "success",

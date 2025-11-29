@@ -71,15 +71,15 @@
     showNavigationLoadingBar = false;
   });
 
+  const { serverRestarting } = websocketStore;
+
   $effect.pre(() => {
-    if ($user || page.url.pathname.startsWith(AppRoute.MAINTENANCE)) {
+    if ($user || $serverRestarting || page.url.pathname.startsWith(AppRoute.MAINTENANCE)) {
       openWebsocketConnection();
     } else {
       closeWebsocketConnection();
     }
   });
-
-  const { serverRestarting } = websocketStore;
 
   const onReleaseEvent = async (release: ReleaseEvent) => {
     if (!release.isAvailable || !$user.isAdmin) {
