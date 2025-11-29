@@ -43,7 +43,7 @@
 
 <svelte:document use:shortcut={{ shortcut: { key: 'Escape' }, onShortcut: onClose }} />
 
-<section class="relative flex flex-col h-full p-2 dark:bg-immich-dark-bg dark:text-immich-dark-fg">
+<section class="relative flex flex-col h-full p-2 dark:bg-immich-dark-bg dark:text-immich-dark-fg dark">
   <div class="flex place-items-center gap-2">
     <IconButton
       shape="round"
