@@ -19,6 +19,7 @@ import { ActivityRepository } from 'src/repositories/activity.repository';
 import { AlbumUserRepository } from 'src/repositories/album-user.repository';
 import { AlbumRepository } from 'src/repositories/album.repository';
 import { ApiKeyRepository } from 'src/repositories/api-key.repository';
+import { AppRepository } from 'src/repositories/app.repository';
 import { AssetJobRepository } from 'src/repositories/asset-job.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
 import { AuditRepository } from 'src/repositories/audit.repository';
@@ -41,12 +42,15 @@ import { MetadataRepository } from 'src/repositories/metadata.repository';
 import { MoveRepository } from 'src/repositories/move.repository';
 import { NotificationRepository } from 'src/repositories/notification.repository';
 import { OAuthRepository } from 'src/repositories/oauth.repository';
+import { OcrRepository } from 'src/repositories/ocr.repository';
 import { PartnerRepository } from 'src/repositories/partner.repository';
 import { PersonRepository } from 'src/repositories/person.repository';
+import { PluginRepository } from 'src/repositories/plugin.repository';
 import { ProcessRepository } from 'src/repositories/process.repository';
 import { SearchRepository } from 'src/repositories/search.repository';
 import { ServerInfoRepository } from 'src/repositories/server-info.repository';
 import { SessionRepository } from 'src/repositories/session.repository';
+import { SharedLinkAssetRepository } from 'src/repositories/shared-link-asset.repository';
 import { SharedLinkRepository } from 'src/repositories/shared-link.repository';
 import { StackRepository } from 'src/repositories/stack.repository';
 import { StorageRepository } from 'src/repositories/storage.repository';
@@ -59,6 +63,8 @@ import { TrashRepository } from 'src/repositories/trash.repository';
 import { UserRepository } from 'src/repositories/user.repository';
 import { VersionHistoryRepository } from 'src/repositories/version-history.repository';
 import { ViewRepository } from 'src/repositories/view-repository';
+import { WebsocketRepository } from 'src/repositories/websocket.repository';
+import { WorkflowRepository } from 'src/repositories/workflow.repository';
 import { DB } from 'src/schema';
 import { AuthService } from 'src/services/auth.service';
 import { BaseService } from 'src/services/base.service';
@@ -207,6 +213,7 @@ export type ServiceOverrides = {
   album: AlbumRepository;
   albumUser: AlbumUserRepository;
   apiKey: ApiKeyRepository;
+  app: AppRepository;
   audit: AuditRepository;
   asset: AssetRepository;
   assetJob: AssetJobRepository;
@@ -228,14 +235,17 @@ export type ServiceOverrides = {
   metadata: MetadataRepository;
   move: MoveRepository;
   notification: NotificationRepository;
+  ocr: OcrRepository;
   oauth: OAuthRepository;
   partner: PartnerRepository;
   person: PersonRepository;
+  plugin: PluginRepository;
   process: ProcessRepository;
   search: SearchRepository;
   serverInfo: ServerInfoRepository;
   session: SessionRepository;
   sharedLink: SharedLinkRepository;
+  sharedLinkAsset: SharedLinkAssetRepository;
   stack: StackRepository;
   storage: StorageRepository;
   sync: SyncRepository;
@@ -247,6 +257,8 @@ export type ServiceOverrides = {
   user: UserRepository;
   versionHistory: VersionHistoryRepository;
   view: ViewRepository;
+  websocket: WebsocketRepository;
+  workflow: WorkflowRepository;
 };
 
 type As<T> = T extends RepositoryInterface<infer U> ? U : never;
@@ -261,10 +273,7 @@ type Constructor<Type, Args extends Array<any>> = {
   new (...deps: Args): Type;
 };
 
-export const newTestService = <T extends BaseService>(
-  Service: Constructor<T, BaseServiceArgs>,
-  overrides: Partial<ServiceOverrides> = {},
-) => {
+export const getMocks = () => {
   const loggerMock = { setContext: () => {} };
   const configMock = { getEnv: () => ({}) };
 
@@ -281,6 +290,7 @@ export const newTestService = <T extends BaseService>(
     albumUser: automock(AlbumUserRepository),
     asset: newAssetRepositoryMock(),
     assetJob: automock(AssetJobRepository),
+    app: automock(AppRepository, { strict: false }),
     config: newConfigRepositoryMock(),
     database: newDatabaseRepositoryMock(),
     downloadRepository: automock(DownloadRepository, { strict: false }),
@@ -298,15 +308,18 @@ export const newTestService = <T extends BaseService>(
     metadata: newMetadataRepositoryMock(),
     move: automock(MoveRepository, { strict: false }),
     notification: automock(NotificationRepository),
+    ocr: automock(OcrRepository, { strict: false }),
     oauth: automock(OAuthRepository, { args: [loggerMock] }),
     partner: automock(PartnerRepository, { strict: false }),
     person: automock(PersonRepository, { strict: false }),
+    plugin: automock(PluginRepository, { strict: true }),
     process: automock(ProcessRepository),
     search: automock(SearchRepository, { strict: false }),
     // eslint-disable-next-line no-sparse-arrays
     serverInfo: automock(ServerInfoRepository, { args: [, loggerMock], strict: false }),
     session: automock(SessionRepository),
     sharedLink: automock(SharedLinkRepository),
+    sharedLinkAsset: automock(SharedLinkAssetRepository),
     stack: automock(StackRepository),
     storage: newStorageRepositoryMock(),
     sync: automock(SyncRepository),
@@ -320,7 +333,19 @@ export const newTestService = <T extends BaseService>(
     user: automock(UserRepository, { strict: false }),
     versionHistory: automock(VersionHistoryRepository),
     view: automock(ViewRepository),
+    // eslint-disable-next-line no-sparse-arrays
+    websocket: automock(WebsocketRepository, { args: [, loggerMock], strict: false }),
+    workflow: automock(WorkflowRepository, { strict: true }),
   };
+
+  return mocks;
+};
+
+export const newTestService = <T extends BaseService>(
+  Service: Constructor<T, BaseServiceArgs>,
+  overrides: Partial<ServiceOverrides> = {},
+) => {
+  const mocks = getMocks();
 
   const sut = new Service(
     overrides.logger || (mocks.logger as As<LoggingRepository>),
@@ -329,6 +354,7 @@ export const newTestService = <T extends BaseService>(
     overrides.album || (mocks.album as As<AlbumRepository>),
     overrides.albumUser || (mocks.albumUser as As<AlbumUserRepository>),
     overrides.apiKey || (mocks.apiKey as As<ApiKeyRepository>),
+    overrides.app || (mocks.app as As<AppRepository>),
     overrides.asset || (mocks.asset as As<AssetRepository>),
     overrides.assetJob || (mocks.assetJob as As<AssetJobRepository>),
     overrides.audit || (mocks.audit as As<AuditRepository>),
@@ -350,13 +376,16 @@ export const newTestService = <T extends BaseService>(
     overrides.move || (mocks.move as As<MoveRepository>),
     overrides.notification || (mocks.notification as As<NotificationRepository>),
     overrides.oauth || (mocks.oauth as As<OAuthRepository>),
+    overrides.ocr || (mocks.ocr as As<OcrRepository>),
     overrides.partner || (mocks.partner as As<PartnerRepository>),
     overrides.person || (mocks.person as As<PersonRepository>),
+    overrides.plugin || (mocks.plugin as As<PluginRepository>),
     overrides.process || (mocks.process as As<ProcessRepository>),
     overrides.search || (mocks.search as As<SearchRepository>),
     overrides.serverInfo || (mocks.serverInfo as As<ServerInfoRepository>),
     overrides.session || (mocks.session as As<SessionRepository>),
     overrides.sharedLink || (mocks.sharedLink as As<SharedLinkRepository>),
+    overrides.sharedLinkAsset || (mocks.sharedLinkAsset as As<SharedLinkAssetRepository>),
     overrides.stack || (mocks.stack as As<StackRepository>),
     overrides.storage || (mocks.storage as As<StorageRepository>),
     overrides.sync || (mocks.sync as As<SyncRepository>),
@@ -368,6 +397,8 @@ export const newTestService = <T extends BaseService>(
     overrides.user || (mocks.user as As<UserRepository>),
     overrides.versionHistory || (mocks.versionHistory as As<VersionHistoryRepository>),
     overrides.view || (mocks.view as As<ViewRepository>),
+    overrides.websocket || (mocks.websocket as As<WebsocketRepository>),
+    overrides.workflow || (mocks.workflow as As<WorkflowRepository>),
   );
 
   return {

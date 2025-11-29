@@ -27,7 +27,7 @@
   let { asset = undefined, point: initialPoint, onClose }: Props = $props();
 
   let places: PlacesResponseDto[] = $state([]);
-  let suggestedPlaces: PlacesResponseDto[] = $state([]);
+  let suggestedPlaces: PlacesResponseDto[] = $derived(places.slice(0, 5));
   let searchWord: string = $state('');
   let latestSearchTimeout: number;
   let showLoadingSpinner = $state(false);
@@ -52,9 +52,6 @@
   });
 
   $effect(() => {
-    if (places) {
-      suggestedPlaces = places.slice(0, 5);
-    }
     if (searchWord === '') {
       suggestedPlaces = [];
     }
@@ -172,8 +169,8 @@
       </div>
 
       <span>{$t('pick_a_location')}</span>
-      <div class="h-[500px] min-h-[300px] w-full z-0">
-        {#await import('../shared-components/map/map.svelte')}
+      <div class="h-125 min-h-75 w-full z-0">
+        {#await import('$lib/components/shared-components/map/map.svelte')}
           {#await delay(timeToLoadTheMap) then}
             <!-- show the loading spinner only if loading the map takes too much time -->
             <div class="flex items-center justify-center h-full w-full">

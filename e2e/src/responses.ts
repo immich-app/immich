@@ -7,6 +7,12 @@ export const errorDto = {
     message: 'Authentication required',
     correlationId: expect.any(String),
   },
+  unauthorizedWithMessage: (message: string) => ({
+    error: 'Unauthorized',
+    statusCode: 401,
+    message,
+    correlationId: expect.any(String),
+  }),
   forbidden: {
     error: 'Forbidden',
     statusCode: 403,
@@ -119,5 +125,6 @@ export const deviceDto = {
     isPendingSyncReset: false,
     deviceOS: '',
     deviceType: '',
+    appVersion: null,
   },
 };

@@ -1,13 +1,9 @@
 <script lang="ts">
-  import {
-    notificationController,
-    NotificationType,
-  } from '$lib/components/shared-components/notification/notification';
   import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
   import { SettingInputFieldType } from '$lib/constants';
   import type { TreeNode } from '$lib/utils/tree-utils';
   import { upsertTags, type TagResponseDto } from '@immich/sdk';
-  import { Button, HStack, Modal, ModalBody, ModalFooter } from '@immich/ui';
+  import { Button, HStack, Modal, ModalBody, ModalFooter, toastManager } from '@immich/ui';
   import { mdiTag } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
@@ -18,7 +14,7 @@
 
   const { onClose, baseTag }: Props = $props();
 
-  let tagValue = $state(baseTag?.value ? `${baseTag.value}/` : '');
+  let tagValue = $state(baseTag?.path ? `${baseTag.path}/` : '');
 
   const createTag = async () => {
     const [tag] = await upsertTags({ tagUpsertDto: { tags: [tagValue] } });
@@ -27,10 +23,7 @@
       return;
     }
 
-    notificationController.show({
-      message: $t('tag_created', { values: { tag: tag.value } }),
-      type: NotificationType.Info,
-    });
+    toastManager.success($t('tag_created', { values: { tag: tag.value } }));
 
     onClose(tag);
   };

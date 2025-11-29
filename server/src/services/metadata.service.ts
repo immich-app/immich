@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ContainerDirectoryItem, ExifDateTime, Tags } from 'exiftool-vendored';
 import { Insertable } from 'kysely';
 import _ from 'lodash';
-import { Duration } from 'luxon';
+import { DateTime, Duration } from 'luxon';
 import { Stats } from 'node:fs';
 import { constants } from 'node:fs/promises';
 import { join, parse } from 'node:path';
@@ -37,7 +37,6 @@ import { upsertTags } from 'src/utils/tag';
 const EXIF_DATE_TAGS: Array<keyof ImmichTags> = [
   'SubSecDateTimeOriginal',
   'SubSecCreateDate',
-  'SubSecMediaCreateDate',
   'DateTimeOriginal',
   'CreationDate',
   'CreateDate',
@@ -236,8 +235,8 @@ export class MetadataService extends BaseService {
       latitude: number | null = null,
       longitude: number | null = null;
     if (this.hasGeo(exifTags)) {
-      latitude = exifTags.GPSLatitude;
-      longitude = exifTags.GPSLongitude;
+      latitude = Number(exifTags.GPSLatitude);
+      longitude = Number(exifTags.GPSLongitude);
       if (reverseGeocoding.enabled) {
         geo = await this.mapRepository.reverseGeocode({ latitude, longitude });
       }
@@ -291,7 +290,7 @@ export class MetadataService extends BaseService {
       this.assetRepository.upsertExif(exifData),
       this.assetRepository.update({
         id: asset.id,
-        duration: exifTags.Duration?.toString() ?? null,
+        duration: this.getDuration(exifTags),
         localDateTime: dates.localDateTime,
         fileCreatedAt: dates.dateTimeOriginal ?? undefined,
         fileModifiedAt: stats.mtime,
@@ -447,26 +446,17 @@ export class MetadataService extends BaseService {
      * For RAW images in the CR2 or RAF format, the "ImageSize" value seems to be correct,
      * but ImageWidth and ImageHeight are not correct (they contain the dimensions of the preview image).
      */
-    let [width, height] = exifTags.ImageSize?.split('x').map((dim) => Number.parseInt(dim) || undefined) || [];
+    let [width, height] =
+      exifTags.ImageSize?.toString()
+        ?.split('x')
+        ?.map((dim) => Number.parseInt(dim) || undefined) ?? [];
     if (!width || !height) {
       [width, height] = [exifTags.ImageWidth, exifTags.ImageHeight];
     }
     return { width, height };
   }
 
-  private getExifTags(asset: {
-    originalPath: string;
-    sidecarPath: string | null;
-    type: AssetType;
-  }): Promise<ImmichTags> {
-    if (!asset.sidecarPath && asset.type === AssetType.Image) {
-      return this.metadataRepository.readTags(asset.originalPath);
-    }
-
-    return this.mergeExifTags(asset);
-  }
-
-  private async mergeExifTags(asset: {
+  private async getExifTags(asset: {
     originalPath: string;
     sidecarPath: string | null;
     type: AssetType;
@@ -489,7 +479,11 @@ export class MetadataService extends BaseService {
     }
 
     // prefer duration from video tags
-    delete mediaTags.Duration;
+    if (videoTags) {
+      delete mediaTags.Duration;
+    }
+
+    // never use duration from sidecar
     delete sidecarTags?.Duration;
 
     return { ...mediaTags, ...videoTags, ...sidecarTags };
@@ -863,40 +857,47 @@ export class MetadataService extends BaseService {
       this.logger.debug(`No timezone information found for asset ${asset.id}: ${asset.originalPath}`);
     }
 
-    let dateTimeOriginal = dateTime?.toDate();
-    let localDateTime = dateTime?.toDateTime().setZone('UTC', { keepLocalTime: true }).toJSDate();
+    let dateTimeOriginal = dateTime?.toDateTime();
+
+    // do not let JavaScript use local timezone
+    if (dateTimeOriginal && !dateTime?.hasZone) {
+      dateTimeOriginal = dateTimeOriginal.setZone('UTC', { keepLocalTime: true });
+    }
+
+    // align with whatever timeZone we chose
+    dateTimeOriginal = dateTimeOriginal?.setZone(timeZone ?? 'UTC');
+
+    // store as "local time"
+    let localDateTime = dateTimeOriginal?.setZone('UTC', { keepLocalTime: true });
+
     if (!localDateTime || !dateTimeOriginal) {
       // FileCreateDate is not available on linux, likely because exiftool hasn't integrated the statx syscall yet
       // birthtime is not available in Docker on macOS, so it appears as 0
-      const earliestDate = new Date(
+      const earliestDate = DateTime.fromMillis(
         Math.min(
           asset.fileCreatedAt.getTime(),
           stats.birthtimeMs ? Math.min(stats.mtimeMs, stats.birthtimeMs) : stats.mtime.getTime(),
         ),
       );
       this.logger.debug(
-        `No exif date time found, falling back on ${earliestDate.toISOString()}, earliest of file creation and modification for asset ${asset.id}: ${asset.originalPath}`,
+        `No exif date time found, falling back on ${earliestDate.toISO()}, earliest of file creation and modification for asset ${asset.id}: ${asset.originalPath}`,
       );
       dateTimeOriginal = localDateTime = earliestDate;
     }
 
-    this.logger.verbose(
-      `Found local date time ${localDateTime.toISOString()} for asset ${asset.id}: ${asset.originalPath}`,
-    );
+    this.logger.verbose(`Found local date time ${localDateTime.toISO()} for asset ${asset.id}: ${asset.originalPath}`);
 
     return {
-      dateTimeOriginal,
       timeZone,
-      localDateTime,
+      localDateTime: localDateTime.toJSDate(),
+      dateTimeOriginal: dateTimeOriginal.toJSDate(),
     };
   }
 
-  private hasGeo(tags: ImmichTags): tags is ImmichTags & { GPSLatitude: number; GPSLongitude: number } {
-    return (
-      tags.GPSLatitude !== undefined &&
-      tags.GPSLongitude !== undefined &&
-      (tags.GPSLatitude !== 0 || tags.GPSLatitude !== 0)
-    );
+  private hasGeo(tags: ImmichTags) {
+    const lat = Number(tags.GPSLatitude);
+    const lng = Number(tags.GPSLongitude);
+    return !Number.isNaN(lat) && !Number.isNaN(lng) && (lat !== 0 || lng !== 0);
   }
 
   private getAutoStackId(tags: ImmichTags | null): string | null {
@@ -922,6 +923,20 @@ export class MetadataService extends BaseService {
     }
 
     return bitsPerSample;
+  }
+
+  private getDuration(tags: ImmichTags): string | null {
+    const duration = tags.Duration;
+
+    if (typeof duration === 'string') {
+      return duration;
+    }
+
+    if (typeof duration === 'number') {
+      return Duration.fromObject({ seconds: duration }).toFormat('hh:mm:ss.SSS');
+    }
+
+    return null;
   }
 
   private async getVideoTags(originalPath: string) {
@@ -951,7 +966,7 @@ export class MetadataService extends BaseService {
     }
 
     if (format.duration) {
-      tags.Duration = Duration.fromObject({ seconds: format.duration }).toFormat('hh:mm:ss.SSS');
+      tags.Duration = format.duration;
     }
 
     return tags;

@@ -11,6 +11,7 @@ import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/utils/bootstrap.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:immich_mobile/utils/http_ssl_options.dart';
+import 'package:immich_mobile/wm_executor.dart';
 import 'package:logging/logging.dart';
 import 'package:worker_manager/worker_manager.dart';
 
@@ -31,7 +32,8 @@ Cancelable<T?> runInIsolateGentle<T>({
     throw const InvalidIsolateUsageException();
   }
 
-  return workerManager.executeGentle((cancelledChecker) async {
+  return workerManagerPatch.executeGentle((cancelledChecker) async {
+    T? result;
     await runZonedGuarded(
       () async {
         BackgroundIsolateBinaryMessenger.ensureInitialized(token);
@@ -53,7 +55,7 @@ Cancelable<T?> runInIsolateGentle<T>({
 
         try {
           HttpSSLOptions.apply(applyNative: false);
-          return await computation(ref);
+          result = await computation(ref);
         } on CanceledError {
           log.warning("Computation cancelled ${debugLabel == null ? '' : ' for $debugLabel'}");
         } catch (error, stack) {
@@ -83,12 +85,11 @@ Cancelable<T?> runInIsolateGentle<T>({
             await Future.delayed(const Duration(seconds: 2));
           }
         }
-        return null;
       },
       (error, stack) {
         dPrint(() => "Error in isolate $debugLabel zone: $error, $stack");
       },
     );
-    return null;
+    return result;
   });
 }

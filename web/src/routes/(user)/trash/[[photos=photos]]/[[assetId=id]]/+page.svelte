@@ -3,25 +3,21 @@
   import empty3Url from '$lib/assets/empty-3.svg';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
-  import {
-    notificationController,
-    NotificationType,
-  } from '$lib/components/shared-components/notification/notification';
   import DeleteAssets from '$lib/components/timeline/actions/DeleteAssetsAction.svelte';
   import RestoreAssets from '$lib/components/timeline/actions/RestoreAction.svelte';
   import SelectAllAssets from '$lib/components/timeline/actions/SelectAllAction.svelte';
   import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import Timeline from '$lib/components/timeline/Timeline.svelte';
   import { AppRoute } from '$lib/constants';
+  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
+  import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-  import { featureFlags, serverConfig } from '$lib/stores/server-config.store';
   import { handlePromiseError } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { emptyTrash, restoreTrash } from '@immich/sdk';
-  import { Button, HStack, modalManager, Text } from '@immich/ui';
+  import { Button, HStack, modalManager, Text, toastManager } from '@immich/ui';
   import { mdiDeleteForeverOutline, mdiHistory } from '@mdi/js';
-  import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
 
@@ -31,15 +27,14 @@
 
   let { data }: Props = $props();
 
-  if (!$featureFlags.trash) {
-    handlePromiseError(goto(AppRoute.PHOTOS));
-  }
-
-  const timelineManager = new TimelineManager();
-  void timelineManager.updateOptions({ isTrashed: true });
-  onDestroy(() => timelineManager.destroy());
+  let timelineManager = $state<TimelineManager>() as TimelineManager;
+  const options = { isTrashed: true };
 
   const assetInteraction = new AssetInteraction();
+
+  if (!featureFlagsManager.value.trash) {
+    handlePromiseError(goto(AppRoute.PHOTOS));
+  }
 
   const handleEmptyTrash = async () => {
     const isConfirmed = await modalManager.showDialog({ prompt: $t('empty_trash_confirmation') });
@@ -49,11 +44,7 @@
 
     try {
       const { count } = await emptyTrash();
-
-      notificationController.show({
-        message: $t('assets_permanently_deleted_count', { values: { count } }),
-        type: NotificationType.Info,
-      });
+      toastManager.success($t('assets_permanently_deleted_count', { values: { count } }));
     } catch (error) {
       handleError(error, $t('errors.unable_to_empty_trash'));
     }
@@ -66,10 +57,7 @@
     }
     try {
       const { count } = await restoreTrash();
-      notificationController.show({
-        message: $t('assets_restored_count', { values: { count } }),
-        type: NotificationType.Info,
-      });
+      toastManager.success($t('assets_restored_count', { values: { count } }));
 
       // reset asset grid (TODO fix in asset store that it should reset when it is empty)
       // note - this is still a problem, but updateOptions with the same value will not
@@ -89,7 +77,7 @@
   };
 </script>
 
-{#if $featureFlags.loaded && $featureFlags.trash}
+{#if featureFlagsManager.value.trash}
   <UserPageLayout hideNavbar={assetInteraction.selectionActive} title={data.meta.title} scrollbar={false}>
     {#snippet buttons()}
       <HStack gap={0}>
@@ -116,12 +104,14 @@
       </HStack>
     {/snippet}
 
-    <Timeline enableRouting={true} {timelineManager} {assetInteraction} onEscape={handleEscape}>
+    <Timeline enableRouting={true} bind:timelineManager {options} {assetInteraction} onEscape={handleEscape}>
       <p class="font-medium text-gray-500/60 dark:text-gray-300/60 p-4">
-        {$t('trashed_items_will_be_permanently_deleted_after', { values: { days: $serverConfig.trashDays } })}
+        {$t('trashed_items_will_be_permanently_deleted_after', {
+          values: { days: serverConfigManager.value.trashDays },
+        })}
       </p>
       {#snippet empty()}
-        <EmptyPlaceholder text={$t('trash_no_results_message')} src={empty3Url} />
+        <EmptyPlaceholder text={$t('trash_no_results_message')} src={empty3Url} class="mt-10 mx-auto" />
       {/snippet}
     </Timeline>
   </UserPageLayout>

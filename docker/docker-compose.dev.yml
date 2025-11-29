@@ -1,5 +1,5 @@
 #
-# WARNING: To install Immich, follow our guide: https://immich.app/docs/install/docker-compose
+# WARNING: To install Immich, follow our guide: https://docs.immich.app/install/docker-compose
 #
 # Make sure to use the docker-compose.yml of the current release:
 #
@@ -8,8 +8,8 @@
 # The compose file on main may not be compatible with the latest release.
 
 # For development see:
-# - https://immich.app/docs/developer/setup
-# - https://immich.app/docs/developer/troubleshooting
+# - https://docs.immich.app/developer/setup
+# - https://docs.immich.app/developer/troubleshooting
 
 name: immich-dev
 
@@ -41,6 +41,7 @@ services:
       - app-node_modules:/usr/src/app/node_modules
       - sveltekit:/usr/src/app/web/.svelte-kit
       - coverage:/usr/src/app/web/coverage
+      - ../plugins:/build/corePlugin
     env_file:
       - .env
     environment:
@@ -55,8 +56,8 @@ services:
       IMMICH_BUILD_IMAGE_URL: https://github.com/immich-app/immich/pkgs/container/immich-server
       IMMICH_THIRD_PARTY_SOURCE_URL: https://github.com/immich-app/immich/
       IMMICH_THIRD_PARTY_BUG_FEATURE_URL: https://github.com/immich-app/immich/issues
-      IMMICH_THIRD_PARTY_DOCUMENTATION_URL: https://immich.app/docs
-      IMMICH_THIRD_PARTY_SUPPORT_URL: https://immich.app/docs/community-guides
+      IMMICH_THIRD_PARTY_DOCUMENTATION_URL: https://docs.immich.app
+      IMMICH_THIRD_PARTY_SUPPORT_URL: https://docs.immich.app/community-guides
     ulimits:
       nofile:
         soft: 1048576
@@ -122,7 +123,7 @@ services:
     ports:
       - 3003:3003
     volumes:
-      - ../machine-learning:/usr/src/app
+      - ../machine-learning/immich_ml:/usr/src/immich_ml
       - model-cache:/cache
     env_file:
       - .env
@@ -134,13 +135,13 @@ services:
 
   redis:
     container_name: immich_redis
-    image: docker.io/valkey/valkey:8-bookworm@sha256:fea8b3e67b15729d4bb70589eb03367bab9ad1ee89c876f54327fc7c6e618571
+    image: docker.io/valkey/valkey:8@sha256:81db6d39e1bba3b3ff32bd3a1b19a6d69690f94a3954ec131277b9a26b95b3aa
     healthcheck:
       test: redis-cli ping || exit 1
 
   database:
     container_name: immich_postgres
-    image: ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0@sha256:c44be5f2871c59362966d71eab4268170eb6f5653c0e6170184e72b38ffdf107
+    image: ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0@sha256:bcf63357191b76a916ae5eb93464d65c07511da41e3bf7a8416db519b40b1c23
     env_file:
       - .env
     environment:

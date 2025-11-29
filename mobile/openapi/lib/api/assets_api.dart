@@ -16,9 +16,9 @@ class AssetsApi {
 
   final ApiClient apiClient;
 
-  /// checkBulkUpload
+  /// Check bulk upload
   ///
-  /// Checks if assets exist by checksums. This endpoint requires the `asset.upload` permission.
+  /// Determine which assets have already been uploaded to the server based on their SHA1 checksums.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -50,9 +50,9 @@ class AssetsApi {
     );
   }
 
-  /// checkBulkUpload
+  /// Check bulk upload
   ///
-  /// Checks if assets exist by checksums. This endpoint requires the `asset.upload` permission.
+  /// Determine which assets have already been uploaded to the server based on their SHA1 checksums.
   ///
   /// Parameters:
   ///
@@ -72,7 +72,7 @@ class AssetsApi {
     return null;
   }
 
-  /// checkExistingAssets
+  /// Check existing assets
   ///
   /// Checks if multiple assets exist on the server and returns all existing - used by background backup
   ///
@@ -106,7 +106,7 @@ class AssetsApi {
     );
   }
 
-  /// checkExistingAssets
+  /// Check existing assets
   ///
   /// Checks if multiple assets exist on the server and returns all existing - used by background backup
   ///
@@ -128,7 +128,57 @@ class AssetsApi {
     return null;
   }
 
-  /// This endpoint requires the `asset.update` permission.
+  /// Copy asset
+  ///
+  /// Copy asset information like albums, tags, etc. from one asset to another.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [AssetCopyDto] assetCopyDto (required):
+  Future<Response> copyAssetWithHttpInfo(AssetCopyDto assetCopyDto,) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/assets/copy';
+
+    // ignore: prefer_final_locals
+    Object? postBody = assetCopyDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'PUT',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Copy asset
+  ///
+  /// Copy asset information like albums, tags, etc. from one asset to another.
+  ///
+  /// Parameters:
+  ///
+  /// * [AssetCopyDto] assetCopyDto (required):
+  Future<void> copyAsset(AssetCopyDto assetCopyDto,) async {
+    final response = await copyAssetWithHttpInfo(assetCopyDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
+  /// Delete asset metadata by key
+  ///
+  /// Delete a specific metadata key-value pair associated with the specified asset.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -164,7 +214,9 @@ class AssetsApi {
     );
   }
 
-  /// This endpoint requires the `asset.update` permission.
+  /// Delete asset metadata by key
+  ///
+  /// Delete a specific metadata key-value pair associated with the specified asset.
   ///
   /// Parameters:
   ///
@@ -178,7 +230,9 @@ class AssetsApi {
     }
   }
 
-  /// This endpoint requires the `asset.delete` permission.
+  /// Delete assets
+  ///
+  /// Deletes multiple assets at the same time.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -210,7 +264,9 @@ class AssetsApi {
     );
   }
 
-  /// This endpoint requires the `asset.delete` permission.
+  /// Delete assets
+  ///
+  /// Deletes multiple assets at the same time.
   ///
   /// Parameters:
   ///
@@ -222,7 +278,9 @@ class AssetsApi {
     }
   }
 
-  /// This endpoint requires the `asset.download` permission.
+  /// Download original asset
+  ///
+  /// Downloads the original file of the specified asset.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -266,7 +324,9 @@ class AssetsApi {
     );
   }
 
-  /// This endpoint requires the `asset.download` permission.
+  /// Download original asset
+  ///
+  /// Downloads the original file of the specified asset.
   ///
   /// Parameters:
   ///
@@ -290,7 +350,7 @@ class AssetsApi {
     return null;
   }
 
-  /// getAllUserAssetsByDeviceId
+  /// Retrieve assets by device ID
   ///
   /// Get all asset of a device that are in the database, ID only.
   ///
@@ -325,7 +385,7 @@ class AssetsApi {
     );
   }
 
-  /// getAllUserAssetsByDeviceId
+  /// Retrieve assets by device ID
   ///
   /// Get all asset of a device that are in the database, ID only.
   ///
@@ -350,7 +410,9 @@ class AssetsApi {
     return null;
   }
 
-  /// This endpoint requires the `asset.read` permission.
+  /// Retrieve an asset
+  ///
+  /// Retrieve detailed information about a specific asset.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -394,7 +456,9 @@ class AssetsApi {
     );
   }
 
-  /// This endpoint requires the `asset.read` permission.
+  /// Retrieve an asset
+  ///
+  /// Retrieve detailed information about a specific asset.
   ///
   /// Parameters:
   ///
@@ -418,7 +482,9 @@ class AssetsApi {
     return null;
   }
 
-  /// This endpoint requires the `asset.read` permission.
+  /// Get asset metadata
+  ///
+  /// Retrieve all metadata key-value pairs associated with the specified asset.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -451,7 +517,9 @@ class AssetsApi {
     );
   }
 
-  /// This endpoint requires the `asset.read` permission.
+  /// Get asset metadata
+  ///
+  /// Retrieve all metadata key-value pairs associated with the specified asset.
   ///
   /// Parameters:
   ///
@@ -474,7 +542,9 @@ class AssetsApi {
     return null;
   }
 
-  /// This endpoint requires the `asset.read` permission.
+  /// Retrieve asset metadata by key
+  ///
+  /// Retrieve the value of a specific metadata key associated with the specified asset.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -510,7 +580,9 @@ class AssetsApi {
     );
   }
 
-  /// This endpoint requires the `asset.read` permission.
+  /// Retrieve asset metadata by key
+  ///
+  /// Retrieve the value of a specific metadata key associated with the specified asset.
   ///
   /// Parameters:
   ///
@@ -532,7 +604,69 @@ class AssetsApi {
     return null;
   }
 
-  /// This endpoint requires the `asset.statistics` permission.
+  /// Retrieve asset OCR data
+  ///
+  /// Retrieve all OCR (Optical Character Recognition) data associated with the specified asset.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  Future<Response> getAssetOcrWithHttpInfo(String id,) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/assets/{id}/ocr'
+      .replaceAll('{id}', id);
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Retrieve asset OCR data
+  ///
+  /// Retrieve all OCR (Optical Character Recognition) data associated with the specified asset.
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  Future<List<AssetOcrResponseDto>?> getAssetOcr(String id,) async {
+    final response = await getAssetOcrWithHttpInfo(id,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      final responseBody = await _decodeBodyBytes(response);
+      return (await apiClient.deserializeAsync(responseBody, 'List<AssetOcrResponseDto>') as List)
+        .cast<AssetOcrResponseDto>()
+        .toList(growable: false);
+
+    }
+    return null;
+  }
+
+  /// Get asset statistics
+  ///
+  /// Retrieve various statistics about the assets owned by the authenticated user.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -578,7 +712,9 @@ class AssetsApi {
     );
   }
 
-  /// This endpoint requires the `asset.statistics` permission.
+  /// Get asset statistics
+  ///
+  /// Retrieve various statistics about the assets owned by the authenticated user.
   ///
   /// Parameters:
   ///
@@ -602,7 +738,9 @@ class AssetsApi {
     return null;
   }
 
-  /// This property was deprecated in v1.116.0. This endpoint requires the `asset.read` permission.
+  /// Get random assets
+  ///
+  /// Retrieve a specified number of random assets for the authenticated user.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -638,7 +776,9 @@ class AssetsApi {
     );
   }
 
-  /// This property was deprecated in v1.116.0. This endpoint requires the `asset.read` permission.
+  /// Get random assets
+  ///
+  /// Retrieve a specified number of random assets for the authenticated user.
   ///
   /// Parameters:
   ///
@@ -661,7 +801,9 @@ class AssetsApi {
     return null;
   }
 
-  /// This endpoint requires the `asset.view` permission.
+  /// Play asset video
+  ///
+  /// Streams the video file for the specified asset. This endpoint also supports byte range requests.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -705,7 +847,9 @@ class AssetsApi {
     );
   }
 
-  /// This endpoint requires the `asset.view` permission.
+  /// Play asset video
+  ///
+  /// Streams the video file for the specified asset. This endpoint also supports byte range requests.
   ///
   /// Parameters:
   ///
@@ -729,9 +873,9 @@ class AssetsApi {
     return null;
   }
 
-  /// Replace the asset with new file, without changing its id
+  /// Replace asset
   ///
-  /// This property was deprecated in v1.142.0. Replace the asset with new file, without changing its id. This endpoint requires the `asset.replace` permission.
+  /// Replace the asset with new file, without changing its id.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -823,9 +967,9 @@ class AssetsApi {
     );
   }
 
-  /// Replace the asset with new file, without changing its id
+  /// Replace asset
   ///
-  /// This property was deprecated in v1.142.0. Replace the asset with new file, without changing its id. This endpoint requires the `asset.replace` permission.
+  /// Replace the asset with new file, without changing its id.
   ///
   /// Parameters:
   ///
@@ -863,7 +1007,12 @@ class AssetsApi {
     return null;
   }
 
-  /// Performs an HTTP 'POST /assets/jobs' operation and returns the [Response].
+  /// Run an asset job
+  ///
+  /// Run a specific job on a set of assets.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [AssetJobsDto] assetJobsDto (required):
@@ -892,6 +1041,10 @@ class AssetsApi {
     );
   }
 
+  /// Run an asset job
+  ///
+  /// Run a specific job on a set of assets.
+  ///
   /// Parameters:
   ///
   /// * [AssetJobsDto] assetJobsDto (required):
@@ -902,7 +1055,9 @@ class AssetsApi {
     }
   }
 
-  /// This endpoint requires the `asset.update` permission.
+  /// Update an asset
+  ///
+  /// Update information of a specific asset.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -937,7 +1092,9 @@ class AssetsApi {
     );
   }
 
-  /// This endpoint requires the `asset.update` permission.
+  /// Update an asset
+  ///
+  /// Update information of a specific asset.
   ///
   /// Parameters:
   ///
@@ -959,7 +1116,9 @@ class AssetsApi {
     return null;
   }
 
-  /// This endpoint requires the `asset.update` permission.
+  /// Update asset metadata
+  ///
+  /// Update or add metadata key-value pairs for the specified asset.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -994,7 +1153,9 @@ class AssetsApi {
     );
   }
 
-  /// This endpoint requires the `asset.update` permission.
+  /// Update asset metadata
+  ///
+  /// Update or add metadata key-value pairs for the specified asset.
   ///
   /// Parameters:
   ///
@@ -1019,7 +1180,9 @@ class AssetsApi {
     return null;
   }
 
-  /// This endpoint requires the `asset.update` permission.
+  /// Update assets
+  ///
+  /// Updates multiple assets at the same time.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -1051,7 +1214,9 @@ class AssetsApi {
     );
   }
 
-  /// This endpoint requires the `asset.update` permission.
+  /// Update assets
+  ///
+  /// Updates multiple assets at the same time.
   ///
   /// Parameters:
   ///
@@ -1063,7 +1228,9 @@ class AssetsApi {
     }
   }
 
-  /// This endpoint requires the `asset.upload` permission.
+  /// Upload asset
+  ///
+  /// Uploads a new asset to the server.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -1190,7 +1357,9 @@ class AssetsApi {
     );
   }
 
-  /// This endpoint requires the `asset.upload` permission.
+  /// Upload asset
+  ///
+  /// Uploads a new asset to the server.
   ///
   /// Parameters:
   ///
@@ -1239,7 +1408,9 @@ class AssetsApi {
     return null;
   }
 
-  /// This endpoint requires the `asset.view` permission.
+  /// View asset thumbnail
+  ///
+  /// Retrieve the thumbnail image for the specified asset.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -1288,7 +1459,9 @@ class AssetsApi {
     );
   }
 
-  /// This endpoint requires the `asset.view` permission.
+  /// View asset thumbnail
+  ///
+  /// Retrieve the thumbnail image for the specified asset.
   ///
   /// Parameters:
   ///

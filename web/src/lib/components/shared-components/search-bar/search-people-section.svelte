@@ -52,7 +52,7 @@
 </script>
 
 {#await peoplePromise}
-  <div id="spinner" class="flex h-[217px] items-center justify-center -mb-4">
+  <div id="spinner" class="flex h-54 items-center justify-center -mb-4">
     <LoadingSpinner size="large" />
   </div>
 {:then people}

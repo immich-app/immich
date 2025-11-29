@@ -65,7 +65,9 @@ class BackupToggleButtonState extends ConsumerState<BackupToggleButton> with Sin
 
     final uploadTasks = ref.watch(driftBackupProvider.select((state) => state.uploadItems));
 
-    final isUploading = uploadTasks.isNotEmpty;
+    final isSyncing = ref.watch(driftBackupProvider.select((state) => state.isSyncing));
+
+    final isProcessing = uploadTasks.isNotEmpty || isSyncing;
 
     return AnimatedBuilder(
       animation: _animationController,
@@ -129,7 +131,7 @@ class BackupToggleButtonState extends ConsumerState<BackupToggleButton> with Sin
                             ],
                           ),
                         ),
-                        child: isUploading
+                        child: isProcessing
                             ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2))
                             : Icon(Icons.cloud_upload_outlined, color: context.primaryColor, size: 24),
                       ),
@@ -141,11 +143,13 @@ class BackupToggleButtonState extends ConsumerState<BackupToggleButton> with Sin
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                Text(
-                                  "enable_backup".t(context: context),
-                                  style: context.textTheme.titleMedium?.copyWith(
-                                    fontWeight: FontWeight.w600,
-                                    color: context.primaryColor,
+                                Flexible(
+                                  child: Text(
+                                    "enable_backup".t(context: context),
+                                    style: context.textTheme.titleMedium?.copyWith(
+                                      fontWeight: FontWeight.w600,
+                                      color: context.primaryColor,
+                                    ),
                                   ),
                                 ),
                               ],

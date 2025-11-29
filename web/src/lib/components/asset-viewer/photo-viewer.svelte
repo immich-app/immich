@@ -2,12 +2,14 @@
   import { shortcuts } from '$lib/actions/shortcut';
   import { zoomImageAction } from '$lib/actions/zoom-image';
   import FaceEditor from '$lib/components/asset-viewer/face-editor/face-editor.svelte';
+  import OcrBoundingBox from '$lib/components/asset-viewer/ocr-bounding-box.svelte';
   import BrokenAsset from '$lib/components/assets/broken-asset.svelte';
   import { assetViewerFadeDuration } from '$lib/constants';
   import { castManager } from '$lib/managers/cast-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import { photoViewerImgElement } from '$lib/stores/assets-store.svelte';
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
+  import { ocrManager } from '$lib/stores/ocr.svelte';
   import { boundingBoxesArray } from '$lib/stores/people.store';
   import { alwaysLoadOriginalFile } from '$lib/stores/preferences.store';
   import { SlideshowLook, SlideshowState, slideshowLookCssMapping, slideshowStore } from '$lib/stores/slideshow.store';
@@ -15,17 +17,17 @@
   import { getAssetOriginalUrl, getAssetThumbnailUrl, handlePromiseError } from '$lib/utils';
   import { canCopyImageToClipboard, copyImageToClipboard, isWebCompatibleImage } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
+  import { getOcrBoundingBoxes } from '$lib/utils/ocr-utils';
   import { getBoundingBox } from '$lib/utils/people-utils';
   import { cancelImageUrl } from '$lib/utils/sw-messaging';
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
-  import { AssetMediaSize, type AssetResponseDto, type SharedLinkResponseDto } from '@immich/sdk';
-  import { LoadingSpinner } from '@immich/ui';
+  import { AssetMediaSize, AssetTypeEnum, type AssetResponseDto, type SharedLinkResponseDto } from '@immich/sdk';
+  import { LoadingSpinner, toastManager } from '@immich/ui';
   import { onDestroy, onMount } from 'svelte';
-  import { swipe, type SwipeCustomEvent } from 'svelte-gestures';
+  import { useSwipe, type SwipeCustomEvent } from 'svelte-gestures';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
-  import { NotificationType, notificationController } from '../shared-components/notification/notification';
 
   interface Props {
     asset: AssetResponseDto;
@@ -72,6 +74,14 @@
     $boundingBoxesArray = [];
   });
 
+  let ocrBoxes = $derived(
+    ocrManager.showOverlay && $photoViewerImgElement
+      ? getOcrBoundingBoxes(ocrManager.data, $photoZoomState, $photoViewerImgElement)
+      : [],
+  );
+
+  let isOcrActive = $derived(ocrManager.showOverlay);
+
   const preload = (targetSize: AssetMediaSize | 'original', preloadAssets?: TimelineAsset[]) => {
     for (const preloadAsset of preloadAssets || []) {
       if (preloadAsset.isImage) {
@@ -92,20 +102,13 @@
   };
 
   copyImage = async () => {
-    if (!canCopyImageToClipboard()) {
+    if (!canCopyImageToClipboard() || !$photoViewerImgElement) {
       return;
     }
 
     try {
-      const result = await copyImageToClipboard($photoViewerImgElement ?? assetFileUrl);
-      if (result.success) {
-        notificationController.show({ type: NotificationType.Info, message: $t('copied_image_to_clipboard') });
-      } else {
-        notificationController.show({
-          type: NotificationType.Error,
-          message: $t('errors.clipboard_unsupported_mime_type', { values: { mimeType: result.mimeType } }),
-        });
-      }
+      await copyImageToClipboard($photoViewerImgElement);
+      toastManager.info($t('copied_image_to_clipboard'));
     } catch (error) {
       handleError(error, $t('copy_error'));
     }
@@ -138,16 +141,25 @@
     if ($photoZoomState.currentZoom > 1) {
       return;
     }
+
+    if (ocrManager.showOverlay) {
+      return;
+    }
+
     if (onNextAsset && event.detail.direction === 'left') {
       onNextAsset();
     }
+
     if (onPreviousAsset && event.detail.direction === 'right') {
       onPreviousAsset();
     }
   };
 
   // when true, will force loading of the original image
-  let forceUseOriginal: boolean = $derived(asset.originalMimeType === 'image/gif' || $photoZoomState.currentZoom > 1);
+  let forceUseOriginal: boolean = $derived(
+    (asset.type === AssetTypeEnum.Image && asset.duration && !asset.duration.includes('0:00:00.000')) ||
+      $photoZoomState.currentZoom > 1,
+  );
 
   const targetImageSize = $derived.by(() => {
     if ($alwaysLoadOriginalFile || forceUseOriginal || originalImageLoaded) {
@@ -159,7 +171,6 @@
 
   $effect(() => {
     if (assetFileUrl) {
-      // this can't be in an async context with $effect
       void cast(assetFileUrl);
     }
   });
@@ -240,9 +251,8 @@
     </div>
   {:else if !imageError}
     <div
-      use:zoomImageAction
-      use:swipe={() => ({})}
-      onswipe={onSwipe}
+      use:zoomImageAction={{ disabled: isOcrActive }}
+      {...useSwipe(onSwipe)}
       class="h-full w-full"
       transition:fade={{ duration: haveFadeTransition ? assetViewerFadeDuration : 0 }}
     >
@@ -266,9 +276,13 @@
       <!-- eslint-disable-next-line svelte/require-each-key -->
       {#each getBoundingBox($boundingBoxesArray, $photoZoomState, $photoViewerImgElement) as boundingbox}
         <div
-          class="absolute border-solid border-white border-[3px] rounded-lg"
+          class="absolute border-solid border-white border-3 rounded-lg"
           style="top: {boundingbox.top}px; left: {boundingbox.left}px; height: {boundingbox.height}px; width: {boundingbox.width}px;"
         ></div>
+      {/each}
+
+      {#each ocrBoxes as ocrBox (ocrBox.id)}
+        <OcrBoundingBox {ocrBox} />
       {/each}
     </div>
 

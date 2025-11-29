@@ -51,10 +51,10 @@ export class AssetMediaService extends BaseService {
     return { id: assetId, status: AssetMediaStatus.DUPLICATE };
   }
 
-  canUploadFile({ auth, fieldName, file }: UploadRequest): true {
+  canUploadFile({ auth, fieldName, file, body }: UploadRequest): true {
     requireUploadAccess(auth);
 
-    const filename = file.originalName;
+    const filename = body.filename || file.originalName;
 
     switch (fieldName) {
       case UploadFieldName.ASSET_DATA: {
@@ -426,6 +426,9 @@ export class AssetMediaService extends BaseService {
     }
     await this.storageRepository.utimes(file.originalPath, new Date(), new Date(dto.fileModifiedAt));
     await this.assetRepository.upsertExif({ assetId: asset.id, fileSizeInByte: file.size });
+
+    await this.eventRepository.emit('AssetCreate', { asset });
+
     await this.jobRepository.queue({ name: JobName.AssetExtractMetadata, data: { id: asset.id, source: 'upload' } });
 
     return asset;

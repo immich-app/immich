@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:background_downloader/background_downloader.dart';
@@ -12,9 +13,13 @@ import 'package:flutter_displaymode/flutter_displaymode.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/constants/locales.dart';
+import 'package:immich_mobile/domain/services/background_worker.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/generated/codegen_loader.g.dart';
+import 'package:immich_mobile/generated/intl_keys.g.dart';
+import 'package:immich_mobile/platform/background_worker_lock_api.g.dart';
 import 'package:immich_mobile/providers/app_life_cycle.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/share_intent_upload.provider.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
@@ -32,22 +37,23 @@ import 'package:immich_mobile/theme/dynamic_theme.dart';
 import 'package:immich_mobile/theme/theme_data.dart';
 import 'package:immich_mobile/utils/bootstrap.dart';
 import 'package:immich_mobile/utils/cache/widgets_binding.dart';
+import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:immich_mobile/utils/http_ssl_options.dart';
 import 'package:immich_mobile/utils/licenses.dart';
 import 'package:immich_mobile/utils/migration.dart';
+import 'package:immich_mobile/wm_executor.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:logging/logging.dart';
 import 'package:timezone/data/latest.dart';
-import 'package:worker_manager/worker_manager.dart';
-import 'package:immich_mobile/utils/debug_print.dart';
 
 void main() async {
   ImmichWidgetsBinding();
+  unawaited(BackgroundWorkerLockService(BackgroundWorkerLockApi()).lock());
   final (isar, drift, logDb) = await Bootstrap.initDB();
   await Bootstrap.initDomain(isar, drift, logDb);
   await initApp();
   // Warm-up isolate pool for worker manager
-  await workerManager.init(dynamicSpawning: true);
+  await workerManagerPatch.init(dynamicSpawning: true, isolatesCount: max(Platform.numberOfProcessors - 1, 5));
   await migrateDatabaseIfNeeded(isar, drift);
   HttpSSLOptions.apply();
 
@@ -153,7 +159,7 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
     WidgetsBinding.instance.addObserver(this);
 
     // Draw the app from edge to edge
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    unawaited(SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge));
 
     // Sets the navigation bar color
     SystemUiOverlayStyle overlayStyle = const SystemUiOverlayStyle(systemNavigationBarColor: Colors.transparent);
@@ -207,6 +213,14 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
       if (Store.isBetaTimelineEnabled) {
         ref.read(backgroundServiceProvider).disableService();
         ref.read(backgroundWorkerFgServiceProvider).enable();
+        if (Platform.isAndroid) {
+          ref
+              .read(backgroundWorkerFgServiceProvider)
+              .saveNotificationMessage(
+                IntlKeys.uploading_media.t(),
+                IntlKeys.backup_background_service_default_notification.t(),
+              );
+        }
       } else {
         ref.read(backgroundWorkerFgServiceProvider).disable();
         ref.read(backgroundServiceProvider).resumeServiceIfEnabled();

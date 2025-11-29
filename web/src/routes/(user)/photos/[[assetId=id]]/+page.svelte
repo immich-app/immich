@@ -37,13 +37,12 @@
   import { AssetVisibility } from '@immich/sdk';
 
   import { mdiDotsVertical, mdiPlus } from '@mdi/js';
-  import { onDestroy } from 'svelte';
+
   import { t } from 'svelte-i18n';
 
   let { isViewing: showAssetViewer } = assetViewingStore;
-  const timelineManager = new TimelineManager();
-  void timelineManager.updateOptions({ visibility: AssetVisibility.Timeline, withStacked: true, withPartners: true });
-  onDestroy(() => timelineManager.destroy());
+  let timelineManager = $state<TimelineManager>() as TimelineManager;
+  const options = { visibility: AssetVisibility.Timeline, withStacked: true, withPartners: true };
 
   const assetInteraction = new AssetInteraction();
 
@@ -70,12 +69,12 @@
 
   const handleLink: OnLink = ({ still, motion }) => {
     timelineManager.removeAssets([motion.id]);
-    timelineManager.updateAssets([still]);
+    timelineManager.upsertAssets([still]);
   };
 
   const handleUnlink: OnUnlink = ({ still, motion }) => {
-    timelineManager.addAssets([motion]);
-    timelineManager.updateAssets([still]);
+    timelineManager.upsertAssets([motion]);
+    timelineManager.upsertAssets([still]);
   };
 
   const handleSetVisibility = (assetIds: string[]) => {
@@ -91,7 +90,8 @@
 <UserPageLayout hideNavbar={assetInteraction.selectionActive} showUploadButton scrollbar={false}>
   <Timeline
     enableRouting={true}
-    {timelineManager}
+    bind:timelineManager
+    {options}
     {assetInteraction}
     removeAction={AssetAction.ARCHIVE}
     onEscape={handleEscape}
@@ -101,7 +101,7 @@
       <MemoryLane />
     {/if}
     {#snippet empty()}
-      <EmptyPlaceholder text={$t('no_assets_message')} onClick={() => openFileUploadDialog()} />
+      <EmptyPlaceholder text={$t('no_assets_message')} onClick={() => openFileUploadDialog()} class="mt-10 mx-auto" />
     {/snippet}
   </Timeline>
 </UserPageLayout>
@@ -146,14 +146,21 @@
       <ChangeDate menuItem />
       <ChangeDescription menuItem />
       <ChangeLocation menuItem />
-      <ArchiveAction menuItem onArchive={(assetIds) => timelineManager.removeAssets(assetIds)} />
+      <ArchiveAction
+        menuItem
+        onArchive={(ids, visibility) =>
+          timelineManager.updateAssetOperation(ids, (asset) => {
+            asset.visibility = visibility;
+            return { remove: false };
+          })}
+      />
       {#if $preferences.tags.enabled}
         <TagAction menuItem />
       {/if}
       <DeleteAssets
         menuItem
         onAssetDelete={(assetIds) => timelineManager.removeAssets(assetIds)}
-        onUndoDelete={(assets) => timelineManager.addAssets(assets)}
+        onUndoDelete={(assets) => timelineManager.upsertAssets(assets)}
       />
       <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />
       <hr />

@@ -8,7 +8,7 @@ During Exif Extraction, assets with latitudes and longitudes are reverse geocode
 
 ## Usage
 
-Data from a reverse geocode is displayed in the image details, and used in [Smart Search](/docs/features/searching.md).
+Data from a reverse geocode is displayed in the image details, and used in [Smart Search](/features/searching.md).
 
 <img src={require('./img/reverse-geocoding-mobile3.webp').default} width='33%' title='Reverse Geocoding' />
 <img src={require('./img/reverse-geocoding-mobile1.webp').default} width='33%' title='Reverse Geocoding' />

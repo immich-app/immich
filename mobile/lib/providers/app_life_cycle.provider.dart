@@ -15,6 +15,7 @@ import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/providers/backup/ios_background_settings.provider.dart';
 import 'package:immich_mobile/providers/backup/manual_upload.provider.dart';
 import 'package:immich_mobile/providers/gallery_permission.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/memory.provider.dart';
 import 'package:immich_mobile/providers/notification_permission.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
@@ -138,6 +139,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
 
   Future<void> _handleBetaTimelineResume() async {
     _ref.read(backupProvider.notifier).cancelBackup();
+    unawaited(_ref.read(backgroundWorkerLockServiceProvider).lock());
 
     // Give isolates time to complete any ongoing database transactions
     await Future.delayed(const Duration(milliseconds: 500));
@@ -146,17 +148,21 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
     final isAlbumLinkedSyncEnable = _ref.read(appSettingsServiceProvider).getSetting(AppSettingsEnum.syncAlbums);
 
     try {
+      bool syncSuccess = false;
       await Future.wait([
         _safeRun(backgroundManager.syncLocal(), "syncLocal"),
-        _safeRun(backgroundManager.syncRemote(), "syncRemote"),
+        _safeRun(backgroundManager.syncRemote().then((success) => syncSuccess = success), "syncRemote"),
       ]);
-
-      await Future.wait([
-        _safeRun(backgroundManager.hashAssets(), "hashAssets").then((_) {
-          _resumeBackup();
-        }),
-        _resumeBackup(),
-      ]);
+      if (syncSuccess) {
+        await Future.wait([
+          _safeRun(backgroundManager.hashAssets(), "hashAssets").then((_) {
+            _resumeBackup();
+          }),
+          _resumeBackup(),
+        ]);
+      } else {
+        await _safeRun(backgroundManager.hashAssets(), "hashAssets");
+      }
 
       if (isAlbumLinkedSyncEnable) {
         await _safeRun(backgroundManager.syncLinkedAlbum(), "syncLinkedAlbum");
@@ -209,6 +215,9 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
     _pauseOperation = Completer<void>();
 
     try {
+      if (Store.isBetaTimelineEnabled) {
+        unawaited(_ref.read(backgroundWorkerLockServiceProvider).unlock());
+      }
       await _performPause();
     } catch (e, stackTrace) {
       _log.severe("Error during app pause", e, stackTrace);
@@ -233,16 +242,20 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
     }
 
     try {
-      LogService.I.flush();
+      await LogService.I.flush();
     } catch (_) {}
   }
 
   Future<void> handleAppDetached() async {
     state = AppLifeCycleEnum.detached;
 
+    if (Store.isBetaTimelineEnabled) {
+      unawaited(_ref.read(backgroundWorkerLockServiceProvider).unlock());
+    }
+
     // Flush logs before closing database
     try {
-      LogService.I.flush();
+      await LogService.I.flush();
     } catch (_) {}
 
     // Close Isar database safely

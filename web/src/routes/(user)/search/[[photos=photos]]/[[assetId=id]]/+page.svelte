@@ -21,12 +21,11 @@
   import TagAction from '$lib/components/timeline/actions/TagAction.svelte';
   import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import { AppRoute, QueryParameter } from '$lib/constants';
-  import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
+  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import type { TimelineAsset, Viewport } from '$lib/managers/timeline-manager/types';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { lang, locale } from '$lib/stores/preferences.store';
-  import { featureFlags } from '$lib/stores/server-config.store';
   import { preferences } from '$lib/stores/user.store';
   import { handlePromiseError } from '$lib/utils';
   import { cancelMultiselect } from '$lib/utils/asset-utils';
@@ -45,7 +44,7 @@
   } from '@immich/sdk';
   import { Icon, IconButton, LoadingSpinner } from '@immich/ui';
   import { mdiArrowLeft, mdiDotsVertical, mdiImageOffOutline, mdiPlus, mdiSelectAll } from '@mdi/js';
-  import { tick } from 'svelte';
+  import { tick, untrack } from 'svelte';
   import { t } from 'svelte-i18n';
 
   let { isViewing: showAssetViewer } = assetViewingStore;
@@ -68,18 +67,15 @@
 
   type SearchTerms = MetadataSearchDto & Pick<SmartSearchDto, 'query' | 'queryAssetId'>;
   let searchQuery = $derived(page.url.searchParams.get(QueryParameter.QUERY));
-  let smartSearchEnabled = $derived($featureFlags.loaded && $featureFlags.smartSearch);
+  let smartSearchEnabled = $derived(featureFlagsManager.value.smartSearch);
   let terms = $derived(searchQuery ? JSON.parse(searchQuery) : {});
 
   $effect(() => {
+    // we want this to *only* be reactive on `terms`
     // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     terms;
-    setTimeout(() => {
-      handlePromiseError(onSearchQueryUpdate());
-    });
+    untrack(() => handlePromiseError(onSearchQueryUpdate()));
   });
-
-  let timelineManager = new TimelineManager();
 
   const onEscape = () => {
     if ($showAssetViewer) {
@@ -129,7 +125,6 @@
   };
 
   const handleSetVisibility = (assetIds: string[]) => {
-    timelineManager.removeAssets(assetIds);
     assetInteraction.clearMultiselect();
     onAssetDelete(assetIds);
   };
@@ -209,6 +204,7 @@
       originalFileName: $t('file_name'),
       description: $t('description'),
       queryAssetId: $t('query_asset_id'),
+      ocr: $t('ocr'),
     };
     return keyMap[key] || key;
   }

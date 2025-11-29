@@ -2,16 +2,12 @@
   import { shortcut } from '$lib/actions/shortcut';
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
   import PeopleInfiniteScroll from '$lib/components/faces-page/people-infinite-scroll.svelte';
-  import {
-    notificationController,
-    NotificationType,
-  } from '$lib/components/shared-components/notification/notification';
   import { ToggleVisibility } from '$lib/constants';
   import { locale } from '$lib/stores/preferences.store';
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { updatePeople, type PersonResponseDto } from '@immich/sdk';
-  import { Button, IconButton } from '@immich/ui';
+  import { Button, IconButton, toastManager } from '@immich/ui';
   import { mdiClose, mdiEye, mdiEyeOff, mdiEyeSettings, mdiRestart } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
@@ -74,15 +70,9 @@
         const successCount = results.filter(({ success }) => success).length;
         const failCount = results.length - successCount;
         if (failCount > 0) {
-          notificationController.show({
-            type: NotificationType.Error,
-            message: $t('errors.unable_to_change_visibility', { values: { count: failCount } }),
-          });
+          toastManager.warning($t('errors.unable_to_change_visibility', { values: { count: failCount } }));
         }
-        notificationController.show({
-          type: NotificationType.Info,
-          message: $t('visibility_changed', { values: { count: successCount } }),
-        });
+        toastManager.success($t('visibility_changed', { values: { count: successCount } }));
       }
 
       for (const person of people) {
@@ -167,6 +157,7 @@
           altText={person.name}
           widthStyle="100%"
           hiddenIconClass="text-white group-hover:text-black transition-colors"
+          preload={false}
         />
         {#if person.name}
           <span class="absolute bottom-2 start-0 w-full select-text px-1 text-center font-medium text-white">

@@ -1,17 +1,29 @@
 <script lang="ts">
   import { AppRoute } from '$lib/constants';
+  import { handleUpdateUserAdmin } from '$lib/services/user-admin.service';
   import { user as authUser } from '$lib/stores/user.store';
   import { userInteraction } from '$lib/stores/user.svelte';
   import { ByteUnit, convertFromBytes, convertToBytes } from '$lib/utils/byte-units';
-  import { handleError } from '$lib/utils/handle-error';
-  import { updateUserAdmin, type UserAdminResponseDto } from '@immich/sdk';
-  import { Button, Field, HStack, Modal, ModalBody, ModalFooter, Switch } from '@immich/ui';
+  import { type UserAdminResponseDto } from '@immich/sdk';
+  import {
+    Button,
+    Field,
+    HStack,
+    Input,
+    Link,
+    Modal,
+    ModalBody,
+    ModalFooter,
+    NumberInput,
+    Switch,
+    Text,
+  } from '@immich/ui';
   import { mdiAccountEditOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
   interface Props {
     user: UserAdminResponseDto;
-    onClose: (data?: UserAdminResponseDto) => void;
+    onClose: () => void;
   }
 
   let { user, onClose }: Props = $props();
@@ -21,95 +33,70 @@
   let email = $derived(user.email);
   let storageLabel = $derived(user.storageLabel || '');
 
-  let quotaSize = $state(user.quotaSizeInBytes === null ? null : convertFromBytes(user.quotaSizeInBytes, ByteUnit.GiB));
-
   const previousQuota = user.quotaSizeInBytes;
 
-  let quotaSizeWarning = $derived(
-    previousQuota !== convertToBytes(Number(quotaSize), ByteUnit.GiB) &&
-      !!quotaSize &&
-      userInteraction.serverInfo &&
-      convertToBytes(Number(quotaSize), ByteUnit.GiB) > userInteraction.serverInfo.diskSizeRaw,
+  let quotaSize = $state(
+    typeof user.quotaSizeInBytes === 'number' ? convertFromBytes(user.quotaSizeInBytes, ByteUnit.GiB) : undefined,
   );
 
-  const handleEditUser = async () => {
-    try {
-      const newUser = await updateUserAdmin({
-        id: user.id,
-        userAdminUpdateDto: {
-          email,
-          name,
-          storageLabel,
-          quotaSizeInBytes: quotaSize === null ? null : convertToBytes(Number(quotaSize), ByteUnit.GiB),
-          isAdmin,
-        },
-      });
+  const quotaSizeBytes = $derived(typeof quotaSize === 'number' ? convertToBytes(quotaSize, ByteUnit.GiB) : null);
 
-      onClose(newUser);
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_update_user'));
-    }
-  };
+  let quotaSizeWarning = $derived(
+    previousQuota !== quotaSizeBytes &&
+      !!quotaSizeBytes &&
+      userInteraction.serverInfo &&
+      quotaSizeBytes > userInteraction.serverInfo.diskSizeRaw,
+  );
 
   const onSubmit = async (event: Event) => {
     event.preventDefault();
-    await handleEditUser();
+
+    const success = await handleUpdateUserAdmin(user, {
+      email,
+      name,
+      storageLabel,
+      quotaSizeInBytes: typeof quotaSize === 'number' ? convertToBytes(quotaSize, ByteUnit.GiB) : null,
+      isAdmin,
+    });
+
+    if (success) {
+      onClose();
+    }
   };
 </script>
 
 <Modal title={$t('edit_user')} size="small" icon={mdiAccountEditOutline} {onClose}>
   <ModalBody>
     <form onsubmit={onSubmit} autocomplete="off" id="edit-user-form">
-      <div class="mb-4 flex flex-col gap-2">
-        <label class="immich-form-label" for="email">{$t('email')}</label>
-        <input class="immich-form-input" id="email" name="email" type="email" bind:value={email} />
-      </div>
+      <Field label={$t('email')} required>
+        <Input type="email" bind:value={email} />
+      </Field>
 
-      <div class="my-4 flex flex-col gap-2">
-        <label class="immich-form-label" for="name">{$t('name')}</label>
-        <input class="immich-form-input" id="name" name="name" type="text" required bind:value={name} />
-      </div>
+      <Field label={$t('name')} required class="mt-4">
+        <Input bind:value={name} />
+      </Field>
 
-      <div class="my-4 flex flex-col gap-2">
-        <label class="flex items-center gap-2 immich-form-label" for="quotaSize">
-          {$t('admin.quota_size_gib')}
-          {#if quotaSizeWarning}
-            <p class="text-red-400 text-sm">{$t('errors.quota_higher_than_disk_size')}</p>
-          {/if}</label
-        >
-        <input
-          class="immich-form-input"
-          id="quotaSize"
-          name="quotaSize"
-          placeholder={$t('unlimited')}
-          type="number"
-          step="1"
-          min="0"
-          bind:value={quotaSize}
-        />
-      </div>
+      <Field label={$t('admin.quota_size_gib')} class="mt-4">
+        <NumberInput bind:value={quotaSize} min="0" step="1" placeholder={$t('unlimited')} />
+        {#if quotaSizeWarning}
+          <Text size="small" color="danger">{$t('errors.quota_higher_than_disk_size')}</Text>
+        {/if}
+      </Field>
 
-      <div class="my-4 flex flex-col gap-2">
-        <label class="immich-form-label" for="storage-label">{$t('storage_label')}</label>
-        <input
-          class="immich-form-input"
-          id="storage-label"
-          name="storage-label"
-          type="text"
-          bind:value={storageLabel}
-        />
+      <Field label={$t('storage_label')} class="mt-4">
+        <Input bind:value={storageLabel} />
+      </Field>
 
-        <p>
-          {$t('admin.note_apply_storage_label_previous_assets')}
-          <a href={AppRoute.ADMIN_JOBS} class="text-primary">
-            {$t('admin.storage_template_migration_job')}
-          </a>
-        </p>
-      </div>
+      <Text size="small" class="mt-2" color="muted">
+        {$t('admin.note_apply_storage_label_previous_assets')}
+        <Link href={AppRoute.ADMIN_JOBS}>
+          {$t('admin.storage_template_migration_job')}
+        </Link>
+      </Text>
 
       {#if user.id !== $authUser.id}
         <Field label={$t('admin.admin_user')}>
-          <Switch bind:checked={isAdmin} />
+          <Switch bind:checked={isAdmin} class="mt-4" />
         </Field>
       {/if}
     </form>

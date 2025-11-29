@@ -65,14 +65,28 @@ class AssetService {
     if (asset.hasRemote) {
       final exif = await getExif(asset);
       isFlipped = ExifDtoConverter.isOrientationFlipped(exif?.orientation);
-      width = exif?.width ?? asset.width?.toDouble();
-      height = exif?.height ?? asset.height?.toDouble();
+      width = asset.width?.toDouble();
+      height = asset.height?.toDouble();
     } else if (asset is LocalAsset) {
       isFlipped = CurrentPlatform.isAndroid && (asset.orientation == 90 || asset.orientation == 270);
       width = asset.width?.toDouble();
       height = asset.height?.toDouble();
     } else {
       isFlipped = false;
+    }
+
+    if (width == null || height == null) {
+      if (asset.hasRemote) {
+        final id = asset is LocalAsset ? asset.remoteId! : (asset as RemoteAsset).id;
+        final remoteAsset = await _remoteAssetRepository.get(id);
+        width = remoteAsset?.width?.toDouble();
+        height = remoteAsset?.height?.toDouble();
+      } else {
+        final id = asset is LocalAsset ? asset.id : (asset as RemoteAsset).localId!;
+        final localAsset = await _localAssetRepository.get(id);
+        width = localAsset?.width?.toDouble();
+        height = localAsset?.height?.toDouble();
+      }
     }
 
     final orientedWidth = isFlipped ? height : width;
@@ -84,8 +98,8 @@ class AssetService {
     return 1.0;
   }
 
-  Future<List<(String, String)>> getPlaces() {
-    return _remoteAssetRepository.getPlaces();
+  Future<List<(String, String)>> getPlaces(String userId) {
+    return _remoteAssetRepository.getPlaces(userId);
   }
 
   Future<(int local, int remote)> getAssetCounts() async {

@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsInt, IsNotEmpty, IsString, Max, Min } from 'class-validator';
 import { Place } from 'src/database';
-import { PropertyLifecycle } from 'src/decorators';
+import { HistoryBuilder, Property } from 'src/decorators';
 import { AlbumResponseDto } from 'src/dtos/album.dto';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import { AssetOrder, AssetType, AssetVisibility } from 'src/enum';
@@ -101,6 +101,11 @@ class BaseSearchDto {
   @Max(5)
   @Min(-1)
   rating?: number;
+
+  @IsString()
+  @IsNotEmpty()
+  @Optional()
+  ocr?: string;
 }
 
 class BaseSearchWithResultsDto extends BaseSearchDto {
@@ -249,6 +254,7 @@ export enum SearchSuggestionType {
   CITY = 'city',
   CAMERA_MAKE = 'camera-make',
   CAMERA_MODEL = 'camera-model',
+  CAMERA_LENS_MODEL = 'camera-lens-model',
 }
 
 export class SearchSuggestionRequestDto {
@@ -271,8 +277,12 @@ export class SearchSuggestionRequestDto {
   @Optional()
   model?: string;
 
+  @IsString()
+  @Optional()
+  lensModel?: string;
+
   @ValidateBoolean({ optional: true })
-  @PropertyLifecycle({ addedAt: 'v111.0.0' })
+  @Property({ history: new HistoryBuilder().added('v1.111.0').stable('v2') })
   includeNull?: boolean;
 }
 

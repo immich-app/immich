@@ -3,6 +3,7 @@ import { isMainThread } from 'node:worker_threads';
 import { MicroservicesModule } from 'src/app.module';
 import { serverVersion } from 'src/constants';
 import { WebSocketAdapter } from 'src/middleware/websocket.adapter';
+import { AppRepository } from 'src/repositories/app.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { bootstrapTelemetry } from 'src/repositories/telemetry.repository';
@@ -17,6 +18,7 @@ export async function bootstrap() {
   const app = await NestFactory.create(MicroservicesModule, { bufferLogs: true });
   const logger = await app.resolve(LoggingRepository);
   const configRepository = app.get(ConfigRepository);
+  app.get(AppRepository).setCloseFn(() => app.close());
 
   const { environment, host } = configRepository.getEnv();
 

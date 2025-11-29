@@ -141,6 +141,7 @@ describe(ServerService.name, () => {
         reverseGeocoding: true,
         oauth: false,
         oauthAutoLaunch: false,
+        ocr: true,
         passwordLogin: true,
         search: true,
         sidecar: true,
@@ -167,6 +168,7 @@ describe(ServerService.name, () => {
         publicUsers: true,
         mapDarkStyleUrl: 'https://tiles.immich.cloud/v1/style/dark.json',
         mapLightStyleUrl: 'https://tiles.immich.cloud/v1/style/light.json',
+        maintenanceMode: false,
       });
       expect(mocks.systemMetadata.get).toHaveBeenCalled();
     });

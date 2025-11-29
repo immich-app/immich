@@ -8,16 +8,19 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/person.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
+import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/models/search/search_filter.model.dart';
 import 'package:immich_mobile/presentation/pages/search/paginated_search.provider.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/general_bottom_sheet.widget.dart';
+import 'package:immich_mobile/presentation/widgets/search/quick_date_picker.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/search/search_input_focus.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/widgets/common/feature_check.dart';
 import 'package:immich_mobile/widgets/common/search_field.dart';
 import 'package:immich_mobile/widgets/search/search_filter/camera_picker.dart';
 import 'package:immich_mobile/widgets/search/search_filter/display_option_picker.dart';
@@ -30,15 +33,14 @@ import 'package:immich_mobile/widgets/search/search_filter/search_filter_utils.d
 
 @RoutePage()
 class DriftSearchPage extends HookConsumerWidget {
-  const DriftSearchPage({super.key, this.preFilter});
-
-  final SearchFilter? preFilter;
+  const DriftSearchPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final textSearchType = useState<TextSearchType>(TextSearchType.context);
     final searchHintText = useState<String>('sunrise_on_the_beach'.t(context: context));
     final textSearchController = useTextEditingController();
+    final preFilter = ref.watch(searchPreFilterProvider);
     final filter = useState<SearchFilter>(
       SearchFilter(
         people: preFilter?.people ?? {},
@@ -48,10 +50,12 @@ class DriftSearchPage extends HookConsumerWidget {
         display: preFilter?.display ?? SearchDisplayFilters(isNotInAlbum: false, isArchive: false, isFavorite: false),
         mediaType: preFilter?.mediaType ?? AssetType.other,
         language: "${context.locale.languageCode}-${context.locale.countryCode}",
+        assetId: preFilter?.assetId,
       ),
     );
 
     final previousFilter = useState<SearchFilter?>(null);
+    final dateInputFilter = useState<DateFilterInputModel?>(null);
 
     final peopleCurrentFilterWidget = useState<Widget?>(null);
     final dateRangeCurrentFilterWidget = useState<Widget?>(null);
@@ -71,26 +75,28 @@ class DriftSearchPage extends HookConsumerWidget {
       );
     }
 
-    search() async {
-      if (filter.value.isEmpty) {
+    searchFilter(SearchFilter filter) async {
+      if (filter.isEmpty) {
         return;
       }
 
-      if (preFilter == null && filter.value == previousFilter.value) {
+      if (preFilter == null && filter == previousFilter.value) {
         return;
       }
 
       isSearching.value = true;
       ref.watch(paginatedSearchProvider.notifier).clear();
-      final hasResult = await ref.watch(paginatedSearchProvider.notifier).search(filter.value);
+      final hasResult = await ref.watch(paginatedSearchProvider.notifier).search(filter);
 
       if (!hasResult) {
         context.showSnackBar(searchInfoSnackBar('search_no_result'.t(context: context)));
       }
 
-      previousFilter.value = filter.value;
+      previousFilter.value = filter;
       isSearching.value = false;
     }
+
+    search() => searchFilter(filter.value);
 
     loadMoreSearchResult() async {
       isSearching.value = true;
@@ -106,10 +112,10 @@ class DriftSearchPage extends HookConsumerWidget {
     searchPreFilter() {
       if (preFilter != null) {
         Future.delayed(Duration.zero, () {
-          search();
+          searchFilter(preFilter);
 
-          if (preFilter!.location.city != null) {
-            locationCurrentFilterWidget.value = Text(preFilter!.location.city!, style: context.textTheme.labelLarge);
+          if (preFilter.location.city != null) {
+            locationCurrentFilterWidget.value = Text(preFilter.location.city!, style: context.textTheme.labelLarge);
           }
         });
       }
@@ -120,7 +126,7 @@ class DriftSearchPage extends HookConsumerWidget {
       searchPreFilter();
 
       return null;
-    }, []);
+    }, [preFilter]);
 
     showPeoplePicker() {
       handleOnSelect(Set<PersonDto> value) {
@@ -241,19 +247,54 @@ class DriftSearchPage extends HookConsumerWidget {
       );
     }
 
+    datePicked(DateFilterInputModel? selectedDate) {
+      dateInputFilter.value = selectedDate;
+      if (selectedDate == null) {
+        filter.value = filter.value.copyWith(date: SearchDateFilter());
+
+        dateRangeCurrentFilterWidget.value = null;
+        unawaited(search());
+        return;
+      }
+
+      final date = selectedDate.asDateTimeRange();
+
+      filter.value = filter.value.copyWith(
+        date: SearchDateFilter(
+          takenAfter: date.start,
+          takenBefore: date.end.add(const Duration(hours: 23, minutes: 59, seconds: 59)),
+        ),
+      );
+
+      dateRangeCurrentFilterWidget.value = Text(
+        selectedDate.asHumanReadable(context),
+        style: context.textTheme.labelLarge,
+      );
+
+      unawaited(search());
+    }
+
     showDatePicker() async {
       final firstDate = DateTime(1900);
       final lastDate = DateTime.now();
+
+      var dateRange = DateTimeRange(
+        start: filter.value.date.takenAfter ?? lastDate,
+        end: filter.value.date.takenBefore ?? lastDate,
+      );
+
+      // datePicked() may increase the date, this will make the date picker fail an assertion
+      // Fixup the end date to be at most now.
+      if (dateRange.end.isAfter(lastDate)) {
+        dateRange = DateTimeRange(start: dateRange.start, end: lastDate);
+      }
 
       final date = await showDateRangePicker(
         context: context,
         firstDate: firstDate,
         lastDate: lastDate,
         currentDate: DateTime.now(),
-        initialDateRange: DateTimeRange(
-          start: filter.value.date.takenAfter ?? lastDate,
-          end: filter.value.date.takenBefore ?? lastDate,
-        ),
+        initialDateRange: dateRange,
         helpText: 'search_filter_date_title'.t(context: context),
         cancelText: 'cancel'.t(context: context),
         confirmText: 'select'.t(context: context),
@@ -267,40 +308,32 @@ class DriftSearchPage extends HookConsumerWidget {
       );
 
       if (date == null) {
-        filter.value = filter.value.copyWith(date: SearchDateFilter());
-
-        dateRangeCurrentFilterWidget.value = null;
-        search();
-        return;
-      }
-
-      filter.value = filter.value.copyWith(
-        date: SearchDateFilter(
-          takenAfter: date.start,
-          takenBefore: date.end.add(const Duration(hours: 23, minutes: 59, seconds: 59)),
-        ),
-      );
-
-      // If date range is less than 24 hours, set the end date to the end of the day
-      if (date.end.difference(date.start).inHours < 24) {
-        dateRangeCurrentFilterWidget.value = Text(
-          DateFormat.yMMMd().format(date.start.toLocal()),
-          style: context.textTheme.labelLarge,
-        );
+        datePicked(null);
       } else {
-        dateRangeCurrentFilterWidget.value = Text(
-          'search_filter_date_interval'.t(
-            context: context,
-            args: {
-              "start": DateFormat.yMMMd().format(date.start.toLocal()),
-              "end": DateFormat.yMMMd().format(date.end.toLocal()),
+        datePicked(CustomDateFilter.fromRange(date));
+      }
+    }
+
+    showQuickDatePicker() {
+      showFilterBottomSheet(
+        context: context,
+        child: FilterBottomSheetScaffold(
+          title: "pick_date_range".tr(),
+          expanded: true,
+          onClear: () => datePicked(null),
+          child: QuickDatePicker(
+            currentInput: dateInputFilter.value,
+            onRequestPicker: () {
+              context.pop();
+              showDatePicker();
+            },
+            onSelect: (date) {
+              context.pop();
+              datePicked(date);
             },
           ),
-          style: context.textTheme.labelLarge,
-        );
-      }
-
-      search();
+        ),
+      );
     }
 
     // MEDIA PICKER
@@ -394,15 +427,18 @@ class DriftSearchPage extends HookConsumerWidget {
     handleTextSubmitted(String value) {
       switch (textSearchType.value) {
         case TextSearchType.context:
-          filter.value = filter.value.copyWith(filename: '', context: value, description: '');
+          filter.value = filter.value.copyWith(filename: '', context: value, description: '', ocr: '');
 
           break;
         case TextSearchType.filename:
-          filter.value = filter.value.copyWith(filename: value, context: '', description: '');
+          filter.value = filter.value.copyWith(filename: value, context: '', description: '', ocr: '');
 
           break;
         case TextSearchType.description:
-          filter.value = filter.value.copyWith(filename: '', context: '', description: value);
+          filter.value = filter.value.copyWith(filename: '', context: '', description: value, ocr: '');
+          break;
+        case TextSearchType.ocr:
+          filter.value = filter.value.copyWith(filename: '', context: '', description: '', ocr: value);
           break;
       }
 
@@ -413,6 +449,7 @@ class DriftSearchPage extends HookConsumerWidget {
       TextSearchType.context => Icons.image_search_rounded,
       TextSearchType.filename => Icons.abc_rounded,
       TextSearchType.description => Icons.text_snippet_outlined,
+      TextSearchType.ocr => Icons.document_scanner_outlined,
     };
 
     return Scaffold(
@@ -498,6 +535,27 @@ class DriftSearchPage extends HookConsumerWidget {
                     searchHintText.value = 'search_by_description_example'.t(context: context);
                   },
                 ),
+                FeatureCheck(
+                  feature: (features) => features.ocr,
+                  child: MenuItemButton(
+                    child: ListTile(
+                      leading: const Icon(Icons.document_scanner_outlined),
+                      title: Text(
+                        'search_by_ocr'.t(context: context),
+                        style: context.textTheme.bodyLarge?.copyWith(
+                          fontWeight: FontWeight.w500,
+                          color: textSearchType.value == TextSearchType.ocr ? context.colorScheme.primary : null,
+                        ),
+                      ),
+                      selectedColor: context.colorScheme.primary,
+                      selected: textSearchType.value == TextSearchType.ocr,
+                    ),
+                    onPressed: () {
+                      textSearchType.value = TextSearchType.ocr;
+                      searchHintText.value = 'search_by_ocr_example'.t(context: context);
+                    },
+                  ),
+                ),
               ],
             ),
           ),
@@ -560,7 +618,7 @@ class DriftSearchPage extends HookConsumerWidget {
                     ),
                     SearchFilterChip(
                       icon: Icons.date_range_outlined,
-                      onTap: showDatePicker,
+                      onTap: showQuickDatePicker,
                       label: 'search_filter_date'.t(context: context),
                       currentFilter: dateRangeCurrentFilterWidget.value,
                     ),
@@ -599,9 +657,9 @@ class _SearchResultGrid extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final searchResult = ref.watch(paginatedSearchProvider);
+    final assets = ref.watch(paginatedSearchProvider.select((s) => s.assets));
 
-    if (searchResult.totalAssets == 0) {
+    if (assets.isEmpty) {
       return const _SearchEmptyContent();
     }
 
@@ -615,6 +673,7 @@ class _SearchResultGrid extends ConsumerWidget {
 
         if (metrics.pixels >= metrics.maxScrollExtent && isVerticalScroll && !isBottomSheetNotification) {
           onScrollEnd();
+          ref.read(paginatedSearchProvider.notifier).setScrollOffset(metrics.maxScrollExtent);
         }
 
         return true;
@@ -623,17 +682,18 @@ class _SearchResultGrid extends ConsumerWidget {
         child: ProviderScope(
           overrides: [
             timelineServiceProvider.overrideWith((ref) {
-              final timelineService = ref.watch(timelineFactoryProvider).fromAssets(searchResult.assets);
+              final timelineService = ref.watch(timelineFactoryProvider).fromAssets(assets, TimelineOrigin.search);
               ref.onDispose(timelineService.dispose);
               return timelineService;
             }),
           ],
           child: Timeline(
-            key: ValueKey(searchResult.totalAssets),
+            key: ValueKey(assets.length),
             groupBy: GroupAssetsBy.none,
             appBar: null,
             bottomSheet: const GeneralBottomSheet(minChildSize: 0.20),
             snapToMonth: false,
+            initialScrollOffset: ref.read(paginatedSearchProvider.select((s) => s.scrollOffset)),
           ),
         ),
       ),
