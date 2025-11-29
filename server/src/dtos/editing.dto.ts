@@ -3,7 +3,7 @@ import { ClassConstructor, plainToInstance, Transform, Type } from 'class-transf
 import { IsEnum, IsInt, Min, ValidateNested } from 'class-validator';
 import { ValidateUUID } from 'src/validation';
 
-export enum EditActionType {
+export enum EditAction {
   Crop = 'crop',
   Rotate = 'rotate',
   Mirror = 'mirror',
@@ -56,14 +56,9 @@ export class MirrorParameters {
 }
 
 class EditActionBase {
-  @IsEnum(EditActionType)
-  @ApiProperty({ enum: EditActionType, enumName: 'EditActionType' })
-  action!: EditActionType;
-
-  @IsInt()
-  @Min(0)
-  @ApiProperty({ description: 'Order of this edit in the sequence' })
-  index!: number;
+  @IsEnum(EditAction)
+  @ApiProperty({ enum: EditAction, enumName: 'EditAction' })
+  action!: EditAction;
 }
 
 export class EditActionCrop extends EditActionBase {
@@ -89,35 +84,32 @@ export class EditActionMirror extends EditActionBase {
 
 export type EditActionItem =
   | {
-      action: EditActionType.Crop;
+      action: EditAction.Crop;
       parameters: CropParameters;
-      index: number;
     }
   | {
-      action: EditActionType.Rotate;
+      action: EditAction.Rotate;
       parameters: RotateParameters;
-      index: number;
     }
   | {
-      action: EditActionType.Mirror;
+      action: EditAction.Mirror;
       parameters: MirrorParameters;
-      index: number;
     };
 
 export type EditActionParameter = {
-  [EditActionType.Crop]: CropParameters;
-  [EditActionType.Rotate]: RotateParameters;
-  [EditActionType.Mirror]: MirrorParameters;
+  [EditAction.Crop]: CropParameters;
+  [EditAction.Rotate]: RotateParameters;
+  [EditAction.Mirror]: MirrorParameters;
 };
 
 type EditActions = EditActionCrop | EditActionRotate | EditActionMirror;
-const actionToClass: Record<EditActionType, ClassConstructor<EditActions>> = {
-  [EditActionType.Crop]: EditActionCrop,
-  [EditActionType.Rotate]: EditActionRotate,
-  [EditActionType.Mirror]: EditActionMirror,
+const actionToClass: Record<EditAction, ClassConstructor<EditActions>> = {
+  [EditAction.Crop]: EditActionCrop,
+  [EditAction.Rotate]: EditActionRotate,
+  [EditAction.Mirror]: EditActionMirror,
 } as const;
 
-const getActionClass = (item: { action: EditActionType }): ClassConstructor<EditActions> => actionToClass[item.action];
+const getActionClass = (item: { action: EditAction }): ClassConstructor<EditActions> => actionToClass[item.action];
 
 @ApiExtraModels(EditActionRotate, EditActionMirror, EditActionCrop)
 export class EditActionListDto {

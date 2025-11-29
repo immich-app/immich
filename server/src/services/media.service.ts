@@ -3,7 +3,7 @@ import { FACE_THUMBNAIL_SIZE, JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { StorageCore, ThumbnailPathEntity } from 'src/cores/storage.core';
 import { Exif } from 'src/database';
 import { OnEvent, OnJob } from 'src/decorators';
-import { CropParameters, EditActionItem, EditActionType } from 'src/dtos/editing.dto';
+import { CropParameters, EditAction, EditActionItem } from 'src/dtos/editing.dto';
 import { SystemConfigFFmpegDto } from 'src/dtos/system-config.dto';
 import {
   AssetFileType,
@@ -406,11 +406,7 @@ export class MediaService extends BaseService {
       await Promise.all(promises);
     }
 
-    // TODO: should we get the image pipeline with edits once and then reuse it for all three operations?
-    const dims = await this.mediaRepository.getEditedImageDimensions(
-      asset.originalPath,
-      useEdits ? (asset.edits ?? []) : [],
-    );
+    const dims = await this.mediaRepository.getImageDimensions(fullsizePath ?? asset.originalPath);
 
     return { previewPath, thumbnailPath, fullsizePath, thumbhash: outputs[0] as Buffer, fullsizeDimensions: dims };
   }
@@ -462,12 +458,11 @@ export class MediaService extends BaseService {
       size: FACE_THUMBNAIL_SIZE,
       edits: [
         {
-          action: EditActionType.Crop,
+          action: EditAction.Crop,
           parameters: this.getCrop(
             { old: { width: oldWidth, height: oldHeight }, new: { width: info.width, height: info.height } },
             { x1, y1, x2, y2 },
           ),
-          index: 0,
         },
       ],
     };

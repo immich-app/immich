@@ -566,9 +566,7 @@ export type CropParameters = {
     y: number;
 };
 export type EditActionCrop = {
-    action: EditActionType;
-    /** Order of this edit in the sequence */
-    index: number;
+    action: EditAction;
     parameters: CropParameters;
 };
 export type RotateParameters = {
@@ -576,9 +574,7 @@ export type RotateParameters = {
     angle: RotationAngle;
 };
 export type EditActionRotate = {
-    action: EditActionType;
-    /** Order of this edit in the sequence */
-    index: number;
+    action: EditAction;
     parameters: RotateParameters;
 };
 export type MirrorParameters = {
@@ -586,9 +582,7 @@ export type MirrorParameters = {
     axis: MirrorAxis;
 };
 export type EditActionMirror = {
-    action: EditActionType;
-    /** Order of this edit in the sequence */
-    index: number;
+    action: EditAction;
     parameters: MirrorParameters;
 };
 export type AssetEditsDto = {
@@ -5449,7 +5443,7 @@ export enum AssetJobName {
     RegenerateThumbnail = "regenerate-thumbnail",
     TranscodeVideo = "transcode-video"
 }
-export enum EditActionType {
+export enum EditAction {
     Crop = "crop",
     Rotate = "rotate",
     Mirror = "mirror"

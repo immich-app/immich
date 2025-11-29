@@ -315,9 +315,8 @@ export function withEdits(eb: ExpressionBuilder<DB, 'asset'>): AliasedEditAction
   return jsonArrayFrom(
     eb
       .selectFrom('asset_edit')
-      .select(['asset_edit.action', 'asset_edit.parameters', 'asset_edit.index'])
-      .whereRef('asset_edit.assetId', '=', 'asset.id')
-      .orderBy('asset_edit.index', 'asc'),
+      .select(['asset_edit.action', 'asset_edit.parameters'])
+      .whereRef('asset_edit.assetId', '=', 'asset.id'),
   ).as('edits') as AliasedEditActions;
 }
 

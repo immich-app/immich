@@ -8,14 +8,13 @@ import type { Component } from 'svelte';
 
 export type EditAction = AssetEditsDto['edits'][number];
 export type EditActions = EditAction[];
-export type EditActionNoIndex = Omit<AssetEditsDto['edits'][number], 'index'>;
 
 export interface EditToolManager {
   onActivate: (asset: AssetResponseDto, edits: EditActions) => Promise<void>;
   onDeactivate: () => void;
   resetAllChanges: () => Promise<void>;
   hasChanges: boolean;
-  edits: EditActionNoIndex[];
+  edits: EditAction[];
 }
 
 export enum EditToolType {
@@ -110,7 +109,7 @@ export class EditManager {
   async applyEdits(): Promise<boolean> {
     this.isApplyingEdits = true;
 
-    const indexedEdits = this.tools.flatMap((tool) => tool.manager.edits).map((edit, index) => ({ ...edit, index }));
+    const edits = this.tools.flatMap((tool) => tool.manager.edits);
 
     try {
       // Setup the websocket listener before sending the edit request
@@ -123,14 +122,13 @@ export class EditManager {
       await editAsset({
         id: this.currentAsset!.id,
         editActionListDto: {
-          edits: indexedEdits as EditActions,
+          edits,
         },
       });
 
       const t = Date.now();
       await editCompleted;
       console.log(`Edit completed in ${Date.now() - t}ms`);
-      await new Promise((r) => setTimeout(r, 500)); // small delay to ensure thumbnails are ready
       toastManager.success('Edits applied successfully');
       this.hasAppliedEdits = true;
 

@@ -91,8 +91,8 @@ String parameterToString(dynamic value) {
   if (value is Colorspace) {
     return ColorspaceTypeTransformer().encode(value).toString();
   }
-  if (value is EditActionType) {
-    return EditActionTypeTypeTransformer().encode(value).toString();
+  if (value is EditAction) {
+    return EditActionTypeTransformer().encode(value).toString();
   }
   if (value is ImageFormat) {
     return ImageFormatTypeTransformer().encode(value).toString();

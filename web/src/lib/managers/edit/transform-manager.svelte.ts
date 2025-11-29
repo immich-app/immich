@@ -1,12 +1,7 @@
-import {
-  editManager,
-  type EditActionNoIndex,
-  type EditActions,
-  type EditToolManager,
-} from '$lib/managers/edit/edit-manager.svelte';
+import { editManager, type EditActions, type EditToolManager } from '$lib/managers/edit/edit-manager.svelte';
 import { getAssetOriginalUrl } from '$lib/utils';
 import { handleError } from '$lib/utils/handle-error';
-import { EditActionType, type AssetResponseDto, type CropParameters, type RotateParameters } from '@immich/sdk';
+import { EditAction, type AssetResponseDto, type CropParameters, type RotateParameters } from '@immich/sdk';
 import { tick } from 'svelte';
 
 export type CropAspectRatio =
@@ -79,14 +74,14 @@ class TransformManager implements EditToolManager {
     );
   }
 
-  getEdits(): EditActionNoIndex[] {
-    const edits: EditActionNoIndex[] = [];
+  getEdits(): EditActions {
+    const edits: EditActions = [];
 
     if (this.checkEdits()) {
       const { x, y, width, height } = this.region;
 
       edits.push({
-        action: EditActionType.Crop,
+        action: EditAction.Crop,
         parameters: {
           x: Math.round(x / this.cropImageScale),
           y: Math.round(y / this.cropImageScale),
@@ -98,7 +93,7 @@ class TransformManager implements EditToolManager {
 
     if (this.normalizedRotation !== 0) {
       edits.push({
-        action: 'rotate' as EditActionType.Rotate,
+        action: EditAction.Rotate,
         parameters: {
           angle: this.normalizedRotation,
         },
@@ -356,7 +351,7 @@ class TransformManager implements EditToolManager {
         passive: true,
       });
     } else {
-      const cropEdit = edits.find((e) => e.action === EditActionType.Crop);
+      const cropEdit = edits.find((e) => e.action === EditAction.Crop);
 
       if (cropEdit) {
         const params = cropEdit.parameters as CropParameters;

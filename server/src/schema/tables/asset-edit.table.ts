@@ -1,8 +1,8 @@
-import { EditActionParameter, EditActionType } from 'src/dtos/editing.dto';
+import { EditAction, EditActionParameter } from 'src/dtos/editing.dto';
 import { AssetTable } from 'src/schema/tables/asset.table';
 import { Column, ForeignKeyColumn } from 'src/sql-tools';
 
-export class AssetEditTable<T extends EditActionType = EditActionType> {
+export class AssetEditTable<T extends EditAction = EditAction> {
   @ForeignKeyColumn(() => AssetTable, { onDelete: 'CASCADE', onUpdate: 'CASCADE', nullable: false, primary: true })
   assetId!: string;
 
@@ -11,7 +11,4 @@ export class AssetEditTable<T extends EditActionType = EditActionType> {
 
   @Column({ type: 'jsonb' })
   parameters!: EditActionParameter[T];
-
-  @Column()
-  index!: number;
 }

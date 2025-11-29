@@ -1,6 +1,6 @@
 import { AssetFace, AssetFile, Exif } from 'src/database';
 import { MapAsset } from 'src/dtos/asset-response.dto';
-import { EditActionItem, EditActionType } from 'src/dtos/editing.dto';
+import { EditAction, EditActionItem } from 'src/dtos/editing.dto';
 import { AssetFileType, AssetStatus, AssetType, AssetVisibility } from 'src/enum';
 import { StorageAsset } from 'src/types';
 import { authStub } from 'test/fixtures/auth.stub';
@@ -1046,14 +1046,13 @@ export const assetStub = {
     visibility: AssetVisibility.Timeline,
     edits: [
       {
-        action: EditActionType.Crop,
+        action: EditAction.Crop,
         parameters: {
-          left: 0.1,
-          right: 0.2,
-          top: 0.3,
-          bottom: 0.4,
+          width: 1512,
+          height: 1152,
+          x: 216,
+          y: 1512,
         },
-        index: 0,
       },
     ] as EditActionItem[],
   }),

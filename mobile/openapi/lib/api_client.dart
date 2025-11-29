@@ -346,6 +346,8 @@ class ApiClient {
           return DuplicateDetectionConfig.fromJson(value);
         case 'DuplicateResponseDto':
           return DuplicateResponseDto.fromJson(value);
+        case 'EditAction':
+          return EditActionTypeTransformer().decode(value);
         case 'EditActionCrop':
           return EditActionCrop.fromJson(value);
         case 'EditActionListDto':
@@ -354,8 +356,6 @@ class ApiClient {
           return EditActionMirror.fromJson(value);
         case 'EditActionRotate':
           return EditActionRotate.fromJson(value);
-        case 'EditActionType':
-          return EditActionTypeTypeTransformer().decode(value);
         case 'EmailNotificationsResponse':
           return EmailNotificationsResponse.fromJson(value);
         case 'EmailNotificationsUpdate':

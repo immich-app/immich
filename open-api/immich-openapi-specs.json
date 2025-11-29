@@ -16565,19 +16565,22 @@
         ],
         "type": "object"
       },
+      "EditAction": {
+        "enum": [
+          "crop",
+          "rotate",
+          "mirror"
+        ],
+        "type": "string"
+      },
       "EditActionCrop": {
         "properties": {
           "action": {
             "allOf": [
               {
-                "$ref": "#/components/schemas/EditActionType"
+                "$ref": "#/components/schemas/EditAction"
               }
             ]
-          },
-          "index": {
-            "description": "Order of this edit in the sequence",
-            "minimum": 0,
-            "type": "number"
           },
           "parameters": {
             "$ref": "#/components/schemas/CropParameters"
@@ -16585,7 +16588,6 @@
         },
         "required": [
           "action",
-          "index",
           "parameters"
         ],
         "type": "object"
@@ -16620,14 +16622,9 @@
           "action": {
             "allOf": [
               {
-                "$ref": "#/components/schemas/EditActionType"
+                "$ref": "#/components/schemas/EditAction"
               }
             ]
-          },
-          "index": {
-            "description": "Order of this edit in the sequence",
-            "minimum": 0,
-            "type": "number"
           },
           "parameters": {
             "$ref": "#/components/schemas/MirrorParameters"
@@ -16635,7 +16632,6 @@
         },
         "required": [
           "action",
-          "index",
           "parameters"
         ],
         "type": "object"
@@ -16645,14 +16641,9 @@
           "action": {
             "allOf": [
               {
-                "$ref": "#/components/schemas/EditActionType"
+                "$ref": "#/components/schemas/EditAction"
               }
             ]
-          },
-          "index": {
-            "description": "Order of this edit in the sequence",
-            "minimum": 0,
-            "type": "number"
           },
           "parameters": {
             "$ref": "#/components/schemas/RotateParameters"
@@ -16660,18 +16651,9 @@
         },
         "required": [
           "action",
-          "index",
           "parameters"
         ],
         "type": "object"
-      },
-      "EditActionType": {
-        "enum": [
-          "crop",
-          "rotate",
-          "mirror"
-        ],
-        "type": "string"
       },
       "EmailNotificationsResponse": {
         "properties": {

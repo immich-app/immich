@@ -31,7 +31,7 @@ export class AssetEditRepository {
   async getEditsForAsset(assetId: string): Promise<EditActionItem[]> {
     return this.db
       .selectFrom('asset_edit')
-      .select(['action', 'parameters', 'index'])
+      .select(['action', 'parameters'])
       .where('assetId', '=', assetId)
       .execute() as Promise<EditActionItem[]>;
   }

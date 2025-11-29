@@ -20,6 +20,7 @@ import {
   VideoInfo,
 } from 'src/types';
 import { handlePromiseError } from 'src/utils/misc';
+import { compose, flipX, flipY, identity, Matrix, rotate } from 'transformation-matrix';
 
 const probe = (input: string, options: string[]): Promise<FfprobeData> =>
   new Promise((resolve, reject) =>
@@ -144,43 +145,47 @@ export class MediaRepository {
     return pipeline.raw().toBuffer({ resolveWithObject: true });
   }
 
-  private applyEdit(input: sharp.Sharp, edit: EditActionItem): sharp.Sharp {
-    switch (edit.action) {
-      case 'crop': {
-        const { x: left, y: top, width, height } = edit.parameters;
-        return input.extract({ left, top, width, height });
-      }
-      case 'rotate': {
-        const { angle } = edit.parameters;
-        return input.rotate(angle);
-      }
-      case 'mirror': {
-        const { axis } = edit.parameters;
-        return axis === 'horizontal' ? input.flop() : input.flip();
-      }
-      default: {
-        return input;
-      }
-    }
+  private createAffineMatrix(edits: EditActionItem[]): Matrix {
+    return compose(
+      identity(),
+      ...edits.map((edit) => {
+        switch (edit.action) {
+          case 'rotate': {
+            const angleInRadians = (-edit.parameters.angle * Math.PI) / 180;
+            return rotate(angleInRadians);
+          }
+          case 'mirror': {
+            return edit.parameters.axis === 'horizontal' ? flipY() : flipX();
+          }
+          default: {
+            return identity();
+          }
+        }
+      }),
+    );
   }
 
   private async applyEdits(pipeline: sharp.Sharp, edits: EditActionItem[]): Promise<sharp.Sharp> {
-    for (const edit of edits) {
-      pipeline = this.applyEdit(pipeline, edit);
+    const affineEditOperations = edits.filter((edit) => edit.action !== 'crop');
+    const affineMatrix = this.createAffineMatrix(affineEditOperations);
 
-      // Each edit requires a new sharp context.
-      // There is a bunch of weird behavior in sharp if
-      // we try to chain edits in a single context
-      // see: https://github.com/lovell/sharp/issues/241
-      const currentBuffer = await pipeline.raw().toBuffer({ resolveWithObject: true });
-      pipeline = sharp(currentBuffer.data, {
-        raw: {
-          width: currentBuffer.info.width,
-          height: currentBuffer.info.height,
-          channels: currentBuffer.info.channels,
-        },
+    const crop = edits.find((edit) => edit.action === 'crop');
+    const dimensions = await pipeline.metadata();
+
+    if (crop) {
+      pipeline = pipeline.extract({
+        left: crop ? Math.round(crop.parameters.x) : 0,
+        top: crop ? Math.round(crop.parameters.y) : 0,
+        width: crop ? Math.round(crop.parameters.width) : dimensions.width || 0,
+        height: crop ? Math.round(crop.parameters.height) : dimensions.height || 0,
       });
     }
+
+    const { a, b, c, d } = affineMatrix;
+    pipeline = pipeline.affine([
+      [a, b],
+      [c, d],
+    ]);
 
     return pipeline;
   }
@@ -326,20 +331,6 @@ export class MediaRepository {
   async getImageDimensions(input: string | Buffer): Promise<ImageDimensions> {
     const { width = 0, height = 0 } = await sharp(input).metadata();
     return { width, height };
-  }
-
-  async getEditedImageDimensions(input: string | Buffer, edits: EditActionItem[]): Promise<ImageDimensions> {
-    const pipeline = await this.getImageDecodingPipeline(input, {
-      colorspace: Colorspace.Srgb,
-      processInvalidImages: false,
-      edits,
-    });
-
-    const dimensions: ImageDimensions = await pipeline.metadata();
-    return {
-      width: dimensions.width,
-      height: dimensions.height,
-    };
   }
 
   private configureFfmpegCall(input: string, output: string | Writable, options: TranscodeCommand) {

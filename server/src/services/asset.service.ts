@@ -17,7 +17,7 @@ import {
   mapStats,
 } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { AssetEditsDto, EditActionListDto } from 'src/dtos/editing.dto';
+import { AssetEditsDto, EditAction, EditActionListDto } from 'src/dtos/editing.dto';
 import { AssetOcrResponseDto } from 'src/dtos/ocr.dto';
 import {
   AssetMetadataKey,
@@ -479,7 +479,7 @@ export class AssetService extends BaseService {
   public async editAsset(auth: AuthDto, id: string, dto: EditActionListDto): Promise<AssetEditsDto> {
     await this.requireAccess({ auth, permission: Permission.AssetEdit, ids: [id] });
 
-    const asset = await this.assetRepository.getById(id);
+    const asset = await this.assetRepository.getById(id, { exifInfo: true });
     if (!asset) {
       throw new BadRequestException('Asset not found');
     }
@@ -488,16 +488,25 @@ export class AssetService extends BaseService {
       throw new BadRequestException('Only images can be edited');
     }
 
-    // verify that each edit has a unique index, with no gaps
-    if (dto.edits.length > 0) {
-      const indices = dto.edits.map((edit) => edit.index);
-      const uniqueIndices = new Set(indices);
-      if (uniqueIndices.size !== indices.length) {
-        throw new BadRequestException('Each edit must have a unique index');
+    // verify there are unique actions
+    // mirror can be duplicated but must have different parameters
+    const actionSet = new Set<string>();
+    for (const edit of dto.edits) {
+      const key = edit.action === EditAction.Mirror ? `${edit.action}-${JSON.stringify(edit.parameters)}` : edit.action;
+      if (actionSet.has(key)) {
+        throw new BadRequestException('Duplicate edit actions are not allowed');
       }
-      const maxIndex = Math.max(...indices);
-      if (maxIndex !== indices.length - 1) {
-        throw new BadRequestException('Edit indices must be continuous and start from 0');
+      actionSet.add(key);
+    }
+
+    // check that crop parameters will not go out of bounds
+    const assetWidth = asset.exifInfo?.exifImageWidth ?? 0;
+    const assetHeight = asset.exifInfo?.exifImageHeight ?? 0;
+    const crop = dto.edits.find((e) => e.action === EditAction.Crop)?.parameters;
+    if (crop) {
+      const { x, y, width, height } = crop;
+      if (x + width > assetWidth || y + height > assetHeight) {
+        throw new BadRequestException('Crop parameters are out of bounds');
       }
     }
 

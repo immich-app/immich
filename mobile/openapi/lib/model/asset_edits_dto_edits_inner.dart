@@ -14,39 +14,30 @@ class AssetEditsDtoEditsInner {
   /// Returns a new [AssetEditsDtoEditsInner] instance.
   AssetEditsDtoEditsInner({
     required this.action,
-    required this.index,
     required this.parameters,
   });
 
-  EditActionType action;
-
-  /// Order of this edit in the sequence
-  ///
-  /// Minimum value: 0
-  num index;
+  EditAction action;
 
   MirrorParameters parameters;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetEditsDtoEditsInner &&
     other.action == action &&
-    other.index == index &&
     other.parameters == parameters;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (action.hashCode) +
-    (index.hashCode) +
     (parameters.hashCode);
 
   @override
-  String toString() => 'AssetEditsDtoEditsInner[action=$action, index=$index, parameters=$parameters]';
+  String toString() => 'AssetEditsDtoEditsInner[action=$action, parameters=$parameters]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'action'] = this.action;
-      json[r'index'] = this.index;
       json[r'parameters'] = this.parameters;
     return json;
   }
@@ -60,8 +51,7 @@ class AssetEditsDtoEditsInner {
       final json = value.cast<String, dynamic>();
 
       return AssetEditsDtoEditsInner(
-        action: EditActionType.fromJson(json[r'action'])!,
-        index: num.parse('${json[r'index']}'),
+        action: EditAction.fromJson(json[r'action'])!,
         parameters: MirrorParameters.fromJson(json[r'parameters'])!,
       );
     }
@@ -111,7 +101,6 @@ class AssetEditsDtoEditsInner {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'action',
-    'index',
     'parameters',
   };
 }
