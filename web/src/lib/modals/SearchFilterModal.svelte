@@ -25,6 +25,7 @@
   } from '$lib/components/shared-components/search-bar/search-camera-section.svelte';
   import SearchDateSection from '$lib/components/shared-components/search-bar/search-date-section.svelte';
   import SearchDisplaySection from '$lib/components/shared-components/search-bar/search-display-section.svelte';
+  import SearchFilterSection from '$lib/components/shared-components/search-bar/search-filter-section.svelte';
   import SearchLocationSection from '$lib/components/shared-components/search-bar/search-location-section.svelte';
   import SearchMediaSection from '$lib/components/shared-components/search-bar/search-media-section.svelte';
   import SearchPeopleSection from '$lib/components/shared-components/search-bar/search-people-section.svelte';
@@ -36,7 +37,18 @@
   import { generateId } from '$lib/utils/generate-id';
   import { AssetTypeEnum, AssetVisibility, type MetadataSearchDto, type SmartSearchDto } from '@immich/sdk';
   import { Button, HStack, Modal, ModalBody, ModalFooter } from '@immich/ui';
-  import { mdiTune } from '@mdi/js';
+  import {
+    mdiAccountMultiple,
+    mdiCalendarRange,
+    mdiCamera,
+    mdiCog,
+    mdiImageMultiple,
+    mdiMagnify,
+    mdiMapMarker,
+    mdiStar,
+    mdiTag,
+    mdiTune,
+  } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { SvelteSet } from 'svelte/reactivity';
 
@@ -187,37 +199,52 @@
 <Modal icon={mdiTune} size="giant" title={$t('search_options')} {onClose}>
   <ModalBody>
     <form id={formId} autocomplete="off" {onsubmit} {onreset}>
-      <div class="flex flex-col gap-4 pb-10" tabindex="-1">
-        <!-- PEOPLE -->
-        <SearchPeopleSection bind:selectedPeople={filter.personIds} />
-
+      <div class="flex flex-col gap-0" tabindex="-1">
         <!-- TEXT -->
-        <SearchTextSection bind:query={filter.query} bind:queryType={filter.queryType} />
+        <SearchFilterSection title={$t('search_type')} icon={mdiMagnify} isFirst expanded>
+          <SearchTextSection bind:query={filter.query} bind:queryType={filter.queryType} />
+        </SearchFilterSection>
+
+        <!-- PEOPLE -->
+        <SearchFilterSection title={$t('people')} icon={mdiAccountMultiple}>
+          <SearchPeopleSection bind:selectedPeople={filter.personIds} />
+        </SearchFilterSection>
 
         <!-- TAGS -->
-        <SearchTagsSection bind:selectedTags={filter.tagIds} />
+        <SearchFilterSection title={$t('tags')} icon={mdiTag}>
+          <SearchTagsSection bind:selectedTags={filter.tagIds} />
+        </SearchFilterSection>
 
         <!-- LOCATION -->
-        <SearchLocationSection bind:filters={filter.location} />
+        <SearchFilterSection title={$t('place')} icon={mdiMapMarker}>
+          <SearchLocationSection bind:filters={filter.location} />
+        </SearchFilterSection>
 
         <!-- CAMERA MODEL -->
-        <SearchCameraSection bind:filters={filter.camera} />
+        <SearchFilterSection title={$t('camera')} icon={mdiCamera}>
+          <SearchCameraSection bind:filters={filter.camera} />
+        </SearchFilterSection>
 
         <!-- DATE RANGE -->
-        <SearchDateSection bind:filters={filter.date} />
+        <SearchFilterSection title={$t('date_range')} icon={mdiCalendarRange}>
+          <SearchDateSection bind:filters={filter.date} />
+        </SearchFilterSection>
 
         <!-- RATING -->
         {#if $preferences?.ratings.enabled}
-          <SearchRatingsSection bind:rating={filter.rating} />
+          <SearchFilterSection title={$t('rating')} icon={mdiStar}>
+            <SearchRatingsSection bind:rating={filter.rating} />
+          </SearchFilterSection>
         {/if}
 
-        <div class="grid md:grid-cols-2 gap-x-5 gap-y-10">
-          <!-- MEDIA TYPE -->
+        <!-- MEDIA TYPE & DISPLAY OPTIONS -->
+        <SearchFilterSection title={$t('media_type')} icon={mdiImageMultiple}>
           <SearchMediaSection bind:filteredMedia={filter.mediaType} />
+        </SearchFilterSection>
 
-          <!-- DISPLAY OPTIONS -->
+        <SearchFilterSection title={$t('display_options')} icon={mdiCog} isLast>
           <SearchDisplaySection bind:filters={filter.display} />
-        </div>
+        </SearchFilterSection>
       </div>
     </form>
   </ModalBody>

@@ -41,14 +41,14 @@
 </script>
 
 {#if $preferences?.tags?.enabled}
-  <div id="location-selection">
+  <div id="tags-selection">
     <form autocomplete="off" id="create-tag-form">
-      <div class="my-4 flex flex-col gap-2">
+      <div class="flex flex-col gap-2">
         <div class="[&_label]:uppercase">
           <Combobox
+            label=""
             disabled={selectedTags === null}
             onSelect={handleSelect}
-            label={$t('tags')}
             defaultFirstOption
             options={allTags.map((tag) => ({ id: tag.id, label: tag.value, value: tag.id }))}
             bind:selectedOption

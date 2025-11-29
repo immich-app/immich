@@ -12,8 +12,7 @@
 
 <div id="media-type-selection">
   <fieldset>
-    <legend class="uppercase immich-form-label">{$t('media_type')}</legend>
-    <div class="flex flex-wrap gap-x-5 gap-y-2 mt-1">
+    <div class="flex flex-wrap gap-x-5 gap-y-2">
       <RadioButton name="media-type" id="type-all" bind:group={filteredMedia} label={$t('all')} value={MediaType.All} />
       <RadioButton
         name="media-type"

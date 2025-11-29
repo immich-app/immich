@@ -62,8 +62,7 @@
       : filterPeople(people, name).slice(0, numberOfPeople)}
 
     <div id="people-selection" class="max-h-60 -mb-4 overflow-y-auto immich-scrollbar">
-      <div class="flex items-center w-full justify-between gap-6">
-        <p class="uppercase immich-form-label py-3">{$t('people')}</p>
+      <div class="flex items-center w-full justify-end gap-6">
         <SearchBar bind:name placeholder={$t('filter_people')} showLoadingSpinner={false} />
       </div>
 

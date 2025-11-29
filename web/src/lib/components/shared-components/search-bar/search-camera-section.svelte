@@ -81,9 +81,7 @@
 </script>
 
 <div id="camera-selection">
-  <p class="uppercase immich-form-label">{$t('camera')}</p>
-
-  <div class="grid grid-auto-fit-40 gap-5 mt-1">
+  <div class="grid grid-auto-fit-40 gap-5">
     <div class="w-full">
       <Combobox
         label={$t('make')}
