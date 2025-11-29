@@ -89,6 +89,7 @@ export class MetadataRepository {
     // Enable exiftool LFS to parse metadata for files larger than 2GB.
     readArgs: ['-api', 'largefilesupport=1'],
     writeArgs: ['-api', 'largefilesupport=1', '-overwrite_original'],
+    taskTimeoutMillis: 120000,  // ADD THIS: Increase from 20s to 120s for large videos
   });
 
   constructor(private logger: LoggingRepository) {
