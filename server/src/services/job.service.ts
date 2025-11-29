@@ -8,30 +8,30 @@ import { BaseService } from 'src/services/base.service';
 import { JobItem } from 'src/types';
 import { hexOrBufferToBase64 } from 'src/utils/bytes';
 
-const asJobItem = (dto: JobCreateDto): JobItem => {
+const asJobItem = (dto: JobCreateDto): JobItem[] => {
   switch (dto.name) {
     case ManualJobName.TagCleanup: {
-      return { name: JobName.TagCleanup };
+      return [{ name: JobName.TagCleanup }];
     }
 
     case ManualJobName.PersonCleanup: {
-      return { name: JobName.PersonCleanup };
+      return [{ name: JobName.PersonCleanup }];
     }
 
     case ManualJobName.UserCleanup: {
-      return { name: JobName.UserDeleteCheck };
+      return [{ name: JobName.UserDeleteCheck }, { name: JobName.SessionCleanup }];
     }
 
     case ManualJobName.MemoryCleanup: {
-      return { name: JobName.MemoryCleanup };
+      return [{ name: JobName.MemoryCleanup }];
     }
 
     case ManualJobName.MemoryCreate: {
-      return { name: JobName.MemoryGenerate };
+      return [{ name: JobName.MemoryGenerate }];
     }
 
     case ManualJobName.BackupDatabase: {
-      return { name: JobName.DatabaseBackup };
+      return [{ name: JobName.DatabaseBackup }];
     }
 
     default: {
@@ -43,7 +43,7 @@ const asJobItem = (dto: JobCreateDto): JobItem => {
 @Injectable()
 export class JobService extends BaseService {
   async create(dto: JobCreateDto): Promise<void> {
-    await this.jobRepository.queue(asJobItem(dto));
+    await this.jobRepository.queueAll(asJobItem(dto));
   }
 
   @OnEvent({ name: 'JobRun' })
