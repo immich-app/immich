@@ -25,12 +25,12 @@
   } from '$lib/components/shared-components/search-bar/search-camera-section.svelte';
   import SearchDateSection from '$lib/components/shared-components/search-bar/search-date-section.svelte';
   import SearchDisplaySection from '$lib/components/shared-components/search-bar/search-display-section.svelte';
+  import SearchFilterGroup from '$lib/components/shared-components/search-bar/search-filter-group.svelte';
   import SearchFilterSection from '$lib/components/shared-components/search-bar/search-filter-section.svelte';
   import SearchLocationSection from '$lib/components/shared-components/search-bar/search-location-section.svelte';
   import SearchMediaSection from '$lib/components/shared-components/search-bar/search-media-section.svelte';
   import SearchPeopleSection from '$lib/components/shared-components/search-bar/search-people-section.svelte';
   import SearchRatingsSection from '$lib/components/shared-components/search-bar/search-ratings-section.svelte';
-  import SearchTagsSection from '$lib/components/shared-components/search-bar/search-tags-section.svelte';
   import SearchTextSection from '$lib/components/shared-components/search-bar/search-text-section.svelte';
   import { preferences } from '$lib/stores/user.store';
   import { parseUtcDate } from '$lib/utils/date-time';
@@ -46,7 +46,6 @@
     mdiMagnify,
     mdiMapMarker,
     mdiStar,
-    mdiTag,
     mdiTune,
   } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -199,62 +198,54 @@
 <Modal icon={mdiTune} size="giant" title={$t('search_options')} {onClose}>
   <ModalBody>
     <form id={formId} autocomplete="off" {onsubmit} {onreset}>
-      <div class="flex flex-col gap-0" tabindex="-1">
-        <!-- TEXT -->
-        <SearchFilterSection title={$t('search_type')} icon={mdiMagnify} isFirst expanded>
-          <SearchTextSection bind:query={filter.query} bind:queryType={filter.queryType} />
-        </SearchFilterSection>
-
-        <!-- PEOPLE -->
-        <SearchFilterSection title={$t('people')} icon={mdiAccountMultiple}>
-          <SearchPeopleSection bind:selectedPeople={filter.personIds} />
-        </SearchFilterSection>
-
-        <!-- TAGS -->
-        <SearchFilterSection title={$t('tags')} icon={mdiTag}>
-          <SearchTagsSection bind:selectedTags={filter.tagIds} />
-        </SearchFilterSection>
-
-        <!-- LOCATION -->
-        <SearchFilterSection title={$t('place')} icon={mdiMapMarker}>
-          <SearchLocationSection bind:filters={filter.location} />
-        </SearchFilterSection>
-
-        <!-- CAMERA MODEL -->
-        <SearchFilterSection title={$t('camera')} icon={mdiCamera}>
-          <SearchCameraSection bind:filters={filter.camera} />
-        </SearchFilterSection>
-
-        <!-- DATE RANGE -->
-        <SearchFilterSection title={$t('date_range')} icon={mdiCalendarRange}>
-          <SearchDateSection bind:filters={filter.date} />
-        </SearchFilterSection>
-
-        <!-- RATING -->
-        {#if $preferences?.ratings.enabled}
-          <SearchFilterSection title={$t('rating')} icon={mdiStar}>
-            <SearchRatingsSection bind:rating={filter.rating} />
+      <div class="flex flex-col gap-6" tabindex="-1">
+        <SearchFilterGroup title={$t('content')}>
+          <SearchFilterSection title={$t('search_type')} icon={mdiMagnify}>
+            <SearchTextSection bind:query={filter.query} bind:queryType={filter.queryType} />
           </SearchFilterSection>
-        {/if}
 
-        <!-- MEDIA TYPE & DISPLAY OPTIONS -->
-        <SearchFilterSection title={$t('media_type')} icon={mdiImageMultiple}>
-          <SearchMediaSection bind:filteredMedia={filter.mediaType} />
-        </SearchFilterSection>
+          <SearchFilterSection title={$t('people')} icon={mdiAccountMultiple}>
+            <SearchPeopleSection bind:selectedPeople={filter.personIds} />
+          </SearchFilterSection>
+        </SearchFilterGroup>
 
-        <SearchFilterSection title={$t('display_options')} icon={mdiCog} isLast>
-          <SearchDisplaySection bind:filters={filter.display} />
-        </SearchFilterSection>
+        <SearchFilterGroup title={$t('metadata')} columns={2}>
+          <SearchFilterSection title={$t('place')} icon={mdiMapMarker}>
+            <SearchLocationSection bind:filters={filter.location} />
+          </SearchFilterSection>
+
+          <SearchFilterSection title={$t('camera')} icon={mdiCamera}>
+            <SearchCameraSection bind:filters={filter.camera} />
+          </SearchFilterSection>
+
+          <SearchFilterSection title={$t('date_range')} icon={mdiCalendarRange}>
+            <SearchDateSection bind:filters={filter.date} />
+          </SearchFilterSection>
+
+          {#if $preferences?.ratings.enabled}
+            <SearchFilterSection title={$t('rating')} icon={mdiStar}>
+              <SearchRatingsSection bind:rating={filter.rating} />
+            </SearchFilterSection>
+          {/if}
+        </SearchFilterGroup>
+
+        <SearchFilterGroup title={$t('options')} columns={2}>
+          <SearchFilterSection title={$t('media_type')} icon={mdiImageMultiple}>
+            <SearchMediaSection bind:filteredMedia={filter.mediaType} />
+          </SearchFilterSection>
+
+          <SearchFilterSection title={$t('display_options')} icon={mdiCog}>
+            <SearchDisplaySection bind:filters={filter.display} />
+          </SearchFilterSection>
+        </SearchFilterGroup>
       </div>
     </form>
   </ModalBody>
 
   <ModalFooter>
     <HStack fullWidth>
-      <Button shape="round" size="large" type="reset" color="secondary" fullWidth form={formId}
-        >{$t('clear_all')}</Button
-      >
-      <Button shape="round" size="large" type="submit" fullWidth form={formId}>{$t('search')}</Button>
+      <Button shape="round" type="reset" color="secondary" fullWidth form={formId}>{$t('clear_all')}</Button>
+      <Button shape="round" type="submit" fullWidth form={formId}>{$t('search')}</Button>
     </HStack>
   </ModalFooter>
 </Modal>

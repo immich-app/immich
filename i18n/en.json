@@ -1,4 +1,5 @@
 {
+  "metadata": "Metadata",
   "about": "About",
   "account": "Account",
   "account_settings": "Account Settings",
@@ -756,6 +757,7 @@
   "connected_device": "Connected device",
   "connected_to": "Connected to",
   "contain": "Contain",
+  "content": "Content",
   "context": "Context",
   "continue": "Continue",
   "control_bottom_app_bar_create_new_album": "Create new album",
