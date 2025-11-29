@@ -4,7 +4,7 @@
   import { ActionQueryParameterValue, AppRoute, QueryParameter } from '$lib/constants';
   import { handleError } from '$lib/utils/handle-error';
   import { getAllPeople, getPerson, mergePerson, type PersonResponseDto } from '@immich/sdk';
-  import { Button, Icon, IconButton, modalManager, toastManager } from '@immich/ui';
+  import { Button, Icon, IconButton, Modal, ModalBody, modalManager, toastManager } from '@immich/ui';
   import { mdiCallMerge, mdiMerge, mdiPlus, mdiSwapHorizontal } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -26,7 +26,7 @@
   let people: PersonResponseDto[] = $state([]);
   let selectedPeople: PersonResponseDto[] = $state([]);
   let screenHeight: number = $state(0);
-  let allPeopleViewShown: boolean = $state(false);
+  let allPeopleViewModalOpen: boolean = $state(false);
 
   let hasSelection = $derived(selectedPeople.length > 0);
   let peopleToNotShow = $derived([...selectedPeople, person]);
@@ -42,14 +42,6 @@
     [person, selectedPeople[0]] = [selectedPeople[0], person];
     page.url.searchParams.set(QueryParameter.ACTION, ActionQueryParameterValue.MERGE);
     await goto(`${AppRoute.PEOPLE}/${person.id}?${page.url.searchParams.toString()}`);
-  };
-
-  const openAllPeopleView = () => {
-    allPeopleViewShown = true;
-  };
-
-  const closeAllPeopleView = () => {
-    allPeopleViewShown = false;
   };
 
   const onSelect = async (selected: PersonResponseDto) => {
@@ -92,7 +84,7 @@
   transition:fly={{ y: 500, duration: 100, easing: quintOut }}
   class="absolute start-0 top-0 h-full w-full bg-light"
 >
-  <ControlAppBar onClose={allPeopleViewShown ? closeAllPeopleView : onBack}>
+  <ControlAppBar onClose={onBack}>
     {#snippet leading()}
       {#if hasSelection}
         {$t('selected_count', { values: { count: selectedPeople.length } })}
@@ -102,24 +94,20 @@
       <div></div>
     {/snippet}
     {#snippet trailing()}
-      {#if !allPeopleViewShown}
-        <Button leadingIcon={mdiMerge} size="small" shape="round" disabled={!hasSelection} onclick={handleMerge}>
-          {$t('merge')}
-        </Button>
-      {/if}
+      <Button leadingIcon={mdiMerge} size="small" shape="round" disabled={!hasSelection} onclick={handleMerge}>
+        {$t('merge')}
+      </Button>
     {/snippet}
   </ControlAppBar>
   <section class="px-17.5 pt-25">
-    <section id="merge-face-selector" hidden="{allPeopleViewShown}">
+    <section id="merge-face-selector">
       <div class="mb-10 h-50 place-content-center place-items-center">
         <p class="mb-4 text-center uppercase dark:text-white">{$t('choose_matching_people_to_merge')}</p>
 
         <div class="grid grid-flow-col-dense place-content-center place-items-center gap-4">
-          {#each selectedPeople as person, i (person.id)}
+          {#each selectedPeople.slice(0, 5) as person, _ (person.id)}
             <div animate:flip={{ duration: 250, easing: quintOut }}>
-              {#if i < 5}
-                <FaceThumbnail border circle {person} selectable thumbnailSize={120} onClick={() => onSelect(person)} />
-              {/if}
+              <FaceThumbnail border circle {person} selectable thumbnailSize={120} onClick={() => onSelect(person)} />
             </div>
           {/each}
 
@@ -135,7 +123,7 @@
                         aria-label={$t('show_all_selected_people')}
                         icon={mdiPlus}
                         size="large"
-                        onclick={openAllPeopleView}
+                        onclick={() => allPeopleViewModalOpen = true}
                       />
                     </div>
                   {/if}
@@ -161,9 +149,13 @@
         </div>
       </div>
       <PeopleList {people} {peopleToNotShow} {screenHeight} {onSelect} {handleSearch} />
-    </section>
-    <section id="merge-face-selector-expanded" hidden="{!allPeopleViewShown}">
-      <PeopleList people={peopleToNotShow} peopleToNotShow={[person]} {screenHeight} {onSelect} {handleSearch} />
+      {#if allPeopleViewModalOpen}
+        <Modal title="Modal Test Title" size="full" onClose={() => allPeopleViewModalOpen = false}>
+          <ModalBody>
+            <PeopleList people={peopleToNotShow} peopleToNotShow={[person]} {screenHeight} {onSelect} {handleSearch} />
+          </ModalBody>
+        </Modal>
+      {/if}
     </section>
   </section>
 </section>
