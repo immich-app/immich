@@ -547,11 +547,7 @@
         {#if assetInteraction.isAllUserOwned}
           <FavoriteAction
             removeFavorite={assetInteraction.isAllFavorite}
-            onFavorite={(ids, isFavorite) =>
-              timelineManager.updateAssetOperation(ids, (asset) => {
-                asset.isFavorite = isFavorite;
-                return { remove: false };
-              })}
+            onFavorite={(ids, isFavorite) => timelineManager.update(ids, (asset) => (asset.isFavorite = isFavorite))}
           ></FavoriteAction>
         {/if}
         <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')} offset={{ x: 175, y: 25 }}>
@@ -570,11 +566,7 @@
             <ArchiveAction
               menuItem
               unarchive={assetInteraction.isAllArchived}
-              onArchive={(ids, visibility) =>
-                timelineManager.updateAssetOperation(ids, (asset) => {
-                  asset.visibility = visibility;
-                  return { remove: false };
-                })}
+              onArchive={(ids, visibility) => timelineManager.update(ids, (asset) => (asset.visibility = visibility))}
             />
             <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />
           {/if}
