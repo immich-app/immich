@@ -4,8 +4,8 @@
   import { ActionQueryParameterValue, AppRoute, QueryParameter } from '$lib/constants';
   import { handleError } from '$lib/utils/handle-error';
   import { getAllPeople, getPerson, mergePerson, type PersonResponseDto } from '@immich/sdk';
-  import { Button, Icon, IconButton, modalManager, toastManager } from '@immich/ui';
-  import { mdiCallMerge, mdiMerge, mdiSwapHorizontal } from '@mdi/js';
+  import { Button, Icon, IconButton, Modal, ModalBody, modalManager, toastManager } from '@immich/ui';
+  import { mdiCallMerge, mdiMerge, mdiPlus, mdiSwapHorizontal } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { flip } from 'svelte/animate';
@@ -26,6 +26,7 @@
   let people: PersonResponseDto[] = $state([]);
   let selectedPeople: PersonResponseDto[] = $state([]);
   let screenHeight: number = $state(0);
+  let allPeopleViewModalOpen: boolean = $state(false);
 
   let hasSelection = $derived(selectedPeople.length > 0);
   let peopleToNotShow = $derived([...selectedPeople, person]);
@@ -46,11 +47,6 @@
   const onSelect = async (selected: PersonResponseDto) => {
     if (selectedPeople.includes(selected)) {
       selectedPeople = selectedPeople.filter((person) => person.id !== selected.id);
-      return;
-    }
-
-    if (selectedPeople.length >= 5) {
-      toastManager.warning($t('merge_people_limit'));
       return;
     }
 
@@ -109,7 +105,7 @@
         <p class="mb-4 text-center uppercase dark:text-white">{$t('choose_matching_people_to_merge')}</p>
 
         <div class="grid grid-flow-col-dense place-content-center place-items-center gap-4">
-          {#each selectedPeople as person (person.id)}
+          {#each selectedPeople.slice(0, 5) as person, _ (person.id)}
             <div animate:flip={{ duration: 250, easing: quintOut }}>
               <FaceThumbnail border circle {person} selectable thumbnailSize={120} onClick={() => onSelect(person)} />
             </div>
@@ -119,6 +115,18 @@
             <div class="relative h-full">
               <div class="flex flex-col h-full justify-between">
                 <div class="flex h-full items-center justify-center">
+                  {#if selectedPeople.length > 5}
+                    <div class="absolute top-2">
+                      <IconButton
+                        shape="round"
+                        color="secondary"
+                        aria-label={$t('show_all_selected_people')}
+                        icon={mdiPlus}
+                        size="medium"
+                        onclick={() => allPeopleViewModalOpen = true}
+                      />
+                    </div>
+                  {/if}
                   <Icon icon={mdiCallMerge} size="48" class="rotate-90 dark:text-white" />
                 </div>
                 {#if selectedPeople.length === 1}
@@ -141,6 +149,14 @@
         </div>
       </div>
       <PeopleList {people} {peopleToNotShow} {screenHeight} {onSelect} {handleSearch} />
+      {#if allPeopleViewModalOpen}
+        <Modal title={$t('selected_people_to_merge')} size="full" onClose={() => allPeopleViewModalOpen = false}>
+          <ModalBody>
+            <p class="mb-4 text-center dark:text-white">{$t('choose_people_to_unselect')}</p>
+            <PeopleList people={peopleToNotShow} peopleToNotShow={[person]} {screenHeight} {onSelect} />
+          </ModalBody>
+        </Modal>
+      {/if}
     </section>
   </section>
 </section>
