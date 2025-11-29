@@ -165,7 +165,7 @@ export class MediaService extends BaseService {
   @OnJob({ name: JobName.AssetGenerateThumbnails, queue: QueueName.ThumbnailGeneration })
   async handleGenerateThumbnails({ id, source }: JobOf<JobName.AssetGenerateThumbnails>): Promise<JobStatus> {
     const asset = await this.assetJobRepository.getForGenerateThumbnailJob(id);
-    const isEditJob = source === 'edit';
+    let isEditJob = source === 'edit';
 
     if (!asset) {
       this.logger.warn(`Thumbnail generation failed for asset ${id}: not found`);
@@ -196,14 +196,7 @@ export class MediaService extends BaseService {
         await Promise.all(files.map((path) => this.storageRepository.unlink(path.path)));
       }
 
-      // rerun the thumbnail generation for the original files now that edits are removed
-      // this is solely to update the thumbhash and dimensions
-      await this.jobRepository.queue({
-        name: JobName.AssetGenerateThumbnails,
-        data: { id: asset.id },
-      });
-
-      return JobStatus.Success;
+      isEditJob = false;
     }
 
     let generated: {

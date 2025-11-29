@@ -1002,14 +1002,15 @@ describe(MediaService.name, () => {
       );
 
       expect(status).toBe(JobStatus.Success);
-      expect(mocks.job.queue).toHaveBeenCalledWith({
-        name: JobName.AssetGenerateThumbnails,
-        data: {
-          id: assetStub.image.id,
-        },
-      });
+      expect(mocks.media.generateThumbnail).toHaveBeenCalled();
 
-      expect(mocks.media.generateThumbnail).not.toHaveBeenCalled();
+      // ensure that we switched to non-edit mode
+      expect(mocks.asset.upsertFiles).toHaveBeenCalledWith(
+        expect.arrayContaining([
+          expect.objectContaining({ type: AssetFileType.Preview }),
+          expect.objectContaining({ type: AssetFileType.Thumbnail }),
+        ]),
+      );
     });
 
     it('should generate all 3 edited files if an asset has edits', async () => {
