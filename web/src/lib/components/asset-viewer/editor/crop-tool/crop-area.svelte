@@ -9,11 +9,27 @@
   }
 
   let { asset }: Props = $props();
+
+  let canvasContainer = $state<HTMLElement | null>(null);
+
+  $effect(() => {
+    if (!canvasContainer) {
+      return;
+    }
+
+    const resizeObserver = new ResizeObserver(() => {
+      transformManager.resizeCanvas();
+    });
+
+    resizeObserver.observe(canvasContainer);
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  });
 </script>
 
-<svelte:window on:resize={() => transformManager.resizeCanvas()} />
-
-<div class="canvas-container">
+<div class="canvas-container" bind:this={canvasContainer}>
   <button
     class={`crop-area ${transformManager.orientationChanged ? 'changedOriention' : ''}`}
     style={`rotate:${transformManager.imageRotation}deg`}
