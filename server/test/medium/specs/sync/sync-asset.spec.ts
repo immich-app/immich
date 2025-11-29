@@ -37,6 +37,8 @@ describe(SyncEntityType.AssetV1, () => {
       deletedAt: null,
       duration: '0:10:00.00000',
       libraryId: null,
+      width: 1920,
+      height: 1080,
     });
 
     const response = await ctx.syncStream(auth, [SyncRequestType.AssetsV1]);
@@ -60,6 +62,8 @@ describe(SyncEntityType.AssetV1, () => {
           stackId: null,
           livePhotoVideoId: null,
           libraryId: asset.libraryId,
+          width: asset.width,
+          height: asset.height,
         },
         type: 'AssetV1',
       },

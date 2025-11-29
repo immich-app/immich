@@ -34,6 +34,8 @@ export class SanitizedAssetResponseDto {
   duration!: string;
   livePhotoVideoId?: string | null;
   hasMetadata!: boolean;
+  width!: number | null;
+  height!: number | null;
 }
 
 export class AssetResponseDto extends SanitizedAssetResponseDto {
@@ -130,6 +132,8 @@ export type MapAsset = {
   tags?: Tag[];
   thumbhash: Buffer<ArrayBufferLike> | null;
   type: AssetType;
+  width: number | null;
+  height: number | null;
 };
 
 export class AssetStackResponseDto {
@@ -191,6 +195,8 @@ export function mapAsset(entity: MapAsset, options: AssetMapOptions = {}): Asset
       duration: entity.duration ?? '0:00:00.00000',
       livePhotoVideoId: entity.livePhotoVideoId,
       hasMetadata: false,
+      width: entity.width,
+      height: entity.height,
     };
     return sanitizedAssetResponse as AssetResponseDto;
   }
@@ -228,5 +234,7 @@ export function mapAsset(entity: MapAsset, options: AssetMapOptions = {}): Asset
     hasMetadata: true,
     duplicateId: entity.duplicateId,
     resized: true,
+    width: entity.width,
+    height: entity.height,
   };
 }
