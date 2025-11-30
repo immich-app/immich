@@ -306,6 +306,46 @@ export function withTagId<O>(qb: SelectQueryBuilder<DB, 'asset', O>, tagId: stri
   );
 }
 
+const isCJK = (c: number): boolean =>
+  (c >= 0x4e_00 && c <= 0x9f_ff) ||
+  (c >= 0xac_00 && c <= 0xd7_af) ||
+  (c >= 0x30_40 && c <= 0x30_9f) ||
+  (c >= 0x30_a0 && c <= 0x30_ff) ||
+  (c >= 0x34_00 && c <= 0x4d_bf);
+
+export const tokenizeForSearch = (text: string): string[] => {
+  /* eslint-disable unicorn/prefer-code-point */
+  const tokens: string[] = [];
+  let i = 0;
+  while (i < text.length) {
+    const c = text.charCodeAt(i);
+    if (c <= 32) {
+      i++;
+      continue;
+    }
+
+    const start = i;
+    if (isCJK(c)) {
+      while (i < text.length && isCJK(text.charCodeAt(i))) {
+        i++;
+      }
+      if (i - start === 1) {
+        tokens.push(text[start]);
+      } else {
+        for (let k = start; k < i - 1; k++) {
+          tokens.push(text[k] + text[k + 1]);
+        }
+      }
+    } else {
+      while (i < text.length && text.charCodeAt(i) > 32 && !isCJK(text.charCodeAt(i))) {
+        i++;
+      }
+      tokens.push(text.slice(start, i));
+    }
+  }
+  return tokens;
+};
+
 const joinDeduplicationPlugin = new DeduplicateJoinsPlugin();
 /** TODO: This should only be used for search-related queries, not as a general purpose query builder */
 
@@ -391,7 +431,7 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
     .$if(!!options.ocr, (qb) =>
       qb
         .innerJoin('ocr_search', 'asset.id', 'ocr_search.assetId')
-        .where(() => sql`f_unaccent(ocr_search.text) %>> f_unaccent(${options.ocr!})`),
+        .where(() => sql`f_unaccent(ocr_search.text) %>> f_unaccent(${tokenizeForSearch(options.ocr!).join(' ')})`),
     )
     .$if(!!options.type, (qb) => qb.where('asset.type', '=', options.type!))
     .$if(options.isFavorite !== undefined, (qb) => qb.where('asset.isFavorite', '=', options.isFavorite!))
