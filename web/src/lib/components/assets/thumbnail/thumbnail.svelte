@@ -224,6 +224,8 @@
   bind:this={element}
   data-asset={asset.id}
   data-thumbnail-focus-container
+  data-selected={selected || undefined}
+  data-disabled={disabled || undefined}
   tabindex={0}
   role="link"
 >
@@ -234,7 +236,6 @@
       { 'rounded-xl': selected },
     ]}
     data-outline
-    data-selected={selected || undefined}
   ></div>
 
   <div

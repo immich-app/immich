@@ -119,7 +119,7 @@ export const thumbnailUtils = {
   async expectSelectedReadonly(page: Page, assetId: string) {
     const container = thumbnailUtils.withAssetId(page, assetId);
     await expect(container.locator('[data-selected]')).toBeVisible();
-    await expect(container.locator('button[role="checkbox"][disabled]')).toBeVisible();
+    await expect(container.locator('[data-disabled]')).toBeVisible();
   },
   async expectTimelineHasOnScreenAssets(page: Page) {
     const first = await thumbnailUtils.getFirstInViewport(page);
