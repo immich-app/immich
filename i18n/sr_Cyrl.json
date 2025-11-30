@@ -367,7 +367,6 @@
     "user_restore_scheduled_removal": "Врати корисника - заказано уклањање за {date, date, лонг}",
     "user_settings": "Подешавања корисника",
     "user_settings_description": "Управљајте корисничким подешавањима",
-    "user_successfully_removed": "Корисник {email} је успешно уклоњен.",
     "version_check_enabled_description": "Омогући проверу нових издања",
     "version_check_implications": "Функција провере верзије се ослања на периодичну комуникацију са гитхуб.цом",
     "version_check_settings": "Провера верзије",

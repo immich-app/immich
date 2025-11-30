@@ -171,7 +171,6 @@
     "user_restore_description": "Уліковы запіс карыстальніка <b>{user}</b> будзе адноўлены.",
     "user_settings": "Налады карыстальніка",
     "user_settings_description": "Кіраванне наладамі карыстальніка",
-    "user_successfully_removed": "Карыстальнік {email} быў паспяхова выдалены.",
     "version_check_enabled_description": "Уключыць праверку версіі",
     "version_check_implications": "Функцыя праверкі версіі перыядычна звяртаецца да github.com",
     "version_check_settings": "Праверка версіі",

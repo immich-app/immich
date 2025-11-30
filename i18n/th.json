@@ -372,7 +372,6 @@
     "user_restore_scheduled_removal": "กู้คืนผู้ใช้ - กำหนดการลบในวันที่ {date, date,long}",
     "user_settings": "การตั้งค่าผู้ใช้",
     "user_settings_description": "จัดการการตั้งค่าผู้ใช้",
-    "user_successfully_removed": "ลบผู้ใช้ {email} เรียบร้อยแล้ว",
     "version_check_enabled_description": "เช็ค GitHub เป็นระยะ ๆ เพื่อตรวจสอบรุ่นใหม่",
     "version_check_implications": "การตรวจสอบเวอร์ชันใหม่จะต้องติดต่อกับ github.com เป็นระยะ",
     "version_check_settings": "ตรวจสอบรุ่น",

@@ -390,7 +390,6 @@
     "user_restore_scheduled_removal": "{date, date, long}에 예약된 사용자 삭제 취소",
     "user_settings": "사용자 설정",
     "user_settings_description": "사용자 설정을 관리합니다.",
-    "user_successfully_removed": "사용자({email})가 제거되었습니다.",
     "version_check_enabled_description": "버전 확인 활성화",
     "version_check_implications": "주기적으로 Github에 요청을 보내 새 버전을 확인합니다.",
     "version_check_settings": "버전 확인",
