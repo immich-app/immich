@@ -252,12 +252,12 @@ describe(OcrService.name, () => {
         expect(mocks.ocr.upsert).toHaveBeenCalledWith(assetStub.image.id, expect.any(Array), 'Hello World');
       });
 
-      it('should skip single CJK characters', async () => {
+      it('should keep single CJK characters', async () => {
         mockOcrResult('A', '中', 'B');
 
         await sut.handleOcr({ id: assetStub.image.id });
 
-        expect(mocks.ocr.upsert).toHaveBeenCalledWith(assetStub.image.id, expect.any(Array), 'A B');
+        expect(mocks.ocr.upsert).toHaveBeenCalledWith(assetStub.image.id, expect.any(Array), 'A 中 B');
       });
     });
   });
