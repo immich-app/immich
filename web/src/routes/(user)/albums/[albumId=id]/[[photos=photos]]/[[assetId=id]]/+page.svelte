@@ -426,7 +426,7 @@
         enableRouting={viewMode === AlbumPageViewMode.SELECT_ASSETS ? false : true}
         {album}
         {albumUsers}
-        {timelineManager}
+        bind:timelineManager
         {options}
         assetInteraction={currentAssetIntersection}
         {isShared}
