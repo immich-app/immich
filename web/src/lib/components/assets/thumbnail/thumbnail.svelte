@@ -230,6 +230,7 @@
       { 'rounded-xl': selected },
     ]}
     data-outline
+    data-selected={selected || undefined}
   ></div>
 
   <div

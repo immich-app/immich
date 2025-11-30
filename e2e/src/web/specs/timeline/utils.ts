@@ -117,12 +117,9 @@ export const thumbnailUtils = {
     await expect(thumbnailUtils.withAssetId(page, assetId).locator('[data-icon-archive]')).toHaveCount(0);
   },
   async expectSelectedReadonly(page: Page, assetId: string) {
-    // todo - need a data attribute for selected
-    await expect(
-      page.locator(
-        `[data-thumbnail-focus-container][data-asset="${assetId}"] > .group.cursor-not-allowed > .rounded-xl`,
-      ),
-    ).toBeVisible();
+    const container = thumbnailUtils.withAssetId(page, assetId);
+    await expect(container.locator('[data-selected]')).toBeVisible();
+    await expect(container.locator('button[role="checkbox"][disabled]')).toBeVisible();
   },
   async expectTimelineHasOnScreenAssets(page: Page) {
     const first = await thumbnailUtils.getFirstInViewport(page);
