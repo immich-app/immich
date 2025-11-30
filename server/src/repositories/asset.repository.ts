@@ -912,4 +912,37 @@ export class AssetRepository {
 
     return count;
   }
+
+async getUserDailyUploads(
+  userId: string,
+  from: Date,
+  to: Date,
+  tz: string = 'UTC',
+): Promise<Array<{ date: string; count: number }>> {
+  const dayText = sql<string>`
+    to_char(
+      date_trunc('day', (a."createdAt" AT TIME ZONE ${tz})),
+      'YYYY-MM-DD'
+    )
+  `;
+
+  const daySub = this.db
+    .selectFrom('asset as a')
+    .select(dayText.as('day'))
+    .where('a.ownerId', '=', asUuid(userId))
+    .where('a.deletedAt', 'is', null)
+    .where('a.createdAt', '>=', from)
+    .where('a.createdAt', '<', to) // end-exclusive
+    .as('d');
+
+  const rows = await this.db
+    .selectFrom(daySub)
+    .select('day')
+    .select((eb) => eb.fn.countAll<number>().as('count'))
+    .groupBy('day')
+    .orderBy('day', 'asc')
+    .execute();
+
+  return rows.map((r) => ({ date: String(r.day), count: Number(r.count) }));
+}
 }
