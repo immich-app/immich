@@ -293,7 +293,6 @@
     "user_restore_scheduled_removal": "بازیابی کاربر - حذف برنامه ریزی شده در {date, date, long}",
     "user_settings": "تنظیمات کاربر",
     "user_settings_description": "مدیریت تنظیمات کاربر",
-    "user_successfully_removed": "کاربر {email} با موفقیت حذف شد.",
     "version_check_enabled_description": "فعال‌سازی بررسی نسخه",
     "version_check_implications": "ویژگی بررسی نسخه به ارتباط دوره ای با github.com متکی است",
     "version_check_settings": "بررسی نسخه",

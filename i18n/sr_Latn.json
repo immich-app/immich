@@ -370,7 +370,6 @@
     "user_restore_scheduled_removal": "Vrati korisnika - zakazano uklanjanje za {date, date, long}",
     "user_settings": "Podešavanja korisnika",
     "user_settings_description": "Upravljajte korisničkim podešavanjima",
-    "user_successfully_removed": "Korisnik {email} je uspešno uklonjen.",
     "version_check_enabled_description": "Omogućite proveru novih izdanja",
     "version_check_implications": "Funkcija provere verzije se oslanja na periodičnu komunikaciju sa github.com",
     "version_check_settings": "Provera verzije",

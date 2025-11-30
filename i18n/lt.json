@@ -384,7 +384,6 @@
     "user_restore_scheduled_removal": "Atkurti naudotoją - suplanuotas pašalinimas {date, date, long}",
     "user_settings": "Naudotojo nustatymai",
     "user_settings_description": "Valdyti naudotojo nustatymus",
-    "user_successfully_removed": "Naudotojas {email} sėkmingai pašalintas.",
     "version_check_enabled_description": "Įgalinti versijų tikrinimą",
     "version_check_implications": "Versijų tikrinimas reikalauja periodiškos komunikacijos su github.com",
     "version_check_settings": "Versijos tikrinimas",
