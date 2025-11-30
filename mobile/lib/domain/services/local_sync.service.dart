@@ -286,11 +286,23 @@ class LocalSyncService {
   }
 
   bool _assetsEqual(LocalAsset a, LocalAsset b) {
-    return a.updatedAt.isAtSameMomentAs(b.updatedAt) &&
+    if (CurrentPlatform.isAndroid) {
+      return a.updatedAt.isAtSameMomentAs(b.updatedAt) &&
+          a.createdAt.isAtSameMomentAs(b.createdAt) &&
+          a.width == b.width &&
+          a.height == b.height &&
+          a.durationInSeconds == b.durationInSeconds;
+    }
+
+    final firstAdjustment = a.adjustmentTime?.millisecondsSinceEpoch ?? 0;
+    final secondAdjustment = b.adjustmentTime?.millisecondsSinceEpoch ?? 0;
+    return firstAdjustment == secondAdjustment &&
         a.createdAt.isAtSameMomentAs(b.createdAt) &&
         a.width == b.width &&
         a.height == b.height &&
-        a.durationInSeconds == b.durationInSeconds;
+        a.durationInSeconds == b.durationInSeconds &&
+        a.latitude == b.latitude &&
+        a.longitude == b.longitude;
   }
 
   bool _albumsEqual(LocalAlbum a, LocalAlbum b) {
@@ -376,5 +388,8 @@ extension PlatformToLocalAsset on PlatformAsset {
     durationInSeconds: durationInSeconds,
     isFavorite: isFavorite,
     orientation: orientation,
+    adjustmentTime: tryFromSecondsSinceEpoch(adjustmentTime, isUtc: true),
+    latitude: latitude,
+    longitude: longitude,
   );
 }
