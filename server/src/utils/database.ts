@@ -330,14 +330,18 @@ export const tokenizeForSearch = (text: string): string => {
         i++;
       }
       for (let k = start; k < i - 1; k++) {
-        if (result) result += ' ';
+        if (result) {
+          result += ' ';
+        }
         result += text[k] + text[k + 1];
       }
     } else {
       while (i < text.length && text.charCodeAt(i) > 32 && !isCJK(text.charCodeAt(i))) {
         i++;
       }
-      if (result) result += ' ';
+      if (result) {
+        result += ' ';
+      }
       result += text.slice(start, i);
     }
   }

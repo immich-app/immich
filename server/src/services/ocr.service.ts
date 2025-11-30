@@ -85,7 +85,9 @@ export class OcrService extends BaseService {
       });
       const tokens = tokenizeForSearch(rawText);
       if (tokens) {
-        if (searchText) searchText += ' ';
+        if (searchText) {
+          searchText += ' ';
+        }
         searchText += tokens;
       }
     }
