@@ -10,7 +10,6 @@ import 'package:immich_mobile/infrastructure/entities/exif.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
-import 'package:immich_mobile/infrastructure/entities/trashed_local_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/memory.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/memory_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/partner.entity.dart';
@@ -21,6 +20,8 @@ import 'package:immich_mobile/infrastructure/entities/remote_album_user.entity.d
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/stack.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/store.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/trash_sync.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/trashed_local_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/user_metadata.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.steps.dart';
@@ -64,6 +65,7 @@ class IsarDatabaseRepository implements IDatabaseRepository {
     AssetFaceEntity,
     StoreEntity,
     TrashedLocalAssetEntity,
+    TrashSyncEntity,
   ],
   include: {'package:immich_mobile/infrastructure/entities/merged_asset.drift'},
 )
@@ -95,7 +97,7 @@ class Drift extends $Drift implements IDatabaseRepository {
   }
 
   @override
-  int get schemaVersion => 13;
+  int get schemaVersion => 14;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -184,6 +186,12 @@ class Drift extends $Drift implements IDatabaseRepository {
             await m.create(v13.trashedLocalAssetEntity);
             await m.createIndex(v13.idxTrashedLocalAssetChecksum);
             await m.createIndex(v13.idxTrashedLocalAssetAlbum);
+          },
+          from13To14: (m, v14) async {
+            await m.create(v14.trashSyncEntity);
+            await m.createIndex(v14.idxTrashSyncChecksum);
+            await m.createIndex(v14.idxTrashSyncStatus);
+            await m.createIndex(v14.idxTrashSyncChecksumStatus);
           },
         ),
       );

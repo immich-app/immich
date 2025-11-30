@@ -20,6 +20,7 @@ class RemoteAsset extends BaseAsset {
     required super.type,
     required super.createdAt,
     required super.updatedAt,
+    super.deletedAt,
     super.width,
     super.height,
     super.durationInSeconds,
@@ -51,6 +52,7 @@ class RemoteAsset extends BaseAsset {
     type: $type,
     createdAt: $createdAt,
     updatedAt: $updatedAt,
+    deletedAt: ${deletedAt ?? "<NA>"},
     width: ${width ?? "<NA>"},
     height: ${height ?? "<NA>"},
     durationInSeconds: ${durationInSeconds ?? "<NA>"},
@@ -104,6 +106,7 @@ class RemoteAsset extends BaseAsset {
     AssetVisibility? visibility,
     String? livePhotoVideoId,
     String? stackId,
+    DateTime? deletedAt,
   }) {
     return RemoteAsset(
       id: id ?? this.id,
@@ -122,6 +125,7 @@ class RemoteAsset extends BaseAsset {
       visibility: visibility ?? this.visibility,
       livePhotoVideoId: livePhotoVideoId ?? this.livePhotoVideoId,
       stackId: stackId ?? this.stackId,
+      deletedAt: deletedAt ?? this.deletedAt,
     );
   }
 }

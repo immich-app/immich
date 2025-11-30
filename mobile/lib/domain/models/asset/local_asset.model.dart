@@ -13,6 +13,7 @@ class LocalAsset extends BaseAsset {
     required super.type,
     required super.createdAt,
     required super.updatedAt,
+    super.deletedAt,
     super.width,
     super.height,
     super.durationInSeconds,
@@ -41,12 +42,13 @@ class LocalAsset extends BaseAsset {
    type: $type,
    createdAt: $createdAt,
    updatedAt: $updatedAt,
+   deletedAt: $deletedAt,
    width: ${width ?? "<NA>"},
    height: ${height ?? "<NA>"},
    durationInSeconds: ${durationInSeconds ?? "<NA>"},
    remoteId: ${remoteId ?? "<NA>"}
    isFavorite: $isFavorite,
-  orientation: $orientation,
+   orientation: $orientation,
  }''';
   }
 
@@ -74,6 +76,7 @@ class LocalAsset extends BaseAsset {
     int? durationInSeconds,
     bool? isFavorite,
     int? orientation,
+    DateTime? deletedAt,
   }) {
     return LocalAsset(
       id: id ?? this.id,
@@ -88,6 +91,7 @@ class LocalAsset extends BaseAsset {
       durationInSeconds: durationInSeconds ?? this.durationInSeconds,
       isFavorite: isFavorite ?? this.isFavorite,
       orientation: orientation ?? this.orientation,
+      deletedAt: deletedAt ?? this.deletedAt,
     );
   }
 }
