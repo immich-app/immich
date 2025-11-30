@@ -65,7 +65,7 @@ export class OcrService extends BaseService {
 
   parseOcrResults(id: string, { box, boxScore, text, textScore }: OCR) {
     const ocrDataList = [];
-    let searchText = '';
+    const searchTokens = [];
     for (let i = 0; i < text.length; i++) {
       const rawText = text[i];
       const boxOffset = i * 8;
@@ -83,15 +83,9 @@ export class OcrService extends BaseService {
         textScore: textScore[i],
         text: rawText,
       });
-      const tokens = tokenizeForSearch(rawText);
-      if (tokens) {
-        if (searchText) {
-          searchText += ' ';
-        }
-        searchText += tokens;
-      }
+      searchTokens.push(...tokenizeForSearch(rawText));
     }
 
-    return { ocrDataList, searchText };
+    return { ocrDataList, searchText: searchTokens.join(' ') };
   }
 }

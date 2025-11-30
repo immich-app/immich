@@ -313,9 +313,9 @@ const isCJK = (c: number): boolean =>
   (c >= 0x30_a0 && c <= 0x30_ff) ||
   (c >= 0x34_00 && c <= 0x4d_bf);
 
-export const tokenizeForSearch = (text: string): string => {
+export const tokenizeForSearch = (text: string): string[] => {
   /* eslint-disable unicorn/prefer-code-point */
-  let result = '';
+  const tokens: string[] = [];
   let i = 0;
   while (i < text.length) {
     const c = text.charCodeAt(i);
@@ -330,29 +330,20 @@ export const tokenizeForSearch = (text: string): string => {
         i++;
       }
       if (i - start === 1) {
-        if (result) {
-          result += ' ';
-        }
-        result += text[start];
+        tokens.push(text[start]);
       } else {
         for (let k = start; k < i - 1; k++) {
-          if (result) {
-            result += ' ';
-          }
-          result += text[k] + text[k + 1];
+          tokens.push(text[k] + text[k + 1]);
         }
       }
     } else {
       while (i < text.length && text.charCodeAt(i) > 32 && !isCJK(text.charCodeAt(i))) {
         i++;
       }
-      if (result) {
-        result += ' ';
-      }
-      result += text.slice(start, i);
+      tokens.push(text.slice(start, i));
     }
   }
-  return result;
+  return tokens;
 };
 
 const joinDeduplicationPlugin = new DeduplicateJoinsPlugin();
@@ -440,7 +431,7 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
     .$if(!!options.ocr, (qb) =>
       qb
         .innerJoin('ocr_search', 'asset.id', 'ocr_search.assetId')
-        .where(() => sql`f_unaccent(ocr_search.text) %>> f_unaccent(${tokenizeForSearch(options.ocr!)})`),
+        .where(() => sql`f_unaccent(ocr_search.text) %>> f_unaccent(${tokenizeForSearch(options.ocr!).join(' ')})`),
     )
     .$if(!!options.type, (qb) => qb.where('asset.type', '=', options.type!))
     .$if(options.isFavorite !== undefined, (qb) => qb.where('asset.isFavorite', '=', options.isFavorite!))
