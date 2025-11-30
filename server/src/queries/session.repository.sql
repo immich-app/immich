@@ -24,6 +24,8 @@ select
   "session"."updatedAt",
   "session"."pinExpiresAt",
   "session"."appVersion",
+  "session"."deviceOS",
+  "session"."deviceType",
   (
     select
       to_json(obj)
