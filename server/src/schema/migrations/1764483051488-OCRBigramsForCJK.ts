@@ -1,0 +1,19 @@
+import { Kysely, sql } from 'kysely';
+
+export async function up(db: Kysely<any>): Promise<void> {
+  await sql`truncate ${sql.table('ocr_search')}`.execute(db);
+  const batch = [];
+  for await (const { assetId, text } of db.selectFrom('asset_ocr').select(['assetId', 'text']).stream()) {
+    batch.push({ assetId, text });
+    if (batch.length >= 5000) {
+      await db.insertInto('ocr_search').values(batch).execute();
+      batch.length = 0;
+    }
+  }
+
+  if (batch.length > 0) {
+    await db.insertInto('ocr_search').values(batch).execute();
+  }
+}
+
+export async function down(db: Kysely<any>): Promise<void> {}
