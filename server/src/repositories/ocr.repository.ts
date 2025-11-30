@@ -45,6 +45,7 @@ export class OcrRepository {
           textScore: DummyValue.NUMBER,
         },
       ],
+      DummyValue.STRING,
     ],
   })
   upsert(assetId: string, ocrDataList: Insertable<AssetOcrTable>[], searchText: string) {
