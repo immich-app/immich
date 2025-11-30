@@ -88,8 +88,8 @@ class Settings(BaseSettings):
 class NonPrefixedSettings(BaseSettings):
     model_config = SettingsConfigDict(case_sensitive=False)
 
-    immich_host: str = "[::]"
-    immich_port: int = 3003
+    immich_host: str = os.getenv("MACHINE_LEARNING_HOST", "[::]")
+    immich_port: int = int(os.getenv("MACHINE_LEARNING_PORT", "3003"))
     immich_log_level: str = "info"
     no_color: bool = False
 
