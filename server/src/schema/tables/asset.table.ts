@@ -6,17 +6,17 @@ import { LibraryTable } from 'src/schema/tables/library.table';
 import { StackTable } from 'src/schema/tables/stack.table';
 import { UserTable } from 'src/schema/tables/user.table';
 import {
-  AfterDeleteTrigger,
-  Column,
-  CreateDateColumn,
-  DeleteDateColumn,
-  ForeignKeyColumn,
-  Generated,
-  Index,
-  PrimaryGeneratedColumn,
-  Table,
-  Timestamp,
-  UpdateDateColumn,
+    AfterDeleteTrigger,
+    Column,
+    CreateDateColumn,
+    DeleteDateColumn,
+    ForeignKeyColumn,
+    Generated,
+    Index,
+    PrimaryGeneratedColumn,
+    Table,
+    Timestamp,
+    UpdateDateColumn,
 } from 'src/sql-tools';
 import { ASSET_CHECKSUM_CONSTRAINT } from 'src/utils/database';
 
@@ -74,6 +74,29 @@ export class AssetTable {
 
   @Column()
   originalPath!: string;
+
+  // Encryption metadata for original asset file (nullable when not encrypted)
+  @Column({ type: 'boolean', default: false })
+  encrypted!: Generated<boolean>;
+
+  @Column({ type: 'character varying', nullable: true })
+  encryptionAlgo!: string | null;
+
+  @Column({ type: 'bytea', nullable: true })
+  encryptionIv!: Buffer | null;
+
+  @Column({ type: 'bytea', nullable: true })
+  encryptedDek!: Buffer | null;
+
+  @Column({ type: 'bytea', nullable: true })
+  encryptionTag!: Buffer | null;
+
+  @Column({ type: 'integer', nullable: true })
+  encryptionVersion!: number | null;
+
+  // Plaintext checksum stored for dedupe/verification when encrypted at rest
+  @Column({ type: 'bytea', nullable: true })
+  plaintextChecksum!: Buffer | null;
 
   @Column({ type: 'timestamp with time zone', index: true })
   fileCreatedAt!: Timestamp;

@@ -1,17 +1,17 @@
 import { CronExpression } from '@nestjs/schedule';
 import {
-  AudioCodec,
-  Colorspace,
-  CQMode,
-  ImageFormat,
-  LogLevel,
-  OAuthTokenEndpointAuthMethod,
-  QueueName,
-  ToneMapping,
-  TranscodeHardwareAcceleration,
-  TranscodePolicy,
-  VideoCodec,
-  VideoContainer,
+    AudioCodec,
+    Colorspace,
+    CQMode,
+    ImageFormat,
+    LogLevel,
+    OAuthTokenEndpointAuthMethod,
+    QueueName,
+    ToneMapping,
+    TranscodeHardwareAcceleration,
+    TranscodePolicy,
+    VideoCodec,
+    VideoContainer,
 } from 'src/enum';
 import { ConcurrentQueueName, FullsizeImageOptions, ImageOptions } from 'src/types';
 
@@ -186,6 +186,19 @@ export interface SystemConfig {
   };
   user: {
     deleteDelay: number;
+  };
+
+  // Storage encryption (at-rest) configuration
+  storageEncryption?: {
+    enabled: boolean;
+    algorithm: 'AES-256-GCM';
+    mode: 'sse' | 'per-user';
+    kek: {
+      type: 'local' | 'kms';
+      secret?: string; // for local
+      provider?: 'aws' | 'gcp' | 'azure';
+      keyId?: string; // for KMS
+    };
   };
 }
 

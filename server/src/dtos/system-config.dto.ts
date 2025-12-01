@@ -1,34 +1,34 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { Type, instanceToPlain, plainToInstance } from 'class-transformer';
 import {
-  ArrayMinSize,
-  IsInt,
-  IsNotEmpty,
-  IsNumber,
-  IsObject,
-  IsPositive,
-  IsString,
-  IsUrl,
-  Max,
-  Min,
-  ValidateIf,
-  ValidateNested,
+    ArrayMinSize,
+    IsInt,
+    IsNotEmpty,
+    IsNumber,
+    IsObject,
+    IsPositive,
+    IsString,
+    IsUrl,
+    Max,
+    Min,
+    ValidateIf,
+    ValidateNested,
 } from 'class-validator';
 import { SystemConfig } from 'src/config';
 import { CLIPConfig, DuplicateDetectionConfig, FacialRecognitionConfig, OcrConfig } from 'src/dtos/model-config.dto';
 import {
-  AudioCodec,
-  CQMode,
-  Colorspace,
-  ImageFormat,
-  LogLevel,
-  OAuthTokenEndpointAuthMethod,
-  QueueName,
-  ToneMapping,
-  TranscodeHardwareAcceleration,
-  TranscodePolicy,
-  VideoCodec,
-  VideoContainer,
+    AudioCodec,
+    CQMode,
+    Colorspace,
+    ImageFormat,
+    LogLevel,
+    OAuthTokenEndpointAuthMethod,
+    QueueName,
+    ToneMapping,
+    TranscodeHardwareAcceleration,
+    TranscodePolicy,
+    VideoCodec,
+    VideoContainer,
 } from 'src/enum';
 import { ConcurrentQueueName } from 'src/types';
 import { IsCronExpression, IsDateStringFormat, Optional, ValidateBoolean, ValidateEnum } from 'src/validation';
@@ -563,6 +563,39 @@ export class SystemConfigThemeDto {
   customCss!: string;
 }
 
+class SystemConfigStorageEncryptionKekDto {
+  @IsString()
+  type!: 'local' | 'kms';
+
+  @IsString()
+  @Optional()
+  secret!: string;
+
+  @IsString()
+  @Optional()
+  provider!: 'aws' | 'gcp' | 'azure';
+
+  @IsString()
+  @Optional()
+  keyId!: string;
+}
+
+class SystemConfigStorageEncryptionDto {
+  @ValidateBoolean()
+  enabled!: boolean;
+
+  @IsString()
+  algorithm!: 'AES-256-GCM';
+
+  @IsString()
+  mode!: 'sse' | 'per-user';
+
+  @Type(() => SystemConfigStorageEncryptionKekDto)
+  @ValidateNested()
+  @IsObject()
+  kek!: SystemConfigStorageEncryptionKekDto;
+}
+
 class SystemConfigGeneratedImageDto {
   @ValidateEnum({ enum: ImageFormat, name: 'ImageFormat' })
   format!: ImageFormat;
@@ -743,8 +776,15 @@ export class SystemConfigDto implements SystemConfig {
   @ValidateNested()
   @IsObject()
   user!: SystemConfigUserDto;
+
+  @Type(() => SystemConfigStorageEncryptionDto)
+  @ValidateNested()
+  @IsObject()
+  @Optional()
+  storageEncryption?: SystemConfigStorageEncryptionDto;
 }
 
 export function mapConfig(config: SystemConfig): SystemConfigDto {
-  return config;
+  // Coerce SystemConfig into a validated DTO shape to satisfy type expectations
+  return instanceToPlain(plainToInstance(SystemConfigDto, config)) as SystemConfigDto;
 }

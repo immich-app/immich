@@ -4,21 +4,21 @@ import sanitize from 'sanitize-filename';
 import { StorageCore } from 'src/cores/storage.core';
 import { Asset } from 'src/database';
 import {
-  AssetBulkUploadCheckResponseDto,
-  AssetMediaResponseDto,
-  AssetMediaStatus,
-  AssetRejectReason,
-  AssetUploadAction,
-  CheckExistingAssetsResponseDto,
+    AssetBulkUploadCheckResponseDto,
+    AssetMediaResponseDto,
+    AssetMediaStatus,
+    AssetRejectReason,
+    AssetUploadAction,
+    CheckExistingAssetsResponseDto,
 } from 'src/dtos/asset-media-response.dto';
 import {
-  AssetBulkUploadCheckDto,
-  AssetMediaCreateDto,
-  AssetMediaOptionsDto,
-  AssetMediaReplaceDto,
-  AssetMediaSize,
-  CheckExistingAssetsDto,
-  UploadFieldName,
+    AssetBulkUploadCheckDto,
+    AssetMediaCreateDto,
+    AssetMediaOptionsDto,
+    AssetMediaReplaceDto,
+    AssetMediaSize,
+    CheckExistingAssetsDto,
+    UploadFieldName,
 } from 'src/dtos/asset-media.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { AssetStatus, AssetType, AssetVisibility, CacheControl, JobName, Permission, StorageFolder } from 'src/enum';
@@ -188,11 +188,48 @@ export class AssetMediaService extends BaseService {
     await this.requireAccess({ auth, permission: Permission.AssetDownload, ids: [id] });
 
     const asset = await this.findOrFail(id);
-
+    const repos = { configRepo: this.configRepository, metadataRepo: this.systemMetadataRepository, logger: this.logger };
+    const config = await this.getConfig({ withCache: true });
+    const contentType = mimeTypes.lookup(asset.originalPath);
+    if (asset.encrypted && config.storageEncryption?.enabled) {
+      try {
+        const secret = config.storageEncryption?.kek?.secret || '';
+        const kek = this.cryptoRepository.deriveKek(secret);
+        const { dek } = this.cryptoRepository.unwrapDek(
+          kek,
+          asset.encryptedDek!,
+          asset.encryptionIv!,
+          asset.encryptionTag!,
+        );
+        const stream = await this.storageRepository.createDecryptedReadStream(
+          asset.originalPath,
+          {
+            algo: 'AES-256-GCM',
+            dek,
+            iv: asset.encryptionIv!,
+            authTag: asset.encryptionTag!,
+          },
+          contentType,
+        );
+        // Attach error telemetry on the returned stream
+        stream.stream.on('error', (error) => {
+          this.logger.error(`Decrypt stream error for asset ${asset.id}: ${error?.message}`);
+        });
+        return new ImmichFileResponse({
+          path: asset.originalPath,
+          fileName: asset.originalFileName,
+          contentType,
+          cacheControl: CacheControl.PrivateWithCache,
+        });
+      } catch (error: any) {
+        this.logger.error(`Failed to decrypt asset ${asset.id}: ${error?.message}`);
+        throw new InternalServerErrorException('Failed to decrypt file');
+      }
+    }
     return new ImmichFileResponse({
       path: asset.originalPath,
       fileName: asset.originalFileName,
-      contentType: mimeTypes.lookup(asset.originalPath),
+      contentType,
       cacheControl: CacheControl.PrivateWithCache,
     });
   }
@@ -394,12 +431,43 @@ export class AssetMediaService extends BaseService {
   }
 
   private async create(ownerId: string, dto: AssetMediaCreateDto, file: UploadFile, sidecarFile?: UploadFile) {
+    const config = await this.getConfig({ withCache: true });
+    const shouldEncrypt = !!config.storageEncryption?.enabled;
+    let originalPath = file.originalPath;
+    let encryptionIv: Buffer | null = null;
+    let encryptedDek: Buffer | null = null;
+    let encryptionTag: Buffer | null = null;
+    let encrypted = false;
+
+    if (shouldEncrypt) {
+      const dek = this.cryptoRepository.randomBytes(32);
+      const iv = this.cryptoRepository.randomBytes(12);
+      const write = this.storageRepository.createEncryptedWriteStream(file.originalPath, { algo: 'AES-256-GCM', dek, iv });
+      const readStream = await this.storageRepository.createReadStream(file.originalPath);
+      const tag = await new Promise<Buffer>((resolve, reject) => {
+        readStream.stream
+          .on('error', reject)
+          .pipe(write.writable)
+          .on('error', reject)
+          .on('finish', () => resolve(write.getAuthTag()));
+      });
+      // overwrite the original with encrypted contents already written to same path
+      const secret = config.storageEncryption?.kek?.secret || '';
+      const kek = this.cryptoRepository.deriveKek(secret);
+      const wrapped = this.cryptoRepository.wrapDek(kek, dek);
+      encryptionIv = iv;
+      encryptedDek = wrapped.wrapped;
+      encryptionTag = tag;
+      encrypted = true;
+      originalPath = file.originalPath;
+    }
+
     const asset = await this.assetRepository.create({
       ownerId,
       libraryId: null,
 
       checksum: file.checksum,
-      originalPath: file.originalPath,
+      originalPath,
 
       deviceAssetId: dto.deviceAssetId,
       deviceId: dto.deviceId,
@@ -415,6 +483,13 @@ export class AssetMediaService extends BaseService {
       livePhotoVideoId: dto.livePhotoVideoId,
       originalFileName: dto.filename || file.originalName,
       sidecarPath: sidecarFile?.originalPath,
+      encrypted,
+      encryptionAlgo: encrypted ? 'AES-256-GCM' : null,
+      encryptionIv,
+      encryptedDek,
+      encryptionTag,
+      encryptionVersion: encrypted ? 1 : null,
+      plaintextChecksum: encrypted ? file.checksum : null,
     });
 
     if (dto.metadata) {
@@ -424,7 +499,7 @@ export class AssetMediaService extends BaseService {
     if (sidecarFile) {
       await this.storageRepository.utimes(sidecarFile.originalPath, new Date(), new Date(dto.fileModifiedAt));
     }
-    await this.storageRepository.utimes(file.originalPath, new Date(), new Date(dto.fileModifiedAt));
+    await this.storageRepository.utimes(originalPath, new Date(), new Date(dto.fileModifiedAt));
     await this.assetRepository.upsertExif({ assetId: asset.id, fileSizeInByte: file.size });
 
     await this.eventRepository.emit('AssetCreate', { asset });

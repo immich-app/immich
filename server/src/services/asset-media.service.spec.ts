@@ -1,8 +1,8 @@
 import {
-  BadRequestException,
-  InternalServerErrorException,
-  NotFoundException,
-  UnauthorizedException,
+    BadRequestException,
+    InternalServerErrorException,
+    NotFoundException,
+    UnauthorizedException,
 } from '@nestjs/common';
 import { Stats } from 'node:fs';
 import { AssetFile } from 'src/database';
@@ -522,6 +522,29 @@ describe(AssetMediaService.name, () => {
           cacheControl: CacheControl.PrivateWithCache,
         }),
       );
+    });
+
+    it('should fail with 500 when decrypt unwrap fails (originals)', async () => {
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
+      const encryptedAsset = {
+        ...assetStub.image,
+        encrypted: true,
+        encryptionAlgo: 'AES-256-GCM',
+        encryptionIv: Buffer.from('iv'),
+        encryptedDek: Buffer.from('wrapped'),
+        encryptionTag: Buffer.from('tag'),
+      };
+      mocks.asset.getById.mockResolvedValue(encryptedAsset as any);
+      // enable encryption flag via service getConfig
+      (sut as any).getConfig = vitest.fn().mockResolvedValue({
+        storageEncryption: { enabled: true, kek: { type: 'local', secret: 'test-secret-should-be-long-enough' } },
+      });
+      // unwrap throws
+      mocks.crypto.unwrapDek.mockImplementation(() => {
+        throw new Error('unwrap failed');
+      });
+
+      await expect(sut.downloadOriginal(authStub.admin, 'asset-1')).rejects.toBeInstanceOf(InternalServerErrorException);
     });
   });
 

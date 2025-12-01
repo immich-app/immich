@@ -15,5 +15,9 @@ export const newCryptoRepositoryMock = (): Mocked<RepositoryInterface<CryptoRepo
     randomBytesAsText: vitest.fn().mockReturnValue(Buffer.from('random-bytes').toString('base64')),
     signJwt: vitest.fn().mockReturnValue('mock-jwt-token'),
     verifyJwt: vitest.fn().mockImplementation((token) => ({ verified: true, token })),
+    // storage encryption helpers (no-op defaults)
+    deriveKek: vitest.fn().mockImplementation((secret: string) => Buffer.from(secret)),
+    wrapDek: vitest.fn().mockImplementation((kek: Buffer, dek: Buffer) => Buffer.from(`${kek.toString('hex')}:${dek.toString('hex')}`)),
+    unwrapDek: vitest.fn().mockImplementation((kek: Buffer, wrapped: Buffer) => Buffer.from('dek')),
   };
 };

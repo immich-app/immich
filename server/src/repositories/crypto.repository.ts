@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { compareSync, hash } from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { createHash, createPublicKey, createVerify, randomBytes, randomUUID } from 'node:crypto';
+import { createCipheriv, createDecipheriv, createHash, createPublicKey, createVerify, randomBytes, randomUUID } from 'node:crypto';
 import { createReadStream } from 'node:fs';
+import { EncryptionAlgo, generateIv } from 'src/utils/encryption';
 
 @Injectable()
 export class CryptoRepository {
@@ -65,5 +66,27 @@ export class CryptoRepository {
 
   verifyJwt<T = any>(token: string, secret: string): T {
     return jwt.verify(token, secret, { algorithms: ['HS256'] }) as T;
+  }
+
+  // Derive a 32-byte KEK from a secret string using sha256
+  deriveKek(secret: string): Buffer {
+    return createHash('sha256').update(secret).digest();
+  }
+
+  // Wrap a DEK using AES-256-GCM with KEK; returns ciphertext, iv, tag
+  wrapDek(kek: Buffer, dek: Buffer, algo: EncryptionAlgo = 'AES-256-GCM') {
+    const iv = generateIv();
+    const cipher = createCipheriv('aes-256-gcm', kek, iv);
+    const wrapped = Buffer.concat([cipher.update(dek), cipher.final()]);
+    const tag = cipher.getAuthTag();
+    return { wrapped, iv, tag, algo };
+  }
+
+  // Unwrap a DEK using AES-256-GCM with KEK and provided iv/tag
+  unwrapDek(kek: Buffer, wrapped: Buffer, iv: Buffer, tag: Buffer, algo: EncryptionAlgo = 'AES-256-GCM') {
+    const decipher = createDecipheriv('aes-256-gcm', kek, iv);
+    decipher.setAuthTag(tag);
+    const dek = Buffer.concat([decipher.update(wrapped), decipher.final()]);
+    return { dek, algo };
   }
 }

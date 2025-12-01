@@ -2,12 +2,13 @@ import { Injectable } from '@nestjs/common';
 import archiver from 'archiver';
 import chokidar, { ChokidarOptions } from 'chokidar';
 import { escapePath, glob, globStream } from 'fast-glob';
-import { constants, createReadStream, createWriteStream, existsSync, mkdirSync, ReadOptionsWithBuffer } from 'node:fs';
+import { constants, createReadStream, createWriteStream, existsSync, createReadStream as fsCreateReadStream, mkdirSync, ReadOptionsWithBuffer } from 'node:fs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { Readable, Writable } from 'node:stream';
 import { CrawlOptionsDto, WalkOptionsDto } from 'src/dtos/library.dto';
 import { LoggingRepository } from 'src/repositories/logging.repository';
+import { createDecryptStream, createEncryptStream, DecryptParams, EncryptParams } from 'src/utils/encryption';
 import { mimeTypes } from 'src/utils/mime-types';
 
 export interface WatchEvents {
@@ -65,6 +66,14 @@ export class StorageRepository {
     return createWriteStream(filepath, { flags: 'w' });
   }
 
+  // Encrypted write: returns writable stream that encrypts data before persisting
+  createEncryptedWriteStream(filepath: string, params: EncryptParams): { writable: Writable; getAuthTag: () => Buffer } {
+    const fileStream = createWriteStream(filepath, { flags: 'w' });
+    const { stream, getAuthTag } = createEncryptStream(params);
+    stream.pipe(fileStream);
+    return { writable: stream, getAuthTag };
+  }
+
   createOrOverwriteFile(filepath: string, buffer: Buffer) {
     return fs.writeFile(filepath, buffer, { flag: 'w' });
   }
@@ -98,6 +107,20 @@ export class StorageRepository {
     await fs.access(filepath, constants.R_OK);
     return {
       stream: createReadStream(filepath),
+      length: size,
+      type: mimeType || undefined,
+    };
+  }
+
+  // Encrypted read: returns readable stream that decrypts from file on the fly
+  async createDecryptedReadStream(filepath: string, params: DecryptParams, mimeType?: string | null): Promise<ImmichReadStream> {
+    const { size } = await fs.stat(filepath);
+    await fs.access(filepath, constants.R_OK);
+    const fileStream = fsCreateReadStream(filepath);
+    const { stream } = createDecryptStream(params);
+    fileStream.pipe(stream);
+    return {
+      stream,
       length: size,
       type: mimeType || undefined,
     };

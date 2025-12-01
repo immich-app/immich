@@ -115,6 +115,30 @@ const buildConfig = async (repos: RepoDeps) => {
   // return config with class-transform changes
   const config = instanceToPlain(instance) as SystemConfig;
 
+  // additional validation for storage encryption
+  if (config.storageEncryption?.enabled) {
+    const kek = config.storageEncryption.kek;
+    if (kek.type === 'local' && (!kek.secret || kek.secret.length < 16)) {
+      const message = 'storageEncryption.enabled requires a strong local secret (IMMICH_STORAGE_ENCRYPTION_SECRET)';
+      if (configFile) {
+        throw new Error(message);
+      } else {
+        logger.error(message);
+        // disable feature to fail-safe
+        config.storageEncryption.enabled = false;
+      }
+    }
+    if (kek.type === 'kms' && (!kek.provider || !kek.keyId)) {
+      const message = 'storageEncryption.kek for KMS requires provider and keyId';
+      if (configFile) {
+        throw new Error(message);
+      } else {
+        logger.error(message);
+        config.storageEncryption.enabled = false;
+      }
+    }
+  }
+
   if (config.server.externalDomain.length > 0) {
     const domain = new URL(config.server.externalDomain);
 
