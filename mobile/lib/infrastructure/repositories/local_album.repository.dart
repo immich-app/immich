@@ -264,7 +264,7 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
         batch.update(
           _db.localAssetEntity,
           companion,
-          where: (row) => row.id.equals(asset.id) & row.adjustmentTime.equalsNullable(asset.adjustmentTime).not(),
+          where: (row) => row.id.equals(asset.id) & row.adjustmentTime.isNotExp(Variable(asset.adjustmentTime)),
         );
       }
     });
