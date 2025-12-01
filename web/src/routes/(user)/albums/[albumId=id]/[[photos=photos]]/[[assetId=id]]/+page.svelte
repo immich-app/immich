@@ -612,7 +612,7 @@
                 variant="ghost"
                 shape="round"
                 color="secondary"
-                aria-label="view asset owners"
+                aria-label={$t('view_asset_owners')}
                 icon={showAlbumUsers ? mdiAccountEye : mdiAccountEyeOutline}
                 onclick={() => timelineManager.toggleShowAssetOwners()}
               />
