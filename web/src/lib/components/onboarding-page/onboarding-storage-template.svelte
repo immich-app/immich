@@ -9,7 +9,7 @@
   <p>
     <FormatMessage key="admin.storage_template_onboarding_description_v2">
       {#snippet children({ message })}
-        <Link isExternal href="https://docs.immich.app/administration/storage-template">{message}</Link>
+        <Link href="https://docs.immich.app/administration/storage-template">{message}</Link>
       {/snippet}
     </FormatMessage>
   </p>
