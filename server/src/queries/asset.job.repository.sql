@@ -457,12 +457,12 @@ order by
 
 -- AssetJobRepository.streamIntegrityReports
 select
-  "id" as "reportId",
-  "path"
+  "integrity_report"."id" as "reportId",
+  "integrity_report"."path"
 from
   "integrity_report"
 where
-  "type" = $1
+  "integrity_report"."type" = $1
 
 -- AssetJobRepository.streamForVideoConversion
 select
