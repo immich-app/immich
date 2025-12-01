@@ -371,7 +371,11 @@ export class IntegrityService extends BaseService {
         await this.jobRepository.queue({
           name: JobName.IntegrityChecksumFilesRefresh,
           data: {
-            items: batchReports,
+            items: batchReports.map(({ path, reportId, checksum }) => ({
+              path,
+              reportId,
+              checksum: checksum?.toString('hex'),
+            })),
           },
         });
 
@@ -505,7 +509,7 @@ export class IntegrityService extends BaseService {
             }),
           ]);
 
-          if (checksum.equals(hash.digest())) {
+          if (Buffer.from(checksum, 'hex').equals(hash.digest())) {
             return reportId;
           }
         } catch (error) {

@@ -16775,10 +16775,12 @@
           "WorkflowRun",
           "IntegrityOrphanedFilesQueueAll",
           "IntegrityOrphanedFiles",
-          "IntegrityOrphanedCheckReports",
+          "IntegrityOrphanedRefresh",
           "IntegrityMissingFilesQueueAll",
           "IntegrityMissingFiles",
-          "IntegrityChecksumFiles"
+          "IntegrityMissingFilesRefresh",
+          "IntegrityChecksumFiles",
+          "IntegrityChecksumFilesRefresh"
         ],
         "type": "string"
       },
