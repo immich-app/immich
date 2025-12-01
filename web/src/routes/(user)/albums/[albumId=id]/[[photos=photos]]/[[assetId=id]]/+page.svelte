@@ -396,11 +396,7 @@
   };
 
   const handleOptions = async () => {
-    const result = await modalManager.show(AlbumOptionsModal, {
-      album,
-      order: albumOrder,
-      user: $user,
-    });
+    const result = await modalManager.show(AlbumOptionsModal, { album, order: albumOrder, user: $user });
 
     if (!result) {
       return;
@@ -616,7 +612,7 @@
                 variant="ghost"
                 shape="round"
                 color="secondary"
-                aria-label={$t('show_asset_owners')}
+                aria-label="view asset owners"
                 icon={showAlbumUsers ? mdiAccountEye : mdiAccountEyeOutline}
                 onclick={() => timelineManager.toggleShowAssetOwners()}
               />
