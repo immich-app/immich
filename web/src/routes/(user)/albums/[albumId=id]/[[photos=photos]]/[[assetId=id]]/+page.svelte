@@ -607,17 +607,6 @@
           {#snippet trailing()}
             <CastButton />
 
-            {#if containsEditors}
-              <IconButton
-                variant="ghost"
-                shape="round"
-                color="secondary"
-                aria-label={$t('view_asset_owners')}
-                icon={showAlbumUsers ? mdiAccountEye : mdiAccountEyeOutline}
-                onclick={() => timelineManager.toggleShowAssetOwners()}
-              />
-            {/if}
-
             {#if isEditor}
               <IconButton
                 variant="ghost"
@@ -678,6 +667,13 @@
                 color="secondary"
                 offset={{ x: 175, y: 25 }}
               >
+                {#if containsEditors}
+                  <MenuOption
+                    icon={showAlbumUsers ? mdiAccountEye : mdiAccountEyeOutline}
+                    text={$t('view_asset_owners')}
+                    onClick={() => timelineManager.toggleShowAssetOwners()}
+                  />
+                {/if}
                 {#if album.assetCount > 0}
                   <MenuOption
                     icon={mdiImageOutline}
