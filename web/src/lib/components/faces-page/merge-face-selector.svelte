@@ -4,7 +4,7 @@
   import { ActionQueryParameterValue, AppRoute, QueryParameter } from '$lib/constants';
   import { handleError } from '$lib/utils/handle-error';
   import { getAllPeople, getPerson, mergePerson, type PersonResponseDto } from '@immich/sdk';
-  import { Button, Icon, IconButton, Modal, ModalBody, modalManager, toastManager } from '@immich/ui';
+  import { Button, Icon, IconButton, modalManager, toastManager } from '@immich/ui';
   import { mdiCallMerge, mdiMerge, mdiPlus, mdiSwapHorizontal } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -14,6 +14,7 @@
   import ControlAppBar from '../shared-components/control-app-bar.svelte';
   import FaceThumbnail from './face-thumbnail.svelte';
   import PeopleList from './people-list.svelte';
+  import PeopleViewModal from "$lib/modals/PeopleViewModal.svelte";
 
   interface Props {
     person: PersonResponseDto;
@@ -26,7 +27,6 @@
   let people: PersonResponseDto[] = $state([]);
   let selectedPeople: PersonResponseDto[] = $state([]);
   let screenHeight: number = $state(0);
-  let allPeopleViewModalOpen: boolean = $state(false);
 
   let hasSelection = $derived(selectedPeople.length > 0);
   let peopleToNotShow = $derived([...selectedPeople, person]);
@@ -123,7 +123,12 @@
                         aria-label={$t('show_all_selected_people')}
                         icon={mdiPlus}
                         size="medium"
-                        onclick={() => allPeopleViewModalOpen = true}
+                        onclick={() => modalManager.show(PeopleViewModal, {
+                          people: peopleToNotShow,
+                          peopleToNotShow: [person],
+                          screenHeight,
+                          onSelect
+                        })}
                       />
                     </div>
                   {/if}
@@ -149,14 +154,6 @@
         </div>
       </div>
       <PeopleList {people} {peopleToNotShow} {screenHeight} {onSelect} {handleSearch} />
-      {#if allPeopleViewModalOpen}
-        <Modal title={$t('selected_people_to_merge')} size="full" onClose={() => allPeopleViewModalOpen = false}>
-          <ModalBody>
-            <p class="mb-4 text-center dark:text-white">{$t('choose_people_to_unselect')}</p>
-            <PeopleList people={peopleToNotShow} peopleToNotShow={[person]} {screenHeight} {onSelect} />
-          </ModalBody>
-        </Modal>
-      {/if}
     </section>
   </section>
 </section>
