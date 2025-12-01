@@ -224,7 +224,7 @@ export class IntegrityService extends BaseService {
       }
     }
 
-    if (orphanedFiles.size) {
+    if (orphanedFiles.size > 0) {
       await this.integrityReportRepository.create(
         [...orphanedFiles].map((path) => ({
           type: IntegrityReportType.OrphanFile,
@@ -494,7 +494,9 @@ export class IntegrityService extends BaseService {
 
     const results = await Promise.all(
       paths.map(async ({ reportId, path, checksum }) => {
-        if (!checksum) return reportId;
+        if (!checksum) {
+          return reportId;
+        }
 
         try {
           const hash = createHash('sha1');

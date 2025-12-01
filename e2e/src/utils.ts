@@ -608,7 +608,7 @@ export const utils = {
       '-s',
       '1',
       '{}',
-      '\;',
+      ';',
     ]).promise;
   },
 

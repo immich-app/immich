@@ -27,7 +27,7 @@
 
   let { data }: Props = $props();
 
-  let integrityReport: MaintenanceIntegrityReportSummaryResponseDto | undefined = $state(data.integrityReport);
+  let integrityReport: MaintenanceIntegrityReportSummaryResponseDto = $state(data.integrityReport);
 
   const TYPES: IntegrityReportType[] = [
     IntegrityReportType.OrphanFile,
