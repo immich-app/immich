@@ -257,7 +257,7 @@ describe('getEnv', () => {
       expect(telemetry).toEqual({
         apiPort: 8081,
         microservicesPort: 8082,
-        metrics: new Set([]),
+        metrics: new Set(),
       });
     });
 
