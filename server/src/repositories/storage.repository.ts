@@ -2,9 +2,9 @@ import { Injectable } from '@nestjs/common';
 import archiver from 'archiver';
 import chokidar, { ChokidarOptions } from 'chokidar';
 import { escapePath, glob, globStream } from 'fast-glob';
+import { createHash } from 'node:crypto';
 import { constants, createReadStream, createWriteStream, existsSync, mkdirSync, ReadOptionsWithBuffer } from 'node:fs';
 import fs from 'node:fs/promises';
-import { createHash } from 'node:crypto';
 import path from 'node:path';
 import { Readable, Writable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
@@ -86,11 +86,7 @@ export class StorageRepository {
    * @param options - Upload options (e.g., computeChecksum)
    * @returns Upload result containing path, size, and optional checksum
    */
-  async uploadFromStream(
-    stream: Readable,
-    destination: string,
-    options: UploadOptions = {},
-  ): Promise<UploadResult> {
+  async uploadFromStream(stream: Readable, destination: string, options: UploadOptions = {}): Promise<UploadResult> {
     // Ensure the directory exists
     const directory = path.dirname(destination);
     this.mkdirSync(directory);
