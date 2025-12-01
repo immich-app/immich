@@ -30,7 +30,6 @@
   import Timeline from '$lib/components/timeline/Timeline.svelte';
   import { AlbumPageViewMode, AppRoute } from '$lib/constants';
   import { activityManager } from '$lib/managers/activity-manager.svelte';
-  import { albumSettingsManager } from '$lib/managers/album-settings-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
@@ -67,6 +66,8 @@
   } from '@immich/sdk';
   import { Button, Icon, IconButton, modalManager, toastManager } from '@immich/ui';
   import {
+    mdiAccountEye,
+    mdiAccountEyeOutline,
     mdiArrowLeft,
     mdiCogOutline,
     mdiDeleteOutline,
@@ -101,7 +102,9 @@
   let isCreatingSharedAlbum = $state(false);
   let isShowActivity = $state(false);
   let albumOrder: AssetOrder | undefined = $state(data.album.order);
-  let showAlbumUsers = $state(albumSettingsManager.showAssetOwners);
+
+  let timelineManager = $state<TimelineManager>() as TimelineManager;
+  let showAlbumUsers = $derived(timelineManager?.showAssetOwners ?? false);
 
   const assetInteraction = new AssetInteraction();
   const timelineInteraction = new AssetInteraction();
@@ -303,7 +306,6 @@
     }
   });
 
-  let timelineManager = $state<TimelineManager>() as TimelineManager;
   const options = $derived.by(() => {
     if (viewMode === AlbumPageViewMode.SELECT_ASSETS) {
       return {
@@ -398,7 +400,6 @@
       album,
       order: albumOrder,
       user: $user,
-      showAlbumUsers,
     });
 
     if (!result) {
@@ -415,10 +416,6 @@
         break;
       }
       case 'refreshAlbum': {
-        // if (result.showAlbumUsers !== undefined) {
-        //   showAlbumUsers = result.showAlbumUsers;
-        //   albumSettingsManager.setShowAssetOwners(result.showAlbumUsers);
-        // }
         await refreshAlbum();
         break;
       }
@@ -613,6 +610,17 @@
         <ControlAppBar showBackButton backIcon={mdiArrowLeft} onClose={() => goto(backUrl)}>
           {#snippet trailing()}
             <CastButton />
+
+            {#if containsEditors}
+              <IconButton
+                variant="ghost"
+                shape="round"
+                color="secondary"
+                aria-label={$t('show_asset_owners')}
+                icon={showAlbumUsers ? mdiAccountEye : mdiAccountEyeOutline}
+                onclick={() => timelineManager.toggleShowAssetOwners()}
+              />
+            {/if}
 
             {#if isEditor}
               <IconButton

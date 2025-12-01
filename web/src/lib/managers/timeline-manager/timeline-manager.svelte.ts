@@ -17,6 +17,7 @@ import {
 } from '$lib/managers/timeline-manager/internal/search-support.svelte';
 import { WebsocketSupport } from '$lib/managers/timeline-manager/internal/websocket-support.svelte';
 import { CancellableTask } from '$lib/utils/cancellable-task';
+import { PersistedLocalStorage } from '$lib/utils/persisted';
 import { toTimelineAsset, type TimelineDateTime, type TimelineYearMonth } from '$lib/utils/timeline-util';
 import { AssetOrder, getAssetInfo, getTimeBuckets } from '@immich/sdk';
 import { clamp, isEqual } from 'lodash-es';
@@ -88,6 +89,19 @@ export class TimelineManager extends VirtualScrollManager {
   #options: TimelineManagerOptions = TimelineManager.#INIT_OPTIONS;
   #updatingIntersections = false;
   #scrollableElement: HTMLElement | undefined = $state();
+  #showAssetOwners = new PersistedLocalStorage<boolean>('album-show-asset-owners', false);
+
+  get showAssetOwners() {
+    return this.#showAssetOwners.current;
+  }
+
+  setShowAssetOwners(value: boolean) {
+    this.#showAssetOwners.current = value;
+  }
+
+  toggleShowAssetOwners() {
+    this.#showAssetOwners.current = !this.#showAssetOwners.current;
+  }
 
   constructor() {
     super();
