@@ -4,6 +4,7 @@
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
   import type { RenderedOption } from '$lib/elements/Dropdown.svelte';
+  import { albumSettingsManager } from '$lib/managers/album-settings-manager.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import {
     AlbumUserRole,
@@ -24,12 +25,26 @@
     album: AlbumResponseDto;
     order: AssetOrder | undefined;
     user: UserResponseDto;
+    showAlbumUsers?: boolean;
     onClose: (
-      result?: { action: 'changeOrder'; order: AssetOrder } | { action: 'shareUser' } | { action: 'refreshAlbum' },
+      result?:
+        | { action: 'changeOrder'; order: AssetOrder }
+        | { action: 'shareUser' }
+        | { action: 'refreshAlbum'; showAlbumUsers?: boolean },
     ) => void;
   }
 
-  let { album, order, user, onClose }: Props = $props();
+  let { album, order, user, showAlbumUsers = $bindable(false), onClose }: Props = $props();
+
+  // managerから読み込んで初期値を設定
+  if (showAlbumUsers === false) {
+    showAlbumUsers = albumSettingsManager.showAssetOwners;
+  }
+
+  const handleToggleShowAlbumUsers = () => {
+    showAlbumUsers = !showAlbumUsers;
+    albumSettingsManager.setShowAssetOwners(showAlbumUsers);
+  };
 
   const options: Record<AssetOrder, RenderedOption> = {
     [AssetOrder.Asc]: { icon: mdiArrowUpThin, title: $t('oldest_first') },
@@ -86,7 +101,7 @@
 
     try {
       await removeUserFromAlbum({ id: album.id, userId: user.id });
-      onClose({ action: 'refreshAlbum' });
+      onClose({ action: 'refreshAlbum', showAlbumUsers });
       toastManager.success($t('album_user_removed', { values: { user: user.name } }));
     } catch (error) {
       handleError(error, $t('errors.unable_to_remove_album_users'));
@@ -99,7 +114,7 @@
       const message = $t('user_role_set', {
         values: { user: user.name, role: role == AlbumUserRole.Viewer ? $t('role_viewer') : $t('role_editor') },
       });
-      onClose({ action: 'refreshAlbum' });
+      onClose({ action: 'refreshAlbum', showAlbumUsers });
       toastManager.success(message);
     } catch (error) {
       handleError(error, $t('errors.unable_to_change_album_user_role'));
@@ -107,7 +122,7 @@
   };
 </script>
 
-<Modal title={$t('options')} onClose={() => onClose({ action: 'refreshAlbum' })} size="small">
+<Modal title={$t('options')} onClose={() => onClose({ action: 'refreshAlbum', showAlbumUsers })} size="small">
   <ModalBody>
     <div class="items-center justify-center">
       <div class="py-2">
@@ -127,6 +142,14 @@
             checked={album.isActivityEnabled}
             onToggle={handleToggleActivity}
           />
+          {#if album?.shared && album.albumUsers.some(({ role }) => role === AlbumUserRole.Editor)}
+            <SettingSwitch
+              title={$t('show_asset_owners')}
+              subtitle={$t('display_who_uploaded_each_asset')}
+              checked={showAlbumUsers}
+              onToggle={handleToggleShowAlbumUsers}
+            />
+          {/if}
         </div>
       </div>
       <div class="py-2">

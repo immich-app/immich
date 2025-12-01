@@ -30,6 +30,7 @@
   import Timeline from '$lib/components/timeline/Timeline.svelte';
   import { AlbumPageViewMode, AppRoute } from '$lib/constants';
   import { activityManager } from '$lib/managers/activity-manager.svelte';
+  import { albumSettingsManager } from '$lib/managers/album-settings-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
@@ -66,7 +67,6 @@
   } from '@immich/sdk';
   import { Button, Icon, IconButton, modalManager, toastManager } from '@immich/ui';
   import {
-    mdiAccountEyeOutline,
     mdiArrowLeft,
     mdiCogOutline,
     mdiDeleteOutline,
@@ -101,7 +101,7 @@
   let isCreatingSharedAlbum = $state(false);
   let isShowActivity = $state(false);
   let albumOrder: AssetOrder | undefined = $state(data.album.order);
-  let showAlbumUsers = $state(false);
+  let showAlbumUsers = $state(albumSettingsManager.showAssetOwners);
 
   const assetInteraction = new AssetInteraction();
   const timelineInteraction = new AssetInteraction();
@@ -394,7 +394,12 @@
   };
 
   const handleOptions = async () => {
-    const result = await modalManager.show(AlbumOptionsModal, { album, order: albumOrder, user: $user });
+    const result = await modalManager.show(AlbumOptionsModal, {
+      album,
+      order: albumOrder,
+      user: $user,
+      showAlbumUsers,
+    });
 
     if (!result) {
       return;
@@ -410,6 +415,10 @@
         break;
       }
       case 'refreshAlbum': {
+        // if (result.showAlbumUsers !== undefined) {
+        //   showAlbumUsers = result.showAlbumUsers;
+        //   albumSettingsManager.setShowAssetOwners(result.showAlbumUsers);
+        // }
         await refreshAlbum();
         break;
       }
@@ -604,17 +613,6 @@
         <ControlAppBar showBackButton backIcon={mdiArrowLeft} onClose={() => goto(backUrl)}>
           {#snippet trailing()}
             <CastButton />
-
-            {#if containsEditors}
-              <IconButton
-                variant="ghost"
-                shape="round"
-                color="secondary"
-                aria-label="view asset owners"
-                icon={mdiAccountEyeOutline}
-                onclick={() => (showAlbumUsers = !showAlbumUsers)}
-              />
-            {/if}
 
             {#if isEditor}
               <IconButton
