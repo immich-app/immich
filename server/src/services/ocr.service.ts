@@ -63,7 +63,7 @@ export class OcrService extends BaseService {
     return JobStatus.Success;
   }
 
-  parseOcrResults(id: string, { box, boxScore, text, textScore }: OCR) {
+  private parseOcrResults(id: string, { box, boxScore, text, textScore }: OCR) {
     const ocrDataList = [];
     const searchTokens = [];
     for (let i = 0; i < text.length; i++) {

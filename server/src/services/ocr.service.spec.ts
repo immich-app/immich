@@ -183,7 +183,7 @@ describe(OcrService.name, () => {
       expect(mocks.ocr.upsert).not.toHaveBeenCalled();
     });
 
-    describe('searchText generation', () => {
+    describe('search tokenization', () => {
       it('should generate bigrams for Chinese text', async () => {
         mockOcrResult('機器學習');
 
