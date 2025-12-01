@@ -428,8 +428,8 @@ importers:
         specifier: 4.3.3
         version: 4.3.3
       exiftool-vendored:
-        specifier: ^33.0.0
-        version: 33.5.0
+        specifier: ^28.8.0
+        version: 28.8.0
       express:
         specifier: ^5.1.0
         version: 5.1.0
@@ -5503,6 +5503,10 @@ packages:
     resolution: {integrity: sha512-a28v2eWrrRWPpJSzxc+mKwm0ZtVx/G8SepdQZDArnXYU/XS+IF6mp8aB/4E+hH1tyGCoDo3KlUCdlSxGDsRkAw==}
     hasBin: true
 
+  batch-cluster@13.0.0:
+    resolution: {integrity: sha512-EreW0Vi8TwovhYUHBXXRA5tthuU2ynGsZFlboyMJHCCUXYa2AjgwnE3ubBOJs2xJLcuXFJbi6c/8pH5+FVj8Og==}
+    engines: {node: '>=14'}
+
   batch-cluster@15.0.1:
     resolution: {integrity: sha512-eUmh0ld1AUPKTEmdzwGF9QTSexXAyt9rA1F5zDfW1wUi3okA3Tal4NLdCeFI6aiKpBenQhR6NmK9bW9tBHTGPQ==}
     engines: {node: '>=20'}
@@ -6849,14 +6853,25 @@ packages:
     resolution: {integrity: sha512-8uSpZZocAZRBAPIEINJj3Lo9HyGitllczc27Eh5YYojjMFMn8yHMDMaUHE2Jqfq05D/wucwI4JGURyXt1vchyg==}
     engines: {node: '>=10'}
 
+  exiftool-vendored.exe@13.0.0:
+    resolution: {integrity: sha512-4zAMuFGgxZkOoyQIzZMHv1HlvgyJK3AkNqjAgm8A8V0UmOZO7yv3pH49cDV1OduzFJqgs6yQ6eG4OGydhKtxlg==}
+    os: [win32]
+
   exiftool-vendored.exe@13.42.0:
     resolution: {integrity: sha512-6AFybe5IakduMWleuQBfep9OWGSVZSedt2uKL+LzufRsATp+beOF7tZyKtMztjb6VRH1GF/4F9EvBVam6zm70w==}
     os: [win32]
+
+  exiftool-vendored.pl@13.0.1:
+    resolution: {integrity: sha512-+BRRzjselpWudKR0ltAW5SUt9T82D+gzQN8DdOQUgnSVWWp7oLCeTGBRptbQz+436Ihn/mPzmo/xnf0cv/Qw1A==}
+    os: ['!win32']
 
   exiftool-vendored.pl@13.42.0:
     resolution: {integrity: sha512-EF5IdxQNIJIvZjHf4bG4jnwAHVVSLkYZToo2q+Mm89kSuppKfRvHz/lngIxN0JALE8rFdC4zt6NWY/PKqRdCcg==}
     os: ['!win32']
     hasBin: true
+
+  exiftool-vendored@28.8.0:
+    resolution: {integrity: sha512-R7tirJLr9fWuH9JS/KFFLB+O7jNGKuPXGxREc6YybYangEudGb+X8ERsYXk9AifMiAWh/2agNfbgkbcQcF+MxA==}
 
   exiftool-vendored@33.5.0:
     resolution: {integrity: sha512-7cCh6izwdmC5ZaCxpHFehnExIr2Yp7CJuxHg4WFiGcm81yyxXLtvSE+85ep9VsNwhlOtSpk+XxiqrlddjY5lAw==}
@@ -17584,6 +17599,8 @@ snapshots:
 
   baseline-browser-mapping@2.8.31: {}
 
+  batch-cluster@13.0.0: {}
+
   batch-cluster@15.0.1: {}
 
   batch@0.6.1: {}
@@ -19132,10 +19149,26 @@ snapshots:
       signal-exit: 3.0.7
       strip-final-newline: 2.0.0
 
+  exiftool-vendored.exe@13.0.0:
+    optional: true
+
   exiftool-vendored.exe@13.42.0:
     optional: true
 
+  exiftool-vendored.pl@13.0.1: {}
+
   exiftool-vendored.pl@13.42.0: {}
+
+  exiftool-vendored@28.8.0:
+    dependencies:
+      '@photostructure/tz-lookup': 11.3.0
+      '@types/luxon': 3.7.1
+      batch-cluster: 13.0.0
+      exiftool-vendored.pl: 13.0.1
+      he: 1.2.0
+      luxon: 3.7.2
+    optionalDependencies:
+      exiftool-vendored.exe: 13.0.0
 
   exiftool-vendored@33.5.0:
     dependencies:
