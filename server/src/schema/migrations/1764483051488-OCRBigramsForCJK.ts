@@ -9,7 +9,7 @@ export async function up(db: Kysely<any>): Promise<void> {
     .select(['assetId', sql<string>`string_agg(text, ' ')`.as('text')])
     .groupBy('assetId')
     .stream()) {
-    batch.push({ assetId, text: tokenizeForSearch(text) });
+    batch.push({ assetId, text: tokenizeForSearch(text).join(' ') });
     if (batch.length >= 5000) {
       await db.insertInto('ocr_search').values(batch).execute();
       batch.length = 0;
