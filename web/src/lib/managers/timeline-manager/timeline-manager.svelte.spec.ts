@@ -691,4 +691,42 @@ describe('TimelineManager', () => {
       expect(discoveredAssets.size).toBe(assetCount);
     });
   });
+
+  describe('showAssetOwners', () => {
+    const LS_KEY = 'album-show-asset-owners';
+
+    beforeEach(() => {
+      // ensure clean state
+      globalThis.localStorage?.removeItem(LS_KEY);
+    });
+
+    it('defaults to false', () => {
+      const timelineManager = new TimelineManager();
+      expect(timelineManager.showAssetOwners).toBe(false);
+    });
+
+    it('setShowAssetOwners updates value', () => {
+      const timelineManager = new TimelineManager();
+      timelineManager.setShowAssetOwners(true);
+      expect(timelineManager.showAssetOwners).toBe(true);
+      timelineManager.setShowAssetOwners(false);
+      expect(timelineManager.showAssetOwners).toBe(false);
+    });
+
+    it('toggleShowAssetOwners flips value', () => {
+      const timelineManager = new TimelineManager();
+      expect(timelineManager.showAssetOwners).toBe(false);
+      timelineManager.toggleShowAssetOwners();
+      expect(timelineManager.showAssetOwners).toBe(true);
+      timelineManager.toggleShowAssetOwners();
+      expect(timelineManager.showAssetOwners).toBe(false);
+    });
+
+    it('persists across instances via localStorage', () => {
+      const a = new TimelineManager();
+      a.setShowAssetOwners(true);
+      const b = new TimelineManager();
+      expect(b.showAssetOwners).toBe(true);
+    });
+  });
 });
