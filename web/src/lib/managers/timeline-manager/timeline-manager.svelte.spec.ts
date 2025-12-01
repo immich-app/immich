@@ -278,10 +278,11 @@ describe('TimelineManager', () => {
     });
 
     it('updates existing asset', () => {
+      const updateAssetsSpy = vi.spyOn(timelineManager, 'upsertAssets');
       const asset = deriveLocalDateTimeFromFileCreatedAt(timelineAssetFactory.build());
       timelineManager.upsertAssets([asset]);
 
-      timelineManager.upsertAssets([asset]);
+      expect(updateAssetsSpy).toBeCalledWith([asset]);
       expect(timelineManager.assetCount).toEqual(1);
     });
 
