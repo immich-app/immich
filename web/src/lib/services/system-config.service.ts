@@ -1,12 +1,11 @@
 import { downloadManager } from '$lib/managers/download-manager.svelte';
 import { eventManager } from '$lib/managers/event-manager.svelte';
-import type { ActionItem } from '$lib/types';
 import { copyToClipboard } from '$lib/utils';
 import { downloadBlob } from '$lib/utils/asset-utils';
 import { handleError } from '$lib/utils/handle-error';
 import { getFormatter } from '$lib/utils/i18n';
 import { getConfig, updateConfig, type ServerFeaturesDto, type SystemConfigDto } from '@immich/sdk';
-import { toastManager } from '@immich/ui';
+import { toastManager, type ActionItem } from '@immich/ui';
 import { mdiContentCopy, mdiDownload, mdiUpload } from '@mdi/js';
 import { isEqual } from 'lodash-es';
 import type { MessageFormatter } from 'svelte-i18n';
@@ -18,21 +17,33 @@ export const getSystemConfigActions = (
 ) => {
   const CopyToClipboard: ActionItem = {
     title: $t('copy_to_clipboard'),
+    description: $t('admin.copy_config_to_clipboard_description'),
+    type: $t('command'),
     icon: mdiContentCopy,
-    onSelect: () => void handleCopyToClipboard(config),
+    onAction: () => void handleCopyToClipboard(config),
+    shortcuts: { shift: true, key: 'c' },
   };
 
   const Download: ActionItem = {
     title: $t('export_as_json'),
+    description: $t('admin.export_config_as_json_description'),
+    type: $t('command'),
     icon: mdiDownload,
-    onSelect: () => handleDownloadConfig(config),
+    onAction: () => handleDownloadConfig(config),
+    shortcuts: [
+      { shift: true, key: 's' },
+      { shift: true, key: 'd' },
+    ],
   };
 
   const Upload: ActionItem = {
     title: $t('import_from_json'),
+    description: $t('admin.import_config_from_json_description'),
+    type: $t('command'),
     icon: mdiUpload,
     $if: () => !featureFlags.configFile,
-    onSelect: () => handleUploadConfig(),
+    onAction: () => handleUploadConfig(),
+    shortcuts: { shift: true, key: 'u' },
   };
 
   return { CopyToClipboard, Download, Upload };

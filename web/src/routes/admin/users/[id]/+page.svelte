@@ -8,6 +8,7 @@
   import DeviceCard from '$lib/components/user-settings-page/device-card.svelte';
   import FeatureSetting from '$lib/components/users/FeatureSetting.svelte';
   import { AppRoute } from '$lib/constants';
+  import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
   import { getUserAdminActions } from '$lib/services/user-admin.service';
   import { locale } from '$lib/stores/preferences.store';
   import { createDateFormatter, findLocale } from '$lib/utils';
@@ -15,11 +16,13 @@
   import { type UserAdminResponseDto } from '@immich/sdk';
   import {
     Alert,
+    Badge,
     Card,
     CardBody,
     CardHeader,
     CardTitle,
     Code,
+    CommandPaletteContext,
     Container,
     getByteUnitString,
     Heading,
@@ -39,6 +42,7 @@
     mdiPlayCircle,
     mdiTrashCanOutline,
   } from '@mdi/js';
+  import { DateTime } from 'luxon';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
 
@@ -77,7 +81,7 @@
     return 'bg-primary';
   };
 
-  const UserAdminActions = $derived(getUserAdminActions($t, user));
+  const { ResetPassword, ResetPinCode, Update, Delete, Restore } = $derived(getUserAdminActions($t, user));
 
   const onUpdate = (update: UserAdminResponseDto) => {
     if (update.id === user.id) {
@@ -90,6 +94,9 @@
       await goto(AppRoute.ADMIN_USERS);
     }
   };
+
+  const getDeleteDate = (deletedAt: string): Date =>
+    DateTime.fromISO(deletedAt).plus({ days: serverConfigManager.value.userDeleteDelay }).toJSDate();
 </script>
 
 <OnEvents
@@ -99,14 +106,21 @@
   {onUserAdminDeleted}
 />
 
-<AdminPageLayout title={data.meta.title}>
+<CommandPaletteContext commands={[ResetPassword, ResetPinCode, Update, Delete, Restore]} />
+
+<AdminPageLayout
+  breadcrumbs={[{ title: $t('admin.user_management'), href: AppRoute.ADMIN_USERS }, { title: user.name }]}
+>
   {#snippet buttons()}
     <HStack gap={0}>
-      <HeaderButton action={UserAdminActions.ResetPassword} />
-      <HeaderButton action={UserAdminActions.ResetPinCode} />
-      <HeaderButton action={UserAdminActions.Update} />
-      <HeaderButton action={UserAdminActions.Restore} />
-      <HeaderButton action={UserAdminActions.Delete} />
+      <HeaderButton action={ResetPassword} />
+      <HeaderButton action={ResetPinCode} />
+      <HeaderButton action={Update} />
+      <HeaderButton
+        action={Restore}
+        title={$t('admin.user_restore_scheduled_removal', { values: { date: getDeleteDate(user.deletedAt!) } })}
+      />
+      <HeaderButton action={Delete} />
     </HStack>
   {/snippet}
   <div>
@@ -116,9 +130,16 @@
       {/if}
 
       <div class="grid gap-4 grid-cols-1 lg:grid-cols-2 w-full">
-        <div class="col-span-full flex gap-4 items-center my-4">
-          <UserAvatar {user} size="md" />
-          <Heading tag="h1" size="large">{user.name}</Heading>
+        <div class="col-span-full flex flex-col gap-4 my-4">
+          <div class="flex items-center gap-4">
+            <UserAvatar {user} size="md" />
+            <Heading tag="h1" size="large">{user.name}</Heading>
+          </div>
+          {#if user.isAdmin}
+            <div>
+              <Badge color="primary" size="small">{$t('admin.admin_user')}</Badge>
+            </div>
+          {/if}
         </div>
         <div class="col-span-full">
           <div class="flex flex-col lg:flex-row gap-4 w-full">
