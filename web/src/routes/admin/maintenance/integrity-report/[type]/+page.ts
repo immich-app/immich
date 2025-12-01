@@ -15,6 +15,7 @@ export const load = (async ({ params, url }) => {
   const $t = await getFormatter();
 
   return {
+    type,
     integrityReport,
     meta: {
       title: $t(`admin.maintenance_integrity_${type}`),

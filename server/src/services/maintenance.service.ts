@@ -1,4 +1,6 @@
 import { Injectable } from '@nestjs/common';
+import { basename } from 'node:path';
+import { Readable } from 'node:stream';
 import { OnEvent } from 'src/decorators';
 import {
   MaintenanceAuthDto,
@@ -6,9 +8,10 @@ import {
   MaintenanceIntegrityReportResponseDto,
   MaintenanceIntegrityReportSummaryResponseDto,
 } from 'src/dtos/maintenance.dto';
-import { SystemMetadataKey } from 'src/enum';
+import { CacheControl, IntegrityReportType, SystemMetadataKey } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
 import { MaintenanceModeState } from 'src/types';
+import { ImmichFileResponse } from 'src/utils/file';
 import { createMaintenanceLoginUrl, generateMaintenanceSecret, signMaintenanceJwt } from 'src/utils/maintenance';
 import { getExternalDomain } from 'src/utils/misc';
 
@@ -62,5 +65,26 @@ export class MaintenanceService extends BaseService {
 
   getIntegrityReport(dto: MaintenanceGetIntegrityReportDto): Promise<MaintenanceIntegrityReportResponseDto> {
     return this.integrityReportRepository.getIntegrityReport(dto);
+  }
+
+  getIntegrityReportCsv(type: IntegrityReportType): Readable {
+    return this.integrityReportRepository.getIntegrityReportCsv(type);
+  }
+
+  async getIntegrityReportFile(id: string): Promise<ImmichFileResponse> {
+    const { path } = await this.integrityReportRepository.getById(id);
+
+    return new ImmichFileResponse({
+      path,
+      fileName: basename(path),
+      contentType: 'application/octet-stream',
+      cacheControl: CacheControl.PrivateWithoutCache,
+    });
+  }
+
+  async deleteIntegrityReportFile(id: string): Promise<void> {
+    const { path } = await this.integrityReportRepository.getById(id);
+    await this.storageRepository.unlink(path);
+    await this.integrityReportRepository.deleteById(id);
   }
 }

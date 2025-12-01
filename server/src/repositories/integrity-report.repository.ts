@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Insertable, Kysely } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
+import { Readable } from 'node:stream';
 import {
   MaintenanceGetIntegrityReportDto,
   MaintenanceIntegrityReportResponseDto,
@@ -23,8 +24,16 @@ export class IntegrityReportRepository {
       .executeTakeFirst();
   }
 
-  async getIntegrityReportSummary(): Promise<MaintenanceIntegrityReportSummaryResponseDto> {
-    return await this.db
+  getById(id: string) {
+    return this.db
+      .selectFrom('integrity_report')
+      .selectAll('integrity_report')
+      .where('id', '=', id)
+      .executeTakeFirstOrThrow();
+  }
+
+  getIntegrityReportSummary(): Promise<MaintenanceIntegrityReportSummaryResponseDto> {
+    return this.db
       .selectFrom('integrity_report')
       .select((eb) =>
         eb.fn
@@ -56,6 +65,28 @@ export class IntegrityReportRepository {
         .orderBy('createdAt', 'desc')
         .execute(),
     };
+  }
+
+  getIntegrityReportCsv(type: IntegrityReportType): Readable {
+    const items = this.db
+      .selectFrom('integrity_report')
+      .select(['id', 'type', 'path'])
+      .where('type', '=', type)
+      .orderBy('createdAt', 'desc')
+      .stream();
+
+    // very rudimentary csv serialiser
+    async function* generator() {
+      yield 'id,type,path\n';
+
+      for await (const item of items) {
+        // no expectation of particularly bad filenames
+        // but they could potentially have a newline or quote character
+        yield `${item.id},${item.type},"${item.path.replace(/"/g, '\\"')}"\n`;
+      }
+    }
+
+    return Readable.from(generator());
   }
 
   deleteById(id: string) {

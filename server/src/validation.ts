@@ -33,6 +33,7 @@ import {
 import { CronJob } from 'cron';
 import { DateTime } from 'luxon';
 import sanitize from 'sanitize-filename';
+import { IntegrityReportType } from 'src/enum';
 import { isIP, isIPRange } from 'validator';
 
 @Injectable()
@@ -94,6 +95,12 @@ export class UUIDAssetIDParamDto {
 
   @ValidateUUID()
   assetId!: string;
+}
+
+export class IntegrityReportTypeParamDto {
+  @IsNotEmpty()
+  @ApiProperty({ enum: IntegrityReportType, enumName: 'IntegrityReportType' })
+  type!: IntegrityReportType;
 }
 
 type PinCodeOptions = { optional?: boolean } & OptionalOptions;

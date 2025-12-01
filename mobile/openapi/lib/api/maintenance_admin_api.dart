@@ -16,6 +16,55 @@ class MaintenanceAdminApi {
 
   final ApiClient apiClient;
 
+  /// Delete associated file if it exists
+  ///
+  /// ...
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  Future<Response> deleteIntegrityReportFileWithHttpInfo(String id,) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/admin/maintenance/integrity/report/{id}/file'
+      .replaceAll('{id}', id);
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'DELETE',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Delete associated file if it exists
+  ///
+  /// ...
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  Future<void> deleteIntegrityReportFile(String id,) async {
+    final response = await deleteIntegrityReportFileWithHttpInfo(id,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
   /// Get integrity report by type
   ///
   /// ...
@@ -67,6 +116,120 @@ class MaintenanceAdminApi {
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
       return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'MaintenanceIntegrityReportResponseDto',) as MaintenanceIntegrityReportResponseDto;
+    
+    }
+    return null;
+  }
+
+  /// Export integrity report by type as CSV
+  ///
+  /// ...
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [IntegrityReportType] type (required):
+  Future<Response> getIntegrityReportCsvWithHttpInfo(IntegrityReportType type,) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/admin/maintenance/integrity/report/{type}/csv'
+      .replaceAll('{type}', type.toString());
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Export integrity report by type as CSV
+  ///
+  /// ...
+  ///
+  /// Parameters:
+  ///
+  /// * [IntegrityReportType] type (required):
+  Future<MultipartFile?> getIntegrityReportCsv(IntegrityReportType type,) async {
+    final response = await getIntegrityReportCsvWithHttpInfo(type,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'MultipartFile',) as MultipartFile;
+    
+    }
+    return null;
+  }
+
+  /// Download the orphan/broken file if one exists
+  ///
+  /// ...
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  Future<Response> getIntegrityReportFileWithHttpInfo(String id,) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/admin/maintenance/integrity/report/{id}/file'
+      .replaceAll('{id}', id);
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Download the orphan/broken file if one exists
+  ///
+  /// ...
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  Future<MultipartFile?> getIntegrityReportFile(String id,) async {
+    final response = await getIntegrityReportFileWithHttpInfo(id,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'MultipartFile',) as MultipartFile;
     
     }
     return null;

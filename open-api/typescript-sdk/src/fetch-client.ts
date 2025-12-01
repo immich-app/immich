@@ -1910,6 +1910,43 @@ export function getIntegrityReport({ maintenanceGetIntegrityReportDto }: {
     })));
 }
 /**
+ * Delete associated file if it exists
+ */
+export function deleteIntegrityReportFile({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/admin/maintenance/integrity/report/${encodeURIComponent(id)}/file`, {
+        ...opts,
+        method: "DELETE"
+    }));
+}
+/**
+ * Download the orphan/broken file if one exists
+ */
+export function getIntegrityReportFile({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchBlob<{
+        status: 200;
+        data: Blob;
+    }>(`/admin/maintenance/integrity/report/${encodeURIComponent(id)}/file`, {
+        ...opts
+    }));
+}
+/**
+ * Export integrity report by type as CSV
+ */
+export function getIntegrityReportCsv({ $type }: {
+    $type: IntegrityReportType;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchBlob<{
+        status: 200;
+        data: Blob;
+    }>(`/admin/maintenance/integrity/report/${encodeURIComponent($type)}/csv`, {
+        ...opts
+    }));
+}
+/**
  * Get integrity report summary
  */
 export function getIntegrityReportSummary(opts?: Oazapfts.RequestOpts) {
