@@ -610,7 +610,7 @@
                 variant="ghost"
                 shape="round"
                 color="secondary"
-                aria-label="view asset owners"
+                aria-label={$t('view_asset_owners')}
                 icon={mdiAccountEyeOutline}
                 onclick={() => (showAlbumUsers = !showAlbumUsers)}
               />
