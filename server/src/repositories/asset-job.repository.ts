@@ -18,6 +18,8 @@ import {
   withFacesAndPeople,
   withFilePath,
   withFiles,
+  withOriginals,
+  withSidecars,
 } from 'src/utils/database';
 
 @Injectable()
@@ -40,8 +42,9 @@ export class AssetJobRepository {
     return this.db
       .selectFrom('asset')
       .where('asset.id', '=', asUuid(id))
-      .select(['id', 'originalPath'])
-      .select((eb) => withFiles(eb, AssetFileType.Sidecar))
+      .select('id')
+      .select(withSidecars)
+      .select(withOriginals)
       .select((eb) =>
         jsonArrayFrom(
           eb
@@ -60,8 +63,9 @@ export class AssetJobRepository {
     return this.db
       .selectFrom('asset')
       .where('asset.id', '=', asUuid(id))
-      .select(['id', 'originalPath'])
-      .select((eb) => withFiles(eb, AssetFileType.Sidecar))
+      .select('id')
+      .select(withSidecars)
+      .select(withOriginals)
       .limit(1)
       .executeTakeFirst();
   }
@@ -107,7 +111,6 @@ export class AssetJobRepository {
         'asset.id',
         'asset.visibility',
         'asset.originalFileName',
-        'asset.originalPath',
         'asset.ownerId',
         'asset.thumbhash',
         'asset.type',
@@ -124,7 +127,8 @@ export class AssetJobRepository {
       .selectFrom('asset')
       .select(columns.asset)
       .select(withFaces)
-      .select((eb) => withFiles(eb, AssetFileType.Sidecar))
+      .select(withOriginals)
+      .select(withSidecars)
       .where('asset.id', '=', id)
       .executeTakeFirst();
   }
@@ -209,14 +213,8 @@ export class AssetJobRepository {
   getForSyncAssets(ids: string[]) {
     return this.db
       .selectFrom('asset')
-      .select([
-        'asset.id',
-        'asset.isOffline',
-        'asset.libraryId',
-        'asset.originalPath',
-        'asset.status',
-        'asset.fileModifiedAt',
-      ])
+      .select(['asset.id', 'asset.isOffline', 'asset.libraryId', 'asset.status', 'asset.fileModifiedAt'])
+      .select(withOriginals)
       .where('asset.id', '=', anyUuid(ids))
       .execute();
   }
@@ -232,7 +230,6 @@ export class AssetJobRepository {
         'asset.ownerId',
         'asset.livePhotoVideoId',
         'asset.encodedVideoPath',
-        'asset.originalPath',
       ])
       .$call(withExif)
       .select(withFacesAndPeople)
@@ -275,7 +272,8 @@ export class AssetJobRepository {
   getForVideoConversion(id: string) {
     return this.db
       .selectFrom('asset')
-      .select(['asset.id', 'asset.ownerId', 'asset.originalPath', 'asset.encodedVideoPath'])
+      .select(['asset.id', 'asset.ownerId', 'asset.encodedVideoPath'])
+      .select(withOriginals)
       .where('asset.id', '=', id)
       .where('asset.type', '=', AssetType.Video)
       .executeTakeFirst();
@@ -306,7 +304,6 @@ export class AssetJobRepository {
         'asset.ownerId',
         'asset.type',
         'asset.checksum',
-        'asset.originalPath',
         'asset.isExternal',
         'asset.originalFileName',
         'asset.livePhotoVideoId',
@@ -320,8 +317,9 @@ export class AssetJobRepository {
             .whereRef('asset_file.assetId', '=', 'asset.id')
             .where('asset_file.type', '=', AssetFileType.Sidecar)
             .limit(1)
-            .as('sidecarPath'),
+            .as('sidecarPath'), // TODO: change to withSidecars
       ])
+      .select(withOriginals)
       .where('asset.deletedAt', 'is', null);
   }
 

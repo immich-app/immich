@@ -191,13 +191,23 @@ export function withFaces(eb: ExpressionBuilder<DB, 'asset'>, withDeletedFace?: 
 }
 
 export function withFiles(eb: ExpressionBuilder<DB, 'asset'>, type?: AssetFileType) {
-  return jsonArrayFrom(
+  const files = jsonArrayFrom(
     eb
       .selectFrom('asset_file')
       .select(columns.assetFiles)
       .whereRef('asset_file.assetId', '=', 'asset.id')
       .$if(!!type, (qb) => qb.where('asset_file.type', '=', type!)),
   ).as('files');
+
+  return files;
+}
+
+export function withSidecars(eb: ExpressionBuilder<DB, 'asset'>, type?: AssetFileType) {
+  return withFiles(eb, AssetFileType.Sidecar);
+}
+
+export function withOriginals(eb: ExpressionBuilder<DB, 'asset'>, type?: AssetFileType) {
+  return withFiles(eb, AssetFileType.Original);
 }
 
 export function withFilePath(eb: ExpressionBuilder<DB, 'asset'>, type: AssetFileType) {
@@ -206,6 +216,10 @@ export function withFilePath(eb: ExpressionBuilder<DB, 'asset'>, type: AssetFile
     .select('asset_file.path')
     .whereRef('asset_file.assetId', '=', 'asset.id')
     .where('asset_file.type', '=', type);
+}
+
+export function withOriginalPath(eb: ExpressionBuilder<DB, 'asset'>) {
+  return withFilePath(eb, AssetFileType.Original).as('originalPath');
 }
 
 export function withFacesAndPeople(eb: ExpressionBuilder<DB, 'asset'>, withDeletedFace?: boolean) {

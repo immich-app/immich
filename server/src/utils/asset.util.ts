@@ -161,12 +161,18 @@ export const onBeforeUnlink = async (
   { asset: assetRepository }: AssetHookRepositories,
   { livePhotoVideoId }: { livePhotoVideoId: string },
 ) => {
-  const motion = await assetRepository.getById(livePhotoVideoId);
+  const motion = await assetRepository.getById(livePhotoVideoId, { files: true });
   if (!motion) {
     return null;
   }
 
-  if (StorageCore.isAndroidMotionPath(motion.originalPath)) {
+  const motionPath = motion.files?.find((file) => file.type === AssetFileType.Original)?.path;
+
+  if (!motionPath) {
+    throw new BadRequestException('Live photo video original file not found');
+  }
+
+  if (StorageCore.isAndroidMotionPath(motionPath)) {
     throw new BadRequestException('Cannot unlink Android motion photos');
   }
 

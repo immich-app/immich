@@ -38,6 +38,7 @@ export enum AssetType {
 }
 
 export enum AssetFileType {
+  Original = 'original',
   /**
    * An full/large-size image extracted/converted from RAW photos
    */

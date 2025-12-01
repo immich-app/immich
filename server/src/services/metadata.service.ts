@@ -224,13 +224,19 @@ export class MetadataService extends BaseService {
       return;
     }
 
+    const originalFile = asset.files?.find((file) => file.type === AssetFileType.Original) ?? null;
+    if (!originalFile) {
+      this.logger.warn(`Asset ${asset.id} has no original file, skipping metadata extraction`);
+      return;
+    }
+
     const [exifTags, stats] = await Promise.all([
       this.getExifTags(asset),
-      this.storageRepository.stat(asset.originalPath),
+      this.storageRepository.stat(originalFile.path),
     ]);
     this.logger.verbose('Exif Tags', exifTags);
 
-    const dates = this.getDates(asset, exifTags, stats);
+    const dates = this.getDates(asset, originalFile.path, exifTags, stats);
 
     const { width, height } = this.getImageDimensions(exifTags);
     let geo: ReverseGeocodeResult = { country: null, state: null, city: null },
@@ -351,7 +357,7 @@ export class MetadataService extends BaseService {
     }
 
     let sidecarPath = null;
-    for (const candidate of this.getSidecarCandidates(asset)) {
+    for (const candidate of this.getSidecarCandidates(asset.files)) {
       const exists = await this.storageRepository.checkFileExists(candidate, constants.R_OK);
       if (!exists) {
         continue;
@@ -400,7 +406,14 @@ export class MetadataService extends BaseService {
 
     const tagsList = (asset.tags || []).map((tag) => tag.value);
 
-    const sidecarPath = asset.files[0]?.path || `${asset.originalPath}.xmp`;
+    const existingSidecar = asset.files?.find((file) => file.type === AssetFileType.Sidecar) ?? null;
+    const original = asset.files?.find((file) => file.type === AssetFileType.Original) ?? null;
+
+    if (!original) {
+      throw new Error(`Asset ${asset.id} has no original file`);
+    }
+
+    const sidecarPath = existingSidecar?.path || `${original.path}.xmp`; // prefer file.jpg.xmp by default
     const exif = _.omitBy(
       <Tags>{
         Description: description,
@@ -427,7 +440,12 @@ export class MetadataService extends BaseService {
     return JobStatus.Success;
   }
 
-  private getSidecarCandidates({ files, originalPath }: { files: AssetFile[] | null; originalPath: string }) {
+  private getSidecarCandidates(files: AssetFile[] | null) {
+    const original = files?.find((file) => file.type === AssetFileType.Original);
+    if (!original) {
+      return [];
+    }
+
     const candidates: string[] = [];
 
     const existingSidecar = files?.find((file) => file.type === AssetFileType.Sidecar);
@@ -436,11 +454,11 @@ export class MetadataService extends BaseService {
       candidates.push(existingSidecar.path);
     }
 
-    const assetPath = parse(originalPath);
+    const assetPath = parse(original.path);
 
     candidates.push(
       // IMG_123.jpg.xmp
-      `${originalPath}.xmp`,
+      `${assetPath}.xmp`,
       // IMG_123.xmp
       `${join(assetPath.dir, assetPath.name)}.xmp`,
     );
@@ -464,25 +482,31 @@ export class MetadataService extends BaseService {
     return { width, height };
   }
 
-  private async getExifTags(asset: { originalPath: string; files: AssetFile[]; type: AssetType }): Promise<ImmichTags> {
+  private async getExifTags(asset: { id; files: AssetFile[]; type: AssetType }): Promise<ImmichTags> {
+    const originalFile = asset.files?.find((file) => file.type === AssetFileType.Original) ?? null;
+
+    if (!originalFile) {
+      throw new Error(`Asset ${asset.id} has no original file`);
+    }
+
     if (asset.type === AssetType.Image) {
       const hasSidecar = asset.files?.some(({ type }) => type === AssetFileType.Sidecar);
 
       if (!hasSidecar) {
-        return this.metadataRepository.readTags(asset.originalPath);
+        return this.metadataRepository.readTags(originalFile.path);
       }
     }
 
     if (asset.files && asset.files.length > 1) {
-      throw new Error(`Asset ${asset.originalPath} has multiple sidecar files`);
+      throw new Error(`Asset ${originalFile.path} has multiple sidecar files`);
     }
 
     const sidecarFile = asset.files ? getAssetFiles(asset.files).sidecarFile : undefined;
 
     const [mediaTags, sidecarTags, videoTags] = await Promise.all([
-      this.metadataRepository.readTags(asset.originalPath),
+      this.metadataRepository.readTags(originalFile.path),
       sidecarFile ? this.metadataRepository.readTags(sidecarFile.path) : null,
-      asset.type === AssetType.Video ? this.getVideoTags(asset.originalPath) : null,
+      asset.type === AssetType.Video ? this.getVideoTags(originalFile.path) : null,
     ]);
 
     // prefer dates from sidecar tags
@@ -546,7 +570,7 @@ export class MetadataService extends BaseService {
     return asset.type === AssetType.Image && !!(tags.MotionPhoto || tags.MicroVideo);
   }
 
-  private async applyMotionPhotos(asset: Asset, tags: ImmichTags, dates: Dates, stats: Stats) {
+  private async applyMotionPhotos(asset: Asset, originalPath: string, tags: ImmichTags, dates: Dates, stats: Stats) {
     const isMotionPhoto = tags.MotionPhoto;
     const isMicroVideo = tags.MicroVideo;
     const videoOffset = tags.MicroVideoOffset;
@@ -577,7 +601,7 @@ export class MetadataService extends BaseService {
       return;
     }
 
-    this.logger.debug(`Starting motion photo video extraction for asset ${asset.id}: ${asset.originalPath}`);
+    this.logger.debug(`Starting motion photo video extraction for asset ${asset.id}: ${originalPath}`);
 
     try {
       const position = stats.size - length - padding;
@@ -585,15 +609,15 @@ export class MetadataService extends BaseService {
       // Samsung MotionPhoto video extraction
       //     HEIC-encoded
       if (hasMotionPhotoVideo) {
-        video = await this.metadataRepository.extractBinaryTag(asset.originalPath, 'MotionPhotoVideo');
+        video = await this.metadataRepository.extractBinaryTag(originalPath, 'MotionPhotoVideo');
       }
       //     JPEG-encoded; HEIC also contains these tags, so this conditional must come second
       else if (hasEmbeddedVideoFile) {
-        video = await this.metadataRepository.extractBinaryTag(asset.originalPath, 'EmbeddedVideoFile');
+        video = await this.metadataRepository.extractBinaryTag(originalPath, 'EmbeddedVideoFile');
       }
       // Default video extraction
       else {
-        video = await this.storageRepository.readFile(asset.originalPath, {
+        video = await this.storageRepository.readFile(originalPath, {
           buffer: Buffer.alloc(length),
           position,
           length,
@@ -617,7 +641,7 @@ export class MetadataService extends BaseService {
             localDateTime: dates.localDateTime,
             checksum,
             ownerId: asset.ownerId,
-            originalPath: StorageCore.getAndroidMotionPath(asset, motionAssetId),
+            files: [{ type: AssetFileType.Original, path: StorageCore.getAndroidMotionPath(asset, motionAssetId) }],
             originalFileName: `${parse(asset.originalFileName).name}.mp4`,
             visibility: AssetVisibility.Hidden,
             deviceAssetId: 'NONE',
@@ -848,7 +872,8 @@ export class MetadataService extends BaseService {
   }
 
   private getDates(
-    asset: { id: string; originalPath: string; fileCreatedAt: Date },
+    asset: { id: string; fileCreatedAt: Date },
+    originalPath: string,
     exifTags: ImmichTags,
     stats: Stats,
   ) {

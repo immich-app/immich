@@ -25,7 +25,9 @@ import {
   withFacesAndPeople,
   withFiles,
   withLibrary,
+  withOriginals,
   withOwner,
+  withSidecars,
   withSmartSearch,
   withTagId,
   withTags,
@@ -112,6 +114,8 @@ interface GetByIdsRelations {
   smartSearch?: boolean;
   stack?: { assets?: boolean };
   tags?: boolean;
+  originals?: boolean;
+  sidecars?: boolean;
 }
 
 @Injectable()
@@ -355,8 +359,10 @@ export class AssetRepository {
     return this.db
       .selectFrom('asset')
       .selectAll('asset')
-      .where('libraryId', '=', asUuid(libraryId))
-      .where('originalPath', '=', originalPath)
+      .innerJoin('asset_file', 'asset.id', 'asset_file.assetId')
+      .where('asset.libraryId', '=', asUuid(libraryId))
+      .where('asset_file.path', '=', originalPath)
+      .where('asset_file.type', '=', AssetFileType.Original)
       .limit(1)
       .executeTakeFirst();
   }
@@ -398,7 +404,10 @@ export class AssetRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
-  getById(id: string, { exifInfo, faces, files, library, owner, smartSearch, stack, tags }: GetByIdsRelations = {}) {
+  getById(
+    id: string,
+    { exifInfo, faces, files, library, owner, smartSearch, stack, tags, sidecars, originals }: GetByIdsRelations = {},
+  ) {
     return this.db
       .selectFrom('asset')
       .selectAll('asset')
@@ -434,6 +443,8 @@ export class AssetRepository {
           ),
       )
       .$if(!!files, (qb) => qb.select(withFiles))
+      .$if(!!sidecars, (qb) => qb.select(withSidecars))
+      .$if(!!originals, (qb) => qb.select(withOriginals))
       .$if(!!tags, (qb) => qb.select(withTags))
       .limit(1)
       .executeTakeFirst();
@@ -877,14 +888,22 @@ export class AssetRepository {
         isOffline: true,
         deletedAt: new Date(),
       })
-      .where('isOffline', '=', false)
-      .where('isExternal', '=', true)
-      .where('libraryId', '=', asUuid(libraryId))
+      .where('asset.isOffline', '=', false)
+      .where('asset.isExternal', '=', true)
+      .where('asset.libraryId', '=', asUuid(libraryId))
       .where((eb) =>
-        eb.or([
-          eb.not(eb.or(paths.map((path) => eb('originalPath', 'like', path)))),
-          eb.or(exclusions.map((path) => eb('originalPath', 'like', path))),
-        ]),
+        eb.exists(
+          eb
+            .selectFrom('asset_file')
+            .whereRef('asset_file.assetId', '=', 'asset.id')
+            .where('asset_file.type', '=', AssetFileType.Original)
+            .where((eb) =>
+              eb.or([
+                eb.not(eb.or(paths.map((path) => eb('asset_file.path', 'like', path)))),
+                eb.or(exclusions.map((path) => eb('asset_file.path', 'like', path))),
+              ]),
+            ),
+        ),
       )
       .executeTakeFirstOrThrow();
   }
@@ -899,10 +918,12 @@ export class AssetRepository {
           eb.exists(
             this.db
               .selectFrom('asset')
-              .select('originalPath')
-              .whereRef('asset.originalPath', '=', eb.ref('path'))
-              .where('libraryId', '=', asUuid(libraryId))
-              .where('isExternal', '=', true),
+              .innerJoin('asset_file', 'asset.id', 'asset_file.assetId')
+              .select('asset_file.path')
+              .whereRef('asset_file.path', '=', eb.ref('path'))
+              .where('asset_file.type', '=', AssetFileType.Original)
+              .where('asset.libraryId', '=', asUuid(libraryId))
+              .where('asset.isExternal', '=', true),
           ),
         ),
       )

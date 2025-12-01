@@ -72,9 +72,6 @@ export class AssetTable {
   @Column()
   type!: AssetType;
 
-  @Column()
-  originalPath!: string;
-
   @Column({ type: 'timestamp with time zone', index: true })
   fileCreatedAt!: Timestamp;
 

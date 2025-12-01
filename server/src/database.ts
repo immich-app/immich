@@ -120,7 +120,6 @@ export type Asset = {
   livePhotoVideoId: string | null;
   localDateTime: Date;
   originalFileName: string;
-  originalPath: string;
   ownerId: string;
   type: AssetType;
 };
@@ -344,7 +343,6 @@ export const columns = {
     'asset.livePhotoVideoId',
     'asset.localDateTime',
     'asset.originalFileName',
-    'asset.originalPath',
     'asset.ownerId',
     'asset.type',
   ],

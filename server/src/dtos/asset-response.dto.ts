@@ -121,7 +121,6 @@ export type MapAsset = {
   livePhotoVideoId: string | null;
   localDateTime: Date;
   originalFileName: string;
-  originalPath: string;
   owner?: User | null;
   ownerId: string;
   stack?: Stack | null;

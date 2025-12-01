@@ -290,7 +290,7 @@ export class StorageCore {
   private savePath(pathType: PathType, id: string, newPath: string) {
     switch (pathType) {
       case AssetPathType.Original: {
-        return this.assetRepository.update({ id, originalPath: newPath });
+        return this.assetRepository.upsertFile({ assetId: id, type: AssetFileType.Original, path: newPath });
       }
       case AssetPathType.FullSize: {
         return this.assetRepository.upsertFile({ assetId: id, type: AssetFileType.FullSize, path: newPath });
