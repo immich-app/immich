@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Kysely } from 'kysely';
+import { Kysely, sql } from 'kysely';
 import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
 import { Asset, columns } from 'src/database';
@@ -282,24 +282,52 @@ export class AssetJobRepository {
       .selectFrom((eb) =>
         eb
           .selectFrom('asset')
-          .select(['originalPath as path'])
+          .select(['asset.originalPath as path'])
+          .select((eb) => [
+            eb.ref('asset.id').$castTo<string | null>().as('assetId'),
+            sql<string | null>`null::uuid`.as('fileAssetId'),
+          ])
           .unionAll(
             eb
               .selectFrom('asset')
-              .select(['encodedVideoPath as path'])
-              .where('encodedVideoPath', 'is not', null)
-              .where('encodedVideoPath', '!=', '')
-              .$castTo<{ path: string }>(),
+              .select((eb) => [
+                eb.ref('asset.encodedVideoPath').$castTo<string>().as('path'),
+                eb.ref('asset.id').$castTo<string | null>().as('assetId'),
+                sql<string | null>`null::uuid`.as('fileAssetId'),
+              ])
+              .where('asset.encodedVideoPath', 'is not', null)
+              .where('asset.encodedVideoPath', '!=', sql<string>`''`),
           )
-          .unionAll(eb.selectFrom('asset_file').select(['path']))
+          .unionAll(
+            eb
+              .selectFrom('asset_file')
+              .select(['path'])
+              .select((eb) => [
+                sql<string | null>`null::uuid`.as('assetId'),
+                eb.ref('asset_file.id').$castTo<string | null>().as('fileAssetId'),
+              ]),
+          )
           .as('allPaths'),
       )
-      .leftJoin('integrity_report', (join) =>
-        join
-          .onRef('integrity_report.path', '=', 'allPaths.path')
-          .on('integrity_report.type', '=', IntegrityReportType.OrphanFile),
+      .leftJoin(
+        'integrity_report',
+        (join) =>
+          join
+            .on('integrity_report.type', '=', IntegrityReportType.OrphanFile)
+            .on((eb) =>
+              eb.or([
+                eb('integrity_report.assetId', '=', eb.ref('allPaths.assetId')),
+                eb('integrity_report.fileAssetId', '=', eb.ref('allPaths.fileAssetId')),
+              ]),
+            ),
+        // .onRef('integrity_report.path', '=', 'allPaths.path')
       )
-      .select(['allPaths.path as path', 'integrity_report.path as reportId'])
+      .select([
+        'allPaths.path as path',
+        'allPaths.assetId',
+        'allPaths.fileAssetId',
+        'integrity_report.path as reportId',
+      ])
       .stream();
   }
 
@@ -309,10 +337,17 @@ export class AssetJobRepository {
       .selectFrom('asset')
       .leftJoin('integrity_report', (join) =>
         join
-          .onRef('integrity_report.path', '=', 'asset.originalPath')
+          .onRef('integrity_report.assetId', '=', 'asset.id')
+          // .onRef('integrity_report.path', '=', 'asset.originalPath')
           .on('integrity_report.type', '=', IntegrityReportType.ChecksumFail),
       )
-      .select(['asset.originalPath', 'asset.checksum', 'asset.createdAt', 'integrity_report.id as reportId'])
+      .select([
+        'asset.originalPath',
+        'asset.checksum',
+        'asset.createdAt',
+        'asset.id as assetId',
+        'integrity_report.id as reportId',
+      ])
       .$if(startMarker !== undefined, (qb) => qb.where('createdAt', '>=', startMarker!))
       .$if(endMarker !== undefined, (qb) => qb.where('createdAt', '<=', endMarker!))
       .orderBy('createdAt', 'asc')

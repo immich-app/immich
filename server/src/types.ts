@@ -291,6 +291,15 @@ export interface IIntegrityOrphanedFilesJob {
   paths: string[];
 }
 
+export interface IIntegrityMissingFilesJob {
+  items: {
+    path: string;
+    reportId: string | null;
+    assetId: string | null;
+    fileAssetId: string | null;
+  }[];
+}
+
 export interface IIntegrityPathWithReportJob {
   items: { path: string; reportId: string | null }[];
 }

@@ -21,27 +21,36 @@ import { ArgOf } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
 import {
   IIntegrityJob,
+  IIntegrityMissingFilesJob,
   IIntegrityOrphanedFilesJob,
   IIntegrityPathWithChecksumJob,
   IIntegrityPathWithReportJob,
 } from 'src/types';
 import { handlePromiseError } from 'src/utils/misc';
 
-async function* chunk<T>(generator: AsyncIterableIterator<T>, n: number) {
-  let chunk: T[] = [];
-  for await (const item of generator) {
-    chunk.push(item);
-
-    if (chunk.length === n) {
-      yield chunk;
-      chunk = [];
-    }
-  }
-
-  if (chunk.length > 0) {
-    yield chunk;
-  }
-}
+/**
+ * Orphan Files:
+ *   Files are detected in /data/encoded-video, /data/library, /data/upload
+ *     Checked against the asset table
+ *   Files are detected in /data/thumbs
+ *     Checked against the asset_file table
+ *
+ *   * Can perform download or delete of files
+ *
+ * Missing Files:
+ *   Paths are queried from asset(originalPath, encodedVideoPath), asset_file(path)
+ *     Check whether files exist on disk
+ *
+ *   * Reports must include origin (asset or asset_file) & ID for further action
+ *   * Can perform trash (asset) or dereference (asset_file)
+ *
+ * Checksum Mismatch:
+ *   Paths & checksums are queried from asset(originalPath, checksum)
+ *     Check whether files match checksum, missing files ignored
+ *
+ *   * Reports must include origin (as above) for further action
+ *   * Can perform download or trash (asset)
+ */
 
 @Injectable()
 export class IntegrityService extends BaseService {
@@ -85,6 +94,24 @@ export class IntegrityService extends BaseService {
         start: checksumFiles.enabled,
       });
     }
+
+    // debug: run on boot
+    setTimeout(() => {
+      void this.jobRepository.queue({
+        name: JobName.IntegrityOrphanedFilesQueueAll,
+        data: {},
+      });
+
+      void this.jobRepository.queue({
+        name: JobName.IntegrityMissingFilesQueueAll,
+        data: {},
+      });
+
+      void this.jobRepository.queue({
+        name: JobName.IntegrityChecksumFiles,
+        data: {},
+      });
+    }, 1000);
   }
 
   @OnEvent({ name: 'ConfigUpdate', server: true })
@@ -220,11 +247,11 @@ export class IntegrityService extends BaseService {
   }
 
   @OnJob({ name: JobName.IntegrityOrphanedFilesRefresh, queue: QueueName.BackgroundTask })
-  async handleOrphanedRefresh({ items: paths }: IIntegrityPathWithReportJob): Promise<JobStatus> {
-    this.logger.log(`Processing batch of ${paths.length} reports to check if they are out of date.`);
+  async handleOrphanedRefresh({ items }: IIntegrityPathWithReportJob): Promise<JobStatus> {
+    this.logger.log(`Processing batch of ${items.length} reports to check if they are out of date.`);
 
     const results = await Promise.all(
-      paths.map(({ reportId, path }) =>
+      items.map(({ reportId, path }) =>
         stat(path)
           .then(() => void 0)
           .catch(() => reportId),
@@ -237,7 +264,7 @@ export class IntegrityService extends BaseService {
       await this.integrityReportRepository.deleteByIds(reportIds);
     }
 
-    this.logger.log(`Processed ${paths.length} paths and found ${reportIds.length} report(s) out of date.`);
+    this.logger.log(`Processed ${items.length} paths and found ${reportIds.length} report(s) out of date.`);
     return JobStatus.Success;
   }
 
@@ -286,14 +313,14 @@ export class IntegrityService extends BaseService {
   }
 
   @OnJob({ name: JobName.IntegrityMissingFiles, queue: QueueName.BackgroundTask })
-  async handleMissingFiles({ items: paths }: IIntegrityPathWithReportJob): Promise<JobStatus> {
-    this.logger.log(`Processing batch of ${paths.length} files to check if they are missing.`);
+  async handleMissingFiles({ items }: IIntegrityMissingFilesJob): Promise<JobStatus> {
+    this.logger.log(`Processing batch of ${items.length} files to check if they are missing.`);
 
     const results = await Promise.all(
-      paths.map((file) =>
-        stat(file.path)
-          .then(() => ({ ...file, exists: true }))
-          .catch(() => ({ ...file, exists: false })),
+      items.map((item) =>
+        stat(item.path)
+          .then(() => ({ ...item, exists: true }))
+          .catch(() => ({ ...item, exists: false })),
       ),
     );
 
@@ -308,14 +335,16 @@ export class IntegrityService extends BaseService {
     const missingFiles = results.filter(({ exists }) => !exists);
     if (missingFiles.length > 0) {
       await this.integrityReportRepository.create(
-        missingFiles.map(({ path }) => ({
+        missingFiles.map(({ path, assetId, fileAssetId }) => ({
           type: IntegrityReportType.MissingFile,
           path,
+          assetId,
+          fileAssetId,
         })),
       );
     }
 
-    this.logger.log(`Processed ${paths.length} and found ${missingFiles.length} missing file(s).`);
+    this.logger.log(`Processed ${items.length} and found ${missingFiles.length} missing file(s).`);
     return JobStatus.Success;
   }
 
@@ -409,7 +438,7 @@ export class IntegrityService extends BaseService {
       endMarker = startMarker;
       startMarker = undefined;
 
-      for await (const { originalPath, checksum, createdAt, reportId } of assets) {
+      for await (const { originalPath, checksum, createdAt, assetId, reportId } of assets) {
         processed++;
 
         try {
@@ -445,6 +474,7 @@ export class IntegrityService extends BaseService {
           await this.integrityReportRepository.create({
             path: originalPath,
             type: IntegrityReportType.ChecksumFail,
+            assetId,
           });
         }
 
@@ -517,5 +547,21 @@ export class IntegrityService extends BaseService {
 
     this.logger.log(`Processed ${paths.length} paths and found ${reportIds.length} report(s) out of date.`);
     return JobStatus.Success;
+  }
+}
+
+async function* chunk<T>(generator: AsyncIterableIterator<T>, n: number) {
+  let chunk: T[] = [];
+  for await (const item of generator) {
+    chunk.push(item);
+
+    if (chunk.length === n) {
+      yield chunk;
+      chunk = [];
+    }
+  }
+
+  if (chunk.length > 0) {
+    yield chunk;
   }
 }

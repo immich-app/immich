@@ -19,7 +19,12 @@ export class IntegrityReportRepository {
     return this.db
       .insertInto('integrity_report')
       .values(dto)
-      .onConflict((oc) => oc.doNothing())
+      .onConflict((oc) =>
+        oc.columns(['path', 'type']).doUpdateSet({
+          assetId: (eb) => eb.ref('excluded.assetId'),
+          fileAssetId: (eb) => eb.ref('excluded.fileAssetId'),
+        }),
+      )
       .returningAll()
       .executeTakeFirst();
   }
@@ -60,7 +65,7 @@ export class IntegrityReportRepository {
     return {
       items: await this.db
         .selectFrom('integrity_report')
-        .select(['id', 'type', 'path'])
+        .select(['id', 'type', 'path', 'assetId', 'fileAssetId'])
         .where('type', '=', dto.type)
         .orderBy('createdAt', 'desc')
         .execute(),
@@ -70,19 +75,19 @@ export class IntegrityReportRepository {
   getIntegrityReportCsv(type: IntegrityReportType): Readable {
     const items = this.db
       .selectFrom('integrity_report')
-      .select(['id', 'type', 'path'])
+      .select(['id', 'type', 'path', 'assetId', 'fileAssetId'])
       .where('type', '=', type)
       .orderBy('createdAt', 'desc')
       .stream();
 
     // very rudimentary csv serialiser
     async function* generator() {
-      yield 'id,type,path\n';
+      yield 'id,type,assetId,fileAssetId,path\n';
 
       for await (const item of items) {
         // no expectation of particularly bad filenames
         // but they could potentially have a newline or quote character
-        yield `${item.id},${item.type},"${item.path.replace(/"/g, '\\"')}"\n`;
+        yield `${item.id},${item.type},${item.assetId},${item.fileAssetId},"${item.path.replace(/"/g, '\\"')}"\n`;
       }
     }
 
