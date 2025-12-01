@@ -85,24 +85,6 @@ export class IntegrityService extends BaseService {
         start: checksumFiles.enabled,
       });
     }
-
-    // debug: run on boot
-    setImmediate(() => {
-      void this.jobRepository.queue({
-        name: JobName.IntegrityOrphanedFilesQueueAll,
-        data: {},
-      });
-
-      void this.jobRepository.queue({
-        name: JobName.IntegrityMissingFilesQueueAll,
-        data: {},
-      });
-
-      void this.jobRepository.queue({
-        name: JobName.IntegrityChecksumFiles,
-        data: {},
-      });
-    });
   }
 
   @OnEvent({ name: 'ConfigUpdate', server: true })
@@ -387,8 +369,13 @@ export class IntegrityService extends BaseService {
       return JobStatus.Success;
     }
 
-    const timeLimit = 60 * 60 * 1000; // 1000;
-    const percentageLimit = 1; // 0.25;
+    const {
+      integrityChecks: {
+        checksumFiles: { timeLimit, percentageLimit },
+      },
+    } = await this.getConfig({
+      withCache: true,
+    });
 
     this.logger.log(
       `Checking file checksums... (will run for up to ${(timeLimit / (60 * 60 * 1000)).toFixed(2)} hours or until ${(percentageLimit * 100).toFixed(2)}% of assets are processed)`,
@@ -400,7 +387,7 @@ export class IntegrityService extends BaseService {
     const checkpoint = await this.systemMetadataRepository.get(SystemMetadataKey.IntegrityChecksumCheckpoint);
 
     let startMarker: Date | undefined = checkpoint?.date ? new Date(checkpoint.date) : undefined;
-    let endMarker: Date | undefined; // todo
+    let endMarker: Date | undefined;
 
     const printStats = () => {
       const averageTime = ((Date.now() - startedAt) / processed).toFixed(2);
