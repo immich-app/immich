@@ -4,7 +4,7 @@
   import { getAssetOriginalUrl, getAssetPlaybackUrl, getAssetThumbnailUrl } from '$lib/utils';
   import { timeToSeconds } from '$lib/utils/date-time';
   import { getAltText } from '$lib/utils/thumbnail-util';
-  import { AssetMediaSize, AssetVisibility } from '@immich/sdk';
+  import { AssetMediaSize, AssetVisibility, type UserResponseDto } from '@immich/sdk';
   import {
     mdiArchiveArrowDownOutline,
     mdiCameraBurst,
@@ -46,6 +46,7 @@
     imageClass?: ClassValue;
     brokenAssetClass?: ClassValue;
     dimmed?: boolean;
+    albumUsers?: UserResponseDto[];
     onClick?: (asset: TimelineAsset) => void;
     onSelect?: (asset: TimelineAsset) => void;
     onMouseEvent?: (event: { isMouseOver: boolean; selectedGroupIndex: number }) => void;
@@ -64,6 +65,7 @@
     readonly = false,
     showArchiveIcon = false,
     showStackedIcon = true,
+    albumUsers = [],
     onClick = undefined,
     onSelect = undefined,
     onMouseEvent = undefined,
@@ -84,6 +86,8 @@
 
   let width = $derived(thumbnailSize || thumbnailWidth || 235);
   let height = $derived(thumbnailSize || thumbnailHeight || 235);
+
+  let assetOwner = $derived(albumUsers?.find((user) => user.id === asset.ownerId) ?? null);
 
   const onIconClickedHandler = (e?: MouseEvent) => {
     e?.stopPropagation();
@@ -265,6 +269,14 @@
         {#if !authManager.isSharedLink && asset.isFavorite}
           <div class="absolute bottom-2 start-2">
             <Icon data-icon-favorite icon={mdiHeart} size="24" class="text-white" />
+          </div>
+        {/if}
+
+        {#if !!assetOwner}
+          <div class="absolute bottom-1 end-2 max-w-[50%]">
+            <p class="text-xs font-medium text-white drop-shadow-lg max-w-[100%] truncate">
+              {assetOwner.name}
+            </p>
           </div>
         {/if}
 
