@@ -64,12 +64,14 @@ export class MaintenanceService extends BaseService {
     return this.integrityRepository.getIntegrityReportSummary();
   }
 
-  getIntegrityReport(dto: MaintenanceGetIntegrityReportDto): Promise<MaintenanceIntegrityReportResponseDto> {
-    return this.integrityRepository.getIntegrityReport(dto);
+  async getIntegrityReport(dto: MaintenanceGetIntegrityReportDto): Promise<MaintenanceIntegrityReportResponseDto> {
+    return {
+      items: await this.integrityRepository.getIntegrityReports(dto.type),
+    };
   }
 
   getIntegrityReportCsv(type: IntegrityReportType): Readable {
-    return this.integrityRepository.getIntegrityReportCsv(type);
+    return this.integrityRepository.streamIntegrityReportsCSV(type);
   }
 
   async getIntegrityReportFile(id: string): Promise<ImmichFileResponse> {

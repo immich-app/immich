@@ -3,11 +3,6 @@ import { Insertable, Kysely, sql } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { Readable } from 'node:stream';
 import { DummyValue, GenerateSql } from 'src/decorators';
-import {
-  MaintenanceGetIntegrityReportDto,
-  MaintenanceIntegrityReportResponseDto,
-  MaintenanceIntegrityReportSummaryResponseDto,
-} from 'src/dtos/maintenance.dto';
 import { IntegrityReportType } from 'src/enum';
 import { DB } from 'src/schema';
 import { IntegrityReportTable } from 'src/schema/tables/integrity-report.table';
@@ -30,6 +25,7 @@ export class IntegrityRepository {
       .executeTakeFirst();
   }
 
+  @GenerateSql({ params: [DummyValue.STRING] })
   getById(id: string) {
     return this.db
       .selectFrom('integrity_report')
@@ -38,7 +34,8 @@ export class IntegrityRepository {
       .executeTakeFirstOrThrow();
   }
 
-  getIntegrityReportSummary(): Promise<MaintenanceIntegrityReportSummaryResponseDto> {
+  @GenerateSql({ params: [] })
+  getIntegrityReportSummary() {
     return this.db
       .selectFrom('integrity_report')
       .select((eb) =>
@@ -62,47 +59,14 @@ export class IntegrityRepository {
       .executeTakeFirstOrThrow();
   }
 
-  async getIntegrityReport(dto: MaintenanceGetIntegrityReportDto): Promise<MaintenanceIntegrityReportResponseDto> {
-    return {
-      items: await this.db
-        .selectFrom('integrity_report')
-        .select(['id', 'type', 'path', 'assetId', 'fileAssetId'])
-        .where('type', '=', dto.type)
-        .orderBy('createdAt', 'desc')
-        .execute(),
-    };
-  }
-
-  getIntegrityReportCsv(type: IntegrityReportType): Readable {
-    const items = this.db
+  @GenerateSql({ params: [DummyValue.STRING] })
+  getIntegrityReports(type: IntegrityReportType) {
+    return this.db
       .selectFrom('integrity_report')
       .select(['id', 'type', 'path', 'assetId', 'fileAssetId'])
       .where('type', '=', type)
       .orderBy('createdAt', 'desc')
-      .stream();
-
-    // very rudimentary csv serialiser
-    async function* generator() {
-      yield 'id,type,assetId,fileAssetId,path\n';
-
-      for await (const item of items) {
-        // no expectation of particularly bad filenames
-        // but they could potentially have a newline or quote character
-        yield `${item.id},${item.type},${item.assetId},${item.fileAssetId},"${item.path.replace(/"/g, '""')}"\n`;
-      }
-    }
-
-    return Readable.from(generator());
-  }
-
-  @GenerateSql({ params: [] })
-  getAllAssetPaths() {
-    return this.db.selectFrom('asset').select(['originalPath', 'encodedVideoPath']).stream();
-  }
-
-  @GenerateSql({ params: [] })
-  getAllAssetFilePaths() {
-    return this.db.selectFrom('asset_file').select(['path']).stream();
+      .execute();
   }
 
   @GenerateSql({ params: [DummyValue.STRING] })
@@ -125,6 +89,39 @@ export class IntegrityRepository {
       .selectFrom('asset')
       .select((eb) => eb.fn.countAll<number>().as('count'))
       .executeTakeFirstOrThrow();
+  }
+
+  @GenerateSql({ params: [DummyValue.STRING], stream: true })
+  streamIntegrityReportsCSV(type: IntegrityReportType): Readable {
+    const items = this.db
+      .selectFrom('integrity_report')
+      .select(['id', 'type', 'path', 'assetId', 'fileAssetId'])
+      .where('type', '=', type)
+      .orderBy('createdAt', 'desc')
+      .stream();
+
+    // very rudimentary csv serialiser
+    async function* generator() {
+      yield 'id,type,assetId,fileAssetId,path\n';
+
+      for await (const item of items) {
+        // no expectation of particularly bad filenames
+        // but they could potentially have a newline or quote character
+        yield `${item.id},${item.type},${item.assetId},${item.fileAssetId},"${item.path.replace(/"/g, '""')}"\n`;
+      }
+    }
+
+    return Readable.from(generator());
+  }
+
+  @GenerateSql({ params: [], stream: true })
+  streamAllAssetPaths() {
+    return this.db.selectFrom('asset').select(['originalPath', 'encodedVideoPath']).stream();
+  }
+
+  @GenerateSql({ params: [], stream: true })
+  streamAllAssetFilePaths() {
+    return this.db.selectFrom('asset_file').select(['path']).stream();
   }
 
   @GenerateSql({ params: [], stream: true })
@@ -230,10 +227,12 @@ export class IntegrityRepository {
       .stream();
   }
 
+  @GenerateSql({ params: [DummyValue.STRING] })
   deleteById(id: string) {
     return this.db.deleteFrom('integrity_report').where('id', '=', id).execute();
   }
 
+  @GenerateSql({ params: [DummyValue.STRING] })
   deleteByIds(ids: string[]) {
     return this.db.deleteFrom('integrity_report').where('id', 'in', ids).execute();
   }
