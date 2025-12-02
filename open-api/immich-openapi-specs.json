@@ -4668,8 +4668,7 @@
         "tags": [
           "Duplicates"
         ],
-        "x-immich-permission": "duplicate.delete",
-        "description": "This endpoint requires the `duplicate.delete` permission."
+        "x-immich-permission": "duplicate.delete"
       }
     },
     "/duplicates/keep-all": {
@@ -4695,8 +4694,7 @@
         "tags": [
           "Duplicates"
         ],
-        "x-immich-permission": "duplicate.delete",
-        "description": "This endpoint requires the `duplicate.delete` permission."
+        "x-immich-permission": "duplicate.delete"
       }
     },
     "/duplicates/{id}": {

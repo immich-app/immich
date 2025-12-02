@@ -2882,18 +2882,12 @@ export function getAssetDuplicates({ page, size }: {
         ...opts
     }));
 }
-/**
- * Delete a duplicate
- */
 export function deDuplicateAll(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchText("/duplicates/de-duplicate-all", {
         ...opts,
         method: "DELETE"
     }));
 }
-/**
- * This endpoint requires the `duplicate.delete` permission.
- */
 export function keepAll(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchText("/duplicates/keep-all", {
         ...opts,
@@ -2901,7 +2895,7 @@ export function keepAll(opts?: Oazapfts.RequestOpts) {
     }));
 }
 /**
- * This endpoint requires the `duplicate.delete` permission.
+ * Delete a duplicate
  */
 export function deleteDuplicate({ id }: {
     id: string;

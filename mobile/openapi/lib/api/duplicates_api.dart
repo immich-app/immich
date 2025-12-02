@@ -16,6 +16,39 @@ class DuplicatesApi {
 
   final ApiClient apiClient;
 
+  /// Performs an HTTP 'DELETE /duplicates/de-duplicate-all' operation and returns the [Response].
+  Future<Response> deDuplicateAllWithHttpInfo() async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/duplicates/de-duplicate-all';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'DELETE',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  Future<void> deDuplicateAll() async {
+    final response = await deDuplicateAllWithHttpInfo();
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
   /// Delete a duplicate
   ///
   /// Delete a single duplicate asset specified by its ID.
@@ -178,5 +211,38 @@ class DuplicatesApi {
     
     }
     return null;
+  }
+
+  /// Performs an HTTP 'DELETE /duplicates/keep-all' operation and returns the [Response].
+  Future<Response> keepAllWithHttpInfo() async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/duplicates/keep-all';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'DELETE',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  Future<void> keepAll() async {
+    final response = await keepAllWithHttpInfo();
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
   }
 }

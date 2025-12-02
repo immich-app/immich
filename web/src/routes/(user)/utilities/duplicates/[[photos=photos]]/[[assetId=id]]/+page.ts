@@ -9,14 +9,18 @@ export const load = (async ({ params, url }) => {
   const asset = await getAssetInfoFromParam(params);
   const $t = await getFormatter();
 
+  const PAGE_SIZE = 10;
+
   const indexParam = url.searchParams.get('index') ?? '0';
   const parsedIndex = Number.parseInt(indexParam, 10);
 
-  const duplicatesRes = await getAssetDuplicates({ page: parsedIndex + 1, size: 1 });
+  const pageNumber = Math.floor(parsedIndex / PAGE_SIZE) + 1;
+  const duplicatesRes = await getAssetDuplicates({ page: pageNumber, size: PAGE_SIZE });
 
   return {
     asset,
     duplicatesRes,
+    pageSize: PAGE_SIZE,
     meta: {
       title: $t('duplicates'),
     },
