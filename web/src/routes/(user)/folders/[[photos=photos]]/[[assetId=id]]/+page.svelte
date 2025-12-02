@@ -1,6 +1,6 @@
 <script lang="ts">
   import { afterNavigate, goto, invalidateAll } from '$app/navigation';
-  import UserPageLayout, { headerId } from '$lib/components/layouts/user-page-layout.svelte';
+  import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
   import Breadcrumbs from '$lib/components/shared-components/tree/breadcrumbs.svelte';
@@ -20,7 +20,6 @@
   import TagAction from '$lib/components/timeline/actions/TagAction.svelte';
   import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import { AppRoute, QueryParameter } from '$lib/constants';
-  import SkipLink from '$lib/elements/SkipLink.svelte';
   import type { Viewport } from '$lib/managers/timeline-manager/types';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { foldersStore } from '$lib/stores/folders.svelte';
@@ -79,7 +78,6 @@
 <UserPageLayout title={data.meta.title}>
   {#snippet sidebar()}
     <Sidebar>
-      <SkipLink target={`#${headerId}`} text={$t('skip_to_folders')} breakpoint="md" />
       <section>
         <div class="uppercase text-xs ps-4 mb-2 dark:text-white">{$t('explorer')}</div>
         <div class="h-full">

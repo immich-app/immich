@@ -7,15 +7,14 @@
     active: string;
     icons: { default: string; active: string };
     getLink: (path: string) => string;
+    isNested?: boolean;
   }
 
-  let { tree, active, icons, getLink }: Props = $props();
+  let { tree, active, icons, getLink, isNested = false }: Props = $props();
 </script>
 
-<ul class="list-none ms-2">
+<ul role={isNested ? 'group' : 'tree'} class="list-none ms-2">
   {#each tree.children as node (node.color ? node.path + node.color : node.path)}
-    <li>
-      <Tree {node} {icons} {active} {getLink} />
-    </li>
+    <Tree {node} {icons} {active} {getLink} />
   {/each}
 </ul>

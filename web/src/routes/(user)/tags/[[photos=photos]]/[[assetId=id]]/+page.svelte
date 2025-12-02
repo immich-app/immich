@@ -1,13 +1,12 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import UserPageLayout, { headerId } from '$lib/components/layouts/user-page-layout.svelte';
+  import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import Breadcrumbs from '$lib/components/shared-components/tree/breadcrumbs.svelte';
   import TreeItemThumbnails from '$lib/components/shared-components/tree/tree-item-thumbnails.svelte';
   import TreeItems from '$lib/components/shared-components/tree/tree-items.svelte';
   import Sidebar from '$lib/components/sidebar/sidebar.svelte';
   import Timeline from '$lib/components/timeline/Timeline.svelte';
   import { AppRoute, AssetAction, QueryParameter } from '$lib/constants';
-  import SkipLink from '$lib/elements/SkipLink.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import TagCreateModal from '$lib/modals/TagCreateModal.svelte';
   import TagEditModal from '$lib/modals/TagEditModal.svelte';
@@ -84,7 +83,6 @@
 <UserPageLayout title={data.meta.title}>
   {#snippet sidebar()}
     <Sidebar>
-      <SkipLink target={`#${headerId}`} text={$t('skip_to_tags')} breakpoint="md" />
       <section>
         <div class="uppercase text-xs ps-4 mb-2 dark:text-white">{$t('explorer')}</div>
         <div class="h-full">
