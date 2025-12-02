@@ -130,7 +130,7 @@ export class IntegrityRepository {
       .selectFrom((eb) =>
         eb
           .selectFrom('asset')
-          .where('asset.deletedAt', 'is not', null)
+          .where('asset.deletedAt', 'is', null)
           .select(['asset.originalPath as path'])
           .select((eb) => [
             eb.ref('asset.id').$castTo<string | null>().as('assetId'),
@@ -139,7 +139,7 @@ export class IntegrityRepository {
           .unionAll(
             eb
               .selectFrom('asset')
-              .where('asset.deletedAt', 'is not', null)
+              .where('asset.deletedAt', 'is', null)
               .select((eb) => [
                 eb.ref('asset.encodedVideoPath').$castTo<string>().as('path'),
                 eb.ref('asset.id').$castTo<string | null>().as('assetId'),
