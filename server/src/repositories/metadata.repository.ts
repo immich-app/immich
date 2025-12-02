@@ -82,7 +82,7 @@ export class MetadataRepository {
   private recreateLock = false;
   private readonly MAX_RETRIES = 4;
   private readonly INITIAL_RETRY_DELAY_MS = 500;
-  private readonly FINAL_RETRY_DELAY_MS = 10000;
+  private readonly FINAL_RETRY_DELAY_MS = 10_000;
 
   constructor(private logger: LoggingRepository) {
     this.logger.setContext(MetadataRepository.name);
@@ -231,8 +231,7 @@ export class MetadataRepository {
   private isBatchClusterError(error: any): boolean {
     const message = error?.message || String(error);
     return (
-      typeof message === 'string' &&
-      (message.includes('BatchCluster has ended') || message.includes('cannot enqueue'))
+      typeof message === 'string' && (message.includes('BatchCluster has ended') || message.includes('cannot enqueue'))
     );
   }
 
@@ -276,9 +275,7 @@ export class MetadataRepository {
         // Если это последняя попытка или ошибка не требует повторной попытки
         if (attempt === this.MAX_RETRIES || !this.isRetryableError(error)) {
           if (attempt > 0) {
-            this.logger.warn(
-              `Error reading exif data after ${attempt} retries (${path}): ${error}`,
-            );
+            this.logger.warn(`Error reading exif data after ${attempt} retries (${path}): ${error}`);
           } else {
             this.logger.warn(`Error reading exif data (${path}): ${error}`);
           }
@@ -317,9 +314,7 @@ export class MetadataRepository {
         // Если это последняя попытка или ошибка не требует повторной попытки
         if (attempt === this.MAX_RETRIES || !this.isRetryableError(error)) {
           if (attempt > 0) {
-            this.logger.warn(
-              `Error extracting binary tag after ${attempt} retries (${path}, ${tagName}): ${error}`,
-            );
+            this.logger.warn(`Error extracting binary tag after ${attempt} retries (${path}, ${tagName}): ${error}`);
           } else {
             this.logger.warn(`Error extracting binary tag (${path}, ${tagName}): ${error}`);
           }
@@ -359,9 +354,7 @@ export class MetadataRepository {
         // Если это последняя попытка или ошибка не требует повторной попытки
         if (attempt === this.MAX_RETRIES || !this.isRetryableError(error)) {
           if (attempt > 0) {
-            this.logger.warn(
-              `Error writing exif data after ${attempt} retries (${path}): ${error}`,
-            );
+            this.logger.warn(`Error writing exif data after ${attempt} retries (${path}): ${error}`);
           } else {
             this.logger.warn(`Error writing exif data (${path}): ${error}`);
           }
