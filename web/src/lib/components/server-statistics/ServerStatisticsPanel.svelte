@@ -7,20 +7,11 @@
   import { mdiCameraIris, mdiChartPie, mdiPlayCircle } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
-  interface Props {
-    stats?: ServerStatsResponseDto;
-  }
+  type Props = {
+    stats: ServerStatsResponseDto;
+  };
 
-  let {
-    stats = {
-      photos: 0,
-      videos: 0,
-      usage: 0,
-      usagePhotos: 0,
-      usageVideos: 0,
-      usageByUser: [],
-    },
-  }: Props = $props();
+  const { stats }: Props = $props();
 
   const zeros = (value: number) => {
     const maxLength = 13;

@@ -1,12 +1,19 @@
 <script lang="ts">
+  import { goto } from '$app/navigation';
   import JobsPanel from '$lib/components/jobs/JobsPanel.svelte';
   import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
   import { AppRoute } from '$lib/constants';
   import JobCreateModal from '$lib/modals/JobCreateModal.svelte';
   import { asyncTimeout } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
-  import { getQueuesLegacy, QueueCommand, QueueName, runQueueCommandLegacy, type QueuesResponseDto } from '@immich/sdk';
-  import { Button, HStack, modalManager, Text } from '@immich/ui';
+  import {
+    getQueuesLegacy,
+    QueueCommand,
+    QueueName,
+    runQueueCommandLegacy,
+    type QueuesResponseLegacyDto,
+  } from '@immich/sdk';
+  import { Button, CommandPaletteContext, HStack, modalManager, Text, type ActionItem } from '@immich/ui';
   import { mdiCog, mdiPlay, mdiPlus } from '@mdi/js';
   import { onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -18,7 +25,7 @@
 
   let { data }: Props = $props();
 
-  let jobs: QueuesResponseDto | undefined = $state();
+  let jobs: QueuesResponseLegacyDto | undefined = $state();
 
   let running = true;
 
@@ -40,6 +47,27 @@
     }
   };
 
+  const handleCreateJob = () => modalManager.show(JobCreateModal);
+
+  const jobConcurrencyLink = `${AppRoute.ADMIN_SETTINGS}?isOpen=job`;
+
+  const commands: ActionItem[] = [
+    {
+      title: $t('admin.create_job'),
+      type: $t('command'),
+      icon: mdiPlus,
+      onAction: () => void handleCreateJob(),
+      shortcuts: { shift: true, key: 'n' },
+    },
+    {
+      title: $t('admin.manage_concurrency'),
+      description: $t('admin.manage_concurrency_description'),
+      type: $t('page'),
+      icon: mdiCog,
+      onAction: () => goto(jobConcurrencyLink),
+    },
+  ];
+
   onMount(async () => {
     while (running) {
       jobs = await getQueuesLegacy();
@@ -52,7 +80,9 @@
   });
 </script>
 
-<AdminPageLayout title={data.meta.title}>
+<CommandPaletteContext {commands} />
+
+<AdminPageLayout breadcrumbs={[{ title: data.meta.title }]}>
   {#snippet buttons()}
     <HStack gap={0}>
       {#if pausedJobs.length > 0}
@@ -68,22 +98,10 @@
           </Text>
         </Button>
       {/if}
-      <Button
-        leadingIcon={mdiPlus}
-        onclick={() => modalManager.show(JobCreateModal, {})}
-        size="small"
-        variant="ghost"
-        color="secondary"
-      >
+      <Button leadingIcon={mdiPlus} onclick={handleCreateJob} size="small" variant="ghost" color="secondary">
         <Text class="hidden md:block">{$t('admin.create_job')}</Text>
       </Button>
-      <Button
-        leadingIcon={mdiCog}
-        href="{AppRoute.ADMIN_SETTINGS}?isOpen=job"
-        size="small"
-        variant="ghost"
-        color="secondary"
-      >
+      <Button leadingIcon={mdiCog} href={jobConcurrencyLink} size="small" variant="ghost" color="secondary">
         <Text class="hidden md:block">{$t('admin.manage_concurrency')}</Text>
       </Button>
     </HStack>

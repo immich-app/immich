@@ -35,15 +35,13 @@
     });
   };
 
-  let albumNameArray: string[] = $state(['', '', '']);
-
   // This part of the code is responsible for splitting album name into 3 parts where part 2 is the search query
   // It is used to highlight the search query in the album name
-  $effect(() => {
+  const albumNameArray: string[] = $derived.by(() => {
     let { albumName } = album;
     let findIndex = normalizeSearchString(albumName).indexOf(normalizeSearchString(searchQuery));
     let findLength = searchQuery.length;
-    albumNameArray = [
+    return [
       albumName.slice(0, findIndex),
       albumName.slice(findIndex, findIndex + findLength),
       albumName.slice(findIndex + findLength),
