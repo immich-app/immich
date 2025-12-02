@@ -76,15 +76,15 @@
       enabled: workflow.enabled,
       triggerType: workflow.triggerType,
       filters: orderedFilters.map((filter) => {
-        const meta = pluginFilterLookup.get(filter.filterId);
-        const key = meta?.methodName ?? filter.filterId;
+        const meta = pluginFilterLookup.get(filter.pluginFilterId);
+        const key = meta?.methodName ?? filter.pluginFilterId;
         return {
           [key]: filter.filterConfig ?? {},
         };
       }),
       actions: orderedActions.map((action) => {
-        const meta = pluginActionLookup.get(action.actionId);
-        const key = meta?.methodName ?? action.actionId;
+        const meta = pluginActionLookup.get(action.pluginActionId);
+        const key = meta?.methodName ?? action.pluginActionId;
         return {
           [key]: action.actionConfig ?? {},
         };
@@ -123,7 +123,7 @@
   };
 
   const handleEditWorkflow = async (workflow: WorkflowResponseDto) => {
-    await goto(`${AppRoute.WORKFLOWS_EDIT}/${workflow.id}?editMode=visual`);
+    await goto(`${AppRoute.WORKFLOWS}/${workflow.id}`);
   };
 
   const handleCreateWorkflow = async () => {
@@ -137,7 +137,7 @@
       },
     });
 
-    await goto(`${AppRoute.WORKFLOWS_EDIT}/${workflow.id}?editMode=visual`);
+    await goto(`${AppRoute.WORKFLOWS}/${workflow.id}`);
   };
 
   const getFilterLabel = (filterId: string) => {
@@ -289,7 +289,7 @@
                         </span>
                       {:else}
                         {#each workflow.filters as workflowFilter (workflowFilter.id)}
-                          {@render chipItem(getFilterLabel(workflowFilter.filterId))}
+                          {@render chipItem(getFilterLabel(workflowFilter.pluginFilterId))}
                         {/each}
                       {/if}
                     </div>
@@ -309,7 +309,7 @@
                       {:else}
                         <div class="flex flex-wrap gap-2">
                           {#each workflow.actions as workflowAction (workflowAction.id)}
-                            {@render chipItem(getActionLabel(workflowAction.actionId))}
+                            {@render chipItem(getActionLabel(workflowAction.pluginActionId))}
                           {/each}
                         </div>
                       {/if}

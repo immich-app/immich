@@ -482,8 +482,8 @@ class ApiClient {
           return PlacesResponseDto.fromJson(value);
         case 'PluginActionResponseDto':
           return PluginActionResponseDto.fromJson(value);
-        case 'PluginContext':
-          return PluginContextTypeTransformer().decode(value);
+        case 'PluginContextType':
+          return PluginContextTypeTypeTransformer().decode(value);
         case 'PluginFilterResponseDto':
           return PluginFilterResponseDto.fromJson(value);
         case 'PluginResponseDto':

@@ -19,7 +19,7 @@ export class PluginController {
     description: 'Retrieve a list of all available plugin triggers.',
     history: new HistoryBuilder().added('v2.3.0').alpha('v2.3.0'),
   })
-  getTriggers(): PluginTriggerResponseDto[] {
+  getPluginTriggers(): PluginTriggerResponseDto[] {
     return this.service.getTriggers();
   }
 

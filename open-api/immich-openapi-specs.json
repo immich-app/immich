@@ -8023,7 +8023,7 @@
     "/plugins/triggers": {
       "get": {
         "description": "Retrieve a list of all available plugin triggers.",
-        "operationId": "getTriggers",
+        "operationId": "getPluginTriggers",
         "parameters": [],
         "responses": {
           "200": {
@@ -18331,7 +18331,7 @@
           },
           "supportedContexts": {
             "items": {
-              "$ref": "#/components/schemas/PluginContext"
+              "$ref": "#/components/schemas/PluginContextType"
             },
             "type": "array"
           },
@@ -18350,7 +18350,7 @@
         ],
         "type": "object"
       },
-      "PluginContext": {
+      "PluginContextType": {
         "enum": [
           "asset",
           "album",
@@ -18378,7 +18378,7 @@
           },
           "supportedContexts": {
             "items": {
-              "$ref": "#/components/schemas/PluginContext"
+              "$ref": "#/components/schemas/PluginContextType"
             },
             "type": "array"
           },
@@ -18452,10 +18452,10 @@
       },
       "PluginTriggerResponseDto": {
         "properties": {
-          "context": {
+          "contextType": {
             "allOf": [
               {
-                "$ref": "#/components/schemas/PluginContext"
+                "$ref": "#/components/schemas/PluginContextType"
               }
             ]
           },
@@ -18465,7 +18465,7 @@
           "name": {
             "type": "string"
           },
-          "triggerType": {
+          "type": {
             "allOf": [
               {
                 "$ref": "#/components/schemas/PluginTriggerType"
@@ -18474,10 +18474,10 @@
           }
         },
         "required": [
-          "context",
+          "contextType",
           "description",
           "name",
-          "triggerType"
+          "type"
         ],
         "type": "object"
       },

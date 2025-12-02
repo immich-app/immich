@@ -199,8 +199,8 @@ Class | Method | HTTP request | Description
 *PeopleApi* | [**updatePeople**](doc//PeopleApi.md#updatepeople) | **PUT** /people | Update people
 *PeopleApi* | [**updatePerson**](doc//PeopleApi.md#updateperson) | **PUT** /people/{id} | Update person
 *PluginsApi* | [**getPlugin**](doc//PluginsApi.md#getplugin) | **GET** /plugins/{id} | Retrieve a plugin
+*PluginsApi* | [**getPluginTriggers**](doc//PluginsApi.md#getplugintriggers) | **GET** /plugins/triggers | List all plugin triggers
 *PluginsApi* | [**getPlugins**](doc//PluginsApi.md#getplugins) | **GET** /plugins | List all plugins
-*PluginsApi* | [**getTriggers**](doc//PluginsApi.md#gettriggers) | **GET** /plugins/triggers | List all plugin triggers
 *QueuesApi* | [**emptyQueue**](doc//QueuesApi.md#emptyqueue) | **DELETE** /queues/{name}/jobs | Empty a queue
 *QueuesApi* | [**getQueue**](doc//QueuesApi.md#getqueue) | **GET** /queues/{name} | Retrieve a queue
 *QueuesApi* | [**getQueueJobs**](doc//QueuesApi.md#getqueuejobs) | **GET** /queues/{name}/jobs | Retrieve queue jobs
@@ -466,7 +466,7 @@ Class | Method | HTTP request | Description
  - [PinCodeSetupDto](doc//PinCodeSetupDto.md)
  - [PlacesResponseDto](doc//PlacesResponseDto.md)
  - [PluginActionResponseDto](doc//PluginActionResponseDto.md)
- - [PluginContext](doc//PluginContext.md)
+ - [PluginContextType](doc//PluginContextType.md)
  - [PluginFilterResponseDto](doc//PluginFilterResponseDto.md)
  - [PluginResponseDto](doc//PluginResponseDto.md)
  - [PluginTriggerResponseDto](doc//PluginTriggerResponseDto.md)

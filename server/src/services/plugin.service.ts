@@ -116,12 +116,12 @@ export class PluginService extends BaseService {
   }
 
   private async loadPluginToDatabase(manifest: PluginManifestDto, basePath: string): Promise<void> {
-    // const currentPlugin = await this.pluginRepository.getPluginByName(manifest.name);
-    // if (currentPlugin != null && currentPlugin.version === manifest.version) {
-    //   this.logger.log(`Plugin ${manifest.name} is up to date (version ${manifest.version}). Skipping`);
-    //   return;
-    // }
-    //
+    const currentPlugin = await this.pluginRepository.getPluginByName(manifest.name);
+    if (currentPlugin != null && currentPlugin.version === manifest.version) {
+      this.logger.log(`Plugin ${manifest.name} is up to date (version ${manifest.version}). Skipping`);
+      return;
+    }
+
     const { plugin, filters, actions } = await this.pluginRepository.loadPlugin(manifest, basePath);
 
     this.logger.log(`Upserted plugin: ${plugin.name} (ID: ${plugin.id}, version: ${plugin.version})`);

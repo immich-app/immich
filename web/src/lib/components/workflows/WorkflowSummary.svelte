@@ -63,7 +63,7 @@
   <!-- svelte-ignore a11y_no_static_element_interactions -->
   <div
     bind:this={containerEl}
-    class="hidden sm:block fixed w-64 z-50 hover:cursor-grab select-none"
+    class="hidden sm:block fixed w-64 hover:cursor-grab select-none"
     style="left: {position.x}px; top: {position.y}px;"
     class:cursor-grabbing={isDragging}
     onmousedown={handleMouseDown}
@@ -112,7 +112,7 @@
               <span class="text-[10px] font-semibold uppercase tracking-wide">{$t('filters')}</span>
             </div>
             <div class="space-y-1 pl-5">
-              {#each filters as filter, index (filter.id)}
+              {#each filters as filter, index (index)}
                 <div class="flex items-center gap-2">
                   <span
                     class="shrink-0 h-4 w-4 rounded-full bg-light-200 text-[10px] font-medium flex items-center justify-center"
@@ -138,7 +138,7 @@
               <span class="text-[10px] font-semibold uppercase tracking-wide">{$t('actions')}</span>
             </div>
             <div class="space-y-1 pl-5">
-              {#each actions as action, index (action.id)}
+              {#each actions as action, index (index)}
                 <div class="flex items-center gap-2">
                   <span
                     class="shrink-0 h-4 w-4 rounded-full bg-light-200 text-[10px] font-medium flex items-center justify-center"
@@ -156,7 +156,7 @@
 {:else}
   <button
     type="button"
-    class="hidden sm:flex fixed right-6 bottom-6 z-50 h-14 w-14 items-center justify-center rounded-full bg-primary text-light shadow-lg hover:bg-primary/90 transition-colors"
+    class="hidden sm:flex fixed right-6 bottom-6 h-14 w-14 items-center justify-center rounded-full bg-primary text-light shadow-lg hover:bg-primary/90 transition-colors"
     title={$t('workflow_summary')}
     onclick={() => (isOpen = true)}
   >

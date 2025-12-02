@@ -13,44 +13,44 @@ part of openapi.api;
 class PluginTriggerResponseDto {
   /// Returns a new [PluginTriggerResponseDto] instance.
   PluginTriggerResponseDto({
-    required this.context,
+    required this.contextType,
     required this.description,
     required this.name,
-    required this.triggerType,
+    required this.type,
   });
 
-  PluginContext context;
+  PluginContextType contextType;
 
   String description;
 
   String name;
 
-  PluginTriggerType triggerType;
+  PluginTriggerType type;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is PluginTriggerResponseDto &&
-    other.context == context &&
+    other.contextType == contextType &&
     other.description == description &&
     other.name == name &&
-    other.triggerType == triggerType;
+    other.type == type;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (context.hashCode) +
+    (contextType.hashCode) +
     (description.hashCode) +
     (name.hashCode) +
-    (triggerType.hashCode);
+    (type.hashCode);
 
   @override
-  String toString() => 'PluginTriggerResponseDto[context=$context, description=$description, name=$name, triggerType=$triggerType]';
+  String toString() => 'PluginTriggerResponseDto[contextType=$contextType, description=$description, name=$name, type=$type]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'context'] = this.context;
+      json[r'contextType'] = this.contextType;
       json[r'description'] = this.description;
       json[r'name'] = this.name;
-      json[r'triggerType'] = this.triggerType;
+      json[r'type'] = this.type;
     return json;
   }
 
@@ -63,10 +63,10 @@ class PluginTriggerResponseDto {
       final json = value.cast<String, dynamic>();
 
       return PluginTriggerResponseDto(
-        context: PluginContext.fromJson(json[r'context'])!,
+        contextType: PluginContextType.fromJson(json[r'contextType'])!,
         description: mapValueOfType<String>(json, r'description')!,
         name: mapValueOfType<String>(json, r'name')!,
-        triggerType: PluginTriggerType.fromJson(json[r'triggerType'])!,
+        type: PluginTriggerType.fromJson(json[r'type'])!,
       );
     }
     return null;
@@ -114,10 +114,10 @@ class PluginTriggerResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'context',
+    'contextType',
     'description',
     'name',
-    'triggerType',
+    'type',
   };
 }
 

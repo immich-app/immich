@@ -1,16 +1,16 @@
 import { IsNotEmpty, IsString } from 'class-validator';
 import { PluginAction, PluginFilter } from 'src/database';
-import { PluginContext, PluginTriggerType } from 'src/enum';
+import { PluginContext as PluginContextType, PluginTriggerType } from 'src/enum';
 import type { JSONSchema } from 'src/types/plugin-schema.types';
 import { ValidateEnum } from 'src/validation';
 
 export class PluginTriggerResponseDto {
   name!: string;
   @ValidateEnum({ enum: PluginTriggerType, name: 'PluginTriggerType' })
-  triggerType!: PluginTriggerType;
+  type!: PluginTriggerType;
   description!: string;
-  @ValidateEnum({ enum: PluginContext, name: 'PluginContext' })
-  context!: PluginContext;
+  @ValidateEnum({ enum: PluginContextType, name: 'PluginContextType' })
+  contextType!: PluginContextType;
 }
 
 export class PluginResponseDto {
@@ -33,8 +33,8 @@ export class PluginFilterResponseDto {
   title!: string;
   description!: string;
 
-  @ValidateEnum({ enum: PluginContext, name: 'PluginContext' })
-  supportedContexts!: PluginContext[];
+  @ValidateEnum({ enum: PluginContextType, name: 'PluginContextType' })
+  supportedContexts!: PluginContextType[];
   schema!: JSONSchema | null;
 }
 
@@ -45,8 +45,8 @@ export class PluginActionResponseDto {
   title!: string;
   description!: string;
 
-  @ValidateEnum({ enum: PluginContext, name: 'PluginContext' })
-  supportedContexts!: PluginContext[];
+  @ValidateEnum({ enum: PluginContextType, name: 'PluginContextType' })
+  supportedContexts!: PluginContextType[];
   schema!: JSONSchema | null;
 }
 

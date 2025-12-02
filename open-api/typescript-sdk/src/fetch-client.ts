@@ -942,7 +942,7 @@ export type PluginActionResponseDto = {
     methodName: string;
     pluginId: string;
     schema: object | null;
-    supportedContexts: PluginContext[];
+    supportedContexts: PluginContextType[];
     title: string;
 };
 export type PluginFilterResponseDto = {
@@ -951,7 +951,7 @@ export type PluginFilterResponseDto = {
     methodName: string;
     pluginId: string;
     schema: object | null;
-    supportedContexts: PluginContext[];
+    supportedContexts: PluginContextType[];
     title: string;
 };
 export type PluginResponseDto = {
@@ -967,10 +967,10 @@ export type PluginResponseDto = {
     version: string;
 };
 export type PluginTriggerResponseDto = {
-    context: PluginContext;
+    contextType: PluginContextType;
     description: string;
     name: string;
-    triggerType: PluginTriggerType;
+    "type": PluginTriggerType;
 };
 export type QueueResponseDto = {
     isPaused: boolean;
@@ -3666,7 +3666,7 @@ export function getPlugins(opts?: Oazapfts.RequestOpts) {
 /**
  * List all plugin triggers
  */
-export function getTriggers(opts?: Oazapfts.RequestOpts) {
+export function getPluginTriggers(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: PluginTriggerResponseDto[];
@@ -5436,7 +5436,7 @@ export enum PartnerDirection {
     SharedBy = "shared-by",
     SharedWith = "shared-with"
 }
-export enum PluginContext {
+export enum PluginContextType {
     Asset = "asset",
     Album = "album",
     Person = "person"

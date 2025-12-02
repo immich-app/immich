@@ -16,10 +16,10 @@ import { BaseService } from 'src/services/base.service';
 @Injectable()
 export class WorkflowService extends BaseService {
   async create(auth: AuthDto, dto: WorkflowCreateDto): Promise<WorkflowResponseDto> {
-    const trigger = this.getTriggerOrFail(dto.triggerType);
+    const context = this.getContextForTrigger(dto.triggerType);
 
-    const filterInserts = await this.validateAndMapFilters(dto.filters, trigger.context);
-    const actionInserts = await this.validateAndMapActions(dto.actions, trigger.context);
+    const filterInserts = await this.validateAndMapFilters(dto.filters, context);
+    const actionInserts = await this.validateAndMapActions(dto.actions, context);
 
     const workflow = await this.workflowRepository.createWorkflow(
       {
@@ -56,11 +56,11 @@ export class WorkflowService extends BaseService {
     }
 
     const workflow = await this.findOrFail(id);
-    const trigger = this.getTriggerOrFail(dto.triggerType ?? workflow.triggerType);
+    const context = this.getContextForTrigger(dto.triggerType ?? workflow.triggerType);
 
     const { filters, actions, ...workflowUpdate } = dto;
-    const filterInserts = filters && (await this.validateAndMapFilters(filters, trigger.context));
-    const actionInserts = actions && (await this.validateAndMapActions(actions, trigger.context));
+    const filterInserts = filters && (await this.validateAndMapFilters(filters, context));
+    const actionInserts = actions && (await this.validateAndMapActions(actions, context));
 
     const updatedWorkflow = await this.workflowRepository.updateWorkflow(
       id,
@@ -124,12 +124,12 @@ export class WorkflowService extends BaseService {
     }));
   }
 
-  private getTriggerOrFail(triggerType: PluginTriggerType) {
-    const trigger = pluginTriggers.find((t) => t.triggerType === triggerType);
+  private getContextForTrigger(type: PluginTriggerType) {
+    const trigger = pluginTriggers.find((t) => t.type === type);
     if (!trigger) {
-      throw new BadRequestException(`Invalid trigger type: ${triggerType}`);
+      throw new BadRequestException(`Invalid trigger type: ${type}`);
     }
-    return trigger;
+    return trigger.contextType;
   }
 
   private async findOrFail(id: string) {

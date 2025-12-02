@@ -2,6 +2,7 @@
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
   import SearchBar from '$lib/elements/SearchBar.svelte';
   import { getPeopleThumbnailUrl } from '$lib/utils';
+  import { handleError } from '$lib/utils/handle-error';
   import { getAllPeople, type PersonResponseDto } from '@immich/sdk';
   import { Button, HStack, LoadingSpinner, Modal, ModalBody, ModalFooter } from '@immich/ui';
   import { onMount } from 'svelte';
@@ -9,10 +10,11 @@
 
   interface Props {
     multiple?: boolean;
+    excludedIds?: string[];
     onClose: (people?: PersonResponseDto[]) => void;
   }
 
-  let { multiple = false, onClose }: Props = $props();
+  let { multiple = false, excludedIds = [], onClose }: Props = $props();
 
   let people: PersonResponseDto[] = $state([]);
   let loading = $state(true);
@@ -20,13 +22,20 @@
   let selectedPeople: PersonResponseDto[] = $state([]);
 
   const filteredPeople = $derived(
-    searchName ? people.filter((person) => person.name.toLowerCase().includes(searchName.toLowerCase())) : people,
+    people
+      .filter((person) => !excludedIds.includes(person.id))
+      .filter((person) => !searchName || person.name.toLowerCase().includes(searchName.toLowerCase())),
   );
 
   onMount(async () => {
-    const result = await getAllPeople({ withHidden: false });
-    people = result.people;
-    loading = false;
+    try {
+      loading = true;
+      const result = await getAllPeople({ withHidden: false });
+      people = result.people;
+      loading = false;
+    } catch (error) {
+      handleError(error, $t('get_people_error'));
+    }
   });
 
   const togglePerson = (person: PersonResponseDto) => {
@@ -86,11 +95,11 @@
     </div>
   </ModalBody>
 
-  {#if multiple && selectedPeople.length > 0}
+  {#if multiple}
     <ModalFooter>
       <HStack fullWidth gap={4}>
         <Button shape="round" color="secondary" fullWidth onclick={() => onClose()}>{$t('cancel')}</Button>
-        <Button shape="round" fullWidth onclick={handleSubmit}>
+        <Button shape="round" fullWidth onclick={handleSubmit} disabled={selectedPeople.length === 0}>
           {$t('select_count', { values: { count: selectedPeople.length } })}
         </Button>
       </HStack>

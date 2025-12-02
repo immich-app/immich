@@ -1,4 +1,5 @@
 {
+  "get_people_error": "Error getting people",
   "about": "About",
   "account": "Account",
   "account_settings": "Account Settings",

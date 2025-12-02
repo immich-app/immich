@@ -11,7 +11,17 @@
   import AddWorkflowStepModal from '$lib/modals/AddWorkflowStepModal.svelte';
   import WorkflowNavigationConfirmModal from '$lib/modals/WorkflowNavigationConfirmModal.svelte';
   import WorkflowTriggerUpdateConfirmModal from '$lib/modals/WorkflowTriggerUpdateConfirmModal.svelte';
-  import { WorkflowService, type WorkflowPayload } from '$lib/services/workflow.service';
+  import {
+    buildWorkflowPayload,
+    getActionsByContext,
+    getFiltersByContext,
+    handleUpdateWorkflow,
+    hasWorkflowChanged,
+    initializeActionConfigs,
+    initializeFilterConfigs,
+    parseWorkflowJson,
+    type WorkflowPayload,
+  } from '$lib/services/workflow.service';
   import { handleError } from '$lib/utils/handle-error';
   import type { PluginActionResponseDto, PluginFilterResponseDto, PluginTriggerResponseDto } from '@immich/sdk';
   import {
@@ -57,7 +67,6 @@
   const triggers = data.triggers;
   const filters = data.plugins.flatMap((plugin) => plugin.filters);
   const actions = data.plugins.flatMap((plugin) => plugin.actions);
-  const workflowService = new WorkflowService(triggers, filters, actions);
 
   let previousWorkflow = data.workflow;
   let editWorkflow = $state(data.workflow);
@@ -67,25 +76,27 @@
   let name: string = $derived(editWorkflow.name ?? '');
   let description: string = $derived(editWorkflow.description ?? '');
 
-  let selectedTrigger = $state(triggers.find((t) => t.triggerType === editWorkflow.triggerType) ?? triggers[0]);
+  let selectedTrigger = $state(triggers.find((t) => t.type === editWorkflow.triggerType) ?? triggers[0]);
 
-  let triggerType = $derived(selectedTrigger.triggerType);
+  let triggerType = $derived(selectedTrigger.type);
 
-  let supportFilters = $derived(workflowService.getFiltersByContext(selectedTrigger.context));
-  let supportActions = $derived(workflowService.getActionsByContext(selectedTrigger.context));
+  let supportFilters = $derived(getFiltersByContext(filters, selectedTrigger.contextType));
+  let supportActions = $derived(getActionsByContext(actions, selectedTrigger.contextType));
 
-  let orderedFilters: PluginFilterResponseDto[] = $derived(
-    workflowService.initializeOrderedFilters(editWorkflow, supportFilters),
+  let selectedFilters: PluginFilterResponseDto[] = $derived(
+    (editWorkflow.filters ?? []).flatMap((workflowFilter) =>
+      supportFilters.filter((supportedFilter) => supportedFilter.id === workflowFilter.pluginFilterId),
+    ),
   );
-  let orderedActions: PluginActionResponseDto[] = $derived(
-    workflowService.initializeOrderedActions(editWorkflow, supportActions),
+
+  let selectedActions: PluginActionResponseDto[] = $derived(
+    (editWorkflow.actions ?? []).flatMap((workflowAction) =>
+      supportActions.filter((supportedAction) => supportedAction.id === workflowAction.pluginActionId),
+    ),
   );
-  let filterConfigs: Record<string, unknown> = $derived(
-    workflowService.initializeFilterConfigs(editWorkflow, supportFilters),
-  );
-  let actionConfigs: Record<string, unknown> = $derived(
-    workflowService.initializeActionConfigs(editWorkflow, supportActions),
-  );
+
+  let filterConfigs: Record<string, unknown> = $derived(initializeFilterConfigs(editWorkflow, supportFilters));
+  let actionConfigs: Record<string, unknown> = $derived(initializeActionConfigs(editWorkflow, supportActions));
 
   $effect(() => {
     editWorkflow.triggerType = triggerType;
@@ -94,10 +105,10 @@
   // Clear filters and actions when trigger changes (context changes)
   let previousContext = $state<string | undefined>(undefined);
   $effect(() => {
-    const currentContext = selectedTrigger.context;
+    const currentContext = selectedTrigger.contextType;
     if (previousContext !== undefined && previousContext !== currentContext) {
-      orderedFilters = [];
-      orderedActions = [];
+      selectedFilters = [];
+      selectedActions = [];
       filterConfigs = {};
       actionConfigs = {};
     }
@@ -106,14 +117,14 @@
 
   const updateWorkflow = async () => {
     try {
-      const updated = await workflowService.updateWorkflow(
+      const updated = await handleUpdateWorkflow(
         editWorkflow.id,
         name,
         description,
         editWorkflow.enabled,
         triggerType,
-        orderedFilters,
-        orderedActions,
+        selectedFilters,
+        selectedActions,
         filterConfigs,
         actionConfigs,
       );
@@ -131,13 +142,13 @@
   };
 
   const jsonContent = $derived(
-    workflowService.buildWorkflowPayload(
+    buildWorkflowPayload(
       name,
       description,
       editWorkflow.enabled,
       triggerType,
-      orderedFilters,
-      orderedActions,
+      selectedFilters,
+      selectedActions,
       filterConfigs,
       actionConfigs,
     ),
@@ -153,7 +164,7 @@
   });
 
   const syncFromJson = () => {
-    const result = workflowService.parseWorkflowJson(JSON.stringify(jsonEditorContent));
+    const result = parseWorkflowJson(JSON.stringify(jsonEditorContent), triggers, filters, actions);
 
     if (!result.success) {
       return;
@@ -168,24 +179,26 @@
         selectedTrigger = result.data.trigger;
       }
 
-      orderedFilters = result.data.filters;
-      orderedActions = result.data.actions;
+      selectedFilters = result.data.filters;
+      selectedActions = result.data.actions;
       filterConfigs = result.data.filterConfigs;
       actionConfigs = result.data.actionConfigs;
     }
   };
 
   let hasChanges: boolean = $derived(
-    workflowService.hasWorkflowChanged(
+    hasWorkflowChanged(
       previousWorkflow,
       editWorkflow.enabled,
       name,
       description,
       triggerType,
-      orderedFilters,
-      orderedActions,
+      selectedFilters,
+      selectedActions,
       filterConfigs,
       actionConfigs,
+      filters,
+      actions,
     ),
   );
 
@@ -211,10 +224,10 @@
       return;
     }
 
-    const newFilters = [...orderedFilters];
+    const newFilters = [...selectedFilters];
     const [draggedItem] = newFilters.splice(draggedFilterIndex, 1);
     newFilters.splice(index, 0, draggedItem);
-    orderedFilters = newFilters;
+    selectedFilters = newFilters;
   };
 
   const handleFilterDragEnd = () => {
@@ -238,10 +251,10 @@
       return;
     }
 
-    const newActions = [...orderedActions];
+    const newActions = [...selectedActions];
     const [draggedItem] = newActions.splice(draggedActionIndex, 1);
     newActions.splice(index, 0, draggedItem);
-    orderedActions = newActions;
+    selectedActions = newActions;
   };
 
   const handleActionDragEnd = () => {
@@ -253,26 +266,24 @@
     const result = (await modalManager.show(AddWorkflowStepModal, {
       filters: supportFilters,
       actions: supportActions,
-      addedFilters: orderedFilters,
-      addedActions: orderedActions,
       type,
     })) as { type: 'filter' | 'action'; item: PluginFilterResponseDto | PluginActionResponseDto } | undefined;
 
     if (result) {
       if (result.type === 'filter') {
-        orderedFilters = [...orderedFilters, result.item as PluginFilterResponseDto];
+        selectedFilters = [...selectedFilters, result.item as PluginFilterResponseDto];
       } else if (result.type === 'action') {
-        orderedActions = [...orderedActions, result.item as PluginActionResponseDto];
+        selectedActions = [...selectedActions, result.item as PluginActionResponseDto];
       }
     }
   };
 
   const handleRemoveFilter = (index: number) => {
-    orderedFilters = orderedFilters.filter((_, i) => i !== index);
+    selectedFilters = selectedFilters.filter((_, i) => i !== index);
   };
 
   const handleRemoveAction = (index: number) => {
-    orderedActions = orderedActions.filter((_, i) => i !== index);
+    selectedActions = selectedActions.filter((_, i) => i !== index);
   };
 
   const handleTriggerChange = async (newTrigger: PluginTriggerResponseDto) => {
@@ -340,8 +351,6 @@
 </svelte:head>
 
 <main class="pt-24 immich-scrollbar">
-  <WorkflowSummarySidebar trigger={selectedTrigger} filters={orderedFilters} actions={orderedActions} />
-
   <Container size="medium" class="p-4" center>
     {#if viewMode === 'json'}
       <WorkflowJsonEditor
@@ -392,7 +401,7 @@
               {#each triggers as trigger (trigger.name)}
                 <WorkflowTriggerCard
                   {trigger}
-                  selected={selectedTrigger.triggerType === trigger.triggerType}
+                  selected={selectedTrigger.type === trigger.type}
                   onclick={() => handleTriggerChange(trigger)}
                 />
               {/each}
@@ -414,10 +423,10 @@
           </CardHeader>
 
           <CardBody>
-            {#if orderedFilters.length === 0}
+            {#if selectedFilters.length === 0}
               {@render emptyCreateButton($t('add_filter'), $t('add_filter_description'), () => handleAddStep('filter'))}
             {:else}
-              {#each orderedFilters as filter, index (filter.id)}
+              {#each selectedFilters as filter, index (index)}
                 {#if index > 0}
                   {@render stepSeparator()}
                 {/if}
@@ -483,10 +492,10 @@
           </CardHeader>
 
           <CardBody>
-            {#if orderedActions.length === 0}
+            {#if selectedActions.length === 0}
               {@render emptyCreateButton($t('add_action'), $t('add_action_description'), () => handleAddStep('action'))}
             {:else}
-              {#each orderedActions as action, index (action.id)}
+              {#each selectedActions as action, index (index)}
                 {#if index > 0}
                   {@render stepSeparator()}
                 {/if}
@@ -539,6 +548,8 @@
       </VStack>
     {/if}
   </Container>
+
+  <WorkflowSummarySidebar trigger={selectedTrigger} filters={selectedFilters} actions={selectedActions} />
 </main>
 
 <ControlAppBar onClose={() => goto(AppRoute.WORKFLOWS)} backIcon={mdiArrowLeft} tailwindClasses="fixed! top-0! w-full">

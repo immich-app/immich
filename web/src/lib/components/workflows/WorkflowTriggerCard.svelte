@@ -39,12 +39,12 @@
         ? 'bg-primary text-light'
         : 'text-light-100 bg-light-300 group-hover:bg-light-500'}"
     >
-      <Icon icon={getTriggerIcon(trigger.triggerType)} size="24" />
+      <Icon icon={getTriggerIcon(trigger.type)} size="24" />
     </div>
     <div class="flex-1">
       <Text class="font-semibold mb-1">{trigger.name}</Text>
       {#if trigger.description}
-        <Text class="text-sm">{trigger.description}</Text>
+        <Text size="small">{trigger.description}</Text>
       {/if}
     </div>
   </div>
