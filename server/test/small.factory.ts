@@ -8,7 +8,6 @@ import {
   Memory,
   Partner,
   Session,
-  SidecarWriteAsset,
   User,
   UserAdmin,
 } from 'src/database';
@@ -246,7 +245,6 @@ const assetFactory = (asset: Partial<MapAsset> = {}) => ({
   originalFileName: 'IMG_123.jpg',
   originalPath: `/data/12/34/IMG_123.jpg`,
   ownerId: newUuid(),
-  sidecarPath: null,
   stackId: null,
   thumbhash: null,
   type: AssetType.Image,
@@ -321,9 +319,8 @@ const versionHistoryFactory = () => ({
   version: '1.123.45',
 });
 
-const assetSidecarWriteFactory = (asset: Partial<SidecarWriteAsset> = {}) => ({
+const assetSidecarWriteFactory = () => ({
   id: newUuid(),
-  sidecarPath: '/path/to/original-path.jpg.xmp',
   originalPath: '/path/to/original-path.jpg.xmp',
   tags: [],
   files: [
@@ -333,7 +330,6 @@ const assetSidecarWriteFactory = (asset: Partial<SidecarWriteAsset> = {}) => ({
       type: AssetFileType.Sidecar,
     },
   ],
-  ...asset,
 });
 
 const assetOcrFactory = (

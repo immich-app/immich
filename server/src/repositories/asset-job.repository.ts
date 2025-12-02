@@ -6,7 +6,6 @@ import { Asset, columns } from 'src/database';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { AssetFileType, AssetType, AssetVisibility } from 'src/enum';
 import { DB } from 'src/schema';
-import { StorageAsset } from 'src/types';
 import {
   anyUuid,
   asUuid,
@@ -313,28 +312,19 @@ export class AssetJobRepository {
         'asset.fileCreatedAt',
         'asset_exif.timeZone',
         'asset_exif.fileSizeInByte',
-        (eb) =>
-          eb
-            .selectFrom('asset_file')
-            .select('asset_file.path')
-            .whereRef('asset_file.assetId', '=', 'asset.id')
-            .where('asset_file.type', '=', AssetFileType.Sidecar)
-            .limit(1)
-            .as('sidecarPath'),
       ])
+      .select((eb) => withFiles(eb, AssetFileType.Sidecar))
       .where('asset.deletedAt', 'is', null);
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
-  getForStorageTemplateJob(id: string): Promise<StorageAsset | undefined> {
-    return this.storageTemplateAssetQuery().where('asset.id', '=', id).executeTakeFirst() as Promise<
-      StorageAsset | undefined
-    >;
+  getForStorageTemplateJob(id: string) {
+    return this.storageTemplateAssetQuery().where('asset.id', '=', id).executeTakeFirst();
   }
 
   @GenerateSql({ params: [], stream: true })
   streamForStorageTemplateJob() {
-    return this.storageTemplateAssetQuery().stream() as AsyncIterableIterator<StorageAsset>;
+    return this.storageTemplateAssetQuery().stream();
   }
 
   @GenerateSql({ params: [DummyValue.DATE], stream: true })

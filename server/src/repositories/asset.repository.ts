@@ -397,6 +397,17 @@ export class AssetRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
+  getForCopy(id: string) {
+    return this.db
+      .selectFrom('asset')
+      .select(['id', 'stackId', 'originalPath', 'isFavorite'])
+      .select(withFiles)
+      .where('id', '=', asUuid(id))
+      .limit(1)
+      .executeTakeFirst();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
   getById(id: string, { exifInfo, faces, files, library, owner, smartSearch, stack, tags }: GetByIdsRelations = {}) {
     return this.db
       .selectFrom('asset')
@@ -842,12 +853,8 @@ export class AssetRepository {
       .execute();
   }
 
-  async deleteFile(file: Pick<Selectable<AssetFileTable>, 'assetId' | 'type'>): Promise<void> {
-    await this.db
-      .deleteFrom('asset_file')
-      .where('assetId', '=', asUuid(file.assetId))
-      .where('type', '=', file.type)
-      .execute();
+  async deleteFile({ assetId, type }: { assetId: string; type: AssetFileType }): Promise<void> {
+    await this.db.deleteFrom('asset_file').where('assetId', '=', asUuid(assetId)).where('type', '=', type).execute();
   }
 
   async deleteFiles(files: Pick<Selectable<AssetFileTable>, 'id'>[]): Promise<void> {

@@ -207,8 +207,8 @@ export class AssetService extends BaseService {
     }: AssetCopyDto,
   ) {
     await this.requireAccess({ auth, permission: Permission.AssetCopy, ids: [sourceId, targetId] });
-    const sourceAsset = await this.assetRepository.getById(sourceId, { files: true });
-    const targetAsset = await this.assetRepository.getById(targetId, { files: true });
+    const sourceAsset = await this.assetRepository.getForCopy(sourceId);
+    const targetAsset = await this.assetRepository.getForCopy(targetId);
 
     if (!sourceAsset || !targetAsset) {
       throw new BadRequestException('Both assets must exist');
@@ -262,27 +262,20 @@ export class AssetService extends BaseService {
     sourceAsset,
     targetAsset,
   }: {
-    sourceAsset: { files?: AssetFile[] };
-    targetAsset: { id: string; files?: AssetFile[]; originalPath: string };
+    sourceAsset: { files: AssetFile[] };
+    targetAsset: { id: string; files: AssetFile[]; originalPath: string };
   }) {
-    if (!sourceAsset.files) {
+    const { sidecarFile: sourceFile } = getAssetFiles(sourceAsset.files);
+    if (!sourceFile?.path) {
       return;
     }
 
-    const sourceSidecarPath = getAssetFiles(sourceAsset.files).sidecarFile?.path;
-
-    if (!sourceSidecarPath) {
-      return;
+    const { sidecarFile: targetFile } = getAssetFiles(targetAsset.files ?? []);
+    if (targetFile?.path) {
+      await this.storageRepository.unlink(targetFile.path);
     }
 
-    if (targetAsset.files) {
-      const targetSidecar = getAssetFiles(targetAsset.files).sidecarFile;
-      if (targetSidecar) {
-        await this.storageRepository.unlink(targetSidecar.path);
-      }
-    }
-
-    await this.storageRepository.copyFile(sourceSidecarPath, `${targetAsset.originalPath}.xmp`);
+    await this.storageRepository.copyFile(sourceFile.path, `${targetAsset.originalPath}.xmp`);
     await this.assetRepository.upsertFile({
       assetId: targetAsset.id,
       path: `${targetAsset.originalPath}.xmp`,

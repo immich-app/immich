@@ -366,7 +366,7 @@ export class AssetMediaService extends BaseService {
     });
 
     await (sidecarPath
-      ? this.assetRepository.upsertFile({ assetId, path: sidecarPath, type: AssetFileType.Sidecar })
+      ? this.assetRepository.upsertFile({ assetId, type: AssetFileType.Sidecar, path: sidecarPath })
       : this.assetRepository.deleteFile({ assetId, type: AssetFileType.Sidecar }));
 
     await this.storageRepository.utimes(file.originalPath, new Date(), new Date(dto.fileModifiedAt));

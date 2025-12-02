@@ -1651,7 +1651,7 @@ describe(MetadataService.name, () => {
           dateTimeOriginal: date,
         }),
       ).resolves.toBe(JobStatus.Success);
-      expect(mocks.metadata.writeTags).toHaveBeenCalledWith(asset.sidecarPath, {
+      expect(mocks.metadata.writeTags).toHaveBeenCalledWith(asset.files[0].path, {
         Description: description,
         ImageDescription: description,
         DateTimeOriginal: date,
