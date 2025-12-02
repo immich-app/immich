@@ -23,8 +23,11 @@ export class DuplicateController {
     description: 'Retrieve a list of duplicate assets available to the authenticated user.',
     history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
-  getAssetDuplicates(@Auth() auth: AuthDto,     @Query('page') page: number = 1,
-    @Query('size') size: number = 20,): Promise<DuplicateResponseDto> {
+  getAssetDuplicates(
+    @Auth() auth: AuthDto,
+    @Query('page') page: number = 1,
+    @Query('size') size: number = 20,
+  ): Promise<DuplicateResponseDto> {
     return this.service.getDuplicates(auth, page, size);
   }
 
