@@ -88,7 +88,7 @@ export class IntegrityRepository {
       for await (const item of items) {
         // no expectation of particularly bad filenames
         // but they could potentially have a newline or quote character
-        yield `${item.id},${item.type},${item.assetId},${item.fileAssetId},"${item.path.replace(/"/g, '\\"')}"\n`;
+        yield `${item.id},${item.type},${item.assetId},${item.fileAssetId},"${item.path.replace(/"/g, '""')}"\n`;
       }
     }
 
