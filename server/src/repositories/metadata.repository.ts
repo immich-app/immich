@@ -80,8 +80,9 @@ export class MetadataRepository {
   private maxConcurrency: number | null = null;
   private isShuttingDown = false;
   private recreateLock = false;
-  private readonly MAX_RETRIES = 3;
+  private readonly MAX_RETRIES = 4;
   private readonly INITIAL_RETRY_DELAY_MS = 500;
+  private readonly FINAL_RETRY_DELAY_MS = 10000;
 
   constructor(private logger: LoggingRepository) {
     this.logger.setContext(MetadataRepository.name);
@@ -226,8 +227,11 @@ export class MetadataRepository {
           return {};
         }
 
-        // Вычисляем задержку с экспоненциальным backoff
-        const delayMs = this.INITIAL_RETRY_DELAY_MS * Math.pow(2, attempt);
+        // Вычисляем задержку с экспоненциальным backoff, последняя попытка - 10 секунд
+        const delayMs =
+          attempt === this.MAX_RETRIES - 1
+            ? this.FINAL_RETRY_DELAY_MS
+            : this.INITIAL_RETRY_DELAY_MS * Math.pow(2, attempt);
         this.logger.debug(
           `Retrying readTags for ${path} (attempt ${attempt + 1}/${this.MAX_RETRIES}) after ${delayMs}ms`,
         );
@@ -264,8 +268,11 @@ export class MetadataRepository {
           throw error;
         }
 
-        // Вычисляем задержку с экспоненциальным backoff
-        const delayMs = this.INITIAL_RETRY_DELAY_MS * Math.pow(2, attempt);
+        // Вычисляем задержку с экспоненциальным backoff, последняя попытка - 10 секунд
+        const delayMs =
+          attempt === this.MAX_RETRIES - 1
+            ? this.FINAL_RETRY_DELAY_MS
+            : this.INITIAL_RETRY_DELAY_MS * Math.pow(2, attempt);
         this.logger.debug(
           `Retrying extractBinaryTag for ${path} (attempt ${attempt + 1}/${this.MAX_RETRIES}) after ${delayMs}ms`,
         );
@@ -303,8 +310,11 @@ export class MetadataRepository {
           throw error;
         }
 
-        // Вычисляем задержку с экспоненциальным backoff
-        const delayMs = this.INITIAL_RETRY_DELAY_MS * Math.pow(2, attempt);
+        // Вычисляем задержку с экспоненциальным backoff, последняя попытка - 10 секунд
+        const delayMs =
+          attempt === this.MAX_RETRIES - 1
+            ? this.FINAL_RETRY_DELAY_MS
+            : this.INITIAL_RETRY_DELAY_MS * Math.pow(2, attempt);
         this.logger.debug(
           `Retrying writeTags for ${path} (attempt ${attempt + 1}/${this.MAX_RETRIES}) after ${delayMs}ms`,
         );
