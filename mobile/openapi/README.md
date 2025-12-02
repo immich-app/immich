@@ -133,6 +133,11 @@ Class | Method | HTTP request | Description
 *AuthenticationApi* | [**unlockAuthSession**](doc//AuthenticationApi.md#unlockauthsession) | **POST** /auth/session/unlock | Unlock auth session
 *AuthenticationApi* | [**validateAccessToken**](doc//AuthenticationApi.md#validateaccesstoken) | **POST** /auth/validateToken | Validate access token
 *AuthenticationAdminApi* | [**unlinkAllOAuthAccountsAdmin**](doc//AuthenticationAdminApi.md#unlinkalloauthaccountsadmin) | **POST** /admin/auth/unlink-all | Unlink all OAuth accounts
+*DatabaseBackupsAdminApi* | [**deleteBackup**](doc//DatabaseBackupsAdminApi.md#deletebackup) | **DELETE** /admin/database-backups/{filename} | Delete backup
+*DatabaseBackupsAdminApi* | [**downloadBackup**](doc//DatabaseBackupsAdminApi.md#downloadbackup) | **GET** /admin/database-backups/{filename} | Download backup
+*DatabaseBackupsAdminApi* | [**listBackups**](doc//DatabaseBackupsAdminApi.md#listbackups) | **GET** /admin/database-backups | List backups
+*DatabaseBackupsAdminApi* | [**startRestoreFlow**](doc//DatabaseBackupsAdminApi.md#startrestoreflow) | **POST** /admin/database-backups/start-restore | Start backup restore flow
+*DatabaseBackupsAdminApi* | [**uploadBackup**](doc//DatabaseBackupsAdminApi.md#uploadbackup) | **POST** /admin/database-backups/upload | Upload database backup
 *DeprecatedApi* | [**createPartnerDeprecated**](doc//DeprecatedApi.md#createpartnerdeprecated) | **POST** /partners/{id} | Create a partner
 *DeprecatedApi* | [**getAllUserAssetsByDeviceId**](doc//DeprecatedApi.md#getalluserassetsbydeviceid) | **GET** /assets/device/{deviceId} | Retrieve assets by device ID
 *DeprecatedApi* | [**getDeltaSync**](doc//DeprecatedApi.md#getdeltasync) | **POST** /sync/delta-sync | Get delta sync for user
@@ -161,15 +166,10 @@ Class | Method | HTTP request | Description
 *LibrariesApi* | [**scanLibrary**](doc//LibrariesApi.md#scanlibrary) | **POST** /libraries/{id}/scan | Scan a library
 *LibrariesApi* | [**updateLibrary**](doc//LibrariesApi.md#updatelibrary) | **PUT** /libraries/{id} | Update a library
 *LibrariesApi* | [**validate**](doc//LibrariesApi.md#validate) | **POST** /libraries/{id}/validate | Validate library settings
-*MaintenanceAdminApi* | [**deleteBackup**](doc//MaintenanceAdminApi.md#deletebackup) | **DELETE** /admin/maintenance/backups/{filename} | Delete backup
 *MaintenanceAdminApi* | [**detectPriorInstall**](doc//MaintenanceAdminApi.md#detectpriorinstall) | **GET** /admin/maintenance/detect-install | Detect existing install
-*MaintenanceAdminApi* | [**downloadBackup**](doc//MaintenanceAdminApi.md#downloadbackup) | **GET** /admin/maintenance/backups/{filename} | Download backup
 *MaintenanceAdminApi* | [**getMaintenanceStatus**](doc//MaintenanceAdminApi.md#getmaintenancestatus) | **GET** /admin/maintenance/status | Get maintenance mode status
-*MaintenanceAdminApi* | [**listBackups**](doc//MaintenanceAdminApi.md#listbackups) | **GET** /admin/maintenance/backups | List backups
 *MaintenanceAdminApi* | [**maintenanceLogin**](doc//MaintenanceAdminApi.md#maintenancelogin) | **POST** /admin/maintenance/login | Log into maintenance mode
 *MaintenanceAdminApi* | [**setMaintenanceMode**](doc//MaintenanceAdminApi.md#setmaintenancemode) | **POST** /admin/maintenance | Set maintenance mode
-*MaintenanceAdminApi* | [**startRestoreFlow**](doc//MaintenanceAdminApi.md#startrestoreflow) | **POST** /admin/maintenance/backups/restore | Start backup restore flow
-*MaintenanceAdminApi* | [**uploadBackup**](doc//MaintenanceAdminApi.md#uploadbackup) | **POST** /admin/maintenance/backups/upload | Upload database backup
 *MapApi* | [**getMapMarkers**](doc//MapApi.md#getmapmarkers) | **GET** /map/markers | Retrieve map markers
 *MapApi* | [**reverseGeocode**](doc//MapApi.md#reversegeocode) | **GET** /map/reverse-geocode | Reverse geocode coordinates
 *MemoriesApi* | [**addMemoryAssets**](doc//MemoriesApi.md#addmemoryassets) | **PUT** /memories/{id}/assets | Add assets to a memory

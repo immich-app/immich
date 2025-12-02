@@ -13,7 +13,14 @@ import {
   SetMaintenanceModeDto,
 } from 'src/dtos/maintenance.dto';
 import { ServerConfigDto } from 'src/dtos/server.dto';
-import { DatabaseLock, ImmichCookie, MaintenanceAction, StorageFolder, SystemMetadataKey } from 'src/enum';
+import {
+  CacheControl,
+  DatabaseLock,
+  ImmichCookie,
+  MaintenanceAction,
+  StorageFolder,
+  SystemMetadataKey,
+} from 'src/enum';
 import { MaintenanceEphemeralStateRepository } from 'src/maintenance/maintenance-ephemeral-state.repository';
 import { MaintenanceWebsocketRepository } from 'src/maintenance/maintenance-websocket.repository';
 import { AppRepository } from 'src/repositories/app.repository';
@@ -25,10 +32,12 @@ import { StorageRepository } from 'src/repositories/storage.repository';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
 import { type ApiService as _ApiService } from 'src/services/api.service';
 import { type BaseService as _BaseService } from 'src/services/base.service';
+import { type DatabaseBackupService as _DatabaseBackupService } from 'src/services/database-backup.service';
 import { type ServerService as _ServerService } from 'src/services/server.service';
 import { MaintenanceModeState } from 'src/types';
 import { deleteBackup, isValidBackupName, listBackups, restoreBackup, uploadBackup } from 'src/utils/backups';
 import { getConfig } from 'src/utils/config';
+import { ImmichFileResponse } from 'src/utils/file';
 import { createMaintenanceLoginUrl, detectPriorInstall } from 'src/utils/maintenance';
 import { getExternalDomain } from 'src/utils/misc';
 
@@ -160,6 +169,55 @@ export class MaintenanceWorkerService {
     return '/usr/src/app/upload';
   }
 
+  /**
+   * {@link _DatabaseBackupService.listBackups}
+   */
+  async listBackups(): Promise<{ backups: string[] }> {
+    return { backups: await listBackups(this.backupRepos) };
+  }
+
+  /**
+   * {@link _DatabaseBackupService.deleteBackup}
+   */
+  async deleteBackup(filename: string): Promise<void> {
+    return deleteBackup(this.backupRepos, filename);
+  }
+
+  /**
+   * {@link _DatabaseBackupService.uploadBackup}
+   */
+  async uploadBackup(file: Express.Multer.File): Promise<void> {
+    return uploadBackup(this.backupRepos, file);
+  }
+
+  /**
+   * {@link _DatabaseBackupService.downloadBackup}
+   */
+  downloadBackup(fileName: string): ImmichFileResponse {
+    if (!isValidBackupName(fileName)) {
+      throw new BadRequestException('Invalid backup name!');
+    }
+
+    const path = join(StorageCore.getBaseFolder(StorageFolder.Backups), fileName);
+
+    return {
+      path,
+      fileName,
+      cacheControl: CacheControl.PrivateWithoutCache,
+      contentType: fileName.endsWith('.gz') ? 'application/gzip' : 'application/sql',
+    };
+  }
+
+  private get backupRepos() {
+    return {
+      logger: this.logger,
+      storage: this.storageRepository,
+      config: this.configRepository,
+      process: this.processRepository,
+      database: this.databaseRepository,
+    };
+  }
+
   setStatus(status: MaintenanceStatusResponseDto): void {
     this.maintenanceEphemeralStateRepository.setStatus(status);
     this.maintenanceWebsocketRepository.serverSend('MaintenanceStatus', status);
@@ -278,20 +336,6 @@ export class MaintenanceWorkerService {
     }
   }
 
-  private async endMaintenance(): Promise<void> {
-    const state: MaintenanceModeState = { isMaintenanceMode: false as const };
-    await this.systemMetadataRepository.set(SystemMetadataKey.MaintenanceMode, state);
-
-    // => corresponds to notification.service.ts#onAppRestart
-    this.maintenanceWebsocketRepository.clientBroadcast('AppRestartV1', state);
-    this.maintenanceWebsocketRepository.serverSend('AppRestart', state);
-    this.appRepository.exitApp();
-  }
-
-  /**
-   * Backups
-   */
-
   private async restoreBackup(filename: string): Promise<void> {
     this.setStatus({
       active: true,
@@ -314,33 +358,13 @@ export class MaintenanceWorkerService {
     });
   }
 
-  async listBackups(): Promise<{ backups: string[] }> {
-    return { backups: await listBackups(this.backupRepos) };
-  }
+  private async endMaintenance(): Promise<void> {
+    const state: MaintenanceModeState = { isMaintenanceMode: false as const };
+    await this.systemMetadataRepository.set(SystemMetadataKey.MaintenanceMode, state);
 
-  async deleteBackup(filename: string): Promise<void> {
-    return deleteBackup(this.backupRepos, filename);
-  }
-
-  async uploadBackup(file: Express.Multer.File): Promise<void> {
-    return uploadBackup(this.backupRepos, file);
-  }
-
-  getBackupPath(filename: string): string {
-    if (!isValidBackupName(filename)) {
-      throw new BadRequestException('Invalid backup name!');
-    }
-
-    return join(StorageCore.getBaseFolder(StorageFolder.Backups), filename);
-  }
-
-  private get backupRepos() {
-    return {
-      logger: this.logger,
-      storage: this.storageRepository,
-      config: this.configRepository,
-      process: this.processRepository,
-      database: this.databaseRepository,
-    };
+    // => corresponds to notification.service.ts#onAppRestart
+    this.maintenanceWebsocketRepository.clientBroadcast('AppRestartV1', state);
+    this.maintenanceWebsocketRepository.serverSend('AppRestart', state);
+    this.appRepository.exitApp();
   }
 }

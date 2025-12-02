@@ -48,7 +48,7 @@ describe('/admin/maintenance', () => {
   describe('GET /backups/list', async () => {
     it('should succeed and be empty', async () => {
       const { status, body } = await request(app)
-        .get('/admin/maintenance/backups/list')
+        .get('/admin/database-backups/list')
         .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toBe(200);
       expect(body).toEqual({
@@ -65,7 +65,7 @@ describe('/admin/maintenance', () => {
         .poll(
           async () => {
             const { status, body } = await request(app)
-              .get('/admin/maintenance/backups/list')
+              .get('/admin/database-backups/list')
               .set('Authorization', `Bearer ${admin.accessToken}`);
 
             expect(status).toBe(200);
@@ -89,13 +89,13 @@ describe('/admin/maintenance', () => {
       const filename = await utils.createBackup(admin.accessToken);
 
       const { status } = await request(app)
-        .delete(`/admin/maintenance/backups/${filename}`)
+        .delete(`/admin/database-backups/${filename}`)
         .set('Authorization', `Bearer ${admin.accessToken}`);
 
       expect(status).toBe(200);
 
       const { status: listStatus, body } = await request(app)
-        .get('/admin/maintenance/backups/list')
+        .get('/admin/database-backups/list')
         .set('Authorization', `Bearer ${admin.accessToken}`);
 
       expect(listStatus).toBe(200);
@@ -271,7 +271,7 @@ describe('/admin/maintenance', () => {
     });
 
     it.sequential('should not work when the server is configured', async () => {
-      const { status, body } = await request(app).post('/admin/maintenance/backups/restore').send();
+      const { status, body } = await request(app).post('/admin/database-backups/restore').send();
 
       expect(status).toBe(400);
       expect(body).toEqual(errorDto.badRequest('The server already has an admin'));
@@ -280,7 +280,7 @@ describe('/admin/maintenance', () => {
     it.sequential('should enter maintenance mode in "database restore mode"', async () => {
       await utils.resetDatabase(); // reset database before running this test
 
-      const { status, headers } = await request(app).post('/admin/maintenance/backups/restore').send();
+      const { status, headers } = await request(app).post('/admin/database-backups/restore').send();
 
       expect(status).toBe(201);
 

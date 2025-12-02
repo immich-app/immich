@@ -14,12 +14,15 @@ class MaintenanceStatusResponseDto {
   /// Returns a new [MaintenanceStatusResponseDto] instance.
   MaintenanceStatusResponseDto({
     required this.action,
+    required this.active,
     this.error,
     this.progress,
     this.task,
   });
 
   MaintenanceAction action;
+
+  bool active;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -48,6 +51,7 @@ class MaintenanceStatusResponseDto {
   @override
   bool operator ==(Object other) => identical(this, other) || other is MaintenanceStatusResponseDto &&
     other.action == action &&
+    other.active == active &&
     other.error == error &&
     other.progress == progress &&
     other.task == task;
@@ -56,16 +60,18 @@ class MaintenanceStatusResponseDto {
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (action.hashCode) +
+    (active.hashCode) +
     (error == null ? 0 : error!.hashCode) +
     (progress == null ? 0 : progress!.hashCode) +
     (task == null ? 0 : task!.hashCode);
 
   @override
-  String toString() => 'MaintenanceStatusResponseDto[action=$action, error=$error, progress=$progress, task=$task]';
+  String toString() => 'MaintenanceStatusResponseDto[action=$action, active=$active, error=$error, progress=$progress, task=$task]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'action'] = this.action;
+      json[r'active'] = this.active;
     if (this.error != null) {
       json[r'error'] = this.error;
     } else {
@@ -94,6 +100,7 @@ class MaintenanceStatusResponseDto {
 
       return MaintenanceStatusResponseDto(
         action: MaintenanceAction.fromJson(json[r'action'])!,
+        active: mapValueOfType<bool>(json, r'active')!,
         error: mapValueOfType<String>(json, r'error'),
         progress: num.parse('${json[r'progress']}'),
         task: mapValueOfType<String>(json, r'task'),
@@ -145,6 +152,7 @@ class MaintenanceStatusResponseDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'action',
+    'active',
   };
 }
 

@@ -592,7 +592,7 @@ export const utils = {
     });
 
     return await utils.poll(
-      () => request(app).get('/admin/maintenance/backups/list').set('Authorization', `Bearer ${accessToken}`),
+      () => request(app).get('/admin/database-backups/list').set('Authorization', `Bearer ${accessToken}`),
       ({ status, body }) => status === 200 && body.backups.length === 1,
       ({ body }) => body.backups[0],
     );

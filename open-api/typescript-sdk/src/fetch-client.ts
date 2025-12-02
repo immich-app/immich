@@ -40,15 +40,15 @@ export type ActivityStatisticsResponseDto = {
     comments: number;
     likes: number;
 };
-export type SetMaintenanceModeDto = {
-    action: MaintenanceAction;
-    restoreBackupFilename?: string;
-};
 export type MaintenanceListBackupsResponseDto = {
     backups: string[];
 };
 export type MaintenanceUploadBackupDto = {
     file?: Blob;
+};
+export type SetMaintenanceModeDto = {
+    action: MaintenanceAction;
+    restoreBackupFilename?: string;
 };
 export type MaintenanceStorageFolderIntegrityDto = {
     files: number;
@@ -67,6 +67,7 @@ export type MaintenanceAuthDto = {
 };
 export type MaintenanceStatusResponseDto = {
     action: MaintenanceAction;
+    active: boolean;
     error?: string;
     progress?: number;
     task?: string;
@@ -1873,25 +1874,13 @@ export function unlinkAllOAuthAccountsAdmin(opts?: Oazapfts.RequestOpts) {
     }));
 }
 /**
- * Set maintenance mode
- */
-export function setMaintenanceMode({ setMaintenanceModeDto }: {
-    setMaintenanceModeDto: SetMaintenanceModeDto;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchText("/admin/maintenance", oazapfts.json({
-        ...opts,
-        method: "POST",
-        body: setMaintenanceModeDto
-    })));
-}
-/**
  * List backups
  */
 export function listBackups(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: MaintenanceListBackupsResponseDto;
-    }>("/admin/maintenance/backups", {
+    }>("/admin/database-backups", {
         ...opts
     }));
 }
@@ -1899,7 +1888,7 @@ export function listBackups(opts?: Oazapfts.RequestOpts) {
  * Start backup restore flow
  */
 export function startRestoreFlow(opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchText("/admin/maintenance/backups/restore", {
+    return oazapfts.ok(oazapfts.fetchText("/admin/database-backups/start-restore", {
         ...opts,
         method: "POST"
     }));
@@ -1910,7 +1899,7 @@ export function startRestoreFlow(opts?: Oazapfts.RequestOpts) {
 export function uploadBackup({ maintenanceUploadBackupDto }: {
     maintenanceUploadBackupDto: MaintenanceUploadBackupDto;
 }, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchText("/admin/maintenance/backups/upload", oazapfts.multipart({
+    return oazapfts.ok(oazapfts.fetchText("/admin/database-backups/upload", oazapfts.multipart({
         ...opts,
         method: "POST",
         body: maintenanceUploadBackupDto
@@ -1922,7 +1911,7 @@ export function uploadBackup({ maintenanceUploadBackupDto }: {
 export function deleteBackup({ filename }: {
     filename: string;
 }, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchText(`/admin/maintenance/backups/${encodeURIComponent(filename)}`, {
+    return oazapfts.ok(oazapfts.fetchText(`/admin/database-backups/${encodeURIComponent(filename)}`, {
         ...opts,
         method: "DELETE"
     }));
@@ -1936,9 +1925,21 @@ export function downloadBackup({ filename }: {
     return oazapfts.ok(oazapfts.fetchBlob<{
         status: 200;
         data: Blob;
-    }>(`/admin/maintenance/backups/${encodeURIComponent(filename)}`, {
+    }>(`/admin/database-backups/${encodeURIComponent(filename)}`, {
         ...opts
     }));
+}
+/**
+ * Set maintenance mode
+ */
+export function setMaintenanceMode({ setMaintenanceModeDto }: {
+    setMaintenanceModeDto: SetMaintenanceModeDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/admin/maintenance", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: setMaintenanceModeDto
+    })));
 }
 /**
  * Detect existing install

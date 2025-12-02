@@ -354,6 +354,7 @@ describe(MaintenanceWorkerService.name, () => {
       });
 
       expect(maintenanceEphemeralStateRepositoryMock.setStatus).toHaveBeenCalledWith({
+        active: true,
         action: MaintenanceAction.RestoreDatabase,
         error: 'Error: Invalid backup file format!',
         task: 'error',
@@ -367,12 +368,14 @@ describe(MaintenanceWorkerService.name, () => {
       });
 
       expect(maintenanceEphemeralStateRepositoryMock.setStatus).toHaveBeenCalledWith({
+        active: true,
         action: MaintenanceAction.RestoreDatabase,
         task: 'ready',
         progress: expect.any(Number),
       });
 
       expect(maintenanceEphemeralStateRepositoryMock.setStatus).toHaveBeenLastCalledWith({
+        active: true,
         action: 'end',
       });
     });
@@ -386,6 +389,7 @@ describe(MaintenanceWorkerService.name, () => {
       });
 
       expect(maintenanceEphemeralStateRepositoryMock.setStatus).toHaveBeenLastCalledWith({
+        active: true,
         action: MaintenanceAction.RestoreDatabase,
         error: 'Error: pg_dump non-zero exit code (1)\nerror',
         task: 'error',
@@ -404,6 +408,7 @@ describe(MaintenanceWorkerService.name, () => {
       });
 
       expect(maintenanceEphemeralStateRepositoryMock.setStatus).toHaveBeenLastCalledWith({
+        active: true,
         action: MaintenanceAction.RestoreDatabase,
         error: 'Error: psql non-zero exit code (1)\nerror',
         task: 'error',
@@ -455,13 +460,17 @@ describe(MaintenanceWorkerService.name, () => {
     });
   });
 
-  describe('getBackupPath', () => {
+  describe('downloadBackup', () => {
     it('should reject invalid file names', () => {
-      expect(() => sut.getBackupPath('invalid backup')).toThrowError(new BadRequestException('Invalid backup name!'));
+      expect(() => sut.downloadBackup('invalid backup')).toThrowError(new BadRequestException('Invalid backup name!'));
     });
 
     it('should get backup path', () => {
-      expect(sut.getBackupPath('hello.sql.gz')).toEqual('/data/backups/hello.sql.gz');
+      expect(sut.downloadBackup('hello.sql.gz')).toEqual(
+        expect.objectContaining({
+          path: '/data/backups/hello.sql.gz',
+        }),
+      );
     });
   });
 });

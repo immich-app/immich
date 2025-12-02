@@ -1,6 +1,4 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { basename, join } from 'node:path';
-import { StorageCore } from 'src/cores/storage.core';
 import { OnEvent } from 'src/decorators';
 import {
   MaintenanceAuthDto,
@@ -8,11 +6,9 @@ import {
   MaintenanceStatusResponseDto,
   SetMaintenanceModeDto,
 } from 'src/dtos/maintenance.dto';
-import { CacheControl, MaintenanceAction, StorageFolder, SystemMetadataKey } from 'src/enum';
+import { MaintenanceAction, SystemMetadataKey } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
 import { MaintenanceModeState } from 'src/types';
-import { deleteBackup, isValidBackupName, listBackups, uploadBackup } from 'src/utils/backups';
-import { ImmichFileResponse } from 'src/utils/file';
 import {
   createMaintenanceLoginUrl,
   detectPriorInstall,
@@ -93,48 +89,5 @@ export class MaintenanceService extends BaseService {
     }
 
     return await createMaintenanceLoginUrl(baseUrl, auth, secret);
-  }
-
-  /**
-   * Backups
-   */
-
-  async listBackups(): Promise<{ backups: string[] }> {
-    return { backups: await listBackups(this.backupRepos) };
-  }
-
-  async deleteBackup(filename: string): Promise<void> {
-    return deleteBackup(this.backupRepos, basename(filename));
-  }
-
-  async uploadBackup(file: Express.Multer.File): Promise<void> {
-    return uploadBackup(this.backupRepos, file);
-  }
-
-  downloadBackup(fileName: string): ImmichFileResponse {
-    return {
-      fileName,
-      cacheControl: CacheControl.PrivateWithoutCache,
-      contentType: fileName.endsWith('.gz') ? 'application/gzip' : 'application/sql',
-      path: this.getBackupPath(fileName),
-    };
-  }
-
-  getBackupPath(filename: string): string {
-    if (!isValidBackupName(filename)) {
-      throw new BadRequestException('Invalid backup name!');
-    }
-
-    return join(StorageCore.getBaseFolder(StorageFolder.Backups), basename(filename));
-  }
-
-  private get backupRepos() {
-    return {
-      logger: this.logger,
-      storage: this.storageRepository,
-      config: this.configRepository,
-      process: this.processRepository,
-      database: this.databaseRepository,
-    };
   }
 }

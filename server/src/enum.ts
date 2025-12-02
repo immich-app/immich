@@ -837,6 +837,7 @@ export enum ApiTag {
   Authentication = 'Authentication',
   AuthenticationAdmin = 'Authentication (admin)',
   Assets = 'Assets',
+  DatabaseBackups = 'Database Backups (admin)',
   Deprecated = 'Deprecated',
   Download = 'Download',
   Duplicates = 'Duplicates',

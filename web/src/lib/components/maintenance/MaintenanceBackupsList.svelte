@@ -106,7 +106,7 @@
   }
 
   function download(filename: string) {
-    location.href = getBaseUrl() + '/admin/maintenance/backups/' + filename;
+    location.href = getBaseUrl() + '/admin/database-backups/' + filename;
   }
 
   const handleOpen = async (event: Event, props: Partial<ContextMenuBaseProps>, filename: string) => {
@@ -142,7 +142,7 @@
       formData.append('file', file);
 
       await uploadRequest<MaintenanceUploadBackupDto>({
-        url: getBaseUrl() + '/admin/maintenance/backups/upload',
+        url: getBaseUrl() + '/admin/database-backups/upload',
         data: formData,
         onUploadProgress(event) {
           uploadProgress = event.loaded / event.total;

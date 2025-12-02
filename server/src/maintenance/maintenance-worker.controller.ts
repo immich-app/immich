@@ -1,6 +1,18 @@
-import { Body, Controller, Delete, Get, Param, Post, Req, Res, UploadedFile, UseInterceptors } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Next,
+  Param,
+  Post,
+  Req,
+  Res,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import {
   MaintenanceAuthDto,
   MaintenanceIntegrityResponseDto,
@@ -14,16 +26,17 @@ import { ImmichCookie } from 'src/enum';
 import { MaintenanceRoute } from 'src/maintenance/maintenance-auth.guard';
 import { MaintenanceWorkerService } from 'src/maintenance/maintenance-worker.service';
 import { GetLoginDetails } from 'src/middleware/auth.guard';
-import { StorageRepository } from 'src/repositories/storage.repository';
+import { LoggingRepository } from 'src/repositories/logging.repository';
 import { LoginDetails } from 'src/services/auth.service';
+import { sendFile } from 'src/utils/file';
 import { respondWithCookie } from 'src/utils/response';
 import { FilenameParamDto } from 'src/validation';
 
 @Controller()
 export class MaintenanceWorkerController {
   constructor(
+    private logger: LoggingRepository,
     private service: MaintenanceWorkerService,
-    private storageRepository: StorageRepository,
   ) {}
 
   @Get('server/config')
@@ -62,26 +75,25 @@ export class MaintenanceWorkerController {
     void this.service.setAction(dto);
   }
 
-  @Get('admin/maintenance/backups/list')
+  @Get('admin/database-backups/list')
   @MaintenanceRoute()
   listBackups(): Promise<MaintenanceListBackupsResponseDto> {
     return this.service.listBackups();
   }
 
-  @Get('admin/maintenance/backups/:filename')
+  @Get('admin/database-backups/:filename')
   @MaintenanceRoute()
-  downloadBackup(@Param() { filename }: FilenameParamDto, @Res() res: Response) {
-    res.header('Content-Disposition', 'attachment');
-    res.sendFile(this.service.getBackupPath(filename));
+  async downloadBackup(@Param() { filename }: FilenameParamDto, @Res() res: Response, @Next() next: NextFunction) {
+    await sendFile(res, next, () => this.service.downloadBackup(filename), this.logger);
   }
 
-  @Delete('admin/maintenance/backups/:filename')
+  @Delete('admin/database-backups/:filename')
   @MaintenanceRoute()
   async deleteBackup(@Param() { filename }: FilenameParamDto): Promise<void> {
     return this.service.deleteBackup(filename);
   }
 
-  @Post('admin/maintenance/backups/upload')
+  @Post('admin/database-backups/upload')
   @MaintenanceRoute()
   @UseInterceptors(FileInterceptor('file'))
   uploadBackup(
