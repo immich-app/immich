@@ -251,8 +251,8 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
                 color: context.textTheme.labelLarge?.color,
               ),
               subtitle: _getFileInfo(asset, exifInfo),
-              subtitleStyle: context.textTheme.bodyMedium?.copyWith(
-                color: context.textTheme.bodyMedium?.color?.withAlpha(155),
+              subtitleStyle: context.textTheme.labelMedium?.copyWith(
+                color: context.textTheme.labelMedium?.color?.withAlpha(200),
               ),
             );
           },
@@ -268,8 +268,8 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
             color: context.textTheme.labelLarge?.color,
           ),
           subtitle: _getFileInfo(asset, exifInfo),
-          subtitleStyle: context.textTheme.bodyMedium?.copyWith(
-            color: context.textTheme.bodyMedium?.color?.withAlpha(155),
+          subtitleStyle: context.textTheme.labelMedium?.copyWith(
+            color: context.textTheme.labelMedium?.color?.withAlpha(200),
           ),
         );
       }
@@ -280,7 +280,7 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
         // Asset Date and Time
         SheetTile(
           title: _getDateTime(context, asset, exifInfo),
-          titleStyle: context.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+          titleStyle: context.textTheme.labelLarge,
           trailing: asset.hasRemote && isOwner ? const Icon(Icons.edit, size: 18) : null,
           onTap: asset.hasRemote && isOwner ? () async => await _editDateTime(context, ref) : null,
         ),
@@ -289,7 +289,7 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
         const SheetLocationDetails(),
         // Details header
         SheetTile(
-          title: 'exif_bottom_sheet_details'.t(context: context),
+          title: 'details'.t(context: context).toUpperCase(),
           titleStyle: context.textTheme.labelMedium?.copyWith(
             color: context.textTheme.labelMedium?.color?.withAlpha(200),
             fontWeight: FontWeight.w600,
@@ -298,29 +298,33 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
         // File info
         buildFileInfoTile(),
         // Camera info
-        if (cameraTitle != null)
+        if (cameraTitle != null) ...[
+          const SizedBox(height: 16),
           SheetTile(
             title: cameraTitle,
             titleStyle: context.textTheme.labelLarge,
             leading: Icon(Icons.camera_alt_outlined, size: 24, color: context.textTheme.labelLarge?.color),
             subtitle: _getCameraInfoSubtitle(exifInfo),
-            subtitleStyle: context.textTheme.bodyMedium?.copyWith(
-              color: context.textTheme.bodyMedium?.color?.withAlpha(155),
+            subtitleStyle: context.textTheme.labelMedium?.copyWith(
+              color: context.textTheme.labelMedium?.color?.withAlpha(200),
             ),
           ),
+        ],
         // Lens info
-        if (lensTitle != null)
+        if (lensTitle != null) ...[
+          const SizedBox(height: 16),
           SheetTile(
             title: lensTitle,
             titleStyle: context.textTheme.labelLarge,
             leading: Icon(Icons.camera_outlined, size: 24, color: context.textTheme.labelLarge?.color),
             subtitle: _getLensInfoSubtitle(exifInfo),
-            subtitleStyle: context.textTheme.bodyMedium?.copyWith(
-              color: context.textTheme.bodyMedium?.color?.withAlpha(155),
+            subtitleStyle: context.textTheme.labelMedium?.copyWith(
+              color: context.textTheme.labelMedium?.color?.withAlpha(200),
             ),
           ),
+        ],
         // Appears in (Albums)
-        _buildAppearsInList(ref, context),
+        Padding(padding: const EdgeInsets.only(top: 16.0), child: _buildAppearsInList(ref, context)),
         // padding at the bottom to avoid cut-off
         const SizedBox(height: 100),
       ],
