@@ -30,8 +30,8 @@ import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/action_button.utils.dart';
 import 'package:immich_mobile/utils/bytes_units.dart';
+import 'package:immich_mobile/utils/timezone.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
-import 'package:timezone/timezone.dart';
 
 const _kSeparator = '  •  ';
 
@@ -93,24 +93,10 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
 
     // Use EXIF timezone information if available (matching web app behavior)
     if (exifInfo?.dateTimeOriginal != null) {
-      dateTime = exifInfo!.dateTimeOriginal!;
-      if (exifInfo.timeZone != null) {
-        dateTime = dateTime.toUtc();
-        try {
-          final location = getLocation(exifInfo.timeZone!);
-          dateTime = TZDateTime.from(dateTime, location);
-          timeZoneOffset = dateTime.timeZoneOffset;
-        } on LocationNotFoundException {
-          // Handle UTC offset format (e.g., "UTC+08:00")
-          RegExp re = RegExp(r'^utc(?:([+-]\d{1,2})(?::(\d{2}))?)?$', caseSensitive: false);
-          final m = re.firstMatch(exifInfo.timeZone!);
-          if (m != null) {
-            final duration = Duration(hours: int.parse(m.group(1) ?? '0'), minutes: int.parse(m.group(2) ?? '0'));
-            dateTime = dateTime.add(duration);
-            timeZoneOffset = duration;
-          }
-        }
-      }
+      (dateTime, timeZoneOffset) = applyTimezoneOffset(
+        dateTime: exifInfo!.dateTimeOriginal!,
+        timeZone: exifInfo.timeZone,
+      );
     }
 
     final date = DateFormat.yMMMEd(ctx.locale.toLanguageTag()).format(dateTime);

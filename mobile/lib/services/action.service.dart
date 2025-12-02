@@ -15,11 +15,11 @@ import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/repositories/download.repository.dart';
 import 'package:immich_mobile/repositories/drift_album_api_repository.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/utils/timezone.dart';
 import 'package:immich_mobile/widgets/common/date_time_picker.dart';
 import 'package:immich_mobile/widgets/common/location_picker.dart';
 import 'package:maplibre_gl/maplibre_gl.dart' as maplibre;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:timezone/timezone.dart';
 
 final actionServiceProvider = Provider<ActionService>(
   (ref) => ActionService(
@@ -182,25 +182,8 @@ class ActionService {
       offset = dt.timeZoneOffset;
 
       if (exifData?.dateTimeOriginal != null) {
-        dt = exifData!.dateTimeOriginal!;
-        if (exifData.timeZone != null) {
-          timeZone = exifData.timeZone;
-          dt = dt.toUtc();
-          try {
-            final location = getLocation(exifData.timeZone!);
-            dt = TZDateTime.from(dt, location);
-            offset = dt.timeZoneOffset;
-          } on LocationNotFoundException {
-            // Handle UTC offset format (e.g., "UTC+08:00")
-            RegExp re = RegExp(r'^utc(?:([+-]\d{1,2})(?::(\d{2}))?)?$', caseSensitive: false);
-            final m = re.firstMatch(exifData.timeZone!);
-            if (m != null) {
-              final duration = Duration(hours: int.parse(m.group(1) ?? '0'), minutes: int.parse(m.group(2) ?? '0'));
-              dt = dt.add(duration);
-              offset = duration;
-            }
-          }
-        }
+        timeZone = exifData!.timeZone;
+        (dt, offset) = applyTimezoneOffset(dateTime: exifData.dateTimeOriginal!, timeZone: exifData.timeZone);
       }
 
       initialDate = dt;
