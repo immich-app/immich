@@ -301,14 +301,14 @@ export type Workflow = Selectable<WorkflowTable> & {
 
 export type WorkflowFilter = Selectable<WorkflowFilterTable> & {
   workflowId: string;
-  filterId: string;
+  pluginFilterId: string;
   filterConfig: FilterConfig | null;
   order: number;
 };
 
 export type WorkflowAction = Selectable<WorkflowActionTable> & {
   workflowId: string;
-  actionId: string;
+  pluginActionId: string;
   actionConfig: ActionConfig | null;
   order: number;
 };

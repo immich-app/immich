@@ -14,41 +14,41 @@ class WorkflowActionResponseDto {
   /// Returns a new [WorkflowActionResponseDto] instance.
   WorkflowActionResponseDto({
     required this.actionConfig,
-    required this.actionId,
     required this.id,
     required this.order,
+    required this.pluginActionId,
     required this.workflowId,
   });
 
   Object? actionConfig;
 
-  String actionId;
-
   String id;
 
   num order;
+
+  String pluginActionId;
 
   String workflowId;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is WorkflowActionResponseDto &&
     other.actionConfig == actionConfig &&
-    other.actionId == actionId &&
     other.id == id &&
     other.order == order &&
+    other.pluginActionId == pluginActionId &&
     other.workflowId == workflowId;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (actionConfig == null ? 0 : actionConfig!.hashCode) +
-    (actionId.hashCode) +
     (id.hashCode) +
     (order.hashCode) +
+    (pluginActionId.hashCode) +
     (workflowId.hashCode);
 
   @override
-  String toString() => 'WorkflowActionResponseDto[actionConfig=$actionConfig, actionId=$actionId, id=$id, order=$order, workflowId=$workflowId]';
+  String toString() => 'WorkflowActionResponseDto[actionConfig=$actionConfig, id=$id, order=$order, pluginActionId=$pluginActionId, workflowId=$workflowId]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -57,9 +57,9 @@ class WorkflowActionResponseDto {
     } else {
     //  json[r'actionConfig'] = null;
     }
-      json[r'actionId'] = this.actionId;
       json[r'id'] = this.id;
       json[r'order'] = this.order;
+      json[r'pluginActionId'] = this.pluginActionId;
       json[r'workflowId'] = this.workflowId;
     return json;
   }
@@ -74,9 +74,9 @@ class WorkflowActionResponseDto {
 
       return WorkflowActionResponseDto(
         actionConfig: mapValueOfType<Object>(json, r'actionConfig'),
-        actionId: mapValueOfType<String>(json, r'actionId')!,
         id: mapValueOfType<String>(json, r'id')!,
         order: num.parse('${json[r'order']}'),
+        pluginActionId: mapValueOfType<String>(json, r'pluginActionId')!,
         workflowId: mapValueOfType<String>(json, r'workflowId')!,
       );
     }
@@ -126,9 +126,9 @@ class WorkflowActionResponseDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'actionConfig',
-    'actionId',
     'id',
     'order',
+    'pluginActionId',
     'workflowId',
   };
 }
