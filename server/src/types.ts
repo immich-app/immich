@@ -1,6 +1,6 @@
 import { SystemConfig } from 'src/config';
 import { VECTOR_EXTENSIONS } from 'src/constants';
-import { Asset } from 'src/database';
+import { Asset, AssetFile } from 'src/database';
 import { UploadFieldName } from 'src/dtos/asset-media.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
@@ -475,8 +475,8 @@ export type StorageAsset = {
   fileCreatedAt: Date;
   originalPath: string;
   originalFileName: string;
-  sidecarPath: string | null;
   fileSizeInByte: number | null;
+  files: AssetFile[];
 };
 
 export type OnThisDayData = { year: number };

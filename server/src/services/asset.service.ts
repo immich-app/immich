@@ -2,6 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import _ from 'lodash';
 import { DateTime, Duration } from 'luxon';
 import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
+import { AssetFile } from 'src/database';
 import { OnJob } from 'src/decorators';
 import { AssetResponseDto, MapAsset, SanitizedAssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
 import {
@@ -18,7 +19,16 @@ import {
 } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { AssetOcrResponseDto } from 'src/dtos/ocr.dto';
-import { AssetMetadataKey, AssetStatus, AssetVisibility, JobName, JobStatus, Permission, QueueName } from 'src/enum';
+import {
+  AssetFileType,
+  AssetMetadataKey,
+  AssetStatus,
+  AssetVisibility,
+  JobName,
+  JobStatus,
+  Permission,
+  QueueName,
+} from 'src/enum';
 import { BaseService } from 'src/services/base.service';
 import { ISidecarWriteJob, JobItem, JobOf } from 'src/types';
 import { requireElevatedPermission } from 'src/utils/access';
@@ -197,8 +207,8 @@ export class AssetService extends BaseService {
     }: AssetCopyDto,
   ) {
     await this.requireAccess({ auth, permission: Permission.AssetCopy, ids: [sourceId, targetId] });
-    const sourceAsset = await this.assetRepository.getById(sourceId);
-    const targetAsset = await this.assetRepository.getById(targetId);
+    const sourceAsset = await this.assetRepository.getForCopy(sourceId);
+    const targetAsset = await this.assetRepository.getForCopy(targetId);
 
     if (!sourceAsset || !targetAsset) {
       throw new BadRequestException('Both assets must exist');
@@ -252,19 +262,25 @@ export class AssetService extends BaseService {
     sourceAsset,
     targetAsset,
   }: {
-    sourceAsset: { sidecarPath: string | null };
-    targetAsset: { id: string; sidecarPath: string | null; originalPath: string };
+    sourceAsset: { files: AssetFile[] };
+    targetAsset: { id: string; files: AssetFile[]; originalPath: string };
   }) {
-    if (!sourceAsset.sidecarPath) {
+    const { sidecarFile: sourceFile } = getAssetFiles(sourceAsset.files);
+    if (!sourceFile?.path) {
       return;
     }
 
-    if (targetAsset.sidecarPath) {
-      await this.storageRepository.unlink(targetAsset.sidecarPath);
+    const { sidecarFile: targetFile } = getAssetFiles(targetAsset.files ?? []);
+    if (targetFile?.path) {
+      await this.storageRepository.unlink(targetFile.path);
     }
 
-    await this.storageRepository.copyFile(sourceAsset.sidecarPath, `${targetAsset.originalPath}.xmp`);
-    await this.assetRepository.update({ id: targetAsset.id, sidecarPath: `${targetAsset.originalPath}.xmp` });
+    await this.storageRepository.copyFile(sourceFile.path, `${targetAsset.originalPath}.xmp`);
+    await this.assetRepository.upsertFile({
+      assetId: targetAsset.id,
+      path: `${targetAsset.originalPath}.xmp`,
+      type: AssetFileType.Sidecar,
+    });
     await this.jobRepository.queue({ name: JobName.AssetExtractMetadata, data: { id: targetAsset.id } });
   }
 
@@ -344,11 +360,11 @@ export class AssetService extends BaseService {
       }
     }
 
-    const { fullsizeFile, previewFile, thumbnailFile } = getAssetFiles(asset.files ?? []);
+    const { fullsizeFile, previewFile, thumbnailFile, sidecarFile } = getAssetFiles(asset.files ?? []);
     const files = [thumbnailFile?.path, previewFile?.path, fullsizeFile?.path, asset.encodedVideoPath];
 
     if (deleteOnDisk) {
-      files.push(asset.sidecarPath, asset.originalPath);
+      files.push(sidecarFile?.path, asset.originalPath);
     }
 
     await this.jobRepository.queue({ name: JobName.FileDelete, data: { files } });

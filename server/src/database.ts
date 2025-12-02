@@ -122,7 +122,6 @@ export type Asset = {
   originalFileName: string;
   originalPath: string;
   ownerId: string;
-  sidecarPath: string | null;
   type: AssetType;
 };
 
@@ -154,13 +153,6 @@ export type StorageAsset = {
   ownerId: string;
   files: AssetFile[];
   encodedVideoPath: string | null;
-};
-
-export type SidecarWriteAsset = {
-  id: string;
-  sidecarPath: string | null;
-  originalPath: string;
-  tags: Array<{ value: string }>;
 };
 
 export type Stack = {
@@ -347,7 +339,6 @@ export const columns = {
     'asset.originalFileName',
     'asset.originalPath',
     'asset.ownerId',
-    'asset.sidecarPath',
     'asset.type',
   ],
   assetFiles: ['asset_file.id', 'asset_file.path', 'asset_file.type'],
