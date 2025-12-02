@@ -62,10 +62,10 @@ Information on the current workers can be found [here](/administration/jobs-work
 
 ## Ports
 
-| Variable      | Description    |                  Default                   |
-| :------------ | :------------- | :----------------------------------------: |
-| `IMMICH_HOST` | Listening host |                 `0.0.0.0`                  |
-| `IMMICH_PORT` | Listening port | `2283` (server), `3003` (machine learning) |
+| Variable      | Description    |                  Default                   | Containers               |
+| :------------ | :------------- | :----------------------------------------: | :----------------------- |
+| `IMMICH_HOST` | Listening host |                 `0.0.0.0`                  | server, machine learning |
+| `IMMICH_PORT` | Listening port | `2283` (server), `3003` (machine learning) | server, machine learning |
 
 ## Database
 
@@ -80,7 +80,7 @@ Information on the current workers can be found [here](/administration/jobs-work
 | `DB_SSL_MODE`                       | Database SSL mode                                                                      |            | server                         |
 | `DB_VECTOR_EXTENSION`<sup>\*2</sup> | Database vector extension (one of [`vectorchord`, `pgvector`, `pgvecto.rs`])           |            | server                         |
 | `DB_SKIP_MIGRATIONS`                | Whether to skip running migrations on startup (one of [`true`, `false`])               |  `false`   | server                         |
-| `DB_STORAGE_TYPE`                   | Optimize concurrent IO on SSDs or sequential IO on HDDs ([`SSD`, `HDD`])<sup>\*3</sup> |   `SSD`    | server                         |
+| `DB_STORAGE_TYPE`                   | Optimize concurrent IO on SSDs or sequential IO on HDDs ([`SSD`, `HDD`])<sup>\*3</sup> |   `SSD`    | database                       |
 
 \*1: The values of `DB_USERNAME`, `DB_PASSWORD`, and `DB_DATABASE_NAME` are passed to the Postgres container as the variables `POSTGRES_USER`, `POSTGRES_PASSWORD`, and `POSTGRES_DB` in `docker-compose.yml`.
 

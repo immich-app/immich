@@ -512,7 +512,7 @@
           {:else if asset.exifInfo?.projectionType === ProjectionType.EQUIRECTANGULAR || (asset.originalPath && asset.originalPath
                 .toLowerCase()
                 .endsWith('.insp'))}
-            <ImagePanoramaViewer {asset} />
+            <ImagePanoramaViewer bind:zoomToggle {asset} />
           {:else if isShowEditor && selectedEditType === 'crop'}
             <CropArea {asset} />
           {:else}
