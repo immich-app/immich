@@ -20,6 +20,8 @@ export class MaintenanceAuthDto {
 }
 
 export class MaintenanceStatusResponseDto {
+  active!: boolean;
+
   @ValidateEnum({ enum: MaintenanceAction, name: 'MaintenanceAction' })
   action!: MaintenanceAction;
 

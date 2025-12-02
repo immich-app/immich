@@ -6,6 +6,7 @@ import { MaintenanceAction } from 'src/enum';
 export class MaintenanceEphemeralStateRepository {
   #secret: string = null!;
   #state: MaintenanceStatusResponseDto = {
+    active: true,
     action: MaintenanceAction.Start,
   };
 

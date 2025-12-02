@@ -49,9 +49,7 @@ export class MaintenanceController {
     history: new HistoryBuilder().added('v2.4.0').alpha('v2.4.0'),
   })
   getMaintenanceStatus(): MaintenanceStatusResponseDto {
-    return {
-      action: MaintenanceAction.End,
-    };
+    return this.service.getMaintenanceStatus();
   }
 
   @Get('detect-install')

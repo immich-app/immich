@@ -65,11 +65,13 @@ describe(MaintenanceWorkerService.name, () => {
   describe('setStatus', () => {
     it('should broadcast status', () => {
       maintenanceEphemeralStateRepositoryMock.getPublicStatus.mockReturnValue({
+        active: true,
         action: MaintenanceAction.Start,
         error: 'mock',
       });
 
       sut.setStatus({
+        active: true,
         action: MaintenanceAction.Start,
         task: 'abc',
         error: 'def',
@@ -79,6 +81,7 @@ describe(MaintenanceWorkerService.name, () => {
       expect(maintenanceWebsocketRepositoryMock.serverSend).toHaveBeenCalled();
       expect(maintenanceWebsocketRepositoryMock.clientSend).toHaveBeenCalledTimes(2);
       expect(maintenanceWebsocketRepositoryMock.clientSend).toHaveBeenCalledWith('MaintenanceStatusV1', 'public', {
+        active: true,
         action: 'start',
         error: 'mock',
       });
@@ -136,11 +139,13 @@ describe(MaintenanceWorkerService.name, () => {
   describe('status', () => {
     beforeEach(() => {
       maintenanceEphemeralStateRepositoryMock.getStatus.mockResolvedValue({
+        active: true,
         action: MaintenanceAction.Start,
         error: 'secret value!',
       });
 
       maintenanceEphemeralStateRepositoryMock.getPublicStatus.mockResolvedValue({
+        active: true,
         action: MaintenanceAction.Start,
         error: 'public mock',
       });

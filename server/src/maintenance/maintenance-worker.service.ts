@@ -58,8 +58,10 @@ export class MaintenanceWorkerService {
 
     this.maintenanceEphemeralStateRepository.setSecret(state.secret);
     this.maintenanceEphemeralStateRepository.setStatus({
+      active: true,
       action: state.action.action,
     });
+
     StorageCore.setMediaLocation(this.detectMediaLocation());
 
     this.maintenanceWebsocketRepository.setAuthFn(async (client) => this.authenticate(client.request.headers));
@@ -219,6 +221,7 @@ export class MaintenanceWorkerService {
 
   async setAction(action: SetMaintenanceModeDto) {
     this.setStatus({
+      active: true,
       action: action.action,
     });
 
@@ -267,6 +270,7 @@ export class MaintenanceWorkerService {
     } catch (error) {
       this.logger.error(`Encountered error running action: ${error}`);
       this.setStatus({
+        active: true,
         action: action.action,
         task: 'error',
         error: '' + error,
@@ -290,6 +294,7 @@ export class MaintenanceWorkerService {
 
   private async restoreBackup(filename: string): Promise<void> {
     this.setStatus({
+      active: true,
       action: MaintenanceAction.RestoreDatabase,
       task: 'ready',
       progress: 0,
@@ -297,6 +302,7 @@ export class MaintenanceWorkerService {
 
     await restoreBackup(this.backupRepos, filename, (task, progress) =>
       this.setStatus({
+        active: true,
         action: MaintenanceAction.RestoreDatabase,
         progress,
         task,

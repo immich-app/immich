@@ -2,7 +2,12 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { basename, join } from 'node:path';
 import { StorageCore } from 'src/cores/storage.core';
 import { OnEvent } from 'src/decorators';
-import { MaintenanceAuthDto, MaintenanceIntegrityResponseDto, SetMaintenanceModeDto } from 'src/dtos/maintenance.dto';
+import {
+  MaintenanceAuthDto,
+  MaintenanceIntegrityResponseDto,
+  MaintenanceStatusResponseDto,
+  SetMaintenanceModeDto,
+} from 'src/dtos/maintenance.dto';
 import { CacheControl, MaintenanceAction, StorageFolder, SystemMetadataKey } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
 import { MaintenanceModeState } from 'src/types';
@@ -25,6 +30,13 @@ export class MaintenanceService extends BaseService {
     return this.systemMetadataRepository
       .get(SystemMetadataKey.MaintenanceMode)
       .then((state) => state ?? { isMaintenanceMode: false });
+  }
+
+  getMaintenanceStatus(): MaintenanceStatusResponseDto {
+    return {
+      active: false,
+      action: MaintenanceAction.End,
+    };
   }
 
   detectPriorInstall(): Promise<MaintenanceIntegrityResponseDto> {
