@@ -45,14 +45,14 @@
     "@nestjs/websockets": "^11.0.4",
     "@opentelemetry/api": "^1.9.0",
     "@opentelemetry/context-async-hooks": "^2.0.0",
-    "@opentelemetry/exporter-prometheus": "^0.207.0",
-    "@opentelemetry/instrumentation-http": "^0.207.0",
-    "@opentelemetry/instrumentation-ioredis": "^0.55.0",
-    "@opentelemetry/instrumentation-nestjs-core": "^0.54.0",
-    "@opentelemetry/instrumentation-pg": "^0.60.0",
+    "@opentelemetry/exporter-prometheus": "^0.208.0",
+    "@opentelemetry/instrumentation-http": "^0.208.0",
+    "@opentelemetry/instrumentation-ioredis": "^0.56.0",
+    "@opentelemetry/instrumentation-nestjs-core": "^0.55.0",
+    "@opentelemetry/instrumentation-pg": "^0.61.0",
     "@opentelemetry/resources": "^2.0.1",
     "@opentelemetry/sdk-metrics": "^2.0.1",
-    "@opentelemetry/sdk-node": "^0.207.0",
+    "@opentelemetry/sdk-node": "^0.208.0",
     "@opentelemetry/semantic-conventions": "^1.34.0",
     "@react-email/components": "^0.5.0",
     "@react-email/render": "^1.1.2",
@@ -70,7 +70,7 @@
     "cookie": "^1.0.2",
     "cookie-parser": "^1.4.7",
     "cron": "4.3.3",
-    "exiftool-vendored": "^31.1.0",
+    "exiftool-vendored": "^33.0.0",
     "express": "^5.1.0",
     "fast-glob": "^3.3.2",
     "fluent-ffmpeg": "^2.1.2",
@@ -105,7 +105,7 @@
     "sanitize-filename": "^1.6.3",
     "sanitize-html": "^2.14.0",
     "semver": "^7.6.2",
-    "sharp": "^0.34.4",
+    "sharp": "^0.34.5",
     "sirv": "^3.0.0",
     "socket.io": "^4.8.1",
     "tailwindcss-preset-email": "^1.4.0",
@@ -120,7 +120,7 @@
     "@nestjs/schematics": "^11.0.0",
     "@nestjs/testing": "^11.0.4",
     "@swc/core": "^1.4.14",
-    "@types/archiver": "^6.0.0",
+    "@types/archiver": "^7.0.0",
     "@types/async-lock": "^1.4.2",
     "@types/bcrypt": "^6.0.0",
     "@types/body-parser": "^1.19.6",
@@ -134,7 +134,7 @@
     "@types/luxon": "^3.6.2",
     "@types/mock-fs": "^4.13.1",
     "@types/multer": "^2.0.0",
-    "@types/node": "^22.19.1",
+    "@types/node": "^24.10.1",
     "@types/nodemailer": "^7.0.0",
     "@types/picomatch": "^4.0.0",
     "@types/pngjs": "^6.0.5",
@@ -148,10 +148,10 @@
     "eslint": "^9.14.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.1.3",
-    "eslint-plugin-unicorn": "^60.0.0",
+    "eslint-plugin-unicorn": "^62.0.0",
     "globals": "^16.0.0",
     "mock-fs": "^5.2.0",
-    "node-gyp": "^11.2.0",
+    "node-gyp": "^12.0.0",
     "pngjs": "^7.0.0",
     "prettier": "^3.0.2",
     "prettier-plugin-organize-imports": "^4.0.0",
@@ -166,9 +166,9 @@
     "vitest": "^3.0.0"
   },
   "volta": {
-    "node": "24.11.0"
+    "node": "24.11.1"
   },
   "overrides": {
-    "sharp": "^0.34.4"
+    "sharp": "^0.34.5"
   }
 }

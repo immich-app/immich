@@ -21,7 +21,16 @@ import {
   UploadFieldName,
 } from 'src/dtos/asset-media.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { AssetStatus, AssetType, AssetVisibility, CacheControl, JobName, Permission, StorageFolder } from 'src/enum';
+import {
+  AssetFileType,
+  AssetStatus,
+  AssetType,
+  AssetVisibility,
+  CacheControl,
+  JobName,
+  Permission,
+  StorageFolder,
+} from 'src/enum';
 import { AuthRequest } from 'src/middleware/auth.guard';
 import { BaseService } from 'src/services/base.service';
 import { UploadFile, UploadRequest } from 'src/types';
@@ -354,8 +363,11 @@ export class AssetMediaService extends BaseService {
       duration: dto.duration || null,
 
       livePhotoVideoId: null,
-      sidecarPath: sidecarPath || null,
     });
+
+    await (sidecarPath
+      ? this.assetRepository.upsertFile({ assetId, type: AssetFileType.Sidecar, path: sidecarPath })
+      : this.assetRepository.deleteFile({ assetId, type: AssetFileType.Sidecar }));
 
     await this.storageRepository.utimes(file.originalPath, new Date(), new Date(dto.fileModifiedAt));
     await this.assetRepository.upsertExif({ assetId, fileSizeInByte: file.size });
@@ -384,7 +396,6 @@ export class AssetMediaService extends BaseService {
       localDateTime: asset.localDateTime,
       fileModifiedAt: asset.fileModifiedAt,
       livePhotoVideoId: asset.livePhotoVideoId,
-      sidecarPath: asset.sidecarPath,
     });
 
     const { size } = await this.storageRepository.stat(created.originalPath);
@@ -414,7 +425,6 @@ export class AssetMediaService extends BaseService {
       visibility: dto.visibility ?? AssetVisibility.Timeline,
       livePhotoVideoId: dto.livePhotoVideoId,
       originalFileName: dto.filename || file.originalName,
-      sidecarPath: sidecarFile?.originalPath,
     });
 
     if (dto.metadata) {
@@ -422,6 +432,11 @@ export class AssetMediaService extends BaseService {
     }
 
     if (sidecarFile) {
+      await this.assetRepository.upsertFile({
+        assetId: asset.id,
+        path: sidecarFile.originalPath,
+        type: AssetFileType.Sidecar,
+      });
       await this.storageRepository.utimes(sidecarFile.originalPath, new Date(), new Date(dto.fileModifiedAt));
     }
     await this.storageRepository.utimes(file.originalPath, new Date(), new Date(dto.fileModifiedAt));

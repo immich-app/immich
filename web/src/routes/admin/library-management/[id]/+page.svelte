@@ -15,7 +15,18 @@
     getLibraryFolderActions,
   } from '$lib/services/library.service';
   import { getBytesWithUnit } from '$lib/utils/byte-units';
-  import { Card, CardBody, CardHeader, CardTitle, Code, Container, Heading, Icon, modalManager } from '@immich/ui';
+  import {
+    Card,
+    CardBody,
+    CardHeader,
+    CardTitle,
+    Code,
+    CommandPaletteContext,
+    Container,
+    Heading,
+    Icon,
+    modalManager,
+  } from '@immich/ui';
   import { mdiCameraIris, mdiChartPie, mdiFilterMinusOutline, mdiFolderOutline, mdiPlayCircle } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
@@ -39,7 +50,14 @@
   onLibraryDelete={({ id }) => id === library.id && goto(AppRoute.ADMIN_LIBRARY_MANAGEMENT)}
 />
 
-<AdminPageLayout title={data.meta.title}>
+<CommandPaletteContext commands={[Rename, Delete, AddFolder, AddExclusionPattern, Scan]} />
+
+<AdminPageLayout
+  breadcrumbs={[
+    { title: $t('admin.external_library_management'), href: AppRoute.ADMIN_LIBRARY_MANAGEMENT },
+    { title: library.name },
+  ]}
+>
   {#snippet buttons()}
     <div class="flex justify-end gap-2">
       <HeaderButton action={Scan} />
