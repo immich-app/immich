@@ -80,10 +80,49 @@ export class MetadataRepository {
   private maxConcurrency: number | null = null;
   private isShuttingDown = false;
   private recreateLock = false;
+  private readonly MAX_RETRIES = 3;
+  private readonly INITIAL_RETRY_DELAY_MS = 500;
 
   constructor(private logger: LoggingRepository) {
     this.logger.setContext(MetadataRepository.name);
     this.exiftool = this.createExifTool();
+  }
+
+  private async delay(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
+  private isRetryableError(error: any): boolean {
+    if (!error) {
+      return false;
+    }
+
+    const message = error?.message || String(error);
+    const code = error?.code;
+
+    // Ошибки BatchCluster требуют пересоздания
+    if (this.isBatchClusterError(error)) {
+      return true;
+    }
+
+    // Ошибки файловой системы, которые могут быть временными
+    if (code === 'ENOENT' || code === 'EACCES' || code === 'ETIMEDOUT' || code === 'ECONNRESET') {
+      return true;
+    }
+
+    // Ошибки, связанные с временной недоступностью файла
+    if (
+      typeof message === 'string' &&
+      (message.includes('No such file') ||
+        message.includes('timeout') ||
+        message.includes('ETIMEDOUT') ||
+        message.includes('ENOENT') ||
+        message.includes('temporarily unavailable'))
+    ) {
+      return true;
+    }
+
+    return false;
   }
 
   private createExifTool(): ExifTool {
@@ -162,49 +201,117 @@ export class MetadataRepository {
 
   async readTags(path: string): Promise<ImmichTags> {
     const args = mimeTypes.isVideo(path) ? ['-ee'] : [];
-    try {
-      return await this.exiftool.read(path, args);
-    } catch (error) {
-      // Если ошибка связана с завершенным BatchCluster, пересоздаем и повторяем попытку один раз
-      if (this.isBatchClusterError(error)) {
-        await this.recreateExifTool();
-        try {
-          return await this.exiftool.read(path, args);
-        } catch (retryError) {
-          this.logger.warn(`Error reading exif data after retry (${path}): ${retryError}`);
+    let lastError: any;
+
+    for (let attempt = 0; attempt <= this.MAX_RETRIES; attempt++) {
+      try {
+        // Если это повторная попытка и была ошибка BatchCluster, пересоздаем экземпляр
+        if (attempt > 0 && this.isBatchClusterError(lastError)) {
+          await this.recreateExifTool();
+        }
+
+        return await this.exiftool.read(path, args);
+      } catch (error) {
+        lastError = error;
+
+        // Если это последняя попытка или ошибка не требует повторной попытки
+        if (attempt === this.MAX_RETRIES || !this.isRetryableError(error)) {
+          if (attempt > 0) {
+            this.logger.warn(
+              `Error reading exif data after ${attempt} retries (${path}): ${error}`,
+            );
+          } else {
+            this.logger.warn(`Error reading exif data (${path}): ${error}`);
+          }
           return {};
         }
+
+        // Вычисляем задержку с экспоненциальным backoff
+        const delayMs = this.INITIAL_RETRY_DELAY_MS * Math.pow(2, attempt);
+        this.logger.debug(
+          `Retrying readTags for ${path} (attempt ${attempt + 1}/${this.MAX_RETRIES}) after ${delayMs}ms`,
+        );
+        await this.delay(delayMs);
       }
-      this.logger.warn(`Error reading exif data (${path}): ${error}`);
-      return {};
     }
+
+    return {};
   }
 
   async extractBinaryTag(path: string, tagName: string): Promise<Buffer> {
-    try {
-      return await this.exiftool.extractBinaryTagToBuffer(tagName, path);
-    } catch (error) {
-      // Если ошибка связана с завершенным BatchCluster, пересоздаем и повторяем попытку один раз
-      if (this.isBatchClusterError(error)) {
-        await this.recreateExifTool();
+    let lastError: any;
+
+    for (let attempt = 0; attempt <= this.MAX_RETRIES; attempt++) {
+      try {
+        // Если это повторная попытка и была ошибка BatchCluster, пересоздаем экземпляр
+        if (attempt > 0 && this.isBatchClusterError(lastError)) {
+          await this.recreateExifTool();
+        }
+
         return await this.exiftool.extractBinaryTagToBuffer(tagName, path);
+      } catch (error) {
+        lastError = error;
+
+        // Если это последняя попытка или ошибка не требует повторной попытки
+        if (attempt === this.MAX_RETRIES || !this.isRetryableError(error)) {
+          if (attempt > 0) {
+            this.logger.warn(
+              `Error extracting binary tag after ${attempt} retries (${path}, ${tagName}): ${error}`,
+            );
+          } else {
+            this.logger.warn(`Error extracting binary tag (${path}, ${tagName}): ${error}`);
+          }
+          throw error;
+        }
+
+        // Вычисляем задержку с экспоненциальным backoff
+        const delayMs = this.INITIAL_RETRY_DELAY_MS * Math.pow(2, attempt);
+        this.logger.debug(
+          `Retrying extractBinaryTag for ${path} (attempt ${attempt + 1}/${this.MAX_RETRIES}) after ${delayMs}ms`,
+        );
+        await this.delay(delayMs);
       }
-      throw error;
     }
+
+    throw lastError;
   }
 
   async writeTags(path: string, tags: Partial<Tags>): Promise<void> {
-    try {
-      await this.exiftool.write(path, tags);
-    } catch (error) {
-      // Если ошибка связана с завершенным BatchCluster, пересоздаем и повторяем попытку один раз
-      if (this.isBatchClusterError(error)) {
-        await this.recreateExifTool();
+    let lastError: any;
+
+    for (let attempt = 0; attempt <= this.MAX_RETRIES; attempt++) {
+      try {
+        // Если это повторная попытка и была ошибка BatchCluster, пересоздаем экземпляр
+        if (attempt > 0 && this.isBatchClusterError(lastError)) {
+          await this.recreateExifTool();
+        }
+
         await this.exiftool.write(path, tags);
         return;
+      } catch (error) {
+        lastError = error;
+
+        // Если это последняя попытка или ошибка не требует повторной попытки
+        if (attempt === this.MAX_RETRIES || !this.isRetryableError(error)) {
+          if (attempt > 0) {
+            this.logger.warn(
+              `Error writing exif data after ${attempt} retries (${path}): ${error}`,
+            );
+          } else {
+            this.logger.warn(`Error writing exif data (${path}): ${error}`);
+          }
+          throw error;
+        }
+
+        // Вычисляем задержку с экспоненциальным backoff
+        const delayMs = this.INITIAL_RETRY_DELAY_MS * Math.pow(2, attempt);
+        this.logger.debug(
+          `Retrying writeTags for ${path} (attempt ${attempt + 1}/${this.MAX_RETRIES}) after ${delayMs}ms`,
+        );
+        await this.delay(delayMs);
       }
-      this.logger.warn(`Error writing exif data (${path}): ${error}`);
-      throw error;
     }
+
+    throw lastError;
   }
 }
