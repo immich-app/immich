@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { Kysely, sql } from 'kysely';
+import { Kysely } from 'kysely';
 import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
 import { Asset, columns } from 'src/database';
 import { DummyValue, GenerateSql } from 'src/decorators';
-import { AssetFileType, AssetType, AssetVisibility, IntegrityReportType } from 'src/enum';
+import { AssetFileType, AssetType, AssetVisibility } from 'src/enum';
 import { DB } from 'src/schema';
 import { StorageAsset } from 'src/types';
 import {
@@ -252,118 +252,6 @@ export class AssetJobRepository {
       .select((eb) => toJson(eb, 'stacked_assets').as('stack'))
       .where('asset.id', '=', id)
       .executeTakeFirst();
-  }
-
-  @GenerateSql({ params: [DummyValue.STRING] })
-  getAssetPathsByPaths(paths: string[]) {
-    return this.db
-      .selectFrom('asset')
-      .select(['originalPath', 'encodedVideoPath'])
-      .where((eb) => eb.or([eb('originalPath', 'in', paths), eb('encodedVideoPath', 'in', paths)]))
-      .execute();
-  }
-
-  @GenerateSql({ params: [DummyValue.STRING] })
-  getAssetFilePathsByPaths(paths: string[]) {
-    return this.db.selectFrom('asset_file').select(['path']).where('path', 'in', paths).execute();
-  }
-
-  @GenerateSql({ params: [] })
-  getAssetCount() {
-    return this.db
-      .selectFrom('asset')
-      .select((eb) => eb.fn.countAll<number>().as('count'))
-      .executeTakeFirstOrThrow();
-  }
-
-  @GenerateSql({ params: [], stream: true })
-  streamAssetPaths() {
-    return this.db
-      .selectFrom((eb) =>
-        eb
-          .selectFrom('asset')
-          .select(['asset.originalPath as path'])
-          .select((eb) => [
-            eb.ref('asset.id').$castTo<string | null>().as('assetId'),
-            sql<string | null>`null::uuid`.as('fileAssetId'),
-          ])
-          .unionAll(
-            eb
-              .selectFrom('asset')
-              .select((eb) => [
-                eb.ref('asset.encodedVideoPath').$castTo<string>().as('path'),
-                eb.ref('asset.id').$castTo<string | null>().as('assetId'),
-                sql<string | null>`null::uuid`.as('fileAssetId'),
-              ])
-              .where('asset.encodedVideoPath', 'is not', null)
-              .where('asset.encodedVideoPath', '!=', sql<string>`''`),
-          )
-          .unionAll(
-            eb
-              .selectFrom('asset_file')
-              .select(['path'])
-              .select((eb) => [
-                sql<string | null>`null::uuid`.as('assetId'),
-                eb.ref('asset_file.id').$castTo<string | null>().as('fileAssetId'),
-              ]),
-          )
-          .as('allPaths'),
-      )
-      .leftJoin(
-        'integrity_report',
-        (join) =>
-          join
-            .on('integrity_report.type', '=', IntegrityReportType.OrphanFile)
-            .on((eb) =>
-              eb.or([
-                eb('integrity_report.assetId', '=', eb.ref('allPaths.assetId')),
-                eb('integrity_report.fileAssetId', '=', eb.ref('allPaths.fileAssetId')),
-              ]),
-            ),
-        // .onRef('integrity_report.path', '=', 'allPaths.path')
-      )
-      .select([
-        'allPaths.path as path',
-        'allPaths.assetId',
-        'allPaths.fileAssetId',
-        'integrity_report.path as reportId',
-      ])
-      .stream();
-  }
-
-  @GenerateSql({ params: [DummyValue.DATE, DummyValue.DATE], stream: true })
-  streamAssetChecksums(startMarker?: Date, endMarker?: Date) {
-    return this.db
-      .selectFrom('asset')
-      .leftJoin('integrity_report', (join) =>
-        join
-          .onRef('integrity_report.assetId', '=', 'asset.id')
-          // .onRef('integrity_report.path', '=', 'asset.originalPath')
-          .on('integrity_report.type', '=', IntegrityReportType.ChecksumFail),
-      )
-      .select([
-        'asset.originalPath',
-        'asset.checksum',
-        'asset.createdAt',
-        'asset.id as assetId',
-        'integrity_report.id as reportId',
-      ])
-      .$if(startMarker !== undefined, (qb) => qb.where('createdAt', '>=', startMarker!))
-      .$if(endMarker !== undefined, (qb) => qb.where('createdAt', '<=', endMarker!))
-      .orderBy('createdAt', 'asc')
-      .stream();
-  }
-
-  @GenerateSql({ params: [DummyValue.STRING], stream: true })
-  streamIntegrityReports(type: IntegrityReportType) {
-    return this.db
-      .selectFrom('integrity_report')
-      .select(['integrity_report.id as reportId', 'integrity_report.path'])
-      .where('integrity_report.type', '=', type)
-      .$if(type === IntegrityReportType.ChecksumFail, (eb) =>
-        eb.leftJoin('asset', 'integrity_report.path', 'asset.originalPath').select('asset.checksum'),
-      )
-      .stream();
   }
 
   @GenerateSql({ params: [], stream: true })

@@ -61,19 +61,19 @@ export class MaintenanceService extends BaseService {
   }
 
   getIntegrityReportSummary(): Promise<MaintenanceIntegrityReportSummaryResponseDto> {
-    return this.integrityReportRepository.getIntegrityReportSummary();
+    return this.integrityRepository.getIntegrityReportSummary();
   }
 
   getIntegrityReport(dto: MaintenanceGetIntegrityReportDto): Promise<MaintenanceIntegrityReportResponseDto> {
-    return this.integrityReportRepository.getIntegrityReport(dto);
+    return this.integrityRepository.getIntegrityReport(dto);
   }
 
   getIntegrityReportCsv(type: IntegrityReportType): Readable {
-    return this.integrityReportRepository.getIntegrityReportCsv(type);
+    return this.integrityRepository.getIntegrityReportCsv(type);
   }
 
   async getIntegrityReportFile(id: string): Promise<ImmichFileResponse> {
-    const { path } = await this.integrityReportRepository.getById(id);
+    const { path } = await this.integrityRepository.getById(id);
 
     return new ImmichFileResponse({
       path,
@@ -84,7 +84,7 @@ export class MaintenanceService extends BaseService {
   }
 
   async deleteIntegrityReport(auth: AuthDto, id: string): Promise<void> {
-    const { path, assetId, fileAssetId } = await this.integrityReportRepository.getById(id);
+    const { path, assetId, fileAssetId } = await this.integrityRepository.getById(id);
 
     if (assetId) {
       await this.assetRepository.updateAll([assetId], {
@@ -97,12 +97,12 @@ export class MaintenanceService extends BaseService {
         userId: auth.user.id,
       });
 
-      await this.integrityReportRepository.deleteById(id);
+      await this.integrityRepository.deleteById(id);
     } else if (fileAssetId) {
       await this.assetRepository.deleteFiles([{ id: fileAssetId }]);
     } else {
       await this.storageRepository.unlink(path);
-      await this.integrityReportRepository.deleteById(id);
+      await this.integrityRepository.deleteById(id);
     }
   }
 }

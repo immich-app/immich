@@ -149,7 +149,7 @@ export class IntegrityService extends BaseService {
   async handleOrphanedFilesQueueAll({ refreshOnly }: IIntegrityJob = {}): Promise<JobStatus> {
     this.logger.log(`Checking for out of date orphaned file reports...`);
 
-    const reports = this.assetJobRepository.streamIntegrityReports(IntegrityReportType.OrphanFile);
+    const reports = this.integrityRepository.streamIntegrityReports(IntegrityReportType.OrphanFile);
 
     let total = 0;
     for await (const batchReports of chunk(reports, JOBS_LIBRARY_PAGINATION_SIZE)) {
@@ -220,7 +220,7 @@ export class IntegrityService extends BaseService {
 
     const orphanedFiles = new Set<string>(paths);
     if (type === 'asset') {
-      const assets = await this.assetJobRepository.getAssetPathsByPaths(paths);
+      const assets = await this.integrityRepository.getAssetPathsByPaths(paths);
       for (const { originalPath, encodedVideoPath } of assets) {
         orphanedFiles.delete(originalPath);
 
@@ -229,14 +229,14 @@ export class IntegrityService extends BaseService {
         }
       }
     } else {
-      const assets = await this.assetJobRepository.getAssetFilePathsByPaths(paths);
+      const assets = await this.integrityRepository.getAssetFilePathsByPaths(paths);
       for (const { path } of assets) {
         orphanedFiles.delete(path);
       }
     }
 
     if (orphanedFiles.size > 0) {
-      await this.integrityReportRepository.create(
+      await this.integrityRepository.create(
         [...orphanedFiles].map((path) => ({
           type: IntegrityReportType.OrphanFile,
           path,
@@ -263,7 +263,7 @@ export class IntegrityService extends BaseService {
     const reportIds = results.filter(Boolean) as string[];
 
     if (reportIds.length > 0) {
-      await this.integrityReportRepository.deleteByIds(reportIds);
+      await this.integrityRepository.deleteByIds(reportIds);
     }
 
     this.logger.log(`Processed ${items.length} paths and found ${reportIds.length} report(s) out of date.`);
@@ -275,7 +275,7 @@ export class IntegrityService extends BaseService {
     if (refreshOnly) {
       this.logger.log(`Checking for out of date missing file reports...`);
 
-      const reports = this.assetJobRepository.streamIntegrityReports(IntegrityReportType.MissingFile);
+      const reports = this.integrityRepository.streamIntegrityReports(IntegrityReportType.MissingFile);
 
       let total = 0;
       for await (const batchReports of chunk(reports, JOBS_LIBRARY_PAGINATION_SIZE)) {
@@ -296,7 +296,7 @@ export class IntegrityService extends BaseService {
 
     this.logger.log(`Scanning for missing files...`);
 
-    const assetPaths = this.assetJobRepository.streamAssetPaths();
+    const assetPaths = this.integrityRepository.streamAssetPaths();
 
     let total = 0;
     for await (const batchPaths of chunk(assetPaths, JOBS_LIBRARY_PAGINATION_SIZE)) {
@@ -331,12 +331,12 @@ export class IntegrityService extends BaseService {
       .map(({ reportId }) => reportId!);
 
     if (outdatedReports.length > 0) {
-      await this.integrityReportRepository.deleteByIds(outdatedReports);
+      await this.integrityRepository.deleteByIds(outdatedReports);
     }
 
     const missingFiles = results.filter(({ exists }) => !exists);
     if (missingFiles.length > 0) {
-      await this.integrityReportRepository.create(
+      await this.integrityRepository.create(
         missingFiles.map(({ path, assetId, fileAssetId }) => ({
           type: IntegrityReportType.MissingFile,
           path,
@@ -365,7 +365,7 @@ export class IntegrityService extends BaseService {
     const reportIds = results.filter(Boolean) as string[];
 
     if (reportIds.length > 0) {
-      await this.integrityReportRepository.deleteByIds(reportIds);
+      await this.integrityRepository.deleteByIds(reportIds);
     }
 
     this.logger.log(`Processed ${paths.length} paths and found ${reportIds.length} report(s) out of date.`);
@@ -377,7 +377,7 @@ export class IntegrityService extends BaseService {
     if (refreshOnly) {
       this.logger.log(`Checking for out of date checksum file reports...`);
 
-      const reports = this.assetJobRepository.streamIntegrityReports(IntegrityReportType.ChecksumFail);
+      const reports = this.integrityRepository.streamIntegrityReports(IntegrityReportType.ChecksumFail);
 
       let total = 0;
       for await (const batchReports of chunk(reports, JOBS_LIBRARY_PAGINATION_SIZE)) {
@@ -414,7 +414,7 @@ export class IntegrityService extends BaseService {
 
     let processed = 0;
     const startedAt = Date.now();
-    const { count } = await this.assetJobRepository.getAssetCount();
+    const { count } = await this.integrityRepository.getAssetCount();
     const checkpoint = await this.systemMetadataRepository.get(SystemMetadataKey.IntegrityChecksumCheckpoint);
 
     let startMarker: Date | undefined = checkpoint?.date ? new Date(checkpoint.date) : undefined;
@@ -436,7 +436,7 @@ export class IntegrityService extends BaseService {
         `Processing assets in range [${startMarker?.toISOString() ?? 'beginning'}, ${endMarker?.toISOString() ?? 'end'}]`,
       );
 
-      const assets = this.assetJobRepository.streamAssetChecksums(startMarker, endMarker);
+      const assets = this.integrityRepository.streamAssetChecksums(startMarker, endMarker);
       endMarker = startMarker;
       startMarker = undefined;
 
@@ -458,7 +458,7 @@ export class IntegrityService extends BaseService {
 
           if (checksum.equals(hash.digest())) {
             if (reportId) {
-              await this.integrityReportRepository.deleteById(reportId);
+              await this.integrityRepository.deleteById(reportId);
             }
           } else {
             throw new Error('File failed checksum');
@@ -466,14 +466,14 @@ export class IntegrityService extends BaseService {
         } catch (error) {
           if ((error as { code?: string }).code === 'ENOENT') {
             if (reportId) {
-              await this.integrityReportRepository.deleteById(reportId);
+              await this.integrityRepository.deleteById(reportId);
             }
             // missing file; handled by the missing files job
             continue;
           }
 
           this.logger.warn('Failed to process a file: ' + error);
-          await this.integrityReportRepository.create({
+          await this.integrityRepository.create({
             path: originalPath,
             type: IntegrityReportType.ChecksumFail,
             assetId,
@@ -544,7 +544,7 @@ export class IntegrityService extends BaseService {
     const reportIds = results.filter(Boolean) as string[];
 
     if (reportIds.length > 0) {
-      await this.integrityReportRepository.deleteByIds(reportIds);
+      await this.integrityRepository.deleteByIds(reportIds);
     }
 
     this.logger.log(`Processed ${paths.length} paths and found ${reportIds.length} report(s) out of date.`);
@@ -576,7 +576,7 @@ export class IntegrityService extends BaseService {
     }
 
     for (const property of properties) {
-      const reports = this.integrityReportRepository.streamIntegrityReportsByProperty(property, type);
+      const reports = this.integrityRepository.streamIntegrityReportsByProperty(property, type);
       for await (const report of chunk(reports, JOBS_LIBRARY_PAGINATION_SIZE)) {
         // todo: queue sub-job here instead?
 
@@ -593,7 +593,7 @@ export class IntegrityService extends BaseService {
               userId: '', // ???
             });
 
-            await this.integrityReportRepository.deleteByIds(report.map(({ id }) => id));
+            await this.integrityRepository.deleteByIds(report.map(({ id }) => id));
             break;
           }
           case 'fileAssetId': {
@@ -602,7 +602,7 @@ export class IntegrityService extends BaseService {
           }
           default: {
             await Promise.all(report.map(({ path }) => this.storageRepository.unlink(path).catch(() => void 0)));
-            await this.integrityReportRepository.deleteByIds(report.map(({ id }) => id));
+            await this.integrityRepository.deleteByIds(report.map(({ id }) => id));
             break;
           }
         }
