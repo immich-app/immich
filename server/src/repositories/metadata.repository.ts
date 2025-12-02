@@ -269,7 +269,7 @@ export class MetadataRepository {
           await this.recreateExifTool();
         }
 
-        return await this.exiftool.read(path, args);
+        return (await this.exiftool.read(path, args)) as ImmichTags;
       } catch (error) {
         lastError = error;
 
