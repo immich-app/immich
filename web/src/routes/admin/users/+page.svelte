@@ -6,7 +6,7 @@
   import { locale } from '$lib/stores/preferences.store';
   import { getByteUnitString } from '$lib/utils/byte-units';
   import { searchUsersAdmin, type UserAdminResponseDto } from '@immich/sdk';
-  import { Button, HStack, Icon } from '@immich/ui';
+  import { Button, CommandPaletteContext, HStack, Icon } from '@immich/ui';
   import { mdiInfinity } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
@@ -42,6 +42,8 @@
   onUserAdminRestore={onUpdate}
   {onUserAdminDeleted}
 />
+
+<CommandPaletteContext commands={[Create]} />
 
 <AdminPageLayout breadcrumbs={[{ title: data.meta.title }]}>
   {#snippet buttons()}

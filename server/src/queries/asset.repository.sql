@@ -216,6 +216,34 @@ from
 limit
   3
 
+-- AssetRepository.getForCopy
+select
+  "id",
+  "stackId",
+  "originalPath",
+  "isFavorite",
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "asset_file"."id",
+          "asset_file"."path",
+          "asset_file"."type"
+        from
+          "asset_file"
+        where
+          "asset_file"."assetId" = "asset"."id"
+      ) as agg
+  ) as "files"
+from
+  "asset"
+where
+  "id" = $1::uuid
+limit
+  $2
+
 -- AssetRepository.getById
 select
   "asset".*
