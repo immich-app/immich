@@ -18,6 +18,13 @@ export const getAssetFile = (files: AssetFile[], type: AssetFileType | Generated
 };
 
 export const getAssetFiles = (files: AssetFile[]) => ({
+  originalFile: (() => {
+    const file = getAssetFile(files, AssetFileType.Original);
+    if (!file?.path) {
+      throw new BadRequestException(`Asset has no original file`); // TODO: should we throw a specific error here that can be caught higher up?
+    }
+    return file;
+  })(),
   fullsizeFile: getAssetFile(files, AssetFileType.FullSize),
   previewFile: getAssetFile(files, AssetFileType.Preview),
   thumbnailFile: getAssetFile(files, AssetFileType.Thumbnail),

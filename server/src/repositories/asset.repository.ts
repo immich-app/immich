@@ -11,7 +11,6 @@ import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
 import { AssetFileTable } from 'src/schema/tables/asset-file.table';
 import { AssetJobStatusTable } from 'src/schema/tables/asset-job-status.table';
 import { AssetTable } from 'src/schema/tables/asset.table';
-import { AssetMetadataItem } from 'src/types';
 import {
   anyUuid,
   asUuid,
@@ -228,7 +227,7 @@ export class AssetRepository {
       .execute();
   }
 
-  upsertMetadata(id: string, items: AssetMetadataItem[]) {
+  upsertMetadata(id: string, items: Array<{ key: AssetMetadataKey; value: object }>) {
     return this.db
       .insertInto('asset_metadata')
       .values(items.map((item) => ({ assetId: id, ...item })))
@@ -256,8 +255,23 @@ export class AssetRepository {
     await this.db.deleteFrom('asset_metadata').where('assetId', '=', id).where('key', '=', key).execute();
   }
 
-  create(asset: Insertable<AssetTable>) {
-    return this.db.insertInto('asset').values(asset).returningAll().executeTakeFirstOrThrow();
+  create(asset: Insertable<AssetTable>, files?: Insertable<AssetFileTable>[]) {
+    return this.db.transaction().execute(async (trx) => {
+      const createdAsset = await trx.insertInto('asset').values(asset).returningAll().executeTakeFirstOrThrow();
+      if (files && files.length > 0) {
+        const values = files.map((f) => ({ ...f, assetId: createdAsset.id }));
+
+        await trx.insertInto('asset_file').values(values).returningAll().execute();
+      }
+
+      const assetWithFiles = await trx
+        .selectFrom('asset')
+        .selectAll('asset')
+        .select(withOriginals)
+        .where('asset.id', '=', asUuid(createdAsset.id))
+        .executeTakeFirstOrThrow();
+      return assetWithFiles;
+    });
   }
 
   createAll(assets: Insertable<AssetTable>[]) {
@@ -403,6 +417,16 @@ export class AssetRepository {
     return this.db.selectFrom('asset_file').select(['assetId', 'path']).limit(sql.lit(3)).execute();
   }
 
+  getForCopy(id: string) {
+    return this.db
+      .selectFrom('asset')
+      .select(['id', 'stackId', 'isFavorite'])
+      .select(withFiles)
+      .where('id', '=', asUuid(id))
+      .limit(1)
+      .executeTakeFirst();
+  }
+
   @GenerateSql({ params: [DummyValue.UUID] })
   getById(
     id: string,
@@ -488,6 +512,7 @@ export class AssetRepository {
     return this.db
       .selectFrom('asset')
       .selectAll('asset')
+      .select(withOriginals)
       .where('ownerId', '=', asUuid(ownerId))
       .where('checksum', '=', checksum)
       .$call((qb) => (libraryId ? qb.where('libraryId', '=', asUuid(libraryId)) : qb.where('libraryId', 'is', null)))
@@ -854,12 +879,8 @@ export class AssetRepository {
       .execute();
   }
 
-  async deleteFile(file: Pick<Selectable<AssetFileTable>, 'assetId' | 'type'>): Promise<void> {
-    await this.db
-      .deleteFrom('asset_file')
-      .where('assetId', '=', asUuid(file.assetId))
-      .where('type', '=', file.type)
-      .execute();
+  async deleteFile({ assetId, type }: { assetId: string; type: AssetFileType }): Promise<void> {
+    await this.db.deleteFrom('asset_file').where('assetId', '=', asUuid(assetId)).where('type', '=', type).execute();
   }
 
   async deleteFiles(files: Pick<Selectable<AssetFileTable>, 'id'>[]): Promise<void> {

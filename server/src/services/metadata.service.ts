@@ -224,11 +224,7 @@ export class MetadataService extends BaseService {
       return;
     }
 
-    const originalFile = asset.files?.find((file) => file.type === AssetFileType.Original) ?? null;
-    if (!originalFile) {
-      this.logger.warn(`Asset ${asset.id} has no original file, skipping metadata extraction`);
-      return;
-    }
+    const { originalFile } = getAssetFiles(asset.files);
 
     const [exifTags, stats] = await Promise.all([
       this.getExifTags(asset),
@@ -307,11 +303,11 @@ export class MetadataService extends BaseService {
     ];
 
     if (this.isMotionPhoto(asset, exifTags)) {
-      promises.push(this.applyMotionPhotos(asset, exifTags, dates, stats));
+      promises.push(this.applyMotionPhotos(asset, originalFile.path, exifTags, dates, stats));
     }
 
     if (isFaceImportEnabled(metadata) && this.hasTaggedFaces(exifTags)) {
-      promises.push(this.applyTaggedFaces(asset, exifTags));
+      promises.push(this.applyTaggedFaces(asset, originalFile.path, exifTags));
     }
 
     await Promise.all(promises);
@@ -357,7 +353,7 @@ export class MetadataService extends BaseService {
     }
 
     let sidecarPath = null;
-    for (const candidate of this.getSidecarCandidates(asset.files)) {
+    for (const candidate of this.getSidecarCandidates(asset)) {
       const exists = await this.storageRepository.checkFileExists(candidate, constants.R_OK);
       if (!exists) {
         continue;
@@ -367,12 +363,12 @@ export class MetadataService extends BaseService {
       break;
     }
 
-    const existingSidecar = asset.files?.find((file) => file.type === AssetFileType.Sidecar) ?? null;
+    const { originalFile, sidecarFile } = getAssetFiles(asset.files);
 
-    const isChanged = sidecarPath !== existingSidecar?.path;
+    const isChanged = sidecarPath !== sidecarFile?.path;
 
     this.logger.debug(
-      `Sidecar check found old=${existingSidecar?.path}, new=${sidecarPath} will ${isChanged ? 'update' : 'do nothing for'}  asset ${asset.id}: ${asset.originalPath}`,
+      `Sidecar check found old=${sidecarFile?.path}, new=${sidecarPath} will ${isChanged ? 'update' : 'do nothing for'}  asset ${asset.id}: ${originalFile.path}`,
     );
 
     if (!isChanged) {
@@ -406,14 +402,9 @@ export class MetadataService extends BaseService {
 
     const tagsList = (asset.tags || []).map((tag) => tag.value);
 
-    const existingSidecar = asset.files?.find((file) => file.type === AssetFileType.Sidecar) ?? null;
-    const original = asset.files?.find((file) => file.type === AssetFileType.Original) ?? null;
+    const { originalFile, sidecarFile } = getAssetFiles(asset.files);
 
-    if (!original) {
-      throw new Error(`Asset ${asset.id} has no original file`);
-    }
-
-    const sidecarPath = existingSidecar?.path || `${original.path}.xmp`; // prefer file.jpg.xmp by default
+    const sidecarPath = sidecarFile?.path || `${originalFile.path}.xmp`; // prefer file.jpg.xmp by default
     const exif = _.omitBy(
       <Tags>{
         Description: description,
@@ -440,21 +431,16 @@ export class MetadataService extends BaseService {
     return JobStatus.Success;
   }
 
-  private getSidecarCandidates(files: AssetFile[] | null) {
-    const original = files?.find((file) => file.type === AssetFileType.Original);
-    if (!original) {
-      return [];
-    }
-
+  private getSidecarCandidates({ id, files }: { id: string; files: AssetFile[] }) {
     const candidates: string[] = [];
 
-    const existingSidecar = files?.find((file) => file.type === AssetFileType.Sidecar);
+    const { originalFile, sidecarFile } = getAssetFiles(files);
 
-    if (existingSidecar) {
-      candidates.push(existingSidecar.path);
+    if (sidecarFile?.path) {
+      candidates.push(sidecarFile.path);
     }
 
-    const assetPath = parse(original.path);
+    const assetPath = parse(originalFile.path);
 
     candidates.push(
       // IMG_123.jpg.xmp
@@ -482,26 +468,8 @@ export class MetadataService extends BaseService {
     return { width, height };
   }
 
-  private async getExifTags(asset: { id; files: AssetFile[]; type: AssetType }): Promise<ImmichTags> {
-    const originalFile = asset.files?.find((file) => file.type === AssetFileType.Original) ?? null;
-
-    if (!originalFile) {
-      throw new Error(`Asset ${asset.id} has no original file`);
-    }
-
-    if (asset.type === AssetType.Image) {
-      const hasSidecar = asset.files?.some(({ type }) => type === AssetFileType.Sidecar);
-
-      if (!hasSidecar) {
-        return this.metadataRepository.readTags(originalFile.path);
-      }
-    }
-
-    if (asset.files && asset.files.length > 1) {
-      throw new Error(`Asset ${originalFile.path} has multiple sidecar files`);
-    }
-
-    const sidecarFile = asset.files ? getAssetFiles(asset.files).sidecarFile : undefined;
+  private async getExifTags(asset: { files: AssetFile[]; type: AssetType }): Promise<ImmichTags> {
+    const { originalFile, sidecarFile } = getAssetFiles(asset.files);
 
     const [mediaTags, sidecarTags, videoTags] = await Promise.all([
       this.metadataRepository.readTags(originalFile.path),
@@ -632,21 +600,29 @@ export class MetadataService extends BaseService {
       if (!motionAsset) {
         try {
           const motionAssetId = this.cryptoRepository.randomUUID();
-          motionAsset = await this.assetRepository.create({
-            id: motionAssetId,
-            libraryId: asset.libraryId,
-            type: AssetType.Video,
-            fileCreatedAt: dates.dateTimeOriginal,
-            fileModifiedAt: stats.mtime,
-            localDateTime: dates.localDateTime,
-            checksum,
-            ownerId: asset.ownerId,
-            files: [{ type: AssetFileType.Original, path: StorageCore.getAndroidMotionPath(asset, motionAssetId) }],
-            originalFileName: `${parse(asset.originalFileName).name}.mp4`,
-            visibility: AssetVisibility.Hidden,
-            deviceAssetId: 'NONE',
-            deviceId: 'NONE',
-          });
+          motionAsset = await this.assetRepository.create(
+            {
+              id: motionAssetId,
+              libraryId: asset.libraryId,
+              type: AssetType.Video,
+              fileCreatedAt: dates.dateTimeOriginal,
+              fileModifiedAt: stats.mtime,
+              localDateTime: dates.localDateTime,
+              checksum,
+              ownerId: asset.ownerId,
+              originalFileName: `${parse(originalPath).name}.mp4`,
+              visibility: AssetVisibility.Hidden,
+              deviceAssetId: 'NONE',
+              deviceId: 'NONE',
+            },
+            [
+              {
+                type: AssetFileType.Original,
+                assetId: motionAssetId,
+                path: StorageCore.getAndroidMotionPath(asset, motionAssetId),
+              },
+            ],
+          );
 
           isNewMotionAsset = true;
 
@@ -660,16 +636,18 @@ export class MetadataService extends BaseService {
 
           motionAsset = await this.assetRepository.getByChecksum(checksumQuery);
           if (!motionAsset) {
-            this.logger.warn(`Unable to find existing motion video asset for ${asset.id}: ${asset.originalPath}`);
+            this.logger.warn(`Unable to find existing motion video asset for ${asset.id}: ${originalPath}`);
             return;
           }
         }
       }
 
+      const { originalFile: originalMotionFile } = getAssetFiles(motionAsset.files);
+
       if (!isNewMotionAsset) {
         this.logger.debugFn(() => {
           const base64Checksum = checksum.toString('base64');
-          return `Motion asset with checksum ${base64Checksum} already exists for asset ${asset.id}: ${asset.originalPath}`;
+          return `Motion asset with checksum ${base64Checksum} already exists for asset ${asset.id}: ${originalPath}`;
         });
       }
 
@@ -699,22 +677,18 @@ export class MetadataService extends BaseService {
       }
 
       // write extracted motion video to disk, especially if the encoded-video folder has been deleted
-      const existsOnDisk = await this.storageRepository.checkFileExists(motionAsset.originalPath);
+      const existsOnDisk = await this.storageRepository.checkFileExists(originalMotionFile.path);
       if (!existsOnDisk) {
-        this.storageCore.ensureFolders(motionAsset.originalPath);
-        await this.storageRepository.createFile(motionAsset.originalPath, video);
-        this.logger.log(`Wrote motion photo video to ${motionAsset.originalPath}`);
-
+        this.storageCore.ensureFolders(originalMotionFile.path);
+        await this.storageRepository.createFile(originalMotionFile.path, video);
+        this.logger.log(`Wrote motion photo video to ${originalMotionFile.path}`);
         await this.handleMetadataExtraction({ id: motionAsset.id });
         await this.jobRepository.queue({ name: JobName.AssetEncodeVideo, data: { id: motionAsset.id } });
       }
 
-      this.logger.debug(`Finished motion photo video extraction for asset ${asset.id}: ${asset.originalPath}`);
+      this.logger.debug(`Finished motion photo video extraction for asset ${asset.id}: ${originalPath}`);
     } catch (error: Error | any) {
-      this.logger.error(
-        `Failed to extract motion video for ${asset.id}: ${asset.originalPath}: ${error}`,
-        error?.stack,
-      );
+      this.logger.error(`Failed to extract motion video for ${asset.id}: ${originalPath}: ${error}`, error?.stack);
     }
   }
 
@@ -799,7 +773,8 @@ export class MetadataService extends BaseService {
   }
 
   private async applyTaggedFaces(
-    asset: { id: string; ownerId: string; faces: AssetFace[]; originalPath: string },
+    asset: { id: string; ownerId: string; faces: AssetFace[] },
+    originalPath: string,
     tags: ImmichTags,
   ) {
     if (!tags.RegionInfo?.AppliedToDimensions || tags.RegionInfo.RegionList.length === 0) {
@@ -853,13 +828,11 @@ export class MetadataService extends BaseService {
 
     const facesToRemove = asset.faces.filter((face) => face.sourceType === SourceType.Exif).map((face) => face.id);
     if (facesToRemove.length > 0) {
-      this.logger.debug(`Removing ${facesToRemove.length} faces for asset ${asset.id}: ${asset.originalPath}`);
+      this.logger.debug(`Removing ${facesToRemove.length} faces for asset ${asset.id}: ${originalPath}`);
     }
 
     if (facesToAdd.length > 0) {
-      this.logger.debug(
-        `Creating ${facesToAdd.length} faces from metadata for asset ${asset.id}: ${asset.originalPath}`,
-      );
+      this.logger.debug(`Creating ${facesToAdd.length} faces from metadata for asset ${asset.id}: ${originalPath}`);
     }
 
     if (facesToRemove.length > 0 || facesToAdd.length > 0) {
@@ -880,9 +853,7 @@ export class MetadataService extends BaseService {
     const result = firstDateTime(exifTags);
     const tag = result?.tag;
     const dateTime = result?.dateTime;
-    this.logger.verbose(
-      `Date and time is ${dateTime} using exifTag ${tag} for asset ${asset.id}: ${asset.originalPath}`,
-    );
+    this.logger.verbose(`Date and time is ${dateTime} using exifTag ${tag} for asset ${asset.id}: ${originalPath}`);
 
     // timezone
     let timeZone = exifTags.tz ?? null;
@@ -893,11 +864,9 @@ export class MetadataService extends BaseService {
     }
 
     if (timeZone) {
-      this.logger.verbose(
-        `Found timezone ${timeZone} via ${exifTags.tzSource} for asset ${asset.id}: ${asset.originalPath}`,
-      );
+      this.logger.verbose(`Found timezone ${timeZone} via ${exifTags.tzSource} for asset ${asset.id}: ${originalPath}`);
     } else {
-      this.logger.debug(`No timezone information found for asset ${asset.id}: ${asset.originalPath}`);
+      this.logger.debug(`No timezone information found for asset ${asset.id}: ${originalPath}`);
     }
 
     let dateTimeOriginal = dateTime?.toDateTime();
@@ -923,12 +892,12 @@ export class MetadataService extends BaseService {
         ),
       );
       this.logger.debug(
-        `No exif date time found, falling back on ${earliestDate.toISO()}, earliest of file creation and modification for asset ${asset.id}: ${asset.originalPath}`,
+        `No exif date time found, falling back on ${earliestDate.toISO()}, earliest of file creation and modification for asset ${asset.id}: ${originalPath}`,
       );
       dateTimeOriginal = localDateTime = earliestDate;
     }
 
-    this.logger.verbose(`Found local date time ${localDateTime.toISO()} for asset ${asset.id}: ${asset.originalPath}`);
+    this.logger.verbose(`Found local date time ${localDateTime.toISO()} for asset ${asset.id}: ${originalPath}`);
 
     return {
       timeZone,

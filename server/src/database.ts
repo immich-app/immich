@@ -154,13 +154,6 @@ export type StorageAsset = {
   encodedVideoPath: string | null;
 };
 
-export type SidecarWriteAsset = {
-  id: string;
-  sidecarPath: string | null;
-  originalPath: string;
-  tags: Array<{ value: string }>;
-};
-
 export type Stack = {
   id: string;
   primaryAssetId: string;

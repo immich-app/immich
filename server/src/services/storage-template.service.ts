@@ -6,10 +6,20 @@ import sanitize from 'sanitize-filename';
 import { StorageCore } from 'src/cores/storage.core';
 import { OnEvent, OnJob } from 'src/decorators';
 import { SystemConfigTemplateStorageOptionDto } from 'src/dtos/system-config.dto';
-import { AssetPathType, AssetType, DatabaseLock, JobName, JobStatus, QueueName, StorageFolder } from 'src/enum';
+import {
+  AssetFileType,
+  AssetPathType,
+  AssetType,
+  DatabaseLock,
+  JobName,
+  JobStatus,
+  QueueName,
+  StorageFolder,
+} from 'src/enum';
 import { ArgOf } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
 import { JobOf, StorageAsset } from 'src/types';
+import { getAssetFile, getAssetFiles } from 'src/utils/asset.util';
 import { getLivePhotoMotionFilename } from 'src/utils/file';
 
 const storageTokens = {
@@ -137,7 +147,8 @@ export class StorageTemplateService extends BaseService {
     const user = await this.userRepository.get(asset.ownerId, {});
     const storageLabel = user?.storageLabel || null;
     const filename = asset.originalFileName || asset.id;
-    await this.moveAsset(asset, { storageLabel, filename });
+    const { originalFile } = getAssetFiles(asset.files);
+    await this.moveAsset({ originalPath: originalFile.path, ...asset }, { storageLabel, filename });
 
     // move motion part of live photo
     if (asset.livePhotoVideoId) {
@@ -145,8 +156,12 @@ export class StorageTemplateService extends BaseService {
       if (!livePhotoVideo) {
         return JobStatus.Failed;
       }
-      const motionFilename = getLivePhotoMotionFilename(filename, livePhotoVideo.originalPath);
-      await this.moveAsset(livePhotoVideo, { storageLabel, filename: motionFilename });
+      const { originalFile: livePhotoOriginalFile } = getAssetFiles(livePhotoVideo.files);
+      const motionFilename = getLivePhotoMotionFilename(filename, livePhotoOriginalFile.path);
+      await this.moveAsset(
+        { originalPath: livePhotoOriginalFile.path, ...livePhotoVideo },
+        { storageLabel, filename: motionFilename },
+      );
     }
     return JobStatus.Success;
   }
@@ -170,7 +185,8 @@ export class StorageTemplateService extends BaseService {
       const user = users.find((user) => user.id === asset.ownerId);
       const storageLabel = user?.storageLabel || null;
       const filename = asset.originalFileName || asset.id;
-      await this.moveAsset(asset, { storageLabel, filename });
+      const { originalFile } = getAssetFiles(asset.files);
+      await this.moveAsset({ originalPath: originalFile.path, ...asset }, { storageLabel, filename });
     }
 
     this.logger.debug('Cleaning up empty directories...');
@@ -196,7 +212,7 @@ export class StorageTemplateService extends BaseService {
     }
 
     return this.databaseRepository.withLock(DatabaseLock.StorageTemplateMigration, async () => {
-      const { id, sidecarPath, originalPath, checksum, fileSizeInByte } = asset;
+      const { id, originalPath, checksum, fileSizeInByte } = asset;
       const oldPath = originalPath;
       const newPath = await this.getTemplatePath(asset, metadata);
 
@@ -213,6 +229,8 @@ export class StorageTemplateService extends BaseService {
           newPath,
           assetInfo: { sizeInBytes: fileSizeInByte, checksum },
         });
+
+        const sidecarPath = getAssetFile(asset.files, AssetFileType.Sidecar)?.path;
         if (sidecarPath) {
           await this.storageCore.moveFile({
             entityId: id,

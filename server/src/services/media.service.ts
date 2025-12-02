@@ -167,6 +167,8 @@ export class MediaService extends BaseService {
       return JobStatus.Skipped;
     }
 
+    const { originalFile } = getAssetFiles(asset.files);
+
     let generated: {
       previewPath: string;
       thumbnailPath: string;
@@ -174,9 +176,11 @@ export class MediaService extends BaseService {
       thumbhash: Buffer;
     };
     if (asset.type === AssetType.Video || asset.originalFileName.toLowerCase().endsWith('.gif')) {
-      generated = await this.generateVideoThumbnails(asset);
+      this.logger.verbose(`Thumbnail generation for video ${id} ${originalFile.path}`);
+      generated = await this.generateVideoThumbnails(asset, originalFile.path);
     } else if (asset.type === AssetType.Image) {
-      generated = await this.generateImageThumbnails(asset);
+      this.logger.verbose(`Thumbnail generation for image ${id} ${originalFile.path}`);
+      generated = await this.generateImageThumbnails(asset, originalFile.path);
     } else {
       this.logger.warn(`Skipping thumbnail generation for asset ${id}: ${asset.type} is not an image or video`);
       return JobStatus.Skipped;
@@ -421,13 +425,13 @@ export class MediaService extends BaseService {
     };
   }
 
-  private async generateVideoThumbnails(asset: ThumbnailPathEntity & { originalPath: string }) {
+  private async generateVideoThumbnails(asset: ThumbnailPathEntity, originalPath: string) {
     const { image, ffmpeg } = await this.getConfig({ withCache: true });
     const previewPath = StorageCore.getImagePath(asset, AssetPathType.Preview, image.preview.format);
     const thumbnailPath = StorageCore.getImagePath(asset, AssetPathType.Thumbnail, image.thumbnail.format);
     this.storageCore.ensureFolders(previewPath);
 
-    const { format, audioStreams, videoStreams } = await this.mediaRepository.probe(asset.originalPath);
+    const { format, audioStreams, videoStreams } = await this.mediaRepository.probe(originalPath);
     const mainVideoStream = this.getMainStream(videoStreams);
     if (!mainVideoStream) {
       throw new Error(`No video streams found for asset ${asset.id}`);

@@ -187,7 +187,6 @@ const existingAsset = Object.freeze({
 
 const sidecarAsset = Object.freeze({
   ...existingAsset,
-  sidecarPath: 'sidecar-path',
   checksum: Buffer.from('_getExistingAssetWithSideCar', 'utf8'),
 }) as MapAsset;
 

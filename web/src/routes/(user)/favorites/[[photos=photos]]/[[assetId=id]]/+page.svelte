@@ -85,11 +85,7 @@
       <ArchiveAction
         menuItem
         unarchive={assetInteraction.isAllArchived}
-        onArchive={(ids, visibility) =>
-          timelineManager.updateAssetOperation(ids, (asset) => {
-            asset.visibility = visibility;
-            return { remove: false };
-          })}
+        onArchive={(ids, visibility) => timelineManager.update(ids, (asset) => (asset.visibility = visibility))}
       />
       {#if $preferences.tags.enabled}
         <TagAction menuItem />

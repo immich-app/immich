@@ -484,21 +484,26 @@ select
   "asset_exif"."fileSizeInByte",
   (
     select
-      "asset_file"."path"
+      coalesce(json_agg(agg), '[]')
     from
-      "asset_file"
-    where
-      "asset_file"."assetId" = "asset"."id"
-      and "asset_file"."type" = $1
-    limit
-      $2
-  ) as "sidecarPath"
+      (
+        select
+          "asset_file"."id",
+          "asset_file"."path",
+          "asset_file"."type"
+        from
+          "asset_file"
+        where
+          "asset_file"."assetId" = "asset"."id"
+          and "asset_file"."type" = $1
+      ) as agg
+  ) as "files"
 from
   "asset"
   inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
   "asset"."deletedAt" is null
-  and "asset"."id" = $3
+  and "asset"."id" = $2
 
 -- AssetJobRepository.streamForStorageTemplateJob
 select
@@ -515,15 +520,20 @@ select
   "asset_exif"."fileSizeInByte",
   (
     select
-      "asset_file"."path"
+      coalesce(json_agg(agg), '[]')
     from
-      "asset_file"
-    where
-      "asset_file"."assetId" = "asset"."id"
-      and "asset_file"."type" = $1
-    limit
-      $2
-  ) as "sidecarPath"
+      (
+        select
+          "asset_file"."id",
+          "asset_file"."path",
+          "asset_file"."type"
+        from
+          "asset_file"
+        where
+          "asset_file"."assetId" = "asset"."id"
+          and "asset_file"."type" = $1
+      ) as agg
+  ) as "files"
 from
   "asset"
   inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
