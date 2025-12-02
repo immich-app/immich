@@ -1910,12 +1910,12 @@ export function getIntegrityReport({ maintenanceGetIntegrityReportDto }: {
     })));
 }
 /**
- * Delete associated file if it exists
+ * Delete report entry and perform corresponding deletion action
  */
-export function deleteIntegrityReportFile({ id }: {
+export function deleteIntegrityReport({ id }: {
     id: string;
 }, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchText(`/admin/maintenance/integrity/report/${encodeURIComponent(id)}/file`, {
+    return oazapfts.ok(oazapfts.fetchText(`/admin/maintenance/integrity/report/${encodeURIComponent(id)}`, {
         ...opts,
         method: "DELETE"
     }));
@@ -5484,7 +5484,10 @@ export enum ManualJobName {
     IntegrityChecksumMismatch = "integrity-checksum-mismatch",
     IntegrityMissingFilesRefresh = "integrity-missing-files-refresh",
     IntegrityOrphanFilesRefresh = "integrity-orphan-files-refresh",
-    IntegrityChecksumMismatchRefresh = "integrity-checksum-mismatch-refresh"
+    IntegrityChecksumMismatchRefresh = "integrity-checksum-mismatch-refresh",
+    IntegrityMissingFilesDeleteAll = "integrity-missing-files-delete-all",
+    IntegrityOrphanFilesDeleteAll = "integrity-orphan-files-delete-all",
+    IntegrityChecksumMismatchDeleteAll = "integrity-checksum-mismatch-delete-all"
 }
 export enum QueueName {
     ThumbnailGeneration = "thumbnailGeneration",
@@ -5600,7 +5603,8 @@ export enum JobName {
     IntegrityMissingFiles = "IntegrityMissingFiles",
     IntegrityMissingFilesRefresh = "IntegrityMissingFilesRefresh",
     IntegrityChecksumFiles = "IntegrityChecksumFiles",
-    IntegrityChecksumFilesRefresh = "IntegrityChecksumFilesRefresh"
+    IntegrityChecksumFilesRefresh = "IntegrityChecksumFilesRefresh",
+    IntegrityReportDelete = "IntegrityReportDelete"
 }
 export enum SearchSuggestionType {
     Country = "country",

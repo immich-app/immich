@@ -2,7 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { OnEvent } from 'src/decorators';
 import { mapAsset } from 'src/dtos/asset-response.dto';
 import { JobCreateDto } from 'src/dtos/job.dto';
-import { AssetType, AssetVisibility, JobName, JobStatus, ManualJobName } from 'src/enum';
+import { AssetType, AssetVisibility, IntegrityReportType, JobName, JobStatus, ManualJobName } from 'src/enum';
 import { ArgsOf } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
 import { JobItem } from 'src/types';
@@ -56,6 +56,18 @@ const asJobItem = (dto: JobCreateDto): JobItem => {
 
     case ManualJobName.IntegrityChecksumFilesRefresh: {
       return { name: JobName.IntegrityChecksumFiles, data: { refreshOnly: true } };
+    }
+
+    case ManualJobName.IntegrityMissingFilesDeleteAll: {
+      return { name: JobName.IntegrityReportDelete, data: { type: IntegrityReportType.MissingFile } };
+    }
+
+    case ManualJobName.IntegrityOrphanFilesDeleteAll: {
+      return { name: JobName.IntegrityReportDelete, data: { type: IntegrityReportType.OrphanFile } };
+    }
+
+    case ManualJobName.IntegrityChecksumFilesDeleteAll: {
+      return { name: JobName.IntegrityReportDelete, data: { type: IntegrityReportType.ChecksumFail } };
     }
 
     default: {

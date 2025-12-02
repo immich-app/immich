@@ -8,6 +8,7 @@ import { JOBS_LIBRARY_PAGINATION_SIZE } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { OnEvent, OnJob } from 'src/decorators';
 import {
+  AssetStatus,
   DatabaseLock,
   ImmichWorker,
   IntegrityReportType,
@@ -20,6 +21,7 @@ import {
 import { ArgOf } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
 import {
+  IIntegrityDeleteReportJob,
   IIntegrityJob,
   IIntegrityMissingFilesJob,
   IIntegrityOrphanedFilesJob,
@@ -42,7 +44,7 @@ import { handlePromiseError } from 'src/utils/misc';
  *     Check whether files exist on disk
  *
  *   * Reports must include origin (asset or asset_file) & ID for further action
- *   * Can perform trash (asset) or dereference (asset_file)
+ *   * Can perform trash (asset) or delete (asset_file)
  *
  * Checksum Mismatch:
  *   Paths & checksums are queried from asset(originalPath, checksum)
@@ -546,6 +548,68 @@ export class IntegrityService extends BaseService {
     }
 
     this.logger.log(`Processed ${paths.length} paths and found ${reportIds.length} report(s) out of date.`);
+    return JobStatus.Success;
+  }
+
+  @OnJob({ name: JobName.IntegrityReportDelete, queue: QueueName.BackgroundTask })
+  async handleDeleteIntegrityReport({ type }: IIntegrityDeleteReportJob): Promise<JobStatus> {
+    this.logger.log(`Deleting all entries for ${type ?? 'all types of'} integrity report`);
+
+    let properties;
+    switch (type) {
+      case IntegrityReportType.ChecksumFail: {
+        properties = ['assetId'] as const;
+        break;
+      }
+      case IntegrityReportType.MissingFile: {
+        properties = ['assetId', 'fileAssetId'] as const;
+        break;
+      }
+      case IntegrityReportType.OrphanFile: {
+        properties = [void 0] as const;
+        break;
+      }
+      default: {
+        properties = [void 0, 'assetId', 'fileAssetId'] as const;
+        break;
+      }
+    }
+
+    for (const property of properties) {
+      const reports = this.integrityReportRepository.streamIntegrityReportsByProperty(property, type);
+      for await (const report of chunk(reports, JOBS_LIBRARY_PAGINATION_SIZE)) {
+        // todo: queue sub-job here instead?
+
+        switch (property) {
+          case 'assetId': {
+            const ids = report.map(({ assetId }) => assetId!);
+            await this.assetRepository.updateAll(ids, {
+              deletedAt: new Date(),
+              status: AssetStatus.Trashed,
+            });
+
+            await this.eventRepository.emit('AssetTrashAll', {
+              assetIds: ids,
+              userId: '', // ???
+            });
+
+            await this.integrityReportRepository.deleteByIds(report.map(({ id }) => id));
+            break;
+          }
+          case 'fileAssetId': {
+            await this.assetRepository.deleteFiles(report.map(({ fileAssetId }) => ({ id: fileAssetId! })));
+            break;
+          }
+          default: {
+            await Promise.all(report.map(({ path }) => this.storageRepository.unlink(path).catch(() => void 0)));
+            await this.integrityReportRepository.deleteByIds(report.map(({ id }) => id));
+            break;
+          }
+        }
+      }
+    }
+
+    this.logger.log('Finished deleting integrity report.');
     return JobStatus.Success;
   }
 }

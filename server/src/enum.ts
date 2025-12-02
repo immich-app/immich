@@ -364,6 +364,9 @@ export enum ManualJobName {
   IntegrityMissingFilesRefresh = `integrity-missing-files-refresh`,
   IntegrityOrphanFilesRefresh = `integrity-orphan-files-refresh`,
   IntegrityChecksumFilesRefresh = `integrity-checksum-mismatch-refresh`,
+  IntegrityMissingFilesDeleteAll = `integrity-missing-files-delete-all`,
+  IntegrityOrphanFilesDeleteAll = `integrity-orphan-files-delete-all`,
+  IntegrityChecksumFilesDeleteAll = `integrity-checksum-mismatch-delete-all`,
 }
 
 export enum AssetPathType {
@@ -660,6 +663,7 @@ export enum JobName {
   IntegrityMissingFilesRefresh = 'IntegrityMissingFilesRefresh',
   IntegrityChecksumFiles = 'IntegrityChecksumFiles',
   IntegrityChecksumFilesRefresh = 'IntegrityChecksumFilesRefresh',
+  IntegrityReportDelete = 'IntegrityReportDelete',
 }
 
 export enum QueueCommand {

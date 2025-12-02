@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Insertable, Kysely } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { Readable } from 'node:stream';
+import { DummyValue, GenerateSql } from 'src/decorators';
 import {
   MaintenanceGetIntegrityReportDto,
   MaintenanceIntegrityReportResponseDto,
@@ -100,5 +101,16 @@ export class IntegrityReportRepository {
 
   deleteByIds(ids: string[]) {
     return this.db.deleteFrom('integrity_report').where('id', 'in', ids).execute();
+  }
+
+  @GenerateSql({ params: [DummyValue.STRING], stream: true })
+  streamIntegrityReportsByProperty(property?: 'assetId' | 'fileAssetId', filterType?: IntegrityReportType) {
+    return this.db
+      .selectFrom('integrity_report')
+      .select(['id', 'path', 'assetId', 'fileAssetId'])
+      .$if(filterType !== undefined, (eb) => eb.where('type', '=', filterType!))
+      .$if(property === undefined, (eb) => eb.where('assetId', 'is', null).where('fileAssetId', 'is', null))
+      .$if(property !== undefined, (eb) => eb.where(property!, 'is not', null))
+      .stream();
   }
 }

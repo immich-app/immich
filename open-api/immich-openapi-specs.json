@@ -429,10 +429,10 @@
         "x-immich-state": "Alpha"
       }
     },
-    "/admin/maintenance/integrity/report/{id}/file": {
+    "/admin/maintenance/integrity/report/{id}": {
       "delete": {
         "description": "...",
-        "operationId": "deleteIntegrityReportFile",
+        "operationId": "deleteIntegrityReport",
         "parameters": [
           {
             "name": "id",
@@ -460,7 +460,7 @@
             "api_key": []
           }
         ],
-        "summary": "Delete associated file if it exists",
+        "summary": "Delete report entry and perform corresponding deletion action",
         "tags": [
           "Maintenance (admin)"
         ],
@@ -477,7 +477,9 @@
         ],
         "x-immich-permission": "maintenance",
         "x-immich-state": "Alpha"
-      },
+      }
+    },
+    "/admin/maintenance/integrity/report/{id}/file": {
       "get": {
         "description": "...",
         "operationId": "getIntegrityReportFile",
@@ -16943,7 +16945,8 @@
           "IntegrityMissingFiles",
           "IntegrityMissingFilesRefresh",
           "IntegrityChecksumFiles",
-          "IntegrityChecksumFilesRefresh"
+          "IntegrityChecksumFilesRefresh",
+          "IntegrityReportDelete"
         ],
         "type": "string"
       },
@@ -17289,7 +17292,10 @@
           "integrity-checksum-mismatch",
           "integrity-missing-files-refresh",
           "integrity-orphan-files-refresh",
-          "integrity-checksum-mismatch-refresh"
+          "integrity-checksum-mismatch-refresh",
+          "integrity-missing-files-delete-all",
+          "integrity-orphan-files-delete-all",
+          "integrity-checksum-mismatch-delete-all"
         ],
         "type": "string"
       },

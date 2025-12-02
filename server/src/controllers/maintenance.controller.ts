@@ -82,6 +82,17 @@ export class MaintenanceController {
     return this.service.getIntegrityReport(dto);
   }
 
+  @Delete('integrity/report/:id')
+  @Endpoint({
+    summary: 'Delete report entry and perform corresponding deletion action',
+    description: '...',
+    history: new HistoryBuilder().added('v9.9.9').alpha('v9.9.9'),
+  })
+  @Authenticated({ permission: Permission.Maintenance, admin: true })
+  async deleteIntegrityReport(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<void> {
+    await this.service.deleteIntegrityReport(auth, id);
+  }
+
   @Get('integrity/report/:type/csv')
   @Endpoint({
     summary: 'Export integrity report by type as CSV',
@@ -112,16 +123,5 @@ export class MaintenanceController {
     @Next() next: NextFunction,
   ): Promise<void> {
     await sendFile(res, next, () => this.service.getIntegrityReportFile(id), this.logger);
-  }
-
-  @Delete('integrity/report/:id/file')
-  @Endpoint({
-    summary: 'Delete associated file if it exists',
-    description: '...',
-    history: new HistoryBuilder().added('v9.9.9').alpha('v9.9.9'),
-  })
-  @Authenticated({ permission: Permission.Maintenance, admin: true })
-  async deleteIntegrityReportFile(@Param() { id }: UUIDParamDto): Promise<void> {
-    await this.service.deleteIntegrityReportFile(id);
   }
 }

@@ -2,13 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { basename } from 'node:path';
 import { Readable } from 'node:stream';
 import { OnEvent } from 'src/decorators';
+import { AuthDto } from 'src/dtos/auth.dto';
 import {
   MaintenanceAuthDto,
   MaintenanceGetIntegrityReportDto,
   MaintenanceIntegrityReportResponseDto,
   MaintenanceIntegrityReportSummaryResponseDto,
 } from 'src/dtos/maintenance.dto';
-import { CacheControl, IntegrityReportType, SystemMetadataKey } from 'src/enum';
+import { AssetStatus, CacheControl, IntegrityReportType, SystemMetadataKey } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
 import { MaintenanceModeState } from 'src/types';
 import { ImmichFileResponse } from 'src/utils/file';
@@ -82,9 +83,26 @@ export class MaintenanceService extends BaseService {
     });
   }
 
-  async deleteIntegrityReportFile(id: string): Promise<void> {
-    const { path } = await this.integrityReportRepository.getById(id);
-    await this.storageRepository.unlink(path);
-    await this.integrityReportRepository.deleteById(id);
+  async deleteIntegrityReport(auth: AuthDto, id: string): Promise<void> {
+    const { path, assetId, fileAssetId } = await this.integrityReportRepository.getById(id);
+
+    if (assetId) {
+      await this.assetRepository.updateAll([assetId], {
+        deletedAt: new Date(),
+        status: AssetStatus.Trashed,
+      });
+
+      await this.eventRepository.emit('AssetTrashAll', {
+        assetIds: [assetId],
+        userId: auth.user.id,
+      });
+
+      await this.integrityReportRepository.deleteById(id);
+    } else if (fileAssetId) {
+      await this.assetRepository.deleteFiles([{ id: fileAssetId }]);
+    } else {
+      await this.storageRepository.unlink(path);
+      await this.integrityReportRepository.deleteById(id);
+    }
   }
 }

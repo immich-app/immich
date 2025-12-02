@@ -2,7 +2,7 @@
   import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
   import { AppRoute } from '$lib/constants';
   import { handleError } from '$lib/utils/handle-error';
-  import { deleteIntegrityReportFile, getBaseUrl, IntegrityReportType } from '@immich/sdk';
+  import { createJob, deleteIntegrityReport, getBaseUrl, IntegrityReportType, ManualJobName } from '@immich/sdk';
   import {
     Button,
     HStack,
@@ -10,6 +10,7 @@
     menuManager,
     modalManager,
     Text,
+    toastManager,
     type ContextMenuBaseProps,
     type MenuItems,
   } from '@immich/ui';
@@ -27,6 +28,38 @@
   let deleting = new SvelteSet();
   let integrityReport = $state(data.integrityReport.items);
 
+  async function removeAll() {
+    const confirm = await modalManager.showDialog({
+      confirmText: $t('delete'),
+    });
+
+    if (confirm) {
+      let name: ManualJobName;
+      switch (data.type) {
+        case IntegrityReportType.OrphanFile: {
+          name = ManualJobName.IntegrityOrphanFilesDeleteAll;
+          break;
+        }
+        case IntegrityReportType.MissingFile: {
+          name = ManualJobName.IntegrityMissingFilesDeleteAll;
+          break;
+        }
+        case IntegrityReportType.ChecksumMismatch: {
+          name = ManualJobName.IntegrityChecksumMismatchDeleteAll;
+          break;
+        }
+      }
+
+      try {
+        deleting.add('all');
+        await createJob({ jobCreateDto: { name } });
+        toastManager.success($t('admin.job_created'));
+      } catch (error) {
+        handleError(error, 'Failed to delete file!');
+      }
+    }
+  }
+
   async function remove(id: string) {
     const confirm = await modalManager.showDialog({
       confirmText: $t('delete'),
@@ -35,7 +68,7 @@
     if (confirm) {
       try {
         deleting.add(id);
-        await deleteIntegrityReportFile({
+        await deleteIntegrityReport({
           id,
         });
         integrityReport = integrityReport.filter((report) => report.id !== id);
@@ -64,21 +97,20 @@
       });
     }
 
-    if (data.type === IntegrityReportType.OrphanFile) {
-      items.push({
-        title: $t('delete'),
-        icon: mdiTrashCanOutline,
-        color: 'danger',
-        onAction() {
-          void remove(reportId);
-        },
-      });
-    }
-
     await menuManager.show({
       ...props,
       target: event.currentTarget as HTMLElement,
-      items,
+      items: [
+        ...items,
+        {
+          title: $t('delete'),
+          icon: mdiTrashCanOutline,
+          color: 'danger',
+          onAction() {
+            void remove(reportId);
+          },
+        },
+      ],
     });
   };
 </script>
@@ -96,9 +128,13 @@
         size="small"
         variant="ghost"
         color="secondary"
+        leadingIcon={mdiDownload}
         href={`${getBaseUrl()}/admin/maintenance/integrity/report/${data.type}/csv`}
       >
         <Text class="hidden md:block">Download CSV</Text>
+      </Button>
+      <Button size="small" variant="ghost" color="danger" leadingIcon={mdiTrashCanOutline} onclick={removeAll}>
+        <Text class="hidden md:block">Delete All</Text>
       </Button>
     </HStack>
   {/snippet}
@@ -119,7 +155,7 @@
         >
           {#each integrityReport as { id, path } (id)}
             <tr
-              class={`flex py-1 w-full place-items-center even:bg-subtle/20 odd:bg-subtle/80 ${deleting.has(id) ? 'text-gray-500' : ''}`}
+              class={`flex py-1 w-full place-items-center even:bg-subtle/20 odd:bg-subtle/80 ${deleting.has(id) || deleting.has('all') ? 'text-gray-500' : ''}`}
             >
               <td class="w-7/8 text-ellipsis text-left px-2 text-sm select-all">{path}</td>
               <td class="w-1/8 text-ellipsis text-right flex justify-end px-2">
@@ -129,7 +165,7 @@
                   variant="ghost"
                   onclick={(event: Event) => handleOpen(event, { position: 'top-right' }, id)}
                   aria-label={$t('open')}
-                  disabled={deleting.has(id)}
+                  disabled={deleting.has(id) || deleting.has('all')}
                 /></td
               >
             </tr>

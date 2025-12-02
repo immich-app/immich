@@ -16,7 +16,7 @@ class MaintenanceAdminApi {
 
   final ApiClient apiClient;
 
-  /// Delete associated file if it exists
+  /// Delete report entry and perform corresponding deletion action
   ///
   /// ...
   ///
@@ -25,9 +25,9 @@ class MaintenanceAdminApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<Response> deleteIntegrityReportFileWithHttpInfo(String id,) async {
+  Future<Response> deleteIntegrityReportWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/admin/maintenance/integrity/report/{id}/file'
+    final apiPath = r'/admin/maintenance/integrity/report/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -51,15 +51,15 @@ class MaintenanceAdminApi {
     );
   }
 
-  /// Delete associated file if it exists
+  /// Delete report entry and perform corresponding deletion action
   ///
   /// ...
   ///
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<void> deleteIntegrityReportFile(String id,) async {
-    final response = await deleteIntegrityReportFileWithHttpInfo(id,);
+  Future<void> deleteIntegrityReport(String id,) async {
+    final response = await deleteIntegrityReportWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

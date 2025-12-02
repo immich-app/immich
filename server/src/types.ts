@@ -10,6 +10,7 @@ import {
   DatabaseSslMode,
   ExifOrientation,
   ImageFormat,
+  IntegrityReportType,
   JobName,
   MemoryType,
   PluginTriggerType,
@@ -286,6 +287,10 @@ export interface IIntegrityJob {
   refreshOnly?: boolean;
 }
 
+export interface IIntegrityDeleteReportJob {
+  type?: IntegrityReportType;
+}
+
 export interface IIntegrityOrphanedFilesJob {
   type: 'asset' | 'asset_file';
   paths: string[];
@@ -427,7 +432,8 @@ export type JobItem =
   | { name: JobName.IntegrityMissingFiles; data: IIntegrityPathWithReportJob }
   | { name: JobName.IntegrityMissingFilesRefresh; data: IIntegrityPathWithReportJob }
   | { name: JobName.IntegrityChecksumFiles; data?: IIntegrityJob }
-  | { name: JobName.IntegrityChecksumFilesRefresh; data?: IIntegrityPathWithChecksumJob };
+  | { name: JobName.IntegrityChecksumFilesRefresh; data?: IIntegrityPathWithChecksumJob }
+  | { name: JobName.IntegrityReportDelete; data: IIntegrityDeleteReportJob };
 
 export type VectorExtension = (typeof VECTOR_EXTENSIONS)[number];
 

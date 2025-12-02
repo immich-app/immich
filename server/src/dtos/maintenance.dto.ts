@@ -37,6 +37,11 @@ export class MaintenanceGetIntegrityReportDto {
   // page?: number;
 }
 
+export class MaintenanceDeleteIntegrityReportDto {
+  @ValidateEnum({ enum: IntegrityReportType, name: 'IntegrityReportType' })
+  type!: IntegrityReportType;
+}
+
 class MaintenanceIntegrityReportDto {
   id!: string;
   @ValidateEnum({ enum: IntegrityReportType, name: 'IntegrityReportType' })

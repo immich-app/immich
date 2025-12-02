@@ -35,6 +35,9 @@ class ManualJobName {
   static const integrityMissingFilesRefresh = ManualJobName._(r'integrity-missing-files-refresh');
   static const integrityOrphanFilesRefresh = ManualJobName._(r'integrity-orphan-files-refresh');
   static const integrityChecksumMismatchRefresh = ManualJobName._(r'integrity-checksum-mismatch-refresh');
+  static const integrityMissingFilesDeleteAll = ManualJobName._(r'integrity-missing-files-delete-all');
+  static const integrityOrphanFilesDeleteAll = ManualJobName._(r'integrity-orphan-files-delete-all');
+  static const integrityChecksumMismatchDeleteAll = ManualJobName._(r'integrity-checksum-mismatch-delete-all');
 
   /// List of all possible values in this [enum][ManualJobName].
   static const values = <ManualJobName>[
@@ -50,6 +53,9 @@ class ManualJobName {
     integrityMissingFilesRefresh,
     integrityOrphanFilesRefresh,
     integrityChecksumMismatchRefresh,
+    integrityMissingFilesDeleteAll,
+    integrityOrphanFilesDeleteAll,
+    integrityChecksumMismatchDeleteAll,
   ];
 
   static ManualJobName? fromJson(dynamic value) => ManualJobNameTypeTransformer().decode(value);
@@ -100,6 +106,9 @@ class ManualJobNameTypeTransformer {
         case r'integrity-missing-files-refresh': return ManualJobName.integrityMissingFilesRefresh;
         case r'integrity-orphan-files-refresh': return ManualJobName.integrityOrphanFilesRefresh;
         case r'integrity-checksum-mismatch-refresh': return ManualJobName.integrityChecksumMismatchRefresh;
+        case r'integrity-missing-files-delete-all': return ManualJobName.integrityMissingFilesDeleteAll;
+        case r'integrity-orphan-files-delete-all': return ManualJobName.integrityOrphanFilesDeleteAll;
+        case r'integrity-checksum-mismatch-delete-all': return ManualJobName.integrityChecksumMismatchDeleteAll;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');
