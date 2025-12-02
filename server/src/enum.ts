@@ -127,6 +127,11 @@ export enum Permission {
 
   ArchiveRead = 'archive.read',
 
+  BackupList = 'backup.list',
+  BackupDownload = 'backup.download',
+  BackupUpload = 'backup.upload',
+  BackupDelete = 'backup.delete',
+
   DuplicateRead = 'duplicate.read',
   DuplicateDelete = 'duplicate.delete',
 

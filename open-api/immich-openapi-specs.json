@@ -372,7 +372,7 @@
         "x-immich-state": "Alpha"
       }
     },
-    "/admin/maintenance/backups/list": {
+    "/admin/maintenance/backups": {
       "get": {
         "description": "Get the list of the successful and failed backups",
         "operationId": "listBackups",
@@ -407,11 +407,11 @@
         "x-immich-admin-only": true,
         "x-immich-history": [
           {
-            "version": "v9.9.9",
+            "version": "v2.4.0",
             "state": "Added"
           },
           {
-            "version": "v9.9.9",
+            "version": "v2.4.0",
             "state": "Alpha"
           }
         ],
@@ -435,11 +435,11 @@
         ],
         "x-immich-history": [
           {
-            "version": "v9.9.9",
+            "version": "v2.4.0",
             "state": "Added"
           },
           {
-            "version": "v9.9.9",
+            "version": "v2.4.0",
             "state": "Alpha"
           }
         ],
@@ -448,7 +448,7 @@
     },
     "/admin/maintenance/backups/upload": {
       "post": {
-        "description": "Uploads a new asset to the server.",
+        "description": "Uploads .sql/.sql.gz file to restore backup from",
         "operationId": "uploadBackup",
         "parameters": [],
         "requestBody": {
@@ -478,22 +478,22 @@
             "api_key": []
           }
         ],
-        "summary": "Upload asset",
+        "summary": "Upload database backup",
         "tags": [
           "Maintenance (admin)"
         ],
         "x-immich-admin-only": true,
         "x-immich-history": [
           {
-            "version": "v9.9.9",
+            "version": "v2.4.0",
             "state": "Added"
           },
           {
-            "version": "v9.9.9",
+            "version": "v2.4.0",
             "state": "Alpha"
           }
         ],
-        "x-immich-permission": "maintenance",
+        "x-immich-permission": "backup.upload",
         "x-immich-state": "Alpha"
       }
     },
@@ -535,15 +535,15 @@
         "x-immich-admin-only": true,
         "x-immich-history": [
           {
-            "version": "v9.9.9",
+            "version": "v2.4.0",
             "state": "Added"
           },
           {
-            "version": "v9.9.9",
+            "version": "v2.4.0",
             "state": "Alpha"
           }
         ],
-        "x-immich-permission": "maintenance",
+        "x-immich-permission": "backup.delete",
         "x-immich-state": "Alpha"
       },
       "get": {
@@ -591,22 +591,22 @@
         "x-immich-admin-only": true,
         "x-immich-history": [
           {
-            "version": "v9.9.9",
+            "version": "v2.4.0",
             "state": "Added"
           },
           {
-            "version": "v9.9.9",
+            "version": "v2.4.0",
             "state": "Alpha"
           }
         ],
-        "x-immich-permission": "maintenance",
+        "x-immich-permission": "backup.download",
         "x-immich-state": "Alpha"
       }
     },
-    "/admin/maintenance/integrity": {
+    "/admin/maintenance/detect-install": {
       "get": {
         "description": "Collect integrity checks and other heuristics about local data.",
-        "operationId": "integrityCheck",
+        "operationId": "detectPriorInstall",
         "parameters": [],
         "responses": {
           "200": {
@@ -620,17 +620,17 @@
             "description": ""
           }
         },
-        "summary": "Get integrity and heuristics",
+        "summary": "Detect existing install",
         "tags": [
           "Maintenance (admin)"
         ],
         "x-immich-history": [
           {
-            "version": "v9.9.9",
+            "version": "v2.4.0",
             "state": "Added"
           },
           {
-            "version": "v9.9.9",
+            "version": "v2.4.0",
             "state": "Alpha"
           }
         ],
@@ -684,7 +684,7 @@
     "/admin/maintenance/status": {
       "get": {
         "description": "Fetch information about the currently running maintenance action.",
-        "operationId": "maintenanceStatus",
+        "operationId": "getMaintenanceStatus",
         "parameters": [],
         "responses": {
           "200": {
@@ -704,11 +704,11 @@
         ],
         "x-immich-history": [
           {
-            "version": "v9.9.9",
+            "version": "v2.4.0",
             "state": "Added"
           },
           {
-            "version": "v9.9.9",
+            "version": "v2.4.0",
             "state": "Alpha"
           }
         ],
@@ -18250,6 +18250,10 @@
           "auth.changePassword",
           "authDevice.delete",
           "archive.read",
+          "backup.list",
+          "backup.download",
+          "backup.upload",
+          "backup.delete",
           "duplicate.read",
           "duplicate.delete",
           "face.create",

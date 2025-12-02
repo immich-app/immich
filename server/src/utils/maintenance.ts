@@ -77,7 +77,9 @@ export function generateMaintenanceSecret(): string {
   return randomBytes(64).toString('hex');
 }
 
-export async function integrityCheck(storageRepository: StorageRepository): Promise<MaintenanceIntegrityResponseDto> {
+export async function detectPriorInstall(
+  storageRepository: StorageRepository,
+): Promise<MaintenanceIntegrityResponseDto> {
   return {
     storage: await Promise.all(
       Object.values(StorageFolder).map(async (folder) => {

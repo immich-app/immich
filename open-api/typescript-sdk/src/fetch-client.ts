@@ -1891,7 +1891,7 @@ export function listBackups(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: MaintenanceListBackupsResponseDto;
-    }>("/admin/maintenance/backups/list", {
+    }>("/admin/maintenance/backups", {
         ...opts
     }));
 }
@@ -1905,7 +1905,7 @@ export function startRestoreFlow(opts?: Oazapfts.RequestOpts) {
     }));
 }
 /**
- * Upload asset
+ * Upload database backup
  */
 export function uploadBackup({ maintenanceUploadBackupDto }: {
     maintenanceUploadBackupDto: MaintenanceUploadBackupDto;
@@ -1941,13 +1941,13 @@ export function downloadBackup({ filename }: {
     }));
 }
 /**
- * Get integrity and heuristics
+ * Detect existing install
  */
-export function integrityCheck(opts?: Oazapfts.RequestOpts) {
+export function detectPriorInstall(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: MaintenanceIntegrityResponseDto;
-    }>("/admin/maintenance/integrity", {
+    }>("/admin/maintenance/detect-install", {
         ...opts
     }));
 }
@@ -1969,7 +1969,7 @@ export function maintenanceLogin({ maintenanceLoginDto }: {
 /**
  * Get maintenance mode status
  */
-export function maintenanceStatus(opts?: Oazapfts.RequestOpts) {
+export function getMaintenanceStatus(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: MaintenanceStatusResponseDto;
@@ -5343,6 +5343,10 @@ export enum Permission {
     AuthChangePassword = "auth.changePassword",
     AuthDeviceDelete = "authDevice.delete",
     ArchiveRead = "archive.read",
+    BackupList = "backup.list",
+    BackupDownload = "backup.download",
+    BackupUpload = "backup.upload",
+    BackupDelete = "backup.delete",
     DuplicateRead = "duplicate.read",
     DuplicateDelete = "duplicate.delete",
     FaceCreate = "face.create",

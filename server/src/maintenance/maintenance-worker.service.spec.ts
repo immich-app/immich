@@ -177,7 +177,7 @@ describe(MaintenanceWorkerService.name, () => {
       mocks.storage.readFile.mockResolvedValue(undefined as never);
       mocks.storage.overwriteFile.mockRejectedValue(undefined as never);
 
-      await expect(sut.integrityCheck()).resolves.toMatchInlineSnapshot(`
+      await expect(sut.detectPriorInstall()).resolves.toMatchInlineSnapshot(`
         {
           "storage": [
             {

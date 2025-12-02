@@ -37,8 +37,8 @@ export class MaintenanceWorkerController {
   }
 
   @Get('admin/maintenance/integrity')
-  integrityCheck(): Promise<MaintenanceIntegrityResponseDto> {
-    return this.service.integrityCheck();
+  detectPriorInstall(): Promise<MaintenanceIntegrityResponseDto> {
+    return this.service.detectPriorInstall();
   }
 
   @Post('admin/maintenance/login')

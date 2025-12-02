@@ -65,6 +65,54 @@ class MaintenanceAdminApi {
     }
   }
 
+  /// Detect existing install
+  ///
+  /// Collect integrity checks and other heuristics about local data.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  Future<Response> detectPriorInstallWithHttpInfo() async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/admin/maintenance/detect-install';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Detect existing install
+  ///
+  /// Collect integrity checks and other heuristics about local data.
+  Future<MaintenanceIntegrityResponseDto?> detectPriorInstall() async {
+    final response = await detectPriorInstallWithHttpInfo();
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'MaintenanceIntegrityResponseDto',) as MaintenanceIntegrityResponseDto;
+    
+    }
+    return null;
+  }
+
   /// Download backup
   ///
   /// Downloads the database backup file
@@ -122,14 +170,14 @@ class MaintenanceAdminApi {
     return null;
   }
 
-  /// Get integrity and heuristics
+  /// Get maintenance mode status
   ///
-  /// Collect integrity checks and other heuristics about local data.
+  /// Fetch information about the currently running maintenance action.
   ///
   /// Note: This method returns the HTTP [Response].
-  Future<Response> integrityCheckWithHttpInfo() async {
+  Future<Response> getMaintenanceStatusWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/admin/maintenance/integrity';
+    final apiPath = r'/admin/maintenance/status';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -152,11 +200,11 @@ class MaintenanceAdminApi {
     );
   }
 
-  /// Get integrity and heuristics
+  /// Get maintenance mode status
   ///
-  /// Collect integrity checks and other heuristics about local data.
-  Future<MaintenanceIntegrityResponseDto?> integrityCheck() async {
-    final response = await integrityCheckWithHttpInfo();
+  /// Fetch information about the currently running maintenance action.
+  Future<MaintenanceStatusResponseDto?> getMaintenanceStatus() async {
+    final response = await getMaintenanceStatusWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -164,7 +212,7 @@ class MaintenanceAdminApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'MaintenanceIntegrityResponseDto',) as MaintenanceIntegrityResponseDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'MaintenanceStatusResponseDto',) as MaintenanceStatusResponseDto;
     
     }
     return null;
@@ -177,7 +225,7 @@ class MaintenanceAdminApi {
   /// Note: This method returns the HTTP [Response].
   Future<Response> listBackupsWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/admin/maintenance/backups/list';
+    final apiPath = r'/admin/maintenance/backups';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -274,54 +322,6 @@ class MaintenanceAdminApi {
     return null;
   }
 
-  /// Get maintenance mode status
-  ///
-  /// Fetch information about the currently running maintenance action.
-  ///
-  /// Note: This method returns the HTTP [Response].
-  Future<Response> maintenanceStatusWithHttpInfo() async {
-    // ignore: prefer_const_declarations
-    final apiPath = r'/admin/maintenance/status';
-
-    // ignore: prefer_final_locals
-    Object? postBody;
-
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
-
-    const contentTypes = <String>[];
-
-
-    return apiClient.invokeAPI(
-      apiPath,
-      'GET',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
-
-  /// Get maintenance mode status
-  ///
-  /// Fetch information about the currently running maintenance action.
-  Future<MaintenanceStatusResponseDto?> maintenanceStatus() async {
-    final response = await maintenanceStatusWithHttpInfo();
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
-    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'MaintenanceStatusResponseDto',) as MaintenanceStatusResponseDto;
-    
-    }
-    return null;
-  }
-
   /// Set maintenance mode
   ///
   /// Put Immich into or take it out of maintenance mode
@@ -410,9 +410,9 @@ class MaintenanceAdminApi {
     }
   }
 
-  /// Upload asset
+  /// Upload database backup
   ///
-  /// Uploads a new asset to the server.
+  /// Uploads .sql/.sql.gz file to restore backup from
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -454,9 +454,9 @@ class MaintenanceAdminApi {
     );
   }
 
-  /// Upload asset
+  /// Upload database backup
   ///
-  /// Uploads a new asset to the server.
+  /// Uploads .sql/.sql.gz file to restore backup from
   ///
   /// Parameters:
   ///

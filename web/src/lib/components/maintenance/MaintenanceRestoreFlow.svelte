@@ -1,6 +1,6 @@
 <script lang="ts">
   import MaintenanceBackupsList from '$lib/components/maintenance/MaintenanceBackupsList.svelte';
-  import { integrityCheck, type MaintenanceIntegrityResponseDto } from '@immich/sdk';
+  import { detectPriorInstall, type MaintenanceIntegrityResponseDto } from '@immich/sdk';
   import { Button, Card, CardBody, Heading, HStack, Icon, Scrollable, Stack, Text } from '@immich/ui';
   import { mdiAlert, mdiArrowLeft, mdiArrowRight, mdiCheck, mdiClose, mdiRefresh } from '@mdi/js';
   import { onMount } from 'svelte';
@@ -16,7 +16,7 @@
   let integrity: MaintenanceIntegrityResponseDto | undefined = $state();
 
   async function reload() {
-    integrity = await integrityCheck();
+    integrity = await detectPriorInstall();
   }
 
   onMount(reload);

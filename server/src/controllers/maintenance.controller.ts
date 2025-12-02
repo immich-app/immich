@@ -4,6 +4,7 @@ import {
   Controller,
   Delete,
   Get,
+  Next,
   Param,
   Post,
   Res,
@@ -12,7 +13,7 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
-import { Response } from 'express';
+import { NextFunction, Response } from 'express';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
@@ -26,9 +27,10 @@ import {
 } from 'src/dtos/maintenance.dto';
 import { ApiTag, ImmichCookie, MaintenanceAction, Permission } from 'src/enum';
 import { Auth, Authenticated, FileResponse, GetLoginDetails } from 'src/middleware/auth.guard';
-import { StorageRepository } from 'src/repositories/storage.repository';
+import { LoggingRepository } from 'src/repositories/logging.repository';
 import { LoginDetails } from 'src/services/auth.service';
 import { MaintenanceService } from 'src/services/maintenance.service';
+import { sendFile } from 'src/utils/file';
 import { respondWithCookie } from 'src/utils/response';
 import { FilenameParamDto } from 'src/validation';
 
@@ -36,30 +38,30 @@ import { FilenameParamDto } from 'src/validation';
 @Controller('admin/maintenance')
 export class MaintenanceController {
   constructor(
+    private logger: LoggingRepository,
     private service: MaintenanceService,
-    private storageRepository: StorageRepository,
   ) {}
 
   @Get('status')
   @Endpoint({
     summary: 'Get maintenance mode status',
     description: 'Fetch information about the currently running maintenance action.',
-    history: new HistoryBuilder().added('v9.9.9').alpha('v9.9.9'),
+    history: new HistoryBuilder().added('v2.4.0').alpha('v2.4.0'),
   })
-  maintenanceStatus(): MaintenanceStatusResponseDto {
+  getMaintenanceStatus(): MaintenanceStatusResponseDto {
     return {
       action: MaintenanceAction.End,
     };
   }
 
-  @Get('integrity')
+  @Get('detect-install')
   @Endpoint({
-    summary: 'Get integrity and heuristics',
+    summary: 'Detect existing install',
     description: 'Collect integrity checks and other heuristics about local data.',
-    history: new HistoryBuilder().added('v9.9.9').alpha('v9.9.9'),
+    history: new HistoryBuilder().added('v2.4.0').alpha('v2.4.0'),
   })
-  integrityCheck(): Promise<MaintenanceIntegrityResponseDto> {
-    return this.service.integrityCheck();
+  detectPriorInstall(): Promise<MaintenanceIntegrityResponseDto> {
+    return this.service.detectPriorInstall();
   }
 
   @Post('login')
@@ -94,11 +96,11 @@ export class MaintenanceController {
     }
   }
 
-  @Get('backups/list')
+  @Get('backups')
   @Endpoint({
     summary: 'List backups',
     description: 'Get the list of the successful and failed backups',
-    history: new HistoryBuilder().added('v9.9.9').alpha('v9.9.9'),
+    history: new HistoryBuilder().added('v2.4.0').alpha('v2.4.0'),
   })
   @Authenticated({ permission: Permission.Maintenance, admin: true })
   listBackups(): Promise<MaintenanceListBackupsResponseDto> {
@@ -110,21 +112,24 @@ export class MaintenanceController {
   @Endpoint({
     summary: 'Download backup',
     description: 'Downloads the database backup file',
-    history: new HistoryBuilder().added('v9.9.9').alpha('v9.9.9'),
+    history: new HistoryBuilder().added('v2.4.0').alpha('v2.4.0'),
   })
-  @Authenticated({ permission: Permission.Maintenance, admin: true })
-  downloadBackup(@Param() { filename }: FilenameParamDto, @Res() res: Response) {
-    res.header('Content-Disposition', 'attachment');
-    res.sendFile(this.service.getBackupPath(filename));
+  @Authenticated({ permission: Permission.BackupDownload, admin: true })
+  async downloadBackup(
+    @Param() { filename }: FilenameParamDto,
+    @Res() res: Response,
+    @Next() next: NextFunction,
+  ): Promise<void> {
+    await sendFile(res, next, () => this.service.downloadBackup(filename), this.logger);
   }
 
   @Delete('backups/:filename')
   @Endpoint({
     summary: 'Delete backup',
     description: 'Delete a backup by its filename',
-    history: new HistoryBuilder().added('v9.9.9').alpha('v9.9.9'),
+    history: new HistoryBuilder().added('v2.4.0').alpha('v2.4.0'),
   })
-  @Authenticated({ permission: Permission.Maintenance, admin: true })
+  @Authenticated({ permission: Permission.BackupDelete, admin: true })
   async deleteBackup(@Param() { filename }: FilenameParamDto): Promise<void> {
     return this.service.deleteBackup(filename);
   }
@@ -133,7 +138,7 @@ export class MaintenanceController {
   @Endpoint({
     summary: 'Start backup restore flow',
     description: 'Put Immich into maintenance mode to restore a backup (Immich must not be configured)',
-    history: new HistoryBuilder().added('v9.9.9').alpha('v9.9.9'),
+    history: new HistoryBuilder().added('v2.4.0').alpha('v2.4.0'),
   })
   async startRestoreFlow(
     @GetLoginDetails() loginDetails: LoginDetails,
@@ -147,13 +152,13 @@ export class MaintenanceController {
   }
 
   @Post('backups/upload')
-  @Authenticated({ permission: Permission.Maintenance, admin: true })
+  @Authenticated({ permission: Permission.BackupUpload, admin: true })
   @ApiConsumes('multipart/form-data')
   @ApiBody({ description: 'Backup Upload', type: MaintenanceUploadBackupDto })
   @Endpoint({
-    summary: 'Upload asset',
-    description: 'Uploads a new asset to the server.',
-    history: new HistoryBuilder().added('v9.9.9').alpha('v9.9.9'),
+    summary: 'Upload database backup',
+    description: 'Uploads .sql/.sql.gz file to restore backup from',
+    history: new HistoryBuilder().added('v2.4.0').alpha('v2.4.0'),
   })
   @UseInterceptors(FileInterceptor('file'))
   uploadBackup(

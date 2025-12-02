@@ -29,7 +29,7 @@ import { type ServerService as _ServerService } from 'src/services/server.servic
 import { MaintenanceModeState } from 'src/types';
 import { deleteBackup, isValidBackupName, listBackups, restoreBackup, uploadBackup } from 'src/utils/backups';
 import { getConfig } from 'src/utils/config';
-import { createMaintenanceLoginUrl, integrityCheck } from 'src/utils/maintenance';
+import { createMaintenanceLoginUrl, detectPriorInstall } from 'src/utils/maintenance';
 import { getExternalDomain } from 'src/utils/misc';
 
 /**
@@ -198,8 +198,8 @@ export class MaintenanceWorkerService {
     }
   }
 
-  integrityCheck(): Promise<MaintenanceIntegrityResponseDto> {
-    return integrityCheck(this.storageRepository);
+  detectPriorInstall(): Promise<MaintenanceIntegrityResponseDto> {
+    return detectPriorInstall(this.storageRepository);
   }
 
   async login(jwt?: string): Promise<MaintenanceAuthDto> {

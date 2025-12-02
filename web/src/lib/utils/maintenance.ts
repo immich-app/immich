@@ -1,7 +1,7 @@
 import { AppRoute } from '$lib/constants';
 import { maintenanceStore } from '$lib/stores/maintenance.store';
 import { websocketStore } from '$lib/stores/websocket';
-import { MaintenanceAction, maintenanceLogin, maintenanceStatus } from '@immich/sdk';
+import { MaintenanceAction, maintenanceLogin } from '@immich/sdk';
 
 export function maintenanceCreateUrl(url: URL) {
   const target = new URL(AppRoute.MAINTENANCE, url.origin);
@@ -36,7 +36,7 @@ export const loadMaintenanceAuth = async () => {
 export const loadMaintenanceStatus = async () => {
   while (true) {
     try {
-      const status = await maintenanceStatus();
+      const status = await getMaintenanceStatus();
       maintenanceStore.status.set(status);
 
       if (status.action === MaintenanceAction.End) {
