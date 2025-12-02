@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Insertable, Kysely, sql } from 'kysely';
 import _ from 'lodash';
+import { DateTime } from 'luxon';
 import { InjectKysely } from 'nestjs-kysely';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { DB } from 'src/schema';
@@ -10,12 +11,22 @@ import { DownloadRequestTable } from 'src/schema/tables/download-request.table';
 export class DownloadRequestRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
+  cleanup() {
+    return this.db
+      .deleteFrom('download_request')
+      .where('download_request.expiresAt', '<=', DateTime.now().toJSDate())
+      .returning(['id'])
+      .execute();
+  }
+
   @GenerateSql({ params: [DummyValue.UUID] })
   get(id: string) {
     return this.db
       .selectFrom('download_request')
       .selectAll('download_request')
-      .where('download_request.id', '=', id)
+      .where((eb) =>
+        eb.and([eb('download_request.id', '=', id), eb('download_request.expiresAt', '>', DateTime.now().toJSDate())]),
+      )
       .leftJoin('download_request_asset', 'download_request_asset.downloadRequestId', 'download_request.id')
       .select((eb) =>
         eb.fn

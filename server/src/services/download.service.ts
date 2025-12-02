@@ -2,6 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { DateTime } from 'luxon';
 import { parse } from 'node:path';
 import { StorageCore } from 'src/cores/storage.core';
+import { OnJob } from 'src/decorators';
 import { AssetIdsDto } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
@@ -10,7 +11,7 @@ import {
   DownloadResponseDto,
   PrepareDownloadResponseDto,
 } from 'src/dtos/download.dto';
-import { Permission } from 'src/enum';
+import { JobName, JobStatus, Permission, QueueName } from 'src/enum';
 import { ImmichReadStream } from 'src/repositories/storage.repository';
 import { BaseService } from 'src/services/base.service';
 import { HumanReadableSize } from 'src/utils/bytes';
@@ -18,6 +19,15 @@ import { getPreferences } from 'src/utils/preferences';
 
 @Injectable()
 export class DownloadService extends BaseService {
+  @OnJob({ name: JobName.DownloadRequestCleanup, queue: QueueName.BackgroundTask })
+  async handleDownloadRequestCleanup(): Promise<JobStatus> {
+    const requests = await this.downloadRequestRepository.cleanup();
+
+    this.logger.log(`Deleted ${requests.length} expired download requests`);
+
+    return JobStatus.Success;
+  }
+
   async getDownloadInfo(auth: AuthDto, dto: DownloadInfoDto): Promise<DownloadResponseDto> {
     let assets;
 
