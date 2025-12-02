@@ -109,7 +109,7 @@ class AddActionButton extends ConsumerWidget {
     final size = renderObject.size;
     final position = renderObject.localToGlobal(Offset.zero);
 
-    return RelativeRect.fromLTRB(position.dx, position.dy - size.height - 200, position.dx + size.width, position.dy);
+    return RelativeRect.fromLTRB(position.dx, position.dy - size.height - 225, position.dx + size.width, position.dy);
   }
 
   void _openAlbumSelector(BuildContext context, WidgetRef ref) {
