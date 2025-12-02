@@ -66,6 +66,7 @@
   } from '@immich/sdk';
   import { Button, Icon, IconButton, modalManager, toastManager } from '@immich/ui';
   import {
+    mdiAccountEye,
     mdiAccountEyeOutline,
     mdiArrowLeft,
     mdiCogOutline,
@@ -101,7 +102,9 @@
   let isCreatingSharedAlbum = $state(false);
   let isShowActivity = $state(false);
   let albumOrder: AssetOrder | undefined = $state(data.album.order);
-  let showAlbumUsers = $state(false);
+
+  let timelineManager = $state<TimelineManager>() as TimelineManager;
+  let showAlbumUsers = $derived(timelineManager?.showAssetOwners ?? false);
 
   const assetInteraction = new AssetInteraction();
   const timelineInteraction = new AssetInteraction();
@@ -303,7 +306,6 @@
     }
   });
 
-  let timelineManager = $state<TimelineManager>() as TimelineManager;
   const options = $derived.by(() => {
     if (viewMode === AlbumPageViewMode.SELECT_ASSETS) {
       return {
@@ -597,17 +599,6 @@
           {#snippet trailing()}
             <CastButton />
 
-            {#if containsEditors}
-              <IconButton
-                variant="ghost"
-                shape="round"
-                color="secondary"
-                aria-label={$t('view_asset_owners')}
-                icon={mdiAccountEyeOutline}
-                onclick={() => (showAlbumUsers = !showAlbumUsers)}
-              />
-            {/if}
-
             {#if isEditor}
               <IconButton
                 variant="ghost"
@@ -668,6 +659,13 @@
                 color="secondary"
                 offset={{ x: 175, y: 25 }}
               >
+                {#if containsEditors}
+                  <MenuOption
+                    icon={showAlbumUsers ? mdiAccountEye : mdiAccountEyeOutline}
+                    text={$t('view_asset_owners')}
+                    onClick={() => timelineManager.toggleShowAssetOwners()}
+                  />
+                {/if}
                 {#if album.assetCount > 0}
                   <MenuOption
                     icon={mdiImageOutline}
