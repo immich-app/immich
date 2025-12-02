@@ -100,27 +100,85 @@ export class MetadataRepository {
 
     const message = error?.message || String(error);
     const code = error?.code;
+    const statusCode = error?.statusCode || error?.status;
 
     // Ошибки BatchCluster требуют пересоздания
     if (this.isBatchClusterError(error)) {
       return true;
     }
 
-    // Ошибки файловой системы, которые могут быть временными
-    if (code === 'ENOENT' || code === 'EACCES' || code === 'ETIMEDOUT' || code === 'ECONNRESET') {
+    // HTTP статусы, указывающие на временные проблемы (часто от rclone/облачных хранилищ)
+    if (
+      statusCode === 429 || // Too Many Requests (rate limiting)
+      statusCode === 502 || // Bad Gateway
+      statusCode === 503 || // Service Unavailable
+      statusCode === 504 || // Gateway Timeout
+      statusCode === 408 || // Request Timeout
+      statusCode === 500 || // Internal Server Error (может быть временным)
+      statusCode === 509 // Bandwidth Limit Exceeded
+    ) {
       return true;
     }
 
-    // Ошибки, связанные с временной недоступностью файла
+    // Ошибки файловой системы, которые могут быть временными
+    // Особенно актуально для rclone, который монтирует облачные хранилища
     if (
-      typeof message === 'string' &&
-      (message.includes('No such file') ||
-        message.includes('timeout') ||
-        message.includes('ETIMEDOUT') ||
-        message.includes('ENOENT') ||
-        message.includes('temporarily unavailable'))
+      code === 'ENOENT' || // No such file or directory (может быть временным при rclone)
+      code === 'EACCES' || // Permission denied (может быть временным)
+      code === 'ETIMEDOUT' || // Operation timed out
+      code === 'ECONNRESET' || // Connection reset by peer
+      code === 'ECONNREFUSED' || // Connection refused
+      code === 'EHOSTUNREACH' || // Host unreachable
+      code === 'ENETUNREACH' || // Network unreachable
+      code === 'EAGAIN' || // Resource temporarily unavailable
+      code === 'EBUSY' || // Device or resource busy
+      code === 'EIO' || // Input/output error
+      code === 'EMFILE' || // Too many open files
+      code === 'ENFILE' || // Too many open files in system
+      code === 'ENOSPC' || // No space left on device (может быть временным при квотах)
+      code === 'EROFS' // Read-only file system (может быть временным при проблемах монтирования)
     ) {
       return true;
+    }
+
+    // Ошибки, связанные с временной недоступностью файла или сети
+    // Включая специфичные для rclone и облачных хранилищ
+    if (typeof message === 'string') {
+      const lowerMessage = message.toLowerCase();
+      return (
+        lowerMessage.includes('no such file') ||
+        lowerMessage.includes('timeout') ||
+        lowerMessage.includes('timed out') ||
+        lowerMessage.includes('temporarily unavailable') ||
+        lowerMessage.includes('service unavailable') ||
+        lowerMessage.includes('bad gateway') ||
+        lowerMessage.includes('gateway timeout') ||
+        lowerMessage.includes('too many requests') ||
+        lowerMessage.includes('rate limit') ||
+        lowerMessage.includes('throttled') ||
+        lowerMessage.includes('connection reset') ||
+        lowerMessage.includes('connection refused') ||
+        lowerMessage.includes('connection closed') ||
+        lowerMessage.includes('network error') ||
+        lowerMessage.includes('network is unreachable') ||
+        lowerMessage.includes('host is unreachable') ||
+        lowerMessage.includes('econnreset') ||
+        lowerMessage.includes('econnrefused') ||
+        lowerMessage.includes('etimedout') ||
+        lowerMessage.includes('enoent') ||
+        lowerMessage.includes('eio') ||
+        lowerMessage.includes('input/output error') ||
+        lowerMessage.includes('resource temporarily unavailable') ||
+        lowerMessage.includes('device or resource busy') ||
+        lowerMessage.includes('too many open files') ||
+        lowerMessage.includes('read-only file system') ||
+        lowerMessage.includes('mount point') ||
+        lowerMessage.includes('not mounted') ||
+        lowerMessage.includes('transport endpoint is not connected') ||
+        lowerMessage.includes('stale file handle') ||
+        lowerMessage.includes('broken pipe') ||
+        lowerMessage.includes('epipe')
+      );
     }
 
     return false;
