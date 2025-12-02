@@ -11,7 +11,6 @@ import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
 import { AssetFileTable } from 'src/schema/tables/asset-file.table';
 import { AssetJobStatusTable } from 'src/schema/tables/asset-job-status.table';
 import { AssetTable } from 'src/schema/tables/asset.table';
-import { AssetMetadataItem } from 'src/types';
 import {
   anyUuid,
   asUuid,
@@ -224,7 +223,7 @@ export class AssetRepository {
       .execute();
   }
 
-  upsertMetadata(id: string, items: AssetMetadataItem[]) {
+  upsertMetadata(id: string, items: Array<{ key: AssetMetadataKey; value: object }>) {
     return this.db
       .insertInto('asset_metadata')
       .values(items.map((item) => ({ assetId: id, ...item })))
