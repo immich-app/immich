@@ -8,8 +8,7 @@ import { OpenTelemetryModule } from 'nestjs-otel';
 import { commandsAndQuestions } from 'src/commands';
 import { IWorker } from 'src/constants';
 import { controllers } from 'src/controllers';
-import { StorageCore } from 'src/cores/storage.core';
-import { ImmichWorker, SystemMetadataKey } from 'src/enum';
+import { ImmichWorker } from 'src/enum';
 import { MaintenanceAuthGuard } from 'src/maintenance/maintenance-auth.guard';
 import { MaintenanceEphemeralStateRepository } from 'src/maintenance/maintenance-ephemeral-state.repository';
 import { MaintenanceWebsocketRepository } from 'src/maintenance/maintenance-websocket.repository';
@@ -35,7 +34,6 @@ import { services } from 'src/services';
 import { AuthService } from 'src/services/auth.service';
 import { CliService } from 'src/services/cli.service';
 import { QueueService } from 'src/services/queue.service';
-import { MaintenanceModeState } from 'src/types';
 import { getKyselyConfig } from 'src/utils/database';
 
 const common = [...repositories, ...services, GlobalExceptionFilter];
@@ -126,35 +124,13 @@ export class MaintenanceModule {
   constructor(
     @Inject(IWorker) private worker: ImmichWorker,
     logger: LoggingRepository,
-    private systemMetadataRepository: SystemMetadataRepository,
     private maintenanceWorkerService: MaintenanceWorkerService,
-    private maintenanceWebsocketRepository: MaintenanceWebsocketRepository,
-    private maintenanceEphemeralStateRepository: MaintenanceEphemeralStateRepository,
   ) {
     logger.setAppName(this.worker);
   }
 
   async onModuleInit() {
-    const state = (await this.systemMetadataRepository.get(
-      SystemMetadataKey.MaintenanceMode,
-    )) as MaintenanceModeState & { isMaintenanceMode: true };
-
-    this.maintenanceEphemeralStateRepository.setSecret(state.secret);
-    this.maintenanceEphemeralStateRepository.setStatus({
-      action: state.action.action,
-    });
-    StorageCore.setMediaLocation(this.maintenanceWorkerService.detectMediaLocation());
-
-    this.maintenanceWebsocketRepository.setAuthFn(async (client) =>
-      this.maintenanceWorkerService.authenticate(client.request.headers),
-    );
-
-    this.maintenanceWebsocketRepository.setStatusUpdateFn((status) =>
-      this.maintenanceEphemeralStateRepository.setStatus(status),
-    );
-
-    await this.maintenanceWorkerService.logSecret();
-    void this.maintenanceWorkerService.runAction(state.action);
+    await this.maintenanceWorkerService.init();
   }
 }
 

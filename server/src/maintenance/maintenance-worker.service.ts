@@ -51,6 +51,27 @@ export class MaintenanceWorkerService {
     this.logger.setContext(this.constructor.name);
   }
 
+  async init() {
+    const state = (await this.systemMetadataRepository.get(
+      SystemMetadataKey.MaintenanceMode,
+    )) as MaintenanceModeState & { isMaintenanceMode: true };
+
+    this.maintenanceEphemeralStateRepository.setSecret(state.secret);
+    this.maintenanceEphemeralStateRepository.setStatus({
+      action: state.action.action,
+    });
+    StorageCore.setMediaLocation(this.detectMediaLocation());
+
+    this.maintenanceWebsocketRepository.setAuthFn(async (client) => this.authenticate(client.request.headers));
+
+    this.maintenanceWebsocketRepository.setStatusUpdateFn((status) =>
+      this.maintenanceEphemeralStateRepository.setStatus(status),
+    );
+
+    await this.logSecret();
+    void this.runAction(state.action);
+  }
+
   /**
    * {@link _BaseService.configRepos}
    */
