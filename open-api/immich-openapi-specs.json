@@ -4671,6 +4671,39 @@
         "x-immich-permission": "duplicate.delete"
       }
     },
+    "/duplicates/de-duplicate-all/count": {
+      "get": {
+        "operationId": "countDeDuplicateAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "number"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Duplicates"
+        ],
+        "x-immich-permission": "duplicate.read"
+      }
+    },
     "/duplicates/keep-all": {
       "delete": {
         "operationId": "keepAll",
@@ -4695,6 +4728,39 @@
           "Duplicates"
         ],
         "x-immich-permission": "duplicate.delete"
+      }
+    },
+    "/duplicates/keep-all/count": {
+      "get": {
+        "operationId": "countKeepAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "number"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Duplicates"
+        ],
+        "x-immich-permission": "duplicate.read"
       }
     },
     "/duplicates/{id}": {

@@ -16,6 +16,88 @@ class DuplicatesApi {
 
   final ApiClient apiClient;
 
+  /// Performs an HTTP 'GET /duplicates/de-duplicate-all/count' operation and returns the [Response].
+  Future<Response> countDeDuplicateAllWithHttpInfo() async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/duplicates/de-duplicate-all/count';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  Future<num?> countDeDuplicateAll() async {
+    final response = await countDeDuplicateAllWithHttpInfo();
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'num',) as num;
+    
+    }
+    return null;
+  }
+
+  /// Performs an HTTP 'GET /duplicates/keep-all/count' operation and returns the [Response].
+  Future<Response> countKeepAllWithHttpInfo() async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/duplicates/keep-all/count';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  Future<num?> countKeepAll() async {
+    final response = await countKeepAllWithHttpInfo();
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'num',) as num;
+    
+    }
+    return null;
+  }
+
   /// Performs an HTTP 'DELETE /duplicates/de-duplicate-all' operation and returns the [Response].
   Future<Response> deDuplicateAllWithHttpInfo() async {
     // ignore: prefer_const_declarations

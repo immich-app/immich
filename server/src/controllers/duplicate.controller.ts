@@ -31,11 +31,23 @@ export class DuplicateController {
     return this.service.getDuplicates(auth, page, size);
   }
 
+  @Get('/de-duplicate-all/count')
+  @Authenticated({ permission: Permission.DuplicateRead })
+  countDeDuplicateAll(@Auth() auth: AuthDto): Promise<number> {
+    return this.service.countDeDuplicateAll(auth);
+  }
+
   @Delete('/de-duplicate-all')
   @Authenticated({ permission: Permission.DuplicateDelete })
   @HttpCode(HttpStatus.NO_CONTENT)
   deDuplicateAll(@Auth() auth: AuthDto) {
     return this.service.deDuplicateAll(auth);
+  }
+
+  @Get('/keep-all/count')
+  @Authenticated({ permission: Permission.DuplicateRead })
+  countKeepAll(@Auth() auth: AuthDto): Promise<number> {
+    return this.service.countKeepAll(auth);
   }
 
   @Delete('/keep-all')

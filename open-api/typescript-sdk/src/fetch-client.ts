@@ -2888,10 +2888,26 @@ export function deDuplicateAll(opts?: Oazapfts.RequestOpts) {
         method: "DELETE"
     }));
 }
+export function countDeDuplicateAll(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: number;
+    }>("/duplicates/de-duplicate-all/count", {
+        ...opts
+    }));
+}
 export function keepAll(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchText("/duplicates/keep-all", {
         ...opts,
         method: "DELETE"
+    }));
+}
+export function countKeepAll(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: number;
+    }>("/duplicates/keep-all/count", {
+        ...opts
     }));
 }
 /**

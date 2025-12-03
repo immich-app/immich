@@ -13,7 +13,7 @@
   import { stackAssets } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
   import type { AssetResponseDto } from '@immich/sdk';
-  import { deDuplicateAll, deleteAssets, getAssetDuplicates, keepAll, updateAssets } from '@immich/sdk';
+  import { countDeDuplicateAll, countKeepAll, deDuplicateAll, deleteAssets, getAssetDuplicates, keepAll, updateAssets } from '@immich/sdk';
   import { Button, HStack, IconButton, modalManager, Text, toastManager } from '@immich/ui';
   import {
     mdiCheckOutline,
@@ -129,13 +129,14 @@
     await correctDuplicatesIndexAndGo(duplicatesIndex);
   };
 
-  const handleDeduplicateAll = () => {
+  const handleDeduplicateAll = async () => {
+    const count = await countDeDuplicateAll();
     let prompt, confirmText;
     if (featureFlagsManager.value.trash) {
-      prompt = $t('bulk_trash_duplicates_confirmation', { values: { count: 1 } });
+      prompt = $t('bulk_trash_duplicates_confirmation', { values: { count } });
       confirmText = $t('confirm');
     } else {
-      prompt = $t('bulk_delete_duplicates_confirmation', { values: { count: 1 } });
+      prompt = $t('bulk_delete_duplicates_confirmation', { values: { count } });
       confirmText = $t('permanently_delete');
     }
 
@@ -154,7 +155,8 @@
     );
   };
 
-  const handleKeepAll = () => {
+  const handleKeepAll = async () => {
+    const count = await countKeepAll();
     return withConfirmation(
       async () => {
         await keepAll();
@@ -163,7 +165,7 @@
         page.url.searchParams.delete('index');
         await goto(`${AppRoute.DUPLICATES}`);
       },
-      $t('bulk_keep_duplicates_confirmation', { values: { count: 1 } }),
+      $t('bulk_keep_duplicates_confirmation', { values: { count } }),
       $t('confirm'),
     );
   };

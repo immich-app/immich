@@ -44,6 +44,29 @@ export class DuplicateService extends BaseService {
     await this.duplicateRepository.deleteAll(auth.user.id, dto.ids);
   }
 
+  async countDeDuplicateAll(auth: AuthDto): Promise<number> {
+    let page = 1;
+    const size = 100;
+    let hasNextPage = true;
+    let totalToDelete = 0;
+
+    while (hasNextPage) {
+      const duplicates = await this.getDuplicates(auth, page, size);
+
+      const idsToKeep = duplicates.items.map((group) => suggestDuplicate(group.assets)).map((asset) => asset?.id);
+      const idsToDelete = duplicates.items.flatMap((group, i) =>
+        group.assets.map((asset) => asset.id).filter((asset) => asset !== idsToKeep[i]),
+      );
+
+      totalToDelete += idsToDelete.length;
+
+      hasNextPage = duplicates.hasNextPage;
+      page++;
+    }
+
+    return totalToDelete;
+  }
+
   async deDuplicateAll(auth: AuthDto) {
     let page = 1;
     const size = 100;
@@ -67,6 +90,24 @@ export class DuplicateService extends BaseService {
       hasNextPage = duplicates.hasNextPage;
       page++;
     }
+  }
+
+  async countKeepAll(auth: AuthDto): Promise<number> {
+    let page = 1;
+    const size = 100;
+    let hasNextPage = true;
+    let totalToDelete = 0;
+
+    while (hasNextPage) {
+      const duplicates = await this.getDuplicates(auth, page, size);
+
+      totalToDelete += duplicates.items.length;
+
+      hasNextPage = duplicates.hasNextPage;
+      page++;
+    }
+
+    return totalToDelete;
   }
 
   async keepAll(auth: AuthDto) {
