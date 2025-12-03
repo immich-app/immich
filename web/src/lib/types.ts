@@ -1,4 +1,5 @@
 import type { QueueResponseDto, ServerVersionResponseDto } from '@immich/sdk';
+import type { ActionItem } from '@immich/ui';
 
 export interface ReleaseEvent {
   isAvailable: boolean;
@@ -9,3 +10,5 @@ export interface ReleaseEvent {
 }
 
 export type QueueSnapshot = { timestamp: number; snapshot?: QueueResponseDto[] };
+
+export type HeaderButtonActionItem = ActionItem & { data?: { title?: string } };

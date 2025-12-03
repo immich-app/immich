@@ -1,12 +1,11 @@
 <script lang="ts">
-  import HeaderButton from '$lib/components/HeaderButton.svelte';
   import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
   import OnEvents from '$lib/components/OnEvents.svelte';
   import { getUserAdminsActions, handleNavigateUserAdmin } from '$lib/services/user-admin.service';
   import { locale } from '$lib/stores/preferences.store';
   import { getByteUnitString } from '$lib/utils/byte-units';
   import { searchUsersAdmin, type UserAdminResponseDto } from '@immich/sdk';
-  import { Button, CommandPaletteContext, HStack, Icon } from '@immich/ui';
+  import { Button, CommandPaletteContext, Icon } from '@immich/ui';
   import { mdiInfinity } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
@@ -45,12 +44,7 @@
 
 <CommandPaletteContext commands={[Create]} />
 
-<AdminPageLayout breadcrumbs={[{ title: data.meta.title }]}>
-  {#snippet buttons()}
-    <HStack gap={1}>
-      <HeaderButton action={Create} />
-    </HStack>
-  {/snippet}
+<AdminPageLayout breadcrumbs={[{ title: data.meta.title }]} actions={[Create]}>
   <section id="setting-content" class="flex place-content-center sm:mx-4">
     <section class="w-full pb-28 lg:w-212.5">
       <table class="my-5 w-full text-start">
