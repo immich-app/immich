@@ -2,6 +2,7 @@
   import { shortcuts } from '$lib/actions/shortcut';
   import { zoomImageAction } from '$lib/actions/zoom-image';
   import FaceEditor from '$lib/components/asset-viewer/face-editor/face-editor.svelte';
+  import ImageViewer from '$lib/components/asset-viewer/image-viewer.svelte';
   import OcrBoundingBox from '$lib/components/asset-viewer/ocr-bounding-box.svelte';
   import BrokenAsset from '$lib/components/assets/broken-asset.svelte';
   import { assetViewerFadeDuration } from '$lib/constants';
@@ -158,7 +159,8 @@
   // when true, will force loading of the original image
   let forceUseOriginal: boolean = $derived(
     (asset.type === AssetTypeEnum.Image && asset.duration && !asset.duration.includes('0:00:00.000')) ||
-      $photoZoomState.currentZoom > 1,
+      $photoZoomState.currentZoom > 1 ||
+      true,
   );
 
   const targetImageSize = $derived.by(() => {
@@ -250,42 +252,44 @@
       <LoadingSpinner />
     </div>
   {:else if !imageError}
-    <div
-      use:zoomImageAction={{ disabled: isOcrActive }}
-      {...useSwipe(onSwipe)}
-      class="h-full w-full"
-      transition:fade={{ duration: haveFadeTransition ? assetViewerFadeDuration : 0 }}
-    >
-      {#if $slideshowState !== SlideshowState.None && $slideshowLook === SlideshowLook.BlurredBackground}
+    <ImageViewer imageUrl={assetFileUrl}></ImageViewer>
+    <div style="display:none;">
+      <div
+        use:zoomImageAction={{ disabled: isOcrActive }}
+        {...useSwipe(onSwipe)}
+        class="h-full w-full"
+        transition:fade={{ duration: haveFadeTransition ? assetViewerFadeDuration : 0 }}
+      >
+        {#if $slideshowState !== SlideshowState.None && $slideshowLook === SlideshowLook.BlurredBackground}
+          <img
+            src={assetFileUrl}
+            alt=""
+            class="-z-1 absolute top-0 start-0 object-cover h-full w-full blur-lg"
+            draggable="false"
+          />
+        {/if}
         <img
+          bind:this={$photoViewerImgElement}
           src={assetFileUrl}
-          alt=""
-          class="-z-1 absolute top-0 start-0 object-cover h-full w-full blur-lg"
+          alt={$getAltText(toTimelineAsset(asset))}
+          class="h-full w-full {$slideshowState === SlideshowState.None
+            ? 'object-contain'
+            : slideshowLookCssMapping[$slideshowLook]}"
           draggable="false"
         />
-      {/if}
-      <img
-        bind:this={$photoViewerImgElement}
-        src={assetFileUrl}
-        alt={$getAltText(toTimelineAsset(asset))}
-        class="h-full w-full {$slideshowState === SlideshowState.None
-          ? 'object-contain'
-          : slideshowLookCssMapping[$slideshowLook]}"
-        draggable="false"
-      />
-      <!-- eslint-disable-next-line svelte/require-each-key -->
-      {#each getBoundingBox($boundingBoxesArray, $photoZoomState, $photoViewerImgElement) as boundingbox}
-        <div
-          class="absolute border-solid border-white border-3 rounded-lg"
-          style="top: {boundingbox.top}px; left: {boundingbox.left}px; height: {boundingbox.height}px; width: {boundingbox.width}px;"
-        ></div>
-      {/each}
+        <!-- eslint-disable-next-line svelte/require-each-key -->
+        {#each getBoundingBox($boundingBoxesArray, $photoZoomState, $photoViewerImgElement) as boundingbox}
+          <div
+            class="absolute border-solid border-white border-3 rounded-lg"
+            style="top: {boundingbox.top}px; left: {boundingbox.left}px; height: {boundingbox.height}px; width: {boundingbox.width}px;"
+          ></div>
+        {/each}
 
-      {#each ocrBoxes as ocrBox (ocrBox.id)}
-        <OcrBoundingBox {ocrBox} />
-      {/each}
+        {#each ocrBoxes as ocrBox (ocrBox.id)}
+          <OcrBoundingBox {ocrBox} />
+        {/each}
+      </div>
     </div>
-
     {#if isFaceEditMode.value}
       <FaceEditor htmlElement={$photoViewerImgElement} {containerWidth} {containerHeight} assetId={asset.id} />
     {/if}
