@@ -125,7 +125,7 @@ const setup = async () => {
     ],
   });
 
-  const onStart = () => console.log(`[auth-server] http://${host}:${port}/.well-known/openid-configuration`);
+  const onStart = () => console.log(`[e2e-auth-server] http://${host}:${port}/.well-known/openid-configuration`);
   const app = oidc.listen(port, host, onStart);
   return () => app.close();
 };
