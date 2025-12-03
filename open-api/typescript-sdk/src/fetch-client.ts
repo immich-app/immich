@@ -50,14 +50,14 @@ export type SetMaintenanceModeDto = {
     action: MaintenanceAction;
     restoreBackupFilename?: string;
 };
-export type MaintenanceStorageFolderIntegrityDto = {
+export type MaintenanceDetectInstallStorageFolderDto = {
     files: number;
     folder: StorageFolder;
     readable: boolean;
     writable: boolean;
 };
-export type MaintenanceIntegrityResponseDto = {
-    storage: MaintenanceStorageFolderIntegrityDto[];
+export type MaintenanceDetectInstallResponseDto = {
+    storage: MaintenanceDetectInstallStorageFolderDto[];
 };
 export type MaintenanceLoginDto = {
     token?: string;
@@ -1874,9 +1874,9 @@ export function unlinkAllOAuthAccountsAdmin(opts?: Oazapfts.RequestOpts) {
     }));
 }
 /**
- * List backups
+ * List database backups
  */
-export function listBackups(opts?: Oazapfts.RequestOpts) {
+export function listDatabaseBackups(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: MaintenanceListBackupsResponseDto;
@@ -1885,9 +1885,9 @@ export function listBackups(opts?: Oazapfts.RequestOpts) {
     }));
 }
 /**
- * Start backup restore flow
+ * Start database backup restore flow
  */
-export function startRestoreFlow(opts?: Oazapfts.RequestOpts) {
+export function startDatabaseRestoreFlow(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchText("/admin/database-backups/start-restore", {
         ...opts,
         method: "POST"
@@ -1896,7 +1896,7 @@ export function startRestoreFlow(opts?: Oazapfts.RequestOpts) {
 /**
  * Upload database backup
  */
-export function uploadBackup({ maintenanceUploadBackupDto }: {
+export function uploadDatabaseBackup({ maintenanceUploadBackupDto }: {
     maintenanceUploadBackupDto: MaintenanceUploadBackupDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchText("/admin/database-backups/upload", oazapfts.multipart({
@@ -1906,9 +1906,9 @@ export function uploadBackup({ maintenanceUploadBackupDto }: {
     })));
 }
 /**
- * Delete backup
+ * Delete database backup
  */
-export function deleteBackup({ filename }: {
+export function deleteDatabaseBackup({ filename }: {
     filename: string;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchText(`/admin/database-backups/${encodeURIComponent(filename)}`, {
@@ -1917,9 +1917,9 @@ export function deleteBackup({ filename }: {
     }));
 }
 /**
- * Download backup
+ * Download database backup
  */
-export function downloadBackup({ filename }: {
+export function downloadDatabaseBackup({ filename }: {
     filename: string;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchBlob<{
@@ -1947,7 +1947,7 @@ export function setMaintenanceMode({ setMaintenanceModeDto }: {
 export function detectPriorInstall(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
-        data: MaintenanceIntegrityResponseDto;
+        data: MaintenanceDetectInstallResponseDto;
     }>("/admin/maintenance/detect-install", {
         ...opts
     }));

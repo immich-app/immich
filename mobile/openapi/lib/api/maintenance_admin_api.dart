@@ -49,7 +49,7 @@ class MaintenanceAdminApi {
   /// Detect existing install
   ///
   /// Collect integrity checks and other heuristics about local data.
-  Future<MaintenanceIntegrityResponseDto?> detectPriorInstall() async {
+  Future<MaintenanceDetectInstallResponseDto?> detectPriorInstall() async {
     final response = await detectPriorInstallWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
@@ -58,7 +58,7 @@ class MaintenanceAdminApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'MaintenanceIntegrityResponseDto',) as MaintenanceIntegrityResponseDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'MaintenanceDetectInstallResponseDto',) as MaintenanceDetectInstallResponseDto;
     
     }
     return null;

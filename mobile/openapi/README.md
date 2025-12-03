@@ -133,11 +133,11 @@ Class | Method | HTTP request | Description
 *AuthenticationApi* | [**unlockAuthSession**](doc//AuthenticationApi.md#unlockauthsession) | **POST** /auth/session/unlock | Unlock auth session
 *AuthenticationApi* | [**validateAccessToken**](doc//AuthenticationApi.md#validateaccesstoken) | **POST** /auth/validateToken | Validate access token
 *AuthenticationAdminApi* | [**unlinkAllOAuthAccountsAdmin**](doc//AuthenticationAdminApi.md#unlinkalloauthaccountsadmin) | **POST** /admin/auth/unlink-all | Unlink all OAuth accounts
-*DatabaseBackupsAdminApi* | [**deleteBackup**](doc//DatabaseBackupsAdminApi.md#deletebackup) | **DELETE** /admin/database-backups/{filename} | Delete backup
-*DatabaseBackupsAdminApi* | [**downloadBackup**](doc//DatabaseBackupsAdminApi.md#downloadbackup) | **GET** /admin/database-backups/{filename} | Download backup
-*DatabaseBackupsAdminApi* | [**listBackups**](doc//DatabaseBackupsAdminApi.md#listbackups) | **GET** /admin/database-backups | List backups
-*DatabaseBackupsAdminApi* | [**startRestoreFlow**](doc//DatabaseBackupsAdminApi.md#startrestoreflow) | **POST** /admin/database-backups/start-restore | Start backup restore flow
-*DatabaseBackupsAdminApi* | [**uploadBackup**](doc//DatabaseBackupsAdminApi.md#uploadbackup) | **POST** /admin/database-backups/upload | Upload database backup
+*DatabaseBackupsAdminApi* | [**deleteDatabaseBackup**](doc//DatabaseBackupsAdminApi.md#deletedatabasebackup) | **DELETE** /admin/database-backups/{filename} | Delete database backup
+*DatabaseBackupsAdminApi* | [**downloadDatabaseBackup**](doc//DatabaseBackupsAdminApi.md#downloaddatabasebackup) | **GET** /admin/database-backups/{filename} | Download database backup
+*DatabaseBackupsAdminApi* | [**listDatabaseBackups**](doc//DatabaseBackupsAdminApi.md#listdatabasebackups) | **GET** /admin/database-backups | List database backups
+*DatabaseBackupsAdminApi* | [**startDatabaseRestoreFlow**](doc//DatabaseBackupsAdminApi.md#startdatabaserestoreflow) | **POST** /admin/database-backups/start-restore | Start database backup restore flow
+*DatabaseBackupsAdminApi* | [**uploadDatabaseBackup**](doc//DatabaseBackupsAdminApi.md#uploaddatabasebackup) | **POST** /admin/database-backups/upload | Upload database backup
 *DeprecatedApi* | [**createPartnerDeprecated**](doc//DeprecatedApi.md#createpartnerdeprecated) | **POST** /partners/{id} | Create a partner
 *DeprecatedApi* | [**getAllUserAssetsByDeviceId**](doc//DeprecatedApi.md#getalluserassetsbydeviceid) | **GET** /assets/device/{deviceId} | Retrieve assets by device ID
 *DeprecatedApi* | [**getDeltaSync**](doc//DeprecatedApi.md#getdeltasync) | **POST** /sync/delta-sync | Get delta sync for user
@@ -423,11 +423,11 @@ Class | Method | HTTP request | Description
  - [MachineLearningAvailabilityChecksDto](doc//MachineLearningAvailabilityChecksDto.md)
  - [MaintenanceAction](doc//MaintenanceAction.md)
  - [MaintenanceAuthDto](doc//MaintenanceAuthDto.md)
- - [MaintenanceIntegrityResponseDto](doc//MaintenanceIntegrityResponseDto.md)
+ - [MaintenanceDetectInstallResponseDto](doc//MaintenanceDetectInstallResponseDto.md)
+ - [MaintenanceDetectInstallStorageFolderDto](doc//MaintenanceDetectInstallStorageFolderDto.md)
  - [MaintenanceListBackupsResponseDto](doc//MaintenanceListBackupsResponseDto.md)
  - [MaintenanceLoginDto](doc//MaintenanceLoginDto.md)
  - [MaintenanceStatusResponseDto](doc//MaintenanceStatusResponseDto.md)
- - [MaintenanceStorageFolderIntegrityDto](doc//MaintenanceStorageFolderIntegrityDto.md)
  - [ManualJobName](doc//ManualJobName.md)
  - [MapMarkerResponseDto](doc//MapMarkerResponseDto.md)
  - [MapReverseGeocodeResponseDto](doc//MapReverseGeocodeResponseDto.md)

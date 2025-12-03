@@ -16,7 +16,7 @@ class DatabaseBackupsAdminApi {
 
   final ApiClient apiClient;
 
-  /// Delete backup
+  /// Delete database backup
   ///
   /// Delete a backup by its filename
   ///
@@ -25,7 +25,7 @@ class DatabaseBackupsAdminApi {
   /// Parameters:
   ///
   /// * [String] filename (required):
-  Future<Response> deleteBackupWithHttpInfo(String filename,) async {
+  Future<Response> deleteDatabaseBackupWithHttpInfo(String filename,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/admin/database-backups/{filename}'
       .replaceAll('{filename}', filename);
@@ -51,21 +51,21 @@ class DatabaseBackupsAdminApi {
     );
   }
 
-  /// Delete backup
+  /// Delete database backup
   ///
   /// Delete a backup by its filename
   ///
   /// Parameters:
   ///
   /// * [String] filename (required):
-  Future<void> deleteBackup(String filename,) async {
-    final response = await deleteBackupWithHttpInfo(filename,);
+  Future<void> deleteDatabaseBackup(String filename,) async {
+    final response = await deleteDatabaseBackupWithHttpInfo(filename,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
   }
 
-  /// Download backup
+  /// Download database backup
   ///
   /// Downloads the database backup file
   ///
@@ -74,7 +74,7 @@ class DatabaseBackupsAdminApi {
   /// Parameters:
   ///
   /// * [String] filename (required):
-  Future<Response> downloadBackupWithHttpInfo(String filename,) async {
+  Future<Response> downloadDatabaseBackupWithHttpInfo(String filename,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/admin/database-backups/{filename}'
       .replaceAll('{filename}', filename);
@@ -100,15 +100,15 @@ class DatabaseBackupsAdminApi {
     );
   }
 
-  /// Download backup
+  /// Download database backup
   ///
   /// Downloads the database backup file
   ///
   /// Parameters:
   ///
   /// * [String] filename (required):
-  Future<MultipartFile?> downloadBackup(String filename,) async {
-    final response = await downloadBackupWithHttpInfo(filename,);
+  Future<MultipartFile?> downloadDatabaseBackup(String filename,) async {
+    final response = await downloadDatabaseBackupWithHttpInfo(filename,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -122,12 +122,12 @@ class DatabaseBackupsAdminApi {
     return null;
   }
 
-  /// List backups
+  /// List database backups
   ///
   /// Get the list of the successful and failed backups
   ///
   /// Note: This method returns the HTTP [Response].
-  Future<Response> listBackupsWithHttpInfo() async {
+  Future<Response> listDatabaseBackupsWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final apiPath = r'/admin/database-backups';
 
@@ -152,11 +152,11 @@ class DatabaseBackupsAdminApi {
     );
   }
 
-  /// List backups
+  /// List database backups
   ///
   /// Get the list of the successful and failed backups
-  Future<MaintenanceListBackupsResponseDto?> listBackups() async {
-    final response = await listBackupsWithHttpInfo();
+  Future<MaintenanceListBackupsResponseDto?> listDatabaseBackups() async {
+    final response = await listDatabaseBackupsWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -170,12 +170,12 @@ class DatabaseBackupsAdminApi {
     return null;
   }
 
-  /// Start backup restore flow
+  /// Start database backup restore flow
   ///
   /// Put Immich into maintenance mode to restore a backup (Immich must not be configured)
   ///
   /// Note: This method returns the HTTP [Response].
-  Future<Response> startRestoreFlowWithHttpInfo() async {
+  Future<Response> startDatabaseRestoreFlowWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final apiPath = r'/admin/database-backups/start-restore';
 
@@ -200,11 +200,11 @@ class DatabaseBackupsAdminApi {
     );
   }
 
-  /// Start backup restore flow
+  /// Start database backup restore flow
   ///
   /// Put Immich into maintenance mode to restore a backup (Immich must not be configured)
-  Future<void> startRestoreFlow() async {
-    final response = await startRestoreFlowWithHttpInfo();
+  Future<void> startDatabaseRestoreFlow() async {
+    final response = await startDatabaseRestoreFlowWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -219,7 +219,7 @@ class DatabaseBackupsAdminApi {
   /// Parameters:
   ///
   /// * [MultipartFile] file:
-  Future<Response> uploadBackupWithHttpInfo({ MultipartFile? file, }) async {
+  Future<Response> uploadDatabaseBackupWithHttpInfo({ MultipartFile? file, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/admin/database-backups/upload';
 
@@ -261,8 +261,8 @@ class DatabaseBackupsAdminApi {
   /// Parameters:
   ///
   /// * [MultipartFile] file:
-  Future<void> uploadBackup({ MultipartFile? file, }) async {
-    final response = await uploadBackupWithHttpInfo( file: file, );
+  Future<void> uploadDatabaseBackup({ MultipartFile? file, }) async {
+    final response = await uploadDatabaseBackupWithHttpInfo( file: file, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

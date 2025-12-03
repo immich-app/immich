@@ -25,24 +25,24 @@ export class DatabaseBackupController {
 
   @Get()
   @Endpoint({
-    summary: 'List backups',
+    summary: 'List database backups',
     description: 'Get the list of the successful and failed backups',
     history: new HistoryBuilder().added('v2.4.0').alpha('v2.4.0'),
   })
   @Authenticated({ permission: Permission.Maintenance, admin: true })
-  listBackups(): Promise<MaintenanceListBackupsResponseDto> {
+  listDatabaseBackups(): Promise<MaintenanceListBackupsResponseDto> {
     return this.service.listBackups();
   }
 
   @Get(':filename')
   @FileResponse()
   @Endpoint({
-    summary: 'Download backup',
+    summary: 'Download database backup',
     description: 'Downloads the database backup file',
     history: new HistoryBuilder().added('v2.4.0').alpha('v2.4.0'),
   })
   @Authenticated({ permission: Permission.BackupDownload, admin: true })
-  async downloadBackup(
+  async downloadDatabaseBackup(
     @Param() { filename }: FilenameParamDto,
     @Res() res: Response,
     @Next() next: NextFunction,
@@ -52,22 +52,22 @@ export class DatabaseBackupController {
 
   @Delete(':filename')
   @Endpoint({
-    summary: 'Delete backup',
+    summary: 'Delete database backup',
     description: 'Delete a backup by its filename',
     history: new HistoryBuilder().added('v2.4.0').alpha('v2.4.0'),
   })
   @Authenticated({ permission: Permission.BackupDelete, admin: true })
-  async deleteBackup(@Param() { filename }: FilenameParamDto): Promise<void> {
+  async deleteDatabaseBackup(@Param() { filename }: FilenameParamDto): Promise<void> {
     return this.service.deleteBackup(filename);
   }
 
   @Post('start-restore')
   @Endpoint({
-    summary: 'Start backup restore flow',
+    summary: 'Start database backup restore flow',
     description: 'Put Immich into maintenance mode to restore a backup (Immich must not be configured)',
     history: new HistoryBuilder().added('v2.4.0').alpha('v2.4.0'),
   })
-  async startRestoreFlow(
+  async startDatabaseRestoreFlow(
     @GetLoginDetails() loginDetails: LoginDetails,
     @Res({ passthrough: true }) res: Response,
   ): Promise<void> {
@@ -88,7 +88,7 @@ export class DatabaseBackupController {
     history: new HistoryBuilder().added('v2.4.0').alpha('v2.4.0'),
   })
   @UseInterceptors(FileInterceptor('file'))
-  uploadBackup(
+  uploadDatabaseBackup(
     @UploadedFile()
     file: Express.Multer.File,
   ): Promise<void> {

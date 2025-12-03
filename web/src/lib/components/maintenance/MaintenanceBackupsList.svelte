@@ -3,9 +3,9 @@
   import { openFilePicker } from '$lib/utils/file-uploader';
   import { handleError } from '$lib/utils/handle-error';
   import {
-    deleteBackup,
+    deleteDatabaseBackup,
     getBaseUrl,
-    listBackups,
+    listDatabaseBackups,
     MaintenanceAction,
     setMaintenanceMode,
     type MaintenanceUploadBackupDto,
@@ -55,7 +55,7 @@
 
   onMount(async () => {
     if (!props.backups) {
-      const result = await listBackups();
+      const result = await listDatabaseBackups();
       backups = mapBackups(result.backups);
     }
   });
@@ -92,7 +92,7 @@
       try {
         deleting.add(filename);
 
-        await deleteBackup({
+        await deleteDatabaseBackup({
           filename,
         });
 
@@ -151,7 +151,7 @@
 
       uploadProgress = 1;
 
-      const { backups: newList } = await listBackups();
+      const { backups: newList } = await listDatabaseBackups();
       backups = mapBackups(newList);
     } catch (error) {
       handleError(error, $t('admin.maintenance_upload_backup_error'));

@@ -325,7 +325,7 @@
     "/admin/database-backups": {
       "get": {
         "description": "Get the list of the successful and failed backups",
-        "operationId": "listBackups",
+        "operationId": "listDatabaseBackups",
         "parameters": [],
         "responses": {
           "200": {
@@ -350,7 +350,7 @@
             "api_key": []
           }
         ],
-        "summary": "List backups",
+        "summary": "List database backups",
         "tags": [
           "Database Backups (admin)"
         ],
@@ -372,14 +372,14 @@
     "/admin/database-backups/start-restore": {
       "post": {
         "description": "Put Immich into maintenance mode to restore a backup (Immich must not be configured)",
-        "operationId": "startRestoreFlow",
+        "operationId": "startDatabaseRestoreFlow",
         "parameters": [],
         "responses": {
           "201": {
             "description": ""
           }
         },
-        "summary": "Start backup restore flow",
+        "summary": "Start database backup restore flow",
         "tags": [
           "Database Backups (admin)"
         ],
@@ -399,7 +399,7 @@
     "/admin/database-backups/upload": {
       "post": {
         "description": "Uploads .sql/.sql.gz file to restore backup from",
-        "operationId": "uploadBackup",
+        "operationId": "uploadDatabaseBackup",
         "parameters": [],
         "requestBody": {
           "content": {
@@ -450,7 +450,7 @@
     "/admin/database-backups/{filename}": {
       "delete": {
         "description": "Delete a backup by its filename",
-        "operationId": "deleteBackup",
+        "operationId": "deleteDatabaseBackup",
         "parameters": [
           {
             "name": "filename",
@@ -478,7 +478,7 @@
             "api_key": []
           }
         ],
-        "summary": "Delete backup",
+        "summary": "Delete database backup",
         "tags": [
           "Database Backups (admin)"
         ],
@@ -498,7 +498,7 @@
       },
       "get": {
         "description": "Downloads the database backup file",
-        "operationId": "downloadBackup",
+        "operationId": "downloadDatabaseBackup",
         "parameters": [
           {
             "name": "filename",
@@ -534,7 +534,7 @@
             "api_key": []
           }
         ],
-        "summary": "Download backup",
+        "summary": "Download database backup",
         "tags": [
           "Database Backups (admin)"
         ],

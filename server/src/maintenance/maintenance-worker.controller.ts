@@ -32,6 +32,9 @@ import { sendFile } from 'src/utils/file';
 import { respondWithCookie } from 'src/utils/response';
 import { FilenameParamDto } from 'src/validation';
 
+import type { DatabaseBackupController as _DatabaseBackupController } from 'src/controllers/database-backup.controller';
+import type { ServerController as _ServerController } from 'src/controllers/server.controller';
+
 @Controller()
 export class MaintenanceWorkerController {
   constructor(
@@ -39,9 +42,56 @@ export class MaintenanceWorkerController {
     private service: MaintenanceWorkerService,
   ) {}
 
+  /**
+   * {@link _ServerController.getServerConfig }
+   */
   @Get('server/config')
   getServerConfig(): ServerConfigDto {
     return this.service.getSystemConfig();
+  }
+
+  /**
+   * {@link _DatabaseBackupController.listDatabaseBackups}
+   */
+  @Get('admin/database-backups')
+  @MaintenanceRoute()
+  listDatabaseBackups(): Promise<MaintenanceListBackupsResponseDto> {
+    return this.service.listBackups();
+  }
+
+  /**
+   * {@link _DatabaseBackupController.downloadDatabaseBackup}
+   */
+  @Get('admin/database-backups/:filename')
+  @MaintenanceRoute()
+  async downloadDatabaseBackup(
+    @Param() { filename }: FilenameParamDto,
+    @Res() res: Response,
+    @Next() next: NextFunction,
+  ) {
+    await sendFile(res, next, () => this.service.downloadBackup(filename), this.logger);
+  }
+
+  /**
+   * {@link _DatabaseBackupController.deleteDatabaseBackup}
+   */
+  @Delete('admin/database-backups/:filename')
+  @MaintenanceRoute()
+  async deleteDatabaseBackup(@Param() { filename }: FilenameParamDto): Promise<void> {
+    return this.service.deleteBackup(filename);
+  }
+
+  /**
+   * {@link _DatabaseBackupController.uploadDatabaseBackup}
+   */
+  @Post('admin/database-backups/upload')
+  @MaintenanceRoute()
+  @UseInterceptors(FileInterceptor('file'))
+  uploadDatabaseBackup(
+    @UploadedFile()
+    file: Express.Multer.File,
+  ): Promise<void> {
+    return this.service.uploadBackup(file);
   }
 
   @Get('admin/maintenance/status')
@@ -73,33 +123,5 @@ export class MaintenanceWorkerController {
   @MaintenanceRoute()
   setMaintenanceMode(@Body() dto: SetMaintenanceModeDto): void {
     void this.service.setAction(dto);
-  }
-
-  @Get('admin/database-backups')
-  @MaintenanceRoute()
-  listBackups(): Promise<MaintenanceListBackupsResponseDto> {
-    return this.service.listBackups();
-  }
-
-  @Get('admin/database-backups/:filename')
-  @MaintenanceRoute()
-  async downloadBackup(@Param() { filename }: FilenameParamDto, @Res() res: Response, @Next() next: NextFunction) {
-    await sendFile(res, next, () => this.service.downloadBackup(filename), this.logger);
-  }
-
-  @Delete('admin/database-backups/:filename')
-  @MaintenanceRoute()
-  async deleteBackup(@Param() { filename }: FilenameParamDto): Promise<void> {
-    return this.service.deleteBackup(filename);
-  }
-
-  @Post('admin/database-backups/upload')
-  @MaintenanceRoute()
-  @UseInterceptors(FileInterceptor('file'))
-  uploadBackup(
-    @UploadedFile()
-    file: Express.Multer.File,
-  ): Promise<void> {
-    return this.service.uploadBackup(file);
   }
 }

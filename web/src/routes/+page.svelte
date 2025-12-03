@@ -3,7 +3,7 @@
   import { AppRoute } from '$lib/constants';
   import { websocketStore } from '$lib/stores/websocket';
   import { handleError } from '$lib/utils/handle-error';
-  import { startRestoreFlow } from '@immich/sdk';
+  import { startDatabaseRestoreFlow } from '@immich/sdk';
   import { Button, Heading, Stack } from '@immich/ui';
   import { t } from 'svelte-i18n';
 
@@ -13,7 +13,7 @@
         isMaintenanceMode: true,
       });
 
-      await startRestoreFlow();
+      await startDatabaseRestoreFlow();
     } catch (error) {
       handleError(error, $t('admin.maintenance_start_error'));
     }

@@ -1,11 +1,11 @@
 import { authenticate } from '$lib/utils/auth';
 import { getFormatter } from '$lib/utils/i18n';
-import { listBackups } from '@immich/sdk';
+import { listDatabaseBackups } from '@immich/sdk';
 import type { PageLoad } from './$types';
 
 export const load = (async ({ url }) => {
   await authenticate(url, { admin: true });
-  const { backups } = await listBackups();
+  const { backups } = await listDatabaseBackups();
   const $t = await getFormatter();
 
   return {
