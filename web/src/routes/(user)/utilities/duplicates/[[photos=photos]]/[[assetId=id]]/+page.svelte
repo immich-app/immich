@@ -13,7 +13,15 @@
   import { stackAssets } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
   import type { AssetResponseDto } from '@immich/sdk';
-  import { countDeDuplicateAll, countKeepAll, deDuplicateAll, deleteAssets, getAssetDuplicates, keepAll, updateAssets } from '@immich/sdk';
+  import {
+    countDeDuplicateAll,
+    countKeepAll,
+    deDuplicateAll,
+    deleteAssets,
+    getAssetDuplicates,
+    keepAll,
+    updateAssets,
+  } from '@immich/sdk';
   import { Button, HStack, IconButton, modalManager, Text, toastManager } from '@immich/ui';
   import {
     mdiCheckOutline,
