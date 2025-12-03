@@ -14,18 +14,18 @@ import { LoggingRepository } from 'src/repositories/logging.repository';
 import { ProcessRepository } from 'src/repositories/process.repository';
 import { StorageRepository } from 'src/repositories/storage.repository';
 
-export function isValidBackupName(filename: string) {
+export function isValidDatabaseBackupName(filename: string) {
   return filename.match(/^[\d\w-.]+\.sql(?:\.gz)?$/);
 }
 
-export function isValidRoutineBackupName(filename: string) {
+export function isValidDatabaseRoutineBackupName(filename: string) {
   const oldBackupStyle = filename.match(/^immich-db-backup-\d+\.sql\.gz$/);
   //immich-db-backup-20250729T114018-v1.136.0-pg14.17.sql.gz
   const newBackupStyle = filename.match(/^immich-db-backup-\d{8}T\d{6}-v.*-pg.*\.sql\.gz$/);
   return oldBackupStyle || newBackupStyle;
 }
 
-export function isFailedBackupName(filename: string) {
+export function isFailedDatabaseBackupName(filename: string) {
   return filename.match(/^immich-db-backup-.*\.sql\.gz\.tmp$/);
 }
 
@@ -137,7 +137,7 @@ export async function buildPostgresLaunchArguments(
   };
 }
 
-export async function createBackup(
+export async function createDatabaseBackup(
   { logger, storage, process: processRepository, ...pgRepos }: BackupRepos,
   filenamePrefix: string = '',
 ): Promise<void> {
@@ -179,7 +179,7 @@ export async function createBackup(
   logger.log(`Database Backup Success`);
 }
 
-export async function restoreBackup(
+export async function restoreDatabaseBackup(
   { logger, storage, process: processRepository, ...pgRepos }: BackupRepos,
   filename: string,
   progressCb?: (action: 'backup' | 'restore', progress: number) => void,
@@ -188,7 +188,7 @@ export async function restoreBackup(
 
   let complete = false;
   try {
-    if (!isValidBackupName(filename)) {
+    if (!isValidDatabaseBackupName(filename)) {
       throw new Error('Invalid backup file format!');
     }
 
@@ -202,7 +202,7 @@ export async function restoreBackup(
 
     progressCb?.('backup', 0.05);
 
-    await createBackup({ logger, storage, process: processRepository, ...pgRepos }, 'restore-point-');
+    await createDatabaseBackup({ logger, storage, process: processRepository, ...pgRepos }, 'restore-point-');
 
     logger.log(`Database Restore Starting. Database Version: ${databaseMajorVersion}`);
 
@@ -266,32 +266,32 @@ export async function restoreBackup(
   logger.log(`Database Restore Success`);
 }
 
-export async function deleteBackups({ storage }: Pick<BackupRepos, 'storage'>, files: string[]): Promise<void> {
+export async function deleteDatabaseBackup({ storage }: Pick<BackupRepos, 'storage'>, files: string[]): Promise<void> {
   const backupsFolder = StorageCore.getBaseFolder(StorageFolder.Backups);
 
-  if (files.some((filename) => !isValidBackupName(filename))) {
+  if (files.some((filename) => !isValidDatabaseBackupName(filename))) {
     throw new BadRequestException('Invalid backup name!');
   }
 
   await Promise.all(files.map((filename) => storage.unlink(path.join(backupsFolder, filename))));
 }
 
-export async function listBackups({ storage }: Pick<BackupRepos, 'storage'>): Promise<string[]> {
+export async function listDatabaseBackups({ storage }: Pick<BackupRepos, 'storage'>): Promise<string[]> {
   const backupsFolder = StorageCore.getBaseFolder(StorageFolder.Backups);
   const files = await storage.readdir(backupsFolder);
   return files
-    .filter((fn) => isValidBackupName(fn))
+    .filter((fn) => isValidDatabaseBackupName(fn))
     .toSorted((a, b) => (a.startsWith('uploaded-') === b.startsWith('uploaded-') ? a.localeCompare(b) : 1))
     .toReversed();
 }
 
-export async function uploadBackup(
+export async function uploadDatabaseBackup(
   { storage }: Pick<BackupRepos, 'storage'>,
   file: Express.Multer.File,
 ): Promise<void> {
   const backupsFolder = StorageCore.getBaseFolder(StorageFolder.Backups);
   const fn = basename(file.originalname);
-  if (!isValidBackupName(fn)) {
+  if (!isValidDatabaseBackupName(fn)) {
     throw new BadRequestException('Invalid backup name!');
   }
 
@@ -299,8 +299,8 @@ export async function uploadBackup(
   await storage.createOrOverwriteFile(path, file.buffer);
 }
 
-export function downloadBackup(fileName: string) {
-  if (!isValidBackupName(fileName)) {
+export function downloadDatabaseBackup(fileName: string) {
+  if (!isValidDatabaseBackupName(fileName)) {
     throw new BadRequestException('Invalid backup name!');
   }
 

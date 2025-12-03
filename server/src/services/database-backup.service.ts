@@ -1,6 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { BaseService } from 'src/services/base.service';
-import { deleteBackups, downloadBackup, listBackups, uploadBackup } from 'src/utils/backups';
+import {
+  deleteDatabaseBackup,
+  downloadDatabaseBackup,
+  listDatabaseBackups,
+  uploadDatabaseBackup,
+} from 'src/utils/database-backups';
 import { ImmichFileResponse } from 'src/utils/file';
 
 /**
@@ -9,19 +14,19 @@ import { ImmichFileResponse } from 'src/utils/file';
 @Injectable()
 export class DatabaseBackupService extends BaseService {
   async listBackups(): Promise<{ backups: string[] }> {
-    return { backups: await listBackups(this.backupRepos) };
+    return { backups: await listDatabaseBackups(this.backupRepos) };
   }
 
   deleteBackup(files: string[]): Promise<void> {
-    return deleteBackups(this.backupRepos, files);
+    return deleteDatabaseBackup(this.backupRepos, files);
   }
 
   async uploadBackup(file: Express.Multer.File): Promise<void> {
-    return uploadBackup(this.backupRepos, file);
+    return uploadDatabaseBackup(this.backupRepos, file);
   }
 
   downloadBackup(fileName: string): ImmichFileResponse {
-    return downloadBackup(fileName);
+    return downloadDatabaseBackup(fileName);
   }
 
   private get backupRepos() {

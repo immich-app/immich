@@ -6,11 +6,11 @@ import { DatabaseLock, ImmichWorker, JobName, JobStatus, QueueName, StorageFolde
 import { ArgOf } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
 import {
-  createBackup,
-  isFailedBackupName,
-  isValidRoutineBackupName,
+  createDatabaseBackup,
+  isFailedDatabaseBackupName,
+  isValidDatabaseRoutineBackupName,
   UnsupportedPostgresError,
-} from 'src/utils/backups';
+} from 'src/utils/database-backups';
 import { handlePromiseError } from 'src/utils/misc';
 
 @Injectable()
@@ -57,10 +57,10 @@ export class BackupService extends BaseService {
     const backupsFolder = StorageCore.getBaseFolder(StorageFolder.Backups);
     const files = await this.storageRepository.readdir(backupsFolder);
     const backups = files
-      .filter((fn) => isValidRoutineBackupName(fn))
+      .filter((fn) => isValidDatabaseRoutineBackupName(fn))
       .toSorted()
       .toReversed();
-    const failedBackups = files.filter((fn) => isFailedBackupName(fn));
+    const failedBackups = files.filter((fn) => isFailedDatabaseBackupName(fn));
 
     const toDelete = backups.slice(config.keepLastAmount);
     toDelete.push(...failedBackups);
@@ -74,7 +74,7 @@ export class BackupService extends BaseService {
   @OnJob({ name: JobName.DatabaseBackup, queue: QueueName.BackupDatabase })
   async handleBackupDatabase(): Promise<JobStatus> {
     try {
-      await createBackup(this.backupRepos);
+      await createDatabaseBackup(this.backupRepos);
     } catch (error) {
       if (error instanceof UnsupportedPostgresError) {
         return JobStatus.Failed;

@@ -26,8 +26,14 @@ import { type BaseService as _BaseService } from 'src/services/base.service';
 import { type DatabaseBackupService as _DatabaseBackupService } from 'src/services/database-backup.service';
 import { type ServerService as _ServerService } from 'src/services/server.service';
 import { MaintenanceModeState } from 'src/types';
-import { deleteBackups, downloadBackup, listBackups, restoreBackup, uploadBackup } from 'src/utils/backups';
 import { getConfig } from 'src/utils/config';
+import {
+  deleteDatabaseBackup,
+  downloadDatabaseBackup,
+  listDatabaseBackups,
+  restoreDatabaseBackup,
+  uploadDatabaseBackup,
+} from 'src/utils/database-backups';
 import { ImmichFileResponse } from 'src/utils/file';
 import { createMaintenanceLoginUrl, detectPriorInstall } from 'src/utils/maintenance';
 import { getExternalDomain } from 'src/utils/misc';
@@ -171,28 +177,28 @@ export class MaintenanceWorkerService {
    * {@link _DatabaseBackupService.listBackups}
    */
   async listBackups(): Promise<{ backups: string[] }> {
-    return { backups: await listBackups(this.backupRepos) };
+    return { backups: await listDatabaseBackups(this.backupRepos) };
   }
 
   /**
    * {@link _DatabaseBackupService.deleteBackup}
    */
   async deleteBackup(files: string[]): Promise<void> {
-    return deleteBackups(this.backupRepos, files);
+    return deleteDatabaseBackup(this.backupRepos, files);
   }
 
   /**
    * {@link _DatabaseBackupService.uploadBackup}
    */
   async uploadBackup(file: Express.Multer.File): Promise<void> {
-    return uploadBackup(this.backupRepos, file);
+    return uploadDatabaseBackup(this.backupRepos, file);
   }
 
   /**
    * {@link _DatabaseBackupService.downloadBackup}
    */
   downloadBackup(fileName: string): ImmichFileResponse {
-    return downloadBackup(fileName);
+    return downloadDatabaseBackup(fileName);
   }
 
   private get backupRepos() {
@@ -339,7 +345,7 @@ export class MaintenanceWorkerService {
       progress: 0,
     });
 
-    await restoreBackup(this.backupRepos, filename, (task, progress) =>
+    await restoreDatabaseBackup(this.backupRepos, filename, (task, progress) =>
       this.setStatus({
         active: true,
         action: MaintenanceAction.RestoreDatabase,
