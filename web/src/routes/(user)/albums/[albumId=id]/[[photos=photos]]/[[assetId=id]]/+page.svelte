@@ -66,6 +66,7 @@
   } from '@immich/sdk';
   import { Button, Icon, IconButton, modalManager, toastManager } from '@immich/ui';
   import {
+    mdiAccountEye,
     mdiAccountEyeOutline,
     mdiArrowLeft,
     mdiCogOutline,
@@ -101,7 +102,9 @@
   let isCreatingSharedAlbum = $state(false);
   let isShowActivity = $state(false);
   let albumOrder: AssetOrder | undefined = $state(data.album.order);
-  let showAlbumUsers = $state(false);
+
+  let timelineManager = $state<TimelineManager>() as TimelineManager;
+  let showAlbumUsers = $derived(timelineManager?.showAssetOwners ?? false);
 
   const assetInteraction = new AssetInteraction();
   const timelineInteraction = new AssetInteraction();
@@ -303,7 +306,6 @@
     }
   });
 
-  let timelineManager = $state<TimelineManager>() as TimelineManager;
   const options = $derived.by(() => {
     if (viewMode === AlbumPageViewMode.SELECT_ASSETS) {
       return {
@@ -555,11 +557,7 @@
         {#if assetInteraction.isAllUserOwned}
           <FavoriteAction
             removeFavorite={assetInteraction.isAllFavorite}
-            onFavorite={(ids, isFavorite) =>
-              timelineManager.updateAssetOperation(ids, (asset) => {
-                asset.isFavorite = isFavorite;
-                return { remove: false };
-              })}
+            onFavorite={(ids, isFavorite) => timelineManager.update(ids, (asset) => (asset.isFavorite = isFavorite))}
           ></FavoriteAction>
         {/if}
         <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')} offset={{ x: 175, y: 25 }}>
@@ -578,11 +576,7 @@
             <ArchiveAction
               menuItem
               unarchive={assetInteraction.isAllArchived}
-              onArchive={(ids, visibility) =>
-                timelineManager.updateAssetOperation(ids, (asset) => {
-                  asset.visibility = visibility;
-                  return { remove: false };
-                })}
+              onArchive={(ids, visibility) => timelineManager.update(ids, (asset) => (asset.visibility = visibility))}
             />
             <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />
           {/if}
@@ -604,17 +598,6 @@
         <ControlAppBar showBackButton backIcon={mdiArrowLeft} onClose={() => goto(backUrl)}>
           {#snippet trailing()}
             <CastButton />
-
-            {#if containsEditors}
-              <IconButton
-                variant="ghost"
-                shape="round"
-                color="secondary"
-                aria-label="view asset owners"
-                icon={mdiAccountEyeOutline}
-                onclick={() => (showAlbumUsers = !showAlbumUsers)}
-              />
-            {/if}
 
             {#if isEditor}
               <IconButton
@@ -676,6 +659,13 @@
                 color="secondary"
                 offset={{ x: 175, y: 25 }}
               >
+                {#if containsEditors}
+                  <MenuOption
+                    icon={showAlbumUsers ? mdiAccountEye : mdiAccountEyeOutline}
+                    text={$t('view_asset_owners')}
+                    onClick={() => timelineManager.toggleShowAssetOwners()}
+                  />
+                {/if}
                 {#if album.assetCount > 0}
                   <MenuOption
                     icon={mdiImageOutline}

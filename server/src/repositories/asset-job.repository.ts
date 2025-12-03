@@ -6,7 +6,6 @@ import { Asset, columns } from 'src/database';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { AssetFileType, AssetType, AssetVisibility } from 'src/enum';
 import { DB } from 'src/schema';
-import { StorageAsset } from 'src/types';
 import {
   anyUuid,
   asUuid,
@@ -40,7 +39,8 @@ export class AssetJobRepository {
     return this.db
       .selectFrom('asset')
       .where('asset.id', '=', asUuid(id))
-      .select(['id', 'sidecarPath', 'originalPath'])
+      .select(['id', 'originalPath'])
+      .select((eb) => withFiles(eb, AssetFileType.Sidecar))
       .select((eb) =>
         jsonArrayFrom(
           eb
@@ -59,7 +59,8 @@ export class AssetJobRepository {
     return this.db
       .selectFrom('asset')
       .where('asset.id', '=', asUuid(id))
-      .select(['id', 'sidecarPath', 'originalPath'])
+      .select(['id', 'originalPath'])
+      .select((eb) => withFiles(eb, AssetFileType.Sidecar))
       .limit(1)
       .executeTakeFirst();
   }
@@ -122,6 +123,7 @@ export class AssetJobRepository {
       .selectFrom('asset')
       .select(columns.asset)
       .select(withFaces)
+      .select((eb) => withFiles(eb, AssetFileType.Sidecar))
       .where('asset.id', '=', id)
       .executeTakeFirst();
   }
@@ -228,7 +230,6 @@ export class AssetJobRepository {
         'asset.libraryId',
         'asset.ownerId',
         'asset.livePhotoVideoId',
-        'asset.sidecarPath',
         'asset.encodedVideoPath',
         'asset.originalPath',
       ])
@@ -306,26 +307,24 @@ export class AssetJobRepository {
         'asset.checksum',
         'asset.originalPath',
         'asset.isExternal',
-        'asset.sidecarPath',
         'asset.originalFileName',
         'asset.livePhotoVideoId',
         'asset.fileCreatedAt',
         'asset_exif.timeZone',
         'asset_exif.fileSizeInByte',
       ])
+      .select((eb) => withFiles(eb, AssetFileType.Sidecar))
       .where('asset.deletedAt', 'is', null);
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
-  getForStorageTemplateJob(id: string): Promise<StorageAsset | undefined> {
-    return this.storageTemplateAssetQuery().where('asset.id', '=', id).executeTakeFirst() as Promise<
-      StorageAsset | undefined
-    >;
+  getForStorageTemplateJob(id: string) {
+    return this.storageTemplateAssetQuery().where('asset.id', '=', id).executeTakeFirst();
   }
 
   @GenerateSql({ params: [], stream: true })
   streamForStorageTemplateJob() {
-    return this.storageTemplateAssetQuery().stream() as AsyncIterableIterator<StorageAsset>;
+    return this.storageTemplateAssetQuery().stream();
   }
 
   @GenerateSql({ params: [DummyValue.DATE], stream: true })
@@ -343,9 +342,18 @@ export class AssetJobRepository {
       .selectFrom('asset')
       .select(['asset.id'])
       .$if(!force, (qb) =>
-        qb.where((eb) => eb.or([eb('asset.sidecarPath', '=', ''), eb('asset.sidecarPath', 'is', null)])),
+        qb.where((eb) =>
+          eb.not(
+            eb.exists(
+              eb
+                .selectFrom('asset_file')
+                .select('asset_file.id')
+                .whereRef('asset_file.assetId', '=', 'asset.id')
+                .where('asset_file.type', '=', AssetFileType.Sidecar),
+            ),
+          ),
+        ),
       )
-      .where('asset.visibility', '!=', AssetVisibility.Hidden)
       .stream();
   }
 
