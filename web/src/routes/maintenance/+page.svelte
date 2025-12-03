@@ -77,10 +77,8 @@
             },
           })}
         </p>
+        <Button onclick={end}>{$t('maintenance_end')}</Button>
       {/if}
-    {/if}
-    {#if $auth && ($status?.action === MaintenanceAction.Start || $status?.error)}
-      <Button onclick={end}>{$t('maintenance_end')}</Button>
     {/if}
   </div>
 </AuthPageLayout>
