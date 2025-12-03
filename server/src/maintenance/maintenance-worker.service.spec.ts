@@ -4,7 +4,6 @@ import { DateTime } from 'luxon';
 import { PassThrough, Readable } from 'node:stream';
 import { StorageCore } from 'src/cores/storage.core';
 import { MaintenanceAction, StorageFolder, SystemMetadataKey } from 'src/enum';
-import { MaintenanceEphemeralStateRepository } from 'src/maintenance/maintenance-ephemeral-state.repository';
 import { MaintenanceWebsocketRepository } from 'src/maintenance/maintenance-websocket.repository';
 import { MaintenanceWorkerService } from 'src/maintenance/maintenance-worker.service';
 import { automock, AutoMocked, getMocks, mockDuplex, mockSpawn, ServiceMocks } from 'test/utils';
@@ -17,16 +16,11 @@ describe(MaintenanceWorkerService.name, () => {
   let sut: MaintenanceWorkerService;
   let mocks: ServiceMocks;
   let maintenanceWebsocketRepositoryMock: AutoMocked<MaintenanceWebsocketRepository>;
-  let maintenanceEphemeralStateRepositoryMock: AutoMocked<MaintenanceEphemeralStateRepository>;
 
   beforeEach(() => {
     mocks = getMocks();
     maintenanceWebsocketRepositoryMock = automock(MaintenanceWebsocketRepository, {
       args: [mocks.logger],
-      strict: false,
-    });
-
-    maintenanceEphemeralStateRepositoryMock = automock(MaintenanceEphemeralStateRepository, {
       strict: false,
     });
 
@@ -36,11 +30,15 @@ describe(MaintenanceWorkerService.name, () => {
       mocks.config,
       mocks.systemMetadata as never,
       maintenanceWebsocketRepositoryMock,
-      maintenanceEphemeralStateRepositoryMock,
       mocks.storage as never,
       mocks.process,
       mocks.database as never,
     );
+
+    sut.mock({
+      active: true,
+      action: MaintenanceAction.Start,
+    });
   });
 
   it('should work', () => {
@@ -64,12 +62,6 @@ describe(MaintenanceWorkerService.name, () => {
 
   describe('setStatus', () => {
     it('should broadcast status', () => {
-      maintenanceEphemeralStateRepositoryMock.getPublicStatus.mockReturnValue({
-        active: true,
-        action: MaintenanceAction.Start,
-        error: 'mock',
-      });
-
       sut.setStatus({
         active: true,
         action: MaintenanceAction.Start,
@@ -77,13 +69,19 @@ describe(MaintenanceWorkerService.name, () => {
         error: 'def',
       });
 
-      expect(maintenanceEphemeralStateRepositoryMock.setStatus).toHaveBeenCalled();
       expect(maintenanceWebsocketRepositoryMock.serverSend).toHaveBeenCalled();
       expect(maintenanceWebsocketRepositoryMock.clientSend).toHaveBeenCalledTimes(2);
+      expect(maintenanceWebsocketRepositoryMock.clientSend).toHaveBeenCalledWith('MaintenanceStatusV1', 'private', {
+        active: true,
+        action: 'start',
+        task: 'abc',
+        error: 'def',
+      });
       expect(maintenanceWebsocketRepositoryMock.clientSend).toHaveBeenCalledWith('MaintenanceStatusV1', 'public', {
         active: true,
         action: 'start',
-        error: 'mock',
+        task: 'abc',
+        error: 'Something went wrong, see logs!',
       });
     });
   });
@@ -138,22 +136,14 @@ describe(MaintenanceWorkerService.name, () => {
 
   describe('status', () => {
     beforeEach(() => {
-      maintenanceEphemeralStateRepositoryMock.getStatus.mockResolvedValue({
+      sut.mock({
         active: true,
         action: MaintenanceAction.Start,
         error: 'secret value!',
       });
-
-      maintenanceEphemeralStateRepositoryMock.getPublicStatus.mockResolvedValue({
-        active: true,
-        action: MaintenanceAction.Start,
-        error: 'public mock',
-      });
     });
 
     it('generates private status', async () => {
-      maintenanceEphemeralStateRepositoryMock.getSecret.mockReturnValue('secret');
-
       const jwt = await new SignJWT({ _mockValue: true })
         .setProtectedHeader({ alg: 'HS256' })
         .setIssuedAt()
@@ -170,7 +160,7 @@ describe(MaintenanceWorkerService.name, () => {
     it('generates public status', async () => {
       await expect(sut.status()).resolves.toEqual(
         expect.objectContaining({
-          error: 'public mock',
+          error: 'Something went wrong, see logs!',
         }),
       );
     });
@@ -259,8 +249,6 @@ describe(MaintenanceWorkerService.name, () => {
         },
       });
 
-      maintenanceEphemeralStateRepositoryMock.getSecret.mockReturnValue('secret');
-
       const jwt = await new SignJWT({ _mockValue: true })
         .setProtectedHeader({ alg: 'HS256' })
         .setIssuedAt()
@@ -328,8 +316,6 @@ describe(MaintenanceWorkerService.name, () => {
     });
 
     it('should update maintenance mode state', async () => {
-      maintenanceEphemeralStateRepositoryMock.getSecret.mockReturnValue('secret');
-
       await sut.runAction({
         action: MaintenanceAction.RestoreDatabase,
         restoreBackupFilename: 'filename',
@@ -353,7 +339,7 @@ describe(MaintenanceWorkerService.name, () => {
         restoreBackupFilename: 'filename',
       });
 
-      expect(maintenanceEphemeralStateRepositoryMock.setStatus).toHaveBeenCalledWith({
+      expect(maintenanceWebsocketRepositoryMock.clientSend).toHaveBeenCalledWith('MaintenanceStatusV1', 'private', {
         active: true,
         action: MaintenanceAction.RestoreDatabase,
         error: 'Error: Invalid backup file format!',
@@ -367,17 +353,25 @@ describe(MaintenanceWorkerService.name, () => {
         restoreBackupFilename: 'development-filename.sql',
       });
 
-      expect(maintenanceEphemeralStateRepositoryMock.setStatus).toHaveBeenCalledWith({
-        active: true,
-        action: MaintenanceAction.RestoreDatabase,
-        task: 'ready',
-        progress: expect.any(Number),
-      });
+      expect(maintenanceWebsocketRepositoryMock.clientSend).toHaveBeenCalledWith(
+        'MaintenanceStatusV1',
+        expect.any(String),
+        {
+          active: true,
+          action: MaintenanceAction.RestoreDatabase,
+          task: 'ready',
+          progress: expect.any(Number),
+        },
+      );
 
-      expect(maintenanceEphemeralStateRepositoryMock.setStatus).toHaveBeenLastCalledWith({
-        active: true,
-        action: 'end',
-      });
+      expect(maintenanceWebsocketRepositoryMock.clientSend).toHaveBeenLastCalledWith(
+        'MaintenanceStatusV1',
+        expect.any(String),
+        {
+          active: true,
+          action: 'end',
+        },
+      );
     });
 
     it('should fail if backup creation fails', async () => {
@@ -388,12 +382,20 @@ describe(MaintenanceWorkerService.name, () => {
         restoreBackupFilename: 'development-filename.sql',
       });
 
-      expect(maintenanceEphemeralStateRepositoryMock.setStatus).toHaveBeenLastCalledWith({
+      expect(maintenanceWebsocketRepositoryMock.clientSend).toHaveBeenCalledWith('MaintenanceStatusV1', 'private', {
         active: true,
         action: MaintenanceAction.RestoreDatabase,
         error: 'Error: pg_dump non-zero exit code (1)\nerror',
         task: 'error',
       });
+
+      expect(maintenanceWebsocketRepositoryMock.clientSend).toHaveBeenLastCalledWith(
+        'MaintenanceStatusV1',
+        expect.any(String),
+        expect.objectContaining({
+          task: 'error',
+        }),
+      );
     });
 
     it('should fail if restore itself fails', async () => {
@@ -407,12 +409,20 @@ describe(MaintenanceWorkerService.name, () => {
         restoreBackupFilename: 'development-filename.sql',
       });
 
-      expect(maintenanceEphemeralStateRepositoryMock.setStatus).toHaveBeenLastCalledWith({
+      expect(maintenanceWebsocketRepositoryMock.clientSend).toHaveBeenCalledWith('MaintenanceStatusV1', 'private', {
         active: true,
         action: MaintenanceAction.RestoreDatabase,
         error: 'Error: psql non-zero exit code (1)\nerror',
         task: 'error',
       });
+
+      expect(maintenanceWebsocketRepositoryMock.clientSend).toHaveBeenLastCalledWith(
+        'MaintenanceStatusV1',
+        expect.any(String),
+        expect.objectContaining({
+          task: 'error',
+        }),
+      );
     });
   });
 
