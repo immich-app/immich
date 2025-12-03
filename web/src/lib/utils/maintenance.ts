@@ -1,7 +1,7 @@
 import { AppRoute } from '$lib/constants';
 import { maintenanceStore } from '$lib/stores/maintenance.store';
 import { websocketStore } from '$lib/stores/websocket';
-import { MaintenanceAction, maintenanceLogin } from '@immich/sdk';
+import { getMaintenanceStatus, MaintenanceAction, maintenanceLogin } from '@immich/sdk';
 
 export function maintenanceCreateUrl(url: URL) {
   const target = new URL(AppRoute.MAINTENANCE, url.origin);
