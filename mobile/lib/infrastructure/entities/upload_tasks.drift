@@ -1,0 +1,78 @@
+CREATE TABLE upload_tasks
+(
+    id                  integer primary key autoincrement,
+    attempts            integer not null,
+    created_at          integer not null,
+    file_path           text,
+    is_live_photo       integer,
+    last_error          integer,
+    live_photo_video_id text,
+    local_id            text    not null,
+    method              integer not null,
+    priority            real    not null,
+    retry_after         integer,
+    status              integer not null
+);
+
+CREATE TABLE upload_task_stats
+(
+    pending_downloads     integer not null,
+    pending_uploads       integer not null,
+    queued_downloads      integer not null,
+    queued_uploads        integer not null,
+    failed_downloads      integer not null,
+    failed_uploads        integer not null,
+    completed_uploads     integer not null,
+    skipped_uploads       integer not null
+);
+
+CREATE TRIGGER update_stats_insert
+    BEFORE INSERT
+    ON upload_tasks
+BEGIN
+    UPDATE upload_task_stats
+    SET pending_downloads     = pending_downloads + (NEW.status = 0),
+        queued_downloads      = queued_downloads  + (NEW.status = 1),
+        failed_downloads      = failed_downloads  + (NEW.status = 2),
+        pending_uploads       = pending_uploads   + (NEW.status = 3),
+        queued_uploads        = queued_uploads    + (NEW.status = 4),
+        failed_uploads        = failed_uploads    + (NEW.status = 5),
+        completed_uploads     = completed_uploads + (NEW.status = 6),
+        skipped_uploads       = skipped_uploads   + (NEW.status = 7);
+END;
+
+CREATE TRIGGER update_stats_update
+    BEFORE UPDATE OF status
+    ON upload_tasks
+    WHEN OLD.status != NEW.status
+BEGIN
+    UPDATE upload_task_stats
+    SET pending_downloads     = pending_downloads - (OLD.status = 0) + (NEW.status = 0),
+        queued_downloads      = queued_downloads  - (OLD.status = 1) + (NEW.status = 1),
+        failed_downloads      = failed_downloads  - (OLD.status = 2) + (NEW.status = 2),
+        pending_uploads       = pending_uploads   - (OLD.status = 3) + (NEW.status = 3),
+        queued_uploads        = queued_uploads    - (OLD.status = 4) + (NEW.status = 4),
+        failed_uploads        = failed_uploads    - (OLD.status = 5) + (NEW.status = 5),
+        completed_uploads     = completed_uploads - (OLD.status = 6) + (NEW.status = 6),
+        skipped_uploads       = skipped_uploads   - (OLD.status = 7) + (NEW.status = 7);
+END;
+
+CREATE TRIGGER update_stats_delete
+    BEFORE DELETE
+    ON upload_tasks
+BEGIN
+    UPDATE upload_task_stats
+    SET pending_downloads     = pending_downloads - (OLD.status = 0),
+        queued_downloads      = queued_downloads  - (OLD.status = 1),
+        failed_downloads      = failed_downloads  - (OLD.status = 2),
+        pending_uploads       = pending_uploads   - (OLD.status = 3),
+        queued_uploads        = queued_uploads    - (OLD.status = 4),
+        failed_uploads        = failed_uploads    - (OLD.status = 5),
+        completed_uploads     = completed_uploads - (OLD.status = 6),
+        skipped_uploads       = skipped_uploads   - (OLD.status = 7);
+END;
+
+CREATE UNIQUE INDEX idx_upload_tasks_local_id ON upload_tasks (local_id, live_photo_video_id);
+CREATE INDEX idx_upload_tasks_asset_data ON upload_tasks (status, priority DESC, created_at);
+
+@create: INSERT INTO upload_task_stats VALUES (0, 0, 0, 0, 0, 0, 0, 0);
