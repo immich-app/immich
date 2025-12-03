@@ -62,7 +62,7 @@ class MoveToTrashActionButton extends ConsumerWidget {
     multiSelectNotifier.reset();
 
     if (source == ActionSource.viewer) {
-      Future.delayed(Durations.medium4, () {
+      Future.delayed(Durations.extralong4, () {
         EventStream.shared.emit(const ViewerReloadAssetEvent());
         EventStream.shared.emit(const TimelineReloadEvent());
       });
