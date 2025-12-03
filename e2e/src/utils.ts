@@ -31,12 +31,12 @@ import {
   createStack,
   createUserAdmin,
   deleteAssets,
-  deleteBackup,
+  deleteDatabaseBackup,
   getAssetInfo,
   getConfig,
   getConfigDefaults,
   getQueuesLegacy,
-  listBackups,
+  listDatabaseBackups,
   login,
   runQueueCommandLegacy,
   scanLibrary,
@@ -599,10 +599,8 @@ export const utils = {
   },
 
   resetBackups: async (accessToken: string) => {
-    const { backups } = await listBackups({ headers: asBearerAuth(accessToken) });
-    for (const filename of backups) {
-      await deleteBackup({ filename }, { headers: asBearerAuth(accessToken) });
-    }
+    const { backups } = await listDatabaseBackups({ headers: asBearerAuth(accessToken) });
+    await deleteDatabaseBackup({ databaseBackupDeleteDto: { backups } }, { headers: asBearerAuth(accessToken) });
   },
 
   prepareTestBackup: async (generate: 'corrupted') => {
