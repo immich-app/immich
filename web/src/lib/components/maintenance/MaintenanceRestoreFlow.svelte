@@ -1,6 +1,6 @@
 <script lang="ts">
   import MaintenanceBackupsList from '$lib/components/maintenance/MaintenanceBackupsList.svelte';
-  import { detectPriorInstall, type MaintenanceIntegrityResponseDto } from '@immich/sdk';
+  import { detectPriorInstall, type MaintenanceDetectInstallResponseDto } from '@immich/sdk';
   import { Button, Card, CardBody, Heading, HStack, Icon, Scrollable, Stack, Text } from '@immich/ui';
   import { mdiAlert, mdiArrowLeft, mdiArrowRight, mdiCheck, mdiClose, mdiRefresh } from '@mdi/js';
   import { onMount } from 'svelte';
@@ -13,10 +13,10 @@
   let props: Props = $props();
   let stage = $state(0);
 
-  let integrity: MaintenanceIntegrityResponseDto | undefined = $state();
+  let detectedInstall: MaintenanceDetectInstallResponseDto | undefined = $state();
 
   async function reload() {
-    integrity = await detectPriorInstall();
+    detectedInstall = await detectPriorInstall();
   }
 
   onMount(reload);
@@ -28,8 +28,8 @@
   <Card>
     <CardBody>
       <Stack>
-        {#if integrity}
-          {#each integrity.storage as { folder, readable, writable } (folder)}
+        {#if detectedInstall}
+          {#each detectedInstall.storage as { folder, readable, writable } (folder)}
             <HStack>
               <Icon
                 icon={writable ? mdiCheck : mdiClose}
@@ -42,7 +42,7 @@
               </Text>
             </HStack>
           {/each}
-          {#each integrity.storage as { folder, files } (folder)}
+          {#each detectedInstall.storage as { folder, files } (folder)}
             {#if folder !== 'backups'}
               <HStack class="items-start">
                 <Icon
