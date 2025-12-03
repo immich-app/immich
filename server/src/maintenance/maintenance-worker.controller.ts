@@ -33,7 +33,7 @@ import { FilenameParamDto } from 'src/validation';
 
 import type { DatabaseBackupController as _DatabaseBackupController } from 'src/controllers/database-backup.controller';
 import type { ServerController as _ServerController } from 'src/controllers/server.controller';
-import { DatabaseBackupListResponseDto } from 'src/dtos/database-backup.dto';
+import { DatabaseBackupDeleteDto, DatabaseBackupListResponseDto } from 'src/dtos/database-backup.dto';
 
 @Controller()
 export class MaintenanceWorkerController {
@@ -75,10 +75,10 @@ export class MaintenanceWorkerController {
   /**
    * {@link _DatabaseBackupController.deleteDatabaseBackup}
    */
-  @Delete('admin/database-backups/:filename')
+  @Delete('admin/database-backups')
   @MaintenanceRoute()
-  async deleteDatabaseBackup(@Param() { filename }: FilenameParamDto): Promise<void> {
-    return this.service.deleteBackup(filename);
+  async deleteDatabaseBackup(@Body() dto: DatabaseBackupDeleteDto): Promise<void> {
+    return this.service.deleteBackup(dto.backups);
   }
 
   /**
