@@ -1,3 +1,4 @@
+import { OAuthClient, OAuthUser } from '@immich/auth-server';
 import {
   LoginResponseDto,
   SystemConfigOAuthDto,
@@ -8,7 +9,6 @@ import {
 } from '@immich/sdk';
 import { createHash, randomBytes } from 'node:crypto';
 import { errorDto } from 'src/responses';
-import { OAuthClient, OAuthUser } from 'src/setup/auth-server';
 import { app, asBearerAuth, baseUrl, utils } from 'src/utils';
 import request from 'supertest';
 import { beforeAll, describe, expect, it } from 'vitest';

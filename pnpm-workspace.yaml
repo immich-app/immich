@@ -1,4 +1,5 @@
 packages:
+  - auth-server
   - cli
   - docs
   - e2e
