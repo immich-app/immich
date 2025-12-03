@@ -13,6 +13,7 @@ part of openapi.api;
 class ActivityResponseDto {
   /// Returns a new [ActivityResponseDto] instance.
   ActivityResponseDto({
+    this.albumUpdate,
     required this.assetId,
     this.comment,
     required this.createdAt,
@@ -20,6 +21,8 @@ class ActivityResponseDto {
     required this.type,
     required this.user,
   });
+
+  ActivityAlbumUpdateResponseDto? albumUpdate;
 
   String? assetId;
 
@@ -35,6 +38,7 @@ class ActivityResponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is ActivityResponseDto &&
+    other.albumUpdate == albumUpdate &&
     other.assetId == assetId &&
     other.comment == comment &&
     other.createdAt == createdAt &&
@@ -45,6 +49,7 @@ class ActivityResponseDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (albumUpdate == null ? 0 : albumUpdate!.hashCode) +
     (assetId == null ? 0 : assetId!.hashCode) +
     (comment == null ? 0 : comment!.hashCode) +
     (createdAt.hashCode) +
@@ -53,10 +58,15 @@ class ActivityResponseDto {
     (user.hashCode);
 
   @override
-  String toString() => 'ActivityResponseDto[assetId=$assetId, comment=$comment, createdAt=$createdAt, id=$id, type=$type, user=$user]';
+  String toString() => 'ActivityResponseDto[albumUpdate=$albumUpdate, assetId=$assetId, comment=$comment, createdAt=$createdAt, id=$id, type=$type, user=$user]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+    if (this.albumUpdate != null) {
+      json[r'albumUpdate'] = this.albumUpdate;
+    } else {
+    //  json[r'albumUpdate'] = null;
+    }
     if (this.assetId != null) {
       json[r'assetId'] = this.assetId;
     } else {
@@ -83,6 +93,7 @@ class ActivityResponseDto {
       final json = value.cast<String, dynamic>();
 
       return ActivityResponseDto(
+        albumUpdate: ActivityAlbumUpdateResponseDto.fromJson(json[r'albumUpdate']),
         assetId: mapValueOfType<String>(json, r'assetId'),
         comment: mapValueOfType<String>(json, r'comment'),
         createdAt: mapDateTime(json, r'createdAt', r'')!,
