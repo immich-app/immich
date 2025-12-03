@@ -367,7 +367,7 @@ export class AssetService extends BaseService {
       files.push(sidecarFile?.path, asset.originalPath);
     }
 
-    await this.jobRepository.queue({ name: JobName.FileDelete, data: { files } });
+    await this.jobRepository.queue({ name: JobName.FileDelete, data: { files: files.filter(Boolean) } });
 
     return JobStatus.Success;
   }
