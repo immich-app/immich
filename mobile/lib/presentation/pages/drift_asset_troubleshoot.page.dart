@@ -131,6 +131,7 @@ class _AssetPropertiesSectionState extends ConsumerState<_AssetPropertiesSection
     final albums = await ref.read(assetServiceProvider).getSourceAlbums(asset.id);
     properties.add(_PropertyItem(label: 'Album', value: albums.map((a) => a.name).join(', ')));
     if (CurrentPlatform.isIOS) {
+      properties.add(_PropertyItem(label: 'Cloud ID', value: asset.cloudId));
       properties.add(_PropertyItem(label: 'Adjustment Time', value: asset.adjustmentTime?.toString()));
     }
     properties.add(

@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/asset/asset_metadata.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
@@ -32,7 +33,7 @@ Future<void> syncCloudIds(ProviderContainer ref) async {
   for (final mapping in mappingsToUpdate) {
     final mobileMeta = AssetMetadataUpsertItemDto(
       key: AssetMetadataKey.mobileApp,
-      value: RemoteAssetMobileAppMetadata(cloudId: mapping.cloudId),
+      value: RemoteAssetMobileAppMetadata(cloudId: mapping.cloudId, eTag: mapping.eTag),
     );
     try {
       await assetApi.updateAssetMetadata(mapping.assetId, AssetMetadataUpsertDto(items: [mobileMeta]));
@@ -51,7 +52,7 @@ Future<void> _populateCloudIds(Drift drift) async {
   await DriftLocalAlbumRepository(drift).updateCloudMapping(cloudMapping);
 }
 
-typedef _CloudIdMapping = ({String assetId, String cloudId});
+typedef _CloudIdMapping = ({String assetId, String cloudId, String eTag});
 
 Future<List<_CloudIdMapping>> _fetchCloudIdMappings(Drift drift, String userId) async {
   final query =
@@ -67,16 +68,31 @@ Future<List<_CloudIdMapping>> _fetchCloudIdMappings(Drift drift, String userId) 
             useColumns: false,
           ),
         ])
-        ..addColumns([drift.remoteAssetEntity.id, drift.localAssetEntity.iCloudId])
+        ..addColumns([
+          drift.remoteAssetEntity.id,
+          drift.localAssetEntity.iCloudId,
+          drift.localAssetEntity.createdAt,
+          drift.localAssetEntity.adjustmentTime,
+          drift.localAssetEntity.latitude,
+          drift.localAssetEntity.longitude,
+        ])
         ..where(
           drift.localAssetEntity.id.isNotNull() &
               drift.localAssetEntity.iCloudId.isNotNull() &
               drift.remoteAssetEntity.ownerId.equals(userId) &
               drift.remoteAssetCloudIdEntity.cloudId.isNull(),
         );
-  return query
-      .map(
-        (row) => (assetId: row.read(drift.remoteAssetEntity.id)!, cloudId: row.read(drift.localAssetEntity.iCloudId)!),
-      )
-      .get();
+  return query.map((row) {
+    final createdAt = row.read(drift.localAssetEntity.createdAt)!;
+    final adjustmentTime = row.read(drift.localAssetEntity.adjustmentTime);
+    final latitude = row.read(drift.localAssetEntity.latitude);
+    final longitude = row.read(drift.localAssetEntity.longitude);
+    final eTag =
+        "${createdAt.millisecondsSinceEpoch ~/ 1000}$kUploadETagDelimiter${(adjustmentTime?.millisecondsSinceEpoch ?? 0) ~/ 1000}$kUploadETagDelimiter${latitude ?? 0}$kUploadETagDelimiter${longitude ?? 0}";
+    return (
+      assetId: row.read(drift.remoteAssetEntity.id)!,
+      cloudId: row.read(drift.localAssetEntity.iCloudId)!,
+      eTag: eTag,
+    );
+  }).get();
 }

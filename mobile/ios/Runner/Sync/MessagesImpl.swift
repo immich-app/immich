@@ -401,8 +401,10 @@ class NativeSyncApiImpl: ImmichPlugin, NativeSyncApi, FlutterPlugin {
     var mappings: [String: String?] = [:]
     let result = PHPhotoLibrary.shared().cloudIdentifierMappings(forLocalIdentifiers: assetIds)
     for (key, value) in result {
-      let id = try? value.get().stringValue
-      mappings[key] = id
+      // Ignores invalid cloud ids of the format "GUID:ID:". Valid Ids are of the form "GUID:ID:HASH"
+      if let cloudId = try? value.get().stringValue, !cloudId.hasSuffix(":") {
+        mappings[key] = cloudId
+      }
     }
     return mappings;
   }

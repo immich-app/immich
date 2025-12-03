@@ -1,3 +1,5 @@
+import 'package:immich_mobile/constants/constants.dart';
+
 part 'local_asset.model.dart';
 part 'remote_asset.model.dart';
 

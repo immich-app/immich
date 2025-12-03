@@ -127,6 +127,11 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
     return result;
   }
 
+  Future<List<LocalAsset>> getEmptyCloudIdAssets() {
+    final query = _db.localAssetEntity.select()..where((row) => row.iCloudId.isNull());
+    return query.map((row) => row.toDto()).get();
+  }
+
   Future<Map<String, String>> getHashMappingFromCloudId() async {
     final createdAt = coalesce([_db.localAssetEntity.createdAt.strftime('%s'), const Constant('0')]);
     final adjustmentTime = coalesce([_db.localAssetEntity.adjustmentTime.strftime('%s'), const Constant('0')]);
