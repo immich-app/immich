@@ -38,6 +38,7 @@ const isOAuthEnabled = (config: SystemConfigOAuthDto) => config.enabled;
 const isOAuthOverrideEnabled = (config: SystemConfigOAuthDto) => config.mobileOverrideEnabled;
 const isEmailNotificationEnabled = (config: SystemConfigSmtpDto) => config.enabled;
 const isDatabaseBackupEnabled = (config: DatabaseBackupConfig) => config.enabled;
+const isEnabledProperty = (config: { enabled: boolean }) => config.enabled;
 
 export class DatabaseBackupConfig {
   @ValidateBoolean()
@@ -143,6 +144,42 @@ export class SystemConfigFFmpegDto {
 
   @ValidateEnum({ enum: ToneMapping, name: 'ToneMapping' })
   tonemap!: ToneMapping;
+}
+
+class SystemConfigIntegrityJob {
+  @ValidateBoolean()
+  enabled!: boolean;
+
+  @ValidateIf(isEnabledProperty)
+  @IsNotEmpty()
+  @IsCronExpression()
+  @IsString()
+  cronExpression!: string;
+}
+
+class SystemConfigIntegrityChecksumJob extends SystemConfigIntegrityJob {
+  @IsInt()
+  timeLimit!: number;
+
+  @IsNumber()
+  percentageLimit!: number;
+}
+
+class SystemConfigIntegrityChecks {
+  @Type(() => SystemConfigIntegrityJob)
+  @ValidateNested()
+  @IsObject()
+  missingFiles!: SystemConfigIntegrityJob;
+
+  @Type(() => SystemConfigIntegrityJob)
+  @ValidateNested()
+  @IsObject()
+  orphanedFiles!: SystemConfigIntegrityJob;
+
+  @Type(() => SystemConfigIntegrityChecksumJob)
+  @ValidateNested()
+  @IsObject()
+  checksumFiles!: SystemConfigIntegrityChecksumJob;
 }
 
 class JobSettingsDto {
@@ -648,6 +685,11 @@ export class SystemConfigDto implements SystemConfig {
   @ValidateNested()
   @IsObject()
   ffmpeg!: SystemConfigFFmpegDto;
+
+  @Type(() => SystemConfigIntegrityChecks)
+  @ValidateNested()
+  @IsObject()
+  integrityChecks!: SystemConfigIntegrityChecks;
 
   @Type(() => SystemConfigLoggingDto)
   @ValidateNested()

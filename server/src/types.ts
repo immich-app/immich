@@ -9,6 +9,7 @@ import {
   DatabaseSslMode,
   ExifOrientation,
   ImageFormat,
+  IntegrityReportType,
   JobName,
   MemoryType,
   PluginTriggerType,
@@ -281,6 +282,36 @@ export interface IWorkflowJob<T extends PluginTriggerType = PluginTriggerType> {
   event: WorkflowData[T];
 }
 
+export interface IIntegrityJob {
+  refreshOnly?: boolean;
+}
+
+export interface IIntegrityDeleteReportJob {
+  type?: IntegrityReportType;
+}
+
+export interface IIntegrityOrphanedFilesJob {
+  type: 'asset' | 'asset_file';
+  paths: string[];
+}
+
+export interface IIntegrityMissingFilesJob {
+  items: {
+    path: string;
+    reportId: string | null;
+    assetId: string | null;
+    fileAssetId: string | null;
+  }[];
+}
+
+export interface IIntegrityPathWithReportJob {
+  items: { path: string; reportId: string | null }[];
+}
+
+export interface IIntegrityPathWithChecksumJob {
+  items: { path: string; reportId: string | null; checksum?: string | null }[];
+}
+
 export interface JobCounts {
   active: number;
   completed: number;
@@ -390,7 +421,18 @@ export type JobItem =
   | { name: JobName.Ocr; data: IEntityJob }
 
   // Workflow
-  | { name: JobName.WorkflowRun; data: IWorkflowJob };
+  | { name: JobName.WorkflowRun; data: IWorkflowJob }
+
+  // Integrity
+  | { name: JobName.IntegrityOrphanedFilesQueueAll; data?: IIntegrityJob }
+  | { name: JobName.IntegrityOrphanedFiles; data: IIntegrityOrphanedFilesJob }
+  | { name: JobName.IntegrityOrphanedFilesRefresh; data: IIntegrityPathWithReportJob }
+  | { name: JobName.IntegrityMissingFilesQueueAll; data?: IIntegrityJob }
+  | { name: JobName.IntegrityMissingFiles; data: IIntegrityPathWithReportJob }
+  | { name: JobName.IntegrityMissingFilesRefresh; data: IIntegrityPathWithReportJob }
+  | { name: JobName.IntegrityChecksumFiles; data?: IIntegrityJob }
+  | { name: JobName.IntegrityChecksumFilesRefresh; data?: IIntegrityPathWithChecksumJob }
+  | { name: JobName.IntegrityReportDelete; data: IIntegrityDeleteReportJob };
 
 export type VectorExtension = (typeof VECTOR_EXTENSIONS)[number];
 
@@ -505,6 +547,7 @@ export interface SystemMetadata extends Record<SystemMetadataKey, Record<string,
   [SystemMetadataKey.SystemFlags]: DeepPartial<SystemFlags>;
   [SystemMetadataKey.VersionCheckState]: VersionCheckMetadata;
   [SystemMetadataKey.MemoriesState]: MemoriesState;
+  [SystemMetadataKey.IntegrityChecksumCheckpoint]: { date?: string };
 }
 
 export interface UserPreferences {

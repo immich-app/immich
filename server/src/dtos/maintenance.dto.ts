@@ -1,4 +1,5 @@
-import { MaintenanceAction } from 'src/enum';
+import { ApiProperty } from '@nestjs/swagger';
+import { IntegrityReportType, MaintenanceAction } from 'src/enum';
 import { ValidateEnum, ValidateString } from 'src/validation';
 
 export class SetMaintenanceModeDto {
@@ -13,4 +14,41 @@ export class MaintenanceLoginDto {
 
 export class MaintenanceAuthDto {
   username!: string;
+}
+
+export class MaintenanceIntegrityReportSummaryResponseDto {
+  @ApiProperty({ type: 'integer' })
+  [IntegrityReportType.ChecksumFail]!: number;
+  @ApiProperty({ type: 'integer' })
+  [IntegrityReportType.MissingFile]!: number;
+  @ApiProperty({ type: 'integer' })
+  [IntegrityReportType.OrphanFile]!: number;
+}
+
+export class MaintenanceGetIntegrityReportDto {
+  @ValidateEnum({ enum: IntegrityReportType, name: 'IntegrityReportType' })
+  type!: IntegrityReportType;
+
+  // todo: paginate
+  // @IsInt()
+  // @Min(1)
+  // @Type(() => Number)
+  // @Optional()
+  // page?: number;
+}
+
+export class MaintenanceDeleteIntegrityReportDto {
+  @ValidateEnum({ enum: IntegrityReportType, name: 'IntegrityReportType' })
+  type!: IntegrityReportType;
+}
+
+class MaintenanceIntegrityReportDto {
+  id!: string;
+  @ValidateEnum({ enum: IntegrityReportType, name: 'IntegrityReportType' })
+  type!: IntegrityReportType;
+  path!: string;
+}
+
+export class MaintenanceIntegrityReportResponseDto {
+  items!: MaintenanceIntegrityReportDto[];
 }

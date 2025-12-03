@@ -372,6 +372,275 @@
         "x-immich-state": "Alpha"
       }
     },
+    "/admin/maintenance/integrity/report": {
+      "post": {
+        "description": "...",
+        "operationId": "getIntegrityReport",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MaintenanceGetIntegrityReportDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MaintenanceIntegrityReportResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Get integrity report by type",
+        "tags": [
+          "Maintenance (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v9.9.9",
+            "state": "Added"
+          },
+          {
+            "version": "v9.9.9",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "maintenance",
+        "x-immich-state": "Alpha"
+      }
+    },
+    "/admin/maintenance/integrity/report/{id}": {
+      "delete": {
+        "description": "...",
+        "operationId": "deleteIntegrityReport",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Delete report entry and perform corresponding deletion action",
+        "tags": [
+          "Maintenance (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v9.9.9",
+            "state": "Added"
+          },
+          {
+            "version": "v9.9.9",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "maintenance",
+        "x-immich-state": "Alpha"
+      }
+    },
+    "/admin/maintenance/integrity/report/{id}/file": {
+      "get": {
+        "description": "...",
+        "operationId": "getIntegrityReportFile",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Download the orphan/broken file if one exists",
+        "tags": [
+          "Maintenance (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v9.9.9",
+            "state": "Added"
+          },
+          {
+            "version": "v9.9.9",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "maintenance",
+        "x-immich-state": "Alpha"
+      }
+    },
+    "/admin/maintenance/integrity/report/{type}/csv": {
+      "get": {
+        "description": "...",
+        "operationId": "getIntegrityReportCsv",
+        "parameters": [
+          {
+            "name": "type",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "$ref": "#/components/schemas/IntegrityReportType"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Export integrity report by type as CSV",
+        "tags": [
+          "Maintenance (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v9.9.9",
+            "state": "Added"
+          },
+          {
+            "version": "v9.9.9",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "maintenance",
+        "x-immich-state": "Alpha"
+      }
+    },
+    "/admin/maintenance/integrity/summary": {
+      "get": {
+        "description": "...",
+        "operationId": "getIntegrityReportSummary",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MaintenanceIntegrityReportSummaryResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Get integrity report summary",
+        "tags": [
+          "Maintenance (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v9.9.9",
+            "state": "Added"
+          },
+          {
+            "version": "v9.9.9",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "maintenance",
+        "x-immich-state": "Alpha"
+      }
+    },
     "/admin/maintenance/login": {
       "post": {
         "description": "Login with maintenance token or cookie to receive current information and perform further actions.",
@@ -16589,6 +16858,14 @@
         ],
         "type": "string"
       },
+      "IntegrityReportType": {
+        "enum": [
+          "orphan_file",
+          "missing_file",
+          "checksum_mismatch"
+        ],
+        "type": "string"
+      },
       "JobCreateDto": {
         "properties": {
           "name": {
@@ -16660,7 +16937,16 @@
           "VersionCheck",
           "OcrQueueAll",
           "Ocr",
-          "WorkflowRun"
+          "WorkflowRun",
+          "IntegrityOrphanedFilesQueueAll",
+          "IntegrityOrphanedFiles",
+          "IntegrityOrphanedRefresh",
+          "IntegrityMissingFilesQueueAll",
+          "IntegrityMissingFiles",
+          "IntegrityMissingFilesRefresh",
+          "IntegrityChecksumFiles",
+          "IntegrityChecksumFilesRefresh",
+          "IntegrityReportDelete"
         ],
         "type": "string"
       },
@@ -16914,6 +17200,77 @@
         ],
         "type": "object"
       },
+      "MaintenanceGetIntegrityReportDto": {
+        "properties": {
+          "type": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/IntegrityReportType"
+              }
+            ]
+          }
+        },
+        "required": [
+          "type"
+        ],
+        "type": "object"
+      },
+      "MaintenanceIntegrityReportDto": {
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "type": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/IntegrityReportType"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "path",
+          "type"
+        ],
+        "type": "object"
+      },
+      "MaintenanceIntegrityReportResponseDto": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/MaintenanceIntegrityReportDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "type": "object"
+      },
+      "MaintenanceIntegrityReportSummaryResponseDto": {
+        "properties": {
+          "checksum_mismatch": {
+            "type": "integer"
+          },
+          "missing_file": {
+            "type": "integer"
+          },
+          "orphan_file": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "checksum_mismatch",
+          "missing_file",
+          "orphan_file"
+        ],
+        "type": "object"
+      },
       "MaintenanceLoginDto": {
         "properties": {
           "token": {
@@ -16929,7 +17286,16 @@
           "user-cleanup",
           "memory-cleanup",
           "memory-create",
-          "backup-database"
+          "backup-database",
+          "integrity-missing-files",
+          "integrity-orphan-files",
+          "integrity-checksum-mismatch",
+          "integrity-missing-files-refresh",
+          "integrity-orphan-files-refresh",
+          "integrity-checksum-mismatch-refresh",
+          "integrity-missing-files-delete-all",
+          "integrity-orphan-files-delete-all",
+          "integrity-checksum-mismatch-delete-all"
         ],
         "type": "string"
       },
@@ -21231,6 +21597,9 @@
           "image": {
             "$ref": "#/components/schemas/SystemConfigImageDto"
           },
+          "integrityChecks": {
+            "$ref": "#/components/schemas/SystemConfigIntegrityChecks"
+          },
           "job": {
             "$ref": "#/components/schemas/SystemConfigJobDto"
           },
@@ -21290,6 +21659,7 @@
           "backup",
           "ffmpeg",
           "image",
+          "integrityChecks",
           "job",
           "library",
           "logging",
@@ -21533,6 +21903,63 @@
           "fullsize",
           "preview",
           "thumbnail"
+        ],
+        "type": "object"
+      },
+      "SystemConfigIntegrityChecks": {
+        "properties": {
+          "checksumFiles": {
+            "$ref": "#/components/schemas/SystemConfigIntegrityChecksumJob"
+          },
+          "missingFiles": {
+            "$ref": "#/components/schemas/SystemConfigIntegrityJob"
+          },
+          "orphanedFiles": {
+            "$ref": "#/components/schemas/SystemConfigIntegrityJob"
+          }
+        },
+        "required": [
+          "checksumFiles",
+          "missingFiles",
+          "orphanedFiles"
+        ],
+        "type": "object"
+      },
+      "SystemConfigIntegrityChecksumJob": {
+        "properties": {
+          "cronExpression": {
+            "type": "string"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "percentageLimit": {
+            "type": "number"
+          },
+          "timeLimit": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "cronExpression",
+          "enabled",
+          "percentageLimit",
+          "timeLimit"
+        ],
+        "type": "object"
+      },
+      "SystemConfigIntegrityJob": {
+        "properties": {
+          "cronExpression": {
+            "type": "string"
+          },
+          "enabled": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "cronExpression",
+          "enabled"
         ],
         "type": "object"
       },
