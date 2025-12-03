@@ -15,8 +15,8 @@ export class DatabaseBackupService extends BaseService {
     return { backups: await listBackups(this.backupRepos) };
   }
 
-  async deleteBackup(filename: string): Promise<void> {
-    return deleteBackup(this.backupRepos, basename(filename));
+  async deleteBackup(files: string[]): Promise<void> {
+    await Promise.all(files.map((filename) => deleteBackup(this.backupRepos, basename(filename))));
   }
 
   async uploadBackup(file: Express.Multer.File): Promise<void> {

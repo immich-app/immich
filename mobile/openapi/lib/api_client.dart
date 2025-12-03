@@ -326,6 +326,10 @@ class ApiClient {
           return CreateProfileImageResponseDto.fromJson(value);
         case 'DatabaseBackupConfig':
           return DatabaseBackupConfig.fromJson(value);
+        case 'DatabaseBackupDeleteDto':
+          return DatabaseBackupDeleteDto.fromJson(value);
+        case 'DatabaseBackupListResponseDto':
+          return DatabaseBackupListResponseDto.fromJson(value);
         case 'DownloadArchiveInfo':
           return DownloadArchiveInfo.fromJson(value);
         case 'DownloadInfoDto':
@@ -388,8 +392,6 @@ class ApiClient {
           return MaintenanceDetectInstallResponseDto.fromJson(value);
         case 'MaintenanceDetectInstallStorageFolderDto':
           return MaintenanceDetectInstallStorageFolderDto.fromJson(value);
-        case 'MaintenanceListBackupsResponseDto':
-          return MaintenanceListBackupsResponseDto.fromJson(value);
         case 'MaintenanceLoginDto':
           return MaintenanceLoginDto.fromJson(value);
         case 'MaintenanceStatusResponseDto':

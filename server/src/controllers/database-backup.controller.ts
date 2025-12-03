@@ -1,9 +1,13 @@
-import { Controller, Delete, Get, Next, Param, Post, Res, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Next, Param, Post, Res, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { NextFunction, Response } from 'express';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
-import { MaintenanceListBackupsResponseDto, MaintenanceUploadBackupDto } from 'src/dtos/maintenance.dto';
+import {
+  DatabaseBackupDeleteDto,
+  DatabaseBackupListResponseDto,
+  DatabaseBackupUploadDto,
+} from 'src/dtos/database-backup.dto';
 import { ApiTag, ImmichCookie, Permission } from 'src/enum';
 import { Authenticated, FileResponse, GetLoginDetails } from 'src/middleware/auth.guard';
 import { LoggingRepository } from 'src/repositories/logging.repository';
@@ -30,7 +34,7 @@ export class DatabaseBackupController {
     history: new HistoryBuilder().added('v2.4.0').alpha('v2.4.0'),
   })
   @Authenticated({ permission: Permission.Maintenance, admin: true })
-  listDatabaseBackups(): Promise<MaintenanceListBackupsResponseDto> {
+  listDatabaseBackups(): Promise<DatabaseBackupListResponseDto> {
     return this.service.listBackups();
   }
 
@@ -50,15 +54,15 @@ export class DatabaseBackupController {
     await sendFile(res, next, () => this.service.downloadBackup(filename), this.logger);
   }
 
-  @Delete(':filename')
+  @Delete()
   @Endpoint({
     summary: 'Delete database backup',
     description: 'Delete a backup by its filename',
     history: new HistoryBuilder().added('v2.4.0').alpha('v2.4.0'),
   })
   @Authenticated({ permission: Permission.BackupDelete, admin: true })
-  async deleteDatabaseBackup(@Param() { filename }: FilenameParamDto): Promise<void> {
-    return this.service.deleteBackup(filename);
+  async deleteDatabaseBackup(@Body() dto: DatabaseBackupDeleteDto): Promise<void> {
+    return this.service.deleteBackup(dto.backups);
   }
 
   @Post('start-restore')
@@ -81,7 +85,7 @@ export class DatabaseBackupController {
   @Post('upload')
   @Authenticated({ permission: Permission.BackupUpload, admin: true })
   @ApiConsumes('multipart/form-data')
-  @ApiBody({ description: 'Backup Upload', type: MaintenanceUploadBackupDto })
+  @ApiBody({ description: 'Backup Upload', type: DatabaseBackupUploadDto })
   @Endpoint({
     summary: 'Upload database backup',
     description: 'Uploads .sql/.sql.gz file to restore backup from',

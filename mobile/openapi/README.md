@@ -133,7 +133,7 @@ Class | Method | HTTP request | Description
 *AuthenticationApi* | [**unlockAuthSession**](doc//AuthenticationApi.md#unlockauthsession) | **POST** /auth/session/unlock | Unlock auth session
 *AuthenticationApi* | [**validateAccessToken**](doc//AuthenticationApi.md#validateaccesstoken) | **POST** /auth/validateToken | Validate access token
 *AuthenticationAdminApi* | [**unlinkAllOAuthAccountsAdmin**](doc//AuthenticationAdminApi.md#unlinkalloauthaccountsadmin) | **POST** /admin/auth/unlink-all | Unlink all OAuth accounts
-*DatabaseBackupsAdminApi* | [**deleteDatabaseBackup**](doc//DatabaseBackupsAdminApi.md#deletedatabasebackup) | **DELETE** /admin/database-backups/{filename} | Delete database backup
+*DatabaseBackupsAdminApi* | [**deleteDatabaseBackup**](doc//DatabaseBackupsAdminApi.md#deletedatabasebackup) | **DELETE** /admin/database-backups | Delete database backup
 *DatabaseBackupsAdminApi* | [**downloadDatabaseBackup**](doc//DatabaseBackupsAdminApi.md#downloaddatabasebackup) | **GET** /admin/database-backups/{filename} | Download database backup
 *DatabaseBackupsAdminApi* | [**listDatabaseBackups**](doc//DatabaseBackupsAdminApi.md#listdatabasebackups) | **GET** /admin/database-backups | List database backups
 *DatabaseBackupsAdminApi* | [**startDatabaseRestoreFlow**](doc//DatabaseBackupsAdminApi.md#startdatabaserestoreflow) | **POST** /admin/database-backups/start-restore | Start database backup restore flow
@@ -394,6 +394,8 @@ Class | Method | HTTP request | Description
  - [CreateLibraryDto](doc//CreateLibraryDto.md)
  - [CreateProfileImageResponseDto](doc//CreateProfileImageResponseDto.md)
  - [DatabaseBackupConfig](doc//DatabaseBackupConfig.md)
+ - [DatabaseBackupDeleteDto](doc//DatabaseBackupDeleteDto.md)
+ - [DatabaseBackupListResponseDto](doc//DatabaseBackupListResponseDto.md)
  - [DownloadArchiveInfo](doc//DownloadArchiveInfo.md)
  - [DownloadInfoDto](doc//DownloadInfoDto.md)
  - [DownloadResponse](doc//DownloadResponse.md)
@@ -425,7 +427,6 @@ Class | Method | HTTP request | Description
  - [MaintenanceAuthDto](doc//MaintenanceAuthDto.md)
  - [MaintenanceDetectInstallResponseDto](doc//MaintenanceDetectInstallResponseDto.md)
  - [MaintenanceDetectInstallStorageFolderDto](doc//MaintenanceDetectInstallStorageFolderDto.md)
- - [MaintenanceListBackupsResponseDto](doc//MaintenanceListBackupsResponseDto.md)
  - [MaintenanceLoginDto](doc//MaintenanceLoginDto.md)
  - [MaintenanceStatusResponseDto](doc//MaintenanceStatusResponseDto.md)
  - [ManualJobName](doc//ManualJobName.md)

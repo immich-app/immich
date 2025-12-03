@@ -323,6 +323,54 @@
       }
     },
     "/admin/database-backups": {
+      "delete": {
+        "description": "Delete a backup by its filename",
+        "operationId": "deleteDatabaseBackup",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DatabaseBackupDeleteDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Delete database backup",
+        "tags": [
+          "Database Backups (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v2.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v2.4.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "backup.delete",
+        "x-immich-state": "Alpha"
+      },
       "get": {
         "description": "Get the list of the successful and failed backups",
         "operationId": "listDatabaseBackups",
@@ -332,7 +380,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/MaintenanceListBackupsResponseDto"
+                  "$ref": "#/components/schemas/DatabaseBackupListResponseDto"
                 }
               }
             },
@@ -405,7 +453,7 @@
           "content": {
             "multipart/form-data": {
               "schema": {
-                "$ref": "#/components/schemas/MaintenanceUploadBackupDto"
+                "$ref": "#/components/schemas/DatabaseBackupUploadDto"
               }
             }
           },
@@ -448,54 +496,6 @@
       }
     },
     "/admin/database-backups/{filename}": {
-      "delete": {
-        "description": "Delete a backup by its filename",
-        "operationId": "deleteDatabaseBackup",
-        "parameters": [
-          {
-            "name": "filename",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "string",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "summary": "Delete database backup",
-        "tags": [
-          "Database Backups (admin)"
-        ],
-        "x-immich-admin-only": true,
-        "x-immich-history": [
-          {
-            "version": "v2.4.0",
-            "state": "Added"
-          },
-          {
-            "version": "v2.4.0",
-            "state": "Alpha"
-          }
-        ],
-        "x-immich-permission": "backup.delete",
-        "x-immich-state": "Alpha"
-      },
       "get": {
         "description": "Downloads the database backup file",
         "operationId": "downloadDatabaseBackup",
@@ -16549,6 +16549,43 @@
         ],
         "type": "object"
       },
+      "DatabaseBackupDeleteDto": {
+        "properties": {
+          "backups": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "backups"
+        ],
+        "type": "object"
+      },
+      "DatabaseBackupListResponseDto": {
+        "properties": {
+          "backups": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "backups"
+        ],
+        "type": "object"
+      },
+      "DatabaseBackupUploadDto": {
+        "properties": {
+          "file": {
+            "format": "binary",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "DownloadArchiveInfo": {
         "properties": {
           "assetIds": {
@@ -17272,20 +17309,6 @@
         ],
         "type": "object"
       },
-      "MaintenanceListBackupsResponseDto": {
-        "properties": {
-          "backups": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array"
-          }
-        },
-        "required": [
-          "backups"
-        ],
-        "type": "object"
-      },
       "MaintenanceLoginDto": {
         "properties": {
           "token": {
@@ -17320,15 +17343,6 @@
           "action",
           "active"
         ],
-        "type": "object"
-      },
-      "MaintenanceUploadBackupDto": {
-        "properties": {
-          "file": {
-            "format": "binary",
-            "type": "string"
-          }
-        },
         "type": "object"
       },
       "ManualJobName": {

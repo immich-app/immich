@@ -24,20 +24,19 @@ class DatabaseBackupsAdminApi {
   ///
   /// Parameters:
   ///
-  /// * [String] filename (required):
-  Future<Response> deleteDatabaseBackupWithHttpInfo(String filename,) async {
+  /// * [DatabaseBackupDeleteDto] databaseBackupDeleteDto (required):
+  Future<Response> deleteDatabaseBackupWithHttpInfo(DatabaseBackupDeleteDto databaseBackupDeleteDto,) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/admin/database-backups/{filename}'
-      .replaceAll('{filename}', filename);
+    final apiPath = r'/admin/database-backups';
 
     // ignore: prefer_final_locals
-    Object? postBody;
+    Object? postBody = databaseBackupDeleteDto;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
-    const contentTypes = <String>[];
+    const contentTypes = <String>['application/json'];
 
 
     return apiClient.invokeAPI(
@@ -57,9 +56,9 @@ class DatabaseBackupsAdminApi {
   ///
   /// Parameters:
   ///
-  /// * [String] filename (required):
-  Future<void> deleteDatabaseBackup(String filename,) async {
-    final response = await deleteDatabaseBackupWithHttpInfo(filename,);
+  /// * [DatabaseBackupDeleteDto] databaseBackupDeleteDto (required):
+  Future<void> deleteDatabaseBackup(DatabaseBackupDeleteDto databaseBackupDeleteDto,) async {
+    final response = await deleteDatabaseBackupWithHttpInfo(databaseBackupDeleteDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -155,7 +154,7 @@ class DatabaseBackupsAdminApi {
   /// List database backups
   ///
   /// Get the list of the successful and failed backups
-  Future<MaintenanceListBackupsResponseDto?> listDatabaseBackups() async {
+  Future<DatabaseBackupListResponseDto?> listDatabaseBackups() async {
     final response = await listDatabaseBackupsWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
@@ -164,7 +163,7 @@ class DatabaseBackupsAdminApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'MaintenanceListBackupsResponseDto',) as MaintenanceListBackupsResponseDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'DatabaseBackupListResponseDto',) as DatabaseBackupListResponseDto;
     
     }
     return null;

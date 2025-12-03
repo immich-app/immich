@@ -40,10 +40,13 @@ export type ActivityStatisticsResponseDto = {
     comments: number;
     likes: number;
 };
-export type MaintenanceListBackupsResponseDto = {
+export type DatabaseBackupDeleteDto = {
     backups: string[];
 };
-export type MaintenanceUploadBackupDto = {
+export type DatabaseBackupListResponseDto = {
+    backups: string[];
+};
+export type DatabaseBackupUploadDto = {
     file?: Blob;
 };
 export type SetMaintenanceModeDto = {
@@ -1874,12 +1877,24 @@ export function unlinkAllOAuthAccountsAdmin(opts?: Oazapfts.RequestOpts) {
     }));
 }
 /**
+ * Delete database backup
+ */
+export function deleteDatabaseBackup({ databaseBackupDeleteDto }: {
+    databaseBackupDeleteDto: DatabaseBackupDeleteDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/admin/database-backups", oazapfts.json({
+        ...opts,
+        method: "DELETE",
+        body: databaseBackupDeleteDto
+    })));
+}
+/**
  * List database backups
  */
 export function listDatabaseBackups(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
-        data: MaintenanceListBackupsResponseDto;
+        data: DatabaseBackupListResponseDto;
     }>("/admin/database-backups", {
         ...opts
     }));
@@ -1896,25 +1911,14 @@ export function startDatabaseRestoreFlow(opts?: Oazapfts.RequestOpts) {
 /**
  * Upload database backup
  */
-export function uploadDatabaseBackup({ maintenanceUploadBackupDto }: {
-    maintenanceUploadBackupDto: MaintenanceUploadBackupDto;
+export function uploadDatabaseBackup({ databaseBackupUploadDto }: {
+    databaseBackupUploadDto: DatabaseBackupUploadDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchText("/admin/database-backups/upload", oazapfts.multipart({
         ...opts,
         method: "POST",
-        body: maintenanceUploadBackupDto
+        body: databaseBackupUploadDto
     })));
-}
-/**
- * Delete database backup
- */
-export function deleteDatabaseBackup({ filename }: {
-    filename: string;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchText(`/admin/database-backups/${encodeURIComponent(filename)}`, {
-        ...opts,
-        method: "DELETE"
-    }));
 }
 /**
  * Download database backup

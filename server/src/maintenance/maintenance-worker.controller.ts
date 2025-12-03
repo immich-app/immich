@@ -16,7 +16,6 @@ import { NextFunction, Request, Response } from 'express';
 import {
   MaintenanceAuthDto,
   MaintenanceDetectInstallResponseDto,
-  MaintenanceListBackupsResponseDto,
   MaintenanceLoginDto,
   MaintenanceStatusResponseDto,
   SetMaintenanceModeDto,
@@ -34,6 +33,7 @@ import { FilenameParamDto } from 'src/validation';
 
 import type { DatabaseBackupController as _DatabaseBackupController } from 'src/controllers/database-backup.controller';
 import type { ServerController as _ServerController } from 'src/controllers/server.controller';
+import { DatabaseBackupListResponseDto } from 'src/dtos/database-backup.dto';
 
 @Controller()
 export class MaintenanceWorkerController {
@@ -55,7 +55,7 @@ export class MaintenanceWorkerController {
    */
   @Get('admin/database-backups')
   @MaintenanceRoute()
-  listDatabaseBackups(): Promise<MaintenanceListBackupsResponseDto> {
+  listDatabaseBackups(): Promise<DatabaseBackupListResponseDto> {
     return this.service.listBackups();
   }
 

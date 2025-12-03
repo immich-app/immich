@@ -1,4 +1,3 @@
-import { ApiProperty } from '@nestjs/swagger';
 import { MaintenanceAction, StorageFolder } from 'src/enum';
 import { ValidateEnum, ValidateString } from 'src/validation';
 
@@ -40,13 +39,4 @@ export class MaintenanceDetectInstallStorageFolderDto {
 
 export class MaintenanceDetectInstallResponseDto {
   storage!: MaintenanceDetectInstallStorageFolderDto[];
-}
-
-export class MaintenanceListBackupsResponseDto {
-  backups!: string[];
-}
-
-export class MaintenanceUploadBackupDto {
-  @ApiProperty({ type: 'string', format: 'binary', required: false })
-  file?: any;
 }

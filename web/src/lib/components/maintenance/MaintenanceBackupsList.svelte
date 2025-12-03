@@ -8,7 +8,7 @@
     listDatabaseBackups,
     MaintenanceAction,
     setMaintenanceMode,
-    type MaintenanceUploadBackupDto,
+    type DatabaseBackupUploadDto,
   } from '@immich/sdk';
   import {
     Button,
@@ -93,7 +93,9 @@
         deleting.add(filename);
 
         await deleteDatabaseBackup({
-          filename,
+          databaseBackupDeleteDto: {
+            backups: [filename],
+          },
         });
 
         backups = backups.filter((backup) => backup.filename !== filename);
@@ -141,7 +143,7 @@
       const formData = new FormData();
       formData.append('file', file);
 
-      await uploadRequest<MaintenanceUploadBackupDto>({
+      await uploadRequest<DatabaseBackupUploadDto>({
         url: getBaseUrl() + '/admin/database-backups/upload',
         data: formData,
         onUploadProgress(event) {
