@@ -16,6 +16,10 @@ export class DatabaseBackupService extends BaseService {
   }
 
   async deleteBackup(files: string[]): Promise<void> {
+    if (files.some((filename) => !isValidBackupName(filename))) {
+      throw new BadRequestException('Invalid backup name!');
+    }
+
     await Promise.all(files.map((filename) => deleteBackup(this.backupRepos, basename(filename))));
   }
 
