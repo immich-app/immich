@@ -5,7 +5,7 @@ import { BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { DuplicateResponseDto } from 'src/dtos/duplicate.dto';
-import { AssetStatus, AssetVisibility, JobName, JobStatus, Permission, QueueName } from 'src/enum';
+import { AssetVisibility, JobName, JobStatus, QueueName } from 'src/enum';
 import { AssetDuplicateResult } from 'src/repositories/search.repository';
 import { AssetService } from 'src/services/asset.service';
 import { BaseService } from 'src/services/base.service';
@@ -59,15 +59,9 @@ export class DuplicateService extends BaseService {
 
       const { trash } = await this.getConfig({ withCache: false });
 
-      // This is duplicated from asset.service - deleteAll()
-      await this.requireAccess({ auth, permission: Permission.AssetDelete, ids: idsToDelete });
-      await this.assetRepository.updateAll(idsToDelete, {
-        deletedAt: new Date(),
-        status: trash ? AssetStatus.Trashed : AssetStatus.Deleted,
-      });
-      await this.eventRepository.emit(trash ? 'AssetTrashAll' : 'AssetDeleteAll', {
-        assetIds: idsToDelete,
-        userId: auth.user.id,
+      await this.eventRepository.emit('AssetDeleteRequest', {
+        auth,
+        dto: { ids: idsToDelete, force: !trash },
       });
 
       hasNextPage = duplicates.hasNextPage;

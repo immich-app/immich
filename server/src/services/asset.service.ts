@@ -2,8 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import _ from 'lodash';
 import { DateTime, Duration } from 'luxon';
 import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
-import { AssetFile } from 'src/database';
-import { OnJob } from 'src/decorators';
+import { OnEvent, OnJob } from 'src/decorators';
 import { AssetResponseDto, MapAsset, SanitizedAssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
 import {
   AssetBulkDeleteDto,
@@ -372,6 +371,7 @@ export class AssetService extends BaseService {
     return JobStatus.Success;
   }
 
+  @OnEvent({ name: 'AssetDeleteRequest' })
   async deleteAll(auth: AuthDto, dto: AssetBulkDeleteDto): Promise<void> {
     const { ids, force } = dto;
 
