@@ -607,7 +607,7 @@ importers:
         version: 9.0.10
       '@types/lodash':
         specifier: ^4.14.197
-        version: 4.17.20
+        version: 4.17.21
       '@types/lodash-es':
         specifier: ^4.17.12
         version: 4.17.12
