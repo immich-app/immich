@@ -75,7 +75,7 @@ export class MaintenanceWorkerController {
     void this.service.setAction(dto);
   }
 
-  @Get('admin/database-backups/list')
+  @Get('admin/database-backups')
   @MaintenanceRoute()
   listBackups(): Promise<MaintenanceListBackupsResponseDto> {
     return this.service.listBackups();
