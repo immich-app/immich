@@ -7,7 +7,7 @@ import { pipeline } from 'node:stream/promises';
 import semver from 'semver';
 import { serverVersion } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
-import { StorageFolder } from 'src/enum';
+import { CacheControl, StorageFolder } from 'src/enum';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { DatabaseRepository } from 'src/repositories/database.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
@@ -266,9 +266,14 @@ export async function restoreBackup(
   logger.log(`Database Restore Success`);
 }
 
-export async function deleteBackup({ storage }: Pick<BackupRepos, 'storage'>, filename: string): Promise<void> {
+export async function deleteBackups({ storage }: Pick<BackupRepos, 'storage'>, files: string[]): Promise<void> {
   const backupsFolder = StorageCore.getBaseFolder(StorageFolder.Backups);
-  await storage.unlink(path.join(backupsFolder, filename));
+
+  if (files.some((filename) => !isValidBackupName(filename))) {
+    throw new BadRequestException('Invalid backup name!');
+  }
+
+  await Promise.all(files.map((filename) => storage.unlink(path.join(backupsFolder, filename))));
 }
 
 export async function listBackups({ storage }: Pick<BackupRepos, 'storage'>): Promise<string[]> {
@@ -287,11 +292,26 @@ export async function uploadBackup(
   const backupsFolder = StorageCore.getBaseFolder(StorageFolder.Backups);
   const fn = basename(file.originalname);
   if (!isValidBackupName(fn)) {
-    throw new BadRequestException('Not a valid backup name!');
+    throw new BadRequestException('Invalid backup name!');
   }
 
   const path = join(backupsFolder, `uploaded-${fn}`);
   await storage.createOrOverwriteFile(path, file.buffer);
+}
+
+export function downloadBackup(fileName: string) {
+  if (!isValidBackupName(fileName)) {
+    throw new BadRequestException('Invalid backup name!');
+  }
+
+  const path = join(StorageCore.getBaseFolder(StorageFolder.Backups), fileName);
+
+  return {
+    path,
+    fileName,
+    cacheControl: CacheControl.PrivateWithoutCache,
+    contentType: fileName.endsWith('.gz') ? 'application/gzip' : 'application/sql',
+  };
 }
 
 function createSqlProgressStreams(cb: (progress: number) => void) {

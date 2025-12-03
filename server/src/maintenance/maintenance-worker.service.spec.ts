@@ -450,17 +450,25 @@ describe(MaintenanceWorkerService.name, () => {
   });
 
   describe('deleteBackup', () => {
+    it('should reject invalid file names', async () => {
+      await expect(sut.deleteBackup(['filename'])).rejects.toThrowError(
+        new BadRequestException('Invalid backup name!'),
+      );
+    });
+
     it('should unlink the target file', async () => {
-      await sut.deleteBackup('filename');
+      await sut.deleteBackup(['filename.sql']);
       expect(mocks.storage.unlink).toHaveBeenCalledTimes(1);
-      expect(mocks.storage.unlink).toHaveBeenCalledWith(`${StorageCore.getBaseFolder(StorageFolder.Backups)}/filename`);
+      expect(mocks.storage.unlink).toHaveBeenCalledWith(
+        `${StorageCore.getBaseFolder(StorageFolder.Backups)}/filename.sql`,
+      );
     });
   });
 
   describe('uploadBackup', () => {
     it('should reject invalid file names', async () => {
       await expect(sut.uploadBackup({ originalname: 'invalid backup' } as never)).rejects.toThrowError(
-        new BadRequestException('Not a valid backup name!'),
+        new BadRequestException('Invalid backup name!'),
       );
     });
 

@@ -1,9 +1,6 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
-import { basename, join } from 'node:path';
-import { StorageCore } from 'src/cores/storage.core';
-import { CacheControl, StorageFolder } from 'src/enum';
+import { Injectable } from '@nestjs/common';
 import { BaseService } from 'src/services/base.service';
-import { deleteBackup, isValidBackupName, listBackups, uploadBackup } from 'src/utils/backups';
+import { deleteBackups, downloadBackup, listBackups, uploadBackup } from 'src/utils/backups';
 import { ImmichFileResponse } from 'src/utils/file';
 
 /**
@@ -15,12 +12,8 @@ export class DatabaseBackupService extends BaseService {
     return { backups: await listBackups(this.backupRepos) };
   }
 
-  async deleteBackup(files: string[]): Promise<void> {
-    if (files.some((filename) => !isValidBackupName(filename))) {
-      throw new BadRequestException('Invalid backup name!');
-    }
-
-    await Promise.all(files.map((filename) => deleteBackup(this.backupRepos, basename(filename))));
+  deleteBackup(files: string[]): Promise<void> {
+    return deleteBackups(this.backupRepos, files);
   }
 
   async uploadBackup(file: Express.Multer.File): Promise<void> {
@@ -28,18 +21,7 @@ export class DatabaseBackupService extends BaseService {
   }
 
   downloadBackup(fileName: string): ImmichFileResponse {
-    if (!isValidBackupName(fileName)) {
-      throw new BadRequestException('Invalid backup name!');
-    }
-
-    const path = join(StorageCore.getBaseFolder(StorageFolder.Backups), fileName);
-
-    return {
-      path,
-      fileName,
-      cacheControl: CacheControl.PrivateWithoutCache,
-      contentType: fileName.endsWith('.gz') ? 'application/gzip' : 'application/sql',
-    };
+    return downloadBackup(fileName);
   }
 
   private get backupRepos() {

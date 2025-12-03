@@ -1,10 +1,9 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { parse } from 'cookie';
 import { NextFunction, Request, Response } from 'express';
 import { jwtVerify } from 'jose';
 import { readFileSync } from 'node:fs';
 import { IncomingHttpHeaders } from 'node:http';
-import { join } from 'node:path';
 import { StorageCore } from 'src/cores/storage.core';
 import {
   MaintenanceAuthDto,
@@ -13,14 +12,7 @@ import {
   SetMaintenanceModeDto,
 } from 'src/dtos/maintenance.dto';
 import { ServerConfigDto } from 'src/dtos/server.dto';
-import {
-  CacheControl,
-  DatabaseLock,
-  ImmichCookie,
-  MaintenanceAction,
-  StorageFolder,
-  SystemMetadataKey,
-} from 'src/enum';
+import { DatabaseLock, ImmichCookie, MaintenanceAction, SystemMetadataKey } from 'src/enum';
 import { MaintenanceWebsocketRepository } from 'src/maintenance/maintenance-websocket.repository';
 import { AppRepository } from 'src/repositories/app.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
@@ -34,7 +26,7 @@ import { type BaseService as _BaseService } from 'src/services/base.service';
 import { type DatabaseBackupService as _DatabaseBackupService } from 'src/services/database-backup.service';
 import { type ServerService as _ServerService } from 'src/services/server.service';
 import { MaintenanceModeState } from 'src/types';
-import { deleteBackup, isValidBackupName, listBackups, restoreBackup, uploadBackup } from 'src/utils/backups';
+import { deleteBackups, downloadBackup, listBackups, restoreBackup, uploadBackup } from 'src/utils/backups';
 import { getConfig } from 'src/utils/config';
 import { ImmichFileResponse } from 'src/utils/file';
 import { createMaintenanceLoginUrl, detectPriorInstall } from 'src/utils/maintenance';
@@ -185,8 +177,8 @@ export class MaintenanceWorkerService {
   /**
    * {@link _DatabaseBackupService.deleteBackup}
    */
-  async deleteBackup(filename: string): Promise<void> {
-    return deleteBackup(this.backupRepos, filename);
+  async deleteBackup(files: string[]): Promise<void> {
+    return deleteBackups(this.backupRepos, files);
   }
 
   /**
@@ -200,18 +192,7 @@ export class MaintenanceWorkerService {
    * {@link _DatabaseBackupService.downloadBackup}
    */
   downloadBackup(fileName: string): ImmichFileResponse {
-    if (!isValidBackupName(fileName)) {
-      throw new BadRequestException('Invalid backup name!');
-    }
-
-    const path = join(StorageCore.getBaseFolder(StorageFolder.Backups), fileName);
-
-    return {
-      path,
-      fileName,
-      cacheControl: CacheControl.PrivateWithoutCache,
-      contentType: fileName.endsWith('.gz') ? 'application/gzip' : 'application/sql',
-    };
+    return downloadBackup(fileName);
   }
 
   private get backupRepos() {
