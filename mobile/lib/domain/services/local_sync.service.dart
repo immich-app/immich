@@ -63,8 +63,9 @@ class LocalSyncService {
 
       final deviceAlbums = await _nativeSyncApi.getAlbums();
       await _localAlbumRepository.updateAll(deviceAlbums.toLocalAlbums());
+      final newAssets = delta.updates.toLocalAssets();
       await _localAlbumRepository.processDelta(
-        updates: delta.updates.toLocalAssets(),
+        updates: newAssets,
         deletes: delta.deletes,
         assetAlbums: delta.assetAlbums,
       );
@@ -92,6 +93,8 @@ class LocalSyncService {
           }
           await updateAlbum(dbAlbum, album);
         }
+
+        await _mapIosCloudIds(newAssets);
       }
       await _nativeSyncApi.checkpointSync();
     } catch (e, s) {
@@ -130,9 +133,12 @@ class LocalSyncService {
     try {
       _log.fine("Adding device album ${album.name}");
 
-      final assets = album.assetCount > 0 ? await _nativeSyncApi.getAssetsForAlbum(album.id) : <PlatformAsset>[];
+      final assets = album.assetCount > 0
+          ? await _nativeSyncApi.getAssetsForAlbum(album.id).then((a) => a.toLocalAssets())
+          : <LocalAsset>[];
 
-      await _localAlbumRepository.upsert(album, toUpsert: assets.toLocalAssets());
+      await _localAlbumRepository.upsert(album, toUpsert: assets);
+      await _mapIosCloudIds(assets);
       _log.fine("Successfully added device album ${album.name}");
     } catch (e, s) {
       _log.warning("Error while adding device album", e, s);
@@ -202,13 +208,16 @@ class LocalSyncService {
         return false;
       }
 
-      final newAssets = await _nativeSyncApi.getAssetsForAlbum(deviceAlbum.id, updatedTimeCond: updatedTime);
+      final newAssets = await _nativeSyncApi
+          .getAssetsForAlbum(deviceAlbum.id, updatedTimeCond: updatedTime)
+          .then((a) => a.toLocalAssets());
 
       await _localAlbumRepository.upsert(
         deviceAlbum.copyWith(backupSelection: dbAlbum.backupSelection),
-        toUpsert: newAssets.toLocalAssets(),
+        toUpsert: newAssets,
       );
 
+      await _mapIosCloudIds(newAssets);
       return true;
     } catch (e, s) {
       _log.warning("Error on fast syncing local album: ${dbAlbum.name}", e, s);
@@ -240,6 +249,7 @@ class LocalSyncService {
       if (dbAlbum.assetCount == 0) {
         _log.fine("Device album ${deviceAlbum.name} is empty. Adding assets to DB.");
         await _localAlbumRepository.upsert(updatedDeviceAlbum, toUpsert: assetsInDevice);
+        await _mapIosCloudIds(assetsInDevice);
         return true;
       }
 
@@ -277,12 +287,23 @@ class LocalSyncService {
       }
 
       await _localAlbumRepository.upsert(updatedDeviceAlbum, toUpsert: assetsToUpsert, toDelete: assetsToDelete);
+      await _mapIosCloudIds(assetsToUpsert);
 
       return true;
     } catch (e, s) {
       _log.warning("Error on full syncing local album: ${dbAlbum.name}", e, s);
     }
     return true;
+  }
+
+  Future<void> _mapIosCloudIds(List<LocalAsset> assets) async {
+    if (!CurrentPlatform.isIOS || assets.isEmpty) {
+      return;
+    }
+
+    final assetIds = assets.map((a) => a.id).toList();
+    final cloudMapping = await _nativeSyncApi.getCloudIdForAssetIds(assetIds);
+    await _localAlbumRepository.updateCloudMapping(cloudMapping);
   }
 
   bool _assetsEqual(LocalAsset a, LocalAsset b) {

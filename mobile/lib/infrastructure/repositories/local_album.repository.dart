@@ -246,6 +246,25 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
     return query.map((row) => row.readTable(_db.localAssetEntity).toDto()).get();
   }
 
+  Future<void> updateCloudMapping(Map<String, String?> cloudMapping) {
+    if (cloudMapping.isEmpty) {
+      return Future.value();
+    }
+
+    return _db.batch((batch) {
+      for (final entry in cloudMapping.entries) {
+        final assetId = entry.key;
+        final cloudId = entry.value;
+
+        batch.update(
+          _db.localAssetEntity,
+          LocalAssetEntityCompanion(iCloudId: Value(cloudId)),
+          where: (f) => f.id.equals(assetId),
+        );
+      }
+    });
+  }
+
   Future<void> Function(Iterable<LocalAsset>) get _upsertAssets =>
       CurrentPlatform.isIOS ? _upsertAssetsDarwin : _upsertAssetsAndroid;
 

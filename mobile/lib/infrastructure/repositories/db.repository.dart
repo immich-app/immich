@@ -18,6 +18,7 @@ import 'package:immich_mobile/infrastructure/entities/remote_album.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_album_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_album_user.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/remote_asset_cloud_id.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/stack.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/trashed_local_asset.entity.dart';
@@ -57,6 +58,7 @@ class IsarDatabaseRepository implements IDatabaseRepository {
     RemoteAlbumEntity,
     RemoteAlbumAssetEntity,
     RemoteAlbumUserEntity,
+    RemoteAssetCloudIdEntity,
     MemoryEntity,
     MemoryAssetEntity,
     StackEntity,
@@ -95,7 +97,7 @@ class Drift extends $Drift implements IDatabaseRepository {
   }
 
   @override
-  int get schemaVersion => 14;
+  int get schemaVersion => 15;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -189,6 +191,12 @@ class Drift extends $Drift implements IDatabaseRepository {
             await m.addColumn(v14.localAssetEntity, v14.localAssetEntity.adjustmentTime);
             await m.addColumn(v14.localAssetEntity, v14.localAssetEntity.latitude);
             await m.addColumn(v14.localAssetEntity, v14.localAssetEntity.longitude);
+          },
+          from14To15: (m, v15) async {
+            // Add i_cloud_id to local and remote asset tables
+            await m.addColumn(v15.localAssetEntity, v15.localAssetEntity.iCloudId);
+            await m.createIndex(v15.idxLocalAssetCloudId);
+            await m.createTable(v15.remoteAssetCloudIdEntity);
           },
         ),
       );

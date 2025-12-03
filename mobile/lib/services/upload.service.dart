@@ -7,6 +7,7 @@ import 'package:cancellation_token_http/http.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
+import 'package:immich_mobile/domain/models/asset/asset_metadata.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
@@ -352,6 +353,8 @@ class UploadService {
       priority: priority,
       isFavorite: asset.isFavorite,
       requiresWiFi: requiresWiFi,
+      cloudId: asset.cloudId,
+      eTag: asset.eTag,
     );
   }
 
@@ -383,6 +386,8 @@ class UploadService {
       priority: 0, // Highest priority to get upload immediately
       isFavorite: asset.isFavorite,
       requiresWiFi: requiresWiFi,
+      cloudId: asset.cloudId,
+      eTag: asset.eTag,
     );
   }
 
@@ -410,6 +415,8 @@ class UploadService {
     int? priority,
     bool? isFavorite,
     bool requiresWiFi = true,
+    String? cloudId,
+    String? eTag,
   }) async {
     final serverEndpoint = Store.get(StoreKey.serverEndpoint);
     final url = Uri.parse('$serverEndpoint/assets').toString();
@@ -424,6 +431,12 @@ class UploadService {
       'fileModifiedAt': modifiedAt.toUtc().toIso8601String(),
       'isFavorite': isFavorite?.toString() ?? 'false',
       'duration': '0',
+      'metadata': jsonEncode([
+        RemoteAssetMetadataItem(
+          key: RemoteAssetMetadataKey.mobileApp,
+          value: RemoteAssetMobileAppMetadata(cloudId: cloudId, eTag: eTag),
+        ),
+      ]),
       if (fields != null) ...fields,
     };
 

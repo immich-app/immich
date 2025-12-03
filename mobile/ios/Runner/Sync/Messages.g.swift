@@ -377,6 +377,7 @@ protocol NativeSyncApi {
   func hashAssets(assetIds: [String], allowNetworkAccess: Bool, completion: @escaping (Result<[HashResult], Error>) -> Void)
   func cancelHashing() throws
   func getTrashedAssets() throws -> [String: [PlatformAsset]]
+  func getCloudIdForAssetIds(assetIds: [String]) throws -> [String: String?]
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -559,6 +560,23 @@ class NativeSyncApiSetup {
       }
     } else {
       getTrashedAssetsChannel.setMessageHandler(nil)
+    }
+    let getCloudIdForAssetIdsChannel = taskQueue == nil
+      ? FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.getCloudIdForAssetIds\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+      : FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.getCloudIdForAssetIds\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec, taskQueue: taskQueue)
+    if let api = api {
+      getCloudIdForAssetIdsChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let assetIdsArg = args[0] as! [String]
+        do {
+          let result = try api.getCloudIdForAssetIds(assetIds: assetIdsArg)
+          reply(wrapResult(result))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      getCloudIdForAssetIdsChannel.setMessageHandler(nil)
     }
   }
 }
