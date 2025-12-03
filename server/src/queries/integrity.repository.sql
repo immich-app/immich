@@ -95,7 +95,7 @@ select
   "allPaths"."path" as "path",
   "allPaths"."assetId",
   "allPaths"."fileAssetId",
-  "integrity_report"."path" as "reportId"
+  "integrity_report"."id" as "reportId"
 from
   (
     select
@@ -105,7 +105,7 @@ from
     from
       "asset"
     where
-      "asset"."deletedAt" is not null
+      "asset"."deletedAt" is null
     union all
     select
       "asset"."encodedVideoPath" as "path",
@@ -114,7 +114,7 @@ from
     from
       "asset"
     where
-      "asset"."deletedAt" is not null
+      "asset"."deletedAt" is null
       and "asset"."encodedVideoPath" is not null
       and "asset"."encodedVideoPath" != ''
     union all
