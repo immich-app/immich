@@ -39,7 +39,7 @@ describe(MaintenanceService.name, () => {
 
   describe('deleteBackup', () => {
     it('should unlink the target file', async () => {
-      await sut.deleteBackup('filename');
+      await sut.deleteBackup(['filename']);
       expect(mocks.storage.unlink).toHaveBeenCalledTimes(1);
       expect(mocks.storage.unlink).toHaveBeenCalledWith(`${StorageCore.getBaseFolder(StorageFolder.Backups)}/filename`);
     });
