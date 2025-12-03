@@ -620,10 +620,22 @@
             "description": ""
           }
         },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
         "summary": "Detect existing install",
         "tags": [
           "Maintenance (admin)"
         ],
+        "x-immich-admin-only": true,
         "x-immich-history": [
           {
             "version": "v2.4.0",
@@ -634,6 +646,7 @@
             "state": "Alpha"
           }
         ],
+        "x-immich-permission": "maintenance",
         "x-immich-state": "Alpha"
       }
     },
