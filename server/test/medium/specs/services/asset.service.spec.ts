@@ -242,7 +242,7 @@ describe(AssetService.name, () => {
 
       expect(ctx.getMock(JobRepository).queue).toHaveBeenCalledWith({
         name: JobName.FileDelete,
-        data: { files: [thumbnailPath, previewPath, sidecarPath, asset.originalPath ] },
+        data: { files: [thumbnailPath, previewPath, sidecarPath, asset.originalPath] },
       });
     });
 
