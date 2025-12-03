@@ -48,6 +48,7 @@
         <Scrollable class="max-h-80">
           <pre class="text-left"><code>{error}</code></pre>
         </Scrollable>
+        <Button onclick={end}>{$t('maintenance_end')}</Button>
       {:else}
         <ProgressBar progress={$status.progress || 0} />
         {#if $status.task !== 'ready'}
