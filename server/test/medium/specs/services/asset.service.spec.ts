@@ -223,6 +223,29 @@ describe(AssetService.name, () => {
   });
 
   describe('delete', () => {
+    it('should delete asset', async () => {
+      const { sut, ctx } = setup();
+      ctx.getMock(EventRepository).emit.mockResolvedValue();
+      ctx.getMock(JobRepository).queue.mockResolvedValue();
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      const thumbnailPath = '/path/to/thumbnail.jpg';
+      const previewPath = '/path/to/preview.jpg';
+      const sidecarPath = '/path/to/sidecar.xmp';
+      await Promise.all([
+        ctx.newAssetFile({ assetId: asset.id, type: AssetFileType.Thumbnail, path: thumbnailPath }),
+        ctx.newAssetFile({ assetId: asset.id, type: AssetFileType.Preview, path: previewPath }),
+        ctx.newAssetFile({ assetId: asset.id, type: AssetFileType.Sidecar, path: sidecarPath }),
+      ]);
+
+      await sut.handleAssetDeletion({ id: asset.id, deleteOnDisk: true });
+
+      expect(ctx.getMock(JobRepository).queue).toHaveBeenCalledWith({
+        name: JobName.FileDelete,
+        data: { files: [thumbnailPath, previewPath, sidecarPath, asset.originalPath ] },
+      });
+    });
+
     it('should not delete offline assets', async () => {
       const { sut, ctx } = setup();
       ctx.getMock(EventRepository).emit.mockResolvedValue();
