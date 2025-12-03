@@ -22,7 +22,10 @@ SELECT
 	rae.live_photo_video_id,
 	0 as orientation,
 	rae.stack_id,
-	NULL as i_cloud_id
+	NULL as i_cloud_id,
+	NULL as latitude,
+	NULL as longitude,
+	NULL as adjustmentTime
 FROM
 	remote_asset_entity rae
 LEFT JOIN
@@ -55,7 +58,10 @@ SELECT
 	NULL as live_photo_video_id,
 	lae.orientation,
 	NULL as stack_id,
-	lae.i_cloud_id
+	lae.i_cloud_id,
+	lae.latitude,
+	lae.longitude,
+	lae.adjustment_time
 FROM
 	local_asset_entity lae
 WHERE NOT EXISTS (

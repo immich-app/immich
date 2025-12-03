@@ -42,8 +42,13 @@ class LocalAsset extends BaseAsset {
   @override
   String get heroTag => '${id}_${remoteId ?? checksum}';
 
-  String get eTag =>
-      "${createdAt.millisecondsSinceEpoch ~/ 1000}$kUploadETagDelimiter${(adjustmentTime?.millisecondsSinceEpoch ?? 0) ~/ 1000}$kUploadETagDelimiter${latitude ?? 0}$kUploadETagDelimiter${longitude ?? 0}";
+  String get eTag {
+    final createdAt = this.createdAt.millisecondsSinceEpoch ~/ 1000;
+    final adjustmentTime = this.adjustmentTime?.millisecondsSinceEpoch ?? 0;
+    final latitude = this.latitude?.truncateTo(2).toStringAsFixed(2) ?? "0.00";
+    final longitude = this.longitude?.truncateTo(2).toStringAsFixed(2) ?? "0.00";
+    return "$createdAt$kUploadETagDelimiter$adjustmentTime$kUploadETagDelimiter$latitude$kUploadETagDelimiter$longitude";
+  }
 
   bool get hasCoordinates => latitude != null && longitude != null && latitude != 0 && longitude != 0;
 
