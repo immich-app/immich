@@ -1,7 +1,9 @@
 import 'package:drift/drift.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/asset/asset_metadata.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/extensions/drift_extensions.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
@@ -56,6 +58,20 @@ Future<void> _populateCloudIds(Drift drift) async {
 typedef _CloudIdMapping = ({String remoteAssetId, LocalAsset localAsset});
 
 Future<List<_CloudIdMapping>> _fetchCloudIdMappings(Drift drift, String userId) async {
+  final createdAt = drift.localAssetEntity.createdAt.strftime('%s');
+  final adjustmentTime = coalesce([drift.localAssetEntity.adjustmentTime.strftime('%s'), const Constant('0')]);
+  final latitude = coalesce([
+    drift.localAssetEntity.latitude,
+    const Constant(0.0),
+  ]).truncateTo(2).cast(DriftSqlType.string);
+  final longitude = coalesce([
+    drift.localAssetEntity.longitude,
+    const Constant(0.0),
+  ]).truncateTo(2).cast(DriftSqlType.string);
+
+  final delimiter = const Constant(kUploadETagDelimiter);
+  final eTag = createdAt + delimiter + adjustmentTime + delimiter + latitude + delimiter + longitude;
+
   final query =
       drift.remoteAssetEntity.select().join([
         leftOuterJoin(
@@ -71,7 +87,7 @@ Future<List<_CloudIdMapping>> _fetchCloudIdMappings(Drift drift, String userId) 
         drift.localAssetEntity.id.isNotNull() &
             drift.localAssetEntity.iCloudId.isNotNull() &
             drift.remoteAssetEntity.ownerId.equals(userId) &
-            drift.remoteAssetCloudIdEntity.cloudId.isNull(),
+            (drift.remoteAssetCloudIdEntity.cloudId.isNull() | drift.remoteAssetCloudIdEntity.eTag.isNotExp(eTag)),
       );
   return query.map((row) {
     return (
