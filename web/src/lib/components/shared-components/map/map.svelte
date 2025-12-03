@@ -376,7 +376,7 @@
           }
         }}
       >
-        {#snippet children({ feature }: { feature: Feature<Geometry, GeoJsonProperties> })}
+        {#snippet children({ feature }: { feature: Feature })}
           {#if useLocationPin}
             <Icon icon={mdiMapMarker} size="50px" class="text-primary -translate-y-[50%]" />
           {:else}

@@ -23162,13 +23162,13 @@
           "actionConfig": {
             "type": "object"
           },
-          "actionId": {
+          "pluginActionId": {
             "format": "uuid",
             "type": "string"
           }
         },
         "required": [
-          "actionId"
+          "pluginActionId"
         ],
         "type": "object"
       },
@@ -23178,14 +23178,14 @@
             "nullable": true,
             "type": "object"
           },
-          "actionId": {
-            "type": "string"
-          },
           "id": {
             "type": "string"
           },
           "order": {
             "type": "number"
+          },
+          "pluginActionId": {
+            "type": "string"
           },
           "workflowId": {
             "type": "string"
@@ -23193,9 +23193,9 @@
         },
         "required": [
           "actionConfig",
-          "actionId",
           "id",
           "order",
+          "pluginActionId",
           "workflowId"
         ],
         "type": "object"
@@ -23244,13 +23244,13 @@
           "filterConfig": {
             "type": "object"
           },
-          "filterId": {
+          "pluginFilterId": {
             "format": "uuid",
             "type": "string"
           }
         },
         "required": [
-          "filterId"
+          "pluginFilterId"
         ],
         "type": "object"
       },
@@ -23260,14 +23260,14 @@
             "nullable": true,
             "type": "object"
           },
-          "filterId": {
-            "type": "string"
-          },
           "id": {
             "type": "string"
           },
           "order": {
             "type": "number"
+          },
+          "pluginFilterId": {
+            "type": "string"
           },
           "workflowId": {
             "type": "string"
@@ -23275,9 +23275,9 @@
         },
         "required": [
           "filterConfig",
-          "filterId",
           "id",
           "order",
+          "pluginFilterId",
           "workflowId"
         ],
         "type": "object"

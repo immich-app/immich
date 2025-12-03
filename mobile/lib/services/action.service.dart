@@ -20,6 +20,7 @@ import 'package:immich_mobile/repositories/download.repository.dart';
 import 'package:immich_mobile/repositories/drift_album_api_repository.dart';
 import 'package:immich_mobile/repositories/local_files_manager.repository.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/utils/timezone.dart';
 import 'package:immich_mobile/widgets/common/date_time_picker.dart';
 import 'package:immich_mobile/widgets/common/location_picker.dart';
 import 'package:logging/logging.dart';
@@ -193,9 +194,17 @@ class ActionService {
       }
 
       final exifData = await _remoteAssetRepository.getExif(assetId);
-      initialDate = asset.createdAt.toLocal();
-      offset = initialDate.timeZoneOffset;
-      timeZone = exifData?.timeZone;
+
+      // Use EXIF timezone information if available (matching web app and display behavior)
+      DateTime dt = asset.createdAt.toLocal();
+      offset = dt.timeZoneOffset;
+
+      if (exifData?.dateTimeOriginal != null) {
+        timeZone = exifData!.timeZone;
+        (dt, offset) = applyTimezoneOffset(dateTime: exifData.dateTimeOriginal!, timeZone: exifData.timeZone);
+      }
+
+      initialDate = dt;
     }
 
     final dateTime = await showDateTimePicker(
