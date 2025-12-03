@@ -8,14 +8,22 @@ import {
   Memory,
   Partner,
   Session,
-  SidecarWriteAsset,
   User,
   UserAdmin,
 } from 'src/database';
 import { MapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { QueueStatisticsDto } from 'src/dtos/queue.dto';
-import { AssetStatus, AssetType, AssetVisibility, MemoryType, Permission, UserMetadataKey, UserStatus } from 'src/enum';
+import {
+  AssetFileType,
+  AssetStatus,
+  AssetType,
+  AssetVisibility,
+  MemoryType,
+  Permission,
+  UserMetadataKey,
+  UserStatus,
+} from 'src/enum';
 import { OnThisDayData, UserMetadataItem } from 'src/types';
 import { v4, v7 } from 'uuid';
 
@@ -237,7 +245,6 @@ const assetFactory = (asset: Partial<MapAsset> = {}) => ({
   originalFileName: 'IMG_123.jpg',
   originalPath: `/data/12/34/IMG_123.jpg`,
   ownerId: newUuid(),
-  sidecarPath: null,
   stackId: null,
   thumbhash: null,
   type: AssetType.Image,
@@ -312,12 +319,17 @@ const versionHistoryFactory = () => ({
   version: '1.123.45',
 });
 
-const assetSidecarWriteFactory = (asset: Partial<SidecarWriteAsset> = {}) => ({
+const assetSidecarWriteFactory = () => ({
   id: newUuid(),
-  sidecarPath: '/path/to/original-path.jpg.xmp',
   originalPath: '/path/to/original-path.jpg.xmp',
   tags: [],
-  ...asset,
+  files: [
+    {
+      id: newUuid(),
+      path: '/path/to/original-path.jpg.xmp',
+      type: AssetFileType.Sidecar,
+    },
+  ],
 });
 
 const assetOcrFactory = (
