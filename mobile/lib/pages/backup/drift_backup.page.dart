@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:app_settings/app_settings.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -8,18 +9,22 @@ import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/generated/intl_keys.g.dart';
 import 'package:immich_mobile/presentation/widgets/backup/backup_toggle_button.widget.dart';
+import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/backup/backup_album.provider.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/providers/sync_status.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/widgets/backup/backup_info_card.dart';
 import 'package:logging/logging.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
 @RoutePage()
@@ -113,6 +118,11 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
         ),
         actions: [
           IconButton(
+            icon: const Icon(Icons.cloud_upload),
+            onPressed: () => context.pushRoute(const DriftUploadDetailRoute()),
+            tooltip: "view_details".t(context: context),
+          ),
+          IconButton(
             onPressed: () {
               context.pushRoute(const DriftBackupOptionsRoute());
             },
@@ -161,10 +171,40 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
                       ),
                     ),
                   },
-                  TextButton.icon(
-                    icon: const Icon(Icons.info_outline_rounded),
-                    onPressed: () => context.pushRoute(const DriftUploadDetailRoute()),
-                    label: Text("view_details".t(context: context)),
+                  FutureBuilder(
+                    future: Permission.notification.isGranted,
+                    builder: (context, snapshot) {
+                      final isBackupEnabled = ref
+                          .watch(appSettingsServiceProvider)
+                          .getSetting(AppSettingsEnum.enableBackup);
+
+                      final isGranted = snapshot.data ?? false;
+
+                      if (isBackupEnabled && !isGranted && CurrentPlatform.isAndroid) {
+                        return Padding(
+                          padding: const EdgeInsets.only(top: 8, bottom: 8),
+                          child: Column(
+                            spacing: 0,
+                            children: [
+                              Text(
+                                "notification_backup_reliability".t(),
+                                style: context.textTheme.bodySmall?.copyWith(
+                                  color: context.colorScheme.onSurfaceSecondary,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              TextButton.icon(
+                                onPressed: () => AppSettings.openAppSettings(type: AppSettingsType.notification),
+                                icon: const Icon(Icons.open_in_new, size: 16),
+                                label: Text("enable_notifications".t()),
+                              ),
+                            ],
+                          ),
+                        );
+                      } else {
+                        return const SizedBox.shrink();
+                      }
+                    },
                   ),
                 ],
               ],
