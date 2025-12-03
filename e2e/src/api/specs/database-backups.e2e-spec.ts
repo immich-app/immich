@@ -55,13 +55,14 @@ describe('/admin/database-backups', () => {
     });
   });
 
-  describe('DELETE /:filename', async () => {
+  describe('DELETE /', async () => {
     it('should delete backup', async () => {
       const filename = await utils.createBackup(admin.accessToken);
 
       const { status } = await request(app)
-        .delete(`/admin/database-backups/${filename}`)
-        .set('Authorization', `Bearer ${admin.accessToken}`);
+        .delete(`/admin/database-backups`)
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send({ backups: [filename] });
 
       expect(status).toBe(200);
 
