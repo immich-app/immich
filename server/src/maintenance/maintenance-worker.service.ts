@@ -21,7 +21,6 @@ import {
   StorageFolder,
   SystemMetadataKey,
 } from 'src/enum';
-import { MaintenanceEphemeralStateRepository } from 'src/maintenance/maintenance-ephemeral-state.repository';
 import { MaintenanceWebsocketRepository } from 'src/maintenance/maintenance-websocket.repository';
 import { AppRepository } from 'src/repositories/app.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
@@ -46,13 +45,18 @@ import { getExternalDomain } from 'src/utils/misc';
  */
 @Injectable()
 export class MaintenanceWorkerService {
+  #secret: string = null!;
+  #status: MaintenanceStatusResponseDto = {
+    active: true,
+    action: MaintenanceAction.Start,
+  };
+
   constructor(
     protected logger: LoggingRepository,
     private appRepository: AppRepository,
     private configRepository: ConfigRepository,
     private systemMetadataRepository: SystemMetadataRepository,
     private maintenanceWebsocketRepository: MaintenanceWebsocketRepository,
-    private maintenanceEphemeralStateRepository: MaintenanceEphemeralStateRepository,
     private storageRepository: StorageRepository,
     private processRepository: ProcessRepository,
     private databaseRepository: DatabaseRepository,
@@ -60,24 +64,26 @@ export class MaintenanceWorkerService {
     this.logger.setContext(this.constructor.name);
   }
 
+  mock(status: MaintenanceStatusResponseDto) {
+    this.#secret = 'secret';
+    this.#status = status;
+  }
+
   async init() {
     const state = (await this.systemMetadataRepository.get(
       SystemMetadataKey.MaintenanceMode,
     )) as MaintenanceModeState & { isMaintenanceMode: true };
 
-    this.maintenanceEphemeralStateRepository.setSecret(state.secret);
-    this.maintenanceEphemeralStateRepository.setStatus({
+    this.#secret = state.secret;
+    this.#status = {
       active: true,
       action: state.action.action,
-    });
+    };
 
     StorageCore.setMediaLocation(this.detectMediaLocation());
 
     this.maintenanceWebsocketRepository.setAuthFn(async (client) => this.authenticate(client.request.headers));
-
-    this.maintenanceWebsocketRepository.setStatusUpdateFn((status) =>
-      this.maintenanceEphemeralStateRepository.setStatus(status),
-    );
+    this.maintenanceWebsocketRepository.setStatusUpdateFn((status) => (this.#status = status));
 
     await this.logSecret();
     void this.runAction(state.action);
@@ -218,15 +224,25 @@ export class MaintenanceWorkerService {
     };
   }
 
+  private getStatus(): MaintenanceStatusResponseDto {
+    return this.#status;
+  }
+
+  private getPublicStatus(): MaintenanceStatusResponseDto {
+    const state = structuredClone(this.#status);
+
+    if (state.error) {
+      state.error = 'Something went wrong, see logs!';
+    }
+
+    return state;
+  }
+
   setStatus(status: MaintenanceStatusResponseDto): void {
-    this.maintenanceEphemeralStateRepository.setStatus(status);
+    this.#status = status;
     this.maintenanceWebsocketRepository.serverSend('MaintenanceStatus', status);
     this.maintenanceWebsocketRepository.clientSend('MaintenanceStatusV1', 'private', status);
-    this.maintenanceWebsocketRepository.clientSend(
-      'MaintenanceStatusV1',
-      'public',
-      this.maintenanceEphemeralStateRepository.getPublicStatus(),
-    );
+    this.maintenanceWebsocketRepository.clientSend('MaintenanceStatusV1', 'public', this.getPublicStatus());
   }
 
   async logSecret(): Promise<void> {
@@ -238,7 +254,7 @@ export class MaintenanceWorkerService {
       {
         username: 'immich-admin',
       },
-      this.maintenanceEphemeralStateRepository.getSecret(),
+      this.#secret,
     );
 
     this.logger.log(`\n\n🚧 Immich is in maintenance mode, you can log in using the following URL:\n${url}\n`);
@@ -252,9 +268,9 @@ export class MaintenanceWorkerService {
   async status(potentiallyJwt?: string): Promise<MaintenanceStatusResponseDto> {
     try {
       await this.login(potentiallyJwt);
-      return this.maintenanceEphemeralStateRepository.getStatus();
+      return this.getStatus();
     } catch {
-      return this.maintenanceEphemeralStateRepository.getPublicStatus();
+      return this.getPublicStatus();
     }
   }
 
@@ -267,10 +283,8 @@ export class MaintenanceWorkerService {
       throw new UnauthorizedException('Missing JWT Token');
     }
 
-    const secret = this.maintenanceEphemeralStateRepository.getSecret();
-
     try {
-      const result = await jwtVerify<MaintenanceAuthDto>(jwt, new TextEncoder().encode(secret));
+      const result = await jwtVerify<MaintenanceAuthDto>(jwt, new TextEncoder().encode(this.#secret));
       return result.payload;
     } catch {
       throw new UnauthorizedException('Invalid JWT Token');
@@ -312,7 +326,7 @@ export class MaintenanceWorkerService {
 
     await this.systemMetadataRepository.set(SystemMetadataKey.MaintenanceMode, {
       isMaintenanceMode: true,
-      secret: this.maintenanceEphemeralStateRepository.getSecret(),
+      secret: this.#secret,
       action: {
         action: MaintenanceAction.Start,
       },
