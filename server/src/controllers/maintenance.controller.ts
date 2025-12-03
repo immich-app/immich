@@ -5,7 +5,7 @@ import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
   MaintenanceAuthDto,
-  MaintenanceIntegrityResponseDto,
+  MaintenanceDetectInstallResponseDto,
   MaintenanceLoginDto,
   MaintenanceStatusResponseDto,
   SetMaintenanceModeDto,
@@ -37,7 +37,7 @@ export class MaintenanceController {
     description: 'Collect integrity checks and other heuristics about local data.',
     history: new HistoryBuilder().added('v2.4.0').alpha('v2.4.0'),
   })
-  detectPriorInstall(): Promise<MaintenanceIntegrityResponseDto> {
+  detectPriorInstall(): Promise<MaintenanceDetectInstallResponseDto> {
     return this.service.detectPriorInstall();
   }
 

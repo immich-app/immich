@@ -5,7 +5,7 @@ import { randomBytes } from 'node:crypto';
 import { join } from 'node:path';
 import { Server as SocketIO } from 'socket.io';
 import { StorageCore } from 'src/cores/storage.core';
-import { MaintenanceAuthDto, MaintenanceIntegrityResponseDto } from 'src/dtos/maintenance.dto';
+import { MaintenanceAuthDto, MaintenanceDetectInstallResponseDto } from 'src/dtos/maintenance.dto';
 import { StorageFolder } from 'src/enum';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { AppRestartEvent } from 'src/repositories/event.repository';
@@ -79,7 +79,7 @@ export function generateMaintenanceSecret(): string {
 
 export async function detectPriorInstall(
   storageRepository: StorageRepository,
-): Promise<MaintenanceIntegrityResponseDto> {
+): Promise<MaintenanceDetectInstallResponseDto> {
   return {
     storage: await Promise.all(
       Object.values(StorageFolder).map(async (folder) => {

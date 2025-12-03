@@ -8,7 +8,7 @@ import { join } from 'node:path';
 import { StorageCore } from 'src/cores/storage.core';
 import {
   MaintenanceAuthDto,
-  MaintenanceIntegrityResponseDto,
+  MaintenanceDetectInstallResponseDto,
   MaintenanceStatusResponseDto,
   SetMaintenanceModeDto,
 } from 'src/dtos/maintenance.dto';
@@ -258,7 +258,7 @@ export class MaintenanceWorkerService {
     }
   }
 
-  detectPriorInstall(): Promise<MaintenanceIntegrityResponseDto> {
+  detectPriorInstall(): Promise<MaintenanceDetectInstallResponseDto> {
     return detectPriorInstall(this.storageRepository);
   }
 

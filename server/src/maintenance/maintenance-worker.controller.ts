@@ -15,7 +15,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { NextFunction, Request, Response } from 'express';
 import {
   MaintenanceAuthDto,
-  MaintenanceIntegrityResponseDto,
+  MaintenanceDetectInstallResponseDto,
   MaintenanceListBackupsResponseDto,
   MaintenanceLoginDto,
   MaintenanceStatusResponseDto,
@@ -49,8 +49,8 @@ export class MaintenanceWorkerController {
     return this.service.status(request.cookies[ImmichCookie.MaintenanceToken]);
   }
 
-  @Get('admin/maintenance/integrity')
-  detectPriorInstall(): Promise<MaintenanceIntegrityResponseDto> {
+  @Get('admin/maintenance/detect-install')
+  detectPriorInstall(): Promise<MaintenanceDetectInstallResponseDto> {
     return this.service.detectPriorInstall();
   }
 

@@ -2,7 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { OnEvent } from 'src/decorators';
 import {
   MaintenanceAuthDto,
-  MaintenanceIntegrityResponseDto,
+  MaintenanceDetectInstallResponseDto,
   MaintenanceStatusResponseDto,
   SetMaintenanceModeDto,
 } from 'src/dtos/maintenance.dto';
@@ -35,7 +35,7 @@ export class MaintenanceService extends BaseService {
     };
   }
 
-  detectPriorInstall(): Promise<MaintenanceIntegrityResponseDto> {
+  detectPriorInstall(): Promise<MaintenanceDetectInstallResponseDto> {
     return detectPriorInstall(this.storageRepository);
   }
 

@@ -30,7 +30,7 @@ export class MaintenanceStatusResponseDto {
   error?: string;
 }
 
-export class MaintenanceStorageFolderIntegrityDto {
+export class MaintenanceDetectInstallStorageFolderDto {
   @ValidateEnum({ enum: StorageFolder, name: 'StorageFolder' })
   folder!: StorageFolder;
   readable!: boolean;
@@ -38,8 +38,8 @@ export class MaintenanceStorageFolderIntegrityDto {
   files!: number;
 }
 
-export class MaintenanceIntegrityResponseDto {
-  storage!: MaintenanceStorageFolderIntegrityDto[];
+export class MaintenanceDetectInstallResponseDto {
+  storage!: MaintenanceDetectInstallStorageFolderDto[];
 }
 
 export class MaintenanceListBackupsResponseDto {

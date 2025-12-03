@@ -613,7 +613,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/MaintenanceIntegrityResponseDto"
+                  "$ref": "#/components/schemas/MaintenanceDetectInstallResponseDto"
                 }
               }
             },
@@ -17218,17 +17218,44 @@
         ],
         "type": "object"
       },
-      "MaintenanceIntegrityResponseDto": {
+      "MaintenanceDetectInstallResponseDto": {
         "properties": {
           "storage": {
             "items": {
-              "$ref": "#/components/schemas/MaintenanceStorageFolderIntegrityDto"
+              "$ref": "#/components/schemas/MaintenanceDetectInstallStorageFolderDto"
             },
             "type": "array"
           }
         },
         "required": [
           "storage"
+        ],
+        "type": "object"
+      },
+      "MaintenanceDetectInstallStorageFolderDto": {
+        "properties": {
+          "files": {
+            "type": "number"
+          },
+          "folder": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/StorageFolder"
+              }
+            ]
+          },
+          "readable": {
+            "type": "boolean"
+          },
+          "writable": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "files",
+          "folder",
+          "readable",
+          "writable"
         ],
         "type": "object"
       },
@@ -17279,33 +17306,6 @@
         "required": [
           "action",
           "active"
-        ],
-        "type": "object"
-      },
-      "MaintenanceStorageFolderIntegrityDto": {
-        "properties": {
-          "files": {
-            "type": "number"
-          },
-          "folder": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/StorageFolder"
-              }
-            ]
-          },
-          "readable": {
-            "type": "boolean"
-          },
-          "writable": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "files",
-          "folder",
-          "readable",
-          "writable"
         ],
         "type": "object"
       },
