@@ -172,12 +172,7 @@ export class IntegrityRepository {
             ),
         // .onRef('integrity_report.path', '=', 'allPaths.path')
       )
-      .select([
-        'allPaths.path as path',
-        'allPaths.assetId',
-        'allPaths.fileAssetId',
-        'integrity_report.path as reportId',
-      ])
+      .select(['allPaths.path as path', 'allPaths.assetId', 'allPaths.fileAssetId', 'integrity_report.id as reportId'])
       .stream();
   }
 
