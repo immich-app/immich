@@ -255,7 +255,7 @@ export class MediaService extends BaseService {
 
   private async extractImage(originalPath: string, minSize: number) {
     let extracted = await this.mediaRepository.extract(originalPath);
-    if (extracted && !(await this.shouldUseExtractedImage(extracted.buffer, minSize))) {
+    if (extracted && !this.shouldUseExtractedImage(extracted.dimensions, minSize)) {
       extracted = null;
     }
 
@@ -313,14 +313,21 @@ export class MediaService extends BaseService {
     ];
 
     let fullsizePath: string | undefined;
+    let fullsizeSize: number | undefined;
+    const originalSize =
+      asset.exifInfo.exifImageWidth && asset.exifInfo.exifImageHeight
+        ? Math.min(asset.exifInfo.exifImageWidth, asset.exifInfo.exifImageHeight)
+        : undefined;
 
     if (convertFullsize) {
       // convert a new fullsize image from the same source as the thumbnail
       fullsizePath = StorageCore.getImagePath(asset, AssetPathType.FullSize, image.fullsize.format);
+      fullsizeSize = originalSize;
       const fullsizeOptions = { format: image.fullsize.format, quality: image.fullsize.quality, ...thumbnailOptions };
       promises.push(this.mediaRepository.generateThumbnail(data, fullsizeOptions, fullsizePath));
     } else if (generateFullsize && extracted && extracted.format === RawExtractedFormat.Jpeg) {
       fullsizePath = StorageCore.getImagePath(asset, AssetPathType.FullSize, extracted.format);
+      fullsizeSize = Math.min(extracted.dimensions.width, extracted.dimensions.height);
       this.storageCore.ensureFolders(fullsizePath);
 
       // Write the buffer to disk with essential EXIF data
@@ -336,14 +343,14 @@ export class MediaService extends BaseService {
 
     const outputs = await Promise.all(promises);
 
-    const originalSize = asset.exifInfo.exifImageHeight;
     if (asset.exifInfo.projectionType === 'EQUIRECTANGULAR' && originalSize) {
-      this.copyPanoramaMetadataToThumbnails(
+      await this.copyPanoramaMetadataToThumbnails(
         asset.originalPath,
         originalSize,
         previewPath,
         image.preview.size,
         fullsizePath,
+        fullsizeSize,
       );
     }
 
@@ -356,6 +363,7 @@ export class MediaService extends BaseService {
     previewPath: string,
     previewSize: number,
     fullsizePath?: string,
+    fullsizeSize?: number,
   ) {
     const originalTags = await this.metadataRepository.readTags(originalPath);
 
@@ -379,7 +387,7 @@ export class MediaService extends BaseService {
     const promises = [
       // preview size is min(preview size, original size) so do the same for pano pixel adjustment
       scaleAndWriteData(previewPath, Math.min(1, previewSize / originalSize)),
-      fullsizePath ? scaleAndWriteData(fullsizePath, 1) : Promise.resolve(),
+      fullsizePath && fullsizeSize ? scaleAndWriteData(fullsizePath, fullsizeSize / originalSize) : Promise.resolve(),
     ];
     await Promise.all(promises);
   }
@@ -733,8 +741,8 @@ export class MediaService extends BaseService {
     }
   }
 
-  private async shouldUseExtractedImage(extractedPathOrBuffer: string | Buffer, targetSize: number) {
-    const { width, height } = await this.mediaRepository.getImageDimensions(extractedPathOrBuffer);
+  private shouldUseExtractedImage(extractedDimensions: ImageDimensions, targetSize: number) {
+    const { width, height } = extractedDimensions;
     const extractedSize = Math.min(width, height);
     return extractedSize >= targetSize;
   }

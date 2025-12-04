@@ -39,6 +39,7 @@ type ProgressEvent = {
 export type ExtractResult = {
   buffer: Buffer;
   format: RawExtractedFormat;
+  dimensions: ImageDimensions;
 };
 
 @Injectable()
@@ -55,28 +56,28 @@ export class MediaRepository {
   async extract(input: string): Promise<ExtractResult | null> {
     try {
       const buffer = await exiftool.extractBinaryTagToBuffer('JpgFromRaw2', input);
-      return { buffer, format: RawExtractedFormat.Jpeg };
+      return { buffer, format: RawExtractedFormat.Jpeg, dimensions: await this.getImageDimensions(buffer) };
     } catch (error: any) {
       this.logger.debug(`Could not extract JpgFromRaw2 buffer from image, trying JPEG from RAW next: ${error}`);
     }
 
     try {
       const buffer = await exiftool.extractBinaryTagToBuffer('JpgFromRaw', input);
-      return { buffer, format: RawExtractedFormat.Jpeg };
+      return { buffer, format: RawExtractedFormat.Jpeg, dimensions: await this.getImageDimensions(buffer) };
     } catch (error: any) {
       this.logger.debug(`Could not extract JPEG buffer from image, trying PreviewJXL next: ${error}`);
     }
 
     try {
       const buffer = await exiftool.extractBinaryTagToBuffer('PreviewJXL', input);
-      return { buffer, format: RawExtractedFormat.Jxl };
+      return { buffer, format: RawExtractedFormat.Jxl, dimensions: await this.getImageDimensions(buffer) };
     } catch (error: any) {
       this.logger.debug(`Could not extract PreviewJXL buffer from image, trying PreviewImage next: ${error}`);
     }
 
     try {
       const buffer = await exiftool.extractBinaryTagToBuffer('PreviewImage', input);
-      return { buffer, format: RawExtractedFormat.Jpeg };
+      return { buffer, format: RawExtractedFormat.Jpeg, dimensions: await this.getImageDimensions(buffer) };
     } catch (error: any) {
       this.logger.debug(`Could not extract preview buffer from image: ${error}`);
       return null;
@@ -269,7 +270,7 @@ export class MediaRepository {
     });
   }
 
-  async getImageDimensions(input: string | Buffer): Promise<ImageDimensions> {
+  private async getImageDimensions(input: string | Buffer): Promise<ImageDimensions> {
     const { width = 0, height = 0 } = await sharp(input).metadata();
     return { width, height };
   }
