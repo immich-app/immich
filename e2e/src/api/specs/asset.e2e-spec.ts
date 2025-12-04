@@ -1116,7 +1116,7 @@ describe('/asset', () => {
       expect(response.status).toBe(AssetMediaStatus.Created);
       const id = response.id;
       // longer timeout as the thumbnail generation from full-size raw files can take a while
-      await utils.waitForWebsocketEvent({ event: 'assetUpload', id });
+      await utils.waitForWebsocketEvent({ event: 'assetUpload', id, timeout: 20_000 });
 
       const asset = await utils.getAssetInfo(admin.accessToken, id);
       expect(asset.exifInfo).toBeDefined();
