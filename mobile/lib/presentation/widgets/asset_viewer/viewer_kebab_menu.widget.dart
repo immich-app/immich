@@ -8,7 +8,9 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_bu
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
 
 class ViewerKebabMenu extends ConsumerWidget {
-  const ViewerKebabMenu({super.key});
+  final VoidCallback onConfigureButtons;
+
+  const ViewerKebabMenu({super.key, required this.onConfigureButtons});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -24,6 +26,8 @@ class ViewerKebabMenu extends ConsumerWidget {
         iconData: Icons.info_outline,
         onPressed: () => EventStream.shared.emit(const ViewerOpenBottomSheetEvent()),
       ),
+      const Divider(height: 0),
+      BaseActionButton(label: 'reorder_buttons'.tr(), iconData: Icons.tune, onPressed: onConfigureButtons),
     ];
 
     return MenuAnchor(

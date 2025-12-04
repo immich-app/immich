@@ -14,6 +14,7 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/favorite_actio
 import 'package:immich_mobile/presentation/widgets/action_buttons/motion_photo_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/unfavorite_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
+import 'package:immich_mobile/presentation/widgets/asset_viewer/quick_action_configurator.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/viewer_kebab_menu.widget.dart';
 import 'package:immich_mobile/providers/activity.provider.dart';
 import 'package:immich_mobile/providers/cast.provider.dart';
@@ -65,6 +66,21 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
 
     final isCasting = ref.watch(castProvider.select((c) => c.isCasting));
 
+    Future<void> openConfigurator() async {
+      final viewerNotifier = ref.read(assetViewerProvider.notifier);
+
+      viewerNotifier.setBottomSheet(true);
+
+      await showModalBottomSheet<void>(
+        context: context,
+        isScrollControlled: true,
+        enableDrag: false,
+        builder: (sheetContext) => const FractionallySizedBox(heightFactor: 0.75, child: QuickActionConfigurator()),
+      ).whenComplete(() {
+        viewerNotifier.setBottomSheet(false);
+      });
+    }
+
     final actions = <Widget>[
       if (asset.isRemoteOnly) const DownloadActionButton(source: ActionSource.viewer, menuItem: true),
       if (isCasting || (asset.hasRemote)) const CastActionButton(menuItem: true),
@@ -90,12 +106,12 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
       if (asset.hasRemote && isOwner && asset.isFavorite)
         const UnFavoriteActionButton(source: ActionSource.viewer, menuItem: true),
       if (asset.isMotionPhoto) const MotionPhotoActionButton(menuItem: true),
-      const ViewerKebabMenu(),
+      ViewerKebabMenu(onConfigureButtons: openConfigurator),
     ];
 
     final lockedViewActions = <Widget>[
       if (isCasting || (asset.hasRemote)) const CastActionButton(menuItem: true),
-      const ViewerKebabMenu(),
+      ViewerKebabMenu(onConfigureButtons: openConfigurator),
     ];
 
     return IgnorePointer(

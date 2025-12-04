@@ -1727,6 +1727,7 @@
   "removed_photo_from_memory": "Removed photo from memory",
   "removed_tagged_assets": "Removed tag from {count, plural, one {# asset} other {# assets}}",
   "rename": "Rename",
+  "reorder_buttons": "Reorder buttons",
   "repair": "Repair",
   "repair_no_results_message": "Untracked and missing files will show up here",
   "replace_with_upload": "Replace with upload",
