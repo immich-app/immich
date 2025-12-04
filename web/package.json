@@ -93,7 +93,7 @@
     "factory.ts": "^1.4.1",
     "globals": "^16.0.0",
     "happy-dom": "^20.0.0",
-    "prettier": "^3.4.2",
+    "prettier": "^3.7.4",
     "prettier-plugin-organize-imports": "^4.0.0",
     "prettier-plugin-sort-json": "^4.1.1",
     "prettier-plugin-svelte": "^3.3.3",

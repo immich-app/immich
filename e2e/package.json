@@ -43,7 +43,7 @@
     "oidc-provider": "^9.0.0",
     "pg": "^8.11.3",
     "pngjs": "^7.0.0",
-    "prettier": "^3.2.5",
+    "prettier": "^3.7.4",
     "prettier-plugin-organize-imports": "^4.0.0",
     "sharp": "^0.34.5",
     "socket.io-client": "^4.7.4",
