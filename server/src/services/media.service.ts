@@ -42,6 +42,7 @@ import { getAssetFiles, getDimensions } from 'src/utils/asset.util';
 import { BaseConfig, ThumbnailConfig } from 'src/utils/media';
 import { mimeTypes } from 'src/utils/mime-types';
 import { clamp, isFaceImportEnabled, isFacialRecognitionEnabled } from 'src/utils/misc';
+import { getOutputDimensions } from 'src/utils/transform';
 interface UpsertFileOptions {
   assetId: string;
   type: AssetFileType;
@@ -422,9 +423,10 @@ export class MediaService extends BaseService {
       await Promise.all(promises);
     }
 
-    const dims = await this.mediaRepository.getImageDimensions(fullsizePath ?? asset.originalPath);
+    const decodedDimensions = { width: info.width, height: info.height };
+    const fullsizeDimensions = useEdits ? getOutputDimensions(asset.edits, decodedDimensions) : decodedDimensions;
 
-    return { previewPath, thumbnailPath, fullsizePath, thumbhash: outputs[0] as Buffer, fullsizeDimensions: dims };
+    return { previewPath, thumbnailPath, fullsizePath, thumbhash: outputs[0] as Buffer, fullsizeDimensions };
   }
 
   @OnJob({ name: JobName.PersonGenerateThumbnail, queue: QueueName.ThumbnailGeneration })
