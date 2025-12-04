@@ -3,17 +3,25 @@
 -- AssetRepository.updateAllExif
 update "asset_exif"
 set
-  "model" = $1
+  "model" = $1,
+  "lockedProperties" = array(
+    select distinct
+      unnest(array_cat("lockedProperties", $2))
+  )
 where
-  "assetId" in ($2)
+  "assetId" in ($3)
 
 -- AssetRepository.updateDateTimeOriginal
 update "asset_exif"
 set
   "dateTimeOriginal" = "dateTimeOriginal" + $1::interval,
-  "timeZone" = $2
+  "timeZone" = $2,
+  "lockedProperties" = array(
+    select distinct
+      unnest(array_cat("lockedProperties", $3))
+  )
 where
-  "assetId" in ($3)
+  "assetId" in ($4)
 returning
   "assetId",
   "dateTimeOriginal",

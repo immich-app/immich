@@ -30,7 +30,7 @@ import {
   QueueName,
 } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
-import { ISidecarWriteJob, JobItem, JobOf } from 'src/types';
+import { JobItem, JobOf } from 'src/types';
 import { requireElevatedPermission } from 'src/utils/access';
 import { getAssetFiles, getMyPartnerIds, onAfterUnlink, onBeforeLink, onBeforeUnlink } from 'src/utils/asset.util';
 
@@ -143,9 +143,9 @@ export class AssetService extends BaseService {
     await this.requireAccess({ auth, permission: Permission.AssetUpdate, ids });
 
     const assetDto = { isFavorite, visibility, duplicateId };
-    const exifDto = { latitude, longitude, rating, description, dateTimeOriginal };
+    const exifDto = _.omitBy({ latitude, longitude, rating, description, dateTimeOriginal }, _.isUndefined);
 
-    const isExifChanged = Object.values(exifDto).some((v) => v !== undefined);
+    const isExifChanged = Object.keys(exifDto).length > 0;
     if (isExifChanged) {
       await this.assetRepository.updateAllExif(ids, exifDto);
     }
@@ -456,12 +456,25 @@ export class AssetService extends BaseService {
     return asset;
   }
 
-  private async updateExif(dto: ISidecarWriteJob) {
+  private async updateExif(dto: {
+    id: string;
+    description?: string;
+    dateTimeOriginal?: string;
+    latitude?: number;
+    longitude?: number;
+    rating?: number;
+  }) {
     const { id, description, dateTimeOriginal, latitude, longitude, rating } = dto;
     const writes = _.omitBy({ description, dateTimeOriginal, latitude, longitude, rating }, _.isUndefined);
     if (Object.keys(writes).length > 0) {
-      await this.assetRepository.upsertExif({ assetId: id, ...writes });
-      await this.jobRepository.queue({ name: JobName.SidecarWrite, data: { id, ...writes } });
+      await this.assetRepository.upsertExif(
+        {
+          assetId: id,
+          ...writes,
+        },
+        { lockedPropertiesBehavior: 'update' },
+      );
+      await this.jobRepository.queue({ name: JobName.SidecarWrite, data: { id } });
     }
   }
 }

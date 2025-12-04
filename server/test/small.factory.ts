@@ -4,6 +4,7 @@ import {
   AuthApiKey,
   AuthSharedLink,
   AuthUser,
+  Exif,
   Library,
   Memory,
   Partner,
@@ -319,18 +320,28 @@ const versionHistoryFactory = () => ({
   version: '1.123.45',
 });
 
-const assetSidecarWriteFactory = () => ({
-  id: newUuid(),
-  originalPath: '/path/to/original-path.jpg.xmp',
-  tags: [],
-  files: [
-    {
-      id: newUuid(),
-      path: '/path/to/original-path.jpg.xmp',
-      type: AssetFileType.Sidecar,
-    },
-  ],
-});
+const assetSidecarWriteFactory = () => {
+  const id = newUuid();
+  return {
+    id,
+    originalPath: '/path/to/original-path.jpg.xmp',
+    tags: [],
+    files: [
+      {
+        id: newUuid(),
+        path: '/path/to/original-path.jpg.xmp',
+        type: AssetFileType.Sidecar,
+      },
+    ],
+    exifInfo: {
+      assetId: id,
+      description: 'this is a description',
+      latitude: 12,
+      longitude: 12,
+      dateTimeOriginal: '2023-11-22T04:56:12.196Z',
+    } as unknown as Exif,
+  };
+};
 
 const assetOcrFactory = (
   ocr: {
