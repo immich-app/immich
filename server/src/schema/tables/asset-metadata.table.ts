@@ -12,7 +12,6 @@ import {
   Timestamp,
   UpdateDateColumn,
 } from 'src/sql-tools';
-import { AssetMetadata, AssetMetadataItem } from 'src/types';
 
 @UpdatedAtTrigger('asset_metadata_updated_at')
 @Table('asset_metadata')
@@ -22,7 +21,7 @@ import { AssetMetadata, AssetMetadataItem } from 'src/types';
   referencingOldTableAs: 'old',
   when: 'pg_trigger_depth() = 0',
 })
-export class AssetMetadataTable<T extends keyof AssetMetadata = AssetMetadataKey> implements AssetMetadataItem<T> {
+export class AssetMetadataTable {
   @ForeignKeyColumn(() => AssetTable, {
     onUpdate: 'CASCADE',
     onDelete: 'CASCADE',
@@ -33,10 +32,10 @@ export class AssetMetadataTable<T extends keyof AssetMetadata = AssetMetadataKey
   assetId!: string;
 
   @PrimaryColumn({ type: 'character varying' })
-  key!: T;
+  key!: AssetMetadataKey;
 
   @Column({ type: 'jsonb' })
-  value!: AssetMetadata[T];
+  value!: object;
 
   @UpdateIdColumn({ index: true })
   updateId!: Generated<string>;

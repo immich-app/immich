@@ -7,6 +7,7 @@
   import LibrarySettings from '$lib/components/admin-settings/LibrarySettings.svelte';
   import LoggingSettings from '$lib/components/admin-settings/LoggingSettings.svelte';
   import MachineLearningSettings from '$lib/components/admin-settings/MachineLearningSettings.svelte';
+  import MaintenanceSettings from '$lib/components/admin-settings/MaintenanceSettings.svelte';
   import MapSettings from '$lib/components/admin-settings/MapSettings.svelte';
   import MetadataSettings from '$lib/components/admin-settings/MetadataSettings.svelte';
   import NewVersionCheckSettings from '$lib/components/admin-settings/NewVersionCheckSettings.svelte';
@@ -26,7 +27,7 @@
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { systemConfigManager } from '$lib/managers/system-config-manager.svelte';
   import { getSystemConfigActions } from '$lib/services/system-config.service';
-  import { Alert, HStack } from '@immich/ui';
+  import { Alert, CommandPaletteContext, HStack } from '@immich/ui';
   import {
     mdiAccountOutline,
     mdiBackupRestore,
@@ -40,6 +41,7 @@
     mdiLockOutline,
     mdiMapMarkerOutline,
     mdiPaletteOutline,
+    mdiRestore,
     mdiRobotOutline,
     mdiServerOutline,
     mdiSync,
@@ -112,6 +114,13 @@
       subtitle: $t('admin.machine_learning_settings_description'),
       key: 'machine-learning',
       icon: mdiRobotOutline,
+    },
+    {
+      component: MaintenanceSettings,
+      title: $t('admin.maintenance_settings'),
+      subtitle: $t('admin.maintenance_settings_description'),
+      key: 'maintenance',
+      icon: mdiRestore,
     },
     {
       component: MapSettings,
@@ -206,7 +215,9 @@
   );
 </script>
 
-<AdminPageLayout title={data.meta.title}>
+<CommandPaletteContext commands={[CopyToClipboard, Upload, Download]} />
+
+<AdminPageLayout breadcrumbs={[{ title: data.meta.title }]}>
   {#snippet buttons()}
     <HStack gap={1}>
       <div class="hidden lg:block">

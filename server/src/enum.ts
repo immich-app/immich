@@ -5,6 +5,7 @@ export enum AuthType {
 
 export enum ImmichCookie {
   AccessToken = 'immich_access_token',
+  MaintenanceToken = 'immich_maintenance_token',
   AuthType = 'immich_auth_type',
   IsAuthenticated = 'immich_is_authenticated',
   SharedLinkToken = 'immich_shared_link_token',
@@ -43,6 +44,7 @@ export enum AssetFileType {
   FullSize = 'fullsize',
   Preview = 'preview',
   Thumbnail = 'thumbnail',
+  Sidecar = 'sidecar',
 }
 
 export enum AlbumUserRole {
@@ -146,6 +148,8 @@ export enum Permission {
   TimelineRead = 'timeline.read',
   TimelineDownload = 'timeline.download',
 
+  Maintenance = 'maintenance',
+
   MemoryCreate = 'memory.create',
   MemoryRead = 'memory.read',
   MemoryUpdate = 'memory.update',
@@ -245,6 +249,14 @@ export enum Permission {
   UserProfileImageUpdate = 'userProfileImage.update',
   UserProfileImageDelete = 'userProfileImage.delete',
 
+  QueueRead = 'queue.read',
+  QueueUpdate = 'queue.update',
+
+  QueueJobCreate = 'queueJob.create',
+  QueueJobRead = 'queueJob.read',
+  QueueJobUpdate = 'queueJob.update',
+  QueueJobDelete = 'queueJob.delete',
+
   WorkflowCreate = 'workflow.create',
   WorkflowRead = 'workflow.read',
   WorkflowUpdate = 'workflow.update',
@@ -285,6 +297,7 @@ export enum SystemMetadataKey {
   FacialRecognitionState = 'facial-recognition-state',
   MemoriesState = 'memories-state',
   AdminOnboarding = 'admin-onboarding',
+  MaintenanceMode = 'maintenance-mode',
   SystemConfig = 'system-config',
   SystemFlags = 'system-flags',
   VersionCheckState = 'version-check-state',
@@ -477,6 +490,7 @@ export enum ImmichEnvironment {
 
 export enum ImmichWorker {
   Api = 'api',
+  Maintenance = 'maintenance',
   Microservices = 'microservices',
 }
 
@@ -536,6 +550,15 @@ export enum QueueName {
   BackupDatabase = 'backupDatabase',
   Ocr = 'ocr',
   Workflow = 'workflow',
+}
+
+export enum QueueJobStatus {
+  Active = 'active',
+  Failed = 'failed',
+  Complete = 'completed',
+  Delayed = 'delayed',
+  Waiting = 'waiting',
+  Paused = 'paused',
 }
 
 export enum JobName {
@@ -619,9 +642,13 @@ export enum JobName {
 
 export enum QueueCommand {
   Start = 'start',
+  /** @deprecated Use `updateQueue` instead */
   Pause = 'pause',
+  /** @deprecated Use `updateQueue` instead */
   Resume = 'resume',
+  /** @deprecated Use `emptyQueue` instead */
   Empty = 'empty',
+  /** @deprecated Use `emptyQueue` instead */
   ClearFailed = 'clear-failed',
 }
 
@@ -653,6 +680,15 @@ export enum DatabaseLock {
   GetSystemConfig = 69,
   BackupDatabase = 42,
   MemoryCreation = 777,
+}
+
+export enum MaintenanceAction {
+  Start = 'start',
+  End = 'end',
+}
+
+export enum ExitCode {
+  AppRestart = 7,
 }
 
 export enum SyncRequestType {
@@ -801,6 +837,7 @@ export enum ApiTag {
   Faces = 'Faces',
   Jobs = 'Jobs',
   Libraries = 'Libraries',
+  Maintenance = 'Maintenance (admin)',
   Map = 'Map',
   Memories = 'Memories',
   Notifications = 'Notifications',
@@ -808,6 +845,7 @@ export enum ApiTag {
   Partners = 'Partners',
   People = 'People',
   Plugins = 'Plugins',
+  Queues = 'Queues',
   Search = 'Search',
   Server = 'Server',
   Sessions = 'Sessions',

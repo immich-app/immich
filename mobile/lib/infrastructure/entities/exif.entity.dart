@@ -165,8 +165,7 @@ extension RemoteExifEntityDataDomainEx on RemoteExifEntityData {
     f: fNumber?.toDouble(),
     mm: focalLength?.toDouble(),
     lens: lens,
-    width: width?.toDouble(),
-    height: height?.toDouble(),
     isFlipped: ExifDtoConverter.isOrientationFlipped(orientation),
+    exposureSeconds: ExifDtoConverter.exposureTimeToSeconds(exposureTime),
   );
 }

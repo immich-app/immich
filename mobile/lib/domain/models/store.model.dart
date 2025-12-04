@@ -71,7 +71,8 @@ enum StoreKey<T> {
   readonlyModeEnabled<bool>._(138),
 
   autoPlayVideo<bool>._(139),
-  viewerQuickActionOrder<String>._(140),
+  albumGridView<bool>._(140),
+  viewerQuickActionOrder<String>._(141),
 
   // Experimental stuff
   photoManagerCustomFilter<bool>._(1000),

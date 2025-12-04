@@ -358,6 +358,8 @@ class ApiClient {
           return ImageFormatTypeTransformer().decode(value);
         case 'JobCreateDto':
           return JobCreateDto.fromJson(value);
+        case 'JobName':
+          return JobNameTypeTransformer().decode(value);
         case 'JobSettingsDto':
           return JobSettingsDto.fromJson(value);
         case 'LibraryResponseDto':
@@ -378,6 +380,12 @@ class ApiClient {
           return LogoutResponseDto.fromJson(value);
         case 'MachineLearningAvailabilityChecksDto':
           return MachineLearningAvailabilityChecksDto.fromJson(value);
+        case 'MaintenanceAction':
+          return MaintenanceActionTypeTransformer().decode(value);
+        case 'MaintenanceAuthDto':
+          return MaintenanceAuthDto.fromJson(value);
+        case 'MaintenanceLoginDto':
+          return MaintenanceLoginDto.fromJson(value);
         case 'ManualJobName':
           return ManualJobNameTypeTransformer().decode(value);
         case 'MapMarkerResponseDto':
@@ -490,16 +498,26 @@ class ApiClient {
           return QueueCommandTypeTransformer().decode(value);
         case 'QueueCommandDto':
           return QueueCommandDto.fromJson(value);
+        case 'QueueDeleteDto':
+          return QueueDeleteDto.fromJson(value);
+        case 'QueueJobResponseDto':
+          return QueueJobResponseDto.fromJson(value);
+        case 'QueueJobStatus':
+          return QueueJobStatusTypeTransformer().decode(value);
         case 'QueueName':
           return QueueNameTypeTransformer().decode(value);
         case 'QueueResponseDto':
           return QueueResponseDto.fromJson(value);
+        case 'QueueResponseLegacyDto':
+          return QueueResponseLegacyDto.fromJson(value);
         case 'QueueStatisticsDto':
           return QueueStatisticsDto.fromJson(value);
-        case 'QueueStatusDto':
-          return QueueStatusDto.fromJson(value);
-        case 'QueuesResponseDto':
-          return QueuesResponseDto.fromJson(value);
+        case 'QueueStatusLegacyDto':
+          return QueueStatusLegacyDto.fromJson(value);
+        case 'QueueUpdateDto':
+          return QueueUpdateDto.fromJson(value);
+        case 'QueuesResponseLegacyDto':
+          return QueuesResponseLegacyDto.fromJson(value);
         case 'RandomSearchDto':
           return RandomSearchDto.fromJson(value);
         case 'RatingsResponse':
@@ -562,6 +580,8 @@ class ApiClient {
           return SessionUnlockDto.fromJson(value);
         case 'SessionUpdateDto':
           return SessionUpdateDto.fromJson(value);
+        case 'SetMaintenanceModeDto':
+          return SetMaintenanceModeDto.fromJson(value);
         case 'SharedLinkCreateDto':
           return SharedLinkCreateDto.fromJson(value);
         case 'SharedLinkEditDto':
