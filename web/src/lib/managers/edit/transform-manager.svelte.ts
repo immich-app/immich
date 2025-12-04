@@ -40,7 +40,7 @@ class TransformManager implements EditToolManager {
   cropFrame = $state<HTMLElement | null>(null);
   cropImageSize = $state([1000, 1000]);
   cropImageScale = $state(1);
-  cropAspectRatio = $state('free' as CropAspectRatio);
+  cropAspectRatio = $state("free");
   region = $state({ x: 0, y: 0, width: 100, height: 100 });
 
   imageRotation = $state(0);
@@ -52,7 +52,7 @@ class TransformManager implements EditToolManager {
 
   edits = $derived.by(() => this.getEdits());
 
-  setAspectRatio(aspectRatio: CropAspectRatio) {
+  setAspectRatio(aspectRatio: string) {
     this.cropAspectRatio = aspectRatio;
 
     if (!this.imgElement || !this.cropAreaEl) {
@@ -161,7 +161,7 @@ class TransformManager implements EditToolManager {
     this.onImageLoad();
   }
 
-  recalculateCrop(aspectRatio: CropAspectRatio = this.cropAspectRatio): CropSettings {
+  recalculateCrop(aspectRatio: string = this.cropAspectRatio): CropSettings {
     if (!this.cropAreaEl) {
       return this.region;
     }
@@ -226,7 +226,7 @@ class TransformManager implements EditToolManager {
     requestAnimationFrame(animate);
   }
 
-  keepAspectRatio(newWidth: number, newHeight: number, aspectRatio: CropAspectRatio = this.cropAspectRatio) {
+  keepAspectRatio(newWidth: number, newHeight: number, aspectRatio: string = this.cropAspectRatio) {
     const [widthRatio, heightRatio] = aspectRatio.split(':').map(Number);
 
     if (widthRatio && heightRatio) {
@@ -240,7 +240,7 @@ class TransformManager implements EditToolManager {
   adjustDimensions(
     newWidth: number,
     newHeight: number,
-    aspectRatio: CropAspectRatio,
+    aspectRatio: string,
     xLimit: number,
     yLimit: number,
     minSize: number,
@@ -923,6 +923,16 @@ class TransformManager implements EditToolManager {
     }
 
     this.isInteracting = !toDark;
+  }
+
+  resetCrop() {
+    this.cropAspectRatio = 'free';
+    this.region = {
+      x: 0,
+      y: 0,
+      width: this.cropImageSize[0] * this.cropImageScale - 1,
+      height: this.cropImageSize[1] * this.cropImageScale - 1,
+    };
   }
 }
 
