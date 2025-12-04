@@ -1,11 +1,13 @@
 import { goto } from '$app/navigation';
 import { eventManager } from '$lib/managers/event-manager.svelte';
+import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
 import PasswordResetSuccessModal from '$lib/modals/PasswordResetSuccessModal.svelte';
 import UserCreateModal from '$lib/modals/UserCreateModal.svelte';
 import UserDeleteConfirmModal from '$lib/modals/UserDeleteConfirmModal.svelte';
 import UserEditModal from '$lib/modals/UserEditModal.svelte';
 import UserRestoreConfirmModal from '$lib/modals/UserRestoreConfirmModal.svelte';
 import { user as authUser } from '$lib/stores/user.store';
+import type { HeaderButtonActionItem } from '$lib/types';
 import { handleError } from '$lib/utils/handle-error';
 import { getFormatter } from '$lib/utils/i18n';
 import {
@@ -28,6 +30,7 @@ import {
   mdiPlusBoxOutline,
   mdiTrashCanOutline,
 } from '@mdi/js';
+import { DateTime } from 'luxon';
 import type { MessageFormatter } from 'svelte-i18n';
 import { get } from 'svelte/store';
 
@@ -36,7 +39,7 @@ export const getUserAdminsActions = ($t: MessageFormatter) => {
     title: $t('create_user'),
     type: $t('command'),
     icon: mdiPlusBoxOutline,
-    onAction: () => void modalManager.show(UserCreateModal, {}),
+    onAction: () => modalManager.show(UserCreateModal, {}),
     shortcuts: { shift: true, key: 'n' },
   };
 
@@ -60,11 +63,17 @@ export const getUserAdminActions = ($t: MessageFormatter, user: UserAdminRespons
     shortcuts: { key: 'Backspace' },
   };
 
-  const Restore: ActionItem = {
+  const getDeleteDate = (deletedAt: string): Date =>
+    DateTime.fromISO(deletedAt).plus({ days: serverConfigManager.value.userDeleteDelay }).toJSDate();
+
+  const Restore: HeaderButtonActionItem = {
     icon: mdiDeleteRestore,
     title: $t('restore'),
     type: $t('command'),
     color: 'primary',
+    data: {
+      title: $t('admin.user_restore_scheduled_removal', { values: { date: getDeleteDate(user.deletedAt!) } }),
+    },
     $if: () => !!user.deletedAt && user.status === UserStatus.Deleted,
     onAction: () => modalManager.show(UserRestoreConfirmModal, { user }),
   };
@@ -74,14 +83,14 @@ export const getUserAdminActions = ($t: MessageFormatter, user: UserAdminRespons
     title: $t('reset_password'),
     type: $t('command'),
     $if: () => get(authUser).id !== user.id,
-    onAction: () => void handleResetPasswordUserAdmin(user),
+    onAction: () => handleResetPasswordUserAdmin(user),
   };
 
   const ResetPinCode: ActionItem = {
     icon: mdiLockSmart,
     type: $t('command'),
     title: $t('reset_pin_code'),
-    onAction: () => void handleResetPinCodeUserAdmin(user),
+    onAction: () => handleResetPinCodeUserAdmin(user),
   };
 
   return { Update, Delete, Restore, ResetPassword, ResetPinCode };
@@ -162,12 +171,12 @@ const generatePassword = (length: number = 16) => {
   return generatedPassword;
 };
 
-export const handleResetPasswordUserAdmin = async (user: UserAdminResponseDto) => {
+const handleResetPasswordUserAdmin = async (user: UserAdminResponseDto) => {
   const $t = await getFormatter();
   const prompt = $t('admin.confirm_user_password_reset', { values: { user: user.name } });
   const success = await modalManager.showDialog({ prompt });
   if (!success) {
-    return false;
+    return;
   }
 
   try {
@@ -176,28 +185,24 @@ export const handleResetPasswordUserAdmin = async (user: UserAdminResponseDto) =
     eventManager.emit('UserAdminUpdate', response);
     toastManager.success();
     await modalManager.show(PasswordResetSuccessModal, { newPassword: dto.password });
-    return true;
   } catch (error) {
     handleError(error, $t('errors.unable_to_reset_password'));
-    return false;
   }
 };
 
-export const handleResetPinCodeUserAdmin = async (user: UserAdminResponseDto) => {
+const handleResetPinCodeUserAdmin = async (user: UserAdminResponseDto) => {
   const $t = await getFormatter();
   const prompt = $t('admin.confirm_user_pin_code_reset', { values: { user: user.name } });
   const success = await modalManager.showDialog({ prompt });
   if (!success) {
-    return false;
+    return;
   }
 
   try {
     const response = await updateUserAdmin({ id: user.id, userAdminUpdateDto: { pinCode: null } });
     eventManager.emit('UserAdminUpdate', response);
     toastManager.success($t('pin_code_reset_successfully'));
-    return true;
   } catch (error) {
     handleError(error, $t('errors.unable_to_reset_pin_code'));
-    return false;
   }
 };
