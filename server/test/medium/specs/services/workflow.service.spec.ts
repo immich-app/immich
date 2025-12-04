@@ -626,14 +626,15 @@ describe(WorkflowService.name, () => {
         actions: [],
       });
 
-      const updated = await sut.update(auth, created.id, {
+      await sut.update(auth, created.id, {
         triggerType: PluginTriggerType.AssetCreate,
       });
 
-      expect(updated.triggerType).toBe(PluginTriggerType.AssetCreate);
+      const fetched = await sut.get(auth, created.id);
+      expect(fetched.triggerType).toBe(PluginTriggerType.AssetCreate);
     });
 
-    it('should use existing trigger type when triggerType not provided in update', async () => {
+    it('should add filters', async () => {
       const { sut, ctx } = setup();
       const { user } = await ctx.newUser();
       const auth = factory.auth({ user });
@@ -643,19 +644,66 @@ describe(WorkflowService.name, () => {
         name: 'test-workflow',
         description: 'Test',
         enabled: true,
-        filters: [{ pluginFilterId: testFilterId }],
+        filters: [],
         actions: [],
       });
 
-      const updated = await sut.update(auth, created.id, {
+      await sut.update(auth, created.id, {
         filters: [
-          { pluginFilterId: testFilterId, filterConfig: { updated: true } },
+          { pluginFilterId: testFilterId, filterConfig: { first: true } },
           { pluginFilterId: testFilterId, filterConfig: { second: true } },
         ],
       });
 
-      expect(updated.triggerType).toBe(PluginTriggerType.AssetCreate);
-      expect(updated.filters).toHaveLength(2);
+      const fetched = await sut.get(auth, created.id);
+      expect(fetched.filters).toHaveLength(2);
+      expect(fetched.filters[0].filterConfig).toEqual({ first: true });
+      expect(fetched.filters[1].filterConfig).toEqual({ second: true });
+    });
+
+    it('should replace existing filters', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+
+      const created = await sut.create(auth, {
+        triggerType: PluginTriggerType.AssetCreate,
+        name: 'test-workflow',
+        description: 'Test',
+        enabled: true,
+        filters: [{ pluginFilterId: testFilterId, filterConfig: { original: true } }],
+        actions: [],
+      });
+
+      await sut.update(auth, created.id, {
+        filters: [{ pluginFilterId: testFilterId, filterConfig: { replaced: true } }],
+      });
+
+      const fetched = await sut.get(auth, created.id);
+      expect(fetched.filters).toHaveLength(1);
+      expect(fetched.filters[0].filterConfig).toEqual({ replaced: true });
+    });
+
+    it('should remove existing filters', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+
+      const created = await sut.create(auth, {
+        triggerType: PluginTriggerType.AssetCreate,
+        name: 'test-workflow',
+        description: 'Test',
+        enabled: true,
+        filters: [{ pluginFilterId: testFilterId, filterConfig: { toRemove: true } }],
+        actions: [],
+      });
+
+      await sut.update(auth, created.id, {
+        filters: [],
+      });
+
+      const fetched = await sut.get(auth, created.id);
+      expect(fetched.filters).toHaveLength(0);
     });
   });
 
