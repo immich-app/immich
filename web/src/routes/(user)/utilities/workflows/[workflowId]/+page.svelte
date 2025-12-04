@@ -9,8 +9,6 @@
   import WorkflowTriggerCard from '$lib/components/workflows/WorkflowTriggerCard.svelte';
   import { AppRoute } from '$lib/constants';
   import AddWorkflowStepModal from '$lib/modals/AddWorkflowStepModal.svelte';
-  import WorkflowNavigationConfirmModal from '$lib/modals/WorkflowNavigationConfirmModal.svelte';
-  import WorkflowTriggerUpdateConfirmModal from '$lib/modals/WorkflowTriggerUpdateConfirmModal.svelte';
   import {
     buildWorkflowPayload,
     getActionsByContext,
@@ -287,7 +285,11 @@
   };
 
   const handleTriggerChange = async (newTrigger: PluginTriggerResponseDto) => {
-    const confirmed = await modalManager.show(WorkflowTriggerUpdateConfirmModal);
+    const confirmed = await modalManager.showDialog({
+      prompt: $t('change_trigger_prompt'),
+      title: $t('change_trigger'),
+      confirmColor: 'primary',
+    });
 
     if (!confirmed) {
       return;
@@ -303,7 +305,10 @@
       cancel();
 
       modalManager
-        .show(WorkflowNavigationConfirmModal)
+        .showDialog({
+          prompt: $t('workflow_navigation_prompt'),
+          confirmColor: 'primary',
+        })
         .then((isConfirmed) => {
           if (isConfirmed && to) {
             allowNavigation = true;
@@ -398,7 +403,7 @@
 
           <CardBody>
             <div class="grid grid-cols-2 gap-4">
-              {#each triggers as trigger (trigger.name)}
+              {#each triggers as trigger (trigger.type)}
                 <WorkflowTriggerCard
                   {trigger}
                   selected={selectedTrigger.type === trigger.type}

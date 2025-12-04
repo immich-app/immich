@@ -2,6 +2,7 @@
   import { PluginTriggerType, type PluginTriggerResponseDto } from '@immich/sdk';
   import { Icon, Text } from '@immich/ui';
   import { mdiFaceRecognition, mdiFileUploadOutline, mdiLightningBolt } from '@mdi/js';
+  import { t } from 'svelte-i18n';
 
   interface Props {
     trigger: PluginTriggerResponseDto;
@@ -24,6 +25,34 @@
       }
     }
   };
+
+  const getTriggerName = (triggerType: PluginTriggerType) => {
+    switch (triggerType) {
+      case PluginTriggerType.AssetCreate: {
+        return $t('trigger_asset_uploaded');
+      }
+      case PluginTriggerType.PersonRecognized: {
+        return $t('trigger_person_recognized');
+      }
+      default: {
+        return triggerType;
+      }
+    }
+  };
+
+  const getTriggerDescription = (triggerType: PluginTriggerType) => {
+    switch (triggerType) {
+      case PluginTriggerType.AssetCreate: {
+        return $t('trigger_asset_uploaded_description');
+      }
+      case PluginTriggerType.PersonRecognized: {
+        return $t('trigger_person_recognized_description');
+      }
+      default: {
+        return '';
+      }
+    }
+  };
 </script>
 
 <button
@@ -42,9 +71,9 @@
       <Icon icon={getTriggerIcon(trigger.type)} size="24" />
     </div>
     <div class="flex-1">
-      <Text class="font-semibold mb-1">{trigger.name}</Text>
-      {#if trigger.description}
-        <Text size="small">{trigger.description}</Text>
+      <Text class="font-semibold mb-1">{getTriggerName(trigger.type)}</Text>
+      {#if getTriggerDescription(trigger.type)}
+        <Text size="small">{getTriggerDescription(trigger.type)}</Text>
       {/if}
     </div>
   </div>

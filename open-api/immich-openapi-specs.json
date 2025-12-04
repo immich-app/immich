@@ -18459,12 +18459,6 @@
               }
             ]
           },
-          "description": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
           "type": {
             "allOf": [
               {
@@ -18475,8 +18469,6 @@
         },
         "required": [
           "contextType",
-          "description",
-          "name",
           "type"
         ],
         "type": "object"

@@ -2,7 +2,6 @@
   import { goto } from '$app/navigation';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import { AppRoute } from '$lib/constants';
-  import WorkflowDeleteConfirmModal from '$lib/modals/WorkflowDeleteConfirmModal.svelte';
   import type { WorkflowPayload } from '$lib/services/workflow.service';
   import { handleError } from '$lib/utils/handle-error';
   import {
@@ -109,7 +108,11 @@
 
   const handleDeleteWorkflow = async (workflow: WorkflowResponseDto) => {
     try {
-      const confirmed = await modalManager.show(WorkflowDeleteConfirmModal);
+      const confirmed = await modalManager.showDialog({
+        prompt: $t('workflow_delete_prompt'),
+        confirmColor: 'danger',
+      });
+
       if (!confirmed) {
         return;
       }

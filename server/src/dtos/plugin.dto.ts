@@ -5,10 +5,8 @@ import type { JSONSchema } from 'src/types/plugin-schema.types';
 import { ValidateEnum } from 'src/validation';
 
 export class PluginTriggerResponseDto {
-  name!: string;
   @ValidateEnum({ enum: PluginTriggerType, name: 'PluginTriggerType' })
   type!: PluginTriggerType;
-  description!: string;
   @ValidateEnum({ enum: PluginContextType, name: 'PluginContextType' })
   contextType!: PluginContextType;
 }

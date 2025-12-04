@@ -1,5 +1,10 @@
 <script lang="ts">
-  import type { PluginActionResponseDto, PluginFilterResponseDto, PluginTriggerResponseDto } from '@immich/sdk';
+  import {
+    PluginTriggerType,
+    type PluginActionResponseDto,
+    type PluginFilterResponseDto,
+    type PluginTriggerResponseDto,
+  } from '@immich/sdk';
   import { Icon, IconButton, Text } from '@immich/ui';
   import { mdiClose, mdiFilterOutline, mdiFlashOutline, mdiPlayCircleOutline, mdiViewDashboardOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -11,6 +16,20 @@
   }
 
   let { trigger, filters, actions }: Props = $props();
+
+  const getTriggerName = (triggerType: PluginTriggerType) => {
+    switch (triggerType) {
+      case PluginTriggerType.AssetCreate: {
+        return $t('trigger_asset_uploaded');
+      }
+      case PluginTriggerType.PersonRecognized: {
+        return $t('trigger_person_recognized');
+      }
+      default: {
+        return triggerType;
+      }
+    }
+  };
 
   let isOpen = $state(false);
   let position = $state({ x: 0, y: 0 });
@@ -96,7 +115,7 @@
             <Icon icon={mdiFlashOutline} size="18" class="text-primary" />
             <span class="text-[10px] font-semibold uppercase tracking-wide">{$t('trigger')}</span>
           </div>
-          <p class="text-sm truncate pl-5">{trigger.name}</p>
+          <p class="text-sm truncate pl-5">{getTriggerName(trigger.type)}</p>
         </div>
 
         <!-- Connector -->

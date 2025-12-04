@@ -968,8 +968,6 @@ export type PluginResponseDto = {
 };
 export type PluginTriggerResponseDto = {
     contextType: PluginContextType;
-    description: string;
-    name: string;
     "type": PluginTriggerType;
 };
 export type QueueResponseDto = {

@@ -14,42 +14,30 @@ class PluginTriggerResponseDto {
   /// Returns a new [PluginTriggerResponseDto] instance.
   PluginTriggerResponseDto({
     required this.contextType,
-    required this.description,
-    required this.name,
     required this.type,
   });
 
   PluginContextType contextType;
-
-  String description;
-
-  String name;
 
   PluginTriggerType type;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is PluginTriggerResponseDto &&
     other.contextType == contextType &&
-    other.description == description &&
-    other.name == name &&
     other.type == type;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (contextType.hashCode) +
-    (description.hashCode) +
-    (name.hashCode) +
     (type.hashCode);
 
   @override
-  String toString() => 'PluginTriggerResponseDto[contextType=$contextType, description=$description, name=$name, type=$type]';
+  String toString() => 'PluginTriggerResponseDto[contextType=$contextType, type=$type]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'contextType'] = this.contextType;
-      json[r'description'] = this.description;
-      json[r'name'] = this.name;
       json[r'type'] = this.type;
     return json;
   }
@@ -64,8 +52,6 @@ class PluginTriggerResponseDto {
 
       return PluginTriggerResponseDto(
         contextType: PluginContextType.fromJson(json[r'contextType'])!,
-        description: mapValueOfType<String>(json, r'description')!,
-        name: mapValueOfType<String>(json, r'name')!,
         type: PluginTriggerType.fromJson(json[r'type'])!,
       );
     }
@@ -115,8 +101,6 @@ class PluginTriggerResponseDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'contextType',
-    'description',
-    'name',
     'type',
   };
 }
