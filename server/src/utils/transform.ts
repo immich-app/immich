@@ -3,6 +3,27 @@ import { AssetOcrResponseDto } from 'src/dtos/ocr.dto';
 import { ImageDimensions } from 'src/types';
 import { applyToPoint, compose, flipX, flipY, identity, Matrix, rotate, scale, translate } from 'transformation-matrix';
 
+export const getOutputDimensions = (edits: EditActionItem[], startingDimensions: ImageDimensions): ImageDimensions => {
+  let { width, height } = startingDimensions;
+
+  const crop = edits.find((edit) => edit.action === EditAction.Crop);
+  if (crop) {
+    width = crop.parameters.width;
+    height = crop.parameters.height;
+  }
+
+  for (const edit of edits) {
+    if (edit.action === EditAction.Rotate) {
+      const angleDegrees = edit.parameters.angle;
+      if (angleDegrees === 90 || angleDegrees === 270) {
+        [width, height] = [height, width];
+      }
+    }
+  }
+
+  return { width, height };
+};
+
 export const createAffineMatrix = (
   edits: EditActionItem[],
   scalingParameters?: {
