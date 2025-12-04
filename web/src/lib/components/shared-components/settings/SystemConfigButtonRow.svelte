@@ -19,11 +19,6 @@
     !isEqual(pick(systemConfigManager.value, keys), pick(systemConfigManager.defaultValue, keys)),
   );
 
-  const handleReset = () => {
-    configToEdit = systemConfigManager.cloneValue();
-    toastManager.info($t('admin.reset_settings_to_recent_saved'));
-  };
-
   const handleResetToDefault = () => {
     const defaultConfig = systemConfigManager.cloneDefaultValue();
 
@@ -51,7 +46,7 @@
   </div>
 
   <div class="flex gap-1">
-    <Button shape="round" {disabled} size="small" color="secondary" onclick={handleReset}>{$t('reset')}</Button>
+    <Button shape="round" {disabled} size="small" color="secondary" onclick={onCancel}>{$t('cancel')}</Button>
     <Button shape="round" type="submit" {disabled} size="small" onclick={handleSave}>{$t('save')}</Button>
   </div>
 </div>

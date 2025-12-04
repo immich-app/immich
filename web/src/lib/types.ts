@@ -1,4 +1,4 @@
-import type { QueueResponseDto, ServerVersionResponseDto } from '@immich/sdk';
+import type { QueueResponseDto, ServerVersionResponseDto, SystemConfigDto } from '@immich/sdk';
 import type { ActionItem } from '@immich/ui';
 
 export interface ReleaseEvent {
@@ -12,3 +12,5 @@ export interface ReleaseEvent {
 export type QueueSnapshot = { timestamp: number; snapshot?: QueueResponseDto[] };
 
 export type HeaderButtonActionItem = ActionItem & { data?: { title?: string } };
+
+export type SystemConfigContext = { disabled: boolean; config: SystemConfigDto; configToEdit: SystemConfigDto };

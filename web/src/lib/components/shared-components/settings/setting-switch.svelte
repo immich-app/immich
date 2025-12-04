@@ -8,7 +8,7 @@
 
   interface Props {
     title: string;
-    subtitle?: string;
+    subtitle?: string | Snippet;
     checked?: boolean;
     disabled?: boolean;
     isEdited?: boolean;
@@ -48,8 +48,10 @@
       {/if}
     </div>
 
-    {#if subtitle}
+    {#if typeof subtitle === 'string'}
       <p id={subtitleId} class="text-sm dark:text-immich-dark-fg">{subtitle}</p>
+    {:else}
+      {@render subtitle?.()}
     {/if}
     {@render children?.()}
   </div>
