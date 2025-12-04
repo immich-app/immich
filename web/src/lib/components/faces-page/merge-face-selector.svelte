@@ -76,6 +76,15 @@
       handleError(error, $t('cannot_merge_people'));
     }
   };
+
+  const showPeopleViewModal = async () => {
+    // Sets the selected people that remained after closing the modal.
+    selectedPeople = await modalManager.show(PeopleViewModal, {
+      people: selectedPeople,
+      peopleToNotShow: [person],
+      screenHeight
+    });
+  };
 </script>
 
 <svelte:window bind:innerHeight={screenHeight} />
@@ -123,12 +132,7 @@
                         aria-label={$t('show_all_selected_people')}
                         icon={mdiPlus}
                         size="medium"
-                        onclick={() => modalManager.show(PeopleViewModal, {
-                          people: peopleToNotShow,
-                          peopleToNotShow: [person],
-                          screenHeight,
-                          onSelect
-                        })}
+                        onclick={showPeopleViewModal}
                       />
                     </div>
                   {/if}
