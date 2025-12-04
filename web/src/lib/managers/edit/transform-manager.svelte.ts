@@ -40,7 +40,7 @@ class TransformManager implements EditToolManager {
   cropFrame = $state<HTMLElement | null>(null);
   cropImageSize = $state([1000, 1000]);
   cropImageScale = $state(1);
-  cropAspectRatio = $state("free");
+  cropAspectRatio = $state('free');
   region = $state({ x: 0, y: 0, width: 100, height: 100 });
 
   imageRotation = $state(0);

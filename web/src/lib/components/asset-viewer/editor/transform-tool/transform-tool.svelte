@@ -22,10 +22,10 @@
     })),
   ]);
 
-  function resetCrop() {
-    transformManager.resetCrop();
-    selectedRatio = undefined;
-  }
+  // function resetCrop() {
+  //   transformManager.resetCrop();
+  //   selectedRatio = undefined;
+  // }
 
   function selectAspectRatio(ratio: 'original' | 'free' | (typeof aspectRatios)[number]['value']) {
     if (ratio === 'original') {
