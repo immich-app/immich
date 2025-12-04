@@ -1,4 +1,4 @@
-import type { ServerVersionResponseDto } from '@immich/sdk';
+import type { QueueResponseDto, ServerVersionResponseDto } from '@immich/sdk';
 
 export interface ReleaseEvent {
   isAvailable: boolean;
@@ -7,3 +7,5 @@ export interface ReleaseEvent {
   serverVersion: ServerVersionResponseDto;
   releaseVersion: ServerVersionResponseDto;
 }
+
+export type QueueSnapshot = { timestamp: number; snapshot?: QueueResponseDto[] };

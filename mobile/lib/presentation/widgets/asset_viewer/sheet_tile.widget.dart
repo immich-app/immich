@@ -46,7 +46,7 @@ class SheetTile extends ConsumerWidget {
     } else {
       titleWidget = Container(
         width: double.infinity,
-        padding: const EdgeInsets.only(left: 15),
+        padding: const EdgeInsets.only(left: 15, right: 15),
         child: Text(title, style: titleStyle),
       );
     }

@@ -98,7 +98,7 @@
     <ControlAppBar showBackButton={false}>
       {#snippet leading()}
         <a data-sveltekit-preload-data="hover" class="ms-4" href="/">
-          <Logo variant="inline" />
+          <Logo variant="inline" class="min-w-min" />
         </a>
       {/snippet}
 

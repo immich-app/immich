@@ -232,6 +232,7 @@ export class AssetJobRepository {
         'asset.livePhotoVideoId',
         'asset.encodedVideoPath',
         'asset.originalPath',
+        'asset.isOffline',
       ])
       .$call(withExif)
       .select(withFacesAndPeople)

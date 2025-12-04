@@ -21,6 +21,9 @@ server {
     # allow large file uploads
     client_max_body_size 50000M;
 
+    # disable buffering uploads to prevent OOM on reverse proxy server and make uploads twice as fast (no pause)
+    proxy_request_buffering off;
+
     # Set headers
     proxy_set_header Host              $host;
     proxy_set_header X-Real-IP         $remote_addr;
