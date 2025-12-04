@@ -62,7 +62,8 @@
     "svelte-maplibre": "^1.2.5",
     "svelte-persisted-store": "^0.12.0",
     "tabbable": "^6.2.0",
-    "thumbhash": "^0.1.1"
+    "thumbhash": "^0.1.1",
+    "uplot": "^1.6.32"
   },
   "devDependencies": {
     "@eslint/js": "^9.36.0",
@@ -70,7 +71,7 @@
     "@koddsson/eslint-plugin-tscompat": "^0.2.0",
     "@socket.io/component-emitter": "^3.1.0",
     "@sveltejs/adapter-static": "^3.0.8",
-    "@sveltejs/enhanced-img": "^0.8.0",
+    "@sveltejs/enhanced-img": "^0.9.0",
     "@sveltejs/kit": "^2.27.1",
     "@sveltejs/vite-plugin-svelte": "6.2.1",
     "@tailwindcss/vite": "^4.1.7",

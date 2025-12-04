@@ -14,6 +14,7 @@
   import { themeManager } from '$lib/managers/theme-manager.svelte';
   import ServerRestartingModal from '$lib/modals/ServerRestartingModal.svelte';
   import VersionAnnouncementModal from '$lib/modals/VersionAnnouncementModal.svelte';
+  import { getQueuesActions } from '$lib/services/queue.service';
   import { user } from '$lib/stores/user.store';
   import { closeWebsocketConnection, openWebsocketConnection, websocketStore } from '$lib/stores/websocket';
   import type { ReleaseEvent } from '$lib/types';
@@ -21,7 +22,7 @@
   import { maintenanceShouldRedirect } from '$lib/utils/maintenance';
   import { isAssetViewerRoute } from '$lib/utils/navigation';
   import { CommandPaletteContext, modalManager, setTranslations, type ActionItem } from '@immich/ui';
-  import { mdiAccountMultipleOutline, mdiBookshelf, mdiCog, mdiServer, mdiSync, mdiThemeLightDark } from '@mdi/js';
+  import { mdiAccountMultipleOutline, mdiBookshelf, mdiCog, mdiServer, mdiThemeLightDark } from '@mdi/js';
   import { onMount, type Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
   import '../app.css';
@@ -143,14 +144,8 @@
       onAction: () => goto(AppRoute.ADMIN_USERS),
     },
     {
-      title: $t('jobs'),
-      description: $t('admin.jobs_page_description'),
-      icon: mdiSync,
-      onAction: () => goto(AppRoute.ADMIN_JOBS),
-    },
-    {
       title: $t('settings'),
-      description: $t('admin.jobs_page_description'),
+      description: $t('admin.settings_page_description'),
       icon: mdiCog,
       onAction: () => goto(AppRoute.ADMIN_SETTINGS),
     },
@@ -168,7 +163,7 @@
     },
   ].map((route) => ({ ...route, type: $t('page'), isGlobal: true, $if: () => $user?.isAdmin }));
 
-  const commands = $derived([...userCommands, ...adminCommands]);
+  const commands = $derived([...userCommands, ...adminCommands, ...Object.values(getQueuesActions($t))]);
 </script>
 
 <OnEvents {onReleaseEvent} />
