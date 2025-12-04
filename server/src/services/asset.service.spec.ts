@@ -225,7 +225,10 @@ describe(AssetService.name, () => {
 
       await sut.update(authStub.admin, 'asset-1', { description: 'Test description' });
 
-      expect(mocks.asset.upsertExif).toHaveBeenCalledWith({ assetId: 'asset-1', description: 'Test description' });
+      expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
+        { assetId: 'asset-1', description: 'Test description' },
+        { lockedPropertiesBehavior: 'update' },
+      );
     });
 
     it('should update the exif rating', async () => {
@@ -235,7 +238,13 @@ describe(AssetService.name, () => {
 
       await sut.update(authStub.admin, 'asset-1', { rating: 3 });
 
-      expect(mocks.asset.upsertExif).toHaveBeenCalledWith({ assetId: 'asset-1', rating: 3 });
+      expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
+        {
+          assetId: 'asset-1',
+          rating: 3,
+        },
+        { lockedPropertiesBehavior: 'update' },
+      );
     });
 
     it('should fail linking a live video if the motion part could not be found', async () => {

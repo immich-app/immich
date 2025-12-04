@@ -288,10 +288,13 @@ describe(SyncRequestType.AlbumAssetExifsV1, () => {
 
     // update the asset
     const assetRepository = ctx.get(AssetRepository);
-    await assetRepository.upsertExif({
-      assetId: asset.id,
-      city: 'New City',
-    });
+    await assetRepository.upsertExif(
+      {
+        assetId: asset.id,
+        city: 'New City',
+      },
+      { lockedPropertiesBehavior: 'update' },
+    );
 
     await expect(ctx.syncStream(auth, [SyncRequestType.AlbumAssetExifsV1])).resolves.toEqual([
       {
@@ -346,10 +349,13 @@ describe(SyncRequestType.AlbumAssetExifsV1, () => {
 
     // update the asset
     const assetRepository = ctx.get(AssetRepository);
-    await assetRepository.upsertExif({
-      assetId: assetDelayedExif.id,
-      city: 'Delayed Exif',
-    });
+    await assetRepository.upsertExif(
+      {
+        assetId: assetDelayedExif.id,
+        city: 'Delayed Exif',
+      },
+      { lockedPropertiesBehavior: 'update' },
+    );
 
     await expect(ctx.syncStream(auth, [SyncRequestType.AlbumAssetExifsV1])).resolves.toEqual([
       {

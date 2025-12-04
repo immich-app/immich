@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { Insertable, Kysely, NotNull, Selectable, sql, Updateable, UpdateResult } from 'kysely';
-import { isEmpty, isUndefined, omitBy } from 'lodash';
+import { intersection, isEmpty, isUndefined, omit, omitBy, union } from 'lodash';
 import { InjectKysely } from 'nestjs-kysely';
 import { Stack } from 'src/database';
 import { Chunked, ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { AssetFileType, AssetMetadataKey, AssetOrder, AssetStatus, AssetType, AssetVisibility } from 'src/enum';
 import { DB } from 'src/schema';
-import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
+import { AssetExifTable, lockableProperties, LockableProperty } from 'src/schema/tables/asset-exif.table';
 import { AssetFileTable } from 'src/schema/tables/asset-file.table';
 import { AssetJobStatusTable } from 'src/schema/tables/asset-job-status.table';
 import { AssetTable } from 'src/schema/tables/asset.table';
@@ -117,49 +117,83 @@ interface GetByIdsRelations {
 export class AssetRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
-  async upsertExif(exif: Insertable<AssetExifTable>): Promise<void> {
-    const value = { ...exif, assetId: asUuid(exif.assetId) };
-    await this.db
-      .insertInto('asset_exif')
-      .values(value)
-      .onConflict((oc) =>
-        oc.column('assetId').doUpdateSet((eb) =>
-          removeUndefinedKeys(
-            {
-              description: eb.ref('excluded.description'),
-              exifImageWidth: eb.ref('excluded.exifImageWidth'),
-              exifImageHeight: eb.ref('excluded.exifImageHeight'),
-              fileSizeInByte: eb.ref('excluded.fileSizeInByte'),
-              orientation: eb.ref('excluded.orientation'),
-              dateTimeOriginal: eb.ref('excluded.dateTimeOriginal'),
-              modifyDate: eb.ref('excluded.modifyDate'),
-              timeZone: eb.ref('excluded.timeZone'),
-              latitude: eb.ref('excluded.latitude'),
-              longitude: eb.ref('excluded.longitude'),
-              projectionType: eb.ref('excluded.projectionType'),
-              city: eb.ref('excluded.city'),
-              livePhotoCID: eb.ref('excluded.livePhotoCID'),
-              autoStackId: eb.ref('excluded.autoStackId'),
-              state: eb.ref('excluded.state'),
-              country: eb.ref('excluded.country'),
-              make: eb.ref('excluded.make'),
-              model: eb.ref('excluded.model'),
-              lensModel: eb.ref('excluded.lensModel'),
-              fNumber: eb.ref('excluded.fNumber'),
-              focalLength: eb.ref('excluded.focalLength'),
-              iso: eb.ref('excluded.iso'),
-              exposureTime: eb.ref('excluded.exposureTime'),
-              profileDescription: eb.ref('excluded.profileDescription'),
-              colorspace: eb.ref('excluded.colorspace'),
-              bitsPerSample: eb.ref('excluded.bitsPerSample'),
-              rating: eb.ref('excluded.rating'),
-              fps: eb.ref('excluded.fps'),
-            },
-            value,
+  async upsertExif(
+    exif: Insertable<AssetExifTable>,
+    { lockedPropertiesBehavior }: { lockedPropertiesBehavior: 'none' | 'update' | 'skip' },
+  ): Promise<void> {
+    await this.db.transaction().execute(async (tx) => {
+      const lockedProperties = await tx
+        .selectFrom('asset_exif')
+        .select('asset_exif.lockedProperties')
+        .where('asset_exif.assetId', '=', exif.assetId)
+        .executeTakeFirst()
+        .then((result) => result?.lockedProperties ?? []);
+
+      let value = { ...exif, assetId: asUuid(exif.assetId) };
+
+      switch (lockedPropertiesBehavior) {
+        case 'skip': {
+          value = omit(value, [...lockedProperties, 'lockedProperties']);
+          break;
+        }
+
+        case 'update': {
+          const updatedLockableProperties = intersection(lockableProperties, Object.keys(exif)) as LockableProperty[];
+          value = {
+            ...value,
+            lockedProperties: union(updatedLockableProperties, lockedProperties),
+          };
+          break;
+        }
+      }
+
+      if (Object.keys(value).length <= 1) {
+        return;
+      }
+
+      return tx
+        .insertInto('asset_exif')
+        .values(value)
+        .onConflict((oc) =>
+          oc.column('assetId').doUpdateSet((eb) =>
+            removeUndefinedKeys(
+              {
+                description: eb.ref('excluded.description'),
+                exifImageWidth: eb.ref('excluded.exifImageWidth'),
+                exifImageHeight: eb.ref('excluded.exifImageHeight'),
+                fileSizeInByte: eb.ref('excluded.fileSizeInByte'),
+                orientation: eb.ref('excluded.orientation'),
+                dateTimeOriginal: eb.ref('excluded.dateTimeOriginal'),
+                modifyDate: eb.ref('excluded.modifyDate'),
+                timeZone: eb.ref('excluded.timeZone'),
+                latitude: eb.ref('excluded.latitude'),
+                longitude: eb.ref('excluded.longitude'),
+                projectionType: eb.ref('excluded.projectionType'),
+                city: eb.ref('excluded.city'),
+                livePhotoCID: eb.ref('excluded.livePhotoCID'),
+                autoStackId: eb.ref('excluded.autoStackId'),
+                state: eb.ref('excluded.state'),
+                country: eb.ref('excluded.country'),
+                make: eb.ref('excluded.make'),
+                model: eb.ref('excluded.model'),
+                lensModel: eb.ref('excluded.lensModel'),
+                fNumber: eb.ref('excluded.fNumber'),
+                focalLength: eb.ref('excluded.focalLength'),
+                iso: eb.ref('excluded.iso'),
+                exposureTime: eb.ref('excluded.exposureTime'),
+                profileDescription: eb.ref('excluded.profileDescription'),
+                colorspace: eb.ref('excluded.colorspace'),
+                bitsPerSample: eb.ref('excluded.bitsPerSample'),
+                rating: eb.ref('excluded.rating'),
+                fps: eb.ref('excluded.fps'),
+                lockedProperties: eb.ref('excluded.lockedProperties'),
+              },
+              value,
+            ),
           ),
-        ),
-      )
-      .execute();
+        )
+        .execute();
+    });
   }
 
   @GenerateSql({ params: [[DummyValue.UUID], { model: DummyValue.STRING }] })
@@ -169,7 +203,18 @@ export class AssetRepository {
       return;
     }
 
-    await this.db.updateTable('asset_exif').set(options).where('assetId', 'in', ids).execute();
+    await this.db
+      .updateTable('asset_exif')
+      .set((eb) => ({
+        ...options,
+        lockedProperties: eb
+          .fn<
+            LockableProperty[]
+          >('array', [sql`select distinct unnest(${eb.fn('array_cat', ['lockedProperties', eb.val(Object.keys(options))])})`])
+          .as('lockedProperties').expression,
+      }))
+      .where('assetId', 'in', ids)
+      .execute();
   }
 
   @GenerateSql({ params: [[DummyValue.UUID], DummyValue.NUMBER, DummyValue.STRING] })
@@ -181,7 +226,15 @@ export class AssetRepository {
   ): Promise<{ assetId: string; dateTimeOriginal: Date | null; timeZone: string | null }[]> {
     return await this.db
       .updateTable('asset_exif')
-      .set({ dateTimeOriginal: sql`"dateTimeOriginal" + ${(delta ?? 0) + ' minute'}::interval`, timeZone })
+      .set((eb) => ({
+        dateTimeOriginal: sql`"dateTimeOriginal" + ${(delta ?? 0) + ' minute'}::interval`,
+        timeZone,
+        lockedProperties: eb
+          .fn<
+            LockableProperty[]
+          >('array', [sql`select distinct unnest(${eb.fn('array_cat', ['lockedProperties', eb.val(['dateTimeOriginal', 'timeZone'])])})`])
+          .as('lockedProperties').expression,
+      }))
       .where('assetId', 'in', ids)
       .returning(['assetId', 'dateTimeOriginal', 'timeZone'])
       .execute();

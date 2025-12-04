@@ -2,6 +2,9 @@ import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
 import { AssetTable } from 'src/schema/tables/asset.table';
 import { Column, ForeignKeyColumn, Generated, Int8, Table, Timestamp, UpdateDateColumn } from 'src/sql-tools';
 
+export type LockableProperty = (typeof lockableProperties)[number];
+export const lockableProperties = ['description', 'dateTimeOriginal', 'latitude', 'longitude', 'rating'] as const;
+
 @Table('asset_exif')
 @UpdatedAtTrigger('asset_exif_updatedAt')
 export class AssetExifTable {
@@ -97,4 +100,7 @@ export class AssetExifTable {
 
   @UpdateIdColumn({ index: true })
   updateId!: Generated<string>;
+
+  @Column({ type: 'character varying', array: true, nullable: true })
+  lockedProperties!: Array<LockableProperty> | null;
 }
