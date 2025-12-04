@@ -370,19 +370,38 @@
             <div class="flex place-items-start gap-3">
               <Icon icon={mdiInformationOutline} size="20" class="mt-1" />
               <div class="flex flex-col">
-                <CardTitle>Basic information</CardTitle>
-                <CardDescription>Describing the workflow</CardDescription>
+                <CardTitle>
+                  {$t('workflow_info')}
+                </CardTitle>
               </div>
             </div>
           </CardHeader>
 
           <CardBody>
-            <VStack gap={6}>
-              <Field class="text-sm" label={$t('name')} for="workflow-name" required>
+            <VStack gap={4}>
+              <div
+                class="relative overflow-hidden border p-4 w-full rounded-xl"
+                class:bg-primary-50={editWorkflow.enabled}
+              >
+                <Field
+                  label={editWorkflow.enabled ? $t('enabled') : $t('disabled')}
+                  for="workflow-enabled"
+                  color={editWorkflow.enabled ? 'primary' : 'secondary'}
+                >
+                  <Switch id="workflow-enabled" bind:checked={editWorkflow.enabled} />
+                </Field>
+              </div>
+
+              <Field label={$t('name')} for="workflow-name" required>
                 <Input id="workflow-name" placeholder={$t('workflow_name')} bind:value={name} />
               </Field>
-              <Field class="text-sm" label={$t('description')} for="workflow-description">
-                <Textarea id="workflow-description" placeholder={$t('workflow_description')} bind:value={description} />
+              <Field label={$t('description')} for="workflow-description">
+                <Textarea
+                  id="workflow-description"
+                  grow
+                  placeholder={$t('workflow_description')}
+                  bind:value={description}
+                />
               </Field>
             </VStack>
           </CardBody>
@@ -559,7 +578,7 @@
 
 <ControlAppBar onClose={() => goto(AppRoute.WORKFLOWS)} backIcon={mdiArrowLeft} tailwindClasses="fixed! top-0! w-full">
   {#snippet leading()}
-    <p>{data.meta.title}</p>
+    <Text>{data.meta.title}</Text>
   {/snippet}
 
   {#snippet trailing()}
@@ -586,11 +605,6 @@
         >
           JSON
         </Button>
-      </HStack>
-
-      <HStack gap={2}>
-        <Text class="text-sm">{editWorkflow.enabled ? 'ON' : 'OFF'}</Text>
-        <Switch bind:checked={editWorkflow.enabled} />
       </HStack>
 
       <Button leadingIcon={mdiContentSave} size="small" color="primary" onclick={updateWorkflow} disabled={!hasChanges}>

@@ -24,7 +24,6 @@
 
   let pickerMetadata = $state<AlbumResponseDto | PersonResponseDto | AlbumResponseDto[] | PersonResponseDto[]>();
 
-  // Fetch metadata for existing picker values (albums/people)
   $effect(() => {
     if (!value) {
       pickerMetadata = undefined;

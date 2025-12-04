@@ -1,6 +1,8 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
+  import emptyWorkflows from '$lib/assets/empty-workflows.svg';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
+  import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import { AppRoute } from '$lib/constants';
   import type { WorkflowPayload } from '$lib/services/workflow.service';
   import { handleError } from '$lib/utils/handle-error';
@@ -187,17 +189,13 @@
   <section class="flex place-content-center sm:mx-4">
     <section class="w-full pb-28 sm:w-5/6 md:w-4xl">
       {#if workflows.length === 0}
-        <div class="flex flex-col items-center justify-center gap-4 py-20">
-          <Icon icon={mdiPlay} size="64" class="text-immich-primary dark:text-immich-dark-primary" />
-          <h2 class="text-2xl font-semibold">{$t('no_workflows_yet')}</h2>
-          <p class="text-center text-sm text-muted">
-            {$t('workflows_help_text')}
-          </p>
-          <Button shape="round" color="primary" onclick={handleCreateWorkflow}>
-            <Icon icon={mdiPlus} size="18" />
-            {$t('create_first_workflow')}
-          </Button>
-        </div>
+        <EmptyPlaceholder
+          title={$t('create_first_workflow')}
+          text={$t('workflows_help_text')}
+          onClick={handleCreateWorkflow}
+          src={emptyWorkflows}
+          class="mt-10 mx-auto"
+        />
       {:else}
         <div class="my-6 grid gap-6">
           {#each workflows as workflow (workflow.id)}
