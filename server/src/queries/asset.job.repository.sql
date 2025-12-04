@@ -219,6 +219,8 @@ select
   "asset"."originalPath",
   "asset"."ownerId",
   "asset"."type",
+  "asset"."width",
+  "asset"."height",
   (
     select
       coalesce(json_agg(agg), '[]')
@@ -247,13 +249,13 @@ select
           "asset_file"
         where
           "asset_file"."assetId" = "asset"."id"
-          and "asset_file"."type" = $1
+          and "asset_file"."type" = $2
       ) as agg
   ) as "files"
 from
   "asset"
 where
-  "asset"."id" = $2
+  "asset"."id" = $3
 
 -- AssetJobRepository.getLockedPropertiesForMetadataExtraction
 select
