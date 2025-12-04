@@ -1,5 +1,4 @@
 {
-  "get_people_error": "Error getting people",
   "about": "About",
   "account": "Account",
   "account_settings": "Account Settings",
@@ -1160,6 +1159,7 @@
   "general": "General",
   "geolocation_instruction_location": "Click on an asset with GPS coordinates to use its location, or select a location directly from the map",
   "get_help": "Get Help",
+  "get_people_error": "Error getting people",
   "get_wifiname_error": "Could not get Wi-Fi name. Make sure you have granted the necessary permissions and are connected to a Wi-Fi network",
   "getting_started": "Getting Started",
   "go_back": "Go back",
@@ -2256,6 +2256,7 @@
   "viewer_stack_use_as_main_asset": "Use as Main Asset",
   "viewer_unstack": "Un-Stack",
   "visibility_changed": "Visibility changed for {count, plural, one {# person} other {# people}}",
+  "visual": "Visual",
   "visual_builder": "Visual builder",
   "waiting": "Waiting",
   "warning": "Warning",

@@ -440,7 +440,7 @@
                     isDragging: draggedFilterIndex === index,
                     isDragOver: dragOverFilterIndex === index,
                   }}
-                  class="mb-4 cursor-move rounded-lg border-2 p-4 transition-all bg-light-50 border-dashed border-transparent hover:border-light-300"
+                  class="mb-4 cursor-move rounded-2xl border-2 p-4 transition-all bg-light-50 border-dashed hover:border-light-300"
                 >
                   <div class="flex items-start gap-4">
                     {@render cardOrder(index)}
@@ -472,7 +472,7 @@
                 leadingIcon={mdiPlus}
                 onclick={() => handleAddStep('filter')}
               >
-                Add more
+                {$t('add_filter')}
               </Button>
             {/if}
           </CardBody>
@@ -509,7 +509,7 @@
                     isDragging: draggedActionIndex === index,
                     isDragOver: dragOverActionIndex === index,
                   }}
-                  class="mb-4 cursor-move rounded-lg border-2 p-4 transition-all bg-light-50 border-dashed border-transparent hover:border-light-300"
+                  class="mb-4 cursor-move rounded-2xl border-2 p-4 transition-all bg-light-50 border-dashed hover:border-light-300"
                 >
                   <div class="flex items-start gap-4">
                     {@render cardOrder(index)}
@@ -540,7 +540,7 @@
                 leadingIcon={mdiPlus}
                 onclick={() => handleAddStep('action')}
               >
-                Add more
+                {$t('add_action')}
               </Button>
             {/if}
           </CardBody>
@@ -567,7 +567,7 @@
           leadingIcon={mdiViewDashboard}
           onclick={() => (viewMode = 'visual')}
         >
-          Visual
+          {$t('visual')}
         </Button>
         <Button
           size="small"
