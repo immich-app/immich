@@ -84,6 +84,7 @@ Future<List<_CloudIdMapping>> _fetchCloudIdMappings(Drift drift, String userId) 
           useColumns: false,
         ),
       ])..where(
+        // Only select assets that have a local cloud ID but either no remote cloud ID or a mismatched eTag
         drift.localAssetEntity.id.isNotNull() &
             drift.localAssetEntity.iCloudId.isNotNull() &
             drift.remoteAssetEntity.ownerId.equals(userId) &
