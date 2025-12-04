@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
@@ -60,7 +61,8 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
           (_) async {
             try {
               wsProvider.connect();
-              unawaited(infoProvider.getServerInfo());
+              await infoProvider.getServerInfo();
+              final serverInfo = ref.read(serverInfoProvider);
 
               if (Store.isBetaTimelineEnabled) {
                 bool syncSuccess = false;
@@ -75,6 +77,9 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
                       _resumeBackup(backupProvider);
                     }),
                     _resumeBackup(backupProvider),
+                    // Sync cloud IDs if server version is compatible
+                    if (CurrentPlatform.isIOS && serverInfo.serverVersion.isAtLeast(major: 2, minor: 4))
+                      backgroundManager.syncCloudIds(),
                   ]);
                 } else {
                   await backgroundManager.hashAssets();
