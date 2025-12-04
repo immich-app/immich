@@ -4,6 +4,7 @@ import type {
   AlbumResponseDto,
   LibraryResponseDto,
   LoginResponseDto,
+  QueueResponseDto,
   SharedLinkResponseDto,
   SystemConfigDto,
   UserAdminResponseDto,
@@ -20,6 +21,8 @@ export type Events = {
   AssetReplace: [{ oldAssetId: string; newAssetId: string }];
 
   AlbumDelete: [AlbumResponseDto];
+
+  QueueUpdate: [QueueResponseDto];
 
   SharedLinkCreate: [SharedLinkResponseDto];
   SharedLinkUpdate: [SharedLinkResponseDto];

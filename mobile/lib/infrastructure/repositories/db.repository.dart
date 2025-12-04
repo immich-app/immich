@@ -20,7 +20,6 @@ import 'package:immich_mobile/infrastructure/entities/remote_album_user.entity.d
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/stack.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/store.entity.dart';
-import 'package:immich_mobile/infrastructure/entities/trash_sync.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/trashed_local_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/user_metadata.entity.dart';
@@ -65,7 +64,6 @@ class IsarDatabaseRepository implements IDatabaseRepository {
     AssetFaceEntity,
     StoreEntity,
     TrashedLocalAssetEntity,
-    TrashSyncEntity,
   ],
   include: {'package:immich_mobile/infrastructure/entities/merged_asset.drift'},
 )
@@ -188,10 +186,9 @@ class Drift extends $Drift implements IDatabaseRepository {
             await m.createIndex(v13.idxTrashedLocalAssetAlbum);
           },
           from13To14: (m, v14) async {
-            await m.create(v14.trashSyncEntity);
-            await m.createIndex(v14.idxTrashSyncChecksum);
-            await m.createIndex(v14.idxTrashSyncStatus);
-            await m.createIndex(v14.idxTrashSyncChecksumStatus);
+            await m.addColumn(v14.localAssetEntity, v14.localAssetEntity.adjustmentTime);
+            await m.addColumn(v14.localAssetEntity, v14.localAssetEntity.latitude);
+            await m.addColumn(v14.localAssetEntity, v14.localAssetEntity.longitude);
           },
         ),
       );

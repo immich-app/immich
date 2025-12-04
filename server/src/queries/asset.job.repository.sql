@@ -369,6 +369,7 @@ select
   "asset"."livePhotoVideoId",
   "asset"."encodedVideoPath",
   "asset"."originalPath",
+  "asset"."isOffline",
   to_json("asset_exif") as "exifInfo",
   (
     select
