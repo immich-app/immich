@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { PluginActionResponseDto, PluginFilterResponseDto } from '@immich/sdk';
-  import { Icon, Modal, ModalBody, Text } from '@immich/ui';
+  import { Modal, ModalBody, Text } from '@immich/ui';
   import { mdiFilterOutline, mdiPlayCircleOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
@@ -18,62 +18,61 @@
   const handleSelect = (type: StepType, item: PluginFilterResponseDto | PluginActionResponseDto) => {
     onClose({ type, item });
   };
+
+  const getModalTitle = () => {
+    if (type === 'filter') {
+      return $t('add_filter');
+    } else if (type === 'action') {
+      return $t('add_action');
+    } else {
+      return $t('add_workflow_step');
+    }
+  };
+
+  const getModalIcon = () => {
+    if (type === 'filter') {
+      return mdiFilterOutline;
+    } else if (type === 'action') {
+      return mdiPlayCircleOutline;
+    } else {
+      return false;
+    }
+  };
 </script>
 
-<Modal title={$t('add_workflow_step')} icon={false} onClose={() => onClose()}>
+{#snippet stepButton(title: string, description?: string, onclick?: () => void)}
+  <button
+    type="button"
+    {onclick}
+    class="flex items-start gap-3 p-3 rounded-lg text-left bg-light-100 hover:border-primary border text-dark"
+  >
+    <div class="flex-1">
+      <Text color="primary" class="font-medium">{title}</Text>
+      {#if description}
+        <Text size="small" class="mt-1">{description}</Text>
+      {/if}
+    </div>
+  </button>
+{/snippet}
+
+<Modal title={getModalTitle()} icon={getModalIcon()} onClose={() => onClose()}>
   <ModalBody>
     <div class="space-y-6">
       <!-- Filters Section -->
       {#if filters.length > 0 && (!type || type === 'filter')}
-        <div class="flex items-center gap-2 mb-3">
-          <div class="h-6 w-6 rounded-md bg-warning-100 flex items-center justify-center">
-            <Icon icon={mdiFilterOutline} size="16" class="text-warning" />
-          </div>
-          <h3 class="text-sm font-semibold">Filters</h3>
-        </div>
         <div class="grid grid-cols-1 gap-2">
           {#each filters as filter (filter.id)}
-            <button
-              type="button"
-              onclick={() => handleSelect('filter', filter)}
-              class="flex items-start gap-3 p-3 rounded-lg border bg-light-100 hover:border-warning-500 dark:hover:border-warning-500 text-left"
-            >
-              <div class="flex-1">
-                <p class="font-medium text-sm">{filter.title}</p>
-                {#if filter.description}
-                  <p class="text-xs text-light-500 mt-1">{filter.description}</p>
-                {/if}
-              </div>
-            </button>
+            {@render stepButton(filter.title, filter.description, () => handleSelect('filter', filter))}
           {/each}
         </div>
       {/if}
 
       <!-- Actions Section -->
       {#if actions.length > 0 && (!type || type === 'action')}
-        <div>
-          <div class="flex items-center gap-2 mb-3">
-            <div class="h-6 w-6 rounded-md bg-success-50 flex items-center justify-center">
-              <Icon icon={mdiPlayCircleOutline} size="16" class="text-success" />
-            </div>
-            <h3 class="text-sm font-semibold">Actions</h3>
-          </div>
-          <div class="grid grid-cols-1 gap-2">
-            {#each actions as action (action.id)}
-              <button
-                type="button"
-                onclick={() => handleSelect('action', action)}
-                class="flex items-start gap-3 p-3 rounded-lg border bg-light-100 hover:border-success-500 dark:hover:border-success-500 text-left"
-              >
-                <div class="flex-1">
-                  <p class="font-medium text-sm">{action.title}</p>
-                  {#if action.description}
-                    <Text size="small" class="text-light-500 mt-1">{action.description}</Text>
-                  {/if}
-                </div>
-              </button>
-            {/each}
-          </div>
+        <div class="grid grid-cols-1 gap-2">
+          {#each actions as action (action.id)}
+            {@render stepButton(action.title, action.description, () => handleSelect('action', action))}
+          {/each}
         </div>
       {/if}
     </div>

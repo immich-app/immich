@@ -203,7 +203,7 @@
           {#each workflows as workflow (workflow.id)}
             <Card class="border border-light-200">
               <CardHeader
-                class={`flex flex-col px-8 py-6 gap-4 sm:flex-row sm:items-center sm:gap-6 ${
+                class={`flex flex-row px-8 py-6 gap-4 sm:items-center sm:gap-6 ${
                   workflow.enabled
                     ? 'bg-linear-to-r from-green-50 to-white dark:from-green-800/50 dark:to-green-950/45'
                     : 'bg-neutral-50 dark:bg-neutral-900'
@@ -222,7 +222,7 @@
                 </div>
 
                 <div class="flex items-center gap-4">
-                  <div class="text-right">
+                  <div class="text-right hidden sm:block">
                     <Text size="tiny">{$t('created_at')}</Text>
                     <Text size="small" class="font-medium">
                       {formatTimestamp(workflow.createdAt)}
