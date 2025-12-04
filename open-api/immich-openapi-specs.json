@@ -4929,6 +4929,7 @@
     },
     "/jobs": {
       "get": {
+        "deprecated": true,
         "description": "Retrieve the counts of the current queue, as well as the current status.",
         "operationId": "getQueuesLegacy",
         "parameters": [],
@@ -4937,7 +4938,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/QueuesResponseDto"
+                  "$ref": "#/components/schemas/QueuesResponseLegacyDto"
                 }
               }
             },
@@ -4957,7 +4958,8 @@
         ],
         "summary": "Retrieve queue counts and status",
         "tags": [
-          "Jobs"
+          "Jobs",
+          "Deprecated"
         ],
         "x-immich-admin-only": true,
         "x-immich-history": [
@@ -4972,10 +4974,14 @@
           {
             "version": "v2",
             "state": "Stable"
+          },
+          {
+            "version": "v2.4.0",
+            "state": "Deprecated"
           }
         ],
         "x-immich-permission": "job.read",
-        "x-immich-state": "Stable"
+        "x-immich-state": "Deprecated"
       },
       "post": {
         "description": "Run a specific job. Most jobs are queued automatically, but this endpoint allows for manual creation of a handful of jobs, including various cleanup tasks, as well as creating a new database backup.",
@@ -5032,6 +5038,7 @@
     },
     "/jobs/{name}": {
       "put": {
+        "deprecated": true,
         "description": "Queue all assets for a specific job type. Defaults to only queueing assets that have not yet been processed, but the force command can be used to re-process all assets.",
         "operationId": "runQueueCommandLegacy",
         "parameters": [
@@ -5059,7 +5066,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/QueueResponseDto"
+                  "$ref": "#/components/schemas/QueueResponseLegacyDto"
                 }
               }
             },
@@ -5079,7 +5086,8 @@
         ],
         "summary": "Run jobs",
         "tags": [
-          "Jobs"
+          "Jobs",
+          "Deprecated"
         ],
         "x-immich-admin-only": true,
         "x-immich-history": [
@@ -5094,10 +5102,14 @@
           {
             "version": "v2",
             "state": "Stable"
+          },
+          {
+            "version": "v2.4.0",
+            "state": "Deprecated"
           }
         ],
         "x-immich-permission": "job.create",
-        "x-immich-state": "Stable"
+        "x-immich-state": "Deprecated"
       }
     },
     "/libraries": {
@@ -8061,6 +8073,303 @@
           }
         ],
         "x-immich-permission": "plugin.read",
+        "x-immich-state": "Alpha"
+      }
+    },
+    "/queues": {
+      "get": {
+        "description": "Retrieves a list of queues.",
+        "operationId": "getQueues",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/QueueResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "List all queues",
+        "tags": [
+          "Queues"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v2.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v2.4.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "queue.read",
+        "x-immich-state": "Alpha"
+      }
+    },
+    "/queues/{name}": {
+      "get": {
+        "description": "Retrieves a specific queue by its name.",
+        "operationId": "getQueue",
+        "parameters": [
+          {
+            "name": "name",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "$ref": "#/components/schemas/QueueName"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QueueResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Retrieve a queue",
+        "tags": [
+          "Queues"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v2.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v2.4.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "queue.read",
+        "x-immich-state": "Alpha"
+      },
+      "put": {
+        "description": "Change the paused status of a specific queue.",
+        "operationId": "updateQueue",
+        "parameters": [
+          {
+            "name": "name",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "$ref": "#/components/schemas/QueueName"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QueueUpdateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QueueResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Update a queue",
+        "tags": [
+          "Queues"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v2.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v2.4.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "queue.update",
+        "x-immich-state": "Alpha"
+      }
+    },
+    "/queues/{name}/jobs": {
+      "delete": {
+        "description": "Removes all jobs from the specified queue.",
+        "operationId": "emptyQueue",
+        "parameters": [
+          {
+            "name": "name",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "$ref": "#/components/schemas/QueueName"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QueueDeleteDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Empty a queue",
+        "tags": [
+          "Queues"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v2.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v2.4.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "queueJob.delete",
+        "x-immich-state": "Alpha"
+      },
+      "get": {
+        "description": "Retrieves a list of queue jobs from the specified queue.",
+        "operationId": "getQueueJobs",
+        "parameters": [
+          {
+            "name": "name",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "$ref": "#/components/schemas/QueueName"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/QueueJobStatus"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/QueueJobResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Retrieve queue jobs",
+        "tags": [
+          "Queues"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v2.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v2.4.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "queueJob.read",
         "x-immich-state": "Alpha"
       }
     },
@@ -14044,6 +14353,10 @@
       "description": "A plugin is an installed module that makes filters and actions available for the workflow feature."
     },
     {
+      "name": "Queues",
+      "description": "Queues and background jobs are used for processing tasks asynchronously. Queues can be paused and resumed as needed."
+    },
+    {
       "name": "Search",
       "description": "Endpoints related to searching assets via text, smart search, optical character recognition (OCR), and other filters like person, album, and other metadata. Search endpoints usually support pagination and sorting."
     },
@@ -16291,6 +16604,66 @@
         ],
         "type": "object"
       },
+      "JobName": {
+        "enum": [
+          "AssetDelete",
+          "AssetDeleteCheck",
+          "AssetDetectFacesQueueAll",
+          "AssetDetectFaces",
+          "AssetDetectDuplicatesQueueAll",
+          "AssetDetectDuplicates",
+          "AssetEncodeVideoQueueAll",
+          "AssetEncodeVideo",
+          "AssetEmptyTrash",
+          "AssetExtractMetadataQueueAll",
+          "AssetExtractMetadata",
+          "AssetFileMigration",
+          "AssetGenerateThumbnailsQueueAll",
+          "AssetGenerateThumbnails",
+          "AuditLogCleanup",
+          "AuditTableCleanup",
+          "DatabaseBackup",
+          "FacialRecognitionQueueAll",
+          "FacialRecognition",
+          "FileDelete",
+          "FileMigrationQueueAll",
+          "LibraryDeleteCheck",
+          "LibraryDelete",
+          "LibraryRemoveAsset",
+          "LibraryScanAssetsQueueAll",
+          "LibrarySyncAssets",
+          "LibrarySyncFilesQueueAll",
+          "LibrarySyncFiles",
+          "LibraryScanQueueAll",
+          "MemoryCleanup",
+          "MemoryGenerate",
+          "NotificationsCleanup",
+          "NotifyUserSignup",
+          "NotifyAlbumInvite",
+          "NotifyAlbumUpdate",
+          "UserDelete",
+          "UserDeleteCheck",
+          "UserSyncUsage",
+          "PersonCleanup",
+          "PersonFileMigration",
+          "PersonGenerateThumbnail",
+          "SessionCleanup",
+          "SendMail",
+          "SidecarQueueAll",
+          "SidecarCheck",
+          "SidecarWrite",
+          "SmartSearchQueueAll",
+          "SmartSearch",
+          "StorageTemplateMigration",
+          "StorageTemplateMigrationSingle",
+          "TagCleanup",
+          "VersionCheck",
+          "OcrQueueAll",
+          "Ocr",
+          "WorkflowRun"
+        ],
+        "type": "string"
+      },
       "JobSettingsDto": {
         "properties": {
           "concurrency": {
@@ -17583,6 +17956,12 @@
           "userProfileImage.read",
           "userProfileImage.update",
           "userProfileImage.delete",
+          "queue.read",
+          "queue.update",
+          "queueJob.create",
+          "queueJob.read",
+          "queueJob.update",
+          "queueJob.delete",
           "workflow.create",
           "workflow.read",
           "workflow.update",
@@ -18083,6 +18462,63 @@
         ],
         "type": "object"
       },
+      "QueueDeleteDto": {
+        "properties": {
+          "failed": {
+            "description": "If true, will also remove failed jobs from the queue.",
+            "type": "boolean",
+            "x-immich-history": [
+              {
+                "version": "v2.4.0",
+                "state": "Added"
+              },
+              {
+                "version": "v2.4.0",
+                "state": "Alpha"
+              }
+            ],
+            "x-immich-state": "Alpha"
+          }
+        },
+        "type": "object"
+      },
+      "QueueJobResponseDto": {
+        "properties": {
+          "data": {
+            "type": "object"
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/JobName"
+              }
+            ]
+          },
+          "timestamp": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "data",
+          "name",
+          "timestamp"
+        ],
+        "type": "object"
+      },
+      "QueueJobStatus": {
+        "enum": [
+          "active",
+          "failed",
+          "completed",
+          "delayed",
+          "waiting",
+          "paused"
+        ],
+        "type": "string"
+      },
       "QueueName": {
         "enum": [
           "thumbnailGeneration",
@@ -18107,11 +18543,34 @@
       },
       "QueueResponseDto": {
         "properties": {
+          "isPaused": {
+            "type": "boolean"
+          },
+          "name": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/QueueName"
+              }
+            ]
+          },
+          "statistics": {
+            "$ref": "#/components/schemas/QueueStatisticsDto"
+          }
+        },
+        "required": [
+          "isPaused",
+          "name",
+          "statistics"
+        ],
+        "type": "object"
+      },
+      "QueueResponseLegacyDto": {
+        "properties": {
           "jobCounts": {
             "$ref": "#/components/schemas/QueueStatisticsDto"
           },
           "queueStatus": {
-            "$ref": "#/components/schemas/QueueStatusDto"
+            "$ref": "#/components/schemas/QueueStatusLegacyDto"
           }
         },
         "required": [
@@ -18151,7 +18610,7 @@
         ],
         "type": "object"
       },
-      "QueueStatusDto": {
+      "QueueStatusLegacyDto": {
         "properties": {
           "isActive": {
             "type": "boolean"
@@ -18166,58 +18625,66 @@
         ],
         "type": "object"
       },
-      "QueuesResponseDto": {
+      "QueueUpdateDto": {
+        "properties": {
+          "isPaused": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "QueuesResponseLegacyDto": {
         "properties": {
           "backgroundTask": {
-            "$ref": "#/components/schemas/QueueResponseDto"
+            "$ref": "#/components/schemas/QueueResponseLegacyDto"
           },
           "backupDatabase": {
-            "$ref": "#/components/schemas/QueueResponseDto"
+            "$ref": "#/components/schemas/QueueResponseLegacyDto"
           },
           "duplicateDetection": {
-            "$ref": "#/components/schemas/QueueResponseDto"
+            "$ref": "#/components/schemas/QueueResponseLegacyDto"
           },
           "faceDetection": {
-            "$ref": "#/components/schemas/QueueResponseDto"
+            "$ref": "#/components/schemas/QueueResponseLegacyDto"
           },
           "facialRecognition": {
-            "$ref": "#/components/schemas/QueueResponseDto"
+            "$ref": "#/components/schemas/QueueResponseLegacyDto"
           },
           "library": {
-            "$ref": "#/components/schemas/QueueResponseDto"
+            "$ref": "#/components/schemas/QueueResponseLegacyDto"
           },
           "metadataExtraction": {
-            "$ref": "#/components/schemas/QueueResponseDto"
+            "$ref": "#/components/schemas/QueueResponseLegacyDto"
           },
           "migration": {
-            "$ref": "#/components/schemas/QueueResponseDto"
+            "$ref": "#/components/schemas/QueueResponseLegacyDto"
           },
           "notifications": {
-            "$ref": "#/components/schemas/QueueResponseDto"
+            "$ref": "#/components/schemas/QueueResponseLegacyDto"
           },
           "ocr": {
-            "$ref": "#/components/schemas/QueueResponseDto"
+            "$ref": "#/components/schemas/QueueResponseLegacyDto"
           },
           "search": {
-            "$ref": "#/components/schemas/QueueResponseDto"
+            "$ref": "#/components/schemas/QueueResponseLegacyDto"
           },
           "sidecar": {
-            "$ref": "#/components/schemas/QueueResponseDto"
+            "$ref": "#/components/schemas/QueueResponseLegacyDto"
           },
           "smartSearch": {
-            "$ref": "#/components/schemas/QueueResponseDto"
+            "$ref": "#/components/schemas/QueueResponseLegacyDto"
           },
           "storageTemplateMigration": {
-            "$ref": "#/components/schemas/QueueResponseDto"
+            "$ref": "#/components/schemas/QueueResponseLegacyDto"
           },
           "thumbnailGeneration": {
-            "$ref": "#/components/schemas/QueueResponseDto"
+            "$ref": "#/components/schemas/QueueResponseLegacyDto"
           },
           "videoConversion": {
-            "$ref": "#/components/schemas/QueueResponseDto"
+            "$ref": "#/components/schemas/QueueResponseLegacyDto"
           },
           "workflow": {
-            "$ref": "#/components/schemas/QueueResponseDto"
+            "$ref": "#/components/schemas/QueueResponseLegacyDto"
           }
         },
         "required": [
@@ -22695,13 +23162,13 @@
           "actionConfig": {
             "type": "object"
           },
-          "actionId": {
+          "pluginActionId": {
             "format": "uuid",
             "type": "string"
           }
         },
         "required": [
-          "actionId"
+          "pluginActionId"
         ],
         "type": "object"
       },
@@ -22711,14 +23178,14 @@
             "nullable": true,
             "type": "object"
           },
-          "actionId": {
-            "type": "string"
-          },
           "id": {
             "type": "string"
           },
           "order": {
             "type": "number"
+          },
+          "pluginActionId": {
+            "type": "string"
           },
           "workflowId": {
             "type": "string"
@@ -22726,9 +23193,9 @@
         },
         "required": [
           "actionConfig",
-          "actionId",
           "id",
           "order",
+          "pluginActionId",
           "workflowId"
         ],
         "type": "object"
@@ -22777,13 +23244,13 @@
           "filterConfig": {
             "type": "object"
           },
-          "filterId": {
+          "pluginFilterId": {
             "format": "uuid",
             "type": "string"
           }
         },
         "required": [
-          "filterId"
+          "pluginFilterId"
         ],
         "type": "object"
       },
@@ -22793,14 +23260,14 @@
             "nullable": true,
             "type": "object"
           },
-          "filterId": {
-            "type": "string"
-          },
           "id": {
             "type": "string"
           },
           "order": {
             "type": "number"
+          },
+          "pluginFilterId": {
+            "type": "string"
           },
           "workflowId": {
             "type": "string"
@@ -22808,9 +23275,9 @@
         },
         "required": [
           "filterConfig",
-          "filterId",
           "id",
           "order",
+          "pluginFilterId",
           "workflowId"
         ],
         "type": "object"

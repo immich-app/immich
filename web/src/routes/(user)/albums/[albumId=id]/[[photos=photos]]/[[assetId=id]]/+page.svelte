@@ -66,6 +66,8 @@
   } from '@immich/sdk';
   import { Button, Icon, IconButton, modalManager, toastManager } from '@immich/ui';
   import {
+    mdiAccountEye,
+    mdiAccountEyeOutline,
     mdiArrowLeft,
     mdiCogOutline,
     mdiDeleteOutline,
@@ -100,6 +102,9 @@
   let isCreatingSharedAlbum = $state(false);
   let isShowActivity = $state(false);
   let albumOrder: AssetOrder | undefined = $state(data.album.order);
+
+  let timelineManager = $state<TimelineManager>() as TimelineManager;
+  let showAlbumUsers = $derived(timelineManager?.showAssetOwners ?? false);
 
   const assetInteraction = new AssetInteraction();
   const timelineInteraction = new AssetInteraction();
@@ -290,13 +295,17 @@
   let album = $derived(data.album);
   let albumId = $derived(album.id);
 
+  const containsEditors = $derived(album?.shared && album.albumUsers.some(({ role }) => role === AlbumUserRole.Editor));
+  const albumUsers = $derived(
+    showAlbumUsers && containsEditors ? [album.owner, ...album.albumUsers.map(({ user }) => user)] : [],
+  );
+
   $effect(() => {
     if (!album.isActivityEnabled && activityManager.commentCount === 0) {
       isShowActivity = false;
     }
   });
 
-  let timelineManager = $state<TimelineManager>() as TimelineManager;
   const options = $derived.by(() => {
     if (viewMode === AlbumPageViewMode.SELECT_ASSETS) {
       return {
@@ -418,6 +427,7 @@
       <Timeline
         enableRouting={viewMode === AlbumPageViewMode.SELECT_ASSETS ? false : true}
         {album}
+        {albumUsers}
         bind:timelineManager
         {options}
         assetInteraction={currentAssetIntersection}
@@ -547,11 +557,7 @@
         {#if assetInteraction.isAllUserOwned}
           <FavoriteAction
             removeFavorite={assetInteraction.isAllFavorite}
-            onFavorite={(ids, isFavorite) =>
-              timelineManager.updateAssetOperation(ids, (asset) => {
-                asset.isFavorite = isFavorite;
-                return { remove: false };
-              })}
+            onFavorite={(ids, isFavorite) => timelineManager.update(ids, (asset) => (asset.isFavorite = isFavorite))}
           ></FavoriteAction>
         {/if}
         <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')} offset={{ x: 175, y: 25 }}>
@@ -567,7 +573,11 @@
                 onClick={() => updateThumbnailUsingCurrentSelection()}
               />
             {/if}
-            <ArchiveAction menuItem unarchive={assetInteraction.isAllArchived} />
+            <ArchiveAction
+              menuItem
+              unarchive={assetInteraction.isAllArchived}
+              onArchive={(ids, visibility) => timelineManager.update(ids, (asset) => (asset.visibility = visibility))}
+            />
             <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />
           {/if}
 
@@ -649,6 +659,13 @@
                 color="secondary"
                 offset={{ x: 175, y: 25 }}
               >
+                {#if containsEditors}
+                  <MenuOption
+                    icon={showAlbumUsers ? mdiAccountEye : mdiAccountEyeOutline}
+                    text={$t('view_asset_owners')}
+                    onClick={() => timelineManager.toggleShowAssetOwners()}
+                  />
+                {/if}
                 {#if album.assetCount > 0}
                   <MenuOption
                     icon={mdiImageOutline}

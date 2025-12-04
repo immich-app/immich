@@ -38,7 +38,7 @@ export class WorkflowTable {
 }
 
 @Index({ columns: ['workflowId', 'order'] })
-@Index({ columns: ['filterId'] })
+@Index({ columns: ['pluginFilterId'] })
 @Table('workflow_filter')
 export class WorkflowFilterTable {
   @PrimaryGeneratedColumn('uuid')
@@ -48,7 +48,7 @@ export class WorkflowFilterTable {
   workflowId!: Generated<string>;
 
   @ForeignKeyColumn(() => PluginFilterTable, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
-  filterId!: string;
+  pluginFilterId!: string;
 
   @Column({ type: 'jsonb', nullable: true })
   filterConfig!: FilterConfig | null;
@@ -58,7 +58,7 @@ export class WorkflowFilterTable {
 }
 
 @Index({ columns: ['workflowId', 'order'] })
-@Index({ columns: ['actionId'] })
+@Index({ columns: ['pluginActionId'] })
 @Table('workflow_action')
 export class WorkflowActionTable {
   @PrimaryGeneratedColumn('uuid')
@@ -68,7 +68,7 @@ export class WorkflowActionTable {
   workflowId!: Generated<string>;
 
   @ForeignKeyColumn(() => PluginActionTable, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
-  actionId!: string;
+  pluginActionId!: string;
 
   @Column({ type: 'jsonb', nullable: true })
   actionConfig!: ActionConfig | null;

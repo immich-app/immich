@@ -9,6 +9,7 @@ import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/exif.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/duration_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/album/album_tile.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
@@ -23,6 +24,7 @@ import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/bytes_units.dart';
+import 'package:immich_mobile/utils/timezone.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
 const _kSeparator = '  •  ';
@@ -58,13 +60,21 @@ class AssetDetailBottomSheet extends ConsumerWidget {
 class _AssetDetailBottomSheet extends ConsumerWidget {
   const _AssetDetailBottomSheet();
 
-  String _getDateTime(BuildContext ctx, BaseAsset asset) {
-    final dateTime = asset.createdAt.toLocal();
+  String _getDateTime(BuildContext ctx, BaseAsset asset, ExifInfo? exifInfo) {
+    DateTime dateTime = asset.createdAt.toLocal();
+    Duration timeZoneOffset = dateTime.timeZoneOffset;
+
+    // Use EXIF timezone information if available (matching web app behavior)
+    if (exifInfo?.dateTimeOriginal != null) {
+      (dateTime, timeZoneOffset) = applyTimezoneOffset(
+        dateTime: exifInfo!.dateTimeOriginal!,
+        timeZone: exifInfo.timeZone,
+      );
+    }
+
     final date = DateFormat.yMMMEd(ctx.locale.toLanguageTag()).format(dateTime);
     final time = DateFormat.jm(ctx.locale.toLanguageTag()).format(dateTime);
-    final timezone = dateTime.timeZoneOffset.isNegative
-        ? 'UTC-${dateTime.timeZoneOffset.inHours.abs().toString().padLeft(2, '0')}:${(dateTime.timeZoneOffset.inMinutes.abs() % 60).toString().padLeft(2, '0')}'
-        : 'UTC+${dateTime.timeZoneOffset.inHours.toString().padLeft(2, '0')}:${(dateTime.timeZoneOffset.inMinutes.abs() % 60).toString().padLeft(2, '0')}';
+    final timezone = 'GMT${timeZoneOffset.formatAsOffset()}';
     return '$date$_kSeparator$time $timezone';
   }
 
@@ -214,8 +224,8 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
                 color: context.textTheme.labelLarge?.color,
               ),
               subtitle: _getFileInfo(asset, exifInfo),
-              subtitleStyle: context.textTheme.bodyMedium?.copyWith(
-                color: context.textTheme.bodyMedium?.color?.withAlpha(155),
+              subtitleStyle: context.textTheme.labelMedium?.copyWith(
+                color: context.textTheme.labelMedium?.color?.withAlpha(200),
               ),
             );
           },
@@ -231,8 +241,8 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
             color: context.textTheme.labelLarge?.color,
           ),
           subtitle: _getFileInfo(asset, exifInfo),
-          subtitleStyle: context.textTheme.bodyMedium?.copyWith(
-            color: context.textTheme.bodyMedium?.color?.withAlpha(155),
+          subtitleStyle: context.textTheme.labelMedium?.copyWith(
+            color: context.textTheme.labelMedium?.color?.withAlpha(200),
           ),
         );
       }
@@ -242,8 +252,8 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
       children: [
         // Asset Date and Time
         SheetTile(
-          title: _getDateTime(context, asset),
-          titleStyle: context.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+          title: _getDateTime(context, asset, exifInfo),
+          titleStyle: context.textTheme.labelLarge,
           trailing: asset.hasRemote && isOwner ? const Icon(Icons.edit, size: 18) : null,
           onTap: asset.hasRemote && isOwner ? () async => await _editDateTime(context, ref) : null,
         ),
@@ -252,7 +262,7 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
         const SheetLocationDetails(),
         // Details header
         SheetTile(
-          title: 'exif_bottom_sheet_details'.t(context: context),
+          title: 'details'.t(context: context).toUpperCase(),
           titleStyle: context.textTheme.labelMedium?.copyWith(
             color: context.textTheme.labelMedium?.color?.withAlpha(200),
             fontWeight: FontWeight.w600,
@@ -261,29 +271,33 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
         // File info
         buildFileInfoTile(),
         // Camera info
-        if (cameraTitle != null)
+        if (cameraTitle != null) ...[
+          const SizedBox(height: 16),
           SheetTile(
             title: cameraTitle,
             titleStyle: context.textTheme.labelLarge,
             leading: Icon(Icons.camera_alt_outlined, size: 24, color: context.textTheme.labelLarge?.color),
             subtitle: _getCameraInfoSubtitle(exifInfo),
-            subtitleStyle: context.textTheme.bodyMedium?.copyWith(
-              color: context.textTheme.bodyMedium?.color?.withAlpha(155),
+            subtitleStyle: context.textTheme.labelMedium?.copyWith(
+              color: context.textTheme.labelMedium?.color?.withAlpha(200),
             ),
           ),
+        ],
         // Lens info
-        if (lensTitle != null)
+        if (lensTitle != null) ...[
+          const SizedBox(height: 16),
           SheetTile(
             title: lensTitle,
             titleStyle: context.textTheme.labelLarge,
             leading: Icon(Icons.camera_outlined, size: 24, color: context.textTheme.labelLarge?.color),
             subtitle: _getLensInfoSubtitle(exifInfo),
-            subtitleStyle: context.textTheme.bodyMedium?.copyWith(
-              color: context.textTheme.bodyMedium?.color?.withAlpha(155),
+            subtitleStyle: context.textTheme.labelMedium?.copyWith(
+              color: context.textTheme.labelMedium?.color?.withAlpha(200),
             ),
           ),
+        ],
         // Appears in (Albums)
-        _buildAppearsInList(ref, context),
+        Padding(padding: const EdgeInsets.only(top: 16.0), child: _buildAppearsInList(ref, context)),
         // padding at the bottom to avoid cut-off
         const SizedBox(height: 100),
       ],

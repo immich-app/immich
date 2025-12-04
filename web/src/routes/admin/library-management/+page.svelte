@@ -9,7 +9,7 @@
   import { locale } from '$lib/stores/preferences.store';
   import { getBytesWithUnit } from '$lib/utils/byte-units';
   import { getLibrary, getLibraryStatistics, getUserAdmin, type LibraryResponseDto } from '@immich/sdk';
-  import { Button } from '@immich/ui';
+  import { Button, CommandPaletteContext } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
   import type { PageData } from './$types';
@@ -49,7 +49,7 @@
     delete owners[id];
   };
 
-  const { Create, ScanAll } = $derived(getLibrariesActions($t));
+  const { Create, ScanAll } = $derived(getLibrariesActions($t, libraries));
 </script>
 
 <OnEvents
@@ -58,12 +58,12 @@
   onLibraryDelete={handleDeleteLibrary}
 />
 
-<AdminPageLayout title={data.meta.title}>
+<CommandPaletteContext commands={[Create, ScanAll]} />
+
+<AdminPageLayout breadcrumbs={[{ title: data.meta.title }]}>
   {#snippet buttons()}
     <div class="flex justify-end gap-2">
-      {#if libraries.length > 0}
-        <HeaderButton action={ScanAll} />
-      {/if}
+      <HeaderButton action={ScanAll} />
       <HeaderButton action={Create} />
     </div>
   {/snippet}

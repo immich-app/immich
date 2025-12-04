@@ -1,8 +1,4 @@
-import type { ServerVersionResponseDto } from '@immich/sdk';
-import type { MenuItem } from '@immich/ui';
-import type { HTMLAttributes } from 'svelte/elements';
-
-export type ActionItem = MenuItem & { props?: Omit<HTMLAttributes<HTMLElement>, 'color'> };
+import type { QueueResponseDto, ServerVersionResponseDto } from '@immich/sdk';
 
 export interface ReleaseEvent {
   isAvailable: boolean;
@@ -11,3 +7,5 @@ export interface ReleaseEvent {
   serverVersion: ServerVersionResponseDto;
   releaseVersion: ServerVersionResponseDto;
 }
+
+export type QueueSnapshot = { timestamp: number; snapshot?: QueueResponseDto[] };

@@ -1,14 +1,17 @@
 import { Kysely } from 'kysely';
-import { JobName, SharedLinkType } from 'src/enum';
+import { AssetFileType, JobName, SharedLinkType } from 'src/enum';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { AlbumRepository } from 'src/repositories/album.repository';
+import { AssetJobRepository } from 'src/repositories/asset-job.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
+import { EventRepository } from 'src/repositories/event.repository';
 import { JobRepository } from 'src/repositories/job.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { SharedLinkAssetRepository } from 'src/repositories/shared-link-asset.repository';
 import { SharedLinkRepository } from 'src/repositories/shared-link.repository';
 import { StackRepository } from 'src/repositories/stack.repository';
 import { StorageRepository } from 'src/repositories/storage.repository';
+import { UserRepository } from 'src/repositories/user.repository';
 import { DB } from 'src/schema';
 import { AssetService } from 'src/services/asset.service';
 import { newMediumService } from 'test/medium.factory';
@@ -20,8 +23,16 @@ let defaultDatabase: Kysely<DB>;
 const setup = (db?: Kysely<DB>) => {
   return newMediumService(AssetService, {
     database: db || defaultDatabase,
-    real: [AssetRepository, AlbumRepository, AccessRepository, SharedLinkAssetRepository, StackRepository],
-    mock: [LoggingRepository, JobRepository, StorageRepository],
+    real: [
+      AssetRepository,
+      AssetJobRepository,
+      AlbumRepository,
+      AccessRepository,
+      SharedLinkAssetRepository,
+      StackRepository,
+      UserRepository,
+    ],
+    mock: [EventRepository, LoggingRepository, JobRepository, StorageRepository],
   });
 };
 
@@ -184,7 +195,15 @@ describe(AssetService.name, () => {
       jobRepo.queue.mockResolvedValue();
 
       const { user } = await ctx.newUser();
-      const { asset: oldAsset } = await ctx.newAsset({ ownerId: user.id, sidecarPath: '/path/to/my/sidecar.xmp' });
+
+      const { asset: oldAsset } = await ctx.newAsset({ ownerId: user.id });
+
+      await ctx.newAssetFile({
+        assetId: oldAsset.id,
+        path: '/path/to/my/sidecar.xmp',
+        type: AssetFileType.Sidecar,
+      });
+
       const { asset: newAsset } = await ctx.newAsset({ ownerId: user.id });
 
       await ctx.newExif({ assetId: oldAsset.id, description: 'foo' });
@@ -199,6 +218,53 @@ describe(AssetService.name, () => {
       expect(jobRepo.queue).toHaveBeenCalledWith({
         name: JobName.AssetExtractMetadata,
         data: { id: newAsset.id },
+      });
+    });
+  });
+
+  describe('delete', () => {
+    it('should delete asset', async () => {
+      const { sut, ctx } = setup();
+      ctx.getMock(EventRepository).emit.mockResolvedValue();
+      ctx.getMock(JobRepository).queue.mockResolvedValue();
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      const thumbnailPath = '/path/to/thumbnail.jpg';
+      const previewPath = '/path/to/preview.jpg';
+      const sidecarPath = '/path/to/sidecar.xmp';
+      await Promise.all([
+        ctx.newAssetFile({ assetId: asset.id, type: AssetFileType.Thumbnail, path: thumbnailPath }),
+        ctx.newAssetFile({ assetId: asset.id, type: AssetFileType.Preview, path: previewPath }),
+        ctx.newAssetFile({ assetId: asset.id, type: AssetFileType.Sidecar, path: sidecarPath }),
+      ]);
+
+      await sut.handleAssetDeletion({ id: asset.id, deleteOnDisk: true });
+
+      expect(ctx.getMock(JobRepository).queue).toHaveBeenCalledWith({
+        name: JobName.FileDelete,
+        data: { files: [thumbnailPath, previewPath, sidecarPath, asset.originalPath] },
+      });
+    });
+
+    it('should not delete offline assets', async () => {
+      const { sut, ctx } = setup();
+      ctx.getMock(EventRepository).emit.mockResolvedValue();
+      ctx.getMock(JobRepository).queue.mockResolvedValue();
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id, isOffline: true });
+      const thumbnailPath = '/path/to/thumbnail.jpg';
+      const previewPath = '/path/to/preview.jpg';
+      await Promise.all([
+        ctx.newAssetFile({ assetId: asset.id, type: AssetFileType.Thumbnail, path: thumbnailPath }),
+        ctx.newAssetFile({ assetId: asset.id, type: AssetFileType.Preview, path: previewPath }),
+        ctx.newAssetFile({ assetId: asset.id, type: AssetFileType.Sidecar, path: `/path/to/sidecar.xmp` }),
+      ]);
+
+      await sut.handleAssetDeletion({ id: asset.id, deleteOnDisk: true });
+
+      expect(ctx.getMock(JobRepository).queue).toHaveBeenCalledWith({
+        name: JobName.FileDelete,
+        data: { files: [thumbnailPath, previewPath] },
       });
     });
   });

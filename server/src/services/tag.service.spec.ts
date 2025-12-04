@@ -217,7 +217,7 @@ describe(TagService.name, () => {
 
   describe('addAssets', () => {
     it('should handle invalid ids', async () => {
-      mocks.tag.getAssetIds.mockResolvedValue(new Set([]));
+      mocks.tag.getAssetIds.mockResolvedValue(new Set());
       await expect(sut.addAssets(authStub.admin, 'tag-1', { ids: ['asset-1'] })).resolves.toEqual([
         { id: 'asset-1', success: false, error: 'no_permission' },
       ]);
