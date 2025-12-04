@@ -1,4 +1,4 @@
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter/widgets.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
@@ -131,7 +131,7 @@ enum ActionButtonType {
     };
   }
 
-  ConsumerWidget buildButton(ActionButtonContext context) {
+  Widget buildButton(ActionButtonContext context) {
     return switch (this) {
       ActionButtonType.advancedInfo => AdvancedInfoActionButton(source: context.source),
       ActionButtonType.share => ShareActionButton(source: context.source),
@@ -160,19 +160,7 @@ enum ActionButtonType {
 class ActionButtonBuilder {
   static const List<ActionButtonType> _actionTypes = ActionButtonType.values;
 
-  static const _excludedActions = {
-    ActionButtonType.share,
-    ActionButtonType.archive,
-    ActionButtonType.delete,
-    ActionButtonType.moveToLockFolder,
-  };
-
-  static final List<ActionButtonType> kebabMenuActionTypes = ActionButtonType.values
-      .where((type) => !_excludedActions.contains(type))
-      .toList();
-
-  static List<ConsumerWidget> build(ActionButtonContext context, {List<ActionButtonType>? actionTypes}) {
-    final types = actionTypes ?? _actionTypes;
-    return types.where((type) => type.shouldShow(context)).map((type) => type.buildButton(context)).toList();
+  static List<Widget> build(ActionButtonContext context) {
+    return _actionTypes.where((type) => type.shouldShow(context)).map((type) => type.buildButton(context)).toList();
   }
 }
