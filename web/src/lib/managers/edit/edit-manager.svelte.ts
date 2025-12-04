@@ -1,4 +1,4 @@
-import CropTool from '$lib/components/asset-viewer/editor/crop-tool/crop-tool.svelte';
+import TransformTool from '$lib/components/asset-viewer/editor/transform-tool/transform-tool.svelte';
 import { transformManager } from '$lib/managers/edit/transform-manager.svelte';
 import { waitForWebsocketEvent } from '$lib/stores/websocket';
 import { editAsset, removeAssetEdits, type AssetEditsDto, type AssetResponseDto } from '@immich/sdk';
@@ -33,7 +33,7 @@ export class EditManager {
     {
       type: EditToolType.Transform,
       icon: mdiCropRotate,
-      component: CropTool,
+      component: TransformTool,
       manager: transformManager,
     },
   ];

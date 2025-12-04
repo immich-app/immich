@@ -42,7 +42,7 @@
   import ActivityStatus from './activity-status.svelte';
   import ActivityViewer from './activity-viewer.svelte';
   import DetailPanel from './detail-panel.svelte';
-  import CropArea from './editor/crop-tool/crop-area.svelte';
+  import CropArea from './editor/transform-tool/crop-area.svelte';
   import EditorPanel from './editor/editor-panel.svelte';
   import ImagePanoramaViewer from './image-panorama-viewer.svelte';
   import OcrButton from './ocr-button.svelte';
