@@ -226,7 +226,7 @@ describe(AssetService.name, () => {
       await sut.update(authStub.admin, 'asset-1', { description: 'Test description' });
 
       expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
-        { assetId: 'asset-1', description: 'Test description' },
+        { assetId: 'asset-1', description: 'Test description', lockedProperties: ['description'] },
         { lockedPropertiesBehavior: 'update' },
       );
     });
@@ -242,6 +242,7 @@ describe(AssetService.name, () => {
         {
           assetId: 'asset-1',
           rating: 3,
+          lockedProperties: ['rating'],
         },
         { lockedPropertiesBehavior: 'update' },
       );
