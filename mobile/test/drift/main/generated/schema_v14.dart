@@ -1486,6 +1486,28 @@ class LocalAssetEntity extends Table
     requiredDuringInsert: false,
     defaultValue: const CustomExpression('0'),
   );
+  late final GeneratedColumn<DateTime> adjustmentTime =
+      GeneratedColumn<DateTime>(
+        'adjustment_time',
+        aliasedName,
+        true,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+      );
+  late final GeneratedColumn<double> latitude = GeneratedColumn<double>(
+    'latitude',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  late final GeneratedColumn<double> longitude = GeneratedColumn<double>(
+    'longitude',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     name,
@@ -1499,6 +1521,9 @@ class LocalAssetEntity extends Table
     checksum,
     isFavorite,
     orientation,
+    adjustmentTime,
+    latitude,
+    longitude,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -1555,6 +1580,18 @@ class LocalAssetEntity extends Table
         DriftSqlType.int,
         data['${effectivePrefix}orientation'],
       )!,
+      adjustmentTime: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}adjustment_time'],
+      ),
+      latitude: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}latitude'],
+      ),
+      longitude: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}longitude'],
+      ),
     );
   }
 
@@ -1582,6 +1619,9 @@ class LocalAssetEntityData extends DataClass
   final String? checksum;
   final bool isFavorite;
   final int orientation;
+  final DateTime? adjustmentTime;
+  final double? latitude;
+  final double? longitude;
   const LocalAssetEntityData({
     required this.name,
     required this.type,
@@ -1594,6 +1634,9 @@ class LocalAssetEntityData extends DataClass
     this.checksum,
     required this.isFavorite,
     required this.orientation,
+    this.adjustmentTime,
+    this.latitude,
+    this.longitude,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1617,6 +1660,15 @@ class LocalAssetEntityData extends DataClass
     }
     map['is_favorite'] = Variable<bool>(isFavorite);
     map['orientation'] = Variable<int>(orientation);
+    if (!nullToAbsent || adjustmentTime != null) {
+      map['adjustment_time'] = Variable<DateTime>(adjustmentTime);
+    }
+    if (!nullToAbsent || latitude != null) {
+      map['latitude'] = Variable<double>(latitude);
+    }
+    if (!nullToAbsent || longitude != null) {
+      map['longitude'] = Variable<double>(longitude);
+    }
     return map;
   }
 
@@ -1637,6 +1689,9 @@ class LocalAssetEntityData extends DataClass
       checksum: serializer.fromJson<String?>(json['checksum']),
       isFavorite: serializer.fromJson<bool>(json['isFavorite']),
       orientation: serializer.fromJson<int>(json['orientation']),
+      adjustmentTime: serializer.fromJson<DateTime?>(json['adjustmentTime']),
+      latitude: serializer.fromJson<double?>(json['latitude']),
+      longitude: serializer.fromJson<double?>(json['longitude']),
     );
   }
   @override
@@ -1654,6 +1709,9 @@ class LocalAssetEntityData extends DataClass
       'checksum': serializer.toJson<String?>(checksum),
       'isFavorite': serializer.toJson<bool>(isFavorite),
       'orientation': serializer.toJson<int>(orientation),
+      'adjustmentTime': serializer.toJson<DateTime?>(adjustmentTime),
+      'latitude': serializer.toJson<double?>(latitude),
+      'longitude': serializer.toJson<double?>(longitude),
     };
   }
 
@@ -1669,6 +1727,9 @@ class LocalAssetEntityData extends DataClass
     Value<String?> checksum = const Value.absent(),
     bool? isFavorite,
     int? orientation,
+    Value<DateTime?> adjustmentTime = const Value.absent(),
+    Value<double?> latitude = const Value.absent(),
+    Value<double?> longitude = const Value.absent(),
   }) => LocalAssetEntityData(
     name: name ?? this.name,
     type: type ?? this.type,
@@ -1683,6 +1744,11 @@ class LocalAssetEntityData extends DataClass
     checksum: checksum.present ? checksum.value : this.checksum,
     isFavorite: isFavorite ?? this.isFavorite,
     orientation: orientation ?? this.orientation,
+    adjustmentTime: adjustmentTime.present
+        ? adjustmentTime.value
+        : this.adjustmentTime,
+    latitude: latitude.present ? latitude.value : this.latitude,
+    longitude: longitude.present ? longitude.value : this.longitude,
   );
   LocalAssetEntityData copyWithCompanion(LocalAssetEntityCompanion data) {
     return LocalAssetEntityData(
@@ -1703,6 +1769,11 @@ class LocalAssetEntityData extends DataClass
       orientation: data.orientation.present
           ? data.orientation.value
           : this.orientation,
+      adjustmentTime: data.adjustmentTime.present
+          ? data.adjustmentTime.value
+          : this.adjustmentTime,
+      latitude: data.latitude.present ? data.latitude.value : this.latitude,
+      longitude: data.longitude.present ? data.longitude.value : this.longitude,
     );
   }
 
@@ -1719,7 +1790,10 @@ class LocalAssetEntityData extends DataClass
           ..write('id: $id, ')
           ..write('checksum: $checksum, ')
           ..write('isFavorite: $isFavorite, ')
-          ..write('orientation: $orientation')
+          ..write('orientation: $orientation, ')
+          ..write('adjustmentTime: $adjustmentTime, ')
+          ..write('latitude: $latitude, ')
+          ..write('longitude: $longitude')
           ..write(')'))
         .toString();
   }
@@ -1737,6 +1811,9 @@ class LocalAssetEntityData extends DataClass
     checksum,
     isFavorite,
     orientation,
+    adjustmentTime,
+    latitude,
+    longitude,
   );
   @override
   bool operator ==(Object other) =>
@@ -1752,7 +1829,10 @@ class LocalAssetEntityData extends DataClass
           other.id == this.id &&
           other.checksum == this.checksum &&
           other.isFavorite == this.isFavorite &&
-          other.orientation == this.orientation);
+          other.orientation == this.orientation &&
+          other.adjustmentTime == this.adjustmentTime &&
+          other.latitude == this.latitude &&
+          other.longitude == this.longitude);
 }
 
 class LocalAssetEntityCompanion extends UpdateCompanion<LocalAssetEntityData> {
@@ -1767,6 +1847,9 @@ class LocalAssetEntityCompanion extends UpdateCompanion<LocalAssetEntityData> {
   final Value<String?> checksum;
   final Value<bool> isFavorite;
   final Value<int> orientation;
+  final Value<DateTime?> adjustmentTime;
+  final Value<double?> latitude;
+  final Value<double?> longitude;
   const LocalAssetEntityCompanion({
     this.name = const Value.absent(),
     this.type = const Value.absent(),
@@ -1779,6 +1862,9 @@ class LocalAssetEntityCompanion extends UpdateCompanion<LocalAssetEntityData> {
     this.checksum = const Value.absent(),
     this.isFavorite = const Value.absent(),
     this.orientation = const Value.absent(),
+    this.adjustmentTime = const Value.absent(),
+    this.latitude = const Value.absent(),
+    this.longitude = const Value.absent(),
   });
   LocalAssetEntityCompanion.insert({
     required String name,
@@ -1792,6 +1878,9 @@ class LocalAssetEntityCompanion extends UpdateCompanion<LocalAssetEntityData> {
     this.checksum = const Value.absent(),
     this.isFavorite = const Value.absent(),
     this.orientation = const Value.absent(),
+    this.adjustmentTime = const Value.absent(),
+    this.latitude = const Value.absent(),
+    this.longitude = const Value.absent(),
   }) : name = Value(name),
        type = Value(type),
        id = Value(id);
@@ -1807,6 +1896,9 @@ class LocalAssetEntityCompanion extends UpdateCompanion<LocalAssetEntityData> {
     Expression<String>? checksum,
     Expression<bool>? isFavorite,
     Expression<int>? orientation,
+    Expression<DateTime>? adjustmentTime,
+    Expression<double>? latitude,
+    Expression<double>? longitude,
   }) {
     return RawValuesInsertable({
       if (name != null) 'name': name,
@@ -1820,6 +1912,9 @@ class LocalAssetEntityCompanion extends UpdateCompanion<LocalAssetEntityData> {
       if (checksum != null) 'checksum': checksum,
       if (isFavorite != null) 'is_favorite': isFavorite,
       if (orientation != null) 'orientation': orientation,
+      if (adjustmentTime != null) 'adjustment_time': adjustmentTime,
+      if (latitude != null) 'latitude': latitude,
+      if (longitude != null) 'longitude': longitude,
     });
   }
 
@@ -1835,6 +1930,9 @@ class LocalAssetEntityCompanion extends UpdateCompanion<LocalAssetEntityData> {
     Value<String?>? checksum,
     Value<bool>? isFavorite,
     Value<int>? orientation,
+    Value<DateTime?>? adjustmentTime,
+    Value<double?>? latitude,
+    Value<double?>? longitude,
   }) {
     return LocalAssetEntityCompanion(
       name: name ?? this.name,
@@ -1848,6 +1946,9 @@ class LocalAssetEntityCompanion extends UpdateCompanion<LocalAssetEntityData> {
       checksum: checksum ?? this.checksum,
       isFavorite: isFavorite ?? this.isFavorite,
       orientation: orientation ?? this.orientation,
+      adjustmentTime: adjustmentTime ?? this.adjustmentTime,
+      latitude: latitude ?? this.latitude,
+      longitude: longitude ?? this.longitude,
     );
   }
 
@@ -1887,6 +1988,15 @@ class LocalAssetEntityCompanion extends UpdateCompanion<LocalAssetEntityData> {
     if (orientation.present) {
       map['orientation'] = Variable<int>(orientation.value);
     }
+    if (adjustmentTime.present) {
+      map['adjustment_time'] = Variable<DateTime>(adjustmentTime.value);
+    }
+    if (latitude.present) {
+      map['latitude'] = Variable<double>(latitude.value);
+    }
+    if (longitude.present) {
+      map['longitude'] = Variable<double>(longitude.value);
+    }
     return map;
   }
 
@@ -1903,7 +2013,10 @@ class LocalAssetEntityCompanion extends UpdateCompanion<LocalAssetEntityData> {
           ..write('id: $id, ')
           ..write('checksum: $checksum, ')
           ..write('isFavorite: $isFavorite, ')
-          ..write('orientation: $orientation')
+          ..write('orientation: $orientation, ')
+          ..write('adjustmentTime: $adjustmentTime, ')
+          ..write('latitude: $latitude, ')
+          ..write('longitude: $longitude')
           ..write(')'))
         .toString();
   }
@@ -7210,17 +7323,6 @@ class TrashedLocalAssetEntity extends Table
     requiredDuringInsert: false,
     defaultValue: const CustomExpression('0'),
   );
-  late final GeneratedColumn<bool> isRestorable = GeneratedColumn<bool>(
-    'is_restorable',
-    aliasedName,
-    false,
-    type: DriftSqlType.bool,
-    requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'CHECK ("is_restorable" IN (0, 1))',
-    ),
-    defaultValue: const CustomExpression('0'),
-  );
   @override
   List<GeneratedColumn> get $columns => [
     name,
@@ -7235,7 +7337,6 @@ class TrashedLocalAssetEntity extends Table
     checksum,
     isFavorite,
     orientation,
-    isRestorable,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -7299,10 +7400,6 @@ class TrashedLocalAssetEntity extends Table
         DriftSqlType.int,
         data['${effectivePrefix}orientation'],
       )!,
-      isRestorable: attachedDatabase.typeMapping.read(
-        DriftSqlType.bool,
-        data['${effectivePrefix}is_restorable'],
-      )!,
     );
   }
 
@@ -7331,7 +7428,6 @@ class TrashedLocalAssetEntityData extends DataClass
   final String? checksum;
   final bool isFavorite;
   final int orientation;
-  final bool isRestorable;
   const TrashedLocalAssetEntityData({
     required this.name,
     required this.type,
@@ -7345,7 +7441,6 @@ class TrashedLocalAssetEntityData extends DataClass
     this.checksum,
     required this.isFavorite,
     required this.orientation,
-    required this.isRestorable,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -7370,7 +7465,6 @@ class TrashedLocalAssetEntityData extends DataClass
     }
     map['is_favorite'] = Variable<bool>(isFavorite);
     map['orientation'] = Variable<int>(orientation);
-    map['is_restorable'] = Variable<bool>(isRestorable);
     return map;
   }
 
@@ -7392,7 +7486,6 @@ class TrashedLocalAssetEntityData extends DataClass
       checksum: serializer.fromJson<String?>(json['checksum']),
       isFavorite: serializer.fromJson<bool>(json['isFavorite']),
       orientation: serializer.fromJson<int>(json['orientation']),
-      isRestorable: serializer.fromJson<bool>(json['isRestorable']),
     );
   }
   @override
@@ -7411,7 +7504,6 @@ class TrashedLocalAssetEntityData extends DataClass
       'checksum': serializer.toJson<String?>(checksum),
       'isFavorite': serializer.toJson<bool>(isFavorite),
       'orientation': serializer.toJson<int>(orientation),
-      'isRestorable': serializer.toJson<bool>(isRestorable),
     };
   }
 
@@ -7428,7 +7520,6 @@ class TrashedLocalAssetEntityData extends DataClass
     Value<String?> checksum = const Value.absent(),
     bool? isFavorite,
     int? orientation,
-    bool? isRestorable,
   }) => TrashedLocalAssetEntityData(
     name: name ?? this.name,
     type: type ?? this.type,
@@ -7444,7 +7535,6 @@ class TrashedLocalAssetEntityData extends DataClass
     checksum: checksum.present ? checksum.value : this.checksum,
     isFavorite: isFavorite ?? this.isFavorite,
     orientation: orientation ?? this.orientation,
-    isRestorable: isRestorable ?? this.isRestorable,
   );
   TrashedLocalAssetEntityData copyWithCompanion(
     TrashedLocalAssetEntityCompanion data,
@@ -7468,9 +7558,6 @@ class TrashedLocalAssetEntityData extends DataClass
       orientation: data.orientation.present
           ? data.orientation.value
           : this.orientation,
-      isRestorable: data.isRestorable.present
-          ? data.isRestorable.value
-          : this.isRestorable,
     );
   }
 
@@ -7488,8 +7575,7 @@ class TrashedLocalAssetEntityData extends DataClass
           ..write('albumId: $albumId, ')
           ..write('checksum: $checksum, ')
           ..write('isFavorite: $isFavorite, ')
-          ..write('orientation: $orientation, ')
-          ..write('isRestorable: $isRestorable')
+          ..write('orientation: $orientation')
           ..write(')'))
         .toString();
   }
@@ -7508,7 +7594,6 @@ class TrashedLocalAssetEntityData extends DataClass
     checksum,
     isFavorite,
     orientation,
-    isRestorable,
   );
   @override
   bool operator ==(Object other) =>
@@ -7525,8 +7610,7 @@ class TrashedLocalAssetEntityData extends DataClass
           other.albumId == this.albumId &&
           other.checksum == this.checksum &&
           other.isFavorite == this.isFavorite &&
-          other.orientation == this.orientation &&
-          other.isRestorable == this.isRestorable);
+          other.orientation == this.orientation);
 }
 
 class TrashedLocalAssetEntityCompanion
@@ -7543,7 +7627,6 @@ class TrashedLocalAssetEntityCompanion
   final Value<String?> checksum;
   final Value<bool> isFavorite;
   final Value<int> orientation;
-  final Value<bool> isRestorable;
   const TrashedLocalAssetEntityCompanion({
     this.name = const Value.absent(),
     this.type = const Value.absent(),
@@ -7557,7 +7640,6 @@ class TrashedLocalAssetEntityCompanion
     this.checksum = const Value.absent(),
     this.isFavorite = const Value.absent(),
     this.orientation = const Value.absent(),
-    this.isRestorable = const Value.absent(),
   });
   TrashedLocalAssetEntityCompanion.insert({
     required String name,
@@ -7572,7 +7654,6 @@ class TrashedLocalAssetEntityCompanion
     this.checksum = const Value.absent(),
     this.isFavorite = const Value.absent(),
     this.orientation = const Value.absent(),
-    this.isRestorable = const Value.absent(),
   }) : name = Value(name),
        type = Value(type),
        id = Value(id),
@@ -7590,7 +7671,6 @@ class TrashedLocalAssetEntityCompanion
     Expression<String>? checksum,
     Expression<bool>? isFavorite,
     Expression<int>? orientation,
-    Expression<bool>? isRestorable,
   }) {
     return RawValuesInsertable({
       if (name != null) 'name': name,
@@ -7605,7 +7685,6 @@ class TrashedLocalAssetEntityCompanion
       if (checksum != null) 'checksum': checksum,
       if (isFavorite != null) 'is_favorite': isFavorite,
       if (orientation != null) 'orientation': orientation,
-      if (isRestorable != null) 'is_restorable': isRestorable,
     });
   }
 
@@ -7622,7 +7701,6 @@ class TrashedLocalAssetEntityCompanion
     Value<String?>? checksum,
     Value<bool>? isFavorite,
     Value<int>? orientation,
-    Value<bool>? isRestorable,
   }) {
     return TrashedLocalAssetEntityCompanion(
       name: name ?? this.name,
@@ -7637,7 +7715,6 @@ class TrashedLocalAssetEntityCompanion
       checksum: checksum ?? this.checksum,
       isFavorite: isFavorite ?? this.isFavorite,
       orientation: orientation ?? this.orientation,
-      isRestorable: isRestorable ?? this.isRestorable,
     );
   }
 
@@ -7680,9 +7757,6 @@ class TrashedLocalAssetEntityCompanion
     if (orientation.present) {
       map['orientation'] = Variable<int>(orientation.value);
     }
-    if (isRestorable.present) {
-      map['is_restorable'] = Variable<bool>(isRestorable.value);
-    }
     return map;
   }
 
@@ -7700,8 +7774,7 @@ class TrashedLocalAssetEntityCompanion
           ..write('albumId: $albumId, ')
           ..write('checksum: $checksum, ')
           ..write('isFavorite: $isFavorite, ')
-          ..write('orientation: $orientation, ')
-          ..write('isRestorable: $isRestorable')
+          ..write('orientation: $orientation')
           ..write(')'))
         .toString();
   }

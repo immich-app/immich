@@ -5577,7 +5577,7 @@ final class Schema14 extends i0.VersionedSchema {
     ),
     alias: null,
   );
-  late final Shape2 localAssetEntity = Shape2(
+  late final Shape24 localAssetEntity = Shape24(
     source: i0.VersionedTable(
       entityName: 'local_asset_entity',
       withoutRowId: true,
@@ -5595,6 +5595,9 @@ final class Schema14 extends i0.VersionedSchema {
         _column_22,
         _column_14,
         _column_23,
+        _column_96,
+        _column_46,
+        _column_47,
       ],
       attachedDatabase: database,
     ),
@@ -5861,7 +5864,7 @@ final class Schema14 extends i0.VersionedSchema {
     ),
     alias: null,
   );
-  late final Shape24 trashedLocalAssetEntity = Shape24(
+  late final Shape23 trashedLocalAssetEntity = Shape23(
     source: i0.VersionedTable(
       entityName: 'trashed_local_asset_entity',
       withoutRowId: true,
@@ -5880,7 +5883,6 @@ final class Schema14 extends i0.VersionedSchema {
         _column_22,
         _column_14,
         _column_23,
-        _column_96,
       ],
       attachedDatabase: database,
     ),
@@ -5918,28 +5920,26 @@ class Shape24 extends i0.VersionedTable {
       columnsByName['duration_in_seconds']! as i1.GeneratedColumn<int>;
   i1.GeneratedColumn<String> get id =>
       columnsByName['id']! as i1.GeneratedColumn<String>;
-  i1.GeneratedColumn<String> get albumId =>
-      columnsByName['album_id']! as i1.GeneratedColumn<String>;
   i1.GeneratedColumn<String> get checksum =>
       columnsByName['checksum']! as i1.GeneratedColumn<String>;
   i1.GeneratedColumn<bool> get isFavorite =>
       columnsByName['is_favorite']! as i1.GeneratedColumn<bool>;
   i1.GeneratedColumn<int> get orientation =>
       columnsByName['orientation']! as i1.GeneratedColumn<int>;
-  i1.GeneratedColumn<bool> get isRestorable =>
-      columnsByName['is_restorable']! as i1.GeneratedColumn<bool>;
+  i1.GeneratedColumn<DateTime> get adjustmentTime =>
+      columnsByName['adjustment_time']! as i1.GeneratedColumn<DateTime>;
+  i1.GeneratedColumn<double> get latitude =>
+      columnsByName['latitude']! as i1.GeneratedColumn<double>;
+  i1.GeneratedColumn<double> get longitude =>
+      columnsByName['longitude']! as i1.GeneratedColumn<double>;
 }
 
-i1.GeneratedColumn<bool> _column_96(String aliasedName) =>
-    i1.GeneratedColumn<bool>(
-      'is_restorable',
+i1.GeneratedColumn<DateTime> _column_96(String aliasedName) =>
+    i1.GeneratedColumn<DateTime>(
+      'adjustment_time',
       aliasedName,
-      false,
-      type: i1.DriftSqlType.bool,
-      defaultConstraints: i1.GeneratedColumn.constraintIsAlways(
-        'CHECK ("is_restorable" IN (0, 1))',
-      ),
-      defaultValue: const CustomExpression('0'),
+      true,
+      type: i1.DriftSqlType.dateTime,
     );
 i0.MigrationStepWithVersion migrationSteps({
   required Future<void> Function(i1.Migrator m, Schema2 schema) from1To2,
