@@ -4,9 +4,12 @@
 update "asset_exif"
 set
   "model" = $1,
-  "lockedProperties" = array(
-    select distinct
-      unnest(array_cat("lockedProperties", $2))
+  "lockedProperties" = nullif(
+    array(
+      select distinct
+        unnest("asset_exif"."lockedProperties" || $2)
+    ),
+    '{}'
   )
 where
   "assetId" in ($3)
@@ -16,9 +19,12 @@ update "asset_exif"
 set
   "dateTimeOriginal" = "dateTimeOriginal" + $1::interval,
   "timeZone" = $2,
-  "lockedProperties" = array(
-    select distinct
-      unnest(array_cat("lockedProperties", $3))
+  "lockedProperties" = nullif(
+    array(
+      select distinct
+        unnest("asset_exif"."lockedProperties" || $3)
+    ),
+    '{}'
   )
 where
   "assetId" in ($4)
