@@ -160,7 +160,7 @@ export class AssetRepository {
               model: ref('model'),
               lensModel: ref('lensModel'),
               fNumber: ref('fNumber'),
-              focalLength: eb.ref('excluded.focalLength'),
+              focalLength: ref('focalLength'),
               iso: ref('iso'),
               exposureTime: ref('exposureTime'),
               profileDescription: ref('profileDescription'),
