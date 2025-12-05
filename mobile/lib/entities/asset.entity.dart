@@ -24,7 +24,7 @@ class Asset {
       fileCreatedAt = remote.fileCreatedAt,
       fileModifiedAt = remote.fileModifiedAt,
       updatedAt = remote.updatedAt,
-      durationInSeconds = remote.duration.toDuration()?.inSeconds ?? 0,
+      durationInSeconds = remote.duration?.toDuration()?.inSeconds ?? 0,
       type = remote.type.toAssetType(),
       fileName = remote.originalFileName,
       height = remote.exifInfo?.exifImageHeight?.toInt(),

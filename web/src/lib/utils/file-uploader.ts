@@ -136,7 +136,6 @@ async function fileUploader({
       fileCreatedAt,
       fileModifiedAt: new Date(assetFile.lastModified).toISOString(),
       isFavorite: 'false',
-      duration: '0:00:00.000000',
       assetData: new File([assetFile], assetFile.name),
     })) {
       formData.append(key, value);

@@ -147,7 +147,7 @@ export class TimeBucketAssetResponseDto {
   @ApiProperty({
     type: 'array',
     items: { type: 'string', nullable: true },
-    description: 'Array of video durations in HH:MM:SS format (null for images)',
+    description: 'Array of video/gif durations in hh:mm:ss.SSS format (null for static images)',
   })
   duration!: (string | null)[];
 

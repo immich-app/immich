@@ -59,7 +59,8 @@ class AssetResponseDto {
 
   String? duplicateId;
 
-  String duration;
+  /// Video/gif duration in hh:mm:ss.SSS format (null for static images)
+  String? duration;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -184,7 +185,7 @@ class AssetResponseDto {
     (deviceAssetId.hashCode) +
     (deviceId.hashCode) +
     (duplicateId == null ? 0 : duplicateId!.hashCode) +
-    (duration.hashCode) +
+    (duration == null ? 0 : duration!.hashCode) +
     (exifInfo == null ? 0 : exifInfo!.hashCode) +
     (fileCreatedAt.hashCode) +
     (fileModifiedAt.hashCode) +
@@ -226,7 +227,11 @@ class AssetResponseDto {
     } else {
     //  json[r'duplicateId'] = null;
     }
+    if (this.duration != null) {
       json[r'duration'] = this.duration;
+    } else {
+    //  json[r'duration'] = null;
+    }
     if (this.exifInfo != null) {
       json[r'exifInfo'] = this.exifInfo;
     } else {
@@ -302,7 +307,7 @@ class AssetResponseDto {
         deviceAssetId: mapValueOfType<String>(json, r'deviceAssetId')!,
         deviceId: mapValueOfType<String>(json, r'deviceId')!,
         duplicateId: mapValueOfType<String>(json, r'duplicateId'),
-        duration: mapValueOfType<String>(json, r'duration')!,
+        duration: mapValueOfType<String>(json, r'duration'),
         exifInfo: ExifResponseDto.fromJson(json[r'exifInfo']),
         fileCreatedAt: mapDateTime(json, r'fileCreatedAt', r'')!,
         fileModifiedAt: mapDateTime(json, r'fileModifiedAt', r'')!,

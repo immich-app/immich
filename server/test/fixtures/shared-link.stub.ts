@@ -62,7 +62,7 @@ const assetResponse: AssetResponseDto = {
   updatedAt: today,
   isFavorite: false,
   isArchived: false,
-  duration: '0:00:00.00000',
+  duration: null,
   exifInfo: assetInfo,
   livePhotoVideoId: null,
   tags: [],
@@ -80,7 +80,7 @@ const assetResponseWithoutMetadata = {
   originalMimeType: 'image/jpeg',
   thumbhash: null,
   localDateTime: today,
-  duration: '0:00:00.00000',
+  duration: null,
   livePhotoVideoId: null,
   hasMetadata: false,
 } as AssetResponseDto;

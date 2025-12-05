@@ -157,8 +157,7 @@
 
   // when true, will force loading of the original image
   let forceUseOriginal: boolean = $derived(
-    (asset.type === AssetTypeEnum.Image && asset.duration && !asset.duration.includes('0:00:00.000')) ||
-      $photoZoomState.currentZoom > 1,
+    (asset.type === AssetTypeEnum.Image && !!asset.duration) || $photoZoomState.currentZoom > 1,
   );
 
   const targetImageSize = $derived.by(() => {

@@ -334,7 +334,7 @@ export function toAssetResponseDto(asset: MockTimelineAsset, owner?: UserRespons
     isArchived: false,
     isTrashed: asset.isTrashed,
     visibility: asset.visibility,
-    duration: asset.duration || '0:00:00.00000',
+    duration: asset.duration,
     exifInfo,
     livePhotoVideoId: asset.livePhotoVideoId,
     tags: [],

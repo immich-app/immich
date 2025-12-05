@@ -31,7 +31,8 @@ export class SanitizedAssetResponseDto {
     example: '2024-01-15T14:30:00.000Z',
   })
   localDateTime!: Date;
-  duration!: string;
+  @ApiProperty({ description: 'Video/gif duration in hh:mm:ss.SSS format (null for static images)' })
+  duration!: string | null;
   livePhotoVideoId?: string | null;
   hasMetadata!: boolean;
 }
@@ -187,7 +188,7 @@ export function mapAsset(entity: MapAsset, options: AssetMapOptions = {}): Asset
       originalMimeType: mimeTypes.lookup(entity.originalFileName),
       thumbhash: entity.thumbhash ? hexOrBufferToBase64(entity.thumbhash) : null,
       localDateTime: entity.localDateTime,
-      duration: entity.duration ?? '0:00:00.00000',
+      duration: entity.duration,
       livePhotoVideoId: entity.livePhotoVideoId,
       hasMetadata: false,
     };
@@ -215,7 +216,7 @@ export function mapAsset(entity: MapAsset, options: AssetMapOptions = {}): Asset
     isArchived: entity.visibility === AssetVisibility.Archive,
     isTrashed: !!entity.deletedAt,
     visibility: entity.visibility,
-    duration: entity.duration ?? '0:00:00.00000',
+    duration: entity.duration,
     exifInfo: entity.exifInfo ? mapExif(entity.exifInfo) : undefined,
     livePhotoVideoId: entity.livePhotoVideoId,
     tags: entity.tags?.map((tag) => mapTag(tag)),
