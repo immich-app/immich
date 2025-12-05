@@ -1,5 +1,6 @@
 <script lang="ts">
   import { shortcuts } from '$lib/actions/shortcut';
+  import type { AssetCursor } from '$lib/components/asset-viewer/asset-viewer.svelte';
   import DuplicateAsset from '$lib/components/utilities-page/duplicates/duplicate-asset.svelte';
   import Portal from '$lib/elements/Portal.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
@@ -10,7 +11,7 @@
   import { getAssetInfo, type AssetResponseDto } from '@immich/sdk';
   import { Button } from '@immich/ui';
   import { mdiCheck, mdiImageMultipleOutline, mdiTrashCanOutline } from '@mdi/js';
-  import { onDestroy, onMount } from 'svelte';
+  import { onDestroy, onMount, untrack } from 'svelte';
   import { t } from 'svelte-i18n';
   import { SvelteSet } from 'svelte/reactivity';
 
@@ -102,6 +103,43 @@
   const handleStack = () => {
     onStack(assets);
   };
+
+  const getPreviousAsset = (currentAsset: AssetResponseDto) => {
+    const index = getAssetIndex(currentAsset.id) - 1;
+    if (index < 0) {
+      return undefined;
+    }
+    return assets[index];
+  };
+
+  const getNextAsset = (currentAsset: AssetResponseDto) => {
+    const index = getAssetIndex(currentAsset.id) + 1;
+    if (index >= assets.length) {
+      return undefined;
+    }
+    return assets[index];
+  };
+
+  let assetCursor = $state<AssetCursor>({
+    current: $viewingAsset,
+    previousAsset: undefined,
+    nextAsset: undefined,
+  });
+
+  const loadCloseAssets = (currentAsset: AssetResponseDto) => {
+    assetCursor = {
+      current: currentAsset,
+      nextAsset: getNextAsset(currentAsset),
+      previousAsset: getPreviousAsset(currentAsset),
+    };
+  };
+
+  //TODO: replace this with async derived in svelte 6
+  $effect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+    $viewingAsset;
+    untrack(() => void loadCloseAssets($viewingAsset));
+  });
 </script>
 
 <svelte:document
@@ -182,7 +220,7 @@
   {#await import('$lib/components/asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
     <Portal target="body">
       <AssetViewer
-        asset={$viewingAsset}
+        cursor={assetCursor}
         showNavigation={assets.length > 1}
         {onNext}
         {onPrevious}

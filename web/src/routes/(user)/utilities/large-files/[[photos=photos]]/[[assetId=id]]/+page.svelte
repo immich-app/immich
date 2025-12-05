@@ -1,14 +1,17 @@
 <script lang="ts">
   import type { Action } from '$lib/components/asset-viewer/actions/action';
+  import type { AssetCursor } from '$lib/components/asset-viewer/asset-viewer.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import LargeAssetData from '$lib/components/utilities-page/large-assets/large-asset-data.svelte';
   import Portal from '$lib/elements/Portal.svelte';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { handlePromiseError } from '$lib/utils';
   import { navigate } from '$lib/utils/navigation';
+  import { getAssetInfo, type AssetResponseDto } from '@immich/sdk';
+  import { untrack } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
-  import type { AssetResponseDto } from '@immich/sdk';
 
   interface Props {
     data: PageData;
@@ -65,6 +68,59 @@
   const onViewAsset = async (asset: AssetResponseDto) => {
     await navigate({ targetRoute: 'current', assetId: asset.id });
   };
+
+  const getNextAsset = async (currentAsset: AssetResponseDto | undefined, preload: boolean = true) => {
+    if (!currentAsset) {
+      return;
+    }
+    const cursor = assets.indexOf(currentAsset);
+    if (cursor < assets.length - 1) {
+      const id = assets[cursor + 1].id;
+      const asset = await getAssetInfo({ ...authManager.params, id });
+      if (preload) {
+        void getNextAsset(asset, false);
+      }
+      return asset;
+    }
+  };
+
+  const getPreviousAsset = async (currentAsset: AssetResponseDto | undefined, preload: boolean = true) => {
+    if (!currentAsset) {
+      return;
+    }
+    const cursor = assets.indexOf(currentAsset);
+    if (cursor <= 0) {
+      return;
+    }
+    const id = assets[cursor - 1].id;
+    const asset = await getAssetInfo({ ...authManager.params, id });
+    if (preload) {
+      void getPreviousAsset(asset, false);
+    }
+    return asset;
+  };
+
+  let assetCursor = $state<AssetCursor>({
+    current: $viewingAsset,
+    previousAsset: undefined,
+    nextAsset: undefined,
+  });
+
+  const loadCloseAssets = async (currentAsset: AssetResponseDto) => {
+    const [nextAsset, previousAsset] = await Promise.all([getNextAsset(currentAsset), getPreviousAsset(currentAsset)]);
+    assetCursor = {
+      current: currentAsset,
+      nextAsset,
+      previousAsset,
+    };
+  };
+
+  //TODO: replace this with async derived in svelte 6
+  $effect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+    $viewingAsset;
+    untrack(() => void loadCloseAssets($viewingAsset));
+  });
 </script>
 
 <UserPageLayout title={data.meta.title} scrollbar={true}>
@@ -85,7 +141,7 @@
   {#await import('$lib/components/asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
     <Portal target="body">
       <AssetViewer
-        asset={$viewingAsset}
+        cursor={assetCursor}
         showNavigation={assets.length > 1}
         {onNext}
         {onPrevious}
