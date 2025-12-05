@@ -18,6 +18,8 @@
     initializeActionConfigs,
     initializeFilterConfigs,
     parseWorkflowJson,
+    remapConfigsOnRemove,
+    remapConfigsOnReorder,
     type WorkflowPayload,
   } from '$lib/services/workflow.service';
   import { handleError } from '$lib/utils/handle-error';
@@ -93,8 +95,8 @@
     ),
   );
 
-  let filterConfigs: Record<string, unknown> = $derived(initializeFilterConfigs(editWorkflow, supportFilters));
-  let actionConfigs: Record<string, unknown> = $derived(initializeActionConfigs(editWorkflow, supportActions));
+  let filterConfigs: Record<string, unknown> = $derived(initializeFilterConfigs(editWorkflow));
+  let actionConfigs: Record<string, unknown> = $derived(initializeActionConfigs(editWorkflow));
 
   $effect(() => {
     editWorkflow.triggerType = triggerType;
@@ -195,8 +197,6 @@
       selectedActions,
       filterConfigs,
       actionConfigs,
-      filters,
-      actions,
     ),
   );
 
@@ -221,6 +221,9 @@
     if (draggedFilterIndex === null || draggedFilterIndex === index) {
       return;
     }
+
+    // Remap configs to follow the new order
+    filterConfigs = remapConfigsOnReorder(filterConfigs, 'filter', draggedFilterIndex, index, selectedFilters.length);
 
     const newFilters = [...selectedFilters];
     const [draggedItem] = newFilters.splice(draggedFilterIndex, 1);
@@ -248,6 +251,9 @@
     if (draggedActionIndex === null || draggedActionIndex === index) {
       return;
     }
+
+    // Remap configs to follow the new order
+    actionConfigs = remapConfigsOnReorder(actionConfigs, 'action', draggedActionIndex, index, selectedActions.length);
 
     const newActions = [...selectedActions];
     const [draggedItem] = newActions.splice(draggedActionIndex, 1);
@@ -277,10 +283,14 @@
   };
 
   const handleRemoveFilter = (index: number) => {
+    // Remap configs to account for the removed item
+    filterConfigs = remapConfigsOnRemove(filterConfigs, 'filter', index, selectedFilters.length);
     selectedFilters = selectedFilters.filter((_, i) => i !== index);
   };
 
   const handleRemoveAction = (index: number) => {
+    // Remap configs to account for the removed item
+    actionConfigs = remapConfigsOnRemove(actionConfigs, 'action', index, selectedActions.length);
     selectedActions = selectedActions.filter((_, i) => i !== index);
   };
 
@@ -473,7 +483,7 @@
                       <SchemaFormFields
                         schema={filter.schema}
                         bind:config={filterConfigs}
-                        configKey={filter.methodName}
+                        configKey={`filter_${index}`}
                       />
                     </div>
                     <div class="flex flex-col gap-2">
@@ -542,7 +552,7 @@
                       <SchemaFormFields
                         schema={action.schema}
                         bind:config={actionConfigs}
-                        configKey={action.methodName}
+                        configKey={`action_${index}`}
                       />
                     </div>
                     <div class="flex flex-col gap-2">

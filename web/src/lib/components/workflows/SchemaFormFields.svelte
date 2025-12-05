@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { formatLabel, getComponentFromSchema, type ComponentConfig } from '$lib/utils/workflow';
-  import { Field, Input, MultiSelect, Select, Switch, Text, type SelectItem } from '@immich/ui';
+  import { getComponentDefaultValue, getComponentFromSchema } from '$lib/utils/workflow';
+  import { Field, Input, MultiSelect, Select, Switch, Text } from '@immich/ui';
   import WorkflowPickerField from './WorkflowPickerField.svelte';
 
   type Props = {
@@ -25,24 +25,6 @@
     config = configKey ? { ...config, [configKey]: { ...actualConfig, ...updates } } : { ...config, ...updates };
   };
 
-  // Helper to determine default value for a component based on its type
-  const getDefaultValue = (component: ComponentConfig): unknown => {
-    if (component.defaultValue !== undefined) {
-      return component.defaultValue;
-    }
-
-    // Initialize with appropriate empty value based on component type
-    if (component.type === 'multiselect' || (component.type === 'text' && component.subType === 'people-picker')) {
-      return [];
-    }
-
-    if (component.type === 'switch') {
-      return false;
-    }
-
-    return '';
-  };
-
   // Derive which keys need initialization (missing from actualConfig)
   const uninitializedKeys = $derived.by(() => {
     if (!components) {
@@ -51,7 +33,7 @@
 
     return Object.entries(components)
       .filter(([key]) => actualConfig[key] === undefined)
-      .map(([key, component]) => ({ key, component, defaultValue: getDefaultValue(component) }));
+      .map(([key, component]) => ({ key, component, defaultValue: getComponentDefaultValue(component) }));
   });
 
   // Derive the batch updates needed
@@ -62,10 +44,6 @@
     }
     return updates;
   });
-
-  let selectValue = $state<SelectItem>();
-  let switchValue = $state<boolean>(false);
-  let multiSelectValue = $state<SelectItem[]>([]);
 
   // Initialize config namespace if needed
   $effect(() => {
@@ -78,26 +56,6 @@
   $effect(() => {
     if (Object.keys(pendingUpdates).length > 0) {
       updateConfigBatch(pendingUpdates);
-    }
-  });
-
-  // Sync UI state for components with default values
-  $effect(() => {
-    for (const { component } of uninitializedKeys) {
-      if (component.defaultValue === undefined) {
-        continue;
-      }
-
-      if (component.type === 'select') {
-        selectValue = {
-          label: formatLabel(String(component.defaultValue)),
-          value: String(component.defaultValue),
-        };
-      }
-
-      if (component.type === 'switch') {
-        switchValue = Boolean(component.defaultValue);
-      }
     }
   });
 
@@ -123,6 +81,8 @@
             {@const options = component.options?.map((opt) => {
               return { label: opt.label, value: String(opt.value) };
             }) || [{ label: 'N/A', value: '' }]}
+            {@const currentValue = actualConfig[key]}
+            {@const selectedItem = options.find((opt) => opt.value === String(currentValue)) ?? options[0]}
 
             <Field
               {label}
@@ -130,7 +90,7 @@
               description={component.description}
               requiredIndicator={component.required}
             >
-              <Select data={options} onChange={(opt) => updateConfig(key, opt.value)} bind:value={selectValue} />
+              <Select data={options} onChange={(opt) => updateConfig(key, opt.value)} value={selectedItem} />
             </Field>
           {/if}
 
@@ -147,6 +107,8 @@
             {@const options = component.options?.map((opt) => {
               return { label: opt.label, value: String(opt.value) };
             }) || [{ label: 'N/A', value: '' }]}
+            {@const currentValues = (actualConfig[key] as string[]) ?? []}
+            {@const selectedItems = options.filter((opt) => currentValues.includes(opt.value))}
 
             <Field
               {label}
@@ -161,20 +123,21 @@
                     key,
                     opt.map((o) => o.value),
                   )}
-                bind:values={multiSelectValue}
+                values={selectedItems}
               />
             </Field>
           {/if}
 
           <!-- Switch component -->
         {:else if component.type === 'switch'}
+          {@const checked = Boolean(actualConfig[key])}
           <Field
             {label}
             description={component.description}
             requiredIndicator={component.required}
             required={component.required}
           >
-            <Switch bind:checked={switchValue} onCheckedChange={(check) => updateConfig(key, check)} />
+            <Switch {checked} onCheckedChange={(check) => updateConfig(key, check)} />
           </Field>
 
           <!-- Text input -->

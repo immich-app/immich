@@ -28,6 +28,23 @@ interface JSONSchema {
   required?: string[];
 }
 
+export const getComponentDefaultValue = (component: ComponentConfig): unknown => {
+  if (component.defaultValue !== undefined) {
+    return component.defaultValue;
+  }
+
+  // Initialize with appropriate empty value based on component type
+  if (component.type === 'multiselect' || (component.type === 'text' && component.subType === 'people-picker')) {
+    return [];
+  }
+
+  if (component.type === 'switch') {
+    return false;
+  }
+
+  return '';
+};
+
 export const getComponentFromSchema = (schema: object | null): Record<string, ComponentConfig> | null => {
   if (!schema || !isJSONSchema(schema) || !schema.properties) {
     return null;
