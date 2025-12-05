@@ -17,35 +17,29 @@ class ViewerKebabMenu extends ConsumerWidget {
       return const SizedBox.shrink();
     }
 
-    final theme = context.themeData;
     final menuChildren = <Widget>[
       BaseActionButton(
-        label: 'open_bottom_sheet_info'.tr(),
+        label: 'about'.tr(),
         iconData: Icons.info_outline,
+        menuItem: true,
         onPressed: () => EventStream.shared.emit(const ViewerOpenBottomSheetEvent()),
       ),
     ];
 
     return MenuAnchor(
+      consumeOutsideTap: true,
       style: MenuStyle(
-        backgroundColor: WidgetStatePropertyAll(theme.scaffoldBackgroundColor),
+        backgroundColor: WidgetStatePropertyAll(context.themeData.scaffoldBackgroundColor),
         elevation: const WidgetStatePropertyAll(4),
         shape: const WidgetStatePropertyAll(
           RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
         ),
-        padding: const WidgetStatePropertyAll(EdgeInsets.symmetric(vertical: 2)),
       ),
       menuChildren: menuChildren,
       builder: (context, controller, child) {
         return IconButton(
           icon: const Icon(Icons.more_vert_rounded),
-          onPressed: () {
-            if (controller.isOpen) {
-              controller.close();
-            } else {
-              controller.open();
-            }
-          },
+          onPressed: () => controller.isOpen ? controller.close() : controller.open(),
         );
       },
     );
