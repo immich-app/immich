@@ -169,9 +169,9 @@ export class AssetRepository {
               rating: ref('rating'),
               fps: ref('fps'),
               lockedProperties:
-                exif.lockedProperties === undefined || lockedPropertiesBehavior === 'none'
-                  ? undefined
-                  : distinctLocked(eb, exif.lockedProperties),
+                exif.lockedProperties !== undefined && lockedPropertiesBehavior !== 'none'
+                  ? distinctLocked(eb, exif.lockedProperties)
+                  : exif.lockedProperties,
             },
             exif,
           );
