@@ -1,19 +1,16 @@
 <script lang="ts">
-  import { goto } from '$app/navigation';
   import emptyWorkflows from '$lib/assets/empty-workflows.svg';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
-  import { AppRoute } from '$lib/constants';
-  import type { WorkflowPayload } from '$lib/services/workflow.service';
-  import { handleError } from '$lib/utils/handle-error';
   import {
-    createWorkflow,
-    deleteWorkflow,
-    PluginTriggerType,
-    updateWorkflow,
-    type PluginFilterResponseDto,
-    type WorkflowResponseDto,
-  } from '@immich/sdk';
+    getWorkflowActions,
+    getWorkflowShowSchemaAction,
+    handleCreateWorkflow,
+    handleDeleteWorkflow,
+    handleToggleWorkflowEnabled,
+    type WorkflowPayload,
+  } from '$lib/services/workflow.service';
+  import type { PluginFilterResponseDto, WorkflowResponseDto } from '@immich/sdk';
   import {
     Button,
     Card,
@@ -27,12 +24,10 @@
     IconButton,
     MenuItemType,
     menuManager,
-    modalManager,
     Text,
-    toastManager,
     VStack,
   } from '@immich/ui';
-  import { mdiClose, mdiCodeJson, mdiDelete, mdiDotsVertical, mdiPause, mdiPencil, mdiPlay, mdiPlus } from '@mdi/js';
+  import { mdiClose, mdiDotsVertical, mdiPlus } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { SvelteMap, SvelteSet } from 'svelte/reactivity';
   import type { PageData } from './$types';
@@ -44,6 +39,7 @@
   let { data }: Props = $props();
 
   let workflows = $state<WorkflowResponseDto[]>(data.workflows);
+
   const expandedWorkflows = new SvelteSet<string>();
 
   const pluginFilterLookup = new SvelteMap<string, PluginFilterResponseDto>();
@@ -95,54 +91,18 @@
 
   const getJson = (workflow: WorkflowResponseDto) => JSON.stringify(constructPayload(workflow), null, 2);
 
-  const handleToggleEnabled = async (workflow: WorkflowResponseDto) => {
-    try {
-      const updated = await updateWorkflow({
-        id: workflow.id,
-        workflowUpdateDto: { enabled: !workflow.enabled },
-      });
+  const onToggleEnabled = async (workflow: WorkflowResponseDto) => {
+    const updated = await handleToggleWorkflowEnabled(workflow);
+    if (updated) {
       workflows = workflows.map((w) => (w.id === updated.id ? updated : w));
-      toastManager.success($t('workflow_updated'));
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_update_workflow'));
     }
   };
 
-  const handleDeleteWorkflow = async (workflow: WorkflowResponseDto) => {
-    try {
-      const confirmed = await modalManager.showDialog({
-        prompt: $t('workflow_delete_prompt'),
-        confirmColor: 'danger',
-      });
-
-      if (!confirmed) {
-        return;
-      }
-
-      await deleteWorkflow({ id: workflow.id });
+  const onDeleteWorkflow = async (workflow: WorkflowResponseDto) => {
+    const deleted = await handleDeleteWorkflow(workflow);
+    if (deleted) {
       workflows = workflows.filter((w) => w.id !== workflow.id);
-      toastManager.success($t('workflow_deleted'));
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_delete_workflow'));
     }
-  };
-
-  const handleEditWorkflow = async (workflow: WorkflowResponseDto) => {
-    await goto(`${AppRoute.WORKFLOWS}/${workflow.id}`);
-  };
-
-  const handleCreateWorkflow = async () => {
-    const workflow = await createWorkflow({
-      workflowCreateDto: {
-        name: 'New workflow',
-        triggerType: PluginTriggerType.AssetCreate,
-        filters: [],
-        actions: [],
-        enabled: false,
-      },
-    });
-
-    await goto(`${AppRoute.WORKFLOWS}/${workflow.id}`);
   };
 
   const getFilterLabel = (filterId: string) => {
@@ -168,6 +128,27 @@
       dateStyle: 'medium',
       timeStyle: 'short',
     }).format(new Date(createdAt));
+
+  const showWorkflowMenu = (event: MouseEvent, workflow: WorkflowResponseDto) => {
+    const { ToggleEnabled, Edit, Delete } = getWorkflowActions($t, workflow);
+    void menuManager.show({
+      target: event.currentTarget as HTMLElement,
+      position: 'top-left',
+      items: [
+        {
+          ...ToggleEnabled,
+          onAction: () => void onToggleEnabled(workflow),
+        },
+        Edit,
+        getWorkflowShowSchemaAction($t, expandedWorkflows.has(workflow.id), () => toggleShowingSchema(workflow.id)),
+        MenuItemType.Divider,
+        {
+          ...Delete,
+          onAction: () => void onDeleteWorkflow(workflow),
+        },
+      ],
+    });
+  };
 </script>
 
 {#snippet chipItem(title: string)}
@@ -232,37 +213,7 @@
                     color="secondary"
                     icon={mdiDotsVertical}
                     aria-label={$t('menu')}
-                    onclick={(event: MouseEvent) => {
-                      void menuManager.show({
-                        target: event.currentTarget as HTMLElement,
-                        position: 'top-left',
-                        items: [
-                          {
-                            title: workflow.enabled ? $t('disable') : $t('enable'),
-                            color: workflow.enabled ? 'danger' : 'primary',
-                            icon: workflow.enabled ? mdiPause : mdiPlay,
-                            onAction: () => void handleToggleEnabled(workflow),
-                          },
-                          {
-                            title: $t('edit'),
-                            icon: mdiPencil,
-                            onAction: () => void handleEditWorkflow(workflow),
-                          },
-                          {
-                            title: expandedWorkflows.has(workflow.id) ? $t('hide_schema') : $t('show_schema'),
-                            icon: mdiCodeJson,
-                            onAction: () => toggleShowingSchema(workflow.id),
-                          },
-                          MenuItemType.Divider,
-                          {
-                            title: $t('delete'),
-                            icon: mdiDelete,
-                            color: 'danger',
-                            onAction: () => void handleDeleteWorkflow(workflow),
-                          },
-                        ],
-                      });
-                    }}
+                    onclick={(event: MouseEvent) => showWorkflowMenu(event, workflow)}
                   />
                 </div>
               </CardHeader>

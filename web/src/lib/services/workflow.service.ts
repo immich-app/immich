@@ -1,6 +1,12 @@
+import { goto } from '$app/navigation';
+import { AppRoute } from '$lib/constants';
+import { handleError } from '$lib/utils/handle-error';
+import { getFormatter } from '$lib/utils/i18n';
 import {
+  createWorkflow,
+  deleteWorkflow,
   PluginTriggerType,
-  updateWorkflow as updateWorkflowApi,
+  updateWorkflow,
   type PluginActionResponseDto,
   type PluginContextType,
   type PluginFilterResponseDto,
@@ -10,6 +16,9 @@ import {
   type WorkflowResponseDto,
   type WorkflowUpdateDto,
 } from '@immich/sdk';
+import { modalManager, toastManager, type ActionItem } from '@immich/ui';
+import { mdiCodeJson, mdiDelete, mdiPause, mdiPencil, mdiPlay } from '@mdi/js';
+import type { MessageFormatter } from 'svelte-i18n';
 
 export interface WorkflowPayload {
   name: string;
@@ -295,5 +304,108 @@ export const handleUpdateWorkflow = async (
     triggerType,
   };
 
-  return updateWorkflowApi({ id: workflowId, workflowUpdateDto: updateDto });
+  return updateWorkflow({ id: workflowId, workflowUpdateDto: updateDto });
+};
+
+export const getWorkflowActions = ($t: MessageFormatter, workflow: WorkflowResponseDto) => {
+  const ToggleEnabled: ActionItem = {
+    title: workflow.enabled ? $t('disable') : $t('enable'),
+    icon: workflow.enabled ? mdiPause : mdiPlay,
+    color: workflow.enabled ? 'danger' : 'primary',
+    onAction: async () => {
+      await handleToggleWorkflowEnabled(workflow);
+    },
+  };
+
+  const Edit: ActionItem = {
+    title: $t('edit'),
+    icon: mdiPencil,
+    onAction: () => handleNavigateToWorkflow(workflow),
+  };
+
+  const Delete: ActionItem = {
+    title: $t('delete'),
+    icon: mdiDelete,
+    color: 'danger',
+    onAction: async () => {
+      await handleDeleteWorkflow(workflow);
+    },
+  };
+
+  return { ToggleEnabled, Edit, Delete };
+};
+
+export const getWorkflowShowSchemaAction = (
+  $t: MessageFormatter,
+  isExpanded: boolean,
+  onToggle: () => void,
+): ActionItem => ({
+  title: isExpanded ? $t('hide_schema') : $t('show_schema'),
+  icon: mdiCodeJson,
+  onAction: onToggle,
+});
+
+export const handleCreateWorkflow = async (): Promise<WorkflowResponseDto | undefined> => {
+  const $t = await getFormatter();
+
+  try {
+    const workflow = await createWorkflow({
+      workflowCreateDto: {
+        name: $t('untitled_workflow'),
+        triggerType: PluginTriggerType.AssetCreate,
+        filters: [],
+        actions: [],
+        enabled: false,
+      },
+    });
+
+    await goto(`${AppRoute.WORKFLOWS}/${workflow.id}`);
+    return workflow;
+  } catch (error) {
+    handleError(error, $t('errors.unable_to_create'));
+  }
+};
+
+export const handleToggleWorkflowEnabled = async (
+  workflow: WorkflowResponseDto,
+): Promise<WorkflowResponseDto | undefined> => {
+  const $t = await getFormatter();
+
+  try {
+    const updated = await updateWorkflow({
+      id: workflow.id,
+      workflowUpdateDto: { enabled: !workflow.enabled },
+    });
+
+    toastManager.success($t('workflow_updated'));
+    return updated;
+  } catch (error) {
+    handleError(error, $t('errors.unable_to_update_workflow'));
+  }
+};
+
+export const handleDeleteWorkflow = async (workflow: WorkflowResponseDto): Promise<boolean> => {
+  const $t = await getFormatter();
+
+  const confirmed = await modalManager.showDialog({
+    prompt: $t('workflow_delete_prompt'),
+    confirmColor: 'danger',
+  });
+
+  if (!confirmed) {
+    return false;
+  }
+
+  try {
+    await deleteWorkflow({ id: workflow.id });
+    toastManager.success($t('workflow_deleted'));
+    return true;
+  } catch (error) {
+    handleError(error, $t('errors.unable_to_delete_workflow'));
+    return false;
+  }
+};
+
+export const handleNavigateToWorkflow = async (workflow: WorkflowResponseDto): Promise<void> => {
+  await goto(`${AppRoute.WORKFLOWS}/${workflow.id}`);
 };
