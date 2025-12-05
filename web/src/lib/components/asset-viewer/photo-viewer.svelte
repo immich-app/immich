@@ -295,13 +295,13 @@
     }),
   );
   let thumbnailPreloaded = $state(false);
-  // $effect(() => {
-  //   // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-  //   asset;
-  //   untrack(() => {
-  //     void preloadManager.isUrlPreloaded(thumbnailUrl).then((preloaded) => (thumbnailPreloaded = preloaded));
-  //   });
-  // });
+  $effect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+    asset;
+    untrack(() => {
+      void preloadManager.isUrlPreloaded(thumbnailUrl).then((preloaded) => (thumbnailPreloaded = preloaded));
+    });
+  });
 
   const exifDimensions = $derived(
     asset.exifInfo?.exifImageHeight && asset.exifInfo.exifImageHeight
