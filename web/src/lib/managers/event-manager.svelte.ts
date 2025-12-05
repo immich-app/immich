@@ -8,6 +8,7 @@ import type {
   SharedLinkResponseDto,
   SystemConfigDto,
   UserAdminResponseDto,
+  WorkflowResponseDto,
 } from '@immich/sdk';
 
 export type Events = {
@@ -41,6 +42,9 @@ export type Events = {
   LibraryCreate: [LibraryResponseDto];
   LibraryUpdate: [LibraryResponseDto];
   LibraryDelete: [{ id: string }];
+
+  WorkflowUpdate: [WorkflowResponseDto];
+  WorkflowDelete: [WorkflowResponseDto];
 
   ReleaseEvent: [ReleaseEvent];
 };

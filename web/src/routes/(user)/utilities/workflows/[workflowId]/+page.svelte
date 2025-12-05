@@ -533,7 +533,7 @@
                     isDragging: draggedActionIndex === index,
                     isDragOver: dragOverActionIndex === index,
                   })}
-                  class="mb-4 cursor-move rounded-2xl border-2 p-4 transition-all bg-light-100 border-dashed hover:border-light-300"
+                  class="mb-4 cursor-move rounded-2xl border-2 p-4 transition-all bg-light-50 border-dashed hover:border-light-300"
                 >
                   <div class="flex items-start gap-4">
                     {@render cardOrder(index)}

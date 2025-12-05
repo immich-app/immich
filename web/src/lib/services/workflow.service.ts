@@ -1,5 +1,6 @@
 import { goto } from '$app/navigation';
 import { AppRoute } from '$lib/constants';
+import { eventManager } from '$lib/managers/event-manager.svelte';
 import { handleError } from '$lib/utils/handle-error';
 import { getFormatter } from '$lib/utils/i18n';
 import {
@@ -377,6 +378,7 @@ export const handleToggleWorkflowEnabled = async (
       workflowUpdateDto: { enabled: !workflow.enabled },
     });
 
+    eventManager.emit('WorkflowUpdate', updated);
     toastManager.success($t('workflow_updated'));
     return updated;
   } catch (error) {
@@ -398,6 +400,7 @@ export const handleDeleteWorkflow = async (workflow: WorkflowResponseDto): Promi
 
   try {
     await deleteWorkflow({ id: workflow.id });
+    eventManager.emit('WorkflowDelete', workflow);
     toastManager.success($t('workflow_deleted'));
     return true;
   } catch (error) {

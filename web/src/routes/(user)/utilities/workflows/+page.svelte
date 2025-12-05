@@ -1,13 +1,12 @@
 <script lang="ts">
   import emptyWorkflows from '$lib/assets/empty-workflows.svg';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
+  import OnEvents from '$lib/components/OnEvents.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import {
     getWorkflowActions,
     getWorkflowShowSchemaAction,
     handleCreateWorkflow,
-    handleDeleteWorkflow,
-    handleToggleWorkflowEnabled,
     type WorkflowPayload,
   } from '$lib/services/workflow.service';
   import type { PluginFilterResponseDto, WorkflowResponseDto } from '@immich/sdk';
@@ -91,18 +90,14 @@
 
   const getJson = (workflow: WorkflowResponseDto) => JSON.stringify(constructPayload(workflow), null, 2);
 
-  const onToggleEnabled = async (workflow: WorkflowResponseDto) => {
-    const updated = await handleToggleWorkflowEnabled(workflow);
-    if (updated) {
-      workflows = workflows.map((w) => (w.id === updated.id ? updated : w));
-    }
+  const onWorkflowUpdate = (updatedWorkflow: WorkflowResponseDto) => {
+    workflows = workflows.map((currentWorkflow) =>
+      currentWorkflow.id === updatedWorkflow.id ? updatedWorkflow : currentWorkflow,
+    );
   };
 
-  const onDeleteWorkflow = async (workflow: WorkflowResponseDto) => {
-    const deleted = await handleDeleteWorkflow(workflow);
-    if (deleted) {
-      workflows = workflows.filter((w) => w.id !== workflow.id);
-    }
+  const onWorkflowDelete = (deletedWorkflow: WorkflowResponseDto) => {
+    workflows = workflows.filter((currentWorkflow) => currentWorkflow.id !== deletedWorkflow.id);
   };
 
   const getFilterLabel = (filterId: string) => {
@@ -135,21 +130,17 @@
       target: event.currentTarget as HTMLElement,
       position: 'top-left',
       items: [
-        {
-          ...ToggleEnabled,
-          onAction: () => void onToggleEnabled(workflow),
-        },
+        ToggleEnabled,
         Edit,
         getWorkflowShowSchemaAction($t, expandedWorkflows.has(workflow.id), () => toggleShowingSchema(workflow.id)),
         MenuItemType.Divider,
-        {
-          ...Delete,
-          onAction: () => void onDeleteWorkflow(workflow),
-        },
+        Delete,
       ],
     });
   };
 </script>
+
+<OnEvents {onWorkflowUpdate} {onWorkflowDelete} />
 
 {#snippet chipItem(title: string)}
   <span class="rounded-xl border border-gray-200/80 px-3 py-1.5 text-sm dark:border-gray-600 bg-light">
