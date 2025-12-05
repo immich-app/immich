@@ -14,6 +14,7 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/favorite_actio
 import 'package:immich_mobile/presentation/widgets/action_buttons/motion_photo_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/unfavorite_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
+import 'package:immich_mobile/presentation/widgets/asset_viewer/viewer_kebab_menu.widget.dart';
 import 'package:immich_mobile/providers/activity.provider.dart';
 import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
@@ -89,12 +90,12 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
       if (asset.hasRemote && isOwner && asset.isFavorite)
         const UnFavoriteActionButton(source: ActionSource.viewer, menuItem: true),
       if (asset.isMotionPhoto) const MotionPhotoActionButton(menuItem: true),
-      const _KebabMenu(),
+      const ViewerKebabMenu(),
     ];
 
     final lockedViewActions = <Widget>[
       if (isCasting || (asset.hasRemote)) const CastActionButton(menuItem: true),
-      const _KebabMenu(),
+      const ViewerKebabMenu(),
     ];
 
     return IgnorePointer(
@@ -120,20 +121,6 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
 
   @override
   Size get preferredSize => const Size.fromHeight(60.0);
-}
-
-class _KebabMenu extends ConsumerWidget {
-  const _KebabMenu();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return IconButton(
-      onPressed: () {
-        EventStream.shared.emit(const ViewerOpenBottomSheetEvent());
-      },
-      icon: const Icon(Icons.more_vert_rounded),
-    );
-  }
 }
 
 class _AppBarBackButton extends ConsumerWidget {

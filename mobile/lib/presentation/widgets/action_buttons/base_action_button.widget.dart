@@ -12,6 +12,7 @@ class BaseActionButton extends StatelessWidget {
     this.maxWidth = 90.0,
     this.minWidth,
     this.menuItem = false,
+    this.detectMenuAnchor = true,
   });
 
   final String label;
@@ -22,6 +23,7 @@ class BaseActionButton extends StatelessWidget {
   final bool menuItem;
   final void Function()? onPressed;
   final void Function()? onLongPressed;
+  final bool detectMenuAnchor;
 
   @override
   Widget build(BuildContext context) {
@@ -35,6 +37,30 @@ class BaseActionButton extends StatelessWidget {
       return IconButton(
         onPressed: onPressed,
         icon: Icon(iconData, size: iconSize, color: iconColor),
+      );
+    }
+
+    if (detectMenuAnchor && context.findAncestorWidgetOfExactType<MenuAnchor>() != null) {
+      final theme = context.themeData;
+      final textStyle = theme.textTheme.bodyMedium;
+      final defaultTextColor = theme.colorScheme.onSurfaceVariant;
+      final effectiveStyle = (textStyle ?? theme.textTheme.bodyMedium)?.copyWith(
+        color: (textStyle?.color ?? defaultTextColor),
+      );
+      final effectiveIconColor = iconColor ?? theme.iconTheme.color ?? theme.colorScheme.onSurfaceVariant;
+
+      return MenuItemButton(
+        style: MenuItemButton.styleFrom(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          visualDensity: const VisualDensity(vertical: -2),
+          alignment: Alignment.centerLeft,
+        ),
+        trailingIcon: Icon(iconData, size: 18, color: effectiveIconColor),
+        onPressed: onPressed,
+        child: Align(
+          alignment: Alignment.centerLeft,
+          child: Text(label, style: effectiveStyle),
+        ),
       );
     }
 
