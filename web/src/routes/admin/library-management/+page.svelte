@@ -1,6 +1,5 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import HeaderButton from '$lib/components/HeaderButton.svelte';
   import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
   import OnEvents from '$lib/components/OnEvents.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
@@ -9,7 +8,7 @@
   import { locale } from '$lib/stores/preferences.store';
   import { getBytesWithUnit } from '$lib/utils/byte-units';
   import { getLibrary, getLibraryStatistics, getUserAdmin, type LibraryResponseDto } from '@immich/sdk';
-  import { Button } from '@immich/ui';
+  import { Button, CommandPaletteContext } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
   import type { PageData } from './$types';
@@ -49,7 +48,7 @@
     delete owners[id];
   };
 
-  const { Create, ScanAll } = $derived(getLibrariesActions($t));
+  const { Create, ScanAll } = $derived(getLibrariesActions($t, libraries));
 </script>
 
 <OnEvents
@@ -58,19 +57,13 @@
   onLibraryDelete={handleDeleteLibrary}
 />
 
-<AdminPageLayout title={data.meta.title}>
-  {#snippet buttons()}
-    <div class="flex justify-end gap-2">
-      {#if libraries.length > 0}
-        <HeaderButton action={ScanAll} />
-      {/if}
-      <HeaderButton action={Create} />
-    </div>
-  {/snippet}
+<CommandPaletteContext commands={[Create, ScanAll]} />
+
+<AdminPageLayout breadcrumbs={[{ title: data.meta.title }]} actions={[ScanAll, Create]}>
   <section class="my-4">
     <div class="flex flex-col items-center gap-2" in:fade={{ duration: 500 }}>
       {#if libraries.length > 0}
-        <table class="w-3/4 text-start">
+        <table class="text-start">
           <thead
             class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray"
           >
