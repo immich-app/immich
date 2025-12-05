@@ -1,7 +1,8 @@
-import { handleCancel, handlePreload } from './request';
+import { handleCancel, handleIsUrlCached, handlePreload } from './request';
+
+export const broadcast = new BroadcastChannel('immich');
 
 export const installBroadcastChannelListener = () => {
-  const broadcast = new BroadcastChannel('immich');
   // eslint-disable-next-line  unicorn/prefer-add-event-listener
   broadcast.onmessage = (event) => {
     if (!event.data) {
@@ -20,6 +21,15 @@ export const installBroadcastChannelListener = () => {
         handleCancel(url);
         break;
       }
+
+      case 'isImageUrlCached': {
+        void handleIsUrlCached(url);
+        break;
+      }
     }
   };
+};
+
+export const replyIsImageUrlCached = (url: string, isImageUrlCached: boolean) => {
+  broadcast.postMessage({ type: 'isImageUrlCachedReply', url, isImageUrlCached });
 };
