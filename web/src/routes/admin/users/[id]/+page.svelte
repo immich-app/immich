@@ -1,6 +1,5 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import HeaderButton from '$lib/components/HeaderButton.svelte';
   import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
   import OnEvents from '$lib/components/OnEvents.svelte';
   import ServerStatisticsCard from '$lib/components/server-statistics/ServerStatisticsCard.svelte';
@@ -15,16 +14,18 @@
   import { type UserAdminResponseDto } from '@immich/sdk';
   import {
     Alert,
+    Badge,
     Card,
     CardBody,
     CardHeader,
     CardTitle,
     Code,
+    CommandPaletteContext,
     Container,
     getByteUnitString,
     Heading,
-    HStack,
     Icon,
+    MenuItemType,
     Stack,
     Text,
   } from '@immich/ui';
@@ -42,11 +43,11 @@
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
 
-  interface Props {
+  type Props = {
     data: PageData;
-  }
+  };
 
-  let { data }: Props = $props();
+  const { data }: Props = $props();
 
   let user = $derived(data.user);
   const userPreferences = $derived(data.userPreferences);
@@ -77,7 +78,7 @@
     return 'bg-primary';
   };
 
-  const UserAdminActions = $derived(getUserAdminActions($t, user));
+  const { ResetPassword, ResetPinCode, Update, Delete, Restore } = $derived(getUserAdminActions($t, user));
 
   const onUpdate = (update: UserAdminResponseDto) => {
     if (update.id === user.id) {
@@ -99,16 +100,12 @@
   {onUserAdminDeleted}
 />
 
-<AdminPageLayout title={data.meta.title}>
-  {#snippet buttons()}
-    <HStack gap={0}>
-      <HeaderButton action={UserAdminActions.ResetPassword} />
-      <HeaderButton action={UserAdminActions.ResetPinCode} />
-      <HeaderButton action={UserAdminActions.Update} />
-      <HeaderButton action={UserAdminActions.Restore} />
-      <HeaderButton action={UserAdminActions.Delete} />
-    </HStack>
-  {/snippet}
+<CommandPaletteContext commands={[ResetPassword, ResetPinCode, Update, Delete, Restore]} />
+
+<AdminPageLayout
+  breadcrumbs={[{ title: $t('admin.user_management'), href: AppRoute.ADMIN_USERS }, { title: user.name }]}
+  actions={[ResetPassword, ResetPinCode, Update, Restore, MenuItemType.Divider, Delete]}
+>
   <div>
     <Container size="large" center>
       {#if user.deletedAt}
@@ -116,9 +113,16 @@
       {/if}
 
       <div class="grid gap-4 grid-cols-1 lg:grid-cols-2 w-full">
-        <div class="col-span-full flex gap-4 items-center my-4">
-          <UserAvatar {user} size="md" />
-          <Heading tag="h1" size="large">{user.name}</Heading>
+        <div class="col-span-full flex flex-col gap-4 my-4">
+          <div class="flex items-center gap-4">
+            <UserAvatar {user} size="md" />
+            <Heading tag="h1" size="large">{user.name}</Heading>
+          </div>
+          {#if user.isAdmin}
+            <div>
+              <Badge color="primary" size="small">{$t('admin.admin_user')}</Badge>
+            </div>
+          {/if}
         </div>
         <div class="col-span-full">
           <div class="flex flex-col lg:flex-row gap-4 w-full">

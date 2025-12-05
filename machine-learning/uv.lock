@@ -876,7 +876,7 @@ wheels = [
 
 [[package]]
 name = "immich-ml"
-version = "2.2.3"
+version = "2.3.1"
 source = { editable = "." }
 dependencies = [
     { name = "aiocache" },
@@ -967,10 +967,10 @@ requires-dist = [
     { name = "huggingface-hub", specifier = ">=0.20.1,<1.0" },
     { name = "insightface", specifier = ">=0.7.3,<1.0" },
     { name = "numpy", specifier = ">=2.3.4" },
-    { name = "onnxruntime", marker = "extra == 'armnn'", specifier = ">=1.23.0,<2" },
-    { name = "onnxruntime", marker = "extra == 'cpu'", specifier = ">=1.23.0,<2" },
-    { name = "onnxruntime", marker = "extra == 'rknn'", specifier = ">=1.23.0,<2" },
-    { name = "onnxruntime-gpu", marker = "extra == 'cuda'", specifier = ">=1.23.0,<2" },
+    { name = "onnxruntime", marker = "extra == 'armnn'", specifier = ">=1.23.2,<2" },
+    { name = "onnxruntime", marker = "extra == 'cpu'", specifier = ">=1.23.2,<2" },
+    { name = "onnxruntime", marker = "extra == 'rknn'", specifier = ">=1.23.2,<2" },
+    { name = "onnxruntime-gpu", marker = "extra == 'cuda'", specifier = ">=1.23.2,<2" },
     { name = "onnxruntime-openvino", marker = "extra == 'openvino'", specifier = ">=1.23.0,<2" },
     { name = "opencv-python-headless", specifier = ">=4.7.0.72,<5.0" },
     { name = "orjson", specifier = ">=3.9.5" },

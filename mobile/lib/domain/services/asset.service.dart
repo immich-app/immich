@@ -75,6 +75,20 @@ class AssetService {
       isFlipped = false;
     }
 
+    if (width == null || height == null) {
+      if (asset.hasRemote) {
+        final id = asset is LocalAsset ? asset.remoteId! : (asset as RemoteAsset).id;
+        final remoteAsset = await _remoteAssetRepository.get(id);
+        width = remoteAsset?.width?.toDouble();
+        height = remoteAsset?.height?.toDouble();
+      } else {
+        final id = asset is LocalAsset ? asset.id : (asset as RemoteAsset).localId!;
+        final localAsset = await _localAssetRepository.get(id);
+        width = localAsset?.width?.toDouble();
+        height = localAsset?.height?.toDouble();
+      }
+    }
+
     final orientedWidth = isFlipped ? height : width;
     final orientedHeight = isFlipped ? width : height;
     if (orientedWidth != null && orientedHeight != null && orientedHeight > 0) {
