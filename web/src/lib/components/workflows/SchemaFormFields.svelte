@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { formatLabel, getComponentFromSchema } from '$lib/utils/workflow';
+  import { formatLabel, getComponentFromSchema, type ComponentConfig } from '$lib/utils/workflow';
   import { Field, Input, MultiSelect, Select, Switch, Text, type SelectItem } from '@immich/ui';
   import WorkflowPickerField from './WorkflowPickerField.svelte';
 
@@ -25,59 +25,78 @@
     config = configKey ? { ...config, [configKey]: { ...actualConfig, ...updates } } : { ...config, ...updates };
   };
 
+  // Helper to determine default value for a component based on its type
+  const getDefaultValue = (component: ComponentConfig): unknown => {
+    if (component.defaultValue !== undefined) {
+      return component.defaultValue;
+    }
+
+    // Initialize with appropriate empty value based on component type
+    if (component.type === 'multiselect' || (component.type === 'text' && component.subType === 'people-picker')) {
+      return [];
+    }
+
+    if (component.type === 'switch') {
+      return false;
+    }
+
+    return '';
+  };
+
+  // Derive which keys need initialization (missing from actualConfig)
+  const uninitializedKeys = $derived.by(() => {
+    if (!components) {
+      return [];
+    }
+
+    return Object.entries(components)
+      .filter(([key]) => actualConfig[key] === undefined)
+      .map(([key, component]) => ({ key, component, defaultValue: getDefaultValue(component) }));
+  });
+
+  // Derive the batch updates needed
+  const pendingUpdates = $derived.by(() => {
+    const updates: Record<string, unknown> = {};
+    for (const { key, defaultValue } of uninitializedKeys) {
+      updates[key] = defaultValue;
+    }
+    return updates;
+  });
+
   let selectValue = $state<SelectItem>();
   let switchValue = $state<boolean>(false);
   let multiSelectValue = $state<SelectItem[]>([]);
 
+  // Initialize config namespace if needed
   $effect(() => {
-    // Initialize config for actions/filters with empty schemas
     if (configKey && !config[configKey]) {
       config = { ...config, [configKey]: {} };
     }
+  });
 
-    if (components) {
-      const updates: Record<string, unknown> = {};
+  // Apply pending config updates
+  $effect(() => {
+    if (Object.keys(pendingUpdates).length > 0) {
+      updateConfigBatch(pendingUpdates);
+    }
+  });
 
-      for (const [key, component] of Object.entries(components)) {
-        // Only initialize if the key doesn't exist in config yet
-        if (actualConfig[key] === undefined) {
-          // Use default value if available, otherwise use appropriate empty value based on type
-          const hasDefault = component.defaultValue !== undefined;
-
-          if (hasDefault) {
-            updates[key] = component.defaultValue;
-          } else {
-            // Initialize with appropriate empty value based on component type
-            if (
-              component.type === 'multiselect' ||
-              (component.type === 'text' && component.subType === 'people-picker')
-            ) {
-              updates[key] = [];
-            } else if (component.type === 'switch') {
-              updates[key] = false;
-            } else {
-              updates[key] = '';
-            }
-          }
-
-          // Update UI state for components with default values
-          if (hasDefault) {
-            if (component.type === 'select') {
-              selectValue = {
-                label: formatLabel(String(component.defaultValue)),
-                value: String(component.defaultValue),
-              };
-            }
-
-            if (component.type === 'switch') {
-              switchValue = Boolean(component.defaultValue);
-            }
-          }
-        }
+  // Sync UI state for components with default values
+  $effect(() => {
+    for (const { component } of uninitializedKeys) {
+      if (component.defaultValue === undefined) {
+        continue;
       }
 
-      if (Object.keys(updates).length > 0) {
-        updateConfigBatch(updates);
+      if (component.type === 'select') {
+        selectValue = {
+          label: formatLabel(String(component.defaultValue)),
+          value: String(component.defaultValue),
+        };
+      }
+
+      if (component.type === 'switch') {
+        switchValue = Boolean(component.defaultValue);
       }
     }
   });

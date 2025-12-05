@@ -6,8 +6,12 @@ import { getFormatter } from '$lib/utils/i18n';
 import {
   createWorkflow,
   deleteWorkflow,
+  getAlbumInfo,
+  getPerson,
   PluginTriggerType,
   updateWorkflow,
+  type AlbumResponseDto,
+  type PersonResponseDto,
   type PluginActionResponseDto,
   type PluginContextType,
   type PluginFilterResponseDto,
@@ -20,6 +24,9 @@ import {
 import { modalManager, toastManager, type ActionItem } from '@immich/ui';
 import { mdiCodeJson, mdiDelete, mdiPause, mdiPencil, mdiPlay } from '@mdi/js';
 import type { MessageFormatter } from 'svelte-i18n';
+
+export type PickerSubType = 'album-picker' | 'people-picker';
+export type PickerMetadata = AlbumResponseDto | PersonResponseDto | AlbumResponseDto[] | PersonResponseDto[];
 
 export interface WorkflowPayload {
   name: string;
@@ -411,4 +418,31 @@ export const handleDeleteWorkflow = async (workflow: WorkflowResponseDto): Promi
 
 export const handleNavigateToWorkflow = async (workflow: WorkflowResponseDto): Promise<void> => {
   await goto(`${AppRoute.WORKFLOWS}/${workflow.id}`);
+};
+
+export const fetchPickerMetadata = async (
+  value: string | string[] | undefined,
+  subType: PickerSubType,
+): Promise<PickerMetadata | undefined> => {
+  if (!value) {
+    return undefined;
+  }
+
+  const isAlbum = subType === 'album-picker';
+
+  try {
+    if (Array.isArray(value) && value.length > 0) {
+      // Multiple selection
+      return isAlbum
+        ? await Promise.all(value.map((id) => getAlbumInfo({ id })))
+        : await Promise.all(value.map((id) => getPerson({ id })));
+    } else if (typeof value === 'string' && value) {
+      // Single selection
+      return isAlbum ? await getAlbumInfo({ id: value }) : await getPerson({ id: value });
+    }
+  } catch (error) {
+    console.error(`Failed to fetch picker metadata:`, error);
+  }
+
+  return undefined;
 };

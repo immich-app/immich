@@ -2,8 +2,9 @@
   import WorkflowPickerItemCard from '$lib/components/workflows/WorkflowPickerItemCard.svelte';
   import AlbumPickerModal from '$lib/modals/AlbumPickerModal.svelte';
   import PeoplePickerModal from '$lib/modals/PeoplePickerModal.svelte';
+  import { fetchPickerMetadata, type PickerMetadata } from '$lib/services/workflow.service';
   import type { ComponentConfig } from '$lib/utils/workflow';
-  import { getAlbumInfo, getPerson, type AlbumResponseDto, type PersonResponseDto } from '@immich/sdk';
+  import type { AlbumResponseDto, PersonResponseDto } from '@immich/sdk';
   import { Button, Field, modalManager } from '@immich/ui';
   import { mdiPlus } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -22,7 +23,7 @@
   const isAlbum = $derived(subType === 'album-picker');
   const multiple = $derived(component.type === 'multiselect' || Array.isArray(value));
 
-  let pickerMetadata = $state<AlbumResponseDto | PersonResponseDto | AlbumResponseDto[] | PersonResponseDto[]>();
+  let pickerMetadata = $state<PickerMetadata | undefined>();
 
   $effect(() => {
     if (!value) {
@@ -30,34 +31,20 @@
       return;
     }
 
-    void fetchMetadata();
+    if (!pickerMetadata) {
+      void loadMetadata();
+    }
   });
 
-  const fetchMetadata = async () => {
-    if (!value || pickerMetadata) {
-      return;
-    }
-
-    try {
-      if (Array.isArray(value) && value.length > 0) {
-        // Multiple selection
-        pickerMetadata = await (isAlbum
-          ? Promise.all(value.map((id) => getAlbumInfo({ id })))
-          : Promise.all(value.map((id) => getPerson({ id }))));
-      } else if (typeof value === 'string' && value) {
-        // Single selection
-        pickerMetadata = await (isAlbum ? getAlbumInfo({ id: value }) : getPerson({ id: value }));
-      }
-    } catch (error) {
-      console.error(`Failed to fetch metadata for ${configKey}:`, error);
-    }
+  const loadMetadata = async () => {
+    pickerMetadata = await fetchPickerMetadata(value, subType);
   };
 
   const handlePicker = async () => {
     if (isAlbum) {
       const albums = await modalManager.show(AlbumPickerModal, { shared: false });
       if (albums && albums.length > 0) {
-        const newValue = multiple ? albums.map((a) => a.id) : albums[0].id;
+        const newValue = multiple ? albums.map((album) => album.id) : albums[0].id;
         onchange(newValue);
         pickerMetadata = multiple ? albums : albums[0];
       }
@@ -66,7 +53,7 @@
       const excludedIds = multiple ? currentIds : [];
       const people = await modalManager.show(PeoplePickerModal, { multiple, excludedIds });
       if (people && people.length > 0) {
-        const newValue = multiple ? people.map((p) => p.id) : people[0].id;
+        const newValue = multiple ? people.map((person) => person.id) : people[0].id;
         onchange(newValue);
         pickerMetadata = multiple ? people : people[0];
       }
