@@ -4,11 +4,11 @@
   import { mdiFaceRecognition, mdiFileUploadOutline, mdiLightningBolt } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
-  interface Props {
+  type Props = {
     trigger: PluginTriggerResponseDto;
     selected: boolean;
     onclick: () => void;
-  }
+  };
 
   let { trigger, selected, onclick }: Props = $props();
 

@@ -8,12 +8,12 @@
   import { mdiClose, mdiPlus } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
-  interface Props {
+  type Props = {
     component: ComponentConfig;
     configKey: string;
     value: string | string[] | undefined;
     onchange: (value: string | string[]) => void;
-  }
+  };
 
   let { component, configKey, value = $bindable(), onchange }: Props = $props();
 

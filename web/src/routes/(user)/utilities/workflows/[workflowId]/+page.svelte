@@ -56,9 +56,9 @@
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
 
-  interface Props {
+  type Props = {
     data: PageData;
-  }
+  };
 
   let { data }: Props = $props();
 

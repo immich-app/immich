@@ -5,11 +5,11 @@
   import { mdiCodeJson } from '@mdi/js';
   import { JSONEditor, Mode, type Content, type OnChangeStatus } from 'svelte-jsoneditor';
 
-  interface Props {
+  type Props = {
     jsonContent: WorkflowPayload;
     onApply: () => void;
     onContentChange: (content: WorkflowPayload) => void;
-  }
+  };
 
   let { jsonContent, onApply, onContentChange }: Props = $props();
 

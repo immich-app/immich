@@ -3,11 +3,11 @@
   import { Field, Input, MultiSelect, Select, Switch, Text, type SelectItem } from '@immich/ui';
   import WorkflowPickerField from './WorkflowPickerField.svelte';
 
-  interface Props {
+  type Props = {
     schema: object | null;
     config: Record<string, unknown>;
     configKey?: string;
-  }
+  };
 
   let { schema = null, config = $bindable({}), configKey }: Props = $props();
 

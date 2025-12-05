@@ -4,12 +4,12 @@
   import { mdiFilterOutline, mdiPlayCircleOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
-  interface Props {
+  type Props = {
     filters: PluginFilterResponseDto[];
     actions: PluginActionResponseDto[];
     onClose: (result?: { type: 'filter' | 'action'; item: PluginFilterResponseDto | PluginActionResponseDto }) => void;
     type?: 'filter' | 'action';
-  }
+  };
 
   let { filters, actions, onClose, type }: Props = $props();
 

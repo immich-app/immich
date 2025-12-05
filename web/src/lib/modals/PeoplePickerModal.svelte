@@ -8,11 +8,11 @@
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
 
-  interface Props {
+  type Props = {
     multiple?: boolean;
     excludedIds?: string[];
     onClose: (people?: PersonResponseDto[]) => void;
-  }
+  };
 
   let { multiple = false, excludedIds = [], onClose }: Props = $props();
 

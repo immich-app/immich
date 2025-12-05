@@ -9,11 +9,11 @@
   import { mdiClose, mdiFilterOutline, mdiFlashOutline, mdiPlayCircleOutline, mdiViewDashboardOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
-  interface Props {
+  type Props = {
     trigger: PluginTriggerResponseDto;
     filters: PluginFilterResponseDto[];
     actions: PluginActionResponseDto[];
-  }
+  };
 
   let { trigger, filters, actions }: Props = $props();
 

@@ -37,9 +37,9 @@
   import { SvelteMap, SvelteSet } from 'svelte/reactivity';
   import type { PageData } from './$types';
 
-  interface Props {
+  type Props = {
     data: PageData;
-  }
+  };
 
   let { data }: Props = $props();
 
