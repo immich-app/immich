@@ -14,6 +14,7 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/favorite_actio
 import 'package:immich_mobile/presentation/widgets/action_buttons/motion_photo_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/unfavorite_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
+import 'package:immich_mobile/presentation/widgets/asset_viewer/viewer_kebab_menu.widget.dart';
 import 'package:immich_mobile/providers/activity.provider.dart';
 import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
@@ -65,8 +66,8 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
     final isCasting = ref.watch(castProvider.select((c) => c.isCasting));
 
     final actions = <Widget>[
-      if (asset.isRemoteOnly) const DownloadActionButton(source: ActionSource.viewer, menuItem: true),
-      if (isCasting || (asset.hasRemote)) const CastActionButton(menuItem: true),
+      if (asset.isRemoteOnly) const DownloadActionButton(source: ActionSource.viewer, iconOnly: true),
+      if (isCasting || (asset.hasRemote)) const CastActionButton(iconOnly: true),
       if (album != null && album.isActivityEnabled && album.isShared)
         IconButton(
           icon: const Icon(Icons.chat_outlined),
@@ -85,16 +86,16 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
           tooltip: 'view_in_timeline'.t(context: context),
         ),
       if (asset.hasRemote && isOwner && !asset.isFavorite)
-        const FavoriteActionButton(source: ActionSource.viewer, menuItem: true),
+        const FavoriteActionButton(source: ActionSource.viewer, iconOnly: true),
       if (asset.hasRemote && isOwner && asset.isFavorite)
-        const UnFavoriteActionButton(source: ActionSource.viewer, menuItem: true),
-      if (asset.isMotionPhoto) const MotionPhotoActionButton(menuItem: true),
-      const _KebabMenu(),
+        const UnFavoriteActionButton(source: ActionSource.viewer, iconOnly: true),
+      if (asset.isMotionPhoto) const MotionPhotoActionButton(iconOnly: true),
+      const ViewerKebabMenu(),
     ];
 
     final lockedViewActions = <Widget>[
-      if (isCasting || (asset.hasRemote)) const CastActionButton(menuItem: true),
-      const _KebabMenu(),
+      if (isCasting || (asset.hasRemote)) const CastActionButton(iconOnly: true),
+      const ViewerKebabMenu(),
     ];
 
     return IgnorePointer(
@@ -120,20 +121,6 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
 
   @override
   Size get preferredSize => const Size.fromHeight(60.0);
-}
-
-class _KebabMenu extends ConsumerWidget {
-  const _KebabMenu();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return IconButton(
-      onPressed: () {
-        EventStream.shared.emit(const ViewerOpenBottomSheetEvent());
-      },
-      icon: const Icon(Icons.more_vert_rounded),
-    );
-  }
 }
 
 class _AppBarBackButton extends ConsumerWidget {
