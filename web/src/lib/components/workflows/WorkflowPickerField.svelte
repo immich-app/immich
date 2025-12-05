@@ -1,11 +1,11 @@
 <script lang="ts">
+  import WorkflowPickerItemCard from '$lib/components/workflows/WorkflowPickerItemCard.svelte';
   import AlbumPickerModal from '$lib/modals/AlbumPickerModal.svelte';
   import PeoplePickerModal from '$lib/modals/PeoplePickerModal.svelte';
-  import { getAssetThumbnailUrl, getPeopleThumbnailUrl } from '$lib/utils';
   import type { ComponentConfig } from '$lib/utils/workflow';
   import { getAlbumInfo, getPerson, type AlbumResponseDto, type PersonResponseDto } from '@immich/sdk';
-  import { Button, Card, CardBody, Field, IconButton, modalManager, Text } from '@immich/ui';
-  import { mdiClose, mdiPlus } from '@mdi/js';
+  import { Button, Field, modalManager } from '@immich/ui';
+  import { mdiPlus } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
   type Props = {
@@ -99,58 +99,14 @@
   };
 </script>
 
-{#snippet pickerItemCard(item: AlbumResponseDto | PersonResponseDto, onRemove: () => void)}
-  <Card color="secondary">
-    <CardBody class="flex items-center gap-3">
-      <div class="shrink-0">
-        {#if isAlbum && 'albumThumbnailAssetId' in item}
-          {#if item.albumThumbnailAssetId}
-            <img
-              src={getAssetThumbnailUrl(item.albumThumbnailAssetId)}
-              alt={item.albumName}
-              class="h-12 w-12 rounded-lg object-cover"
-            />
-          {:else}
-            <div class="h-12 w-12 rounded-lg"></div>
-          {/if}
-        {:else if !isAlbum && 'name' in item}
-          <img src={getPeopleThumbnailUrl(item)} alt={item.name} class="h-12 w-12 rounded-full object-cover" />
-        {/if}
-      </div>
-      <div class="min-w-0 flex-1">
-        <Text class="font-semibold truncate">
-          {isAlbum && 'albumName' in item ? item.albumName : 'name' in item ? item.name : ''}
-        </Text>
-        {#if isAlbum && 'assetCount' in item}
-          <Text size="small" color="muted">
-            {$t('items_count', { values: { count: item.assetCount } })}
-          </Text>
-        {/if}
-      </div>
-
-      <IconButton
-        type="button"
-        onclick={onRemove}
-        class="shrink-0"
-        shape="round"
-        aria-label={$t('remove')}
-        icon={mdiClose}
-        size="small"
-        variant="ghost"
-        color="secondary"
-      />
-    </CardBody>
-  </Card>
-{/snippet}
-
 <Field {label} required={component.required} description={component.description} requiredIndicator={component.required}>
   <div class="flex flex-col gap-3">
     {#if pickerMetadata && !Array.isArray(pickerMetadata)}
-      {@render pickerItemCard(pickerMetadata, removeSelection)}
+      <WorkflowPickerItemCard item={pickerMetadata} {isAlbum} onRemove={removeSelection} />
     {:else if pickerMetadata && Array.isArray(pickerMetadata) && pickerMetadata.length > 0}
       <div class="flex flex-col gap-2">
         {#each pickerMetadata as item (item.id)}
-          {@render pickerItemCard(item, () => removeItemFromSelection(item.id))}
+          <WorkflowPickerItemCard {item} {isAlbum} onRemove={() => removeItemFromSelection(item.id)} />
         {/each}
       </div>
     {/if}

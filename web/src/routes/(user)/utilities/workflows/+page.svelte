@@ -248,7 +248,6 @@
                             icon: mdiPencil,
                             onAction: () => void handleEditWorkflow(workflow),
                           },
-
                           {
                             title: expandedWorkflows.has(workflow.id) ? $t('hide_schema') : $t('show_schema'),
                             icon: mdiCodeJson,

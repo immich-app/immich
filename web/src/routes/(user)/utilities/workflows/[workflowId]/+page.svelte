@@ -1,6 +1,6 @@
 <script lang="ts">
   import { beforeNavigate, goto } from '$app/navigation';
-  import { dragAndDrop } from '$lib/actions/drag-and-drop';
+  import { dragAndDrop } from '$lib/attachments/drag-and-drop.svelte';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
   import SchemaFormFields from '$lib/components/workflows/SchemaFormFields.svelte';
   import WorkflowCardConnector from '$lib/components/workflows/WorkflowCardConnector.svelte';
@@ -321,7 +321,7 @@
 </script>
 
 {#snippet cardOrder(index: number)}
-  <div class="h-8 w-8 rounded-lg flex place-items-center place-content-center shrink-0 border">
+  <div class="h-8 w-8 rounded-lg flex place-items-center place-content-center shrink-0 border bg-light-50">
     <Text size="small" class="font-mono font-bold">
       {index + 1}
     </Text>
@@ -455,7 +455,7 @@
                   {@render stepSeparator()}
                 {/if}
                 <div
-                  use:dragAndDrop={{
+                  {@attach dragAndDrop({
                     index,
                     onDragStart: handleFilterDragStart,
                     onDragEnter: handleFilterDragEnter,
@@ -463,7 +463,7 @@
                     onDragEnd: handleFilterDragEnd,
                     isDragging: draggedFilterIndex === index,
                     isDragOver: dragOverFilterIndex === index,
-                  }}
+                  })}
                   class="mb-4 cursor-move rounded-2xl border-2 p-4 transition-all bg-light-50 border-dashed hover:border-light-300"
                 >
                   <div class="flex items-start gap-4">
@@ -524,7 +524,7 @@
                   {@render stepSeparator()}
                 {/if}
                 <div
-                  use:dragAndDrop={{
+                  {@attach dragAndDrop({
                     index,
                     onDragStart: handleActionDragStart,
                     onDragEnter: handleActionDragEnter,
@@ -532,8 +532,8 @@
                     onDragEnd: handleActionDragEnd,
                     isDragging: draggedActionIndex === index,
                     isDragOver: dragOverActionIndex === index,
-                  }}
-                  class="mb-4 cursor-move rounded-2xl border-2 p-4 transition-all bg-light-50 border-dashed hover:border-light-300"
+                  })}
+                  class="mb-4 cursor-move rounded-2xl border-2 p-4 transition-all bg-light-100 border-dashed hover:border-light-300"
                 >
                   <div class="flex items-start gap-4">
                     {@render cardOrder(index)}
