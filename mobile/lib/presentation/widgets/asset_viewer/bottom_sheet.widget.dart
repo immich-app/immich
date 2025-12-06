@@ -17,7 +17,6 @@ import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.sta
 import 'package:immich_mobile/presentation/widgets/asset_viewer/bottom_sheet/sheet_location_details.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/bottom_sheet/sheet_people_details.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/sheet_tile.widget.dart';
-import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
@@ -83,7 +82,7 @@ class AssetDetailBottomSheetContent extends ConsumerWidget {
             ],
           ),
         // Scrollable content
-        Expanded(child: CustomScrollView(slivers: const [_AssetDetailBottomSheet()])),
+        const Expanded(child: CustomScrollView(slivers: [_AssetDetailBottomSheet()])),
       ],
     );
   }
