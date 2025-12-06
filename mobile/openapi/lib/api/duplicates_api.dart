@@ -16,6 +16,121 @@ class DuplicatesApi {
 
   final ApiClient apiClient;
 
+  /// Performs an HTTP 'GET /duplicates/de-duplicate-all/count' operation and returns the [Response].
+  Future<Response> countDeDuplicateAllWithHttpInfo() async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/duplicates/de-duplicate-all/count';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  Future<num?> countDeDuplicateAll() async {
+    final response = await countDeDuplicateAllWithHttpInfo();
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'num',) as num;
+    
+    }
+    return null;
+  }
+
+  /// Performs an HTTP 'GET /duplicates/keep-all/count' operation and returns the [Response].
+  Future<Response> countKeepAllWithHttpInfo() async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/duplicates/keep-all/count';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  Future<num?> countKeepAll() async {
+    final response = await countKeepAllWithHttpInfo();
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'num',) as num;
+    
+    }
+    return null;
+  }
+
+  /// Performs an HTTP 'DELETE /duplicates/de-duplicate-all' operation and returns the [Response].
+  Future<Response> deDuplicateAllWithHttpInfo() async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/duplicates/de-duplicate-all';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'DELETE',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  Future<void> deDuplicateAll() async {
+    final response = await deDuplicateAllWithHttpInfo();
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
   /// Delete a duplicate
   ///
   /// Delete a single duplicate asset specified by its ID.
@@ -118,7 +233,13 @@ class DuplicatesApi {
   /// Retrieve a list of duplicate assets available to the authenticated user.
   ///
   /// Note: This method returns the HTTP [Response].
-  Future<Response> getAssetDuplicatesWithHttpInfo() async {
+  ///
+  /// Parameters:
+  ///
+  /// * [num] page:
+  ///
+  /// * [num] size:
+  Future<Response> getAssetDuplicatesWithHttpInfo({ num? page, num? size, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/duplicates';
 
@@ -128,6 +249,13 @@ class DuplicatesApi {
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
+
+    if (page != null) {
+      queryParams.addAll(_queryParams('', 'page', page));
+    }
+    if (size != null) {
+      queryParams.addAll(_queryParams('', 'size', size));
+    }
 
     const contentTypes = <String>[];
 
@@ -146,8 +274,14 @@ class DuplicatesApi {
   /// Retrieve duplicates
   ///
   /// Retrieve a list of duplicate assets available to the authenticated user.
-  Future<List<DuplicateResponseDto>?> getAssetDuplicates() async {
-    final response = await getAssetDuplicatesWithHttpInfo();
+  ///
+  /// Parameters:
+  ///
+  /// * [num] page:
+  ///
+  /// * [num] size:
+  Future<DuplicateResponseDto?> getAssetDuplicates({ num? page, num? size, }) async {
+    final response = await getAssetDuplicatesWithHttpInfo( page: page, size: size, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -155,12 +289,42 @@ class DuplicatesApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      final responseBody = await _decodeBodyBytes(response);
-      return (await apiClient.deserializeAsync(responseBody, 'List<DuplicateResponseDto>') as List)
-        .cast<DuplicateResponseDto>()
-        .toList(growable: false);
-
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'DuplicateResponseDto',) as DuplicateResponseDto;
+    
     }
     return null;
+  }
+
+  /// Performs an HTTP 'DELETE /duplicates/keep-all' operation and returns the [Response].
+  Future<Response> keepAllWithHttpInfo() async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/duplicates/keep-all';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'DELETE',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  Future<void> keepAll() async {
+    final response = await keepAllWithHttpInfo();
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
   }
 }
