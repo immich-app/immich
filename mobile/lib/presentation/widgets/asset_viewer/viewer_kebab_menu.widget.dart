@@ -19,7 +19,7 @@ class ViewerKebabMenu extends ConsumerWidget {
 
     final menuChildren = <Widget>[
       BaseActionButton(
-        label: 'about'.tr(),
+        label: 'open_asset_info'.tr(),
         iconData: Icons.info_outline,
         menuItem: true,
         onPressed: () => EventStream.shared.emit(const ViewerOpenBottomSheetEvent()),
