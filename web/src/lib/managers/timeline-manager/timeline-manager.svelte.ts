@@ -12,7 +12,6 @@ import {
   getMonthGroupByDate,
   retrieveRange as retrieveRangeUtil,
 } from '$lib/managers/timeline-manager/internal/search-support.svelte';
-import { WebsocketSupport } from '$lib/managers/timeline-manager/internal/websocket-support.svelte';
 import { CancellableTask } from '$lib/utils/cancellable-task';
 import { PersistedLocalStorage } from '$lib/utils/persisted';
 import {
@@ -87,7 +86,6 @@ export class TimelineManager extends VirtualScrollManager {
   );
 
   static #INIT_OPTIONS = {};
-  #websocketSupport: WebsocketSupport | undefined;
   #options: TimelineManagerOptions = TimelineManager.#INIT_OPTIONS;
   #updatingIntersections = false;
   #scrollableElement: HTMLElement | undefined = $state();
@@ -156,21 +154,9 @@ export class TimelineManager extends VirtualScrollManager {
     }
   }
 
-  connect() {
-    if (this.#websocketSupport) {
-      throw new Error('TimelineManager already connected');
-    }
-    this.#websocketSupport = new WebsocketSupport(this);
-    this.#websocketSupport.connectWebsocketEvents();
-  }
+  connect() {}
 
-  disconnect() {
-    if (!this.#websocketSupport) {
-      return;
-    }
-    this.#websocketSupport.disconnectWebsocketEvents();
-    this.#websocketSupport = undefined;
-  }
+  disconnect() {}
 
   #calculateMonthBottomViewportRatio(month: MonthGroup | undefined) {
     if (!month) {
