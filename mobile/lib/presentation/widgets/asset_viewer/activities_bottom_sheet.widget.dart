@@ -10,17 +10,8 @@ import 'package:immich_mobile/providers/activity.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 
-class ActivitiesBottomSheet extends HookConsumerWidget {
-  final DraggableScrollableController controller;
-  final double initialChildSize;
-  final bool scrollToBottomInitially;
-
-  const ActivitiesBottomSheet({
-    required this.controller,
-    this.initialChildSize = 0.35,
-    this.scrollToBottomInitially = true,
-    super.key,
-  });
+class ActivitiesBottomSheetContent extends HookConsumerWidget {
+  const ActivitiesBottomSheetContent({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -54,32 +45,20 @@ class ActivitiesBottomSheet extends HookConsumerWidget {
       );
     }
 
-    return BaseBottomSheet(
-      actions: [],
-      slivers: [buildActivitiesSliver()],
-      footer: Padding(
-        // TODO: avoid fixed padding, use context.padding.bottom
-        padding: const EdgeInsets.only(bottom: 32),
-        child: Column(
-          children: [
-            const Divider(indent: 16, endIndent: 16),
-            DriftActivityTextField(
-              isEnabled: album.isActivityEnabled,
-              isBottomSheet: true,
-              // likeId: likedId,
-              onSubmit: onAddComment,
-            ),
-          ],
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Expanded(child: CustomScrollView(slivers: [buildActivitiesSliver()])),
+        Padding(
+          padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom + 16),
+          child: Column(
+            children: [
+              const Divider(indent: 16, endIndent: 16),
+              DriftActivityTextField(isEnabled: album.isActivityEnabled, isBottomSheet: true, onSubmit: onAddComment),
+            ],
+          ),
         ),
-      ),
-      controller: controller,
-      initialChildSize: initialChildSize,
-      minChildSize: 0.1,
-      maxChildSize: 0.88,
-      expand: false,
-      shouldCloseOnMinExtent: false,
-      resizeOnScroll: false,
-      backgroundColor: context.isDarkTheme ? Colors.black : Colors.white,
+      ],
     );
   }
 }

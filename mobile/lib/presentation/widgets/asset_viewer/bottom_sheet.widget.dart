@@ -35,11 +35,8 @@ import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
 const _kSeparator = '  •  ';
 
-class AssetDetailBottomSheet extends ConsumerWidget {
-  final DraggableScrollableController? controller;
-  final double initialChildSize;
-
-  const AssetDetailBottomSheet({this.controller, this.initialChildSize = 0.35, super.key});
+class AssetDetailBottomSheetContent extends ConsumerWidget {
+  const AssetDetailBottomSheetContent({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -69,17 +66,25 @@ class AssetDetailBottomSheet extends ConsumerWidget {
 
     final actions = ActionButtonBuilder.build(buttonContext);
 
-    return BaseBottomSheet(
-      actions: actions,
-      slivers: const [_AssetDetailBottomSheet()],
-      controller: controller,
-      initialChildSize: initialChildSize,
-      minChildSize: 0.1,
-      maxChildSize: 0.88,
-      expand: false,
-      shouldCloseOnMinExtent: false,
-      resizeOnScroll: false,
-      backgroundColor: context.isDarkTheme ? Colors.black : Colors.white,
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Action buttons row - horizontally scrollable
+        if (actions.isNotEmpty)
+          Column(
+            children: [
+              const SizedBox(height: 8),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: actions),
+              ),
+              const Divider(indent: 16, endIndent: 16),
+              const SizedBox(height: 16),
+            ],
+          ),
+        // Scrollable content
+        Expanded(child: CustomScrollView(slivers: const [_AssetDetailBottomSheet()])),
+      ],
     );
   }
 }
@@ -326,7 +331,7 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
         // Appears in (Albums)
         Padding(padding: const EdgeInsets.only(top: 16.0), child: _buildAppearsInList(ref, context)),
         // padding at the bottom to avoid cut-off
-        const SizedBox(height: 100),
+        const SizedBox(height: 24),
       ],
     );
   }
