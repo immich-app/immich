@@ -81,6 +81,24 @@ export const ValidateUUID = (options?: UUIDOptions & ApiPropertyOptions) => {
   );
 };
 
+export function IsAxisAlignedRotation() {
+  return ValidateBy(
+    {
+      name: 'isAxisAlignedRotation',
+      validator: {
+        validate(value: any) {
+          return [0, 90, 180, 270].includes(value);
+        },
+        defaultMessage: buildMessage(
+          (eachPrefix) => eachPrefix + '$property must be one of the following values: 0, 90, 180, 270',
+          {},
+        ),
+      },
+    },
+    {},
+  );
+}
+
 export class UUIDParamDto {
   @IsNotEmpty()
   @IsUUID('4')

@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Insertable, Kysely, sql } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { DummyValue, GenerateSql } from 'src/decorators';
+import { AssetOcrResponseDto } from 'src/dtos/ocr.dto';
 import { DB } from 'src/schema';
 import { AssetOcrTable } from 'src/schema/tables/asset-ocr.table';
 
@@ -15,8 +16,13 @@ export class OcrRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
-  getByAssetId(id: string) {
-    return this.db.selectFrom('asset_ocr').selectAll('asset_ocr').where('asset_ocr.assetId', '=', id).execute();
+  getByAssetId(id: string, { onlyVisible = true }: { onlyVisible?: boolean } = {}) {
+    return this.db
+      .selectFrom('asset_ocr')
+      .selectAll('asset_ocr')
+      .where('asset_ocr.assetId', '=', id)
+      .$if(onlyVisible, (qb) => qb.where('asset_ocr.isVisible', '=', true))
+      .execute();
   }
 
   deleteAll() {
@@ -64,5 +70,39 @@ export class OcrRepository {
     }
 
     return query.selectNoFrom(sql`1`.as('dummy')).execute();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, [], []] })
+  async updateOcrVisibilities(
+    assetId: string,
+    visible: AssetOcrResponseDto[],
+    hidden: AssetOcrResponseDto[],
+  ): Promise<void> {
+    if (visible.length > 0) {
+      await this.db
+        .updateTable('asset_ocr')
+        .set({ isVisible: true })
+        .where(
+          'asset_ocr.id',
+          'in',
+          visible.map((i) => i.id),
+        )
+        .execute();
+    }
+
+    if (hidden.length > 0) {
+      await this.db
+        .updateTable('asset_ocr')
+        .set({ isVisible: false })
+        .where(
+          'asset_ocr.id',
+          'in',
+          hidden.map((i) => i.id),
+        )
+        .execute();
+    }
+
+    const searchText = visible.map((item) => item.text.trim()).join(' ');
+    await this.db.updateTable('ocr_search').set({ text: searchText }).where('assetId', '=', assetId).execute();
   }
 }

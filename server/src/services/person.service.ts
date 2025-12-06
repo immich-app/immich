@@ -40,6 +40,7 @@ import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
 import { FaceSearchTable } from 'src/schema/tables/face-search.table';
 import { BaseService } from 'src/services/base.service';
 import { JobItem, JobOf } from 'src/types';
+import { getDimensions } from 'src/utils/asset.util';
 import { ImmichFileResponse } from 'src/utils/file';
 import { mimeTypes } from 'src/utils/mime-types';
 import { isFacialRecognitionEnabled } from 'src/utils/misc';
@@ -126,7 +127,10 @@ export class PersonService extends BaseService {
   async getFacesById(auth: AuthDto, dto: FaceDto): Promise<AssetFaceResponseDto[]> {
     await this.requireAccess({ auth, permission: Permission.AssetRead, ids: [dto.id] });
     const faces = await this.personRepository.getFaces(dto.id);
-    return faces.map((asset) => mapFaces(asset, auth));
+    const asset = await this.assetRepository.getById(dto.id, { edits: true, exifInfo: true });
+    const assetDimensions = getDimensions(asset!.exifInfo!);
+
+    return faces.map((face) => mapFaces(face, auth, asset!.edits!, assetDimensions));
   }
 
   async createNewFeaturePhoto(changeFeaturePhoto: string[]) {

@@ -8,10 +8,12 @@ export const newMediaRepositoryMock = (): Mocked<RepositoryInterface<MediaReposi
     writeExif: vitest.fn().mockImplementation(() => Promise.resolve()),
     copyTagGroup: vitest.fn().mockImplementation(() => Promise.resolve()),
     generateThumbhash: vitest.fn().mockResolvedValue(Buffer.from('')),
-    decodeImage: vitest.fn().mockResolvedValue({ data: Buffer.from(''), info: {} }),
+    decodeImage: vitest.fn().mockImplementation(() => Promise.resolve({ data: Buffer.from(''), info: {} })),
     extract: vitest.fn().mockResolvedValue(null),
     probe: vitest.fn(),
     transcode: vitest.fn(),
     getImageDimensions: vitest.fn(),
+    checkFaceVisibility: vitest.fn().mockImplementation(() => ({ visible: [], hidden: [] })),
+    checkOcrVisibility: vitest.fn().mockImplementation(() => ({ visible: [], hidden: [] })),
   };
 };
