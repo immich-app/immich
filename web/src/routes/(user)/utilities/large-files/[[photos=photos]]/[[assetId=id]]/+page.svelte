@@ -6,9 +6,9 @@
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { handlePromiseError } from '$lib/utils';
   import { navigate } from '$lib/utils/navigation';
+  import type { AssetResponseDto } from '@immich/sdk';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
-  import type { AssetResponseDto } from '@immich/sdk';
 
   interface Props {
     data: PageData;
@@ -27,21 +27,27 @@
     }
   });
 
-  const onNext = async () => {
-    const index = getAssetIndex($viewingAsset.id) + 1;
-    if (index >= assets.length) {
-      return false;
+  const nextAsset = $derived.by(() => {
+    const currentIndex = getAssetIndex($viewingAsset.id);
+    if (currentIndex >= assets.length - 1) {
+      return undefined;
     }
-    await onViewAsset(assets[index]);
-    return true;
-  };
+    return currentIndex + 1 < assets.length ? assets[currentIndex + 1] : undefined;
+  });
 
-  const onPrevious = async () => {
-    const index = getAssetIndex($viewingAsset.id) - 1;
-    if (index < 0) {
+  const previousAsset = $derived.by(() => {
+    const currentIndex = getAssetIndex($viewingAsset.id);
+    if (currentIndex <= 0) {
+      return undefined;
+    }
+    return currentIndex - 1 >= 0 ? assets[currentIndex - 1] : undefined;
+  });
+
+  const handleNavigateToAsset = async (asset: AssetResponseDto | undefined) => {
+    if (!asset) {
       return false;
     }
-    await onViewAsset(assets[index]);
+    await onViewAsset(asset);
     return true;
   };
 
@@ -86,9 +92,10 @@
     <Portal target="body">
       <AssetViewer
         asset={$viewingAsset}
+        onNavigateToAsset={handleNavigateToAsset}
+        {nextAsset}
+        {previousAsset}
         showNavigation={assets.length > 1}
-        {onNext}
-        {onPrevious}
         {onRandom}
         {onAction}
         onClose={() => {

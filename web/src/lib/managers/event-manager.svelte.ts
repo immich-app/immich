@@ -43,6 +43,8 @@ export type Events = {
   LibraryDelete: [{ id: string }];
 
   ReleaseEvent: [ReleaseEvent];
+
+  AssetViewerFree: [];
 };
 
 type Listener<EventMap extends Record<string, unknown[]>, K extends keyof EventMap> = (...params: EventMap[K]) => void;

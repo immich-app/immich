@@ -10,7 +10,7 @@
   import { getAssetInfo, type AssetResponseDto } from '@immich/sdk';
   import { Button } from '@immich/ui';
   import { mdiCheck, mdiImageMultipleOutline, mdiTrashCanOutline } from '@mdi/js';
-  import { onDestroy, onMount } from 'svelte';
+  import { onDestroy, onMount, untrack } from 'svelte';
   import { t } from 'svelte-i18n';
   import { SvelteSet } from 'svelte/reactivity';
 
@@ -43,23 +43,54 @@
     assetViewingStore.showAssetViewer(false);
   });
 
-  const onNext = async () => {
-    const index = getAssetIndex($viewingAsset.id) + 1;
-    if (index >= assets.length) {
+  const handleNavigateToAsset = async (asset: AssetResponseDto | undefined) => {
+    if (!asset) {
       return false;
     }
-    await onViewAsset(assets[index]);
+    await onViewAsset(asset);
     return true;
   };
 
-  const onPrevious = async () => {
-    const index = getAssetIndex($viewingAsset.id) - 1;
+  const getPreviousAsset = (currentAsset: AssetResponseDto) => {
+    const index = getAssetIndex(currentAsset.id) - 1;
     if (index < 0) {
-      return false;
+      return undefined;
     }
-    await onViewAsset(assets[index]);
-    return true;
+    return assets[index];
   };
+
+  const getNextAsset = (currentAsset: AssetResponseDto) => {
+    const index = getAssetIndex(currentAsset.id) + 1;
+    if (index >= assets.length) {
+      return undefined;
+    }
+    return assets[index];
+  };
+
+  let assetCursor = $state<{
+    previousAsset: AssetResponseDto | undefined;
+    current: AssetResponseDto;
+    nextAsset: AssetResponseDto | undefined;
+  }>({
+    current: $viewingAsset,
+    previousAsset: undefined,
+    nextAsset: undefined,
+  });
+
+  const loadCloseAssets = (currentAsset: AssetResponseDto) => {
+    assetCursor = {
+      current: currentAsset,
+      nextAsset: getNextAsset(currentAsset),
+      previousAsset: getPreviousAsset(currentAsset),
+    };
+  };
+
+  //TODO: replace this with async derived in svelte 6
+  $effect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+    $viewingAsset;
+    untrack(() => void loadCloseAssets($viewingAsset));
+  });
 
   const onRandom = async () => {
     if (assets.length <= 0) {
@@ -182,10 +213,11 @@
   {#await import('$lib/components/asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
     <Portal target="body">
       <AssetViewer
-        asset={$viewingAsset}
+        asset={assetCursor.current}
+        nextAsset={assetCursor.nextAsset}
+        previousAsset={assetCursor.previousAsset}
         showNavigation={assets.length > 1}
-        {onNext}
-        {onPrevious}
+        onNavigateToAsset={handleNavigateToAsset}
         {onRandom}
         onClose={() => {
           assetViewingStore.showAssetViewer(false);

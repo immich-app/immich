@@ -10,7 +10,8 @@
   import { AppRoute, AssetAction, ProjectionType } from '$lib/constants';
   import { activityManager } from '$lib/managers/activity-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
-  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
+  import { eventManager } from '$lib/managers/event-manager.svelte';
+  import { preloadManager } from '$lib/managers/PreloadManager.svelte';
   import { closeEditorCofirm } from '$lib/stores/asset-editor.store';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { ocrManager } from '$lib/stores/ocr.svelte';
@@ -18,9 +19,11 @@
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { user } from '$lib/stores/user.store';
   import { websocketEvents } from '$lib/stores/websocket';
-  import { getAssetJobMessage, getSharedLink, handlePromiseError } from '$lib/utils';
+  import { getAssetJobMessage, getAssetUrl, getSharedLink, handlePromiseError } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
+  import { InvocationTracker } from '$lib/utils/invocationTracker';
   import { SlideshowHistory } from '$lib/utils/slideshow-history';
+  import { preloadImageUrl } from '$lib/utils/sw-messaging';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import {
     AssetJobName,
@@ -50,11 +53,10 @@
   import SlideshowBar from './slideshow-bar.svelte';
   import VideoViewer from './video-wrapper-viewer.svelte';
 
-  type HasAsset = boolean;
-
   interface Props {
     asset: AssetResponseDto;
-    preloadAssets?: TimelineAsset[];
+    nextAsset?: AssetResponseDto;
+    previousAsset?: AssetResponseDto;
     showNavigation?: boolean;
     withStacked?: boolean;
     isShared?: boolean;
@@ -63,16 +65,16 @@
     preAction?: PreAction | undefined;
     onAction?: OnAction | undefined;
     showCloseButton?: boolean;
-    onClose: (asset: AssetResponseDto) => void;
-    onNext: () => Promise<HasAsset>;
-    onPrevious: () => Promise<HasAsset>;
-    onRandom: () => Promise<{ id: string } | undefined>;
+    onClose?: (asset: AssetResponseDto) => void;
+    onNavigateToAsset?: (asset: AssetResponseDto | undefined) => Promise<boolean>;
+    onRandom?: () => Promise<{ id: string } | undefined>;
     copyImage?: () => Promise<void>;
   }
 
   let {
-    asset = $bindable(),
-    preloadAssets = $bindable([]),
+    asset,
+    nextAsset,
+    previousAsset,
     showNavigation = true,
     withStacked = false,
     isShared = false,
@@ -82,8 +84,7 @@
     onAction = undefined,
     showCloseButton,
     onClose,
-    onNext,
-    onPrevious,
+    onNavigateToAsset,
     onRandom,
     copyImage = $bindable(),
   }: Props = $props();
@@ -135,7 +136,7 @@
 
     untrack(() => {
       if (stack && stack?.assets.length > 1) {
-        preloadAssets.push(toTimelineAsset(stack.assets[1]));
+        preloadImageUrl(getAssetUrl({ asset: stack.assets[1] }));
       }
     });
   };
@@ -225,7 +226,7 @@
   };
 
   const closeViewer = () => {
-    onClose(asset);
+    onClose?.(asset);
   };
 
   const closeEditor = () => {
@@ -234,7 +235,9 @@
     });
   };
 
-  const navigateAsset = async (order?: 'previous' | 'next', e?: Event) => {
+  const tracker = new InvocationTracker();
+
+  const navigateAsset = (order?: 'previous' | 'next', e?: Event) => {
     if (!order) {
       if ($slideshowState === SlideshowState.PlaySlideshow) {
         order = $slideshowNavigation === SlideshowNavigation.AscendingOrder ? 'previous' : 'next';
@@ -244,37 +247,38 @@
     }
 
     e?.stopPropagation();
+    preloadManager.cancel(asset);
+    if (tracker.isActive()) {
+      return;
+    }
 
-    let hasNext = false;
+    void tracker.invoke(async () => {
+      let hasNext = false;
 
-    if ($slideshowState === SlideshowState.PlaySlideshow && $slideshowNavigation === SlideshowNavigation.Shuffle) {
-      hasNext = order === 'previous' ? slideshowHistory.previous() : slideshowHistory.next();
-      if (!hasNext) {
-        const asset = await onRandom();
-        if (asset) {
-          slideshowHistory.queue(asset);
-          hasNext = true;
+      if ($slideshowState === SlideshowState.PlaySlideshow && $slideshowNavigation === SlideshowNavigation.Shuffle) {
+        hasNext = order === 'previous' ? slideshowHistory.previous() : slideshowHistory.next();
+        if (!hasNext) {
+          const asset = await onRandom?.();
+          if (asset) {
+            slideshowHistory.queue(asset);
+            hasNext = true;
+          }
+        }
+      } else if (onNavigateToAsset) {
+        hasNext = order === 'previous' ? await onNavigateToAsset(previousAsset) : await onNavigateToAsset(nextAsset);
+      } else {
+        hasNext = false;
+      }
+
+      if ($slideshowState === SlideshowState.PlaySlideshow) {
+        if (hasNext) {
+          $restartSlideshowProgress = true;
+        } else {
+          await handleStopSlideshow();
         }
       }
-    } else {
-      hasNext = order === 'previous' ? await onPrevious() : await onNext();
-    }
-
-    if ($slideshowState === SlideshowState.PlaySlideshow) {
-      if (hasNext) {
-        $restartSlideshowProgress = true;
-      } else {
-        await handleStopSlideshow();
-      }
-    }
+    });
   };
-
-  // const showEditorHandler = () => {
-  //   if (isShowActivity) {
-  //     isShowActivity = false;
-  //   }
-  //   isShowEditor = !isShowEditor;
-  // };
 
   const handleRunJob = async (name: AssetJobName) => {
     try {
@@ -379,12 +383,6 @@
   let isFullScreen = $derived(fullscreenElement !== null);
 
   $effect(() => {
-    if (asset) {
-      previewStackedAsset = undefined;
-      handlePromiseError(refreshStack());
-    }
-  });
-  $effect(() => {
     if (album && !album.isActivityEnabled && activityManager.commentCount === 0) {
       isShowActivity = false;
     }
@@ -395,13 +393,57 @@
     }
   });
 
-  // primarily, this is reactive on `asset`
+  let lastAsset: AssetResponseDto | undefined;
   $effect(() => {
-    handlePromiseError(handleGetAllAlbums());
-    ocrManager.clear();
-    if (!sharedLink) {
-      handlePromiseError(ocrManager.getAssetOcr(asset.id));
+    const refresh = async () => {
+      await refreshStack();
+      await handleGetAllAlbums();
+      ocrManager.clear();
+      if (!sharedLink) {
+        if (previewStackedAsset) {
+          await ocrManager.getAssetOcr(previewStackedAsset.id);
+        }
+        await ocrManager.getAssetOcr(asset.id);
+      }
+    };
+    handlePromiseError(refresh());
+    if (lastAsset?.id !== asset.id) {
+      preloadManager.cancel(lastAsset);
     }
+    lastAsset = asset;
+  });
+
+  $effect(() => {
+    preloadManager.preload(nextAsset);
+    preloadManager.preload(previousAsset);
+  });
+
+  $effect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+    asset.id;
+    if (viewerKind !== 'PhotoViewer') {
+      eventManager.emit('AssetViewerFree');
+    }
+  });
+
+  const viewerKind = $derived.by(() => {
+    if (previewStackedAsset) {
+      return asset.type === AssetTypeEnum.Image ? 'StackPhotoViewer' : 'StackVideoViewer';
+    }
+    if (asset.type === AssetTypeEnum.Image) {
+      if (shouldPlayMotionPhoto && asset.livePhotoVideoId) {
+        return 'LiveVideoViewer';
+      } else if (
+        asset.exifInfo?.projectionType === ProjectionType.EQUIRECTANGULAR ||
+        (asset.originalPath && asset.originalPath.toLowerCase().endsWith('.insp'))
+      ) {
+        return 'ImagePanaramaViewer';
+      } else if (isShowEditor && selectedEditType === 'crop') {
+        return 'CropArea';
+      }
+      return 'PhotoViewer';
+    }
+    return 'VideoViewer';
   });
 </script>
 
@@ -459,7 +501,7 @@
     </div>
   {/if}
 
-  {#if $slideshowState === SlideshowState.None && showNavigation && !isShowEditor}
+  {#if $slideshowState === SlideshowState.None && showNavigation && !isShowEditor && previousAsset}
     <div class="my-auto column-span-1 col-start-1 row-span-full row-start-1 justify-self-start">
       <PreviousAssetAction onPreviousAsset={() => navigateAsset('previous')} />
     </div>
@@ -467,104 +509,91 @@
 
   <!-- Asset Viewer -->
   <div class="z-[-1] relative col-start-1 col-span-4 row-start-1 row-span-full">
-    {#if previewStackedAsset}
-      {#key previewStackedAsset.id}
-        {#if previewStackedAsset.type === AssetTypeEnum.Image}
-          <PhotoViewer
-            bind:zoomToggle
-            bind:copyImage
-            asset={previewStackedAsset}
-            {preloadAssets}
-            onPreviousAsset={() => navigateAsset('previous')}
-            onNextAsset={() => navigateAsset('next')}
-            haveFadeTransition={false}
-            {sharedLink}
-          />
-        {:else}
-          <VideoViewer
-            assetId={previewStackedAsset.id}
-            cacheKey={previewStackedAsset.thumbhash}
-            projectionType={previewStackedAsset.exifInfo?.projectionType}
-            loopVideo={true}
-            onPreviousAsset={() => navigateAsset('previous')}
-            onNextAsset={() => navigateAsset('next')}
-            onClose={closeViewer}
-            onVideoEnded={() => navigateAsset()}
-            onVideoStarted={handleVideoStarted}
-            {playOriginalVideo}
-          />
-        {/if}
-      {/key}
-    {:else}
-      {#key asset.id}
-        {#if asset.type === AssetTypeEnum.Image}
-          {#if shouldPlayMotionPhoto && asset.livePhotoVideoId}
-            <VideoViewer
-              assetId={asset.livePhotoVideoId}
-              cacheKey={asset.thumbhash}
-              projectionType={asset.exifInfo?.projectionType}
-              loopVideo={$slideshowState !== SlideshowState.PlaySlideshow}
-              onPreviousAsset={() => navigateAsset('previous')}
-              onNextAsset={() => navigateAsset('next')}
-              onVideoEnded={() => (shouldPlayMotionPhoto = false)}
-              {playOriginalVideo}
-            />
-          {:else if asset.exifInfo?.projectionType === ProjectionType.EQUIRECTANGULAR || (asset.originalPath && asset.originalPath
-                .toLowerCase()
-                .endsWith('.insp'))}
-            <ImagePanoramaViewer bind:zoomToggle {asset} />
-          {:else if isShowEditor && selectedEditType === 'crop'}
-            <CropArea {asset} />
-          {:else}
-            <PhotoViewer
-              bind:zoomToggle
-              bind:copyImage
-              {asset}
-              {preloadAssets}
-              onPreviousAsset={() => navigateAsset('previous')}
-              onNextAsset={() => navigateAsset('next')}
-              {sharedLink}
-              haveFadeTransition={$slideshowState !== SlideshowState.None && $slideshowTransition}
-            />
-          {/if}
-        {:else}
-          <VideoViewer
-            assetId={asset.id}
-            cacheKey={asset.thumbhash}
-            projectionType={asset.exifInfo?.projectionType}
-            loopVideo={$slideshowState !== SlideshowState.PlaySlideshow}
-            onPreviousAsset={() => navigateAsset('previous')}
-            onNextAsset={() => navigateAsset('next')}
-            onClose={closeViewer}
-            onVideoEnded={() => navigateAsset()}
-            onVideoStarted={handleVideoStarted}
-            {playOriginalVideo}
-          />
-        {/if}
+    {#if viewerKind === 'StackPhotoViewer'}
+      <PhotoViewer
+        bind:zoomToggle
+        bind:copyImage
+        asset={previewStackedAsset!}
+        onPreviousAsset={() => navigateAsset('previous')}
+        onNextAsset={() => navigateAsset('next')}
+        haveFadeTransition={false}
+        {sharedLink}
+      />
+    {:else if viewerKind === 'StackVideoViewer'}
+      <VideoViewer
+        assetId={previewStackedAsset!.id}
+        cacheKey={previewStackedAsset!.thumbhash}
+        projectionType={previewStackedAsset!.exifInfo?.projectionType}
+        loopVideo={true}
+        onPreviousAsset={() => navigateAsset('previous')}
+        onNextAsset={() => navigateAsset('next')}
+        onClose={closeViewer}
+        onVideoEnded={() => navigateAsset()}
+        onVideoStarted={handleVideoStarted}
+        {playOriginalVideo}
+      />
+    {:else if viewerKind === 'LiveVideoViewer'}
+      <VideoViewer
+        assetId={asset.livePhotoVideoId!}
+        cacheKey={asset.thumbhash}
+        projectionType={asset.exifInfo?.projectionType}
+        loopVideo={$slideshowState !== SlideshowState.PlaySlideshow}
+        onPreviousAsset={() => navigateAsset('previous')}
+        onNextAsset={() => navigateAsset('next')}
+        onVideoEnded={() => (shouldPlayMotionPhoto = false)}
+        {playOriginalVideo}
+      />
+    {:else if viewerKind === 'ImagePanaramaViewer'}
+      <ImagePanoramaViewer bind:zoomToggle {asset} />
+    {:else if viewerKind === 'CropArea'}
+      <CropArea {asset} />
+    {:else if viewerKind === 'PhotoViewer'}
+      <PhotoViewer
+        bind:zoomToggle
+        bind:copyImage
+        {asset}
+        onPreviousAsset={() => navigateAsset('previous')}
+        onNextAsset={() => navigateAsset('next')}
+        {sharedLink}
+        haveFadeTransition={$slideshowState !== SlideshowState.None && $slideshowTransition}
+        onFree={() => eventManager.emit('AssetViewerFree')}
+      />
+    {:else if viewerKind === 'VideoViewer'}
+      <VideoViewer
+        assetId={asset.id}
+        cacheKey={asset.thumbhash}
+        projectionType={asset.exifInfo?.projectionType}
+        loopVideo={$slideshowState !== SlideshowState.PlaySlideshow}
+        onPreviousAsset={() => navigateAsset('previous')}
+        onNextAsset={() => navigateAsset('next')}
+        onClose={closeViewer}
+        onVideoEnded={() => navigateAsset()}
+        onVideoStarted={handleVideoStarted}
+        {playOriginalVideo}
+      />
+    {/if}
 
-        {#if $slideshowState === SlideshowState.None && isShared && ((album && album.isActivityEnabled) || activityManager.commentCount > 0) && !activityManager.isLoading}
-          <div class="absolute bottom-0 end-0 mb-20 me-8">
-            <ActivityStatus
-              disabled={!album?.isActivityEnabled}
-              isLiked={activityManager.isLiked}
-              numberOfComments={activityManager.commentCount}
-              numberOfLikes={activityManager.likeCount}
-              onFavorite={handleFavorite}
-              onOpenActivityTab={handleOpenActivity}
-            />
-          </div>
-        {/if}
+    {#if $slideshowState === SlideshowState.None && isShared && ((album && album.isActivityEnabled) || activityManager.commentCount > 0) && !activityManager.isLoading}
+      <div class="absolute bottom-0 end-0 mb-20 me-8">
+        <ActivityStatus
+          disabled={!album?.isActivityEnabled}
+          isLiked={activityManager.isLiked}
+          numberOfComments={activityManager.commentCount}
+          numberOfLikes={activityManager.likeCount}
+          onFavorite={handleFavorite}
+          onOpenActivityTab={handleOpenActivity}
+        />
+      </div>
+    {/if}
 
-        {#if $slideshowState === SlideshowState.None && asset.type === AssetTypeEnum.Image && !isShowEditor && ocrManager.hasOcrData}
-          <div class="absolute bottom-0 end-0 mb-6 me-6">
-            <OcrButton />
-          </div>
-        {/if}
-      {/key}
+    {#if $slideshowState === SlideshowState.None && asset.type === AssetTypeEnum.Image && !isShowEditor && ocrManager.hasOcrData}
+      <div class="absolute bottom-0 end-0 mb-6 me-6">
+        <OcrButton />
+      </div>
     {/if}
   </div>
 
-  {#if $slideshowState === SlideshowState.None && showNavigation && !isShowEditor}
+  {#if $slideshowState === SlideshowState.None && showNavigation && !isShowEditor && nextAsset}
     <div class="my-auto col-span-1 col-start-4 row-span-full row-start-1 justify-self-end">
       <NextAssetAction onNextAsset={() => navigateAsset('next')} />
     </div>
