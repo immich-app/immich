@@ -115,12 +115,17 @@ export class GCastDestination implements ICastDestination {
     // build the authenticated media request and send it to the cast device
     const authenticatedUrl = `${mediaUrl}&sessionKey=${sessionKey}`;
     const mediaInfo = new chrome.cast.media.MediaInfo(authenticatedUrl, contentType);
-    const request = new chrome.cast.media.LoadRequest(mediaInfo);
+
+    // Create a queue with a single item and set it to repeat
+    const queueItem = new chrome.cast.media.QueueItem(mediaInfo);
+    const queueLoadRequest = new chrome.cast.media.QueueLoadRequest([queueItem]);
+    queueLoadRequest.repeatMode = chrome.cast.media.RepeatMode.SINGLE;
+
     const successCallback = this.onMediaDiscovered.bind(this, SESSION_DISCOVERY_CAUSE.LOAD_MEDIA);
 
     this.currentUrl = mediaUrl;
 
-    return this.session.loadMedia(request, successCallback, this.onError.bind(this));
+    return this.session.queueLoad(queueLoadRequest, successCallback, this.onError.bind(this));
   }
 
   ///
