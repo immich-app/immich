@@ -186,6 +186,8 @@ export interface SystemConfig {
   };
   user: {
     deleteDelay: number;
+    sessionDeleteDelayBrowser: number;
+    sessionDeleteDelayMobile: number;
   };
 }
 
@@ -388,5 +390,7 @@ export const defaults = Object.freeze<SystemConfig>({
   },
   user: {
     deleteDelay: 7,
+    sessionDeleteDelayBrowser: 90,
+    sessionDeleteDelayMobile: 90,
   },
 });
