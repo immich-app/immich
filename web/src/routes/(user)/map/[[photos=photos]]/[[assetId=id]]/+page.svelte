@@ -24,7 +24,6 @@
   let { isViewing: showAssetViewer, asset: viewingAsset, setAssetId } = assetViewingStore;
 
   let viewingAssets: string[] = $state([]);
-  let viewingAssetCursor = 0;
 
   onDestroy(() => {
     assetViewingStore.showAssetViewer(false);
@@ -36,27 +35,16 @@
 
   async function onViewAssets(assetIds: string[]) {
     viewingAssets = assetIds;
-    viewingAssetCursor = 0;
     await setAssetId(assetIds[0]);
   }
 
-  async function navigateNext() {
-    if (viewingAssetCursor < viewingAssets.length - 1) {
-      await setAssetId(viewingAssets[++viewingAssetCursor]);
-      await navigate({ targetRoute: 'current', assetId: $viewingAsset.id });
-      return true;
+  const handleNavigateToAsset = async (currentAsset: AssetResponseDto | undefined | null) => {
+    if (!currentAsset) {
+      return false;
     }
-    return false;
-  }
-
-  async function navigatePrevious() {
-    if (viewingAssetCursor > 0) {
-      await setAssetId(viewingAssets[--viewingAssetCursor]);
-      await navigate({ targetRoute: 'current', assetId: $viewingAsset.id });
-      return true;
-    }
-    return false;
-  }
+    await navigate({ targetRoute: 'current', assetId: currentAsset.id });
+    return true;
+  };
 
   async function navigateRandom() {
     if (viewingAssets.length <= 0) {
@@ -138,13 +126,12 @@
     </div>
   </UserPageLayout>
   <Portal target="body">
-    {#if $showAssetViewer}
+    {#if $showAssetViewer && assetCursor.current}
       {#await import('$lib/components/asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
         <AssetViewer
           cursor={assetCursor}
           showNavigation={viewingAssets.length > 1}
-          onNext={navigateNext}
-          onPrevious={navigatePrevious}
+          onNavigateToAsset={handleNavigateToAsset}
           onRandom={navigateRandom}
           onClose={() => {
             assetViewingStore.showAssetViewer(false);
