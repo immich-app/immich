@@ -1,7 +1,7 @@
 import { Controller, Get, Param } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
-import { PluginResponseDto } from 'src/dtos/plugin.dto';
+import { PluginResponseDto, PluginTriggerResponseDto } from 'src/dtos/plugin.dto';
 import { Permission } from 'src/enum';
 import { Authenticated } from 'src/middleware/auth.guard';
 import { PluginService } from 'src/services/plugin.service';
@@ -11,6 +11,17 @@ import { UUIDParamDto } from 'src/validation';
 @Controller('plugins')
 export class PluginController {
   constructor(private service: PluginService) {}
+
+  @Get('triggers')
+  @Authenticated({ permission: Permission.PluginRead })
+  @Endpoint({
+    summary: 'List all plugin triggers',
+    description: 'Retrieve a list of all available plugin triggers.',
+    history: new HistoryBuilder().added('v2.3.0').alpha('v2.3.0'),
+  })
+  getPluginTriggers(): PluginTriggerResponseDto[] {
+    return this.service.getTriggers();
+  }
 
   @Get()
   @Authenticated({ permission: Permission.PluginRead })
