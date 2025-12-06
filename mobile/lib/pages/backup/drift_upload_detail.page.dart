@@ -98,7 +98,7 @@ class DriftUploadDetailPage extends ConsumerWidget {
                             ),
                           ),
                         Text(
-                          'Tap for more details',
+                          "backup_upload_details_page_more_details".t(context: context),
                           style: context.textTheme.bodySmall?.copyWith(
                             color: context.colorScheme.onSurface.withValues(alpha: 0.6),
                           ),
@@ -239,14 +239,20 @@ class FileDetailDialog extends ConsumerWidget {
                   const SizedBox(height: 24),
                   if (asset != null) ...[
                     _buildInfoSection(context, [
-                      _buildInfoRow(context, "Filename", path.basename(uploadStatus.filename)),
-                      _buildInfoRow(context, "Local ID", asset.id),
-                      _buildInfoRow(context, "File Size", formatHumanReadableBytes(uploadStatus.fileSize, 2)),
-                      if (asset.width != null) _buildInfoRow(context, "Width", "${asset.width}px"),
-                      if (asset.height != null) _buildInfoRow(context, "Height", "${asset.height}px"),
-                      _buildInfoRow(context, "Created At", asset.createdAt.toString()),
-                      _buildInfoRow(context, "Updated At", asset.updatedAt.toString()),
-                      if (asset.checksum != null) _buildInfoRow(context, "Checksum", asset.checksum!),
+                      _buildInfoRow(context, "filename".t(context: context), path.basename(uploadStatus.filename)),
+                      _buildInfoRow(context, "local_id".t(context: context), asset.id),
+                      _buildInfoRow(
+                        context,
+                        "file_size".t(context: context),
+                        formatHumanReadableBytes(uploadStatus.fileSize, 2),
+                      ),
+                      if (asset.width != null) _buildInfoRow(context, "width".t(context: context), "${asset.width}px"),
+                      if (asset.height != null)
+                        _buildInfoRow(context, "height".t(context: context), "${asset.height}px"),
+                      _buildInfoRow(context, "created_at".t(context: context), asset.createdAt.toString()),
+                      _buildInfoRow(context, "updated_at".t(context: context), asset.updatedAt.toString()),
+                      if (asset.checksum != null)
+                        _buildInfoRow(context, "checksum".t(context: context), asset.checksum!),
                     ]),
                   ],
                 ],
