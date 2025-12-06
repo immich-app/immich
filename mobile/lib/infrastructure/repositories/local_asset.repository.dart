@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/extensions/drift_extensions.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart';
@@ -125,5 +128,52 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
       }
     }
     return result;
+  }
+
+  Future<List<LocalAsset>> getEmptyCloudIdAssets() {
+    final query = _db.localAssetEntity.select()..where((row) => row.iCloudId.isNull());
+    return query.map((row) => row.toDto()).get();
+  }
+
+  Future<Map<String, String>> getHashMappingFromCloudId() async {
+    final createdAt = _db.localAssetEntity.createdAt.strftime('%s');
+    final adjustmentTime = coalesce([_db.localAssetEntity.adjustmentTime.strftime('%s'), const Constant('0')]);
+    final latitude = coalesce([
+      _db.localAssetEntity.latitude,
+      const Constant(0.0),
+    ]).truncateTo(2).cast(DriftSqlType.string);
+    final longitude = coalesce([
+      _db.localAssetEntity.longitude,
+      const Constant(0.0),
+    ]).truncateTo(2).cast(DriftSqlType.string);
+
+    final delimiter = const Constant(kUploadETagDelimiter);
+    final eTag = createdAt + delimiter + adjustmentTime + delimiter + latitude + delimiter + longitude;
+
+    final query =
+        _db.localAssetEntity.selectOnly().join([
+            leftOuterJoin(
+              _db.remoteAssetCloudIdEntity,
+              _db.localAssetEntity.iCloudId.equalsExp(_db.remoteAssetCloudIdEntity.cloudId),
+              useColumns: false,
+            ),
+            leftOuterJoin(
+              _db.remoteAssetEntity,
+              _db.remoteAssetCloudIdEntity.assetId.equalsExp(_db.remoteAssetEntity.id),
+              useColumns: false,
+            ),
+          ])
+          ..addColumns([_db.localAssetEntity.id, _db.remoteAssetEntity.checksum])
+          ..where(
+            _db.remoteAssetCloudIdEntity.cloudId.isNotNull() &
+                _db.localAssetEntity.checksum.isNull() &
+                _db.remoteAssetCloudIdEntity.eTag.equalsExp(eTag),
+          );
+    final mapping = await query
+        .map(
+          (row) => (assetId: row.read(_db.localAssetEntity.id)!, checksum: row.read(_db.remoteAssetEntity.checksum)!),
+        )
+        .get();
+    return {for (final entry in mapping) entry.assetId: entry.checksum};
   }
 }

@@ -390,4 +390,22 @@ class NativeSyncApiImpl: ImmichPlugin, NativeSyncApi, FlutterPlugin {
       return PHAsset.fetchAssets(in: album, options: options)
     }
   }
+  
+  func getCloudIdForAssetIds(assetIds: [String]) throws -> [String : String?] {
+    guard #available(iOS 16, *) else {
+      return Dictionary(
+        uniqueKeysWithValues: assetIds.map { ($0, nil as String?) }
+      )
+    }
+    
+    var mappings: [String: String?] = [:]
+    let result = PHPhotoLibrary.shared().cloudIdentifierMappings(forLocalIdentifiers: assetIds)
+    for (key, value) in result {
+      // Ignores invalid cloud ids of the format "GUID:ID:". Valid Ids are of the form "GUID:ID:HASH"
+      if let cloudId = try? value.get().stringValue, !cloudId.hasSuffix(":") {
+        mappings[key] = cloudId
+      }
+    }
+    return mappings;
+  }
 }
