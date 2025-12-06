@@ -6,6 +6,7 @@
   import BrokenAsset from '$lib/components/assets/broken-asset.svelte';
   import { assetViewerFadeDuration } from '$lib/constants';
   import { castManager } from '$lib/managers/cast-manager.svelte';
+  import { eventManager } from '$lib/managers/event-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import { photoViewerImgElement } from '$lib/stores/assets-store.svelte';
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
@@ -39,9 +40,11 @@
     onNextAsset?: (() => void) | null;
     copyImage?: () => Promise<void>;
     zoomToggle?: (() => void) | null;
+    onPhotoLoaded?: (() => void) | null;
   }
 
   let {
+    onPhotoLoaded,
     asset,
     preloadAssets = undefined,
     element = $bindable(),
@@ -190,13 +193,17 @@
   };
 
   const onload = () => {
+    onPhotoLoaded?.();
     imageLoaded = true;
     assetFileUrl = imageLoaderUrl;
     originalImageLoaded = targetImageSize === AssetMediaSize.Fullsize || targetImageSize === 'original';
+    eventManager.emit('RenderLoaded');
   };
 
   const onerror = () => {
+    onPhotoLoaded?.();
     imageError = imageLoaded = true;
+    eventManager.emit('RenderLoaded');
   };
 
   $effect(() => {
@@ -205,7 +212,7 @@
 
   onMount(() => {
     if (loader?.complete) {
-      onload();
+      void onload();
     }
     loader?.addEventListener('load', onload, { passive: true });
     loader?.addEventListener('error', onerror, { passive: true });
@@ -238,13 +245,13 @@
 {/if}
 <!-- svelte-ignore a11y_missing_attribute -->
 <img bind:this={loader} style="display:none" src={imageLoaderUrl} aria-hidden="true" />
+
 <div
   bind:this={element}
-  class="relative h-full select-none"
+  class="relative h-full w-full select-none max-h-full max-h-full"
   bind:clientWidth={containerWidth}
   bind:clientHeight={containerHeight}
 >
-  <img style="display:none" src={imageLoaderUrl} alt="" {onload} {onerror} />
   {#if !imageLoaded}
     <div id="spinner" class="flex h-full items-center justify-center">
       <LoadingSpinner />
@@ -268,7 +275,7 @@
         bind:this={$photoViewerImgElement}
         src={assetFileUrl}
         alt={$getAltText(toTimelineAsset(asset))}
-        class="h-full w-full {$slideshowState === SlideshowState.None
+        class="max-h-dvh h-full w-full {$slideshowState === SlideshowState.None
           ? 'object-contain'
           : slideshowLookCssMapping[$slideshowLook]}"
         draggable="false"

@@ -20,7 +20,7 @@ export const isAlbumsRoute = (route?: string | null) => !!route?.startsWith('/(u
 export const isPeopleRoute = (route?: string | null) => !!route?.startsWith('/(user)/people/[personId]');
 export const isLockedFolderRoute = (route?: string | null) => !!route?.startsWith('/(user)/locked');
 
-export const isAssetViewerRoute = (target?: NavigationTarget | null) =>
+export const isAssetViewerRoute = (target?: { route?: { id?: RouteId } } | null) =>
   !!(target?.route.id?.endsWith('/[[assetId=id]]') && 'assetId' in (target?.params || {}));
 
 export function getAssetInfoFromParam({ assetId, slug, key }: { assetId?: string; key?: string; slug?: string }) {

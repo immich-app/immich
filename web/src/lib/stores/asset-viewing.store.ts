@@ -7,6 +7,7 @@ import { readonly, writable } from 'svelte/store';
 
 function createAssetViewingStore() {
   const viewingAssetStoreState = writable<AssetResponseDto>();
+  const invisible = writable<boolean>(false);
   const preloadAssets = writable<TimelineAsset[]>([]);
   const viewState = writable<boolean>(false);
   const viewingAssetMutex = new Mutex();
@@ -37,6 +38,7 @@ function createAssetViewingStore() {
     setAsset,
     setAssetId,
     showAssetViewer,
+    invisible,
   };
 }
 

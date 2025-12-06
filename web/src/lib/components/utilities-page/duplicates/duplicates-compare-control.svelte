@@ -1,5 +1,6 @@
 <script lang="ts">
   import { shortcuts } from '$lib/actions/shortcut';
+  import AssetViewer from '$lib/components/asset-viewer/asset-viewer.svelte';
   import DuplicateAsset from '$lib/components/utilities-page/duplicates/duplicate-asset.svelte';
   import Portal from '$lib/elements/Portal.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
@@ -179,19 +180,17 @@
 </div>
 
 {#if $showAssetViewer}
-  {#await import('$lib/components/asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
-    <Portal target="body">
-      <AssetViewer
-        asset={$viewingAsset}
-        showNavigation={assets.length > 1}
-        {onNext}
-        {onPrevious}
-        {onRandom}
-        onClose={() => {
-          assetViewingStore.showAssetViewer(false);
-          handlePromiseError(navigate({ targetRoute: 'current', assetId: null }));
-        }}
-      />
-    </Portal>
-  {/await}
+  <Portal target="body">
+    <AssetViewer
+      asset={$viewingAsset}
+      showNavigation={assets.length > 1}
+      {onNext}
+      {onPrevious}
+      {onRandom}
+      onClose={() => {
+        assetViewingStore.showAssetViewer(false);
+        handlePromiseError(navigate({ targetRoute: 'current', assetId: null }));
+      }}
+    />
+  </Portal>
 {/if}

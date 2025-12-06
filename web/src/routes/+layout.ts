@@ -2,6 +2,7 @@ import { goto } from '$app/navigation';
 import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
 import { maintenanceCreateUrl, maintenanceReturnUrl, maintenanceShouldRedirect } from '$lib/utils/maintenance';
 import { init } from '$lib/utils/server';
+
 import { commandPaletteManager } from '@immich/ui';
 import type { LayoutLoad } from './$types';
 

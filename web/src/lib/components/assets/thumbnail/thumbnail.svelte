@@ -1,10 +1,19 @@
 <script lang="ts">
+  import { thumbhash } from '$lib/actions/thumbhash';
   import { ProjectionType } from '$lib/constants';
+  import Portal from '$lib/elements/Portal.svelte';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
+  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
+  import { mobileDevice } from '$lib/stores/mobile-device.svelte';
   import { locale, playVideoThumbnailOnHover } from '$lib/stores/preferences.store';
   import { getAssetOriginalUrl, getAssetPlaybackUrl, getAssetThumbnailUrl } from '$lib/utils';
   import { timeToSeconds } from '$lib/utils/date-time';
+  import { moveFocus } from '$lib/utils/focus-util';
+  import { currentUrlReplaceAssetId } from '$lib/utils/navigation';
   import { getAltText } from '$lib/utils/thumbnail-util';
+  import { TUNABLES } from '$lib/utils/tunables';
   import { AssetMediaSize, AssetVisibility, type UserResponseDto } from '@immich/sdk';
+  import { Icon } from '@immich/ui';
   import {
     mdiArchiveArrowDownOutline,
     mdiCameraBurst,
@@ -15,16 +24,10 @@
     mdiMotionPlayOutline,
     mdiRotate360,
   } from '@mdi/js';
+  import { onDestroy, onMount } from 'svelte';
 
-  import { thumbhash } from '$lib/actions/thumbhash';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-  import { mobileDevice } from '$lib/stores/mobile-device.svelte';
-  import { moveFocus } from '$lib/utils/focus-util';
-  import { currentUrlReplaceAssetId } from '$lib/utils/navigation';
-  import { TUNABLES } from '$lib/utils/tunables';
-  import { Icon } from '@immich/ui';
-  import { onMount } from 'svelte';
+  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
+  import { cubicOut } from 'svelte/easing';
   import type { ClassValue } from 'svelte/elements';
   import { fade } from 'svelte/transition';
   import ImageThumbnail from './image-thumbnail.svelte';
@@ -105,7 +108,7 @@
     onClick?.($state.snapshot(asset));
   };
 
-  const handleClick = (e: MouseEvent) => {
+  const handleClick = async (e: MouseEvent) => {
     if (e.ctrlKey || e.metaKey) {
       window.open(currentUrlReplaceAssetId(asset.id), '_blank');
       return;
@@ -113,6 +116,21 @@
 
     e.stopPropagation();
     e.preventDefault();
+    // callClickHandlers();
+
+    // rect = element?.getBoundingClientRect();
+    // console.log('rect', rect, element);
+    // await tick();
+    // const html = document.querySelector('html')!;
+    // viewport = {
+    //   width: html.clientWidth,
+    //   height: html.clientHeight,
+    // };
+    // console.log(rect, viewport, imageWithinRect);
+    // transitionToAssetViewer = true;
+    // await tick();
+    // transitionToAssetViewer = false;
+    // assetViewingStore.invisible.set(true);
     callClickHandlers();
   };
 
@@ -197,8 +215,145 @@
       document.removeEventListener('pointermove', moveHandler, true);
     };
   });
+  onDestroy(() => {});
+
+  let transitionToAssetViewer = $state(false);
+  let rect = $state<DOMRect>();
+  let viewport = $state<{ width: number; height: number }>();
+
+  // Calculate the image position within rect such that when rect scales to viewport, image is centered
+  let imageWithinRect = $derived.by(() => {
+    if (!viewport || !rect) {
+      return null;
+    }
+
+    const imageAspect = asset.ratio; // width / height
+    const viewportAspect = viewport.width / viewport.height;
+
+    // Calculate where image should be in the final fullscreen state
+    let finalWidth: number;
+    let finalHeight: number;
+    let finalLeft: number;
+    let finalTop: number;
+
+    if (imageAspect > viewportAspect) {
+      // Image is wider - fit to width, black bars top/bottom
+      finalWidth = viewport.width;
+      finalHeight = viewport.width / imageAspect;
+      finalLeft = 0;
+      finalTop = (viewport.height - finalHeight) / 2;
+    } else {
+      // Image is taller - fit to height, black bars left/right
+      finalHeight = viewport.height;
+      finalWidth = viewport.height * imageAspect;
+      finalTop = 0;
+      finalLeft = (viewport.width - finalWidth) / 2;
+    }
+
+    // Scale these coordinates down to fit within rect
+    // The rect will scale from rect size to viewport size
+    const scaleX = rect.width / viewport.width;
+    const scaleY = rect.height / viewport.height;
+
+    return {
+      width: finalWidth * scaleX,
+      height: finalHeight * scaleY,
+      left: finalLeft * scaleX,
+      top: finalTop * scaleY,
+    };
+  });
+  /**
+   * @param {Element} element
+   */
+  function get_zoom(element) {
+    if ('currentCSSZoom' in element) {
+      return /** @type {number} */ (element.currentCSSZoom);
+    }
+
+    /** @type {Element | null} */
+    var current = element;
+    var zoom = 1;
+
+    while (current !== null) {
+      zoom *= +getComputedStyle(current).zoom;
+      current = /** @type {Element | null} */ (current.parentElement);
+    }
+
+    return zoom;
+  }
+  function flip(node, params) {
+    var { from, to, delay = 0, duration = (d) => Math.sqrt(d) * 120, easing = cubicOut } = params;
+
+    var style = getComputedStyle(node);
+
+    // find the transform origin, expressed as a pair of values between 0 and 1
+    var transform = style.transform === 'none' ? '' : style.transform;
+    var [ox, oy] = style.transformOrigin.split(' ').map(parseFloat);
+    ox /= node.clientWidth;
+    oy /= node.clientHeight;
+
+    // calculate effect of parent transforms and zoom
+    var zoom = get_zoom(node); // https://drafts.csswg.org/css-viewport/#effective-zoom
+    var sx = node.clientWidth / to.width / zoom;
+    var sy = node.clientHeight / to.height / zoom;
+
+    // find the starting position of the transform origin
+    var fx = from.left + from.width * ox;
+    var fy = from.top + from.height * oy;
+
+    // find the ending position of the transform origin
+    var tx = to.left + to.width * ox;
+    var ty = to.top + to.height * oy;
+
+    // find the translation at the start of the transform
+    var dx = (fx - tx) * sx;
+    var dy = (fy - ty) * sy;
+
+    // find the relative scale at the start of the transform
+    var dsx = from.width / to.width;
+    var dsy = from.height / to.height;
+
+    return {
+      delay,
+      duration: typeof duration === 'function' ? duration(Math.sqrt(dx * dx + dy * dy)) : duration,
+      easing,
+      css: (t, u) => {
+        var x = u * dx;
+        var y = u * dy;
+        var sx = t + u * dsx;
+        var sy = t + u * dsy;
+
+        return `transform: ${transform} translate(${x}px, ${y}px) scale(${sx}, ${sy});`;
+      },
+    };
+  }
 </script>
 
+{#if transitionToAssetViewer}
+  <Portal target="body"
+    ><div id="hello" style="position: absolute; top:0;left:0;right:0;bottom:0; z-index: 100;">
+      <div
+        style:position="absolute"
+        style:top={(rect?.top ?? 0) + 'px'}
+        style:left={(rect?.left ?? 0) + 'px'}
+        style:width={(rect?.width ?? 0) + 'px'}
+        style:height={(rect?.height ?? 0) + 'px'}
+        style:background-color="black"
+        out:flip={{ to: rect!, from: new DOMRect(0, 0, viewport?.width, viewport?.height), duration: 300 }}
+        onoutroend={() => assetViewingStore.invisible.set(false)}
+      >
+        <img
+          src={getAssetThumbnailUrl({ id: asset.id, size: AssetMediaSize.Preview, cacheKey: asset.thumbhash })}
+          style:position="absolute"
+          style:top={imageWithinRect.top + 'px'}
+          style:left={imageWithinRect.left + 'px'}
+          style:width={imageWithinRect.width + 'px'}
+          style:height={imageWithinRect.height + 'px'}
+        />
+      </div>
+    </div></Portal
+  >
+{/if}
 <div
   class={[
     'focus-visible:outline-none flex overflow-hidden',

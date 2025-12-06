@@ -2,6 +2,7 @@
   import { goto } from '$app/navigation';
   import { shortcuts, type ShortcutOptions } from '$lib/actions/shortcut';
   import type { Action } from '$lib/components/asset-viewer/actions/action';
+  import AssetViewer from '$lib/components/asset-viewer/asset-viewer.svelte';
   import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
   import { AppRoute, AssetAction } from '$lib/constants';
   import Portal from '$lib/elements/Portal.svelte';
@@ -486,18 +487,16 @@
 <!-- Overlay Asset Viewer -->
 {#if $isViewerOpen}
   <Portal target="body">
-    {#await import('$lib/components/asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
-      <AssetViewer
-        asset={$viewingAsset}
-        onAction={handleAction}
-        onPrevious={handlePrevious}
-        onNext={handleNext}
-        onRandom={handleRandom}
-        onClose={() => {
-          assetViewingStore.showAssetViewer(false);
-          handlePromiseError(navigate({ targetRoute: 'current', assetId: null }));
-        }}
-      />
-    {/await}
+    <AssetViewer
+      asset={$viewingAsset}
+      onAction={handleAction}
+      onPrevious={handlePrevious}
+      onNext={handleNext}
+      onRandom={handleRandom}
+      onClose={() => {
+        assetViewingStore.showAssetViewer(false);
+        handlePromiseError(navigate({ targetRoute: 'current', assetId: null }));
+      }}
+    />
   </Portal>
 {/if}

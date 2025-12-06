@@ -9,10 +9,11 @@
 
   type Props = {
     asset: AssetResponseDto;
+    viewerHeight: number;
     zoomToggle?: (() => void) | null;
   };
 
-  let { asset, zoomToggle = $bindable() }: Props = $props();
+  let { asset, viewerHeight, zoomToggle = $bindable() }: Props = $props();
 
   const loadAssetData = async (id: string) => {
     const data = await viewAsset({ ...authManager.params, id, size: AssetMediaSize.Preview });
@@ -20,7 +21,7 @@
   };
 </script>
 
-<div transition:fade={{ duration: 150 }} class="flex h-full select-none place-content-center place-items-center">
+<div transition:fade={{ duration: 150 }} class="flex h-dvh select-none place-content-center place-items-center">
   {#await Promise.all([loadAssetData(asset.id), import('./photo-sphere-viewer-adapter.svelte')])}
     <LoadingSpinner />
   {:then [data, { default: PhotoSphereViewer }]}

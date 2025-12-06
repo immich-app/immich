@@ -7,7 +7,8 @@
   import NavigationBar from '$lib/components/shared-components/navigation-bar/navigation-bar.svelte';
   import UserSidebar from '$lib/components/shared-components/side-bar/user-sidebar.svelte';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
-  import type { Snippet } from 'svelte';
+  import { getContext, type Snippet } from 'svelte';
+  import type { AppState } from '../../../routes/+layout.svelte';
 
   interface Props {
     hideNavbar?: boolean;
@@ -37,10 +38,12 @@
 
   let scrollbarClass = $derived(scrollbar ? 'immich-scrollbar' : 'scrollbar-hidden');
   let hasTitleClass = $derived(title ? 'top-16 h-[calc(100%-(--spacing(16)))]' : 'top-0 h-full');
+  const appState = getContext('AppState') as AppState;
+  let isAssetViewer = $derived(appState.isAssetViewer);
 </script>
 
 <header>
-  {#if !hideNavbar}
+  {#if !hideNavbar && !isAssetViewer}
     <NavigationBar {showUploadButton} onUploadClick={() => openFileUploadDialog()} />
   {/if}
 
@@ -53,13 +56,15 @@
     {hideNavbar ? 'pt-(--navbar-height)' : ''}
     {hideNavbar ? 'max-md:pt-(--navbar-height-md)' : ''}"
 >
-  {#if sidebar}
+  {#if isAssetViewer}
+    <div></div>
+  {:else if sidebar}
     {@render sidebar()}
   {:else}
     <UserSidebar />
   {/if}
 
-  <main class="relative">
+  <main class="relative w-full">
     <div class="{scrollbarClass} absolute {hasTitleClass} w-full overflow-y-auto p-2" use:useActions={use}>
       {@render children?.()}
     </div>

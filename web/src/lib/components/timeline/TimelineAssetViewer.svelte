@@ -1,7 +1,9 @@
 <script lang="ts">
   import type { Action } from '$lib/components/asset-viewer/actions/action';
+  import type { Something } from '$lib/components/timeline/Timeline.svelte';
   import { AssetAction } from '$lib/constants';
   import { authManager } from '$lib/managers/auth-manager.svelte';
+  import { eventManager } from '$lib/managers/event-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { updateStackedAssetInTimeline, updateUnstackedAssetInTimeline } from '$lib/utils/actions';
@@ -12,6 +14,7 @@
   let { asset: viewingAsset, gridScrollTarget, mutex, preloadAssets } = assetViewingStore;
 
   interface Props {
+    shared: Something;
     timelineManager: TimelineManager;
     invisible: boolean;
     withStacked?: boolean;
@@ -29,6 +32,7 @@
   }
 
   let {
+    shared,
     timelineManager,
     invisible = $bindable(false),
     removeAction,
@@ -80,6 +84,10 @@
   };
 
   const handleClose = async (asset: { id: string }) => {
+    const awaitInit = new Promise<void>((resolve) => eventManager.once('StartViewTransition', resolve));
+    eventManager.emit('TransitionToTimeline', { id: asset.id });
+    await awaitInit;
+
     assetViewingStore.showAssetViewer(false);
     invisible = true;
     $gridScrollTarget = { at: asset.id };
@@ -167,6 +175,7 @@
 
 {#await import('$lib/components/asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
   <AssetViewer
+    {shared}
     {withStacked}
     asset={$viewingAsset}
     preloadAssets={$preloadAssets}

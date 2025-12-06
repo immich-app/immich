@@ -6,11 +6,11 @@
   import type { CommonPosition } from '$lib/utils/layout-utils';
   import type { Snippet } from 'svelte';
   import { flip } from 'svelte/animate';
-  import { scale } from 'svelte/transition';
 
   let { isUploading } = uploadAssetsStore;
 
   type Props = {
+    animationTargetAssetId?: string | null;
     viewerAssets: ViewerAsset[];
     width: number;
     height: number;
@@ -26,7 +26,8 @@
     customThumbnailLayout?: Snippet<[asset: TimelineAsset]>;
   };
 
-  const { viewerAssets, width, height, manager, thumbnail, customThumbnailLayout }: Props = $props();
+  const { animationTargetAssetId, viewerAssets, width, height, manager, thumbnail, customThumbnailLayout }: Props =
+    $props();
 
   const transitionDuration = $derived(manager.suspendTransitions && !$isUploading ? 0 : 150);
   const scaleDuration = $derived(transitionDuration === 0 ? 0 : transitionDuration + 100);
@@ -41,16 +42,17 @@
   {#each filterIntersecting(viewerAssets) as viewerAsset (viewerAsset.id)}
     {@const position = viewerAsset.position!}
     {@const asset = viewerAsset.asset!}
+    {@const transitionName = animationTargetAssetId === asset.id ? 'hero' : undefined}
 
     <!-- note: don't remove data-asset-id - its used by web e2e tests -->
     <div
       data-asset-id={asset.id}
       class="absolute"
+      style:view-transition-name={transitionName}
       style:top={position.top + 'px'}
       style:left={position.left + 'px'}
       style:width={position.width + 'px'}
       style:height={position.height + 'px'}
-      out:scale|global={{ start: 0.1, duration: scaleDuration }}
       animate:flip={{ duration: transitionDuration }}
     >
       {@render thumbnail({ asset, position })}

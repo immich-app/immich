@@ -26,6 +26,8 @@ export class DayGroup {
   #col = $state(0);
   #deferredLayout = false;
 
+  #element = $state<HTMLElement>();
+
   constructor(monthGroup: MonthGroup, index: number, day: number, groupTitle: string) {
     this.index = index;
     this.monthGroup = monthGroup;
@@ -33,6 +35,12 @@ export class DayGroup {
     this.groupTitle = groupTitle;
   }
 
+  set element(value: any) {
+    this.#element = value;
+  }
+  get element() {
+    return this.#element;
+  }
   get top() {
     return this.#top;
   }
