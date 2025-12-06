@@ -12,12 +12,28 @@ import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/auth.service.dart';
 import 'package:immich_mobile/services/secure_storage.service.dart';
+import 'package:immich_mobile/services/server_info.service.dart';
 import 'package:immich_mobile/services/upload.service.dart';
 import 'package:immich_mobile/services/widget.service.dart';
 import 'package:immich_mobile/utils/hash.dart';
+import 'package:immich_mobile/utils/url_helper.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
+
+class ServerAuthSettings {
+  final String endpoint;
+  final bool isOAuthEnabled;
+  final bool isPasswordLoginEnabled;
+  final String oAuthButtonText;
+
+  const ServerAuthSettings({
+    required this.endpoint,
+    required this.isOAuthEnabled,
+    required this.isPasswordLoginEnabled,
+    required this.oAuthButtonText,
+  });
+}
 
 final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
   return AuthNotifier(
@@ -27,6 +43,7 @@ final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
     ref.watch(uploadServiceProvider),
     ref.watch(secureStorageServiceProvider),
     ref.watch(widgetServiceProvider),
+    ref.watch(serverInfoServiceProvider),
   );
 });
 
@@ -37,6 +54,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
   final UploadService _uploadService;
   final SecureStorageService _secureStorageService;
   final WidgetService _widgetService;
+  final ServerInfoService _serverInfoService;
   final _log = Logger("AuthenticationNotifier");
 
   static const Duration _timeoutDuration = Duration(seconds: 7);
@@ -48,6 +66,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     this._uploadService,
     this._secureStorageService,
     this._widgetService,
+    this._serverInfoService,
   ) : super(
         const AuthState(
           deviceId: "",
@@ -62,6 +81,27 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   Future<String> validateServerUrl(String url) {
     return _authService.validateServerUrl(url);
+  }
+
+  Future<ServerAuthSettings?> getServerAuthSettings(String serverUrl) async {
+    final sanitizedUrl = sanitizeUrl(serverUrl);
+    final encodedUrl = punycodeEncodeUrl(sanitizedUrl);
+
+    final endpoint = await _authService.validateServerUrl(encodedUrl);
+
+    final features = await _serverInfoService.getServerFeatures();
+    final config = await _serverInfoService.getServerConfig();
+
+    if (features == null || config == null) {
+      return null;
+    }
+
+    return ServerAuthSettings(
+      endpoint: endpoint,
+      isOAuthEnabled: features.oauthEnabled,
+      isPasswordLoginEnabled: features.passwordLogin,
+      oAuthButtonText: config.oauthButtonText.isNotEmpty ? config.oauthButtonText : 'OAuth',
+    );
   }
 
   /// Validating the url is the alternative connecting server url without

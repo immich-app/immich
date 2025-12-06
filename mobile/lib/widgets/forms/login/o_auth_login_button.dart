@@ -1,23 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 
-class OAuthLoginButton extends ConsumerWidget {
+class OAuthLoginButton extends StatelessWidget {
   final TextEditingController serverEndpointController;
-  final ValueNotifier<bool> isLoading;
   final String buttonLabel;
-  final Function() onPressed;
+  final VoidCallback onPressed;
 
   const OAuthLoginButton({
     super.key,
     required this.serverEndpointController,
-    required this.isLoading,
     required this.buttonLabel,
     required this.onPressed,
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     return ElevatedButton.icon(
       style: ElevatedButton.styleFrom(
         backgroundColor: context.primaryColor.withAlpha(230),

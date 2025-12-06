@@ -1,14 +1,13 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-class LoginButton extends ConsumerWidget {
-  final Function() onPressed;
+class LoginButton extends StatelessWidget {
+  final VoidCallback onPressed;
 
   const LoginButton({super.key, required this.onPressed});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     return ElevatedButton.icon(
       style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 12)),
       onPressed: onPressed,
