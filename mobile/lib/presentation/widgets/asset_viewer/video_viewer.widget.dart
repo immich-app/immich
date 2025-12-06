@@ -104,7 +104,10 @@ class NativeVideoViewer extends HookConsumerWidget {
             throw Exception('No file found for the video');
           }
 
-          final source = await VideoSource.init(path: file.path, type: VideoSourceType.file);
+          // Pass a file:// URI so Android's Uri.parse doesn't
+          // interpret characters like '#' as fragment identifiers.
+          final fileUri = Uri.file(file.path).toString();
+          final source = await VideoSource.init(path: fileUri, type: VideoSourceType.file);
           return source;
         }
 
