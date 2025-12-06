@@ -123,6 +123,34 @@
       </intent-filter>
     </activity>
 
+    <!-- Image picker provider activity - handles ACTION_GET_CONTENT and ACTION_PICK -->
+    <activity
+      android:name=".picker.ImagePickerActivity"
+      android:exported="true"
+      android:theme="@style/LaunchTheme"
+      android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
+      android:hardwareAccelerated="true"
+      android:windowSoftInputMode="adjustResize">
+      
+      <meta-data
+        android:name="io.flutter.embedding.android.NormalTheme"
+        android:resource="@style/NormalTheme" />
+
+      <!-- Image picker handling - respond to GET_CONTENT and PICK requests -->
+      <intent-filter android:label="Select from Immich">
+        <action android:name="android.intent.action.GET_CONTENT" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.OPENABLE" />
+        <data android:mimeType="image/*" />
+      </intent-filter>
+
+      <intent-filter android:label="Select from Immich">
+        <action android:name="android.intent.action.PICK" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <data android:mimeType="image/*" />
+      </intent-filter>
+    </activity>
+
 
     <activity
       android:name="com.linusu.flutter_web_auth_2.CallbackActivity"
@@ -143,6 +171,17 @@
       android:name="androidx.startup.InitializationProvider"
       android:authorities="${applicationId}.androidx-startup"
       tools:node="remove" />
+
+    <!-- FileProvider for sharing images with other apps -->
+    <provider
+      android:name="androidx.core.content.FileProvider"
+      android:authorities="${applicationId}.fileprovider"
+      android:exported="false"
+      android:grantUriPermissions="true">
+      <meta-data
+        android:name="android.support.FILE_PROVIDER_PATHS"
+        android:resource="@xml/fileprovider_paths" />
+    </provider>
 
 
     <!-- Widgets -->
