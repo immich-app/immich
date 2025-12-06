@@ -169,6 +169,10 @@ class Asset {
   @Enumerated(EnumType.ordinal)
   AssetVisibilityEnum visibility;
 
+  /// Transient field for storing owner name (used in shared albums)
+  @ignore
+  String? ownerName;
+
   /// Returns null if the asset has no sync access to the exif info
   @ignore
   double? get aspectRatio {

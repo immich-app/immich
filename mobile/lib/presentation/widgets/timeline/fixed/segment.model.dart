@@ -18,6 +18,7 @@ import 'package:immich_mobile/providers/asset_viewer/is_motion_video_playing.pro
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/remote_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -191,6 +192,38 @@ class _AssetTileWidget extends ConsumerWidget {
     return lockSelectionAssets.contains(asset);
   }
 
+  String? _getOwnerName(WidgetRef ref) {
+    final album = ref.watch(currentRemoteAlbumProvider);
+    if (album == null || !album.isShared) {
+      return null;
+    }
+
+    if (asset case RemoteAsset remoteAsset) {
+      final ownerId = remoteAsset.ownerId;
+
+      // If owner matches album owner
+      if (album.ownerId == ownerId) {
+        return album.ownerName;
+      }
+
+      // Check shared users
+      final sharedUsersAsync = ref.watch(remoteAlbumSharedUsersProvider(album.id));
+      return sharedUsersAsync.maybeWhen(
+        data: (sharedUsers) {
+          for (final user in sharedUsers) {
+            if (user.id == ownerId) {
+              return user.name;
+            }
+          }
+          return null;
+        },
+        orElse: () => null,
+      );
+    }
+
+    return null;
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final heroOffset = TabsRouterScope.of(context)?.controller.activeIndex ?? 0;
@@ -198,6 +231,7 @@ class _AssetTileWidget extends ConsumerWidget {
     final lockSelection = _getLockSelectionStatus(ref);
     final showStorageIndicator = ref.watch(timelineArgsProvider.select((args) => args.showStorageIndicator));
     final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
+    final ownerName = _getOwnerName(ref);
 
     return RepaintBoundary(
       child: GestureDetector(
@@ -208,6 +242,7 @@ class _AssetTileWidget extends ConsumerWidget {
           lockSelection: lockSelection,
           showStorageIndicator: showStorageIndicator,
           heroOffset: heroOffset,
+          ownerName: ownerName,
         ),
       ),
     );

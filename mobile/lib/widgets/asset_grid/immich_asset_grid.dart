@@ -11,6 +11,7 @@ import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart'
 import 'package:immich_mobile/widgets/asset_grid/immich_asset_grid_view.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
+import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
@@ -33,6 +34,7 @@ class ImmichAssetGrid extends HookConsumerWidget {
   final bool showDragScroll;
   final bool showDragScrollLabel;
   final bool showStack;
+  final Album? album;
 
   const ImmichAssetGrid({
     super.key,
@@ -54,6 +56,7 @@ class ImmichAssetGrid extends HookConsumerWidget {
     this.showDragScroll = true,
     this.showDragScrollLabel = true,
     this.showStack = false,
+    this.album,
   });
 
   @override
@@ -115,6 +118,7 @@ class ImmichAssetGrid extends HookConsumerWidget {
           showDragScroll: showDragScroll,
           showStack: showStack,
           showLabel: showDragScrollLabel,
+          album: album,
         ),
       );
     }

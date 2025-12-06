@@ -10,7 +10,9 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
+import 'package:immich_mobile/utils/hash.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/collection_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
@@ -55,6 +57,7 @@ class ImmichAssetGridView extends ConsumerStatefulWidget {
   final bool showDragScroll;
   final bool showStack;
   final bool showLabel;
+  final Album? album;
 
   const ImmichAssetGridView({
     super.key,
@@ -76,6 +79,7 @@ class ImmichAssetGridView extends ConsumerStatefulWidget {
     this.showDragScroll = true,
     this.showStack = false,
     this.showLabel = true,
+    this.album,
   });
 
   @override
@@ -153,6 +157,32 @@ class ImmichAssetGridViewState extends ConsumerState<ImmichAssetGridView> {
     return widget.selectionActive && assets.firstWhereOrNull((e) => !_selectedAssets.contains(e)) == null;
   }
 
+  String? _getOwnerName(Asset asset) {
+    final album = widget.album;
+    if (album == null || !album.shared) {
+      return null;
+    }
+
+    // Load owner and sharedUsers if not loaded
+    album.owner.loadSync();
+    album.sharedUsers.loadSync();
+
+    // Check if asset owner matches album owner
+    final owner = album.owner.value;
+    if (owner != null && asset.ownerId == fastHash(owner.id)) {
+      return owner.name;
+    }
+
+    // Check shared users
+    for (final user in album.sharedUsers) {
+      if (asset.ownerId == fastHash(user.id)) {
+        return user.name;
+      }
+    }
+
+    return null;
+  }
+
   Future<void> _scrollToIndex(int index) async {
     // if the index is so far down, that the end of the list is reached on the screen
     // the scroll_position widget crashes. This is a workaround to prevent this.
@@ -197,6 +227,7 @@ class ImmichAssetGridViewState extends ConsumerState<ImmichAssetGridView> {
           ref.read(showControlsProvider.notifier).show = false;
         }
       },
+      getOwnerName: _getOwnerName,
     );
   }
 
@@ -580,6 +611,7 @@ class _Section extends StatelessWidget {
   final int heroOffset;
   final bool showStorageIndicator;
   final void Function(Asset) onAssetTap;
+  final String? Function(Asset)? getOwnerName;
 
   const _Section({
     required this.section,
@@ -598,6 +630,7 @@ class _Section extends StatelessWidget {
     required this.heroOffset,
     required this.showStorageIndicator,
     required this.onAssetTap,
+    this.getOwnerName,
   });
 
   @override
@@ -651,6 +684,7 @@ class _Section extends StatelessWidget {
                       onSelect: (asset) => selectAssets([asset]),
                       onDeselect: (asset) => deselectAssets([asset]),
                       onAssetTap: onAssetTap,
+                      getOwnerName: getOwnerName,
                     ),
           ],
         );
@@ -730,6 +764,7 @@ class _AssetRow extends StatelessWidget {
   final void Function(Asset)? onSelect;
   final void Function(Asset)? onDeselect;
   final bool isSelectionActive;
+  final String? Function(Asset)? getOwnerName;
 
   const _AssetRow({
     super.key,
@@ -751,6 +786,7 @@ class _AssetRow extends StatelessWidget {
     required this.onAssetTap,
     this.onSelect,
     this.onDeselect,
+    this.getOwnerName,
   });
 
   @override

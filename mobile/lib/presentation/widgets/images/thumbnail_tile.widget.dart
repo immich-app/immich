@@ -19,6 +19,7 @@ class ThumbnailTile extends ConsumerWidget {
     this.showStorageIndicator = false,
     this.lockSelection = false,
     this.heroOffset,
+    this.ownerName,
     super.key,
   });
 
@@ -28,6 +29,7 @@ class ThumbnailTile extends ConsumerWidget {
   final bool showStorageIndicator;
   final bool lockSelection;
   final int? heroOffset;
+  final String? ownerName;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -44,6 +46,9 @@ class ThumbnailTile extends ConsumerWidget {
 
     final bool storageIndicator =
         ref.watch(settingsProvider.select((s) => s.get(Setting.showStorageIndicator))) && showStorageIndicator;
+
+    final bool showOwnerNameSetting = ref.watch(settingsProvider.select((s) => s.get(Setting.showOwnerName)));
+    final shouldShowOwnerName = showOwnerNameSetting && ownerName != null;
 
     return Stack(
       children: [
@@ -71,6 +76,14 @@ class ThumbnailTile extends ConsumerWidget {
                   Align(
                     alignment: Alignment.topRight,
                     child: _AssetTypeIcons(asset: asset),
+                  ),
+                if (shouldShowOwnerName)
+                  Align(
+                    alignment: Alignment.bottomRight,
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 10.0, bottom: 6.0),
+                      child: _OwnerNameLabel(ownerName: ownerName!),
+                    ),
                   ),
                 if (storageIndicator && asset != null)
                   switch (asset.storage) {
@@ -226,6 +239,30 @@ class _AssetTypeIcons extends StatelessWidget {
             child: _TileOverlayIcon(Icons.motion_photos_on_rounded),
           ),
       ],
+    );
+  }
+}
+
+class _OwnerNameLabel extends StatelessWidget {
+  final String ownerName;
+
+  const _OwnerNameLabel({required this.ownerName});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      constraints: const BoxConstraints(maxWidth: 120),
+      child: Text(
+        ownerName,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+          shadows: [Shadow(blurRadius: 5.0, color: Color.fromRGBO(0, 0, 0, 0.6), offset: Offset(0.0, 0.0))],
+        ),
+        overflow: TextOverflow.ellipsis,
+        maxLines: 1,
+      ),
     );
   }
 }
