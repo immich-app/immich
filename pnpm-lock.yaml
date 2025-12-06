@@ -244,8 +244,8 @@ importers:
         specifier: ^62.0.0
         version: 62.0.0(eslint@9.39.1(jiti@2.6.1))
       exiftool-vendored:
-        specifier: ^33.0.0
-        version: 33.5.0
+        specifier: ^34.0.0
+        version: 34.0.0
       globals:
         specifier: ^16.0.0
         version: 16.5.0
@@ -428,8 +428,8 @@ importers:
         specifier: 4.3.3
         version: 4.3.3
       exiftool-vendored:
-        specifier: ^33.0.0
-        version: 33.5.0
+        specifier: ^34.0.0
+        version: 34.0.0
       express:
         specifier: ^5.1.0
         version: 5.2.0
@@ -3236,6 +3236,7 @@ packages:
   '@koa/router@14.0.0':
     resolution: {integrity: sha512-LBSu5K0qAaaQcXX/0WIB9PGDevyCxxpnc1uq13vV/CgObaVxuis5hKl3Eboq/8gcb6ebnkAStW9NB/Em2eYyFA==}
     engines: {node: '>= 20'}
+    deprecated: Please upgrade to v15 or higher. All reported bugs in this version are fixed in newer releases, dependencies have been updated, and security has been improved.
 
   '@koddsson/eslint-plugin-tscompat@0.2.0':
     resolution: {integrity: sha512-Oqd4kWSX0LiO9wWHjcmDfXZNC7TotFV/tLRhwCFU3XUeb//KYvJ75c9OmeSJ+vBv5lkCeB+xYsqyNrBc5j18XA==}
@@ -5503,8 +5504,8 @@ packages:
     resolution: {integrity: sha512-a28v2eWrrRWPpJSzxc+mKwm0ZtVx/G8SepdQZDArnXYU/XS+IF6mp8aB/4E+hH1tyGCoDo3KlUCdlSxGDsRkAw==}
     hasBin: true
 
-  batch-cluster@15.0.1:
-    resolution: {integrity: sha512-eUmh0ld1AUPKTEmdzwGF9QTSexXAyt9rA1F5zDfW1wUi3okA3Tal4NLdCeFI6aiKpBenQhR6NmK9bW9tBHTGPQ==}
+  batch-cluster@16.0.0:
+    resolution: {integrity: sha512-+T7Ho09ikx/kP4P8M+GEnpuePzRQa4gTUhtPIu6ApFC8+0GY0sri1y1PuB+yfXlQWl5DkHC/e58z3U6g0qCz/A==}
     engines: {node: '>=20'}
 
   batch@0.6.1:
@@ -6848,17 +6849,17 @@ packages:
     resolution: {integrity: sha512-8uSpZZocAZRBAPIEINJj3Lo9HyGitllczc27Eh5YYojjMFMn8yHMDMaUHE2Jqfq05D/wucwI4JGURyXt1vchyg==}
     engines: {node: '>=10'}
 
-  exiftool-vendored.exe@13.42.0:
-    resolution: {integrity: sha512-6AFybe5IakduMWleuQBfep9OWGSVZSedt2uKL+LzufRsATp+beOF7tZyKtMztjb6VRH1GF/4F9EvBVam6zm70w==}
+  exiftool-vendored.exe@13.43.0:
+    resolution: {integrity: sha512-EENHNz86tYY5yHGPtGB2mto3FIGstQvEhrcU34f7fm4RMxBKNfTWYOGkhU1jzvjOi+V4575LQX/FUES1TwgUbQ==}
     os: [win32]
 
-  exiftool-vendored.pl@13.42.0:
-    resolution: {integrity: sha512-EF5IdxQNIJIvZjHf4bG4jnwAHVVSLkYZToo2q+Mm89kSuppKfRvHz/lngIxN0JALE8rFdC4zt6NWY/PKqRdCcg==}
+  exiftool-vendored.pl@13.43.0:
+    resolution: {integrity: sha512-0ApWaQ/pxaliPK7HzTxVA0sg/wZ8vl7UtFVhCyWhGQg01WfZkFrKwKmELB0Bnn01WTfgIuMadba8ccmFvpmJag==}
     os: ['!win32']
     hasBin: true
 
-  exiftool-vendored@33.5.0:
-    resolution: {integrity: sha512-7cCh6izwdmC5ZaCxpHFehnExIr2Yp7CJuxHg4WFiGcm81yyxXLtvSE+85ep9VsNwhlOtSpk+XxiqrlddjY5lAw==}
+  exiftool-vendored@34.0.0:
+    resolution: {integrity: sha512-rhIe4XGE7kh76nwytwHtq6qK/pc1mpOBHRV++gudFeG2PfAp3XIVQbFWCLK3S4l9I4AWYOe4mxk8mW8l1oHRTw==}
     engines: {node: '>=20.0.0'}
 
   expect-type@1.2.1:
@@ -17580,7 +17581,7 @@ snapshots:
 
   baseline-browser-mapping@2.8.31: {}
 
-  batch-cluster@15.0.1: {}
+  batch-cluster@16.0.0: {}
 
   batch@0.6.1: {}
 
@@ -19128,21 +19129,21 @@ snapshots:
       signal-exit: 3.0.7
       strip-final-newline: 2.0.0
 
-  exiftool-vendored.exe@13.42.0:
+  exiftool-vendored.exe@13.43.0:
     optional: true
 
-  exiftool-vendored.pl@13.42.0: {}
+  exiftool-vendored.pl@13.43.0: {}
 
-  exiftool-vendored@33.5.0:
+  exiftool-vendored@34.0.0:
     dependencies:
       '@photostructure/tz-lookup': 11.3.0
       '@types/luxon': 3.7.1
-      batch-cluster: 15.0.1
-      exiftool-vendored.pl: 13.42.0
+      batch-cluster: 16.0.0
+      exiftool-vendored.pl: 13.43.0
       he: 1.2.0
       luxon: 3.7.2
     optionalDependencies:
-      exiftool-vendored.exe: 13.42.0
+      exiftool-vendored.exe: 13.43.0
 
   expect-type@1.2.1: {}
 
