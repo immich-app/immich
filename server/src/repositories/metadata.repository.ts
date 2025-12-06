@@ -72,6 +72,21 @@ export interface ImmichTags extends Omit<Tags, TagsWithWrongTypes> {
 
   AndroidMake?: string;
   AndroidModel?: string;
+
+  UsePanoramaViewer?: boolean;
+  ProjectionType?: string;
+  PoseHeadingDegrees?: number;
+  PosePitchDegrees?: number;
+  PoseRollDegrees?: number;
+  InitialViewHeadingDegrees?: number;
+  InitialViewPitchDegrees?: number;
+  InitialViewRollDegrees?: number;
+  CroppedAreaImageWidthPixels?: number;
+  CroppedAreaImageHeightPixels?: number;
+  FullPanoWidthPixels?: number;
+  FullPanoHeightPixels?: number;
+  CroppedAreaLeftPixels?: number;
+  CroppedAreaTopPixels?: number;
 }
 
 @Injectable()

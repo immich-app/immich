@@ -892,6 +892,8 @@ export const assetStub = {
     exifInfo: {
       fileSizeInByte: 5000,
       projectionType: 'EQUIRECTANGULAR',
+      exifImageHeight: 2160,
+      exifImageWidth: 3840,
     } as Exif,
     duplicateId: null,
     isOffline: false,
