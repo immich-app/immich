@@ -15,8 +15,7 @@
     getFiltersByContext,
     handleUpdateWorkflow,
     hasWorkflowChanged,
-    initializeActionConfigs,
-    initializeFilterConfigs,
+    initializeConfigs,
     parseWorkflowJson,
     remapConfigsOnRemove,
     remapConfigsOnReorder,
@@ -95,8 +94,8 @@
     ),
   );
 
-  let filterConfigs: Record<string, unknown> = $derived(initializeFilterConfigs(editWorkflow));
-  let actionConfigs: Record<string, unknown> = $derived(initializeActionConfigs(editWorkflow));
+  let filterConfigs: Record<string, unknown> = $derived(initializeConfigs('filter', editWorkflow));
+  let actionConfigs: Record<string, unknown> = $derived(initializeConfigs('action', editWorkflow));
 
   $effect(() => {
     editWorkflow.triggerType = triggerType;
@@ -129,7 +128,6 @@
         actionConfigs,
       );
 
-      // Update the previous workflow state to the new values
       previousWorkflow = updated;
       editWorkflow = updated;
 
@@ -200,7 +198,6 @@
     ),
   );
 
-  // Drag and drop handlers
   let draggedFilterIndex: number | null = $state(null);
   let draggedActionIndex: number | null = $state(null);
   let dragOverFilterIndex: number | null = $state(null);
@@ -252,7 +249,6 @@
       return;
     }
 
-    // Remap configs to follow the new order
     actionConfigs = remapConfigsOnReorder(actionConfigs, 'action', draggedActionIndex, index, selectedActions.length);
 
     const newActions = [...selectedActions];
@@ -266,12 +262,12 @@
     dragOverActionIndex = null;
   };
 
-  const handleAddStep = async (type?: 'action' | 'filter') => {
-    const result = (await modalManager.show(AddWorkflowStepModal, {
+  const handleAddStep = async (type: 'action' | 'filter') => {
+    const result = await modalManager.show(AddWorkflowStepModal, {
       filters: supportFilters,
       actions: supportActions,
       type,
-    })) as { type: 'filter' | 'action'; item: PluginFilterResponseDto | PluginActionResponseDto } | undefined;
+    });
 
     if (result) {
       if (result.type === 'filter') {
@@ -283,13 +279,11 @@
   };
 
   const handleRemoveFilter = (index: number) => {
-    // Remap configs to account for the removed item
     filterConfigs = remapConfigsOnRemove(filterConfigs, 'filter', index, selectedFilters.length);
     selectedFilters = selectedFilters.filter((_, i) => i !== index);
   };
 
   const handleRemoveAction = (index: number) => {
-    // Remap configs to account for the removed item
     actionConfigs = remapConfigsOnRemove(actionConfigs, 'action', index, selectedActions.length);
     selectedActions = selectedActions.filter((_, i) => i !== index);
   };

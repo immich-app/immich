@@ -57,10 +57,6 @@ export const getActionsByContext = (
   return availableActions.filter((action) => action.supportedContexts.includes(context));
 };
 
-/**
- * Remap configs when items are reordered (drag-drop)
- * Moves config from old index to new index position
- */
 export const remapConfigsOnReorder = (
   configs: Record<string, unknown>,
   prefix: 'filter' | 'action',
@@ -111,30 +107,19 @@ export const remapConfigsOnRemove = (
   return newConfigs;
 };
 
-/**
- * Initialize filter configurations from existing workflow
- * Uses index-based keys to support multiple filters of the same type
- */
-export const initializeFilterConfigs = (workflow: WorkflowResponseDto): Record<string, unknown> => {
+export const initializeConfigs = (
+  type: 'action' | 'filter',
+  workflow: WorkflowResponseDto,
+): Record<string, unknown> => {
   const configs: Record<string, unknown> = {};
 
-  if (workflow.filters) {
+  if (workflow.filters && type == 'filter') {
     for (const [index, workflowFilter] of workflow.filters.entries()) {
       configs[`filter_${index}`] = workflowFilter.filterConfig ?? {};
     }
   }
 
-  return configs;
-};
-
-/**
- * Initialize action configurations from existing workflow
- * Uses index-based keys to support multiple actions of the same type
- */
-export const initializeActionConfigs = (workflow: WorkflowResponseDto): Record<string, unknown> => {
-  const configs: Record<string, unknown> = {};
-
-  if (workflow.actions) {
+  if (workflow.actions && type == 'action') {
     for (const [index, workflowAction] of workflow.actions.entries()) {
       configs[`action_${index}`] = workflowAction.actionConfig ?? {};
     }
@@ -175,9 +160,6 @@ export const buildWorkflowPayload = (
   };
 };
 
-/**
- * Parse JSON workflow and update state
- */
 export const parseWorkflowJson = (
   jsonString: string,
   availableTriggers: PluginTriggerResponseDto[],
@@ -200,10 +182,8 @@ export const parseWorkflowJson = (
   try {
     const parsed = JSON.parse(jsonString);
 
-    // Find trigger
     const trigger = availableTriggers.find((t) => t.type === parsed.triggerType);
 
-    // Parse filters (using index-based keys to support multiple of same type)
     const filters: PluginFilterResponseDto[] = [];
     const filterConfigs: Record<string, unknown> = {};
     if (Array.isArray(parsed.filters)) {
@@ -217,7 +197,6 @@ export const parseWorkflowJson = (
       }
     }
 
-    // Parse actions (using index-based keys to support multiple of same type)
     const actions: PluginActionResponseDto[] = [];
     const actionConfigs: Record<string, unknown> = {};
     if (Array.isArray(parsed.actions)) {
@@ -252,9 +231,6 @@ export const parseWorkflowJson = (
   }
 };
 
-/**
- * Check if workflow has changes compared to previous version
- */
 export const hasWorkflowChanged = (
   previousWorkflow: WorkflowResponseDto,
   enabled: boolean,
@@ -266,36 +242,30 @@ export const hasWorkflowChanged = (
   filterConfigs: Record<string, unknown>,
   actionConfigs: Record<string, unknown>,
 ): boolean => {
-  // Check enabled state
   if (enabled !== previousWorkflow.enabled) {
     return true;
   }
 
-  // Check name or description
   if (name !== (previousWorkflow.name ?? '') || description !== (previousWorkflow.description ?? '')) {
     return true;
   }
 
-  // Check trigger
   if (triggerType !== previousWorkflow.triggerType) {
     return true;
   }
 
-  // Check filters order/items
   const previousFilterIds = previousWorkflow.filters?.map((f) => f.pluginFilterId) ?? [];
   const currentFilterIds = orderedFilters.map((f) => f.id);
   if (JSON.stringify(previousFilterIds) !== JSON.stringify(currentFilterIds)) {
     return true;
   }
 
-  // Check actions order/items
   const previousActionIds = previousWorkflow.actions?.map((a) => a.pluginActionId) ?? [];
   const currentActionIds = orderedActions.map((a) => a.id);
   if (JSON.stringify(previousActionIds) !== JSON.stringify(currentActionIds)) {
     return true;
   }
 
-  // Check filter configs (using index-based keys)
   const previousFilterConfigs: Record<string, unknown> = {};
   for (const [index, wf] of (previousWorkflow.filters ?? []).entries()) {
     previousFilterConfigs[`filter_${index}`] = wf.filterConfig ?? {};
@@ -304,7 +274,6 @@ export const hasWorkflowChanged = (
     return true;
   }
 
-  // Check action configs (using index-based keys)
   const previousActionConfigs: Record<string, unknown> = {};
   for (const [index, wa] of (previousWorkflow.actions ?? []).entries()) {
     previousActionConfigs[`action_${index}`] = wa.actionConfig ?? {};
@@ -316,9 +285,6 @@ export const hasWorkflowChanged = (
   return false;
 };
 
-/**
- * Update a workflow via API
- */
 export const handleUpdateWorkflow = async (
   workflowId: string,
   name: string,

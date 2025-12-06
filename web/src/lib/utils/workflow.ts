@@ -33,7 +33,6 @@ export const getComponentDefaultValue = (component: ComponentConfig): unknown =>
     return component.defaultValue;
   }
 
-  // Initialize with appropriate empty value based on component type
   if (component.type === 'multiselect' || (component.type === 'text' && component.subType === 'people-picker')) {
     return [];
   }
