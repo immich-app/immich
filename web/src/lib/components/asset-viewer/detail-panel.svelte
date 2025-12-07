@@ -1,6 +1,7 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { resolve } from '$app/paths';
+  import DetailPanelDate from '$lib/components/asset-viewer/detail-panel-date.svelte';
   import DetailPanelDescription from '$lib/components/asset-viewer/detail-panel-description.svelte';
   import DetailPanelLocation from '$lib/components/asset-viewer/detail-panel-location.svelte';
   import DetailPanelRating from '$lib/components/asset-viewer/detail-panel-star-rating.svelte';
@@ -8,7 +9,6 @@
   import { AppRoute, QueryParameter, timeToLoadTheMap } from '$lib/constants';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
-  import AssetChangeDateModal from '$lib/modals/AssetChangeDateModal.svelte';
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import { boundingBoxesArray } from '$lib/stores/people.store';
   import { locale } from '$lib/stores/preferences.store';
@@ -17,12 +17,10 @@
   import { delay, getDimensions } from '$lib/utils/asset-utils';
   import { getByteUnitString } from '$lib/utils/byte-units';
   import { getMetadataSearchQuery } from '$lib/utils/metadata-search';
-  import { fromISODateTime, fromISODateTimeUTC, toTimelineAsset } from '$lib/utils/timeline-util';
   import { getParentPath } from '$lib/utils/tree-utils';
   import { AssetMediaSize, getAssetInfo, type AlbumResponseDto, type AssetResponseDto } from '@immich/sdk';
-  import { Icon, IconButton, LoadingSpinner, modalManager } from '@immich/ui';
+  import { Icon, IconButton, LoadingSpinner } from '@immich/ui';
   import {
-    mdiCalendar,
     mdiCamera,
     mdiCameraIris,
     mdiClose,
@@ -56,12 +54,6 @@
   let people = $derived(asset.people || []);
   let unassignedFaces = $derived(asset.unassignedFaces || []);
   let showingHiddenPeople = $state(false);
-  let timeZone = $derived(asset.exifInfo?.timeZone ?? undefined);
-  let dateTime = $derived(
-    timeZone && asset.exifInfo?.dateTimeOriginal
-      ? fromISODateTime(asset.exifInfo.dateTimeOriginal, timeZone)
-      : fromISODateTimeUTC(asset.localDateTime),
-  );
   let latlng = $derived(
     (() => {
       const lat = asset.exifInfo?.latitude;
@@ -108,14 +100,6 @@
   };
 
   const toggleAssetPath = () => (showAssetPath = !showAssetPath);
-
-  const handleChangeDate = async () => {
-    if (!isOwner) {
-      return;
-    }
-
-    await modalManager.show(AssetChangeDateModal, { asset: toTimelineAsset(asset), initialDate: dateTime });
-  };
 </script>
 
 <section class="relative p-2">
@@ -268,65 +252,7 @@
       <p class="uppercase text-sm">{$t('no_exif_info_available')}</p>
     {/if}
 
-    {#if dateTime}
-      <button
-        type="button"
-        class="flex w-full text-start justify-between place-items-start gap-4 py-4"
-        onclick={handleChangeDate}
-        title={isOwner ? $t('edit_date') : ''}
-        class:hover:text-primary={isOwner}
-      >
-        <div class="flex gap-4">
-          <div>
-            <Icon icon={mdiCalendar} size="24" />
-          </div>
-
-          <div>
-            <p>
-              {dateTime.toLocaleString(
-                {
-                  month: 'short',
-                  day: 'numeric',
-                  year: 'numeric',
-                },
-                { locale: $locale },
-              )}
-            </p>
-            <div class="flex gap-2 text-sm">
-              <p>
-                {dateTime.toLocaleString(
-                  {
-                    weekday: 'short',
-                    hour: 'numeric',
-                    minute: '2-digit',
-                    second: '2-digit',
-                    timeZoneName: timeZone ? 'longOffset' : undefined,
-                  },
-                  { locale: $locale },
-                )}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {#if isOwner}
-          <div class="p-1">
-            <Icon icon={mdiPencil} size="20" />
-          </div>
-        {/if}
-      </button>
-    {:else if !dateTime && isOwner}
-      <div class="flex justify-between place-items-start gap-4 py-4">
-        <div class="flex gap-4">
-          <div>
-            <Icon icon={mdiCalendar} size="24" />
-          </div>
-        </div>
-        <div class="p-1">
-          <Icon icon={mdiPencil} size="20" />
-        </div>
-      </div>
-    {/if}
+    <DetailPanelDate {asset} {isOwner} />
 
     <div class="flex gap-4 py-4">
       <div><Icon icon={mdiImageOutline} size="24" /></div>
