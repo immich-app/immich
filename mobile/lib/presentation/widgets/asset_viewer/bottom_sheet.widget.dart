@@ -79,7 +79,7 @@ class AssetDetailBottomSheet extends ConsumerWidget {
       expand: false,
       shouldCloseOnMinExtent: false,
       resizeOnScroll: false,
-      backgroundColor: context.isDarkTheme ? context.colorScheme.surfaceContainer : Colors.white,
+      backgroundColor: context.isDarkTheme ? context.colorScheme.surface : Colors.white,
     );
   }
 }
