@@ -32,6 +32,7 @@ import { BaseService } from 'src/services/base.service';
 import { JobItem, JobOf } from 'src/types';
 import { getAssetFiles } from 'src/utils/asset.util';
 import { isAssetChecksumConstraint } from 'src/utils/database';
+import { mimeTypes } from 'src/utils/mime-types';
 import { isFaceImportEnabled } from 'src/utils/misc';
 import { upsertTags } from 'src/utils/tag';
 
@@ -486,7 +487,8 @@ export class MetadataService extends BaseService {
     }
 
     // prefer duration from video tags
-    if (videoTags) {
+    // don't save duration if asset is definitely not an animated image (see e.g. CR3 with Duration: 1s)
+    if (videoTags || !mimeTypes.isPossiblyAnimatedImage(asset.originalPath)) {
       delete mediaTags.Duration;
     }
 

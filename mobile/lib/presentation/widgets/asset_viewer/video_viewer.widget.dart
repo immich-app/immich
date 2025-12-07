@@ -9,6 +9,7 @@ import 'package:immich_mobile/domain/models/setting.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/services/setting.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/video_viewer_controls.widget.dart';
@@ -104,7 +105,12 @@ class NativeVideoViewer extends HookConsumerWidget {
             throw Exception('No file found for the video');
           }
 
-          final source = await VideoSource.init(path: file.path, type: VideoSourceType.file);
+          // Pass a file:// URI so Android's Uri.parse doesn't
+          // interpret characters like '#' as fragment identifiers.
+          final source = await VideoSource.init(
+            path: CurrentPlatform.isAndroid ? file.uri.toString() : file.path,
+            type: VideoSourceType.file,
+          );
           return source;
         }
 

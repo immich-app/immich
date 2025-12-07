@@ -188,7 +188,7 @@
       // the performance benefits of deferred layouts while still supporting deep linking
       // to assets at the end of the timeline.
       timelineManager.isScrollingOnLoad = true;
-      const monthGroup = await timelineManager.findMonthGroupForAsset(assetId);
+      const monthGroup = await timelineManager.findMonthGroupForAsset({ id: assetId });
       if (!monthGroup) {
         return false;
       }

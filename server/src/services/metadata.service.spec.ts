@@ -1034,7 +1034,10 @@ describe(MetadataService.name, () => {
     });
 
     it('should use Duration from exif', async () => {
-      mocks.assetJob.getForMetadataExtraction.mockResolvedValue(assetStub.image);
+      mocks.assetJob.getForMetadataExtraction.mockResolvedValue({
+        ...assetStub.image,
+        originalPath: '/original/path.webp',
+      });
       mockReadTags({ Duration: 123 }, {});
 
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
@@ -1046,6 +1049,7 @@ describe(MetadataService.name, () => {
     it('should prefer Duration from exif over sidecar', async () => {
       mocks.assetJob.getForMetadataExtraction.mockResolvedValue({
         ...assetStub.image,
+        originalPath: '/original/path.webp',
         files: [
           {
             id: 'some-id',
@@ -1061,6 +1065,16 @@ describe(MetadataService.name, () => {
 
       expect(mocks.metadata.readTags).toHaveBeenCalledTimes(2);
       expect(mocks.asset.update).toHaveBeenCalledWith(expect.objectContaining({ duration: '00:02:03.000' }));
+    });
+
+    it('should ignore all Duration tags for definitely static images', async () => {
+      mocks.assetJob.getForMetadataExtraction.mockResolvedValue(assetStub.imageDng);
+      mockReadTags({ Duration: 123 }, { Duration: 456 });
+
+      await sut.handleMetadataExtraction({ id: assetStub.imageDng.id });
+
+      expect(mocks.metadata.readTags).toHaveBeenCalledTimes(1);
+      expect(mocks.asset.update).toHaveBeenCalledWith(expect.objectContaining({ duration: null }));
     });
 
     it('should ignore Duration from exif for videos', async () => {

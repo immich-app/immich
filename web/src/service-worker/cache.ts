@@ -30,7 +30,11 @@ export const put = async (key: string, response: Response) => {
     return;
   }
 
-  cache.put(key, response.clone());
+  try {
+    await cache.put(key, response.clone());
+  } catch (error) {
+    console.error('Ignoring error during cache put', error);
+  }
 };
 
 export const prune = async () => {

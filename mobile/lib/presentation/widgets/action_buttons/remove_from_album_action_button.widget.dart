@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
+import 'package:immich_mobile/domain/models/events.model.dart';
+import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
@@ -11,8 +13,16 @@ import 'package:immich_mobile/widgets/common/immich_toast.dart';
 class RemoveFromAlbumActionButton extends ConsumerWidget {
   final String albumId;
   final ActionSource source;
+  final bool iconOnly;
+  final bool menuItem;
 
-  const RemoveFromAlbumActionButton({super.key, required this.albumId, required this.source});
+  const RemoveFromAlbumActionButton({
+    super.key,
+    required this.albumId,
+    required this.source,
+    this.iconOnly = false,
+    this.menuItem = false,
+  });
 
   void _onTap(BuildContext context, WidgetRef ref) async {
     if (!context.mounted) {
@@ -21,6 +31,10 @@ class RemoveFromAlbumActionButton extends ConsumerWidget {
 
     final result = await ref.read(actionProvider.notifier).removeFromAlbum(source, albumId);
     ref.read(multiSelectProvider.notifier).reset();
+
+    if (source == ActionSource.viewer) {
+      EventStream.shared.emit(const ViewerReloadAssetEvent());
+    }
 
     final successMessage = 'remove_from_album_action_prompt'.t(
       context: context,
@@ -42,6 +56,8 @@ class RemoveFromAlbumActionButton extends ConsumerWidget {
     return BaseActionButton(
       iconData: Icons.remove_circle_outline,
       label: "remove_from_album".t(context: context),
+      iconOnly: iconOnly,
+      menuItem: menuItem,
       onPressed: () => _onTap(context, ref),
       maxWidth: 100,
     );

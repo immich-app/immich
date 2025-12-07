@@ -10,8 +10,10 @@ import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
 class UnStackActionButton extends ConsumerWidget {
   final ActionSource source;
+  final bool iconOnly;
+  final bool menuItem;
 
-  const UnStackActionButton({super.key, required this.source});
+  const UnStackActionButton({super.key, required this.source, this.iconOnly = false, this.menuItem = false});
 
   void _onTap(BuildContext context, WidgetRef ref) async {
     if (!context.mounted) {
@@ -38,6 +40,8 @@ class UnStackActionButton extends ConsumerWidget {
     return BaseActionButton(
       iconData: Icons.layers_clear_outlined,
       label: "unstack".t(context: context),
+      iconOnly: iconOnly,
+      menuItem: menuItem,
       onPressed: () => _onTap(context, ref),
     );
   }

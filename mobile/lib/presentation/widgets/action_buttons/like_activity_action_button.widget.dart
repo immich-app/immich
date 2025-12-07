@@ -47,7 +47,7 @@ class LikeActivityActionButton extends ConsumerWidget {
 
         return BaseActionButton(
           maxWidth: 60,
-          iconData: liked != null ? Icons.favorite : Icons.favorite_border,
+          iconData: liked != null ? Icons.thumb_up : Icons.thumb_up_off_alt,
           label: "like".t(context: context),
           onPressed: () => onTap(liked),
           iconOnly: iconOnly,
@@ -57,7 +57,7 @@ class LikeActivityActionButton extends ConsumerWidget {
 
       // default to empty heart during loading
       loading: () => BaseActionButton(
-        iconData: Icons.favorite_border,
+        iconData: Icons.thumb_up_off_alt,
         label: "like".t(context: context),
         iconOnly: iconOnly,
         menuItem: menuItem,

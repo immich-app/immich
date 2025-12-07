@@ -79,10 +79,30 @@
     searchStore.isSearchEnabled = false;
   };
 
+  const buildSearchPayload = (term: string): SmartSearchDto | MetadataSearchDto => {
+    const searchType = getSearchType();
+    switch (searchType) {
+      case 'smart': {
+        return { query: term };
+      }
+      case 'metadata': {
+        return { originalFileName: term };
+      }
+      case 'description': {
+        return { description: term };
+      }
+      case 'ocr': {
+        return { ocr: term };
+      }
+      default: {
+        return { query: term };
+      }
+    }
+  };
+
   const onHistoryTermClick = async (searchTerm: string) => {
     value = searchTerm;
-    const searchPayload = { query: searchTerm };
-    await handleSearch(searchPayload);
+    await handleSearch(buildSearchPayload(searchTerm));
   };
 
   const onFilterClick = async () => {
@@ -112,29 +132,7 @@
   };
 
   const onSubmit = () => {
-    const searchType = getSearchType();
-    let payload = {} as SmartSearchDto | MetadataSearchDto;
-
-    switch (searchType) {
-      case 'smart': {
-        payload = { query: value } as SmartSearchDto;
-        break;
-      }
-      case 'metadata': {
-        payload = { originalFileName: value } as MetadataSearchDto;
-        break;
-      }
-      case 'description': {
-        payload = { description: value } as MetadataSearchDto;
-        break;
-      }
-      case 'ocr': {
-        payload = { ocr: value } as MetadataSearchDto;
-        break;
-      }
-    }
-
-    handlePromiseError(handleSearch(payload));
+    handlePromiseError(handleSearch(buildSearchPayload(value)));
     saveSearchTerm(value);
   };
 
