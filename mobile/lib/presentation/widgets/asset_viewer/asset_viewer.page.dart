@@ -696,7 +696,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
               enablePanAlways: true,
             ),
             if (!showingBottomSheet)
-              Positioned(
+              const Positioned(
                 bottom: 0,
                 left: 0,
                 right: 0,
@@ -704,7 +704,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
                   mainAxisSize: MainAxisSize.min,
                   mainAxisAlignment: MainAxisAlignment.end,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [const AssetStackRow(), const ViewerBottomBar()],
+                  children: [AssetStackRow(), ViewerBottomBar()],
                 ),
               ),
           ],
