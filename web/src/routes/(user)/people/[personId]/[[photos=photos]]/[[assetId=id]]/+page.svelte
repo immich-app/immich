@@ -98,6 +98,10 @@
   let isSearchingPeople = $state(false);
   let suggestionContainer: HTMLElement | undefined = $state();
 
+  $effect(() => {
+    numberOfAssets = data.statistics.assets;
+  });
+
   onMount(() => {
     const action = $page.url.searchParams.get(QueryParameter.ACTION);
     const getPreviousRoute = $page.url.searchParams.get(QueryParameter.PREVIOUS_ROUTE);
