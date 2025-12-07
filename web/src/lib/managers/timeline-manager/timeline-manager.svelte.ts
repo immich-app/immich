@@ -16,12 +16,13 @@ import { WebsocketSupport } from '$lib/managers/timeline-manager/internal/websoc
 import { CancellableTask } from '$lib/utils/cancellable-task';
 import { PersistedLocalStorage } from '$lib/utils/persisted';
 import {
+  isAssetResponseDto,
   setDifference,
   toTimelineAsset,
   type TimelineDateTime,
   type TimelineYearMonth,
 } from '$lib/utils/timeline-util';
-import { AssetOrder, getAssetInfo, getTimeBuckets } from '@immich/sdk';
+import { AssetOrder, getAssetInfo, getTimeBuckets, type AssetResponseDto } from '@immich/sdk';
 import { clamp, isEqual } from 'lodash-es';
 import { SvelteDate, SvelteSet } from 'svelte/reactivity';
 import { DayGroup } from './day-group.svelte';
@@ -343,27 +344,30 @@ export class TimelineManager extends VirtualScrollManager {
     this.addAssetsUpsertSegments([...notExcluded]);
   }
 
-  async findMonthGroupForAsset(id: string) {
+  async findMonthGroupForAsset(asset: AssetDescriptor | AssetResponseDto) {
     if (!this.isInitialized) {
       await this.initTask.waitUntilCompletion();
     }
 
+    const { id } = asset;
     let { monthGroup } = findMonthGroupForAssetUtil(this, id) ?? {};
     if (monthGroup) {
       return monthGroup;
     }
 
-    const response = await getAssetInfo({ ...authManager.params, id }).catch(() => null);
+    const response = isAssetResponseDto(asset)
+      ? asset
+      : await getAssetInfo({ ...authManager.params, id }).catch(() => null);
     if (!response) {
       return;
     }
 
-    const asset = toTimelineAsset(response);
-    if (!asset || this.isExcluded(asset)) {
+    const timelineAsset = toTimelineAsset(response);
+    if (this.isExcluded(timelineAsset)) {
       return;
     }
 
-    monthGroup = await this.#loadMonthGroupAtTime(asset.localDateTime, { cancelable: false });
+    monthGroup = await this.#loadMonthGroupAtTime(timelineAsset.localDateTime, { cancelable: false });
     if (monthGroup?.findAssetById({ id })) {
       return monthGroup;
     }
@@ -532,14 +536,14 @@ export class TimelineManager extends VirtualScrollManager {
   }
 
   async getLaterAsset(
-    assetDescriptor: AssetDescriptor,
+    assetDescriptor: AssetDescriptor | AssetResponseDto,
     interval: 'asset' | 'day' | 'month' | 'year' = 'asset',
   ): Promise<TimelineAsset | undefined> {
     return await getAssetWithOffset(this, assetDescriptor, interval, 'later');
   }
 
   async getEarlierAsset(
-    assetDescriptor: AssetDescriptor,
+    assetDescriptor: AssetDescriptor | AssetResponseDto,
     interval: 'asset' | 'day' | 'month' | 'year' = 'asset',
   ): Promise<TimelineAsset | undefined> {
     return await getAssetWithOffset(this, assetDescriptor, interval, 'earlier');

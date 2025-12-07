@@ -5,7 +5,7 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_bu
 import 'package:immich_mobile/providers/asset_viewer/is_motion_video_playing.provider.dart';
 
 class MotionPhotoActionButton extends ConsumerWidget {
-  const MotionPhotoActionButton({super.key, this.iconOnly = true, this.menuItem = false});
+  const MotionPhotoActionButton({super.key, this.iconOnly = false, this.menuItem = false});
 
   final bool iconOnly;
   final bool menuItem;

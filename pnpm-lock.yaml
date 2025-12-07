@@ -717,8 +717,8 @@ importers:
         specifier: file:../open-api/typescript-sdk
         version: link:../open-api/typescript-sdk
       '@immich/ui':
-        specifier: ^0.50.0
-        version: 0.50.0(@sveltejs/kit@2.49.0(@opentelemetry/api@1.9.0)(@sveltejs/vite-plugin-svelte@6.2.1(svelte@5.45.2)(vite@7.2.4(@types/node@24.10.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(yaml@2.8.2)))(svelte@5.45.2)(vite@7.2.4(@types/node@24.10.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(yaml@2.8.2)))(svelte@5.45.2)
+        specifier: ^0.50.1
+        version: 0.50.1(@sveltejs/kit@2.49.0(@opentelemetry/api@1.9.0)(@sveltejs/vite-plugin-svelte@6.2.1(svelte@5.45.2)(vite@7.2.4(@types/node@24.10.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(yaml@2.8.2)))(svelte@5.45.2)(vite@7.2.4(@types/node@24.10.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(yaml@2.8.2)))(svelte@5.45.2)
       '@mapbox/mapbox-gl-rtl-text':
         specifier: 0.2.3
         version: 0.2.3(mapbox-gl@1.13.3)
@@ -2989,8 +2989,8 @@ packages:
     peerDependencies:
       svelte: ^5.0.0
 
-  '@immich/ui@0.50.0':
-    resolution: {integrity: sha512-7AW9SRZTAgal8xlkUAxm7o4+pSG7HcKb+Bh9JpWLaDRRdGyPCZMmsNa9CjZglOQ7wkAD07tQ9u4+zezBLe0dlQ==}
+  '@immich/ui@0.50.1':
+    resolution: {integrity: sha512-fNlQGh75ZFa/UZAgJaYk9/ItHOXHNNzN4CunjCmE7WocVVkUZbUxopN9Ku3F5GULSqD/zJ5gNO6PQAZ1ZoSaaQ==}
     peerDependencies:
       svelte: ^5.0.0
 
@@ -14701,7 +14701,7 @@ snapshots:
     dependencies:
       svelte: 5.45.2
 
-  '@immich/ui@0.50.0(@sveltejs/kit@2.49.0(@opentelemetry/api@1.9.0)(@sveltejs/vite-plugin-svelte@6.2.1(svelte@5.45.2)(vite@7.2.4(@types/node@24.10.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(yaml@2.8.2)))(svelte@5.45.2)(vite@7.2.4(@types/node@24.10.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(yaml@2.8.2)))(svelte@5.45.2)':
+  '@immich/ui@0.50.1(@sveltejs/kit@2.49.0(@opentelemetry/api@1.9.0)(@sveltejs/vite-plugin-svelte@6.2.1(svelte@5.45.2)(vite@7.2.4(@types/node@24.10.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(yaml@2.8.2)))(svelte@5.45.2)(vite@7.2.4(@types/node@24.10.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(yaml@2.8.2)))(svelte@5.45.2)':
     dependencies:
       '@immich/svelte-markdown-preprocess': 0.1.0(svelte@5.45.2)
       '@internationalized/date': 3.10.0

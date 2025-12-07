@@ -1,9 +1,18 @@
-import 'package:flutter/widgets.dart';
+import 'package:auto_route/auto_route.dart';
+import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/material.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/events.model.dart';
+import 'package:immich_mobile/domain/services/timeline.service.dart';
+import 'package:immich_mobile/domain/utils/event_stream.dart';
+import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/advanced_info_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/archive_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/cast_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_local_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_permanent_action_button.widget.dart';
@@ -19,6 +28,7 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/trash_action_b
 import 'package:immich_mobile/presentation/widgets/action_buttons/unarchive_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/unstack_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/upload_action_button.widget.dart';
+import 'package:immich_mobile/routing/router.dart';
 
 class ActionButtonContext {
   final BaseAsset asset;
@@ -162,5 +172,100 @@ class ActionButtonBuilder {
 
   static List<Widget> build(ActionButtonContext context) {
     return _actionTypes.where((type) => type.shouldShow(context)).map((type) => type.buildButton(context)).toList();
+  }
+}
+
+class ViewerKebabMenuButtonContext {
+  final BaseAsset asset;
+  final bool isOwner;
+  final bool isCasting;
+  final TimelineOrigin timelineOrigin;
+  final ThemeData? originalTheme;
+
+  const ViewerKebabMenuButtonContext({
+    required this.asset,
+    required this.isOwner,
+    required this.isCasting,
+    required this.timelineOrigin,
+    this.originalTheme,
+  });
+}
+
+enum ViewerKebabMenuButtonType {
+  openInfo,
+  viewInTimeline,
+  cast,
+  download;
+
+  /// Defines which group each button belongs to.
+  /// Buttons in the same group will be displayed together,
+  /// with dividers separating different groups.
+  int get group => switch (this) {
+    ViewerKebabMenuButtonType.openInfo => 0,
+    ViewerKebabMenuButtonType.viewInTimeline => 1,
+    ViewerKebabMenuButtonType.cast => 1,
+    ViewerKebabMenuButtonType.download => 1,
+  };
+
+  bool shouldShow(ViewerKebabMenuButtonContext context) {
+    return switch (this) {
+      ViewerKebabMenuButtonType.openInfo => true,
+      ViewerKebabMenuButtonType.viewInTimeline =>
+        context.timelineOrigin != TimelineOrigin.main &&
+            context.timelineOrigin != TimelineOrigin.deepLink &&
+            context.timelineOrigin != TimelineOrigin.trash &&
+            context.timelineOrigin != TimelineOrigin.archive &&
+            context.timelineOrigin != TimelineOrigin.localAlbum &&
+            context.isOwner,
+      ViewerKebabMenuButtonType.cast => context.isCasting || context.asset.hasRemote,
+      ViewerKebabMenuButtonType.download => context.asset.isRemoteOnly,
+    };
+  }
+
+  ConsumerWidget buildButton(ViewerKebabMenuButtonContext context, BuildContext buildContext) {
+    return switch (this) {
+      ViewerKebabMenuButtonType.openInfo => BaseActionButton(
+        label: 'info'.tr(),
+        iconData: Icons.info_outline,
+        iconColor: context.originalTheme?.iconTheme.color,
+        menuItem: true,
+        onPressed: () => EventStream.shared.emit(const ViewerOpenBottomSheetEvent()),
+      ),
+
+      ViewerKebabMenuButtonType.viewInTimeline => BaseActionButton(
+        label: 'view_in_timeline'.t(context: buildContext),
+        iconData: Icons.image_search,
+        iconColor: context.originalTheme?.iconTheme.color,
+        menuItem: true,
+        onPressed: () async {
+          await buildContext.maybePop();
+          await buildContext.navigateTo(const TabShellRoute(children: [MainTimelineRoute()]));
+          EventStream.shared.emit(ScrollToDateEvent(context.asset.createdAt));
+        },
+      ),
+      ViewerKebabMenuButtonType.cast => const CastActionButton(menuItem: true),
+      ViewerKebabMenuButtonType.download => const DownloadActionButton(source: ActionSource.viewer, menuItem: true),
+    };
+  }
+}
+
+class ViewerKebabMenuButtonBuilder {
+  static List<Widget> build(ViewerKebabMenuButtonContext context, BuildContext buildContext, WidgetRef ref) {
+    final visibleButtons = ViewerKebabMenuButtonType.values.where((type) => type.shouldShow(context)).toList();
+
+    if (visibleButtons.isEmpty) return [];
+
+    final List<Widget> result = [];
+    int? lastGroup;
+
+    for (final type in visibleButtons) {
+      if (lastGroup != null && type.group != lastGroup) {
+        result.add(const Divider(height: 1));
+      }
+      result.add(type.buildButton(context, buildContext).build(buildContext, ref));
+      lastGroup = type.group;
+    }
+
+    return result;
   }
 }
