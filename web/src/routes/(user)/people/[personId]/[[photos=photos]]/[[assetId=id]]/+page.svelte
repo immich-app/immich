@@ -368,6 +368,8 @@
       singleSelect={viewMode === PersonPageViewMode.SELECT_PERSON}
       onSelect={handleSelectFeaturePhoto}
       onEscape={handleEscape}
+      onKeyboardDelete={() => updateAssetCount()}
+      onKeyboardArchive={() => updateAssetCount()}
     >
       {#if viewMode === PersonPageViewMode.VIEW_ASSETS}
         <!-- Person information block -->
