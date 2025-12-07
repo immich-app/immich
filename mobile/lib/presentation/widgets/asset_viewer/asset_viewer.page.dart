@@ -695,16 +695,20 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
               backgroundDecoration: BoxDecoration(color: backgroundColor),
               enablePanAlways: true,
             ),
+            if (!showingBottomSheet)
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [const AssetStackRow(), const ViewerBottomBar()],
+                ),
+              ),
           ],
         ),
-        bottomNavigationBar: showingBottomSheet
-            ? const SizedBox.shrink()
-            : const Column(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.end,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [AssetStackRow(), ViewerBottomBar()],
-              ),
       ),
     );
   }
