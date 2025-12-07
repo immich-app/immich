@@ -97,7 +97,7 @@ class AssetViewer extends ConsumerStatefulWidget {
 }
 
 const double _kBottomSheetMinimumExtent = 0.4;
-const double _kBottomSheetSnapExtent = 0.7;
+const double _kBottomSheetSnapExtent = 0.82;
 
 class _AssetViewerState extends ConsumerState<AssetViewer> {
   static final _dummyListener = ImageStreamListener((image, _) => image.dispose());
@@ -405,7 +405,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       }
       // Jump to a lower position before starting close animation to prevent glitch
       if (bottomSheetController.isAttached) {
-        bottomSheetController.jumpTo(0.45);
+        bottomSheetController.jumpTo(0.55);
       }
       sheetCloseController?.close();
     }
@@ -485,8 +485,8 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     sheetCloseController = showBottomSheet(
       context: ctx,
       sheetAnimationStyle: const AnimationStyle(
-        duration: Durations.short4,
-        reverseDuration: Duration(milliseconds: 200),
+        duration: Duration(milliseconds: 300),
+        reverseDuration: Duration(milliseconds: 270),
       ),
       constraints: const BoxConstraints(maxWidth: double.infinity),
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20.0))),
