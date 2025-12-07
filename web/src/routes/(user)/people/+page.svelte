@@ -231,7 +231,7 @@
 
   let people = $derived(data.people.people);
   let visiblePeople = $derived(people.filter((people) => !people.isHidden));
-  let countVisiblePeople = $derived(searchName ? searchedPeopleLocal.length : data.people.total - data.people.hidden);
+  let countVisiblePeople = $derived(searchName ? searchedPeopleLocal.length : visiblePeople.length);
   let showPeople = $derived(searchName ? searchedPeopleLocal : visiblePeople);
 
   const onNameChangeInputFocus = (person: PersonResponseDto) => {
