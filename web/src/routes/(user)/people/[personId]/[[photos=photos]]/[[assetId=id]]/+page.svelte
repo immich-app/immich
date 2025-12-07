@@ -69,7 +69,7 @@
 
   let { data }: Props = $props();
 
-  let numberOfAssets = $state(data.statistics.assets);
+  let numberOfAssets = $derived(data.statistics.assets);
   let { isViewing: showAssetViewer } = assetViewingStore;
 
   let timelineManager = $state<TimelineManager>() as TimelineManager;
@@ -97,10 +97,6 @@
    **/
   let isSearchingPeople = $state(false);
   let suggestionContainer: HTMLElement | undefined = $state();
-
-  $effect(() => {
-    numberOfAssets = data.statistics.assets;
-  });
 
   onMount(() => {
     const action = $page.url.searchParams.get(QueryParameter.ACTION);
@@ -133,12 +129,7 @@
   };
 
   const updateAssetCount = async () => {
-    try {
-      const { assets } = await getPersonStatistics({ id: person.id });
-      numberOfAssets = assets;
-    } catch (error) {
-      handleError(error, "Can't update the asset count");
-    }
+    await invalidateAll();
   };
 
   afterNavigate(({ from }) => {
