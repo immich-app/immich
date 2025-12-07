@@ -13,7 +13,7 @@ describe('DeleteAction component', () => {
     });
 
     it('displays a button to move the asset to the trash bin', () => {
-      const { getByTitle, queryByTitle } = render(DeleteAction, { asset, onAction: vi.fn() });
+      const { getByTitle, queryByTitle } = render(DeleteAction, { asset, onAction: vi.fn(), preAction: vi.fn() });
       expect(getByTitle('delete')).toBeInTheDocument();
       expect(queryByTitle('deletePermanently')).toBeNull();
     });
@@ -25,7 +25,7 @@ describe('DeleteAction component', () => {
     });
 
     it('displays a button to permanently delete the asset', () => {
-      const { getByTitle, queryByTitle } = render(DeleteAction, { asset, onAction: vi.fn() });
+      const { getByTitle, queryByTitle } = render(DeleteAction, { asset, onAction: vi.fn(), preAction: vi.fn() });
       expect(getByTitle('permanently_delete')).toBeInTheDocument();
       expect(queryByTitle('delete')).toBeNull();
     });
