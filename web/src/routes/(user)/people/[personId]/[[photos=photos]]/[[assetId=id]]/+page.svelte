@@ -38,13 +38,7 @@
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { isExternalUrl } from '$lib/utils/navigation';
-  import {
-    AssetVisibility,
-    getPersonStatistics,
-    searchPerson,
-    updatePerson,
-    type PersonResponseDto,
-  } from '@immich/sdk';
+  import { AssetVisibility, searchPerson, updatePerson, type PersonResponseDto } from '@immich/sdk';
   import { LoadingSpinner, modalManager, toastManager } from '@immich/ui';
   import {
     mdiAccountBoxOutline,
