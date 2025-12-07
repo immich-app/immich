@@ -29,6 +29,7 @@
     await modalManager.show(AssetChangeDateModal, {
       asset: toTimelineAsset(asset),
       initialDate: dateTime,
+      initialTimeZone: timeZone,
     });
   };
 </script>
