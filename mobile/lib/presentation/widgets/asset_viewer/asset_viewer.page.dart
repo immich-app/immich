@@ -403,6 +403,10 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       if (dragInProgress) {
         blockGestures = true;
       }
+      // Jump to a lower position before starting close animation to prevent glitch
+      if (bottomSheetController.isAttached) {
+        bottomSheetController.jumpTo(0.45);
+      }
       sheetCloseController?.close();
     }
 
@@ -480,7 +484,10 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     previousExtent = _kBottomSheetMinimumExtent;
     sheetCloseController = showBottomSheet(
       context: ctx,
-      sheetAnimationStyle: const AnimationStyle(duration: Durations.short4, reverseDuration: Durations.short2),
+      sheetAnimationStyle: const AnimationStyle(
+        duration: Durations.short4,
+        reverseDuration: Duration(milliseconds: 200),
+      ),
       constraints: const BoxConstraints(maxWidth: double.infinity),
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20.0))),
       backgroundColor: ctx.colorScheme.surfaceContainerLowest,
