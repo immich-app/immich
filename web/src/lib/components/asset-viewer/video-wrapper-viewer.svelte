@@ -5,6 +5,8 @@
   import type { AssetResponseDto, SharedLinkResponseDto } from '@immich/sdk';
 
   interface Props {
+    transitionName?: string | null;
+    asset: AssetResponseDto;
     assetId: string;
     previousAsset?: AssetResponseDto | null | undefined;
     nextAsset?: AssetResponseDto | null | undefined;
@@ -21,6 +23,8 @@
   }
 
   let {
+    transitionName,
+    asset,
     assetId,
     previousAsset,
     nextAsset,
@@ -38,11 +42,13 @@
 </script>
 
 {#if projectionType === ProjectionType.EQUIRECTANGULAR}
-  <VideoPanoramaViewer {assetId} />
+  <VideoPanoramaViewer {assetId} {transitionName} />
 {:else}
   <VideoNativeViewer
+    {transitionName}
     {loopVideo}
     {cacheKey}
+    {asset}
     {assetId}
     {nextAsset}
     {sharedLink}
