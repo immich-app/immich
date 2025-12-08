@@ -73,7 +73,7 @@ class _AddActionButtonState extends ConsumerState<AddActionButton> {
       ),
 
       if (isOwner) ...[
-        const PopupMenuDivider(),
+        const Divider(),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Text("move_to".tr(), style: context.textTheme.labelMedium),
