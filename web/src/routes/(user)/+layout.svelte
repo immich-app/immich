@@ -24,7 +24,7 @@
   });
 </script>
 
-<div class:display-none={$showAssetViewer}>
+<div>
   {@render children?.()}
 </div>
 <UploadCover />
@@ -32,8 +32,5 @@
 <style>
   :root {
     overscroll-behavior: none;
-  }
-  .display-none {
-    display: none;
   }
 </style>

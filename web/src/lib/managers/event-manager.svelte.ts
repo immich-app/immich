@@ -23,6 +23,7 @@ export type Events = {
 
   ResetSwipeFeedback: [];
   ViewerFinishNavigate: [];
+  AssetViewerAfterNavigate: [];
 
   AuthLogin: [LoginResponseDto];
   AuthLogout: [];
@@ -77,6 +78,19 @@ export type Events = {
   UserAdminDeleted: [{ id: string }];
 
   SessionLocked: [];
+
+  TransitionToTimeline: [{ id: string }];
+  TimelineLoaded: [{ id: string | null }];
+
+  TransitionToAssetViewer: [];
+  AssetViewerLoaded: [];
+  AssetViewerFree: [];
+
+  BeforeStartViewTransition: [];
+  Finished: [];
+  Ready: [];
+  UpdateCallbackDone: [];
+  StartViewTransition: [];
 
   SystemConfigUpdate: [SystemConfigDto];
 

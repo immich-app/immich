@@ -49,6 +49,7 @@
       $locale = newLocale;
     }
   };
+
   let editedLocale = $derived(findLocale($locale).code);
   let selectedDate: string = $derived(createDateFormatter(editedLocale).formatDateTime(time));
   let selectedOption = $derived({
