@@ -11,6 +11,7 @@
   import { fade, fly } from 'svelte/transition';
 
   interface Props {
+    invisible: boolean;
     /** Offset from the top of the timeline (e.g., for headers) */
     timelineTopOffset?: number;
     /** Offset from the bottom of the timeline (e.g., for footers) */
@@ -39,6 +40,7 @@
   }
 
   let {
+    invisible = false,
     timelineTopOffset = 0,
     timelineBottomOffset = 0,
     height = 0,
@@ -437,7 +439,7 @@
           next = forward
             ? (focusable[(index + 1) % focusable.length] as HTMLElement)
             : (focusable[(index - 1) % focusable.length] as HTMLElement);
-          next.focus();
+          next?.focus();
         }
       }
     }
@@ -508,6 +510,7 @@
   aria-valuemin={toScrollY(0)}
   data-id="scrubber"
   class="absolute end-0 z-1 select-none hover:cursor-row-resize"
+  class:invisible
   style:padding-top={PADDING_TOP + 'px'}
   style:padding-bottom={PADDING_BOTTOM + 'px'}
   style:width

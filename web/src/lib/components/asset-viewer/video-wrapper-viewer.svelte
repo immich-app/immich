@@ -6,6 +6,7 @@
   import type { SharedLinkResponseDto } from '@immich/sdk';
 
   interface Props {
+    transitionName?: string;
     cursor: AssetCursor;
     assetId?: string;
     sharedLink?: SharedLinkResponseDto;
@@ -17,9 +18,11 @@
     onSwipe?: (direction: 'left' | 'right') => void;
     onVideoEnded?: () => void;
     onVideoStarted?: () => void;
+    onReady?: () => void;
   }
 
   let {
+    transitionName,
     cursor,
     assetId,
     sharedLink,
@@ -31,13 +34,15 @@
     onClose,
     onVideoEnded,
     onVideoStarted,
+    onReady,
   }: Props = $props();
 </script>
 
 {#if projectionType === ProjectionType.EQUIRECTANGULAR}
-  <VideoPanoramaViewer asset={cursor.current} />
+  <VideoPanoramaViewer {transitionName} asset={cursor.current} {onReady} />
 {:else}
   <VideoNativeViewer
+    {transitionName}
     {loopVideo}
     {cacheKey}
     {cursor}
@@ -48,5 +53,6 @@
     {onVideoEnded}
     {onVideoStarted}
     {onClose}
+    {onReady}
   />
 {/if}

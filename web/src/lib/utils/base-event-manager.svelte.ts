@@ -41,6 +41,14 @@ export class BaseEventManager<Events extends EventMap> {
     };
   }
 
+  once<T extends keyof Events>(event: T, callback: EventCallback<Events, T>) {
+    const unsubscribe = this.on(event, (...args: Events[T]) => {
+      unsubscribe();
+      return callback(...args);
+    });
+    return unsubscribe;
+  }
+
   emit<T extends keyof Events>(event: T, ...params: Events[T]) {
     const listeners = this.getListeners(event);
     for (const listener of listeners) {
