@@ -181,12 +181,14 @@ class ViewerKebabMenuButtonContext {
   final bool isOwner;
   final bool isCasting;
   final TimelineOrigin timelineOrigin;
+  final ThemeData? originalTheme;
 
   const ViewerKebabMenuButtonContext({
     required this.asset,
     required this.isOwner,
     required this.isCasting,
     required this.timelineOrigin,
+    this.originalTheme,
   });
 }
 
@@ -218,6 +220,7 @@ enum ViewerKebabMenuButtonType {
       ViewerKebabMenuButtonType.openInfo => BaseActionButton(
         label: 'open_asset_info'.tr(),
         iconData: Icons.info_outline,
+        iconColor: context.originalTheme?.iconTheme.color,
         menuItem: true,
         onPressed: () => EventStream.shared.emit(const ViewerOpenBottomSheetEvent()),
       ),
@@ -225,6 +228,7 @@ enum ViewerKebabMenuButtonType {
       ViewerKebabMenuButtonType.viewInTimeline => BaseActionButton(
         label: 'view_in_timeline'.t(context: buildContext),
         iconData: Icons.image_search,
+        iconColor: context.originalTheme?.iconTheme.color,
         menuItem: true,
         onPressed: () async {
           await buildContext.maybePop();

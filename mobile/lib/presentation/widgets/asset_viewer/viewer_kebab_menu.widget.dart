@@ -9,7 +9,9 @@ import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/utils/action_button.utils.dart';
 
 class ViewerKebabMenu extends ConsumerWidget {
-  const ViewerKebabMenu({super.key});
+  const ViewerKebabMenu({super.key, this.originalTheme});
+
+  final ThemeData? originalTheme;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -28,6 +30,7 @@ class ViewerKebabMenu extends ConsumerWidget {
       isOwner: isOwner,
       isCasting: isCasting,
       timelineOrigin: timelineOrigin,
+      originalTheme: originalTheme,
     );
 
     final menuChildren = ViewerKebabMenuButtonBuilder.build(kebabContext, context, ref);

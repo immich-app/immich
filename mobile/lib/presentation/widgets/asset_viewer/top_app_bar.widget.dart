@@ -46,6 +46,8 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
       opacity = 0;
     }
 
+    final originalTheme = context.themeData;
+
     final actions = <Widget>[
       if (album != null && album.isActivityEnabled && album.isShared)
         IconButton(
@@ -58,10 +60,10 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
         const FavoriteActionButton(source: ActionSource.viewer, iconOnly: true),
       if (asset.hasRemote && isOwner && asset.isFavorite)
         const UnFavoriteActionButton(source: ActionSource.viewer, iconOnly: true),
-      const ViewerKebabMenu(),
+      ViewerKebabMenu(originalTheme: originalTheme),
     ];
 
-    final lockedViewActions = <Widget>[const ViewerKebabMenu()];
+    final lockedViewActions = <Widget>[ViewerKebabMenu(originalTheme: originalTheme)];
 
     return IgnorePointer(
       ignoring: opacity < 255,
