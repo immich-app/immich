@@ -769,8 +769,8 @@ class AddToAlbumHeader extends ConsumerWidget {
   }
 }
 
-class CreateAddSinglAlbumHeader extends ConsumerWidget {
-  const CreateAddSinglAlbumHeader({super.key});
+class CreateAlbumButton extends ConsumerWidget {
+  const CreateAlbumButton({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

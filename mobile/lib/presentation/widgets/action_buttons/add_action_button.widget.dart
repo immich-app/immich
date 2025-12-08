@@ -108,7 +108,7 @@ class _AddActionButtonState extends ConsumerState<AddActionButton> {
     }
 
     final List<Widget> slivers = [
-      const CreateAddSinglAlbumHeader(),
+      const CreateAlbumButton(),
       AlbumSelector(onAlbumSelected: (album) => _addCurrentAssetToAlbum(album)),
     ];
 
