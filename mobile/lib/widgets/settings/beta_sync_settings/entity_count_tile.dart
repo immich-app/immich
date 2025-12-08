@@ -38,9 +38,11 @@ class EntitiyCountTile extends StatelessWidget {
             children: [
               Icon(icon, color: context.primaryColor),
               const SizedBox(width: 8),
-              Text(
-                label,
-                style: TextStyle(color: context.primaryColor, fontWeight: FontWeight.bold, fontSize: 16),
+              Flexible(
+                child: Text(
+                  label,
+                  style: TextStyle(color: context.primaryColor, fontWeight: FontWeight.bold, fontSize: 16),
+                ),
               ),
             ],
           ),
