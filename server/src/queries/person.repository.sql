@@ -259,8 +259,13 @@ where
           and "asset"."visibility" = 'timeline'
           and "asset"."deletedAt" is null
       )
+    having
+      (
+        "person"."name" != $2
+        or count("asset_face"."assetId") >= $3
+      )
   )
-  and "person"."ownerId" = $2
+  and "person"."ownerId" = $4
 
 -- PersonRepository.refreshFaces
 with
