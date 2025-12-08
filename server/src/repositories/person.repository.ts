@@ -358,7 +358,7 @@ export class PersonRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
-  getNumberOfPeople(userId: string) {
+  getNumberOfPeople(userId: string, options?: PersonSearchOptions) {
     const zero = sql.lit(0);
     return this.db
       .selectFrom('person')
@@ -368,6 +368,12 @@ export class PersonRepository {
             .selectFrom('asset_face')
             .whereRef('asset_face.personId', '=', 'person.id')
             .where('asset_face.deletedAt', 'is', null)
+            .having((eb) =>
+              eb.or([
+                eb('person.name', '!=', ''),
+                eb((innerEb) => innerEb.fn.count('asset_face.assetId'), '>=', options?.minimumFaceCount || 1),
+              ]),
+            )
             .where((eb) =>
               eb.exists((eb) =>
                 eb

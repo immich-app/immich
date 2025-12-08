@@ -67,7 +67,10 @@ export class PersonService extends BaseService {
       withHidden,
       closestFaceAssetId,
     });
-    const { total, hidden } = await this.personRepository.getNumberOfPeople(auth.user.id);
+    const { total, hidden } = await this.personRepository.getNumberOfPeople(auth.user.id, {
+      minimumFaceCount: machineLearning.facialRecognition.minFaces,
+      withHidden,
+    });
 
     return {
       people: items.map((person) => mapPerson(person)),
