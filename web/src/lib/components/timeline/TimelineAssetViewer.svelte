@@ -2,6 +2,7 @@
   import type { Action } from '$lib/components/asset-viewer/actions/action';
   import type { AssetCursor } from '$lib/components/asset-viewer/asset-viewer.svelte';
   import { AssetAction } from '$lib/constants';
+  import { assetCacheManager } from '$lib/managers/AssetCacheManager.svelte';
 
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
@@ -11,8 +12,8 @@
   import { updateStackedAssetInTimeline, updateUnstackedAssetInTimeline } from '$lib/utils/actions';
   import { navigate } from '$lib/utils/navigation';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
-  import { type AlbumResponseDto, type AssetResponseDto, type PersonResponseDto, getAssetInfo } from '@immich/sdk';
-  import { onMount, untrack } from 'svelte';
+  import { type AlbumResponseDto, type AssetResponseDto, type PersonResponseDto } from '@immich/sdk';
+  import { onDestroy, onMount, untrack } from 'svelte';
 
   let { asset: viewingAsset, gridScrollTarget } = assetViewingStore;
 
@@ -46,7 +47,7 @@
   const getNextAsset = async (currentAsset: AssetResponseDto, preload: boolean = true) => {
     const earlierTimelineAsset = await timelineManager.getEarlierAsset(currentAsset);
     if (earlierTimelineAsset) {
-      const asset = await getAssetInfo({ ...authManager.params, id: earlierTimelineAsset.id });
+      const asset = await assetCacheManager.getAsset({ ...authManager.params, id: earlierTimelineAsset.id });
       if (preload) {
         // also pre-cache an extra one, to pre-cache these assetInfos for the next nav after this one is complete
         void getNextAsset(asset, false);
@@ -59,7 +60,7 @@
     const laterTimelineAsset = await timelineManager.getLaterAsset(currentAsset);
 
     if (laterTimelineAsset) {
-      const asset = await getAssetInfo({ ...authManager.params, id: laterTimelineAsset.id });
+      const asset = await assetCacheManager.getAsset({ ...authManager.params, id: laterTimelineAsset.id });
       if (preload) {
         // also pre-cache an extra one, to pre-cache these assetInfos for the next nav after this one is complete
         void getPreviousAsset(asset, false);
@@ -194,6 +195,9 @@
       }
     }
   };
+  onDestroy(() => {
+    assetCacheManager.invalidate();
+  });
   const onAssetUpdate = ({ asset }: { event: 'upload' | 'update'; asset: AssetResponseDto }) => {
     if (asset.id === assetCursor.current.id) {
       void loadCloseAssets(asset);
@@ -220,7 +224,10 @@
     {album}
     {person}
     preAction={handlePreAction}
-    onAction={handleAction}
+    onAction={(action) => {
+      handleAction(action);
+      assetCacheManager.invalidate();
+    }}
     onPrevious={() => handleNavigateToAsset(assetCursor.previousAsset)}
     onNext={() => handleNavigateToAsset(assetCursor.nextAsset)}
     onRandom={handleRandom}
