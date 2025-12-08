@@ -219,6 +219,14 @@
     animation: var(--vt-duration-default) 0s panelSlideInRight forwards;
   }
 
+  ::view-transition-group(detail-panel) {
+    z-index: 1;
+  }
+  ::view-transition-old(detail-panel),
+  ::view-transition-new(detail-panel) {
+    animation: none;
+  }
+
   ::view-transition-group(exclude-previousbutton),
   ::view-transition-group(exclude-nextbutton),
   ::view-transition-group(exclude) {

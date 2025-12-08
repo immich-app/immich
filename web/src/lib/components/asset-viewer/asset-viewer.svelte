@@ -1,3 +1,9 @@
+<script module lang="ts">
+  const useSplitNavTransitions =
+    typeof document !== 'undefined' &&
+    getComputedStyle(document.documentElement).getPropertyValue('--immich-split-viewer-nav').trim() === 'enabled';
+</script>
+
 <script lang="ts">
   import { browser } from '$app/environment';
   import { focusTrap } from '$lib/actions/focus-trap';
@@ -25,6 +31,7 @@
   import { InvocationTracker } from '$lib/utils/invocationTracker';
   import { SlideshowHistory } from '$lib/utils/slideshow-history';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
+  import { crossfadeViewerContent, removeCrossfadeOverlay } from '$lib/utils/transition-utils';
   import {
     AssetTypeEnum,
     getAssetInfo,
@@ -95,6 +102,7 @@
     slideshowNavigation,
     slideshowState,
     slideshowRepeat,
+    slideshowTransition,
   } = slideshowStore;
   const stackThumbnailSize = 60;
   const stackSelectedThumbnailSize = 65;
@@ -149,6 +157,7 @@
   let navigationBarTransitionName = $state<string | undefined>();
   let previousButtonTransitionName = $state<string | undefined>();
   let nextButtonTransitionName = $state<string | undefined>();
+  let letterboxTransitionName = $state<string | undefined>();
 
   const activateViewTransitionNames = () => {
     detailPanelTransitionName = 'info';
@@ -228,25 +237,87 @@
     assetViewerManager.closeEditor();
   };
 
-  const completeNavigation = async (order: 'previous' | 'next') => {
-    preloadManager.cancelBeforeNavigation(order);
+  const getTransitionName = (kind: 'old' | 'new', direction: string | null | undefined) => {
+    if (direction === 'previous' || direction === 'next') {
+      return useSplitNavTransitions ? `${direction}-${kind}` : direction;
+    }
+    return direction ?? undefined;
+  };
 
-    let hasNext: boolean;
+  const clearTransitionNames = () => {
+    detailPanelTransitionName = undefined;
+    assetViewerManager.transitionName = undefined;
+    letterboxTransitionName = undefined;
+  };
+
+  const startTransition = async (
+    types: string[],
+    targetTransition: string | null,
+    navigateFn: () => Promise<boolean>,
+  ) => {
+    const oldName = getTransitionName('old', targetTransition);
+    const newName = getTransitionName('new', targetTransition);
+
+    let result = false;
+
+    await viewTransitionManager.startTransition({
+      types,
+      prepareOldSnapshot: () => {
+        assetViewerManager.transitionName = oldName;
+        letterboxTransitionName = targetTransition ? `${targetTransition}-old` : undefined;
+        detailPanelTransitionName = 'detail-panel';
+      },
+      performUpdate: async (signal) => {
+        const ready = eventManager.untilNext('ViewerOpenTransitionReady', { signal });
+        result = await navigateFn();
+        await ready;
+      },
+      prepareNewSnapshot: () => {
+        assetViewerManager.transitionName = newName;
+        letterboxTransitionName = targetTransition ? `${targetTransition}-new` : undefined;
+      },
+      onFinished: clearTransitionNames,
+    });
+
+    return result;
+  };
+
+  const completeNavigation = async (order: 'previous' | 'next', skipTransition: boolean) => {
+    preloadManager.cancelBeforeNavigation(order);
+    const skipped = viewTransitionManager.skipTransitions();
+    const canTransition = viewTransitionManager.isSupported() && !skipped && !skipTransition;
+
+    let navigate: () => Promise<boolean>;
+    let types: string[];
+    let targetTransition: string | null;
 
     if (slideShowPlaying && slideShowShuffle) {
-      let next = order === 'previous' ? slideshowHistory.previous() : slideshowHistory.next();
-      if (!next) {
-        const asset = await onRandom?.();
-        if (asset) {
-          slideshowHistory.queue(asset);
-          next = true;
+      navigate = async () => {
+        let next = order === 'previous' ? slideshowHistory.previous() : slideshowHistory.next();
+        if (!next) {
+          const asset = await onRandom?.();
+          if (asset) {
+            slideshowHistory.queue(asset);
+            next = true;
+          }
         }
-      }
-      hasNext = next;
+        return next;
+      };
+      types = ['slideshow'];
+      targetTransition = null;
     } else {
-      const target = order === 'previous' ? previousAsset : nextAsset;
-      hasNext = await navigateToAsset(target);
+      navigate = async () => {
+        const target = order === 'previous' ? previousAsset : nextAsset;
+        return navigateToAsset(target);
+      };
+      types = slideShowPlaying ? ['slideshow'] : ['viewer-nav'];
+      targetTransition = slideShowPlaying ? null : order;
     }
+
+    const targetAsset = order === 'previous' ? previousAsset : nextAsset;
+    const slideshowAllowsTransition = !slideShowPlaying || $slideshowTransition;
+    const useTransition = canTransition && slideshowAllowsTransition && (slideShowShuffle || !!targetAsset);
+    const hasNext = useTransition ? await startTransition(types, targetTransition, navigate) : await navigate();
 
     if (!slideShowPlaying) {
       return;
@@ -268,7 +339,7 @@
 
   const tracker = new InvocationTracker();
   let navigating = $state(false);
-  const navigateAsset = (order?: 'previous' | 'next') => {
+  const navigateAsset = (order?: 'previous' | 'next', skipTransition: boolean = false) => {
     if (!order) {
       if (slideShowPlaying) {
         order = slideShowAscending ? 'previous' : 'next';
@@ -283,7 +354,7 @@
 
     navigating = true;
     void tracker
-      .invoke(() => completeNavigation(order), $t('error_while_navigating'))
+      .invoke(() => completeNavigation(order, skipTransition), $t('error_while_navigating'))
       .finally(() => (navigating = false));
   };
 
@@ -324,8 +395,22 @@
     }
   };
 
-  const handleStackedAssetMouseEvent = (isMouseOver: boolean, stackedAsset: AssetResponseDto) => {
-    previewStackedAsset = isMouseOver ? stackedAsset : undefined;
+  const handleStackedAssetMouseEnter = (stackedAsset: AssetResponseDto) => {
+    if ((previewStackedAsset ?? cursor.current).id === stackedAsset.id) {
+      return;
+    }
+    assetViewerManager.closeFaceEditMode();
+    void crossfadeViewerContent(() => {
+      previewStackedAsset = stackedAsset;
+    });
+  };
+
+  const handleStackedAssetMouseLeave = () => {
+    if (!previewStackedAsset) {
+      return;
+    }
+    removeCrossfadeOverlay();
+    previewStackedAsset = undefined;
   };
 
   const handlePreAction = (action: Action) => {
@@ -652,7 +737,12 @@
 
   {#if stack && withStacked && $slideshowState === SlideshowState.None && !assetViewerManager.isShowEditor}
     {@const stackedAssets = stack.assets}
-    <div id="stack-slideshow" class="absolute bottom-0 w-full col-span-4 col-start-1 pointer-events-none">
+    <!-- svelte-ignore a11y_no_static_element_interactions -->
+    <div
+      id="stack-slideshow"
+      class="absolute bottom-0 w-full col-span-4 col-start-1 pointer-events-none"
+      onmouseleave={handleStackedAssetMouseLeave}
+    >
       <div class="relative flex flex-row no-wrap overflow-x-auto overflow-y-hidden horizontal-scrollbar">
         {#each stackedAssets as stackedAsset (stackedAsset.id)}
           <div
@@ -665,10 +755,11 @@
               dimmed={stackedAsset.id !== asset.id}
               asset={toTimelineAsset(stackedAsset)}
               onClick={() => {
+                removeCrossfadeOverlay();
                 cursor.current = stackedAsset;
                 previewStackedAsset = undefined;
               }}
-              onMouseEvent={({ isMouseOver }) => handleStackedAssetMouseEvent(isMouseOver, stackedAsset)}
+              onMouseEvent={({ isMouseOver }) => isMouseOver && handleStackedAssetMouseEnter(stackedAsset)}
               readonly
               thumbnailSize={stackedAsset.id === asset.id ? stackSelectedThumbnailSize : stackThumbnailSize}
               showStackedIcon={false}
