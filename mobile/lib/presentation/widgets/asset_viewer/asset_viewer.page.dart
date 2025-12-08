@@ -97,7 +97,7 @@ class AssetViewer extends ConsumerStatefulWidget {
 }
 
 const double _kBottomSheetMinimumExtent = 0.4;
-const double _kBottomSheetSnapExtent = 0.82;
+const double _kBottomSheetSnapExtent = 0.67;
 
 class _AssetViewerState extends ConsumerState<AssetViewer> {
   static final _dummyListener = ImageStreamListener((image, _) => image.dispose());
@@ -399,13 +399,13 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     final isDraggingDown = currentExtent < previousExtent;
     previousExtent = currentExtent;
     // Closes the bottom sheet if the user is dragging down
-    if (isDraggingDown && delta.extent < 0.55) {
+    if (isDraggingDown && delta.extent < 0.67) {
       if (dragInProgress) {
         blockGestures = true;
       }
       // Jump to a lower position before starting close animation to prevent glitch
       if (bottomSheetController.isAttached) {
-        bottomSheetController.jumpTo(0.55);
+        bottomSheetController.jumpTo(0.67);
       }
       sheetCloseController?.close();
     }
@@ -486,7 +486,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       context: ctx,
       sheetAnimationStyle: const AnimationStyle(
         duration: Duration(milliseconds: 300),
-        reverseDuration: Duration(milliseconds: 270),
+        reverseDuration: Duration(milliseconds: 300),
       ),
       constraints: const BoxConstraints(maxWidth: double.infinity),
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20.0))),
