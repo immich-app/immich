@@ -44,6 +44,20 @@ export type Events = {
 
   ReleaseEvent: [ReleaseEvent];
 
+  TransitionToTimeline: [{ id: string }];
+  TimelineLoaded: [{ id: string | null }];
+
+  TransitionToAssetViewer: [];
+  AssetViewerLoaded: [];
+
+  RenderLoaded: [];
+
+  BeforeStartViewTransition: [];
+  Finished: [];
+  Ready: [];
+  UpdateCallbackDone: [];
+  StartViewTransition: [];
+
   AssetViewerFree: [];
 };
 
@@ -57,11 +71,11 @@ class EventManager<EventMap extends Record<string, unknown[]>> {
     }[];
   } = {};
 
-  on<T extends keyof EventMap>(key: T, listener: (...params: EventMap[T]) => void) {
+  on<T extends keyof EventMap>(key: T, listener: (...params: EventMap[T]) => unknown) {
     return this.addListener(key, listener, false);
   }
 
-  once<T extends keyof EventMap>(key: T, listener: (...params: EventMap[T]) => void) {
+  once<T extends keyof EventMap>(key: T, listener: (...params: EventMap[T]) => unknown) {
     return this.addListener(key, listener, true);
   }
 

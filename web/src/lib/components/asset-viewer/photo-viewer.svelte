@@ -4,7 +4,6 @@
   import FaceEditor from '$lib/components/asset-viewer/face-editor/face-editor.svelte';
   import OcrBoundingBox from '$lib/components/asset-viewer/ocr-bounding-box.svelte';
   import BrokenAsset from '$lib/components/assets/broken-asset.svelte';
-  import { assetViewerFadeDuration } from '$lib/constants';
   import { castManager } from '$lib/managers/cast-manager.svelte';
   import { preloadManager } from '$lib/managers/PreloadManager.svelte';
   import { photoViewerImgElement } from '$lib/stores/assets-store.svelte';
@@ -12,7 +11,7 @@
   import { ocrManager } from '$lib/stores/ocr.svelte';
   import { boundingBoxesArray } from '$lib/stores/people.store';
   import { SlideshowLook, SlideshowState, slideshowLookCssMapping, slideshowStore } from '$lib/stores/slideshow.store';
-  import { photoZoomState } from '$lib/stores/zoom-image.store';
+  import { photoZoomState, resetZoomState } from '$lib/stores/zoom-image.store';
   import { getAssetUrl, targetImageSize as getTargetImageSize, handlePromiseError } from '$lib/utils';
   import { canCopyImageToClipboard, copyImageToClipboard } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
@@ -25,9 +24,9 @@
   import { onDestroy, onMount, untrack } from 'svelte';
   import { useSwipe, type SwipeCustomEvent } from 'svelte-gestures';
   import { t } from 'svelte-i18n';
-  import { fade } from 'svelte/transition';
 
   interface Props {
+    transitionName?: string | null;
     asset: AssetResponseDto;
     element?: HTMLDivElement | undefined;
     haveFadeTransition?: boolean;
@@ -43,6 +42,7 @@
   }
 
   let {
+    transitionName,
     asset,
     element = $bindable(),
     haveFadeTransition = true,
@@ -58,24 +58,45 @@
   }: Props = $props();
 
   const { slideshowState, slideshowLook } = slideshowStore;
-
+  haveFadeTransition = true;
   let imageLoaded: boolean = $state(false);
   let originalImageLoaded: boolean = $state(false);
   let imageError: boolean = $state(false);
 
   let loader = $state<HTMLImageElement>();
 
-  photoZoomState.set({
-    currentRotation: 0,
-    currentZoom: 1,
-    enable: true,
-    currentPositionX: 0,
-    currentPositionY: 0,
-  });
+  resetZoomState();
 
   onDestroy(() => {
     $boundingBoxesArray = [];
   });
+
+  const calculateSize = () => {
+    // Recalculate size when image is loaded/errored
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+    imageLoaded || imageError;
+
+    const naturalWidth = loader?.naturalWidth ?? 1;
+    const naturalHeight = loader?.naturalHeight ?? 1;
+
+    const scaleX = containerWidth / naturalWidth;
+    const scaleY = containerHeight / naturalHeight;
+
+    // Use the smaller scale to ensure image fits (like object-fit: contain)
+    const scale = Math.min(scaleX, scaleY);
+
+    const scaledWidth = naturalWidth * scale;
+    const scaledHeight = naturalHeight * scale;
+
+    return {
+      width: scaledWidth,
+      height: scaledHeight,
+      left: (containerWidth - scaledWidth) / 2,
+      top: (containerHeight - scaledHeight) / 2,
+    };
+  };
+
+  const box = $derived(calculateSize());
 
   let ocrBoxes = $derived(
     ocrManager.showOverlay && $photoViewerImgElement
@@ -225,7 +246,7 @@
 <img bind:this={loader} style="display:none" src={imageLoaderUrl} alt="" aria-hidden="true" {onload} {onerror} />
 <div
   bind:this={element}
-  class="relative h-full select-none"
+  class="absolute h-full w-full select-none"
   bind:clientWidth={containerWidth}
   bind:clientHeight={containerHeight}
 >
@@ -234,29 +255,34 @@
       <LoadingSpinner />
     </div>
   {:else if !imageError}
+    {#if $slideshowState !== SlideshowState.None && $slideshowLook === SlideshowLook.BlurredBackground}
+      <img
+        src={imageLoaderUrl}
+        alt=""
+        class="-z-1 absolute top-0 start-0 object-cover h-full w-full blur-lg"
+        draggable="false"
+      />
+    {/if}
     <div
       use:zoomImageAction={{ disabled: isOcrActive }}
       {...useSwipe(onSwipe)}
-      class="h-full w-full"
-      transition:fade={{ duration: haveFadeTransition ? assetViewerFadeDuration : 0 }}
+      style:width={box.width + 'px'}
+      style:height={box.height + 'px'}
+      style:left={box.left + 'px'}
+      style:top={box.top + 'px'}
+      class="absolute"
     >
-      {#if $slideshowState !== SlideshowState.None && $slideshowLook === SlideshowLook.BlurredBackground}
-        <img
-          src={imageLoaderUrl}
-          alt=""
-          class="-z-1 absolute top-0 start-0 object-cover h-full w-full blur-lg"
-          draggable="false"
-        />
-      {/if}
       <img
+        style:view-transition-name={transitionName}
         bind:this={$photoViewerImgElement}
         src={imageLoaderUrl}
         alt={$getAltText(toTimelineAsset(asset))}
-        class="h-full w-full {$slideshowState === SlideshowState.None
+        class="w-full h-full {$slideshowState === SlideshowState.None
           ? 'object-contain'
           : slideshowLookCssMapping[$slideshowLook]}"
         draggable="false"
       />
+
       <!-- eslint-disable-next-line svelte/require-each-key -->
       {#each getBoundingBox($boundingBoxesArray, $photoZoomState, $photoViewerImgElement) as boundingbox}
         <div

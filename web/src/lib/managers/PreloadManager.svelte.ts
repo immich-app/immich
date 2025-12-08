@@ -1,5 +1,5 @@
 import { getAssetUrl } from '$lib/utils';
-import { cancelImageUrl, preloadImageUrl } from '$lib/utils/sw-messaging';
+import { cancelImageUrl, isImageUrlCached, preloadImageUrl } from '$lib/utils/sw-messaging';
 import { AssetTypeEnum, type AssetResponseDto } from '@immich/sdk';
 
 class PreloadManager {
@@ -15,6 +15,16 @@ class PreloadManager {
       const img = new Image();
       img.src = getAssetUrl({ asset });
     }
+  }
+
+  isPreloaded(asset: AssetResponseDto | undefined) {
+    if (!asset) {
+      return false;
+    }
+    if (globalThis.isSecureContext) {
+      return isImageUrlCached(getAssetUrl({ asset }));
+    }
+    return false;
   }
 
   cancel(asset: AssetResponseDto | undefined) {
