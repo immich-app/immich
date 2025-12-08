@@ -30,7 +30,7 @@ class ViewerKebabMenu extends ConsumerWidget {
       timelineOrigin: timelineOrigin,
     );
 
-    final menuChildren = ViewerKebabMenuButtonBuilder.build(kebabContext, context);
+    final menuChildren = ViewerKebabMenuButtonBuilder.build(kebabContext, context, ref);
 
     return MenuAnchor(
       consumeOutsideTap: true,

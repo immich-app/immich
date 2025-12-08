@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 
-class BaseActionButton extends StatelessWidget {
+class BaseActionButton extends ConsumerWidget {
   const BaseActionButton({
     super.key,
     required this.label,
@@ -30,7 +31,7 @@ class BaseActionButton extends StatelessWidget {
   final void Function()? onLongPressed;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final miniWidth = minWidth ?? (context.isMobile ? context.width / 4.5 : 75.0);
     final iconTheme = IconTheme.of(context);
     final iconSize = iconTheme.size ?? 24.0;

@@ -1,6 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
@@ -212,7 +213,7 @@ enum ViewerKebabMenuButtonType {
     };
   }
 
-  Widget buildButton(ViewerKebabMenuButtonContext context, BuildContext buildContext) {
+  ConsumerWidget buildButton(ViewerKebabMenuButtonContext context, BuildContext buildContext) {
     return switch (this) {
       ViewerKebabMenuButtonType.openInfo => BaseActionButton(
         label: 'open_asset_info'.tr(),
@@ -240,10 +241,10 @@ enum ViewerKebabMenuButtonType {
 class ViewerKebabMenuButtonBuilder {
   static const List<ViewerKebabMenuButtonType> _buttonTypes = ViewerKebabMenuButtonType.values;
 
-  static List<Widget> build(ViewerKebabMenuButtonContext context, BuildContext buildContext) {
+  static List<Widget> build(ViewerKebabMenuButtonContext context, BuildContext buildContext, WidgetRef ref) {
     return _buttonTypes
         .where((type) => type.shouldShow(context))
-        .map((type) => type.buildButton(context, buildContext))
+        .map((type) => type.buildButton(context, buildContext).build(buildContext, ref))
         .expand((action) => [const Divider(height: 0), action])
         .skip(1) // to remove the first divider
         .toList();
