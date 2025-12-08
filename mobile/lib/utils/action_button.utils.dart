@@ -1,14 +1,23 @@
-import 'package:flutter/widgets.dart';
+import 'package:auto_route/auto_route.dart';
+import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/material.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/events.model.dart';
+import 'package:immich_mobile/domain/services/timeline.service.dart';
+import 'package:immich_mobile/domain/utils/event_stream.dart';
+import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/advanced_info_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/archive_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/cast_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_local_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_permanent_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/download_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/like_activity_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/motion_photo_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/move_to_lock_folder_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/remove_from_album_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/remove_from_lock_folder_action_button.widget.dart';
@@ -19,6 +28,7 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/trash_action_b
 import 'package:immich_mobile/presentation/widgets/action_buttons/unarchive_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/unstack_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/upload_action_button.widget.dart';
+import 'package:immich_mobile/routing/router.dart';
 
 class ActionButtonContext {
   final BaseAsset asset;
@@ -162,5 +172,80 @@ class ActionButtonBuilder {
 
   static List<Widget> build(ActionButtonContext context) {
     return _actionTypes.where((type) => type.shouldShow(context)).map((type) => type.buildButton(context)).toList();
+  }
+}
+
+class ViewerKebabMenuButtonContext {
+  final BaseAsset asset;
+  final bool isOwner;
+  final bool isCasting;
+  final TimelineOrigin timelineOrigin;
+
+  const ViewerKebabMenuButtonContext({
+    required this.asset,
+    required this.isOwner,
+    required this.isCasting,
+    required this.timelineOrigin,
+  });
+}
+
+enum ViewerKebabMenuButtonType {
+  openInfo,
+  motionPhoto,
+  viewInTimeline,
+  cast,
+  download;
+
+  bool shouldShow(ViewerKebabMenuButtonContext context) {
+    return switch (this) {
+      ViewerKebabMenuButtonType.openInfo => true,
+      ViewerKebabMenuButtonType.motionPhoto => context.asset.isMotionPhoto,
+      ViewerKebabMenuButtonType.viewInTimeline =>
+        context.timelineOrigin != TimelineOrigin.main &&
+            context.timelineOrigin != TimelineOrigin.deepLink &&
+            context.timelineOrigin != TimelineOrigin.trash &&
+            context.timelineOrigin != TimelineOrigin.archive &&
+            context.timelineOrigin != TimelineOrigin.localAlbum &&
+            context.isOwner,
+      ViewerKebabMenuButtonType.cast => context.isCasting || context.asset.hasRemote,
+      ViewerKebabMenuButtonType.download => context.asset.isRemoteOnly,
+    };
+  }
+
+  Widget buildButton(ViewerKebabMenuButtonContext context, BuildContext buildContext) {
+    return switch (this) {
+      ViewerKebabMenuButtonType.openInfo => BaseActionButton(
+        label: 'open_asset_info'.tr(),
+        iconData: Icons.info_outline,
+        menuItem: true,
+        onPressed: () => EventStream.shared.emit(const ViewerOpenBottomSheetEvent()),
+      ),
+      ViewerKebabMenuButtonType.motionPhoto => const MotionPhotoActionButton(menuItem: true),
+      ViewerKebabMenuButtonType.viewInTimeline => BaseActionButton(
+        label: 'view_in_timeline'.t(context: buildContext),
+        iconData: Icons.image_search,
+        menuItem: true,
+        onPressed: () async {
+          await buildContext.maybePop();
+          await buildContext.navigateTo(const TabShellRoute(children: [MainTimelineRoute()]));
+          EventStream.shared.emit(ScrollToDateEvent(context.asset.createdAt));
+        },
+      ),
+      ViewerKebabMenuButtonType.cast => const CastActionButton(menuItem: true),
+      ViewerKebabMenuButtonType.download => const DownloadActionButton(source: ActionSource.viewer, menuItem: true),
+    };
+  }
+}
+
+class ViewerKebabMenuButtonBuilder {
+  static const List<ViewerKebabMenuButtonType> _buttonTypes = ViewerKebabMenuButtonType.values;
+
+  static List<Widget> build(ViewerKebabMenuButtonContext context, BuildContext buildContext) {
+    return _buttonTypes
+        .where((type) => type.shouldShow(context))
+        .map((type) => type.buildButton(context, buildContext))
+        .expand((action) => [const Divider(height: 0), action])
+        .skip(1) // to remove the first divider
+        .toList();
   }
 }
