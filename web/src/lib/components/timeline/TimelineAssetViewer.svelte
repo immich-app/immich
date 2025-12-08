@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { Action } from '$lib/components/asset-viewer/actions/action';
   import { AssetAction } from '$lib/constants';
+  import { assetCacheManager } from '$lib/managers/AssetCacheManager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { eventManager } from '$lib/managers/event-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
@@ -8,7 +9,7 @@
   import { updateStackedAssetInTimeline, updateUnstackedAssetInTimeline } from '$lib/utils/actions';
   import { navigate } from '$lib/utils/navigation';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
-  import { getAssetInfo, type AlbumResponseDto, type AssetResponseDto, type PersonResponseDto } from '@immich/sdk';
+  import { type AlbumResponseDto, type AssetResponseDto, type PersonResponseDto } from '@immich/sdk';
   import { untrack } from 'svelte';
 
   let { asset: viewingAsset, gridScrollTarget } = assetViewingStore;
@@ -43,7 +44,7 @@
   const getNextAsset = async (currentAsset: AssetResponseDto) => {
     const earlierTimelineAsset = await timelineManager.getEarlierAsset(currentAsset);
     if (earlierTimelineAsset) {
-      const asset = await getAssetInfo({ ...authManager.params, id: earlierTimelineAsset.id });
+      const asset = assetCacheManager.getAsset({ ...authManager.params, id: earlierTimelineAsset.id });
       return asset;
     }
   };
@@ -51,7 +52,7 @@
   const getPreviousAsset = async (currentAsset: AssetResponseDto) => {
     const laterTimelineAsset = await timelineManager.getLaterAsset(currentAsset);
     if (laterTimelineAsset) {
-      const asset = await getAssetInfo({ ...authManager.params, id: laterTimelineAsset.id });
+      const asset = assetCacheManager.getAsset({ ...authManager.params, id: laterTimelineAsset.id });
       return asset;
     }
   };
@@ -103,6 +104,10 @@
   };
 
   const handleClose = async (asset: { id: string }) => {
+    const awaitInit = new Promise<void>((resolve) => eventManager.once('StartViewTransition', resolve));
+    eventManager.emit('TransitionToTimeline', { id: asset.id });
+    await awaitInit;
+
     assetViewingStore.showAssetViewer(false);
     invisible = true;
     $gridScrollTarget = { at: asset.id };

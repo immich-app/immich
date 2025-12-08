@@ -4,6 +4,7 @@
   import { ProjectionType } from '$lib/constants';
 
   interface Props {
+    transitionName?: string | null;
     assetId: string;
     projectionType: string | null | undefined;
     cacheKey: string | null;
@@ -17,6 +18,7 @@
   }
 
   let {
+    transitionName,
     assetId,
     projectionType,
     cacheKey,
@@ -31,9 +33,10 @@
 </script>
 
 {#if projectionType === ProjectionType.EQUIRECTANGULAR}
-  <VideoPanoramaViewer {assetId} />
+  <VideoPanoramaViewer {assetId} {transitionName} />
 {:else}
   <VideoNativeViewer
+    {transitionName}
     {loopVideo}
     {cacheKey}
     {assetId}

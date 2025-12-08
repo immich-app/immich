@@ -18,6 +18,7 @@
   import { fade } from 'svelte/transition';
 
   interface Props {
+    transitionName?: string | null;
     assetId: string;
     loopVideo: boolean;
     cacheKey: string | null;
@@ -30,6 +31,7 @@
   }
 
   let {
+    transitionName,
     assetId,
     loopVideo,
     cacheKey,
@@ -115,12 +117,30 @@
       videoPlayer?.pause();
     }
   });
+
+  const calculateSize = () => {
+    const videoWidth = videoPlayer?.videoWidth ?? 1;
+    const videoHeight = videoPlayer?.videoHeight ?? 1;
+
+    const scaleX = containerWidth / videoWidth;
+    const scaleY = containerHeight / videoHeight;
+
+    // Use the smaller scale to ensure image fits (like object-fit: contain)
+    const scale = Math.min(scaleX, scaleY);
+
+    return {
+      width: videoWidth * scale + 'px',
+      height: videoHeight * scale + 'px',
+    };
+  };
+
+  let box = $derived(calculateSize());
 </script>
 
 {#if showVideo}
   <div
     transition:fade={{ duration: assetViewerFadeDuration }}
-    class="flex h-full select-none place-content-center place-items-center"
+    class="flex select-none h-full w-full place-content-center place-items-center"
     bind:clientWidth={containerWidth}
     bind:clientHeight={containerHeight}
   >
@@ -135,14 +155,17 @@
       </div>
     {:else}
       <video
+        style:view-transition-name={transitionName}
+        style:height={box.height}
+        style:width={box.width}
         bind:this={videoPlayer}
         loop={$loopVideoPreference && loopVideo}
         autoplay={$autoPlayVideo}
         playsinline
         controls
         disablePictureInPicture
-        class="h-full object-contain"
         {...useSwipe(onSwipe)}
+        onloadedmetadata={() => (box = calculateSize())}
         oncanplay={(e) => handleCanPlay(e.currentTarget)}
         onended={onVideoEnded}
         onvolumechange={(e) => ($videoViewerMuted = e.currentTarget.muted)}
@@ -171,3 +194,9 @@
     {/if}
   </div>
 {/if}
+
+<style>
+  video:focus {
+    outline: none;
+  }
+</style>

@@ -12,6 +12,7 @@
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { eventManager } from '$lib/managers/event-manager.svelte';
   import { preloadManager } from '$lib/managers/PreloadManager.svelte';
+  import { viewTransitionManager } from '$lib/managers/ViewTransitionManager.svelte';
   import { closeEditorCofirm } from '$lib/stores/asset-editor.store';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { ocrManager } from '$lib/stores/ocr.svelte';
@@ -19,6 +20,7 @@
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { user } from '$lib/stores/user.store';
   import { websocketEvents } from '$lib/stores/websocket';
+  import { resetZoomState } from '$lib/stores/zoom-image.store';
   import { getAssetJobMessage, getAssetUrl, getSharedLink, handlePromiseError } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { InvocationTracker } from '$lib/utils/invocationTracker';
@@ -40,7 +42,7 @@
   import { toastManager } from '@immich/ui';
   import { onDestroy, onMount, untrack } from 'svelte';
   import { t } from 'svelte-i18n';
-  import { fly } from 'svelte/transition';
+  import { fly, slide } from 'svelte/transition';
   import Thumbnail from '../assets/thumbnail/thumbnail.svelte';
   import ActivityStatus from './activity-status.svelte';
   import ActivityViewer from './activity-viewer.svelte';
@@ -89,7 +91,7 @@
     copyImage = $bindable(),
   }: Props = $props();
 
-  const { setAssetId } = assetViewingStore;
+  const { setAssetId, invisible } = assetViewingStore;
   const {
     restartProgress: restartSlideshowProgress,
     stopProgress: stopSlideshowProgress,
@@ -157,7 +159,24 @@
     }
   };
 
+  let transitionName = $state<string | null>('hero');
+  let equirectangularTransitionName = $state<string | null>('hero');
+  let detailPanelTransitionName = $state<string | null>(null);
+
+  let addInfoTransition;
+  let finished;
   onMount(async () => {
+    addInfoTransition = () => {
+      detailPanelTransitionName = 'info';
+    };
+    eventManager.on('TransitionToAssetViewer', addInfoTransition);
+    eventManager.on('TransitionToTimeline', addInfoTransition);
+    finished = () => {
+      detailPanelTransitionName = null;
+      transitionName = null;
+    };
+    eventManager.on('Finished', finished);
+    // eventManager.emit('AssetViewerLoaded');
     unsubscribes.push(
       websocketEvents.on('on_upload_success', (asset) => onAssetUpdate({ event: 'upload', asset })),
       websocketEvents.on('on_asset_update', (asset) => onAssetUpdate({ event: 'update', asset })),
@@ -199,6 +218,9 @@
     }
 
     activityManager.reset();
+    eventManager.off('TransitionToAssetViewer', addInfoTransition!);
+    eventManager.off('TransitionToTimeline', addInfoTransition!);
+    eventManager.off('Finished', finished!);
   });
 
   const handleGetAllAlbums = async () => {
@@ -226,6 +248,7 @@
   };
 
   const closeViewer = () => {
+    transitionName = 'hero';
     onClose?.(asset);
   };
 
@@ -233,6 +256,23 @@
     closeEditorCofirm(() => {
       isShowEditor = false;
     });
+  };
+
+  const startTransition = (targetTransition: string | null, targetAsset?: AssetResponseDto) => {
+    transitionName = targetTransition;
+    equirectangularTransitionName = targetTransition;
+    detailPanelTransitionName = 'onTop';
+
+    viewTransitionManager.startTransition(
+      new Promise<void>((resolve) => {
+        eventManager.once('StartViewTransition', () => {
+          if (targetAsset && isEquirectangular(asset) && !isEquirectangular(targetAsset)) {
+            equirectangularTransitionName = null;
+          }
+        });
+        eventManager.once('AssetViewerFree', () => resolve());
+      }),
+    );
   };
 
   const tracker = new InvocationTracker();
@@ -247,7 +287,6 @@
     }
 
     e?.stopPropagation();
-    preloadManager.cancel(asset);
     if (tracker.isActive()) {
       return;
     }
@@ -256,6 +295,7 @@
       let hasNext = false;
 
       if ($slideshowState === SlideshowState.PlaySlideshow && $slideshowNavigation === SlideshowNavigation.Shuffle) {
+        startTransition(null, undefined);
         hasNext = order === 'previous' ? slideshowHistory.previous() : slideshowHistory.next();
         if (!hasNext) {
           const asset = await onRandom?.();
@@ -265,6 +305,13 @@
           }
         }
       } else if (onNavigateToAsset) {
+        // only transition if the target is already preloaded, and is in a secure context
+        const targetAsset = order === 'previous' ? previousAsset : nextAsset;
+        if (!!targetAsset && globalThis.isSecureContext && preloadManager.isPreloaded(targetAsset)) {
+          const targetTransition = $slideshowState === SlideshowState.PlaySlideshow ? null : order;
+          startTransition(targetTransition, targetAsset);
+        }
+        resetZoomState();
         hasNext = order === 'previous' ? await onNavigateToAsset(previousAsset) : await onNavigateToAsset(nextAsset);
       } else {
         hasNext = false;
@@ -421,10 +468,17 @@
   $effect(() => {
     // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     asset.id;
-    if (viewerKind !== 'PhotoViewer') {
+    if (viewerKind !== 'PhotoViewer' && viewerKind !== 'ImagePanaramaViewer') {
       eventManager.emit('AssetViewerFree');
     }
   });
+
+  const isEquirectangular = (asset: AssetResponseDto) => {
+    return (
+      asset.exifInfo?.projectionType === ProjectionType.EQUIRECTANGULAR ||
+      (asset.originalPath && asset.originalPath.toLowerCase().endsWith('.insp'))
+    );
+  };
 
   const viewerKind = $derived.by(() => {
     if (previewStackedAsset) {
@@ -433,10 +487,7 @@
     if (asset.type === AssetTypeEnum.Image) {
       if (shouldPlayMotionPhoto && asset.livePhotoVideoId) {
         return 'LiveVideoViewer';
-      } else if (
-        asset.exifInfo?.projectionType === ProjectionType.EQUIRECTANGULAR ||
-        (asset.originalPath && asset.originalPath.toLowerCase().endsWith('.insp'))
-      ) {
+      } else if (isEquirectangular(asset)) {
         return 'ImagePanaramaViewer';
       } else if (isShowEditor && selectedEditType === 'crop') {
         return 'CropArea';
@@ -454,12 +505,16 @@
 <section
   id="immich-asset-viewer"
   class="fixed start-0 top-0 grid size-full grid-cols-4 grid-rows-[64px_1fr] overflow-hidden bg-black"
+  class:invisible={$invisible}
   use:focusTrap
   bind:this={assetViewerHtmlElement}
 >
   <!-- Top navigation bar -->
   {#if $slideshowState === SlideshowState.None && !isShowEditor}
-    <div class="col-span-4 col-start-1 row-span-1 row-start-1 transition-transform">
+    <div
+      class="col-span-4 col-start-1 row-span-1 row-start-1 transition-transform"
+      style:view-transition-name="exclude"
+    >
       <AssetViewerNavBar
         {asset}
         {album}
@@ -508,11 +563,12 @@
   {/if}
 
   <!-- Asset Viewer -->
-  <div class="z-[-1] relative col-start-1 col-span-4 row-start-1 row-span-full">
+  <div class="z-[-1] relative col-start-1 col-span-4 row-start-1 row-span-full items-center flex">
     {#if viewerKind === 'StackPhotoViewer'}
       <PhotoViewer
         bind:zoomToggle
         bind:copyImage
+        {transitionName}
         asset={previewStackedAsset!}
         onPreviousAsset={() => navigateAsset('previous')}
         onNextAsset={() => navigateAsset('next')}
@@ -521,6 +577,7 @@
       />
     {:else if viewerKind === 'StackVideoViewer'}
       <VideoViewer
+        {transitionName}
         assetId={previewStackedAsset!.id}
         cacheKey={previewStackedAsset!.thumbhash}
         projectionType={previewStackedAsset!.exifInfo?.projectionType}
@@ -534,6 +591,7 @@
       />
     {:else if viewerKind === 'LiveVideoViewer'}
       <VideoViewer
+        {transitionName}
         assetId={asset.livePhotoVideoId!}
         cacheKey={asset.thumbhash}
         projectionType={asset.exifInfo?.projectionType}
@@ -544,11 +602,12 @@
         {playOriginalVideo}
       />
     {:else if viewerKind === 'ImagePanaramaViewer'}
-      <ImagePanoramaViewer bind:zoomToggle {asset} />
+      <ImagePanoramaViewer bind:zoomToggle {asset} transitionName={equirectangularTransitionName} />
     {:else if viewerKind === 'CropArea'}
       <CropArea {asset} />
     {:else if viewerKind === 'PhotoViewer'}
       <PhotoViewer
+        {transitionName}
         bind:zoomToggle
         bind:copyImage
         {asset}
@@ -560,6 +619,7 @@
       />
     {:else if viewerKind === 'VideoViewer'}
       <VideoViewer
+        {transitionName}
         assetId={asset.id}
         cacheKey={asset.thumbhash}
         projectionType={asset.exifInfo?.projectionType}
@@ -601,8 +661,9 @@
 
   {#if enableDetailPanel && $slideshowState === SlideshowState.None && $isShowDetail && !isShowEditor}
     <div
-      transition:fly={{ duration: 150 }}
+      transition:slide={{ axis: 'x', duration: 150 }}
       id="detail-panel"
+      style:view-transition-name={detailPanelTransitionName}
       class="row-start-1 row-span-4 w-[360px] overflow-y-auto transition-all dark:border-l dark:border-s-immich-dark-gray bg-light"
       translate="yes"
     >

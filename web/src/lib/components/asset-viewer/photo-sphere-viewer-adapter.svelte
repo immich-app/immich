@@ -1,5 +1,6 @@
 <script lang="ts">
   import { shortcuts } from '$lib/actions/shortcut';
+  import { eventManager } from '$lib/managers/event-manager.svelte';
   import { boundingBoxesArray, type Faces } from '$lib/stores/people.store';
   import { alwaysLoadOriginalFile } from '$lib/stores/preferences.store';
   import { photoZoomState } from '$lib/stores/zoom-image.store';
@@ -27,6 +28,7 @@
   };
 
   type Props = {
+    transitionName?: string | null;
     panorama: string | { source: string };
     originalPanorama?: string | { source: string };
     adapter?: AdapterConstructor | [AdapterConstructor, unknown];
@@ -36,6 +38,7 @@
   };
 
   let {
+    transitionName,
     panorama,
     originalPanorama,
     adapter = EquirectangularAdapter,
@@ -154,6 +157,13 @@
       zoomSpeed: 0.5,
       fisheye: false,
     });
+    viewer.addEventListener(
+      'ready',
+      () => {
+        eventManager.emit('AssetViewerFree');
+      },
+      { once: true },
+    );
     const resolutionPlugin = viewer.getPlugin<ResolutionPlugin>(ResolutionPlugin);
     const zoomHandler = ({ zoomLevel }: events.ZoomUpdatedEvent) => {
       // zoomLevel range: [0, 100]
@@ -190,4 +200,9 @@
 </script>
 
 <svelte:document use:shortcuts={[{ shortcut: { key: 'z' }, onShortcut: zoomToggle, preventDefault: true }]} />
-<div class="h-full w-full mb-0" bind:this={container}></div>
+<div
+  id="sphere"
+  class="h-full w-full h-dvh w-dvw mb-0"
+  bind:this={container}
+  style:view-transition-name={transitionName}
+></div>
