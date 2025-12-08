@@ -74,6 +74,9 @@
     --immich-dark-bg: 10 10 10;
     --immich-dark-fg: 229 231 235;
     --immich-dark-gray: 33 33 33;
+
+    /* transitions */
+    --immich-split-viewer-nav: enabled;
   }
 
   button:not(:disabled),
@@ -169,5 +172,260 @@
 
   .maplibregl-popup-content {
     @apply bg-subtle rounded-lg;
+  }
+}
+
+@layer base {
+  ::view-transition {
+    background: black;
+    animation-duration: 250ms;
+  }
+
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    mix-blend-mode: normal;
+    animation-duration: inherit;
+  }
+
+  ::view-transition-old(*) {
+    animation-name: fadeOut;
+    animation-fill-mode: forwards;
+  }
+  ::view-transition-new(*) {
+    animation-name: fadeIn;
+    animation-fill-mode: forwards;
+  }
+
+  ::view-transition-old(root) {
+    animation: 250ms 0s fadeOut forwards;
+  }
+  ::view-transition-new(root) {
+    animation: 250ms 0s fadeIn forwards;
+  }
+  html:active-view-transition-type(slideshow) {
+    &::view-transition-old(root) {
+      animation: 1s 0s fadeOut forwards;
+    }
+    &::view-transition-new(root) {
+      animation: 1s 0s fadeIn forwards;
+    }
+  }
+  html:active-view-transition-type(viewer-nav) {
+    &::view-transition-old(root) {
+      animation: 350ms 0s fadeOut forwards;
+    }
+    &::view-transition-new(root) {
+      animation: 350ms 0s fadeIn forwards;
+    }
+  }
+  ::view-transition-old(info) {
+    animation: 250ms 0s flyOutRight forwards;
+  }
+  ::view-transition-new(info) {
+    animation: 250ms 0s flyInRight forwards;
+  }
+
+  ::view-transition-group(detail-panel) {
+    z-index: 1;
+  }
+  ::view-transition-old(detail-panel),
+  ::view-transition-new(detail-panel) {
+    animation: none;
+  }
+  ::view-transition-group(letterbox-left),
+  ::view-transition-group(letterbox-right),
+  ::view-transition-group(letterbox-top),
+  ::view-transition-group(letterbox-bottom) {
+    z-index: 4;
+  }
+
+  ::view-transition-old(letterbox-left),
+  ::view-transition-old(letterbox-right),
+  ::view-transition-old(letterbox-top),
+  ::view-transition-old(letterbox-bottom) {
+    background-color: black;
+  }
+
+  ::view-transition-new(letterbox-left),
+  ::view-transition-new(letterbox-right) {
+    height: 100dvh;
+  }
+
+  ::view-transition-new(letterbox-left),
+  ::view-transition-new(letterbox-right),
+  ::view-transition-new(letterbox-top),
+  ::view-transition-new(letterbox-bottom) {
+    background-color: black;
+    opacity: 1 !important;
+  }
+
+  ::view-transition-group(exclude-leftbutton),
+  ::view-transition-group(exclude-rightbutton),
+  ::view-transition-group(exclude) {
+    animation: none;
+    z-index: 5;
+  }
+  ::view-transition-old(exclude-leftbutton),
+  ::view-transition-old(exclude-rightbutton),
+  ::view-transition-old(exclude) {
+    visibility: hidden;
+  }
+  ::view-transition-new(exclude-leftbutton),
+  ::view-transition-new(exclude-rightbutton),
+  ::view-transition-new(exclude) {
+    animation: none;
+    z-index: 5;
+  }
+
+  ::view-transition-old(hero) {
+    animation: 350ms fadeOut forwards;
+    align-content: center;
+  }
+  ::view-transition-new(hero) {
+    animation: 350ms fadeIn forwards;
+    align-content: center;
+  }
+  ::view-transition-old(next),
+  ::view-transition-old(next-old) {
+    animation: 250ms cubic-bezier(0.25, 0.46, 0.45, 0.94) flyOutLeft forwards;
+    overflow: hidden;
+  }
+
+  ::view-transition-new(next),
+  ::view-transition-new(next-new) {
+    animation: 250ms cubic-bezier(0.25, 0.46, 0.45, 0.94) flyInRight forwards;
+    overflow: hidden;
+  }
+
+  ::view-transition-old(previous) {
+    animation: 250ms cubic-bezier(0.25, 0.46, 0.45, 0.94) flyOutRight forwards;
+  }
+  ::view-transition-old(previous-old) {
+    animation: 250ms cubic-bezier(0.25, 0.46, 0.45, 0.94) flyOutRight forwards;
+    overflow: hidden;
+    z-index: -1;
+  }
+
+  ::view-transition-new(previous) {
+    animation: 250ms cubic-bezier(0.25, 0.46, 0.45, 0.94) flyInLeft forwards;
+  }
+
+  ::view-transition-new(previous-new) {
+    animation: 250ms cubic-bezier(0.25, 0.46, 0.45, 0.94) flyInLeft forwards;
+    overflow: hidden;
+  }
+
+  @keyframes flyInLeft {
+    from {
+      /* object-position: -25dvw; */
+      transform: translateX(-15%);
+      opacity: 0.1;
+      filter: blur(4px);
+    }
+    50% {
+      opacity: 0.4;
+      filter: blur(2px);
+    }
+    to {
+      opacity: 1;
+      filter: blur(0);
+    }
+  }
+
+  @keyframes flyOutLeft {
+    from {
+      opacity: 1;
+      filter: blur(0);
+    }
+    50% {
+      opacity: 0.4;
+      filter: blur(2px);
+    }
+    to {
+      /* object-position: -25dvw; */
+      transform: translateX(-15%);
+      opacity: 0.1;
+      filter: blur(4px);
+    }
+  }
+
+  @keyframes flyInRight {
+    from {
+      /* object-position: 25dvw; */
+      transform: translateX(15%);
+      opacity: 0.1;
+      filter: blur(4px);
+    }
+    50% {
+      opacity: 0.4;
+      filter: blur(2px);
+    }
+    to {
+      opacity: 1;
+      filter: blur(0);
+    }
+  }
+
+  /* Fly out to right */
+  @keyframes flyOutRight {
+    from {
+      opacity: 1;
+      filter: blur(0);
+    }
+    50% {
+      opacity: 0.4;
+      filter: blur(2px);
+    }
+    to {
+      /* object-position: 50dvw 0px; */
+      transform: translateX(15%);
+      opacity: 0.1;
+      filter: blur(4px);
+    }
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes fadeOut {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion) {
+    ::view-transition-group(previous),
+    ::view-transition-group(next) {
+      width: 100% !important;
+      height: 100% !important;
+      transform: none !important;
+    }
+
+    ::view-transition-old(previous),
+    ::view-transition-old(next) {
+      animation: 250ms fadeOut forwards;
+      transform-origin: center;
+      height: 100%;
+      width: 100%;
+      object-fit: contain;
+      overflow: hidden;
+    }
+
+    ::view-transition-new(previous),
+    ::view-transition-new(next) {
+      animation: 250ms fadeIn forwards;
+      transform-origin: center;
+      height: 100%;
+      width: 100%;
+      object-fit: contain;
+    }
   }
 }

@@ -1,34 +1,36 @@
 <script lang="ts">
   import AssetLayout from '$lib/components/timeline/AssetLayout.svelte';
+  import { eventManager } from '$lib/managers/event-manager.svelte';
   import { DayGroup } from '$lib/managers/timeline-manager/day-group.svelte';
   import type { MonthGroup } from '$lib/managers/timeline-manager/month-group.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import { assetsSnapshot } from '$lib/managers/timeline-manager/utils.svelte';
-  import type { VirtualScrollManager } from '$lib/managers/VirtualScrollManager/VirtualScrollManager.svelte';
+  import { viewTransitionManager } from '$lib/managers/ViewTransitionManager.svelte';
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { uploadAssetsStore } from '$lib/stores/upload';
   import type { CommonPosition } from '$lib/utils/layout-utils';
   import { fromTimelinePlainDate, getDateLocaleString } from '$lib/utils/timeline-util';
   import { Icon } from '@immich/ui';
   import { mdiCheckCircle, mdiCircleOutline } from '@mdi/js';
-  import type { Snippet } from 'svelte';
+  import { onDestroy, tick, type Snippet } from 'svelte';
 
   type Props = {
+    toAssetViewerTransitionId?: string | null;
     thumbnail: Snippet<[{ asset: TimelineAsset; position: CommonPosition; dayGroup: DayGroup; groupIndex: number }]>;
     customThumbnailLayout?: Snippet<[TimelineAsset]>;
     singleSelect: boolean;
     assetInteraction: AssetInteraction;
     monthGroup: MonthGroup;
-    manager: VirtualScrollManager;
     onDayGroupSelect: (dayGroup: DayGroup, assets: TimelineAsset[]) => void;
   };
+
   let {
+    toAssetViewerTransitionId,
     thumbnail: thumbnailWithGroup,
     customThumbnailLayout,
     singleSelect,
     assetInteraction,
     monthGroup,
-    manager,
     onDayGroupSelect,
   }: Props = $props();
 
@@ -51,6 +53,34 @@
     });
     return getDateLocaleString(date);
   };
+
+  let toTimelineTransitionAssetId = $state<string | null>(null);
+  let animationTargetAssetId = $derived(toTimelineTransitionAssetId ?? toAssetViewerTransitionId ?? null);
+
+  const transitionToTimelineCallback = ({ id }: { id: string }) => {
+    const asset = monthGroup.findAssetById({ id });
+    if (!asset) {
+      return;
+    }
+    viewTransitionManager.startTransition(
+      new Promise<void>((resolve) => {
+        eventManager.once('TimelineLoaded', ({ id }) => {
+          animationTargetAssetId = id;
+          void tick().then(resolve);
+        });
+      }),
+      [],
+      () => {
+        animationTargetAssetId = null;
+      },
+    );
+  };
+  if (viewTransitionManager.isSupported()) {
+    eventManager.on('TransitionToTimeline', transitionToTimelineCallback);
+    onDestroy(() => {
+      eventManager.off('TransitionToTimeline', transitionToTimelineCallback);
+    });
+  }
 </script>
 
 {#each filterIntersecting(monthGroup.dayGroups) as dayGroup, groupIndex (dayGroup.day)}
@@ -95,7 +125,7 @@
     </div>
 
     <AssetLayout
-      {manager}
+      {animationTargetAssetId}
       viewerAssets={dayGroup.viewerAssets}
       height={dayGroup.height}
       width={dayGroup.width}

@@ -28,6 +28,7 @@
   };
 
   type Props = {
+    transitionName?: string | null;
     panorama: string | { source: string };
     originalPanorama?: string | { source: string };
     adapter?: AdapterConstructor | [AdapterConstructor, unknown];
@@ -37,6 +38,7 @@
   };
 
   let {
+    transitionName,
     panorama,
     originalPanorama,
     adapter = EquirectangularAdapter,
@@ -195,4 +197,9 @@
 </script>
 
 <svelte:document use:shortcuts={[{ shortcut: { key: 'z' }, onShortcut: zoomToggle, preventDefault: true }]} />
-<div class="h-full w-full mb-0" bind:this={container}></div>
+<div
+  id="sphere"
+  class="h-full w-full h-dvh w-dvw mb-0"
+  bind:this={container}
+  style:view-transition-name={transitionName}
+></div>

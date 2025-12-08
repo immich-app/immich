@@ -30,7 +30,7 @@ export const put = async (key: string, response: Response) => {
     return;
   }
 
-  cache.put(key, response.clone());
+  await cache.put(key, response.clone());
 };
 
 export const prune = async () => {

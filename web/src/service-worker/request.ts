@@ -1,6 +1,6 @@
 import { get, put } from './cache';
 
-const pendingRequests = new Map<string, AbortController>();
+const pendingRequests = new Map<string, { abort: AbortController; callbacks: ((canceled: boolean) => void)[] }>();
 
 const isURL = (request: URL | RequestInfo): request is URL => (request as URL).href !== undefined;
 const isRequest = (request: RequestInfo): request is Request => (request as Request).url !== undefined;
@@ -31,6 +31,11 @@ export const handlePreload = async (request: URL | Request) => {
   }
 };
 
+const canceledResponse = () => {
+  // dummy response avoids network errors in the console for these requests
+  return new Response(undefined, { status: 204 });
+};
+
 export const handleRequest = async (request: URL | Request) => {
   const cacheKey = getCacheKey(request);
   const cachedResponse = await get(cacheKey);
@@ -38,36 +43,53 @@ export const handleRequest = async (request: URL | Request) => {
     return cachedResponse;
   }
 
+  let canceled = false;
   try {
+    const requestSignals = pendingRequests.get(cacheKey);
+    if (requestSignals) {
+      const canceled = await new Promise<boolean>((resolve) => requestSignals.callbacks.push(resolve));
+      if (canceled) {
+        return canceledResponse();
+      }
+      const cachedResponse = await get(cacheKey);
+      if (cachedResponse) {
+        return cachedResponse;
+      }
+    }
     const cancelToken = new AbortController();
-    pendingRequests.set(cacheKey, cancelToken);
+    pendingRequests.set(cacheKey, { abort: cancelToken, callbacks: [] });
     const response = await fetch(request, { signal: cancelToken.signal });
 
     assertResponse(response);
-    put(cacheKey, response);
+    await put(cacheKey, response);
 
     return response;
   } catch (error) {
-    if (error.name === 'AbortError') {
-      // dummy response avoids network errors in the console for these requests
-      return new Response(undefined, { status: 204 });
+    if (error instanceof Error && error.name === 'AbortError') {
+      canceled = true;
+      return canceledResponse();
     }
 
     console.log('Not an abort error', error);
 
     throw error;
   } finally {
+    const requestSignals = pendingRequests.get(cacheKey);
     pendingRequests.delete(cacheKey);
+    if (requestSignals) {
+      for (const callback of requestSignals.callbacks) {
+        callback(canceled);
+      }
+    }
   }
 };
 
 export const handleCancel = (url: URL) => {
   const cacheKey = getCacheKey(url);
-  const pendingRequest = pendingRequests.get(cacheKey);
-  if (!pendingRequest) {
+  const requestSignals = pendingRequests.get(cacheKey);
+  if (!requestSignals) {
     return;
   }
 
-  pendingRequest.abort();
-  pendingRequests.delete(cacheKey);
+  requestSignals.abort.abort();
 };

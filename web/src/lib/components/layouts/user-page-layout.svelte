@@ -9,8 +9,9 @@
   import type { HeaderButtonActionItem } from '$lib/types';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
   import { Button, ContextMenuButton, HStack, isMenuItemType, type MenuItemType } from '@immich/ui';
-  import type { Snippet } from 'svelte';
+  import { getContext, type Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
+  import type { AppState } from '../../../routes/+layout.svelte';
 
   interface Props {
     hideNavbar?: boolean;
@@ -48,11 +49,17 @@
 
   let scrollbarClass = $derived(scrollbar ? 'immich-scrollbar' : 'scrollbar-hidden');
   let hasTitleClass = $derived(title ? 'top-16 h-[calc(100%-(--spacing(16)))]' : 'top-0 h-full');
+  const appState = getContext('AppState') as AppState;
+  let isAssetViewer = $derived(appState.isAssetViewer);
 </script>
 
 <header>
-  {#if !hideNavbar}
+  {#if !hideNavbar && !isAssetViewer}
     <NavigationBar {showUploadButton} onUploadClick={() => openFileUploadDialog()} />
+  {/if}
+
+  {#if isAssetViewer}
+    <div class="max-md:h-(--navbar-height-md) h-(--navbar-height)"></div>
   {/if}
 
   {@render header?.()}
@@ -64,13 +71,15 @@
     {hideNavbar ? 'pt-(--navbar-height)' : ''}
     {hideNavbar ? 'max-md:pt-(--navbar-height-md)' : ''}"
 >
-  {#if sidebar}
+  {#if isAssetViewer}
+    <div></div>
+  {:else if sidebar}
     {@render sidebar()}
   {:else}
     <UserSidebar />
   {/if}
 
-  <main class="relative">
+  <main class="relative w-full">
     <div class="{scrollbarClass} absolute {hasTitleClass} w-full overflow-y-auto p-2" use:useActions={use}>
       {@render children?.()}
     </div>

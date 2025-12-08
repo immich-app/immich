@@ -8,11 +8,12 @@
   import { fade } from 'svelte/transition';
 
   type Props = {
+    transitionName?: string | null;
     asset: AssetResponseDto;
     zoomToggle?: (() => void) | null;
   };
 
-  let { asset, zoomToggle = $bindable() }: Props = $props();
+  let { transitionName, asset, zoomToggle = $bindable() }: Props = $props();
 
   const loadAssetData = async (id: string) => {
     const data = await viewAsset({ ...authManager.params, id, size: AssetMediaSize.Preview });
@@ -20,11 +21,12 @@
   };
 </script>
 
-<div transition:fade={{ duration: 150 }} class="flex h-full select-none place-content-center place-items-center">
+<div transition:fade={{ duration: 150 }} class="flex h-dvh w-dvw select-none place-content-center place-items-center">
   {#await Promise.all([loadAssetData(asset.id), import('./photo-sphere-viewer-adapter.svelte')])}
     <LoadingSpinner />
   {:then [data, { default: PhotoSphereViewer }]}
     <PhotoSphereViewer
+      {transitionName}
       bind:zoomToggle
       panorama={data}
       originalPanorama={isWebCompatibleImage(asset)
