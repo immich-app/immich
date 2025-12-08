@@ -14,14 +14,15 @@ class EntitiyCountTile extends StatelessWidget {
     return numStr.length < targetWidth ? "0" * (targetWidth - numStr.length) : "";
   }
 
-  int calculateMaxDigits(double availableWidth) {
-    const double charWidth = 11.0;
-    return (availableWidth / charWidth).floor().clamp(1, 8);
-  }
-
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final availableWidth = (screenWidth - 32 - 8) / 2;
+    const double charWidth = 11.0;
+    final maxDigits = ((availableWidth - 32) / charWidth).floor().clamp(1, 8);
+
     return Container(
+      height: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: context.colorScheme.surfaceContainerLow,
@@ -29,7 +30,6 @@ class EntitiyCountTile extends StatelessWidget {
         border: Border.all(width: 0.5, color: context.colorScheme.outline.withAlpha(25)),
       ),
       child: Column(
-        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           // Icon and Label
@@ -46,27 +46,22 @@ class EntitiyCountTile extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 12),
           // Number
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final maxDigits = calculateMaxDigits(constraints.maxWidth);
-              return RichText(
-                text: TextSpan(
-                  style: const TextStyle(fontSize: 18, fontFamily: 'OverpassMono', fontWeight: FontWeight.w600),
-                  children: [
-                    TextSpan(
-                      text: zeroPadding(count, maxDigits),
-                      style: TextStyle(color: context.colorScheme.onSurfaceSecondary.withAlpha(75)),
-                    ),
-                    TextSpan(
-                      text: count.toString(),
-                      style: TextStyle(color: context.primaryColor),
-                    ),
-                  ],
+          const Spacer(),
+          RichText(
+            text: TextSpan(
+              style: const TextStyle(fontSize: 18, fontFamily: 'OverpassMono', fontWeight: FontWeight.w600),
+              children: [
+                TextSpan(
+                  text: zeroPadding(count, maxDigits),
+                  style: TextStyle(color: context.colorScheme.onSurfaceSecondary.withAlpha(75)),
                 ),
-              );
-            },
+                TextSpan(
+                  text: count.toString(),
+                  style: TextStyle(color: context.primaryColor),
+                ),
+              ],
+            ),
           ),
         ],
       ),
