@@ -4,6 +4,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:collection/collection.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
@@ -23,6 +24,7 @@ import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/user_metadata.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
@@ -54,6 +56,12 @@ class AssetDetailBottomSheet extends ConsumerWidget {
     final currentAlbum = ref.watch(currentRemoteAlbumProvider);
     final isArchived = asset is RemoteAsset && asset.visibility == AssetVisibility.archive;
     final advancedTroubleshooting = ref.watch(settingsProvider.notifier).get(Setting.advancedTroubleshooting);
+    final isRatingEnabled = ref
+        .watch(userMetadataProvider(ref.watch(currentUserProvider)?.id ?? ''))
+        .maybeWhen(
+          data: (metadataList) => metadataList.any((meta) => meta.preferences?.ratingsEnabled ?? false),
+          orElse: () => false,
+        );
 
     final buttonContext = ActionButtonContext(
       asset: asset,
@@ -71,7 +79,7 @@ class AssetDetailBottomSheet extends ConsumerWidget {
 
     return BaseBottomSheet(
       actions: actions,
-      slivers: const [_AssetDetailBottomSheet()],
+      slivers: [_AssetDetailBottomSheet(isRatingEnabled: isRatingEnabled)],
       controller: controller,
       initialChildSize: initialChildSize,
       minChildSize: 0.1,
@@ -85,7 +93,9 @@ class AssetDetailBottomSheet extends ConsumerWidget {
 }
 
 class _AssetDetailBottomSheet extends ConsumerWidget {
-  const _AssetDetailBottomSheet();
+  final bool isRatingEnabled;
+
+  const _AssetDetailBottomSheet({required this.isRatingEnabled});
 
   String _getDateTime(BuildContext ctx, BaseAsset asset, ExifInfo? exifInfo) {
     DateTime dateTime = asset.createdAt.toLocal();
@@ -320,6 +330,36 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
             subtitle: _getLensInfoSubtitle(exifInfo),
             subtitleStyle: context.textTheme.labelMedium?.copyWith(
               color: context.textTheme.labelMedium?.color?.withAlpha(200),
+            ),
+          ),
+        ],
+        // Rating bar
+        if (isRatingEnabled) ...[
+          Padding(
+            padding: const EdgeInsets.only(left: 16.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 16),
+                Text(
+                  'rating'.t(context: context).toUpperCase(),
+                  style: context.textTheme.labelMedium?.copyWith(
+                    color: context.textTheme.labelMedium?.color?.withAlpha(200),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                RatingBar.builder(
+                  initialRating: exifInfo?.rating?.toDouble() ?? 0,
+                  itemBuilder: (context, _) => Icon(Icons.star, color: context.themeData.colorScheme.primary),
+                  itemSize: 32,
+                  glow: false,
+                  onRatingUpdate: (rating) async {
+                    await ref.read(actionProvider.notifier).updateRating(ActionSource.viewer, rating.round());
+                  },
+                ),
+              ],
             ),
           ),
         ],
