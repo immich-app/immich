@@ -21,12 +21,34 @@ import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_shee
 
 enum AddToMenuItem { album, archive, unarchive, lockedFolder }
 
-class AddActionButton extends ConsumerWidget {
+class AddActionButton extends ConsumerStatefulWidget {
   const AddActionButton({super.key});
 
-  Future<void> _showAddOptions(BuildContext context, WidgetRef ref) async {
+  @override
+  ConsumerState<AddActionButton> createState() => _AddActionButtonState();
+}
+
+class _AddActionButtonState extends ConsumerState<AddActionButton> {
+  void _handleMenuSelection(AddToMenuItem selected) {
+    switch (selected) {
+      case AddToMenuItem.album:
+        _openAlbumSelector();
+        break;
+      case AddToMenuItem.archive:
+        performArchiveAction(context, ref, source: ActionSource.viewer);
+        break;
+      case AddToMenuItem.unarchive:
+        performUnArchiveAction(context, ref, source: ActionSource.viewer);
+        break;
+      case AddToMenuItem.lockedFolder:
+        performMoveToLockFolderAction(context, ref, source: ActionSource.viewer);
+        break;
+    }
+  }
+
+  List<Widget> _buildMenuChildren() {
     final asset = ref.read(currentAssetNotifier);
-    if (asset == null) return;
+    if (asset == null) return [];
 
     final user = ref.read(currentUserProvider);
     final isOwner = asset is RemoteAsset && asset.ownerId == user?.id;
@@ -35,93 +57,57 @@ class AddActionButton extends ConsumerWidget {
     final hasRemote = asset is RemoteAsset;
     final showArchive = isOwner && !isInLockedView && hasRemote && !isArchived;
     final showUnarchive = isOwner && !isInLockedView && hasRemote && isArchived;
-    final menuItemHeight = 30.0;
 
-    final List<PopupMenuEntry<AddToMenuItem>> items = [
-      PopupMenuItem(
-        enabled: false,
-        textStyle: context.textTheme.labelMedium,
-        height: 40,
-        child: Text("add_to_bottom_bar".tr()),
+    return [
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: Text("add_to_bottom_bar".tr(), style: context.textTheme.labelMedium),
       ),
-      PopupMenuItem(
-        height: menuItemHeight,
-        value: AddToMenuItem.album,
-        child: ListTile(leading: const Icon(Icons.photo_album_outlined), title: Text("album".tr())),
+      BaseActionButton(
+        iconData: Icons.photo_album_outlined,
+        label: "album".tr(),
+        menuItem: true,
+        onPressed: () => _handleMenuSelection(AddToMenuItem.album),
       ),
-      const PopupMenuDivider(),
-      PopupMenuItem(enabled: false, textStyle: context.textTheme.labelMedium, height: 40, child: Text("move_to".tr())),
+
       if (isOwner) ...[
+        const PopupMenuDivider(),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Text("move_to".tr(), style: context.textTheme.labelMedium),
+        ),
         if (showArchive)
-          PopupMenuItem(
-            height: menuItemHeight,
-            value: AddToMenuItem.archive,
-            child: ListTile(leading: const Icon(Icons.archive_outlined), title: Text("archive".tr())),
+          BaseActionButton(
+            iconData: Icons.archive_outlined,
+            label: "archive".tr(),
+            menuItem: true,
+            onPressed: () => _handleMenuSelection(AddToMenuItem.archive),
           ),
         if (showUnarchive)
-          PopupMenuItem(
-            height: menuItemHeight,
-            value: AddToMenuItem.unarchive,
-            child: ListTile(leading: const Icon(Icons.unarchive_outlined), title: Text("unarchive".tr())),
+          BaseActionButton(
+            iconData: Icons.unarchive_outlined,
+            label: "unarchive".tr(),
+            menuItem: true,
+            onPressed: () => _handleMenuSelection(AddToMenuItem.unarchive),
           ),
-        PopupMenuItem(
-          height: menuItemHeight,
-          value: AddToMenuItem.lockedFolder,
-          child: ListTile(leading: const Icon(Icons.lock_outline), title: Text("locked_folder".tr())),
+        BaseActionButton(
+          iconData: Icons.lock_outline,
+          label: "locked_folder".tr(),
+          menuItem: true,
+          onPressed: () => _handleMenuSelection(AddToMenuItem.lockedFolder),
         ),
       ],
     ];
-
-    final AddToMenuItem? selected = await showMenu<AddToMenuItem>(
-      context: context,
-      color: context.themeData.scaffoldBackgroundColor,
-      position: _menuPosition(context),
-      items: items,
-      popUpAnimationStyle: AnimationStyle.noAnimation,
-    );
-
-    if (selected == null) {
-      return;
-    }
-
-    switch (selected) {
-      case AddToMenuItem.album:
-        _openAlbumSelector(context, ref);
-        break;
-      case AddToMenuItem.archive:
-        await performArchiveAction(context, ref, source: ActionSource.viewer);
-        break;
-      case AddToMenuItem.unarchive:
-        await performUnArchiveAction(context, ref, source: ActionSource.viewer);
-        break;
-      case AddToMenuItem.lockedFolder:
-        await performMoveToLockFolderAction(context, ref, source: ActionSource.viewer);
-        break;
-    }
   }
 
-  RelativeRect _menuPosition(BuildContext context) {
-    final renderObject = context.findRenderObject();
-    if (renderObject is! RenderBox) {
-      return RelativeRect.fill;
-    }
-
-    final size = renderObject.size;
-    final position = renderObject.localToGlobal(Offset.zero);
-
-    return RelativeRect.fromLTRB(position.dx, position.dy - size.height - 200, position.dx + size.width, position.dy);
-  }
-
-  void _openAlbumSelector(BuildContext context, WidgetRef ref) {
+  void _openAlbumSelector() {
     final currentAsset = ref.read(currentAssetNotifier);
     if (currentAsset == null) {
       ImmichToast.show(context: context, msg: "Cannot load asset information.", toastType: ToastType.error);
       return;
     }
 
-    final List<Widget> slivers = [
-      AlbumSelector(onAlbumSelected: (album) => _addCurrentAssetToAlbum(context, ref, album)),
-    ];
+    final List<Widget> slivers = [AlbumSelector(onAlbumSelected: (album) => _addCurrentAssetToAlbum(album))];
 
     showModalBottomSheet(
       context: context,
@@ -141,7 +127,7 @@ class AddActionButton extends ConsumerWidget {
     );
   }
 
-  Future<void> _addCurrentAssetToAlbum(BuildContext context, WidgetRef ref, RemoteAlbum album) async {
+  Future<void> _addCurrentAssetToAlbum(RemoteAlbum album) async {
     final latest = ref.read(currentAssetNotifier);
 
     if (latest == null) {
@@ -174,17 +160,27 @@ class AddActionButton extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final asset = ref.watch(currentAssetNotifier);
     if (asset == null) {
       return const SizedBox.shrink();
     }
-    return Builder(
-      builder: (buttonContext) {
+
+    return MenuAnchor(
+      consumeOutsideTap: true,
+      style: MenuStyle(
+        backgroundColor: WidgetStatePropertyAll(context.themeData.scaffoldBackgroundColor),
+        elevation: const WidgetStatePropertyAll(4),
+        shape: const WidgetStatePropertyAll(
+          RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
+        ),
+      ),
+      menuChildren: _buildMenuChildren(),
+      builder: (context, controller, child) {
         return BaseActionButton(
           iconData: Icons.add,
           label: "add_to_bottom_bar".tr(),
-          onPressed: () => _showAddOptions(buttonContext, ref),
+          onPressed: () => controller.isOpen ? controller.close() : controller.open(),
         );
       },
     );

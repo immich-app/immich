@@ -78,7 +78,6 @@
     "exclusion_pattern_description": "Exclusion patterns lets you ignore files and folders when scanning your library. This is useful if you have folders that contain files you don't want to import, such as RAW files.",
     "export_config_as_json_description": "Download the current system config as a JSON file",
     "external_libraries_page_description": "Admin external library page",
-    "external_library_management": "External Library Management",
     "face_detection": "Face detection",
     "face_detection_description": "Detect the faces in assets using machine learning. For videos, only the thumbnail is considered. \"Refresh\" (re-)processes all assets. \"Reset\" additionally clears all current face data. \"Missing\" queues assets that haven't been processed yet. Detected faces will be queued for Facial Recognition after Face Detection is complete, grouping them into existing or new people.",
     "facial_recognition_job_description": "Group detected faces into people. This step runs after Face Detection is complete. \"Reset\" (re-)clusters all faces. \"Missing\" queues faces that don't have a person assigned.",

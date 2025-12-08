@@ -5,8 +5,9 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_bu
 import 'package:immich_mobile/providers/asset_viewer/is_motion_video_playing.provider.dart';
 
 class MotionPhotoActionButton extends ConsumerWidget {
-  const MotionPhotoActionButton({super.key, this.menuItem = true});
+  const MotionPhotoActionButton({super.key, this.iconOnly = true, this.menuItem = false});
 
+  final bool iconOnly;
   final bool menuItem;
 
   @override
@@ -17,6 +18,7 @@ class MotionPhotoActionButton extends ConsumerWidget {
       iconData: isPlaying ? Icons.motion_photos_pause_outlined : Icons.play_circle_outline_rounded,
       label: "play_motion_photo".t(context: context),
       onPressed: ref.read(isPlayingMotionVideoProvider.notifier).toggle,
+      iconOnly: iconOnly,
       menuItem: menuItem,
     );
   }
