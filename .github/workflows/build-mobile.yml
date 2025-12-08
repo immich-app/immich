@@ -222,19 +222,13 @@ jobs:
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: '3.3'
+          bundler-cache: true
           working-directory: ./mobile/ios
 
       - name: Install CocoaPods dependencies
         working-directory: ./mobile/ios
         run: |
           pod install
-
-      - name: Install Fastlane
-        working-directory: ./mobile/ios
-        run: |
-          gem install bundler
-          bundle config set --local path 'vendor/bundle'
-          bundle install
 
       - name: Create API Key
         env:

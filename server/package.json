@@ -70,7 +70,7 @@
     "cookie": "^1.0.2",
     "cookie-parser": "^1.4.7",
     "cron": "4.3.3",
-    "exiftool-vendored": "^33.0.0",
+    "exiftool-vendored": "^34.0.0",
     "express": "^5.1.0",
     "fast-glob": "^3.3.2",
     "fluent-ffmpeg": "^2.1.2",
