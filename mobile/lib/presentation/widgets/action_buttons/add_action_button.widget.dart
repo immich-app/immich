@@ -22,7 +22,9 @@ import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_shee
 enum AddToMenuItem { album, archive, unarchive, lockedFolder }
 
 class AddActionButton extends ConsumerStatefulWidget {
-  const AddActionButton({super.key});
+  const AddActionButton({super.key, this.originalTheme});
+
+  final ThemeData? originalTheme;
 
   @override
   ConsumerState<AddActionButton> createState() => _AddActionButtonState();
@@ -71,7 +73,7 @@ class _AddActionButtonState extends ConsumerState<AddActionButton> {
       ),
 
       if (isOwner) ...[
-        const PopupMenuDivider(),
+        const Divider(),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Text("move_to".tr(), style: context.textTheme.labelMedium),
@@ -166,16 +168,25 @@ class _AddActionButtonState extends ConsumerState<AddActionButton> {
       return const SizedBox.shrink();
     }
 
+    final themeData = widget.originalTheme ?? context.themeData;
+
     return MenuAnchor(
       consumeOutsideTap: true,
       style: MenuStyle(
-        backgroundColor: WidgetStatePropertyAll(context.themeData.scaffoldBackgroundColor),
+        backgroundColor: WidgetStatePropertyAll(themeData.scaffoldBackgroundColor),
         elevation: const WidgetStatePropertyAll(4),
         shape: const WidgetStatePropertyAll(
           RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
         ),
       ),
-      menuChildren: _buildMenuChildren(),
+      menuChildren: widget.originalTheme != null
+          ? [
+              Theme(
+                data: widget.originalTheme!,
+                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: _buildMenuChildren()),
+              ),
+            ]
+          : _buildMenuChildren(),
       builder: (context, controller, child) {
         return BaseActionButton(
           iconData: Icons.add,
