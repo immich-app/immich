@@ -292,14 +292,14 @@ class _SyncStatsCounts extends ConsumerWidget {
                   spacing: 8.0,
                   children: [
                     Expanded(
-                      child: EntitiyCountTile(
+                      child: EntityCountTile(
                         label: "local".t(context: context),
                         count: localAssetCount,
                         icon: Icons.smartphone,
                       ),
                     ),
                     Expanded(
-                      child: EntitiyCountTile(
+                      child: EntityCountTile(
                         label: "remote".t(context: context),
                         count: remoteAssetCount,
                         icon: Icons.cloud,
@@ -320,14 +320,14 @@ class _SyncStatsCounts extends ConsumerWidget {
                   spacing: 8.0,
                   children: [
                     Expanded(
-                      child: EntitiyCountTile(
+                      child: EntityCountTile(
                         label: "local".t(context: context),
                         count: localAlbumCount,
                         icon: Icons.smartphone,
                       ),
                     ),
                     Expanded(
-                      child: EntitiyCountTile(
+                      child: EntityCountTile(
                         label: "remote".t(context: context),
                         count: remoteAlbumCount,
                         icon: Icons.cloud,
@@ -348,14 +348,14 @@ class _SyncStatsCounts extends ConsumerWidget {
                   spacing: 8.0,
                   children: [
                     Expanded(
-                      child: EntitiyCountTile(
+                      child: EntityCountTile(
                         label: "memories".t(context: context),
                         count: memoryCount,
                         icon: Icons.calendar_today,
                       ),
                     ),
                     Expanded(
-                      child: EntitiyCountTile(
+                      child: EntityCountTile(
                         label: "hashed_assets".t(context: context),
                         count: localHashedCount,
                         icon: Icons.tag,
@@ -383,14 +383,14 @@ class _SyncStatsCounts extends ConsumerWidget {
                           spacing: 8.0,
                           children: [
                             Expanded(
-                              child: EntitiyCountTile(
+                              child: EntityCountTile(
                                 label: "local".t(context: context),
                                 count: c.total,
                                 icon: Icons.delete_outline,
                               ),
                             ),
                             Expanded(
-                              child: EntitiyCountTile(
+                              child: EntityCountTile(
                                 label: "hashed_assets".t(context: context),
                                 count: c.hashed,
                                 icon: Icons.tag,

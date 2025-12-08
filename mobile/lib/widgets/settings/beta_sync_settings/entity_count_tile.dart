@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 
-class EntitiyCountTile extends StatelessWidget {
+class EntityCountTile extends StatelessWidget {
   final int count;
   final String label;
   final IconData icon;
 
-  const EntitiyCountTile({super.key, required this.count, required this.label, required this.icon});
+  const EntityCountTile({super.key, required this.count, required this.label, required this.icon});
 
   String zeroPadding(int number, int targetWidth) {
     final numStr = number.toString();
