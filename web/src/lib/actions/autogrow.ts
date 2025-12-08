@@ -1,4 +1,3 @@
-import { tick } from 'svelte';
 import type { Action } from 'svelte/action';
 
 type Parameters = {
@@ -6,14 +5,19 @@ type Parameters = {
   value: string; // added to enable reactivity
 };
 
-export const autoGrowHeight: Action<HTMLTextAreaElement, Parameters> = (textarea, { height = 'auto' }) => {
-  const update = () => {
-    void tick().then(() => {
-      textarea.style.height = height;
-      textarea.style.height = `${textarea.scrollHeight}px`;
-    });
+export const autoGrowHeight: Action<HTMLTextAreaElement, Parameters> = (textarea) => {
+  const resize = () => {
+    textarea.style.minHeight = '0';
+    textarea.style.height = 'auto';
+    textarea.style.height = `${textarea.scrollHeight}px`;
   };
 
-  update();
-  return { update };
+  resize();
+  textarea.addEventListener('input', resize);
+  return {
+    update: resize,
+    destroy() {
+      textarea.removeEventListener('input', resize);
+    },
+  };
 };
