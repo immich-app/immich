@@ -20,7 +20,7 @@ class DeleteActionButton extends ConsumerWidget {
   final bool showConfirmation;
   const DeleteActionButton({super.key, required this.source, this.showConfirmation = false});
 
-  void _onTap(BuildContext context, WidgetRef ref) async {
+  static void deleteAsset(BuildContext context, WidgetRef ref, bool showConfirmation, ActionSource source) async {
     if (!context.mounted) {
       return;
     }
@@ -74,7 +74,7 @@ class DeleteActionButton extends ConsumerWidget {
       maxWidth: 110.0,
       iconData: Icons.delete_sweep_outlined,
       label: "delete".t(context: context),
-      onPressed: () => _onTap(context, ref),
+      onPressed: () => deleteAsset(context, ref, showConfirmation, source),
     );
   }
 }

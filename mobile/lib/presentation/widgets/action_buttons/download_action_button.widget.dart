@@ -14,7 +14,12 @@ class DownloadActionButton extends ConsumerWidget {
   final bool menuItem;
   const DownloadActionButton({super.key, required this.source, this.iconOnly = false, this.menuItem = false});
 
-  void _onTap(BuildContext context, WidgetRef ref, BackgroundSyncManager backgroundSyncManager) async {
+  static void onDownload(
+    BuildContext context,
+    WidgetRef ref,
+    ActionSource source,
+    BackgroundSyncManager backgroundSyncManager,
+  ) async {
     if (!context.mounted) {
       return;
     }
@@ -41,7 +46,7 @@ class DownloadActionButton extends ConsumerWidget {
       label: "download".t(context: context),
       iconOnly: iconOnly,
       menuItem: menuItem,
-      onPressed: () => _onTap(context, ref, backgroundManager),
+      onPressed: () => onDownload(context, ref, source, backgroundManager),
     );
   }
 }

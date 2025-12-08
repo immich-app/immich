@@ -24,6 +24,67 @@ enum AddToMenuItem { album, archive, unarchive, lockedFolder }
 class AddActionButton extends ConsumerStatefulWidget {
   const AddActionButton({super.key});
 
+  static void openAlbumSelector(BuildContext context, WidgetRef ref) {
+    final currentAsset = ref.read(currentAssetNotifier);
+    if (currentAsset == null) {
+      ImmichToast.show(context: context, msg: "Cannot load asset information.", toastType: ToastType.error);
+      return;
+    }
+
+    final List<Widget> slivers = [
+      AlbumSelector(onAlbumSelected: (album) => addCurrentAssetToAlbum(context, ref, album)),
+    ];
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) {
+        return BaseBottomSheet(
+          actions: const [],
+          slivers: slivers,
+          initialChildSize: 0.6,
+          minChildSize: 0.3,
+          maxChildSize: 0.95,
+          expand: false,
+          backgroundColor: context.isDarkTheme ? Colors.black : Colors.white,
+        );
+      },
+    );
+  }
+
+  static Future<void> addCurrentAssetToAlbum(BuildContext context, WidgetRef ref, RemoteAlbum album) async {
+    final latest = ref.read(currentAssetNotifier);
+
+    if (latest == null) {
+      ImmichToast.show(context: context, msg: "Cannot load asset information.", toastType: ToastType.error);
+      return;
+    }
+
+    final addedCount = await ref.read(remoteAlbumProvider.notifier).addAssets(album.id, [latest.remoteId!]);
+
+    if (!context.mounted) {
+      return;
+    }
+
+    if (addedCount == 0) {
+      ImmichToast.show(
+        context: context,
+        msg: 'add_to_album_bottom_sheet_already_exists'.tr(namedArgs: {'album': album.name}),
+      );
+    } else {
+      ImmichToast.show(
+        context: context,
+        msg: 'add_to_album_bottom_sheet_added'.tr(namedArgs: {'album': album.name}),
+      );
+    }
+
+    if (!context.mounted) {
+      return;
+    }
+    await Navigator.of(context).maybePop();
+  }
+
   @override
   ConsumerState<AddActionButton> createState() => _AddActionButtonState();
 }
@@ -32,7 +93,7 @@ class _AddActionButtonState extends ConsumerState<AddActionButton> {
   void _handleMenuSelection(AddToMenuItem selected) {
     switch (selected) {
       case AddToMenuItem.album:
-        _openAlbumSelector();
+        AddActionButton.openAlbumSelector(context, ref);
         break;
       case AddToMenuItem.archive:
         performArchiveAction(context, ref, source: ActionSource.viewer);
@@ -98,65 +159,6 @@ class _AddActionButtonState extends ConsumerState<AddActionButton> {
         ),
       ],
     ];
-  }
-
-  void _openAlbumSelector() {
-    final currentAsset = ref.read(currentAssetNotifier);
-    if (currentAsset == null) {
-      ImmichToast.show(context: context, msg: "Cannot load asset information.", toastType: ToastType.error);
-      return;
-    }
-
-    final List<Widget> slivers = [AlbumSelector(onAlbumSelected: (album) => _addCurrentAssetToAlbum(album))];
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) {
-        return BaseBottomSheet(
-          actions: const [],
-          slivers: slivers,
-          initialChildSize: 0.6,
-          minChildSize: 0.3,
-          maxChildSize: 0.95,
-          expand: false,
-          backgroundColor: context.isDarkTheme ? Colors.black : Colors.white,
-        );
-      },
-    );
-  }
-
-  Future<void> _addCurrentAssetToAlbum(RemoteAlbum album) async {
-    final latest = ref.read(currentAssetNotifier);
-
-    if (latest == null) {
-      ImmichToast.show(context: context, msg: "Cannot load asset information.", toastType: ToastType.error);
-      return;
-    }
-
-    final addedCount = await ref.read(remoteAlbumProvider.notifier).addAssets(album.id, [latest.remoteId!]);
-
-    if (!context.mounted) {
-      return;
-    }
-
-    if (addedCount == 0) {
-      ImmichToast.show(
-        context: context,
-        msg: 'add_to_album_bottom_sheet_already_exists'.tr(namedArgs: {'album': album.name}),
-      );
-    } else {
-      ImmichToast.show(
-        context: context,
-        msg: 'add_to_album_bottom_sheet_added'.tr(namedArgs: {'album': album.name}),
-      );
-    }
-
-    if (!context.mounted) {
-      return;
-    }
-    await Navigator.of(context).maybePop();
   }
 
   @override

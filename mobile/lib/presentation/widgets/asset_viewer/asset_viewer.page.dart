@@ -5,6 +5,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/events.model.dart';
@@ -13,6 +14,9 @@ import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/extensions/scroll_extensions.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/add_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/delete_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/download_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/download_status_floating_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/activities_bottom_sheet.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_stack.provider.dart';
@@ -27,11 +31,14 @@ import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart'
 import 'package:immich_mobile/providers/asset_viewer/is_motion_video_playing.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/video_player_controls_provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/video_player_value_provider.dart';
+import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/cast.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
+import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_loading_indicator.dart';
 import 'package:immich_mobile/widgets/photo_view/photo_view.dart';
 import 'package:immich_mobile/widgets/photo_view/photo_view_gallery.dart';
@@ -622,6 +629,70 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     ref.read(currentAssetNotifier.notifier).dispose();
   }
 
+  KeyEventResult handleKeyEvent(KeyDownEvent event) {
+    final asset = ref.watch(currentAssetNotifier);
+    final user = ref.watch(currentUserProvider);
+    final isOwner = asset is RemoteAsset && asset.ownerId == user?.id;
+    // Arrow Left
+    if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
+      final prevIndex = (pageController.page?.round() ?? 0) - 1;
+      if (prevIndex >= 0) {
+        pageController.animateToPage(prevIndex, duration: Durations.short4, curve: Curves.ease);
+      }
+      return KeyEventResult.handled;
+    }
+
+    // Arrow Right
+    if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
+      final nextIndex = (pageController.page?.round() ?? 0) + 1;
+      if (nextIndex < totalAssets) {
+        pageController.animateToPage(nextIndex, duration: Durations.short4, curve: Curves.ease);
+      }
+      return KeyEventResult.handled;
+    }
+
+    // Key F - Favorite / Unfavorite
+    if (event.logicalKey == LogicalKeyboardKey.keyF) {
+      if (asset == null || !asset.hasRemote || !isOwner) return KeyEventResult.ignored;
+      if (asset.isFavorite) {
+        ref.read(actionProvider.notifier).unFavorite(ActionSource.viewer);
+        return KeyEventResult.handled;
+      } else {
+        ref.read(actionProvider.notifier).favorite(ActionSource.viewer);
+        return KeyEventResult.handled;
+      }
+    }
+
+    // Shift + D - Download
+    if (event.logicalKey == LogicalKeyboardKey.keyD &&
+        (HardwareKeyboard.instance.logicalKeysPressed.contains(LogicalKeyboardKey.shiftLeft) ||
+            HardwareKeyboard.instance.logicalKeysPressed.contains(LogicalKeyboardKey.shiftRight))) {
+      if (asset == null || !asset.isRemoteOnly) return KeyEventResult.ignored;
+      final backgroundManager = ref.watch(backgroundSyncProvider);
+      DownloadActionButton.onDownload(context, ref, ActionSource.viewer, backgroundManager);
+      return KeyEventResult.handled;
+    }
+
+    // Key L - Add to Album
+    if (event.logicalKey == LogicalKeyboardKey.keyL) {
+      AddActionButton.openAlbumSelector(context, ref);
+      return KeyEventResult.handled;
+    }
+
+    // Delete Key - Delete Asset
+    if (event.logicalKey == LogicalKeyboardKey.delete) {
+      if (asset == null || !asset.hasRemote || !isOwner) return KeyEventResult.ignored;
+      if (asset.isLocalOnly) {
+        ref.read(actionProvider.notifier).deleteLocal(ActionSource.viewer, context);
+      } else {
+        DeleteActionButton.deleteAsset(context, ref, true, ActionSource.viewer);
+      }
+      return KeyEventResult.handled;
+    }
+
+    return KeyEventResult.ignored;
+  }
+
   @override
   Widget build(BuildContext context) {
     // Rebuild the widget when the asset viewer state changes
@@ -658,46 +729,55 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     // TODO: Add a custom scrum builder once the fix lands on stable
     return PopScope(
       onPopInvokedWithResult: _onPop,
-      child: Scaffold(
-        backgroundColor: backgroundColor,
-        appBar: const ViewerTopAppBar(),
-        extendBody: true,
-        extendBodyBehindAppBar: true,
-        floatingActionButton: IgnorePointer(
-          ignoring: !showingControls,
-          child: AnimatedOpacity(
-            opacity: showingControls ? 1.0 : 0.0,
-            duration: Durations.short2,
-            child: const DownloadStatusFloatingButton(),
-          ),
-        ),
-        body: Stack(
-          children: [
-            PhotoViewGallery.builder(
-              gaplessPlayback: true,
-              loadingBuilder: _placeholderBuilder,
-              pageController: pageController,
-              scrollPhysics: CurrentPlatform.isIOS
-                  ? const FastScrollPhysics() // Use bouncing physics for iOS
-                  : const FastClampingScrollPhysics(), // Use heavy physics for Android
-              itemCount: totalAssets,
-              onPageChanged: _onPageChanged,
-              onPageBuild: _onPageBuild,
-              scaleStateChangedCallback: _onScaleStateChanged,
-              builder: _assetBuilder,
-              backgroundDecoration: BoxDecoration(color: backgroundColor),
-              enablePanAlways: true,
+      child: Focus(
+        autofocus: true,
+        onKeyEvent: (node, event) {
+          if (event is KeyDownEvent) {
+            return handleKeyEvent(event);
+          }
+          return KeyEventResult.ignored;
+        },
+        child: Scaffold(
+          backgroundColor: backgroundColor,
+          appBar: const ViewerTopAppBar(),
+          extendBody: true,
+          extendBodyBehindAppBar: true,
+          floatingActionButton: IgnorePointer(
+            ignoring: !showingControls,
+            child: AnimatedOpacity(
+              opacity: showingControls ? 1.0 : 0.0,
+              duration: Durations.short2,
+              child: const DownloadStatusFloatingButton(),
             ),
-          ],
-        ),
-        bottomNavigationBar: showingBottomSheet
-            ? const SizedBox.shrink()
-            : const Column(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.end,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [AssetStackRow(), ViewerBottomBar()],
+          ),
+          body: Stack(
+            children: [
+              PhotoViewGallery.builder(
+                gaplessPlayback: true,
+                loadingBuilder: _placeholderBuilder,
+                pageController: pageController,
+                scrollPhysics: CurrentPlatform.isIOS
+                    ? const FastScrollPhysics() // Use bouncing physics for iOS
+                    : const FastClampingScrollPhysics(), // Use heavy physics for Android
+                itemCount: totalAssets,
+                onPageChanged: _onPageChanged,
+                onPageBuild: _onPageBuild,
+                scaleStateChangedCallback: _onScaleStateChanged,
+                builder: _assetBuilder,
+                backgroundDecoration: BoxDecoration(color: backgroundColor),
+                enablePanAlways: true,
               ),
+            ],
+          ),
+          bottomNavigationBar: showingBottomSheet
+              ? const SizedBox.shrink()
+              : const Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [AssetStackRow(), ViewerBottomBar()],
+                ),
+        ),
       ),
     );
   }

@@ -15,7 +15,7 @@ class FavoriteActionButton extends ConsumerWidget {
 
   const FavoriteActionButton({super.key, required this.source, this.iconOnly = false, this.menuItem = false});
 
-  void _onTap(BuildContext context, WidgetRef ref) async {
+  static void favoriteAsset(BuildContext context, WidgetRef ref, ActionSource source) async {
     if (!context.mounted) {
       return;
     }
@@ -47,7 +47,7 @@ class FavoriteActionButton extends ConsumerWidget {
       label: "favorite".t(context: context),
       iconOnly: iconOnly,
       menuItem: menuItem,
-      onPressed: () => _onTap(context, ref),
+      onPressed: () => favoriteAsset(context, ref, source),
     );
   }
 }
