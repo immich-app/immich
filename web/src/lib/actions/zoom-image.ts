@@ -14,6 +14,8 @@ export const zoomImageAction = (node: HTMLElement, options?: { disabled?: boolea
     setZoomImageState(state);
   }
 
+  node.style.overflow = 'visible';
+
   // Store original event handlers so we can prevent them when disabled
   const wheelHandler = (event: WheelEvent) => {
     if (options?.disabled) {
@@ -21,15 +23,15 @@ export const zoomImageAction = (node: HTMLElement, options?: { disabled?: boolea
     }
   };
 
-  const pointerDownHandler = (event: PointerEvent) => {
+  const disabledPointerDownHandler = (event: PointerEvent) => {
     if (options?.disabled) {
       event.stopImmediatePropagation();
     }
   };
 
-  // Add handlers at capture phase with higher priority
+  // Add handlers at capture phase with higher priority for disabled state
   node.addEventListener('wheel', wheelHandler, { capture: true });
-  node.addEventListener('pointerdown', pointerDownHandler, { capture: true });
+  node.addEventListener('pointerdown', disabledPointerDownHandler, { capture: true });
 
   const unsubscribes = [photoZoomState.subscribe(setZoomImageState), zoomImageState.subscribe(photoZoomState.set)];
 
@@ -39,7 +41,7 @@ export const zoomImageAction = (node: HTMLElement, options?: { disabled?: boolea
     },
     destroy() {
       node.removeEventListener('wheel', wheelHandler, { capture: true });
-      node.removeEventListener('pointerdown', pointerDownHandler, { capture: true });
+      node.removeEventListener('pointerdown', disabledPointerDownHandler, { capture: true });
       for (const unsubscribe of unsubscribes) {
         unsubscribe();
       }

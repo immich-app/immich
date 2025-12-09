@@ -1,6 +1,12 @@
 import { eventManager } from '$lib/managers/event-manager.svelte';
 
 class ViewTransitionManager {
+  #activeViewTransition = $state<ViewTransition | null>(null);
+
+  get activeViewTransition() {
+    return this.#activeViewTransition;
+  }
+
   startTransition(domUpdateComplete: Promise<void>, finishedCallback?: () => void) {
     // good time to add view-transition-name styles (if needed)
     eventManager.emit('BeforeStartViewTransition');
@@ -16,6 +22,7 @@ class ViewTransitionManager {
         console.log('exception', error);
       }
     });
+    this.#activeViewTransition = transition;
     // UpdateCallbackDone is a good time to add any view-transition-name styles
     // to the new DOM state, before the 'new' view snapshot is creatd
     // eslint-disable-next-line tscompat/tscompat
@@ -34,7 +41,10 @@ class ViewTransitionManager {
       .then(() => eventManager.emit('Finished'))
       .catch((error: unknown) => console.log('exception in finished', error));
     // eslint-disable-next-line tscompat/tscompat
-    void transition.finished.then(() => finishedCallback?.());
+    void transition.finished.then(() => {
+      finishedCallback?.();
+      this.#activeViewTransition = null;
+    });
   }
 }
 

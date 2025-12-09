@@ -724,20 +724,21 @@
                   // tag  target on the 'old' snapshot
                   toAssetViewerTransitionId = asset.id;
 
-                  viewTransitionManager.startTransition(
-                    new Promise((resolve) =>
-                      eventManager.once('AssetViewerFree', () => {
-                        eventManager.emit('TransitionToAssetViewer');
-                        resolve();
-                      }),
-                    ),
-                  );
-
                   eventManager.once('StartViewTransition', () => {
                     // remove target on the 'old' view,
                     // asset-viewer will tag new target element for 'new' snapshot
                     toAssetViewerTransitionId = null;
                   });
+
+                  viewTransitionManager.startTransition(
+                    new Promise((resolve) =>
+                      eventManager.once('AssetViewerFree', () => {
+                        toAssetViewerTransitionId = null;
+                        eventManager.emit('TransitionToAssetViewer');
+                        resolve();
+                      }),
+                    ),
+                  );
 
                   if (typeof onThumbnailClick === 'function') {
                     onThumbnailClick(asset, timelineManager, dayGroup, _onClick);

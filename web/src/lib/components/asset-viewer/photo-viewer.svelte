@@ -1,5 +1,6 @@
 <script lang="ts">
   import { shortcuts } from '$lib/actions/shortcut';
+  import { swipeFeedback } from '$lib/actions/swipe-feedback';
   import { zoomImageAction } from '$lib/actions/zoom-image';
   import FaceEditor from '$lib/components/asset-viewer/face-editor/face-editor.svelte';
   import OcrBoundingBox from '$lib/components/asset-viewer/ocr-bounding-box.svelte';
@@ -22,14 +23,15 @@
   import { AssetMediaSize, type AssetResponseDto, type SharedLinkResponseDto } from '@immich/sdk';
   import { LoadingSpinner, toastManager } from '@immich/ui';
   import { onDestroy, onMount, untrack } from 'svelte';
-  import { useSwipe, type SwipeCustomEvent } from 'svelte-gestures';
+  import { type SwipeCustomEvent } from 'svelte-gestures';
   import { t } from 'svelte-i18n';
 
   interface Props {
     transitionName?: string | null;
     asset: AssetResponseDto;
+    previousAsset?: AssetResponseDto;
+    nextAsset?: AssetResponseDto;
     element?: HTMLDivElement | undefined;
-    haveFadeTransition?: boolean;
     sharedLink?: SharedLinkResponseDto | undefined;
     onPreviousAsset?: (() => void) | null;
     onNextAsset?: (() => void) | null;
@@ -44,8 +46,9 @@
   let {
     transitionName,
     asset,
+    previousAsset,
+    nextAsset,
     element = $bindable(),
-    haveFadeTransition = true,
     sharedLink = undefined,
     onPreviousAsset = null,
     onNextAsset = null,
@@ -58,7 +61,7 @@
   }: Props = $props();
 
   const { slideshowState, slideshowLook } = slideshowStore;
-  haveFadeTransition = true;
+
   let imageLoaded: boolean = $state(false);
   let originalImageLoaded: boolean = $state(false);
   let imageError: boolean = $state(false);
@@ -72,13 +75,6 @@
   });
 
   const calculateSize = () => {
-    // Recalculate size when image is loaded/errored
-    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-    imageLoaded || imageError;
-
-    const naturalWidth = loader?.naturalWidth ?? 1;
-    const naturalHeight = loader?.naturalHeight ?? 1;
-
     const scaleX = containerWidth / naturalWidth;
     const scaleY = containerHeight / naturalHeight;
 
@@ -88,12 +84,14 @@
     const scaledWidth = naturalWidth * scale;
     const scaledHeight = naturalHeight * scale;
 
-    return {
+    const result = {
       width: scaledWidth,
       height: scaledHeight,
       left: (containerWidth - scaledWidth) / 2,
       top: (containerHeight - scaledHeight) / 2,
     };
+
+    return result;
   };
 
   const box = $derived(calculateSize());
@@ -105,6 +103,34 @@
   );
 
   let isOcrActive = $derived(ocrManager.showOverlay);
+
+  // Swipe preview state
+  let swipeOffsetX = $state(0);
+
+  const handleSwipeMove = (offsetX: number) => {
+    swipeOffsetX = offsetX;
+  };
+
+  const handleSwipeEnd = () => {
+    swipeOffsetX = 0;
+  };
+
+  const handlePreCommit = (direction: 'left' | 'right', previewNaturalWidth: number, previewNaturalHeight: number) => {
+    // Set the natural dimensions from the preview image BEFORE navigation starts
+    // This ensures calculateSize has the correct dimensions immediately when the component reloads
+    naturalWidth = previewNaturalWidth;
+    naturalHeight = previewNaturalHeight;
+  };
+
+  const handleSwipeCommit = (direction: 'left' | 'right') => {
+    if (direction === 'left' && onNextAsset) {
+      // Swiped left, go to next asset
+      onNextAsset();
+    } else if (direction === 'right' && onPreviousAsset) {
+      // Swiped right, go to previous asset
+      onPreviousAsset();
+    }
+  };
 
   copyImage = async () => {
     if (!canCopyImageToClipboard() || !$photoViewerImgElement) {
@@ -186,12 +212,17 @@
     onLoad?.();
     onFree?.();
     imageLoaded = true;
+    loadingCachedPreview = false;
+    naturalWidth = loader?.naturalWidth ?? 1;
+    naturalHeight = loader?.naturalHeight ?? 1;
     originalImageLoaded = targetImageSize === AssetMediaSize.Fullsize || targetImageSize === 'original';
   };
 
   const onerror = () => {
     onError?.();
     onFree?.();
+    naturalWidth = loader?.naturalWidth ?? 1;
+    naturalHeight = loader?.naturalHeight ?? 1;
     imageError = imageLoaded = true;
   };
 
@@ -200,18 +231,26 @@
       if (!imageLoaded && !imageError) {
         onFree?.();
       }
-      preloadManager.cancelPreloadUrl(imageLoaderUrl);
+      if (imageLoaderUrl) {
+        preloadManager.cancelPreloadUrl(imageLoaderUrl);
+      }
     };
   });
 
-  let imageLoaderUrl = $derived(
+  const imageLoaderUrl = $derived(
     getAssetUrl({ asset, sharedLink, forceOriginal: originalImageLoaded || $photoZoomState.currentZoom > 1 }),
   );
+  const previousAssetUrl = $derived(getAssetUrl({ asset: previousAsset, sharedLink }));
+  const nextAssetUrl = $derived(getAssetUrl({ asset: nextAsset, sharedLink }));
 
   let containerWidth = $state(0);
   let containerHeight = $state(0);
+  let naturalWidth = $state(1);
+  let naturalHeight = $state(1);
 
-  let lastUrl: string | undefined;
+  let lastUrl: string | undefined | null;
+  let lastPreviousUrl: string | undefined | null;
+  let lastNextUrl: string | undefined | null;
 
   $effect(() => {
     if (!lastUrl) {
@@ -219,13 +258,21 @@
     }
     if (lastUrl && lastUrl !== imageLoaderUrl) {
       untrack(() => {
-        imageLoaded = false;
+        const isPreviewedImage = imageLoaderUrl === lastPreviousUrl || imageLoaderUrl === lastNextUrl;
+
+        if (!isPreviewedImage) {
+          // It is a previewed image - prevent flicker - skip spinner but still let loader go through lifecycle
+          imageLoaded = false;
+        }
+
         originalImageLoaded = false;
         imageError = false;
         onBusy?.();
       });
     }
     lastUrl = imageLoaderUrl;
+    lastPreviousUrl = previousAssetUrl;
+    lastNextUrl = nextAssetUrl;
   });
 </script>
 
@@ -265,11 +312,21 @@
     {/if}
     <div
       use:zoomImageAction={{ disabled: isOcrActive }}
-      {...useSwipe(onSwipe)}
+      use:swipeFeedback={{
+        disabled: isOcrActive || $photoZoomState.currentZoom > 1,
+        onSwipeMove: handleSwipeMove,
+        onSwipeEnd: handleSwipeEnd,
+        onPreCommit: handlePreCommit,
+        onSwipeCommit: handleSwipeCommit,
+        leftPreviewUrl: previousAssetUrl,
+        rightPreviewUrl: nextAssetUrl,
+        currentAssetUrl: imageLoaderUrl,
+      }}
       style:width={box.width + 'px'}
       style:height={box.height + 'px'}
       style:left={box.left + 'px'}
       style:top={box.top + 'px'}
+      style:overflow="visible"
       class="absolute"
     >
       <img

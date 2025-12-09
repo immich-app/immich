@@ -199,10 +199,13 @@ export const getAssetUrl = ({
   sharedLink,
   forceOriginal = false,
 }: {
-  asset: AssetResponseDto;
+  asset: AssetResponseDto | undefined | null;
   sharedLink?: SharedLinkResponseDto;
   forceOriginal?: boolean;
 }) => {
+  if (!asset) {
+    return null;
+  }
   const id = asset.id;
   const cacheKey = asset.thumbhash;
   if (sharedLink && (!sharedLink.allowDownload || !sharedLink.showMetadata)) {

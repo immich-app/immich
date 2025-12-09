@@ -3,6 +3,7 @@
   import VideoRemoteViewer from '$lib/components/asset-viewer/video-remote-viewer.svelte';
   import { assetViewerFadeDuration } from '$lib/constants';
   import { castManager } from '$lib/managers/cast-manager.svelte';
+  import { eventManager } from '$lib/managers/event-manager.svelte';
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import {
     autoPlayVideo,
@@ -68,6 +69,11 @@
       videoPlayer.src = '';
     }
   });
+
+  const handleLoadedMetadata = () => {
+    box = calculateSize();
+    eventManager.emit('AssetViewerFree');
+  };
 
   const handleCanPlay = async (video: HTMLVideoElement) => {
     try {
@@ -165,7 +171,7 @@
         controls
         disablePictureInPicture
         {...useSwipe(onSwipe)}
-        onloadedmetadata={() => (box = calculateSize())}
+        onloadedmetadata={() => handleLoadedMetadata()}
         oncanplay={(e) => handleCanPlay(e.currentTarget)}
         onended={onVideoEnded}
         onvolumechange={(e) => ($videoViewerMuted = e.currentTarget.muted)}

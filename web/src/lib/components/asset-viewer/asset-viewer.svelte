@@ -159,10 +159,14 @@
     }
   };
 
-  let transitionName = $state<string | null>('hero');
-  let equirectangularTransitionName = $state<string | null>('hero');
+  let transitionName = $state<string | null>(null);
+  let equirectangularTransitionName = $state<string | null>();
   let detailPanelTransitionName = $state<string | null>(null);
 
+  if (viewTransitionManager.activeViewTransition) {
+    transitionName = 'hero';
+    equirectangularTransitionName = 'hero';
+  }
   let addInfoTransition;
   let finished;
   onMount(async () => {
@@ -277,7 +281,7 @@
 
   const tracker = new InvocationTracker();
 
-  const navigateAsset = (order?: 'previous' | 'next', e?: Event) => {
+  const navigateAsset = (order?: 'previous' | 'next', skipTransition?: boolean = false) => {
     if (!order) {
       if ($slideshowState === SlideshowState.PlaySlideshow) {
         order = $slideshowNavigation === SlideshowNavigation.AscendingOrder ? 'previous' : 'next';
@@ -286,7 +290,6 @@
       }
     }
 
-    e?.stopPropagation();
     if (tracker.isActive()) {
       return;
     }
@@ -295,7 +298,9 @@
       let hasNext = false;
 
       if ($slideshowState === SlideshowState.PlaySlideshow && $slideshowNavigation === SlideshowNavigation.Shuffle) {
-        startTransition(null, undefined);
+        if (!skipTransition) {
+          startTransition(null, undefined);
+        }
         hasNext = order === 'previous' ? slideshowHistory.previous() : slideshowHistory.next();
         if (!hasNext) {
           const asset = await onRandom?.();
@@ -307,7 +312,7 @@
       } else if (onNavigateToAsset) {
         // only transition if the target is already preloaded, and is in a secure context
         const targetAsset = order === 'previous' ? previousAsset : nextAsset;
-        if (!!targetAsset && globalThis.isSecureContext && preloadManager.isPreloaded(targetAsset)) {
+        if (!skipTransition && !!targetAsset && globalThis.isSecureContext && preloadManager.isPreloaded(targetAsset)) {
           const targetTransition = $slideshowState === SlideshowState.PlaySlideshow ? null : order;
           startTransition(targetTransition, targetAsset);
         }
@@ -468,7 +473,7 @@
   $effect(() => {
     // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     asset.id;
-    if (viewerKind !== 'PhotoViewer' && viewerKind !== 'ImagePanaramaViewer') {
+    if (viewerKind !== 'PhotoViewer' && viewerKind !== 'ImagePanaramaViewer' && viewerKind !== 'VideoViewer') {
       eventManager.emit('AssetViewerFree');
     }
   });
@@ -570,9 +575,10 @@
         bind:copyImage
         {transitionName}
         asset={previewStackedAsset!}
-        onPreviousAsset={() => navigateAsset('previous')}
-        onNextAsset={() => navigateAsset('next')}
-        haveFadeTransition={false}
+        {nextAsset}
+        {previousAsset}
+        onPreviousAsset={() => navigateAsset('previous', true)}
+        onNextAsset={() => navigateAsset('next', true)}
         {sharedLink}
       />
     {:else if viewerKind === 'StackVideoViewer'}
@@ -611,10 +617,11 @@
         bind:zoomToggle
         bind:copyImage
         {asset}
-        onPreviousAsset={() => navigateAsset('previous')}
-        onNextAsset={() => navigateAsset('next')}
+        {nextAsset}
+        {previousAsset}
+        onPreviousAsset={() => navigateAsset('previous', true)}
+        onNextAsset={() => navigateAsset('next', true)}
         {sharedLink}
-        haveFadeTransition={$slideshowState !== SlideshowState.None && $slideshowTransition}
         onFree={() => eventManager.emit('AssetViewerFree')}
       />
     {:else if viewerKind === 'VideoViewer'}
