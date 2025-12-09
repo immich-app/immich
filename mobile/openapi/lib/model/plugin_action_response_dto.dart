@@ -32,7 +32,7 @@ class PluginActionResponseDto {
 
   Object? schema;
 
-  List<PluginContext> supportedContexts;
+  List<PluginContextType> supportedContexts;
 
   String title;
 
@@ -90,7 +90,7 @@ class PluginActionResponseDto {
         methodName: mapValueOfType<String>(json, r'methodName')!,
         pluginId: mapValueOfType<String>(json, r'pluginId')!,
         schema: mapValueOfType<Object>(json, r'schema'),
-        supportedContexts: PluginContext.listFromJson(json[r'supportedContexts']),
+        supportedContexts: PluginContextType.listFromJson(json[r'supportedContexts']),
         title: mapValueOfType<String>(json, r'title')!,
       );
     }

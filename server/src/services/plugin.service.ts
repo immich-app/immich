@@ -6,8 +6,9 @@ import { join } from 'node:path';
 import { Asset, WorkflowAction, WorkflowFilter } from 'src/database';
 import { OnEvent, OnJob } from 'src/decorators';
 import { PluginManifestDto } from 'src/dtos/plugin-manifest.dto';
-import { mapPlugin, PluginResponseDto } from 'src/dtos/plugin.dto';
+import { mapPlugin, PluginResponseDto, PluginTriggerResponseDto } from 'src/dtos/plugin.dto';
 import { JobName, JobStatus, PluginTriggerType, QueueName } from 'src/enum';
+import { pluginTriggers } from 'src/plugins';
 import { ArgOf } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
 import { PluginHostFunctions } from 'src/services/plugin-host.functions';
@@ -48,6 +49,10 @@ export class PluginService extends BaseService {
     );
 
     await this.loadPlugins();
+  }
+
+  getTriggers(): PluginTriggerResponseDto[] {
+    return pluginTriggers;
   }
 
   //
