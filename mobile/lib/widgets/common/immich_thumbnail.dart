@@ -13,12 +13,20 @@ import 'package:octo_image/octo_image.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 
 class ImmichThumbnail extends HookConsumerWidget {
-  const ImmichThumbnail({this.asset, this.width = 250, this.height = 250, this.fit = BoxFit.cover, super.key});
+  const ImmichThumbnail({
+    this.asset,
+    this.width = 250,
+    this.height = 250,
+    this.fit = BoxFit.cover,
+    super.key,
+    this.placeholderEnabled = true,
+  });
 
   final Asset? asset;
   final double width;
   final double height;
   final BoxFit fit;
+  final bool placeholderEnabled;
 
   /// Helper function to return the image provider for the asset thumbnail
   /// either by using the asset ID or the asset itself
@@ -47,7 +55,7 @@ class ImmichThumbnail extends HookConsumerWidget {
 
     if (asset == null) {
       return Container(
-        color: Colors.grey,
+        color: Colors.black,
         width: width,
         height: height,
         child: const Center(child: Icon(Icons.no_photography)),
