@@ -9,11 +9,17 @@ broadcast.addEventListener('message', (event) => {
   }
 });
 
-export function cancelImageUrl(url: string) {
+export function cancelImageUrl(url: string | undefined | null) {
+  if (!url) {
+    return;
+  }
   broadcast.postMessage({ type: 'cancel', url });
 }
 
-export function preloadImageUrl(url: string) {
+export function preloadImageUrl(url: string | undefined | null) {
+  if (!url) {
+    return;
+  }
   broadcast.postMessage({ type: 'preload', url });
 }
 

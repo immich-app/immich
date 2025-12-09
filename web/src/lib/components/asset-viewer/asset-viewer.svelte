@@ -119,6 +119,8 @@
   let zoomToggle = $state(() => void 0);
   let playOriginalVideo = $state($alwaysLoadOriginalVideo);
 
+  let nextSizeHint = $state<{ width: number; height: number } | null>(null);
+
   const setPlayOriginalVideo = (value: boolean) => {
     playOriginalVideo = value;
   };
@@ -159,10 +161,14 @@
     }
   };
 
-  let transitionName = $state<string | null>('hero');
-  let equirectangularTransitionName = $state<string | null>('hero');
+  let transitionName = $state<string | null>(null);
+  let equirectangularTransitionName = $state<string | null>();
   let detailPanelTransitionName = $state<string | null>(null);
 
+  if (viewTransitionManager.activeViewTransition) {
+    transitionName = 'hero';
+    equirectangularTransitionName = 'hero';
+  }
   let addInfoTransition;
   let finished;
   onMount(async () => {
@@ -277,7 +283,7 @@
 
   const tracker = new InvocationTracker();
 
-  const navigateAsset = (order?: 'previous' | 'next', e?: Event) => {
+  const navigateAsset = (order?: 'previous' | 'next', skipTransition: boolean = false) => {
     if (!order) {
       if ($slideshowState === SlideshowState.PlaySlideshow) {
         order = $slideshowNavigation === SlideshowNavigation.AscendingOrder ? 'previous' : 'next';
@@ -286,7 +292,6 @@
       }
     }
 
-    e?.stopPropagation();
     if (tracker.isActive()) {
       return;
     }
@@ -295,7 +300,9 @@
       let hasNext = false;
 
       if ($slideshowState === SlideshowState.PlaySlideshow && $slideshowNavigation === SlideshowNavigation.Shuffle) {
-        startTransition(null, undefined);
+        if (!skipTransition) {
+          startTransition(null, undefined);
+        }
         hasNext = order === 'previous' ? slideshowHistory.previous() : slideshowHistory.next();
         if (!hasNext) {
           const asset = await onRandom?.();
@@ -307,7 +314,7 @@
       } else if (onNavigateToAsset) {
         // only transition if the target is already preloaded, and is in a secure context
         const targetAsset = order === 'previous' ? previousAsset : nextAsset;
-        if (!!targetAsset && globalThis.isSecureContext && preloadManager.isPreloaded(targetAsset)) {
+        if (!skipTransition && !!targetAsset && globalThis.isSecureContext && preloadManager.isPreloaded(targetAsset)) {
           const targetTransition = $slideshowState === SlideshowState.PlaySlideshow ? null : order;
           startTransition(targetTransition, targetAsset);
         }
@@ -427,6 +434,15 @@
     await goto(`${AppRoute.PHOTOS}/${newAssetId}`);
   };
 
+  const handleAboutToNavigate = (target: { direction: 'left' | 'right'; nextWidth: number; nextHeight: number }) => {
+    debugger;
+    nextSizeHint = {
+      width: target.nextWidth,
+      height: target.nextHeight,
+    };
+    console.log('setting', nextSizeHint);
+  };
+
   let isFullScreen = $derived(fullscreenElement !== null);
 
   $effect(() => {
@@ -468,7 +484,7 @@
   $effect(() => {
     // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     asset.id;
-    if (viewerKind !== 'PhotoViewer' && viewerKind !== 'ImagePanaramaViewer') {
+    if (viewerKind !== 'PhotoViewer' && viewerKind !== 'ImagePanaramaViewer' && viewerKind !== 'VideoViewer') {
       eventManager.emit('AssetViewerFree');
     }
   });
@@ -570,20 +586,26 @@
         bind:copyImage
         {transitionName}
         asset={previewStackedAsset!}
-        onPreviousAsset={() => navigateAsset('previous')}
-        onNextAsset={() => navigateAsset('next')}
-        haveFadeTransition={false}
+        {nextAsset}
+        {previousAsset}
+        {nextSizeHint}
+        onAboutToNavigate={handleAboutToNavigate}
+        onPreviousAsset={() => navigateAsset('previous', true)}
+        onNextAsset={() => navigateAsset('next', true)}
         {sharedLink}
       />
     {:else if viewerKind === 'StackVideoViewer'}
       <VideoViewer
         {transitionName}
         assetId={previewStackedAsset!.id}
+        {nextAsset}
+        {previousAsset}
+        {nextSizeHint}
         cacheKey={previewStackedAsset!.thumbhash}
         projectionType={previewStackedAsset!.exifInfo?.projectionType}
         loopVideo={true}
-        onPreviousAsset={() => navigateAsset('previous')}
-        onNextAsset={() => navigateAsset('next')}
+        onPreviousAsset={() => navigateAsset('previous', true)}
+        onNextAsset={() => navigateAsset('next', true)}
         onClose={closeViewer}
         onVideoEnded={() => navigateAsset()}
         onVideoStarted={handleVideoStarted}
@@ -593,11 +615,15 @@
       <VideoViewer
         {transitionName}
         assetId={asset.livePhotoVideoId!}
+        {nextAsset}
+        {previousAsset}
+        {sharedLink}
+        {nextSizeHint}
         cacheKey={asset.thumbhash}
         projectionType={asset.exifInfo?.projectionType}
         loopVideo={$slideshowState !== SlideshowState.PlaySlideshow}
-        onPreviousAsset={() => navigateAsset('previous')}
-        onNextAsset={() => navigateAsset('next')}
+        onPreviousAsset={() => navigateAsset('previous', true)}
+        onNextAsset={() => navigateAsset('next', true)}
         onVideoEnded={() => (shouldPlayMotionPhoto = false)}
         {playOriginalVideo}
       />
@@ -611,21 +637,28 @@
         bind:zoomToggle
         bind:copyImage
         {asset}
-        onPreviousAsset={() => navigateAsset('previous')}
-        onNextAsset={() => navigateAsset('next')}
+        {nextAsset}
+        {previousAsset}
+        {nextSizeHint}
+        onAboutToNavigate={handleAboutToNavigate}
+        onPreviousAsset={() => navigateAsset('previous', true)}
+        onNextAsset={() => navigateAsset('next', true)}
         {sharedLink}
-        haveFadeTransition={$slideshowState !== SlideshowState.None && $slideshowTransition}
         onFree={() => eventManager.emit('AssetViewerFree')}
       />
     {:else if viewerKind === 'VideoViewer'}
       <VideoViewer
         {transitionName}
         assetId={asset.id}
+        {nextAsset}
+        {previousAsset}
+        {sharedLink}
+        {nextSizeHint}
         cacheKey={asset.thumbhash}
         projectionType={asset.exifInfo?.projectionType}
         loopVideo={$slideshowState !== SlideshowState.PlaySlideshow}
-        onPreviousAsset={() => navigateAsset('previous')}
-        onNextAsset={() => navigateAsset('next')}
+        onPreviousAsset={() => navigateAsset('previous', true)}
+        onNextAsset={() => navigateAsset('next', true)}
         onClose={closeViewer}
         onVideoEnded={() => navigateAsset()}
         onVideoStarted={handleVideoStarted}

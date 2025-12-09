@@ -130,3 +130,16 @@ export type CommonPosition = {
   width: number;
   height: number;
 };
+
+// Scales dimensions to fit within a container (like object-fit: contain)
+export const scaleToFit = (width: number, height: number, containerW: number, containerH: number) => {
+  const scaleX = containerW / width;
+  const scaleY = containerH / height;
+
+  const scale = Math.min(scaleX, scaleY);
+
+  return {
+    width: width * scale,
+    height: height * scale,
+  };
+};

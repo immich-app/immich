@@ -2,14 +2,28 @@
   import VideoNativeViewer from '$lib/components/asset-viewer/video-native-viewer.svelte';
   import VideoPanoramaViewer from '$lib/components/asset-viewer/video-panorama-viewer.svelte';
   import { ProjectionType } from '$lib/constants';
+  import type { AssetResponseDto, SharedLinkResponseDto } from '@immich/sdk';
 
   interface Props {
     transitionName?: string | null;
     assetId: string;
+    previousAsset?: AssetResponseDto;
+    nextAsset?: AssetResponseDto;
+    sharedLink?: SharedLinkResponseDto;
+    nextSizeHint?: { width: number; height: number } | null;
     projectionType: string | null | undefined;
     cacheKey: string | null;
     loopVideo: boolean;
     playOriginalVideo: boolean;
+    onAboutToNavigate?: ({
+      direction,
+      nextWidth,
+      nextHeight,
+    }: {
+      direction: 'left' | 'right';
+      nextWidth: number;
+      nextHeight: number;
+    }) => void;
     onClose?: () => void;
     onPreviousAsset?: () => void;
     onNextAsset?: () => void;
@@ -20,10 +34,15 @@
   let {
     transitionName,
     assetId,
+    previousAsset,
+    nextAsset,
+    sharedLink,
+    nextSizeHint,
     projectionType,
     cacheKey,
     loopVideo,
     playOriginalVideo,
+    onAboutToNavigate,
     onPreviousAsset,
     onClose,
     onNextAsset,
@@ -40,7 +59,12 @@
     {loopVideo}
     {cacheKey}
     {assetId}
+    {nextAsset}
+    {sharedLink}
+    {nextSizeHint}
+    {previousAsset}
     {playOriginalVideo}
+    {onAboutToNavigate}
     {onPreviousAsset}
     {onNextAsset}
     {onVideoEnded}

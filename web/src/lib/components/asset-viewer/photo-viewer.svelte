@@ -1,5 +1,6 @@
 <script lang="ts">
   import { shortcuts } from '$lib/actions/shortcut';
+  import { swipeFeedback } from '$lib/actions/swipe-feedback';
   import { zoomImageAction } from '$lib/actions/zoom-image';
   import FaceEditor from '$lib/components/asset-viewer/face-editor/face-editor.svelte';
   import OcrBoundingBox from '$lib/components/asset-viewer/ocr-bounding-box.svelte';
@@ -15,6 +16,7 @@
   import { getAssetUrl, targetImageSize as getTargetImageSize, handlePromiseError } from '$lib/utils';
   import { canCopyImageToClipboard, copyImageToClipboard } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
+  import { scaleToFit } from '$lib/utils/layout-utils';
   import { getOcrBoundingBoxes } from '$lib/utils/ocr-utils';
   import { getBoundingBox } from '$lib/utils/people-utils';
   import { getAltText } from '$lib/utils/thumbnail-util';
@@ -22,15 +24,25 @@
   import { AssetMediaSize, type AssetResponseDto, type SharedLinkResponseDto } from '@immich/sdk';
   import { LoadingSpinner, toastManager } from '@immich/ui';
   import { onDestroy, onMount, untrack } from 'svelte';
-  import { useSwipe, type SwipeCustomEvent } from 'svelte-gestures';
   import { t } from 'svelte-i18n';
 
   interface Props {
     transitionName?: string | null;
     asset: AssetResponseDto;
-    element?: HTMLDivElement | undefined;
-    haveFadeTransition?: boolean;
-    sharedLink?: SharedLinkResponseDto | undefined;
+    previousAsset?: AssetResponseDto;
+    nextAsset?: AssetResponseDto;
+    element?: HTMLDivElement;
+    sharedLink?: SharedLinkResponseDto;
+    nextSizeHint?: { width: number; height: number } | null;
+    onAboutToNavigate?: ({
+      direction,
+      nextWidth,
+      nextHeight,
+    }: {
+      direction: 'left' | 'right';
+      nextWidth: number;
+      nextHeight: number;
+    }) => void;
     onPreviousAsset?: (() => void) | null;
     onNextAsset?: (() => void) | null;
     onLoad?: (() => void) | null;
@@ -44,9 +56,12 @@
   let {
     transitionName,
     asset,
+    previousAsset,
+    nextAsset,
     element = $bindable(),
-    haveFadeTransition = true,
-    sharedLink = undefined,
+    sharedLink,
+    nextSizeHint,
+    onAboutToNavigate,
     onPreviousAsset = null,
     onNextAsset = null,
     onLoad,
@@ -58,7 +73,7 @@
   }: Props = $props();
 
   const { slideshowState, slideshowLook } = slideshowStore;
-  haveFadeTransition = true;
+
   let imageLoaded: boolean = $state(false);
   let originalImageLoaded: boolean = $state(false);
   let imageError: boolean = $state(false);
@@ -71,32 +86,15 @@
     $boundingBoxesArray = [];
   });
 
-  const calculateSize = () => {
-    // Recalculate size when image is loaded/errored
-    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-    imageLoaded || imageError;
-
-    const naturalWidth = loader?.naturalWidth ?? 1;
-    const naturalHeight = loader?.naturalHeight ?? 1;
-
-    const scaleX = containerWidth / naturalWidth;
-    const scaleY = containerHeight / naturalHeight;
-
-    // Use the smaller scale to ensure image fits (like object-fit: contain)
-    const scale = Math.min(scaleX, scaleY);
-
-    const scaledWidth = naturalWidth * scale;
-    const scaledHeight = naturalHeight * scale;
-
+  const box = $derived.by(() => {
+    const { width, height } = scaleToFit(naturalWidth, naturalHeight, containerWidth, containerHeight);
     return {
-      width: scaledWidth,
-      height: scaledHeight,
-      left: (containerWidth - scaledWidth) / 2,
-      top: (containerHeight - scaledHeight) / 2,
+      width: width + 'px',
+      height: height + 'px',
+      left: (containerWidth - width) / 2 + 'px',
+      top: (containerHeight - height) / 2 + 'px',
     };
-  };
-
-  const box = $derived(calculateSize());
+  });
 
   let ocrBoxes = $derived(
     ocrManager.showOverlay && $photoViewerImgElement
@@ -105,6 +103,30 @@
   );
 
   let isOcrActive = $derived(ocrManager.showOverlay);
+
+  const handlePreCommit = (direction: 'left' | 'right', nextWidth: number, nextHeight: number) => {
+    // Scale the preview dimensions to fit within the viewport (like object-fit: contain)
+    // This prevents flashing when small images are scaled up by scaleToFit
+    const { width: scaledWidth, height: scaledHeight } = scaleToFit(
+      nextWidth,
+      nextHeight,
+      containerWidth,
+      containerHeight,
+    );
+    console.log('nextSize', nextWidth, nextHeight, scaledWidth, scaledHeight);
+    // onAboutToNavigate?.({ direction, nextWidth: scaledWidth, nextHeight: scaledHeight });
+    onAboutToNavigate?.({ direction, nextWidth, nextHeight });
+  };
+
+  const handleSwipeCommit = (direction: 'left' | 'right') => {
+    if (direction === 'left' && onNextAsset) {
+      // Swiped left, go to next asset
+      onNextAsset();
+    } else if (direction === 'right' && onPreviousAsset) {
+      // Swiped right, go to previous asset
+      onPreviousAsset();
+    }
+  };
 
   copyImage = async () => {
     if (!canCopyImageToClipboard() || !$photoViewerImgElement) {
@@ -142,24 +164,6 @@
     handlePromiseError(copyImage());
   };
 
-  const onSwipe = (event: SwipeCustomEvent) => {
-    if ($photoZoomState.currentZoom > 1) {
-      return;
-    }
-
-    if (ocrManager.showOverlay) {
-      return;
-    }
-
-    if (onNextAsset && event.detail.direction === 'left') {
-      onNextAsset();
-    }
-
-    if (onPreviousAsset && event.detail.direction === 'right') {
-      onPreviousAsset();
-    }
-  };
-
   const targetImageSize = $derived(getTargetImageSize(asset, originalImageLoaded || $photoZoomState.currentZoom > 1));
 
   $effect(() => {
@@ -186,12 +190,16 @@
     onLoad?.();
     onFree?.();
     imageLoaded = true;
+    naturalWidth = loader?.naturalWidth ?? 1;
+    naturalHeight = loader?.naturalHeight ?? 1;
     originalImageLoaded = targetImageSize === AssetMediaSize.Fullsize || targetImageSize === 'original';
   };
 
   const onerror = () => {
     onError?.();
     onFree?.();
+    naturalWidth = loader?.naturalWidth ?? 1;
+    naturalHeight = loader?.naturalHeight ?? 1;
     imageError = imageLoaded = true;
   };
 
@@ -200,18 +208,28 @@
       if (!imageLoaded && !imageError) {
         onFree?.();
       }
-      preloadManager.cancelPreloadUrl(imageLoaderUrl);
+      if (imageLoaderUrl) {
+        preloadManager.cancelPreloadUrl(imageLoaderUrl);
+      }
     };
   });
 
-  let imageLoaderUrl = $derived(
+  const imageLoaderUrl = $derived(
     getAssetUrl({ asset, sharedLink, forceOriginal: originalImageLoaded || $photoZoomState.currentZoom > 1 }),
   );
+  const previousAssetUrl = $derived(getAssetUrl({ asset: previousAsset, sharedLink }));
+  const nextAssetUrl = $derived(getAssetUrl({ asset: nextAsset, sharedLink }));
 
   let containerWidth = $state(0);
   let containerHeight = $state(0);
+  let naturalWidth = $derived(nextSizeHint?.width ?? 1);
+  let naturalHeight = $derived(nextSizeHint?.height ?? 1);
 
-  let lastUrl: string | undefined;
+  $inspect(naturalWidth).with(console.log.bind(null, 'natW'));
+  $inspect(naturalHeight).with(console.log.bind(null, 'natH'));
+  let lastUrl: string | undefined | null;
+  let lastPreviousUrl: string | undefined | null;
+  let lastNextUrl: string | undefined | null;
 
   $effect(() => {
     if (!lastUrl) {
@@ -219,13 +237,21 @@
     }
     if (lastUrl && lastUrl !== imageLoaderUrl) {
       untrack(() => {
-        imageLoaded = false;
+        const isPreviewedImage = imageLoaderUrl === lastPreviousUrl || imageLoaderUrl === lastNextUrl;
+
+        if (!isPreviewedImage) {
+          // It is a previewed image - prevent flicker - skip spinner but still let loader go through lifecycle
+          imageLoaded = false;
+        }
+
         originalImageLoaded = false;
         imageError = false;
         onBusy?.();
       });
     }
     lastUrl = imageLoaderUrl;
+    lastPreviousUrl = previousAssetUrl;
+    lastNextUrl = nextAssetUrl;
   });
 </script>
 
@@ -249,6 +275,15 @@
   class="absolute h-full w-full select-none"
   bind:clientWidth={containerWidth}
   bind:clientHeight={containerHeight}
+  use:swipeFeedback={{
+    disabled: isOcrActive || $photoZoomState.currentZoom > 1,
+    onPreCommit: handlePreCommit,
+    onSwipeCommit: handleSwipeCommit,
+    leftPreviewUrl: previousAssetUrl,
+    rightPreviewUrl: nextAssetUrl,
+    currentAssetUrl: imageLoaderUrl,
+    imageElement: $photoViewerImgElement,
+  }}
 >
   {#if !imageLoaded}
     <div id="spinner" class="flex h-full items-center justify-center">
@@ -265,11 +300,11 @@
     {/if}
     <div
       use:zoomImageAction={{ disabled: isOcrActive }}
-      {...useSwipe(onSwipe)}
-      style:width={box.width + 'px'}
-      style:height={box.height + 'px'}
-      style:left={box.left + 'px'}
-      style:top={box.top + 'px'}
+      style:width={box.width}
+      style:height={box.height}
+      style:left={box.left}
+      style:top={box.top}
+      style:overflow="visible"
       class="absolute"
     >
       <img
