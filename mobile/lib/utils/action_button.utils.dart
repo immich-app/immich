@@ -67,7 +67,7 @@ enum ActionButtonType {
   unstack,
   likeActivity;
 
-  dynamic toJson() => name;
+  String toJson() => name;
 
   bool shouldShow(ActionButtonContext context) {
     return switch (this) {

@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
@@ -87,7 +86,11 @@ class IsarStoreRepository extends IsarDatabaseRepository implements IStoreReposi
             const (DateTime) => entity.intValue == null ? null : DateTime.fromMillisecondsSinceEpoch(entity.intValue!),
             const (UserDto) =>
               entity.strValue == null ? null : await IsarUserRepository(_db).getByUserId(entity.strValue!),
-            const (List<ActionButtonType>) => jsonDecode(entity.strValue ?? '[]') as T,
+            const (List<ActionButtonType>) =>
+              (jsonDecode(entity.strValue ?? '[]') as List<dynamic>)
+                      .map<ActionButtonType>((d) => ActionButtonType.values.byName(d))
+                      .toList()
+                  as T,
             _ => null,
           }
           as T?;
@@ -179,7 +182,11 @@ class DriftStoreRepository extends DriftDatabaseRepository implements IStoreRepo
             const (DateTime) => entity.intValue == null ? null : DateTime.fromMillisecondsSinceEpoch(entity.intValue!),
             const (UserDto) =>
               entity.stringValue == null ? null : await DriftAuthUserRepository(_db).get(entity.stringValue!),
-            const (List<ActionButtonType>) => jsonDecode(entity.stringValue ?? '[]') as T,
+            const (List<ActionButtonType>) =>
+              (jsonDecode(entity.stringValue ?? '[]') as List<dynamic>)
+                      .map<ActionButtonType>((d) => ActionButtonType.values.byName(d))
+                      .toList()
+                  as T,
             _ => null,
           }
           as T?;
