@@ -28,6 +28,8 @@ class ThumbnailTile extends ConsumerWidget {
   final bool showStorageIndicator;
   final bool lockSelection;
   final int? heroOffset;
+  final bool enablePlaceholder = false;
+  final bool showIndicators = false;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -47,7 +49,13 @@ class ThumbnailTile extends ConsumerWidget {
 
     return Stack(
       children: [
-        Container(color: lockSelection ? context.colorScheme.surfaceContainerHighest : assetContainerColor),
+        Container(
+          color: lockSelection
+              ? context.colorScheme.surfaceContainerHighest
+              : isSelected
+              ? assetContainerColor
+              : Colors.transparent,
+        ),
         AnimatedContainer(
           duration: Durations.short4,
           curve: Curves.decelerate,
