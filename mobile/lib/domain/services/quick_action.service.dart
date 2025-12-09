@@ -1,53 +1,28 @@
 import 'package:immich_mobile/infrastructure/repositories/action_button_order.repository.dart';
 import 'package:immich_mobile/utils/action_button.utils.dart';
 
-/// Service for managing quick action configurations.
-/// Provides business logic for building quick action types based on context.
 class QuickActionService {
   final ActionButtonOrderRepository _repository;
 
   const QuickActionService(this._repository);
 
-  // Constants
-  static const int defaultQuickActionLimit = 4;
-
-  static const List<ActionButtonType> defaultQuickActionSeed = [
-    ActionButtonType.share,
-    ActionButtonType.upload,
-    ActionButtonType.edit,
-    ActionButtonType.add,
-    ActionButtonType.archive,
-    ActionButtonType.delete,
-    ActionButtonType.removeFromAlbum,
-    ActionButtonType.likeActivity,
-  ];
-
-  static final Set<ActionButtonType> _quickActionSet = Set<ActionButtonType>.unmodifiable(defaultQuickActionSeed);
-
-  static final List<ActionButtonType> defaultQuickActionOrder = List<ActionButtonType>.unmodifiable(
-    defaultQuickActionSeed,
+  static final Set<ActionButtonType> _quickActionSet = Set<ActionButtonType>.unmodifiable(
+    ActionButtonBuilder.defaultQuickActionOrder,
   );
 
-  /// Get the list of available quick action options
-  // static List<ActionButtonType> get quickActionOptions => defaultQuickActionOrder;
-
-  /// Get the current quick action order
   List<ActionButtonType> get() {
     return _repository.get();
   }
 
-  /// Set the quick action order
   Future<void> set(List<ActionButtonType> order) async {
     final normalized = _normalizeQuickActionOrder(order);
     await _repository.set(normalized);
   }
 
-  /// Watch for changes to quick action order
   Stream<List<ActionButtonType>> watch() {
     return _repository.watch();
   }
 
-  /// Normalize quick action order by filtering valid types and ensuring all defaults are included
   List<ActionButtonType> _normalizeQuickActionOrder(List<ActionButtonType> order) {
     final ordered = <ActionButtonType>{};
 
@@ -57,19 +32,20 @@ class QuickActionService {
       }
     }
 
-    ordered.addAll(defaultQuickActionSeed);
+    ordered.addAll(ActionButtonBuilder.defaultQuickActionOrder);
 
     return ordered.toList(growable: false);
   }
 
-  /// Build a list of quick action types based on context and custom order
   List<ActionButtonType> buildQuickActionTypes(
     ActionButtonContext context, {
     List<ActionButtonType>? quickActionOrder,
-    int limit = defaultQuickActionLimit,
+    int limit = ActionButtonBuilder.defaultQuickActionLimit,
   }) {
     final normalized = _normalizeQuickActionOrder(
-      quickActionOrder == null || quickActionOrder.isEmpty ? defaultQuickActionOrder : quickActionOrder,
+      quickActionOrder == null || quickActionOrder.isEmpty
+          ? ActionButtonBuilder.defaultQuickActionOrder
+          : quickActionOrder,
     );
 
     final seen = <ActionButtonType>{};

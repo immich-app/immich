@@ -46,7 +46,7 @@ void main() {
 
       final types = service.buildQuickActionTypes(context, quickActionOrder: customOrder);
 
-      expect(types.length, lessThanOrEqualTo(QuickActionService.defaultQuickActionLimit));
+      expect(types.length, lessThanOrEqualTo(ActionButtonBuilder.defaultQuickActionLimit));
       expect(types.first, ActionButtonType.archive);
       expect(types[1], ActionButtonType.share);
     });
@@ -140,7 +140,7 @@ void main() {
 
       final types = service.buildQuickActionTypes(
         context,
-        quickActionOrder: QuickActionService.defaultQuickActionOrder,
+        quickActionOrder: ActionButtonBuilder.defaultQuickActionOrder,
         limit: 2,
       );
 

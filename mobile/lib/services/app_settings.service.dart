@@ -54,8 +54,7 @@ enum AppSettingsEnum<T> {
   readonlyModeEnabled<bool>(StoreKey.readonlyModeEnabled, "readonlyModeEnabled", false),
   albumGridView<bool>(StoreKey.albumGridView, "albumGridView", false),
   backupRequireCharging<bool>(StoreKey.backupRequireCharging, null, false),
-  backupTriggerDelay<int>(StoreKey.backupTriggerDelay, null, 30),
-  viewerQuickActionOrder<String>(StoreKey.viewerQuickActionOrder, null, '');
+  backupTriggerDelay<int>(StoreKey.backupTriggerDelay, null, 30);
 
   const AppSettingsEnum(this.storeKey, this.hiveKey, this.defaultValue);
 
@@ -73,9 +72,5 @@ class AppSettingsService {
 
   Future<void> setSetting<T>(AppSettingsEnum<T> setting, T value) {
     return Store.put(setting.storeKey, value);
-  }
-
-  Stream<T> watchSetting<T>(AppSettingsEnum<T> setting) {
-    return Store.watch(setting.storeKey).map((value) => value ?? setting.defaultValue);
   }
 }

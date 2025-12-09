@@ -169,22 +169,22 @@ enum ActionButtonType {
   }
 }
 
-/// Builder class for creating action button widgets.
-/// This class provides simple factory methods for building action button widgets
-/// from ActionButtonContext. Business logic for quick actions is handled by QuickActionService.
 class ActionButtonBuilder {
   static const List<ActionButtonType> _actionTypes = ActionButtonType.values;
 
-  /// Build a list of quick action widgets based on context and custom order.
-  /// Uses QuickActionService for business logic.
-  static List<Widget> buildQuickActions(
-    ActionButtonContext context, {
-    required List<ActionButtonType> quickActionTypes,
-  }) {
-    return quickActionTypes.map((type) => type.buildButton(context)).toList();
-  }
+  static const int defaultQuickActionLimit = 4;
 
-  /// Build all available action button widgets for the given context.
+  static const List<ActionButtonType> defaultQuickActionOrder = [
+    ActionButtonType.share,
+    ActionButtonType.upload,
+    ActionButtonType.edit,
+    ActionButtonType.add,
+    ActionButtonType.archive,
+    ActionButtonType.delete,
+    ActionButtonType.removeFromAlbum,
+    ActionButtonType.likeActivity,
+  ];
+
   static List<Widget> build(ActionButtonContext context) {
     return _actionTypes.where((type) => type.shouldShow(context)).map((type) => type.buildButton(context)).toList();
   }

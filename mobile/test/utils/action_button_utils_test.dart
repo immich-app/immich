@@ -1042,9 +1042,9 @@ void main() {
         ],
       );
 
-      final quickActions = ActionButtonBuilder.buildQuickActions(context, quickActionTypes: quickActionTypes);
+      final quickActions = quickActionTypes.map((type) => type.buildButton(context)).toList();
 
-      expect(quickActions.length, QuickActionService.defaultQuickActionLimit);
+      expect(quickActions.length, ActionButtonBuilder.defaultQuickActionLimit);
       expect(quickActions.first, isA<ArchiveActionButton>());
       expect(quickActions[1], isA<ShareActionButton>());
       expect(quickActions[2], isA<EditImageActionButton>());
