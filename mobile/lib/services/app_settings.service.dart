@@ -1,7 +1,6 @@
 import 'package:immich_mobile/constants/colors.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
-import 'package:immich_mobile/utils/action_button.utils.dart';
 
 enum AppSettingsEnum<T> {
   loadPreview<bool>(StoreKey.loadPreview, "loadPreview", true),
@@ -56,11 +55,7 @@ enum AppSettingsEnum<T> {
   albumGridView<bool>(StoreKey.albumGridView, "albumGridView", false),
   backupRequireCharging<bool>(StoreKey.backupRequireCharging, null, false),
   backupTriggerDelay<int>(StoreKey.backupTriggerDelay, null, 30),
-  viewerQuickActionOrder<List<ActionButtonType>>(
-    StoreKey.viewerQuickActionOrder,
-    null,
-    ActionButtonBuilder.defaultQuickActionSeed,
-  );
+  viewerQuickActionOrder<String>(StoreKey.viewerQuickActionOrder, null, '');
 
   const AppSettingsEnum(this.storeKey, this.hiveKey, this.defaultValue);
 

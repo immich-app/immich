@@ -1,53 +1,51 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
-import 'package:immich_mobile/providers/app_settings.provider.dart';
-import 'package:immich_mobile/services/app_settings.service.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/services/quick_action.service.dart';
+import 'package:immich_mobile/infrastructure/repositories/action_button_order.repository.dart';
 import 'package:immich_mobile/utils/action_button.utils.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-part 'viewer_quick_action_order.provider.g.dart';
+final actionButtonOrderRepositoryProvider = Provider<ActionButtonOrderRepository>(
+  (ref) => const ActionButtonOrderRepository(),
+);
 
-@Riverpod(keepAlive: true)
-class ViewerQuickActionOrder extends _$ViewerQuickActionOrder {
+final quickActionServiceProvider = Provider<QuickActionService>(
+  (ref) => QuickActionService(ref.watch(actionButtonOrderRepositoryProvider)),
+);
+
+final viewerQuickActionOrderProvider = StateNotifierProvider<ViewerQuickActionOrderNotifier, List<ActionButtonType>>(
+  (ref) => ViewerQuickActionOrderNotifier(ref.watch(quickActionServiceProvider)),
+);
+
+class ViewerQuickActionOrderNotifier extends StateNotifier<List<ActionButtonType>> {
+  final QuickActionService _service;
   StreamSubscription<List<ActionButtonType>>? _subscription;
 
+  ViewerQuickActionOrderNotifier(this._service) : super(_service.get()) {
+    _subscription = _service.watch().listen((order) {
+      state = order;
+    });
+  }
+
   @override
-  List<ActionButtonType> build() {
-    final service = ref.watch(appSettingsServiceProvider);
-    final initial = ActionButtonBuilder.normalizeQuickActionOrder(
-      service.getSetting(AppSettingsEnum.viewerQuickActionOrder),
-    );
-
-    _subscription ??= service.watchSetting(AppSettingsEnum.viewerQuickActionOrder).listen((order) {
-      state = ActionButtonBuilder.normalizeQuickActionOrder(order);
-    });
-
-    ref.onDispose(() {
-      _subscription?.cancel();
-      _subscription = null;
-    });
-
-    return initial;
+  void dispose() {
+    _subscription?.cancel();
+    super.dispose();
   }
 
   Future<void> setOrder(List<ActionButtonType> order) async {
-    final normalized = ActionButtonBuilder.normalizeQuickActionOrder(order);
-
-    if (listEquals(state, normalized)) {
+    if (listEquals(state, order)) {
       return;
     }
 
     final previous = state;
-    state = normalized;
+    state = order;
 
     try {
-      await ref.read(appSettingsServiceProvider).setSetting(AppSettingsEnum.viewerQuickActionOrder, normalized);
+      await _service.set(order);
     } catch (error) {
       state = previous;
       rethrow;
     }
   }
 }
-
-/// Mock class for testing
-abstract class ViewerQuickActionOrderInternal extends _$ViewerQuickActionOrder {}

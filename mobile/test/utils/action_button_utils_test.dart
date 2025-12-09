@@ -3,6 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/services/quick_action.service.dart';
+import 'package:immich_mobile/infrastructure/repositories/action_button_order.repository.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/archive_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/edit_image_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_action_button.widget.dart';
@@ -1029,7 +1031,8 @@ void main() {
         source: ActionSource.viewer,
       );
 
-      final quickActions = ActionButtonBuilder.buildQuickActions(
+      final quickActionService = const QuickActionService(ActionButtonOrderRepository());
+      final quickActionTypes = quickActionService.buildQuickActionTypes(
         context,
         quickActionOrder: const [
           ActionButtonType.archive,
@@ -1039,7 +1042,9 @@ void main() {
         ],
       );
 
-      expect(quickActions.length, ActionButtonBuilder.defaultQuickActionLimit);
+      final quickActions = ActionButtonBuilder.buildQuickActions(context, quickActionTypes: quickActionTypes);
+
+      expect(quickActions.length, QuickActionService.defaultQuickActionLimit);
       expect(quickActions.first, isA<ArchiveActionButton>());
       expect(quickActions[1], isA<ShareActionButton>());
       expect(quickActions[2], isA<EditImageActionButton>());

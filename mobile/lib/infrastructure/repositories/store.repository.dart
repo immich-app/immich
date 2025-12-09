@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
@@ -6,7 +5,6 @@ import 'package:immich_mobile/infrastructure/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/store.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/user.repository.dart';
-import 'package:immich_mobile/utils/action_button.utils.dart';
 import 'package:isar/isar.dart';
 
 // Temporary interface until Isar is removed to make the service work with both Isar and Sqlite
@@ -86,11 +84,6 @@ class IsarStoreRepository extends IsarDatabaseRepository implements IStoreReposi
             const (DateTime) => entity.intValue == null ? null : DateTime.fromMillisecondsSinceEpoch(entity.intValue!),
             const (UserDto) =>
               entity.strValue == null ? null : await IsarUserRepository(_db).getByUserId(entity.strValue!),
-            const (List<ActionButtonType>) =>
-              (jsonDecode(entity.strValue ?? '[]') as List<dynamic>)
-                      .map<ActionButtonType>((d) => ActionButtonType.values.byName(d))
-                      .toList()
-                  as T,
             _ => null,
           }
           as T?;
@@ -102,7 +95,6 @@ class IsarStoreRepository extends IsarDatabaseRepository implements IStoreReposi
       const (bool) => ((value as bool) ? 1 : 0, null),
       const (DateTime) => ((value as DateTime).millisecondsSinceEpoch, null),
       const (UserDto) => (null, (await IsarUserRepository(_db).update(value as UserDto)).id),
-      const (List<ActionButtonType>) => (null, jsonEncode(value)),
       _ => throw UnsupportedError("Unsupported primitive type: ${key.type} for key: ${key.name}"),
     };
     return StoreValue(key.id, intValue: intValue, strValue: strValue);
@@ -182,11 +174,6 @@ class DriftStoreRepository extends DriftDatabaseRepository implements IStoreRepo
             const (DateTime) => entity.intValue == null ? null : DateTime.fromMillisecondsSinceEpoch(entity.intValue!),
             const (UserDto) =>
               entity.stringValue == null ? null : await DriftAuthUserRepository(_db).get(entity.stringValue!),
-            const (List<ActionButtonType>) =>
-              (jsonDecode(entity.stringValue ?? '[]') as List<dynamic>)
-                      .map<ActionButtonType>((d) => ActionButtonType.values.byName(d))
-                      .toList()
-                  as T,
             _ => null,
           }
           as T?;
@@ -198,7 +185,6 @@ class DriftStoreRepository extends DriftDatabaseRepository implements IStoreRepo
       const (bool) => ((value as bool) ? 1 : 0, null),
       const (DateTime) => ((value as DateTime).millisecondsSinceEpoch, null),
       const (UserDto) => (null, (await DriftAuthUserRepository(_db).upsert(value as UserDto)).id),
-      const (List<ActionButtonType>) => (null, jsonEncode(value)),
       _ => throw UnsupportedError("Unsupported primitive type: ${key.type} for key: ${key.name}"),
     };
     return StoreEntityCompanion(id: Value(key.id), intValue: Value(intValue), stringValue: Value(strValue));

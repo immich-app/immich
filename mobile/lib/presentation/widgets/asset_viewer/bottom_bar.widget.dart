@@ -56,7 +56,8 @@ class ViewerBottomBar extends ConsumerWidget {
       source: ActionSource.viewer,
     );
 
-    final quickActionTypes = ActionButtonBuilder.buildQuickActionTypes(
+    final quickActionService = ref.watch(quickActionServiceProvider);
+    final quickActionTypes = quickActionService.buildQuickActionTypes(
       buttonContext,
       quickActionOrder: quickActionOrder,
     );
@@ -76,9 +77,10 @@ class ViewerBottomBar extends ConsumerWidget {
       });
     }
 
-    final actions = quickActionTypes
-        .map((type) => GestureDetector(onLongPress: openConfigurator, child: type.buildButton(buttonContext)))
-        .toList(growable: false);
+    final actions = ActionButtonBuilder.buildQuickActions(
+      buttonContext,
+      quickActionTypes: quickActionTypes,
+    ).map((widget) => GestureDetector(onLongPress: openConfigurator, child: widget)).toList(growable: false);
 
     return IgnorePointer(
       ignoring: opacity < 255,

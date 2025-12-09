@@ -169,99 +169,23 @@ enum ActionButtonType {
   }
 }
 
+/// Builder class for creating action button widgets.
+/// This class provides simple factory methods for building action button widgets
+/// from ActionButtonContext. Business logic for quick actions is handled by QuickActionService.
 class ActionButtonBuilder {
   static const List<ActionButtonType> _actionTypes = ActionButtonType.values;
 
-  static const int defaultQuickActionLimit = 4;
-
-  static const List<ActionButtonType> defaultQuickActionSeed = [
-    ActionButtonType.share,
-    ActionButtonType.upload,
-    ActionButtonType.edit,
-    ActionButtonType.add,
-    ActionButtonType.archive,
-    ActionButtonType.delete,
-    ActionButtonType.removeFromAlbum,
-    ActionButtonType.likeActivity,
-  ];
-
-  static final Set<ActionButtonType> _quickActionSet = Set<ActionButtonType>.unmodifiable(defaultQuickActionSeed);
-
-  static final List<ActionButtonType> defaultQuickActionOrder = List<ActionButtonType>.unmodifiable(
-    defaultQuickActionSeed,
-  );
-
-  static List<ActionButtonType> get quickActionOptions => defaultQuickActionOrder;
-
-  static List<ActionButtonType> buildQuickActionTypes(
-    ActionButtonContext context, {
-    List<ActionButtonType>? quickActionOrder,
-    int limit = defaultQuickActionLimit,
-  }) {
-    final normalized = normalizeQuickActionOrder(
-      quickActionOrder == null || quickActionOrder.isEmpty ? defaultQuickActionOrder : quickActionOrder,
-    );
-
-    final seen = <ActionButtonType>{};
-    final result = <ActionButtonType>[];
-
-    for (final type in normalized) {
-      if (!_quickActionSet.contains(type)) {
-        continue;
-      }
-
-      final resolved = _resolveQuickActionType(type, context);
-      if (!seen.add(resolved) || !resolved.shouldShow(context)) {
-        continue;
-      }
-
-      result.add(resolved);
-      if (result.length >= limit) {
-        break;
-      }
-    }
-
-    return result;
-  }
-
+  /// Build a list of quick action widgets based on context and custom order.
+  /// Uses QuickActionService for business logic.
   static List<Widget> buildQuickActions(
     ActionButtonContext context, {
-    List<ActionButtonType>? quickActionOrder,
-    int limit = defaultQuickActionLimit,
+    required List<ActionButtonType> quickActionTypes,
   }) {
-    final types = buildQuickActionTypes(context, quickActionOrder: quickActionOrder, limit: limit);
-    return types.map((type) => type.buildButton(context)).toList();
+    return quickActionTypes.map((type) => type.buildButton(context)).toList();
   }
 
+  /// Build all available action button widgets for the given context.
   static List<Widget> build(ActionButtonContext context) {
     return _actionTypes.where((type) => type.shouldShow(context)).map((type) => type.buildButton(context)).toList();
   }
-
-  static List<ActionButtonType> normalizeQuickActionOrder(List<ActionButtonType> order) {
-    final ordered = <ActionButtonType>{};
-
-    for (final type in order) {
-      if (_quickActionSet.contains(type)) {
-        ordered.add(type);
-      }
-    }
-
-    ordered.addAll(defaultQuickActionSeed);
-
-    return ordered.toList(growable: false);
-  }
-
-  static ActionButtonType _resolveQuickActionType(ActionButtonType type, ActionButtonContext context) {
-    if (type == ActionButtonType.archive && context.isArchived) {
-      return ActionButtonType.unarchive;
-    }
-
-    if (type == ActionButtonType.delete && context.asset.isLocalOnly) {
-      return ActionButtonType.deleteLocal;
-    }
-
-    return type;
-  }
-
-  static bool isSupportedQuickAction(ActionButtonType type) => _quickActionSet.contains(type);
 }

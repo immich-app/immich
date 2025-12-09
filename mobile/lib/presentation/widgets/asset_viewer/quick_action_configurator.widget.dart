@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_reorderable_grid_view/widgets/reorderable_builder.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/services/quick_action.service.dart';
 import 'package:immich_mobile/providers/infrastructure/viewer_quick_action_order.provider.dart';
 import 'package:immich_mobile/utils/action_button.utils.dart';
 import 'package:immich_mobile/utils/action_button_visuals.dart';
@@ -41,7 +42,7 @@ class _QuickActionConfiguratorState extends ConsumerState<QuickActionConfigurato
 
   void _resetToDefault() {
     setState(() {
-      _order = List<ActionButtonType>.from(ActionButtonBuilder.defaultQuickActionOrder);
+      _order = List<ActionButtonType>.from(QuickActionService.defaultQuickActionOrder);
       _hasLocalChanges = true;
     });
   }
@@ -49,9 +50,7 @@ class _QuickActionConfiguratorState extends ConsumerState<QuickActionConfigurato
   void _cancel() => Navigator.of(context).pop();
 
   Future<void> _save() async {
-    final normalized = ActionButtonBuilder.normalizeQuickActionOrder(_order);
-
-    await ref.read(viewerQuickActionOrderProvider.notifier).setOrder(normalized);
+    await ref.read(viewerQuickActionOrderProvider.notifier).setOrder(_order);
     _hasLocalChanges = false;
     if (mounted) {
       Navigator.of(context).pop();
@@ -69,8 +68,8 @@ class _QuickActionConfiguratorState extends ConsumerState<QuickActionConfigurato
     if (!_hasLocalChanges && !listEquals(_order, currentOrder)) {
       _order = List<ActionButtonType>.from(currentOrder);
     }
-    final normalizedSelection = ActionButtonBuilder.normalizeQuickActionOrder(_order);
-    final hasChanges = !listEquals(currentOrder, normalizedSelection);
+
+    final hasChanges = !listEquals(currentOrder, _order);
 
     return SafeArea(
       child: Padding(
@@ -91,7 +90,7 @@ class _QuickActionConfiguratorState extends ConsumerState<QuickActionConfigurato
             const SizedBox(height: 8),
             Text(
               'quick_actions_settings_description'.tr(
-                namedArgs: {'count': ActionButtonBuilder.defaultQuickActionLimit.toString()},
+                namedArgs: {'count': QuickActionService.defaultQuickActionLimit.toString()},
               ),
               style: theme.textTheme.bodyMedium,
               textAlign: TextAlign.center,
