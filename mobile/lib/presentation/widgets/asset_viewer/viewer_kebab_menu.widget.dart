@@ -39,13 +39,23 @@ class ViewerKebabMenu extends ConsumerWidget {
       consumeOutsideTap: true,
       style: MenuStyle(
         backgroundColor: WidgetStatePropertyAll(context.themeData.scaffoldBackgroundColor),
+        surfaceTintColor: const WidgetStatePropertyAll(Colors.grey),
         elevation: const WidgetStatePropertyAll(4),
         shape: const WidgetStatePropertyAll(
           RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
         ),
-        padding: const WidgetStatePropertyAll(EdgeInsets.symmetric(vertical: 2)),
+        padding: const WidgetStatePropertyAll(EdgeInsets.symmetric(vertical: 6)),
       ),
-      menuChildren: menuChildren,
+      menuChildren: [
+        ConstrainedBox(
+          constraints: const BoxConstraints(minWidth: 150),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: menuChildren,
+          ),
+        ),
+      ],
       builder: (context, controller, child) {
         return IconButton(
           icon: const Icon(Icons.more_vert_rounded),

@@ -194,15 +194,23 @@ class ViewerKebabMenuButtonContext {
 
 enum ViewerKebabMenuButtonType {
   openInfo,
-  motionPhoto,
   viewInTimeline,
   cast,
   download;
 
+  /// Defines which group each button belongs to.
+  /// Buttons in the same group will be displayed together,
+  /// with dividers separating different groups.
+  int get group => switch (this) {
+    ViewerKebabMenuButtonType.openInfo => 0,
+    ViewerKebabMenuButtonType.viewInTimeline => 1,
+    ViewerKebabMenuButtonType.cast => 1,
+    ViewerKebabMenuButtonType.download => 1,
+  };
+
   bool shouldShow(ViewerKebabMenuButtonContext context) {
     return switch (this) {
       ViewerKebabMenuButtonType.openInfo => true,
-      ViewerKebabMenuButtonType.motionPhoto => context.asset.isMotionPhoto,
       ViewerKebabMenuButtonType.viewInTimeline =>
         context.timelineOrigin != TimelineOrigin.main &&
             context.timelineOrigin != TimelineOrigin.deepLink &&
@@ -218,13 +226,13 @@ enum ViewerKebabMenuButtonType {
   ConsumerWidget buildButton(ViewerKebabMenuButtonContext context, BuildContext buildContext) {
     return switch (this) {
       ViewerKebabMenuButtonType.openInfo => BaseActionButton(
-        label: 'open_asset_info'.tr(),
+        label: 'info'.tr(),
         iconData: Icons.info_outline,
         iconColor: context.originalTheme?.iconTheme.color,
         menuItem: true,
         onPressed: () => EventStream.shared.emit(const ViewerOpenBottomSheetEvent()),
       ),
-      ViewerKebabMenuButtonType.motionPhoto => const MotionPhotoActionButton(menuItem: true),
+
       ViewerKebabMenuButtonType.viewInTimeline => BaseActionButton(
         label: 'view_in_timeline'.t(context: buildContext),
         iconData: Icons.image_search,
@@ -243,14 +251,22 @@ enum ViewerKebabMenuButtonType {
 }
 
 class ViewerKebabMenuButtonBuilder {
-  static const List<ViewerKebabMenuButtonType> _buttonTypes = ViewerKebabMenuButtonType.values;
-
   static List<Widget> build(ViewerKebabMenuButtonContext context, BuildContext buildContext, WidgetRef ref) {
-    return _buttonTypes
-        .where((type) => type.shouldShow(context))
-        .map((type) => type.buildButton(context, buildContext).build(buildContext, ref))
-        .expand((action) => [const Divider(height: 0), action])
-        .skip(1) // to remove the first divider
-        .toList();
+    final visibleButtons = ViewerKebabMenuButtonType.values.where((type) => type.shouldShow(context)).toList();
+
+    if (visibleButtons.isEmpty) return [];
+
+    final List<Widget> result = [];
+    int? lastGroup;
+
+    for (final type in visibleButtons) {
+      if (lastGroup != null && type.group != lastGroup) {
+        result.add(const Divider(height: 1));
+      }
+      result.add(type.buildButton(context, buildContext).build(buildContext, ref));
+      lastGroup = type.group;
+    }
+
+    return result;
   }
 }

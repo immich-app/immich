@@ -47,14 +47,13 @@ class BaseActionButton extends ConsumerWidget {
 
     if (menuItem) {
       final theme = context.themeData;
-      final effectiveStyle = theme.textTheme.labelLarge;
       final effectiveIconColor = iconColor ?? theme.iconTheme.color ?? theme.colorScheme.onSurfaceVariant;
 
       return MenuItemButton(
-        style: MenuItemButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12)),
-        leadingIcon: Icon(iconData, color: effectiveIconColor, size: 20),
+        style: MenuItemButton.styleFrom(alignment: Alignment.centerLeft, padding: const EdgeInsets.all(16)),
+        leadingIcon: Icon(iconData, color: effectiveIconColor),
         onPressed: onPressed,
-        child: Text(label, style: effectiveStyle),
+        child: Text(label, style: theme.textTheme.labelLarge?.copyWith(fontSize: 16)),
       );
     }
 

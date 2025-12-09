@@ -7,6 +7,7 @@ import 'package:immich_mobile/domain/models/events.model.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/favorite_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/motion_photo_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/unfavorite_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/viewer_kebab_menu.widget.dart';
@@ -49,6 +50,7 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
     final originalTheme = context.themeData;
 
     final actions = <Widget>[
+      if (asset.isMotionPhoto) const MotionPhotoActionButton(iconOnly: true),
       if (album != null && album.isActivityEnabled && album.isShared)
         IconButton(
           icon: const Icon(Icons.chat_outlined),
@@ -56,10 +58,12 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
             EventStream.shared.emit(const ViewerOpenBottomSheetEvent(activitiesMode: true));
           },
         ),
+
       if (asset.hasRemote && isOwner && !asset.isFavorite)
         const FavoriteActionButton(source: ActionSource.viewer, iconOnly: true),
       if (asset.hasRemote && isOwner && asset.isFavorite)
         const UnFavoriteActionButton(source: ActionSource.viewer, iconOnly: true),
+
       ViewerKebabMenu(originalTheme: originalTheme),
     ];
 
