@@ -165,7 +165,7 @@ describe(DownloadService.name, () => {
         stream: archiveMock.stream,
       });
 
-      expect(archiveMock.addFile).toHaveBeenCalledWith('/path/to/realpath.jpg', 'IMG_123.jpg');
+      expect(archiveMock.addFile).toHaveBeenCalledWith('/path/to/realpath.jpg', 'symlink.jpg');
     });
   });
 

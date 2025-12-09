@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
-import { extname } from 'node:path';
+import { basename, extname } from 'node:path';
 import sanitize from 'sanitize-filename';
 import { StorageCore } from 'src/cores/storage.core';
 import { Asset } from 'src/database';
@@ -200,7 +200,7 @@ export class AssetMediaService extends BaseService {
 
     return new ImmichFileResponse({
       path: asset.originalPath,
-      fileName: asset.originalFileName,
+      fileName: basename(asset.originalPath),
       contentType: mimeTypes.lookup(asset.originalPath),
       cacheControl: CacheControl.PrivateWithCache,
     });
