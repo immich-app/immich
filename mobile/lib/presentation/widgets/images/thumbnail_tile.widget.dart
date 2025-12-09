@@ -10,6 +10,66 @@ import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart'
 import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
 import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
+
+class _DelayedAnimation extends StatefulWidget {
+  final Widget child;
+  final bool show;
+  final Duration showDelay = const Duration(milliseconds: 300);
+  final Duration hideDelay = const Duration(milliseconds: 0);
+  final Duration showDuration = const Duration(milliseconds: 200);
+  final Duration hideDuration = const Duration(milliseconds: 100);
+
+  const _DelayedAnimation({required this.child, required this.show});
+
+  @override
+  State<_DelayedAnimation> createState() => _DelayedAnimationState();
+}
+
+class _DelayedAnimationState extends State<_DelayedAnimation> {
+  bool _show = false;
+  Duration _currentDuration = const Duration(milliseconds: 200);
+
+  @override
+  void initState() {
+    super.initState();
+    // If starting with show=true, show immediately (no delay on initial render)
+    if (widget.show) {
+      _show = true;
+      _currentDuration = const Duration(milliseconds: 200);
+    }
+  }
+
+  @override
+  void didUpdateWidget(_DelayedAnimation oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (widget.show && !oldWidget.show) {
+      // Showing: use show duration and delay
+      setState(() => _currentDuration = widget.showDuration);
+      Future.delayed(widget.showDelay, () {
+        if (mounted) {
+          setState(() => _show = true);
+        }
+      });
+    } else if (!widget.show && oldWidget.show) {
+      // Hiding: use hide duration and no delay
+      setState(() {
+        _currentDuration = widget.hideDuration;
+        Future.delayed(widget.hideDelay, () {
+          if (mounted) {
+            setState(() => _show = false);
+          }
+        });
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedOpacity(duration: _currentDuration, opacity: widget.show && _show ? 1.0 : 0.0, child: widget.child);
+  }
+}
 
 class ThumbnailTile extends ConsumerWidget {
   const ThumbnailTile(
@@ -28,13 +88,13 @@ class ThumbnailTile extends ConsumerWidget {
   final bool showStorageIndicator;
   final bool lockSelection;
   final int? heroOffset;
-  final bool enablePlaceholder = false;
-  final bool showIndicators = false;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final asset = this.asset;
     final heroIndex = heroOffset ?? TabsRouterScope.of(context)?.controller.activeIndex ?? 0;
+    final currentAsset = ref.watch(currentAssetNotifier);
+    final showIndicators = asset == null || asset != currentAsset;
 
     final assetContainerColor = context.isDarkTheme
         ? context.primaryColor.darken(amount: 0.4)
@@ -76,40 +136,51 @@ class ThumbnailTile extends ConsumerWidget {
                   ),
                 ),
                 if (asset != null)
-                  Align(
-                    alignment: Alignment.topRight,
-                    child: _AssetTypeIcons(asset: asset),
+                  _DelayedAnimation(
+                    show: showIndicators,
+                    child: Align(
+                      alignment: Alignment.topRight,
+                      child: _AssetTypeIcons(asset: asset),
+                    ),
                   ),
+
                 if (storageIndicator && asset != null)
-                  switch (asset.storage) {
-                    AssetState.local => const Align(
-                      alignment: Alignment.bottomRight,
-                      child: Padding(
-                        padding: EdgeInsets.only(right: 10.0, bottom: 6.0),
-                        child: _TileOverlayIcon(Icons.cloud_off_outlined),
+                  _DelayedAnimation(
+                    show: showIndicators,
+                    child: switch (asset.storage) {
+                      AssetState.local => const Align(
+                        alignment: Alignment.bottomRight,
+                        child: Padding(
+                          padding: EdgeInsets.only(right: 10.0, bottom: 6.0),
+                          child: _TileOverlayIcon(Icons.cloud_off_outlined),
+                        ),
                       ),
-                    ),
-                    AssetState.remote => const Align(
-                      alignment: Alignment.bottomRight,
-                      child: Padding(
-                        padding: EdgeInsets.only(right: 10.0, bottom: 6.0),
-                        child: _TileOverlayIcon(Icons.cloud_outlined),
+                      AssetState.remote => const Align(
+                        alignment: Alignment.bottomRight,
+                        child: Padding(
+                          padding: EdgeInsets.only(right: 10.0, bottom: 6.0),
+                          child: _TileOverlayIcon(Icons.cloud_outlined),
+                        ),
                       ),
-                    ),
-                    AssetState.merged => const Align(
-                      alignment: Alignment.bottomRight,
-                      child: Padding(
-                        padding: EdgeInsets.only(right: 10.0, bottom: 6.0),
-                        child: _TileOverlayIcon(Icons.cloud_done_outlined),
+                      AssetState.merged => const Align(
+                        alignment: Alignment.bottomRight,
+                        child: Padding(
+                          padding: EdgeInsets.only(right: 10.0, bottom: 6.0),
+                          child: _TileOverlayIcon(Icons.cloud_done_outlined),
+                        ),
                       ),
-                    ),
-                  },
+                    },
+                  ),
+
                 if (asset != null && asset.isFavorite)
-                  const Align(
-                    alignment: Alignment.bottomLeft,
-                    child: Padding(
-                      padding: EdgeInsets.only(left: 10.0, bottom: 6.0),
-                      child: _TileOverlayIcon(Icons.favorite_rounded),
+                  _DelayedAnimation(
+                    show: showIndicators,
+                    child: const Align(
+                      alignment: Alignment.bottomLeft,
+                      child: Padding(
+                        padding: EdgeInsets.only(left: 10.0, bottom: 6.0),
+                        child: _TileOverlayIcon(Icons.favorite_rounded),
+                      ),
                     ),
                   ),
               ],
