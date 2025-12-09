@@ -21,6 +21,9 @@ server {
     # allow large file uploads
     client_max_body_size 50000M;
 
+    # disable buffering uploads to prevent OOM on reverse proxy server and make uploads twice as fast (no pause)
+    proxy_request_buffering off;
+
     # Set headers
     proxy_set_header Host              $host;
     proxy_set_header X-Real-IP         $remote_addr;
@@ -29,8 +32,6 @@ server {
 
     # enable websockets: http://nginx.org/en/docs/http/websocket.html
     proxy_http_version 1.1;
-    proxy_set_header   Upgrade    $http_upgrade;
-    proxy_set_header   Connection "upgrade";
     proxy_redirect     off;
 
     # set timeout
@@ -40,6 +41,8 @@ server {
 
     location / {
         proxy_pass http://<backend_url>:2283;
+        proxy_set_header   Upgrade    $http_upgrade;
+        proxy_set_header   Connection "upgrade";
     }
 
     # useful when using Let's Encrypt http-01 challenge

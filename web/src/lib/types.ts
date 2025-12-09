@@ -1,4 +1,14 @@
-import type { MenuItem } from '@immich/ui';
-import type { HTMLAttributes } from 'svelte/elements';
+import type { QueueResponseDto, ServerVersionResponseDto } from '@immich/sdk';
+import type { ActionItem } from '@immich/ui';
 
-export type ActionItem = MenuItem & { props?: Omit<HTMLAttributes<HTMLElement>, 'color'> };
+export interface ReleaseEvent {
+  isAvailable: boolean;
+  /** ISO8601 */
+  checkedAt: string;
+  serverVersion: ServerVersionResponseDto;
+  releaseVersion: ServerVersionResponseDto;
+}
+
+export type QueueSnapshot = { timestamp: number; snapshot?: QueueResponseDto[] };
+
+export type HeaderButtonActionItem = ActionItem & { data?: { title?: string } };

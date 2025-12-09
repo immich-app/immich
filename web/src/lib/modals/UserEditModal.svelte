@@ -89,7 +89,7 @@
 
       <Text size="small" class="mt-2" color="muted">
         {$t('admin.note_apply_storage_label_previous_assets')}
-        <Link href={AppRoute.ADMIN_JOBS}>
+        <Link href={AppRoute.ADMIN_QUEUES}>
           {$t('admin.storage_template_migration_job')}
         </Link>
       </Text>

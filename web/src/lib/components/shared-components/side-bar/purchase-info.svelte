@@ -74,10 +74,10 @@
   {#if $isPurchased && $preferences.purchase.showSupportBadge}
     <button
       onclick={() => goto(`${AppRoute.USER_SETTINGS}?isOpen=user-purchase-settings`)}
-      class="w-full"
+      class="w-full mt-2"
       type="button"
     >
-      <SupporterBadge />
+      <SupporterBadge size="small" effect="always" />
     </button>
   {:else if !$isPurchased && showBuyButton && getAccountAge() > 14}
     <button
