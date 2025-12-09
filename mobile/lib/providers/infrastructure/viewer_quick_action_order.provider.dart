@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
+import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/utils/action_button.utils.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -13,9 +14,11 @@ class ViewerQuickActionOrder extends _$ViewerQuickActionOrder {
   @override
   List<ActionButtonType> build() {
     final service = ref.watch(appSettingsServiceProvider);
-    final initial = ActionButtonBuilder.normalizeQuickActionOrder(service.getViewerQuickActionOrder());
+    final initial = ActionButtonBuilder.normalizeQuickActionOrder(
+      service.getSetting(AppSettingsEnum.viewerQuickActionOrder),
+    );
 
-    _subscription ??= service.watchViewerQuickActionOrder().listen((order) {
+    _subscription ??= service.watchSetting(AppSettingsEnum.viewerQuickActionOrder).listen((order) {
       state = ActionButtonBuilder.normalizeQuickActionOrder(order);
     });
 
@@ -38,7 +41,7 @@ class ViewerQuickActionOrder extends _$ViewerQuickActionOrder {
     state = normalized;
 
     try {
-      await ref.read(appSettingsServiceProvider).setViewerQuickActionOrder(normalized);
+      await ref.read(appSettingsServiceProvider).setSetting(AppSettingsEnum.viewerQuickActionOrder, normalized);
     } catch (error) {
       state = previous;
       rethrow;

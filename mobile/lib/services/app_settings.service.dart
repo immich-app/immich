@@ -55,7 +55,12 @@ enum AppSettingsEnum<T> {
   readonlyModeEnabled<bool>(StoreKey.readonlyModeEnabled, "readonlyModeEnabled", false),
   albumGridView<bool>(StoreKey.albumGridView, "albumGridView", false),
   backupRequireCharging<bool>(StoreKey.backupRequireCharging, null, false),
-  backupTriggerDelay<int>(StoreKey.backupTriggerDelay, null, 30);
+  backupTriggerDelay<int>(StoreKey.backupTriggerDelay, null, 30),
+  viewerQuickActionOrder<List<ActionButtonType>>(
+    StoreKey.viewerQuickActionOrder,
+    null,
+    ActionButtonBuilder.defaultQuickActionSeed,
+  );
 
   const AppSettingsEnum(this.storeKey, this.hiveKey, this.defaultValue);
 
@@ -66,6 +71,7 @@ enum AppSettingsEnum<T> {
 
 class AppSettingsService {
   const AppSettingsService();
+
   T getSetting<T>(AppSettingsEnum<T> setting) {
     return Store.get(setting.storeKey, setting.defaultValue);
   }
@@ -74,19 +80,7 @@ class AppSettingsService {
     return Store.put(setting.storeKey, value);
   }
 
-  List<ActionButtonType> getViewerQuickActionOrder() {
-    final stored = Store.get(StoreKey.viewerQuickActionOrder, ActionButtonBuilder.defaultQuickActionOrderStorageValue);
-    return ActionButtonBuilder.parseQuickActionOrder(stored);
-  }
-
-  Stream<List<ActionButtonType>> watchViewerQuickActionOrder() {
-    return Store.watch(StoreKey.viewerQuickActionOrder).map(
-      (value) =>
-          ActionButtonBuilder.parseQuickActionOrder(value ?? ActionButtonBuilder.defaultQuickActionOrderStorageValue),
-    );
-  }
-
-  Future<void> setViewerQuickActionOrder(List<ActionButtonType> order) {
-    return Store.put(StoreKey.viewerQuickActionOrder, ActionButtonBuilder.encodeQuickActionOrder(order));
+  Stream<T> watchSetting<T>(AppSettingsEnum<T> setting) {
+    return Store.watch(setting.storeKey).map((value) => value ?? setting.defaultValue);
   }
 }

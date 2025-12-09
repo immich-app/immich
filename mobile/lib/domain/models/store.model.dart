@@ -1,4 +1,5 @@
 import 'package:immich_mobile/domain/models/user.model.dart';
+import 'package:immich_mobile/utils/action_button.utils.dart';
 
 /// Key for each possible value in the `Store`.
 /// Defines the data type for each value
@@ -72,7 +73,7 @@ enum StoreKey<T> {
 
   autoPlayVideo<bool>._(139),
   albumGridView<bool>._(140),
-  viewerQuickActionOrder<String>._(141),
+  viewerQuickActionOrder<List<ActionButtonType>>._(141),
 
   // Experimental stuff
   photoManagerCustomFilter<bool>._(1000),

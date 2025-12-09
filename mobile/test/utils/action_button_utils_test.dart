@@ -1015,24 +1015,6 @@ void main() {
       expect(nonArchivedWidgets, isNotEmpty);
     });
 
-    test('should encode and parse quick action order consistently', () {
-      final encoded = ActionButtonBuilder.encodeQuickActionOrder([
-        ActionButtonType.edit,
-        ActionButtonType.share,
-        ActionButtonType.archive,
-      ]);
-
-      final decoded = ActionButtonBuilder.parseQuickActionOrder(encoded);
-
-      final expectedOrder = ActionButtonBuilder.normalizeQuickActionOrder([
-        ActionButtonType.edit,
-        ActionButtonType.share,
-        ActionButtonType.archive,
-      ]);
-
-      expect(decoded, expectedOrder);
-    });
-
     test('should build quick actions honoring custom order', () {
       final remoteAsset = createRemoteAsset();
       final context = ActionButtonContext(

@@ -67,6 +67,8 @@ enum ActionButtonType {
   unstack,
   likeActivity;
 
+  dynamic toJson() => name;
+
   bool shouldShow(ActionButtonContext context) {
     return switch (this) {
       ActionButtonType.advancedInfo => context.advancedTroubleshooting,
@@ -171,9 +173,8 @@ class ActionButtonBuilder {
   static const List<ActionButtonType> _actionTypes = ActionButtonType.values;
 
   static const int defaultQuickActionLimit = 4;
-  static const String quickActionStorageDelimiter = ',';
 
-  static const List<ActionButtonType> _defaultQuickActionSeed = [
+  static const List<ActionButtonType> defaultQuickActionSeed = [
     ActionButtonType.share,
     ActionButtonType.upload,
     ActionButtonType.edit,
@@ -184,46 +185,13 @@ class ActionButtonBuilder {
     ActionButtonType.likeActivity,
   ];
 
-  static final Set<ActionButtonType> _quickActionSet = Set<ActionButtonType>.unmodifiable(_defaultQuickActionSeed);
+  static final Set<ActionButtonType> _quickActionSet = Set<ActionButtonType>.unmodifiable(defaultQuickActionSeed);
 
   static final List<ActionButtonType> defaultQuickActionOrder = List<ActionButtonType>.unmodifiable(
-    _defaultQuickActionSeed,
+    defaultQuickActionSeed,
   );
 
-  static final String defaultQuickActionOrderStorageValue = defaultQuickActionOrder
-      .map((type) => type.name)
-      .join(quickActionStorageDelimiter);
-
   static List<ActionButtonType> get quickActionOptions => defaultQuickActionOrder;
-
-  static List<ActionButtonType> parseQuickActionOrder(String? stored) {
-    final parsed = <ActionButtonType>[];
-
-    if (stored != null && stored.trim().isNotEmpty) {
-      for (final name in stored.split(quickActionStorageDelimiter)) {
-        final type = _typeByName(name.trim());
-        if (type != null) {
-          parsed.add(type);
-        }
-      }
-    }
-
-    return normalizeQuickActionOrder(parsed);
-  }
-
-  static String encodeQuickActionOrder(List<ActionButtonType> order) {
-    final unique = <ActionButtonType>{};
-    final buffer = <String>[];
-
-    for (final type in order) {
-      if (unique.add(type)) {
-        buffer.add(type.name);
-      }
-    }
-
-    final result = buffer.join(quickActionStorageDelimiter);
-    return result;
-  }
 
   static List<ActionButtonType> buildQuickActionTypes(
     ActionButtonContext context, {
@@ -265,20 +233,6 @@ class ActionButtonBuilder {
     return types.map((type) => type.buildButton(context)).toList();
   }
 
-  static ActionButtonType? _typeByName(String name) {
-    if (name.isEmpty) {
-      return null;
-    }
-
-    for (final type in ActionButtonType.values) {
-      if (type.name == name) {
-        return type;
-      }
-    }
-
-    return null;
-  }
-
   static List<Widget> build(ActionButtonContext context) {
     return _actionTypes.where((type) => type.shouldShow(context)).map((type) => type.buildButton(context)).toList();
   }
@@ -292,7 +246,7 @@ class ActionButtonBuilder {
       }
     }
 
-    ordered.addAll(_defaultQuickActionSeed);
+    ordered.addAll(defaultQuickActionSeed);
 
     return ordered.toList(growable: false);
   }
