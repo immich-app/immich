@@ -58,7 +58,7 @@ class _DelayedAnimationState extends State<_DelayedAnimation> {
     _delayTimer?.cancel();
 
     if (widget.show && !oldWidget.show) {
-      // Showing: set duration, then delay, then show
+      // Showing
       _currentDuration = widget.showDuration;
       if (widget.showDelay == Duration.zero) {
         setState(() => _show = true);
@@ -70,7 +70,7 @@ class _DelayedAnimationState extends State<_DelayedAnimation> {
         });
       }
     } else if (!widget.show && oldWidget.show) {
-      // Hiding: delay, then set duration and hide
+      // Hiding
       if (widget.hideDelay == Duration.zero) {
         setState(() {
           _currentDuration = widget.hideDuration;
