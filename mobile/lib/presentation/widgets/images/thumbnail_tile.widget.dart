@@ -11,6 +11,7 @@ import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
 import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
+import 'dart:async';
 
 class _DelayedAnimation extends StatefulWidget {
   final Widget child;
@@ -23,10 +24,10 @@ class _DelayedAnimation extends StatefulWidget {
   const _DelayedAnimation({
     required this.child,
     required this.show,
-    this.showDelay = const Duration(milliseconds: 300),
+    this.showDelay = const Duration(milliseconds: 0),
     this.hideDelay = const Duration(milliseconds: 0),
-    this.showDuration = const Duration(milliseconds: 200),
-    this.hideDuration = const Duration(milliseconds: 150),
+    this.showDuration = const Duration(milliseconds: 0),
+    this.hideDuration = const Duration(milliseconds: 0),
   });
 
   @override
@@ -36,6 +37,7 @@ class _DelayedAnimation extends StatefulWidget {
 class _DelayedAnimationState extends State<_DelayedAnimation> {
   bool _show = false;
   Duration _currentDuration = const Duration(milliseconds: 200);
+  Timer? _delayTimer;
 
   @override
   void initState() {
@@ -43,7 +45,7 @@ class _DelayedAnimationState extends State<_DelayedAnimation> {
     // If starting with show=true, show immediately (no delay on initial render)
     if (widget.show) {
       _show = true;
-      _currentDuration = const Duration(milliseconds: 200);
+      _currentDuration = widget.showDuration;
     }
   }
 
@@ -51,30 +53,50 @@ class _DelayedAnimationState extends State<_DelayedAnimation> {
   void didUpdateWidget(_DelayedAnimation oldWidget) {
     super.didUpdateWidget(oldWidget);
 
+    // Cancel any pending timer
+    _delayTimer?.cancel();
+
     if (widget.show && !oldWidget.show) {
-      // Showing: use show duration and delay
-      setState(() => _currentDuration = widget.showDuration);
-      Future.delayed(widget.showDelay, () {
-        if (mounted) {
-          setState(() => _show = true);
-        }
-      });
-    } else if (!widget.show && oldWidget.show) {
-      // Hiding: use hide duration and no delay
-      setState(() {
-        _currentDuration = widget.hideDuration;
-        Future.delayed(widget.hideDelay, () {
+      // Showing: set duration, then delay, then show
+      _currentDuration = widget.showDuration;
+      if (widget.showDelay == Duration.zero) {
+        setState(() => _show = true);
+      } else {
+        _delayTimer = Timer(widget.showDelay, () {
           if (mounted) {
-            setState(() => _show = false);
+            setState(() => _show = true);
           }
         });
-      });
+      }
+    } else if (!widget.show && oldWidget.show) {
+      // Hiding: delay, then set duration and hide
+      if (widget.hideDelay == Duration.zero) {
+        setState(() {
+          _currentDuration = widget.hideDuration;
+          _show = false;
+        });
+      } else {
+        _delayTimer = Timer(widget.hideDelay, () {
+          if (mounted) {
+            setState(() {
+              _currentDuration = widget.hideDuration;
+              _show = false;
+            });
+          }
+        });
+      }
     }
   }
 
   @override
+  void dispose() {
+    _delayTimer?.cancel();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return AnimatedOpacity(duration: _currentDuration, opacity: widget.show && _show ? 1.0 : 0.0, child: widget.child);
+    return AnimatedOpacity(duration: _currentDuration, opacity: _show ? 1.0 : 0.0, child: widget.child);
   }
 }
 
@@ -118,10 +140,7 @@ class ThumbnailTile extends ConsumerWidget {
       children: [
         _DelayedAnimation(
           show: isSelected || lockSelection,
-          showDelay: Duration.zero,
-          hideDelay: Durations.short4, // Wait for indicators to finish
-          showDuration: Duration.zero,
-          hideDuration: Duration.zero,
+          hideDelay: Durations.short4,
           child: Container(color: lockSelection ? context.colorScheme.surfaceContainerHighest : assetContainerColor),
         ),
         AnimatedContainer(
@@ -146,6 +165,9 @@ class ThumbnailTile extends ConsumerWidget {
                 if (asset != null)
                   _DelayedAnimation(
                     show: showIndicators,
+                    showDelay: const Duration(milliseconds: 300),
+                    showDuration: const Duration(milliseconds: 200),
+                    hideDuration: const Duration(milliseconds: 150),
                     child: Align(
                       alignment: Alignment.topRight,
                       child: _AssetTypeIcons(asset: asset),
@@ -155,6 +177,9 @@ class ThumbnailTile extends ConsumerWidget {
                 if (storageIndicator && asset != null)
                   _DelayedAnimation(
                     show: showIndicators,
+                    showDelay: const Duration(milliseconds: 300),
+                    showDuration: const Duration(milliseconds: 200),
+                    hideDuration: const Duration(milliseconds: 150),
                     child: switch (asset.storage) {
                       AssetState.local => const Align(
                         alignment: Alignment.bottomRight,
@@ -183,6 +208,9 @@ class ThumbnailTile extends ConsumerWidget {
                 if (asset != null && asset.isFavorite)
                   _DelayedAnimation(
                     show: showIndicators,
+                    showDelay: const Duration(milliseconds: 300),
+                    showDuration: const Duration(milliseconds: 200),
+                    hideDuration: const Duration(milliseconds: 150),
                     child: const Align(
                       alignment: Alignment.bottomLeft,
                       child: Padding(
