@@ -15,12 +15,19 @@ import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asse
 class _DelayedAnimation extends StatefulWidget {
   final Widget child;
   final bool show;
-  final Duration showDelay = const Duration(milliseconds: 300);
-  final Duration hideDelay = const Duration(milliseconds: 0);
-  final Duration showDuration = const Duration(milliseconds: 200);
-  final Duration hideDuration = const Duration(milliseconds: 100);
+  final Duration showDelay;
+  final Duration hideDelay;
+  final Duration showDuration;
+  final Duration hideDuration;
 
-  const _DelayedAnimation({required this.child, required this.show});
+  const _DelayedAnimation({
+    required this.child,
+    required this.show,
+    this.showDelay = const Duration(milliseconds: 300),
+    this.hideDelay = const Duration(milliseconds: 0),
+    this.showDuration = const Duration(milliseconds: 200),
+    this.hideDuration = const Duration(milliseconds: 150),
+  });
 
   @override
   State<_DelayedAnimation> createState() => _DelayedAnimationState();
@@ -109,12 +116,13 @@ class ThumbnailTile extends ConsumerWidget {
 
     return Stack(
       children: [
-        Container(
-          color: lockSelection
-              ? context.colorScheme.surfaceContainerHighest
-              : isSelected
-              ? assetContainerColor
-              : Colors.transparent,
+        _DelayedAnimation(
+          show: isSelected || lockSelection,
+          showDelay: Duration.zero,
+          hideDelay: Durations.short4, // Wait for indicators to finish
+          showDuration: Duration.zero,
+          hideDuration: Duration.zero,
+          child: Container(color: lockSelection ? context.colorScheme.surfaceContainerHighest : assetContainerColor),
         ),
         AnimatedContainer(
           duration: Durations.short4,
