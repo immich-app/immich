@@ -20,8 +20,8 @@ importers:
   .github:
     devDependencies:
       prettier:
-        specifier: ^3.5.3
-        version: 3.7.1
+        specifier: ^3.7.4
+        version: 3.7.4
 
   cli:
     dependencies:
@@ -85,7 +85,7 @@ importers:
         version: 10.1.8(eslint@9.39.1(jiti@2.6.1))
       eslint-plugin-prettier:
         specifier: ^5.1.3
-        version: 5.5.4(@types/eslint@9.6.1)(eslint-config-prettier@10.1.8(eslint@9.39.1(jiti@2.6.1)))(eslint@9.39.1(jiti@2.6.1))(prettier@3.7.1)
+        version: 5.5.4(@types/eslint@9.6.1)(eslint-config-prettier@10.1.8(eslint@9.39.1(jiti@2.6.1)))(eslint@9.39.1(jiti@2.6.1))(prettier@3.7.4)
       eslint-plugin-unicorn:
         specifier: ^62.0.0
         version: 62.0.0(eslint@9.39.1(jiti@2.6.1))
@@ -96,11 +96,11 @@ importers:
         specifier: ^5.2.0
         version: 5.5.0
       prettier:
-        specifier: ^3.2.5
-        version: 3.7.1
+        specifier: ^3.7.4
+        version: 3.7.4
       prettier-plugin-organize-imports:
         specifier: ^4.0.0
-        version: 4.3.0(prettier@3.7.1)(typescript@5.9.3)
+        version: 4.3.0(prettier@3.7.4)(typescript@5.9.3)
       typescript:
         specifier: ^5.3.3
         version: 5.9.3
@@ -184,8 +184,8 @@ importers:
         specifier: ^3.7.0
         version: 3.9.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       prettier:
-        specifier: ^3.2.4
-        version: 3.7.1
+        specifier: ^3.7.4
+        version: 3.7.4
       typescript:
         specifier: ^5.1.6
         version: 5.9.3
@@ -239,13 +239,13 @@ importers:
         version: 10.1.8(eslint@9.39.1(jiti@2.6.1))
       eslint-plugin-prettier:
         specifier: ^5.1.3
-        version: 5.5.4(@types/eslint@9.6.1)(eslint-config-prettier@10.1.8(eslint@9.39.1(jiti@2.6.1)))(eslint@9.39.1(jiti@2.6.1))(prettier@3.7.1)
+        version: 5.5.4(@types/eslint@9.6.1)(eslint-config-prettier@10.1.8(eslint@9.39.1(jiti@2.6.1)))(eslint@9.39.1(jiti@2.6.1))(prettier@3.7.4)
       eslint-plugin-unicorn:
         specifier: ^62.0.0
         version: 62.0.0(eslint@9.39.1(jiti@2.6.1))
       exiftool-vendored:
-        specifier: ^33.0.0
-        version: 33.5.0
+        specifier: ^34.0.0
+        version: 34.0.0
       globals:
         specifier: ^16.0.0
         version: 16.5.0
@@ -265,11 +265,11 @@ importers:
         specifier: ^7.0.0
         version: 7.0.0
       prettier:
-        specifier: ^3.2.5
-        version: 3.7.1
+        specifier: ^3.7.4
+        version: 3.7.4
       prettier-plugin-organize-imports:
         specifier: ^4.0.0
-        version: 4.3.0(prettier@3.7.1)(typescript@5.9.3)
+        version: 4.3.0(prettier@3.7.4)(typescript@5.9.3)
       sharp:
         specifier: ^0.34.5
         version: 0.34.5
@@ -428,8 +428,8 @@ importers:
         specifier: 4.3.3
         version: 4.3.3
       exiftool-vendored:
-        specifier: ^33.0.0
-        version: 33.5.0
+        specifier: ^34.0.0
+        version: 34.0.0
       express:
         specifier: ^5.1.0
         version: 5.2.0
@@ -655,7 +655,7 @@ importers:
         version: 10.1.8(eslint@9.39.1(jiti@2.6.1))
       eslint-plugin-prettier:
         specifier: ^5.1.3
-        version: 5.5.4(@types/eslint@9.6.1)(eslint-config-prettier@10.1.8(eslint@9.39.1(jiti@2.6.1)))(eslint@9.39.1(jiti@2.6.1))(prettier@3.7.1)
+        version: 5.5.4(@types/eslint@9.6.1)(eslint-config-prettier@10.1.8(eslint@9.39.1(jiti@2.6.1)))(eslint@9.39.1(jiti@2.6.1))(prettier@3.7.4)
       eslint-plugin-unicorn:
         specifier: ^62.0.0
         version: 62.0.0(eslint@9.39.1(jiti@2.6.1))
@@ -672,11 +672,11 @@ importers:
         specifier: ^7.0.0
         version: 7.0.0
       prettier:
-        specifier: ^3.0.2
-        version: 3.7.1
+        specifier: ^3.7.4
+        version: 3.7.4
       prettier-plugin-organize-imports:
         specifier: ^4.0.0
-        version: 4.3.0(prettier@3.7.1)(typescript@5.9.3)
+        version: 4.3.0(prettier@3.7.4)(typescript@5.9.3)
       sql-formatter:
         specifier: ^15.0.0
         version: 15.6.10
@@ -717,8 +717,8 @@ importers:
         specifier: file:../open-api/typescript-sdk
         version: link:../open-api/typescript-sdk
       '@immich/ui':
-        specifier: ^0.49.2
-        version: 0.49.3(@sveltejs/kit@2.49.0(@opentelemetry/api@1.9.0)(@sveltejs/vite-plugin-svelte@6.2.1(svelte@5.45.2)(vite@7.2.4(@types/node@24.10.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(yaml@2.8.2)))(svelte@5.45.2)(vite@7.2.4(@types/node@24.10.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(yaml@2.8.2)))(svelte@5.45.2)
+        specifier: ^0.50.0
+        version: 0.50.0(@sveltejs/kit@2.49.0(@opentelemetry/api@1.9.0)(@sveltejs/vite-plugin-svelte@6.2.1(svelte@5.45.2)(vite@7.2.4(@types/node@24.10.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(yaml@2.8.2)))(svelte@5.45.2)(vite@7.2.4(@types/node@24.10.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(yaml@2.8.2)))(svelte@5.45.2)
       '@mapbox/mapbox-gl-rtl-text':
         specifier: 0.2.3
         version: 0.2.3(mapbox-gl@1.13.3)
@@ -904,17 +904,17 @@ importers:
         specifier: ^16.0.0
         version: 16.5.0
       prettier:
-        specifier: ^3.4.2
-        version: 3.7.1
+        specifier: ^3.7.4
+        version: 3.7.4
       prettier-plugin-organize-imports:
         specifier: ^4.0.0
-        version: 4.3.0(prettier@3.7.1)(typescript@5.9.3)
+        version: 4.3.0(prettier@3.7.4)(typescript@5.9.3)
       prettier-plugin-sort-json:
         specifier: ^4.1.1
-        version: 4.1.1(prettier@3.7.1)
+        version: 4.1.1(prettier@3.7.4)
       prettier-plugin-svelte:
         specifier: ^3.3.3
-        version: 3.4.0(prettier@3.7.1)(svelte@5.45.2)
+        version: 3.4.0(prettier@3.7.4)(svelte@5.45.2)
       rollup-plugin-visualizer:
         specifier: ^6.0.0
         version: 6.0.5(rollup@4.53.3)
@@ -2989,8 +2989,8 @@ packages:
     peerDependencies:
       svelte: ^5.0.0
 
-  '@immich/ui@0.49.3':
-    resolution: {integrity: sha512-joqT72Y6gmGK6z25Suzr2VhYANrLo43g20T4UHmbQenz/z/Ax6sl1Ao9SjIOwEkKMm9N3Txoh7WOOzmHVl04OA==}
+  '@immich/ui@0.50.0':
+    resolution: {integrity: sha512-7AW9SRZTAgal8xlkUAxm7o4+pSG7HcKb+Bh9JpWLaDRRdGyPCZMmsNa9CjZglOQ7wkAD07tQ9u4+zezBLe0dlQ==}
     peerDependencies:
       svelte: ^5.0.0
 
@@ -3236,6 +3236,7 @@ packages:
   '@koa/router@14.0.0':
     resolution: {integrity: sha512-LBSu5K0qAaaQcXX/0WIB9PGDevyCxxpnc1uq13vV/CgObaVxuis5hKl3Eboq/8gcb6ebnkAStW9NB/Em2eYyFA==}
     engines: {node: '>= 20'}
+    deprecated: Please upgrade to v15 or higher. All reported bugs in this version are fixed in newer releases, dependencies have been updated, and security has been improved.
 
   '@koddsson/eslint-plugin-tscompat@0.2.0':
     resolution: {integrity: sha512-Oqd4kWSX0LiO9wWHjcmDfXZNC7TotFV/tLRhwCFU3XUeb//KYvJ75c9OmeSJ+vBv5lkCeB+xYsqyNrBc5j18XA==}
@@ -5503,8 +5504,8 @@ packages:
     resolution: {integrity: sha512-a28v2eWrrRWPpJSzxc+mKwm0ZtVx/G8SepdQZDArnXYU/XS+IF6mp8aB/4E+hH1tyGCoDo3KlUCdlSxGDsRkAw==}
     hasBin: true
 
-  batch-cluster@15.0.1:
-    resolution: {integrity: sha512-eUmh0ld1AUPKTEmdzwGF9QTSexXAyt9rA1F5zDfW1wUi3okA3Tal4NLdCeFI6aiKpBenQhR6NmK9bW9tBHTGPQ==}
+  batch-cluster@16.0.0:
+    resolution: {integrity: sha512-+T7Ho09ikx/kP4P8M+GEnpuePzRQa4gTUhtPIu6ApFC8+0GY0sri1y1PuB+yfXlQWl5DkHC/e58z3U6g0qCz/A==}
     engines: {node: '>=20'}
 
   batch@0.6.1:
@@ -6848,17 +6849,17 @@ packages:
     resolution: {integrity: sha512-8uSpZZocAZRBAPIEINJj3Lo9HyGitllczc27Eh5YYojjMFMn8yHMDMaUHE2Jqfq05D/wucwI4JGURyXt1vchyg==}
     engines: {node: '>=10'}
 
-  exiftool-vendored.exe@13.42.0:
-    resolution: {integrity: sha512-6AFybe5IakduMWleuQBfep9OWGSVZSedt2uKL+LzufRsATp+beOF7tZyKtMztjb6VRH1GF/4F9EvBVam6zm70w==}
+  exiftool-vendored.exe@13.43.0:
+    resolution: {integrity: sha512-EENHNz86tYY5yHGPtGB2mto3FIGstQvEhrcU34f7fm4RMxBKNfTWYOGkhU1jzvjOi+V4575LQX/FUES1TwgUbQ==}
     os: [win32]
 
-  exiftool-vendored.pl@13.42.0:
-    resolution: {integrity: sha512-EF5IdxQNIJIvZjHf4bG4jnwAHVVSLkYZToo2q+Mm89kSuppKfRvHz/lngIxN0JALE8rFdC4zt6NWY/PKqRdCcg==}
+  exiftool-vendored.pl@13.43.0:
+    resolution: {integrity: sha512-0ApWaQ/pxaliPK7HzTxVA0sg/wZ8vl7UtFVhCyWhGQg01WfZkFrKwKmELB0Bnn01WTfgIuMadba8ccmFvpmJag==}
     os: ['!win32']
     hasBin: true
 
-  exiftool-vendored@33.5.0:
-    resolution: {integrity: sha512-7cCh6izwdmC5ZaCxpHFehnExIr2Yp7CJuxHg4WFiGcm81yyxXLtvSE+85ep9VsNwhlOtSpk+XxiqrlddjY5lAw==}
+  exiftool-vendored@34.0.0:
+    resolution: {integrity: sha512-rhIe4XGE7kh76nwytwHtq6qK/pc1mpOBHRV++gudFeG2PfAp3XIVQbFWCLK3S4l9I4AWYOe4mxk8mW8l1oHRTw==}
     engines: {node: '>=20.0.0'}
 
   expect-type@1.2.1:
@@ -9765,8 +9766,8 @@ packages:
       prettier: ^3.0.0
       svelte: ^3.2.0 || ^4.0.0-next.0 || ^5.0.0-next.0
 
-  prettier@3.7.1:
-    resolution: {integrity: sha512-RWKXE4qB3u5Z6yz7omJkjWwmTfLdcbv44jUVHC5NpfXwFGzvpQM798FGv/6WNK879tc+Cn0AAyherCl1KjbyZQ==}
+  prettier@3.7.4:
+    resolution: {integrity: sha512-v6UNi1+3hSlVvv8fSaoUbggEM5VErKmmpGA7Pl3HF8V6uKY7rvClBOJlH6yNwQtfTueNkGVpOv/mtWL9L4bgRA==}
     engines: {node: '>=14'}
     hasBin: true
 
@@ -14517,7 +14518,7 @@ snapshots:
   '@fig/complete-commander@3.2.0(commander@11.1.0)':
     dependencies:
       commander: 11.1.0
-      prettier: 3.7.1
+      prettier: 3.7.4
 
   '@floating-ui/core@1.7.3':
     dependencies:
@@ -14700,7 +14701,7 @@ snapshots:
     dependencies:
       svelte: 5.45.2
 
-  '@immich/ui@0.49.3(@sveltejs/kit@2.49.0(@opentelemetry/api@1.9.0)(@sveltejs/vite-plugin-svelte@6.2.1(svelte@5.45.2)(vite@7.2.4(@types/node@24.10.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(yaml@2.8.2)))(svelte@5.45.2)(vite@7.2.4(@types/node@24.10.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(yaml@2.8.2)))(svelte@5.45.2)':
+  '@immich/ui@0.50.0(@sveltejs/kit@2.49.0(@opentelemetry/api@1.9.0)(@sveltejs/vite-plugin-svelte@6.2.1(svelte@5.45.2)(vite@7.2.4(@types/node@24.10.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(yaml@2.8.2)))(svelte@5.45.2)(vite@7.2.4(@types/node@24.10.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(yaml@2.8.2)))(svelte@5.45.2)':
     dependencies:
       '@immich/svelte-markdown-preprocess': 0.1.0(svelte@5.45.2)
       '@internationalized/date': 3.10.0
@@ -15788,7 +15789,7 @@ snapshots:
   '@react-email/render@1.4.0(react-dom@19.2.0(react@19.2.0))(react@19.2.0)':
     dependencies:
       html-to-text: 9.0.5
-      prettier: 3.7.1
+      prettier: 3.7.4
       react: 19.2.0
       react-dom: 19.2.0(react@19.2.0)
       react-promise-suspense: 0.3.4
@@ -17580,7 +17581,7 @@ snapshots:
 
   baseline-browser-mapping@2.8.31: {}
 
-  batch-cluster@15.0.1: {}
+  batch-cluster@16.0.0: {}
 
   batch@0.6.1: {}
 
@@ -18907,10 +18908,10 @@ snapshots:
       lodash.memoize: 4.1.2
       semver: 7.7.3
 
-  eslint-plugin-prettier@5.5.4(@types/eslint@9.6.1)(eslint-config-prettier@10.1.8(eslint@9.39.1(jiti@2.6.1)))(eslint@9.39.1(jiti@2.6.1))(prettier@3.7.1):
+  eslint-plugin-prettier@5.5.4(@types/eslint@9.6.1)(eslint-config-prettier@10.1.8(eslint@9.39.1(jiti@2.6.1)))(eslint@9.39.1(jiti@2.6.1))(prettier@3.7.4):
     dependencies:
       eslint: 9.39.1(jiti@2.6.1)
-      prettier: 3.7.1
+      prettier: 3.7.4
       prettier-linter-helpers: 1.0.0
       synckit: 0.11.11
     optionalDependencies:
@@ -19128,21 +19129,21 @@ snapshots:
       signal-exit: 3.0.7
       strip-final-newline: 2.0.0
 
-  exiftool-vendored.exe@13.42.0:
+  exiftool-vendored.exe@13.43.0:
     optional: true
 
-  exiftool-vendored.pl@13.42.0: {}
+  exiftool-vendored.pl@13.43.0: {}
 
-  exiftool-vendored@33.5.0:
+  exiftool-vendored@34.0.0:
     dependencies:
       '@photostructure/tz-lookup': 11.3.0
       '@types/luxon': 3.7.1
-      batch-cluster: 15.0.1
-      exiftool-vendored.pl: 13.42.0
+      batch-cluster: 16.0.0
+      exiftool-vendored.pl: 13.43.0
       he: 1.2.0
       luxon: 3.7.2
     optionalDependencies:
-      exiftool-vendored.exe: 13.42.0
+      exiftool-vendored.exe: 13.43.0
 
   expect-type@1.2.1: {}
 
@@ -22636,21 +22637,21 @@ snapshots:
     dependencies:
       fast-diff: 1.3.0
 
-  prettier-plugin-organize-imports@4.3.0(prettier@3.7.1)(typescript@5.9.3):
+  prettier-plugin-organize-imports@4.3.0(prettier@3.7.4)(typescript@5.9.3):
     dependencies:
-      prettier: 3.7.1
+      prettier: 3.7.4
       typescript: 5.9.3
 
-  prettier-plugin-sort-json@4.1.1(prettier@3.7.1):
+  prettier-plugin-sort-json@4.1.1(prettier@3.7.4):
     dependencies:
-      prettier: 3.7.1
+      prettier: 3.7.4
 
-  prettier-plugin-svelte@3.4.0(prettier@3.7.1)(svelte@5.45.2):
+  prettier-plugin-svelte@3.4.0(prettier@3.7.4)(svelte@5.45.2):
     dependencies:
-      prettier: 3.7.1
+      prettier: 3.7.4
       svelte: 5.45.2
 
-  prettier@3.7.1: {}
+  prettier@3.7.4: {}
 
   pretty-error@4.0.0:
     dependencies:

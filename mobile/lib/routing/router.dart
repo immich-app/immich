@@ -167,7 +167,7 @@ class AppRouter extends RootStackRouter {
     AutoRoute(page: LoginRoute.page, guards: [_duplicateGuard]),
     AutoRoute(page: ChangePasswordRoute.page),
     AutoRoute(page: SearchRoute.page, guards: [_authGuard, _duplicateGuard], maintainState: false),
-    CustomRoute(
+    AutoRoute(
       page: TabControllerRoute.page,
       guards: [_authGuard, _duplicateGuard],
       children: [
@@ -176,9 +176,8 @@ class AppRouter extends RootStackRouter {
         AutoRoute(page: LibraryRoute.page, guards: [_authGuard, _duplicateGuard]),
         AutoRoute(page: AlbumsRoute.page, guards: [_authGuard, _duplicateGuard]),
       ],
-      transitionsBuilder: TransitionsBuilders.fadeIn,
     ),
-    CustomRoute(
+    AutoRoute(
       page: TabShellRoute.page,
       guards: [_authGuard, _duplicateGuard],
       children: [
@@ -187,7 +186,6 @@ class AppRouter extends RootStackRouter {
         AutoRoute(page: DriftLibraryRoute.page, guards: [_authGuard, _duplicateGuard]),
         AutoRoute(page: DriftAlbumsRoute.page, guards: [_authGuard, _duplicateGuard]),
       ],
-      transitionsBuilder: TransitionsBuilders.fadeIn,
     ),
     CustomRoute(
       page: GalleryViewerRoute.page,

@@ -82,8 +82,8 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
     }
 
     final actions = <Widget>[
-      if (asset.isRemoteOnly) const DownloadActionButton(source: ActionSource.viewer, menuItem: true),
-      if (isCasting || (asset.hasRemote)) const CastActionButton(menuItem: true),
+      if (asset.isRemoteOnly) const DownloadActionButton(source: ActionSource.viewer, iconOnly: true),
+      if (isCasting || (asset.hasRemote)) const CastActionButton(iconOnly: true),
       if (album != null && album.isActivityEnabled && album.isShared)
         IconButton(
           icon: const Icon(Icons.chat_outlined),
@@ -102,16 +102,16 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
           tooltip: 'view_in_timeline'.t(context: context),
         ),
       if (asset.hasRemote && isOwner && !asset.isFavorite)
-        const FavoriteActionButton(source: ActionSource.viewer, menuItem: true),
+        const FavoriteActionButton(source: ActionSource.viewer, iconOnly: true),
       if (asset.hasRemote && isOwner && asset.isFavorite)
-        const UnFavoriteActionButton(source: ActionSource.viewer, menuItem: true),
-      if (asset.isMotionPhoto) const MotionPhotoActionButton(menuItem: true),
-      ViewerKebabMenu(onConfigureButtons: openConfigurator),
+        const UnFavoriteActionButton(source: ActionSource.viewer, iconOnly: true),
+      if (asset.isMotionPhoto) const MotionPhotoActionButton(iconOnly: true),
+      const ViewerKebabMenu(),
     ];
 
     final lockedViewActions = <Widget>[
-      if (isCasting || (asset.hasRemote)) const CastActionButton(menuItem: true),
-      ViewerKebabMenu(onConfigureButtons: openConfigurator),
+      if (isCasting || (asset.hasRemote)) const CastActionButton(iconOnly: true),
+      const ViewerKebabMenu(),
     ];
 
     return IgnorePointer(

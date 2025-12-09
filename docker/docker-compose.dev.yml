@@ -58,10 +58,6 @@ services:
       IMMICH_THIRD_PARTY_BUG_FEATURE_URL: https://github.com/immich-app/immich/issues
       IMMICH_THIRD_PARTY_DOCUMENTATION_URL: https://docs.immich.app
       IMMICH_THIRD_PARTY_SUPPORT_URL: https://docs.immich.app/community-guides
-    ulimits:
-      nofile:
-        soft: 1048576
-        hard: 1048576
     ports:
       - 9230:9230
       - 9231:9231
@@ -100,10 +96,6 @@ services:
       - app-node_modules:/usr/src/app/node_modules
       - sveltekit:/usr/src/app/web/.svelte-kit
       - coverage:/usr/src/app/web/coverage
-    ulimits:
-      nofile:
-        soft: 1048576
-        hard: 1048576
     restart: unless-stopped
     depends_on:
       immich-server:

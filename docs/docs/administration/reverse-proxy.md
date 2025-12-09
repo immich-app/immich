@@ -32,8 +32,6 @@ server {
 
     # enable websockets: http://nginx.org/en/docs/http/websocket.html
     proxy_http_version 1.1;
-    proxy_set_header   Upgrade    $http_upgrade;
-    proxy_set_header   Connection "upgrade";
     proxy_redirect     off;
 
     # set timeout
@@ -43,6 +41,8 @@ server {
 
     location / {
         proxy_pass http://<backend_url>:2283;
+        proxy_set_header   Upgrade    $http_upgrade;
+        proxy_set_header   Connection "upgrade";
     }
 
     # useful when using Let's Encrypt http-01 challenge
