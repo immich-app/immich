@@ -485,7 +485,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     sheetCloseController = showBottomSheet(
       context: ctx,
       sheetAnimationStyle: const AnimationStyle(
-        duration: Duration(milliseconds: 300),
+        duration: Durations.medium2,
         reverseDuration: Duration(milliseconds: 300),
       ),
       constraints: const BoxConstraints(maxWidth: double.infinity),
