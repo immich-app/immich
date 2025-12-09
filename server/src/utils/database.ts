@@ -14,7 +14,7 @@ import {
 import { PostgresJSDialect } from 'kysely-postgres-js';
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
 import { parse } from 'pg-connection-string';
-import postgres, { Notice } from 'postgres';
+import postgres, { Notice, PostgresError } from 'postgres';
 import { columns, Exif, Person } from 'src/database';
 import { AssetFileType, AssetVisibility, DatabaseExtension, DatabaseSslMode } from 'src/enum';
 import { AssetSearchBuilderOptions } from 'src/repositories/search.repository';
@@ -153,6 +153,10 @@ export function toJson<DB, TB extends keyof DB & string, T extends TB | Expressi
 
 export const ASSET_CHECKSUM_CONSTRAINT = 'UQ_assets_owner_checksum';
 
+export const isAssetChecksumConstraint = (error: unknown) => {
+  return (error as PostgresError)?.constraint_name === 'UQ_assets_owner_checksum';
+};
+
 export function withDefaultVisibility<O>(qb: SelectQueryBuilder<DB, 'asset', O>) {
   return qb.where('asset.visibility', 'in', [sql.lit(AssetVisibility.Archive), sql.lit(AssetVisibility.Timeline)]);
 }
@@ -196,6 +200,14 @@ export function withFiles(eb: ExpressionBuilder<DB, 'asset'>, type?: AssetFileTy
   ).as('files');
 }
 
+export function withFilePath(eb: ExpressionBuilder<DB, 'asset'>, type: AssetFileType) {
+  return eb
+    .selectFrom('asset_file')
+    .select('asset_file.path')
+    .whereRef('asset_file.assetId', '=', 'asset.id')
+    .where('asset_file.type', '=', type);
+}
+
 export function withFacesAndPeople(eb: ExpressionBuilder<DB, 'asset'>, withDeletedFace?: boolean) {
   return jsonArrayFrom(
     eb
@@ -232,12 +244,12 @@ export function inAlbums<O>(qb: SelectQueryBuilder<DB, 'asset', O>, albumIds: st
     (eb) =>
       eb
         .selectFrom('album_asset')
-        .select('assetsId')
-        .where('albumsId', '=', anyUuid(albumIds!))
-        .groupBy('assetsId')
-        .having((eb) => eb.fn.count('albumsId').distinct(), '=', albumIds.length)
+        .select('assetId')
+        .where('albumId', '=', anyUuid(albumIds!))
+        .groupBy('assetId')
+        .having((eb) => eb.fn.count('albumId').distinct(), '=', albumIds.length)
         .as('has_album'),
-    (join) => join.onRef('has_album.assetsId', '=', 'asset.id'),
+    (join) => join.onRef('has_album.assetId', '=', 'asset.id'),
   );
 }
 
@@ -246,13 +258,13 @@ export function hasTags<O>(qb: SelectQueryBuilder<DB, 'asset', O>, tagIds: strin
     (eb) =>
       eb
         .selectFrom('tag_asset')
-        .select('assetsId')
-        .innerJoin('tag_closure', 'tag_asset.tagsId', 'tag_closure.id_descendant')
+        .select('assetId')
+        .innerJoin('tag_closure', 'tag_asset.tagId', 'tag_closure.id_descendant')
         .where('tag_closure.id_ancestor', '=', anyUuid(tagIds))
-        .groupBy('assetsId')
+        .groupBy('assetId')
         .having((eb) => eb.fn.count('tag_closure.id_ancestor').distinct(), '>=', tagIds.length)
         .as('has_tags'),
-    (join) => join.onRef('has_tags.assetsId', '=', 'asset.id'),
+    (join) => join.onRef('has_tags.assetId', '=', 'asset.id'),
   );
 }
 
@@ -273,8 +285,8 @@ export function withTags(eb: ExpressionBuilder<DB, 'asset'>) {
     eb
       .selectFrom('tag')
       .select(columns.tag)
-      .innerJoin('tag_asset', 'tag.id', 'tag_asset.tagsId')
-      .whereRef('asset.id', '=', 'tag_asset.assetsId'),
+      .innerJoin('tag_asset', 'tag.id', 'tag_asset.tagId')
+      .whereRef('asset.id', '=', 'tag_asset.assetId'),
   ).as('tags');
 }
 
@@ -287,12 +299,52 @@ export function withTagId<O>(qb: SelectQueryBuilder<DB, 'asset', O>, tagId: stri
     eb.exists(
       eb
         .selectFrom('tag_closure')
-        .innerJoin('tag_asset', 'tag_asset.tagsId', 'tag_closure.id_descendant')
-        .whereRef('tag_asset.assetsId', '=', 'asset.id')
+        .innerJoin('tag_asset', 'tag_asset.tagId', 'tag_closure.id_descendant')
+        .whereRef('tag_asset.assetId', '=', 'asset.id')
         .where('tag_closure.id_ancestor', '=', tagId),
     ),
   );
 }
+
+const isCJK = (c: number): boolean =>
+  (c >= 0x4e_00 && c <= 0x9f_ff) ||
+  (c >= 0xac_00 && c <= 0xd7_af) ||
+  (c >= 0x30_40 && c <= 0x30_9f) ||
+  (c >= 0x30_a0 && c <= 0x30_ff) ||
+  (c >= 0x34_00 && c <= 0x4d_bf);
+
+export const tokenizeForSearch = (text: string): string[] => {
+  /* eslint-disable unicorn/prefer-code-point */
+  const tokens: string[] = [];
+  let i = 0;
+  while (i < text.length) {
+    const c = text.charCodeAt(i);
+    if (c <= 32) {
+      i++;
+      continue;
+    }
+
+    const start = i;
+    if (isCJK(c)) {
+      while (i < text.length && isCJK(text.charCodeAt(i))) {
+        i++;
+      }
+      if (i - start === 1) {
+        tokens.push(text[start]);
+      } else {
+        for (let k = start; k < i - 1; k++) {
+          tokens.push(text[k] + text[k + 1]);
+        }
+      }
+    } else {
+      while (i < text.length && text.charCodeAt(i) > 32 && !isCJK(text.charCodeAt(i))) {
+        i++;
+      }
+      tokens.push(text.slice(start, i));
+    }
+  }
+  return tokens;
+};
 
 const joinDeduplicationPlugin = new DeduplicateJoinsPlugin();
 /** TODO: This should only be used for search-related queries, not as a general purpose query builder */
@@ -308,7 +360,7 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
     .$if(!!options.albumIds && options.albumIds.length > 0, (qb) => inAlbums(qb, options.albumIds!))
     .$if(!!options.tagIds && options.tagIds.length > 0, (qb) => hasTags(qb, options.tagIds!))
     .$if(options.tagIds === null, (qb) =>
-      qb.where((eb) => eb.not(eb.exists((eb) => eb.selectFrom('tag_asset').whereRef('assetsId', '=', 'asset.id')))),
+      qb.where((eb) => eb.not(eb.exists((eb) => eb.selectFrom('tag_asset').whereRef('assetId', '=', 'asset.id')))),
     )
     .$if(!!options.personIds && options.personIds.length > 0, (qb) => hasPeople(qb, options.personIds!))
     .$if(!!options.createdBefore, (qb) => qb.where('asset.createdAt', '<=', options.createdBefore!))
@@ -376,6 +428,11 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
         .innerJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
         .where(sql`f_unaccent(asset_exif.description)`, 'ilike', sql`'%' || f_unaccent(${options.description}) || '%'`),
     )
+    .$if(!!options.ocr, (qb) =>
+      qb
+        .innerJoin('ocr_search', 'asset.id', 'ocr_search.assetId')
+        .where(() => sql`f_unaccent(ocr_search.text) %>> f_unaccent(${tokenizeForSearch(options.ocr!).join(' ')})`),
+    )
     .$if(!!options.type, (qb) => qb.where('asset.type', '=', options.type!))
     .$if(options.isFavorite !== undefined, (qb) => qb.where('asset.isFavorite', '=', options.isFavorite!))
     .$if(options.isOffline !== undefined, (qb) => qb.where('asset.isOffline', '=', options.isOffline!))
@@ -386,7 +443,7 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
       qb.where('asset.livePhotoVideoId', options.isMotion ? 'is not' : 'is', null),
     )
     .$if(!!options.isNotInAlbum && (!options.albumIds || options.albumIds.length === 0), (qb) =>
-      qb.where((eb) => eb.not(eb.exists((eb) => eb.selectFrom('album_asset').whereRef('assetsId', '=', 'asset.id')))),
+      qb.where((eb) => eb.not(eb.exists((eb) => eb.selectFrom('album_asset').whereRef('assetId', '=', 'asset.id')))),
     )
     .$if(!!options.withExif, withExifInner)
     .$if(!!(options.withFaces || options.withPeople || options.personIds), (qb) => qb.select(withFacesAndPeople))

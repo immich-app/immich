@@ -61,7 +61,7 @@ export class BackupService extends BaseService {
         const newBackupStyle = file.match(/immich-db-backup-\d{8}T\d{6}-v.*-pg.*\.sql\.gz$/);
         return oldBackupStyle || newBackupStyle;
       })
-      .sort()
+      .toSorted()
       .toReversed();
 
     const toDelete = backups.slice(config.keepLastAmount);
@@ -81,8 +81,16 @@ export class BackupService extends BaseService {
 
     const isUrlConnection = config.connectionType === 'url';
 
+    let connectionUrl: string = isUrlConnection ? config.url : '';
+    if (URL.canParse(connectionUrl)) {
+      // remove known bad url parameters for pg_dumpall
+      const url = new URL(connectionUrl);
+      url.searchParams.delete('uselibpqcompat');
+      connectionUrl = url.toString();
+    }
+
     const databaseParams = isUrlConnection
-      ? ['--dbname', config.url]
+      ? ['--dbname', connectionUrl]
       : [
           '--username',
           config.username,
@@ -103,7 +111,7 @@ export class BackupService extends BaseService {
     const databaseSemver = semver.coerce(databaseVersion);
     const databaseMajorVersion = databaseSemver?.major;
 
-    if (!databaseMajorVersion || !databaseSemver || !semver.satisfies(databaseSemver, '>=14.0.0 <18.0.0')) {
+    if (!databaseMajorVersion || !databaseSemver || !semver.satisfies(databaseSemver, '>=14.0.0 <19.0.0')) {
       this.logger.error(`Database Backup Failure: Unsupported PostgreSQL version: ${databaseVersion}`);
       return JobStatus.Failed;
     }
@@ -118,7 +126,7 @@ export class BackupService extends BaseService {
           {
             env: {
               PATH: process.env.PATH,
-              PGPASSWORD: isUrlConnection ? undefined : config.password,
+              PGPASSWORD: isUrlConnection ? new URL(connectionUrl).password : config.password,
             },
           },
         );
@@ -132,12 +140,12 @@ export class BackupService extends BaseService {
         gzip.stdout.pipe(fileStream);
 
         pgdump.on('error', (err) => {
-          this.logger.error('Backup failed with error', err);
+          this.logger.error(`Backup failed with error: ${err}`);
           reject(err);
         });
 
         gzip.on('error', (err) => {
-          this.logger.error('Gzip failed with error', err);
+          this.logger.error(`Gzip failed with error: ${err}`);
           reject(err);
         });
 
@@ -175,10 +183,10 @@ export class BackupService extends BaseService {
       });
       await this.storageRepository.rename(backupFilePath, backupFilePath.replace('.tmp', ''));
     } catch (error) {
-      this.logger.error('Database Backup Failure', error);
+      this.logger.error(`Database Backup Failure: ${error}`);
       await this.storageRepository
         .unlink(backupFilePath)
-        .catch((error) => this.logger.error('Failed to delete failed backup file', error));
+        .catch((error) => this.logger.error(`Failed to delete failed backup file: ${error}`));
       throw error;
     }
 

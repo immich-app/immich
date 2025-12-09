@@ -72,6 +72,7 @@ const envData: EnvData = {
       root: '/build/www',
       indexHtml: '/build/www/index.html',
     },
+    corePlugin: '/build/corePlugin',
   },
 
   storage: {
@@ -85,6 +86,11 @@ const envData: EnvData = {
   },
 
   workers: [ImmichWorker.Api, ImmichWorker.Microservices],
+
+  plugins: {
+    enabled: true,
+    installFolder: '/app/data/plugins',
+  },
 
   noColor: false,
 };

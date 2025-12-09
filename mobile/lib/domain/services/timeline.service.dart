@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import 'package:collection/collection.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/events.model.dart';
 import 'package:immich_mobile/domain/models/setting.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/domain/services/setting.service.dart';
@@ -16,7 +17,25 @@ typedef TimelineAssetSource = Future<List<BaseAsset>> Function(int index, int co
 
 typedef TimelineBucketSource = Stream<List<Bucket>> Function();
 
-typedef TimelineQuery = ({TimelineAssetSource assetSource, TimelineBucketSource bucketSource});
+typedef TimelineQuery = ({TimelineAssetSource assetSource, TimelineBucketSource bucketSource, TimelineOrigin origin});
+
+enum TimelineOrigin {
+  main,
+  localAlbum,
+  remoteAlbum,
+  remoteAssets,
+  favorite,
+  trash,
+  archive,
+  lockedFolder,
+  video,
+  place,
+  person,
+  map,
+  search,
+  deepLink,
+  albumActivities,
+}
 
 class TimelineFactory {
   final DriftTimelineRepository _timelineRepository;
@@ -57,14 +76,17 @@ class TimelineFactory {
   TimelineService person(String userId, String personId) =>
       TimelineService(_timelineRepository.person(userId, personId, groupBy));
 
-  TimelineService fromAssets(List<BaseAsset> assets) => TimelineService(_timelineRepository.fromAssets(assets));
+  TimelineService fromAssets(List<BaseAsset> assets, TimelineOrigin type) =>
+      TimelineService(_timelineRepository.fromAssets(assets, type));
 
-  TimelineService map(LatLngBounds bounds) => TimelineService(_timelineRepository.map(bounds, groupBy));
+  TimelineService map(String userId, LatLngBounds bounds) =>
+      TimelineService(_timelineRepository.map(userId, bounds, groupBy));
 }
 
 class TimelineService {
   final TimelineAssetSource _assetSource;
   final TimelineBucketSource _bucketSource;
+  final TimelineOrigin origin;
   final AsyncMutex _mutex = AsyncMutex();
   int _bufferOffset = 0;
   List<BaseAsset> _buffer = [];
@@ -73,11 +95,15 @@ class TimelineService {
   int _totalAssets = 0;
   int get totalAssets => _totalAssets;
 
-  TimelineService(TimelineQuery query) : this._(assetSource: query.assetSource, bucketSource: query.bucketSource);
+  TimelineService(TimelineQuery query)
+    : this._(assetSource: query.assetSource, bucketSource: query.bucketSource, origin: query.origin);
 
-  TimelineService._({required TimelineAssetSource assetSource, required TimelineBucketSource bucketSource})
-    : _assetSource = assetSource,
-      _bucketSource = bucketSource {
+  TimelineService._({
+    required TimelineAssetSource assetSource,
+    required TimelineBucketSource bucketSource,
+    required this.origin,
+  }) : _assetSource = assetSource,
+       _bucketSource = bucketSource {
     _bucketSubscription = _bucketSource().listen((buckets) {
       _mutex.run(() async {
         final totalAssets = buckets.fold<int>(0, (acc, bucket) => acc + bucket.assetCount);
@@ -202,7 +228,7 @@ class TimelineService {
   Future<void> dispose() async {
     await _bucketSubscription?.cancel();
     _bucketSubscription = null;
-    _buffer.clear();
+    _buffer = [];
     _bufferOffset = 0;
   }
 }

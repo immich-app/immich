@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/domain/models/timeline.model.dart';
+import 'package:immich_mobile/domain/models/events.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
@@ -272,9 +272,17 @@ class _RandomAssetBackgroundState extends State<_RandomAssetBackground> with Tic
   void initState() {
     super.initState();
 
-    _zoomController = AnimationController(duration: const Duration(seconds: 12), vsync: this);
+    _zoomController = AnimationController(
+      duration: const Duration(seconds: 12),
+      vsync: this,
+      animationBehavior: AnimationBehavior.preserve,
+    );
 
-    _crossFadeController = AnimationController(duration: const Duration(milliseconds: 1200), vsync: this);
+    _crossFadeController = AnimationController(
+      duration: const Duration(milliseconds: 1200),
+      vsync: this,
+      animationBehavior: AnimationBehavior.preserve,
+    );
 
     _zoomAnimation = Tween<double>(
       begin: 1.0,

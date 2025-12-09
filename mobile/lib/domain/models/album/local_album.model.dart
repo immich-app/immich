@@ -15,6 +15,7 @@ class LocalAlbum {
 
   final int assetCount;
   final BackupSelection backupSelection;
+  final String? linkedRemoteAlbumId;
 
   const LocalAlbum({
     required this.id,
@@ -23,6 +24,7 @@ class LocalAlbum {
     this.assetCount = 0,
     this.backupSelection = BackupSelection.none,
     this.isIosSharedAlbum = false,
+    this.linkedRemoteAlbumId,
   });
 
   LocalAlbum copyWith({
@@ -32,6 +34,7 @@ class LocalAlbum {
     int? assetCount,
     BackupSelection? backupSelection,
     bool? isIosSharedAlbum,
+    String? linkedRemoteAlbumId,
   }) {
     return LocalAlbum(
       id: id ?? this.id,
@@ -40,6 +43,7 @@ class LocalAlbum {
       assetCount: assetCount ?? this.assetCount,
       backupSelection: backupSelection ?? this.backupSelection,
       isIosSharedAlbum: isIosSharedAlbum ?? this.isIosSharedAlbum,
+      linkedRemoteAlbumId: linkedRemoteAlbumId ?? this.linkedRemoteAlbumId,
     );
   }
 
@@ -53,7 +57,8 @@ class LocalAlbum {
         other.updatedAt == updatedAt &&
         other.assetCount == assetCount &&
         other.backupSelection == backupSelection &&
-        other.isIosSharedAlbum == isIosSharedAlbum;
+        other.isIosSharedAlbum == isIosSharedAlbum &&
+        other.linkedRemoteAlbumId == linkedRemoteAlbumId;
   }
 
   @override
@@ -63,7 +68,8 @@ class LocalAlbum {
         updatedAt.hashCode ^
         assetCount.hashCode ^
         backupSelection.hashCode ^
-        isIosSharedAlbum.hashCode;
+        isIosSharedAlbum.hashCode ^
+        linkedRemoteAlbumId.hashCode;
   }
 
   @override
@@ -75,6 +81,7 @@ updatedAt: $updatedAt,
 assetCount: $assetCount,
 backupSelection: $backupSelection,
 isIosSharedAlbum: $isIosSharedAlbum
+linkedRemoteAlbumId: $linkedRemoteAlbumId,
 }''';
   }
 }

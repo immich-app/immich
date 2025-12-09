@@ -1,18 +1,14 @@
 <script lang="ts">
-  import {
-    notificationController,
-    NotificationType,
-  } from '$lib/components/shared-components/notification/notification';
   import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
   import { SettingInputFieldType } from '$lib/constants';
   import { user } from '$lib/stores/user.store';
+  import { handleError } from '$lib/utils/handle-error';
   import { updateMyUser } from '@immich/sdk';
-  import { Button } from '@immich/ui';
+  import { Button, toastManager } from '@immich/ui';
   import { cloneDeep } from 'lodash-es';
   import { t } from 'svelte-i18n';
   import { createBubbler, preventDefault } from 'svelte/legacy';
   import { fade } from 'svelte/transition';
-  import { handleError } from '../../utils/handle-error';
 
   let editedUser = $state(cloneDeep($user));
   const bubble = createBubbler();
@@ -29,10 +25,7 @@
       Object.assign(editedUser, data);
       $user = data;
 
-      notificationController.show({
-        message: $t('saved_profile'),
-        type: NotificationType.Info,
-      });
+      toastManager.success($t('saved_profile'));
     } catch (error) {
       handleError(error, $t('errors.unable_to_save_profile'));
     }

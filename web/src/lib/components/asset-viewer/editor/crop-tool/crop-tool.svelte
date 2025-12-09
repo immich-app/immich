@@ -135,7 +135,7 @@
 
 <div class="mt-3 px-4 py-4">
   <div class="flex h-10 w-full items-center justify-between text-sm">
-    <h2>{$t('editor_crop_tool_h2_aspect_ratios').toUpperCase()}</h2>
+    <h2 class="uppercase">{$t('editor_crop_tool_h2_aspect_ratios')}</h2>
   </div>
   {#each sizesRows as sizesRow, index (index)}
     <ul class="flex-wrap flex-row flex gap-x-6 py-2 justify-evenly">
@@ -145,7 +145,7 @@
     </ul>
   {/each}
   <div class="flex h-10 w-full items-center justify-between text-sm">
-    <h2>{$t('editor_crop_tool_h2_rotation').toUpperCase()}</h2>
+    <h2 class="uppercase">{$t('editor_crop_tool_h2_rotation')}</h2>
   </div>
   <ul class="flex-wrap flex-row flex gap-x-6 gap-y-4 justify-center">
     <li>

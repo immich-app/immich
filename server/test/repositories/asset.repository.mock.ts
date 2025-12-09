@@ -10,6 +10,7 @@ export const newAssetRepositoryMock = (): Mocked<RepositoryInterface<AssetReposi
     updateAllExif: vitest.fn(),
     updateDateTimeOriginal: vitest.fn().mockResolvedValue([]),
     upsertJobStatus: vitest.fn(),
+    getForCopy: vitest.fn(),
     getByDayOfYear: vitest.fn(),
     getByIds: vitest.fn().mockResolvedValue([]),
     getByIdsWithAllRelationsButStacks: vitest.fn().mockResolvedValue([]),
@@ -36,10 +37,15 @@ export const newAssetRepositoryMock = (): Mocked<RepositoryInterface<AssetReposi
     getChangedDeltaSync: vitest.fn(),
     upsertFile: vitest.fn(),
     upsertFiles: vitest.fn(),
+    deleteFile: vitest.fn(),
     deleteFiles: vitest.fn(),
     detectOfflineExternalAssets: vitest.fn(),
     filterNewExternalAssetPaths: vitest.fn(),
     updateByLibraryId: vitest.fn(),
     getFileSamples: vitest.fn(),
+    getMetadata: vitest.fn(),
+    upsertMetadata: vitest.fn(),
+    getMetadataByKey: vitest.fn(),
+    deleteMetadataByKey: vitest.fn(),
   };
 };

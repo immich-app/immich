@@ -43,7 +43,9 @@ export class StorageCore {
     private storageRepository: StorageRepository,
     private systemMetadataRepository: SystemMetadataRepository,
     private logger: LoggingRepository,
-  ) {}
+  ) {
+    this.logger.setContext(StorageCore.name);
+  }
 
   static create(
     assetRepository: AssetRepository,
@@ -303,7 +305,7 @@ export class StorageCore {
         return this.assetRepository.update({ id, encodedVideoPath: newPath });
       }
       case AssetPathType.Sidecar: {
-        return this.assetRepository.update({ id, sidecarPath: newPath });
+        return this.assetRepository.upsertFile({ assetId: id, type: AssetFileType.Sidecar, path: newPath });
       }
       case PersonPathType.Face: {
         return this.personRepository.update({ id, thumbnailPath: newPath });

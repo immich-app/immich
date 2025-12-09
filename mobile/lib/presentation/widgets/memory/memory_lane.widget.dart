@@ -3,19 +3,23 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/memory.model.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/presentation/pages/drift_memory.page.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
-import 'package:immich_mobile/providers/asset_viewer/video_player_value_provider.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/memory.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 
 class DriftMemoryLane extends ConsumerWidget {
-  final List<DriftMemory> memories;
-
-  const DriftMemoryLane({super.key, required this.memories});
+  const DriftMemoryLane({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final memoryLaneProvider = ref.watch(driftMemoryFutureProvider);
+    final memories = memoryLaneProvider.value ?? const [];
+    if (memories.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
     return ConstrainedBox(
       constraints: const BoxConstraints(maxHeight: 200),
       child: CarouselView(
@@ -26,19 +30,14 @@ class DriftMemoryLane extends ConsumerWidget {
         overlayColor: WidgetStateProperty.all(Colors.white.withValues(alpha: 0.1)),
         onTap: (index) {
           ref.read(hapticFeedbackProvider.notifier).heavyImpact();
-
           if (memories[index].assets.isNotEmpty) {
-            final asset = memories[index].assets[0];
-            ref.read(currentAssetNotifier.notifier).setAsset(asset);
-
-            if (asset.isVideo) {
-              ref.read(videoPlaybackValueProvider.notifier).reset();
-            }
+            DriftMemoryPage.setMemory(ref, memories[index]);
           }
-
           context.pushRoute(DriftMemoryRoute(memories: memories, memoryIndex: index));
         },
-        children: memories.map((memory) => DriftMemoryCard(memory: memory)).toList(),
+        children: memories
+            .map((memory) => DriftMemoryCard(key: Key(memory.id), memory: memory))
+            .toList(growable: false),
       ),
     );
   }
@@ -61,7 +60,7 @@ class DriftMemoryCard extends ConsumerWidget {
             child: SizedBox(
               width: 205,
               height: 200,
-              child: Thumbnail(remoteId: memory.assets[0].id, fit: BoxFit.cover),
+              child: Thumbnail.remote(remoteId: memory.assets[0].id, fit: BoxFit.cover),
             ),
           ),
           Positioned(

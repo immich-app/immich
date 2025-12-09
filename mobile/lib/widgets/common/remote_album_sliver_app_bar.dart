@@ -7,7 +7,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/domain/models/timeline.model.dart';
+import 'package:immich_mobile/domain/models/events.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
@@ -18,7 +18,6 @@ import 'package:immich_mobile/providers/infrastructure/current_album.provider.da
 import 'package:immich_mobile/providers/infrastructure/remote_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
-import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/album/remote_album_shared_user_icons.dart';
 
 class RemoteAlbumSliverAppBar extends ConsumerStatefulWidget {
@@ -75,86 +74,79 @@ class _MesmerizingSliverAppBarState extends ConsumerState<RemoteAlbumSliverAppBa
         const Shadow(offset: Offset(0, 2), blurRadius: 0, color: Colors.transparent),
     ];
 
-    if (isMultiSelectEnabled) {
-      return SliverToBoxAdapter(
-        child: switch (_scrollProgress) {
-          < 0.8 => const SizedBox(height: 120),
-          _ => const SizedBox(height: 452),
-        },
-      );
-    } else {
-      return SliverAppBar(
-        expandedHeight: 400.0,
-        floating: false,
-        pinned: true,
-        snap: false,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(
-            Platform.isIOS ? Icons.arrow_back_ios_new_rounded : Icons.arrow_back,
-            color: actionIconColor,
-            shadows: actionIconShadows,
-          ),
-          onPressed: () => context.navigateTo(const TabShellRoute(children: [DriftAlbumsRoute()])),
-        ),
-        actions: [
-          if (widget.onToggleAlbumOrder != null)
-            IconButton(
-              icon: Icon(Icons.swap_vert_rounded, color: actionIconColor, shadows: actionIconShadows),
-              onPressed: widget.onToggleAlbumOrder,
-            ),
-          if (currentAlbum.isActivityEnabled && currentAlbum.isShared)
-            IconButton(
-              icon: Icon(Icons.chat_outlined, color: actionIconColor, shadows: actionIconShadows),
-              onPressed: widget.onActivity,
-            ),
-          if (widget.onShowOptions != null)
-            IconButton(
-              icon: Icon(Icons.more_vert, color: actionIconColor, shadows: actionIconShadows),
-              onPressed: widget.onShowOptions,
-            ),
-        ],
-        title: Builder(
-          builder: (context) {
-            final settings = context.dependOnInheritedWidgetOfExactType<FlexibleSpaceBarSettings>();
-            final scrollProgress = _calculateScrollProgress(settings);
-
-            return AnimatedSwitcher(
-              duration: const Duration(milliseconds: 200),
-              child: scrollProgress > 0.95
-                  ? Text(
-                      currentAlbum.name,
-                      style: TextStyle(color: context.primaryColor, fontWeight: FontWeight.w600, fontSize: 18),
-                    )
-                  : null,
-            );
-          },
-        ),
-        flexibleSpace: Builder(
-          builder: (context) {
-            final settings = context.dependOnInheritedWidgetOfExactType<FlexibleSpaceBarSettings>();
-            final scrollProgress = _calculateScrollProgress(settings);
-
-            // Update scroll progress for the leading button
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (mounted && _scrollProgress != scrollProgress) {
-                setState(() {
-                  _scrollProgress = scrollProgress;
-                });
-              }
-            });
-
-            return FlexibleSpaceBar(
-              background: _ExpandedBackground(
-                scrollProgress: scrollProgress,
-                icon: widget.icon,
-                onEditTitle: widget.onEditTitle,
+    return SliverAppBar(
+      expandedHeight: 400.0,
+      floating: false,
+      pinned: true,
+      snap: false,
+      elevation: 0,
+      leading: isMultiSelectEnabled
+          ? const SizedBox.shrink()
+          : IconButton(
+              icon: Icon(
+                Platform.isIOS ? Icons.arrow_back_ios_new_rounded : Icons.arrow_back,
+                color: actionIconColor,
+                shadows: actionIconShadows,
               ),
-            );
-          },
-        ),
-      );
-    }
+              onPressed: () => context.maybePop(),
+            ),
+      actions: [
+        if (widget.onToggleAlbumOrder != null)
+          IconButton(
+            icon: Icon(Icons.swap_vert_rounded, color: actionIconColor, shadows: actionIconShadows),
+            onPressed: widget.onToggleAlbumOrder,
+          ),
+        if (currentAlbum.isActivityEnabled && currentAlbum.isShared)
+          IconButton(
+            icon: Icon(Icons.chat_outlined, color: actionIconColor, shadows: actionIconShadows),
+            onPressed: widget.onActivity,
+          ),
+        if (widget.onShowOptions != null)
+          IconButton(
+            icon: Icon(Icons.more_vert, color: actionIconColor, shadows: actionIconShadows),
+            onPressed: widget.onShowOptions,
+          ),
+      ],
+      title: Builder(
+        builder: (context) {
+          final settings = context.dependOnInheritedWidgetOfExactType<FlexibleSpaceBarSettings>();
+          final scrollProgress = _calculateScrollProgress(settings);
+
+          return AnimatedSwitcher(
+            duration: const Duration(milliseconds: 200),
+            child: scrollProgress > 0.95
+                ? Text(
+                    currentAlbum.name,
+                    style: TextStyle(color: context.primaryColor, fontWeight: FontWeight.w600, fontSize: 18),
+                  )
+                : null,
+          );
+        },
+      ),
+      flexibleSpace: Builder(
+        builder: (context) {
+          final settings = context.dependOnInheritedWidgetOfExactType<FlexibleSpaceBarSettings>();
+          final scrollProgress = _calculateScrollProgress(settings);
+
+          // Update scroll progress for the leading button
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted && _scrollProgress != scrollProgress) {
+              setState(() {
+                _scrollProgress = scrollProgress;
+              });
+            }
+          });
+
+          return FlexibleSpaceBar(
+            background: _ExpandedBackground(
+              scrollProgress: scrollProgress,
+              icon: widget.icon,
+              onEditTitle: widget.onEditTitle,
+            ),
+          );
+        },
+      ),
+    );
   }
 }
 
@@ -378,9 +370,17 @@ class _RandomAssetBackgroundState extends State<_RandomAssetBackground> with Tic
   void initState() {
     super.initState();
 
-    _zoomController = AnimationController(duration: const Duration(seconds: 12), vsync: this);
+    _zoomController = AnimationController(
+      duration: const Duration(seconds: 12),
+      vsync: this,
+      animationBehavior: AnimationBehavior.preserve,
+    );
 
-    _crossFadeController = AnimationController(duration: const Duration(milliseconds: 1200), vsync: this);
+    _crossFadeController = AnimationController(
+      duration: const Duration(milliseconds: 1200),
+      vsync: this,
+      animationBehavior: AnimationBehavior.preserve,
+    );
 
     _zoomAnimation = Tween<double>(
       begin: 1.0,

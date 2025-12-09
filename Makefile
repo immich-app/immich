@@ -15,7 +15,10 @@ dev-docs:
 
 .PHONY: e2e
 e2e:
-	@trap 'make e2e-down' EXIT; COMPOSE_BAKE=true docker compose -f ./e2e/docker-compose.yml up --build -V --remove-orphans
+	@trap 'make e2e-down' EXIT; COMPOSE_BAKE=true docker compose -f ./e2e/docker-compose.yml up --remove-orphans
+
+e2e-dev:
+	@trap 'make e2e-down' EXIT; COMPOSE_BAKE=true docker compose -f ./e2e/docker-compose.dev.yml up --remove-orphans
 
 e2e-update:
 	@trap 'make e2e-down' EXIT; COMPOSE_BAKE=true docker compose -f ./e2e/docker-compose.yml up --build -V --remove-orphans
@@ -51,6 +54,23 @@ attach-server:
 renovate:
   LOG_LEVEL=debug npx renovate --platform=local --repository-cache=reset
 
+# Directories that need to be created for volumes or build output
+VOLUME_DIRS = \
+	./.pnpm-store \
+	./web/.svelte-kit \
+	./web/node_modules \
+	./web/coverage \
+	./e2e/node_modules \
+	./docs/node_modules \
+	./server/node_modules \
+	./open-api/typescript-sdk/node_modules \
+	./.github/node_modules \
+	./node_modules \
+	./cli/node_modules
+
+# Include .env file if it exists
+-include docker/.env
+
 MODULES = e2e server web cli sdk docs .github
 
 # directory to package name mapping function
@@ -74,8 +94,6 @@ format-%:
 	pnpm --filter $(call map-package,$*) run format:fix
 lint-%:
 	pnpm --filter $(call map-package,$*) run lint:fix
-lint-web:
-	pnpm --filter $(call map-package,$*) run lint:p
 check-%:
 	pnpm --filter $(call map-package,$*) run check
 check-web:
@@ -126,8 +144,9 @@ clean:
 	find . -name ".svelte-kit" -type d -prune -exec rm -rf '{}' +
 	find . -name "coverage" -type d -prune -exec rm -rf '{}' +
 	find . -name ".pnpm-store" -type d -prune -exec rm -rf '{}' +
-	command -v docker >/dev/null 2>&1 && docker compose -f ./docker/docker-compose.dev.yml rm -v -f || true
-	command -v docker >/dev/null 2>&1 && docker compose -f ./e2e/docker-compose.yml rm -v -f || true
+	command -v docker >/dev/null 2>&1 && docker compose -f ./docker/docker-compose.dev.yml down -v --remove-orphans || true
+	command -v docker >/dev/null 2>&1 && docker compose -f ./e2e/docker-compose.yml down -v --remove-orphans || true
+
 
 setup-server-dev: install-server
 setup-web-dev: install-sdk build-sdk install-web

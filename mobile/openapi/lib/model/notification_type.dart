@@ -26,6 +26,8 @@ class NotificationType {
   static const jobFailed = NotificationType._(r'JobFailed');
   static const backupFailed = NotificationType._(r'BackupFailed');
   static const systemMessage = NotificationType._(r'SystemMessage');
+  static const albumInvite = NotificationType._(r'AlbumInvite');
+  static const albumUpdate = NotificationType._(r'AlbumUpdate');
   static const custom = NotificationType._(r'Custom');
 
   /// List of all possible values in this [enum][NotificationType].
@@ -33,6 +35,8 @@ class NotificationType {
     jobFailed,
     backupFailed,
     systemMessage,
+    albumInvite,
+    albumUpdate,
     custom,
   ];
 
@@ -75,6 +79,8 @@ class NotificationTypeTypeTransformer {
         case r'JobFailed': return NotificationType.jobFailed;
         case r'BackupFailed': return NotificationType.backupFailed;
         case r'SystemMessage': return NotificationType.systemMessage;
+        case r'AlbumInvite': return NotificationType.albumInvite;
+        case r'AlbumUpdate': return NotificationType.albumUpdate;
         case r'Custom': return NotificationType.custom;
         default:
           if (!allowNull) {

@@ -1,13 +1,68 @@
 # XMP Sidecars
 
-Immich can ingest XMP sidecars on file upload (via the CLI) as well as detect new sidecars that are placed in the filesystem for existing images.
+Immich supports XMP sidecar files — external `.xmp` files that store metadata for an image or video in XML format. During the metadata extraction job Immich will read & import metadata from `.xmp` files, and during the Sidecar Write job it will _write_ metadata back to `.xmp`.
 
-<img src={require('./img/xmp-sidecars.webp').default} title='XMP sidecars' />
+:::tip
+Tools like Lightroom, Darktable, digiKam and other applications can also be configured to write changes to `.xmp` files, in order to avoid modifying the original file.
+:::
 
-XMP sidecars are external XML files that contain metadata related to media files. Many applications read and write these files either exclusively or in addition to the metadata written to image files. They can be a powerful tool for editing and storing metadata of a media file without modifying the media file itself. When Immich receives or detects an XMP sidecar for a media file, it will attempt to extract the metadata from both the sidecar as well as the media file. It will prioritize the metadata for fields in the sidecar but will fall back and use the metadata in the media file if necessary.
+## Metadata Fields
 
-When importing files via the CLI bulk uploader or parsing photo metadata for external libraries, Immich will automatically detect XMP sidecar files as files that exist next to the original media file. Immich will look files that have the same name as the photo, but with the `.xmp` file extension. The same name can either include the photo's file extension or without the photo's file extension. For example, for a photo named `PXL_20230401_203352928.MP.jpg`, Immich will look for an XMP file named either `PXL_20230401_203352928.MP.jpg.xmp` or `PXL_20230401_203352928.MP.xmp`. If both `PXL_20230401_203352928.MP.jpg.xmp` and `PXL_20230401_203352928.MP.xmp` are present, Immich will prefer `PXL_20230401_203352928.MP.jpg.xmp`.
+Immich does not support _all_ metadata fields. Below is a table showing what fields Immich can _read_ and _write_. It's important to note that writes do not replace the entire file contents, but are merged together with any existing fields.
 
-There are 2 administrator jobs associated with sidecar files: `SYNC` and `DISCOVER`. The sync job will re-scan all media with existing sidecar files and queue them for a metadata refresh. This is a great use case when third-party applications are used to modify the metadata of media. The discover job will attempt to scan the filesystem for new sidecar files for all media that does not currently have a sidecar file associated with it.
+:::info
+Immich automatically queues a Sidecar Write job after editing the description, rating, or updating tags.
+:::
 
-<img src={require('./img/sidecar-jobs.webp').default} title='Sidecar Administrator Jobs' />
+| Metadata        | Immich writes to XMP                             | Immich reads from XMP                                                                                                                                                                                                                          |
+| --------------- | ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Description** | `dc:description`, `tiff:ImageDescription`        | `dc:description`, `tiff:ImageDescription`                                                                                                                                                                                                      |
+| **Rating**      | `xmp:Rating`                                     | `xmp:Rating`                                                                                                                                                                                                                                   |
+| **DateTime**    | `exif:DateTimeOriginal`, `photoshop:DateCreated` | In prioritized order:<br/>`exif:SubSecDateTimeOriginal`<br/>`exif:DateTimeOriginal`<br/>`xmp:SubSecCreateDate`<br/>`xmp:CreateDate`<br/>`xmp:CreationDate`<br/>`xmp:MediaCreateDate`<br/>`xmp:SubSecMediaCreateDate`<br/>`xmp:DateTimeCreated` |
+| **Location**    | `exif:GPSLatitude`, `exif:GPSLongitude`          | `exif:GPSLatitude`, `exif:GPSLongitude`                                                                                                                                                                                                        |
+| **Tags**        | `digiKam:TagsList`                               | In prioritized order: <br/>`digiKam:TagsList`<br/>`lr:HierarchicalSubject`<br/>`IPTC:Keywords`                                                                                                                                                 |
+
+:::note
+All other fields (e.g. `Creator`, `Source`, IPTC, Lightroom edits) remain in the `.xmp` file and are **not searchable** in Immich.
+:::
+
+## File Naming Rules
+
+A sidecar must share the base name of the media file:
+
+- ✅ `IMG_0001.jpg.xmp` ← preferred
+- ✅ `IMG_0001.xmp` ← fallback
+- ❌ `myphoto_meta.xmp` ← not recognized
+
+If both `.jpg.xmp` and `.xmp` are present, Immich uses the **`.jpg.xmp`** file.
+
+## CLI Support
+
+1. **Detect** – Immich looks for a `.xmp` file placed next to each media file during upload.
+2. **Copy** – Both the media and the sidecar file are copied into Immich’s internal library folder.  
+   The sidecar is renamed to match the internal filename template, e.g.:  
+   `upload/library/<user>/YYYY/YYYY-MM-DD/IMG_0001.jpg`  
+   `upload/library/<user>/YYYY/YYYY-MM-DD/IMG_0001.jpg.xmp`
+3. **Extract** – Selected metadata (title, description, date, rating, tags) is parsed from the sidecar and saved to the database.
+4. **Write-back** – If you later update tags, rating, or description in the web UI, Immich will update **both** the database _and_ the copied `.xmp` file to stay in sync.
+
+## External Library (Mounted Folder) Support
+
+1. **Detect** – The `DISCOVER` job automatically associates `.xmp` files that sit next to existing media files in your mounted folder. No files are moved or renamed.
+2. **Extract** – Immich reads and saves the same metadata fields from the sidecar to the database.
+3. **Write-back** – If Immich has **write access** to the mount, any future metadata edits (e.g., rating or tags) are also written back to the original `.xmp` file on disk.
+
+:::danger
+If the mount is **read-only**, Immich cannot update either the sidecar **or** the database — **metadata edits will silently fail** with no warning see issue [#10538](https://github.com/immich-app/immich/issues/10538) for more details.
+:::
+
+## Admin Jobs
+
+Immich provides two admin jobs for managing sidecars:
+
+| Job        | What it does                                                                                      |
+| ---------- | ------------------------------------------------------------------------------------------------- |
+| `DISCOVER` | Finds new `.xmp` files next to media that don’t already have one linked                           |
+| `SYNC`     | Re-reads existing `.xmp` files and refreshes metadata in the database (e.g. after external edits) |
+
+![Sidecar Admin Jobs](./img/sidecar-jobs.webp)

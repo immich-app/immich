@@ -179,6 +179,26 @@ describe(SearchService.name, () => {
       ).resolves.toEqual(['Fujifilm X100VI', null]);
       expect(mocks.search.getCameraModels).toHaveBeenCalledWith([authStub.user1.user.id], expect.anything());
     });
+
+    it('should return search suggestions for camera lens model', async () => {
+      mocks.search.getCameraLensModels.mockResolvedValue(['10-24mm']);
+      mocks.partner.getAll.mockResolvedValue([]);
+
+      await expect(
+        sut.getSearchSuggestions(authStub.user1, { includeNull: false, type: SearchSuggestionType.CAMERA_LENS_MODEL }),
+      ).resolves.toEqual(['10-24mm']);
+      expect(mocks.search.getCameraLensModels).toHaveBeenCalledWith([authStub.user1.user.id], expect.anything());
+    });
+
+    it('should return search suggestions for camera lens model (including null)', async () => {
+      mocks.search.getCameraLensModels.mockResolvedValue(['10-24mm']);
+      mocks.partner.getAll.mockResolvedValue([]);
+
+      await expect(
+        sut.getSearchSuggestions(authStub.user1, { includeNull: true, type: SearchSuggestionType.CAMERA_LENS_MODEL }),
+      ).resolves.toEqual(['10-24mm', null]);
+      expect(mocks.search.getCameraLensModels).toHaveBeenCalledWith([authStub.user1.user.id], expect.anything());
+    });
   });
 
   describe('searchSmart', () => {
@@ -211,7 +231,6 @@ describe(SearchService.name, () => {
       await sut.searchSmart(authStub.user1, { query: 'test' });
 
       expect(mocks.machineLearning.encodeText).toHaveBeenCalledWith(
-        [expect.any(String)],
         'test',
         expect.objectContaining({ modelName: expect.any(String) }),
       );
@@ -225,7 +244,6 @@ describe(SearchService.name, () => {
       await sut.searchSmart(authStub.user1, { query: 'test', page: 2, size: 50 });
 
       expect(mocks.machineLearning.encodeText).toHaveBeenCalledWith(
-        [expect.any(String)],
         'test',
         expect.objectContaining({ modelName: expect.any(String) }),
       );
@@ -243,7 +261,6 @@ describe(SearchService.name, () => {
       await sut.searchSmart(authStub.user1, { query: 'test' });
 
       expect(mocks.machineLearning.encodeText).toHaveBeenCalledWith(
-        [expect.any(String)],
         'test',
         expect.objectContaining({ modelName: 'ViT-B-16-SigLIP__webli' }),
       );
@@ -253,7 +270,6 @@ describe(SearchService.name, () => {
       await sut.searchSmart(authStub.user1, { query: 'test', language: 'de' });
 
       expect(mocks.machineLearning.encodeText).toHaveBeenCalledWith(
-        [expect.any(String)],
         'test',
         expect.objectContaining({ language: 'de' }),
       );

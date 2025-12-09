@@ -14,6 +14,7 @@ class AssetResponseDto {
   /// Returns a new [AssetResponseDto] instance.
   AssetResponseDto({
     required this.checksum,
+    required this.createdAt,
     required this.deviceAssetId,
     required this.deviceId,
     this.duplicateId,
@@ -49,6 +50,9 @@ class AssetResponseDto {
   /// base64 encoded sha1 hash
   String checksum;
 
+  /// The UTC timestamp when the asset was originally uploaded to Immich.
+  DateTime createdAt;
+
   String deviceAssetId;
 
   String deviceId;
@@ -83,7 +87,6 @@ class AssetResponseDto {
 
   bool isTrashed;
 
-  /// This property was deprecated in v1.106.0
   String? libraryId;
 
   String? livePhotoVideoId;
@@ -115,7 +118,6 @@ class AssetResponseDto {
 
   List<PersonWithFacesResponseDto> people;
 
-  /// This property was deprecated in v1.113.0
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -142,6 +144,7 @@ class AssetResponseDto {
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetResponseDto &&
     other.checksum == checksum &&
+    other.createdAt == createdAt &&
     other.deviceAssetId == deviceAssetId &&
     other.deviceId == deviceId &&
     other.duplicateId == duplicateId &&
@@ -177,6 +180,7 @@ class AssetResponseDto {
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (checksum.hashCode) +
+    (createdAt.hashCode) +
     (deviceAssetId.hashCode) +
     (deviceId.hashCode) +
     (duplicateId == null ? 0 : duplicateId!.hashCode) +
@@ -209,11 +213,12 @@ class AssetResponseDto {
     (visibility.hashCode);
 
   @override
-  String toString() => 'AssetResponseDto[checksum=$checksum, deviceAssetId=$deviceAssetId, deviceId=$deviceId, duplicateId=$duplicateId, duration=$duration, exifInfo=$exifInfo, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, hasMetadata=$hasMetadata, id=$id, isArchived=$isArchived, isFavorite=$isFavorite, isOffline=$isOffline, isTrashed=$isTrashed, libraryId=$libraryId, livePhotoVideoId=$livePhotoVideoId, localDateTime=$localDateTime, originalFileName=$originalFileName, originalMimeType=$originalMimeType, originalPath=$originalPath, owner=$owner, ownerId=$ownerId, people=$people, resized=$resized, stack=$stack, tags=$tags, thumbhash=$thumbhash, type=$type, unassignedFaces=$unassignedFaces, updatedAt=$updatedAt, visibility=$visibility]';
+  String toString() => 'AssetResponseDto[checksum=$checksum, createdAt=$createdAt, deviceAssetId=$deviceAssetId, deviceId=$deviceId, duplicateId=$duplicateId, duration=$duration, exifInfo=$exifInfo, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, hasMetadata=$hasMetadata, id=$id, isArchived=$isArchived, isFavorite=$isFavorite, isOffline=$isOffline, isTrashed=$isTrashed, libraryId=$libraryId, livePhotoVideoId=$livePhotoVideoId, localDateTime=$localDateTime, originalFileName=$originalFileName, originalMimeType=$originalMimeType, originalPath=$originalPath, owner=$owner, ownerId=$ownerId, people=$people, resized=$resized, stack=$stack, tags=$tags, thumbhash=$thumbhash, type=$type, unassignedFaces=$unassignedFaces, updatedAt=$updatedAt, visibility=$visibility]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'checksum'] = this.checksum;
+      json[r'createdAt'] = this.createdAt.toUtc().toIso8601String();
       json[r'deviceAssetId'] = this.deviceAssetId;
       json[r'deviceId'] = this.deviceId;
     if (this.duplicateId != null) {
@@ -293,6 +298,7 @@ class AssetResponseDto {
 
       return AssetResponseDto(
         checksum: mapValueOfType<String>(json, r'checksum')!,
+        createdAt: mapDateTime(json, r'createdAt', r'')!,
         deviceAssetId: mapValueOfType<String>(json, r'deviceAssetId')!,
         deviceId: mapValueOfType<String>(json, r'deviceId')!,
         duplicateId: mapValueOfType<String>(json, r'duplicateId'),
@@ -371,6 +377,7 @@ class AssetResponseDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'checksum',
+    'createdAt',
     'deviceAssetId',
     'deviceId',
     'duration',

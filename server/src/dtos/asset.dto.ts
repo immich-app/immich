@@ -1,20 +1,23 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
+  IsArray,
   IsDateString,
   IsInt,
   IsLatitude,
   IsLongitude,
   IsNotEmpty,
+  IsObject,
   IsPositive,
   IsString,
   IsTimeZone,
   Max,
   Min,
   ValidateIf,
+  ValidateNested,
 } from 'class-validator';
 import { BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
-import { AssetType, AssetVisibility } from 'src/enum';
+import { AssetMetadataKey, AssetType, AssetVisibility } from 'src/enum';
 import { AssetStats } from 'src/repositories/asset.repository';
 import { IsNotSiblingOf, Optional, ValidateBoolean, ValidateEnum, ValidateUUID } from 'src/validation';
 
@@ -133,6 +136,65 @@ export class AssetStatsResponseDto {
 
   @ApiProperty({ type: 'integer' })
   total!: number;
+}
+
+export class AssetMetadataRouteParams {
+  @ValidateUUID()
+  id!: string;
+
+  @ValidateEnum({ enum: AssetMetadataKey, name: 'AssetMetadataKey' })
+  key!: AssetMetadataKey;
+}
+
+export class AssetMetadataUpsertDto {
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => AssetMetadataUpsertItemDto)
+  items!: AssetMetadataUpsertItemDto[];
+}
+
+export class AssetMetadataUpsertItemDto {
+  @ValidateEnum({ enum: AssetMetadataKey, name: 'AssetMetadataKey' })
+  key!: AssetMetadataKey;
+
+  @IsObject()
+  value!: object;
+}
+
+export class AssetMetadataMobileAppDto {
+  @IsString()
+  @Optional()
+  iCloudId?: string;
+}
+
+export class AssetMetadataResponseDto {
+  @ValidateEnum({ enum: AssetMetadataKey, name: 'AssetMetadataKey' })
+  key!: AssetMetadataKey;
+  value!: object;
+  updatedAt!: Date;
+}
+
+export class AssetCopyDto {
+  @ValidateUUID()
+  sourceId!: string;
+
+  @ValidateUUID()
+  targetId!: string;
+
+  @ValidateBoolean({ optional: true, default: true })
+  sharedLinks?: boolean;
+
+  @ValidateBoolean({ optional: true, default: true })
+  albums?: boolean;
+
+  @ValidateBoolean({ optional: true, default: true })
+  sidecar?: boolean;
+
+  @ValidateBoolean({ optional: true, default: true })
+  stack?: boolean;
+
+  @ValidateBoolean({ optional: true, default: true })
+  favorite?: boolean;
 }
 
 export const mapStats = (stats: AssetStats): AssetStatsResponseDto => {

@@ -1,7 +1,7 @@
-import 'package:flutter/foundation.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/partner.repository.dart';
 import 'package:immich_mobile/repositories/partner_api.repository.dart';
+import 'package:immich_mobile/utils/debug_print.dart';
 
 class DriftPartnerService {
   final DriftPartnerRepository _driftPartnerRepository;
@@ -30,7 +30,7 @@ class DriftPartnerService {
   Future<void> toggleShowInTimeline(String partnerId, String userId) async {
     final partner = await _driftPartnerRepository.getPartner(partnerId, userId);
     if (partner == null) {
-      debugPrint("Partner not found: $partnerId for user: $userId");
+      dPrint(() => "Partner not found: $partnerId for user: $userId");
       return;
     }
 

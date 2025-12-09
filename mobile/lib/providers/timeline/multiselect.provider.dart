@@ -2,18 +2,12 @@ import 'package:collection/collection.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
-import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 
 final multiSelectProvider = NotifierProvider<MultiSelectNotifier, MultiSelectState>(
   MultiSelectNotifier.new,
   dependencies: [timelineServiceProvider],
 );
-
-class MultiSelectToggleEvent extends Event {
-  final bool isEnabled;
-  const MultiSelectToggleEvent(this.isEnabled);
-}
 
 class MultiSelectState {
   final Set<BaseAsset> selectedAssets;
@@ -27,6 +21,8 @@ class MultiSelectState {
   /// Cloud only
   bool get hasRemote =>
       selectedAssets.any((asset) => asset.storage == AssetState.remote || asset.storage == AssetState.merged);
+
+  bool get hasStacked => selectedAssets.any((asset) => asset is RemoteAsset && asset.stackId != null);
 
   bool get hasLocal => selectedAssets.any((asset) => asset.storage == AssetState.local);
 

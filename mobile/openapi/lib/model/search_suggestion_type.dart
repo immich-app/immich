@@ -28,6 +28,7 @@ class SearchSuggestionType {
   static const city = SearchSuggestionType._(r'city');
   static const cameraMake = SearchSuggestionType._(r'camera-make');
   static const cameraModel = SearchSuggestionType._(r'camera-model');
+  static const cameraLensModel = SearchSuggestionType._(r'camera-lens-model');
 
   /// List of all possible values in this [enum][SearchSuggestionType].
   static const values = <SearchSuggestionType>[
@@ -36,6 +37,7 @@ class SearchSuggestionType {
     city,
     cameraMake,
     cameraModel,
+    cameraLensModel,
   ];
 
   static SearchSuggestionType? fromJson(dynamic value) => SearchSuggestionTypeTypeTransformer().decode(value);
@@ -79,6 +81,7 @@ class SearchSuggestionTypeTypeTransformer {
         case r'city': return SearchSuggestionType.city;
         case r'camera-make': return SearchSuggestionType.cameraMake;
         case r'camera-model': return SearchSuggestionType.cameraModel;
+        case r'camera-lens-model': return SearchSuggestionType.cameraLensModel;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');

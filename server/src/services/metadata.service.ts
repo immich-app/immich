@@ -2,15 +2,16 @@ import { Injectable } from '@nestjs/common';
 import { ContainerDirectoryItem, ExifDateTime, Tags } from 'exiftool-vendored';
 import { Insertable } from 'kysely';
 import _ from 'lodash';
-import { Duration } from 'luxon';
+import { DateTime, Duration } from 'luxon';
 import { Stats } from 'node:fs';
 import { constants } from 'node:fs/promises';
-import path from 'node:path';
+import { join, parse } from 'node:path';
 import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
-import { Asset, AssetFace } from 'src/database';
+import { Asset, AssetFace, AssetFile } from 'src/database';
 import { OnEvent, OnJob } from 'src/decorators';
 import {
+  AssetFileType,
   AssetType,
   AssetVisibility,
   DatabaseLock,
@@ -29,6 +30,8 @@ import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
 import { PersonTable } from 'src/schema/tables/person.table';
 import { BaseService } from 'src/services/base.service';
 import { JobItem, JobOf } from 'src/types';
+import { getAssetFiles } from 'src/utils/asset.util';
+import { isAssetChecksumConstraint } from 'src/utils/database';
 import { isFaceImportEnabled } from 'src/utils/misc';
 import { upsertTags } from 'src/utils/tag';
 
@@ -36,11 +39,10 @@ import { upsertTags } from 'src/utils/tag';
 const EXIF_DATE_TAGS: Array<keyof ImmichTags> = [
   'SubSecDateTimeOriginal',
   'SubSecCreateDate',
-  'SubSecMediaCreateDate',
   'DateTimeOriginal',
+  'CreationDate',
   'CreateDate',
   'MediaCreateDate',
-  'CreationDate',
   'DateTimeCreated',
   'GPSDateTime',
   'DateTimeUTC',
@@ -235,8 +237,8 @@ export class MetadataService extends BaseService {
       latitude: number | null = null,
       longitude: number | null = null;
     if (this.hasGeo(exifTags)) {
-      latitude = exifTags.GPSLatitude;
-      longitude = exifTags.GPSLongitude;
+      latitude = Number(exifTags.GPSLatitude);
+      longitude = Number(exifTags.GPSLongitude);
       if (reverseGeocoding.enabled) {
         geo = await this.mapRepository.reverseGeocode({ latitude, longitude });
       }
@@ -290,7 +292,7 @@ export class MetadataService extends BaseService {
       this.assetRepository.upsertExif(exifData),
       this.assetRepository.update({
         id: asset.id,
-        duration: exifTags.Duration?.toString() ?? null,
+        duration: this.getDuration(exifTags),
         localDateTime: dates.localDateTime,
         fileCreatedAt: dates.dateTimeOriginal ?? undefined,
         fileModifiedAt: stats.mtime,
@@ -330,7 +332,7 @@ export class MetadataService extends BaseService {
 
     const assets = this.assetJobRepository.streamForSidecar(force);
     for await (const asset of assets) {
-      jobs.push({ name: force ? JobName.SidecarSync : JobName.SidecarDiscovery, data: { id: asset.id } });
+      jobs.push({ name: JobName.SidecarCheck, data: { id: asset.id } });
       if (jobs.length >= JOBS_ASSET_PAGINATION_SIZE) {
         await queueAll();
       }
@@ -341,14 +343,41 @@ export class MetadataService extends BaseService {
     return JobStatus.Success;
   }
 
-  @OnJob({ name: JobName.SidecarSync, queue: QueueName.Sidecar })
-  handleSidecarSync({ id }: JobOf<JobName.SidecarSync>): Promise<JobStatus> {
-    return this.processSidecar(id, true);
-  }
+  @OnJob({ name: JobName.SidecarCheck, queue: QueueName.Sidecar })
+  async handleSidecarCheck({ id }: JobOf<JobName.SidecarCheck>): Promise<JobStatus | undefined> {
+    const asset = await this.assetJobRepository.getForSidecarCheckJob(id);
+    if (!asset) {
+      return;
+    }
 
-  @OnJob({ name: JobName.SidecarDiscovery, queue: QueueName.Sidecar })
-  handleSidecarDiscovery({ id }: JobOf<JobName.SidecarDiscovery>): Promise<JobStatus> {
-    return this.processSidecar(id, false);
+    let sidecarPath = null;
+    for (const candidate of this.getSidecarCandidates(asset)) {
+      const exists = await this.storageRepository.checkFileExists(candidate, constants.R_OK);
+      if (!exists) {
+        continue;
+      }
+
+      sidecarPath = candidate;
+      break;
+    }
+
+    const { sidecarFile } = getAssetFiles(asset.files);
+
+    const isChanged = sidecarPath !== sidecarFile?.path;
+
+    this.logger.debug(
+      `Sidecar check found old=${sidecarFile?.path}, new=${sidecarPath} will ${isChanged ? 'update' : 'do nothing for'}  asset ${asset.id}: ${asset.originalPath}`,
+    );
+
+    if (!isChanged) {
+      return JobStatus.Skipped;
+    }
+
+    await (sidecarPath === null
+      ? this.assetRepository.deleteFile({ assetId: asset.id, type: AssetFileType.Sidecar })
+      : this.assetRepository.upsertFile({ assetId: asset.id, type: AssetFileType.Sidecar, path: sidecarPath }));
+
+    return JobStatus.Success;
   }
 
   @OnEvent({ name: 'AssetTag' })
@@ -371,7 +400,9 @@ export class MetadataService extends BaseService {
 
     const tagsList = (asset.tags || []).map((tag) => tag.value);
 
-    const sidecarPath = asset.sidecarPath || `${asset.originalPath}.xmp`;
+    const { sidecarFile } = getAssetFiles(asset.files);
+    const sidecarPath = sidecarFile?.path || `${asset.originalPath}.xmp`;
+
     const exif = _.omitBy(
       <Tags>{
         Description: description,
@@ -391,11 +422,31 @@ export class MetadataService extends BaseService {
 
     await this.metadataRepository.writeTags(sidecarPath, exif);
 
-    if (!asset.sidecarPath) {
-      await this.assetRepository.update({ id, sidecarPath });
+    if (asset.files.length === 0) {
+      await this.assetRepository.upsertFile({ assetId: id, type: AssetFileType.Sidecar, path: sidecarPath });
     }
 
     return JobStatus.Success;
+  }
+
+  private getSidecarCandidates({ files, originalPath }: { files: AssetFile[]; originalPath: string }) {
+    const candidates: string[] = [];
+
+    const { sidecarFile } = getAssetFiles(files);
+    if (sidecarFile?.path) {
+      candidates.push(sidecarFile.path);
+    }
+
+    const assetPath = parse(originalPath);
+
+    candidates.push(
+      // IMG_123.jpg.xmp
+      `${originalPath}.xmp`,
+      // IMG_123.xmp
+      `${join(assetPath.dir, assetPath.name)}.xmp`,
+    );
+
+    return candidates;
   }
 
   private getImageDimensions(exifTags: ImmichTags): { width?: number; height?: number } {
@@ -404,33 +455,22 @@ export class MetadataService extends BaseService {
      * For RAW images in the CR2 or RAF format, the "ImageSize" value seems to be correct,
      * but ImageWidth and ImageHeight are not correct (they contain the dimensions of the preview image).
      */
-    let [width, height] = exifTags.ImageSize?.split('x').map((dim) => Number.parseInt(dim) || undefined) || [];
+    let [width, height] =
+      exifTags.ImageSize?.toString()
+        ?.split('x')
+        ?.map((dim) => Number.parseInt(dim) || undefined) ?? [];
     if (!width || !height) {
       [width, height] = [exifTags.ImageWidth, exifTags.ImageHeight];
     }
     return { width, height };
   }
 
-  private getExifTags(asset: {
-    originalPath: string;
-    sidecarPath: string | null;
-    type: AssetType;
-  }): Promise<ImmichTags> {
-    if (!asset.sidecarPath && asset.type === AssetType.Image) {
-      return this.metadataRepository.readTags(asset.originalPath);
-    }
+  private async getExifTags(asset: { originalPath: string; files: AssetFile[]; type: AssetType }): Promise<ImmichTags> {
+    const { sidecarFile } = getAssetFiles(asset.files);
 
-    return this.mergeExifTags(asset);
-  }
-
-  private async mergeExifTags(asset: {
-    originalPath: string;
-    sidecarPath: string | null;
-    type: AssetType;
-  }): Promise<ImmichTags> {
     const [mediaTags, sidecarTags, videoTags] = await Promise.all([
       this.metadataRepository.readTags(asset.originalPath),
-      asset.sidecarPath ? this.metadataRepository.readTags(asset.sidecarPath) : null,
+      sidecarFile ? this.metadataRepository.readTags(sidecarFile.path) : null,
       asset.type === AssetType.Video ? this.getVideoTags(asset.originalPath) : null,
     ]);
 
@@ -446,7 +486,11 @@ export class MetadataService extends BaseService {
     }
 
     // prefer duration from video tags
-    delete mediaTags.Duration;
+    if (videoTags) {
+      delete mediaTags.Duration;
+    }
+
+    // never use duration from sidecar
     delete sidecarTags?.Duration;
 
     return { ...mediaTags, ...videoTags, ...sidecarTags };
@@ -545,47 +589,62 @@ export class MetadataService extends BaseService {
         });
       }
       const checksum = this.cryptoRepository.hashSha1(video);
+      const checksumQuery = { ownerId: asset.ownerId, libraryId: asset.libraryId ?? undefined, checksum };
 
-      let motionAsset = await this.assetRepository.getByChecksum({
-        ownerId: asset.ownerId,
-        libraryId: asset.libraryId ?? undefined,
-        checksum,
-      });
-      if (motionAsset) {
+      let motionAsset = await this.assetRepository.getByChecksum(checksumQuery);
+      let isNewMotionAsset = false;
+
+      if (!motionAsset) {
+        try {
+          const motionAssetId = this.cryptoRepository.randomUUID();
+          motionAsset = await this.assetRepository.create({
+            id: motionAssetId,
+            libraryId: asset.libraryId,
+            type: AssetType.Video,
+            fileCreatedAt: dates.dateTimeOriginal,
+            fileModifiedAt: stats.mtime,
+            localDateTime: dates.localDateTime,
+            checksum,
+            ownerId: asset.ownerId,
+            originalPath: StorageCore.getAndroidMotionPath(asset, motionAssetId),
+            originalFileName: `${parse(asset.originalFileName).name}.mp4`,
+            visibility: AssetVisibility.Hidden,
+            deviceAssetId: 'NONE',
+            deviceId: 'NONE',
+          });
+
+          isNewMotionAsset = true;
+
+          if (!asset.isExternal) {
+            await this.userRepository.updateUsage(asset.ownerId, video.byteLength);
+          }
+        } catch (error) {
+          if (!isAssetChecksumConstraint(error)) {
+            throw error;
+          }
+
+          motionAsset = await this.assetRepository.getByChecksum(checksumQuery);
+          if (!motionAsset) {
+            this.logger.warn(`Unable to find existing motion video asset for ${asset.id}: ${asset.originalPath}`);
+            return;
+          }
+        }
+      }
+
+      if (!isNewMotionAsset) {
         this.logger.debugFn(() => {
           const base64Checksum = checksum.toString('base64');
           return `Motion asset with checksum ${base64Checksum} already exists for asset ${asset.id}: ${asset.originalPath}`;
         });
+      }
 
-        // Hide the motion photo video asset if it's not already hidden to prepare for linking
-        if (motionAsset.visibility === AssetVisibility.Timeline) {
-          await this.assetRepository.update({
-            id: motionAsset.id,
-            visibility: AssetVisibility.Hidden,
-          });
-          this.logger.log(`Hid unlinked motion photo video asset (${motionAsset.id})`);
-        }
-      } else {
-        const motionAssetId = this.cryptoRepository.randomUUID();
-        motionAsset = await this.assetRepository.create({
-          id: motionAssetId,
-          libraryId: asset.libraryId,
-          type: AssetType.Video,
-          fileCreatedAt: dates.dateTimeOriginal,
-          fileModifiedAt: stats.mtime,
-          localDateTime: dates.localDateTime,
-          checksum,
-          ownerId: asset.ownerId,
-          originalPath: StorageCore.getAndroidMotionPath(asset, motionAssetId),
-          originalFileName: `${path.parse(asset.originalFileName).name}.mp4`,
+      // Hide the motion photo video asset if it's not already hidden to prepare for linking
+      if (motionAsset.visibility === AssetVisibility.Timeline) {
+        await this.assetRepository.update({
+          id: motionAsset.id,
           visibility: AssetVisibility.Hidden,
-          deviceAssetId: 'NONE',
-          deviceId: 'NONE',
         });
-
-        if (!asset.isExternal) {
-          await this.userRepository.updateUsage(asset.ownerId, video.byteLength);
-        }
+        this.logger.log(`Hid unlinked motion photo video asset (${motionAsset.id})`);
       }
 
       if (asset.livePhotoVideoId !== motionAsset.id) {
@@ -777,7 +836,11 @@ export class MetadataService extends BaseService {
     }
   }
 
-  private getDates(asset: { id: string; originalPath: string }, exifTags: ImmichTags, stats: Stats) {
+  private getDates(
+    asset: { id: string; originalPath: string; fileCreatedAt: Date },
+    exifTags: ImmichTags,
+    stats: Stats,
+  ) {
     const result = firstDateTime(exifTags);
     const tag = result?.tag;
     const dateTime = result?.dateTime;
@@ -801,35 +864,47 @@ export class MetadataService extends BaseService {
       this.logger.debug(`No timezone information found for asset ${asset.id}: ${asset.originalPath}`);
     }
 
-    let dateTimeOriginal = dateTime?.toDate();
-    let localDateTime = dateTime?.toDateTime().setZone('UTC', { keepLocalTime: true }).toJSDate();
+    let dateTimeOriginal = dateTime?.toDateTime();
+
+    // do not let JavaScript use local timezone
+    if (dateTimeOriginal && !dateTime?.hasZone) {
+      dateTimeOriginal = dateTimeOriginal.setZone('UTC', { keepLocalTime: true });
+    }
+
+    // align with whatever timeZone we chose
+    dateTimeOriginal = dateTimeOriginal?.setZone(timeZone ?? 'UTC');
+
+    // store as "local time"
+    let localDateTime = dateTimeOriginal?.setZone('UTC', { keepLocalTime: true });
+
     if (!localDateTime || !dateTimeOriginal) {
       // FileCreateDate is not available on linux, likely because exiftool hasn't integrated the statx syscall yet
       // birthtime is not available in Docker on macOS, so it appears as 0
-      const earliestDate = stats.birthtimeMs ? new Date(Math.min(stats.mtimeMs, stats.birthtimeMs)) : stats.mtime;
+      const earliestDate = DateTime.fromMillis(
+        Math.min(
+          asset.fileCreatedAt.getTime(),
+          stats.birthtimeMs ? Math.min(stats.mtimeMs, stats.birthtimeMs) : stats.mtime.getTime(),
+        ),
+      );
       this.logger.debug(
-        `No exif date time found, falling back on ${earliestDate.toISOString()}, earliest of file creation and modification for asset ${asset.id}: ${asset.originalPath}`,
+        `No exif date time found, falling back on ${earliestDate.toISO()}, earliest of file creation and modification for asset ${asset.id}: ${asset.originalPath}`,
       );
       dateTimeOriginal = localDateTime = earliestDate;
     }
 
-    this.logger.verbose(
-      `Found local date time ${localDateTime.toISOString()} for asset ${asset.id}: ${asset.originalPath}`,
-    );
+    this.logger.verbose(`Found local date time ${localDateTime.toISO()} for asset ${asset.id}: ${asset.originalPath}`);
 
     return {
-      dateTimeOriginal,
       timeZone,
-      localDateTime,
+      localDateTime: localDateTime.toJSDate(),
+      dateTimeOriginal: dateTimeOriginal.toJSDate(),
     };
   }
 
-  private hasGeo(tags: ImmichTags): tags is ImmichTags & { GPSLatitude: number; GPSLongitude: number } {
-    return (
-      tags.GPSLatitude !== undefined &&
-      tags.GPSLongitude !== undefined &&
-      (tags.GPSLatitude !== 0 || tags.GPSLatitude !== 0)
-    );
+  private hasGeo(tags: ImmichTags) {
+    const lat = Number(tags.GPSLatitude);
+    const lng = Number(tags.GPSLongitude);
+    return !Number.isNaN(lat) && !Number.isNaN(lng) && (lat !== 0 || lng !== 0);
   }
 
   private getAutoStackId(tags: ImmichTags | null): string | null {
@@ -855,6 +930,20 @@ export class MetadataService extends BaseService {
     }
 
     return bitsPerSample;
+  }
+
+  private getDuration(tags: ImmichTags): string | null {
+    const duration = tags.Duration;
+
+    if (typeof duration === 'string') {
+      return duration;
+    }
+
+    if (typeof duration === 'number') {
+      return Duration.fromObject({ seconds: duration }).toFormat('hh:mm:ss.SSS');
+    }
+
+    return null;
   }
 
   private async getVideoTags(originalPath: string) {
@@ -884,65 +973,9 @@ export class MetadataService extends BaseService {
     }
 
     if (format.duration) {
-      tags.Duration = Duration.fromObject({ seconds: format.duration }).toFormat('hh:mm:ss.SSS');
+      tags.Duration = format.duration;
     }
 
     return tags;
-  }
-
-  private async processSidecar(id: string, isSync: boolean): Promise<JobStatus> {
-    const [asset] = await this.assetRepository.getByIds([id]);
-
-    if (!asset) {
-      return JobStatus.Failed;
-    }
-
-    if (isSync && !asset.sidecarPath) {
-      return JobStatus.Failed;
-    }
-
-    if (!isSync && (asset.visibility === AssetVisibility.Hidden || asset.sidecarPath) && !asset.isExternal) {
-      return JobStatus.Failed;
-    }
-
-    // XMP sidecars can come in two filename formats. For a photo named photo.ext, the filenames are photo.ext.xmp and photo.xmp
-    const assetPath = path.parse(asset.originalPath);
-    const assetPathWithoutExt = path.join(assetPath.dir, assetPath.name);
-    const sidecarPathWithoutExt = `${assetPathWithoutExt}.xmp`;
-    const sidecarPathWithExt = `${asset.originalPath}.xmp`;
-
-    const [sidecarPathWithExtExists, sidecarPathWithoutExtExists] = await Promise.all([
-      this.storageRepository.checkFileExists(sidecarPathWithExt, constants.R_OK),
-      this.storageRepository.checkFileExists(sidecarPathWithoutExt, constants.R_OK),
-    ]);
-
-    let sidecarPath = null;
-    if (sidecarPathWithExtExists) {
-      sidecarPath = sidecarPathWithExt;
-    } else if (sidecarPathWithoutExtExists) {
-      sidecarPath = sidecarPathWithoutExt;
-    }
-
-    if (asset.isExternal) {
-      if (sidecarPath !== asset.sidecarPath) {
-        await this.assetRepository.update({ id: asset.id, sidecarPath });
-      }
-      return JobStatus.Success;
-    }
-
-    if (sidecarPath) {
-      this.logger.debug(`Detected sidecar at '${sidecarPath}' for asset ${asset.id}: ${asset.originalPath}`);
-      await this.assetRepository.update({ id: asset.id, sidecarPath });
-      return JobStatus.Success;
-    }
-
-    if (!isSync) {
-      return JobStatus.Failed;
-    }
-
-    this.logger.debug(`No sidecar found for asset ${asset.id}: ${asset.originalPath}`);
-    await this.assetRepository.update({ id: asset.id, sidecarPath: null });
-
-    return JobStatus.Success;
   }
 }

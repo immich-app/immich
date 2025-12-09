@@ -420,7 +420,7 @@ describe(AssetService.name, () => {
         ids: ['asset-1'],
         latitude: 0,
         longitude: 0,
-        visibility: undefined,
+        visibility: AssetVisibility.Archive,
         isFavorite: false,
         duplicateId: undefined,
         rating: undefined,
@@ -585,8 +585,6 @@ describe(AssetService.name, () => {
                 '/uploads/user-id/webp/path.ext',
                 '/uploads/user-id/thumbs/path.jpg',
                 '/uploads/user-id/fullsize/path.webp',
-                assetWithFace.encodedVideoPath,
-                assetWithFace.sidecarPath,
                 assetWithFace.originalPath,
               ],
             },
@@ -648,8 +646,6 @@ describe(AssetService.name, () => {
                 '/uploads/user-id/webp/path.ext',
                 '/uploads/user-id/thumbs/path.jpg',
                 '/uploads/user-id/fullsize/path.webp',
-                undefined,
-                undefined,
                 'fake_path/asset_1.jpeg',
               ],
             },
@@ -676,8 +672,6 @@ describe(AssetService.name, () => {
                 '/uploads/user-id/webp/path.ext',
                 '/uploads/user-id/thumbs/path.jpg',
                 '/uploads/user-id/fullsize/path.webp',
-                undefined,
-                undefined,
                 'fake_path/asset_1.jpeg',
               ],
             },
@@ -697,6 +691,42 @@ describe(AssetService.name, () => {
       await expect(sut.handleAssetDeletion({ id: assetStub.image.id, deleteOnDisk: true })).resolves.toBe(
         JobStatus.Failed,
       );
+    });
+  });
+
+  describe('getOcr', () => {
+    it('should require asset read permission', async () => {
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set());
+
+      await expect(sut.getOcr(authStub.admin, 'asset-1')).rejects.toBeInstanceOf(BadRequestException);
+
+      expect(mocks.ocr.getByAssetId).not.toHaveBeenCalled();
+    });
+
+    it('should return OCR data for an asset', async () => {
+      const ocr1 = factory.assetOcr({ text: 'Hello World' });
+      const ocr2 = factory.assetOcr({ text: 'Test Image' });
+
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
+      mocks.ocr.getByAssetId.mockResolvedValue([ocr1, ocr2]);
+
+      await expect(sut.getOcr(authStub.admin, 'asset-1')).resolves.toEqual([ocr1, ocr2]);
+
+      expect(mocks.access.asset.checkOwnerAccess).toHaveBeenCalledWith(
+        authStub.admin.user.id,
+        new Set(['asset-1']),
+        undefined,
+      );
+      expect(mocks.ocr.getByAssetId).toHaveBeenCalledWith('asset-1');
+    });
+
+    it('should return empty array when no OCR data exists', async () => {
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
+      mocks.ocr.getByAssetId.mockResolvedValue([]);
+
+      await expect(sut.getOcr(authStub.admin, 'asset-1')).resolves.toEqual([]);
+
+      expect(mocks.ocr.getByAssetId).toHaveBeenCalledWith('asset-1');
     });
   });
 

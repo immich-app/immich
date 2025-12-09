@@ -1,12 +1,12 @@
 import { AssetOrder } from '@immich/sdk';
 
 import type { CommonLayoutOptions } from '$lib/utils/layout-utils';
-import { getJustifiedLayoutFromAssets, getPosition } from '$lib/utils/layout-utils';
+import { getJustifiedLayoutFromAssets } from '$lib/utils/layout-utils';
 import { plainDateTimeCompare } from '$lib/utils/timeline-util';
 
 import { SvelteSet } from 'svelte/reactivity';
 import type { MonthGroup } from './month-group.svelte';
-import type { AssetOperation, Direction, MoveAsset, TimelineAsset } from './types';
+import type { Direction, MoveAsset, TimelineAsset } from './types';
 import { ViewerAsset } from './viewer-asset.svelte';
 
 export class DayGroup {
@@ -82,11 +82,6 @@ export class DayGroup {
     return this.viewerAssets[0]?.asset;
   }
 
-  getRandomAsset() {
-    const random = Math.floor(Math.random() * this.viewerAssets.length);
-    return this.viewerAssets[random];
-  }
-
   *assetsIterator(options: { startAsset?: TimelineAsset; direction?: Direction } = {}) {
     const isEarlier = (options?.direction ?? 'earlier') === 'earlier';
     let assetIndex = options?.startAsset
@@ -106,7 +101,7 @@ export class DayGroup {
     return this.viewerAssets.map((viewerAsset) => viewerAsset.asset);
   }
 
-  runAssetOperation(ids: Set<string>, operation: AssetOperation) {
+  runAssetCallback(ids: Set<string>, callback: (asset: TimelineAsset) => void | { remove?: boolean }) {
     if (ids.size === 0) {
       return {
         moveAssets: [] as MoveAsset[],
@@ -127,7 +122,8 @@ export class DayGroup {
 
       const asset = this.viewerAssets[index].asset!;
       const oldTime = { ...asset.localDateTime };
-      let { remove } = operation(asset);
+      const callbackResult = callback(asset);
+      let remove = (callbackResult as { remove?: boolean } | undefined)?.remove ?? false;
       const newTime = asset.localDateTime;
       if (oldTime.year !== newTime.year || oldTime.month !== newTime.month || oldTime.day !== newTime.day) {
         const { year, month, day } = newTime;
@@ -145,7 +141,7 @@ export class DayGroup {
   }
 
   layout(options: CommonLayoutOptions, noDefer: boolean) {
-    if (!noDefer && !this.monthGroup.intersecting) {
+    if (!noDefer && !this.monthGroup.intersecting && !this.monthGroup.timelineManager.isScrollingOnLoad) {
       this.#deferredLayout = true;
       return;
     }
@@ -153,9 +149,9 @@ export class DayGroup {
     const geometry = getJustifiedLayoutFromAssets(assets, options);
     this.width = geometry.containerWidth;
     this.height = assets.length === 0 ? 0 : geometry.containerHeight;
+    // TODO: lazily get positions instead of loading them all here
     for (let i = 0; i < this.viewerAssets.length; i++) {
-      const position = getPosition(geometry, i);
-      this.viewerAssets[i].position = position;
+      this.viewerAssets[i].position = geometry.getPosition(i);
     }
   }
 

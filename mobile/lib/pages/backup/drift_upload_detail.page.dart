@@ -1,12 +1,12 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
-import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
-import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
+import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/utils/bytes_units.dart';
 import 'package:path/path.dart' as path;
 
@@ -82,6 +82,7 @@ class DriftUploadDetailPage extends ConsumerWidget {
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
+                      spacing: 4,
                       children: [
                         Text(
                           path.basename(item.filename),
@@ -89,9 +90,15 @@ class DriftUploadDetailPage extends ConsumerWidget {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: 4),
+                        if (item.error != null)
+                          Text(
+                            item.error!,
+                            style: context.textTheme.bodySmall?.copyWith(
+                              color: context.colorScheme.onErrorContainer.withValues(alpha: 0.6),
+                            ),
+                          ),
                         Text(
-                          'Tap for more details',
+                          "backup_upload_details_page_more_details".t(context: context),
                           style: context.textTheme.bodySmall?.copyWith(
                             color: context.colorScheme.onSurface.withValues(alpha: 0.6),
                           ),
@@ -163,8 +170,8 @@ class DriftUploadDetailPage extends ConsumerWidget {
     );
   }
 
-  Future<void> _showFileDetailDialog(BuildContext context, DriftUploadStatus item) async {
-    showDialog(
+  Future<void> _showFileDetailDialog(BuildContext context, DriftUploadStatus item) {
+    return showDialog(
       context: context,
       builder: (context) => FileDetailDialog(uploadStatus: item),
     );
@@ -224,7 +231,7 @@ class FileDetailDialog extends ConsumerWidget {
                           borderRadius: const BorderRadius.all(Radius.circular(12)),
                         ),
                         child: asset != null
-                            ? Thumbnail(asset: asset, size: const Size(512, 512), fit: BoxFit.cover)
+                            ? Thumbnail.fromAsset(asset: asset, size: const Size(128, 128), fit: BoxFit.cover)
                             : null,
                       ),
                     ),
@@ -232,14 +239,20 @@ class FileDetailDialog extends ConsumerWidget {
                   const SizedBox(height: 24),
                   if (asset != null) ...[
                     _buildInfoSection(context, [
-                      _buildInfoRow(context, "Filename", path.basename(uploadStatus.filename)),
-                      _buildInfoRow(context, "Local ID", asset.id),
-                      _buildInfoRow(context, "File Size", formatHumanReadableBytes(uploadStatus.fileSize, 2)),
-                      if (asset.width != null) _buildInfoRow(context, "Width", "${asset.width}px"),
-                      if (asset.height != null) _buildInfoRow(context, "Height", "${asset.height}px"),
-                      _buildInfoRow(context, "Created At", asset.createdAt.toString()),
-                      _buildInfoRow(context, "Updated At", asset.updatedAt.toString()),
-                      if (asset.checksum != null) _buildInfoRow(context, "Checksum", asset.checksum!),
+                      _buildInfoRow(context, "filename".t(context: context), path.basename(uploadStatus.filename)),
+                      _buildInfoRow(context, "local_id".t(context: context), asset.id),
+                      _buildInfoRow(
+                        context,
+                        "file_size".t(context: context),
+                        formatHumanReadableBytes(uploadStatus.fileSize, 2),
+                      ),
+                      if (asset.width != null) _buildInfoRow(context, "width".t(context: context), "${asset.width}px"),
+                      if (asset.height != null)
+                        _buildInfoRow(context, "height".t(context: context), "${asset.height}px"),
+                      _buildInfoRow(context, "created_at".t(context: context), asset.createdAt.toString()),
+                      _buildInfoRow(context, "updated_at".t(context: context), asset.updatedAt.toString()),
+                      if (asset.checksum != null)
+                        _buildInfoRow(context, "checksum".t(context: context), asset.checksum!),
                     ]),
                   ],
                 ],

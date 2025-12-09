@@ -2,7 +2,17 @@
 
 ## TypeORM Upgrade
 
-In order to update to Immich to `v1.137.0` (or above), the application must be started at least once on a version in the range between `1.132.0` and `1.136.0`. Doing so will complete database schema upgrades that are required for `v1.137.0` (and above). After Immich has successfully updated to a version in this range, you can now attempt to update to v1.137.0 (or above). We recommend users upgrade to `1.132.0` since it does not have any other breaking changes.
+If you encountered "Migrations failed: Error: Invalid upgrade path" then perform an intermediate upgrade to `v1.132.3` first.
+
+:::tip
+We recommend users upgrade to `v1.132.3` since it does not have any breaking changes or bugs on this upgrade path.
+:::
+
+In order to update to Immich `v1.137.0` or above, the application must be started at least once on a version in the range between `1.132.0` and `1.136.0`. Doing so will complete database schema upgrades that are required for `v1.137.0` (and above). After Immich has successfully updated to a version in this range, you can now attempt to update to `v1.137.0` (or above).
+
+:::caution
+Avoid `v1.136.0` if upgrading from `v1.131.0` (or earlier) due to a bug blocking this upgrade in some installations.
+:::
 
 ## Inconsistent Media Location
 

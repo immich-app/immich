@@ -1,15 +1,15 @@
 <script lang="ts">
-  import Icon from '$lib/components/elements/icon.svelte';
   import { ProjectionType } from '$lib/constants';
   import { locale, playVideoThumbnailOnHover } from '$lib/stores/preferences.store';
-  import { getAssetPlaybackUrl, getAssetThumbnailUrl } from '$lib/utils';
+  import { getAssetOriginalUrl, getAssetPlaybackUrl, getAssetThumbnailUrl } from '$lib/utils';
   import { timeToSeconds } from '$lib/utils/date-time';
   import { getAltText } from '$lib/utils/thumbnail-util';
-  import { AssetMediaSize, AssetVisibility } from '@immich/sdk';
+  import { AssetMediaSize, AssetVisibility, type UserResponseDto } from '@immich/sdk';
   import {
     mdiArchiveArrowDownOutline,
     mdiCameraBurst,
     mdiCheckCircle,
+    mdiFileGifBox,
     mdiHeart,
     mdiMotionPauseOutline,
     mdiMotionPlayOutline,
@@ -23,6 +23,7 @@
   import { moveFocus } from '$lib/utils/focus-util';
   import { currentUrlReplaceAssetId } from '$lib/utils/navigation';
   import { TUNABLES } from '$lib/utils/tunables';
+  import { Icon } from '@immich/ui';
   import { onMount } from 'svelte';
   import type { ClassValue } from 'svelte/elements';
   import { fade } from 'svelte/transition';
@@ -45,6 +46,7 @@
     imageClass?: ClassValue;
     brokenAssetClass?: ClassValue;
     dimmed?: boolean;
+    albumUsers?: UserResponseDto[];
     onClick?: (asset: TimelineAsset) => void;
     onSelect?: (asset: TimelineAsset) => void;
     onMouseEvent?: (event: { isMouseOver: boolean; selectedGroupIndex: number }) => void;
@@ -63,6 +65,7 @@
     readonly = false,
     showArchiveIcon = false,
     showStackedIcon = true,
+    albumUsers = [],
     onClick = undefined,
     onSelect = undefined,
     onMouseEvent = undefined,
@@ -83,6 +86,8 @@
 
   let width = $derived(thumbnailSize || thumbnailWidth || 235);
   let height = $derived(thumbnailSize || thumbnailHeight || 235);
+
+  let assetOwner = $derived(albumUsers?.find((user) => user.id === asset.ownerId) ?? null);
 
   const onIconClickedHandler = (e?: MouseEvent) => {
     e?.stopPropagation();
@@ -121,6 +126,7 @@
 
   const onMouseLeave = () => {
     mouseOver = false;
+    onMouseEvent?.({ isMouseOver: false, selectedGroupIndex: groupIndex });
   };
 
   let timer: ReturnType<typeof setTimeout> | null = null;
@@ -197,7 +203,7 @@
 <div
   class={[
     'focus-visible:outline-none flex overflow-hidden',
-    disabled ? 'bg-gray-300' : 'bg-immich-primary/20 dark:bg-immich-dark-primary/20',
+    disabled ? 'bg-gray-300' : 'dark:bg-neutral-700 bg-neutral-200',
   ]}
   style:width="{width}px"
   style:height="{height}px"
@@ -232,7 +238,7 @@
   ></div>
 
   <div
-    class={['group absolute -top-[0px] -bottom-[0px]', { 'cursor-not-allowed': disabled, 'cursor-pointer': !disabled }]}
+    class={['group absolute top-0 bottom-0', { 'cursor-not-allowed': disabled, 'cursor-pointer': !disabled }]}
     style:width="inherit"
     style:height="inherit"
   >
@@ -263,20 +269,36 @@
         <!-- Favorite asset star -->
         {#if !authManager.isSharedLink && asset.isFavorite}
           <div class="absolute bottom-2 start-2">
-            <Icon path={mdiHeart} size="24" class="text-white" />
+            <Icon data-icon-favorite icon={mdiHeart} size="24" class="text-white" />
+          </div>
+        {/if}
+
+        {#if !!assetOwner}
+          <div class="absolute bottom-1 end-2 max-w-[50%]">
+            <p class="text-xs font-medium text-white drop-shadow-lg max-w-[100%] truncate">
+              {assetOwner.name}
+            </p>
           </div>
         {/if}
 
         {#if !authManager.isSharedLink && showArchiveIcon && asset.visibility === AssetVisibility.Archive}
           <div class={['absolute start-2', asset.isFavorite ? 'bottom-10' : 'bottom-2']}>
-            <Icon path={mdiArchiveArrowDownOutline} size="24" class="text-white" />
+            <Icon data-icon-archive icon={mdiArchiveArrowDownOutline} size="24" class="text-white" />
           </div>
         {/if}
 
         {#if asset.isImage && asset.projectionType === ProjectionType.EQUIRECTANGULAR}
           <div class="absolute end-0 top-0 flex place-items-center gap-1 text-xs font-medium text-white">
             <span class="pe-2 pt-2">
-              <Icon path={mdiRotate360} size="24" />
+              <Icon data-icon-equirectangular icon={mdiRotate360} size="24" />
+            </span>
+          </div>
+        {/if}
+
+        {#if asset.isImage && asset.duration && !asset.duration.includes('0:00:00.000')}
+          <div class="absolute end-0 top-0 flex place-items-center gap-1 text-xs font-medium text-white">
+            <span class="pe-2 pt-2">
+              <Icon data-icon-playable icon={mdiFileGifBox} size="24" />
             </span>
           </div>
         {/if}
@@ -291,7 +313,7 @@
           >
             <span class="pe-2 pt-2 flex place-items-center gap-1">
               <p>{asset.stack.assetCount.toLocaleString($locale)}</p>
-              <Icon path={mdiCameraBurst} size="24" />
+              <Icon data-icon-stack icon={mdiCameraBurst} size="24" />
             </span>
           </div>
         {/if}
@@ -321,7 +343,7 @@
         onComplete={(errored) => ((loaded = true), (thumbError = errored))}
       />
       {#if asset.isVideo}
-        <div class="absolute top-0 h-full w-full">
+        <div class="absolute top-0 h-full w-full pointer-events-none">
           <VideoThumbnail
             url={getAssetPlaybackUrl({ id: asset.id, cacheKey: asset.thumbhash })}
             enablePlayback={mouseOver && $playVideoThumbnailOnHover}
@@ -331,7 +353,7 @@
           />
         </div>
       {:else if asset.isImage && asset.livePhotoVideoId}
-        <div class="absolute top-0 h-full w-full">
+        <div class="absolute top-0 h-full w-full pointer-events-none">
           <VideoThumbnail
             url={getAssetPlaybackUrl({ id: asset.livePhotoVideoId, cacheKey: asset.thumbhash })}
             enablePlayback={mouseOver && $playVideoThumbnailOnHover}
@@ -341,6 +363,25 @@
             curve={selected}
             playbackOnIconHover={!$playVideoThumbnailOnHover}
           />
+        </div>
+      {:else if asset.isImage && asset.duration && !asset.duration.includes('0:00:00.000') && mouseOver}
+        <!-- GIF -->
+        <div class="absolute top-0 h-full w-full pointer-events-none">
+          <div class="absolute h-full w-full bg-linear-to-b from-black/25 via-[transparent_25%]"></div>
+          <ImageThumbnail
+            class={imageClass}
+            {brokenAssetClass}
+            url={getAssetOriginalUrl({ id: asset.id, cacheKey: asset.thumbhash })}
+            altText={$getAltText(asset)}
+            widthStyle="{width}px"
+            heightStyle="{height}px"
+            curve={selected}
+          />
+          <div class="absolute end-0 top-0 flex place-items-center gap-1 text-xs font-medium text-white">
+            <span class="pe-2 pt-2">
+              <Icon data-icon-playable-pause icon={mdiMotionPauseOutline} size="24" />
+            </span>
+          </div>
         </div>
       {/if}
 
@@ -378,13 +419,13 @@
         {disabled}
       >
         {#if disabled}
-          <Icon path={mdiCheckCircle} size="24" class="text-zinc-800" />
+          <Icon data-icon-select icon={mdiCheckCircle} size="24" class="text-zinc-800" />
         {:else if selected}
           <div class="rounded-full bg-[#D9DCEF] dark:bg-[#232932]">
-            <Icon path={mdiCheckCircle} size="24" class="text-primary" />
+            <Icon data-icon-select icon={mdiCheckCircle} size="24" class="text-primary" />
           </div>
         {:else}
-          <Icon path={mdiCheckCircle} size="24" class="text-white/80 hover:text-white" />
+          <Icon data-icon-select icon={mdiCheckCircle} size="24" class="text-white/80 hover:text-white" />
         {/if}
       </button>
     {/if}

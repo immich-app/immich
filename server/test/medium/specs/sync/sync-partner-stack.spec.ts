@@ -29,7 +29,6 @@ describe(SyncRequestType.PartnerStacksV1, () => {
     const { stack } = await ctx.newStack({ ownerId: user2.id }, [asset.id]);
 
     const response = await ctx.syncStream(auth, [SyncRequestType.PartnerStacksV1]);
-    expect(response).toHaveLength(1);
     expect(response).toEqual([
       {
         ack: expect.any(String),
@@ -42,10 +41,11 @@ describe(SyncRequestType.PartnerStacksV1, () => {
         },
         type: SyncEntityType.PartnerStackV1,
       },
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
     ]);
 
     await ctx.syncAckAll(auth, response);
-    await expect(ctx.syncStream(auth, [SyncRequestType.PartnerStacksV1])).resolves.toEqual([]);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.PartnerStacksV1]);
   });
 
   it('should detect and sync a deleted partner stack', async () => {
@@ -58,7 +58,6 @@ describe(SyncRequestType.PartnerStacksV1, () => {
     await stackRepo.delete(stack.id);
 
     const response = await ctx.syncStream(auth, [SyncRequestType.PartnerStacksV1]);
-    expect(response).toHaveLength(1);
     expect(response).toEqual([
       {
         ack: expect.stringContaining('PartnerStackDeleteV1'),
@@ -67,10 +66,11 @@ describe(SyncRequestType.PartnerStacksV1, () => {
         },
         type: SyncEntityType.PartnerStackDeleteV1,
       },
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
     ]);
 
     await ctx.syncAckAll(auth, response);
-    await expect(ctx.syncStream(auth, [SyncRequestType.PartnerStacksV1])).resolves.toEqual([]);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.PartnerStacksV1]);
   });
 
   it('should not sync a deleted partner stack due to a user delete', async () => {
@@ -81,7 +81,7 @@ describe(SyncRequestType.PartnerStacksV1, () => {
     const { asset } = await ctx.newAsset({ ownerId: user2.id });
     await ctx.newStack({ ownerId: user2.id }, [asset.id]);
     await userRepo.delete({ id: user2.id }, true);
-    await expect(ctx.syncStream(auth, [SyncRequestType.PartnerStacksV1])).resolves.toEqual([]);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.PartnerStacksV1]);
   });
 
   it('should not sync a deleted partner stack due to a partner delete (unshare)', async () => {
@@ -91,9 +91,12 @@ describe(SyncRequestType.PartnerStacksV1, () => {
     const { asset } = await ctx.newAsset({ ownerId: user2.id });
     await ctx.newStack({ ownerId: user2.id }, [asset.id]);
     const { partner } = await ctx.newPartner({ sharedById: user2.id, sharedWithId: user.id });
-    await expect(ctx.syncStream(auth, [SyncRequestType.PartnerStacksV1])).resolves.toHaveLength(1);
+    await expect(ctx.syncStream(auth, [SyncRequestType.PartnerStacksV1])).resolves.toEqual([
+      expect.objectContaining({ type: SyncEntityType.PartnerStackV1 }),
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
+    ]);
     await partnerRepo.remove(partner);
-    await expect(ctx.syncStream(auth, [SyncRequestType.PartnerStacksV1])).resolves.toEqual([]);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.PartnerStacksV1]);
   });
 
   it('should not sync a stack or stack delete for own user', async () => {
@@ -103,11 +106,17 @@ describe(SyncRequestType.PartnerStacksV1, () => {
     const { asset } = await ctx.newAsset({ ownerId: user.id });
     const { stack } = await ctx.newStack({ ownerId: user.id }, [asset.id]);
     await ctx.newPartner({ sharedById: user2.id, sharedWithId: user.id });
-    await expect(ctx.syncStream(auth, [SyncRequestType.StacksV1])).resolves.toHaveLength(1);
-    await expect(ctx.syncStream(auth, [SyncRequestType.PartnerStacksV1])).resolves.toHaveLength(0);
+    await expect(ctx.syncStream(auth, [SyncRequestType.StacksV1])).resolves.toEqual([
+      expect.objectContaining({ type: SyncEntityType.StackV1 }),
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
+    ]);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.PartnerStacksV1]);
     await stackRepo.delete(stack.id);
-    await expect(ctx.syncStream(auth, [SyncRequestType.StacksV1])).resolves.toHaveLength(1);
-    await expect(ctx.syncStream(auth, [SyncRequestType.PartnerStacksV1])).resolves.toHaveLength(0);
+    await expect(ctx.syncStream(auth, [SyncRequestType.StacksV1])).resolves.toEqual([
+      expect.objectContaining({ type: SyncEntityType.StackDeleteV1 }),
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
+    ]);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.PartnerStacksV1]);
   });
 
   it('should not sync a stack or stack delete for unrelated user', async () => {
@@ -119,13 +128,19 @@ describe(SyncRequestType.PartnerStacksV1, () => {
     const { stack } = await ctx.newStack({ ownerId: user2.id }, [asset.id]);
     const auth2 = factory.auth({ session, user: user2 });
 
-    await expect(ctx.syncStream(auth2, [SyncRequestType.StacksV1])).resolves.toHaveLength(1);
-    await expect(ctx.syncStream(auth, [SyncRequestType.PartnerStacksV1])).resolves.toHaveLength(0);
+    await expect(ctx.syncStream(auth2, [SyncRequestType.StacksV1])).resolves.toEqual([
+      expect.objectContaining({ type: SyncEntityType.StackV1 }),
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
+    ]);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.PartnerStacksV1]);
 
     await stackRepo.delete(stack.id);
 
-    await expect(ctx.syncStream(auth2, [SyncRequestType.StacksV1])).resolves.toHaveLength(1);
-    await expect(ctx.syncStream(auth, [SyncRequestType.PartnerStacksV1])).resolves.toHaveLength(0);
+    await expect(ctx.syncStream(auth2, [SyncRequestType.StacksV1])).resolves.toEqual([
+      expect.objectContaining({ type: SyncEntityType.StackDeleteV1 }),
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
+    ]);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.PartnerStacksV1]);
   });
 
   it('should backfill partner stacks when a partner shared their library with you', async () => {
@@ -140,7 +155,6 @@ describe(SyncRequestType.PartnerStacksV1, () => {
     await ctx.newPartner({ sharedById: user2.id, sharedWithId: auth.user.id });
 
     const response = await ctx.syncStream(auth, [SyncRequestType.PartnerStacksV1]);
-    expect(response).toHaveLength(1);
     expect(response).toEqual([
       {
         ack: expect.stringContaining('PartnerStackV1'),
@@ -149,12 +163,12 @@ describe(SyncRequestType.PartnerStacksV1, () => {
         }),
         type: SyncEntityType.PartnerStackV1,
       },
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
     ]);
     await ctx.syncAckAll(auth, response);
     await ctx.newPartner({ sharedById: user3.id, sharedWithId: user.id });
 
     const newResponse = await ctx.syncStream(auth, [SyncRequestType.PartnerStacksV1]);
-    expect(newResponse).toHaveLength(2);
     expect(newResponse).toEqual([
       {
         ack: expect.stringContaining(SyncEntityType.PartnerStackBackfillV1),
@@ -168,10 +182,11 @@ describe(SyncRequestType.PartnerStacksV1, () => {
         data: {},
         type: SyncEntityType.SyncAckV1,
       },
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
     ]);
 
     await ctx.syncAckAll(auth, newResponse);
-    await expect(ctx.syncStream(auth, [SyncRequestType.PartnerStacksV1])).resolves.toEqual([]);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.PartnerStacksV1]);
   });
 
   it('should only backfill partner stacks created prior to the current partner stack checkpoint', async () => {
@@ -189,7 +204,6 @@ describe(SyncRequestType.PartnerStacksV1, () => {
     await ctx.newPartner({ sharedById: user2.id, sharedWithId: auth.user.id });
 
     const response = await ctx.syncStream(auth, [SyncRequestType.PartnerStacksV1]);
-    expect(response).toHaveLength(1);
     expect(response).toEqual([
       {
         ack: expect.stringContaining(SyncEntityType.PartnerStackV1),
@@ -198,12 +212,12 @@ describe(SyncRequestType.PartnerStacksV1, () => {
         }),
         type: SyncEntityType.PartnerStackV1,
       },
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
     ]);
     await ctx.syncAckAll(auth, response);
 
     await ctx.newPartner({ sharedById: user3.id, sharedWithId: auth.user.id });
     const newResponse = await ctx.syncStream(auth, [SyncRequestType.PartnerStacksV1]);
-    expect(newResponse).toHaveLength(3);
     expect(newResponse).toEqual([
       {
         ack: expect.any(String),
@@ -224,9 +238,10 @@ describe(SyncRequestType.PartnerStacksV1, () => {
         }),
         type: SyncEntityType.PartnerStackV1,
       },
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
     ]);
 
     await ctx.syncAckAll(auth, newResponse);
-    await expect(ctx.syncStream(auth, [SyncRequestType.PartnerStacksV1])).resolves.toEqual([]);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.PartnerStacksV1]);
   });
 });

@@ -7,14 +7,12 @@ import 'dart:ui' show DartPluginRegistrant, IsolateNameServer, PluginUtilities;
 import 'package:cancellation_token_http/http.dart';
 import 'package:collection/collection.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/backup_album.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
-import 'package:immich_mobile/infrastructure/repositories/logger_db.repository.dart';
 import 'package:immich_mobile/models/backup/backup_candidate.model.dart';
 import 'package:immich_mobile/models/backup/current_upload_asset.model.dart';
 import 'package:immich_mobile/models/backup/error_upload_asset.model.dart';
@@ -30,6 +28,7 @@ import 'package:immich_mobile/services/backup.service.dart';
 import 'package:immich_mobile/services/localization.service.dart';
 import 'package:immich_mobile/utils/backup_progress.dart';
 import 'package:immich_mobile/utils/bootstrap.dart';
+import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:immich_mobile/utils/diff.dart';
 import 'package:immich_mobile/utils/http_ssl_options.dart';
 import 'package:path_provider_foundation/path_provider_foundation.dart';
@@ -166,7 +165,7 @@ class BackgroundService {
         ]);
       }
     } catch (error) {
-      debugPrint("[_updateNotification] failed to communicate with plugin");
+      dPrint(() => "[_updateNotification] failed to communicate with plugin");
     }
     return false;
   }
@@ -178,7 +177,7 @@ class BackgroundService {
         return await _backgroundChannel.invokeMethod('showError', [title, content, individualTag]);
       }
     } catch (error) {
-      debugPrint("[_showErrorNotification] failed to communicate with plugin");
+      dPrint(() => "[_showErrorNotification] failed to communicate with plugin");
     }
     return false;
   }
@@ -189,7 +188,7 @@ class BackgroundService {
         return await _backgroundChannel.invokeMethod('clearErrorNotifications');
       }
     } catch (error) {
-      debugPrint("[_clearErrorNotifications] failed to communicate with plugin");
+      dPrint(() => "[_clearErrorNotifications] failed to communicate with plugin");
     }
     return false;
   }
@@ -197,7 +196,7 @@ class BackgroundService {
   /// await to ensure this thread (foreground or background) has exclusive access
   Future<bool> acquireLock() async {
     if (_hasLock) {
-      debugPrint("WARNING: [acquireLock] called more than once");
+      dPrint(() => "WARNING: [acquireLock] called more than once");
       return true;
     }
     final int lockTime = Timeline.now;
@@ -292,7 +291,7 @@ class BackgroundService {
       case "backgroundProcessing":
       case "onAssetsChanged":
         try {
-          _clearErrorNotifications();
+          unawaited(_clearErrorNotifications());
 
           // iOS should time out after some threshold so it doesn't wait
           // indefinitely and can run later
@@ -303,19 +302,19 @@ class BackgroundService {
 
           final bool hasAccess = await waitForLock;
           if (!hasAccess) {
-            debugPrint("[_callHandler] could not acquire lock, exiting");
+            dPrint(() => "[_callHandler] could not acquire lock, exiting");
             return false;
           }
 
           final translationsOk = await loadTranslations();
           if (!translationsOk) {
-            debugPrint("[_callHandler] could not load translations");
+            dPrint(() => "[_callHandler] could not load translations");
           }
 
           final bool ok = await _onAssetsChanged();
           return ok;
         } catch (error) {
-          debugPrint(error.toString());
+          dPrint(() => error.toString());
           return false;
         } finally {
           releaseLock();
@@ -325,24 +324,27 @@ class BackgroundService {
         _cancellationToken?.cancel();
         return true;
       default:
-        debugPrint("Unknown method ${call.method}");
+        dPrint(() => "Unknown method ${call.method}");
         return false;
     }
   }
 
   Future<bool> _onAssetsChanged() async {
-    final db = await Bootstrap.initIsar();
-    final logDb = DriftLogger();
-    await Bootstrap.initDomain(db, logDb);
+    final (isar, drift, logDb) = await Bootstrap.initDB();
+    await Bootstrap.initDomain(isar, drift, logDb, shouldBufferLogs: false, listenStoreUpdates: false);
 
-    final ref = ProviderContainer(overrides: [dbProvider.overrideWithValue(db), isarProvider.overrideWithValue(db)]);
+    final ref = ProviderContainer(
+      overrides: [
+        dbProvider.overrideWithValue(isar),
+        isarProvider.overrideWithValue(isar),
+        driftProvider.overrideWith(driftOverride(drift)),
+      ],
+    );
 
     HttpSSLOptions.apply();
-    ref.read(apiServiceProvider).setAccessToken(Store.get(StoreKey.accessToken));
+    await ref.read(apiServiceProvider).setAccessToken(Store.get(StoreKey.accessToken));
     await ref.read(authServiceProvider).setOpenApiServiceEndpoint();
-    if (kDebugMode) {
-      debugPrint("[BG UPLOAD] Using endpoint: ${ref.read(apiServiceProvider).apiClient.basePath}");
-    }
+    dPrint(() => "[BG UPLOAD] Using endpoint: ${ref.read(apiServiceProvider).apiClient.basePath}");
 
     final selectedAlbums = await ref.read(backupAlbumRepositoryProvider).getAllBySelection(BackupSelection.select);
     final excludedAlbums = await ref.read(backupAlbumRepositoryProvider).getAllBySelection(BackupSelection.exclude);
@@ -383,7 +385,7 @@ class BackgroundService {
         await ref.read(backupAlbumRepositoryProvider).deleteAll(toDelete);
         await ref.read(backupAlbumRepositoryProvider).updateAll(toUpsert);
       } else if (Store.tryGet(StoreKey.backupFailedSince) == null) {
-        Store.put(StoreKey.backupFailedSince, DateTime.now());
+        await Store.put(StoreKey.backupFailedSince, DateTime.now());
         return false;
       }
       // Android should check for new assets added while performing backup
@@ -410,9 +412,11 @@ class BackgroundService {
     try {
       toUpload = await backupService.removeAlreadyUploadedAssets(toUpload);
     } catch (e) {
-      _showErrorNotification(
-        title: "backup_background_service_error_title".tr(),
-        content: "backup_background_service_connection_failed_message".tr(),
+      unawaited(
+        _showErrorNotification(
+          title: "backup_background_service_error_title".tr(),
+          content: "backup_background_service_connection_failed_message".tr(),
+        ),
       );
       return false;
     }
@@ -426,13 +430,15 @@ class BackgroundService {
     }
     _assetsToUploadCount = toUpload.length;
     _uploadedAssetsCount = 0;
-    _updateNotification(
-      title: "backup_background_service_in_progress_notification".tr(),
-      content: notifyTotalProgress ? formatAssetBackupProgress(_uploadedAssetsCount, _assetsToUploadCount) : null,
-      progress: 0,
-      max: notifyTotalProgress ? _assetsToUploadCount : 0,
-      indeterminate: !notifyTotalProgress,
-      onlyIfFG: !notifyTotalProgress,
+    unawaited(
+      _updateNotification(
+        title: "backup_background_service_in_progress_notification".tr(),
+        content: notifyTotalProgress ? formatAssetBackupProgress(_uploadedAssetsCount, _assetsToUploadCount) : null,
+        progress: 0,
+        max: notifyTotalProgress ? _assetsToUploadCount : 0,
+        indeterminate: !notifyTotalProgress,
+        onlyIfFG: !notifyTotalProgress,
+      ),
     );
 
     _cancellationToken = CancellationToken();
@@ -450,9 +456,11 @@ class BackgroundService {
     );
 
     if (!ok && !_cancellationToken!.isCancelled) {
-      _showErrorNotification(
-        title: "backup_background_service_error_title".tr(),
-        content: "backup_background_service_backup_failed_message".tr(),
+      unawaited(
+        _showErrorNotification(
+          title: "backup_background_service_error_title".tr(),
+          content: "backup_background_service_backup_failed_message".tr(),
+        ),
       );
     }
 

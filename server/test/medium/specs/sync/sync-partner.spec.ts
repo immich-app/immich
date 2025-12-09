@@ -26,7 +26,6 @@ describe(SyncEntityType.PartnerV1, () => {
     const { partner } = await ctx.newPartner({ sharedById: user2.id, sharedWithId: user1.id });
 
     const response = await ctx.syncStream(auth, [SyncRequestType.PartnersV1]);
-    expect(response).toHaveLength(1);
     expect(response).toEqual([
       {
         ack: expect.any(String),
@@ -37,10 +36,11 @@ describe(SyncEntityType.PartnerV1, () => {
         },
         type: 'PartnerV1',
       },
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
     ]);
 
     await ctx.syncAckAll(auth, response);
-    await expect(ctx.syncStream(auth, [SyncRequestType.PartnersV1])).resolves.toEqual([]);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.PartnersV1]);
   });
 
   it('should detect and sync a deleted partner', async () => {
@@ -53,22 +53,20 @@ describe(SyncEntityType.PartnerV1, () => {
     await partnerRepo.remove(partner);
 
     const response = await ctx.syncStream(auth, [SyncRequestType.PartnersV1]);
-    expect(response).toHaveLength(1);
-    expect(response).toEqual(
-      expect.arrayContaining([
-        {
-          ack: expect.any(String),
-          data: {
-            sharedById: partner.sharedById,
-            sharedWithId: partner.sharedWithId,
-          },
-          type: 'PartnerDeleteV1',
+    expect(response).toEqual([
+      {
+        ack: expect.any(String),
+        data: {
+          sharedById: partner.sharedById,
+          sharedWithId: partner.sharedWithId,
         },
-      ]),
-    );
+        type: 'PartnerDeleteV1',
+      },
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
+    ]);
 
     await ctx.syncAckAll(auth, response);
-    await expect(ctx.syncStream(auth, [SyncRequestType.PartnersV1])).resolves.toEqual([]);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.PartnersV1]);
   });
 
   it('should detect and sync a partner share both to and from another user', async () => {
@@ -79,32 +77,30 @@ describe(SyncEntityType.PartnerV1, () => {
     const { partner: partner2 } = await ctx.newPartner({ sharedById: user1.id, sharedWithId: user2.id });
 
     const response = await ctx.syncStream(auth, [SyncRequestType.PartnersV1]);
-    expect(response).toHaveLength(2);
-    expect(response).toEqual(
-      expect.arrayContaining([
-        {
-          ack: expect.any(String),
-          data: {
-            inTimeline: partner1.inTimeline,
-            sharedById: partner1.sharedById,
-            sharedWithId: partner1.sharedWithId,
-          },
-          type: 'PartnerV1',
+    expect(response).toEqual([
+      {
+        ack: expect.any(String),
+        data: {
+          inTimeline: partner1.inTimeline,
+          sharedById: partner1.sharedById,
+          sharedWithId: partner1.sharedWithId,
         },
-        {
-          ack: expect.any(String),
-          data: {
-            inTimeline: partner2.inTimeline,
-            sharedById: partner2.sharedById,
-            sharedWithId: partner2.sharedWithId,
-          },
-          type: 'PartnerV1',
+        type: 'PartnerV1',
+      },
+      {
+        ack: expect.any(String),
+        data: {
+          inTimeline: partner2.inTimeline,
+          sharedById: partner2.sharedById,
+          sharedWithId: partner2.sharedWithId,
         },
-      ]),
-    );
+        type: 'PartnerV1',
+      },
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
+    ]);
 
     await ctx.syncAckAll(auth, response);
-    await expect(ctx.syncStream(auth, [SyncRequestType.PartnersV1])).resolves.toEqual([]);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.PartnersV1]);
   });
 
   it('should sync a partner and then an update to that same partner', async () => {
@@ -116,7 +112,6 @@ describe(SyncEntityType.PartnerV1, () => {
     const { partner } = await ctx.newPartner({ sharedById: user2.id, sharedWithId: user1.id });
 
     const response = await ctx.syncStream(auth, [SyncRequestType.PartnersV1]);
-    expect(response).toHaveLength(1);
     expect(response).toEqual([
       {
         ack: expect.any(String),
@@ -127,6 +122,7 @@ describe(SyncEntityType.PartnerV1, () => {
         },
         type: 'PartnerV1',
       },
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
     ]);
 
     await ctx.syncAckAll(auth, response);
@@ -137,7 +133,6 @@ describe(SyncEntityType.PartnerV1, () => {
     );
 
     const newResponse = await ctx.syncStream(auth, [SyncRequestType.PartnersV1]);
-    expect(newResponse).toHaveLength(1);
     expect(newResponse).toEqual([
       {
         ack: expect.any(String),
@@ -148,10 +143,11 @@ describe(SyncEntityType.PartnerV1, () => {
         },
         type: 'PartnerV1',
       },
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
     ]);
 
     await ctx.syncAckAll(auth, newResponse);
-    await expect(ctx.syncStream(auth, [SyncRequestType.PartnersV1])).resolves.toEqual([]);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.PartnersV1]);
   });
 
   it('should not sync a partner or partner delete for an unrelated user', async () => {
@@ -163,9 +159,9 @@ describe(SyncEntityType.PartnerV1, () => {
     const { user: user3 } = await ctx.newUser();
     const { partner } = await ctx.newPartner({ sharedById: user2.id, sharedWithId: user3.id });
 
-    await expect(ctx.syncStream(auth, [SyncRequestType.PartnersV1])).resolves.toEqual([]);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.PartnersV1]);
     await partnerRepo.remove(partner);
-    await expect(ctx.syncStream(auth, [SyncRequestType.PartnersV1])).resolves.toEqual([]);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.PartnersV1]);
   });
 
   it('should not sync a partner delete after a user is deleted', async () => {
@@ -177,6 +173,6 @@ describe(SyncEntityType.PartnerV1, () => {
     await ctx.newPartner({ sharedById: user2.id, sharedWithId: auth.user.id });
     await userRepo.delete({ id: user2.id }, true);
 
-    await expect(ctx.syncStream(auth, [SyncRequestType.PartnersV1])).resolves.toEqual([]);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.PartnersV1]);
   });
 });

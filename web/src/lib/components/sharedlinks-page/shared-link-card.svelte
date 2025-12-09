@@ -1,26 +1,22 @@
 <script lang="ts">
-  import Badge from '$lib/components/elements/badge.svelte';
-  import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
-  import SharedLinkCopy from '$lib/components/sharedlinks-page/actions/shared-link-copy.svelte';
-  import SharedLinkDelete from '$lib/components/sharedlinks-page/actions/shared-link-delete.svelte';
-  import SharedLinkEdit from '$lib/components/sharedlinks-page/actions/shared-link-edit.svelte';
+  import ActionButton from '$lib/components/ActionButton.svelte';
   import ShareCover from '$lib/components/sharedlinks-page/covers/share-cover.svelte';
   import { AppRoute } from '$lib/constants';
+  import { getSharedLinkActions } from '$lib/services/shared-link.service';
   import { locale } from '$lib/stores/preferences.store';
   import { SharedLinkType, type SharedLinkResponseDto } from '@immich/sdk';
-  import { mdiDotsVertical } from '@mdi/js';
+  import { Badge, ContextMenuButton, MenuItemType, Text } from '@immich/ui';
   import { DateTime, type ToRelativeUnit } from 'luxon';
   import { t } from 'svelte-i18n';
 
   interface Props {
-    link: SharedLinkResponseDto;
-    onDelete: () => void;
+    sharedLink: SharedLinkResponseDto;
   }
 
-  let { link, onDelete }: Props = $props();
+  let { sharedLink }: Props = $props();
 
   let now = DateTime.now();
-  let expiresAt = $derived(link.expiresAt ? DateTime.fromISO(link.expiresAt) : undefined);
+  let expiresAt = $derived(sharedLink.expiresAt ? DateTime.fromISO(sharedLink.expiresAt) : undefined);
   let isExpired = $derived(expiresAt ? now > expiresAt : false);
 
   const getCountDownExpirationDate = (expiresAtDate: DateTime, now: DateTime) => {
@@ -34,6 +30,8 @@
       }
     }
   };
+
+  const { Edit, Copy, Delete } = $derived(getSharedLinkActions($t, sharedLink));
 </script>
 
 <div
@@ -41,81 +39,70 @@
 >
   <svelte:element
     this={isExpired ? 'div' : 'a'}
-    href={isExpired ? undefined : `${AppRoute.SHARE}/${link.key}`}
+    href={isExpired ? undefined : `${AppRoute.SHARE}/${sharedLink.key}`}
     class="flex gap-4 w-full py-4"
   >
-    <ShareCover class="transition-all duration-300 hover:shadow-lg" {link} />
+    <ShareCover class="transition-all duration-300 hover:shadow-lg" {sharedLink} />
 
-    <div class="flex flex-col justify-between">
-      <div class="info-top">
-        <div class="font-mono text-xs font-semibold text-gray-500 dark:text-gray-400">
-          {#if isExpired}
-            <p class="font-bold text-red-600 dark:text-red-400">{$t('expired')}</p>
-          {:else if expiresAt}
-            <p>
-              {$t('expires_date', { values: { date: getCountDownExpirationDate(expiresAt, now) } })}
-            </p>
-          {:else}
-            <p>{$t('expires_date', { values: { date: '∞' } })}</p>
-          {/if}
-        </div>
+    <div class="flex flex-col gap-2">
+      <Text size="large" color="primary" class="flex place-items-center gap-2 break-all">
+        {#if sharedLink.type === SharedLinkType.Album}
+          {sharedLink.album?.albumName}
+        {:else if sharedLink.type === SharedLinkType.Individual}
+          {$t('individual_share')}
+        {/if}
+      </Text>
 
-        <div class="text-sm pb-2">
-          <p
-            class="flex place-items-center gap-2 text-immich-primary dark:text-immich-dark-primary break-all uppercase"
-          >
-            {#if link.type === SharedLinkType.Album}
-              {link.album?.albumName}
-            {:else if link.type === SharedLinkType.Individual}
-              {$t('individual_share')}
-            {/if}
-          </p>
-
-          <p class="text-sm">{link.description ?? ''}</p>
-        </div>
-      </div>
-
-      <div class="flex flex-wrap gap-2 text-xl">
-        {#if link.allowUpload}
-          <Badge rounded="full"><span class="text-xs px-1">{$t('upload')}</span></Badge>
+      <div class="flex flex-wrap gap-1">
+        {#if isExpired}
+          <Badge size="small" color="danger">{$t('expired')}</Badge>
+        {:else if expiresAt}
+          <Badge size="small" color="secondary">
+            {$t('expires_date', { values: { date: getCountDownExpirationDate(expiresAt, now) } })}
+          </Badge>
+        {:else}
+          <Badge size="small" color="secondary">{$t('expires_date', { values: { date: '∞' } })}</Badge>
         {/if}
 
-        {#if link.allowDownload}
-          <Badge rounded="full"><span class="text-xs px-1">{$t('download')}</span></Badge>
+        {#if sharedLink.slug}
+          <Badge size="small" color="secondary">{$t('custom_url')}</Badge>
         {/if}
 
-        {#if link.showMetadata}
-          <Badge rounded="full"><span class="text-xs px-1">{$t('exif').toUpperCase()}</span></Badge>
+        {#if sharedLink.allowUpload}
+          <Badge size="small" color="secondary">{$t('upload')}</Badge>
         {/if}
 
-        {#if link.password}
-          <Badge rounded="full"><span class="text-xs px-1">{$t('password')}</span></Badge>
+        {#if sharedLink.showMetadata && sharedLink.allowDownload}
+          <Badge size="small" color="secondary">{$t('download')}</Badge>
         {/if}
-        {#if link.slug}
-          <Badge rounded="full"><span class="text-xs px-1">{$t('custom_url')}</span></Badge>
+
+        {#if sharedLink.showMetadata}
+          <Badge size="small" color="secondary">{$t('exif')}</Badge>
+        {/if}
+
+        {#if sharedLink.password}
+          <Badge size="small" color="secondary">{$t('password')}</Badge>
         {/if}
       </div>
+
+      {#if sharedLink.description}
+        <Text size="small" class="line-clamp-1">{sharedLink.description}</Text>
+      {/if}
     </div>
   </svelte:element>
   <div class="flex flex-auto flex-col place-content-center place-items-end text-end ms-4">
     <div class="sm:flex hidden">
-      <SharedLinkEdit sharedLink={link} />
-      <SharedLinkCopy {link} />
-      <SharedLinkDelete {onDelete} />
+      <ActionButton action={Edit} />
+      <ActionButton action={Copy} />
+      <ActionButton action={Delete} />
     </div>
 
     <div class="sm:hidden">
-      <ButtonContextMenu
-        color="primary"
-        title={$t('shared_link_options')}
-        icon={mdiDotsVertical}
-        size="large"
-        hideContent
-      >
-        <SharedLinkEdit menuItem sharedLink={link} />
-        <SharedLinkCopy menuItem {link} />
-        <SharedLinkDelete menuItem {onDelete} />
-      </ButtonContextMenu>
+      <ContextMenuButton
+        aria-label={$t('shared_link_options')}
+        position="top-right"
+        items={[Edit, Copy, MenuItemType.Divider, Delete]}
+      />
     </div>
   </div>
 </div>

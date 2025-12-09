@@ -7,7 +7,8 @@
   } from '$lib/components/shared-components/album-selection/album-selection-utils';
   import { albumViewSettings } from '$lib/stores/preferences.store';
   import { createAlbum, getAllAlbums, type AlbumResponseDto } from '@immich/sdk';
-  import { Button, Modal, ModalBody } from '@immich/ui';
+  import { Button, Icon, Modal, ModalBody, ModalFooter, Text } from '@immich/ui';
+  import { mdiKeyboardReturn } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import AlbumListItem from '../components/asset-viewer/album-list-item.svelte';
@@ -74,9 +75,9 @@
   };
 
   const handleMultiSubmit = () => {
-    const albums = new Set(albumModalRows.filter((row) => row.multiSelected).map(({ album }) => album!));
-    if (albums.size > 0) {
-      onClose([...albums]);
+    const selectedAlbums = new Set(albums.filter(({ id }) => multiSelectedAlbumIds.includes(id)));
+    if (selectedAlbums.size > 0) {
+      onClose([...selectedAlbums]);
     } else {
       onClose();
     }
@@ -133,7 +134,7 @@
         await onEnter();
         break;
       }
-      case 'm': {
+      case 'Control': {
         e.preventDefault();
         handleMultiSelect();
         break;
@@ -147,7 +148,7 @@
 
 <Modal title={shared ? $t('add_to_shared_album') : $t('add_to_album')} {onClose} size="small">
   <ModalBody>
-    <div class="mb-2 flex max-h-[400px] flex-col">
+    <div class="mb-2 flex max-h-100 flex-col">
       {#if loading}
         <!-- eslint-disable-next-line svelte/require-each-key -->
         {#each { length: 3 } as _}
@@ -199,4 +200,22 @@
       >
     {/if}
   </ModalBody>
+  <ModalFooter>
+    <div class="flex justify-around w-full">
+      <div class="flex gap-4">
+        <div class="flex gap-1 place-items-center">
+          <span class="bg-gray-300 dark:bg-gray-500 rounded p-1">
+            <Icon icon={mdiKeyboardReturn} size="1rem" />
+          </span>
+          <Text size="tiny">{$t('to_select')}</Text>
+        </div>
+        <div class="flex gap-1 place-items-center">
+          <span class="bg-gray-300 dark:bg-gray-500 rounded p-1">
+            <Text size="tiny">CTRL</Text>
+          </span>
+          <Text size="tiny">{$t('to_multi_select')}</Text>
+        </div>
+      </div>
+    </div>
+  </ModalFooter>
 </Modal>

@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Selectable } from 'kysely';
 import { AssetFace, AssetFile, Exif, Stack, Tag, User } from 'src/database';
-import { PropertyLifecycle } from 'src/decorators';
+import { HistoryBuilder, Property } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { ExifResponseDto, mapExif } from 'src/dtos/exif.dto';
 import {
@@ -37,11 +37,18 @@ export class SanitizedAssetResponseDto {
 }
 
 export class AssetResponseDto extends SanitizedAssetResponseDto {
+  @ApiProperty({
+    type: 'string',
+    format: 'date-time',
+    description: 'The UTC timestamp when the asset was originally uploaded to Immich.',
+    example: '2024-01-15T20:30:00.000Z',
+  })
+  createdAt!: Date;
   deviceAssetId!: string;
   deviceId!: string;
   ownerId!: string;
   owner?: UserResponseDto;
-  @PropertyLifecycle({ deprecatedAt: 'v1.106.0' })
+  @Property({ history: new HistoryBuilder().added('v1').deprecated('v1') })
   libraryId?: string | null;
   originalPath!: string;
   originalFileName!: string;
@@ -84,7 +91,7 @@ export class AssetResponseDto extends SanitizedAssetResponseDto {
   stack?: AssetStackResponseDto | null;
   duplicateId?: string | null;
 
-  @PropertyLifecycle({ deprecatedAt: 'v1.113.0' })
+  @Property({ history: new HistoryBuilder().added('v1').deprecated('v1.113.0') })
   resized?: boolean;
 }
 
@@ -117,7 +124,6 @@ export type MapAsset = {
   originalPath: string;
   owner?: User | null;
   ownerId: string;
-  sidecarPath: string | null;
   stack?: Stack | null;
   stackId: string | null;
   tags?: Tag[];
@@ -190,6 +196,7 @@ export function mapAsset(entity: MapAsset, options: AssetMapOptions = {}): Asset
 
   return {
     id: entity.id,
+    createdAt: entity.createdAt,
     deviceAssetId: entity.deviceAssetId,
     ownerId: entity.ownerId,
     owner: entity.owner ? mapUser(entity.owner) : undefined,
@@ -204,7 +211,7 @@ export function mapAsset(entity: MapAsset, options: AssetMapOptions = {}): Asset
     fileModifiedAt: entity.fileModifiedAt,
     localDateTime: entity.localDateTime,
     updatedAt: entity.updatedAt,
-    isFavorite: options.auth?.user.id === entity.ownerId ? entity.isFavorite : false,
+    isFavorite: options.auth?.user.id === entity.ownerId && entity.isFavorite,
     isArchived: entity.visibility === AssetVisibility.Archive,
     isTrashed: !!entity.deletedAt,
     visibility: entity.visibility,

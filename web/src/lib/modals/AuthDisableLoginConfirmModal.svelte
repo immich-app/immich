@@ -1,5 +1,5 @@
 <script lang="ts">
-  import FormatMessage from '$lib/components/i18n/format-message.svelte';
+  import FormatMessage from '$lib/elements/FormatMessage.svelte';
   import { Button, HStack, Modal, ModalBody, ModalFooter } from '@immich/ui';
   import { mdiCancel } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -19,7 +19,7 @@
         <FormatMessage key="admin.authentication_settings_reenable">
           {#snippet children({ message })}
             <a
-              href="https://immich.app/docs/administration/server-commands"
+              href="https://docs.immich.app/administration/server-commands"
               rel="noreferrer"
               target="_blank"
               class="underline"

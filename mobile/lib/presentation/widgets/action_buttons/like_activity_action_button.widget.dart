@@ -1,4 +1,5 @@
 import 'package:collection/collection.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
@@ -11,8 +12,9 @@ import 'package:immich_mobile/providers/infrastructure/current_album.provider.da
 import 'package:immich_mobile/providers/user.provider.dart';
 
 class LikeActivityActionButton extends ConsumerWidget {
-  const LikeActivityActionButton({super.key, this.menuItem = false});
+  const LikeActivityActionButton({super.key, this.iconOnly = false, this.menuItem = false});
 
+  final bool iconOnly;
   final bool menuItem;
 
   @override
@@ -48,6 +50,7 @@ class LikeActivityActionButton extends ConsumerWidget {
           iconData: liked != null ? Icons.favorite : Icons.favorite_border,
           label: "like".t(context: context),
           onPressed: () => onTap(liked),
+          iconOnly: iconOnly,
           menuItem: menuItem,
         );
       },
@@ -56,9 +59,10 @@ class LikeActivityActionButton extends ConsumerWidget {
       loading: () => BaseActionButton(
         iconData: Icons.favorite_border,
         label: "like".t(context: context),
+        iconOnly: iconOnly,
         menuItem: menuItem,
       ),
-      error: (error, stack) => Text("Error: $error"),
+      error: (error, stack) => Text('error_saving_image'.tr(args: [error.toString()])),
     );
   }
 }

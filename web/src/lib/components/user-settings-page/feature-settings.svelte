@@ -1,17 +1,15 @@
 <script lang="ts">
-  import {
-    notificationController,
-    NotificationType,
-  } from '$lib/components/shared-components/notification/notification';
   import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
+  import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
   import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
+  import { SettingInputFieldType } from '$lib/constants';
   import { preferences } from '$lib/stores/user.store';
+  import { handleError } from '$lib/utils/handle-error';
   import { AssetOrder, updateMyPreferences } from '@immich/sdk';
-  import { Button } from '@immich/ui';
+  import { Button, toastManager } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
-  import { handleError } from '../../utils/handle-error';
 
   // Albums
   let defaultAssetOrder = $state($preferences?.albums?.defaultAssetOrder ?? AssetOrder.Desc);
@@ -22,6 +20,7 @@
 
   // Memories
   let memoriesEnabled = $state($preferences?.memories?.enabled ?? true);
+  let memoriesDuration = $state($preferences?.memories?.duration ?? 5);
 
   // People
   let peopleEnabled = $state($preferences?.people?.enabled ?? false);
@@ -47,7 +46,7 @@
         userPreferencesUpdateDto: {
           albums: { defaultAssetOrder },
           folders: { enabled: foldersEnabled, sidebarWeb: foldersSidebar },
-          memories: { enabled: memoriesEnabled },
+          memories: { enabled: memoriesEnabled, duration: memoriesDuration },
           people: { enabled: peopleEnabled, sidebarWeb: peopleSidebar },
           ratings: { enabled: ratingsEnabled },
           sharedLinks: { enabled: sharedLinksEnabled, sidebarWeb: sharedLinkSidebar },
@@ -58,7 +57,7 @@
 
       $preferences = { ...data };
 
-      notificationController.show({ message: $t('saved_settings'), type: NotificationType.Info });
+      toastManager.success($t('saved_settings'));
     } catch (error) {
       handleError(error, $t('errors.unable_to_update_settings'));
     }
@@ -106,6 +105,14 @@
         <SettingAccordion key="memories" title={$t('time_based_memories')} subtitle={$t('photos_from_previous_years')}>
           <div class="ms-4 mt-6">
             <SettingSwitch title={$t('enable')} bind:checked={memoriesEnabled} />
+          </div>
+          <div class="ms-4 mt-6">
+            <SettingInputField
+              inputType={SettingInputFieldType.NUMBER}
+              label={$t('duration')}
+              description={$t('time_based_memories_duration')}
+              bind:value={memoriesDuration}
+            />
           </div>
         </SettingAccordion>
 

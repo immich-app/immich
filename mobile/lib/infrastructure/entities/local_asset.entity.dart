@@ -16,12 +16,18 @@ class LocalAssetEntity extends Table with DriftDefaultsMixin, AssetEntityMixin {
 
   IntColumn get orientation => integer().withDefault(const Constant(0))();
 
+  DateTimeColumn get adjustmentTime => dateTime().nullable()();
+
+  RealColumn get latitude => real().nullable()();
+
+  RealColumn get longitude => real().nullable()();
+
   @override
   Set<Column> get primaryKey => {id};
 }
 
-extension LocalAssetEntityDataDomainEx on LocalAssetEntityData {
-  LocalAsset toDto() => LocalAsset(
+extension LocalAssetEntityDataDomainExtension on LocalAssetEntityData {
+  LocalAsset toDto({String? remoteId}) => LocalAsset(
     id: id,
     name: name,
     checksum: checksum,
@@ -32,7 +38,10 @@ extension LocalAssetEntityDataDomainEx on LocalAssetEntityData {
     isFavorite: isFavorite,
     height: height,
     width: width,
-    remoteId: null,
+    remoteId: remoteId,
     orientation: orientation,
+    adjustmentTime: adjustmentTime,
+    latitude: latitude,
+    longitude: longitude,
   );
 }

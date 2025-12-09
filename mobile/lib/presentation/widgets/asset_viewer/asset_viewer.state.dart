@@ -1,15 +1,6 @@
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/providers/asset_viewer/video_player_controls_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-
-class ViewerOpenBottomSheetEvent extends Event {
-  const ViewerOpenBottomSheetEvent();
-}
-
-class ViewerReloadAssetEvent extends Event {
-  const ViewerReloadAssetEvent();
-}
 
 class AssetViewerState {
   final int backgroundOpacity;
@@ -68,21 +59,34 @@ class AssetViewerState {
       stackIndex.hashCode;
 }
 
-class AssetViewerStateNotifier extends AutoDisposeNotifier<AssetViewerState> {
+class AssetViewerStateNotifier extends Notifier<AssetViewerState> {
   @override
   AssetViewerState build() {
     return const AssetViewerState();
   }
 
+  void reset() {
+    state = const AssetViewerState();
+  }
+
   void setAsset(BaseAsset? asset) {
+    if (asset == state.currentAsset) {
+      return;
+    }
     state = state.copyWith(currentAsset: asset, stackIndex: 0);
   }
 
   void setOpacity(int opacity) {
+    if (opacity == state.backgroundOpacity) {
+      return;
+    }
     state = state.copyWith(backgroundOpacity: opacity, showingControls: opacity == 255 ? true : state.showingControls);
   }
 
   void setBottomSheet(bool showing) {
+    if (showing == state.showingBottomSheet) {
+      return;
+    }
     state = state.copyWith(showingBottomSheet: showing, showingControls: showing ? true : state.showingControls);
     if (showing) {
       ref.read(videoPlayerControlsProvider.notifier).pause();
@@ -90,6 +94,9 @@ class AssetViewerStateNotifier extends AutoDisposeNotifier<AssetViewerState> {
   }
 
   void setControls(bool isShowing) {
+    if (isShowing == state.showingControls) {
+      return;
+    }
     state = state.copyWith(showingControls: isShowing);
   }
 
@@ -98,10 +105,11 @@ class AssetViewerStateNotifier extends AutoDisposeNotifier<AssetViewerState> {
   }
 
   void setStackIndex(int index) {
+    if (index == state.stackIndex) {
+      return;
+    }
     state = state.copyWith(stackIndex: index);
   }
 }
 
-final assetViewerProvider = AutoDisposeNotifierProvider<AssetViewerStateNotifier, AssetViewerState>(
-  AssetViewerStateNotifier.new,
-);
+final assetViewerProvider = NotifierProvider<AssetViewerStateNotifier, AssetViewerState>(AssetViewerStateNotifier.new);

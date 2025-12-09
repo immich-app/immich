@@ -2,12 +2,16 @@ part of 'base_asset.model.dart';
 
 class LocalAsset extends BaseAsset {
   final String id;
-  final String? remoteId;
+  final String? remoteAssetId;
   final int orientation;
+
+  final DateTime? adjustmentTime;
+  final double? latitude;
+  final double? longitude;
 
   const LocalAsset({
     required this.id,
-    this.remoteId,
+    String? remoteId,
     required super.name,
     super.checksum,
     required super.type,
@@ -19,13 +23,24 @@ class LocalAsset extends BaseAsset {
     super.isFavorite = false,
     super.livePhotoVideoId,
     this.orientation = 0,
-  });
+    this.adjustmentTime,
+    this.latitude,
+    this.longitude,
+  }) : remoteAssetId = remoteId;
+
+  @override
+  String? get localId => id;
+
+  @override
+  String? get remoteId => remoteAssetId;
 
   @override
   AssetState get storage => remoteId == null ? AssetState.local : AssetState.merged;
 
   @override
   String get heroTag => '${id}_${remoteId ?? checksum}';
+
+  bool get hasCoordinates => latitude != null && longitude != null && latitude != 0 && longitude != 0;
 
   @override
   String toString() {
@@ -41,6 +56,9 @@ class LocalAsset extends BaseAsset {
    remoteId: ${remoteId ?? "<NA>"}
    isFavorite: $isFavorite,
   orientation: $orientation,
+  adjustmentTime: $adjustmentTime,
+  latitude: ${latitude ?? "<NA>"},
+  longitude: ${longitude ?? "<NA>"},
  }''';
   }
 
@@ -49,11 +67,23 @@ class LocalAsset extends BaseAsset {
   bool operator ==(Object other) {
     if (other is! LocalAsset) return false;
     if (identical(this, other)) return true;
-    return super == other && id == other.id && orientation == other.orientation;
+    return super == other &&
+        id == other.id &&
+        orientation == other.orientation &&
+        adjustmentTime == other.adjustmentTime &&
+        latitude == other.latitude &&
+        longitude == other.longitude;
   }
 
   @override
-  int get hashCode => super.hashCode ^ id.hashCode ^ remoteId.hashCode ^ orientation.hashCode;
+  int get hashCode =>
+      super.hashCode ^
+      id.hashCode ^
+      remoteId.hashCode ^
+      orientation.hashCode ^
+      adjustmentTime.hashCode ^
+      latitude.hashCode ^
+      longitude.hashCode;
 
   LocalAsset copyWith({
     String? id,
@@ -68,6 +98,9 @@ class LocalAsset extends BaseAsset {
     int? durationInSeconds,
     bool? isFavorite,
     int? orientation,
+    DateTime? adjustmentTime,
+    double? latitude,
+    double? longitude,
   }) {
     return LocalAsset(
       id: id ?? this.id,
@@ -82,6 +115,9 @@ class LocalAsset extends BaseAsset {
       durationInSeconds: durationInSeconds ?? this.durationInSeconds,
       isFavorite: isFavorite ?? this.isFavorite,
       orientation: orientation ?? this.orientation,
+      adjustmentTime: adjustmentTime ?? this.adjustmentTime,
+      latitude: latitude ?? this.latitude,
+      longitude: longitude ?? this.longitude,
     );
   }
 }

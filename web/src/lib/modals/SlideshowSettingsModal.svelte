@@ -2,6 +2,7 @@
   import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import { SettingInputFieldType } from '$lib/constants';
+  import type { RenderedOption } from '$lib/elements/Dropdown.svelte';
   import { Button, HStack, Modal, ModalBody, ModalFooter } from '@immich/ui';
   import {
     mdiArrowDownThin,
@@ -12,7 +13,6 @@
     mdiShuffle,
   } from '@mdi/js';
   import { t } from 'svelte-i18n';
-  import type { RenderedOption } from '../components/elements/dropdown.svelte';
   import SettingDropdown from '../components/shared-components/settings/setting-dropdown.svelte';
   import { SlideshowLook, SlideshowNavigation, slideshowStore } from '../stores/slideshow.store';
 
@@ -75,7 +75,7 @@
 
 <Modal size="small" title={$t('slideshow_settings')} onClose={() => onClose()}>
   <ModalBody>
-    <div class="flex flex-col gap-4 text-immich-primary dark:text-immich-dark-primary">
+    <div class="flex flex-col gap-4 text-primary">
       <SettingDropdown
         title={$t('direction')}
         options={Object.values(navigationOptions)}

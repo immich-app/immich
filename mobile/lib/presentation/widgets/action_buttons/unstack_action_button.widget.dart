@@ -36,7 +36,7 @@ class UnStackActionButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return BaseActionButton(
-      iconData: Icons.filter_none_rounded,
+      iconData: Icons.layers_clear_outlined,
       label: "unstack".t(context: context),
       onPressed: () => _onTap(context, ref),
     );

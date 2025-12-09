@@ -10,6 +10,7 @@ import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:immich_mobile/widgets/common/mesmerizing_sliver_app_bar.dart';
+import 'package:immich_mobile/utils/debug_print.dart';
 
 @RoutePage()
 class DriftPartnerDetailPage extends StatelessWidget {
@@ -68,7 +69,7 @@ class _InfoBoxState extends ConsumerState<_InfoBox> {
         _inTimeline = !_inTimeline;
       });
     } catch (error, stack) {
-      debugPrint("Failed to toggle in timeline: $error $stack");
+      dPrint(() => "Failed to toggle in timeline: $error $stack");
       ImmichToast.show(
         context: context,
         toastType: ToastType.error,

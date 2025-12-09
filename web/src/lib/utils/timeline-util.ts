@@ -1,4 +1,4 @@
-import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
+import type { TimelineAsset, ViewportTopMonth } from '$lib/managers/timeline-manager/types';
 import { locale } from '$lib/stores/preferences.store';
 import { getAssetRatio } from '$lib/utils/asset-utils';
 import { AssetTypeEnum, type AssetResponseDto } from '@immich/sdk';
@@ -23,11 +23,11 @@ export type TimelineDateTime = TimelineDate & {
   millisecond: number;
 };
 
-export type ScrubberListener = (
-  scrubberMonth: { year: number; month: number },
-  overallScrollPercent: number,
-  scrubberMonthScrollPercent: number,
-) => void | Promise<void>;
+export type ScrubberListener = (scrubberData: {
+  scrubberMonth: ViewportTopMonth;
+  overallScrollPercent: number;
+  scrubberMonthScrollPercent: number;
+}) => void | Promise<void>;
 
 // used for AssetResponseDto.dateTimeOriginal, amongst others
 export const fromISODateTime = (isoDateTime: string, timeZone: string): DateTime<true> =>
@@ -94,8 +94,11 @@ export const fromTimelinePlainYearMonth = (timelineYearMonth: TimelineYearMonth)
     { zone: 'local', locale: get(locale) },
   ) as DateTime<true>;
 
-export const toISOYearMonthUTC = ({ year, month }: TimelineYearMonth): string =>
-  `${year}-${month.toString().padStart(2, '0')}-01T00:00:00.000Z`;
+export const toISOYearMonthUTC = ({ year, month }: TimelineYearMonth): string => {
+  const yearFull = `${year}`.padStart(4, '0');
+  const monthFull = `${month}`.padStart(2, '0');
+  return `${yearFull}-${monthFull}-01T00:00:00.000Z`;
+};
 
 export function formatMonthGroupTitle(_date: DateTime): string {
   if (!_date.isValid) {
@@ -151,12 +154,6 @@ export function formatGroupTitle(_date: DateTime): string {
 export const getDateLocaleString = (date: DateTime, opts?: LocaleOptions): string =>
   date.toLocaleString(DateTime.DATE_MED_WITH_WEEKDAY, opts);
 
-export const getDateTimeOffsetLocaleString = (date: DateTime, opts?: LocaleOptions): string =>
-  date.toLocaleString(
-    { year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZoneName: 'longOffset' },
-    opts,
-  );
-
 export const toTimelineAsset = (unknownAsset: AssetResponseDto | TimelineAsset): TimelineAsset => {
   if (isTimelineAsset(unknownAsset)) {
     return unknownAsset;
@@ -190,11 +187,16 @@ export const toTimelineAsset = (unknownAsset: AssetResponseDto | TimelineAsset):
     city: city || null,
     country: country || null,
     people,
+    latitude: assetResponse.exifInfo?.latitude || null,
+    longitude: assetResponse.exifInfo?.longitude || null,
   };
 };
 
 export const isTimelineAsset = (unknownAsset: AssetResponseDto | TimelineAsset): unknownAsset is TimelineAsset =>
   (unknownAsset as TimelineAsset).ratio !== undefined;
+
+export const isTimelineAssets = (assets: AssetResponseDto[] | TimelineAsset[]): assets is TimelineAsset[] =>
+  assets.length === 0 || 'ratio' in assets[0];
 
 export const plainDateTimeCompare = (ascending: boolean, a: TimelineDateTime, b: TimelineDateTime) => {
   const [aDateTime, bDateTime] = ascending ? [a, b] : [b, a];

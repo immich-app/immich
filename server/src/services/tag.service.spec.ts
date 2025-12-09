@@ -192,12 +192,12 @@ describe(TagService.name, () => {
       mocks.access.tag.checkOwnerAccess.mockResolvedValue(new Set(['tag-1', 'tag-2']));
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1', 'asset-2', 'asset-3']));
       mocks.tag.upsertAssetIds.mockResolvedValue([
-        { tagsId: 'tag-1', assetsId: 'asset-1' },
-        { tagsId: 'tag-1', assetsId: 'asset-2' },
-        { tagsId: 'tag-1', assetsId: 'asset-3' },
-        { tagsId: 'tag-2', assetsId: 'asset-1' },
-        { tagsId: 'tag-2', assetsId: 'asset-2' },
-        { tagsId: 'tag-2', assetsId: 'asset-3' },
+        { tagId: 'tag-1', assetId: 'asset-1' },
+        { tagId: 'tag-1', assetId: 'asset-2' },
+        { tagId: 'tag-1', assetId: 'asset-3' },
+        { tagId: 'tag-2', assetId: 'asset-1' },
+        { tagId: 'tag-2', assetId: 'asset-2' },
+        { tagId: 'tag-2', assetId: 'asset-3' },
       ]);
       await expect(
         sut.bulkTagAssets(authStub.admin, { tagIds: ['tag-1', 'tag-2'], assetIds: ['asset-1', 'asset-2', 'asset-3'] }),
@@ -205,19 +205,19 @@ describe(TagService.name, () => {
         count: 6,
       });
       expect(mocks.tag.upsertAssetIds).toHaveBeenCalledWith([
-        { tagsId: 'tag-1', assetsId: 'asset-1' },
-        { tagsId: 'tag-1', assetsId: 'asset-2' },
-        { tagsId: 'tag-1', assetsId: 'asset-3' },
-        { tagsId: 'tag-2', assetsId: 'asset-1' },
-        { tagsId: 'tag-2', assetsId: 'asset-2' },
-        { tagsId: 'tag-2', assetsId: 'asset-3' },
+        { tagId: 'tag-1', assetId: 'asset-1' },
+        { tagId: 'tag-1', assetId: 'asset-2' },
+        { tagId: 'tag-1', assetId: 'asset-3' },
+        { tagId: 'tag-2', assetId: 'asset-1' },
+        { tagId: 'tag-2', assetId: 'asset-2' },
+        { tagId: 'tag-2', assetId: 'asset-3' },
       ]);
     });
   });
 
   describe('addAssets', () => {
     it('should handle invalid ids', async () => {
-      mocks.tag.getAssetIds.mockResolvedValue(new Set([]));
+      mocks.tag.getAssetIds.mockResolvedValue(new Set());
       await expect(sut.addAssets(authStub.admin, 'tag-1', { ids: ['asset-1'] })).resolves.toEqual([
         { id: 'asset-1', success: false, error: 'no_permission' },
       ]);

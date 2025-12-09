@@ -7,12 +7,9 @@ import { columns } from 'src/database';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { AssetType, AssetVisibility, UserStatus } from 'src/enum';
 import { DB } from 'src/schema';
-import { UserMetadataTable } from 'src/schema/tables/user-metadata.table';
 import { UserTable } from 'src/schema/tables/user.table';
 import { UserMetadata, UserMetadataItem } from 'src/types';
 import { asUuid } from 'src/utils/database';
-
-type Upsert = Insertable<UserMetadataTable>;
 
 export interface UserListFilter {
   id?: string;
@@ -211,12 +208,12 @@ export class UserRepository {
   async upsertMetadata<T extends keyof UserMetadata>(id: string, { key, value }: { key: T; value: UserMetadata[T] }) {
     await this.db
       .insertInto('user_metadata')
-      .values({ userId: id, key, value } as Upsert)
+      .values({ userId: id, key, value })
       .onConflict((oc) =>
         oc.columns(['userId', 'key']).doUpdateSet({
           key,
           value,
-        } as Upsert),
+        }),
       )
       .execute();
   }
@@ -287,6 +284,16 @@ export class UserRepository {
       .groupBy('user.id')
       .orderBy('user.createdAt', 'asc')
       .execute();
+  }
+
+  @GenerateSql()
+  async getCount(): Promise<number> {
+    const result = await this.db
+      .selectFrom('user')
+      .select((eb) => eb.fn.countAll().as('count'))
+      .where('user.deletedAt', 'is', null)
+      .executeTakeFirstOrThrow();
+    return Number(result.count);
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.NUMBER] })

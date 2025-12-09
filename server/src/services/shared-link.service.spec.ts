@@ -300,6 +300,7 @@ describe(SharedLinkService.name, () => {
       mocks.sharedLink.get.mockResolvedValue(_.cloneDeep(sharedLinkStub.individual));
       mocks.sharedLink.create.mockResolvedValue(sharedLinkStub.individual);
       mocks.sharedLink.update.mockResolvedValue(sharedLinkStub.individual);
+      mocks.sharedLinkAsset.remove.mockResolvedValue([assetStub.image.id]);
 
       await expect(
         sut.removeAssets(authStub.admin, 'link-1', { assetIds: [assetStub.image.id, 'asset-2'] }),
@@ -308,6 +309,7 @@ describe(SharedLinkService.name, () => {
         { assetId: 'asset-2', success: false, error: AssetIdErrorReason.NOT_FOUND },
       ]);
 
+      expect(mocks.sharedLinkAsset.remove).toHaveBeenCalledWith('link-1', [assetStub.image.id, 'asset-2']);
       expect(mocks.sharedLink.update).toHaveBeenCalledWith({ ...sharedLinkStub.individual, assets: [] });
     });
   });

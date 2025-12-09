@@ -7,11 +7,10 @@
 </script>
 
 <script lang="ts">
-  import { run } from 'svelte/legacy';
-
   import Combobox, { asComboboxOptions, asSelectedOption } from '$lib/components/shared-components/combobox.svelte';
   import { handlePromiseError } from '$lib/utils';
   import { getSearchSuggestions, SearchSuggestionType } from '@immich/sdk';
+  import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
 
   interface Props {
@@ -66,19 +65,16 @@
   }
   let countryFilter = $derived(filters.country);
   let stateFilter = $derived(filters.state);
-  run(() => {
-    handlePromiseError(updateCountries());
-  });
-  run(() => {
-    handlePromiseError(updateStates(countryFilter));
-  });
-  run(() => {
-    handlePromiseError(updateCities(countryFilter, stateFilter));
-  });
+
+  // TODO replace by async $derived, at the latest when it's in stable https://svelte.dev/docs/svelte/await-expressions
+  $effect(() => handlePromiseError(updateStates(countryFilter)));
+  $effect(() => handlePromiseError(updateCities(countryFilter, stateFilter)));
+
+  onMount(() => updateCountries());
 </script>
 
 <div id="location-selection">
-  <p class="immich-form-label">{$t('place').toUpperCase()}</p>
+  <p class="uppercase immich-form-label">{$t('place')}</p>
 
   <div class="grid grid-auto-fit-40 gap-5 mt-1">
     <div class="w-full">

@@ -1,9 +1,10 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/models/backup/backup_state.model.dart';
 import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
@@ -15,11 +16,11 @@ import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/providers/backup/ios_background_settings.provider.dart';
 import 'package:immich_mobile/providers/backup/manual_upload.provider.dart';
 import 'package:immich_mobile/providers/gallery_permission.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/memory.provider.dart';
 import 'package:immich_mobile/providers/notification_permission.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/tab.provider.dart';
-import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/services/background.service.dart';
@@ -33,6 +34,12 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
   final Ref _ref;
   bool _wasPaused = false;
 
+  // Add operation coordination
+  Completer<void>? _resumeOperation;
+  Completer<void>? _pauseOperation;
+
+  final _log = Logger("AppLifeCycleNotifier");
+
   AppLifeCycleNotifier(this._ref) : super(AppLifeCycleEnum.active);
 
   AppLifeCycleEnum getAppState() {
@@ -42,6 +49,32 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
   void handleAppResume() async {
     state = AppLifeCycleEnum.resumed;
 
+    // Prevent overlapping resume operations
+    if (_resumeOperation != null && !_resumeOperation!.isCompleted) {
+      await _resumeOperation!.future;
+      return;
+    }
+
+    // Cancel any ongoing pause operation
+    if (_pauseOperation != null && !_pauseOperation!.isCompleted) {
+      _pauseOperation!.complete();
+    }
+
+    _resumeOperation = Completer<void>();
+
+    try {
+      await _performResume();
+    } catch (e, stackTrace) {
+      _log.severe("Error during app resume", e, stackTrace);
+    } finally {
+      if (!_resumeOperation!.isCompleted) {
+        _resumeOperation!.complete();
+      }
+      _resumeOperation = null;
+    }
+  }
+
+  Future<void> _performResume() async {
     // no need to resume because app was never really paused
     if (!_wasPaused) return;
     _wasPaused = false;
@@ -52,9 +85,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
     if (isAuthenticated) {
       // switch endpoint if needed
       final endpoint = await _ref.read(authProvider.notifier).setOpenApiServiceEndpoint();
-      if (kDebugMode) {
-        debugPrint("Using server URL: $endpoint");
-      }
+      _log.info("Using server URL: $endpoint");
 
       if (!Store.isBetaTimelineEnabled) {
         final permission = _ref.watch(galleryPermissionNotifier);
@@ -80,39 +111,9 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
           break;
       }
     } else {
-      _ref.read(backupProvider.notifier).cancelBackup();
-
-      final backgroundManager = _ref.read(backgroundSyncProvider);
-      // Ensure proper cleanup before starting new background tasks
-      try {
-        await Future.wait([
-          Future(() async {
-            await backgroundManager.syncLocal();
-            Logger("AppLifeCycleNotifier").fine("Hashing assets after syncLocal");
-            // Check if app is still active before hashing
-            if ([AppLifeCycleEnum.resumed, AppLifeCycleEnum.active].contains(state)) {
-              await backgroundManager.hashAssets();
-            }
-          }),
-          backgroundManager.syncRemote(),
-        ]).then((_) async {
-          final isEnableBackup = _ref.read(appSettingsServiceProvider).getSetting(AppSettingsEnum.enableBackup);
-
-          if (isEnableBackup) {
-            final currentUser = _ref.read(currentUserProvider);
-            if (currentUser == null) {
-              return;
-            }
-
-            await _ref.read(driftBackupProvider.notifier).handleBackupResume(currentUser.id);
-          }
-        });
-      } catch (e, stackTrace) {
-        Logger("AppLifeCycleNotifier").severe("Error during background sync", e, stackTrace);
-      }
+      _ref.read(websocketProvider.notifier).connect();
+      await _handleBetaTimelineResume();
     }
-
-    _ref.read(websocketProvider.notifier).connect();
 
     await _ref.read(notificationPermissionProvider.notifier).getNotificationPermission();
 
@@ -125,15 +126,111 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
     }
   }
 
+  Future<void> _safeRun(Future<void> action, String debugName) async {
+    if (!_shouldContinueOperation()) {
+      return;
+    }
+
+    try {
+      await action;
+    } catch (e, stackTrace) {
+      _log.warning("Error during $debugName operation", e, stackTrace);
+    }
+  }
+
+  Future<void> _handleBetaTimelineResume() async {
+    _ref.read(backupProvider.notifier).cancelBackup();
+    unawaited(_ref.read(backgroundWorkerLockServiceProvider).lock());
+
+    // Give isolates time to complete any ongoing database transactions
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    final backgroundManager = _ref.read(backgroundSyncProvider);
+    final isAlbumLinkedSyncEnable = _ref.read(appSettingsServiceProvider).getSetting(AppSettingsEnum.syncAlbums);
+
+    try {
+      bool syncSuccess = false;
+      await Future.wait([
+        _safeRun(backgroundManager.syncLocal(full: CurrentPlatform.isAndroid ? true : false), "syncLocal"),
+        _safeRun(backgroundManager.syncRemote().then((success) => syncSuccess = success), "syncRemote"),
+      ]);
+      if (syncSuccess) {
+        await Future.wait([
+          _safeRun(backgroundManager.hashAssets(), "hashAssets").then((_) {
+            _resumeBackup();
+          }),
+          _resumeBackup(),
+        ]);
+      } else {
+        await _safeRun(backgroundManager.hashAssets(), "hashAssets");
+      }
+
+      if (isAlbumLinkedSyncEnable) {
+        await _safeRun(backgroundManager.syncLinkedAlbum(), "syncLinkedAlbum");
+      }
+    } catch (e, stackTrace) {
+      _log.severe("Error during background sync", e, stackTrace);
+    }
+  }
+
+  Future<void> _resumeBackup() async {
+    final isEnableBackup = _ref.read(appSettingsServiceProvider).getSetting(AppSettingsEnum.enableBackup);
+
+    if (isEnableBackup) {
+      final currentUser = Store.tryGet(StoreKey.currentUser);
+      if (currentUser != null) {
+        await _safeRun(
+          _ref.read(driftBackupProvider.notifier).handleBackupResume(currentUser.id),
+          "handleBackupResume",
+        );
+      }
+    }
+  }
+
+  // Helper method to check if operations should continue
+  bool _shouldContinueOperation() {
+    return [AppLifeCycleEnum.resumed, AppLifeCycleEnum.active].contains(state) &&
+        (_resumeOperation?.isCompleted == false || _resumeOperation == null);
+  }
+
   void handleAppInactivity() {
     state = AppLifeCycleEnum.inactive;
     // do not stop/clean up anything on inactivity: issued on every orientation change
   }
 
-  void handleAppPause() {
+  Future<void> handleAppPause() async {
     state = AppLifeCycleEnum.paused;
     _wasPaused = true;
 
+    // Prevent overlapping pause operations
+    if (_pauseOperation != null && !_pauseOperation!.isCompleted) {
+      await _pauseOperation!.future;
+      return;
+    }
+
+    // Cancel any ongoing resume operation
+    if (_resumeOperation != null && !_resumeOperation!.isCompleted) {
+      _resumeOperation!.complete();
+    }
+
+    _pauseOperation = Completer<void>();
+
+    try {
+      if (Store.isBetaTimelineEnabled) {
+        unawaited(_ref.read(backgroundWorkerLockServiceProvider).unlock());
+      }
+      await _performPause();
+    } catch (e, stackTrace) {
+      _log.severe("Error during app pause", e, stackTrace);
+    } finally {
+      if (!_pauseOperation!.isCompleted) {
+        _pauseOperation!.complete();
+      }
+      _pauseOperation = null;
+    }
+  }
+
+  Future<void> _performPause() async {
     if (_ref.read(authProvider).isAuthenticated) {
       if (!Store.isBetaTimelineEnabled) {
         // Do not cancel backup if manual upload is in progress
@@ -146,21 +243,21 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
     }
 
     try {
-      LogService.I.flush();
-    } catch (e) {
-      // Ignore flush errors during pause
-    }
+      await LogService.I.flush();
+    } catch (_) {}
   }
 
   Future<void> handleAppDetached() async {
     state = AppLifeCycleEnum.detached;
 
+    if (Store.isBetaTimelineEnabled) {
+      unawaited(_ref.read(backgroundWorkerLockServiceProvider).unlock());
+    }
+
     // Flush logs before closing database
     try {
-      LogService.I.flush();
-    } catch (e) {
-      // Ignore flush errors during shutdown
-    }
+      await LogService.I.flush();
+    } catch (_) {}
 
     // Close Isar database safely
     try {
@@ -168,9 +265,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
       if (isar != null && isar.isOpen) {
         await isar.close();
       }
-    } catch (e) {
-      // Ignore close errors during shutdown
-    }
+    } catch (_) {}
 
     if (Store.isBetaTimelineEnabled) {
       return;
@@ -179,9 +274,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
     // no guarantee this is called at all
     try {
       _ref.read(manualUploadProvider.notifier).cancelBackup();
-    } catch (e) {
-      // Ignore errors during shutdown
-    }
+    } catch (_) {}
   }
 
   void handleAppHidden() {
