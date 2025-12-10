@@ -200,10 +200,6 @@ export class AssetRepository {
   @GenerateSql({ params: [[DummyValue.UUID], DummyValue.NUMBER, DummyValue.STRING] })
   @Chunked()
   updateDateTimeOriginal(ids: string[], delta?: number, timeZone?: string) {
-    if (ids.length === 0) {
-      return;
-    }
-
     return this.db
       .updateTable('asset_exif')
       .set((eb) => ({
