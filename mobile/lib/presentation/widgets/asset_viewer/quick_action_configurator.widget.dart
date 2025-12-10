@@ -5,6 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/providers/infrastructure/viewer_quick_action_order.provider.dart';
 import 'package:immich_mobile/utils/action_button.utils.dart';
 import 'package:immich_mobile/utils/action_button_visuals.dart';
+import 'package:immich_mobile/widgets/common/reorderable_drag_drop_grid.dart';
 
 class QuickActionConfigurator extends ConsumerStatefulWidget {
   const QuickActionConfigurator({super.key});
@@ -108,9 +109,13 @@ class _QuickActionConfiguratorState extends ConsumerState<QuickActionConfigurato
                   final childAspectRatio = tileWidth / tileHeight;
                   final gridController = shouldScroll ? _scrollController : null;
 
-                  return _ReorderableGrid(
+                  return ReorderableDragDropGrid(
                     scrollController: gridController,
-                    items: _order,
+                    itemCount: _order.length,
+                    itemBuilder: (context, index) {
+                      final type = _order[index];
+                      return _QuickActionTile(index: index, type: type);
+                    },
                     onReorder: _onReorder,
                     crossAxisCount: crossAxisCount,
                     crossAxisSpacing: crossAxisSpacing,
@@ -137,247 +142,6 @@ class _QuickActionConfiguratorState extends ConsumerState<QuickActionConfigurato
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _ReorderableGrid extends StatefulWidget {
-  final ScrollController? scrollController;
-  final List<ActionButtonType> items;
-  final Function(int oldIndex, int newIndex) onReorder;
-  final int crossAxisCount;
-  final double crossAxisSpacing;
-  final double mainAxisSpacing;
-  final double childAspectRatio;
-  final bool shouldScroll;
-
-  const _ReorderableGrid({
-    required this.scrollController,
-    required this.items,
-    required this.onReorder,
-    required this.crossAxisCount,
-    required this.crossAxisSpacing,
-    required this.mainAxisSpacing,
-    required this.childAspectRatio,
-    required this.shouldScroll,
-  });
-
-  @override
-  State<_ReorderableGrid> createState() => _ReorderableGridState();
-}
-
-class _ReorderableGridState extends State<_ReorderableGrid> {
-  int? _draggingIndex;
-  late List<int> _itemOrder;
-  int? _lastHoveredIndex;
-  bool _snapNow = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _itemOrder = List.generate(widget.items.length, (index) => index);
-  }
-
-  @override
-  void didUpdateWidget(_ReorderableGrid oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.items.length != widget.items.length) {
-      _itemOrder = List.generate(widget.items.length, (index) => index);
-    }
-  }
-
-  void _updateHover(int draggedIndex, int targetIndex) {
-    if (draggedIndex == targetIndex || _draggingIndex == null) return;
-
-    setState(() {
-      _lastHoveredIndex = targetIndex;
-      // Temporarily reorder for visual feedback
-      final newOrder = List<int>.from(_itemOrder);
-      final draggedOrderIndex = newOrder.indexOf(draggedIndex);
-      final targetOrderIndex = newOrder.indexOf(targetIndex);
-
-      newOrder.removeAt(draggedOrderIndex);
-      newOrder.insert(targetOrderIndex, draggedIndex);
-      _itemOrder = newOrder;
-    });
-  }
-
-  void _handleDragEnd(int draggedIndex, int? targetIndex) {
-    // Use targetIndex if available, otherwise check if visual position changed
-    final effectiveTargetIndex =
-        targetIndex ??
-        (() {
-          final currentVisualIndex = _itemOrder.indexOf(draggedIndex);
-          // If visual position changed from original, use the item at current visual position
-          if (currentVisualIndex != draggedIndex) {
-            return _itemOrder[currentVisualIndex];
-          }
-          return null;
-        })();
-
-    if (effectiveTargetIndex != null && draggedIndex != effectiveTargetIndex) {
-      widget.onReorder(draggedIndex, effectiveTargetIndex);
-    }
-
-    // Trigger snap animation for all items
-    _armSnapNow();
-
-    setState(() {
-      _draggingIndex = null;
-      _lastHoveredIndex = null;
-      _itemOrder = List.generate(widget.items.length, (i) => i);
-    });
-  }
-
-  void _armSnapNow() {
-    setState(() => _snapNow = true);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      setState(() => _snapNow = false);
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final tileWidth =
-            (constraints.maxWidth - (widget.crossAxisSpacing * (widget.crossAxisCount - 1))) / widget.crossAxisCount;
-        final tileHeight = tileWidth / widget.childAspectRatio;
-        final rows = (_itemOrder.length / widget.crossAxisCount).ceil();
-        final totalHeight = rows * tileHeight + (rows - 1) * widget.mainAxisSpacing;
-
-        return SingleChildScrollView(
-          controller: widget.scrollController,
-          physics: widget.shouldScroll ? const BouncingScrollPhysics() : const NeverScrollableScrollPhysics(),
-          child: SizedBox(
-            width: constraints.maxWidth,
-            height: totalHeight,
-            child: Stack(
-              children: List.generate(widget.items.length, (index) {
-                final visualIndex = _itemOrder.indexOf(index);
-                final item = widget.items[index];
-                final isDragging = _draggingIndex == index;
-
-                // Calculate position
-                final row = visualIndex ~/ widget.crossAxisCount;
-                final col = visualIndex % widget.crossAxisCount;
-                final left = col * (tileWidth + widget.crossAxisSpacing);
-                final top = row * (tileHeight + widget.mainAxisSpacing);
-
-                return _AnimatedGridItem(
-                  key: ValueKey(index),
-                  index: index,
-                  item: item,
-                  isDragging: isDragging,
-                  snapNow: _snapNow,
-                  tileWidth: tileWidth,
-                  tileHeight: tileHeight,
-                  left: left,
-                  top: top,
-                  onDragStarted: () {
-                    setState(() {
-                      _draggingIndex = index;
-                      _lastHoveredIndex = index;
-                    });
-                  },
-                  onDragUpdate: (draggedIndex, targetIndex) {
-                    _updateHover(draggedIndex, targetIndex);
-                  },
-                  onDragCompleted: (draggedIndex) {
-                    _handleDragEnd(draggedIndex, _lastHoveredIndex);
-                  },
-                );
-              }),
-            ),
-          ),
-        );
-      },
-    );
-  }
-}
-
-class _AnimatedGridItem extends StatelessWidget {
-  final int index;
-  final ActionButtonType item;
-  final bool isDragging;
-  final bool snapNow;
-  final double tileWidth;
-  final double tileHeight;
-  final double left;
-  final double top;
-  final VoidCallback onDragStarted;
-  final Function(int draggedIndex, int targetIndex) onDragUpdate;
-  final Function(int draggedIndex) onDragCompleted;
-
-  const _AnimatedGridItem({
-    super.key,
-    required this.index,
-    required this.item,
-    required this.isDragging,
-    required this.snapNow,
-    required this.tileWidth,
-    required this.tileHeight,
-    required this.left,
-    required this.top,
-    required this.onDragStarted,
-    required this.onDragUpdate,
-    required this.onDragCompleted,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final Duration animDuration = snapNow ? Duration.zero : const Duration(milliseconds: 150);
-
-    return AnimatedPositioned(
-      duration: animDuration,
-      curve: Curves.easeInOut,
-      left: left,
-      top: top,
-      width: tileWidth,
-      height: tileHeight,
-      child: DragTarget<int>(
-        onWillAcceptWithDetails: (details) {
-          if (details.data != index) {
-            onDragUpdate(details.data, index);
-          }
-          return details.data != index;
-        },
-        builder: (context, candidateData, rejectedData) {
-          Widget child = _QuickActionTile(index: index, type: item);
-
-          if (isDragging) {
-            child = Opacity(opacity: 0.0, child: child);
-          }
-
-          return Draggable<int>(
-            data: index,
-            feedback: Material(
-              color: Colors.transparent,
-              child: SizedBox(
-                width: tileWidth,
-                height: tileHeight,
-                child: Opacity(
-                  opacity: 0.9,
-                  child: Transform.scale(
-                    scale: 1.05,
-                    child: _QuickActionTile(index: index, type: item),
-                  ),
-                ),
-              ),
-            ),
-            childWhenDragging: const SizedBox.shrink(),
-            onDragStarted: onDragStarted,
-            onDragCompleted: () {
-              onDragCompleted(index);
-            },
-            onDraggableCanceled: (_, __) {
-              onDragCompleted(index);
-            },
-            child: child,
-          );
-        },
       ),
     );
   }
