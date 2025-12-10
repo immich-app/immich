@@ -436,9 +436,7 @@ describe(AssetService.name, () => {
       });
       expect(mocks.asset.updateAll).toHaveBeenCalled();
       expect(mocks.asset.updateAllExif).toHaveBeenCalledWith(['asset-1'], { latitude: 0, longitude: 0 });
-      expect(mocks.job.queueAll).toHaveBeenCalledWith([
-        { name: JobName.SidecarWrite, data: { id: 'asset-1', latitude: 0, longitude: 0 } },
-      ]);
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([{ name: JobName.SidecarWrite, data: { id: 'asset-1' } }]);
     });
 
     it('should update exif table if latitude field is provided', async () => {
@@ -459,9 +457,7 @@ describe(AssetService.name, () => {
         latitude: 30,
         longitude: 50,
       });
-      expect(mocks.job.queueAll).toHaveBeenCalledWith([
-        { name: JobName.SidecarWrite, data: { id: 'asset-1', dateTimeOriginal, latitude: 30, longitude: 50 } },
-      ]);
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([{ name: JobName.SidecarWrite, data: { id: 'asset-1' } }]);
     });
 
     it('should update Assets table if duplicateId is provided as null', async () => {
@@ -491,18 +487,7 @@ describe(AssetService.name, () => {
         timeZone,
       });
       expect(mocks.asset.updateDateTimeOriginal).toHaveBeenCalledWith(['asset-1'], dateTimeRelative, timeZone);
-      expect(mocks.job.queueAll).toHaveBeenCalledWith([
-        {
-          name: JobName.SidecarWrite,
-          data: {
-            id: 'asset-1',
-            dateTimeOriginal: '2020-02-25T06:41:00.000+02:00',
-            description: undefined,
-            latitude: undefined,
-            longitude: undefined,
-          },
-        },
-      ]);
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([{ name: JobName.SidecarWrite, data: { id: 'asset-1' } }]);
     });
   });
 
