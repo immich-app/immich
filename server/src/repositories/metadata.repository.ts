@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { BinaryField, DefaultReadTaskOptions, ExifTool, Tags } from 'exiftool-vendored';
 import geotz from 'geo-tz';
 import { LoggingRepository } from 'src/repositories/logging.repository';
-import { mimeTypes } from 'src/utils/mime-types';
 
 interface ExifDuration {
   Value: number;
@@ -82,6 +81,7 @@ export class MetadataRepository {
     inferTimezoneFromDatestamps: true,
     inferTimezoneFromTimeStamp: true,
     useMWG: true,
+    taskTimeoutMillis: 1 * 60 * 1000,
     numericTags: [...DefaultReadTaskOptions.numericTags, 'FocalLength', 'FileSize'],
     /* eslint unicorn/no-array-callback-reference: off, unicorn/no-array-method-this-argument: off */
     geoTz: (lat, lon) => geotz.find(lat, lon)[0],
@@ -104,8 +104,7 @@ export class MetadataRepository {
   }
 
   readTags(path: string): Promise<ImmichTags> {
-    const args = mimeTypes.isVideo(path) ? ['-ee'] : [];
-    return this.exiftool.read(path, args).catch((error) => {
+    return this.exiftool.read(path).catch((error) => {
       this.logger.warn(`Error reading exif data (${path}): ${error}\n${error?.stack}`);
       return {};
     }) as Promise<ImmichTags>;
