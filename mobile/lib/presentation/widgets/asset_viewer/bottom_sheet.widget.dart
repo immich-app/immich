@@ -4,7 +4,6 @@ import 'package:auto_route/auto_route.dart';
 import 'package:collection/collection.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
@@ -17,6 +16,7 @@ import 'package:immich_mobile/presentation/widgets/album/album_tile.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/bottom_sheet/sheet_location_details.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/bottom_sheet/sheet_people_details.widget.dart';
+import 'package:immich_mobile/presentation/widgets/asset_viewer/rating_bar.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/sheet_tile.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
@@ -56,12 +56,6 @@ class AssetDetailBottomSheet extends ConsumerWidget {
     final currentAlbum = ref.watch(currentRemoteAlbumProvider);
     final isArchived = asset is RemoteAsset && asset.visibility == AssetVisibility.archive;
     final advancedTroubleshooting = ref.watch(settingsProvider.notifier).get(Setting.advancedTroubleshooting);
-    final isRatingEnabled = ref
-        .watch(userMetadataProvider(ref.watch(currentUserProvider)?.id ?? ''))
-        .maybeWhen(
-          data: (metadataList) => metadataList.any((meta) => meta.preferences?.ratingsEnabled ?? false),
-          orElse: () => false,
-        );
 
     final buttonContext = ActionButtonContext(
       asset: asset,
@@ -79,7 +73,7 @@ class AssetDetailBottomSheet extends ConsumerWidget {
 
     return BaseBottomSheet(
       actions: actions,
-      slivers: [_AssetDetailBottomSheet(isRatingEnabled: isRatingEnabled)],
+      slivers: [const _AssetDetailBottomSheet()],
       controller: controller,
       initialChildSize: initialChildSize,
       minChildSize: 0.1,
@@ -93,9 +87,7 @@ class AssetDetailBottomSheet extends ConsumerWidget {
 }
 
 class _AssetDetailBottomSheet extends ConsumerWidget {
-  final bool isRatingEnabled;
-
-  const _AssetDetailBottomSheet({required this.isRatingEnabled});
+  const _AssetDetailBottomSheet();
 
   String _getDateTime(BuildContext ctx, BaseAsset asset, ExifInfo? exifInfo) {
     DateTime dateTime = asset.createdAt.toLocal();
@@ -243,6 +235,9 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
     final cameraTitle = _getCameraInfoTitle(exifInfo);
     final lensTitle = exifInfo?.lens != null && exifInfo!.lens!.isNotEmpty ? exifInfo.lens : null;
     final isOwner = ref.watch(currentUserProvider)?.id == (asset is RemoteAsset ? asset.ownerId : null);
+    final isRatingEnabled = ref
+        .watch(userMetadataPreferencesProvider(ref.watch(currentUserProvider)?.id ?? ''))
+        .maybeWhen(data: (prefs) => prefs?.ratingsEnabled ?? false, orElse: () => false);
 
     // Build file info tile based on asset type
     Widget buildFileInfoTile() {
@@ -350,11 +345,11 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(height: 8),
-                RatingBar.builder(
+                RatingBar(
                   initialRating: exifInfo?.rating?.toDouble() ?? 0,
-                  itemBuilder: (context, _) => Icon(Icons.star, color: context.themeData.colorScheme.primary),
+                  filledColor: context.themeData.colorScheme.primary,
+                  unfilledColor: context.themeData.colorScheme.onSurface.withAlpha(100),
                   itemSize: 32,
-                  glow: false,
                   onRatingUpdate: (rating) async {
                     await ref.read(actionProvider.notifier).updateRating(ActionSource.viewer, rating.round());
                   },

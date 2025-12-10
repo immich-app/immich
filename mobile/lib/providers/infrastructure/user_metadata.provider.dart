@@ -11,3 +11,9 @@ final userMetadataProvider = FutureProvider.family<List<UserMetadata>, String>((
   final repository = ref.watch(userMetadataRepository);
   return repository.getUserMetadata(userId);
 });
+
+final userMetadataPreferencesProvider = FutureProvider.family<Preferences?, String>((ref, String userId) async {
+  final metadataList = await ref.watch(userMetadataProvider(userId).future);
+  final metadataWithPrefs = metadataList.firstWhere((meta) => meta.preferences != null);
+  return metadataWithPrefs.preferences;
+});
