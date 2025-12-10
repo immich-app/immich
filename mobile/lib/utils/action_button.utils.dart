@@ -30,6 +30,7 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/trash_action_b
 import 'package:immich_mobile/presentation/widgets/action_buttons/unarchive_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/unstack_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/upload_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/reorder_buttons_action_button.widget.dart';
 import 'package:immich_mobile/routing/router.dart';
 
 class ActionButtonContext {
@@ -219,6 +220,7 @@ class ViewerKebabMenuButtonContext {
 enum ViewerKebabMenuButtonType {
   openInfo,
   viewInTimeline,
+  reorderButtons,
   cast,
   download;
 
@@ -228,6 +230,7 @@ enum ViewerKebabMenuButtonType {
   int get group => switch (this) {
     ViewerKebabMenuButtonType.openInfo => 0,
     ViewerKebabMenuButtonType.viewInTimeline => 1,
+    ViewerKebabMenuButtonType.reorderButtons => 1,
     ViewerKebabMenuButtonType.cast => 1,
     ViewerKebabMenuButtonType.download => 1,
   };
@@ -244,6 +247,7 @@ enum ViewerKebabMenuButtonType {
             context.isOwner,
       ViewerKebabMenuButtonType.cast => context.isCasting || context.asset.hasRemote,
       ViewerKebabMenuButtonType.download => context.asset.isRemoteOnly,
+      ViewerKebabMenuButtonType.reorderButtons => true,
     };
   }
 
@@ -270,6 +274,7 @@ enum ViewerKebabMenuButtonType {
       ),
       ViewerKebabMenuButtonType.cast => const CastActionButton(menuItem: true),
       ViewerKebabMenuButtonType.download => const DownloadActionButton(source: ActionSource.viewer, menuItem: true),
+      ViewerKebabMenuButtonType.reorderButtons => ReorderButtonsActionButton(originalTheme: context.originalTheme),
     };
   }
 }

@@ -10,7 +10,6 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/favorite_actio
 import 'package:immich_mobile/presentation/widgets/action_buttons/motion_photo_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/unfavorite_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
-import 'package:immich_mobile/presentation/widgets/asset_viewer/quick_action_configurator.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/viewer_kebab_menu.widget.dart';
 import 'package:immich_mobile/providers/activity.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
@@ -49,21 +48,6 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
     }
 
     final originalTheme = context.themeData;
-
-    Future<void> openConfigurator() async {
-      final viewerNotifier = ref.read(assetViewerProvider.notifier);
-
-      viewerNotifier.setBottomSheet(true);
-
-      await showModalBottomSheet<void>(
-        context: context,
-        isScrollControlled: true,
-        enableDrag: false,
-        builder: (sheetContext) => const FractionallySizedBox(heightFactor: 0.75, child: QuickActionConfigurator()),
-      ).whenComplete(() {
-        viewerNotifier.setBottomSheet(false);
-      });
-    }
 
     final actions = <Widget>[
       if (asset.isMotionPhoto) const MotionPhotoActionButton(iconOnly: true),
