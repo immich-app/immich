@@ -478,6 +478,21 @@ describe('/asset', () => {
       expect(status).toEqual(200);
     });
 
+    it('should accept hour only offset on update asset', async () => {
+      const { status, body } = await request(app)
+        .put(`/assets/${user1Assets[0].id}`)
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .send({ dateTimeOriginal: '2025-09-23 02:28:00-04' });
+
+      expect(body).toMatchObject({
+        id: user1Assets[0].id,
+        exifInfo: expect.objectContaining({
+          dateTimeOriginal: '2025-09-23T06:28:00+00:00',
+        }),
+      });
+      expect(status).toEqual(200);
+    });
+
     it('should not allow linking two photos', async () => {
       const { status, body } = await request(app)
         .put(`/assets/${user1Assets[0].id}`)
@@ -840,6 +855,21 @@ describe('/asset', () => {
           dateTimeOriginal: '2023-11-19T01:10:00+00:00',
         }),
       });
+    });
+
+    it('should accept hour only offset on bulk update', async () => {
+      const { status } = await request(app)
+        .put(`/assets/`)
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .send({ ids: [user1Assets[1].id], dateTimeOriginal: '2025-09-23T02:33:00+09' });
+
+      expect(status).toEqual(204);
+
+      await utils.waitForQueueFinish(admin.accessToken, 'sidecar');
+
+      const asset = await utils.getAssetInfo(user1.accessToken, user1Assets[1].id);
+      expect(new Date(asset.exifInfo!.dateTimeOriginal!).getTime())
+        .toBe(new Date('2025-09-22T17:33:00Z').getTime());
     });
   });
 
