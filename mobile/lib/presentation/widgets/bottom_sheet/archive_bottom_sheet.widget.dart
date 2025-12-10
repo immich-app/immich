@@ -47,10 +47,8 @@ class ArchiveBottomSheet extends ConsumerWidget {
           if (multiselect.selectedAssets.length > 1) const StackActionButton(source: ActionSource.timeline),
           if (multiselect.hasStacked) const UnStackActionButton(source: ActionSource.timeline),
         ],
-        if (multiselect.hasLocal) ...[
-          const DeleteLocalActionButton(source: ActionSource.timeline),
-          const UploadActionButton(source: ActionSource.timeline),
-        ],
+        if (multiselect.hasLocal || multiselect.hasMerged) const DeleteLocalActionButton(source: ActionSource.timeline),
+        if (multiselect.hasLocal) const UploadActionButton(source: ActionSource.timeline),
       ],
     );
   }
