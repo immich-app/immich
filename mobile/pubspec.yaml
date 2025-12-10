@@ -38,7 +38,6 @@ dependencies:
   flutter_udid: ^4.0.0
   flutter_web_auth_2: ^5.0.0-alpha.0
   fluttertoast: ^8.2.12
-  flutter_reorderable_grid_view: ^5.5.2
   geolocator: ^14.0.2
   home_widget: ^0.8.1
   hooks_riverpod: ^2.6.1

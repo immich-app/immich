@@ -1,7 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_reorderable_grid_view/widgets/reorderable_builder.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/providers/infrastructure/viewer_quick_action_order.provider.dart';
 import 'package:immich_mobile/utils/action_button.utils.dart';
@@ -32,9 +31,10 @@ class _QuickActionConfiguratorState extends ConsumerState<QuickActionConfigurato
     super.dispose();
   }
 
-  void _onReorder(ReorderedListFunction<ActionButtonType> reorder) {
+  void _onReorder(int oldIndex, int newIndex) {
     setState(() {
-      _order = reorder(_order);
+      final item = _order.removeAt(oldIndex);
+      _order.insert(newIndex, item);
       _hasLocalChanges = true;
     });
   }
@@ -101,31 +101,22 @@ class _QuickActionConfiguratorState extends ConsumerState<QuickActionConfigurato
                   final rows = (_order.length / crossAxisCount).ceil().clamp(1, 4);
                   final naturalHeight = rows * tileHeight + (rows - 1) * mainAxisSpacing;
                   final shouldScroll = naturalHeight > constraints.maxHeight;
-                  final horizontalPadding = 8.0; // matches GridView padding
+                  final horizontalPadding = 8.0;
                   final tileWidth =
                       (constraints.maxWidth - horizontalPadding - (crossAxisSpacing * (crossAxisCount - 1))) /
                       crossAxisCount;
                   final childAspectRatio = tileWidth / tileHeight;
                   final gridController = shouldScroll ? _scrollController : null;
 
-                  return ReorderableBuilder<ActionButtonType>(
-                    onReorder: _onReorder,
-                    enableLongPress: false,
+                  return _ReorderableGrid(
                     scrollController: gridController,
-                    children: [
-                      for (var i = 0; i < _order.length; i++)
-                        _QuickActionTile(key: ValueKey(_order[i].name), index: i, type: _order[i]),
-                    ],
-                    builder: (children) => GridView.count(
-                      controller: gridController,
-                      crossAxisCount: crossAxisCount,
-                      crossAxisSpacing: crossAxisSpacing,
-                      mainAxisSpacing: mainAxisSpacing,
-                      // padding: const EdgeInsets.fromLTRB(4, 0, 4, 12),
-                      physics: shouldScroll ? const BouncingScrollPhysics() : const NeverScrollableScrollPhysics(),
-                      childAspectRatio: childAspectRatio,
-                      children: children,
-                    ),
+                    items: _order,
+                    onReorder: _onReorder,
+                    crossAxisCount: crossAxisCount,
+                    crossAxisSpacing: crossAxisSpacing,
+                    mainAxisSpacing: mainAxisSpacing,
+                    childAspectRatio: childAspectRatio,
+                    shouldScroll: shouldScroll,
                   );
                 },
               ),
@@ -151,11 +142,113 @@ class _QuickActionConfiguratorState extends ConsumerState<QuickActionConfigurato
   }
 }
 
+class _ReorderableGrid extends StatefulWidget {
+  final ScrollController? scrollController;
+  final List<ActionButtonType> items;
+  final Function(int oldIndex, int newIndex) onReorder;
+  final int crossAxisCount;
+  final double crossAxisSpacing;
+  final double mainAxisSpacing;
+  final double childAspectRatio;
+  final bool shouldScroll;
+
+  const _ReorderableGrid({
+    required this.scrollController,
+    required this.items,
+    required this.onReorder,
+    required this.crossAxisCount,
+    required this.crossAxisSpacing,
+    required this.mainAxisSpacing,
+    required this.childAspectRatio,
+    required this.shouldScroll,
+  });
+
+  @override
+  State<_ReorderableGrid> createState() => _ReorderableGridState();
+}
+
+class _ReorderableGridState extends State<_ReorderableGrid> {
+  int? _draggingIndex;
+  int? _hoveringIndex;
+
+  @override
+  Widget build(BuildContext context) {
+    return GridView.builder(
+      controller: widget.scrollController,
+      physics: widget.shouldScroll ? const BouncingScrollPhysics() : const NeverScrollableScrollPhysics(),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: widget.crossAxisCount,
+        crossAxisSpacing: widget.crossAxisSpacing,
+        mainAxisSpacing: widget.mainAxisSpacing,
+        childAspectRatio: widget.childAspectRatio,
+      ),
+      itemCount: widget.items.length,
+      itemBuilder: (context, index) {
+        final item = widget.items[index];
+        final isDragging = _draggingIndex == index;
+        final isHovering = _hoveringIndex == index;
+
+        return DragTarget<int>(
+          onWillAcceptWithDetails: (details) {
+            if (details.data != index) {
+              setState(() => _hoveringIndex = index);
+            }
+            return details.data != index;
+          },
+          onLeave: (_) {
+            setState(() => _hoveringIndex = null);
+          },
+          onAcceptWithDetails: (details) {
+            final oldIndex = details.data;
+            if (oldIndex != index) {
+              widget.onReorder(oldIndex, index);
+            }
+            setState(() {
+              _hoveringIndex = null;
+              _draggingIndex = null;
+            });
+          },
+          builder: (context, candidateData, rejectedData) {
+            return LongPressDraggable<int>(
+              data: index,
+              feedback: Material(
+                color: Colors.transparent,
+                child: Opacity(
+                  opacity: 0.8,
+                  child: Transform.scale(
+                    scale: 1.1,
+                    child: _QuickActionTile(index: index, type: item),
+                  ),
+                ),
+              ),
+              childWhenDragging: Opacity(
+                opacity: 0.3,
+                child: _QuickActionTile(index: index, type: item),
+              ),
+              onDragStarted: () {
+                setState(() => _draggingIndex = index);
+              },
+              onDragEnd: (_) {
+                setState(() => _draggingIndex = null);
+              },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                transform: isHovering && !isDragging ? Matrix4.translationValues(0, -4, 0) : Matrix4.identity(),
+                child: _QuickActionTile(index: index, type: item),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
 class _QuickActionTile extends StatelessWidget {
   final int index;
   final ActionButtonType type;
 
-  const _QuickActionTile({super.key, required this.index, required this.type});
+  const _QuickActionTile({required this.index, required this.type});
 
   @override
   Widget build(BuildContext context) {
