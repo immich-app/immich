@@ -169,77 +169,185 @@ class _ReorderableGrid extends StatefulWidget {
 
 class _ReorderableGridState extends State<_ReorderableGrid> {
   int? _draggingIndex;
-  int? _hoveringIndex;
+  late List<int> _itemOrder;
+
+  @override
+  void initState() {
+    super.initState();
+    _itemOrder = List.generate(widget.items.length, (index) => index);
+  }
+
+  @override
+  void didUpdateWidget(_ReorderableGrid oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.items.length != widget.items.length) {
+      _itemOrder = List.generate(widget.items.length, (index) => index);
+    }
+  }
+
+  void _updateHover(int draggedIndex, int targetIndex) {
+    if (draggedIndex == targetIndex || _draggingIndex == null) return;
+
+    setState(() {
+      // Temporarily reorder for visual feedback
+      final newOrder = List<int>.from(_itemOrder);
+      final draggedOrderIndex = newOrder.indexOf(draggedIndex);
+      final targetOrderIndex = newOrder.indexOf(targetIndex);
+
+      newOrder.removeAt(draggedOrderIndex);
+      newOrder.insert(targetOrderIndex, draggedIndex);
+      _itemOrder = newOrder;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    return GridView.builder(
-      controller: widget.scrollController,
-      physics: widget.shouldScroll ? const BouncingScrollPhysics() : const NeverScrollableScrollPhysics(),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: widget.crossAxisCount,
-        crossAxisSpacing: widget.crossAxisSpacing,
-        mainAxisSpacing: widget.mainAxisSpacing,
-        childAspectRatio: widget.childAspectRatio,
-      ),
-      itemCount: widget.items.length,
-      itemBuilder: (context, index) {
-        final item = widget.items[index];
-        final isDragging = _draggingIndex == index;
-        final isHovering = _hoveringIndex == index;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final tileWidth =
+            (constraints.maxWidth - (widget.crossAxisSpacing * (widget.crossAxisCount - 1))) / widget.crossAxisCount;
+        final tileHeight = tileWidth / widget.childAspectRatio;
+        final rows = (_itemOrder.length / widget.crossAxisCount).ceil();
+        final totalHeight = rows * tileHeight + (rows - 1) * widget.mainAxisSpacing;
 
-        return DragTarget<int>(
-          onWillAcceptWithDetails: (details) {
-            if (details.data != index) {
-              setState(() => _hoveringIndex = index);
-            }
-            return details.data != index;
-          },
-          onLeave: (_) {
-            setState(() => _hoveringIndex = null);
-          },
-          onAcceptWithDetails: (details) {
-            final oldIndex = details.data;
-            if (oldIndex != index) {
-              widget.onReorder(oldIndex, index);
-            }
-            setState(() {
-              _hoveringIndex = null;
-              _draggingIndex = null;
-            });
-          },
-          builder: (context, candidateData, rejectedData) {
-            return LongPressDraggable<int>(
-              data: index,
-              feedback: Material(
-                color: Colors.transparent,
+        return SingleChildScrollView(
+          controller: widget.scrollController,
+          physics: widget.shouldScroll ? const BouncingScrollPhysics() : const NeverScrollableScrollPhysics(),
+          child: SizedBox(
+            width: constraints.maxWidth,
+            height: totalHeight,
+            child: Stack(
+              children: List.generate(widget.items.length, (index) {
+                final visualIndex = _itemOrder.indexOf(index);
+                final item = widget.items[index];
+                final isDragging = _draggingIndex == index;
+
+                // Calculate position
+                final row = visualIndex ~/ widget.crossAxisCount;
+                final col = visualIndex % widget.crossAxisCount;
+                final left = col * (tileWidth + widget.crossAxisSpacing);
+                final top = row * (tileHeight + widget.mainAxisSpacing);
+
+                return _AnimatedGridItem(
+                  key: ValueKey(index),
+                  index: index,
+                  item: item,
+                  isDragging: isDragging,
+                  tileWidth: tileWidth,
+                  tileHeight: tileHeight,
+                  left: left,
+                  top: top,
+                  onDragStarted: () {
+                    setState(() => _draggingIndex = index);
+                  },
+                  onDragUpdate: (draggedIndex, targetIndex) {
+                    _updateHover(draggedIndex, targetIndex);
+                  },
+                  onDragEnd: (draggedIndex, targetIndex) {
+                    if (draggedIndex != targetIndex) {
+                      final oldVisualIndex = _itemOrder.indexOf(draggedIndex);
+                      final newVisualIndex = _itemOrder.indexOf(targetIndex);
+                      widget.onReorder(oldVisualIndex, newVisualIndex);
+                    }
+                    setState(() {
+                      _draggingIndex = null;
+                      _itemOrder = List.generate(widget.items.length, (i) => i);
+                    });
+                  },
+                  onDragCanceled: () {
+                    setState(() {
+                      _draggingIndex = null;
+                      _itemOrder = List.generate(widget.items.length, (i) => i);
+                    });
+                  },
+                );
+              }),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _AnimatedGridItem extends StatelessWidget {
+  final int index;
+  final ActionButtonType item;
+  final bool isDragging;
+  final double tileWidth;
+  final double tileHeight;
+  final double left;
+  final double top;
+  final VoidCallback onDragStarted;
+  final Function(int draggedIndex, int targetIndex) onDragUpdate;
+  final Function(int draggedIndex, int targetIndex) onDragEnd;
+  final VoidCallback onDragCanceled;
+
+  const _AnimatedGridItem({
+    super.key,
+    required this.index,
+    required this.item,
+    required this.isDragging,
+    required this.tileWidth,
+    required this.tileHeight,
+    required this.left,
+    required this.top,
+    required this.onDragStarted,
+    required this.onDragUpdate,
+    required this.onDragEnd,
+    required this.onDragCanceled,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedPositioned(
+      duration: const Duration(milliseconds: 200),
+      curve: Curves.easeInOut,
+      left: left,
+      top: top,
+      width: tileWidth,
+      height: tileHeight,
+      child: DragTarget<int>(
+        onWillAcceptWithDetails: (details) {
+          if (details.data != index) {
+            onDragUpdate(details.data, index);
+          }
+          return details.data != index;
+        },
+        onAcceptWithDetails: (details) {
+          onDragEnd(details.data, index);
+        },
+        builder: (context, candidateData, rejectedData) {
+          Widget child = _QuickActionTile(index: index, type: item);
+
+          if (isDragging) {
+            child = Opacity(opacity: 0.0, child: child);
+          }
+
+          return Draggable<int>(
+            data: index,
+            feedback: Material(
+              color: Colors.transparent,
+              child: SizedBox(
+                width: tileWidth,
+                height: tileHeight,
                 child: Opacity(
-                  opacity: 0.8,
+                  opacity: 0.9,
                   child: Transform.scale(
-                    scale: 1.1,
+                    scale: 1.05,
                     child: _QuickActionTile(index: index, type: item),
                   ),
                 ),
               ),
-              childWhenDragging: Opacity(
-                opacity: 0.3,
-                child: _QuickActionTile(index: index, type: item),
-              ),
-              onDragStarted: () {
-                setState(() => _draggingIndex = index);
-              },
-              onDragEnd: (_) {
-                setState(() => _draggingIndex = null);
-              },
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                transform: isHovering && !isDragging ? Matrix4.translationValues(0, -4, 0) : Matrix4.identity(),
-                child: _QuickActionTile(index: index, type: item),
-              ),
-            );
-          },
-        );
-      },
+            ),
+            childWhenDragging: const SizedBox.shrink(),
+            onDragStarted: onDragStarted,
+            onDragEnd: (_) => onDragCanceled(),
+            onDraggableCanceled: (_, __) => onDragCanceled(),
+            child: child,
+          );
+        },
+      ),
     );
   }
 }
