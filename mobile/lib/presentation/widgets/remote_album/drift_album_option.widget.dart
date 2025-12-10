@@ -144,7 +144,7 @@ class DriftRemoteAlbumOption extends ConsumerWidget {
       ],
       builder: (context, controller, child) {
         return IconButton(
-          icon: const Icon(Icons.more_vert_rounded),
+          icon: const Icon(Icons.more_vert_rounded, color: Colors.white),
           onPressed: () => controller.isOpen ? controller.close() : controller.open(),
         );
       },
