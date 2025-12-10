@@ -109,12 +109,12 @@ class DriftRemoteAlbumOption extends ConsumerWidget {
     }
 
     if (onDeleteAlbum != null) {
-      final deleteColor = context.isDarkTheme ? Colors.red[400] : Colors.red[800];
+      menuChildren.add(const Divider(height: 1));
       menuChildren.add(
         BaseActionButton(
           label: 'delete_album'.t(context: context),
           iconData: Icons.delete,
-          iconColor: deleteColor,
+          iconColor: context.isDarkTheme ? Colors.red[400] : Colors.red[800],
           onPressed: onDeleteAlbum,
           menuItem: true,
         ),
