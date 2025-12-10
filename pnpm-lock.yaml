@@ -425,8 +425,8 @@ importers:
         specifier: ^1.4.7
         version: 1.4.7
       cron:
-        specifier: 4.3.5
-        version: 4.3.5
+        specifier: 4.3.3
+        version: 4.3.3
       exiftool-vendored:
         specifier: ^34.0.0
         version: 34.0.0
@@ -6081,10 +6081,6 @@ packages:
 
   cron@4.3.3:
     resolution: {integrity: sha512-B/CJj5yL3sjtlun6RtYHvoSB26EmQ2NUmhq9ZiJSyKIM4K/fqfh9aelDFlIayD2YMeFZqWLi9hHV+c+pq2Djkw==}
-    engines: {node: '>=18.x'}
-
-  cron@4.3.5:
-    resolution: {integrity: sha512-hKPP7fq1+OfyCqoePkKfVq7tNAdFwiQORr4lZUHwrf0tebC65fYEeWgOrXOL6prn1/fegGOdTfrM6e34PJfksg==}
     engines: {node: '>=18.x'}
 
   cross-spawn@7.0.6:
@@ -18211,11 +18207,6 @@ snapshots:
       luxon: 3.7.2
 
   cron@4.3.3:
-    dependencies:
-      '@types/luxon': 3.7.1
-      luxon: 3.7.2
-
-  cron@4.3.5:
     dependencies:
       '@types/luxon': 3.7.1
       luxon: 3.7.2
