@@ -7,7 +7,7 @@ class ImmichCloseButton extends StatelessWidget {
   final ImmichVariant variant;
   final ImmichColor color;
 
-  ImmichCloseButton({
+  const ImmichCloseButton({
     super.key,
     this.onTap,
     this.color = ImmichColor.primary,

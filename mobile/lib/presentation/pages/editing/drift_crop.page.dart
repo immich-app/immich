@@ -31,7 +31,7 @@ class DriftCropImagePage extends HookWidget {
       appBar: AppBar(
         backgroundColor: context.scaffoldBackgroundColor,
         title: Text("crop".tr()),
-        leading: ImmichCloseButton(),
+        leading: const ImmichCloseButton(),
         actions: [
           ImmichIconButton(
             icon: Icons.done_rounded,
