@@ -41,6 +41,7 @@
     onclick={handleChangeDate}
     title={isOwner ? $t('edit_date') : ''}
     class:hover:text-primary={isOwner}
+    data-testid="detail-panel-edit-date-button"
   >
     <div class="flex gap-4">
       <div>
