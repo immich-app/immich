@@ -170,6 +170,8 @@ class _ReorderableGrid extends StatefulWidget {
 class _ReorderableGridState extends State<_ReorderableGrid> {
   int? _draggingIndex;
   late List<int> _itemOrder;
+  int? _lastHoveredIndex;
+  bool _snapNow = false;
 
   @override
   void initState() {
@@ -189,6 +191,7 @@ class _ReorderableGridState extends State<_ReorderableGrid> {
     if (draggedIndex == targetIndex || _draggingIndex == null) return;
 
     setState(() {
+      _lastHoveredIndex = targetIndex;
       // Temporarily reorder for visual feedback
       final newOrder = List<int>.from(_itemOrder);
       final draggedOrderIndex = newOrder.indexOf(draggedIndex);
@@ -197,6 +200,65 @@ class _ReorderableGridState extends State<_ReorderableGrid> {
       newOrder.removeAt(draggedOrderIndex);
       newOrder.insert(targetOrderIndex, draggedIndex);
       _itemOrder = newOrder;
+
+      // ignore: avoid_print
+      print('[D&D] Hover: dragged=$draggedIndex -> target=$targetIndex, visualOrder=$_itemOrder');
+    });
+  }
+
+  void _handleDragEnd(int draggedIndex, int? targetIndex) {
+    // ignore: avoid_print
+    print('[D&D] DragEnd called: draggedIndex=$draggedIndex, targetIndex=$targetIndex, visualOrder=$_itemOrder');
+
+    // Use targetIndex if available, otherwise check if visual position changed
+    final effectiveTargetIndex =
+        targetIndex ??
+        (() {
+          final currentVisualIndex = _itemOrder.indexOf(draggedIndex);
+          // If visual position changed from original, use the item at current visual position
+          if (currentVisualIndex != draggedIndex) {
+            return _itemOrder[currentVisualIndex];
+          }
+          return null;
+        })();
+
+    // ignore: avoid_print
+    print('[D&D] Effective target: $effectiveTargetIndex');
+
+    if (effectiveTargetIndex != null && draggedIndex != effectiveTargetIndex) {
+      // Find the visual positions in _itemOrder
+      final oldVisualPosition = _itemOrder.indexOf(draggedIndex);
+      final newVisualPosition = _itemOrder.indexOf(effectiveTargetIndex);
+      // ignore: avoid_print
+      print('[D&D] Visual positions: old=$oldVisualPosition, new=$newVisualPosition');
+      // Pass the actual indices (draggedIndex is old, effectiveTargetIndex is new)
+      // But we need to pass the position in the visual order
+      widget.onReorder(draggedIndex, effectiveTargetIndex);
+      // ignore: avoid_print
+      print('[D&D] Called onReorder: oldIndex=$draggedIndex, newIndex=$effectiveTargetIndex');
+    } else {
+      // ignore: avoid_print
+      print('[D&D] Skipping onReorder: no valid target or same position');
+    }
+
+    // Trigger snap animation for all items
+    _armSnapNow();
+
+    setState(() {
+      _draggingIndex = null;
+      _lastHoveredIndex = null;
+      _itemOrder = List.generate(widget.items.length, (i) => i);
+    });
+  }
+
+  void _armSnapNow() {
+    // ignore: avoid_print
+    print('[D&D] Snap animation triggered for all items');
+    // 直後のレイアウト更新でだけ duration を 0 にする
+    setState(() => _snapNow = true);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      setState(() => _snapNow = false);
     });
   }
 
@@ -233,32 +295,24 @@ class _ReorderableGridState extends State<_ReorderableGrid> {
                   index: index,
                   item: item,
                   isDragging: isDragging,
+                  snapNow: _snapNow,
                   tileWidth: tileWidth,
                   tileHeight: tileHeight,
                   left: left,
                   top: top,
                   onDragStarted: () {
-                    setState(() => _draggingIndex = index);
+                    // ignore: avoid_print
+                    print('[D&D] DragStarted: index=$index');
+                    setState(() {
+                      _draggingIndex = index;
+                      _lastHoveredIndex = index;
+                    });
                   },
                   onDragUpdate: (draggedIndex, targetIndex) {
                     _updateHover(draggedIndex, targetIndex);
                   },
-                  onDragEnd: (draggedIndex, targetIndex) {
-                    if (draggedIndex != targetIndex) {
-                      final oldVisualIndex = _itemOrder.indexOf(draggedIndex);
-                      final newVisualIndex = _itemOrder.indexOf(targetIndex);
-                      widget.onReorder(oldVisualIndex, newVisualIndex);
-                    }
-                    setState(() {
-                      _draggingIndex = null;
-                      _itemOrder = List.generate(widget.items.length, (i) => i);
-                    });
-                  },
-                  onDragCanceled: () {
-                    setState(() {
-                      _draggingIndex = null;
-                      _itemOrder = List.generate(widget.items.length, (i) => i);
-                    });
+                  onDragCompleted: (draggedIndex) {
+                    _handleDragEnd(draggedIndex, _lastHoveredIndex);
                   },
                 );
               }),
@@ -274,34 +328,37 @@ class _AnimatedGridItem extends StatelessWidget {
   final int index;
   final ActionButtonType item;
   final bool isDragging;
+  final bool snapNow;
   final double tileWidth;
   final double tileHeight;
   final double left;
   final double top;
   final VoidCallback onDragStarted;
   final Function(int draggedIndex, int targetIndex) onDragUpdate;
-  final Function(int draggedIndex, int targetIndex) onDragEnd;
-  final VoidCallback onDragCanceled;
+  final Function(int draggedIndex) onDragCompleted;
 
   const _AnimatedGridItem({
     super.key,
     required this.index,
     required this.item,
     required this.isDragging,
+    required this.snapNow,
     required this.tileWidth,
     required this.tileHeight,
     required this.left,
     required this.top,
     required this.onDragStarted,
     required this.onDragUpdate,
-    required this.onDragEnd,
-    required this.onDragCanceled,
+    required this.onDragCompleted,
   });
 
   @override
   Widget build(BuildContext context) {
+    // ドロップ直後は全アイテムが 0ms でスナップ
+    final Duration animDuration = snapNow ? Duration.zero : const Duration(milliseconds: 150);
+
     return AnimatedPositioned(
-      duration: const Duration(milliseconds: 200),
+      duration: animDuration,
       curve: Curves.easeInOut,
       left: left,
       top: top,
@@ -313,9 +370,6 @@ class _AnimatedGridItem extends StatelessWidget {
             onDragUpdate(details.data, index);
           }
           return details.data != index;
-        },
-        onAcceptWithDetails: (details) {
-          onDragEnd(details.data, index);
         },
         builder: (context, candidateData, rejectedData) {
           Widget child = _QuickActionTile(index: index, type: item);
@@ -342,8 +396,14 @@ class _AnimatedGridItem extends StatelessWidget {
             ),
             childWhenDragging: const SizedBox.shrink(),
             onDragStarted: onDragStarted,
-            onDragEnd: (_) => onDragCanceled(),
-            onDraggableCanceled: (_, __) => onDragCanceled(),
+            onDragCompleted: () {
+              // DragTargetに受け入れられた場合
+              onDragCompleted(index);
+            },
+            onDraggableCanceled: (_, __) {
+              // DragTarget外にドロップした場合
+              onDragCompleted(index);
+            },
             child: child,
           );
         },
