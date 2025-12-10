@@ -200,16 +200,10 @@ class _ReorderableGridState extends State<_ReorderableGrid> {
       newOrder.removeAt(draggedOrderIndex);
       newOrder.insert(targetOrderIndex, draggedIndex);
       _itemOrder = newOrder;
-
-      // ignore: avoid_print
-      print('[D&D] Hover: dragged=$draggedIndex -> target=$targetIndex, visualOrder=$_itemOrder');
     });
   }
 
   void _handleDragEnd(int draggedIndex, int? targetIndex) {
-    // ignore: avoid_print
-    print('[D&D] DragEnd called: draggedIndex=$draggedIndex, targetIndex=$targetIndex, visualOrder=$_itemOrder');
-
     // Use targetIndex if available, otherwise check if visual position changed
     final effectiveTargetIndex =
         targetIndex ??
@@ -222,23 +216,8 @@ class _ReorderableGridState extends State<_ReorderableGrid> {
           return null;
         })();
 
-    // ignore: avoid_print
-    print('[D&D] Effective target: $effectiveTargetIndex');
-
     if (effectiveTargetIndex != null && draggedIndex != effectiveTargetIndex) {
-      // Find the visual positions in _itemOrder
-      final oldVisualPosition = _itemOrder.indexOf(draggedIndex);
-      final newVisualPosition = _itemOrder.indexOf(effectiveTargetIndex);
-      // ignore: avoid_print
-      print('[D&D] Visual positions: old=$oldVisualPosition, new=$newVisualPosition');
-      // Pass the actual indices (draggedIndex is old, effectiveTargetIndex is new)
-      // But we need to pass the position in the visual order
       widget.onReorder(draggedIndex, effectiveTargetIndex);
-      // ignore: avoid_print
-      print('[D&D] Called onReorder: oldIndex=$draggedIndex, newIndex=$effectiveTargetIndex');
-    } else {
-      // ignore: avoid_print
-      print('[D&D] Skipping onReorder: no valid target or same position');
     }
 
     // Trigger snap animation for all items
@@ -252,9 +231,6 @@ class _ReorderableGridState extends State<_ReorderableGrid> {
   }
 
   void _armSnapNow() {
-    // ignore: avoid_print
-    print('[D&D] Snap animation triggered for all items');
-    // 直後のレイアウト更新でだけ duration を 0 にする
     setState(() => _snapNow = true);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
@@ -301,8 +277,6 @@ class _ReorderableGridState extends State<_ReorderableGrid> {
                   left: left,
                   top: top,
                   onDragStarted: () {
-                    // ignore: avoid_print
-                    print('[D&D] DragStarted: index=$index');
                     setState(() {
                       _draggingIndex = index;
                       _lastHoveredIndex = index;
@@ -354,7 +328,6 @@ class _AnimatedGridItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // ドロップ直後は全アイテムが 0ms でスナップ
     final Duration animDuration = snapNow ? Duration.zero : const Duration(milliseconds: 150);
 
     return AnimatedPositioned(
@@ -397,11 +370,9 @@ class _AnimatedGridItem extends StatelessWidget {
             childWhenDragging: const SizedBox.shrink(),
             onDragStarted: onDragStarted,
             onDragCompleted: () {
-              // DragTargetに受け入れられた場合
               onDragCompleted(index);
             },
             onDraggableCanceled: (_, __) {
-              // DragTarget外にドロップした場合
               onDragCompleted(index);
             },
             child: child,
