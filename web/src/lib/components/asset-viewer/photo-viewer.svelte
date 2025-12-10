@@ -1,78 +1,100 @@
 <script lang="ts">
   import { shortcuts } from '$lib/actions/shortcut';
+  import { swipeFeedback } from '$lib/actions/swipe-feedback';
   import { zoomImageAction } from '$lib/actions/zoom-image';
   import FaceEditor from '$lib/components/asset-viewer/face-editor/face-editor.svelte';
   import OcrBoundingBox from '$lib/components/asset-viewer/ocr-bounding-box.svelte';
   import BrokenAsset from '$lib/components/assets/broken-asset.svelte';
-  import { assetViewerFadeDuration } from '$lib/constants';
   import { castManager } from '$lib/managers/cast-manager.svelte';
-  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
+  import { preloadManager } from '$lib/managers/PreloadManager.svelte';
   import { photoViewerImgElement } from '$lib/stores/assets-store.svelte';
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import { ocrManager } from '$lib/stores/ocr.svelte';
   import { boundingBoxesArray } from '$lib/stores/people.store';
-  import { alwaysLoadOriginalFile } from '$lib/stores/preferences.store';
   import { SlideshowLook, SlideshowState, slideshowLookCssMapping, slideshowStore } from '$lib/stores/slideshow.store';
-  import { photoZoomState } from '$lib/stores/zoom-image.store';
-  import { getAssetOriginalUrl, getAssetThumbnailUrl, handlePromiseError } from '$lib/utils';
-  import { canCopyImageToClipboard, copyImageToClipboard, isWebCompatibleImage } from '$lib/utils/asset-utils';
+  import { photoZoomState, resetZoomState } from '$lib/stores/zoom-image.store';
+  import { getAssetUrl, targetImageSize as getTargetImageSize, handlePromiseError } from '$lib/utils';
+  import { canCopyImageToClipboard, copyImageToClipboard } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
   import { getOcrBoundingBoxes } from '$lib/utils/ocr-utils';
   import { getBoundingBox } from '$lib/utils/people-utils';
-  import { cancelImageUrl } from '$lib/utils/sw-messaging';
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
-  import { AssetMediaSize, AssetTypeEnum, type AssetResponseDto, type SharedLinkResponseDto } from '@immich/sdk';
+  import { AssetMediaSize, type AssetResponseDto, type SharedLinkResponseDto } from '@immich/sdk';
   import { LoadingSpinner, toastManager } from '@immich/ui';
-  import { onDestroy, onMount } from 'svelte';
-  import { useSwipe, type SwipeCustomEvent } from 'svelte-gestures';
+  import { onDestroy, onMount, untrack } from 'svelte';
+  import { type SwipeCustomEvent } from 'svelte-gestures';
   import { t } from 'svelte-i18n';
-  import { fade } from 'svelte/transition';
 
   interface Props {
+    transitionName?: string | null;
     asset: AssetResponseDto;
-    preloadAssets?: TimelineAsset[] | undefined;
+    previousAsset?: AssetResponseDto;
+    nextAsset?: AssetResponseDto;
     element?: HTMLDivElement | undefined;
-    haveFadeTransition?: boolean;
     sharedLink?: SharedLinkResponseDto | undefined;
     onPreviousAsset?: (() => void) | null;
     onNextAsset?: (() => void) | null;
+    onLoad?: (() => void) | null;
+    onError?: (() => void) | null;
+    onBusy?: (() => void) | null;
+    onFree?: (() => void) | null;
     copyImage?: () => Promise<void>;
     zoomToggle?: (() => void) | null;
   }
 
   let {
+    transitionName,
     asset,
-    preloadAssets = undefined,
+    previousAsset,
+    nextAsset,
     element = $bindable(),
-    haveFadeTransition = true,
     sharedLink = undefined,
     onPreviousAsset = null,
     onNextAsset = null,
+    onLoad,
+    onError,
+    onBusy,
+    onFree,
     copyImage = $bindable(),
     zoomToggle = $bindable(),
   }: Props = $props();
 
   const { slideshowState, slideshowLook } = slideshowStore;
 
-  let assetFileUrl: string = $state('');
   let imageLoaded: boolean = $state(false);
   let originalImageLoaded: boolean = $state(false);
   let imageError: boolean = $state(false);
 
   let loader = $state<HTMLImageElement>();
 
-  photoZoomState.set({
-    currentRotation: 0,
-    currentZoom: 1,
-    enable: true,
-    currentPositionX: 0,
-    currentPositionY: 0,
-  });
+  resetZoomState();
 
   onDestroy(() => {
     $boundingBoxesArray = [];
   });
+
+  const calculateSize = () => {
+    const scaleX = containerWidth / naturalWidth;
+    const scaleY = containerHeight / naturalHeight;
+
+    // Use the smaller scale to ensure image fits (like object-fit: contain)
+    const scale = Math.min(scaleX, scaleY);
+
+    const scaledWidth = naturalWidth * scale;
+    const scaledHeight = naturalHeight * scale;
+
+    const result = {
+      width: scaledWidth,
+      height: scaledHeight,
+      left: (containerWidth - scaledWidth) / 2,
+      top: (containerHeight - scaledHeight) / 2,
+    };
+
+    return result;
+  };
+
+  const box = $derived(calculateSize());
 
   let ocrBoxes = $derived(
     ocrManager.showOverlay && $photoViewerImgElement
@@ -82,23 +104,32 @@
 
   let isOcrActive = $derived(ocrManager.showOverlay);
 
-  const preload = (targetSize: AssetMediaSize | 'original', preloadAssets?: TimelineAsset[]) => {
-    for (const preloadAsset of preloadAssets || []) {
-      if (preloadAsset.isImage) {
-        let img = new Image();
-        img.src = getAssetUrl(preloadAsset.id, targetSize, preloadAsset.thumbhash);
-      }
-    }
+  // Swipe preview state
+  let swipeOffsetX = $state(0);
+
+  const handleSwipeMove = (offsetX: number) => {
+    swipeOffsetX = offsetX;
   };
 
-  const getAssetUrl = (id: string, targetSize: AssetMediaSize | 'original', cacheKey: string | null) => {
-    if (sharedLink && (!sharedLink.allowDownload || !sharedLink.showMetadata)) {
-      return getAssetThumbnailUrl({ id, size: AssetMediaSize.Preview, cacheKey });
-    }
+  const handleSwipeEnd = () => {
+    swipeOffsetX = 0;
+  };
 
-    return targetSize === 'original'
-      ? getAssetOriginalUrl({ id, cacheKey })
-      : getAssetThumbnailUrl({ id, size: targetSize, cacheKey });
+  const handlePreCommit = (direction: 'left' | 'right', previewNaturalWidth: number, previewNaturalHeight: number) => {
+    // Set the natural dimensions from the preview image BEFORE navigation starts
+    // This ensures calculateSize has the correct dimensions immediately when the component reloads
+    naturalWidth = previewNaturalWidth;
+    naturalHeight = previewNaturalHeight;
+  };
+
+  const handleSwipeCommit = (direction: 'left' | 'right') => {
+    if (direction === 'left' && onNextAsset) {
+      // Swiped left, go to next asset
+      onNextAsset();
+    } else if (direction === 'right' && onPreviousAsset) {
+      // Swiped right, go to previous asset
+      onPreviousAsset();
+    }
   };
 
   copyImage = async () => {
@@ -155,23 +186,11 @@
     }
   };
 
-  // when true, will force loading of the original image
-  let forceUseOriginal: boolean = $derived(
-    (asset.type === AssetTypeEnum.Image && asset.duration && !asset.duration.includes('0:00:00.000')) ||
-      $photoZoomState.currentZoom > 1,
-  );
-
-  const targetImageSize = $derived.by(() => {
-    if ($alwaysLoadOriginalFile || forceUseOriginal || originalImageLoaded) {
-      return isWebCompatibleImage(asset) ? 'original' : AssetMediaSize.Fullsize;
-    }
-
-    return AssetMediaSize.Preview;
-  });
+  const targetImageSize = $derived(getTargetImageSize(asset, originalImageLoaded || $photoZoomState.currentZoom > 1));
 
   $effect(() => {
-    if (assetFileUrl) {
-      void cast(assetFileUrl);
+    if (imageLoaderUrl) {
+      void cast(imageLoaderUrl);
     }
   });
 
@@ -190,36 +209,71 @@
   };
 
   const onload = () => {
+    onLoad?.();
+    onFree?.();
     imageLoaded = true;
-    assetFileUrl = imageLoaderUrl;
+    loadingCachedPreview = false;
+    naturalWidth = loader?.naturalWidth ?? 1;
+    naturalHeight = loader?.naturalHeight ?? 1;
     originalImageLoaded = targetImageSize === AssetMediaSize.Fullsize || targetImageSize === 'original';
   };
 
   const onerror = () => {
+    onError?.();
+    onFree?.();
+    naturalWidth = loader?.naturalWidth ?? 1;
+    naturalHeight = loader?.naturalHeight ?? 1;
     imageError = imageLoaded = true;
   };
 
-  $effect(() => {
-    preload(targetImageSize, preloadAssets);
-  });
-
   onMount(() => {
-    if (loader?.complete) {
-      onload();
-    }
-    loader?.addEventListener('load', onload, { passive: true });
-    loader?.addEventListener('error', onerror, { passive: true });
     return () => {
-      loader?.removeEventListener('load', onload);
-      loader?.removeEventListener('error', onerror);
-      cancelImageUrl(imageLoaderUrl);
+      if (!imageLoaded && !imageError) {
+        onFree?.();
+      }
+      if (imageLoaderUrl) {
+        preloadManager.cancelPreloadUrl(imageLoaderUrl);
+      }
     };
   });
 
-  let imageLoaderUrl = $derived(getAssetUrl(asset.id, targetImageSize, asset.thumbhash));
+  const imageLoaderUrl = $derived(
+    getAssetUrl({ asset, sharedLink, forceOriginal: originalImageLoaded || $photoZoomState.currentZoom > 1 }),
+  );
+  const previousAssetUrl = $derived(getAssetUrl({ asset: previousAsset, sharedLink }));
+  const nextAssetUrl = $derived(getAssetUrl({ asset: nextAsset, sharedLink }));
 
   let containerWidth = $state(0);
   let containerHeight = $state(0);
+  let naturalWidth = $state(1);
+  let naturalHeight = $state(1);
+
+  let lastUrl: string | undefined | null;
+  let lastPreviousUrl: string | undefined | null;
+  let lastNextUrl: string | undefined | null;
+
+  $effect(() => {
+    if (!lastUrl) {
+      untrack(() => onBusy?.());
+    }
+    if (lastUrl && lastUrl !== imageLoaderUrl) {
+      untrack(() => {
+        const isPreviewedImage = imageLoaderUrl === lastPreviousUrl || imageLoaderUrl === lastNextUrl;
+
+        if (!isPreviewedImage) {
+          // It is a previewed image - prevent flicker - skip spinner but still let loader go through lifecycle
+          imageLoaded = false;
+        }
+
+        originalImageLoaded = false;
+        imageError = false;
+        onBusy?.();
+      });
+    }
+    lastUrl = imageLoaderUrl;
+    lastPreviousUrl = previousAssetUrl;
+    lastNextUrl = nextAssetUrl;
+  });
 </script>
 
 <svelte:document
@@ -236,43 +290,56 @@
     <BrokenAsset class="text-xl h-full w-full" />
   </div>
 {/if}
-<!-- svelte-ignore a11y_missing_attribute -->
-<img bind:this={loader} style="display:none" src={imageLoaderUrl} aria-hidden="true" />
+<img bind:this={loader} style="display:none" src={imageLoaderUrl} alt="" aria-hidden="true" {onload} {onerror} />
 <div
   bind:this={element}
-  class="relative h-full select-none"
+  class="absolute h-full w-full select-none"
   bind:clientWidth={containerWidth}
   bind:clientHeight={containerHeight}
 >
-  <img style="display:none" src={imageLoaderUrl} alt="" {onload} {onerror} />
   {#if !imageLoaded}
     <div id="spinner" class="flex h-full items-center justify-center">
       <LoadingSpinner />
     </div>
   {:else if !imageError}
+    {#if $slideshowState !== SlideshowState.None && $slideshowLook === SlideshowLook.BlurredBackground}
+      <img
+        src={imageLoaderUrl}
+        alt=""
+        class="-z-1 absolute top-0 start-0 object-cover h-full w-full blur-lg"
+        draggable="false"
+      />
+    {/if}
     <div
       use:zoomImageAction={{ disabled: isOcrActive }}
-      {...useSwipe(onSwipe)}
-      class="h-full w-full"
-      transition:fade={{ duration: haveFadeTransition ? assetViewerFadeDuration : 0 }}
+      use:swipeFeedback={{
+        disabled: isOcrActive || $photoZoomState.currentZoom > 1,
+        onSwipeMove: handleSwipeMove,
+        onSwipeEnd: handleSwipeEnd,
+        onPreCommit: handlePreCommit,
+        onSwipeCommit: handleSwipeCommit,
+        leftPreviewUrl: previousAssetUrl,
+        rightPreviewUrl: nextAssetUrl,
+        currentAssetUrl: imageLoaderUrl,
+      }}
+      style:width={box.width + 'px'}
+      style:height={box.height + 'px'}
+      style:left={box.left + 'px'}
+      style:top={box.top + 'px'}
+      style:overflow="visible"
+      class="absolute"
     >
-      {#if $slideshowState !== SlideshowState.None && $slideshowLook === SlideshowLook.BlurredBackground}
-        <img
-          src={assetFileUrl}
-          alt=""
-          class="-z-1 absolute top-0 start-0 object-cover h-full w-full blur-lg"
-          draggable="false"
-        />
-      {/if}
       <img
+        style:view-transition-name={transitionName}
         bind:this={$photoViewerImgElement}
-        src={assetFileUrl}
+        src={imageLoaderUrl}
         alt={$getAltText(toTimelineAsset(asset))}
-        class="h-full w-full {$slideshowState === SlideshowState.None
+        class="w-full h-full {$slideshowState === SlideshowState.None
           ? 'object-contain'
           : slideshowLookCssMapping[$slideshowLook]}"
         draggable="false"
       />
+
       <!-- eslint-disable-next-line svelte/require-each-key -->
       {#each getBoundingBox($boundingBoxesArray, $photoZoomState, $photoViewerImgElement) as boundingbox}
         <div

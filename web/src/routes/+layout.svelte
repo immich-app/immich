@@ -1,5 +1,17 @@
+<script lang="ts" module>
+  export class AppState {
+    #isAssetViewer = $state<boolean>(false);
+    set isAssetViewer(value) {
+      this.#isAssetViewer = value;
+    }
+    get isAssetViewer() {
+      return this.#isAssetViewer;
+    }
+  }
+</script>
+
 <script lang="ts">
-  import { afterNavigate, beforeNavigate, goto } from '$app/navigation';
+  import { afterNavigate, beforeNavigate, goto, onNavigate } from '$app/navigation';
   import { page } from '$app/state';
   import { shortcut } from '$lib/actions/shortcut';
   import DownloadPanel from '$lib/components/asset-viewer/download-panel.svelte';
@@ -23,7 +35,7 @@
   import { isAssetViewerRoute } from '$lib/utils/navigation';
   import { CommandPaletteContext, modalManager, setTranslations, toastManager, type ActionItem } from '@immich/ui';
   import { mdiAccountMultipleOutline, mdiBookshelf, mdiCog, mdiServer, mdiSync, mdiThemeLightDark } from '@mdi/js';
-  import { onMount, type Snippet } from 'svelte';
+  import { onMount, setContext, type Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
   import '../app.css';
 
@@ -48,6 +60,10 @@
   let { children }: Props = $props();
 
   let showNavigationLoadingBar = $state(false);
+
+  const appState = new AppState();
+  appState.isAssetViewer = isAssetViewerRoute(page);
+  setContext('AppState', appState);
 
   const getMyImmichLink = () => {
     return new URL(page.url.pathname + page.url.search, 'https://my.immich.app');
@@ -74,8 +90,14 @@
     showNavigationLoadingBar = true;
   });
 
-  afterNavigate(() => {
-    showNavigationLoadingBar = false;
+  onNavigate(({ to }) => {
+    appState.isAssetViewer = isAssetViewerRoute(to) ? true : false;
+  });
+  afterNavigate(({ to, complete }) => {
+    appState.isAssetViewer = isAssetViewerRoute(to) ? true : false;
+    void complete.finally(() => {
+      showNavigationLoadingBar = false;
+    });
   });
 
   $effect.pre(() => {

@@ -248,7 +248,8 @@
             <textarea
               {disabled}
               bind:value={message}
-              use:autoGrowHeight={{ height: '5px', value: message }}
+              rows="1"
+              use:autoGrowHeight={{ value: message }}
               placeholder={disabled ? $t('comments_are_disabled') : $t('say_something')}
               use:shortcut={{
                 shortcut: { key: 'Enter' },
