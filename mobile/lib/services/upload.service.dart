@@ -441,7 +441,7 @@ class UploadService {
       if (CurrentPlatform.isIOS &&
           cloudId != null &&
           eTag != null &&
-          _serverInfo.serverVersion.isAtLeast(major: 2, minor: 4))
+          _serverInfo.serverVersion.isAtLeast(major: 2, minor: 2))
         'metadata': jsonEncode([
           RemoteAssetMetadataItem(
             key: RemoteAssetMetadataKey.mobileApp,

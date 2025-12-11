@@ -55,6 +55,7 @@ class SyncStreamRepository extends DriftDatabaseRepository {
           await _db.authUserEntity.deleteAll();
           await _db.userEntity.deleteAll();
           await _db.userMetadataEntity.deleteAll();
+          await _db.remoteAssetCloudIdEntity.deleteAll();
         });
         await _db.customStatement('PRAGMA foreign_keys = ON');
       });

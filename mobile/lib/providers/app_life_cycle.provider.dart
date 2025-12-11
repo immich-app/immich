@@ -162,7 +162,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
           }),
           _resumeBackup(),
           // Sync cloud IDs if server version is compatible
-          if (CurrentPlatform.isIOS && serverInfo.serverVersion.isAtLeast(major: 2, minor: 4))
+          if (CurrentPlatform.isIOS && serverInfo.serverVersion.isAtLeast(major: 2, minor: 2))
             backgroundManager.syncCloudIds(),
         ]);
       } else {
