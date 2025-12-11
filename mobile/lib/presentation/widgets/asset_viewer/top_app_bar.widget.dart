@@ -15,8 +15,6 @@ import 'package:immich_mobile/providers/activity.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/trash_sync.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 
@@ -50,10 +48,6 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
     }
 
     final originalTheme = context.themeData;
-
-    final isWaitingForSyncApproval =
-        timelineOrigin == TimelineOrigin.syncTrash ||
-        ref.watch(isWaitingForSyncApprovalProvider(asset.checksum)).value == true;
 
     final actions = <Widget>[
       if (asset.isMotionPhoto) const MotionPhotoActionButton(iconOnly: true),
