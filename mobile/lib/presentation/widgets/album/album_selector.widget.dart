@@ -776,7 +776,10 @@ class CreateAlbumButton extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     Future<void> onCreateAlbum() async {
       var albumName = await showDialog<String?>(context: context, builder: (context) => const NewAlbumNameModal());
-      if (albumName == null) return;
+      if (albumName == null) {
+        return;
+      }
+
       final asset = ref.read(currentAssetNotifier);
 
       if (asset == null) {
@@ -797,6 +800,10 @@ class CreateAlbumButton extends ConsumerWidget {
         context: context,
         msg: 'add_to_album_bottom_sheet_added'.tr(namedArgs: {'album': album.name}),
       );
+
+      // Invalidate using the asset's remote ID to refresh the "Appears in" list
+      ref.invalidate(albumsContainingAssetProvider(asset.remoteId!));
+
       context.pop();
     }
 
