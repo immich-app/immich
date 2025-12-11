@@ -62,6 +62,10 @@ class Timeline extends StatelessWidget {
       floatingActionButton: const DownloadStatusFloatingButton(),
       body: LayoutBuilder(
         builder: (_, constraints) => ProviderScope(
+          // Key changes when dimensions change significantly, forcing rebuild on fold/unfold
+          key: ValueKey(
+            'timeline_${(constraints.maxWidth / 50).round()}_${(constraints.maxHeight / 50).round()}',
+          ),
           overrides: [
             timelineArgsProvider.overrideWith(
               (ref) => TimelineArgs(
