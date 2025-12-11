@@ -1665,22 +1665,6 @@ class FavoritesRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
-/// [FeatInDevPage]
-class FeatInDevRoute extends PageRouteInfo<void> {
-  const FeatInDevRoute({List<PageRouteInfo>? children})
-    : super(FeatInDevRoute.name, initialChildren: children);
-
-  static const String name = 'FeatInDevRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      return const FeatInDevPage();
-    },
-  );
-}
-
-/// generated route for
 /// [FilterImagePage]
 class FilterImageRoute extends PageRouteInfo<FilterImageRouteArgs> {
   FilterImageRoute({
@@ -1843,6 +1827,22 @@ class HeaderSettingsRoute extends PageRouteInfo<void> {
     name,
     builder: (data) {
       return const HeaderSettingsPage();
+    },
+  );
+}
+
+/// generated route for
+/// [ImmichUIShowcasePage]
+class ImmichUIShowcaseRoute extends PageRouteInfo<void> {
+  const ImmichUIShowcaseRoute({List<PageRouteInfo>? children})
+    : super(ImmichUIShowcaseRoute.name, initialChildren: children);
+
+  static const String name = 'ImmichUIShowcaseRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const ImmichUIShowcasePage();
     },
   );
 }
