@@ -7,7 +7,13 @@ class RemoteAssetCloudIdEntity extends Table with DriftDefaultsMixin {
 
   TextColumn get cloudId => text().unique().nullable()();
 
-  TextColumn get eTag => text().nullable()();
+  DateTimeColumn get createdAt => dateTime().nullable()();
+
+  DateTimeColumn get adjustmentTime => dateTime().nullable()();
+
+  RealColumn get latitude => real().nullable()();
+
+  RealColumn get longitude => real().nullable()();
 
   @override
   Set<Column> get primaryKey => {assetId};

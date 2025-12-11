@@ -25,9 +25,18 @@ class RemoteAssetMetadataItem {
 
 class RemoteAssetMobileAppMetadata extends RemoteAssetMetadataValue {
   final String? cloudId;
-  final String? eTag;
+  final String? createdAt;
+  final String? adjustmentTime;
+  final String? latitude;
+  final String? longitude;
 
-  const RemoteAssetMobileAppMetadata({this.cloudId, this.eTag});
+  const RemoteAssetMobileAppMetadata({
+    this.cloudId,
+    this.createdAt,
+    this.adjustmentTime,
+    this.latitude,
+    this.longitude,
+  });
 
   @override
   Map<String, dynamic> toJson() {
@@ -35,8 +44,17 @@ class RemoteAssetMobileAppMetadata extends RemoteAssetMetadataValue {
     if (cloudId != null) {
       map["iCloudId"] = cloudId;
     }
-    if (eTag != null) {
-      map["eTag"] = eTag;
+    if (createdAt != null) {
+      map["createdAt"] = createdAt;
+    }
+    if (adjustmentTime != null) {
+      map["adjustmentTime"] = adjustmentTime;
+    }
+    if (latitude != null) {
+      map["latitude"] = latitude;
+    }
+    if (longitude != null) {
+      map["longitude"] = longitude;
     }
 
     return map;

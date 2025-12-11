@@ -319,53 +319,6 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
       return Future.value();
     }
 
-    // Reset checksum if asset changed
-    await _db.batch((batch) async {
-      for (final asset in localAssets) {
-        final companion = LocalAssetEntityCompanion(
-          checksum: const Value(null),
-          adjustmentTime: Value(asset.adjustmentTime),
-        );
-        batch.update(
-          _db.localAssetEntity,
-          companion,
-          where: (row) => row.id.equals(asset.id) & row.adjustmentTime.equalsNullable(asset.adjustmentTime).not(),
-        );
-      }
-    });
-
-    return _db.batch((batch) async {
-      for (final asset in localAssets) {
-        final companion = LocalAssetEntityCompanion.insert(
-          name: asset.name,
-          type: asset.type,
-          createdAt: Value(asset.createdAt),
-          updatedAt: Value(asset.updatedAt),
-          width: Value(asset.width),
-          height: Value(asset.height),
-          durationInSeconds: Value(asset.durationInSeconds),
-          id: asset.id,
-          checksum: const Value(null),
-          orientation: Value(asset.orientation),
-          isFavorite: Value(asset.isFavorite),
-          latitude: Value(asset.latitude),
-          longitude: Value(asset.longitude),
-          adjustmentTime: Value(asset.adjustmentTime),
-        );
-        batch.insert<$LocalAssetEntityTable, LocalAssetEntityData>(
-          _db.localAssetEntity,
-          companion.copyWith(checksum: const Value(null)),
-          onConflict: DoUpdate((old) => companion),
-        );
-      }
-    });
-  }
-
-  Future<void> _upsertAssetsAndroid(Iterable<LocalAsset> localAssets) async {
-    if (localAssets.isEmpty) {
-      return Future.value();
-    }
-
     return _db.batch((batch) async {
       for (final asset in localAssets) {
         final companion = LocalAssetEntityCompanion.insert(

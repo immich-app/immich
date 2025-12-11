@@ -221,6 +221,7 @@ void main() {
         cloudId: 'cloud-id-123',
         latitude: 37.7749,
         longitude: -122.4194,
+        adjustmentTime: DateTime(2026, 1, 2),
       );
 
       final mockEntity = MockAssetEntity();
@@ -240,7 +241,10 @@ void main() {
       expect(metadata, hasLength(1));
       expect(metadata[0]['key'], equals('mobile-app'));
       expect(metadata[0]['value']['iCloudId'], equals('cloud-id-123'));
-      expect(metadata[0]['value']['eTag'], isNotNull);
+      expect(metadata[0]['value']['createdAt'], isNotNull);
+      expect(metadata[0]['value']['adjustmentTime'], isNotNull);
+      expect(metadata[0]['value']['latitude'], isNotNull);
+      expect(metadata[0]['value']['longitude'], isNotNull);
     });
 
     test('should NOT include metadata on iOS when server version is below 2.4', () async {

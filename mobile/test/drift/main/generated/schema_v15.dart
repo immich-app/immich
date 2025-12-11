@@ -5393,15 +5393,44 @@ class RemoteAssetCloudIdEntity extends Table
     requiredDuringInsert: false,
     defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
   );
-  late final GeneratedColumn<String> eTag = GeneratedColumn<String>(
-    'e_tag',
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
     aliasedName,
     true,
-    type: DriftSqlType.string,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  late final GeneratedColumn<DateTime> adjustmentTime =
+      GeneratedColumn<DateTime>(
+        'adjustment_time',
+        aliasedName,
+        true,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+      );
+  late final GeneratedColumn<double> latitude = GeneratedColumn<double>(
+    'latitude',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  late final GeneratedColumn<double> longitude = GeneratedColumn<double>(
+    'longitude',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
     requiredDuringInsert: false,
   );
   @override
-  List<GeneratedColumn> get $columns => [assetId, cloudId, eTag];
+  List<GeneratedColumn> get $columns => [
+    assetId,
+    cloudId,
+    createdAt,
+    adjustmentTime,
+    latitude,
+    longitude,
+  ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -5424,9 +5453,21 @@ class RemoteAssetCloudIdEntity extends Table
         DriftSqlType.string,
         data['${effectivePrefix}cloud_id'],
       ),
-      eTag: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}e_tag'],
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      ),
+      adjustmentTime: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}adjustment_time'],
+      ),
+      latitude: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}latitude'],
+      ),
+      longitude: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}longitude'],
       ),
     );
   }
@@ -5446,11 +5487,17 @@ class RemoteAssetCloudIdEntityData extends DataClass
     implements Insertable<RemoteAssetCloudIdEntityData> {
   final String assetId;
   final String? cloudId;
-  final String? eTag;
+  final DateTime? createdAt;
+  final DateTime? adjustmentTime;
+  final double? latitude;
+  final double? longitude;
   const RemoteAssetCloudIdEntityData({
     required this.assetId,
     this.cloudId,
-    this.eTag,
+    this.createdAt,
+    this.adjustmentTime,
+    this.latitude,
+    this.longitude,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -5459,8 +5506,17 @@ class RemoteAssetCloudIdEntityData extends DataClass
     if (!nullToAbsent || cloudId != null) {
       map['cloud_id'] = Variable<String>(cloudId);
     }
-    if (!nullToAbsent || eTag != null) {
-      map['e_tag'] = Variable<String>(eTag);
+    if (!nullToAbsent || createdAt != null) {
+      map['created_at'] = Variable<DateTime>(createdAt);
+    }
+    if (!nullToAbsent || adjustmentTime != null) {
+      map['adjustment_time'] = Variable<DateTime>(adjustmentTime);
+    }
+    if (!nullToAbsent || latitude != null) {
+      map['latitude'] = Variable<double>(latitude);
+    }
+    if (!nullToAbsent || longitude != null) {
+      map['longitude'] = Variable<double>(longitude);
     }
     return map;
   }
@@ -5473,7 +5529,10 @@ class RemoteAssetCloudIdEntityData extends DataClass
     return RemoteAssetCloudIdEntityData(
       assetId: serializer.fromJson<String>(json['assetId']),
       cloudId: serializer.fromJson<String?>(json['cloudId']),
-      eTag: serializer.fromJson<String?>(json['eTag']),
+      createdAt: serializer.fromJson<DateTime?>(json['createdAt']),
+      adjustmentTime: serializer.fromJson<DateTime?>(json['adjustmentTime']),
+      latitude: serializer.fromJson<double?>(json['latitude']),
+      longitude: serializer.fromJson<double?>(json['longitude']),
     );
   }
   @override
@@ -5482,18 +5541,29 @@ class RemoteAssetCloudIdEntityData extends DataClass
     return <String, dynamic>{
       'assetId': serializer.toJson<String>(assetId),
       'cloudId': serializer.toJson<String?>(cloudId),
-      'eTag': serializer.toJson<String?>(eTag),
+      'createdAt': serializer.toJson<DateTime?>(createdAt),
+      'adjustmentTime': serializer.toJson<DateTime?>(adjustmentTime),
+      'latitude': serializer.toJson<double?>(latitude),
+      'longitude': serializer.toJson<double?>(longitude),
     };
   }
 
   RemoteAssetCloudIdEntityData copyWith({
     String? assetId,
     Value<String?> cloudId = const Value.absent(),
-    Value<String?> eTag = const Value.absent(),
+    Value<DateTime?> createdAt = const Value.absent(),
+    Value<DateTime?> adjustmentTime = const Value.absent(),
+    Value<double?> latitude = const Value.absent(),
+    Value<double?> longitude = const Value.absent(),
   }) => RemoteAssetCloudIdEntityData(
     assetId: assetId ?? this.assetId,
     cloudId: cloudId.present ? cloudId.value : this.cloudId,
-    eTag: eTag.present ? eTag.value : this.eTag,
+    createdAt: createdAt.present ? createdAt.value : this.createdAt,
+    adjustmentTime: adjustmentTime.present
+        ? adjustmentTime.value
+        : this.adjustmentTime,
+    latitude: latitude.present ? latitude.value : this.latitude,
+    longitude: longitude.present ? longitude.value : this.longitude,
   );
   RemoteAssetCloudIdEntityData copyWithCompanion(
     RemoteAssetCloudIdEntityCompanion data,
@@ -5501,7 +5571,12 @@ class RemoteAssetCloudIdEntityData extends DataClass
     return RemoteAssetCloudIdEntityData(
       assetId: data.assetId.present ? data.assetId.value : this.assetId,
       cloudId: data.cloudId.present ? data.cloudId.value : this.cloudId,
-      eTag: data.eTag.present ? data.eTag.value : this.eTag,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      adjustmentTime: data.adjustmentTime.present
+          ? data.adjustmentTime.value
+          : this.adjustmentTime,
+      latitude: data.latitude.present ? data.latitude.value : this.latitude,
+      longitude: data.longitude.present ? data.longitude.value : this.longitude,
     );
   }
 
@@ -5510,58 +5585,92 @@ class RemoteAssetCloudIdEntityData extends DataClass
     return (StringBuffer('RemoteAssetCloudIdEntityData(')
           ..write('assetId: $assetId, ')
           ..write('cloudId: $cloudId, ')
-          ..write('eTag: $eTag')
+          ..write('createdAt: $createdAt, ')
+          ..write('adjustmentTime: $adjustmentTime, ')
+          ..write('latitude: $latitude, ')
+          ..write('longitude: $longitude')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(assetId, cloudId, eTag);
+  int get hashCode => Object.hash(
+    assetId,
+    cloudId,
+    createdAt,
+    adjustmentTime,
+    latitude,
+    longitude,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is RemoteAssetCloudIdEntityData &&
           other.assetId == this.assetId &&
           other.cloudId == this.cloudId &&
-          other.eTag == this.eTag);
+          other.createdAt == this.createdAt &&
+          other.adjustmentTime == this.adjustmentTime &&
+          other.latitude == this.latitude &&
+          other.longitude == this.longitude);
 }
 
 class RemoteAssetCloudIdEntityCompanion
     extends UpdateCompanion<RemoteAssetCloudIdEntityData> {
   final Value<String> assetId;
   final Value<String?> cloudId;
-  final Value<String?> eTag;
+  final Value<DateTime?> createdAt;
+  final Value<DateTime?> adjustmentTime;
+  final Value<double?> latitude;
+  final Value<double?> longitude;
   const RemoteAssetCloudIdEntityCompanion({
     this.assetId = const Value.absent(),
     this.cloudId = const Value.absent(),
-    this.eTag = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.adjustmentTime = const Value.absent(),
+    this.latitude = const Value.absent(),
+    this.longitude = const Value.absent(),
   });
   RemoteAssetCloudIdEntityCompanion.insert({
     required String assetId,
     this.cloudId = const Value.absent(),
-    this.eTag = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.adjustmentTime = const Value.absent(),
+    this.latitude = const Value.absent(),
+    this.longitude = const Value.absent(),
   }) : assetId = Value(assetId);
   static Insertable<RemoteAssetCloudIdEntityData> custom({
     Expression<String>? assetId,
     Expression<String>? cloudId,
-    Expression<String>? eTag,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? adjustmentTime,
+    Expression<double>? latitude,
+    Expression<double>? longitude,
   }) {
     return RawValuesInsertable({
       if (assetId != null) 'asset_id': assetId,
       if (cloudId != null) 'cloud_id': cloudId,
-      if (eTag != null) 'e_tag': eTag,
+      if (createdAt != null) 'created_at': createdAt,
+      if (adjustmentTime != null) 'adjustment_time': adjustmentTime,
+      if (latitude != null) 'latitude': latitude,
+      if (longitude != null) 'longitude': longitude,
     });
   }
 
   RemoteAssetCloudIdEntityCompanion copyWith({
     Value<String>? assetId,
     Value<String?>? cloudId,
-    Value<String?>? eTag,
+    Value<DateTime?>? createdAt,
+    Value<DateTime?>? adjustmentTime,
+    Value<double?>? latitude,
+    Value<double?>? longitude,
   }) {
     return RemoteAssetCloudIdEntityCompanion(
       assetId: assetId ?? this.assetId,
       cloudId: cloudId ?? this.cloudId,
-      eTag: eTag ?? this.eTag,
+      createdAt: createdAt ?? this.createdAt,
+      adjustmentTime: adjustmentTime ?? this.adjustmentTime,
+      latitude: latitude ?? this.latitude,
+      longitude: longitude ?? this.longitude,
     );
   }
 
@@ -5574,8 +5683,17 @@ class RemoteAssetCloudIdEntityCompanion
     if (cloudId.present) {
       map['cloud_id'] = Variable<String>(cloudId.value);
     }
-    if (eTag.present) {
-      map['e_tag'] = Variable<String>(eTag.value);
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (adjustmentTime.present) {
+      map['adjustment_time'] = Variable<DateTime>(adjustmentTime.value);
+    }
+    if (latitude.present) {
+      map['latitude'] = Variable<double>(latitude.value);
+    }
+    if (longitude.present) {
+      map['longitude'] = Variable<double>(longitude.value);
     }
     return map;
   }
@@ -5585,7 +5703,10 @@ class RemoteAssetCloudIdEntityCompanion
     return (StringBuffer('RemoteAssetCloudIdEntityCompanion(')
           ..write('assetId: $assetId, ')
           ..write('cloudId: $cloudId, ')
-          ..write('eTag: $eTag')
+          ..write('createdAt: $createdAt, ')
+          ..write('adjustmentTime: $adjustmentTime, ')
+          ..write('latitude: $latitude, ')
+          ..write('longitude: $longitude')
           ..write(')'))
         .toString();
   }

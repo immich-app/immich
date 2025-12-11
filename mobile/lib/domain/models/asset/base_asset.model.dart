@@ -1,6 +1,3 @@
-import 'package:immich_mobile/constants/constants.dart';
-import 'package:immich_mobile/extensions/num_extensions.dart';
-
 part 'local_asset.model.dart';
 part 'remote_asset.model.dart';
 

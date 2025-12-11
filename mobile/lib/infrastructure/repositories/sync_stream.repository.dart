@@ -283,7 +283,12 @@ class SyncStreamRepository extends DriftDatabaseRepository {
             final map = metadata.value as Map<String, Object?>;
             final companion = RemoteAssetCloudIdEntityCompanion(
               cloudId: Value(map['iCloudId']?.toString()),
-              eTag: Value(map['eTag']?.toString()),
+              createdAt: Value(map['createdAt'] != null ? DateTime.parse(map['createdAt'] as String) : null),
+              adjustmentTime: Value(
+                map['adjustmentTime'] != null ? DateTime.parse(map['adjustmentTime'] as String) : null,
+              ),
+              latitude: Value(map['latitude'] != null ? (double.tryParse(map['latitude'] as String)) : null),
+              longitude: Value(map['longitude'] != null ? (double.tryParse(map['longitude'] as String)) : null),
             );
             batch.insert(
               _db.remoteAssetCloudIdEntity,

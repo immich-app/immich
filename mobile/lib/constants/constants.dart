@@ -47,7 +47,6 @@ const List<(String, String)> kWidgetNames = [
 
 const double kUploadStatusFailed = -1.0;
 const double kUploadStatusCanceled = -2.0;
-const String kUploadETagDelimiter = "_";
 
 const int kMinMonthsToEnableScrubberSnap = 12;
 
