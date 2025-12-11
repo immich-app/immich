@@ -236,7 +236,7 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
     final lensTitle = exifInfo?.lens != null && exifInfo!.lens!.isNotEmpty ? exifInfo.lens : null;
     final isOwner = ref.watch(currentUserProvider)?.id == (asset is RemoteAsset ? asset.ownerId : null);
     final isRatingEnabled = ref
-        .watch(userMetadataPreferencesProvider(ref.watch(currentUserProvider)?.id ?? ''))
+        .watch(userMetadataPreferencesProvider)
         .maybeWhen(data: (prefs) => prefs?.ratingsEnabled ?? false, orElse: () => false);
 
     // Build file info tile based on asset type
