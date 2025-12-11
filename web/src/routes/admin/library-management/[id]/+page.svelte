@@ -1,7 +1,7 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import emptyFoldersUrl from '$lib/assets/empty-folders.svg';
-  import HeaderButton from '$lib/components/HeaderButton.svelte';
+  import HeaderActionButton from '$lib/components/HeaderActionButton.svelte';
   import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
   import OnEvents from '$lib/components/OnEvents.svelte';
   import ServerStatisticsCard from '$lib/components/server-statistics/ServerStatisticsCard.svelte';
@@ -53,18 +53,9 @@
 <CommandPaletteContext commands={[Rename, Delete, AddFolder, AddExclusionPattern, Scan]} />
 
 <AdminPageLayout
-  breadcrumbs={[
-    { title: $t('admin.external_library_management'), href: AppRoute.ADMIN_LIBRARY_MANAGEMENT },
-    { title: library.name },
-  ]}
+  breadcrumbs={[{ title: $t('external_libraries'), href: AppRoute.ADMIN_LIBRARY_MANAGEMENT }, { title: library.name }]}
+  actions={[Scan, Rename, Delete]}
 >
-  {#snippet buttons()}
-    <div class="flex justify-end gap-2">
-      <HeaderButton action={Scan} />
-      <HeaderButton action={Rename} />
-      <HeaderButton action={Delete} />
-    </div>
-  {/snippet}
   <Container size="large" center>
     <div class="grid gap-4 grid-cols-1 lg:grid-cols-2 w-full">
       <Heading tag="h1" size="large" class="col-span-full my-4">{library.name}</Heading>
@@ -80,7 +71,7 @@
               <Icon icon={mdiFolderOutline} size="1.5rem" />
               <CardTitle>{$t('folders')}</CardTitle>
             </div>
-            <HeaderButton action={AddFolder} />
+            <HeaderActionButton action={AddFolder} />
           </div>
         </CardHeader>
         <CardBody>
@@ -120,7 +111,7 @@
               <Icon icon={mdiFilterMinusOutline} size="1.5rem" />
               <CardTitle>{$t('exclusion_pattern')}</CardTitle>
             </div>
-            <HeaderButton action={AddExclusionPattern} />
+            <HeaderActionButton action={AddExclusionPattern} />
           </div>
         </CardHeader>
         <CardBody>
