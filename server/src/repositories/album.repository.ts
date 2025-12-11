@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ExpressionBuilder, Insertable, Kysely, NotNull, sql, Updateable } from 'kysely';
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
+import { isUndefined, omitBy } from 'lodash';
 import { InjectKysely } from 'nestjs-kysely';
 import { columns, Exif } from 'src/database';
 import { Chunked, ChunkedArray, ChunkedSet, DummyValue, GenerateSql } from 'src/decorators';
@@ -294,9 +295,10 @@ export class AlbumRepository {
   }
 
   update(id: string, album: Updateable<AlbumTable>) {
+    const value = omitBy(album, isUndefined);
     return this.db
       .updateTable('album')
-      .set(album)
+      .set(value)
       .where('id', '=', id)
       .returningAll('album')
       .returning(withOwner)

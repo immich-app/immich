@@ -14671,6 +14671,9 @@
           "hasSharedLink": {
             "type": "boolean"
           },
+          "hideFromTimeline": {
+            "type": "boolean"
+          },
           "id": {
             "type": "string"
           },
@@ -14715,6 +14718,7 @@
           "createdAt",
           "description",
           "hasSharedLink",
+          "hideFromTimeline",
           "id",
           "isActivityEnabled",
           "owner",
@@ -16143,6 +16147,9 @@
           },
           "description": {
             "type": "string"
+          },
+          "hideFromTimeline": {
+            "type": "boolean"
           }
         },
         "required": [
@@ -22527,6 +22534,9 @@
           },
           "description": {
             "type": "string"
+          },
+          "hideFromTimeline": {
+            "type": "boolean"
           },
           "isActivityEnabled": {
             "type": "boolean"
