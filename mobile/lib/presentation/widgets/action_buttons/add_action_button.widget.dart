@@ -109,7 +109,10 @@ class _AddActionButtonState extends ConsumerState<AddActionButton> {
       return;
     }
 
-    final List<Widget> slivers = [AlbumSelector(onAlbumSelected: (album) => _addCurrentAssetToAlbum(album))];
+    final List<Widget> slivers = [
+      const CreateAlbumButton(),
+      AlbumSelector(onAlbumSelected: (album) => _addCurrentAssetToAlbum(album)),
+    ];
 
     showModalBottomSheet(
       context: context,
