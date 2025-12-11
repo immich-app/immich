@@ -20,7 +20,7 @@ export const getSystemConfigActions = (
     description: $t('admin.copy_config_to_clipboard_description'),
     type: $t('command'),
     icon: mdiContentCopy,
-    onAction: () => void handleCopyToClipboard(config),
+    onAction: () => handleCopyToClipboard(config),
     shortcuts: { shift: true, key: 'c' },
   };
 

@@ -23,7 +23,7 @@ export const load = (async ({ url }) => {
     statistics: Object.fromEntries(statistics),
     owners: Object.fromEntries(owners),
     meta: {
-      title: $t('admin.external_library_management'),
+      title: $t('external_libraries'),
     },
   };
 }) satisfies PageLoad;

@@ -1,5 +1,4 @@
 <script lang="ts">
-  import HeaderButton from '$lib/components/HeaderButton.svelte';
   import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
   import OnEvents from '$lib/components/OnEvents.svelte';
   import QueueGraph from '$lib/components/QueueGraph.svelte';
@@ -7,7 +6,18 @@
   import { queueManager } from '$lib/managers/queue-manager.svelte';
   import { asQueueItem, getQueueActions } from '$lib/services/queue.service';
   import { type QueueResponseDto } from '@immich/sdk';
-  import { Badge, Card, CardBody, CardHeader, CardTitle, Container, Heading, HStack, Icon, Text } from '@immich/ui';
+  import {
+    Badge,
+    Card,
+    CardBody,
+    CardHeader,
+    CardTitle,
+    Container,
+    Heading,
+    Icon,
+    MenuItemType,
+    Text,
+  } from '@immich/ui';
   import { mdiClockTimeTwoOutline } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -35,15 +45,10 @@
 
 <OnEvents {onQueueUpdate} />
 
-<AdminPageLayout breadcrumbs={[{ title: $t('admin.queues'), href: AppRoute.ADMIN_QUEUES }, { title: item.title }]}>
-  {#snippet buttons()}
-    <HStack gap={0}>
-      <HeaderButton action={Pause} />
-      <HeaderButton action={Resume} />
-      <HeaderButton action={Empty} />
-      <HeaderButton action={RemoveFailedJobs} />
-    </HStack>
-  {/snippet}
+<AdminPageLayout
+  breadcrumbs={[{ title: $t('admin.queues'), href: AppRoute.ADMIN_QUEUES }, { title: item.title }]}
+  actions={[Pause, Resume, Empty, MenuItemType.Divider, RemoveFailedJobs]}
+>
   <div>
     <Container size="large" center>
       <div class="mb-1 mt-4 flex items-center gap-2">

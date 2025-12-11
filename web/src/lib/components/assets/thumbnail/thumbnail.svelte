@@ -126,6 +126,7 @@
 
   const onMouseLeave = () => {
     mouseOver = false;
+    onMouseEvent?.({ isMouseOver: false, selectedGroupIndex: groupIndex });
   };
 
   let timer: ReturnType<typeof setTimeout> | null = null;

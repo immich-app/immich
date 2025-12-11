@@ -38,11 +38,13 @@ class ViewerBottomBar extends ConsumerWidget {
       opacity = 0;
     }
 
+    final originalTheme = context.themeData;
+
     final actions = <Widget>[
       const ShareActionButton(source: ActionSource.viewer),
       if (asset.isLocalOnly) const UploadActionButton(source: ActionSource.viewer),
       if (asset.type == AssetType.image) const EditImageActionButton(),
-      if (asset.hasRemote) const AddActionButton(),
+      if (asset.hasRemote) AddActionButton(originalTheme: originalTheme),
 
       if (isOwner) ...[
         asset.isLocalOnly

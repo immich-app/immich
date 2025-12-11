@@ -524,6 +524,7 @@ describe('TimelineManager', () => {
         { count: 3, timeBucket: '2024-01-01T00:00:00.000Z' },
       ]);
       sdkMock.getTimeBucket.mockImplementation(({ timeBucket }) => Promise.resolve(bucketAssetsResponse[timeBucket]));
+      sdkMock.getAssetInfo.mockRejectedValue(new Error('Asset not found'));
       await timelineManager.updateViewport({ width: 1588, height: 1000 });
     });
 

@@ -1,6 +1,5 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import HeaderButton from '$lib/components/HeaderButton.svelte';
   import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
   import OnEvents from '$lib/components/OnEvents.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
@@ -60,17 +59,11 @@
 
 <CommandPaletteContext commands={[Create, ScanAll]} />
 
-<AdminPageLayout breadcrumbs={[{ title: data.meta.title }]}>
-  {#snippet buttons()}
-    <div class="flex justify-end gap-2">
-      <HeaderButton action={ScanAll} />
-      <HeaderButton action={Create} />
-    </div>
-  {/snippet}
+<AdminPageLayout breadcrumbs={[{ title: data.meta.title }]} actions={[ScanAll, Create]}>
   <section class="my-4">
     <div class="flex flex-col items-center gap-2" in:fade={{ duration: 500 }}>
       {#if libraries.length > 0}
-        <table class="w-3/4 text-start">
+        <table class="text-start">
           <thead
             class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray"
           >
