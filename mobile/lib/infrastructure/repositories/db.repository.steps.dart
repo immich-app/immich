@@ -6243,7 +6243,14 @@ final class Schema15 extends i0.VersionedSchema {
       withoutRowId: true,
       isStrict: true,
       tableConstraints: ['PRIMARY KEY(asset_id)'],
-      columns: [_column_36, _column_98, _column_99],
+      columns: [
+        _column_36,
+        _column_98,
+        _column_99,
+        _column_96,
+        _column_46,
+        _column_47,
+      ],
       attachedDatabase: database,
     ),
     alias: null,
@@ -6424,8 +6431,14 @@ class Shape26 extends i0.VersionedTable {
       columnsByName['asset_id']! as i1.GeneratedColumn<String>;
   i1.GeneratedColumn<String> get cloudId =>
       columnsByName['cloud_id']! as i1.GeneratedColumn<String>;
-  i1.GeneratedColumn<String> get eTag =>
-      columnsByName['e_tag']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<DateTime> get createdAt =>
+      columnsByName['created_at']! as i1.GeneratedColumn<DateTime>;
+  i1.GeneratedColumn<DateTime> get adjustmentTime =>
+      columnsByName['adjustment_time']! as i1.GeneratedColumn<DateTime>;
+  i1.GeneratedColumn<double> get latitude =>
+      columnsByName['latitude']! as i1.GeneratedColumn<double>;
+  i1.GeneratedColumn<double> get longitude =>
+      columnsByName['longitude']! as i1.GeneratedColumn<double>;
 }
 
 i1.GeneratedColumn<String> _column_98(String aliasedName) =>
@@ -6436,12 +6449,12 @@ i1.GeneratedColumn<String> _column_98(String aliasedName) =>
       type: i1.DriftSqlType.string,
       defaultConstraints: i1.GeneratedColumn.constraintIsAlways('UNIQUE'),
     );
-i1.GeneratedColumn<String> _column_99(String aliasedName) =>
-    i1.GeneratedColumn<String>(
-      'e_tag',
+i1.GeneratedColumn<DateTime> _column_99(String aliasedName) =>
+    i1.GeneratedColumn<DateTime>(
+      'created_at',
       aliasedName,
       true,
-      type: i1.DriftSqlType.string,
+      type: i1.DriftSqlType.dateTime,
     );
 i0.MigrationStepWithVersion migrationSteps({
   required Future<void> Function(i1.Migrator m, Schema2 schema) from1To2,

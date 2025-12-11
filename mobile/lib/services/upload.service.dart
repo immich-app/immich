@@ -359,7 +359,9 @@ class UploadService {
       isFavorite: asset.isFavorite,
       requiresWiFi: requiresWiFi,
       cloudId: asset.cloudId,
-      eTag: asset.eTag,
+      adjustmentTime: asset.adjustmentTime?.toIso8601String(),
+      latitude: asset.latitude?.toString(),
+      longitude: asset.longitude?.toString(),
     );
   }
 
@@ -392,7 +394,9 @@ class UploadService {
       isFavorite: asset.isFavorite,
       requiresWiFi: requiresWiFi,
       cloudId: asset.cloudId,
-      eTag: asset.eTag,
+      adjustmentTime: asset.adjustmentTime?.toIso8601String(),
+      latitude: asset.latitude?.toString(),
+      longitude: asset.longitude?.toString(),
     );
   }
 
@@ -421,7 +425,9 @@ class UploadService {
     bool? isFavorite,
     bool requiresWiFi = true,
     String? cloudId,
-    String? eTag,
+    String? adjustmentTime,
+    String? latitude,
+    String? longitude,
   }) async {
     final serverEndpoint = Store.get(StoreKey.serverEndpoint);
     final url = Uri.parse('$serverEndpoint/assets').toString();
@@ -438,14 +444,17 @@ class UploadService {
       'duration': '0',
       if (fields != null) ...fields,
       // Include cloudId and eTag in metadata if available and server version supports it
-      if (CurrentPlatform.isIOS &&
-          cloudId != null &&
-          eTag != null &&
-          _serverInfo.serverVersion.isAtLeast(major: 2, minor: 2))
+      if (CurrentPlatform.isIOS && cloudId != null && _serverInfo.serverVersion.isAtLeast(major: 2, minor: 2))
         'metadata': jsonEncode([
           RemoteAssetMetadataItem(
             key: RemoteAssetMetadataKey.mobileApp,
-            value: RemoteAssetMobileAppMetadata(cloudId: cloudId, eTag: eTag),
+            value: RemoteAssetMobileAppMetadata(
+              cloudId: cloudId,
+              createdAt: createdAt.toIso8601String(),
+              adjustmentTime: adjustmentTime,
+              latitude: latitude,
+              longitude: longitude,
+            ),
           ),
         ]),
     };

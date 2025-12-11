@@ -13,13 +13,19 @@ typedef $$RemoteAssetCloudIdEntityTableCreateCompanionBuilder =
     i1.RemoteAssetCloudIdEntityCompanion Function({
       required String assetId,
       i0.Value<String?> cloudId,
-      i0.Value<String?> eTag,
+      i0.Value<DateTime?> createdAt,
+      i0.Value<DateTime?> adjustmentTime,
+      i0.Value<double?> latitude,
+      i0.Value<double?> longitude,
     });
 typedef $$RemoteAssetCloudIdEntityTableUpdateCompanionBuilder =
     i1.RemoteAssetCloudIdEntityCompanion Function({
       i0.Value<String> assetId,
       i0.Value<String?> cloudId,
-      i0.Value<String?> eTag,
+      i0.Value<DateTime?> createdAt,
+      i0.Value<DateTime?> adjustmentTime,
+      i0.Value<double?> latitude,
+      i0.Value<double?> longitude,
     });
 
 final class $$RemoteAssetCloudIdEntityTableReferences
@@ -85,8 +91,23 @@ class $$RemoteAssetCloudIdEntityTableFilterComposer
     builder: (column) => i0.ColumnFilters(column),
   );
 
-  i0.ColumnFilters<String> get eTag => $composableBuilder(
-    column: $table.eTag,
+  i0.ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => i0.ColumnFilters(column),
+  );
+
+  i0.ColumnFilters<DateTime> get adjustmentTime => $composableBuilder(
+    column: $table.adjustmentTime,
+    builder: (column) => i0.ColumnFilters(column),
+  );
+
+  i0.ColumnFilters<double> get latitude => $composableBuilder(
+    column: $table.latitude,
+    builder: (column) => i0.ColumnFilters(column),
+  );
+
+  i0.ColumnFilters<double> get longitude => $composableBuilder(
+    column: $table.longitude,
     builder: (column) => i0.ColumnFilters(column),
   );
 
@@ -133,8 +154,23 @@ class $$RemoteAssetCloudIdEntityTableOrderingComposer
     builder: (column) => i0.ColumnOrderings(column),
   );
 
-  i0.ColumnOrderings<String> get eTag => $composableBuilder(
-    column: $table.eTag,
+  i0.ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => i0.ColumnOrderings(column),
+  );
+
+  i0.ColumnOrderings<DateTime> get adjustmentTime => $composableBuilder(
+    column: $table.adjustmentTime,
+    builder: (column) => i0.ColumnOrderings(column),
+  );
+
+  i0.ColumnOrderings<double> get latitude => $composableBuilder(
+    column: $table.latitude,
+    builder: (column) => i0.ColumnOrderings(column),
+  );
+
+  i0.ColumnOrderings<double> get longitude => $composableBuilder(
+    column: $table.longitude,
     builder: (column) => i0.ColumnOrderings(column),
   );
 
@@ -180,8 +216,19 @@ class $$RemoteAssetCloudIdEntityTableAnnotationComposer
   i0.GeneratedColumn<String> get cloudId =>
       $composableBuilder(column: $table.cloudId, builder: (column) => column);
 
-  i0.GeneratedColumn<String> get eTag =>
-      $composableBuilder(column: $table.eTag, builder: (column) => column);
+  i0.GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  i0.GeneratedColumn<DateTime> get adjustmentTime => $composableBuilder(
+    column: $table.adjustmentTime,
+    builder: (column) => column,
+  );
+
+  i0.GeneratedColumn<double> get latitude =>
+      $composableBuilder(column: $table.latitude, builder: (column) => column);
+
+  i0.GeneratedColumn<double> get longitude =>
+      $composableBuilder(column: $table.longitude, builder: (column) => column);
 
   i3.$$RemoteAssetEntityTableAnnotationComposer get assetId {
     final i3.$$RemoteAssetEntityTableAnnotationComposer composer =
@@ -256,21 +303,33 @@ class $$RemoteAssetCloudIdEntityTableTableManager
               ({
                 i0.Value<String> assetId = const i0.Value.absent(),
                 i0.Value<String?> cloudId = const i0.Value.absent(),
-                i0.Value<String?> eTag = const i0.Value.absent(),
+                i0.Value<DateTime?> createdAt = const i0.Value.absent(),
+                i0.Value<DateTime?> adjustmentTime = const i0.Value.absent(),
+                i0.Value<double?> latitude = const i0.Value.absent(),
+                i0.Value<double?> longitude = const i0.Value.absent(),
               }) => i1.RemoteAssetCloudIdEntityCompanion(
                 assetId: assetId,
                 cloudId: cloudId,
-                eTag: eTag,
+                createdAt: createdAt,
+                adjustmentTime: adjustmentTime,
+                latitude: latitude,
+                longitude: longitude,
               ),
           createCompanionCallback:
               ({
                 required String assetId,
                 i0.Value<String?> cloudId = const i0.Value.absent(),
-                i0.Value<String?> eTag = const i0.Value.absent(),
+                i0.Value<DateTime?> createdAt = const i0.Value.absent(),
+                i0.Value<DateTime?> adjustmentTime = const i0.Value.absent(),
+                i0.Value<double?> latitude = const i0.Value.absent(),
+                i0.Value<double?> longitude = const i0.Value.absent(),
               }) => i1.RemoteAssetCloudIdEntityCompanion.insert(
                 assetId: assetId,
                 cloudId: cloudId,
-                eTag: eTag,
+                createdAt: createdAt,
+                adjustmentTime: adjustmentTime,
+                latitude: latitude,
+                longitude: longitude,
               ),
           withReferenceMapper: (p0) => p0
               .map(
@@ -381,19 +440,60 @@ class $RemoteAssetCloudIdEntityTable extends i2.RemoteAssetCloudIdEntity
     requiredDuringInsert: false,
     defaultConstraints: i0.GeneratedColumn.constraintIsAlways('UNIQUE'),
   );
-  static const i0.VerificationMeta _eTagMeta = const i0.VerificationMeta(
-    'eTag',
+  static const i0.VerificationMeta _createdAtMeta = const i0.VerificationMeta(
+    'createdAt',
   );
   @override
-  late final i0.GeneratedColumn<String> eTag = i0.GeneratedColumn<String>(
-    'e_tag',
+  late final i0.GeneratedColumn<DateTime> createdAt =
+      i0.GeneratedColumn<DateTime>(
+        'created_at',
+        aliasedName,
+        true,
+        type: i0.DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+      );
+  static const i0.VerificationMeta _adjustmentTimeMeta =
+      const i0.VerificationMeta('adjustmentTime');
+  @override
+  late final i0.GeneratedColumn<DateTime> adjustmentTime =
+      i0.GeneratedColumn<DateTime>(
+        'adjustment_time',
+        aliasedName,
+        true,
+        type: i0.DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+      );
+  static const i0.VerificationMeta _latitudeMeta = const i0.VerificationMeta(
+    'latitude',
+  );
+  @override
+  late final i0.GeneratedColumn<double> latitude = i0.GeneratedColumn<double>(
+    'latitude',
     aliasedName,
     true,
-    type: i0.DriftSqlType.string,
+    type: i0.DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const i0.VerificationMeta _longitudeMeta = const i0.VerificationMeta(
+    'longitude',
+  );
+  @override
+  late final i0.GeneratedColumn<double> longitude = i0.GeneratedColumn<double>(
+    'longitude',
+    aliasedName,
+    true,
+    type: i0.DriftSqlType.double,
     requiredDuringInsert: false,
   );
   @override
-  List<i0.GeneratedColumn> get $columns => [assetId, cloudId, eTag];
+  List<i0.GeneratedColumn> get $columns => [
+    assetId,
+    cloudId,
+    createdAt,
+    adjustmentTime,
+    latitude,
+    longitude,
+  ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -420,10 +520,31 @@ class $RemoteAssetCloudIdEntityTable extends i2.RemoteAssetCloudIdEntity
         cloudId.isAcceptableOrUnknown(data['cloud_id']!, _cloudIdMeta),
       );
     }
-    if (data.containsKey('e_tag')) {
+    if (data.containsKey('created_at')) {
       context.handle(
-        _eTagMeta,
-        eTag.isAcceptableOrUnknown(data['e_tag']!, _eTagMeta),
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    if (data.containsKey('adjustment_time')) {
+      context.handle(
+        _adjustmentTimeMeta,
+        adjustmentTime.isAcceptableOrUnknown(
+          data['adjustment_time']!,
+          _adjustmentTimeMeta,
+        ),
+      );
+    }
+    if (data.containsKey('latitude')) {
+      context.handle(
+        _latitudeMeta,
+        latitude.isAcceptableOrUnknown(data['latitude']!, _latitudeMeta),
+      );
+    }
+    if (data.containsKey('longitude')) {
+      context.handle(
+        _longitudeMeta,
+        longitude.isAcceptableOrUnknown(data['longitude']!, _longitudeMeta),
       );
     }
     return context;
@@ -446,9 +567,21 @@ class $RemoteAssetCloudIdEntityTable extends i2.RemoteAssetCloudIdEntity
         i0.DriftSqlType.string,
         data['${effectivePrefix}cloud_id'],
       ),
-      eTag: attachedDatabase.typeMapping.read(
-        i0.DriftSqlType.string,
-        data['${effectivePrefix}e_tag'],
+      createdAt: attachedDatabase.typeMapping.read(
+        i0.DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      ),
+      adjustmentTime: attachedDatabase.typeMapping.read(
+        i0.DriftSqlType.dateTime,
+        data['${effectivePrefix}adjustment_time'],
+      ),
+      latitude: attachedDatabase.typeMapping.read(
+        i0.DriftSqlType.double,
+        data['${effectivePrefix}latitude'],
+      ),
+      longitude: attachedDatabase.typeMapping.read(
+        i0.DriftSqlType.double,
+        data['${effectivePrefix}longitude'],
       ),
     );
   }
@@ -468,11 +601,17 @@ class RemoteAssetCloudIdEntityData extends i0.DataClass
     implements i0.Insertable<i1.RemoteAssetCloudIdEntityData> {
   final String assetId;
   final String? cloudId;
-  final String? eTag;
+  final DateTime? createdAt;
+  final DateTime? adjustmentTime;
+  final double? latitude;
+  final double? longitude;
   const RemoteAssetCloudIdEntityData({
     required this.assetId,
     this.cloudId,
-    this.eTag,
+    this.createdAt,
+    this.adjustmentTime,
+    this.latitude,
+    this.longitude,
   });
   @override
   Map<String, i0.Expression> toColumns(bool nullToAbsent) {
@@ -481,8 +620,17 @@ class RemoteAssetCloudIdEntityData extends i0.DataClass
     if (!nullToAbsent || cloudId != null) {
       map['cloud_id'] = i0.Variable<String>(cloudId);
     }
-    if (!nullToAbsent || eTag != null) {
-      map['e_tag'] = i0.Variable<String>(eTag);
+    if (!nullToAbsent || createdAt != null) {
+      map['created_at'] = i0.Variable<DateTime>(createdAt);
+    }
+    if (!nullToAbsent || adjustmentTime != null) {
+      map['adjustment_time'] = i0.Variable<DateTime>(adjustmentTime);
+    }
+    if (!nullToAbsent || latitude != null) {
+      map['latitude'] = i0.Variable<double>(latitude);
+    }
+    if (!nullToAbsent || longitude != null) {
+      map['longitude'] = i0.Variable<double>(longitude);
     }
     return map;
   }
@@ -495,7 +643,10 @@ class RemoteAssetCloudIdEntityData extends i0.DataClass
     return RemoteAssetCloudIdEntityData(
       assetId: serializer.fromJson<String>(json['assetId']),
       cloudId: serializer.fromJson<String?>(json['cloudId']),
-      eTag: serializer.fromJson<String?>(json['eTag']),
+      createdAt: serializer.fromJson<DateTime?>(json['createdAt']),
+      adjustmentTime: serializer.fromJson<DateTime?>(json['adjustmentTime']),
+      latitude: serializer.fromJson<double?>(json['latitude']),
+      longitude: serializer.fromJson<double?>(json['longitude']),
     );
   }
   @override
@@ -504,18 +655,29 @@ class RemoteAssetCloudIdEntityData extends i0.DataClass
     return <String, dynamic>{
       'assetId': serializer.toJson<String>(assetId),
       'cloudId': serializer.toJson<String?>(cloudId),
-      'eTag': serializer.toJson<String?>(eTag),
+      'createdAt': serializer.toJson<DateTime?>(createdAt),
+      'adjustmentTime': serializer.toJson<DateTime?>(adjustmentTime),
+      'latitude': serializer.toJson<double?>(latitude),
+      'longitude': serializer.toJson<double?>(longitude),
     };
   }
 
   i1.RemoteAssetCloudIdEntityData copyWith({
     String? assetId,
     i0.Value<String?> cloudId = const i0.Value.absent(),
-    i0.Value<String?> eTag = const i0.Value.absent(),
+    i0.Value<DateTime?> createdAt = const i0.Value.absent(),
+    i0.Value<DateTime?> adjustmentTime = const i0.Value.absent(),
+    i0.Value<double?> latitude = const i0.Value.absent(),
+    i0.Value<double?> longitude = const i0.Value.absent(),
   }) => i1.RemoteAssetCloudIdEntityData(
     assetId: assetId ?? this.assetId,
     cloudId: cloudId.present ? cloudId.value : this.cloudId,
-    eTag: eTag.present ? eTag.value : this.eTag,
+    createdAt: createdAt.present ? createdAt.value : this.createdAt,
+    adjustmentTime: adjustmentTime.present
+        ? adjustmentTime.value
+        : this.adjustmentTime,
+    latitude: latitude.present ? latitude.value : this.latitude,
+    longitude: longitude.present ? longitude.value : this.longitude,
   );
   RemoteAssetCloudIdEntityData copyWithCompanion(
     i1.RemoteAssetCloudIdEntityCompanion data,
@@ -523,7 +685,12 @@ class RemoteAssetCloudIdEntityData extends i0.DataClass
     return RemoteAssetCloudIdEntityData(
       assetId: data.assetId.present ? data.assetId.value : this.assetId,
       cloudId: data.cloudId.present ? data.cloudId.value : this.cloudId,
-      eTag: data.eTag.present ? data.eTag.value : this.eTag,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      adjustmentTime: data.adjustmentTime.present
+          ? data.adjustmentTime.value
+          : this.adjustmentTime,
+      latitude: data.latitude.present ? data.latitude.value : this.latitude,
+      longitude: data.longitude.present ? data.longitude.value : this.longitude,
     );
   }
 
@@ -532,58 +699,92 @@ class RemoteAssetCloudIdEntityData extends i0.DataClass
     return (StringBuffer('RemoteAssetCloudIdEntityData(')
           ..write('assetId: $assetId, ')
           ..write('cloudId: $cloudId, ')
-          ..write('eTag: $eTag')
+          ..write('createdAt: $createdAt, ')
+          ..write('adjustmentTime: $adjustmentTime, ')
+          ..write('latitude: $latitude, ')
+          ..write('longitude: $longitude')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(assetId, cloudId, eTag);
+  int get hashCode => Object.hash(
+    assetId,
+    cloudId,
+    createdAt,
+    adjustmentTime,
+    latitude,
+    longitude,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is i1.RemoteAssetCloudIdEntityData &&
           other.assetId == this.assetId &&
           other.cloudId == this.cloudId &&
-          other.eTag == this.eTag);
+          other.createdAt == this.createdAt &&
+          other.adjustmentTime == this.adjustmentTime &&
+          other.latitude == this.latitude &&
+          other.longitude == this.longitude);
 }
 
 class RemoteAssetCloudIdEntityCompanion
     extends i0.UpdateCompanion<i1.RemoteAssetCloudIdEntityData> {
   final i0.Value<String> assetId;
   final i0.Value<String?> cloudId;
-  final i0.Value<String?> eTag;
+  final i0.Value<DateTime?> createdAt;
+  final i0.Value<DateTime?> adjustmentTime;
+  final i0.Value<double?> latitude;
+  final i0.Value<double?> longitude;
   const RemoteAssetCloudIdEntityCompanion({
     this.assetId = const i0.Value.absent(),
     this.cloudId = const i0.Value.absent(),
-    this.eTag = const i0.Value.absent(),
+    this.createdAt = const i0.Value.absent(),
+    this.adjustmentTime = const i0.Value.absent(),
+    this.latitude = const i0.Value.absent(),
+    this.longitude = const i0.Value.absent(),
   });
   RemoteAssetCloudIdEntityCompanion.insert({
     required String assetId,
     this.cloudId = const i0.Value.absent(),
-    this.eTag = const i0.Value.absent(),
+    this.createdAt = const i0.Value.absent(),
+    this.adjustmentTime = const i0.Value.absent(),
+    this.latitude = const i0.Value.absent(),
+    this.longitude = const i0.Value.absent(),
   }) : assetId = i0.Value(assetId);
   static i0.Insertable<i1.RemoteAssetCloudIdEntityData> custom({
     i0.Expression<String>? assetId,
     i0.Expression<String>? cloudId,
-    i0.Expression<String>? eTag,
+    i0.Expression<DateTime>? createdAt,
+    i0.Expression<DateTime>? adjustmentTime,
+    i0.Expression<double>? latitude,
+    i0.Expression<double>? longitude,
   }) {
     return i0.RawValuesInsertable({
       if (assetId != null) 'asset_id': assetId,
       if (cloudId != null) 'cloud_id': cloudId,
-      if (eTag != null) 'e_tag': eTag,
+      if (createdAt != null) 'created_at': createdAt,
+      if (adjustmentTime != null) 'adjustment_time': adjustmentTime,
+      if (latitude != null) 'latitude': latitude,
+      if (longitude != null) 'longitude': longitude,
     });
   }
 
   i1.RemoteAssetCloudIdEntityCompanion copyWith({
     i0.Value<String>? assetId,
     i0.Value<String?>? cloudId,
-    i0.Value<String?>? eTag,
+    i0.Value<DateTime?>? createdAt,
+    i0.Value<DateTime?>? adjustmentTime,
+    i0.Value<double?>? latitude,
+    i0.Value<double?>? longitude,
   }) {
     return i1.RemoteAssetCloudIdEntityCompanion(
       assetId: assetId ?? this.assetId,
       cloudId: cloudId ?? this.cloudId,
-      eTag: eTag ?? this.eTag,
+      createdAt: createdAt ?? this.createdAt,
+      adjustmentTime: adjustmentTime ?? this.adjustmentTime,
+      latitude: latitude ?? this.latitude,
+      longitude: longitude ?? this.longitude,
     );
   }
 
@@ -596,8 +797,17 @@ class RemoteAssetCloudIdEntityCompanion
     if (cloudId.present) {
       map['cloud_id'] = i0.Variable<String>(cloudId.value);
     }
-    if (eTag.present) {
-      map['e_tag'] = i0.Variable<String>(eTag.value);
+    if (createdAt.present) {
+      map['created_at'] = i0.Variable<DateTime>(createdAt.value);
+    }
+    if (adjustmentTime.present) {
+      map['adjustment_time'] = i0.Variable<DateTime>(adjustmentTime.value);
+    }
+    if (latitude.present) {
+      map['latitude'] = i0.Variable<double>(latitude.value);
+    }
+    if (longitude.present) {
+      map['longitude'] = i0.Variable<double>(longitude.value);
     }
     return map;
   }
@@ -607,7 +817,10 @@ class RemoteAssetCloudIdEntityCompanion
     return (StringBuffer('RemoteAssetCloudIdEntityCompanion(')
           ..write('assetId: $assetId, ')
           ..write('cloudId: $cloudId, ')
-          ..write('eTag: $eTag')
+          ..write('createdAt: $createdAt, ')
+          ..write('adjustmentTime: $adjustmentTime, ')
+          ..write('latitude: $latitude, ')
+          ..write('longitude: $longitude')
           ..write(')'))
         .toString();
   }
