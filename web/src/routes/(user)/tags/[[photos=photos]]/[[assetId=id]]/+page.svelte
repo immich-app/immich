@@ -14,16 +14,8 @@
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { joinPaths, TreeNode } from '$lib/utils/tree-utils';
   import { deleteTag, getAllTags, type TagResponseDto } from '@immich/sdk';
-  import { Button, HStack, IconButton, modalManager, Text } from '@immich/ui';
-  import {
-    mdiDotsVertical,
-    mdiPencil,
-    mdiPlus,
-    mdiSelectAll,
-    mdiTag,
-    mdiTagMultiple,
-    mdiTrashCanOutline,
-  } from '@mdi/js';
+  import { Button, HStack, modalManager, Text } from '@immich/ui';
+  import { mdiDotsVertical, mdiPencil, mdiPlus, mdiTag, mdiTagMultiple, mdiTrashCanOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
   import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
