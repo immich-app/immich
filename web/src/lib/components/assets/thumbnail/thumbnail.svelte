@@ -20,6 +20,7 @@
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import { mobileDevice } from '$lib/stores/mobile-device.svelte';
+  import { isCached } from '$lib/utils/cache';
   import { moveFocus } from '$lib/utils/focus-util';
   import { currentUrlReplaceAssetId } from '$lib/utils/navigation';
   import { TUNABLES } from '$lib/utils/tunables';
@@ -77,6 +78,12 @@
   let {
     IMAGE_THUMBNAIL: { THUMBHASH_FADE_DURATION },
   } = TUNABLES;
+
+  const thumbnailURL = getAssetThumbnailUrl({
+    id: asset.id,
+    size: AssetMediaSize.Thumbnail,
+    cacheKey: asset.thumbhash,
+  });
 
   let usingMobileDevice = $derived(mobileDevice.pointerCoarse);
   let element: HTMLElement | undefined = $state();
@@ -335,7 +342,7 @@
       <ImageThumbnail
         class={imageClass}
         {brokenAssetClass}
-        url={getAssetThumbnailUrl({ id: asset.id, size: AssetMediaSize.Thumbnail, cacheKey: asset.thumbhash })}
+        url={thumbnailURL}
         altText={$getAltText(asset)}
         widthStyle="{width}px"
         heightStyle="{height}px"
@@ -385,17 +392,31 @@
         </div>
       {/if}
 
-      {#if (!loaded || thumbError) && asset.thumbhash}
-        <canvas
-          use:thumbhash={{ base64ThumbHash: asset.thumbhash }}
-          data-testid="thumbhash"
-          class="absolute top-0 object-cover"
-          style:width="{width}px"
-          style:height="{height}px"
-          class:rounded-xl={selected}
-          draggable="false"
-          out:fade={{ duration: THUMBHASH_FADE_DURATION }}
-        ></canvas>
+      {#if asset.thumbhash}
+        {#await isCached(new Request(thumbnailURL))}
+          <canvas
+            use:thumbhash={{ base64ThumbHash: asset.thumbhash }}
+            data-testid="thumbhash"
+            class="absolute top-0 object-cover"
+            style:width="{width}px"
+            style:height="{height}px"
+            class:rounded-xl={selected}
+            draggable="false"
+          ></canvas>
+        {:then cached}
+          {#if !cached && !loaded && !thumbError}
+            <canvas
+              use:thumbhash={{ base64ThumbHash: asset.thumbhash }}
+              data-testid="thumbhash"
+              class="absolute top-0 object-cover"
+              style:width="{width}px"
+              style:height="{height}px"
+              class:rounded-xl={selected}
+              draggable="false"
+              out:fade={{ duration: THUMBHASH_FADE_DURATION }}
+            ></canvas>
+          {/if}
+        {/await}
       {/if}
     </div>
 
