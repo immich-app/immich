@@ -39,6 +39,7 @@ import { AssetOcrTable } from 'src/schema/tables/asset-ocr.table';
 import { AssetTable } from 'src/schema/tables/asset.table';
 import { AuditTable } from 'src/schema/tables/audit.table';
 import { FaceSearchTable } from 'src/schema/tables/face-search.table';
+import { FavoriteLocationTable } from 'src/schema/tables/favorite-location.table';
 import { GeodataPlacesTable } from 'src/schema/tables/geodata-places.table';
 import { LibraryTable } from 'src/schema/tables/library.table';
 import { MemoryAssetAuditTable } from 'src/schema/tables/memory-asset-audit.table';
@@ -97,6 +98,7 @@ export class ImmichDatabase {
     AuditTable,
     AssetExifTable,
     FaceSearchTable,
+    FavoriteLocationTable,
     GeodataPlacesTable,
     LibraryTable,
     MemoryTable,
@@ -192,6 +194,7 @@ export interface DB {
   audit: AuditTable;
 
   face_search: FaceSearchTable;
+  favorite_location: FavoriteLocationTable;
 
   geodata_places: GeodataPlacesTable;
 

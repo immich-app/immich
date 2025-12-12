@@ -1112,6 +1112,8 @@
   "failed_to_load_assets": "Failed to load assets",
   "failed_to_load_folder": "Failed to load folder",
   "favorite": "Favorite",
+  "favorite_locations": "Favorite Locations",
+  "favorite_locations_not_found": "No favorite locations saved",
   "favorite_action_prompt": "{count} added to Favorites",
   "favorite_or_unfavorite_photo": "Favorite or unfavorite photo",
   "favorites": "Favorites",

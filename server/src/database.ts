@@ -274,6 +274,16 @@ export type AssetFace = {
   updateId: string;
 };
 
+export type FavoriteLocation = {
+  id: string;
+  name: string;
+  userId: string;
+  latitude: number | null;
+  longitude: number | null;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
 export type Plugin = Selectable<PluginTable>;
 
 export type PluginFilter = Selectable<PluginFilterTable> & {
