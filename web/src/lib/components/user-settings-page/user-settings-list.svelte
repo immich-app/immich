@@ -21,7 +21,6 @@
     mdiDownload,
     mdiFeatureSearchOutline,
     mdiFormTextboxPassword,
-    mdiKeyOutline,
     mdiLockSmart,
     mdiServerOutline,
   } from '@mdi/js';
@@ -57,7 +56,7 @@
     <AppSettings />
   </SettingAccordion>
 
-  {#if $featureFlags.loaded && !$featureFlags.oauth}
+  {#if !featureFlagsManager.value.oauth}
     <SettingAccordion icon={mdiAccountOutline} key="account" title={$t('account')} subtitle={$t('manage_your_account')}>
       <UserProfileSettings />
     </SettingAccordion>
