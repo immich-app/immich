@@ -19,6 +19,7 @@
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
   import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
+  import RemoveTagAction from '$lib/components/timeline/actions/RemoveTagAction.svelte';
   import AddToAlbum from '$lib/components/timeline/actions/AddToAlbumAction.svelte';
   import ArchiveAction from '$lib/components/timeline/actions/ArchiveAction.svelte';
   import ChangeDate from '$lib/components/timeline/actions/ChangeDateAction.svelte';
@@ -169,7 +170,11 @@
         <FavoriteAction
           removeFavorite={assetInteraction.isAllFavorite}
           onFavorite={(ids, isFavorite) => timelineManager.update(ids, (asset) => (asset.isFavorite = isFavorite))}
-        ></FavoriteAction>
+         />
+        <RemoveTagAction 
+          tagId={tag.id} 
+          onRemove={(assetIds) => timelineManager.removeAssets(assetIds)}
+        />
         <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
           <DownloadAction menuItem />
           <ChangeDate menuItem />
