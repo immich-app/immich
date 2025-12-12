@@ -3,6 +3,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/services/quick_action.service.dart';
+import 'package:immich_mobile/infrastructure/repositories/action_button_order.repository.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/archive_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/edit_image_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/share_action_button.widget.dart';
 import 'package:immich_mobile/utils/action_button.utils.dart';
 
 LocalAsset createLocalAsset({
@@ -134,6 +139,56 @@ void main() {
         );
 
         expect(ActionButtonType.share.shouldShow(context), isTrue);
+      });
+    });
+
+    group('edit button', () {
+      test('should show for images when not in locked view', () {
+        final context = ActionButtonContext(
+          asset: createRemoteAsset(type: AssetType.image),
+          isOwner: true,
+          isArchived: false,
+          isTrashEnabled: true,
+          isInLockedView: false,
+          currentAlbum: null,
+          advancedTroubleshooting: false,
+          isStacked: false,
+          source: ActionSource.timeline,
+        );
+
+        expect(ActionButtonType.edit.shouldShow(context), isTrue);
+      });
+
+      test('should not show in locked view', () {
+        final context = ActionButtonContext(
+          asset: createRemoteAsset(type: AssetType.image),
+          isOwner: true,
+          isArchived: false,
+          isTrashEnabled: true,
+          isInLockedView: true,
+          currentAlbum: null,
+          advancedTroubleshooting: false,
+          isStacked: false,
+          source: ActionSource.timeline,
+        );
+
+        expect(ActionButtonType.edit.shouldShow(context), isFalse);
+      });
+
+      test('should not show for non-image assets', () {
+        final context = ActionButtonContext(
+          asset: createRemoteAsset(type: AssetType.video),
+          isOwner: true,
+          isArchived: false,
+          isTrashEnabled: true,
+          isInLockedView: false,
+          currentAlbum: null,
+          advancedTroubleshooting: false,
+          isStacked: false,
+          source: ActionSource.timeline,
+        );
+
+        expect(ActionButtonType.edit.shouldShow(context), isFalse);
       });
     });
 
@@ -960,6 +1015,39 @@ void main() {
 
       expect(archivedWidgets, isNotEmpty);
       expect(nonArchivedWidgets, isNotEmpty);
+    });
+
+    test('should build quick actions honoring custom order', () {
+      final remoteAsset = createRemoteAsset();
+      final context = ActionButtonContext(
+        asset: remoteAsset,
+        isOwner: true,
+        isArchived: false,
+        isTrashEnabled: true,
+        isInLockedView: false,
+        currentAlbum: null,
+        advancedTroubleshooting: false,
+        isStacked: false,
+        source: ActionSource.viewer,
+      );
+
+      final quickActionService = const QuickActionService(ActionButtonOrderRepository());
+      final quickActionTypes = quickActionService.buildQuickActionTypes(
+        context,
+        quickActionOrder: const [
+          ActionButtonType.archive,
+          ActionButtonType.share,
+          ActionButtonType.edit,
+          ActionButtonType.delete,
+        ],
+      );
+
+      final quickActions = quickActionTypes.map((type) => type.buildButton(context)).toList();
+
+      expect(quickActions.length, ActionButtonBuilder.defaultQuickActionLimit);
+      expect(quickActions.first, isA<ArchiveActionButton>());
+      expect(quickActions[1], isA<ShareActionButton>());
+      expect(quickActions[2], isA<EditImageActionButton>());
     });
   });
 }
