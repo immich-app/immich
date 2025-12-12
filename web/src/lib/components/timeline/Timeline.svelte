@@ -54,6 +54,8 @@
     isShowDeleteConfirmation?: boolean;
     onSelect?: (asset: TimelineAsset) => void;
     onEscape?: () => void;
+    onKeyboardDelete?: (assetIds: string[]) => void;
+    onKeyboardArchive?: (ids: string[]) => void;
     children?: Snippet;
     empty?: Snippet;
     customThumbnailLayout?: Snippet<[TimelineAsset]>;
@@ -87,6 +89,8 @@
     isShowDeleteConfirmation = $bindable(false),
     onSelect = () => {},
     onEscape = () => {},
+    onKeyboardDelete,
+    onKeyboardArchive,
     children,
     empty,
     customThumbnailLayout,
@@ -604,6 +608,8 @@
   {assetInteraction}
   bind:isShowDeleteConfirmation
   {onEscape}
+  onAssetDelete={onKeyboardDelete}
+  onArchive={onKeyboardArchive}
 />
 
 {#if timelineManager.months.length > 0}
