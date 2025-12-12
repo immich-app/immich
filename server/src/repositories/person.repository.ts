@@ -147,10 +147,9 @@ export class PersonRepository {
   }
 
   @GenerateSql({ params: [{ take: 1, skip: 0 }, DummyValue.UUID] })
-  async getAllForUser(pagination: PaginationOptions, userId: string, options?: PersonSearchOptions) {
-    const items = await this.db
+  async getAllForUser(pagination: PaginationOptions, userId: string, options: PersonSearchOptions) {
+    const baseQuery = this.db
       .selectFrom('person')
-      .selectAll('person')
       .innerJoin('asset_face', 'asset_face.personId', 'person.id')
       .innerJoin('asset', (join) =>
         join
@@ -160,45 +159,62 @@ export class PersonRepository {
       )
       .where('person.ownerId', '=', userId)
       .where('asset_face.deletedAt', 'is', null)
-      .orderBy('person.isHidden', 'asc')
-      .orderBy('person.isFavorite', 'desc')
-      .having((eb) =>
-        eb.or([
-          eb('person.name', '!=', ''),
-          eb((innerEb) => innerEb.fn.count('asset_face.assetId'), '>=', options?.minimumFaceCount || 1),
-        ]),
-      )
       .groupBy('person.id')
-      .$if(!!options?.closestFaceAssetId, (qb) =>
-        qb.orderBy((eb) =>
-          eb(
-            (eb) =>
-              eb
-                .selectFrom('face_search')
-                .select('face_search.embedding')
-                .whereRef('face_search.faceId', '=', 'person.faceAssetId'),
-            '<=>',
-            (eb) =>
-              eb
-                .selectFrom('face_search')
-                .select('face_search.embedding')
-                .where('face_search.faceId', '=', options!.closestFaceAssetId!),
-          ),
+      .having((eb) =>
+        eb.or([eb('person.name', '!=', ''), eb(eb.fn.count('asset_face.assetId'), '>=', options.minimumFaceCount)]),
+      )
+      .selectAll('person')
+      .select((eb) => [
+        eb.fn.count('asset_face.assetId').as('faceCount'),
+
+        eb.fn.countAll().over().as('totalCount'),
+
+        eb.fn
+          .sum(sql<number>`CASE WHEN ${sql.ref('person.isHidden')} THEN 1 ELSE 0 END`)
+          .over()
+          .as('hiddenCount'),
+      ]);
+
+    let sorted = baseQuery.orderBy('person.isHidden', 'asc').orderBy('person.isFavorite', 'desc');
+
+    if (options.closestFaceAssetId) {
+      const closestId = options.closestFaceAssetId!;
+
+      sorted = sorted.orderBy((eb) =>
+        eb(
+          (eb) =>
+            eb
+              .selectFrom('face_search')
+              .select('face_search.embedding')
+              .whereRef('face_search.faceId', '=', 'person.faceAssetId'),
+          '<=>',
+          (eb) =>
+            eb.selectFrom('face_search').select('face_search.embedding').where('face_search.faceId', '=', closestId),
         ),
-      )
-      .$if(!options?.closestFaceAssetId, (qb) =>
-        qb
-          .orderBy(sql`NULLIF(person.name, '') is null`, 'asc')
-          .orderBy((eb) => eb.fn.count('asset_face.assetId'), 'desc')
-          .orderBy(sql`NULLIF(person.name, '')`, (om) => om.asc().nullsLast())
-          .orderBy('person.createdAt'),
-      )
-      .$if(!options?.withHidden, (qb) => qb.where('person.isHidden', '=', false))
+      );
+    } else {
+      sorted = sorted
+        .orderBy(sql`NULLIF(person.name, '') IS NULL`, 'asc')
+        .orderBy((eb) => eb.fn.count('asset_face.assetId'), 'desc')
+        .orderBy(sql`NULLIF(person.name, '')`, (o) => o.asc().nullsLast())
+        .orderBy('person.createdAt');
+    }
+
+    if (!options.withHidden) {
+      sorted = sorted.where('person.isHidden', '=', false);
+    }
+
+    const rows = await sorted
       .offset(pagination.skip ?? 0)
       .limit(pagination.take + 1)
       .execute();
 
-    return paginationHelper(items, pagination.take);
+    const total = rows[0]?.totalCount ?? 0;
+    const hidden = rows[0]?.hiddenCount ?? 0;
+
+    const { items, hasNextPage } = paginationHelper(rows, pagination.take);
+
+    return { items, hasNextPage, total, hidden };
   }
 
   @GenerateSql()
@@ -355,40 +371,6 @@ export class PersonRepository {
     return {
       assets: result ? Number(result.count) : 0,
     };
-  }
-
-  @GenerateSql({ params: [DummyValue.UUID] })
-  getNumberOfPeople(userId: string, options?: PersonSearchOptions) {
-    const zero = sql.lit(0);
-    return this.db
-      .selectFrom('person')
-      .where((eb) =>
-        eb.exists((eb) =>
-          eb
-            .selectFrom('asset_face')
-            .whereRef('asset_face.personId', '=', 'person.id')
-            .where('asset_face.deletedAt', 'is', null)
-            .having((eb) =>
-              eb.or([
-                eb('person.name', '!=', ''),
-                eb((innerEb) => innerEb.fn.count('asset_face.assetId'), '>=', options?.minimumFaceCount || 1),
-              ]),
-            )
-            .where((eb) =>
-              eb.exists((eb) =>
-                eb
-                  .selectFrom('asset')
-                  .whereRef('asset.id', '=', 'asset_face.assetId')
-                  .where('asset.visibility', '=', sql.lit(AssetVisibility.Timeline))
-                  .where('asset.deletedAt', 'is', null),
-              ),
-            ),
-        ),
-      )
-      .where('person.ownerId', '=', userId)
-      .select((eb) => eb.fn.coalesce(eb.fn.countAll<number>(), zero).as('total'))
-      .select((eb) => eb.fn.coalesce(eb.fn.countAll<number>().filterWhere('isHidden', '=', true), zero).as('hidden'))
-      .executeTakeFirstOrThrow();
   }
 
   create(person: Insertable<PersonTable>) {

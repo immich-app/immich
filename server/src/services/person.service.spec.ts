@@ -70,11 +70,28 @@ describe(PersonService.name, () => {
 
   describe('getAll', () => {
     it('should get all hidden and visible people with thumbnails', async () => {
+      // Updated stubs with the required aggregated fields
+      const personWithCounts = {
+        ...personStub.withName,
+        faceCount: 3,
+        totalCount: 2,
+        hiddenCount: 1,
+      };
+
+      const hiddenPersonWithCounts = {
+        ...personStub.hidden,
+        faceCount: 1,
+        totalCount: 2,
+        hiddenCount: 1,
+      };
+
       mocks.person.getAllForUser.mockResolvedValue({
-        items: [personStub.withName, personStub.hidden],
+        items: [personWithCounts, hiddenPersonWithCounts],
         hasNextPage: false,
+        total: 2,
+        hidden: 1,
       });
-      mocks.person.getNumberOfPeople.mockResolvedValue({ total: 2, hidden: 1 });
+
       await expect(sut.getAll(authStub.admin, { withHidden: true, page: 1, size: 10 })).resolves.toEqual({
         hasNextPage: false,
         total: 2,
@@ -93,18 +110,36 @@ describe(PersonService.name, () => {
           },
         ],
       });
+
       expect(mocks.person.getAllForUser).toHaveBeenCalledWith({ skip: 0, take: 10 }, authStub.admin.user.id, {
         minimumFaceCount: 3,
         withHidden: true,
+        closestFaceAssetId: undefined,
       });
     });
 
     it('should get all visible people and favorites should be first in the array', async () => {
+      const favoritePersonWithCounts = {
+        ...personStub.isFavorite,
+        faceCount: 3,
+        totalCount: 2,
+        hiddenCount: 1,
+      };
+
+      const namedPersonWithCounts = {
+        ...personStub.withName,
+        faceCount: 3,
+        totalCount: 2,
+        hiddenCount: 1,
+      };
+
       mocks.person.getAllForUser.mockResolvedValue({
-        items: [personStub.isFavorite, personStub.withName],
+        items: [favoritePersonWithCounts, namedPersonWithCounts],
         hasNextPage: false,
+        total: 2,
+        hidden: 1,
       });
-      mocks.person.getNumberOfPeople.mockResolvedValue({ total: 2, hidden: 1 });
+
       await expect(sut.getAll(authStub.admin, { withHidden: false, page: 1, size: 10 })).resolves.toEqual({
         hasNextPage: false,
         total: 2,
@@ -123,9 +158,11 @@ describe(PersonService.name, () => {
           responseDto,
         ],
       });
+
       expect(mocks.person.getAllForUser).toHaveBeenCalledWith({ skip: 0, take: 10 }, authStub.admin.user.id, {
         minimumFaceCount: 3,
         withHidden: false,
+        closestFaceAssetId: undefined,
       });
     });
   });

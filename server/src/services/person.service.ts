@@ -48,12 +48,13 @@ import { isFacialRecognitionEnabled } from 'src/utils/misc';
 export class PersonService extends BaseService {
   async getAll(auth: AuthDto, dto: PersonSearchDto): Promise<PeopleResponseDto> {
     const { withHidden = false, closestAssetId, closestPersonId, page, size } = dto;
-    let closestFaceAssetId = closestAssetId;
+
     const pagination = {
       take: size,
       skip: (page - 1) * size,
     };
 
+    let closestFaceAssetId = closestAssetId;
     if (closestPersonId) {
       const person = await this.personRepository.getById(closestPersonId);
       if (!person?.faceAssetId) {
@@ -61,22 +62,20 @@ export class PersonService extends BaseService {
       }
       closestFaceAssetId = person.faceAssetId;
     }
+
     const { machineLearning } = await this.getConfig({ withCache: false });
-    const { items, hasNextPage } = await this.personRepository.getAllForUser(pagination, auth.user.id, {
+
+    const { items, hasNextPage, total, hidden } = await this.personRepository.getAllForUser(pagination, auth.user.id, {
       minimumFaceCount: machineLearning.facialRecognition.minFaces,
       withHidden,
       closestFaceAssetId,
-    });
-    const { total, hidden } = await this.personRepository.getNumberOfPeople(auth.user.id, {
-      minimumFaceCount: machineLearning.facialRecognition.minFaces,
-      withHidden,
     });
 
     return {
       people: items.map((person) => mapPerson(person)),
       hasNextPage,
-      total,
-      hidden,
+      total: Number(total),
+      hidden: Number(hidden),
     };
   }
 

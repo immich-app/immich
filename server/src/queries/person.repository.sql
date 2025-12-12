@@ -23,38 +23,6 @@ where
 limit
   3
 
--- PersonRepository.getAllForUser
-select
-  "person".*
-from
-  "person"
-  inner join "asset_face" on "asset_face"."personId" = "person"."id"
-  inner join "asset" on "asset_face"."assetId" = "asset"."id"
-  and "asset"."visibility" = 'timeline'
-  and "asset"."deletedAt" is null
-where
-  "person"."ownerId" = $1
-  and "asset_face"."deletedAt" is null
-  and "person"."isHidden" = $2
-group by
-  "person"."id"
-having
-  (
-    "person"."name" != $3
-    or count("asset_face"."assetId") >= $4
-  )
-order by
-  "person"."isHidden" asc,
-  "person"."isFavorite" desc,
-  NULLIF(person.name, '') is null asc,
-  count("asset_face"."assetId") desc,
-  NULLIF(person.name, '') asc nulls last,
-  "person"."createdAt"
-limit
-  $5
-offset
-  $6
-
 -- PersonRepository.getAllWithoutFaces
 select
   "person".*
@@ -229,43 +197,6 @@ from
   and "asset"."deletedAt" is null
 where
   "asset_face"."deletedAt" is null
-
--- PersonRepository.getNumberOfPeople
-select
-  coalesce(count(*), 0) as "total",
-  coalesce(
-    count(*) filter (
-      where
-        "isHidden" = $1
-    ),
-    0
-  ) as "hidden"
-from
-  "person"
-where
-  exists (
-    select
-    from
-      "asset_face"
-    where
-      "asset_face"."personId" = "person"."id"
-      and "asset_face"."deletedAt" is null
-      and exists (
-        select
-        from
-          "asset"
-        where
-          "asset"."id" = "asset_face"."assetId"
-          and "asset"."visibility" = 'timeline'
-          and "asset"."deletedAt" is null
-      )
-    having
-      (
-        "person"."name" != $2
-        or count("asset_face"."assetId") >= $3
-      )
-  )
-  and "person"."ownerId" = $4
 
 -- PersonRepository.refreshFaces
 with
