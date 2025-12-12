@@ -103,6 +103,20 @@ async def preload_models(preload: PreloadModelData) -> None:
             ModelTask.FACIAL_RECOGNITION,
         )
 
+    if preload.ocr.detection is not None:
+        await load_models(
+            preload.ocr.detection,
+            ModelType.DETECTION,
+            ModelTask.OCR,
+        )
+
+    if preload.ocr.recognition is not None:
+        await load_models(
+            preload.ocr.recognition,
+            ModelType.RECOGNITION,
+            ModelTask.OCR,
+        )
+
     if preload.clip_fallback is not None:
         log.warning(
             "Deprecated env variable: 'MACHINE_LEARNING_PRELOAD__CLIP'. "

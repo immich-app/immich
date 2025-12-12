@@ -12,7 +12,6 @@ import {
   AssetMediaStatus,
   AssetVisibility,
   checkBulkUpload,
-  getAssetOriginalPath,
   getBaseUrl,
   type AssetMediaResponseDto,
 } from '@immich/sdk';
@@ -44,12 +43,10 @@ export const addDummyItems = () => {
 
 export const uploadExecutionQueue = new ExecutorQueue({ concurrency: 2 });
 
-type FileUploadParam = { multiple?: boolean } & (
-  | { albumId?: string; assetId?: never }
-  | { albumId?: never; assetId?: string }
-);
+type FileUploadParam = { multiple?: boolean; albumId?: string };
+
 export const openFileUploadDialog = async (options: FileUploadParam = {}) => {
-  const { albumId, multiple = true, assetId } = options;
+  const { albumId, multiple = true } = options;
   const extensions = uploadManager.getExtensions();
 
   return new Promise<string[]>((resolve, reject) => {
@@ -68,7 +65,7 @@ export const openFileUploadDialog = async (options: FileUploadParam = {}) => {
           }
           const files = Array.from(target.files);
 
-          resolve(fileUploadHandler({ files, albumId, replaceAssetId: assetId }));
+          resolve(fileUploadHandler({ files, albumId }));
         },
         { passive: true },
       );
@@ -88,7 +85,6 @@ type FileUploadHandlerParams = Omit<FileUploaderParams, 'deviceAssetId' | 'asset
 export const fileUploadHandler = async ({
   files,
   albumId,
-  replaceAssetId,
   isLockedAssets = false,
 }: FileUploadHandlerParams): Promise<string[]> => {
   const extensions = uploadManager.getExtensions();
@@ -99,9 +95,7 @@ export const fileUploadHandler = async ({
       const deviceAssetId = getDeviceAssetId(file);
       uploadAssetsStore.addItem({ id: deviceAssetId, file, albumId });
       promises.push(
-        uploadExecutionQueue.addTask(() =>
-          fileUploader({ assetFile: file, deviceAssetId, albumId, replaceAssetId, isLockedAssets }),
-        ),
+        uploadExecutionQueue.addTask(() => fileUploader({ assetFile: file, deviceAssetId, albumId, isLockedAssets })),
       );
     }
   }
@@ -127,7 +121,6 @@ async function fileUploader({
   assetFile,
   deviceAssetId,
   albumId,
-  replaceAssetId,
   isLockedAssets = false,
 }: FileUploaderParams): Promise<string | undefined> {
   const fileCreatedAt = new Date(assetFile.lastModified).toISOString();
@@ -183,27 +176,17 @@ async function fileUploader({
       const queryParams = asQueryString(authManager.params);
 
       uploadAssetsStore.updateItem(deviceAssetId, { message: $t('asset_uploading') });
-      if (replaceAssetId) {
-        const response = await uploadRequest<AssetMediaResponseDto>({
-          url: getBaseUrl() + getAssetOriginalPath(replaceAssetId) + (queryParams ? `?${queryParams}` : ''),
-          method: 'PUT',
-          data: formData,
-          onUploadProgress: (event) => uploadAssetsStore.updateProgress(deviceAssetId, event.loaded, event.total),
-        });
-        responseData = response.data;
-      } else {
-        const response = await uploadRequest<AssetMediaResponseDto>({
-          url: getBaseUrl() + '/assets' + (queryParams ? `?${queryParams}` : ''),
-          data: formData,
-          onUploadProgress: (event) => uploadAssetsStore.updateProgress(deviceAssetId, event.loaded, event.total),
-        });
+      const response = await uploadRequest<AssetMediaResponseDto>({
+        url: getBaseUrl() + '/assets' + (queryParams ? `?${queryParams}` : ''),
+        data: formData,
+        onUploadProgress: (event) => uploadAssetsStore.updateProgress(deviceAssetId, event.loaded, event.total),
+      });
 
-        if (![200, 201].includes(response.status)) {
-          throw new Error($t('errors.unable_to_upload_file'));
-        }
-
-        responseData = response.data;
+      if (![200, 201].includes(response.status)) {
+        throw new Error($t('errors.unable_to_upload_file'));
       }
+
+      responseData = response.data;
     }
 
     if (responseData.status === AssetMediaStatus.Duplicate) {

@@ -62,7 +62,6 @@
     "exclusion_pattern_description": "Maaaring gamitin ang mga pattern na pangbukod para hindi pansinin ang ilang file o folder habang binabasa ang iyong library. Mainam itong solusyon para sa mga folder na may file na ayaw niyong ma-import, tulad ng mga RAW na file.",
     "force_delete_user_warning": "BABALA: Tatanggalin itong user at lahat ng asset nila, Hindi ito mababawi at ang kanilang files ay hindi na mababalik",
     "image_format": "Format",
-    "library_import_path_description": "Tukuyin ang folder na i-import. Ang folder na ito, kasama ang subfolders, ay mag sa-scan para sa mga imahe at mga videos.",
     "note_cannot_be_changed_later": "TANDAAN: Hindi na ito pwede baguhin sa susunod!",
     "server_welcome_message_description": "Mensahe na ipapakita sa login page.",
     "user_restore_description": "Ang account ni <b>{user}</b> ay maibabalik."

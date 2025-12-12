@@ -5,7 +5,7 @@ class SearchStore {
   isSearchEnabled = $state(false);
 
   constructor() {
-    eventManager.on('auth.logout', () => this.clearCache());
+    eventManager.on('AuthLogout', () => this.clearCache());
   }
 
   clearCache() {

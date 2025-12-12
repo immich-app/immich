@@ -3,12 +3,12 @@
 #
 # Pump one or both of the server/mobile versions in appropriate files
 #
-# usage: './scripts/pump-version.sh -s <major|minor|patch> <-m>
+# usage: './scripts/pump-version.sh -s <major|minor|patch> <-m> <true|false>
 #
 # examples:
-#    ./scripts/pump-version.sh -s major        # 1.0.0+50 => 2.0.0+50
-#    ./scripts/pump-version.sh -s minor -m     # 1.0.0+50 => 1.1.0+51
-#    ./scripts/pump-version.sh -m              # 1.0.0+50 => 1.0.0+51
+#    ./scripts/pump-version.sh -s major         # 1.0.0+50 => 2.0.0+50
+#    ./scripts/pump-version.sh -s minor -m true # 1.0.0+50 => 1.1.0+51
+#    ./scripts/pump-version.sh -m true          # 1.0.0+50 => 1.0.0+51
 #
 
 SERVER_PUMP="false"

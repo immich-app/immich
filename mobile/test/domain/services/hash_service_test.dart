@@ -14,16 +14,19 @@ void main() {
   late MockLocalAlbumRepository mockAlbumRepo;
   late MockLocalAssetRepository mockAssetRepo;
   late MockNativeSyncApi mockNativeApi;
+  late MockTrashedLocalAssetRepository mockTrashedAssetRepo;
 
   setUp(() {
     mockAlbumRepo = MockLocalAlbumRepository();
     mockAssetRepo = MockLocalAssetRepository();
     mockNativeApi = MockNativeSyncApi();
+    mockTrashedAssetRepo = MockTrashedLocalAssetRepository();
 
     sut = HashService(
       localAlbumRepository: mockAlbumRepo,
       localAssetRepository: mockAssetRepo,
       nativeSyncApi: mockNativeApi,
+      trashedLocalAssetRepository: mockTrashedAssetRepo,
     );
 
     registerFallbackValue(LocalAlbumStub.recent);
@@ -114,6 +117,7 @@ void main() {
         localAssetRepository: mockAssetRepo,
         nativeSyncApi: mockNativeApi,
         batchSize: batchSize,
+        trashedLocalAssetRepository: mockTrashedAssetRepo,
       );
 
       final album = LocalAlbumStub.recent;
@@ -186,4 +190,5 @@ void main() {
       verify(() => mockNativeApi.hashAssets([asset2.id], allowNetworkAccess: false)).called(1);
     });
   });
+
 }

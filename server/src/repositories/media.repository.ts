@@ -121,6 +121,23 @@ export class MediaRepository {
     }
   }
 
+  async copyTagGroup(tagGroup: string, source: string, target: string): Promise<boolean> {
+    try {
+      await exiftool.write(
+        target,
+        {},
+        {
+          ignoreMinorErrors: true,
+          writeArgs: ['-TagsFromFile', source, `-${tagGroup}:all>${tagGroup}:all`, '-overwrite_original'],
+        },
+      );
+      return true;
+    } catch (error: any) {
+      this.logger.warn(`Could not copy tag data to image: ${error.message}`);
+      return false;
+    }
+  }
+
   decodeImage(input: string | Buffer, options: DecodeToBufferOptions) {
     return this.getImageDecodingPipeline(input, options).raw().toBuffer({ resolveWithObject: true });
   }

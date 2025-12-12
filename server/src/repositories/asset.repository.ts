@@ -73,9 +73,10 @@ export interface TimeBucketItem {
   count: number;
 }
 
-export interface MonthDay {
+export interface YearMonthDay {
   day: number;
   month: number;
+  year: number;
 }
 
 interface AssetExploreFieldOptions {
@@ -259,8 +260,8 @@ export class AssetRepository {
     return this.db.insertInto('asset').values(assets).returningAll().execute();
   }
 
-  @GenerateSql({ params: [DummyValue.UUID, { day: 1, month: 1 }] })
-  getByDayOfYear(ownerIds: string[], { day, month }: MonthDay) {
+  @GenerateSql({ params: [DummyValue.UUID, { year: 2000, day: 1, month: 1 }] })
+  getByDayOfYear(ownerIds: string[], { year, day, month }: YearMonthDay) {
     return this.db
       .with('res', (qb) =>
         qb
@@ -270,7 +271,7 @@ export class AssetRepository {
                 eb
                   .fn('generate_series', [
                     sql`(select date_part('year', min(("localDateTime" at time zone 'UTC')::date))::int from asset)`,
-                    sql`date_part('year', current_date)::int - 1`,
+                    sql`${year - 1}`,
                   ])
                   .as('year'),
               )
@@ -563,8 +564,8 @@ export class AssetRepository {
           .$if(!!options.visibility, (qb) => qb.where('asset.visibility', '=', options.visibility!))
           .$if(!!options.albumId, (qb) =>
             qb
-              .innerJoin('album_asset', 'asset.id', 'album_asset.assetsId')
-              .where('album_asset.albumsId', '=', asUuid(options.albumId!)),
+              .innerJoin('album_asset', 'asset.id', 'album_asset.assetId')
+              .where('album_asset.albumId', '=', asUuid(options.albumId!)),
           )
           .$if(!!options.personId, (qb) => hasPeople(qb, [options.personId!]))
           .$if(!!options.withStacked, (qb) =>
@@ -641,8 +642,8 @@ export class AssetRepository {
               eb.exists(
                 eb
                   .selectFrom('album_asset')
-                  .whereRef('album_asset.assetsId', '=', 'asset.id')
-                  .where('album_asset.albumsId', '=', asUuid(options.albumId!)),
+                  .whereRef('album_asset.assetId', '=', 'asset.id')
+                  .where('album_asset.albumId', '=', asUuid(options.albumId!)),
               ),
             ),
           )

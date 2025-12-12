@@ -13,6 +13,12 @@ class AvatarUpdate {
 class MemoriesUpdate {
   @ValidateBoolean({ optional: true })
   enabled?: boolean;
+
+  @Optional()
+  @IsInt()
+  @IsPositive()
+  @ApiProperty({ type: 'integer' })
+  duration?: number;
 }
 
 class RatingsUpdate {
@@ -166,6 +172,9 @@ class RatingsResponse {
 
 class MemoriesResponse {
   enabled: boolean = true;
+
+  @ApiProperty({ type: 'integer' })
+  duration: number = 5;
 }
 
 class FoldersResponse {

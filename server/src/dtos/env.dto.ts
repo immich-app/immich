@@ -57,6 +57,13 @@ export class EnvDto {
   @Type(() => Number)
   IMMICH_MICROSERVICES_METRICS_PORT?: number;
 
+  @ValidateBoolean({ optional: true })
+  IMMICH_PLUGINS_ENABLED?: boolean;
+
+  @Optional()
+  @Matches(/^\//, { message: 'IMMICH_PLUGINS_INSTALL_FOLDER must be an absolute path' })
+  IMMICH_PLUGINS_INSTALL_FOLDER?: string;
+
   @IsInt()
   @Optional()
   @Type(() => Number)

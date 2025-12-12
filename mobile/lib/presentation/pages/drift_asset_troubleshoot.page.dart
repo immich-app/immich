@@ -161,8 +161,6 @@ class _AssetPropertiesSectionState extends ConsumerState<_AssetPropertiesSection
         value: exif.fileSize != null ? '${(exif.fileSize! / 1024 / 1024).toStringAsFixed(2)} MB' : null,
       ),
       _PropertyItem(label: 'Description', value: exif.description),
-      _PropertyItem(label: 'EXIF Width', value: exif.width?.toString()),
-      _PropertyItem(label: 'EXIF Height', value: exif.height?.toString()),
       _PropertyItem(label: 'Date Taken', value: exif.dateTimeOriginal?.toString()),
       _PropertyItem(label: 'Time Zone', value: exif.timeZone),
       _PropertyItem(label: 'Camera Make', value: exif.make),

@@ -4,9 +4,14 @@ import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/trashed_local_asset.repository.dart';
 import 'package:immich_mobile/platform/native_sync_api.g.dart';
+import 'package:immich_mobile/repositories/local_files_manager.repository.dart';
 import 'package:immich_mobile/utils/datetime_helpers.dart';
 import 'package:immich_mobile/utils/diff.dart';
 import 'package:logging/logging.dart';
@@ -14,15 +19,34 @@ import 'package:logging/logging.dart';
 class LocalSyncService {
   final DriftLocalAlbumRepository _localAlbumRepository;
   final NativeSyncApi _nativeSyncApi;
+  final DriftTrashedLocalAssetRepository _trashedLocalAssetRepository;
+  final LocalFilesManagerRepository _localFilesManager;
+  final StorageRepository _storageRepository;
   final Logger _log = Logger("DeviceSyncService");
 
-  LocalSyncService({required DriftLocalAlbumRepository localAlbumRepository, required NativeSyncApi nativeSyncApi})
-    : _localAlbumRepository = localAlbumRepository,
-      _nativeSyncApi = nativeSyncApi;
+  LocalSyncService({
+    required DriftLocalAlbumRepository localAlbumRepository,
+    required DriftTrashedLocalAssetRepository trashedLocalAssetRepository,
+    required LocalFilesManagerRepository localFilesManager,
+    required StorageRepository storageRepository,
+    required NativeSyncApi nativeSyncApi,
+  }) : _localAlbumRepository = localAlbumRepository,
+       _trashedLocalAssetRepository = trashedLocalAssetRepository,
+       _localFilesManager = localFilesManager,
+       _storageRepository = storageRepository,
+       _nativeSyncApi = nativeSyncApi;
 
   Future<void> sync({bool full = false}) async {
     final Stopwatch stopwatch = Stopwatch()..start();
     try {
+      if (CurrentPlatform.isAndroid && Store.get(StoreKey.manageLocalMediaAndroid, false)) {
+        final hasPermission = await _localFilesManager.hasManageMediaPermission();
+        if (hasPermission) {
+          await _syncTrashedAssets();
+        } else {
+          _log.warning("syncTrashedAssets cannot proceed because MANAGE_MEDIA permission is missing");
+        }
+      }
       if (full || await _nativeSyncApi.shouldFullSync()) {
         _log.fine("Full sync request from ${full ? "user" : "native"}");
         return await fullSync();
@@ -69,7 +93,6 @@ class LocalSyncService {
           await updateAlbum(dbAlbum, album);
         }
       }
-
       await _nativeSyncApi.checkpointSync();
     } catch (e, s) {
       _log.severe("Error performing device sync", e, s);
@@ -273,6 +296,48 @@ class LocalSyncService {
   bool _albumsEqual(LocalAlbum a, LocalAlbum b) {
     return a.name == b.name && a.assetCount == b.assetCount && a.updatedAt.isAtSameMomentAs(b.updatedAt);
   }
+
+  Future<void> _syncTrashedAssets() async {
+    final trashedAssetMap = await _nativeSyncApi.getTrashedAssets();
+    await processTrashedAssets(trashedAssetMap);
+  }
+
+  @visibleForTesting
+  Future<void> processTrashedAssets(Map<String, List<PlatformAsset>> trashedAssetMap) async {
+    if (trashedAssetMap.isEmpty) {
+      _log.info("syncTrashedAssets, No trashed assets found");
+    }
+    final trashedAssets = trashedAssetMap.cast<String, List<Object?>>().entries.expand(
+      (entry) => entry.value.cast<PlatformAsset>().toTrashedAssets(entry.key),
+    );
+
+    _log.fine("syncTrashedAssets, trashedAssets: ${trashedAssets.map((e) => e.asset.id)}");
+    await _trashedLocalAssetRepository.processTrashSnapshot(trashedAssets);
+
+    final assetsToRestore = await _trashedLocalAssetRepository.getToRestore();
+    if (assetsToRestore.isNotEmpty) {
+      final restoredIds = await _localFilesManager.restoreAssetsFromTrash(assetsToRestore);
+      await _trashedLocalAssetRepository.applyRestoredAssets(restoredIds);
+    } else {
+      _log.info("syncTrashedAssets, No remote assets found for restoration");
+    }
+
+    final localAssetsToTrash = await _trashedLocalAssetRepository.getToTrash();
+    if (localAssetsToTrash.isNotEmpty) {
+      final mediaUrls = await Future.wait(
+        localAssetsToTrash.values
+            .expand((e) => e)
+            .map((localAsset) => _storageRepository.getAssetEntityForAsset(localAsset).then((e) => e?.getMediaUrl())),
+      );
+      _log.info("Moving to trash ${mediaUrls.join(", ")} assets");
+      final result = await _localFilesManager.moveToTrash(mediaUrls.nonNulls.toList());
+      if (result) {
+        await _trashedLocalAssetRepository.trashLocalAsset(localAssetsToTrash);
+      }
+    } else {
+      _log.info("syncTrashedAssets, No assets found in backup-enabled albums for move to trash");
+    }
+  }
 }
 
 extension on Iterable<PlatformAlbum> {
@@ -290,20 +355,26 @@ extension on Iterable<PlatformAlbum> {
 
 extension on Iterable<PlatformAsset> {
   List<LocalAsset> toLocalAssets() {
-    return map(
-      (e) => LocalAsset(
-        id: e.id,
-        name: e.name,
-        checksum: null,
-        type: AssetType.values.elementAtOrNull(e.type) ?? AssetType.other,
-        createdAt: tryFromSecondsSinceEpoch(e.createdAt, isUtc: true) ?? DateTime.timestamp(),
-        updatedAt: tryFromSecondsSinceEpoch(e.updatedAt, isUtc: true) ?? DateTime.timestamp(),
-        width: e.width,
-        height: e.height,
-        durationInSeconds: e.durationInSeconds,
-        orientation: e.orientation,
-        isFavorite: e.isFavorite,
-      ),
-    ).toList();
+    return map((e) => e.toLocalAsset()).toList();
   }
+
+  Iterable<TrashedAsset> toTrashedAssets(String albumId) {
+    return map((e) => (albumId: albumId, asset: e.toLocalAsset()));
+  }
+}
+
+extension on PlatformAsset {
+  LocalAsset toLocalAsset() => LocalAsset(
+    id: id,
+    name: name,
+    checksum: null,
+    type: AssetType.values.elementAtOrNull(type) ?? AssetType.other,
+    createdAt: tryFromSecondsSinceEpoch(createdAt, isUtc: true) ?? DateTime.timestamp(),
+    updatedAt: tryFromSecondsSinceEpoch(createdAt, isUtc: true) ?? DateTime.timestamp(),
+    width: width,
+    height: height,
+    durationInSeconds: durationInSeconds,
+    isFavorite: isFavorite,
+    orientation: orientation,
+  );
 }

@@ -1,5 +1,6 @@
 <script lang="ts">
   import RadioButton from '$lib/elements/RadioButton.svelte';
+  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { t } from 'svelte-i18n';
 
   interface Props {
@@ -13,7 +14,9 @@
 <fieldset>
   <legend class="immich-form-label">{$t('search_type')}</legend>
   <div class="flex flex-wrap gap-x-5 gap-y-2 mt-1 mb-2">
-    <RadioButton name="query-type" id="context-radio" label={$t('context')} bind:group={queryType} value="smart" />
+    {#if featureFlagsManager.value.smartSearch}
+      <RadioButton name="query-type" id="context-radio" label={$t('context')} bind:group={queryType} value="smart" />
+    {/if}
     <RadioButton
       name="query-type"
       id="file-name-radio"
@@ -28,7 +31,9 @@
       bind:group={queryType}
       value="description"
     />
-    <RadioButton name="query-type" id="ocr-radio" label={$t('ocr')} bind:group={queryType} value="ocr" />
+    {#if featureFlagsManager.value.ocr}
+      <RadioButton name="query-type" id="ocr-radio" label={$t('ocr')} bind:group={queryType} value="ocr" />
+    {/if}
   </div>
 </fieldset>
 
@@ -67,7 +72,7 @@
 {:else if queryType === 'ocr'}
   <label for="ocr-input" class="immich-form-label">{$t('search_by_ocr')}</label>
   <input
-    class="immich-form-input hover:cursor-text w-full !mt-1"
+    class="immich-form-input hover:cursor-text w-full mt-1!"
     type="text"
     id="ocr-input"
     name="ocr"

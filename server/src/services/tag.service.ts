@@ -82,14 +82,14 @@ export class TagService extends BaseService {
     ]);
 
     const items: Insertable<TagAssetTable>[] = [];
-    for (const tagsId of tagIds) {
-      for (const assetsId of assetIds) {
-        items.push({ tagsId, assetsId });
+    for (const tagId of tagIds) {
+      for (const assetId of assetIds) {
+        items.push({ tagId, assetId });
       }
     }
 
     const results = await this.tagRepository.upsertAssetIds(items);
-    for (const assetId of new Set(results.map((item) => item.assetsId))) {
+    for (const assetId of new Set(results.map((item) => item.assetId))) {
       await this.eventRepository.emit('AssetTag', { assetId });
     }
 

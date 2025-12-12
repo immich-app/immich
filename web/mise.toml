@@ -1,0 +1,62 @@
+[tasks.install]
+run = "pnpm install --filter immich-web --frozen-lockfile"
+
+[tasks."svelte-kit-sync"]
+env._.path = "./node_modules/.bin"
+run = "svelte-kit sync"
+
+[tasks.build]
+env._.path = "./node_modules/.bin"
+run = "vite build"
+
+[tasks."build-stats"]
+env.BUILD_STATS = "true"
+env._.path = "./node_modules/.bin"
+run = "vite build"
+
+[tasks.preview]
+env._.path = "./node_modules/.bin"
+run = "vite preview"
+
+[tasks.start]
+env._.path = "./node_modules/.bin"
+run = "vite dev --host 0.0.0.0 --port 3000"
+
+[tasks.test]
+depends = ["svelte-kit-sync"]
+env._.path = "./node_modules/.bin"
+run = "vitest"
+
+[tasks.format]
+env._.path = "./node_modules/.bin"
+run = "prettier --check ."
+
+[tasks."format-fix"]
+env._.path = "./node_modules/.bin"
+run = "prettier --write ."
+
+[tasks.lint]
+env._.path = "./node_modules/.bin"
+run = "eslint . --max-warnings 0 --concurrency 4"
+
+[tasks."lint-fix"]
+run = { task = "lint --fix" }
+
+[tasks.check]
+depends = ["svelte-kit-sync"]
+env._.path = "./node_modules/.bin"
+run = "tsc --noEmit"
+
+[tasks."check-svelte"]
+depends = ["svelte-kit-sync"]
+env._.path = "./node_modules/.bin"
+run = "svelte-check --no-tsconfig --fail-on-warnings"
+
+[tasks.checklist]
+run = [
+  { task = ":install" },
+  { task = ":format" },
+  { task = ":check" },
+  { task = ":test --run" },
+  { task = ":lint" },
+]

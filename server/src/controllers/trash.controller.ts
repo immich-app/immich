@@ -1,13 +1,14 @@
 import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { TrashResponseDto } from 'src/dtos/trash.dto';
-import { Permission } from 'src/enum';
+import { ApiTag, Permission } from 'src/enum';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { TrashService } from 'src/services/trash.service';
 
-@ApiTags('Trash')
+@ApiTags(ApiTag.Trash)
 @Controller('trash')
 export class TrashController {
   constructor(private service: TrashService) {}
@@ -15,6 +16,11 @@ export class TrashController {
   @Post('empty')
   @Authenticated({ permission: Permission.AssetDelete })
   @HttpCode(HttpStatus.OK)
+  @Endpoint({
+    summary: 'Empty trash',
+    description: 'Permanently delete all items in the trash.',
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
+  })
   emptyTrash(@Auth() auth: AuthDto): Promise<TrashResponseDto> {
     return this.service.empty(auth);
   }
@@ -22,6 +28,11 @@ export class TrashController {
   @Post('restore')
   @Authenticated({ permission: Permission.AssetDelete })
   @HttpCode(HttpStatus.OK)
+  @Endpoint({
+    summary: 'Restore trash',
+    description: 'Restore all items in the trash.',
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
+  })
   restoreTrash(@Auth() auth: AuthDto): Promise<TrashResponseDto> {
     return this.service.restore(auth);
   }
@@ -29,6 +40,11 @@ export class TrashController {
   @Post('restore/assets')
   @Authenticated({ permission: Permission.AssetDelete })
   @HttpCode(HttpStatus.OK)
+  @Endpoint({
+    summary: 'Restore assets',
+    description: 'Restore specific assets from the trash.',
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
+  })
   restoreAssets(@Auth() auth: AuthDto, @Body() dto: BulkIdsDto): Promise<TrashResponseDto> {
     return this.service.restoreAssets(auth, dto);
   }

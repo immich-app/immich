@@ -94,7 +94,7 @@
         <Albums sharedAlbums={data.sharedAlbums} userSettings={settings} showOwner>
           <!-- Empty List -->
           {#snippet empty()}
-            <EmptyPlaceholder text={$t('no_shared_albums_message')} src={empty2Url} />
+            <EmptyPlaceholder text={$t('no_shared_albums_message')} src={empty2Url} class="mt-10 mx-auto" />
           {/snippet}
         </Albums>
       </div>

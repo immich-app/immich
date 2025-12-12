@@ -9,9 +9,10 @@
   import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import Timeline from '$lib/components/timeline/Timeline.svelte';
   import { AppRoute } from '$lib/constants';
+  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
+  import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-  import { featureFlags, serverConfig } from '$lib/stores/server-config.store';
   import { handlePromiseError } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { emptyTrash, restoreTrash } from '@immich/sdk';
@@ -26,14 +27,14 @@
 
   let { data }: Props = $props();
 
-  if (!$featureFlags.trash) {
-    handlePromiseError(goto(AppRoute.PHOTOS));
-  }
-
   let timelineManager = $state<TimelineManager>() as TimelineManager;
   const options = { isTrashed: true };
 
   const assetInteraction = new AssetInteraction();
+
+  if (!featureFlagsManager.value.trash) {
+    handlePromiseError(goto(AppRoute.PHOTOS));
+  }
 
   const handleEmptyTrash = async () => {
     const isConfirmed = await modalManager.showDialog({ prompt: $t('empty_trash_confirmation') });
@@ -76,7 +77,7 @@
   };
 </script>
 
-{#if $featureFlags.loaded && $featureFlags.trash}
+{#if featureFlagsManager.value.trash}
   <UserPageLayout hideNavbar={assetInteraction.selectionActive} title={data.meta.title} scrollbar={false}>
     {#snippet buttons()}
       <HStack gap={0}>
@@ -103,12 +104,14 @@
       </HStack>
     {/snippet}
 
-    <Timeline enableRouting={true} {options} {assetInteraction} onEscape={handleEscape}>
+    <Timeline enableRouting={true} bind:timelineManager {options} {assetInteraction} onEscape={handleEscape}>
       <p class="font-medium text-gray-500/60 dark:text-gray-300/60 p-4">
-        {$t('trashed_items_will_be_permanently_deleted_after', { values: { days: $serverConfig.trashDays } })}
+        {$t('trashed_items_will_be_permanently_deleted_after', {
+          values: { days: serverConfigManager.value.trashDays },
+        })}
       </p>
       {#snippet empty()}
-        <EmptyPlaceholder text={$t('trash_no_results_message')} src={empty3Url} />
+        <EmptyPlaceholder text={$t('trash_no_results_message')} src={empty3Url} class="mt-10 mx-auto" />
       {/snippet}
     </Timeline>
   </UserPageLayout>

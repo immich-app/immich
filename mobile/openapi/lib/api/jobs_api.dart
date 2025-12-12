@@ -16,7 +16,9 @@ class JobsApi {
 
   final ApiClient apiClient;
 
-  /// This endpoint is an admin-only route, and requires the `job.create` permission.
+  /// Create a manual job
+  ///
+  /// Run a specific job. Most jobs are queued automatically, but this endpoint allows for manual creation of a handful of jobs, including various cleanup tasks, as well as creating a new database backup.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -48,7 +50,9 @@ class JobsApi {
     );
   }
 
-  /// This endpoint is an admin-only route, and requires the `job.create` permission.
+  /// Create a manual job
+  ///
+  /// Run a specific job. Most jobs are queued automatically, but this endpoint allows for manual creation of a handful of jobs, including various cleanup tasks, as well as creating a new database backup.
   ///
   /// Parameters:
   ///
@@ -60,10 +64,12 @@ class JobsApi {
     }
   }
 
-  /// This endpoint is an admin-only route, and requires the `job.read` permission.
+  /// Retrieve queue counts and status
+  ///
+  /// Retrieve the counts of the current queue, as well as the current status.
   ///
   /// Note: This method returns the HTTP [Response].
-  Future<Response> getAllJobsStatusWithHttpInfo() async {
+  Future<Response> getQueuesLegacyWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final apiPath = r'/jobs';
 
@@ -88,9 +94,11 @@ class JobsApi {
     );
   }
 
-  /// This endpoint is an admin-only route, and requires the `job.read` permission.
-  Future<AllJobStatusResponseDto?> getAllJobsStatus() async {
-    final response = await getAllJobsStatusWithHttpInfo();
+  /// Retrieve queue counts and status
+  ///
+  /// Retrieve the counts of the current queue, as well as the current status.
+  Future<QueuesResponseDto?> getQueuesLegacy() async {
+    final response = await getQueuesLegacyWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -98,28 +106,30 @@ class JobsApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'AllJobStatusResponseDto',) as AllJobStatusResponseDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'QueuesResponseDto',) as QueuesResponseDto;
     
     }
     return null;
   }
 
-  /// This endpoint is an admin-only route, and requires the `job.create` permission.
+  /// Run jobs
+  ///
+  /// Queue all assets for a specific job type. Defaults to only queueing assets that have not yet been processed, but the force command can be used to re-process all assets.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
   /// Parameters:
   ///
-  /// * [JobName] id (required):
+  /// * [QueueName] name (required):
   ///
-  /// * [JobCommandDto] jobCommandDto (required):
-  Future<Response> sendJobCommandWithHttpInfo(JobName id, JobCommandDto jobCommandDto,) async {
+  /// * [QueueCommandDto] queueCommandDto (required):
+  Future<Response> runQueueCommandLegacyWithHttpInfo(QueueName name, QueueCommandDto queueCommandDto,) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/jobs/{id}'
-      .replaceAll('{id}', id.toString());
+    final apiPath = r'/jobs/{name}'
+      .replaceAll('{name}', name.toString());
 
     // ignore: prefer_final_locals
-    Object? postBody = jobCommandDto;
+    Object? postBody = queueCommandDto;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
@@ -139,15 +149,17 @@ class JobsApi {
     );
   }
 
-  /// This endpoint is an admin-only route, and requires the `job.create` permission.
+  /// Run jobs
+  ///
+  /// Queue all assets for a specific job type. Defaults to only queueing assets that have not yet been processed, but the force command can be used to re-process all assets.
   ///
   /// Parameters:
   ///
-  /// * [JobName] id (required):
+  /// * [QueueName] name (required):
   ///
-  /// * [JobCommandDto] jobCommandDto (required):
-  Future<JobStatusDto?> sendJobCommand(JobName id, JobCommandDto jobCommandDto,) async {
-    final response = await sendJobCommandWithHttpInfo(id, jobCommandDto,);
+  /// * [QueueCommandDto] queueCommandDto (required):
+  Future<QueueResponseDto?> runQueueCommandLegacy(QueueName name, QueueCommandDto queueCommandDto,) async {
+    final response = await runQueueCommandLegacyWithHttpInfo(name, queueCommandDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -155,7 +167,7 @@ class JobsApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'JobStatusDto',) as JobStatusDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'QueueResponseDto',) as QueueResponseDto;
     
     }
     return null;

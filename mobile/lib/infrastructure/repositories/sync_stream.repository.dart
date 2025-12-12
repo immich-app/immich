@@ -219,8 +219,6 @@ class SyncStreamRepository extends DriftDatabaseRepository {
             country: Value(exif.country),
             dateTimeOriginal: Value(exif.dateTimeOriginal),
             description: Value(exif.description),
-            height: Value(exif.exifImageHeight),
-            width: Value(exif.exifImageWidth),
             exposureTime: Value(exif.exposureTime),
             fNumber: Value(exif.fNumber),
             fileSize: Value(exif.fileSizeInByte),
@@ -241,6 +239,16 @@ class SyncStreamRepository extends DriftDatabaseRepository {
             _db.remoteExifEntity,
             companion.copyWith(assetId: Value(exif.assetId)),
             onConflict: DoUpdate((_) => companion),
+          );
+        }
+      });
+
+      await _db.batch((batch) {
+        for (final exif in data) {
+          batch.update(
+            _db.remoteAssetEntity,
+            RemoteAssetEntityCompanion(width: Value(exif.exifImageWidth), height: Value(exif.exifImageHeight)),
+            where: (row) => row.id.equals(exif.assetId),
           );
         }
       });

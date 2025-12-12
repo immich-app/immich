@@ -25,6 +25,7 @@ class SystemConfigJobDto {
     required this.smartSearch,
     required this.thumbnailGeneration,
     required this.videoConversion,
+    required this.workflow,
   });
 
   JobSettingsDto backgroundTask;
@@ -51,6 +52,8 @@ class SystemConfigJobDto {
 
   JobSettingsDto videoConversion;
 
+  JobSettingsDto workflow;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigJobDto &&
     other.backgroundTask == backgroundTask &&
@@ -64,7 +67,8 @@ class SystemConfigJobDto {
     other.sidecar == sidecar &&
     other.smartSearch == smartSearch &&
     other.thumbnailGeneration == thumbnailGeneration &&
-    other.videoConversion == videoConversion;
+    other.videoConversion == videoConversion &&
+    other.workflow == workflow;
 
   @override
   int get hashCode =>
@@ -80,10 +84,11 @@ class SystemConfigJobDto {
     (sidecar.hashCode) +
     (smartSearch.hashCode) +
     (thumbnailGeneration.hashCode) +
-    (videoConversion.hashCode);
+    (videoConversion.hashCode) +
+    (workflow.hashCode);
 
   @override
-  String toString() => 'SystemConfigJobDto[backgroundTask=$backgroundTask, faceDetection=$faceDetection, library_=$library_, metadataExtraction=$metadataExtraction, migration=$migration, notifications=$notifications, ocr=$ocr, search=$search, sidecar=$sidecar, smartSearch=$smartSearch, thumbnailGeneration=$thumbnailGeneration, videoConversion=$videoConversion]';
+  String toString() => 'SystemConfigJobDto[backgroundTask=$backgroundTask, faceDetection=$faceDetection, library_=$library_, metadataExtraction=$metadataExtraction, migration=$migration, notifications=$notifications, ocr=$ocr, search=$search, sidecar=$sidecar, smartSearch=$smartSearch, thumbnailGeneration=$thumbnailGeneration, videoConversion=$videoConversion, workflow=$workflow]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -99,6 +104,7 @@ class SystemConfigJobDto {
       json[r'smartSearch'] = this.smartSearch;
       json[r'thumbnailGeneration'] = this.thumbnailGeneration;
       json[r'videoConversion'] = this.videoConversion;
+      json[r'workflow'] = this.workflow;
     return json;
   }
 
@@ -123,6 +129,7 @@ class SystemConfigJobDto {
         smartSearch: JobSettingsDto.fromJson(json[r'smartSearch'])!,
         thumbnailGeneration: JobSettingsDto.fromJson(json[r'thumbnailGeneration'])!,
         videoConversion: JobSettingsDto.fromJson(json[r'videoConversion'])!,
+        workflow: JobSettingsDto.fromJson(json[r'workflow'])!,
       );
     }
     return null;
@@ -182,6 +189,7 @@ class SystemConfigJobDto {
     'smartSearch',
     'thumbnailGeneration',
     'videoConversion',
+    'workflow',
   };
 }
 

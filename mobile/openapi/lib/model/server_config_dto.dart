@@ -17,6 +17,7 @@ class ServerConfigDto {
     required this.isInitialized,
     required this.isOnboarded,
     required this.loginPageMessage,
+    required this.maintenanceMode,
     required this.mapDarkStyleUrl,
     required this.mapLightStyleUrl,
     required this.oauthButtonText,
@@ -32,6 +33,8 @@ class ServerConfigDto {
   bool isOnboarded;
 
   String loginPageMessage;
+
+  bool maintenanceMode;
 
   String mapDarkStyleUrl;
 
@@ -51,6 +54,7 @@ class ServerConfigDto {
     other.isInitialized == isInitialized &&
     other.isOnboarded == isOnboarded &&
     other.loginPageMessage == loginPageMessage &&
+    other.maintenanceMode == maintenanceMode &&
     other.mapDarkStyleUrl == mapDarkStyleUrl &&
     other.mapLightStyleUrl == mapLightStyleUrl &&
     other.oauthButtonText == oauthButtonText &&
@@ -65,6 +69,7 @@ class ServerConfigDto {
     (isInitialized.hashCode) +
     (isOnboarded.hashCode) +
     (loginPageMessage.hashCode) +
+    (maintenanceMode.hashCode) +
     (mapDarkStyleUrl.hashCode) +
     (mapLightStyleUrl.hashCode) +
     (oauthButtonText.hashCode) +
@@ -73,7 +78,7 @@ class ServerConfigDto {
     (userDeleteDelay.hashCode);
 
   @override
-  String toString() => 'ServerConfigDto[externalDomain=$externalDomain, isInitialized=$isInitialized, isOnboarded=$isOnboarded, loginPageMessage=$loginPageMessage, mapDarkStyleUrl=$mapDarkStyleUrl, mapLightStyleUrl=$mapLightStyleUrl, oauthButtonText=$oauthButtonText, publicUsers=$publicUsers, trashDays=$trashDays, userDeleteDelay=$userDeleteDelay]';
+  String toString() => 'ServerConfigDto[externalDomain=$externalDomain, isInitialized=$isInitialized, isOnboarded=$isOnboarded, loginPageMessage=$loginPageMessage, maintenanceMode=$maintenanceMode, mapDarkStyleUrl=$mapDarkStyleUrl, mapLightStyleUrl=$mapLightStyleUrl, oauthButtonText=$oauthButtonText, publicUsers=$publicUsers, trashDays=$trashDays, userDeleteDelay=$userDeleteDelay]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -81,6 +86,7 @@ class ServerConfigDto {
       json[r'isInitialized'] = this.isInitialized;
       json[r'isOnboarded'] = this.isOnboarded;
       json[r'loginPageMessage'] = this.loginPageMessage;
+      json[r'maintenanceMode'] = this.maintenanceMode;
       json[r'mapDarkStyleUrl'] = this.mapDarkStyleUrl;
       json[r'mapLightStyleUrl'] = this.mapLightStyleUrl;
       json[r'oauthButtonText'] = this.oauthButtonText;
@@ -103,6 +109,7 @@ class ServerConfigDto {
         isInitialized: mapValueOfType<bool>(json, r'isInitialized')!,
         isOnboarded: mapValueOfType<bool>(json, r'isOnboarded')!,
         loginPageMessage: mapValueOfType<String>(json, r'loginPageMessage')!,
+        maintenanceMode: mapValueOfType<bool>(json, r'maintenanceMode')!,
         mapDarkStyleUrl: mapValueOfType<String>(json, r'mapDarkStyleUrl')!,
         mapLightStyleUrl: mapValueOfType<String>(json, r'mapLightStyleUrl')!,
         oauthButtonText: mapValueOfType<String>(json, r'oauthButtonText')!,
@@ -160,6 +167,7 @@ class ServerConfigDto {
     'isInitialized',
     'isOnboarded',
     'loginPageMessage',
+    'maintenanceMode',
     'mapDarkStyleUrl',
     'mapLightStyleUrl',
     'oauthButtonText',

@@ -16,7 +16,12 @@ class NotificationsAdminApi {
 
   final ApiClient apiClient;
 
-  /// Performs an HTTP 'POST /admin/notifications' operation and returns the [Response].
+  /// Create a notification
+  ///
+  /// Create a new notification for a specific user.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [NotificationCreateDto] notificationCreateDto (required):
@@ -45,6 +50,10 @@ class NotificationsAdminApi {
     );
   }
 
+  /// Create a notification
+  ///
+  /// Create a new notification for a specific user.
+  ///
   /// Parameters:
   ///
   /// * [NotificationCreateDto] notificationCreateDto (required):
@@ -63,7 +72,12 @@ class NotificationsAdminApi {
     return null;
   }
 
-  /// Performs an HTTP 'POST /admin/notifications/templates/{name}' operation and returns the [Response].
+  /// Render email template
+  ///
+  /// Retrieve a preview of the provided email template.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] name (required):
@@ -95,6 +109,10 @@ class NotificationsAdminApi {
     );
   }
 
+  /// Render email template
+  ///
+  /// Retrieve a preview of the provided email template.
+  ///
   /// Parameters:
   ///
   /// * [String] name (required):
@@ -115,7 +133,12 @@ class NotificationsAdminApi {
     return null;
   }
 
-  /// Performs an HTTP 'POST /admin/notifications/test-email' operation and returns the [Response].
+  /// Send test email
+  ///
+  /// Send a test email using the provided SMTP configuration.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [SystemConfigSmtpDto] systemConfigSmtpDto (required):
@@ -144,6 +167,10 @@ class NotificationsAdminApi {
     );
   }
 
+  /// Send test email
+  ///
+  /// Send a test email using the provided SMTP configuration.
+  ///
   /// Parameters:
   ///
   /// * [SystemConfigSmtpDto] systemConfigSmtpDto (required):

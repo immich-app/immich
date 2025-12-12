@@ -17,7 +17,7 @@ import path from 'node:path';
 import picomatch from 'picomatch';
 import parse from 'picomatch/lib/parse';
 import { SystemConfig } from 'src/config';
-import { CLIP_MODEL_INFO, serverVersion } from 'src/constants';
+import { CLIP_MODEL_INFO, endpointTags, serverVersion } from 'src/constants';
 import { extraSyncModels } from 'src/dtos/sync.dto';
 import { ApiCustomExtension, ImmichCookie, ImmichHeader, MetadataKey } from 'src/enum';
 import { LoggingRepository } from 'src/repositories/logging.repository';
@@ -218,25 +218,16 @@ const patchOpenAPI = (document: OpenAPIObject) => {
         delete operation.summary;
       }
 
+      if (operation.description === '') {
+        delete operation.description;
+      }
+
       if (operation.operationId) {
         // console.log(`${routeToErrorMessage(operation.operationId).padEnd(40)} (${operation.operationId})`);
       }
 
-      const adminOnly = operation[ApiCustomExtension.AdminOnly] ?? false;
-      const permission = operation[ApiCustomExtension.Permission];
-      if (permission) {
-        let description = (operation.description || '').trim();
-        if (description && !description.endsWith('.')) {
-          description += '. ';
-        }
-
-        operation.description =
-          description +
-          `This endpoint ${adminOnly ? 'is an admin-only route, and ' : ''}requires the \`${permission}\` permission.`;
-
-        if (operation.parameters) {
-          operation.parameters = _.orderBy(operation.parameters, 'name');
-        }
+      if (operation.parameters) {
+        operation.parameters = _.orderBy(operation.parameters, 'name');
       }
     }
   }
@@ -245,7 +236,7 @@ const patchOpenAPI = (document: OpenAPIObject) => {
 };
 
 export const useSwagger = (app: INestApplication, { write }: { write: boolean }) => {
-  const config = new DocumentBuilder()
+  const builder = new DocumentBuilder()
     .setTitle('Immich')
     .setDescription('Immich API')
     .setVersion(serverVersion.toString())
@@ -263,8 +254,12 @@ export const useSwagger = (app: INestApplication, { write }: { write: boolean })
       },
       MetadataKey.ApiKeySecurity,
     )
-    .addServer('/api')
-    .build();
+    .addServer('/api');
+
+  for (const [tag, description] of Object.entries(endpointTags)) {
+    builder.addTag(tag, description);
+  }
+  const config = builder.build();
 
   const options: SwaggerDocumentOptions = {
     operationIdFactory: (controllerKey: string, methodKey: string) => methodKey,

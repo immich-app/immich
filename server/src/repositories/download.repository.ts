@@ -26,8 +26,8 @@ export class DownloadRepository {
 
   downloadAlbumId(albumId: string) {
     return builder(this.db)
-      .innerJoin('album_asset', 'asset.id', 'album_asset.assetsId')
-      .where('album_asset.albumsId', '=', albumId)
+      .innerJoin('album_asset', 'asset.id', 'album_asset.assetId')
+      .where('album_asset.albumId', '=', albumId)
       .stream();
   }
 

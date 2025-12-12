@@ -97,9 +97,9 @@ export class TagRepository {
 
     const results = await this.db
       .selectFrom('tag_asset')
-      .select(['assetsId as assetId'])
-      .where('tagsId', '=', tagId)
-      .where('assetsId', 'in', assetIds)
+      .select(['assetId as assetId'])
+      .where('tagId', '=', tagId)
+      .where('assetId', 'in', assetIds)
       .execute();
 
     return new Set(results.map(({ assetId }) => assetId));
@@ -114,7 +114,7 @@ export class TagRepository {
 
     await this.db
       .insertInto('tag_asset')
-      .values(assetIds.map((assetId) => ({ tagsId: tagId, assetsId: assetId })))
+      .values(assetIds.map((assetId) => ({ tagId, assetId })))
       .execute();
   }
 
@@ -125,10 +125,10 @@ export class TagRepository {
       return;
     }
 
-    await this.db.deleteFrom('tag_asset').where('tagsId', '=', tagId).where('assetsId', 'in', assetIds).execute();
+    await this.db.deleteFrom('tag_asset').where('tagId', '=', tagId).where('assetId', 'in', assetIds).execute();
   }
 
-  @GenerateSql({ params: [[{ assetId: DummyValue.UUID, tagsIds: [DummyValue.UUID] }]] })
+  @GenerateSql({ params: [[{ assetId: DummyValue.UUID, tagIds: DummyValue.UUID }]] })
   @Chunked()
   upsertAssetIds(items: Insertable<TagAssetTable>[]) {
     if (items.length === 0) {
@@ -147,7 +147,7 @@ export class TagRepository {
   @Chunked({ paramIndex: 1 })
   replaceAssetTags(assetId: string, tagIds: string[]) {
     return this.db.transaction().execute(async (tx) => {
-      await tx.deleteFrom('tag_asset').where('assetsId', '=', assetId).execute();
+      await tx.deleteFrom('tag_asset').where('assetId', '=', assetId).execute();
 
       if (tagIds.length === 0) {
         return;
@@ -155,7 +155,7 @@ export class TagRepository {
 
       return tx
         .insertInto('tag_asset')
-        .values(tagIds.map((tagId) => ({ tagsId: tagId, assetsId: assetId })))
+        .values(tagIds.map((tagId) => ({ tagId, assetId })))
         .onConflict((oc) => oc.doNothing())
         .returningAll()
         .execute();
@@ -170,7 +170,7 @@ export class TagRepository {
           exists(
             selectFrom('tag_closure')
               .whereRef('tag.id', '=', 'tag_closure.id_ancestor')
-              .innerJoin('tag_asset', 'tag_closure.id_descendant', 'tag_asset.tagsId'),
+              .innerJoin('tag_asset', 'tag_closure.id_descendant', 'tag_asset.tagId'),
           ),
         ),
       )

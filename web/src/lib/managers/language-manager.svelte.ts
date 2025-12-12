@@ -4,7 +4,7 @@ import { lang } from '$lib/stores/preferences.store';
 
 class LanguageManager {
   constructor() {
-    eventManager.on('app.init', () => lang.subscribe((lang) => this.setLanguage(lang)));
+    eventManager.on('AppInit', () => lang.subscribe((lang) => this.setLanguage(lang)));
   }
 
   rtl = $state(false);
@@ -19,7 +19,7 @@ class LanguageManager {
 
     document.body.setAttribute('dir', item.rtl ? 'rtl' : 'ltr');
 
-    eventManager.emit('language.change', item);
+    eventManager.emit('LanguageChange', item);
   }
 }
 

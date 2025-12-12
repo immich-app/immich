@@ -1,0 +1,66 @@
+[tasks.install]
+run = "pnpm install --filter immich --frozen-lockfile"
+
+[tasks.build]
+env._.path = "./node_modules/.bin"
+run = "nest build"
+
+[tasks.test]
+env._.path = "./node_modules/.bin"
+run = "vitest --config test/vitest.config.mjs"
+
+[tasks."test-medium"]
+env._.path = "./node_modules/.bin"
+run = "vitest --config test/vitest.config.medium.mjs"
+
+[tasks.format]
+env._.path = "./node_modules/.bin"
+run = "prettier --check ."
+
+[tasks."format-fix"]
+env._.path = "./node_modules/.bin"
+run = "prettier --write ."
+
+[tasks.lint]
+env._.path = "./node_modules/.bin"
+run = "eslint \"src/**/*.ts\" \"test/**/*.ts\" --max-warnings 0"
+
+[tasks."lint-fix"]
+run = { task = "lint --fix" }
+
+[tasks.check]
+env._.path = "./node_modules/.bin"
+run = "tsc --noEmit"
+
+[tasks.sql]
+run = "node ./dist/bin/sync-open-api.js"
+
+[tasks."open-api"]
+run = "node ./dist/bin/sync-open-api.js"
+
+[tasks.migrations]
+run = "node ./dist/bin/migrations.js"
+description = "Run database migration commands (create, generate, run, debug, or query)"
+
+[tasks."schema-drop"]
+run = { task = "migrations query 'DROP schema public cascade; CREATE schema public;'" }
+
+[tasks."schema-reset"]
+run = [
+  { task = ":schema-drop" },
+  { task = "migrations run" },
+]
+
+[tasks."email-dev"]
+env._.path = "./node_modules/.bin"
+run = "email dev -p 3050 --dir src/emails"
+
+[tasks.checklist]
+run = [
+  { task = ":install" },
+  { task = ":format" },
+  { task = ":lint" },
+  { task = ":check" },
+  { task = ":test-medium --run" },
+  { task = ":test --run" },
+]

@@ -2,7 +2,7 @@ import { plainDateTimeCompare, type TimelineYearMonth } from '$lib/utils/timelin
 import { AssetOrder } from '@immich/sdk';
 import { DateTime } from 'luxon';
 import type { MonthGroup } from '../month-group.svelte';
-import type { TimelineManager } from '../timeline-manager.svelte';
+import { TimelineManager } from '../timeline-manager.svelte';
 import type { AssetDescriptor, Direction, TimelineAsset } from '../types';
 
 export async function getAssetWithOffset(

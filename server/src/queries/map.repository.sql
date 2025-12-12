@@ -23,8 +23,8 @@ where
       from
         "album_asset"
       where
-        "asset"."id" = "album_asset"."assetsId"
-        and "album_asset"."albumsId" in ($3)
+        "asset"."id" = "album_asset"."assetId"
+        and "album_asset"."albumId" in ($3)
     )
   )
 order by

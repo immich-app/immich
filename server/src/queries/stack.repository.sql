@@ -89,9 +89,9 @@ select
                   "tag"."parentId"
                 from
                   "tag"
-                  inner join "tag_asset" on "tag"."id" = "tag_asset"."tagsId"
+                  inner join "tag_asset" on "tag"."id" = "tag_asset"."tagId"
                 where
-                  "tag_asset"."assetsId" = "asset"."id"
+                  "tag_asset"."assetId" = "asset"."id"
               ) as agg
           ) as "tags",
           to_json("exifInfo") as "exifInfo"

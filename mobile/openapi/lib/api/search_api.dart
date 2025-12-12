@@ -16,7 +16,9 @@ class SearchApi {
 
   final ApiClient apiClient;
 
-  /// This endpoint requires the `asset.read` permission.
+  /// Retrieve assets by city
+  ///
+  /// Retrieve a list of assets with each asset belonging to a different city. This endpoint is used on the places pages to show a single thumbnail for each city the user has assets in.
   ///
   /// Note: This method returns the HTTP [Response].
   Future<Response> getAssetsByCityWithHttpInfo() async {
@@ -44,7 +46,9 @@ class SearchApi {
     );
   }
 
-  /// This endpoint requires the `asset.read` permission.
+  /// Retrieve assets by city
+  ///
+  /// Retrieve a list of assets with each asset belonging to a different city. This endpoint is used on the places pages to show a single thumbnail for each city the user has assets in.
   Future<List<AssetResponseDto>?> getAssetsByCity() async {
     final response = await getAssetsByCityWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -63,7 +67,9 @@ class SearchApi {
     return null;
   }
 
-  /// This endpoint requires the `asset.read` permission.
+  /// Retrieve explore data
+  ///
+  /// Retrieve data for the explore section, such as popular people and places.
   ///
   /// Note: This method returns the HTTP [Response].
   Future<Response> getExploreDataWithHttpInfo() async {
@@ -91,7 +97,9 @@ class SearchApi {
     );
   }
 
-  /// This endpoint requires the `asset.read` permission.
+  /// Retrieve explore data
+  ///
+  /// Retrieve data for the explore section, such as popular people and places.
   Future<List<SearchExploreResponseDto>?> getExploreData() async {
     final response = await getExploreDataWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -110,7 +118,9 @@ class SearchApi {
     return null;
   }
 
-  /// This endpoint requires the `asset.read` permission.
+  /// Retrieve search suggestions
+  ///
+  /// Retrieve search suggestions based on partial input. This endpoint is used for typeahead search features.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -121,7 +131,6 @@ class SearchApi {
   /// * [String] country:
   ///
   /// * [bool] includeNull:
-  ///   This property was added in v111.0.0
   ///
   /// * [String] lensModel:
   ///
@@ -175,7 +184,9 @@ class SearchApi {
     );
   }
 
-  /// This endpoint requires the `asset.read` permission.
+  /// Retrieve search suggestions
+  ///
+  /// Retrieve search suggestions based on partial input. This endpoint is used for typeahead search features.
   ///
   /// Parameters:
   ///
@@ -184,7 +195,6 @@ class SearchApi {
   /// * [String] country:
   ///
   /// * [bool] includeNull:
-  ///   This property was added in v111.0.0
   ///
   /// * [String] lensModel:
   ///
@@ -211,7 +221,9 @@ class SearchApi {
     return null;
   }
 
-  /// This endpoint requires the `asset.statistics` permission.
+  /// Search asset statistics
+  ///
+  /// Retrieve statistical data about assets based on search criteria, such as the total matching count.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -243,7 +255,9 @@ class SearchApi {
     );
   }
 
-  /// This endpoint requires the `asset.statistics` permission.
+  /// Search asset statistics
+  ///
+  /// Retrieve statistical data about assets based on search criteria, such as the total matching count.
   ///
   /// Parameters:
   ///
@@ -263,7 +277,9 @@ class SearchApi {
     return null;
   }
 
-  /// This endpoint requires the `asset.read` permission.
+  /// Search assets by metadata
+  ///
+  /// Search for assets based on various metadata criteria.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -295,7 +311,9 @@ class SearchApi {
     );
   }
 
-  /// This endpoint requires the `asset.read` permission.
+  /// Search assets by metadata
+  ///
+  /// Search for assets based on various metadata criteria.
   ///
   /// Parameters:
   ///
@@ -315,7 +333,9 @@ class SearchApi {
     return null;
   }
 
-  /// This endpoint requires the `asset.read` permission.
+  /// Search large assets
+  ///
+  /// Search for assets that are considered large based on specified criteria.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -506,7 +526,9 @@ class SearchApi {
     );
   }
 
-  /// This endpoint requires the `asset.read` permission.
+  /// Search large assets
+  ///
+  /// Search for assets that are considered large based on specified criteria.
   ///
   /// Parameters:
   ///
@@ -591,7 +613,9 @@ class SearchApi {
     return null;
   }
 
-  /// This endpoint requires the `person.read` permission.
+  /// Search people
+  ///
+  /// Search for people by name.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -630,7 +654,9 @@ class SearchApi {
     );
   }
 
-  /// This endpoint requires the `person.read` permission.
+  /// Search people
+  ///
+  /// Search for people by name.
   ///
   /// Parameters:
   ///
@@ -655,7 +681,9 @@ class SearchApi {
     return null;
   }
 
-  /// This endpoint requires the `asset.read` permission.
+  /// Search places
+  ///
+  /// Search for places by name.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -689,7 +717,9 @@ class SearchApi {
     );
   }
 
-  /// This endpoint requires the `asset.read` permission.
+  /// Search places
+  ///
+  /// Search for places by name.
   ///
   /// Parameters:
   ///
@@ -712,7 +742,9 @@ class SearchApi {
     return null;
   }
 
-  /// This endpoint requires the `asset.read` permission.
+  /// Search random assets
+  ///
+  /// Retrieve a random selection of assets based on the provided criteria.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -744,7 +776,9 @@ class SearchApi {
     );
   }
 
-  /// This endpoint requires the `asset.read` permission.
+  /// Search random assets
+  ///
+  /// Retrieve a random selection of assets based on the provided criteria.
   ///
   /// Parameters:
   ///
@@ -767,7 +801,9 @@ class SearchApi {
     return null;
   }
 
-  /// This endpoint requires the `asset.read` permission.
+  /// Smart asset search
+  ///
+  /// Perform a smart search for assets by using machine learning vectors to determine relevance.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -799,7 +835,9 @@ class SearchApi {
     );
   }
 
-  /// This endpoint requires the `asset.read` permission.
+  /// Smart asset search
+  ///
+  /// Perform a smart search for assets by using machine learning vectors to determine relevance.
   ///
   /// Parameters:
   ///

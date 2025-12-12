@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:immich_mobile/models/activities/activity.model.dart';
 import 'package:immich_mobile/providers/activity_service.provider.dart';
 import 'package:immich_mobile/providers/activity_statistics.provider.dart';
@@ -16,13 +17,20 @@ class AlbumActivity extends _$AlbumActivity {
 
   Future<void> removeActivity(String id) async {
     if (await ref.watch(activityServiceProvider).removeActivity(id)) {
-      final activities = state.valueOrNull ?? [];
-      final removedActivity = activities.firstWhere((a) => a.id == id);
-      activities.remove(removedActivity);
-      state = AsyncData(activities);
-      // Decrement activity count only for comments
+      final removedActivity = _removeFromState(id);
+      if (removedActivity == null) {
+        return;
+      }
+
+      if (assetId != null) {
+        ref.read(albumActivityProvider(albumId).notifier)._removeFromState(id);
+      }
+
       if (removedActivity.type == ActivityType.comment) {
         ref.watch(activityStatisticsProvider(albumId, assetId).notifier).removeActivity();
+        if (assetId != null) {
+          ref.watch(activityStatisticsProvider(albumId).notifier).removeActivity();
+        }
       }
     }
   }
@@ -30,8 +38,10 @@ class AlbumActivity extends _$AlbumActivity {
   Future<void> addLike() async {
     final activity = await ref.watch(activityServiceProvider).addActivity(albumId, ActivityType.like, assetId: assetId);
     if (activity.hasValue) {
-      final activities = state.asData?.value ?? [];
-      state = AsyncData([...activities, activity.requireValue]);
+      _addToState(activity.requireValue);
+      if (assetId != null) {
+        ref.read(albumActivityProvider(albumId).notifier)._addToState(activity.requireValue);
+      }
     }
   }
 
@@ -41,8 +51,10 @@ class AlbumActivity extends _$AlbumActivity {
         .addActivity(albumId, ActivityType.comment, assetId: assetId, comment: comment);
 
     if (activity.hasValue) {
-      final activities = state.valueOrNull ?? [];
-      state = AsyncData([...activities, activity.requireValue]);
+      _addToState(activity.requireValue);
+      if (assetId != null) {
+        ref.read(albumActivityProvider(albumId).notifier)._addToState(activity.requireValue);
+      }
       ref.watch(activityStatisticsProvider(albumId, assetId).notifier).addActivity();
       // The previous addActivity call would increase the count of an asset if assetId != null
       // To also increase the activity count of the album, calling it once again with assetId set to null
@@ -50,6 +62,29 @@ class AlbumActivity extends _$AlbumActivity {
         ref.watch(activityStatisticsProvider(albumId).notifier).addActivity();
       }
     }
+  }
+
+  void _addToState(Activity activity) {
+    final activities = state.valueOrNull ?? [];
+    if (activities.any((a) => a.id == activity.id)) {
+      return;
+    }
+    state = AsyncData([...activities, activity]);
+  }
+
+  Activity? _removeFromState(String id) {
+    final activities = state.valueOrNull;
+    if (activities == null) {
+      return null;
+    }
+    final activity = activities.firstWhereOrNull((a) => a.id == id);
+    if (activity == null) {
+      return null;
+    }
+
+    final updated = [...activities]..remove(activity);
+    state = AsyncData(updated);
+    return activity;
   }
 }
 

@@ -37,9 +37,11 @@ import 'package:immich_mobile/infrastructure/entities/asset_face.entity.drift.da
     as i17;
 import 'package:immich_mobile/infrastructure/entities/store.entity.drift.dart'
     as i18;
-import 'package:immich_mobile/infrastructure/entities/merged_asset.drift.dart'
+import 'package:immich_mobile/infrastructure/entities/trashed_local_asset.entity.drift.dart'
     as i19;
-import 'package:drift/internal/modular.dart' as i20;
+import 'package:immich_mobile/infrastructure/entities/merged_asset.drift.dart'
+    as i20;
+import 'package:drift/internal/modular.dart' as i21;
 
 abstract class $Drift extends i0.GeneratedDatabase {
   $Drift(i0.QueryExecutor e) : super(e);
@@ -77,9 +79,11 @@ abstract class $Drift extends i0.GeneratedDatabase {
   late final i17.$AssetFaceEntityTable assetFaceEntity = i17
       .$AssetFaceEntityTable(this);
   late final i18.$StoreEntityTable storeEntity = i18.$StoreEntityTable(this);
-  i19.MergedAssetDrift get mergedAssetDrift => i20.ReadDatabaseContainer(
+  late final i19.$TrashedLocalAssetEntityTable trashedLocalAssetEntity = i19
+      .$TrashedLocalAssetEntityTable(this);
+  i20.MergedAssetDrift get mergedAssetDrift => i21.ReadDatabaseContainer(
     this,
-  ).accessor<i19.MergedAssetDrift>(i19.MergedAssetDrift.new);
+  ).accessor<i20.MergedAssetDrift>(i20.MergedAssetDrift.new);
   @override
   Iterable<i0.TableInfo<i0.Table, Object?>> get allTables =>
       allSchemaEntities.whereType<i0.TableInfo<i0.Table, Object?>>();
@@ -108,7 +112,10 @@ abstract class $Drift extends i0.GeneratedDatabase {
     personEntity,
     assetFaceEntity,
     storeEntity,
+    trashedLocalAssetEntity,
     i11.idxLatLng,
+    i19.idxTrashedLocalAssetChecksum,
+    i19.idxTrashedLocalAssetAlbum,
   ];
   @override
   i0.StreamQueryUpdateRules
@@ -336,4 +343,9 @@ class $DriftManager {
       i17.$$AssetFaceEntityTableTableManager(_db, _db.assetFaceEntity);
   i18.$$StoreEntityTableTableManager get storeEntity =>
       i18.$$StoreEntityTableTableManager(_db, _db.storeEntity);
+  i19.$$TrashedLocalAssetEntityTableTableManager get trashedLocalAssetEntity =>
+      i19.$$TrashedLocalAssetEntityTableTableManager(
+        _db,
+        _db.trashedLocalAssetEntity,
+      );
 }

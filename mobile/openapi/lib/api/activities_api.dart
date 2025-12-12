@@ -16,7 +16,9 @@ class ActivitiesApi {
 
   final ApiClient apiClient;
 
-  /// This endpoint requires the `activity.create` permission.
+  /// Create an activity
+  ///
+  /// Create a like or a comment for an album, or an asset in an album.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -48,7 +50,9 @@ class ActivitiesApi {
     );
   }
 
-  /// This endpoint requires the `activity.create` permission.
+  /// Create an activity
+  ///
+  /// Create a like or a comment for an album, or an asset in an album.
   ///
   /// Parameters:
   ///
@@ -68,7 +72,9 @@ class ActivitiesApi {
     return null;
   }
 
-  /// This endpoint requires the `activity.delete` permission.
+  /// Delete an activity
+  ///
+  /// Removes a like or comment from a given album or asset in an album.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -101,7 +107,9 @@ class ActivitiesApi {
     );
   }
 
-  /// This endpoint requires the `activity.delete` permission.
+  /// Delete an activity
+  ///
+  /// Removes a like or comment from a given album or asset in an album.
   ///
   /// Parameters:
   ///
@@ -113,7 +121,9 @@ class ActivitiesApi {
     }
   }
 
-  /// This endpoint requires the `activity.read` permission.
+  /// List all activities
+  ///
+  /// Returns a list of activities for the selected asset or album. The activities are returned in sorted order, with the oldest activities appearing first.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -167,7 +177,9 @@ class ActivitiesApi {
     );
   }
 
-  /// This endpoint requires the `activity.read` permission.
+  /// List all activities
+  ///
+  /// Returns a list of activities for the selected asset or album. The activities are returned in sorted order, with the oldest activities appearing first.
   ///
   /// Parameters:
   ///
@@ -198,7 +210,9 @@ class ActivitiesApi {
     return null;
   }
 
-  /// This endpoint requires the `activity.statistics` permission.
+  /// Retrieve activity statistics
+  ///
+  /// Returns the number of likes and comments for a given album or asset in an album.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -237,7 +251,9 @@ class ActivitiesApi {
     );
   }
 
-  /// This endpoint requires the `activity.statistics` permission.
+  /// Retrieve activity statistics
+  ///
+  /// Returns the number of likes and comments for a given album or asset in an album.
   ///
   /// Parameters:
   ///

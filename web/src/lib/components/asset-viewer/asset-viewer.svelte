@@ -1,16 +1,19 @@
 <script lang="ts">
+  import { goto } from '$app/navigation';
   import { focusTrap } from '$lib/actions/focus-trap';
   import type { Action, OnAction, PreAction } from '$lib/components/asset-viewer/actions/action';
   import MotionPhotoAction from '$lib/components/asset-viewer/actions/motion-photo-action.svelte';
   import NextAssetAction from '$lib/components/asset-viewer/actions/next-asset-action.svelte';
   import PreviousAssetAction from '$lib/components/asset-viewer/actions/previous-asset-action.svelte';
   import AssetViewerNavBar from '$lib/components/asset-viewer/asset-viewer-nav-bar.svelte';
-  import { AssetAction, ProjectionType } from '$lib/constants';
+  import OnEvents from '$lib/components/OnEvents.svelte';
+  import { AppRoute, AssetAction, ProjectionType } from '$lib/constants';
   import { activityManager } from '$lib/managers/activity-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import { closeEditorCofirm } from '$lib/stores/asset-editor.store';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
+  import { ocrManager } from '$lib/stores/ocr.svelte';
   import { alwaysLoadOriginalVideo, isShowDetail } from '$lib/stores/preferences.store';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { user } from '$lib/stores/user.store';
@@ -42,6 +45,7 @@
   import CropArea from './editor/crop-tool/crop-area.svelte';
   import EditorPanel from './editor/editor-panel.svelte';
   import ImagePanoramaViewer from './image-panorama-viewer.svelte';
+  import OcrButton from './ocr-button.svelte';
   import PhotoViewer from './photo-viewer.svelte';
   import SlideshowBar from './slideshow-bar.svelte';
   import VideoViewer from './video-wrapper-viewer.svelte';
@@ -363,6 +367,15 @@
     selectedEditType = type;
   };
 
+  const handleAssetReplace = async ({ oldAssetId, newAssetId }: { oldAssetId: string; newAssetId: string }) => {
+    if (oldAssetId !== asset.id) {
+      return;
+    }
+
+    await new Promise((promise) => setTimeout(promise, 500));
+    await goto(`${AppRoute.PHOTOS}/${newAssetId}`);
+  };
+
   let isFullScreen = $derived(fullscreenElement !== null);
 
   $effect(() => {
@@ -381,12 +394,18 @@
       handlePromiseError(activityManager.init(album.id, asset.id));
     }
   });
+
+  let currentAssetId = $derived(asset.id);
   $effect(() => {
-    if (asset.id) {
-      handlePromiseError(handleGetAllAlbums());
+    if (currentAssetId) {
+      untrack(() => handlePromiseError(handleGetAllAlbums()));
+      ocrManager.clear();
+      handlePromiseError(ocrManager.getAssetOcr(currentAssetId));
     }
   });
 </script>
+
+<OnEvents onAssetReplace={handleAssetReplace} />
 
 <svelte:document bind:fullscreenElement />
 
@@ -522,6 +541,7 @@
             {playOriginalVideo}
           />
         {/if}
+
         {#if $slideshowState === SlideshowState.None && isShared && ((album && album.isActivityEnabled) || activityManager.commentCount > 0) && !activityManager.isLoading}
           <div class="absolute bottom-0 end-0 mb-20 me-8">
             <ActivityStatus
@@ -532,6 +552,12 @@
               onFavorite={handleFavorite}
               onOpenActivityTab={handleOpenActivity}
             />
+          </div>
+        {/if}
+
+        {#if $slideshowState === SlideshowState.None && asset.type === AssetTypeEnum.Image && !isShowEditor && ocrManager.hasOcrData}
+          <div class="absolute bottom-0 end-0 mb-6 me-6">
+            <OcrButton />
           </div>
         {/if}
       {/key}

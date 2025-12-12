@@ -37,7 +37,7 @@ export class AlbumUserTable {
     nullable: false,
     primary: true,
   })
-  albumsId!: string;
+  albumId!: string;
 
   @ForeignKeyColumn(() => UserTable, {
     onDelete: 'CASCADE',
@@ -45,7 +45,7 @@ export class AlbumUserTable {
     nullable: false,
     primary: true,
   })
-  usersId!: string;
+  userId!: string;
 
   @Column({ type: 'character varying', default: AlbumUserRole.Editor })
   role!: Generated<AlbumUserRole>;

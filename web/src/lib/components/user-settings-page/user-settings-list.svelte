@@ -7,7 +7,7 @@
   import NotificationsSettings from '$lib/components/user-settings-page/notifications-settings.svelte';
   import UserUsageStatistic from '$lib/components/user-settings-page/user-usage-statistic.svelte';
   import { OpenSettingQueryParameterValue, QueryParameter } from '$lib/constants';
-  import { featureFlags } from '$lib/stores/server-config.store';
+  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { user } from '$lib/stores/user.store';
   import { oauth } from '$lib/utils';
   import { type ApiKeyResponseDto, type SessionResponseDto } from '@immich/sdk';
@@ -21,6 +21,7 @@
     mdiDownload,
     mdiFeatureSearchOutline,
     mdiFormTextboxPassword,
+    mdiKeyOutline,
     mdiLockSmart,
     mdiServerOutline,
   } from '@mdi/js';
@@ -115,7 +116,7 @@
     <NotificationsSettings />
   </SettingAccordion>
 
-  {#if $featureFlags.loaded && !$featureFlags.oauth}
+  {#if featureFlagsManager.value.oauth}
     <SettingAccordion
       icon={mdiFormTextboxPassword}
       key="password"

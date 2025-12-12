@@ -1,4 +1,4 @@
-import { JobCommand, JobName, LoginResponseDto, updateConfig } from '@immich/sdk';
+import { LoginResponseDto, QueueCommand, QueueName, updateConfig } from '@immich/sdk';
 import { cpSync, rmSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { basename } from 'node:path';
@@ -17,28 +17,28 @@ describe('/jobs', () => {
 
   describe('PUT /jobs', () => {
     afterEach(async () => {
-      await utils.jobCommand(admin.accessToken, JobName.MetadataExtraction, {
-        command: JobCommand.Resume,
+      await utils.queueCommand(admin.accessToken, QueueName.MetadataExtraction, {
+        command: QueueCommand.Resume,
         force: false,
       });
 
-      await utils.jobCommand(admin.accessToken, JobName.ThumbnailGeneration, {
-        command: JobCommand.Resume,
+      await utils.queueCommand(admin.accessToken, QueueName.ThumbnailGeneration, {
+        command: QueueCommand.Resume,
         force: false,
       });
 
-      await utils.jobCommand(admin.accessToken, JobName.FaceDetection, {
-        command: JobCommand.Resume,
+      await utils.queueCommand(admin.accessToken, QueueName.FaceDetection, {
+        command: QueueCommand.Resume,
         force: false,
       });
 
-      await utils.jobCommand(admin.accessToken, JobName.SmartSearch, {
-        command: JobCommand.Resume,
+      await utils.queueCommand(admin.accessToken, QueueName.SmartSearch, {
+        command: QueueCommand.Resume,
         force: false,
       });
 
-      await utils.jobCommand(admin.accessToken, JobName.DuplicateDetection, {
-        command: JobCommand.Resume,
+      await utils.queueCommand(admin.accessToken, QueueName.DuplicateDetection, {
+        command: QueueCommand.Resume,
         force: false,
       });
 
@@ -59,8 +59,8 @@ describe('/jobs', () => {
     it('should queue metadata extraction for missing assets', async () => {
       const path = `${testAssetDir}/formats/raw/Nikon/D700/philadelphia.nef`;
 
-      await utils.jobCommand(admin.accessToken, JobName.MetadataExtraction, {
-        command: JobCommand.Pause,
+      await utils.queueCommand(admin.accessToken, QueueName.MetadataExtraction, {
+        command: QueueCommand.Pause,
         force: false,
       });
 
@@ -77,20 +77,20 @@ describe('/jobs', () => {
         expect(asset.exifInfo?.make).toBeNull();
       }
 
-      await utils.jobCommand(admin.accessToken, JobName.MetadataExtraction, {
-        command: JobCommand.Empty,
+      await utils.queueCommand(admin.accessToken, QueueName.MetadataExtraction, {
+        command: QueueCommand.Empty,
         force: false,
       });
 
       await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
 
-      await utils.jobCommand(admin.accessToken, JobName.MetadataExtraction, {
-        command: JobCommand.Resume,
+      await utils.queueCommand(admin.accessToken, QueueName.MetadataExtraction, {
+        command: QueueCommand.Resume,
         force: false,
       });
 
-      await utils.jobCommand(admin.accessToken, JobName.MetadataExtraction, {
-        command: JobCommand.Start,
+      await utils.queueCommand(admin.accessToken, QueueName.MetadataExtraction, {
+        command: QueueCommand.Start,
         force: false,
       });
 
@@ -124,8 +124,8 @@ describe('/jobs', () => {
 
       cpSync(`${testAssetDir}/formats/raw/Nikon/D80/glarus.nef`, path);
 
-      await utils.jobCommand(admin.accessToken, JobName.MetadataExtraction, {
-        command: JobCommand.Start,
+      await utils.queueCommand(admin.accessToken, QueueName.MetadataExtraction, {
+        command: QueueCommand.Start,
         force: false,
       });
 
@@ -144,8 +144,8 @@ describe('/jobs', () => {
     it('should queue thumbnail extraction for assets missing thumbs', async () => {
       const path = `${testAssetDir}/albums/nature/tanners_ridge.jpg`;
 
-      await utils.jobCommand(admin.accessToken, JobName.ThumbnailGeneration, {
-        command: JobCommand.Pause,
+      await utils.queueCommand(admin.accessToken, QueueName.ThumbnailGeneration, {
+        command: QueueCommand.Pause,
         force: false,
       });
 
@@ -153,32 +153,32 @@ describe('/jobs', () => {
         assetData: { bytes: await readFile(path), filename: basename(path) },
       });
 
-      await utils.waitForQueueFinish(admin.accessToken, JobName.MetadataExtraction);
-      await utils.waitForQueueFinish(admin.accessToken, JobName.ThumbnailGeneration);
+      await utils.waitForQueueFinish(admin.accessToken, QueueName.MetadataExtraction);
+      await utils.waitForQueueFinish(admin.accessToken, QueueName.ThumbnailGeneration);
 
       const assetBefore = await utils.getAssetInfo(admin.accessToken, id);
       expect(assetBefore.thumbhash).toBeNull();
 
-      await utils.jobCommand(admin.accessToken, JobName.ThumbnailGeneration, {
-        command: JobCommand.Empty,
+      await utils.queueCommand(admin.accessToken, QueueName.ThumbnailGeneration, {
+        command: QueueCommand.Empty,
         force: false,
       });
 
-      await utils.waitForQueueFinish(admin.accessToken, JobName.MetadataExtraction);
-      await utils.waitForQueueFinish(admin.accessToken, JobName.ThumbnailGeneration);
+      await utils.waitForQueueFinish(admin.accessToken, QueueName.MetadataExtraction);
+      await utils.waitForQueueFinish(admin.accessToken, QueueName.ThumbnailGeneration);
 
-      await utils.jobCommand(admin.accessToken, JobName.ThumbnailGeneration, {
-        command: JobCommand.Resume,
+      await utils.queueCommand(admin.accessToken, QueueName.ThumbnailGeneration, {
+        command: QueueCommand.Resume,
         force: false,
       });
 
-      await utils.jobCommand(admin.accessToken, JobName.ThumbnailGeneration, {
-        command: JobCommand.Start,
+      await utils.queueCommand(admin.accessToken, QueueName.ThumbnailGeneration, {
+        command: QueueCommand.Start,
         force: false,
       });
 
-      await utils.waitForQueueFinish(admin.accessToken, JobName.MetadataExtraction);
-      await utils.waitForQueueFinish(admin.accessToken, JobName.ThumbnailGeneration);
+      await utils.waitForQueueFinish(admin.accessToken, QueueName.MetadataExtraction);
+      await utils.waitForQueueFinish(admin.accessToken, QueueName.ThumbnailGeneration);
 
       const assetAfter = await utils.getAssetInfo(admin.accessToken, id);
       expect(assetAfter.thumbhash).not.toBeNull();
@@ -193,26 +193,26 @@ describe('/jobs', () => {
         assetData: { bytes: await readFile(path), filename: basename(path) },
       });
 
-      await utils.waitForQueueFinish(admin.accessToken, JobName.MetadataExtraction);
-      await utils.waitForQueueFinish(admin.accessToken, JobName.ThumbnailGeneration);
+      await utils.waitForQueueFinish(admin.accessToken, QueueName.MetadataExtraction);
+      await utils.waitForQueueFinish(admin.accessToken, QueueName.ThumbnailGeneration);
 
       const assetBefore = await utils.getAssetInfo(admin.accessToken, id);
 
       cpSync(`${testAssetDir}/albums/nature/notocactus_minimus.jpg`, path);
 
-      await utils.jobCommand(admin.accessToken, JobName.ThumbnailGeneration, {
-        command: JobCommand.Resume,
+      await utils.queueCommand(admin.accessToken, QueueName.ThumbnailGeneration, {
+        command: QueueCommand.Resume,
         force: false,
       });
 
       // This runs the missing thumbnail job
-      await utils.jobCommand(admin.accessToken, JobName.ThumbnailGeneration, {
-        command: JobCommand.Start,
+      await utils.queueCommand(admin.accessToken, QueueName.ThumbnailGeneration, {
+        command: QueueCommand.Start,
         force: false,
       });
 
-      await utils.waitForQueueFinish(admin.accessToken, JobName.MetadataExtraction);
-      await utils.waitForQueueFinish(admin.accessToken, JobName.ThumbnailGeneration);
+      await utils.waitForQueueFinish(admin.accessToken, QueueName.MetadataExtraction);
+      await utils.waitForQueueFinish(admin.accessToken, QueueName.ThumbnailGeneration);
 
       const assetAfter = await utils.getAssetInfo(admin.accessToken, id);
 

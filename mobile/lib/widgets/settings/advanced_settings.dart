@@ -8,8 +8,8 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
+import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/repositories/local_files_manager.repository.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/utils/hooks/app_settings_update_hook.dart';
@@ -17,6 +17,7 @@ import 'package:immich_mobile/utils/http_ssl_options.dart';
 import 'package:immich_mobile/widgets/settings/beta_timeline_list_tile.dart';
 import 'package:immich_mobile/widgets/settings/custom_proxy_headers_settings/custom_proxy_headers_settings.dart';
 import 'package:immich_mobile/widgets/settings/local_storage_settings.dart';
+import 'package:immich_mobile/widgets/settings/settings_action_tile.dart';
 import 'package:immich_mobile/widgets/settings/settings_slider_list_tile.dart';
 import 'package:immich_mobile/widgets/settings/settings_sub_page_scaffold.dart';
 import 'package:immich_mobile/widgets/settings/settings_switch_list_tile.dart';
@@ -25,12 +26,15 @@ import 'package:logging/logging.dart';
 
 class AdvancedSettings extends HookConsumerWidget {
   const AdvancedSettings({super.key});
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     bool isLoggedIn = ref.read(currentUserProvider) != null;
 
     final advancedTroubleshooting = useAppSettingsState(AppSettingsEnum.advancedTroubleshooting);
     final manageLocalMediaAndroid = useAppSettingsState(AppSettingsEnum.manageLocalMediaAndroid);
+    final isManageMediaSupported = useState(false);
+    final manageMediaAndroidPermission = useState(false);
     final levelId = useAppSettingsState(AppSettingsEnum.logLevel);
     final preferRemote = useAppSettingsState(AppSettingsEnum.preferRemoteImage);
     final allowSelfSignedSSLCert = useAppSettingsState(AppSettingsEnum.allowSelfSignedSSLCert);
@@ -51,6 +55,18 @@ class AdvancedSettings extends HookConsumerWidget {
       return false;
     }
 
+    useEffect(() {
+      () async {
+        isManageMediaSupported.value = await checkAndroidVersion();
+        if (isManageMediaSupported.value) {
+          manageMediaAndroidPermission.value = await ref
+              .read(localFilesManagerRepositoryProvider)
+              .hasManageMediaPermission();
+        }
+      }();
+      return null;
+    }, []);
+
     final advancedSettings = [
       SettingsSwitchListTile(
         enabled: true,
@@ -58,11 +74,10 @@ class AdvancedSettings extends HookConsumerWidget {
         title: "advanced_settings_troubleshooting_title".tr(),
         subtitle: "advanced_settings_troubleshooting_subtitle".tr(),
       ),
-      FutureBuilder<bool>(
-        future: checkAndroidVersion(),
-        builder: (context, snapshot) {
-          if (snapshot.hasData && snapshot.data == true) {
-            return SettingsSwitchListTile(
+      if (isManageMediaSupported.value)
+        Column(
+          children: [
+            SettingsSwitchListTile(
               enabled: true,
               valueNotifier: manageLocalMediaAndroid,
               title: "advanced_settings_sync_remote_deletions_title".tr(),
@@ -71,14 +86,24 @@ class AdvancedSettings extends HookConsumerWidget {
                 if (value) {
                   final result = await ref.read(localFilesManagerRepositoryProvider).requestManageMediaPermission();
                   manageLocalMediaAndroid.value = result;
+                  manageMediaAndroidPermission.value = result;
                 }
               },
-            );
-          } else {
-            return const SizedBox.shrink();
-          }
-        },
-      ),
+            ),
+            SettingsActionTile(
+              title: "manage_media_access_title".tr(),
+              statusText: manageMediaAndroidPermission.value ? "allowed".tr() : "not_allowed".tr(),
+              subtitle: "manage_media_access_rationale".tr(),
+              statusColor: manageLocalMediaAndroid.value && !manageMediaAndroidPermission.value
+                  ? const Color.fromARGB(255, 243, 188, 106)
+                  : null,
+              onActionTap: () async {
+                final result = await ref.read(localFilesManagerRepositoryProvider).manageMediaPermission();
+                manageMediaAndroidPermission.value = result;
+              },
+            ),
+          ],
+        ),
       SettingsSliderListTile(
         text: "advanced_settings_log_level_title".tr(namedArgs: {'level': logLevel}),
         valueNotifier: levelId,

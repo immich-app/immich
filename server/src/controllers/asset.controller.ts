@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import { EndpointLifecycle } from 'src/decorators';
+import { ApiTags } from '@nestjs/swagger';
+import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import {
   AssetBulkDeleteDto,
@@ -18,30 +18,32 @@ import {
 } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { AssetOcrResponseDto } from 'src/dtos/ocr.dto';
-import { Permission, RouteKey } from 'src/enum';
+import { ApiTag, Permission, RouteKey } from 'src/enum';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { AssetService } from 'src/services/asset.service';
 import { UUIDParamDto } from 'src/validation';
 
-@ApiTags('Assets')
+@ApiTags(ApiTag.Assets)
 @Controller(RouteKey.Asset)
 export class AssetController {
   constructor(private service: AssetService) {}
 
   @Get('random')
   @Authenticated({ permission: Permission.AssetRead })
-  @EndpointLifecycle({ deprecatedAt: 'v1.116.0' })
+  @Endpoint({
+    summary: 'Get random assets',
+    description: 'Retrieve a specified number of random assets for the authenticated user.',
+    history: new HistoryBuilder().added('v1').deprecated('v1', { replacementId: 'searchAssets' }),
+  })
   getRandom(@Auth() auth: AuthDto, @Query() dto: RandomAssetsDto): Promise<AssetResponseDto[]> {
     return this.service.getRandom(auth, dto.count ?? 1);
   }
 
-  /**
-   * Get all asset of a device that are in the database, ID only.
-   */
   @Get('/device/:deviceId')
-  @ApiOperation({
-    summary: 'getAllUserAssetsByDeviceId',
+  @Endpoint({
+    summary: 'Retrieve assets by device ID',
     description: 'Get all asset of a device that are in the database, ID only.',
+    history: new HistoryBuilder().added('v1').deprecated('v2'),
   })
   @Authenticated()
   getAllUserAssetsByDeviceId(@Auth() auth: AuthDto, @Param() { deviceId }: DeviceIdDto) {
@@ -50,6 +52,11 @@ export class AssetController {
 
   @Get('statistics')
   @Authenticated({ permission: Permission.AssetStatistics })
+  @Endpoint({
+    summary: 'Get asset statistics',
+    description: 'Retrieve various statistics about the assets owned by the authenticated user.',
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
+  })
   getAssetStatistics(@Auth() auth: AuthDto, @Query() dto: AssetStatsDto): Promise<AssetStatsResponseDto> {
     return this.service.getStatistics(auth, dto);
   }
@@ -57,6 +64,11 @@ export class AssetController {
   @Post('jobs')
   @Authenticated()
   @HttpCode(HttpStatus.NO_CONTENT)
+  @Endpoint({
+    summary: 'Run an asset job',
+    description: 'Run a specific job on a set of assets.',
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
+  })
   runAssetJobs(@Auth() auth: AuthDto, @Body() dto: AssetJobsDto): Promise<void> {
     return this.service.run(auth, dto);
   }
@@ -64,6 +76,11 @@ export class AssetController {
   @Put()
   @Authenticated({ permission: Permission.AssetUpdate })
   @HttpCode(HttpStatus.NO_CONTENT)
+  @Endpoint({
+    summary: 'Update assets',
+    description: 'Updates multiple assets at the same time.',
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
+  })
   updateAssets(@Auth() auth: AuthDto, @Body() dto: AssetBulkUpdateDto): Promise<void> {
     return this.service.updateAll(auth, dto);
   }
@@ -71,12 +88,22 @@ export class AssetController {
   @Delete()
   @Authenticated({ permission: Permission.AssetDelete })
   @HttpCode(HttpStatus.NO_CONTENT)
+  @Endpoint({
+    summary: 'Delete assets',
+    description: 'Deletes multiple assets at the same time.',
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
+  })
   deleteAssets(@Auth() auth: AuthDto, @Body() dto: AssetBulkDeleteDto): Promise<void> {
     return this.service.deleteAll(auth, dto);
   }
 
   @Get(':id')
   @Authenticated({ permission: Permission.AssetRead, sharedLink: true })
+  @Endpoint({
+    summary: 'Retrieve an asset',
+    description: 'Retrieve detailed information about a specific asset.',
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
+  })
   getAssetInfo(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<AssetResponseDto> {
     return this.service.get(auth, id) as Promise<AssetResponseDto>;
   }
@@ -84,12 +111,22 @@ export class AssetController {
   @Put('copy')
   @Authenticated({ permission: Permission.AssetCopy })
   @HttpCode(HttpStatus.NO_CONTENT)
+  @Endpoint({
+    summary: 'Copy asset',
+    description: 'Copy asset information like albums, tags, etc. from one asset to another.',
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
+  })
   copyAsset(@Auth() auth: AuthDto, @Body() dto: AssetCopyDto): Promise<void> {
     return this.service.copy(auth, dto);
   }
 
   @Put(':id')
   @Authenticated({ permission: Permission.AssetUpdate })
+  @Endpoint({
+    summary: 'Update an asset',
+    description: 'Update information of a specific asset.',
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
+  })
   updateAsset(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
@@ -100,18 +137,33 @@ export class AssetController {
 
   @Get(':id/metadata')
   @Authenticated({ permission: Permission.AssetRead })
+  @Endpoint({
+    summary: 'Get asset metadata',
+    description: 'Retrieve all metadata key-value pairs associated with the specified asset.',
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
+  })
   getAssetMetadata(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<AssetMetadataResponseDto[]> {
     return this.service.getMetadata(auth, id);
   }
 
   @Get(':id/ocr')
   @Authenticated({ permission: Permission.AssetRead })
+  @Endpoint({
+    summary: 'Retrieve asset OCR data',
+    description: 'Retrieve all OCR (Optical Character Recognition) data associated with the specified asset.',
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
+  })
   getAssetOcr(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<AssetOcrResponseDto[]> {
     return this.service.getOcr(auth, id);
   }
 
   @Put(':id/metadata')
   @Authenticated({ permission: Permission.AssetUpdate })
+  @Endpoint({
+    summary: 'Update asset metadata',
+    description: 'Update or add metadata key-value pairs for the specified asset.',
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
+  })
   updateAssetMetadata(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
@@ -122,6 +174,11 @@ export class AssetController {
 
   @Get(':id/metadata/:key')
   @Authenticated({ permission: Permission.AssetRead })
+  @Endpoint({
+    summary: 'Retrieve asset metadata by key',
+    description: 'Retrieve the value of a specific metadata key associated with the specified asset.',
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
+  })
   getAssetMetadataByKey(
     @Auth() auth: AuthDto,
     @Param() { id, key }: AssetMetadataRouteParams,
@@ -132,6 +189,11 @@ export class AssetController {
   @Delete(':id/metadata/:key')
   @Authenticated({ permission: Permission.AssetUpdate })
   @HttpCode(HttpStatus.NO_CONTENT)
+  @Endpoint({
+    summary: 'Delete asset metadata by key',
+    description: 'Delete a specific metadata key-value pair associated with the specified asset.',
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
+  })
   deleteAssetMetadata(@Auth() auth: AuthDto, @Param() { id, key }: AssetMetadataRouteParams): Promise<void> {
     return this.service.deleteMetadataByKey(auth, id, key);
   }

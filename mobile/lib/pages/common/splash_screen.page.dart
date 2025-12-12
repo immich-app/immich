@@ -65,7 +65,7 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
               if (Store.isBetaTimelineEnabled) {
                 bool syncSuccess = false;
                 await Future.wait([
-                  backgroundManager.syncLocal(),
+                  backgroundManager.syncLocal(full: true),
                   backgroundManager.syncRemote().then((success) => syncSuccess = success),
                 ]);
 

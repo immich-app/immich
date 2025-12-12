@@ -16,7 +16,9 @@ class UsersAdminApi {
 
   final ApiClient apiClient;
 
-  /// This endpoint is an admin-only route, and requires the `adminUser.create` permission.
+  /// Create a user
+  ///
+  /// Create a new user.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -48,7 +50,9 @@ class UsersAdminApi {
     );
   }
 
-  /// This endpoint is an admin-only route, and requires the `adminUser.create` permission.
+  /// Create a user
+  ///
+  /// Create a new user.
   ///
   /// Parameters:
   ///
@@ -68,7 +72,9 @@ class UsersAdminApi {
     return null;
   }
 
-  /// This endpoint is an admin-only route, and requires the `adminUser.delete` permission.
+  /// Delete a user
+  ///
+  /// Delete a user.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -103,7 +109,9 @@ class UsersAdminApi {
     );
   }
 
-  /// This endpoint is an admin-only route, and requires the `adminUser.delete` permission.
+  /// Delete a user
+  ///
+  /// Delete a user.
   ///
   /// Parameters:
   ///
@@ -125,7 +133,9 @@ class UsersAdminApi {
     return null;
   }
 
-  /// This endpoint is an admin-only route, and requires the `adminUser.read` permission.
+  /// Retrieve a user
+  ///
+  /// Retrieve  a specific user by their ID.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -158,7 +168,9 @@ class UsersAdminApi {
     );
   }
 
-  /// This endpoint is an admin-only route, and requires the `adminUser.read` permission.
+  /// Retrieve a user
+  ///
+  /// Retrieve  a specific user by their ID.
   ///
   /// Parameters:
   ///
@@ -178,7 +190,9 @@ class UsersAdminApi {
     return null;
   }
 
-  /// This endpoint is an admin-only route, and requires the `adminUser.read` permission.
+  /// Retrieve user preferences
+  ///
+  /// Retrieve the preferences of a specific user.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -211,7 +225,9 @@ class UsersAdminApi {
     );
   }
 
-  /// This endpoint is an admin-only route, and requires the `adminUser.read` permission.
+  /// Retrieve user preferences
+  ///
+  /// Retrieve the preferences of a specific user.
   ///
   /// Parameters:
   ///
@@ -231,7 +247,9 @@ class UsersAdminApi {
     return null;
   }
 
-  /// This endpoint is an admin-only route, and requires the `adminSession.read` permission.
+  /// Retrieve user sessions
+  ///
+  /// Retrieve all sessions for a specific user.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -264,7 +282,9 @@ class UsersAdminApi {
     );
   }
 
-  /// This endpoint is an admin-only route, and requires the `adminSession.read` permission.
+  /// Retrieve user sessions
+  ///
+  /// Retrieve all sessions for a specific user.
   ///
   /// Parameters:
   ///
@@ -287,7 +307,9 @@ class UsersAdminApi {
     return null;
   }
 
-  /// This endpoint is an admin-only route, and requires the `adminUser.read` permission.
+  /// Retrieve user statistics
+  ///
+  /// Retrieve asset statistics for a specific user.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -336,7 +358,9 @@ class UsersAdminApi {
     );
   }
 
-  /// This endpoint is an admin-only route, and requires the `adminUser.read` permission.
+  /// Retrieve user statistics
+  ///
+  /// Retrieve asset statistics for a specific user.
   ///
   /// Parameters:
   ///
@@ -362,7 +386,9 @@ class UsersAdminApi {
     return null;
   }
 
-  /// This endpoint is an admin-only route, and requires the `adminUser.delete` permission.
+  /// Restore a deleted user
+  ///
+  /// Restore a previously deleted user.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -395,7 +421,9 @@ class UsersAdminApi {
     );
   }
 
-  /// This endpoint is an admin-only route, and requires the `adminUser.delete` permission.
+  /// Restore a deleted user
+  ///
+  /// Restore a previously deleted user.
   ///
   /// Parameters:
   ///
@@ -415,7 +443,9 @@ class UsersAdminApi {
     return null;
   }
 
-  /// This endpoint is an admin-only route, and requires the `adminUser.read` permission.
+  /// Search users
+  ///
+  /// Search for users.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -456,7 +486,9 @@ class UsersAdminApi {
     );
   }
 
-  /// This endpoint is an admin-only route, and requires the `adminUser.read` permission.
+  /// Search users
+  ///
+  /// Search for users.
   ///
   /// Parameters:
   ///
@@ -481,7 +513,9 @@ class UsersAdminApi {
     return null;
   }
 
-  /// This endpoint is an admin-only route, and requires the `adminUser.update` permission.
+  /// Update a user
+  ///
+  /// Update an existing user.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -516,7 +550,9 @@ class UsersAdminApi {
     );
   }
 
-  /// This endpoint is an admin-only route, and requires the `adminUser.update` permission.
+  /// Update a user
+  ///
+  /// Update an existing user.
   ///
   /// Parameters:
   ///
@@ -538,7 +574,9 @@ class UsersAdminApi {
     return null;
   }
 
-  /// This endpoint is an admin-only route, and requires the `adminUser.update` permission.
+  /// Update user preferences
+  ///
+  /// Update the preferences of a specific user.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -573,7 +611,9 @@ class UsersAdminApi {
     );
   }
 
-  /// This endpoint is an admin-only route, and requires the `adminUser.update` permission.
+  /// Update user preferences
+  ///
+  /// Update the preferences of a specific user.
   ///
   /// Parameters:
   ///

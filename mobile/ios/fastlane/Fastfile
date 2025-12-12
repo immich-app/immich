@@ -112,7 +112,7 @@ end
       workspace: "Runner.xcworkspace",
       configuration: configuration,
       export_method: "app-store",
-      xcargs: "CODE_SIGN_IDENTITY='#{CODE_SIGN_IDENTITY}' CODE_SIGN_STYLE=Manual",
+      xcargs: "-skipMacroValidation CODE_SIGN_IDENTITY='#{CODE_SIGN_IDENTITY}' CODE_SIGN_STYLE=Manual",
       export_options: {
         provisioningProfiles: {
           "#{app_identifier}" => "#{app_identifier} AppStore",
@@ -195,7 +195,7 @@ end
       configuration: "Release",
       export_method: "app-store",
       skip_package_ipa: false,
-      xcargs: "-allowProvisioningUpdates",
+      xcargs: "-skipMacroValidation -allowProvisioningUpdates",
       export_options: {
         method: "app-store",
         signingStyle: "automatic",
@@ -207,6 +207,39 @@ end
     
     upload_to_testflight(
       skip_waiting_for_build_processing: true
+    )
+  end
+
+  desc "iOS Build Only (no TestFlight upload)"
+  lane :gha_build_only do
+    # Use the same build process as production, just skip the upload
+    # This ensures PR builds validate the same way as production builds
+    
+    # Install provisioning profiles (use development profiles for PR builds)
+    install_provisioning_profile(path: "profile_dev.mobileprovision")
+    install_provisioning_profile(path: "profile_dev_share.mobileprovision")
+    install_provisioning_profile(path: "profile_dev_widget.mobileprovision")
+    
+    # Configure code signing for dev bundle IDs
+    configure_code_signing(bundle_id_suffix: "development")
+    
+    # Build the app (same as gha_testflight_dev but without upload)
+    build_app(
+      scheme: "Runner",
+      workspace: "Runner.xcworkspace",
+      configuration: "Release",
+      export_method: "app-store",
+      skip_package_ipa: true,
+      xcargs: "-skipMacroValidation CODE_SIGN_IDENTITY='#{CODE_SIGN_IDENTITY}' CODE_SIGN_STYLE=Manual",
+      export_options: {
+        provisioningProfiles: {
+          "#{BASE_BUNDLE_ID}.development" => "#{BASE_BUNDLE_ID}.development AppStore",
+          "#{BASE_BUNDLE_ID}.development.ShareExtension" => "#{BASE_BUNDLE_ID}.development.ShareExtension AppStore",
+          "#{BASE_BUNDLE_ID}.development.Widget" => "#{BASE_BUNDLE_ID}.development.Widget AppStore"
+        },
+        signingStyle: "manual",
+        signingCertificate: CODE_SIGN_IDENTITY
+      }
     )
   end
 

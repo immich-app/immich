@@ -1,35 +1,23 @@
 <script lang="ts">
   import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
-  import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
   import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
+  import SettingButtonsRow from '$lib/components/shared-components/settings/SystemConfigButtonRow.svelte';
   import { SettingInputFieldType } from '$lib/constants';
   import FormatMessage from '$lib/elements/FormatMessage.svelte';
-  import type { SystemConfigDto } from '@immich/sdk';
-  import { isEqual } from 'lodash-es';
+  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
+  import { systemConfigManager } from '$lib/managers/system-config-manager.svelte';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
-  import type { SettingsResetEvent, SettingsSaveEvent } from './admin-settings';
 
-  interface Props {
-    savedConfig: SystemConfigDto;
-    defaultConfig: SystemConfigDto;
-    config: SystemConfigDto;
-    disabled?: boolean;
-    onReset: SettingsResetEvent;
-    onSave: SettingsSaveEvent;
-  }
-
-  let { savedConfig, defaultConfig, config = $bindable(), disabled = false, onReset, onSave }: Props = $props();
-
-  const onsubmit = (event: Event) => {
-    event.preventDefault();
-  };
+  const disabled = $derived(featureFlagsManager.value.configFile);
+  const config = $derived(systemConfigManager.value);
+  let configToEdit = $state(systemConfigManager.cloneValue());
 </script>
 
 <div class="mt-2">
   <div in:fade={{ duration: 500 }}>
-    <form autocomplete="off" {onsubmit}>
+    <form autocomplete="off" onsubmit={(event) => event.preventDefault()}>
       <div class="flex flex-col gap-4">
         <SettingAccordion key="map" title={$t('admin.map_settings')} subtitle={$t('admin.map_settings_description')}>
           <div class="ms-4 mt-4 flex flex-col gap-4">
@@ -37,7 +25,7 @@
               title={$t('admin.map_enable_description')}
               subtitle={$t('admin.map_implications')}
               {disabled}
-              bind:checked={config.map.enabled}
+              bind:checked={configToEdit.map.enabled}
             />
 
             <hr />
@@ -46,17 +34,17 @@
               inputType={SettingInputFieldType.TEXT}
               label={$t('admin.map_light_style')}
               description={$t('admin.map_style_description')}
-              bind:value={config.map.lightStyle}
-              disabled={disabled || !config.map.enabled}
-              isEdited={config.map.lightStyle !== savedConfig.map.lightStyle}
+              bind:value={configToEdit.map.lightStyle}
+              disabled={disabled || !configToEdit.map.enabled}
+              isEdited={configToEdit.map.lightStyle !== config.map.lightStyle}
             />
             <SettingInputField
               inputType={SettingInputFieldType.TEXT}
               label={$t('admin.map_dark_style')}
               description={$t('admin.map_style_description')}
-              bind:value={config.map.darkStyle}
-              disabled={disabled || !config.map.enabled}
-              isEdited={config.map.darkStyle !== savedConfig.map.darkStyle}
+              bind:value={configToEdit.map.darkStyle}
+              disabled={disabled || !configToEdit.map.enabled}
+              isEdited={configToEdit.map.darkStyle !== config.map.darkStyle}
             />
           </div></SettingAccordion
         >
@@ -82,20 +70,12 @@
             <SettingSwitch
               title={$t('admin.map_reverse_geocoding_enable_description')}
               {disabled}
-              bind:checked={config.reverseGeocoding.enabled}
+              bind:checked={configToEdit.reverseGeocoding.enabled}
             />
           </div></SettingAccordion
         >
 
-        <SettingButtonsRow
-          onReset={(options) => onReset({ ...options, configKeys: ['map', 'reverseGeocoding'] })}
-          onSave={() => onSave({ map: config.map, reverseGeocoding: config.reverseGeocoding })}
-          showResetToDefault={!isEqual(
-            { map: savedConfig.map, reverseGeocoding: savedConfig.reverseGeocoding },
-            { map: defaultConfig.map, reverseGeocoding: defaultConfig.reverseGeocoding },
-          )}
-          {disabled}
-        />
+        <SettingButtonsRow bind:configToEdit keys={['map', 'reverseGeocoding']} {disabled} />
       </div>
     </form>
   </div>

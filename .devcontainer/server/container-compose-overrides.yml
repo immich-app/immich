@@ -21,6 +21,7 @@ services:
       - app-node_modules:/usr/src/app/node_modules
       - sveltekit:/usr/src/app/web/.svelte-kit
       - coverage:/usr/src/app/web/coverage
+      - ../plugins:/build/corePlugin
   immich-web:
     env_file: !reset []
   immich-machine-learning:

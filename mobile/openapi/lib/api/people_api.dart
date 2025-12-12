@@ -16,7 +16,9 @@ class PeopleApi {
 
   final ApiClient apiClient;
 
-  /// This endpoint requires the `person.create` permission.
+  /// Create a person
+  ///
+  /// Create a new person that can have multiple faces assigned to them.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -48,7 +50,9 @@ class PeopleApi {
     );
   }
 
-  /// This endpoint requires the `person.create` permission.
+  /// Create a person
+  ///
+  /// Create a new person that can have multiple faces assigned to them.
   ///
   /// Parameters:
   ///
@@ -68,7 +72,9 @@ class PeopleApi {
     return null;
   }
 
-  /// This endpoint requires the `person.delete` permission.
+  /// Delete people
+  ///
+  /// Bulk delete a list of people at once.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -100,7 +106,9 @@ class PeopleApi {
     );
   }
 
-  /// This endpoint requires the `person.delete` permission.
+  /// Delete people
+  ///
+  /// Bulk delete a list of people at once.
   ///
   /// Parameters:
   ///
@@ -112,7 +120,9 @@ class PeopleApi {
     }
   }
 
-  /// This endpoint requires the `person.delete` permission.
+  /// Delete person
+  ///
+  /// Delete an individual person.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -145,7 +155,9 @@ class PeopleApi {
     );
   }
 
-  /// This endpoint requires the `person.delete` permission.
+  /// Delete person
+  ///
+  /// Delete an individual person.
   ///
   /// Parameters:
   ///
@@ -157,7 +169,9 @@ class PeopleApi {
     }
   }
 
-  /// This endpoint requires the `person.read` permission.
+  /// Get all people
+  ///
+  /// Retrieve a list of all people.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -215,7 +229,9 @@ class PeopleApi {
     );
   }
 
-  /// This endpoint requires the `person.read` permission.
+  /// Get all people
+  ///
+  /// Retrieve a list of all people.
   ///
   /// Parameters:
   ///
@@ -245,7 +261,9 @@ class PeopleApi {
     return null;
   }
 
-  /// This endpoint requires the `person.read` permission.
+  /// Get a person
+  ///
+  /// Retrieve a person by id.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -278,7 +296,9 @@ class PeopleApi {
     );
   }
 
-  /// This endpoint requires the `person.read` permission.
+  /// Get a person
+  ///
+  /// Retrieve a person by id.
   ///
   /// Parameters:
   ///
@@ -298,7 +318,9 @@ class PeopleApi {
     return null;
   }
 
-  /// This endpoint requires the `person.statistics` permission.
+  /// Get person statistics
+  ///
+  /// Retrieve statistics about a specific person.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -331,7 +353,9 @@ class PeopleApi {
     );
   }
 
-  /// This endpoint requires the `person.statistics` permission.
+  /// Get person statistics
+  ///
+  /// Retrieve statistics about a specific person.
   ///
   /// Parameters:
   ///
@@ -351,7 +375,9 @@ class PeopleApi {
     return null;
   }
 
-  /// This endpoint requires the `person.read` permission.
+  /// Get person thumbnail
+  ///
+  /// Retrieve the thumbnail file for a person.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -384,7 +410,9 @@ class PeopleApi {
     );
   }
 
-  /// This endpoint requires the `person.read` permission.
+  /// Get person thumbnail
+  ///
+  /// Retrieve the thumbnail file for a person.
   ///
   /// Parameters:
   ///
@@ -404,7 +432,9 @@ class PeopleApi {
     return null;
   }
 
-  /// This endpoint requires the `person.merge` permission.
+  /// Merge people
+  ///
+  /// Merge a list of people into the person specified in the path parameter.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -439,7 +469,9 @@ class PeopleApi {
     );
   }
 
-  /// This endpoint requires the `person.merge` permission.
+  /// Merge people
+  ///
+  /// Merge a list of people into the person specified in the path parameter.
   ///
   /// Parameters:
   ///
@@ -464,7 +496,9 @@ class PeopleApi {
     return null;
   }
 
-  /// This endpoint requires the `person.reassign` permission.
+  /// Reassign faces
+  ///
+  /// Bulk reassign a list of faces to a different person.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -499,7 +533,9 @@ class PeopleApi {
     );
   }
 
-  /// This endpoint requires the `person.reassign` permission.
+  /// Reassign faces
+  ///
+  /// Bulk reassign a list of faces to a different person.
   ///
   /// Parameters:
   ///
@@ -524,7 +560,9 @@ class PeopleApi {
     return null;
   }
 
-  /// This endpoint requires the `person.update` permission.
+  /// Update people
+  ///
+  /// Bulk update multiple people at once.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -556,7 +594,9 @@ class PeopleApi {
     );
   }
 
-  /// This endpoint requires the `person.update` permission.
+  /// Update people
+  ///
+  /// Bulk update multiple people at once.
   ///
   /// Parameters:
   ///
@@ -579,7 +619,9 @@ class PeopleApi {
     return null;
   }
 
-  /// This endpoint requires the `person.update` permission.
+  /// Update person
+  ///
+  /// Update an individual person.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -614,7 +656,9 @@ class PeopleApi {
     );
   }
 
-  /// This endpoint requires the `person.update` permission.
+  /// Update person
+  ///
+  /// Update an individual person.
   ///
   /// Parameters:
   ///

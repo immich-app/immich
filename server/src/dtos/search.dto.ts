@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsInt, IsNotEmpty, IsString, Max, Min } from 'class-validator';
 import { Place } from 'src/database';
-import { PropertyLifecycle } from 'src/decorators';
+import { HistoryBuilder, Property } from 'src/decorators';
 import { AlbumResponseDto } from 'src/dtos/album.dto';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import { AssetOrder, AssetType, AssetVisibility } from 'src/enum';
@@ -282,7 +282,7 @@ export class SearchSuggestionRequestDto {
   lensModel?: string;
 
   @ValidateBoolean({ optional: true })
-  @PropertyLifecycle({ addedAt: 'v111.0.0' })
+  @Property({ history: new HistoryBuilder().added('v1.111.0').stable('v2') })
   includeNull?: boolean;
 }
 

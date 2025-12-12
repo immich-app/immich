@@ -305,6 +305,7 @@ interface NativeSyncApi {
   fun getAssetsForAlbum(albumId: String, updatedTimeCond: Long?): List<PlatformAsset>
   fun hashAssets(assetIds: List<String>, allowNetworkAccess: Boolean, callback: (Result<List<HashResult>>) -> Unit)
   fun cancelHashing()
+  fun getTrashedAssets(): Map<String, List<PlatformAsset>>
 
   companion object {
     /** The codec used by NativeSyncApi. */
@@ -474,6 +475,21 @@ interface NativeSyncApi {
             val wrapped: List<Any?> = try {
               api.cancelHashing()
               listOf(null)
+            } catch (exception: Throwable) {
+              MessagesPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.NativeSyncApi.getTrashedAssets$separatedMessageChannelSuffix", codec, taskQueue)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            val wrapped: List<Any?> = try {
+              listOf(api.getTrashedAssets())
             } catch (exception: Throwable) {
               MessagesPigeonUtils.wrapError(exception)
             }

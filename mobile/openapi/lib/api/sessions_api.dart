@@ -16,7 +16,9 @@ class SessionsApi {
 
   final ApiClient apiClient;
 
-  /// This endpoint requires the `session.create` permission.
+  /// Create a session
+  ///
+  /// Create a session as a child to the current session. This endpoint is used for casting.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -48,7 +50,9 @@ class SessionsApi {
     );
   }
 
-  /// This endpoint requires the `session.create` permission.
+  /// Create a session
+  ///
+  /// Create a session as a child to the current session. This endpoint is used for casting.
   ///
   /// Parameters:
   ///
@@ -68,7 +72,9 @@ class SessionsApi {
     return null;
   }
 
-  /// This endpoint requires the `session.delete` permission.
+  /// Delete all sessions
+  ///
+  /// Delete all sessions for the user. This will not delete the current session.
   ///
   /// Note: This method returns the HTTP [Response].
   Future<Response> deleteAllSessionsWithHttpInfo() async {
@@ -96,7 +102,9 @@ class SessionsApi {
     );
   }
 
-  /// This endpoint requires the `session.delete` permission.
+  /// Delete all sessions
+  ///
+  /// Delete all sessions for the user. This will not delete the current session.
   Future<void> deleteAllSessions() async {
     final response = await deleteAllSessionsWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -104,7 +112,9 @@ class SessionsApi {
     }
   }
 
-  /// This endpoint requires the `session.delete` permission.
+  /// Delete a session
+  ///
+  /// Delete a specific session by id.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -137,7 +147,9 @@ class SessionsApi {
     );
   }
 
-  /// This endpoint requires the `session.delete` permission.
+  /// Delete a session
+  ///
+  /// Delete a specific session by id.
   ///
   /// Parameters:
   ///
@@ -149,7 +161,9 @@ class SessionsApi {
     }
   }
 
-  /// This endpoint requires the `session.read` permission.
+  /// Retrieve sessions
+  ///
+  /// Retrieve a list of sessions for the user.
   ///
   /// Note: This method returns the HTTP [Response].
   Future<Response> getSessionsWithHttpInfo() async {
@@ -177,7 +191,9 @@ class SessionsApi {
     );
   }
 
-  /// This endpoint requires the `session.read` permission.
+  /// Retrieve sessions
+  ///
+  /// Retrieve a list of sessions for the user.
   Future<List<SessionResponseDto>?> getSessions() async {
     final response = await getSessionsWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -196,7 +212,9 @@ class SessionsApi {
     return null;
   }
 
-  /// This endpoint requires the `session.lock` permission.
+  /// Lock a session
+  ///
+  /// Lock a specific session by id.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -229,7 +247,9 @@ class SessionsApi {
     );
   }
 
-  /// This endpoint requires the `session.lock` permission.
+  /// Lock a session
+  ///
+  /// Lock a specific session by id.
   ///
   /// Parameters:
   ///
@@ -241,7 +261,9 @@ class SessionsApi {
     }
   }
 
-  /// This endpoint requires the `session.update` permission.
+  /// Update a session
+  ///
+  /// Update a specific session identified by id.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -276,7 +298,9 @@ class SessionsApi {
     );
   }
 
-  /// This endpoint requires the `session.update` permission.
+  /// Update a session
+  ///
+  /// Update a specific session identified by id.
   ///
   /// Parameters:
   ///

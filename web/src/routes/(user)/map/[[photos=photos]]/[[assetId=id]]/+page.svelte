@@ -3,14 +3,13 @@
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import { AppRoute, timeToLoadTheMap } from '$lib/constants';
   import Portal from '$lib/elements/Portal.svelte';
+  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { featureFlags } from '$lib/stores/server-config.store';
   import { handlePromiseError } from '$lib/utils';
   import { delay } from '$lib/utils/asset-utils';
   import { navigate } from '$lib/utils/navigation';
   import { LoadingSpinner } from '@immich/ui';
   import { onDestroy } from 'svelte';
-  import { run } from 'svelte/legacy';
   import type { PageData } from './$types';
 
   interface Props {
@@ -28,11 +27,9 @@
     assetViewingStore.showAssetViewer(false);
   });
 
-  run(() => {
-    if (!$featureFlags.map) {
-      handlePromiseError(goto(AppRoute.PHOTOS));
-    }
-  });
+  if (!featureFlagsManager.value.map) {
+    handlePromiseError(goto(AppRoute.PHOTOS));
+  }
 
   async function onViewAssets(assetIds: string[]) {
     viewingAssets = assetIds;
@@ -69,7 +66,7 @@
   }
 </script>
 
-{#if $featureFlags.loaded && $featureFlags.map}
+{#if featureFlagsManager.value.map}
   <UserPageLayout title={data.meta.title}>
     <div class="isolate h-full w-full">
       {#await import('$lib/components/shared-components/map/map.svelte')}

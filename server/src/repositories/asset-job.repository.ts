@@ -46,8 +46,8 @@ export class AssetJobRepository {
           eb
             .selectFrom('tag')
             .select(['tag.value'])
-            .innerJoin('tag_asset', 'tag.id', 'tag_asset.tagsId')
-            .whereRef('asset.id', '=', 'tag_asset.assetsId'),
+            .innerJoin('tag_asset', 'tag.id', 'tag_asset.tagId')
+            .whereRef('asset.id', '=', 'tag_asset.assetId'),
         ).as('tags'),
       )
       .limit(1)

@@ -2,8 +2,6 @@
   import AlbumSharedLink from '$lib/components/album-page/album-shared-link.svelte';
   import { AppRoute } from '$lib/constants';
   import Dropdown from '$lib/elements/Dropdown.svelte';
-  import QrCodeModal from '$lib/modals/QrCodeModal.svelte';
-  import { makeSharedLinkUrl } from '$lib/utils';
   import {
     AlbumUserRole,
     getAllSharedLinks,
@@ -13,7 +11,7 @@
     type SharedLinkResponseDto,
     type UserResponseDto,
   } from '@immich/sdk';
-  import { Button, Icon, Link, Modal, ModalBody, modalManager, Stack, Text } from '@immich/ui';
+  import { Button, Icon, Link, Modal, ModalBody, Stack, Text } from '@immich/ui';
   import { mdiCheck, mdiEye, mdiLink, mdiPencil } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -28,13 +26,6 @@
 
   let users: UserResponseDto[] = $state([]);
   let selectedUsers: Record<string, { user: UserResponseDto; role: AlbumUserRole }> = $state({});
-
-  const handleViewQrCode = async (sharedLink: SharedLinkResponseDto) => {
-    await modalManager.show(QrCodeModal, {
-      title: $t('view_link'),
-      value: makeSharedLinkUrl(sharedLink),
-    });
-  };
 
   const roleOptions: Array<{ title: string; value: AlbumUserRole | 'none'; icon?: string }> = [
     { title: $t('role_editor'), value: AlbumUserRole.Editor, icon: mdiPencil },
@@ -174,7 +165,7 @@
 
         <Stack gap={4}>
           {#each sharedLinks as sharedLink (sharedLink.id)}
-            <AlbumSharedLink {album} {sharedLink} onViewQrCode={() => handleViewQrCode(sharedLink)} />
+            <AlbumSharedLink {album} {sharedLink} />
           {/each}
         </Stack>
       {/if}

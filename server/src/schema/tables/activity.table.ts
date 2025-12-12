@@ -32,7 +32,7 @@ import {
 @ForeignKeyConstraint({
   columns: ['albumId', 'assetId'],
   referenceTable: () => AlbumAssetTable,
-  referenceColumns: ['albumsId', 'assetsId'],
+  referenceColumns: ['albumId', 'assetId'],
   onUpdate: 'NO ACTION',
   onDelete: 'CASCADE',
 })

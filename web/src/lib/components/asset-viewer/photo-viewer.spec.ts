@@ -1,7 +1,7 @@
 import { getAnimateMock } from '$lib/__mocks__/animate.mock';
 import PhotoViewer from '$lib/components/asset-viewer/photo-viewer.svelte';
 import * as utils from '$lib/utils';
-import { AssetMediaSize } from '@immich/sdk';
+import { AssetMediaSize, AssetTypeEnum } from '@immich/sdk';
 import { assetFactory } from '@test-data/factories/asset-factory';
 import { sharedLinkFactory } from '@test-data/factories/shared-link-factory';
 import { render } from '@testing-library/svelte';
@@ -65,7 +65,11 @@ describe('PhotoViewer component', () => {
   });
 
   it('loads the thumbnail', () => {
-    const asset = assetFactory.build({ originalPath: 'image.jpg', originalMimeType: 'image/jpeg' });
+    const asset = assetFactory.build({
+      originalPath: 'image.jpg',
+      originalMimeType: 'image/jpeg',
+      type: AssetTypeEnum.Image,
+    });
     render(PhotoViewer, { asset });
 
     expect(getAssetThumbnailUrlSpy).toBeCalledWith({
@@ -76,16 +80,89 @@ describe('PhotoViewer component', () => {
     expect(getAssetOriginalUrlSpy).not.toBeCalled();
   });
 
-  it('loads the original image for gifs', () => {
-    const asset = assetFactory.build({ originalPath: 'image.gif', originalMimeType: 'image/gif' });
+  it('loads the thumbnail image for static gifs', () => {
+    const asset = assetFactory.build({
+      originalPath: 'image.gif',
+      originalMimeType: 'image/gif',
+      type: AssetTypeEnum.Image,
+    });
+    render(PhotoViewer, { asset });
+
+    expect(getAssetThumbnailUrlSpy).toBeCalledWith({
+      id: asset.id,
+      size: AssetMediaSize.Preview,
+      cacheKey: asset.thumbhash,
+    });
+    expect(getAssetOriginalUrlSpy).not.toBeCalled();
+  });
+
+  it('loads the thumbnail image for static webp images', () => {
+    const asset = assetFactory.build({
+      originalPath: 'image.webp',
+      originalMimeType: 'image/webp',
+      type: AssetTypeEnum.Image,
+    });
+    render(PhotoViewer, { asset });
+
+    expect(getAssetThumbnailUrlSpy).toBeCalledWith({
+      id: asset.id,
+      size: AssetMediaSize.Preview,
+      cacheKey: asset.thumbhash,
+    });
+    expect(getAssetOriginalUrlSpy).not.toBeCalled();
+  });
+
+  it('loads the original image for animated gifs', () => {
+    const asset = assetFactory.build({
+      originalPath: 'image.gif',
+      originalMimeType: 'image/gif',
+      type: AssetTypeEnum.Image,
+      duration: '2.0',
+    });
     render(PhotoViewer, { asset });
 
     expect(getAssetThumbnailUrlSpy).not.toBeCalled();
     expect(getAssetOriginalUrlSpy).toBeCalledWith({ id: asset.id, cacheKey: asset.thumbhash });
   });
 
-  it('loads original for shared link when download permission is true and showMetadata permission is true', () => {
-    const asset = assetFactory.build({ originalPath: 'image.gif', originalMimeType: 'image/gif' });
+  it('loads the original image for animated webp images', () => {
+    const asset = assetFactory.build({
+      originalPath: 'image.webp',
+      originalMimeType: 'image/webp',
+      type: AssetTypeEnum.Image,
+      duration: '2.0',
+    });
+    render(PhotoViewer, { asset });
+
+    expect(getAssetThumbnailUrlSpy).not.toBeCalled();
+    expect(getAssetOriginalUrlSpy).toBeCalledWith({ id: asset.id, cacheKey: asset.thumbhash });
+  });
+
+  it('not loads original static image in shared link even when download permission is true and showMetadata permission is true', () => {
+    const asset = assetFactory.build({
+      originalPath: 'image.gif',
+      originalMimeType: 'image/gif',
+      type: AssetTypeEnum.Image,
+    });
+    const sharedLink = sharedLinkFactory.build({ allowDownload: true, showMetadata: true, assets: [asset] });
+    render(PhotoViewer, { asset, sharedLink });
+
+    expect(getAssetThumbnailUrlSpy).toBeCalledWith({
+      id: asset.id,
+      size: AssetMediaSize.Preview,
+      cacheKey: asset.thumbhash,
+    });
+
+    expect(getAssetOriginalUrlSpy).not.toBeCalled();
+  });
+
+  it('loads original animated image in shared link when download permission is true and showMetadata permission is true', () => {
+    const asset = assetFactory.build({
+      originalPath: 'image.gif',
+      originalMimeType: 'image/gif',
+      type: AssetTypeEnum.Image,
+      duration: '2.0',
+    });
     const sharedLink = sharedLinkFactory.build({ allowDownload: true, showMetadata: true, assets: [asset] });
     render(PhotoViewer, { asset, sharedLink });
 
@@ -93,8 +170,13 @@ describe('PhotoViewer component', () => {
     expect(getAssetOriginalUrlSpy).toBeCalledWith({ id: asset.id, cacheKey: asset.thumbhash });
   });
 
-  it('not loads original image when shared link download permission is false', () => {
-    const asset = assetFactory.build({ originalPath: 'image.gif', originalMimeType: 'image/gif' });
+  it('not loads original animated image when shared link download permission is false', () => {
+    const asset = assetFactory.build({
+      originalPath: 'image.gif',
+      originalMimeType: 'image/gif',
+      type: AssetTypeEnum.Image,
+      duration: '2.0',
+    });
     const sharedLink = sharedLinkFactory.build({ allowDownload: false, assets: [asset] });
     render(PhotoViewer, { asset, sharedLink });
 
@@ -107,8 +189,13 @@ describe('PhotoViewer component', () => {
     expect(getAssetOriginalUrlSpy).not.toBeCalled();
   });
 
-  it('not loads original image when shared link showMetadata permission is false', () => {
-    const asset = assetFactory.build({ originalPath: 'image.gif', originalMimeType: 'image/gif' });
+  it('not loads original animated image when shared link showMetadata permission is false', () => {
+    const asset = assetFactory.build({
+      originalPath: 'image.gif',
+      originalMimeType: 'image/gif',
+      type: AssetTypeEnum.Image,
+      duration: '2.0',
+    });
     const sharedLink = sharedLinkFactory.build({ showMetadata: false, assets: [asset] });
     render(PhotoViewer, { asset, sharedLink });
 

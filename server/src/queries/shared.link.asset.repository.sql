@@ -4,10 +4,10 @@
 insert into
   "shared_link_asset"
 select
-  $1 as "assetsId",
-  "shared_link_asset"."sharedLinksId"
+  $1 as "assetId",
+  "shared_link_asset"."sharedLinkId"
 from
   "shared_link_asset"
 where
-  "shared_link_asset"."assetsId" = $2
+  "shared_link_asset"."assetId" = $2
 on conflict do nothing

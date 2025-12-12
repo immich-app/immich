@@ -256,7 +256,7 @@ The Dev Container supports multiple ways to run tests:
 
 ```bash
 # Run tests for specific components
-make test-server         # Server unit tests
+make test-server        # Server unit tests
 make test-web           # Web unit tests
 make test-e2e           # End-to-end tests
 make test-cli           # CLI tests
@@ -268,12 +268,13 @@ make test-all           # Runs tests for all components
 make test-medium-dev    # End-to-end tests
 ```
 
-#### Using NPM Directly
+#### Using PNPM Directly
 
 ```bash
 # Server tests
 cd /workspaces/immich/server
-pnpm test                # Run all tests
+pnpm test               # Run all tests
+pnpm run test:medium    # Medium tests (integration tests)
 pnpm run test:watch     # Watch mode
 pnpm run test:cov       # Coverage report
 
@@ -293,21 +294,21 @@ pnpm run test:web       # Run web UI tests
 ```bash
 # Linting
 make lint-server        # Lint server code
-make lint-web          # Lint web code
-make lint-all          # Lint all components
+make lint-web           # Lint web code
+make lint-all           # Lint all components
 
 # Formatting
 make format-server      # Format server code
-make format-web        # Format web code
-make format-all        # Format all code
+make format-web         # Format web code
+make format-all         # Format all code
 
 # Type checking
 make check-server       # Type check server
-make check-web         # Type check web
-make check-all         # Check all components
+make check-web          # Type check web
+make check-all          # Check all components
 
 # Complete hygiene check
-make hygiene-all       # Runs lint, format, check, SQL sync, and audit
+make hygiene-all        # Run lint, format, check, SQL sync, and audit
 ```
 
 ### Additional Make Commands
@@ -315,21 +316,21 @@ make hygiene-all       # Runs lint, format, check, SQL sync, and audit
 ```bash
 # Build commands
 make build-server       # Build server
-make build-web         # Build web app
-make build-all         # Build everything
+make build-web          # Build web app
+make build-all          # Build everything
 
 # API generation
-make open-api          # Generate OpenAPI specs
+make open-api           # Generate OpenAPI specs
 make open-api-typescript # Generate TypeScript SDK
-make open-api-dart     # Generate Dart SDK
+make open-api-dart      # Generate Dart SDK
 
 # Database
-make sql               # Sync database schema
+make sql                # Sync database schema
 
 # Dependencies
-make install-server    # Install server dependencies
-make install-web      # Install web dependencies
-make install-all      # Install all dependencies
+make install-server     # Install server dependencies
+make install-web        # Install web dependencies
+make install-all        # Install all dependencies
 ```
 
 ### Debugging

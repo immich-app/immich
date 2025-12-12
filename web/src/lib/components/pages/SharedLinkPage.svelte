@@ -2,7 +2,6 @@
   import AlbumViewer from '$lib/components/album-page/album-viewer.svelte';
   import IndividualSharedViewer from '$lib/components/share-page/individual-shared-viewer.svelte';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
-  import ImmichLogoSmallLink from '$lib/components/shared-components/immich-logo-small-link.svelte';
   import ThemeButton from '$lib/components/shared-components/theme-button.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { user } from '$lib/stores/user.store';
@@ -10,7 +9,7 @@
   import { handleError } from '$lib/utils/handle-error';
   import { navigate } from '$lib/utils/navigation';
   import { getMySharedLink, SharedLinkType, type AssetResponseDto, type SharedLinkResponseDto } from '@immich/sdk';
-  import { Button, PasswordInput } from '@immich/ui';
+  import { Button, Logo, PasswordInput } from '@immich/ui';
   import { tick } from 'svelte';
   import { t } from 'svelte-i18n';
 
@@ -87,7 +86,9 @@
   <header>
     <ControlAppBar showBackButton={false}>
       {#snippet leading()}
-        <ImmichLogoSmallLink />
+        <a data-sveltekit-preload-data="hover" class="ms-4" href="/">
+          <Logo variant="inline" />
+        </a>
       {/snippet}
 
       {#snippet trailing()}

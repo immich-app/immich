@@ -126,8 +126,8 @@ export class MapRepository {
             eb.exists((eb) =>
               eb
                 .selectFrom('album_asset')
-                .whereRef('asset.id', '=', 'album_asset.assetsId')
-                .where('album_asset.albumsId', 'in', albumIds),
+                .whereRef('asset.id', '=', 'album_asset.assetId')
+                .where('album_asset.albumId', 'in', albumIds),
             ),
           );
         }

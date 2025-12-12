@@ -12,6 +12,7 @@ import { MapAsset } from 'src/dtos/asset-response.dto';
 import { AssetFileType, AssetStatus, AssetType, AssetVisibility, CacheControl, JobName } from 'src/enum';
 import { AuthRequest } from 'src/middleware/auth.guard';
 import { AssetMediaService } from 'src/services/asset-media.service';
+import { UploadBody } from 'src/types';
 import { ASSET_CHECKSUM_CONSTRAINT } from 'src/utils/database';
 import { ImmichFileResponse } from 'src/utils/file';
 import { assetStub } from 'test/fixtures/asset.stub';
@@ -35,10 +36,10 @@ const uploadFile = {
       size: 1000,
     },
   },
-  filename: (fieldName: UploadFieldName, filename: string) => {
+  filename: (fieldName: UploadFieldName, filename: string, body?: UploadBody) => {
     return {
       auth: authStub.admin,
-      body: {},
+      body: body || {},
       fieldName,
       file: {
         uuid: 'random-uuid',
@@ -263,6 +264,15 @@ describe(AssetMediaService.name, () => {
         });
       });
     }
+
+    it('should prefer filename from body over name from path', () => {
+      const pathFilename = 'invalid-file-name';
+      const body = { filename: 'video.mov' };
+      expect(() => sut.canUploadFile(uploadFile.filename(UploadFieldName.ASSET_DATA, pathFilename))).toThrowError(
+        BadRequestException,
+      );
+      expect(sut.canUploadFile(uploadFile.filename(UploadFieldName.ASSET_DATA, pathFilename, body))).toEqual(true);
+    });
   });
 
   describe('getUploadFilename', () => {

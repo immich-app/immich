@@ -339,7 +339,7 @@
   };
 
   const handleUndoDeleteAssets = async (assets: TimelineAsset[]) => {
-    timelineManager.addAssets(assets);
+    timelineManager.upsertAssets(assets);
     await updateAssetCount();
   };
 

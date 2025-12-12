@@ -86,13 +86,9 @@ class _BaseDraggableScrollableSheetState extends ConsumerState<BaseBottomSheet> 
                       SliverToBoxAdapter(
                         child: Column(
                           children: [
-                            SizedBox(
-                              height: 115,
-                              child: ListView(
-                                shrinkWrap: true,
-                                scrollDirection: Axis.horizontal,
-                                children: widget.actions,
-                              ),
+                            SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: widget.actions),
                             ),
                             const Divider(indent: 16, endIndent: 16),
                             const SizedBox(height: 16),

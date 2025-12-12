@@ -4,7 +4,7 @@ import { IsArray, IsInt, IsNotEmpty, IsNumber, IsString, Max, Min, ValidateNeste
 import { Selectable } from 'kysely';
 import { DateTime } from 'luxon';
 import { AssetFace, Person } from 'src/database';
-import { PropertyLifecycle } from 'src/decorators';
+import { HistoryBuilder, Property } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { SourceType } from 'src/enum';
 import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
@@ -111,11 +111,11 @@ export class PersonResponseDto {
   birthDate!: string | null;
   thumbnailPath!: string;
   isHidden!: boolean;
-  @PropertyLifecycle({ addedAt: 'v1.107.0' })
+  @Property({ history: new HistoryBuilder().added('v1.107.0').stable('v2') })
   updatedAt?: Date;
-  @PropertyLifecycle({ addedAt: 'v1.126.0' })
+  @Property({ history: new HistoryBuilder().added('v1.126.0').stable('v2') })
   isFavorite?: boolean;
-  @PropertyLifecycle({ addedAt: 'v1.126.0' })
+  @Property({ history: new HistoryBuilder().added('v1.126.0').stable('v2') })
   color?: string;
 }
 
@@ -216,7 +216,7 @@ export class PeopleResponseDto {
   people!: PersonResponseDto[];
 
   // TODO: make required after a few versions
-  @PropertyLifecycle({ addedAt: 'v1.110.0' })
+  @Property({ history: new HistoryBuilder().added('v1.110.0').stable('v2') })
   hasNextPage?: boolean;
 }
 

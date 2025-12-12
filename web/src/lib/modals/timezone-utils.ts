@@ -70,9 +70,14 @@ export function getModernOffsetForZoneAndDate(
 
 function zoneOptionForDate(zone: string, date: string) {
   const { offsetMinutes, offsetFormat: zoneOffsetAtDate } = getModernOffsetForZoneAndDate(zone, date);
-  // For validity, we still need to check if the exact date/time exists in the *original* timezone (for gaps/overlaps).
-  const dateForValidity = DateTime.fromISO(date, { zone });
-  const valid = dateForValidity.isValid && date === dateForValidity.toFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
+  // For validity, we still need to check if the exact date/time exists in the *original* timezone.
+  // Use the fact that in DST gaps Luxon advances the missing time by an hour.
+  // Ignore milliseconds:
+  // - milliseconds are not relevant for TZ calculations
+  // - browsers strip insignificant .000 making string comparison with milliseconds more fragile.
+  const dateInTimezone = DateTime.fromISO(date, { zone });
+  const exists = date.replace(/\.\d+/, '') === dateInTimezone.toFormat("yyyy-MM-dd'T'HH:mm:ss");
+  const valid = dateInTimezone.isValid && exists;
   return {
     value: zone,
     offsetMinutes,

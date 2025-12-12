@@ -16,7 +16,9 @@ class SystemMetadataApi {
 
   final ApiClient apiClient;
 
-  /// This endpoint is an admin-only route, and requires the `systemMetadata.read` permission.
+  /// Retrieve admin onboarding
+  ///
+  /// Retrieve the current admin onboarding status.
   ///
   /// Note: This method returns the HTTP [Response].
   Future<Response> getAdminOnboardingWithHttpInfo() async {
@@ -44,7 +46,9 @@ class SystemMetadataApi {
     );
   }
 
-  /// This endpoint is an admin-only route, and requires the `systemMetadata.read` permission.
+  /// Retrieve admin onboarding
+  ///
+  /// Retrieve the current admin onboarding status.
   Future<AdminOnboardingUpdateDto?> getAdminOnboarding() async {
     final response = await getAdminOnboardingWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -60,7 +64,9 @@ class SystemMetadataApi {
     return null;
   }
 
-  /// This endpoint is an admin-only route, and requires the `systemMetadata.read` permission.
+  /// Retrieve reverse geocoding state
+  ///
+  /// Retrieve the current state of the reverse geocoding import.
   ///
   /// Note: This method returns the HTTP [Response].
   Future<Response> getReverseGeocodingStateWithHttpInfo() async {
@@ -88,7 +94,9 @@ class SystemMetadataApi {
     );
   }
 
-  /// This endpoint is an admin-only route, and requires the `systemMetadata.read` permission.
+  /// Retrieve reverse geocoding state
+  ///
+  /// Retrieve the current state of the reverse geocoding import.
   Future<ReverseGeocodingStateResponseDto?> getReverseGeocodingState() async {
     final response = await getReverseGeocodingStateWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -104,7 +112,9 @@ class SystemMetadataApi {
     return null;
   }
 
-  /// This endpoint is an admin-only route, and requires the `systemMetadata.read` permission.
+  /// Retrieve version check state
+  ///
+  /// Retrieve the current state of the version check process.
   ///
   /// Note: This method returns the HTTP [Response].
   Future<Response> getVersionCheckStateWithHttpInfo() async {
@@ -132,7 +142,9 @@ class SystemMetadataApi {
     );
   }
 
-  /// This endpoint is an admin-only route, and requires the `systemMetadata.read` permission.
+  /// Retrieve version check state
+  ///
+  /// Retrieve the current state of the version check process.
   Future<VersionCheckStateResponseDto?> getVersionCheckState() async {
     final response = await getVersionCheckStateWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -148,7 +160,9 @@ class SystemMetadataApi {
     return null;
   }
 
-  /// This endpoint is an admin-only route, and requires the `systemMetadata.update` permission.
+  /// Update admin onboarding
+  ///
+  /// Update the admin onboarding status.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -180,7 +194,9 @@ class SystemMetadataApi {
     );
   }
 
-  /// This endpoint is an admin-only route, and requires the `systemMetadata.update` permission.
+  /// Update admin onboarding
+  ///
+  /// Update the admin onboarding status.
   ///
   /// Parameters:
   ///

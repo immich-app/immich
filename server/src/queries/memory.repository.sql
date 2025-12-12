@@ -37,7 +37,7 @@ select
           "asset".*
         from
           "asset"
-          inner join "memory_asset" on "asset"."id" = "memory_asset"."assetsId"
+          inner join "memory_asset" on "asset"."id" = "memory_asset"."assetId"
         where
           "memory_asset"."memoriesId" = "memory"."id"
           and "asset"."visibility" = 'timeline'
@@ -66,7 +66,7 @@ select
           "asset".*
         from
           "asset"
-          inner join "memory_asset" on "asset"."id" = "memory_asset"."assetsId"
+          inner join "memory_asset" on "asset"."id" = "memory_asset"."assetId"
         where
           "memory_asset"."memoriesId" = "memory"."id"
           and "asset"."visibility" = 'timeline'
@@ -104,7 +104,7 @@ select
           "asset".*
         from
           "asset"
-          inner join "memory_asset" on "asset"."id" = "memory_asset"."assetsId"
+          inner join "memory_asset" on "asset"."id" = "memory_asset"."assetId"
         where
           "memory_asset"."memoriesId" = "memory"."id"
           and "asset"."visibility" = 'timeline'
@@ -137,7 +137,7 @@ select
           "asset".*
         from
           "asset"
-          inner join "memory_asset" on "asset"."id" = "memory_asset"."assetsId"
+          inner join "memory_asset" on "asset"."id" = "memory_asset"."assetId"
         where
           "memory_asset"."memoriesId" = "memory"."id"
           and "asset"."visibility" = 'timeline'
@@ -159,15 +159,15 @@ where
 
 -- MemoryRepository.getAssetIds
 select
-  "assetsId"
+  "assetId"
 from
   "memory_asset"
 where
   "memoriesId" = $1
-  and "assetsId" in ($2)
+  and "assetId" in ($2)
 
 -- MemoryRepository.addAssetIds
 insert into
-  "memory_asset" ("memoriesId", "assetsId")
+  "memory_asset" ("memoriesId", "assetId")
 values
   ($1, $2)

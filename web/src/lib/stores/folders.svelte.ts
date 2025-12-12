@@ -19,7 +19,7 @@ class FoldersStore {
   private assets = $state<AssetCache>({});
 
   constructor() {
-    eventManager.on('auth.logout', () => this.clearCache());
+    eventManager.on('AuthLogout', () => this.clearCache());
   }
 
   async fetchTree(): Promise<TreeNode> {

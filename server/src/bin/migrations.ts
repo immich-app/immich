@@ -2,7 +2,7 @@
 process.env.DB_URL = process.env.DB_URL || 'postgres://postgres:postgres@localhost:5432/immich';
 
 import { Kysely, sql } from 'kysely';
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { basename, dirname, extname, join } from 'node:path';
 import postgres from 'postgres';
 import { ConfigRepository } from 'src/repositories/config.repository';
@@ -27,6 +27,11 @@ const main = async () => {
       return;
     }
 
+    case 'revert': {
+      await revert();
+      return;
+    }
+
     case 'query': {
       const query = process.argv[3];
       await runQuery(query);
@@ -48,6 +53,7 @@ const main = async () => {
   node dist/bin/migrations.js create <name>
   node dist/bin/migrations.js generate <name>
   node dist/bin/migrations.js run
+  node dist/bin/migrations.js revert
 `);
     }
   }
@@ -72,6 +78,25 @@ const runMigrations = async () => {
   const databaseRepository = new DatabaseRepository(db, logger, configRepository);
   await databaseRepository.runMigrations();
   await db.destroy();
+};
+
+const revert = async () => {
+  const configRepository = new ConfigRepository();
+  const logger = LoggingRepository.create();
+  const db = getDatabaseClient();
+  const databaseRepository = new DatabaseRepository(db, logger, configRepository);
+
+  try {
+    const migrationName = await databaseRepository.revertLastMigration();
+    if (!migrationName) {
+      console.log('No migrations to revert');
+      return;
+    }
+
+    markMigrationAsReverted(migrationName);
+  } finally {
+    await db.destroy();
+  }
 };
 
 const debug = async () => {
@@ -146,6 +171,37 @@ export async function down(db: Kysely<any>): Promise<void> {
 ${downSql}
 }
 `;
+};
+
+const markMigrationAsReverted = (migrationName: string) => {
+  // eslint-disable-next-line unicorn/prefer-module
+  const distRoot = join(__dirname, '..');
+  const projectRoot = join(distRoot, '..');
+  const sourceFolder = join(projectRoot, 'src', 'schema', 'migrations');
+  const distFolder = join(distRoot, 'schema', 'migrations');
+
+  const sourcePath = join(sourceFolder, `${migrationName}.ts`);
+  const revertedFolder = join(sourceFolder, 'reverted');
+  const revertedPath = join(revertedFolder, `${migrationName}.ts`);
+
+  if (existsSync(revertedPath)) {
+    console.log(`Migration ${migrationName} is already marked as reverted`);
+  } else if (existsSync(sourcePath)) {
+    mkdirSync(revertedFolder, { recursive: true });
+    renameSync(sourcePath, revertedPath);
+    console.log(`Moved ${sourcePath} to ${revertedPath}`);
+  } else {
+    console.warn(`Source migration file not found for ${migrationName}`);
+  }
+
+  const distBase = join(distFolder, migrationName);
+  for (const extension of ['.js', '.js.map', '.d.ts']) {
+    const filePath = `${distBase}${extension}`;
+    if (existsSync(filePath)) {
+      rmSync(filePath, { force: true });
+      console.log(`Removed ${filePath}`);
+    }
+  }
 };
 
 main()

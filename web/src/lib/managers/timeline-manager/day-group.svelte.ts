@@ -140,7 +140,7 @@ export class DayGroup {
   }
 
   layout(options: CommonLayoutOptions, noDefer: boolean) {
-    if (!noDefer && !this.monthGroup.intersecting) {
+    if (!noDefer && !this.monthGroup.intersecting && !this.monthGroup.timelineManager.isScrollingOnLoad) {
       this.#deferredLayout = true;
       return;
     }

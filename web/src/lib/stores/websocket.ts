@@ -1,3 +1,5 @@
+import { page } from '$app/state';
+import { AppRoute } from '$lib/constants';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { notificationManager } from '$lib/stores/notification-manager.svelte';
 import { createEventEmitter } from '$lib/utils/eventemitter';
@@ -13,6 +15,11 @@ export interface ReleaseEvent {
   serverVersion: ServerVersionResponseDto;
   releaseVersion: ServerVersionResponseDto;
 }
+
+interface AppRestartEvent {
+  isMaintenanceMode: boolean;
+}
+
 export interface Events {
   on_upload_success: (asset: AssetResponseDto) => void;
   on_user_delete: (id: string) => void;
@@ -28,6 +35,8 @@ export interface Events {
   on_new_release: (newRelease: ReleaseEvent) => void;
   on_session_delete: (sessionId: string) => void;
   on_notification: (notification: NotificationDto) => void;
+
+  AppRestartV1: (event: AppRestartEvent) => void;
 }
 
 const websocket: Socket<Events> = io({
@@ -42,6 +51,7 @@ export const websocketStore = {
   connected: writable<boolean>(false),
   serverVersion: writable<ServerVersionResponseDto>(),
   release: writable<ReleaseEvent>(),
+  serverRestarting: writable<undefined | AppRestartEvent>(),
 };
 
 export const websocketEvents = createEventEmitter(websocket);
@@ -50,6 +60,7 @@ websocket
   .on('connect', () => websocketStore.connected.set(true))
   .on('disconnect', () => websocketStore.connected.set(false))
   .on('on_server_version', (serverVersion) => websocketStore.serverVersion.set(serverVersion))
+  .on('AppRestartV1', (mode) => websocketStore.serverRestarting.set(mode))
   .on('on_new_release', (releaseVersion) => websocketStore.release.set(releaseVersion))
   .on('on_session_delete', () => authManager.logout())
   .on('on_notification', () => notificationManager.refresh())
@@ -57,11 +68,9 @@ websocket
 
 export const openWebsocketConnection = () => {
   try {
-    if (!get(user)) {
-      return;
+    if (get(user) || page.url.pathname.startsWith(AppRoute.MAINTENANCE)) {
+      websocket.connect();
     }
-
-    websocket.connect();
   } catch (error) {
     console.log('Cannot connect to websocket', error);
   }

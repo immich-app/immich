@@ -316,6 +316,16 @@ export class MediaService extends BaseService {
 
     const outputs = await Promise.all(promises);
 
+    if (asset.exifInfo.projectionType === 'EQUIRECTANGULAR') {
+      const promises = [
+        this.mediaRepository.copyTagGroup('XMP-GPano', asset.originalPath, previewPath),
+        fullsizePath
+          ? this.mediaRepository.copyTagGroup('XMP-GPano', asset.originalPath, fullsizePath)
+          : Promise.resolve(),
+      ];
+      await Promise.all(promises);
+    }
+
     return { previewPath, thumbnailPath, fullsizePath, thumbhash: outputs[0] as Buffer };
   }
 

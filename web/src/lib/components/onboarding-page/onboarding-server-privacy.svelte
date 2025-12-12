@@ -1,17 +1,14 @@
 <script lang="ts">
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
-  import { systemConfig } from '$lib/stores/server-config.store';
-  import { updateConfig } from '@immich/sdk';
+  import { systemConfigManager } from '$lib/managers/system-config-manager.svelte';
+  import { handleSystemConfigSave } from '$lib/services/system-config.service';
   import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
-  import { get } from 'svelte/store';
+
+  const configToEdit = $state(systemConfigManager.cloneValue());
 
   onDestroy(async () => {
-    const cfg = get(systemConfig);
-
-    await updateConfig({
-      systemConfigDto: cfg,
-    });
+    await handleSystemConfigSave({ map: configToEdit.map, newVersionCheck: configToEdit.newVersionCheck });
   });
 </script>
 
@@ -20,16 +17,14 @@
     {$t('onboarding_privacy_description')}
   </p>
 
-  {#if $systemConfig}
-    <SettingSwitch
-      title={$t('admin.map_settings')}
-      subtitle={$t('admin.map_implications')}
-      bind:checked={$systemConfig.map.enabled}
-    />
-    <SettingSwitch
-      title={$t('admin.version_check_settings')}
-      subtitle={$t('admin.version_check_implications')}
-      bind:checked={$systemConfig.newVersionCheck.enabled}
-    />
-  {/if}
+  <SettingSwitch
+    title={$t('admin.map_settings')}
+    subtitle={$t('admin.map_implications')}
+    bind:checked={configToEdit.map.enabled}
+  />
+  <SettingSwitch
+    title={$t('admin.version_check_settings')}
+    subtitle={$t('admin.version_check_implications')}
+    bind:checked={configToEdit.newVersionCheck.enabled}
+  />
 </div>

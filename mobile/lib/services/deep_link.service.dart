@@ -77,6 +77,7 @@ class DeepLinkService {
       "memory" => await _buildMemoryDeepLink(queryParams['id'] ?? ''),
       "asset" => await _buildAssetDeepLink(queryParams['id'] ?? '', ref),
       "album" => await _buildAlbumDeepLink(queryParams['id'] ?? ''),
+      "activity" => await _buildActivityDeepLink(queryParams['albumId'] ?? ''),
       _ => null,
     };
 
@@ -184,5 +185,19 @@ class DeepLinkService {
       _currentAlbum.set(album);
       return AlbumViewerRoute(albumId: album.id);
     }
+  }
+
+  Future<PageRouteInfo?> _buildActivityDeepLink(String albumId) async {
+    if (Store.isBetaTimelineEnabled == false) {
+      return null;
+    }
+
+    final album = await _betaRemoteAlbumService.get(albumId);
+
+    if (album == null || album.isActivityEnabled == false) {
+      return null;
+    }
+
+    return DriftActivitiesRoute(album: album);
   }
 }

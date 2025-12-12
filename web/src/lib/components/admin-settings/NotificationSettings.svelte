@@ -1,29 +1,23 @@
 <script lang="ts">
   import TemplateSettings from '$lib/components/admin-settings/TemplateSettings.svelte';
   import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
-  import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
   import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
+  import SettingButtonsRow from '$lib/components/shared-components/settings/SystemConfigButtonRow.svelte';
   import { SettingInputFieldType } from '$lib/constants';
+  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
+  import { systemConfigManager } from '$lib/managers/system-config-manager.svelte';
+  import { handleSystemConfigSave } from '$lib/services/system-config.service';
   import { user } from '$lib/stores/user.store';
   import { handleError } from '$lib/utils/handle-error';
-  import { sendTestEmailAdmin, type SystemConfigDto } from '@immich/sdk';
+  import { sendTestEmailAdmin } from '@immich/sdk';
   import { Button, LoadingSpinner, toastManager } from '@immich/ui';
-  import { isEqual } from 'lodash-es';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
-  import type { SettingsResetEvent, SettingsSaveEvent } from './admin-settings';
 
-  interface Props {
-    savedConfig: SystemConfigDto;
-    defaultConfig: SystemConfigDto;
-    config: SystemConfigDto;
-    disabled?: boolean;
-    onReset: SettingsResetEvent;
-    onSave: SettingsSaveEvent;
-  }
-
-  let { savedConfig, defaultConfig, config = $bindable(), disabled = false, onReset, onSave }: Props = $props();
+  const disabled = $derived(featureFlagsManager.value.configFile);
+  const config = $derived(systemConfigManager.value);
+  let configToEdit = $state(systemConfigManager.cloneValue());
 
   let isSending = $state(false);
 
@@ -37,24 +31,24 @@
     try {
       await sendTestEmailAdmin({
         systemConfigSmtpDto: {
-          enabled: config.notifications.smtp.enabled,
+          enabled: configToEdit.notifications.smtp.enabled,
           transport: {
-            host: config.notifications.smtp.transport.host,
-            port: config.notifications.smtp.transport.port,
-            secure: config.notifications.smtp.transport.secure,
-            username: config.notifications.smtp.transport.username,
-            password: config.notifications.smtp.transport.password,
-            ignoreCert: config.notifications.smtp.transport.ignoreCert,
+            host: configToEdit.notifications.smtp.transport.host,
+            port: configToEdit.notifications.smtp.transport.port,
+            secure: configToEdit.notifications.smtp.transport.secure,
+            username: configToEdit.notifications.smtp.transport.username,
+            password: configToEdit.notifications.smtp.transport.password,
+            ignoreCert: configToEdit.notifications.smtp.transport.ignoreCert,
           },
-          from: config.notifications.smtp.from,
-          replyTo: config.notifications.smtp.from,
+          from: configToEdit.notifications.smtp.from,
+          replyTo: configToEdit.notifications.smtp.from,
         },
       });
 
       toastManager.success($t('admin.notification_email_test_email_sent', { values: { email: $user.email } }));
 
       if (!disabled) {
-        onSave({ notifications: config.notifications });
+        await handleSystemConfigSave({ notifications: configToEdit.notifications });
       }
     } catch (error) {
       handleError(error, $t('admin.notification_email_test_email_failed'));
@@ -62,22 +56,18 @@
       isSending = false;
     }
   };
-
-  const onsubmit = (event: Event) => {
-    event.preventDefault();
-  };
 </script>
 
 <div>
   <div in:fade={{ duration: 500 }}>
-    <form autocomplete="off" {onsubmit} class="mt-4">
+    <form autocomplete="off" class="mt-4" onsubmit={(event) => event.preventDefault()}>
       <div class="flex flex-col gap-4">
         <SettingAccordion key="email" title={$t('email')} subtitle={$t('admin.notification_email_setting_description')}>
           <div class="ms-4 mt-4 flex flex-col gap-4">
             <SettingSwitch
               title={$t('admin.notification_enable_email_notifications')}
               {disabled}
-              bind:checked={config.notifications.smtp.enabled}
+              bind:checked={configToEdit.notifications.smtp.enabled}
             />
 
             <hr />
@@ -87,9 +77,9 @@
               required
               label={$t('host')}
               description={$t('admin.notification_email_host_description')}
-              disabled={disabled || !config.notifications.smtp.enabled}
-              bind:value={config.notifications.smtp.transport.host}
-              isEdited={config.notifications.smtp.transport.host !== savedConfig.notifications.smtp.transport.host}
+              disabled={disabled || !configToEdit.notifications.smtp.enabled}
+              bind:value={configToEdit.notifications.smtp.transport.host}
+              isEdited={configToEdit.notifications.smtp.transport.host !== config.notifications.smtp.transport.host}
             />
 
             <SettingInputField
@@ -97,43 +87,43 @@
               required
               label={$t('port')}
               description={$t('admin.notification_email_port_description')}
-              disabled={disabled || !config.notifications.smtp.enabled}
-              bind:value={config.notifications.smtp.transport.port}
-              isEdited={config.notifications.smtp.transport.port !== savedConfig.notifications.smtp.transport.port}
+              disabled={disabled || !configToEdit.notifications.smtp.enabled}
+              bind:value={configToEdit.notifications.smtp.transport.port}
+              isEdited={configToEdit.notifications.smtp.transport.port !== config.notifications.smtp.transport.port}
             />
 
             <SettingInputField
               inputType={SettingInputFieldType.TEXT}
               label={$t('username')}
               description={$t('admin.notification_email_username_description')}
-              disabled={disabled || !config.notifications.smtp.enabled}
-              bind:value={config.notifications.smtp.transport.username}
-              isEdited={config.notifications.smtp.transport.username !==
-                savedConfig.notifications.smtp.transport.username}
+              disabled={disabled || !configToEdit.notifications.smtp.enabled}
+              bind:value={configToEdit.notifications.smtp.transport.username}
+              isEdited={configToEdit.notifications.smtp.transport.username !==
+                config.notifications.smtp.transport.username}
             />
 
             <SettingInputField
               inputType={SettingInputFieldType.PASSWORD}
               label={$t('password')}
               description={$t('admin.notification_email_password_description')}
-              disabled={disabled || !config.notifications.smtp.enabled}
-              bind:value={config.notifications.smtp.transport.password}
-              isEdited={config.notifications.smtp.transport.password !==
-                savedConfig.notifications.smtp.transport.password}
+              disabled={disabled || !configToEdit.notifications.smtp.enabled}
+              bind:value={configToEdit.notifications.smtp.transport.password}
+              isEdited={configToEdit.notifications.smtp.transport.password !==
+                config.notifications.smtp.transport.password}
             />
 
             <SettingSwitch
               title={$t('admin.notification_email_secure')}
               subtitle={$t('admin.notification_email_secure_description')}
-              disabled={disabled || !config.notifications.smtp.enabled}
-              bind:checked={config.notifications.smtp.transport.secure}
+              disabled={disabled || !configToEdit.notifications.smtp.enabled}
+              bind:checked={configToEdit.notifications.smtp.transport.secure}
             />
 
             <SettingSwitch
               title={$t('admin.notification_email_ignore_certificate_errors')}
               subtitle={$t('admin.notification_email_ignore_certificate_errors_description')}
-              disabled={disabled || !config.notifications.smtp.enabled}
-              bind:checked={config.notifications.smtp.transport.ignoreCert}
+              disabled={disabled || !configToEdit.notifications.smtp.enabled}
+              bind:checked={configToEdit.notifications.smtp.transport.ignoreCert}
             />
 
             <hr />
@@ -143,16 +133,16 @@
               required
               label={$t('admin.notification_email_from_address')}
               description={$t('admin.notification_email_from_address_description')}
-              disabled={disabled || !config.notifications.smtp.enabled}
-              bind:value={config.notifications.smtp.from}
-              isEdited={config.notifications.smtp.from !== savedConfig.notifications.smtp.from}
+              disabled={disabled || !configToEdit.notifications.smtp.enabled}
+              bind:value={configToEdit.notifications.smtp.from}
+              isEdited={configToEdit.notifications.smtp.from !== config.notifications.smtp.from}
             />
 
             <div class="flex gap-2 place-items-center">
               <Button
                 size="small"
                 shape="round"
-                disabled={!config.notifications.smtp.enabled}
+                disabled={!configToEdit.notifications.smtp.enabled}
                 onclick={handleSendTestEmail}
               >
                 {#if disabled}
@@ -170,12 +160,7 @@
       </div>
     </form>
   </div>
-  <TemplateSettings {config} {savedConfig} />
+  <TemplateSettings bind:config={configToEdit} />
 
-  <SettingButtonsRow
-    onReset={(options) => onReset({ ...options, configKeys: ['notifications', 'templates'] })}
-    onSave={() => onSave({ notifications: config.notifications, templates: config.templates })}
-    showResetToDefault={!isEqual(savedConfig, defaultConfig)}
-    {disabled}
-  />
+  <SettingButtonsRow bind:configToEdit keys={['notifications', 'templates']} {disabled} />
 </div>

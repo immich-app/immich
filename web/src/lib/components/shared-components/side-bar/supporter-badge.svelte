@@ -1,6 +1,6 @@
 <script lang="ts">
+  import { Logo } from '@immich/ui';
   import { t } from 'svelte-i18n';
-  import ImmichLogo from '../immich-logo.svelte';
 
   interface Props {
     centered?: boolean;
@@ -14,7 +14,7 @@
   class="flex gap-1 mt-2 place-items-center dark:bg-immich-dark-primary/10 bg-gray-200/50 p-2 rounded-lg bg-clip-padding border border-transparent relative supporter-effect"
   class:place-content-center={centered}
 >
-  <ImmichLogo class={logoSize === 'sm' ? 'h-6' : 'h-8'} noText />
+  <Logo variant="icon" size={logoSize === 'sm' ? 'tiny' : 'small'} />
   <p class="dark:text-gray-100">{$t('purchase_account_info')}</p>
 </div>
 

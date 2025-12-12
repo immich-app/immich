@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "target": "es2020", // Specify ECMAScript target version
+    "module": "commonjs", // Specify module code generation
+    "lib": [
+      "es2020"
+    ], // Specify a list of library files to be included in the compilation
+    "types": [
+      "@extism/js-pdk",
+      "./src/index.d.ts"
+    ], // Specify a list of type definition files to be included in the compilation
+    "strict": true, // Enable all strict type-checking options
+    "esModuleInterop": true, // Enables compatibility with Babel-style module imports
+    "skipLibCheck": true, // Skip type checking of declaration files
+    "allowJs": true, // Allow JavaScript files to be compiled
+    "noEmit": true // Do not emit outputs (no .js or .d.ts files)
+  },
+  "include": [
+    "src/**/*.ts" // Include all TypeScript files in src directory
+  ],
+  "exclude": [
+    "node_modules" // Exclude the node_modules directory
+  ]
+}

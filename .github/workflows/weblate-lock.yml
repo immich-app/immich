@@ -36,8 +36,7 @@ jobs:
           github-token: ${{ steps.token.outputs.token }}
           filters: |
             i18n:
-              - 'i18n/!(en)**\.json'
-          exclude-branches: 'chore/translations'
+              - modified: 'i18n/!(en)**\.json'
           skip-force-logic: 'true'
 
   enforce-lock:

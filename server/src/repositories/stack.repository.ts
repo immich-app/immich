@@ -33,8 +33,8 @@ const withAssets = (eb: ExpressionBuilder<DB, 'stack'>, withTags = false) => {
             eb
               .selectFrom('tag')
               .select(columns.tag)
-              .innerJoin('tag_asset', 'tag.id', 'tag_asset.tagsId')
-              .whereRef('tag_asset.assetsId', '=', 'asset.id'),
+              .innerJoin('tag_asset', 'tag.id', 'tag_asset.tagId')
+              .whereRef('tag_asset.assetId', '=', 'asset.id'),
           ).as('tags'),
         ),
       )
