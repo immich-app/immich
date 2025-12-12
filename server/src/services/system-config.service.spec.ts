@@ -147,6 +147,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
     storageLabelClaim: 'preferred_username',
     storageQuotaClaim: 'immich_quota',
     roleClaim: 'immich_role',
+    disableAdminRegistration: false,
   },
   passwordLogin: {
     enabled: true,

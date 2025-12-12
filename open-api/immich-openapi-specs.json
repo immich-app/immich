@@ -21804,6 +21804,9 @@
             "nullable": true,
             "type": "integer"
           },
+          "disableAdminRegistration": {
+            "type": "boolean"
+          },
           "enabled": {
             "type": "boolean"
           },
@@ -21854,6 +21857,7 @@
           "clientId",
           "clientSecret",
           "defaultStorageQuota",
+          "disableAdminRegistration",
           "enabled",
           "issuerUrl",
           "mobileOverrideEnabled",

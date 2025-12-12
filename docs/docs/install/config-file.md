@@ -201,7 +201,8 @@ The default configuration looks like this:
     "storageLabelClaim": "preferred_username",
     "storageQuotaClaim": "immich_quota",
     "timeout": 30000,
-    "tokenEndpointAuthMethod": "client_secret_post"
+    "tokenEndpointAuthMethod": "client_secret_post",
+    "disableAdminRegistration": false
   },
   "passwordLogin": {
     "enabled": true

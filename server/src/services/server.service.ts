@@ -116,7 +116,8 @@ export class ServerService extends BaseService {
 
   async getSystemConfig(): Promise<ServerConfigDto> {
     const config = await this.getConfig({ withCache: false });
-    const isInitialized = await this.userRepository.hasAdmin();
+    const isInitialized =
+      (config.oauth.enabled && config.oauth.disableAdminRegistration) || (await this.userRepository.hasAdmin());
     const onboarding = await this.systemMetadataRepository.get(SystemMetadataKey.AdminOnboarding);
 
     return {

@@ -114,6 +114,7 @@ export interface SystemConfig {
     storageLabelClaim: string;
     storageQuotaClaim: string;
     roleClaim: string;
+    disableAdminRegistration: boolean;
   };
   passwordLogin: {
     enabled: boolean;
@@ -304,6 +305,7 @@ export const defaults = Object.freeze<SystemConfig>({
     roleClaim: 'immich_role',
     tokenEndpointAuthMethod: OAuthTokenEndpointAuthMethod.ClientSecretPost,
     timeout: 30_000,
+    disableAdminRegistration: false,
   },
   passwordLogin: {
     enabled: true,

@@ -431,6 +431,9 @@ class SystemConfigOAuthDto {
 
   @IsString()
   roleClaim!: string;
+
+  @ValidateBoolean()
+  disableAdminRegistration!: boolean;
 }
 
 class SystemConfigPasswordLoginDto {
