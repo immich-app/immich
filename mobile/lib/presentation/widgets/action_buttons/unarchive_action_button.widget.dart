@@ -37,8 +37,10 @@ Future<void> performUnArchiveAction(BuildContext context, WidgetRef ref, {requir
 
 class UnArchiveActionButton extends ConsumerWidget {
   final ActionSource source;
+  final bool iconOnly;
+  final bool menuItem;
 
-  const UnArchiveActionButton({super.key, required this.source});
+  const UnArchiveActionButton({super.key, required this.source, this.iconOnly = false, this.menuItem = false});
 
   Future<void> _onTap(BuildContext context, WidgetRef ref) async {
     await performUnArchiveAction(context, ref, source: source);
@@ -49,6 +51,8 @@ class UnArchiveActionButton extends ConsumerWidget {
     return BaseActionButton(
       iconData: Icons.unarchive_outlined,
       label: "unarchive".t(context: context),
+      iconOnly: iconOnly,
+      menuItem: menuItem,
       onPressed: () => _onTap(context, ref),
     );
   }
