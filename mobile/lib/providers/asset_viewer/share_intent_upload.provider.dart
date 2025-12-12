@@ -11,6 +11,7 @@ import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/share_intent_service.dart';
 import 'package:immich_mobile/services/upload.service.dart';
+import 'package:logging/logging.dart';
 import 'package:path/path.dart';
 
 final shareIntentUploadProvider = StateNotifierProvider<ShareIntentUploadStateNotifier, List<ShareIntentAttachment>>(
@@ -25,6 +26,7 @@ class ShareIntentUploadStateNotifier extends StateNotifier<List<ShareIntentAttac
   final AppRouter router;
   final UploadService _uploadService;
   final ShareIntentService _shareIntentService;
+  final Logger _logger = Logger('ShareIntentUploadStateNotifier');
 
   ShareIntentUploadStateNotifier(this.router, this._uploadService, this._shareIntentService) : super([]) {
     _uploadService.taskStatusStream.listen(_updateUploadStatus);
@@ -86,6 +88,8 @@ class ShareIntentUploadStateNotifier extends StateNotifier<List<ShareIntentAttac
       for (final attachment in state)
         if (attachment.id == taskId.toInt()) attachment.copyWith(status: uploadStatus) else attachment,
     ];
+
+    _logger.fine("Upload failed for asset: ${task.task.filename}, exception: ${task.exception}");
   }
 
   void _taskProgressCallback(TaskProgressUpdate update) {
