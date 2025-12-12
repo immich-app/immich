@@ -5,11 +5,10 @@ import ImmichLayout from 'src/emails/components/immich.layout';
 import { WelcomeEmailProps } from 'src/repositories/email.repository';
 import { replaceTemplateTags } from 'src/utils/replace-template-tags';
 
-export const WelcomeEmail = ({ baseUrl, displayName, username, password, customTemplate }: WelcomeEmailProps) => {
+export const WelcomeEmail = ({ baseUrl, displayName, username, customTemplate }: WelcomeEmailProps) => {
   const usableTemplateVariables = {
     displayName,
     username,
-    password,
     baseUrl,
   };
 
@@ -21,23 +20,17 @@ export const WelcomeEmail = ({ baseUrl, displayName, username, password, customT
         Hey <strong>{displayName}</strong>!
       </Text>
 
-      <Text>A new account has been created for you.</Text>
+      <Text>You have been invited to join a PixelUnion.</Text>
 
       <Text>
-        <strong>Username</strong>: {username}
-        {password && (
-          <>
-            <br />
-            <strong>Password</strong>: {password}
-          </>
-        )}
+        Visit the link below to create your account and start uploading your photos and videos.
       </Text>
     </>
   );
 
   return (
     <ImmichLayout
-      preview={customTemplate ? emailContent.toString() : 'You have been invited to a new PixelUnion instance.'}
+      preview={customTemplate ? emailContent.toString() : 'You have been invited to join a PixelUnion.'}
     >
       {customTemplate && (
         <Text className="m-0">
@@ -48,11 +41,11 @@ export const WelcomeEmail = ({ baseUrl, displayName, username, password, customT
       {!customTemplate && emailContent}
 
       <Section className="flex justify-center my-6">
-        <ImmichButton href={`${baseUrl}/auth/login`}>Login</ImmichButton>
+        <ImmichButton href={`${baseUrl}/auth/login`}>Create Account</ImmichButton>
       </Section>
 
       <Text className="text-xs">
-        If you cannot click the button use the link below to proceed with first login.
+        If you cannot click the button, use the link below to create your account.
         <br />
         <Link href={baseUrl}>{baseUrl}</Link>
       </Text>
@@ -61,10 +54,9 @@ export const WelcomeEmail = ({ baseUrl, displayName, username, password, customT
 };
 
 WelcomeEmail.PreviewProps = {
-  baseUrl: 'https://demo.immich.app/auth/login',
+  baseUrl: 'https://demo.immich.app',
   displayName: 'Alan Turing',
   username: 'alanturing@immich.app',
-  password: 'mysuperpassword',
 } as WelcomeEmailProps;
 
 export default WelcomeEmail;
