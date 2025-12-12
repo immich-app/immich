@@ -44,7 +44,7 @@
   } from '@immich/sdk';
   import { Icon, IconButton, LoadingSpinner } from '@immich/ui';
   import { mdiArrowLeft, mdiDotsVertical, mdiImageOffOutline, mdiPlus, mdiSelectAll } from '@mdi/js';
-  import { tick } from 'svelte';
+  import { tick, untrack } from 'svelte';
   import { t } from 'svelte-i18n';
 
   let { isViewing: showAssetViewer } = assetViewingStore;
@@ -71,11 +71,10 @@
   let terms = $derived(searchQuery ? JSON.parse(searchQuery) : {});
 
   $effect(() => {
+    // we want this to *only* be reactive on `terms`
     // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     terms;
-    setTimeout(() => {
-      handlePromiseError(onSearchQueryUpdate());
-    });
+    untrack(() => handlePromiseError(onSearchQueryUpdate()));
   });
 
   const onEscape = () => {

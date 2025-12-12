@@ -17,8 +17,10 @@ class PersonApiRepository extends ApiRepository {
   }
 
   Future<PersonDto> update(String id, {String? name, DateTime? birthday}) async {
-    final dto = await checkNull(_api.updatePerson(id, PersonUpdateDto(name: name, birthDate: birthday)));
-    return _toPerson(dto);
+    final birthdayUtc = birthday == null ? null : DateTime.utc(birthday.year, birthday.month, birthday.day);
+    final dto = PersonUpdateDto(name: name, birthDate: birthdayUtc);
+    final response = await checkNull(_api.updatePerson(id, dto));
+    return _toPerson(response);
   }
 
   static PersonDto _toPerson(PersonResponseDto dto) => PersonDto(

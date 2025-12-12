@@ -64,10 +64,11 @@
     }
   }
 
-  let makeFilter = $derived(filters.make);
-  let modelFilter = $derived(filters.model);
-  let lensModelFilter = $derived(filters.lensModel);
+  const makeFilter = $derived(filters.make);
+  const modelFilter = $derived(filters.model);
+  const lensModelFilter = $derived(filters.lensModel);
 
+  // TODO replace by async $derived, at the latest when it's in stable https://svelte.dev/docs/svelte/await-expressions
   $effect(() => {
     handlePromiseError(updateMakes());
   });

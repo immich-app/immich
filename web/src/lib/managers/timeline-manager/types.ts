@@ -37,8 +37,6 @@ export type TimelineAsset = {
   longitude?: number | null;
 };
 
-export type AssetOperation = (asset: TimelineAsset) => { remove: boolean };
-
 export type MoveAsset = { asset: TimelineAsset; date: TimelineDate };
 
 export interface Viewport {

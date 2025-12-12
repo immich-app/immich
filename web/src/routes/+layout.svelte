@@ -1,31 +1,30 @@
 <script lang="ts">
-  import { afterNavigate, beforeNavigate } from '$app/navigation';
+  import { afterNavigate, beforeNavigate, goto } from '$app/navigation';
   import { page } from '$app/state';
   import { shortcut } from '$lib/actions/shortcut';
   import DownloadPanel from '$lib/components/asset-viewer/download-panel.svelte';
   import ErrorLayout from '$lib/components/layouts/ErrorLayout.svelte';
+  import OnEvents from '$lib/components/OnEvents.svelte';
   import AppleHeader from '$lib/components/shared-components/apple-header.svelte';
   import NavigationLoadingBar from '$lib/components/shared-components/navigation-loading-bar.svelte';
   import UploadPanel from '$lib/components/shared-components/upload-panel.svelte';
   import { AppRoute } from '$lib/constants';
   import { eventManager } from '$lib/managers/event-manager.svelte';
   import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
+  import { themeManager } from '$lib/managers/theme-manager.svelte';
   import ServerRestartingModal from '$lib/modals/ServerRestartingModal.svelte';
   import VersionAnnouncementModal from '$lib/modals/VersionAnnouncementModal.svelte';
+  import { sidebarStore } from '$lib/stores/sidebar.svelte';
   import { user } from '$lib/stores/user.store';
-  import {
-    closeWebsocketConnection,
-    openWebsocketConnection,
-    websocketStore,
-    type ReleaseEvent,
-  } from '$lib/stores/websocket';
+  import { closeWebsocketConnection, openWebsocketConnection, websocketStore } from '$lib/stores/websocket';
+  import type { ReleaseEvent } from '$lib/types';
   import { copyToClipboard, getReleaseType, semverToName } from '$lib/utils';
   import { maintenanceShouldRedirect } from '$lib/utils/maintenance';
   import { isAssetViewerRoute } from '$lib/utils/navigation';
-  import { modalManager, setTranslations } from '@immich/ui';
+  import { CommandPaletteContext, modalManager, setTranslations, toastManager, type ActionItem } from '@immich/ui';
+  import { mdiAccountMultipleOutline, mdiBookshelf, mdiCog, mdiServer, mdiSync, mdiThemeLightDark } from '@mdi/js';
   import { onMount, type Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
-  import { run } from 'svelte/legacy';
   import '../app.css';
 
   interface Props {
@@ -54,6 +53,8 @@
     return new URL(page.url.pathname + page.url.search, 'https://my.immich.app');
   };
 
+  toastManager.setOptions({ class: 'top-16' });
+
   onMount(() => {
     const element = document.querySelector('#stencil');
     element?.remove();
@@ -63,6 +64,10 @@
   eventManager.emit('AppInit');
 
   beforeNavigate(({ from, to }) => {
+    if (sidebarStore.isOpen) {
+      sidebarStore.reset();
+    }
+
     if (isAssetViewerRoute(from) && isAssetViewerRoute(to)) {
       return;
     }
@@ -72,7 +77,8 @@
   afterNavigate(() => {
     showNavigationLoadingBar = false;
   });
-  run(() => {
+
+  $effect.pre(() => {
     if ($user || page.url.pathname.startsWith(AppRoute.MAINTENANCE)) {
       openWebsocketConnection();
     } else {
@@ -80,10 +86,10 @@
     }
   });
 
-  const { release, serverRestarting } = websocketStore;
+  const { serverRestarting } = websocketStore;
 
-  const handleRelease = async (release?: ReleaseEvent) => {
-    if (!release?.isAvailable || !$user.isAdmin) {
+  const onReleaseEvent = async (release: ReleaseEvent) => {
+    if (!release.isAvailable || !$user.isAdmin) {
       return;
     }
 
@@ -97,14 +103,11 @@
 
     try {
       await modalManager.show(VersionAnnouncementModal, { serverVersion, releaseVersion });
-
       localStorage.setItem('appVersion', releaseVersion);
     } catch (error) {
       console.error('Error [VersionAnnouncementBox]:', error);
     }
   };
-
-  $effect(() => void handleRelease($release));
 
   serverRestarting.subscribe((isRestarting) => {
     if (!isRestarting) {
@@ -126,7 +129,58 @@
       });
     }
   });
+
+  const userCommands: ActionItem[] = [
+    {
+      title: $t('theme'),
+      description: $t('toggle_theme_description'),
+      type: $t('command'),
+      icon: mdiThemeLightDark,
+      onAction: () => themeManager.toggleTheme(),
+      shortcuts: { shift: true, key: 't' },
+      isGlobal: true,
+    },
+  ];
+
+  const adminCommands: ActionItem[] = [
+    {
+      title: $t('users'),
+      description: $t('admin.users_page_description'),
+      icon: mdiAccountMultipleOutline,
+      onAction: () => goto(AppRoute.ADMIN_USERS),
+    },
+    {
+      title: $t('settings'),
+      description: $t('admin.settings_page_description'),
+      icon: mdiCog,
+      onAction: () => goto(AppRoute.ADMIN_SETTINGS),
+    },
+    {
+      title: $t('admin.queues'),
+      description: $t('admin.queues_page_description'),
+      icon: mdiSync,
+      type: $t('page'),
+      onAction: () => goto(AppRoute.ADMIN_QUEUES),
+    },
+    {
+      title: $t('external_libraries'),
+      description: $t('admin.external_libraries_page_description'),
+      icon: mdiBookshelf,
+      onAction: () => goto(AppRoute.ADMIN_LIBRARY_MANAGEMENT),
+    },
+    {
+      title: $t('server_stats'),
+      description: $t('admin.server_stats_page_description'),
+      icon: mdiServer,
+      onAction: () => goto(AppRoute.ADMIN_STATS),
+    },
+  ].map((route) => ({ ...route, type: $t('page'), isGlobal: true, $if: () => $user?.isAdmin }));
+
+  const commands = $derived([...userCommands, ...adminCommands]);
 </script>
+
+<OnEvents {onReleaseEvent} />
+<CommandPaletteContext {commands} />
 
 <svelte:head>
   <title>{page.data.meta?.title || 'Web'} - Immich</title>
