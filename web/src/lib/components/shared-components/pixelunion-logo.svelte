@@ -20,5 +20,9 @@
 {#if variant === 'icon'}
   <img src="/pixelunion.svg" alt="PixelUnion Logo" class="{sizeClass} w-auto object-contain {className}" />
 {:else}
-  <img src="/pixelunion-full-no-bg.svg" alt="PixelUnion Logo" class="{sizeClass} w-auto object-contain {className}" />
+  <img
+    src="/pixelunion-full-no-bg-margin.svg"
+    alt="PixelUnion Logo"
+    class="{sizeClass} w-auto object-contain {className}"
+  />
 {/if}
