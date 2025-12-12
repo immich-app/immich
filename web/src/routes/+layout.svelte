@@ -38,6 +38,7 @@
       hide_password: $t('hide_password'),
       confirm: $t('confirm'),
       cancel: $t('cancel'),
+      save: $t('save'),
       toast_success_title: $t('success'),
       toast_info_title: $t('info'),
       toast_warning_title: $t('warning'),
