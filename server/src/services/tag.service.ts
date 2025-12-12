@@ -123,6 +123,13 @@ export class TagService extends BaseService {
       { parentId: id, assetIds: dto.ids, canAlwaysRemove: Permission.TagDelete },
     );
 
+    const descendantTagIds = await this.tagRepository.getDescendantIds(id);
+    for (const descendantTagId of descendantTagIds) {
+      if (descendantTagId !== id) {
+        await this.tagRepository.removeAssetIds(descendantTagId, dto.ids);
+      }
+    }
+
     for (const { id: assetId, success } of results) {
       if (success) {
         await this.eventRepository.emit('AssetUntag', { assetId });
