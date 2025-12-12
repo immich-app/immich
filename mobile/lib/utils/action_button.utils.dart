@@ -17,8 +17,10 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/delete_action_
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_local_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_permanent_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/download_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/keep_on_device_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/like_activity_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/move_to_lock_folder_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/move_to_trash_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/remove_from_album_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/remove_from_lock_folder_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_action_button.widget.dart';
@@ -39,6 +41,7 @@ class ActionButtonContext {
   final bool isStacked;
   final RemoteAlbum? currentAlbum;
   final bool advancedTroubleshooting;
+  final bool isWaitingForTrashApproval;
   final ActionSource source;
 
   const ActionButtonContext({
@@ -50,6 +53,7 @@ class ActionButtonContext {
     required this.isInLockedView,
     required this.currentAlbum,
     required this.advancedTroubleshooting,
+    required this.isWaitingForTrashApproval,
     required this.source,
   });
 }
@@ -71,7 +75,9 @@ enum ActionButtonType {
   upload,
   removeFromAlbum,
   unstack,
-  likeActivity;
+  likeActivity,
+  keepOnDevice,
+  syncTrash;
 
   bool shouldShow(ActionButtonContext context) {
     return switch (this) {
@@ -84,7 +90,8 @@ enum ActionButtonType {
         context.isOwner && //
             !context.isInLockedView && //
             context.asset.hasRemote && //
-            !context.isArchived,
+            !context.isArchived &&
+            !context.isWaitingForTrashApproval,
       ActionButtonType.unarchive =>
         context.isOwner && //
             !context.isInLockedView && //
@@ -98,27 +105,31 @@ enum ActionButtonType {
         context.isOwner && //
             !context.isInLockedView && //
             context.asset.hasRemote && //
-            context.isTrashEnabled,
+            context.isTrashEnabled &&
+            !context.isWaitingForTrashApproval,
       ActionButtonType.deletePermanent =>
         context.isOwner && //
                 context.asset.hasRemote && //
                 !context.isTrashEnabled ||
-            context.isInLockedView,
+            context.isInLockedView && !context.isWaitingForTrashApproval,
       ActionButtonType.delete =>
         context.isOwner && //
             !context.isInLockedView && //
-            context.asset.hasRemote,
+            context.asset.hasRemote &&
+            !context.isWaitingForTrashApproval,
       ActionButtonType.moveToLockFolder =>
         context.isOwner && //
             !context.isInLockedView && //
-            context.asset.hasRemote,
+            context.asset.hasRemote &&
+            !context.isWaitingForTrashApproval,
       ActionButtonType.removeFromLockFolder =>
         context.isOwner && //
             context.isInLockedView && //
             context.asset.hasRemote,
       ActionButtonType.deleteLocal =>
         !context.isInLockedView && //
-            context.asset.hasLocal,
+            context.asset.hasLocal &&
+            !context.isWaitingForTrashApproval,
       ActionButtonType.upload =>
         !context.isInLockedView && //
             context.asset.storage == AssetState.local,
@@ -138,6 +149,8 @@ enum ActionButtonType {
       ActionButtonType.similarPhotos =>
         !context.isInLockedView && //
             context.asset is RemoteAsset,
+      ActionButtonType.keepOnDevice => context.isWaitingForTrashApproval,
+      ActionButtonType.syncTrash => context.isWaitingForTrashApproval,
     };
   }
 
@@ -163,6 +176,8 @@ enum ActionButtonType {
       ActionButtonType.likeActivity => const LikeActivityActionButton(),
       ActionButtonType.unstack => UnStackActionButton(source: context.source),
       ActionButtonType.similarPhotos => SimilarPhotosActionButton(assetId: (context.asset as RemoteAsset).id),
+      ActionButtonType.keepOnDevice => const KeepOnDeviceActionButton(source: ActionSource.viewer, isPreview: true),
+      ActionButtonType.syncTrash => const MoveToTrashActionButton(source: ActionSource.viewer, isPreview: true),
     };
   }
 }
