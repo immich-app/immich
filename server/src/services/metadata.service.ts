@@ -420,7 +420,7 @@ export class MetadataService extends BaseService {
       <Tags>{
         Description: description,
         ImageDescription: description,
-        DateTimeOriginal: dateTimeOriginal == null ? undefined : String(dateTimeOriginal),
+        DateTimeOriginal: dateTimeOriginal ? String(dateTimeOriginal) : undefined,
         GPSLatitude: latitude,
         GPSLongitude: longitude,
         Rating: rating,

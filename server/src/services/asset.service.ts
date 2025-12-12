@@ -33,6 +33,7 @@ import { BaseService } from 'src/services/base.service';
 import { JobItem, JobOf } from 'src/types';
 import { requireElevatedPermission } from 'src/utils/access';
 import { getAssetFiles, getMyPartnerIds, onAfterUnlink, onBeforeLink, onBeforeUnlink } from 'src/utils/asset.util';
+import { updateLockedColumns } from 'src/utils/database';
 
 @Injectable()
 export class AssetService extends BaseService {
@@ -438,11 +439,11 @@ export class AssetService extends BaseService {
     const writes = _.omitBy({ description, dateTimeOriginal, latitude, longitude, rating }, _.isUndefined);
     if (Object.keys(writes).length > 0) {
       await this.assetRepository.upsertExif(
-        {
+        updateLockedColumns({
           assetId: id,
           ...writes,
-        },
-        { lockedPropertiesBehavior: 'update' },
+        }),
+        { lockedPropertiesBehavior: 'append' },
       );
       await this.jobRepository.queue({ name: JobName.SidecarWrite, data: { id } });
     }

@@ -465,3 +465,13 @@ export const columns = {
     'plugin.updatedAt as updatedAt',
   ],
 } as const;
+
+export type LockableProperty = (typeof lockableProperties)[number];
+export const lockableProperties = [
+  'description',
+  'dateTimeOriginal',
+  'latitude',
+  'longitude',
+  'rating',
+  'timeZone',
+] as const;
