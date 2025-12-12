@@ -1,5 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { AuthDto } from 'src/dtos/auth.dto';
+import {
+  CreateFavoriteLocationDto,
+  FavoriteLocationResponseDto,
+  UpdateFavoriteLocationDto,
+} from 'src/dtos/favorite-location.dto';
 import { MapMarkerDto, MapMarkerResponseDto, MapReverseGeocodeDto } from 'src/dtos/map.dto';
 import { BaseService } from 'src/services/base.service';
 import { getMyPartnerIds } from 'src/utils/asset.util';
@@ -31,5 +36,39 @@ export class MapService extends BaseService {
     // eventually this should probably return an array of results
     const result = await this.mapRepository.reverseGeocode({ latitude, longitude });
     return result ? [result] : [];
+  }
+
+  async getFavoriteLocations(auth: AuthDto): Promise<FavoriteLocationResponseDto[]> {
+    return this.mapRepository.getFavoriteLocations(auth.user.id);
+  }
+
+  async createFavoriteLocation(auth: AuthDto, dto: CreateFavoriteLocationDto): Promise<FavoriteLocationResponseDto> {
+    const entity = {
+      userId: auth.user.id,
+      name: dto.name,
+      latitude: dto.latitude,
+      longitude: dto.longitude,
+    };
+
+    return this.mapRepository.createFavoriteLocation(entity);
+  }
+
+  async updateFavoriteLocation(
+    auth: AuthDto,
+    id: string,
+    dto: UpdateFavoriteLocationDto,
+  ): Promise<FavoriteLocationResponseDto> {
+    const entity = {
+      userId: auth.user.id,
+      id,
+      ...(dto.name !== undefined && { name: dto.name }),
+      ...(dto.latitude !== undefined && { latitude: dto.latitude }),
+      ...(dto.longitude !== undefined && { longitude: dto.longitude }),
+    };
+    return this.mapRepository.updateFavoriteLocation(id, auth.user.id, entity);
+  }
+
+  async deleteFavoriteLocation(id: string) {
+    await this.mapRepository.deleteFavoriteLocation(id);
   }
 }
