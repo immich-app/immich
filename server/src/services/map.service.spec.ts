@@ -103,6 +103,8 @@ describe(MapService.name, () => {
         name: 'Home',
         latitude: 12.34,
         longitude: 56.78,
+        createdAt: new Date(),
+        updatedAt: new Date(),
       };
 
       mocks.map.getFavoriteLocations.mockResolvedValue([favoriteLocation]);
@@ -118,7 +120,16 @@ describe(MapService.name, () => {
   describe('createFavoriteLocation', () => {
     it('should create a new favorite location', async () => {
       const dto: CreateFavoriteLocationDto = { name: 'Work', latitude: 1, longitude: 2 };
-      const created = { id: 'loc2', userId: authStub.user1.user.id, ...dto };
+
+      const created = {
+        id: 'loc2',
+        userId: authStub.user1.user.id,
+        name: 'Work',
+        latitude: 1,
+        longitude: 2,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
 
       mocks.map.createFavoriteLocation.mockResolvedValue(created);
 
@@ -137,7 +148,16 @@ describe(MapService.name, () => {
   describe('updateFavoriteLocation', () => {
     it('should update an existing favorite location', async () => {
       const dto: UpdateFavoriteLocationDto = { name: 'Gym' };
-      const updated = { id: 'loc3', userId: authStub.user1.user.id, name: 'Gym', latitude: null, longitude: null };
+
+      const updated = {
+        id: 'loc3',
+        userId: authStub.user1.user.id,
+        name: 'Gym',
+        latitude: null,
+        longitude: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
 
       mocks.map.updateFavoriteLocation.mockResolvedValue(updated);
 
@@ -154,7 +174,7 @@ describe(MapService.name, () => {
 
   describe('deleteFavoriteLocation', () => {
     it('should call repository to delete a location by id', async () => {
-      mocks.map.deleteFavoriteLocation.mockResolvedValue(undefined);
+      mocks.map.deleteFavoriteLocation.mockResolvedValue();
 
       await sut.deleteFavoriteLocation('loc4');
 

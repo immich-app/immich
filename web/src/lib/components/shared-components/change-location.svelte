@@ -61,13 +61,13 @@
   const loadFavoriteLocations = async () => {
     try {
       favoriteLocations = await getFavoriteLocations();
-    } catch (err) {
-      handleError(err, 'Failed to load favorite locations');
+    } catch (error) {
+      handleError(error, 'Failed to load favorite locations');
     }
   };
 
-  onMount(() => {
-    loadFavoriteLocations();
+  onMount(async () => {
+    await loadFavoriteLocations();
   });
 
   $effect(() => {
@@ -110,8 +110,8 @@
       favoriteLocations = [...favoriteLocations, newLocation];
       favoriteLocations = favoriteLocations.sort((a, b) => a.name.localeCompare(b.name));
       newFavoriteName = '';
-    } catch (err) {
-      handleError(err, 'Failed to save favorite location');
+    } catch (error) {
+      handleError(error, 'Failed to save favorite location');
     } finally {
       savingFavorite = false;
     }
@@ -121,8 +121,8 @@
     try {
       await deleteFavoriteLocation({ id: locationId });
       favoriteLocations = favoriteLocations.filter((loc) => loc.id !== locationId);
-    } catch (err) {
-      handleError(err, 'Failed to delete favorite location');
+    } catch (error) {
+      handleError(error, 'Failed to delete favorite location');
     }
   };
 
@@ -291,6 +291,7 @@
               {#each favoriteLocations as location (location.id)}
                 <li>
                   <button
+                    type="button"
                     class="w-full"
                     onclick={() => handleUseSuggested(location.latitude!, location.longitude!, 14)}
                   >
@@ -305,9 +306,9 @@
                         size="medium"
                         color="danger"
                         aria-label={$t('delete')}
-                        onclick={(e: Event) => {
+                        onclick={async (e: Event) => {
                           e.stopPropagation();
-                          handleDeleteFavorite(location.id);
+                          await handleDeleteFavorite(location.id);
                         }}
                       />
                     </div>
