@@ -1,6 +1,7 @@
 <script lang="ts">
   import { copyToClipboard } from '$lib/utils';
-  import { Icon, IconButton, Logo } from '@immich/ui';
+  import { Icon, IconButton } from '@immich/ui';
+  import PixelUnionLogo from '$lib/components/shared-components/pixelunion-logo.svelte';
   import { mdiCodeTags, mdiContentCopy, mdiMessage, mdiPartyPopper } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
@@ -23,7 +24,7 @@
   <section>
     <div class="flex place-items-center border-b px-6 py-4 dark:border-b-immich-dark-gray">
       <a class="flex place-items-center gap-2 hover:cursor-pointer" href="/photos">
-        <Logo variant="inline" />
+        <PixelUnionLogo variant="inline" />
       </a>
     </div>
   </section>

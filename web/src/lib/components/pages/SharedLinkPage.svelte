@@ -9,7 +9,8 @@
   import { handleError } from '$lib/utils/handle-error';
   import { navigate } from '$lib/utils/navigation';
   import { getMySharedLink, SharedLinkType, type AssetResponseDto, type SharedLinkResponseDto } from '@immich/sdk';
-  import { Button, Logo, PasswordInput } from '@immich/ui';
+  import { Button, PasswordInput } from '@immich/ui';
+  import PixelUnionLogo from '$lib/components/shared-components/pixelunion-logo.svelte';
   import { tick } from 'svelte';
   import { t } from 'svelte-i18n';
 
@@ -87,7 +88,7 @@
     <ControlAppBar showBackButton={false}>
       {#snippet leading()}
         <a data-sveltekit-preload-data="hover" class="ms-4" href="/">
-          <Logo variant="inline" />
+          <PixelUnionLogo variant="inline" />
         </a>
       {/snippet}
 

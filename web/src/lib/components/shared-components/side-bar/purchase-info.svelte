@@ -9,7 +9,8 @@
   import { handleError } from '$lib/utils/handle-error';
   import { getButtonVisibility } from '$lib/utils/purchase-utils';
   import { updateMyPreferences } from '@immich/sdk';
-  import { Button, Icon, IconButton, Logo, modalManager, SupporterBadge } from '@immich/ui';
+  import { Button, Icon, IconButton, modalManager, SupporterBadge } from '@immich/ui';
+  import PixelUnionLogo from '$lib/components/shared-components/pixelunion-logo.svelte';
   import { mdiClose, mdiInformationOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { SvelteDate } from 'svelte/reactivity';
@@ -91,7 +92,7 @@
     >
       <div class="flex justify-between w-full place-items-center place-content-center">
         <div class="flex place-items-center place-content-center gap-1">
-          <Logo variant="icon" size="tiny" />
+          <PixelUnionLogo variant="icon" size="tiny" />
           <p class="flex text-primary font-medium">
             {$t('purchase_button_buy_immich')}
           </p>
@@ -118,7 +119,7 @@
     >
       <div class="flex justify-between place-items-center">
         <div class="h-10 w-10">
-          <Logo variant="icon" size="small" />
+          <PixelUnionLogo variant="icon" size="small" />
         </div>
         <IconButton
           shape="round"

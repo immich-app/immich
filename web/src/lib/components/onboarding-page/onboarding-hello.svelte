@@ -1,9 +1,8 @@
 <script lang="ts">
   import { OnboardingRole } from '$lib/models/onboarding-role';
   import { serverConfig } from '$lib/stores/server-config.store';
-  import ImmichLogo from '$lib/components/shared-components/immich-logo.svelte';
+  import PixelUnionLogo from '$lib/components/shared-components/pixelunion-logo.svelte';
   import { user } from '$lib/stores/user.store';
-  import { Logo } from '@immich/ui';
   import { t } from 'svelte-i18n';
 
   let userRole = $derived(
@@ -12,7 +11,7 @@
 </script>
 
 <div class="gap-4">
-  <Logo variant="icon" size="giant" class="mb-2" />
+  <PixelUnionLogo variant="icon" size="giant" class="mb-2" />
   <p class="font-medium mb-6 text-6xl text-primary">
     {$t('onboarding_welcome_user', { values: { user: $user.name } })}
   </p>
