@@ -209,28 +209,28 @@
   }
 
   :global(::view-transition-old(next)) {
-    animation: 500ms flyOutLeft forwards;
+    animation: 250ms flyOutLeft forwards;
     transform-origin: center;
     height: 100%;
     object-fit: contain;
   }
 
   :global(::view-transition-new(next)) {
-    animation: 500ms flyInRight forwards;
+    animation: 250ms flyInRight forwards;
     transform-origin: center;
     height: 100%;
     object-fit: contain;
   }
 
   :global(::view-transition-old(previous)) {
-    animation: 500ms flyOutRight forwards;
+    animation: 250ms flyOutRight forwards;
     transform-origin: center;
     height: 100%;
     object-fit: contain;
   }
 
   :global(::view-transition-new(previous)) {
-    animation: 500ms flyInLeft forwards;
+    animation: 250ms flyInLeft forwards;
     transform-origin: center;
     height: 100%;
     object-fit: contain;
@@ -250,7 +250,7 @@
 
     :global(::view-transition-old(previous)),
     :global(::view-transition-old(next)) {
-      animation: 500ms fadeOut forwards;
+      animation: 250ms fadeOut forwards;
       transform-origin: center;
       height: 100%;
       width: 100%;
@@ -259,7 +259,7 @@
 
     :global(::view-transition-new(previous)),
     :global(::view-transition-new(next)) {
-      animation: 500ms fadeIn forwards;
+      animation: 250ms fadeIn forwards;
       transform-origin: center;
       height: 100%;
       width: 100%;
@@ -268,33 +268,33 @@
   }
   @keyframes -global-flyInLeft {
     from {
-      transform: translateX(-100vw) scale(0);
+      transform: translateX(-100vw);
       opacity: 0;
     }
     to {
-      transform: translateX(0) scale(1);
+      transform: translateX(0);
       opacity: 1;
     }
   }
 
   @keyframes -global-flyOutLeft {
     from {
-      transform: translateX(0) scale(1);
+      transform: translateX(0);
       opacity: 1;
     }
     to {
-      transform: translateX(-100vw) scale(0);
+      transform: translateX(-100vw);
       opacity: 0;
     }
   }
 
   @keyframes -global-flyInRight {
     from {
-      transform: translateX(100vw) scale(0);
+      transform: translateX(100vw);
       opacity: 0;
     }
     to {
-      transform: translateX(0) scale(1);
+      transform: translateX(0);
       opacity: 1;
     }
   }
@@ -302,11 +302,11 @@
   /* Fly out to right */
   @keyframes -global-flyOutRight {
     from {
-      transform: translateX(0) scale(1);
+      transform: translateX(0);
       opacity: 1;
     }
     to {
-      transform: translateX(100vw) scale(0);
+      transform: translateX(100vw);
       opacity: 0;
     }
   }

@@ -21,6 +21,11 @@ export interface SwipeFeedbackOptions {
   imageElement?: HTMLImageElement | HTMLVideoElement | null;
 }
 
+interface SwipeAnimations {
+  currentImageAnimation: Animation;
+  previewAnimation: Animation | null;
+}
+
 /**
  * Action that provides visual feedback for horizontal swipe gestures.
  * Allows the user to drag an element left or right (horizontal only),
@@ -28,6 +33,15 @@ export interface SwipeFeedbackOptions {
  * Optionally shows preview images on the left/right during swipe.
  */
 export const swipeFeedback = (node: HTMLElement, options?: SwipeFeedbackOptions) => {
+  // Animation configuration
+  const ANIMATION_DURATION_MS = 300;
+  // Drag sensitivity: pixels needed to reach 100% animation progress
+  // Higher value = less sensitive (need to drag further)
+  // Lower value = more sensitive (animation advances quickly)
+  const DRAG_DISTANCE_FOR_FULL_ANIMATION = 400;
+  // Enable/disable scaling effect during animation
+  const ENABLE_SCALE_ANIMATION = false;
+
   // Find the image element to apply custom transforms
   let imgElement: HTMLImageElement | HTMLVideoElement | null =
     options?.imageElement ?? node.querySelector('img') ?? node.querySelector('video');
@@ -40,10 +54,22 @@ export const swipeFeedback = (node: HTMLElement, options?: SwipeFeedbackOptions)
   let dragStartTime: Date | null = null;
   let swipeAmount = 0;
 
+  // Web Animations API - bidirectional animations
+  let leftAnimations: SwipeAnimations | null = null;
+  let rightAnimations: SwipeAnimations | null = null;
+
   // Set initial cursor
   node.style.cursor = 'grab';
 
   const resetPreviewContainers = () => {
+    // Cancel any active animations
+    leftAnimations?.currentImageAnimation?.cancel();
+    leftAnimations?.previewAnimation?.cancel();
+    rightAnimations?.currentImageAnimation?.cancel();
+    rightAnimations?.previewAnimation?.cancel();
+    leftAnimations = null;
+    rightAnimations = null;
+
     // Reset transforms and opacity
     if (leftPreviewContainer) {
       leftPreviewContainer.style.transform = '';
@@ -64,6 +90,94 @@ export const swipeFeedback = (node: HTMLElement, options?: SwipeFeedbackOptions)
       imgElement.style.opacity = '';
     }
     currentOffsetX = 0;
+  };
+
+  /**
+   * Creates Web Animations API animations for swipe transitions.
+   * Matches the keyframes from Month.svelte view transitions.
+   * @param direction - 'left' for next (swipe left), 'right' for previous (swipe right)
+   */
+  const createSwipeAnimations = (direction: 'left' | 'right'): SwipeAnimations | null => {
+    if (!imgElement) {
+      return null;
+    }
+
+    const duration = ANIMATION_DURATION_MS;
+    const easing = 'cubic-bezier(0.33, 1, 0.68, 1)'; // Match Month.svelte:156
+
+    // Set transform origin to center for proper scaling
+    imgElement.style.transformOrigin = 'center';
+
+    // Helper to build transform string with optional scale
+    const scale = (s: number) => (ENABLE_SCALE_ANIMATION ? ` scale(${s})` : '');
+
+    // Animation for current image flying out
+    // Note: Delayed opacity fade (stays at 1 until 20%, fades 20-80%) for tighter crossfade
+    const currentImageAnimation = imgElement.animate(
+      direction === 'left'
+        ? [
+            // flyOutLeft - Month.svelte:280-289
+            { transform: `translateX(0)${scale(1)}`, opacity: '1', offset: 0 },
+            { transform: `translateX(-20vw)${scale(0.8)}`, opacity: '1', offset: 0.2 },
+            { transform: `translateX(-50vw)${scale(0.5)}`, opacity: '0.5', offset: 0.5 },
+            { transform: `translateX(-80vw)${scale(0.2)}`, opacity: '0', offset: 0.8 },
+            { transform: `translateX(-100vw)${scale(0)}`, opacity: '0', offset: 1 },
+          ]
+        : [
+            // flyOutRight - Month.svelte:303-312
+            { transform: `translateX(0)${scale(1)}`, opacity: '1', offset: 0 },
+            { transform: `translateX(20vw)${scale(0.8)}`, opacity: '1', offset: 0.2 },
+            { transform: `translateX(50vw)${scale(0.5)}`, opacity: '0.5', offset: 0.5 },
+            { transform: `translateX(80vw)${scale(0.2)}`, opacity: '0', offset: 0.8 },
+            { transform: `translateX(100vw)${scale(0)}`, opacity: '0', offset: 1 },
+          ],
+      {
+        duration,
+        easing,
+        fill: 'both',
+      },
+    );
+
+    // Animation for preview image flying in
+    const previewContainer = direction === 'left' ? rightPreviewContainer : leftPreviewContainer;
+    let previewAnimation: Animation | null = null;
+
+    if (previewContainer) {
+      // Set transform origin to center for proper scaling
+      previewContainer.style.transformOrigin = 'center';
+
+      previewAnimation = previewContainer.animate(
+        direction === 'left'
+          ? [
+              // flyInRight - Month.svelte:291-300
+              // Note: Early opacity fade (starts at 0, fades 20-80%, stays at 1 after 80%)
+              { transform: `translateX(100vw)${scale(0)}`, opacity: '0', offset: 0 },
+              { transform: `translateX(80vw)${scale(0.2)}`, opacity: '0', offset: 0.2 },
+              { transform: `translateX(50vw)${scale(0.5)}`, opacity: '0.5', offset: 0.5 },
+              { transform: `translateX(20vw)${scale(0.8)}`, opacity: '1', offset: 0.8 },
+              { transform: `translateX(0)${scale(1)}`, opacity: '1', offset: 1 },
+            ]
+          : [
+              // flyInLeft - Month.svelte:269-278
+              { transform: `translateX(-100vw)${scale(0)}`, opacity: '0', offset: 0 },
+              { transform: `translateX(-80vw)${scale(0.2)}`, opacity: '0', offset: 0.2 },
+              { transform: `translateX(-50vw)${scale(0.5)}`, opacity: '0.5', offset: 0.5 },
+              { transform: `translateX(-20vw)${scale(0.8)}`, opacity: '1', offset: 0.8 },
+              { transform: `translateX(0)${scale(1)}`, opacity: '1', offset: 1 },
+            ],
+        {
+          duration,
+          easing,
+          fill: 'both',
+        },
+      );
+    }
+
+    // Pause both animations immediately - we'll control them manually via currentTime
+    currentImageAnimation.pause();
+    previewAnimation?.pause();
+
+    return { currentImageAnimation, previewAnimation };
   };
 
   // Create preview image containers
@@ -121,31 +235,20 @@ export const swipeFeedback = (node: HTMLElement, options?: SwipeFeedbackOptions)
     const viewportWidth = Number.parseFloat(parentComputedStyle.width);
     const viewportHeight = Number.parseFloat(parentComputedStyle.height);
 
-    // Preview containers should be full viewport size
+    // Preview containers should be full viewport size, positioned at 0,0
+    // The animations will handle the translateX positioning
     if (leftPreviewContainer) {
       leftPreviewContainer.style.width = `${viewportWidth}px`;
       leftPreviewContainer.style.height = `${viewportHeight}px`;
-      leftPreviewContainer.style.left = `${-viewportWidth}px`;
+      leftPreviewContainer.style.left = `0px`;
       leftPreviewContainer.style.top = `0px`;
     }
 
     if (rightPreviewContainer) {
       rightPreviewContainer.style.width = `${viewportWidth}px`;
       rightPreviewContainer.style.height = `${viewportHeight}px`;
-      rightPreviewContainer.style.left = `${viewportWidth}px`;
+      rightPreviewContainer.style.left = `0px`;
       rightPreviewContainer.style.top = `0px`;
-    }
-  };
-
-  const updatePreviewVisibility = () => {
-    // Show left preview when swiping right (offsetX > 0)
-    if (leftPreviewContainer) {
-      leftPreviewContainer.style.display = currentOffsetX > 0 ? 'block' : 'none';
-    }
-
-    // Show right preview when swiping left (offsetX < 0)
-    if (rightPreviewContainer) {
-      rightPreviewContainer.style.display = currentOffsetX < 0 ? 'block' : 'none';
     }
   };
 
@@ -168,8 +271,14 @@ export const swipeFeedback = (node: HTMLElement, options?: SwipeFeedbackOptions)
       // Also add document listeners as fallback
       document.addEventListener('pointerup', pointerUp);
       document.addEventListener('pointercancel', pointerUp);
+
+      // Ensure preview containers are created and positioned
       ensurePreviewsCreated();
       updatePreviewPositions();
+
+      // Note: We don't create animations here - they're lazy-created in pointerMove
+      // when we know which direction the user is swiping
+
       event.preventDefault();
     }
   };
@@ -181,24 +290,84 @@ export const swipeFeedback = (node: HTMLElement, options?: SwipeFeedbackOptions)
 
     if (isDragging) {
       currentOffsetX = event.clientX - startX;
+      swipeAmount = currentOffsetX;
 
-      const xDelta = event.clientX - startX;
-      swipeAmount = xDelta;
+      // Determine which direction we're swiping
+      const isSwipingLeft = currentOffsetX < 0;
+      const isSwipingRight = currentOffsetX > 0;
 
-      // Apply transform directly to the image element
-      // Only translate horizontally (no vertical movement)
-      imgElement.style.transform = `translate(${currentOffsetX}px, 0px)`;
-
-      // Apply same transform to preview containers so they move with the swipe
-      if (leftPreviewContainer) {
-        leftPreviewContainer.style.transform = `translate(${currentOffsetX}px, 0px)`;
+      // Lazy create animations when first needed
+      if (isSwipingLeft && !leftAnimations) {
+        leftAnimations = createSwipeAnimations('left');
+        // Ensure the right preview container is visible
+        if (rightPreviewContainer) {
+          rightPreviewContainer.style.display = 'block';
+          rightPreviewContainer.style.zIndex = '1';
+        }
+      } else if (isSwipingRight && !rightAnimations) {
+        rightAnimations = createSwipeAnimations('right');
+        // Ensure the left preview container is visible
+        if (leftPreviewContainer) {
+          leftPreviewContainer.style.display = 'block';
+          leftPreviewContainer.style.zIndex = '1';
+        }
       }
-      if (rightPreviewContainer) {
-        rightPreviewContainer.style.transform = `translate(${currentOffsetX}px, 0px)`;
-      }
 
-      // Update preview visibility
-      updatePreviewVisibility();
+      // Calculate progress based on absolute drag distance
+      // Using a threshold distance to map to full animation (0-1)
+      const progress = Math.min(Math.abs(currentOffsetX) / DRAG_DISTANCE_FOR_FULL_ANIMATION, 1);
+
+      // Map progress to animation time
+      const animationTime = progress * ANIMATION_DURATION_MS;
+      console.log(
+        `Animation progress: ${(progress * 100).toFixed(1)}% | Time: ${animationTime.toFixed(1)}ms | Offset: ${currentOffsetX.toFixed(1)}px`,
+      );
+
+      if (isSwipingLeft && leftAnimations) {
+        // Ensure the right preview container is visible
+        if (rightPreviewContainer) {
+          rightPreviewContainer.style.display = 'block';
+          rightPreviewContainer.style.zIndex = '1';
+        }
+        // Scrub left animations forward
+        leftAnimations.currentImageAnimation.currentTime = animationTime;
+        if (leftAnimations.previewAnimation) {
+          leftAnimations.previewAnimation.currentTime = animationTime;
+        }
+        // Cancel and recreate right animations to prevent conflicts on imgElement
+        if (rightAnimations) {
+          rightAnimations.currentImageAnimation.cancel();
+          if (rightAnimations.previewAnimation) {
+            rightAnimations.previewAnimation.cancel();
+          }
+          rightAnimations = null;
+          if (leftPreviewContainer) {
+            leftPreviewContainer.style.display = 'none';
+          }
+        }
+      } else if (isSwipingRight && rightAnimations) {
+        // Ensure the left preview container is visible
+        if (leftPreviewContainer) {
+          leftPreviewContainer.style.display = 'block';
+          leftPreviewContainer.style.zIndex = '1';
+        }
+        // Scrub right animations forward
+        rightAnimations.currentImageAnimation.currentTime = animationTime;
+        if (rightAnimations.previewAnimation) {
+          rightAnimations.previewAnimation.currentTime = animationTime;
+        }
+        // Cancel and recreate left animations to prevent conflicts on imgElement
+        if (leftAnimations) {
+          leftAnimations.currentImageAnimation.cancel();
+          if (leftAnimations.previewAnimation) {
+            leftAnimations.previewAnimation.cancel();
+          }
+          leftAnimations = null;
+          if (rightPreviewContainer) {
+            rightPreviewContainer.style.display = 'none';
+          }
+        }
+      }
       // Notify about swipe movement
       options?.onSwipeMove?.(currentOffsetX);
       event.preventDefault();
@@ -210,40 +379,38 @@ export const swipeFeedback = (node: HTMLElement, options?: SwipeFeedbackOptions)
       return;
     }
 
-    // Add smooth transition
-    const transitionStyle = 'transform 0.3s ease-out';
-    imgElement.style.transition = transitionStyle;
-    if (leftPreviewContainer) {
-      leftPreviewContainer.style.transition = transitionStyle;
-    }
-    if (rightPreviewContainer) {
-      rightPreviewContainer.style.transition = transitionStyle;
-    }
+    // Determine which animations are active
+    const activeAnimations = currentOffsetX < 0 ? leftAnimations : rightAnimations;
+    const activePreviewContainer = currentOffsetX < 0 ? rightPreviewContainer : leftPreviewContainer;
 
-    // Reset transforms
-    imgElement.style.transform = 'translate(0px, 0px)';
-    if (leftPreviewContainer) {
-      leftPreviewContainer.style.transform = 'translate(0px, 0px)';
-    }
-    if (rightPreviewContainer) {
-      rightPreviewContainer.style.transform = 'translate(0px, 0px)';
-    }
+    if (activeAnimations) {
+      // Reverse the animation back to 0
+      activeAnimations.currentImageAnimation.playbackRate = -1;
+      if (activeAnimations.previewAnimation) {
+        activeAnimations.previewAnimation.playbackRate = -1;
+      }
 
-    // Remove transition after animation completes
-    setTimeout(() => {
-      if (imgElement) {
-        imgElement.style.transition = '';
-      }
-      if (leftPreviewContainer) {
-        leftPreviewContainer.style.transition = '';
-      }
-      if (rightPreviewContainer) {
-        rightPreviewContainer.style.transition = '';
-      }
-    }, 300);
+      // Play from current position back to start
+      activeAnimations.currentImageAnimation.play();
+      activeAnimations.previewAnimation?.play();
+
+      // Listen for finish event to clean up
+      const handleFinish = () => {
+        activeAnimations.currentImageAnimation.removeEventListener('finish', handleFinish);
+        // Reset to original state
+        activeAnimations.currentImageAnimation.cancel();
+        activeAnimations.previewAnimation?.cancel();
+
+        // Hide the preview container after animation completes
+        if (activePreviewContainer) {
+          activePreviewContainer.style.display = 'none';
+          activePreviewContainer.style.zIndex = '-1';
+        }
+      };
+      activeAnimations.currentImageAnimation.addEventListener('finish', handleFinish, { once: true });
+    }
 
     currentOffsetX = 0;
-    updatePreviewVisibility();
   };
 
   const completeTransition = (direction: 'left' | 'right') => {
@@ -255,75 +422,72 @@ export const swipeFeedback = (node: HTMLElement, options?: SwipeFeedbackOptions)
     const activePreviewImg = direction === 'right' ? leftPreviewImg : rightPreviewImg;
     const naturalWidth = activePreviewImg?.naturalWidth ?? 1;
     const naturalHeight = activePreviewImg?.naturalHeight ?? 1;
-    console.log('nat', naturalWidth, naturalHeight);
 
     // Call pre-commit callback BEFORE starting the animation
     // This allows the parent component to update state with the preview dimensions
     options?.onPreCommit?.(direction, naturalWidth, naturalHeight);
 
-    // Add smooth transition
-    const transitionStyle = 'transform 0.3s ease-out';
-    imgElement.style.transition = transitionStyle;
-    if (leftPreviewContainer) {
-      leftPreviewContainer.style.transition = transitionStyle;
-    }
-    if (rightPreviewContainer) {
-      rightPreviewContainer.style.transition = transitionStyle;
-    }
+    // Get the active animations
+    const activeAnimations = direction === 'left' ? leftAnimations : rightAnimations;
 
-    // Calculate the final offset to center the preview
-    const parentElement = node.parentElement;
-    if (!parentElement) {
-      return;
-    }
-    const viewportWidth = Number.parseFloat(globalThis.getComputedStyle(parentElement).width);
+    if (activeAnimations) {
+      // Get current time before modifying animation
+      const currentTime = Number(activeAnimations.currentImageAnimation.currentTime) || 0;
+      console.log(`Committing transition from ${currentTime}ms / ${ANIMATION_DURATION_MS}ms`);
 
-    // Slide everything to complete the transition
-    // If swiping right (direction='right'), slide everything right by viewport width
-    // If swiping left (direction='left'), slide everything left by viewport width
-    const finalOffset = direction === 'right' ? viewportWidth : -viewportWidth;
+      // If animation is already at or near the end, skip to finish immediately
+      if (currentTime >= ANIMATION_DURATION_MS - 5) {
+        console.log('Animation already complete, finishing immediately');
 
-    // Listen for transition end
-    const handleTransitionEnd = () => {
-      if (!imgElement) {
+        // Keep the preview visible by hiding the main image but showing the preview
+        imgElement.style.opacity = '0';
+
+        // Show the preview that's now in the center
+        const activePreview = direction === 'right' ? leftPreviewContainer : rightPreviewContainer;
+
+        if (activePreview) {
+          activePreview.style.zIndex = '1'; // Bring to front
+        }
+
+        // Trigger navigation (dimensions were already passed in onPreCommit)
+        options?.onSwipeCommit?.(direction);
         return;
       }
 
-      imgElement.removeEventListener('transitionend', handleTransitionEnd);
-
-      // Keep the preview visible by hiding the main image but showing the preview
-      // The preview is now centered, and we want it to stay visible while the new component loads
-      imgElement.style.opacity = '0';
-
-      // Show the preview that's now in the center
-      const activePreview = direction === 'right' ? leftPreviewContainer : rightPreviewContainer;
-
-      if (activePreview) {
-        activePreview.style.zIndex = '1'; // Bring to front
+      // Ensure playback rate is forward (in case it was reversed)
+      activeAnimations.currentImageAnimation.playbackRate = 1;
+      if (activeAnimations.previewAnimation) {
+        activeAnimations.previewAnimation.playbackRate = 1;
       }
 
-      // Remove transitions
-      imgElement.style.transition = '';
-      if (leftPreviewContainer) {
-        leftPreviewContainer.style.transition = '';
-      }
-      if (rightPreviewContainer) {
-        rightPreviewContainer.style.transition = '';
-      }
+      // Play the animation to completion from current position
+      activeAnimations.currentImageAnimation.play();
+      activeAnimations.previewAnimation?.play();
 
-      // Trigger navigation (dimensions were already passed in onPreCommit)
-      options?.onSwipeCommit?.(direction);
-    };
+      // Listen for animation finish
+      const handleFinish = () => {
+        if (!imgElement) {
+          return;
+        }
 
-    imgElement.addEventListener('transitionend', handleTransitionEnd, { once: true });
+        activeAnimations.currentImageAnimation.removeEventListener('finish', handleFinish);
 
-    // Apply the final transform to trigger animation
-    imgElement.style.transform = `translate(${finalOffset}px, 0px)`;
-    if (leftPreviewContainer) {
-      leftPreviewContainer.style.transform = `translate(${finalOffset}px, 0px)`;
-    }
-    if (rightPreviewContainer) {
-      rightPreviewContainer.style.transform = `translate(${finalOffset}px, 0px)`;
+        // Keep the preview visible by hiding the main image but showing the preview
+        // The preview is now centered, and we want it to stay visible while the new component loads
+        imgElement.style.opacity = '0';
+
+        // Show the preview that's now in the center
+        const activePreview = direction === 'right' ? leftPreviewContainer : rightPreviewContainer;
+
+        if (activePreview) {
+          activePreview.style.zIndex = '1'; // Bring to front
+        }
+
+        // Trigger navigation (dimensions were already passed in onPreCommit)
+        options?.onSwipeCommit?.(direction);
+      };
+
+      activeAnimations.currentImageAnimation.addEventListener('finish', handleFinish, { once: true });
     }
   };
 
@@ -346,15 +510,21 @@ export const swipeFeedback = (node: HTMLElement, options?: SwipeFeedbackOptions)
       const threshold = options?.swipeThreshold ?? 45;
 
       const timeTaken = Date.now() - (dragStartTime?.getTime() ?? 0);
-
       const velocity = Math.abs(swipeAmount) / timeTaken;
-      console.log('velocity', velocity, swipeAmount);
-      if (Math.abs(swipeAmount) < threshold || velocity < 0.11) {
+
+      // Calculate animation progress (same calculation as in pointerMove)
+      const progress = Math.min(Math.abs(currentOffsetX) / DRAG_DISTANCE_FOR_FULL_ANIMATION, 1);
+
+      // Commit if EITHER:
+      // 1. High velocity (fast swipe) OR
+      // 2. Animation progress is over 25%
+      const hasEnoughVelocity = velocity >= 0.11;
+      const hasEnoughProgress = progress > 0.25;
+
+      if (Math.abs(swipeAmount) < threshold || (!hasEnoughVelocity && !hasEnoughProgress)) {
         resetPosition();
         return;
       }
-
-      // Check if swipe exceeded threshold
 
       const commitDirection = currentOffsetX > 0 ? 'right' : 'left';
 
@@ -416,6 +586,12 @@ export const swipeFeedback = (node: HTMLElement, options?: SwipeFeedbackOptions)
       }
     },
     destroy() {
+      // Cancel all animations
+      leftAnimations?.currentImageAnimation?.cancel();
+      leftAnimations?.previewAnimation?.cancel();
+      rightAnimations?.currentImageAnimation?.cancel();
+      rightAnimations?.previewAnimation?.cancel();
+
       node.removeEventListener('pointerdown', pointerDown);
       node.removeEventListener('pointermove', pointerMove);
       node.removeEventListener('pointerup', pointerUp);
