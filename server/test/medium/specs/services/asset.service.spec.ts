@@ -268,4 +268,65 @@ describe(AssetService.name, () => {
       });
     });
   });
+
+  describe('update', () => {
+    it('should update dateTimeOriginal', async () => {
+      const { sut, ctx } = setup();
+      ctx.getMock(JobRepository).queue.mockResolvedValue();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newExif({ assetId: asset.id, description: 'test' });
+
+      await expect(
+        ctx.database
+          .selectFrom('asset_exif')
+          .select('lockedProperties')
+          .where('assetId', '=', asset.id)
+          .executeTakeFirstOrThrow(),
+      ).resolves.toEqual({ lockedProperties: null });
+      await sut.update(auth, asset.id, { dateTimeOriginal: '2023-11-19T18:11:00.000-07:00' });
+
+      await expect(
+        ctx.database
+          .selectFrom('asset_exif')
+          .select('lockedProperties')
+          .where('assetId', '=', asset.id)
+          .executeTakeFirstOrThrow(),
+      ).resolves.toEqual({ lockedProperties: ['dateTimeOriginal'] });
+      await expect(ctx.get(AssetRepository).getById(asset.id, { exifInfo: true })).resolves.toEqual(
+        expect.objectContaining({
+          exifInfo: expect.objectContaining({ dateTimeOriginal: '2023-11-20T01:11:00+00:00' }),
+        }),
+      );
+    });
+  });
+
+  describe('updateAll', () => {
+    it('should relatively update assets', async () => {
+      const { sut, ctx } = setup();
+      ctx.getMock(JobRepository).queueAll.mockResolvedValue();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newExif({ assetId: asset.id, dateTimeOriginal: '2023-11-19T18:11:00' });
+
+      await sut.updateAll(auth, { ids: [asset.id], dateTimeRelative: -11 });
+
+      await expect(
+        ctx.database
+          .selectFrom('asset_exif')
+          .select('lockedProperties')
+          .where('assetId', '=', asset.id)
+          .executeTakeFirstOrThrow(),
+      ).resolves.toEqual({ lockedProperties: ['timeZone', 'dateTimeOriginal'] });
+      await expect(ctx.get(AssetRepository).getById(asset.id, { exifInfo: true })).resolves.toEqual(
+        expect.objectContaining({
+          exifInfo: expect.objectContaining({
+            dateTimeOriginal: '2023-11-19T18:00:00+00:00',
+          }),
+        }),
+      );
+    });
+  });
 });

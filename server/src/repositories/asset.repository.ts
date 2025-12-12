@@ -7,7 +7,7 @@ import { Chunked, ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { AssetFileType, AssetMetadataKey, AssetOrder, AssetStatus, AssetType, AssetVisibility } from 'src/enum';
 import { DB } from 'src/schema';
-import { AssetExifTable, LockableProperty } from 'src/schema/tables/asset-exif.table';
+import { AssetExifTable, lockableProperties, LockableProperty } from 'src/schema/tables/asset-exif.table';
 import { AssetFileTable } from 'src/schema/tables/asset-file.table';
 import { AssetJobStatusTable } from 'src/schema/tables/asset-job-status.table';
 import { AssetTable } from 'src/schema/tables/asset.table';
@@ -120,13 +120,26 @@ const distinctLocked = <T extends LockableProperty[] | null>(eb: ExpressionBuild
 export class AssetRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
+  @GenerateSql({ params: [{ dateTimeOriginal: DummyValue.DATE }, { lockedPropertiesBehavior: 'update' }] })
   async upsertExif(
     exif: Insertable<AssetExifTable>,
     { lockedPropertiesBehavior }: { lockedPropertiesBehavior: 'none' | 'update' | 'skip' },
   ): Promise<void> {
+    const values = {
+      ...exif,
+    };
+
+    if (lockedPropertiesBehavior !== 'none') {
+      delete values.lockedProperties;
+    }
+
+    if (lockedPropertiesBehavior === 'update') {
+      values.lockedProperties = lockableProperties.filter((property) => Object.keys(exif).includes(property));
+    }
+
     await this.db
       .insertInto('asset_exif')
-      .values(exif)
+      .values(values)
       .onConflict((oc) =>
         oc.column('assetId').doUpdateSet((eb) => {
           const updateLocked = <T extends keyof AssetExifTable>(col: T) => eb.ref(`excluded.${col}`);
@@ -138,43 +151,45 @@ export class AssetRepository {
               .else(eb.ref(`excluded.${col}`))
               .end();
           const ref = lockedPropertiesBehavior === 'update' ? updateLocked : skipLocked;
-          return removeUndefinedKeys(
-            {
-              description: ref('description'),
-              exifImageWidth: ref('exifImageWidth'),
-              exifImageHeight: ref('exifImageHeight'),
-              fileSizeInByte: ref('fileSizeInByte'),
-              orientation: ref('orientation'),
-              dateTimeOriginal: ref('dateTimeOriginal'),
-              modifyDate: ref('modifyDate'),
-              timeZone: ref('timeZone'),
-              latitude: ref('latitude'),
-              longitude: ref('longitude'),
-              projectionType: ref('projectionType'),
-              city: ref('city'),
-              livePhotoCID: ref('livePhotoCID'),
-              autoStackId: ref('autoStackId'),
-              state: ref('state'),
-              country: ref('country'),
-              make: ref('make'),
-              model: ref('model'),
-              lensModel: ref('lensModel'),
-              fNumber: ref('fNumber'),
-              focalLength: ref('focalLength'),
-              iso: ref('iso'),
-              exposureTime: ref('exposureTime'),
-              profileDescription: ref('profileDescription'),
-              colorspace: ref('colorspace'),
-              bitsPerSample: ref('bitsPerSample'),
-              rating: ref('rating'),
-              fps: ref('fps'),
-              lockedProperties:
-                exif.lockedProperties !== undefined && lockedPropertiesBehavior !== 'none'
-                  ? distinctLocked(eb, exif.lockedProperties)
-                  : exif.lockedProperties,
-            },
-            exif,
-          );
+          return {
+            ...removeUndefinedKeys(
+              {
+                description: ref('description'),
+                exifImageWidth: ref('exifImageWidth'),
+                exifImageHeight: ref('exifImageHeight'),
+                fileSizeInByte: ref('fileSizeInByte'),
+                orientation: ref('orientation'),
+                dateTimeOriginal: ref('dateTimeOriginal'),
+                modifyDate: ref('modifyDate'),
+                timeZone: ref('timeZone'),
+                latitude: ref('latitude'),
+                longitude: ref('longitude'),
+                projectionType: ref('projectionType'),
+                city: ref('city'),
+                livePhotoCID: ref('livePhotoCID'),
+                autoStackId: ref('autoStackId'),
+                state: ref('state'),
+                country: ref('country'),
+                make: ref('make'),
+                model: ref('model'),
+                lensModel: ref('lensModel'),
+                fNumber: ref('fNumber'),
+                focalLength: ref('focalLength'),
+                iso: ref('iso'),
+                exposureTime: ref('exposureTime'),
+                profileDescription: ref('profileDescription'),
+                colorspace: ref('colorspace'),
+                bitsPerSample: ref('bitsPerSample'),
+                rating: ref('rating'),
+                fps: ref('fps'),
+                lockedProperties:
+                  lockedPropertiesBehavior === 'update'
+                    ? distinctLocked(eb, values.lockedProperties ?? [])
+                    : ref('lockedProperties'),
+              },
+              values,
+            ),
+          };
         }),
       )
       .execute();
