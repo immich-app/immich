@@ -23,6 +23,9 @@ final backgroundSyncProvider = Provider<BackgroundSyncManager>((ref) {
     onHashingStart: syncStatusNotifier.startHashJob,
     onHashingComplete: syncStatusNotifier.completeHashJob,
     onHashingError: syncStatusNotifier.errorHashJob,
+    onCloudIdSyncStart: syncStatusNotifier.startCloudIdSync,
+    onCloudIdSyncComplete: syncStatusNotifier.completeCloudIdSync,
+    onCloudIdSyncError: syncStatusNotifier.errorCloudIdSync,
   );
   ref.onDispose(manager.cancel);
   return manager;
