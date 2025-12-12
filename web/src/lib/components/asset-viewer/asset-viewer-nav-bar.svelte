@@ -30,7 +30,7 @@
   import { user } from '$lib/stores/user.store';
   import { photoZoomState } from '$lib/stores/zoom-image.store';
   import { getAssetJobName, getSharedLink } from '$lib/utils';
-  import { canCopyImageToClipboard } from '$lib/utils/asset-utils';
+  import { canCopyImageToClipboard, isDngFile } from '$lib/utils/asset-utils';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import {
     AssetJobName,
@@ -109,6 +109,7 @@
   let showDownloadButton = $derived(sharedLink ? sharedLink.allowDownload : !asset.isOffline);
   let isLocked = $derived(asset.visibility === AssetVisibility.Locked);
   let smartSearchEnabled = $derived(featureFlagsManager.value.smartSearch);
+  let isRawFile = $derived(asset.type === AssetTypeEnum.Image && isDngFile(asset));
 
   // $: showEditorButton =
   //   isOwner &&
@@ -131,6 +132,17 @@
   </div>
   <div class="flex gap-2 overflow-x-auto dark" data-testid="asset-viewer-navbar-actions">
     <CastButton />
+
+    {#if isRawFile}
+      <div
+        class="flex place-items-center text-sm font-semibold text-white pointer-events-auto"
+        title="RAW files preserves more image details and provides greater control over editing adjustments like exposure, white balance, and color grading"
+      >
+        <span class="px-3 py-1.5">
+          RAW
+        </span>
+      </div>
+    {/if}
 
     {#if !asset.isTrashed && $user && !isLocked}
       <ShareAction {asset} />
