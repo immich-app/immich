@@ -15686,6 +15686,8 @@
             "type": "string"
           },
           "duration": {
+            "description": "Video/gif duration in hh:mm:ss.SSS format (null for static images)",
+            "nullable": true,
             "type": "string"
           },
           "exifInfo": {
@@ -22314,7 +22316,7 @@
             "type": "array"
           },
           "duration": {
-            "description": "Array of video durations in HH:MM:SS format (null for images)",
+            "description": "Array of video/gif durations in hh:mm:ss.SSS format (null for static images)",
             "items": {
               "nullable": true,
               "type": "string"
