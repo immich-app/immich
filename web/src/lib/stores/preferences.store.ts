@@ -151,3 +151,21 @@ export const autoPlayVideo = persisted<boolean>('auto-play-video', true, {});
 export const alwaysLoadOriginalVideo = persisted<boolean>('always-load-original-video', false, {});
 
 export const recentAlbumsDropdown = persisted<boolean>('recent-albums-open', true, {});
+
+export interface DuplicateSettings {
+  synchronizeAlbums: boolean;
+  synchronizeVisibility: boolean;
+  synchronizeFavorites: boolean;
+  synchronizeRating: boolean;
+  synchronizeDescpription: boolean;
+  synchronizeLocation: boolean;
+}
+
+export const duplicateSettings = persistedObject<DuplicateSettings>('duplicate-settings', {
+  synchronizeAlbums: false,
+  synchronizeVisibility: false,
+  synchronizeFavorites: false,
+  synchronizeRating: false,
+  synchronizeDescpription: false,
+  synchronizeLocation: false,
+});
