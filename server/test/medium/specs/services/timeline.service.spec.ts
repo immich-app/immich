@@ -44,6 +44,34 @@ describe(TimelineService.name, () => {
       ]);
     });
 
+    it('should exclude assets from albums with hideFromTimeline=true', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+
+      // Create two assets
+      const { asset: asset1 } = await ctx.newAsset({
+        ownerId: user.id,
+        localDateTime: new Date('1970-01-01'),
+      });
+      const { asset: asset2 } = await ctx.newAsset({
+        ownerId: user.id,
+        localDateTime: new Date('1970-01-01'),
+      });
+
+      // Create an album with hideFromTimeline=true and add asset1
+      const { album } = await ctx.newAlbum({
+        ownerId: user.id,
+        hideFromTimeline: true,
+      });
+      await ctx.newAlbumAsset({ albumId: album.id, assetId: asset1.id });
+
+      // Get time buckets - should only include asset2, not asset1
+      const response = await sut.getTimeBuckets(auth, {});
+
+      expect(response).toEqual([{ count: 1, timeBucket: '1970-01-01' }]);
+    });
+
     it('should return error if time bucket is requested with partners asset and archived', async () => {
       const { sut } = setup();
       const auth = factory.auth();

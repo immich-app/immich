@@ -123,6 +123,7 @@ export class AlbumService extends BaseService {
         description: dto.description,
         albumThumbnailAssetId: assetIds[0] || null,
         order: getPreferences(userMetadata).albums.defaultAssetOrder,
+        hideFromTimeline: dto.hideFromTimeline,
       },
       assetIds,
       albumUsers,
@@ -153,6 +154,7 @@ export class AlbumService extends BaseService {
       albumThumbnailAssetId: dto.albumThumbnailAssetId,
       isActivityEnabled: dto.isActivityEnabled,
       order: dto.order,
+      hideFromTimeline: dto.hideFromTimeline,
     });
 
     return mapAlbumWithoutAssets({ ...updatedAlbum, assets: album.assets });

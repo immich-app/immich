@@ -53,6 +53,9 @@ export class CreateAlbumDto {
 
   @ValidateUUID({ optional: true, each: true })
   assetIds?: string[];
+
+  @ValidateBoolean({ optional: true })
+  hideFromTimeline?: boolean;
 }
 
 export class AlbumsAddAssetsDto {
@@ -86,6 +89,9 @@ export class UpdateAlbumDto {
 
   @ValidateEnum({ enum: AssetOrder, name: 'AssetOrder', optional: true })
   order?: AssetOrder;
+
+  @ValidateBoolean({ optional: true })
+  hideFromTimeline?: boolean;
 }
 
 export class GetAlbumsDto {
@@ -157,6 +163,7 @@ export class AlbumResponseDto {
   isActivityEnabled!: boolean;
   @ValidateEnum({ enum: AssetOrder, name: 'AssetOrder', optional: true })
   order?: AssetOrder;
+  hideFromTimeline!: boolean;
 
   // Optional per-user contribution counts for shared albums
   @Type(() => ContributorCountResponseDto)
@@ -178,6 +185,7 @@ export type MapAlbumDto = {
   owner: User;
   isActivityEnabled: boolean;
   order: AssetOrder;
+  hideFromTimeline: boolean;
 };
 
 export const mapAlbum = (entity: MapAlbumDto, withAssets: boolean, auth?: AuthDto): AlbumResponseDto => {
@@ -225,6 +233,7 @@ export const mapAlbum = (entity: MapAlbumDto, withAssets: boolean, auth?: AuthDt
     assetCount: entity.assets?.length || 0,
     isActivityEnabled: entity.isActivityEnabled,
     order: entity.order,
+    hideFromTimeline: entity.hideFromTimeline,
   };
 };
 

@@ -295,6 +295,18 @@ export class AssetRepository {
                       .where('asset_file.type', '=', AssetFileType.Preview),
                   ),
                 )
+                .where((eb) =>
+                  eb.not(
+                    eb.exists(
+                      eb
+                        .selectFrom('album_asset')
+                        .innerJoin('album', 'album.id', 'album_asset.albumId')
+                        .whereRef('album_asset.assetId', '=', 'asset.id')
+                        .where('album.hideFromTimeline', '=', true)
+                        .where('album.deletedAt', 'is', null),
+                    ),
+                  ),
+                )
                 .where('asset.deletedAt', 'is', null)
                 .orderBy(sql`(asset."localDateTime" at time zone 'UTC')::date`, 'desc')
                 .limit(20)
@@ -591,7 +603,21 @@ export class AssetRepository {
           .$if(options.isDuplicate !== undefined, (qb) =>
             qb.where('asset.duplicateId', options.isDuplicate ? 'is not' : 'is', null),
           )
-          .$if(!!options.tagId, (qb) => withTagId(qb, options.tagId!)),
+          .$if(!!options.tagId, (qb) => withTagId(qb, options.tagId!))
+          .$if(!options.albumId, (qb) =>
+            qb.where((eb) =>
+              eb.not(
+                eb.exists(
+                  eb
+                    .selectFrom('album_asset')
+                    .innerJoin('album', 'album.id', 'album_asset.albumId')
+                    .whereRef('album_asset.assetId', '=', 'asset.id')
+                    .where('album.hideFromTimeline', '=', true)
+                    .where('album.deletedAt', 'is', null),
+                ),
+              ),
+            ),
+          ),
       )
       .selectFrom('asset')
       .select(sql<string>`("timeBucket" AT TIME ZONE 'UTC')::date::text`.as('timeBucket'))
@@ -692,6 +718,20 @@ export class AssetRepository {
           )
           .$if(!!options.isTrashed, (qb) => qb.where('asset.status', '!=', AssetStatus.Deleted))
           .$if(!!options.tagId, (qb) => withTagId(qb, options.tagId!))
+          .$if(!options.albumId, (qb) =>
+            qb.where((eb) =>
+              eb.not(
+                eb.exists(
+                  eb
+                    .selectFrom('album_asset')
+                    .innerJoin('album', 'album.id', 'album_asset.albumId')
+                    .whereRef('album_asset.assetId', '=', 'asset.id')
+                    .where('album.hideFromTimeline', '=', true)
+                    .where('album.deletedAt', 'is', null),
+                ),
+              ),
+            ),
+          )
           .orderBy('asset.fileCreatedAt', options.order ?? 'desc'),
       )
       .with('agg', (qb) =>

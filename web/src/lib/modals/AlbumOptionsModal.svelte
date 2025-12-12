@@ -73,6 +73,21 @@
     }
   };
 
+  const handleToggleHideFromTimeline = async () => {
+    try {
+      album = await updateAlbumInfo({
+        id: album.id,
+        updateAlbumDto: {
+          hideFromTimeline: !album.hideFromTimeline,
+        },
+      });
+
+      toastManager.success($t('timeline_visibility_changed', { values: { hidden: album.hideFromTimeline } }));
+    } catch (error) {
+      handleError(error, $t('errors.cant_change_timeline_visibility'));
+    }
+  };
+
   const handleRemoveUser = async (user: UserResponseDto): Promise<void> => {
     const confirmed = await modalManager.showDialog({
       title: $t('album_remove_user'),
@@ -126,6 +141,12 @@
             subtitle={$t('let_others_respond')}
             checked={album.isActivityEnabled}
             onToggle={handleToggleActivity}
+          />
+          <SettingSwitch
+            title={$t('hide_from_timeline')}
+            subtitle={$t('hide_from_timeline_description')}
+            checked={album.hideFromTimeline}
+            onToggle={handleToggleHideFromTimeline}
           />
         </div>
       </div>
