@@ -14,8 +14,10 @@ import 'package:immich_mobile/widgets/common/immich_toast.dart';
 /// - Prompt to delete the asset locally
 class DeleteLocalActionButton extends ConsumerWidget {
   final ActionSource source;
+  final bool iconOnly;
+  final bool menuItem;
 
-  const DeleteLocalActionButton({super.key, required this.source});
+  const DeleteLocalActionButton({super.key, required this.source, this.iconOnly = false, this.menuItem = false});
 
   void _onTap(BuildContext context, WidgetRef ref) async {
     if (!context.mounted) {
@@ -55,6 +57,8 @@ class DeleteLocalActionButton extends ConsumerWidget {
       maxWidth: 95.0,
       iconData: Icons.no_cell_outlined,
       label: "control_bottom_app_bar_delete_from_local".t(context: context),
+      iconOnly: iconOnly,
+      menuItem: menuItem,
       onPressed: () => _onTap(context, ref),
     );
   }

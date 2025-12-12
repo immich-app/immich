@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/setting.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
+import 'package:immich_mobile/providers/routes.provider.dart';
+import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/utils/action_button.utils.dart';
 
@@ -24,16 +30,28 @@ class ViewerKebabMenu extends ConsumerWidget {
     final isOwner = asset is RemoteAsset && asset.ownerId == user?.id;
     final isCasting = ref.watch(castProvider.select((c) => c.isCasting));
     final timelineOrigin = ref.read(timelineServiceProvider).origin;
+    final isTrashEnable = ref.watch(serverInfoProvider.select((state) => state.serverFeatures.trash));
+    final isInLockedView = ref.watch(inLockedViewProvider);
+    final currentAlbum = ref.watch(currentRemoteAlbumProvider);
+    final isArchived = asset is RemoteAsset && asset.visibility == AssetVisibility.archive;
+    final advancedTroubleshooting = ref.watch(settingsProvider.notifier).get(Setting.advancedTroubleshooting);
 
-    final kebabContext = ViewerKebabMenuButtonContext(
+    final actionContext = ActionButtonContext(
       asset: asset,
       isOwner: isOwner,
+      isArchived: isArchived,
+      isTrashEnabled: isTrashEnable,
+      isStacked: asset is RemoteAsset && asset.stackId != null,
+      isInLockedView: isInLockedView,
+      currentAlbum: currentAlbum,
+      advancedTroubleshooting: advancedTroubleshooting,
+      source: ActionSource.viewer,
       isCasting: isCasting,
       timelineOrigin: timelineOrigin,
       originalTheme: originalTheme,
     );
 
-    final menuChildren = ViewerKebabMenuButtonBuilder.build(kebabContext, context, ref);
+    final menuChildren = ActionButtonBuilder.buildViewerKebabMenu(actionContext, context, ref);
 
     return MenuAnchor(
       consumeOutsideTap: true,
