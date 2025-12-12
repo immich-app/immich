@@ -249,6 +249,8 @@ const assetFactory = (asset: Partial<MapAsset> = {}) => ({
   thumbhash: null,
   type: AssetType.Image,
   visibility: AssetVisibility.Timeline,
+  width: null,
+  height: null,
   ...asset,
 });
 
@@ -347,6 +349,7 @@ const assetOcrFactory = (
     boxScore?: number;
     textScore?: number;
     text?: string;
+    isVisible?: boolean;
   } = {},
 ) => ({
   id: newUuid(),
@@ -362,6 +365,7 @@ const assetOcrFactory = (
   boxScore: 0.95,
   textScore: 0.92,
   text: 'Sample Text',
+  isVisible: true,
   ...ocr,
 });
 

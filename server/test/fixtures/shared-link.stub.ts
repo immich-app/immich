@@ -72,6 +72,8 @@ const assetResponse: AssetResponseDto = {
   libraryId: 'library-id',
   hasMetadata: true,
   visibility: AssetVisibility.Timeline,
+  width: null,
+  height: null,
 };
 
 const assetResponseWithoutMetadata = {
@@ -83,6 +85,8 @@ const assetResponseWithoutMetadata = {
   duration: '0:00:00.00000',
   livePhotoVideoId: null,
   hasMetadata: false,
+  width: 500,
+  height: 500,
 } as AssetResponseDto;
 
 const albumResponse: AlbumResponseDto = {
@@ -257,6 +261,8 @@ export const sharedLinkStub = {
           libraryId: null,
           stackId: null,
           visibility: AssetVisibility.Timeline,
+          width: 500,
+          height: 500,
         },
       ],
     },

@@ -141,6 +141,8 @@ export class JobService extends BaseService {
                 livePhotoVideoId: asset.livePhotoVideoId,
                 stackId: asset.stackId,
                 libraryId: asset.libraryId,
+                width: asset.width,
+                height: asset.height,
               },
               exif: {
                 assetId: exif.assetId,

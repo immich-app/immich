@@ -33,6 +33,7 @@ import {
   CheckExistingAssetsDto,
   UploadFieldName,
 } from 'src/dtos/asset-media.dto';
+import { AssetDownloadOriginalDto } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { ApiTag, ImmichHeader, Permission, RouteKey } from 'src/enum';
 import { AssetUploadInterceptor } from 'src/middleware/asset-upload.interceptor';
@@ -94,10 +95,11 @@ export class AssetMediaController {
   async downloadAsset(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
+    @Query() { edited }: AssetDownloadOriginalDto,
     @Res() res: Response,
     @Next() next: NextFunction,
   ) {
-    await sendFile(res, next, () => this.service.downloadOriginal(auth, id), this.logger);
+    await sendFile(res, next, () => this.service.downloadOriginal(auth, id, edited ?? true), this.logger);
   }
 
   @Put(':id/original')
