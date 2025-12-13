@@ -1,0 +1,2 @@
+json_key_file("/Users/alex/Documents/immich-play-store-key.json")
+package_name("app.alextran.immich")

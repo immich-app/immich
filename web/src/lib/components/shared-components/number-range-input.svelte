@@ -1,0 +1,54 @@
+<script lang="ts">
+  import { clamp } from 'lodash-es';
+  import type { ClipboardEventHandler, KeyboardEventHandler } from 'svelte/elements';
+
+  interface Props {
+    id: string;
+    min: number;
+    max: number;
+    step?: number | string;
+    required?: boolean;
+    value?: number;
+    onInput: (value: number | null) => void;
+    onPaste?: ClipboardEventHandler<HTMLInputElement>;
+    onKeyDown?: KeyboardEventHandler<HTMLInputElement>;
+  }
+
+  let {
+    id,
+    min,
+    max,
+    step = 'any',
+    required = true,
+    value = $bindable(),
+    onInput,
+    onPaste = undefined,
+    onKeyDown = undefined,
+  }: Props = $props();
+
+  const oninput = () => {
+    // value can be 0
+    if (value === undefined) {
+      return;
+    }
+
+    if (value !== null && (value < min || value > max)) {
+      value = clamp(value, min, max);
+    }
+    onInput(value);
+  };
+</script>
+
+<input
+  type="number"
+  class="immich-form-input w-full"
+  {id}
+  {min}
+  {max}
+  {step}
+  {required}
+  bind:value
+  {oninput}
+  onpaste={onPaste}
+  onkeydown={onKeyDown}
+/>

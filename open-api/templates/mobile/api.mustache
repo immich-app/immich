@@ -1,0 +1,194 @@
+{{>header}}
+{{>part_of}}
+{{#operations}}
+
+class {{{classname}}} {
+  {{{classname}}}([ApiClient? apiClient]) : apiClient = apiClient ?? defaultApiClient;
+
+  final ApiClient apiClient;
+  {{#operation}}
+
+  {{#summary}}
+  /// {{{.}}}
+  {{/summary}}
+  {{#notes}}
+    {{#summary}}
+  ///
+    {{/summary}}
+  /// {{{notes}}}
+  ///
+  /// Note: This method returns the HTTP [Response].
+  {{/notes}}
+  {{^notes}}
+    {{#summary}}
+  ///
+  /// Note: This method returns the HTTP [Response].
+    {{/summary}}
+    {{^summary}}
+  /// Performs an HTTP '{{{httpMethod}}} {{{path}}}' operation and returns the [Response].
+    {{/summary}}
+  {{/notes}}
+  {{#hasParams}}
+    {{#summary}}
+  ///
+    {{/summary}}
+    {{^summary}}
+      {{#notes}}
+  ///
+      {{/notes}}
+    {{/summary}}
+  /// Parameters:
+  ///
+  {{/hasParams}}
+  {{#allParams}}
+  /// * [{{{dataType}}}] {{{paramName}}}{{#required}} (required){{/required}}{{#optional}} (optional){{/optional}}:
+    {{#description}}
+  ///   {{{.}}}
+    {{/description}}
+    {{^-last}}
+  ///
+    {{/-last}}
+  {{/allParams}}
+  Future<Response> {{{nickname}}}WithHttpInfo({{#allParams}}{{#required}}{{{dataType}}} {{{paramName}}},{{^-last}} {{/-last}}{{/required}}{{/allParams}}{{#hasOptionalParams}}{ {{#allParams}}{{^required}}{{{dataType}}}? {{{paramName}}},{{^-last}} {{/-last}}{{/required}}{{/allParams}} }{{/hasOptionalParams}}) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'{{{path}}}'{{#pathParams}}
+      .replaceAll({{=<% %>=}}'{<% baseName %>}'<%={{ }}=%>, {{{paramName}}}{{^isString}}.toString(){{/isString}}){{/pathParams}};
+
+    // ignore: prefer_final_locals
+    Object? postBody{{#bodyParam}} = {{{paramName}}}{{/bodyParam}};
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+    {{#hasQueryParams}}
+
+      {{#queryParams}}
+        {{^required}}
+    if ({{{paramName}}} != null) {
+          {{/required}}
+      queryParams.addAll(_queryParams('{{{collectionFormat}}}', '{{{baseName}}}', {{{paramName}}}));
+          {{^required}}
+    }
+        {{/required}}
+      {{/queryParams}}
+    {{/hasQueryParams}}
+    {{#hasHeaderParams}}
+
+      {{#headerParams}}
+        {{#required}}
+    headerParams[r'{{{baseName}}}'] = parameterToString({{{paramName}}});
+        {{/required}}
+        {{^required}}
+    if ({{{paramName}}} != null) {
+      headerParams[r'{{{baseName}}}'] = parameterToString({{{paramName}}});
+    }
+        {{/required}}
+      {{/headerParams}}
+    {{/hasHeaderParams}}
+
+    const contentTypes = <String>[{{#prioritizedContentTypes}}'{{{mediaType}}}'{{^-last}}, {{/-last}}{{/prioritizedContentTypes}}];
+
+    {{#isMultipart}}
+    bool hasFields = false;
+    final mp = MultipartRequest('{{{httpMethod}}}', Uri.parse(apiPath));
+    {{#formParams}}
+    {{^isFile}}
+    if ({{{paramName}}} != null) {
+      hasFields = true;
+      mp.fields[r'{{{baseName}}}'] = parameterToString({{{paramName}}});
+    }
+    {{/isFile}}
+    {{#isFile}}
+    if ({{{paramName}}} != null) {
+      hasFields = true;
+      mp.fields[r'{{{baseName}}}'] = {{{paramName}}}.field;
+      mp.files.add({{{paramName}}});
+    }
+    {{/isFile}}
+    {{/formParams}}
+    if (hasFields) {
+      postBody = mp;
+    }
+    {{/isMultipart}}
+    {{^isMultipart}}
+    {{#formParams}}
+    {{^isFile}}
+    if ({{{paramName}}} != null) {
+      formParams[r'{{{baseName}}}'] = parameterToString({{{paramName}}});
+    }
+    {{/isFile}}
+    {{/formParams}}
+    {{/isMultipart}}
+
+    return apiClient.invokeAPI(
+      apiPath,
+      '{{{httpMethod}}}',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  {{#summary}}
+  /// {{{.}}}
+  {{/summary}}
+  {{#notes}}
+  {{#summary}}
+  ///
+  {{/summary}}
+  /// {{{notes}}}
+  {{/notes}}
+  {{#hasParams}}
+    {{#summary}}
+  ///
+    {{/summary}}
+    {{^summary}}
+      {{#notes}}
+  ///
+      {{/notes}}
+    {{/summary}}
+  /// Parameters:
+  ///
+  {{/hasParams}}
+  {{#allParams}}
+  /// * [{{{dataType}}}] {{{paramName}}}{{#required}} (required){{/required}}{{#optional}} (optional){{/optional}}:
+    {{#description}}
+  ///   {{{.}}}
+    {{/description}}
+    {{^-last}}
+  ///
+    {{/-last}}
+  {{/allParams}}
+  Future<{{#returnType}}{{{.}}}?{{/returnType}}{{^returnType}}void{{/returnType}}> {{{nickname}}}({{#allParams}}{{#required}}{{{dataType}}} {{{paramName}}},{{^-last}} {{/-last}}{{/required}}{{/allParams}}{{#hasOptionalParams}}{ {{#allParams}}{{^required}}{{{dataType}}}? {{{paramName}}},{{^-last}} {{/-last}}{{/required}}{{/allParams}} }{{/hasOptionalParams}}) async {
+    final response = await {{{nickname}}}WithHttpInfo({{#allParams}}{{#required}}{{{paramName}}},{{^-last}} {{/-last}}{{/required}}{{/allParams}}{{#hasOptionalParams}} {{#allParams}}{{^required}}{{{paramName}}}: {{{paramName}}},{{^-last}} {{/-last}}{{/required}}{{/allParams}} {{/hasOptionalParams}});
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    {{#returnType}}
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+    {{#native_serialization}}
+    {{#isArray}}
+      final responseBody = await _decodeBodyBytes(response);
+      return (await apiClient.deserializeAsync(responseBody, '{{{returnType}}}') as List)
+        .cast<{{{returnBaseType}}}>()
+        .{{#uniqueItems}}toSet(){{/uniqueItems}}{{^uniqueItems}}toList(growable: false){{/uniqueItems}};
+    {{/isArray}}
+    {{^isArray}}
+    {{#isMap}}
+      return {{{returnType}}}.from(await apiClient.deserializeAsync(await _decodeBodyBytes(response), '{{{returnType}}}'),);
+    {{/isMap}}
+    {{^isMap}}
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), '{{{returnType}}}',) as {{{returnType}}};
+    {{/isMap}}{{/isArray}}{{/native_serialization}}
+    }
+    return null;
+    {{/returnType}}
+  }
+  {{/operation}}
+}
+{{/operations}}

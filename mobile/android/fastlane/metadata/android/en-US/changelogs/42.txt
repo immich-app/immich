@@ -1,0 +1,2 @@
+* Fixed Android BackgroundServiceStartNotAllowedException
+* Restore old cache mechanism

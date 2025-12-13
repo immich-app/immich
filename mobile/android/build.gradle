@@ -1,0 +1,39 @@
+allprojects {
+    ext.kotlin_version = '2.2.20'
+
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+rootProject.buildDir = '../build'
+
+subprojects {
+  //  fix for verifyReleaseResources
+  // ============
+  afterEvaluate { project ->
+        if (project.plugins.hasPlugin("com.android.application") ||
+                project.plugins.hasPlugin("com.android.library")) {
+            project.android {
+                compileSdkVersion 36
+                buildToolsVersion "36.0.0"
+            }
+        }
+    }
+    // ============
+    project.buildDir = "${rootProject.buildDir}/${project.name}"
+}
+
+subprojects {
+    project.evaluationDependsOn(':app')
+}
+
+tasks.register("clean", Delete) {
+    delete rootProject.buildDir
+}
+
+tasks.named('wrapper') {
+    distributionType = Wrapper.DistributionType.ALL
+}
+

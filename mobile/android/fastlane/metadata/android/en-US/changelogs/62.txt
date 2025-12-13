@@ -1,0 +1,1 @@
+* Add additional supported translation for CZ, SK, and CN

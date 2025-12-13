@@ -1,0 +1,135 @@
+plugins {
+  id "com.android.application"
+  id "kotlin-android"
+  id "dev.flutter.flutter-gradle-plugin"
+  id 'com.google.devtools.ksp'
+  id 'org.jetbrains.kotlin.plugin.compose' version '2.0.20' // this version matches your Kotlin version
+
+}
+
+def localProperties = new Properties()
+def localPropertiesFile = rootProject.file('local.properties')
+if (localPropertiesFile.exists()) {
+  localPropertiesFile.withInputStream { localProperties.load(it) }
+}
+
+def flutterVersionCode = localProperties.getProperty('flutter.versionCode')
+if (flutterVersionCode == null) {
+  flutterVersionCode = '1'
+}
+
+def flutterVersionName = localProperties.getProperty('flutter.versionName')
+if (flutterVersionName == null) {
+  flutterVersionName = '1.0'
+}
+
+def keystoreProperties = new Properties()
+def keystorePropertiesFile = rootProject.file('key.properties')
+if (keystorePropertiesFile.exists()) {
+  keystorePropertiesFile.withInputStream { keystoreProperties.load(it) }
+}
+
+android {
+  compileSdkVersion 35
+  ndkVersion = "28.1.13356709"
+
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_17
+    targetCompatibility JavaVersion.VERSION_17
+    coreLibraryDesugaringEnabled true
+  }
+
+  kotlinOptions {
+    jvmTarget = '17'
+  }
+
+  sourceSets {
+    main.java.srcDirs += 'src/main/kotlin'
+  }
+
+  buildFeatures {
+    compose true
+  }
+
+  defaultConfig {
+    applicationId "app.alextran.immich"
+    minSdkVersion 26
+    targetSdkVersion 35
+    versionCode flutterVersionCode.toInteger()
+    versionName flutterVersionName
+  }
+
+  signingConfigs {
+    release {
+      def keyAliasVal = System.getenv("ALIAS")
+      def keyPasswordVal = System.getenv("ANDROID_KEY_PASSWORD")
+      def storePasswordVal = System.getenv("ANDROID_STORE_PASSWORD")
+
+      keyAlias keyAliasVal ? keyAliasVal : keystoreProperties['keyAlias']
+      keyPassword keyPasswordVal ? keyPasswordVal : keystoreProperties['keyPassword']
+      storeFile file("../key.jks") ? file("../key.jks") : file(keystoreProperties['storeFile'])
+      storePassword storePasswordVal ? storePasswordVal : keystoreProperties['storePassword']
+    }
+  }
+
+  buildTypes {
+    debug {
+      applicationIdSuffix '.debug'
+      versionNameSuffix '-DEBUG'
+    }
+
+    release {
+      signingConfig signingConfigs.release
+    }
+  }
+  namespace 'app.alextran.immich'
+
+  externalNativeBuild {
+    cmake {
+      path "CMakeLists.txt"
+    }
+  }
+}
+
+flutter {
+  source '../..'
+}
+
+dependencies {
+  def kotlin_version = '2.0.20'
+  def kotlin_coroutines_version = '1.9.0'
+  def work_version = '2.9.1'
+  def concurrent_version = '1.2.0'
+  def guava_version = '33.3.1-android'
+  def glide_version = '4.16.0'
+  def serialization_version = '1.8.1'
+  def compose_version = '1.1.1'
+  def gson_version = '2.10.1'
+
+  implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+  implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlin_coroutines_version"
+  implementation "androidx.work:work-runtime-ktx:$work_version"
+  implementation "androidx.concurrent:concurrent-futures:$concurrent_version"
+  implementation "com.google.guava:guava:$guava_version"
+  implementation "com.github.bumptech.glide:glide:$glide_version"
+  implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:$serialization_version"
+
+  ksp "com.github.bumptech.glide:ksp:$glide_version"
+  coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.2'
+
+  //Glance Widget
+  implementation "androidx.glance:glance-appwidget:$compose_version"
+  implementation "com.google.code.gson:gson:$gson_version"
+
+  // Glance Configure
+  implementation "androidx.activity:activity-compose:1.8.2"
+  implementation "androidx.compose.ui:ui:$compose_version"
+  implementation "androidx.compose.ui:ui-tooling:$compose_version"
+  implementation "androidx.compose.material3:material3:1.2.1"
+  implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.6.2"
+}
+
+// This is uncommented in F-Droid build script
+//f configurations.all {
+//f     exclude group: 'com.google.android.gms'
+//f }

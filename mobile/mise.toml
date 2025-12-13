@@ -1,0 +1,185 @@
+[tools]
+flutter = "3.35.7"
+
+[tools."github:CQLabs/homebrew-dcm"]
+version = "1.30.0"
+bin = "dcm"
+postinstall = "chmod +x $MISE_TOOL_INSTALL_PATH/dcm"
+
+[tasks."codegen:dart"]
+alias = "codegen"
+description = "Execute build_runner to auto-generate dart code"
+sources = [
+  "pubspec.yaml",
+  "build.yaml",
+  "lib/**/*.dart",
+  "infrastructure/**/*.drift",
+]
+outputs = { auto = true }
+run = "dart run build_runner build --delete-conflicting-outputs"
+
+[tasks."codegen:pigeon"]
+alias = "pigeon"
+description = "Generate pigeon platform code"
+depends = [
+  "pigeon:native-sync",
+  "pigeon:thumbnail",
+  "pigeon:background-worker",
+  "pigeon:background-worker-lock",
+  "pigeon:connectivity",
+]
+
+[tasks."codegen:translation"]
+alias = "translation"
+description = "Generate translations from i18n JSONs"
+run = [
+  { task = "//i18n:format-fix" },
+  { tasks = [
+    "i18n:loader",
+    "i18n:keys",
+  ] },
+]
+
+[tasks."codegen:app-icon"]
+description = "Generate app icons"
+run = "flutter pub run flutter_launcher_icons:main"
+
+[tasks."codegen:splash"]
+description = "Generate splash screen"
+run = "flutter pub run flutter_native_splash:create"
+
+[tasks.test]
+description = "Run mobile tests"
+run = "flutter test"
+
+[tasks.lint]
+description = "Analyze Dart code"
+depends = ["analyze:dart", "analyze:dcm"]
+
+[tasks."lint-fix"]
+description = "Auto-fix Dart code"
+depends = ["analyze:fix:dart", "analyze:fix:dcm"]
+
+[tasks.format]
+description = "Format Dart code"
+run = "dart format --set-exit-if-changed $(find lib -name '*.dart' -not \\( -name '*.g.dart' -o -name '*.drift.dart' -o -name '*.gr.dart' \\))"
+
+[tasks."build:android"]
+description = "Build Android release"
+run = "flutter build appbundle"
+
+[tasks."drift:migration"]
+alias = "migration"
+description = "Generate database migrations"
+run = "dart run drift_dev make-migrations"
+
+
+# Internal tasks
+[tasks."pigeon:native-sync"]
+description = "Generate native sync API pigeon code"
+hide = true
+sources = ["pigeon/native_sync_api.dart"]
+outputs = [
+  "lib/platform/native_sync_api.g.dart",
+  "ios/Runner/Sync/Messages.g.swift",
+  "android/app/src/main/kotlin/app/alextran/immich/sync/Messages.g.kt",
+]
+run = [
+  "dart run pigeon --input pigeon/native_sync_api.dart",
+  "dart format lib/platform/native_sync_api.g.dart",
+]
+
+[tasks."pigeon:thumbnail"]
+description = "Generate thumbnail API pigeon code"
+hide = true
+sources = ["pigeon/thumbnail_api.dart"]
+outputs = [
+  "lib/platform/thumbnail_api.g.dart",
+  "ios/Runner/Images/Thumbnails.g.swift",
+  "android/app/src/main/kotlin/app/alextran/immich/images/Thumbnails.g.kt",
+]
+run = [
+  "dart run pigeon --input pigeon/thumbnail_api.dart",
+  "dart format lib/platform/thumbnail_api.g.dart",
+]
+
+[tasks."pigeon:background-worker"]
+description = "Generate background worker API pigeon code"
+hide = true
+sources = ["pigeon/background_worker_api.dart"]
+outputs = [
+  "lib/platform/background_worker_api.g.dart",
+  "ios/Runner/Background/BackgroundWorker.g.swift",
+  "android/app/src/main/kotlin/app/alextran/immich/background/BackgroundWorker.g.kt",
+]
+run = [
+  "dart run pigeon --input pigeon/background_worker_api.dart",
+  "dart format lib/platform/background_worker_api.g.dart",
+]
+
+[tasks."pigeon:background-worker-lock"]
+description = "Generate background worker lock API pigeon code"
+hide = true
+sources = ["pigeon/background_worker_lock_api.dart"]
+outputs = [
+  "lib/platform/background_worker_lock_api.g.dart",
+  "android/app/src/main/kotlin/app/alextran/immich/background/BackgroundWorkerLock.g.kt",
+]
+run = [
+  "dart run pigeon --input pigeon/background_worker_lock_api.dart",
+  "dart format lib/platform/background_worker_lock_api.g.dart",
+]
+
+[tasks."pigeon:connectivity"]
+description = "Generate connectivity API pigeon code"
+hide = true
+sources = ["pigeon/connectivity_api.dart"]
+outputs = [
+  "lib/platform/connectivity_api.g.dart",
+  "ios/Runner/Connectivity/Connectivity.g.swift",
+  "android/app/src/main/kotlin/app/alextran/immich/connectivity/Connectivity.g.kt",
+]
+run = [
+  "dart run pigeon --input pigeon/connectivity_api.dart",
+  "dart format lib/platform/connectivity_api.g.dart",
+]
+
+[tasks."i18n:loader"]
+description = "Generate i18n loader"
+hide = true
+sources = ["i18n/"]
+outputs = "lib/generated/codegen_loader.g.dart"
+run = [
+  "dart run easy_localization:generate -S ../i18n",
+  "dart format lib/generated/codegen_loader.g.dart",
+]
+
+[tasks."i18n:keys"]
+description = "Generate i18n keys"
+hide = true
+sources = ["i18n/en.json"]
+outputs = "lib/generated/intl_keys.g.dart"
+run = [
+  "dart run bin/generate_keys.dart",
+  "dart format lib/generated/intl_keys.g.dart",
+]
+
+[tasks."analyze:dart"]
+description = "Run Dart analysis"
+hide = true
+run = "dart analyze --fatal-infos"
+
+[tasks."analyze:dcm"]
+description = "Run Dart Code Metrics"
+hide = true
+run = "dcm analyze lib --fatal-style --fatal-warnings"
+
+[tasks."analyze:fix:dart"]
+description = "Auto-fix Dart analysis"
+hide = true
+run = "dart fix --apply"
+
+[tasks."analyze:fix:dcm"]
+description = "Auto-fix Dart Code Metrics"
+hide = true
+run = "dcm fix lib"

@@ -1,0 +1,187 @@
+<script lang="ts">
+  import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
+  import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
+  import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
+  import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
+  import { SettingInputFieldType } from '$lib/constants';
+  import { preferences } from '$lib/stores/user.store';
+  import { handleError } from '$lib/utils/handle-error';
+  import { AssetOrder, updateMyPreferences } from '@immich/sdk';
+  import { Button, toastManager } from '@immich/ui';
+  import { t } from 'svelte-i18n';
+  import { fade } from 'svelte/transition';
+
+  // Albums
+  let defaultAssetOrder = $state($preferences?.albums?.defaultAssetOrder ?? AssetOrder.Desc);
+
+  // Folders
+  let foldersEnabled = $state($preferences?.folders?.enabled ?? false);
+  let foldersSidebar = $state($preferences?.folders?.sidebarWeb ?? false);
+
+  // Memories
+  let memoriesEnabled = $state($preferences?.memories?.enabled ?? true);
+  let memoriesDuration = $state($preferences?.memories?.duration ?? 5);
+
+  // People
+  let peopleEnabled = $state($preferences?.people?.enabled ?? false);
+  let peopleSidebar = $state($preferences?.people?.sidebarWeb ?? false);
+
+  // Ratings
+  let ratingsEnabled = $state($preferences?.ratings?.enabled ?? false);
+
+  // Shared links
+  let sharedLinksEnabled = $state($preferences?.sharedLinks?.enabled ?? true);
+  let sharedLinkSidebar = $state($preferences?.sharedLinks?.sidebarWeb ?? false);
+
+  // Tags
+  let tagsEnabled = $state($preferences?.tags?.enabled ?? false);
+  let tagsSidebar = $state($preferences?.tags?.sidebarWeb ?? false);
+
+  // Cast
+  let gCastEnabled = $state($preferences?.cast?.gCastEnabled ?? false);
+
+  const handleSave = async () => {
+    try {
+      const data = await updateMyPreferences({
+        userPreferencesUpdateDto: {
+          albums: { defaultAssetOrder },
+          folders: { enabled: foldersEnabled, sidebarWeb: foldersSidebar },
+          memories: { enabled: memoriesEnabled, duration: memoriesDuration },
+          people: { enabled: peopleEnabled, sidebarWeb: peopleSidebar },
+          ratings: { enabled: ratingsEnabled },
+          sharedLinks: { enabled: sharedLinksEnabled, sidebarWeb: sharedLinkSidebar },
+          tags: { enabled: tagsEnabled, sidebarWeb: tagsSidebar },
+          cast: { gCastEnabled },
+        },
+      });
+
+      $preferences = { ...data };
+
+      toastManager.success($t('saved_settings'));
+    } catch (error) {
+      handleError(error, $t('errors.unable_to_update_settings'));
+    }
+  };
+
+  const onsubmit = (event: Event) => {
+    event.preventDefault();
+  };
+</script>
+
+<section class="my-4">
+  <div in:fade={{ duration: 500 }}>
+    <form autocomplete="off" {onsubmit}>
+      <div class="ms-4 mt-4 flex flex-col">
+        <SettingAccordion key="albums" title={$t('albums')} subtitle={$t('albums_feature_description')}>
+          <div class="ms-4 mt-6">
+            <SettingSelect
+              label={$t('albums_default_sort_order')}
+              desc={$t('albums_default_sort_order_description')}
+              options={[
+                { value: AssetOrder.Asc, text: $t('oldest_first') },
+                { value: AssetOrder.Desc, text: $t('newest_first') },
+              ]}
+              bind:value={defaultAssetOrder}
+            />
+          </div>
+        </SettingAccordion>
+
+        <SettingAccordion key="folders" title={$t('folders')} subtitle={$t('folders_feature_description')}>
+          <div class="ms-4 mt-6">
+            <SettingSwitch title={$t('enable')} bind:checked={foldersEnabled} />
+          </div>
+
+          {#if foldersEnabled}
+            <div class="ms-4 mt-6">
+              <SettingSwitch
+                title={$t('sidebar')}
+                subtitle={$t('sidebar_display_description')}
+                bind:checked={foldersSidebar}
+              />
+            </div>
+          {/if}
+        </SettingAccordion>
+
+        <SettingAccordion key="memories" title={$t('time_based_memories')} subtitle={$t('photos_from_previous_years')}>
+          <div class="ms-4 mt-6">
+            <SettingSwitch title={$t('enable')} bind:checked={memoriesEnabled} />
+          </div>
+          <div class="ms-4 mt-6">
+            <SettingInputField
+              inputType={SettingInputFieldType.NUMBER}
+              label={$t('duration')}
+              description={$t('time_based_memories_duration')}
+              bind:value={memoriesDuration}
+            />
+          </div>
+        </SettingAccordion>
+
+        <SettingAccordion key="people" title={$t('people')} subtitle={$t('people_feature_description')}>
+          <div class="ms-4 mt-6">
+            <SettingSwitch title={$t('enable')} bind:checked={peopleEnabled} />
+          </div>
+
+          {#if peopleEnabled}
+            <div class="ms-4 mt-6">
+              <SettingSwitch
+                title={$t('sidebar')}
+                subtitle={$t('sidebar_display_description')}
+                bind:checked={peopleSidebar}
+              />
+            </div>
+          {/if}
+        </SettingAccordion>
+
+        <SettingAccordion key="rating" title={$t('rating')} subtitle={$t('rating_description')}>
+          <div class="ms-4 mt-6">
+            <SettingSwitch title={$t('enable')} bind:checked={ratingsEnabled} />
+          </div>
+        </SettingAccordion>
+
+        <SettingAccordion key="shared-links" title={$t('shared_links')} subtitle={$t('shared_links_description')}>
+          <div class="ms-4 mt-6">
+            <SettingSwitch title={$t('enable')} bind:checked={sharedLinksEnabled} />
+          </div>
+          {#if sharedLinksEnabled}
+            <div class="ms-4 mt-6">
+              <SettingSwitch
+                title={$t('sidebar')}
+                subtitle={$t('sidebar_display_description')}
+                bind:checked={sharedLinkSidebar}
+              />
+            </div>
+          {/if}
+        </SettingAccordion>
+
+        <SettingAccordion key="tags" title={$t('tags')} subtitle={$t('tag_feature_description')}>
+          <div class="ms-4 mt-6">
+            <SettingSwitch title={$t('enable')} bind:checked={tagsEnabled} />
+          </div>
+          {#if tagsEnabled}
+            <div class="ms-4 mt-6">
+              <SettingSwitch
+                title={$t('sidebar')}
+                subtitle={$t('sidebar_display_description')}
+                bind:checked={tagsSidebar}
+              />
+            </div>
+          {/if}
+        </SettingAccordion>
+
+        <SettingAccordion key="cast" title={$t('cast')} subtitle={$t('cast_description')}>
+          <div class="ms-4 mt-6">
+            <SettingSwitch
+              title={$t('gcast_enabled')}
+              subtitle={$t('gcast_enabled_description')}
+              bind:checked={gCastEnabled}
+            />
+          </div>
+        </SettingAccordion>
+
+        <div class="flex justify-end">
+          <Button shape="round" type="submit" size="small" onclick={() => handleSave()}>{$t('save')}</Button>
+        </div>
+      </div>
+    </form>
+  </div>
+</section>

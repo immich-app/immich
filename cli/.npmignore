@@ -1,0 +1,15 @@
+**/*.spec.js
+coverage/**
+src/**
+upload/**
+.editorconfig
+.eslintignore
+.eslintrc.cjs
+.gitignore
+.prettierignore
+.prettierrc
+Dockerfile
+package-lock.json
+tsconfig.json
+vite.config.ts
+vitest.config.ts

@@ -1,0 +1,101 @@
+/**
+ * Any CSS included here will be global. The classic template
+ * bundles Infima by default. Infima is a CSS framework designed to
+ * work well for content-centric websites.
+ */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: 'Overpass';
+  src: url('/fonts/overpass/Overpass.ttf') format('truetype-variations');
+  font-weight: 1 999;
+  font-style: normal;
+  ascent-override: 106.25%;
+  size-adjust: 106.25%;
+}
+
+@font-face {
+  font-family: 'Overpass Mono';
+  src: url('/fonts/overpass/OverpassMono.ttf') format('truetype-variations');
+  font-weight: 1 999;
+  font-style: normal;
+  ascent-override: 106.25%;
+  size-adjust: 106.25%;
+}
+
+.breadcrumbs__link {
+  font-weight: 500;
+  font-size: 0.875rem;
+  padding: 8px 16px 8px 16px;
+}
+
+img {
+  border-radius: 15px;
+}
+
+/* You can override the default Infima variables here. */
+:root {
+  font-family: 'Overpass', sans-serif;
+  --ifm-color-primary: #4250af;
+  --ifm-color-primary-dark: #4250af;
+  --ifm-color-primary-darker: #4250af;
+  --ifm-color-primary-darkest: #4250af;
+  --ifm-color-primary-light: #4250af;
+  --ifm-color-primary-lighter: #4250af;
+  --ifm-color-primary-lightest: #4250af;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+}
+
+/* For readability concerns, you should choose a lighter palette in dark mode. */
+[data-theme='dark'] {
+  --ifm-color-primary: #adcbfa;
+  --ifm-color-primary-dark: #85b2f8;
+  --ifm-color-primary-darker: #71a5f6;
+  --ifm-color-primary-darkest: #357ff3;
+  --ifm-color-primary-light: #d5e4fc;
+  --ifm-color-primary-lighter: #e9f1fe;
+  --ifm-color-primary-lightest: #ffffff;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+  --ifm-background-color: #000000;
+}
+
+div[class^='announcementBar_'] {
+  min-height: 2rem;
+  background-color: #2b3336;
+  color: white;
+}
+
+.menu__link {
+  padding: 10px 10px 10px 16px;
+  border-radius: 24px;
+  margin-right: 16px;
+}
+
+.menu__list-item-collapsible {
+  margin-right: 16px;
+  border-radius: 24px;
+}
+
+.menu__link--active {
+  font-weight: 500;
+}
+
+/* workaround for version switcher PR 15894 */
+div[class*='navbar__items'] > li:has(a[class*='version-switcher-34ab39']) {
+  display: none;
+}
+
+code {
+  font-weight: 600;
+}
+
+.buy-button {
+  padding: 8px 14px;
+  border: 1px solid transparent;
+  font-family: 'Overpass', sans-serif;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: 0 0 5px 2px rgba(181, 206, 254, 0.4);
+}

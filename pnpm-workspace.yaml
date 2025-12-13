@@ -1,0 +1,63 @@
+packages:
+  - cli
+  - docs
+  - e2e
+  - open-api/typescript-sdk
+  - server
+  - plugins
+  - web
+  - .github
+ignoredBuiltDependencies:
+  - '@nestjs/core'
+  - '@scarf/scarf'
+  - '@swc/core'
+  - canvas
+  - core-js
+  - core-js-pure
+  - cpu-features
+  - es5-ext
+  - esbuild
+  - msgpackr-extract
+  - postman-code-generators
+  - protobufjs
+  - ssh2
+  - utimes
+onlyBuiltDependencies:
+  - sharp
+  - '@tailwindcss/oxide'
+  - bcrypt
+overrides:
+  canvas: 2.11.2
+  sharp: ^0.34.5
+packageExtensions:
+  nestjs-kysely:
+    dependencies:
+      tslib: '*'
+  nestjs-otel:
+    dependencies:
+      tslib: '*'
+  '@photo-sphere-viewer/equirectangular-video-adapter':
+    dependencies:
+      three: '*'
+  '@photo-sphere-viewer/video-plugin':
+    dependencies:
+      three: '*'
+  sharp:
+    dependencies:
+      node-addon-api: '*'
+      node-gyp: '*'
+  '@immich/ui':
+    dependencies:
+      tailwindcss: '>=4.1'
+  tailwind-variants:
+    dependencies:
+      tailwindcss: '>=4.1'
+  bcrypt:
+    dependencies:
+      node-addon-api: '*'
+      node-gyp: '*'
+dedupePeerDependents: false
+preferWorkspacePackages: true
+injectWorkspacePackages: true
+shamefullyHoist: false
+verifyDepsBeforeRun: install

@@ -1,0 +1,2 @@
+* Show human readable file size in detail view
+* Fix permission issue on Android 33

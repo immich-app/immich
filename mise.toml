@@ -1,0 +1,37 @@
+experimental_monorepo_root = true
+
+[tools]
+node = "24.11.1"
+flutter = "3.35.7"
+pnpm = "10.24.0"
+terragrunt = "0.93.10"
+opentofu = "1.10.7"
+java = "25.0.1"
+
+[tools."github:CQLabs/homebrew-dcm"]
+version = "1.30.0"
+bin = "dcm"
+postinstall = "chmod +x $MISE_TOOL_INSTALL_PATH/dcm"
+
+[settings]
+experimental = true
+pin = true
+
+# SDK tasks
+[tasks."sdk:install"]
+dir = "open-api/typescript-sdk"
+run = "pnpm install --filter @immich/sdk --frozen-lockfile"
+
+[tasks."sdk:build"]
+dir = "open-api/typescript-sdk"
+env._.path = "./node_modules/.bin"
+run = "tsc"
+
+# i18n tasks
+[tasks."i18n:format"]
+dir = "i18n"
+run = { task = ":i18n:format-fix" }
+
+[tasks."i18n:format-fix"]
+dir = "i18n"
+run = "pnpm dlx sort-json *.json"

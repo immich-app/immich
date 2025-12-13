@@ -1,0 +1,33 @@
+{
+  "name": "@immich/sdk",
+  "version": "2.3.1",
+  "description": "Auto-generated TypeScript SDK for the Immich API",
+  "type": "module",
+  "main": "./build/index.js",
+  "types": "./build/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./build/index.d.ts",
+      "default": "./build/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc"
+  },
+  "license": "GNU Affero General Public License version 3",
+  "dependencies": {
+    "@oazapfts/runtime": "^1.0.2"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "typescript": "^5.3.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/immich-app/immich.git",
+    "directory": "open-api/typescript-sdk"
+  },
+  "volta": {
+    "node": "24.11.1"
+  }
+}

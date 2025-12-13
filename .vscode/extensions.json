@@ -1,0 +1,10 @@
+{
+  "recommendations": [
+    "esbenp.prettier-vscode",
+    "svelte.svelte-vscode",
+    "dbaeumer.vscode-eslint",
+    "dart-code.flutter",
+    "dart-code.dart-code",
+    "dcmdev.dcm-vscode-extension"
+  ]
+}

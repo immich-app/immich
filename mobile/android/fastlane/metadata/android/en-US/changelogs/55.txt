@@ -1,0 +1,3 @@
+* Added OAuth login option
+* Tidy-up dependencies, remove unused, replace rarely used ones
+* Added view LivePhotos feature

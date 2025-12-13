@@ -1,0 +1,14 @@
+#
+# AUTO-GENERATED FILE, DO NOT MODIFY!
+#
+# https://docs.travis-ci.com/user/languages/dart/
+#
+language: dart
+dart:
+# Install a specific stable release
+- "2.12"
+install:
+- pub get
+
+script:
+- pub run test

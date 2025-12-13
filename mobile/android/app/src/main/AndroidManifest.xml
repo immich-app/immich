@@ -1,0 +1,205 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:tools="http://schemas.android.com/tools">
+
+  <uses-permission android:name="android.permission.INTERNET" />
+  <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+    android:maxSdkVersion="32" />
+  <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+    android:maxSdkVersion="32" />
+  <uses-permission android:name="android.permission.ACCESS_MEDIA_LOCATION" />
+  <uses-permission android:name="android.permission.MANAGE_MEDIA" />
+  <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+  <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+  <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+  <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+  <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+  <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+  <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+  <uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED" />
+  <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+  <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+  <uses-permission android:name="android.permission.USE_BIOMETRIC" />
+
+  <!-- Foreground service permission -->
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+
+  <application android:label="Immich" android:name=".ImmichApp" android:usesCleartextTraffic="true"
+    android:icon="@mipmap/ic_launcher" android:requestLegacyExternalStorage="true"
+    android:largeHeap="true" android:enableOnBackInvokedCallback="false" android:allowBackup="false">
+
+    <profileable android:shell="true" />
+
+    <service
+      android:name="androidx.work.impl.foreground.SystemForegroundService"
+      android:directBootAware="false"
+      android:enabled="@bool/enable_system_foreground_service_default"
+      android:exported="false"
+      android:foregroundServiceType="dataSync|shortService" />
+
+    <meta-data
+      android:name="io.flutter.embedding.android.EnableImpeller"
+      android:value="false" />
+
+    <meta-data
+      android:name="com.google.firebase.messaging.default_notification_icon"
+      android:resource="@drawable/notification_icon" />
+
+    <activity android:name=".MainActivity" android:exported="true" android:launchMode="singleTask"
+      android:theme="@style/LaunchTheme"
+      android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
+      android:hardwareAccelerated="true" android:windowSoftInputMode="adjustResize">
+      <!-- Specifies an Android theme to apply to this Activity as soon as
+                 the
+      Android process has started. This theme is visible to the user
+                 while the
+      Flutter UI initializes. After that, this theme continues
+                 to determine the
+      Window background behind the Flutter UI. -->
+      <meta-data android:name="io.flutter.embedding.android.NormalTheme"
+        android:resource="@style/NormalTheme" />
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
+        <category android:name="android.intent.category.LAUNCHER" />
+      </intent-filter>
+
+
+      <!--TODO:
+      Add this filter if you want to handle shared images-->
+      <intent-filter android:label="Upload to Immich">
+        <action android:name="android.intent.action.SEND" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <data android:mimeType="image/*" />
+      </intent-filter>
+
+      <intent-filter android:label="Upload to Immich">
+        <action android:name="android.intent.action.SEND_MULTIPLE" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <data android:mimeType="image/*" />
+      </intent-filter>
+
+      <!--TODO:
+      Add this filter if you want to handle shared videos-->
+      <intent-filter android:label="Upload to Immich">
+        <action android:name="android.intent.action.SEND" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <data android:mimeType="video/*" />
+      </intent-filter>
+      <intent-filter android:label="Upload to Immich">
+        <action android:name="android.intent.action.SEND_MULTIPLE" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <data android:mimeType="video/*" />
+      </intent-filter>
+
+      <!-- immich:// URL scheme handling -->
+      <intent-filter>
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+        <data android:scheme="immich" />
+      </intent-filter>
+
+      <!-- my.immich.app deep link -->
+      <intent-filter android:autoVerify="true">
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+
+        <data android:scheme="https" />
+
+        <data
+          android:host="my.immich.app"
+          android:path="/" />
+        <data
+          android:host="my.immich.app"
+          android:pathPrefix="/albums/" />
+        <data
+          android:host="my.immich.app"
+          android:pathPrefix="/memories/" />
+        <data
+          android:host="my.immich.app"
+          android:pathPrefix="/photos/" />
+      </intent-filter>
+    </activity>
+
+
+    <activity
+      android:name="com.linusu.flutter_web_auth_2.CallbackActivity"
+      android:exported="true">
+      <intent-filter android:label="flutter_web_auth_2">
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+        <data android:scheme="app.immich" android:pathPrefix="/oauth-callback" />
+      </intent-filter>
+    </activity>
+    <!-- Don't delete the meta-data below.
+             This is used by the Flutter tool to
+    generate GeneratedPluginRegistrant.java -->
+    <meta-data android:name="flutterEmbedding" android:value="2" />
+    <!-- Disables default WorkManager initialization to use our custom initialization -->
+    <provider
+      android:name="androidx.startup.InitializationProvider"
+      android:authorities="${applicationId}.androidx-startup"
+      tools:node="remove" />
+
+    <!-- FileProvider for sharing files with other apps -->
+    <provider
+      android:name="androidx.core.content.FileProvider"
+      android:authorities="${applicationId}.provider"
+      android:exported="false"
+      android:grantUriPermissions="true">
+      <meta-data
+        android:name="android.support.FILE_PROVIDER_PATHS"
+        android:resource="@xml/file_paths" />
+    </provider>
+
+
+    <!-- Widgets -->
+    <receiver
+      android:name=".widget.RandomReceiver"
+      android:exported="true"
+      android:label="@string/random_widget_title">
+      <intent-filter>
+        <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+      </intent-filter>
+      <meta-data
+        android:name="android.appwidget.provider"
+        android:resource="@xml/random_widget" />
+    </receiver>
+
+    <receiver
+      android:name=".widget.MemoryReceiver"
+      android:exported="true"
+      android:label="@string/memory_widget_title">
+      <intent-filter>
+        <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+      </intent-filter>
+      <meta-data
+        android:name="android.appwidget.provider"
+        android:resource="@xml/memory_widget" />
+    </receiver>
+
+    <activity android:name=".widget.configure.RandomConfigure"
+      android:exported="true"
+      android:theme="@style/Theme.Material3.DayNight.NoActionBar">
+
+      <intent-filter>
+        <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE"/>
+      </intent-filter>
+    </activity>
+  </application>
+
+
+  <queries>
+    <intent>
+      <action android:name="android.intent.action.VIEW" />
+      <data android:scheme="https" />
+    </intent>
+    <intent>
+      <action android:name="android.intent.action.VIEW" />
+      <data android:scheme="geo" />
+    </intent>
+  </queries>
+</manifest>
