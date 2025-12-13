@@ -4695,14 +4695,17 @@ export function updateTag({ id, tagUpdateDto }: {
 /**
  * Untag assets
  */
-export function untagAssets({ id, bulkIdsDto }: {
+export function untagAssets({ id, untagDescendants, bulkIdsDto }: {
     id: string;
+    untagDescendants?: boolean;
     bulkIdsDto: BulkIdsDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: BulkIdResponseDto[];
-    }>(`/tags/${encodeURIComponent(id)}/assets`, oazapfts.json({
+    }>(`/tags/${encodeURIComponent(id)}/assets${QS.query(QS.explode({
+        untagDescendants
+    }))}`, oazapfts.json({
         ...opts,
         method: "DELETE",
         body: bulkIdsDto
