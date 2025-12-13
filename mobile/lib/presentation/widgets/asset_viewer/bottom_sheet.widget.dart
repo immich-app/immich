@@ -75,11 +75,11 @@ class AssetDetailBottomSheet extends ConsumerWidget {
       controller: controller,
       initialChildSize: initialChildSize,
       minChildSize: 0.1,
-      maxChildSize: 0.88,
+      maxChildSize: 0.82,
       expand: false,
       shouldCloseOnMinExtent: false,
       resizeOnScroll: false,
-      backgroundColor: context.isDarkTheme ? Colors.black : Colors.white,
+      backgroundColor: context.isDarkTheme ? context.colorScheme.surface : Colors.white,
     );
   }
 }
@@ -326,7 +326,7 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
         // Appears in (Albums)
         Padding(padding: const EdgeInsets.only(top: 16.0), child: _buildAppearsInList(ref, context)),
         // padding at the bottom to avoid cut-off
-        const SizedBox(height: 100),
+        const SizedBox(height: 30),
       ],
     );
   }
