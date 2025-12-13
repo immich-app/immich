@@ -22,6 +22,8 @@ class ServerConfigDto {
     required this.mapLightStyleUrl,
     required this.oauthButtonText,
     required this.publicUsers,
+    required this.sessionDeleteDelayBrowser,
+    required this.sessionDeleteDelayMobile,
     required this.trashDays,
     required this.userDeleteDelay,
   });
@@ -44,6 +46,10 @@ class ServerConfigDto {
 
   bool publicUsers;
 
+  int sessionDeleteDelayBrowser;
+
+  int sessionDeleteDelayMobile;
+
   int trashDays;
 
   int userDeleteDelay;
@@ -59,6 +65,8 @@ class ServerConfigDto {
     other.mapLightStyleUrl == mapLightStyleUrl &&
     other.oauthButtonText == oauthButtonText &&
     other.publicUsers == publicUsers &&
+    other.sessionDeleteDelayBrowser == sessionDeleteDelayBrowser &&
+    other.sessionDeleteDelayMobile == sessionDeleteDelayMobile &&
     other.trashDays == trashDays &&
     other.userDeleteDelay == userDeleteDelay;
 
@@ -74,11 +82,13 @@ class ServerConfigDto {
     (mapLightStyleUrl.hashCode) +
     (oauthButtonText.hashCode) +
     (publicUsers.hashCode) +
+    (sessionDeleteDelayBrowser.hashCode) +
+    (sessionDeleteDelayMobile.hashCode) +
     (trashDays.hashCode) +
     (userDeleteDelay.hashCode);
 
   @override
-  String toString() => 'ServerConfigDto[externalDomain=$externalDomain, isInitialized=$isInitialized, isOnboarded=$isOnboarded, loginPageMessage=$loginPageMessage, maintenanceMode=$maintenanceMode, mapDarkStyleUrl=$mapDarkStyleUrl, mapLightStyleUrl=$mapLightStyleUrl, oauthButtonText=$oauthButtonText, publicUsers=$publicUsers, trashDays=$trashDays, userDeleteDelay=$userDeleteDelay]';
+  String toString() => 'ServerConfigDto[externalDomain=$externalDomain, isInitialized=$isInitialized, isOnboarded=$isOnboarded, loginPageMessage=$loginPageMessage, maintenanceMode=$maintenanceMode, mapDarkStyleUrl=$mapDarkStyleUrl, mapLightStyleUrl=$mapLightStyleUrl, oauthButtonText=$oauthButtonText, publicUsers=$publicUsers, sessionDeleteDelayBrowser=$sessionDeleteDelayBrowser, sessionDeleteDelayMobile=$sessionDeleteDelayMobile, trashDays=$trashDays, userDeleteDelay=$userDeleteDelay]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -91,6 +101,8 @@ class ServerConfigDto {
       json[r'mapLightStyleUrl'] = this.mapLightStyleUrl;
       json[r'oauthButtonText'] = this.oauthButtonText;
       json[r'publicUsers'] = this.publicUsers;
+      json[r'sessionDeleteDelayBrowser'] = this.sessionDeleteDelayBrowser;
+      json[r'sessionDeleteDelayMobile'] = this.sessionDeleteDelayMobile;
       json[r'trashDays'] = this.trashDays;
       json[r'userDeleteDelay'] = this.userDeleteDelay;
     return json;
@@ -114,6 +126,8 @@ class ServerConfigDto {
         mapLightStyleUrl: mapValueOfType<String>(json, r'mapLightStyleUrl')!,
         oauthButtonText: mapValueOfType<String>(json, r'oauthButtonText')!,
         publicUsers: mapValueOfType<bool>(json, r'publicUsers')!,
+        sessionDeleteDelayBrowser: mapValueOfType<int>(json, r'sessionDeleteDelayBrowser')!,
+        sessionDeleteDelayMobile: mapValueOfType<int>(json, r'sessionDeleteDelayMobile')!,
         trashDays: mapValueOfType<int>(json, r'trashDays')!,
         userDeleteDelay: mapValueOfType<int>(json, r'userDeleteDelay')!,
       );
@@ -172,6 +186,8 @@ class ServerConfigDto {
     'mapLightStyleUrl',
     'oauthButtonText',
     'publicUsers',
+    'sessionDeleteDelayBrowser',
+    'sessionDeleteDelayMobile',
     'trashDays',
     'userDeleteDelay',
   };
