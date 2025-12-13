@@ -482,7 +482,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       context: ctx,
       sheetAnimationStyle: const AnimationStyle(
         duration: Durations.medium2,
-        reverseDuration: Duration(milliseconds: 300),
+        reverseDuration: Durations.medium2,
         reverseCurve: Curves.linear,
       ),
       constraints: const BoxConstraints(maxWidth: double.infinity),
