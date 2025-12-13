@@ -170,7 +170,7 @@
   </div>
 
   <div class="overflow-x-auto p-2">
-    <div class="flex flex-nowrap gap-1 place-items-center justify-center min-w-full w-fit mx-auto">
+    <div class="flex flex-nowrap gap-1 place-items-start justify-center min-w-full w-fit mx-auto">
       {#each assets as asset (asset.id)}
         <DuplicateAsset {assets} {asset} {onSelectAsset} isSelected={selectedAssetIds.has(asset.id)} {onViewAsset} />
       {/each}
