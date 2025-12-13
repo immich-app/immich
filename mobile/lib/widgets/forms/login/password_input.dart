@@ -1,36 +1,45 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-class PasswordInput extends HookConsumerWidget {
+class PasswordInput extends StatefulWidget {
   final TextEditingController controller;
   final FocusNode? focusNode;
-  final Function()? onSubmit;
+  final VoidCallback? onSubmit;
 
   const PasswordInput({super.key, required this.controller, this.focusNode, this.onSubmit});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final isPasswordVisible = useState<bool>(false);
+  State<PasswordInput> createState() => _PasswordInputState();
+}
 
+class _PasswordInputState extends State<PasswordInput> {
+  bool _isPasswordVisible = false;
+
+  void _togglePasswordVisibility() {
+    setState(() {
+      _isPasswordVisible = !_isPasswordVisible;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return TextFormField(
-      obscureText: !isPasswordVisible.value,
-      controller: controller,
+      obscureText: !_isPasswordVisible,
+      controller: widget.controller,
       decoration: InputDecoration(
         labelText: 'password'.tr(),
         border: const OutlineInputBorder(),
         hintText: 'login_form_password_hint'.tr(),
         hintStyle: const TextStyle(fontWeight: FontWeight.normal, fontSize: 14),
         suffixIcon: IconButton(
-          onPressed: () => isPasswordVisible.value = !isPasswordVisible.value,
-          icon: Icon(isPasswordVisible.value ? Icons.visibility_off_sharp : Icons.visibility_sharp),
+          onPressed: _togglePasswordVisibility,
+          icon: Icon(_isPasswordVisible ? Icons.visibility_off_sharp : Icons.visibility_sharp),
         ),
       ),
       autofillHints: const [AutofillHints.password],
       keyboardType: TextInputType.text,
-      onFieldSubmitted: (_) => onSubmit?.call(),
-      focusNode: focusNode,
+      onFieldSubmitted: (_) => widget.onSubmit?.call(),
+      focusNode: widget.focusNode,
       textInputAction: TextInputAction.go,
     );
   }
