@@ -35,10 +35,6 @@ interface SwipeAnimations {
 export const swipeFeedback = (node: HTMLElement, options?: SwipeFeedbackOptions) => {
   // Animation configuration
   const ANIMATION_DURATION_MS = 300;
-  // Drag sensitivity: pixels needed to reach 100% animation progress
-  // Higher value = less sensitive (need to drag further)
-  // Lower value = more sensitive (animation advances quickly)
-  const DRAG_DISTANCE_FOR_FULL_ANIMATION = 400;
   // Enable/disable scaling effect during animation
   const ENABLE_SCALE_ANIMATION = false;
 
@@ -103,7 +99,7 @@ export const swipeFeedback = (node: HTMLElement, options?: SwipeFeedbackOptions)
     }
 
     const duration = ANIMATION_DURATION_MS;
-    const easing = 'cubic-bezier(0.33, 1, 0.68, 1)'; // Match Month.svelte:156
+    const easing = 'linear'; // Linear easing to match drag rate
 
     // Set transform origin to center for proper scaling
     imgElement.style.transformOrigin = 'center';
@@ -118,17 +114,11 @@ export const swipeFeedback = (node: HTMLElement, options?: SwipeFeedbackOptions)
         ? [
             // flyOutLeft - Month.svelte:280-289
             { transform: `translateX(0)${scale(1)}`, opacity: '1', offset: 0 },
-            { transform: `translateX(-20vw)${scale(0.8)}`, opacity: '1', offset: 0.2 },
-            { transform: `translateX(-50vw)${scale(0.5)}`, opacity: '0.5', offset: 0.5 },
-            { transform: `translateX(-80vw)${scale(0.2)}`, opacity: '0', offset: 0.8 },
             { transform: `translateX(-100vw)${scale(0)}`, opacity: '0', offset: 1 },
           ]
         : [
             // flyOutRight - Month.svelte:303-312
             { transform: `translateX(0)${scale(1)}`, opacity: '1', offset: 0 },
-            { transform: `translateX(20vw)${scale(0.8)}`, opacity: '1', offset: 0.2 },
-            { transform: `translateX(50vw)${scale(0.5)}`, opacity: '0.5', offset: 0.5 },
-            { transform: `translateX(80vw)${scale(0.2)}`, opacity: '0', offset: 0.8 },
             { transform: `translateX(100vw)${scale(0)}`, opacity: '0', offset: 1 },
           ],
       {
@@ -252,126 +242,134 @@ export const swipeFeedback = (node: HTMLElement, options?: SwipeFeedbackOptions)
     }
   };
 
+  /**
+   * Calculates animation progress (0-1) based on drag distance.
+   * Maps pixel drag distance to viewport width to match the animation's vw-based transforms.
+   * @param dragPixels - Absolute drag distance in pixels
+   * @returns Progress value between 0 and 1
+   */
+  const calculateAnimationProgress = (dragPixels: number): number => {
+    // The animation moves from 0 to 100vw, so map pixel drag to viewport width
+    const viewportWidth = window.innerWidth;
+    const dragInViewportUnits = dragPixels / viewportWidth;
+    return Math.min(dragInViewportUnits, 1);
+  };
+
   const pointerDown = (event: PointerEvent) => {
     if (options?.disabled || !imgElement) {
       return;
     }
 
-    // Only handle single pointer (mouse or single touch)
-    if (event.isPrimary) {
-      isDragging = true;
-      startX = event.clientX;
-
-      // Change cursor to grabbing
-      node.style.cursor = 'grabbing';
-      // Capture pointer so we continue to receive events even if mouse moves outside element
-      node.setPointerCapture(event.pointerId);
-      dragStartTime = new Date();
-
-      // Also add document listeners as fallback
-      document.addEventListener('pointerup', pointerUp);
-      document.addEventListener('pointercancel', pointerUp);
-
-      // Ensure preview containers are created and positioned
-      ensurePreviewsCreated();
-      updatePreviewPositions();
-
-      // Note: We don't create animations here - they're lazy-created in pointerMove
-      // when we know which direction the user is swiping
-
-      event.preventDefault();
-    }
-  };
-
-  const pointerMove = (event: PointerEvent) => {
-    if (options?.disabled || !imgElement) {
+    // Only handle primary mouse button (0) and single touch (isPrimary)
+    if (!event.isPrimary || (event.pointerType === 'mouse' && event.button !== 0)) {
       return;
     }
 
-    if (isDragging) {
-      currentOffsetX = event.clientX - startX;
-      swipeAmount = currentOffsetX;
+    isDragging = true;
+    startX = event.clientX;
+    swipeAmount = 0;
 
-      // Determine which direction we're swiping
-      const isSwipingLeft = currentOffsetX < 0;
-      const isSwipingRight = currentOffsetX > 0;
+    // Change cursor to grabbing
+    node.style.cursor = 'grabbing';
+    // Capture pointer so we continue to receive events even if mouse moves outside element
+    node.setPointerCapture(event.pointerId);
+    dragStartTime = new Date();
 
-      // Lazy create animations when first needed
-      if (isSwipingLeft && !leftAnimations) {
-        leftAnimations = createSwipeAnimations('left');
-        // Ensure the right preview container is visible
-        if (rightPreviewContainer) {
-          rightPreviewContainer.style.display = 'block';
-          rightPreviewContainer.style.zIndex = '1';
-        }
-      } else if (isSwipingRight && !rightAnimations) {
-        rightAnimations = createSwipeAnimations('right');
-        // Ensure the left preview container is visible
-        if (leftPreviewContainer) {
-          leftPreviewContainer.style.display = 'block';
-          leftPreviewContainer.style.zIndex = '1';
-        }
-      }
+    // Also add document listeners as fallback
+    document.addEventListener('pointerup', pointerUp);
+    document.addEventListener('pointercancel', pointerUp);
 
-      // Calculate progress based on absolute drag distance
-      // Using a threshold distance to map to full animation (0-1)
-      const progress = Math.min(Math.abs(currentOffsetX) / DRAG_DISTANCE_FOR_FULL_ANIMATION, 1);
+    // Ensure preview containers are created and positioned
+    ensurePreviewsCreated();
+    updatePreviewPositions();
 
-      // Map progress to animation time
-      const animationTime = progress * ANIMATION_DURATION_MS;
-      console.log(
-        `Animation progress: ${(progress * 100).toFixed(1)}% | Time: ${animationTime.toFixed(1)}ms | Offset: ${currentOffsetX.toFixed(1)}px`,
-      );
+    // Note: We don't create animations here - they're lazy-created in pointerMove
+    // when we know which direction the user is swiping
 
-      if (isSwipingLeft && leftAnimations) {
-        // Ensure the right preview container is visible
-        if (rightPreviewContainer) {
-          rightPreviewContainer.style.display = 'block';
-          rightPreviewContainer.style.zIndex = '1';
-        }
-        // Scrub left animations forward
-        leftAnimations.currentImageAnimation.currentTime = animationTime;
-        if (leftAnimations.previewAnimation) {
-          leftAnimations.previewAnimation.currentTime = animationTime;
-        }
-        // Cancel and recreate right animations to prevent conflicts on imgElement
-        if (rightAnimations) {
-          rightAnimations.currentImageAnimation.cancel();
-          if (rightAnimations.previewAnimation) {
-            rightAnimations.previewAnimation.cancel();
-          }
-          rightAnimations = null;
-          if (leftPreviewContainer) {
-            leftPreviewContainer.style.display = 'none';
-          }
-        }
-      } else if (isSwipingRight && rightAnimations) {
-        // Ensure the left preview container is visible
-        if (leftPreviewContainer) {
-          leftPreviewContainer.style.display = 'block';
-          leftPreviewContainer.style.zIndex = '1';
-        }
-        // Scrub right animations forward
-        rightAnimations.currentImageAnimation.currentTime = animationTime;
-        if (rightAnimations.previewAnimation) {
-          rightAnimations.previewAnimation.currentTime = animationTime;
-        }
-        // Cancel and recreate left animations to prevent conflicts on imgElement
-        if (leftAnimations) {
-          leftAnimations.currentImageAnimation.cancel();
-          if (leftAnimations.previewAnimation) {
-            leftAnimations.previewAnimation.cancel();
-          }
-          leftAnimations = null;
-          if (rightPreviewContainer) {
-            rightPreviewContainer.style.display = 'none';
-          }
-        }
-      }
-      // Notify about swipe movement
-      options?.onSwipeMove?.(currentOffsetX);
-      event.preventDefault();
+    event.preventDefault();
+  };
+
+  const pointerMove = (event: PointerEvent) => {
+    if (options?.disabled || !imgElement || !isDragging) {
+      return;
     }
+
+    currentOffsetX = event.clientX - startX;
+    swipeAmount = currentOffsetX;
+
+    // Determine which direction we're swiping
+    const isSwipingLeft = currentOffsetX < 0;
+    const isSwipingRight = currentOffsetX > 0;
+
+    // Lazy create animations when first needed
+    if (isSwipingLeft && !leftAnimations) {
+      leftAnimations = createSwipeAnimations('left');
+      // Ensure the right preview container is visible
+      if (rightPreviewContainer) {
+        rightPreviewContainer.style.display = 'block';
+        rightPreviewContainer.style.zIndex = '1';
+      }
+    } else if (isSwipingRight && !rightAnimations) {
+      rightAnimations = createSwipeAnimations('right');
+      // Ensure the left preview container is visible
+      if (leftPreviewContainer) {
+        leftPreviewContainer.style.display = 'block';
+        leftPreviewContainer.style.zIndex = '1';
+      }
+    }
+
+    // Calculate animation progress based on drag distance
+    const progress = calculateAnimationProgress(Math.abs(currentOffsetX));
+    const animationTime = progress * ANIMATION_DURATION_MS;
+
+    if (isSwipingLeft && leftAnimations) {
+      // Ensure the right preview container is visible
+      if (rightPreviewContainer) {
+        rightPreviewContainer.style.display = 'block';
+        rightPreviewContainer.style.zIndex = '1';
+      }
+      // Scrub left animations forward
+      leftAnimations.currentImageAnimation.currentTime = animationTime;
+      if (leftAnimations.previewAnimation) {
+        leftAnimations.previewAnimation.currentTime = animationTime;
+      }
+      // Cancel and recreate right animations to prevent conflicts on imgElement
+      if (rightAnimations) {
+        rightAnimations.currentImageAnimation.cancel();
+        if (rightAnimations.previewAnimation) {
+          rightAnimations.previewAnimation.cancel();
+        }
+        rightAnimations = null;
+        if (leftPreviewContainer) {
+          leftPreviewContainer.style.display = 'none';
+        }
+      }
+    } else if (isSwipingRight && rightAnimations) {
+      // Ensure the left preview container is visible
+      if (leftPreviewContainer) {
+        leftPreviewContainer.style.display = 'block';
+        leftPreviewContainer.style.zIndex = '1';
+      }
+      // Scrub right animations forward
+      rightAnimations.currentImageAnimation.currentTime = animationTime;
+      if (rightAnimations.previewAnimation) {
+        rightAnimations.previewAnimation.currentTime = animationTime;
+      }
+      // Cancel and recreate left animations to prevent conflicts on imgElement
+      if (leftAnimations) {
+        leftAnimations.currentImageAnimation.cancel();
+        if (leftAnimations.previewAnimation) {
+          leftAnimations.previewAnimation.cancel();
+        }
+        leftAnimations = null;
+        if (rightPreviewContainer) {
+          rightPreviewContainer.style.display = 'none';
+        }
+      }
+    }
+    // Notify about swipe movement
+    options?.onSwipeMove?.(currentOffsetX);
+    event.preventDefault();
   };
 
   const resetPosition = () => {
@@ -383,32 +381,35 @@ export const swipeFeedback = (node: HTMLElement, options?: SwipeFeedbackOptions)
     const activeAnimations = currentOffsetX < 0 ? leftAnimations : rightAnimations;
     const activePreviewContainer = currentOffsetX < 0 ? rightPreviewContainer : leftPreviewContainer;
 
-    if (activeAnimations) {
-      // Reverse the animation back to 0
-      activeAnimations.currentImageAnimation.playbackRate = -1;
-      if (activeAnimations.previewAnimation) {
-        activeAnimations.previewAnimation.playbackRate = -1;
-      }
-
-      // Play from current position back to start
-      activeAnimations.currentImageAnimation.play();
-      activeAnimations.previewAnimation?.play();
-
-      // Listen for finish event to clean up
-      const handleFinish = () => {
-        activeAnimations.currentImageAnimation.removeEventListener('finish', handleFinish);
-        // Reset to original state
-        activeAnimations.currentImageAnimation.cancel();
-        activeAnimations.previewAnimation?.cancel();
-
-        // Hide the preview container after animation completes
-        if (activePreviewContainer) {
-          activePreviewContainer.style.display = 'none';
-          activePreviewContainer.style.zIndex = '-1';
-        }
-      };
-      activeAnimations.currentImageAnimation.addEventListener('finish', handleFinish, { once: true });
+    if (!activeAnimations) {
+      currentOffsetX = 0;
+      return;
     }
+
+    // Reverse the animation back to 0
+    activeAnimations.currentImageAnimation.playbackRate = -1;
+    if (activeAnimations.previewAnimation) {
+      activeAnimations.previewAnimation.playbackRate = -1;
+    }
+
+    // Play from current position back to start
+    activeAnimations.currentImageAnimation.play();
+    activeAnimations.previewAnimation?.play();
+
+    // Listen for finish event to clean up
+    const handleFinish = () => {
+      activeAnimations.currentImageAnimation.removeEventListener('finish', handleFinish);
+      // Reset to original state
+      activeAnimations.currentImageAnimation.cancel();
+      activeAnimations.previewAnimation?.cancel();
+
+      // Hide the preview container after animation completes
+      if (activePreviewContainer) {
+        activePreviewContainer.style.display = 'none';
+        activePreviewContainer.style.zIndex = '-1';
+      }
+    };
+    activeAnimations.currentImageAnimation.addEventListener('finish', handleFinish, { once: true });
 
     currentOffsetX = 0;
   };
@@ -430,110 +431,116 @@ export const swipeFeedback = (node: HTMLElement, options?: SwipeFeedbackOptions)
     // Get the active animations
     const activeAnimations = direction === 'left' ? leftAnimations : rightAnimations;
 
-    if (activeAnimations) {
-      // Get current time before modifying animation
-      const currentTime = Number(activeAnimations.currentImageAnimation.currentTime) || 0;
-      console.log(`Committing transition from ${currentTime}ms / ${ANIMATION_DURATION_MS}ms`);
-
-      // If animation is already at or near the end, skip to finish immediately
-      if (currentTime >= ANIMATION_DURATION_MS - 5) {
-        console.log('Animation already complete, finishing immediately');
-
-        // Keep the preview visible by hiding the main image but showing the preview
-        imgElement.style.opacity = '0';
-
-        // Show the preview that's now in the center
-        const activePreview = direction === 'right' ? leftPreviewContainer : rightPreviewContainer;
-
-        if (activePreview) {
-          activePreview.style.zIndex = '1'; // Bring to front
-        }
-
-        // Trigger navigation (dimensions were already passed in onPreCommit)
-        options?.onSwipeCommit?.(direction);
-        return;
-      }
-
-      // Ensure playback rate is forward (in case it was reversed)
-      activeAnimations.currentImageAnimation.playbackRate = 1;
-      if (activeAnimations.previewAnimation) {
-        activeAnimations.previewAnimation.playbackRate = 1;
-      }
-
-      // Play the animation to completion from current position
-      activeAnimations.currentImageAnimation.play();
-      activeAnimations.previewAnimation?.play();
-
-      // Listen for animation finish
-      const handleFinish = () => {
-        if (!imgElement) {
-          return;
-        }
-
-        activeAnimations.currentImageAnimation.removeEventListener('finish', handleFinish);
-
-        // Keep the preview visible by hiding the main image but showing the preview
-        // The preview is now centered, and we want it to stay visible while the new component loads
-        imgElement.style.opacity = '0';
-
-        // Show the preview that's now in the center
-        const activePreview = direction === 'right' ? leftPreviewContainer : rightPreviewContainer;
-
-        if (activePreview) {
-          activePreview.style.zIndex = '1'; // Bring to front
-        }
-
-        // Trigger navigation (dimensions were already passed in onPreCommit)
-        options?.onSwipeCommit?.(direction);
-      };
-
-      activeAnimations.currentImageAnimation.addEventListener('finish', handleFinish, { once: true });
+    if (!activeAnimations) {
+      return;
     }
-  };
 
-  const pointerUp = (event: PointerEvent) => {
-    if (isDragging) {
+    // Get current time before modifying animation
+    const currentTime = Number(activeAnimations.currentImageAnimation.currentTime) || 0;
+    console.log(`Committing transition from ${currentTime}ms / ${ANIMATION_DURATION_MS}ms`);
+
+    // If animation is already at or near the end, skip to finish immediately
+    if (currentTime >= ANIMATION_DURATION_MS - 5) {
+      console.log('Animation already complete, finishing immediately');
+
+      // Keep the preview visible by hiding the main image but showing the preview
+      imgElement.style.opacity = '0';
+
+      // Show the preview that's now in the center
+      const activePreview = direction === 'right' ? leftPreviewContainer : rightPreviewContainer;
+
+      if (activePreview) {
+        activePreview.style.zIndex = '1'; // Bring to front
+      }
+
+      // Trigger navigation (dimensions were already passed in onPreCommit)
+      options?.onSwipeCommit?.(direction);
+      return;
+    }
+
+    // Ensure playback rate is forward (in case it was reversed)
+    activeAnimations.currentImageAnimation.playbackRate = 1;
+    if (activeAnimations.previewAnimation) {
+      activeAnimations.previewAnimation.playbackRate = 1;
+    }
+
+    // Play the animation to completion from current position
+    activeAnimations.currentImageAnimation.play();
+    activeAnimations.previewAnimation?.play();
+
+    // Listen for animation finish
+    const handleFinish = () => {
       if (!imgElement) {
         return;
       }
-      isDragging = false;
-      // Reset cursor
-      node.style.cursor = 'grab';
-      // Release pointer capture
-      if (node.hasPointerCapture(event.pointerId)) {
-        node.releasePointerCapture(event.pointerId);
-      }
-      // Remove document listeners
-      document.removeEventListener('pointerup', pointerUp);
-      document.removeEventListener('pointercancel', pointerUp);
 
-      const threshold = options?.swipeThreshold ?? 45;
+      activeAnimations.currentImageAnimation.removeEventListener('finish', handleFinish);
 
-      const timeTaken = Date.now() - (dragStartTime?.getTime() ?? 0);
-      const velocity = Math.abs(swipeAmount) / timeTaken;
+      // Keep the preview visible by hiding the main image but showing the preview
+      // The preview is now centered, and we want it to stay visible while the new component loads
+      imgElement.style.opacity = '0';
 
-      // Calculate animation progress (same calculation as in pointerMove)
-      const progress = Math.min(Math.abs(currentOffsetX) / DRAG_DISTANCE_FOR_FULL_ANIMATION, 1);
+      // Show the preview that's now in the center
+      const activePreview = direction === 'right' ? leftPreviewContainer : rightPreviewContainer;
 
-      // Commit if EITHER:
-      // 1. High velocity (fast swipe) OR
-      // 2. Animation progress is over 25%
-      const hasEnoughVelocity = velocity >= 0.11;
-      const hasEnoughProgress = progress > 0.25;
-
-      if (Math.abs(swipeAmount) < threshold || (!hasEnoughVelocity && !hasEnoughProgress)) {
-        resetPosition();
-        return;
+      if (activePreview) {
+        activePreview.style.zIndex = '1'; // Bring to front
       }
 
-      const commitDirection = currentOffsetX > 0 ? 'right' : 'left';
+      // Trigger navigation (dimensions were already passed in onPreCommit)
+      options?.onSwipeCommit?.(direction);
+    };
 
-      // Call onSwipeEnd callback
-      options?.onSwipeEnd?.(currentOffsetX);
+    activeAnimations.currentImageAnimation.addEventListener('finish', handleFinish, { once: true });
+  };
 
-      // complete the transition animation
-      completeTransition(commitDirection);
+  const pointerUp = (event: PointerEvent) => {
+    console.log('up', event);
+    if (!isDragging || !event.isPrimary || (event.pointerType === 'mouse' && event.button !== 0)) {
+      return;
     }
+
+    if (!imgElement) {
+      return;
+    }
+
+    isDragging = false;
+    // Reset cursor
+    node.style.cursor = 'grab';
+    // Release pointer capture
+    if (node.hasPointerCapture(event.pointerId)) {
+      node.releasePointerCapture(event.pointerId);
+    }
+    // Remove document listeners
+    document.removeEventListener('pointerup', pointerUp);
+    document.removeEventListener('pointercancel', pointerUp);
+
+    const threshold = options?.swipeThreshold ?? 45;
+
+    const timeTaken = Date.now() - (dragStartTime?.getTime() ?? 0);
+    const velocity = Math.abs(swipeAmount) / timeTaken;
+
+    // Calculate animation progress (same calculation as in pointerMove)
+    const progress = calculateAnimationProgress(Math.abs(currentOffsetX));
+
+    // Commit if EITHER:
+    // 1. High velocity (fast swipe) OR
+    // 2. Animation progress is over 25%
+    const hasEnoughVelocity = velocity >= 0.11;
+    const hasEnoughProgress = progress > 0.25;
+
+    if (Math.abs(swipeAmount) < threshold || (!hasEnoughVelocity && !hasEnoughProgress)) {
+      resetPosition();
+      return;
+    }
+
+    const commitDirection = currentOffsetX > 0 ? 'right' : 'left';
+
+    // Call onSwipeEnd callback
+    options?.onSwipeEnd?.(currentOffsetX);
+
+    // complete the transition animation
+    completeTransition(commitDirection);
   };
 
   // Add event listeners

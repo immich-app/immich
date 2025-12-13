@@ -243,6 +243,7 @@
   // and a new route is being navigated to. It will never be called on direct
   // navigations by the browser.
   beforeNavigate(({ from, to }) => {
+    console.log('BEFORE NAV');
     timelineManager.suspendTransitions = true;
     const isNavigatingToAssetViewer = isAssetViewerRoute(to);
     const isNavigatingFromAssetViewer = isAssetViewerRoute(from);
@@ -256,6 +257,7 @@
   // after successful navigation.
   afterNavigate(({ complete }) => {
     void complete.finally(async () => {
+      console.log('AFTER nav');
       const isAssetViewerPage = isAssetViewerRoute(page);
 
       // Set initial load state only once - if initialLoadWasAssetViewer is null, then
@@ -732,8 +734,9 @@
 
                   viewTransitionManager.startTransition(
                     new Promise((resolve) =>
-                      eventManager.once('AssetViewerFree', () => {
+                      eventManager.once('AssetViewerFree', async () => {
                         toAssetViewerTransitionId = null;
+                        await tick();
                         eventManager.emit('TransitionToAssetViewer');
                         resolve();
                       }),

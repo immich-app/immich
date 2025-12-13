@@ -13,7 +13,7 @@
   import { fromTimelinePlainDate, getDateLocaleString } from '$lib/utils/timeline-util';
   import { Icon } from '@immich/ui';
   import { mdiCheckCircle, mdiCircleOutline } from '@mdi/js';
-  import { onDestroy, type Snippet } from 'svelte';
+  import { onDestroy, tick, type Snippet } from 'svelte';
 
   type Props = {
     toAssetViewerTransitionId?: string | null;
@@ -67,8 +67,9 @@
 
     viewTransitionManager.startTransition(
       new Promise<void>((resolve) => {
-        eventManager.once('TimelineLoaded', ({ id }) => {
+        eventManager.once('TimelineLoaded', async ({ id }) => {
           animationTargetAssetId = id;
+          await tick();
           resolve();
         });
       }),
@@ -153,46 +154,46 @@
   :global(::view-transition-new(*)) {
     mix-blend-mode: normal;
     animation-duration: inherit;
-    animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
   }
 
   :global(::view-transition-old(*)) {
-    animation-name: fadeOut forwards;
+    animation-name: fadeOut;
+    animation-fill-mode: forwards;
   }
   :global(::view-transition-new(*)) {
-    animation-name: fadeIn forwards;
-  }
-
-  :global(::view-transition-old(slideshow)) {
-    animation: 500ms 0s fadeOut forwards;
-  }
-
-  :global(::view-transition-new(slideshow)) {
-    animation: 500ms 0s fadeIn forwards;
+    animation-name: fadeIn;
+    animation-fill-mode: forwards;
   }
 
   :global(::view-transition-old(root)) {
     animation: 500ms 0s fadeOut forwards;
-    animation-timing-function: inherit;
   }
   :global(::view-transition-new(root)) {
     animation: 500ms 0s fadeIn forwards;
-    animation-timing-function: inherit;
   }
 
   :global(::view-transition-old(info)) {
     animation: 250ms 0s flyOutRight forwards;
-    animation-timing-function: inherit;
   }
   :global(::view-transition-new(info)) {
     animation: 250ms 0s flyInRight forwards;
-    animation-timing-function: inherit;
   }
 
-  :global(::view-transition-old(onTop)),
-  :global(::view-transition-new(onTop)) {
-    z-index: 100;
+  :global(::view-transition-old(detail-panel)),
+  :global(::view-transition-new(detail-panel)) {
+    z-index: 3;
     animation: none;
+  }
+  :global(::view-transition-group(exclude)) {
+    animation: none;
+    z-index: 2;
+  }
+  :global(::view-transition-old(exclude)) {
+    visibility: hidden;
+  }
+  :global(::view-transition-new(exclude)) {
+    animation: none;
+    z-index: 2;
   }
 
   :global(::view-transition-old(hero)) {
@@ -203,98 +204,111 @@
     animation: 350ms fadeIn forwards;
     align-content: center;
   }
-
-  :global(::view-transition-new(exclude)) {
-    animation: none;
-  }
-
-  :global(::view-transition-old(next)) {
+  :global(::view-transition-old(next)),
+  :global(::view-transition-old(next-old)) {
     animation: 250ms flyOutLeft forwards;
-    transform-origin: center;
+    /* transform-origin: center; */
     height: 100%;
+    /* display: flex; */
     object-fit: contain;
+    /* margin: auto; */
+    /* transform: translateY(50%); */
+    /* width: auto;
+    left: 50dvw;
+    top: 50dvh;
+    transform: translate3d(-50%, -50%, 0); */
+    /* object-fit: contain;
+    height: 100vh;
+    width: 100vw;
+    z-index: 10; */
+    overflow: hidden;
   }
 
-  :global(::view-transition-new(next)) {
-    animation: 250ms flyInRight forwards;
-    transform-origin: center;
+  :global(::view-transition-new(next)),
+  :global(::view-transition-new(next-new)) {
+    animation: 250ms fadeIn forwards;
     height: 100%;
+    /* display: flex; */
     object-fit: contain;
+    /* transform-origin: center;
+    width: auto;
+    left: 50dvw;
+    top: 50dvh;
+    transform: translate3d(-50%, -50%, 0); */
+    /* height: 100%;
+    object-fit: contain;
+    height: 100vh;
+    width: 100vw; */
+    overflow: hidden;
   }
 
   :global(::view-transition-old(previous)) {
+    animation: 1s flyOutRight forwards;
+  }
+  :global(::view-transition-old(previous-old)) {
     animation: 250ms flyOutRight forwards;
-    transform-origin: center;
     height: 100%;
     object-fit: contain;
+    /* transform-origin: center; */
+    /* height: 100%;
+    object-fit: contain;
+    height: 100vh;
+    width: 100vw;
+    z-index: 10; */
+    overflow: hidden;
   }
 
   :global(::view-transition-new(previous)) {
-    animation: 250ms flyInLeft forwards;
-    transform-origin: center;
+    animation: 1s flyOutRight forwards;
+  }
+
+  :global(::view-transition-new(previous-new)) {
+    animation: 250ms fadeIn forwards;
     height: 100%;
     object-fit: contain;
-  }
-  :global(::view-transition-new(navbar)) {
-    z-index: 100;
-    animation: none;
+    /* transform-origin: center; */
+    /* height: 100%;
+    object-fit: contain;
+    height: 100vh;
+    width: 100vw; */
+    overflow: hidden;
   }
 
-  @media (prefers-reduced-motion) {
-    :global(::view-transition-group(previous)),
-    :global(::view-transition-group(next)) {
-      width: 100% !important;
-      height: 100% !important;
-      transform: none !important;
-    }
-
-    :global(::view-transition-old(previous)),
-    :global(::view-transition-old(next)) {
-      animation: 250ms fadeOut forwards;
-      transform-origin: center;
-      height: 100%;
-      width: 100%;
-      object-fit: contain;
-    }
-
-    :global(::view-transition-new(previous)),
-    :global(::view-transition-new(next)) {
-      animation: 250ms fadeIn forwards;
-      transform-origin: center;
-      height: 100%;
-      width: 100%;
-      object-fit: contain;
-    }
-  }
   @keyframes -global-flyInLeft {
     from {
-      transform: translateX(-100vw);
+      /* transform: translateX(-50dvw); */
+      object-position: -25dvw;
       opacity: 0;
     }
     to {
-      transform: translateX(0);
+      /* transform: translateX(0); */
+      object-position: 0px 0px;
       opacity: 1;
     }
   }
 
   @keyframes -global-flyOutLeft {
     from {
-      transform: translateX(0);
+      /* transform: translateX(0); */
+      object-position: 0px;
       opacity: 1;
     }
     to {
-      transform: translateX(-100vw);
+      /* transform: translateX(-50dvw); */
+      object-position: -25dvw;
       opacity: 0;
     }
   }
 
   @keyframes -global-flyInRight {
     from {
-      transform: translateX(100vw);
+      /* transform: translateX(50dvw); */
+      object-position: 25dvw;
       opacity: 0;
     }
     to {
-      transform: translateX(0);
+      /* transform: translateX(0); */
+      object-position: 0px;
       opacity: 1;
     }
   }
@@ -302,11 +316,13 @@
   /* Fly out to right */
   @keyframes -global-flyOutRight {
     from {
-      transform: translateX(0);
+      /* transform: translateX(0); */
       opacity: 1;
     }
+
     to {
-      transform: translateX(100vw);
+      /* transform: translateX(50dvw); */
+      object-position: 50dvw 0px;
       opacity: 0;
     }
   }
@@ -325,6 +341,34 @@
     }
     to {
       opacity: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion) {
+    :global(::view-transition-group(previous)),
+    :global(::view-transition-group(next)) {
+      width: 100% !important;
+      height: 100% !important;
+      transform: none !important;
+    }
+
+    :global(::view-transition-old(previous)),
+    :global(::view-transition-old(next)) {
+      animation: 250ms fadeOut forwards;
+      transform-origin: center;
+      height: 100%;
+      width: 100%;
+      object-fit: contain;
+      overflow: hidden;
+    }
+
+    :global(::view-transition-new(previous)),
+    :global(::view-transition-new(next)) {
+      animation: 250ms fadeIn forwards;
+      transform-origin: center;
+      height: 100%;
+      width: 100%;
+      object-fit: contain;
     }
   }
 </style>

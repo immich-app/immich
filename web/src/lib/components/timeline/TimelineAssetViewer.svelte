@@ -87,11 +87,12 @@
     if (!targetAsset) {
       return false;
     }
-    let waitForAssetViewerFree = new Promise<void>((resolve) => {
-      eventManager.once('AssetViewerFree', () => resolve());
-    });
+    // let waitForAssetViewerFree = new Promise<void>((resolve) => {
+    //   eventManager.once('AssetViewerFree', () => resolve());
+    // });
     await navigate({ targetRoute: 'current', assetId: targetAsset.id });
-    await waitForAssetViewerFree;
+
+    // await waitForAssetViewerFree;
     return true;
   };
 

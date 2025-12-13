@@ -40,7 +40,7 @@
     type StackResponseDto,
   } from '@immich/sdk';
   import { toastManager } from '@immich/ui';
-  import { onDestroy, onMount, untrack } from 'svelte';
+  import { onDestroy, onMount, tick, untrack } from 'svelte';
   import { t } from 'svelte-i18n';
   import { fly, slide } from 'svelte/transition';
   import Thumbnail from '../assets/thumbnail/thumbnail.svelte';
@@ -167,6 +167,7 @@
 
   if (viewTransitionManager.activeViewTransition) {
     transitionName = 'hero';
+    console.log('setting name initial');
     equirectangularTransitionName = 'hero';
   }
   let addInfoTransition;
@@ -180,6 +181,7 @@
     finished = () => {
       detailPanelTransitionName = null;
       transitionName = null;
+      console.log('setting null');
     };
     eventManager.on('Finished', finished);
     // eventManager.emit('AssetViewerLoaded');
@@ -264,19 +266,23 @@
     });
   };
 
-  const startTransition = (targetTransition: string | null, targetAsset?: AssetResponseDto) => {
-    transitionName = targetTransition;
-    equirectangularTransitionName = targetTransition;
-    detailPanelTransitionName = 'onTop';
-
+  const startTransition = async (targetTransition: string | null, targetAsset?: AssetResponseDto) => {
+    transitionName = viewTransitionManager.getTransitionName('old', targetTransition);
+    console.log('transitionName', transitionName);
+    equirectangularTransitionName = viewTransitionManager.getTransitionName('old', targetTransition);
+    detailPanelTransitionName = 'detail-panel';
+    await tick();
+    debugger;
     viewTransitionManager.startTransition(
       new Promise<void>((resolve) => {
         eventManager.once('StartViewTransition', () => {
+          transitionName = viewTransitionManager.getTransitionName('new', targetTransition);
+          console.log(transitionName);
           if (targetAsset && isEquirectangular(asset) && !isEquirectangular(targetAsset)) {
             equirectangularTransitionName = null;
           }
         });
-        eventManager.once('AssetViewerFree', () => resolve());
+        eventManager.once('AssetViewerFree', () => tick().then(resolve()));
       }),
     );
   };
@@ -297,11 +303,18 @@
     }
 
     void tracker.invoke(async () => {
-      let hasNext = false;
+      let skipped = false;
+      if (viewTransitionManager.skipTransitions()) {
+        await tick();
+        skipped = true;
+        console.log('was skipped');
+      }
 
+      let hasNext = false;
       if ($slideshowState === SlideshowState.PlaySlideshow && $slideshowNavigation === SlideshowNavigation.Shuffle) {
+        console.log('$slideshowState', $slideshowState, skipTransition);
         if (!skipTransition) {
-          startTransition(null, undefined);
+          await startTransition('slideshow', undefined);
         }
         hasNext = order === 'previous' ? slideshowHistory.previous() : slideshowHistory.next();
         if (!hasNext) {
@@ -314,12 +327,19 @@
       } else if (onNavigateToAsset) {
         // only transition if the target is already preloaded, and is in a secure context
         const targetAsset = order === 'previous' ? previousAsset : nextAsset;
-        if (!skipTransition && !!targetAsset && globalThis.isSecureContext && preloadManager.isPreloaded(targetAsset)) {
+        const preloaded = await preloadManager.isPreloaded(targetAsset);
+
+        if (!skipTransition && !!targetAsset && globalThis.isSecureContext && preloaded) {
           const targetTransition = $slideshowState === SlideshowState.PlaySlideshow ? null : order;
-          startTransition(targetTransition, targetAsset);
+          console.log('sta', $slideshowState);
+          await startTransition(targetTransition, targetAsset);
+        } else {
+          console.log('not');
         }
         resetZoomState();
+        console.log('about to');
         hasNext = order === 'previous' ? await onNavigateToAsset(previousAsset) : await onNavigateToAsset(nextAsset);
+        console.log('done to');
       } else {
         hasNext = false;
       }
@@ -435,7 +455,6 @@
   };
 
   const handleAboutToNavigate = (target: { direction: 'left' | 'right'; nextWidth: number; nextHeight: number }) => {
-    debugger;
     nextSizeHint = {
       width: target.nextWidth,
       height: target.nextHeight,

@@ -27,7 +27,7 @@
   import { t } from 'svelte-i18n';
 
   interface Props {
-    transitionName?: string | null;
+    transitionName?: string | null | undefined;
     asset: AssetResponseDto;
     previousAsset?: AssetResponseDto;
     nextAsset?: AssetResponseDto;
@@ -85,6 +85,7 @@
   onDestroy(() => {
     $boundingBoxesArray = [];
   });
+  $inspect(transitionName).with(console.log.bind(null, 'transit'));
 
   const box = $derived.by(() => {
     const { width, height } = scaleToFit(naturalWidth, naturalHeight, containerWidth, containerHeight);
@@ -107,15 +108,24 @@
   const handlePreCommit = (direction: 'left' | 'right', nextWidth: number, nextHeight: number) => {
     // Scale the preview dimensions to fit within the viewport (like object-fit: contain)
     // This prevents flashing when small images are scaled up by scaleToFit
-    const { width: scaledWidth, height: scaledHeight } = scaleToFit(
-      nextWidth,
-      nextHeight,
-      containerWidth,
-      containerHeight,
-    );
-    console.log('nextSize', nextWidth, nextHeight, scaledWidth, scaledHeight);
+
+    let width = nextWidth;
+    let height = nextHeight;
+    if (direction === 'right' && nextAsset?.exifInfo?.exifImageWidth && nextAsset?.exifInfo?.exifImageHeight) {
+      width = nextAsset.exifInfo.exifImageWidth;
+      height = nextAsset.exifInfo.exifImageHeight;
+    } else if (
+      direction === 'left' &&
+      previousAsset?.exifInfo?.exifImageWidth &&
+      previousAsset?.exifInfo?.exifImageHeight
+    ) {
+      width = previousAsset.exifInfo.exifImageWidth;
+      height = previousAsset.exifInfo.exifImageHeight;
+    }
+    const box = scaleToFit(width, height, containerWidth, containerHeight);
+    console.log('nextSize', nextWidth, nextHeight, box);
     // onAboutToNavigate?.({ direction, nextWidth: scaledWidth, nextHeight: scaledHeight });
-    onAboutToNavigate?.({ direction, nextWidth, nextHeight });
+    onAboutToNavigate?.({ direction, nextWidth: box.width, nextHeight: box.height });
   };
 
   const handleSwipeCommit = (direction: 'left' | 'right') => {
@@ -225,8 +235,6 @@
   let naturalWidth = $derived(nextSizeHint?.width ?? 1);
   let naturalHeight = $derived(nextSizeHint?.height ?? 1);
 
-  $inspect(naturalWidth).with(console.log.bind(null, 'natW'));
-  $inspect(naturalHeight).with(console.log.bind(null, 'natH'));
   let lastUrl: string | undefined | null;
   let lastPreviousUrl: string | undefined | null;
   let lastNextUrl: string | undefined | null;

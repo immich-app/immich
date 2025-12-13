@@ -22,7 +22,9 @@ class PreloadManager {
       return false;
     }
     if (globalThis.isSecureContext) {
-      return isImageUrlCached(getAssetUrl({ asset }));
+      const img = getAssetUrl({ asset });
+
+      return isImageUrlCached(img);
     }
     return false;
   }
