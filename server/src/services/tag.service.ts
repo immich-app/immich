@@ -114,7 +114,7 @@ export class TagService extends BaseService {
     return results;
   }
 
-  async removeAssets(auth: AuthDto, id: string, dto: BulkIdsDto): Promise<BulkIdResponseDto[]> {
+  async removeAssets(auth: AuthDto, id: string, dto: BulkIdsDto, untagDescendants?: boolean): Promise<BulkIdResponseDto[]> {
     await this.requireAccess({ auth, permission: Permission.TagAsset, ids: [id] });
 
     const results = await removeAssets(
@@ -123,10 +123,12 @@ export class TagService extends BaseService {
       { parentId: id, assetIds: dto.ids, canAlwaysRemove: Permission.TagDelete },
     );
 
-    const descendantTagIds = await this.tagRepository.getDescendantIds(id);
-    for (const descendantTagId of descendantTagIds) {
-      if (descendantTagId !== id) {
-        await this.tagRepository.removeAssetIds(descendantTagId, dto.ids);
+    if(untagDescendants) {
+      const descendantTagIds = await this.tagRepository.getDescendantIds(id);
+      for (const descendantTagId of descendantTagIds) {
+        if (descendantTagId !== id) {
+          await this.tagRepository.removeAssetIds(descendantTagId, dto.ids);
+        }
       }
     }
 
