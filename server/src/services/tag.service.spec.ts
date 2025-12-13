@@ -169,12 +169,53 @@ describe(TagService.name, () => {
       expect(mocks.tag.delete).not.toHaveBeenCalled();
     });
 
-    it('should remove a tag', async () => {
-      mocks.tag.get.mockResolvedValue(tagStub.tag);
+    it('should remove a tag and emit AssetUntag events for affected assets', async () => {
+      mocks.tag.getDescendantTagIds.mockResolvedValue(['tag-1']);
+      mocks.tag.getAssetIdsForTag.mockResolvedValue(['asset-1', 'asset-2']);
       mocks.tag.delete.mockResolvedValue();
 
       await sut.remove(authStub.admin, 'tag-1');
+
+      expect(mocks.tag.getDescendantTagIds).toHaveBeenCalledWith('tag-1');
+      expect(mocks.tag.getAssetIdsForTag).toHaveBeenCalledWith('tag-1');
       expect(mocks.tag.delete).toHaveBeenCalledWith('tag-1');
+      expect(mocks.event.emit).toHaveBeenNthCalledWith(1, 'AssetUntag', { assetId: 'asset-1' });
+      expect(mocks.event.emit).toHaveBeenNthCalledWith(2, 'AssetUntag', { assetId: 'asset-2' });
+    });
+
+    it('should remove a tag with descendants and emit AssetUntag events for all affected assets', async () => {
+      mocks.tag.getDescendantTagIds.mockResolvedValue(['tag-1', 'tag-1-child', 'tag-1-grandchild']);
+      mocks.tag.getAssetIdsForTag.mockResolvedValueOnce(['asset-1', 'asset-2']);
+      mocks.tag.getAssetIdsForTag.mockResolvedValueOnce(['asset-2', 'asset-3']);
+      mocks.tag.getAssetIdsForTag.mockResolvedValueOnce(['asset-4']);
+      mocks.tag.delete.mockResolvedValue();
+
+      await sut.remove(authStub.admin, 'tag-1');
+
+      expect(mocks.tag.getDescendantTagIds).toHaveBeenCalledWith('tag-1');
+      expect(mocks.tag.getAssetIdsForTag).toHaveBeenNthCalledWith(1, 'tag-1');
+      expect(mocks.tag.getAssetIdsForTag).toHaveBeenNthCalledWith(2, 'tag-1-child');
+      expect(mocks.tag.getAssetIdsForTag).toHaveBeenNthCalledWith(3, 'tag-1-grandchild');
+      expect(mocks.tag.delete).toHaveBeenCalledWith('tag-1');
+      // Should emit events for all affected assets (de-duplicated)
+      expect(mocks.event.emit).toHaveBeenCalledTimes(4);
+      expect(mocks.event.emit).toHaveBeenCalledWith('AssetUntag', { assetId: 'asset-1' });
+      expect(mocks.event.emit).toHaveBeenCalledWith('AssetUntag', { assetId: 'asset-2' });
+      expect(mocks.event.emit).toHaveBeenCalledWith('AssetUntag', { assetId: 'asset-3' });
+      expect(mocks.event.emit).toHaveBeenCalledWith('AssetUntag', { assetId: 'asset-4' });
+    });
+
+    it('should remove a tag with no affected assets', async () => {
+      mocks.tag.getDescendantTagIds.mockResolvedValue(['tag-1']);
+      mocks.tag.getAssetIdsForTag.mockResolvedValue([]);
+      mocks.tag.delete.mockResolvedValue();
+
+      await sut.remove(authStub.admin, 'tag-1');
+
+      expect(mocks.tag.getDescendantTagIds).toHaveBeenCalledWith('tag-1');
+      expect(mocks.tag.getAssetIdsForTag).toHaveBeenCalledWith('tag-1');
+      expect(mocks.tag.delete).toHaveBeenCalledWith('tag-1');
+      expect(mocks.event.emit).not.toHaveBeenCalled();
     });
   });
 
