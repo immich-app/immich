@@ -249,7 +249,6 @@ describe(TagService.name, () => {
     it('should throw an error for an invalid id', async () => {
       mocks.tag.getAssetIds.mockResolvedValue(new Set());
       mocks.tag.removeAssetIds.mockResolvedValue();
-      mocks.tag.getDescendantIds.mockResolvedValue(['tag-1']);
 
       await expect(sut.removeAssets(authStub.admin, 'tag-1', { ids: ['asset-1'] })).resolves.toEqual([
         { id: 'asset-1', success: false, error: 'not_found' },
@@ -260,7 +259,6 @@ describe(TagService.name, () => {
       mocks.tag.get.mockResolvedValue(tagStub.tag);
       mocks.tag.getAssetIds.mockResolvedValue(new Set(['asset-1']));
       mocks.tag.removeAssetIds.mockResolvedValue();
-      mocks.tag.getDescendantIds.mockResolvedValue(['tag-1']);
 
       await expect(
         sut.removeAssets(authStub.admin, 'tag-1', {
@@ -275,7 +273,7 @@ describe(TagService.name, () => {
       expect(mocks.tag.removeAssetIds).toHaveBeenCalledWith('tag-1', ['asset-1']);
     });
 
-    it('should remove assets from parent tag and all child tags', async () => {
+    it('should remove assets from parent tag but not child tags', async () => {
       mocks.tag.get.mockResolvedValue(tagStub.tag);
       mocks.tag.getAssetIds.mockResolvedValue(new Set(['asset-1', 'asset-2']));
       mocks.tag.removeAssetIds.mockResolvedValue();
@@ -291,6 +289,34 @@ describe(TagService.name, () => {
       ]);
 
       expect(mocks.tag.getAssetIds).toHaveBeenCalledWith('tag-1', ['asset-1', 'asset-2']);
+      expect(mocks.tag.removeAssetIds).toHaveBeenCalledWith('tag-1', ['asset-1', 'asset-2']);
+      expect(mocks.tag.getDescendantIds).not.toHaveBeenCalled();
+      expect(mocks.tag.removeAssetIds).not.toHaveBeenCalledWith('tag-child-1', ['asset-1', 'asset-2']);
+      expect(mocks.tag.removeAssetIds).not.toHaveBeenCalledWith('tag-child-2', ['asset-1', 'asset-2']);
+    });
+
+    it('should remove assets from parent tag and all child tags when asked', async () => {
+      mocks.tag.get.mockResolvedValue(tagStub.tag);
+      mocks.tag.getAssetIds.mockResolvedValue(new Set(['asset-1', 'asset-2']));
+      mocks.tag.removeAssetIds.mockResolvedValue();
+      mocks.tag.getDescendantIds.mockResolvedValue(['tag-1', 'tag-child-1', 'tag-child-2']);
+
+      await expect(
+        sut.removeAssets(
+          authStub.admin,
+          'tag-1',
+          {
+            ids: ['asset-1', 'asset-2'],
+          },
+          true,
+        ),
+      ).resolves.toEqual([
+        { id: 'asset-1', success: true },
+        { id: 'asset-2', success: true },
+      ]);
+
+      expect(mocks.tag.getAssetIds).toHaveBeenCalledWith('tag-1', ['asset-1', 'asset-2']);
+      expect(mocks.tag.getDescendantIds).toHaveBeenCalledWith('tag-1');
       expect(mocks.tag.removeAssetIds).toHaveBeenCalledWith('tag-1', ['asset-1', 'asset-2']);
       expect(mocks.tag.removeAssetIds).toHaveBeenCalledWith('tag-child-1', ['asset-1', 'asset-2']);
       expect(mocks.tag.removeAssetIds).toHaveBeenCalledWith('tag-child-2', ['asset-1', 'asset-2']);
