@@ -2022,7 +2022,6 @@
   "theme": "テーマ",
   "theme_selection": "テーマ選択",
   "theme_selection_description": "ブラウザのシステム設定に基づいてテーマを明色または暗色に自動的に設定します",
-  "theme_setting_asset_list_show_owner_name_title": "アセット所有者名を表示",
   "theme_setting_asset_list_storage_indicator_title": "ストレージに関する情報を表示",
   "theme_setting_asset_list_tiles_per_row_title": "一行ごとの表示枚数: {count}",
   "theme_setting_colorful_interface_subtitle": "アクセントカラーを背景にも使用する",

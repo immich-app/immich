@@ -104,7 +104,6 @@ class AlbumViewer extends HookConsumerWidget {
         MultiselectGrid(
           key: const ValueKey("albumViewerMultiselectGrid"),
           renderListProvider: albumTimelineProvider(album.id),
-          album: album,
           topWidget: Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(

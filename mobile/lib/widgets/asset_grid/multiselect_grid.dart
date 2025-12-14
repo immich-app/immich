@@ -48,7 +48,6 @@ class MultiselectGrid extends HookConsumerWidget {
     this.unfavorite = false,
     this.downloadEnabled = true,
     this.emptyIndicator,
-    this.album,
   });
 
   final ProviderListenable<AsyncValue<RenderList>> renderListProvider;
@@ -66,7 +65,6 @@ class MultiselectGrid extends HookConsumerWidget {
   final bool unfavorite;
   final bool editEnabled;
   final Widget? emptyIndicator;
-  final Album? album;
   Widget buildDefaultLoadingIndicator() => const Center(child: CircularProgressIndicator());
 
   Widget buildEmptyIndicator() => emptyIndicator ?? Center(child: const Text("no_assets_to_show").tr());
@@ -420,7 +418,6 @@ class MultiselectGrid extends HookConsumerWidget {
                         topWidget: topWidget,
                         showStack: stackEnabled,
                         showDragScrollLabel: dragScrollLabelEnabled,
-                        album: album,
                       ),
                 error: (error, _) => Center(child: Text(error.toString())),
                 loading: buildLoadingIndicator ?? buildDefaultLoadingIndicator,
