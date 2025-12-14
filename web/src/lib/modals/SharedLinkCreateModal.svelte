@@ -4,7 +4,6 @@
   import { SharedLinkType } from '@immich/sdk';
   import { Button, Field, HStack, Input, Modal, ModalBody, ModalFooter, PasswordInput, Switch, Text } from '@immich/ui';
   import { mdiLink } from '@mdi/js';
-  import { DateTime } from 'luxon';
   import { t } from 'svelte-i18n';
 
   interface Props {
@@ -36,7 +35,7 @@
       type: shareType,
       albumId,
       assetIds,
-      expiresAt: expiresAt,
+      expiresAt,
       allowUpload,
       description,
       password,
