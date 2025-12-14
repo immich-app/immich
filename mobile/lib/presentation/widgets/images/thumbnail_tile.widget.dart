@@ -53,73 +53,81 @@ class ThumbnailTile extends ConsumerWidget {
     return Stack(
       children: [
         Container(color: lockSelection ? context.colorScheme.surfaceContainerHighest : assetContainerColor),
-        AnimatedContainer(
-          duration: Durations.short4,
-          curve: Curves.decelerate,
-          padding: EdgeInsets.all(isSelected || lockSelection ? 6 : 0),
-          child: TweenAnimationBuilder<double>(
-            tween: Tween<double>(begin: 0.0, end: (isSelected || lockSelection) ? 15.0 : 0.0),
-            duration: Durations.short4,
-            curve: Curves.decelerate,
-            builder: (context, value, child) {
-              return ClipRRect(borderRadius: BorderRadius.all(Radius.circular(value)), child: child);
-            },
-            child: Stack(
-              children: [
-                Positioned.fill(
-                  child: Hero(
-                    tag: '${asset?.heroTag ?? ''}_$heroIndex',
-                    child: Thumbnail.fromAsset(asset: asset, size: size),
-                  ),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            return AnimatedContainer(
+              duration: Durations.short4,
+              curve: Curves.decelerate,
+              padding: EdgeInsets.all(isSelected || lockSelection ? 6 : 0),
+              child: TweenAnimationBuilder<double>(
+                tween: Tween<double>(begin: 0.0, end: (isSelected || lockSelection) ? 15.0 : 0.0),
+                duration: Durations.short4,
+                curve: Curves.decelerate,
+                builder: (context, value, child) {
+                  return ClipRRect(borderRadius: BorderRadius.all(Radius.circular(value)), child: child);
+                },
+                child: Stack(
+                  children: [
+                    Positioned.fill(
+                      child: Hero(
+                        tag: '${asset?.heroTag ?? ''}_$heroIndex',
+                        child: Thumbnail.fromAsset(asset: asset, size: size),
+                      ),
+                    ),
+                    if (asset != null)
+                      Align(
+                        alignment: Alignment.topRight,
+                        child: _AssetTypeIcons(asset: asset),
+                      ),
+                    if (shouldShowOwnerName)
+                      Align(
+                        alignment: Alignment.bottomRight,
+                        child: Padding(
+                          padding: EdgeInsets.only(
+                            right: constraints.maxWidth * 0.03,
+                            left: constraints.maxWidth * 0.3,
+                            bottom: constraints.maxWidth * 0.01,
+                          ),
+                          child: _OwnerNameLabel(ownerName: ownerName!),
+                        ),
+                      ),
+                    if (storageIndicator && asset != null)
+                      switch (asset.storage) {
+                        AssetState.local => const Align(
+                          alignment: Alignment.bottomRight,
+                          child: Padding(
+                            padding: EdgeInsets.only(right: 10.0, bottom: 6.0),
+                            child: _TileOverlayIcon(Icons.cloud_off_outlined),
+                          ),
+                        ),
+                        AssetState.remote => const Align(
+                          alignment: Alignment.bottomRight,
+                          child: Padding(
+                            padding: EdgeInsets.only(right: 10.0, bottom: 6.0),
+                            child: _TileOverlayIcon(Icons.cloud_outlined),
+                          ),
+                        ),
+                        AssetState.merged => const Align(
+                          alignment: Alignment.bottomRight,
+                          child: Padding(
+                            padding: EdgeInsets.only(right: 10.0, bottom: 6.0),
+                            child: _TileOverlayIcon(Icons.cloud_done_outlined),
+                          ),
+                        ),
+                      },
+                    if (asset != null && asset.isFavorite)
+                      const Align(
+                        alignment: Alignment.bottomLeft,
+                        child: Padding(
+                          padding: EdgeInsets.only(left: 10.0, bottom: 6.0),
+                          child: _TileOverlayIcon(Icons.favorite_rounded),
+                        ),
+                      ),
+                  ],
                 ),
-                if (asset != null)
-                  Align(
-                    alignment: Alignment.topRight,
-                    child: _AssetTypeIcons(asset: asset),
-                  ),
-                if (shouldShowOwnerName)
-                  Align(
-                    alignment: Alignment.bottomRight,
-                    child: Padding(
-                      padding: const EdgeInsets.only(right: 10.0, bottom: 6.0),
-                      child: _OwnerNameLabel(ownerName: ownerName!),
-                    ),
-                  ),
-                if (storageIndicator && asset != null)
-                  switch (asset.storage) {
-                    AssetState.local => const Align(
-                      alignment: Alignment.bottomRight,
-                      child: Padding(
-                        padding: EdgeInsets.only(right: 10.0, bottom: 6.0),
-                        child: _TileOverlayIcon(Icons.cloud_off_outlined),
-                      ),
-                    ),
-                    AssetState.remote => const Align(
-                      alignment: Alignment.bottomRight,
-                      child: Padding(
-                        padding: EdgeInsets.only(right: 10.0, bottom: 6.0),
-                        child: _TileOverlayIcon(Icons.cloud_outlined),
-                      ),
-                    ),
-                    AssetState.merged => const Align(
-                      alignment: Alignment.bottomRight,
-                      child: Padding(
-                        padding: EdgeInsets.only(right: 10.0, bottom: 6.0),
-                        child: _TileOverlayIcon(Icons.cloud_done_outlined),
-                      ),
-                    ),
-                  },
-                if (asset != null && asset.isFavorite)
-                  const Align(
-                    alignment: Alignment.bottomLeft,
-                    child: Padding(
-                      padding: EdgeInsets.only(left: 10.0, bottom: 6.0),
-                      child: _TileOverlayIcon(Icons.favorite_rounded),
-                    ),
-                  ),
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         ),
         TweenAnimationBuilder<double>(
           tween: Tween<double>(begin: 0.0, end: (isSelected || lockSelection) ? 1.0 : 0.0),
@@ -260,7 +268,8 @@ class _OwnerNameLabel extends StatelessWidget {
           fontWeight: FontWeight.w600,
           shadows: [Shadow(blurRadius: 5.0, color: Color.fromRGBO(0, 0, 0, 0.6), offset: Offset(0.0, 0.0))],
         ),
-        overflow: TextOverflow.ellipsis,
+        overflow: TextOverflow.fade,
+        softWrap: false,
         maxLines: 1,
       ),
     );
