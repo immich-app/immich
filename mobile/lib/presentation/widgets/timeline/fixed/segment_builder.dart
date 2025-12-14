@@ -42,7 +42,17 @@ class FixedSegmentBuilder extends SegmentBuilder {
       final headerExtent = SegmentBuilder.headerExtent(timelineHeader);
 
       final segmentStartOffset = startOffset;
-      startOffset += headerExtent + (tileHeight * numberOfRows) + spacing * (numberOfRows - 1);
+      // Compute endOffset to match FixedSegment.gridOffset semantics:
+      // - gridOffset = startOffset + headerExtent + spacing (for first grid row)
+      // - endOffset should be: gridOffset + (mainAxisExtend * (numberOfRows - 1)) + tileHeight
+      //   where mainAxisExtend = tileHeight + spacing
+      // This simplifies to: startOffset + headerExtent + spacing + tileHeight * numberOfRows + spacing * (numberOfRows - 1)
+      if (numberOfRows > 0) {
+        startOffset += headerExtent + spacing + (tileHeight * numberOfRows) + spacing * (numberOfRows - 1);
+      } else {
+        // If no rows, endOffset is just after the header (no spacing needed)
+        startOffset += headerExtent;
+      }
       final segmentEndOffset = startOffset;
 
       segments.add(
@@ -66,6 +76,24 @@ class FixedSegmentBuilder extends SegmentBuilder {
         previousDate = bucket.date;
       }
     }
+
+    // Debug validation: ensure segments have monotonic, non-overlapping offsets
+    assert(() {
+      for (int i = 0; i < segments.length - 1; i++) {
+        final current = segments[i];
+        final next = segments[i + 1];
+        assert(
+          current.endOffset <= next.startOffset,
+          'Segment offset overlap: segment $i endOffset=${current.endOffset} > segment ${i + 1} startOffset=${next.startOffset}',
+        );
+        assert(
+          current.startOffset <= current.endOffset,
+          'Segment $i has invalid offset range: startOffset=${current.startOffset} > endOffset=${current.endOffset}',
+        );
+      }
+      return true;
+    }(), 'Segment offset validation failed');
+
     return segments;
   }
 }

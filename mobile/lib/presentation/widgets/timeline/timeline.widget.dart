@@ -41,6 +41,25 @@ final _timelineAnchorAssetIndexProvider = StateProvider<int?>((ref) => null);
 // Set by the Timeline widget right before constraints/args change; consumed by _SliverTimelineState to restore view.
 final _timelinePendingRestoreAssetIndexProvider = StateProvider<int?>((ref) => null);
 
+/// Represents a row anchor for scroll position restoration.
+/// The rowIndex is the sliver child index (includes headers), and deltaPx is the
+/// offset within that row (0 if the row is at the top edge).
+class _TimelineRowAnchor {
+  final int rowIndex;
+  final double deltaPx;
+
+  const _TimelineRowAnchor({required this.rowIndex, required this.deltaPx});
+
+  @override
+  String toString() => '_TimelineRowAnchor(rowIndex: $rowIndex, deltaPx: $deltaPx)';
+}
+
+// Updated continuously by the timeline grid to describe the row at the top of the viewport.
+final _timelineAnchorRowProvider = StateProvider<_TimelineRowAnchor?>((ref) => null);
+
+// Set by the Timeline widget right before constraints/args change; consumed by _SliverTimelineState to restore view.
+final _timelinePendingRestoreRowAnchorProvider = StateProvider<_TimelineRowAnchor?>((ref) => null);
+
 class Timeline extends StatelessWidget {
   const Timeline({
     super.key,
@@ -102,15 +121,12 @@ class Timeline extends StatelessWidget {
                 final current = ref.watch(_runtimeTimelineArgsProvider);
 
                 if (current != desired) {
-                  final anchor = ref.read(_timelineAnchorAssetIndexProvider);
+                  final rowAnchor = ref.read(_timelineAnchorRowProvider);
                   // #region agent log
                   debugPrint(
-                    'AGENT_LOG Timeline.constraintsChange captureAnchor assetIndex=$anchor currentArgs={w=${current.maxWidth},h=${current.maxHeight},c=${current.columnCount}} desiredArgs={w=${desired.maxWidth},h=${desired.maxHeight},c=${desired.columnCount}}',
+                    'AGENT_LOG Timeline.constraintsChange captureAnchor rowAnchor=$rowAnchor currentArgs={w=${current.maxWidth},h=${current.maxHeight},c=${current.columnCount}} desiredArgs={w=${desired.maxWidth},h=${desired.maxHeight},c=${desired.columnCount}}',
                   );
                   // #endregion
-                  if (anchor != null) {
-                    ref.read(_timelinePendingRestoreAssetIndexProvider.notifier).state = anchor;
-                  }
                   // Update after this frame (avoid mutating provider state during widget build).
                   WidgetsBinding.instance.addPostFrameCallback((_) {
                     final latest = ref.read(_runtimeTimelineArgsProvider);
@@ -121,6 +137,10 @@ class Timeline extends StatelessWidget {
                       );
                       // #endregion
                       ref.read(_runtimeTimelineArgsProvider.notifier).state = desired;
+                    }
+                    // Set pending restore after updating args (also deferred to avoid build-time modification)
+                    if (rowAnchor != null) {
+                      ref.read(_timelinePendingRestoreRowAnchorProvider.notifier).state = rowAnchor;
                     }
                   });
                 }
@@ -181,6 +201,8 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
   double _scaleFactor = 3.0;
   double _baseScaleFactor = 3.0;
   int? _scaleRestoreAssetIndex;
+  _TimelineRowAnchor? _pendingRestoreRowAnchor;
+  bool _hasPendingRowAnchorRestore = false;
 
   @override
   void initState() {
@@ -195,12 +217,12 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
       onAttach: (position) {
         // #region agent log
         debugPrint(
-          'AGENT_LOG _SliverTimelineState.scrollController.onAttach stateHash=${identityHashCode(this)} restoredOffset=${position.pixels}',
+          'AGENT_LOG _SliverTimelineState.scrollController.onAttach stateHash=${identityHashCode(this)} restoredOffset=${position.pixels} hasPendingRowAnchor=$_hasPendingRowAnchorRestore',
         );
         // #endregion
-        // If we detach/reattach during rotation and the framework restores to 0 unexpectedly,
-        // jump back to the last known non-zero offset.
-        if (_lastKnownScrollOffset != null &&
+        // If we have a pending row anchor restore, skip the pixel fallback to avoid conflicts.
+        if (!_hasPendingRowAnchorRestore &&
+            _lastKnownScrollOffset != null &&
             _lastKnownScrollOffset! > 0 &&
             (position.pixels == 0.0 || position.pixels.isNaN)) {
           final target = _lastKnownScrollOffset!;
@@ -217,6 +239,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
           });
         }
         _restoreScalePosition(position);
+        _restoreRowAnchor();
       },
       onDetach: (position) {
         _lastKnownScrollOffset = position.pixels;
@@ -247,6 +270,19 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
       // Clear so we don't re-run.
       ref.read(_timelinePendingRestoreAssetIndexProvider.notifier).state = null;
     });
+
+    // When constraints change (rotation), restore the row anchor after new layout is computed.
+    ref.listenManual(_timelinePendingRestoreRowAnchorProvider, (_, next) {
+      if (next == null) return;
+      // #region agent log
+      debugPrint('AGENT_LOG _SliverTimelineState.pendingRestoreRowAnchor received rowAnchor=$next');
+      // #endregion
+      _pendingRestoreRowAnchor = next;
+      _hasPendingRowAnchorRestore = true;
+      _restoreRowAnchor();
+      // Clear so we don't re-run.
+      ref.read(_timelinePendingRestoreRowAnchorProvider.notifier).state = null;
+    });
   }
 
   int? _computeAnchorAssetIndex(List<Segment> segments, double scrollOffset, int columnCount) {
@@ -257,6 +293,18 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
     final rowIndexInSegment = rowIndex - (segment.firstIndex + 1);
     final assetIndexInSegment = rowIndexInSegment * columnCount;
     return segment.firstAssetIndex + assetIndexInSegment;
+  }
+
+  /// Computes the row anchor (rowIndex + deltaPx) for the current scroll position.
+  /// This is used for stable scroll restoration during orientation changes.
+  _TimelineRowAnchor? _computeRowAnchor(List<Segment> segments, double scrollOffset) {
+    final segment = segments.findByOffset(scrollOffset) ?? segments.lastOrNull;
+    if (segment == null) return null;
+    final rowIndex = segment.getMinChildIndexForScrollOffset(scrollOffset);
+    final rowOffset = segment.indexToLayoutOffset(rowIndex);
+    // Delta is the offset within the row (clamped to >= 0 to handle edge cases)
+    final deltaPx = (scrollOffset - rowOffset).clamp(0.0, double.infinity);
+    return _TimelineRowAnchor(rowIndex: rowIndex, deltaPx: deltaPx);
   }
 
   void _onEvent(Event event) {
@@ -300,6 +348,60 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
       }
     });
     _scaleRestoreAssetIndex = null;
+  }
+
+  /// Restores scroll position using the row anchor (rowIndex + deltaPx).
+  /// This provides stable restoration during orientation changes by keeping the same row at the top.
+  void _restoreRowAnchor() {
+    if (_pendingRestoreRowAnchor == null || !_hasPendingRowAnchorRestore) return;
+
+    final asyncSegments = ref.read(timelineSegmentProvider);
+    asyncSegments.whenData((segments) {
+      if (segments.isEmpty) return;
+
+      final rowAnchor = _pendingRestoreRowAnchor!;
+      // Find the segment that contains the target row index
+      final targetSegment = segments.findByIndex(rowAnchor.rowIndex);
+      if (targetSegment == null) {
+        // If row index is out of bounds, clamp to valid range
+        final lastSegment = segments.lastOrNull;
+        if (lastSegment == null) return;
+        final clampedRowIndex = rowAnchor.rowIndex.clamp(0, lastSegment.lastIndex);
+        final fallbackSegment = segments.findByIndex(clampedRowIndex);
+        if (fallbackSegment == null) return;
+        final targetOffset = fallbackSegment.indexToLayoutOffset(clampedRowIndex) + rowAnchor.deltaPx;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted || !_scrollController.hasClients) return;
+          final max = _scrollController.position.maxScrollExtent;
+          final clamped = targetOffset.clamp(0.0, max);
+          // #region agent log
+          debugPrint(
+            'AGENT_LOG _SliverTimelineState._restoreRowAnchor clampedRowIndex=$clampedRowIndex targetOffset=$targetOffset clamped=$clamped',
+          );
+          // #endregion
+          _scrollController.jumpTo(clamped);
+          _hasPendingRowAnchorRestore = false;
+          _pendingRestoreRowAnchor = null;
+        });
+        return;
+      }
+
+      // Compute the target offset: row's layout offset + delta within the row
+      final targetOffset = targetSegment.indexToLayoutOffset(rowAnchor.rowIndex) + rowAnchor.deltaPx;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted || !_scrollController.hasClients) return;
+        final max = _scrollController.position.maxScrollExtent;
+        final clamped = targetOffset.clamp(0.0, max);
+        // #region agent log
+        debugPrint(
+          'AGENT_LOG _SliverTimelineState._restoreRowAnchor rowIndex=${rowAnchor.rowIndex} deltaPx=${rowAnchor.deltaPx} targetOffset=$targetOffset clamped=$clamped',
+        );
+        // #endregion
+        _scrollController.jumpTo(clamped);
+        _hasPendingRowAnchorRestore = false;
+        _pendingRestoreRowAnchor = null;
+      });
+    });
   }
 
   @override
@@ -444,12 +546,14 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
               ? _scrollController.offset
               : (widget.initialScrollOffset ?? 0.0);
           final anchor = _computeAnchorAssetIndex(segments, currentOffset, args.columnCount);
+          final rowAnchor = _computeRowAnchor(segments, currentOffset);
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (!mounted) return;
             ref.read(_timelineAnchorAssetIndexProvider.notifier).state = anchor;
+            ref.read(_timelineAnchorRowProvider.notifier).state = rowAnchor;
           });
           debugPrint(
-            'AGENT_LOG _SliverTimelineState.anchorComputed offset=$currentOffset columnCount=${args.columnCount} anchorAssetIndex=$anchor',
+            'AGENT_LOG _SliverTimelineState.anchorComputed offset=$currentOffset columnCount=${args.columnCount} anchorAssetIndex=$anchor rowAnchor=$rowAnchor',
           );
           // #endregion
           final childCount = (segments.lastOrNull?.lastIndex ?? -1) + 1;
