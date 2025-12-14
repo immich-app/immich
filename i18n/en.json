@@ -1074,7 +1074,8 @@
     "unable_to_update_settings": "Unable to update settings",
     "unable_to_update_timeline_display_status": "Unable to update timeline display status",
     "unable_to_update_user": "Unable to update user",
-    "unable_to_upload_file": "Unable to upload file"
+    "unable_to_upload_file": "Unable to upload file",
+    "unable_to_set_rating": "Unable to set rating"
   },
   "exclusion_pattern": "Exclusion pattern",
   "exif": "Exif",
@@ -1671,6 +1672,7 @@
   "rating_clear": "Clear rating",
   "rating_count": "{count, plural, one {# star} other {# stars}}",
   "rating_description": "Display the EXIF rating in the info panel",
+  "rating_set": "Rating set to {rating} stars",
   "reaction_options": "Reaction options",
   "read_changelog": "Read Changelog",
   "readonly_mode_disabled": "Read-only mode disabled",
