@@ -19,7 +19,6 @@
   let allowDownload = $state(true);
   let allowUpload = $state(false);
   let showMetadata = $state(true);
-  let expirationOption: number = $state(0);
   let password = $state('');
   let slug = $state('');
   let expiresAt = $state<string | null>(null);
@@ -37,7 +36,7 @@
       type: shareType,
       albumId,
       assetIds,
-      expiresAt: expirationOption > 0 ? DateTime.now().plus(expirationOption).toISO() : undefined,
+      expiresAt: expiresAt,
       allowUpload,
       description,
       password,
