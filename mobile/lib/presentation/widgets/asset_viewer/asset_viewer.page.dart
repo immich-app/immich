@@ -376,7 +376,17 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
 
   void _onTapDown(_, __, ___) {
     if (!showingBottomSheet) {
+      // #region agent log (H1 device)
+      final before = ref.read(assetViewerProvider.select((s) => s.showingControls));
+      print(
+        '[AGENT_LOG] asset_viewer.page.dart:_onTapDown toggleControls before=$before orientation=${MediaQuery.orientationOf(context).name} size=${MediaQuery.sizeOf(context).width}x${MediaQuery.sizeOf(context).height}',
+      );
+      // #endregion
       ref.read(assetViewerProvider.notifier).toggleControls();
+      // #region agent log (H1 device)
+      final after = ref.read(assetViewerProvider.select((s) => s.showingControls));
+      print('[AGENT_LOG] asset_viewer.page.dart:_onTapDown toggleControls after=$after');
+      // #endregion
     }
   }
 
@@ -516,6 +526,12 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   }
 
   Widget _placeholderBuilder(BuildContext ctx, ImageChunkEvent? progress, int index) {
+    // #region agent log (H2 device)
+    final show = ref.read(assetViewerProvider.select((s) => s.showingControls));
+    print(
+      '[AGENT_LOG] asset_viewer.page.dart:PhotoViewGallery.loadingBuilder index=$index showControls=$show orientation=${MediaQuery.orientationOf(ctx).name} size=${MediaQuery.sizeOf(ctx).width}x${MediaQuery.sizeOf(ctx).height} progress=${progress == null ? "null" : "${progress.cumulativeBytesLoaded}/${progress.expectedTotalBytes}"}',
+    );
+    // #endregion
     return const Center(child: ImmichLoadingIndicator());
   }
 
@@ -536,6 +552,12 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
 
     // If asset is not available in buffer, return a placeholder
     if (asset == null) {
+      // #region agent log (H6 device)
+      final show = ref.read(assetViewerProvider.select((s) => s.showingControls));
+      print(
+        '[AGENT_LOG] asset_viewer.page.dart:_assetBuilder asset=null index=$index totalAssets=${timelineService.totalAssets} showControls=$show orientation=${MediaQuery.orientationOf(ctx).name} size=${MediaQuery.sizeOf(ctx).width}x${MediaQuery.sizeOf(ctx).height}',
+      );
+      // #endregion
       return PhotoViewGalleryPageOptions.customChild(
         heroAttributes: PhotoViewHeroAttributes(tag: 'loading_$index'),
         child: Container(
@@ -546,6 +568,14 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
         ),
       );
     }
+
+    // #region agent log (H6 device)
+    if (index == (pageController.hasClients ? pageController.page?.round() : null)) {
+      print(
+        '[AGENT_LOG] asset_viewer.page.dart:_assetBuilder asset!=null index=$index heroTag=${asset.heroTag} type=${asset.type} hasLocal=${asset.hasLocal} hasRemote=${asset.hasRemote}',
+      );
+    }
+    // #endregion
 
     BaseAsset displayAsset = asset;
     final stackChildren = ref.read(stackChildrenNotifier(asset)).valueOrNull;
@@ -646,6 +676,11 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
 
     // Listen for control visibility changes and change system UI mode accordingly
     ref.listen(assetViewerProvider.select((value) => value.showingControls), (_, showingControls) async {
+      // #region agent log (H1 device)
+      print(
+        '[AGENT_LOG] asset_viewer.page.dart:showingControlsChanged=$showingControls -> SystemUiMode=${(showingControls ? SystemUiMode.edgeToEdge : SystemUiMode.immersiveSticky).name} orientation=${MediaQuery.orientationOf(context).name} size=${MediaQuery.sizeOf(context).width}x${MediaQuery.sizeOf(context).height}',
+      );
+      // #endregion
       if (showingControls) {
         unawaited(SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge));
       } else {

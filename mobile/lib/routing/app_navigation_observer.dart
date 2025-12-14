@@ -19,6 +19,17 @@ class AppNavigationObserver extends AutoRouterObserver {
 
   @override
   void didPush(Route route, Route? previousRoute) {
+    // #region agent log (VERIFY device)
+    // Keep this targeted to reduce noise; we care about the Places -> (Drift)Map -> AssetViewer flow.
+    final name = route.settings.name;
+    final prev = previousRoute?.settings.name;
+    if (name == MapRoute.name ||
+        name == DriftMapRoute.name ||
+        name == GalleryViewerRoute.name ||
+        name == AssetViewerRoute.name) {
+      print('[AGENT_LOG] nav.didPush route=$name prev=$prev');
+    }
+    // #endregion
     _handleLockedViewState(route, previousRoute);
     _handleDriftLockedFolderState(route, previousRoute);
     Future(() {

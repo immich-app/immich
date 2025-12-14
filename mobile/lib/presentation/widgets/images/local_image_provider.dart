@@ -63,12 +63,27 @@ class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProv
   LocalFullImageProvider({required this.id, required this.assetType, required this.size});
 
   @override
+  void cancel() {
+    // #region agent log (H7 device)
+    print(
+      '[AGENT_LOG] LocalFullImageProvider.cancel id=$id size=${size.width}x${size.height} isCancelledWas=$isCancelled',
+    );
+    // #endregion
+    super.cancel();
+  }
+
+  @override
   Future<LocalFullImageProvider> obtainKey(ImageConfiguration configuration) {
     return SynchronousFuture(this);
   }
 
   @override
   ImageStreamCompleter loadImage(LocalFullImageProvider key, ImageDecoderCallback decode) {
+    // #region agent log (H7 device)
+    print(
+      '[AGENT_LOG] LocalFullImageProvider.loadImage id=${key.id} size=${key.size.width}x${key.size.height} isCancelled=$isCancelled keyHash=${key.hashCode} instHash=${hashCode}',
+    );
+    // #endregion
     return OneFramePlaceholderImageStreamCompleter(
       _codec(key, decode),
       initialImage: getInitialImage(LocalThumbProvider(id: key.id, assetType: key.assetType)),

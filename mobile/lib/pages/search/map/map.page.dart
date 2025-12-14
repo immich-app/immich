@@ -151,11 +151,24 @@ class MapPage extends HookConsumerWidget {
     Future<void> onMarkerTapped() async {
       final assetId = selectedMarker.value?.marker.assetRemoteId;
       if (assetId == null) {
+        // #region agent log (VERIFY device)
+        // Device-friendly runtime evidence: prints show up in `flutter run` output.
+        print('[AGENT_LOG] map.page.dart:onMarkerTapped assetId=null');
+        // #endregion
         return;
       }
 
+      // #region agent log (VERIFY device)
+      print(
+        '[AGENT_LOG] map.page.dart:onMarkerTapped start assetId=$assetId orientation=${MediaQuery.orientationOf(context).name} size=${MediaQuery.sizeOf(context).width}x${MediaQuery.sizeOf(context).height}',
+      );
+      // #endregion
+
       final asset = await ref.read(dbProvider).assets.getByRemoteId(assetId);
       if (asset == null) {
+        // #region agent log (VERIFY device)
+        print('[AGENT_LOG] map.page.dart:onMarkerTapped asset not found in db remoteId=$assetId');
+        // #endregion
         return;
       }
 
@@ -166,6 +179,11 @@ class MapPage extends HookConsumerWidget {
       if (asset.isVideo) {
         ref.read(showControlsProvider.notifier).show = false;
       }
+      // #region agent log (VERIFY device)
+      print(
+        '[AGENT_LOG] map.page.dart:onMarkerTapped push GalleryViewerRoute assetType=${asset.type} isVideo=${asset.isVideo} isRemote=${asset.isRemote} isLocal=${asset.isLocal}',
+      );
+      // #endregion
       unawaited(context.pushRoute(GalleryViewerRoute(initialIndex: 0, heroOffset: 0, renderList: renderList)));
     }
 
