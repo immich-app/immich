@@ -47,11 +47,6 @@ import 'package:logging/logging.dart';
 import 'package:timezone/data/latest.dart';
 
 void main() async {
-  // #region agent log (VERIFY device)
-  // This MUST show in `flutter run -d Phone` output immediately after hot restart.
-  // If you don't see it, you're not running the updated build.
-  print('[AGENT_LOG] main.dart:main ENTER ts=${DateTime.now().toIso8601String()}');
-  // #endregion
   ImmichWidgetsBinding();
   unawaited(BackgroundWorkerLockService(BackgroundWorkerLockApi()).lock());
   final (isar, drift, logDb) = await Bootstrap.initDB();
@@ -72,10 +67,6 @@ void main() async {
       child: const MainWidget(),
     ),
   );
-
-  // #region agent log (VERIFY device)
-  print('[AGENT_LOG] main.dart:main AFTER runApp ts=${DateTime.now().toIso8601String()}');
-  // #endregion
 }
 
 Future<void> initApp() async {

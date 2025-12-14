@@ -226,11 +226,6 @@ class TimelineService {
   }
 
   Future<void> dispose() async {
-    // #region agent log (H6 device)
-    print(
-      '[AGENT_LOG] TimelineService.dispose origin=$origin totalAssets=$_totalAssets bufferLen=${_buffer.length} bufferOffset=$_bufferOffset',
-    );
-    // #endregion
     await _bucketSubscription?.cancel();
     _bucketSubscription = null;
     _buffer = [];

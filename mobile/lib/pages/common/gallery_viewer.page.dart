@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 import 'dart:ui' as ui;
@@ -58,72 +57,6 @@ class GalleryViewerPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // #region agent log helper
-    void _agentLog({
-      required String hypothesisId,
-      required String location,
-      required String message,
-      Map<String, Object?> data = const {},
-    }) {
-      // Print to console as immediate verification
-      print('[AGENT_LOG] $location: $message');
-      // Best-effort logging only; never throw from UI code.
-      () async {
-        try {
-          final logEntry = jsonEncode({
-            'sessionId': 'debug-session',
-            'runId': 'run1',
-            'hypothesisId': hypothesisId,
-            'location': location,
-            'message': message,
-            'data': data,
-            'timestamp': DateTime.now().millisecondsSinceEpoch,
-          });
-          // Write directly to file (Dart/Flutter approach)
-          try {
-            final file = File('/Users/timonthegoat/code/oss/immich/.cursor/debug.log');
-            await file.writeAsString('$logEntry\n', mode: FileMode.append, flush: true);
-            print('[AGENT_LOG] File write SUCCESS: $location');
-          } catch (e) {
-            print('[AGENT_LOG] File write FAILED: $location - $e');
-          }
-          // Also try HTTP as backup
-          try {
-            final client = HttpClient();
-            final req = await client.postUrl(
-              Uri.parse('http://127.0.0.1:7242/ingest/9f2496b1-d42f-425c-9b63-abfeb2cdbe71'),
-            );
-            req.headers.contentType = ContentType.json;
-            req.write(logEntry);
-            await req.close();
-            client.close(force: true);
-            print('[AGENT_LOG] HTTP write SUCCESS: $location');
-          } catch (e) {
-            print('[AGENT_LOG] HTTP write FAILED: $location - $e');
-          }
-        } catch (e) {
-          print('[AGENT_LOG] Logging error: $e');
-        }
-      }();
-    }
-    // #endregion
-
-    // #region agent log (VERIFY) - immediate entry point
-    _agentLog(
-      hypothesisId: 'VERIFY',
-      location: 'gallery_viewer.page.dart:build:ENTRY',
-      message: 'GalleryViewer build ENTRY - logging system test',
-      data: {'test': true, 'timestamp': DateTime.now().toIso8601String()},
-    );
-    // #endregion
-
-    // #region agent log (VERIFY device) - plain print (no async/file/http)
-    // This MUST appear in `flutter run` output as soon as the viewer route builds.
-    print(
-      '[AGENT_LOG] gallery_viewer.page.dart:ENTRY_PRINT isIOS=${Platform.isIOS} orientation=${MediaQuery.orientationOf(context).name} size=${MediaQuery.sizeOf(context).width}x${MediaQuery.sizeOf(context).height}',
-    );
-    // #endregion
-
     final totalAssets = useState(renderList.totalAssets);
     final isZoomed = useState(false);
     final stackIndex = useState(0);
@@ -132,25 +65,6 @@ class GalleryViewerPage extends HookConsumerWidget {
     final loadAsset = renderList.loadAsset;
     final isPlayingMotionVideo = ref.watch(isPlayingMotionVideoProvider);
     final isCasting = ref.watch(castProvider.select((c) => c.isCasting));
-    final showControls = ref.watch(showControlsProvider);
-
-    // #region agent log (H1) build snapshot
-    _agentLog(
-      hypothesisId: 'H1',
-      location: 'gallery_viewer.page.dart:build',
-      message: 'GalleryViewer build',
-      data: {
-        'isIOS': Platform.isIOS,
-        'orientation': MediaQuery.orientationOf(context).name,
-        'size': {'w': MediaQuery.sizeOf(context).width, 'h': MediaQuery.sizeOf(context).height},
-        'devicePixelRatio': MediaQuery.devicePixelRatioOf(context),
-        'showControls': showControls,
-        'isZoomed': isZoomed.value,
-        'currentIndex': currentIndex.value,
-        'totalAssets': totalAssets.value,
-      },
-    );
-    // #endregion
 
     final videoPlayerKeys = useRef<Map<int, GlobalKey>>({});
 
@@ -192,21 +106,6 @@ class GalleryViewerPage extends HookConsumerWidget {
       } else {
         SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
       }
-
-      // #region agent log (H1) init ui mode
-      _agentLog(
-        hypothesisId: 'H1',
-        location: 'gallery_viewer.page.dart:useEffect(init)',
-        message: 'Initial SystemChrome.setEnabledSystemUIMode',
-        data: {
-          'initialShowControls': initialShowControls,
-          'mode': (initialShowControls ? SystemUiMode.edgeToEdge : SystemUiMode.immersive).name,
-          'isIOS': Platform.isIOS,
-          'orientation': MediaQuery.orientationOf(context).name,
-          'size': {'w': MediaQuery.sizeOf(context).width, 'h': MediaQuery.sizeOf(context).height},
-        },
-      );
-      // #endregion
 
       // Delay this a bit so we can finish loading the page
       Timer(const Duration(milliseconds: 400), () {
@@ -304,22 +203,6 @@ class GalleryViewerPage extends HookConsumerWidget {
     }
 
     ref.listen(showControlsProvider, (_, show) {
-      // #region agent log (H1) controls -> system ui mode
-      _agentLog(
-        hypothesisId: 'H1',
-        location: 'gallery_viewer.page.dart:ref.listen(showControlsProvider)',
-        message: 'showControls changed; applying SystemChrome mode',
-        data: {
-          'show': show,
-          'isIOS': Platform.isIOS,
-          'willSetMode': (show || Platform.isIOS ? SystemUiMode.edgeToEdge : SystemUiMode.immersive).name,
-          'orientation': MediaQuery.orientationOf(context).name,
-          'size': {'w': MediaQuery.sizeOf(context).width, 'h': MediaQuery.sizeOf(context).height},
-          'currentIndex': currentIndex.value,
-        },
-      );
-      // #endregion
-
       if (show || Platform.isIOS) {
         SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
         return;
@@ -340,32 +223,7 @@ class GalleryViewerPage extends HookConsumerWidget {
           handleSwipeUpDown(details);
         },
         onTapDown: (_, __, ___) {
-          final prev = ref.read(showControlsProvider);
           ref.read(showControlsProvider.notifier).toggle();
-          final next = ref.read(showControlsProvider);
-          // #region agent log (H1) user tapped to toggle controls
-          _agentLog(
-            hypothesisId: 'H1',
-            location: 'gallery_viewer.page.dart:buildImage.onTapDown',
-            message: 'Tap to toggle viewer controls',
-            data: {
-              'prev': prev,
-              'next': next,
-              'isIOS': Platform.isIOS,
-              'orientation': MediaQuery.orientationOf(context).name,
-              'size': {'w': MediaQuery.sizeOf(context).width, 'h': MediaQuery.sizeOf(context).height},
-              'asset': {
-                'id': asset.id,
-                'type': asset.type.toString(),
-                'isRemote': asset.isRemote,
-                'isLocal': asset.isLocal,
-                'remoteIdPresent': asset.remoteId != null,
-                'localIdPresent': asset.localId != null,
-              },
-              'currentIndex': currentIndex.value,
-            },
-          );
-          // #endregion
         },
         onLongPressStart: asset.isMotionPhoto
             ? (_, __, ___) {
@@ -423,56 +281,8 @@ class GalleryViewerPage extends HookConsumerWidget {
       }
 
       if (newAsset.isImage && !isPlayingMotionVideo) {
-        // #region agent log (H5) asset builder for current page
-        if (index == currentIndex.value) {
-          _agentLog(
-            hypothesisId: 'H5',
-            location: 'gallery_viewer.page.dart:buildAsset',
-            message: 'Built page options for current index (image path)',
-            data: {
-              'index': index,
-              'isIOS': Platform.isIOS,
-              'orientation': MediaQuery.orientationOf(context).name,
-              'size': {'w': MediaQuery.sizeOf(context).width, 'h': MediaQuery.sizeOf(context).height},
-              'showControls': ref.read(showControlsProvider),
-              'isZoomed': isZoomed.value,
-              'asset': {
-                'id': newAsset.id,
-                'type': newAsset.type.toString(),
-                'isRemote': newAsset.isRemote,
-                'isLocal': newAsset.isLocal,
-                'stackIdPresent': newAsset.stackId != null,
-              },
-            },
-          );
-        }
-        // #endregion
         return buildImage(newAsset);
       }
-      // #region agent log (H5) asset builder for current page (video path)
-      if (index == currentIndex.value) {
-        _agentLog(
-          hypothesisId: 'H5',
-          location: 'gallery_viewer.page.dart:buildAsset',
-          message: 'Built page options for current index (video path)',
-          data: {
-            'index': index,
-            'isIOS': Platform.isIOS,
-            'orientation': MediaQuery.orientationOf(context).name,
-            'size': {'w': MediaQuery.sizeOf(context).width, 'h': MediaQuery.sizeOf(context).height},
-            'showControls': ref.read(showControlsProvider),
-            'isZoomed': isZoomed.value,
-            'asset': {
-              'id': newAsset.id,
-              'type': newAsset.type.toString(),
-              'isRemote': newAsset.isRemote,
-              'isLocal': newAsset.isLocal,
-              'stackIdPresent': newAsset.stackId != null,
-            },
-          },
-        );
-      }
-      // #endregion
       return buildVideo(context, newAsset);
     }
 
@@ -499,29 +309,6 @@ class GalleryViewerPage extends HookConsumerWidget {
               gaplessPlayback: true,
               loadingBuilder: (context, event, index) {
                 final asset = loadAsset(index);
-                // #region agent log (H2) stuck on loading builder
-                if (index == currentIndex.value) {
-                  _agentLog(
-                    hypothesisId: 'H2',
-                    location: 'gallery_viewer.page.dart:PhotoViewGallery.loadingBuilder',
-                    message: 'PhotoViewGallery loadingBuilder for current index',
-                    data: {
-                      'index': index,
-                      'isIOS': Platform.isIOS,
-                      'orientation': MediaQuery.orientationOf(context).name,
-                      'size': {'w': MediaQuery.sizeOf(context).width, 'h': MediaQuery.sizeOf(context).height},
-                      'showControls': ref.read(showControlsProvider),
-                      'isZoomed': isZoomed.value,
-                      'asset': {
-                        'id': asset.id,
-                        'type': asset.type.toString(),
-                        'isRemote': asset.isRemote,
-                        'isLocal': asset.isLocal,
-                      },
-                    },
-                  );
-                }
-                // #endregion
                 return ClipRect(
                   child: Stack(
                     fit: StackFit.expand,
@@ -542,19 +329,6 @@ class GalleryViewerPage extends HookConsumerWidget {
               itemCount: totalAssets.value,
               scrollDirection: Axis.horizontal,
               onPageChanged: (value, _) {
-                // #region agent log (VERIFY) page changed
-                _agentLog(
-                  hypothesisId: 'VERIFY',
-                  location: 'gallery_viewer.page.dart:onPageChanged',
-                  message: 'PhotoViewGallery page changed',
-                  data: {
-                    'from': currentIndex.value,
-                    'to': value,
-                    'isIOS': Platform.isIOS,
-                    'orientation': MediaQuery.orientationOf(context).name,
-                  },
-                );
-                // #endregion
                 final next = currentIndex.value < value ? value + 1 : value - 1;
 
                 ref.read(hapticFeedbackProvider.notifier).selectionClick();

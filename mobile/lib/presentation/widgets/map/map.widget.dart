@@ -116,16 +116,13 @@ class _DriftMapState extends ConsumerState<DriftMap> {
       return;
     }
 
-    // #region agent log (H6 device)
     // When the AssetViewer is open, the DriftMap route stays alive in the background.
     // If we continue to update bounds, the map-scoped timeline service gets recreated and the previous one disposed,
     // which can invalidate the TimelineService instance that was passed into AssetViewerRoute (causing "loading forever").
     final currentRoute = ref.read(currentRouteNameProvider);
     if (currentRoute == AssetViewerRoute.name || currentRoute == GalleryViewerRoute.name) {
-      print('[AGENT_LOG] DriftMap.setBounds SKIP currentRoute=$currentRoute');
       return;
     }
-    // #endregion
 
     final bounds = await controller.getVisibleRegion();
     unawaited(

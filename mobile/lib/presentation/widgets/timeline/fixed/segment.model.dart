@@ -155,11 +155,6 @@ class _AssetTileWidget extends ConsumerWidget {
     if (multiSelectState.forceEnable || multiSelectState.isEnabled) {
       ref.read(multiSelectProvider.notifier).toggleAssetSelection(asset);
     } else {
-      // #region agent log (VERIFY device)
-      print(
-        '[AGENT_LOG] timeline.assetTile:onTap open AssetViewerRoute index=$assetIndex assetType=${asset.type} isRemote=${asset is RemoteAsset} heroOffset=$heroOffset',
-      );
-      // #endregion
       await ref.read(timelineServiceProvider).loadAssets(assetIndex, 1);
       ref.read(isPlayingMotionVideoProvider.notifier).playing = false;
       AssetViewer.setAsset(ref, asset);

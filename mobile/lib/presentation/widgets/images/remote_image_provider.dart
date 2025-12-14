@@ -67,9 +67,6 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
 
   @override
   void cancel() {
-    // #region agent log (H7 device)
-    print('[AGENT_LOG] RemoteFullImageProvider.cancel assetId=$assetId isCancelledWas=$isCancelled');
-    // #endregion
     super.cancel();
   }
 
@@ -80,11 +77,6 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
 
   @override
   ImageStreamCompleter loadImage(RemoteFullImageProvider key, ImageDecoderCallback decode) {
-    // #region agent log (H7 device)
-    print(
-      '[AGENT_LOG] RemoteFullImageProvider.loadImage assetId=${key.assetId} isCancelled=$isCancelled keyHash=${key.hashCode} instHash=${hashCode}',
-    );
-    // #endregion
     return OneFramePlaceholderImageStreamCompleter(
       _codec(key, decode),
       initialImage: getInitialImage(RemoteThumbProvider(assetId: key.assetId)),
