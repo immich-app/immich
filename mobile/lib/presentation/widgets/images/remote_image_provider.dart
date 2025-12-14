@@ -66,11 +66,6 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
   RemoteFullImageProvider({required this.assetId});
 
   @override
-  void cancel() {
-    super.cancel();
-  }
-
-  @override
   Future<RemoteFullImageProvider> obtainKey(ImageConfiguration configuration) {
     return SynchronousFuture(this);
   }

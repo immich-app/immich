@@ -63,11 +63,6 @@ class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProv
   LocalFullImageProvider({required this.id, required this.assetType, required this.size});
 
   @override
-  void cancel() {
-    super.cancel();
-  }
-
-  @override
   Future<LocalFullImageProvider> obtainKey(ImageConfiguration configuration) {
     return SynchronousFuture(this);
   }

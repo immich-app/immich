@@ -100,8 +100,7 @@ class GalleryViewerPage extends HookConsumerWidget {
     }
 
     useEffect(() {
-      final initialShowControls = ref.read(showControlsProvider);
-      if (initialShowControls) {
+      if (ref.read(showControlsProvider)) {
         SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
       } else {
         SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
