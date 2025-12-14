@@ -22,22 +22,36 @@ class DriftMemoryLane extends ConsumerWidget {
 
     return ConstrainedBox(
       constraints: const BoxConstraints(maxHeight: 200),
-      child: CarouselView(
-        itemExtent: 145.0,
-        shrinkExtent: 1.0,
-        elevation: 2,
-        backgroundColor: Colors.black,
-        overlayColor: WidgetStateProperty.all(Colors.white.withValues(alpha: 0.1)),
-        onTap: (index) {
-          ref.read(hapticFeedbackProvider.notifier).heavyImpact();
-          if (memories[index].assets.isNotEmpty) {
-            DriftMemoryPage.setMemory(ref, memories[index]);
-          }
-          context.pushRoute(DriftMemoryRoute(memories: memories, memoryIndex: index));
+      // CarouselView has been observed to trigger a framework assertion during rotation
+      // ('haveDimensions == (_lastMetrics != null)') in our runtime logs.
+      // Use a simple horizontal ListView to avoid that crash.
+      child: ListView.separated(
+        key: const PageStorageKey<String>('drift-memory-lane-scroll'),
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        itemCount: memories.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 8),
+        itemBuilder: (ctx, index) {
+          return InkWell(
+            onTap: () {
+              ref.read(hapticFeedbackProvider.notifier).heavyImpact();
+              if (memories[index].assets.isNotEmpty) {
+                DriftMemoryPage.setMemory(ref, memories[index]);
+              }
+              context.pushRoute(DriftMemoryRoute(memories: memories, memoryIndex: index));
+            },
+            child: Material(
+              elevation: 2,
+              color: Colors.black,
+              borderRadius: BorderRadius.circular(12),
+              child: SizedBox(
+                width: 205,
+                height: 200,
+                child: DriftMemoryCard(key: Key(memories[index].id), memory: memories[index]),
+              ),
+            ),
+          );
         },
-        children: memories
-            .map((memory) => DriftMemoryCard(key: Key(memory.id), memory: memory))
-            .toList(growable: false),
       ),
     );
   }
