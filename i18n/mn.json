@@ -50,7 +50,6 @@
     "face_detection": "Нүүр илрүүлэх",
     "image_quality": "Чанар",
     "job_settings": "Ажлын тохиргоо",
-    "job_status": "Ажлын төлөв",
     "machine_learning_enabled": "Машин сургалт идэвхжүүлэх",
     "machine_learning_enabled_description": "Идэвхгүй болгосон үед доорх тохиргооноос хамаарахгүйгээр бүх машин сургалтын боломж идэвхгүй болно.",
     "machine_learning_facial_recognition": "Нүүр танилт",
