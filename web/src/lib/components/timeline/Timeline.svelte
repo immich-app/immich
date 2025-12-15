@@ -23,7 +23,7 @@
   import { mobileDevice } from '$lib/stores/mobile-device.svelte';
   import { isAssetViewerRoute, navigate } from '$lib/utils/navigation';
   import { getTimes, type ScrubberListener } from '$lib/utils/timeline-util';
-  import { type AlbumResponseDto, type PersonResponseDto } from '@immich/sdk';
+  import { type AlbumResponseDto, type PersonResponseDto, type UserResponseDto } from '@immich/sdk';
   import { DateTime } from 'luxon';
   import { onDestroy, onMount, type Snippet } from 'svelte';
   import type { UpdatePayload } from 'vite';
@@ -49,6 +49,7 @@
     showArchiveIcon?: boolean;
     isShared?: boolean;
     album?: AlbumResponseDto | null;
+    albumUsers?: UserResponseDto[];
     person?: PersonResponseDto | null;
     isShowDeleteConfirmation?: boolean;
     onSelect?: (asset: TimelineAsset) => void;
@@ -81,6 +82,7 @@
     showArchiveIcon = false,
     isShared = false,
     album = null,
+    albumUsers = [],
     person = null,
     isShowDeleteConfirmation = $bindable(false),
     onSelect = () => {},
@@ -186,7 +188,7 @@
       // the performance benefits of deferred layouts while still supporting deep linking
       // to assets at the end of the timeline.
       timelineManager.isScrollingOnLoad = true;
-      const monthGroup = await timelineManager.findMonthGroupForAsset(assetId);
+      const monthGroup = await timelineManager.findMonthGroupForAsset({ id: assetId });
       if (!monthGroup) {
         return false;
       }
@@ -702,6 +704,7 @@
                 showStackedIcon={withStacked}
                 {showArchiveIcon}
                 {asset}
+                {albumUsers}
                 {groupIndex}
                 onClick={(asset) => {
                   if (typeof onThumbnailClick === 'function') {

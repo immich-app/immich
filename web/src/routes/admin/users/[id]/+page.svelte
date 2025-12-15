@@ -1,6 +1,5 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import HeaderButton from '$lib/components/HeaderButton.svelte';
   import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
   import OnEvents from '$lib/components/OnEvents.svelte';
   import ServerStatisticsCard from '$lib/components/server-statistics/ServerStatisticsCard.svelte';
@@ -8,7 +7,6 @@
   import DeviceCard from '$lib/components/user-settings-page/device-card.svelte';
   import FeatureSetting from '$lib/components/users/FeatureSetting.svelte';
   import { AppRoute } from '$lib/constants';
-  import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
   import { getUserAdminActions } from '$lib/services/user-admin.service';
   import { locale } from '$lib/stores/preferences.store';
   import { createDateFormatter, findLocale } from '$lib/utils';
@@ -26,8 +24,8 @@
     Container,
     getByteUnitString,
     Heading,
-    HStack,
     Icon,
+    MenuItemType,
     Stack,
     Text,
   } from '@immich/ui';
@@ -42,15 +40,14 @@
     mdiPlayCircle,
     mdiTrashCanOutline,
   } from '@mdi/js';
-  import { DateTime } from 'luxon';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
 
-  interface Props {
+  type Props = {
     data: PageData;
-  }
+  };
 
-  let { data }: Props = $props();
+  const { data }: Props = $props();
 
   let user = $derived(data.user);
   const userPreferences = $derived(data.userPreferences);
@@ -94,9 +91,6 @@
       await goto(AppRoute.ADMIN_USERS);
     }
   };
-
-  const getDeleteDate = (deletedAt: string): Date =>
-    DateTime.fromISO(deletedAt).plus({ days: serverConfigManager.value.userDeleteDelay }).toJSDate();
 </script>
 
 <OnEvents
@@ -110,19 +104,8 @@
 
 <AdminPageLayout
   breadcrumbs={[{ title: $t('admin.user_management'), href: AppRoute.ADMIN_USERS }, { title: user.name }]}
+  actions={[ResetPassword, ResetPinCode, Update, Restore, MenuItemType.Divider, Delete]}
 >
-  {#snippet buttons()}
-    <HStack gap={0}>
-      <HeaderButton action={ResetPassword} />
-      <HeaderButton action={ResetPinCode} />
-      <HeaderButton action={Update} />
-      <HeaderButton
-        action={Restore}
-        title={$t('admin.user_restore_scheduled_removal', { values: { date: getDeleteDate(user.deletedAt!) } })}
-      />
-      <HeaderButton action={Delete} />
-    </HStack>
-  {/snippet}
   <div>
     <Container size="large" center>
       {#if user.deletedAt}
