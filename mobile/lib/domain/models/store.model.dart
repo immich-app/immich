@@ -72,6 +72,7 @@ enum StoreKey<T> {
 
   autoPlayVideo<bool>._(139),
   albumGridView<bool>._(140),
+  viewerQuickActionOrder<String>._(141),
 
   // Experimental stuff
   photoManagerCustomFilter<bool>._(1000),

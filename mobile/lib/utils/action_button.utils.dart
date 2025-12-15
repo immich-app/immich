@@ -5,6 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/add_action_button.widget.dart';
 import 'package:immich_mobile/domain/models/events.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
@@ -17,6 +18,7 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/delete_action_
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_local_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_permanent_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/download_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/edit_image_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/like_activity_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/move_to_lock_folder_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/remove_from_album_action_button.widget.dart';
@@ -28,6 +30,7 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/trash_action_b
 import 'package:immich_mobile/presentation/widgets/action_buttons/unarchive_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/unstack_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/upload_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/reorder_buttons_action_button.widget.dart';
 import 'package:immich_mobile/routing/router.dart';
 
 class ActionButtonContext {
@@ -57,6 +60,8 @@ class ActionButtonContext {
 enum ActionButtonType {
   advancedInfo,
   share,
+  edit,
+  add,
   shareLink,
   similarPhotos,
   archive,
@@ -73,10 +78,16 @@ enum ActionButtonType {
   unstack,
   likeActivity;
 
+  String toJson() => name;
+
   bool shouldShow(ActionButtonContext context) {
     return switch (this) {
       ActionButtonType.advancedInfo => context.advancedTroubleshooting,
       ActionButtonType.share => true,
+      ActionButtonType.edit =>
+        !context.isInLockedView && //
+            context.asset.isImage,
+      ActionButtonType.add => context.asset.hasRemote,
       ActionButtonType.shareLink =>
         !context.isInLockedView && //
             context.asset.hasRemote,
@@ -145,6 +156,8 @@ enum ActionButtonType {
     return switch (this) {
       ActionButtonType.advancedInfo => AdvancedInfoActionButton(source: context.source),
       ActionButtonType.share => ShareActionButton(source: context.source),
+      ActionButtonType.edit => const EditImageActionButton(),
+      ActionButtonType.add => const AddActionButton(),
       ActionButtonType.shareLink => ShareLinkActionButton(source: context.source),
       ActionButtonType.archive => ArchiveActionButton(source: context.source),
       ActionButtonType.unarchive => UnArchiveActionButton(source: context.source),
@@ -170,6 +183,19 @@ enum ActionButtonType {
 class ActionButtonBuilder {
   static const List<ActionButtonType> _actionTypes = ActionButtonType.values;
 
+  static const int defaultQuickActionLimit = 4;
+
+  static const List<ActionButtonType> defaultQuickActionOrder = [
+    ActionButtonType.share,
+    ActionButtonType.upload,
+    ActionButtonType.edit,
+    ActionButtonType.add,
+    ActionButtonType.archive,
+    ActionButtonType.delete,
+    ActionButtonType.removeFromAlbum,
+    ActionButtonType.likeActivity,
+  ];
+
   static List<Widget> build(ActionButtonContext context) {
     return _actionTypes.where((type) => type.shouldShow(context)).map((type) => type.buildButton(context)).toList();
   }
@@ -194,6 +220,7 @@ class ViewerKebabMenuButtonContext {
 enum ViewerKebabMenuButtonType {
   openInfo,
   viewInTimeline,
+  reorderButtons,
   cast,
   download;
 
@@ -203,6 +230,7 @@ enum ViewerKebabMenuButtonType {
   int get group => switch (this) {
     ViewerKebabMenuButtonType.openInfo => 0,
     ViewerKebabMenuButtonType.viewInTimeline => 1,
+    ViewerKebabMenuButtonType.reorderButtons => 1,
     ViewerKebabMenuButtonType.cast => 1,
     ViewerKebabMenuButtonType.download => 1,
   };
@@ -219,6 +247,7 @@ enum ViewerKebabMenuButtonType {
             context.isOwner,
       ViewerKebabMenuButtonType.cast => context.isCasting || context.asset.hasRemote,
       ViewerKebabMenuButtonType.download => context.asset.isRemoteOnly,
+      ViewerKebabMenuButtonType.reorderButtons => true,
     };
   }
 
@@ -245,6 +274,7 @@ enum ViewerKebabMenuButtonType {
       ),
       ViewerKebabMenuButtonType.cast => const CastActionButton(menuItem: true),
       ViewerKebabMenuButtonType.download => const DownloadActionButton(source: ActionSource.viewer, menuItem: true),
+      ViewerKebabMenuButtonType.reorderButtons => ReorderButtonsActionButton(originalTheme: context.originalTheme),
     };
   }
 }
