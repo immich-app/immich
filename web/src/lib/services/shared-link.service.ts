@@ -17,7 +17,7 @@ import {
   type SharedLinkResponseDto,
 } from '@immich/sdk';
 import { modalManager, toastManager, type ActionItem } from '@immich/ui';
-import { mdiContentCopy, mdiDeleteOutline, mdiPencilOutline, mdiQrcode } from '@mdi/js';
+import { mdiContentCopy, mdiPencilOutline, mdiQrcode, mdiTrashCanOutline } from '@mdi/js';
 import type { MessageFormatter } from 'svelte-i18n';
 
 export const getSharedLinkActions = ($t: MessageFormatter, sharedLink: SharedLinkResponseDto) => {
@@ -29,7 +29,7 @@ export const getSharedLinkActions = ($t: MessageFormatter, sharedLink: SharedLin
 
   const Delete: ActionItem = {
     title: $t('delete_link'),
-    icon: mdiDeleteOutline,
+    icon: mdiTrashCanOutline,
     color: 'danger',
     onAction: () => handleDeleteSharedLink(sharedLink),
   };
