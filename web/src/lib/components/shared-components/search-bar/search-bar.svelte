@@ -79,21 +79,26 @@
     searchStore.isSearchEnabled = false;
   };
 
-  function buildSearchPayload(term: string): SmartSearchDto | MetadataSearchDto {
+  const buildSearchPayload = (term: string): SmartSearchDto | MetadataSearchDto => {
     const searchType = getSearchType();
     switch (searchType) {
-      case 'smart':
-        return { query: term } as SmartSearchDto;
-      case 'metadata':
-        return { originalFileName: term } as MetadataSearchDto;
-      case 'description':
-        return { description: term } as MetadataSearchDto;
-      case 'ocr':
-        return { ocr: term } as MetadataSearchDto;
-      default:
-        return { query: term } as SmartSearchDto;
+      case 'smart': {
+        return { query: term };
+      }
+      case 'metadata': {
+        return { originalFileName: term };
+      }
+      case 'description': {
+        return { description: term };
+      }
+      case 'ocr': {
+        return { ocr: term };
+      }
+      default: {
+        return { query: term };
+      }
     }
-  }
+  };
 
   const onHistoryTermClick = async (searchTerm: string) => {
     value = searchTerm;
