@@ -2,6 +2,7 @@
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
   import { ActionQueryParameterValue, AppRoute, QueryParameter } from '$lib/constants';
+  import PeopleViewModal from '$lib/modals/PeopleViewModal.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { getAllPeople, getPerson, mergePerson, type PersonResponseDto } from '@immich/sdk';
   import { Button, Icon, IconButton, modalManager, toastManager } from '@immich/ui';
@@ -14,7 +15,6 @@
   import ControlAppBar from '../shared-components/control-app-bar.svelte';
   import FaceThumbnail from './face-thumbnail.svelte';
   import PeopleList from './people-list.svelte';
-  import PeopleViewModal from "$lib/modals/PeopleViewModal.svelte";
 
   interface Props {
     person: PersonResponseDto;
@@ -78,11 +78,10 @@
   };
 
   const showPeopleViewModal = async () => {
-    // Sets the selected people that remained after closing the modal.
     selectedPeople = await modalManager.show(PeopleViewModal, {
       people: selectedPeople,
       peopleToNotShow: [person],
-      screenHeight
+      screenHeight,
     });
   };
 </script>
@@ -114,7 +113,7 @@
         <p class="mb-4 text-center uppercase dark:text-white">{$t('choose_matching_people_to_merge')}</p>
 
         <div class="grid grid-flow-col-dense place-content-center place-items-center gap-4">
-          {#each selectedPeople.slice(0, 5) as person, _ (person.id)}
+          {#each selectedPeople.slice(0, 5) as person (person.id)}
             <div animate:flip={{ duration: 250, easing: quintOut }}>
               <FaceThumbnail border circle {person} selectable thumbnailSize={120} onClick={() => onSelect(person)} />
             </div>
