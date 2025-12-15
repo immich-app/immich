@@ -151,6 +151,7 @@ enum ActionButtonType {
         context.timelineOrigin != TimelineOrigin.main &&
             context.timelineOrigin != TimelineOrigin.deepLink &&
             context.timelineOrigin != TimelineOrigin.trash &&
+            context.timelineOrigin != TimelineOrigin.lockedFolder &&
             context.timelineOrigin != TimelineOrigin.archive &&
             context.timelineOrigin != TimelineOrigin.localAlbum &&
             context.isOwner,
@@ -272,13 +273,12 @@ class ActionButtonBuilder {
   static const List<ActionButtonType> _actionTypes = ActionButtonType.values;
   static const List<ActionButtonType> defaultViewerKebabMenuOrder = _actionTypes;
   static const Set<ActionButtonType> defaultViewerBottomBarButtons = {
-    ActionButtonType.share, // ViewerBottomBar
-    ActionButtonType.upload, // ViewerBottomBar
-    ActionButtonType.delete, // ViewerBottomBar
-    // ActionButtonType.deleteLocal, // ViewerBottomBar
-    ActionButtonType.archive, // AddActionButton
-    ActionButtonType.unarchive, // AddActionButton
-    ActionButtonType.moveToLockFolder, // AddActionButton
+    ActionButtonType.share,
+    ActionButtonType.moveToLockFolder,
+    ActionButtonType.upload,
+    ActionButtonType.delete,
+    ActionButtonType.archive,
+    ActionButtonType.unarchive,
   };
 
   static List<Widget> build(ActionButtonContext context) {
@@ -290,7 +290,9 @@ class ActionButtonBuilder {
         .where((type) => !defaultViewerBottomBarButtons.contains(type) && type.shouldShow(context))
         .toList();
 
-    if (visibleButtons.isEmpty) return [];
+    if (visibleButtons.isEmpty) {
+      return [];
+    }
 
     final List<Widget> result = [];
     int? lastGroup;
