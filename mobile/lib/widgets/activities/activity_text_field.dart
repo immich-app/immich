@@ -68,11 +68,11 @@ class ActivityTextField extends HookConsumerWidget {
           suffixIcon: Padding(
             padding: const EdgeInsets.only(right: 10),
             child: IconButton(
-              icon: Icon(liked ? Icons.favorite_rounded : Icons.favorite_border_rounded),
+              icon: Icon(liked ? Icons.thumb_up : Icons.thumb_up_off_alt),
               onPressed: liked ? removeLike : addLike,
             ),
           ),
-          suffixIconColor: liked ? Colors.red[700] : null,
+          suffixIconColor: liked ? Colors.blue[700] : null,
           hintText: !isEnabled ? 'shared_album_activities_input_disable'.tr() : 'say_something'.tr(),
           hintStyle: TextStyle(fontWeight: FontWeight.normal, fontSize: 14, color: Colors.grey[600]),
         ),

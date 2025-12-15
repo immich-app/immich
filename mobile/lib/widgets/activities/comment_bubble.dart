@@ -68,7 +68,7 @@ class CommentBubble extends ConsumerWidget {
                 child: Container(
                   padding: const EdgeInsets.all(4),
                   decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.7), shape: BoxShape.circle),
-                  child: Icon(Icons.favorite, color: Colors.red[600], size: 18),
+                  child: Icon(Icons.thumb_up, color: Colors.blue[600], size: 18),
                 ),
               ),
           ],
@@ -82,7 +82,7 @@ class CommentBubble extends ConsumerWidget {
       likes = Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.7), shape: BoxShape.circle),
-        child: Icon(Icons.favorite, color: Colors.red[600], size: 18),
+        child: Icon(Icons.thumb_up, color: Colors.blue[600], size: 18),
       );
     }
 

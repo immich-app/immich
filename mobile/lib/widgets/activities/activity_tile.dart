@@ -37,7 +37,7 @@ class ActivityTile extends HookConsumerWidget {
           ? Container(
               width: isBottomSheet ? 30 : 44,
               alignment: Alignment.center,
-              child: Icon(Icons.favorite_rounded, color: Colors.red[700]),
+              child: Icon(Icons.thumb_up, color: Colors.blue[700]),
             )
           : isBottomSheet
           ? UserCircleAvatar(user: activity.user, size: 30, radius: 15)
