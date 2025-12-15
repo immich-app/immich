@@ -89,11 +89,7 @@ class ActionService {
 
     // Ask user if they want to delete local copies
     if (localIds.isNotEmpty) {
-      final deletedIds = await _assetMediaRepository.deleteAll(localIds);
-
-      if (deletedIds.isNotEmpty) {
-        await _localAssetRepository.delete(deletedIds);
-      }
+      await _deleteLocalAssets(localIds);
     }
   }
 
@@ -117,15 +113,7 @@ class ActionService {
     await _remoteAssetRepository.trash(remoteIds);
 
     if (localIds.isNotEmpty) {
-      final deletedIds = await _assetMediaRepository.deleteAll(localIds);
-
-      if (deletedIds.isNotEmpty) {
-        if (CurrentPlatform.isAndroid && Store.get(StoreKey.manageLocalMediaAndroid, false)) {
-          await _trashedLocalAssetRepository.applyTrashedAssets(deletedIds);
-        } else {
-          await _localAssetRepository.delete(deletedIds);
-        }
-      }
+      await _deleteLocalAssets(localIds);
     }
   }
 
@@ -134,22 +122,12 @@ class ActionService {
     await _remoteAssetRepository.delete(remoteIds);
 
     if (localIds.isNotEmpty) {
-      final deletedIds = await _assetMediaRepository.deleteAll(localIds);
-
-      if (deletedIds.isNotEmpty) {
-        await _localAssetRepository.delete(deletedIds);
-      }
+      await _deleteLocalAssets(localIds);
     }
   }
 
   Future<int> deleteLocal(List<String> localIds) async {
-    final deletedIds = await _assetMediaRepository.deleteAll(localIds);
-    if (deletedIds.isNotEmpty) {
-      await _localAssetRepository.delete(deletedIds);
-      return deletedIds.length;
-    }
-
-    return 0;
+    return await _deleteLocalAssets(localIds);
   }
 
   Future<bool> editLocation(List<String> remoteIds, BuildContext context) async {
@@ -252,5 +230,18 @@ class ActionService {
 
   Future<List<bool>> downloadAll(List<RemoteAsset> assets) {
     return _downloadRepository.downloadAllAssets(assets);
+  }
+
+  Future<int> _deleteLocalAssets(List<String> localIds) async {
+    final deletedIds = await _assetMediaRepository.deleteAll(localIds);
+    if (deletedIds.isEmpty) {
+      return 0;
+    }
+    if (CurrentPlatform.isAndroid && Store.get(StoreKey.manageLocalMediaAndroid, false)) {
+      await _trashedLocalAssetRepository.applyTrashedAssets(deletedIds);
+    } else {
+      await _localAssetRepository.delete(deletedIds);
+    }
+    return deletedIds.length;
   }
 }
