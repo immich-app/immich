@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -28,6 +30,7 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/trash_action_b
 import 'package:immich_mobile/presentation/widgets/action_buttons/unarchive_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/unstack_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/upload_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/use_as_wallpaper_action_button.widget.dart';
 import 'package:immich_mobile/routing/router.dart';
 
 class ActionButtonContext {
@@ -62,6 +65,7 @@ enum ActionButtonType {
   archive,
   unarchive,
   download,
+  useAsWallpaper,
   trash,
   deletePermanent,
   delete,
@@ -94,6 +98,9 @@ enum ActionButtonType {
         !context.isInLockedView && //
             context.asset.hasRemote && //
             !context.asset.hasLocal,
+      ActionButtonType.useAsWallpaper => 
+        (context.asset.type == AssetType.image) && //
+        Platform.isAndroid, // TODO: remove when iOS is supported
       ActionButtonType.trash =>
         context.isOwner && //
             !context.isInLockedView && //
@@ -149,6 +156,7 @@ enum ActionButtonType {
       ActionButtonType.archive => ArchiveActionButton(source: context.source),
       ActionButtonType.unarchive => UnArchiveActionButton(source: context.source),
       ActionButtonType.download => DownloadActionButton(source: context.source),
+      ActionButtonType.useAsWallpaper => UseAsWallpaperActionButton(source: context.source),
       ActionButtonType.trash => TrashActionButton(source: context.source),
       ActionButtonType.deletePermanent => DeletePermanentActionButton(source: context.source),
       ActionButtonType.delete => DeleteActionButton(source: context.source),

@@ -144,6 +144,17 @@
       android:authorities="${applicationId}.androidx-startup"
       tools:node="remove" />
 
+    <!-- FileProvider for sharing files with other apps -->
+    <provider
+      android:name="androidx.core.content.FileProvider"
+      android:authorities="${applicationId}.provider"
+      android:exported="false"
+      android:grantUriPermissions="true">
+      <meta-data
+        android:name="android.support.FILE_PROVIDER_PATHS"
+        android:resource="@xml/file_paths" />
+    </provider>
+
 
     <!-- Widgets -->
     <receiver

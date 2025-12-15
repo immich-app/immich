@@ -22,6 +22,7 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/stack_action_b
 import 'package:immich_mobile/presentation/widgets/action_buttons/trash_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/unstack_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/upload_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/use_as_wallpaper_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/album/album_selector.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
@@ -121,6 +122,8 @@ class _GeneralBottomSheetState extends ConsumerState<GeneralBottomSheet> {
           if (multiselect.hasStacked) const UnStackActionButton(source: ActionSource.timeline),
           const DeleteActionButton(source: ActionSource.timeline),
         ],
+        if (multiselect.selectedAssets.length == 1 && multiselect.selectedAssets.first.isImage)
+        const UseAsWallpaperActionButton(source: ActionSource.timeline),
         if (multiselect.hasLocal || multiselect.hasMerged) const DeleteLocalActionButton(source: ActionSource.timeline),
         if (multiselect.hasLocal) const UploadActionButton(source: ActionSource.timeline),
       ],
