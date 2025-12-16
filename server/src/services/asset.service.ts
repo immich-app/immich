@@ -36,6 +36,12 @@ import { getAssetFiles, getMyPartnerIds, onAfterUnlink, onBeforeLink, onBeforeUn
 
 @Injectable()
 export class AssetService extends BaseService {
+  private normalizeOffset(s?: string): string | undefined {
+    if (!s) return s;
+    // normalise hour only offsets (+09 to +09:00), replace space separator with "T" for ISO-8601
+    return s.replace(/([+-])(\d{2})(?!:?\d{2})$/, '$1$2:00').replace(' ', 'T');
+  }
+
   async getStatistics(auth: AuthDto, dto: AssetStatsDto) {
     if (dto.visibility === AssetVisibility.Locked) {
       requireElevatedPermission(auth);
@@ -143,7 +149,8 @@ export class AssetService extends BaseService {
     await this.requireAccess({ auth, permission: Permission.AssetUpdate, ids });
 
     const assetDto = { isFavorite, visibility, duplicateId };
-    const exifDto = { latitude, longitude, rating, description, dateTimeOriginal };
+    const normalizedDateTimeOriginal = this.normalizeOffset(dateTimeOriginal);
+    const exifDto = { latitude, longitude, rating, description, dateTimeOriginal: normalizedDateTimeOriginal };
 
     const isExifChanged = Object.values(exifDto).some((v) => v !== undefined);
     if (isExifChanged) {
@@ -157,19 +164,19 @@ export class AssetService extends BaseService {
 
     const dateTimesWithTimezone = assets
       ? assets.map((asset) => {
-          const isoString = asset.dateTimeOriginal?.toISOString();
-          let dateTime = isoString ? DateTime.fromISO(isoString) : null;
+        const isoString = asset.dateTimeOriginal?.toISOString();
+        let dateTime = isoString ? DateTime.fromISO(isoString) : null;
 
-          if (dateTime && asset.timeZone) {
-            dateTime = dateTime.setZone(asset.timeZone);
-          }
+        if (dateTime && asset.timeZone) {
+          dateTime = dateTime.setZone(asset.timeZone);
+        }
 
-          return {
-            assetId: asset.assetId,
-            dateTimeOriginal: dateTime?.toISO() ?? null,
-          };
-        })
-      : ids.map((id) => ({ assetId: id, dateTimeOriginal }));
+        return {
+          assetId: asset.assetId,
+          dateTimeOriginal: dateTime?.toISO() ?? null,
+        };
+      })
+      : ids.map((id) => ({ assetId: id, dateTimeOriginal: normalizedDateTimeOriginal }));
 
     if (dateTimesWithTimezone.length > 0) {
       await this.jobRepository.queueAll(
@@ -458,7 +465,8 @@ export class AssetService extends BaseService {
 
   private async updateExif(dto: ISidecarWriteJob) {
     const { id, description, dateTimeOriginal, latitude, longitude, rating } = dto;
-    const writes = _.omitBy({ description, dateTimeOriginal, latitude, longitude, rating }, _.isUndefined);
+    const normalizedDateTimeOriginal = this.normalizeOffset(dateTimeOriginal);
+    const writes = _.omitBy({ description, dateTimeOriginal: normalizedDateTimeOriginal, latitude, longitude, rating }, _.isUndefined);
     if (Object.keys(writes).length > 0) {
       await this.assetRepository.upsertExif({ assetId: id, ...writes });
       await this.jobRepository.queue({ name: JobName.SidecarWrite, data: { id, ...writes } });
