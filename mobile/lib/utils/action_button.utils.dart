@@ -61,6 +61,7 @@ class ActionButtonContext {
 
 enum ActionButtonType {
   openInfo,
+  openActivity,
   likeActivity,
   share,
   shareLink,
@@ -138,6 +139,11 @@ enum ActionButtonType {
         context.isOwner && //
             !context.isInLockedView && //
             context.isStacked,
+      ActionButtonType.openActivity =>
+        !context.isInLockedView &&
+            context.currentAlbum != null &&
+            context.currentAlbum!.isActivityEnabled &&
+            context.currentAlbum!.isShared,
       ActionButtonType.likeActivity =>
         !context.isInLockedView &&
             context.currentAlbum != null &&
@@ -227,6 +233,13 @@ enum ActionButtonType {
         menuItem: true,
         onPressed: () => EventStream.shared.emit(const ViewerOpenBottomSheetEvent()),
       ),
+      ActionButtonType.openActivity => BaseActionButton(
+        label: 'activity'.tr(),
+        iconData: Icons.chat_outlined,
+        iconColor: context.originalTheme?.iconTheme.color,
+        menuItem: true,
+        onPressed: () => EventStream.shared.emit(const ViewerOpenBottomSheetEvent(activitiesMode: true)),
+      ),
       ActionButtonType.viewInTimeline => BaseActionButton(
         label: 'view_in_timeline'.tr(),
         iconData: Icons.image_search,
@@ -249,7 +262,7 @@ enum ActionButtonType {
   /// Buttons in the same group will be displayed together,
   /// with dividers separating different groups.
   int get kebabMenuGroup => switch (this) {
-    // 0: info
+    // 0: info and activity
     ActionButtonType.openInfo => 0,
     // 10: move,remove, and delete
     ActionButtonType.trash => 10,
