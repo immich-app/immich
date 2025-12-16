@@ -74,8 +74,8 @@ class ImmichSliverAppBar extends ConsumerWidget {
             ...actions!.map((action) => Padding(padding: const EdgeInsets.only(right: 16), child: action)),
           if ((kDebugMode || kProfileMode) && !isReadonlyModeEnabled)
             IconButton(
-              icon: const Icon(Icons.science_rounded),
-              onPressed: () => context.pushRoute(const FeatInDevRoute()),
+              icon: const Icon(Icons.palette_rounded),
+              onPressed: () => context.pushRoute(const ImmichUIShowcaseRoute()),
             ),
           if (showUploadButton && !isReadonlyModeEnabled)
             const Padding(padding: EdgeInsets.only(right: 20), child: _BackupIndicator()),
