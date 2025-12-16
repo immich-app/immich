@@ -1,4 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { sdkMock } from '$lib/__mocks__/sdk.mock';
+import { renderWithTooltips } from '$tests/helpers';
 import { albumFactory } from '@test-data/factories/album-factory';
 import '@testing-library/jest-dom';
 import { render, waitFor, type RenderResult } from '@testing-library/svelte';
@@ -9,7 +11,7 @@ import AlbumCard from '../album-card.svelte';
 const onShowContextMenu = vi.fn();
 
 describe('AlbumCard component', () => {
-  let sut: RenderResult<typeof AlbumCard>;
+  let sut: RenderResult<any>;
 
   beforeAll(async () => {
     await init({ fallbackLocale: 'en-US' });
@@ -88,7 +90,7 @@ describe('AlbumCard component', () => {
     const album = Object.freeze(albumFactory.build({ albumThumbnailAssetId: null }));
 
     beforeEach(async () => {
-      sut = render(AlbumCard, { album, onShowContextMenu });
+      sut = renderWithTooltips(AlbumCard, { album, onShowContextMenu });
 
       const albumImgElement = sut.getByTestId('album-image');
       await waitFor(() => expect(albumImgElement).toHaveAttribute('src'));
