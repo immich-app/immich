@@ -8,7 +8,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/exif.model.dart';
-import 'package:immich_mobile/domain/models/setting.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/duration_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
@@ -21,14 +20,9 @@ import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_shee
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
-import 'package:immich_mobile/providers/routes.provider.dart';
-import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/utils/action_button.utils.dart';
 import 'package:immich_mobile/utils/bytes_units.dart';
 import 'package:immich_mobile/utils/timezone.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
@@ -48,29 +42,8 @@ class AssetDetailBottomSheet extends ConsumerWidget {
       return const SizedBox.shrink();
     }
 
-    final isTrashEnable = ref.watch(serverInfoProvider.select((state) => state.serverFeatures.trash));
-    final isOwner = asset is RemoteAsset && asset.ownerId == ref.watch(currentUserProvider)?.id;
-    final isInLockedView = ref.watch(inLockedViewProvider);
-    final currentAlbum = ref.watch(currentRemoteAlbumProvider);
-    final isArchived = asset is RemoteAsset && asset.visibility == AssetVisibility.archive;
-    final advancedTroubleshooting = ref.watch(settingsProvider.notifier).get(Setting.advancedTroubleshooting);
-
-    final buttonContext = ActionButtonContext(
-      asset: asset,
-      isOwner: isOwner,
-      isArchived: isArchived,
-      isTrashEnabled: isTrashEnable,
-      isInLockedView: isInLockedView,
-      isStacked: asset is RemoteAsset && asset.stackId != null,
-      currentAlbum: currentAlbum,
-      advancedTroubleshooting: advancedTroubleshooting,
-      source: ActionSource.viewer,
-    );
-
-    final actions = ActionButtonBuilder.build(buttonContext);
-
     return BaseBottomSheet(
-      actions: actions,
+      actions: [],
       slivers: const [_AssetDetailBottomSheet()],
       controller: controller,
       initialChildSize: initialChildSize,
