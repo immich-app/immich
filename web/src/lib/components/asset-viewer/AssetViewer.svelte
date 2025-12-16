@@ -588,6 +588,10 @@
         <OcrButton />
       </div>
     {/if}
+
+    {#if $slideshowState !== SlideshowState.None}
+      <SlideshowMetadataOverlay {asset} />
+    {/if}
   </div>
 
   {#if $slideshowState === SlideshowState.None && showNavigation && !assetViewerManager.isShowEditor && !assetViewerManager.isFaceEditMode && nextAsset}
