@@ -20,6 +20,7 @@ import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_stack.widg
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/bottom_bar.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/bottom_sheet.widget.dart';
+import 'package:immich_mobile/presentation/widgets/asset_viewer/motion_photo_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/top_app_bar.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/video_viewer.widget.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
@@ -692,6 +693,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
               backgroundDecoration: BoxDecoration(color: backgroundColor),
               enablePanAlways: true,
             ),
+            const Positioned(top: -40, left: 0, right: 0, child: MotionPhotoPlayButton()),
             if (!showingBottomSheet)
               const Positioned(
                 bottom: 0,

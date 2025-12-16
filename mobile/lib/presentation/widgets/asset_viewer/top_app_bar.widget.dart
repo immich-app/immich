@@ -8,7 +8,6 @@ import 'package:immich_mobile/domain/models/events.model.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/favorite_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/motion_photo_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/unfavorite_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/viewer_kebab_menu.widget.dart';
@@ -51,7 +50,6 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
     final originalTheme = context.themeData;
 
     final actions = <Widget>[
-      if (asset.isMotionPhoto) const MotionPhotoActionButton(iconOnly: true),
       if (album != null && album.isActivityEnabled && album.isShared)
         IconButton(
           icon: const Icon(Icons.chat_outlined),
@@ -132,7 +130,10 @@ class _AssetInfoTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dateTime = asset.createdAt.toLocal();
-    final dateFormatted = DateFormat.yMMMd().format(dateTime);
+    final currentYear = DateTime.now().year;
+    final isCurrentYear = dateTime.year == currentYear;
+
+    final dateFormatted = isCurrentYear ? DateFormat.MMMd().format(dateTime) : DateFormat.yMMMd().format(dateTime);
     final timeFormatted = DateFormat.jm().format(dateTime);
 
     return Column(
