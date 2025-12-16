@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
@@ -77,6 +78,8 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
         child: AppBar(
           backgroundColor: isShowingSheet ? Colors.transparent : Colors.black.withAlpha(125),
           leading: const _AppBarBackButton(),
+          centerTitle: true,
+          title: isShowingSheet ? null : _AssetInfoTitle(asset: asset),
           iconTheme: const IconThemeData(size: 22, color: Colors.white),
           actionsIconTheme: const IconThemeData(size: 22, color: Colors.white),
           shape: const Border(),
@@ -117,6 +120,27 @@ class _AppBarBackButton extends ConsumerWidget {
         onPressed: context.maybePop,
         child: const Icon(Icons.arrow_back_rounded),
       ),
+    );
+  }
+}
+
+class _AssetInfoTitle extends StatelessWidget {
+  final BaseAsset asset;
+
+  const _AssetInfoTitle({required this.asset});
+
+  @override
+  Widget build(BuildContext context) {
+    final dateTime = asset.createdAt.toLocal();
+    final dateFormatted = DateFormat.yMMMd().format(dateTime);
+    final timeFormatted = DateFormat.jm().format(dateTime);
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(dateFormatted, style: context.textTheme.bodyMedium?.copyWith(color: Colors.white)),
+        Text(timeFormatted, style: context.textTheme.labelMedium?.copyWith(color: Colors.white70)),
+      ],
     );
   }
 }
