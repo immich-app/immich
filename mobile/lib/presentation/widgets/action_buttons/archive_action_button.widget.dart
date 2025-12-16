@@ -35,8 +35,10 @@ Future<void> performArchiveAction(BuildContext context, WidgetRef ref, {required
 
 class ArchiveActionButton extends ConsumerWidget {
   final ActionSource source;
+  final bool iconOnly;
+  final bool menuItem;
 
-  const ArchiveActionButton({super.key, required this.source});
+  const ArchiveActionButton({super.key, required this.source, this.iconOnly = false, this.menuItem = false});
 
   Future<void> _onTap(BuildContext context, WidgetRef ref) async {
     await performArchiveAction(context, ref, source: source);
@@ -47,6 +49,8 @@ class ArchiveActionButton extends ConsumerWidget {
     return BaseActionButton(
       iconData: Icons.archive_outlined,
       label: "to_archive".t(context: context),
+      iconOnly: iconOnly,
+      menuItem: menuItem,
       onPressed: () => _onTap(context, ref),
     );
   }
