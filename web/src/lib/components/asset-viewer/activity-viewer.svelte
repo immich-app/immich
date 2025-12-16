@@ -181,7 +181,7 @@
           {:else if reaction.type === ReactionType.Like}
             <div class="relative">
               <div class="flex py-3 ps-3 mt-3 gap-4 items-center text-sm">
-                <div class="text-blue-600"><Icon icon={mdiThumbUp} size="20" /></div>
+                <div class="text-primary"><Icon icon={mdiThumbUp} size="20" /></div>
 
                 <div class="w-full" title={`${reaction.user.name} (${reaction.user.email})`}>
                   {$t('user_liked', {
@@ -254,7 +254,7 @@
                 shortcut: { key: 'Enter' },
                 onShortcut: () => handleSendComment(),
               }}
-              class="h-[18px] {disabled
+              class="h-4.5 {disabled
                 ? 'cursor-not-allowed'
                 : ''} w-full max-h-56 pe-2 items-center overflow-y-auto leading-4 outline-none resize-none bg-gray-200"
             ></textarea>
