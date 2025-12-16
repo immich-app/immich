@@ -484,10 +484,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     previousExtent = _kBottomSheetMinimumExtent;
     sheetCloseController = showBottomSheet(
       context: ctx,
-      sheetAnimationStyle: const AnimationStyle(
-        duration: Duration(milliseconds: 300),
-        reverseDuration: Duration(milliseconds: 300),
-      ),
+      sheetAnimationStyle: const AnimationStyle(duration: Durations.medium2, reverseDuration: Durations.medium2),
       constraints: const BoxConstraints(maxWidth: double.infinity),
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20.0))),
       backgroundColor: ctx.colorScheme.surfaceContainerLowest,

@@ -114,7 +114,7 @@ class _DragHandle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 32,
+      height: 38,
       child: Center(
         child: SizedBox(
           width: 32,

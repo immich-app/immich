@@ -75,7 +75,7 @@ class ActivitiesBottomSheet extends HookConsumerWidget {
       controller: controller,
       initialChildSize: initialChildSize,
       minChildSize: 0.1,
-      maxChildSize: 0.82,
+      maxChildSize: 0.88,
       expand: false,
       shouldCloseOnMinExtent: false,
       resizeOnScroll: false,
