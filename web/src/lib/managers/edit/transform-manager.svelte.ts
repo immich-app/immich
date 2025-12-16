@@ -1,7 +1,14 @@
 import { editManager, type EditActions, type EditToolManager } from '$lib/managers/edit/edit-manager.svelte';
 import { getAssetOriginalUrl } from '$lib/utils';
 import { handleError } from '$lib/utils/handle-error';
-import { EditAction, type AssetResponseDto, type CropParameters, type RotateParameters } from '@immich/sdk';
+import {
+  EditAction,
+  MirrorAxis,
+  type AssetResponseDto,
+  type CropParameters,
+  type MirrorParameters,
+  type RotateParameters,
+} from '@immich/sdk';
 import { tick } from 'svelte';
 
 export type CropAspectRatio =
@@ -44,6 +51,8 @@ class TransformManager implements EditToolManager {
   region = $state({ x: 0, y: 0, width: 100, height: 100 });
 
   imageRotation = $state(0);
+  mirrorHorizontal = $state(false);
+  mirrorVertical = $state(false);
   normalizedRotation = $derived.by(() => {
     const newAngle = this.imageRotation % 360;
     return newAngle < 0 ? newAngle + 360 : newAngle;
@@ -70,6 +79,18 @@ class TransformManager implements EditToolManager {
     const originalImgSize = this.cropImageSize.map((el) => el * this.cropImageScale);
 
     return (
+      Math.abs(originalImgSize[0] - this.region.width) > 2 ||
+      Math.abs(originalImgSize[1] - this.region.height) > 2 ||
+      this.mirrorHorizontal ||
+      this.mirrorVertical ||
+      this.normalizedRotation !== 0
+    );
+  }
+
+  checkCropEdits() {
+    const originalImgSize = this.cropImageSize.map((el) => el * this.cropImageScale);
+
+    return (
       Math.abs(originalImgSize[0] - this.region.width) > 2 || Math.abs(originalImgSize[1] - this.region.height) > 2
     );
   }
@@ -77,16 +98,50 @@ class TransformManager implements EditToolManager {
   getEdits(): EditActions {
     const edits: EditActions = [];
 
-    if (this.checkEdits()) {
-      const { x, y, width, height } = this.region;
+    if (this.checkCropEdits()) {
+      let { x, y, width, height } = this.region;
+
+      // Convert from display coordinates to original image coordinates
+      x = Math.round(x / this.cropImageScale);
+      y = Math.round(y / this.cropImageScale);
+      width = Math.round(width / this.cropImageScale);
+      height = Math.round(height / this.cropImageScale);
+
+      // Transform crop coordinates to account for mirroring
+      // The preview shows the mirrored image, but crop is applied before mirror on the server
+      // So we need to "unmirror" the crop coordinates
+      const [imgWidth, imgHeight] = this.cropImageSize;
+
+      if (this.mirrorHorizontal) {
+        x = imgWidth - x - width;
+      }
+
+      if (this.mirrorVertical) {
+        y = imgHeight - y - height;
+      }
 
       edits.push({
         action: EditAction.Crop,
+        parameters: { x, y, width, height },
+      });
+    }
+
+    // Mirror edits come before rotate in array so that compose applies rotate first, then mirror
+    // This matches CSS where parent has rotate and child img has mirror transforms
+    if (this.mirrorHorizontal) {
+      edits.push({
+        action: EditAction.Mirror,
         parameters: {
-          x: Math.round(x / this.cropImageScale),
-          y: Math.round(y / this.cropImageScale),
-          width: Math.round(width / this.cropImageScale),
-          height: Math.round(height / this.cropImageScale),
+          axis: MirrorAxis.Horizontal,
+        },
+      });
+    }
+
+    if (this.mirrorVertical) {
+      edits.push({
+        action: EditAction.Mirror,
+        parameters: {
+          axis: MirrorAxis.Vertical,
         },
       });
     }
@@ -105,6 +160,8 @@ class TransformManager implements EditToolManager {
 
   async resetAllChanges() {
     this.imageRotation = 0;
+    this.mirrorHorizontal = false;
+    this.mirrorVertical = false;
     await tick();
 
     this.onImageLoad([]);
@@ -125,6 +182,17 @@ class TransformManager implements EditToolManager {
     const rotateEdit = edits.find((e) => e.action === 'rotate');
     if (rotateEdit) {
       this.imageRotation = (rotateEdit.parameters as RotateParameters).angle;
+    }
+
+    // set mirror state from edits
+    const mirrorEdits = edits.filter((e) => e.action === 'mirror');
+    for (const mirrorEdit of mirrorEdits) {
+      const axis = (mirrorEdit.parameters as MirrorParameters).axis;
+      if (axis === MirrorAxis.Horizontal) {
+        this.mirrorHorizontal = true;
+      } else if (axis === MirrorAxis.Vertical) {
+        this.mirrorVertical = true;
+      }
     }
 
     await tick();
@@ -150,9 +218,23 @@ class TransformManager implements EditToolManager {
     this.isDragging = false;
     this.overlayEl = null;
     this.imageRotation = 0;
+    this.mirrorHorizontal = false;
+    this.mirrorVertical = false;
     this.region = { x: 0, y: 0, width: 100, height: 100 };
     this.cropImageSize = [1000, 1000];
     this.cropImageScale = 1;
+  }
+
+  mirror(axis: 'horizontal' | 'vertical') {
+    if (this.imageRotation % 180 !== 0) {
+      axis = axis === 'horizontal' ? 'vertical' : 'horizontal';
+    }
+
+    if (axis === 'horizontal') {
+      this.mirrorHorizontal = !this.mirrorHorizontal;
+    } else {
+      this.mirrorVertical = !this.mirrorVertical;
+    }
   }
 
   async rotate(angle: number) {
@@ -355,12 +437,25 @@ class TransformManager implements EditToolManager {
 
       if (cropEdit) {
         const params = cropEdit.parameters as CropParameters;
+        // eslint-disable-next-line prefer-const
+        let { x, y, width, height } = params;
+
+        // Transform crop coordinates to account for mirroring
+        // The stored coordinates are for the original image, but we display mirrored
+        // So we need to mirror the crop coordinates to match the preview
+        if (this.mirrorHorizontal) {
+          x = img.width - x - width;
+        }
+        if (this.mirrorVertical) {
+          y = img.height - y - height;
+        }
+
         // Convert from absolute pixel coordinates to display coordinates
         this.region = {
-          x: params.x * scale,
-          y: params.y * scale,
-          width: params.width * scale,
-          height: params.height * scale,
+          x: x * scale,
+          y: y * scale,
+          width: width * scale,
+          height: height * scale,
         };
       } else {
         this.region = {
@@ -933,6 +1028,16 @@ class TransformManager implements EditToolManager {
       width: this.cropImageSize[0] * this.cropImageScale - 1,
       height: this.cropImageSize[1] * this.cropImageScale - 1,
     };
+  }
+
+  rotateAspectRatio() {
+    const aspectRatio = this.cropAspectRatio;
+    if (aspectRatio === 'free' || aspectRatio === 'reset') {
+      return;
+    }
+
+    const [widthRatio, heightRatio] = aspectRatio.split(':');
+    this.setAspectRatio(`${heightRatio}:${widthRatio}`);
   }
 }
 

@@ -12,6 +12,20 @@
 
   let canvasContainer = $state<HTMLElement | null>(null);
 
+  // use CSS transforms to mirror the image
+  let imageTransform = $derived.by(() => {
+    const transforms: string[] = [];
+
+    if (transformManager.mirrorHorizontal) {
+      transforms.push('scaleX(-1)');
+    }
+    if (transformManager.mirrorVertical) {
+      transforms.push('scaleY(-1)');
+    }
+
+    return transforms.join(' ');
+  });
+
   $effect(() => {
     if (!canvasContainer) {
       return;
@@ -39,7 +53,12 @@
     aria-label="Crop area"
     type="button"
   >
-    <img draggable="false" src={transformManager.imgElement?.src} alt={$getAltText(toTimelineAsset(asset))} />
+    <img
+      draggable="false"
+      src={transformManager.imgElement?.src}
+      alt={$getAltText(toTimelineAsset(asset))}
+      style={imageTransform ? `transform: ${imageTransform}` : ''}
+    />
     <div
       class={`${transformManager.isInteracting ? 'resizing' : ''} crop-frame`}
       bind:this={transformManager.cropFrame}
@@ -126,6 +145,7 @@
     max-width: 100%;
     height: 100%;
     user-select: none;
+    transition: transform 0.15s ease;
   }
 
   .crop-frame {
