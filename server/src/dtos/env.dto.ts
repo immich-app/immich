@@ -58,7 +58,7 @@ export class EnvDto {
   IMMICH_MICROSERVICES_METRICS_PORT?: number;
 
   @ValidateBoolean({ optional: true })
-  IMMICH_PLUGINS_ENABLED?: boolean;
+  IMMICH_ALLOW_EXTERNAL_PLUGINS?: boolean;
 
   @Optional()
   @Matches(/^\//, { message: 'IMMICH_PLUGINS_INSTALL_FOLDER must be an absolute path' })
@@ -112,6 +112,9 @@ export class EnvDto {
   @IsString()
   @Optional()
   IMMICH_THIRD_PARTY_SUPPORT_URL?: string;
+
+  @ValidateBoolean({ optional: true })
+  IMMICH_ALLOW_SETUP?: boolean;
 
   @IsIPRange({ requireCIDR: false }, { each: true })
   @Transform(({ value }) =>
