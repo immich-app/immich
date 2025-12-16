@@ -6,7 +6,6 @@
   import { handleError } from '$lib/utils/handle-error';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { updateAsset, type AssetResponseDto } from '@immich/sdk';
-  import { toastManager } from '@immich/ui';
   import { t } from 'svelte-i18n';
 
   interface Props {
@@ -38,12 +37,6 @@
         asset: toTimelineAsset(asset),
         rating,
       });
-
-      if (rating === null) {
-        toastManager.success($t('rating_clear'));
-      } else {
-        toastManager.success($t('rating_set', { values: { rating } }));
-      }
     } catch (error) {
       handleError(error, $t('errors.unable_to_set_rating'));
     }
