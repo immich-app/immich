@@ -64,7 +64,6 @@
     if (!asset) {
       return;
     }
-
     viewTransitionManager.startTransition(
       new Promise<void>((resolve) => {
         eventManager.once('TimelineLoaded', async ({ id }) => {
@@ -73,15 +72,18 @@
           resolve();
         });
       }),
+      [],
       () => {
         animationTargetAssetId = null;
       },
     );
   };
-  eventManager.on('TransitionToTimeline', transitionToTimelineCallback);
-  onDestroy(() => {
-    eventManager.off('TransitionToTimeline', transitionToTimelineCallback);
-  });
+  if (viewTransitionManager.isSupported()) {
+    eventManager.on('TransitionToTimeline', transitionToTimelineCallback);
+    onDestroy(() => {
+      eventManager.off('TransitionToTimeline', transitionToTimelineCallback);
+    });
+  }
 </script>
 
 {#each filterIntersecting(monthGroup.dayGroups) as dayGroup, groupIndex (dayGroup.day)}
@@ -147,7 +149,7 @@
 
   :global(::view-transition) {
     background: black;
-    animation-duration: 500ms;
+    animation-duration: 250ms;
   }
 
   :global(::view-transition-old(*)),
@@ -166,12 +168,27 @@
   }
 
   :global(::view-transition-old(root)) {
-    animation: 500ms 0s fadeOut forwards;
+    animation: 250ms 0s fadeOut forwards;
   }
   :global(::view-transition-new(root)) {
-    animation: 500ms 0s fadeIn forwards;
+    animation: 250ms 0s fadeIn forwards;
   }
-
+  :global(html:active-view-transition-type(slideshow)) {
+    :global(&::view-transition-old(root)) {
+      animation: 1s 0s fadeOut forwards;
+    }
+    :global(&::view-transition-new(root)) {
+      animation: 1s 0s fadeIn forwards;
+    }
+  }
+  :global(html:active-view-transition-type(viewer-nav)) {
+    :global(&::view-transition-old(root)) {
+      animation: 350ms 0s fadeOut forwards;
+    }
+    :global(&::view-transition-new(root)) {
+      animation: 350ms 0s fadeIn forwards;
+    }
+  }
   :global(::view-transition-old(info)) {
     animation: 250ms 0s flyOutRight forwards;
   }
@@ -179,21 +196,56 @@
     animation: 250ms 0s flyInRight forwards;
   }
 
+  :global(::view-transition-group(detail-panel)) {
+    z-index: 1;
+  }
   :global(::view-transition-old(detail-panel)),
   :global(::view-transition-new(detail-panel)) {
-    z-index: 3;
     animation: none;
   }
+  :global(::view-transition-group(letterbox-left)),
+  :global(::view-transition-group(letterbox-right)),
+  :global(::view-transition-group(letterbox-top)),
+  :global(::view-transition-group(letterbox-bottom)) {
+    z-index: 4;
+  }
+
+  :global(::view-transition-old(letterbox-left)),
+  :global(::view-transition-old(letterbox-right)),
+  :global(::view-transition-old(letterbox-top)),
+  :global(::view-transition-old(letterbox-bottom)) {
+    background-color: black;
+  }
+
+  :global(::view-transition-new(letterbox-left)),
+  :global(::view-transition-new(letterbox-right)) {
+    height: 100dvh;
+  }
+
+  :global(::view-transition-new(letterbox-left)),
+  :global(::view-transition-new(letterbox-right)),
+  :global(::view-transition-new(letterbox-top)),
+  :global(::view-transition-new(letterbox-bottom)) {
+    background-color: black;
+    opacity: 1 !important;
+  }
+
+  :global(::view-transition-group(exclude-leftbutton)),
+  :global(::view-transition-group(exclude-rightbutton)),
   :global(::view-transition-group(exclude)) {
     animation: none;
-    z-index: 2;
+    z-index: 5;
   }
+  :global(::view-transition-old(exclude-leftbutton)),
+  :global(::view-transition-old(exclude-rightbutton)),
   :global(::view-transition-old(exclude)) {
     visibility: hidden;
   }
+  :global(::view-transition-new(exclude-leftbutton)),
+  :global(::view-transition-new(exclude-rightbutton)),
   :global(::view-transition-new(exclude)) {
     animation: none;
-    z-index: 2;
+    z-index: 5;
   }
 
   :global(::view-transition-old(hero)) {
@@ -206,124 +258,100 @@
   }
   :global(::view-transition-old(next)),
   :global(::view-transition-old(next-old)) {
-    animation: 250ms flyOutLeft forwards;
-    /* transform-origin: center; */
-    height: 100%;
-    /* display: flex; */
-    object-fit: contain;
-    /* margin: auto; */
-    /* transform: translateY(50%); */
-    /* width: auto;
-    left: 50dvw;
-    top: 50dvh;
-    transform: translate3d(-50%, -50%, 0); */
-    /* object-fit: contain;
-    height: 100vh;
-    width: 100vw;
-    z-index: 10; */
+    animation: 250ms cubic-bezier(0.25, 0.46, 0.45, 0.94) flyOutLeft forwards;
     overflow: hidden;
   }
 
   :global(::view-transition-new(next)),
   :global(::view-transition-new(next-new)) {
-    animation: 250ms fadeIn forwards;
-    height: 100%;
-    /* display: flex; */
-    object-fit: contain;
-    /* transform-origin: center;
-    width: auto;
-    left: 50dvw;
-    top: 50dvh;
-    transform: translate3d(-50%, -50%, 0); */
-    /* height: 100%;
-    object-fit: contain;
-    height: 100vh;
-    width: 100vw; */
+    animation: 250ms cubic-bezier(0.25, 0.46, 0.45, 0.94) flyInRight forwards;
     overflow: hidden;
   }
 
   :global(::view-transition-old(previous)) {
-    animation: 1s flyOutRight forwards;
+    animation: 250ms cubic-bezier(0.25, 0.46, 0.45, 0.94) flyOutRight forwards;
   }
   :global(::view-transition-old(previous-old)) {
-    animation: 250ms flyOutRight forwards;
-    height: 100%;
-    object-fit: contain;
-    /* transform-origin: center; */
-    /* height: 100%;
-    object-fit: contain;
-    height: 100vh;
-    width: 100vw;
-    z-index: 10; */
+    animation: 250ms cubic-bezier(0.25, 0.46, 0.45, 0.94) flyOutRight forwards;
     overflow: hidden;
+    z-index: -1;
   }
 
   :global(::view-transition-new(previous)) {
-    animation: 1s flyOutRight forwards;
+    animation: 250ms cubic-bezier(0.25, 0.46, 0.45, 0.94) flyInLeft forwards;
   }
 
   :global(::view-transition-new(previous-new)) {
-    animation: 250ms fadeIn forwards;
-    height: 100%;
-    object-fit: contain;
-    /* transform-origin: center; */
-    /* height: 100%;
-    object-fit: contain;
-    height: 100vh;
-    width: 100vw; */
+    animation: 250ms cubic-bezier(0.25, 0.46, 0.45, 0.94) flyInLeft forwards;
     overflow: hidden;
   }
 
   @keyframes -global-flyInLeft {
     from {
-      /* transform: translateX(-50dvw); */
-      object-position: -25dvw;
-      opacity: 0;
+      /* object-position: -25dvw; */
+      transform: translateX(-15%);
+      opacity: 0.1;
+      filter: blur(4px);
+    }
+    50% {
+      opacity: 0.4;
+      filter: blur(2px);
     }
     to {
-      /* transform: translateX(0); */
-      object-position: 0px 0px;
       opacity: 1;
+      filter: blur(0);
     }
   }
 
   @keyframes -global-flyOutLeft {
     from {
-      /* transform: translateX(0); */
-      object-position: 0px;
       opacity: 1;
+      filter: blur(0);
+    }
+    50% {
+      opacity: 0.4;
+      filter: blur(2px);
     }
     to {
-      /* transform: translateX(-50dvw); */
-      object-position: -25dvw;
-      opacity: 0;
+      /* object-position: -25dvw; */
+      transform: translateX(-15%);
+      opacity: 0.1;
+      filter: blur(4px);
     }
   }
 
   @keyframes -global-flyInRight {
     from {
-      /* transform: translateX(50dvw); */
-      object-position: 25dvw;
-      opacity: 0;
+      /* object-position: 25dvw; */
+      transform: translateX(15%);
+      opacity: 0.1;
+      filter: blur(4px);
+    }
+    50% {
+      opacity: 0.4;
+      filter: blur(2px);
     }
     to {
-      /* transform: translateX(0); */
-      object-position: 0px;
       opacity: 1;
+      filter: blur(0);
     }
   }
 
   /* Fly out to right */
   @keyframes -global-flyOutRight {
     from {
-      /* transform: translateX(0); */
       opacity: 1;
+      filter: blur(0);
     }
-
+    50% {
+      opacity: 0.4;
+      filter: blur(2px);
+    }
     to {
-      /* transform: translateX(50dvw); */
-      object-position: 50dvw 0px;
-      opacity: 0;
+      /* object-position: 50dvw 0px; */
+      transform: translateX(15%);
+      opacity: 0.1;
+      filter: blur(4px);
     }
   }
 

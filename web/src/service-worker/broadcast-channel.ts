@@ -26,10 +26,19 @@ export const installBroadcastChannelListener = () => {
         void handleIsUrlCached(url);
         break;
       }
+
+      case 'isServiceWorkerEnabled': {
+        replyIsServiceWorkerEnabled();
+        break;
+      }
     }
   };
 };
 
 export const replyIsImageUrlCached = (url: string, isImageUrlCached: boolean) => {
   broadcast.postMessage({ type: 'isImageUrlCachedReply', url, isImageUrlCached });
+};
+
+export const replyIsServiceWorkerEnabled = () => {
+  broadcast.postMessage({ type: 'isServiceWorkerEnabledReply', enabled: true });
 };

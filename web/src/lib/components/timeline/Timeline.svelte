@@ -229,9 +229,7 @@
       // if the asset is not found, scroll to the top
       timelineManager.scrollTo(0);
     }
-    if (!isAssetViewerRoute(page)) {
-      invisible = false;
-    }
+    invisible = isAssetViewerRoute(page) ? true : false;
   };
 
   // note: only modified once in afterNavigate()
@@ -243,7 +241,6 @@
   // and a new route is being navigated to. It will never be called on direct
   // navigations by the browser.
   beforeNavigate(({ from, to }) => {
-    console.log('BEFORE NAV');
     timelineManager.suspendTransitions = true;
     const isNavigatingToAssetViewer = isAssetViewerRoute(to);
     const isNavigatingFromAssetViewer = isAssetViewerRoute(from);
@@ -257,7 +254,6 @@
   // after successful navigation.
   afterNavigate(({ complete }) => {
     void complete.finally(async () => {
-      console.log('AFTER nav');
       const isAssetViewerPage = isAssetViewerRoute(page);
 
       // Set initial load state only once - if initialLoadWasAssetViewer is null, then
@@ -722,32 +718,39 @@
                 {asset}
                 {albumUsers}
                 {groupIndex}
-                onClick={(asset) => {
+                onClick={async (asset) => {
+                  const callClickHandler = () => {
+                    if (typeof onThumbnailClick === 'function') {
+                      onThumbnailClick(asset, timelineManager, dayGroup, _onClick);
+                    } else {
+                      _onClick(timelineManager, dayGroup.getAssets(), dayGroup.groupTitle, asset);
+                    }
+                  };
+
+                  if (!viewTransitionManager.isSupported()) {
+                    callClickHandler();
+                    return;
+                  }
+
                   // tag  target on the 'old' snapshot
                   toAssetViewerTransitionId = asset.id;
+                  await tick();
 
                   eventManager.once('StartViewTransition', () => {
-                    // remove target on the 'old' view,
-                    // asset-viewer will tag new target element for 'new' snapshot
                     toAssetViewerTransitionId = null;
+
+                    callClickHandler();
                   });
 
                   viewTransitionManager.startTransition(
-                    new Promise((resolve) =>
+                    new Promise<void>((resolve) => {
                       eventManager.once('AssetViewerFree', async () => {
-                        toAssetViewerTransitionId = null;
                         await tick();
                         eventManager.emit('TransitionToAssetViewer');
                         resolve();
-                      }),
-                    ),
+                      });
+                    }),
                   );
-
-                  if (typeof onThumbnailClick === 'function') {
-                    onThumbnailClick(asset, timelineManager, dayGroup, _onClick);
-                  } else {
-                    _onClick(timelineManager, dayGroup.getAssets(), dayGroup.groupTitle, asset);
-                  }
                 }}
                 onSelect={() => {
                   if (isSelectionMode || assetInteraction.selectionActive) {

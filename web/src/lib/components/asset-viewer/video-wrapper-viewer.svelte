@@ -6,6 +6,7 @@
 
   interface Props {
     transitionName?: string | null;
+    asset: AssetResponseDto;
     assetId: string;
     previousAsset?: AssetResponseDto;
     nextAsset?: AssetResponseDto;
@@ -15,15 +16,7 @@
     cacheKey: string | null;
     loopVideo: boolean;
     playOriginalVideo: boolean;
-    onAboutToNavigate?: ({
-      direction,
-      nextWidth,
-      nextHeight,
-    }: {
-      direction: 'left' | 'right';
-      nextWidth: number;
-      nextHeight: number;
-    }) => void;
+
     onClose?: () => void;
     onPreviousAsset?: () => void;
     onNextAsset?: () => void;
@@ -33,6 +26,7 @@
 
   let {
     transitionName,
+    asset,
     assetId,
     previousAsset,
     nextAsset,
@@ -42,7 +36,6 @@
     cacheKey,
     loopVideo,
     playOriginalVideo,
-    onAboutToNavigate,
     onPreviousAsset,
     onClose,
     onNextAsset,
@@ -58,13 +51,13 @@
     {transitionName}
     {loopVideo}
     {cacheKey}
+    {asset}
     {assetId}
     {nextAsset}
     {sharedLink}
     {nextSizeHint}
     {previousAsset}
     {playOriginalVideo}
-    {onAboutToNavigate}
     {onPreviousAsset}
     {onNextAsset}
     {onVideoEnded}

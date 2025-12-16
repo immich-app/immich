@@ -1,3 +1,5 @@
+import { preloadManager } from '$lib/managers/PreloadManager.svelte';
+
 export interface SwipeFeedbackOptions {
   /** Whether the swipe feedback is disabled */
   disabled?: boolean;
@@ -17,8 +19,6 @@ export interface SwipeFeedbackOptions {
   swipeThreshold?: number;
   /** Current asset URL - when this changes, preview containers are reset */
   currentAssetUrl?: string | null;
-  /** The img or video element to transform. If not provided, will query for img/video inside the node */
-  imageElement?: HTMLImageElement | HTMLVideoElement | null;
 }
 
 interface SwipeAnimations {
@@ -31,6 +31,8 @@ interface SwipeAnimations {
  * Allows the user to drag an element left or right (horizontal only),
  * and resets the position when the drag ends.
  * Optionally shows preview images on the left/right during swipe.
+ *
+ * Requires exactly one element with [data-swipe-subject] attribute within the node.
  */
 export const swipeFeedback = (node: HTMLElement, options?: SwipeFeedbackOptions) => {
   // Animation configuration
@@ -38,9 +40,18 @@ export const swipeFeedback = (node: HTMLElement, options?: SwipeFeedbackOptions)
   // Enable/disable scaling effect during animation
   const ENABLE_SCALE_ANIMATION = false;
 
-  // Find the image element to apply custom transforms
-  let imgElement: HTMLImageElement | HTMLVideoElement | null =
-    options?.imageElement ?? node.querySelector('img') ?? node.querySelector('video');
+  // Find the element to apply custom transforms - must have [data-swipe-subject] attribute
+  const swipeSubjects = node.querySelectorAll<HTMLElement>('[data-swipe-subject]');
+
+  if (swipeSubjects.length === 0) {
+    throw new Error('swipeFeedback action requires exactly one element with [data-swipe-subject] attribute, found 0');
+  }
+
+  if (swipeSubjects.length > 1) {
+    throw new Error(`swipeFeedback action requires exactly one element with [data-swipe-subject] attribute, found ${swipeSubjects.length}`);
+  }
+
+  const imgElement: HTMLElement = swipeSubjects[0];
 
   let isDragging = false;
   let startX = 0;
@@ -437,12 +448,9 @@ export const swipeFeedback = (node: HTMLElement, options?: SwipeFeedbackOptions)
 
     // Get current time before modifying animation
     const currentTime = Number(activeAnimations.currentImageAnimation.currentTime) || 0;
-    console.log(`Committing transition from ${currentTime}ms / ${ANIMATION_DURATION_MS}ms`);
 
     // If animation is already at or near the end, skip to finish immediately
     if (currentTime >= ANIMATION_DURATION_MS - 5) {
-      console.log('Animation already complete, finishing immediately');
-
       // Keep the preview visible by hiding the main image but showing the preview
       imgElement.style.opacity = '0';
 
@@ -495,7 +503,6 @@ export const swipeFeedback = (node: HTMLElement, options?: SwipeFeedbackOptions)
   };
 
   const pointerUp = (event: PointerEvent) => {
-    console.log('up', event);
     if (!isDragging || !event.isPrimary || (event.pointerType === 'mouse' && event.button !== 0)) {
       return;
     }
@@ -551,23 +558,34 @@ export const swipeFeedback = (node: HTMLElement, options?: SwipeFeedbackOptions)
 
   return {
     update(newOptions?: SwipeFeedbackOptions) {
-      // Update imgElement if provided
-      if (newOptions?.imageElement !== undefined) {
-        imgElement = newOptions.imageElement;
-      }
-
       // Check if asset URL changed - if so, reset everything
       if (newOptions?.currentAssetUrl && newOptions.currentAssetUrl !== lastAssetUrl) {
         resetPreviewContainers();
         lastAssetUrl = newOptions.currentAssetUrl;
       }
-
+      const lastLeftPreviewUrl = options?.leftPreviewUrl;
+      const lastRightPreviewUrl = options?.rightPreviewUrl;
+      if (
+        lastLeftPreviewUrl &&
+        lastLeftPreviewUrl != newOptions?.leftPreviewUrl &&
+        lastLeftPreviewUrl !== newOptions?.currentAssetUrl
+      ) {
+        preloadManager.cancelUrl(lastLeftPreviewUrl);
+      }
+      if (
+        lastRightPreviewUrl &&
+        lastRightPreviewUrl != newOptions?.rightPreviewUrl &&
+        lastRightPreviewUrl !== newOptions?.currentAssetUrl
+      ) {
+        preloadManager.cancelUrl(lastRightPreviewUrl);
+      }
       options = newOptions;
 
       // Update or create left preview
       if (options?.leftPreviewUrl) {
         if (leftPreviewImg) {
           // Update existing
+
           leftPreviewImg.src = options.leftPreviewUrl;
         } else if (!leftPreviewContainer) {
           // Create if doesn't exist
@@ -582,6 +600,7 @@ export const swipeFeedback = (node: HTMLElement, options?: SwipeFeedbackOptions)
       if (options?.rightPreviewUrl) {
         if (rightPreviewImg) {
           // Update existing
+
           rightPreviewImg.src = options.rightPreviewUrl;
         } else if (!rightPreviewContainer) {
           // Create if doesn't exist

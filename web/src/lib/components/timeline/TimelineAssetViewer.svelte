@@ -41,18 +41,26 @@
     person = null,
   }: Props = $props();
 
-  const getNextAsset = async (currentAsset: AssetResponseDto) => {
+  const getNextAsset = async (currentAsset: AssetResponseDto, preload: boolean = true) => {
     const earlierTimelineAsset = await timelineManager.getEarlierAsset(currentAsset);
     if (earlierTimelineAsset) {
-      const asset = assetCacheManager.getAsset({ ...authManager.params, id: earlierTimelineAsset.id });
+      const asset = await assetCacheManager.getAsset({ ...authManager.params, id: earlierTimelineAsset.id });
+      if (preload) {
+        // also pre-cache an extra one, to pre-cache these assetInfos for the next nav after this one is complete
+        void getNextAsset(asset, false);
+      }
       return asset;
     }
   };
 
-  const getPreviousAsset = async (currentAsset: AssetResponseDto) => {
+  const getPreviousAsset = async (currentAsset: AssetResponseDto, preload: boolean = true) => {
     const laterTimelineAsset = await timelineManager.getLaterAsset(currentAsset);
     if (laterTimelineAsset) {
-      const asset = assetCacheManager.getAsset({ ...authManager.params, id: laterTimelineAsset.id });
+      const asset = await assetCacheManager.getAsset({ ...authManager.params, id: laterTimelineAsset.id });
+      if (preload) {
+        // also pre-cache an extra one, to pre-cache these assetInfos for the next nav after this one is complete
+        void getPreviousAsset(asset, false);
+      }
       return asset;
     }
   };

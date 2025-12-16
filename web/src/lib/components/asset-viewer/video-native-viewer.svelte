@@ -13,6 +13,7 @@
     videoViewerVolume,
   } from '$lib/stores/preferences.store';
   import { getAssetOriginalUrl, getAssetPlaybackUrl, getAssetThumbnailUrl, getAssetUrl } from '$lib/utils';
+  import { getDimensions } from '$lib/utils/asset-utils';
   import { scaleToFit } from '$lib/utils/layout-utils';
   import { AssetMediaSize, type AssetResponseDto, type SharedLinkResponseDto } from '@immich/sdk';
   import { LoadingSpinner } from '@immich/ui';
@@ -21,6 +22,7 @@
 
   interface Props {
     transitionName?: string | null;
+    asset: AssetResponseDto;
     assetId: string;
     previousAsset?: AssetResponseDto;
     nextAsset?: AssetResponseDto;
@@ -29,15 +31,6 @@
     loopVideo: boolean;
     cacheKey: string | null;
     playOriginalVideo: boolean;
-    onAboutToNavigate?: ({
-      direction,
-      nextWidth,
-      nextHeight,
-    }: {
-      direction: 'left' | 'right';
-      nextWidth: number;
-      nextHeight: number;
-    }) => void;
     onPreviousAsset?: () => void;
     onNextAsset?: () => void;
     onVideoEnded?: () => void;
@@ -47,6 +40,7 @@
 
   let {
     transitionName,
+    asset,
     assetId,
     previousAsset,
     nextAsset,
@@ -55,7 +49,6 @@
     loopVideo,
     cacheKey,
     playOriginalVideo,
-    onAboutToNavigate,
     onPreviousAsset = () => {},
     onNextAsset = () => {},
     onVideoEnded = () => {},
@@ -73,10 +66,14 @@
 
   let containerWidth = $state(document.documentElement.clientWidth);
   let containerHeight = $state(document.documentElement.clientHeight);
-  let videoHeight = $derived(nextSizeHint?.height ?? 1);
-  let videoWidth = $derived(nextSizeHint?.width ?? 1);
-  $inspect(videoWidth).with(console.log.bind(null, 'vwidth'));
-  console.log('next', nextSizeHint);
+  const exifDimensions = $derived(
+    asset.exifInfo?.exifImageHeight && asset.exifInfo.exifImageHeight
+      ? (getDimensions(asset.exifInfo) as { width: number; height: number })
+      : null,
+  );
+  let dimensions = $derived(nextSizeHint ?? exifDimensions ?? { width: 1, height: 1 });
+  const scaledDimensions = $derived(scaleToFit(dimensions, containerWidth, containerHeight));
+
   onMount(() => {
     // Show video after mount to ensure fading in.
     showVideo = true;
@@ -96,9 +93,10 @@
   });
 
   const handleLoadedMetadata = () => {
-    console.log('loaded', videoPlayer?.videoWidth);
-    videoWidth = videoPlayer?.videoWidth ?? 1;
-    videoHeight = videoPlayer?.videoHeight ?? 1;
+    dimensions = {
+      width: videoPlayer?.videoWidth ?? 1,
+      height: videoPlayer?.videoHeight ?? 1,
+    };
     eventManager.emit('AssetViewerFree');
   };
 
@@ -141,17 +139,6 @@
     }
   };
 
-  const handlePreCommit = (direction: 'left' | 'right', nextWidth: number, nextHeight: number) => {
-    const { width: scaledWidth, height: scaledHeight } = scaleToFit(
-      nextWidth,
-      nextHeight,
-      containerWidth,
-      containerHeight,
-    );
-
-    onAboutToNavigate?.({ direction, nextWidth: scaledWidth, nextHeight: scaledHeight });
-  };
-
   $effect(() => {
     if (isFaceEditMode.value) {
       videoPlayer?.pause();
@@ -159,7 +146,7 @@
   });
 
   const calculateSize = () => {
-    const { width, height } = scaleToFit(videoWidth, videoHeight, containerWidth, containerHeight);
+    const { width, height } = scaledDimensions;
 
     const size = {
       width: width + 'px',
@@ -188,16 +175,14 @@
     bind:clientWidth={containerWidth}
     bind:clientHeight={containerHeight}
     use:swipeFeedback={{
-      onPreCommit: handlePreCommit,
       onSwipeCommit: handleSwipeCommit,
       leftPreviewUrl: previousAssetUrl,
       rightPreviewUrl: nextAssetUrl,
       currentAssetUrl: assetFileUrl,
-      imageElement: videoPlayer,
     }}
   >
     {#if castManager.isCasting}
-      <div class="place-content-center h-full place-items-center">
+      <div class="place-content-center h-full place-items-center" data-swipe-subject>
         <VideoRemoteViewer
           poster={getAssetThumbnailUrl({ id: assetId, size: AssetMediaSize.Preview, cacheKey })}
           {onVideoStarted}
@@ -206,7 +191,7 @@
         />
       </div>
     {:else}
-      <div>
+      <div class="relative">
         <video
           style:view-transition-name={transitionName}
           style:height={box.height}
@@ -231,15 +216,14 @@
           bind:volume={$videoViewerVolume}
           poster={getAssetThumbnailUrl({ id: assetId, size: AssetMediaSize.Preview, cacheKey })}
           src={assetFileUrl}
+          data-swipe-subject
         >
         </video>
-
         {#if isLoading}
-          <div class="absolute flex place-content-center place-items-center">
+          <div class="absolute inset-0 flex place-content-center place-items-center">
             <LoadingSpinner />
           </div>
         {/if}
-
         {#if isFaceEditMode.value}
           <FaceEditor htmlElement={videoPlayer} {containerWidth} {containerHeight} {assetId} />
         {/if}

@@ -1,13 +1,21 @@
 const broadcast = new BroadcastChannel('immich');
 
-let isLoadedReplyListeners: ((url: string, isUrlCached: boolean) => void)[] = [];
+let serviceWorkerEnabled = false;
+let replyListeners: ((url: string, isUrlCached: boolean) => void)[] = [];
 broadcast.addEventListener('message', (event) => {
-  if (event.data.type == 'isImageUrlCachedReply') {
-    for (const listener of isLoadedReplyListeners) {
+  if (event.data.type === 'isImageUrlCachedReply') {
+    for (const listener of replyListeners) {
       listener(event.data.url, event.data.isImageUrlCached);
     }
+  } else if (event.data.type === 'isServiceWorkerEnabledReply') {
+    serviceWorkerEnabled = true;
   }
 });
+broadcast.postMessage({ type: 'isServiceWorkerEnabled' });
+
+export function isServiceWorkerEnabled() {
+  return serviceWorkerEnabled;
+}
 
 export function cancelImageUrl(url: string | undefined | null) {
   if (!url) {
@@ -24,22 +32,21 @@ export function preloadImageUrl(url: string | undefined | null) {
 }
 
 export function isImageUrlCached(url: string) {
-  if (!globalThis.isSecureContext) {
+  if (!globalThis.isSecureContext || !serviceWorkerEnabled) {
     return Promise.resolve(false);
   }
-  return new Promise((resolve) => {
+  return new Promise<boolean>((resolve) => {
     const listener = (urlReply: string, isUrlCached: boolean) => {
       if (urlReply === url) {
         cleanup(isUrlCached);
       }
     };
     const cleanup = (isUrlCached: boolean) => {
-      isLoadedReplyListeners = isLoadedReplyListeners.filter((element) => element !== listener);
+      replyListeners = replyListeners.filter((element) => element !== listener);
       resolve(isUrlCached);
     };
-    isLoadedReplyListeners.push(listener);
+    replyListeners.push(listener);
     broadcast.postMessage({ type: 'isImageUrlCached', url });
-
     setTimeout(() => cleanup(false), 5000);
   });
 }

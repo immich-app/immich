@@ -1,5 +1,8 @@
 import { eventManager } from '$lib/managers/event-manager.svelte';
-
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function traceTransitionEvents(msg: string, error?: unknown) {
+  // console.log(msg, error);
+}
 class ViewTransitionManager {
   #activeViewTransition = $state<ViewTransition | null>(null);
   #finishedCallbacks: (() => void)[] = [];
@@ -25,36 +28,57 @@ class ViewTransitionManager {
     return this.#activeViewTransition;
   }
 
+  isSupported() {
+    return 'startViewTransition' in document;
+  }
+
   skipTransitions() {
     const skippedTransitions = !!this.#activeViewTransition;
-    if (skippedTransitions) {
-      console.log('skipped!');
-    }
     this.#activeViewTransition?.skipTransition();
     this.#notifyFinished();
     return skippedTransitions;
   }
 
-  startTransition(domUpdateComplete: Promise<void>, finishedCallback?: () => void) {
+  startTransition(domUpdateComplete: Promise<unknown>, types?: string[], finishedCallback?: () => unknown) {
+    if (!this.isSupported()) {
+      throw new Error('View transition API not available');
+    }
     if (this.#activeViewTransition) {
-      console.error('Can not start transition - one already active');
+      traceTransitionEvents('Can not start transition - one already active');
       return;
     }
 
     // good time to add view-transition-name styles (if needed)
+    traceTransitionEvents('emit BeforeStartViewTransition');
     eventManager.emit('BeforeStartViewTransition');
+
     // next call will create the 'old' view snapshot
-    // eslint-disable-next-line tscompat/tscompat
-    const transition = document.startViewTransition(async () => {
-      try {
+    let transition: ViewTransition;
+    try {
+      // eslint-disable-next-line tscompat/tscompat
+      transition = document.startViewTransition({
+        update: async () => {
+          // Good time to remove any view-transition-name styles created during
+          // BeforeStartViewTransition, then trigger the actual view transition.
+          traceTransitionEvents('emit StartViewTransition');
+          eventManager.emit('StartViewTransition');
+
+          await domUpdateComplete;
+          traceTransitionEvents('awaited domUpdateComplete');
+        },
+        types,
+      });
+    } catch {
+      // eslint-disable-next-line tscompat/tscompat
+      transition = document.startViewTransition(async () => {
         // Good time to remove any view-transition-name styles created during
         // BeforeStartViewTransition, then trigger the actual view transition.
+        traceTransitionEvents('emit StartViewTransition');
         eventManager.emit('StartViewTransition');
         await domUpdateComplete;
-      } catch (error: unknown) {
-        console.log('exception', error);
-      }
-    });
+        traceTransitionEvents('awaited domUpdateComplete');
+      });
+    }
     this.#activeViewTransition = transition;
     this.#finishedCallbacks.push(() => {
       this.#activeViewTransition = null;
@@ -67,10 +91,10 @@ class ViewTransitionManager {
     // eslint-disable-next-line tscompat/tscompat
     transition.updateCallbackDone
       .then(() => {
-        console.log('update done');
+        traceTransitionEvents('emit UpdateCallbackDone');
         eventManager.emit('UpdateCallbackDone');
       })
-      .catch((error: unknown) => console.log('exception in update', error));
+      .catch((error: unknown) => traceTransitionEvents('error in UpdateCallbackDone', error));
     // Both old/new snapshots are taken - pseudo elements are created, transition is
     // about to start
     // eslint-disable-next-line tscompat/tscompat
@@ -78,21 +102,21 @@ class ViewTransitionManager {
       .then(() => eventManager.emit('Ready'))
       .catch((error: unknown) => {
         this.#notifyFinished();
-        console.log('exception in ready', error);
+        traceTransitionEvents('error in Ready', error);
       });
     // Transition is complete
     // eslint-disable-next-line tscompat/tscompat
     transition.finished
       .then(() => {
+        traceTransitionEvents('emit Finished');
         eventManager.emit('Finished');
-        console.log('finished');
       })
-      .catch((error: unknown) => console.log('exception in finished', error));
+      .catch((error: unknown) => traceTransitionEvents('error in Finished', error));
     // eslint-disable-next-line tscompat/tscompat
     void transition.finished.then(() => this.#notifyFinished());
   }
+
   #notifyFinished() {
-    console.log('finishedCallbacks len', this.#finishedCallbacks.length);
     for (const callback of this.#finishedCallbacks) {
       callback();
     }

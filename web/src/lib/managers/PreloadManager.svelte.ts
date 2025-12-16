@@ -1,44 +1,60 @@
 import { getAssetUrl } from '$lib/utils';
-import { cancelImageUrl, isImageUrlCached, preloadImageUrl } from '$lib/utils/sw-messaging';
+import { cancelImageUrl, isImageUrlCached, isServiceWorkerEnabled, preloadImageUrl } from '$lib/utils/sw-messaging';
 import { AssetTypeEnum, type AssetResponseDto } from '@immich/sdk';
 
 class PreloadManager {
+  #cachedImages = new Set<string>();
+  loading(url: string) {
+    if (!isServiceWorkerEnabled()) {
+      this.#cachedImages.add(url);
+    }
+  }
+
   preload(asset: AssetResponseDto | undefined) {
     if (!asset) {
       return;
     }
-    if (globalThis.isSecureContext) {
+    if (isServiceWorkerEnabled()) {
       preloadImageUrl(getAssetUrl({ asset }));
       return;
     }
     if (asset.type === AssetTypeEnum.Image) {
-      const img = new Image();
-      img.src = getAssetUrl({ asset });
+      const src = getAssetUrl({ asset });
+      if (src) {
+        const img = new Image();
+        img.src = src;
+      }
     }
   }
 
   isPreloaded(asset: AssetResponseDto | undefined) {
     if (!asset) {
-      return false;
+      return Promise.resolve(false);
     }
-    if (globalThis.isSecureContext) {
-      const img = getAssetUrl({ asset });
+    const url = getAssetUrl({ asset });
+    return this.isUrlPreloaded(url);
+  }
 
-      return isImageUrlCached(img);
+  isUrlPreloaded(url: string | undefined | null) {
+    if (!url) {
+      return Promise.resolve(false);
     }
-    return false;
+    if (isServiceWorkerEnabled()) {
+      return isImageUrlCached(url);
+    }
+    return Promise.resolve(this.#cachedImages.has(url));
   }
 
   cancel(asset: AssetResponseDto | undefined) {
-    if (!globalThis.isSecureContext || !asset) {
+    if (!isServiceWorkerEnabled() || !asset) {
       return;
     }
     const url = getAssetUrl({ asset });
     cancelImageUrl(url);
   }
 
-  cancelPreloadUrl(url: string) {
-    if (!globalThis.isSecureContext) {
+  cancelUrl(url: string) {
+    if (!isServiceWorkerEnabled()) {
       return;
     }
 

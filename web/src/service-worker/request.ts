@@ -77,6 +77,5 @@ export const handleIsUrlCached = async (url: URL) => {
   const cacheKey = getCacheKey(url);
 
   const isImageUrlCached = !!(await get(cacheKey));
-  console.log('cacheKey', cacheKey, isImageUrlCached);
   replyIsImageUrlCached(url.pathname + url.search + url.hash, isImageUrlCached);
 };
