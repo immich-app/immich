@@ -2,6 +2,7 @@
   import { shortcuts } from '$lib/actions/shortcut';
   import type { OnAction } from '$lib/components/asset-viewer/actions/action';
   import { AssetAction } from '$lib/constants';
+  import { preferences } from '$lib/stores/user.store';
   import { handleError } from '$lib/utils/handle-error';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { updateAsset, type AssetResponseDto } from '@immich/sdk';
@@ -52,11 +53,13 @@
 </script>
 
 <svelte:document
-  use:shortcuts={[
-    { shortcut: { key: '1' }, onShortcut: onShortcut1 },
-    { shortcut: { key: '2' }, onShortcut: onShortcut2 },
-    { shortcut: { key: '3' }, onShortcut: onShortcut3 },
-    { shortcut: { key: '4' }, onShortcut: onShortcut4 },
-    { shortcut: { key: '5' }, onShortcut: onShortcut5 },
-  ]}
+  use:shortcuts={$preferences?.ratings.enabled
+    ? [
+        { shortcut: { key: '1' }, onShortcut: onShortcut1 },
+        { shortcut: { key: '2' }, onShortcut: onShortcut2 },
+        { shortcut: { key: '3' }, onShortcut: onShortcut3 },
+        { shortcut: { key: '4' }, onShortcut: onShortcut4 },
+        { shortcut: { key: '5' }, onShortcut: onShortcut5 },
+      ]
+    : []}
 />
