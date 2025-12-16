@@ -69,7 +69,7 @@
     "compression": "^1.8.0",
     "cookie": "^1.0.2",
     "cookie-parser": "^1.4.7",
-    "cron": "4.3.3",
+    "cron": "4.3.5",
     "exiftool-vendored": "^34.0.0",
     "express": "^5.1.0",
     "fast-glob": "^3.3.2",
