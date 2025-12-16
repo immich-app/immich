@@ -83,6 +83,9 @@
       );
     }}
   ></video>
+  <div
+    class="absolute top-0 h-full w-full pointer-events-none bg-linear-to-b from-black/25 via-[transparent_25%]"
+  ></div>
 {/if}
 
 <div class="absolute end-0 top-0 flex place-items-center gap-1 text-xs font-medium text-white">

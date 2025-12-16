@@ -343,7 +343,9 @@
         onComplete={(errored) => ((loaded = true), (thumbError = errored))}
       />
       {#if asset.isVideo}
-        <div class="absolute top-0 h-full w-full pointer-events-none">
+        <div
+          class="absolute top-0 h-full w-full pointer-events-none bg-linear-to-b from-black/25 via-[transparent_25%]"
+        >
           <VideoThumbnail
             url={getAssetPlaybackUrl({ id: asset.id, cacheKey: asset.thumbhash })}
             enablePlayback={mouseOver && $playVideoThumbnailOnHover}
@@ -353,7 +355,9 @@
           />
         </div>
       {:else if asset.isImage && asset.livePhotoVideoId}
-        <div class="absolute top-0 h-full w-full pointer-events-none">
+        <div
+          class="absolute top-0 h-full w-full pointer-events-none bg-linear-to-b from-black/25 via-[transparent_25%]"
+        >
           <VideoThumbnail
             url={getAssetPlaybackUrl({ id: asset.livePhotoVideoId, cacheKey: asset.thumbhash })}
             enablePlayback={mouseOver && $playVideoThumbnailOnHover}
