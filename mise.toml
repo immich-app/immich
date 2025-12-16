@@ -34,4 +34,4 @@ run = { task = ":i18n:format-fix" }
 
 [tasks."i18n:format-fix"]
 dir = "i18n"
-run = "pnpm dlx sort-json *.json"
+run = "pnpm run format:fix"
