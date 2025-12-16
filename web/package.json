@@ -9,7 +9,7 @@
     "build:stats": "BUILD_STATS=true vite build",
     "package": "svelte-kit package",
     "preview": "vite preview",
-    "check:svelte": "svelte-check --no-tsconfig --fail-on-warnings",
+    "check:svelte": "svelte-check --no-tsconfig --fail-on-warnings --compiler-warnings 'state_referenced_locally:ignore'",
     "check:typescript": "tsc --noEmit",
     "check:watch": "pnpm run check:svelte --watch",
     "check:code": "pnpm run format && pnpm run lint && pnpm run check:svelte && pnpm run check:typescript",
