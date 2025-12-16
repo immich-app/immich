@@ -7,6 +7,7 @@ const newMetricGroupMock = () => {
     addToCounter: vitest.fn(),
     addToGauge: vitest.fn(),
     addToHistogram: vitest.fn(),
+    setObservableGauge: vitest.fn(),
     configure: vitest.fn(),
   };
 };
