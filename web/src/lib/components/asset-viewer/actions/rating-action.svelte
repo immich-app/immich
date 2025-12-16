@@ -16,9 +16,9 @@
 
   let { asset, onAction }: Props = $props();
 
-  const rateAsset = async (rating: number) => {
+  const rateAsset = async (rating: number | null) => {
     try {
-      const updateAssetDto = { rating };
+      const updateAssetDto = rating === null ? {} : { rating };
 
       await updateAsset({
         id: asset.id,
@@ -39,12 +39,17 @@
         rating,
       });
 
-      toastManager.success($t('rating_set', { values: { rating } }));
+      if (rating === null) {
+        toastManager.success($t('rating_clear'));
+      } else {
+        toastManager.success($t('rating_set', { values: { rating } }));
+      }
     } catch (error) {
       handleError(error, $t('errors.unable_to_set_rating'));
     }
   };
 
+  const onShortcut0 = () => rateAsset(null);
   const onShortcut1 = () => rateAsset(1);
   const onShortcut2 = () => rateAsset(2);
   const onShortcut3 = () => rateAsset(3);
@@ -55,6 +60,7 @@
 <svelte:document
   use:shortcuts={$preferences?.ratings.enabled
     ? [
+        { shortcut: { key: '0' }, onShortcut: onShortcut0 },
         { shortcut: { key: '1' }, onShortcut: onShortcut1 },
         { shortcut: { key: '2' }, onShortcut: onShortcut2 },
         { shortcut: { key: '3' }, onShortcut: onShortcut3 },
