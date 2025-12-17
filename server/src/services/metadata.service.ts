@@ -290,7 +290,7 @@ export class MetadataService extends BaseService {
     };
 
     const promises: Promise<unknown>[] = [
-      this.assetRepository.upsertExif(exifData),
+      this.assetRepository.upsertExif(exifData, { lockedPropertiesBehavior: 'skip' }),
       this.assetRepository.update({
         id: asset.id,
         duration: this.getDuration(exifTags),
@@ -393,22 +393,34 @@ export class MetadataService extends BaseService {
 
   @OnJob({ name: JobName.SidecarWrite, queue: QueueName.Sidecar })
   async handleSidecarWrite(job: JobOf<JobName.SidecarWrite>): Promise<JobStatus> {
-    const { id, description, dateTimeOriginal, latitude, longitude, rating, tags } = job;
+    const { id, tags } = job;
     const asset = await this.assetJobRepository.getForSidecarWriteJob(id);
     if (!asset) {
       return JobStatus.Failed;
     }
 
+    const lockedProperties = await this.assetJobRepository.getLockedPropertiesForMetadataExtraction(id);
     const tagsList = (asset.tags || []).map((tag) => tag.value);
 
     const { sidecarFile } = getAssetFiles(asset.files);
     const sidecarPath = sidecarFile?.path || `${asset.originalPath}.xmp`;
 
+    const { description, dateTimeOriginal, latitude, longitude, rating } = _.pick(
+      {
+        description: asset.exifInfo.description,
+        dateTimeOriginal: asset.exifInfo.dateTimeOriginal,
+        latitude: asset.exifInfo.latitude,
+        longitude: asset.exifInfo.longitude,
+        rating: asset.exifInfo.rating,
+      },
+      lockedProperties,
+    );
+
     const exif = _.omitBy(
       <Tags>{
         Description: description,
         ImageDescription: description,
-        DateTimeOriginal: dateTimeOriginal,
+        DateTimeOriginal: dateTimeOriginal ? String(dateTimeOriginal) : undefined,
         GPSLatitude: latitude,
         GPSLongitude: longitude,
         Rating: rating,
