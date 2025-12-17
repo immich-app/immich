@@ -69,14 +69,13 @@ enum ActionButtonType {
   openActivity,
   likeActivity,
   share,
+  editImage,
   shareLink,
   cast,
   similarPhotos,
   viewInTimeline,
   download,
   upload,
-  editImage,
-  addTo,
   unstack,
   archive,
   unarchive,
@@ -87,6 +86,7 @@ enum ActionButtonType {
   deleteLocal,
   deletePermanent,
   delete,
+  addTo,
   advancedInfo;
 
   bool shouldShow(ActionButtonContext context) {
@@ -138,13 +138,6 @@ enum ActionButtonType {
       ActionButtonType.upload =>
         !context.isInLockedView && //
             context.asset.storage == AssetState.local,
-      ActionButtonType.editImage =>
-        !context.isInLockedView && //
-            context.asset.type == AssetType.image &&
-            !(context.buttonPosition == ButtonPosition.bottomBar && context.currentAlbum?.isShared == true),
-      ActionButtonType.addTo =>
-        !context.isInLockedView && //
-            context.asset.hasRemote,
       ActionButtonType.removeFromAlbum =>
         context.isOwner && //
             !context.isInLockedView && //
@@ -153,11 +146,6 @@ enum ActionButtonType {
         context.isOwner && //
             !context.isInLockedView && //
             context.isStacked,
-      ActionButtonType.openActivity =>
-        !context.isInLockedView &&
-            context.currentAlbum != null &&
-            context.currentAlbum!.isActivityEnabled &&
-            context.currentAlbum!.isShared,
       ActionButtonType.likeActivity =>
         !context.isInLockedView &&
             context.currentAlbum != null &&
@@ -176,6 +164,18 @@ enum ActionButtonType {
             context.timelineOrigin != TimelineOrigin.localAlbum &&
             context.isOwner,
       ActionButtonType.cast => context.isCasting || context.asset.hasRemote,
+      ActionButtonType.editImage =>
+        !context.isInLockedView && //
+            context.asset.type == AssetType.image &&
+            !(context.buttonPosition == ButtonPosition.bottomBar && context.currentAlbum?.isShared == true),
+      ActionButtonType.addTo =>
+        !context.isInLockedView && //
+            context.asset.hasRemote,
+      ActionButtonType.openActivity =>
+        !context.isInLockedView &&
+            context.currentAlbum != null &&
+            context.currentAlbum!.isActivityEnabled &&
+            context.currentAlbum!.isShared,
     };
   }
 
@@ -227,8 +227,6 @@ enum ActionButtonType {
         menuItem: menuItem,
       ),
       ActionButtonType.upload => UploadActionButton(source: context.source, iconOnly: iconOnly, menuItem: menuItem),
-      ActionButtonType.editImage => const EditImageActionButton(),
-      ActionButtonType.addTo => AddActionButton(originalTheme: context.originalTheme),
       ActionButtonType.removeFromAlbum => RemoveFromAlbumActionButton(
         albumId: context.currentAlbum!.id,
         source: context.source,
@@ -249,7 +247,6 @@ enum ActionButtonType {
         menuItem: true,
         onPressed: () => EventStream.shared.emit(const ViewerOpenBottomSheetEvent()),
       ),
-      ActionButtonType.openActivity => OpenActivityActionButton(iconOnly: iconOnly, menuItem: menuItem),
       ActionButtonType.viewInTimeline => BaseActionButton(
         label: 'view_in_timeline'.tr(),
         iconData: Icons.image_search,
@@ -265,6 +262,9 @@ enum ActionButtonType {
               },
       ),
       ActionButtonType.cast => CastActionButton(iconOnly: iconOnly, menuItem: menuItem),
+      ActionButtonType.editImage => const EditImageActionButton(),
+      ActionButtonType.addTo => AddActionButton(originalTheme: context.originalTheme),
+      ActionButtonType.openActivity => OpenActivityActionButton(iconOnly: iconOnly, menuItem: menuItem),
     };
   }
 
@@ -272,7 +272,7 @@ enum ActionButtonType {
   /// Buttons in the same group will be displayed together,
   /// with dividers separating different groups.
   int get kebabMenuGroup => switch (this) {
-    // 0: info and activity
+    // 0: info
     ActionButtonType.openInfo => 0,
     // 10: move,remove, and delete
     ActionButtonType.trash => 10,
