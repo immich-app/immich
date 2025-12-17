@@ -1019,7 +1019,7 @@ void main() {
 
       final bottomBarTypes = ActionButtonBuilder.getViewerBottomBarTypes(context);
       final kebabTypes = ActionButtonBuilder.getViewerKebabMenuTypes(
-        context.copyWith(buttonPosition: ButtonPosition.kebabMenu),
+        context.withButtonPosition(ButtonPosition.kebabMenu),
       );
 
       expect(const ListEquality().equals(bottomBarTypes, expectedTypes), isTrue);
@@ -1049,7 +1049,7 @@ void main() {
 
       final bottomBarTypes = ActionButtonBuilder.getViewerBottomBarTypes(context);
       final kebabTypes = ActionButtonBuilder.getViewerKebabMenuTypes(
-        context.copyWith(buttonPosition: ButtonPosition.kebabMenu),
+        context.withButtonPosition(ButtonPosition.kebabMenu),
       );
 
       expect(const ListEquality().equals(bottomBarTypes, expectedTypes), isTrue);
@@ -1080,7 +1080,7 @@ void main() {
 
       final bottomBarTypes = ActionButtonBuilder.getViewerBottomBarTypes(context);
       final kebabTypes = ActionButtonBuilder.getViewerKebabMenuTypes(
-        context.copyWith(buttonPosition: ButtonPosition.kebabMenu),
+        context.withButtonPosition(ButtonPosition.kebabMenu),
       );
 
       expect(const ListEquality().equals(bottomBarTypes, expectedTypes), isTrue);

@@ -63,35 +63,21 @@ class ActionButtonContext {
     this.buttonPosition = ButtonPosition.other,
   });
 
-  ActionButtonContext copyWith({
-    BaseAsset? asset,
-    bool? isOwner,
-    bool? isArchived,
-    bool? isTrashEnabled,
-    bool? isStacked,
-    bool? isInLockedView,
-    RemoteAlbum? currentAlbum,
-    bool? advancedTroubleshooting,
-    ActionSource? source,
-    bool? isCasting,
-    TimelineOrigin? timelineOrigin,
-    ThemeData? originalTheme,
-    ButtonPosition? buttonPosition,
-  }) {
+  ActionButtonContext withButtonPosition(ButtonPosition position) {
     return ActionButtonContext(
-      asset: asset ?? this.asset,
-      isOwner: isOwner ?? this.isOwner,
-      isArchived: isArchived ?? this.isArchived,
-      isTrashEnabled: isTrashEnabled ?? this.isTrashEnabled,
-      isStacked: isStacked ?? this.isStacked,
-      isInLockedView: isInLockedView ?? this.isInLockedView,
-      currentAlbum: currentAlbum ?? this.currentAlbum,
-      advancedTroubleshooting: advancedTroubleshooting ?? this.advancedTroubleshooting,
-      source: source ?? this.source,
-      isCasting: isCasting ?? this.isCasting,
-      timelineOrigin: timelineOrigin ?? this.timelineOrigin,
-      originalTheme: originalTheme ?? this.originalTheme,
-      buttonPosition: buttonPosition ?? this.buttonPosition,
+      asset: asset,
+      isOwner: isOwner,
+      isArchived: isArchived,
+      isTrashEnabled: isTrashEnabled,
+      isStacked: isStacked,
+      isInLockedView: isInLockedView,
+      currentAlbum: currentAlbum,
+      advancedTroubleshooting: advancedTroubleshooting,
+      source: source,
+      isCasting: isCasting,
+      timelineOrigin: timelineOrigin,
+      originalTheme: originalTheme,
+      buttonPosition: position,
     );
   }
 }
@@ -358,7 +344,7 @@ class ActionButtonBuilder {
   }
 
   static List<ActionButtonType> getViewerBottomBarTypes(ActionButtonContext context) {
-    final bottomBarContext = context.copyWith(buttonPosition: ButtonPosition.bottomBar);
+    final bottomBarContext = context.withButtonPosition(ButtonPosition.bottomBar);
     return _defaultViewerBottomBarOrder.where((type) => type.shouldShow(bottomBarContext)).take(4).toList();
   }
 
