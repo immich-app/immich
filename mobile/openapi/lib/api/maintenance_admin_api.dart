@@ -73,13 +73,13 @@ class MaintenanceAdminApi {
   ///
   /// Parameters:
   ///
-  /// * [MaintenanceGetIntegrityReportDto] maintenanceGetIntegrityReportDto (required):
-  Future<Response> getIntegrityReportWithHttpInfo(MaintenanceGetIntegrityReportDto maintenanceGetIntegrityReportDto,) async {
+  /// * [IntegrityGetReportDto] integrityGetReportDto (required):
+  Future<Response> getIntegrityReportWithHttpInfo(IntegrityGetReportDto integrityGetReportDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/admin/integrity/report';
 
     // ignore: prefer_final_locals
-    Object? postBody = maintenanceGetIntegrityReportDto;
+    Object? postBody = integrityGetReportDto;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
@@ -105,9 +105,9 @@ class MaintenanceAdminApi {
   ///
   /// Parameters:
   ///
-  /// * [MaintenanceGetIntegrityReportDto] maintenanceGetIntegrityReportDto (required):
-  Future<MaintenanceIntegrityReportResponseDto?> getIntegrityReport(MaintenanceGetIntegrityReportDto maintenanceGetIntegrityReportDto,) async {
-    final response = await getIntegrityReportWithHttpInfo(maintenanceGetIntegrityReportDto,);
+  /// * [IntegrityGetReportDto] integrityGetReportDto (required):
+  Future<IntegrityReportResponseDto?> getIntegrityReport(IntegrityGetReportDto integrityGetReportDto,) async {
+    final response = await getIntegrityReportWithHttpInfo(integrityGetReportDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -115,7 +115,7 @@ class MaintenanceAdminApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'MaintenanceIntegrityReportResponseDto',) as MaintenanceIntegrityReportResponseDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'IntegrityReportResponseDto',) as IntegrityReportResponseDto;
     
     }
     return null;
@@ -268,7 +268,7 @@ class MaintenanceAdminApi {
   /// Get integrity report summary
   ///
   /// ...
-  Future<MaintenanceIntegrityReportSummaryResponseDto?> getIntegrityReportSummary() async {
+  Future<IntegrityReportSummaryResponseDto?> getIntegrityReportSummary() async {
     final response = await getIntegrityReportSummaryWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
@@ -277,7 +277,7 @@ class MaintenanceAdminApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'MaintenanceIntegrityReportSummaryResponseDto',) as MaintenanceIntegrityReportSummaryResponseDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'IntegrityReportSummaryResponseDto',) as IntegrityReportSummaryResponseDto;
     
     }
     return null;

@@ -40,18 +40,18 @@ export type ActivityStatisticsResponseDto = {
     comments: number;
     likes: number;
 };
-export type MaintenanceGetIntegrityReportDto = {
+export type IntegrityGetReportDto = {
     "type": IntegrityReportType;
 };
-export type MaintenanceIntegrityReportDto = {
+export type IntegrityReportDto = {
     id: string;
     path: string;
     "type": IntegrityReportType;
 };
-export type MaintenanceIntegrityReportResponseDto = {
-    items: MaintenanceIntegrityReportDto[];
+export type IntegrityReportResponseDto = {
+    items: IntegrityReportDto[];
 };
-export type MaintenanceIntegrityReportSummaryResponseDto = {
+export type IntegrityReportSummaryResponseDto = {
     checksum_mismatch: number;
     missing_file: number;
     orphan_file: number;
@@ -1887,16 +1887,16 @@ export function unlinkAllOAuthAccountsAdmin(opts?: Oazapfts.RequestOpts) {
 /**
  * Get integrity report by type
  */
-export function getIntegrityReport({ maintenanceGetIntegrityReportDto }: {
-    maintenanceGetIntegrityReportDto: MaintenanceGetIntegrityReportDto;
+export function getIntegrityReport({ integrityGetReportDto }: {
+    integrityGetReportDto: IntegrityGetReportDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 201;
-        data: MaintenanceIntegrityReportResponseDto;
+        data: IntegrityReportResponseDto;
     }>("/admin/integrity/report", oazapfts.json({
         ...opts,
         method: "POST",
-        body: maintenanceGetIntegrityReportDto
+        body: integrityGetReportDto
     })));
 }
 /**
@@ -1942,7 +1942,7 @@ export function getIntegrityReportCsv({ $type }: {
 export function getIntegrityReportSummary(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
-        data: MaintenanceIntegrityReportSummaryResponseDto;
+        data: IntegrityReportSummaryResponseDto;
     }>("/admin/integrity/summary", {
         ...opts
     }));

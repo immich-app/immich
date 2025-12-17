@@ -3,6 +3,8 @@ import { newTestService, ServiceMocks } from 'test/utils';
 
 describe(IntegrityService.name, () => {
   let sut: IntegrityService;
+  // impl. pending
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let mocks: ServiceMocks;
 
   beforeEach(() => {

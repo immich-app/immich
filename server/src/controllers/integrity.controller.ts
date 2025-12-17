@@ -4,10 +4,10 @@ import { NextFunction, Response } from 'express';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
-  MaintenanceGetIntegrityReportDto,
-  MaintenanceIntegrityReportResponseDto,
-  MaintenanceIntegrityReportSummaryResponseDto,
-} from 'src/dtos/maintenance.dto';
+  IntegrityGetReportDto,
+  IntegrityReportResponseDto,
+  IntegrityReportSummaryResponseDto,
+} from 'src/dtos/integrity.dto';
 import { ApiTag, Permission } from 'src/enum';
 import { Auth, Authenticated, FileResponse } from 'src/middleware/auth.guard';
 import { LoggingRepository } from 'src/repositories/logging.repository';
@@ -30,7 +30,7 @@ export class IntegrityController {
     history: new HistoryBuilder().added('v9.9.9').alpha('v9.9.9'),
   })
   @Authenticated({ permission: Permission.Maintenance, admin: true })
-  getIntegrityReportSummary(): Promise<MaintenanceIntegrityReportSummaryResponseDto> {
+  getIntegrityReportSummary(): Promise<IntegrityReportSummaryResponseDto> {
     return this.service.getIntegrityReportSummary();
   }
 
@@ -41,7 +41,7 @@ export class IntegrityController {
     history: new HistoryBuilder().added('v9.9.9').alpha('v9.9.9'),
   })
   @Authenticated({ permission: Permission.Maintenance, admin: true })
-  getIntegrityReport(@Body() dto: MaintenanceGetIntegrityReportDto): Promise<MaintenanceIntegrityReportResponseDto> {
+  getIntegrityReport(@Body() dto: IntegrityGetReportDto): Promise<IntegrityReportResponseDto> {
     return this.service.getIntegrityReport(dto);
   }
 

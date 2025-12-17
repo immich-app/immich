@@ -331,7 +331,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/MaintenanceGetIntegrityReportDto"
+                "$ref": "#/components/schemas/IntegrityGetReportDto"
               }
             }
           },
@@ -342,7 +342,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/MaintenanceIntegrityReportResponseDto"
+                  "$ref": "#/components/schemas/IntegrityReportResponseDto"
                 }
               }
             },
@@ -554,7 +554,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/MaintenanceIntegrityReportSummaryResponseDto"
+                  "$ref": "#/components/schemas/IntegrityReportSummaryResponseDto"
                 }
               }
             },
@@ -16862,6 +16862,77 @@
         ],
         "type": "string"
       },
+      "IntegrityGetReportDto": {
+        "properties": {
+          "type": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/IntegrityReportType"
+              }
+            ]
+          }
+        },
+        "required": [
+          "type"
+        ],
+        "type": "object"
+      },
+      "IntegrityReportDto": {
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "type": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/IntegrityReportType"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "path",
+          "type"
+        ],
+        "type": "object"
+      },
+      "IntegrityReportResponseDto": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/IntegrityReportDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "type": "object"
+      },
+      "IntegrityReportSummaryResponseDto": {
+        "properties": {
+          "checksum_mismatch": {
+            "type": "integer"
+          },
+          "missing_file": {
+            "type": "integer"
+          },
+          "orphan_file": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "checksum_mismatch",
+          "missing_file",
+          "orphan_file"
+        ],
+        "type": "object"
+      },
       "IntegrityReportType": {
         "enum": [
           "orphan_file",
@@ -17201,77 +17272,6 @@
         },
         "required": [
           "username"
-        ],
-        "type": "object"
-      },
-      "MaintenanceGetIntegrityReportDto": {
-        "properties": {
-          "type": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/IntegrityReportType"
-              }
-            ]
-          }
-        },
-        "required": [
-          "type"
-        ],
-        "type": "object"
-      },
-      "MaintenanceIntegrityReportDto": {
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "path": {
-            "type": "string"
-          },
-          "type": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/IntegrityReportType"
-              }
-            ]
-          }
-        },
-        "required": [
-          "id",
-          "path",
-          "type"
-        ],
-        "type": "object"
-      },
-      "MaintenanceIntegrityReportResponseDto": {
-        "properties": {
-          "items": {
-            "items": {
-              "$ref": "#/components/schemas/MaintenanceIntegrityReportDto"
-            },
-            "type": "array"
-          }
-        },
-        "required": [
-          "items"
-        ],
-        "type": "object"
-      },
-      "MaintenanceIntegrityReportSummaryResponseDto": {
-        "properties": {
-          "checksum_mismatch": {
-            "type": "integer"
-          },
-          "missing_file": {
-            "type": "integer"
-          },
-          "orphan_file": {
-            "type": "integer"
-          }
-        },
-        "required": [
-          "checksum_mismatch",
-          "missing_file",
-          "orphan_file"
         ],
         "type": "object"
       },

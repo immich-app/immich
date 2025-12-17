@@ -10,10 +10,10 @@ import { StorageCore } from 'src/cores/storage.core';
 import { OnEvent, OnJob } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
-  MaintenanceGetIntegrityReportDto,
-  MaintenanceIntegrityReportResponseDto,
-  MaintenanceIntegrityReportSummaryResponseDto,
-} from 'src/dtos/maintenance.dto';
+  IntegrityGetReportDto,
+  IntegrityReportResponseDto,
+  IntegrityReportSummaryResponseDto,
+} from 'src/dtos/integrity.dto';
 import {
   AssetStatus,
   CacheControl,
@@ -154,11 +154,11 @@ export class IntegrityService extends BaseService {
     });
   }
 
-  getIntegrityReportSummary(): Promise<MaintenanceIntegrityReportSummaryResponseDto> {
+  getIntegrityReportSummary(): Promise<IntegrityReportSummaryResponseDto> {
     return this.integrityRepository.getIntegrityReportSummary();
   }
 
-  async getIntegrityReport(dto: MaintenanceGetIntegrityReportDto): Promise<MaintenanceIntegrityReportResponseDto> {
+  async getIntegrityReport(dto: IntegrityGetReportDto): Promise<IntegrityReportResponseDto> {
     return {
       items: await this.integrityRepository.getIntegrityReports(dto.type),
     };
