@@ -17,6 +17,7 @@ import 'package:immich_mobile/providers/infrastructure/current_album.provider.da
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
+import 'package:immich_mobile/utils/timezone.dart';
 
 class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
   const ViewerTopAppBar({super.key});
@@ -122,16 +123,21 @@ class _AppBarBackButton extends ConsumerWidget {
   }
 }
 
-class _AssetInfoTitle extends StatelessWidget {
+class _AssetInfoTitle extends ConsumerWidget {
   final BaseAsset asset;
 
   const _AssetInfoTitle({required this.asset});
 
   @override
-  Widget build(BuildContext context) {
-    final dateTime = asset.createdAt.toLocal();
+  Widget build(BuildContext context, WidgetRef ref) {
+    DateTime dateTime = asset.createdAt.toLocal();
     final currentYear = DateTime.now().year;
     final isCurrentYear = dateTime.year == currentYear;
+    final exifInfo = ref.watch(currentAssetExifProvider).valueOrNull;
+
+    if (exifInfo?.dateTimeOriginal != null) {
+      (dateTime, _) = applyTimezoneOffset(dateTime: exifInfo!.dateTimeOriginal!, timeZone: exifInfo.timeZone);
+    }
 
     final dateFormatted = isCurrentYear ? DateFormat.MMMd().format(dateTime) : DateFormat.yMMMd().format(dateTime);
     final timeFormatted = DateFormat.jm().format(dateTime);
@@ -139,7 +145,7 @@ class _AssetInfoTitle extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(dateFormatted, style: context.textTheme.bodyMedium?.copyWith(color: Colors.white)),
+        Text(dateFormatted, style: context.textTheme.labelLarge?.copyWith(color: Colors.white)),
         Text(timeFormatted, style: context.textTheme.labelMedium?.copyWith(color: Colors.white70)),
       ],
     );

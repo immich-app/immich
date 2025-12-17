@@ -693,7 +693,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
               backgroundDecoration: BoxDecoration(color: backgroundColor),
               enablePanAlways: true,
             ),
-            const Positioned(top: -40, left: 0, right: 0, child: MotionPhotoPlayButton()),
+            const Positioned(top: -50, left: 0, right: 0, child: MotionPhotoPlayButton()),
             if (!showingBottomSheet)
               const Positioned(
                 bottom: 0,
