@@ -86,7 +86,11 @@ class ViewerBottomBar extends ConsumerWidget {
                       children: [
                         if (asset.isVideo) const VideoControls(),
                         if (!isReadonlyModeEnabled)
-                          Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: actions),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: actions.map((action) => Expanded(child: action)).toList(),
+                          ),
                       ],
                     ),
                   ),
