@@ -22,9 +22,6 @@ class MemoryLane extends HookConsumerWidget {
           (memories) => memories != null
               ? ConstrainedBox(
                   constraints: const BoxConstraints(maxHeight: 200),
-                  // CarouselView has been observed to trigger a framework assertion during rotation
-                  // ('haveDimensions == (_lastMetrics != null)') in our runtime logs.
-                  // Use a simple horizontal ListView to avoid that crash and preserve timeline scroll state.
                   child: ListView.builder(
                     key: const PageStorageKey<String>('memory-lane-scroll'),
                     scrollDirection: Axis.horizontal,
