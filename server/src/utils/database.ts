@@ -15,7 +15,7 @@ import { PostgresJSDialect } from 'kysely-postgres-js';
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
 import { parse } from 'pg-connection-string';
 import postgres, { Notice, PostgresError } from 'postgres';
-import { columns, Exif, Person } from 'src/database';
+import { columns, Exif, lockableProperties, LockableProperty, Person } from 'src/database';
 import { AssetFileType, AssetVisibility, DatabaseExtension, DatabaseSslMode } from 'src/enum';
 import { AssetSearchBuilderOptions } from 'src/repositories/search.repository';
 import { DB } from 'src/schema';
@@ -488,3 +488,10 @@ export function vectorIndexQuery({ vectorExtension, table, indexName, lists }: V
     }
   }
 }
+
+export const updateLockedColumns = <T extends Record<string, unknown> & { lockedProperties?: LockableProperty[] }>(
+  exif: T,
+) => {
+  exif.lockedProperties = lockableProperties.filter((property) => property in exif);
+  return exif;
+};

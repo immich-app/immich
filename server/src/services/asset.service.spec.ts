@@ -225,7 +225,10 @@ describe(AssetService.name, () => {
 
       await sut.update(authStub.admin, 'asset-1', { description: 'Test description' });
 
-      expect(mocks.asset.upsertExif).toHaveBeenCalledWith({ assetId: 'asset-1', description: 'Test description' });
+      expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
+        { assetId: 'asset-1', description: 'Test description', lockedProperties: ['description'] },
+        { lockedPropertiesBehavior: 'append' },
+      );
     });
 
     it('should update the exif rating', async () => {
@@ -235,7 +238,14 @@ describe(AssetService.name, () => {
 
       await sut.update(authStub.admin, 'asset-1', { rating: 3 });
 
-      expect(mocks.asset.upsertExif).toHaveBeenCalledWith({ assetId: 'asset-1', rating: 3 });
+      expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
+        {
+          assetId: 'asset-1',
+          rating: 3,
+          lockedProperties: ['rating'],
+        },
+        { lockedPropertiesBehavior: 'append' },
+      );
     });
 
     it('should fail linking a live video if the motion part could not be found', async () => {
@@ -427,9 +437,7 @@ describe(AssetService.name, () => {
       });
       expect(mocks.asset.updateAll).toHaveBeenCalled();
       expect(mocks.asset.updateAllExif).toHaveBeenCalledWith(['asset-1'], { latitude: 0, longitude: 0 });
-      expect(mocks.job.queueAll).toHaveBeenCalledWith([
-        { name: JobName.SidecarWrite, data: { id: 'asset-1', latitude: 0, longitude: 0 } },
-      ]);
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([{ name: JobName.SidecarWrite, data: { id: 'asset-1' } }]);
     });
 
     it('should update exif table if latitude field is provided', async () => {
@@ -450,9 +458,7 @@ describe(AssetService.name, () => {
         latitude: 30,
         longitude: 50,
       });
-      expect(mocks.job.queueAll).toHaveBeenCalledWith([
-        { name: JobName.SidecarWrite, data: { id: 'asset-1', dateTimeOriginal, latitude: 30, longitude: 50 } },
-      ]);
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([{ name: JobName.SidecarWrite, data: { id: 'asset-1' } }]);
     });
 
     it('should update Assets table if duplicateId is provided as null', async () => {
@@ -482,18 +488,7 @@ describe(AssetService.name, () => {
         timeZone,
       });
       expect(mocks.asset.updateDateTimeOriginal).toHaveBeenCalledWith(['asset-1'], dateTimeRelative, timeZone);
-      expect(mocks.job.queueAll).toHaveBeenCalledWith([
-        {
-          name: JobName.SidecarWrite,
-          data: {
-            id: 'asset-1',
-            dateTimeOriginal: '2020-02-25T06:41:00.000+02:00',
-            description: undefined,
-            latitude: undefined,
-            longitude: undefined,
-          },
-        },
-      ]);
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([{ name: JobName.SidecarWrite, data: { id: 'asset-1' } }]);
     });
   });
 

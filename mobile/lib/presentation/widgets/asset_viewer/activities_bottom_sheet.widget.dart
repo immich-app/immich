@@ -79,7 +79,7 @@ class ActivitiesBottomSheet extends HookConsumerWidget {
       expand: false,
       shouldCloseOnMinExtent: false,
       resizeOnScroll: false,
-      backgroundColor: context.isDarkTheme ? Colors.black : Colors.white,
+      backgroundColor: context.isDarkTheme ? context.colorScheme.surface : Colors.white,
     );
   }
 }
