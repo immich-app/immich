@@ -987,6 +987,12 @@ void main() {
       expect(types[1], ActionButtonType.addTo);
       expect(types[2], ActionButtonType.openActivity);
       expect(types[3], ActionButtonType.likeActivity);
+
+      // Verify kebab menu does not contain bottom bar buttons
+      final kebabTypes = ActionButtonBuilder.getViewerKebabMenuTypes(context);
+      for (final type in types) {
+        expect(kebabTypes.contains(type), isFalse);
+      }
     });
 
     test('should return correct button types for local only asset', () {
@@ -1011,6 +1017,14 @@ void main() {
       expect(types[1], ActionButtonType.upload);
       expect(types[2], ActionButtonType.editImage);
       expect(types[3], ActionButtonType.deleteLocal);
+
+      // Verify kebab menu does not contain bottom bar buttons
+      final kebabTypes = ActionButtonBuilder.getViewerKebabMenuTypes(
+        context.copyWith(buttonPosition: ButtonPosition.kebabMenu),
+      );
+      for (final type in types) {
+        expect(kebabTypes.contains(type), isFalse);
+      }
     });
 
     test('should return correct button types for locked view', () {
@@ -1034,6 +1048,14 @@ void main() {
       expect(types[0], ActionButtonType.share);
       expect(types[1], ActionButtonType.removeFromLockFolder);
       expect(types[2], ActionButtonType.deletePermanent);
+
+      // Verify kebab menu does not contain bottom bar buttons
+      final kebabTypes = ActionButtonBuilder.getViewerKebabMenuTypes(
+        context.copyWith(buttonPosition: ButtonPosition.kebabMenu),
+      );
+      for (final type in types) {
+        expect(kebabTypes.contains(type), isFalse);
+      }
     });
 
     test('should return correct button types for remote only asset', () {
@@ -1058,6 +1080,14 @@ void main() {
       expect(types[1], ActionButtonType.editImage);
       expect(types[2], ActionButtonType.addTo);
       expect(types[3], ActionButtonType.delete);
+
+      // Verify kebab menu does not contain bottom bar buttons
+      final kebabTypes = ActionButtonBuilder.getViewerKebabMenuTypes(
+        context.copyWith(buttonPosition: ButtonPosition.kebabMenu),
+      );
+      for (final type in types) {
+        expect(kebabTypes.contains(type), isFalse);
+      }
     });
   });
 }
