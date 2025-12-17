@@ -97,7 +97,7 @@ class AssetViewer extends ConsumerStatefulWidget {
 }
 
 const double _kBottomSheetMinimumExtent = 0.4;
-const double _kBottomSheetSnapExtent = 0.7;
+const double _kBottomSheetSnapExtent = 0.67;
 
 class _AssetViewerState extends ConsumerState<AssetViewer> {
   static final _dummyListener = ImageStreamListener((image, _) => image.dispose());
@@ -399,9 +399,13 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     final isDraggingDown = currentExtent < previousExtent;
     previousExtent = currentExtent;
     // Closes the bottom sheet if the user is dragging down
-    if (isDraggingDown && delta.extent < 0.55) {
+    if (isDraggingDown && delta.extent < 0.67) {
       if (dragInProgress) {
         blockGestures = true;
+      }
+      // Jump to a lower position before starting close animation to prevent glitch
+      if (bottomSheetController.isAttached) {
+        bottomSheetController.jumpTo(0.67);
       }
       sheetCloseController?.close();
     }
@@ -480,7 +484,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     previousExtent = _kBottomSheetMinimumExtent;
     sheetCloseController = showBottomSheet(
       context: ctx,
-      sheetAnimationStyle: const AnimationStyle(duration: Durations.short4, reverseDuration: Durations.short2),
+      sheetAnimationStyle: const AnimationStyle(duration: Durations.medium2, reverseDuration: Durations.medium2),
       constraints: const BoxConstraints(maxWidth: double.infinity),
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20.0))),
       backgroundColor: ctx.colorScheme.surfaceContainerLowest,
@@ -688,16 +692,20 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
               backgroundDecoration: BoxDecoration(color: backgroundColor),
               enablePanAlways: true,
             ),
+            if (!showingBottomSheet)
+              const Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [AssetStackRow(), ViewerBottomBar()],
+                ),
+              ),
           ],
         ),
-        bottomNavigationBar: showingBottomSheet
-            ? const SizedBox.shrink()
-            : const Column(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.end,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [AssetStackRow(), ViewerBottomBar()],
-              ),
       ),
     );
   }

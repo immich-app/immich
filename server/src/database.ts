@@ -240,7 +240,7 @@ export type Session = {
   isPendingSyncReset: boolean;
 };
 
-export type Exif = Omit<Selectable<AssetExifTable>, 'updatedAt' | 'updateId'>;
+export type Exif = Omit<Selectable<AssetExifTable>, 'updatedAt' | 'updateId' | 'lockedProperties'>;
 
 export type Person = {
   createdAt: Date;
@@ -465,3 +465,13 @@ export const columns = {
     'plugin.updatedAt as updatedAt',
   ],
 } as const;
+
+export type LockableProperty = (typeof lockableProperties)[number];
+export const lockableProperties = [
+  'description',
+  'dateTimeOriginal',
+  'latitude',
+  'longitude',
+  'rating',
+  'timeZone',
+] as const;
