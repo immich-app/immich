@@ -294,7 +294,7 @@ enum ActionButtonType {
               },
       ),
       ActionButtonType.cast => CastActionButton(iconOnly: iconOnly, menuItem: menuItem),
-      ActionButtonType.editImage => const EditImageActionButton(),
+      ActionButtonType.editImage => EditImageActionButton(iconOnly: iconOnly, menuItem: menuItem),
       ActionButtonType.addTo => AddActionButton(originalTheme: context.originalTheme),
       ActionButtonType.openActivity => OpenActivityActionButton(iconOnly: iconOnly, menuItem: menuItem),
     };
