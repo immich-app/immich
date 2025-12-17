@@ -6,7 +6,6 @@
   import { QueryParameter } from '$lib/constants';
   import { handleError } from '$lib/utils/handle-error';
   import { MaintenanceAction, setMaintenanceMode } from '@immich/sdk';
-  import { Button, HStack, Text } from '@immich/ui';
   import { mdiProgressWrench, mdiRefresh } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
@@ -30,21 +29,16 @@
   }
 </script>
 
-<AdminPageLayout breadcrumbs={[{ title: data.meta.title }]}>
-  {#snippet buttons()}
-    <HStack gap={1}>
-      <Button
-        leadingIcon={mdiProgressWrench}
-        size="small"
-        variant="ghost"
-        color="secondary"
-        onclick={switchToMaintenance}
-      >
-        <Text class="hidden md:block">{$t('admin.maintenance_start')}</Text>
-      </Button>
-    </HStack>
-  {/snippet}
-
+<AdminPageLayout
+  breadcrumbs={[{ title: data.meta.title }]}
+  actions={[
+    {
+      title: $t('admin.maintenance_start'),
+      onAction: switchToMaintenance,
+      icon: mdiProgressWrench,
+    },
+  ]}
+>
   <section id="setting-content" class="flex place-content-center sm:mx-4">
     <section class="w-full pb-28 sm:w-5/6 md:w-[850px]">
       <SettingAccordionState queryParam={QueryParameter.IS_OPEN}>
