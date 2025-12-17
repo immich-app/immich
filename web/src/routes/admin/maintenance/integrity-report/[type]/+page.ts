@@ -8,7 +8,7 @@ export const load = (async ({ params, url }) => {
 
   await authenticate(url, { admin: true });
   const integrityReport = await getIntegrityReport({
-    maintenanceGetIntegrityReportDto: {
+    integrityGetReportDto: {
       type,
     },
   });
