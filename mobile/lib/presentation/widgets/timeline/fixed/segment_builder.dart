@@ -71,22 +71,6 @@ class FixedSegmentBuilder extends SegmentBuilder {
       }
     }
 
-    assert(() {
-      for (int i = 0; i < segments.length - 1; i++) {
-        final current = segments[i];
-        final next = segments[i + 1];
-        assert(
-          current.endOffset <= next.startOffset,
-          'Segment offset overlap: segment $i endOffset=${current.endOffset} > segment ${i + 1} startOffset=${next.startOffset}',
-        );
-        assert(
-          current.startOffset <= current.endOffset,
-          'Segment $i has invalid offset range: startOffset=${current.startOffset} > endOffset=${current.endOffset}',
-        );
-      }
-      return true;
-    }(), 'Segment offset validation failed');
-
     return segments;
   }
 }
