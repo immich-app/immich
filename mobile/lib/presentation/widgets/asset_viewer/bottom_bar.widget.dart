@@ -57,33 +57,38 @@ class ViewerBottomBar extends ConsumerWidget {
         const MoveToTrashActionButton(source: ActionSource.viewer, isPreview: true),
       ] else ...[
         const ShareActionButton(source: ActionSource.viewer),
-        if (asset.isLocalOnly && !isWaitingForSyncApproval) const UploadActionButton(source: ActionSource.viewer),
-        if (asset.type == AssetType.image) const EditImageActionButton(),
-        if (asset.hasRemote) AddActionButton(originalTheme: originalTheme),
-        if (isOwner) ...[
-          asset.isLocalOnly
-              ? const DeleteLocalActionButton(source: ActionSource.viewer)
-              : const DeleteActionButton(source: ActionSource.viewer, showConfirmation: true),
+
+        if (!isInLockedView) ...[
+          if (asset.isLocalOnly) const UploadActionButton(source: ActionSource.viewer),
+          if (asset.type == AssetType.image) const EditImageActionButton(),
+          if (asset.hasRemote) AddActionButton(originalTheme: originalTheme),
+
+          if (isOwner) ...[
+            asset.isLocalOnly
+                ? const DeleteLocalActionButton(source: ActionSource.viewer)
+                : const DeleteActionButton(source: ActionSource.viewer, showConfirmation: true),
+          ],
         ],
-        if (isWaitingForSyncApproval) ...[
-          DecoratedBox(
-            decoration: BoxDecoration(
-              border: Border.all(color: const Color.fromARGB(155, 243, 188, 106), width: 0.5),
-              borderRadius: const BorderRadius.all(Radius.circular(24)),
-            ),
-            child: Column(
-              children: [
-                const Text('asset_out_of_sync_trash_confirmation_title').tr(),
-                const Row(
-                  children: [
-                    KeepOnDeviceActionButton(source: ActionSource.viewer, isPreview: true),
-                    MoveToTrashActionButton(source: ActionSource.viewer, isPreview: true),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
+        //todo check it!
+        // if (isWaitingForSyncApproval) ...[
+        //   DecoratedBox(
+        //     decoration: BoxDecoration(
+        //       border: Border.all(color: const Color.fromARGB(155, 243, 188, 106), width: 0.5),
+        //       borderRadius: const BorderRadius.all(Radius.circular(24)),
+        //     ),
+        //     child: Column(
+        //       children: [
+        //         const Text('asset_out_of_sync_trash_confirmation_title').tr(),
+        //         const Row(
+        //           children: [
+        //             KeepOnDeviceActionButton(source: ActionSource.viewer, isPreview: true),
+        //             MoveToTrashActionButton(source: ActionSource.viewer, isPreview: true),
+        //           ],
+        //         ),
+        //       ],
+        //     ),
+        //   ),
+        // ],
       ],
     ];
 
@@ -110,7 +115,7 @@ class ViewerBottomBar extends ConsumerWidget {
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         if (asset.isVideo) const VideoControls(),
-                        if (!isInLockedView && !isReadonlyModeEnabled)
+                        if (!isReadonlyModeEnabled)
                           Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: actions),
                       ],
                     ),
