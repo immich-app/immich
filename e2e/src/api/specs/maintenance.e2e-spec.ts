@@ -69,7 +69,7 @@ describe('/admin/maintenance', () => {
         name: ManualJobName.IntegrityChecksumMismatch,
       });
 
-      await utils.waitForQueueFinish(admin.accessToken, QueueName.BackgroundTask);
+      await utils.waitForQueueFinish(admin.accessToken, QueueName.IntegrityCheck);
 
       const { status, body } = await request(app)
         .get('/admin/maintenance/integrity/summary')
@@ -93,7 +93,7 @@ describe('/admin/maintenance', () => {
         name: ManualJobName.IntegrityOrphanFiles,
       });
 
-      await utils.waitForQueueFinish(admin.accessToken, QueueName.BackgroundTask);
+      await utils.waitForQueueFinish(admin.accessToken, QueueName.IntegrityCheck);
 
       const { status, body } = await request(app)
         .get('/admin/maintenance/integrity/summary')
@@ -117,7 +117,7 @@ describe('/admin/maintenance', () => {
         name: ManualJobName.IntegrityOrphanFilesRefresh,
       });
 
-      await utils.waitForQueueFinish(admin.accessToken, QueueName.BackgroundTask);
+      await utils.waitForQueueFinish(admin.accessToken, QueueName.IntegrityCheck);
 
       const { status, body } = await request(app)
         .get('/admin/maintenance/integrity/summary')
@@ -139,7 +139,7 @@ describe('/admin/maintenance', () => {
         name: ManualJobName.IntegrityMissingFiles,
       });
 
-      await utils.waitForQueueFinish(admin.accessToken, QueueName.BackgroundTask);
+      await utils.waitForQueueFinish(admin.accessToken, QueueName.IntegrityCheck);
 
       const { status, body } = await request(app)
         .get('/admin/maintenance/integrity/summary')
@@ -160,7 +160,7 @@ describe('/admin/maintenance', () => {
         name: ManualJobName.IntegrityMissingFilesRefresh,
       });
 
-      await utils.waitForQueueFinish(admin.accessToken, QueueName.BackgroundTask);
+      await utils.waitForQueueFinish(admin.accessToken, QueueName.IntegrityCheck);
 
       const { status, body } = await request(app)
         .get('/admin/maintenance/integrity/summary')
@@ -183,7 +183,7 @@ describe('/admin/maintenance', () => {
         name: ManualJobName.IntegrityChecksumMismatch,
       });
 
-      await utils.waitForQueueFinish(admin.accessToken, QueueName.BackgroundTask);
+      await utils.waitForQueueFinish(admin.accessToken, QueueName.IntegrityCheck);
 
       const { status, body } = await request(app)
         .get('/admin/maintenance/integrity/summary')
@@ -203,7 +203,7 @@ describe('/admin/maintenance', () => {
         name: ManualJobName.IntegrityChecksumMismatchRefresh,
       });
 
-      await utils.waitForQueueFinish(admin.accessToken, QueueName.BackgroundTask);
+      await utils.waitForQueueFinish(admin.accessToken, QueueName.IntegrityCheck);
 
       const { status, body } = await request(app)
         .get('/admin/maintenance/integrity/summary')

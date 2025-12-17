@@ -746,6 +746,7 @@ export type QueuesResponseLegacyDto = {
     duplicateDetection: QueueResponseLegacyDto;
     faceDetection: QueueResponseLegacyDto;
     facialRecognition: QueueResponseLegacyDto;
+    integrityCheck: QueueResponseLegacyDto;
     library: QueueResponseLegacyDto;
     metadataExtraction: QueueResponseLegacyDto;
     migration: QueueResponseLegacyDto;
@@ -1491,6 +1492,7 @@ export type JobSettingsDto = {
 export type SystemConfigJobDto = {
     backgroundTask: JobSettingsDto;
     faceDetection: JobSettingsDto;
+    integrityCheck: JobSettingsDto;
     library: JobSettingsDto;
     metadataExtraction: JobSettingsDto;
     migration: JobSettingsDto;
@@ -5506,7 +5508,8 @@ export enum QueueName {
     Notifications = "notifications",
     BackupDatabase = "backupDatabase",
     Ocr = "ocr",
-    Workflow = "workflow"
+    Workflow = "workflow",
+    IntegrityCheck = "integrityCheck"
 }
 export enum QueueCommand {
     Start = "start",

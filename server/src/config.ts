@@ -268,6 +268,7 @@ export const defaults = Object.freeze<SystemConfig>({
     [QueueName.Notification]: { concurrency: 5 },
     [QueueName.Ocr]: { concurrency: 1 },
     [QueueName.Workflow]: { concurrency: 5 },
+    [QueueName.IntegrityCheck]: { concurrency: 1 },
   },
   logging: {
     enabled: true,

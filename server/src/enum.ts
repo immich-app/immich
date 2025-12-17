@@ -565,6 +565,7 @@ export enum QueueName {
   BackupDatabase = 'backupDatabase',
   Ocr = 'ocr',
   Workflow = 'workflow',
+  IntegrityCheck = 'integrityCheck',
 }
 
 export enum QueueJobStatus {

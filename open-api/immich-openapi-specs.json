@@ -18903,7 +18903,8 @@
           "notifications",
           "backupDatabase",
           "ocr",
-          "workflow"
+          "workflow",
+          "integrityCheck"
         ],
         "type": "string"
       },
@@ -19016,6 +19017,9 @@
           "facialRecognition": {
             "$ref": "#/components/schemas/QueueResponseLegacyDto"
           },
+          "integrityCheck": {
+            "$ref": "#/components/schemas/QueueResponseLegacyDto"
+          },
           "library": {
             "$ref": "#/components/schemas/QueueResponseLegacyDto"
           },
@@ -19059,6 +19063,7 @@
           "duplicateDetection",
           "faceDetection",
           "facialRecognition",
+          "integrityCheck",
           "library",
           "metadataExtraction",
           "migration",
@@ -21971,6 +21976,9 @@
           "faceDetection": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
+          "integrityCheck": {
+            "$ref": "#/components/schemas/JobSettingsDto"
+          },
           "library": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
@@ -22008,6 +22016,7 @@
         "required": [
           "backgroundTask",
           "faceDetection",
+          "integrityCheck",
           "library",
           "metadataExtraction",
           "migration",

@@ -145,7 +145,7 @@ export class IntegrityService extends BaseService {
     });
   }
 
-  @OnJob({ name: JobName.IntegrityOrphanedFilesQueueAll, queue: QueueName.BackgroundTask })
+  @OnJob({ name: JobName.IntegrityOrphanedFilesQueueAll, queue: QueueName.IntegrityCheck })
   async handleOrphanedFilesQueueAll({ refreshOnly }: IIntegrityJob = {}): Promise<JobStatus> {
     this.logger.log(`Checking for out of date orphaned file reports...`);
 
@@ -214,7 +214,7 @@ export class IntegrityService extends BaseService {
     return JobStatus.Success;
   }
 
-  @OnJob({ name: JobName.IntegrityOrphanedFiles, queue: QueueName.BackgroundTask })
+  @OnJob({ name: JobName.IntegrityOrphanedFiles, queue: QueueName.IntegrityCheck })
   async handleOrphanedFiles({ type, paths }: IIntegrityOrphanedFilesJob): Promise<JobStatus> {
     this.logger.log(`Processing batch of ${paths.length} files to check if they are orphaned.`);
 
@@ -248,7 +248,7 @@ export class IntegrityService extends BaseService {
     return JobStatus.Success;
   }
 
-  @OnJob({ name: JobName.IntegrityOrphanedFilesRefresh, queue: QueueName.BackgroundTask })
+  @OnJob({ name: JobName.IntegrityOrphanedFilesRefresh, queue: QueueName.IntegrityCheck })
   async handleOrphanedRefresh({ items }: IIntegrityPathWithReportJob): Promise<JobStatus> {
     this.logger.log(`Processing batch of ${items.length} reports to check if they are out of date.`);
 
@@ -270,7 +270,7 @@ export class IntegrityService extends BaseService {
     return JobStatus.Success;
   }
 
-  @OnJob({ name: JobName.IntegrityMissingFilesQueueAll, queue: QueueName.BackgroundTask })
+  @OnJob({ name: JobName.IntegrityMissingFilesQueueAll, queue: QueueName.IntegrityCheck })
   async handleMissingFilesQueueAll({ refreshOnly }: IIntegrityJob = {}): Promise<JobStatus> {
     if (refreshOnly) {
       this.logger.log(`Checking for out of date missing file reports...`);
@@ -314,7 +314,7 @@ export class IntegrityService extends BaseService {
     return JobStatus.Success;
   }
 
-  @OnJob({ name: JobName.IntegrityMissingFiles, queue: QueueName.BackgroundTask })
+  @OnJob({ name: JobName.IntegrityMissingFiles, queue: QueueName.IntegrityCheck })
   async handleMissingFiles({ items }: IIntegrityMissingFilesJob): Promise<JobStatus> {
     this.logger.log(`Processing batch of ${items.length} files to check if they are missing.`);
 
@@ -350,7 +350,7 @@ export class IntegrityService extends BaseService {
     return JobStatus.Success;
   }
 
-  @OnJob({ name: JobName.IntegrityMissingFilesRefresh, queue: QueueName.BackgroundTask })
+  @OnJob({ name: JobName.IntegrityMissingFilesRefresh, queue: QueueName.IntegrityCheck })
   async handleMissingRefresh({ items: paths }: IIntegrityPathWithReportJob): Promise<JobStatus> {
     this.logger.log(`Processing batch of ${paths.length} reports to check if they are out of date.`);
 
@@ -372,7 +372,7 @@ export class IntegrityService extends BaseService {
     return JobStatus.Success;
   }
 
-  @OnJob({ name: JobName.IntegrityChecksumFiles, queue: QueueName.BackgroundTask })
+  @OnJob({ name: JobName.IntegrityChecksumFiles, queue: QueueName.IntegrityCheck })
   async handleChecksumFiles({ refreshOnly }: IIntegrityJob = {}): Promise<JobStatus> {
     if (refreshOnly) {
       this.logger.log(`Checking for out of date checksum file reports...`);
@@ -507,7 +507,7 @@ export class IntegrityService extends BaseService {
     return JobStatus.Success;
   }
 
-  @OnJob({ name: JobName.IntegrityChecksumFilesRefresh, queue: QueueName.BackgroundTask })
+  @OnJob({ name: JobName.IntegrityChecksumFilesRefresh, queue: QueueName.IntegrityCheck })
   async handleChecksumRefresh({ items: paths }: IIntegrityPathWithChecksumJob): Promise<JobStatus> {
     this.logger.log(`Processing batch of ${paths.length} reports to check if they are out of date.`);
 
@@ -551,7 +551,7 @@ export class IntegrityService extends BaseService {
     return JobStatus.Success;
   }
 
-  @OnJob({ name: JobName.IntegrityReportDelete, queue: QueueName.BackgroundTask })
+  @OnJob({ name: JobName.IntegrityReportDelete, queue: QueueName.IntegrityCheck })
   async handleDeleteIntegrityReport({ type }: IIntegrityDeleteReportJob): Promise<JobStatus> {
     this.logger.log(`Deleting all entries for ${type ?? 'all types of'} integrity report`);
 
