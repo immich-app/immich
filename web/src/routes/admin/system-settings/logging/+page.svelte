@@ -1,18 +1,17 @@
 <script lang="ts">
   import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
-  import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import SystemSettingsModal from '$lib/modals/SystemSettingsModal.svelte';
   import { LogLevel } from '@immich/sdk';
+  import { Field, Switch } from '@immich/ui';
   import { t } from 'svelte-i18n';
 </script>
 
 <SystemSettingsModal keys={['logging']}>
   {#snippet child({ disabled, config, configToEdit })}
-    <SettingSwitch
-      title={$t('admin.logging_enable_description')}
-      {disabled}
-      bind:checked={configToEdit.logging.enabled}
-    />
+    <Field required {disabled} label={$t('admin.logging_enable_description')}>
+      <Switch bind:checked={configToEdit.logging.enabled} />
+    </Field>
+
     <SettingSelect
       label={$t('level')}
       desc={$t('admin.logging_level_description')}

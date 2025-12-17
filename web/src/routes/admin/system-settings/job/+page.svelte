@@ -1,9 +1,8 @@
 <script lang="ts">
-  import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
-  import { SettingInputFieldType } from '$lib/constants';
   import SystemSettingsModal from '$lib/modals/SystemSettingsModal.svelte';
   import { getQueueName } from '$lib/utils';
   import { QueueName, type SystemConfigDto, type SystemConfigJobDto } from '@immich/sdk';
+  import { Field, HelperText, NumberInput } from '@immich/ui';
   import { t } from 'svelte-i18n';
 
   const queueNames = [
@@ -29,30 +28,23 @@
 </script>
 
 <SystemSettingsModal keys={['user']}>
-  {#snippet child({ disabled, config, configToEdit })}
+  {#snippet child({ disabled, configToEdit })}
     {#each queueNames as queueName (queueName)}
-      <div class="ms-4 mt-4 flex flex-col gap-4">
-        {#if isSystemConfigJobDto(configToEdit, queueName)}
-          <SettingInputField
-            inputType={SettingInputFieldType.NUMBER}
-            {disabled}
-            label={$t('admin.job_concurrency', { values: { job: $getQueueName(queueName) } })}
-            description=""
-            bind:value={configToEdit.job[queueName].concurrency}
-            required={true}
-            isEdited={!(configToEdit.job[queueName].concurrency == config.job[queueName].concurrency)}
-          />
-        {:else}
-          <SettingInputField
-            inputType={SettingInputFieldType.NUMBER}
-            label={$t('admin.job_concurrency', { values: { job: $getQueueName(queueName) } })}
-            description=""
-            value={1}
-            disabled={true}
-            title={$t('admin.job_not_concurrency_safe')}
-          />
-        {/if}
-      </div>
+      {#if isSystemConfigJobDto(configToEdit, queueName)}
+        <Field
+          required
+          {disabled}
+          label={$t('admin.job_concurrency', { values: { job: $getQueueName(queueName) } })}
+          description=""
+        >
+          <NumberInput bind:value={configToEdit.job[queueName].concurrency} />
+        </Field>
+      {:else}
+        <Field label={$t('admin.job_concurrency', { values: { job: $getQueueName(queueName) } })}>
+          <NumberInput value={1} disabled={true} />
+          <HelperText>{$t('admin.job_not_concurrency_safe')}</HelperText>
+        </Field>
+      {/if}
     {/each}
   {/snippet}
 </SystemSettingsModal>

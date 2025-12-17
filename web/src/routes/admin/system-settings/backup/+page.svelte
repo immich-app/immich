@@ -1,10 +1,8 @@
 <script lang="ts">
-  import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
   import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
-  import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
-  import { SettingInputFieldType } from '$lib/constants';
   import FormatMessage from '$lib/elements/FormatMessage.svelte';
   import SystemSettingsModal from '$lib/modals/SystemSettingsModal.svelte';
+  import { Field, HelperText, Input, Link, NumberInput, Switch } from '@immich/ui';
   import { t } from 'svelte-i18n';
 
   let cronExpressionOptions = $derived([
@@ -16,12 +14,10 @@
 </script>
 
 <SystemSettingsModal keys={['backup']}>
-  {#snippet child({ disabled, config, configToEdit })}
-    <SettingSwitch
-      title={$t('admin.backup_database_enable_description')}
-      {disabled}
-      bind:checked={configToEdit.backup.database.enabled}
-    />
+  {#snippet child({ disabled, configToEdit })}
+    <Field label={$t('admin.backup_database_enable_description')} {disabled}>
+      <Switch bind:checked={configToEdit.backup.database.enabled} />
+    </Field>
 
     <SettingSelect
       options={cronExpressionOptions}
@@ -31,40 +27,25 @@
       bind:value={configToEdit.backup.database.cronExpression}
     />
 
-    <SettingInputField
-      inputType={SettingInputFieldType.TEXT}
-      required={true}
-      disabled={disabled || !configToEdit.backup.database.enabled}
-      label={$t('admin.cron_expression')}
-      bind:value={configToEdit.backup.database.cronExpression}
-      isEdited={configToEdit.backup.database.cronExpression !== config.backup.database.cronExpression}
-    >
-      {#snippet descriptionSnippet()}
-        <p class="text-sm dark:text-immich-dark-fg">
-          <FormatMessage key="admin.cron_expression_description">
-            {#snippet children({ message })}
-              <a
-                href="https://crontab.guru/#{configToEdit.backup.database.cronExpression.replaceAll(' ', '_')}"
-                class="underline"
-                target="_blank"
-                rel="noreferrer"
-              >
-                {message}
-                <br />
-              </a>
-            {/snippet}
-          </FormatMessage>
-        </p>
-      {/snippet}
-    </SettingInputField>
+    <Field label={$t('admin.cron_expression')} required disabled={disabled || !configToEdit.backup.database.enabled}>
+      <Input bind:value={configToEdit.backup.database.cronExpression} />
+      <HelperText>
+        <FormatMessage key="admin.cron_expression_description">
+          {#snippet children({ message })}
+            <Link href="https://crontab.guru/#{configToEdit.backup.database.cronExpression.replaceAll(' ', '_')}">
+              {message}
+            </Link>
+          {/snippet}
+        </FormatMessage>
+      </HelperText>
+    </Field>
 
-    <SettingInputField
-      inputType={SettingInputFieldType.NUMBER}
-      required={true}
+    <Field
+      required
       label={$t('admin.backup_keep_last_amount')}
       disabled={disabled || !configToEdit.backup.database.enabled}
-      bind:value={configToEdit.backup.database.keepLastAmount}
-      isEdited={configToEdit.backup.database.keepLastAmount !== config.backup.database.keepLastAmount}
-    />
+    >
+      <NumberInput bind:value={configToEdit.backup.database.keepLastAmount}></NumberInput>
+    </Field>
   {/snippet}
 </SystemSettingsModal>

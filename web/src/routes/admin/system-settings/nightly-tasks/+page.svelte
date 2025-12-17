@@ -3,6 +3,7 @@
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import { SettingInputFieldType } from '$lib/constants';
   import SystemSettingsModal from '$lib/modals/SystemSettingsModal.svelte';
+  import { Field, Switch } from '@immich/ui';
   import { t } from 'svelte-i18n';
 </script>
 
@@ -18,12 +19,13 @@
         {disabled}
         isEdited={!(configToEdit.nightlyTasks.startTime === config.nightlyTasks.startTime)}
       />
-      <SettingSwitch
-        title={$t('admin.nightly_tasks_database_cleanup_setting')}
-        subtitle={$t('admin.nightly_tasks_database_cleanup_setting_description')}
-        bind:checked={configToEdit.nightlyTasks.databaseCleanup}
+      <Field
+        label={$t('admin.nightly_tasks_database_cleanup_setting')}
+        description={$t('admin.nightly_tasks_database_cleanup_setting_description')}
         {disabled}
-      />
+      >
+        <Switch bind:checked={configToEdit.nightlyTasks.databaseCleanup} />
+      </Field>
       <SettingSwitch
         title={$t('admin.nightly_tasks_missing_thumbnails_setting')}
         subtitle={$t('admin.nightly_tasks_missing_thumbnails_setting_description')}

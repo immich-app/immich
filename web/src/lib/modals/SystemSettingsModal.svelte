@@ -4,7 +4,7 @@
   import { AppRoute } from '$lib/constants';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { systemConfigManager } from '$lib/managers/system-config-manager.svelte';
-  import { getSystemConfigActions, handleSystemConfigSave } from '$lib/services/system-config.service';
+  import { getSystemConfigActions, handleSystemConfigSave, resolveSetting } from '$lib/services/system-config.service';
   import type { SystemConfigContext } from '$lib/types';
   import type { SystemConfigDto } from '@immich/sdk';
   import { Button, FormModal, type ModalSize } from '@immich/ui';
@@ -19,13 +19,13 @@
     child: Snippet<[SystemConfigContext]>;
   };
 
-  let { keys, size = 'medium', onBeforeSave, child }: Props = $props();
+  let { keys, size = 'large', onBeforeSave, child }: Props = $props();
 
   const disabled = $derived(featureFlagsManager.value.configFile);
   const config = $derived(systemConfigManager.value);
   let configToEdit = $state(systemConfigManager.cloneValue());
   const { settings } = $derived(getSystemConfigActions($t, featureFlagsManager.value, systemConfigManager.value));
-  const setting = $derived(settings.find((setting) => setting.href === page.url.pathname));
+  const setting = $derived(resolveSetting(settings, page.url.pathname));
   const showResetToDefault = $derived(!isEqual(pick(configToEdit, keys), pick(systemConfigManager.defaultValue, keys)));
 
   const handleResetToDefault = () => {
@@ -47,14 +47,7 @@
 </script>
 
 {#if setting}
-  <FormModal
-    size={size as 'small' | 'medium'}
-    title={setting.title}
-    icon={setting.icon}
-    preventDefault
-    {onClose}
-    {onSubmit}
-  >
+  <FormModal {size} title={setting.title} icon={setting.icon} preventDefault {onClose} {onSubmit}>
     <div class="flex flex-col gap-5">
       {@render child({ disabled, config, configToEdit })}
       {#if showResetToDefault}

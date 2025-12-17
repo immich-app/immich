@@ -272,7 +272,7 @@
     "oauth_timeout_description": "Timeout for requests in milliseconds",
     "ocr_job_description": "Use machine learning to recognize text in images",
     "password_enable_description": "Login with email and password",
-    "password_settings": "Password Login",
+    "password_settings": "Password login",
     "password_settings_description": "Manage password login settings",
     "paths_validated_successfully": "All paths validated successfully",
     "person_cleanup_job": "Person cleanup",

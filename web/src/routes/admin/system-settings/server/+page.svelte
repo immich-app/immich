@@ -3,18 +3,18 @@
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import { SettingInputFieldType } from '$lib/constants';
   import SystemSettingsModal from '$lib/modals/SystemSettingsModal.svelte';
+  import { Field, Input } from '@immich/ui';
   import { t } from 'svelte-i18n';
 </script>
 
 <SystemSettingsModal keys={['server']}>
   {#snippet child({ disabled, config, configToEdit })}
-    <SettingInputField
-      inputType={SettingInputFieldType.TEXT}
+    <Field
       label={$t('admin.server_external_domain_settings')}
       description={$t('admin.server_external_domain_settings_description')}
-      bind:value={configToEdit.server.externalDomain}
-      isEdited={configToEdit.server.externalDomain !== config.server.externalDomain}
-    />
+    >
+      <Input bind:value={configToEdit.server.externalDomain} />
+    </Field>
 
     <SettingInputField
       inputType={SettingInputFieldType.TEXT}
