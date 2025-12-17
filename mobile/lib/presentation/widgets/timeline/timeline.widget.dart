@@ -33,8 +33,6 @@ final _runtimeTimelineArgsProvider = StateProvider<TimelineArgs>((ref) {
   return const TimelineArgs(maxWidth: 0, maxHeight: 0);
 });
 
-final _timelinePendingRestoreAssetIndexProvider = StateProvider<int?>((ref) => null);
-
 class _TimelineRowAnchor {
   final int rowIndex;
   final double deltaPx;
@@ -190,13 +188,6 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
     _baseScaleFactor = _scaleFactor;
 
     ref.listenManual(multiSelectProvider.select((s) => s.isEnabled), _onMultiSelectionToggled);
-
-    ref.listenManual(_timelinePendingRestoreAssetIndexProvider, (_, next) {
-      if (next == null) return;
-      _scaleRestoreAssetIndex = next;
-      _restoreScalePosition(null);
-      ref.read(_timelinePendingRestoreAssetIndexProvider.notifier).state = null;
-    });
 
     ref.listenManual(_timelinePendingRestoreRowAnchorProvider, (_, next) {
       if (next == null) return;
