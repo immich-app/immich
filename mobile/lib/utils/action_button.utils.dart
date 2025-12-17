@@ -16,10 +16,8 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/delete_action_
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_local_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_permanent_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/download_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/keep_on_device_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/like_activity_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/move_to_lock_folder_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/move_to_trash_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/remove_from_album_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/remove_from_lock_folder_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_action_button.widget.dart';
@@ -83,9 +81,7 @@ enum ActionButtonType {
   deleteLocal,
   deletePermanent,
   delete,
-  advancedInfo,
-  keepOnDevice,
-  syncTrash;
+  advancedInfo;
 
   bool shouldShow(ActionButtonContext context) {
     return switch (this) {
@@ -165,10 +161,9 @@ enum ActionButtonType {
             context.timelineOrigin != TimelineOrigin.lockedFolder &&
             context.timelineOrigin != TimelineOrigin.archive &&
             context.timelineOrigin != TimelineOrigin.localAlbum &&
+            context.timelineOrigin != TimelineOrigin.syncTrash &&
             context.isOwner,
       ActionButtonType.cast => context.isCasting || context.asset.hasRemote,
-      ActionButtonType.keepOnDevice => context.isWaitingForTrashApproval,
-      ActionButtonType.syncTrash => context.isWaitingForTrashApproval,
     };
   }
 
@@ -255,8 +250,6 @@ enum ActionButtonType {
               },
       ),
       ActionButtonType.cast => CastActionButton(iconOnly: iconOnly, menuItem: menuItem),
-      ActionButtonType.keepOnDevice => const KeepOnDeviceActionButton(source: ActionSource.viewer, isPreview: true),
-      ActionButtonType.syncTrash => const MoveToTrashActionButton(source: ActionSource.viewer, isPreview: true),
     };
   }
 

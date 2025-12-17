@@ -20,11 +20,6 @@ import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_shee
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/trash_sync.provider.dart';
-import 'package:immich_mobile/providers/routes.provider.dart';
-import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -46,29 +41,6 @@ class AssetDetailBottomSheet extends ConsumerWidget {
     if (asset == null) {
       return const SizedBox.shrink();
     }
-//todo check it!
-    // final isTrashEnable = ref.watch(serverInfoProvider.select((state) => state.serverFeatures.trash));
-    // final isOwner = asset is RemoteAsset && asset.ownerId == ref.watch(currentUserProvider)?.id;
-    // final isInLockedView = ref.watch(inLockedViewProvider);
-    // final currentAlbum = ref.watch(currentRemoteAlbumProvider);
-    // final isArchived = asset is RemoteAsset && asset.visibility == AssetVisibility.archive;
-    // final advancedTroubleshooting = ref.watch(settingsProvider.notifier).get(Setting.advancedTroubleshooting);
-    // final isWaitingForTrashApproval = ref.watch(isWaitingForSyncApprovalProvider(asset.checksum)).value == true;
-    //
-    // final buttonContext = ActionButtonContext(
-    //   asset: asset,
-    //   isOwner: isOwner,
-    //   isArchived: isArchived,
-    //   isTrashEnabled: isTrashEnable,
-    //   isInLockedView: isInLockedView,
-    //   isStacked: asset is RemoteAsset && asset.stackId != null,
-    //   currentAlbum: currentAlbum,
-    //   advancedTroubleshooting: advancedTroubleshooting,
-    //   isWaitingForTrashApproval: isWaitingForTrashApproval,
-    //   source: ActionSource.viewer,
-    // );
-    //
-    // final actions = ActionButtonBuilder.build(buttonContext);
 
     return BaseBottomSheet(
       actions: [],

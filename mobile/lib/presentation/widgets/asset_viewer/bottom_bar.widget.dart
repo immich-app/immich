@@ -69,26 +69,6 @@ class ViewerBottomBar extends ConsumerWidget {
                 : const DeleteActionButton(source: ActionSource.viewer, showConfirmation: true),
           ],
         ],
-        //todo check it!
-        // if (isWaitingForSyncApproval) ...[
-        //   DecoratedBox(
-        //     decoration: BoxDecoration(
-        //       border: Border.all(color: const Color.fromARGB(155, 243, 188, 106), width: 0.5),
-        //       borderRadius: const BorderRadius.all(Radius.circular(24)),
-        //     ),
-        //     child: Column(
-        //       children: [
-        //         const Text('asset_out_of_sync_trash_confirmation_title').tr(),
-        //         const Row(
-        //           children: [
-        //             KeepOnDeviceActionButton(source: ActionSource.viewer, isPreview: true),
-        //             MoveToTrashActionButton(source: ActionSource.viewer, isPreview: true),
-        //           ],
-        //         ),
-        //       ],
-        //     ),
-        //   ),
-        // ],
       ],
     ];
 
