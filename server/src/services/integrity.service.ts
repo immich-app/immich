@@ -2,13 +2,21 @@ import { Injectable } from '@nestjs/common';
 import { createHash } from 'node:crypto';
 import { createReadStream } from 'node:fs';
 import { stat } from 'node:fs/promises';
-import { Writable } from 'node:stream';
+import { basename } from 'node:path';
+import { Readable, Writable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 import { JOBS_LIBRARY_PAGINATION_SIZE } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { OnEvent, OnJob } from 'src/decorators';
+import { AuthDto } from 'src/dtos/auth.dto';
+import {
+  MaintenanceGetIntegrityReportDto,
+  MaintenanceIntegrityReportResponseDto,
+  MaintenanceIntegrityReportSummaryResponseDto,
+} from 'src/dtos/maintenance.dto';
 import {
   AssetStatus,
+  CacheControl,
   DatabaseLock,
   ImmichWorker,
   IntegrityReportType,
@@ -28,6 +36,7 @@ import {
   IIntegrityPathWithChecksumJob,
   IIntegrityPathWithReportJob,
 } from 'src/types';
+import { ImmichFileResponse } from 'src/utils/file';
 import { handlePromiseError } from 'src/utils/misc';
 
 /**
@@ -143,6 +152,54 @@ export class IntegrityService extends BaseService {
       expression: checksumFiles.cronExpression,
       start: checksumFiles.enabled,
     });
+  }
+
+  getIntegrityReportSummary(): Promise<MaintenanceIntegrityReportSummaryResponseDto> {
+    return this.integrityRepository.getIntegrityReportSummary();
+  }
+
+  async getIntegrityReport(dto: MaintenanceGetIntegrityReportDto): Promise<MaintenanceIntegrityReportResponseDto> {
+    return {
+      items: await this.integrityRepository.getIntegrityReports(dto.type),
+    };
+  }
+
+  getIntegrityReportCsv(type: IntegrityReportType): Readable {
+    return this.integrityRepository.streamIntegrityReportsCSV(type);
+  }
+
+  async getIntegrityReportFile(id: string): Promise<ImmichFileResponse> {
+    const { path } = await this.integrityRepository.getById(id);
+
+    return new ImmichFileResponse({
+      path,
+      fileName: basename(path),
+      contentType: 'application/octet-stream',
+      cacheControl: CacheControl.PrivateWithoutCache,
+    });
+  }
+
+  async deleteIntegrityReport(auth: AuthDto, id: string): Promise<void> {
+    const { path, assetId, fileAssetId } = await this.integrityRepository.getById(id);
+
+    if (assetId) {
+      await this.assetRepository.updateAll([assetId], {
+        deletedAt: new Date(),
+        status: AssetStatus.Trashed,
+      });
+
+      await this.eventRepository.emit('AssetTrashAll', {
+        assetIds: [assetId],
+        userId: auth.user.id,
+      });
+
+      await this.integrityRepository.deleteById(id);
+    } else if (fileAssetId) {
+      await this.assetRepository.deleteFiles([{ id: fileAssetId }]);
+    } else {
+      await this.storageRepository.unlink(path);
+      await this.integrityRepository.deleteById(id);
+    }
   }
 
   @OnJob({ name: JobName.IntegrityOrphanedFilesQueueAll, queue: QueueName.IntegrityCheck })

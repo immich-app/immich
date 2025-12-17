@@ -40,9 +40,6 @@ export type ActivityStatisticsResponseDto = {
     comments: number;
     likes: number;
 };
-export type SetMaintenanceModeDto = {
-    action: MaintenanceAction;
-};
 export type MaintenanceGetIntegrityReportDto = {
     "type": IntegrityReportType;
 };
@@ -58,6 +55,9 @@ export type MaintenanceIntegrityReportSummaryResponseDto = {
     checksum_mismatch: number;
     missing_file: number;
     orphan_file: number;
+};
+export type SetMaintenanceModeDto = {
+    action: MaintenanceAction;
 };
 export type MaintenanceLoginDto = {
     token?: string;
@@ -1885,18 +1885,6 @@ export function unlinkAllOAuthAccountsAdmin(opts?: Oazapfts.RequestOpts) {
     }));
 }
 /**
- * Set maintenance mode
- */
-export function setMaintenanceMode({ setMaintenanceModeDto }: {
-    setMaintenanceModeDto: SetMaintenanceModeDto;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchText("/admin/maintenance", oazapfts.json({
-        ...opts,
-        method: "POST",
-        body: setMaintenanceModeDto
-    })));
-}
-/**
  * Get integrity report by type
  */
 export function getIntegrityReport({ maintenanceGetIntegrityReportDto }: {
@@ -1905,7 +1893,7 @@ export function getIntegrityReport({ maintenanceGetIntegrityReportDto }: {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 201;
         data: MaintenanceIntegrityReportResponseDto;
-    }>("/admin/maintenance/integrity/report", oazapfts.json({
+    }>("/admin/integrity/report", oazapfts.json({
         ...opts,
         method: "POST",
         body: maintenanceGetIntegrityReportDto
@@ -1917,7 +1905,7 @@ export function getIntegrityReport({ maintenanceGetIntegrityReportDto }: {
 export function deleteIntegrityReport({ id }: {
     id: string;
 }, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchText(`/admin/maintenance/integrity/report/${encodeURIComponent(id)}`, {
+    return oazapfts.ok(oazapfts.fetchText(`/admin/integrity/report/${encodeURIComponent(id)}`, {
         ...opts,
         method: "DELETE"
     }));
@@ -1931,7 +1919,7 @@ export function getIntegrityReportFile({ id }: {
     return oazapfts.ok(oazapfts.fetchBlob<{
         status: 200;
         data: Blob;
-    }>(`/admin/maintenance/integrity/report/${encodeURIComponent(id)}/file`, {
+    }>(`/admin/integrity/report/${encodeURIComponent(id)}/file`, {
         ...opts
     }));
 }
@@ -1944,7 +1932,7 @@ export function getIntegrityReportCsv({ $type }: {
     return oazapfts.ok(oazapfts.fetchBlob<{
         status: 200;
         data: Blob;
-    }>(`/admin/maintenance/integrity/report/${encodeURIComponent($type)}/csv`, {
+    }>(`/admin/integrity/report/${encodeURIComponent($type)}/csv`, {
         ...opts
     }));
 }
@@ -1955,9 +1943,21 @@ export function getIntegrityReportSummary(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: MaintenanceIntegrityReportSummaryResponseDto;
-    }>("/admin/maintenance/integrity/summary", {
+    }>("/admin/integrity/summary", {
         ...opts
     }));
+}
+/**
+ * Set maintenance mode
+ */
+export function setMaintenanceMode({ setMaintenanceModeDto }: {
+    setMaintenanceModeDto: SetMaintenanceModeDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/admin/maintenance", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: setMaintenanceModeDto
+    })));
 }
 /**
  * Log into maintenance mode
@@ -5235,14 +5235,14 @@ export enum UserAvatarColor {
     Gray = "gray",
     Amber = "amber"
 }
-export enum MaintenanceAction {
-    Start = "start",
-    End = "end"
-}
 export enum IntegrityReportType {
     OrphanFile = "orphan_file",
     MissingFile = "missing_file",
     ChecksumMismatch = "checksum_mismatch"
+}
+export enum MaintenanceAction {
+    Start = "start",
+    End = "end"
 }
 export enum NotificationLevel {
     Success = "success",

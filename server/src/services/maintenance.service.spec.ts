@@ -106,7 +106,4 @@ describe(MaintenanceService.name, () => {
       expect(mocks.systemMetadata.get).toHaveBeenCalledTimes(1);
     });
   });
-
-  describe.skip('getIntegrityReportSummary'); // just calls repository
-  describe.skip('getIntegrityReport'); // just calls repository
 });

@@ -7,7 +7,7 @@ import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 
 const assetFilepath = `${testAssetDir}/metadata/gps-position/thompson-springs.jpg`;
 
-describe('/admin/maintenance', () => {
+describe('/admin/integrity', () => {
   let cookie: string | undefined;
   let admin: LoginResponseDto;
   let nonAdmin: LoginResponseDto;
@@ -18,7 +18,7 @@ describe('/admin/maintenance', () => {
     nonAdmin = await utils.userSetup(admin.accessToken, createUserDto.user1);
   });
 
-  describe('POST /integrity/summary (& jobs)', async () => {
+  describe('POST /summary (& jobs)', async () => {
     let baseline: Record<IntegrityReportType, number>;
 
     beforeAll(async () => {
@@ -53,7 +53,7 @@ describe('/admin/maintenance', () => {
       await utils.waitForQueueFinish(admin.accessToken, QueueName.IntegrityCheck);
 
       const { status, body } = await request(app)
-        .get('/admin/maintenance/integrity/summary')
+        .get('/admin/integrity/summary')
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .send();
 
@@ -77,7 +77,7 @@ describe('/admin/maintenance', () => {
       await utils.waitForQueueFinish(admin.accessToken, QueueName.IntegrityCheck);
 
       const { status, body } = await request(app)
-        .get('/admin/maintenance/integrity/summary')
+        .get('/admin/integrity/summary')
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .send();
 
@@ -101,7 +101,7 @@ describe('/admin/maintenance', () => {
       await utils.waitForQueueFinish(admin.accessToken, QueueName.IntegrityCheck);
 
       const { status, body } = await request(app)
-        .get('/admin/maintenance/integrity/summary')
+        .get('/admin/integrity/summary')
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .send();
 
@@ -123,7 +123,7 @@ describe('/admin/maintenance', () => {
       await utils.waitForQueueFinish(admin.accessToken, QueueName.IntegrityCheck);
 
       const { status, body } = await request(app)
-        .get('/admin/maintenance/integrity/summary')
+        .get('/admin/integrity/summary')
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .send();
 
@@ -144,7 +144,7 @@ describe('/admin/maintenance', () => {
       await utils.waitForQueueFinish(admin.accessToken, QueueName.IntegrityCheck);
 
       const { status, body } = await request(app)
-        .get('/admin/maintenance/integrity/summary')
+        .get('/admin/integrity/summary')
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .send();
 
@@ -167,7 +167,7 @@ describe('/admin/maintenance', () => {
       await utils.waitForQueueFinish(admin.accessToken, QueueName.IntegrityCheck);
 
       const { status, body } = await request(app)
-        .get('/admin/maintenance/integrity/summary')
+        .get('/admin/integrity/summary')
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .send();
 
@@ -187,7 +187,7 @@ describe('/admin/maintenance', () => {
       await utils.waitForQueueFinish(admin.accessToken, QueueName.IntegrityCheck);
 
       const { status, body } = await request(app)
-        .get('/admin/maintenance/integrity/summary')
+        .get('/admin/integrity/summary')
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .send();
 

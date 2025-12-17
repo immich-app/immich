@@ -863,6 +863,7 @@ export enum ApiTag {
   Download = 'Download',
   Duplicates = 'Duplicates',
   Faces = 'Faces',
+  Integrity = 'Integrity (admin)',
   Jobs = 'Jobs',
   Libraries = 'Libraries',
   Maintenance = 'Maintenance (admin)',

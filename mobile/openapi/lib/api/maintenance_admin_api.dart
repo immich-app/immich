@@ -27,7 +27,7 @@ class MaintenanceAdminApi {
   /// * [String] id (required):
   Future<Response> deleteIntegrityReportWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/admin/maintenance/integrity/report/{id}'
+    final apiPath = r'/admin/integrity/report/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -76,7 +76,7 @@ class MaintenanceAdminApi {
   /// * [MaintenanceGetIntegrityReportDto] maintenanceGetIntegrityReportDto (required):
   Future<Response> getIntegrityReportWithHttpInfo(MaintenanceGetIntegrityReportDto maintenanceGetIntegrityReportDto,) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/admin/maintenance/integrity/report';
+    final apiPath = r'/admin/integrity/report';
 
     // ignore: prefer_final_locals
     Object? postBody = maintenanceGetIntegrityReportDto;
@@ -132,7 +132,7 @@ class MaintenanceAdminApi {
   /// * [IntegrityReportType] type (required):
   Future<Response> getIntegrityReportCsvWithHttpInfo(IntegrityReportType type,) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/admin/maintenance/integrity/report/{type}/csv'
+    final apiPath = r'/admin/integrity/report/{type}/csv'
       .replaceAll('{type}', type.toString());
 
     // ignore: prefer_final_locals
@@ -189,7 +189,7 @@ class MaintenanceAdminApi {
   /// * [String] id (required):
   Future<Response> getIntegrityReportFileWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/admin/maintenance/integrity/report/{id}/file'
+    final apiPath = r'/admin/integrity/report/{id}/file'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -242,7 +242,7 @@ class MaintenanceAdminApi {
   /// Note: This method returns the HTTP [Response].
   Future<Response> getIntegrityReportSummaryWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/admin/maintenance/integrity/summary';
+    final apiPath = r'/admin/integrity/summary';
 
     // ignore: prefer_final_locals
     Object? postBody;

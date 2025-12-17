@@ -322,57 +322,7 @@
         "x-immich-state": "Stable"
       }
     },
-    "/admin/maintenance": {
-      "post": {
-        "description": "Put Immich into or take it out of maintenance mode",
-        "operationId": "setMaintenanceMode",
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SetMaintenanceModeDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "summary": "Set maintenance mode",
-        "tags": [
-          "Maintenance (admin)"
-        ],
-        "x-immich-admin-only": true,
-        "x-immich-history": [
-          {
-            "version": "v2.3.0",
-            "state": "Added"
-          },
-          {
-            "version": "v2.3.0",
-            "state": "Alpha"
-          }
-        ],
-        "x-immich-permission": "maintenance",
-        "x-immich-state": "Alpha"
-      }
-    },
-    "/admin/maintenance/integrity/report": {
+    "/admin/integrity/report": {
       "post": {
         "description": "...",
         "operationId": "getIntegrityReport",
@@ -429,7 +379,7 @@
         "x-immich-state": "Alpha"
       }
     },
-    "/admin/maintenance/integrity/report/{id}": {
+    "/admin/integrity/report/{id}": {
       "delete": {
         "description": "...",
         "operationId": "deleteIntegrityReport",
@@ -479,7 +429,7 @@
         "x-immich-state": "Alpha"
       }
     },
-    "/admin/maintenance/integrity/report/{id}/file": {
+    "/admin/integrity/report/{id}/file": {
       "get": {
         "description": "...",
         "operationId": "getIntegrityReportFile",
@@ -537,7 +487,7 @@
         "x-immich-state": "Alpha"
       }
     },
-    "/admin/maintenance/integrity/report/{type}/csv": {
+    "/admin/integrity/report/{type}/csv": {
       "get": {
         "description": "...",
         "operationId": "getIntegrityReportCsv",
@@ -594,7 +544,7 @@
         "x-immich-state": "Alpha"
       }
     },
-    "/admin/maintenance/integrity/summary": {
+    "/admin/integrity/summary": {
       "get": {
         "description": "...",
         "operationId": "getIntegrityReportSummary",
@@ -634,6 +584,56 @@
           },
           {
             "version": "v9.9.9",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "maintenance",
+        "x-immich-state": "Alpha"
+      }
+    },
+    "/admin/maintenance": {
+      "post": {
+        "description": "Put Immich into or take it out of maintenance mode",
+        "operationId": "setMaintenanceMode",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetMaintenanceModeDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Set maintenance mode",
+        "tags": [
+          "Maintenance (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v2.3.0",
+            "state": "Added"
+          },
+          {
+            "version": "v2.3.0",
             "state": "Alpha"
           }
         ],
@@ -14580,6 +14580,10 @@
     {
       "name": "Faces",
       "description": "A face is a detected human face within an asset, which can be associated with a person. Faces are normally detected via machine learning, but can also be created via manually."
+    },
+    {
+      "name": "Integrity (admin)",
+      "description": "Endpoints for viewing and managing integrity reports."
     },
     {
       "name": "Jobs",
