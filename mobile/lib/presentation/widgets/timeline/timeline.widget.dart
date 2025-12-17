@@ -29,18 +29,12 @@ import 'package:immich_mobile/widgets/common/immich_sliver_app_bar.dart';
 import 'package:immich_mobile/widgets/common/mesmerizing_sliver_app_bar.dart';
 import 'package:immich_mobile/widgets/common/selection_sliver_app_bar.dart';
 
-// Holds the live TimelineArgs for the current Timeline instance.
-// We update this when LayoutBuilder constraints change (e.g. rotation) without recreating the widget subtree.
 final _runtimeTimelineArgsProvider = StateProvider<TimelineArgs>((ref) {
   return const TimelineArgs(maxWidth: 0, maxHeight: 0);
 });
 
-// Set by the Timeline widget right before constraints/args change; consumed by _SliverTimelineState to restore view.
 final _timelinePendingRestoreAssetIndexProvider = StateProvider<int?>((ref) => null);
 
-/// Represents a row anchor for scroll position restoration.
-/// The rowIndex is the sliver child index (includes headers), and deltaPx is the
-/// offset within that row (0 if the row is at the top edge).
 class _TimelineRowAnchor {
   final int rowIndex;
   final double deltaPx;
@@ -51,10 +45,8 @@ class _TimelineRowAnchor {
   String toString() => '_TimelineRowAnchor(rowIndex: $rowIndex, deltaPx: $deltaPx)';
 }
 
-// Updated continuously by the timeline grid to describe the row at the top of the viewport.
 final _timelineAnchorRowProvider = StateProvider<_TimelineRowAnchor?>((ref) => null);
 
-// Set by the Timeline widget right before constraints/args change; consumed by _SliverTimelineState to restore view.
 final _timelinePendingRestoreRowAnchorProvider = StateProvider<_TimelineRowAnchor?>((ref) => null);
 
 class Timeline extends StatelessWidget {
@@ -91,10 +83,7 @@ class Timeline extends StatelessWidget {
       body: LayoutBuilder(
         builder: (_, constraints) {
           return ProviderScope(
-            overrides: [
-              // Make TimelineArgs dynamic: dependent widgets will rebuild when _runtimeTimelineArgsProvider changes.
-              timelineArgsProvider.overrideWith((ref) => ref.watch(_runtimeTimelineArgsProvider)),
-            ],
+            overrides: [timelineArgsProvider.overrideWith((ref) => ref.watch(_runtimeTimelineArgsProvider))],
             child: Consumer(
               builder: (context, ref, _) {
                 final columnCount = ref.watch(settingsProvider.select((s) => s.get(Setting.tilesPerRow)));
@@ -110,13 +99,11 @@ class Timeline extends StatelessWidget {
 
                 if (current != desired) {
                   final rowAnchor = ref.read(_timelineAnchorRowProvider);
-                  // Update after this frame (avoid mutating provider state during widget build).
                   WidgetsBinding.instance.addPostFrameCallback((_) {
                     final latest = ref.read(_runtimeTimelineArgsProvider);
                     if (latest != desired) {
                       ref.read(_runtimeTimelineArgsProvider.notifier).state = desired;
                     }
-                    // Set pending restore after updating args (also deferred to avoid build-time modification)
                     if (rowAnchor != null) {
                       ref.read(_timelinePendingRestoreRowAnchorProvider.notifier).state = rowAnchor;
                     }
@@ -187,7 +174,6 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
     _scrollController = ScrollController(
       initialScrollOffset: widget.initialScrollOffset ?? 0.0,
       onAttach: (position) {
-        // Add scroll listener to continuously update row anchor (similar to web's updateIntersections)
         _scrollController.addListener(_onScroll);
         _restoreScalePosition(position);
         _restoreRowAnchor();
@@ -205,33 +191,24 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
 
     ref.listenManual(multiSelectProvider.select((s) => s.isEnabled), _onMultiSelectionToggled);
 
-    // When constraints change (rotation), restore the top-of-viewport anchor asset index after new layout is computed.
     ref.listenManual(_timelinePendingRestoreAssetIndexProvider, (_, next) {
       if (next == null) return;
       _scaleRestoreAssetIndex = next;
       _restoreScalePosition(null);
-      // Clear so we don't re-run.
       ref.read(_timelinePendingRestoreAssetIndexProvider.notifier).state = null;
     });
 
-    // When constraints change (rotation), restore the row anchor after new layout is computed.
     ref.listenManual(_timelinePendingRestoreRowAnchorProvider, (_, next) {
       if (next == null) return;
       _pendingRestoreRowAnchor = next;
       _hasPendingRowAnchorRestore = true;
       _restoreRowAnchor();
-      // Clear so we don't re-run.
       ref.read(_timelinePendingRestoreRowAnchorProvider.notifier).state = null;
     });
 
-    // When segments change (due to width/columnCount change), automatically adjust scroll
-    // to maintain the current row anchor (similar to web's MonthGroup.height setter).
-    // We use a separate listener that watches the segments directly to avoid AsyncValue null issues.
     ref.listenManual(timelineSegmentProvider.select((async) => async.valueOrNull), (previous, next) {
-      // Only process when both have data
       if (previous == null || next == null) return;
 
-      // Only adjust if segments actually changed (not just a rebuild)
       if (previous.equals(next)) return;
 
       final currentAnchor = ref.read(_timelineAnchorRowProvider);
@@ -241,7 +218,6 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
 
       final targetSegment = next.findByIndex(currentAnchor.rowIndex);
       if (targetSegment == null) {
-        // Segment changed, try to find closest
         final lastSegment = next.lastOrNull;
         if (lastSegment == null) return;
         final clampedRowIndex = currentAnchor.rowIndex.clamp(0, lastSegment.lastIndex);
@@ -257,13 +233,11 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
         return;
       }
 
-      // Compute the target offset: row's layout offset + delta within the row
       final targetOffset = targetSegment.indexToLayoutOffset(currentAnchor.rowIndex) + currentAnchor.deltaPx;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted || !_scrollController.hasClients) return;
         final max = _scrollController.position.maxScrollExtent;
         final clamped = targetOffset.clamp(0.0, max);
-        // Only adjust if the current scroll position doesn't match the target
         final currentOffset = _scrollController.offset;
         if ((clamped - currentOffset).abs() > 1.0) {
           _scrollController.jumpTo(clamped);
@@ -272,20 +246,15 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
     });
   }
 
-  /// Computes the row anchor (rowIndex + deltaPx) for the current scroll position.
-  /// This is used for stable scroll restoration during orientation changes.
   _TimelineRowAnchor? _computeRowAnchor(List<Segment> segments, double scrollOffset) {
     final segment = segments.findByOffset(scrollOffset) ?? segments.lastOrNull;
     if (segment == null) return null;
     final rowIndex = segment.getMinChildIndexForScrollOffset(scrollOffset);
     final rowOffset = segment.indexToLayoutOffset(rowIndex);
-    // Delta is the offset within the row (clamped to >= 0 to handle edge cases)
     final deltaPx = (scrollOffset - rowOffset).clamp(0.0, double.infinity);
     return _TimelineRowAnchor(rowIndex: rowIndex, deltaPx: deltaPx);
   }
 
-  /// Continuously updates the row anchor during scroll (similar to web's updateIntersections).
-  /// This ensures we always have an accurate anchor when geometry changes (e.g., orientation).
   void _onScroll() {
     if (!_scrollController.hasClients) return;
     final scrollOffset = _scrollController.offset;
@@ -342,8 +311,6 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
     _scaleRestoreAssetIndex = null;
   }
 
-  /// Restores scroll position using the row anchor (rowIndex + deltaPx).
-  /// This provides stable restoration during orientation changes by keeping the same row at the top.
   void _restoreRowAnchor() {
     if (_pendingRestoreRowAnchor == null || !_hasPendingRowAnchorRestore) return;
 
@@ -352,10 +319,8 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
       if (segments.isEmpty) return;
 
       final rowAnchor = _pendingRestoreRowAnchor!;
-      // Find the segment that contains the target row index
       final targetSegment = segments.findByIndex(rowAnchor.rowIndex);
       if (targetSegment == null) {
-        // If row index is out of bounds, clamp to valid range
         final lastSegment = segments.lastOrNull;
         if (lastSegment == null) return;
         final clampedRowIndex = rowAnchor.rowIndex.clamp(0, lastSegment.lastIndex);
@@ -373,7 +338,6 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
         return;
       }
 
-      // Compute the target offset: row's layout offset + delta within the row
       final targetOffset = targetSegment.indexToLayoutOffset(rowAnchor.rowIndex) + rowAnchor.deltaPx;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted || !_scrollController.hasClients) return;
@@ -530,8 +494,6 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
               (isMultiSelectEnabled ? bottomSheetOpenModifier : 0);
 
           final grid = CustomScrollView(
-            // Preserve scroll position across transient detach/reattach during rotation/layout changes.
-            // Without a stable PageStorageKey, ScrollController can fall back to initialScrollOffset (0.0).
             key: const PageStorageKey<String>('timeline-grid-scroll'),
             primary: true,
             physics: _scrollPhysics,

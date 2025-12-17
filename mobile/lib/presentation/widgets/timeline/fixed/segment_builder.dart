@@ -42,15 +42,9 @@ class FixedSegmentBuilder extends SegmentBuilder {
       final headerExtent = SegmentBuilder.headerExtent(timelineHeader);
 
       final segmentStartOffset = startOffset;
-      // Compute endOffset to match FixedSegment.gridOffset semantics:
-      // - gridOffset = startOffset + headerExtent + spacing (for first grid row)
-      // - endOffset should be: gridOffset + (mainAxisExtend * (numberOfRows - 1)) + tileHeight
-      //   where mainAxisExtend = tileHeight + spacing
-      // This simplifies to: startOffset + headerExtent + spacing + tileHeight * numberOfRows + spacing * (numberOfRows - 1)
       if (numberOfRows > 0) {
         startOffset += headerExtent + spacing + (tileHeight * numberOfRows) + spacing * (numberOfRows - 1);
       } else {
-        // If no rows, endOffset is just after the header (no spacing needed)
         startOffset += headerExtent;
       }
       final segmentEndOffset = startOffset;
@@ -77,7 +71,6 @@ class FixedSegmentBuilder extends SegmentBuilder {
       }
     }
 
-    // Debug validation: ensure segments have monotonic, non-overlapping offsets
     assert(() {
       for (int i = 0; i < segments.length - 1; i++) {
         final current = segments[i];

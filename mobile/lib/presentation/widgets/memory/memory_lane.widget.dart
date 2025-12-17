@@ -22,9 +22,6 @@ class DriftMemoryLane extends ConsumerWidget {
 
     return ConstrainedBox(
       constraints: const BoxConstraints(maxHeight: 200),
-      // CarouselView has been observed to trigger a framework assertion during rotation
-      // ('haveDimensions == (_lastMetrics != null)') in our runtime logs.
-      // Use a simple horizontal ListView to avoid that crash.
       child: ListView.separated(
         key: const PageStorageKey<String>('drift-memory-lane-scroll'),
         scrollDirection: Axis.horizontal,
