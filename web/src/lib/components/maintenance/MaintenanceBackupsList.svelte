@@ -214,13 +214,6 @@
                   })}
                 {/if}
               </Text>
-              <!-- {#if backup.hoursAgo <= 24}
-                <Text color="info" size="small">Created {backup.hoursAgo} hours ago</Text>
-              {:else if backup.hoursAgo <= 48}
-                <Text color="info" size="small">Created 1 day ago</Text>
-              {:else}
-                <Text color="info" size="small">Created {Math.floor(backup.hoursAgo / 24)} days ago</Text>
-              {/if} -->
             {/if}
           </Stack>
 
