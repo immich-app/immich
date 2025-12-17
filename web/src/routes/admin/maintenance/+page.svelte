@@ -12,10 +12,10 @@
     MaintenanceAction,
     ManualJobName,
     setMaintenanceMode,
-    type MaintenanceIntegrityReportSummaryResponseDto,
+    type IntegrityReportSummaryResponseDto,
     type QueuesResponseLegacyDto,
   } from '@immich/sdk';
-  import { Button, HStack, Text, toastManager } from '@immich/ui';
+  import { Button, HStack, toastManager } from '@immich/ui';
   import { mdiProgressWrench } from '@mdi/js';
   import { onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -27,7 +27,7 @@
 
   let { data }: Props = $props();
 
-  let integrityReport: MaintenanceIntegrityReportSummaryResponseDto = $state(data.integrityReport);
+  let integrityReport: IntegrityReportSummaryResponseDto = $state(data.integrityReport);
 
   const TYPES: IntegrityReportType[] = [
     IntegrityReportType.OrphanFile,
@@ -98,21 +98,16 @@
   });
 </script>
 
-<AdminPageLayout breadcrumbs={[{ title: data.meta.title }]}>
-  {#snippet buttons()}
-    <HStack gap={1}>
-      <Button
-        leadingIcon={mdiProgressWrench}
-        size="small"
-        variant="ghost"
-        color="secondary"
-        onclick={switchToMaintenance}
-      >
-        <Text class="hidden md:block">{$t('admin.maintenance_start')}</Text>
-      </Button>
-    </HStack>
-  {/snippet}
-
+<AdminPageLayout
+  breadcrumbs={[{ title: data.meta.title }]}
+  actions={[
+    {
+      title: $t('admin.maintenance_start'),
+      onAction: switchToMaintenance,
+      icon: mdiProgressWrench,
+    },
+  ]}
+>
   <section id="setting-content" class="flex place-content-center sm:mx-4">
     <section class="w-full pb-28 sm:w-5/6 md:w-[850px]">
       <p class="text-sm dark:text-immich-dark-fg uppercase">{$t('admin.maintenance_integrity_report')}</p>

@@ -4,12 +4,9 @@
   import { handleError } from '$lib/utils/handle-error';
   import { createJob, deleteIntegrityReport, getBaseUrl, IntegrityReportType, ManualJobName } from '@immich/sdk';
   import {
-    Button,
-    HStack,
     IconButton,
     menuManager,
     modalManager,
-    Text,
     toastManager,
     type ContextMenuBaseProps,
     type MenuItems,
@@ -121,24 +118,21 @@
     { title: $t('admin.maintenance_integrity_report') },
     { title: data.meta.title },
   ]}
+  actions={[
+    {
+      title: 'Download CSV',
+      icon: mdiDownload,
+      onAction: () => {
+        location.href = `${getBaseUrl()}/admin/maintenance/integrity/report/${data.type}/csv`;
+      },
+    },
+    {
+      title: 'Delete All',
+      onAction: removeAll,
+      icon: mdiTrashCanOutline,
+    },
+  ]}
 >
-  {#snippet buttons()}
-    <HStack gap={1}>
-      <Button
-        size="small"
-        variant="ghost"
-        color="secondary"
-        leadingIcon={mdiDownload}
-        href={`${getBaseUrl()}/admin/maintenance/integrity/report/${data.type}/csv`}
-      >
-        <Text class="hidden md:block">Download CSV</Text>
-      </Button>
-      <Button size="small" variant="ghost" color="danger" leadingIcon={mdiTrashCanOutline} onclick={removeAll}>
-        <Text class="hidden md:block">Delete All</Text>
-      </Button>
-    </HStack>
-  {/snippet}
-
   <section id="setting-content" class="flex place-content-center sm:mx-4">
     <section class="w-full pb-28 sm:w-5/6 md:w-[850px]">
       <table class="mt-5 w-full text-start">
