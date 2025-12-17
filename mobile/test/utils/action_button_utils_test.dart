@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/constants/enums.dart';
@@ -980,19 +981,18 @@ void main() {
         buttonPosition: ButtonPosition.bottomBar,
       );
 
-      final types = ActionButtonBuilder.getViewerBottomBarTypes(context);
+      const expectedTypes = [
+        ActionButtonType.share,
+        ActionButtonType.addTo,
+        ActionButtonType.openActivity,
+        ActionButtonType.likeActivity,
+      ];
 
-      expect(types.length, 4);
-      expect(types[0], ActionButtonType.share);
-      expect(types[1], ActionButtonType.addTo);
-      expect(types[2], ActionButtonType.openActivity);
-      expect(types[3], ActionButtonType.likeActivity);
-
-      // Verify kebab menu does not contain bottom bar buttons
+      final bottomBarTypes = ActionButtonBuilder.getViewerBottomBarTypes(context);
       final kebabTypes = ActionButtonBuilder.getViewerKebabMenuTypes(context);
-      for (final type in types) {
-        expect(kebabTypes.contains(type), isFalse);
-      }
+
+      expect(const ListEquality().equals(bottomBarTypes, expectedTypes), isTrue);
+      expect(bottomBarTypes.any(kebabTypes.contains), isFalse);
     });
 
     test('should return correct button types for local only asset', () {
@@ -1010,21 +1010,20 @@ void main() {
         buttonPosition: ButtonPosition.bottomBar,
       );
 
-      final types = ActionButtonBuilder.getViewerBottomBarTypes(context);
+      const expectedTypes = [
+        ActionButtonType.share,
+        ActionButtonType.upload,
+        ActionButtonType.editImage,
+        ActionButtonType.deleteLocal,
+      ];
 
-      expect(types.length, 4);
-      expect(types[0], ActionButtonType.share);
-      expect(types[1], ActionButtonType.upload);
-      expect(types[2], ActionButtonType.editImage);
-      expect(types[3], ActionButtonType.deleteLocal);
-
-      // Verify kebab menu does not contain bottom bar buttons
+      final bottomBarTypes = ActionButtonBuilder.getViewerBottomBarTypes(context);
       final kebabTypes = ActionButtonBuilder.getViewerKebabMenuTypes(
         context.copyWith(buttonPosition: ButtonPosition.kebabMenu),
       );
-      for (final type in types) {
-        expect(kebabTypes.contains(type), isFalse);
-      }
+
+      expect(const ListEquality().equals(bottomBarTypes, expectedTypes), isTrue);
+      expect(bottomBarTypes.any(kebabTypes.contains), isFalse);
     });
 
     test('should return correct button types for locked view', () {
@@ -1042,20 +1041,19 @@ void main() {
         buttonPosition: ButtonPosition.bottomBar,
       );
 
-      final types = ActionButtonBuilder.getViewerBottomBarTypes(context);
+      const expectedTypes = [
+        ActionButtonType.share,
+        ActionButtonType.removeFromLockFolder,
+        ActionButtonType.deletePermanent,
+      ];
 
-      expect(types.length, 3);
-      expect(types[0], ActionButtonType.share);
-      expect(types[1], ActionButtonType.removeFromLockFolder);
-      expect(types[2], ActionButtonType.deletePermanent);
-
-      // Verify kebab menu does not contain bottom bar buttons
+      final bottomBarTypes = ActionButtonBuilder.getViewerBottomBarTypes(context);
       final kebabTypes = ActionButtonBuilder.getViewerKebabMenuTypes(
         context.copyWith(buttonPosition: ButtonPosition.kebabMenu),
       );
-      for (final type in types) {
-        expect(kebabTypes.contains(type), isFalse);
-      }
+
+      expect(const ListEquality().equals(bottomBarTypes, expectedTypes), isTrue);
+      expect(bottomBarTypes.any(kebabTypes.contains), isFalse);
     });
 
     test('should return correct button types for remote only asset', () {
@@ -1073,21 +1071,20 @@ void main() {
         buttonPosition: ButtonPosition.bottomBar,
       );
 
-      final types = ActionButtonBuilder.getViewerBottomBarTypes(context);
+      const expectedTypes = [
+        ActionButtonType.share,
+        ActionButtonType.editImage,
+        ActionButtonType.addTo,
+        ActionButtonType.delete,
+      ];
 
-      expect(types.length, 4);
-      expect(types[0], ActionButtonType.share);
-      expect(types[1], ActionButtonType.editImage);
-      expect(types[2], ActionButtonType.addTo);
-      expect(types[3], ActionButtonType.delete);
-
-      // Verify kebab menu does not contain bottom bar buttons
+      final bottomBarTypes = ActionButtonBuilder.getViewerBottomBarTypes(context);
       final kebabTypes = ActionButtonBuilder.getViewerKebabMenuTypes(
         context.copyWith(buttonPosition: ButtonPosition.kebabMenu),
       );
-      for (final type in types) {
-        expect(kebabTypes.contains(type), isFalse);
-      }
+
+      expect(const ListEquality().equals(bottomBarTypes, expectedTypes), isTrue);
+      expect(bottomBarTypes.any(kebabTypes.contains), isFalse);
     });
   });
 }
