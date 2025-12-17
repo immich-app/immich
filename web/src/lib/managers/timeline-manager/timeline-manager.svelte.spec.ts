@@ -278,10 +278,11 @@ describe('TimelineManager', () => {
     });
 
     it('updates existing asset', () => {
+      const updateAssetsSpy = vi.spyOn(timelineManager, 'upsertAssets');
       const asset = deriveLocalDateTimeFromFileCreatedAt(timelineAssetFactory.build());
       timelineManager.upsertAssets([asset]);
 
-      timelineManager.upsertAssets([asset]);
+      expect(updateAssetsSpy).toBeCalledWith([asset]);
       expect(timelineManager.assetCount).toEqual(1);
     });
 
@@ -523,6 +524,7 @@ describe('TimelineManager', () => {
         { count: 3, timeBucket: '2024-01-01T00:00:00.000Z' },
       ]);
       sdkMock.getTimeBucket.mockImplementation(({ timeBucket }) => Promise.resolve(bucketAssetsResponse[timeBucket]));
+      sdkMock.getAssetInfo.mockRejectedValue(new Error('Asset not found'));
       await timelineManager.updateViewport({ width: 1588, height: 1000 });
     });
 
@@ -689,6 +691,44 @@ describe('TimelineManager', () => {
       }
 
       expect(discoveredAssets.size).toBe(assetCount);
+    });
+  });
+
+  describe('showAssetOwners', () => {
+    const LS_KEY = 'album-show-asset-owners';
+
+    beforeEach(() => {
+      // ensure clean state
+      globalThis.localStorage?.removeItem(LS_KEY);
+    });
+
+    it('defaults to false', () => {
+      const timelineManager = new TimelineManager();
+      expect(timelineManager.showAssetOwners).toBe(false);
+    });
+
+    it('setShowAssetOwners updates value', () => {
+      const timelineManager = new TimelineManager();
+      timelineManager.setShowAssetOwners(true);
+      expect(timelineManager.showAssetOwners).toBe(true);
+      timelineManager.setShowAssetOwners(false);
+      expect(timelineManager.showAssetOwners).toBe(false);
+    });
+
+    it('toggleShowAssetOwners flips value', () => {
+      const timelineManager = new TimelineManager();
+      expect(timelineManager.showAssetOwners).toBe(false);
+      timelineManager.toggleShowAssetOwners();
+      expect(timelineManager.showAssetOwners).toBe(true);
+      timelineManager.toggleShowAssetOwners();
+      expect(timelineManager.showAssetOwners).toBe(false);
+    });
+
+    it('persists across instances via localStorage', () => {
+      const a = new TimelineManager();
+      a.setShowAssetOwners(true);
+      const b = new TimelineManager();
+      expect(b.showAssetOwners).toBe(true);
     });
   });
 });

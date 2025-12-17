@@ -37,7 +37,7 @@ class ExifInfo {
 
   String get fNumber => f == null ? "" : f!.toStringAsFixed(1);
 
-  String get focalLength => mm == null ? "" : mm!.toStringAsFixed(1);
+  String get focalLength => mm == null ? "" : mm!.toStringAsFixed(3);
 
   const ExifInfo({
     this.assetId,

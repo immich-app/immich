@@ -1763,16 +1763,16 @@ export type CreateProfileImageResponseDto = {
 };
 export type WorkflowActionResponseDto = {
     actionConfig: object | null;
-    actionId: string;
     id: string;
     order: number;
+    pluginActionId: string;
     workflowId: string;
 };
 export type WorkflowFilterResponseDto = {
     filterConfig: object | null;
-    filterId: string;
     id: string;
     order: number;
+    pluginFilterId: string;
     workflowId: string;
 };
 export type WorkflowResponseDto = {
@@ -1788,11 +1788,11 @@ export type WorkflowResponseDto = {
 };
 export type WorkflowActionItemDto = {
     actionConfig?: object;
-    actionId: string;
+    pluginActionId: string;
 };
 export type WorkflowFilterItemDto = {
     filterConfig?: object;
-    filterId: string;
+    pluginFilterId: string;
 };
 export type WorkflowCreateDto = {
     actions: WorkflowActionItemDto[];

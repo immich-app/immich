@@ -23,17 +23,22 @@ import { modalManager, toastManager, type ActionItem } from '@immich/ui';
 import { mdiPencilOutline, mdiPlusBoxOutline, mdiSync, mdiTrashCanOutline } from '@mdi/js';
 import type { MessageFormatter } from 'svelte-i18n';
 
-export const getLibrariesActions = ($t: MessageFormatter) => {
+export const getLibrariesActions = ($t: MessageFormatter, libraries: LibraryResponseDto[]) => {
   const ScanAll: ActionItem = {
     title: $t('scan_all_libraries'),
+    type: $t('command'),
     icon: mdiSync,
-    onAction: () => void handleScanAllLibraries(),
+    onAction: () => handleScanAllLibraries(),
+    shortcuts: { shift: true, key: 'r' },
+    $if: () => libraries.length > 0,
   };
 
   const Create: ActionItem = {
     title: $t('create_library'),
+    type: $t('command'),
     icon: mdiPlusBoxOutline,
-    onAction: () => void handleCreateLibrary(),
+    onAction: () => handleCreateLibrary(),
+    shortcuts: { shift: true, key: 'n' },
   };
 
   return { ScanAll, Create };
@@ -42,33 +47,41 @@ export const getLibrariesActions = ($t: MessageFormatter) => {
 export const getLibraryActions = ($t: MessageFormatter, library: LibraryResponseDto) => {
   const Rename: ActionItem = {
     icon: mdiPencilOutline,
+    type: $t('command'),
     title: $t('rename'),
-    onAction: () => void modalManager.show(LibraryRenameModal, { library }),
+    onAction: () => modalManager.show(LibraryRenameModal, { library }),
+    shortcuts: { key: 'r' },
   };
 
   const Delete: ActionItem = {
     icon: mdiTrashCanOutline,
+    type: $t('command'),
     title: $t('delete'),
     color: 'danger',
-    onAction: () => void handleDeleteLibrary(library),
+    onAction: () => handleDeleteLibrary(library),
+    shortcuts: { key: 'Backspace' },
   };
 
   const AddFolder: ActionItem = {
     icon: mdiPlusBoxOutline,
+    type: $t('command'),
     title: $t('add'),
-    onAction: () => void modalManager.show(LibraryFolderAddModal, { library }),
+    onAction: () => modalManager.show(LibraryFolderAddModal, { library }),
   };
 
   const AddExclusionPattern: ActionItem = {
     icon: mdiPlusBoxOutline,
+    type: $t('command'),
     title: $t('add'),
-    onAction: () => void modalManager.show(LibraryExclusionPatternAddModal, { library }),
+    onAction: () => modalManager.show(LibraryExclusionPatternAddModal, { library }),
   };
 
   const Scan: ActionItem = {
     icon: mdiSync,
+    type: $t('command'),
     title: $t('scan_library'),
-    onAction: () => void handleScanLibrary(library),
+    onAction: () => handleScanLibrary(library),
+    shortcuts: { shift: true, key: 'r' },
   };
 
   return { Rename, Delete, AddFolder, AddExclusionPattern, Scan };
@@ -77,14 +90,16 @@ export const getLibraryActions = ($t: MessageFormatter, library: LibraryResponse
 export const getLibraryFolderActions = ($t: MessageFormatter, library: LibraryResponseDto, folder: string) => {
   const Edit: ActionItem = {
     icon: mdiPencilOutline,
+    type: $t('command'),
     title: $t('edit'),
-    onAction: () => void modalManager.show(LibraryFolderEditModal, { folder, library }),
+    onAction: () => modalManager.show(LibraryFolderEditModal, { folder, library }),
   };
 
   const Delete: ActionItem = {
     icon: mdiTrashCanOutline,
+    type: $t('command'),
     title: $t('delete'),
-    onAction: () => void handleDeleteLibraryFolder(library, folder),
+    onAction: () => handleDeleteLibraryFolder(library, folder),
   };
 
   return { Edit, Delete };
@@ -97,14 +112,16 @@ export const getLibraryExclusionPatternActions = (
 ) => {
   const Edit: ActionItem = {
     icon: mdiPencilOutline,
+    type: $t('command'),
     title: $t('edit'),
-    onAction: () => void modalManager.show(LibraryExclusionPatternEditModal, { exclusionPattern, library }),
+    onAction: () => modalManager.show(LibraryExclusionPatternEditModal, { exclusionPattern, library }),
   };
 
   const Delete: ActionItem = {
     icon: mdiTrashCanOutline,
+    type: $t('command'),
     title: $t('delete'),
-    onAction: () => void handleDeleteExclusionPattern(library, exclusionPattern),
+    onAction: () => handleDeleteExclusionPattern(library, exclusionPattern),
   };
 
   return { Edit, Delete };
@@ -256,7 +273,7 @@ const handleDeleteLibraryFolder = async (library: LibraryResponseDto, folder: st
   });
 
   if (!confirmed) {
-    return false;
+    return;
   }
 
   try {
@@ -268,10 +285,7 @@ const handleDeleteLibraryFolder = async (library: LibraryResponseDto, folder: st
     toastManager.success($t('admin.library_updated'));
   } catch (error) {
     handleError(error, $t('errors.unable_to_update_library'));
-    return false;
   }
-
-  return true;
 };
 
 export const handleAddLibraryExclusionPattern = async (library: LibraryResponseDto, exclusionPattern: string) => {
@@ -328,9 +342,8 @@ const handleDeleteExclusionPattern = async (library: LibraryResponseDto, exclusi
   const $t = await getFormatter();
 
   const confirmed = await modalManager.showDialog({ prompt: $t('admin.library_remove_exclusion_pattern_prompt') });
-
   if (!confirmed) {
-    return false;
+    return;
   }
 
   try {
@@ -344,8 +357,5 @@ const handleDeleteExclusionPattern = async (library: LibraryResponseDto, exclusi
     toastManager.success($t('admin.library_updated'));
   } catch (error) {
     handleError(error, $t('errors.unable_to_update_library'));
-    return false;
   }
-
-  return true;
 };
