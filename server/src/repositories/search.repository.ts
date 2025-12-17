@@ -5,12 +5,28 @@ import { randomUUID } from 'node:crypto';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { MapAsset } from 'src/dtos/asset-response.dto';
 import { AssetStatus, AssetType, AssetVisibility, VectorIndex } from 'src/enum';
+import { ConfigRepository } from 'src/repositories/config.repository';
 import { probes } from 'src/repositories/database.repository';
+import { LoggingRepository } from 'src/repositories/logging.repository';
 import { DB } from 'src/schema';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
 import { anyUuid, searchAssetBuilder, withExif } from 'src/utils/database';
 import { paginationHelper } from 'src/utils/pagination';
 import { isValidInteger } from 'src/validation';
+
+interface GeodataApiPlaceResponse {
+  id: number;
+  name: string;
+  latitude: number;
+  longitude: number;
+  countryCode: string;
+  admin1Code: string | null;
+  admin2Code: string | null;
+  modificationDate: string;
+  admin1Name: string | null;
+  admin2Name: string | null;
+  alternateNames: string | null;
+}
 
 export interface SearchAssetIdOptions {
   checksum?: Buffer;
@@ -183,7 +199,13 @@ export interface GetCameraLensModelsOptions {
 
 @Injectable()
 export class SearchRepository {
-  constructor(@InjectKysely() private db: Kysely<DB>) {}
+  constructor(
+    @InjectKysely() private db: Kysely<DB>,
+    private configRepository: ConfigRepository,
+    private logger: LoggingRepository,
+  ) {
+    this.logger.setContext(SearchRepository.name);
+  }
 
   @GenerateSql({
     params: [
@@ -364,6 +386,52 @@ export class SearchRepository {
 
   @GenerateSql({ params: [DummyValue.STRING] })
   searchPlaces(placeName: string) {
+    const { geodataApiUrl } = this.configRepository.getEnv();
+
+    // Use external API if configured
+    if (geodataApiUrl) {
+      return this.searchPlacesViaApi(placeName, geodataApiUrl);
+    }
+
+    // Fall back to local database query
+    return this.searchPlacesViaDatabase(placeName);
+  }
+
+  private async searchPlacesViaApi(placeName: string, apiUrl: string) {
+    try {
+      const url = `${apiUrl}/search-places?q=${encodeURIComponent(placeName)}`;
+      this.logger.debug(`Search places API URL: ${url}`);
+      const response = await fetch(url);
+
+      if (!response.ok) {
+        this.logger.error(`Geodata API error: ${response.status} ${response.statusText}`);
+        return [];
+      }
+
+      const data: GeodataApiPlaceResponse[] = await response.json();
+      this.logger.debug(`API returned ${data.length} places for query: ${placeName}`);
+
+      // Transform API response to match expected format
+      return data.map((place) => ({
+        id: place.id,
+        name: place.name,
+        latitude: place.latitude,
+        longitude: place.longitude,
+        countryCode: place.countryCode,
+        admin1Code: place.admin1Code,
+        admin2Code: place.admin2Code,
+        modificationDate: new Date(place.modificationDate),
+        admin1Name: place.admin1Name,
+        admin2Name: place.admin2Name,
+        alternateNames: place.alternateNames,
+      }));
+    } catch (error) {
+      this.logger.error(`Failed to call geodata API: ${error}`);
+      return [];
+    }
+  }
+
+  private searchPlacesViaDatabase(placeName: string) {
     return this.db
       .selectFrom('geodata_places')
       .selectAll()

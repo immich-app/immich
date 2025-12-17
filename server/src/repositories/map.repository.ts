@@ -15,6 +15,12 @@ import { DB } from 'src/schema';
 import { GeodataPlacesTable } from 'src/schema/tables/geodata-places.table';
 import { NaturalEarthCountriesTable } from 'src/schema/tables/natural-earth-countries.table';
 
+interface GeodataApiReverseGeocodeResponse {
+  country: string | null;
+  state: string | null;
+  city: string | null;
+}
+
 export interface MapMarkerSearchOptions {
   isArchived?: boolean;
   isFavorite?: boolean;
@@ -56,8 +62,15 @@ export class MapRepository {
   }
 
   async init(): Promise<void> {
+    const { geodataApiUrl, resourcePaths } = this.configRepository.getEnv();
+
+    // Skip geodata import when using external API
+    if (geodataApiUrl) {
+      this.logger.log('Using external geodata API, skipping local geodata import');
+      return;
+    }
+
     this.logger.log('Initializing metadata repository');
-    const { resourcePaths } = this.configRepository.getEnv();
     const geodataDate = await readFile(resourcePaths.geodata.dateFile, 'utf8');
 
     // TODO move to service init
@@ -141,6 +154,44 @@ export class MapRepository {
   async reverseGeocode(point: GeoPoint): Promise<ReverseGeocodeResult> {
     this.logger.debug(`Request: ${point.latitude},${point.longitude}`);
 
+    const { geodataApiUrl } = this.configRepository.getEnv();
+
+    // Use external API if configured
+    if (geodataApiUrl) {
+      return this.reverseGeocodeViaApi(point, geodataApiUrl);
+    }
+
+    // Fall back to local database query
+    return this.reverseGeocodeViaDatabase(point);
+  }
+
+  private async reverseGeocodeViaApi(point: GeoPoint, apiUrl: string): Promise<ReverseGeocodeResult> {
+    try {
+      const url = `${apiUrl}/reverse-geocode?lat=${point.latitude}&lon=${point.longitude}`;
+      this.logger.debug(`Reverse geocoding API URL: ${url}`);
+      const response = await fetch(url);
+
+      if (!response.ok) {
+        this.logger.error(`Geodata API error: ${response.status} ${response.statusText}`);
+        return { country: null, state: null, city: null };
+      }
+
+      const data: GeodataApiReverseGeocodeResponse = await response.json();
+      this.logger.verboseFn(() => `API response: ${JSON.stringify(data, null, 2)}`);
+
+      return {
+        country: data.country ?? null,
+        state: data.state ?? null,
+        city: data.city ?? null,
+      };
+    } catch (error) {
+      this.logger.error(`Reverse geocoding API URL: ${apiUrl}`);
+      this.logger.error(`Failed to call geodata API blabla: ${error}`);
+      return { country: null, state: null, city: null };
+    }
+  }
+
+  private async reverseGeocodeViaDatabase(point: GeoPoint): Promise<ReverseGeocodeResult> {
     const response = await this.db
       .selectFrom('geodata_places')
       .selectAll()

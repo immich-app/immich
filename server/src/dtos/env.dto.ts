@@ -202,4 +202,8 @@ export class EnvDto {
   @IsString()
   @Optional()
   REDIS_URL?: string;
+
+  @IsString()
+  @Optional()
+  GEODATA_API_URL?: string;
 }

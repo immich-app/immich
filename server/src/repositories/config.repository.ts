@@ -110,6 +110,8 @@ export interface EnvData {
 
   noColor: boolean;
   nodeVersion?: string;
+
+  geodataApiUrl: string | null;
 }
 
 const productionKeys = {
@@ -332,6 +334,8 @@ const getEnv = (): EnvData => {
     },
 
     noColor: !!dto.NO_COLOR,
+
+    geodataApiUrl: dto.GEODATA_API_URL || null,
   };
 };
 
