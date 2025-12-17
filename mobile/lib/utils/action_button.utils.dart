@@ -62,6 +62,38 @@ class ActionButtonContext {
     this.originalTheme,
     this.buttonPosition = ButtonPosition.other,
   });
+
+  ActionButtonContext copyWith({
+    BaseAsset? asset,
+    bool? isOwner,
+    bool? isArchived,
+    bool? isTrashEnabled,
+    bool? isStacked,
+    bool? isInLockedView,
+    RemoteAlbum? currentAlbum,
+    bool? advancedTroubleshooting,
+    ActionSource? source,
+    bool? isCasting,
+    TimelineOrigin? timelineOrigin,
+    ThemeData? originalTheme,
+    ButtonPosition? buttonPosition,
+  }) {
+    return ActionButtonContext(
+      asset: asset ?? this.asset,
+      isOwner: isOwner ?? this.isOwner,
+      isArchived: isArchived ?? this.isArchived,
+      isTrashEnabled: isTrashEnabled ?? this.isTrashEnabled,
+      isStacked: isStacked ?? this.isStacked,
+      isInLockedView: isInLockedView ?? this.isInLockedView,
+      currentAlbum: currentAlbum ?? this.currentAlbum,
+      advancedTroubleshooting: advancedTroubleshooting ?? this.advancedTroubleshooting,
+      source: source ?? this.source,
+      isCasting: isCasting ?? this.isCasting,
+      timelineOrigin: timelineOrigin ?? this.timelineOrigin,
+      originalTheme: originalTheme ?? this.originalTheme,
+      buttonPosition: buttonPosition ?? this.buttonPosition,
+    );
+  }
 }
 
 enum ActionButtonType {
@@ -326,7 +358,8 @@ class ActionButtonBuilder {
   }
 
   static List<ActionButtonType> getViewerBottomBarTypes(ActionButtonContext context) {
-    return _defaultViewerBottomBarOrder.where((type) => type.shouldShow(context)).take(4).toList();
+    final bottomBarContext = context.copyWith(buttonPosition: ButtonPosition.bottomBar);
+    return _defaultViewerBottomBarOrder.where((type) => type.shouldShow(bottomBarContext)).take(4).toList();
   }
 
   static List<Widget> buildViewerKebabMenu(ActionButtonContext context, BuildContext buildContext, WidgetRef ref) {
