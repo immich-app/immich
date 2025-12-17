@@ -189,7 +189,7 @@ describe('mimeTypes', () => {
 
     it('should contain only video mime types', () => {
       const values = Object.values(mimeTypes.video).flat();
-      expect(values).toEqual(values.filter((mimeType) => mimeType.startsWith('video/')));
+      expect(values).toEqual(values.filter((mimeType) => mimeType.startsWith('video/') || mimeType === 'application/mxf'));
     });
 
     for (const [extension, v] of Object.entries(mimeTypes.video)) {
