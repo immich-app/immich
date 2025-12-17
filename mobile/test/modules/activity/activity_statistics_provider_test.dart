@@ -22,7 +22,7 @@ void main() {
   test('Returns the proper count family', () async {
     when(
       () => activityMock.getStatistics('test-album', assetId: 'test-asset'),
-    ).thenAnswer((_) async => const ActivityStats(comments: 5));
+    ).thenAnswer((_) async => const ActivityStats(comments: 5, likes: 0));
 
     // Read here to make the getStatistics call
     container.read(activityStatisticsProvider('test-album', 'test-asset'));
@@ -38,7 +38,9 @@ void main() {
   });
 
   test('Adds activity', () async {
-    when(() => activityMock.getStatistics('test-album')).thenAnswer((_) async => const ActivityStats(comments: 10));
+    when(
+      () => activityMock.getStatistics('test-album'),
+    ).thenAnswer((_) async => const ActivityStats(comments: 10, likes: 0));
 
     final provider = activityStatisticsProvider('test-album');
     container.listen(provider, listener.call, fireImmediately: true);
@@ -55,7 +57,7 @@ void main() {
   test('Removes activity', () async {
     when(
       () => activityMock.getStatistics('new-album', assetId: 'test-asset'),
-    ).thenAnswer((_) async => const ActivityStats(comments: 10));
+    ).thenAnswer((_) async => const ActivityStats(comments: 10, likes: 0));
 
     final provider = activityStatisticsProvider('new-album', 'test-asset');
     container.listen(provider, listener.call, fireImmediately: true);

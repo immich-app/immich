@@ -32,7 +32,7 @@ class ActivityService with ErrorLoggerMixin {
   Future<ActivityStats> getStatistics(String albumId, {String? assetId}) async {
     return logError(
       () => _activityApiRepository.getStats(albumId, assetId: assetId),
-      defaultValue: const ActivityStats(comments: 0),
+      defaultValue: const ActivityStats(comments: 0, likes: 0),
       errorMessage: "Failed to statistics for album $albumId",
     );
   }

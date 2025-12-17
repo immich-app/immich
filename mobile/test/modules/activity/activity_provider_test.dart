@@ -108,9 +108,9 @@ void main() {
       expect(activities, hasLength(5));
       expect(activities, contains(like));
 
-      // Never bump activity count for new likes
-      verifyNever(() => activityStatisticsMock.addActivity());
-      verifyNever(() => albumActivityStatisticsMock.addActivity());
+      // Verify activity count is bumped for new likes
+      verify(() => activityStatisticsMock.addActivity()).called(1);
+      verify(() => albumActivityStatisticsMock.addActivity()).called(1);
 
       final albumActivities = container.read(albumProvider).requireValue;
       expect(albumActivities, hasLength(5));
@@ -155,8 +155,9 @@ void main() {
       expect(activities, hasLength(3));
       expect(activities, isNot(anyElement(predicate((Activity a) => a.id == '3'))));
 
-      verifyNever(() => activityStatisticsMock.removeActivity());
-      verifyNever(() => albumActivityStatisticsMock.removeActivity());
+      // Verify activity count is decreased for removed likes
+      verify(() => activityStatisticsMock.removeActivity()).called(1);
+      verify(() => albumActivityStatisticsMock.removeActivity()).called(1);
     });
 
     test('Remove Like failed', () async {
@@ -204,8 +205,9 @@ void main() {
       expect(albumActivities, isNot(anyElement(predicate((Activity a) => a.id == '3'))));
 
       verify(() => activityMock.removeActivity('3'));
-      verifyNever(() => activityStatisticsMock.removeActivity());
-      verifyNever(() => albumActivityStatisticsMock.removeActivity());
+      // Verify activity count is decreased when removing from asset-scoped provider
+      verify(() => activityStatisticsMock.removeActivity()).called(1);
+      verify(() => albumActivityStatisticsMock.removeActivity()).called(1);
     });
   });
 

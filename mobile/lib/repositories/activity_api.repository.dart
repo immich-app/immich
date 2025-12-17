@@ -36,7 +36,7 @@ class ActivityApiRepository extends ApiRepository {
 
   Future<ActivityStats> getStats(String albumId, {String? assetId}) async {
     final response = await checkNull(_api.getActivityStatistics(albumId, assetId: assetId));
-    return ActivityStats(comments: response.comments);
+    return ActivityStats(comments: response.comments, likes: response.likes);
   }
 
   static Activity _toActivity(ActivityResponseDto dto) => Activity(
