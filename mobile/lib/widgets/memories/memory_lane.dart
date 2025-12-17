@@ -48,7 +48,7 @@ class MemoryLane extends HookConsumerWidget {
                           child: Material(
                             elevation: 2,
                             color: Colors.black,
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: const BorderRadius.all(Radius.circular(12)),
                             child: SizedBox(
                               width: 205,
                               height: 200,
