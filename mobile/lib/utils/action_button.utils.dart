@@ -17,6 +17,7 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/delete_local_a
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_permanent_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/download_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/like_activity_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/open_activity_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/move_to_lock_folder_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/remove_from_album_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/remove_from_lock_folder_action_button.widget.dart';
@@ -27,6 +28,8 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/trash_action_b
 import 'package:immich_mobile/presentation/widgets/action_buttons/unarchive_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/unstack_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/upload_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/edit_image_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/add_action_button.widget.dart';
 import 'package:immich_mobile/routing/router.dart';
 
 class ActionButtonContext {
@@ -70,6 +73,8 @@ enum ActionButtonType {
   viewInTimeline,
   download,
   upload,
+  editImage,
+  addTo,
   unstack,
   archive,
   unarchive,
@@ -85,7 +90,9 @@ enum ActionButtonType {
   bool shouldShow(ActionButtonContext context) {
     return switch (this) {
       ActionButtonType.advancedInfo => context.advancedTroubleshooting,
-      ActionButtonType.share => true,
+      ActionButtonType.share =>
+        !context.isInLockedView && //
+            context.asset.hasRemote,
       ActionButtonType.shareLink =>
         !context.isInLockedView && //
             context.asset.hasRemote,
@@ -131,6 +138,12 @@ enum ActionButtonType {
       ActionButtonType.upload =>
         !context.isInLockedView && //
             context.asset.storage == AssetState.local,
+      ActionButtonType.editImage =>
+        !context.isInLockedView && //
+            context.asset.type == AssetType.image,
+      ActionButtonType.addTo =>
+        !context.isInLockedView && //
+            context.asset.hasRemote,
       ActionButtonType.removeFromAlbum =>
         context.isOwner && //
             !context.isInLockedView && //
@@ -165,7 +178,7 @@ enum ActionButtonType {
     };
   }
 
-  ConsumerWidget buildButton(
+  Widget buildButton(
     ActionButtonContext context, [
     BuildContext? buildContext,
     bool iconOnly = false,
@@ -213,6 +226,8 @@ enum ActionButtonType {
         menuItem: menuItem,
       ),
       ActionButtonType.upload => UploadActionButton(source: context.source, iconOnly: iconOnly, menuItem: menuItem),
+      ActionButtonType.editImage => const EditImageActionButton(),
+      ActionButtonType.addTo => AddActionButton(originalTheme: context.originalTheme),
       ActionButtonType.removeFromAlbum => RemoveFromAlbumActionButton(
         albumId: context.currentAlbum!.id,
         source: context.source,
@@ -233,13 +248,7 @@ enum ActionButtonType {
         menuItem: true,
         onPressed: () => EventStream.shared.emit(const ViewerOpenBottomSheetEvent()),
       ),
-      ActionButtonType.openActivity => BaseActionButton(
-        label: 'activity'.tr(),
-        iconData: Icons.chat_outlined,
-        iconColor: context.originalTheme?.iconTheme.color,
-        menuItem: true,
-        onPressed: () => EventStream.shared.emit(const ViewerOpenBottomSheetEvent(activitiesMode: true)),
-      ),
+      ActionButtonType.openActivity => OpenActivityActionButton(iconOnly: iconOnly, menuItem: menuItem),
       ActionButtonType.viewInTimeline => BaseActionButton(
         label: 'view_in_timeline'.tr(),
         iconData: Icons.image_search,
@@ -285,22 +294,40 @@ enum ActionButtonType {
 class ActionButtonBuilder {
   static const List<ActionButtonType> _actionTypes = ActionButtonType.values;
   static const List<ActionButtonType> defaultViewerKebabMenuOrder = _actionTypes;
-  static const Set<ActionButtonType> defaultViewerBottomBarButtons = {
+  static const List<ActionButtonType> _defaultViewerBottomBarOrder = [
     ActionButtonType.share,
-    ActionButtonType.moveToLockFolder,
     ActionButtonType.upload,
+    ActionButtonType.editImage,
+    ActionButtonType.openActivity,
+    ActionButtonType.likeActivity,
+    ActionButtonType.addTo,
+    ActionButtonType.deleteLocal,
     ActionButtonType.delete,
-    ActionButtonType.archive,
-    ActionButtonType.unarchive,
-  };
+    ActionButtonType.removeFromLockFolder,
+    ActionButtonType.deletePermanent,
+  ];
 
   static List<Widget> build(ActionButtonContext context) {
     return _actionTypes.where((type) => type.shouldShow(context)).map((type) => type.buildButton(context)).toList();
   }
 
   static List<Widget> buildViewerKebabMenu(ActionButtonContext context, BuildContext buildContext, WidgetRef ref) {
+    // Get visible bottom bar buttons for exclusion
+    final visibleBottomBarButtons = _defaultViewerBottomBarOrder
+        .where((type) => type.shouldShow(context))
+        .take(4)
+        .toSet();
+
+    // Always exclude addTo from kebab menu
+    final excludedTypes = <ActionButtonType>{...visibleBottomBarButtons, ActionButtonType.addTo};
+
+    // If addTo is visible in bottom bar, also exclude moveToLockFolder, archive, and unarchive from kebab menu
+    if (visibleBottomBarButtons.contains(ActionButtonType.addTo)) {
+      excludedTypes.addAll([ActionButtonType.moveToLockFolder, ActionButtonType.archive, ActionButtonType.unarchive]);
+    }
+
     final visibleButtons = defaultViewerKebabMenuOrder
-        .where((type) => !defaultViewerBottomBarButtons.contains(type) && type.shouldShow(context))
+        .where((type) => !excludedTypes.contains(type) && type.shouldShow(context))
         .toList();
 
     if (visibleButtons.isEmpty) {
@@ -314,10 +341,21 @@ class ActionButtonBuilder {
       if (lastGroup != null && type.kebabMenuGroup != lastGroup) {
         result.add(const Divider(height: 1));
       }
-      result.add(type.buildButton(context, buildContext, false, true).build(buildContext, ref));
+      final widget = type.buildButton(context, buildContext, false, true);
+      result.add(widget is ConsumerWidget ? widget.build(buildContext, ref) : widget);
       lastGroup = type.kebabMenuGroup;
     }
 
     return result;
+  }
+
+  static List<Widget> buildViewerBottomBar(ActionButtonContext context, BuildContext buildContext, WidgetRef ref) {
+    // Take only the first 4 visible buttons from the order
+    final visibleButtons = _defaultViewerBottomBarOrder.where((type) => type.shouldShow(context)).take(4).toList();
+
+    return visibleButtons.map((type) {
+      final widget = type.buildButton(context, buildContext, false, false);
+      return widget is ConsumerWidget ? widget.build(buildContext, ref) : widget;
+    }).toList();
   }
 }
