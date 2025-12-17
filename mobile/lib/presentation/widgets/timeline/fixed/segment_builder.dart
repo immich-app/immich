@@ -70,7 +70,6 @@ class FixedSegmentBuilder extends SegmentBuilder {
         previousDate = bucket.date;
       }
     }
-
     return segments;
   }
 }
