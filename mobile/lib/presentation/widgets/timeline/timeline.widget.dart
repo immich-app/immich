@@ -35,9 +35,6 @@ final _runtimeTimelineArgsProvider = StateProvider<TimelineArgs>((ref) {
   return const TimelineArgs(maxWidth: 0, maxHeight: 0);
 });
 
-// Updated continuously by the timeline grid to describe what's currently at the top of the viewport.
-final _timelineAnchorAssetIndexProvider = StateProvider<int?>((ref) => null);
-
 // Set by the Timeline widget right before constraints/args change; consumed by _SliverTimelineState to restore view.
 final _timelinePendingRestoreAssetIndexProvider = StateProvider<int?>((ref) => null);
 
@@ -189,7 +186,6 @@ class _SliverTimeline extends ConsumerStatefulWidget {
 class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
   late final ScrollController _scrollController;
   StreamSubscription? _eventSubscription;
-  double? _lastKnownScrollOffset;
 
   // Drag selection state
   bool _dragging = false;
@@ -220,29 +216,13 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
           'AGENT_LOG _SliverTimelineState.scrollController.onAttach stateHash=${identityHashCode(this)} restoredOffset=${position.pixels} hasPendingRowAnchor=$_hasPendingRowAnchorRestore',
         );
         // #endregion
-        // If we have a pending row anchor restore, skip the pixel fallback to avoid conflicts.
-        if (!_hasPendingRowAnchorRestore &&
-            _lastKnownScrollOffset != null &&
-            _lastKnownScrollOffset! > 0 &&
-            (position.pixels == 0.0 || position.pixels.isNaN)) {
-          final target = _lastKnownScrollOffset!;
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (!mounted || !_scrollController.hasClients) return;
-            final max = _scrollController.position.maxScrollExtent;
-            final clamped = target.clamp(0.0, max);
-            // #region agent log
-            debugPrint(
-              'AGENT_LOG _SliverTimelineState.scrollController.onAttach fallbackJump target=$target clamped=$clamped max=$max',
-            );
-            // #endregion
-            _scrollController.jumpTo(clamped);
-          });
-        }
+        // Add scroll listener to continuously update row anchor (similar to web's updateIntersections)
+        _scrollController.addListener(_onScroll);
         _restoreScalePosition(position);
         _restoreRowAnchor();
       },
       onDetach: (position) {
-        _lastKnownScrollOffset = position.pixels;
+        _scrollController.removeListener(_onScroll);
         // #region agent log
         debugPrint(
           'AGENT_LOG _SliverTimelineState.scrollController.onDetach stateHash=${identityHashCode(this)} lastOffset=${position.pixels}',
@@ -283,16 +263,63 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
       // Clear so we don't re-run.
       ref.read(_timelinePendingRestoreRowAnchorProvider.notifier).state = null;
     });
-  }
 
-  int? _computeAnchorAssetIndex(List<Segment> segments, double scrollOffset, int columnCount) {
-    final segment = segments.findByOffset(scrollOffset) ?? segments.lastOrNull;
-    if (segment == null) return null;
-    final rowIndex = segment.getMinChildIndexForScrollOffset(scrollOffset);
-    if (rowIndex < segment.firstIndex) return segment.firstAssetIndex;
-    final rowIndexInSegment = rowIndex - (segment.firstIndex + 1);
-    final assetIndexInSegment = rowIndexInSegment * columnCount;
-    return segment.firstAssetIndex + assetIndexInSegment;
+    // When segments change (due to width/columnCount change), automatically adjust scroll
+    // to maintain the current row anchor (similar to web's MonthGroup.height setter).
+    // We use a separate listener that watches the segments directly to avoid AsyncValue null issues.
+    ref.listenManual(timelineSegmentProvider.select((async) => async.valueOrNull), (previous, next) {
+      // Only process when both have data
+      if (previous == null || next == null) return;
+
+      // Only adjust if segments actually changed (not just a rebuild)
+      if (previous.equals(next)) return;
+
+      final currentAnchor = ref.read(_timelineAnchorRowProvider);
+      if (currentAnchor == null) return;
+
+      if (next.isEmpty) return;
+
+      final targetSegment = next.findByIndex(currentAnchor.rowIndex);
+      if (targetSegment == null) {
+        // Segment changed, try to find closest
+        final lastSegment = next.lastOrNull;
+        if (lastSegment == null) return;
+        final clampedRowIndex = currentAnchor.rowIndex.clamp(0, lastSegment.lastIndex);
+        final fallbackSegment = next.findByIndex(clampedRowIndex);
+        if (fallbackSegment == null) return;
+        final targetOffset = fallbackSegment.indexToLayoutOffset(clampedRowIndex) + currentAnchor.deltaPx;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted || !_scrollController.hasClients) return;
+          final max = _scrollController.position.maxScrollExtent;
+          final clamped = targetOffset.clamp(0.0, max);
+          // #region agent log
+          debugPrint(
+            'AGENT_LOG _SliverTimelineState.segmentsChanged autoAdjust fallback clampedRowIndex=$clampedRowIndex targetOffset=$targetOffset clamped=$clamped',
+          );
+          // #endregion
+          _scrollController.jumpTo(clamped);
+        });
+        return;
+      }
+
+      // Compute the target offset: row's layout offset + delta within the row
+      final targetOffset = targetSegment.indexToLayoutOffset(currentAnchor.rowIndex) + currentAnchor.deltaPx;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted || !_scrollController.hasClients) return;
+        final max = _scrollController.position.maxScrollExtent;
+        final clamped = targetOffset.clamp(0.0, max);
+        // Only adjust if the current scroll position doesn't match the target
+        final currentOffset = _scrollController.offset;
+        if ((clamped - currentOffset).abs() > 1.0) {
+          // #region agent log
+          debugPrint(
+            'AGENT_LOG _SliverTimelineState.segmentsChanged autoAdjust rowIndex=${currentAnchor.rowIndex} deltaPx=${currentAnchor.deltaPx} currentOffset=$currentOffset targetOffset=$targetOffset clamped=$clamped',
+          );
+          // #endregion
+          _scrollController.jumpTo(clamped);
+        }
+      });
+    });
   }
 
   /// Computes the row anchor (rowIndex + deltaPx) for the current scroll position.
@@ -305,6 +332,21 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
     // Delta is the offset within the row (clamped to >= 0 to handle edge cases)
     final deltaPx = (scrollOffset - rowOffset).clamp(0.0, double.infinity);
     return _TimelineRowAnchor(rowIndex: rowIndex, deltaPx: deltaPx);
+  }
+
+  /// Continuously updates the row anchor during scroll (similar to web's updateIntersections).
+  /// This ensures we always have an accurate anchor when geometry changes (e.g., orientation).
+  void _onScroll() {
+    if (!_scrollController.hasClients) return;
+    final scrollOffset = _scrollController.offset;
+    final asyncSegments = ref.read(timelineSegmentProvider);
+    asyncSegments.whenData((segments) {
+      if (segments.isEmpty) return;
+      final rowAnchor = _computeRowAnchor(segments, scrollOffset);
+      if (rowAnchor != null) {
+        ref.read(_timelineAnchorRowProvider.notifier).state = rowAnchor;
+      }
+    });
   }
 
   void _onEvent(Event event) {
@@ -541,21 +583,6 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
       },
       child: asyncSegments.widgetWhen(
         onData: (segments) {
-          // #region agent log
-          final currentOffset = _scrollController.hasClients
-              ? _scrollController.offset
-              : (widget.initialScrollOffset ?? 0.0);
-          final anchor = _computeAnchorAssetIndex(segments, currentOffset, args.columnCount);
-          final rowAnchor = _computeRowAnchor(segments, currentOffset);
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (!mounted) return;
-            ref.read(_timelineAnchorAssetIndexProvider.notifier).state = anchor;
-            ref.read(_timelineAnchorRowProvider.notifier).state = rowAnchor;
-          });
-          debugPrint(
-            'AGENT_LOG _SliverTimelineState.anchorComputed offset=$currentOffset columnCount=${args.columnCount} anchorAssetIndex=$anchor rowAnchor=$rowAnchor',
-          );
-          // #endregion
           final childCount = (segments.lastOrNull?.lastIndex ?? -1) + 1;
           final double appBarExpandedHeight = widget.appBar != null && widget.appBar is MesmerizingSliverAppBar
               ? 200
