@@ -30,9 +30,10 @@ import {
   QueueName,
 } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
-import { ISidecarWriteJob, JobItem, JobOf } from 'src/types';
+import { JobItem, JobOf } from 'src/types';
 import { requireElevatedPermission } from 'src/utils/access';
 import { getAssetFiles, getMyPartnerIds, onAfterUnlink, onBeforeLink, onBeforeUnlink } from 'src/utils/asset.util';
+import { updateLockedColumns } from 'src/utils/database';
 
 @Injectable()
 export class AssetService extends BaseService {
@@ -142,56 +143,26 @@ export class AssetService extends BaseService {
     } = dto;
     await this.requireAccess({ auth, permission: Permission.AssetUpdate, ids });
 
-    const assetDto = { isFavorite, visibility, duplicateId };
-    const exifDto = { latitude, longitude, rating, description, dateTimeOriginal };
+    const assetDto = _.omitBy({ isFavorite, visibility, duplicateId }, _.isUndefined);
+    const exifDto = _.omitBy({ latitude, longitude, rating, description, dateTimeOriginal }, _.isUndefined);
 
-    const isExifChanged = Object.values(exifDto).some((v) => v !== undefined);
-    if (isExifChanged) {
+    if (Object.keys(exifDto).length > 0) {
       await this.assetRepository.updateAllExif(ids, exifDto);
     }
 
-    const assets =
-      (dateTimeRelative !== undefined && dateTimeRelative !== 0) || timeZone !== undefined
-        ? await this.assetRepository.updateDateTimeOriginal(ids, dateTimeRelative, timeZone)
-        : undefined;
-
-    const dateTimesWithTimezone = assets
-      ? assets.map((asset) => {
-          const isoString = asset.dateTimeOriginal?.toISOString();
-          let dateTime = isoString ? DateTime.fromISO(isoString) : null;
-
-          if (dateTime && asset.timeZone) {
-            dateTime = dateTime.setZone(asset.timeZone);
-          }
-
-          return {
-            assetId: asset.assetId,
-            dateTimeOriginal: dateTime?.toISO() ?? null,
-          };
-        })
-      : ids.map((id) => ({ assetId: id, dateTimeOriginal }));
-
-    if (dateTimesWithTimezone.length > 0) {
-      await this.jobRepository.queueAll(
-        dateTimesWithTimezone.map(({ assetId: id, dateTimeOriginal }) => ({
-          name: JobName.SidecarWrite,
-          data: {
-            ...exifDto,
-            id,
-            dateTimeOriginal: dateTimeOriginal ?? undefined,
-          },
-        })),
-      );
+    if ((dateTimeRelative !== undefined && dateTimeRelative !== 0) || timeZone !== undefined) {
+      await this.assetRepository.updateDateTimeOriginal(ids, dateTimeRelative, timeZone);
     }
 
-    const isAssetChanged = Object.values(assetDto).some((v) => v !== undefined);
-    if (isAssetChanged) {
+    if (Object.keys(assetDto).length > 0) {
       await this.assetRepository.updateAll(ids, assetDto);
-
-      if (visibility === AssetVisibility.Locked) {
-        await this.albumRepository.removeAssetsFromAll(ids);
-      }
     }
+
+    if (visibility === AssetVisibility.Locked) {
+      await this.albumRepository.removeAssetsFromAll(ids);
+    }
+
+    await this.jobRepository.queueAll(ids.map((id) => ({ name: JobName.SidecarWrite, data: { id } })));
   }
 
   async copy(
@@ -456,12 +427,25 @@ export class AssetService extends BaseService {
     return asset;
   }
 
-  private async updateExif(dto: ISidecarWriteJob) {
+  private async updateExif(dto: {
+    id: string;
+    description?: string;
+    dateTimeOriginal?: string;
+    latitude?: number;
+    longitude?: number;
+    rating?: number;
+  }) {
     const { id, description, dateTimeOriginal, latitude, longitude, rating } = dto;
     const writes = _.omitBy({ description, dateTimeOriginal, latitude, longitude, rating }, _.isUndefined);
     if (Object.keys(writes).length > 0) {
-      await this.assetRepository.upsertExif({ assetId: id, ...writes });
-      await this.jobRepository.queue({ name: JobName.SidecarWrite, data: { id, ...writes } });
+      await this.assetRepository.upsertExif(
+        updateLockedColumns({
+          assetId: id,
+          ...writes,
+        }),
+        { lockedPropertiesBehavior: 'append' },
+      );
+      await this.jobRepository.queue({ name: JobName.SidecarWrite, data: { id } });
     }
   }
 }
