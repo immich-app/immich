@@ -76,6 +76,7 @@ describe('mimeTypes', () => {
     { mimetype: 'image/x-sony-sr2', extension: '.sr2' },
     { mimetype: 'image/x-sony-srf', extension: '.srf' },
     { mimetype: 'image/x3f', extension: '.x3f' },
+    { mimetype: 'application/mxf', extension: '.mxf' },
     { mimetype: 'video/3gpp', extension: '.3gp' },
     { mimetype: 'video/3gpp', extension: '.3gpp' },
     { mimetype: 'video/avi', extension: '.avi' },
