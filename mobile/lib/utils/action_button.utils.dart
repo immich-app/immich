@@ -90,9 +90,7 @@ enum ActionButtonType {
   bool shouldShow(ActionButtonContext context) {
     return switch (this) {
       ActionButtonType.advancedInfo => context.advancedTroubleshooting,
-      ActionButtonType.share =>
-        !context.isInLockedView && //
-            context.asset.hasRemote,
+      ActionButtonType.share => true,
       ActionButtonType.shareLink =>
         !context.isInLockedView && //
             context.asset.hasRemote,
@@ -311,33 +309,44 @@ class ActionButtonBuilder {
     return _actionTypes.where((type) => type.shouldShow(context)).map((type) => type.buildButton(context)).toList();
   }
 
-  static List<Widget> buildViewerKebabMenu(ActionButtonContext context, BuildContext buildContext, WidgetRef ref) {
-    // Get visible bottom bar buttons for exclusion
-    final visibleBottomBarButtons = _defaultViewerBottomBarOrder
-        .where((type) => type.shouldShow(context))
-        .take(4)
-        .toSet();
-
-    // Always exclude addTo from kebab menu
+  static List<ActionButtonType> getViewerKebabMenuTypes(ActionButtonContext context) {
+    final visibleBottomBarButtons = getViewerBottomBarTypes(context);
     final excludedTypes = <ActionButtonType>{...visibleBottomBarButtons, ActionButtonType.addTo};
 
-    // If addTo is visible in bottom bar, also exclude moveToLockFolder, archive, and unarchive from kebab menu
     if (visibleBottomBarButtons.contains(ActionButtonType.addTo)) {
       excludedTypes.addAll([ActionButtonType.moveToLockFolder, ActionButtonType.archive, ActionButtonType.unarchive]);
     }
 
-    final visibleButtons = defaultViewerKebabMenuOrder
+    return defaultViewerKebabMenuOrder
         .where((type) => !excludedTypes.contains(type) && type.shouldShow(context))
         .toList();
+  }
 
-    if (visibleButtons.isEmpty) {
+  static List<ActionButtonType> getViewerBottomBarTypes(ActionButtonContext context) {
+    return _defaultViewerBottomBarOrder.where((type) => type.shouldShow(context)).take(4).toList();
+  }
+
+  static List<Widget> buildViewerKebabMenu(ActionButtonContext context, BuildContext buildContext, WidgetRef ref) {
+    final visibleButtons = getViewerKebabMenuTypes(context);
+    return visibleButtons.toKebabMenuWidgets(context, buildContext, ref);
+  }
+
+  static List<Widget> buildViewerBottomBar(ActionButtonContext context, BuildContext buildContext, WidgetRef ref) {
+    final visibleButtons = getViewerBottomBarTypes(context);
+    return visibleButtons.toBottomBarWidgets(context, buildContext, ref);
+  }
+}
+
+extension ActionButtonTypeListExtension on List<ActionButtonType> {
+  List<Widget> toKebabMenuWidgets(ActionButtonContext context, BuildContext buildContext, WidgetRef ref) {
+    if (isEmpty) {
       return [];
     }
 
     final List<Widget> result = [];
     int? lastGroup;
 
-    for (final type in visibleButtons) {
+    for (final type in this) {
       if (lastGroup != null && type.kebabMenuGroup != lastGroup) {
         result.add(const Divider(height: 1));
       }
@@ -349,11 +358,8 @@ class ActionButtonBuilder {
     return result;
   }
 
-  static List<Widget> buildViewerBottomBar(ActionButtonContext context, BuildContext buildContext, WidgetRef ref) {
-    // Take only the first 4 visible buttons from the order
-    final visibleButtons = _defaultViewerBottomBarOrder.where((type) => type.shouldShow(context)).take(4).toList();
-
-    return visibleButtons.map((type) {
+  List<Widget> toBottomBarWidgets(ActionButtonContext context, BuildContext buildContext, WidgetRef ref) {
+    return map((type) {
       final widget = type.buildButton(context, buildContext, false, false);
       return widget is ConsumerWidget ? widget.build(buildContext, ref) : widget;
     }).toList();
