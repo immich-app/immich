@@ -71,12 +71,6 @@ class MultiselectGrid extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // #region agent log
-    final mq = MediaQuery.of(context);
-    debugPrint(
-      'AGENT_LOG MultiselectGrid.build w=${mq.size.width} h=${mq.size.height} orientation=${mq.orientation} route=${ModalRoute.of(context)?.settings.name}',
-    );
-    // #endregion
     final multiselectEnabled = ref.watch(multiselectProvider.notifier);
     final selectionEnabledHook = useState(false);
     final selectionAssetState = useState(const AssetSelectionState());
@@ -414,24 +408,17 @@ class MultiselectGrid extends HookConsumerWidget {
           ref
               .watch(renderListProvider)
               .when(
-                data: (data) {
-                  // #region agent log
-                  debugPrint(
-                    'AGENT_LOG MultiselectGrid.renderList.when(data) isEmpty=${data.isEmpty} elements=${data.elements.length} totalAssets=${data.totalAssets}',
-                  );
-                  // #endregion
-                  return data.isEmpty && (buildLoadingIndicator != null || topWidget == null)
-                      ? (buildLoadingIndicator ?? buildEmptyIndicator)()
-                      : ImmichAssetGrid(
-                          renderList: data,
-                          listener: selectionListener,
-                          selectionActive: selectionEnabledHook.value,
-                          onRefresh: onRefresh == null ? null : wrapLongRunningFun(onRefresh!, showOverlay: false),
-                          topWidget: topWidget,
-                          showStack: stackEnabled,
-                          showDragScrollLabel: dragScrollLabelEnabled,
-                        );
-                },
+                data: (data) => data.isEmpty && (buildLoadingIndicator != null || topWidget == null)
+                    ? (buildLoadingIndicator ?? buildEmptyIndicator)()
+                    : ImmichAssetGrid(
+                        renderList: data,
+                        listener: selectionListener,
+                        selectionActive: selectionEnabledHook.value,
+                        onRefresh: onRefresh == null ? null : wrapLongRunningFun(onRefresh!, showOverlay: false),
+                        topWidget: topWidget,
+                        showStack: stackEnabled,
+                        showDragScrollLabel: dragScrollLabelEnabled,
+                      ),
                 error: (error, _) => Center(child: Text(error.toString())),
                 loading: buildLoadingIndicator ?? buildDefaultLoadingIndicator,
               ),

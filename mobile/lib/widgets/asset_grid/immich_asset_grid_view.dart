@@ -310,11 +310,6 @@ class ImmichAssetGridViewState extends ConsumerState<ImmichAssetGridView> {
   @override
   void didUpdateWidget(ImmichAssetGridView oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // #region agent log
-    debugPrint(
-      'AGENT_LOG ImmichAssetGridViewState.didUpdateWidget oldAssetsPerRow=${oldWidget.assetsPerRow} newAssetsPerRow=${widget.assetsPerRow}',
-    );
-    // #endregion
     if (!widget.selectionActive) {
       setState(() {
         _selectedAssets.clear();
@@ -498,12 +493,6 @@ class ImmichAssetGridViewState extends ConsumerState<ImmichAssetGridView> {
 
   @override
   Widget build(BuildContext context) {
-    // #region agent log
-    final mq = MediaQuery.of(context);
-    debugPrint(
-      'AGENT_LOG ImmichAssetGridViewState.build assetsPerRow=${widget.assetsPerRow} w=${mq.size.width} h=${mq.size.height} orientation=${mq.orientation} route=${ModalRoute.of(context)?.settings.name}',
-    );
-    // #endregion
     return PopScope(
       canPop: !(widget.selectionActive && _selectedAssets.isNotEmpty),
       onPopInvokedWithResult: (didPop, _) {
@@ -615,11 +604,6 @@ class _Section extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        // #region agent log
-        debugPrint(
-          'AGENT_LOG _Section.build constraintsMaxWidth=${constraints.maxWidth} constraintsMaxHeight=${constraints.maxHeight} assetsPerRow=$assetsPerRow margin=$margin sectionCount=${section.count} sectionType=${section.type}',
-        );
-        // #endregion
         final width = constraints.maxWidth / assetsPerRow - margin * (assetsPerRow - 1) / assetsPerRow;
         final rows = (section.count + assetsPerRow - 1) ~/ assetsPerRow;
         final List<Asset> assetsToRender = scrolling ? [] : renderList.loadAssets(section.offset, section.count);
@@ -771,11 +755,6 @@ class _AssetRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // #region agent log
-    debugPrint(
-      'AGENT_LOG _AssetRow.build assetsLen=${assets.length} width=$width assetsPerRow=$assetsPerRow dynamicLayout=$dynamicLayout margin=$margin absoluteOffset=$absoluteOffset',
-    );
-    // #endregion
     // Default: All assets have the same width
     final widthDistribution = List.filled(assets.length, 1.0);
 

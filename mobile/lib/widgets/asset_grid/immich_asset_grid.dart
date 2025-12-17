@@ -64,13 +64,6 @@ class ImmichAssetGrid extends HookConsumerWidget {
     final scaleFactor = useState(7.0 - perRow.value);
     final baseScaleFactor = useState(7.0 - perRow.value);
 
-    // #region agent log
-    final mq = MediaQuery.of(context);
-    debugPrint(
-      'AGENT_LOG ImmichAssetGrid.build w=${mq.size.width} h=${mq.size.height} orientation=${mq.orientation} assetsPerRowProp=$assetsPerRow perRowState=${perRow.value} margin=$margin shrinkWrap=$shrinkWrap',
-    );
-    // #endregion
-
     /// assets need different hero tags across tabs / modals
     /// otherwise, hero animations are performed across tabs (looks buggy!)
     int heroOffset() {
@@ -98,9 +91,6 @@ class ImmichAssetGrid extends HookConsumerWidget {
                 if (7 - scaleFactor.value.toInt() != perRow.value) {
                   perRow.value = 7 - scaleFactor.value.toInt();
                   settings.setSetting(AppSettingsEnum.tilesPerRow, perRow.value);
-                  // #region agent log
-                  debugPrint('AGENT_LOG ImmichAssetGrid.scale.onUpdate perRowChanged=${perRow.value}');
-                  // #endregion
                 }
               };
             },

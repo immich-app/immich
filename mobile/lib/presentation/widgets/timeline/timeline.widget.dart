@@ -85,20 +85,11 @@ class Timeline extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // #region agent log
-    final mq = MediaQuery.of(context);
-    debugPrint('AGENT_LOG Timeline.build w=${mq.size.width} h=${mq.size.height} orientation=${mq.orientation}');
-    // #endregion
     return Scaffold(
       resizeToAvoidBottomInset: false,
       floatingActionButton: const DownloadStatusFloatingButton(),
       body: LayoutBuilder(
         builder: (_, constraints) {
-          // #region agent log
-          debugPrint(
-            'AGENT_LOG Timeline.LayoutBuilder constraintsMaxWidth=${constraints.maxWidth} constraintsMaxHeight=${constraints.maxHeight}',
-          );
-          // #endregion
           return ProviderScope(
             overrides: [
               // Make TimelineArgs dynamic: dependent widgets will rebuild when _runtimeTimelineArgsProvider changes.
@@ -119,20 +110,10 @@ class Timeline extends StatelessWidget {
 
                 if (current != desired) {
                   final rowAnchor = ref.read(_timelineAnchorRowProvider);
-                  // #region agent log
-                  debugPrint(
-                    'AGENT_LOG Timeline.constraintsChange captureAnchor rowAnchor=$rowAnchor currentArgs={w=${current.maxWidth},h=${current.maxHeight},c=${current.columnCount}} desiredArgs={w=${desired.maxWidth},h=${desired.maxHeight},c=${desired.columnCount}}',
-                  );
-                  // #endregion
                   // Update after this frame (avoid mutating provider state during widget build).
                   WidgetsBinding.instance.addPostFrameCallback((_) {
                     final latest = ref.read(_runtimeTimelineArgsProvider);
                     if (latest != desired) {
-                      // #region agent log
-                      debugPrint(
-                        'AGENT_LOG runtimeTimelineArgs.update from {w=${latest.maxWidth},h=${latest.maxHeight},c=${latest.columnCount}} to {w=${desired.maxWidth},h=${desired.maxHeight},c=${desired.columnCount}}',
-                      );
-                      // #endregion
                       ref.read(_runtimeTimelineArgsProvider.notifier).state = desired;
                     }
                     // Set pending restore after updating args (also deferred to avoid build-time modification)
@@ -203,19 +184,9 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
   @override
   void initState() {
     super.initState();
-    // #region agent log
-    debugPrint(
-      'AGENT_LOG _SliverTimelineState.initState stateHash=${identityHashCode(this)} initialScrollOffset=${widget.initialScrollOffset ?? 0.0}',
-    );
-    // #endregion
     _scrollController = ScrollController(
       initialScrollOffset: widget.initialScrollOffset ?? 0.0,
       onAttach: (position) {
-        // #region agent log
-        debugPrint(
-          'AGENT_LOG _SliverTimelineState.scrollController.onAttach stateHash=${identityHashCode(this)} restoredOffset=${position.pixels} hasPendingRowAnchor=$_hasPendingRowAnchorRestore',
-        );
-        // #endregion
         // Add scroll listener to continuously update row anchor (similar to web's updateIntersections)
         _scrollController.addListener(_onScroll);
         _restoreScalePosition(position);
@@ -223,11 +194,6 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
       },
       onDetach: (position) {
         _scrollController.removeListener(_onScroll);
-        // #region agent log
-        debugPrint(
-          'AGENT_LOG _SliverTimelineState.scrollController.onDetach stateHash=${identityHashCode(this)} lastOffset=${position.pixels}',
-        );
-        // #endregion
       },
     );
     _eventSubscription = EventStream.shared.listen(_onEvent);
@@ -242,9 +208,6 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
     // When constraints change (rotation), restore the top-of-viewport anchor asset index after new layout is computed.
     ref.listenManual(_timelinePendingRestoreAssetIndexProvider, (_, next) {
       if (next == null) return;
-      // #region agent log
-      debugPrint('AGENT_LOG _SliverTimelineState.pendingRestore received assetIndex=$next');
-      // #endregion
       _scaleRestoreAssetIndex = next;
       _restoreScalePosition(null);
       // Clear so we don't re-run.
@@ -254,9 +217,6 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
     // When constraints change (rotation), restore the row anchor after new layout is computed.
     ref.listenManual(_timelinePendingRestoreRowAnchorProvider, (_, next) {
       if (next == null) return;
-      // #region agent log
-      debugPrint('AGENT_LOG _SliverTimelineState.pendingRestoreRowAnchor received rowAnchor=$next');
-      // #endregion
       _pendingRestoreRowAnchor = next;
       _hasPendingRowAnchorRestore = true;
       _restoreRowAnchor();
@@ -292,11 +252,6 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
           if (!mounted || !_scrollController.hasClients) return;
           final max = _scrollController.position.maxScrollExtent;
           final clamped = targetOffset.clamp(0.0, max);
-          // #region agent log
-          debugPrint(
-            'AGENT_LOG _SliverTimelineState.segmentsChanged autoAdjust fallback clampedRowIndex=$clampedRowIndex targetOffset=$targetOffset clamped=$clamped',
-          );
-          // #endregion
           _scrollController.jumpTo(clamped);
         });
         return;
@@ -311,11 +266,6 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
         // Only adjust if the current scroll position doesn't match the target
         final currentOffset = _scrollController.offset;
         if ((clamped - currentOffset).abs() > 1.0) {
-          // #region agent log
-          debugPrint(
-            'AGENT_LOG _SliverTimelineState.segmentsChanged autoAdjust rowIndex=${currentAnchor.rowIndex} deltaPx=${currentAnchor.deltaPx} currentOffset=$currentOffset targetOffset=$targetOffset clamped=$clamped',
-          );
-          // #endregion
           _scrollController.jumpTo(clamped);
         }
       });
@@ -416,11 +366,6 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
           if (!mounted || !_scrollController.hasClients) return;
           final max = _scrollController.position.maxScrollExtent;
           final clamped = targetOffset.clamp(0.0, max);
-          // #region agent log
-          debugPrint(
-            'AGENT_LOG _SliverTimelineState._restoreRowAnchor clampedRowIndex=$clampedRowIndex targetOffset=$targetOffset clamped=$clamped',
-          );
-          // #endregion
           _scrollController.jumpTo(clamped);
           _hasPendingRowAnchorRestore = false;
           _pendingRestoreRowAnchor = null;
@@ -434,11 +379,6 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
         if (!mounted || !_scrollController.hasClients) return;
         final max = _scrollController.position.maxScrollExtent;
         final clamped = targetOffset.clamp(0.0, max);
-        // #region agent log
-        debugPrint(
-          'AGENT_LOG _SliverTimelineState._restoreRowAnchor rowIndex=${rowAnchor.rowIndex} deltaPx=${rowAnchor.deltaPx} targetOffset=$targetOffset clamped=$clamped',
-        );
-        // #endregion
         _scrollController.jumpTo(clamped);
         _hasPendingRowAnchorRestore = false;
         _pendingRestoreRowAnchor = null;
@@ -561,13 +501,6 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
 
   @override
   Widget build(BuildContext _) {
-    // #region agent log
-    final mq = MediaQuery.of(context);
-    final args = ref.watch(timelineArgsProvider);
-    debugPrint(
-      'AGENT_LOG _SliverTimelineState.build w=${mq.size.width} h=${mq.size.height} orientation=${mq.orientation} args.maxWidth=${args.maxWidth} args.maxHeight=${args.maxHeight} args.columnCount=${args.columnCount} localPerRow=$_perRow scrollHasClients=${_scrollController.hasClients} scrollOffset=${_scrollController.hasClients ? _scrollController.offset : null}',
-    );
-    // #endregion
     final asyncSegments = ref.watch(timelineSegmentProvider);
     final maxHeight = ref.watch(timelineArgsProvider.select((args) => args.maxHeight));
     final isSelectionMode = ref.watch(multiSelectProvider.select((s) => s.forceEnable));

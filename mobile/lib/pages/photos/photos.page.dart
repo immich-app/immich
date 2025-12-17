@@ -24,13 +24,6 @@ class PhotosPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // #region agent log
-    final mq = MediaQuery.of(context);
-    // Use debugPrint to avoid potential throttling differences vs print across platforms.
-    debugPrint(
-      'AGENT_LOG PhotosPage.build w=${mq.size.width} h=${mq.size.height} orientation=${mq.orientation} route=${ModalRoute.of(context)?.settings.name}',
-    );
-    // #endregion
     final currentUser = ref.watch(currentUserProvider);
     final timelineUsers = ref.watch(timelineUsersIdsProvider);
     final tipOneOpacity = useState(0.0);
