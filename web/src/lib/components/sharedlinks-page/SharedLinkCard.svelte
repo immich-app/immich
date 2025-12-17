@@ -5,7 +5,7 @@
   import { getSharedLinkActions } from '$lib/services/shared-link.service';
   import { locale } from '$lib/stores/preferences.store';
   import { SharedLinkType, type SharedLinkResponseDto } from '@immich/sdk';
-  import { Badge, ContextMenuButton, MenuItemType, Text } from '@immich/ui';
+  import { ContextMenuButton, MenuItemType, Text } from '@immich/ui';
   import { DateTime, type ToRelativeUnit } from 'luxon';
   import { t } from 'svelte-i18n';
 
@@ -32,6 +32,28 @@
   };
 
   const { Edit, Copy, Delete } = $derived(getSharedLinkActions($t, sharedLink));
+
+  const capabilities = $derived.by(() => {
+    const items = [];
+
+    if (sharedLink.allowUpload) {
+      items.push($t('upload'));
+    }
+
+    if (sharedLink.allowDownload) {
+      items.push($t('download'));
+    }
+
+    if (sharedLink.showMetadata) {
+      items.push($t('exif'));
+    }
+
+    if (sharedLink.password) {
+      items.push($t('password'));
+    }
+
+    return items;
+  });
 </script>
 
 <div
@@ -44,50 +66,41 @@
   >
     <ShareCover class="transition-all duration-300 hover:shadow-lg" {sharedLink} />
 
-    <div class="flex flex-col gap-2">
-      <Text size="large" color="primary" class="flex place-items-center gap-2 break-all">
-        {#if sharedLink.type === SharedLinkType.Album}
-          {sharedLink.album?.albumName}
-        {:else if sharedLink.type === SharedLinkType.Individual}
-          {$t('individual_share')}
-        {/if}
-      </Text>
-
-      <div class="flex flex-wrap gap-1">
-        {#if isExpired}
-          <Badge size="small" color="danger">{$t('expired')}</Badge>
-        {:else if expiresAt}
-          <Badge size="small" color="secondary">
+    <div class="flex flex-col gap-4 justify-between">
+      <div class="flex flex-col">
+        <Text size="tiny" color={isExpired ? 'danger' : 'muted'} class="font-medium">
+          {#if isExpired}
+            {$t('expired')}
+          {:else if expiresAt}
             {$t('expires_date', { values: { date: getCountDownExpirationDate(expiresAt, now) } })}
-          </Badge>
-        {:else}
-          <Badge size="small" color="secondary">{$t('expires_date', { values: { date: '∞' } })}</Badge>
-        {/if}
+          {:else}
+            {$t('expires_date', { values: { date: '∞' } })}
+          {/if}
+        </Text>
 
-        {#if sharedLink.slug}
-          <Badge size="small" color="secondary">{$t('custom_url')}</Badge>
-        {/if}
+        <Text size="large" color="primary" class="flex place-items-center gap-2 break-all font-medium">
+          {#if sharedLink.type === SharedLinkType.Album}
+            {sharedLink.album?.albumName}
+          {:else if sharedLink.type === SharedLinkType.Individual}
+            {$t('individual_share')}
+          {/if}
+        </Text>
 
-        {#if sharedLink.allowUpload}
-          <Badge size="small" color="secondary">{$t('upload')}</Badge>
-        {/if}
-
-        {#if sharedLink.showMetadata && sharedLink.allowDownload}
-          <Badge size="small" color="secondary">{$t('download')}</Badge>
-        {/if}
-
-        {#if sharedLink.showMetadata}
-          <Badge size="small" color="secondary">{$t('exif')}</Badge>
-        {/if}
-
-        {#if sharedLink.password}
-          <Badge size="small" color="secondary">{$t('password')}</Badge>
+        {#if sharedLink.description}
+          <Text size="small" class="line-clamp-1">{sharedLink.description}</Text>
         {/if}
       </div>
 
-      {#if sharedLink.description}
-        <Text size="small" class="line-clamp-1">{sharedLink.description}</Text>
-      {/if}
+      <div class="flex flex-wrap items-center gap-2">
+        {#each capabilities as capability, index (index)}
+          <Text size="small" color="primary" class="font-medium">
+            {capability}
+          </Text>
+          {#if index < capabilities.length - 1}
+            <Text size="small" color="muted">•</Text>
+          {/if}
+        {/each}
+      </div>
     </div>
   </svelte:element>
   <div class="flex flex-auto flex-col place-content-center place-items-end text-end ms-4">
