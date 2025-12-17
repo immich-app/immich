@@ -104,7 +104,6 @@
 
   $effect(() => {
     scrimOpacity = asset.thumbhash ? computeScrimOpacity(asset.thumbhash) : 0.7;
-    console.log('scrimOpacity', scrimOpacity);
   });
 </script>
 
