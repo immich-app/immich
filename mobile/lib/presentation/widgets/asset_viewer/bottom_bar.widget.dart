@@ -57,6 +57,7 @@ class ViewerBottomBar extends ConsumerWidget {
       source: ActionSource.viewer,
       timelineOrigin: timelineOrigin,
       originalTheme: originalTheme,
+      buttonPosition: ButtonPosition.bottomBar,
     );
 
     final actions = ActionButtonBuilder.buildViewerBottomBar(buttonContext, context, ref);

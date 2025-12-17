@@ -45,6 +45,7 @@ class ActionButtonContext {
   final bool isCasting;
   final TimelineOrigin timelineOrigin;
   final ThemeData? originalTheme;
+  final ButtonPosition buttonPosition;
 
   const ActionButtonContext({
     required this.asset,
@@ -59,6 +60,7 @@ class ActionButtonContext {
     this.isCasting = false,
     this.timelineOrigin = TimelineOrigin.main,
     this.originalTheme,
+    this.buttonPosition = ButtonPosition.other,
   });
 }
 
@@ -138,7 +140,8 @@ enum ActionButtonType {
             context.asset.storage == AssetState.local,
       ActionButtonType.editImage =>
         !context.isInLockedView && //
-            context.asset.type == AssetType.image,
+            context.asset.type == AssetType.image &&
+            !(context.buttonPosition == ButtonPosition.bottomBar && context.currentAlbum?.isShared == true),
       ActionButtonType.addTo =>
         !context.isInLockedView && //
             context.asset.hasRemote,
@@ -296,9 +299,9 @@ class ActionButtonBuilder {
     ActionButtonType.share,
     ActionButtonType.upload,
     ActionButtonType.editImage,
+    ActionButtonType.addTo,
     ActionButtonType.openActivity,
     ActionButtonType.likeActivity,
-    ActionButtonType.addTo,
     ActionButtonType.deleteLocal,
     ActionButtonType.delete,
     ActionButtonType.removeFromLockFolder,

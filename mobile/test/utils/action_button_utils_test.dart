@@ -962,4 +962,102 @@ void main() {
       expect(nonArchivedWidgets, isNotEmpty);
     });
   });
+
+  group('ActionButtonBuilder.getViewerBottomBarTypes', () {
+    test('should return correct button types for shared album with activity', () {
+      final remoteAsset = createRemoteAsset();
+      final album = createRemoteAlbum(isActivityEnabled: true, isShared: true);
+      final context = ActionButtonContext(
+        asset: remoteAsset,
+        isOwner: true,
+        isArchived: false,
+        isTrashEnabled: true,
+        isInLockedView: false,
+        currentAlbum: album,
+        advancedTroubleshooting: false,
+        isStacked: false,
+        source: ActionSource.viewer,
+        buttonPosition: ButtonPosition.bottomBar,
+      );
+
+      final types = ActionButtonBuilder.getViewerBottomBarTypes(context);
+
+      expect(types.length, 4);
+      expect(types[0], ActionButtonType.share);
+      expect(types[1], ActionButtonType.addTo);
+      expect(types[2], ActionButtonType.openActivity);
+      expect(types[3], ActionButtonType.likeActivity);
+    });
+
+    test('should return correct button types for local only asset', () {
+      final localAsset = createLocalAsset();
+      final context = ActionButtonContext(
+        asset: localAsset,
+        isOwner: true,
+        isArchived: false,
+        isTrashEnabled: true,
+        isInLockedView: false,
+        currentAlbum: null,
+        advancedTroubleshooting: false,
+        isStacked: false,
+        source: ActionSource.viewer,
+        buttonPosition: ButtonPosition.bottomBar,
+      );
+
+      final types = ActionButtonBuilder.getViewerBottomBarTypes(context);
+
+      expect(types.length, 4);
+      expect(types[0], ActionButtonType.share);
+      expect(types[1], ActionButtonType.upload);
+      expect(types[2], ActionButtonType.editImage);
+      expect(types[3], ActionButtonType.deleteLocal);
+    });
+
+    test('should return correct button types for locked view', () {
+      final remoteAsset = createRemoteAsset();
+      final context = ActionButtonContext(
+        asset: remoteAsset,
+        isOwner: true,
+        isArchived: false,
+        isTrashEnabled: false,
+        isInLockedView: true,
+        currentAlbum: null,
+        advancedTroubleshooting: false,
+        isStacked: false,
+        source: ActionSource.viewer,
+        buttonPosition: ButtonPosition.bottomBar,
+      );
+
+      final types = ActionButtonBuilder.getViewerBottomBarTypes(context);
+
+      expect(types.length, 3);
+      expect(types[0], ActionButtonType.share);
+      expect(types[1], ActionButtonType.removeFromLockFolder);
+      expect(types[2], ActionButtonType.deletePermanent);
+    });
+
+    test('should return correct button types for remote only asset', () {
+      final remoteAsset = createRemoteAsset();
+      final context = ActionButtonContext(
+        asset: remoteAsset,
+        isOwner: true,
+        isArchived: false,
+        isTrashEnabled: true,
+        isInLockedView: false,
+        currentAlbum: null,
+        advancedTroubleshooting: false,
+        isStacked: false,
+        source: ActionSource.viewer,
+        buttonPosition: ButtonPosition.bottomBar,
+      );
+
+      final types = ActionButtonBuilder.getViewerBottomBarTypes(context);
+
+      expect(types.length, 4);
+      expect(types[0], ActionButtonType.share);
+      expect(types[1], ActionButtonType.editImage);
+      expect(types[2], ActionButtonType.addTo);
+      expect(types[3], ActionButtonType.delete);
+    });
+  });
 }
