@@ -1,6 +1,5 @@
 import { IntegrityReportType, LoginResponseDto, ManualJobName, QueueName } from '@immich/sdk';
 import { readFile } from 'node:fs/promises';
-import { createUserDto } from 'src/fixtures';
 import { app, testAssetDir, utils } from 'src/utils';
 import request from 'supertest';
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
@@ -8,14 +7,11 @@ import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 const assetFilepath = `${testAssetDir}/metadata/gps-position/thompson-springs.jpg`;
 
 describe('/admin/integrity', () => {
-  let cookie: string | undefined;
   let admin: LoginResponseDto;
-  let nonAdmin: LoginResponseDto;
 
   beforeAll(async () => {
     await utils.resetDatabase();
     admin = await utils.adminSetup();
-    nonAdmin = await utils.userSetup(admin.accessToken, createUserDto.user1);
   });
 
   describe('POST /summary (& jobs)', async () => {
