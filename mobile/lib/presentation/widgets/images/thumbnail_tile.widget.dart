@@ -10,6 +10,8 @@ import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart'
 import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
 import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
+import 'package:immich_mobile/providers/partner.provider.dart';
+import 'package:immich_mobile/utils/hash.dart';
 
 class ThumbnailTile extends ConsumerStatefulWidget {
   const ThumbnailTile(
@@ -61,6 +63,10 @@ class _ThumbnailTileState extends ConsumerState<ThumbnailTile> {
     if (isSelected) {
       _showSelectionContainer = true;
     }
+
+    final isPartnerShared = asset is RemoteAsset
+        ? ref.watch(partnerSharedWithProvider).map((e) => fastHash(e.id)).contains(fastHash(asset.ownerId))
+        : false;
 
     return Stack(
       children: [
@@ -156,7 +162,7 @@ class _ThumbnailTileState extends ConsumerState<ThumbnailTile> {
                     },
                   ),
 
-                if (asset != null && asset.isFavorite)
+                if (asset != null && asset.isFavorite && !isPartnerShared)
                   AnimatedOpacity(
                     duration: Durations.short4,
                     opacity: _hideIndicators ? 0.0 : 1.0,

@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/extensions/duration_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/widgets/common/immich_thumbnail.dart';
+import 'package:immich_mobile/providers/partner.provider.dart';
+import 'package:immich_mobile/utils/hash.dart';
 
-class ThumbnailImage extends StatelessWidget {
+class ThumbnailImage extends ConsumerWidget {
   /// The asset to show the thumbnail image for
   final Asset asset;
 
@@ -40,10 +43,12 @@ class ThumbnailImage extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final assetContainerColor = context.isDarkTheme
         ? context.primaryColor.darken(amount: 0.6)
         : context.primaryColor.lighten(amount: 0.8);
+
+    final isPartnerShared = ref.watch(partnerSharedWithProvider).map((e) => fastHash(e.id)).contains(asset.ownerId);
 
     return Stack(
       children: [
@@ -73,7 +78,7 @@ class ThumbnailImage extends StatelessWidget {
                 isSelected: isSelected,
               ),
               if (showStorageIndicator) _StorageIcon(storage: asset.storage),
-              if (asset.isFavorite)
+              if (asset.isFavorite && !isPartnerShared)
                 const Positioned(left: 8, bottom: 5, child: Icon(Icons.favorite, color: Colors.white, size: 16)),
               if (asset.isVideo) _VideoIcon(duration: asset.duration),
               if (asset.stackCount > 0) _StackIcon(isVideo: asset.isVideo, stackCount: asset.stackCount),
