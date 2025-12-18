@@ -32,13 +32,7 @@ depends = [
 [tasks."codegen:translation"]
 alias = "translation"
 description = "Generate translations from i18n JSONs"
-run = [
-  { task = "//i18n:format-fix" },
-  { tasks = [
-    "i18n:loader",
-    "i18n:keys",
-  ] },
-]
+run = [{ task = "//i18n:format-fix" }, { tasks = ["i18n:loader", "i18n:keys"] }]
 
 [tasks."codegen:app-icon"]
 description = "Generate app icons"
@@ -158,10 +152,10 @@ run = [
 description = "Generate i18n keys"
 hide = true
 sources = ["i18n/en.json"]
-outputs = "lib/generated/intl_keys.g.dart"
+outputs = "lib/generated/translations.g.dart"
 run = [
   "dart run bin/generate_keys.dart",
-  "dart format lib/generated/intl_keys.g.dart",
+  "dart format lib/generated/translations.g.dart",
 ]
 
 [tasks."analyze:dart"]
