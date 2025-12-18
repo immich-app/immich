@@ -1,3 +1,5 @@
+import { createHash } from 'node:crypto';
+import { Readable } from 'node:stream';
 import { text } from 'node:stream/consumers';
 import { AssetStatus, IntegrityReportType, JobName, JobStatus } from 'src/enum';
 import { IntegrityService } from 'src/services/integrity.service';
@@ -179,6 +181,7 @@ describe(IntegrityService.name, () => {
           yield ['/path/to/batch2'];
         })() as never,
       );
+
       mocks.storage.walk.mockReturnValueOnce(
         (function* () {
           yield ['/path/to/file3', '/path/to/file4'];
@@ -196,6 +199,7 @@ describe(IntegrityService.name, () => {
           paths: expect.arrayContaining(['/path/to/file']),
         },
       });
+
       expect(mocks.job.queue).toBeCalledWith({
         name: JobName.IntegrityOrphanedFiles,
         data: {
@@ -418,7 +422,132 @@ describe(IntegrityService.name, () => {
     });
   });
 
-  describe.todo('handleChecksumFiles');
-  describe.todo('handleChecksumRefresh');
-  describe.todo('handleDeleteIntegrityReport');
+  describe('handleChecksumFiles', () => {
+    beforeEach(() => {
+      mocks.integrityReport.streamIntegrityReportsWithAssetChecksum.mockReturnValue((function* () {})() as never);
+      mocks.integrityReport.streamAssetChecksums.mockReturnValue((function* () {})() as never);
+      mocks.integrityReport.getAssetCount.mockResolvedValue({ count: 1000 });
+      mocks.systemMetadata.get.mockResolvedValue(null);
+    });
+
+    it('should queue refresh jobs when refreshOnly', async () => {
+      mocks.integrityReport.streamIntegrityReportsWithAssetChecksum.mockReturnValue(
+        (function* () {
+          yield { reportId: 'report1', path: '/path/to/file1', checksum: Buffer.from('abc123', 'hex') };
+        })() as never,
+      );
+
+      await sut.handleChecksumFiles({ refreshOnly: true });
+
+      expect(mocks.integrityReport.streamIntegrityReportsWithAssetChecksum).toHaveBeenCalledWith(
+        IntegrityReportType.ChecksumFail,
+      );
+
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.IntegrityChecksumFilesRefresh,
+        data: {
+          items: [{ reportId: 'report1', path: '/path/to/file1', checksum: 'abc123' }],
+        },
+      });
+    });
+
+    it('should create report for checksum mismatch and delete when fixed', async () => {
+      const fileContent = Buffer.from('test content');
+
+      mocks.integrityReport.streamAssetChecksums.mockReturnValue(
+        (function* () {
+          yield {
+            originalPath: '/path/to/mismatch',
+            checksum: 'mismatched checksum',
+            createdAt: new Date(),
+            assetId: 'asset1',
+            reportId: null,
+          };
+          yield {
+            originalPath: '/path/to/fixed',
+            checksum: createHash('sha1').update(fileContent).digest(),
+            createdAt: new Date(),
+            assetId: 'asset2',
+            reportId: 'report1',
+          };
+        })() as never,
+      );
+
+      mocks.storage.createPlainReadStream.mockImplementation(() => Readable.from(fileContent));
+
+      await sut.handleChecksumFiles({ refreshOnly: false });
+
+      expect(mocks.integrityReport.create).toHaveBeenCalledWith({
+        path: '/path/to/mismatch',
+        type: IntegrityReportType.ChecksumFail,
+        assetId: 'asset1',
+      });
+
+      expect(mocks.integrityReport.deleteById).toHaveBeenCalledWith('report1');
+    });
+
+    it('should skip missing files', async () => {
+      mocks.integrityReport.streamAssetChecksums.mockReturnValue(
+        (function* () {
+          yield {
+            originalPath: '/path/to/missing',
+            checksum: Buffer.from('abc', 'hex'),
+            createdAt: new Date(),
+            assetId: 'asset1',
+            reportId: 'report1',
+          };
+        })() as never,
+      );
+
+      const error = new Error('ENOENT') as NodeJS.ErrnoException;
+      error.code = 'ENOENT';
+      mocks.storage.createPlainReadStream.mockImplementation(() => {
+        throw error;
+      });
+
+      await sut.handleChecksumFiles({ refreshOnly: false });
+
+      expect(mocks.integrityReport.deleteById).toHaveBeenCalledWith('report1');
+      expect(mocks.integrityReport.create).not.toHaveBeenCalled();
+    });
+
+    it('should succeed', async () => {
+      await expect(sut.handleChecksumFiles({ refreshOnly: false })).resolves.toBe(JobStatus.Success);
+    });
+  });
+
+  describe('handleChecksumRefresh', () => {
+    it('should delete reports when checksum now matches, file is missing, or asset is now missing', async () => {
+      const fileContent = Buffer.from('test content');
+      const correctChecksum = createHash('sha1').update(fileContent).digest().toString('hex');
+
+      const error = new Error('ENOENT') as NodeJS.ErrnoException;
+      error.code = 'ENOENT';
+
+      mocks.storage.createPlainReadStream
+        .mockImplementationOnce(() => Readable.from(fileContent))
+        .mockImplementationOnce(() => {
+          throw error;
+        })
+        .mockImplementationOnce(() => Readable.from(fileContent))
+        .mockImplementationOnce(() => Readable.from(fileContent));
+
+      await sut.handleChecksumRefresh({
+        items: [
+          { reportId: 'report1', path: '/path/to/fixed', checksum: correctChecksum },
+          { reportId: 'report2', path: '/path/to/missing', checksum: 'abc123' },
+          { reportId: 'report3', path: '/path/to/bad', checksum: 'wrongchecksum' },
+          { reportId: 'report4', path: '/path/to/missing-asset', checksum: null },
+        ],
+      });
+
+      expect(mocks.integrityReport.deleteByIds).toHaveBeenCalledWith(['report1', 'report2', 'report4']);
+    });
+
+    it('should succeed', async () => {
+      await expect(sut.handleChecksumRefresh({ items: [] })).resolves.toBe(JobStatus.Success);
+    });
+  });
+
+  describe.todo('handleDeleteIntegrityReport'); // needs splitting into sub-job
 });
