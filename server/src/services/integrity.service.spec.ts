@@ -549,5 +549,129 @@ describe(IntegrityService.name, () => {
     });
   });
 
-  describe.todo('handleDeleteIntegrityReport'); // needs splitting into sub-job
+  describe('handleDeleteAllIntegrityReports', () => {
+    beforeEach(() => {
+      mocks.integrityReport.streamIntegrityReportsByProperty.mockReturnValue((function* () {})() as never);
+    });
+
+    it('should queue delete jobs for checksum fail reports', async () => {
+      mocks.integrityReport.streamIntegrityReportsByProperty.mockReturnValue(
+        (function* () {
+          yield { id: 'report1', assetId: 'asset1', path: '/path/to/file1' };
+        })() as never,
+      );
+
+      await sut.handleDeleteAllIntegrityReports({ type: IntegrityReportType.ChecksumFail });
+
+      expect(mocks.integrityReport.streamIntegrityReportsByProperty).toHaveBeenCalledWith(
+        'assetId',
+        IntegrityReportType.ChecksumFail,
+      );
+
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.IntegrityDeleteReports,
+        data: {
+          reports: [{ id: 'report1', assetId: 'asset1', path: '/path/to/file1' }],
+        },
+      });
+    });
+
+    it('should queue delete jobs for missing file reports by assetId and fileAssetId', async () => {
+      mocks.integrityReport.streamIntegrityReportsByProperty
+        .mockReturnValueOnce(
+          (function* () {
+            yield { id: 'report1', assetId: 'asset1', path: '/path/to/file1' };
+          })() as never,
+        )
+        .mockReturnValueOnce(
+          (function* () {
+            yield { id: 'report2', fileAssetId: 'fileAsset1', path: '/path/to/file2' };
+          })() as never,
+        );
+
+      await sut.handleDeleteAllIntegrityReports({ type: IntegrityReportType.MissingFile });
+
+      expect(mocks.integrityReport.streamIntegrityReportsByProperty).toHaveBeenCalledWith(
+        'assetId',
+        IntegrityReportType.MissingFile,
+      );
+
+      expect(mocks.integrityReport.streamIntegrityReportsByProperty).toHaveBeenCalledWith(
+        'fileAssetId',
+        IntegrityReportType.MissingFile,
+      );
+
+      expect(mocks.job.queue).toHaveBeenCalledTimes(2);
+    });
+
+    it('should queue delete jobs for orphan file reports', async () => {
+      mocks.integrityReport.streamIntegrityReportsByProperty.mockReturnValue(
+        (function* () {
+          yield { id: 'report1', path: '/path/to/orphan' };
+        })() as never,
+      );
+
+      await sut.handleDeleteAllIntegrityReports({ type: IntegrityReportType.OrphanFile });
+
+      expect(mocks.integrityReport.streamIntegrityReportsByProperty).toHaveBeenCalledWith(
+        undefined,
+        IntegrityReportType.OrphanFile,
+      );
+
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.IntegrityDeleteReports,
+        data: {
+          reports: [{ id: 'report1', path: '/path/to/orphan' }],
+        },
+      });
+    });
+
+    it('should query all property types when no type specified', async () => {
+      await sut.handleDeleteAllIntegrityReports({});
+
+      expect(mocks.integrityReport.streamIntegrityReportsByProperty).toHaveBeenCalledWith(undefined, undefined);
+      expect(mocks.integrityReport.streamIntegrityReportsByProperty).toHaveBeenCalledWith('assetId', undefined);
+      expect(mocks.integrityReport.streamIntegrityReportsByProperty).toHaveBeenCalledWith('fileAssetId', undefined);
+    });
+
+    it('should succeed', async () => {
+      await expect(sut.handleDeleteAllIntegrityReports({})).resolves.toBe(JobStatus.Success);
+    });
+  });
+
+  describe('handleDeleteIntegrityReports', () => {
+    it('should handle all report types', async () => {
+      mocks.storage.unlink.mockResolvedValue(void 0);
+
+      await sut.handleDeleteIntegrityReports({
+        reports: [
+          { id: 'report1', assetId: 'asset1', fileAssetId: null, path: '/path/to/file1' },
+          { id: 'report2', assetId: 'asset2', fileAssetId: null, path: '/path/to/file2' },
+          { id: 'report3', assetId: null, fileAssetId: 'fileAsset1', path: '/path/to/file3' },
+          { id: 'report4', assetId: null, fileAssetId: null, path: '/path/to/orphan' },
+        ],
+      });
+
+      expect(mocks.asset.updateAll).toHaveBeenCalledWith(['asset1', 'asset2'], {
+        deletedAt: expect.any(Date),
+        status: AssetStatus.Trashed,
+      });
+
+      expect(mocks.event.emit).toHaveBeenCalledWith('AssetTrashAll', {
+        assetIds: ['asset1', 'asset2'],
+        userId: '',
+      });
+
+      expect(mocks.integrityReport.deleteByIds).toHaveBeenCalledWith(['report1', 'report2']);
+
+      expect(mocks.asset.deleteFiles).toHaveBeenCalledWith([{ id: 'fileAsset1' }]);
+
+      expect(mocks.storage.unlink).toHaveBeenCalledWith('/path/to/orphan');
+      expect(mocks.integrityReport.deleteByIds).toHaveBeenCalledWith(['report4']);
+    });
+
+    it('should succeed', async () => {
+      await expect(sut.handleDeleteIntegrityReports({ reports: [] })).resolves.toBe(JobStatus.Success);
+    });
+  });
 });
