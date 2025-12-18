@@ -63,6 +63,15 @@ const tests: Test[] = [
     skipOnWin32: true, // single quote interferes with mockfs root on Windows
   },
   {
+    test: 'should crawl folders with parentheses',
+    options: {
+      pathsToCrawl: ['/photos/album (year)'],
+    },
+    files: {
+      '/photos/album (year)/image.jpg': true,
+    },
+  },
+  {
     test: 'should crawl a single file',
     options: {
       pathsToCrawl: ['/photos/image.jpg'],
