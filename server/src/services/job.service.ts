@@ -59,15 +59,15 @@ const asJobItem = (dto: JobCreateDto): JobItem => {
     }
 
     case ManualJobName.IntegrityMissingFilesDeleteAll: {
-      return { name: JobName.IntegrityReportDelete, data: { type: IntegrityReportType.MissingFile } };
+      return { name: JobName.IntegrityDeleteReportType, data: { type: IntegrityReportType.MissingFile } };
     }
 
     case ManualJobName.IntegrityOrphanFilesDeleteAll: {
-      return { name: JobName.IntegrityReportDelete, data: { type: IntegrityReportType.OrphanFile } };
+      return { name: JobName.IntegrityDeleteReportType, data: { type: IntegrityReportType.OrphanFile } };
     }
 
     case ManualJobName.IntegrityChecksumFilesDeleteAll: {
-      return { name: JobName.IntegrityReportDelete, data: { type: IntegrityReportType.ChecksumFail } };
+      return { name: JobName.IntegrityDeleteReportType, data: { type: IntegrityReportType.ChecksumFail } };
     }
 
     default: {

@@ -286,8 +286,17 @@ export interface IIntegrityJob {
   refreshOnly?: boolean;
 }
 
-export interface IIntegrityDeleteReportJob {
+export interface IIntegrityDeleteReportTypeJob {
   type?: IntegrityReportType;
+}
+
+export interface IIntegrityDeleteReportsJob {
+  reports: {
+    id: string;
+    assetId: string | null;
+    fileAssetId: string | null;
+    path: string;
+  }[];
 }
 
 export interface IIntegrityOrphanedFilesJob {
@@ -432,7 +441,8 @@ export type JobItem =
   | { name: JobName.IntegrityMissingFilesRefresh; data: IIntegrityPathWithReportJob }
   | { name: JobName.IntegrityChecksumFiles; data?: IIntegrityJob }
   | { name: JobName.IntegrityChecksumFilesRefresh; data?: IIntegrityPathWithChecksumJob }
-  | { name: JobName.IntegrityReportDelete; data: IIntegrityDeleteReportJob };
+  | { name: JobName.IntegrityDeleteReportType; data: IIntegrityDeleteReportTypeJob }
+  | { name: JobName.IntegrityDeleteReports; data: IIntegrityDeleteReportsJob };
 
 export type VectorExtension = (typeof VECTOR_EXTENSIONS)[number];
 

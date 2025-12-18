@@ -665,7 +665,8 @@ export enum JobName {
   IntegrityMissingFilesRefresh = 'IntegrityMissingFilesRefresh',
   IntegrityChecksumFiles = 'IntegrityChecksumFiles',
   IntegrityChecksumFilesRefresh = 'IntegrityChecksumFilesRefresh',
-  IntegrityReportDelete = 'IntegrityReportDelete',
+  IntegrityDeleteReportType = 'IntegrityDeleteReportType',
+  IntegrityDeleteReports = 'IntegrityDeleteReports',
 }
 
 export enum QueueCommand {

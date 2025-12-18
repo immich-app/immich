@@ -27,7 +27,8 @@ import {
 import { ArgOf } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
 import {
-  IIntegrityDeleteReportJob,
+  IIntegrityDeleteReportsJob,
+  IIntegrityDeleteReportTypeJob,
   IIntegrityJob,
   IIntegrityMissingFilesJob,
   IIntegrityOrphanedFilesJob,
@@ -622,8 +623,8 @@ export class IntegrityService extends BaseService {
     return JobStatus.Success;
   }
 
-  @OnJob({ name: JobName.IntegrityReportDelete, queue: QueueName.IntegrityCheck })
-  async handleDeleteIntegrityReport({ type }: IIntegrityDeleteReportJob): Promise<JobStatus> {
+  @OnJob({ name: JobName.IntegrityDeleteReportType, queue: QueueName.IntegrityCheck })
+  async handleDeleteAllIntegrityReports({ type }: IIntegrityDeleteReportTypeJob): Promise<JobStatus> {
     this.logger.log(`Deleting all entries for ${type ?? 'all types of'} integrity report`);
 
     let properties;
@@ -648,39 +649,52 @@ export class IntegrityService extends BaseService {
 
     for (const property of properties) {
       const reports = this.integrityRepository.streamIntegrityReportsByProperty(property, type);
-      for await (const report of chunk(reports, JOBS_LIBRARY_PAGINATION_SIZE)) {
-        // todo: queue sub-job here instead?
+      for await (const batch of chunk(reports, JOBS_LIBRARY_PAGINATION_SIZE)) {
+        await this.jobRepository.queue({
+          name: JobName.IntegrityDeleteReports,
+          data: {
+            reports: batch,
+          },
+        });
 
-        switch (property) {
-          case 'assetId': {
-            const ids = report.map(({ assetId }) => assetId!);
-            await this.assetRepository.updateAll(ids, {
-              deletedAt: new Date(),
-              status: AssetStatus.Trashed,
-            });
-
-            await this.eventRepository.emit('AssetTrashAll', {
-              assetIds: ids,
-              userId: '', // ???
-            });
-
-            await this.integrityRepository.deleteByIds(report.map(({ id }) => id));
-            break;
-          }
-          case 'fileAssetId': {
-            await this.assetRepository.deleteFiles(report.map(({ fileAssetId }) => ({ id: fileAssetId! })));
-            break;
-          }
-          default: {
-            await Promise.all(report.map(({ path }) => this.storageRepository.unlink(path).catch(() => void 0)));
-            await this.integrityRepository.deleteByIds(report.map(({ id }) => id));
-            break;
-          }
-        }
+        this.logger.log(`Queued ${batch.length} reports to delete.`);
       }
     }
 
-    this.logger.log('Finished deleting integrity report.');
+    return JobStatus.Success;
+  }
+
+  @OnJob({ name: JobName.IntegrityDeleteReports, queue: QueueName.IntegrityCheck })
+  async handleDeleteIntegrityReports({ reports }: IIntegrityDeleteReportsJob): Promise<JobStatus> {
+    const byAsset = reports.filter((report) => report.assetId);
+    const byFileAsset = reports.filter((report) => report.fileAssetId);
+    const byPath = reports.filter((report) => !report.assetId && !report.fileAssetId);
+
+    if (byAsset.length > 0) {
+      const ids = byAsset.map(({ assetId }) => assetId!);
+      await this.assetRepository.updateAll(ids, {
+        deletedAt: new Date(),
+        status: AssetStatus.Trashed,
+      });
+
+      await this.eventRepository.emit('AssetTrashAll', {
+        assetIds: ids,
+        userId: '', // we don't notify any users currently
+      });
+
+      await this.integrityRepository.deleteByIds(byAsset.map(({ id }) => id));
+    }
+
+    if (byFileAsset.length > 0) {
+      await this.assetRepository.deleteFiles(byFileAsset.map(({ fileAssetId }) => ({ id: fileAssetId! })));
+    }
+
+    if (byPath.length > 0) {
+      await Promise.all(byPath.map(({ path }) => this.storageRepository.unlink(path).catch(() => void 0)));
+      await this.integrityRepository.deleteByIds(byPath.map(({ id }) => id));
+    }
+
+    this.logger.log(`Deleted ${reports.length} reports.`);
     return JobStatus.Success;
   }
 }

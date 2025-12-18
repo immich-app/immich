@@ -17033,7 +17033,8 @@
           "IntegrityMissingFilesRefresh",
           "IntegrityChecksumFiles",
           "IntegrityChecksumFilesRefresh",
-          "IntegrityReportDelete"
+          "IntegrityDeleteReportType",
+          "IntegrityDeleteReports"
         ],
         "type": "string"
       },
