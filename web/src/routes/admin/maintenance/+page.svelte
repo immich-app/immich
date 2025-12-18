@@ -114,7 +114,7 @@
     <section class="w-full pb-28 sm:w-5/6 md:w-[850px]">
       <p class="text-sm dark:text-immich-dark-fg uppercase">{$t('admin.maintenance_integrity_report')}</p>
 
-      <div class="mt-5 hidden justify-between lg:flex gap-4">
+      <div class="mt-5 flex justify-between max-lg:flex-wrap gap-4">
         {#each TYPES as reportType (reportType)}
           <ServerStatisticsCard
             title={$t(`admin.maintenance_integrity_${reportType}`)}
