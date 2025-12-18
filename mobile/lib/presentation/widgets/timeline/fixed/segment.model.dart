@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:auto_route/auto_route.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
@@ -201,22 +202,13 @@ class _AssetTileWidget extends ConsumerWidget {
     if (asset case RemoteAsset remoteAsset) {
       final ownerId = remoteAsset.ownerId;
 
-      // If owner matches album owner
       if (album.ownerId == ownerId) {
         return album.ownerName;
       }
 
-      // Check shared users
       final sharedUsersAsync = ref.watch(remoteAlbumSharedUsersProvider(album.id));
       return sharedUsersAsync.maybeWhen(
-        data: (sharedUsers) {
-          for (final user in sharedUsers) {
-            if (user.id == ownerId) {
-              return user.name;
-            }
-          }
-          return null;
-        },
+        data: (sharedUsers) => sharedUsers.firstWhereOrNull((user) => user.id == ownerId)?.name,
         orElse: () => null,
       );
     }
