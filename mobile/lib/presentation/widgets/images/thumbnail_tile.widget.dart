@@ -55,6 +55,9 @@ class ThumbnailTile extends ConsumerWidget {
         Container(color: lockSelection ? context.colorScheme.surfaceContainerHighest : assetContainerColor),
         LayoutBuilder(
           builder: (context, constraints) {
+            final horizontalPadding = constraints.maxWidth * 0.02;
+            final verticalPadding = constraints.maxHeight * 0.02;
+
             return AnimatedContainer(
               duration: Durations.short4,
               curve: Curves.decelerate,
@@ -77,50 +80,51 @@ class ThumbnailTile extends ConsumerWidget {
                     if (asset != null)
                       Align(
                         alignment: Alignment.topRight,
-                        child: _AssetTypeIcons(asset: asset),
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(horizontal: horizontalPadding * 0.5, vertical: verticalPadding),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [_AssetTypeIcons(asset: asset)],
+                          ),
+                        ),
                       ),
-                    if (shouldShowOwnerName)
+                    if (shouldShowOwnerName ||
+                        (storageIndicator && asset != null) ||
+                        (asset != null && asset.isFavorite))
                       Align(
-                        alignment: Alignment.bottomRight,
+                        alignment: Alignment.bottomCenter,
                         child: Padding(
-                          padding: EdgeInsets.only(
-                            right: constraints.maxWidth * 0.03,
-                            left: constraints.maxWidth * 0.3,
-                            bottom: constraints.maxWidth * 0.01,
+                          padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: verticalPadding * 0.1),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              if (asset != null && asset.isFavorite)
+                                const Padding(
+                                  padding: EdgeInsets.only(right: 1.0),
+                                  child: _TileOverlayIcon(Icons.favorite_rounded),
+                                )
+                              else
+                                const SizedBox.shrink(),
+                              if (shouldShowOwnerName)
+                                Flexible(
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 1.0),
+                                    child: _OwnerNameLabel(ownerName: ownerName!),
+                                  ),
+                                ),
+                              if (storageIndicator && asset != null)
+                                Padding(
+                                  padding: const EdgeInsets.only(right: 2.0),
+                                  child: _TileOverlayIcon(switch (asset.storage) {
+                                    AssetState.local => Icons.cloud_off_outlined,
+                                    AssetState.remote => Icons.cloud_outlined,
+                                    AssetState.merged => Icons.cloud_done_outlined,
+                                  }),
+                                ),
+                            ],
                           ),
-                          child: _OwnerNameLabel(ownerName: ownerName!),
-                        ),
-                      ),
-                    if (storageIndicator && asset != null)
-                      switch (asset.storage) {
-                        AssetState.local => const Align(
-                          alignment: Alignment.bottomRight,
-                          child: Padding(
-                            padding: EdgeInsets.only(right: 10.0, bottom: 6.0),
-                            child: _TileOverlayIcon(Icons.cloud_off_outlined),
-                          ),
-                        ),
-                        AssetState.remote => const Align(
-                          alignment: Alignment.bottomRight,
-                          child: Padding(
-                            padding: EdgeInsets.only(right: 10.0, bottom: 6.0),
-                            child: _TileOverlayIcon(Icons.cloud_outlined),
-                          ),
-                        ),
-                        AssetState.merged => const Align(
-                          alignment: Alignment.bottomRight,
-                          child: Padding(
-                            padding: EdgeInsets.only(right: 10.0, bottom: 6.0),
-                            child: _TileOverlayIcon(Icons.cloud_done_outlined),
-                          ),
-                        ),
-                      },
-                    if (asset != null && asset.isFavorite)
-                      const Align(
-                        alignment: Alignment.bottomLeft,
-                        child: Padding(
-                          padding: EdgeInsets.only(left: 10.0, bottom: 6.0),
-                          child: _TileOverlayIcon(Icons.favorite_rounded),
                         ),
                       ),
                   ],
@@ -183,7 +187,6 @@ class _VideoIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
-      spacing: 3,
       mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.end,
       // CrossAxisAlignment.start looks more centered vertically than CrossAxisAlignment.center
@@ -198,6 +201,7 @@ class _VideoIndicator extends StatelessWidget {
             shadows: [Shadow(blurRadius: 5.0, color: Color.fromRGBO(0, 0, 0, 0.6))],
           ),
         ),
+        const SizedBox(width: 2),
         const _TileOverlayIcon(Icons.play_circle_outline_rounded),
       ],
     );
@@ -230,22 +234,14 @@ class _AssetTypeIcons extends StatelessWidget {
     final hasStack = asset is RemoteAsset && (asset as RemoteAsset).stackId != null;
     final isLivePhoto = asset is RemoteAsset && asset.livePhotoVideoId != null;
 
-    return Column(
+    return Row(
       mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.end,
       children: [
-        if (asset.isVideo)
-          Padding(padding: const EdgeInsets.only(right: 10.0, top: 6.0), child: _VideoIndicator(asset.duration)),
+        if (asset.isVideo) Padding(padding: const EdgeInsets.only(right: 2.0), child: _VideoIndicator(asset.duration)),
         if (hasStack)
-          const Padding(
-            padding: EdgeInsets.only(right: 10.0, top: 6.0),
-            child: _TileOverlayIcon(Icons.burst_mode_rounded),
-          ),
+          const Padding(padding: EdgeInsets.only(right: 2.0), child: _TileOverlayIcon(Icons.burst_mode_rounded)),
         if (isLivePhoto)
-          const Padding(
-            padding: EdgeInsets.only(right: 10.0, top: 6.0),
-            child: _TileOverlayIcon(Icons.motion_photos_on_rounded),
-          ),
+          const Padding(padding: EdgeInsets.only(right: 2.0), child: _TileOverlayIcon(Icons.motion_photos_on_rounded)),
       ],
     );
   }
@@ -258,20 +254,17 @@ class _OwnerNameLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      constraints: const BoxConstraints(maxWidth: 120),
-      child: Text(
-        ownerName,
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 14,
-          fontWeight: FontWeight.w600,
-          shadows: [Shadow(blurRadius: 5.0, color: Color.fromRGBO(0, 0, 0, 0.6), offset: Offset(0.0, 0.0))],
-        ),
-        overflow: TextOverflow.fade,
-        softWrap: false,
-        maxLines: 1,
+    return Text(
+      ownerName,
+      style: const TextStyle(
+        color: Colors.white,
+        fontSize: 12,
+        fontWeight: FontWeight.bold,
+        shadows: [Shadow(blurRadius: 5.0, color: Color.fromRGBO(0, 0, 0, 0.6), offset: Offset(0.0, 0.0))],
       ),
+      overflow: TextOverflow.fade,
+      softWrap: false,
+      maxLines: 1,
     );
   }
 }
