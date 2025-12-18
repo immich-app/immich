@@ -14,7 +14,12 @@
   } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import SettingDropdown from '../components/shared-components/settings/setting-dropdown.svelte';
-  import { SlideshowLook, SlideshowNavigation, slideshowStore } from '../stores/slideshow.store';
+  import {
+    SlideshowLook,
+    SlideshowMetadataOverlayMode,
+    SlideshowNavigation,
+    slideshowStore,
+  } from '../stores/slideshow.store';
 
   const {
     slideshowDelay,
@@ -23,6 +28,8 @@
     slideshowLook,
     slideshowTransition,
     slideshowAutoplay,
+    slideshowShowMetadataOverlay,
+    slideshowMetadataOverlayMode,
   } = slideshowStore;
 
   interface Props {
@@ -38,6 +45,8 @@
   let tempSlideshowLook = $state($slideshowLook);
   let tempSlideshowTransition = $state($slideshowTransition);
   let tempSlideshowAutoplay = $state($slideshowAutoplay);
+  let tempSlideshowShowMetadataOverlay = $state($slideshowShowMetadataOverlay);
+  let tempSlideshowMetadataOverlayMode = $state($slideshowMetadataOverlayMode);
 
   const navigationOptions: Record<SlideshowNavigation, RenderedOption> = {
     [SlideshowNavigation.Shuffle]: { icon: mdiShuffle, title: $t('shuffle') },
@@ -51,7 +60,16 @@
     [SlideshowLook.BlurredBackground]: { icon: mdiPanorama, title: $t('blurred_background') },
   };
 
-  const handleToggle = <Type extends SlideshowNavigation | SlideshowLook>(
+  const metadataOverlayModeOptions: Record<SlideshowMetadataOverlayMode, RenderedOption> = {
+    [SlideshowMetadataOverlayMode.DescriptionOnly]: {
+      title: $t('slideshow_metadata_overlay_mode_description_only'),
+    },
+    [SlideshowMetadataOverlayMode.Full]: {
+      title: $t('slideshow_metadata_overlay_mode_full'),
+    },
+  };
+
+  const handleToggle = <Type extends SlideshowNavigation | SlideshowLook | SlideshowMetadataOverlayMode>(
     record: RenderedOption,
     options: Record<Type, RenderedOption>,
   ): undefined | Type => {
@@ -69,6 +87,8 @@
     $slideshowLook = tempSlideshowLook;
     $slideshowTransition = tempSlideshowTransition;
     $slideshowAutoplay = tempSlideshowAutoplay;
+    $slideshowShowMetadataOverlay = tempSlideshowShowMetadataOverlay;
+    $slideshowMetadataOverlayMode = tempSlideshowMetadataOverlayMode;
     onClose();
   };
 </script>
@@ -95,6 +115,20 @@
       <SettingSwitch title={$t('autoplay_slideshow')} bind:checked={tempSlideshowAutoplay} />
       <SettingSwitch title={$t('show_progress_bar')} bind:checked={tempShowProgressBar} />
       <SettingSwitch title={$t('show_slideshow_transition')} bind:checked={tempSlideshowTransition} />
+      <SettingSwitch title={$t('show_slideshow_metadata_overlay')} bind:checked={tempSlideshowShowMetadataOverlay} />
+      <div class={tempSlideshowShowMetadataOverlay ? '' : 'opacity-50 pointer-events-none'}>
+        <SettingDropdown
+          title={$t('slideshow_metadata_overlay_mode')}
+          options={Object.values(metadataOverlayModeOptions)}
+          selectedOption={metadataOverlayModeOptions[tempSlideshowMetadataOverlayMode]}
+          onToggle={(option) => {
+            if (tempSlideshowShowMetadataOverlay) {
+              tempSlideshowMetadataOverlayMode =
+                handleToggle(option, metadataOverlayModeOptions) || tempSlideshowMetadataOverlayMode;
+            }
+          }}
+        />
+      </div>
       <SettingInputField
         inputType={SettingInputFieldType.NUMBER}
         label={$t('duration')}
