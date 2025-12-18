@@ -5,7 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/generated/intl_keys.g.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/providers/partner.provider.dart';
 import 'package:immich_mobile/providers/search/people.provider.dart';
@@ -41,13 +41,13 @@ class LibraryPage extends ConsumerWidget {
                   ActionButton(
                     onPressed: () => context.pushRoute(const FavoritesRoute()),
                     icon: Icons.favorite_outline_rounded,
-                    label: IntlKeys.favorites.tr(),
+                    label: context.t.favorites,
                   ),
                   const SizedBox(width: 8),
                   ActionButton(
                     onPressed: () => context.pushRoute(const ArchiveRoute()),
                     icon: Icons.archive_outlined,
-                    label: IntlKeys.archived.tr(),
+                    label: context.t.archived,
                   ),
                 ],
               ),
@@ -58,14 +58,14 @@ class LibraryPage extends ConsumerWidget {
                 ActionButton(
                   onPressed: () => context.pushRoute(const SharedLinkRoute()),
                   icon: Icons.link_outlined,
-                  label: IntlKeys.shared_links.tr(),
+                  label: context.t.shared_links,
                 ),
                 SizedBox(width: trashEnabled ? 8 : 0),
                 trashEnabled
                     ? ActionButton(
                         onPressed: () => context.pushRoute(const TrashRoute()),
                         icon: Icons.delete_outline_rounded,
-                        label: IntlKeys.trash.tr(),
+                        label: context.t.trash,
                       )
                     : const SizedBox.shrink(),
               ],
@@ -120,26 +120,20 @@ class QuickAccessButtons extends ConsumerWidget {
               ),
             ),
             leading: const Icon(Icons.folder_outlined, size: 26),
-            title: Text(
-              IntlKeys.folders.tr(),
-              style: context.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w500),
-            ),
+            title: Text(context.t.folders, style: context.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w500)),
             onTap: () => context.pushRoute(FolderRoute()),
           ),
           ListTile(
             leading: const Icon(Icons.lock_outline_rounded, size: 26),
             title: Text(
-              IntlKeys.locked_folder.tr(),
+              context.t.locked_folder,
               style: context.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w500),
             ),
             onTap: () => context.pushRoute(const LockedRoute()),
           ),
           ListTile(
             leading: const Icon(Icons.group_outlined, size: 26),
-            title: Text(
-              IntlKeys.partners.tr(),
-              style: context.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w500),
-            ),
+            title: Text(context.t.partners, style: context.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w500)),
             onTap: () => context.pushRoute(const PartnerRoute()),
           ),
           PartnerList(partners: partners),
@@ -235,7 +229,7 @@ class PeopleCollectionCard extends ConsumerWidget {
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
-                  IntlKeys.people.tr(),
+                  context.t.people,
                   style: context.textTheme.titleSmall?.copyWith(
                     color: context.colorScheme.onSurface,
                     fontWeight: FontWeight.w500,
@@ -295,7 +289,7 @@ class LocalAlbumsCollectionCard extends HookConsumerWidget {
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
-                  IntlKeys.on_this_device.tr(),
+                  context.t.on_this_device,
                   style: context.textTheme.titleSmall?.copyWith(
                     color: context.colorScheme.onSurface,
                     fontWeight: FontWeight.w500,
@@ -346,7 +340,7 @@ class PlacesCollectionCard extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
-                  IntlKeys.places.tr(),
+                  context.t.places,
                   style: context.textTheme.titleSmall?.copyWith(
                     color: context.colorScheme.onSurface,
                     fontWeight: FontWeight.w500,
