@@ -41,6 +41,8 @@ export type ActivityStatisticsResponseDto = {
     likes: number;
 };
 export type IntegrityGetReportDto = {
+    page?: number;
+    size?: number;
     "type": IntegrityReportType;
 };
 export type IntegrityReportDto = {
@@ -49,6 +51,7 @@ export type IntegrityReportDto = {
     "type": IntegrityReportType;
 };
 export type IntegrityReportResponseDto = {
+    hasNextPage: boolean;
     items: IntegrityReportDto[];
 };
 export type IntegrityReportSummaryResponseDto = {

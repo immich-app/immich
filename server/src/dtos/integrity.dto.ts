@@ -1,4 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
+import { IsInt, IsOptional, Min } from 'class-validator';
 import { IntegrityReportType } from 'src/enum';
 import { ValidateEnum } from 'src/validation';
 
@@ -15,12 +17,17 @@ export class IntegrityGetReportDto {
   @ValidateEnum({ enum: IntegrityReportType, name: 'IntegrityReportType' })
   type!: IntegrityReportType;
 
-  // todo: paginate
-  // @IsInt()
-  // @Min(1)
-  // @Type(() => Number)
-  // @Optional()
-  // page?: number;
+  @IsInt()
+  @Min(1)
+  @IsOptional()
+  @Type(() => Number)
+  page?: number;
+
+  @IsInt()
+  @Min(1)
+  @IsOptional()
+  @Type(() => Number)
+  size?: number;
 }
 
 export class IntegrityDeleteReportDto {
@@ -37,4 +44,5 @@ class IntegrityReportDto {
 
 export class IntegrityReportResponseDto {
   items!: IntegrityReportDto[];
+  hasNextPage!: boolean;
 }

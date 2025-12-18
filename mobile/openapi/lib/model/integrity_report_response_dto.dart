@@ -13,25 +13,31 @@ part of openapi.api;
 class IntegrityReportResponseDto {
   /// Returns a new [IntegrityReportResponseDto] instance.
   IntegrityReportResponseDto({
+    required this.hasNextPage,
     this.items = const [],
   });
+
+  bool hasNextPage;
 
   List<IntegrityReportDto> items;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is IntegrityReportResponseDto &&
+    other.hasNextPage == hasNextPage &&
     _deepEquality.equals(other.items, items);
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (hasNextPage.hashCode) +
     (items.hashCode);
 
   @override
-  String toString() => 'IntegrityReportResponseDto[items=$items]';
+  String toString() => 'IntegrityReportResponseDto[hasNextPage=$hasNextPage, items=$items]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+      json[r'hasNextPage'] = this.hasNextPage;
       json[r'items'] = this.items;
     return json;
   }
@@ -45,6 +51,7 @@ class IntegrityReportResponseDto {
       final json = value.cast<String, dynamic>();
 
       return IntegrityReportResponseDto(
+        hasNextPage: mapValueOfType<bool>(json, r'hasNextPage')!,
         items: IntegrityReportDto.listFromJson(json[r'items']),
       );
     }
@@ -93,6 +100,7 @@ class IntegrityReportResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
+    'hasNextPage',
     'items',
   };
 }

@@ -16864,6 +16864,14 @@
       },
       "IntegrityGetReportDto": {
         "properties": {
+          "page": {
+            "minimum": 1,
+            "type": "number"
+          },
+          "size": {
+            "minimum": 1,
+            "type": "number"
+          },
           "type": {
             "allOf": [
               {
@@ -16902,6 +16910,9 @@
       },
       "IntegrityReportResponseDto": {
         "properties": {
+          "hasNextPage": {
+            "type": "boolean"
+          },
           "items": {
             "items": {
               "$ref": "#/components/schemas/IntegrityReportDto"
@@ -16910,6 +16921,7 @@
           }
         },
         "required": [
+          "hasNextPage",
           "items"
         ],
         "type": "object"

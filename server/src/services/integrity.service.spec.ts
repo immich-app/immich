@@ -24,7 +24,7 @@ describe(IntegrityService.name, () => {
 
   describe('getIntegrityReport', () => {
     it('gets report', async () => {
-      await expect(sut.getIntegrityReport(IntegrityReportType.ChecksumFail)).resolves.toEqual(
+      await expect(sut.getIntegrityReport({ type: IntegrityReportType.ChecksumFail })).resolves.toEqual(
         expect.objectContaining({
           items: undefined,
         }),

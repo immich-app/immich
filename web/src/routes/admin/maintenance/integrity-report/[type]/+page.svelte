@@ -2,8 +2,16 @@
   import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
   import { AppRoute } from '$lib/constants';
   import { handleError } from '$lib/utils/handle-error';
-  import { createJob, deleteIntegrityReport, getBaseUrl, IntegrityReportType, ManualJobName } from '@immich/sdk';
   import {
+    createJob,
+    deleteIntegrityReport,
+    getBaseUrl,
+    getIntegrityReport,
+    IntegrityReportType,
+    ManualJobName,
+  } from '@immich/sdk';
+  import {
+    HStack,
     IconButton,
     menuManager,
     modalManager,
@@ -11,7 +19,14 @@
     type ContextMenuBaseProps,
     type MenuItems,
   } from '@immich/ui';
-  import { mdiDotsVertical, mdiDownload, mdiTrashCanOutline } from '@mdi/js';
+  import {
+    mdiChevronLeft,
+    mdiChevronRight,
+    mdiDotsVertical,
+    mdiDownload,
+    mdiPageFirst,
+    mdiTrashCanOutline,
+  } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { SvelteSet } from 'svelte/reactivity';
   import type { PageData } from './$types';
@@ -23,7 +38,19 @@
   let { data }: Props = $props();
 
   let deleting = new SvelteSet();
-  let integrityReport = $state(data.integrityReport.items);
+  let page = $state(1);
+  let integrityReport = $state(data.integrityReport);
+
+  async function loadPage(target: number) {
+    integrityReport = await getIntegrityReport({
+      integrityGetReportDto: {
+        type: data.type,
+        page: target,
+      },
+    });
+
+    page = target;
+  }
 
   async function removeAll() {
     const confirm = await modalManager.showDialog({
@@ -68,7 +95,7 @@
         await deleteIntegrityReport({
           id,
         });
-        integrityReport = integrityReport.filter((report) => report.id !== id);
+        integrityReport.items = integrityReport.items.filter((report) => report.id !== id);
       } catch (error) {
         handleError(error, 'Failed to delete file!');
       } finally {
@@ -147,7 +174,7 @@
         <tbody
           class="block max-h-80 w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray dark:text-immich-dark-fg"
         >
-          {#each integrityReport as { id, path } (id)}
+          {#each integrityReport.items as { id, path } (id)}
             <tr
               class={`flex py-1 w-full place-items-center even:bg-subtle/20 odd:bg-subtle/80 ${deleting.has(id) || deleting.has('all') ? 'text-gray-500' : ''}`}
             >
@@ -165,6 +192,31 @@
             </tr>
           {/each}
         </tbody>
+        <tfoot>
+          <HStack class="mt-4 items-center justify-end">
+            <IconButton
+              disabled={page === 1}
+              color="primary"
+              icon={mdiPageFirst}
+              aria-label="first page"
+              onclick={() => loadPage(1)}
+            />
+            <IconButton
+              disabled={page === 1}
+              color="primary"
+              icon={mdiChevronLeft}
+              aria-label="previous page"
+              onclick={() => loadPage(page - 1)}
+            />
+            <IconButton
+              disabled={!integrityReport.hasNextPage}
+              color="primary"
+              icon={mdiChevronRight}
+              aria-label="next page"
+              onclick={() => loadPage(page + 1)}
+            />
+          </HStack>
+        </tfoot>
       </table>
     </section>
   </section>

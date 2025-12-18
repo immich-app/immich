@@ -9,7 +9,11 @@ import { JOBS_LIBRARY_PAGINATION_SIZE } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { OnEvent, OnJob } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { IntegrityReportResponseDto, IntegrityReportSummaryResponseDto } from 'src/dtos/integrity.dto';
+import {
+  IntegrityGetReportDto,
+  IntegrityReportResponseDto,
+  IntegrityReportSummaryResponseDto,
+} from 'src/dtos/integrity.dto';
 import {
   AssetStatus,
   CacheControl,
@@ -154,10 +158,8 @@ export class IntegrityService extends BaseService {
     return this.integrityRepository.getIntegrityReportSummary();
   }
 
-  async getIntegrityReport(type: IntegrityReportType): Promise<IntegrityReportResponseDto> {
-    return {
-      items: await this.integrityRepository.getIntegrityReports(type),
-    };
+  async getIntegrityReport(dto: IntegrityGetReportDto): Promise<IntegrityReportResponseDto> {
+    return this.integrityRepository.getIntegrityReports({ page: dto.page || 1, size: dto.size || 100 }, dto.type);
   }
 
   getIntegrityReportCsv(type: IntegrityReportType): Readable {

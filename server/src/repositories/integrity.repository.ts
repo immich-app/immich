@@ -5,6 +5,12 @@ import { DummyValue, GenerateSql } from 'src/decorators';
 import { IntegrityReportType } from 'src/enum';
 import { DB } from 'src/schema';
 import { IntegrityReportTable } from 'src/schema/tables/integrity-report.table';
+import { paginationHelper } from 'src/utils/pagination';
+
+export interface ReportPaginationOptions {
+  page: number;
+  size: number;
+}
 
 @Injectable()
 export class IntegrityRepository {
@@ -58,14 +64,18 @@ export class IntegrityRepository {
       .executeTakeFirstOrThrow();
   }
 
-  @GenerateSql({ params: [DummyValue.STRING] })
-  getIntegrityReports(type: IntegrityReportType) {
-    return this.db
+  @GenerateSql({ params: [{ page: 1, size: 100 }, DummyValue.STRING] })
+  async getIntegrityReports(pagination: ReportPaginationOptions, type: IntegrityReportType) {
+    const items = await this.db
       .selectFrom('integrity_report')
       .select(['id', 'type', 'path', 'assetId', 'fileAssetId'])
       .where('type', '=', type)
       .orderBy('createdAt', 'desc')
+      .limit(pagination.size + 1)
+      .offset((pagination.page - 1) * pagination.size)
       .execute();
+
+    return paginationHelper(items, pagination.size);
   }
 
   @GenerateSql({ params: [DummyValue.STRING] })
