@@ -6,13 +6,7 @@ import 'package:immich_mobile/infrastructure/repositories/local_asset.repository
 import 'package:immich_mobile/infrastructure/repositories/remote_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/utils/exif.converter.dart';
 
-class AssetVideoDimension {
-  final double? width;
-  final double? height;
-  final bool isFlipped;
-
-  const AssetVideoDimension(this.width, this.height, this.isFlipped);
-}
+typedef _AssetVideoDimension = ({double? width, double? height, bool isFlipped});
 
 class AssetService {
   final RemoteAssetRepository _remoteAssetRepository;
@@ -77,7 +71,7 @@ class AssetService {
     return dimension.isFlipped ? dimension.height! / dimension.width! : dimension.width! / dimension.height!;
   }
 
-  Future<AssetVideoDimension> _getLocalAssetDimensions(LocalAsset asset) async {
+  Future<_AssetVideoDimension> _getLocalAssetDimensions(LocalAsset asset) async {
     double? width = asset.width?.toDouble();
     double? height = asset.height?.toDouble();
     int orientation = asset.orientation;
@@ -92,10 +86,10 @@ class AssetService {
     // On Android, local assets need orientation correction for 90°/270° rotations
     // On iOS, the Photos framework pre-corrects dimensions
     final isFlipped = CurrentPlatform.isAndroid && (orientation == 90 || orientation == 270);
-    return AssetVideoDimension(width, height, isFlipped);
+    return (width: width, height: height, isFlipped: isFlipped);
   }
 
-  Future<AssetVideoDimension> _getRemoteAssetDimensions(RemoteAsset asset) async {
+  Future<_AssetVideoDimension> _getRemoteAssetDimensions(RemoteAsset asset) async {
     double? width = asset.width?.toDouble();
     double? height = asset.height?.toDouble();
 
@@ -107,7 +101,7 @@ class AssetService {
 
     final exif = await getExif(asset);
     final isFlipped = ExifDtoConverter.isOrientationFlipped(exif?.orientation);
-    return AssetVideoDimension(width, height, isFlipped);
+    return (width: width, height: height, isFlipped: isFlipped);
   }
 
   Future<List<(String, String)>> getPlaces(String userId) {
