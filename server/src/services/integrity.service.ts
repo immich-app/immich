@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { createHash } from 'node:crypto';
-import { createReadStream } from 'node:fs';
 import { basename } from 'node:path';
 import { Readable, Writable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
@@ -519,7 +518,7 @@ export class IntegrityService extends BaseService {
           const hash = createHash('sha1');
 
           await pipeline([
-            createReadStream(originalPath),
+            this.storageRepository.createPlainReadStream(originalPath),
             new Writable({
               write(chunk, _encoding, callback) {
                 hash.update(chunk);
@@ -593,7 +592,7 @@ export class IntegrityService extends BaseService {
           const hash = createHash('sha1');
 
           await pipeline([
-            createReadStream(path),
+            this.storageRepository.createPlainReadStream(path),
             new Writable({
               write(chunk, _encoding, callback) {
                 hash.update(chunk);
