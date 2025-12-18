@@ -38,6 +38,10 @@ where
   "type" = $1
 order by
   "createdAt" desc
+limit
+  $2
+offset
+  $3
 
 -- IntegrityRepository.getAssetPathsByPaths
 select
@@ -66,18 +70,6 @@ from
   "asset"
 
 -- IntegrityRepository.streamAllAssetPaths
-select
-  "id",
-  "type",
-  "path",
-  "assetId",
-  "fileAssetId"
-from
-  "integrity_report"
-where
-  "type" = $1
-order by
-  "createdAt" desc
 select
   "originalPath",
   "encodedVideoPath"
@@ -149,6 +141,20 @@ order by
   "createdAt" asc
 
 -- IntegrityRepository.streamIntegrityReports
+select
+  "id",
+  "type",
+  "path",
+  "assetId",
+  "fileAssetId"
+from
+  "integrity_report"
+where
+  "type" = $1
+order by
+  "createdAt" desc
+
+-- IntegrityRepository.streamIntegrityReportsWithAssetChecksum
 select
   "integrity_report"."id" as "reportId",
   "integrity_report"."path"
