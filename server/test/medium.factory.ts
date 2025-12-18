@@ -202,7 +202,7 @@ export class MediumTestContext<S extends BaseService = BaseService> {
   }
 
   async newExif(dto: Insertable<AssetExifTable>) {
-    const result = await this.get(AssetRepository).upsertExif(dto);
+    const result = await this.get(AssetRepository).upsertExif(dto, { lockedPropertiesBehavior: 'override' });
     return { result };
   }
 

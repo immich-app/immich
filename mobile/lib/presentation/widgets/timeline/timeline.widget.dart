@@ -324,7 +324,11 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
           final topPadding = context.padding.top + (widget.appBar == null ? 0 : kToolbarHeight) + 10;
 
           const scrubberBottomPadding = 100.0;
-          final bottomPadding = context.padding.bottom + (widget.appBar == null ? 0 : scrubberBottomPadding);
+          const bottomSheetOpenModifier = 120.0;
+          final bottomPadding =
+              context.padding.bottom +
+              (widget.appBar == null ? 0 : scrubberBottomPadding) +
+              (isMultiSelectEnabled ? bottomSheetOpenModifier : 0);
 
           final grid = CustomScrollView(
             primary: true,
@@ -347,7 +351,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
                   addRepaintBoundaries: false,
                 ),
               ),
-              const SliverPadding(padding: EdgeInsets.only(bottom: scrubberBottomPadding)),
+              SliverPadding(padding: EdgeInsets.only(bottom: bottomPadding)),
             ],
           );
 

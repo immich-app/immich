@@ -95,6 +95,7 @@ describe(MetadataService.name, () => {
           dateTimeOriginal: new Date(expected.dateTimeOriginal),
           timeZone: expected.timeZone,
         }),
+        { lockedPropertiesBehavior: 'skip' },
       );
 
       expect(mocks.asset.update).toHaveBeenCalledWith(

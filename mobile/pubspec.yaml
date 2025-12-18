@@ -2,7 +2,7 @@ name: immich_mobile
 description: Immich - selfhosted backup media file on mobile phone
 
 publish_to: 'none'
-version: 2.3.1+3028
+version: 2.4.0+3029
 
 environment:
   sdk: '>=3.8.0 <4.0.0'
@@ -43,6 +43,8 @@ dependencies:
   hooks_riverpod: ^2.6.1
   http: ^1.5.0
   image_picker: ^1.2.0
+  immich_ui:
+    path: './packages/ui'
   intl: ^0.20.2
   isar:
     git:
