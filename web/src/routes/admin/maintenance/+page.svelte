@@ -71,7 +71,7 @@
       await createJob({ jobCreateDto: { name } });
       if (jobs) {
         expectingUpdate = true;
-        jobs.backgroundTask.queueStatus.isActive = true;
+        jobs.integrityCheck.queueStatus.isActive = true;
       }
       toastManager.success($t('admin.job_created'));
     } catch (error) {
@@ -84,7 +84,7 @@
   onMount(async () => {
     while (running) {
       jobs = await getQueuesLegacy();
-      if (jobs.backgroundTask.queueStatus.isActive) {
+      if (jobs.integrityCheck.queueStatus.isActive) {
         expectingUpdate = true;
       } else if (expectingUpdate) {
         integrityReport = await getIntegrityReportSummary();
