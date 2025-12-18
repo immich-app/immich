@@ -79,7 +79,7 @@
         await createJob({ jobCreateDto: { name } });
         toastManager.success($t('admin.job_created'));
       } catch (error) {
-        handleError(error, 'Failed to delete file!');
+        handleError(error, $t('failed_to_delete_file'));
       }
     }
   }
@@ -97,7 +97,7 @@
         });
         integrityReport.items = integrityReport.items.filter((report) => report.id !== id);
       } catch (error) {
-        handleError(error, 'Failed to delete file!');
+        handleError(error, $t('failed_to_delete_file'));
       } finally {
         deleting.delete(id);
       }
@@ -147,14 +147,14 @@
   ]}
   actions={[
     {
-      title: 'Download CSV',
+      title: $t('admin.download_csv'),
       icon: mdiDownload,
       onAction: () => {
         location.href = `${getBaseUrl()}/admin/maintenance/integrity/report/${data.type}/csv`;
       },
     },
     {
-      title: 'Delete All',
+      title: $t('trash_page_delete_all'),
       onAction: removeAll,
       icon: mdiTrashCanOutline,
     },
@@ -198,21 +198,21 @@
               disabled={page === 1}
               color="primary"
               icon={mdiPageFirst}
-              aria-label="first page"
+              aria-label={$t('first_page')}
               onclick={() => loadPage(1)}
             />
             <IconButton
               disabled={page === 1}
               color="primary"
               icon={mdiChevronLeft}
-              aria-label="previous page"
+              aria-label={$t('previous_page')}
               onclick={() => loadPage(page - 1)}
             />
             <IconButton
               disabled={!integrityReport.hasNextPage}
               color="primary"
               icon={mdiChevronRight}
-              aria-label="next page"
+              aria-label={$t('next_page')}
               onclick={() => loadPage(page + 1)}
             />
           </HStack>

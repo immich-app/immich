@@ -245,7 +245,7 @@ export const asQueueItem = ($t: MessageFormatter, queue: { name: QueueName }): Q
     },
     [QueueName.IntegrityCheck]: {
       icon: '',
-      title: 'TODO',
+      title: $t('integrity_checks'),
     },
   };
 

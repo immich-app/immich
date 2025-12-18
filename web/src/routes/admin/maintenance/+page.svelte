@@ -125,19 +125,20 @@
                   size="tiny"
                   variant="ghost"
                   class="self-end mt-1"
-                  disabled={jobs?.backgroundTask.queueStatus.isActive}>Check All</Button
+                  disabled={jobs?.backgroundTask.queueStatus.isActive}
+                  >{$t('admin.maintenance_integrity_check_all')}</Button
                 >
                 <Button
                   onclick={() => runJob(reportType, true)}
                   size="tiny"
                   variant="ghost"
                   class="self-end mt-1"
-                  disabled={jobs?.backgroundTask.queueStatus.isActive}>Refresh</Button
+                  disabled={jobs?.backgroundTask.queueStatus.isActive}>{$t('refresh')}</Button
                 >
                 <Button
                   href={`${AppRoute.ADMIN_MAINTENANCE_INTEGRITY_REPORT + reportType}`}
                   size="tiny"
-                  class="self-end mt-1">View</Button
+                  class="self-end mt-1">{$t('view')}</Button
                 >
               </HStack>
             {/snippet}
