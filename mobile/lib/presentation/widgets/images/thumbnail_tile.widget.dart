@@ -80,10 +80,7 @@ class ThumbnailTile extends ConsumerWidget {
                       Align(
                         alignment: Alignment.topRight,
                         child: Padding(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: metrics.horizontalPadding,
-                            vertical: metrics.verticalPadding,
-                          ),
+                          padding: EdgeInsets.symmetric(horizontal: metrics.padding, vertical: metrics.padding),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.end,
                             crossAxisAlignment: CrossAxisAlignment.center,
@@ -97,10 +94,7 @@ class ThumbnailTile extends ConsumerWidget {
                       Align(
                         alignment: Alignment.bottomCenter,
                         child: Padding(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: metrics.horizontalPadding,
-                            vertical: metrics.verticalPadding,
-                          ),
+                          padding: EdgeInsets.symmetric(horizontal: metrics.padding, vertical: metrics.padding),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             crossAxisAlignment: CrossAxisAlignment.center,
@@ -301,16 +295,14 @@ class _OwnerNameLabel extends StatelessWidget {
 }
 
 class _OverlayMetrics {
-  final double horizontalPadding;
-  final double verticalPadding;
+  final double padding;
   final double iconSize;
   final double fontSize;
   final double iconSpacing;
   final double blurRadius;
 
   const _OverlayMetrics({
-    required this.horizontalPadding,
-    required this.verticalPadding,
+    required this.padding,
     required this.iconSize,
     required this.fontSize,
     required this.iconSpacing,
@@ -318,45 +310,15 @@ class _OverlayMetrics {
   });
 
   factory _OverlayMetrics.fromConstraints(BoxConstraints constraints) {
-    final tileSize = constraints.maxWidth;
+    const baseSize = 120.0;
+    final scale = (constraints.maxWidth / baseSize).clamp(0.5, 2.0);
 
-    if (tileSize < 80) {
-      return const _OverlayMetrics(
-        horizontalPadding: 1.0,
-        verticalPadding: 1.0,
-        iconSize: 14,
-        fontSize: 11,
-        iconSpacing: 1.0,
-        blurRadius: 3.0,
-      );
-    }
-    if (tileSize < 120) {
-      return const _OverlayMetrics(
-        horizontalPadding: 2.0,
-        verticalPadding: 2.0,
-        iconSize: 16,
-        fontSize: 12,
-        iconSpacing: 2.0,
-        blurRadius: 5.0,
-      );
-    }
-    if (tileSize < 180) {
-      return const _OverlayMetrics(
-        horizontalPadding: 3.0,
-        verticalPadding: 3.0,
-        iconSize: 18,
-        fontSize: 13,
-        iconSpacing: 3.0,
-        blurRadius: 6.0,
-      );
-    }
-    return const _OverlayMetrics(
-      horizontalPadding: 4.0,
-      verticalPadding: 4.0,
-      iconSize: 20,
-      fontSize: 14,
-      iconSpacing: 4.0,
-      blurRadius: 7.0,
+    return _OverlayMetrics(
+      padding: (2.0 * scale).clamp(1.0, 4.0),
+      iconSize: (16.0 * scale).clamp(14.0, 20.0),
+      fontSize: (12.0 * scale).clamp(11.0, 14.0),
+      iconSpacing: (2.0 * scale).clamp(1.0, 4.0),
+      blurRadius: (5.0 * scale).clamp(3.0, 7.0),
     );
   }
 }
