@@ -16,9 +16,9 @@ class MaintenanceAdminApi {
 
   final ApiClient apiClient;
 
-  /// Delete report entry and perform corresponding deletion action
+  /// Delete integrity report item
   ///
-  /// ...
+  /// Delete a given report item and perform corresponding deletion (e.g. trash asset, delete file)
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -51,9 +51,9 @@ class MaintenanceAdminApi {
     );
   }
 
-  /// Delete report entry and perform corresponding deletion action
+  /// Delete integrity report item
   ///
-  /// ...
+  /// Delete a given report item and perform corresponding deletion (e.g. trash asset, delete file)
   ///
   /// Parameters:
   ///
@@ -67,7 +67,7 @@ class MaintenanceAdminApi {
 
   /// Get integrity report by type
   ///
-  /// ...
+  /// Get all flagged items by integrity report type
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -101,7 +101,7 @@ class MaintenanceAdminApi {
 
   /// Get integrity report by type
   ///
-  /// ...
+  /// Get all flagged items by integrity report type
   ///
   /// Parameters:
   ///
@@ -123,7 +123,7 @@ class MaintenanceAdminApi {
 
   /// Export integrity report by type as CSV
   ///
-  /// ...
+  /// Get all integrity report entries for a given type as a CSV
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -158,7 +158,7 @@ class MaintenanceAdminApi {
 
   /// Export integrity report by type as CSV
   ///
-  /// ...
+  /// Get all integrity report entries for a given type as a CSV
   ///
   /// Parameters:
   ///
@@ -178,9 +178,9 @@ class MaintenanceAdminApi {
     return null;
   }
 
-  /// Download the orphan/broken file if one exists
+  /// Download flagged file file
   ///
-  /// ...
+  /// Download the orphan/broken file if one exists
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -213,9 +213,9 @@ class MaintenanceAdminApi {
     );
   }
 
-  /// Download the orphan/broken file if one exists
+  /// Download flagged file file
   ///
-  /// ...
+  /// Download the orphan/broken file if one exists
   ///
   /// Parameters:
   ///
@@ -237,7 +237,7 @@ class MaintenanceAdminApi {
 
   /// Get integrity report summary
   ///
-  /// ...
+  /// Get a count of the items flagged in each integrity report
   ///
   /// Note: This method returns the HTTP [Response].
   Future<Response> getIntegrityReportSummaryWithHttpInfo() async {
@@ -267,7 +267,7 @@ class MaintenanceAdminApi {
 
   /// Get integrity report summary
   ///
-  /// ...
+  /// Get a count of the items flagged in each integrity report
   Future<IntegrityReportSummaryResponseDto?> getIntegrityReportSummary() async {
     final response = await getIntegrityReportSummaryWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {

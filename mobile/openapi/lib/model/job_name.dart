@@ -86,7 +86,8 @@ class JobName {
   static const integrityMissingFilesRefresh = JobName._(r'IntegrityMissingFilesRefresh');
   static const integrityChecksumFiles = JobName._(r'IntegrityChecksumFiles');
   static const integrityChecksumFilesRefresh = JobName._(r'IntegrityChecksumFilesRefresh');
-  static const integrityReportDelete = JobName._(r'IntegrityReportDelete');
+  static const integrityDeleteReportType = JobName._(r'IntegrityDeleteReportType');
+  static const integrityDeleteReports = JobName._(r'IntegrityDeleteReports');
 
   /// List of all possible values in this [enum][JobName].
   static const values = <JobName>[
@@ -153,7 +154,8 @@ class JobName {
     integrityMissingFilesRefresh,
     integrityChecksumFiles,
     integrityChecksumFilesRefresh,
-    integrityReportDelete,
+    integrityDeleteReportType,
+    integrityDeleteReports,
   ];
 
   static JobName? fromJson(dynamic value) => JobNameTypeTransformer().decode(value);
@@ -255,7 +257,8 @@ class JobNameTypeTransformer {
         case r'IntegrityMissingFilesRefresh': return JobName.integrityMissingFilesRefresh;
         case r'IntegrityChecksumFiles': return JobName.integrityChecksumFiles;
         case r'IntegrityChecksumFilesRefresh': return JobName.integrityChecksumFilesRefresh;
-        case r'IntegrityReportDelete': return JobName.integrityReportDelete;
+        case r'IntegrityDeleteReportType': return JobName.integrityDeleteReportType;
+        case r'IntegrityDeleteReports': return JobName.integrityDeleteReports;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');

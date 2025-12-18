@@ -1894,7 +1894,7 @@ export function getIntegrityReport({ integrityGetReportDto }: {
     integrityGetReportDto: IntegrityGetReportDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
-        status: 201;
+        status: 200;
         data: IntegrityReportResponseDto;
     }>("/admin/integrity/report", oazapfts.json({
         ...opts,
@@ -1903,7 +1903,7 @@ export function getIntegrityReport({ integrityGetReportDto }: {
     })));
 }
 /**
- * Delete report entry and perform corresponding deletion action
+ * Delete integrity report item
  */
 export function deleteIntegrityReport({ id }: {
     id: string;
@@ -1914,7 +1914,7 @@ export function deleteIntegrityReport({ id }: {
     }));
 }
 /**
- * Download the orphan/broken file if one exists
+ * Download flagged file file
  */
 export function getIntegrityReportFile({ id }: {
     id: string;
@@ -5610,7 +5610,8 @@ export enum JobName {
     IntegrityMissingFilesRefresh = "IntegrityMissingFilesRefresh",
     IntegrityChecksumFiles = "IntegrityChecksumFiles",
     IntegrityChecksumFilesRefresh = "IntegrityChecksumFilesRefresh",
-    IntegrityReportDelete = "IntegrityReportDelete"
+    IntegrityDeleteReportType = "IntegrityDeleteReportType",
+    IntegrityDeleteReports = "IntegrityDeleteReports"
 }
 export enum SearchSuggestionType {
     Country = "country",

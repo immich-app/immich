@@ -135,7 +135,8 @@ from
   left join "integrity_report" on "integrity_report"."assetId" = "asset"."id"
   and "integrity_report"."type" = $1
 where
-  "createdAt" >= $2
+  "asset"."deletedAt" is null
+  and "createdAt" >= $2
   and "createdAt" <= $3
 order by
   "createdAt" asc
