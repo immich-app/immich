@@ -305,9 +305,119 @@ describe(IntegrityService.name, () => {
     });
   });
 
-  describe.todo('handleMissingFilesQueueAll');
-  describe.todo('handleMissingFiles');
-  describe.todo('handleMissingRefresh');
+  describe('handleMissingFilesQueueAll', () => {
+    beforeEach(() => {
+      mocks.integrityReport.streamAssetPaths.mockReturnValue((function* () {})() as never);
+    });
+
+    it('should queue jobs', async () => {
+      mocks.integrityReport.streamAssetPaths.mockReturnValue(
+        (function* () {
+          yield { path: '/path/to/file1', assetId: 'asset1', fileAssetId: null };
+          yield { path: '/path/to/file2', assetId: 'asset2', fileAssetId: null };
+        })() as never,
+      );
+
+      await sut.handleMissingFilesQueueAll({ refreshOnly: false });
+
+      expect(mocks.integrityReport.streamAssetPaths).toHaveBeenCalled();
+
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.IntegrityMissingFiles,
+        data: {
+          items: expect.arrayContaining([{ path: '/path/to/file1', assetId: 'asset1', fileAssetId: null }]),
+        },
+      });
+
+      expect(mocks.job.queue).not.toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: JobName.IntegrityMissingFilesRefresh,
+        }),
+      );
+    });
+
+    it('should queue refresh jobs when refreshOnly is set', async () => {
+      mocks.integrityReport.streamIntegrityReportsWithAssetChecksum.mockReturnValue(
+        (function* () {
+          yield { reportId: 'report1', path: '/path/to/file1' };
+          yield { reportId: 'report2', path: '/path/to/file2' };
+        })() as never,
+      );
+
+      await sut.handleMissingFilesQueueAll({ refreshOnly: true });
+
+      expect(mocks.integrityReport.streamIntegrityReportsWithAssetChecksum).toHaveBeenCalledWith(
+        IntegrityReportType.MissingFile,
+      );
+
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.IntegrityMissingFilesRefresh,
+        data: {
+          items: expect.arrayContaining([{ reportId: 'report1', path: '/path/to/file1' }]),
+        },
+      });
+
+      expect(mocks.job.queue).not.toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: JobName.IntegrityMissingFiles,
+        }),
+      );
+    });
+
+    it('should succeed', async () => {
+      await expect(sut.handleMissingFilesQueueAll()).resolves.toBe(JobStatus.Success);
+    });
+  });
+
+  describe('handleMissingFiles', () => {
+    it('should detect missing files and remove outdated reports', async () => {
+      mocks.storage.stat
+        .mockResolvedValueOnce({} as never)
+        .mockRejectedValueOnce(new Error('ENOENT'))
+        .mockResolvedValueOnce({} as never);
+
+      await sut.handleMissingFiles({
+        items: [
+          { path: '/path/to/existing', assetId: 'asset1', fileAssetId: null, reportId: null },
+          { path: '/path/to/missing', assetId: 'asset2', fileAssetId: null, reportId: null },
+          { path: '/path/to/restored', assetId: 'asset3', fileAssetId: null, reportId: 'report2' },
+        ],
+      });
+
+      expect(mocks.integrityReport.deleteByIds).toHaveBeenCalledWith(['report2']);
+      expect(mocks.integrityReport.create).toHaveBeenCalledWith([
+        { type: IntegrityReportType.MissingFile, path: '/path/to/missing', assetId: 'asset2', fileAssetId: null },
+      ]);
+    });
+
+    it('should succeed', async () => {
+      await expect(sut.handleMissingFiles({ items: [] })).resolves.toBe(JobStatus.Success);
+    });
+  });
+
+  describe('handleMissingRefresh', () => {
+    it('should remove outdated reports', async () => {
+      mocks.storage.stat
+        .mockResolvedValueOnce({} as never)
+        .mockRejectedValueOnce(new Error('ENOENT'))
+        .mockResolvedValueOnce({} as never);
+
+      await sut.handleMissingRefresh({
+        items: [
+          { path: '/path/to/existing', reportId: null },
+          { path: '/path/to/missing', reportId: null },
+          { path: '/path/to/restored', reportId: 'report2' },
+        ],
+      });
+
+      expect(mocks.integrityReport.deleteByIds).toHaveBeenCalledWith(['report2']);
+    });
+
+    it('should succeed', async () => {
+      await expect(sut.handleMissingFiles({ items: [] })).resolves.toBe(JobStatus.Success);
+    });
+  });
+
   describe.todo('handleChecksumFiles');
   describe.todo('handleChecksumRefresh');
   describe.todo('handleDeleteIntegrityReport');
