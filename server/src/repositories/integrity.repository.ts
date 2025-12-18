@@ -166,6 +166,7 @@ export class IntegrityRepository {
   streamAssetChecksums(startMarker?: Date, endMarker?: Date) {
     return this.db
       .selectFrom('asset')
+      .where('asset.deletedAt', 'is', null)
       .leftJoin('integrity_report', (join) =>
         join
           .onRef('integrity_report.assetId', '=', 'asset.id')
