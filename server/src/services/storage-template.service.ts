@@ -385,9 +385,9 @@ export class StorageTemplateService extends BaseService {
       assetIdShort: asset.id.slice(-12),
       //just throw into the root if it doesn't belong to an album
       album: (albumName && sanitize(albumName.replaceAll(/\.+/g, ''))) || '',
-      make: make || '',
-      model: model || '',
-      lensModel: lensModel || '',
+      make: make ?? '',
+      model: model ?? '',
+      lensModel: lensModel ?? '',
     };
 
     const systemTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
