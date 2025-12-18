@@ -33,10 +33,6 @@ server {
     proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
     proxy_set_header X-Forwarded-Proto $scheme;
 
-    # enable websockets: http://nginx.org/en/docs/http/websocket.html
-    proxy_http_version 1.1;
-    proxy_redirect     off;
-
     # set timeout
     proxy_read_timeout 600s;
     proxy_send_timeout 600s;
@@ -44,6 +40,10 @@ server {
 
     location / {
         proxy_pass http://<backend_url>:2283;
+
+        # enable websockets: http://nginx.org/en/docs/http/websocket.html
+        proxy_http_version 1.1;
+        proxy_redirect     off;
         proxy_set_header   Upgrade    $http_upgrade;
         proxy_set_header   Connection "upgrade";
     }
