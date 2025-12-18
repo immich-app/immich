@@ -71,6 +71,23 @@ describe('DateSelectionModal component', () => {
     expect(onClose).toHaveBeenCalled();
   });
 
+  test('does not fall back to UTC when datetime-local value has no seconds', async () => {
+    render(AssetSelectionChangeDateModal, {
+      props: { initialDate, initialTimeZone, assets: [], onClose },
+    });
+
+    // Some browsers omit seconds when the seconds field is 00, emitting only minute precision.
+    await fireEvent.input(getDateInput(), { target: { value: '2024-01-01T00:00' } });
+    await fireEvent.blur(getDateInput());
+
+    // Should keep the initial timezone selection, not the UTC fallback caused by an empty options list.
+    expect(getTimeZoneInput().value).toBe('Europe/Berlin (+01:00)');
+
+    // Opening the dropdown should not show "no_results" (i18n key in tests) which would indicate empty options.
+    await fireEvent.focus(getTimeZoneInput());
+    expect(screen.queryByText('no_results')).not.toBeInTheDocument();
+  });
+
   describe('when date is in daylight saving time', () => {
     const dstDate = DateTime.fromISO('2024-07-01');
 
