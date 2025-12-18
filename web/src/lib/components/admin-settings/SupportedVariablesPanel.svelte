@@ -52,6 +52,5 @@
         <li>{`{{assetIdShort}}`} - Asset ID (last 12 characters)</li>
       </ul>
     </div>
-
   </div>
 </div>
