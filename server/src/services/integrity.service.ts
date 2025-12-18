@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { createHash } from 'node:crypto';
 import { createReadStream } from 'node:fs';
-import { stat } from 'node:fs/promises';
 import { basename } from 'node:path';
 import { Readable, Writable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
@@ -322,7 +321,8 @@ export class IntegrityService extends BaseService {
 
     const results = await Promise.all(
       items.map(({ reportId, path }) =>
-        stat(path)
+        this.storageRepository
+          .stat(path)
           .then(() => void 0)
           .catch(() => reportId),
       ),
@@ -388,7 +388,8 @@ export class IntegrityService extends BaseService {
 
     const results = await Promise.all(
       items.map((item) =>
-        stat(item.path)
+        this.storageRepository
+          .stat(item.path)
           .then(() => ({ ...item, exists: true }))
           .catch(() => ({ ...item, exists: false })),
       ),
@@ -424,7 +425,8 @@ export class IntegrityService extends BaseService {
 
     const results = await Promise.all(
       paths.map(({ reportId, path }) =>
-        stat(path)
+        this.storageRepository
+          .stat(path)
           .then(() => reportId)
           .catch(() => void 0),
       ),
