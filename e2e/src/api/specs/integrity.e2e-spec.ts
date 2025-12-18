@@ -426,4 +426,59 @@ describe('/admin/integrity', () => {
       expect(listBody2.items.length).toBe(0);
     });
   });
+
+  describe('GET /report/:type/csv', () => {
+    it.sequential('exports orphan files as csv', async () => {
+      await utils.putTextFile('orphan', `/data/upload/${admin.userId}/orphan1.png`);
+
+      await utils.createJob(admin.accessToken, {
+        name: ManualJobName.IntegrityOrphanFiles,
+      });
+
+      await utils.waitForQueueFinish(admin.accessToken, QueueName.IntegrityCheck);
+
+      const { status, headers, text } = await request(app)
+        .get('/admin/integrity/report/orphan_file/csv')
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send();
+
+      expect(status).toBe(200);
+      expect(headers['content-type']).toContain('text/csv');
+      expect(headers['content-disposition']).toContain('.csv');
+      expect(text).toContain('id,type,assetId,fileAssetId,path');
+      expect(text).toContain(`orphan_file`);
+      expect(text).toContain(`/data/upload/${admin.userId}/orphan1.png`);
+    });
+  });
+
+  describe('GET /report/:id/file', () => {
+    it.sequential('downloads orphan file', async () => {
+      await utils.putTextFile('orphan-content', `/data/upload/${admin.userId}/orphan1.png`);
+
+      await utils.createJob(admin.accessToken, {
+        name: ManualJobName.IntegrityOrphanFiles,
+      });
+
+      await utils.waitForQueueFinish(admin.accessToken, QueueName.IntegrityCheck);
+
+      const { body: listBody } = await request(app)
+        .post('/admin/integrity/report')
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send({ type: 'orphan_file' });
+
+      const report = (listBody as IntegrityReportResponseDto).items.find(
+        (item) => item.path === `/data/upload/${admin.userId}/orphan1.png`,
+      )!;
+
+      const { status, headers, body } = await request(app)
+        .get(`/admin/integrity/report/${report.id}/file`)
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .buffer(true)
+        .send();
+
+      expect(status).toBe(200);
+      expect(headers['content-type']).toContain('application/octet-stream');
+      expect(body.toString()).toBe('orphan-content');
+    });
+  });
 });
