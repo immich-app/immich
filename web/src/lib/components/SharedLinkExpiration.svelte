@@ -80,7 +80,7 @@
       });
     })()}
     label={$t('expire_after')}
-    disabled={expiresAt !== null && DateTime.fromISO(expiresAt) < DateTime.now()}
+    disabled={false}
     number={true}
   />
 </div>
