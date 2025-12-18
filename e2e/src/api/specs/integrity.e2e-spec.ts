@@ -1,4 +1,11 @@
-import { IntegrityReportType, LoginResponseDto, ManualJobName, QueueName } from '@immich/sdk';
+import {
+  AssetMediaResponseDto,
+  IntegrityReportResponseDto,
+  IntegrityReportType,
+  LoginResponseDto,
+  ManualJobName,
+  QueueName,
+} from '@immich/sdk';
 import { readFile } from 'node:fs/promises';
 import { app, testAssetDir, utils } from 'src/utils';
 import request from 'supertest';
@@ -8,30 +15,31 @@ const assetFilepath = `${testAssetDir}/metadata/gps-position/thompson-springs.jp
 
 describe('/admin/integrity', () => {
   let admin: LoginResponseDto;
+  let asset: AssetMediaResponseDto;
 
   beforeAll(async () => {
     await utils.resetDatabase();
     admin = await utils.adminSetup();
   });
 
+  beforeAll(async () => {
+    asset = await utils.createAsset(admin.accessToken, {
+      assetData: {
+        filename: 'asset.jpg',
+        bytes: await readFile(assetFilepath),
+      },
+    });
+
+    await utils.copyFolder(`/data/upload/${admin.userId}`, `/data/upload/${admin.userId}-bak`);
+  });
+
+  afterEach(async () => {
+    await utils.deleteFolder(`/data/upload/${admin.userId}`);
+    await utils.copyFolder(`/data/upload/${admin.userId}-bak`, `/data/upload/${admin.userId}`);
+  });
+
   describe('POST /summary (& jobs)', async () => {
     let baseline: Record<IntegrityReportType, number>;
-
-    beforeAll(async () => {
-      await utils.createAsset(admin.accessToken, {
-        assetData: {
-          filename: 'asset.jpg',
-          bytes: await readFile(assetFilepath),
-        },
-      });
-
-      await utils.copyFolder(`/data/upload/${admin.userId}`, `/data/upload/${admin.userId}-bak`);
-    });
-
-    afterEach(async () => {
-      await utils.deleteFolder(`/data/upload/${admin.userId}`);
-      await utils.copyFolder(`/data/upload/${admin.userId}-bak`, `/data/upload/${admin.userId}`);
-    });
 
     it.sequential('may report issues', async () => {
       await utils.createJob(admin.accessToken, {
@@ -193,6 +201,229 @@ describe('/admin/integrity', () => {
           checksum_mismatch: 0,
         }),
       );
+    });
+  });
+
+  describe('POST /report', async () => {
+    it.sequential('reports orphan files', async () => {
+      await utils.putTextFile('orphan', `/data/upload/${admin.userId}/orphan1.png`);
+
+      await utils.createJob(admin.accessToken, {
+        name: ManualJobName.IntegrityOrphanFiles,
+      });
+
+      await utils.waitForQueueFinish(admin.accessToken, QueueName.IntegrityCheck);
+
+      const { status, body } = await request(app)
+        .post('/admin/integrity/report')
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send({ type: 'orphan_file' });
+
+      expect(status).toBe(200);
+      expect(body).toEqual({
+        hasNextPage: expect.any(Boolean),
+        items: expect.arrayContaining([
+          {
+            id: expect.any(String),
+            type: 'orphan_file',
+            path: `/data/upload/${admin.userId}/orphan1.png`,
+            assetId: null,
+            fileAssetId: null,
+          },
+        ]),
+      });
+    });
+
+    it.sequential('reports missing files', async () => {
+      await utils.deleteFolder(`/data/upload/${admin.userId}`);
+
+      await utils.createJob(admin.accessToken, {
+        name: ManualJobName.IntegrityMissingFiles,
+      });
+
+      await utils.waitForQueueFinish(admin.accessToken, QueueName.IntegrityCheck);
+
+      const { status, body } = await request(app)
+        .post('/admin/integrity/report')
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send({ type: 'missing_file' });
+
+      expect(status).toBe(200);
+      expect(body).toEqual({
+        hasNextPage: expect.any(Boolean),
+        items: expect.arrayContaining([
+          {
+            id: expect.any(String),
+            type: 'missing_file',
+            path: expect.any(String),
+            assetId: asset.id,
+            fileAssetId: null,
+          },
+        ]),
+      });
+    });
+
+    it.sequential('reports checksum mismatched files', async () => {
+      await utils.truncateFolder(`/data/upload/${admin.userId}`);
+
+      await utils.createJob(admin.accessToken, {
+        name: ManualJobName.IntegrityChecksumMismatch,
+      });
+
+      await utils.waitForQueueFinish(admin.accessToken, QueueName.IntegrityCheck);
+
+      const { status, body } = await request(app)
+        .post('/admin/integrity/report')
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send({ type: 'checksum_mismatch' });
+
+      expect(status).toBe(200);
+      expect(body).toEqual({
+        hasNextPage: expect.any(Boolean),
+        items: expect.arrayContaining([
+          {
+            id: expect.any(String),
+            type: 'checksum_mismatch',
+            path: expect.any(String),
+            assetId: asset.id,
+            fileAssetId: null,
+          },
+        ]),
+      });
+    });
+  });
+
+  describe('DELETE /report/:id', async () => {
+    it.sequential('delete orphan files', async () => {
+      await utils.putTextFile('orphan', `/data/upload/${admin.userId}/orphan1.png`);
+
+      await utils.createJob(admin.accessToken, {
+        name: ManualJobName.IntegrityOrphanFiles,
+      });
+
+      await utils.waitForQueueFinish(admin.accessToken, QueueName.IntegrityCheck);
+
+      const { status: listStatus, body: listBody } = await request(app)
+        .post('/admin/integrity/report')
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send({ type: 'orphan_file' });
+
+      expect(listStatus).toBe(200);
+
+      const report = (listBody as IntegrityReportResponseDto).items.find(
+        (item) => item.path === `/data/upload/${admin.userId}/orphan1.png`,
+      )!;
+
+      const { status } = await request(app)
+        .delete(`/admin/integrity/report/${report.id}`)
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send();
+
+      expect(status).toBe(200);
+
+      await utils.createJob(admin.accessToken, {
+        name: ManualJobName.IntegrityOrphanFiles,
+      });
+
+      await utils.waitForQueueFinish(admin.accessToken, QueueName.IntegrityCheck);
+
+      const { status: listStatus2, body: listBody2 } = await request(app)
+        .post('/admin/integrity/report')
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send({ type: 'orphan_file' });
+
+      expect(listStatus2).toBe(200);
+      expect(listBody2).not.toBe(
+        expect.objectContaining({
+          items: expect.arrayContaining([
+            expect.objectContaining({
+              id: report.id,
+            }),
+          ]),
+        }),
+      );
+    });
+
+    it.sequential('delete assets missing files', async () => {
+      await utils.deleteFolder(`/data/upload/${admin.userId}`);
+
+      await utils.createJob(admin.accessToken, {
+        name: ManualJobName.IntegrityMissingFiles,
+      });
+
+      await utils.waitForQueueFinish(admin.accessToken, QueueName.IntegrityCheck);
+
+      const { status: listStatus, body: listBody } = await request(app)
+        .post('/admin/integrity/report')
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send({ type: 'missing_file' });
+
+      expect(listStatus).toBe(200);
+      expect(listBody.items.length).toBe(1);
+
+      const report = (listBody as IntegrityReportResponseDto).items[0];
+
+      const { status } = await request(app)
+        .delete(`/admin/integrity/report/${report.id}`)
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send();
+
+      expect(status).toBe(200);
+
+      await utils.createJob(admin.accessToken, {
+        name: ManualJobName.IntegrityMissingFiles,
+      });
+
+      await utils.waitForQueueFinish(admin.accessToken, QueueName.IntegrityCheck);
+
+      const { status: listStatus2, body: listBody2 } = await request(app)
+        .post('/admin/integrity/report')
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send({ type: 'missing_file' });
+
+      expect(listStatus2).toBe(200);
+      expect(listBody2.items.length).toBe(0);
+    });
+
+    it.sequential('delete assets with failing checksum', async () => {
+      await utils.truncateFolder(`/data/upload/${admin.userId}`);
+
+      await utils.createJob(admin.accessToken, {
+        name: ManualJobName.IntegrityChecksumMismatch,
+      });
+
+      await utils.waitForQueueFinish(admin.accessToken, QueueName.IntegrityCheck);
+
+      const { status: listStatus, body: listBody } = await request(app)
+        .post('/admin/integrity/report')
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send({ type: 'checksum_mismatch' });
+
+      expect(listStatus).toBe(200);
+      expect(listBody.items.length).toBe(1);
+
+      const report = (listBody as IntegrityReportResponseDto).items[0];
+
+      const { status } = await request(app)
+        .delete(`/admin/integrity/report/${report.id}`)
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send();
+
+      expect(status).toBe(200);
+
+      await utils.createJob(admin.accessToken, {
+        name: ManualJobName.IntegrityChecksumMismatch,
+      });
+
+      await utils.waitForQueueFinish(admin.accessToken, QueueName.IntegrityCheck);
+
+      const { status: listStatus2, body: listBody2 } = await request(app)
+        .post('/admin/integrity/report')
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send({ type: 'checksum_mismatch' });
+
+      expect(listStatus2).toBe(200);
+      expect(listBody2.items.length).toBe(0);
     });
   });
 });

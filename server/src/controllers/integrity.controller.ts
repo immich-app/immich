@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Next, Param, Post, Res } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Next, Param, Post, Res } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { NextFunction, Response } from 'express';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
@@ -35,6 +35,7 @@ export class IntegrityController {
   }
 
   @Post('report')
+  @HttpCode(HttpStatus.OK)
   @Endpoint({
     summary: 'Get integrity report by type',
     description: 'Get all flagged items by integrity report type',
