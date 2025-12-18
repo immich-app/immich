@@ -18,6 +18,18 @@ Object.defineProperty(globalThis, 'matchMedia', {
   })),
 });
 
+// Mock localStorage for svelte-persisted-store
+const localStorageMock = {
+  getItem: vi.fn(() => null),
+  setItem: vi.fn(),
+  removeItem: vi.fn(),
+  clear: vi.fn(),
+};
+Object.defineProperty(globalThis, 'localStorage', {
+  writable: true,
+  value: localStorageMock,
+});
+
 vi.mock('$env/dynamic/public', () => {
   return {
     env: {
