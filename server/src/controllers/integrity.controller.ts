@@ -42,7 +42,7 @@ export class IntegrityController {
   })
   @Authenticated({ permission: Permission.Maintenance, admin: true })
   getIntegrityReport(@Body() dto: IntegrityGetReportDto): Promise<IntegrityReportResponseDto> {
-    return this.service.getIntegrityReport(dto);
+    return this.service.getIntegrityReport(dto.type);
   }
 
   @Delete('report/:id')

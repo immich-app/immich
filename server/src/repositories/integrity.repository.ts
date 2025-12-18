@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Insertable, Kysely, sql } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
-import { Readable } from 'node:stream';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { IntegrityReportType } from 'src/enum';
 import { DB } from 'src/schema';
@@ -91,29 +90,6 @@ export class IntegrityRepository {
       .executeTakeFirstOrThrow();
   }
 
-  @GenerateSql({ params: [DummyValue.STRING], stream: true })
-  streamIntegrityReportsCSV(type: IntegrityReportType): Readable {
-    const items = this.db
-      .selectFrom('integrity_report')
-      .select(['id', 'type', 'path', 'assetId', 'fileAssetId'])
-      .where('type', '=', type)
-      .orderBy('createdAt', 'desc')
-      .stream();
-
-    // very rudimentary csv serialiser
-    async function* generator() {
-      yield 'id,type,assetId,fileAssetId,path\n';
-
-      for await (const item of items) {
-        // no expectation of particularly bad filenames
-        // but they could potentially have a newline or quote character
-        yield `${item.id},${item.type},${item.assetId},${item.fileAssetId},"${item.path.replaceAll('"', '""')}"\n`;
-      }
-    }
-
-    return Readable.from(generator());
-  }
-
   @GenerateSql({ params: [], stream: true })
   streamAllAssetPaths() {
     return this.db.selectFrom('asset').select(['originalPath', 'encodedVideoPath']).stream();
@@ -201,6 +177,16 @@ export class IntegrityRepository {
 
   @GenerateSql({ params: [DummyValue.STRING], stream: true })
   streamIntegrityReports(type: IntegrityReportType) {
+    return this.db
+      .selectFrom('integrity_report')
+      .select(['id', 'type', 'path', 'assetId', 'fileAssetId'])
+      .where('type', '=', type)
+      .orderBy('createdAt', 'desc')
+      .stream();
+  }
+
+  @GenerateSql({ params: [DummyValue.STRING], stream: true })
+  streamIntegrityReportsWithAssetChecksum(type: IntegrityReportType) {
     return this.db
       .selectFrom('integrity_report')
       .select(['integrity_report.id as reportId', 'integrity_report.path'])

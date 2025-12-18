@@ -9,11 +9,7 @@ import { JOBS_LIBRARY_PAGINATION_SIZE } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { OnEvent, OnJob } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
-import {
-  IntegrityGetReportDto,
-  IntegrityReportResponseDto,
-  IntegrityReportSummaryResponseDto,
-} from 'src/dtos/integrity.dto';
+import { IntegrityReportResponseDto, IntegrityReportSummaryResponseDto } from 'src/dtos/integrity.dto';
 import {
   AssetStatus,
   CacheControl,
@@ -158,14 +154,27 @@ export class IntegrityService extends BaseService {
     return this.integrityRepository.getIntegrityReportSummary();
   }
 
-  async getIntegrityReport(dto: IntegrityGetReportDto): Promise<IntegrityReportResponseDto> {
+  async getIntegrityReport(type: IntegrityReportType): Promise<IntegrityReportResponseDto> {
     return {
-      items: await this.integrityRepository.getIntegrityReports(dto.type),
+      items: await this.integrityRepository.getIntegrityReports(type),
     };
   }
 
   getIntegrityReportCsv(type: IntegrityReportType): Readable {
-    return this.integrityRepository.streamIntegrityReportsCSV(type);
+    const items = this.integrityRepository.streamIntegrityReports(type);
+
+    // very rudimentary csv serialiser
+    async function* generator() {
+      yield 'id,type,assetId,fileAssetId,path\n';
+
+      for await (const item of items) {
+        // no expectation of particularly bad filenames
+        // but they could potentially have a newline or quote character
+        yield `${item.id},${item.type},${item.assetId},${item.fileAssetId},"${item.path.replaceAll('"', '""')}"\n`;
+      }
+    }
+
+    return Readable.from(generator());
   }
 
   async getIntegrityReportFile(id: string): Promise<ImmichFileResponse> {
@@ -206,7 +215,7 @@ export class IntegrityService extends BaseService {
   async handleOrphanedFilesQueueAll({ refreshOnly }: IIntegrityJob = {}): Promise<JobStatus> {
     this.logger.log(`Checking for out of date orphaned file reports...`);
 
-    const reports = this.integrityRepository.streamIntegrityReports(IntegrityReportType.OrphanFile);
+    const reports = this.integrityRepository.streamIntegrityReportsWithAssetChecksum(IntegrityReportType.OrphanFile);
 
     let total = 0;
     for await (const batchReports of chunk(reports, JOBS_LIBRARY_PAGINATION_SIZE)) {
@@ -332,7 +341,7 @@ export class IntegrityService extends BaseService {
     if (refreshOnly) {
       this.logger.log(`Checking for out of date missing file reports...`);
 
-      const reports = this.integrityRepository.streamIntegrityReports(IntegrityReportType.MissingFile);
+      const reports = this.integrityRepository.streamIntegrityReportsWithAssetChecksum(IntegrityReportType.MissingFile);
 
       let total = 0;
       for await (const batchReports of chunk(reports, JOBS_LIBRARY_PAGINATION_SIZE)) {
@@ -434,7 +443,9 @@ export class IntegrityService extends BaseService {
     if (refreshOnly) {
       this.logger.log(`Checking for out of date checksum file reports...`);
 
-      const reports = this.integrityRepository.streamIntegrityReports(IntegrityReportType.ChecksumFail);
+      const reports = this.integrityRepository.streamIntegrityReportsWithAssetChecksum(
+        IntegrityReportType.ChecksumFail,
+      );
 
       let total = 0;
       for await (const batchReports of chunk(reports, JOBS_LIBRARY_PAGINATION_SIZE)) {
