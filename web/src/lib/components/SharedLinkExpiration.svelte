@@ -68,7 +68,17 @@
   <SettingSelect
     bind:value={expirationOption}
     {onSelect}
-    options={[...new Set([...expiredDateOptions, getExpirationOption(createdAt, expiresAt)])]}
+    options={(() => {
+      const allOptions = [...expiredDateOptions, getExpirationOption(createdAt, expiresAt)];
+      const seen = new Set<string | number>();
+      return allOptions.filter((option) => {
+        if (seen.has(option.value)) {
+          return false;
+        }
+        seen.add(option.value);
+        return true;
+      });
+    })()}
     label={$t('expire_after')}
     disabled={expiresAt !== null && DateTime.fromISO(expiresAt) < DateTime.now()}
     number={true}
