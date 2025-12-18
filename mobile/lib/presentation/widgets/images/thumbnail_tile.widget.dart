@@ -81,7 +81,7 @@ class ThumbnailTile extends ConsumerWidget {
                       Align(
                         alignment: Alignment.topRight,
                         child: Padding(
-                          padding: EdgeInsets.symmetric(horizontal: horizontalPadding * 0.5, vertical: verticalPadding),
+                          padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: verticalPadding),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.end,
                             crossAxisAlignment: CrossAxisAlignment.center,
@@ -95,14 +95,14 @@ class ThumbnailTile extends ConsumerWidget {
                       Align(
                         alignment: Alignment.bottomCenter,
                         child: Padding(
-                          padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: verticalPadding * 0.1),
+                          padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: verticalPadding),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               if (asset != null && asset.isFavorite)
                                 const Padding(
-                                  padding: EdgeInsets.only(right: 1.0),
+                                  padding: EdgeInsets.only(right: 2.0),
                                   child: _TileOverlayIcon(Icons.favorite_rounded),
                                 )
                               else
@@ -237,11 +237,11 @@ class _AssetTypeIcons extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (asset.isVideo) Padding(padding: const EdgeInsets.only(right: 2.0), child: _VideoIndicator(asset.duration)),
+        if (asset.isVideo) Padding(padding: const EdgeInsets.only(left: 2.0), child: _VideoIndicator(asset.duration)),
         if (hasStack)
-          const Padding(padding: EdgeInsets.only(right: 2.0), child: _TileOverlayIcon(Icons.burst_mode_rounded)),
+          const Padding(padding: EdgeInsets.only(left: 2.0), child: _TileOverlayIcon(Icons.burst_mode_rounded)),
         if (isLivePhoto)
-          const Padding(padding: EdgeInsets.only(right: 2.0), child: _TileOverlayIcon(Icons.motion_photos_on_rounded)),
+          const Padding(padding: EdgeInsets.only(left: 2.0), child: _TileOverlayIcon(Icons.motion_photos_on_rounded)),
       ],
     );
   }
@@ -259,7 +259,7 @@ class _OwnerNameLabel extends StatelessWidget {
       style: const TextStyle(
         color: Colors.white,
         fontSize: 12,
-        fontWeight: FontWeight.bold,
+        fontWeight: FontWeight.w500,
         shadows: [Shadow(blurRadius: 5.0, color: Color.fromRGBO(0, 0, 0, 0.6), offset: Offset(0.0, 0.0))],
       ),
       overflow: TextOverflow.fade,
