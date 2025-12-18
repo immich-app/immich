@@ -55,6 +55,19 @@
     return closestOption;
   };
 
+  const deduplicateOptionsByValue = (
+    options: { text: string; value: string | number }[],
+  ): { text: string; value: string | number }[] => {
+    const seen = new Set<string | number>();
+    return options.filter((option) => {
+      if (seen.has(option.value)) {
+        return false;
+      }
+      seen.add(option.value);
+      return true;
+    });
+  };
+
   const onSelect = (option: number | string) => {
     const expirationOption = Number(option);
 
@@ -68,17 +81,7 @@
   <SettingSelect
     bind:value={expirationOption}
     {onSelect}
-    options={(() => {
-      const allOptions = [...expiredDateOptions, getExpirationOption(createdAt, expiresAt)];
-      const seen = new Set<string | number>();
-      return allOptions.filter((option) => {
-        if (seen.has(option.value)) {
-          return false;
-        }
-        seen.add(option.value);
-        return true;
-      });
-    })()}
+    options={deduplicateOptionsByValue([...expiredDateOptions, getExpirationOption(createdAt, expiresAt)])}
     label={$t('expire_after')}
     disabled={false}
     number={true}
