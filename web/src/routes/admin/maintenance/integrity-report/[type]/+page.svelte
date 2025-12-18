@@ -1,12 +1,14 @@
 <script lang="ts">
   import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
   import { AppRoute } from '$lib/constants';
+  import { asyncTimeout } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import {
     createJob,
     deleteIntegrityReport,
     getBaseUrl,
     getIntegrityReport,
+    getQueuesLegacy,
     IntegrityReportType,
     ManualJobName,
   } from '@immich/sdk';
@@ -27,6 +29,7 @@
     mdiPageFirst,
     mdiTrashCanOutline,
   } from '@mdi/js';
+  import { onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { SvelteSet } from 'svelte/reactivity';
   import type { PageData } from './$types';
@@ -137,6 +140,27 @@
       ],
     });
   };
+
+  let running = true;
+  let expectingUpdate = false;
+
+  onMount(async () => {
+    while (running) {
+      const jobs = await getQueuesLegacy();
+      if (jobs.integrityCheck.queueStatus.isActive) {
+        expectingUpdate = true;
+      } else if (expectingUpdate) {
+        await loadPage(page);
+        expectingUpdate = false;
+      }
+
+      await asyncTimeout(2000);
+    }
+  });
+
+  onDestroy(() => {
+    running = false;
+  });
 </script>
 
 <AdminPageLayout

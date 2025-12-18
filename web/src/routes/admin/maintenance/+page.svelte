@@ -88,8 +88,10 @@
         expectingUpdate = true;
       } else if (expectingUpdate) {
         integrityReport = await getIntegrityReportSummary();
+        expectingUpdate = false;
       }
-      await asyncTimeout(5000);
+
+      await asyncTimeout(2000);
     }
   });
 
