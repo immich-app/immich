@@ -324,7 +324,7 @@
     },
     "/admin/integrity/report": {
       "post": {
-        "description": "...",
+        "description": "Get all flagged items by integrity report type",
         "operationId": "getIntegrityReport",
         "parameters": [],
         "requestBody": {
@@ -381,7 +381,7 @@
     },
     "/admin/integrity/report/{id}": {
       "delete": {
-        "description": "...",
+        "description": "Delete a given report item and perform corresponding deletion (e.g. trash asset, delete file)",
         "operationId": "deleteIntegrityReport",
         "parameters": [
           {
@@ -410,7 +410,7 @@
             "api_key": []
           }
         ],
-        "summary": "Delete report entry and perform corresponding deletion action",
+        "summary": "Delete integrity report item",
         "tags": [
           "Maintenance (admin)"
         ],
@@ -431,7 +431,7 @@
     },
     "/admin/integrity/report/{id}/file": {
       "get": {
-        "description": "...",
+        "description": "Download the orphan/broken file if one exists",
         "operationId": "getIntegrityReportFile",
         "parameters": [
           {
@@ -468,7 +468,7 @@
             "api_key": []
           }
         ],
-        "summary": "Download the orphan/broken file if one exists",
+        "summary": "Download flagged file file",
         "tags": [
           "Maintenance (admin)"
         ],
@@ -489,7 +489,7 @@
     },
     "/admin/integrity/report/{type}/csv": {
       "get": {
-        "description": "...",
+        "description": "Get all integrity report entries for a given type as a CSV",
         "operationId": "getIntegrityReportCsv",
         "parameters": [
           {
@@ -546,7 +546,7 @@
     },
     "/admin/integrity/summary": {
       "get": {
-        "description": "...",
+        "description": "Get a count of the items flagged in each integrity report",
         "operationId": "getIntegrityReportSummary",
         "parameters": [],
         "responses": {

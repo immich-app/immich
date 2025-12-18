@@ -26,7 +26,7 @@ export class IntegrityController {
   @Get('summary')
   @Endpoint({
     summary: 'Get integrity report summary',
-    description: '...',
+    description: 'Get a count of the items flagged in each integrity report',
     history: new HistoryBuilder().added('v9.9.9').alpha('v9.9.9'),
   })
   @Authenticated({ permission: Permission.Maintenance, admin: true })
@@ -37,7 +37,7 @@ export class IntegrityController {
   @Post('report')
   @Endpoint({
     summary: 'Get integrity report by type',
-    description: '...',
+    description: 'Get all flagged items by integrity report type',
     history: new HistoryBuilder().added('v9.9.9').alpha('v9.9.9'),
   })
   @Authenticated({ permission: Permission.Maintenance, admin: true })
@@ -47,8 +47,8 @@ export class IntegrityController {
 
   @Delete('report/:id')
   @Endpoint({
-    summary: 'Delete report entry and perform corresponding deletion action',
-    description: '...',
+    summary: 'Delete integrity report item',
+    description: 'Delete a given report item and perform corresponding deletion (e.g. trash asset, delete file)',
     history: new HistoryBuilder().added('v9.9.9').alpha('v9.9.9'),
   })
   @Authenticated({ permission: Permission.Maintenance, admin: true })
@@ -59,7 +59,7 @@ export class IntegrityController {
   @Get('report/:type/csv')
   @Endpoint({
     summary: 'Export integrity report by type as CSV',
-    description: '...',
+    description: 'Get all integrity report entries for a given type as a CSV',
     history: new HistoryBuilder().added('v9.9.9').alpha('v9.9.9'),
   })
   @FileResponse()
@@ -74,8 +74,8 @@ export class IntegrityController {
 
   @Get('report/:id/file')
   @Endpoint({
-    summary: 'Download the orphan/broken file if one exists',
-    description: '...',
+    summary: 'Download flagged file file',
+    description: 'Download the orphan/broken file if one exists',
     history: new HistoryBuilder().added('v9.9.9').alpha('v9.9.9'),
   })
   @FileResponse()
