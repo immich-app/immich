@@ -6,6 +6,14 @@ import 'package:immich_mobile/infrastructure/repositories/local_asset.repository
 import 'package:immich_mobile/infrastructure/repositories/remote_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/utils/exif.converter.dart';
 
+class AssetVideoDimension {
+  final double? width;
+  final double? height;
+  final bool isFlipped;
+
+  const AssetVideoDimension(this.width, this.height, this.isFlipped);
+}
+
 class AssetService {
   final RemoteAssetRepository _remoteAssetRepository;
   final DriftLocalAssetRepository _localAssetRepository;
@@ -58,44 +66,48 @@ class AssetService {
   }
 
   Future<double> getAspectRatio(BaseAsset asset) async {
-    bool isFlipped;
-    double? width;
-    double? height;
+    final dimension = asset is LocalAsset
+        ? await _getLocalAssetDimensions(asset)
+        : await _getRemoteAssetDimensions(asset as RemoteAsset);
 
-    if (asset.hasRemote) {
-      final exif = await getExif(asset);
-      isFlipped = ExifDtoConverter.isOrientationFlipped(exif?.orientation);
-      width = asset.width?.toDouble();
-      height = asset.height?.toDouble();
-    } else if (asset is LocalAsset) {
-      isFlipped = CurrentPlatform.isAndroid && (asset.orientation == 90 || asset.orientation == 270);
-      width = asset.width?.toDouble();
-      height = asset.height?.toDouble();
-    } else {
-      isFlipped = false;
+    if (dimension.width == null || dimension.height == null || dimension.height == 0) {
+      return 1.0;
     }
+
+    return dimension.isFlipped ? dimension.height! / dimension.width! : dimension.width! / dimension.height!;
+  }
+
+  Future<AssetVideoDimension> _getLocalAssetDimensions(LocalAsset asset) async {
+    double? width = asset.width?.toDouble();
+    double? height = asset.height?.toDouble();
+    int orientation = asset.orientation;
 
     if (width == null || height == null) {
-      if (asset.hasRemote) {
-        final id = asset is LocalAsset ? asset.remoteId! : (asset as RemoteAsset).id;
-        final remoteAsset = await _remoteAssetRepository.get(id);
-        width = remoteAsset?.width?.toDouble();
-        height = remoteAsset?.height?.toDouble();
-      } else {
-        final id = asset is LocalAsset ? asset.id : (asset as RemoteAsset).localId!;
-        final localAsset = await _localAssetRepository.get(id);
-        width = localAsset?.width?.toDouble();
-        height = localAsset?.height?.toDouble();
-      }
+      final fetched = await _localAssetRepository.get(asset.id);
+      width = fetched?.width?.toDouble();
+      height = fetched?.height?.toDouble();
+      orientation = fetched?.orientation ?? 0;
     }
 
-    final orientedWidth = isFlipped ? height : width;
-    final orientedHeight = isFlipped ? width : height;
-    if (orientedWidth != null && orientedHeight != null && orientedHeight > 0) {
-      return orientedWidth / orientedHeight;
+    // On Android, local assets need orientation correction for 90°/270° rotations
+    // On iOS, the Photos framework pre-corrects dimensions
+    final isFlipped = CurrentPlatform.isAndroid && (orientation == 90 || orientation == 270);
+    return AssetVideoDimension(width, height, isFlipped);
+  }
+
+  Future<AssetVideoDimension> _getRemoteAssetDimensions(RemoteAsset asset) async {
+    double? width = asset.width?.toDouble();
+    double? height = asset.height?.toDouble();
+
+    if (width == null || height == null) {
+      final fetched = await _remoteAssetRepository.get(asset.id);
+      width = fetched?.width?.toDouble();
+      height = fetched?.height?.toDouble();
     }
 
-    return 1.0;
+    final exif = await getExif(asset);
+    final isFlipped = ExifDtoConverter.isOrientationFlipped(exif?.orientation);
+    return AssetVideoDimension(width, height, isFlipped);
   }
 
   Future<List<(String, String)>> getPlaces(String userId) {
