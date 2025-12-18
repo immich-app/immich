@@ -55,8 +55,7 @@ class ThumbnailTile extends ConsumerWidget {
         Container(color: lockSelection ? context.colorScheme.surfaceContainerHighest : assetContainerColor),
         LayoutBuilder(
           builder: (context, constraints) {
-            final horizontalPadding = constraints.maxWidth * 0.02;
-            final verticalPadding = constraints.maxHeight * 0.02;
+            final metrics = _OverlayMetrics.fromConstraints(constraints);
 
             return AnimatedContainer(
               duration: Durations.short4,
@@ -81,11 +80,14 @@ class ThumbnailTile extends ConsumerWidget {
                       Align(
                         alignment: Alignment.topRight,
                         child: Padding(
-                          padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: verticalPadding),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: metrics.horizontalPadding,
+                            vertical: metrics.verticalPadding,
+                          ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.end,
                             crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [_AssetTypeIcons(asset: asset)],
+                            children: [_AssetTypeIcons(asset: asset, metrics: metrics)],
                           ),
                         ),
                       ),
@@ -95,33 +97,36 @@ class ThumbnailTile extends ConsumerWidget {
                       Align(
                         alignment: Alignment.bottomCenter,
                         child: Padding(
-                          padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: verticalPadding),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: metrics.horizontalPadding,
+                            vertical: metrics.verticalPadding,
+                          ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               if (asset != null && asset.isFavorite)
-                                const Padding(
-                                  padding: EdgeInsets.only(right: 2.0),
-                                  child: _TileOverlayIcon(Icons.favorite_rounded),
+                                Padding(
+                                  padding: EdgeInsets.only(right: metrics.iconSpacing),
+                                  child: _TileOverlayIcon(Icons.favorite_rounded, metrics: metrics),
                                 )
                               else
                                 const SizedBox.shrink(),
                               if (shouldShowOwnerName)
                                 Flexible(
                                   child: Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 1.0),
-                                    child: _OwnerNameLabel(ownerName: ownerName!),
+                                    padding: EdgeInsets.symmetric(horizontal: metrics.iconSpacing),
+                                    child: _OwnerNameLabel(ownerName: ownerName!, metrics: metrics),
                                   ),
                                 ),
                               if (storageIndicator && asset != null)
                                 Padding(
-                                  padding: const EdgeInsets.only(right: 2.0),
+                                  padding: EdgeInsets.only(right: metrics.iconSpacing),
                                   child: _TileOverlayIcon(switch (asset.storage) {
                                     AssetState.local => Icons.cloud_off_outlined,
                                     AssetState.remote => Icons.cloud_outlined,
                                     AssetState.merged => Icons.cloud_done_outlined,
-                                  }),
+                                  }, metrics: metrics),
                                 ),
                             ],
                           ),
@@ -182,7 +187,8 @@ class _SelectionIndicator extends StatelessWidget {
 
 class _VideoIndicator extends StatelessWidget {
   final Duration duration;
-  const _VideoIndicator(this.duration);
+  final _OverlayMetrics metrics;
+  const _VideoIndicator(this.duration, {required this.metrics});
 
   @override
   Widget build(BuildContext context) {
@@ -194,15 +200,15 @@ class _VideoIndicator extends StatelessWidget {
       children: [
         Text(
           duration.format(),
-          style: const TextStyle(
+          style: TextStyle(
             color: Colors.white,
-            fontSize: 12,
+            fontSize: metrics.fontSize,
             fontWeight: FontWeight.bold,
-            shadows: [Shadow(blurRadius: 5.0, color: Color.fromRGBO(0, 0, 0, 0.6))],
+            shadows: [Shadow(blurRadius: metrics.blurRadius, color: const Color.fromRGBO(0, 0, 0, 0.6))],
           ),
         ),
-        const SizedBox(width: 2),
-        const _TileOverlayIcon(Icons.play_circle_outline_rounded),
+        SizedBox(width: metrics.iconSpacing),
+        _TileOverlayIcon(Icons.play_circle_outline_rounded, metrics: metrics),
       ],
     );
   }
@@ -210,24 +216,32 @@ class _VideoIndicator extends StatelessWidget {
 
 class _TileOverlayIcon extends StatelessWidget {
   final IconData icon;
+  final _OverlayMetrics metrics;
 
-  const _TileOverlayIcon(this.icon);
+  const _TileOverlayIcon(this.icon, {required this.metrics});
 
   @override
   Widget build(BuildContext context) {
     return Icon(
       icon,
       color: Colors.white,
-      size: 16,
-      shadows: [const Shadow(blurRadius: 5.0, color: Color.fromRGBO(0, 0, 0, 0.6), offset: Offset(0.0, 0.0))],
+      size: metrics.iconSize,
+      shadows: [
+        Shadow(
+          blurRadius: metrics.blurRadius,
+          color: const Color.fromRGBO(0, 0, 0, 0.6),
+          offset: const Offset(0.0, 0.0),
+        ),
+      ],
     );
   }
 }
 
 class _AssetTypeIcons extends StatelessWidget {
   final BaseAsset asset;
+  final _OverlayMetrics metrics;
 
-  const _AssetTypeIcons({required this.asset});
+  const _AssetTypeIcons({required this.asset, required this.metrics});
 
   @override
   Widget build(BuildContext context) {
@@ -237,11 +251,21 @@ class _AssetTypeIcons extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (asset.isVideo) Padding(padding: const EdgeInsets.only(left: 2.0), child: _VideoIndicator(asset.duration)),
+        if (asset.isVideo)
+          Padding(
+            padding: EdgeInsets.only(left: metrics.iconSpacing),
+            child: _VideoIndicator(asset.duration, metrics: metrics),
+          ),
         if (hasStack)
-          const Padding(padding: EdgeInsets.only(left: 2.0), child: _TileOverlayIcon(Icons.burst_mode_rounded)),
+          Padding(
+            padding: EdgeInsets.only(left: metrics.iconSpacing),
+            child: _TileOverlayIcon(Icons.burst_mode_rounded, metrics: metrics),
+          ),
         if (isLivePhoto)
-          const Padding(padding: EdgeInsets.only(left: 2.0), child: _TileOverlayIcon(Icons.motion_photos_on_rounded)),
+          Padding(
+            padding: EdgeInsets.only(left: metrics.iconSpacing),
+            child: _TileOverlayIcon(Icons.motion_photos_on_rounded, metrics: metrics),
+          ),
       ],
     );
   }
@@ -249,22 +273,90 @@ class _AssetTypeIcons extends StatelessWidget {
 
 class _OwnerNameLabel extends StatelessWidget {
   final String ownerName;
+  final _OverlayMetrics metrics;
 
-  const _OwnerNameLabel({required this.ownerName});
+  const _OwnerNameLabel({required this.ownerName, required this.metrics});
 
   @override
   Widget build(BuildContext context) {
     return Text(
       ownerName,
-      style: const TextStyle(
+      style: TextStyle(
         color: Colors.white,
-        fontSize: 12,
+        fontSize: metrics.fontSize,
         fontWeight: FontWeight.w500,
-        shadows: [Shadow(blurRadius: 5.0, color: Color.fromRGBO(0, 0, 0, 0.6), offset: Offset(0.0, 0.0))],
+        shadows: [
+          Shadow(
+            blurRadius: metrics.blurRadius,
+            color: const Color.fromRGBO(0, 0, 0, 0.6),
+            offset: const Offset(0.0, 0.0),
+          ),
+        ],
       ),
       overflow: TextOverflow.fade,
       softWrap: false,
       maxLines: 1,
+    );
+  }
+}
+
+class _OverlayMetrics {
+  final double horizontalPadding;
+  final double verticalPadding;
+  final double iconSize;
+  final double fontSize;
+  final double iconSpacing;
+  final double blurRadius;
+
+  const _OverlayMetrics({
+    required this.horizontalPadding,
+    required this.verticalPadding,
+    required this.iconSize,
+    required this.fontSize,
+    required this.iconSpacing,
+    required this.blurRadius,
+  });
+
+  factory _OverlayMetrics.fromConstraints(BoxConstraints constraints) {
+    final tileSize = constraints.maxWidth;
+
+    if (tileSize < 80) {
+      return const _OverlayMetrics(
+        horizontalPadding: 1.0,
+        verticalPadding: 1.0,
+        iconSize: 14,
+        fontSize: 11,
+        iconSpacing: 1.0,
+        blurRadius: 3.0,
+      );
+    }
+    if (tileSize < 120) {
+      return const _OverlayMetrics(
+        horizontalPadding: 2.0,
+        verticalPadding: 2.0,
+        iconSize: 16,
+        fontSize: 12,
+        iconSpacing: 2.0,
+        blurRadius: 5.0,
+      );
+    }
+    if (tileSize < 180) {
+      return const _OverlayMetrics(
+        horizontalPadding: 3.0,
+        verticalPadding: 3.0,
+        iconSize: 18,
+        fontSize: 13,
+        iconSpacing: 3.0,
+        blurRadius: 6.0,
+      );
+    }
+    return const _OverlayMetrics(
+      horizontalPadding: 4.0,
+      verticalPadding: 4.0,
+      iconSize: 20,
+      fontSize: 14,
+      iconSpacing: 4.0,
+      blurRadius: 7.0,
     );
   }
 }
