@@ -38,7 +38,7 @@ export class ViewRepository {
   ) {
     const normalizedPath = partialPath.replaceAll(/\/$/g, '');
 
-    let query = this.db
+    return this.db
       .selectFrom('asset')
       .selectAll('asset')
       .$call(withExif)
@@ -49,16 +49,14 @@ export class ViewRepository {
       .where('fileModifiedAt', 'is not', null)
       .where('localDateTime', 'is not', null)
       .where('originalPath', 'like', `%${normalizedPath}/%`)
-      .where('originalPath', 'not like', `%${normalizedPath}/%/%`);
-
-    query =
-      order === FolderContentOrder.Name
-        ? query.orderBy(
-            (eb) => eb.fn('regexp_replace', ['asset.originalPath', eb.val('.*/(.+)'), eb.val(String.raw`\1`)]),
-            'asc',
-          )
-        : query.orderBy('fileCreatedAt', 'asc');
-
-    return query.execute();
+      .where('originalPath', 'not like', `%${normalizedPath}/%/%`)
+      .$if(order === FolderContentOrder.Name, (qb) =>
+        qb.orderBy(
+          (eb) => eb.fn('regexp_replace', ['asset.originalPath', eb.val('.*/(.+)'), eb.val(String.raw`\1`)]),
+          'asc',
+        ),
+      )
+      .$if(order === FolderContentOrder.Date, (qb) => qb.orderBy('fileCreatedAt', 'asc'))
+      .execute();
   }
 }
