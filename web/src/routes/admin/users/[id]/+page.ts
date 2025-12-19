@@ -1,4 +1,4 @@
-import { AppRoute } from '$lib/constants';
+import { AppRoute, UUID_REGEX } from '$lib/constants';
 import { authenticate, requestServerInfo } from '$lib/utils/auth';
 import { getFormatter } from '$lib/utils/i18n';
 import { getUserPreferencesAdmin, getUserSessionsAdmin, getUserStatisticsAdmin, searchUsersAdmin } from '@immich/sdk';
@@ -8,6 +8,11 @@ import type { PageLoad } from './$types';
 export const load = (async ({ params, url }) => {
   await authenticate(url, { admin: true });
   await requestServerInfo();
+
+  if (!UUID_REGEX.test(params.id)) {
+    redirect(302, AppRoute.ADMIN_USERS);
+  }
+
   const [user] = await searchUsersAdmin({ id: params.id, withDeleted: true }).catch(() => []);
   if (!user) {
     redirect(302, AppRoute.ADMIN_USERS);

@@ -7,14 +7,16 @@
   import { searchUsersAdmin, type UserAdminResponseDto } from '@immich/sdk';
   import { Button, CommandPaletteContext, Icon } from '@immich/ui';
   import { mdiInfinity } from '@mdi/js';
+  import type { Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
-  import type { PageData } from './$types';
+  import type { LayoutData } from './$types';
 
   type Props = {
-    data: PageData;
+    children?: Snippet;
+    data: LayoutData;
   };
 
-  let { data }: Props = $props();
+  let { children, data }: Props = $props();
 
   let allUsers: UserAdminResponseDto[] = $state(data.allUsers);
 
@@ -91,3 +93,5 @@
     </section>
   </section>
 </AdminPageLayout>
+
+{@render children?.()}
