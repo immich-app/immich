@@ -56,7 +56,7 @@ export class CliService extends BaseService {
     const state = { isMaintenanceMode: false as const };
     await this.systemMetadataRepository.set(SystemMetadataKey.MaintenanceMode, state);
 
-    sendOneShotAppRestart(state);
+    await sendOneShotAppRestart(state);
 
     return {
       alreadyDisabled: false,
@@ -89,7 +89,7 @@ export class CliService extends BaseService {
       secret,
     });
 
-    sendOneShotAppRestart({
+    await sendOneShotAppRestart({
       isMaintenanceMode: true,
     });
 

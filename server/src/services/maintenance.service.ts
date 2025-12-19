@@ -31,7 +31,8 @@ export class MaintenanceService extends BaseService {
   }
 
   @OnEvent({ name: 'AppRestart', server: true })
-  onRestart(): void {
+  onRestart(_: undefined, ack: (ok: 'ok') => void): void {
+    ack('ok');
     this.appRepository.exitApp();
   }
 
