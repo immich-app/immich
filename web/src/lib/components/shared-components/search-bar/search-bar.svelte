@@ -313,18 +313,6 @@
       />
     </div>
 
-    <div class="absolute inset-y-0 {showClearIcon ? 'end-14' : 'end-2'} flex items-center ps-6 transition-all">
-      <IconButton
-        aria-label={$t('show_search_options')}
-        shape="round"
-        icon={mdiTune}
-        onclick={onFilterClick}
-        size="medium"
-        color="secondary"
-        variant="ghost"
-      />
-    </div>
-
     {#if searchStore.isSearchEnabled}
       <div
         id={searchTypeId}
@@ -363,6 +351,18 @@
         </div>
       </div>
     {/if}
+
+    <div class="absolute inset-y-0 {showClearIcon ? 'end-14' : 'end-2'} flex items-center ps-6 transition-all">
+      <IconButton
+        aria-label={$t('show_search_options')}
+        shape="round"
+        icon={mdiTune}
+        onclick={onFilterClick}
+        size="medium"
+        color="secondary"
+        variant="ghost"
+      />
+    </div>
 
     {#if showClearIcon}
       <div class="absolute inset-y-0 end-0 flex items-center pe-2">
