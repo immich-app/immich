@@ -27,6 +27,10 @@ export class ViewRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING, FolderContentOrder.Name] })
+  @GenerateSql({
+    params: [DummyValue.UUID, DummyValue.STRING, FolderContentOrder.Date],
+    name: 'getAssetsByOriginalPath (date order)',
+  })
   async getAssetsByOriginalPath(
     userId: string,
     partialPath: string,
