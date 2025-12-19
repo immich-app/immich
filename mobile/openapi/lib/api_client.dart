@@ -326,6 +326,10 @@ class ApiClient {
           return CreateProfileImageResponseDto.fromJson(value);
         case 'DatabaseBackupConfig':
           return DatabaseBackupConfig.fromJson(value);
+        case 'DatabaseBackupDeleteDto':
+          return DatabaseBackupDeleteDto.fromJson(value);
+        case 'DatabaseBackupListResponseDto':
+          return DatabaseBackupListResponseDto.fromJson(value);
         case 'DownloadArchiveInfo':
           return DownloadArchiveInfo.fromJson(value);
         case 'DownloadInfoDto':
@@ -384,8 +388,14 @@ class ApiClient {
           return MaintenanceActionTypeTransformer().decode(value);
         case 'MaintenanceAuthDto':
           return MaintenanceAuthDto.fromJson(value);
+        case 'MaintenanceDetectInstallResponseDto':
+          return MaintenanceDetectInstallResponseDto.fromJson(value);
+        case 'MaintenanceDetectInstallStorageFolderDto':
+          return MaintenanceDetectInstallStorageFolderDto.fromJson(value);
         case 'MaintenanceLoginDto':
           return MaintenanceLoginDto.fromJson(value);
+        case 'MaintenanceStatusResponseDto':
+          return MaintenanceStatusResponseDto.fromJson(value);
         case 'ManualJobName':
           return ManualJobNameTypeTransformer().decode(value);
         case 'MapMarkerResponseDto':
@@ -608,6 +618,8 @@ class ApiClient {
           return StackUpdateDto.fromJson(value);
         case 'StatisticsSearchDto':
           return StatisticsSearchDto.fromJson(value);
+        case 'StorageFolder':
+          return StorageFolderTypeTransformer().decode(value);
         case 'SyncAckDeleteDto':
           return SyncAckDeleteDto.fromJson(value);
         case 'SyncAckDto':
