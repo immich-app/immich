@@ -612,6 +612,10 @@ export const utils = {
     ]).promise;
   },
 
+  async mkFolder(path: string) {
+    return executeCommand('docker', ['exec', 'immich-e2e-server', 'mkdir', '-p', path]).promise;
+  },
+
   resetAdminConfig: async (accessToken: string) => {
     const defaultConfig = await getConfigDefaults({ headers: asBearerAuth(accessToken) });
     await updateConfig({ systemConfigDto: defaultConfig }, { headers: asBearerAuth(accessToken) });
