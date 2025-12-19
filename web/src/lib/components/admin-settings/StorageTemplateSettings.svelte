@@ -12,7 +12,7 @@
   import { systemConfigManager } from '$lib/managers/system-config-manager.svelte';
   import { handleSystemConfigSave } from '$lib/services/system-config.service';
   import { user } from '$lib/stores/user.store';
-  import { getStorageTemplateOptions, type SystemConfigTemplateStorageOptionDto } from '@immich/sdk';
+  import { FolderContentOrder, getStorageTemplateOptions, type SystemConfigTemplateStorageOptionDto } from '@immich/sdk';
   import { LoadingSpinner } from '@immich/ui';
   import handlebar from 'handlebars';
   import * as luxon from 'luxon';
@@ -157,8 +157,8 @@
           desc={$t('admin.folder_content_order_description')}
           bind:value={configToEdit.storageTemplate.folderContentOrder}
           options={[
-            { value: 'name', text: $t('admin.folder_content_order_name') },
-            { value: 'date', text: $t('admin.folder_content_order_date') },
+            { value: FolderContentOrder.Name, text: $t('admin.folder_content_order_name') },
+            { value: FolderContentOrder.Date, text: $t('admin.folder_content_order_date') },
           ]}
           isEdited={configToEdit.storageTemplate.folderContentOrder !== config.storageTemplate.folderContentOrder}
           {disabled}
