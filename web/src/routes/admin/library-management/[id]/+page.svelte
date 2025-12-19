@@ -1,7 +1,7 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import emptyFoldersUrl from '$lib/assets/empty-folders.svg';
-  import HeaderActionButton from '$lib/components/HeaderActionButton.svelte';
+  import AdminCard from '$lib/components/AdminCard.svelte';
   import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
   import OnEvents from '$lib/components/OnEvents.svelte';
   import ServerStatisticsCard from '$lib/components/server-statistics/ServerStatisticsCard.svelte';
@@ -15,18 +15,7 @@
     getLibraryFolderActions,
   } from '$lib/services/library.service';
   import { getBytesWithUnit } from '$lib/utils/byte-units';
-  import {
-    Card,
-    CardBody,
-    CardHeader,
-    CardTitle,
-    Code,
-    CommandPaletteContext,
-    Container,
-    Heading,
-    Icon,
-    modalManager,
-  } from '@immich/ui';
+  import { Code, CommandPaletteContext, Container, Heading, modalManager } from '@immich/ui';
   import { mdiCameraIris, mdiChartPie, mdiFilterMinusOutline, mdiFolderOutline, mdiPlayCircle } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
@@ -64,77 +53,53 @@
         <ServerStatisticsCard icon={mdiPlayCircle} title={$t('videos')} value={statistics.videos} />
         <ServerStatisticsCard icon={mdiChartPie} title={$t('usage')} value={storageUsage} {unit} />
       </div>
-      <Card color="secondary">
-        <CardHeader>
-          <div class="flex w-full justify-between items-center px-4 py-2">
-            <div class="flex gap-2 text-primary">
-              <Icon icon={mdiFolderOutline} size="1.5rem" />
-              <CardTitle>{$t('folders')}</CardTitle>
-            </div>
-            <HeaderActionButton action={AddFolder} />
-          </div>
-        </CardHeader>
-        <CardBody>
-          <div class="px-4 pb-7">
-            {#if library.importPaths.length === 0}
-              <EmptyPlaceholder
-                src={emptyFoldersUrl}
-                text={$t('admin.library_folder_description')}
-                fullWidth
-                onClick={() => modalManager.show(LibraryFolderAddModal, { library })}
-              />
-            {:else}
-              <table class="w-full">
-                <tbody>
-                  {#each library.importPaths as folder (folder)}
-                    {@const { Edit, Delete } = getLibraryFolderActions($t, library, folder)}
-                    <tr class="h-12">
-                      <td>
-                        <Code>{folder}</Code>
-                      </td>
-                      <td class="flex gap-2 justify-end">
-                        <TableButton action={Edit} />
-                        <TableButton action={Delete} />
-                      </td>
-                    </tr>
-                  {/each}
-                </tbody>
-              </table>
-            {/if}
-          </div>
-        </CardBody>
-      </Card>
-      <Card color="secondary">
-        <CardHeader>
-          <div class="flex w-full justify-between items-center px-4 py-2">
-            <div class="flex gap-2 text-primary">
-              <Icon icon={mdiFilterMinusOutline} size="1.5rem" />
-              <CardTitle>{$t('exclusion_pattern')}</CardTitle>
-            </div>
-            <HeaderActionButton action={AddExclusionPattern} />
-          </div>
-        </CardHeader>
-        <CardBody>
-          <div class="px-4 pb-7">
-            <table class="w-full">
-              <tbody>
-                {#each library.exclusionPatterns as exclusionPattern (exclusionPattern)}
-                  {@const { Edit, Delete } = getLibraryExclusionPatternActions($t, library, exclusionPattern)}
-                  <tr class="h-12">
-                    <td>
-                      <Code>{exclusionPattern}</Code>
-                    </td>
-                    <td class="flex gap-2 justify-end">
-                      <TableButton action={Edit} />
-                      <TableButton action={Delete} />
-                    </td>
-                  </tr>
-                {/each}
-              </tbody>
-            </table>
-          </div>
-        </CardBody>
-      </Card>
+
+      <AdminCard icon={mdiFolderOutline} title={$t('folders')} headerAction={AddFolder}>
+        {#if library.importPaths.length === 0}
+          <EmptyPlaceholder
+            src={emptyFoldersUrl}
+            text={$t('admin.library_folder_description')}
+            fullWidth
+            onClick={() => modalManager.show(LibraryFolderAddModal, { library })}
+          />
+        {:else}
+          <table class="w-full">
+            <tbody>
+              {#each library.importPaths as folder (folder)}
+                {@const { Edit, Delete } = getLibraryFolderActions($t, library, folder)}
+                <tr class="h-12">
+                  <td>
+                    <Code>{folder}</Code>
+                  </td>
+                  <td class="flex gap-2 justify-end">
+                    <TableButton action={Edit} />
+                    <TableButton action={Delete} />
+                  </td>
+                </tr>
+              {/each}
+            </tbody>
+          </table>
+        {/if}
+      </AdminCard>
+
+      <AdminCard icon={mdiFilterMinusOutline} title={$t('exclusion_pattern')} headerAction={AddExclusionPattern}>
+        <table class="w-full">
+          <tbody>
+            {#each library.exclusionPatterns as exclusionPattern (exclusionPattern)}
+              {@const { Edit, Delete } = getLibraryExclusionPatternActions($t, library, exclusionPattern)}
+              <tr class="h-12">
+                <td>
+                  <Code>{exclusionPattern}</Code>
+                </td>
+                <td class="flex gap-2 justify-end">
+                  <TableButton action={Edit} />
+                  <TableButton action={Delete} />
+                </td>
+              </tr>
+            {/each}
+          </tbody>
+        </table>
+      </AdminCard>
     </div>
   </Container>
 </AdminPageLayout>
