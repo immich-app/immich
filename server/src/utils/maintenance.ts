@@ -19,7 +19,10 @@ export async function sendOneShotAppRestart(state: AppRestartEvent): Promise<voi
 
   // => corresponds to notification.service.ts#onAppRestart
   server.emit('AppRestartV1', state, async () => {
-    await server.serverSideEmitWithAck('AppRestart', state);
+    const responses = await server.serverSideEmitWithAck('AppRestart', state);
+    if (responses.some((response) => response !== 'ok')) {
+      throw new Error("One or more node(s) returned a non-'ok' response to our restart request!");
+    }
 
     pubClient.disconnect();
     subClient.disconnect();
