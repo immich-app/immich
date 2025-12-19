@@ -26,6 +26,7 @@
   let showClearIcon = $derived(value.length > 0);
 
   let input = $state<HTMLInputElement>();
+  let searchTypeMenu = $state<HTMLDivElement>();
   let searchHistoryBox = $state<ReturnType<typeof SearchHistoryBox>>();
   let showSuggestions = $state(false);
   let isSearchSuggestions = $state(false);
@@ -173,8 +174,12 @@
     searchHistoryBox?.clearSelection();
   };
 
-  const toggleSearchTypeDropdown = () => {
+  const toggleSearchTypeDropdown = async () => {
     showSearchTypeDropdown = !showSearchTypeDropdown;
+    if (showSearchTypeDropdown) {
+      await tick();
+      searchTypeMenu?.focus();
+    }
   };
 
   const closeSearchTypeDropdown = () => {
@@ -327,7 +332,7 @@
         class:max-md:hidden={value}
         class:end-28={value.length > 0}
       >
-        <div class="relative">
+        <div class="relative" use:focusOutside={{ onFocusOut: closeSearchTypeDropdown }}>
           <Button
             class="bg-immich-primary text-white dark:bg-immich-dark-primary/90 dark:text-black/75 rounded-full px-3 py-1 text-xs hover:opacity-80 transition-opacity cursor-pointer"
             onclick={toggleSearchTypeDropdown}
@@ -339,12 +344,13 @@
 
           {#if showSearchTypeDropdown}
             <div
+              bind:this={searchTypeMenu}
               class="absolute top-full right-0 mt-1 bg-white dark:bg-immich-dark-gray border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg py-1 min-w-32 z-9999"
-              use:focusOutside={{ onFocusOut: closeSearchTypeDropdown }}
             >
               {#each searchTypes as searchType (searchType.value)}
                 <button
                   type="button"
+                  tabindex="0"
                   class="w-full text-left px-3 py-2 text-xs hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors
                          {currentSearchType === searchType.value ? 'bg-gray-100 dark:bg-gray-700' : ''}"
                   onclick={() => selectSearchType(searchType.value)}
