@@ -1,12 +1,12 @@
 import { goto } from '$app/navigation';
 import { AppRoute } from '$lib/constants';
 import { eventManager } from '$lib/managers/event-manager.svelte';
+import LibraryCreateModal from '$lib/modals/LibraryCreateModal.svelte';
 import LibraryExclusionPatternAddModal from '$lib/modals/LibraryExclusionPatternAddModal.svelte';
 import LibraryExclusionPatternEditModal from '$lib/modals/LibraryExclusionPatternEditModal.svelte';
 import LibraryFolderAddModal from '$lib/modals/LibraryFolderAddModal.svelte';
 import LibraryFolderEditModal from '$lib/modals/LibraryFolderEditModal.svelte';
 import LibraryRenameModal from '$lib/modals/LibraryRenameModal.svelte';
-import LibraryUserPickerModal from '$lib/modals/LibraryUserPickerModal.svelte';
 import { handleError } from '$lib/utils/handle-error';
 import { getFormatter } from '$lib/utils/i18n';
 import {
@@ -17,6 +17,7 @@ import {
   runQueueCommandLegacy,
   scanLibrary,
   updateLibrary,
+  type CreateLibraryDto,
   type LibraryResponseDto,
 } from '@immich/sdk';
 import { modalManager, toastManager, type ActionItem } from '@immich/ui';
@@ -37,7 +38,7 @@ export const getLibrariesActions = ($t: MessageFormatter, libraries: LibraryResp
     title: $t('create_library'),
     type: $t('command'),
     icon: mdiPlusBoxOutline,
-    onAction: () => handleCreateLibrary(),
+    onAction: () => handleShowLibraryCreateModal(),
     shortcuts: { shift: true, key: 'n' },
   };
 
@@ -152,20 +153,17 @@ export const handleViewLibrary = async (library: LibraryResponseDto) => {
   await goto(`${AppRoute.ADMIN_LIBRARY_MANAGEMENT}/${library.id}`);
 };
 
-export const handleCreateLibrary = async () => {
+export const handleCreateLibrary = async (dto: CreateLibraryDto) => {
   const $t = await getFormatter();
 
-  const ownerId = await modalManager.show(LibraryUserPickerModal, {});
-  if (!ownerId) {
-    return;
-  }
-
   try {
-    const createdLibrary = await createLibrary({ createLibraryDto: { ownerId } });
-    eventManager.emit('LibraryCreate', createdLibrary);
-    toastManager.success($t('admin.library_created', { values: { library: createdLibrary.name } }));
+    const library = await createLibrary({ createLibraryDto: dto });
+    eventManager.emit('LibraryCreate', library);
+    toastManager.success($t('admin.library_created', { values: { library: library.name } }));
+    return true;
   } catch (error) {
     handleError(error, $t('errors.unable_to_create_library'));
+    return false;
   }
 };
 
@@ -358,4 +356,8 @@ const handleDeleteExclusionPattern = async (library: LibraryResponseDto, exclusi
   } catch (error) {
     handleError(error, $t('errors.unable_to_update_library'));
   }
+};
+
+export const handleShowLibraryCreateModal = async () => {
+  await modalManager.show(LibraryCreateModal, {});
 };

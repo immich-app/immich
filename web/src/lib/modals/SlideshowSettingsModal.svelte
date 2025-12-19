@@ -14,7 +14,7 @@
   } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import SettingDropdown from '../components/shared-components/settings/setting-dropdown.svelte';
-  import { SlideshowLook, SlideshowNavigation, slideshowStore } from '../stores/slideshow.store';
+  import { SlideshowLook, SlideshowNavigation, SlideshowState, slideshowStore } from '../stores/slideshow.store';
 
   const {
     slideshowDelay,
@@ -23,6 +23,7 @@
     slideshowLook,
     slideshowTransition,
     slideshowAutoplay,
+    slideshowState,
   } = slideshowStore;
 
   interface Props {
@@ -69,6 +70,7 @@
     $slideshowLook = tempSlideshowLook;
     $slideshowTransition = tempSlideshowTransition;
     $slideshowAutoplay = tempSlideshowAutoplay;
+    $slideshowState = SlideshowState.PlaySlideshow;
     onClose();
   };
 </script>

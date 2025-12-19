@@ -37,7 +37,13 @@ export class MaintenanceWebsocketRepository implements OnGatewayConnection, OnGa
 
   afterInit(websocketServer: Server) {
     this.logger.log('Initialized websocket server');
-    websocketServer.on('AppRestart', () => this.appRepository.exitApp());
+
+    websocketServer.on('AppRestart', (event: ArgsOf<'AppRestart'>, ack?: (ok: 'ok') => void) => {
+      this.logger.log(`Restarting due to event... ${JSON.stringify(event)}`);
+
+      ack?.('ok');
+      this.appRepository.exitApp();
+    });
   }
 
   clientBroadcast<T extends keyof ClientEventMap>(event: T, ...data: ClientEventMap[T]) {
