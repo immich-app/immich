@@ -549,7 +549,7 @@
   "asset_troubleshoot": "Diagnóstico del elemento",
   "asset_uploaded": "Subido",
   "asset_uploading": "Subiendo…",
-  "asset_viewer_settings_subtitle": "Administra las configuracioens de tu visor de fotos",
+  "asset_viewer_settings_subtitle": "Administra las configuraciones de tu visor de fotos",
   "asset_viewer_settings_title": "Visor de Archivos",
   "assets": "elementos",
   "assets_added_count": "{count, plural, one {# elemento añadido} other {# elementos añadidos}}",
