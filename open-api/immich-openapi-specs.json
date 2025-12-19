@@ -16554,6 +16554,13 @@
         ],
         "type": "object"
       },
+      "FolderContentOrder": {
+        "enum": [
+          "name",
+          "date"
+        ],
+        "type": "string"
+      },
       "FoldersResponse": {
         "properties": {
           "enabled": {
@@ -21972,6 +21979,13 @@
           "enabled": {
             "type": "boolean"
           },
+          "folderContentOrder": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/FolderContentOrder"
+              }
+            ]
+          },
           "hashVerificationEnabled": {
             "type": "boolean"
           },
@@ -21981,6 +21995,7 @@
         },
         "required": [
           "enabled",
+          "folderContentOrder",
           "hashVerificationEnabled",
           "template"
         ],

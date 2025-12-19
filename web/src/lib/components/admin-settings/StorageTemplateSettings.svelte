@@ -4,6 +4,7 @@
   import SupportedVariablesPanel from '$lib/components/admin-settings/SupportedVariablesPanel.svelte';
   import SettingButtonsRow from '$lib/components/shared-components/settings/SystemConfigButtonRow.svelte';
   import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
+  import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import { AppRoute, SettingInputFieldType } from '$lib/constants';
   import FormatMessage from '$lib/elements/FormatMessage.svelte';
@@ -149,6 +150,19 @@
           isEdited={!(
             configToEdit.storageTemplate.hashVerificationEnabled === config.storageTemplate.hashVerificationEnabled
           )}
+        />
+
+        <SettingSelect
+          label={$t('admin.folder_content_order')}
+          desc={$t('admin.folder_content_order_description')}
+          bind:value={configToEdit.storageTemplate.folderContentOrder}
+          options={[
+            { value: 'name', text: $t('admin.folder_content_order_name') },
+            { value: 'date', text: $t('admin.folder_content_order_date') },
+          ]}
+          isEdited={configToEdit.storageTemplate.folderContentOrder !== config.storageTemplate.folderContentOrder}
+          {disabled}
+          name="folder-content-order"
         />
       {/if}
 
