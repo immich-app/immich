@@ -75,7 +75,7 @@ export class IntegrityController {
 
   @Get('report/:id/file')
   @Endpoint({
-    summary: 'Download flagged file file',
+    summary: 'Download flagged file',
     description: 'Download the orphan/broken file if one exists',
     history: new HistoryBuilder().added('v9.9.9').alpha('v9.9.9'),
   })
