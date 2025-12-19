@@ -4,6 +4,7 @@
   import SupportedVariablesPanel from '$lib/components/admin-settings/SupportedVariablesPanel.svelte';
   import SettingButtonsRow from '$lib/components/shared-components/settings/SystemConfigButtonRow.svelte';
   import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
+  import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import { AppRoute, SettingInputFieldType } from '$lib/constants';
   import FormatMessage from '$lib/elements/FormatMessage.svelte';
@@ -11,7 +12,7 @@
   import { systemConfigManager } from '$lib/managers/system-config-manager.svelte';
   import { handleSystemConfigSave } from '$lib/services/system-config.service';
   import { user } from '$lib/stores/user.store';
-  import { getStorageTemplateOptions, type SystemConfigTemplateStorageOptionDto } from '@immich/sdk';
+  import { FolderContentOrder, getStorageTemplateOptions, type SystemConfigTemplateStorageOptionDto } from '@immich/sdk';
   import { LoadingSpinner } from '@immich/ui';
   import handlebar from 'handlebars';
   import * as luxon from 'luxon';
@@ -149,6 +150,19 @@
           isEdited={!(
             configToEdit.storageTemplate.hashVerificationEnabled === config.storageTemplate.hashVerificationEnabled
           )}
+        />
+
+        <SettingSelect
+          label={$t('admin.folder_content_order')}
+          desc={$t('admin.folder_content_order_description')}
+          bind:value={configToEdit.storageTemplate.folderContentOrder}
+          options={[
+            { value: FolderContentOrder.Name, text: $t('admin.folder_content_order_name') },
+            { value: FolderContentOrder.Date, text: $t('admin.folder_content_order_date') },
+          ]}
+          isEdited={configToEdit.storageTemplate.folderContentOrder !== config.storageTemplate.folderContentOrder}
+          {disabled}
+          name="folder-content-order"
         />
       {/if}
 

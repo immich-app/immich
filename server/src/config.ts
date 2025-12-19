@@ -3,6 +3,7 @@ import {
   AudioCodec,
   Colorspace,
   CQMode,
+  FolderContentOrder,
   ImageFormat,
   LogLevel,
   OAuthTokenEndpointAuthMethod,
@@ -121,6 +122,7 @@ export interface SystemConfig {
   storageTemplate: {
     enabled: boolean;
     hashVerificationEnabled: boolean;
+    folderContentOrder: FolderContentOrder;
     template: string;
   };
   image: {
@@ -311,6 +313,7 @@ export const defaults = Object.freeze<SystemConfig>({
   storageTemplate: {
     enabled: false,
     hashVerificationEnabled: true,
+    folderContentOrder: FolderContentOrder.Name,
     template: '{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}',
   },
   image: {

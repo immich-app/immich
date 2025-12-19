@@ -1581,6 +1581,7 @@ export type SystemConfigServerDto = {
 };
 export type SystemConfigStorageTemplateDto = {
     enabled: boolean;
+    folderContentOrder: FolderContentOrder;
     hashVerificationEnabled: boolean;
     template: string;
 };
@@ -5638,6 +5639,10 @@ export enum LogLevel {
 export enum OAuthTokenEndpointAuthMethod {
     ClientSecretPost = "client_secret_post",
     ClientSecretBasic = "client_secret_basic"
+}
+export enum FolderContentOrder {
+    Name = "name",
+    Date = "date"
 }
 export enum TriggerType {
     AssetCreate = "AssetCreate",

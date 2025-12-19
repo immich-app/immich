@@ -20,6 +20,7 @@ import {
   AudioCodec,
   CQMode,
   Colorspace,
+  FolderContentOrder,
   ImageFormat,
   LogLevel,
   OAuthTokenEndpointAuthMethod,
@@ -545,6 +546,9 @@ class SystemConfigStorageTemplateDto {
   @IsNotEmpty()
   @IsString()
   template!: string;
+
+  @ValidateEnum({ enum: FolderContentOrder, name: 'FolderContentOrder' })
+  folderContentOrder!: FolderContentOrder;
 }
 
 export class SystemConfigTemplateStorageOptionDto {

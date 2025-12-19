@@ -873,3 +873,8 @@ export enum PluginTriggerType {
   AssetCreate = 'AssetCreate',
   PersonRecognized = 'PersonRecognized',
 }
+
+export enum FolderContentOrder {
+  Name = 'name',
+  Date = 'date',
+}
