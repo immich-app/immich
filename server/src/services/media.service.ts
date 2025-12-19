@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { FACE_THUMBNAIL_SIZE, JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
+import { FACE_THUMBNAIL_SIZE, JOBS_ASSET_PAGINATION_SIZE, TILE_TARGET_SIZE } from 'src/constants';
 import { StorageCore, ThumbnailPathEntity } from 'src/cores/storage.core';
 import { Exif } from 'src/database';
 import { OnEvent, OnJob } from 'src/decorators';
@@ -45,6 +45,15 @@ interface UpsertFileOptions {
   assetId: string;
   type: AssetFileType;
   path: string;
+}
+
+interface TileInfo {
+  path: string;
+  info: {
+    width: number;
+    cols: number;
+    rows: number;
+  };
 }
 
 @Injectable()
@@ -149,6 +158,8 @@ export class MediaService extends BaseService {
     await this.storageCore.moveAssetImage(asset, AssetPathType.FullSize, image.fullsize.format);
     await this.storageCore.moveAssetImage(asset, AssetPathType.Preview, image.preview.format);
     await this.storageCore.moveAssetImage(asset, AssetPathType.Thumbnail, image.thumbnail.format);
+    // TODO:
+    // await this.storageCore.moveAssetImage(asset, AssetPathType.Tiles, image.???.format);
     await this.storageCore.moveAssetVideo(asset);
 
     return JobStatus.Success;
@@ -171,6 +182,7 @@ export class MediaService extends BaseService {
       previewPath: string;
       thumbnailPath: string;
       fullsizePath?: string;
+      tileInfo?: TileInfo;
       thumbhash: Buffer;
     };
     if (asset.type === AssetType.Video || asset.originalFileName.toLowerCase().endsWith('.gif')) {
@@ -184,7 +196,7 @@ export class MediaService extends BaseService {
       return JobStatus.Skipped;
     }
 
-    const { previewFile, thumbnailFile, fullsizeFile } = getAssetFiles(asset.files);
+    const { previewFile, thumbnailFile, fullsizeFile, tilesPath } = getAssetFiles(asset.files);
     const toUpsert: UpsertFileOptions[] = [];
     if (previewFile?.path !== generated.previewPath) {
       toUpsert.push({ assetId: asset.id, path: generated.previewPath, type: AssetFileType.Preview });
@@ -196,6 +208,11 @@ export class MediaService extends BaseService {
 
     if (generated.fullsizePath && fullsizeFile?.path !== generated.fullsizePath) {
       toUpsert.push({ assetId: asset.id, path: generated.fullsizePath, type: AssetFileType.FullSize });
+    }
+
+    if (generated.tileInfo?.path && tilesPath?.path !== generated.tileInfo.path) {
+      // TODO: save tileInfo.info (width, cols, rows) somewhere in the db.
+      toUpsert.push({ assetId: asset.id, path: generated.tileInfo.path, type: AssetFileType.Tiles });
     }
 
     if (toUpsert.length > 0) {
@@ -220,6 +237,12 @@ export class MediaService extends BaseService {
         // did not generate a new fullsize image, delete the existing record
         await this.assetRepository.deleteFiles([fullsizeFile]);
       }
+    }
+
+    if (tilesPath && tilesPath.path !== generated.tileInfo?.path) {
+      this.logger.debug(`Deleting old tiles for asset ${asset.id}`);
+      pathsToDelete.push(tilesPath.path.replace('.dz', '.dzi'));
+      await this.storageRepository.unlinkDir(tilesPath.path.replace('.dz', '_files'), { recursive: true });
     }
 
     if (pathsToDelete.length > 0) {
@@ -316,6 +339,39 @@ export class MediaService extends BaseService {
       );
     }
 
+    // TODO: probably extract to helper method
+    let tileInfo: TileInfo | undefined;
+    if (asset.exifInfo.projectionType === 'EQUIRECTANGULAR') {
+      // TODO: get uncropped width from asset (FullPanoWidthPixels if present).
+      const originalSize = 12_988;
+      // Get the number of tiles at the exact target size, rounded up (to at least 1 tile).
+      const numTilesExact = Math.ceil(originalSize / TILE_TARGET_SIZE);
+      // Then round up to the nearest power of 2 (photo-sphere-viewer requirement).
+      const numTiles = Math.pow(2, Math.ceil(Math.log2(numTilesExact)));
+      const tileSize = Math.ceil(originalSize / numTiles);
+
+      const tileOptions = {
+        format: image.preview.format,
+        size: tileSize,
+        quality: image.preview.quality,
+        ...thumbnailOptions,
+      };
+
+      tileInfo = {
+        path: StorageCore.getImagePath(asset, AssetPathType.Tiles, 'dz'),
+        info: {
+          width: originalSize,
+          cols: numTiles,
+          rows: numTiles / 2,
+        }
+      };
+      // TODO: reverse comment state
+      // TODO: handle cropped panoramas here. Tile as normal but save some offset?
+      // promises.push(this.mediaRepository.generateTiles(data, tileOptions, tileInfo.path));
+      console.log(tileOptions, tileInfo);
+      tileInfo = undefined;
+    }
+
     const outputs = await Promise.all(promises);
 
     if (asset.exifInfo.projectionType === 'EQUIRECTANGULAR') {
@@ -328,7 +384,7 @@ export class MediaService extends BaseService {
       await Promise.all(promises);
     }
 
-    return { previewPath, thumbnailPath, fullsizePath, thumbhash: outputs[0] as Buffer };
+    return { previewPath, thumbnailPath, fullsizePath, tileInfo, thumbhash: outputs[0] as Buffer };
   }
 
   @OnJob({ name: JobName.PersonGenerateThumbnail, queue: QueueName.ThumbnailGeneration })

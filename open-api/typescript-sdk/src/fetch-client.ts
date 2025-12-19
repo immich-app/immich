@@ -2653,6 +2653,27 @@ export function viewAsset({ id, key, size, slug }: {
     }));
 }
 /**
+ * Get an image tile
+ */
+export function getAssetTile({ col, id, key, level, row, slug }: {
+    col: number;
+    id: string;
+    key?: string;
+    level: number;
+    row: number;
+    slug?: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchBlob<{
+        status: 200;
+        data: Blob;
+    }>(`/assets/${encodeURIComponent(id)}/tiles/${encodeURIComponent(level)}/${encodeURIComponent(col)}/${encodeURIComponent(row)}${QS.query(QS.explode({
+        key,
+        slug
+    }))}`, {
+        ...opts
+    }));
+}
+/**
  * Play asset video
  */
 export function playAssetVideo({ id, key, slug }: {

@@ -11,6 +11,7 @@
     type PluginConstructor,
   } from '@photo-sphere-viewer/core';
   import '@photo-sphere-viewer/core/index.css';
+  import { EquirectangularTilesAdapter } from '@photo-sphere-viewer/equirectangular-tiles-adapter';
   import { MarkersPlugin } from '@photo-sphere-viewer/markers-plugin';
   import '@photo-sphere-viewer/markers-plugin/index.css';
   import { ResolutionPlugin } from '@photo-sphere-viewer/resolution-plugin';
@@ -26,21 +27,39 @@
     strokeLinejoin: 'round',
   };
 
+  const SHARED_VIEWER_CONFIG = {
+    touchmoveTwoFingers: false,
+    mousewheelCtrlKey: false,
+    navbar: false,
+    minFov: 15,
+    maxFov: 90,
+    zoomSpeed: 0.5,
+    fisheye: false,
+  };
+
+  type TileConfig = {
+    width: number;
+    cols: number;
+    rows: number;
+  };
+
   type Props = {
-    panorama: string | { source: string };
+    baseUrl: string | { source: string };
+    tileUrl?: (col: number, row: number, level: number) => string | null;
+    tileconfig?: TileConfig;
     originalPanorama?: string | { source: string };
     adapter?: AdapterConstructor | [AdapterConstructor, unknown];
     plugins?: (PluginConstructor | [PluginConstructor, unknown])[];
-    navbar?: boolean;
     zoomToggle?: (() => void) | null;
   };
 
   let {
-    panorama,
+    baseUrl,
+    tileUrl,
+    tileconfig,
     originalPanorama,
     adapter = EquirectangularAdapter,
     plugins = [],
-    navbar = false,
     zoomToggle = $bindable(),
   }: Props = $props();
 
@@ -116,20 +135,32 @@
       return;
     }
 
-    viewer = new Viewer({
-      adapter,
-      plugins: [
-        MarkersPlugin,
-        SettingsPlugin,
-        [
-          ResolutionPlugin,
-          {
+    if (tileconfig) {
+      viewer = new Viewer({
+        adapter: EquirectangularTilesAdapter,
+        panorama: {
+          ...tileconfig,
+          baseUrl,
+          tileUrl,
+        },
+        plugins: [MarkersPlugin, ...plugins],
+        container,
+        ...SHARED_VIEWER_CONFIG,
+      });
+    } else {
+      viewer = new Viewer({
+        adapter,
+        panorama: baseUrl,
+        plugins: [
+          MarkersPlugin,
+          SettingsPlugin,
+          ResolutionPlugin.withConfig({
             defaultResolution: $alwaysLoadOriginalFile && originalPanorama ? 'original' : 'default',
             resolutions: [
               {
                 id: 'default',
                 label: 'Default',
-                panorama,
+                panorama: baseUrl,
               },
               ...(originalPanorama
                 ? [
@@ -141,39 +172,34 @@
                   ]
                 : []),
             ],
-          },
+          }),
+          ...plugins,
         ],
-        ...plugins,
-      ],
-      container,
-      touchmoveTwoFingers: false,
-      mousewheelCtrlKey: false,
-      navbar,
-      minFov: 15,
-      maxFov: 90,
-      zoomSpeed: 0.5,
-      fisheye: false,
-    });
-    const resolutionPlugin = viewer.getPlugin<ResolutionPlugin>(ResolutionPlugin);
-    const zoomHandler = ({ zoomLevel }: events.ZoomUpdatedEvent) => {
-      // zoomLevel range: [0, 100]
-      photoZoomState.set({
-        ...$photoZoomState,
-        currentZoom: zoomLevel / 50,
+        container,
+        ...SHARED_VIEWER_CONFIG,
       });
 
-      if (Math.round(zoomLevel) >= 75 && !hasChangedResolution) {
-        // Replace the preview with the original
-        void resolutionPlugin.setResolution('original');
-        hasChangedResolution = true;
+      const resolutionPlugin = viewer.getPlugin<ResolutionPlugin>(ResolutionPlugin);
+      const zoomHandler = ({ zoomLevel }: events.ZoomUpdatedEvent) => {
+        // zoomLevel range: [0, 100]
+        photoZoomState.set({
+          ...$photoZoomState,
+          currentZoom: zoomLevel / 50,
+        });
+
+        if (Math.round(zoomLevel) >= 75 && !hasChangedResolution) {
+          // Replace the preview with the original
+          void resolutionPlugin.setResolution('original');
+          hasChangedResolution = true;
+        }
+      };
+
+      if (originalPanorama && !$alwaysLoadOriginalFile) {
+        viewer.addEventListener(events.ZoomUpdatedEvent.type, zoomHandler, { passive: true });
       }
-    };
 
-    if (originalPanorama && !$alwaysLoadOriginalFile) {
-      viewer.addEventListener(events.ZoomUpdatedEvent.type, zoomHandler, { passive: true });
+      return () => viewer.removeEventListener(events.ZoomUpdatedEvent.type, zoomHandler);
     }
-
-    return () => viewer.removeEventListener(events.ZoomUpdatedEvent.type, zoomHandler);
   });
 
   onDestroy(() => {

@@ -1,8 +1,7 @@
 <script lang="ts">
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { getAssetOriginalUrl, getAssetThumbnailUrl } from '$lib/utils';
+  import { getAssetOriginalUrl, getAssetThumbnailUrl, getAssetTileUrl } from '$lib/utils';
   import { isWebCompatibleImage } from '$lib/utils/asset-utils';
-  import { AssetMediaSize, viewAsset, type AssetResponseDto } from '@immich/sdk';
+  import { AssetMediaSize, type AssetResponseDto } from '@immich/sdk';
   import { LoadingSpinner } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
@@ -14,19 +13,31 @@
 
   let { asset, zoomToggle = $bindable() }: Props = $props();
 
-  const loadAssetData = async (id: string) => {
-    const data = await viewAsset({ ...authManager.params, id, size: AssetMediaSize.Preview });
-    return URL.createObjectURL(data);
-  };
+  const tileconfig =
+    asset.id === '6e899018-32fe-4fd5-b6ac-b3a525b8e61f'
+      ? {
+          width: 12_988,
+          // height: 35,
+          cols: 16,
+          rows: 8,
+        }
+      : undefined;
+
+  const baseUrl = getAssetThumbnailUrl({ id: asset.id, size: AssetMediaSize.Preview, cacheKey: asset.thumbhash });
+  // TODO: determine whether to return null based on 1. if asset has tiles, 2. if tile is inside 'cropped' bounds.
+  const tileUrl = (col: number, row: number, level: number) =>
+    tileconfig ? getAssetTileUrl({ id: asset.id, level, col, row, cacheKey: asset.thumbhash }) : null;
 </script>
 
 <div transition:fade={{ duration: 150 }} class="flex h-full select-none place-content-center place-items-center">
-  {#await Promise.all([loadAssetData(asset.id), import('./photo-sphere-viewer-adapter.svelte')])}
+  {#await import('./photo-sphere-viewer-adapter.svelte')}
     <LoadingSpinner />
-  {:then [data, { default: PhotoSphereViewer }]}
+  {:then { default: PhotoSphereViewer }}
     <PhotoSphereViewer
       bind:zoomToggle
-      panorama={data}
+      {baseUrl}
+      {tileUrl}
+      {tileconfig}
       originalPanorama={isWebCompatibleImage(asset)
         ? getAssetOriginalUrl(asset.id)
         : getAssetThumbnailUrl({ id: asset.id, size: AssetMediaSize.Fullsize, cacheKey: asset.thumbhash })}
