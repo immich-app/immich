@@ -42,7 +42,7 @@ export class CliService extends BaseService {
     await this.updateConfig(config);
   }
 
-  async disableMaintenanceMode(): Promise<{ alreadyDisabled: boolean }> {
+  async disableMaintenanceMode(sendAppRestartCallback = sendOneShotAppRestart): Promise<{ alreadyDisabled: boolean }> {
     const currentState = await this.systemMetadataRepository
       .get(SystemMetadataKey.MaintenanceMode)
       .then((state) => state ?? { isMaintenanceMode: false as const });
@@ -56,14 +56,16 @@ export class CliService extends BaseService {
     const state = { isMaintenanceMode: false as const };
     await this.systemMetadataRepository.set(SystemMetadataKey.MaintenanceMode, state);
 
-    await sendOneShotAppRestart(state);
+    await sendAppRestartCallback(state);
 
     return {
       alreadyDisabled: false,
     };
   }
 
-  async enableMaintenanceMode(): Promise<{ authUrl: string; alreadyEnabled: boolean }> {
+  async enableMaintenanceMode(
+    sendAppRestartCallback = sendOneShotAppRestart,
+  ): Promise<{ authUrl: string; alreadyEnabled: boolean }> {
     const { server } = await this.getConfig({ withCache: true });
     const baseUrl = getExternalDomain(server);
 
@@ -89,7 +91,7 @@ export class CliService extends BaseService {
       secret,
     });
 
-    await sendOneShotAppRestart({
+    await sendAppRestartCallback({
       isMaintenanceMode: true,
     });
 

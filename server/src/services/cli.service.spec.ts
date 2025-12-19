@@ -5,6 +5,8 @@ import { factory } from 'test/small.factory';
 import { newTestService, ServiceMocks } from 'test/utils';
 import { describe, it } from 'vitest';
 
+const mockSendRestart = vi.fn();
+
 describe(CliService.name, () => {
   let sut: CliService;
   let mocks: ServiceMocks;
@@ -85,7 +87,7 @@ describe(CliService.name, () => {
   describe('disableMaintenanceMode', () => {
     it('should not do anything if not in maintenance mode', async () => {
       mocks.systemMetadata.get.mockResolvedValue({ isMaintenanceMode: false });
-      await expect(sut.disableMaintenanceMode()).resolves.toEqual({
+      await expect(sut.disableMaintenanceMode(mockSendRestart)).resolves.toEqual({
         alreadyDisabled: true,
       });
 
@@ -95,7 +97,7 @@ describe(CliService.name, () => {
 
     it('should disable maintenance mode', async () => {
       mocks.systemMetadata.get.mockResolvedValue({ isMaintenanceMode: true, secret: 'secret' });
-      await expect(sut.disableMaintenanceMode()).resolves.toEqual({
+      await expect(sut.disableMaintenanceMode(mockSendRestart)).resolves.toEqual({
         alreadyDisabled: false,
       });
 
@@ -108,7 +110,7 @@ describe(CliService.name, () => {
   describe('enableMaintenanceMode', () => {
     it('should not do anything if in maintenance mode', async () => {
       mocks.systemMetadata.get.mockResolvedValue({ isMaintenanceMode: true, secret: 'secret' });
-      await expect(sut.enableMaintenanceMode()).resolves.toEqual(
+      await expect(sut.enableMaintenanceMode(mockSendRestart)).resolves.toEqual(
         expect.objectContaining({
           alreadyEnabled: true,
         }),
@@ -120,7 +122,7 @@ describe(CliService.name, () => {
 
     it('should enable maintenance mode', async () => {
       mocks.systemMetadata.get.mockResolvedValue({ isMaintenanceMode: false });
-      await expect(sut.enableMaintenanceMode()).resolves.toEqual(
+      await expect(sut.enableMaintenanceMode(mockSendRestart)).resolves.toEqual(
         expect.objectContaining({
           alreadyEnabled: false,
         }),
@@ -137,7 +139,7 @@ describe(CliService.name, () => {
     it('should return a valid login URL', async () => {
       mocks.systemMetadata.get.mockResolvedValue({ isMaintenanceMode: true, secret: 'secret' });
 
-      const result = await sut.enableMaintenanceMode();
+      const result = await sut.enableMaintenanceMode(mockSendRestart);
 
       expect(result).toEqual(
         expect.objectContaining({
