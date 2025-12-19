@@ -145,18 +145,15 @@ export class IntegrityRepository {
           )
           .as('allPaths'),
       )
-      .leftJoin(
-        'integrity_report',
-        (join) =>
-          join
-            .on('integrity_report.type', '=', IntegrityReportType.OrphanFile)
-            .on((eb) =>
-              eb.or([
-                eb('integrity_report.assetId', '=', eb.ref('allPaths.assetId')),
-                eb('integrity_report.fileAssetId', '=', eb.ref('allPaths.fileAssetId')),
-              ]),
-            ),
-        // .onRef('integrity_report.path', '=', 'allPaths.path')
+      .leftJoin('integrity_report', (join) =>
+        join
+          .on('integrity_report.type', '=', IntegrityReportType.OrphanFile)
+          .on((eb) =>
+            eb.or([
+              eb('integrity_report.assetId', '=', eb.ref('allPaths.assetId')),
+              eb('integrity_report.fileAssetId', '=', eb.ref('allPaths.fileAssetId')),
+            ]),
+          ),
       )
       .select(['allPaths.path as path', 'allPaths.assetId', 'allPaths.fileAssetId', 'integrity_report.id as reportId'])
       .stream();
@@ -170,7 +167,6 @@ export class IntegrityRepository {
       .leftJoin('integrity_report', (join) =>
         join
           .onRef('integrity_report.assetId', '=', 'asset.id')
-          // .onRef('integrity_report.path', '=', 'asset.originalPath')
           .on('integrity_report.type', '=', IntegrityReportType.ChecksumFail),
       )
       .select([
