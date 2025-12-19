@@ -104,24 +104,6 @@ export class IntegrityService extends BaseService {
         start: checksumFiles.enabled,
       });
     }
-
-    // debug: run on boot
-    setTimeout(() => {
-      void this.jobRepository.queue({
-        name: JobName.IntegrityOrphanedFilesQueueAll,
-        data: {},
-      });
-
-      void this.jobRepository.queue({
-        name: JobName.IntegrityMissingFilesQueueAll,
-        data: {},
-      });
-
-      void this.jobRepository.queue({
-        name: JobName.IntegrityChecksumFiles,
-        data: {},
-      });
-    }, 1000);
   }
 
   @OnEvent({ name: 'ConfigUpdate', server: true })
