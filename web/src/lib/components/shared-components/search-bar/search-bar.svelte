@@ -26,7 +26,6 @@
   let showClearIcon = $derived(value.length > 0);
 
   let input = $state<HTMLInputElement>();
-  let searchTypeMenu = $state<HTMLDivElement>();
   let searchHistoryBox = $state<ReturnType<typeof SearchHistoryBox>>();
   let showSuggestions = $state(false);
   let isSearchSuggestions = $state(false);
@@ -174,12 +173,8 @@
     searchHistoryBox?.clearSelection();
   };
 
-  const toggleSearchTypeDropdown = async () => {
+  const toggleSearchTypeDropdown = () => {
     showSearchTypeDropdown = !showSearchTypeDropdown;
-    if (showSearchTypeDropdown) {
-      await tick();
-      searchTypeMenu?.focus();
-    }
   };
 
   const closeSearchTypeDropdown = () => {
@@ -332,7 +327,6 @@
 
           {#if showSearchTypeDropdown}
             <div
-              bind:this={searchTypeMenu}
               class="absolute top-full right-0 mt-1 bg-white dark:bg-immich-dark-gray border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg py-1 min-w-32 z-9999"
             >
               {#each searchTypes as searchType (searchType.value)}
