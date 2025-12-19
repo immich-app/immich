@@ -1,7 +1,7 @@
 import { authenticate, requestServerInfo } from '$lib/utils/auth';
 import { getFormatter } from '$lib/utils/i18n';
 import { getAllLibraries, getLibraryStatistics, getUserAdmin, searchUsersAdmin } from '@immich/sdk';
-import type { PageLoad } from './$types';
+import type { LayoutLoad } from './$types';
 
 export const load = (async ({ url }) => {
   await authenticate(url, { admin: true });
@@ -26,4 +26,4 @@ export const load = (async ({ url }) => {
       title: $t('external_libraries'),
     },
   };
-}) satisfies PageLoad;
+}) satisfies LayoutLoad;

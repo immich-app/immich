@@ -1,12 +1,10 @@
 import { goto } from '$app/navigation';
 import { AppRoute } from '$lib/constants';
 import { eventManager } from '$lib/managers/event-manager.svelte';
-import LibraryCreateModal from '$lib/modals/LibraryCreateModal.svelte';
 import LibraryExclusionPatternAddModal from '$lib/modals/LibraryExclusionPatternAddModal.svelte';
 import LibraryExclusionPatternEditModal from '$lib/modals/LibraryExclusionPatternEditModal.svelte';
 import LibraryFolderAddModal from '$lib/modals/LibraryFolderAddModal.svelte';
 import LibraryFolderEditModal from '$lib/modals/LibraryFolderEditModal.svelte';
-import LibraryRenameModal from '$lib/modals/LibraryRenameModal.svelte';
 import { handleError } from '$lib/utils/handle-error';
 import { getFormatter } from '$lib/utils/i18n';
 import {
@@ -19,6 +17,7 @@ import {
   updateLibrary,
   type CreateLibraryDto,
   type LibraryResponseDto,
+  type UpdateLibraryDto,
 } from '@immich/sdk';
 import { modalManager, toastManager, type ActionItem } from '@immich/ui';
 import { mdiPencilOutline, mdiPlusBoxOutline, mdiSync, mdiTrashCanOutline } from '@mdi/js';
@@ -38,7 +37,7 @@ export const getLibrariesActions = ($t: MessageFormatter, libraries: LibraryResp
     title: $t('create_library'),
     type: $t('command'),
     icon: mdiPlusBoxOutline,
-    onAction: () => handleShowLibraryCreateModal(),
+    onAction: () => goto(AppRoute.ADMIN_LIBRARIES_NEW),
     shortcuts: { shift: true, key: 'n' },
   };
 
@@ -46,11 +45,11 @@ export const getLibrariesActions = ($t: MessageFormatter, libraries: LibraryResp
 };
 
 export const getLibraryActions = ($t: MessageFormatter, library: LibraryResponseDto) => {
-  const Rename: ActionItem = {
+  const Edit: ActionItem = {
     icon: mdiPencilOutline,
     type: $t('command'),
-    title: $t('rename'),
-    onAction: () => modalManager.show(LibraryRenameModal, { library }),
+    title: $t('edit'),
+    onAction: () => goto(`${AppRoute.ADMIN_LIBRARIES}/${library.id}/edit`),
     shortcuts: { key: 'r' },
   };
 
@@ -85,7 +84,7 @@ export const getLibraryActions = ($t: MessageFormatter, library: LibraryResponse
     shortcuts: { shift: true, key: 'r' },
   };
 
-  return { Rename, Delete, AddFolder, AddExclusionPattern, Scan };
+  return { Edit, Delete, AddFolder, AddExclusionPattern, Scan };
 };
 
 export const getLibraryFolderActions = ($t: MessageFormatter, library: LibraryResponseDto, folder: string) => {
@@ -150,7 +149,7 @@ const handleScanLibrary = async (library: LibraryResponseDto) => {
 };
 
 export const handleViewLibrary = async (library: LibraryResponseDto) => {
-  await goto(`${AppRoute.ADMIN_LIBRARY_MANAGEMENT}/${library.id}`);
+  await goto(`${AppRoute.ADMIN_LIBRARIES}/${library.id}`);
 };
 
 export const handleCreateLibrary = async (dto: CreateLibraryDto) => {
@@ -160,33 +159,24 @@ export const handleCreateLibrary = async (dto: CreateLibraryDto) => {
     const library = await createLibrary({ createLibraryDto: dto });
     eventManager.emit('LibraryCreate', library);
     toastManager.success($t('admin.library_created', { values: { library: library.name } }));
-    return true;
+    return library;
   } catch (error) {
     handleError(error, $t('errors.unable_to_create_library'));
-    return false;
   }
 };
 
-export const handleRenameLibrary = async (library: { id: string }, name?: string) => {
+export const handleUpdateLibrary = async (library: LibraryResponseDto, dto: UpdateLibraryDto) => {
   const $t = await getFormatter();
 
-  if (!name) {
-    return false;
-  }
-
   try {
-    const updatedLibrary = await updateLibrary({
-      id: library.id,
-      updateLibraryDto: { name },
-    });
+    const updatedLibrary = await updateLibrary({ id: library.id, updateLibraryDto: dto });
     eventManager.emit('LibraryUpdate', updatedLibrary);
     toastManager.success($t('admin.library_updated'));
+    return true;
   } catch (error) {
     handleError(error, $t('errors.unable_to_update_library'));
     return false;
   }
-
-  return true;
 };
 
 const handleDeleteLibrary = async (library: LibraryResponseDto) => {
@@ -356,8 +346,4 @@ const handleDeleteExclusionPattern = async (library: LibraryResponseDto, exclusi
   } catch (error) {
     handleError(error, $t('errors.unable_to_update_library'));
   }
-};
-
-export const handleShowLibraryCreateModal = async () => {
-  await modalManager.show(LibraryCreateModal, {});
 };
