@@ -1,7 +1,7 @@
 import { Kysely } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { DummyValue, GenerateSql } from 'src/decorators';
-import { AssetVisibility } from 'src/enum';
+import { AssetVisibility, FolderContentOrder } from 'src/enum';
 import { DB } from 'src/schema';
 import { asUuid, withExif } from 'src/utils/database';
 
@@ -26,11 +26,15 @@ export class ViewRepository {
     return results.map((row) => row.directoryPath.replaceAll(/\/$/g, ''));
   }
 
-  @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING] })
-  async getAssetsByOriginalPath(userId: string, partialPath: string) {
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING, FolderContentOrder.Name] })
+  async getAssetsByOriginalPath(
+    userId: string,
+    partialPath: string,
+    order: FolderContentOrder = FolderContentOrder.Name,
+  ) {
     const normalizedPath = partialPath.replaceAll(/\/$/g, '');
 
-    return this.db
+    let query = this.db
       .selectFrom('asset')
       .selectAll('asset')
       .$call(withExif)
@@ -41,11 +45,16 @@ export class ViewRepository {
       .where('fileModifiedAt', 'is not', null)
       .where('localDateTime', 'is not', null)
       .where('originalPath', 'like', `%${normalizedPath}/%`)
-      .where('originalPath', 'not like', `%${normalizedPath}/%/%`)
-      .orderBy(
-        (eb) => eb.fn('regexp_replace', ['asset.originalPath', eb.val('.*/(.+)'), eb.val(String.raw`\1`)]),
-        'asc',
-      )
-      .execute();
+      .where('originalPath', 'not like', `%${normalizedPath}/%/%`);
+
+    query =
+      order === FolderContentOrder.Name
+        ? query.orderBy(
+            (eb) => eb.fn('regexp_replace', ['asset.originalPath', eb.val('.*/(.+)'), eb.val(String.raw`\1`)]),
+            'asc',
+          )
+        : query.orderBy('fileCreatedAt', 'asc');
+
+    return query.execute();
   }
 }

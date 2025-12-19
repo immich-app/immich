@@ -1,4 +1,5 @@
 import { mapAsset } from 'src/dtos/asset-response.dto';
+import { FolderContentOrder } from 'src/enum';
 import { ViewService } from 'src/services/view.service';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
@@ -44,6 +45,11 @@ describe(ViewService.name, () => {
       const result = await sut.getAssetsByOriginalPath(authStub.admin, path);
       expect(result).toEqual(mockAssetReponseDto);
       await expect(mocks.view.getAssetsByOriginalPath(authStub.admin.user.id, path)).resolves.toEqual(mockAssets);
+      expect(mocks.view.getAssetsByOriginalPath).toHaveBeenCalledWith(
+        authStub.admin.user.id,
+        path,
+        FolderContentOrder.Name,
+      );
     });
   });
 });

@@ -4,6 +4,7 @@ import {
   AudioCodec,
   Colorspace,
   CQMode,
+  FolderContentOrder,
   ImageFormat,
   LogLevel,
   OAuthTokenEndpointAuthMethod,
@@ -159,6 +160,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
   storageTemplate: {
     enabled: false,
     hashVerificationEnabled: true,
+    folderContentOrder: FolderContentOrder.Name,
     template: '{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}',
   },
   image: {

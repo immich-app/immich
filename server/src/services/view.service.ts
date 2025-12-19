@@ -10,7 +10,12 @@ export class ViewService extends BaseService {
   }
 
   async getAssetsByOriginalPath(auth: AuthDto, path: string): Promise<AssetResponseDto[]> {
-    const assets = await this.viewRepository.getAssetsByOriginalPath(auth.user.id, path);
+    const { storageTemplate } = await this.getConfig({ withCache: true });
+    const assets = await this.viewRepository.getAssetsByOriginalPath(
+      auth.user.id,
+      path,
+      storageTemplate.folderContentOrder,
+    );
     return assets.map((asset) => mapAsset(asset, { auth }));
   }
 }
