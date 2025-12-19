@@ -178,7 +178,7 @@ class MaintenanceAdminApi {
     return null;
   }
 
-  /// Download flagged file file
+  /// Download flagged file
   ///
   /// Download the orphan/broken file if one exists
   ///
@@ -213,7 +213,7 @@ class MaintenanceAdminApi {
     );
   }
 
-  /// Download flagged file file
+  /// Download flagged file
   ///
   /// Download the orphan/broken file if one exists
   ///

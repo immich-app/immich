@@ -164,7 +164,7 @@ Class | Method | HTTP request | Description
 *MaintenanceAdminApi* | [**deleteIntegrityReport**](doc//MaintenanceAdminApi.md#deleteintegrityreport) | **DELETE** /admin/integrity/report/{id} | Delete integrity report item
 *MaintenanceAdminApi* | [**getIntegrityReport**](doc//MaintenanceAdminApi.md#getintegrityreport) | **POST** /admin/integrity/report | Get integrity report by type
 *MaintenanceAdminApi* | [**getIntegrityReportCsv**](doc//MaintenanceAdminApi.md#getintegrityreportcsv) | **GET** /admin/integrity/report/{type}/csv | Export integrity report by type as CSV
-*MaintenanceAdminApi* | [**getIntegrityReportFile**](doc//MaintenanceAdminApi.md#getintegrityreportfile) | **GET** /admin/integrity/report/{id}/file | Download flagged file file
+*MaintenanceAdminApi* | [**getIntegrityReportFile**](doc//MaintenanceAdminApi.md#getintegrityreportfile) | **GET** /admin/integrity/report/{id}/file | Download flagged file
 *MaintenanceAdminApi* | [**getIntegrityReportSummary**](doc//MaintenanceAdminApi.md#getintegrityreportsummary) | **GET** /admin/integrity/summary | Get integrity report summary
 *MaintenanceAdminApi* | [**maintenanceLogin**](doc//MaintenanceAdminApi.md#maintenancelogin) | **POST** /admin/maintenance/login | Log into maintenance mode
 *MaintenanceAdminApi* | [**setMaintenanceMode**](doc//MaintenanceAdminApi.md#setmaintenancemode) | **POST** /admin/maintenance | Set maintenance mode

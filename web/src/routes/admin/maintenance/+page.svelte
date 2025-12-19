@@ -79,6 +79,12 @@
     }
   }
 
+  async function runAllJobs(refreshOnly?: boolean) {
+    for (const reportType of Object.values(IntegrityReportType)) {
+      await runJob(reportType, refreshOnly);
+    }
+  }
+
   let running = true;
 
   onMount(async () => {
@@ -112,7 +118,23 @@
 >
   <section id="setting-content" class="flex place-content-center sm:mx-4">
     <section class="w-full pb-28 sm:w-5/6 md:w-[850px]">
-      <p class="text-sm dark:text-immich-dark-fg uppercase">{$t('admin.maintenance_integrity_report')}</p>
+      <HStack>
+        <p class="text-sm dark:text-immich-dark-fg uppercase">{$t('admin.maintenance_integrity_report')}</p>
+        <Button
+          size="tiny"
+          variant="ghost"
+          onclick={() => runAllJobs()}
+          class="self-end mt-1"
+          disabled={jobs?.integrityCheck.queueStatus.isActive}>{$t('admin.maintenance_integrity_check_all')}</Button
+        >
+        <Button
+          size="tiny"
+          variant="ghost"
+          onclick={() => runAllJobs(true)}
+          class="self-end mt-1"
+          disabled={jobs?.integrityCheck.queueStatus.isActive}>{$t('refresh')}</Button
+        ></HStack
+      >
 
       <div class="mt-5 flex justify-between max-lg:flex-wrap gap-4">
         {#each TYPES as reportType (reportType)}
@@ -127,7 +149,7 @@
                   size="tiny"
                   variant="ghost"
                   class="self-end mt-1"
-                  disabled={jobs?.backgroundTask.queueStatus.isActive}
+                  disabled={jobs?.integrityCheck.queueStatus.isActive}
                   >{$t('admin.maintenance_integrity_check_all')}</Button
                 >
                 <Button
@@ -135,7 +157,7 @@
                   size="tiny"
                   variant="ghost"
                   class="self-end mt-1"
-                  disabled={jobs?.backgroundTask.queueStatus.isActive}>{$t('refresh')}</Button
+                  disabled={jobs?.integrityCheck.queueStatus.isActive}>{$t('refresh')}</Button
                 >
                 <Button
                   href={`${AppRoute.ADMIN_MAINTENANCE_INTEGRITY_REPORT + reportType}`}

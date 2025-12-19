@@ -1914,7 +1914,7 @@ export function deleteIntegrityReport({ id }: {
     }));
 }
 /**
- * Download flagged file file
+ * Download flagged file
  */
 export function getIntegrityReportFile({ id }: {
     id: string;

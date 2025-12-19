@@ -468,7 +468,7 @@
             "api_key": []
           }
         ],
-        "summary": "Download flagged file file",
+        "summary": "Download flagged file",
         "tags": [
           "Maintenance (admin)"
         ],
