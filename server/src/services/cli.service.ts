@@ -5,7 +5,7 @@ import { MaintenanceAuthDto } from 'src/dtos/maintenance.dto';
 import { UserAdminResponseDto, mapUserAdmin } from 'src/dtos/user.dto';
 import { SystemMetadataKey } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
-import { createMaintenanceLoginUrl, generateMaintenanceSecret, sendOneShotAppRestart } from 'src/utils/maintenance';
+import { createMaintenanceLoginUrl, generateMaintenanceSecret } from 'src/utils/maintenance';
 import { getExternalDomain } from 'src/utils/misc';
 
 @Injectable()
@@ -42,7 +42,7 @@ export class CliService extends BaseService {
     await this.updateConfig(config);
   }
 
-  async disableMaintenanceMode(sendAppRestartCallback = sendOneShotAppRestart): Promise<{ alreadyDisabled: boolean }> {
+  async disableMaintenanceMode(): Promise<{ alreadyDisabled: boolean }> {
     const currentState = await this.systemMetadataRepository
       .get(SystemMetadataKey.MaintenanceMode)
       .then((state) => state ?? { isMaintenanceMode: false as const });
@@ -55,17 +55,14 @@ export class CliService extends BaseService {
 
     const state = { isMaintenanceMode: false as const };
     await this.systemMetadataRepository.set(SystemMetadataKey.MaintenanceMode, state);
-
-    await sendAppRestartCallback(state);
+    await this.appRepository.sendOneShotAppRestart(state);
 
     return {
       alreadyDisabled: false,
     };
   }
 
-  async enableMaintenanceMode(
-    sendAppRestartCallback = sendOneShotAppRestart,
-  ): Promise<{ authUrl: string; alreadyEnabled: boolean }> {
+  async enableMaintenanceMode(): Promise<{ authUrl: string; alreadyEnabled: boolean }> {
     const { server } = await this.getConfig({ withCache: true });
     const baseUrl = getExternalDomain(server);
 
@@ -91,9 +88,7 @@ export class CliService extends BaseService {
       secret,
     });
 
-    await sendAppRestartCallback({
-      isMaintenanceMode: true,
-    });
+    await this.appRepository.sendOneShotAppRestart(state);
 
     return {
       authUrl: await createMaintenanceLoginUrl(baseUrl, payload, secret),

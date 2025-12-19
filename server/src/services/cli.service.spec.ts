@@ -5,8 +5,6 @@ import { factory } from 'test/small.factory';
 import { newTestService, ServiceMocks } from 'test/utils';
 import { describe, it } from 'vitest';
 
-const mockSendRestart = vi.fn();
-
 describe(CliService.name, () => {
   let sut: CliService;
   let mocks: ServiceMocks;
@@ -87,20 +85,22 @@ describe(CliService.name, () => {
   describe('disableMaintenanceMode', () => {
     it('should not do anything if not in maintenance mode', async () => {
       mocks.systemMetadata.get.mockResolvedValue({ isMaintenanceMode: false });
-      await expect(sut.disableMaintenanceMode(mockSendRestart)).resolves.toEqual({
+      await expect(sut.disableMaintenanceMode()).resolves.toEqual({
         alreadyDisabled: true,
       });
 
+      expect(mocks.app.sendOneShotAppRestart).toHaveBeenCalledTimes(0);
       expect(mocks.systemMetadata.set).toHaveBeenCalledTimes(0);
       expect(mocks.event.emit).toHaveBeenCalledTimes(0);
     });
 
     it('should disable maintenance mode', async () => {
       mocks.systemMetadata.get.mockResolvedValue({ isMaintenanceMode: true, secret: 'secret' });
-      await expect(sut.disableMaintenanceMode(mockSendRestart)).resolves.toEqual({
+      await expect(sut.disableMaintenanceMode()).resolves.toEqual({
         alreadyDisabled: false,
       });
 
+      expect(mocks.app.sendOneShotAppRestart).toHaveBeenCalled();
       expect(mocks.systemMetadata.set).toHaveBeenCalledWith(SystemMetadataKey.MaintenanceMode, {
         isMaintenanceMode: false,
       });
@@ -110,24 +110,26 @@ describe(CliService.name, () => {
   describe('enableMaintenanceMode', () => {
     it('should not do anything if in maintenance mode', async () => {
       mocks.systemMetadata.get.mockResolvedValue({ isMaintenanceMode: true, secret: 'secret' });
-      await expect(sut.enableMaintenanceMode(mockSendRestart)).resolves.toEqual(
+      await expect(sut.enableMaintenanceMode()).resolves.toEqual(
         expect.objectContaining({
           alreadyEnabled: true,
         }),
       );
 
+      expect(mocks.app.sendOneShotAppRestart).toHaveBeenCalledTimes(0);
       expect(mocks.systemMetadata.set).toHaveBeenCalledTimes(0);
       expect(mocks.event.emit).toHaveBeenCalledTimes(0);
     });
 
     it('should enable maintenance mode', async () => {
       mocks.systemMetadata.get.mockResolvedValue({ isMaintenanceMode: false });
-      await expect(sut.enableMaintenanceMode(mockSendRestart)).resolves.toEqual(
+      await expect(sut.enableMaintenanceMode()).resolves.toEqual(
         expect.objectContaining({
           alreadyEnabled: false,
         }),
       );
 
+      expect(mocks.app.sendOneShotAppRestart).toHaveBeenCalled();
       expect(mocks.systemMetadata.set).toHaveBeenCalledWith(SystemMetadataKey.MaintenanceMode, {
         isMaintenanceMode: true,
         secret: expect.stringMatching(/^\w{128}$/),
@@ -139,7 +141,7 @@ describe(CliService.name, () => {
     it('should return a valid login URL', async () => {
       mocks.systemMetadata.get.mockResolvedValue({ isMaintenanceMode: true, secret: 'secret' });
 
-      const result = await sut.enableMaintenanceMode(mockSendRestart);
+      const result = await sut.enableMaintenanceMode();
 
       expect(result).toEqual(
         expect.objectContaining({
