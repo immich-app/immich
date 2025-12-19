@@ -88,7 +88,9 @@ export class CliService extends BaseService {
       secret,
     });
 
-    await this.appRepository.sendOneShotAppRestart(state);
+    await this.appRepository.sendOneShotAppRestart({
+      isMaintenanceMode: true,
+    });
 
     return {
       authUrl: await createMaintenanceLoginUrl(baseUrl, payload, secret),
