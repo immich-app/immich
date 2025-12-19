@@ -9,7 +9,7 @@ export const load = (async ({ url }) => {
 
   return {
     meta: {
-      title: $t('admin.library_details'),
+      title: $t('admin.user_details'),
     },
   };
 }) satisfies PageLoad;

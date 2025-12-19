@@ -18,19 +18,19 @@
 
   let { children, data }: Props = $props();
 
-  let allUsers: UserAdminResponseDto[] = $state(data.allUsers);
+  let users: UserAdminResponseDto[] = $state(data.users);
 
   const onUpdate = async (user: UserAdminResponseDto) => {
-    const index = allUsers.findIndex(({ id }) => id === user.id);
+    const index = users.findIndex(({ id }) => id === user.id);
     if (index === -1) {
-      allUsers = await searchUsersAdmin({ withDeleted: true });
+      users = await searchUsersAdmin({ withDeleted: true });
     } else {
-      allUsers[index] = user;
+      users[index] = user;
     }
   };
 
   const onUserAdminDeleted = ({ id: userId }: { id: string }) => {
-    allUsers = allUsers.filter(({ id }) => id !== userId);
+    users = users.filter(({ id }) => id !== userId);
   };
 
   const { Create } = $derived(getUserAdminsActions($t));
@@ -62,7 +62,7 @@
           </tr>
         </thead>
         <tbody class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
-          {#each allUsers as user (user.id)}
+          {#each users as user (user.id)}
             <tr
               class="flex h-20 overflow-hidden w-full place-items-center text-center dark:text-immich-dark-fg {user.deletedAt
                 ? 'bg-red-300 dark:bg-red-900'

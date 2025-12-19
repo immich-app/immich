@@ -55,7 +55,7 @@
 
     isCreatingUser = true;
 
-    const response = await handleCreateUserAdmin({
+    const user = await handleCreateUserAdmin({
       email,
       password,
       shouldChangePassword,
@@ -65,8 +65,8 @@
       isAdmin,
     });
 
-    if (response) {
-      await goto(`${AppRoute.ADMIN_USERS}/${response.id}`);
+    if (user) {
+      await goto(`${AppRoute.ADMIN_USERS}/${user.id}`, { replaceState: true });
     }
 
     isCreatingUser = false;

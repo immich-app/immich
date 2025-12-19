@@ -4,7 +4,6 @@ import { eventManager } from '$lib/managers/event-manager.svelte';
 import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
 import PasswordResetSuccessModal from '$lib/modals/PasswordResetSuccessModal.svelte';
 import UserDeleteConfirmModal from '$lib/modals/UserDeleteConfirmModal.svelte';
-import UserEditModal from '$lib/modals/UserEditModal.svelte';
 import UserRestoreConfirmModal from '$lib/modals/UserRestoreConfirmModal.svelte';
 import { user as authUser } from '$lib/stores/user.store';
 import type { HeaderButtonActionItem } from '$lib/types';
@@ -50,7 +49,7 @@ export const getUserAdminActions = ($t: MessageFormatter, user: UserAdminRespons
   const Update: ActionItem = {
     icon: mdiPencilOutline,
     title: $t('edit'),
-    onAction: () => modalManager.show(UserEditModal, { user }),
+    onAction: () => goto(`${AppRoute.ADMIN_USERS}/${user.id}/edit`),
   };
 
   const Delete: ActionItem = {

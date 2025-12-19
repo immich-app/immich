@@ -6,11 +6,11 @@ import type { LayoutLoad } from './$types';
 export const load = (async ({ url }) => {
   await authenticate(url, { admin: true });
   await requestServerInfo();
-  const allUsers = await searchUsersAdmin({ withDeleted: true });
+  const users = await searchUsersAdmin({ withDeleted: true });
   const $t = await getFormatter();
 
   return {
-    allUsers,
+    users,
     meta: {
       title: $t('admin.user_management'),
     },
