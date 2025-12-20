@@ -22,6 +22,8 @@ export enum AppRoute {
   ADMIN_USERS = '/admin/users',
   ADMIN_LIBRARY_MANAGEMENT = '/admin/library-management',
   ADMIN_SETTINGS = '/admin/system-settings',
+  ADMIN_MAINTENANCE_SETTINGS = '/admin/maintenance',
+  ADMIN_MAINTENANCE_INTEGRITY_REPORT = '/admin/maintenance/integrity-report/',
   ADMIN_STATS = '/admin/server-status',
   ADMIN_QUEUES = '/admin/queues',
   ADMIN_REPAIR = '/admin/repair',

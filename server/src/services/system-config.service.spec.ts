@@ -41,6 +41,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
     [QueueName.Notification]: { concurrency: 5 },
     [QueueName.Ocr]: { concurrency: 1 },
     [QueueName.Workflow]: { concurrency: 5 },
+    [QueueName.IntegrityCheck]: { concurrency: 1 },
   },
   backup: {
     database: {
@@ -71,6 +72,22 @@ const updatedConfig = Object.freeze<SystemConfig>({
     accel: TranscodeHardwareAcceleration.Disabled,
     accelDecode: false,
     tonemap: ToneMapping.Hable,
+  },
+  integrityChecks: {
+    orphanedFiles: {
+      enabled: true,
+      cronExpression: '0 03 * * *',
+    },
+    missingFiles: {
+      enabled: true,
+      cronExpression: '0 03 * * *',
+    },
+    checksumFiles: {
+      enabled: true,
+      cronExpression: '0 03 * * *',
+      timeLimit: 60 * 60 * 1000,
+      percentageLimit: 1,
+    },
   },
   logging: {
     enabled: true,

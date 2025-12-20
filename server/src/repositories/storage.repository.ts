@@ -93,6 +93,10 @@ export class StorageRepository {
     return { stream: archive, addFile, finalize };
   }
 
+  createPlainReadStream(filepath: string): Readable {
+    return createReadStream(filepath);
+  }
+
   async createReadStream(filepath: string, mimeType?: string | null): Promise<ImmichReadStream> {
     const { size } = await fs.stat(filepath);
     await fs.access(filepath, constants.R_OK);

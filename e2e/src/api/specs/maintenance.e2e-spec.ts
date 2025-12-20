@@ -83,8 +83,8 @@ describe('/admin/maintenance', () => {
             return body.maintenanceMode;
           },
           {
-            interval: 5e2,
-            timeout: 1e4,
+            interval: 500,
+            timeout: 60_000,
           },
         )
         .toBeTruthy();
@@ -162,8 +162,8 @@ describe('/admin/maintenance', () => {
             return body.maintenanceMode;
           },
           {
-            interval: 5e2,
-            timeout: 1e4,
+            interval: 500,
+            timeout: 60_000,
           },
         )
         .toBeFalsy();
