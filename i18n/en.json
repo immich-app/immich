@@ -1074,7 +1074,8 @@
     "unable_to_update_settings": "Unable to update settings",
     "unable_to_update_timeline_display_status": "Unable to update timeline display status",
     "unable_to_update_user": "Unable to update user",
-    "unable_to_upload_file": "Unable to upload file"
+    "unable_to_upload_file": "Unable to upload file",
+    "unable_to_set_rating": "Unable to set rating"
   },
   "exclusion_pattern": "Exclusion pattern",
   "exif": "Exif",
@@ -1667,10 +1668,12 @@
   "purchase_settings_server_activated": "The server product key is managed by the admin",
   "query_asset_id": "Query Asset ID",
   "queue_status": "Queuing {count}/{total}",
+  "rate_asset": "Rate Asset",
   "rating": "Star rating",
   "rating_clear": "Clear rating",
   "rating_count": "{count, plural, one {# star} other {# stars}}",
   "rating_description": "Display the EXIF rating in the info panel",
+  "rating_set": "Rating set to {rating, plural, one {# star} other {# stars}}"
   "reaction_options": "Reaction options",
   "read_changelog": "Read Changelog",
   "readonly_mode_disabled": "Read-only mode disabled",
@@ -2231,6 +2234,7 @@
   "yes": "Yes",
   "you_dont_have_any_shared_links": "You don't have any shared links",
   "your_wifi_name": "Your Wi-Fi name",
+  "zero_to_clear_rating": "press 0 to clear asset rating",
   "zoom_image": "Zoom Image",
   "zoom_to_bounds": "Zoom to bounds"
 }
