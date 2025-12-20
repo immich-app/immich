@@ -1,5 +1,5 @@
+import { assetCacheManager } from '$lib/managers/AssetCacheManager.svelte';
 import { CancellableTask } from '$lib/utils/cancellable-task';
-import { getAssetOcr } from '@immich/sdk';
 
 export type OcrBoundingBox = {
   id: string;
@@ -38,7 +38,7 @@ class OcrManager {
       this.#cleared = false;
     }
     await this.#ocrLoader.execute(async () => {
-      this.#data = await getAssetOcr({ id });
+      this.#data = await assetCacheManager.getAssetOcr(id);
     }, false);
   }
 

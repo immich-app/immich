@@ -1,3 +1,4 @@
+import { replyIsImageUrlCached } from './broadcast-channel';
 import { get, put } from './cache';
 
 const pendingRequests = new Map<string, AbortController>();
@@ -44,7 +45,7 @@ export const handleRequest = async (request: URL | Request) => {
     const response = await fetch(request, { signal: cancelToken.signal });
 
     assertResponse(response);
-    put(cacheKey, response);
+    await put(cacheKey, response);
 
     return response;
   } catch (error) {
@@ -70,4 +71,11 @@ export const handleCancel = (url: URL) => {
 
   pendingRequest.abort();
   pendingRequests.delete(cacheKey);
+};
+
+export const handleIsUrlCached = async (url: URL) => {
+  const cacheKey = getCacheKey(url);
+
+  const isImageUrlCached = !!(await get(cacheKey));
+  replyIsImageUrlCached(url.pathname + url.search + url.hash, isImageUrlCached);
 };

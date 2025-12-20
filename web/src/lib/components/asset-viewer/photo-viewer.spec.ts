@@ -1,7 +1,7 @@
 import { getAnimateMock } from '$lib/__mocks__/animate.mock';
 import PhotoViewer from '$lib/components/asset-viewer/photo-viewer.svelte';
 import * as utils from '$lib/utils';
-import { AssetMediaSize, AssetTypeEnum } from '@immich/sdk';
+import { AssetTypeEnum } from '@immich/sdk';
 import { assetFactory } from '@test-data/factories/asset-factory';
 import { sharedLinkFactory } from '@test-data/factories/shared-link-factory';
 import { render } from '@testing-library/svelte';
@@ -19,18 +19,15 @@ vi.mock('$lib/utils', async (originalImport) => {
   const meta = await originalImport<typeof import('$lib/utils')>();
   return {
     ...meta,
-    getAssetOriginalUrl: vi.fn(),
-    getAssetThumbnailUrl: vi.fn(),
+    getAssetUrl: vi.fn(),
   };
 });
 
 describe('PhotoViewer component', () => {
-  let getAssetOriginalUrlSpy: MockInstance;
-  let getAssetThumbnailUrlSpy: MockInstance;
+  let getAssetUrlSpy: MockInstance;
 
   beforeAll(() => {
-    getAssetOriginalUrlSpy = vi.spyOn(utils, 'getAssetOriginalUrl');
-    getAssetThumbnailUrlSpy = vi.spyOn(utils, 'getAssetThumbnailUrl');
+    getAssetUrlSpy = vi.spyOn(utils, 'getAssetUrl');
 
     vi.stubGlobal('cast', {
       framework: {
@@ -72,12 +69,11 @@ describe('PhotoViewer component', () => {
     });
     render(PhotoViewer, { asset });
 
-    expect(getAssetThumbnailUrlSpy).toBeCalledWith({
-      id: asset.id,
-      size: AssetMediaSize.Preview,
-      cacheKey: asset.thumbhash,
+    expect(getAssetUrlSpy).toBeCalledWith({
+      asset,
+      sharedLink: undefined,
+      forceOriginal: false,
     });
-    expect(getAssetOriginalUrlSpy).not.toBeCalled();
   });
 
   it('loads the thumbnail image for static gifs', () => {
@@ -88,12 +84,11 @@ describe('PhotoViewer component', () => {
     });
     render(PhotoViewer, { asset });
 
-    expect(getAssetThumbnailUrlSpy).toBeCalledWith({
-      id: asset.id,
-      size: AssetMediaSize.Preview,
-      cacheKey: asset.thumbhash,
+    expect(getAssetUrlSpy).toBeCalledWith({
+      asset,
+      sharedLink: undefined,
+      forceOriginal: false,
     });
-    expect(getAssetOriginalUrlSpy).not.toBeCalled();
   });
 
   it('loads the thumbnail image for static webp images', () => {
@@ -104,12 +99,11 @@ describe('PhotoViewer component', () => {
     });
     render(PhotoViewer, { asset });
 
-    expect(getAssetThumbnailUrlSpy).toBeCalledWith({
-      id: asset.id,
-      size: AssetMediaSize.Preview,
-      cacheKey: asset.thumbhash,
+    expect(getAssetUrlSpy).toBeCalledWith({
+      asset,
+      sharedLink: undefined,
+      forceOriginal: false,
     });
-    expect(getAssetOriginalUrlSpy).not.toBeCalled();
   });
 
   it('loads the original image for animated gifs', () => {
@@ -121,8 +115,11 @@ describe('PhotoViewer component', () => {
     });
     render(PhotoViewer, { asset });
 
-    expect(getAssetThumbnailUrlSpy).not.toBeCalled();
-    expect(getAssetOriginalUrlSpy).toBeCalledWith({ id: asset.id, cacheKey: asset.thumbhash });
+    expect(getAssetUrlSpy).toBeCalledWith({
+      asset,
+      sharedLink: undefined,
+      forceOriginal: false,
+    });
   });
 
   it('loads the original image for animated webp images', () => {
@@ -134,8 +131,11 @@ describe('PhotoViewer component', () => {
     });
     render(PhotoViewer, { asset });
 
-    expect(getAssetThumbnailUrlSpy).not.toBeCalled();
-    expect(getAssetOriginalUrlSpy).toBeCalledWith({ id: asset.id, cacheKey: asset.thumbhash });
+    expect(getAssetUrlSpy).toBeCalledWith({
+      asset,
+      sharedLink: undefined,
+      forceOriginal: false,
+    });
   });
 
   it('not loads original static image in shared link even when download permission is true and showMetadata permission is true', () => {
@@ -147,13 +147,11 @@ describe('PhotoViewer component', () => {
     const sharedLink = sharedLinkFactory.build({ allowDownload: true, showMetadata: true, assets: [asset] });
     render(PhotoViewer, { asset, sharedLink });
 
-    expect(getAssetThumbnailUrlSpy).toBeCalledWith({
-      id: asset.id,
-      size: AssetMediaSize.Preview,
-      cacheKey: asset.thumbhash,
+    expect(getAssetUrlSpy).toBeCalledWith({
+      asset,
+      sharedLink,
+      forceOriginal: false,
     });
-
-    expect(getAssetOriginalUrlSpy).not.toBeCalled();
   });
 
   it('loads original animated image in shared link when download permission is true and showMetadata permission is true', () => {
@@ -166,8 +164,11 @@ describe('PhotoViewer component', () => {
     const sharedLink = sharedLinkFactory.build({ allowDownload: true, showMetadata: true, assets: [asset] });
     render(PhotoViewer, { asset, sharedLink });
 
-    expect(getAssetThumbnailUrlSpy).not.toBeCalled();
-    expect(getAssetOriginalUrlSpy).toBeCalledWith({ id: asset.id, cacheKey: asset.thumbhash });
+    expect(getAssetUrlSpy).toBeCalledWith({
+      asset,
+      sharedLink,
+      forceOriginal: false,
+    });
   });
 
   it('not loads original animated image when shared link download permission is false', () => {
@@ -180,13 +181,11 @@ describe('PhotoViewer component', () => {
     const sharedLink = sharedLinkFactory.build({ allowDownload: false, assets: [asset] });
     render(PhotoViewer, { asset, sharedLink });
 
-    expect(getAssetThumbnailUrlSpy).toBeCalledWith({
-      id: asset.id,
-      size: AssetMediaSize.Preview,
-      cacheKey: asset.thumbhash,
+    expect(getAssetUrlSpy).toBeCalledWith({
+      asset,
+      sharedLink,
+      forceOriginal: false,
     });
-
-    expect(getAssetOriginalUrlSpy).not.toBeCalled();
   });
 
   it('not loads original animated image when shared link showMetadata permission is false', () => {
@@ -199,12 +198,10 @@ describe('PhotoViewer component', () => {
     const sharedLink = sharedLinkFactory.build({ showMetadata: false, assets: [asset] });
     render(PhotoViewer, { asset, sharedLink });
 
-    expect(getAssetThumbnailUrlSpy).toBeCalledWith({
-      id: asset.id,
-      size: AssetMediaSize.Preview,
-      cacheKey: asset.thumbhash,
+    expect(getAssetUrlSpy).toBeCalledWith({
+      asset,
+      sharedLink,
+      forceOriginal: false,
     });
-
-    expect(getAssetOriginalUrlSpy).not.toBeCalled();
   });
 });

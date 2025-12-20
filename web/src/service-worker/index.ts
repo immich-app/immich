@@ -37,3 +37,4 @@ sw.addEventListener('install', handleInstall, { passive: true });
 sw.addEventListener('activate', handleActivate, { passive: true });
 sw.addEventListener('fetch', handleFetch, { passive: true });
 installBroadcastChannelListener();
+

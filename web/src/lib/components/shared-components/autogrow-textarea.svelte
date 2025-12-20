@@ -26,6 +26,7 @@
   class="resize-none {className}"
   onfocusout={updateContent}
   {placeholder}
+  rows="1"
   use:shortcut={{
     shortcut: { key: 'Enter', ctrl: true },
     onShortcut: (e) => e.currentTarget.blur(),

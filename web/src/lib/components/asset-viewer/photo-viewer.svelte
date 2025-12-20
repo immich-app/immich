@@ -1,77 +1,174 @@
 <script lang="ts">
   import { shortcuts } from '$lib/actions/shortcut';
+  import { swipeFeedback } from '$lib/actions/swipe-feedback';
+  import { thumbhash } from '$lib/actions/thumbhash';
   import { zoomImageAction } from '$lib/actions/zoom-image';
   import FaceEditor from '$lib/components/asset-viewer/face-editor/face-editor.svelte';
   import OcrBoundingBox from '$lib/components/asset-viewer/ocr-bounding-box.svelte';
   import BrokenAsset from '$lib/components/assets/broken-asset.svelte';
-  import { assetViewerFadeDuration } from '$lib/constants';
   import { castManager } from '$lib/managers/cast-manager.svelte';
-  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
+  import { preloadManager } from '$lib/managers/PreloadManager.svelte';
   import { photoViewerImgElement } from '$lib/stores/assets-store.svelte';
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import { ocrManager } from '$lib/stores/ocr.svelte';
   import { boundingBoxesArray } from '$lib/stores/people.store';
-  import { alwaysLoadOriginalFile } from '$lib/stores/preferences.store';
-  import { SlideshowLook, SlideshowState, slideshowLookCssMapping, slideshowStore } from '$lib/stores/slideshow.store';
-  import { photoZoomState } from '$lib/stores/zoom-image.store';
-  import { getAssetOriginalUrl, getAssetThumbnailUrl, handlePromiseError } from '$lib/utils';
-  import { canCopyImageToClipboard, copyImageToClipboard, isWebCompatibleImage } from '$lib/utils/asset-utils';
+  import { SlideshowLook, slideshowLookCssMapping, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
+  import { photoZoomState, resetZoomState } from '$lib/stores/zoom-image.store';
+  import {
+    getAssetThumbnailUrl,
+    getAssetUrl,
+    targetImageSize as getTargetImageSize,
+    handlePromiseError,
+  } from '$lib/utils';
+  import { canCopyImageToClipboard, copyImageToClipboard, getDimensions } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
+  import { scaleToFit } from '$lib/utils/layout-utils';
   import { getOcrBoundingBoxes } from '$lib/utils/ocr-utils';
   import { getBoundingBox } from '$lib/utils/people-utils';
   import { cancelImageUrl } from '$lib/utils/sw-messaging';
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
-  import { AssetMediaSize, AssetTypeEnum, type AssetResponseDto, type SharedLinkResponseDto } from '@immich/sdk';
+  import { TUNABLES } from '$lib/utils/tunables';
+  import { AssetMediaSize, type AssetResponseDto, type SharedLinkResponseDto } from '@immich/sdk';
   import { LoadingSpinner, toastManager } from '@immich/ui';
-  import { onDestroy, onMount } from 'svelte';
-  import { useSwipe, type SwipeCustomEvent } from 'svelte-gestures';
+  import { onDestroy, onMount, untrack } from 'svelte';
   import { t } from 'svelte-i18n';
-  import { fade } from 'svelte/transition';
+  let {
+    IMAGE_THUMBNAIL: { THUMBHASH_FADE_DURATION },
+  } = TUNABLES;
 
   interface Props {
+    transitionName?: string | null | undefined;
     asset: AssetResponseDto;
-    preloadAssets?: TimelineAsset[] | undefined;
-    element?: HTMLDivElement | undefined;
-    haveFadeTransition?: boolean;
-    sharedLink?: SharedLinkResponseDto | undefined;
+    previousAsset?: AssetResponseDto;
+    nextAsset?: AssetResponseDto;
+    element?: HTMLDivElement;
+    sharedLink?: SharedLinkResponseDto;
+    nextSizeHint?: { width: number; height: number } | null;
+
     onPreviousAsset?: (() => void) | null;
     onNextAsset?: (() => void) | null;
+    onReady?: (() => void) | null;
+    onBusy?: (() => void) | null;
+    onFree?: (() => void) | null;
     copyImage?: () => Promise<void>;
     zoomToggle?: (() => void) | null;
   }
 
   let {
+    transitionName,
     asset,
-    preloadAssets = undefined,
+    previousAsset,
+    nextAsset,
     element = $bindable(),
-    haveFadeTransition = true,
-    sharedLink = undefined,
+    sharedLink,
+    nextSizeHint,
+
     onPreviousAsset = null,
     onNextAsset = null,
+    onReady,
+    onBusy,
+    onFree,
     copyImage = $bindable(),
     zoomToggle = $bindable(),
   }: Props = $props();
 
   const { slideshowState, slideshowLook } = slideshowStore;
 
-  let assetFileUrl: string = $state('');
   let imageLoaded: boolean = $state(false);
   let originalImageLoaded: boolean = $state(false);
   let imageError: boolean = $state(false);
 
   let loader = $state<HTMLImageElement>();
-
-  photoZoomState.set({
-    currentRotation: 0,
-    currentZoom: 1,
-    enable: true,
-    currentPositionX: 0,
-    currentPositionY: 0,
+  $effect(() => {
+    if (loader) {
+      const _loader = loader;
+      const _src = loader.src;
+      const _imageLoaderUrl = imageLoaderUrl;
+      _loader.onload = () => {
+        if (_loader.src === _src && imageLoaderUrl === _imageLoaderUrl) {
+          onload();
+        }
+      };
+      _loader.onerror = () => {
+        if (_loader.src === _src && imageLoaderUrl === _imageLoaderUrl) {
+          onerror();
+        }
+      };
+    }
   });
+
+  resetZoomState();
 
   onDestroy(() => {
     $boundingBoxesArray = [];
+  });
+
+  const box = $derived.by(() => {
+    const { width, height } = scaledDimensions;
+    return {
+      width: width + 'px',
+      height: height + 'px',
+      left: (containerWidth - width) / 2 + 'px',
+      top: (containerHeight - height) / 2 + 'px',
+    };
+  });
+
+  const blurredSlideshow = $derived(
+    $slideshowState !== SlideshowState.None && $slideshowLook === SlideshowLook.BlurredBackground && asset.thumbhash,
+  );
+  const transitionLetterboxLeft = $derived(transitionName === 'hero' || blurredSlideshow ? null : 'letterbox-left');
+  const transitionLetterboxRight = $derived(transitionName === 'hero' || blurredSlideshow ? null : 'letterbox-right');
+  const transitionLetterboxTop = $derived(transitionName === 'hero' || blurredSlideshow ? null : 'letterbox-top');
+  const transitionLetterboxBottom = $derived(transitionName === 'hero' || blurredSlideshow ? null : 'letterbox-bottom');
+
+  // Letterbox regions (the empty space around the main box)
+  const letterboxLeft = $derived.by(() => {
+    const { width } = scaledDimensions;
+    const leftOffset = (containerWidth - width) / 2;
+    return {
+      width: leftOffset + 'px',
+      height: containerHeight + 'px',
+      left: '0px',
+      top: '0px',
+    };
+  });
+
+  const letterboxRight = $derived.by(() => {
+    const { width } = scaledDimensions;
+    const leftOffset = (containerWidth - width) / 2;
+    const rightOffset = leftOffset;
+    return {
+      width: rightOffset + 'px',
+      height: containerHeight + 'px',
+      left: containerWidth - rightOffset + 'px',
+      top: '0px',
+    };
+  });
+
+  const letterboxTop = $derived.by(() => {
+    const { width, height } = scaledDimensions;
+    const topOffset = (containerHeight - height) / 2;
+    const leftOffset = (containerWidth - width) / 2;
+    return {
+      width: width + 'px',
+      height: topOffset + 'px',
+      left: leftOffset + 'px',
+      top: '0px',
+    };
+  });
+
+  const letterboxBottom = $derived.by(() => {
+    const { width, height } = scaledDimensions;
+    const topOffset = (containerHeight - height) / 2;
+    const bottomOffset = topOffset;
+    const leftOffset = (containerWidth - width) / 2;
+    return {
+      width: width + 'px',
+      height: bottomOffset + 'px',
+      left: leftOffset + 'px',
+      top: containerHeight - bottomOffset + 'px',
+    };
   });
 
   let ocrBoxes = $derived(
@@ -82,23 +179,14 @@
 
   let isOcrActive = $derived(ocrManager.showOverlay);
 
-  const preload = (targetSize: AssetMediaSize | 'original', preloadAssets?: TimelineAsset[]) => {
-    for (const preloadAsset of preloadAssets || []) {
-      if (preloadAsset.isImage) {
-        let img = new Image();
-        img.src = getAssetUrl(preloadAsset.id, targetSize, preloadAsset.thumbhash);
-      }
+  const handleSwipeCommit = (direction: 'left' | 'right') => {
+    if (direction === 'left' && onNextAsset) {
+      // Swiped left, go to next asset
+      onNextAsset();
+    } else if (direction === 'right' && onPreviousAsset) {
+      // Swiped right, go to previous asset
+      onPreviousAsset();
     }
-  };
-
-  const getAssetUrl = (id: string, targetSize: AssetMediaSize | 'original', cacheKey: string | null) => {
-    if (sharedLink && (!sharedLink.allowDownload || !sharedLink.showMetadata)) {
-      return getAssetThumbnailUrl({ id, size: AssetMediaSize.Preview, cacheKey });
-    }
-
-    return targetSize === 'original'
-      ? getAssetOriginalUrl({ id, cacheKey })
-      : getAssetThumbnailUrl({ id, size: targetSize, cacheKey });
   };
 
   copyImage = async () => {
@@ -137,41 +225,11 @@
     handlePromiseError(copyImage());
   };
 
-  const onSwipe = (event: SwipeCustomEvent) => {
-    if ($photoZoomState.currentZoom > 1) {
-      return;
-    }
-
-    if (ocrManager.showOverlay) {
-      return;
-    }
-
-    if (onNextAsset && event.detail.direction === 'left') {
-      onNextAsset();
-    }
-
-    if (onPreviousAsset && event.detail.direction === 'right') {
-      onPreviousAsset();
-    }
-  };
-
-  // when true, will force loading of the original image
-  let forceUseOriginal: boolean = $derived(
-    (asset.type === AssetTypeEnum.Image && asset.duration && !asset.duration.includes('0:00:00.000')) ||
-      $photoZoomState.currentZoom > 1,
-  );
-
-  const targetImageSize = $derived.by(() => {
-    if ($alwaysLoadOriginalFile || forceUseOriginal || originalImageLoaded) {
-      return isWebCompatibleImage(asset) ? 'original' : AssetMediaSize.Fullsize;
-    }
-
-    return AssetMediaSize.Preview;
-  });
+  const targetImageSize = $derived(getTargetImageSize(asset, originalImageLoaded || $photoZoomState.currentZoom > 1));
 
   $effect(() => {
-    if (assetFileUrl) {
-      void cast(assetFileUrl);
+    if (imageLoaderUrl) {
+      void cast(imageLoaderUrl);
     }
   });
 
@@ -189,37 +247,104 @@
     }
   };
 
+  let lastFreedUrl: string | undefined | null;
+  const notifyFree = () => {
+    if (lastFreedUrl !== imageLoaderUrl) {
+      onFree?.();
+      lastFreedUrl = imageLoaderUrl;
+    }
+  };
+
+  const notifyReady = () => {
+    onReady?.();
+  };
+
   const onload = () => {
     imageLoaded = true;
-    assetFileUrl = imageLoaderUrl;
+    notifyFree();
+    dimensions = {
+      width: loader?.naturalWidth ?? 1,
+      height: loader?.naturalHeight ?? 1,
+    };
     originalImageLoaded = targetImageSize === AssetMediaSize.Fullsize || targetImageSize === 'original';
   };
 
   const onerror = () => {
-    imageError = imageLoaded = true;
+    notifyFree();
+    dimensions = {
+      width: loader?.naturalWidth ?? 1,
+      height: loader?.naturalHeight ?? 1,
+    };
+    imageError = true;
   };
 
-  $effect(() => {
-    preload(targetImageSize, preloadAssets);
-  });
-
   onMount(() => {
-    if (loader?.complete) {
-      onload();
-    }
-    loader?.addEventListener('load', onload, { passive: true });
-    loader?.addEventListener('error', onerror, { passive: true });
+    notifyReady();
     return () => {
-      loader?.removeEventListener('load', onload);
-      loader?.removeEventListener('error', onerror);
-      cancelImageUrl(imageLoaderUrl);
+      if (!imageLoaded && !imageError) {
+        notifyFree();
+      }
+      if (imageLoaderUrl) {
+        preloadManager.cancelUrl(imageLoaderUrl);
+      }
     };
   });
 
-  let imageLoaderUrl = $derived(getAssetUrl(asset.id, targetImageSize, asset.thumbhash));
+  const imageLoaderUrl = $derived(
+    getAssetUrl({ asset, sharedLink, forceOriginal: originalImageLoaded || $photoZoomState.currentZoom > 1 }),
+  );
+  const previousAssetUrl = $derived(getAssetUrl({ asset: previousAsset, sharedLink }));
+  const nextAssetUrl = $derived(getAssetUrl({ asset: nextAsset, sharedLink }));
+  const thumbnailUrl = $derived(
+    getAssetThumbnailUrl({
+      id: asset.id,
+      size: AssetMediaSize.Thumbnail,
+      cacheKey: asset.thumbhash,
+    }),
+  );
+  let thumbnailPreloaded = $state(false);
+  $effect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+    asset;
+    untrack(() => {
+      void preloadManager.isUrlPreloaded(thumbnailUrl).then((preloaded) => (thumbnailPreloaded = preloaded));
+    });
+  });
 
   let containerWidth = $state(0);
   let containerHeight = $state(0);
+  const exifDimensions = $derived(
+    asset.exifInfo?.exifImageHeight && asset.exifInfo.exifImageHeight
+      ? (getDimensions(asset.exifInfo) as { width: number; height: number })
+      : null,
+  );
+  let dimensions = $derived(nextSizeHint ?? exifDimensions ?? { width: 1, height: 1 });
+  const scaledDimensions = $derived(scaleToFit(dimensions, containerWidth, containerHeight));
+
+  let lastUrl: string | undefined | null;
+  let lastPreviousUrl: string | undefined | null;
+  let lastNextUrl: string | undefined | null;
+
+  $effect(() => {
+    if (lastUrl !== imageLoaderUrl && imageLoaderUrl) {
+      untrack(() => {
+        imageLoaded = false;
+        originalImageLoaded = false;
+        imageError = false;
+        cancelImageUrl(lastUrl);
+        onBusy?.();
+
+        notifyReady();
+      });
+    }
+
+    lastUrl = imageLoaderUrl;
+    lastPreviousUrl = previousAssetUrl;
+    lastNextUrl = nextAssetUrl;
+  });
+  $effect(() => {
+    $photoViewerImgElement = loader;
+  });
 </script>
 
 <svelte:document
@@ -231,65 +356,127 @@
     { shortcut: { key: 'z' }, onShortcut: zoomToggle, preventDefault: false },
   ]}
 />
-{#if imageError}
-  <div class="h-full w-full">
-    <BrokenAsset class="text-xl h-full w-full" />
-  </div>
-{/if}
-<!-- svelte-ignore a11y_missing_attribute -->
-<img bind:this={loader} style="display:none" src={imageLoaderUrl} aria-hidden="true" />
+
+<!-- <img bind:this={loader} style="display:none" src={imageLoaderUrl} alt="" aria-hidden="true" {onload} {onerror} /> -->
 <div
   bind:this={element}
-  class="relative h-full select-none"
+  class="absolute h-full w-full select-none"
   bind:clientWidth={containerWidth}
   bind:clientHeight={containerHeight}
+  use:swipeFeedback={{
+    disabled: isOcrActive || $photoZoomState.currentZoom > 1,
+    onSwipeCommit: handleSwipeCommit,
+    leftPreviewUrl: previousAssetUrl,
+    rightPreviewUrl: nextAssetUrl,
+    currentAssetUrl: imageLoaderUrl,
+  }}
 >
-  <img style="display:none" src={imageLoaderUrl} alt="" {onload} {onerror} />
-  {#if !imageLoaded}
-    <div id="spinner" class="flex h-full items-center justify-center">
-      <LoadingSpinner />
-    </div>
-  {:else if !imageError}
-    <div
-      use:zoomImageAction={{ disabled: isOcrActive }}
-      {...useSwipe(onSwipe)}
-      class="h-full w-full"
-      transition:fade={{ duration: haveFadeTransition ? assetViewerFadeDuration : 0 }}
-    >
-      {#if $slideshowState !== SlideshowState.None && $slideshowLook === SlideshowLook.BlurredBackground}
+  {#if blurredSlideshow}
+    <canvas
+      id="test"
+      use:thumbhash={{ base64ThumbHash: asset.thumbhash! }}
+      class="-z-1 absolute top-0 left-0 start-0 h-dvh w-dvw"
+    ></canvas>
+  {/if}
+  <div
+    class="absolute"
+    style:view-transition-name={transitionLetterboxLeft}
+    style:left={letterboxLeft.left}
+    style:top={letterboxLeft.top}
+    style:width={letterboxLeft.width}
+    style:height={letterboxLeft.height}
+  ></div>
+  <div
+    class="absolute"
+    style:view-transition-name={transitionLetterboxRight}
+    style:left={letterboxRight.left}
+    style:top={letterboxRight.top}
+    style:width={letterboxRight.width}
+    style:height={letterboxRight.height}
+  ></div>
+  <div
+    class="absolute"
+    style:view-transition-name={transitionLetterboxTop}
+    style:left={letterboxTop.left}
+    style:top={letterboxTop.top}
+    style:width={letterboxTop.width}
+    style:height={letterboxTop.height}
+  ></div>
+  <div
+    class="absolute"
+    style:view-transition-name={transitionLetterboxBottom}
+    style:left={letterboxBottom.left}
+    style:top={letterboxBottom.top}
+    style:width={letterboxBottom.width}
+    style:height={letterboxBottom.height}
+  ></div>
+  <div
+    style:view-transition-name={transitionName}
+    data-transition-name={transitionName}
+    class="absolute"
+    style:left={box.left}
+    style:top={box.top}
+    style:width={box.width}
+    style:height={box.height}
+    data-swipe-subject
+  >
+    {#if asset.thumbhash}
+      <canvas data-blur use:thumbhash={{ base64ThumbHash: asset.thumbhash }} class="h-full w-full absolute -z-2"
+      ></canvas>
+      {#if thumbnailPreloaded}
+        <img src={thumbnailUrl} alt={$getAltText(toTimelineAsset(asset))} class="h-full w-full absolute -z-1" />
+      {/if}
+    {/if}
+    {#if !imageLoaded && !asset.thumbhash && !imageError}
+      <div id="spinner" class="absolute flex h-full items-center justify-center">
+        <LoadingSpinner />
+      </div>
+    {/if}
+    {#if imageError}
+      <div class="h-full w-full">
+        <BrokenAsset class="text-xl h-full w-full" />
+      </div>
+    {/if}
+    {#key imageLoaderUrl}
+      <div
+        use:zoomImageAction={{ disabled: isOcrActive }}
+        style:width={box.width}
+        style:height={box.height}
+        style:overflow="visible"
+        class="absolute"
+      >
         <img
-          src={assetFileUrl}
-          alt=""
-          class="-z-1 absolute top-0 start-0 object-cover h-full w-full blur-lg"
+          decoding="async"
+          bind:this={loader}
+          src={imageLoaderUrl}
+          alt={$getAltText(toTimelineAsset(asset))}
+          class={[
+            'w-full',
+            'h-full',
+            $slideshowState === SlideshowState.None ? 'object-contain' : slideshowLookCssMapping[$slideshowLook],
+            imageError && 'hidden',
+          ]}
           draggable="false"
         />
-      {/if}
-      <img
-        bind:this={$photoViewerImgElement}
-        src={assetFileUrl}
-        alt={$getAltText(toTimelineAsset(asset))}
-        class="h-full w-full {$slideshowState === SlideshowState.None
-          ? 'object-contain'
-          : slideshowLookCssMapping[$slideshowLook]}"
-        draggable="false"
-      />
-      <!-- eslint-disable-next-line svelte/require-each-key -->
-      {#each getBoundingBox($boundingBoxesArray, $photoZoomState, $photoViewerImgElement) as boundingbox}
-        <div
-          class="absolute border-solid border-white border-3 rounded-lg"
-          style="top: {boundingbox.top}px; left: {boundingbox.left}px; height: {boundingbox.height}px; width: {boundingbox.width}px;"
-        ></div>
-      {/each}
 
-      {#each ocrBoxes as ocrBox (ocrBox.id)}
-        <OcrBoundingBox {ocrBox} />
-      {/each}
-    </div>
+        <!-- eslint-disable-next-line svelte/require-each-key -->
+        {#each getBoundingBox($boundingBoxesArray, $photoZoomState, $photoViewerImgElement) as boundingbox}
+          <div
+            class="absolute border-solid border-white border-3 rounded-lg"
+            style="top: {boundingbox.top}px; left: {boundingbox.left}px; height: {boundingbox.height}px; width: {boundingbox.width}px;"
+          ></div>
+        {/each}
+
+        {#each ocrBoxes as ocrBox (ocrBox.id)}
+          <OcrBoundingBox {ocrBox} />
+        {/each}
+      </div>
+    {/key}
 
     {#if isFaceEditMode.value}
       <FaceEditor htmlElement={$photoViewerImgElement} {containerWidth} {containerHeight} assetId={asset.id} />
     {/if}
-  {/if}
+  </div>
 </div>
 
 <style>
@@ -301,5 +488,9 @@
   #spinner {
     visibility: hidden;
     animation: 0s linear 0.4s forwards delayedVisibility;
+  }
+  [data-blur] {
+    visibility: hidden;
+    animation: 0s linear 0.1s forwards delayedVisibility;
   }
 </style>

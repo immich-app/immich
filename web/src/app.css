@@ -74,6 +74,9 @@
     --immich-dark-bg: 10 10 10;
     --immich-dark-fg: 229 231 235;
     --immich-dark-gray: 33 33 33;
+
+    /* transitions */
+    --immich-split-viewer-nav: enabled;
   }
 
   button:not(:disabled),

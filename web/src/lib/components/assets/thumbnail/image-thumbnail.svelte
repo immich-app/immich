@@ -1,8 +1,9 @@
 <script lang="ts">
   import BrokenAsset from '$lib/components/assets/broken-asset.svelte';
-  import { cancelImageUrl } from '$lib/utils/sw-messaging';
+  import { preloadManager } from '$lib/managers/PreloadManager.svelte';
   import { Icon } from '@immich/ui';
   import { mdiEyeOffOutline } from '@mdi/js';
+  import { untrack } from 'svelte';
   import type { ActionReturn } from 'svelte/action';
   import type { ClassValue } from 'svelte/elements';
 
@@ -54,13 +55,20 @@
     onComplete?.(true);
   };
 
+  $effect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+    url;
+    untrack(() => {
+      preloadManager.loading(url);
+    });
+  });
   function mount(elem: HTMLImageElement): ActionReturn {
     if (elem.complete) {
       loaded = true;
       onComplete?.(false);
     }
     return {
-      destroy: () => cancelImageUrl(url),
+      destroy: () => preloadManager.cancelUrl(url),
     };
   }
 

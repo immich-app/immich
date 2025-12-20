@@ -1,8 +1,10 @@
 <script lang="ts">
+  import { swipeFeedback } from '$lib/actions/swipe-feedback';
   import FaceEditor from '$lib/components/asset-viewer/face-editor/face-editor.svelte';
   import VideoRemoteViewer from '$lib/components/asset-viewer/video-remote-viewer.svelte';
   import { assetViewerFadeDuration } from '$lib/constants';
   import { castManager } from '$lib/managers/cast-manager.svelte';
+  import { eventManager } from '$lib/managers/event-manager.svelte';
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import {
     autoPlayVideo,
@@ -10,15 +12,22 @@
     videoViewerMuted,
     videoViewerVolume,
   } from '$lib/stores/preferences.store';
-  import { getAssetOriginalUrl, getAssetPlaybackUrl, getAssetThumbnailUrl } from '$lib/utils';
-  import { AssetMediaSize } from '@immich/sdk';
+  import { getAssetOriginalUrl, getAssetPlaybackUrl, getAssetThumbnailUrl, getAssetUrl } from '$lib/utils';
+  import { getDimensions } from '$lib/utils/asset-utils';
+  import { scaleToFit } from '$lib/utils/layout-utils';
+  import { AssetMediaSize, type AssetResponseDto, type SharedLinkResponseDto } from '@immich/sdk';
   import { LoadingSpinner } from '@immich/ui';
   import { onDestroy, onMount } from 'svelte';
-  import { useSwipe, type SwipeCustomEvent } from 'svelte-gestures';
   import { fade } from 'svelte/transition';
 
   interface Props {
+    transitionName?: string | null;
+    asset: AssetResponseDto;
     assetId: string;
+    previousAsset?: AssetResponseDto;
+    nextAsset?: AssetResponseDto;
+    sharedLink?: SharedLinkResponseDto;
+    nextSizeHint?: { width: number; height: number } | null;
     loopVideo: boolean;
     cacheKey: string | null;
     playOriginalVideo: boolean;
@@ -30,7 +39,13 @@
   }
 
   let {
+    transitionName,
+    asset,
     assetId,
+    previousAsset,
+    nextAsset,
+    nextSizeHint,
+    sharedLink,
     loopVideo,
     cacheKey,
     playOriginalVideo,
@@ -49,6 +64,16 @@
   let isScrubbing = $state(false);
   let showVideo = $state(false);
 
+  let containerWidth = $state(document.documentElement.clientWidth);
+  let containerHeight = $state(document.documentElement.clientHeight);
+  const exifDimensions = $derived(
+    asset.exifInfo?.exifImageHeight && asset.exifInfo.exifImageHeight
+      ? (getDimensions(asset.exifInfo) as { width: number; height: number })
+      : null,
+  );
+  let dimensions = $derived(nextSizeHint ?? exifDimensions ?? { width: 1, height: 1 });
+  const scaledDimensions = $derived(scaleToFit(dimensions, containerWidth, containerHeight));
+
   onMount(() => {
     // Show video after mount to ensure fading in.
     showVideo = true;
@@ -66,6 +91,14 @@
       videoPlayer.src = '';
     }
   });
+
+  const handleLoadedMetadata = () => {
+    dimensions = {
+      width: videoPlayer?.videoWidth ?? 1,
+      height: videoPlayer?.videoHeight ?? 1,
+    };
+    eventManager.emit('AssetViewerFree');
+  };
 
   const handleCanPlay = async (video: HTMLVideoElement) => {
     try {
@@ -98,34 +131,58 @@
     }
   };
 
-  const onSwipe = (event: SwipeCustomEvent) => {
-    if (event.detail.direction === 'left') {
+  const handleSwipeCommit = (direction: 'left' | 'right') => {
+    if (direction === 'left' && onNextAsset) {
       onNextAsset();
-    }
-    if (event.detail.direction === 'right') {
+    } else if (direction === 'right' && onPreviousAsset) {
       onPreviousAsset();
     }
   };
-
-  let containerWidth = $state(0);
-  let containerHeight = $state(0);
 
   $effect(() => {
     if (isFaceEditMode.value) {
       videoPlayer?.pause();
     }
   });
+
+  const calculateSize = () => {
+    const { width, height } = scaledDimensions;
+
+    const size = {
+      width: width + 'px',
+      height: height + 'px',
+    };
+
+    return size;
+  };
+
+  const box = $derived(calculateSize());
+
+  const previousAssetUrl = $derived(getAssetUrl({ asset: previousAsset, sharedLink }));
+  const nextAssetUrl = $derived(getAssetUrl({ asset: nextAsset, sharedLink }));
+  const transitionFn = (node: Element) => {
+    if (nextSizeHint === null) {
+      return fade(node, { duration: assetViewerFadeDuration });
+    }
+    return {};
+  };
 </script>
 
 {#if showVideo}
   <div
-    transition:fade={{ duration: assetViewerFadeDuration }}
-    class="flex h-full select-none place-content-center place-items-center"
+    transition:transitionFn
+    class="flex select-none h-full w-full place-content-center place-items-center"
     bind:clientWidth={containerWidth}
     bind:clientHeight={containerHeight}
+    use:swipeFeedback={{
+      onSwipeCommit: handleSwipeCommit,
+      leftPreviewUrl: previousAssetUrl,
+      rightPreviewUrl: nextAssetUrl,
+      currentAssetUrl: assetFileUrl,
+    }}
   >
     {#if castManager.isCasting}
-      <div class="place-content-center h-full place-items-center">
+      <div class="place-content-center h-full place-items-center" data-swipe-subject>
         <VideoRemoteViewer
           poster={getAssetThumbnailUrl({ id: assetId, size: AssetMediaSize.Preview, cacheKey })}
           {onVideoStarted}
@@ -134,40 +191,49 @@
         />
       </div>
     {:else}
-      <video
-        bind:this={videoPlayer}
-        loop={$loopVideoPreference && loopVideo}
-        autoplay={$autoPlayVideo}
-        playsinline
-        controls
-        disablePictureInPicture
-        class="h-full object-contain"
-        {...useSwipe(onSwipe)}
-        oncanplay={(e) => handleCanPlay(e.currentTarget)}
-        onended={onVideoEnded}
-        onvolumechange={(e) => ($videoViewerMuted = e.currentTarget.muted)}
-        onseeking={() => (isScrubbing = true)}
-        onseeked={() => (isScrubbing = false)}
-        onplaying={(e) => {
-          e.currentTarget.focus();
-        }}
-        onclose={() => onClose()}
-        muted={$videoViewerMuted}
-        bind:volume={$videoViewerVolume}
-        poster={getAssetThumbnailUrl({ id: assetId, size: AssetMediaSize.Preview, cacheKey })}
-        src={assetFileUrl}
-      >
-      </video>
-
-      {#if isLoading}
-        <div class="absolute flex place-content-center place-items-center">
-          <LoadingSpinner />
-        </div>
-      {/if}
-
-      {#if isFaceEditMode.value}
-        <FaceEditor htmlElement={videoPlayer} {containerWidth} {containerHeight} {assetId} />
-      {/if}
+      <div class="relative">
+        <video
+          style:view-transition-name={transitionName}
+          style:height={box.height}
+          style:width={box.width}
+          bind:this={videoPlayer}
+          loop={$loopVideoPreference && loopVideo}
+          autoplay={$autoPlayVideo}
+          playsinline
+          controls
+          disablePictureInPicture
+          onloadedmetadata={() => handleLoadedMetadata()}
+          oncanplay={(e) => handleCanPlay(e.currentTarget)}
+          onended={onVideoEnded}
+          onvolumechange={(e) => ($videoViewerMuted = e.currentTarget.muted)}
+          onseeking={() => (isScrubbing = true)}
+          onseeked={() => (isScrubbing = false)}
+          onplaying={(e) => {
+            e.currentTarget.focus();
+          }}
+          onclose={() => onClose()}
+          muted={$videoViewerMuted}
+          bind:volume={$videoViewerVolume}
+          poster={getAssetThumbnailUrl({ id: assetId, size: AssetMediaSize.Preview, cacheKey })}
+          src={assetFileUrl}
+          data-swipe-subject
+        >
+        </video>
+        {#if isLoading}
+          <div class="absolute inset-0 flex place-content-center place-items-center">
+            <LoadingSpinner />
+          </div>
+        {/if}
+        {#if isFaceEditMode.value}
+          <FaceEditor htmlElement={videoPlayer} {containerWidth} {containerHeight} {assetId} />
+        {/if}
+      </div>
     {/if}
   </div>
 {/if}
+
+<style>
+  video:focus {
+    outline: none;
+  }
+</style>

@@ -13,13 +13,19 @@
   import { boundingBoxesArray } from '$lib/stores/people.store';
   import { locale } from '$lib/stores/preferences.store';
   import { preferences, user } from '$lib/stores/user.store';
-  import { getAssetThumbnailUrl, getPeopleThumbnailUrl } from '$lib/utils';
+  import { getAssetThumbnailUrl, getPeopleThumbnailUrl, handlePromiseError } from '$lib/utils';
   import { delay, getDimensions } from '$lib/utils/asset-utils';
   import { getByteUnitString } from '$lib/utils/byte-units';
   import { getMetadataSearchQuery } from '$lib/utils/metadata-search';
   import { fromISODateTime, fromISODateTimeUTC, toTimelineAsset } from '$lib/utils/timeline-util';
   import { getParentPath } from '$lib/utils/tree-utils';
-  import { AssetMediaSize, getAssetInfo, type AlbumResponseDto, type AssetResponseDto } from '@immich/sdk';
+  import {
+    AssetMediaSize,
+    getAllAlbums,
+    getAssetInfo,
+    type AlbumResponseDto,
+    type AssetResponseDto,
+  } from '@immich/sdk';
   import { Icon, IconButton, LoadingSpinner, modalManager } from '@immich/ui';
   import {
     mdiCalendar,
@@ -43,12 +49,12 @@
 
   interface Props {
     asset: AssetResponseDto;
-    albums?: AlbumResponseDto[];
     currentAlbum?: AlbumResponseDto | null;
+    refreshAlbumsSignal?: number;
     onClose: () => void;
   }
 
-  let { asset, albums = [], currentAlbum = null, onClose }: Props = $props();
+  let { asset, refreshAlbumsSignal = 0, currentAlbum = null, onClose }: Props = $props();
 
   let showAssetPath = $state(false);
   let showEditFaces = $state(false);
@@ -73,6 +79,17 @@
     })(),
   );
   let previousId: string | undefined = $state();
+
+  let albums = $state<AlbumResponseDto[]>([]);
+
+  $effect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+    refreshAlbumsSignal;
+    if (authManager.isSharedLink) {
+      return;
+    }
+    handlePromiseError(getAllAlbums({ assetId: asset.id }).then((response) => (albums = response)));
+  });
 
   $effect(() => {
     if (!previousId) {

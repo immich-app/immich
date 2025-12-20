@@ -24,11 +24,11 @@ export interface boundingBox {
 export const getBoundingBox = (
   faces: Faces[],
   zoom: ZoomImageWheelState,
-  photoViewer: HTMLImageElement | null,
+  photoViewer: HTMLImageElement | null | undefined,
 ): boundingBox[] => {
   const boxes: boundingBox[] = [];
 
-  if (photoViewer === null) {
+  if (!photoViewer) {
     return boxes;
   }
   const clientHeight = photoViewer.clientHeight;
