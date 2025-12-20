@@ -366,9 +366,13 @@ export class MetadataService extends BaseService {
 
     const isChanged = sidecarPath !== sidecarFile?.path;
 
-    this.logger.debug(
-      `Sidecar check found old=${sidecarFile?.path}, new=${sidecarPath} will ${isChanged ? 'update' : 'do nothing for'}  asset ${asset.id}: ${asset.originalPath}`,
-    );
+    if (sidecarFile?.path || sidecarPath) {
+      this.logger.debug(
+        `Sidecar check found old=${sidecarFile?.path}, new=${sidecarPath} will ${isChanged ? 'update' : 'do nothing for'} asset ${asset.id}: ${asset.originalPath}`,
+      );
+    } else {
+      this.logger.verbose(`No sidecars found for asset ${asset.id}: ${asset.originalPath}`);
+    }
 
     if (!isChanged) {
       return JobStatus.Skipped;
