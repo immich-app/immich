@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:immich_mobile/extensions/translate_extensions.dart';
 
 class RatingBar extends StatefulWidget {
   final double initialRating;
@@ -7,7 +8,9 @@ class RatingBar extends StatefulWidget {
   final Color filledColor;
   final Color unfilledColor;
   final ValueChanged<int>? onRatingUpdate;
+  final VoidCallback? onClearRating;
   final Widget? itemBuilder;
+  final double starPadding;
 
   const RatingBar({
     super.key,
@@ -17,7 +20,9 @@ class RatingBar extends StatefulWidget {
     this.filledColor = Colors.amber,
     this.unfilledColor = Colors.grey,
     this.onRatingUpdate,
+    this.onClearRating,
     this.itemBuilder,
+    this.starPadding = 4.0,
   });
 
   @override
@@ -34,7 +39,7 @@ class _RatingBarState extends State<RatingBar> {
   }
 
   void _updateRating(Offset localPosition, bool isRTL, {bool isTap = false}) {
-    final totalWidth = widget.itemCount * widget.itemSize;
+    final totalWidth = widget.itemCount * widget.itemSize + (widget.itemCount - 1) * widget.starPadding;
     double dx = localPosition.dx;
 
     if (isRTL) dx = totalWidth - dx;
@@ -46,7 +51,8 @@ class _RatingBarState extends State<RatingBar> {
     } else if (dx >= totalWidth) {
       newRating = widget.itemCount.toDouble();
     } else {
-      int tappedIndex = (dx ~/ widget.itemSize).clamp(0, widget.itemCount - 1);
+      double starWithPadding = widget.itemSize + widget.starPadding;
+      int tappedIndex = (dx / starWithPadding).floor().clamp(0, widget.itemCount - 1);
       newRating = tappedIndex + 1.0;
 
       if (isTap && newRating == _currentRating && _currentRating != 0) {
@@ -66,19 +72,39 @@ class _RatingBarState extends State<RatingBar> {
   Widget build(BuildContext context) {
     final isRTL = Directionality.of(context) == TextDirection.rtl;
 
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTapDown: (details) => _updateRating(details.localPosition, isRTL, isTap: true),
-      onPanUpdate: (details) => _updateRating(details.localPosition, isRTL, isTap: false),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        textDirection: isRTL ? TextDirection.rtl : TextDirection.ltr,
-        children: List.generate(widget.itemCount, (index) {
-          bool filled = _currentRating > index;
-          return widget.itemBuilder ??
-              Icon(Icons.star, size: widget.itemSize, color: filled ? widget.filledColor : widget.unfilledColor);
-        }),
-      ),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTapDown: (details) => _updateRating(details.localPosition, isRTL, isTap: true),
+          onPanUpdate: (details) => _updateRating(details.localPosition, isRTL, isTap: false),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            textDirection: isRTL ? TextDirection.rtl : TextDirection.ltr,
+            children: List.generate(widget.itemCount * 2 - 1, (i) {
+              if (i.isOdd) {
+                return SizedBox(width: widget.starPadding);
+              }
+              int index = i ~/ 2;
+              bool filled = _currentRating > index;
+              return widget.itemBuilder ??
+                  Icon(Icons.star, size: widget.itemSize, color: filled ? widget.filledColor : widget.unfilledColor);
+            }),
+          ),
+        ),
+        if (_currentRating > 0)
+          TextButton(
+            onPressed: () => {
+              setState(() {
+                _currentRating = 0;
+              }),
+              widget.onClearRating?.call(),
+            },
+            child: Text('rating_clear'.t(context: context)),
+          ),
+      ],
     );
   }
 }

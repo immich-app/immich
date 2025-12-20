@@ -73,7 +73,7 @@ class AssetDetailBottomSheet extends ConsumerWidget {
 
     return BaseBottomSheet(
       actions: actions,
-      slivers: [const _AssetDetailBottomSheet()],
+      slivers: const [_AssetDetailBottomSheet()],
       controller: controller,
       initialChildSize: initialChildSize,
       minChildSize: 0.1,
@@ -331,12 +331,12 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
         // Rating bar
         if (isRatingEnabled) ...[
           Padding(
-            padding: const EdgeInsets.only(left: 16.0),
+            padding: const EdgeInsets.only(left: 16.0, top: 16.0),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
+              spacing: 8,
               children: [
-                const SizedBox(height: 16),
                 Text(
                   'rating'.t(context: context).toUpperCase(),
                   style: context.textTheme.labelMedium?.copyWith(
@@ -344,14 +344,16 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                const SizedBox(height: 8),
                 RatingBar(
                   initialRating: exifInfo?.rating?.toDouble() ?? 0,
                   filledColor: context.themeData.colorScheme.primary,
                   unfilledColor: context.themeData.colorScheme.onSurface.withAlpha(100),
-                  itemSize: 32,
+                  itemSize: 40,
                   onRatingUpdate: (rating) async {
                     await ref.read(actionProvider.notifier).updateRating(ActionSource.viewer, rating.round());
+                  },
+                  onClearRating: () async {
+                    await ref.read(actionProvider.notifier).updateRating(ActionSource.viewer, 0);
                   },
                 ),
               ],
