@@ -4,6 +4,7 @@ import 'package:drift/drift.dart' hide isNull, isNotNull;
 import 'package:drift/native.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
@@ -16,8 +17,8 @@ import 'package:mocktail/mocktail.dart';
 import '../domain/service.mock.dart';
 import '../fixtures/asset.stub.dart';
 import '../infrastructure/repository.mock.dart';
-import '../repository.mocks.dart';
 import '../mocks/asset_entity.mock.dart';
+import '../repository.mocks.dart';
 
 void main() {
   late UploadService sut;
@@ -163,6 +164,175 @@ void main() {
       // Should fall back to asset.name when original filename is null
       expect(task!.fields['filename'], equals(asset.name));
       verify(() => mockAssetMediaRepository.getOriginalFilename(asset.id)).called(1);
+    });
+  });
+
+  group('prepareUploadFile', () {
+    test('should keep filename with existing extension unchanged', () async {
+      final asset = LocalAssetStub.image1;
+      final mockFile = File('/tmp/123.jpg');
+
+      when(() => mockStorageRepository.getFileForAsset(asset.id)).thenAnswer((_) async => mockFile);
+      when(() => mockAssetMediaRepository.getOriginalFilename(asset.id)).thenAnswer((_) async => 'photo.jpg');
+
+      final result = await sut.prepareUploadFile(asset);
+      expect(result, isNotNull);
+      expect(result!.file.path, equals('/tmp/123.jpg'));
+      expect(result.originalFilename, equals('photo.jpg'));
+    });
+
+    test('should use asset.name extension when original filename lacks one', () async {
+      final asset = LocalAssetStub.image1;
+      final mockFile = File('/tmp/cache/123.mov');
+
+      when(() => mockStorageRepository.getFileForAsset(asset.id)).thenAnswer((_) async => mockFile);
+      when(() => mockAssetMediaRepository.getOriginalFilename(asset.id)).thenAnswer((_) async => '2024-10-23_17-00-30');
+
+      final result = await sut.prepareUploadFile(asset);
+      expect(result, isNotNull);
+      expect(result!.originalFilename, equals('2024-10-23_17-00-30.jpg'));
+    });
+
+    test('should use file path extension as final fallback', () async {
+      final asset = LocalAssetStub.image1.copyWith(name: 'document');
+      final mockFile = File('/tmp/cache/123.mov');
+
+      when(() => mockStorageRepository.getFileForAsset(asset.id)).thenAnswer((_) async => mockFile);
+      when(() => mockAssetMediaRepository.getOriginalFilename(asset.id)).thenAnswer((_) async => 'document');
+
+      final result = await sut.prepareUploadFile(asset);
+      expect(result, isNotNull);
+      expect(result!.originalFilename, equals('document.mov'));
+    });
+
+    test('should handle file without extension anywhere', () async {
+      final asset = LocalAssetStub.image1.copyWith(name: 'document');
+      final mockFile = File('/tmp/temp');
+
+      when(() => mockStorageRepository.getFileForAsset(asset.id)).thenAnswer((_) async => mockFile);
+      when(() => mockAssetMediaRepository.getOriginalFilename(asset.id)).thenAnswer((_) async => 'document');
+
+      final result = await sut.prepareUploadFile(asset);
+      expect(result, isNotNull);
+      expect(result!.originalFilename, equals('document'));
+    });
+
+    test('should preserve existing extension even if asset.name has different one', () async {
+      final asset = LocalAssetStub.image1;
+      final mockFile = File('/tmp/123.mov');
+
+      when(() => mockStorageRepository.getFileForAsset(asset.id)).thenAnswer((_) async => mockFile);
+      when(() => mockAssetMediaRepository.getOriginalFilename(asset.id)).thenAnswer((_) async => 'photo.HEIC');
+
+      final result = await sut.prepareUploadFile(asset);
+      expect(result, isNotNull);
+      expect(result!.originalFilename, equals('photo.HEIC'));
+    });
+
+    test('should fall back to asset.name when getOriginalFilename returns null', () async {
+      final asset = LocalAssetStub.image1.copyWith(name: 'VID_1234.mp4');
+      final mockFile = File('/tmp/video.mov');
+
+      when(() => mockStorageRepository.getFileForAsset(asset.id)).thenAnswer((_) async => mockFile);
+      when(() => mockAssetMediaRepository.getOriginalFilename(asset.id)).thenAnswer((_) async => null);
+
+      final result = await sut.prepareUploadFile(asset);
+      expect(result, isNotNull);
+      expect(result!.originalFilename, equals('VID_1234.mp4')); // Uses asset.name directly
+    });
+
+    test('should return null when file is not found', () async {
+      final asset = LocalAssetStub.image1;
+
+      when(() => mockStorageRepository.getFileForAsset(asset.id)).thenAnswer((_) async => null);
+
+      final result = await sut.prepareUploadFile(asset);
+      expect(result, isNull);
+    });
+  });
+
+  group('getUploadTask with missing extensions', () {
+    test('should add extension for regular photo without extension', () async {
+      final asset = LocalAssetStub.image1;
+      final mockEntity = MockAssetEntity();
+      final mockFile = File('/path/to/file.jpg');
+
+      when(() => mockEntity.isLivePhoto).thenReturn(false);
+      when(() => mockStorageRepository.getAssetEntityForAsset(asset)).thenAnswer((_) async => mockEntity);
+      when(() => mockStorageRepository.getFileForAsset(asset.id)).thenAnswer((_) async => mockFile);
+      when(() => mockAssetMediaRepository.getOriginalFilename(asset.id)).thenAnswer((_) async => '2024-10-23_17-00-30');
+
+      final task = await sut.getUploadTask(asset);
+
+      expect(task, isNotNull);
+      expect(task!.fields['filename'], equals('2024-10-23_17-00-30.jpg'));
+    });
+
+    test('should preserve existing extension for regular photo', () async {
+      final asset = LocalAssetStub.image1;
+      final mockEntity = MockAssetEntity();
+      final mockFile = File('/path/to/file.jpg');
+
+      when(() => mockEntity.isLivePhoto).thenReturn(false);
+      when(() => mockStorageRepository.getAssetEntityForAsset(asset)).thenAnswer((_) async => mockEntity);
+      when(() => mockStorageRepository.getFileForAsset(asset.id)).thenAnswer((_) async => mockFile);
+      when(() => mockAssetMediaRepository.getOriginalFilename(asset.id)).thenAnswer((_) async => 'MyPhoto.HEIC');
+
+      final task = await sut.getUploadTask(asset);
+
+      expect(task, isNotNull);
+      expect(task!.fields['filename'], equals('MyPhoto.HEIC'));
+    });
+
+    test('should add extension for video without extension', () async {
+      final asset = LocalAssetStub.image1.copyWith(id: 'video1', name: 'VID_20241023_170030', type: AssetType.video);
+      final mockEntity = MockAssetEntity();
+      final mockFile = File('/path/to/video.mov');
+
+      when(() => mockEntity.isLivePhoto).thenReturn(false);
+      when(() => mockStorageRepository.getAssetEntityForAsset(asset)).thenAnswer((_) async => mockEntity);
+      when(() => mockStorageRepository.getFileForAsset(asset.id)).thenAnswer((_) async => mockFile);
+      when(() => mockAssetMediaRepository.getOriginalFilename(asset.id)).thenAnswer((_) async => 'VID_20241023_170030');
+
+      final task = await sut.getUploadTask(asset);
+
+      expect(task, isNotNull);
+      expect(task!.fields['filename'], equals('VID_20241023_170030.mov'));
+    });
+  });
+
+  group('getLivePhotoUploadTask with missing extensions', () {
+    test('should add extension when live photo filename lacks one', () async {
+      final asset = LocalAssetStub.image1.copyWith(name: 'IMG_1234.heic');
+      final mockEntity = MockAssetEntity();
+      final mockFile = File('/path/to/photo.heic');
+
+      when(() => mockEntity.isLivePhoto).thenReturn(true);
+      when(() => mockStorageRepository.getAssetEntityForAsset(asset)).thenAnswer((_) async => mockEntity);
+      when(() => mockStorageRepository.getFileForAsset(asset.id)).thenAnswer((_) async => mockFile);
+      when(() => mockAssetMediaRepository.getOriginalFilename(asset.id)).thenAnswer((_) async => 'IMG_1234');
+
+      final task = await sut.getLivePhotoUploadTask(asset, 'video-id-123');
+
+      expect(task, isNotNull);
+      expect(task!.fields['filename'], equals('IMG_1234.heic'));
+      expect(task.fields['livePhotoVideoId'], equals('video-id-123'));
+    });
+
+    test('should preserve extension when live photo filename has one', () async {
+      final asset = LocalAssetStub.image1;
+      final mockEntity = MockAssetEntity();
+      final mockFile = File('/path/to/photo.heic');
+
+      when(() => mockEntity.isLivePhoto).thenReturn(true);
+      when(() => mockStorageRepository.getAssetEntityForAsset(asset)).thenAnswer((_) async => mockEntity);
+      when(() => mockStorageRepository.getFileForAsset(asset.id)).thenAnswer((_) async => mockFile);
+      when(() => mockAssetMediaRepository.getOriginalFilename(asset.id)).thenAnswer((_) async => 'MyLivePhoto.HEIC');
+
+      final task = await sut.getLivePhotoUploadTask(asset, 'video-id-456');
+
+      expect(task, isNotNull);
+      expect(task!.fields['filename'], equals('MyLivePhoto.HEIC'));
     });
   });
 }

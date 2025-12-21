@@ -271,12 +271,12 @@ class UploadService {
       return null;
     }
 
-    final file = await _storageRepository.getFileForAsset(asset.id);
-    if (file == null) {
+    final uploadFileResult = await prepareUploadFile(asset, isLivePhoto: entity.isLivePhoto);
+    if (uploadFileResult == null) {
       return null;
     }
 
-    final originalFileName = entity.isLivePhoto ? p.setExtension(asset.name, p.extension(file.path)) : asset.name;
+    final (:file, :originalFilename) = uploadFileResult;
 
     String metadata = UploadTaskMetadata(
       localAssetId: asset.id,
@@ -290,7 +290,7 @@ class UploadService {
         file,
         createdAt: asset.createdAt,
         modifiedAt: asset.updatedAt,
-        originalFileName: originalFileName,
+        originalFileName: originalFilename,
         deviceAssetId: asset.id,
         metadata: metadata,
         group: "group",
@@ -308,8 +308,6 @@ class UploadService {
       return null;
     }
 
-    File? file;
-
     /// iOS LivePhoto has two files: a photo and a video.
     /// They are uploaded separately, with video file being upload first, then returned with the assetId
     /// The assetId is then used as a metadata for the photo file upload task.
@@ -320,18 +318,12 @@ class UploadService {
     /// The cancel operation will only cancel the video group (normal group), the photo group will not
     /// be touched, as the video file is already uploaded.
 
-    if (entity.isLivePhoto) {
-      file = await _storageRepository.getMotionFileForAsset(asset);
-    } else {
-      file = await _storageRepository.getFileForAsset(asset.id);
-    }
-
-    if (file == null) {
+    final uploadFileResult = await prepareUploadFile(asset, isLivePhoto: entity.isLivePhoto);
+    if (uploadFileResult == null) {
       return null;
     }
 
-    final fileName = await _assetMediaRepository.getOriginalFilename(asset.id) ?? asset.name;
-    final originalFileName = entity.isLivePhoto ? p.setExtension(fileName, p.extension(file.path)) : fileName;
+    final (:file, :originalFilename) = uploadFileResult;
 
     String metadata = UploadTaskMetadata(
       localAssetId: asset.id,
@@ -345,7 +337,7 @@ class UploadService {
       file,
       createdAt: asset.createdAt,
       modifiedAt: asset.updatedAt,
-      originalFileName: originalFileName,
+      originalFileName: originalFilename,
       deviceAssetId: asset.id,
       metadata: metadata,
       group: group,
@@ -362,21 +354,20 @@ class UploadService {
       return null;
     }
 
-    final file = await _storageRepository.getFileForAsset(asset.id);
-    if (file == null) {
+    final result = await prepareUploadFile(asset);
+    if (result == null) {
       return null;
     }
 
     final fields = {'livePhotoVideoId': livePhotoVideoId};
 
     final requiresWiFi = _shouldRequireWiFi(asset);
-    final originalFileName = await _assetMediaRepository.getOriginalFilename(asset.id) ?? asset.name;
 
     return buildUploadTask(
-      file,
+      result.file,
       createdAt: asset.createdAt,
       modifiedAt: asset.updatedAt,
-      originalFileName: originalFileName,
+      originalFileName: result.originalFilename,
       deviceAssetId: asset.id,
       fields: fields,
       group: kBackupLivePhotoGroup,
@@ -396,6 +387,54 @@ class UploadService {
     }
 
     return requiresWiFi;
+  }
+
+  @visibleForTesting
+  Future<({File file, String originalFilename})?> prepareUploadFile(
+    LocalAsset asset, {
+    bool isLivePhoto = false,
+  }) async {
+    final file = isLivePhoto
+        ? await _storageRepository.getMotionFileForAsset(asset)
+        : await _storageRepository.getFileForAsset(asset.id);
+
+    if (file == null) {
+      return null;
+    }
+
+    final originalFilename = await _assetMediaRepository.getOriginalFilename(asset.id) ?? asset.name;
+
+    if (isLivePhoto) {
+      final livePhotoFilename = p.setExtension(originalFilename, p.extension(file.path));
+      return (file: file, originalFilename: livePhotoFilename);
+    }
+
+    final filenameExt = p.extension(originalFilename);
+    if (filenameExt.isNotEmpty) {
+      return (file: file, originalFilename: originalFilename);
+    }
+
+    final assetNameExt = p.extension(asset.name);
+    if (assetNameExt.isNotEmpty) {
+      final correctedFilename = p.setExtension(originalFilename, assetNameExt);
+      _logger.fine(
+        "Corrected filename $originalFilename to $correctedFilename using asset.name extension $assetNameExt",
+      );
+      return (file: file, originalFilename: correctedFilename);
+    }
+
+    final filePathExt = p.extension(file.path);
+    if (filePathExt.isEmpty) {
+      _logger.warning(
+        "Asset ${asset.id} has no file extension in any source, using original filename - $originalFilename",
+      );
+      return (file: file, originalFilename: originalFilename);
+    }
+
+    final correctedFilename = p.setExtension(originalFilename, filePathExt);
+    _logger.fine("Corrected filename $originalFilename to $correctedFilename using file path extension $filePathExt");
+
+    return (file: file, originalFilename: correctedFilename);
   }
 
   Future<UploadTask> buildUploadTask(
