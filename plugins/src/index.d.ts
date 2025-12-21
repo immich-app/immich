@@ -1,5 +1,6 @@
 declare module 'main' {
   export function filterFileName(): I32;
+  export function filterPerson(): I32;
   export function actionAddToAlbum(): I32;
   export function actionArchive(): I32;
 }
