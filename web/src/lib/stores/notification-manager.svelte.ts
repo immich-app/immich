@@ -11,6 +11,7 @@ class NotificationStore {
   constructor() {
     eventManager.on('AuthLogin', () => handlePromiseError(this.refresh()));
     eventManager.on('AuthLogout', () => this.clear());
+    eventManager.on('AuthAccountSwitch', () => handlePromiseError(this.refresh()));
   }
 
   async refresh() {

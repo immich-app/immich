@@ -6,6 +6,7 @@ class SearchStore {
 
   constructor() {
     eventManager.on('AuthLogout', () => this.clearCache());
+    eventManager.on('AuthAccountSwitch', () => this.clearCache());
   }
 
   clearCache() {

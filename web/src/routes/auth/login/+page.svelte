@@ -6,6 +6,7 @@
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
   import { oauth } from '$lib/utils';
+  import { saveCurrentAccountFromLogin } from '$lib/utils/auth';
   import { getServerErrorMessage, handleError } from '$lib/utils/handle-error';
   import { login, type LoginResponseDto } from '@immich/sdk';
   import { Alert, Button, Field, Input, PasswordInput, Stack } from '@immich/ui';
@@ -46,6 +47,9 @@
       try {
         const user = await oauth.login(globalThis.location);
 
+        // Save the account token immediately after successful OAuth login
+        await saveCurrentAccountFromLogin(user);
+
         if (!user.isOnboarded) {
           await onOnboarding();
           return;
@@ -82,6 +86,10 @@
       errorMessage = '';
       loading = true;
       const user = await login({ loginCredentialDto: { email, password } });
+
+      // Save the account token immediately after successful login
+      // This ensures the token is captured even for onboarding/password-change flows
+      await saveCurrentAccountFromLogin(user);
 
       if (user.isAdmin && !serverConfig.isOnboarded) {
         await onOnboarding();

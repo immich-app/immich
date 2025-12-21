@@ -7,6 +7,7 @@ class UploadManager {
 
   constructor() {
     eventManager.on('AppInit', () => void this.#loadExtensions()).on('AuthLogout', () => void this.reset());
+    eventManager.on('AuthAccountSwitch', () => void this.reset());
   }
 
   reset() {
