@@ -563,7 +563,7 @@
         <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')} offset={{ x: 175, y: 25 }}>
           <DownloadAction menuItem filename="{album.albumName}.zip" />
           {#if assetInteraction.isAllUserOwned}
-            <ChangeDate menuItem />
+            <ChangeDate menuItem onDateChange={(ids, updateFn) => timelineManager.update(ids, updateFn)} />
             <ChangeDescription menuItem />
             <ChangeLocation menuItem />
             {#if assetInteraction.selectedAssets.length === 1}

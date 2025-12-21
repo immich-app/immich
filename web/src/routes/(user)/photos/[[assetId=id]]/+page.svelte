@@ -139,7 +139,7 @@
           onUnlink={handleUnlink}
         />
       {/if}
-      <ChangeDate menuItem />
+      <ChangeDate menuItem onDateChange={(ids, updateFn) => timelineManager.update(ids, updateFn)} />
       <ChangeDescription menuItem />
       <ChangeLocation menuItem />
       <ArchiveAction

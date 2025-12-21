@@ -1,24 +1,13 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import UserPageLayout, { headerId } from '$lib/components/layouts/user-page-layout.svelte';
+  import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import Breadcrumbs from '$lib/components/shared-components/tree/breadcrumbs.svelte';
   import TreeItemThumbnails from '$lib/components/shared-components/tree/tree-item-thumbnails.svelte';
   import TreeItems from '$lib/components/shared-components/tree/tree-items.svelte';
   import Sidebar from '$lib/components/sidebar/sidebar.svelte';
-  import Timeline from '$lib/components/timeline/Timeline.svelte';
-  import { AppRoute, AssetAction, QueryParameter } from '$lib/constants';
-  import SkipLink from '$lib/elements/SkipLink.svelte';
-  import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
-  import TagCreateModal from '$lib/modals/TagCreateModal.svelte';
-  import TagEditModal from '$lib/modals/TagEditModal.svelte';
-  import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-  import { joinPaths, TreeNode } from '$lib/utils/tree-utils';
-  import { deleteTag, getAllTags, type TagResponseDto } from '@immich/sdk';
-  import { Button, HStack, modalManager, Text } from '@immich/ui';
-  import { mdiDotsVertical, mdiPencil, mdiPlus, mdiTag, mdiTagMultiple, mdiTrashCanOutline } from '@mdi/js';
-  import { t } from 'svelte-i18n';
-  import type { PageData } from './$types';
   import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
+  import Timeline from '$lib/components/timeline/Timeline.svelte';
   import AddToAlbum from '$lib/components/timeline/actions/AddToAlbumAction.svelte';
   import ArchiveAction from '$lib/components/timeline/actions/ArchiveAction.svelte';
   import ChangeDate from '$lib/components/timeline/actions/ChangeDateAction.svelte';
@@ -31,8 +20,19 @@
   import SelectAllAssets from '$lib/components/timeline/actions/SelectAllAction.svelte';
   import SetVisibilityAction from '$lib/components/timeline/actions/SetVisibilityAction.svelte';
   import TagAction from '$lib/components/timeline/actions/TagAction.svelte';
-  import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
+  import { AppRoute, AssetAction, QueryParameter } from '$lib/constants';
+  import SkipLink from '$lib/elements/SkipLink.svelte';
+  import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
+  import TagCreateModal from '$lib/modals/TagCreateModal.svelte';
+  import TagEditModal from '$lib/modals/TagEditModal.svelte';
+  import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { preferences, user } from '$lib/stores/user.store';
+  import { joinPaths, TreeNode } from '$lib/utils/tree-utils';
+  import { deleteTag, getAllTags, type TagResponseDto } from '@immich/sdk';
+  import { Button, HStack, modalManager, Text } from '@immich/ui';
+  import { mdiDotsVertical, mdiPencil, mdiPlus, mdiTag, mdiTagMultiple, mdiTrashCanOutline } from '@mdi/js';
+  import { t } from 'svelte-i18n';
+  import type { PageData } from './$types';
 
   interface Props {
     data: PageData;
@@ -172,7 +172,7 @@
         ></FavoriteAction>
         <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
           <DownloadAction menuItem />
-          <ChangeDate menuItem />
+          <ChangeDate menuItem onDateChange={(ids, updateFn) => timelineManager.update(ids, updateFn)} />
           <ChangeDescription menuItem />
           <ChangeLocation menuItem />
           <ArchiveAction

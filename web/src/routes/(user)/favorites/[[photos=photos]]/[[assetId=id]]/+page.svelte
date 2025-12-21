@@ -79,7 +79,7 @@
     </ButtonContextMenu>
     <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
       <DownloadAction menuItem />
-      <ChangeDate menuItem />
+      <ChangeDate menuItem onDateChange={(ids, updateFn) => timelineManager.update(ids, updateFn)} />
       <ChangeDescription menuItem />
       <ChangeLocation menuItem />
       <ArchiveAction

@@ -80,7 +80,7 @@
     <SetVisibilityAction unlock onVisibilitySet={handleMoveOffLockedFolder} />
     <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
       <DownloadAction menuItem />
-      <ChangeDate menuItem />
+      <ChangeDate menuItem onDateChange={(ids, updateFn) => timelineManager.update(ids, updateFn)} />
       <ChangeLocation menuItem />
       <DeleteAssets menuItem force onAssetDelete={(assetIds) => timelineManager.removeAssets(assetIds)} />
     </ButtonContextMenu>

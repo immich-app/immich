@@ -1,8 +1,26 @@
+<script lang="ts" module>
+  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
+  import type { DateTime as DateTimeType } from 'luxon';
+
+  export type DateChangeResult =
+    | {
+        type: 'relative';
+        offsetMinutes: number;
+        timeZone: string;
+        assets: TimelineAsset[];
+      }
+    | {
+        type: 'absolute';
+        newDateTime: DateTimeType;
+        timeZone: string;
+        assets: TimelineAsset[];
+      };
+</script>
+
 <script lang="ts">
   import Combobox from '$lib/components/shared-components/combobox.svelte';
   import DateInput from '$lib/elements/DateInput.svelte';
   import DurationInput from '$lib/elements/DurationInput.svelte';
-  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import { getPreferredTimeZone, getTimezones, toIsoDate, type ZoneOption } from '$lib/modals/timezone-utils';
   import { user } from '$lib/stores/user.store';
   import { getOwnedAssetsWithWarning } from '$lib/utils/asset-utils';
@@ -17,7 +35,7 @@
     initialDate?: DateTime;
     initialTimeZone?: string;
     assets: TimelineAsset[];
-    onClose: (success: boolean) => void;
+    onClose: (result: DateChangeResult | undefined) => void;
   }
   let { initialDate = DateTime.now(), initialTimeZone, assets, onClose }: Props = $props();
 
@@ -32,24 +50,35 @@
 
   const handleConfirm = async () => {
     const ids = getOwnedAssetsWithWarning(assets, $user);
+    const timeZone = selectedOption?.value ?? 'UTC';
     try {
       if (showRelative && (selectedDuration || selectedOption)) {
         await updateAssets({
           assetBulkUpdateDto: {
             ids,
             dateTimeRelative: selectedDuration,
-            timeZone: selectedOption?.value,
+            timeZone,
           },
         });
-        onClose(true);
+        onClose({
+          type: 'relative',
+          offsetMinutes: selectedDuration,
+          timeZone,
+          assets,
+        });
         return;
       }
       const isoDate = toIsoDate(selectedDate, selectedOption);
       await updateAssets({ assetBulkUpdateDto: { ids, dateTimeOriginal: isoDate } });
-      onClose(true);
+      onClose({
+        type: 'absolute',
+        newDateTime: date,
+        timeZone,
+        assets,
+      });
     } catch (error) {
       handleError(error, $t('errors.unable_to_change_date'));
-      onClose(false);
+      onClose(undefined);
     }
   };
 
@@ -63,7 +92,7 @@
   const date = $derived(DateTime.fromISO(selectedDate, { zone: selectedOption?.value, setZone: true }));
 </script>
 
-<Modal title={$t('edit_date_and_time')} icon={mdiCalendarEdit} onClose={() => onClose(false)} size="small">
+<Modal title={$t('edit_date_and_time')} icon={mdiCalendarEdit} onClose={() => onClose(undefined)} size="small">
   <ModalBody>
     <Field label={$t('edit_date_and_time_by_offset')}>
       <Switch data-testid="edit-by-offset-switch" bind:checked={showRelative} class="mb-2" />
@@ -117,7 +146,7 @@
   </ModalBody>
   <ModalFooter>
     <HStack fullWidth>
-      <Button shape="round" color="secondary" fullWidth onclick={() => onClose(false)}>
+      <Button shape="round" color="secondary" fullWidth onclick={() => onClose(undefined)}>
         {$t('cancel')}
       </Button>
       <Button shape="round" color="primary" fullWidth onclick={handleConfirm} disabled={!date.isValid}>

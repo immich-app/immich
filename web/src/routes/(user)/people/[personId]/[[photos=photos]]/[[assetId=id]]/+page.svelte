@@ -501,7 +501,7 @@
           text={$t('fix_incorrect_match')}
           onClick={handleReassignAssets}
         />
-        <ChangeDate menuItem />
+        <ChangeDate menuItem onDateChange={(ids, updateFn) => timelineManager.update(ids, updateFn)} />
         <ChangeDescription menuItem />
         <ChangeLocation menuItem />
         <ArchiveAction

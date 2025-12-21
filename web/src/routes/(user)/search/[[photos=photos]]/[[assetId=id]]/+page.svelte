@@ -291,7 +291,7 @@
 
         <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
           <DownloadAction menuItem />
-          <ChangeDate menuItem />
+          <ChangeDate menuItem onDateChange={() => onSearchQueryUpdate()} />
           <ChangeLocation menuItem />
           <ArchiveAction menuItem unarchive={assetInteraction.isAllArchived} />
           {#if $preferences.tags.enabled && assetInteraction.isAllUserOwned}
@@ -432,7 +432,7 @@
 
           <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
             <DownloadAction menuItem />
-            <ChangeDate menuItem />
+            <ChangeDate menuItem onDateChange={() => onSearchQueryUpdate()} />
             <ChangeDescription menuItem />
             <ChangeLocation menuItem />
             <ArchiveAction menuItem unarchive={assetInteraction.isAllArchived} />
