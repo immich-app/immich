@@ -1,5 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
+  import AdminCard from '$lib/components/AdminCard.svelte';
   import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
   import OnEvents from '$lib/components/OnEvents.svelte';
   import ServerStatisticsCard from '$lib/components/server-statistics/ServerStatisticsCard.svelte';
@@ -15,10 +16,6 @@
   import {
     Alert,
     Badge,
-    Card,
-    CardBody,
-    CardHeader,
-    CardTitle,
     Code,
     CommandPaletteContext,
     Container,
@@ -131,128 +128,90 @@
             <ServerStatisticsCard icon={mdiChartPie} title={$t('storage')} value={statsUsage} unit={statsUsageUnit} />
           </div>
         </div>
-        <div>
-          <Card color="secondary">
-            <CardHeader>
-              <div class="flex items-center gap-2 px-4 py-2 text-primary">
-                <Icon icon={mdiAccountOutline} size="1.5rem" />
-                <CardTitle>{$t('profile')}</CardTitle>
-              </div>
-            </CardHeader>
-            <CardBody>
-              <div class="px-4 pb-7">
-                <Stack gap={2}>
-                  <div>
-                    <Heading tag="h3" size="tiny">{$t('name')}</Heading>
-                    <Text>{user.name}</Text>
-                  </div>
-                  <div>
-                    <Heading tag="h3" size="tiny">{$t('email')}</Heading>
-                    <Text>{user.email}</Text>
-                  </div>
-                  <div>
-                    <Heading tag="h3" size="tiny">{$t('created_at')}</Heading>
-                    <Text>{userCreatedAtDateAndTime}</Text>
-                  </div>
-                  <div>
-                    <Heading tag="h3" size="tiny">{$t('updated_at')}</Heading>
-                    <Text>{userUpdatedAtDateAndTime}</Text>
-                  </div>
-                  <div>
-                    <Heading tag="h3" size="tiny">{$t('id')}</Heading>
-                    <Code>{user.id}</Code>
-                  </div>
-                </Stack>
-              </div>
-            </CardBody>
-          </Card>
-        </div>
-        <Card color="secondary">
-          <CardHeader>
-            <div class="flex items-center gap-2 px-4 py-2 text-primary">
-              <Icon icon={mdiFeatureSearchOutline} size="1.5rem" />
-              <CardTitle>{$t('features')}</CardTitle>
-            </div>
-          </CardHeader>
-          <CardBody>
-            <div class="px-4 pb-4">
-              <Stack gap={3}>
-                <FeatureSetting title={$t('email_notifications')} state={userPreferences.emailNotifications.enabled} />
-                <FeatureSetting title={$t('folders')} state={userPreferences.folders.enabled} />
-                <FeatureSetting title={$t('memories')} state={userPreferences.memories.enabled} />
-                <FeatureSetting title={$t('people')} state={userPreferences.people.enabled} />
-                <FeatureSetting title={$t('rating')} state={userPreferences.ratings.enabled} />
-                <FeatureSetting title={$t('shared_links')} state={userPreferences.sharedLinks.enabled} />
-                <FeatureSetting title={$t('show_supporter_badge')} state={userPreferences.purchase.showSupportBadge} />
-                <FeatureSetting title={$t('tags')} state={userPreferences.tags.enabled} />
-                <FeatureSetting title={$t('gcast_enabled')} state={userPreferences.cast.gCastEnabled} />
-              </Stack>
-            </div>
-          </CardBody>
-        </Card>
-        <Card color="secondary">
-          <CardHeader>
-            <div class="flex items-center gap-2 px-4 py-2 text-primary">
-              <Icon icon={mdiChartPieOutline} size="1.5rem" />
-              <CardTitle>{$t('storage_quota')}</CardTitle>
-            </div>
-          </CardHeader>
-          <CardBody>
-            <div class="px-4 pb-4">
-              {#if user.quotaSizeInBytes !== null && user.quotaSizeInBytes >= 0}
-                <Text>
-                  {$t('storage_usage', {
-                    values: {
-                      used: getByteUnitString(usedBytes, $locale, 3),
-                      available: getByteUnitString(availableBytes, $locale, 3),
-                    },
-                  })}
-                </Text>
-              {:else}
-                <Text class="flex items-center gap-1">
-                  <Icon icon={mdiCheckCircle} size="1.25rem" class="text-success" />
-                  {$t('unlimited')}
-                </Text>
-              {/if}
-            </div>
 
-            {#if user.quotaSizeInBytes !== null && user.quotaSizeInBytes >= 0}
-              <div
-                class="storage-status p-4 mt-4 bg-gray-100 dark:bg-immich-dark-primary/10 rounded-lg text-sm w-full"
-                title={$t('storage_usage', {
-                  values: {
-                    used: getByteUnitString(usedBytes, $locale, 3),
-                    available: getByteUnitString(availableBytes, $locale, 3),
-                  },
-                })}
-              >
-                <p class="font-medium text-immich-dark-gray dark:text-white mb-2">{$t('storage')}</p>
-                <div class="mt-4 h-[7px] w-full rounded-full bg-gray-200 dark:bg-gray-700">
-                  <div class="h-[7px] rounded-full {getUsageClass()}" style="width: {usedPercentage}%"></div>
-                </div>
+        <AdminCard icon={mdiAccountOutline} title={$t('profile')}>
+          <Stack gap={2}>
+            <div>
+              <Heading tag="h3" size="tiny">{$t('name')}</Heading>
+              <Text>{user.name}</Text>
+            </div>
+            <div>
+              <Heading tag="h3" size="tiny">{$t('email')}</Heading>
+              <Text>{user.email}</Text>
+            </div>
+            <div>
+              <Heading tag="h3" size="tiny">{$t('created_at')}</Heading>
+              <Text>{userCreatedAtDateAndTime}</Text>
+            </div>
+            <div>
+              <Heading tag="h3" size="tiny">{$t('updated_at')}</Heading>
+              <Text>{userUpdatedAtDateAndTime}</Text>
+            </div>
+            <div>
+              <Heading tag="h3" size="tiny">{$t('id')}</Heading>
+              <Code>{user.id}</Code>
+            </div>
+          </Stack>
+        </AdminCard>
+
+        <AdminCard icon={mdiFeatureSearchOutline} title={$t('features')}>
+          <Stack gap={3}>
+            <FeatureSetting title={$t('email_notifications')} state={userPreferences.emailNotifications.enabled} />
+            <FeatureSetting title={$t('folders')} state={userPreferences.folders.enabled} />
+            <FeatureSetting title={$t('memories')} state={userPreferences.memories.enabled} />
+            <FeatureSetting title={$t('people')} state={userPreferences.people.enabled} />
+            <FeatureSetting title={$t('rating')} state={userPreferences.ratings.enabled} />
+            <FeatureSetting title={$t('shared_links')} state={userPreferences.sharedLinks.enabled} />
+            <FeatureSetting title={$t('show_supporter_badge')} state={userPreferences.purchase.showSupportBadge} />
+            <FeatureSetting title={$t('tags')} state={userPreferences.tags.enabled} />
+            <FeatureSetting title={$t('gcast_enabled')} state={userPreferences.cast.gCastEnabled} />
+          </Stack>
+        </AdminCard>
+
+        <AdminCard icon={mdiChartPieOutline} title={$t('storage_quota')}>
+          {#if user.quotaSizeInBytes !== null && user.quotaSizeInBytes >= 0}
+            <Text>
+              {$t('storage_usage', {
+                values: {
+                  used: getByteUnitString(usedBytes, $locale, 3),
+                  available: getByteUnitString(availableBytes, $locale, 3),
+                },
+              })}
+            </Text>
+          {:else}
+            <Text class="flex items-center gap-1">
+              <Icon icon={mdiCheckCircle} size="1.25rem" class="text-success" />
+              {$t('unlimited')}
+            </Text>
+          {/if}
+
+          {#if user.quotaSizeInBytes !== null && user.quotaSizeInBytes >= 0}
+            <div
+              class="storage-status p-4 mt-4 bg-gray-100 dark:bg-immich-dark-primary/10 rounded-lg text-sm w-full"
+              title={$t('storage_usage', {
+                values: {
+                  used: getByteUnitString(usedBytes, $locale, 3),
+                  available: getByteUnitString(availableBytes, $locale, 3),
+                },
+              })}
+            >
+              <p class="font-medium text-immich-dark-gray dark:text-white mb-2">{$t('storage')}</p>
+              <div class="mt-4 h-[7px] w-full rounded-full bg-gray-200 dark:bg-gray-700">
+                <div class="h-[7px] rounded-full {getUsageClass()}" style="width: {usedPercentage}%"></div>
               </div>
-            {/if}
-          </CardBody>
-        </Card>
-        <Card color="secondary">
-          <CardHeader>
-            <div class="flex items-center gap-2 px-4 py-2 text-primary">
-              <Icon icon={mdiDevices} size="1.5rem" />
-              <CardTitle>{$t('authorized_devices')}</CardTitle>
             </div>
-          </CardHeader>
-          <CardBody>
-            <div class="px-4 pb-7">
-              <Stack gap={3}>
-                {#each userSessions as session (session.id)}
-                  <DeviceCard {session} />
-                {:else}
-                  <span class="text-dark">{$t('no_devices')}</span>
-                {/each}
-              </Stack>
-            </div>
-          </CardBody>
-        </Card>
+          {/if}
+        </AdminCard>
+
+        <AdminCard icon={mdiDevices} title={$t('authorized_devices')}>
+          <Stack gap={3}>
+            {#each userSessions as session (session.id)}
+              <DeviceCard {session} />
+            {:else}
+              <span class="text-dark">{$t('no_devices')}</span>
+            {/each}
+          </Stack>
+        </AdminCard>
       </div>
     </Container>
   </div>

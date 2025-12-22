@@ -55,6 +55,7 @@ export enum AppRoute {
   DUPLICATES = '/utilities/duplicates',
   LARGE_FILES = '/utilities/large-files',
   GEOLOCATION = '/utilities/geolocation',
+  WORKFLOWS = '/utilities/workflows',
 
   FOLDERS = '/folders',
   TAGS = '/tags',
@@ -306,6 +307,7 @@ export const langs: Lang[] = [
   { name: 'Chuvash', code: 'cv', loader: () => import('$i18n/cv.json') },
   { name: 'Danish', code: 'da', loader: () => import('$i18n/da.json') },
   { name: 'German', code: 'de', loader: () => import('$i18n/de.json') },
+  { name: 'German (Switzerland)', code: 'de-CH', weblateCode: 'de_CH', loader: () => import('$i18n/de_CH.json') },
   defaultLang,
   { name: 'Greek', code: 'el', loader: () => import('$i18n/el.json') },
   { name: 'Esperanto', code: 'eo', loader: () => import('$i18n/eo.json') },
