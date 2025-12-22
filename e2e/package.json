@@ -1,6 +1,6 @@
 {
   "name": "immich-e2e",
-  "version": "2.4.0",
+  "version": "2.4.1",
   "description": "",
   "main": "index.js",
   "type": "module",

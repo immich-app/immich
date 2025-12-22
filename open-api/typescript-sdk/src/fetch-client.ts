@@ -1,6 +1,6 @@
 /**
  * Immich
- * 2.4.0
+ * 2.4.1
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -942,7 +942,7 @@ export type PluginActionResponseDto = {
     methodName: string;
     pluginId: string;
     schema: object | null;
-    supportedContexts: PluginContext[];
+    supportedContexts: PluginContextType[];
     title: string;
 };
 export type PluginFilterResponseDto = {
@@ -951,7 +951,7 @@ export type PluginFilterResponseDto = {
     methodName: string;
     pluginId: string;
     schema: object | null;
-    supportedContexts: PluginContext[];
+    supportedContexts: PluginContextType[];
     title: string;
 };
 export type PluginResponseDto = {
@@ -965,6 +965,10 @@ export type PluginResponseDto = {
     title: string;
     updatedAt: string;
     version: string;
+};
+export type PluginTriggerResponseDto = {
+    contextType: PluginContextType;
+    "type": PluginTriggerType;
 };
 export type QueueResponseDto = {
     isPaused: boolean;
@@ -1750,7 +1754,7 @@ export type WorkflowResponseDto = {
     id: string;
     name: string | null;
     ownerId: string;
-    triggerType: TriggerType;
+    triggerType: PluginTriggerType;
 };
 export type WorkflowActionItemDto = {
     actionConfig?: object;
@@ -1774,6 +1778,7 @@ export type WorkflowUpdateDto = {
     enabled?: boolean;
     filters?: WorkflowFilterItemDto[];
     name?: string;
+    triggerType?: PluginTriggerType;
 };
 /**
  * List all activities
@@ -3657,6 +3662,17 @@ export function getPlugins(opts?: Oazapfts.RequestOpts) {
     }));
 }
 /**
+ * List all plugin triggers
+ */
+export function getPluginTriggers(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: PluginTriggerResponseDto[];
+    }>("/plugins/triggers", {
+        ...opts
+    }));
+}
+/**
  * Retrieve a plugin
  */
 export function getPlugin({ id }: {
@@ -5418,10 +5434,14 @@ export enum PartnerDirection {
     SharedBy = "shared-by",
     SharedWith = "shared-with"
 }
-export enum PluginContext {
+export enum PluginContextType {
     Asset = "asset",
     Album = "album",
     Person = "person"
+}
+export enum PluginTriggerType {
+    AssetCreate = "AssetCreate",
+    PersonRecognized = "PersonRecognized"
 }
 export enum QueueJobStatus {
     Active = "active",
@@ -5638,12 +5658,4 @@ export enum LogLevel {
 export enum OAuthTokenEndpointAuthMethod {
     ClientSecretPost = "client_secret_post",
     ClientSecretBasic = "client_secret_basic"
-}
-export enum TriggerType {
-    AssetCreate = "AssetCreate",
-    PersonRecognized = "PersonRecognized"
-}
-export enum PluginTriggerType {
-    AssetCreate = "AssetCreate",
-    PersonRecognized = "PersonRecognized"
 }

@@ -4,18 +4,18 @@
   import OnEvents from '$lib/components/OnEvents.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import { AppRoute } from '$lib/constants';
-  import { getLibrariesActions, handleCreateLibrary, handleViewLibrary } from '$lib/services/library.service';
+  import { getLibrariesActions, handleShowLibraryCreateModal, handleViewLibrary } from '$lib/services/library.service';
   import { locale } from '$lib/stores/preferences.store';
   import { getBytesWithUnit } from '$lib/utils/byte-units';
-  import { getLibrary, getLibraryStatistics, getUserAdmin, type LibraryResponseDto } from '@immich/sdk';
+  import { getLibrary, getLibraryStatistics, type LibraryResponseDto } from '@immich/sdk';
   import { Button, CommandPaletteContext } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
   import type { PageData } from './$types';
 
-  interface Props {
+  type Props = {
     data: PageData;
-  }
+  };
 
   let { data }: Props = $props();
 
@@ -23,15 +23,11 @@
   let statistics = $state(data.statistics);
   let owners = $state(data.owners);
 
-  const handleLibraryAdd = async (library: LibraryResponseDto) => {
-    statistics[library.id] = await getLibraryStatistics({ id: library.id });
-    owners[library.id] = await getUserAdmin({ id: library.ownerId });
-    libraries.push(library);
-
+  const onLibraryCreate = async (library: LibraryResponseDto) => {
     await goto(`${AppRoute.ADMIN_LIBRARY_MANAGEMENT}/${library.id}`);
   };
 
-  const handleLibraryUpdate = async (library: LibraryResponseDto) => {
+  const onLibraryUpdate = async (library: LibraryResponseDto) => {
     const index = libraries.findIndex(({ id }) => id === library.id);
 
     if (index === -1) {
@@ -42,7 +38,7 @@
     statistics[library.id] = await getLibraryStatistics({ id: library.id });
   };
 
-  const handleDeleteLibrary = ({ id }: { id: string }) => {
+  const onLibraryDelete = ({ id }: { id: string }) => {
     libraries = libraries.filter((library) => library.id !== id);
     delete statistics[id];
     delete owners[id];
@@ -51,11 +47,7 @@
   const { Create, ScanAll } = $derived(getLibrariesActions($t, libraries));
 </script>
 
-<OnEvents
-  onLibraryCreate={handleLibraryAdd}
-  onLibraryUpdate={handleLibraryUpdate}
-  onLibraryDelete={handleDeleteLibrary}
-/>
+<OnEvents {onLibraryCreate} {onLibraryUpdate} {onLibraryDelete} />
 
 <CommandPaletteContext commands={[Create, ScanAll]} />
 
@@ -106,7 +98,11 @@
           </tbody>
         </table>
       {:else}
-        <EmptyPlaceholder text={$t('no_libraries_message')} onClick={handleCreateLibrary} class="mt-10 mx-auto" />
+        <EmptyPlaceholder
+          text={$t('no_libraries_message')}
+          onClick={handleShowLibraryCreateModal}
+          class="mt-10 mx-auto"
+        />
       {/if}
     </div>
   </section>
