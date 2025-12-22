@@ -231,14 +231,14 @@ export const handleAddLibraryFolder = async (library: LibraryResponseDto, folder
   return true;
 };
 
-export const handleEditLibraryFolder = async (library: LibraryResponseDto, oldFolder: string, newFolder: string) => {
+export const handleEditLibraryFolder = async (library: LibraryResponseDto, oldValue: string, newValue: string) => {
   const $t = await getFormatter();
 
-  if (oldFolder === newFolder) {
+  if (oldValue === newValue) {
     return true;
   }
 
-  const importPaths = library.importPaths.map((path) => (path === oldFolder ? newFolder : path));
+  const importPaths = library.importPaths.map((path) => (path === oldValue ? newValue : path));
 
   try {
     const updatedLibrary = await updateLibrary({ id: library.id, updateLibraryDto: { importPaths } });
@@ -299,20 +299,14 @@ export const handleAddLibraryExclusionPattern = async (library: LibraryResponseD
   return true;
 };
 
-export const handleEditExclusionPattern = async (
-  library: LibraryResponseDto,
-  oldExclusionPattern: string,
-  newExclusionPattern: string,
-) => {
+export const handleEditExclusionPattern = async (library: LibraryResponseDto, oldValue: string, newValue: string) => {
   const $t = await getFormatter();
 
-  if (oldExclusionPattern === newExclusionPattern) {
+  if (oldValue === newValue) {
     return true;
   }
 
-  const exclusionPatterns = library.exclusionPatterns.map((pattern) =>
-    pattern === oldExclusionPattern ? newExclusionPattern : pattern,
-  );
+  const exclusionPatterns = library.exclusionPatterns.map((pattern) => (pattern === oldValue ? newValue : pattern));
 
   try {
     const updatedLibrary = await updateLibrary({ id: library.id, updateLibraryDto: { exclusionPatterns } });
