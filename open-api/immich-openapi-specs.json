@@ -10381,6 +10381,21 @@
               "format": "uuid",
               "type": "string"
             }
+          },
+          {
+            "name": "id",
+            "required": false,
+            "in": "query",
+            "x-immich-history": [
+              {
+                "version": "v2.5.0",
+                "state": "Added"
+              }
+            ],
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
           }
         ],
         "responses": {
