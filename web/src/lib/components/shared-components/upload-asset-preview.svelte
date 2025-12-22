@@ -1,9 +1,9 @@
 <script lang="ts">
   import { AppRoute } from '$lib/constants';
-  import type { UploadAsset } from '$lib/models/upload-asset';
-  import { UploadState } from '$lib/models/upload-asset';
   import { locale } from '$lib/stores/preferences.store';
   import { uploadAssetsStore } from '$lib/stores/upload';
+  import type { UploadAsset } from '$lib/types';
+  import { UploadState } from '$lib/types';
   import { getByteUnitString } from '$lib/utils/byte-units';
   import { fileUploadHandler } from '$lib/utils/file-uploader';
   import { Icon } from '@immich/ui';
