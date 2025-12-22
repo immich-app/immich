@@ -26,6 +26,7 @@ export type Events = {
 
   AssetReplace: [{ oldAssetId: string; newAssetId: string }];
 
+  AlbumUpdate: [AlbumResponseDto];
   AlbumDelete: [AlbumResponseDto];
 
   QueueUpdate: [QueueResponseDto];
