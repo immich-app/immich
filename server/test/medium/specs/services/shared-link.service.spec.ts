@@ -41,7 +41,7 @@ describe(SharedLinkService.name, () => {
       for (const date of dates) {
         const { asset } = await ctx.newAsset({ fileCreatedAt: date, localDateTime: date, ownerId: user.id });
         await ctx.newExif({ assetId: asset.id, make: 'Canon' });
-        await ctx.newAlbumAsset({ albumId: album.id, assetId: asset.id });
+        await ctx.newAlbumAsset({ albumId: album.id, assetId: asset.id, createdBy: user.id });
       }
 
       const sharedLinkRepo = ctx.get(SharedLinkRepository);
