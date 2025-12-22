@@ -2,8 +2,11 @@ import { ConsoleLogger, Inject, Injectable, Scope } from '@nestjs/common';
 import { isLogLevelEnabled } from '@nestjs/common/services/utils/is-log-level-enabled.util';
 import { ClsService } from 'nestjs-cls';
 import { Telemetry } from 'src/decorators';
-import { LogLevel } from 'src/enum';
+import { LogFormat, LogLevel } from 'src/enum';
 import { ConfigRepository } from 'src/repositories/config.repository';
+import { ConsoleFormatter } from 'src/repositories/logging/console-formatter';
+import { JsonFormatter } from 'src/repositories/logging/json-formatter';
+import { LogContext, LogFormatter } from 'src/repositories/logging/log-formatter.interface';
 
 type LogDetails = any;
 type LogFunction = () => string;
@@ -23,18 +26,49 @@ let appName: string | undefined;
 let logLevels: LogLevel[] = [LogLevel.Log, LogLevel.Warn, LogLevel.Error, LogLevel.Fatal];
 
 export class MyConsoleLogger extends ConsoleLogger {
-  private isColorEnabled: boolean;
+  private formatter: LogFormatter;
 
   constructor(
     private cls: ClsService | undefined,
-    options?: { color?: boolean; context?: string },
+    options?: { format?: LogFormat; color?: boolean; context?: string },
   ) {
     super(options?.context || MyConsoleLogger.name);
-    this.isColorEnabled = options?.color || false;
+
+    const format = options?.format || LogFormat.Console;
+    const useColor = format === LogFormat.Console ? (options?.color || false) : false;
+
+    this.formatter = format === LogFormat.Json ? new JsonFormatter() : new ConsoleFormatter(useColor);
   }
 
   isLevelEnabled(level: LogLevel) {
     return isLogLevelEnabled(level, logLevels);
+  }
+
+  /**
+   * Override printMessages to use custom formatters.
+   * This is called by NestJS for all log methods (log, error, warn, etc.).
+   */
+  protected printMessages(messages: unknown[], context = '', logLevel: LogLevel = LogLevel.Log, writeStreamType?: 'stdout' | 'stderr') {
+    const timestamp = new Date();
+    const correlationId = this.cls?.getId();
+
+    for (const message of messages) {
+      const logContext: LogContext = {
+        timestamp,
+        level: logLevel,
+        context: context || this.context,
+        appName,
+        correlationId,
+        message: this.messageToString(message, logLevel),
+        stack: this.extractStack(message),
+      };
+
+      const formattedMessage = this.formatter.formatMessage(logContext);
+
+      // Write to appropriate stream
+      const stream = writeStreamType === 'stderr' ? process.stderr : process.stdout;
+      stream.write(formattedMessage + '\n');
+    }
   }
 
   formatContext(context: string): string {
@@ -52,20 +86,25 @@ export class MyConsoleLogger extends ConsoleLogger {
       return '';
     }
 
-    return this.colors.yellow(`[${prefix}]`) + ' ';
+    // For backwards compatibility, only use formatter if it supports colors (console formatter)
+    if (this.formatter.shouldUseColor()) {
+      return `\u001B[${LogColor.YELLOW}m[${prefix}]\u001B[39m `;
+    }
+    return `[${prefix}] `;
   }
 
-  private colors = {
-    red: (text: string) => this.withColor(text, LogColor.RED),
-    green: (text: string) => this.withColor(text, LogColor.GREEN),
-    yellow: (text: string) => this.withColor(text, LogColor.YELLOW),
-    blue: (text: string) => this.withColor(text, LogColor.BLUE),
-    magentaBright: (text: string) => this.withColor(text, LogColor.MAGENTA_BRIGHT),
-    cyanBright: (text: string) => this.withColor(text, LogColor.CYAN_BRIGHT),
-  };
+  private messageToString(message: unknown, logLevel: string): string {
+    if (message instanceof Error) {
+      return message.message;
+    }
+    return typeof message === 'string' ? message : JSON.stringify(message);
+  }
 
-  private withColor(text: string, color: LogColor) {
-    return this.isColorEnabled ? `\u001B[${color}m${text}\u001B[39m` : text;
+  private extractStack(message: unknown): string | undefined {
+    if (message instanceof Error && message.stack) {
+      return message.stack;
+    }
+    return undefined;
   }
 }
 
@@ -79,10 +118,19 @@ export class LoggingRepository {
     @Inject(ConfigRepository) configRepository: ConfigRepository | undefined,
   ) {
     let noColor = false;
+    let logFormat = LogFormat.Console;
+
     if (configRepository) {
-      noColor = configRepository.getEnv().noColor;
+      const env = configRepository.getEnv();
+      noColor = env.noColor;
+      logFormat = env.logFormat;
     }
-    this.logger = new MyConsoleLogger(cls, { context: LoggingRepository.name, color: !noColor });
+
+    this.logger = new MyConsoleLogger(cls, {
+      context: LoggingRepository.name,
+      format: logFormat,
+      color: !noColor,
+    });
   }
 
   static create(context?: string) {
