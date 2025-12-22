@@ -34,7 +34,7 @@
   };
 </script>
 
-<FormModal title={$t('api_key')} icon={mdiKeyVariant} {onClose} {onSubmit} size="giant" submitText={$t('save')}>
+<FormModal title={$t('api_key')} icon={mdiKeyVariant} {onClose} {onSubmit} size="giant">
   <div class="mb-4 flex flex-col gap-2">
     <Field label={$t('name')}>
       <Input bind:value={name} />
