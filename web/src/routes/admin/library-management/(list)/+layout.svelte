@@ -4,27 +4,29 @@
   import OnEvents from '$lib/components/OnEvents.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import { AppRoute } from '$lib/constants';
-  import { getLibrariesActions, handleShowLibraryCreateModal, handleViewLibrary } from '$lib/services/library.service';
+  import { getLibrariesActions, handleViewLibrary } from '$lib/services/library.service';
   import { locale } from '$lib/stores/preferences.store';
   import { getBytesWithUnit } from '$lib/utils/byte-units';
   import { getLibrary, getLibraryStatistics, type LibraryResponseDto } from '@immich/sdk';
   import { Button, CommandPaletteContext } from '@immich/ui';
+  import type { Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
-  import type { PageData } from './$types';
+  import type { LayoutData } from './$types';
 
   type Props = {
-    data: PageData;
+    children?: Snippet;
+    data: LayoutData;
   };
 
-  let { data }: Props = $props();
+  let { children, data }: Props = $props();
 
   let libraries = $state(data.libraries);
   let statistics = $state(data.statistics);
   let owners = $state(data.owners);
 
   const onLibraryCreate = async (library: LibraryResponseDto) => {
-    await goto(`${AppRoute.ADMIN_LIBRARY_MANAGEMENT}/${library.id}`);
+    await goto(`${AppRoute.ADMIN_LIBRARIES}/${library.id}`);
   };
 
   const onLibraryUpdate = async (library: LibraryResponseDto) => {
@@ -100,10 +102,12 @@
       {:else}
         <EmptyPlaceholder
           text={$t('no_libraries_message')}
-          onClick={handleShowLibraryCreateModal}
+          onClick={() => goto(AppRoute.ADMIN_LIBRARIES_NEW)}
           class="mt-10 mx-auto"
         />
       {/if}
+
+      {@render children?.()}
     </div>
   </section>
 </AdminPageLayout>

@@ -4,12 +4,11 @@ import type { PageLoad } from './$types';
 
 export const load = (async ({ url }) => {
   await authenticate(url, { admin: true });
-
   const $t = await getFormatter();
 
   return {
     meta: {
-      title: $t('admin.library_details'),
+      title: $t('external_libraries'),
     },
   };
 }) satisfies PageLoad;
