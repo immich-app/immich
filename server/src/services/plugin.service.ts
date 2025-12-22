@@ -85,8 +85,8 @@ export class PluginService extends BaseService {
     this.logger.log(`Successfully processed core plugin: ${coreManifest.name} (version ${coreManifest.version})`);
 
     // Load external plugins
-    if (plugins.enabled && plugins.installFolder) {
-      await this.loadExternalPlugins(plugins.installFolder);
+    if (plugins.external.allow && plugins.external.installFolder) {
+      await this.loadExternalPlugins(plugins.external.installFolder);
     }
   }
 
