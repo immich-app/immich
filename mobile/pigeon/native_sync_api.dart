@@ -121,4 +121,21 @@ abstract class NativeSyncApi {
 
   @TaskQueue(type: TaskQueueType.serialBackgroundThread)
   Map<String, List<PlatformAsset>> getTrashedAssets();
+
+  /// Get the file path for the main resource of an asset.
+  /// Returns null if the asset cannot be found.
+  @async
+  @TaskQueue(type: TaskQueueType.serialBackgroundThread)
+  String? getAssetFilePath(String assetId);
+
+  /// Check if an asset has a RAW resource (iOS only, JPEG+RAW pair).
+  /// Returns true if the asset has a RAW resource alongside the main JPEG/HEIC.
+  @TaskQueue(type: TaskQueueType.serialBackgroundThread)
+  bool hasRawResource(String assetId);
+
+  /// Get the file path for the RAW resource of an asset.
+  /// Returns null if the asset has no RAW resource.
+  @async
+  @TaskQueue(type: TaskQueueType.serialBackgroundThread)
+  String? getRawFilePath(String assetId);
 }

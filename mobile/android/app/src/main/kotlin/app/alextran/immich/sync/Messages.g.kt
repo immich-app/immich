@@ -315,6 +315,21 @@ interface NativeSyncApi {
   fun hashAssets(assetIds: List<String>, allowNetworkAccess: Boolean, callback: (Result<List<HashResult>>) -> Unit)
   fun cancelHashing()
   fun getTrashedAssets(): Map<String, List<PlatformAsset>>
+  /**
+   * Get the file path for the main resource of an asset.
+   * Returns null if the asset cannot be found.
+   */
+  fun getAssetFilePath(assetId: String, callback: (Result<String?>) -> Unit)
+  /**
+   * Check if an asset has a RAW resource (iOS only, JPEG+RAW pair).
+   * Returns true if the asset has a RAW resource alongside the main JPEG/HEIC.
+   */
+  fun hasRawResource(assetId: String): Boolean
+  /**
+   * Get the file path for the RAW resource of an asset.
+   * Returns null if the asset has no RAW resource.
+   */
+  fun getRawFilePath(assetId: String, callback: (Result<String?>) -> Unit)
 
   companion object {
     /** The codec used by NativeSyncApi. */
@@ -503,6 +518,63 @@ interface NativeSyncApi {
               MessagesPigeonUtils.wrapError(exception)
             }
             reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.NativeSyncApi.getAssetFilePath$separatedMessageChannelSuffix", codec, taskQueue)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val assetIdArg = args[0] as String
+            api.getAssetFilePath(assetIdArg) { result: Result<String?> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(MessagesPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(MessagesPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.NativeSyncApi.hasRawResource$separatedMessageChannelSuffix", codec, taskQueue)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val assetIdArg = args[0] as String
+            val wrapped: List<Any?> = try {
+              listOf(api.hasRawResource(assetIdArg))
+            } catch (exception: Throwable) {
+              MessagesPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.NativeSyncApi.getRawFilePath$separatedMessageChannelSuffix", codec, taskQueue)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val assetIdArg = args[0] as String
+            api.getRawFilePath(assetIdArg) { result: Result<String?> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(MessagesPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(MessagesPigeonUtils.wrapResult(data))
+              }
+            }
           }
         } else {
           channel.setMessageHandler(null)

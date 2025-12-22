@@ -377,6 +377,15 @@ protocol NativeSyncApi {
   func hashAssets(assetIds: [String], allowNetworkAccess: Bool, completion: @escaping (Result<[HashResult], Error>) -> Void)
   func cancelHashing() throws
   func getTrashedAssets() throws -> [String: [PlatformAsset]]
+  /// Get the file path for the main resource of an asset.
+  /// Returns null if the asset cannot be found.
+  func getAssetFilePath(assetId: String, completion: @escaping (Result<String?, Error>) -> Void)
+  /// Check if an asset has a RAW resource (iOS only, JPEG+RAW pair).
+  /// Returns true if the asset has a RAW resource alongside the main JPEG/HEIC.
+  func hasRawResource(assetId: String) throws -> Bool
+  /// Get the file path for the RAW resource of an asset.
+  /// Returns null if the asset has no RAW resource.
+  func getRawFilePath(assetId: String, completion: @escaping (Result<String?, Error>) -> Void)
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -559,6 +568,67 @@ class NativeSyncApiSetup {
       }
     } else {
       getTrashedAssetsChannel.setMessageHandler(nil)
+    }
+    /// Get the file path for the main resource of an asset.
+    /// Returns null if the asset cannot be found.
+    let getAssetFilePathChannel = taskQueue == nil
+      ? FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.getAssetFilePath\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+      : FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.getAssetFilePath\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec, taskQueue: taskQueue)
+    if let api = api {
+      getAssetFilePathChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let assetIdArg = args[0] as! String
+        api.getAssetFilePath(assetId: assetIdArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      getAssetFilePathChannel.setMessageHandler(nil)
+    }
+    /// Check if an asset has a RAW resource (iOS only, JPEG+RAW pair).
+    /// Returns true if the asset has a RAW resource alongside the main JPEG/HEIC.
+    let hasRawResourceChannel = taskQueue == nil
+      ? FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.hasRawResource\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+      : FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.hasRawResource\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec, taskQueue: taskQueue)
+    if let api = api {
+      hasRawResourceChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let assetIdArg = args[0] as! String
+        do {
+          let result = try api.hasRawResource(assetId: assetIdArg)
+          reply(wrapResult(result))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      hasRawResourceChannel.setMessageHandler(nil)
+    }
+    /// Get the file path for the RAW resource of an asset.
+    /// Returns null if the asset has no RAW resource.
+    let getRawFilePathChannel = taskQueue == nil
+      ? FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.getRawFilePath\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+      : FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.getRawFilePath\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec, taskQueue: taskQueue)
+    if let api = api {
+      getRawFilePathChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let assetIdArg = args[0] as! String
+        api.getRawFilePath(assetId: assetIdArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      getRawFilePathChannel.setMessageHandler(nil)
     }
   }
 }

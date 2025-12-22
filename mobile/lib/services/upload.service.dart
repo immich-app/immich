@@ -215,6 +215,7 @@ class UploadService {
     switch (update.status) {
       case TaskStatus.complete:
         unawaited(_handleLivePhoto(update));
+        unawaited(_handleRawPhoto(update));
 
         if (CurrentPlatform.isIOS) {
           try {
@@ -262,6 +263,51 @@ class UploadService {
       await enqueueTasks([uploadTask]);
     } catch (error, stackTrace) {
       dPrint(() => "Error handling live photo upload task: $error $stackTrace");
+    }
+  }
+
+  /// Handle RAW photo upload after the main JPEG/HEIC photo is uploaded (iOS only).
+  /// This checks if the asset has a paired RAW file and uploads it if present.
+  Future<void> _handleRawPhoto(TaskStatusUpdate update) async {
+    // RAW photo handling is only for iOS
+    if (!CurrentPlatform.isIOS) {
+      return;
+    }
+
+    try {
+      if (update.task.metaData.isEmpty || update.task.metaData == '') {
+        return;
+      }
+
+      final metadata = UploadTaskMetadata.fromJson(update.task.metaData);
+
+      // Skip if this is already a RAW file upload or a live photo video part
+      if (metadata.isLivePhotos || metadata.isRawFile) {
+        return;
+      }
+
+      // Check if this asset has a RAW resource
+      final hasRaw = await _storageRepository.hasRawResource(metadata.localAssetId);
+      if (!hasRaw) {
+        return;
+      }
+
+      final localAsset = await _localAssetRepository.getById(metadata.localAssetId);
+      if (localAsset == null) {
+        _logger.warning('Could not find local asset for ${metadata.localAssetId}');
+        return;
+      }
+
+      final uploadTask = await getRawPhotoUploadTask(localAsset);
+      if (uploadTask == null) {
+        _logger.warning('Failed to create RAW upload task for ${localAsset.id}');
+        return;
+      }
+
+      await enqueueTasks([uploadTask]);
+    } catch (error, stackTrace) {
+      _logger.severe('Error handling RAW photo upload task: $error', error, stackTrace);
+      dPrint(() => "Error handling RAW photo upload task: $error $stackTrace");
     }
   }
 
@@ -386,6 +432,43 @@ class UploadService {
     );
   }
 
+  /// Get the upload task for the RAW file paired with a JPEG/HEIC photo (iOS only).
+  @visibleForTesting
+  Future<UploadTask?> getRawPhotoUploadTask(LocalAsset asset) async {
+    final file = await _storageRepository.getRawFileForAsset(asset.id);
+    if (file == null) {
+      return null;
+    }
+
+    final requiresWiFi = _shouldRequireWiFi(asset);
+    // Use the RAW file's actual filename
+    final originalFileName = p.basename(file.path);
+
+    // Create metadata indicating this is a RAW file upload
+    String metadata = UploadTaskMetadata(
+      localAssetId: asset.id,
+      isLivePhotos: false,
+      livePhotoVideoId: '',
+      isRawFile: true,
+    ).toJson();
+
+    // Use a unique device asset ID for the RAW file to distinguish from the main photo
+    final rawDeviceAssetId = '${asset.id}:raw';
+
+    return buildUploadTask(
+      file,
+      createdAt: asset.createdAt,
+      modifiedAt: asset.updatedAt,
+      originalFileName: originalFileName,
+      deviceAssetId: rawDeviceAssetId,
+      metadata: metadata,
+      group: kBackupGroup, // Use normal backup group
+      priority: 1, // High priority since the main photo is already uploaded
+      isFavorite: asset.isFavorite,
+      requiresWiFi: requiresWiFi,
+    );
+  }
+
   bool _shouldRequireWiFi(LocalAsset asset) {
     bool requiresWiFi = true;
 
@@ -452,14 +535,16 @@ class UploadTaskMetadata {
   final String localAssetId;
   final bool isLivePhotos;
   final String livePhotoVideoId;
+  final bool isRawFile;
 
-  const UploadTaskMetadata({required this.localAssetId, required this.isLivePhotos, required this.livePhotoVideoId});
+  const UploadTaskMetadata({required this.localAssetId, required this.isLivePhotos, required this.livePhotoVideoId, this.isRawFile = false});
 
-  UploadTaskMetadata copyWith({String? localAssetId, bool? isLivePhotos, String? livePhotoVideoId}) {
+  UploadTaskMetadata copyWith({String? localAssetId, bool? isLivePhotos, String? livePhotoVideoId, bool? isRawFile}) {
     return UploadTaskMetadata(
       localAssetId: localAssetId ?? this.localAssetId,
       isLivePhotos: isLivePhotos ?? this.isLivePhotos,
       livePhotoVideoId: livePhotoVideoId ?? this.livePhotoVideoId,
+      isRawFile: isRawFile ?? this.isRawFile,
     );
   }
 
@@ -468,6 +553,7 @@ class UploadTaskMetadata {
       'localAssetId': localAssetId,
       'isLivePhotos': isLivePhotos,
       'livePhotoVideoId': livePhotoVideoId,
+      'isRawFile': isRawFile,
     };
   }
 
@@ -476,6 +562,7 @@ class UploadTaskMetadata {
       localAssetId: map['localAssetId'] as String,
       isLivePhotos: map['isLivePhotos'] as bool,
       livePhotoVideoId: map['livePhotoVideoId'] as String,
+      isRawFile: map['isRawFile'] as bool? ?? false,
     );
   }
 
@@ -486,7 +573,7 @@ class UploadTaskMetadata {
 
   @override
   String toString() =>
-      'UploadTaskMetadata(localAssetId: $localAssetId, isLivePhotos: $isLivePhotos, livePhotoVideoId: $livePhotoVideoId)';
+      'UploadTaskMetadata(localAssetId: $localAssetId, isLivePhotos: $isLivePhotos, livePhotoVideoId: $livePhotoVideoId, isRawFile: $isRawFile)';
 
   @override
   bool operator ==(covariant UploadTaskMetadata other) {
@@ -494,9 +581,10 @@ class UploadTaskMetadata {
 
     return other.localAssetId == localAssetId &&
         other.isLivePhotos == isLivePhotos &&
-        other.livePhotoVideoId == livePhotoVideoId;
+        other.livePhotoVideoId == livePhotoVideoId &&
+        other.isRawFile == isRawFile;
   }
 
   @override
-  int get hashCode => localAssetId.hashCode ^ isLivePhotos.hashCode ^ livePhotoVideoId.hashCode;
+  int get hashCode => localAssetId.hashCode ^ isLivePhotos.hashCode ^ livePhotoVideoId.hashCode ^ isRawFile.hashCode;
 }
