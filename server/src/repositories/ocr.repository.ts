@@ -78,31 +78,34 @@ export class OcrRepository {
     visible: AssetOcrResponseDto[],
     hidden: AssetOcrResponseDto[],
   ): Promise<void> {
-    if (visible.length > 0) {
-      await this.db
-        .updateTable('asset_ocr')
-        .set({ isVisible: true })
-        .where(
-          'asset_ocr.id',
-          'in',
-          visible.map((i) => i.id),
-        )
-        .execute();
-    }
-
-    if (hidden.length > 0) {
-      await this.db
-        .updateTable('asset_ocr')
-        .set({ isVisible: false })
-        .where(
-          'asset_ocr.id',
-          'in',
-          hidden.map((i) => i.id),
-        )
-        .execute();
-    }
-
     const searchText = visible.map((item) => item.text.trim()).join(' ');
-    await this.db.updateTable('ocr_search').set({ text: searchText }).where('assetId', '=', assetId).execute();
+
+    await this.db.transaction().execute(async (trx) => {
+      if (visible.length > 0) {
+        await trx
+          .updateTable('asset_ocr')
+          .set({ isVisible: true })
+          .where(
+            'asset_ocr.id',
+            'in',
+            visible.map((i) => i.id),
+          )
+          .execute();
+      }
+
+      if (hidden.length > 0) {
+        await trx
+          .updateTable('asset_ocr')
+          .set({ isVisible: false })
+          .where(
+            'asset_ocr.id',
+            'in',
+            hidden.map((i) => i.id),
+          )
+          .execute();
+      }
+
+      await trx.updateTable('ocr_search').set({ text: searchText }).where('assetId', '=', assetId).execute();
+    });
   }
 }

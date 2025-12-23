@@ -554,28 +554,30 @@ export class PersonRepository {
       return;
     }
 
-    if (visible.length > 0) {
-      await this.db
-        .updateTable('asset_face')
-        .set({ isVisible: true })
-        .where(
-          'asset_face.id',
-          'in',
-          visible.map(({ id }) => id),
-        )
-        .execute();
-    }
+    await this.db.transaction().execute(async (trx) => {
+      if (visible.length > 0) {
+        await trx
+          .updateTable('asset_face')
+          .set({ isVisible: true })
+          .where(
+            'asset_face.id',
+            'in',
+            visible.map(({ id }) => id),
+          )
+          .execute();
+      }
 
-    if (hidden.length > 0) {
-      await this.db
-        .updateTable('asset_face')
-        .set({ isVisible: false })
-        .where(
-          'asset_face.id',
-          'in',
-          hidden.map(({ id }) => id),
-        )
-        .execute();
-    }
+      if (hidden.length > 0) {
+        await trx
+          .updateTable('asset_face')
+          .set({ isVisible: false })
+          .where(
+            'asset_face.id',
+            'in',
+            hidden.map(({ id }) => id),
+          )
+          .execute();
+      }
+    });
   }
 }
