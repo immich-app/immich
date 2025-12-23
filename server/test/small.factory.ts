@@ -1,6 +1,7 @@
 import {
   Activity,
   ApiKey,
+  AssetFile,
   AuthApiKey,
   AuthSharedLink,
   AuthUser,
@@ -380,10 +381,18 @@ const assetOcrFactory = (
   ...ocr,
 });
 
+const assetFileFactory = (file: Partial<AssetFile> = {}): AssetFile => ({
+  id: newUuid(),
+  type: AssetFileType.Preview,
+  path: '/uploads/user-id/thumbs/path.jpg',
+  ...file,
+});
+
 export const factory = {
   activity: activityFactory,
   apiKey: apiKeyFactory,
   asset: assetFactory,
+  assetFile: assetFileFactory,
   assetOcr: assetOcrFactory,
   auth: authFactory,
   authApiKey: authApiKeyFactory,

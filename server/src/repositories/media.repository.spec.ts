@@ -5,6 +5,7 @@ import { AssetOcrResponseDto } from 'src/dtos/ocr.dto';
 import { SourceType } from 'src/enum';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { MediaRepository } from 'src/repositories/media.repository';
+import { checkFaceVisibility, checkOcrVisibility } from 'src/utils/editor';
 import { automock } from 'test/utils';
 
 const getPixelColor = async (buffer: Buffer, x: number, y: number) => {
@@ -346,7 +347,7 @@ describe(MediaRepository.name, () => {
     describe('with no crop edit', () => {
       it('should return all faces as visible when no crop is provided', () => {
         const faces = [baseFace];
-        const result = sut.checkFaceVisibility(faces, assetDimensions);
+        const result = checkFaceVisibility(faces, assetDimensions);
 
         expect(result.visible).toEqual(faces);
         expect(result.hidden).toEqual([]);
@@ -360,7 +361,7 @@ describe(MediaRepository.name, () => {
           parameters: { x: 0, y: 0, width: 500, height: 400 },
         };
         const faces = [baseFace];
-        const result = sut.checkFaceVisibility(faces, assetDimensions, crop);
+        const result = checkFaceVisibility(faces, assetDimensions, crop);
 
         expect(result.visible).toEqual(faces);
         expect(result.hidden).toEqual([]);
@@ -376,7 +377,7 @@ describe(MediaRepository.name, () => {
         // Face area: 100x100 = 10000
         // Overlap percentage: 25% - should be hidden
         const faces = [baseFace];
-        const result = sut.checkFaceVisibility(faces, assetDimensions, crop);
+        const result = checkFaceVisibility(faces, assetDimensions, crop);
 
         expect(result.visible).toEqual([]);
         expect(result.hidden).toEqual(faces);
@@ -389,7 +390,7 @@ describe(MediaRepository.name, () => {
         };
         // Face completely outside crop area
         const faces = [baseFace];
-        const result = sut.checkFaceVisibility(faces, assetDimensions, crop);
+        const result = checkFaceVisibility(faces, assetDimensions, crop);
 
         expect(result.visible).toEqual([]);
         expect(result.hidden).toEqual(faces);
@@ -401,7 +402,7 @@ describe(MediaRepository.name, () => {
           parameters: { x: 500, y: 500, width: 200, height: 200 },
         };
         const faces = [baseFace];
-        const result = sut.checkFaceVisibility(faces, assetDimensions, crop);
+        const result = checkFaceVisibility(faces, assetDimensions, crop);
 
         expect(result.visible).toEqual([]);
         expect(result.hidden).toEqual(faces);
@@ -429,7 +430,7 @@ describe(MediaRepository.name, () => {
           boundingBoxY2: 500,
         };
         const faces = [faceInside, faceOutside];
-        const result = sut.checkFaceVisibility(faces, assetDimensions, crop);
+        const result = checkFaceVisibility(faces, assetDimensions, crop);
 
         expect(result.visible).toEqual([faceInside]);
         expect(result.hidden).toEqual([faceOutside]);
@@ -453,7 +454,7 @@ describe(MediaRepository.name, () => {
           parameters: { x: 50, y: 0, width: 100, height: 100 },
         };
         const faces = [faceAtEdge];
-        const result = sut.checkFaceVisibility(faces, assetDimensions, crop);
+        const result = checkFaceVisibility(faces, assetDimensions, crop);
 
         expect(result.visible).toEqual([faceAtEdge]);
         expect(result.hidden).toEqual([]);
@@ -472,7 +473,7 @@ describe(MediaRepository.name, () => {
         // Scaled to 500x400: (50,50)-(100,100)
         // Crop at (0,0)-(250,200) - face is fully inside
         const faces = [baseFace];
-        const result = sut.checkFaceVisibility(faces, scaledDimensions, crop);
+        const result = checkFaceVisibility(faces, scaledDimensions, crop);
 
         expect(result.visible).toEqual(faces);
         expect(result.hidden).toEqual([]);
@@ -486,7 +487,7 @@ describe(MediaRepository.name, () => {
         const faces = [baseFace];
 
         // Without any crop, all faces remain visible
-        const result = sut.checkFaceVisibility(faces, assetDimensions);
+        const result = checkFaceVisibility(faces, assetDimensions);
 
         expect(result.visible).toEqual(faces);
         expect(result.hidden).toEqual([]);
@@ -519,7 +520,7 @@ describe(MediaRepository.name, () => {
         };
 
         const faces = [faceInsideCrop, faceOutsideCrop];
-        const result = sut.checkFaceVisibility(faces, assetDimensions, crop);
+        const result = checkFaceVisibility(faces, assetDimensions, crop);
 
         // Face inside crop area is visible, face outside is hidden
         // This is true regardless of any subsequent rotate/mirror operations
@@ -551,7 +552,7 @@ describe(MediaRepository.name, () => {
     describe('with no crop edit', () => {
       it('should return all OCR items as visible when no crop is provided', () => {
         const ocrs = [baseOcr];
-        const result = sut.checkOcrVisibility(ocrs, assetDimensions);
+        const result = checkOcrVisibility(ocrs, assetDimensions);
 
         expect(result.visible).toEqual(ocrs);
         expect(result.hidden).toEqual([]);
@@ -567,7 +568,7 @@ describe(MediaRepository.name, () => {
         // OCR box: (0.1,0.1)-(0.2,0.2) on 1000x800 = (100,80)-(200,160)
         // Crop: (0,0)-(500,400) - OCR fully inside
         const ocrs = [baseOcr];
-        const result = sut.checkOcrVisibility(ocrs, assetDimensions, crop);
+        const result = checkOcrVisibility(ocrs, assetDimensions, crop);
 
         expect(result.visible).toEqual(ocrs);
         expect(result.hidden).toEqual([]);
@@ -580,7 +581,7 @@ describe(MediaRepository.name, () => {
         };
         // OCR box: (100,80)-(200,160) - completely outside crop
         const ocrs = [baseOcr];
-        const result = sut.checkOcrVisibility(ocrs, assetDimensions, crop);
+        const result = checkOcrVisibility(ocrs, assetDimensions, crop);
 
         expect(result.visible).toEqual([]);
         expect(result.hidden).toEqual(ocrs);
@@ -597,7 +598,7 @@ describe(MediaRepository.name, () => {
         // OCR area: 100x80 = 8000
         // Overlap percentage: 25% - should be hidden
         const ocrs = [baseOcr];
-        const result = sut.checkOcrVisibility(ocrs, assetDimensions, crop);
+        const result = checkOcrVisibility(ocrs, assetDimensions, crop);
 
         expect(result.visible).toEqual([]);
         expect(result.hidden).toEqual(ocrs);
@@ -625,7 +626,7 @@ describe(MediaRepository.name, () => {
           y4: 0.6,
         };
         const ocrs = [ocrInside, ocrOutside];
-        const result = sut.checkOcrVisibility(ocrs, assetDimensions, crop);
+        const result = checkOcrVisibility(ocrs, assetDimensions, crop);
 
         expect(result.visible).toEqual([ocrInside]);
         expect(result.hidden).toEqual([ocrOutside]);
@@ -650,7 +651,7 @@ describe(MediaRepository.name, () => {
           parameters: { x: 0, y: 0, width: 300, height: 300 },
         };
         const ocrs = [rotatedOcr];
-        const result = sut.checkOcrVisibility(ocrs, assetDimensions, crop);
+        const result = checkOcrVisibility(ocrs, assetDimensions, crop);
 
         expect(result.visible).toEqual([rotatedOcr]);
         expect(result.hidden).toEqual([]);
@@ -664,7 +665,7 @@ describe(MediaRepository.name, () => {
         const ocrs = [baseOcr];
 
         // Without any crop, all OCR items remain visible
-        const result = sut.checkOcrVisibility(ocrs, assetDimensions);
+        const result = checkOcrVisibility(ocrs, assetDimensions);
 
         expect(result.visible).toEqual(ocrs);
         expect(result.hidden).toEqual([]);
@@ -699,7 +700,7 @@ describe(MediaRepository.name, () => {
         };
 
         const ocrs = [ocrInsideCrop, ocrOutsideCrop];
-        const result = sut.checkOcrVisibility(ocrs, assetDimensions, crop);
+        const result = checkOcrVisibility(ocrs, assetDimensions, crop);
 
         // OCR inside crop area is visible, OCR outside is hidden
         // This is true regardless of any subsequent rotate/mirror operations

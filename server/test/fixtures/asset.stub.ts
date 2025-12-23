@@ -6,54 +6,44 @@ import { StorageAsset } from 'src/types';
 import { authStub } from 'test/fixtures/auth.stub';
 import { fileStub } from 'test/fixtures/file.stub';
 import { userStub } from 'test/fixtures/user.stub';
+import { factory } from 'test/small.factory';
 
-export const previewFile: AssetFile = {
-  id: 'file-1',
-  type: AssetFileType.Preview,
-  path: '/uploads/user-id/thumbs/path.jpg',
-};
+export const previewFile = factory.assetFile({ type: AssetFileType.Preview });
 
-const thumbnailFile: AssetFile = {
-  id: 'file-2',
+const thumbnailFile = factory.assetFile({
   type: AssetFileType.Thumbnail,
   path: '/uploads/user-id/webp/path.ext',
-};
+});
 
-const fullsizeFile: AssetFile = {
-  id: 'file-3',
+const fullsizeFile = factory.assetFile({
   type: AssetFileType.FullSize,
   path: '/uploads/user-id/fullsize/path.webp',
-};
+});
 
-const sidecarFileWithExt: AssetFile = {
-  id: 'sidecar-with-ext',
+const sidecarFileWithExt = factory.assetFile({
   type: AssetFileType.Sidecar,
   path: '/original/path.ext.xmp',
-};
+});
 
-const sidecarFileWithoutExt: AssetFile = {
-  id: 'sidecar-without-ext',
+const sidecarFileWithoutExt = factory.assetFile({
   type: AssetFileType.Sidecar,
   path: '/original/path.xmp',
-};
+});
 
-const editedPreviewFile: AssetFile = {
-  id: 'file-4',
+const editedPreviewFile = factory.assetFile({
   type: AssetFileType.EditedPreview,
   path: '/uploads/user-id/preview/path_edited.jpg',
-};
+});
 
-const editedThumbnailFile: AssetFile = {
-  id: 'file-5',
+const editedThumbnailFile = factory.assetFile({
   type: AssetFileType.EditedThumbnail,
   path: '/uploads/user-id/thumbnail/path_edited.jpg',
-};
+});
 
-const editedFullsizeFile: AssetFile = {
-  id: 'file-6',
+const editedFullsizeFile = factory.assetFile({
   type: AssetFileType.EditedFullSize,
   path: '/uploads/user-id/fullsize/path_edited.jpg',
-};
+});
 
 const files: AssetFile[] = [fullsizeFile, previewFile, thumbnailFile];
 
