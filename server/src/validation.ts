@@ -99,6 +99,31 @@ export function IsAxisAlignedRotation() {
   );
 }
 
+@ValidatorConstraint({ name: 'uniqueEditActions' })
+class UniqueEditActionsValidator implements ValidatorConstraintInterface {
+  validate(edits: { action: string; parameters?: unknown }[]): boolean {
+    if (!Array.isArray(edits)) {
+      return true;
+    }
+
+    const actionSet = new Set<string>();
+    for (const edit of edits) {
+      const key = edit.action === 'mirror' ? `${edit.action}-${JSON.stringify(edit.parameters)}` : edit.action;
+      if (actionSet.has(key)) {
+        return false;
+      }
+      actionSet.add(key);
+    }
+    return true;
+  }
+
+  defaultMessage(): string {
+    return 'Duplicate edit actions are not allowed';
+  }
+}
+
+export const IsUniqueEditActions = () => Validate(UniqueEditActionsValidator);
+
 export class UUIDParamDto {
   @IsNotEmpty()
   @IsUUID('4')

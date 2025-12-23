@@ -1,7 +1,7 @@
 import { ApiExtraModels, ApiProperty, getSchemaPath } from '@nestjs/swagger';
 import { ClassConstructor, plainToInstance, Transform, Type } from 'class-transformer';
-import { IsEnum, IsInt, Min, ValidateNested } from 'class-validator';
-import { IsAxisAlignedRotation, ValidateUUID } from 'src/validation';
+import { ArrayMinSize, IsEnum, IsInt, Min, ValidateNested } from 'class-validator';
+import { IsAxisAlignedRotation, IsUniqueEditActions, ValidateUUID } from 'src/validation';
 
 export enum EditAction {
   Crop = 'crop',
@@ -107,6 +107,8 @@ const getActionClass = (item: { action: EditAction }): ClassConstructor<EditActi
 @ApiExtraModels(EditActionRotate, EditActionMirror, EditActionCrop)
 export class EditActionListDto {
   /** list of edits */
+  @ArrayMinSize(1)
+  @IsUniqueEditActions()
   @ValidateNested({ each: true })
   @Transform(({ value: edits }) =>
     Array.isArray(edits) ? edits.map((item) => plainToInstance(getActionClass(item), item)) : edits,

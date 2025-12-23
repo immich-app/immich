@@ -516,10 +516,6 @@ export class AssetService extends BaseService {
   async editAsset(auth: AuthDto, id: string, dto: EditActionListDto): Promise<AssetEditsDto> {
     await this.requireAccess({ auth, permission: Permission.AssetEdit, ids: [id] });
 
-    if (dto.edits.length === 0) {
-      throw new BadRequestException('At least one edit action must be provided');
-    }
-
     const asset = await this.assetRepository.getById(id, { exifInfo: true });
     if (!asset) {
       throw new BadRequestException('Asset not found');
@@ -541,17 +537,6 @@ export class AssetService extends BaseService {
       throw new BadRequestException('Editing GIF images is not supported');
     }
 
-    // verify there are unique actions
-    // mirror can be duplicated but must have different parameters
-    const actionSet = new Set<string>();
-    for (const edit of dto.edits) {
-      const key = edit.action === EditAction.Mirror ? `${edit.action}-${JSON.stringify(edit.parameters)}` : edit.action;
-      if (actionSet.has(key)) {
-        throw new BadRequestException('Duplicate edit actions are not allowed');
-      }
-      actionSet.add(key);
-    }
-
     // check that crop parameters will not go out of bounds
     const { width: assetWidth, height: assetHeight } = getDimensions(asset.exifInfo!);
 
@@ -567,7 +552,7 @@ export class AssetService extends BaseService {
       }
     }
 
-    await this.assetEditRepository.replaceAll(id, dto.edits);
+    const newEdits = await this.assetEditRepository.replaceAll(id, dto.edits);
     await this.jobRepository.queue({
       name: JobName.AssetGenerateThumbnails,
       data: { id, source: 'edit', notify: true },
@@ -576,7 +561,7 @@ export class AssetService extends BaseService {
     // Return the asset and its applied edits
     return {
       assetId: id,
-      edits: dto.edits,
+      edits: newEdits,
     };
   }
 
