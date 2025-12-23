@@ -3290,7 +3290,7 @@
         "x-immich-state": "Beta"
       },
       "put": {
-        "description": "Applies a series of edit actions (crop, rotate, mirror) to the specified asset.",
+        "description": "Apply a series of edit actions (crop, rotate, mirror) to the specified asset.",
         "operationId": "editAsset",
         "parameters": [
           {
@@ -3336,17 +3336,17 @@
             "api_key": []
           }
         ],
-        "summary": "Applies edits to an existing asset",
+        "summary": "Apply edits to an existing asset",
         "tags": [
           "Assets"
         ],
         "x-immich-history": [
           {
-            "version": "v2",
+            "version": "v2.5.0",
             "state": "Added"
           },
           {
-            "version": "v2",
+            "version": "v2.5.0",
             "state": "Beta"
           }
         ],
@@ -15375,6 +15375,7 @@
                 }
               ]
             },
+            "minItems": 1,
             "type": "array"
           }
         },
@@ -16720,6 +16721,7 @@
                 }
               ]
             },
+            "minItems": 1,
             "type": "array"
           }
         },

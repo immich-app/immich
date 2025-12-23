@@ -2596,7 +2596,7 @@ export function getAssetEdits({ id }: {
     }));
 }
 /**
- * Applies edits to an existing asset
+ * Apply edits to an existing asset
  */
 export function editAsset({ id, editActionListDto }: {
     id: string;

@@ -357,9 +357,9 @@ class AssetsApi {
     return null;
   }
 
-  /// Applies edits to an existing asset
+  /// Apply edits to an existing asset
   ///
-  /// Applies a series of edit actions (crop, rotate, mirror) to the specified asset.
+  /// Apply a series of edit actions (crop, rotate, mirror) to the specified asset.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -394,9 +394,9 @@ class AssetsApi {
     );
   }
 
-  /// Applies edits to an existing asset
+  /// Apply edits to an existing asset
   ///
-  /// Applies a series of edit actions (crop, rotate, mirror) to the specified asset.
+  /// Apply a series of edit actions (crop, rotate, mirror) to the specified asset.
   ///
   /// Parameters:
   ///
