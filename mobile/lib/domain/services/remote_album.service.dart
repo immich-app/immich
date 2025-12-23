@@ -47,8 +47,8 @@ class RemoteAlbumService {
       AlbumSortMode.mostRecent => await _sortByNewestAsset(albums),
       AlbumSortMode.mostOldest => await _sortByOldestAsset(albums),
     };
-
     final effectiveOrder = isReverse ? sortMode.defaultOrder.opposite : sortMode.defaultOrder;
+
     return (effectiveOrder == SortOrder.asc ? sorted : sorted.reversed).toList();
   }
 

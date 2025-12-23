@@ -89,8 +89,7 @@ enum AlbumSortMode {
 
   const AlbumSortMode(this.storeIndex, this.label, this.sortFn, this.defaultOrder);
 
-  SortOrder effectiveOrder(bool isReverse) =>
-      isReverse ? defaultOrder.opposite : defaultOrder;
+  SortOrder effectiveOrder(bool isReverse) => isReverse ? defaultOrder.opposite : defaultOrder;
 }
 
 @riverpod
