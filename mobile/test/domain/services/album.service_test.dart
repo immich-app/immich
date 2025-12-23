@@ -115,5 +115,17 @@ void main() {
       final result = await sut.sortAlbums(albums, AlbumSortMode.mostOldest);
       expect(result, [albumA, albumB]);
     });
+
+    test('should flip order when isReverse is true for all modes', () async {
+      final albums = [albumB, albumA];
+
+      for (final mode in AlbumSortMode.values) {
+        final normal = await sut.sortAlbums(albums, mode, isReverse: false);
+        final reversed = await sut.sortAlbums(albums, mode, isReverse: true);
+
+        // reversed should be the exact inverse of normal
+        expect(reversed, normal.reversed.toList(), reason: 'Mode: $mode');
+      }
+    });
   });
 }
