@@ -1,0 +1,46 @@
+<svg viewBox="250 0 600 640" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" overflow="hidden">
+  <defs>
+    <linearGradient x1="736.438" y1="89.874" x2="348.563" y2="552.126" gradientUnits="userSpaceOnUse" spreadMethod="reflect" id="fill0">
+      <stop offset="0" stop-color="#FA2921"/><stop offset="0.11" stop-color="#FA2921"/><stop offset="0.32" stop-color="#FFB400"/><stop offset="0.52" stop-color="#18C249"/><stop offset="0.74" stop-color="#1E83F7"/><stop offset="0.93" stop-color="#ED79B5"/><stop offset="1" stop-color="#ED79B5"/>
+    </linearGradient>
+    <linearGradient x1="736.503" y1="89.6833" x2="348.068" y2="552.602" gradientUnits="userSpaceOnUse" spreadMethod="reflect" id="fill1">
+      <stop offset="0" stop-color="#FA2921"/><stop offset="0.06" stop-color="#FA2921"/><stop offset="0.32" stop-color="#FFB400"/>
+      <stop offset="0.52" stop-color="#18C249"/><stop offset="0.74" stop-color="#1E83F7"/><stop offset="0.93" stop-color="#ED79B5"/><stop offset="1" stop-color="#ED79B5"/>
+    </linearGradient>
+    <linearGradient x1="736.503" y1="89.6833" x2="348.068" y2="552.602" gradientUnits="userSpaceOnUse" spreadMethod="reflect" id="fill2">
+      <stop offset="0" stop-color="#FA2921"/><stop offset="0.11" stop-color="#FA2921"/><stop offset="0.32" stop-color="#FFB400"/>
+      <stop offset="0.52" stop-color="#18C249"/><stop offset="0.74" stop-color="#1E83F7"/><stop offset="0.93" stop-color="#ED79B5"/><stop offset="1" stop-color="#ED79B5"/>
+    </linearGradient>
+
+    <!-- Motion paths (onzichtbaar) -->
+    <path id="orbitA" d="M477.679 221.728C351.798 294.405 275.997 398.779 308.372 454.854 340.747 510.929 469.038 497.47 594.918 424.793 720.799 352.116 796.6 247.742 764.225 191.667 731.85 135.592 603.559 149.051 477.679 221.728Z" fill="none"/>
+    <path id="orbitB" d="M601.464 219.934C475.986 146.565 347.771 132.4 315.088 188.295 282.404 244.191 357.629 348.981 483.107 422.35 608.585 495.72 736.8 509.885 769.483 453.989 802.167 398.093 726.942 293.303 601.464 219.934Z" fill="none"/>
+    <path id="orbitC" d="M425.527 321C425.527 466.512 477.898 584.473 542.5 584.473 607.102 584.473 659.473 466.512 659.473 321 659.473 175.488 607.102 57.5271 542.5 57.5271 477.898 57.5271 425.527 175.488 425.527 321Z" fill="none"/>
+  </defs>
+
+  <g>
+    <!-- achtergrond (zonder zwarte hulplijnen) -->
+    <path d="M408 321C408 165.808 468.218 40 542.5 40 616.783 40 677.001 165.808 677.001 321 677.001 476.192 616.783 602 542.5 602 468.218 602 408 476.192 408 321ZM438.879 321C438.879 459.138 485.272 571.121 542.5 571.121 599.729 571.121 646.122 459.138 646.122 321 646.122 182.862 599.729 70.8787 542.5 70.8787 485.272 70.8787 438.879 182.862 438.879 321Z" fill="url(#fill0)" fill-rule="evenodd"/>
+    <path d="M475.143 204.848C609.611 127.212 748.68 116.343 785.762 180.571 822.844 244.799 743.897 359.802 609.428 437.437 474.96 515.073 335.891 525.942 298.809 461.714 261.727 397.486 340.674 282.483 475.143 204.848ZM490.557 231.547C370.834 300.669 296.939 396.817 325.508 446.299 354.076 495.782 474.291 479.861 594.014 410.739 713.737 341.616 787.632 245.468 759.064 195.986 730.495 146.503 610.281 162.424 490.557 231.547Z" fill="url(#fill1)" fill-rule="evenodd"/>
+    <path d="M609.429 204.848C743.897 282.483 822.845 397.486 785.763 461.714 748.681 525.942 609.611 515.073 475.143 437.437 340.674 359.802 261.727 244.799 298.809 180.571 335.891 116.343 474.96 127.212 609.429 204.848ZM594.014 231.547C474.291 162.424 354.076 146.503 325.508 195.986 296.939 245.468 370.834 341.616 490.557 410.739 610.281 479.861 730.495 495.782 759.064 446.299 787.632 396.817 713.737 300.669 594.014 231.547Z" fill="url(#fill2)" fill-rule="evenodd"/>
+
+    <!-- ballen -->
+    <circle r="33" fill="#003399">
+      <animateMotion dur="5s" repeatCount="indefinite" rotate="0" calcMode="linear" keyPoints="0;1" keyTimes="0;1">
+        <mpath xlink:href="#orbitA"/>
+      </animateMotion>
+    </circle>
+
+    <circle r="33" fill="#003399">
+      <animateMotion dur="5s" repeatCount="indefinite" rotate="0" calcMode="linear" keyPoints="0.334;1;0;0.334" keyTimes="0;0.666;0.666;1">
+        <mpath xlink:href="#orbitB"/>
+      </animateMotion>
+    </circle>
+
+    <circle r="33" fill="#003399">
+      <animateMotion dur="5s" repeatCount="indefinite" rotate="0" calcMode="linear" keyPoints="0.666;1;0;0.666" keyTimes="0;0.334;0.334;1">
+        <mpath xlink:href="#orbitC"/>
+      </animateMotion>
+    </circle>
+  </g>
+</svg>
