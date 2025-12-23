@@ -50,7 +50,7 @@ export class EnvDto {
 
   @IsEnum(LogFormat)
   @Optional()
-  LOG_FORMAT?: LogFormat;
+  IMMICH_LOG_FORMAT?: LogFormat;
 
   @Optional()
   @Matches(/^\//, { message: 'IMMICH_MEDIA_LOCATION must be an absolute path' })

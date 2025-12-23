@@ -229,7 +229,7 @@ const getEnv = (): EnvData => {
     environment,
     configFile: dto.IMMICH_CONFIG_FILE,
     logLevel: dto.IMMICH_LOG_LEVEL,
-    logFormat: dto.LOG_FORMAT || LogFormat.Console,
+    logFormat: dto.IMMICH_LOG_FORMAT || LogFormat.Console,
 
     buildMetadata: {
       build: dto.IMMICH_BUILD,
