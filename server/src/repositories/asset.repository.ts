@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { Insertable, Kysely, NotNull, Selectable, sql, Updateable, UpdateResult } from 'kysely';
+import { ExpressionBuilder, Insertable, Kysely, NotNull, Selectable, sql, Updateable, UpdateResult } from 'kysely';
 import { isEmpty, isUndefined, omitBy } from 'lodash';
 import { InjectKysely } from 'nestjs-kysely';
-import { Stack } from 'src/database';
+import { LockableProperty, Stack } from 'src/database';
 import { Chunked, ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { AssetFileType, AssetMetadataKey, AssetOrder, AssetStatus, AssetType, AssetVisibility } from 'src/enum';
@@ -11,7 +11,6 @@ import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
 import { AssetFileTable } from 'src/schema/tables/asset-file.table';
 import { AssetJobStatusTable } from 'src/schema/tables/asset-job-status.table';
 import { AssetTable } from 'src/schema/tables/asset.table';
-import { AssetMetadataItem } from 'src/types';
 import {
   anyUuid,
   asUuid,
@@ -114,51 +113,77 @@ interface GetByIdsRelations {
   tags?: boolean;
 }
 
+const distinctLocked = <T extends LockableProperty[] | null>(eb: ExpressionBuilder<DB, 'asset_exif'>, columns: T) =>
+  sql<T>`nullif(array(select distinct unnest(${eb.ref('asset_exif.lockedProperties')} || ${columns})), '{}')`;
+
 @Injectable()
 export class AssetRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
-  async upsertExif(exif: Insertable<AssetExifTable>): Promise<void> {
-    const value = { ...exif, assetId: asUuid(exif.assetId) };
+  @GenerateSql({
+    params: [
+      { dateTimeOriginal: DummyValue.DATE, lockedProperties: ['dateTimeOriginal'] },
+      { lockedPropertiesBehavior: 'append' },
+    ],
+  })
+  async upsertExif(
+    exif: Insertable<AssetExifTable>,
+    { lockedPropertiesBehavior }: { lockedPropertiesBehavior: 'override' | 'append' | 'skip' },
+  ): Promise<void> {
     await this.db
       .insertInto('asset_exif')
-      .values(value)
+      .values(exif)
       .onConflict((oc) =>
-        oc.column('assetId').doUpdateSet((eb) =>
-          removeUndefinedKeys(
-            {
-              description: eb.ref('excluded.description'),
-              exifImageWidth: eb.ref('excluded.exifImageWidth'),
-              exifImageHeight: eb.ref('excluded.exifImageHeight'),
-              fileSizeInByte: eb.ref('excluded.fileSizeInByte'),
-              orientation: eb.ref('excluded.orientation'),
-              dateTimeOriginal: eb.ref('excluded.dateTimeOriginal'),
-              modifyDate: eb.ref('excluded.modifyDate'),
-              timeZone: eb.ref('excluded.timeZone'),
-              latitude: eb.ref('excluded.latitude'),
-              longitude: eb.ref('excluded.longitude'),
-              projectionType: eb.ref('excluded.projectionType'),
-              city: eb.ref('excluded.city'),
-              livePhotoCID: eb.ref('excluded.livePhotoCID'),
-              autoStackId: eb.ref('excluded.autoStackId'),
-              state: eb.ref('excluded.state'),
-              country: eb.ref('excluded.country'),
-              make: eb.ref('excluded.make'),
-              model: eb.ref('excluded.model'),
-              lensModel: eb.ref('excluded.lensModel'),
-              fNumber: eb.ref('excluded.fNumber'),
-              focalLength: eb.ref('excluded.focalLength'),
-              iso: eb.ref('excluded.iso'),
-              exposureTime: eb.ref('excluded.exposureTime'),
-              profileDescription: eb.ref('excluded.profileDescription'),
-              colorspace: eb.ref('excluded.colorspace'),
-              bitsPerSample: eb.ref('excluded.bitsPerSample'),
-              rating: eb.ref('excluded.rating'),
-              fps: eb.ref('excluded.fps'),
-            },
-            value,
-          ),
-        ),
+        oc.column('assetId').doUpdateSet((eb) => {
+          const updateLocked = <T extends keyof AssetExifTable>(col: T) => eb.ref(`excluded.${col}`);
+          const skipLocked = <T extends keyof AssetExifTable>(col: T) =>
+            eb
+              .case()
+              .when(sql`${col}`, '=', eb.fn.any('asset_exif.lockedProperties'))
+              .then(eb.ref(`asset_exif.${col}`))
+              .else(eb.ref(`excluded.${col}`))
+              .end();
+          const ref = lockedPropertiesBehavior === 'skip' ? skipLocked : updateLocked;
+          return {
+            ...removeUndefinedKeys(
+              {
+                description: ref('description'),
+                exifImageWidth: ref('exifImageWidth'),
+                exifImageHeight: ref('exifImageHeight'),
+                fileSizeInByte: ref('fileSizeInByte'),
+                orientation: ref('orientation'),
+                dateTimeOriginal: ref('dateTimeOriginal'),
+                modifyDate: ref('modifyDate'),
+                timeZone: ref('timeZone'),
+                latitude: ref('latitude'),
+                longitude: ref('longitude'),
+                projectionType: ref('projectionType'),
+                city: ref('city'),
+                livePhotoCID: ref('livePhotoCID'),
+                autoStackId: ref('autoStackId'),
+                state: ref('state'),
+                country: ref('country'),
+                make: ref('make'),
+                model: ref('model'),
+                lensModel: ref('lensModel'),
+                fNumber: ref('fNumber'),
+                focalLength: ref('focalLength'),
+                iso: ref('iso'),
+                exposureTime: ref('exposureTime'),
+                profileDescription: ref('profileDescription'),
+                colorspace: ref('colorspace'),
+                bitsPerSample: ref('bitsPerSample'),
+                rating: ref('rating'),
+                fps: ref('fps'),
+                lockedProperties:
+                  lockedPropertiesBehavior === 'append'
+                    ? distinctLocked(eb, exif.lockedProperties ?? null)
+                    : ref('lockedProperties'),
+              },
+              exif,
+            ),
+          };
+        }),
       )
       .execute();
   }
@@ -170,19 +195,26 @@ export class AssetRepository {
       return;
     }
 
-    await this.db.updateTable('asset_exif').set(options).where('assetId', 'in', ids).execute();
+    await this.db
+      .updateTable('asset_exif')
+      .set((eb) => ({
+        ...options,
+        lockedProperties: distinctLocked(eb, Object.keys(options) as LockableProperty[]),
+      }))
+      .where('assetId', 'in', ids)
+      .execute();
   }
 
   @GenerateSql({ params: [[DummyValue.UUID], DummyValue.NUMBER, DummyValue.STRING] })
   @Chunked()
-  async updateDateTimeOriginal(
-    ids: string[],
-    delta?: number,
-    timeZone?: string,
-  ): Promise<{ assetId: string; dateTimeOriginal: Date | null; timeZone: string | null }[]> {
-    return await this.db
+  updateDateTimeOriginal(ids: string[], delta?: number, timeZone?: string) {
+    return this.db
       .updateTable('asset_exif')
-      .set({ dateTimeOriginal: sql`"dateTimeOriginal" + ${(delta ?? 0) + ' minute'}::interval`, timeZone })
+      .set((eb) => ({
+        dateTimeOriginal: sql`"dateTimeOriginal" + ${(delta ?? 0) + ' minute'}::interval`,
+        timeZone,
+        lockedProperties: distinctLocked(eb, ['dateTimeOriginal', 'timeZone']),
+      }))
       .where('assetId', 'in', ids)
       .returning(['assetId', 'dateTimeOriginal', 'timeZone'])
       .execute();
@@ -224,7 +256,7 @@ export class AssetRepository {
       .execute();
   }
 
-  upsertMetadata(id: string, items: AssetMetadataItem[]) {
+  upsertMetadata(id: string, items: Array<{ key: AssetMetadataKey; value: object }>) {
     return this.db
       .insertInto('asset_metadata')
       .values(items.map((item) => ({ assetId: id, ...item })))
@@ -395,6 +427,17 @@ export class AssetRepository {
   @GenerateSql()
   getFileSamples() {
     return this.db.selectFrom('asset_file').select(['assetId', 'path']).limit(sql.lit(3)).execute();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  getForCopy(id: string) {
+    return this.db
+      .selectFrom('asset')
+      .select(['id', 'stackId', 'originalPath', 'isFavorite'])
+      .select(withFiles)
+      .where('id', '=', asUuid(id))
+      .limit(1)
+      .executeTakeFirst();
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
@@ -841,6 +884,10 @@ export class AssetRepository {
         })),
       )
       .execute();
+  }
+
+  async deleteFile({ assetId, type }: { assetId: string; type: AssetFileType }): Promise<void> {
+    await this.db.deleteFrom('asset_file').where('assetId', '=', asUuid(assetId)).where('type', '=', type).execute();
   }
 
   async deleteFiles(files: Pick<Selectable<AssetFileTable>, 'id'>[]): Promise<void> {

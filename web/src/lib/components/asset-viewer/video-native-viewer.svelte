@@ -43,7 +43,9 @@
 
   let videoPlayer: HTMLVideoElement | undefined = $state();
   let isLoading = $state(true);
-  let assetFileUrl = $state('');
+  let assetFileUrl = $derived(
+    playOriginalVideo ? getAssetOriginalUrl({ id: assetId, cacheKey }) : getAssetPlaybackUrl({ id: assetId, cacheKey }),
+  );
   let isScrubbing = $state(false);
   let showVideo = $state(false);
 
@@ -53,11 +55,9 @@
   });
 
   $effect(() => {
-    assetFileUrl = playOriginalVideo
-      ? getAssetOriginalUrl({ id: assetId, cacheKey })
-      : getAssetPlaybackUrl({ id: assetId, cacheKey });
-    if (videoPlayer) {
-      videoPlayer.load();
+    // reactive on `assetFileUrl` changes
+    if (assetFileUrl) {
+      videoPlayer?.load();
     }
   });
 

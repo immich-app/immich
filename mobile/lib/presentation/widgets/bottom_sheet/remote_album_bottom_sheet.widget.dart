@@ -18,7 +18,6 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/share_link_act
 import 'package:immich_mobile/presentation/widgets/action_buttons/stack_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/trash_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/unstack_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/upload_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/album/album_selector.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
@@ -112,10 +111,7 @@ class _RemoteAlbumBottomSheetState extends ConsumerState<RemoteAlbumBottomSheet>
             if (multiselect.hasStacked) const UnStackActionButton(source: ActionSource.timeline),
           ],
         ],
-        if (multiselect.hasLocal) ...[
-          const DeleteLocalActionButton(source: ActionSource.timeline),
-          const UploadActionButton(source: ActionSource.timeline),
-        ],
+        if (multiselect.hasMerged) const DeleteLocalActionButton(source: ActionSource.timeline),
         if (ownsAlbum) RemoveFromAlbumActionButton(source: ActionSource.timeline, albumId: widget.album.id),
       ],
       slivers: ownsAlbum

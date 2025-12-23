@@ -13,8 +13,10 @@ import 'package:immich_mobile/routing/router.dart';
 
 class SimilarPhotosActionButton extends ConsumerWidget {
   final String assetId;
+  final bool iconOnly;
+  final bool menuItem;
 
-  const SimilarPhotosActionButton({super.key, required this.assetId});
+  const SimilarPhotosActionButton({super.key, required this.assetId, this.iconOnly = false, this.menuItem = false});
 
   void _onTap(BuildContext context, WidgetRef ref) async {
     if (!context.mounted) {
@@ -44,6 +46,8 @@ class SimilarPhotosActionButton extends ConsumerWidget {
     return BaseActionButton(
       iconData: Icons.compare,
       label: "view_similar_photos".t(context: context),
+      iconOnly: iconOnly,
+      menuItem: menuItem,
       onPressed: () => _onTap(context, ref),
       maxWidth: 100,
     );

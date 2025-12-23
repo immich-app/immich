@@ -37,7 +37,7 @@ class DriftActivitiesPage extends HookConsumerWidget {
       child: Scaffold(
         appBar: AppBar(
           title: Text(album.name),
-          actions: [const LikeActivityActionButton(menuItem: true)],
+          actions: [const LikeActivityActionButton(iconOnly: true)],
           actionsPadding: const EdgeInsets.only(right: 8),
         ),
         body: activities.widgetWhen(

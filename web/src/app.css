@@ -76,14 +76,6 @@
     --immich-dark-gray: 33 33 33;
   }
 
-  *,
-  ::after,
-  ::before,
-  ::backdrop,
-  ::file-selector-button {
-    border-color: rgb(var(--immich-ui-default-border));
-  }
-
   button:not(:disabled),
   [role='button']:not(:disabled) {
     cursor: pointer;

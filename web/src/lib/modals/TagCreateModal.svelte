@@ -14,7 +14,7 @@
 
   const { onClose, baseTag }: Props = $props();
 
-  let tagValue = $state(baseTag?.value ? `${baseTag.value}/` : '');
+  let tagValue = $state(baseTag?.path ? `${baseTag.path}/` : '');
 
   const createTag = async () => {
     const [tag] = await upsertTags({ tagUpsertDto: { tags: [tagValue] } });

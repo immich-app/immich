@@ -1,16 +1,6 @@
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/providers/asset_viewer/video_player_controls_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-
-class ViewerOpenBottomSheetEvent extends Event {
-  final bool activitiesMode;
-  const ViewerOpenBottomSheetEvent({this.activitiesMode = false});
-}
-
-class ViewerReloadAssetEvent extends Event {
-  const ViewerReloadAssetEvent();
-}
 
 class AssetViewerState {
   final int backgroundOpacity;

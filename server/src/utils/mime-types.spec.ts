@@ -152,6 +152,26 @@ describe('mimeTypes', () => {
     }
   });
 
+  describe('animated image', () => {
+    for (const img of ['a.avif', 'a.gif', 'a.webp']) {
+      it('should identify animated image mime types as such', () => {
+        expect(mimeTypes.isPossiblyAnimatedImage(img)).toBeTruthy();
+      });
+    }
+
+    for (const img of ['a.cr3', 'a.jpg', 'a.tiff']) {
+      it('should identify static image mime types as such', () => {
+        expect(mimeTypes.isPossiblyAnimatedImage(img)).toBeFalsy();
+      });
+    }
+
+    for (const extension of Object.keys(mimeTypes.video)) {
+      it('should not identify video mime types as animated', () => {
+        expect(mimeTypes.isPossiblyAnimatedImage(extension)).toBeFalsy();
+      });
+    }
+  });
+
   describe('video', () => {
     it('should contain only lowercase mime types', () => {
       const keys = Object.keys(mimeTypes.video);

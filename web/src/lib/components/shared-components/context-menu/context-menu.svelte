@@ -33,37 +33,36 @@
     children,
   }: Props = $props();
 
-  let left: number = $state(0);
-  let top: number = $state(0);
+  const swap = (direction: string) => (direction === 'left' ? 'right' : 'left');
+
+  const layoutDirection = $derived(languageManager.rtl ? swap(direction) : direction);
+  const position = $derived.by(() => {
+    if (!menuElement) {
+      return { left: 0, top: 0 };
+    }
+
+    const rect = menuElement.getBoundingClientRect();
+    const directionWidth = layoutDirection === 'left' ? rect.width : 0;
+    const menuHeight = Math.min(menuElement.clientHeight, height) || 0;
+
+    const left = Math.max(8, Math.min(window.innerWidth - rect.width, x - directionWidth));
+    const top = Math.max(8, Math.min(window.innerHeight - menuHeight, y));
+
+    return { left, top };
+  });
 
   // We need to bind clientHeight since the bounding box may return a height
   // of zero when starting the 'slide' animation.
   let height: number = $state(0);
 
   let isTransitioned = $state(false);
-
-  $effect(() => {
-    if (menuElement) {
-      let layoutDirection = direction;
-      if (languageManager.rtl) {
-        layoutDirection = direction === 'left' ? 'right' : 'left';
-      }
-
-      const rect = menuElement.getBoundingClientRect();
-      const directionWidth = layoutDirection === 'left' ? rect.width : 0;
-      const menuHeight = Math.min(menuElement.clientHeight, height) || 0;
-
-      left = Math.max(8, Math.min(window.innerWidth - rect.width, x - directionWidth));
-      top = Math.max(8, Math.min(window.innerHeight - menuHeight, y));
-    }
-  });
 </script>
 
 <div
   bind:clientHeight={height}
   class="fixed min-w-50 w-max max-w-75 overflow-hidden rounded-lg shadow-lg z-1"
-  style:left="{left}px"
-  style:top="{top}px"
+  style:left="{position.left}px"
+  style:top="{position.top}px"
   transition:slide={{ duration: 250, easing: quintOut }}
   use:clickOutside={{ onOutclick: onClose }}
   onintroend={() => {

@@ -7,6 +7,9 @@ services:
     build:
       context: ../
       dockerfile: server/Dockerfile
+      cache_from:
+        - type=registry,ref=ghcr.io/immich-app/immich-server-build-cache:linux-amd64-cc099f297acd18c924b35ece3245215b53d106eb2518e3af6415931d055746cd-main
+        - type=registry,ref=ghcr.io/immich-app/immich-server-build-cache:linux-arm64-cc099f297acd18c924b35ece3245215b53d106eb2518e3af6415931d055746cd-main
       args:
         - BUILD_ID=1234567890
         - BUILD_IMAGE=e2e

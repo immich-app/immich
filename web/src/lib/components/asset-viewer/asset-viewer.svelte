@@ -395,12 +395,12 @@
     }
   });
 
-  let currentAssetId = $derived(asset.id);
+  // primarily, this is reactive on `asset`
   $effect(() => {
-    if (currentAssetId) {
-      untrack(() => handlePromiseError(handleGetAllAlbums()));
-      ocrManager.clear();
-      handlePromiseError(ocrManager.getAssetOcr(currentAssetId));
+    handlePromiseError(handleGetAllAlbums());
+    ocrManager.clear();
+    if (!sharedLink) {
+      handlePromiseError(ocrManager.getAssetOcr(asset.id));
     }
   });
 </script>
@@ -512,7 +512,7 @@
           {:else if asset.exifInfo?.projectionType === ProjectionType.EQUIRECTANGULAR || (asset.originalPath && asset.originalPath
                 .toLowerCase()
                 .endsWith('.insp'))}
-            <ImagePanoramaViewer {asset} />
+            <ImagePanoramaViewer bind:zoomToggle {asset} />
           {:else if isShowEditor && selectedEditType === 'crop'}
             <CropArea {asset} />
           {:else}

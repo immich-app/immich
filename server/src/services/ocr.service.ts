@@ -5,6 +5,7 @@ import { AssetVisibility, JobName, JobStatus, QueueName } from 'src/enum';
 import { OCR } from 'src/repositories/machine-learning.repository';
 import { BaseService } from 'src/services/base.service';
 import { JobItem, JobOf } from 'src/types';
+import { tokenizeForSearch } from 'src/utils/database';
 import { isOcrEnabled } from 'src/utils/misc';
 
 @Injectable()
@@ -53,8 +54,8 @@ export class OcrService extends BaseService {
     }
 
     const ocrResults = await this.machineLearningRepository.ocr(asset.previewFile, machineLearning.ocr);
-
-    await this.ocrRepository.upsert(id, this.parseOcrResults(id, ocrResults));
+    const { ocrDataList, searchText } = this.parseOcrResults(id, ocrResults);
+    await this.ocrRepository.upsert(id, ocrDataList, searchText);
 
     await this.assetRepository.upsertJobStatus({ assetId: id, ocrAt: new Date() });
 
@@ -64,7 +65,9 @@ export class OcrService extends BaseService {
 
   private parseOcrResults(id: string, { box, boxScore, text, textScore }: OCR) {
     const ocrDataList = [];
+    const searchTokens = [];
     for (let i = 0; i < text.length; i++) {
+      const rawText = text[i];
       const boxOffset = i * 8;
       ocrDataList.push({
         assetId: id,
@@ -78,9 +81,11 @@ export class OcrService extends BaseService {
         y4: box[boxOffset + 7],
         boxScore: boxScore[i],
         textScore: textScore[i],
-        text: text[i],
+        text: rawText,
       });
+      searchTokens.push(...tokenizeForSearch(rawText));
     }
-    return ocrDataList;
+
+    return { ocrDataList, searchText: searchTokens.join(' ') };
   }
 }

@@ -27,6 +27,10 @@ class PlatformAsset {
   final int orientation;
   final bool isFavorite;
 
+  final int? adjustmentTime;
+  final double? latitude;
+  final double? longitude;
+
   const PlatformAsset({
     required this.id,
     required this.name,
@@ -38,6 +42,9 @@ class PlatformAsset {
     this.durationInSeconds = 0,
     this.orientation = 0,
     this.isFavorite = false,
+    this.adjustmentTime,
+    this.latitude,
+    this.longitude,
   });
 }
 

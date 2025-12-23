@@ -3,7 +3,7 @@
   import { page } from '$app/state';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import OnEvents from '$lib/components/OnEvents.svelte';
-  import SharedLinkCard from '$lib/components/sharedlinks-page/shared-link-card.svelte';
+  import SharedLinkCard from '$lib/components/sharedlinks-page/SharedLinkCard.svelte';
   import { AppRoute } from '$lib/constants';
   import GroupTab from '$lib/elements/GroupTab.svelte';
   import SharedLinkUpdateModal from '$lib/modals/SharedLinkUpdateModal.svelte';

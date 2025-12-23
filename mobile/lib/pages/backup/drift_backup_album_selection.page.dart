@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -242,8 +241,7 @@ class _DriftBackupAlbumSelectionPageState extends ConsumerState<DriftBackupAlbum
                         ),
                       ),
 
-                      if (Platform.isAndroid)
-                        _SelectAllButton(filteredAlbums: filteredAlbums, selectedBackupAlbums: selectedBackupAlbums),
+                      _SelectAllButton(filteredAlbums: filteredAlbums, selectedBackupAlbums: selectedBackupAlbums),
                     ],
                   ),
                 ),

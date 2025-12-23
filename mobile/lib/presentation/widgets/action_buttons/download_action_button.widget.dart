@@ -10,8 +10,9 @@ import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 
 class DownloadActionButton extends ConsumerWidget {
   final ActionSource source;
+  final bool iconOnly;
   final bool menuItem;
-  const DownloadActionButton({super.key, required this.source, this.menuItem = false});
+  const DownloadActionButton({super.key, required this.source, this.iconOnly = false, this.menuItem = false});
 
   void _onTap(BuildContext context, WidgetRef ref, BackgroundSyncManager backgroundSyncManager) async {
     if (!context.mounted) {
@@ -38,6 +39,7 @@ class DownloadActionButton extends ConsumerWidget {
       iconData: Icons.download,
       maxWidth: 95,
       label: "download".t(context: context),
+      iconOnly: iconOnly,
       menuItem: menuItem,
       onPressed: () => _onTap(context, ref, backgroundManager),
     );

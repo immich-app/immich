@@ -10,9 +10,10 @@ import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
 class FavoriteActionButton extends ConsumerWidget {
   final ActionSource source;
+  final bool iconOnly;
   final bool menuItem;
 
-  const FavoriteActionButton({super.key, required this.source, this.menuItem = false});
+  const FavoriteActionButton({super.key, required this.source, this.iconOnly = false, this.menuItem = false});
 
   void _onTap(BuildContext context, WidgetRef ref) async {
     if (!context.mounted) {
@@ -44,6 +45,7 @@ class FavoriteActionButton extends ConsumerWidget {
     return BaseActionButton(
       iconData: Icons.favorite_border_rounded,
       label: "favorite".t(context: context),
+      iconOnly: iconOnly,
       menuItem: menuItem,
       onPressed: () => _onTap(context, ref),
     );

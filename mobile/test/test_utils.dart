@@ -5,6 +5,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:fake_async/fake_async.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart' as domain;
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/android_device_asset.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
@@ -115,5 +116,44 @@ abstract final class TestUtils {
       Error.throwWithStackTrace(error!, stack!);
     }
     return result;
+  }
+
+  static domain.RemoteAsset createRemoteAsset({required String id, int? width, int? height, String? ownerId}) {
+    return domain.RemoteAsset(
+      id: id,
+      checksum: 'checksum1',
+      ownerId: ownerId ?? 'owner1',
+      name: 'test.jpg',
+      type: domain.AssetType.image,
+      createdAt: DateTime(2024, 1, 1),
+      updatedAt: DateTime(2024, 1, 1),
+      durationInSeconds: 0,
+      isFavorite: false,
+      width: width,
+      height: height,
+    );
+  }
+
+  static domain.LocalAsset createLocalAsset({
+    required String id,
+    String? remoteId,
+    int? width,
+    int? height,
+    int orientation = 0,
+  }) {
+    return domain.LocalAsset(
+      id: id,
+      remoteId: remoteId,
+      checksum: 'checksum1',
+      name: 'test.jpg',
+      type: domain.AssetType.image,
+      createdAt: DateTime(2024, 1, 1),
+      updatedAt: DateTime(2024, 1, 1),
+      durationInSeconds: 0,
+      isFavorite: false,
+      width: width,
+      height: height,
+      orientation: orientation,
+    );
   }
 }

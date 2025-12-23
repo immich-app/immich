@@ -53,7 +53,7 @@ Version mismatches between both hosts may cause bugs and instability, so remembe
 
 Adding a new URL to the settings is recommended over replacing the existing URL. This is because it will allow machine learning tasks to be processed successfully when the remote server is down by falling back to the local machine learning container. If you do not want machine learning tasks to be processed locally when the remote server is not available, you can instead replace the existing URL and only provide the remote container's URL. If doing this, you can remove the `immich-machine-learning` section of the local `docker-compose.yml` file to save resources, as this service will never be used.
 
-Do note that this will mean that Smart Search and Face Detection jobs will fail to be processed when the remote instance is not available. This in turn means that tasks dependent on these features—Duplicate Detection and Facial Recognition—will not run for affected assets. If this occurs, you must manually click the _Missing_ button next to Smart Search and Face Detection in the [Job Status](http://my.immich.app/admin/jobs-status) page for the jobs to be retried.
+Do note that this will mean that Smart Search and Face Detection jobs will fail to be processed when the remote instance is not available. This in turn means that tasks dependent on these features—Duplicate Detection and Facial Recognition—will not run for affected assets. If this occurs, you must manually click the _Missing_ button next to Smart Search and Face Detection in the [Job Status](http://my.immich.app/admin/queues) page for the jobs to be retried.
 
 ## Load balancing
 

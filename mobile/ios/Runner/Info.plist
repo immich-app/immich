@@ -307,4 +307,62 @@
 		<key>io.flutter.embedded_views_preview</key>
 		<true/>
 	</dict>
+	<key>NSBonjourServices</key>
+	<array>
+		<string>_googlecast._tcp</string>
+		<string>_CC1AD845._googlecast._tcp</string>
+	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>We need to access the camera to let you take beautiful video using this app</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>We need to use FaceID to allow access to your locked folder</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>We need local network permission to connect to the local server using IP address and allow the casting feature to work</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>We require this permission to access the local WiFi name for background upload mechanism</string>
+	<key>NSLocationUsageDescription</key>
+	<string>We require this permission to access the local WiFi name</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>We require this permission to access the local WiFi name</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>We need to access the microphone to let you take beautiful video using this app</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>We need to manage backup your photos album</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>We need to manage backup your photos album</string>
+	<key>NSUserActivityTypes</key>
+	<array>
+		<string>INSendMessageIntent</string>
+	</array>
+	<key>UIApplicationSupportsIndirectInputEvents</key>
+	<true/>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>fetch</string>
+		<string>processing</string>
+	</array>
+	<key>UILaunchStoryboardName</key>
+	<string>LaunchScreen</string>
+	<key>UIMainStoryboardFile</key>
+	<string>Main</string>
+	<key>UIStatusBarHidden</key>
+	<false/>
+	<key>UISupportedInterfaceOrientations</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+	<key>UISupportedInterfaceOrientations~ipad</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationPortraitUpsideDown</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+	<key>UIViewControllerBasedStatusBarAppearance</key>
+	<true/>
+	<key>io.flutter.embedded_views_preview</key>
+	<true/>
+</dict>
 </plist>

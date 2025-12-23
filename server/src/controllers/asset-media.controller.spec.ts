@@ -85,19 +85,6 @@ describe(AssetMediaController.name, () => {
       expect(body).toEqual(factory.responses.badRequest(['metadata must be valid JSON']));
     });
 
-    it('should validate iCloudId is a string', async () => {
-      const { status, body } = await request(ctx.getHttpServer())
-        .post('/assets')
-        .attach('assetData', assetData, filename)
-        .field({
-          ...makeUploadDto(),
-          metadata: JSON.stringify([{ key: AssetMetadataKey.MobileApp, value: { iCloudId: 123 } }]),
-        });
-
-      expect(status).toBe(400);
-      expect(body).toEqual(factory.responses.badRequest(['metadata.0.value.iCloudId must be a string']));
-    });
-
     it('should require `deviceAssetId`', async () => {
       const { status, body } = await request(ctx.getHttpServer())
         .post('/assets')

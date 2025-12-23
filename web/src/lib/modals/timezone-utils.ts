@@ -75,8 +75,15 @@ function zoneOptionForDate(zone: string, date: string) {
   // Ignore milliseconds:
   // - milliseconds are not relevant for TZ calculations
   // - browsers strip insignificant .000 making string comparison with milliseconds more fragile.
+  //
+  // Also, some browsers emit `datetime-local` values without seconds when seconds are 00,
+  // e.g. `2024-01-01T00:00` instead of `2024-01-01T00:00:00.000`.
+  // In that case we must compare with minute precision (otherwise every zone looks "invalid").
   const dateInTimezone = DateTime.fromISO(date, { zone });
-  const exists = date.replace(/\.\d+/, '') === dateInTimezone.toFormat("yyyy-MM-dd'T'HH:mm:ss");
+  const withoutMillis = date.replace(/\.\d+/, '');
+  const hasSeconds = /T\d{2}:\d{2}:\d{2}$/.test(withoutMillis);
+  const compareFormat = hasSeconds ? "yyyy-MM-dd'T'HH:mm:ss" : "yyyy-MM-dd'T'HH:mm";
+  const exists = withoutMillis === dateInTimezone.toFormat(compareFormat);
   const valid = dateInTimezone.isValid && exists;
   return {
     value: zone,

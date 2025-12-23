@@ -155,8 +155,8 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
           ...actions!.map((action) => Padding(padding: const EdgeInsets.only(right: 16), child: action)),
         if (kDebugMode || kProfileMode)
           IconButton(
-            icon: const Icon(Icons.science_rounded),
-            onPressed: () => context.pushRoute(const FeatInDevRoute()),
+            icon: const Icon(Icons.palette_rounded),
+            onPressed: () => context.pushRoute(const ImmichUIShowcaseRoute()),
           ),
         if (isCasting)
           Padding(

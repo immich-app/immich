@@ -9,8 +9,10 @@ import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
 
 class AdvancedInfoActionButton extends ConsumerWidget {
   final ActionSource source;
+  final bool iconOnly;
+  final bool menuItem;
 
-  const AdvancedInfoActionButton({super.key, required this.source});
+  const AdvancedInfoActionButton({super.key, required this.source, this.iconOnly = false, this.menuItem = false});
 
   void _onTap(BuildContext context, WidgetRef ref) async {
     if (!context.mounted) {
@@ -26,6 +28,8 @@ class AdvancedInfoActionButton extends ConsumerWidget {
       maxWidth: 115.0,
       iconData: Icons.help_outline_rounded,
       label: "troubleshoot".t(context: context),
+      iconOnly: iconOnly,
+      menuItem: menuItem,
       onPressed: () => _onTap(context, ref),
     );
   }

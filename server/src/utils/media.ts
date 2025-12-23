@@ -704,8 +704,7 @@ export class QsvSwDecodeConfig extends BaseHWConfig {
   }
 
   getBitrateOptions() {
-    const options = [];
-    options.push(`-${this.useCQP() ? 'q:v' : 'global_quality:v'} ${this.config.crf}`);
+    const options = [`-${this.useCQP() ? 'q:v' : 'global_quality:v'} ${this.config.crf}`];
     const bitrates = this.getBitrateDistribution();
     if (bitrates.max > 0) {
       options.push(`-maxrate ${bitrates.max}${bitrates.unit}`, `-bufsize ${bitrates.max * 2}${bitrates.unit}`);

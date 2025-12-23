@@ -1,11 +1,15 @@
 <script lang="ts">
+  import QueueCardBadge from '$lib/components/QueueCardBadge.svelte';
+  import QueueCardButton from '$lib/components/QueueCardButton.svelte';
   import Badge from '$lib/elements/Badge.svelte';
+  import { asQueueItem, getQueueDetailUrl } from '$lib/services/queue.service';
   import { locale } from '$lib/stores/preferences.store';
-  import { QueueCommand, type QueueCommandDto, type QueueStatisticsDto, type QueueStatusDto } from '@immich/sdk';
-  import { Icon, IconButton } from '@immich/ui';
+  import { QueueCommand, type QueueCommandDto, type QueueResponseDto } from '@immich/sdk';
+  import { Icon, IconButton, Link } from '@immich/ui';
   import {
     mdiAlertCircle,
     mdiAllInclusive,
+    mdiChartLine,
     mdiClose,
     mdiFastForward,
     mdiImageRefreshOutline,
@@ -15,39 +19,23 @@
   } from '@mdi/js';
   import { type Component } from 'svelte';
   import { t } from 'svelte-i18n';
-  import JobTileButton from './JobTileButton.svelte';
-  import JobTileStatus from './JobTileStatus.svelte';
 
   interface Props {
-    title: string;
-    subtitle: string | undefined;
-    description: Component | undefined;
-    statistics: QueueStatisticsDto;
-    queueStatus: QueueStatusDto;
-    icon: string;
+    queue: QueueResponseDto;
+    description?: Component;
     disabled?: boolean;
-    allText: string | undefined;
-    refreshText: string | undefined;
+    allText?: string;
+    refreshText?: string;
     missingText: string;
     onCommand: (command: QueueCommandDto) => void;
   }
 
-  let {
-    title,
-    subtitle,
-    description,
-    statistics,
-    queueStatus,
-    icon,
-    disabled = false,
-    allText,
-    refreshText,
-    missingText,
-    onCommand,
-  }: Props = $props();
+  let { queue, description, disabled = false, allText, refreshText, missingText, onCommand }: Props = $props();
 
+  const { icon, title, subtitle } = $derived(asQueueItem($t, queue));
+  const { statistics } = $derived(queue);
   let waitingCount = $derived(statistics.waiting + statistics.paused + statistics.delayed);
-  let isIdle = $derived(!queueStatus.isActive && !queueStatus.isPaused);
+  let isIdle = $derived(statistics.active + statistics.waiting === 0 && !queue.isPaused);
   let multipleButtons = $derived(allText || refreshText);
 
   const commonClasses = 'flex place-items-center justify-between w-full py-2 sm:py-4 pe-4 ps-6';
@@ -55,17 +43,25 @@
 
 <div class="flex flex-col overflow-hidden rounded-2xl bg-gray-100 dark:bg-immich-dark-gray sm:flex-row sm:rounded-9">
   <div class="flex w-full flex-col">
-    {#if queueStatus.isPaused}
-      <JobTileStatus color="warning">{$t('paused')}</JobTileStatus>
-    {:else if queueStatus.isActive}
-      <JobTileStatus color="success">{$t('active')}</JobTileStatus>
+    {#if queue.isPaused}
+      <QueueCardBadge color="warning">{$t('paused')}</QueueCardBadge>
+    {:else if statistics.active > 0}
+      <QueueCardBadge color="success">{$t('active')}</QueueCardBadge>
     {/if}
     <div class="flex flex-col gap-2 p-5 sm:p-7 md:p-9">
-      <div class="flex items-center gap-4 text-xl font-semibold text-primary">
-        <span class="flex items-center gap-2">
+      <div class="flex items-center gap-2 text-xl font-semibold text-primary">
+        <Link class="flex items-center gap-2 hover:underline" href={getQueueDetailUrl(queue)} underline={false}>
           <Icon {icon} size="1.25em" class="hidden shrink-0 sm:block" />
           <span class="uppercase">{title}</span>
-        </span>
+        </Link>
+        <IconButton
+          color="primary"
+          icon={mdiChartLine}
+          aria-label={$t('view_details')}
+          size="small"
+          variant="ghost"
+          href={getQueueDetailUrl(queue)}
+        />
         <div class="flex gap-2">
           {#if statistics.failed > 0}
             <Badge>
@@ -128,62 +124,62 @@
   </div>
   <div class="flex w-full flex-row overflow-hidden sm:w-32 sm:flex-col">
     {#if disabled}
-      <JobTileButton
+      <QueueCardButton
         disabled={true}
         color="light-gray"
         onClick={() => onCommand({ command: QueueCommand.Start, force: false })}
       >
         <Icon icon={mdiAlertCircle} size="36" />
         <span class="uppercase">{$t('disabled')}</span>
-      </JobTileButton>
+      </QueueCardButton>
     {/if}
 
     {#if !disabled && !isIdle}
       {#if waitingCount > 0}
-        <JobTileButton color="gray" onClick={() => onCommand({ command: QueueCommand.Empty, force: false })}>
+        <QueueCardButton color="gray" onClick={() => onCommand({ command: QueueCommand.Empty, force: false })}>
           <Icon icon={mdiClose} size="24" />
           <span class="uppercase">{$t('clear')}</span>
-        </JobTileButton>
+        </QueueCardButton>
       {/if}
-      {#if queueStatus.isPaused}
+      {#if queue.isPaused}
         {@const size = waitingCount > 0 ? '24' : '48'}
-        <JobTileButton color="light-gray" onClick={() => onCommand({ command: QueueCommand.Resume, force: false })}>
+        <QueueCardButton color="light-gray" onClick={() => onCommand({ command: QueueCommand.Resume, force: false })}>
           <!-- size property is not reactive, so have to use width and height -->
           <Icon icon={mdiFastForward} {size} />
           <span class="uppercase">{$t('resume')}</span>
-        </JobTileButton>
+        </QueueCardButton>
       {:else}
-        <JobTileButton color="light-gray" onClick={() => onCommand({ command: QueueCommand.Pause, force: false })}>
+        <QueueCardButton color="light-gray" onClick={() => onCommand({ command: QueueCommand.Pause, force: false })}>
           <Icon icon={mdiPause} size="24" />
           <span class="uppercase">{$t('pause')}</span>
-        </JobTileButton>
+        </QueueCardButton>
       {/if}
     {/if}
 
     {#if !disabled && multipleButtons && isIdle}
       {#if allText}
-        <JobTileButton color="dark-gray" onClick={() => onCommand({ command: QueueCommand.Start, force: true })}>
+        <QueueCardButton color="dark-gray" onClick={() => onCommand({ command: QueueCommand.Start, force: true })}>
           <Icon icon={mdiAllInclusive} size="24" />
           <span class="uppercase">{allText}</span>
-        </JobTileButton>
+        </QueueCardButton>
       {/if}
       {#if refreshText}
-        <JobTileButton color="gray" onClick={() => onCommand({ command: QueueCommand.Start, force: undefined })}>
+        <QueueCardButton color="gray" onClick={() => onCommand({ command: QueueCommand.Start, force: undefined })}>
           <Icon icon={mdiImageRefreshOutline} size="24" />
           <span class="uppercase">{refreshText}</span>
-        </JobTileButton>
+        </QueueCardButton>
       {/if}
-      <JobTileButton color="light-gray" onClick={() => onCommand({ command: QueueCommand.Start, force: false })}>
+      <QueueCardButton color="light-gray" onClick={() => onCommand({ command: QueueCommand.Start, force: false })}>
         <Icon icon={mdiSelectionSearch} size="24" />
         <span class="uppercase">{missingText}</span>
-      </JobTileButton>
+      </QueueCardButton>
     {/if}
 
     {#if !disabled && !multipleButtons && isIdle}
-      <JobTileButton color="light-gray" onClick={() => onCommand({ command: QueueCommand.Start, force: false })}>
+      <QueueCardButton color="light-gray" onClick={() => onCommand({ command: QueueCommand.Start, force: false })}>
         <Icon icon={mdiPlay} size="48" />
         <span class="uppercase">{missingText}</span>
-      </JobTileButton>
+      </QueueCardButton>
     {/if}
   </div>
 </div>

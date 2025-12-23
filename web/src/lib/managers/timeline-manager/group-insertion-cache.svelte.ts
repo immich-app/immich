@@ -1,6 +1,5 @@
 import { setDifference, type TimelineDate } from '$lib/utils/timeline-util';
 import { AssetOrder } from '@immich/sdk';
-import { SvelteSet } from 'svelte/reactivity';
 import type { DayGroup } from './day-group.svelte';
 import type { MonthGroup } from './month-group.svelte';
 import type { TimelineAsset } from './types';
@@ -10,8 +9,10 @@ export class GroupInsertionCache {
     [year: number]: { [month: number]: { [day: number]: DayGroup } };
   } = {};
   unprocessedAssets: TimelineAsset[] = [];
-  changedDayGroups = new SvelteSet<DayGroup>();
-  newDayGroups = new SvelteSet<DayGroup>();
+  // eslint-disable-next-line svelte/prefer-svelte-reactivity
+  changedDayGroups = new Set<DayGroup>();
+  // eslint-disable-next-line svelte/prefer-svelte-reactivity
+  newDayGroups = new Set<DayGroup>();
 
   getDayGroup({ year, month, day }: TimelineDate): DayGroup | undefined {
     return this.#lookupCache[year]?.[month]?.[day];
@@ -32,7 +33,8 @@ export class GroupInsertionCache {
   }
 
   get updatedBuckets() {
-    const updated = new SvelteSet<MonthGroup>();
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity
+    const updated = new Set<MonthGroup>();
     for (const group of this.changedDayGroups) {
       updated.add(group.monthGroup);
     }
@@ -40,7 +42,8 @@ export class GroupInsertionCache {
   }
 
   get bucketsWithNewDayGroups() {
-    const updated = new SvelteSet<MonthGroup>();
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity
+    const updated = new Set<MonthGroup>();
     for (const group of this.newDayGroups) {
       updated.add(group.monthGroup);
     }

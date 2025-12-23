@@ -86,7 +86,6 @@ class NetworkingSettings extends HookConsumerWidget {
 
     return ListView(
       padding: const EdgeInsets.only(bottom: 96),
-      physics: const ClampingScrollPhysics(),
       children: <Widget>[
         Padding(
           padding: const EdgeInsets.only(top: 8, left: 16, bottom: 8),

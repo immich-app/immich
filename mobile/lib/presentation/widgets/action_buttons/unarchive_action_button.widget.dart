@@ -9,8 +9,8 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_bu
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
+import 'package:immich_mobile/domain/models/events.model.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
-import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
 
 // used to allow performing unarchive action from different sources (without duplicating code)
 Future<void> performUnArchiveAction(BuildContext context, WidgetRef ref, {required ActionSource source}) async {
@@ -37,8 +37,10 @@ Future<void> performUnArchiveAction(BuildContext context, WidgetRef ref, {requir
 
 class UnArchiveActionButton extends ConsumerWidget {
   final ActionSource source;
+  final bool iconOnly;
+  final bool menuItem;
 
-  const UnArchiveActionButton({super.key, required this.source});
+  const UnArchiveActionButton({super.key, required this.source, this.iconOnly = false, this.menuItem = false});
 
   Future<void> _onTap(BuildContext context, WidgetRef ref) async {
     await performUnArchiveAction(context, ref, source: source);
@@ -49,6 +51,8 @@ class UnArchiveActionButton extends ConsumerWidget {
     return BaseActionButton(
       iconData: Icons.unarchive_outlined,
       label: "unarchive".t(context: context),
+      iconOnly: iconOnly,
+      menuItem: menuItem,
       onPressed: () => _onTap(context, ref),
     );
   }

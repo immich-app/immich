@@ -28,7 +28,18 @@ class _DriftCreateAlbumPageState extends ConsumerState<DriftCreateAlbumPage> {
   Set<BaseAsset> selectedAssets = {};
 
   @override
+  void initState() {
+    super.initState();
+    albumTitleController.addListener(_onTitleChanged);
+  }
+
+  void _onTitleChanged() {
+    setState(() {});
+  }
+
+  @override
   void dispose() {
+    albumTitleController.removeListener(_onTitleChanged);
     albumTitleController.dispose();
     albumDescriptionController.dispose();
     albumTitleTextFieldFocusNode.dispose();

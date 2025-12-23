@@ -19,7 +19,6 @@ import {
 import { BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AssetMetadataKey, AssetType, AssetVisibility } from 'src/enum';
 import { AssetStats } from 'src/repositories/asset.repository';
-import { AssetMetadata, AssetMetadataItem } from 'src/types';
 import { IsNotSiblingOf, Optional, ValidateBoolean, ValidateEnum, ValidateUUID } from 'src/validation';
 
 export class DeviceIdDto {
@@ -154,23 +153,12 @@ export class AssetMetadataUpsertDto {
   items!: AssetMetadataUpsertItemDto[];
 }
 
-export class AssetMetadataUpsertItemDto implements AssetMetadataItem {
+export class AssetMetadataUpsertItemDto {
   @ValidateEnum({ enum: AssetMetadataKey, name: 'AssetMetadataKey' })
   key!: AssetMetadataKey;
 
   @IsObject()
-  @ValidateNested()
-  @Type((options) => {
-    switch (options?.object.key) {
-      case AssetMetadataKey.MobileApp: {
-        return AssetMetadataMobileAppDto;
-      }
-      default: {
-        return Object;
-      }
-    }
-  })
-  value!: AssetMetadata[AssetMetadataKey];
+  value!: object;
 }
 
 export class AssetMetadataMobileAppDto {

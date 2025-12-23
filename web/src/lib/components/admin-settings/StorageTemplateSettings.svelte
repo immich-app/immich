@@ -254,7 +254,7 @@
                       values={{ job: $t('admin.storage_template_migration_job') }}
                     >
                       {#snippet children({ message })}
-                        <a href={resolve(AppRoute.ADMIN_JOBS)} class="text-primary">
+                        <a href={resolve(AppRoute.ADMIN_QUEUES)} class="text-primary">
                           {message}
                         </a>
                       {/snippet}

@@ -50,6 +50,7 @@ export class AssetDeltaSyncResponseDto {
 export const extraSyncModels: Function[] = [];
 
 export const ExtraModel = (): ClassDecorator => {
+  // eslint-disable-next-line unicorn/consistent-function-scoping
   return (object: Function) => {
     extraSyncModels.push(object);
   };

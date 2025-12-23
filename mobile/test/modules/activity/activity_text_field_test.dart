@@ -77,15 +77,15 @@ void main() {
       overrides: overrides,
     );
 
-    expect(find.widgetWithIcon(IconButton, Icons.favorite_rounded), findsOneWidget);
-    expect(find.widgetWithIcon(IconButton, Icons.favorite_border_rounded), findsNothing);
+    expect(find.widgetWithIcon(IconButton, Icons.thumb_up), findsOneWidget);
+    expect(find.widgetWithIcon(IconButton, Icons.thumb_up_off_alt), findsNothing);
   });
 
   testWidgets('Bordered icon if likedId == null', (tester) async {
     await tester.pumpConsumerWidget(ActivityTextField(onSubmit: (_) {}), overrides: overrides);
 
-    expect(find.widgetWithIcon(IconButton, Icons.favorite_border_rounded), findsOneWidget);
-    expect(find.widgetWithIcon(IconButton, Icons.favorite_rounded), findsNothing);
+    expect(find.widgetWithIcon(IconButton, Icons.thumb_up_off_alt), findsOneWidget);
+    expect(find.widgetWithIcon(IconButton, Icons.thumb_up), findsNothing);
   });
 
   testWidgets('Adds new like', (tester) async {

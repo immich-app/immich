@@ -2,10 +2,10 @@
   import ActionButton from '$lib/components/ActionButton.svelte';
   import ShareCover from '$lib/components/sharedlinks-page/covers/share-cover.svelte';
   import { AppRoute } from '$lib/constants';
-  import Badge from '$lib/elements/Badge.svelte';
   import { getSharedLinkActions } from '$lib/services/shared-link.service';
   import { locale } from '$lib/stores/preferences.store';
   import { SharedLinkType, type SharedLinkResponseDto } from '@immich/sdk';
+  import { ContextMenuButton, MenuItemType, Text } from '@immich/ui';
   import { DateTime, type ToRelativeUnit } from 'luxon';
   import { t } from 'svelte-i18n';
 
@@ -31,7 +31,29 @@
     }
   };
 
-  const SharedLinkActions = $derived(getSharedLinkActions($t, sharedLink));
+  const { Edit, Copy, Delete } = $derived(getSharedLinkActions($t, sharedLink));
+
+  const capabilities = $derived.by(() => {
+    const items = [];
+
+    if (sharedLink.allowUpload) {
+      items.push($t('upload'));
+    }
+
+    if (sharedLink.allowDownload) {
+      items.push($t('download'));
+    }
+
+    if (sharedLink.showMetadata) {
+      items.push($t('exif'));
+    }
+
+    if (sharedLink.password) {
+      items.push($t('password'));
+    }
+
+    return items;
+  });
 </script>
 
 <div
@@ -44,64 +66,56 @@
   >
     <ShareCover class="transition-all duration-300 hover:shadow-lg" {sharedLink} />
 
-    <div class="flex flex-col justify-between">
-      <div class="info-top">
-        <div class="font-mono text-xs font-semibold text-gray-500 dark:text-gray-400">
+    <div class="flex flex-col gap-4 justify-between">
+      <div class="flex flex-col">
+        <Text size="tiny" color={isExpired ? 'danger' : 'muted'} class="font-medium">
           {#if isExpired}
-            <p class="font-bold text-red-600 dark:text-red-400">{$t('expired')}</p>
+            {$t('expired')}
           {:else if expiresAt}
-            <p>
-              {$t('expires_date', { values: { date: getCountDownExpirationDate(expiresAt, now) } })}
-            </p>
+            {$t('expires_date', { values: { date: getCountDownExpirationDate(expiresAt, now) } })}
           {:else}
-            <p>{$t('expires_date', { values: { date: '∞' } })}</p>
+            {$t('expires_date', { values: { date: '∞' } })}
           {/if}
-        </div>
+        </Text>
 
-        <div class="text-sm pb-2">
-          <p class="flex place-items-center gap-2 text-primary break-all uppercase">
-            {#if sharedLink.type === SharedLinkType.Album}
-              {sharedLink.album?.albumName}
-            {:else if sharedLink.type === SharedLinkType.Individual}
-              {$t('individual_share')}
-            {/if}
-          </p>
+        <Text size="large" color="primary" class="flex place-items-center gap-2 break-all font-medium">
+          {#if sharedLink.type === SharedLinkType.Album}
+            {sharedLink.album?.albumName}
+          {:else if sharedLink.type === SharedLinkType.Individual}
+            {$t('individual_share')}
+          {/if}
+        </Text>
 
-          <p class="text-sm">{sharedLink.description ?? ''}</p>
-        </div>
+        {#if sharedLink.description}
+          <Text size="small" class="line-clamp-1">{sharedLink.description}</Text>
+        {/if}
       </div>
 
-      <div class="flex flex-wrap gap-2 text-xl">
-        {#if sharedLink.allowUpload}
-          <Badge rounded="full"><span class="text-xs px-1">{$t('upload')}</span></Badge>
-        {/if}
-
-        {#if sharedLink.allowDownload}
-          <Badge rounded="full"><span class="text-xs px-1">{$t('download')}</span></Badge>
-        {/if}
-
-        {#if sharedLink.showMetadata}
-          <Badge rounded="full"><span class="uppercase text-xs px-1">{$t('exif')}</span></Badge>
-        {/if}
-
-        {#if sharedLink.password}
-          <Badge rounded="full"><span class="text-xs px-1">{$t('password')}</span></Badge>
-        {/if}
-        {#if sharedLink.slug}
-          <Badge rounded="full"><span class="text-xs px-1">{$t('custom_url')}</span></Badge>
-        {/if}
+      <div class="flex flex-wrap items-center gap-2">
+        {#each capabilities as capability, index (index)}
+          <Text size="small" color="primary" class="font-medium">
+            {capability}
+          </Text>
+          {#if index < capabilities.length - 1}
+            <Text size="small" color="muted">•</Text>
+          {/if}
+        {/each}
       </div>
     </div>
   </svelte:element>
   <div class="flex flex-auto flex-col place-content-center place-items-end text-end ms-4">
     <div class="sm:flex hidden">
-      <ActionButton action={SharedLinkActions.Edit} />
-      <ActionButton action={SharedLinkActions.Copy} />
-      <ActionButton action={SharedLinkActions.Delete} />
+      <ActionButton action={Edit} />
+      <ActionButton action={Copy} />
+      <ActionButton action={Delete} />
     </div>
 
     <div class="sm:hidden">
-      <ActionButton action={SharedLinkActions.ContextMenu} />
+      <ContextMenuButton
+        aria-label={$t('shared_link_options')}
+        position="top-right"
+        items={[Edit, Copy, MenuItemType.Divider, Delete]}
+      />
     </div>
   </div>
 </div>

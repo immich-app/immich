@@ -52,7 +52,7 @@ Password login has been enabled.
 Disable Maintenance Mode
 
 ```
-immich-admin disable-maintenace-mode
+immich-admin disable-maintenance-mode
 Maintenance mode has been disabled.
 ```
 

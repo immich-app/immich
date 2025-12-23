@@ -78,7 +78,7 @@ class _SheetLocationDetailsState extends ConsumerState<SheetLocationDetails> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SheetTile(
-            title: 'exif_bottom_sheet_location'.t(context: context),
+            title: 'location'.t(context: context).toUpperCase(),
             titleStyle: context.textTheme.labelMedium?.copyWith(
               color: context.textTheme.labelMedium?.color?.withAlpha(200),
               fontWeight: FontWeight.w600,
@@ -102,7 +102,7 @@ class _SheetLocationDetailsState extends ConsumerState<SheetLocationDetails> {
                   Text(
                     coordinates,
                     style: context.textTheme.labelMedium?.copyWith(
-                      color: context.textTheme.labelMedium?.color?.withAlpha(150),
+                      color: context.textTheme.labelMedium?.color?.withAlpha(200),
                     ),
                   ),
                 ],

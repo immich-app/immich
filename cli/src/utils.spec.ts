@@ -299,7 +299,7 @@ describe('crawl', () => {
           .map(([file]) => file);
 
         // Compare file's content instead of path since a file can be represent in multiple ways.
-        expect(actual.map((path) => readContent(path)).sort()).toEqual(expected.sort());
+        expect(actual.map((path) => readContent(path)).toSorted()).toEqual(expected.toSorted());
       });
     }
   });

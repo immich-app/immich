@@ -10,8 +10,15 @@ import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
 class RemoveFromLockFolderActionButton extends ConsumerWidget {
   final ActionSource source;
+  final bool iconOnly;
+  final bool menuItem;
 
-  const RemoveFromLockFolderActionButton({super.key, required this.source});
+  const RemoveFromLockFolderActionButton({
+    super.key,
+    required this.source,
+    this.iconOnly = false,
+    this.menuItem = false,
+  });
 
   void _onTap(BuildContext context, WidgetRef ref) async {
     if (!context.mounted) {
@@ -42,6 +49,8 @@ class RemoveFromLockFolderActionButton extends ConsumerWidget {
       maxWidth: 100.0,
       iconData: Icons.lock_open_rounded,
       label: "remove_from_locked_folder".t(context: context),
+      iconOnly: iconOnly,
+      menuItem: menuItem,
       onPressed: () => _onTap(context, ref),
     );
   }

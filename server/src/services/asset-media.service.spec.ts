@@ -174,7 +174,6 @@ const assetEntity = Object.freeze({
     longitude: 10.703_075,
   },
   livePhotoVideoId: null,
-  sidecarPath: null,
 } as MapAsset);
 
 const existingAsset = Object.freeze({
@@ -188,7 +187,6 @@ const existingAsset = Object.freeze({
 
 const sidecarAsset = Object.freeze({
   ...existingAsset,
-  sidecarPath: 'sidecar-path',
   checksum: Buffer.from('_getExistingAssetWithSideCar', 'utf8'),
 }) as MapAsset;
 
@@ -721,16 +719,20 @@ describe(AssetMediaService.name, () => {
       expect(mocks.asset.update).toHaveBeenCalledWith(
         expect.objectContaining({
           id: existingAsset.id,
-          sidecarPath: null,
           originalFileName: 'photo1.jpeg',
           originalPath: 'fake_path/photo1.jpeg',
         }),
       );
       expect(mocks.asset.create).toHaveBeenCalledWith(
         expect.objectContaining({
-          sidecarPath: null,
           originalFileName: 'existing-filename.jpeg',
           originalPath: 'fake_path/asset_1.jpeg',
+        }),
+      );
+      expect(mocks.asset.deleteFile).toHaveBeenCalledWith(
+        expect.objectContaining({
+          assetId: existingAsset.id,
+          type: AssetFileType.Sidecar,
         }),
       );
 
@@ -769,6 +771,13 @@ describe(AssetMediaService.name, () => {
         deletedAt: expect.any(Date),
         status: AssetStatus.Trashed,
       });
+      expect(mocks.asset.upsertFile).toHaveBeenCalledWith(
+        expect.objectContaining({
+          assetId: existingAsset.id,
+          path: sidecarFile.originalPath,
+          type: AssetFileType.Sidecar,
+        }),
+      );
       expect(mocks.user.updateUsage).toHaveBeenCalledWith(authStub.user1.user.id, updatedFile.size);
       expect(mocks.storage.utimes).toHaveBeenCalledWith(
         updatedFile.originalPath,
@@ -798,6 +807,12 @@ describe(AssetMediaService.name, () => {
         deletedAt: expect.any(Date),
         status: AssetStatus.Trashed,
       });
+      expect(mocks.asset.deleteFile).toHaveBeenCalledWith(
+        expect.objectContaining({
+          assetId: existingAsset.id,
+          type: AssetFileType.Sidecar,
+        }),
+      );
       expect(mocks.user.updateUsage).toHaveBeenCalledWith(authStub.user1.user.id, updatedFile.size);
       expect(mocks.storage.utimes).toHaveBeenCalledWith(
         updatedFile.originalPath,
@@ -827,6 +842,9 @@ describe(AssetMediaService.name, () => {
 
       expect(mocks.asset.create).not.toHaveBeenCalled();
       expect(mocks.asset.updateAll).not.toHaveBeenCalled();
+      expect(mocks.asset.upsertFile).not.toHaveBeenCalled();
+      expect(mocks.asset.deleteFile).not.toHaveBeenCalled();
+
       expect(mocks.job.queue).toHaveBeenCalledWith({
         name: JobName.FileDelete,
         data: { files: [updatedFile.originalPath, undefined] },

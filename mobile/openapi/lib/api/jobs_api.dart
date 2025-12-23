@@ -97,7 +97,7 @@ class JobsApi {
   /// Retrieve queue counts and status
   ///
   /// Retrieve the counts of the current queue, as well as the current status.
-  Future<QueuesResponseDto?> getQueuesLegacy() async {
+  Future<QueuesResponseLegacyDto?> getQueuesLegacy() async {
     final response = await getQueuesLegacyWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
@@ -106,7 +106,7 @@ class JobsApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'QueuesResponseDto',) as QueuesResponseDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'QueuesResponseLegacyDto',) as QueuesResponseLegacyDto;
     
     }
     return null;
@@ -158,7 +158,7 @@ class JobsApi {
   /// * [QueueName] name (required):
   ///
   /// * [QueueCommandDto] queueCommandDto (required):
-  Future<QueueResponseDto?> runQueueCommandLegacy(QueueName name, QueueCommandDto queueCommandDto,) async {
+  Future<QueueResponseLegacyDto?> runQueueCommandLegacy(QueueName name, QueueCommandDto queueCommandDto,) async {
     final response = await runQueueCommandLegacyWithHttpInfo(name, queueCommandDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
@@ -167,7 +167,7 @@ class JobsApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'QueueResponseDto',) as QueueResponseDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'QueueResponseLegacyDto',) as QueueResponseLegacyDto;
     
     }
     return null;

@@ -14,7 +14,7 @@ class WorkflowFilterItemDto {
   /// Returns a new [WorkflowFilterItemDto] instance.
   WorkflowFilterItemDto({
     this.filterConfig,
-    required this.filterId,
+    required this.pluginFilterId,
   });
 
   ///
@@ -25,21 +25,21 @@ class WorkflowFilterItemDto {
   ///
   Object? filterConfig;
 
-  String filterId;
+  String pluginFilterId;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is WorkflowFilterItemDto &&
     other.filterConfig == filterConfig &&
-    other.filterId == filterId;
+    other.pluginFilterId == pluginFilterId;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (filterConfig == null ? 0 : filterConfig!.hashCode) +
-    (filterId.hashCode);
+    (pluginFilterId.hashCode);
 
   @override
-  String toString() => 'WorkflowFilterItemDto[filterConfig=$filterConfig, filterId=$filterId]';
+  String toString() => 'WorkflowFilterItemDto[filterConfig=$filterConfig, pluginFilterId=$pluginFilterId]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -48,7 +48,7 @@ class WorkflowFilterItemDto {
     } else {
     //  json[r'filterConfig'] = null;
     }
-      json[r'filterId'] = this.filterId;
+      json[r'pluginFilterId'] = this.pluginFilterId;
     return json;
   }
 
@@ -62,7 +62,7 @@ class WorkflowFilterItemDto {
 
       return WorkflowFilterItemDto(
         filterConfig: mapValueOfType<Object>(json, r'filterConfig'),
-        filterId: mapValueOfType<String>(json, r'filterId')!,
+        pluginFilterId: mapValueOfType<String>(json, r'pluginFilterId')!,
       );
     }
     return null;
@@ -110,7 +110,7 @@ class WorkflowFilterItemDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'filterId',
+    'pluginFilterId',
   };
 }
 

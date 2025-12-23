@@ -196,7 +196,7 @@
     withStacked
     onThumbnailClick={handleThumbnailClick}
   >
-    {#snippet customLayout(asset: TimelineAsset)}
+    {#snippet customThumbnailLayout(asset: TimelineAsset)}
       {#if hasGps(asset)}
         <div class="absolute bottom-1 end-3 px-4 py-1 rounded-xl text-xs transition-colors bg-success text-black">
           {asset.city || $t('gps')}

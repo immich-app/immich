@@ -12,7 +12,7 @@ import {
   PersonCreateDto,
   QueueCommandDto,
   QueueName,
-  QueuesResponseDto,
+  QueuesResponseLegacyDto,
   SharedLinkCreateDto,
   UpdateLibraryDto,
   UserAdminCreateDto,
@@ -564,13 +564,13 @@ export const utils = {
     await updateConfig({ systemConfigDto: defaultConfig }, { headers: asBearerAuth(accessToken) });
   },
 
-  isQueueEmpty: async (accessToken: string, queue: keyof QueuesResponseDto) => {
+  isQueueEmpty: async (accessToken: string, queue: keyof QueuesResponseLegacyDto) => {
     const queues = await getQueuesLegacy({ headers: asBearerAuth(accessToken) });
     const jobCounts = queues[queue].jobCounts;
     return !jobCounts.active && !jobCounts.waiting;
   },
 
-  waitForQueueFinish: (accessToken: string, queue: keyof QueuesResponseDto, ms?: number) => {
+  waitForQueueFinish: (accessToken: string, queue: keyof QueuesResponseLegacyDto, ms?: number) => {
     // eslint-disable-next-line no-async-promise-executor
     return new Promise<void>(async (resolve, reject) => {
       const timeout = setTimeout(() => reject(new Error('Timed out waiting for queue to empty')), ms || 10_000);

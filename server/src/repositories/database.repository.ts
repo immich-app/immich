@@ -403,7 +403,6 @@ export class DatabaseRepository {
         .set((eb) => ({
           originalPath: eb.fn('REGEXP_REPLACE', ['originalPath', source, target]),
           encodedVideoPath: eb.fn('REGEXP_REPLACE', ['encodedVideoPath', source, target]),
-          sidecarPath: eb.fn('REGEXP_REPLACE', ['sidecarPath', source, target]),
         }))
         .execute();
 

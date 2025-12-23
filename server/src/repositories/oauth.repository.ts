@@ -24,9 +24,8 @@ export class OAuthRepository {
   }
 
   async authorize(config: OAuthConfig, redirectUrl: string, state?: string, codeChallenge?: string) {
-    const { buildAuthorizationUrl, randomState, randomPKCECodeVerifier, calculatePKCECodeChallenge } = await import(
-      'openid-client'
-    );
+    const { buildAuthorizationUrl, randomState, randomPKCECodeVerifier, calculatePKCECodeChallenge } =
+      await import('openid-client');
     const client = await this.getClient(config);
     state ??= randomState();
 

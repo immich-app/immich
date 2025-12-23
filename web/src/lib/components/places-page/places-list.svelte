@@ -9,7 +9,6 @@
   import { type PlacesGroup, getSelectedPlacesGroupOption } from '$lib/utils/places-utils';
   import { Icon } from '@immich/ui';
   import { t } from 'svelte-i18n';
-  import { run } from 'svelte/legacy';
 
   interface Props {
     places?: AssetResponseDto[];
@@ -70,39 +69,27 @@
     },
   };
 
-  let filteredPlaces: AssetResponseDto[] = $state([]);
-  let groupedPlaces: PlacesGroup[] = $state([]);
+  const filteredPlaces = $derived.by(() => {
+    const searchQueryNormalized = normalizeSearchString(searchQuery);
+    return searchQueryNormalized
+      ? places.filter((place) => normalizeSearchString(place.exifInfo?.city ?? '').includes(searchQueryNormalized))
+      : places;
+  });
 
-  let placesGroupOption: string = $state(PlacesGroupBy.None);
+  const placesGroupOption: string = $derived(getSelectedPlacesGroupOption(userSettings));
+  const groupingFunction = $derived(groupOptions[placesGroupOption] ?? groupOptions[PlacesGroupBy.None]);
+  const groupedPlaces: PlacesGroup[] = $derived(groupingFunction(filteredPlaces));
 
-  let hasPlaces = $derived(places.length > 0);
-
-  // Step 1: Filter using the given search query.
-  run(() => {
-    if (searchQuery) {
-      const searchQueryNormalized = normalizeSearchString(searchQuery);
-
-      filteredPlaces = places.filter((place) => {
-        return normalizeSearchString(place.exifInfo?.city ?? '').includes(searchQueryNormalized);
-      });
-    } else {
-      filteredPlaces = places;
-    }
-
+  $effect(() => {
     searchResultCount = filteredPlaces.length;
   });
 
-  // Step 2: Group places.
-  run(() => {
-    placesGroupOption = getSelectedPlacesGroupOption(userSettings);
-    const groupFunc = groupOptions[placesGroupOption] ?? groupOptions[PlacesGroupBy.None];
-    groupedPlaces = groupFunc(filteredPlaces);
-
+  $effect(() => {
     placesGroupIds = groupedPlaces.map(({ id }) => id);
   });
 </script>
 
-{#if hasPlaces}
+{#if places.length > 0}
   <!-- Album Cards -->
   {#if placesGroupOption === PlacesGroupBy.None}
     <PlacesCardGroup places={groupedPlaces[0].places} />

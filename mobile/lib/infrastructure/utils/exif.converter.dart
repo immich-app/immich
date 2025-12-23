@@ -22,7 +22,7 @@ abstract final class ExifDtoConverter {
       f: dto.fNumber?.toDouble(),
       mm: dto.focalLength?.toDouble(),
       iso: dto.iso?.toInt(),
-      exposureSeconds: _exposureTimeToSeconds(dto.exposureTime),
+      exposureSeconds: exposureTimeToSeconds(dto.exposureTime),
     );
   }
 
@@ -36,15 +36,15 @@ abstract final class ExifDtoConverter {
     return isRotated90CW || isRotated270CW;
   }
 
-  static double? _exposureTimeToSeconds(String? s) {
-    if (s == null) {
+  static double? exposureTimeToSeconds(String? second) {
+    if (second == null) {
       return null;
     }
-    double? value = double.tryParse(s);
+    double? value = double.tryParse(second);
     if (value != null) {
       return value;
     }
-    final parts = s.split("/");
+    final parts = second.split("/");
     if (parts.length == 2) {
       final numerator = double.tryParse(parts.firstOrNull ?? "-");
       final denominator = double.tryParse(parts.lastOrNull ?? "-");

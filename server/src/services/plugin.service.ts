@@ -247,9 +247,9 @@ export class PluginService extends BaseService {
 
   private async executeFilters(workflowFilters: WorkflowFilter[], context: WorkflowContext): Promise<boolean> {
     for (const workflowFilter of workflowFilters) {
-      const filter = await this.pluginRepository.getFilter(workflowFilter.filterId);
+      const filter = await this.pluginRepository.getFilter(workflowFilter.pluginFilterId);
       if (!filter) {
-        this.logger.error(`Filter ${workflowFilter.filterId} not found`);
+        this.logger.error(`Filter ${workflowFilter.pluginFilterId} not found`);
         return false;
       }
 
@@ -291,9 +291,9 @@ export class PluginService extends BaseService {
 
   private async executeActions(workflowActions: WorkflowAction[], context: WorkflowContext): Promise<void> {
     for (const workflowAction of workflowActions) {
-      const action = await this.pluginRepository.getAction(workflowAction.actionId);
+      const action = await this.pluginRepository.getAction(workflowAction.pluginActionId);
       if (!action) {
-        throw new Error(`Action ${workflowAction.actionId} not found`);
+        throw new Error(`Action ${workflowAction.pluginActionId} not found`);
       }
 
       const pluginInstance = this.loadedPlugins.get(action.pluginId);

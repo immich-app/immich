@@ -62,50 +62,60 @@ export const setupTimelineMockApiRoutes = async (
     return route.continue();
   });
 
-  await context.route('**/api/assets/**', async (route, request) => {
+  await context.route('**/api/assets/*', async (route, request) => {
+    const url = new URL(request.url());
+    const pathname = url.pathname;
+    const assetId = basename(pathname);
+    const asset = getAsset(timelineRestData, assetId);
+    return route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      json: asset,
+    });
+  });
+
+  await context.route('**/api/assets/*/ocr', async (route) => {
+    return route.fulfill({ status: 200, contentType: 'application/json', json: [] });
+  });
+
+  await context.route('**/api/assets/*/thumbnail?size=*', async (route, request) => {
     const pattern = /\/api\/assets\/(?<assetId>[^/]+)\/thumbnail\?size=(?<size>preview|thumbnail)/;
     const match = request.url().match(pattern);
-    if (!match) {
-      const url = new URL(request.url());
-      const pathname = url.pathname;
-      const assetId = basename(pathname);
-      const asset = getAsset(timelineRestData, assetId);
-      return route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        json: asset,
-      });
+    if (!match?.groups) {
+      throw new Error(`Invalid URL for thumbnail endpoint: ${request.url()}`);
     }
-    if (match.groups?.size === 'preview') {
+
+    if (match.groups.size === 'preview') {
       if (!route.request().serviceWorker()) {
         return route.continue();
       }
-      const asset = getAsset(timelineRestData, match.groups?.assetId);
+      const asset = getAsset(timelineRestData, match.groups.assetId);
       return route.fulfill({
         status: 200,
         headers: { 'content-type': 'image/jpeg', ETag: 'abc123', 'Cache-Control': 'public, max-age=3600' },
         body: await randomPreview(
-          match.groups?.assetId,
+          match.groups.assetId,
           (asset?.exifInfo?.exifImageWidth ?? 0) / (asset?.exifInfo?.exifImageHeight ?? 1),
         ),
       });
     }
-    if (match.groups?.size === 'thumbnail') {
+    if (match.groups.size === 'thumbnail') {
       if (!route.request().serviceWorker()) {
         return route.continue();
       }
-      const asset = getAsset(timelineRestData, match.groups?.assetId);
+      const asset = getAsset(timelineRestData, match.groups.assetId);
       return route.fulfill({
         status: 200,
         headers: { 'content-type': 'image/jpeg' },
         body: await randomThumbnail(
-          match.groups?.assetId,
+          match.groups.assetId,
           (asset?.exifInfo?.exifImageWidth ?? 0) / (asset?.exifInfo?.exifImageHeight ?? 1),
         ),
       });
     }
     return route.continue();
   });
+
   await context.route('**/api/albums/**', async (route, request) => {
     const pattern = /\/api\/albums\/(?<albumId>[^/?]+)/;
     const match = request.url().match(pattern);

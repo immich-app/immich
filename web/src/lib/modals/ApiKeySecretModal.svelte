@@ -15,7 +15,7 @@
 <Modal title={$t('api_key')} icon={mdiKeyVariant} {onClose} size="small">
   <ModalBody>
     <Text size="small" class="mb-4">{$t('api_key_description')}</Text>
-    <Textarea bind:value={secret} readonly />
+    <Textarea bind:value={secret} readonly class="font-mono" />
   </ModalBody>
 
   <ModalFooter>

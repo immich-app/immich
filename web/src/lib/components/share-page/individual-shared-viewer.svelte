@@ -1,6 +1,7 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import type { Action } from '$lib/components/asset-viewer/actions/action';
+  import PixelUnionLogo from '$lib/components/shared-components/pixelunion-logo.svelte';
   import DownloadAction from '$lib/components/timeline/actions/DownloadAction.svelte';
   import RemoveFromSharedLink from '$lib/components/timeline/actions/RemoveFromSharedLinkAction.svelte';
   import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
@@ -16,7 +17,6 @@
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { addSharedLinkAssets, getAssetInfo, type SharedLinkResponseDto } from '@immich/sdk';
   import { IconButton, toastManager } from '@immich/ui';
-  import PixelUnionLogo from '$lib/components/shared-components/pixelunion-logo.svelte';
   import { mdiArrowLeft, mdiDownload, mdiFileImagePlusOutline, mdiSelectAll } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import ControlAppBar from '../shared-components/control-app-bar.svelte';

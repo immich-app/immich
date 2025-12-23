@@ -265,7 +265,7 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
         row.deletedAt.isNull() &
         row.isFavorite.equals(true) &
         row.ownerId.equals(userId) &
-        row.visibility.equalsValue(AssetVisibility.timeline),
+        (row.visibility.equalsValue(AssetVisibility.timeline) | row.visibility.equalsValue(AssetVisibility.archive)),
     groupBy: groupBy,
     origin: TimelineOrigin.favorite,
   );

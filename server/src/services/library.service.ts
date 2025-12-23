@@ -223,7 +223,14 @@ export class LibraryService extends BaseService {
       ownerId: dto.ownerId,
       name: dto.name ?? 'New External Library',
       importPaths: dto.importPaths ?? [],
-      exclusionPatterns: dto.exclusionPatterns ?? ['**/@eaDir/**', '**/._*', '**/#recycle/**', '**/#snapshot/**'],
+      exclusionPatterns: dto.exclusionPatterns ?? [
+        '**/@eaDir/**',
+        '**/._*',
+        '**/#recycle/**',
+        '**/#snapshot/**',
+        '**/.stversions/**',
+        '**/.stfolder/**',
+      ],
     });
     return mapLibrary(library);
   }

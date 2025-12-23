@@ -2,6 +2,7 @@
   import { shortcut } from '$lib/actions/shortcut';
   import CastButton from '$lib/cast/cast-button.svelte';
   import AlbumMap from '$lib/components/album-page/album-map.svelte';
+  import PixelUnionLogo from '$lib/components/shared-components/pixelunion-logo.svelte';
   import DownloadAction from '$lib/components/timeline/actions/DownloadAction.svelte';
   import SelectAllAssets from '$lib/components/timeline/actions/SelectAllAction.svelte';
   import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
@@ -12,13 +13,13 @@
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
+  import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { handlePromiseError } from '$lib/utils';
   import { cancelMultiselect } from '$lib/utils/asset-utils';
   import { fileUploadHandler, openFileUploadDialog } from '$lib/utils/file-uploader';
   import type { AlbumResponseDto, SharedLinkResponseDto, UserResponseDto } from '@immich/sdk';
   import { IconButton } from '@immich/ui';
-  import PixelUnionLogo from '$lib/components/shared-components/pixelunion-logo.svelte';
-  import { mdiDownload, mdiFileImagePlusOutline } from '@mdi/js';
+  import { mdiDownload, mdiFileImagePlusOutline, mdiPresentationPlay } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import ControlAppBar from '../shared-components/control-app-bar.svelte';
   import ThemeButton from '../shared-components/theme-button.svelte';
@@ -33,7 +34,8 @@
 
   const album = sharedLink.album as AlbumResponseDto;
 
-  let { isViewing: showAssetViewer } = assetViewingStore;
+  let { isViewing: showAssetViewer, setAssetId } = assetViewingStore;
+  let { slideshowState, slideshowNavigation } = slideshowStore;
 
   const options = $derived({ albumId: album.id, order: album.order });
   let timelineManager = $state<TimelineManager>() as TimelineManager;
@@ -46,6 +48,16 @@
       dragAndDropFilesStore.set({ isDragging: false, files: [] });
     }
   });
+
+  const handleStartSlideshow = async () => {
+    const asset =
+      $slideshowNavigation === SlideshowNavigation.Shuffle
+        ? await timelineManager.getRandomAsset()
+        : timelineManager.months[0]?.dayGroups[0]?.viewerAssets[0]?.asset;
+    if (asset) {
+      handlePromiseError(setAssetId(asset.id).then(() => ($slideshowState = SlideshowState.PlaySlideshow)));
+    }
+  };
 </script>
 
 <svelte:document
@@ -118,6 +130,14 @@
         {/if}
 
         {#if album.assetCount > 0 && sharedLink.allowDownload}
+          <IconButton
+            shape="round"
+            variant="ghost"
+            color="secondary"
+            aria-label={$t('slideshow')}
+            onclick={handleStartSlideshow}
+            icon={mdiPresentationPlay}
+          />
           <IconButton
             shape="round"
             color="secondary"

@@ -105,20 +105,16 @@ export const thumbnailUtils = {
     return await poll(page, () => thumbnailUtils.queryThumbnailInViewport(page, collector));
   },
   async expectThumbnailIsFavorite(page: Page, assetId: string) {
-    await expect(
-      thumbnailUtils
-        .withAssetId(page, assetId)
-        .locator(
-          'path[d="M12,21.35L10.55,20.03C5.4,15.36 2,12.27 2,8.5C2,5.41 4.42,3 7.5,3C9.24,3 10.91,3.81 12,5.08C13.09,3.81 14.76,3 16.5,3C19.58,3 22,5.41 22,8.5C22,12.27 18.6,15.36 13.45,20.03L12,21.35Z"]',
-        ),
-    ).toHaveCount(1);
+    await expect(thumbnailUtils.withAssetId(page, assetId).locator('[data-icon-favorite]')).toHaveCount(1);
+  },
+  async expectThumbnailIsNotFavorite(page: Page, assetId: string) {
+    await expect(thumbnailUtils.withAssetId(page, assetId).locator('[data-icon-favorite]')).toHaveCount(0);
   },
   async expectThumbnailIsArchive(page: Page, assetId: string) {
-    await expect(
-      thumbnailUtils
-        .withAssetId(page, assetId)
-        .locator('path[d="M20 21H4V10H6V19H18V10H20V21M3 3H21V9H3V3M5 5V7H19V5M10.5 11V14H8L12 18L16 14H13.5V11"]'),
-    ).toHaveCount(1);
+    await expect(thumbnailUtils.withAssetId(page, assetId).locator('[data-icon-archive]')).toHaveCount(1);
+  },
+  async expectThumbnailIsNotArchive(page: Page, assetId: string) {
+    await expect(thumbnailUtils.withAssetId(page, assetId).locator('[data-icon-archive]')).toHaveCount(0);
   },
   async expectSelectedReadonly(page: Page, assetId: string) {
     // todo - need a data attribute for selected
@@ -208,8 +204,16 @@ export const pageUtils = {
     await page.goto(`/photos`);
     await timelineUtils.waitForTimelineLoad(page);
   },
+  async openFavorites(page: Page) {
+    await page.goto(`/favorites`);
+    await timelineUtils.waitForTimelineLoad(page);
+  },
   async openAlbumPage(page: Page, albumId: string) {
     await page.goto(`/albums/${albumId}`);
+    await timelineUtils.waitForTimelineLoad(page);
+  },
+  async openArchivePage(page: Page) {
+    await page.goto(`/archive`);
     await timelineUtils.waitForTimelineLoad(page);
   },
   async deepLinkAlbumPage(page: Page, albumId: string, assetId: string) {

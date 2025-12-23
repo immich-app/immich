@@ -2,7 +2,7 @@ import { asOptions } from 'src/sql-tools/helpers';
 import { register } from 'src/sql-tools/register';
 import { ColumnStorage, ColumnType, DatabaseEnum } from 'src/sql-tools/types';
 
-export type ColumnValue = null | boolean | string | number | object | Date | (() => string);
+export type ColumnValue = null | boolean | string | number | Array<unknown> | object | Date | (() => string);
 
 export type ColumnBaseOptions = {
   name?: string;

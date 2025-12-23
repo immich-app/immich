@@ -4,6 +4,6 @@
     "format:fix": "prettier --write ."
   },
   "devDependencies": {
-    "prettier": "^3.5.3"
+    "prettier": "^3.7.4"
   }
 }
