@@ -86,6 +86,18 @@
         return;
       }
 
+      // Try to parse coordinate pair from search input in the format `LATITUDE, LONGITUDE` as floats
+      const coordinateParts = searchWord.split(',').map(part => part.trim());
+      if (coordinateParts.length === 2) {
+        const coordinateLat = parseFloat(coordinateParts[0]);
+        const coordinateLng = parseFloat(coordinateParts[1]);
+
+        places = [];
+        showLoadingSpinner = false;
+        handleUseSuggested(coordinateLat, coordinateLng);
+        return
+      }
+
       searchPlaces({ name: searchWord })
         .then((searchResult) => {
           // skip result when a newer search is happening
