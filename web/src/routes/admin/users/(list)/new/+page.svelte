@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { goto } from '$app/navigation';
+  import { AppRoute } from '$lib/constants';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { handleCreateUserAdmin } from '$lib/services/user-admin.service';
   import { userInteraction } from '$lib/stores/user.svelte';
@@ -17,12 +19,6 @@
     Switch,
   } from '@immich/ui';
   import { t } from 'svelte-i18n';
-
-  type Props = {
-    onClose: () => void;
-  };
-
-  let { onClose }: Props = $props();
 
   let success = $state(false);
 
@@ -46,6 +42,10 @@
   const passwordMismatchMessage = $derived(passwordMismatch ? $t('password_does_not_match') : '');
   const valid = $derived(!passwordMismatch && !isCreatingUser);
 
+  const onClose = async () => {
+    await goto(AppRoute.ADMIN_USERS);
+  };
+
   const onSubmit = async (event: Event) => {
     event.preventDefault();
 
@@ -55,7 +55,7 @@
 
     isCreatingUser = true;
 
-    const success = await handleCreateUserAdmin({
+    const user = await handleCreateUserAdmin({
       email,
       password,
       shouldChangePassword,
@@ -65,8 +65,8 @@
       isAdmin,
     });
 
-    if (success) {
-      onClose();
+    if (user) {
+      await goto(`${AppRoute.ADMIN_USERS}/${user.id}`, { replaceState: true });
     }
 
     isCreatingUser = false;

@@ -6,20 +6,20 @@
   import SharedLinkCard from '$lib/components/sharedlinks-page/SharedLinkCard.svelte';
   import { AppRoute } from '$lib/constants';
   import GroupTab from '$lib/elements/GroupTab.svelte';
-  import SharedLinkUpdateModal from '$lib/modals/SharedLinkUpdateModal.svelte';
   import { getAllSharedLinks, SharedLinkType, type SharedLinkResponseDto } from '@immich/sdk';
-  import { onMount } from 'svelte';
+  import { Container } from '@immich/ui';
+  import { onMount, type Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
-  import type { PageData } from './$types';
+  import type { LayoutData } from './$types';
 
   type Props = {
-    data: PageData;
+    children?: Snippet;
+    data: LayoutData;
   };
 
-  const { data }: Props = $props();
+  const { children, data }: Props = $props();
 
   let sharedLinks: SharedLinkResponseDto[] = $state([]);
-  let sharedLink = $derived(sharedLinks.find(({ id }) => id === page.params.id));
 
   const refresh = async () => {
     sharedLinks = await getAllSharedLinks({});
@@ -80,7 +80,7 @@
     </div>
   {/snippet}
 
-  <div class="w-full max-w-3xl m-auto">
+  <Container center size="medium">
     {#if sharedLinks.length === 0}
       <div
         class="flex place-content-center place-items-center rounded-lg bg-gray-100 dark:bg-immich-dark-gray dark:text-immich-gray p-12"
@@ -95,8 +95,6 @@
       </div>
     {/if}
 
-    {#if sharedLink}
-      <SharedLinkUpdateModal {sharedLink} onClose={() => goto(AppRoute.SHARED_LINKS)} />
-    {/if}
-  </div>
+    {@render children?.()}
+  </Container>
 </UserPageLayout>

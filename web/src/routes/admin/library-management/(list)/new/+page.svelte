@@ -1,5 +1,7 @@
 <script lang="ts">
+  import { goto } from '$app/navigation';
   import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
+  import { AppRoute } from '$lib/constants';
   import { handleCreateLibrary } from '$lib/services/library.service';
   import { user } from '$lib/stores/user.store';
   import { searchUsersAdmin } from '@immich/sdk';
@@ -7,12 +9,6 @@
   import { mdiFolderSync } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
-
-  type Props = {
-    onClose: () => void;
-  };
-
-  let { onClose }: Props = $props();
 
   let ownerId: string = $state($user.id);
 
@@ -23,10 +19,14 @@
     userOptions = users.map((user) => ({ value: user.id, text: user.name }));
   });
 
+  const onClose = async () => {
+    await goto(AppRoute.ADMIN_LIBRARIES);
+  };
+
   const onSubmit = async () => {
-    const success = await handleCreateLibrary({ ownerId });
-    if (success) {
-      onClose();
+    const library = await handleCreateLibrary({ ownerId });
+    if (library) {
+      await goto(`${AppRoute.ADMIN_LIBRARIES}/${library.id}`, { replaceState: true });
     }
   };
 </script>
