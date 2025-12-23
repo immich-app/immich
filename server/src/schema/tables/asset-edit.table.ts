@@ -6,7 +6,7 @@ export class AssetEditTable<T extends EditAction = EditAction> {
   @PrimaryGeneratedColumn()
   id!: Generated<string>;
 
-  @ForeignKeyColumn(() => AssetTable, { onDelete: 'CASCADE', onUpdate: 'CASCADE', nullable: false, primary: true })
+  @ForeignKeyColumn(() => AssetTable, { onDelete: 'CASCADE', onUpdate: 'CASCADE', nullable: false })
   assetId!: string;
 
   @Column()

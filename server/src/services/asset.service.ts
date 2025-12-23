@@ -506,7 +506,7 @@ export class AssetService extends BaseService {
 
   async getAssetEdits(auth: AuthDto, id: string): Promise<AssetEditsDto> {
     await this.requireAccess({ auth, permission: Permission.AssetRead, ids: [id] });
-    const edits = await this.assetEditRepository.getEditsForAsset(id);
+    const edits = await this.assetEditRepository.getAll(id);
     return {
       assetId: id,
       edits,
@@ -529,7 +529,7 @@ export class AssetService extends BaseService {
       throw new BadRequestException('Only images can be edited');
     }
 
-    if (asset.livePhotoVideoId !== null) {
+    if (asset.livePhotoVideoId) {
       throw new BadRequestException('Editing live photos is not supported');
     }
 
@@ -567,7 +567,7 @@ export class AssetService extends BaseService {
       }
     }
 
-    await this.assetEditRepository.storeEdits(id, dto.edits);
+    await this.assetEditRepository.replaceAll(id, dto.edits);
     await this.jobRepository.queue({
       name: JobName.AssetGenerateThumbnails,
       data: { id, source: 'edit', notify: true },
@@ -588,7 +588,7 @@ export class AssetService extends BaseService {
       throw new BadRequestException('Asset not found');
     }
 
-    await this.assetEditRepository.deleteEditsForAsset(id);
+    await this.assetEditRepository.replaceAll(id, []);
     await this.jobRepository.queue({
       name: JobName.AssetGenerateThumbnails,
       data: { id, source: 'edit', notify: true },

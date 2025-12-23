@@ -83,7 +83,7 @@
     />
   </HStack>
   <div class="flex h-10 w-full items-center justify-between text-sm mt-2">
-    <h2>{$t('editor_rotate_and_flip')}</h2>
+    <h2>{$t('editor_orientation')}</h2>
   </div>
   <HStack>
     <Button fullWidth leadingIcon={mdiRotateLeft} onclick={() => rotateImage(-90)}></Button>

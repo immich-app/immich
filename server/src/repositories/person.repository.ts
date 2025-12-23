@@ -549,7 +549,7 @@ export class PersonRepository {
   }
 
   @GenerateSql({ params: [[], []] })
-  async updateFaceVisibilities(visible: AssetFace[], hidden: AssetFace[]): Promise<void> {
+  async updateVisibility(visible: AssetFace[], hidden: AssetFace[]): Promise<void> {
     if (visible.length === 0 && hidden.length === 0) {
       return;
     }

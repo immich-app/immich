@@ -12,7 +12,7 @@ export class AssetEditRepository {
   @GenerateSql({
     params: [DummyValue.UUID],
   })
-  async storeEdits(assetId: string, edits: EditActionItem[]): Promise<void> {
+  async replaceAll(assetId: string, edits: EditActionItem[]): Promise<void> {
     await this.db.transaction().execute(async (trx) => {
       await trx.deleteFrom('asset_edit').where('assetId', '=', assetId).execute();
 
@@ -28,18 +28,11 @@ export class AssetEditRepository {
   @GenerateSql({
     params: [DummyValue.UUID],
   })
-  async getEditsForAsset(assetId: string): Promise<EditActionItem[]> {
+  async getAll(assetId: string): Promise<EditActionItem[]> {
     return this.db
       .selectFrom('asset_edit')
       .select(['action', 'parameters'])
       .where('assetId', '=', assetId)
       .execute() as Promise<EditActionItem[]>;
-  }
-
-  @GenerateSql({
-    params: [DummyValue.UUID],
-  })
-  async deleteEditsForAsset(assetId: string): Promise<void> {
-    await this.db.deleteFrom('asset_edit').where('assetId', '=', assetId).execute();
   }
 }

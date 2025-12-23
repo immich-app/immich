@@ -20,6 +20,7 @@ import {
   CheckExistingAssetsDto,
   UploadFieldName,
 } from 'src/dtos/asset-media.dto';
+import { AssetDownloadOriginalDto } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
   AssetFileType,
@@ -193,12 +194,12 @@ export class AssetMediaService extends BaseService {
     }
   }
 
-  async downloadOriginal(auth: AuthDto, id: string, edited: boolean): Promise<ImmichFileResponse> {
+  async downloadOriginal(auth: AuthDto, id: string, dto: AssetDownloadOriginalDto): Promise<ImmichFileResponse> {
     await this.requireAccess({ auth, permission: Permission.AssetDownload, ids: [id] });
 
     const asset = await this.findOrFail(id);
 
-    if (asset.edits!.length > 0 && edited) {
+    if (asset.edits!.length > 0 && (dto.edited ?? true)) {
       const { editedFullsizeFile } = getAssetFiles(asset.files ?? []);
 
       if (editedFullsizeFile) {

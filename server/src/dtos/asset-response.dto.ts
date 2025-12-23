@@ -161,7 +161,7 @@ const peopleWithFaces = (
   assetDimensions?: ImageDimensions,
 ): PersonWithFacesResponseDto[] => {
   const result: PersonWithFacesResponseDto[] = [];
-  if (faces && edits && assetDimensions) {
+  if (faces) {
     for (const face of faces) {
       if (face.person) {
         const existingPersonEntry = result.find((item) => item.id === face.person!.id);

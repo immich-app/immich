@@ -288,12 +288,12 @@ export class MediaService extends BaseService {
     if (source === 'edit') {
       // check if the edits modify faces or ocr
       const assetFaces = await this.personRepository.getFaces(asset.id, { onlyVisible: false });
-      const ocrData = await this.ocrRepository.getByAssetId(asset.id, { onlyVisible: false });
+      const ocrData = await this.ocrRepository.getByAssetId(asset.id, { isVisible: false });
       const crop = asset.edits.find((e) => e.action === EditAction.Crop);
       const originalDimensions = getDimensions(asset.exifInfo!);
 
       const faceStatuses = this.mediaRepository.checkFaceVisibility(assetFaces, originalDimensions, crop);
-      await this.personRepository.updateFaceVisibilities(faceStatuses.visible, faceStatuses.hidden);
+      await this.personRepository.updateVisibility(faceStatuses.visible, faceStatuses.hidden);
 
       const ocrStatuses = this.mediaRepository.checkOcrVisibility(ocrData, originalDimensions, crop);
       await this.ocrRepository.updateOcrVisibilities(asset.id, ocrStatuses.visible, ocrStatuses.hidden);

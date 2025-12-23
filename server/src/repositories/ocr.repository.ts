@@ -16,12 +16,12 @@ export class OcrRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
-  getByAssetId(id: string, { onlyVisible = true }: { onlyVisible?: boolean } = {}) {
+  getByAssetId(id: string, { isVisible = true }: { isVisible?: boolean } = {}) {
     return this.db
       .selectFrom('asset_ocr')
       .selectAll('asset_ocr')
       .where('asset_ocr.assetId', '=', id)
-      .$if(onlyVisible, (qb) => qb.where('asset_ocr.isVisible', '=', true))
+      .$if(isVisible !== undefined, (qb) => qb.where('asset_ocr.isVisible', '=', isVisible))
       .execute();
   }
 

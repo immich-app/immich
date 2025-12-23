@@ -95,11 +95,11 @@ export class AssetMediaController {
   async downloadAsset(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
-    @Query() { edited }: AssetDownloadOriginalDto,
+    @Query() dto: AssetDownloadOriginalDto,
     @Res() res: Response,
     @Next() next: NextFunction,
   ) {
-    await sendFile(res, next, () => this.service.downloadOriginal(auth, id, edited ?? true), this.logger);
+    await sendFile(res, next, () => this.service.downloadOriginal(auth, id, dto), this.logger);
   }
 
   @Put(':id/original')

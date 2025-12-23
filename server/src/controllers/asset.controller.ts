@@ -199,21 +199,6 @@ export class AssetController {
     return this.service.deleteMetadataByKey(auth, id, key);
   }
 
-  @Put(':id/edits')
-  @Authenticated({ permission: Permission.AssetEdit })
-  @Endpoint({
-    summary: 'Applies edits to an existing asset',
-    description: 'Applies a series of edit actions (crop, rotate, mirror) to the specified asset.',
-    history: new HistoryBuilder().added('v2').beta('v2'),
-  })
-  editAsset(
-    @Auth() auth: AuthDto,
-    @Param() { id }: UUIDParamDto,
-    @Body() dto: EditActionListDto,
-  ): Promise<AssetEditsDto> {
-    return this.service.editAsset(auth, id, dto);
-  }
-
   @Get(':id/edits')
   @Authenticated({ permission: Permission.AssetRead })
   @Endpoint({
@@ -223,6 +208,21 @@ export class AssetController {
   })
   getAssetEdits(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<AssetEditsDto> {
     return this.service.getAssetEdits(auth, id);
+  }
+
+  @Put(':id/edits')
+  @Authenticated({ permission: Permission.AssetEdit })
+  @Endpoint({
+    summary: 'Apply edits to an existing asset',
+    description: 'Apply a series of edit actions (crop, rotate, mirror) to the specified asset.',
+    history: new HistoryBuilder().added('v2').beta('v2'),
+  })
+  editAsset(
+    @Auth() auth: AuthDto,
+    @Param() { id }: UUIDParamDto,
+    @Body() dto: EditActionListDto,
+  ): Promise<AssetEditsDto> {
+    return this.service.editAsset(auth, id, dto);
   }
 
   @Delete(':id/edits')
