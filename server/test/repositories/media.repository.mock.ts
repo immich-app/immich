@@ -13,7 +13,5 @@ export const newMediaRepositoryMock = (): Mocked<RepositoryInterface<MediaReposi
     probe: vitest.fn(),
     transcode: vitest.fn(),
     getImageDimensions: vitest.fn(),
-    checkFaceVisibility: vitest.fn().mockReturnValue({ visible: [], hidden: [] }),
-    checkOcrVisibility: vitest.fn().mockReturnValue({ visible: [], hidden: [] }),
   };
 };

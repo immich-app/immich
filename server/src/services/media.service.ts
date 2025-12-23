@@ -39,6 +39,7 @@ import {
   VideoStreamInfo,
 } from 'src/types';
 import { getAssetFiles, getDimensions } from 'src/utils/asset.util';
+import { checkFaceVisibility, checkOcrVisibility } from 'src/utils/editor';
 import { BaseConfig, ThumbnailConfig } from 'src/utils/media';
 import { mimeTypes } from 'src/utils/mime-types';
 import { clamp, isFaceImportEnabled, isFacialRecognitionEnabled } from 'src/utils/misc';
@@ -292,10 +293,10 @@ export class MediaService extends BaseService {
       const crop = asset.edits.find((e) => e.action === EditAction.Crop);
       const originalDimensions = getDimensions(asset.exifInfo!);
 
-      const faceStatuses = this.mediaRepository.checkFaceVisibility(assetFaces, originalDimensions, crop);
+      const faceStatuses = checkFaceVisibility(assetFaces, originalDimensions, crop);
       await this.personRepository.updateVisibility(faceStatuses.visible, faceStatuses.hidden);
 
-      const ocrStatuses = this.mediaRepository.checkOcrVisibility(ocrData, originalDimensions, crop);
+      const ocrStatuses = checkOcrVisibility(ocrData, originalDimensions, crop);
       await this.ocrRepository.updateOcrVisibilities(asset.id, ocrStatuses.visible, ocrStatuses.hidden);
     }
 
