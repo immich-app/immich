@@ -109,7 +109,10 @@ class _AddActionButtonState extends ConsumerState<AddActionButton> {
       return;
     }
 
-    final List<Widget> slivers = [AlbumSelector(onAlbumSelected: (album) => _addCurrentAssetToAlbum(album))];
+    final List<Widget> slivers = [
+      const CreateAlbumButton(),
+      AlbumSelector(onAlbumSelected: (album) => _addCurrentAssetToAlbum(album)),
+    ];
 
     showModalBottomSheet(
       context: context,
@@ -153,6 +156,9 @@ class _AddActionButtonState extends ConsumerState<AddActionButton> {
         context: context,
         msg: 'add_to_album_bottom_sheet_added'.tr(namedArgs: {'album': album.name}),
       );
+
+      // Invalidate using the asset's remote ID to refresh the "Appears in" list
+      ref.invalidate(albumsContainingAssetProvider(latest.remoteId!));
     }
 
     if (!context.mounted) {
@@ -174,10 +180,12 @@ class _AddActionButtonState extends ConsumerState<AddActionButton> {
       consumeOutsideTap: true,
       style: MenuStyle(
         backgroundColor: WidgetStatePropertyAll(themeData.scaffoldBackgroundColor),
+        surfaceTintColor: const WidgetStatePropertyAll(Colors.grey),
         elevation: const WidgetStatePropertyAll(4),
         shape: const WidgetStatePropertyAll(
           RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
         ),
+        padding: const WidgetStatePropertyAll(EdgeInsets.symmetric(vertical: 6)),
       ),
       menuChildren: widget.originalTheme != null
           ? [

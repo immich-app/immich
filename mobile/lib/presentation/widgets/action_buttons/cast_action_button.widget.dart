@@ -7,7 +7,7 @@ import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/widgets/asset_viewer/cast_dialog.dart';
 
 class CastActionButton extends ConsumerWidget {
-  const CastActionButton({super.key, this.iconOnly = true, this.menuItem = false});
+  const CastActionButton({super.key, this.iconOnly = false, this.menuItem = false});
 
   final bool iconOnly;
   final bool menuItem;

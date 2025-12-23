@@ -79,10 +79,30 @@
     searchStore.isSearchEnabled = false;
   };
 
+  const buildSearchPayload = (term: string): SmartSearchDto | MetadataSearchDto => {
+    const searchType = getSearchType();
+    switch (searchType) {
+      case 'smart': {
+        return { query: term };
+      }
+      case 'metadata': {
+        return { originalFileName: term };
+      }
+      case 'description': {
+        return { description: term };
+      }
+      case 'ocr': {
+        return { ocr: term };
+      }
+      default: {
+        return { query: term };
+      }
+    }
+  };
+
   const onHistoryTermClick = async (searchTerm: string) => {
     value = searchTerm;
-    const searchPayload = { query: searchTerm };
-    await handleSearch(searchPayload);
+    await handleSearch(buildSearchPayload(searchTerm));
   };
 
   const onFilterClick = async () => {
@@ -112,29 +132,7 @@
   };
 
   const onSubmit = () => {
-    const searchType = getSearchType();
-    let payload = {} as SmartSearchDto | MetadataSearchDto;
-
-    switch (searchType) {
-      case 'smart': {
-        payload = { query: value } as SmartSearchDto;
-        break;
-      }
-      case 'metadata': {
-        payload = { originalFileName: value } as MetadataSearchDto;
-        break;
-      }
-      case 'description': {
-        payload = { description: value } as MetadataSearchDto;
-        break;
-      }
-      case 'ocr': {
-        payload = { ocr: value } as MetadataSearchDto;
-        break;
-      }
-    }
-
-    handlePromiseError(handleSearch(payload));
+    handlePromiseError(handleSearch(buildSearchPayload(value)));
     saveSearchTerm(value);
   };
 
@@ -310,18 +308,6 @@
       />
     </div>
 
-    <div class="absolute inset-y-0 {showClearIcon ? 'end-14' : 'end-2'} flex items-center ps-6 transition-all">
-      <IconButton
-        aria-label={$t('show_search_options')}
-        shape="round"
-        icon={mdiTune}
-        onclick={onFilterClick}
-        size="medium"
-        color="secondary"
-        variant="ghost"
-      />
-    </div>
-
     {#if searchStore.isSearchEnabled}
       <div
         id={searchTypeId}
@@ -329,7 +315,7 @@
         class:max-md:hidden={value}
         class:end-28={value.length > 0}
       >
-        <div class="relative">
+        <div class="relative" use:focusOutside={{ onFocusOut: closeSearchTypeDropdown }}>
           <Button
             class="bg-immich-primary text-white dark:bg-immich-dark-primary/90 dark:text-black/75 rounded-full px-3 py-1 text-xs hover:opacity-80 transition-opacity cursor-pointer"
             onclick={toggleSearchTypeDropdown}
@@ -342,11 +328,11 @@
           {#if showSearchTypeDropdown}
             <div
               class="absolute top-full right-0 mt-1 bg-white dark:bg-immich-dark-gray border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg py-1 min-w-32 z-9999"
-              use:focusOutside={{ onFocusOut: closeSearchTypeDropdown }}
             >
               {#each searchTypes as searchType (searchType.value)}
                 <button
                   type="button"
+                  tabindex="0"
                   class="w-full text-left px-3 py-2 text-xs hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors
                          {currentSearchType === searchType.value ? 'bg-gray-100 dark:bg-gray-700' : ''}"
                   onclick={() => selectSearchType(searchType.value)}
@@ -359,6 +345,18 @@
         </div>
       </div>
     {/if}
+
+    <div class="absolute inset-y-0 {showClearIcon ? 'end-14' : 'end-2'} flex items-center ps-6 transition-all">
+      <IconButton
+        aria-label={$t('show_search_options')}
+        shape="round"
+        icon={mdiTune}
+        onclick={onFilterClick}
+        size="medium"
+        color="secondary"
+        variant="ghost"
+      />
+    </div>
 
     {#if showClearIcon}
       <div class="absolute inset-y-0 end-0 flex items-center pe-2">

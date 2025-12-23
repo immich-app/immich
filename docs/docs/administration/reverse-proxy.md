@@ -24,6 +24,9 @@ server {
     # disable buffering uploads to prevent OOM on reverse proxy server and make uploads twice as fast (no pause)
     proxy_request_buffering off;
 
+    # increase body buffer to avoid limiting upload speed
+    client_body_buffer_size 1024k;
+
     # Set headers
     proxy_set_header Host              $host;
     proxy_set_header X-Real-IP         $remote_addr;

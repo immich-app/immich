@@ -158,7 +158,7 @@ export class MediaService extends BaseService {
   async handleGenerateThumbnails({ id }: JobOf<JobName.AssetGenerateThumbnails>): Promise<JobStatus> {
     const asset = await this.assetJobRepository.getForGenerateThumbnailJob(id);
     if (!asset) {
-      this.logger.warn(`Thumbnail generation failed for asset ${id}: not found`);
+      this.logger.warn(`Thumbnail generation failed for asset ${id}: not found in database or missing metadata`);
       return JobStatus.Failed;
     }
 
