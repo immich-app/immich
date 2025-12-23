@@ -454,6 +454,11 @@ export enum LogLevel {
   Fatal = 'fatal',
 }
 
+export enum LogFormat {
+  Console = 'console',
+  Json = 'json',
+}
+
 export enum ApiCustomExtension {
   Permission = 'x-immich-permission',
   AdminOnly = 'x-immich-admin-only',
