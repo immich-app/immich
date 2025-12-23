@@ -1,68 +1,47 @@
 <script lang="ts">
+  import OnEvents from '$lib/components/OnEvents.svelte';
+  import TableButton from '$lib/components/TableButton.svelte';
   import { dateFormats } from '$lib/constants';
-  import ApiKeyCreateModal from '$lib/modals/ApiKeyCreateModal.svelte';
-  import ApiKeySecretModal from '$lib/modals/ApiKeySecretModal.svelte';
-  import ApiKeyUpdateModal from '$lib/modals/ApiKeyUpdateModal.svelte';
+  import { getApiKeyActions, getApiKeysActions } from '$lib/services/api-key.service';
   import { locale } from '$lib/stores/preferences.store';
-  import { handleError } from '$lib/utils/handle-error';
-  import { deleteApiKey, getApiKeys, type ApiKeyResponseDto } from '@immich/sdk';
-  import { Button, IconButton, modalManager, toastManager } from '@immich/ui';
-  import { mdiPencilOutline, mdiTrashCanOutline } from '@mdi/js';
+  import { getApiKeys, type ApiKeyResponseDto } from '@immich/sdk';
+  import { Button } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
 
-  interface Props {
+  type Props = {
     keys: ApiKeyResponseDto[];
-  }
+  };
 
   let { keys = $bindable() }: Props = $props();
 
-  async function refreshKeys() {
+  const onApiKeyCreate = async () => {
     keys = await getApiKeys();
-  }
-
-  const handleCreate = async () => {
-    const secret = await modalManager.show(ApiKeyCreateModal);
-
-    if (!secret) {
-      return;
-    }
-
-    await modalManager.show(ApiKeySecretModal, { secret });
-    await refreshKeys();
   };
 
-  const handleUpdate = async (key: ApiKeyResponseDto) => {
-    const success = await modalManager.show(ApiKeyUpdateModal, {
-      apiKey: key,
-    });
-
-    if (success) {
-      await refreshKeys();
+  const onApiKeyUpdate = (update: ApiKeyResponseDto) => {
+    for (const key of keys) {
+      if (key.id === update.id) {
+        Object.assign(key, update);
+      }
     }
   };
 
-  const handleDelete = async (key: ApiKeyResponseDto) => {
-    const isConfirmed = await modalManager.showDialog({ prompt: $t('delete_api_key_prompt') });
-    if (!isConfirmed) {
-      return;
-    }
-
-    try {
-      await deleteApiKey({ id: key.id });
-      toastManager.success($t('removed_api_key', { values: { name: key.name } }));
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_remove_api_key'));
-    } finally {
-      await refreshKeys();
-    }
+  const onApiKeyDelete = ({ id }: ApiKeyResponseDto) => {
+    keys = keys.filter((apiKey) => apiKey.id !== id);
   };
+
+  const { Create } = $derived(getApiKeysActions($t));
 </script>
+
+<OnEvents {onApiKeyCreate} {onApiKeyUpdate} {onApiKeyDelete} />
 
 <section class="my-4">
   <div class="flex flex-col gap-2" in:fade={{ duration: 500 }}>
     <div class="mb-2 flex justify-end">
-      <Button shape="round" size="small" onclick={() => handleCreate()}>{$t('new_api_key')}</Button>
+      <Button leadingIcon={Create.icon} shape="round" size="small" onclick={() => Create.onAction(Create)}
+        >{Create.title}</Button
+      >
     </div>
 
     {#if keys.length > 0}
@@ -79,6 +58,7 @@
         </thead>
         <tbody class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
           {#each keys as key (key.id)}
+            {@const { Update, Delete } = getApiKeyActions($t, key)}
             <tr
               class="flex h-20 w-full place-items-center text-center dark:text-immich-dark-fg even:bg-subtle/20 odd:bg-subtle/80"
             >
@@ -91,22 +71,8 @@
                 >{new Date(key.createdAt).toLocaleDateString($locale, dateFormats.settings)}
               </td>
               <td class="flex flex-row flex-wrap justify-center gap-x-2 gap-y-1 w-1/4">
-                <IconButton
-                  shape="round"
-                  color="primary"
-                  icon={mdiPencilOutline}
-                  aria-label={$t('edit_key')}
-                  size="small"
-                  onclick={() => handleUpdate(key)}
-                />
-                <IconButton
-                  shape="round"
-                  color="primary"
-                  icon={mdiTrashCanOutline}
-                  aria-label={$t('delete_key')}
-                  size="small"
-                  onclick={() => handleDelete(key)}
-                />
+                <TableButton action={Update} size="small" />
+                <TableButton action={Delete} size="small" />
               </td>
             </tr>
           {/each}

@@ -1,9 +1,6 @@
 <script lang="ts">
-  import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
-  import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
-  import { SettingInputFieldType } from '$lib/constants';
   import type { RenderedOption } from '$lib/elements/Dropdown.svelte';
-  import { Button, HStack, Modal, ModalBody, ModalFooter } from '@immich/ui';
+  import { Field, FormModal, HelperText, NumberInput, Switch } from '@immich/ui';
   import {
     mdiArrowDownThin,
     mdiArrowUpThin,
@@ -26,9 +23,9 @@
     slideshowState,
   } = slideshowStore;
 
-  interface Props {
+  type Props = {
     onClose: () => void;
-  }
+  };
 
   let { onClose }: Props = $props();
 
@@ -63,7 +60,7 @@
     }
   };
 
-  const applyChanges = () => {
+  const onSubmit = () => {
     $slideshowDelay = tempSlideshowDelay;
     $showProgressBar = tempShowProgressBar;
     $slideshowNavigation = tempSlideshowNavigation;
@@ -75,41 +72,41 @@
   };
 </script>
 
-<Modal size="small" title={$t('slideshow_settings')} onClose={() => onClose()}>
-  <ModalBody>
-    <div class="flex flex-col gap-4 text-primary">
-      <SettingDropdown
-        title={$t('direction')}
-        options={Object.values(navigationOptions)}
-        selectedOption={navigationOptions[tempSlideshowNavigation]}
-        onToggle={(option) => {
-          tempSlideshowNavigation = handleToggle(option, navigationOptions) || tempSlideshowNavigation;
-        }}
-      />
-      <SettingDropdown
-        title={$t('look')}
-        options={Object.values(lookOptions)}
-        selectedOption={lookOptions[tempSlideshowLook]}
-        onToggle={(option) => {
-          tempSlideshowLook = handleToggle(option, lookOptions) || tempSlideshowLook;
-        }}
-      />
-      <SettingSwitch title={$t('autoplay_slideshow')} bind:checked={tempSlideshowAutoplay} />
-      <SettingSwitch title={$t('show_progress_bar')} bind:checked={tempShowProgressBar} />
-      <SettingSwitch title={$t('show_slideshow_transition')} bind:checked={tempSlideshowTransition} />
-      <SettingInputField
-        inputType={SettingInputFieldType.NUMBER}
-        label={$t('duration')}
-        description={$t('admin.slideshow_duration_description')}
-        min={1}
-        bind:value={tempSlideshowDelay}
-      />
-    </div>
-  </ModalBody>
-  <ModalFooter>
-    <HStack fullWidth>
-      <Button color="secondary" shape="round" fullWidth onclick={() => onClose()}>{$t('cancel')}</Button>
-      <Button fullWidth color="primary" shape="round" onclick={applyChanges}>{$t('confirm')}</Button>
-    </HStack>
-  </ModalFooter>
-</Modal>
+<FormModal size="small" title={$t('slideshow_settings')} {onClose} {onSubmit}>
+  <div class="flex flex-col gap-4">
+    <SettingDropdown
+      title={$t('direction')}
+      options={Object.values(navigationOptions)}
+      selectedOption={navigationOptions[tempSlideshowNavigation]}
+      onToggle={(option) => {
+        tempSlideshowNavigation = handleToggle(option, navigationOptions) || tempSlideshowNavigation;
+      }}
+    />
+
+    <SettingDropdown
+      title={$t('look')}
+      options={Object.values(lookOptions)}
+      selectedOption={lookOptions[tempSlideshowLook]}
+      onToggle={(option) => {
+        tempSlideshowLook = handleToggle(option, lookOptions) || tempSlideshowLook;
+      }}
+    />
+
+    <Field label={$t('autoplay_slideshow')}>
+      <Switch bind:checked={tempSlideshowAutoplay} />
+    </Field>
+
+    <Field label={$t('show_progress_bar')}>
+      <Switch bind:checked={tempShowProgressBar} />
+    </Field>
+
+    <Field label={$t('show_slideshow_transition')}>
+      <Switch bind:checked={tempSlideshowTransition} />
+    </Field>
+
+    <Field label={$t('duration')}>
+      <NumberInput min={1} bind:value={tempSlideshowDelay} />
+      <HelperText>{$t('admin.slideshow_duration_description')}</HelperText>
+    </Field>
+  </div>
+</FormModal>

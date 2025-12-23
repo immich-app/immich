@@ -1,26 +1,13 @@
-import { AppRoute } from '$lib/constants';
 import { authenticate } from '$lib/utils/auth';
 import { getFormatter } from '$lib/utils/i18n';
-import { getLibrary, getLibraryStatistics, type LibraryResponseDto } from '@immich/sdk';
-import { redirect } from '@sveltejs/kit';
 import type { PageLoad } from './$types';
 
-export const load = (async ({ params: { id }, url }) => {
+export const load = (async ({ url }) => {
   await authenticate(url, { admin: true });
-  let library: LibraryResponseDto;
 
-  try {
-    library = await getLibrary({ id });
-  } catch {
-    redirect(302, AppRoute.ADMIN_LIBRARY_MANAGEMENT);
-  }
-
-  const statistics = await getLibraryStatistics({ id });
   const $t = await getFormatter();
 
   return {
-    library,
-    statistics,
     meta: {
       title: $t('admin.library_details'),
     },
