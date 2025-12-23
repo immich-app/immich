@@ -69,8 +69,10 @@ select
   1 as "dummy"
 
 -- OcrRepository.updateOcrVisibilities
+begin
 update "ocr_search"
 set
   "text" = $1
 where
   "assetId" = $2
+commit
