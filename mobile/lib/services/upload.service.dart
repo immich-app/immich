@@ -537,7 +537,12 @@ class UploadTaskMetadata {
   final String livePhotoVideoId;
   final bool isRawFile;
 
-  const UploadTaskMetadata({required this.localAssetId, required this.isLivePhotos, required this.livePhotoVideoId, this.isRawFile = false});
+  const UploadTaskMetadata({
+    required this.localAssetId,
+    required this.isLivePhotos,
+    required this.livePhotoVideoId,
+    this.isRawFile = false,
+  });
 
   UploadTaskMetadata copyWith({String? localAssetId, bool? isLivePhotos, String? livePhotoVideoId, bool? isRawFile}) {
     return UploadTaskMetadata(
