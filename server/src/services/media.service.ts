@@ -195,7 +195,10 @@ export class MediaService extends BaseService {
 
       if (files.length > 0) {
         await this.assetRepository.deleteFiles(files);
-        await Promise.all(files.map((path) => this.storageRepository.unlink(path.path)));
+        await this.jobRepository.queue({
+          name: JobName.FileDelete,
+          data: { files: files.map((file) => file.path) },
+        });
       }
 
       applyEdits = false;
