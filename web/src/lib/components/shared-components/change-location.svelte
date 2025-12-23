@@ -92,10 +92,12 @@
         const coordinateLat = parseFloat(coordinateParts[0]);
         const coordinateLng = parseFloat(coordinateParts[1]);
 
-        places = [];
-        showLoadingSpinner = false;
-        handleUseSuggested(coordinateLat, coordinateLng);
-        return
+        if (!isNaN(coordinateLat) && !isNaN(coordinateLng) && coordinateLat >= -90 && coordinateLat <= 90 && coordinateLng >= -180 && coordinateLng <= 180) {
+          places = [];
+          showLoadingSpinner = false;
+          handleUseSuggested(coordinateLat, coordinateLng);
+          return;
+        }
       }
 
       searchPlaces({ name: searchWord })
