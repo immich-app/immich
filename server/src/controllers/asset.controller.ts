@@ -215,7 +215,7 @@ export class AssetController {
   @Endpoint({
     summary: 'Apply edits to an existing asset',
     description: 'Apply a series of edit actions (crop, rotate, mirror) to the specified asset.',
-    history: new HistoryBuilder().added('v2').beta('v2'),
+    history: new HistoryBuilder().added('v2.5.0').beta('v2.5.0'),
   })
   editAsset(
     @Auth() auth: AuthDto,
