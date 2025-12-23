@@ -76,6 +76,10 @@ const envData: EnvData = {
     corePlugin: '/build/corePlugin',
   },
 
+  setup: {
+    allow: true,
+  },
+
   storage: {
     ignoreMountCheckErrors: false,
   },
@@ -89,8 +93,10 @@ const envData: EnvData = {
   workers: [ImmichWorker.Api, ImmichWorker.Microservices],
 
   plugins: {
-    enabled: true,
-    installFolder: '/app/data/plugins',
+    external: {
+      allow: true,
+      installFolder: '/app/data/plugins',
+    },
   },
 
   noColor: false,

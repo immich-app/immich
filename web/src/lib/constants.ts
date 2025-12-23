@@ -1,3 +1,5 @@
+export const UUID_REGEX = /^[\dA-Fa-f]{8}(?:\b-[\dA-Fa-f]{4}){3}\b-[\dA-Fa-f]{12}$/;
+
 export enum AssetAction {
   ARCHIVE = 'archive',
   UNARCHIVE = 'unarchive',
@@ -20,7 +22,9 @@ export enum AssetAction {
 
 export enum AppRoute {
   ADMIN_USERS = '/admin/users',
-  ADMIN_LIBRARY_MANAGEMENT = '/admin/library-management',
+  ADMIN_USERS_NEW = '/admin/users/new',
+  ADMIN_LIBRARIES = '/admin/library-management',
+  ADMIN_LIBRARIES_NEW = '/admin/library-management/new',
   ADMIN_SETTINGS = '/admin/system-settings',
   ADMIN_STATS = '/admin/server-status',
   ADMIN_QUEUES = '/admin/queues',

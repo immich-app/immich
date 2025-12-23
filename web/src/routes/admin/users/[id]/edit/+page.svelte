@@ -1,10 +1,10 @@
 <script lang="ts">
+  import { goto } from '$app/navigation';
   import { AppRoute } from '$lib/constants';
   import { handleUpdateUserAdmin } from '$lib/services/user-admin.service';
   import { user as authUser } from '$lib/stores/user.store';
   import { userInteraction } from '$lib/stores/user.svelte';
   import { ByteUnit, convertFromBytes, convertToBytes } from '$lib/utils/byte-units';
-  import { type UserAdminResponseDto } from '@immich/sdk';
   import {
     Button,
     Field,
@@ -20,22 +20,22 @@
   } from '@immich/ui';
   import { mdiAccountEditOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
+  import type { PageData } from './$types';
 
-  interface Props {
-    user: UserAdminResponseDto;
-    onClose: () => void;
-  }
+  type Props = {
+    data: PageData;
+  };
 
-  let { user, onClose }: Props = $props();
+  let { data }: Props = $props();
 
-  let isAdmin = $derived(user.isAdmin);
-  let name = $derived(user.name);
-  let email = $derived(user.email);
-  let storageLabel = $derived(user.storageLabel || '');
+  const user = $state(data.user);
+  let isAdmin = $state(user.isAdmin);
+  let name = $state(user.name);
+  let email = $state(user.email);
+  let storageLabel = $state(user.storageLabel || '');
+  const previousQuota = $state(user.quotaSizeInBytes);
 
-  const previousQuota = user.quotaSizeInBytes;
-
-  let quotaSize = $state(
+  let quotaSize = $derived(
     typeof user.quotaSizeInBytes === 'number' ? convertFromBytes(user.quotaSizeInBytes, ByteUnit.GiB) : undefined,
   );
 
@@ -47,6 +47,10 @@
       userInteraction.serverInfo &&
       quotaSizeBytes > userInteraction.serverInfo.diskSizeRaw,
   );
+
+  const onClose = async () => {
+    await goto(`${AppRoute.ADMIN_USERS}/${user.id}`);
+  };
 
   const onSubmit = async (event: Event) => {
     event.preventDefault();
@@ -60,7 +64,7 @@
     });
 
     if (success) {
-      onClose();
+      await onClose();
     }
   };
 </script>

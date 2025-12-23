@@ -4218,14 +4218,16 @@ export function lockSession({ id }: {
 /**
  * Retrieve all shared links
  */
-export function getAllSharedLinks({ albumId }: {
+export function getAllSharedLinks({ albumId, id }: {
     albumId?: string;
+    id?: string;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: SharedLinkResponseDto[];
     }>(`/shared-links${QS.query(QS.explode({
-        albumId
+        albumId,
+        id
     }))}`, {
         ...opts
     }));

@@ -2,6 +2,7 @@ import type { ThemeSetting } from '$lib/managers/theme-manager.svelte';
 import type { ReleaseEvent } from '$lib/types';
 import type {
   AlbumResponseDto,
+  ApiKeyResponseDto,
   LibraryResponseDto,
   LoginResponseDto,
   QueueResponseDto,
@@ -19,8 +20,13 @@ export type Events = {
   LanguageChange: [{ name: string; code: string; rtl?: boolean }];
   ThemeChange: [ThemeSetting];
 
+  ApiKeyCreate: [ApiKeyResponseDto];
+  ApiKeyUpdate: [ApiKeyResponseDto];
+  ApiKeyDelete: [ApiKeyResponseDto];
+
   AssetReplace: [{ oldAssetId: string; newAssetId: string }];
 
+  AlbumUpdate: [AlbumResponseDto];
   AlbumDelete: [AlbumResponseDto];
 
   QueueUpdate: [QueueResponseDto];
