@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsHexColor, IsNotEmpty, IsString } from 'class-validator';
+import { IsHexColor, IsNotEmpty, IsString, IsBoolean } from 'class-validator';
 import { Tag } from 'src/database';
 import { Optional, ValidateHexColor, ValidateUUID } from 'src/validation';
 
@@ -40,6 +40,11 @@ export class TagBulkAssetsResponseDto {
   @ApiProperty({ type: 'integer' })
   count!: number;
 }
+
+export class UntagAssetsOptionsDto {
+  @IsBoolean()
+  untagDescendants?: boolean;
+} 
 
 export class TagResponseDto {
   id!: string;
