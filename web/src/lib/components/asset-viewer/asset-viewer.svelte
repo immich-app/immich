@@ -19,6 +19,7 @@
   import { user } from '$lib/stores/user.store';
   import { websocketEvents } from '$lib/stores/websocket';
   import { getAssetJobMessage, getSharedLink, handlePromiseError } from '$lib/utils';
+  import type { OnUndoDelete } from '$lib/utils/actions';
   import { handleError } from '$lib/utils/handle-error';
   import { SlideshowHistory } from '$lib/utils/slideshow-history';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
@@ -62,6 +63,7 @@
     person?: PersonResponseDto | null;
     preAction?: PreAction | undefined;
     onAction?: OnAction | undefined;
+    onUndoDelete?: OnUndoDelete | undefined;
     showCloseButton?: boolean;
     onClose: (asset: AssetResponseDto) => void;
     onNext: () => Promise<HasAsset>;
@@ -80,6 +82,7 @@
     person = null,
     preAction = undefined,
     onAction = undefined,
+    onUndoDelete = undefined,
     showCloseButton,
     onClose,
     onNext,
@@ -430,6 +433,7 @@
         onCopyImage={copyImage}
         preAction={handlePreAction}
         onAction={handleAction}
+        {onUndoDelete}
         onRunJob={handleRunJob}
         onPlaySlideshow={() => ($slideshowState = SlideshowState.PlaySlideshow)}
         onShowDetail={toggleDetailPanel}
