@@ -42,7 +42,11 @@ class FixedSegmentBuilder extends SegmentBuilder {
       final headerExtent = SegmentBuilder.headerExtent(timelineHeader);
 
       final segmentStartOffset = startOffset;
-      startOffset += headerExtent + (tileHeight * numberOfRows) + spacing * (numberOfRows - 1);
+      if (numberOfRows > 0) {
+        startOffset += headerExtent + spacing + (tileHeight * numberOfRows) + spacing * (numberOfRows - 1);
+      } else {
+        startOffset += headerExtent;
+      }
       final segmentEndOffset = startOffset;
 
       segments.add(
