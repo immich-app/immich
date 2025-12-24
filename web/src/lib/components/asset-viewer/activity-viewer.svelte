@@ -1,6 +1,5 @@
 <script lang="ts">
   import { resolve } from '$app/paths';
-  import { autoGrowHeight } from '$lib/actions/autogrow';
   import { shortcut } from '$lib/actions/shortcut';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
@@ -12,10 +11,11 @@
   import { handleError } from '$lib/utils/handle-error';
   import { isTenMinutesApart } from '$lib/utils/timesince';
   import { ReactionType, type ActivityResponseDto, type AssetTypeEnum, type UserResponseDto } from '@immich/sdk';
-  import { Icon, IconButton, LoadingSpinner, toastManager } from '@immich/ui';
+  import { Icon, IconButton, LoadingSpinner, Textarea, toastManager } from '@immich/ui';
   import { mdiClose, mdiDeleteOutline, mdiDotsVertical, mdiSend, mdiThumbUp } from '@mdi/js';
   import * as luxon from 'luxon';
   import { t } from 'svelte-i18n';
+  import { fromAction } from 'svelte/attachments';
   import UserAvatar from '../shared-components/user-avatar.svelte';
 
   const units: Intl.RelativeTimeFormatUnit[] = ['year', 'month', 'week', 'day', 'hour', 'minute', 'second'];
@@ -245,19 +245,20 @@
         </div>
         <form class="flex w-full max-h-56 gap-1" {onsubmit}>
           <div class="flex w-full items-center gap-4">
-            <textarea
+            <Textarea
               {disabled}
               bind:value={message}
-              use:autoGrowHeight={{ height: '5px', value: message }}
+              rows={1}
+              grow
               placeholder={disabled ? $t('comments_are_disabled') : $t('say_something')}
-              use:shortcut={{
+              {@attach fromAction(shortcut, () => ({
                 shortcut: { key: 'Enter' },
                 onShortcut: () => handleSendComment(),
-              }}
+              }))}
               class="h-4.5 {disabled
                 ? 'cursor-not-allowed'
-                : ''} w-full max-h-56 pe-2 items-center overflow-y-auto leading-4 outline-none resize-none bg-gray-200"
-            ></textarea>
+                : ''} w-full max-h-56 pe-2 items-center overflow-y-auto leading-4 outline-none resize-none bg-gray-200 dark:bg-gray-200"
+            ></Textarea>
           </div>
           {#if isSendingMessage}
             <div class="flex items-end place-items-center pb-2 ms-0">
