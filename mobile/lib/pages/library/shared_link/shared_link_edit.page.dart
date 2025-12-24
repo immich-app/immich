@@ -11,6 +11,7 @@ import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/shared_link.provider.dart';
 import 'package:immich_mobile/services/shared_link.service.dart';
 import 'package:immich_mobile/utils/url_helper.dart';
+import 'package:immich_mobile/widgets/common/confirm_dialog.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
 @RoutePage()
@@ -336,6 +337,21 @@ class SharedLinkEditPage extends HookConsumerWidget {
       await context.maybePop();
     }
 
+    Future<void> handleDeleteLink() async {
+      return showDialog(
+        context: context,
+        builder: (BuildContext context) => ConfirmDialog(
+          title: "delete_shared_link_dialog_title",
+          content: "confirm_delete_shared_link",
+          onOk: () async {
+            await ref.read(sharedLinkServiceProvider).deleteSharedLink(existingLink!.id);
+            ref.invalidate(sharedLinksStateProvider);
+            if (context.mounted) await context.maybePop();
+          },
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text(existingLink == null ? "create_link_to_share" : "edit_link").tr(),
@@ -375,12 +391,28 @@ class SharedLinkEditPage extends HookConsumerWidget {
                 alignment: Alignment.bottomRight,
                 child: Padding(
                   padding: const EdgeInsets.only(right: padding + 10, bottom: padding),
-                  child: ElevatedButton(
-                    onPressed: existingLink != null ? handleEditLink : handleNewLink,
-                    child: Text(
-                      existingLink != null ? "shared_link_edit_submit_button" : "create_link",
-                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-                    ).tr(),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    spacing: 8,
+                    children: [
+                      if (existingLink != null)
+                        OutlinedButton.icon(
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: themeData.colorScheme.error,
+                            side: BorderSide(color: themeData.colorScheme.error),
+                          ),
+                          onPressed: handleDeleteLink,
+                          icon: const Icon(Icons.delete_outline),
+                          label: const Text("delete", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)).tr(),
+                        ),
+                      ElevatedButton(
+                        onPressed: existingLink != null ? handleEditLink : handleNewLink,
+                        child: Text(
+                          existingLink != null ? "shared_link_edit_submit_button" : "create_link",
+                          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                        ).tr(),
+                      ),
+                    ],
                   ),
                 ),
               ),
