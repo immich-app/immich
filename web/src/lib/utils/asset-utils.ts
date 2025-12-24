@@ -367,6 +367,31 @@ export function isWebCompatibleImage(asset: AssetResponseDto): boolean {
   return supportedImageMimeTypes.has(asset.originalMimeType);
 }
 
+/**
+ * Returns true if the asset is a DNG file, false otherwise
+ * Checks both file extension and mime type
+ *
+ * Note: Assets loaded from time buckets don't include originalMimeType or originalFileName.
+ * To show RAW tags for all DNG files, add originalMimeType to TimeBucketAssetResponseDto on the server.
+ */
+export function isDngFile(asset: { originalFileName?: string | null; originalMimeType?: string | null }): boolean {
+  // Check by mime type first (more reliable)
+  if (asset.originalMimeType) {
+    const dngMimeTypes = ['image/dng', 'image/x-adobe-dng'];
+    if (dngMimeTypes.includes(asset.originalMimeType.toLowerCase())) {
+      return true;
+    }
+  }
+
+  // Fallback to file extension
+  if (asset.originalFileName) {
+    const extension = getFilenameExtension(asset.originalFileName);
+    return extension === 'dng';
+  }
+
+  return false;
+}
+
 export const getAssetType = (type: AssetTypeEnum) => {
   switch (type) {
     case 'IMAGE': {
