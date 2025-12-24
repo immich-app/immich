@@ -23,26 +23,20 @@ class SharedLinkItem extends ConsumerWidget {
 
   const SharedLinkItem(this.sharedLink, {super.key});
 
-  bool isExpired() {
-    if (sharedLink.expiresAt != null) {
-      return DateTime.now().isAfter(sharedLink.expiresAt!);
-    }
-    return false;
-  }
+  bool isExpired() => sharedLink.expiresAt?.isBefore(DateTime.now()) ?? false;
 
-  Widget getExpiryDuration(bool isDarkMode) {
+  Widget buildExpiryDuration() {
     var expiresText = "shared_link_expires_never".tr();
+
     if (sharedLink.expiresAt != null) {
-      if (isExpired()) {
-        return Text("expired", style: TextStyle(color: Colors.red[300])).tr();
-      }
+      if (isExpired()) return const Text("expired").tr();
+
       final difference = sharedLink.expiresAt!.difference(DateTime.now());
       dPrint(() => "Difference: $difference");
+
       if (difference.inDays > 0) {
         var dayDifference = difference.inDays;
-        if (difference.inHours % 24 > 12) {
-          dayDifference += 1;
-        }
+        if (difference.inHours % 24 > 12) dayDifference += 1;
         expiresText = "shared_link_expires_days".tr(namedArgs: {'count': dayDifference.toString()});
       } else if (difference.inHours > 0) {
         expiresText = "shared_link_expires_hours".tr(namedArgs: {'count': difference.inHours.toString()});
@@ -52,22 +46,20 @@ class SharedLinkItem extends ConsumerWidget {
         expiresText = "shared_link_expires_seconds".tr(namedArgs: {'count': difference.inSeconds.toString()});
       }
     }
-    return Text(expiresText, style: TextStyle(color: isDarkMode ? Colors.grey[400] : Colors.grey[600]));
+
+    return Row(children: [const Icon(Icons.schedule, size: 12), const SizedBox(width: 4), Text(expiresText)]);
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final colorScheme = context.colorScheme;
-    final isDarkMode = colorScheme.brightness == Brightness.dark;
     final thumbnailUrl = sharedLink.thumbAssetId != null ? getThumbnailUrlForRemoteId(sharedLink.thumbAssetId!) : null;
     final imageSize = math.min(context.width / 4, 100.0);
 
     void copyShareLinkToClipboard() {
       final externalDomain = ref.read(serverInfoProvider.select((s) => s.serverConfig.externalDomain));
       var serverUrl = externalDomain.isNotEmpty ? externalDomain : getServerUrl();
-      if (serverUrl != null && !serverUrl.endsWith('/')) {
-        serverUrl += '/';
-      }
+      if (serverUrl != null && !serverUrl.endsWith('/')) serverUrl += '/';
+
       if (serverUrl == null) {
         ImmichToast.show(
           context: context,
@@ -105,52 +97,36 @@ class SharedLinkItem extends ConsumerWidget {
     }
 
     Widget buildThumbnail() {
-      if (thumbnailUrl == null) {
-        return Container(
-          height: imageSize * 1.2,
-          width: imageSize,
-          decoration: BoxDecoration(color: isDarkMode ? Colors.grey[800] : Colors.grey[200]),
-          child: Center(
-            child: Icon(Icons.image_not_supported_outlined, color: isDarkMode ? Colors.grey[100] : Colors.grey[700]),
-          ),
-        );
-      }
       return SizedBox(
         height: imageSize * 1.2,
         width: imageSize,
-        child: Padding(
-          padding: const EdgeInsets.only(right: 4.0),
-          child: ThumbnailWithInfo(
-            imageUrl: thumbnailUrl,
-            key: key,
-            textInfo: '',
-            noImageIcon: Icons.image_not_supported_outlined,
-            onTap: () {},
-          ),
-        ),
+        child: thumbnailUrl == null
+            ? Card(
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                child: const Icon(Icons.image_not_supported_outlined),
+              )
+            : ThumbnailWithInfo(
+                imageUrl: thumbnailUrl,
+                key: key,
+                textInfo: '',
+                noImageIcon: Icons.image_not_supported_outlined,
+                onTap: () => context.pushRoute(SharedLinkEditRoute(existingLink: sharedLink)),
+              ),
       );
     }
 
     Widget buildInfoChip(String labelText) {
-      return Padding(
-        padding: const EdgeInsets.only(right: 10),
-        child: Chip(
-          backgroundColor: colorScheme.primary,
-          label: Text(
-            labelText,
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w500,
-              color: isDarkMode ? Colors.black : Colors.white,
-            ),
-          ),
-          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(25))),
+      return Card.outlined(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          child: Text(labelText, style: const TextStyle(fontSize: 11)),
         ),
       );
     }
 
-    Widget buildBottomInfo() {
+    Widget buildShareParameterInfos() {
       return Row(
+        spacing: 4,
         children: [
           if (sharedLink.allowUpload) buildInfoChip("upload".tr()),
           if (sharedLink.allowDownload) buildInfoChip("download".tr()),
@@ -159,111 +135,52 @@ class SharedLinkItem extends ConsumerWidget {
       );
     }
 
-    Widget buildSharedLinkActions() {
-      const actionIconSize = 20.0;
-      return Row(
-        children: [
-          IconButton(
-            splashRadius: 25,
-            constraints: const BoxConstraints(),
-            iconSize: actionIconSize,
-            icon: const Icon(Icons.delete_outline),
-            style: const ButtonStyle(
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap, // the '2023' part
-            ),
-            onPressed: deleteShareLink,
-          ),
-          IconButton(
-            splashRadius: 25,
-            constraints: const BoxConstraints(),
-            iconSize: actionIconSize,
-            icon: const Icon(Icons.edit_outlined),
-            style: const ButtonStyle(
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap, // the '2023' part
-            ),
-            onPressed: () => context.pushRoute(SharedLinkEditRoute(existingLink: sharedLink)),
-          ),
-          IconButton(
-            splashRadius: 25,
-            constraints: const BoxConstraints(),
-            iconSize: actionIconSize,
-            icon: const Icon(Icons.copy_outlined),
-            style: const ButtonStyle(
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap, // the '2023' part
-            ),
-            onPressed: copyShareLinkToClipboard,
-          ),
-        ],
-      );
-    }
-
     Widget buildSharedLinkDetails() {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          getExpiryDuration(isDarkMode),
-          Padding(
-            padding: const EdgeInsets.only(top: 5),
-            child: Tooltip(
-              verticalOffset: 0,
-              decoration: BoxDecoration(
-                color: colorScheme.primary.withValues(alpha: 0.9),
-                borderRadius: const BorderRadius.all(Radius.circular(10)),
-              ),
-              textStyle: TextStyle(color: isDarkMode ? Colors.black : Colors.white, fontWeight: FontWeight.bold),
-              message: sharedLink.title,
-              preferBelow: false,
-              triggerMode: TooltipTriggerMode.tap,
-              child: Text(
-                sharedLink.title,
-                style: TextStyle(
-                  color: colorScheme.primary,
-                  fontWeight: FontWeight.bold,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
+          const SizedBox(height: 5),
+          Text(
+            sharedLink.title,
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.primary,
+              fontWeight: FontWeight.bold,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
-          Row(
-            mainAxisSize: MainAxisSize.max,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Tooltip(
-                  verticalOffset: 0,
-                  decoration: BoxDecoration(
-                    color: colorScheme.primary.withValues(alpha: 0.9),
-                    borderRadius: const BorderRadius.all(Radius.circular(10)),
-                  ),
-                  textStyle: TextStyle(color: isDarkMode ? Colors.black : Colors.white, fontWeight: FontWeight.bold),
-                  message: sharedLink.description ?? "",
-                  preferBelow: false,
-                  triggerMode: TooltipTriggerMode.tap,
-                  child: Text(sharedLink.description ?? "", overflow: TextOverflow.ellipsis),
-                ),
-              ),
-              Padding(padding: const EdgeInsets.only(right: 15), child: buildSharedLinkActions()),
-            ],
-          ),
-          buildBottomInfo(),
+          if (sharedLink.description?.isNotEmpty ?? false)
+            Text(sharedLink.description!, overflow: TextOverflow.ellipsis),
+          buildExpiryDuration(),
+          buildShareParameterInfos(),
         ],
       );
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(padding: const EdgeInsets.only(left: 15), child: buildThumbnail()),
-            Expanded(
-              child: Padding(padding: const EdgeInsets.only(left: 15), child: buildSharedLinkDetails()),
-            ),
-          ],
+    return Dismissible(
+      key: ValueKey(sharedLink.id),
+      direction: DismissDirection.endToStart,
+      background: Container(
+        color: Theme.of(context).colorScheme.error,
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.only(right: 20),
+        child: Icon(Icons.delete, color: Theme.of(context).colorScheme.onError),
+      ),
+      onDismissed: (_) => deleteShareLink(),
+      child: InkWell(
+        onTap: () => context.pushRoute(SharedLinkEditRoute(existingLink: sharedLink)),
+        onLongPress: copyShareLinkToClipboard,
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              buildThumbnail(),
+              const SizedBox(width: 12),
+              Expanded(child: buildSharedLinkDetails()),
+            ],
+          ),
         ),
-        const Padding(padding: EdgeInsets.all(20), child: Divider(height: 0)),
-      ],
+      ),
     );
   }
 }
