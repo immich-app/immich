@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   CallHandler,
   ExecutionContext,
   HttpException,
@@ -26,6 +27,12 @@ export class ErrorInterceptor implements NestInterceptor {
           }
 
           logGlobalError(this.logger, error);
+
+          // Handle storage errors as client errors (disk full / storage unavailable)
+          const code = (error as NodeJS.ErrnoException).code;
+          if (code === 'ENOSPC' || code === 'ENOENT') {
+            return new BadRequestException('Not enough storage');
+          }
 
           const message = routeToErrorMessage(context.getHandler().name);
           return new InternalServerErrorException(message);
