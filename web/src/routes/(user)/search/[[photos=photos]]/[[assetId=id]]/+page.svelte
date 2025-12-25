@@ -259,64 +259,6 @@
 <svelte:window bind:scrollY />
 <svelte:document use:shortcut={{ shortcut: { key: 'Escape' }, onShortcut: onEscape }} />
 
-<section>
-  {#if assetInteraction.selectionActive}
-    <div class="fixed top-0 start-0 w-full">
-      <AssetSelectControlBar
-        assets={assetInteraction.selectedAssets}
-        clearSelect={() => cancelMultiselect(assetInteraction)}
-      >
-        <CreateSharedLink />
-        <IconButton
-          shape="round"
-          color="secondary"
-          variant="ghost"
-          aria-label={$t('select_all')}
-          icon={mdiSelectAll}
-          onclick={handleSelectAll}
-        />
-        <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
-          <AddToAlbum {onAddToAlbum} />
-          <AddToAlbum shared {onAddToAlbum} />
-        </ButtonContextMenu>
-        <FavoriteAction
-          removeFavorite={assetInteraction.isAllFavorite}
-          onFavorite={(assetIds, isFavorite) => {
-            for (const assetId of assetIds) {
-              const asset = searchResultAssets.find((searchAsset) => searchAsset.id === assetId);
-              if (asset) {
-                asset.isFavorite = isFavorite;
-              }
-            }
-          }}
-        />
-
-        <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
-          <DownloadAction menuItem />
-          <ChangeDate menuItem />
-          <ChangeLocation menuItem />
-          <ArchiveAction menuItem unarchive={assetInteraction.isAllArchived} />
-          {#if $preferences.tags.enabled && assetInteraction.isAllUserOwned}
-            <TagAction menuItem />
-          {/if}
-          <DeleteAssets menuItem {onAssetDelete} onUndoDelete={onSearchQueryUpdate} />
-          <hr />
-          <AssetJobActions />
-        </ButtonContextMenu>
-      </AssetSelectControlBar>
-    </div>
-  {:else}
-    <div class="fixed top-0 start-0 w-full">
-      <ControlAppBar onClose={() => goto(previousRoute)} backIcon={mdiArrowLeft}>
-        <div class="absolute bg-light"></div>
-        <div class="w-full flex-1 ps-4">
-          <SearchBar grayTheme={false} value={terms?.query ?? ''} searchQuery={terms} />
-        </div>
-      </ControlAppBar>
-    </div>
-  {/if}
-</section>
-
 {#if terms}
   <section
     id="search-chips"
