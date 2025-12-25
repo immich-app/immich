@@ -28,9 +28,9 @@ export class ErrorInterceptor implements NestInterceptor {
 
           logGlobalError(this.logger, error);
 
-          // Handle storage errors as client errors (disk full / storage unavailable)
-          const code = (error as NodeJS.ErrnoException).code;
-          if (code === 'ENOSPC' || code === 'ENOENT') {
+          // Handle storage errors as client errors (disk full / quota exceeded / storage unavailable)
+          const { code, errno } = error as NodeJS.ErrnoException;
+          if (code === 'ENOSPC' || code === 'ENOENT' || code === 'EDQUOT' || errno === -122) {
             return new BadRequestException('Not enough storage');
           }
 
