@@ -53,7 +53,7 @@ class BackupInfoCard extends StatelessWidget {
                       info,
                       style: context.textTheme.titleLarge?.copyWith(
                         color: context.colorScheme.onSurface.withAlpha(isLoading ? 50 : 255),
-                        fontFeatures: [FontFeature.tabularFigures()],
+                        fontFeatures: const [FontFeature.tabularFigures()],
                       ),
                     ),
                     if (isLoading)
