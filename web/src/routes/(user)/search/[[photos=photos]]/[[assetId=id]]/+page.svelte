@@ -26,7 +26,7 @@
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { lang, locale } from '$lib/stores/preferences.store';
-  import { preferences } from '$lib/stores/user.store';
+  import { preferences, user } from '$lib/stores/user.store';
   import { handlePromiseError } from '$lib/utils';
   import { cancelMultiselect } from '$lib/utils/asset-utils';
   import { parseUtcDate } from '$lib/utils/date-time';
@@ -69,6 +69,8 @@
   let searchQuery = $derived(page.url.searchParams.get(QueryParameter.QUERY));
   let smartSearchEnabled = $derived(featureFlagsManager.value.smartSearch);
   let terms = $derived(searchQuery ? JSON.parse(searchQuery) : {});
+
+  let isAllUserOwned = $derived($user && assetInteraction.selectedAssets.every((asset) => asset.ownerId === $user.id));
 
   $effect(() => {
     // we want this to *only* be reactive on `terms`
@@ -418,34 +420,38 @@
             <AddToAlbum {onAddToAlbum} />
             <AddToAlbum shared {onAddToAlbum} />
           </ButtonContextMenu>
-          <FavoriteAction
-            removeFavorite={assetInteraction.isAllFavorite}
-            onFavorite={(ids, isFavorite) => {
-              for (const id of ids) {
-                const asset = searchResultAssets.find((asset) => asset.id === id);
-                if (asset) {
-                  asset.isFavorite = isFavorite;
+          {#if isAllUserOwned}
+            <FavoriteAction
+              removeFavorite={assetInteraction.isAllFavorite}
+              onFavorite={(ids, isFavorite) => {
+                for (const id of ids) {
+                  const asset = searchResultAssets.find((asset) => asset.id === id);
+                  if (asset) {
+                    asset.isFavorite = isFavorite;
+                  }
                 }
-              }
-            }}
-          />
+              }}
+            />
 
-          <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
-            <DownloadAction menuItem />
-            <ChangeDate menuItem />
-            <ChangeDescription menuItem />
-            <ChangeLocation menuItem />
-            <ArchiveAction menuItem unarchive={assetInteraction.isAllArchived} />
-            {#if assetInteraction.isAllUserOwned}
-              <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />
-            {/if}
-            {#if $preferences.tags.enabled && assetInteraction.isAllUserOwned}
-              <TagAction menuItem />
-            {/if}
-            <DeleteAssets menuItem {onAssetDelete} onUndoDelete={onSearchQueryUpdate} />
-            <hr />
-            <AssetJobActions />
-          </ButtonContextMenu>
+            <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
+              <DownloadAction menuItem />
+              <ChangeDate menuItem />
+              <ChangeDescription menuItem />
+              <ChangeLocation menuItem />
+              <ArchiveAction menuItem unarchive={assetInteraction.isAllArchived} />
+              {#if assetInteraction.isAllUserOwned}
+                <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />
+              {/if}
+              {#if $preferences.tags.enabled && assetInteraction.isAllUserOwned}
+                <TagAction menuItem />
+              {/if}
+              <DeleteAssets menuItem {onAssetDelete} onUndoDelete={onSearchQueryUpdate} />
+              <hr />
+              <AssetJobActions />
+            </ButtonContextMenu>
+          {:else}
+            <DownloadAction />
+          {/if}
         </AssetSelectControlBar>
       </div>
     {:else}
