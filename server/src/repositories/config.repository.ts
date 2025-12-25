@@ -85,9 +85,14 @@ export interface EnvData {
       root: string;
       indexHtml: string;
     };
+    corePlugin: string;
   };
 
   redis: RedisOptions;
+
+  setup: {
+    allow: boolean;
+  };
 
   telemetry: {
     apiPort: number;
@@ -101,6 +106,13 @@ export interface EnvData {
   };
 
   workers: ImmichWorker[];
+
+  plugins: {
+    external: {
+      allow: boolean;
+      installFolder?: string;
+    };
+  };
 
   noColor: boolean;
   nodeVersion?: string;
@@ -243,7 +255,7 @@ const getEnv = (): EnvData => {
         prefix: 'immich_bull',
         connection: { ...redisConfig },
         defaultJobOptions: {
-          attempts: 3,
+          attempts: 1,
           removeOnComplete: true,
           removeOnFail: false,
         },
@@ -304,6 +316,11 @@ const getEnv = (): EnvData => {
         root: folders.web,
         indexHtml: join(folders.web, 'index.html'),
       },
+      corePlugin: join(buildFolder, 'corePlugin'),
+    },
+
+    setup: {
+      allow: dto.IMMICH_ALLOW_SETUP ?? true,
     },
 
     storage: {
@@ -318,6 +335,13 @@ const getEnv = (): EnvData => {
     },
 
     workers,
+
+    plugins: {
+      external: {
+        allow: dto.IMMICH_ALLOW_EXTERNAL_PLUGINS ?? false,
+        installFolder: dto.IMMICH_PLUGINS_INSTALL_FOLDER,
+      },
+    },
 
     noColor: !!dto.NO_COLOR,
   };

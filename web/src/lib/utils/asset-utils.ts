@@ -3,7 +3,7 @@ import ToastAction from '$lib/components/ToastAction.svelte';
 import { AppRoute } from '$lib/constants';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { downloadManager } from '$lib/managers/download-manager.svelte';
-import type { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
+import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
 import { assetsSnapshot } from '$lib/managers/timeline-manager/utils.svelte';
 import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
@@ -30,7 +30,6 @@ import {
   untagAssets,
   updateAsset,
   updateAssets,
-  type AlbumResponseDto,
   type AssetResponseDto,
   type AssetTypeEnum,
   type DownloadInfoDto,
@@ -154,12 +153,6 @@ export const removeTag = async ({
   }
 
   return assetIds;
-};
-
-export const downloadAlbum = async (album: AlbumResponseDto) => {
-  await downloadArchive(`${album.albumName}.zip`, {
-    albumId: album.id,
-  });
 };
 
 export const downloadBlob = (data: Blob, filename: string) => {
@@ -360,7 +353,7 @@ const supportedImageMimeTypes = new Set([
 
 const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent); // https://stackoverflow.com/a/23522755
 if (isSafari) {
-  supportedImageMimeTypes.add('image/heic').add('image/heif');
+  supportedImageMimeTypes.add('image/heic').add('image/heif').add('image/jxl');
 }
 
 /**

@@ -12,6 +12,7 @@ import { MapAsset } from 'src/dtos/asset-response.dto';
 import { AssetFileType, AssetStatus, AssetType, AssetVisibility, CacheControl, JobName } from 'src/enum';
 import { AuthRequest } from 'src/middleware/auth.guard';
 import { AssetMediaService } from 'src/services/asset-media.service';
+import { UploadBody } from 'src/types';
 import { ASSET_CHECKSUM_CONSTRAINT } from 'src/utils/database';
 import { ImmichFileResponse } from 'src/utils/file';
 import { assetStub } from 'test/fixtures/asset.stub';
@@ -35,10 +36,10 @@ const uploadFile = {
       size: 1000,
     },
   },
-  filename: (fieldName: UploadFieldName, filename: string) => {
+  filename: (fieldName: UploadFieldName, filename: string, body?: UploadBody) => {
     return {
       auth: authStub.admin,
-      body: {},
+      body: body || {},
       fieldName,
       file: {
         uuid: 'random-uuid',
@@ -173,7 +174,6 @@ const assetEntity = Object.freeze({
     longitude: 10.703_075,
   },
   livePhotoVideoId: null,
-  sidecarPath: null,
 } as MapAsset);
 
 const existingAsset = Object.freeze({
@@ -187,7 +187,6 @@ const existingAsset = Object.freeze({
 
 const sidecarAsset = Object.freeze({
   ...existingAsset,
-  sidecarPath: 'sidecar-path',
   checksum: Buffer.from('_getExistingAssetWithSideCar', 'utf8'),
 }) as MapAsset;
 
@@ -263,6 +262,15 @@ describe(AssetMediaService.name, () => {
         });
       });
     }
+
+    it('should prefer filename from body over name from path', () => {
+      const pathFilename = 'invalid-file-name';
+      const body = { filename: 'video.mov' };
+      expect(() => sut.canUploadFile(uploadFile.filename(UploadFieldName.ASSET_DATA, pathFilename))).toThrowError(
+        BadRequestException,
+      );
+      expect(sut.canUploadFile(uploadFile.filename(UploadFieldName.ASSET_DATA, pathFilename, body))).toEqual(true);
+    });
   });
 
   describe('getUploadFilename', () => {
@@ -711,16 +719,20 @@ describe(AssetMediaService.name, () => {
       expect(mocks.asset.update).toHaveBeenCalledWith(
         expect.objectContaining({
           id: existingAsset.id,
-          sidecarPath: null,
           originalFileName: 'photo1.jpeg',
           originalPath: 'fake_path/photo1.jpeg',
         }),
       );
       expect(mocks.asset.create).toHaveBeenCalledWith(
         expect.objectContaining({
-          sidecarPath: null,
           originalFileName: 'existing-filename.jpeg',
           originalPath: 'fake_path/asset_1.jpeg',
+        }),
+      );
+      expect(mocks.asset.deleteFile).toHaveBeenCalledWith(
+        expect.objectContaining({
+          assetId: existingAsset.id,
+          type: AssetFileType.Sidecar,
         }),
       );
 
@@ -759,6 +771,13 @@ describe(AssetMediaService.name, () => {
         deletedAt: expect.any(Date),
         status: AssetStatus.Trashed,
       });
+      expect(mocks.asset.upsertFile).toHaveBeenCalledWith(
+        expect.objectContaining({
+          assetId: existingAsset.id,
+          path: sidecarFile.originalPath,
+          type: AssetFileType.Sidecar,
+        }),
+      );
       expect(mocks.user.updateUsage).toHaveBeenCalledWith(authStub.user1.user.id, updatedFile.size);
       expect(mocks.storage.utimes).toHaveBeenCalledWith(
         updatedFile.originalPath,
@@ -788,6 +807,12 @@ describe(AssetMediaService.name, () => {
         deletedAt: expect.any(Date),
         status: AssetStatus.Trashed,
       });
+      expect(mocks.asset.deleteFile).toHaveBeenCalledWith(
+        expect.objectContaining({
+          assetId: existingAsset.id,
+          type: AssetFileType.Sidecar,
+        }),
+      );
       expect(mocks.user.updateUsage).toHaveBeenCalledWith(authStub.user1.user.id, updatedFile.size);
       expect(mocks.storage.utimes).toHaveBeenCalledWith(
         updatedFile.originalPath,
@@ -817,6 +842,9 @@ describe(AssetMediaService.name, () => {
 
       expect(mocks.asset.create).not.toHaveBeenCalled();
       expect(mocks.asset.updateAll).not.toHaveBeenCalled();
+      expect(mocks.asset.upsertFile).not.toHaveBeenCalled();
+      expect(mocks.asset.deleteFile).not.toHaveBeenCalled();
+
       expect(mocks.job.queue).toHaveBeenCalledWith({
         name: JobName.FileDelete,
         data: { files: [updatedFile.originalPath, undefined] },

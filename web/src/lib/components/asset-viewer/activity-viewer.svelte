@@ -1,6 +1,5 @@
 <script lang="ts">
   import { resolve } from '$app/paths';
-  import { autoGrowHeight } from '$lib/actions/autogrow';
   import { shortcut } from '$lib/actions/shortcut';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
@@ -12,10 +11,11 @@
   import { handleError } from '$lib/utils/handle-error';
   import { isTenMinutesApart } from '$lib/utils/timesince';
   import { ReactionType, type ActivityResponseDto, type AssetTypeEnum, type UserResponseDto } from '@immich/sdk';
-  import { Icon, IconButton, LoadingSpinner, toastManager } from '@immich/ui';
-  import { mdiClose, mdiDeleteOutline, mdiDotsVertical, mdiHeart, mdiSend } from '@mdi/js';
+  import { Icon, IconButton, LoadingSpinner, Textarea, toastManager } from '@immich/ui';
+  import { mdiClose, mdiDeleteOutline, mdiDotsVertical, mdiSend, mdiThumbUp } from '@mdi/js';
   import * as luxon from 'luxon';
   import { t } from 'svelte-i18n';
+  import { fromAction } from 'svelte/attachments';
   import UserAvatar from '../shared-components/user-avatar.svelte';
 
   const units: Intl.RelativeTimeFormatUnit[] = ['year', 'month', 'week', 'day', 'hour', 'minute', 'second'];
@@ -52,7 +52,7 @@
   let innerHeight: number = $state(0);
   let activityHeight: number = $state(0);
   let chatHeight: number = $state(0);
-  let divHeight: number = $state(0);
+  let divHeight = $derived(innerHeight - activityHeight);
   let previousAssetId: string | undefined = $state(assetId);
   let message = $state('');
   let isSendingMessage = $state(false);
@@ -96,11 +96,7 @@
     }
     isSendingMessage = false;
   };
-  $effect(() => {
-    if (innerHeight && activityHeight) {
-      divHeight = innerHeight - activityHeight;
-    }
-  });
+
   $effect(() => {
     if (assetId && previousAssetId != assetId) {
       previousAssetId = assetId;
@@ -185,7 +181,7 @@
           {:else if reaction.type === ReactionType.Like}
             <div class="relative">
               <div class="flex py-3 ps-3 mt-3 gap-4 items-center text-sm">
-                <div class="text-red-600"><Icon icon={mdiHeart} size="20" /></div>
+                <div class="text-primary"><Icon icon={mdiThumbUp} size="20" /></div>
 
                 <div class="w-full" title={`${reaction.user.name} (${reaction.user.email})`}>
                   {$t('user_liked', {
@@ -249,19 +245,20 @@
         </div>
         <form class="flex w-full max-h-56 gap-1" {onsubmit}>
           <div class="flex w-full items-center gap-4">
-            <textarea
+            <Textarea
               {disabled}
               bind:value={message}
-              use:autoGrowHeight={{ height: '5px', value: message }}
+              rows={1}
+              grow
               placeholder={disabled ? $t('comments_are_disabled') : $t('say_something')}
-              use:shortcut={{
+              {@attach fromAction(shortcut, () => ({
                 shortcut: { key: 'Enter' },
                 onShortcut: () => handleSendComment(),
-              }}
-              class="h-[18px] {disabled
+              }))}
+              class="h-4.5 {disabled
                 ? 'cursor-not-allowed'
-                : ''} w-full max-h-56 pe-2 items-center overflow-y-auto leading-4 outline-none resize-none bg-gray-200"
-            ></textarea>
+                : ''} w-full max-h-56 pe-2 items-center overflow-y-auto leading-4 outline-none resize-none bg-gray-200 dark:bg-gray-200"
+            ></Textarea>
           </div>
           {#if isSendingMessage}
             <div class="flex items-end place-items-center pb-2 ms-0">

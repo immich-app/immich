@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 
-class BaseActionButton extends StatelessWidget {
+class BaseActionButton extends ConsumerWidget {
   const BaseActionButton({
     super.key,
     required this.label,
@@ -11,6 +12,7 @@ class BaseActionButton extends StatelessWidget {
     this.onLongPressed,
     this.maxWidth = 90.0,
     this.minWidth,
+    this.iconOnly = false,
     this.menuItem = false,
   });
 
@@ -19,22 +21,39 @@ class BaseActionButton extends StatelessWidget {
   final Color? iconColor;
   final double maxWidth;
   final double? minWidth;
+
+  /// When true, renders only an IconButton without text label
+  final bool iconOnly;
+
+  /// When true, renders as a MenuItemButton for use in MenuAnchor menus
   final bool menuItem;
   final void Function()? onPressed;
   final void Function()? onLongPressed;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final miniWidth = minWidth ?? (context.isMobile ? context.width / 4.5 : 75.0);
     final iconTheme = IconTheme.of(context);
     final iconSize = iconTheme.size ?? 24.0;
     final iconColor = this.iconColor ?? iconTheme.color ?? context.themeData.iconTheme.color;
     final textColor = context.themeData.textTheme.labelLarge?.color;
 
-    if (menuItem) {
+    if (iconOnly) {
       return IconButton(
         onPressed: onPressed,
         icon: Icon(iconData, size: iconSize, color: iconColor),
+      );
+    }
+
+    if (menuItem) {
+      final theme = context.themeData;
+      final effectiveIconColor = iconColor ?? theme.iconTheme.color ?? theme.colorScheme.onSurfaceVariant;
+
+      return MenuItemButton(
+        style: MenuItemButton.styleFrom(alignment: Alignment.centerLeft, padding: const EdgeInsets.all(16)),
+        leadingIcon: Icon(iconData, color: effectiveIconColor),
+        onPressed: onPressed,
+        child: Text(label, style: theme.textTheme.labelLarge?.copyWith(fontSize: 16)),
       );
     }
 

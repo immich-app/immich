@@ -3,12 +3,12 @@
 #
 # Pump one or both of the server/mobile versions in appropriate files
 #
-# usage: './scripts/pump-version.sh -s <major|minor|patch> <-m>
+# usage: './scripts/pump-version.sh -s <major|minor|patch> <-m> <true|false>
 #
 # examples:
-#    ./scripts/pump-version.sh -s major        # 1.0.0+50 => 2.0.0+50
-#    ./scripts/pump-version.sh -s minor -m     # 1.0.0+50 => 1.1.0+51
-#    ./scripts/pump-version.sh -m              # 1.0.0+50 => 1.0.0+51
+#    ./scripts/pump-version.sh -s major         # 1.0.0+50 => 2.0.0+50
+#    ./scripts/pump-version.sh -s minor -m true # 1.0.0+50 => 1.1.0+51
+#    ./scripts/pump-version.sh -m true          # 1.0.0+50 => 1.0.0+51
 #
 
 SERVER_PUMP="false"
@@ -90,6 +90,7 @@ fi
 sed -i "s/\"android\.injected\.version\.name\" => \"$CURRENT_SERVER\",/\"android\.injected\.version\.name\" => \"$NEXT_SERVER\",/" mobile/android/fastlane/Fastfile
 sed -i "s/\"android\.injected\.version\.code\" => $CURRENT_MOBILE,/\"android\.injected\.version\.code\" => $NEXT_MOBILE,/" mobile/android/fastlane/Fastfile
 sed -i "s/^version: $CURRENT_SERVER+$CURRENT_MOBILE$/version: $NEXT_SERVER+$NEXT_MOBILE/" mobile/pubspec.yaml
+perl -i -p0e "s/(<key>CFBundleShortVersionString<\/key>\s*<string>)$CURRENT_SERVER(<\/string>)/\${1}$NEXT_SERVER\${2}/s" mobile/ios/Runner/Info.plist
 
 ./misc/release/archive-version.js "$NEXT_SERVER"
 

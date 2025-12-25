@@ -16,7 +16,9 @@ class LibrariesApi {
 
   final ApiClient apiClient;
 
-  /// This endpoint is an admin-only route, and requires the `library.create` permission.
+  /// Create a library
+  ///
+  /// Create a new external library.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -48,7 +50,9 @@ class LibrariesApi {
     );
   }
 
-  /// This endpoint is an admin-only route, and requires the `library.create` permission.
+  /// Create a library
+  ///
+  /// Create a new external library.
   ///
   /// Parameters:
   ///
@@ -68,7 +72,9 @@ class LibrariesApi {
     return null;
   }
 
-  /// This endpoint is an admin-only route, and requires the `library.delete` permission.
+  /// Delete a library
+  ///
+  /// Delete an external library by its ID.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -101,7 +107,9 @@ class LibrariesApi {
     );
   }
 
-  /// This endpoint is an admin-only route, and requires the `library.delete` permission.
+  /// Delete a library
+  ///
+  /// Delete an external library by its ID.
   ///
   /// Parameters:
   ///
@@ -113,7 +121,9 @@ class LibrariesApi {
     }
   }
 
-  /// This endpoint is an admin-only route, and requires the `library.read` permission.
+  /// Retrieve libraries
+  ///
+  /// Retrieve a list of external libraries.
   ///
   /// Note: This method returns the HTTP [Response].
   Future<Response> getAllLibrariesWithHttpInfo() async {
@@ -141,7 +151,9 @@ class LibrariesApi {
     );
   }
 
-  /// This endpoint is an admin-only route, and requires the `library.read` permission.
+  /// Retrieve libraries
+  ///
+  /// Retrieve a list of external libraries.
   Future<List<LibraryResponseDto>?> getAllLibraries() async {
     final response = await getAllLibrariesWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -160,7 +172,9 @@ class LibrariesApi {
     return null;
   }
 
-  /// This endpoint is an admin-only route, and requires the `library.read` permission.
+  /// Retrieve a library
+  ///
+  /// Retrieve an external library by its ID.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -193,7 +207,9 @@ class LibrariesApi {
     );
   }
 
-  /// This endpoint is an admin-only route, and requires the `library.read` permission.
+  /// Retrieve a library
+  ///
+  /// Retrieve an external library by its ID.
   ///
   /// Parameters:
   ///
@@ -213,7 +229,9 @@ class LibrariesApi {
     return null;
   }
 
-  /// This endpoint is an admin-only route, and requires the `library.statistics` permission.
+  /// Retrieve library statistics
+  ///
+  /// Retrieve statistics for a specific external library, including number of videos, images, and storage usage.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -246,7 +264,9 @@ class LibrariesApi {
     );
   }
 
-  /// This endpoint is an admin-only route, and requires the `library.statistics` permission.
+  /// Retrieve library statistics
+  ///
+  /// Retrieve statistics for a specific external library, including number of videos, images, and storage usage.
   ///
   /// Parameters:
   ///
@@ -266,7 +286,9 @@ class LibrariesApi {
     return null;
   }
 
-  /// This endpoint is an admin-only route, and requires the `library.update` permission.
+  /// Scan a library
+  ///
+  /// Queue a scan for the external library to find and import new assets.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -299,7 +321,9 @@ class LibrariesApi {
     );
   }
 
-  /// This endpoint is an admin-only route, and requires the `library.update` permission.
+  /// Scan a library
+  ///
+  /// Queue a scan for the external library to find and import new assets.
   ///
   /// Parameters:
   ///
@@ -311,7 +335,9 @@ class LibrariesApi {
     }
   }
 
-  /// This endpoint is an admin-only route, and requires the `library.update` permission.
+  /// Update a library
+  ///
+  /// Update an existing external library.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -346,7 +372,9 @@ class LibrariesApi {
     );
   }
 
-  /// This endpoint is an admin-only route, and requires the `library.update` permission.
+  /// Update a library
+  ///
+  /// Update an existing external library.
   ///
   /// Parameters:
   ///
@@ -368,7 +396,12 @@ class LibrariesApi {
     return null;
   }
 
-  /// Performs an HTTP 'POST /libraries/{id}/validate' operation and returns the [Response].
+  /// Validate library settings
+  ///
+  /// Validate the settings of an external library.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -400,6 +433,10 @@ class LibrariesApi {
     );
   }
 
+  /// Validate library settings
+  ///
+  /// Validate the settings of an external library.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):

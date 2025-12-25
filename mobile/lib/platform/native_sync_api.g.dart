@@ -41,6 +41,9 @@ class PlatformAsset {
     required this.durationInSeconds,
     required this.orientation,
     required this.isFavorite,
+    this.adjustmentTime,
+    this.latitude,
+    this.longitude,
   });
 
   String id;
@@ -63,8 +66,28 @@ class PlatformAsset {
 
   bool isFavorite;
 
+  int? adjustmentTime;
+
+  double? latitude;
+
+  double? longitude;
+
   List<Object?> _toList() {
-    return <Object?>[id, name, type, createdAt, updatedAt, width, height, durationInSeconds, orientation, isFavorite];
+    return <Object?>[
+      id,
+      name,
+      type,
+      createdAt,
+      updatedAt,
+      width,
+      height,
+      durationInSeconds,
+      orientation,
+      isFavorite,
+      adjustmentTime,
+      latitude,
+      longitude,
+    ];
   }
 
   Object encode() {
@@ -84,6 +107,9 @@ class PlatformAsset {
       durationInSeconds: result[7]! as int,
       orientation: result[8]! as int,
       isFavorite: result[9]! as bool,
+      adjustmentTime: result[10] as int?,
+      latitude: result[11] as double?,
+      longitude: result[12] as double?,
     );
   }
 
@@ -560,6 +586,34 @@ class NativeSyncApi {
       );
     } else {
       return;
+    }
+  }
+
+  Future<Map<String, List<PlatformAsset>>> getTrashedAssets() async {
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.immich_mobile.NativeSyncApi.getTrashedAssets$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
+    final List<Object?>? pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+    if (pigeonVar_replyList == null) {
+      throw _createConnectionError(pigeonVar_channelName);
+    } else if (pigeonVar_replyList.length > 1) {
+      throw PlatformException(
+        code: pigeonVar_replyList[0]! as String,
+        message: pigeonVar_replyList[1] as String?,
+        details: pigeonVar_replyList[2],
+      );
+    } else if (pigeonVar_replyList[0] == null) {
+      throw PlatformException(
+        code: 'null-error',
+        message: 'Host platform returned null value for non-null return value.',
+      );
+    } else {
+      return (pigeonVar_replyList[0] as Map<Object?, Object?>?)!.cast<String, List<PlatformAsset>>();
     }
   }
 }

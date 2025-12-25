@@ -7,7 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/domain/models/timeline.model.dart';
+import 'package:immich_mobile/domain/models/events.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
@@ -97,7 +97,7 @@ class AssetViewer extends ConsumerStatefulWidget {
 }
 
 const double _kBottomSheetMinimumExtent = 0.4;
-const double _kBottomSheetSnapExtent = 0.7;
+const double _kBottomSheetSnapExtent = 0.67;
 
 class _AssetViewerState extends ConsumerState<AssetViewer> {
   static final _dummyListener = ImageStreamListener((image, _) => image.dispose());
@@ -399,9 +399,13 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     final isDraggingDown = currentExtent < previousExtent;
     previousExtent = currentExtent;
     // Closes the bottom sheet if the user is dragging down
-    if (isDraggingDown && delta.extent < 0.55) {
+    if (isDraggingDown && delta.extent < 0.67) {
       if (dragInProgress) {
         blockGestures = true;
+      }
+      // Jump to a lower position before starting close animation to prevent glitch
+      if (bottomSheetController.isAttached) {
+        bottomSheetController.jumpTo(0.67);
       }
       sheetCloseController?.close();
     }
@@ -480,7 +484,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     previousExtent = _kBottomSheetMinimumExtent;
     sheetCloseController = showBottomSheet(
       context: ctx,
-      sheetAnimationStyle: const AnimationStyle(duration: Durations.short4, reverseDuration: Durations.short2),
+      sheetAnimationStyle: const AnimationStyle(duration: Durations.medium2, reverseDuration: Durations.medium2),
       constraints: const BoxConstraints(maxWidth: double.infinity),
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20.0))),
       backgroundColor: ctx.colorScheme.surfaceContainerLowest,
@@ -627,10 +631,10 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     // Rebuild the widget when the asset viewer state changes
     // Using multiple selectors to avoid unnecessary rebuilds for other state changes
     ref.watch(assetViewerProvider.select((s) => s.showingBottomSheet));
-    ref.watch(assetViewerProvider.select((s) => s.showingControls));
     ref.watch(assetViewerProvider.select((s) => s.backgroundOpacity));
     ref.watch(assetViewerProvider.select((s) => s.stackIndex));
     ref.watch(isPlayingMotionVideoProvider);
+    final showingControls = ref.watch(assetViewerProvider.select((s) => s.showingControls));
 
     // Listen for casting changes and send initial asset to the cast provider
     ref.listen(castProvider.select((value) => value.isCasting), (_, isCasting) async {
@@ -663,7 +667,14 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
         appBar: const ViewerTopAppBar(),
         extendBody: true,
         extendBodyBehindAppBar: true,
-        floatingActionButton: const DownloadStatusFloatingButton(),
+        floatingActionButton: IgnorePointer(
+          ignoring: !showingControls,
+          child: AnimatedOpacity(
+            opacity: showingControls ? 1.0 : 0.0,
+            duration: Durations.short2,
+            child: const DownloadStatusFloatingButton(),
+          ),
+        ),
         body: Stack(
           children: [
             PhotoViewGallery.builder(
@@ -681,16 +692,20 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
               backgroundDecoration: BoxDecoration(color: backgroundColor),
               enablePanAlways: true,
             ),
+            if (!showingBottomSheet)
+              const Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [AssetStackRow(), ViewerBottomBar()],
+                ),
+              ),
           ],
         ),
-        bottomNavigationBar: showingBottomSheet
-            ? const SizedBox.shrink()
-            : const Column(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.end,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [AssetStackRow(), ViewerBottomBar()],
-              ),
       ),
     );
   }

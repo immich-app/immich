@@ -264,9 +264,8 @@ class ActionNotifier extends Notifier<void> {
   }
 
   Future<ActionResult?> deleteLocal(ActionSource source, BuildContext context) async {
-    // Always perform the operation if there is only one merged asset
     final assets = _getAssets(source);
-    bool? backedUpOnly = assets.length == 1 && assets.first.storage == AssetState.merged
+    bool? backedUpOnly = assets.every((asset) => asset.storage == AssetState.merged)
         ? true
         : await showDialog<bool>(
             context: context,
@@ -300,6 +299,13 @@ class ActionNotifier extends Notifier<void> {
       final isEdited = await _service.editLocation(ids, context);
       if (!isEdited) {
         return null;
+      }
+
+      // This must be called since editing location
+      // does not update the currentAsset which means
+      // the exif provider will not be refreshed automatically
+      if (source == ActionSource.viewer) {
+        ref.invalidate(currentAssetExifProvider);
       }
 
       return ActionResult(count: ids.length, success: true);

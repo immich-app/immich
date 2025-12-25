@@ -140,6 +140,9 @@ struct PlatformAsset: Hashable {
   var durationInSeconds: Int64
   var orientation: Int64
   var isFavorite: Bool
+  var adjustmentTime: Int64? = nil
+  var latitude: Double? = nil
+  var longitude: Double? = nil
 
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
@@ -154,6 +157,9 @@ struct PlatformAsset: Hashable {
     let durationInSeconds = pigeonVar_list[7] as! Int64
     let orientation = pigeonVar_list[8] as! Int64
     let isFavorite = pigeonVar_list[9] as! Bool
+    let adjustmentTime: Int64? = nilOrValue(pigeonVar_list[10])
+    let latitude: Double? = nilOrValue(pigeonVar_list[11])
+    let longitude: Double? = nilOrValue(pigeonVar_list[12])
 
     return PlatformAsset(
       id: id,
@@ -165,7 +171,10 @@ struct PlatformAsset: Hashable {
       height: height,
       durationInSeconds: durationInSeconds,
       orientation: orientation,
-      isFavorite: isFavorite
+      isFavorite: isFavorite,
+      adjustmentTime: adjustmentTime,
+      latitude: latitude,
+      longitude: longitude
     )
   }
   func toList() -> [Any?] {
@@ -180,6 +189,9 @@ struct PlatformAsset: Hashable {
       durationInSeconds,
       orientation,
       isFavorite,
+      adjustmentTime,
+      latitude,
+      longitude,
     ]
   }
   static func == (lhs: PlatformAsset, rhs: PlatformAsset) -> Bool {
@@ -364,6 +376,7 @@ protocol NativeSyncApi {
   func getAssetsForAlbum(albumId: String, updatedTimeCond: Int64?) throws -> [PlatformAsset]
   func hashAssets(assetIds: [String], allowNetworkAccess: Bool, completion: @escaping (Result<[HashResult], Error>) -> Void)
   func cancelHashing() throws
+  func getTrashedAssets() throws -> [String: [PlatformAsset]]
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -531,6 +544,21 @@ class NativeSyncApiSetup {
       }
     } else {
       cancelHashingChannel.setMessageHandler(nil)
+    }
+    let getTrashedAssetsChannel = taskQueue == nil
+      ? FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.getTrashedAssets\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+      : FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.getTrashedAssets\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec, taskQueue: taskQueue)
+    if let api = api {
+      getTrashedAssetsChannel.setMessageHandler { _, reply in
+        do {
+          let result = try api.getTrashedAssets()
+          reply(wrapResult(result))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      getTrashedAssetsChannel.setMessageHandler(nil)
     }
   }
 }

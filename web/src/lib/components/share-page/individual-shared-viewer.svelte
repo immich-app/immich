@@ -1,7 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import type { Action } from '$lib/components/asset-viewer/actions/action';
-  import ImmichLogoSmallLink from '$lib/components/shared-components/immich-logo-small-link.svelte';
   import DownloadAction from '$lib/components/timeline/actions/DownloadAction.svelte';
   import RemoveFromSharedLink from '$lib/components/timeline/actions/RemoveFromSharedLinkAction.svelte';
   import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
@@ -10,13 +9,14 @@
   import type { Viewport } from '$lib/managers/timeline-manager/types';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
+  import { mobileDevice } from '$lib/stores/mobile-device.svelte';
   import { handlePromiseError } from '$lib/utils';
   import { cancelMultiselect, downloadArchive } from '$lib/utils/asset-utils';
   import { fileUploadHandler, openFileUploadDialog } from '$lib/utils/file-uploader';
   import { handleError } from '$lib/utils/handle-error';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { addSharedLinkAssets, getAssetInfo, type SharedLinkResponseDto } from '@immich/sdk';
-  import { IconButton, toastManager } from '@immich/ui';
+  import { IconButton, Logo, toastManager } from '@immich/ui';
   import { mdiArrowLeft, mdiDownload, mdiFileImagePlusOutline, mdiSelectAll } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import ControlAppBar from '../shared-components/control-app-bar.svelte';
@@ -108,7 +108,9 @@
     {:else}
       <ControlAppBar onClose={() => goto(AppRoute.PHOTOS)} backIcon={mdiArrowLeft} showBackButton={false}>
         {#snippet leading()}
-          <ImmichLogoSmallLink />
+          <a data-sveltekit-preload-data="hover" class="ms-4" href="/">
+            <Logo variant={mobileDevice.maxMd ? 'icon' : 'inline'} class="min-w-10" />
+          </a>
         {/snippet}
 
         {#snippet trailing()}

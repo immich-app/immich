@@ -5,7 +5,7 @@ sidebar_position: 2
 # Setup
 
 :::note
-If there's a feature you're planning to work on, just give us a heads up in [Discord](https://discord.com/channels/979116623879368755/1071165397228855327) so we can:
+If there's a feature you're planning to work on, just give us a heads up in [#contributing](https://discord.com/channels/979116623879368755/1071165397228855327) on [our Discord](https://discord.immich.app) so we can:
 
 1. Let you know if it's something we would accept into Immich
 2. Provide any guidance on how something like that would ideally be implemented
@@ -48,7 +48,6 @@ You can access the web from `http://your-machine-ip:3000` or `http://localhost:3
 **Notes:**
 
 - The "web" development container runs with uid 1000. If that uid does not have read/write permissions on the mounted volumes, you may encounter errors
-- In case of rootless docker setup, you need to use root within the container, otherwise you will encounter read/write permission related errors, see comments in `docker/docker-compose.dev.yml`.
 
 #### Connect web to a remote backend
 

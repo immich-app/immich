@@ -81,4 +81,67 @@ abstract final class SyncStreamStub {
     data: SyncMemoryAssetDeleteV1(assetId: "asset-2", memoryId: "memory-1"),
     ack: "8",
   );
+
+  static final assetDeleteV1 = SyncEvent(
+    type: SyncEntityType.assetDeleteV1,
+    data: SyncAssetDeleteV1(assetId: "remote-asset"),
+    ack: "asset-delete-ack",
+  );
+
+  static SyncEvent assetTrashed({
+    required String id,
+    required String checksum,
+    required String ack,
+    DateTime? trashedAt,
+  }) {
+    return _assetV1(
+      id: id,
+      checksum: checksum,
+      deletedAt: trashedAt ?? DateTime(2025, 1, 1),
+      ack: ack,
+    );
+  }
+
+  static SyncEvent assetModified({
+    required String id,
+    required String checksum,
+    required String ack,
+  }) {
+    return _assetV1(
+      id: id,
+      checksum: checksum,
+      deletedAt: null,
+      ack: ack,
+    );
+  }
+
+  static SyncEvent _assetV1({
+    required String id,
+    required String checksum,
+    required DateTime? deletedAt,
+    required String ack,
+  }) {
+    return SyncEvent(
+      type: SyncEntityType.assetV1,
+      data: SyncAssetV1(
+        checksum: checksum,
+        deletedAt: deletedAt,
+        duration: '0',
+        fileCreatedAt: DateTime(2025),
+        fileModifiedAt: DateTime(2025, 1, 2),
+        id: id,
+        isFavorite: false,
+        libraryId: null,
+        livePhotoVideoId: null,
+        localDateTime: DateTime(2025, 1, 3),
+        originalFileName: '$id.jpg',
+        ownerId: 'owner',
+        stackId: null,
+        thumbhash: null,
+        type: AssetTypeEnum.IMAGE,
+        visibility: AssetVisibility.timeline,
+      ),
+      ack: ack,
+    );
+  }
 }

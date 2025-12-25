@@ -1,5 +1,59 @@
 import type { ThemeSetting } from '$lib/managers/theme-manager.svelte';
-import type { LoginResponseDto } from '@immich/sdk';
+import type { ReleaseEvent } from '$lib/types';
+import type {
+  AlbumResponseDto,
+  ApiKeyResponseDto,
+  LibraryResponseDto,
+  LoginResponseDto,
+  QueueResponseDto,
+  SharedLinkResponseDto,
+  SystemConfigDto,
+  UserAdminResponseDto,
+  WorkflowResponseDto,
+} from '@immich/sdk';
+
+export type Events = {
+  AppInit: [];
+  UserLogin: [];
+  AuthLogin: [LoginResponseDto];
+  AuthLogout: [];
+  LanguageChange: [{ name: string; code: string; rtl?: boolean }];
+  ThemeChange: [ThemeSetting];
+
+  ApiKeyCreate: [ApiKeyResponseDto];
+  ApiKeyUpdate: [ApiKeyResponseDto];
+  ApiKeyDelete: [ApiKeyResponseDto];
+
+  AssetReplace: [{ oldAssetId: string; newAssetId: string }];
+
+  AlbumUpdate: [AlbumResponseDto];
+  AlbumDelete: [AlbumResponseDto];
+
+  QueueUpdate: [QueueResponseDto];
+
+  SharedLinkCreate: [SharedLinkResponseDto];
+  SharedLinkUpdate: [SharedLinkResponseDto];
+  SharedLinkDelete: [SharedLinkResponseDto];
+
+  UserAdminCreate: [UserAdminResponseDto];
+  UserAdminUpdate: [UserAdminResponseDto];
+  UserAdminRestore: [UserAdminResponseDto];
+  // soft deleted
+  UserAdminDelete: [UserAdminResponseDto];
+  // confirmed permanently deleted from server
+  UserAdminDeleted: [{ id: string }];
+
+  SystemConfigUpdate: [SystemConfigDto];
+
+  LibraryCreate: [LibraryResponseDto];
+  LibraryUpdate: [LibraryResponseDto];
+  LibraryDelete: [{ id: string }];
+
+  WorkflowUpdate: [WorkflowResponseDto];
+  WorkflowDelete: [WorkflowResponseDto];
+
+  ReleaseEvent: [ReleaseEvent];
+};
 
 type Listener<EventMap extends Record<string, unknown[]>, K extends keyof EventMap> = (...params: EventMap[K]) => void;
 
@@ -51,11 +105,4 @@ class EventManager<EventMap extends Record<string, unknown[]>> {
   }
 }
 
-export const eventManager = new EventManager<{
-  'app.init': [];
-  'user.login': [];
-  'auth.login': [LoginResponseDto];
-  'auth.logout': [];
-  'language.change': [{ name: string; code: string; rtl?: boolean }];
-  'theme.change': [ThemeSetting];
-}>();
+export const eventManager = new EventManager<Events>();

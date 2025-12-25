@@ -358,20 +358,9 @@ export class DatabaseRepository {
   }
 
   async runMigrations(): Promise<void> {
-    this.logger.debug('Running migrations');
+    this.logger.log('Running migrations');
 
-    const migrator = new Migrator({
-      db: this.db,
-      migrationLockTableName: 'kysely_migrations_lock',
-      allowUnorderedMigrations: this.configRepository.isDev(),
-      migrationTableName: 'kysely_migrations',
-      provider: new FileMigrationProvider({
-        fs: { readdir },
-        path: { join },
-        // eslint-disable-next-line unicorn/prefer-module
-        migrationFolder: join(__dirname, '..', 'schema/migrations'),
-      }),
-    });
+    const migrator = this.createMigrator();
 
     const { error, results } = await migrator.migrateToLatest();
 
@@ -390,7 +379,7 @@ export class DatabaseRepository {
       throw error;
     }
 
-    this.logger.debug('Finished running migrations');
+    this.logger.log('Finished running migrations');
   }
 
   async migrateFilePaths(sourceFolder: string, targetFolder: string): Promise<void> {
@@ -414,7 +403,6 @@ export class DatabaseRepository {
         .set((eb) => ({
           originalPath: eb.fn('REGEXP_REPLACE', ['originalPath', source, target]),
           encodedVideoPath: eb.fn('REGEXP_REPLACE', ['encodedVideoPath', source, target]),
-          sidecarPath: eb.fn('REGEXP_REPLACE', ['sidecarPath', source, target]),
         }))
         .execute();
 
@@ -476,5 +464,51 @@ export class DatabaseRepository {
 
   private async releaseLock(lock: DatabaseLock, connection: Kysely<DB>): Promise<void> {
     await sql`SELECT pg_advisory_unlock(${lock})`.execute(connection);
+  }
+
+  async revertLastMigration(): Promise<string | undefined> {
+    this.logger.debug('Reverting last migration');
+
+    const migrator = this.createMigrator();
+    const { error, results } = await migrator.migrateDown();
+
+    for (const result of results ?? []) {
+      if (result.status === 'Success') {
+        this.logger.log(`Reverted migration "${result.migrationName}"`);
+      }
+
+      if (result.status === 'Error') {
+        this.logger.warn(`Failed to revert migration "${result.migrationName}"`);
+      }
+    }
+
+    if (error) {
+      this.logger.error(`Failed to revert migrations: ${error}`);
+      throw error;
+    }
+
+    const reverted = results?.find((result) => result.direction === 'Down' && result.status === 'Success');
+    if (!reverted) {
+      this.logger.debug('No migrations to revert');
+      return undefined;
+    }
+
+    this.logger.debug('Finished reverting migration');
+    return reverted.migrationName;
+  }
+
+  private createMigrator(): Migrator {
+    return new Migrator({
+      db: this.db,
+      migrationLockTableName: 'kysely_migrations_lock',
+      allowUnorderedMigrations: this.configRepository.isDev(),
+      migrationTableName: 'kysely_migrations',
+      provider: new FileMigrationProvider({
+        fs: { readdir },
+        path: { join },
+        // eslint-disable-next-line unicorn/prefer-module
+        migrationFolder: join(__dirname, '..', 'schema/migrations'),
+      }),
+    });
   }
 }

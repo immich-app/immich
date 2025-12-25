@@ -4,17 +4,27 @@ import {
   AuthApiKey,
   AuthSharedLink,
   AuthUser,
+  Exif,
   Library,
   Memory,
   Partner,
   Session,
-  SidecarWriteAsset,
   User,
   UserAdmin,
 } from 'src/database';
 import { MapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { AssetStatus, AssetType, AssetVisibility, MemoryType, Permission, UserMetadataKey, UserStatus } from 'src/enum';
+import { QueueStatisticsDto } from 'src/dtos/queue.dto';
+import {
+  AssetFileType,
+  AssetStatus,
+  AssetType,
+  AssetVisibility,
+  MemoryType,
+  Permission,
+  UserMetadataKey,
+  UserStatus,
+} from 'src/enum';
 import { OnThisDayData, UserMetadataItem } from 'src/types';
 import { v4, v7 } from 'uuid';
 
@@ -139,6 +149,16 @@ const sessionFactory = (session: Partial<Session> = {}) => ({
   ...session,
 });
 
+const queueStatisticsFactory = (dto?: Partial<QueueStatisticsDto>) => ({
+  active: 0,
+  completed: 0,
+  failed: 0,
+  delayed: 0,
+  waiting: 0,
+  paused: 0,
+  ...dto,
+});
+
 const stackFactory = () => ({
   id: newUuid(),
   ownerId: newUuid(),
@@ -226,7 +246,6 @@ const assetFactory = (asset: Partial<MapAsset> = {}) => ({
   originalFileName: 'IMG_123.jpg',
   originalPath: `/data/12/34/IMG_123.jpg`,
   ownerId: newUuid(),
-  sidecarPath: null,
   stackId: null,
   thumbhash: null,
   type: AssetType.Image,
@@ -301,13 +320,28 @@ const versionHistoryFactory = () => ({
   version: '1.123.45',
 });
 
-const assetSidecarWriteFactory = (asset: Partial<SidecarWriteAsset> = {}) => ({
-  id: newUuid(),
-  sidecarPath: '/path/to/original-path.jpg.xmp',
-  originalPath: '/path/to/original-path.jpg.xmp',
-  tags: [],
-  ...asset,
-});
+const assetSidecarWriteFactory = () => {
+  const id = newUuid();
+  return {
+    id,
+    originalPath: '/path/to/original-path.jpg.xmp',
+    tags: [],
+    files: [
+      {
+        id: newUuid(),
+        path: '/path/to/original-path.jpg.xmp',
+        type: AssetFileType.Sidecar,
+      },
+    ],
+    exifInfo: {
+      assetId: id,
+      description: 'this is a description',
+      latitude: 12,
+      longitude: 12,
+      dateTimeOriginal: '2023-11-22T04:56:12.196Z',
+    } as unknown as Exif,
+  };
+};
 
 const assetOcrFactory = (
   ocr: {
@@ -353,6 +387,7 @@ export const factory = {
   library: libraryFactory,
   memory: memoryFactory,
   partner: partnerFactory,
+  queueStatistics: queueStatisticsFactory,
   session: sessionFactory,
   stack: stackFactory,
   user: userFactory,

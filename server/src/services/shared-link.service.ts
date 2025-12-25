@@ -19,9 +19,9 @@ import { getExternalDomain, OpenGraphTags } from 'src/utils/misc';
 
 @Injectable()
 export class SharedLinkService extends BaseService {
-  async getAll(auth: AuthDto, { albumId }: SharedLinkSearchDto): Promise<SharedLinkResponseDto[]> {
+  async getAll(auth: AuthDto, { id, albumId }: SharedLinkSearchDto): Promise<SharedLinkResponseDto[]> {
     return this.sharedLinkRepository
-      .getAll({ userId: auth.user.id, albumId })
+      .getAll({ userId: auth.user.id, id, albumId })
       .then((links) => links.map((link) => mapSharedLink(link)));
   }
 

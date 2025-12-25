@@ -1,9 +1,9 @@
 import { SystemConfig } from 'src/config';
 import { VECTOR_EXTENSIONS } from 'src/constants';
+import { Asset, AssetFile } from 'src/database';
 import { UploadFieldName } from 'src/dtos/asset-media.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
-  AssetMetadataKey,
   AssetOrder,
   AssetType,
   DatabaseSslMode,
@@ -11,6 +11,7 @@ import {
   ImageFormat,
   JobName,
   MemoryType,
+  PluginTriggerType,
   QueueName,
   StorageFolder,
   SyncEntityType,
@@ -221,11 +222,6 @@ export interface IDeleteFilesJob extends IBaseJob {
 }
 
 export interface ISidecarWriteJob extends IEntityJob {
-  description?: string;
-  dateTimeOriginal?: string;
-  latitude?: number;
-  longitude?: number;
-  rating?: number;
   tags?: true;
 }
 
@@ -263,6 +259,23 @@ export interface INotifyAlbumUpdateJob extends IEntityJob, IDelayedJob {
   recipientId: string;
 }
 
+export interface WorkflowData {
+  [PluginTriggerType.AssetCreate]: {
+    userId: string;
+    asset: Asset;
+  };
+  [PluginTriggerType.PersonRecognized]: {
+    personId: string;
+    assetId: string;
+  };
+}
+
+export interface IWorkflowJob<T extends PluginTriggerType = PluginTriggerType> {
+  id: string;
+  type: T;
+  event: WorkflowData[T];
+}
+
 export interface JobCounts {
   active: number;
   completed: number;
@@ -270,11 +283,6 @@ export interface JobCounts {
   delayed: number;
   waiting: number;
   paused: number;
-}
-
-export interface QueueStatus {
-  isActive: boolean;
-  isPaused: boolean;
 }
 
 export type JobItem =
@@ -374,7 +382,10 @@ export type JobItem =
 
   // OCR
   | { name: JobName.OcrQueueAll; data: IBaseJob }
-  | { name: JobName.Ocr; data: IEntityJob };
+  | { name: JobName.Ocr; data: IEntityJob }
+
+  // Workflow
+  | { name: JobName.WorkflowRun; data: IWorkflowJob };
 
 export type VectorExtension = (typeof VECTOR_EXTENSIONS)[number];
 
@@ -419,14 +430,16 @@ export interface UploadFile {
   size: number;
 }
 
+export interface UploadBody {
+  filename?: string;
+  [key: string]: unknown;
+}
+
 export type UploadRequest = {
   auth: AuthDto | null;
   fieldName: UploadFieldName;
   file: UploadFile;
-  body: {
-    filename?: string;
-    [key: string]: unknown;
-  };
+  body: UploadBody;
 };
 
 export interface UploadFiles {
@@ -457,8 +470,8 @@ export type StorageAsset = {
   fileCreatedAt: Date;
   originalPath: string;
   originalFileName: string;
-  sidecarPath: string | null;
   fileSizeInByte: number | null;
+  files: AssetFile[];
 };
 
 export type OnThisDayData = { year: number };
@@ -469,6 +482,7 @@ export interface MemoryData {
 
 export type VersionCheckMetadata = { checkedAt: string; releaseVersion: string };
 export type SystemFlags = { mountChecks: Record<StorageFolder, boolean> };
+export type MaintenanceModeState = { isMaintenanceMode: true; secret: string } | { isMaintenanceMode: false };
 export type MemoriesState = {
   /** memories have already been created through this date */
   lastOnThisDayDate: string;
@@ -479,6 +493,7 @@ export interface SystemMetadata extends Record<SystemMetadataKey, Record<string,
   [SystemMetadataKey.AdminOnboarding]: { isOnboarded: boolean };
   [SystemMetadataKey.FacialRecognitionState]: { lastRun?: string };
   [SystemMetadataKey.License]: { licenseKey: string; activationKey: string; activatedAt: Date };
+  [SystemMetadataKey.MaintenanceMode]: MaintenanceModeState;
   [SystemMetadataKey.MediaLocation]: MediaLocation;
   [SystemMetadataKey.ReverseGeocodingState]: { lastUpdate?: string; lastImportFileName?: string };
   [SystemMetadataKey.SystemConfig]: DeepPartial<SystemConfig>;
@@ -497,6 +512,7 @@ export interface UserPreferences {
   };
   memories: {
     enabled: boolean;
+    duration: number;
   };
   people: {
     enabled: boolean;
@@ -540,13 +556,4 @@ export interface UserMetadata extends Record<UserMetadataKey, Record<string, any
   [UserMetadataKey.Preferences]: DeepPartial<UserPreferences>;
   [UserMetadataKey.License]: { licenseKey: string; activationKey: string; activatedAt: string };
   [UserMetadataKey.Onboarding]: { isOnboarded: boolean };
-}
-
-export type AssetMetadataItem<T extends keyof AssetMetadata = AssetMetadataKey> = {
-  key: T;
-  value: AssetMetadata[T];
-};
-
-export interface AssetMetadata extends Record<AssetMetadataKey, Record<string, any>> {
-  [AssetMetadataKey.MobileApp]: { iCloudId: string };
 }

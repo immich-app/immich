@@ -39,13 +39,17 @@ export const shortcutLabel = (shortcut: Shortcut) => {
 /** Determines whether an event should be ignored. The event will be ignored if:
  *  - The element dispatching the event is not the same as the element which the event listener is attached to
  *  - The element dispatching the event is an input field
+ *  - The element dispatching the event is a map canvas
  */
 export const shouldIgnoreEvent = (event: KeyboardEvent | ClipboardEvent): boolean => {
   if (event.target === event.currentTarget) {
     return false;
   }
   const type = (event.target as HTMLInputElement).type;
-  return ['textarea', 'text', 'date', 'datetime-local', 'email', 'password'].includes(type);
+  return (
+    ['textarea', 'text', 'date', 'datetime-local', 'email', 'password'].includes(type) ||
+    (event.target instanceof HTMLCanvasElement && event.target.classList.contains('maplibregl-canvas'))
+  );
 };
 
 export const matchesShortcut = (event: KeyboardEvent, shortcut: Shortcut) => {

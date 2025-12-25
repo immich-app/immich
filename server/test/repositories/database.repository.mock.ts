@@ -19,6 +19,7 @@ export const newDatabaseRepositoryMock = (): Mocked<RepositoryInterface<Database
     deleteAllSearchEmbeddings: vitest.fn(),
     prewarm: vitest.fn(),
     runMigrations: vitest.fn(),
+    revertLastMigration: vitest.fn(),
     withLock: vitest.fn().mockImplementation((_, function_: <R>() => Promise<R>) => function_()),
     tryLock: vitest.fn(),
     isBusy: vitest.fn(),

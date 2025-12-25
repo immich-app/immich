@@ -20,6 +20,7 @@ import 'package:immich_mobile/infrastructure/entities/remote_album_user.entity.d
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/stack.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/store.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/trashed_local_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/user_metadata.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.steps.dart';
@@ -62,6 +63,7 @@ class IsarDatabaseRepository implements IDatabaseRepository {
     PersonEntity,
     AssetFaceEntity,
     StoreEntity,
+    TrashedLocalAssetEntity,
   ],
   include: {'package:immich_mobile/infrastructure/entities/merged_asset.drift'},
 )
@@ -93,7 +95,7 @@ class Drift extends $Drift implements IDatabaseRepository {
   }
 
   @override
-  int get schemaVersion => 12;
+  int get schemaVersion => 14;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -177,6 +179,16 @@ class Drift extends $Drift implements IDatabaseRepository {
                 ),
               );
             }
+          },
+          from12To13: (m, v13) async {
+            await m.create(v13.trashedLocalAssetEntity);
+            await m.createIndex(v13.idxTrashedLocalAssetChecksum);
+            await m.createIndex(v13.idxTrashedLocalAssetAlbum);
+          },
+          from13To14: (m, v14) async {
+            await m.addColumn(v14.localAssetEntity, v14.localAssetEntity.adjustmentTime);
+            await m.addColumn(v14.localAssetEntity, v14.localAssetEntity.latitude);
+            await m.addColumn(v14.localAssetEntity, v14.localAssetEntity.longitude);
           },
         ),
       );

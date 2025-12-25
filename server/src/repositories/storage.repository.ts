@@ -113,6 +113,10 @@ export class StorageRepository {
     }
   }
 
+  async readTextFile(filepath: string): Promise<string> {
+    return fs.readFile(filepath, 'utf8');
+  }
+
   async checkFileExists(filepath: string, mode = constants.F_OK): Promise<boolean> {
     try {
       await fs.access(filepath, mode);

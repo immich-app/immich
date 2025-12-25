@@ -12,6 +12,7 @@ import { SharedLinkTable } from 'src/schema/tables/shared-link.table';
 
 export type SharedLinkSearchOptions = {
   userId: string;
+  id?: string;
   albumId?: string;
 };
 
@@ -118,7 +119,7 @@ export class SharedLinkRepository {
   }
 
   @GenerateSql({ params: [{ userId: DummyValue.UUID, albumId: DummyValue.UUID }] })
-  getAll({ userId, albumId }: SharedLinkSearchOptions) {
+  getAll({ userId, id, albumId }: SharedLinkSearchOptions) {
     return this.db
       .selectFrom('shared_link')
       .selectAll('shared_link')
@@ -176,6 +177,7 @@ export class SharedLinkRepository {
       .select((eb) => eb.fn.toJson('album').$castTo<Album | null>().as('album'))
       .where((eb) => eb.or([eb('shared_link.type', '=', SharedLinkType.Individual), eb('album.id', 'is not', null)]))
       .$if(!!albumId, (eb) => eb.where('shared_link.albumId', '=', albumId!))
+      .$if(!!id, (eb) => eb.where('shared_link.id', '=', id!))
       .orderBy('shared_link.createdAt', 'desc')
       .distinctOn(['shared_link.createdAt'])
       .execute();

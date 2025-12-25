@@ -52,7 +52,7 @@
     bind:albumGroupIds={albumGroups}
   >
     {#snippet empty()}
-      <EmptyPlaceholder text={$t('no_albums_message')} onClick={() => createAlbumAndRedirect()} />
+      <EmptyPlaceholder text={$t('no_albums_message')} onClick={() => createAlbumAndRedirect()} class="mt-10 mx-auto" />
     {/snippet}
   </Albums>
 </UserPageLayout>

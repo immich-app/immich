@@ -7,6 +7,8 @@ import {
   AssetVisibility,
   MemoryType,
   Permission,
+  PluginContext,
+  PluginTriggerType,
   SharedLinkType,
   SourceType,
   UserAvatarColor,
@@ -14,7 +16,10 @@ import {
 } from 'src/enum';
 import { AlbumTable } from 'src/schema/tables/album.table';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
+import { PluginActionTable, PluginFilterTable, PluginTable } from 'src/schema/tables/plugin.table';
+import { WorkflowActionTable, WorkflowFilterTable, WorkflowTable } from 'src/schema/tables/workflow.table';
 import { UserMetadataItem } from 'src/types';
+import type { ActionConfig, FilterConfig, JSONSchema } from 'src/types/plugin-schema.types';
 
 export type AuthUser = {
   id: string;
@@ -117,7 +122,6 @@ export type Asset = {
   originalFileName: string;
   originalPath: string;
   ownerId: string;
-  sidecarPath: string | null;
   type: AssetType;
 };
 
@@ -149,13 +153,6 @@ export type StorageAsset = {
   ownerId: string;
   files: AssetFile[];
   encodedVideoPath: string | null;
-};
-
-export type SidecarWriteAsset = {
-  id: string;
-  sidecarPath: string | null;
-  originalPath: string;
-  tags: Array<{ value: string }>;
 };
 
 export type Stack = {
@@ -243,7 +240,7 @@ export type Session = {
   isPendingSyncReset: boolean;
 };
 
-export type Exif = Omit<Selectable<AssetExifTable>, 'updatedAt' | 'updateId'>;
+export type Exif = Omit<Selectable<AssetExifTable>, 'updatedAt' | 'updateId' | 'lockedProperties'>;
 
 export type Person = {
   createdAt: Date;
@@ -277,6 +274,45 @@ export type AssetFace = {
   updateId: string;
 };
 
+export type Plugin = Selectable<PluginTable>;
+
+export type PluginFilter = Selectable<PluginFilterTable> & {
+  methodName: string;
+  title: string;
+  description: string;
+  supportedContexts: PluginContext[];
+  schema: JSONSchema | null;
+};
+
+export type PluginAction = Selectable<PluginActionTable> & {
+  methodName: string;
+  title: string;
+  description: string;
+  supportedContexts: PluginContext[];
+  schema: JSONSchema | null;
+};
+
+export type Workflow = Selectable<WorkflowTable> & {
+  triggerType: PluginTriggerType;
+  name: string | null;
+  description: string;
+  enabled: boolean;
+};
+
+export type WorkflowFilter = Selectable<WorkflowFilterTable> & {
+  workflowId: string;
+  pluginFilterId: string;
+  filterConfig: FilterConfig | null;
+  order: number;
+};
+
+export type WorkflowAction = Selectable<WorkflowActionTable> & {
+  workflowId: string;
+  pluginActionId: string;
+  actionConfig: ActionConfig | null;
+  order: number;
+};
+
 const userColumns = ['id', 'name', 'email', 'avatarColor', 'profileImagePath', 'profileChangedAt'] as const;
 const userWithPrefixColumns = [
   'user2.id',
@@ -303,7 +339,6 @@ export const columns = {
     'asset.originalFileName',
     'asset.originalPath',
     'asset.ownerId',
-    'asset.sidecarPath',
     'asset.type',
   ],
   assetFiles: ['asset_file.id', 'asset_file.path', 'asset_file.type'],
@@ -418,4 +453,25 @@ export const columns = {
     'asset_exif.state',
     'asset_exif.timeZone',
   ],
+  plugin: [
+    'plugin.id as id',
+    'plugin.name as name',
+    'plugin.title as title',
+    'plugin.description as description',
+    'plugin.author as author',
+    'plugin.version as version',
+    'plugin.wasmPath as wasmPath',
+    'plugin.createdAt as createdAt',
+    'plugin.updatedAt as updatedAt',
+  ],
 } as const;
+
+export type LockableProperty = (typeof lockableProperties)[number];
+export const lockableProperties = [
+  'description',
+  'dateTimeOriginal',
+  'latitude',
+  'longitude',
+  'rating',
+  'timeZone',
+] as const;
