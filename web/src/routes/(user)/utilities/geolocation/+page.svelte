@@ -10,6 +10,7 @@
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import GeolocationUpdateConfirmModal from '$lib/modals/GeolocationUpdateConfirmModal.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
+  import { user } from '$lib/stores/user.store';
   import { cancelMultiselect } from '$lib/utils/asset-utils';
   import { setQueryValue } from '$lib/utils/navigation';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
@@ -31,12 +32,13 @@
   let locationUpdated = $state(false);
 
   let timelineManager = $state<TimelineManager>() as TimelineManager;
-  const options = {
+  const options = $derived({
     visibility: AssetVisibility.Timeline,
     withStacked: true,
     withPartners: true,
     withCoordinates: true,
-  };
+    _accountSwitchId: $user?.id,
+  });
 
   const handleUpdate = async () => {
     const confirmed = await modalManager.show(GeolocationUpdateConfirmModal, {

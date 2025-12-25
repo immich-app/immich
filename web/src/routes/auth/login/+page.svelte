@@ -5,11 +5,13 @@
   import { eventManager } from '$lib/managers/event-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
+  import { getSavedAccountById, updateSavedAccount } from '$lib/stores/saved-accounts.store';
+  import { resetSavedUser } from '$lib/stores/user.store';
   import { oauth } from '$lib/utils';
   import { saveCurrentAccountFromLogin } from '$lib/utils/auth';
   import { getServerErrorMessage, handleError } from '$lib/utils/handle-error';
   import { login, type LoginResponseDto } from '@immich/sdk';
-  import { Alert, Button, Field, Input, PasswordInput, Stack } from '@immich/ui';
+  import { Alert, Button, Field, Input, PasswordInput, Stack, toastManager } from '@immich/ui';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
@@ -26,10 +28,22 @@
   let oauthError = $state('');
   let loading = $state(false);
   let oauthLoading = $state(true);
+  let reauthAccountEmail = $state('');
 
   const serverConfig = $derived(serverConfigManager.value);
+  const isAddingAccount = $derived(data.addAccount);
+  const isReauthenticating = $derived(!!data.reauthAccountId);
 
   const onSuccess = async (user: LoginResponseDto) => {
+    // Show appropriate toast message based on flow
+    if (isAddingAccount) {
+      toastManager.success($t('account_added'));
+    } else if (isReauthenticating) {
+      toastManager.success($t('session_refreshed'));
+    }
+
+    resetSavedUser();
+
     await goto(data.continueUrl, { invalidateAll: true });
     eventManager.emit('AuthLogin', user);
   };
@@ -38,6 +52,14 @@
   const onOnboarding = () => goto(AppRoute.AUTH_ONBOARDING);
 
   onMount(async () => {
+    if (data.reauthAccountId) {
+      const account = await getSavedAccountById(data.reauthAccountId);
+      if (account) {
+        email = account.email;
+        reauthAccountEmail = account.email;
+      }
+    }
+
     if (!featureFlagsManager.value.oauth) {
       oauthLoading = false;
       return;
@@ -91,6 +113,13 @@
       // This ensures the token is captured even for onboarding/password-change flows
       await saveCurrentAccountFromLogin(user);
 
+      if (data.reauthAccountId) {
+        await updateSavedAccount(data.reauthAccountId, {
+          token: user.accessToken,
+          isExpired: false,
+        });
+      }
+
       if (user.isAdmin && !serverConfig.isOnboarded) {
         await onOnboarding();
         return;
@@ -143,6 +172,18 @@
       </Alert>
     {/if}
 
+    {#if isAddingAccount}
+      <Alert color="primary" class="mb-2">
+        {$t('adding_new_account')}
+      </Alert>
+    {/if}
+
+    {#if isReauthenticating && reauthAccountEmail}
+      <Alert color="warning" class="mb-2">
+        {$t('reauthenticate_account', { values: { email: reauthAccountEmail } })}
+      </Alert>
+    {/if}
+
     {#if !oauthLoading && featureFlagsManager.value.passwordLogin}
       <form {onsubmit} class="flex flex-col gap-4">
         {#if errorMessage}
@@ -150,7 +191,14 @@
         {/if}
 
         <Field label={$t('email')}>
-          <Input id="email" name="email" type="email" autocomplete="email" bind:value={email} />
+          <Input
+            id="email"
+            name="email"
+            type="email"
+            autocomplete="email"
+            bind:value={email}
+            readonly={isReauthenticating && !!reauthAccountEmail}
+          />
         </Field>
 
         <Field label={$t('password')}>

@@ -76,14 +76,14 @@ export const closeWebsocketConnection = () => {
 
 /**
  * Reconnect the websocket connection with new credentials.
- * Used when switching accounts.
+ * Used when switching accounts or logging into a new account.
  */
 export const reconnectWebsocket = () => {
   closeWebsocketConnection();
   openWebsocketConnection();
 };
 
-// Handle account switch by reconnecting websocket
-eventManager.on('AuthAccountSwitch', () => {
+// Handle new login (e.g., adding a new account) by reconnecting websocket
+eventManager.on('AuthLogin', () => {
   reconnectWebsocket();
 });

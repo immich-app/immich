@@ -18,5 +18,7 @@ export const load = (async ({ parent, url }) => {
       title: $t('login'),
     },
     continueUrl: url.searchParams.get('continue') || AppRoute.PHOTOS,
+    addAccount: url.searchParams.get('addAccount') === 'true',
+    reauthAccountId: url.searchParams.get('reauth') || null,
   };
 }) satisfies PageLoad;

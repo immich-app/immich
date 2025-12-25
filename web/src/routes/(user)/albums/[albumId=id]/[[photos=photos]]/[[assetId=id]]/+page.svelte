@@ -312,9 +312,10 @@
         visibility: AssetVisibility.Timeline,
         withPartners: true,
         timelineAlbumId: albumId,
+        _accountSwitchId: $user?.id,
       };
     }
-    return { albumId, order: albumOrder };
+    return { albumId, order: albumOrder, _accountSwitchId: $user?.id };
   });
 
   const isShared = $derived(viewMode === AlbumPageViewMode.SELECT_ASSETS ? false : album.albumUsers.length > 0);

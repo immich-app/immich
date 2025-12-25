@@ -28,14 +28,15 @@ import { SvelteDate, SvelteSet } from 'svelte/reactivity';
 import { DayGroup } from './day-group.svelte';
 import { isMismatched, updateObject } from './internal/utils.svelte';
 import { MonthGroup } from './month-group.svelte';
-import type {
-  AssetDescriptor,
-  Direction,
-  MoveAsset,
-  ScrubberMonth,
-  TimelineAsset,
-  TimelineManagerOptions,
-  Viewport,
+import {
+  getApiOptions,
+  type AssetDescriptor,
+  type Direction,
+  type MoveAsset,
+  type ScrubberMonth,
+  type TimelineAsset,
+  type TimelineManagerOptions,
+  type Viewport,
 } from './types';
 
 type ViewportTopMonthIntersection = {
@@ -226,7 +227,7 @@ export class TimelineManager extends VirtualScrollManager {
   async #initializeMonthGroups() {
     const timebuckets = await getTimeBuckets({
       ...authManager.params,
-      ...this.#options,
+      ...getApiOptions(this.#options),
     });
 
     this.months = timebuckets.map((timeBucket) => {

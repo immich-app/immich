@@ -14,6 +14,7 @@
   import { AppRoute, AssetAction } from '$lib/constants';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
+  import { user } from '$lib/stores/user.store';
   import { AssetVisibility, lockAuthSession } from '@immich/sdk';
   import { Button } from '@immich/ui';
   import { mdiDotsVertical, mdiLockOutline } from '@mdi/js';
@@ -27,7 +28,7 @@
   let { data }: Props = $props();
 
   let timelineManager = $state<TimelineManager>() as TimelineManager;
-  const options = { visibility: AssetVisibility.Locked };
+  const options = $derived({ visibility: AssetVisibility.Locked, _accountSwitchId: $user?.id });
 
   const assetInteraction = new AssetInteraction();
 

@@ -22,7 +22,7 @@ export type MemoryAsset = MemoryIndex & {
 class MemoryStoreSvelte {
   constructor() {
     eventManager.on('AuthLogout', () => this.clearCache());
-    eventManager.on('AuthAccountSwitch', () => this.clearCache());
+    eventManager.on('AuthLogin', () => this.clearCache());
   }
 
   memories = $state<MemoryResponseDto[]>([]);

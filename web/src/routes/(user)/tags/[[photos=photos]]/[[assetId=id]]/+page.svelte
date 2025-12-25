@@ -47,7 +47,7 @@
   const tag = $derived(tree.traverse(data.path));
 
   let timelineManager = $state<TimelineManager>() as TimelineManager;
-  const options = $derived({ deferInit: !tag, tagId: tag?.id });
+  const options = $derived({ deferInit: !tag, tagId: tag?.id, _accountSwitchId: $user?.id });
 
   const handleNavigation = (tag: string) => navigateToView(joinPaths(data.path, tag));
 

@@ -10,8 +10,6 @@ export interface SavedAccount {
   email: string;
   // Path to user's profile image
   profileImagePath: string | null;
-  // The Immich server URL this account belongs to
-  serverUrl: string;
   // Authentication token (encrypted for storage)
   token: string;
   // Optional expiration timestamp
@@ -30,6 +28,11 @@ interface StoredAccount extends Omit<SavedAccount, 'token'> {
 
 const STORAGE_KEY = 'immich_saved_accounts';
 const CRYPTO_KEY_STORAGE = 'immich_accounts_key';
+const ACTIVE_ACCOUNT_KEY = 'immich_active_account_id';
+
+// Reactive state for saved accounts - updated when accounts change
+type SavedAccountsListener = (accounts: SavedAccount[]) => void;
+const savedAccountsListeners: Set<SavedAccountsListener> = new Set();
 
 /**
  * Get or create the encryption key for token storage.
@@ -47,7 +50,7 @@ const getOrCreateCryptoKey = async (): Promise<CryptoKey | null> => {
 
     if (storedKey) {
       // Import existing key
-      const keyData = Uint8Array.from(atob(storedKey), (c) => c.charCodeAt(0));
+      const keyData = Uint8Array.from(atob(storedKey), (c) => c.codePointAt(0)!);
       return await crypto.subtle.importKey('raw', keyData, { name: 'AES-GCM' }, true, ['encrypt', 'decrypt']);
     }
 
@@ -56,7 +59,7 @@ const getOrCreateCryptoKey = async (): Promise<CryptoKey | null> => {
 
     // Export and store the key
     const exportedKey = await crypto.subtle.exportKey('raw', key);
-    const keyBase64 = btoa(String.fromCharCode(...new Uint8Array(exportedKey)));
+    const keyBase64 = btoa(String.fromCodePoint(...new Uint8Array(exportedKey)));
     localStorage.setItem(CRYPTO_KEY_STORAGE, keyBase64);
 
     return key;
@@ -80,8 +83,8 @@ const encryptToken = async (token: string): Promise<{ encrypted: string; iv: str
     const encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, encodedToken);
 
     return {
-      encrypted: btoa(String.fromCharCode(...new Uint8Array(encrypted))),
-      iv: btoa(String.fromCharCode(...iv)),
+      encrypted: btoa(String.fromCodePoint(...new Uint8Array(encrypted))),
+      iv: btoa(String.fromCodePoint(...iv)),
     };
   } catch (error) {
     console.error('Failed to encrypt token:', error);
@@ -97,8 +100,8 @@ const decryptToken = async (encrypted: string, ivBase64: string): Promise<string
   }
 
   try {
-    const iv = Uint8Array.from(atob(ivBase64), (c) => c.charCodeAt(0));
-    const encryptedData = Uint8Array.from(atob(encrypted), (c) => c.charCodeAt(0));
+    const iv = Uint8Array.from(atob(ivBase64), (c) => c.codePointAt(0)!);
+    const encryptedData = Uint8Array.from(atob(encrypted), (c) => c.codePointAt(0)!);
 
     const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, encryptedData);
 
@@ -128,7 +131,7 @@ const readFromStorage = async (): Promise<SavedAccount[]> => {
     for (const account of storedAccounts) {
       const token = await decryptToken(account.encryptedToken, account.iv);
       if (token) {
-        const { encryptedToken: _, iv: __, ...rest } = account;
+        const { encryptedToken: _encryptedToken, iv: _iv, ...rest } = account;
         accounts.push({ ...rest, token });
       }
     }
@@ -137,6 +140,14 @@ const readFromStorage = async (): Promise<SavedAccount[]> => {
   } catch (error) {
     console.error('Failed to read saved accounts from storage:', error);
     return [];
+  }
+};
+
+// Notify all listeners that saved accounts have changed
+const notifySavedAccountsChanged = async (): Promise<void> => {
+  const accounts = await readFromStorage();
+  for (const listener of savedAccountsListeners) {
+    listener(accounts);
   }
 };
 
@@ -162,6 +173,8 @@ const writeToStorage = async (accounts: SavedAccount[]): Promise<void> => {
     }
 
     localStorage.setItem(STORAGE_KEY, JSON.stringify(storedAccounts));
+    // Notify listeners of the change
+    await notifySavedAccountsChanged();
   } catch (error) {
     console.error('Failed to write saved accounts to storage:', error);
   }
@@ -172,54 +185,33 @@ export const getSavedAccounts = async (): Promise<SavedAccount[]> => {
   return readFromStorage();
 };
 
-// Get saved accounts grouped by server URL
-export const getSavedAccountsByServer = async (): Promise<Map<string, SavedAccount[]>> => {
-  const accounts = await getSavedAccounts();
-  const grouped = new Map<string, SavedAccount[]>();
-
-  for (const account of accounts) {
-    const serverAccounts = grouped.get(account.serverUrl) || [];
-    serverAccounts.push(account);
-    grouped.set(account.serverUrl, serverAccounts);
-  }
-
-  return grouped;
-};
-
 // Find a saved account by ID
 export const getSavedAccountById = async (accountId: string): Promise<SavedAccount | undefined> => {
   const accounts = await getSavedAccounts();
   return accounts.find((account) => account.id === accountId);
 };
 
-// Find a saved account by email and server URL
-export const getSavedAccountByEmailAndServer = async (
-  email: string,
-  serverUrl: string,
-): Promise<SavedAccount | undefined> => {
+// Find a saved account by email
+export const getSavedAccountByEmail = async (email: string): Promise<SavedAccount | undefined> => {
   const accounts = await getSavedAccounts();
-  return accounts.find(
-    (account) => account.email.toLowerCase() === email.toLowerCase() && account.serverUrl === serverUrl,
-  );
+  return accounts.find((account) => account.email.toLowerCase() === email.toLowerCase());
 };
 
-// Add a new saved account or update if it already exists (by email + server)
+// Add a new saved account or update if it already exists (by email)
 export const addSavedAccount = async (account: SavedAccount): Promise<void> => {
   const accounts = await getSavedAccounts();
-  const existingIndex = accounts.findIndex(
-    (a) => a.email.toLowerCase() === account.email.toLowerCase() && a.serverUrl === account.serverUrl,
-  );
+  const existingIndex = accounts.findIndex((a) => a.email.toLowerCase() === account.email.toLowerCase());
 
-  if (existingIndex >= 0) {
+  if (existingIndex === -1) {
+    // Add new account
+    accounts.push(account);
+  } else {
     // Update existing account
     accounts[existingIndex] = {
       ...accounts[existingIndex],
       ...account,
       isExpired: false, // Reset expired status on update
     };
-  } else {
-    // Add new account
-    accounts.push(account);
   }
 
   await writeToStorage(accounts);
@@ -237,7 +229,7 @@ export const updateSavedAccount = async (accountId: string, updates: Partial<Sav
   const accounts = await getSavedAccounts();
   const index = accounts.findIndex((account) => account.id === accountId);
 
-  if (index >= 0) {
+  if (index !== -1) {
     accounts[index] = {
       ...accounts[index],
       ...updates,
@@ -252,9 +244,10 @@ export const markAccountAsExpired = async (accountId: string): Promise<void> => 
 };
 
 // Clear all saved accounts
-export const clearAllSavedAccounts = (): void => {
+export const clearAllSavedAccounts = async (): Promise<void> => {
   if (browser) {
     localStorage.removeItem(STORAGE_KEY);
+    await notifySavedAccountsChanged();
   }
 };
 
@@ -270,10 +263,48 @@ export const hasOtherSavedAccounts = async (currentAccountId: string): Promise<b
   return accounts.some((account) => account.id !== currentAccountId);
 };
 
-// Generate the current server URL from the browser's location
-export const getCurrentServerUrl = (): string => {
+// Subscribe to saved accounts changes
+export const subscribeSavedAccounts = (listener: SavedAccountsListener): (() => void) => {
+  savedAccountsListeners.add(listener);
+  // Immediately call with current value
+  void readFromStorage().then(listener);
+  // Return unsubscribe function
+  return () => {
+    savedAccountsListeners.delete(listener);
+  };
+};
+
+// Get the currently active account ID (the account that was switched to)
+export const getActiveAccountId = (): string | null => {
   if (!browser) {
-    return '';
+    return null;
   }
-  return globalThis.location.origin;
+  return localStorage.getItem(ACTIVE_ACCOUNT_KEY);
+};
+
+// Set the currently active account ID
+export const setActiveAccountId = (accountId: string | null): void => {
+  if (!browser) {
+    return;
+  }
+  if (accountId) {
+    localStorage.setItem(ACTIVE_ACCOUNT_KEY, accountId);
+  } else {
+    localStorage.removeItem(ACTIVE_ACCOUNT_KEY);
+  }
+};
+
+// Get the active account with its token (for restoring session on page load)
+export const getActiveAccount = async (): Promise<SavedAccount | null> => {
+  const activeId = getActiveAccountId();
+  if (!activeId) {
+    return null;
+  }
+  const account = await getSavedAccountById(activeId);
+  return account ?? null;
+};
+
+// Clear the active account (on logout)
+export const clearActiveAccount = (): void => {
+  setActiveAccountId(null);
 };

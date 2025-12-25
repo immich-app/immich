@@ -27,4 +27,4 @@ const reset = () => {
 };
 
 eventManager.on('AuthLogout', () => reset());
-eventManager.on('AuthAccountSwitch', () => reset());
+eventManager.on('AuthLogin', () => reset());

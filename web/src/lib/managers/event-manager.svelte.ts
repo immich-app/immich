@@ -16,7 +16,6 @@ export type Events = {
   UserLogin: [];
   AuthLogin: [LoginResponseDto];
   AuthLogout: [];
-  AuthAccountSwitch: [{ previousUserId: string; newUserId: string }];
   LanguageChange: [{ name: string; code: string; rtl?: boolean }];
   ThemeChange: [ThemeSetting];
 

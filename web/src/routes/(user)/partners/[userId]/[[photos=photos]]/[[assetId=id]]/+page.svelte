@@ -9,6 +9,7 @@
   import Timeline from '$lib/components/timeline/Timeline.svelte';
   import { AppRoute } from '$lib/constants';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
+  import { user } from '$lib/stores/user.store';
   import { AssetVisibility } from '@immich/sdk';
   import { mdiArrowLeft, mdiPlus } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -24,6 +25,7 @@
     userId: data.partner.id,
     visibility: AssetVisibility.Timeline,
     withStacked: true,
+    _accountSwitchId: $user?.id,
   });
 
   const assetInteraction = new AssetInteraction();

@@ -1,25 +1,42 @@
 <script lang="ts">
+  import { user } from '$lib/stores/user.store';
   import { userInteraction } from '$lib/stores/user.svelte';
   import { getAssetThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { getAllAlbums, type AlbumResponseDto } from '@immich/sdk';
-  import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
 
   let albums: AlbumResponseDto[] = $state([]);
+  let latestRequestId = 0;
 
-  onMount(async () => {
+  $effect(() => {
+    const currentUserId = $user?.id;
+    if (!currentUserId) {
+      albums = [];
+      return;
+    }
+
     if (userInteraction.recentAlbums) {
       albums = userInteraction.recentAlbums;
       return;
     }
-    try {
-      const allAlbums = await getAllAlbums({});
-      albums = allAlbums.sort((a, b) => (a.updatedAt > b.updatedAt ? -1 : 1)).slice(0, 3);
-      userInteraction.recentAlbums = albums;
-    } catch (error) {
-      handleError(error, $t('failed_to_load_assets'));
-    }
+
+    const requestId = ++latestRequestId;
+
+    getAllAlbums({})
+      .then((allAlbums) => {
+        if (requestId !== latestRequestId) {
+          return;
+        }
+        const recentAlbums = allAlbums.sort((a, b) => (a.updatedAt > b.updatedAt ? -1 : 1)).slice(0, 3);
+        albums = recentAlbums;
+        userInteraction.recentAlbums = recentAlbums;
+      })
+      .catch((error) => {
+        if (requestId === latestRequestId) {
+          handleError(error, $t('failed_to_load_assets'));
+        }
+      });
   });
 </script>
 

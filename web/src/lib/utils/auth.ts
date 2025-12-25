@@ -2,12 +2,15 @@ import { browser } from '$app/environment';
 import { purchaseStore } from '$lib/stores/purchase.store';
 import {
   addSavedAccount,
-  getCurrentServerUrl,
+  clearActiveAccount,
+  getActiveAccount,
+  getSavedAccountByEmail,
   getSavedAccountById,
   markAccountAsExpired,
+  setActiveAccountId,
   type SavedAccount,
 } from '$lib/stores/saved-accounts.store';
-import { preferences as preferences$, resetSavedUser, user as user$ } from '$lib/stores/user.store';
+import { preferences as preferences$, user as user$ } from '$lib/stores/user.store';
 import { userInteraction } from '$lib/stores/user.svelte';
 import type { LoginResponseDto } from '@immich/sdk';
 import { defaults, getAboutInfo, getMyPreferences, getMyUser, getStorage, validateAccessToken } from '@immich/sdk';
@@ -128,39 +131,49 @@ export const clearCurrentSessionToken = (): void => {
  * @param loginResponse The response from the login endpoint
  */
 export const saveCurrentAccountFromLogin = async (loginResponse: LoginResponseDto): Promise<void> => {
-  const serverUrl = getCurrentServerUrl();
-
   const savedAccount: SavedAccount = {
     id: loginResponse.userId,
     name: loginResponse.name,
     email: loginResponse.userEmail,
     profileImagePath: loginResponse.profileImagePath || null,
-    serverUrl,
     token: loginResponse.accessToken,
     isExpired: false,
   };
 
   await addSavedAccount(savedAccount);
   setCurrentSessionToken(loginResponse.accessToken);
+
+  // Clear any active account since this login establishes a new cookie-based session.
+  // The newly logged-in user is now authenticated via cookie, not header.
+  clearActiveAccount();
+  // Also clear the auth header in case one was set
+  if (defaults.headers) {
+    delete defaults.headers[USER_TOKEN_HEADER];
+  }
 };
 
 // Save the current user as a saved account (from existing session)
 export const saveCurrentAccount = async (): Promise<void> => {
   const user = get(user$);
-  const token = getCurrentSessionToken();
+  let token = getCurrentSessionToken();
+
+  // If no in-memory token (e.g., after page reload), try to get it from saved accounts
+  if (!token && user) {
+    const existingAccount = await getSavedAccountByEmail(user.email);
+    if (existingAccount && !existingAccount.isExpired) {
+      token = existingAccount.token;
+    }
+  }
 
   if (!user || !token) {
     return;
   }
-
-  const serverUrl = getCurrentServerUrl();
 
   const savedAccount: SavedAccount = {
     id: user.id,
     name: user.name,
     email: user.email,
     profileImagePath: user.profileImagePath || null,
-    serverUrl,
     token,
     isExpired: false,
   };
@@ -200,11 +213,9 @@ export const switchToAccount = async (accountId: string): Promise<boolean> => {
       return false;
     }
 
-    // Reset current user state before loading new user
-    resetSavedUser();
-
-    // Load the new user data
-    const newUser = await loadUser();
+    // Load the new user data directly (don't reset first to avoid UI flicker)
+    // We bypass the cache check by fetching directly
+    const [newUser, newPreferences, serverInfo] = await Promise.all([getMyUser(), getMyPreferences(), getAboutInfo()]);
 
     if (!newUser) {
       // Something went wrong loading the user
@@ -213,8 +224,20 @@ export const switchToAccount = async (accountId: string): Promise<boolean> => {
       return false;
     }
 
+    // Update stores with the new user data
+    user$.set(newUser);
+    preferences$.set(newPreferences);
+
+    // Check for license status
+    if (serverInfo.licensed || newUser.license?.activatedAt) {
+      purchaseStore.setPurchaseStatus(true);
+    }
+
     // Update the current session token
     setCurrentSessionToken(account.token);
+
+    // Persist the active account ID so it survives page refresh
+    setActiveAccountId(accountId);
 
     return true;
   } catch (error) {
@@ -233,4 +256,46 @@ export const clearAuthHeader = (): void => {
     delete defaults.headers[USER_TOKEN_HEADER];
   }
   clearCurrentSessionToken();
+  // Clear the active account so page refresh won't try to restore it
+  clearActiveAccount();
+};
+
+/**
+ * Restore the active account session on page load.
+ * This should be called during app initialization to restore
+ * the token header if the user had switched accounts before refresh.
+ * If the stored token is invalid/expired, it clears the active account.
+ */
+export const restoreActiveAccountSession = async (): Promise<boolean> => {
+  const activeAccount = await getActiveAccount();
+
+  if (!activeAccount) {
+    return false;
+  }
+
+  // Temporarily set the token header to validate it
+  defaults.headers = defaults.headers || {};
+  defaults.headers[USER_TOKEN_HEADER] = activeAccount.token;
+
+  try {
+    // Validate the token before fully restoring the session
+    const response = await validateAccessToken();
+
+    if (!response.authStatus) {
+      // Token is invalid/expired, clear the active account
+      delete defaults.headers[USER_TOKEN_HEADER];
+      await markAccountAsExpired(activeAccount.id);
+      clearActiveAccount();
+      return false;
+    }
+
+    // Token is valid, complete the restoration
+    setCurrentSessionToken(activeAccount.token);
+    return true;
+  } catch {
+    // Request failed, token is likely invalid
+    delete defaults.headers[USER_TOKEN_HEADER];
+    clearActiveAccount();
+    return false;
+  }
 };

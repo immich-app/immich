@@ -8,6 +8,8 @@ export type AssetApiGetTimeBucketsRequest = Parameters<typeof import('@immich/sd
 export type TimelineManagerOptions = Omit<AssetApiGetTimeBucketsRequest, 'size'> & {
   timelineAlbumId?: string;
   deferInit?: boolean;
+  /** Used to force timeline re-initialization when switching accounts (not sent to API) */
+  _accountSwitchId?: string;
 };
 
 export type AssetDescriptor = { id: string };
@@ -93,4 +95,11 @@ export type TimelineManagerLayoutOptions = {
 export interface UpdateGeometryOptions {
   invalidateHeight: boolean;
   noDefer?: boolean;
+}
+
+/** Strips internal-only properties before passing options to the API */
+export function getApiOptions(options: TimelineManagerOptions): AssetApiGetTimeBucketsRequest {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { _accountSwitchId, timelineAlbumId, deferInit, ...apiOptions } = options;
+  return apiOptions;
 }

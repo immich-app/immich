@@ -2,11 +2,9 @@ import { goto } from '$app/navigation';
 import { page } from '$app/state';
 import { AppRoute } from '$lib/constants';
 import { eventManager } from '$lib/managers/event-manager.svelte';
-import { user as user$ } from '$lib/stores/user.store';
 import { clearAuthHeader, switchToAccount as switchToAccountUtil } from '$lib/utils/auth';
 import { isSharedLinkRoute } from '$lib/utils/navigation';
 import { logout } from '@immich/sdk';
-import { get } from 'svelte/store';
 
 class AuthManager {
   isSharedLink = $derived(isSharedLinkRoute(page.route?.id));
@@ -18,20 +16,10 @@ class AuthManager {
    * @returns true if switch was successful, false if the session is invalid/expired
    */
   async switchToAccount(accountId: string): Promise<boolean> {
-    const previousUser = get(user$);
-    const previousUserId = previousUser?.id ?? '';
-
     const success = await switchToAccountUtil(accountId);
 
     if (success) {
-      const newUser = get(user$);
-      const newUserId = newUser?.id ?? '';
-
-      // Emit the account switch event
-      eventManager.emit('AuthAccountSwitch', { previousUserId, newUserId });
-
-      // Navigate to photos page after successful switch
-      await goto(AppRoute.PHOTOS, { invalidateAll: true });
+      globalThis.location.href = AppRoute.PHOTOS;
     }
 
     return success;
@@ -49,7 +37,6 @@ class AuthManager {
       console.log('Error logging out:', error);
     }
 
-    // Clear any auth headers set for account switching
     clearAuthHeader();
 
     redirectUri = redirectUri ?? AppRoute.AUTH_LOGIN;
