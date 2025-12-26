@@ -8,6 +8,7 @@ import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/backup_album.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/models/auth/auth_state.model.dart';
+import 'package:immich_mobile/models/backup/adaptive_state.model.dart';
 import 'package:immich_mobile/models/backup/available_album.model.dart';
 import 'package:immich_mobile/models/backup/backup_candidate.model.dart';
 import 'package:immich_mobile/models/backup/backup_state.model.dart';
@@ -22,9 +23,11 @@ import 'package:immich_mobile/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/repositories/album_media.repository.dart';
 import 'package:immich_mobile/repositories/backup.repository.dart';
 import 'package:immich_mobile/repositories/file_media.repository.dart';
+import 'package:immich_mobile/services/adaptive_throttle.service.dart';
 import 'package:immich_mobile/services/background.service.dart';
 import 'package:immich_mobile/services/backup.service.dart';
 import 'package:immich_mobile/services/backup_album.service.dart';
+import 'package:immich_mobile/services/backup_recovery.service.dart';
 import 'package:immich_mobile/services/server_info.service.dart';
 import 'package:immich_mobile/utils/backup_progress.dart';
 import 'package:immich_mobile/utils/diff.dart';
@@ -43,6 +46,8 @@ final backupProvider = StateNotifierProvider<BackupNotifier, BackUpState>((ref) 
     ref.watch(albumMediaRepositoryProvider),
     ref.watch(fileMediaRepositoryProvider),
     ref.watch(backupAlbumServiceProvider),
+    ref.watch(adaptiveThrottleControllerProvider),
+    ref.watch(backupRecoveryServiceProvider),
     ref,
   );
 });
@@ -57,6 +62,8 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     this._albumMediaRepository,
     this._fileMediaRepository,
     this._backupAlbumService,
+    this._throttleController,
+    this._recoveryService,
     this.ref,
   ) : super(
         BackUpState(
@@ -101,7 +108,12 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   final AlbumMediaRepository _albumMediaRepository;
   final FileMediaRepository _fileMediaRepository;
   final BackupAlbumService _backupAlbumService;
+  final AdaptiveThrottleController _throttleController;
+  final BackupRecoveryService _recoveryService;
   final Ref ref;
+
+  /// Whether to use adaptive throttling (can be disabled in advanced settings)
+  bool _useAdaptiveBackup = true;
 
   ///
   /// UI INTERACTION
@@ -426,6 +438,9 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   }
 
   /// Invoke backup process
+  /// 
+  /// Uses adaptive throttling to automatically adjust batch sizes and delays
+  /// based on real-time performance metrics.
   Future<void> startBackupProcess() async {
     dPrint(() => "Start backup process");
     assert(state.backupProgress == BackUpProgressEnum.idle);
@@ -451,6 +466,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
       if (assetsWillBeBackup.isEmpty) {
         state = state.copyWith(backupProgress: BackUpProgressEnum.idle);
+        return;
       }
 
       // Perform Backup
@@ -463,19 +479,76 @@ class BackupNotifier extends StateNotifier<BackUpState> {
         state = state.copyWith(iCloudDownloadProgress: progress);
       });
 
-      await _backupService.backupAsset(
-        assetsWillBeBackup,
-        state.cancelToken,
-        pmProgressHandler: pmProgressHandler,
-        onSuccess: _onAssetUploaded,
-        onProgress: _onUploadProgress,
-        onCurrentAsset: _onSetCurrentBackupAsset,
-        onError: _onBackupError,
-      );
+      // Use adaptive backup if enabled, otherwise fall back to standard backup
+      if (_useAdaptiveBackup) {
+        // Listen to throttle controller state changes
+        _throttleController.stateStream.listen((throttleState) {
+          state = state.copyWith(
+            adaptiveState: throttleState,
+            currentBatchNumber: throttleState.currentBatchNumber,
+            totalBatches: throttleState.totalBatches,
+            adaptiveStatusMessage: throttleState.statusMessage,
+          );
+        });
+
+        await _backupService.backupAssetAdaptive(
+          assetsWillBeBackup,
+          state.cancelToken,
+          throttleController: _throttleController,
+          recoveryService: _recoveryService,
+          pmProgressHandler: pmProgressHandler,
+          onSuccess: _onAssetUploaded,
+          onProgress: _onUploadProgress,
+          onCurrentAsset: _onSetCurrentBackupAsset,
+          onError: _onBackupError,
+          onBatchComplete: _onBatchComplete,
+          onStatusUpdate: _onAdaptiveStatusUpdate,
+        );
+      } else {
+        // Fall back to original non-adaptive backup
+        await _backupService.backupAsset(
+          assetsWillBeBackup,
+          state.cancelToken,
+          pmProgressHandler: pmProgressHandler,
+          onSuccess: _onAssetUploaded,
+          onProgress: _onUploadProgress,
+          onCurrentAsset: _onSetCurrentBackupAsset,
+          onError: _onBackupError,
+        );
+      }
+
       await notifyBackgroundServiceCanRun();
     } else {
       await openAppSettings();
     }
+  }
+
+  /// Toggle adaptive backup mode (for advanced settings)
+  void setAdaptiveBackupEnabled(bool enabled) {
+    _useAdaptiveBackup = enabled;
+    if (enabled) {
+      _throttleController.enableAdaptive();
+    }
+  }
+
+  /// Get current adaptive throttle state
+  AdaptiveThrottleState? get adaptiveState => state.adaptiveState;
+
+  /// Callback when a batch completes
+  void _onBatchComplete(
+    dynamic metrics,
+    int batchNumber,
+    int totalBatches,
+  ) {
+    state = state.copyWith(
+      currentBatchNumber: batchNumber,
+      totalBatches: totalBatches,
+    );
+  }
+
+  /// Callback for adaptive system status updates
+  void _onAdaptiveStatusUpdate(String message) {
+    state = state.copyWith(adaptiveStatusMessage: message);
   }
 
   void setAvailableAlbums(availableAlbums) {

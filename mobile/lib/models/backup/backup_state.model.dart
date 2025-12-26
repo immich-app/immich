@@ -2,6 +2,7 @@
 
 import 'package:cancellation_token_http/http.dart';
 import 'package:collection/collection.dart';
+import 'package:immich_mobile/models/backup/adaptive_state.model.dart';
 import 'package:immich_mobile/models/backup/backup_candidate.model.dart';
 
 import 'package:immich_mobile/models/backup/available_album.model.dart';
@@ -43,6 +44,16 @@ class BackUpState {
   // Current Backup Asset
   final CurrentUploadAsset currentUploadAsset;
 
+  // Adaptive throttle state
+  final AdaptiveThrottleState? adaptiveState;
+
+  // Current batch info for UI display
+  final int currentBatchNumber;
+  final int totalBatches;
+
+  // Last status message from adaptive system
+  final String? adaptiveStatusMessage;
+
   const BackUpState({
     required this.backupProgress,
     required this.allAssetsInDatabase,
@@ -66,6 +77,10 @@ class BackUpState {
     required this.allUniqueAssets,
     required this.selectedAlbumsBackupAssetsIds,
     required this.currentUploadAsset,
+    this.adaptiveState,
+    this.currentBatchNumber = 0,
+    this.totalBatches = 0,
+    this.adaptiveStatusMessage,
   });
 
   BackUpState copyWith({
@@ -91,6 +106,10 @@ class BackUpState {
     Set<BackupCandidate>? allUniqueAssets,
     Set<String>? selectedAlbumsBackupAssetsIds,
     CurrentUploadAsset? currentUploadAsset,
+    AdaptiveThrottleState? adaptiveState,
+    int? currentBatchNumber,
+    int? totalBatches,
+    String? adaptiveStatusMessage,
   }) {
     return BackUpState(
       backupProgress: backupProgress ?? this.backupProgress,
@@ -115,12 +134,16 @@ class BackUpState {
       allUniqueAssets: allUniqueAssets ?? this.allUniqueAssets,
       selectedAlbumsBackupAssetsIds: selectedAlbumsBackupAssetsIds ?? this.selectedAlbumsBackupAssetsIds,
       currentUploadAsset: currentUploadAsset ?? this.currentUploadAsset,
+      adaptiveState: adaptiveState ?? this.adaptiveState,
+      currentBatchNumber: currentBatchNumber ?? this.currentBatchNumber,
+      totalBatches: totalBatches ?? this.totalBatches,
+      adaptiveStatusMessage: adaptiveStatusMessage ?? this.adaptiveStatusMessage,
     );
   }
 
   @override
   String toString() {
-    return 'BackUpState(backupProgress: $backupProgress, allAssetsInDatabase: $allAssetsInDatabase, progressInPercentage: $progressInPercentage, progressInFileSize: $progressInFileSize, progressInFileSpeed: $progressInFileSpeed, progressInFileSpeeds: $progressInFileSpeeds, progressInFileSpeedUpdateTime: $progressInFileSpeedUpdateTime, progressInFileSpeedUpdateSentBytes: $progressInFileSpeedUpdateSentBytes, iCloudDownloadProgress: $iCloudDownloadProgress, cancelToken: $cancelToken, serverInfo: $serverInfo, autoBackup: $autoBackup, backgroundBackup: $backgroundBackup, backupRequireWifi: $backupRequireWifi, backupRequireCharging: $backupRequireCharging, backupTriggerDelay: $backupTriggerDelay, availableAlbums: $availableAlbums, selectedBackupAlbums: $selectedBackupAlbums, excludedBackupAlbums: $excludedBackupAlbums, allUniqueAssets: $allUniqueAssets, selectedAlbumsBackupAssetsIds: $selectedAlbumsBackupAssetsIds, currentUploadAsset: $currentUploadAsset)';
+    return 'BackUpState(backupProgress: $backupProgress, allAssetsInDatabase: $allAssetsInDatabase, progressInPercentage: $progressInPercentage, progressInFileSize: $progressInFileSize, progressInFileSpeed: $progressInFileSpeed, progressInFileSpeeds: $progressInFileSpeeds, progressInFileSpeedUpdateTime: $progressInFileSpeedUpdateTime, progressInFileSpeedUpdateSentBytes: $progressInFileSpeedUpdateSentBytes, iCloudDownloadProgress: $iCloudDownloadProgress, cancelToken: $cancelToken, serverInfo: $serverInfo, autoBackup: $autoBackup, backgroundBackup: $backgroundBackup, backupRequireWifi: $backupRequireWifi, backupRequireCharging: $backupRequireCharging, backupTriggerDelay: $backupTriggerDelay, availableAlbums: $availableAlbums, selectedBackupAlbums: $selectedBackupAlbums, excludedBackupAlbums: $excludedBackupAlbums, allUniqueAssets: $allUniqueAssets, selectedAlbumsBackupAssetsIds: $selectedAlbumsBackupAssetsIds, currentUploadAsset: $currentUploadAsset, adaptiveState: $adaptiveState, currentBatchNumber: $currentBatchNumber, totalBatches: $totalBatches, adaptiveStatusMessage: $adaptiveStatusMessage)';
   }
 
   @override
@@ -149,7 +172,11 @@ class BackUpState {
         collectionEquals(other.excludedBackupAlbums, excludedBackupAlbums) &&
         collectionEquals(other.allUniqueAssets, allUniqueAssets) &&
         collectionEquals(other.selectedAlbumsBackupAssetsIds, selectedAlbumsBackupAssetsIds) &&
-        other.currentUploadAsset == currentUploadAsset;
+        other.currentUploadAsset == currentUploadAsset &&
+        other.adaptiveState == adaptiveState &&
+        other.currentBatchNumber == currentBatchNumber &&
+        other.totalBatches == totalBatches &&
+        other.adaptiveStatusMessage == adaptiveStatusMessage;
   }
 
   @override
@@ -175,6 +202,10 @@ class BackUpState {
         excludedBackupAlbums.hashCode ^
         allUniqueAssets.hashCode ^
         selectedAlbumsBackupAssetsIds.hashCode ^
-        currentUploadAsset.hashCode;
+        currentUploadAsset.hashCode ^
+        adaptiveState.hashCode ^
+        currentBatchNumber.hashCode ^
+        totalBatches.hashCode ^
+        adaptiveStatusMessage.hashCode;
   }
 }

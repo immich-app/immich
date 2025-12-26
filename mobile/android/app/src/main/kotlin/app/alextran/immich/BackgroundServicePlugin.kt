@@ -194,7 +194,56 @@ class BackgroundServicePlugin : FlutterPlugin, MethodChannel.MethodCallHandler, 
 
       "manageMediaPermission" -> requestManageMediaPermission(result)
 
+      // App restart for backup recovery (Level 3 recovery)
+      "restartApp" -> {
+        restartApp(result)
+      }
+
       else -> result.notImplemented()
+    }
+  }
+
+  /**
+   * Restart the app for backup recovery.
+   * This is used as a last resort when memory issues cannot be resolved.
+   */
+  private fun restartApp(result: Result) {
+    val ctx = context
+    val activity = activityBinding?.activity
+    
+    if (ctx == null || activity == null) {
+      result.error("RESTART_ERROR", "Context or activity not available", null)
+      return
+    }
+
+    try {
+      val packageManager = ctx.packageManager
+      val intent = packageManager.getLaunchIntentForPackage(ctx.packageName)
+      
+      if (intent == null) {
+        result.error("RESTART_ERROR", "Could not get launch intent", null)
+        return
+      }
+
+      intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+      intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+      intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
+      
+      // Add extra to indicate this is a restart for backup recovery
+      intent.putExtra("backup_recovery_restart", true)
+      
+      ctx.startActivity(intent)
+      
+      // Give the new activity a moment to start
+      android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+        activity.finishAffinity()
+        Runtime.getRuntime().exit(0)
+      }, 500)
+      
+      result.success(true)
+    } catch (e: Exception) {
+      Log.e(TAG, "Failed to restart app: ${e.message}", e)
+      result.error("RESTART_ERROR", "Failed to restart app: ${e.message}", null)
     }
   }
 

@@ -10,7 +10,10 @@ import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/backup_album.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/models/backup/adaptive_state.model.dart';
 import 'package:immich_mobile/models/backup/backup_candidate.model.dart';
+import 'package:immich_mobile/models/backup/backup_checkpoint.model.dart';
+import 'package:immich_mobile/models/backup/backup_metrics.model.dart';
 import 'package:immich_mobile/models/backup/current_upload_asset.model.dart';
 import 'package:immich_mobile/models/backup/error_upload_asset.model.dart';
 import 'package:immich_mobile/models/backup/success_upload_asset.model.dart';
@@ -20,9 +23,11 @@ import 'package:immich_mobile/repositories/album_media.repository.dart';
 import 'package:immich_mobile/repositories/asset.repository.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/repositories/file_media.repository.dart';
+import 'package:immich_mobile/services/adaptive_throttle.service.dart';
 import 'package:immich_mobile/services/album.service.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
+import 'package:immich_mobile/services/backup_recovery.service.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 import 'package:path/path.dart' as p;
@@ -229,6 +234,389 @@ class BackupService {
       if (cmp != 0) return cmp;
       return a.asset.fileCreatedAt.compareTo(b.asset.fileCreatedAt);
     });
+  }
+
+  /// Backup assets using adaptive throttling with automatic batch size adjustment.
+  /// 
+  /// This method processes assets in batches, automatically adjusting batch size
+  /// and delays based on performance metrics. It supports multi-level recovery
+  /// when issues are detected.
+  /// 
+  /// Parameters:
+  /// - [assets]: The assets to backup
+  /// - [cancelToken]: Token to cancel the backup
+  /// - [throttleController]: The adaptive throttle controller
+  /// - [recoveryService]: Service to handle recovery operations
+  /// - [onSuccess]: Called when an asset is successfully uploaded
+  /// - [onProgress]: Called to report upload progress
+  /// - [onCurrentAsset]: Called when starting to upload a new asset
+  /// - [onError]: Called when an asset fails to upload
+  /// - [onBatchComplete]: Called when a batch completes with metrics
+  /// - [onStatusUpdate]: Called with status messages for the UI
+  Future<bool> backupAssetAdaptive(
+    Iterable<BackupCandidate> assets,
+    http.CancellationToken cancelToken, {
+    required AdaptiveThrottleController throttleController,
+    required BackupRecoveryService recoveryService,
+    bool isBackground = false,
+    PMProgressHandler? pmProgressHandler,
+    required void Function(SuccessUploadAsset result) onSuccess,
+    required void Function(int bytes, int totalBytes) onProgress,
+    required void Function(CurrentUploadAsset asset) onCurrentAsset,
+    required void Function(ErrorUploadAsset error) onError,
+    void Function(BackupBatchMetrics metrics, int batchNumber, int totalBatches)? onBatchComplete,
+    void Function(String message)? onStatusUpdate,
+  }) async {
+    final hasPermission = await _checkPermissions();
+    if (!hasPermission) {
+      return false;
+    }
+
+    // Convert to list and sort if background
+    List<BackupCandidate> candidates = assets.toList();
+    if (isBackground) {
+      candidates = _sortPhotosFirst(candidates);
+    }
+
+    final totalAssets = candidates.length;
+    if (totalAssets == 0) {
+      return true;
+    }
+
+    // Initialize throttle controller
+    throttleController.initialize(totalAssets);
+    onStatusUpdate?.call('Starting backup...');
+
+    // Generate session ID for checkpointing
+    final sessionId = DateTime.now().millisecondsSinceEpoch.toString();
+    var checkpoint = BackupCheckpoint.initial(
+      totalAssets: totalAssets,
+      sessionId: sessionId,
+      initialBatchSize: throttleController.currentBatchSize,
+      initialDelayMs: throttleController.delayMs,
+    );
+
+    int cursor = 0;
+    int totalBatches = (totalAssets / throttleController.currentBatchSize).ceil();
+    int currentBatchNumber = 0;
+    bool anyErrors = false;
+
+    _log.info('Starting adaptive backup: $totalAssets assets, '
+        'initial batch size: ${throttleController.currentBatchSize}');
+
+    while (cursor < totalAssets && !cancelToken.isCancelled) {
+      currentBatchNumber++;
+      final batchSize = throttleController.currentBatchSize;
+      final batchEnd = (cursor + batchSize).clamp(0, totalAssets);
+      final batch = candidates.sublist(cursor, batchEnd);
+
+      _log.fine('Processing batch $currentBatchNumber: ${batch.length} assets '
+          '(cursor: $cursor, batchSize: $batchSize)');
+
+      // Process the batch and collect metrics
+      final metrics = await _processBatchWithMetrics(
+        batch,
+        cancelToken,
+        pmProgressHandler: pmProgressHandler,
+        onSuccess: onSuccess,
+        onProgress: onProgress,
+        onCurrentAsset: onCurrentAsset,
+        onError: onError,
+      );
+
+      // Update cursor
+      cursor = batchEnd;
+
+      // Update checkpoint
+      checkpoint = checkpoint.update(
+        newCursorPosition: cursor,
+        additionalUploaded: metrics.successCount,
+        additionalFailed: metrics.failureCount,
+        newBatchSize: throttleController.currentBatchSize,
+        newDelayMs: throttleController.delayMs,
+      );
+
+      // Save checkpoint periodically
+      await recoveryService.saveCheckpoint(checkpoint);
+
+      // Adjust throttle based on metrics
+      throttleController.adjustAfterBatch(metrics);
+
+      // Recalculate total batches based on new batch size
+      final remainingAssets = totalAssets - cursor;
+      totalBatches = currentBatchNumber + (remainingAssets / throttleController.currentBatchSize).ceil();
+      throttleController.updateBatchProgress(currentBatchNumber, totalBatches);
+
+      // Notify batch completion
+      onBatchComplete?.call(metrics, currentBatchNumber, totalBatches);
+
+      // Check if recovery is needed
+      if (throttleController.needsRecovery) {
+        final level = throttleController.recoveryLevel;
+        _log.warning('Recovery needed: $level');
+        
+        onStatusUpdate?.call(throttleController.state.statusMessage);
+        
+        final recoverySuccess = await recoveryService.executeRecovery(
+          level,
+          checkpoint: checkpoint,
+          throttleState: throttleController.state,
+          onStatusUpdate: onStatusUpdate,
+        );
+
+        if (!recoverySuccess && level == RecoveryLevel.restart) {
+          // On iOS, restart isn't supported - we need to pause
+          _log.info('Recovery requires user intervention, pausing backup');
+          anyErrors = true;
+          break;
+        }
+
+        throttleController.clearRecovery();
+      }
+
+      // Track if there were any failures
+      if (metrics.failureCount > 0) {
+        anyErrors = true;
+      }
+
+      // Apply delay between batches (unless cancelled)
+      if (cursor < totalAssets && !cancelToken.isCancelled && throttleController.delayMs > 0) {
+        await Future.delayed(Duration(milliseconds: throttleController.delayMs));
+      }
+
+      // Update status message based on throttle state
+      if (throttleController.state.lastAdjustmentReason != null) {
+        onStatusUpdate?.call(throttleController.state.statusMessage);
+      }
+    }
+
+    // Clear checkpoint on completion
+    if (cursor >= totalAssets) {
+      await recoveryService.clearCheckpoint();
+      _log.info('Adaptive backup completed: $totalAssets assets processed');
+    }
+
+    return !anyErrors && !cancelToken.isCancelled;
+  }
+
+  /// Process a batch of assets and return metrics
+  Future<BackupBatchMetrics> _processBatchWithMetrics(
+    List<BackupCandidate> batch,
+    http.CancellationToken cancelToken, {
+    PMProgressHandler? pmProgressHandler,
+    required void Function(SuccessUploadAsset result) onSuccess,
+    required void Function(int bytes, int totalBytes) onProgress,
+    required void Function(CurrentUploadAsset asset) onCurrentAsset,
+    required void Function(ErrorUploadAsset error) onError,
+  }) async {
+    final startTime = DateTime.now();
+    int successCount = 0;
+    int failureCount = 0;
+    int timeoutErrors = 0;
+    int networkErrors = 0;
+    int serverErrors = 0;
+    int fileErrors = 0;
+
+    final bool isIgnoreIcloudAssets = _appSetting.getSetting(AppSettingsEnum.ignoreIcloudAssets);
+    final shouldSyncAlbums = _appSetting.getSetting(AppSettingsEnum.syncAlbums);
+    final String deviceId = Store.get(StoreKey.deviceId);
+    final String savedEndpoint = Store.get(StoreKey.serverEndpoint);
+    final List<String> duplicatedAssetIds = [];
+
+    for (final candidate in batch) {
+      if (cancelToken.isCancelled) break;
+
+      final Asset asset = candidate.asset;
+      File? file;
+      File? livePhotoFile;
+
+      try {
+        final isAvailableLocally = await asset.local!.isLocallyAvailable(isOrigin: true);
+
+        // Handle getting files from iCloud
+        if (!isAvailableLocally && Platform.isIOS) {
+          if (isIgnoreIcloudAssets) {
+            continue;
+          }
+
+          onCurrentAsset(
+            CurrentUploadAsset(
+              id: asset.localId!,
+              fileCreatedAt: asset.fileCreatedAt.year == 1970 ? asset.fileModifiedAt : asset.fileCreatedAt,
+              fileName: asset.fileName,
+              fileType: _getAssetType(asset.type),
+              iCloudAsset: true,
+            ),
+          );
+
+          file = await asset.local!.loadFile(progressHandler: pmProgressHandler);
+          if (asset.local!.isLivePhoto) {
+            livePhotoFile = await asset.local!.loadFile(withSubtype: true, progressHandler: pmProgressHandler);
+          }
+        } else {
+          file = await asset.local!.originFile.timeout(const Duration(seconds: 5));
+
+          if (asset.local!.isLivePhoto) {
+            livePhotoFile = await asset.local!.originFileWithSubtype.timeout(const Duration(seconds: 5));
+          }
+        }
+
+        if (file != null) {
+          String? originalFileName = await _assetMediaRepository.getOriginalFilename(asset.localId!);
+          originalFileName ??= asset.fileName;
+
+          if (asset.local!.isLivePhoto && livePhotoFile == null) {
+            _log.warning("Failed to obtain motion part of the livePhoto - $originalFileName");
+          }
+
+          final fileStream = file.openRead();
+          final assetRawUploadData = http.MultipartFile(
+            "assetData",
+            fileStream,
+            file.lengthSync(),
+            filename: originalFileName,
+          );
+
+          final baseRequest = MultipartRequest(
+            'POST',
+            Uri.parse('$savedEndpoint/assets'),
+            onProgress: ((bytes, totalBytes) => onProgress(bytes, totalBytes)),
+          );
+
+          baseRequest.headers.addAll(ApiService.getRequestHeaders());
+          baseRequest.fields['deviceAssetId'] = asset.localId!;
+          baseRequest.fields['deviceId'] = deviceId;
+          baseRequest.fields['fileCreatedAt'] = asset.fileCreatedAt.toUtc().toIso8601String();
+          baseRequest.fields['fileModifiedAt'] = asset.fileModifiedAt.toUtc().toIso8601String();
+          baseRequest.fields['isFavorite'] = asset.isFavorite.toString();
+          baseRequest.fields['duration'] = asset.duration.toString();
+          baseRequest.files.add(assetRawUploadData);
+
+          onCurrentAsset(
+            CurrentUploadAsset(
+              id: asset.localId!,
+              fileCreatedAt: asset.fileCreatedAt.year == 1970 ? asset.fileModifiedAt : asset.fileCreatedAt,
+              fileName: originalFileName,
+              fileType: _getAssetType(asset.type),
+              fileSize: file.lengthSync(),
+              iCloudAsset: false,
+            ),
+          );
+
+          String? livePhotoVideoId;
+          if (asset.local!.isLivePhoto && livePhotoFile != null) {
+            livePhotoVideoId = await uploadLivePhotoVideo(originalFileName, livePhotoFile, baseRequest, cancelToken);
+          }
+
+          if (livePhotoVideoId != null) {
+            baseRequest.fields['livePhotoVideoId'] = livePhotoVideoId;
+          }
+
+          final response = await httpClient.send(baseRequest, cancellationToken: cancelToken);
+
+          final responseBody = jsonDecode(await response.stream.bytesToString());
+
+          if (![200, 201].contains(response.statusCode)) {
+            final error = responseBody;
+            final errorMessage = error['message'] ?? error['error'];
+
+            dPrint(
+              () =>
+                  "Error(${error['statusCode']}) uploading ${asset.localId} | $originalFileName | Created on ${asset.fileCreatedAt} | ${error['error']}",
+            );
+
+            onError(
+              ErrorUploadAsset(
+                asset: asset,
+                id: asset.localId!,
+                fileCreatedAt: asset.fileCreatedAt,
+                fileName: originalFileName,
+                fileType: _getAssetType(candidate.asset.type),
+                errorMessage: errorMessage,
+              ),
+            );
+
+            failureCount++;
+            
+            // Categorize error
+            final statusCode = error['statusCode'] as int?;
+            if (statusCode != null && statusCode >= 500) {
+              serverErrors++;
+            }
+
+            if (errorMessage == "Quota has been exceeded!") {
+              break;
+            }
+
+            continue;
+          }
+
+          bool isDuplicate = false;
+          if (response.statusCode == 200) {
+            isDuplicate = true;
+            duplicatedAssetIds.add(asset.localId!);
+          }
+
+          onSuccess(
+            SuccessUploadAsset(
+              candidate: candidate,
+              remoteAssetId: responseBody['id'] as String,
+              isDuplicate: isDuplicate,
+            ),
+          );
+
+          successCount++;
+
+          if (shouldSyncAlbums) {
+            await _albumService.syncUploadAlbums(candidate.albumNames, [responseBody['id'] as String]);
+          }
+        } else {
+          fileErrors++;
+          failureCount++;
+        }
+      } on http.CancelledException {
+        dPrint(() => "Backup was cancelled by the user");
+        break;
+      } on TimeoutException {
+        timeoutErrors++;
+        failureCount++;
+        dPrint(() => "Timeout uploading asset: ${asset.localId}");
+      } on SocketException {
+        networkErrors++;
+        failureCount++;
+        dPrint(() => "Network error uploading asset: ${asset.localId}");
+      } catch (error, stackTrace) {
+        dPrint(() => "Error backup asset: ${error.toString()}: $stackTrace");
+        failureCount++;
+        continue;
+      } finally {
+        if (Platform.isIOS) {
+          try {
+            await file?.delete();
+            await livePhotoFile?.delete();
+          } catch (e) {
+            dPrint(() => "ERROR deleting file: ${e.toString()}");
+          }
+        }
+      }
+    }
+
+    if (duplicatedAssetIds.isNotEmpty) {
+      await _saveDuplicatedAssetIds(duplicatedAssetIds);
+    }
+
+    final endTime = DateTime.now();
+
+    return BackupBatchMetrics.fromBatch(
+      successCount: successCount,
+      failureCount: failureCount,
+      startTime: startTime,
+      endTime: endTime,
+      timeoutErrors: timeoutErrors,
+      networkErrors: networkErrors,
+      serverErrors: serverErrors,
+      fileErrors: fileErrors,
+    );
   }
 
   Future<bool> backupAsset(
