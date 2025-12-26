@@ -61,7 +61,7 @@ class TextRecognizer(InferenceModel):
             OcrOptions(
                 session=session.session,
                 rec_batch_num=settings.max_batch_size.text_recognition if settings.max_batch_size is not None else 6,
-                rec_img_shape=(3, 48, 320),
+                rec_img_shape=(3, 48, 640),
                 lang_type=self.language,
             )
         )
