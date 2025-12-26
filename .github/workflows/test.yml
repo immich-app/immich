@@ -298,9 +298,9 @@ jobs:
           cache: 'pnpm'
           cache-dependency-path: '**/pnpm-lock.yaml'
       - name: Install dependencies
-        run: pnpm --filter=immich-web install --frozen-lockfile
+        run: pnpm --filter=immich-i18n install --frozen-lockfile
       - name: Format
-        run: pnpm --filter=immich-web format:i18n
+        run: pnpm --filter=immich-i18n format:fix
       - name: Find file changes
         uses: tj-actions/verify-changed-files@a1c6acee9df209257a246f2cc6ae8cb6581c1edf # v20.0.4
         id: verify-changed-files
