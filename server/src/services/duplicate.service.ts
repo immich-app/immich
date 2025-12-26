@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { OnJob } from 'src/decorators';
 import { BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
@@ -7,18 +7,33 @@ import { AuthDto } from 'src/dtos/auth.dto';
 import { DuplicateResponseDto } from 'src/dtos/duplicate.dto';
 import { AssetVisibility, JobName, JobStatus, QueueName } from 'src/enum';
 import { AssetDuplicateResult } from 'src/repositories/search.repository';
+import { AssetService } from 'src/services/asset.service';
 import { BaseService } from 'src/services/base.service';
 import { JobItem, JobOf } from 'src/types';
+import { suggestDuplicate } from 'src/utils/duplicate-utils';
 import { isDuplicateDetectionEnabled } from 'src/utils/misc';
 
 @Injectable()
 export class DuplicateService extends BaseService {
-  async getDuplicates(auth: AuthDto): Promise<DuplicateResponseDto[]> {
-    const duplicates = await this.duplicateRepository.getAll(auth.user.id);
-    return duplicates.map(({ duplicateId, assets }) => ({
+  @Inject() private assetService!: AssetService;
+
+  async getDuplicates(auth: AuthDto, page = 1, size = 20): Promise<DuplicateResponseDto> {
+    const { items, totalItems } = await this.duplicateRepository.getAll(auth.user.id, page, size);
+
+    const duplicates = items.map(({ duplicateId, assets }) => ({
       duplicateId,
       assets: assets.map((asset) => mapAsset(asset, { auth })),
     }));
+
+    const totalPages = Math.ceil(totalItems / size);
+    const hasNextPage = page < totalPages;
+
+    return {
+      items: duplicates,
+      totalItems,
+      totalPages,
+      hasNextPage,
+    };
   }
 
   async delete(auth: AuthDto, id: string): Promise<void> {
@@ -27,6 +42,89 @@ export class DuplicateService extends BaseService {
 
   async deleteAll(auth: AuthDto, dto: BulkIdsDto) {
     await this.duplicateRepository.deleteAll(auth.user.id, dto.ids);
+  }
+
+  async countDeDuplicateAll(auth: AuthDto): Promise<number> {
+    let page = 1;
+    const size = 100;
+    let hasNextPage = true;
+    let totalToDelete = 0;
+
+    while (hasNextPage) {
+      const duplicates = await this.getDuplicates(auth, page, size);
+
+      const idsToKeep = duplicates.items.map((group) => suggestDuplicate(group.assets)).map((asset) => asset?.id);
+      const idsToDelete = duplicates.items.flatMap((group, i) =>
+        group.assets.map((asset) => asset.id).filter((asset) => asset !== idsToKeep[i]),
+      );
+
+      totalToDelete += idsToDelete.length;
+
+      hasNextPage = duplicates.hasNextPage;
+      page++;
+    }
+
+    return totalToDelete;
+  }
+
+  async deDuplicateAll(auth: AuthDto) {
+    let page = 1;
+    const size = 100;
+    let hasNextPage = true;
+
+    while (hasNextPage) {
+      const duplicates = await this.getDuplicates(auth, page, size);
+
+      const idsToKeep = duplicates.items.map((group) => suggestDuplicate(group.assets)).map((asset) => asset?.id);
+      const idsToDelete = duplicates.items.flatMap((group, i) =>
+        group.assets.map((asset) => asset.id).filter((asset) => asset !== idsToKeep[i]),
+      );
+
+      const { trash } = await this.getConfig({ withCache: false });
+
+      await this.eventRepository.emit('AssetDeleteRequest', {
+        auth,
+        dto: { ids: idsToDelete, force: !trash },
+      });
+
+      hasNextPage = duplicates.hasNextPage;
+      page++;
+    }
+  }
+
+  async countKeepAll(auth: AuthDto): Promise<number> {
+    let page = 1;
+    const size = 100;
+    let hasNextPage = true;
+    let totalToDelete = 0;
+
+    while (hasNextPage) {
+      const duplicates = await this.getDuplicates(auth, page, size);
+
+      totalToDelete += duplicates.items.length;
+
+      hasNextPage = duplicates.hasNextPage;
+      page++;
+    }
+
+    return totalToDelete;
+  }
+
+  async keepAll(auth: AuthDto) {
+    let page = 1;
+    const size = 100;
+    let hasNextPage = true;
+
+    while (hasNextPage) {
+      const duplicates = await this.getDuplicates(auth, page, size);
+
+      const idsToDelete = duplicates.items.map(({ duplicateId }) => duplicateId);
+
+      await this.deleteAll(auth, { ids: idsToDelete });
+
+      hasNextPage = duplicates.hasNextPage;
+      page++;
+    }
   }
 
   @OnJob({ name: JobName.AssetDetectDuplicatesQueueAll, queue: QueueName.DuplicateDetection })

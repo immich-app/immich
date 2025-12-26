@@ -13,32 +13,44 @@ part of openapi.api;
 class DuplicateResponseDto {
   /// Returns a new [DuplicateResponseDto] instance.
   DuplicateResponseDto({
-    this.assets = const [],
-    required this.duplicateId,
+    required this.hasNextPage,
+    this.items = const [],
+    required this.totalItems,
+    required this.totalPages,
   });
 
-  List<AssetResponseDto> assets;
+  bool hasNextPage;
 
-  String duplicateId;
+  List<DuplicateItem> items;
+
+  num totalItems;
+
+  num totalPages;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is DuplicateResponseDto &&
-    _deepEquality.equals(other.assets, assets) &&
-    other.duplicateId == duplicateId;
+    other.hasNextPage == hasNextPage &&
+    _deepEquality.equals(other.items, items) &&
+    other.totalItems == totalItems &&
+    other.totalPages == totalPages;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (assets.hashCode) +
-    (duplicateId.hashCode);
+    (hasNextPage.hashCode) +
+    (items.hashCode) +
+    (totalItems.hashCode) +
+    (totalPages.hashCode);
 
   @override
-  String toString() => 'DuplicateResponseDto[assets=$assets, duplicateId=$duplicateId]';
+  String toString() => 'DuplicateResponseDto[hasNextPage=$hasNextPage, items=$items, totalItems=$totalItems, totalPages=$totalPages]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'assets'] = this.assets;
-      json[r'duplicateId'] = this.duplicateId;
+      json[r'hasNextPage'] = this.hasNextPage;
+      json[r'items'] = this.items;
+      json[r'totalItems'] = this.totalItems;
+      json[r'totalPages'] = this.totalPages;
     return json;
   }
 
@@ -51,8 +63,10 @@ class DuplicateResponseDto {
       final json = value.cast<String, dynamic>();
 
       return DuplicateResponseDto(
-        assets: AssetResponseDto.listFromJson(json[r'assets']),
-        duplicateId: mapValueOfType<String>(json, r'duplicateId')!,
+        hasNextPage: mapValueOfType<bool>(json, r'hasNextPage')!,
+        items: DuplicateItem.listFromJson(json[r'items']),
+        totalItems: num.parse('${json[r'totalItems']}'),
+        totalPages: num.parse('${json[r'totalPages']}'),
       );
     }
     return null;
@@ -100,8 +114,10 @@ class DuplicateResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'assets',
-    'duplicateId',
+    'hasNextPage',
+    'items',
+    'totalItems',
+    'totalPages',
   };
 }
 
