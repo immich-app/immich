@@ -48,7 +48,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
     final showMetadata = useState(existingLink?.showMetadata ?? true);
     final allowDownload = useState(existingLink?.allowDownload ?? true);
     final allowUpload = useState(existingLink?.allowUpload ?? false);
-    final expiryAfter = useState<DateTime?>(existingLink?.expiresAt);
+    final expiryAfter = useState<DateTime?>(existingLink?.expiresAt?.toLocal());
     final newShareLink = useState("");
 
     Widget buildSharedLinkRow({required String leading, required String content}) {
@@ -330,7 +330,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
             description: descriptionController.text.isEmpty ? null : descriptionController.text,
             password: passwordController.text.isEmpty ? null : passwordController.text,
             slug: slugController.text.isEmpty ? null : slugController.text,
-            expiresAt: calculateExpiry(),
+            expiresAt: calculateExpiry()?.toUtc(),
           );
       ref.invalidate(sharedLinksStateProvider);
 
@@ -404,7 +404,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
             description: desc,
             password: password,
             slug: slug,
-            expiresAt: expiry,
+            expiresAt: expiry?.toUtc(),
             changeExpiry: changeExpiry,
           );
       ref.invalidate(sharedLinksStateProvider);
