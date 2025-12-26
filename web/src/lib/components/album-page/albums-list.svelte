@@ -13,8 +13,8 @@
     AlbumGroupBy,
     AlbumSortBy,
     AlbumViewMode,
-    SortOrder,
     locale,
+    SortOrder,
     type AlbumViewSettings,
   } from '$lib/stores/preferences.store';
   import { user } from '$lib/stores/user.store';
@@ -23,7 +23,12 @@
   import type { ContextMenuPosition } from '$lib/utils/context-menu';
   import { handleError } from '$lib/utils/handle-error';
   import { normalizeSearchString } from '$lib/utils/string-utils';
-  import { addUsersToAlbum, type AlbumResponseDto, type AlbumUserAddDto } from '@immich/sdk';
+  import {
+    addUsersToAlbum,
+    type AlbumResponseDto,
+    type AlbumUserAddDto,
+    type SharedLinkResponseDto,
+  } from '@immich/sdk';
   import { modalManager } from '@immich/ui';
   import { mdiDeleteOutline, mdiDownload, mdiRenameOutline, mdiShareVariantOutline } from '@mdi/js';
   import { groupBy } from 'lodash-es';
@@ -208,12 +213,7 @@
           }
 
           case 'sharedLink': {
-            const success = await modalManager.show(SharedLinkCreateModal, { albumId: selectedAlbum.id });
-            if (success) {
-              selectedAlbum.shared = true;
-              selectedAlbum.hasSharedLink = true;
-              onUpdate(selectedAlbum);
-            }
+            await modalManager.show(SharedLinkCreateModal, { albumId: selectedAlbum.id });
             break;
           }
         }
@@ -274,9 +274,15 @@
     ownedAlbums = ownedAlbums.filter(({ id }) => id !== album.id);
     sharedAlbums = sharedAlbums.filter(({ id }) => id !== album.id);
   };
+
+  const onSharedLinkCreate = (sharedLink: SharedLinkResponseDto) => {
+    if (sharedLink.album) {
+      onUpdate(sharedLink.album);
+    }
+  };
 </script>
 
-<OnEvents {onAlbumUpdate} {onAlbumDelete} />
+<OnEvents {onAlbumUpdate} {onAlbumDelete} {onSharedLinkCreate} />
 
 {#if albums.length > 0}
   {#if userSettings.view === AlbumViewMode.Cover}
