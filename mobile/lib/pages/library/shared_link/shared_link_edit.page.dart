@@ -192,24 +192,36 @@ class SharedLinkEditPage extends HookConsumerWidget {
     DateTime? getExpiresAtFromPreset(Duration preset) => preset == Duration.zero ? null : DateTime.now().add(preset);
 
     Future<void> selectDate() async {
+      final today = DateTime.now();
+      final safeInitialDate = expiryAfter.value ?? today.add(const Duration(days: 7));
+      final initialDate = safeInitialDate.isBefore(today) ? today : safeInitialDate;
+
       final selectedDate = await showDatePicker(
         context: context,
-        initialDate: expiryAfter.value ?? DateTime.now().add(const Duration(days: 7)),
-        firstDate: DateTime.now(),
-        lastDate: DateTime.now().add(const Duration(days: maxFutureDate)),
+        initialDate: initialDate,
+        firstDate: today,
+        lastDate: today.add(const Duration(days: maxFutureDate)),
       );
 
       if (selectedDate != null && context.mounted) {
-        final selectedTime = await showTimePicker(context: context, initialTime: const TimeOfDay(hour: 12, minute: 0));
+        final isToday =
+            selectedDate.year == today.year && selectedDate.month == today.month && selectedDate.day == today.day;
+        final initialTime = isToday ? TimeOfDay.fromDateTime(today) : const TimeOfDay(hour: 12, minute: 0);
+
+        final selectedTime = await showTimePicker(context: context, initialTime: initialTime);
 
         if (selectedTime != null) {
-          final finalDateTime = DateTime(
+          final now = DateTime.now();
+          var finalDateTime = DateTime(
             selectedDate.year,
             selectedDate.month,
             selectedDate.day,
             selectedTime.hour,
             selectedTime.minute,
           );
+
+          if (finalDateTime.isBefore(now) && isToday) finalDateTime = now;
+
           expiryAfter.value = finalDateTime;
         }
       }
