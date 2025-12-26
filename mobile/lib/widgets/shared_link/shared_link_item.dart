@@ -177,7 +177,7 @@ class SharedLinkItem extends ConsumerWidget {
           builder: (BuildContext context) => ConfirmDialog(
             title: "delete_shared_link_dialog_title",
             content: "confirm_delete_shared_link",
-            onOk: () => Navigator.of(context).pop(true),
+            onOk: () {},
           ),
         );
 
