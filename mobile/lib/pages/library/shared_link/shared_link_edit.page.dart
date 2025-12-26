@@ -126,7 +126,6 @@ class SharedLinkEditPage extends HookConsumerWidget {
         focusNode: slugFocusNode,
         textInputAction: TextInputAction.done,
         autofocus: false,
-        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
         decoration: InputDecoration(
           hintText: 'custom_url'.tr(),
           labelText: slugController.text.isNotEmpty ? 'custom_url'.tr() : null,
@@ -489,9 +488,10 @@ class SharedLinkEditPage extends HookConsumerWidget {
                                 style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                               ).tr(),
                             ),
-                          ElevatedButton(
+                          ElevatedButton.icon(
+                            icon: const Icon(Icons.check),
                             onPressed: existingLink != null ? handleEditLink : handleNewLink,
-                            child: Text(
+                            label: Text(
                               existingLink != null ? "shared_link_edit_submit_button" : "create_link",
                               style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                             ).tr(),
