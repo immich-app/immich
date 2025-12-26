@@ -171,7 +171,23 @@ class SharedLinkItem extends ConsumerWidget {
         padding: const EdgeInsets.only(right: 20),
         child: Icon(Icons.delete, color: Theme.of(context).colorScheme.onError),
       ),
-      onDismissed: (_) => deleteShareLink(),
+      confirmDismiss: (_) async {
+        final confirmed = await showDialog<bool>(
+          context: context,
+          builder: (BuildContext context) => ConfirmDialog(
+            title: "delete_shared_link_dialog_title",
+            content: "confirm_delete_shared_link",
+            onOk: () => Navigator.of(context).pop(true),
+          ),
+        );
+
+        if (confirmed == true) {
+          await ref.read(sharedLinksStateProvider.notifier).deleteLink(sharedLink.id);
+          return true;
+        }
+
+        return false;
+      },
       child: InkWell(
         onTap: () => context.pushRoute(SharedLinkEditRoute(existingLink: sharedLink)),
         onLongPress: copyShareLinkToClipboard,
