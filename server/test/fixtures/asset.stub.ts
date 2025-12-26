@@ -65,6 +65,9 @@ export const assetStub = {
     originalFileName: 'IMG_123.jpg',
     fileSizeInByte: 12_345,
     files: [],
+    make: 'FUJIFILM',
+    model: 'X-T50',
+    lensModel: 'XF27mm F2.8 R WR',
     ...asset,
   }),
   noResizePath: Object.freeze({

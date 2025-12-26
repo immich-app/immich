@@ -472,6 +472,9 @@ export type StorageAsset = {
   originalFileName: string;
   fileSizeInByte: number | null;
   files: AssetFile[];
+  make: string | null;
+  model: string | null;
+  lensModel: string | null;
 };
 
 export type OnThisDayData = { year: number };

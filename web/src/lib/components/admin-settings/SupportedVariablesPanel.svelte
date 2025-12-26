@@ -24,10 +24,8 @@
       </ul>
     </div>
     <div>
-      <p class="uppercase font-medium text-primary">{$t('other')}</p>
+      <p class="uppercase font-medium text-primary">{$t('album')}</p>
       <ul>
-        <li>{`{{assetId}}`} - Asset ID</li>
-        <li>{`{{assetIdShort}}`} - Asset ID (last 12 characters)</li>
         <li>{`{{album}}`} - Album Name</li>
         <li>
           {`{{album-startDate-x}}`} - Album Start Date and Time (e.g. album-startDate-yy).
@@ -37,6 +35,21 @@
           {`{{album-endDate-x}}`} - Album End Date and Time (e.g. album-endDate-MM).
           {$t('admin.storage_template_date_time_sample', { values: { date: '2023-05-06T09:15:17.100' } })}
         </li>
+      </ul>
+    </div>
+    <div>
+      <p class="uppercase font-medium text-primary">{$t('camera')}</p>
+      <ul>
+        <li>{`{{make}}`} - FUJIFILM</li>
+        <li>{`{{model}}`} - X-T50</li>
+        <li>{`{{lensModel}}`} - XF27mm F2.8 R WR</li>
+      </ul>
+    </div>
+    <div>
+      <p class="uppercase font-medium text-primary">{$t('other')}</p>
+      <ul>
+        <li>{`{{assetId}}`} - Asset ID</li>
+        <li>{`{{assetIdShort}}`} - Asset ID (last 12 characters)</li>
       </ul>
     </div>
   </div>

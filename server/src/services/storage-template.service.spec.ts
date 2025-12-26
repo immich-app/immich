@@ -84,6 +84,7 @@ describe(StorageTemplateService.name, () => {
           '{{y}}/{{y}}-{{MM}}/{{assetId}}',
           '{{y}}/{{y}}-{{WW}}/{{assetId}}',
           '{{album}}/{{filename}}',
+          '{{make}}/{{model}}/{{lensModel}}/{{filename}}',
         ],
         secondOptions: ['s', 'ss', 'SSS'],
         weekOptions: ['W', 'WW'],

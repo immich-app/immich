@@ -493,6 +493,9 @@ select
   "asset"."fileCreatedAt",
   "asset_exif"."timeZone",
   "asset_exif"."fileSizeInByte",
+  "asset_exif"."make",
+  "asset_exif"."model",
+  "asset_exif"."lensModel",
   (
     select
       coalesce(json_agg(agg), '[]')
@@ -529,6 +532,9 @@ select
   "asset"."fileCreatedAt",
   "asset_exif"."timeZone",
   "asset_exif"."fileSizeInByte",
+  "asset_exif"."make",
+  "asset_exif"."model",
+  "asset_exif"."lensModel",
   (
     select
       coalesce(json_agg(agg), '[]')
