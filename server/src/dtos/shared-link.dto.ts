@@ -2,6 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsString } from 'class-validator';
 import _ from 'lodash';
 import { SharedLink } from 'src/database';
+import { HistoryBuilder, Property } from 'src/decorators';
 import { AlbumResponseDto, mapAlbumWithoutAssets } from 'src/dtos/album.dto';
 import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
 import { SharedLinkType } from 'src/enum';
@@ -10,6 +11,10 @@ import { Optional, ValidateBoolean, ValidateDate, ValidateEnum, ValidateUUID } f
 export class SharedLinkSearchDto {
   @ValidateUUID({ optional: true })
   albumId?: string;
+
+  @ValidateUUID({ optional: true })
+  @Property({ history: new HistoryBuilder().added('v2.5.0') })
+  id?: string;
 }
 
 export class SharedLinkCreateDto {

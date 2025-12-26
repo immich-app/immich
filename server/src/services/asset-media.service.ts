@@ -370,7 +370,10 @@ export class AssetMediaService extends BaseService {
       : this.assetRepository.deleteFile({ assetId, type: AssetFileType.Sidecar }));
 
     await this.storageRepository.utimes(file.originalPath, new Date(), new Date(dto.fileModifiedAt));
-    await this.assetRepository.upsertExif({ assetId, fileSizeInByte: file.size });
+    await this.assetRepository.upsertExif(
+      { assetId, fileSizeInByte: file.size },
+      { lockedPropertiesBehavior: 'override' },
+    );
     await this.jobRepository.queue({
       name: JobName.AssetExtractMetadata,
       data: { id: assetId, source: 'upload' },
@@ -399,7 +402,10 @@ export class AssetMediaService extends BaseService {
     });
 
     const { size } = await this.storageRepository.stat(created.originalPath);
-    await this.assetRepository.upsertExif({ assetId: created.id, fileSizeInByte: size });
+    await this.assetRepository.upsertExif(
+      { assetId: created.id, fileSizeInByte: size },
+      { lockedPropertiesBehavior: 'override' },
+    );
     await this.jobRepository.queue({ name: JobName.AssetExtractMetadata, data: { id: created.id, source: 'copy' } });
     return created;
   }
@@ -440,7 +446,10 @@ export class AssetMediaService extends BaseService {
       await this.storageRepository.utimes(sidecarFile.originalPath, new Date(), new Date(dto.fileModifiedAt));
     }
     await this.storageRepository.utimes(file.originalPath, new Date(), new Date(dto.fileModifiedAt));
-    await this.assetRepository.upsertExif({ assetId: asset.id, fileSizeInByte: file.size });
+    await this.assetRepository.upsertExif(
+      { assetId: asset.id, fileSizeInByte: file.size },
+      { lockedPropertiesBehavior: 'override' },
+    );
 
     await this.eventRepository.emit('AssetCreate', { asset });
 
