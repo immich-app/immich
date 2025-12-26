@@ -55,10 +55,12 @@ class SharedLinkEditPage extends HookConsumerWidget {
       return Row(
         children: [
           Expanded(
-            child: Text(
-              content,
-              style: TextStyle(color: colorScheme.primary, fontWeight: FontWeight.bold),
-              overflow: TextOverflow.ellipsis,
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Text(
+                content,
+                style: TextStyle(color: colorScheme.primary, fontWeight: FontWeight.bold),
+              ),
             ),
           ),
           const SizedBox(width: 8),
