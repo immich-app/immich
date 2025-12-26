@@ -94,9 +94,9 @@ class SharedLinkItem extends ConsumerWidget {
         height: imageSize * 1.2,
         width: imageSize,
         child: thumbnailUrl == null
-            ? Card(
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                child: const Icon(Icons.image_not_supported_outlined),
+            ? const Card(
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(10))),
+                child: Icon(Icons.image_not_supported_outlined),
               )
             : ThumbnailWithInfo(
                 imageUrl: thumbnailUrl,
