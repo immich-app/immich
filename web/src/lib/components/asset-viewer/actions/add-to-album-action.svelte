@@ -8,19 +8,18 @@
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import type { AssetResponseDto } from '@immich/sdk';
   import { modalManager } from '@immich/ui';
-  import { mdiImageAlbum, mdiShareVariantOutline } from '@mdi/js';
+  import { mdiImageAlbum } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
   interface Props {
     asset: AssetResponseDto;
     onAction: OnAction;
-    shared?: boolean;
   }
 
-  let { asset, onAction, shared = false }: Props = $props();
+  let { asset, onAction }: Props = $props();
 
   const onClick = async () => {
-    const albums = await modalManager.show(AlbumPickerModal, { shared });
+    const albums = await modalManager.show(AlbumPickerModal, {});
 
     if (!albums || albums.length === 0) {
       return;
@@ -40,10 +39,6 @@
   };
 </script>
 
-<svelte:document use:shortcut={{ shortcut: { key: 'l', shift: shared }, onShortcut: onClick }} />
+<svelte:document use:shortcut={{ shortcut: { key: 'l' }, onShortcut: onClick }} />
 
-<MenuOption
-  icon={shared ? mdiShareVariantOutline : mdiImageAlbum}
-  text={shared ? $t('add_to_shared_album') : $t('add_to_album')}
-  {onClick}
-/>
+<MenuOption icon={mdiImageAlbum} text={$t('add_to_album')} {onClick} />
