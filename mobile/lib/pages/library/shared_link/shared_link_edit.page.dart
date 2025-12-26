@@ -125,7 +125,9 @@ class SharedLinkEditPage extends HookConsumerWidget {
         autofocus: false,
         style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
         decoration: InputDecoration(
-          labelText: 'custom_url'.tr(),
+          hintText: 'custom_url'.tr(),
+          labelText: slugController.text.isNotEmpty ? 'custom_url'.tr() : null,
+          labelStyle: const TextStyle(fontWeight: FontWeight.bold),
           border: const OutlineInputBorder(),
           prefixText: slugController.text.isNotEmpty ? '/s/' : null,
           prefixStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
@@ -216,9 +218,10 @@ class SharedLinkEditPage extends HookConsumerWidget {
     Widget buildExpiryAfterButton() {
       return ExpansionTile(
         title: Text("expire_after", style: themeData.textTheme.labelLarge?.copyWith(fontWeight: FontWeight.bold)).tr(),
-        subtitle: expiryAfter.value == null
-            ? const Text("shared_link_expires_never").tr()
-            : Text(formatDateTime(expiryAfter.value!), style: TextStyle(color: themeData.colorScheme.primary)),
+        subtitle: Text(
+          expiryAfter.value == null ? "shared_link_expires_never".tr() : formatDateTime(expiryAfter.value!),
+          style: TextStyle(color: themeData.colorScheme.primary),
+        ),
         children: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -421,9 +424,10 @@ class SharedLinkEditPage extends HookConsumerWidget {
       body: SafeArea(
         child: newShareLink.value.isEmpty
             ? Padding(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: ListView(
                   children: [
+                    const SizedBox(height: 20),
                     buildLinkTitle(),
                     if (existingLink != null)
                       Column(
@@ -479,6 +483,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
                         ],
                       ),
                     ),
+                    const SizedBox(height: 40),
                   ],
                 ),
               )
