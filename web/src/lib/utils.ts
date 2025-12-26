@@ -162,7 +162,7 @@ export const getQueueName = derived(t, ($t) => {
       [QueueName.Notifications]: $t('notifications'),
       [QueueName.BackupDatabase]: $t('admin.backup_database'),
       [QueueName.Ocr]: $t('admin.machine_learning_ocr'),
-      [QueueName.Workflow]: $t('workflow'),
+      [QueueName.Workflow]: $t('workflows'),
     };
 
     return names[name];
