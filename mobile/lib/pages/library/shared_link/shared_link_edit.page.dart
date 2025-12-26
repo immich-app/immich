@@ -42,6 +42,9 @@ class SharedLinkEditPage extends HookConsumerWidget {
     final descriptionController = useTextEditingController(text: existingLink?.description ?? "");
     final descriptionFocusNode = useFocusNode();
     final passwordController = useTextEditingController(text: existingLink?.password ?? "");
+    final slugController = useTextEditingController(text: existingLink?.slug ?? "");
+    final slugFocusNode = useFocusNode();
+    useListenable(slugController);
     final showMetadata = useState(existingLink?.showMetadata ?? true);
     final allowDownload = useState(existingLink?.allowDownload ?? true);
     final allowUpload = useState(existingLink?.allowUpload ?? false);
@@ -112,6 +115,32 @@ class SharedLinkEditPage extends HookConsumerWidget {
           hintStyle: const TextStyle(fontWeight: FontWeight.normal, fontSize: 14),
         ),
       );
+    }
+
+    Widget buildSlugField() {
+      return TextField(
+        controller: slugController,
+        focusNode: slugFocusNode,
+        textInputAction: TextInputAction.done,
+        autofocus: false,
+        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+        decoration: InputDecoration(
+          labelText: 'custom_url'.tr(),
+          border: const OutlineInputBorder(),
+          prefixText: slugController.text.isNotEmpty ? '/s/' : null,
+          prefixStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+        ),
+        onTapOutside: (_) => slugFocusNode.unfocus(),
+      );
+    }
+
+    String getShareLinkUrl(SharedLink link) {
+      var serverUrl = getServerUrl();
+      if (serverUrl != null && !serverUrl.endsWith('/')) serverUrl += '/';
+      if (serverUrl == null) return '';
+
+      final urlPath = link.slug?.isNotEmpty == true ? link.slug : link.key;
+      return '${serverUrl}s/$urlPath';
     }
 
     Widget buildShowMetaButton() {
@@ -285,6 +314,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
             allowUpload: allowUpload.value,
             description: descriptionController.text.isEmpty ? null : descriptionController.text,
             password: passwordController.text.isEmpty ? null : passwordController.text,
+            slug: slugController.text.isEmpty ? null : slugController.text,
             expiresAt: calculateExpiry(),
           );
       ref.invalidate(sharedLinksStateProvider);
@@ -296,7 +326,8 @@ class SharedLinkEditPage extends HookConsumerWidget {
       if (serverUrl != null && !serverUrl.endsWith('/')) serverUrl += '/';
 
       if (newLink != null && serverUrl != null) {
-        newShareLink.value = "${serverUrl}share/${newLink.key}";
+        final urlPath = newLink.slug?.isNotEmpty == true ? newLink.slug : newLink.key;
+        newShareLink.value = "${serverUrl}s/$urlPath";
         copyToClipboard(newShareLink.value);
       } else if (newLink == null) {
         ImmichToast.show(
@@ -314,6 +345,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
       bool? meta;
       String? desc;
       String? password;
+      String? slug;
       DateTime? expiry;
       bool? changeExpiry;
 
@@ -337,6 +369,10 @@ class SharedLinkEditPage extends HookConsumerWidget {
         password = passwordController.text;
       }
 
+      if (slugController.text != (existingLink!.slug ?? "")) {
+        slug = slugController.text.isEmpty ? null : slugController.text;
+      }
+
       final newExpiry = expiryAfter.value;
       if (newExpiry != existingLink!.expiresAt) {
         expiry = newExpiry;
@@ -352,6 +388,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
             allowUpload: upload,
             description: desc,
             password: password,
+            slug: slug,
             expiresAt: expiry,
             changeExpiry: changeExpiry,
           );
@@ -393,7 +430,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           const SizedBox(height: 16),
-                          buildLinkCopyField("${getServerUrl()}/share/${existingLink!.key}"),
+                          buildLinkCopyField(getShareLinkUrl(existingLink!)),
                           const SizedBox(height: 24),
                           const Divider(),
                         ],
@@ -402,6 +439,8 @@ class SharedLinkEditPage extends HookConsumerWidget {
                     buildDescriptionField(),
                     const SizedBox(height: 16),
                     buildPasswordField(),
+                    const SizedBox(height: 16),
+                    buildSlugField(),
                     const SizedBox(height: 16),
                     buildShowMetaButton(),
                     const SizedBox(height: 16),

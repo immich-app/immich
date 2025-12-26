@@ -74,8 +74,10 @@ class SharedLinkItem extends ConsumerWidget {
         return;
       }
 
-      Clipboard.setData(ClipboardData(text: "${serverUrl}share/${sharedLink.key}")).then((_) {
-        context.scaffoldMessenger.showSnackBar(
+      final urlPath = sharedLink.slug?.isNotEmpty == true ? sharedLink.slug : sharedLink.key;
+
+      Clipboard.setData(ClipboardData(text: "${serverUrl}s/$urlPath")).then(
+        (_) => context.scaffoldMessenger.showSnackBar(
           SnackBar(
             content: Text(
               "shared_link_clipboard_copied_massage",
@@ -83,8 +85,8 @@ class SharedLinkItem extends ConsumerWidget {
             ).tr(),
             duration: const Duration(seconds: 2),
           ),
-        );
-      });
+        ),
+      );
     }
 
     Future<void> deleteShareLink() async {
