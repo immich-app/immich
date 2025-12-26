@@ -89,19 +89,6 @@ class SharedLinkItem extends ConsumerWidget {
       );
     }
 
-    Future<void> deleteShareLink() async {
-      return showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return ConfirmDialog(
-            title: "delete_shared_link_dialog_title",
-            content: "confirm_delete_shared_link",
-            onOk: () => ref.read(sharedLinksStateProvider.notifier).deleteLink(sharedLink.id),
-          );
-        },
-      );
-    }
-
     Widget buildThumbnail() {
       return SizedBox(
         height: imageSize * 1.2,
