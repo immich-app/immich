@@ -2,10 +2,11 @@
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
   import { ActionQueryParameterValue, AppRoute, QueryParameter } from '$lib/constants';
+  import PeopleViewModal from '$lib/modals/PeopleViewModal.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { getAllPeople, getPerson, mergePerson, type PersonResponseDto } from '@immich/sdk';
   import { Button, Icon, IconButton, modalManager, toastManager } from '@immich/ui';
-  import { mdiCallMerge, mdiMerge, mdiSwapHorizontal } from '@mdi/js';
+  import { mdiCallMerge, mdiMerge, mdiPlus, mdiSwapHorizontal } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { flip } from 'svelte/animate';
@@ -49,11 +50,6 @@
       return;
     }
 
-    if (selectedPeople.length >= 5) {
-      toastManager.warning($t('merge_people_limit'));
-      return;
-    }
-
     selectedPeople = [selected, ...selectedPeople];
 
     if (selectedPeople.length === 1 && !person.name && selected.name) {
@@ -79,6 +75,14 @@
     } catch (error) {
       handleError(error, $t('cannot_merge_people'));
     }
+  };
+
+  const showPeopleViewModal = async () => {
+    selectedPeople = await modalManager.show(PeopleViewModal, {
+      people: selectedPeople,
+      peopleToNotShow: [person],
+      screenHeight,
+    });
   };
 </script>
 
@@ -109,7 +113,7 @@
         <p class="mb-4 text-center uppercase dark:text-white">{$t('choose_matching_people_to_merge')}</p>
 
         <div class="grid grid-flow-col-dense place-content-center place-items-center gap-4">
-          {#each selectedPeople as person (person.id)}
+          {#each selectedPeople.slice(0, 5) as person (person.id)}
             <div animate:flip={{ duration: 250, easing: quintOut }}>
               <FaceThumbnail border circle {person} selectable thumbnailSize={120} onClick={() => onSelect(person)} />
             </div>
@@ -119,6 +123,18 @@
             <div class="relative h-full">
               <div class="flex flex-col h-full justify-between">
                 <div class="flex h-full items-center justify-center">
+                  {#if selectedPeople.length > 5}
+                    <div class="absolute top-2">
+                      <IconButton
+                        shape="round"
+                        color="secondary"
+                        aria-label={$t('show_all_selected_people')}
+                        icon={mdiPlus}
+                        size="medium"
+                        onclick={showPeopleViewModal}
+                      />
+                    </div>
+                  {/if}
                   <Icon icon={mdiCallMerge} size="48" class="rotate-90 dark:text-white" />
                 </div>
                 {#if selectedPeople.length === 1}
