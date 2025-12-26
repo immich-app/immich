@@ -16,6 +16,19 @@ import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
 @RoutePage()
 class SharedLinkEditPage extends HookConsumerWidget {
+  static const List<(Duration, String)> expiryPresetsWithLabels = [
+    (Duration.zero, 'never'),
+    (Duration(minutes: 30), 'shared_link_edit_expire_after_option_minutes'),
+    (Duration(hours: 1), 'shared_link_edit_expire_after_option_hour'),
+    (Duration(hours: 6), 'shared_link_edit_expire_after_option_hours'),
+    (Duration(days: 1), 'shared_link_edit_expire_after_option_day'),
+    (Duration(days: 7), 'shared_link_edit_expire_after_option_days'),
+    (Duration(days: 30), 'shared_link_edit_expire_after_option_days'),
+    (Duration(days: 90), 'shared_link_edit_expire_after_option_months'),
+    (Duration(days: 365), 'shared_link_edit_expire_after_option_year'),
+  ];
+  static const int maxFutureDate = 365 * 2;
+
   final SharedLink? existingLink;
   final List<String>? assetsList;
   final String? albumId;
@@ -32,7 +45,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
     final showMetadata = useState(existingLink?.showMetadata ?? true);
     final allowDownload = useState(existingLink?.allowDownload ?? true);
     final allowUpload = useState(existingLink?.allowUpload ?? false);
-    final expiryAfter = useState(0);
+    final expiryAfter = useState<DateTime?>(existingLink?.expiresAt);
     final newShareLink = useState("");
 
     Widget buildSharedLinkRow({required String leading, required String content}) {
@@ -134,27 +147,83 @@ class SharedLinkEditPage extends HookConsumerWidget {
       );
     }
 
-    Widget buildExpiryAfterButton() {
-      final entries = <(int, String)>[
-        (0, "never".tr()),
-        (30, "shared_link_edit_expire_after_option_minutes".tr(namedArgs: {'count': '30'})),
-        (60, "shared_link_edit_expire_after_option_hour".tr()),
-        (60 * 6, "shared_link_edit_expire_after_option_hours".tr(namedArgs: {'count': '6'})),
-        (60 * 24, "shared_link_edit_expire_after_option_day".tr()),
-        (60 * 24 * 7, "shared_link_edit_expire_after_option_days".tr(namedArgs: {'count': '7'})),
-        (60 * 24 * 30, "shared_link_edit_expire_after_option_days".tr(namedArgs: {'count': '30'})),
-        (60 * 24 * 30 * 3, "shared_link_edit_expire_after_option_months".tr(namedArgs: {'count': '3'})),
-        (60 * 24 * 30 * 12, "shared_link_edit_expire_after_option_year".tr(namedArgs: {'count': '1'})),
-      ];
+    String formatDateTime(DateTime dateTime) => DateFormat.yMMMd(context.locale.toString()).add_Hm().format(dateTime);
 
-      return DropdownMenu<int>(
-        label: const Text("expire_after", style: TextStyle(fontWeight: FontWeight.bold)).tr(),
-        enableSearch: false,
-        enableFilter: false,
-        width: context.width - 40,
-        initialSelection: expiryAfter.value,
-        onSelected: (v) => expiryAfter.value = v!,
-        dropdownMenuEntries: entries.map((e) => DropdownMenuEntry(value: e.$1, label: e.$2)).toList(),
+    String getPresetLabel(String labelKey) => switch (labelKey) {
+      'shared_link_edit_expire_after_option_minutes' => labelKey.tr(namedArgs: {'count': '30'}),
+      'shared_link_edit_expire_after_option_hours' => labelKey.tr(namedArgs: {'count': '6'}),
+      'shared_link_edit_expire_after_option_days' => labelKey.tr(namedArgs: {'count': '7'}),
+      'shared_link_edit_expire_after_option_months' => labelKey.tr(namedArgs: {'count': '3'}),
+      'shared_link_edit_expire_after_option_year' => labelKey.tr(namedArgs: {'count': '1'}),
+      _ => labelKey.tr(),
+    };
+
+    DateTime? getExpiresAtFromPreset(Duration preset) => preset == Duration.zero ? null : DateTime.now().add(preset);
+
+    Future<void> selectDate() async {
+      final selectedDate = await showDatePicker(
+        context: context,
+        initialDate: expiryAfter.value ?? DateTime.now().add(const Duration(days: 7)),
+        firstDate: DateTime.now(),
+        lastDate: DateTime.now().add(const Duration(days: maxFutureDate)),
+      );
+
+      if (selectedDate != null && context.mounted) {
+        final selectedTime = await showTimePicker(context: context, initialTime: const TimeOfDay(hour: 12, minute: 0));
+
+        if (selectedTime != null) {
+          final finalDateTime = DateTime(
+            selectedDate.year,
+            selectedDate.month,
+            selectedDate.day,
+            selectedTime.hour,
+            selectedTime.minute,
+          );
+          expiryAfter.value = finalDateTime;
+        }
+      }
+    }
+
+    Widget buildExpiryAfterButton() {
+      return ExpansionTile(
+        title: Text("expire_after", style: themeData.textTheme.labelLarge?.copyWith(fontWeight: FontWeight.bold)).tr(),
+        subtitle: expiryAfter.value == null
+            ? const Text("shared_link_expires_never").tr()
+            : Text(formatDateTime(expiryAfter.value!), style: TextStyle(color: themeData.colorScheme.primary)),
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: expiryPresetsWithLabels
+                      .map(
+                        (preset) => ChoiceChip(
+                          label: Text(getPresetLabel(preset.$2)),
+                          selected: expiryAfter.value == getExpiresAtFromPreset(preset.$1),
+                          onSelected: (_) => expiryAfter.value = getExpiresAtFromPreset(preset.$1),
+                        ),
+                      )
+                      .toList(),
+                ),
+                if (expiryAfter.value != null) ...[
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: selectDate,
+                      icon: const Icon(Icons.edit_calendar),
+                      label: const Text('edit_date_and_time').tr(),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
       );
     }
 
@@ -203,7 +272,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
       );
     }
 
-    DateTime calculateExpiry() => DateTime.now().add(Duration(minutes: expiryAfter.value));
+    DateTime? calculateExpiry() => expiryAfter.value;
 
     Future<void> handleNewLink() async {
       final newLink = await ref
@@ -216,7 +285,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
             allowUpload: allowUpload.value,
             description: descriptionController.text.isEmpty ? null : descriptionController.text,
             password: passwordController.text.isEmpty ? null : passwordController.text,
-            expiresAt: expiryAfter.value == 0 ? null : calculateExpiry(),
+            expiresAt: calculateExpiry(),
           );
       ref.invalidate(sharedLinksStateProvider);
 
@@ -268,7 +337,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
         password = passwordController.text;
       }
 
-      final newExpiry = expiryAfter.value == 0 ? null : calculateExpiry();
+      final newExpiry = expiryAfter.value;
       if (newExpiry != existingLink!.expiresAt) {
         expiry = newExpiry;
         changeExpiry = true;
