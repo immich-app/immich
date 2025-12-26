@@ -45,7 +45,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
               overflow: TextOverflow.ellipsis,
             ),
           ),
-          const Spacer(),
+          const SizedBox(width: 8),
           Text(leading, style: const TextStyle(fontWeight: FontWeight.bold)).tr(),
         ],
       );

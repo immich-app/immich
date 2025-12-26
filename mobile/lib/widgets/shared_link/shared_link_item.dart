@@ -27,9 +27,13 @@ class SharedLinkItem extends ConsumerWidget {
 
   Widget buildExpiryDuration() {
     var expiresText = "shared_link_expires_never".tr();
+    IconData expiryIcon = Icons.schedule;
 
     if (sharedLink.expiresAt != null) {
-      if (isExpired()) return const Text("expired").tr();
+      if (isExpired()) {
+        expiresText = "expired".tr();
+        expiryIcon = Icons.timer_off_outlined;
+      }
 
       final difference = sharedLink.expiresAt!.difference(DateTime.now());
       dPrint(() => "Difference: $difference");
@@ -47,7 +51,7 @@ class SharedLinkItem extends ConsumerWidget {
       }
     }
 
-    return Row(children: [const Icon(Icons.schedule, size: 12), const SizedBox(width: 4), Text(expiresText)]);
+    return Row(children: [Icon(expiryIcon, size: 12), const SizedBox(width: 4), Text(expiresText)]);
   }
 
   @override
