@@ -26,7 +26,6 @@ class RemoteAlbumSliverAppBar extends ConsumerStatefulWidget {
     this.icon = Icons.camera,
     this.onShowOptions,
     this.kebabMenu,
-    this.onToggleAlbumOrder,
     this.onEditTitle,
     this.onActivity,
   });
@@ -34,7 +33,6 @@ class RemoteAlbumSliverAppBar extends ConsumerStatefulWidget {
   final IconData icon;
   final void Function()? onShowOptions;
   final Widget? kebabMenu;
-  final void Function()? onToggleAlbumOrder;
   final void Function()? onEditTitle;
   final void Function()? onActivity;
 
@@ -93,11 +91,6 @@ class _MesmerizingSliverAppBarState extends ConsumerState<RemoteAlbumSliverAppBa
               onPressed: () => context.maybePop(),
             ),
       actions: [
-        if (widget.onToggleAlbumOrder != null)
-          IconButton(
-            icon: Icon(Icons.swap_vert_rounded, color: actionIconColor, shadows: actionIconShadows),
-            onPressed: widget.onToggleAlbumOrder,
-          ),
         if (currentAlbum.isActivityEnabled && currentAlbum.isShared)
           IconButton(
             icon: Icon(Icons.chat_outlined, color: actionIconColor, shadows: actionIconShadows),

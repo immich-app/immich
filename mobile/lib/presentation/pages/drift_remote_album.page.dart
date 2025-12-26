@@ -188,8 +188,16 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
       child: Timeline(
         appBar: RemoteAlbumSliverAppBar(
           icon: Icons.photo_album_outlined,
-          kebabMenu: _AlbumKebabMenu(album: _album, isOwner: isOwner),
-          onToggleAlbumOrder: isOwner ? () => toggleAlbumOrder() : null,
+          kebabMenu: _AlbumKebabMenu(
+            album: _album,
+            onDeleteAlbum: () => deleteAlbum(context),
+            onAddUsers: () => addUsers(context),
+            onAddPhotos: () => addAssets(context),
+            onToggleAlbumOrder: () => toggleAlbumOrder(),
+            onEditAlbum: () => showEditTitleAndDescription(context),
+            onCreateSharedLink: () => unawaited(context.pushRoute(SharedLinkEditRoute(albumId: _album.id))),
+            onShowOptions: () => context.pushRoute(DriftAlbumOptionsRoute(album: _album)),
+          ),
           onEditTitle: isOwner ? () => showEditTitleAndDescription(context) : null,
           onActivity: () => showActivity(context),
         ),
@@ -356,33 +364,72 @@ class _EditAlbumDialogState extends ConsumerState<_EditAlbumDialog> {
 
 class _AlbumKebabMenu extends ConsumerWidget {
   final RemoteAlbum album;
-  final bool isOwner;
+  final VoidCallback? onDeleteAlbum;
+  final VoidCallback? onAddUsers;
+  final VoidCallback? onAddPhotos;
+  final VoidCallback? onToggleAlbumOrder;
+  final VoidCallback? onEditAlbum;
+  final VoidCallback? onCreateSharedLink;
+  final VoidCallback? onShowOptions;
 
-  const _AlbumKebabMenu({required this.album, required this.isOwner});
+  const _AlbumKebabMenu({
+    required this.album,
+    this.onDeleteAlbum,
+    this.onAddUsers,
+    this.onAddPhotos,
+    this.onToggleAlbumOrder,
+    this.onEditAlbum,
+    this.onCreateSharedLink,
+    this.onShowOptions,
+  });
+
+  double _calculateScrollProgress(FlexibleSpaceBarSettings? settings) {
+    if (settings?.maxExtent == null || settings?.minExtent == null) {
+      return 1.0;
+    }
+
+    final deltaExtent = settings!.maxExtent - settings.minExtent;
+    if (deltaExtent <= 0.0) {
+      return 1.0;
+    }
+
+    return (1.0 - (settings.currentExtent - settings.minExtent) / deltaExtent).clamp(0.0, 1.0);
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final settings = context.dependOnInheritedWidgetOfExactType<FlexibleSpaceBarSettings>();
+    final scrollProgress = _calculateScrollProgress(settings);
+
+    final iconColor = Color.lerp(Colors.white, context.primaryColor, scrollProgress);
+    final iconShadows = [
+      if (scrollProgress < 0.95)
+        Shadow(offset: const Offset(0, 2), blurRadius: 5, color: Colors.black.withValues(alpha: 0.5))
+      else
+        const Shadow(offset: Offset(0, 2), blurRadius: 0, color: Colors.transparent),
+    ];
+
+    final user = ref.watch(currentUserProvider);
+    final isOwner = user != null && user.id == album.ownerId;
+
     return FutureBuilder<bool>(
       future: ref
           .read(remoteAlbumServiceProvider)
-          .getUserRole(album.id, ref.read(currentUserProvider)?.id ?? '')
+          .getUserRole(album.id, user?.id ?? '')
           .then((role) => role == AlbumUserRole.editor),
       builder: (context, snapshot) {
         final canAddPhotos = snapshot.data ?? false;
-        final state = context.findAncestorStateOfType<_RemoteAlbumPageState>();
-
-        if (state == null) return const SizedBox.shrink();
 
         return DriftRemoteAlbumOption(
-          onDeleteAlbum: isOwner ? () => state.deleteAlbum(context) : null,
-          onAddUsers: isOwner ? () => state.addUsers(context) : null,
-          onAddPhotos: isOwner || canAddPhotos ? () => state.addAssets(context) : null,
-          onToggleAlbumOrder: isOwner ? () => state.toggleAlbumOrder() : null,
-          onEditAlbum: isOwner ? () => state.showEditTitleAndDescription(context) : null,
-          onCreateSharedLink: isOwner
-              ? () => unawaited(context.pushRoute(SharedLinkEditRoute(albumId: album.id)))
-              : null,
-          onShowOptions: () => context.pushRoute(DriftAlbumOptionsRoute(album: album)),
+          iconColor: iconColor,
+          iconShadows: iconShadows,
+          onDeleteAlbum: isOwner ? onDeleteAlbum : null,
+          onAddUsers: isOwner ? onAddUsers : null,
+          onAddPhotos: isOwner || canAddPhotos ? onAddPhotos : null,
+          onToggleAlbumOrder: isOwner ? onToggleAlbumOrder : null,
+          onEditAlbum: isOwner ? onEditAlbum : null,
+          onCreateSharedLink: isOwner ? onCreateSharedLink : null,
+          onShowOptions: onShowOptions,
         );
       },
     );

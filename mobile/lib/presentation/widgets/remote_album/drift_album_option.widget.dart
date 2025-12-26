@@ -15,6 +15,8 @@ class DriftRemoteAlbumOption extends ConsumerWidget {
     this.onToggleAlbumOrder,
     this.onEditAlbum,
     this.onShowOptions,
+    this.iconColor,
+    this.iconShadows,
   });
 
   final VoidCallback? onAddPhotos;
@@ -25,6 +27,8 @@ class DriftRemoteAlbumOption extends ConsumerWidget {
   final VoidCallback? onToggleAlbumOrder;
   final VoidCallback? onEditAlbum;
   final VoidCallback? onShowOptions;
+  final Color? iconColor;
+  final List<Shadow>? iconShadows;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -144,7 +148,7 @@ class DriftRemoteAlbumOption extends ConsumerWidget {
       ],
       builder: (context, controller, child) {
         return IconButton(
-          icon: const Icon(Icons.more_vert_rounded, color: Colors.white),
+          icon: Icon(Icons.more_vert_rounded, color: iconColor ?? Colors.white, shadows: iconShadows),
           onPressed: () => controller.isOpen ? controller.close() : controller.open(),
         );
       },
