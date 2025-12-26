@@ -13,6 +13,7 @@ import 'package:immich_mobile/services/shared_link.service.dart';
 import 'package:immich_mobile/utils/url_helper.dart';
 import 'package:immich_mobile/widgets/common/confirm_dialog.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
+import 'package:share_plus/share_plus.dart';
 
 @RoutePage()
 class SharedLinkEditPage extends HookConsumerWidget {
@@ -290,11 +291,12 @@ class SharedLinkEditPage extends HookConsumerWidget {
     Widget buildLinkCopyField(String link) {
       return TextFormField(
         readOnly: true,
+        onTap: () => copyToClipboard(link),
         initialValue: link,
         decoration: InputDecoration(
           border: const OutlineInputBorder(),
           enabledBorder: themeData.inputDecorationTheme.focusedBorder,
-          suffixIcon: IconButton(onPressed: () => copyToClipboard(link), icon: const Icon(Icons.copy)),
+          suffixIcon: IconButton(onPressed: () => Share.share(link), icon: const Icon(Icons.share)),
         ),
       );
     }
