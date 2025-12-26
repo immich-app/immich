@@ -1,16 +1,15 @@
 <script lang="ts">
-  import type { ActionItem } from '$lib/types';
-  import { IconButton, type IconButtonProps } from '@immich/ui';
+  import { IconButton, type ActionItem, type Size } from '@immich/ui';
 
   type Props = {
     action: ActionItem;
+    size?: Size;
   };
 
-  const { action }: Props = $props();
-  const { title, icon, props: other = {}, onSelect } = $derived(action);
-  const onclick = (event: Event) => onSelect?.({ event, item: action });
+  const { action, size }: Props = $props();
+  const { title, icon, onAction } = $derived(action);
 </script>
 
 {#if action.$if?.() ?? true}
-  <IconButton shape="round" color="primary" {...other as IconButtonProps} {icon} aria-label={title} {onclick} />
+  <IconButton {size} shape="round" color="primary" {icon} aria-label={title} onclick={() => onAction(action)} />
 {/if}
