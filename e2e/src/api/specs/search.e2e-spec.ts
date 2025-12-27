@@ -700,4 +700,109 @@ describe('/search', () => {
       expect(status).toBe(200);
     });
   });
+
+  describe('GET /search/person', () => {
+    it('matches prefix of first name', async () => {
+      const person = await utils.createPerson(admin.accessToken, {
+        name: 'Ford'
+      })
+
+      const { status, body } = await request(app)
+        .get('/search/person?name=For')
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+
+      expect(status).toBe(200);
+      expect(body).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ id: person.id }),
+        ]),
+      );
+    });
+
+    it('matches prefix of subsequent name parts', async () => {
+      const person1 = await utils.createPerson(admin.accessToken, {
+        name: 'Ford Prefect'
+      })
+
+      const person2 = await utils.createPerson(admin.accessToken, {
+        name: 'Ford Nicholas Prefect'
+      })
+
+      const { status, body } = await request(app)
+        .get('/search/person?name=Pre')
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+
+      expect(status).toBe(200);
+      expect(body).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ id: person1.id }),
+          expect.objectContaining({ id: person2.id }),
+        ]),
+      );
+    });
+
+    it('does not match substring in the middle of a name', async () => {
+      await utils.createPerson(admin.accessToken, {
+        name: 'Ford Prefect'
+      })
+
+      const { status, body } = await request(app)
+        .get('/search/person?name=fec')
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+
+      expect(status).toBe(200);
+      expect(body).toEqual([]);
+    });
+
+    it('matches accented name without accent in query', async () => {
+      const person = await utils.createPerson(admin.accessToken, {
+        name: 'Emília'
+      })
+
+      const { status, body } = await request(app)
+        .get('/search/person?name=Emi')
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+
+      expect(status).toBe(200);
+      expect(body).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ id: person.id }),
+        ]),
+      );
+    });
+
+    it('matches unaccented name with accent in query', async () => {
+      const person = await utils.createPerson(admin.accessToken, {
+        name: 'Emilia'
+      })
+
+      const { status, body } = await request(app)
+        .get('/search/person?name=Emí')
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+
+      expect(status).toBe(200);
+      expect(body).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ id: person.id }),
+        ]),
+      );
+    });
+
+    it('is case insensitive', async () => {
+      const person = await utils.createPerson(admin.accessToken, {
+        name: 'Arthur'
+      })
+
+      const { status, body } = await request(app)
+        .get('/search/person?name=arthur')
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+
+      expect(status).toBe(200);
+      expect(body).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ id: person.id }),
+        ]),
+      );
+    });
+  });
 });
