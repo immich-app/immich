@@ -197,7 +197,7 @@ class UploadService {
   Future<void> startForegroundUpload(
     String userId,
     CancellationToken cancelToken,
-    void Function(String localAssetId, int bytes, int totalBytes) onProgress,
+    void Function(String localAssetId, String filename, int bytes, int totalBytes) onProgress,
     void Function(String localAssetId, String remoteAssetId) onSuccess,
     void Function(String errorMessage) onError, {
     void Function(String localAssetId, double progress)? onICloudProgress,
@@ -234,7 +234,7 @@ class UploadService {
               asset,
               httpClient,
               cancelToken,
-              (bytes, totalBytes) => onProgress(asset.localId!, bytes, totalBytes),
+              (bytes, totalBytes) => onProgress(asset.localId!, asset.name, bytes, totalBytes),
               onSuccess,
               onError,
               onICloudProgress: onICloudProgress,
@@ -322,6 +322,7 @@ class UploadService {
       }
 
       final originalFileName = entity.isLivePhoto ? p.setExtension(asset.name, p.extension(file.path)) : asset.name;
+      print("originalFileName: $originalFileName");
       final deviceId = Store.get(StoreKey.deviceId);
 
       final headers = ApiService.getRequestHeaders();

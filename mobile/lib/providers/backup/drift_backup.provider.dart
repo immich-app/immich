@@ -392,7 +392,7 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
 
     // Remove from progress map when download completes
     if (progress >= 1.0) {
-      Future.delayed(const Duration(milliseconds: 500), () {
+      Future.delayed(const Duration(milliseconds: 250), () {
         final updatedProgress = Map<String, double>.from(state.iCloudDownloadProgress);
         updatedProgress.remove(localAssetId);
         state = state.copyWith(iCloudDownloadProgress: updatedProgress);
@@ -400,7 +400,7 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
     }
   }
 
-  void _handleForegroundBackupProgress(String localAssetId, int bytes, int totalBytes) {
+  void _handleForegroundBackupProgress(String localAssetId, String filename, int bytes, int totalBytes) {
     final progress = totalBytes > 0 ? bytes / totalBytes : 0.0;
     final currentItem = state.uploadItems[localAssetId];
     if (currentItem != null) {
@@ -416,7 +416,7 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
           ...state.uploadItems,
           localAssetId: DriftUploadStatus(
             taskId: localAssetId,
-            filename: localAssetId,
+            filename: filename,
             progress: progress,
             fileSize: totalBytes,
             networkSpeedAsString: '',
