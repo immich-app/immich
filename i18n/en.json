@@ -2153,7 +2153,7 @@
   "trigger": "Trigger",
   "trigger_asset_uploaded": "Asset Uploaded",
   "trigger_asset_uploaded_description": "Triggered when a new asset is uploaded",
-  "trigger_description": "An event that kick off the workflow",
+  "trigger_description": "An event that kicks off the workflow",
   "trigger_person_recognized": "Person Recognized",
   "trigger_person_recognized_description": "Triggered when a person is detected",
   "trigger_type": "Trigger type",
