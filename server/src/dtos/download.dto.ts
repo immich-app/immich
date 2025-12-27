@@ -30,3 +30,15 @@ export class DownloadArchiveInfo {
   size!: number;
   assetIds!: string[];
 }
+
+export class PrepareDownloadResponseDto {
+  @ApiProperty({ type: 'integer' })
+  totalSize!: number;
+  archives!: PrepareDownloadArchiveInfo[];
+}
+
+export class PrepareDownloadArchiveInfo {
+  @ApiProperty({ type: 'integer' })
+  size!: number;
+  downloadRequestId!: string;
+}

@@ -2,14 +2,13 @@ import { goto } from '$app/navigation';
 import ToastAction from '$lib/components/ToastAction.svelte';
 import { AppRoute } from '$lib/constants';
 import { authManager } from '$lib/managers/auth-manager.svelte';
-import { downloadManager } from '$lib/managers/download-manager.svelte';
 import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
 import { assetsSnapshot } from '$lib/managers/timeline-manager/utils.svelte';
 import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
 import { isSelectingAllAssets } from '$lib/stores/assets-store.svelte';
 import { preferences } from '$lib/stores/user.store';
-import { downloadRequest, sleep, withError } from '$lib/utils';
+import { sleep, withError } from '$lib/utils';
 import { getByteUnitString } from '$lib/utils/byte-units';
 import { getFormatter } from '$lib/utils/i18n';
 import { navigate } from '$lib/utils/navigation';
@@ -25,8 +24,8 @@ import {
   deleteStacks,
   getAssetInfo,
   getBaseUrl,
-  getDownloadInfo,
   getStack,
+  prepareDownload,
   untagAssets,
   updateAsset,
   updateAssets,
@@ -182,12 +181,12 @@ export const downloadUrl = (url: string, filename: string) => {
 };
 
 export const downloadArchive = async (fileName: string, options: Omit<DownloadInfoDto, 'archiveSize'>) => {
+  const $t = get(t);
   const $preferences = get<UserPreferencesResponseDto | undefined>(preferences);
   const dto = { ...options, archiveSize: $preferences?.download.archiveSize };
 
-  const [error, downloadInfo] = await withError(() => getDownloadInfo({ ...authManager.params, downloadInfoDto: dto }));
+  const [error, downloadInfo] = await withError(() => prepareDownload({ ...authManager.params, downloadInfoDto: dto }));
   if (error) {
-    const $t = get(t);
     handleError(error, $t('errors.unable_to_download_files'));
     return;
   }
@@ -202,32 +201,19 @@ export const downloadArchive = async (fileName: string, options: Omit<DownloadIn
     const archiveName = fileName.replace('.zip', `${suffix}-${DateTime.now().toFormat('yyyyLLdd_HHmmss')}.zip`);
     const queryParams = asQueryString(authManager.params);
 
-    let downloadKey = `${archiveName} `;
-    if (downloadInfo.archives.length > 1) {
-      downloadKey = `${archiveName} (${index + 1}/${downloadInfo.archives.length})`;
+    if (index !== 0) {
+      // play nice with Safari
+      await sleep(500);
     }
 
-    const abort = new AbortController();
-    downloadManager.add(downloadKey, archive.size, abort);
-
     try {
-      // TODO use sdk once it supports progress events
-      const { data } = await downloadRequest({
-        method: 'POST',
-        url: getBaseUrl() + '/download/archive' + (queryParams ? `?${queryParams}` : ''),
-        data: { assetIds: archive.assetIds },
-        signal: abort.signal,
-        onDownloadProgress: (event) => downloadManager.update(downloadKey, event.loaded),
-      });
-
-      downloadBlob(data, archiveName);
+      toastManager.success($t('downloading'));
+      downloadUrl(
+        getBaseUrl() + `/download/archive/${archive.downloadRequestId}` + (queryParams ? `?${queryParams}` : ''),
+        archiveName,
+      );
     } catch (error) {
-      const $t = get(t);
       handleError(error, $t('errors.unable_to_download_files'));
-      downloadManager.clear(downloadKey);
-      return;
-    } finally {
-      setTimeout(() => downloadManager.clear(downloadKey), 5000);
     }
   }
 };

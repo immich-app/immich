@@ -582,6 +582,8 @@ export enum JobName {
 
   DatabaseBackup = 'DatabaseBackup',
 
+  DownloadRequestCleanup = 'DownloadRequestCleanup',
+
   FacialRecognitionQueueAll = 'FacialRecognitionQueueAll',
   FacialRecognition = 'FacialRecognition',
 
