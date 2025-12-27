@@ -69,7 +69,7 @@ extension on AssetResponseDto {
         api.AssetVisibility.locked => AssetVisibility.locked,
         _ => AssetVisibility.timeline,
       },
-      durationInSeconds: duration.toDuration()?.inSeconds ?? 0,
+      durationInSeconds: duration?.toDuration()?.inSeconds ?? 0,
       height: exifInfo?.exifImageHeight?.toInt(),
       width: exifInfo?.exifImageWidth?.toInt(),
       isFavorite: isFavorite,

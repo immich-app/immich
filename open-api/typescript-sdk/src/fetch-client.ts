@@ -342,7 +342,8 @@ export type AssetResponseDto = {
     deviceAssetId: string;
     deviceId: string;
     duplicateId?: string | null;
-    duration: string;
+    /** Video/gif duration in hh:mm:ss.SSS format (null for static images) */
+    duration: string | null;
     exifInfo?: ExifResponseDto;
     /** The actual UTC timestamp when the file was created/captured, preserving timezone information. This is the authoritative timestamp for chronological sorting within timeline groups. Combined with timezone data, this can be used to determine the exact moment the photo was taken. */
     fileCreatedAt: string;
@@ -1669,7 +1670,7 @@ export type TimeBucketAssetResponseDto = {
     city: (string | null)[];
     /** Array of country names extracted from EXIF GPS data */
     country: (string | null)[];
-    /** Array of video durations in HH:MM:SS format (null for images) */
+    /** Array of video/gif durations in hh:mm:ss.SSS format (null for static images) */
     duration: (string | null)[];
     /** Array of file creation timestamps in UTC (ISO 8601 format, without timezone) */
     fileCreatedAt: string[];
