@@ -2,7 +2,8 @@
 import { Command, Option } from 'commander';
 import os from 'node:os';
 import path from 'node:path';
-import { upload } from 'src/commands/asset';
+import { addAssets, albumInfo, listAlbums } from 'src/commands/album';
+import { listAssets, upload } from 'src/commands/asset';
 import { login, logout } from 'src/commands/auth';
 import { serverInfo } from 'src/commands/server-info';
 import { version } from '../package.json';
@@ -39,6 +40,58 @@ program
   .command('server-info')
   .description('Display server information')
   .action(() => serverInfo(program.opts()));
+
+const album = program.command('album').description('Manage albums');
+
+album
+  .command('list')
+  .description('List all albums')
+  .addOption(
+    new Option('-j, --json-output', 'Output detailed information in json format')
+      .env('IMMICH_JSON_OUTPUT')
+      .default(false),
+  )
+  .action((options) => listAlbums({ ...program.opts(), ...options }));
+
+album
+  .command('info')
+  .description('Show album information')
+  .argument('<id>', 'Album ID')
+  .addOption(
+    new Option('-j, --json-output', 'Output detailed information in json format')
+      .env('IMMICH_JSON_OUTPUT')
+      .default(false),
+  )
+  .action((id, options) => albumInfo(id, { ...program.opts(), ...options }));
+
+album
+  .command('add')
+  .description('Add assets to an album')
+  .argument('<albumId>', 'Album ID')
+  .argument('<assetIds...>', 'Asset IDs')
+  .addOption(
+    new Option('-b, --batch-size <number>', 'Number of assets to add per request')
+      .env('IMMICH_ALBUM_BATCH_SIZE')
+      .default(1000),
+  )
+  .addOption(
+    new Option('-j, --json-output', 'Output detailed information in json format')
+      .env('IMMICH_JSON_OUTPUT')
+      .default(false),
+  )
+  .action((albumId, assetIds, options) => addAssets(albumId, assetIds, { ...program.opts(), ...options }));
+
+const asset = program.command('asset').description('Manage assets');
+
+asset
+  .command('list')
+  .description('List all assets')
+  .addOption(
+    new Option('-j, --json-output', 'Output detailed information in json format')
+      .env('IMMICH_JSON_OUTPUT')
+      .default(false),
+  )
+  .action((options) => listAssets({ ...program.opts(), ...options }));
 
 program
   .command('upload')

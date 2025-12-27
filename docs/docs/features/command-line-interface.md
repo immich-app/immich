@@ -5,6 +5,8 @@ Immich has a command line interface (CLI) that allows you to perform certain act
 ## Features
 
 - Upload photos and videos to Immich
+- List assets and albums
+- Add assets to albums
 - Check server version
 
 More features are planned for the future.
@@ -71,6 +73,8 @@ Commands:
   login|login-key <url> <key>         Login using an API key
   logout                              Remove stored credentials
   server-info                         Display server information
+  album                               Manage albums
+  asset                               Manage assets
   upload [options] [paths...]         Upload assets
   help [command]                      display help for command
 ```
@@ -112,6 +116,59 @@ Options:
 </details>
 
 Note that the above options can read from environment variables as well.
+
+The album command supports the following subcommands:
+
+<details>
+<summary>Album Commands</summary>
+
+```
+Usage: immich album [options] [command]
+
+Manage albums
+
+Options:
+  -h, --help                        display help for command
+
+Commands:
+  list [options]                    List all albums
+  info [options] <id>               Show album information
+  add [options] <albumId> <assetIds...>  Add assets to an album
+  help [command]                    display help for command
+```
+
+```
+Options:
+  -b, --batch-size <number>         Number of assets to add per request (default: 1000, env: IMMICH_ALBUM_BATCH_SIZE)
+  -j, --json-output                 Output detailed information in json format (default: false, env: IMMICH_JSON_OUTPUT)
+```
+
+</details>
+
+The asset command supports the following subcommands:
+
+<details>
+<summary>Asset Commands</summary>
+
+```
+Usage: immich asset [options] [command]
+
+Manage assets
+
+Options:
+  -h, --help                        display help for command
+
+Commands:
+  list [options]                    List all assets
+  help [command]                    display help for command
+```
+
+```
+Options:
+  -j, --json-output                 Output detailed information in json format (default: false, env: IMMICH_JSON_OUTPUT)
+```
+
+</details>
 
 ## Quick Start
 

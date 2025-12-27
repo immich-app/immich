@@ -4,12 +4,14 @@ import {
   AssetBulkUploadCheckResult,
   AssetMediaResponseDto,
   AssetMediaStatus,
+  SearchResponseDto,
   addAssetsToAlbum,
   checkBulkUpload,
   createAlbum,
   defaults,
   getAllAlbums,
   getSupportedMediaTypes,
+  searchAssets,
 } from '@immich/sdk';
 import byteSize from 'byte-size';
 import { Matcher, watch as watchFs } from 'chokidar';
@@ -20,16 +22,38 @@ import { Stats, createReadStream } from 'node:fs';
 import { stat, unlink } from 'node:fs/promises';
 import path, { basename } from 'node:path';
 import { Queue } from 'src/queue';
-import { BaseOptions, Batcher, authenticate, crawl, sha1 } from 'src/utils';
+import { BaseOptions, Batcher, authenticate, crawl, logError, sha1, withError } from 'src/utils';
 
 const UPLOAD_WATCH_BATCH_SIZE = 100;
 const UPLOAD_WATCH_DEBOUNCE_TIME_MS = 10_000;
 
-const s = (count: number) => (count === 1 ? '' : 's');
+export const s = (count: number) => (count === 1 ? '' : 's');
 
 // TODO figure out why `id` is missing
 type AssetBulkUploadCheckResults = Array<AssetBulkUploadCheckResult & { id: string }>;
 type Asset = { id: string; filepath: string };
+
+export interface ListAssetsOptions extends BaseOptions {
+  jsonOutput?: boolean;
+}
+
+export const listAssets = async (options: ListAssetsOptions) => {
+  await authenticate(options);
+  const [error, result] = await withError<SearchResponseDto>(searchAssets({ metadataSearchDto: {} }));
+  if (error) {
+    logError(error, 'Failed to list assets');
+    process.exit(1);
+  }
+
+  if (options.jsonOutput) {
+    console.log(JSON.stringify(result.assets.items, undefined, 4));
+    return;
+  }
+
+  for (const asset of result.assets.items) {
+    console.log(`${asset.id}\t${asset.originalFileName}`);
+  }
+};
 
 export interface UploadOptionsDto {
   recursive?: boolean;
