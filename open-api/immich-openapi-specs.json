@@ -3756,6 +3756,103 @@
         "x-immich-state": "Stable"
       }
     },
+    "/assets/{id}/tiles/{level}/{col}/{row}": {
+      "get": {
+        "description": "Download a specific tile from an image at the specified level and position",
+        "operationId": "getAssetTile",
+        "parameters": [
+          {
+            "name": "col",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "level",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "row",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "slug",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Get an image tile",
+        "tags": [
+          "Assets"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v2.4.0",
+            "state": "Added"
+          },
+          {
+            "version": "v2.4.0",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "asset.view",
+        "x-immich-state": "Stable"
+      }
+    },
     "/assets/{id}/video/playback": {
       "get": {
         "description": "Streams the video file for the specified asset. This endpoint also supports byte range requests.",
