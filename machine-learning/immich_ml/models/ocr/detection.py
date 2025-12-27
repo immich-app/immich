@@ -89,6 +89,11 @@ class TextDetector(InferenceModel):
 
         resize_h = int(round(resize_h / 32) * 32)
         resize_w = int(round(resize_w / 32) * 32)
+
+        # TODO for test only
+        resize_h = 1536
+        resize_w = 1536
+
         resized_img = img.resize((int(resize_w), int(resize_h)), resample=Image.Resampling.LANCZOS)
 
         img_np: NDArray[np.float32] = cv2.cvtColor(np.array(resized_img, dtype=np.float32), cv2.COLOR_RGB2BGR)  # type: ignore
