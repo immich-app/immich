@@ -272,6 +272,7 @@ export type AssetFace = {
   person?: Person | null;
   updatedAt: Date;
   updateId: string;
+  isVisible: boolean;
 };
 
 export type Plugin = Selectable<PluginTable>;
@@ -340,6 +341,8 @@ export const columns = {
     'asset.originalPath',
     'asset.ownerId',
     'asset.type',
+    'asset.width',
+    'asset.height',
   ],
   assetFiles: ['asset_file.id', 'asset_file.path', 'asset_file.type'],
   authUser: ['user.id', 'user.name', 'user.email', 'user.isAdmin', 'user.quotaUsageInBytes', 'user.quotaSizeInBytes'],
@@ -390,6 +393,8 @@ export const columns = {
     'asset.livePhotoVideoId',
     'asset.stackId',
     'asset.libraryId',
+    'asset.width',
+    'asset.height',
   ],
   syncAlbumUser: ['album_user.albumId as albumId', 'album_user.userId as userId', 'album_user.role'],
   syncStack: ['stack.id', 'stack.createdAt', 'stack.updatedAt', 'stack.primaryAssetId', 'stack.ownerId'],

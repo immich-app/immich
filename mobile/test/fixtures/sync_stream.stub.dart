@@ -94,25 +94,11 @@ abstract final class SyncStreamStub {
     required String ack,
     DateTime? trashedAt,
   }) {
-    return _assetV1(
-      id: id,
-      checksum: checksum,
-      deletedAt: trashedAt ?? DateTime(2025, 1, 1),
-      ack: ack,
-    );
+    return _assetV1(id: id, checksum: checksum, deletedAt: trashedAt ?? DateTime(2025, 1, 1), ack: ack);
   }
 
-  static SyncEvent assetModified({
-    required String id,
-    required String checksum,
-    required String ack,
-  }) {
-    return _assetV1(
-      id: id,
-      checksum: checksum,
-      deletedAt: null,
-      ack: ack,
-    );
+  static SyncEvent assetModified({required String id, required String checksum, required String ack}) {
+    return _assetV1(id: id, checksum: checksum, deletedAt: null, ack: ack);
   }
 
   static SyncEvent _assetV1({
@@ -140,6 +126,8 @@ abstract final class SyncStreamStub {
         thumbhash: null,
         type: AssetTypeEnum.IMAGE,
         visibility: AssetVisibility.timeline,
+        width: null,
+        height: null,
       ),
       ack: ack,
     );

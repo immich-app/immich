@@ -236,6 +236,27 @@ describe(AssetController.name, () => {
     });
   });
 
+  describe('PUT /assets/:id/edits', () => {
+    it('should be an authenticated route', async () => {
+      await request(ctx.getHttpServer()).put(`/assets/${factory.uuid()}/edits`).send({ edits: [] });
+      expect(ctx.authenticate).toHaveBeenCalled();
+    });
+
+    it('should require a valid id', async () => {
+      const { status, body } = await request(ctx.getHttpServer()).put(`/assets/123/edits`).send({ edits: [] });
+      expect(status).toBe(400);
+      expect(body).toEqual(factory.responses.badRequest(expect.arrayContaining(['id must be a UUID'])));
+    });
+
+    it('should require at least one edit', async () => {
+      const { status, body } = await request(ctx.getHttpServer())
+        .put(`/assets/${factory.uuid()}/edits`)
+        .send({ edits: [] });
+      expect(status).toBe(400);
+      expect(body).toEqual(factory.responses.badRequest(['edits must contain at least 1 elements']));
+    });
+  });
+
   describe('DELETE /assets/:id/metadata/:key', () => {
     it('should be an authenticated route', async () => {
       await request(ctx.getHttpServer()).delete(`/assets/${factory.uuid()}/metadata/mobile-app`);
