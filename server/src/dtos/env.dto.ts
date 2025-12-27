@@ -1,6 +1,6 @@
 import { Transform, Type } from 'class-transformer';
 import { IsEnum, IsInt, IsString, Matches } from 'class-validator';
-import { DatabaseSslMode, ImmichEnvironment, LogLevel } from 'src/enum';
+import { DatabaseSslMode, ImmichEnvironment, LogFormat, LogLevel } from 'src/enum';
 import { IsIPRange, Optional, ValidateBoolean } from 'src/validation';
 
 export class EnvDto {
@@ -47,6 +47,10 @@ export class EnvDto {
   @IsEnum(LogLevel)
   @Optional()
   IMMICH_LOG_LEVEL?: LogLevel;
+
+  @IsEnum(LogFormat)
+  @Optional()
+  IMMICH_LOG_FORMAT?: LogFormat;
 
   @Optional()
   @Matches(/^\//, { message: 'IMMICH_MEDIA_LOCATION must be an absolute path' })
