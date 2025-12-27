@@ -17,11 +17,20 @@ class AssetListSettings extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final showStorageIndicator = useAppSettingsState(AppSettingsEnum.storageIndicator);
+    final showOwnerName = useAppSettingsState(AppSettingsEnum.showOwnerName);
 
     final assetListSetting = [
       SettingsSwitchListTile(
         valueNotifier: showStorageIndicator,
         title: 'theme_setting_asset_list_storage_indicator_title'.tr(),
+        onChanged: (_) {
+          ref.invalidate(appSettingsServiceProvider);
+          ref.invalidate(settingsProvider);
+        },
+      ),
+      SettingsSwitchListTile(
+        valueNotifier: showOwnerName,
+        title: 'theme_setting_asset_list_show_owner_name_title'.tr(),
         onChanged: (_) {
           ref.invalidate(appSettingsServiceProvider);
           ref.invalidate(settingsProvider);
