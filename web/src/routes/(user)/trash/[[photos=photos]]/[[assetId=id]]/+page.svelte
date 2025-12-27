@@ -13,6 +13,7 @@
   import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
+  import { user } from '$lib/stores/user.store';
   import { handlePromiseError } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { emptyTrash, restoreTrash } from '@immich/sdk';
@@ -28,7 +29,7 @@
   let { data }: Props = $props();
 
   let timelineManager = $state<TimelineManager>() as TimelineManager;
-  const options = { isTrashed: true };
+  const options = $derived({ isTrashed: true, _accountSwitchId: $user?.id });
 
   const assetInteraction = new AssetInteraction();
 

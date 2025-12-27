@@ -103,6 +103,7 @@ Access the demo [here](https://demo.immich.app). For the mobile app, you can use
 | Stacked Photos                               | Yes    | Yes |
 | Tags                                         | No     | Yes |
 | Folder View                                  | Yes    | Yes |
+| Account Switching                            | No     | Yes |
 
 ## Translations
 
