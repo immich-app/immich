@@ -183,107 +183,107 @@
 
     {#if isOwner}
       <DeleteAction {asset} {onAction} {preAction} />
+    {/if}
 
-      <ButtonContextMenu direction="left" align="top-right" color="secondary" title={$t('more')} icon={mdiDotsVertical}>
-        {#if showSlideshow && !isLocked}
-          <MenuOption icon={mdiPresentationPlay} text={$t('slideshow')} onClick={onPlaySlideshow} />
+    <ButtonContextMenu direction="left" align="top-right" color="secondary" title={$t('more')} icon={mdiDotsVertical}>
+      {#if showSlideshow && !isLocked}
+        <MenuOption icon={mdiPresentationPlay} text={$t('slideshow')} onClick={onPlaySlideshow} />
+      {/if}
+      {#if isOwner && showDownloadButton}
+        <DownloadAction asset={toTimelineAsset(asset)} menuItem />
+      {/if}
+
+      {#if !isLocked}
+        {#if asset.isTrashed}
+          <RestoreAction {asset} {onAction} />
+        {:else}
+          <AddToAlbumAction {asset} {onAction} />
+          <AddToAlbumAction {asset} {onAction} shared />
         {/if}
-        {#if showDownloadButton}
-          <DownloadAction asset={toTimelineAsset(asset)} menuItem />
+      {/if}
+
+      {#if isOwner}
+        <AddToStackAction {asset} {stack} {onAction} />
+        {#if stack}
+          <UnstackAction {stack} {onAction} />
+          <KeepThisDeleteOthersAction {stack} {asset} {onAction} />
+          {#if stack?.primaryAssetId !== asset.id}
+            <SetStackPrimaryAsset {stack} {asset} {onAction} />
+            {#if stack?.assets?.length > 2}
+              <RemoveAssetFromStack {asset} {stack} {onAction} />
+            {/if}
+          {/if}
+        {/if}
+        {#if album}
+          <SetAlbumCoverAction {asset} {album} />
+        {/if}
+        {#if person}
+          <SetFeaturedPhotoAction {asset} {person} {onAction} />
+        {/if}
+        {#if asset.type === AssetTypeEnum.Image && !isLocked}
+          <SetProfilePictureAction {asset} />
         {/if}
 
         {#if !isLocked}
-          {#if asset.isTrashed}
-            <RestoreAction {asset} {onAction} />
-          {:else}
-            <AddToAlbumAction {asset} {onAction} />
-            <AddToAlbumAction {asset} {onAction} shared />
-          {/if}
-        {/if}
-
-        {#if isOwner}
-          <AddToStackAction {asset} {stack} {onAction} />
-          {#if stack}
-            <UnstackAction {stack} {onAction} />
-            <KeepThisDeleteOthersAction {stack} {asset} {onAction} />
-            {#if stack?.primaryAssetId !== asset.id}
-              <SetStackPrimaryAsset {stack} {asset} {onAction} />
-              {#if stack?.assets?.length > 2}
-                <RemoveAssetFromStack {asset} {stack} {onAction} />
-              {/if}
-            {/if}
-          {/if}
-          {#if album}
-            <SetAlbumCoverAction {asset} {album} />
-          {/if}
-          {#if person}
-            <SetFeaturedPhotoAction {asset} {person} {onAction} />
-          {/if}
-          {#if asset.type === AssetTypeEnum.Image && !isLocked}
-            <SetProfilePictureAction {asset} />
-          {/if}
-
-          {#if !isLocked}
-            <ArchiveAction {asset} {onAction} {preAction} />
+          <ArchiveAction {asset} {onAction} {preAction} />
+          <MenuOption 
+            icon={mdiUpload}
+            onClick={() => handleReplaceAsset(asset.id)}
+            text={$t('replace_with_upload')} 
+          />
+          {#if !asset.isArchived && !asset.isTrashed}
             <MenuOption
-              icon={mdiUpload}
-              onClick={() => handleReplaceAsset(asset.id)}
-              text={$t('replace_with_upload')}
-            />
-            {#if !asset.isArchived && !asset.isTrashed}
-              <MenuOption
-                icon={mdiImageSearch}
-                onClick={() => goto(resolve(`${AppRoute.PHOTOS}?at=${stack?.primaryAssetId ?? asset.id}`))}
-                text={$t('view_in_timeline')}
-              />
-            {/if}
-            {#if !asset.isArchived && !asset.isTrashed && smartSearchEnabled}
-              <MenuOption
-                icon={mdiCompare}
-                onClick={() =>
-                  goto(resolve(`${AppRoute.SEARCH}?query={"queryAssetId":"${stack?.primaryAssetId ?? asset.id}"}`))}
-                text={$t('view_similar_photos')}
-              />
-            {/if}
-          {/if}
-
-          {#if !asset.isTrashed}
-            <SetVisibilityAction asset={toTimelineAsset(asset)} {onAction} {preAction} />
-          {/if}
-
-          {#if asset.type === AssetTypeEnum.Video}
-            <MenuOption
-              icon={mdiVideoOutline}
-              onClick={() => setPlayOriginalVideo(!playOriginalVideo)}
-              text={playOriginalVideo ? $t('play_transcoded_video') : $t('play_original_video')}
+              icon={mdiImageSearch}
+              onClick={() => goto(resolve(`${AppRoute.PHOTOS}?at=${stack?.primaryAssetId ?? asset.id}`))}
+              text={$t('view_in_timeline')}
             />
           {/if}
-
-          <hr />
-          <MenuOption
-            icon={mdiHeadSyncOutline}
-            onClick={() => onRunJob(AssetJobName.RefreshFaces)}
-            text={$getAssetJobName(AssetJobName.RefreshFaces)}
-          />
-          <MenuOption
-            icon={mdiDatabaseRefreshOutline}
-            onClick={() => onRunJob(AssetJobName.RefreshMetadata)}
-            text={$getAssetJobName(AssetJobName.RefreshMetadata)}
-          />
-          <MenuOption
-            icon={mdiImageRefreshOutline}
-            onClick={() => onRunJob(AssetJobName.RegenerateThumbnail)}
-            text={$getAssetJobName(AssetJobName.RegenerateThumbnail)}
-          />
-          {#if asset.type === AssetTypeEnum.Video}
+          {#if !asset.isArchived && !asset.isTrashed && smartSearchEnabled}
             <MenuOption
-              icon={mdiCogRefreshOutline}
-              onClick={() => onRunJob(AssetJobName.TranscodeVideo)}
-              text={$getAssetJobName(AssetJobName.TranscodeVideo)}
+              icon={mdiCompare}
+              onClick={() =>
+                goto(resolve(`${AppRoute.SEARCH}?query={"queryAssetId":"${stack?.primaryAssetId ?? asset.id}"}`))}
+              text={$t('view_similar_photos')}
             />
           {/if}
         {/if}
-      </ButtonContextMenu>
-    {/if}
+
+        {#if !asset.isTrashed}
+          <SetVisibilityAction asset={toTimelineAsset(asset)} {onAction} {preAction} />
+        {/if}
+
+        {#if asset.type === AssetTypeEnum.Video}
+          <MenuOption
+            icon={mdiVideoOutline}
+            onClick={() => setPlayOriginalVideo(!playOriginalVideo)}
+            text={playOriginalVideo ? $t('play_transcoded_video') : $t('play_original_video')}
+          />
+        {/if}
+
+        <hr />
+        <MenuOption
+          icon={mdiHeadSyncOutline}
+          onClick={() => onRunJob(AssetJobName.RefreshFaces)}
+          text={$getAssetJobName(AssetJobName.RefreshFaces)}
+        />
+        <MenuOption
+          icon={mdiDatabaseRefreshOutline}
+          onClick={() => onRunJob(AssetJobName.RefreshMetadata)}
+          text={$getAssetJobName(AssetJobName.RefreshMetadata)}
+        />
+        <MenuOption
+          icon={mdiImageRefreshOutline}
+          onClick={() => onRunJob(AssetJobName.RegenerateThumbnail)}
+          text={$getAssetJobName(AssetJobName.RegenerateThumbnail)}
+        />
+        {#if asset.type === AssetTypeEnum.Video}
+          <MenuOption
+            icon={mdiCogRefreshOutline}
+            onClick={() => onRunJob(AssetJobName.TranscodeVideo)}
+            text={$getAssetJobName(AssetJobName.TranscodeVideo)}
+          />
+        {/if}
+      {/if}
+    </ButtonContextMenu>
   </div>
 </div>
