@@ -17,6 +17,7 @@ class DriftUploadDetailPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final uploadItems = ref.watch(driftBackupProvider.select((state) => state.uploadItems));
+    final iCloudProgress = ref.watch(driftBackupProvider.select((state) => state.iCloudDownloadProgress));
 
     return Scaffold(
       appBar: AppBar(
@@ -25,7 +26,9 @@ class DriftUploadDetailPage extends ConsumerWidget {
         elevation: 0,
         scrolledUnderElevation: 1,
       ),
-      body: uploadItems.isEmpty ? _buildEmptyState(context) : _buildUploadList(uploadItems),
+      body: uploadItems.isEmpty && iCloudProgress.isEmpty
+          ? _buildEmptyState(context)
+          : _buildUploadList(uploadItems, iCloudProgress),
     );
   }
 
@@ -45,16 +48,107 @@ class DriftUploadDetailPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildUploadList(Map<String, DriftUploadStatus> uploadItems) {
+  Widget _buildUploadList(Map<String, DriftUploadStatus> uploadItems, Map<String, double> iCloudProgress) {
+    final totalItems = uploadItems.length + iCloudProgress.length;
+
     return ListView.separated(
       addAutomaticKeepAlives: true,
       padding: const EdgeInsets.all(16),
-      itemCount: uploadItems.length,
+      itemCount: totalItems,
       separatorBuilder: (context, index) => const SizedBox(height: 4),
       itemBuilder: (context, index) {
-        final item = uploadItems.values.elementAt(index);
+        // Show iCloud downloads first
+        if (index < iCloudProgress.length) {
+          final entry = iCloudProgress.entries.elementAt(index);
+          return _buildICloudDownloadCard(context, entry.key, entry.value);
+        }
+
+        // Then show upload items
+        final uploadIndex = index - iCloudProgress.length;
+        final item = uploadItems.values.elementAt(uploadIndex);
         return _buildUploadCard(context, item);
       },
+    );
+  }
+
+  Widget _buildICloudDownloadCard(BuildContext context, String assetId, double progress) {
+    final double progressPercentage = (progress * 100).clamp(0, 100);
+
+    return Card(
+      elevation: 0,
+      color: context.colorScheme.surfaceContainerHighest,
+      shape: RoundedRectangleBorder(
+        borderRadius: const BorderRadius.all(Radius.circular(16)),
+        side: BorderSide(color: context.colorScheme.outline.withValues(alpha: 0.1), width: 1),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.cloud_download_rounded, size: 20, color: context.colorScheme.primary),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    spacing: 4,
+                    children: [
+                      Text(
+                        "Downloading from iCloud",
+                        style: context.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      Text(
+                        assetId,
+                        style: context.textTheme.bodySmall?.copyWith(
+                          color: context.colorScheme.onSurface.withValues(alpha: 0.6),
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+                _buildICloudProgressIndicator(context, progress, progressPercentage),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildICloudProgressIndicator(BuildContext context, double progress, double percentage) {
+    return Column(
+      children: [
+        Stack(
+          alignment: AlignmentDirectional.center,
+          children: [
+            SizedBox(
+              width: 36,
+              height: 36,
+              child: TweenAnimationBuilder(
+                tween: Tween<double>(begin: 0.0, end: progress),
+                duration: const Duration(milliseconds: 300),
+                builder: (context, value, _) => CircularProgressIndicator(
+                  backgroundColor: context.colorScheme.outline.withValues(alpha: 0.2),
+                  strokeWidth: 3,
+                  value: value,
+                  color: context.colorScheme.primary,
+                ),
+              ),
+            ),
+            Text(
+              percentage.toStringAsFixed(0),
+              style: context.textTheme.labelSmall?.copyWith(fontWeight: FontWeight.bold, fontSize: 10),
+            ),
+          ],
+        ),
+        Text("iCloud", style: context.textTheme.labelSmall?.copyWith(color: context.colorScheme.primary, fontSize: 10)),
+      ],
     );
   }
 
