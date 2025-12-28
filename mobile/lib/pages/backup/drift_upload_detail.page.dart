@@ -57,13 +57,11 @@ class DriftUploadDetailPage extends ConsumerWidget {
       itemCount: totalItems,
       separatorBuilder: (context, index) => const SizedBox(height: 4),
       itemBuilder: (context, index) {
-        // Show iCloud downloads first
         if (index < iCloudProgress.length) {
           final entry = iCloudProgress.entries.elementAt(index);
           return _buildICloudDownloadCard(context, entry.key, entry.value);
         }
 
-        // Then show upload items
         final uploadIndex = index - iCloudProgress.length;
         final item = uploadItems.values.elementAt(uploadIndex);
         return _buildUploadCard(context, item);

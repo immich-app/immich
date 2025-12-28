@@ -6,7 +6,9 @@ import 'package:logging/logging.dart';
 import 'package:photo_manager/photo_manager.dart';
 
 class StorageRepository {
-  const StorageRepository();
+  final log = Logger('StorageRepository');
+
+  StorageRepository();
 
   Future<File?> getFileForAsset(String assetId) async {
     File? file;
@@ -82,10 +84,7 @@ class StorageRepository {
     return entity;
   }
 
-  /// Check if an asset is available locally or needs to be downloaded from iCloud
   Future<bool> isAssetAvailableLocally(String assetId) async {
-    final log = Logger('StorageRepository');
-
     try {
       final entity = await AssetEntity.fromId(assetId);
       if (entity == null) {
@@ -100,10 +99,7 @@ class StorageRepository {
     }
   }
 
-  /// Load file from iCloud with progress handler (for iOS)
   Future<File?> loadFileFromCloud(String assetId, {PMProgressHandler? progressHandler}) async {
-    final log = Logger('StorageRepository');
-
     try {
       final entity = await AssetEntity.fromId(assetId);
       if (entity == null) {
@@ -118,10 +114,7 @@ class StorageRepository {
     }
   }
 
-  /// Load live photo motion file from iCloud with progress handler (for iOS)
   Future<File?> loadMotionFileFromCloud(String assetId, {PMProgressHandler? progressHandler}) async {
-    final log = Logger('StorageRepository');
-
     try {
       final entity = await AssetEntity.fromId(assetId);
       if (entity == null) {

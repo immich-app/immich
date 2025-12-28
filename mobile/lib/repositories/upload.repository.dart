@@ -21,6 +21,7 @@ class UploadTaskWithFile {
 final uploadRepositoryProvider = Provider((ref) => UploadRepository());
 
 class UploadRepository {
+  final Logger logger = Logger('UploadRepository');
   void Function(TaskStatusUpdate)? onUploadStatus;
   void Function(TaskProgressUpdate)? onTaskProgress;
 
@@ -142,7 +143,6 @@ class UploadRepository {
     }
   }
 
-  /// Upload a single asset with progress tracking
   Future<UploadResult> uploadSingleAsset({
     required File file,
     required String originalFileName,
@@ -160,7 +160,7 @@ class UploadRepository {
       httpClient: httpClient,
       cancelToken: cancelToken,
       onProgress: onProgress,
-      logContext: 'asset',
+      logContext: 'assetUpload',
     );
   }
 
@@ -182,7 +182,7 @@ class UploadRepository {
       httpClient: httpClient,
       cancelToken: cancelToken,
       onProgress: onProgress,
-      logContext: 'livePhoto video',
+      logContext: 'livePhotoVideoUpload',
     );
 
     if (result.isSuccess && result.remoteAssetId != null) {
@@ -192,7 +192,6 @@ class UploadRepository {
     return null;
   }
 
-  /// Internal method to upload a file to the server
   Future<UploadResult> _uploadFile({
     required File file,
     required String originalFileName,
@@ -204,7 +203,6 @@ class UploadRepository {
     required String logContext,
   }) async {
     final String savedEndpoint = Store.get(StoreKey.serverEndpoint);
-    final Logger logger = Logger('UploadRepository');
 
     try {
       final fileStream = file.openRead();
@@ -239,7 +237,6 @@ class UploadRepository {
   }
 }
 
-/// Result of an upload operation
 class UploadResult {
   final bool isSuccess;
   final bool isCancelled;
@@ -268,7 +265,6 @@ class UploadResult {
   }
 }
 
-/// Custom MultipartRequest with progress tracking
 class CustomMultipartRequest extends MultipartRequest {
   CustomMultipartRequest(super.method, super.url, {required this.onProgress});
 

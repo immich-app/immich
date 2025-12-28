@@ -15,7 +15,6 @@ import 'package:immich_mobile/infrastructure/repositories/backup.repository.dart
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
-import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/storage.provider.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
@@ -122,7 +121,7 @@ class UploadService {
   /// Find backup candidates
   /// Build the upload tasks
   /// Enqueue the tasks
-  Future<void> startBackup(String userId, void Function(EnqueueStatus status) onEnqueueTasks) async {
+  Future<void> startBackupWithURLSession(String userId) async {
     await _storageRepository.clearCache();
 
     shouldAbortQueuingTasks = false;
@@ -133,27 +132,17 @@ class UploadService {
     }
 
     const batchSize = 100;
-    int count = 0;
-    for (int i = 0; i < candidates.length; i += batchSize) {
-      if (shouldAbortQueuingTasks) {
-        break;
+    final batch = candidates.take(batchSize).toList();
+    List<UploadTask> tasks = [];
+    for (final asset in batch) {
+      final task = await getUploadTask(asset);
+      if (task != null) {
+        tasks.add(task);
       }
+    }
 
-      final batch = candidates.skip(i).take(batchSize).toList();
-      List<UploadTask> tasks = [];
-      for (final asset in batch) {
-        final task = await getUploadTask(asset);
-        if (task != null) {
-          tasks.add(task);
-        }
-      }
-
-      if (tasks.isNotEmpty && !shouldAbortQueuingTasks) {
-        count += tasks.length;
-        await enqueueTasks(tasks);
-
-        onEnqueueTasks(EnqueueStatus(enqueueCount: count, totalCount: candidates.length));
-      }
+    if (tasks.isNotEmpty && !shouldAbortQueuingTasks) {
+      await enqueueTasks(tasks);
     }
   }
 
@@ -215,39 +204,42 @@ class UploadService {
     }
 
     try {
-      int clientIndex = 0;
+      int currentIndex = 0;
 
-      for (int i = 0; i < candidates.length; i += concurrentUploads) {
-        if (shouldAbortQueuingTasks || cancelToken.isCancelled) {
-          break;
-        }
+      Future<void> worker(Client httpClient) async {
+        while (true) {
+          if (shouldAbortQueuingTasks || cancelToken.isCancelled) {
+            break;
+          }
 
-        final batch = candidates.skip(i).take(concurrentUploads).toList();
-        final uploadFutures = <Future<void>>[];
+          final index = currentIndex;
+          if (index >= candidates.length) {
+            break;
+          }
+          currentIndex++;
 
-        for (final asset in batch) {
-          final httpClient = httpClients[clientIndex % concurrentUploads];
-          clientIndex++;
+          final asset = candidates[index];
 
-          uploadFutures.add(
-            _uploadSingleAsset(
-              asset,
-              httpClient,
-              cancelToken,
-              (bytes, totalBytes) => onProgress(asset.localId!, asset.name, bytes, totalBytes),
-              onSuccess,
-              onError,
-              onICloudProgress: onICloudProgress,
-            ),
+          await _uploadSingleAsset(
+            asset,
+            httpClient,
+            cancelToken,
+            (bytes, totalBytes) => onProgress(asset.localId!, asset.name, bytes, totalBytes),
+            onSuccess,
+            onError,
+            onICloudProgress: onICloudProgress,
           );
         }
-
-        await Future.wait(uploadFutures);
-
-        if (shouldAbortQueuingTasks) {
-          break;
-        }
       }
+
+      // Start all workers in parallel - each worker continuously pulls from the queue
+      final workerFutures = <Future<void>>[];
+
+      for (int i = 0; i < concurrentUploads; i++) {
+        workerFutures.add(worker(httpClients[i]));
+      }
+
+      await Future.wait(workerFutures);
     } finally {
       for (final client in httpClients) {
         client.close();
@@ -322,7 +314,6 @@ class UploadService {
       }
 
       final originalFileName = entity.isLivePhoto ? p.setExtension(asset.name, p.extension(file.path)) : asset.name;
-      print("originalFileName: $originalFileName");
       final deviceId = Store.get(StoreKey.deviceId);
 
       final headers = ApiService.getRequestHeaders();
