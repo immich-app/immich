@@ -86,6 +86,27 @@
         return;
       }
 
+      // Try to parse coordinate pair from search input in the format `LATITUDE, LONGITUDE` as floats
+      const coordinateParts = searchWord.split(',').map((part) => part.trim());
+      if (coordinateParts.length === 2) {
+        const coordinateLat = Number.parseFloat(coordinateParts[0]);
+        const coordinateLng = Number.parseFloat(coordinateParts[1]);
+
+        if (
+          !Number.isNaN(coordinateLat) &&
+          !Number.isNaN(coordinateLng) &&
+          coordinateLat >= -90 &&
+          coordinateLat <= 90 &&
+          coordinateLng >= -180 &&
+          coordinateLng <= 180
+        ) {
+          places = [];
+          showLoadingSpinner = false;
+          handleUseSuggested(coordinateLat, coordinateLng);
+          return;
+        }
+      }
+
       searchPlaces({ name: searchWord })
         .then((searchResult) => {
           // skip result when a newer search is happening
