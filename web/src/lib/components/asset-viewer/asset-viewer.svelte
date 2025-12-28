@@ -96,7 +96,6 @@
     stopProgress: stopSlideshowProgress,
     slideshowNavigation,
     slideshowState,
-    slideshowTransition,
   } = slideshowStore;
   const stackThumbnailSize = 60;
   const stackSelectedThumbnailSize = 65;
@@ -327,6 +326,7 @@
   const handleStackedAssetMouseEvent = (isMouseOver: boolean, asset: AssetResponseDto) => {
     previewStackedAsset = isMouseOver ? asset : undefined;
   };
+
   const handlePreAction = (action: Action) => {
     preAction?.(action);
   };
@@ -506,13 +506,14 @@
         cursor={{ ...cursor, current: previewStackedAsset! }}
         onPreviousAsset={() => navigateAsset('previous')}
         onNextAsset={() => navigateAsset('next')}
-        haveFadeTransition={false}
         {sharedLink}
       />
     {:else if viewerKind === 'StackVideoViewer'}
       <VideoViewer
         assetId={previewStackedAsset!.id}
         cacheKey={previewStackedAsset!.thumbhash}
+        nextAsset={cursor.nextAsset}
+        previousAsset={cursor.previousAsset}
         projectionType={previewStackedAsset!.exifInfo?.projectionType}
         loopVideo={true}
         onPreviousAsset={() => navigateAsset('previous')}
@@ -525,6 +526,9 @@
     {:else if viewerKind === 'LiveVideoViewer'}
       <VideoViewer
         assetId={asset.livePhotoVideoId!}
+        nextAsset={cursor.nextAsset}
+        previousAsset={cursor.previousAsset}
+        {sharedLink}
         cacheKey={asset.thumbhash}
         projectionType={asset.exifInfo?.projectionType}
         loopVideo={$slideshowState !== SlideshowState.PlaySlideshow}
@@ -545,12 +549,14 @@
         onPreviousAsset={() => navigateAsset('previous')}
         onNextAsset={() => navigateAsset('next')}
         {sharedLink}
-        haveFadeTransition={$slideshowState !== SlideshowState.None && $slideshowTransition}
         onFree={() => eventManager.emit('AssetViewerFree')}
       />
     {:else if viewerKind === 'VideoViewer'}
       <VideoViewer
         assetId={asset.id}
+        nextAsset={cursor.nextAsset}
+        previousAsset={cursor.previousAsset}
+        {sharedLink}
         cacheKey={asset.thumbhash}
         projectionType={asset.exifInfo?.projectionType}
         loopVideo={$slideshowState !== SlideshowState.PlaySlideshow}

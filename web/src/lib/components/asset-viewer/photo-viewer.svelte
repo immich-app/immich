@@ -1,10 +1,10 @@
 <script lang="ts">
   import { shortcuts } from '$lib/actions/shortcut';
+  import { swipeFeedback } from '$lib/actions/swipe-feedback';
   import { zoomImageAction } from '$lib/actions/zoom-image';
   import FaceEditor from '$lib/components/asset-viewer/face-editor/face-editor.svelte';
   import OcrBoundingBox from '$lib/components/asset-viewer/ocr-bounding-box.svelte';
   import BrokenAsset from '$lib/components/assets/broken-asset.svelte';
-  import { assetViewerFadeDuration } from '$lib/constants';
   import { castManager } from '$lib/managers/cast-manager.svelte';
   import { preloadManager } from '$lib/managers/PreloadManager.svelte';
   import { photoViewerImgElement } from '$lib/stores/assets-store.svelte';
@@ -14,8 +14,9 @@
   import { SlideshowLook, SlideshowState, slideshowLookCssMapping, slideshowStore } from '$lib/stores/slideshow.store';
   import { photoZoomState } from '$lib/stores/zoom-image.store';
   import { getAssetUrl, targetImageSize as getTargetImageSize, handlePromiseError } from '$lib/utils';
-  import { canCopyImageToClipboard, copyImageToClipboard } from '$lib/utils/asset-utils';
+  import { canCopyImageToClipboard, copyImageToClipboard, getDimensions } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
+  import { scaleToFit } from '$lib/utils/layout-utils';
   import { getOcrBoundingBoxes } from '$lib/utils/ocr-utils';
   import { getBoundingBox } from '$lib/utils/people-utils';
   import { getAltText } from '$lib/utils/thumbnail-util';
@@ -23,16 +24,13 @@
   import { AssetMediaSize, type SharedLinkResponseDto } from '@immich/sdk';
   import { LoadingSpinner, toastManager } from '@immich/ui';
   import { onDestroy, onMount, untrack } from 'svelte';
-  import { useSwipe, type SwipeCustomEvent } from 'svelte-gestures';
   import { t } from 'svelte-i18n';
-  import { fade } from 'svelte/transition';
   import type { AssetCursor } from './asset-viewer.svelte';
 
   interface Props {
     cursor: AssetCursor;
-    element?: HTMLDivElement | undefined;
-    haveFadeTransition?: boolean;
-    sharedLink?: SharedLinkResponseDto | undefined;
+    element?: HTMLDivElement;
+    sharedLink?: SharedLinkResponseDto;
     onPreviousAsset?: (() => void) | null;
     onFree?: (() => void) | null;
     onBusy?: (() => void) | null;
@@ -46,8 +44,7 @@
   let {
     cursor,
     element = $bindable(),
-    haveFadeTransition = true,
-    sharedLink = undefined,
+    sharedLink,
     onPreviousAsset = null,
     onNextAsset = null,
     onFree = null,
@@ -66,6 +63,16 @@
   let imageError: boolean = $state(false);
 
   let loader = $state<HTMLImageElement>();
+
+  const box = $derived.by(() => {
+    const { width, height } = scaledDimensions;
+    return {
+      width: width + 'px',
+      height: height + 'px',
+      left: (containerWidth - width) / 2 + 'px',
+      top: (containerHeight - height) / 2 + 'px',
+    };
+  });
 
   photoZoomState.set({
     currentRotation: 0,
@@ -122,21 +129,12 @@
     event.preventDefault();
     handlePromiseError(copyImage());
   };
-
-  const onSwipe = (event: SwipeCustomEvent) => {
-    if ($photoZoomState.currentZoom > 1) {
-      return;
-    }
-
-    if (ocrManager.showOverlay) {
-      return;
-    }
-
-    if (onNextAsset && event.detail.direction === 'left') {
+  const handleSwipeCommit = (direction: 'left' | 'right') => {
+    if (direction === 'left' && onNextAsset) {
+      // Swiped left, go to next asset
       onNextAsset();
-    }
-
-    if (onPreviousAsset && event.detail.direction === 'right') {
+    } else if (direction === 'right' && onPreviousAsset) {
+      // Swiped right, go to previous asset
       onPreviousAsset();
     }
   };
@@ -167,12 +165,20 @@
     onLoad?.();
     onFree?.();
     imageLoaded = true;
+    dimensions = {
+      width: loader?.naturalWidth ?? 1,
+      height: loader?.naturalHeight ?? 1,
+    };
     originalImageLoaded = targetImageSize === AssetMediaSize.Fullsize || targetImageSize === 'original';
   };
 
   const onerror = () => {
     onError?.();
     onFree?.();
+    dimensions = {
+      width: loader?.naturalWidth ?? 1,
+      height: loader?.naturalHeight ?? 1,
+    };
     imageError = imageLoaded = true;
   };
 
@@ -181,18 +187,36 @@
       if (!imageLoaded && !imageError) {
         onFree?.();
       }
-      preloadManager.cancelPreloadUrl(imageLoaderUrl);
+      if (imageLoaderUrl) {
+        preloadManager.cancelPreloadUrl(imageLoaderUrl);
+      }
     };
   });
 
-  let imageLoaderUrl = $derived(
+  const imageLoaderUrl = $derived(
     getAssetUrl({ asset, sharedLink, forceOriginal: originalImageLoaded || $photoZoomState.currentZoom > 1 }),
+  );
+  const previousAssetUrl = $derived(getAssetUrl({ asset: cursor.previousAsset, sharedLink }));
+  const nextAssetUrl = $derived(getAssetUrl({ asset: cursor.nextAsset, sharedLink }));
+
+  const exifDimensions = $derived(
+    asset.exifInfo?.exifImageHeight && asset.exifInfo.exifImageHeight
+      ? (getDimensions(asset.exifInfo) as { width: number; height: number })
+      : null,
   );
 
   let containerWidth = $state(0);
   let containerHeight = $state(0);
+  const container = $derived({
+    width: containerWidth,
+    height: containerHeight,
+  });
+  let dimensions = $derived(exifDimensions ?? { width: 1, height: 1 });
+  const scaledDimensions = $derived(scaleToFit(dimensions, container));
 
-  let lastUrl: string | undefined | null;
+  let lastUrl: string | undefined | null | null;
+  let lastPreviousUrl: string | undefined | null;
+  let lastNextUrl: string | undefined | null;
 
   $effect(() => {
     if (!lastUrl) {
@@ -200,13 +224,21 @@
     }
     if (lastUrl && lastUrl !== imageLoaderUrl) {
       untrack(() => {
-        imageLoaded = false;
+        const isPreviewedImage = imageLoaderUrl === lastPreviousUrl || imageLoaderUrl === lastNextUrl;
+
+        if (!isPreviewedImage) {
+          // It is a previewed image - prevent flicker - skip spinner but still let loader go through lifecycle
+          imageLoaded = false;
+        }
+
         originalImageLoaded = false;
         imageError = false;
         onBusy?.();
       });
     }
     lastUrl = imageLoaderUrl;
+    lastPreviousUrl = previousAssetUrl;
+    lastNextUrl = nextAssetUrl;
   });
 </script>
 
@@ -230,18 +262,21 @@
   class="relative h-full w-full select-none"
   bind:clientWidth={containerWidth}
   bind:clientHeight={containerHeight}
+  use:swipeFeedback={{
+    disabled: isOcrActive || $photoZoomState.currentZoom > 1,
+    onSwipeCommit: handleSwipeCommit,
+    leftPreviewUrl: previousAssetUrl,
+    rightPreviewUrl: nextAssetUrl,
+    currentAssetUrl: imageLoaderUrl,
+    target: $photoViewerImgElement,
+  }}
 >
-  {#if !imageLoaded}
-    <div id="spinner" class="flex h-full items-center justify-center">
-      <LoadingSpinner />
-    </div>
-  {:else if !imageError}
-    <div
-      use:zoomImageAction={{ disabled: isOcrActive }}
-      {...useSwipe(onSwipe)}
-      class="h-full w-full"
-      transition:fade={{ duration: haveFadeTransition ? assetViewerFadeDuration : 0 }}
-    >
+  <div class="absolute" style:width={box.width} style:height={box.height} style:left={box.left} style:top={box.top}>
+    {#if !imageLoaded}
+      <div id="spinner" class="flex h-full items-center justify-center">
+        <LoadingSpinner />
+      </div>
+    {:else if !imageError}
       {#if $slideshowState !== SlideshowState.None && $slideshowLook === SlideshowLook.BlurredBackground}
         <img
           src={imageLoaderUrl}
@@ -250,32 +285,34 @@
           draggable="false"
         />
       {/if}
-      <img
-        bind:this={$photoViewerImgElement}
-        src={imageLoaderUrl}
-        alt={$getAltText(toTimelineAsset(asset))}
-        class="h-full w-full {$slideshowState === SlideshowState.None
-          ? 'object-contain'
-          : slideshowLookCssMapping[$slideshowLook]}"
-        draggable="false"
-      />
-      <!-- eslint-disable-next-line svelte/require-each-key -->
-      {#each getBoundingBox($boundingBoxesArray, $photoZoomState, $photoViewerImgElement) as boundingbox}
-        <div
-          class="absolute border-solid border-white border-3 rounded-lg"
-          style="top: {boundingbox.top}px; left: {boundingbox.left}px; height: {boundingbox.height}px; width: {boundingbox.width}px;"
-        ></div>
-      {/each}
+      <div use:zoomImageAction={{ disabled: isOcrActive }} style:width={box.width} style:height={box.height}>
+        <img
+          bind:this={$photoViewerImgElement}
+          src={imageLoaderUrl}
+          alt={$getAltText(toTimelineAsset(asset))}
+          class="h-full w-full {$slideshowState === SlideshowState.None
+            ? 'object-contain'
+            : slideshowLookCssMapping[$slideshowLook]}"
+          draggable="false"
+        />
+        <!-- eslint-disable-next-line svelte/require-each-key -->
+        {#each getBoundingBox($boundingBoxesArray, $photoZoomState, $photoViewerImgElement) as boundingbox}
+          <div
+            class="absolute border-solid border-white border-3 rounded-lg"
+            style="top: {boundingbox.top}px; left: {boundingbox.left}px; height: {boundingbox.height}px; width: {boundingbox.width}px;"
+          ></div>
+        {/each}
 
-      {#each ocrBoxes as ocrBox (ocrBox.id)}
-        <OcrBoundingBox {ocrBox} />
-      {/each}
-    </div>
+        {#each ocrBoxes as ocrBox (ocrBox.id)}
+          <OcrBoundingBox {ocrBox} />
+        {/each}
+      </div>
 
-    {#if isFaceEditMode.value}
-      <FaceEditor htmlElement={$photoViewerImgElement} {containerWidth} {containerHeight} assetId={asset.id} />
+      {#if isFaceEditMode.value}
+        <FaceEditor htmlElement={$photoViewerImgElement} {containerWidth} {containerHeight} assetId={asset.id} />
+      {/if}
     {/if}
-  {/if}
+  </div>
 </div>
 
 <style>
