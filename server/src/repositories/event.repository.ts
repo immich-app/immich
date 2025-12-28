@@ -44,6 +44,7 @@ type EventMap = {
 
   // asset events
   AssetCreate: [{ asset: Asset }];
+  PersonRecognized: [{ assetId: string; ownerId: string; personId: string }];
   AssetTag: [{ assetId: string }];
   AssetUntag: [{ assetId: string }];
   AssetHide: [{ assetId: string; userId: string }];

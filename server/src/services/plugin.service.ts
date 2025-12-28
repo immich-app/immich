@@ -17,6 +17,7 @@ import { IWorkflowJob, JobItem, JobOf, WorkflowData } from 'src/types';
 interface WorkflowContext {
   authToken: string;
   asset: Asset;
+  faces?: { faceId: string; personId: string | null }[];
 }
 
 interface PluginInput<T = unknown> {
@@ -24,6 +25,7 @@ interface PluginInput<T = unknown> {
   config: T;
   data: {
     asset: Asset;
+    faces?: { faceId: string; personId: string | null }[];
   };
 }
 
@@ -117,7 +119,9 @@ export class PluginService extends BaseService {
 
   private async loadPluginToDatabase(manifest: PluginManifestDto, basePath: string): Promise<void> {
     const currentPlugin = await this.pluginRepository.getPluginByName(manifest.name);
-    if (currentPlugin != null && currentPlugin.version === manifest.version) {
+    const isDev = this.configRepository.isDev();
+
+    if (currentPlugin != null && currentPlugin.version === manifest.version && !isDev) {
       this.logger.log(`Plugin ${manifest.name} is up to date (version ${manifest.version}). Skipping`);
       return;
     }
@@ -178,6 +182,14 @@ export class PluginService extends BaseService {
     });
   }
 
+  @OnEvent({ name: 'PersonRecognized' })
+  async handlePersonRecognized({ assetId, ownerId, personId }: ArgOf<'PersonRecognized'>) {
+    await this.handleTrigger(PluginTriggerType.PersonRecognized, {
+      ownerId,
+      event: { userId: ownerId, assetId, personId },
+    });
+  }
+
   private async handleTrigger<T extends PluginTriggerType>(
     triggerType: T,
     params: { ownerId: string; event: WorkflowData[T] },
@@ -230,13 +242,41 @@ export class PluginService extends BaseService {
           }
 
           await this.executeActions(workflowActions, context);
-          this.logger.debug(`Workflow ${workflowId} executed successfully`);
+          this.logger.debug(`Workflow ${workflowId} executed successfully for AssetCreate`);
           return JobStatus.Success;
         }
 
         case PluginTriggerType.PersonRecognized: {
-          this.logger.error('unimplemented');
-          return JobStatus.Skipped;
+          const data = event as WorkflowData[PluginTriggerType.PersonRecognized];
+
+          const asset = await this.assetRepository.getById(data.assetId);
+          if (!asset) {
+            this.logger.error(`Asset ${data.assetId} not found for workflow ${workflowId}`);
+            return JobStatus.Failed;
+          }
+
+          const authToken = this.cryptoRepository.signJwt({ userId: data.userId }, this.pluginJwtSecret);
+
+          const faces = await this.personRepository.getFaces(data.assetId);
+          const facePayload = faces.map((face) => ({
+            faceId: face.id,
+            personId: face.personId,
+          }));
+
+          const context = {
+            authToken,
+            asset,
+            faces: facePayload,
+          };
+
+          const filtersPassed = await this.executeFilters(workflowFilters, context);
+          if (!filtersPassed) {
+            return JobStatus.Skipped;
+          }
+
+          await this.executeActions(workflowActions, context);
+          this.logger.debug(`Workflow ${workflowId} executed successfully for PersonRecognized`);
+          return JobStatus.Success;
         }
 
         default: {
@@ -269,6 +309,7 @@ export class PluginService extends BaseService {
         config: workflowFilter.filterConfig,
         data: {
           asset: context.asset,
+          faces: context.faces,
         },
       };
 
