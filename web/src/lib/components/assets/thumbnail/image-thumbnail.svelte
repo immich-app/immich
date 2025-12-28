@@ -3,6 +3,7 @@
   import { preloadManager } from '$lib/managers/PreloadManager.svelte';
   import { Icon } from '@immich/ui';
   import { mdiEyeOffOutline } from '@mdi/js';
+  import { untrack } from 'svelte';
   import type { ActionReturn } from 'svelte/action';
   import type { ClassValue } from 'svelte/elements';
 
@@ -63,6 +64,14 @@
       destroy: () => preloadManager.cancelPreloadUrl(url),
     };
   }
+
+  $effect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+    url;
+    untrack(() => {
+      preloadManager.loading(url);
+    });
+  });
 
   let optionalClasses = $derived(
     [
