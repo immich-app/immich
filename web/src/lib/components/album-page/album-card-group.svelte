@@ -65,7 +65,6 @@
     <div class="grid grid-auto-fill-56 gap-y-4" transition:slide={{ duration: 300 }}>
       {#each albums as album, index (album.id)}
         <a
-          data-sveltekit-preload-data="hover"
           href={resolve(`${AppRoute.ALBUMS}/${album.id}`)}
           animate:flip={{ duration: 400 }}
           oncontextmenu={(event) => oncontextmenu(event, album)}

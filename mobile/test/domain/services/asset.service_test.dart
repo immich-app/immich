@@ -87,6 +87,25 @@ void main() {
       verify(() => mockLocalAssetRepository.get('local-1')).called(1);
     });
 
+    test('uses fetched asset orientation when dimensions are missing on Android', () async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.android;
+      addTearDown(() => debugDefaultTargetPlatformOverride = null);
+
+      // Original asset has default orientation 0, but dimensions are missing
+      final localAsset = TestUtils.createLocalAsset(id: 'local-1', width: null, height: null, orientation: 0);
+
+      // Fetched asset has 90° orientation and proper dimensions
+      final fetchedAsset = TestUtils.createLocalAsset(id: 'local-1', width: 1920, height: 1080, orientation: 90);
+
+      when(() => mockLocalAssetRepository.get('local-1')).thenAnswer((_) async => fetchedAsset);
+
+      final result = await sut.getAspectRatio(localAsset);
+
+      // Should flip dimensions since fetched asset has 90° orientation
+      expect(result, 1080 / 1920);
+      verify(() => mockLocalAssetRepository.get('local-1')).called(1);
+    });
+
     test('returns 1.0 when dimensions are still unavailable after fetching', () async {
       final remoteAsset = TestUtils.createRemoteAsset(id: 'remote-1', width: null, height: null);
 
@@ -112,7 +131,9 @@ void main() {
       expect(result, 1.0);
     });
 
-    test('handles local asset with remoteId and uses exif from remote', () async {
+    test('handles local asset with remoteId using local orientation not remote exif', () async {
+      // When a LocalAsset has a remoteId (merged), we should use local orientation
+      // because the width/height come from the local asset (pre-corrected on iOS)
       final localAsset = TestUtils.createLocalAsset(
         id: 'local-1',
         remoteId: 'remote-1',
@@ -121,9 +142,24 @@ void main() {
         orientation: 0,
       );
 
-      final exif = const ExifInfo(orientation: '6');
+      final result = await sut.getAspectRatio(localAsset);
 
-      when(() => mockRemoteAssetRepository.getExif('remote-1')).thenAnswer((_) async => exif);
+      expect(result, 1920 / 1080);
+      // Should not call remote exif for LocalAsset
+      verifyNever(() => mockRemoteAssetRepository.getExif(any()));
+    });
+
+    test('handles local asset with remoteId and 90 degree rotation on Android', () async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.android;
+      addTearDown(() => debugDefaultTargetPlatformOverride = null);
+
+      final localAsset = TestUtils.createLocalAsset(
+        id: 'local-1',
+        remoteId: 'remote-1',
+        width: 1920,
+        height: 1080,
+        orientation: 90,
+      );
 
       final result = await sut.getAspectRatio(localAsset);
 
