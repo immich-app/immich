@@ -117,7 +117,6 @@ class DriftBackupState {
   final Map<String, DriftUploadStatus> uploadItems;
   final CancellationToken? cancelToken;
 
-  /// iCloud download progress for assets (assetId -> progress 0.0-1.0)
   final Map<String, double> iCloudDownloadProgress;
 
   const DriftBackupState({
@@ -227,8 +226,8 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
         ),
       ) {
     {
-      _uploadService.taskStatusStream.listen(_handleTaskStatusUpdate);
-      _uploadService.taskProgressStream.listen(_handleTaskProgressUpdate);
+      _statusSubscription = _uploadService.taskStatusStream.listen(_handleTaskStatusUpdate);
+      _progressSubscription = _uploadService.taskProgressStream.listen(_handleTaskProgressUpdate);
     }
   }
 
@@ -239,6 +238,10 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
 
   /// Remove upload item from state
   void _removeUploadItem(String taskId) {
+    if (!mounted) {
+      _logger.warning("Skip _removeUploadItem: notifier disposed");
+      return;
+    }
     if (state.uploadItems.containsKey(taskId)) {
       final updatedItems = Map<String, DriftUploadStatus>.from(state.uploadItems);
       updatedItems.remove(taskId);
@@ -247,6 +250,10 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
   }
 
   void _handleTaskStatusUpdate(TaskStatusUpdate update) {
+    if (!mounted) {
+      _logger.warning("Skip _handleTaskStatusUpdate: notifier disposed");
+      return;
+    }
     final taskId = update.task.taskId;
 
     switch (update.status) {
@@ -306,6 +313,10 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
   }
 
   void _handleTaskProgressUpdate(TaskProgressUpdate update) {
+    if (!mounted) {
+      _logger.warning("Skip _handleTaskProgressUpdate: notifier disposed");
+      return;
+    }
     final taskId = update.task.taskId;
     final filename = update.task.displayName;
     final progress = update.progress;
@@ -347,7 +358,15 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
   }
 
   Future<void> getBackupStatus(String userId) async {
+    if (!mounted) {
+      _logger.warning("Skip getBackupStatus (pre-call): notifier disposed");
+      return;
+    }
     final counts = await _uploadService.getBackupCounts(userId);
+    if (!mounted) {
+      _logger.warning("Skip getBackupStatus (post-call): notifier disposed");
+      return;
+    }
 
     state = state.copyWith(
       totalCount: counts.total,
@@ -358,6 +377,10 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
   }
 
   void updateError(BackupError error) async {
+    if (!mounted) {
+      _logger.warning("Skip updateError: notifier disposed");
+      return;
+    }
     state = state.copyWith(error: error);
   }
 
@@ -390,7 +413,6 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
   void _handleICloudProgress(String localAssetId, double progress) {
     state = state.copyWith(iCloudDownloadProgress: {...state.iCloudDownloadProgress, localAssetId: progress});
 
-    // Remove from progress map when download completes
     if (progress >= 1.0) {
       Future.delayed(const Duration(milliseconds: 250), () {
         final updatedProgress = Map<String, double>.from(state.iCloudDownloadProgress);
@@ -436,7 +458,6 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
 
   void _handleForegroundBackupError(String errorMessage) {
     _logger.severe("Upload failed: $errorMessage");
-    // Here you can update the state to reflect the error if needed
   }
 
   // void _updateEnqueueCount(EnqueueStatus status) {
@@ -444,10 +465,18 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
   // }
 
   Future<void> cancel() async {
+    if (!mounted) {
+      _logger.warning("Skip cancel (pre-call): notifier disposed");
+      return;
+    }
     dPrint(() => "Canceling backup tasks...");
     state = state.copyWith(enqueueCount: 0, enqueueTotalCount: 0, isCanceling: true, error: BackupError.none);
 
     final activeTaskCount = await _uploadService.cancelBackup();
+    if (!mounted) {
+      _logger.warning("Skip cancel (post-call): notifier disposed");
+      return;
+    }
 
     if (activeTaskCount > 0) {
       dPrint(() => "$activeTaskCount tasks left, continuing to cancel...");
@@ -460,9 +489,17 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
   }
 
   Future<void> handleBackupResume(String userId) async {
+    if (!mounted) {
+      _logger.warning("Skip handleBackupResume (pre-call): notifier disposed");
+      return;
+    }
     _logger.info("Resuming backup tasks...");
     state = state.copyWith(error: BackupError.none);
     final tasks = await _uploadService.getActiveTasks(kBackupGroup);
+    if (!mounted) {
+      _logger.warning("Skip handleBackupResume (post-call): notifier disposed");
+      return;
+    }
     _logger.info("Found ${tasks.length} tasks");
 
     if (tasks.isEmpty) {

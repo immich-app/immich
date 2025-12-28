@@ -142,7 +142,6 @@ class UploadRepository {
     }
   }
 
-  /// Upload a single asset with progress tracking
   Future<UploadResult> uploadSingleAsset({
     required File file,
     required String originalFileName,
@@ -192,7 +191,6 @@ class UploadRepository {
     return null;
   }
 
-  /// Internal method to upload a file to the server
   Future<UploadResult> _uploadFile({
     required File file,
     required String originalFileName,
@@ -239,7 +237,6 @@ class UploadRepository {
   }
 }
 
-/// Result of an upload operation
 class UploadResult {
   final bool isSuccess;
   final bool isCancelled;
@@ -268,7 +265,6 @@ class UploadResult {
   }
 }
 
-/// Custom MultipartRequest with progress tracking
 class CustomMultipartRequest extends MultipartRequest {
   CustomMultipartRequest(super.method, super.url, {required this.onProgress});
 

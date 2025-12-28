@@ -322,7 +322,6 @@ class UploadService {
       }
 
       final originalFileName = entity.isLivePhoto ? p.setExtension(asset.name, p.extension(file.path)) : asset.name;
-      print("originalFileName: $originalFileName");
       final deviceId = Store.get(StoreKey.deviceId);
 
       final headers = ApiService.getRequestHeaders();
