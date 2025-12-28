@@ -3,13 +3,13 @@
 </script>
 
 <div class="mt-4 text-sm">
-  <h4 class="uppercase">{$t('other_variables')}</h4>
+  <h4 class="">{$t('other_variables')}</h4>
 </div>
 
 <div class="p-4 mt-2 text-xs bg-gray-200 rounded-lg dark:bg-gray-700 dark:text-immich-dark-fg">
   <div class="flex gap-12">
     <div>
-      <p class="uppercase font-medium text-primary">{$t('filename')}</p>
+      <p class="font-medium text-primary">{$t('filename')}</p>
       <ul>
         <li>{`{{filename}}`} - IMG_123</li>
         <li>{`{{ext}}`} - jpg</li>
@@ -17,14 +17,14 @@
     </div>
 
     <div>
-      <p class="uppercase font-medium text-primary">{$t('filetype')}</p>
+      <p class="font-medium text-primary">{$t('filetype')}</p>
       <ul>
         <li>{`{{filetype}}`} - VID or IMG</li>
         <li>{`{{filetypefull}}`} - VIDEO or IMAGE</li>
       </ul>
     </div>
     <div>
-      <p class="uppercase font-medium text-primary">{$t('other')}</p>
+      <p class="font-medium text-primary">{$t('other')}</p>
       <ul>
         <li>{`{{assetId}}`} - Asset ID</li>
         <li>{`{{assetIdShort}}`} - Asset ID (last 12 characters)</li>

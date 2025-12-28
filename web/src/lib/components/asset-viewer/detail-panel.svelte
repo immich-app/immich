@@ -20,7 +20,7 @@
   import { fromISODateTime, fromISODateTimeUTC, toTimelineAsset } from '$lib/utils/timeline-util';
   import { getParentPath } from '$lib/utils/tree-utils';
   import { AssetMediaSize, getAssetInfo, type AlbumResponseDto, type AssetResponseDto } from '@immich/sdk';
-  import { Icon, IconButton, LoadingSpinner, modalManager } from '@immich/ui';
+  import { Icon, IconButton, LoadingSpinner, modalManager, Text } from '@immich/ui';
   import {
     mdiCalendar,
     mdiCamera,
@@ -163,7 +163,7 @@
   {#if !authManager.isSharedLink && isOwner}
     <section class="px-4 pt-4 text-sm">
       <div class="flex h-10 w-full items-center justify-between">
-        <h2 class="uppercase">{$t('people')}</h2>
+        <Text size="small" color="muted">{$t('people')}</Text>
         <div class="flex gap-2 items-center">
           {#if people.some((person) => person.isHidden)}
             <IconButton
@@ -266,10 +266,10 @@
   <div class="px-4 py-4">
     {#if asset.exifInfo}
       <div class="flex h-10 w-full items-center justify-between text-sm">
-        <h2 class="uppercase">{$t('details')}</h2>
+        <Text size="small" color="muted">{$t('details')}</Text>
       </div>
     {:else}
-      <p class="uppercase text-sm">{$t('no_exif_info_available')}</p>
+      <Text size="small" color="muted">{$t('no_exif_info_available')}</Text>
     {/if}
 
     {#if dateTime}
@@ -496,7 +496,7 @@
 
 {#if currentAlbum && currentAlbum.albumUsers.length > 0 && asset.owner}
   <section class="px-6 dark:text-immich-dark-fg mt-4">
-    <p class="uppercase text-sm">{$t('shared_by')}</p>
+    <Text size="small" color="muted">{$t('shared_by')}</Text>
     <div class="flex gap-4 pt-4">
       <div>
         <UserAvatar user={asset.owner} size="md" />
@@ -513,7 +513,9 @@
 
 {#if albums.length > 0}
   <section class="px-6 py-6 dark:text-immich-dark-fg">
-    <p class="uppercase pb-4 text-sm">{$t('appears_in')}</p>
+    <div class="pb-4">
+      <Text size="small" color="muted">{$t('appears_in')}</Text>
+    </div>
     {#each albums as album (album.id)}
       <a href={resolve(`${AppRoute.ALBUMS}/${album.id}`)}>
         <div class="flex gap-4 pt-2 hover:cursor-pointer items-center">

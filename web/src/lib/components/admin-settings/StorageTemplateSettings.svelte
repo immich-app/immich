@@ -175,7 +175,7 @@
           <h3 class="text-base font-medium text-primary">{$t('template')}</h3>
 
           <div class="my-2 text-sm">
-            <h4 class="uppercase">{$t('preview')}</h4>
+            <h4 class="text-sm">{$t('preview')}</h4>
           </div>
 
           <p class="text-sm">

@@ -1,6 +1,7 @@
 <script lang="ts">
   import RadioButton from '$lib/elements/RadioButton.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
+  import { Field, Input, Text } from '@immich/ui';
   import { t } from 'svelte-i18n';
 
   interface Props {
@@ -12,7 +13,7 @@
 </script>
 
 <fieldset>
-  <legend class="immich-form-label">{$t('search_type')}</legend>
+  <Text class="font-semibold py-3">{$t('search_type')}</Text>
   <div class="flex flex-wrap gap-x-5 gap-y-2 mt-1 mb-2">
     {#if featureFlagsManager.value.smartSearch}
       <RadioButton name="query-type" id="context-radio" label={$t('context')} bind:group={queryType} value="smart" />
@@ -38,46 +39,47 @@
 </fieldset>
 
 {#if queryType === 'smart'}
-  <label for="context-input" class="immich-form-label">{$t('search_by_context')}</label>
-  <input
-    class="immich-form-input hover:cursor-text w-full mt-1!"
-    type="text"
-    id="context-input"
-    name="context"
-    placeholder={$t('sunrise_on_the_beach')}
-    bind:value={query}
-  />
+  <Field label={$t('search_by_context')} class="text-sm" for="context-input">
+    <Input
+      type="text"
+      id="context-input"
+      name="context"
+      placeholder={$t('sunrise_on_the_beach')}
+      bind:value={query}
+      aria-labelledby="context-label"
+    />
+  </Field>
 {:else if queryType === 'metadata'}
-  <label for="file-name-input" class="immich-form-label">{$t('search_by_filename')}</label>
-  <input
-    class="immich-form-input hover:cursor-text w-full mt-1!"
-    type="text"
-    id="file-name-input"
-    name="file-name"
-    placeholder={$t('search_by_filename_example')}
-    bind:value={query}
-    aria-labelledby="file-name-label"
-  />
+  <Field label={$t('search_by_filename')} class="text-sm" for="file-name-input">
+    <Input
+      type="text"
+      id="file-name-input"
+      name="context"
+      placeholder={$t('search_by_filename_example')}
+      bind:value={query}
+      aria-labelledby="file-name-label"
+    />
+  </Field>
 {:else if queryType === 'description'}
-  <label for="description-input" class="immich-form-label">{$t('search_by_description')}</label>
-  <input
-    class="immich-form-input hover:cursor-text w-full mt-1!"
-    type="text"
-    id="description-input"
-    name="description"
-    placeholder={$t('search_by_description_example')}
-    bind:value={query}
-    aria-labelledby="description-label"
-  />
+  <Field label={$t('search_by_description')} class="text-sm" for="description">
+    <Input
+      type="text"
+      id="description-input"
+      name="description"
+      placeholder={$t('search_by_description_example')}
+      bind:value={query}
+      aria-labelledby="description-label"
+    />
+  </Field>
 {:else if queryType === 'ocr'}
-  <label for="ocr-input" class="immich-form-label">{$t('search_by_ocr')}</label>
-  <input
-    class="immich-form-input hover:cursor-text w-full mt-1!"
-    type="text"
-    id="ocr-input"
-    name="ocr"
-    placeholder={$t('search_by_ocr_example')}
-    bind:value={query}
-    aria-labelledby="ocr-label"
-  />
+  <Field label={$t('search_by_ocr')} class="text-sm" for="ocr-input">
+    <Input
+      type="text"
+      id="ocr-input"
+      name="ocr"
+      placeholder={$t('search_by_ocr_example')}
+      bind:value={query}
+      aria-labelledby="ocr-label"
+    />
+  </Field>
 {/if}
