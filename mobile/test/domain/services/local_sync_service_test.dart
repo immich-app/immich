@@ -9,6 +9,7 @@ import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/trashed_local_asset.repository.dart';
@@ -25,6 +26,7 @@ import '../../repository.mocks.dart';
 void main() {
   late LocalSyncService sut;
   late DriftLocalAlbumRepository mockLocalAlbumRepository;
+  late DriftLocalAssetRepository mockLocalAssetRepository;
   late DriftTrashedLocalAssetRepository mockTrashedLocalAssetRepository;
   late LocalFilesManagerRepository mockLocalFilesManager;
   late StorageRepository mockStorageRepository;
@@ -47,6 +49,7 @@ void main() {
 
   setUp(() async {
     mockLocalAlbumRepository = MockLocalAlbumRepository();
+    mockLocalAssetRepository = MockLocalAssetRepository();
     mockTrashedLocalAssetRepository = MockTrashedLocalAssetRepository();
     mockLocalFilesManager = MockLocalFilesManagerRepository();
     mockStorageRepository = MockStorageRepository();
@@ -66,6 +69,7 @@ void main() {
 
     sut = LocalSyncService(
       localAlbumRepository: mockLocalAlbumRepository,
+      localAssetRepository: mockLocalAssetRepository,
       trashedLocalAssetRepository: mockTrashedLocalAssetRepository,
       localFilesManager: mockLocalFilesManager,
       storageRepository: mockStorageRepository,

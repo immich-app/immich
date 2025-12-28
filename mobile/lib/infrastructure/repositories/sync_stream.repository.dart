@@ -18,6 +18,7 @@ import 'package:immich_mobile/infrastructure/entities/remote_album.entity.drift.
 import 'package:immich_mobile/infrastructure/entities/remote_album_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_album_user.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.dart';
+import 'package:immich_mobile/infrastructure/entities/remote_asset_cloud_id.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/stack.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/user_metadata.entity.drift.dart';
@@ -54,6 +55,7 @@ class SyncStreamRepository extends DriftDatabaseRepository {
           await _db.authUserEntity.deleteAll();
           await _db.userEntity.deleteAll();
           await _db.userMetadataEntity.deleteAll();
+          await _db.remoteAssetCloudIdEntity.deleteAll();
         });
         await _db.customStatement('PRAGMA foreign_keys = ON');
       });
@@ -254,6 +256,50 @@ class SyncStreamRepository extends DriftDatabaseRepository {
       });
     } catch (error, stack) {
       _logger.severe('Error: updateAssetsExifV1 - $debugLabel', error, stack);
+      rethrow;
+    }
+  }
+
+  Future<void> deleteAssetsMetadataV1(Iterable<SyncAssetMetadataDeleteV1> data) async {
+    try {
+      await _db.batch((batch) {
+        for (final metadata in data) {
+          if (metadata.key == AssetMetadataKey.mobileApp) {
+            batch.deleteWhere(_db.remoteAssetCloudIdEntity, (row) => row.assetId.equals(metadata.assetId));
+          }
+        }
+      });
+    } catch (error, stack) {
+      _logger.severe('Error: deleteAssetsMetadataV1', error, stack);
+      rethrow;
+    }
+  }
+
+  Future<void> updateAssetsMetadataV1(Iterable<SyncAssetMetadataV1> data) async {
+    try {
+      await _db.batch((batch) {
+        for (final metadata in data) {
+          if (metadata.key == AssetMetadataKey.mobileApp) {
+            final map = metadata.value as Map<String, Object?>;
+            final companion = RemoteAssetCloudIdEntityCompanion(
+              cloudId: Value(map['iCloudId']?.toString()),
+              createdAt: Value(map['createdAt'] != null ? DateTime.parse(map['createdAt'] as String) : null),
+              adjustmentTime: Value(
+                map['adjustmentTime'] != null ? DateTime.parse(map['adjustmentTime'] as String) : null,
+              ),
+              latitude: Value(map['latitude'] != null ? (double.tryParse(map['latitude'] as String)) : null),
+              longitude: Value(map['longitude'] != null ? (double.tryParse(map['longitude'] as String)) : null),
+            );
+            batch.insert(
+              _db.remoteAssetCloudIdEntity,
+              companion.copyWith(assetId: Value(metadata.assetId)),
+              onConflict: DoUpdate((_) => companion),
+            );
+          }
+        }
+      });
+    } catch (error, stack) {
+      _logger.severe('Error: updateAssetsMetadataV1', error, stack);
       rethrow;
     }
   }
