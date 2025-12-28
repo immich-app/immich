@@ -1,6 +1,8 @@
 <script lang="ts">
+  import { zoomImageAction } from '$lib/actions/zoom-image';
   import { assetViewerFadeDuration } from '$lib/constants';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
+  import { photoZoomState } from '$lib/stores/zoom-image.store';
   import { getAssetThumbnailUrl } from '$lib/utils';
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { AssetMediaSize } from '@immich/sdk';
@@ -11,13 +13,29 @@
   interface Props {
     asset: TimelineAsset;
     onImageLoad: () => void;
+    onZoomChange?: (isZoomed: boolean) => void;
   }
 
-  const { asset, onImageLoad }: Props = $props();
+  const { asset, onImageLoad, onZoomChange }: Props = $props();
 
   let assetFileUrl: string = $state('');
   let imageLoaded: boolean = $state(false);
   let loader = $state<HTMLImageElement>();
+
+  // Reset zoom state when component mounts (new asset)
+  photoZoomState.set({
+    currentRotation: 0,
+    currentZoom: 1,
+    enable: true,
+    currentPositionX: 0,
+    currentPositionY: 0,
+  });
+
+  // Notify parent when zoom state changes
+  $effect(() => {
+    const isZoomed = $photoZoomState?.currentZoom > 1;
+    onZoomChange?.(isZoomed);
+  });
 
   const onLoadCallback = () => {
     imageLoaded = true;
@@ -48,7 +66,7 @@
     <LoadingSpinner />
   </div>
 {:else if imageLoaded}
-  <div transition:fade={{ duration: assetViewerFadeDuration }} class="h-full w-full">
+  <div use:zoomImageAction transition:fade={{ duration: assetViewerFadeDuration }} class="h-full w-full">
     <img
       class="h-full w-full rounded-2xl object-contain transition-all"
       src={assetFileUrl}

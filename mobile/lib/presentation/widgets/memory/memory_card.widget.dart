@@ -8,18 +8,21 @@ import 'package:immich_mobile/presentation/widgets/asset_viewer/video_viewer.wid
 import 'package:immich_mobile/presentation/widgets/images/full_image.widget.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/utils/hooks/blurhash_hook.dart';
+import 'package:immich_mobile/widgets/photo_view/photo_view.dart';
 
 class DriftMemoryCard extends StatelessWidget {
   final RemoteAsset asset;
   final String title;
   final bool showTitle;
   final Function()? onVideoEnded;
+  final ValueChanged<bool>? onZoomChanged;
 
   const DriftMemoryCard({
     required this.asset,
     required this.title,
     required this.showTitle,
     this.onVideoEnded,
+    this.onZoomChanged,
     super.key,
   });
 
@@ -37,20 +40,22 @@ class DriftMemoryCard extends StatelessWidget {
           SizedBox.expand(child: _BlurredBackdrop(asset: asset)),
           LayoutBuilder(
             builder: (context, constraints) {
-              // Determine the fit using the aspect ratio
-              BoxFit fit = BoxFit.contain;
-              if (asset.width != null && asset.height != null) {
-                final aspectRatio = asset.width! / asset.height!;
-                final phoneAspectRatio = constraints.maxWidth / constraints.maxHeight;
-                // Look for a 25% difference in either direction
-                if (phoneAspectRatio * .75 < aspectRatio && phoneAspectRatio * 1.25 > aspectRatio) {
-                  // Cover to look nice if we have nearly the same aspect ratio
-                  fit = BoxFit.cover;
-                }
-              }
-
               if (asset.isImage) {
-                return FullImage(asset, fit: fit, size: const Size(double.infinity, double.infinity));
+                final size = Size(constraints.maxWidth, constraints.maxHeight);
+                return PhotoView(
+                  key: ValueKey('photo-${asset.id}'),
+                  imageProvider: getFullImageProvider(asset, size: size),
+                  index: 0,
+                  minScale: PhotoViewComputedScale.contained,
+                  maxScale: PhotoViewComputedScale.covered * 5,
+                  initialScale: PhotoViewComputedScale.contained,
+                  backgroundDecoration: const BoxDecoration(color: Colors.transparent),
+                  filterQuality: FilterQuality.high,
+                  scaleStateChangedCallback: (scaleState) {
+                    final isZoomed = scaleState != PhotoViewScaleState.initial;
+                    onZoomChanged?.call(isZoomed);
+                  },
+                );
               } else {
                 return SizedBox(
                   width: context.width,

@@ -7,14 +7,23 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/pages/common/native_video_viewer.page.dart';
 import 'package:immich_mobile/utils/hooks/blurhash_hook.dart';
 import 'package:immich_mobile/widgets/common/immich_image.dart';
+import 'package:immich_mobile/widgets/photo_view/photo_view.dart';
 
 class MemoryCard extends StatelessWidget {
   final Asset asset;
   final String title;
   final bool showTitle;
   final Function()? onVideoEnded;
+  final ValueChanged<bool>? onZoomChanged;
 
-  const MemoryCard({required this.asset, required this.title, required this.showTitle, this.onVideoEnded, super.key});
+  const MemoryCard({
+    required this.asset,
+    required this.title,
+    required this.showTitle,
+    this.onVideoEnded,
+    this.onZoomChanged,
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -30,22 +39,27 @@ class MemoryCard extends StatelessWidget {
           SizedBox.expand(child: _BlurredBackdrop(asset: asset)),
           LayoutBuilder(
             builder: (context, constraints) {
-              // Determine the fit using the aspect ratio
-              BoxFit fit = BoxFit.contain;
-              if (asset.width != null && asset.height != null) {
-                final aspectRatio = asset.width! / asset.height!;
-                final phoneAspectRatio = constraints.maxWidth / constraints.maxHeight;
-                // Look for a 25% difference in either direction
-                if (phoneAspectRatio * .75 < aspectRatio && phoneAspectRatio * 1.25 > aspectRatio) {
-                  // Cover to look nice if we have nearly the same aspect ratio
-                  fit = BoxFit.cover;
-                }
-              }
-
               if (asset.isImage) {
                 return Hero(
                   tag: 'memory-${asset.id}',
-                  child: ImmichImage(asset, fit: fit, height: double.infinity, width: double.infinity),
+                  child: PhotoView(
+                    key: ValueKey('photo-${asset.id}'),
+                    imageProvider: ImmichImage.imageProvider(
+                      asset: asset,
+                      width: constraints.maxWidth,
+                      height: constraints.maxHeight,
+                    ),
+                    index: 0,
+                    minScale: PhotoViewComputedScale.contained,
+                    maxScale: PhotoViewComputedScale.covered * 5,
+                    initialScale: PhotoViewComputedScale.contained,
+                    backgroundDecoration: const BoxDecoration(color: Colors.transparent),
+                    filterQuality: FilterQuality.high,
+                    scaleStateChangedCallback: (scaleState) {
+                      final isZoomed = scaleState != PhotoViewScaleState.initial;
+                      onZoomChanged?.call(isZoomed);
+                    },
+                  ),
                 );
               } else {
                 return Hero(

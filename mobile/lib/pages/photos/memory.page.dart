@@ -31,6 +31,7 @@ class MemoryPage extends HookConsumerWidget {
     final assetProgress = useState("${currentAssetPage.value + 1}|${currentMemory.value.assets.length}");
     const bgColor = Colors.black;
     final currentAsset = useState<Asset?>(null);
+    final isZoomed = useState(false);
 
     /// The list of all of the asset page controllers
     final memoryAssetPageControllers = List.generate(memories.length, (i) => usePageController());
@@ -156,6 +157,7 @@ class MemoryPage extends HookConsumerWidget {
     Future<void> onAssetChanged(int otherIndex) async {
       ref.read(hapticFeedbackProvider.notifier).selectionClick();
       currentAssetPage.value = otherIndex;
+      isZoomed.value = false; // Reset zoom state when changing assets
       updateProgressText();
 
       // Wait for page change animation to finish
@@ -258,33 +260,42 @@ class MemoryPage extends HookConsumerWidget {
                               children: [
                                 Container(
                                   color: Colors.black,
-                                  child: MemoryCard(asset: asset, title: memories[mIndex].title, showTitle: index == 0),
-                                ),
-                                Positioned.fill(
-                                  child: Row(
-                                    children: [
-                                      // Left side of the screen
-                                      Expanded(
-                                        child: GestureDetector(
-                                          behavior: HitTestBehavior.translucent,
-                                          onTap: () {
-                                            toPreviousAsset(index);
-                                          },
-                                        ),
-                                      ),
-
-                                      // Right side of the screen
-                                      Expanded(
-                                        child: GestureDetector(
-                                          behavior: HitTestBehavior.translucent,
-                                          onTap: () {
-                                            toNextAsset(index);
-                                          },
-                                        ),
-                                      ),
-                                    ],
+                                  child: MemoryCard(
+                                    asset: asset,
+                                    title: memories[mIndex].title,
+                                    showTitle: index == 0,
+                                    onZoomChanged: (zoomed) {
+                                      isZoomed.value = zoomed;
+                                    },
                                   ),
                                 ),
+                                // Only show navigation overlays when not zoomed
+                                if (!isZoomed.value)
+                                  Positioned.fill(
+                                    child: Row(
+                                      children: [
+                                        // Left side of the screen
+                                        Expanded(
+                                          child: GestureDetector(
+                                            behavior: HitTestBehavior.translucent,
+                                            onTap: () {
+                                              toPreviousAsset(index);
+                                            },
+                                          ),
+                                        ),
+
+                                        // Right side of the screen
+                                        Expanded(
+                                          child: GestureDetector(
+                                            behavior: HitTestBehavior.translucent,
+                                            onTap: () {
+                                              toNextAsset(index);
+                                            },
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                               ],
                             );
                           },
