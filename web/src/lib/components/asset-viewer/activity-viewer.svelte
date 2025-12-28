@@ -12,7 +12,9 @@
   import { isTenMinutesApart } from '$lib/utils/timesince';
   import { ReactionType, type ActivityResponseDto, type AssetTypeEnum, type UserResponseDto } from '@immich/sdk';
   import { Icon, IconButton, LoadingSpinner, Textarea, toastManager } from '@immich/ui';
+
   import { mdiClose, mdiDeleteOutline, mdiDotsVertical, mdiSend, mdiThumbUp } from '@mdi/js';
+
   import * as luxon from 'luxon';
   import { t } from 'svelte-i18n';
   import { fromAction } from 'svelte/attachments';
@@ -255,7 +257,7 @@
                 shortcut: { key: 'Enter' },
                 onShortcut: () => handleSendComment(),
               }))}
-              class="h-4.5 {disabled
+              class="h-[18px] {disabled
                 ? 'cursor-not-allowed'
                 : ''} w-full max-h-56 pe-2 items-center overflow-y-auto leading-4 outline-none resize-none bg-gray-200 dark:bg-gray-200"
             ></Textarea>

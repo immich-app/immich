@@ -4,6 +4,7 @@
   import VideoRemoteViewer from '$lib/components/asset-viewer/video-remote-viewer.svelte';
   import { assetViewerFadeDuration } from '$lib/constants';
   import { assetCacheManager } from '$lib/managers/AssetCacheManager.svelte';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import { castManager } from '$lib/managers/cast-manager.svelte';
   import { eventManager } from '$lib/managers/event-manager.svelte';
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
@@ -22,6 +23,8 @@
   import { fade } from 'svelte/transition';
 
   interface Props {
+    transitionName?: string | null;
+    asset: AssetResponseDto;
     assetId: string;
     previousAsset?: AssetResponseDto | null | undefined;
     nextAsset?: AssetResponseDto | undefined | null | undefined;
@@ -37,6 +40,8 @@
   }
 
   let {
+    transitionName,
+    asset,
     assetId,
     previousAsset,
     nextAsset,
@@ -50,8 +55,6 @@
     onVideoStarted = () => {},
     onClose = () => {},
   }: Props = $props();
-
-  let asset = $state<AssetResponseDto | null>(null);
 
   let videoPlayer: HTMLVideoElement | undefined = $state();
   let isLoading = $state(true);
@@ -83,7 +86,7 @@
 
   $effect(
     () =>
-      void assetCacheManager.getAsset({ key: cacheKey ?? assetId, id: assetId }).then((assetDto) => (asset = assetDto)),
+      void assetCacheManager.getAsset({ ...authManager.params, id: assetId }).then((assetDto) => (asset = assetDto)),
   );
 
   $effect(() => {
@@ -184,7 +187,7 @@
     }}
   >
     {#if castManager.isCasting}
-      <div class="place-content-center h-full place-items-center">
+      <div class="place-content-center h-full place-items-center" data-swipe-subject>
         <VideoRemoteViewer
           poster={getAssetThumbnailUrl({ id: assetId, size: AssetMediaSize.Preview, cacheKey })}
           {onVideoStarted}
@@ -193,8 +196,9 @@
         />
       </div>
     {:else}
-      <div>
+      <div class="relative">
         <video
+          style:view-transition-name={transitionName}
           style:height={box.height}
           style:width={box.width}
           bind:this={videoPlayer}
@@ -217,15 +221,14 @@
           bind:volume={$videoViewerVolume}
           poster={getAssetThumbnailUrl({ id: assetId, size: AssetMediaSize.Preview, cacheKey })}
           src={assetFileUrl}
+          data-swipe-subject
         >
         </video>
-
         {#if isLoading}
-          <div class="absolute flex place-content-center place-items-center">
+          <div class="absolute inset-0 flex place-content-center place-items-center">
             <LoadingSpinner />
           </div>
         {/if}
-
         {#if isFaceEditMode.value}
           <FaceEditor htmlElement={videoPlayer} {containerWidth} {containerHeight} {assetId} />
         {/if}
@@ -233,3 +236,9 @@
     {/if}
   </div>
 {/if}
+
+<style>
+  video:focus {
+    outline: none;
+  }
+</style>

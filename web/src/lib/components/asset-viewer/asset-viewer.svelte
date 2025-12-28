@@ -12,12 +12,14 @@
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { eventManager } from '$lib/managers/event-manager.svelte';
   import { preloadManager } from '$lib/managers/PreloadManager.svelte';
+  import { viewTransitionManager } from '$lib/managers/ViewTransitionManager.svelte';
   import { closeEditorCofirm } from '$lib/stores/asset-editor.store';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { ocrManager } from '$lib/stores/ocr.svelte';
   import { alwaysLoadOriginalVideo, isShowDetail } from '$lib/stores/preferences.store';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { user } from '$lib/stores/user.store';
+  import { resetZoomState } from '$lib/stores/zoom-image.store';
   import { getAssetJobMessage, getAssetUrl, getSharedLink, handlePromiseError } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { InvocationTracker } from '$lib/utils/invocationTracker';
@@ -27,7 +29,6 @@
   import {
     AssetJobName,
     AssetTypeEnum,
-    getAllAlbums,
     getAssetInfo,
     getStack,
     runAssetJobs,
@@ -37,9 +38,9 @@
     type StackResponseDto,
   } from '@immich/sdk';
   import { toastManager } from '@immich/ui';
-  import { onDestroy, onMount, untrack } from 'svelte';
+  import { onDestroy, onMount, tick, untrack } from 'svelte';
   import { t } from 'svelte-i18n';
-  import { fly } from 'svelte/transition';
+  import { fly, slide } from 'svelte/transition';
   import Thumbnail from '../assets/thumbnail/thumbnail.svelte';
   import ActivityStatus from './activity-status.svelte';
   import ActivityViewer from './activity-viewer.svelte';
@@ -90,7 +91,7 @@
     copyImage = $bindable(),
   }: Props = $props();
 
-  const { setAssetId } = assetViewingStore;
+  const { setAssetId, invisible } = assetViewingStore;
   const {
     restartProgress: restartSlideshowProgress,
     stopProgress: stopSlideshowProgress,
@@ -103,7 +104,6 @@
   let asset = $derived(cursor.current);
   let nextAsset = $derived(cursor.nextAsset);
   let previousAsset = $derived(cursor.previousAsset);
-  let appearsInAlbums: AlbumResponseDto[] = $state([]);
   let shouldPlayMotionPhoto = $state(false);
   let sharedLink = getSharedLink();
   let enableDetailPanel = $derived(asset.hasMetadata);
@@ -117,8 +117,14 @@
   let selectedEditType: string = $state('');
   let stack: StackResponseDto | null = $state(null);
 
+  let slideShowPlaying = $derived($slideshowState === SlideshowState.PlaySlideshow);
+  let slideShowAscending = $derived($slideshowNavigation === SlideshowNavigation.AscendingOrder);
+  let slideShowShuffle = $derived($slideshowNavigation === SlideshowNavigation.Shuffle);
+
   let zoomToggle = $state(() => void 0);
   let playOriginalVideo = $state($alwaysLoadOriginalVideo);
+
+  let refreshAlbumsSignal = $state(0);
 
   const setPlayOriginalVideo = (value: boolean) => {
     playOriginalVideo = value;
@@ -154,7 +160,26 @@
     }
   };
 
-  onMount(async () => {
+  let transitionName = $state<string | null>('hero');
+  let equirectangularTransitionName = $state<string | null>('hero');
+  let detailPanelTransitionName = $state<string | null>(null);
+
+  let addInfoTransition;
+  let finished;
+  onMount(() => {
+    addInfoTransition = () => {
+      detailPanelTransitionName = 'info';
+      transitionName = 'hero';
+      equirectangularTransitionName = 'hero';
+    };
+    eventManager.on('TransitionToAssetViewer', addInfoTransition);
+    eventManager.on('TransitionToTimeline', addInfoTransition);
+    finished = () => {
+      detailPanelTransitionName = null;
+      transitionName = null;
+    };
+    eventManager.on('Finished', finished);
+
     slideshowStateUnsubscribe = slideshowState.subscribe((value) => {
       if (value === SlideshowState.PlaySlideshow) {
         slideshowHistory.reset();
@@ -171,10 +196,6 @@
         slideshowHistory.queue(toTimelineAsset(asset));
       }
     });
-
-    if (!sharedLink) {
-      await handleGetAllAlbums();
-    }
   });
 
   onDestroy(() => {
@@ -191,19 +212,10 @@
     }
 
     activityManager.reset();
+    eventManager.off('TransitionToAssetViewer', addInfoTransition!);
+    eventManager.off('TransitionToTimeline', addInfoTransition!);
+    eventManager.off('Finished', finished!);
   });
-
-  const handleGetAllAlbums = async () => {
-    if (authManager.isSharedLink) {
-      return;
-    }
-
-    try {
-      appearsInAlbums = await getAllAlbums({ assetId: asset.id });
-    } catch (error) {
-      console.error('Error getting album that asset belong to', error);
-    }
-  };
 
   const handleOpenActivity = () => {
     if ($isShowDetail) {
@@ -218,6 +230,7 @@
   };
 
   const closeViewer = () => {
+    transitionName = 'hero';
     onClose?.(asset);
   };
 
@@ -227,45 +240,98 @@
     });
   };
 
+  const startTransition = async (
+    types: string[],
+    targetTransition: string | null,
+    targetAsset: AssetResponseDto | null,
+    navigateFn: () => Promise<boolean>,
+  ) => {
+    transitionName = viewTransitionManager.getTransitionName('old', targetTransition);
+    equirectangularTransitionName = viewTransitionManager.getTransitionName('old', targetTransition);
+    detailPanelTransitionName = 'detail-panel';
+    await tick();
+    const navigationResult = new Promise<boolean>((navigationResolve) => {
+      viewTransitionManager.startTransition(
+        new Promise<void>((resolve) => {
+          eventManager.once('StartViewTransition', async () => {
+            transitionName = viewTransitionManager.getTransitionName('new', targetTransition);
+            if (targetAsset && isEquirectangular(asset) && !isEquirectangular(targetAsset)) {
+              equirectangularTransitionName = null;
+            }
+            await tick();
+            navigationResolve(await navigateFn());
+          });
+          eventManager.once('AssetViewerFree', () => tick().then(resolve));
+        }),
+        types,
+      );
+    });
+    return navigationResult;
+  };
+
   const tracker = new InvocationTracker();
 
-  const navigateAsset = (order?: 'previous' | 'next', e?: Event) => {
+  const navigateAsset = (order?: 'previous' | 'next', skipTransition: boolean = false) => {
     if (!order) {
-      if ($slideshowState === SlideshowState.PlaySlideshow) {
-        order = $slideshowNavigation === SlideshowNavigation.AscendingOrder ? 'previous' : 'next';
+      if (slideShowPlaying) {
+        order = slideShowAscending ? 'previous' : 'next';
       } else {
         return;
       }
     }
 
-    e?.stopPropagation();
     preloadManager.cancel(asset);
     if (tracker.isActive()) {
       return;
     }
 
+    let skipped = false;
+    if (viewTransitionManager.skipTransitions()) {
+      skipped = true;
+    }
+
     void tracker.invoke(async () => {
       let hasNext = false;
-
-      if ($slideshowState === SlideshowState.PlaySlideshow && $slideshowNavigation === SlideshowNavigation.Shuffle) {
-        hasNext = order === 'previous' ? slideshowHistory.previous() : slideshowHistory.next();
-        if (!hasNext) {
-          const asset = await onRandom?.();
-          if (asset) {
-            slideshowHistory.queue(asset);
-            hasNext = true;
+      if (slideShowPlaying && slideShowShuffle) {
+        const navigate = async () => {
+          let next = order === 'previous' ? slideshowHistory.previous() : slideshowHistory.next();
+          if (!next) {
+            const asset = await onRandom?.();
+            if (asset) {
+              slideshowHistory.queue(asset);
+              next = true;
+            }
           }
+          return next;
+        };
+        // eslint-disable-next-line unicorn/prefer-ternary
+        if (viewTransitionManager.isSupported() && !skipped && !skipTransition) {
+          hasNext = await startTransition(['slideshow'], null, null, navigate);
+        } else {
+          hasNext = await navigate();
         }
       } else if (onNavigateToAsset) {
-        hasNext =
-          order === 'previous'
-            ? await onNavigateToAsset(cursor.previousAsset)
-            : await onNavigateToAsset(cursor.nextAsset);
+        // only transition if the target is already preloaded, and is in a secure context
+        const targetAsset = order === 'previous' ? previousAsset : nextAsset;
+        const navigate = async () =>
+          order === 'previous' ? await onNavigateToAsset(previousAsset) : await onNavigateToAsset(nextAsset);
+        if (viewTransitionManager.isSupported() && !skipped && !skipTransition && !!targetAsset) {
+          const targetTransition = slideShowPlaying ? null : order;
+          hasNext = await startTransition(
+            slideShowPlaying ? ['slideshow'] : ['viewer-nav'],
+            targetTransition,
+            targetAsset,
+            navigate,
+          );
+        } else {
+          hasNext = await navigate();
+        }
+        resetZoomState();
       } else {
         hasNext = false;
       }
 
-      if ($slideshowState === SlideshowState.PlaySlideshow) {
+      if (slideShowPlaying) {
         if (hasNext) {
           $restartSlideshowProgress = true;
         } else {
@@ -333,7 +399,7 @@
   const handleAction = async (action: Action) => {
     switch (action.type) {
       case AssetAction.ADD_TO_ALBUM: {
-        await handleGetAllAlbums();
+        refreshAlbumsSignal++;
         break;
       }
       case AssetAction.REMOVE_ASSET_FROM_STACK: {
@@ -391,7 +457,6 @@
 
   const refresh = async () => {
     await refreshStack();
-    await handleGetAllAlbums();
     ocrManager.clear();
     if (!sharedLink) {
       if (previewStackedAsset) {
@@ -416,6 +481,13 @@
     }
   });
 
+  const isEquirectangular = (asset: AssetResponseDto) => {
+    return (
+      asset.exifInfo?.projectionType === ProjectionType.EQUIRECTANGULAR ||
+      (asset.originalPath && asset.originalPath.toLowerCase().endsWith('.insp'))
+    );
+  };
+
   const viewerKind = $derived.by(() => {
     if (previewStackedAsset) {
       return asset.type === AssetTypeEnum.Image ? 'StackPhotoViewer' : 'StackVideoViewer';
@@ -423,10 +495,7 @@
     if (asset.type === AssetTypeEnum.Image) {
       if (shouldPlayMotionPhoto && asset.livePhotoVideoId) {
         return 'LiveVideoViewer';
-      } else if (
-        asset.exifInfo?.projectionType === ProjectionType.EQUIRECTANGULAR ||
-        (asset.originalPath && asset.originalPath.toLowerCase().endsWith('.insp'))
-      ) {
+      } else if (isEquirectangular(asset)) {
         return 'ImagePanaramaViewer';
       } else if (isShowEditor && selectedEditType === 'crop') {
         return 'CropArea';
@@ -444,12 +513,16 @@
 <section
   id="immich-asset-viewer"
   class="fixed start-0 top-0 grid size-full grid-cols-4 grid-rows-[64px_1fr] overflow-hidden bg-black"
+  class:invisible={$invisible}
   use:focusTrap
   bind:this={assetViewerHtmlElement}
 >
   <!-- Top navigation bar -->
   {#if $slideshowState === SlideshowState.None && !isShowEditor}
-    <div class="col-span-4 col-start-1 row-span-1 row-start-1 transition-transform">
+    <div
+      class="col-span-4 col-start-1 row-span-1 row-start-1 transition-transform"
+      style:view-transition-name="exclude"
+    >
       <AssetViewerNavBar
         {asset}
         {album}
@@ -492,24 +565,30 @@
   {/if}
 
   {#if $slideshowState === SlideshowState.None && showNavigation && !isShowEditor && previousAsset}
-    <div class="my-auto col-span-1 col-start-1 row-span-full row-start-1 justify-self-start">
+    <div
+      class="my-auto col-span-1 col-start-1 row-span-full row-start-1 justify-self-start"
+      style:view-transition-name="exclude-leftbutton"
+    >
       <PreviousAssetAction onPreviousAsset={() => navigateAsset('previous')} />
     </div>
   {/if}
 
   <!-- Asset Viewer -->
-  <div class="z-[-1] relative col-start-1 col-span-4 row-start-1 row-span-full">
+  <div class="z-[-1] relative col-start-1 col-span-4 row-start-1 row-span-full items-center flex">
     {#if viewerKind === 'StackPhotoViewer'}
       <PhotoViewer
         bind:zoomToggle
         bind:copyImage
+        {transitionName}
         cursor={{ ...cursor, current: previewStackedAsset! }}
-        onPreviousAsset={() => navigateAsset('previous')}
-        onNextAsset={() => navigateAsset('next')}
+        onPreviousAsset={() => navigateAsset('previous', true)}
+        onNextAsset={() => navigateAsset('next', true)}
         {sharedLink}
       />
     {:else if viewerKind === 'StackVideoViewer'}
       <VideoViewer
+        {transitionName}
+        {asset}
         assetId={previewStackedAsset!.id}
         cacheKey={previewStackedAsset!.thumbhash}
         nextAsset={cursor.nextAsset}
@@ -525,6 +604,8 @@
       />
     {:else if viewerKind === 'LiveVideoViewer'}
       <VideoViewer
+        {transitionName}
+        {asset}
         assetId={asset.livePhotoVideoId!}
         nextAsset={cursor.nextAsset}
         previousAsset={cursor.previousAsset}
@@ -538,21 +619,24 @@
         {playOriginalVideo}
       />
     {:else if viewerKind === 'ImagePanaramaViewer'}
-      <ImagePanoramaViewer bind:zoomToggle {asset} />
+      <ImagePanoramaViewer bind:zoomToggle {asset} transitionName={equirectangularTransitionName} />
     {:else if viewerKind === 'CropArea'}
       <CropArea {asset} />
     {:else if viewerKind === 'PhotoViewer'}
       <PhotoViewer
+        {transitionName}
         bind:zoomToggle
         bind:copyImage
         {cursor}
-        onPreviousAsset={() => navigateAsset('previous')}
-        onNextAsset={() => navigateAsset('next')}
+        onPreviousAsset={() => navigateAsset('previous', true)}
+        onNextAsset={() => navigateAsset('next', true)}
         {sharedLink}
-        onFree={() => eventManager.emit('AssetViewerFree')}
+        onReady={() => eventManager.emit('AssetViewerFree')}
       />
     {:else if viewerKind === 'VideoViewer'}
       <VideoViewer
+        {transitionName}
+        {asset}
         assetId={asset.id}
         nextAsset={cursor.nextAsset}
         previousAsset={cursor.previousAsset}
@@ -590,19 +674,23 @@
   </div>
 
   {#if $slideshowState === SlideshowState.None && showNavigation && !isShowEditor && nextAsset}
-    <div class="my-auto col-span-1 col-start-4 row-span-full row-start-1 justify-self-end">
+    <div
+      class="my-auto col-span-1 col-start-4 row-span-full row-start-1 justify-self-end"
+      style:view-transition-name="exclude-rightbutton"
+    >
       <NextAssetAction onNextAsset={() => navigateAsset('next')} />
     </div>
   {/if}
 
   {#if enableDetailPanel && $slideshowState === SlideshowState.None && $isShowDetail && !isShowEditor}
     <div
-      transition:fly={{ duration: 150 }}
+      transition:slide={{ axis: 'x', duration: 150 }}
       id="detail-panel"
+      style:view-transition-name={detailPanelTransitionName}
       class="row-start-1 row-span-4 w-[360px] overflow-y-auto transition-all dark:border-l dark:border-s-immich-dark-gray bg-light"
       translate="yes"
     >
-      <DetailPanel {asset} currentAlbum={album} albums={appearsInAlbums} onClose={() => ($isShowDetail = false)} />
+      <DetailPanel {asset} {refreshAlbumsSignal} currentAlbum={album} onClose={() => ($isShowDetail = false)} />
     </div>
   {/if}
 

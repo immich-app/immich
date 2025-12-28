@@ -24,11 +24,11 @@ export interface boundingBox {
 export const getBoundingBox = (
   faces: Faces[],
   zoom: ZoomImageWheelState,
-  photoViewer: HTMLImageElement | null,
+  photoViewer: HTMLImageElement | null | undefined,
 ): boundingBox[] => {
   const boxes: boundingBox[] = [];
 
-  if (photoViewer === null) {
+  if (!photoViewer) {
     return boxes;
   }
   const clientHeight = photoViewer.clientHeight;
@@ -76,9 +76,9 @@ export const zoomImageToBase64 = async (
   face: AssetFaceResponseDto,
   assetId: string,
   assetType: AssetTypeEnum,
-  photoViewer: HTMLImageElement | null,
+  photoViewer: HTMLImageElement | null | undefined,
 ): Promise<string | null> => {
-  let image: HTMLImageElement | null = null;
+  let image: HTMLImageElement | null | undefined = null;
   if (assetType === AssetTypeEnum.Image) {
     image = photoViewer;
   } else if (assetType === AssetTypeEnum.Video) {
@@ -93,7 +93,7 @@ export const zoomImageToBase64 = async (
 
     image = img;
   }
-  if (image === null) {
+  if (!image) {
     return null;
   }
   const { boundingBoxX1: x1, boundingBoxX2: x2, boundingBoxY1: y1, boundingBoxY2: y2, imageWidth, imageHeight } = face;

@@ -3,7 +3,6 @@
   import type { AssetCursor } from '$lib/components/asset-viewer/asset-viewer.svelte';
   import { AssetAction } from '$lib/constants';
   import { assetCacheManager } from '$lib/managers/AssetCacheManager.svelte';
-
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { eventManager } from '$lib/managers/event-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
@@ -97,11 +96,12 @@
     if (!targetAsset) {
       return false;
     }
-    let waitForAssetViewerFree = new Promise<void>((resolve) => {
-      eventManager.once('AssetViewerFree', () => resolve());
-    });
+    // let waitForAssetViewerFree = new Promise<void>((resolve) => {
+    //   eventManager.once('AssetViewerFree', () => resolve());
+    // });
     await navigate({ targetRoute: 'current', assetId: targetAsset.id });
-    await waitForAssetViewerFree;
+
+    // await waitForAssetViewerFree;
     return true;
   };
 
@@ -114,6 +114,10 @@
   };
 
   const handleClose = async (asset: { id: string }) => {
+    const awaitInit = new Promise<void>((resolve) => eventManager.once('StartViewTransition', resolve));
+    eventManager.emit('TransitionToTimeline', { id: asset.id });
+    await awaitInit;
+
     assetViewingStore.showAssetViewer(false);
     invisible = true;
     $gridScrollTarget = { at: asset.id };
