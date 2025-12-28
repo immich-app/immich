@@ -26,7 +26,7 @@ services:
       - IMMICH_PORT=2285
       - IMMICH_IGNORE_MOUNT_CHECK_ERRORS=true
     volumes:
-      - ./test-assets:/test-assets
+      - ./test-assets:/test-assets:z
     extra_hosts:
       - 'auth-server:host-gateway'
     depends_on:

@@ -20,9 +20,9 @@ services:
       - IMMICH_PORT=2285
       - IMMICH_IGNORE_MOUNT_CHECK_ERRORS=true
     volumes:
-      - ./test-assets:/test-assets
-      - ..:/usr/src/app
-      - ${UPLOAD_LOCATION}/photos:/data
+      - ./test-assets:/test-assets:z
+      - ..:/usr/src/app:z
+      - ${UPLOAD_LOCATION}/photos:/data:z
       - /etc/localtime:/etc/localtime:ro
       - pnpm-store:/usr/src/app/.pnpm-store
       - server-node_modules:/usr/src/app/server/node_modules
@@ -35,7 +35,7 @@ services:
       - app-node_modules:/usr/src/app/node_modules
       - sveltekit:/usr/src/app/web/.svelte-kit
       - coverage:/usr/src/app/web/coverage
-      - ../plugins:/build/corePlugin
+      - ../plugins:/build/corePlugin:z
     depends_on:
       redis:
         condition: service_started
@@ -55,7 +55,7 @@ services:
     environment:
       - IMMICH_SERVER_URL=http://immich-server:2285/
     volumes:
-      - ..:/usr/src/app
+      - ..:/usr/src/app:z
       - pnpm-store:/usr/src/app/.pnpm-store
       - server-node_modules:/usr/src/app/server/node_modules
       - web-node_modules:/usr/src/app/web/node_modules
