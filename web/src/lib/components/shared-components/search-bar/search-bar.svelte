@@ -9,8 +9,8 @@
   import { generateId } from '$lib/utils/generate-id';
   import { getMetadataSearchQuery } from '$lib/utils/metadata-search';
   import type { MetadataSearchDto, SmartSearchDto } from '@immich/sdk';
-  import { Button, IconButton, modalManager } from '@immich/ui';
-  import { mdiClose, mdiMagnify, mdiTune } from '@mdi/js';
+  import { IconButton, modalManager } from '@immich/ui';
+  import { mdiClose, mdiMagnify, mdiTune, mdiCameraOutline } from '@mdi/js';
   import { onDestroy, onMount, tick } from 'svelte';
   import { t } from 'svelte-i18n';
   import SearchHistoryBox from './search-history-box.svelte';
@@ -33,6 +33,8 @@
   let close: (() => Promise<void>) | undefined;
   let showSearchTypeDropdown = $state(false);
   let currentSearchType = $state('smart');
+
+  let fileInput: HTMLInputElement;
 
   const listboxId = generateId();
   const searchTypeId = generateId();
@@ -82,21 +84,11 @@
   const buildSearchPayload = (term: string): SmartSearchDto | MetadataSearchDto => {
     const searchType = getSearchType();
     switch (searchType) {
-      case 'smart': {
-        return { query: term };
-      }
-      case 'metadata': {
-        return { originalFileName: term };
-      }
-      case 'description': {
-        return { description: term };
-      }
-      case 'ocr': {
-        return { ocr: term };
-      }
-      default: {
-        return { query: term };
-      }
+      case 'smart': return { query: term };
+      case 'metadata': return { originalFileName: term };
+      case 'description': return { description: term };
+      case 'ocr': return { ocr: term };
+      default: return { query: term };
     }
   };
 
@@ -107,7 +99,6 @@
 
   const onFilterClick = async () => {
     value = '';
-
     if (close) {
       await close();
       close = undefined;
@@ -121,13 +112,9 @@
     const searchResult = await result.onClose;
     close = undefined;
 
-    // Refresh search type after modal closes
     getSearchType();
 
-    if (!searchResult) {
-      return;
-    }
-
+    if (!searchResult) return;
     await handleSearch(searchResult);
   };
 
@@ -173,17 +160,7 @@
     searchHistoryBox?.clearSelection();
   };
 
-  const toggleSearchTypeDropdown = () => {
-    showSearchTypeDropdown = !showSearchTypeDropdown;
-  };
-
   const closeSearchTypeDropdown = () => {
-    showSearchTypeDropdown = false;
-  };
-
-  const selectSearchType = (type: string) => {
-    localStorage.setItem('searchQueryType', type);
-    currentSearchType = type;
     showSearchTypeDropdown = false;
   };
 
@@ -209,36 +186,32 @@
     }
   }
 
-  function getSearchTypeText(): string {
-    switch (currentSearchType) {
-      case 'smart': {
-        return $t('context');
-      }
-      case 'metadata': {
-        return $t('filename');
-      }
-      case 'description': {
-        return $t('description');
-      }
-      case 'ocr': {
-        return $t('ocr');
-      }
-      default: {
-        return $t('context');
-      }
-    }
-  }
-
   onMount(() => {
     getSearchType();
   });
 
-  const searchTypes = [
-    { value: 'smart', label: () => $t('context') },
-    { value: 'metadata', label: () => $t('filename') },
-    { value: 'description', label: () => $t('description') },
-    { value: 'ocr', label: () => $t('ocr') },
-  ] as const;
+
+  async function searchByPhoto(event: Event) {
+    const target = event.target as HTMLInputElement;
+    if (!target.files?.length) return;
+
+    const file = target.files[0];
+
+    closeDropdown();
+    searchStore.isSearchEnabled = false;
+
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const base64Image = e.target?.result as string;
+      
+      sessionStorage.setItem('pending-photo-search', base64Image);
+      
+      await goto(`${AppRoute.SEARCH}?q=photo-search`);
+    };
+    reader.readAsDataURL(file);
+    
+    target.value = '';
+  }
 </script>
 
 <svelte:document
@@ -260,13 +233,22 @@
     onfocusin={onFocusIn}
     role="search"
   >
+    <input
+      type="file"
+      bind:this={fileInput}
+      onchange={searchByPhoto} 
+      class="hidden"
+      accept="image/*"
+    />
+
     <div use:focusOutside={{ onFocusOut: closeDropdown }} tabindex="-1">
       <label for="main-search-bar" class="sr-only">{$t('search_your_photos')}</label>
+
       <input
         type="text"
         name="q"
         id="main-search-bar"
-        class="w-full transition-all border-2 ps-14 py-4 max-md:py-2 text-immich-fg/75 dark:text-immich-dark-fg
+        class="w-full transition-all border-2 ps-24 py-4 max-md:py-2 text-immich-fg/75 dark:text-immich-dark-fg
         {showClearIcon ? 'pe-22.5' : 'pe-14'}
         {grayTheme ? 'dark:bg-immich-dark-gray' : 'dark:bg-immich-dark-bg'}
         {showSuggestions && isSearchSuggestions ? 'rounded-t-3xl' : 'rounded-3xl bg-gray-200'}
@@ -294,7 +276,6 @@
         ]}
       />
 
-      <!-- SEARCH HISTORY BOX -->
       <SearchHistoryBox
         bind:this={searchHistoryBox}
         bind:isSearchSuggestions
@@ -308,43 +289,30 @@
       />
     </div>
 
-    {#if searchStore.isSearchEnabled}
-      <div
-        id={searchTypeId}
-        class="absolute inset-y-0 flex items-center end-16"
-        class:max-md:hidden={value}
-        class:end-28={value.length > 0}
-      >
-        <div class="relative" use:focusOutside={{ onFocusOut: closeSearchTypeDropdown }}>
-          <Button
-            class="bg-immich-primary text-white dark:bg-immich-dark-primary/90 dark:text-black/75 rounded-full px-3 py-1 text-xs hover:opacity-80 transition-opacity cursor-pointer"
-            onclick={toggleSearchTypeDropdown}
-            aria-expanded={showSearchTypeDropdown}
-            aria-haspopup="listbox"
-          >
-            {getSearchTypeText()}
-          </Button>
+    <div class="absolute inset-y-0 start-0 flex items-center ps-2">
+      <IconButton
+        type="button"
+        variant="ghost"
+        size="medium"
+        onclick={() => fileInput.click()}
+        icon={mdiCameraOutline}
+        shape="round"
+        color="secondary"
+      />
+    </div>
 
-          {#if showSearchTypeDropdown}
-            <div
-              class="absolute top-full right-0 mt-1 bg-white dark:bg-immich-dark-gray border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg py-1 min-w-32 z-9999"
-            >
-              {#each searchTypes as searchType (searchType.value)}
-                <button
-                  type="button"
-                  tabindex="0"
-                  class="w-full text-left px-3 py-2 text-xs hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors
-                         {currentSearchType === searchType.value ? 'bg-gray-100 dark:bg-gray-700' : ''}"
-                  onclick={() => selectSearchType(searchType.value)}
-                >
-                  {searchType.label()}
-                </button>
-              {/each}
-            </div>
-          {/if}
-        </div>
-      </div>
-    {/if}
+    <div class="absolute inset-y-0 start-11 flex items-center">
+      <IconButton
+        type="submit"
+        aria-label={$t('search')}
+        icon={mdiMagnify}
+        size="medium"
+        onclick={() => {}}
+        shape="round"
+        color="secondary"
+        variant="ghost"
+      />
+    </div>
 
     <div class="absolute inset-y-0 {showClearIcon ? 'end-14' : 'end-2'} flex items-center ps-6 transition-all">
       <IconButton
@@ -371,17 +339,5 @@
         />
       </div>
     {/if}
-    <div class="absolute inset-y-0 start-0 flex items-center ps-2">
-      <IconButton
-        type="submit"
-        aria-label={$t('search')}
-        icon={mdiMagnify}
-        size="medium"
-        onclick={() => {}}
-        shape="round"
-        color="secondary"
-        variant="ghost"
-      />
-    </div>
   </form>
 </div>

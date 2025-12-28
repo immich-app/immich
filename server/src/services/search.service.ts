@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { LRUMap } from 'mnemonist';
+import sharp from 'sharp';
 import { AssetMapOptions, AssetResponseDto, MapAsset, mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { mapPerson, PersonResponseDto } from 'src/dtos/person.dto';
@@ -23,7 +24,6 @@ import { BaseService } from 'src/services/base.service';
 import { requireElevatedPermission } from 'src/utils/access';
 import { getMyPartnerIds } from 'src/utils/asset.util';
 import { isSmartSearchEnabled } from 'src/utils/misc';
-
 @Injectable()
 export class SearchService extends BaseService {
   private embeddingCache = new LRUMap<string, string>(100);
@@ -206,5 +206,36 @@ export class SearchService extends BaseService {
         nextPage,
       },
     };
+  }
+
+async searchByPhoto(auth: AuthDto, file: Express.Multer.File): Promise<SearchResponseDto> {
+    const { machineLearning } = await this.getConfig({ withCache: false });
+    
+    if (!isSmartSearchEnabled(machineLearning)) {
+      throw new BadRequestException('Smart search is not enabled');
+    }
+    const buffer = await sharp(file.buffer)
+      .rotate()
+      .resize(224, 224, { fit: 'cover' })
+      .toFormat('jpeg')
+      .toBuffer();
+
+    const embedding = await this.machineLearningRepository.encodeImageBuffer(
+      buffer,
+      machineLearning.clip,
+    );
+
+    const userIds = await this.getUserIdsToSearch(auth);
+    const { hasNextPage, items } = await this.searchRepository.searchSmart(
+      { page: 1, size: 100 },
+      { 
+        userIds, 
+        embedding,
+        query: undefined, 
+        modelName: machineLearning.clip.modelName 
+      } as any,
+    );
+
+    return this.mapResponse(items, hasNextPage ? '2' : null, { auth });
   }
 }

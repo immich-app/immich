@@ -1,4 +1,19 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Post,
+  Query, // Imported
+  UploadedFile // Imported
+  ,
+
+
+
+  UseInterceptors
+} from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express'; // Imported
 import { ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
@@ -37,6 +52,17 @@ export class SearchController {
   })
   searchAssets(@Auth() auth: AuthDto, @Body() dto: MetadataSearchDto): Promise<SearchResponseDto> {
     return this.service.searchMetadata(auth, dto);
+  }
+
+  // 1. NEW ENDPOINT: Added with correct imports
+  @Post('by-photo')
+  @UseInterceptors(FileInterceptor('file')) 
+  @Authenticated({ permission: Permission.AssetRead }) // Added security
+  async searchByPhoto(
+    @Auth() auth: AuthDto,
+    @UploadedFile() file: Express.Multer.File,
+  ): Promise<SearchResponseDto> { 
+    return this.service.searchByPhoto(auth, file);
   }
 
   @Post('statistics')
