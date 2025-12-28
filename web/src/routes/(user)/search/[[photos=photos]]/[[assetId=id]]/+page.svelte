@@ -44,16 +44,13 @@
   } from '@immich/sdk';
   import { Icon, IconButton, LoadingSpinner } from '@immich/ui';
   import { mdiArrowLeft, mdiDotsVertical, mdiImageOffOutline, mdiPlus, mdiSelectAll } from '@mdi/js';
-  import { tick, untrack } from 'svelte';
+  import { tick, untrack, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
 
   let { isViewing: showAssetViewer } = assetViewingStore;
   const viewport: Viewport = $state({ width: 0, height: 0 });
   let searchResultsElement: HTMLElement | undefined = $state();
 
-  // The GalleryViewer pushes it's own history state, which causes weird
-  // behavior for history.back(). To prevent that we store the previous page
-  // manually and navigate back to that.
   let previousRoute = $state(AppRoute.EXPLORE as string);
 
   let nextPage = $state(1);
@@ -70,18 +67,87 @@
   let smartSearchEnabled = $derived(featureFlagsManager.value.smartSearch);
   let terms = $derived(searchQuery ? JSON.parse(searchQuery) : {});
 
-  $effect(() => {
-    // we want this to *only* be reactive on `terms`
-    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-    terms;
-    untrack(() => handlePromiseError(onSearchQueryUpdate()));
-  });
+  /**
+   * Main search logic handler
+   * Mimics Immich's native loading behavior by setting isLoading = true
+   * and clearing results before the API call.
+   */
+  async function onSearchQueryUpdate() {
+    const qParam = page.url.searchParams.get('q');
+    
+    nextPage = 1;
+    searchResultAssets = [];
+    searchResultAlbums = [];
+    isLoading = true;
 
-  const onEscape = () => {
-    if ($showAssetViewer) {
+    if (qParam === 'photo-search') {
+      try {
+        const raw = sessionStorage.getItem('photo-search-results');
+        if (raw) {
+          const results = JSON.parse(raw);
+          searchResultAssets = results.assets.items.map((asset: any) => toTimelineAsset(asset));
+          if (results.albums) {
+            searchResultAlbums = results.albums.items;
+          }
+          sessionStorage.removeItem('photo-search-results');
+          isLoading = false;
+          return;
+        }
+
+        const base64Image = sessionStorage.getItem('pending-photo-search');
+        if (base64Image) {
+          sessionStorage.removeItem('pending-photo-search');
+          
+          const response = await fetch(base64Image);
+          const blob = await response.blob();
+          
+          const formData = new FormData();
+          formData.append('file', blob, 'search-image.jpg');
+          
+          const searchResponse = await fetch('/api/search/by-photo', {
+            method: 'POST',
+            body: formData,
+          });
+          
+          if (!searchResponse.ok) {
+            throw new Error(`Search failed: ${searchResponse.statusText}`);
+          }
+          
+          const searchResult = await searchResponse.json();
+          searchResultAssets = searchResult.assets.items.map((asset: any) => toTimelineAsset(asset));
+          if (searchResult.albums) {
+            searchResultAlbums = searchResult.albums.items;
+          }
+        } else {
+          console.warn("No photo search data found");
+        }
+      } catch (e) {
+        handleError(e, 'Photo search failed');
+      } finally {
+        isLoading = false;
+      }
       return;
     }
 
+    await loadNextPage(true);
+  }
+
+  onMount(() => {
+    handlePromiseError(onSearchQueryUpdate());
+  });
+
+  $effect(() => {
+    terms;
+    untrack(() => {
+      if (page.url.searchParams.get('q') === 'photo-search') {
+        return;
+      }
+      handlePromiseError(onSearchQueryUpdate());
+    });
+  });
+
+  const onEscape = () => {
+    if ($showAssetViewer) return;
     if (assetInteraction.selectionActive) {
       assetInteraction.selectedAssets = [];
       return;
@@ -90,38 +156,25 @@
   };
 
   $effect(() => {
-    if (scrollY) {
-      scrollYHistory = scrollY;
-    }
+    if (scrollY) scrollYHistory = scrollY;
   });
 
   afterNavigate(({ from }) => {
-    // Prevent setting previousRoute to the current page.
     if (from?.url && from.route.id !== page.route.id) {
       previousRoute = from.url.href;
     }
     const route = from?.route?.id;
+    if (isPeopleRoute(route)) previousRoute = AppRoute.PHOTOS;
+    if (isAlbumsRoute(route)) previousRoute = AppRoute.EXPLORE;
 
-    if (isPeopleRoute(route)) {
-      previousRoute = AppRoute.PHOTOS;
-    }
-
-    if (isAlbumsRoute(route)) {
-      previousRoute = AppRoute.EXPLORE;
-    }
-
-    tick()
-      .then(() => {
-        window.scrollTo(0, scrollYHistory);
-      })
-      .catch(() => {
-        // do nothing
-      });
+    tick().then(() => {
+      window.scrollTo(0, scrollYHistory);
+    }).catch(() => {});
   });
 
   const onAssetDelete = (assetIds: string[]) => {
     const assetIdSet = new Set(assetIds);
-    searchResultAssets = searchResultAssets.filter((asset: TimelineAsset) => !assetIdSet.has(asset.id));
+    searchResultAssets = searchResultAssets.filter((asset) => !assetIdSet.has(asset.id));
   };
 
   const handleSetVisibility = (assetIds: string[]) => {
@@ -133,18 +186,8 @@
     assetInteraction.selectAssets(searchResultAssets);
   };
 
-  async function onSearchQueryUpdate() {
-    nextPage = 1;
-    searchResultAssets = [];
-    searchResultAlbums = [];
-    await loadNextPage(true);
-  }
-
-  // eslint-disable-next-line svelte/valid-prop-names-in-kit-pages
   export const loadNextPage = async (force?: boolean) => {
-    if (!nextPage || (isLoading && !force)) {
-      return;
-    }
+    if (!nextPage || (isLoading && !force)) return;
     isLoading = true;
 
     const searchDto: SearchTerms = {
@@ -163,7 +206,6 @@
 
       searchResultAlbums.push(...albums.items);
       searchResultAssets.push(...assets.items.map((asset) => toTimelineAsset(asset)));
-
       nextPage = Number(assets.nextPage) || 0;
     } catch (error) {
       handleError(error, $t('loading_search_results_failed'));
@@ -174,76 +216,40 @@
 
   function getHumanReadableDate(dateString: string) {
     const date = parseUtcDate(dateString).startOf('day');
-    return date.toLocaleString(
-      {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      },
-      { locale: $locale },
-    );
+    return date.toLocaleString({ year: 'numeric', month: 'long', day: 'numeric' }, { locale: $locale });
   }
 
   function getHumanReadableSearchKey(key: keyof SearchTerms): string {
     const keyMap: Partial<Record<keyof SearchTerms, string>> = {
-      takenAfter: $t('start_date'),
-      takenBefore: $t('end_date'),
-      visibility: $t('in_archive'),
-      isFavorite: $t('favorite'),
-      isNotInAlbum: $t('not_in_any_album'),
-      type: $t('media_type'),
-      query: $t('context'),
-      city: $t('city'),
-      country: $t('country'),
-      state: $t('state'),
-      make: $t('camera_brand'),
-      model: $t('camera_model'),
-      lensModel: $t('lens_model'),
-      personIds: $t('people'),
-      tagIds: $t('tags'),
-      originalFileName: $t('file_name'),
-      description: $t('description'),
-      queryAssetId: $t('query_asset_id'),
-      ocr: $t('ocr'),
+      takenAfter: $t('start_date'), takenBefore: $t('end_date'), visibility: $t('in_archive'),
+      isFavorite: $t('favorite'), isNotInAlbum: $t('not_in_any_album'), type: $t('media_type'),
+      query: $t('context'), city: $t('city'), country: $t('country'), state: $t('state'),
+      make: $t('camera_brand'), model: $t('camera_model'), lensModel: $t('lens_model'),
+      personIds: $t('people'), tagIds: $t('tags'), originalFileName: $t('file_name'),
+      description: $t('description'), queryAssetId: $t('query_asset_id'), ocr: $t('ocr'),
     };
     return keyMap[key] || key;
   }
 
   async function getPersonName(personIds: string[]) {
     const personNames = await Promise.all(
-      personIds.map(async (personId) => {
-        const person = await getPerson({ id: personId });
-
-        if (person.name == '') {
-          return $t('no_name');
-        }
-
-        return person.name;
-      }),
+      personIds.map(async (id) => {
+        const p = await getPerson({ id });
+        return p.name === '' ? $t('no_name') : p.name;
+      })
     );
-
     return personNames.join(', ');
   }
 
   async function getTagNames(tagIds: string[] | null) {
-    if (tagIds === null) {
-      return $t('untagged');
-    }
-    const tagNames = await Promise.all(
-      tagIds.map(async (tagId) => {
-        const tag = await getTagById({ id: tagId });
-
-        return tag.value;
-      }),
-    );
-
+    if (tagIds === null) return $t('untagged');
+    const tagNames = await Promise.all(tagIds.map(async (id) => (await getTagById({ id })).value));
     return tagNames.join(', ');
   }
 
   const onAddToAlbum = (assetIds: string[]) => {
     cancelMultiselect(assetInteraction);
-
-    if (terms.isNotInAlbum.toString() == 'true') {
+    if (terms.isNotInAlbum?.toString() === 'true') {
       const assetIdSet = new Set(assetIds);
       searchResultAssets = searchResultAssets.filter((asset) => !assetIdSet.has(asset.id));
     }
@@ -259,36 +265,26 @@
 
 <section>
   {#if assetInteraction.selectionActive}
-    <div class="fixed top-0 start-0 w-full">
+    <div class="fixed top-0 start-0 w-full z-[100]">
       <AssetSelectControlBar
         assets={assetInteraction.selectedAssets}
         clearSelect={() => cancelMultiselect(assetInteraction)}
       >
         <CreateSharedLink />
-        <IconButton
-          shape="round"
-          color="secondary"
-          variant="ghost"
-          aria-label={$t('select_all')}
-          icon={mdiSelectAll}
-          onclick={handleSelectAll}
-        />
+        <IconButton shape="round" color="secondary" variant="ghost" icon={mdiSelectAll} onclick={handleSelectAll} />
         <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
           <AddToAlbum {onAddToAlbum} />
           <AddToAlbum shared {onAddToAlbum} />
         </ButtonContextMenu>
         <FavoriteAction
           removeFavorite={assetInteraction.isAllFavorite}
-          onFavorite={(assetIds, isFavorite) => {
-            for (const assetId of assetIds) {
-              const asset = searchResultAssets.find((searchAsset) => searchAsset.id === assetId);
-              if (asset) {
-                asset.isFavorite = isFavorite;
-              }
-            }
+          onFavorite={(ids, isFav) => {
+            ids.forEach(id => {
+              const a = searchResultAssets.find(s => s.id === id);
+              if (a) a.isFavorite = isFav;
+            });
           }}
         />
-
         <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
           <DownloadAction menuItem />
           <ChangeDate menuItem />
@@ -304,7 +300,7 @@
       </AssetSelectControlBar>
     </div>
   {:else}
-    <div class="fixed top-0 start-0 w-full">
+    <div class="fixed top-0 start-0 w-full z-[100]">
       <ControlAppBar onClose={() => goto(previousRoute)} backIcon={mdiArrowLeft}>
         <div class="absolute bg-light"></div>
         <div class="w-full flex-1 ps-4">
@@ -315,37 +311,24 @@
   {/if}
 </section>
 
-{#if terms}
-  <section
-    id="search-chips"
-    class="mt-24 text-center w-full flex gap-5 place-content-center place-items-center flex-wrap px-24"
-  >
+{#if terms && Object.keys(terms).length > 0}
+  <section id="search-chips" class="mt-24 text-center w-full flex gap-5 place-content-center flex-wrap px-24">
     {#each getObjectKeys(terms) as searchKey (searchKey)}
       {@const value = terms[searchKey]}
-      <div class="flex place-content-center place-items-center items-stretch text-xs">
-        <div
-          class="flex items-center justify-center bg-immich-primary py-2 px-4 text-white dark:text-black dark:bg-immich-dark-primary
-          {value === true ? 'rounded-full' : 'rounded-s-full'}"
-        >
-          {getHumanReadableSearchKey(searchKey as keyof SearchTerms)}
+      <div class="flex place-content-center items-stretch text-xs">
+        <div class="flex items-center justify-center bg-immich-primary py-2 px-4 text-white dark:text-black dark:bg-immich-dark-primary {value === true ? 'rounded-full' : 'rounded-s-full'}">
+          {getHumanReadableSearchKey(searchKey)}
         </div>
-
         {#if value !== true}
           <div class="bg-gray-300 py-2 px-4 dark:bg-gray-800 dark:text-white rounded-e-full">
             {#if (searchKey === 'takenAfter' || searchKey === 'takenBefore') && typeof value === 'string'}
               {getHumanReadableDate(value)}
             {:else if searchKey === 'personIds' && Array.isArray(value)}
-              {#await getPersonName(value) then personName}
-                {personName}
-              {/await}
+              {#await getPersonName(value) then name}{name}{/await}
             {:else if searchKey === 'tagIds' && (Array.isArray(value) || value === null)}
-              {#await getTagNames(value) then tagNames}
-                {tagNames}
-              {/await}
-            {:else if value === null || value === ''}
-              {$t('unknown')}
+              {#await getTagNames(value) then names}{names}{/await}
             {:else}
-              {value}
+              {value ?? $t('unknown')}
             {/if}
           </div>
         {/if}
@@ -355,7 +338,7 @@
 {/if}
 
 <section
-  class="mb-12 bg-immich-bg dark:bg-immich-dark-bg m-4 max-h-screen"
+  class="mb-12 bg-immich-bg dark:bg-immich-dark-bg m-4 min-h-[50vh] mt-24"
   bind:clientHeight={viewport.height}
   bind:clientWidth={viewport.width}
   bind:this={searchResultsElement}
@@ -364,12 +347,10 @@
     <section>
       <div class="uppercase ms-6 text-4xl font-medium text-black/70 dark:text-white/80">{$t('albums')}</div>
       <AlbumCardGroup albums={searchResultAlbums} showDateRange showItemCount />
-
-      <div class="uppercase m-6 text-4xl font-medium text-black/70 dark:text-white/80">
-        {$t('photos_and_videos')}
-      </div>
+      <div class="uppercase m-6 text-4xl font-medium text-black/70 dark:text-white/80">{$t('photos_and_videos')}</div>
     </section>
   {/if}
+
   <section id="search-content">
     {#if searchResultAssets.length > 0}
       <GalleryViewer
@@ -379,11 +360,11 @@
         showArchiveIcon={true}
         {viewport}
         onReload={onSearchQueryUpdate}
-        slidingWindowOffset={searchResultsElement.offsetTop}
+        slidingWindowOffset={searchResultsElement?.offsetTop ?? 0}
       />
     {:else if !isLoading}
       <div class="flex min-h-[calc(66vh-11rem)] w-full place-content-center items-center dark:text-white">
-        <div class="flex flex-col content-center items-center text-center">
+        <div class="flex flex-col items-center text-center">
           <Icon icon={mdiImageOffOutline} size="3.5em" />
           <p class="mt-5 text-3xl font-medium">{$t('no_results')}</p>
           <p class="text-base font-normal">{$t('no_results_description')}</p>
@@ -392,70 +373,8 @@
     {/if}
 
     {#if isLoading}
-      <div class="flex justify-center py-16 items-center">
+      <div class="flex justify-center py-32 items-center">
         <LoadingSpinner size="giant" />
-      </div>
-    {/if}
-  </section>
-
-  <section>
-    {#if assetInteraction.selectionActive}
-      <div class="fixed top-0 start-0 w-full">
-        <AssetSelectControlBar
-          assets={assetInteraction.selectedAssets}
-          clearSelect={() => cancelMultiselect(assetInteraction)}
-        >
-          <CreateSharedLink />
-          <IconButton
-            shape="round"
-            color="secondary"
-            variant="ghost"
-            aria-label={$t('select_all')}
-            icon={mdiSelectAll}
-            onclick={handleSelectAll}
-          />
-          <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
-            <AddToAlbum {onAddToAlbum} />
-            <AddToAlbum shared {onAddToAlbum} />
-          </ButtonContextMenu>
-          <FavoriteAction
-            removeFavorite={assetInteraction.isAllFavorite}
-            onFavorite={(ids, isFavorite) => {
-              for (const id of ids) {
-                const asset = searchResultAssets.find((asset) => asset.id === id);
-                if (asset) {
-                  asset.isFavorite = isFavorite;
-                }
-              }
-            }}
-          />
-
-          <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
-            <DownloadAction menuItem />
-            <ChangeDate menuItem />
-            <ChangeDescription menuItem />
-            <ChangeLocation menuItem />
-            <ArchiveAction menuItem unarchive={assetInteraction.isAllArchived} />
-            {#if assetInteraction.isAllUserOwned}
-              <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />
-            {/if}
-            {#if $preferences.tags.enabled && assetInteraction.isAllUserOwned}
-              <TagAction menuItem />
-            {/if}
-            <DeleteAssets menuItem {onAssetDelete} onUndoDelete={onSearchQueryUpdate} />
-            <hr />
-            <AssetJobActions />
-          </ButtonContextMenu>
-        </AssetSelectControlBar>
-      </div>
-    {:else}
-      <div class="fixed top-0 start-0 w-full">
-        <ControlAppBar onClose={() => goto(previousRoute)} backIcon={mdiArrowLeft}>
-          <div class="absolute bg-light"></div>
-          <div class="w-full flex-1 ps-4">
-            <SearchBar grayTheme={false} value={terms?.query ?? ''} searchQuery={terms} />
-          </div>
-        </ControlAppBar>
       </div>
     {/if}
   </section>

@@ -8422,6 +8422,39 @@
         "x-immich-state": "Alpha"
       }
     },
+    "/search/by-photo": {
+      "post": {
+        "operationId": "searchByPhoto",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Search"
+        ],
+        "x-immich-permission": "asset.read"
+      }
+    },
     "/search/cities": {
       "get": {
         "description": "Retrieve a list of assets with each asset belonging to a different city. This endpoint is used on the places pages to show a single thumbnail for each city the user has assets in.",

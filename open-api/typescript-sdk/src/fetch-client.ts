@@ -988,6 +988,31 @@ export type QueueJobResponseDto = {
     name: JobName;
     timestamp: number;
 };
+export type SearchFacetCountResponseDto = {
+    count: number;
+    value: string;
+};
+export type SearchFacetResponseDto = {
+    counts: SearchFacetCountResponseDto[];
+    fieldName: string;
+};
+export type SearchAlbumResponseDto = {
+    count: number;
+    facets: SearchFacetResponseDto[];
+    items: AlbumResponseDto[];
+    total: number;
+};
+export type SearchAssetResponseDto = {
+    count: number;
+    facets: SearchFacetResponseDto[];
+    items: AssetResponseDto[];
+    nextPage: string | null;
+    total: number;
+};
+export type SearchResponseDto = {
+    albums: SearchAlbumResponseDto;
+    assets: SearchAssetResponseDto;
+};
 export type SearchExploreItem = {
     data: AssetResponseDto;
     value: string;
@@ -1041,31 +1066,6 @@ export type MetadataSearchDto = {
     withExif?: boolean;
     withPeople?: boolean;
     withStacked?: boolean;
-};
-export type SearchFacetCountResponseDto = {
-    count: number;
-    value: string;
-};
-export type SearchFacetResponseDto = {
-    counts: SearchFacetCountResponseDto[];
-    fieldName: string;
-};
-export type SearchAlbumResponseDto = {
-    count: number;
-    facets: SearchFacetResponseDto[];
-    items: AlbumResponseDto[];
-    total: number;
-};
-export type SearchAssetResponseDto = {
-    count: number;
-    facets: SearchFacetResponseDto[];
-    items: AssetResponseDto[];
-    nextPage: string | null;
-    total: number;
-};
-export type SearchResponseDto = {
-    albums: SearchAlbumResponseDto;
-    assets: SearchAssetResponseDto;
 };
 export type PlacesResponseDto = {
     admin1name?: string;
@@ -3752,6 +3752,15 @@ export function getQueueJobs({ name, status }: {
         status
     }))}`, {
         ...opts
+    }));
+}
+export function searchByPhoto(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: SearchResponseDto;
+    }>("/search/by-photo", {
+        ...opts,
+        method: "POST"
     }));
 }
 /**
