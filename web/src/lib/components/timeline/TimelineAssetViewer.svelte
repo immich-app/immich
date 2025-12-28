@@ -5,6 +5,7 @@
   import { assetCacheManager } from '$lib/managers/AssetCacheManager.svelte';
 
   import { authManager } from '$lib/managers/auth-manager.svelte';
+  import { eventManager } from '$lib/managers/event-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { websocketEvents } from '$lib/stores/websocket';
@@ -96,8 +97,11 @@
     if (!targetAsset) {
       return false;
     }
-
+    let waitForAssetViewerFree = new Promise<void>((resolve) => {
+      eventManager.once('AssetViewerFree', () => resolve());
+    });
     await navigate({ targetRoute: 'current', assetId: targetAsset.id });
+    await waitForAssetViewerFree;
     return true;
   };
 
@@ -228,8 +232,7 @@
       handleAction(action);
       assetCacheManager.invalidate();
     }}
-    onPrevious={() => handleNavigateToAsset(assetCursor.previousAsset)}
-    onNext={() => handleNavigateToAsset(assetCursor.nextAsset)}
+    onNavigateToAsset={handleNavigateToAsset}
     onRandom={handleRandom}
     onClose={handleClose}
   />

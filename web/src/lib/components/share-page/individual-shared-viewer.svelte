@@ -148,10 +148,6 @@
           cursor={{ current: asset, nextAsset: null, previousAsset: null }}
           showCloseButton={false}
           onAction={handleAction}
-          onPrevious={() => Promise.resolve(false)}
-          onNext={() => Promise.resolve(false)}
-          onRandom={() => Promise.resolve(undefined)}
-          onClose={() => {}}
         />
       {/await}
     {/await}
