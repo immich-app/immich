@@ -9,6 +9,8 @@ import {
   UploadedFile // Imported
   ,
 
+
+
   UseInterceptors
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express'; // Imported
@@ -165,6 +167,7 @@ export class SearchController {
     history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
   getSearchSuggestions(@Auth() auth: AuthDto, @Query() dto: SearchSuggestionRequestDto): Promise<string[]> {
+    // TODO fix open api generation to indicate that results can be nullable
     return this.service.getSearchSuggestions(auth, dto) as Promise<string[]>;
   }
 }
