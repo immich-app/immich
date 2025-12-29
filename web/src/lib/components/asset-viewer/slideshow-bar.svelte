@@ -38,7 +38,7 @@
   let showControls = $state(true);
   let timer: NodeJS.Timeout;
   let isOverControls = $state(false);
-  let isVideoSlide = $derived(assetType === AssetTypeEnum.Video);
+  const isVideoSlide = $derived(assetType === AssetTypeEnum.Video);
 
   let unsubscribeRestart: () => void;
   let unsubscribeStop: () => void;
