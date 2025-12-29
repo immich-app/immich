@@ -163,10 +163,7 @@
   });
 </script>
 
-<svelte:document
-  onmousemove={showControlBar}
-  use:shortcuts={shortcutBindings}
-/>
+<svelte:document onmousemove={showControlBar} use:shortcuts={shortcutBindings} />
 
 {/* @ts-expect-error https://github.com/Rezi/svelte-gestures/issues/38#issuecomment-3315953573 */ null}
 <svelte:body {@attach swipe} {onswipe} {onswipedown} />
