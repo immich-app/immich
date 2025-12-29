@@ -324,6 +324,9 @@ export class AssetJobRepository {
         'asset.fileCreatedAt',
         'asset_exif.timeZone',
         'asset_exif.fileSizeInByte',
+        'asset_exif.make',
+        'asset_exif.model',
+        'asset_exif.lensModel',
       ])
       .select((eb) => withFiles(eb, AssetFileType.Sidecar))
       .where('asset.deletedAt', 'is', null);
