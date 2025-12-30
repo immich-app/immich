@@ -346,7 +346,7 @@ export class TimelineManager extends VirtualScrollManager {
 
   async findMonthGroupForAsset(asset: AssetDescriptor | AssetResponseDto) {
     if (!this.isInitialized) {
-      await this.initTask.waitUntilCompletion();
+      await this.initTask.waitUntilExecution();
     }
 
     const { id } = asset;
