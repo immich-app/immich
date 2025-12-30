@@ -100,11 +100,6 @@ class OrtSession:
                         "device_type": device,
                         "precision": settings.openvino_precision.value,
                         "cache_dir": openvino_dir.as_posix(),
-                        "load_config": orjson.dumps(
-                            {
-                                "CPU": {"CPU_RUNTIME_CACHE_CAPACITY": str(settings.openvino_cache_capacity)},
-                            }
-                        ).decode(),
                     }
                 case "CoreMLExecutionProvider":
                     options = {

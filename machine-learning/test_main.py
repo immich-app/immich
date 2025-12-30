@@ -249,15 +249,13 @@ class TestOrtSession:
                 "device_type": "GPU.0",
                 "precision": "FP32",
                 "cache_dir": "/cache/ViT-B-32__openai/textual/openvino",
-                "load_config": "{\"CPU\":{\"CPU_RUNTIME_CACHE_CAPACITY\":\"20\"}}",
             },
             {"arena_extend_strategy": "kSameAsRequested"},
         ]
 
-    def test_sets_provider_options_for_openvino(self, mocker: MockerFixture) -> None:
+    def test_sets_provider_options_for_openvino(self) -> None:
         model_path = "/cache/ViT-B-32__openai/textual/model.onnx"
         os.environ["MACHINE_LEARNING_DEVICE_ID"] = "1"
-        mocker.patch.object(settings, "openvino_cache_capacity", 10)
 
         session = OrtSession(model_path, providers=["OpenVINOExecutionProvider"])
 
@@ -266,7 +264,6 @@ class TestOrtSession:
                 "device_type": "GPU.1",
                 "precision": "FP32",
                 "cache_dir": "/cache/ViT-B-32__openai/textual/openvino",
-                "load_config": "{\"CPU\":{\"CPU_RUNTIME_CACHE_CAPACITY\":\"10\"}}"
             }
         ]
 
@@ -282,7 +279,6 @@ class TestOrtSession:
                 "device_type": "GPU.1",
                 "precision": "FP16",
                 "cache_dir": "/cache/ViT-B-32__openai/textual/openvino",
-                "load_config": "{\"CPU\":{\"CPU_RUNTIME_CACHE_CAPACITY\":\"20\"}}",
             }
         ]
 
