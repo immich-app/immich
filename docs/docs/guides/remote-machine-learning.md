@@ -60,7 +60,7 @@ In such instances, searching by context in the web UI or mobile apps will also f
 ```yaml
 environment:
   MACHINE_LEARNING__PROCESS_IMAGES: false
-  MACHINE_LEARNING__PROCESS_TEXT: false
+  MACHINE_LEARNING__PROCESS_TEXT: true
 ```
 
 This allows the local container to handle text processing for Smart Search, while the remote container processes images. Add the remote container's URL to the Machine Learning Settings as described above, and both containers will work together seamlessly.
