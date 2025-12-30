@@ -28,6 +28,7 @@ select
       (
         select
           "album_user"."role",
+          "album_user"."showInTimeline",
           (
             select
               to_json(obj)
@@ -119,6 +120,7 @@ select
       (
         select
           "album_user"."role",
+          "album_user"."showInTimeline",
           (
             select
               to_json(obj)
@@ -213,6 +215,7 @@ select
       (
         select
           "album_user"."role",
+          "album_user"."showInTimeline",
           (
             select
               to_json(obj)
@@ -268,6 +271,7 @@ select
       (
         select
           "album_user"."role",
+          "album_user"."showInTimeline",
           (
             select
               to_json(obj)
