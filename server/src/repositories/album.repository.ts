@@ -31,7 +31,7 @@ const withAlbumUsers = (eb: ExpressionBuilder<DB, 'album'>) => {
   return jsonArrayFrom(
     eb
       .selectFrom('album_user')
-      .select('album_user.role')
+      .select(['album_user.role', 'album_user.showInTimeline'])
       .select((eb) =>
         jsonObjectFrom(eb.selectFrom('user').select(columns.user).whereRef('user.id', '=', 'album_user.userId'))
           .$notNull()

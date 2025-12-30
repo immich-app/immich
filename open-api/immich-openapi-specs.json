@@ -2095,6 +2095,130 @@
         "x-immich-state": "Stable"
       }
     },
+    "/albums/{id}/users/{userId}/preferences": {
+      "put": {
+        "description": "Update timeline visibility preference for the current user in an album. Users can only update their own preferences.",
+        "operationId": "updateAlbumUserPreferences",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAlbumUserPreferencesDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Update user preferences for album",
+        "tags": [
+          "Albums"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v2",
+            "state": "Added"
+          }
+        ],
+        "x-immich-permission": "album.read"
+      }
+    },
+    "/albums/{id}/users/{userId}/role": {
+      "put": {
+        "description": "Change the role for a specific user in an album. Only album owners can update roles.",
+        "operationId": "updateAlbumUserRole",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAlbumUserRoleDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Update user role in album",
+        "tags": [
+          "Albums"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v2",
+            "state": "Added"
+          }
+        ],
+        "x-immich-permission": "album.share"
+      }
+    },
     "/api-keys": {
       "get": {
         "description": "Retrieve all API keys of the current user.",
@@ -12776,6 +12900,15 @@
             }
           },
           {
+            "name": "withSharedAlbums",
+            "required": false,
+            "in": "query",
+            "description": "Include assets from shared albums where showInTimeline is enabled (not supported with albumId, personId, or tagId filters)",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
             "name": "withStacked",
             "required": false,
             "in": "query",
@@ -12937,6 +13070,15 @@
             "required": false,
             "in": "query",
             "description": "Include assets shared by partners",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "withSharedAlbums",
+            "required": false,
+            "in": "query",
+            "description": "Include assets from shared albums where showInTimeline is enabled (not supported with albumId, personId, or tagId filters)",
             "schema": {
               "type": "boolean"
             }
@@ -14856,12 +14998,16 @@
               }
             ]
           },
+          "showInTimeline": {
+            "type": "boolean"
+          },
           "user": {
             "$ref": "#/components/schemas/UserResponseDto"
           }
         },
         "required": [
           "role",
+          "showInTimeline",
           "user"
         ],
         "type": "object"
@@ -20376,6 +20522,9 @@
               }
             ]
           },
+          "showInTimeline": {
+            "type": "boolean"
+          },
           "userId": {
             "type": "string"
           }
@@ -20383,6 +20532,7 @@
         "required": [
           "albumId",
           "role",
+          "showInTimeline",
           "userId"
         ],
         "type": "object"
@@ -22436,6 +22586,13 @@
             },
             "type": "array"
           },
+          "isShared": {
+            "description": "Array indicating whether each asset is from a shared album (only present when withSharedAlbums is true)",
+            "items": {
+              "type": "boolean"
+            },
+            "type": "array"
+          },
           "isTrashed": {
             "description": "Array indicating whether each asset is in the trash",
             "items": {
@@ -22629,6 +22786,32 @@
         "type": "object"
       },
       "UpdateAlbumUserDto": {
+        "properties": {
+          "role": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AlbumUserRole"
+              }
+            ]
+          },
+          "showInTimeline": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "UpdateAlbumUserPreferencesDto": {
+        "properties": {
+          "showInTimeline": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "showInTimeline"
+        ],
+        "type": "object"
+      },
+      "UpdateAlbumUserRoleDto": {
         "properties": {
           "role": {
             "allOf": [

@@ -717,5 +717,65 @@ describe('/albums', () => {
       expect(status).toBe(400);
       expect(body).toEqual(errorDto.badRequest('Not found or no album.share access'));
     });
+
+    it('should include showInTimeline in album user response', async () => {
+      const album = await utils.createAlbum(user1.accessToken, {
+        albumName: 'testAlbumShowInTimeline',
+        albumUsers: [{ userId: user2.userId, role: AlbumUserRole.Viewer }],
+      });
+
+      const { status, body } = await request(app)
+        .get(`/albums/${album.id}`)
+        .set('Authorization', `Bearer ${user1.accessToken}`);
+
+      expect(status).toBe(200);
+      expect(body.albumUsers[0]).toEqual(
+        expect.objectContaining({
+          showInTimeline: false,
+          role: AlbumUserRole.Viewer,
+        }),
+      );
+    });
+
+    it('should allow a shared user to update their own showInTimeline preference', async () => {
+      const album = await utils.createAlbum(user1.accessToken, {
+        albumName: 'testAlbumSelfUpdate',
+        albumUsers: [{ userId: user2.userId, role: AlbumUserRole.Viewer }],
+      });
+
+      expect(album.albumUsers[0].showInTimeline).toEqual(false);
+
+      const { status } = await request(app)
+        .put(`/albums/${album.id}/user/${user2.userId}`)
+        .set('Authorization', `Bearer ${user2.accessToken}`)
+        .send({ showInTimeline: true });
+
+      expect(status).toBe(204);
+
+      // Verify the change
+      const { body } = await request(app)
+        .get(`/albums/${album.id}`)
+        .set('Authorization', `Bearer ${user2.accessToken}`);
+      expect(body.albumUsers[0]).toEqual(
+        expect.objectContaining({
+          showInTimeline: true,
+        }),
+      );
+    });
+
+    it('should not allow album owner to update a shared user showInTimeline preference', async () => {
+      const album = await utils.createAlbum(user1.accessToken, {
+        albumName: 'testAlbumOwnerCannotUpdate',
+        albumUsers: [{ userId: user2.userId, role: AlbumUserRole.Viewer }],
+      });
+
+      const { status, body } = await request(app)
+        .put(`/albums/${album.id}/user/${user2.userId}`)
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .send({ showInTimeline: true });
+
+      expect(status).toBe(400);
+      expect(body).toEqual(errorDto.badRequest('Can only update your own timeline preference'));
+    });
   });
 });

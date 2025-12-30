@@ -10,7 +10,7 @@
     AssetOrder,
     removeUserFromAlbum,
     updateAlbumInfo,
-    updateAlbumUser,
+    updateAlbumUserRole,
     type AlbumResponseDto,
     type UserResponseDto,
   } from '@immich/sdk';
@@ -30,6 +30,9 @@
   }
 
   let { album, order, user, onClose }: Props = $props();
+
+  // Check if current user is the album owner
+  let isOwner = $derived(user.id === album.ownerId);
 
   const options: Record<AssetOrder, RenderedOption> = {
     [AssetOrder.Asc]: { icon: mdiArrowUpThin, title: $t('oldest_first') },
@@ -95,7 +98,7 @@
 
   const handleUpdateSharedUserRole = async (user: UserResponseDto, role: AlbumUserRole) => {
     try {
-      await updateAlbumUser({ id: album.id, userId: user.id, updateAlbumUserDto: { role } });
+      await updateAlbumUserRole({ id: album.id, userId: user.id, updateAlbumUserRoleDto: { role } });
       const message = $t('user_role_set', {
         values: { user: user.name, role: role == AlbumUserRole.Viewer ? $t('role_viewer') : $t('role_editor') },
       });
@@ -105,6 +108,7 @@
       handleError(error, $t('errors.unable_to_change_album_user_role'));
     }
   };
+
 </script>
 
 <Modal title={$t('options')} onClose={() => onClose({ action: 'refreshAlbum' })} size="small">
@@ -113,7 +117,7 @@
       <div class="py-2">
         <h2 class="uppercase text-gray text-sm mb-2">{$t('settings')}</h2>
         <div class="grid p-2 gap-y-2">
-          {#if order}
+          {#if order && isOwner}
             <SettingDropdown
               title={$t('display_order')}
               options={Object.values(options)}
@@ -121,31 +125,34 @@
               onToggle={handleToggleOrder}
             />
           {/if}
-          <SettingSwitch
-            title={$t('comments_and_likes')}
-            subtitle={$t('let_others_respond')}
-            checked={album.isActivityEnabled}
-            onToggle={handleToggleActivity}
-          />
+          {#if isOwner}
+            <SettingSwitch
+              title={$t('comments_and_likes')}
+              subtitle={$t('let_others_respond')}
+              checked={album.isActivityEnabled}
+              onToggle={handleToggleActivity}
+            />
+          {/if}
         </div>
       </div>
-      <div class="py-2">
-        <div class="uppercase text-gray text-sm mb-3">{$t('people')}</div>
-        <div class="p-2">
-          <button type="button" class="flex items-center gap-2" onclick={() => onClose({ action: 'shareUser' })}>
-            <div class="rounded-full w-10 h-10 border border-gray-500 flex items-center justify-center">
-              <div><Icon icon={mdiPlus} size="25" /></div>
-            </div>
-            <div>{$t('invite_people')}</div>
-          </button>
+      {#if isOwner}
+        <div class="py-2">
+          <div class="uppercase text-gray text-sm mb-3">{$t('people')}</div>
+          <div class="p-2">
+            <button type="button" class="flex items-center gap-2" onclick={() => onClose({ action: 'shareUser' })}>
+              <div class="rounded-full w-10 h-10 border border-gray-500 flex items-center justify-center">
+                <div><Icon icon={mdiPlus} size="25" /></div>
+              </div>
+              <div>{$t('invite_people')}</div>
+            </button>
 
-          <div class="flex items-center gap-2 py-2 mt-2">
-            <div>
-              <UserAvatar {user} size="md" />
+            <div class="flex items-center gap-2 py-2 mt-2">
+              <div>
+                <UserAvatar user={album.owner} size="md" />
+              </div>
+              <div class="w-full">{album.owner.name}</div>
+              <div>{$t('owner')}</div>
             </div>
-            <div class="w-full">{user.name}</div>
-            <div>{$t('owner')}</div>
-          </div>
 
           {#each album.albumUsers as { user, role } (user.id)}
             <div class="flex items-center gap-2 py-2">
@@ -177,8 +184,9 @@
               {/if}
             </div>
           {/each}
+          </div>
         </div>
-      </div>
+      {/if}
     </div>
   </ModalBody>
 </Modal>

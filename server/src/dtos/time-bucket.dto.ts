@@ -38,6 +38,13 @@ export class TimeBucketDto {
   @ValidateBoolean({ optional: true, description: 'Include assets shared by partners' })
   withPartners?: boolean;
 
+  @ValidateBoolean({
+    optional: true,
+    description:
+      'Include assets from shared albums where showInTimeline is enabled (not supported with albumId, personId, or tagId filters)',
+  })
+  withSharedAlbums?: boolean;
+
   @ValidateEnum({
     enum: AssetOrder,
     name: 'AssetOrder',
@@ -191,6 +198,14 @@ export class TimeBucketAssetResponseDto {
     description: 'Array of country names extracted from EXIF GPS data',
   })
   country!: (string | null)[];
+
+  @ApiProperty({
+    type: 'array',
+    required: false,
+    items: { type: 'boolean' },
+    description: 'Array indicating whether each asset is from a shared album (only present when withSharedAlbums is true)',
+  })
+  isShared?: boolean[];
 
   @ApiProperty({
     type: 'array',

@@ -31,6 +31,11 @@
     <tr class="flex w-full place-items-center p-2 md:p-5">
       {#each sortOptionsMetadata as option, index (index)}
         <AlbumTableHeader {option} />
+        {#if index === 0}
+          <th class="text-sm font-medium text-center w-2/12 sm:w-1/12 md:w-1/12 xl:w-[10%] 2xl:w-[8%]">
+            {$t('timeline')}
+          </th>
+        {/if}
       {/each}
     </tr>
   </thead>

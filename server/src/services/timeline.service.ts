@@ -41,6 +41,7 @@ export class TimelineService extends BaseService {
       }
     }
 
+    // Shared albums are resolved for the timeline user (userIds[0]) when enabled
     return { ...options, userIds };
   }
 
@@ -74,6 +75,23 @@ export class TimelineService extends BaseService {
       if (requestedArchived || requestedFavorite || requestedTrash) {
         throw new BadRequestException(
           'withPartners is only supported for non-archived, non-trashed, non-favorited assets',
+        );
+      }
+    }
+
+    if (dto.withSharedAlbums) {
+      const requestedArchived = dto.visibility === AssetVisibility.Archive || dto.visibility === undefined;
+      const requestedTrash = dto.isTrashed === true;
+
+      if (requestedArchived || requestedTrash) {
+        throw new BadRequestException(
+          'withSharedAlbums is only supported for non-archived, non-trashed assets',
+        );
+      }
+
+      if (dto.albumId || dto.personId || dto.tagId) {
+        throw new BadRequestException(
+          'withSharedAlbums is not supported with albumId, personId, or tagId filters',
         );
       }
     }

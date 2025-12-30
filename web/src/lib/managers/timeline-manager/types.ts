@@ -35,6 +35,8 @@ export type TimelineAsset = {
   people: string[] | null;
   latitude?: number | null;
   longitude?: number | null;
+  /** Whether this asset is from a shared album (only present when withSharedAlbums is enabled) */
+  isShared?: boolean;
 };
 
 export type MoveAsset = { asset: TimelineAsset; date: TimelineDate };

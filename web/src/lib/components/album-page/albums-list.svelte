@@ -23,9 +23,9 @@
   import type { ContextMenuPosition } from '$lib/utils/context-menu';
   import { handleError } from '$lib/utils/handle-error';
   import { normalizeSearchString } from '$lib/utils/string-utils';
-  import { addUsersToAlbum, type AlbumResponseDto, type AlbumUserAddDto } from '@immich/sdk';
-  import { modalManager } from '@immich/ui';
-  import { mdiDeleteOutline, mdiDownload, mdiRenameOutline, mdiShareVariantOutline } from '@mdi/js';
+  import { addUsersToAlbum, updateAlbumUser, type AlbumResponseDto, type AlbumUserAddDto } from '@immich/sdk';
+  import { modalManager, toastManager } from '@immich/ui';
+  import { mdiCheck, mdiDeleteOutline, mdiDownload, mdiRenameOutline, mdiShareVariantOutline } from '@mdi/js';
   import { groupBy } from 'lodash-es';
   import { onMount, type Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -159,6 +159,23 @@
   let contextMenuPosition: ContextMenuPosition = $state({ x: 0, y: 0 });
   let selectedAlbum: AlbumResponseDto | undefined = $state();
   let isOpen = $state(false);
+  let isUpdatingTimeline = $state(false);
+  let selectedShowInTimeline = $state(false);
+
+  let selectedAlbumMembership = $derived.by(() => {
+    if (!selectedAlbum) {
+      return undefined;
+    }
+    return selectedAlbum.albumUsers.find(({ user: { id } }) => id === $user.id);
+  });
+
+  let isSelectedAlbumRecipient = $derived(
+    selectedAlbumMembership !== undefined && selectedAlbum?.ownerId !== $user.id,
+  );
+
+  $effect(() => {
+    selectedShowInTimeline = selectedAlbumMembership?.showInTimeline ?? false;
+  });
 
   // TODO get rid of this
   $effect(() => {
@@ -229,6 +246,51 @@
         await handleDeleteAlbum(selectedAlbum);
         break;
       }
+    }
+  };
+
+  const updateSelectedAlbumShowInTimeline = (value: boolean) => {
+    if (!selectedAlbum || !selectedAlbumMembership) {
+      return;
+    }
+
+    selectedAlbum.albumUsers = selectedAlbum.albumUsers.map((albumUser) => {
+      if (albumUser.user.id === selectedAlbumMembership.user.id) {
+        return { ...albumUser, showInTimeline: value };
+      }
+      return albumUser;
+    });
+
+    onUpdate(selectedAlbum);
+    userInteraction.recentAlbums = findAndUpdate(userInteraction.recentAlbums || [], selectedAlbum);
+  };
+
+  const handleToggleShowInTimeline = async () => {
+    if (!selectedAlbum || !selectedAlbumMembership || isUpdatingTimeline) {
+      return;
+    }
+
+    const nextValue = !selectedShowInTimeline;
+    const previousValue = selectedShowInTimeline;
+    selectedShowInTimeline = nextValue;
+    updateSelectedAlbumShowInTimeline(nextValue);
+    isUpdatingTimeline = true;
+
+    try {
+      await updateAlbumUser({
+        id: selectedAlbum.id,
+        userId: $user.id,
+        updateAlbumUserDto: { showInTimeline: nextValue },
+      });
+      toastManager.success(
+        $t('album_timeline_display_changed', { values: { inTimeline: nextValue } }),
+      );
+    } catch (error) {
+      selectedShowInTimeline = previousValue;
+      updateSelectedAlbumShowInTimeline(previousValue);
+      handleError(error, $t('errors.unable_to_update_timeline_display_status'));
+    } finally {
+      isUpdatingTimeline = false;
     }
   };
 
@@ -315,6 +377,14 @@
   {#if showFullContextMenu}
     <MenuOption icon={mdiRenameOutline} text={$t('edit_album')} onClick={() => handleSelect('edit')} />
     <MenuOption icon={mdiShareVariantOutline} text={$t('share')} onClick={() => handleSelect('share')} />
+  {/if}
+  {#if isSelectedAlbumRecipient}
+    <MenuOption
+      icon={selectedShowInTimeline ? mdiCheck : ''}
+      text={$t('show_in_timeline')}
+      subtitle={$t('show_in_timeline_album_setting_description')}
+      onClick={handleToggleShowInTimeline}
+    />
   {/if}
   <MenuOption icon={mdiDownload} text={$t('download')} onClick={() => handleSelect('download')} />
   {#if showFullContextMenu}

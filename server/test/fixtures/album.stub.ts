@@ -39,6 +39,7 @@ export const albumStub = {
       {
         user: userStub.user1,
         role: AlbumUserRole.Editor,
+        showInTimeline: false,
       },
     ],
     isActivityEnabled: true,
@@ -62,10 +63,12 @@ export const albumStub = {
       {
         user: userStub.user1,
         role: AlbumUserRole.Editor,
+        showInTimeline: false,
       },
       {
         user: userStub.user2,
         role: AlbumUserRole.Editor,
+        showInTimeline: false,
       },
     ],
     isActivityEnabled: true,
@@ -89,6 +92,7 @@ export const albumStub = {
       {
         user: userStub.admin,
         role: AlbumUserRole.Editor,
+        showInTimeline: false,
       },
     ],
     isActivityEnabled: true,

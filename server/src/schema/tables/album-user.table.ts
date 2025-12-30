@@ -50,6 +50,9 @@ export class AlbumUserTable {
   @Column({ type: 'character varying', default: AlbumUserRole.Editor })
   role!: Generated<AlbumUserRole>;
 
+  @Column({ type: 'boolean', default: false })
+  showInTimeline!: Generated<boolean>;
+
   @CreateIdColumn({ index: true })
   createId!: Generated<string>;
 

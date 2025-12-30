@@ -58,12 +58,12 @@ export const sortOptionsMetadata: AlbumSortOptionMetadata[] = [
   {
     id: AlbumSortBy.Title,
     defaultOrder: SortOrder.Asc,
-    columnStyle: 'text-start w-8/12 sm:w-4/12 md:w-4/12 xl:w-[30%] 2xl:w-[40%]',
+    columnStyle: 'text-start w-7/12 sm:w-3/12 md:w-3/12 xl:w-[26%] 2xl:w-[32%]',
   },
   {
     id: AlbumSortBy.ItemCount,
     defaultOrder: SortOrder.Desc,
-    columnStyle: 'text-center w-4/12 m:w-2/12 md:w-2/12 xl:w-[15%] 2xl:w-[12%]',
+    columnStyle: 'text-center w-3/12 sm:w-2/12 md:w-2/12 xl:w-[14%] 2xl:w-[12%]',
   },
   {
     id: AlbumSortBy.DateModified,

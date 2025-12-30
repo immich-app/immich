@@ -196,6 +196,7 @@ export class SyncAlbumUserV1 {
   userId!: string;
   @ValidateEnum({ enum: AlbumUserRole, name: 'AlbumUserRole' })
   role!: AlbumUserRole;
+  showInTimeline!: boolean;
 }
 
 @ExtraModel()

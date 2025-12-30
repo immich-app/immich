@@ -12,6 +12,8 @@ import {
   GetAlbumsDto,
   UpdateAlbumDto,
   UpdateAlbumUserDto,
+  UpdateAlbumUserPreferencesDto,
+  UpdateAlbumUserRoleDto,
 } from 'src/dtos/album.dto';
 import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -173,6 +175,40 @@ export class AlbumController {
     @Body() dto: UpdateAlbumUserDto,
   ): Promise<void> {
     return this.service.updateUser(auth, id, userId, dto);
+  }
+
+  @Put(':id/users/:userId/role')
+  @Authenticated({ permission: Permission.AlbumShare })
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Endpoint({
+    summary: 'Update user role in album',
+    description: 'Change the role for a specific user in an album. Only album owners can update roles.',
+    history: new HistoryBuilder().added('v2'),
+  })
+  updateAlbumUserRole(
+    @Auth() auth: AuthDto,
+    @Param() { id }: UUIDParamDto,
+    @Param('userId', new ParseMeUUIDPipe({ version: '4' })) userId: string,
+    @Body() dto: UpdateAlbumUserRoleDto,
+  ): Promise<void> {
+    return this.service.updateUserRole(auth, id, userId, dto);
+  }
+
+  @Put(':id/users/:userId/preferences')
+  @Authenticated({ permission: Permission.AlbumRead })
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Endpoint({
+    summary: 'Update user preferences for album',
+    description: 'Update timeline visibility preference for the current user in an album. Users can only update their own preferences.',
+    history: new HistoryBuilder().added('v2'),
+  })
+  updateAlbumUserPreferences(
+    @Auth() auth: AuthDto,
+    @Param() { id }: UUIDParamDto,
+    @Param('userId', new ParseMeUUIDPipe({ version: '4' })) userId: string,
+    @Body() dto: UpdateAlbumUserPreferencesDto,
+  ): Promise<void> {
+    return this.service.updateUserPreferences(auth, id, userId, dto);
   }
 
   @Delete(':id/user/:userId')

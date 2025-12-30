@@ -14,6 +14,7 @@
     mdiMotionPauseOutline,
     mdiMotionPlayOutline,
     mdiRotate360,
+    mdiShareVariant,
   } from '@mdi/js';
 
   import { thumbhash } from '$lib/actions/thumbhash';
@@ -284,6 +285,16 @@
         {#if !authManager.isSharedLink && showArchiveIcon && asset.visibility === AssetVisibility.Archive}
           <div class={['absolute start-2', asset.isFavorite ? 'bottom-10' : 'bottom-2']}>
             <Icon data-icon-archive icon={mdiArchiveArrowDownOutline} size="24" class="text-white" />
+          </div>
+        {/if}
+
+        <!-- Shared album indicator -->
+        {#if !authManager.isSharedLink && asset.isShared}
+          <div
+            class={['absolute end-2', assetOwner ? 'bottom-6' : 'bottom-2']}
+            title="From shared album"
+          >
+            <Icon data-icon-shared icon={mdiShareVariant} size="20" class="text-white drop-shadow-lg" />
           </div>
         {/if}
 

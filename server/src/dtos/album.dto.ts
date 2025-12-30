@@ -118,14 +118,29 @@ export class AlbumStatisticsResponseDto {
 }
 
 export class UpdateAlbumUserDto {
+  @ValidateEnum({ enum: AlbumUserRole, name: 'AlbumUserRole', optional: true })
+  role?: AlbumUserRole;
+
+  @ValidateBoolean({ optional: true })
+  showInTimeline?: boolean;
+}
+
+export class UpdateAlbumUserRoleDto {
   @ValidateEnum({ enum: AlbumUserRole, name: 'AlbumUserRole' })
   role!: AlbumUserRole;
+}
+
+export class UpdateAlbumUserPreferencesDto {
+  @ValidateBoolean()
+  showInTimeline!: boolean;
 }
 
 export class AlbumUserResponseDto {
   user!: UserResponseDto;
   @ValidateEnum({ enum: AlbumUserRole, name: 'AlbumUserRole' })
   role!: AlbumUserRole;
+  @ApiProperty()
+  showInTimeline!: boolean;
 }
 
 export class ContributorCountResponseDto {
@@ -189,6 +204,7 @@ export const mapAlbum = (entity: MapAlbumDto, withAssets: boolean, auth?: AuthDt
       albumUsers.push({
         user,
         role: albumUser.role,
+        showInTimeline: albumUser.showInTimeline,
       });
     }
   }

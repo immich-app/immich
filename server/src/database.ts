@@ -33,6 +33,7 @@ export type AuthUser = {
 export type AlbumUser = {
   user: User;
   role: AlbumUserRole;
+  showInTimeline: boolean;
 };
 
 export type AssetFile = {
@@ -391,7 +392,7 @@ export const columns = {
     'asset.stackId',
     'asset.libraryId',
   ],
-  syncAlbumUser: ['album_user.albumId as albumId', 'album_user.userId as userId', 'album_user.role'],
+  syncAlbumUser: ['album_user.albumId as albumId', 'album_user.userId as userId', 'album_user.role', 'album_user.showInTimeline'],
   syncStack: ['stack.id', 'stack.createdAt', 'stack.updatedAt', 'stack.primaryAssetId', 'stack.ownerId'],
   syncUser: ['id', 'name', 'email', 'avatarColor', 'deletedAt', 'updateId', 'profileImagePath', 'profileChangedAt'],
   stack: ['stack.id', 'stack.primaryAssetId', 'ownerId'],

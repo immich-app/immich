@@ -65,6 +65,7 @@ interface AssetBuilderOptions {
 
 export interface TimeBucketOptions extends AssetBuilderOptions {
   order?: AssetOrder;
+  withSharedAlbums?: boolean;
 }
 
 export interface TimeBucketItem {
@@ -618,7 +619,26 @@ export class AssetRepository {
               )
               .where((eb) => eb.or([eb('asset.stackId', 'is', null), eb(eb.table('stack'), 'is not', null)])),
           )
-          .$if(!!options.userIds, (qb) => qb.where('asset.ownerId', '=', anyUuid(options.userIds!)))
+          // Main ownership OR shared album predicate (only when userIds is specified)
+          .$if(!!options.userIds, (qb) =>
+            qb.where((eb) =>
+              eb.or([
+                // Owned assets
+                eb('asset.ownerId', '=', anyUuid(options.userIds!)),
+                // Shared album assets (when enabled)
+                options.withSharedAlbums
+                  ? eb.exists((qb) =>
+                      qb
+                        .selectFrom('album_asset')
+                        .innerJoin('album_user', 'album_user.albumId', 'album_asset.albumId')
+                        .whereRef('album_asset.assetId', '=', 'asset.id')
+                        .where('album_user.userId', '=', asUuid(options.userIds![0]))
+                        .where('album_user.showInTimeline', '=', true),
+                    )
+                  : eb.lit(false),
+              ]),
+            ),
+          )
           .$if(options.isFavorite !== undefined, (qb) => qb.where('asset.isFavorite', '=', options.isFavorite!))
           .$if(!!options.assetType, (qb) => qb.where('asset.type', '=', options.assetType!))
           .$if(options.isDuplicate !== undefined, (qb) =>
@@ -638,6 +658,8 @@ export class AssetRepository {
     params: [DummyValue.TIME_BUCKET, { withStacked: true }, { user: { id: DummyValue.UUID } }],
   })
   getTimeBucket(timeBucket: string, options: TimeBucketOptions, auth: AuthDto) {
+    const cleanedTimeBucket = timeBucket.replace(/^[+-]/, '');
+
     const query = this.db
       .with('cte', (qb) =>
         qb
@@ -674,12 +696,16 @@ export class AssetRepository {
                 eb.lit(1),
               )
               .as('ratio'),
+            // Mark asset as shared if it's not owned by the user and exists in a shared album
+            options.withSharedAlbums && options.userIds?.length
+              ? sql<boolean>`asset."ownerId" != ${asUuid(options.userIds![0])}`.as('isShared')
+              : sql<boolean>`false`.as('isShared'),
           ])
           .$if(!!options.withCoordinates, (qb) => qb.select(['asset_exif.latitude', 'asset_exif.longitude']))
           .where('asset.deletedAt', options.isTrashed ? 'is not' : 'is', null)
           .$if(options.visibility == undefined, withDefaultVisibility)
           .$if(!!options.visibility, (qb) => qb.where('asset.visibility', '=', options.visibility!))
-          .where(truncatedDate(), '=', timeBucket.replace(/^[+-]/, ''))
+          .where(truncatedDate(), '=', cleanedTimeBucket)
           .$if(!!options.albumId, (qb) =>
             qb.where((eb) =>
               eb.exists(
@@ -691,7 +717,26 @@ export class AssetRepository {
             ),
           )
           .$if(!!options.personId, (qb) => hasPeople(qb, [options.personId!]))
-          .$if(!!options.userIds, (qb) => qb.where('asset.ownerId', '=', anyUuid(options.userIds!)))
+          // Main ownership OR shared album predicate (only when userIds is specified)
+          .$if(!!options.userIds, (qb) =>
+            qb.where((eb) =>
+              eb.or([
+                // Owned assets
+                eb('asset.ownerId', '=', anyUuid(options.userIds!)),
+                // Shared album assets (when enabled)
+                options.withSharedAlbums
+                  ? eb.exists((qb) =>
+                      qb
+                        .selectFrom('album_asset')
+                        .innerJoin('album_user', 'album_user.albumId', 'album_asset.albumId')
+                        .whereRef('album_asset.assetId', '=', 'asset.id')
+                        .where('album_user.userId', '=', asUuid(options.userIds![0]))
+                        .where('album_user.showInTimeline', '=', true),
+                    )
+                  : eb.lit(false),
+              ]),
+            ),
+          )
           .$if(options.isFavorite !== undefined, (qb) => qb.where('asset.isFavorite', '=', options.isFavorite!))
           .$if(!!options.withStacked, (qb) =>
             qb
@@ -748,6 +793,7 @@ export class AssetRepository {
             eb.fn.coalesce(eb.fn('array_agg', ['ratio']), sql.lit('{}')).as('ratio'),
             eb.fn.coalesce(eb.fn('array_agg', ['status']), sql.lit('{}')).as('status'),
             eb.fn.coalesce(eb.fn('array_agg', ['thumbhash']), sql.lit('{}')).as('thumbhash'),
+            eb.fn.coalesce(eb.fn('array_agg', ['isShared']), sql.lit('{}')).as('isShared'),
           ])
           .$if(!!options.withCoordinates, (qb) =>
             qb.select((eb) => [
