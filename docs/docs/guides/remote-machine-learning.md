@@ -55,6 +55,16 @@ Adding a new URL to the settings is recommended over replacing the existing URL.
 
 Do note that this will mean that Smart Search and Face Detection jobs will fail to be processed when the remote instance is not available. This in turn means that tasks dependent on these features—Duplicate Detection and Facial Recognition—will not run for affected assets. If this occurs, you must manually click the _Missing_ button next to Smart Search and Face Detection in the [Job Status](http://my.immich.app/admin/queues) page for the jobs to be retried.
 
+In such instances, searching by context in the web UI or mobile apps will also fail. This is because the inputted text needs to be processed before matching images can be found, which is done by the machine-learning container. To combat this, two containers can be used: one on the same device that the server is running on, and one on a remote server. The local machine learning container can then be configured to only process text by adding the following environment variables to its service definition in `docker-compose.yml`:
+
+```yaml
+environment:
+  MACHINE_LEARNING__PROCESS_IMAGES: false
+  MACHINE_LEARNING__PROCESS_TEXT: false
+```
+
+This allows the local container to handle text processing for Smart Search, while the remote container processes images. Add the remote container's URL to the Machine Learning Settings as described above, and both containers will work together seamlessly.
+
 ## Load balancing
 
 While several URLs can be provided in the settings, they are tried sequentially; there is no attempt to distribute load across multiple containers. It is recommended to use a dedicated load balancer for such use-cases and specify it as the only URL. Among other things, it may enable the use of different APIs on the same server by running multiple containers with different configurations. For example, one might run an OpenVINO container in addition to a CUDA container, or run a standard release container to maximize both CPU and GPU utilization.
