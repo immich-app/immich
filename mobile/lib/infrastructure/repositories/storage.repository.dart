@@ -81,6 +81,26 @@ class StorageRepository {
     }
     return entity;
   }
+  
+  /// Check if an asset is available locally (not cloud-only)
+  /// Returns true if the file exists on device, false if it needs to be downloaded from cloud
+  Future<bool> isAssetLocallyAvailable(String assetId) async {
+    final log = Logger('StorageRepository');
+    
+    try {
+      final entity = await AssetEntity.fromId(assetId);
+      if (entity == null) {
+        return false;
+      }
+      
+      // Check if file is locally available (not just in cloud)
+      final isLocal = await entity.isLocallyAvailable(isOrigin: true);
+      return isLocal;
+    } catch (error, stackTrace) {
+      log.warning("Error checking local availability for asset $assetId", error, stackTrace);
+      return false;
+    }
+  }
 
   Future<void> clearCache() async {
     final log = Logger('StorageRepository');

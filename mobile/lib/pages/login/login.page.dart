@@ -37,7 +37,7 @@ class LoginPage extends HookConsumerWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  'v${appVersion.value}',
+                  'v${appVersion.value} (DEV)',
                   style: TextStyle(
                     color: context.colorScheme.onSurfaceSecondary,
                     fontWeight: FontWeight.bold,

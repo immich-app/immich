@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
@@ -13,8 +14,10 @@ import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/backup/backup_album.provider.dart';
+import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
+import 'package:immich_mobile/services/adaptive_throttle.service.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/widgets/settings/settings_sub_page_scaffold.dart';
 
@@ -57,6 +60,9 @@ class DriftBackupSettings extends ConsumerWidget {
           ),
         ),
         const _AlbumSyncActionButton(),
+        const Divider(),
+        // Adaptive Backup Throttling settings
+        const _AdaptiveThrottleSettings(),
       ],
     );
   }
@@ -374,6 +380,189 @@ class _BackupDelaySliderState extends ConsumerState<_BackupDelaySlider> {
           label: formatBackupDelaySliderValue(currentValue),
         ),
       ],
+    );
+  }
+}
+
+/// Adaptive Backup Throttling settings widget
+class _AdaptiveThrottleSettings extends HookConsumerWidget {
+  const _AdaptiveThrottleSettings();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final throttleController = ref.watch(adaptiveThrottleControllerProvider);
+    final backupState = ref.watch(backupProvider);
+    final adaptiveState = backupState.adaptiveState;
+    
+    final isAdaptiveEnabled = useState(true);
+
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.speed, color: context.primaryColor),
+                const SizedBox(width: 8),
+                Text(
+                  'Adaptive Backup Throttling',
+                  style: context.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Advanced settings for backup performance tuning',
+              style: context.textTheme.bodySmall?.copyWith(
+                color: context.colorScheme.onSurface.withOpacity(0.6),
+              ),
+            ),
+            const Divider(height: 24),
+            
+            // Adaptive mode toggle
+            SwitchListTile(
+              title: const Text('Use Adaptive Throttling'),
+              subtitle: const Text('Automatically adjust batch size based on performance'),
+              value: isAdaptiveEnabled.value,
+              onChanged: (value) {
+                isAdaptiveEnabled.value = value;
+                ref.read(backupProvider.notifier).setAdaptiveBackupEnabled(value);
+              },
+              contentPadding: EdgeInsets.zero,
+            ),
+            
+            const Divider(height: 16),
+            
+            // Current settings display
+            Text(
+              'Current Settings',
+              style: context.textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            
+            _buildInfoRow(
+              context,
+              'Batch Size',
+              '${adaptiveState?.currentBatchSize ?? throttleController.currentBatchSize} assets',
+            ),
+            _buildInfoRow(
+              context,
+              'Delay Between Batches',
+              '${adaptiveState?.currentDelayMs ?? throttleController.delayMs} ms',
+            ),
+            _buildInfoRow(
+              context,
+              'Status',
+              adaptiveState?.statusMessage ?? 'Idle',
+            ),
+            
+            if (adaptiveState?.lastAdjustmentReason != null) ...[
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: context.colorScheme.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.info_outline,
+                      size: 16,
+                      color: context.primaryColor,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Last adjustment: ${adaptiveState!.lastAdjustmentReason}',
+                        style: context.textTheme.bodySmall,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+            
+            const Divider(height: 24),
+            
+            // Manual override section (only when adaptive is disabled)
+            if (!isAdaptiveEnabled.value) ...[
+              Text(
+                'Manual Override',
+                style: context.textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 8),
+              
+              // Batch size slider
+              Text('Batch Size: ${throttleController.currentBatchSize}'),
+              Slider(
+                value: throttleController.currentBatchSize.toDouble(),
+                min: 10,
+                max: 200,
+                divisions: 19,
+                label: '${throttleController.currentBatchSize}',
+                onChanged: (value) {
+                  throttleController.setManualBatchSize(value.round());
+                },
+              ),
+              
+              // Delay slider
+              Text('Delay: ${throttleController.delayMs} ms'),
+              Slider(
+                value: throttleController.delayMs.toDouble(),
+                min: 0,
+                max: 5000,
+                divisions: 10,
+                label: '${throttleController.delayMs} ms',
+                onChanged: (value) {
+                  throttleController.setManualDelay(value.round());
+                },
+              ),
+              
+              const SizedBox(height: 8),
+              Text(
+                'Warning: Manual settings may cause performance issues with large libraries.',
+                style: context.textTheme.bodySmall?.copyWith(
+                  color: Colors.orange,
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(BuildContext context, String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: context.textTheme.bodyMedium?.copyWith(
+              color: context.colorScheme.onSurface.withOpacity(0.7),
+            ),
+          ),
+          Text(
+            value,
+            style: context.textTheme.bodyMedium?.copyWith(
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

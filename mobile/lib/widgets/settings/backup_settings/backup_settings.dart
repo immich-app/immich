@@ -78,8 +78,8 @@ class BackupSettings extends HookConsumerWidget {
               ? const CircularProgressIndicator()
               : ElevatedButton(onPressed: syncAlbums, child: Text('sync'.tr())),
         ),
-      // Hidden advanced throttle settings (only visible in troubleshooting mode)
-      if (isAdvancedTroubleshooting.value) _AdaptiveThrottleSettings(),
+      // Adaptive throttle settings (always visible for testing)
+      _AdaptiveThrottleSettings(),
     ];
 
     return SettingsSubPageScaffold(settings: backupSettings, showDivider: true);

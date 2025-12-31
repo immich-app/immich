@@ -67,7 +67,8 @@ class BackupToggleButtonState extends ConsumerState<BackupToggleButton> with Sin
 
     final isSyncing = ref.watch(driftBackupProvider.select((state) => state.isSyncing));
 
-    final isProcessing = uploadTasks.isNotEmpty || isSyncing;
+    // Activity indicator - used for subtitle text, not spinner anymore
+    final _ = uploadTasks.isNotEmpty || isSyncing;
 
     return AnimatedBuilder(
       animation: _animationController,
@@ -125,15 +126,22 @@ class BackupToggleButtonState extends ConsumerState<BackupToggleButton> with Sin
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           gradient: LinearGradient(
-                            colors: [
-                              context.primaryColor.withValues(alpha: 0.2),
-                              context.primaryColor.withValues(alpha: 0.1),
-                            ],
+                            colors: _isEnabled
+                                ? [
+                                    Colors.green.withValues(alpha: 0.3),
+                                    Colors.green.withValues(alpha: 0.15),
+                                  ]
+                                : [
+                                    context.primaryColor.withValues(alpha: 0.2),
+                                    context.primaryColor.withValues(alpha: 0.1),
+                                  ],
                           ),
                         ),
-                        child: isProcessing
-                            ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2))
-                            : Icon(Icons.cloud_upload_outlined, color: context.primaryColor, size: 24),
+                        child: Icon(
+                          _isEnabled ? Icons.cloud_done : Icons.cloud_upload_outlined,
+                          color: _isEnabled ? Colors.green : context.primaryColor,
+                          size: 24,
+                        ),
                       ),
                       const SizedBox(width: 16),
                       Expanded(

@@ -28,6 +28,10 @@ enum AdaptiveStatus {
   recovering,
   /// Paused (user initiated or system)
   paused,
+  /// Actively monitoring for issues
+  monitoring,
+  /// Not doing anything (waiting for work)
+  idle,
 }
 
 /// Represents the current state of the adaptive throttling system.
@@ -117,19 +121,21 @@ class AdaptiveThrottleState {
   }
 
   /// Calculate initial batch size based on total assets
+  /// More aggressive settings for faster uploads on modern devices
   static int _getInitialBatchSize(int totalAssets) {
-    if (totalAssets < 500) return 50;
-    if (totalAssets < 2000) return 30;
-    if (totalAssets < 5000) return 25;
-    return 20; // Very conservative for large libraries
+    if (totalAssets < 500) return 100;   // Small library: very aggressive
+    if (totalAssets < 2000) return 75;   // Medium library: aggressive
+    if (totalAssets < 5000) return 50;   // Large library: moderate
+    return 50; // Very large library: start moderate, will adapt
   }
 
   /// Calculate initial delay based on total assets
+  /// Shorter delays for faster throughput - will adapt if issues occur
   static int _getInitialDelay(int totalAssets) {
-    if (totalAssets < 500) return 500;
-    if (totalAssets < 2000) return 1000;
-    if (totalAssets < 5000) return 1500;
-    return 2000; // Longer delay for large libraries
+    if (totalAssets < 500) return 100;   // Small: minimal delay
+    if (totalAssets < 2000) return 200;  // Medium: slight delay
+    if (totalAssets < 5000) return 300;  // Large: moderate delay
+    return 500; // Very large: conservative start, will adapt
   }
 
   /// Whether the system needs recovery
@@ -161,6 +167,10 @@ class AdaptiveThrottleState {
         return 'Recovering...';
       case AdaptiveStatus.paused:
         return 'Paused';
+      case AdaptiveStatus.monitoring:
+        return 'Monitoring...';
+      case AdaptiveStatus.idle:
+        return 'Idle';
     }
   }
 
@@ -309,6 +319,39 @@ class AdaptiveThrottleState {
         'delay: ${currentDelayMs}ms, '
         'status: $status, '
         'batch#: $currentBatchNumber/$totalBatches)';
+  }
+}
+
+/// Simplified adaptive state for UI display in drift backup
+class AdaptiveState {
+  final AdaptiveStatus status;
+  final int currentBatchSize;
+  final int currentDelayMs;
+  final String statusMessage;
+  final String? lastAdjustmentReason;
+
+  const AdaptiveState({
+    this.status = AdaptiveStatus.initializing,
+    required this.currentBatchSize,
+    required this.currentDelayMs,
+    this.statusMessage = 'Idle',
+    this.lastAdjustmentReason,
+  });
+
+  AdaptiveState copyWith({
+    AdaptiveStatus? status,
+    int? currentBatchSize,
+    int? currentDelayMs,
+    String? statusMessage,
+    String? lastAdjustmentReason,
+  }) {
+    return AdaptiveState(
+      status: status ?? this.status,
+      currentBatchSize: currentBatchSize ?? this.currentBatchSize,
+      currentDelayMs: currentDelayMs ?? this.currentDelayMs,
+      statusMessage: statusMessage ?? this.statusMessage,
+      lastAdjustmentReason: lastAdjustmentReason ?? this.lastAdjustmentReason,
+    );
   }
 }
 

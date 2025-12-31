@@ -101,6 +101,8 @@ class CurrentUploadingAssetInfoBox extends ConsumerWidget {
       AdaptiveStatus.decelerating => (Icons.trending_down, Colors.orange, 'Adjusting'),
       AdaptiveStatus.recovering => (Icons.healing, Colors.amber, 'Recovering'),
       AdaptiveStatus.paused => (Icons.pause_circle_outline, Colors.grey, 'Paused'),
+      AdaptiveStatus.monitoring => (Icons.monitor_heart, Colors.blue, 'Monitoring'),
+      AdaptiveStatus.idle => (Icons.hourglass_empty, Colors.grey, 'Idle'),
     };
 
     return Container(

@@ -22,8 +22,13 @@ final uploadRepositoryProvider = Provider((ref) => UploadRepository());
 class UploadRepository {
   void Function(TaskStatusUpdate)? onUploadStatus;
   void Function(TaskProgressUpdate)? onTaskProgress;
+  final _log = Logger('UploadRepository');
 
   UploadRepository() {
+    // Configure FileDownloader for higher concurrent uploads
+    // Default is usually 3-4, we want more for faster batch uploads
+    _configureDownloader();
+    
     FileDownloader().registerCallbacks(
       group: kBackupGroup,
       taskStatusCallback: (update) => onUploadStatus?.call(update),
@@ -40,6 +45,23 @@ class UploadRepository {
       taskProgressCallback: (update) => onTaskProgress?.call(update),
     );
   }
+  
+  /// Configure FileDownloader for optimal upload performance
+  Future<void> _configureDownloader() async {
+    try {
+      // Configure for more concurrent uploads (default is usually 4)
+      // Allow up to 10 concurrent uploads for faster batch processing
+      await FileDownloader().configure(
+        globalConfig: [
+          (Config.requestTimeout, const Duration(minutes: 10)),
+          (Config.holdingQueue, (null, 10)), // Allow 10 concurrent uploads
+        ],
+      );
+      _log.info('FileDownloader configured for 10 concurrent uploads');
+    } catch (e) {
+      _log.warning('Could not configure FileDownloader: $e');
+    }
+  }
 
   Future<void> enqueueBackground(UploadTask task) {
     return FileDownloader().enqueue(task);
@@ -55,6 +77,25 @@ class UploadRepository {
 
   Future<bool> cancelAll(String group) {
     return FileDownloader().cancelAll(group: group);
+  }
+  
+  /// Cancel a specific task by taskId
+  Future<bool> cancelTask(String taskId) async {
+    final tasks = await FileDownloader().allTasks();
+    for (final task in tasks) {
+      if (task.taskId == taskId) {
+        return FileDownloader().cancelTaskWithId(taskId);
+      }
+    }
+    return false;
+  }
+  
+  /// Get tasks that are waiting to retry (stuck)
+  Future<List<TaskRecord>> getRetryingTasks(String group) {
+    return FileDownloader().database.allRecordsWithStatus(
+      TaskStatus.waitingToRetry, 
+      group: group,
+    );
   }
 
   Future<int> reset(String group) {

@@ -40,6 +40,9 @@ final uploadServiceProvider = Provider((ref) {
   return service;
 });
 
+/// Cloudflare's upload size limit (100MB)
+const int kCloudflareMaxUploadSize = 100 * 1024 * 1024;
+
 class UploadService {
   UploadService(
     this._uploadRepository,
@@ -68,6 +71,155 @@ class UploadService {
   Stream<TaskProgressUpdate> get taskProgressStream => _taskProgressController.stream;
 
   bool shouldAbortQueuingTasks = false;
+  
+  /// List of asset IDs that were skipped due to size limits (for later upload on local network)
+  final Set<String> _skippedLargeFiles = {};
+  
+  /// Get count of skipped large files waiting for local network
+  int get skippedLargeFilesCount => _skippedLargeFiles.length;
+  
+  /// Get the list of skipped large file IDs
+  Set<String> get skippedLargeFiles => Set.unmodifiable(_skippedLargeFiles);
+  
+  // Cache the network type to avoid repeated checks
+  bool? _cachedIsLocalNetwork;
+  String? _cachedEndpoint;
+  
+  /// Check if connected to a local/internal network (not through Cloudflare)
+  /// Returns true for .local domains, private IPs, and localhost
+  bool isOnLocalNetwork() {
+    final serverEndpoint = Store.tryGet(StoreKey.serverEndpoint) ?? '';
+    
+    // Use cached result if endpoint hasn't changed
+    if (_cachedEndpoint == serverEndpoint && _cachedIsLocalNetwork != null) {
+      return _cachedIsLocalNetwork!;
+    }
+    _cachedEndpoint = serverEndpoint;
+    
+    final uri = Uri.tryParse(serverEndpoint);
+    if (uri == null) {
+      _logger.warning('Could not parse server endpoint: $serverEndpoint');
+      _cachedIsLocalNetwork = false;
+      return false;
+    }
+    
+    final host = uri.host.toLowerCase();
+    _logger.info('Checking network type for host: $host');
+    
+    // Check for .local domain (mDNS/Bonjour) - like familyvault.local
+    if (host.endsWith('.local')) {
+      _logger.info('✓ LOCAL NETWORK detected: .local domain ($host)');
+      _cachedIsLocalNetwork = true;
+      return true;
+    }
+    
+    // Check for localhost
+    if (host == 'localhost' || host == '127.0.0.1') {
+      _logger.info('✓ LOCAL NETWORK detected: localhost');
+      _cachedIsLocalNetwork = true;
+      return true;
+    }
+    
+    // Check for private IP ranges
+    final ipPattern = RegExp(r'^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$');
+    final match = ipPattern.firstMatch(host);
+    if (match != null) {
+      final first = int.parse(match.group(1)!);
+      final second = int.parse(match.group(2)!);
+      
+      // 10.x.x.x (Class A private)
+      if (first == 10) {
+        _logger.info('✓ LOCAL NETWORK detected: 10.x.x.x private IP');
+        _cachedIsLocalNetwork = true;
+        return true;
+      }
+      // 172.16.x.x - 172.31.x.x (Class B private)
+      if (first == 172 && second >= 16 && second <= 31) {
+        _logger.info('✓ LOCAL NETWORK detected: 172.16-31.x.x private IP');
+        _cachedIsLocalNetwork = true;
+        return true;
+      }
+      // 192.168.x.x (Class C private)
+      if (first == 192 && second == 168) {
+        _logger.info('✓ LOCAL NETWORK detected: 192.168.x.x private IP');
+        _cachedIsLocalNetwork = true;
+        return true;
+      }
+    }
+    
+    _logger.info('✗ EXTERNAL NETWORK: $host (Cloudflare/external)');
+    _cachedIsLocalNetwork = false;
+    return false;
+  }
+  
+  /// Force refresh the network type cache (call when network changes)
+  void refreshNetworkCache() {
+    _cachedIsLocalNetwork = null;
+    _cachedEndpoint = null;
+    _logger.info('Network cache cleared - will re-detect on next check');
+  }
+  
+  /// Check if a file should be skipped due to Cloudflare size limits
+  /// Returns true if file is too large AND we're not on local network
+  bool shouldSkipLargeFile(int fileSize) {
+    final sizeMB = fileSize / (1024 * 1024);
+    
+    if (fileSize <= kCloudflareMaxUploadSize) {
+      return false; // Small enough for any network
+    }
+    
+    final onLocal = isOnLocalNetwork();
+    if (onLocal) {
+      _logger.info('Large file (${sizeMB.toStringAsFixed(1)}MB) - OK, on LOCAL network');
+      return false; // On local network, can upload any size
+    }
+    
+    _logger.warning('SKIPPING large file (${sizeMB.toStringAsFixed(1)}MB) - '
+        'exceeds Cloudflare 100MB limit on EXTERNAL network');
+    return true;
+  }
+  
+  /// Clear the list of skipped large files (call when switching to local network)
+  void clearSkippedLargeFiles() {
+    _skippedLargeFiles.clear();
+  }
+  
+  /// Upload only the previously skipped large files (for when on local network)
+  Future<int> uploadSkippedLargeFiles(String userId) async {
+    if (_skippedLargeFiles.isEmpty) {
+      _logger.info('No skipped large files to upload');
+      return 0;
+    }
+    
+    if (!isOnLocalNetwork()) {
+      _logger.warning('Not on local network - cannot upload large files');
+      return 0;
+    }
+    
+    _logger.info('Uploading ${_skippedLargeFiles.length} previously skipped large files on LOCAL network');
+    
+    int uploadedCount = 0;
+    // Get ALL candidates (including unhashed) so we can find skipped large files
+    final candidates = await _backupRepository.getCandidates(userId, onlyHashed: false);
+    
+    for (final candidate in candidates) {
+      if (_skippedLargeFiles.contains(candidate.id)) {
+        _logger.info('Uploading large file: ${candidate.name} (was skipped on external network)');
+        final task = await getUploadTask(candidate, skipSizeCheck: true);
+        if (task != null) {
+          await _uploadRepository.enqueueBackground(task);
+          _skippedLargeFiles.remove(candidate.id);
+          uploadedCount++;
+          _logger.info('Queued large file: ${candidate.name}');
+        } else {
+          _logger.warning('Could not create upload task for large file: ${candidate.name}');
+        }
+      }
+    }
+    
+    _logger.info('Queued $uploadedCount large files for upload on local network');
+    return uploadedCount;
+  }
 
   void _onTaskProgressCallback(TaskProgressUpdate update) {
     if (!_taskProgressController.isClosed) {
@@ -156,6 +308,128 @@ class UploadService {
     }
   }
 
+  /// Upload a specific batch of assets immediately.
+  /// Used by the parallel pipeline to upload batches as they become available
+  /// instead of waiting for all hashing to complete.
+  Future<int> uploadBatch(
+    List<LocalAsset> assets, {
+    void Function(int queued, int total)? onProgress,
+  }) async {
+    _logger.info('uploadBatch: Starting batch of ${assets.length} assets');
+    
+    if (shouldAbortQueuingTasks) {
+      _logger.warning('uploadBatch: ABORTED - shouldAbortQueuingTasks is true');
+      return 0;
+    }
+    
+    if (assets.isEmpty) {
+      _logger.info('uploadBatch: No assets to upload');
+      return 0;
+    }
+
+    List<UploadTask> tasks = [];
+    int skipped = 0;
+    for (int i = 0; i < assets.length; i++) {
+      final asset = assets[i];
+      if (shouldAbortQueuingTasks) {
+        _logger.warning('uploadBatch: ABORTED during loop at asset $i');
+        break;
+      }
+      final task = await getUploadTask(asset);
+      if (task != null) {
+        tasks.add(task);
+        _logger.fine('uploadBatch: Created task for ${asset.name}');
+      } else {
+        skipped++;
+        _logger.fine('uploadBatch: Skipped ${asset.name} (no task returned)');
+      }
+    }
+    
+    _logger.info('uploadBatch: Created ${tasks.length} tasks, skipped $skipped');
+
+    if (tasks.isNotEmpty && !shouldAbortQueuingTasks) {
+      _logger.info('uploadBatch: Enqueueing ${tasks.length} tasks...');
+      await enqueueTasks(tasks);
+      _logger.info('uploadBatch: Enqueued ${tasks.length} tasks successfully');
+      onProgress?.call(tasks.length, assets.length);
+    }
+
+    return tasks.length;
+  }
+
+  /// Get the current count of assets ready for upload (hashed but not uploaded)
+  Future<int> getReadyForUploadCount(String userId) async {
+    final counts = await _backupRepository.getAllCounts(userId);
+    // remainder = total not on server, processing = not hashed yet
+    // ready = remainder - processing
+    return counts.remainder - counts.processing;
+  }
+
+  /// Track cloud-only files that we've identified
+  final Set<String> _cloudOnlyFiles = {};
+  
+  /// Get count of identified cloud-only files
+  int get cloudOnlyFilesCount => _cloudOnlyFiles.length;
+  
+  /// Get a batch of candidates ready for upload.
+  /// PRIORITIZES LOCAL FILES - cloud files are processed after.
+  Future<List<LocalAsset>> getCandidateBatch(String userId, {int limit = 100}) async {
+    _logger.info('getCandidateBatch: Fetching up to $limit candidates');
+    
+    // Get ALL candidates - don't filter by hash
+    // Server will handle deduplication, we just need to upload
+    final candidates = await _backupRepository.getCandidates(userId, onlyHashed: false);
+    _logger.info('getCandidateBatch: ${candidates.length} total candidates');
+    
+    if (candidates.isEmpty) {
+      return [];
+    }
+    
+    // Separate local vs cloud files for prioritization
+    final localFiles = <LocalAsset>[];
+    final cloudFiles = <LocalAsset>[];
+    
+    // Check first batch for local availability
+    for (final asset in candidates.take(limit * 3)) {
+      if (localFiles.length >= limit) break;
+      
+      // Quick check if we already know this is cloud-only
+      if (_cloudOnlyFiles.contains(asset.id)) {
+        cloudFiles.add(asset);
+        continue;
+      }
+      
+      final isLocal = await _storageRepository.isAssetLocallyAvailable(asset.id);
+      if (isLocal) {
+        localFiles.add(asset);
+      } else {
+        _cloudOnlyFiles.add(asset.id);
+        cloudFiles.add(asset);
+      }
+    }
+    
+    _logger.info('getCandidateBatch: ${localFiles.length} local, ${cloudFiles.length} cloud');
+    
+    // Return local files first
+    if (localFiles.isNotEmpty) {
+      return localFiles.take(limit).toList();
+    }
+    
+    // Only cloud files remain - return them (will be slow)
+    if (cloudFiles.isNotEmpty) {
+      _logger.info('getCandidateBatch: Processing ${cloudFiles.length} cloud files (SLOW)');
+      // For cloud files, just return a smaller batch since they're slow
+      return cloudFiles.take((limit / 4).ceil().clamp(1, 10)).toList();
+    }
+    
+    return [];
+  }
+  
+  /// Clear tracked cloud files (call when backup completes or cancelled)
+  void clearCloudFileTracking() {
+    _cloudOnlyFiles.clear();
+  }
+
   Future<void> startBackupWithHttpClient(String userId, bool hasWifi, CancellationToken token) async {
     await _storageRepository.clearCache();
 
@@ -198,6 +472,9 @@ class UploadService {
   /// Return the number of left over tasks in the queue
   Future<int> cancelBackup() async {
     shouldAbortQueuingTasks = true;
+    
+    // Clear cloud file tracking
+    clearCloudFileTracking();
 
     await _storageRepository.clearCache();
     await _uploadRepository.reset(kBackupGroup);
@@ -209,6 +486,30 @@ class UploadService {
 
   Future<void> resumeBackup() {
     return _uploadRepository.start();
+  }
+  
+  /// Cancel a specific upload task by taskId
+  /// Returns true if cancelled successfully
+  Future<bool> cancelTaskById(String taskId) async {
+    _logger.info('Cancelling task: $taskId');
+    return _uploadRepository.cancelTask(taskId);
+  }
+  
+  /// Cancel uploads that are stuck retrying
+  /// Returns the number of tasks cancelled
+  Future<int> cancelStuckUploads() async {
+    final retryingTasks = await _uploadRepository.getRetryingTasks(kBackupGroup);
+    _logger.info('Found ${retryingTasks.length} tasks stuck in retry');
+    
+    int cancelled = 0;
+    for (final record in retryingTasks) {
+      final success = await _uploadRepository.cancelTask(record.task.taskId);
+      if (success) {
+        cancelled++;
+        _logger.info('Cancelled stuck task: ${record.task.displayName}');
+      }
+    }
+    return cancelled;
   }
 
   void _handleTaskStatusUpdate(TaskStatusUpdate update) async {
@@ -302,9 +603,19 @@ class UploadService {
   }
 
   @visibleForTesting
-  Future<UploadTask?> getUploadTask(LocalAsset asset, {String group = kBackupGroup, int? priority}) async {
+  /// Get upload task for an asset.
+  /// If [skipSizeCheck] is false (default), large files (>100MB) will be skipped
+  /// when not on a local network to avoid Cloudflare upload limits.
+  Future<UploadTask?> getUploadTask(
+    LocalAsset asset, {
+    String group = kBackupGroup, 
+    int? priority,
+    bool skipSizeCheck = false,
+  }) async {
+    _logger.fine('getUploadTask: Getting entity for asset ${asset.name} (${asset.id})');
     final entity = await _storageRepository.getAssetEntityForAsset(asset);
     if (entity == null) {
+      _logger.warning('getUploadTask: NO ENTITY for ${asset.name} - file may not be accessible');
       return null;
     }
 
@@ -320,6 +631,7 @@ class UploadService {
     /// The cancel operation will only cancel the video group (normal group), the photo group will not
     /// be touched, as the video file is already uploaded.
 
+    _logger.fine('getUploadTask: Getting file for ${asset.name}');
     if (entity.isLivePhoto) {
       file = await _storageRepository.getMotionFileForAsset(asset);
     } else {
@@ -327,7 +639,22 @@ class UploadService {
     }
 
     if (file == null) {
+      _logger.warning('getUploadTask: NO FILE for ${asset.name} - file may need to be downloaded from cloud');
       return null;
+    }
+    
+    _logger.fine('getUploadTask: Got file ${file.path} (${file.lengthSync()} bytes)');
+    
+    // Check if file is too large for external network (Cloudflare limit)
+    if (!skipSizeCheck) {
+      final fileSize = file.lengthSync();
+      if (shouldSkipLargeFile(fileSize)) {
+        _skippedLargeFiles.add(asset.id);
+        final fileName = await _assetMediaRepository.getOriginalFilename(asset.id) ?? asset.name;
+        _logger.info('Skipping large file "$fileName" (${(fileSize / 1024 / 1024).toStringAsFixed(1)}MB) - '
+            'will upload when on local network');
+        return null;
+      }
     }
 
     final fileName = await _assetMediaRepository.getOriginalFilename(asset.id) ?? asset.name;
@@ -398,6 +725,12 @@ class UploadService {
     return requiresWiFi;
   }
 
+  /// Size threshold for "large" files (50MB) - these get special handling
+  static const int _largeFileSizeThreshold = 50 * 1024 * 1024; // 50MB
+  
+  /// Size threshold for "very large" files (200MB) - even more retries
+  static const int _veryLargeFileSizeThreshold = 200 * 1024 * 1024; // 200MB
+
   Future<UploadTask> buildUploadTask(
     File file, {
     required String group,
@@ -415,7 +748,26 @@ class UploadService {
     final url = Uri.parse('$serverEndpoint/assets').toString();
     final headers = ApiService.getRequestHeaders();
     final deviceId = Store.get(StoreKey.deviceId);
-    final (baseDirectory, directory, filename) = await Task.split(filePath: file.path);
+    
+    // Determine retry settings based on file size
+    // Larger files get more retries since they're more prone to failures
+    final fileSize = file.lengthSync();
+    final int retries;
+    
+    if (fileSize >= _veryLargeFileSizeThreshold) {
+      // Very large files (200MB+): 8 retries
+      retries = 8;
+      _logger.info('Very large file (${(fileSize / 1024 / 1024).toStringAsFixed(1)}MB): '
+          'Using $retries retries');
+    } else if (fileSize >= _largeFileSizeThreshold) {
+      // Large files (50-200MB): 5 retries
+      retries = 5;
+      _logger.info('Large file (${(fileSize / 1024 / 1024).toStringAsFixed(1)}MB): '
+          'Using $retries retries');
+    } else {
+      // Normal files: 3 retries (default)
+      retries = 3;
+    }    final (baseDirectory, directory, filename) = await Task.split(filePath: file.path);
     final fieldsMap = {
       'filename': originalFileName ?? filename,
       'deviceAssetId': deviceAssetId ?? '',
@@ -427,6 +779,10 @@ class UploadService {
       if (fields != null) ...fields,
     };
 
+    if (fileSize >= _largeFileSizeThreshold) {
+      _logger.info('Large file upload: ${(fileSize / (1024 * 1024)).toStringAsFixed(0)}MB, retries: $retries');
+    }
+    
     return UploadTask(
       taskId: deviceAssetId,
       displayName: originalFileName ?? filename,
@@ -443,7 +799,7 @@ class UploadService {
       requiresWiFi: requiresWiFi,
       priority: priority ?? 5,
       updates: Updates.statusAndProgress,
-      retries: 3,
+      retries: retries,
     );
   }
 }

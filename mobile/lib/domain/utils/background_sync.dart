@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:immich_mobile/domain/services/hash.service.dart';
 import 'package:immich_mobile/domain/utils/sync_linked_album.dart';
 import 'package:immich_mobile/providers/infrastructure/sync.provider.dart';
 import 'package:immich_mobile/utils/isolate.dart';
@@ -8,6 +9,7 @@ import 'package:worker_manager/worker_manager.dart';
 typedef SyncCallback = void Function();
 typedef SyncCallbackWithResult<T> = void Function(T result);
 typedef SyncErrorCallback = void Function(String error);
+typedef HashBatchCallback = void Function(HashBatchResult result);
 
 class BackgroundSyncManager {
   final SyncCallback? onRemoteSyncStart;
@@ -132,6 +134,42 @@ class BackgroundSyncManager {
     _hashTask = runInIsolateGentle(
       computation: (ref) => ref.read(hashServiceProvider).hashAssets(),
       debugLabel: 'hash-assets',
+    );
+
+    return _hashTask!
+        .whenComplete(() {
+          onHashingComplete?.call();
+          _hashTask = null;
+        })
+        .catchError((error) {
+          onHashingError?.call(error.toString());
+          _hashTask = null;
+        });
+  }
+
+  /// Hash assets with a callback that fires after each batch completes.
+  /// This enables the parallel pipeline where uploads can start immediately
+  /// after each batch is hashed.
+  /// 
+  /// Note: The [onBatchComplete] callback is called from the isolate, so
+  /// it may need to use ports for communication with the main isolate.
+  Future<void> hashAssetsWithCallback({
+    HashBatchCallback? onBatchComplete,
+  }) {
+    if (_hashTask != null) {
+      return _hashTask!.future;
+    }
+
+    onHashingStart?.call();
+
+    _hashTask = runInIsolateGentle(
+      computation: (ref) {
+        final hashService = ref.read(hashServiceProvider);
+        return hashService.hashAssetsWithCallback(
+          onBatchComplete: onBatchComplete,
+        );
+      },
+      debugLabel: 'hash-assets-pipeline',
     );
 
     return _hashTask!

@@ -25,9 +25,10 @@ class AdaptiveThrottleController {
   final Logger _log = Logger('AdaptiveThrottleController');
   
   /// Current state of the throttle system
+  /// Start with more aggressive settings - will adapt if needed
   AdaptiveThrottleState _state = const AdaptiveThrottleState(
-    currentBatchSize: 30,
-    currentDelayMs: 1000,
+    currentBatchSize: 50,
+    currentDelayMs: 300,
   );
 
   /// Session metrics for trend analysis
@@ -87,8 +88,8 @@ class AdaptiveThrottleController {
   void reset() {
     _sessionMetrics.clear();
     _state = const AdaptiveThrottleState(
-      currentBatchSize: 30,
-      currentDelayMs: 1000,
+      currentBatchSize: 50,
+      currentDelayMs: 300,
     );
     _emitState();
   }
