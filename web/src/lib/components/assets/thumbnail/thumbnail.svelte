@@ -295,7 +295,7 @@
           </div>
         {/if}
 
-        {#if asset.isImage && asset.duration && !asset.duration.includes('0:00:00.000')}
+        {#if asset.isImage && !!asset.duration}
           <div class="absolute end-0 top-0 flex place-items-center gap-1 text-xs font-medium text-white">
             <span class="pe-2 pt-2">
               <Icon data-icon-playable icon={mdiFileGifBox} size="24" />
@@ -364,7 +364,7 @@
             playbackOnIconHover={!$playVideoThumbnailOnHover}
           />
         </div>
-      {:else if asset.isImage && asset.duration && !asset.duration.includes('0:00:00.000') && mouseOver}
+      {:else if asset.isImage && asset.duration && mouseOver}
         <!-- GIF -->
         <div class="absolute top-0 h-full w-full pointer-events-none">
           <div class="absolute h-full w-full bg-linear-to-b from-black/25 via-[transparent_25%]"></div>
