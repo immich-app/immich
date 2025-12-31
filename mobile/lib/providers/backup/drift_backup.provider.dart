@@ -276,8 +276,8 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
         ),
       ) {
     {
-      _uploadService.taskStatusStream.listen(_handleTaskStatusUpdate);
-      _uploadService.taskProgressStream.listen(_handleTaskProgressUpdate);
+      _statusSubscription = _uploadService.taskStatusStream.listen(_handleTaskStatusUpdate);
+      _progressSubscription = _uploadService.taskProgressStream.listen(_handleTaskProgressUpdate);
     }
   }
 
@@ -296,7 +296,10 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
 
   /// Remove upload item from state
   void _removeUploadItem(String taskId) {
-    if (!mounted) return;
+    if (!mounted) {
+      _logger.warning("Skip _removeUploadItem: notifier disposed");
+      return;
+    }
     if (state.uploadItems.containsKey(taskId)) {
       final updatedItems = Map<String, DriftUploadStatus>.from(state.uploadItems);
       updatedItems.remove(taskId);
@@ -305,7 +308,10 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
   }
 
   void _handleTaskStatusUpdate(TaskStatusUpdate update) {
-    if (!mounted) return;
+    if (!mounted) {
+      _logger.warning("Skip _handleTaskStatusUpdate: notifier disposed");
+      return;
+    }
     final taskId = update.task.taskId;
     
     // VERBOSE LOGGING for all status updates
@@ -480,7 +486,10 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
   }
 
   void _handleTaskProgressUpdate(TaskProgressUpdate update) {
-    if (!mounted) return;
+    if (!mounted) {
+      _logger.warning("Skip _handleTaskProgressUpdate: notifier disposed");
+      return;
+    }
     final taskId = update.task.taskId;
     final filename = update.task.displayName;
     final progress = update.progress;
@@ -549,8 +558,15 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
   }
 
   Future<void> getBackupStatus(String userId) async {
+    if (!mounted) {
+      _logger.warning("Skip getBackupStatus (pre-call): notifier disposed");
+      return;
+    }
     final counts = await _uploadService.getBackupCounts(userId);
-    if (!mounted) return;
+    if (!mounted) {
+      _logger.warning("Skip getBackupStatus (post-call): notifier disposed");
+      return;
+    }
 
     state = state.copyWith(
       totalCount: counts.total,
@@ -561,7 +577,10 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
   }
 
   void updateError(BackupError error) {
-    if (!mounted) return;
+    if (!mounted) {
+      _logger.warning("Skip updateError: notifier disposed");
+      return;
+    }
     state = state.copyWith(error: error);
   }
 
@@ -614,7 +633,10 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
     void Function()? onHashingComplete,
     void Function(String message)? onStatusUpdate,
   }) async {
-    if (!mounted) return;
+    if (!mounted) {
+      _logger.warning("Skip startParallelBackup: notifier disposed");
+      return;
+    }
     
     // CRITICAL: Check backup toggle - don't start if disabled
     if (!_isBackupEnabled) {
@@ -1002,10 +1024,17 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
   }
 
   Future<void> handleBackupResume(String userId) async {
-    if (!mounted) return;
+    if (!mounted) {
+      _logger.warning("Skip handleBackupResume (pre-call): notifier disposed");
+      return;
+    }
     _logger.info("Resuming backup tasks...");
     state = state.copyWith(error: BackupError.none);
     final tasks = await _uploadService.getActiveTasks(kBackupGroup);
+    if (!mounted) {
+      _logger.warning("Skip handleBackupResume (post-call): notifier disposed");
+      return;
+    }
     _logger.info("Found ${tasks.length} tasks");
 
     if (tasks.isEmpty) {

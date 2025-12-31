@@ -451,6 +451,7 @@
     <div class="absolute w-full flex">
       <SlideshowBar
         {isFullScreen}
+        assetType={previewStackedAsset?.type ?? asset.type}
         onSetToFullScreen={() => assetViewerHtmlElement?.requestFullscreen?.()}
         onPrevious={() => navigateAsset('previous')}
         onNext={() => navigateAsset('next')}
