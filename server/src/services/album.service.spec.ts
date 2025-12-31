@@ -509,7 +509,6 @@ describe(AlbumService.name, () => {
   describe('updateUser', () => {
     it('should update user role', async () => {
       mocks.access.album.checkOwnerAccess.mockResolvedValue(new Set([albumStub.sharedWithAdmin.id]));
-      mocks.album.getById.mockResolvedValue(albumStub.sharedWithAdmin);
       mocks.albumUser.update.mockResolvedValue(null as any);
 
       await sut.updateUser(authStub.user1, albumStub.sharedWithAdmin.id, userStub.admin.id, {
@@ -519,44 +518,6 @@ describe(AlbumService.name, () => {
         { albumId: albumStub.sharedWithAdmin.id, userId: userStub.admin.id },
         { role: AlbumUserRole.Editor },
       );
-    });
-
-    it('should allow a user to update their own showInTimeline preference', async () => {
-      mocks.access.album.checkSharedAlbumAccess.mockResolvedValue(new Set([albumStub.sharedWithAdmin.id]));
-      mocks.album.getById.mockResolvedValue(albumStub.sharedWithAdmin);
-      mocks.albumUser.update.mockResolvedValue(null as any);
-
-      await sut.updateUser(authStub.admin, albumStub.sharedWithAdmin.id, userStub.admin.id, {
-        showInTimeline: true,
-      });
-      expect(mocks.albumUser.update).toHaveBeenCalledWith(
-        { albumId: albumStub.sharedWithAdmin.id, userId: userStub.admin.id },
-        { showInTimeline: true },
-      );
-    });
-
-    it('should not allow a user to update another user showInTimeline preference', async () => {
-      mocks.access.album.checkOwnerAccess.mockResolvedValue(new Set([albumStub.sharedWithAdmin.id]));
-      mocks.album.getById.mockResolvedValue(albumStub.sharedWithAdmin);
-
-      await expect(
-        sut.updateUser(authStub.user1, albumStub.sharedWithAdmin.id, userStub.admin.id, {
-          showInTimeline: true,
-        }),
-      ).rejects.toBeInstanceOf(BadRequestException);
-      expect(mocks.albumUser.update).not.toHaveBeenCalled();
-    });
-
-    it('should throw an error if user is not a member of the album', async () => {
-      mocks.access.album.checkOwnerAccess.mockResolvedValue(new Set([albumStub.empty.id]));
-      mocks.album.getById.mockResolvedValue(albumStub.empty);
-
-      await expect(
-        sut.updateUser(authStub.admin, albumStub.empty.id, 'non-existent-user', {
-          role: AlbumUserRole.Viewer,
-        }),
-      ).rejects.toBeInstanceOf(BadRequestException);
-      expect(mocks.albumUser.update).not.toHaveBeenCalled();
     });
   });
 

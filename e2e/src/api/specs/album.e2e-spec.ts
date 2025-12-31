@@ -746,7 +746,7 @@ describe('/albums', () => {
       expect(album.albumUsers[0].showInTimeline).toEqual(false);
 
       const { status } = await request(app)
-        .put(`/albums/${album.id}/user/${user2.userId}`)
+        .put(`/albums/${album.id}/users/${user2.userId}/preferences`)
         .set('Authorization', `Bearer ${user2.accessToken}`)
         .send({ showInTimeline: true });
 
@@ -770,7 +770,7 @@ describe('/albums', () => {
       });
 
       const { status, body } = await request(app)
-        .put(`/albums/${album.id}/user/${user2.userId}`)
+        .put(`/albums/${album.id}/users/${user2.userId}/preferences`)
         .set('Authorization', `Bearer ${user1.accessToken}`)
         .send({ showInTimeline: true });
 

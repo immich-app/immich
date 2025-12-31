@@ -323,31 +323,8 @@ export class AlbumService extends BaseService {
   }
 
   async updateUser(auth: AuthDto, id: string, userId: string, dto: UpdateAlbumUserDto): Promise<void> {
-    // Ensure user has at least read access to the album
-    await this.requireAccess({ auth, permission: Permission.AlbumRead, ids: [id] });
-
-    // Fetch album with users (albumUsers is always populated by repository, regardless of withAssets option)
-    const album = await this.findOrFail(id, { withAssets: false });
-
-    // Verify the target userId is actually a member of this album
-    const albumUser = album.albumUsers.find((u) => u.user.id === userId);
-    if (!albumUser) {
-      throw new BadRequestException('User is not a member of this album');
-    }
-
-    // Role update: album owner only (requires AlbumShare permission)
-    if (dto.role !== undefined) {
-      await this.requireAccess({ auth, permission: Permission.AlbumShare, ids: [id] });
-      await this.albumUserRepository.update({ albumId: id, userId }, { role: dto.role });
-    }
-
-    // showInTimeline update: the user themselves only
-    if (dto.showInTimeline !== undefined) {
-      if (auth.user.id !== userId) {
-        throw new BadRequestException('Can only update your own timeline preference');
-      }
-      await this.albumUserRepository.update({ albumId: id, userId }, { showInTimeline: dto.showInTimeline });
-    }
+    await this.requireAccess({ auth, permission: Permission.AlbumShare, ids: [id] });
+    await this.albumUserRepository.update({ albumId: id, userId }, { role: dto.role });
   }
 
   async updateUserRole(auth: AuthDto, id: string, userId: string, dto: UpdateAlbumUserRoleDto): Promise<void> {

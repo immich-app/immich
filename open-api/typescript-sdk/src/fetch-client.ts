@@ -439,8 +439,7 @@ export type BulkIdResponseDto = {
     success: boolean;
 };
 export type UpdateAlbumUserDto = {
-    role?: AlbumUserRole;
-    showInTimeline?: boolean;
+    role: AlbumUserRole;
 };
 export type AlbumUserAddDto = {
     role?: AlbumUserRole;

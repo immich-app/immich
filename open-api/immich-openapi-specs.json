@@ -22793,11 +22793,11 @@
                 "$ref": "#/components/schemas/AlbumUserRole"
               }
             ]
-          },
-          "showInTimeline": {
-            "type": "boolean"
           }
         },
+        "required": [
+          "role"
+        ],
         "type": "object"
       },
       "UpdateAlbumUserPreferencesDto": {

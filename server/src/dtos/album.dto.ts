@@ -118,11 +118,8 @@ export class AlbumStatisticsResponseDto {
 }
 
 export class UpdateAlbumUserDto {
-  @ValidateEnum({ enum: AlbumUserRole, name: 'AlbumUserRole', optional: true })
-  role?: AlbumUserRole;
-
-  @ValidateBoolean({ optional: true })
-  showInTimeline?: boolean;
+  @ValidateEnum({ enum: AlbumUserRole, name: 'AlbumUserRole' })
+  role!: AlbumUserRole;
 }
 
 export class UpdateAlbumUserRoleDto {
