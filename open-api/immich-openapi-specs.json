@@ -15007,7 +15007,6 @@
         },
         "required": [
           "role",
-          "showInTimeline",
           "user"
         ],
         "type": "object"
@@ -20532,7 +20531,6 @@
         "required": [
           "albumId",
           "role",
-          "showInTimeline",
           "userId"
         ],
         "type": "object"

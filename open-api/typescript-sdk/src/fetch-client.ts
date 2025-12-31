@@ -273,7 +273,7 @@ export type AssetStatsResponseDto = {
 };
 export type AlbumUserResponseDto = {
     role: AlbumUserRole;
-    showInTimeline: boolean;
+    showInTimeline?: boolean;
     user: UserResponseDto;
 };
 export type ExifResponseDto = {

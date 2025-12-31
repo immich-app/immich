@@ -136,8 +136,8 @@ export class AlbumUserResponseDto {
   user!: UserResponseDto;
   @ValidateEnum({ enum: AlbumUserRole, name: 'AlbumUserRole' })
   role!: AlbumUserRole;
-  @ApiProperty()
-  showInTimeline!: boolean;
+  @ApiProperty({ required: false })
+  showInTimeline?: boolean;
 }
 
 export class ContributorCountResponseDto {
