@@ -14,6 +14,7 @@
   import NightlyTasksSettings from '$lib/components/admin-settings/NightlyTasksSettings.svelte';
   import NotificationSettings from '$lib/components/admin-settings/NotificationSettings.svelte';
   import ServerSettings from '$lib/components/admin-settings/ServerSettings.svelte';
+  import StorageSettings from '$lib/components/admin-settings/StorageSettings.svelte';
   import StorageTemplateSettings from '$lib/components/admin-settings/StorageTemplateSettings.svelte';
   import ThemeSettings from '$lib/components/admin-settings/ThemeSettings.svelte';
   import TrashSettings from '$lib/components/admin-settings/TrashSettings.svelte';
@@ -33,6 +34,7 @@
     mdiBellOutline,
     mdiBookshelf,
     mdiClockOutline,
+    mdiCloudOutline,
     mdiDatabaseOutline,
     mdiFileDocumentOutline,
     mdiFolderOutline,
@@ -162,6 +164,13 @@
       subtitle: $t('admin.storage_template_settings_description'),
       key: 'storage-template',
       icon: mdiFolderOutline,
+    },
+    {
+      component: StorageSettings,
+      title: 'Object Storage (S3)',
+      subtitle: 'Configure S3-compatible object storage for assets',
+      key: 'storage',
+      icon: mdiCloudOutline,
     },
     {
       component: ThemeSettings,

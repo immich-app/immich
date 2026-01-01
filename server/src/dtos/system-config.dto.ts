@@ -24,6 +24,7 @@ import {
   LogLevel,
   OAuthTokenEndpointAuthMethod,
   QueueName,
+  StorageBackend,
   ToneMapping,
   TranscodeHardwareAcceleration,
   TranscodePolicy,
@@ -619,6 +620,89 @@ export class SystemConfigImageDto {
   extractEmbedded!: boolean;
 }
 
+const isS3Enabled = (config: SystemConfigStorageS3Dto) => config.enabled;
+
+class SystemConfigStorageS3Dto {
+  @ValidateBoolean()
+  enabled!: boolean;
+
+  @ValidateIf(isS3Enabled)
+  @IsNotEmpty()
+  @IsString()
+  endpoint!: string;
+
+  @ValidateIf(isS3Enabled)
+  @IsNotEmpty()
+  @IsString()
+  bucket!: string;
+
+  @IsString()
+  region!: string;
+
+  @ValidateIf(isS3Enabled)
+  @IsNotEmpty()
+  @IsString()
+  accessKeyId!: string;
+
+  @ValidateIf(isS3Enabled)
+  @IsNotEmpty()
+  @IsString()
+  secretAccessKey!: string;
+
+  @IsString()
+  prefix!: string;
+
+  @ValidateBoolean()
+  forcePathStyle!: boolean;
+}
+
+class SystemConfigStorageLocationsDto {
+  @ValidateEnum({ enum: StorageBackend, name: 'StorageBackend' })
+  originals!: StorageBackend;
+
+  @ValidateEnum({ enum: StorageBackend, name: 'StorageBackend' })
+  thumbnails!: StorageBackend;
+
+  @ValidateEnum({ enum: StorageBackend, name: 'StorageBackend' })
+  previews!: StorageBackend;
+
+  @ValidateEnum({ enum: StorageBackend, name: 'StorageBackend' })
+  encodedVideos!: StorageBackend;
+}
+
+enum UploadStrategy {
+  LocalFirst = 'local-first',
+  S3First = 's3-first',
+}
+
+class SystemConfigStorageUploadDto {
+  @ValidateEnum({ enum: UploadStrategy, name: 'UploadStrategy' })
+  strategy!: 'local-first' | 's3-first';
+
+  @ValidateBoolean()
+  deleteLocalAfterUpload!: boolean;
+}
+
+class SystemConfigStorageDto {
+  @ValidateEnum({ enum: StorageBackend, name: 'StorageBackend' })
+  backend!: StorageBackend;
+
+  @Type(() => SystemConfigStorageS3Dto)
+  @ValidateNested()
+  @IsObject()
+  s3!: SystemConfigStorageS3Dto;
+
+  @Type(() => SystemConfigStorageLocationsDto)
+  @ValidateNested()
+  @IsObject()
+  locations!: SystemConfigStorageLocationsDto;
+
+  @Type(() => SystemConfigStorageUploadDto)
+  @ValidateNested()
+  @IsObject()
+  upload!: SystemConfigStorageUploadDto;
+}
+
 class SystemConfigTrashDto {
   @ValidateBoolean()
   enabled!: boolean;
@@ -698,6 +782,11 @@ export class SystemConfigDto implements SystemConfig {
   @ValidateNested()
   @IsObject()
   storageTemplate!: SystemConfigStorageTemplateDto;
+
+  @Type(() => SystemConfigStorageDto)
+  @ValidateNested()
+  @IsObject()
+  storage!: SystemConfigStorageDto;
 
   @Type(() => SystemConfigJobDto)
   @ValidateNested()
