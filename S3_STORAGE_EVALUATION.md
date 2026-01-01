@@ -200,9 +200,9 @@ CREATE TABLE asset_storage_location (
 
 ---
 
-## Per-User Buckets for Isolation
+## Bucket Organization
 
-### Approach 1: Single Bucket with User Prefixes
+### Recommended: Single Bucket with User Prefixes
 
 ```
 s3://immich-storage/
@@ -215,55 +215,14 @@ s3://immich-storage/
 │       └── generated/
 ```
 
-**Pros:**
-- Simple to manage
-- Single IAM policy
+**Why this approach:**
+- Simple to manage with single IAM policy
 - Easy cross-user operations (admin, sharing)
+- IAM policies can restrict access via prefix conditions
+- No bucket limit concerns (AWS soft limit: 100 buckets)
+- User deletion just requires prefix cleanup
 
-**Cons:**
-- Less isolation
-- Harder to audit per-user storage
-
-### Approach 2: Per-User Buckets
-
-```
-s3://immich-user-{uuid-1}/
-├── originals/
-└── generated/
-
-s3://immich-user-{uuid-2}/
-├── originals/
-└── generated/
-```
-
-**Pros:**
-- Strong isolation
-- Per-user billing/quotas possible
-- Easy user data deletion (delete bucket)
-
-**Cons:**
-- Bucket management complexity (create on signup, delete on account removal)
-- AWS has 100 bucket soft limit (can be raised)
-- Cross-user sharing more complex
-- Requires dynamic bucket credentials
-
-### Approach 3: Bucket per User Group/Tenant (Multi-tenant)
-
-Best for self-hosted instances with multiple families/organizations.
-
-```
-s3://immich-tenant-{family-id}/
-├── users/
-│   ├── {user-1}/
-│   └── {user-2}/
-```
-
-### Recommended Approach
-
-**Single bucket with user prefixes** for most use cases:
-- Simpler operations
-- IAM policies can still restrict access via prefix conditions
-- Use bucket policies with user ID in path for access control
+> **Note**: Per-user buckets were considered but rejected due to high complexity (dynamic bucket creation, cross-user sharing difficulties) with minimal isolation benefit over prefix-based separation.
 
 ---
 
@@ -364,18 +323,10 @@ async getDownloadUrl(assetId: string): Promise<string> {
 | Monitoring and metrics | Medium | Low |
 | Documentation | Low | Low |
 
-### Phase 4: Per-User Bucket Support (Optional, 1-2 weeks)
-
-| Task | Effort | Risk |
-|------|--------|------|
-| Dynamic bucket management | Medium | Medium |
-| IAM policy templates | Medium | Medium |
-| User onboarding/offboarding hooks | Medium | Low |
-
 ### Total Estimated Effort
 
 - **Minimum Viable (Hybrid approach)**: 6-8 weeks
-- **Full Feature (with per-user buckets)**: 8-12 weeks
+- **Full Feature (S3-first, direct uploads)**: 8-10 weeks
 
 ---
 
@@ -449,10 +400,6 @@ storage:
     secretAccessKey: ${AWS_SECRET_ACCESS_KEY}
     prefix: users/  # Optional prefix for all keys
 
-    # Per-user buckets (optional)
-    perUserBuckets: false
-    bucketTemplate: immich-user-{userId}
-
   # What to store where (hybrid mode)
   locations:
     originals: s3
@@ -462,7 +409,7 @@ storage:
 
   # Upload behavior
   upload:
-    localFirst: true  # Process locally, then push to S3
+    strategy: local-first  # or 's3-first'
     deleteLocalAfterUpload: true
     retryAttempts: 3
     retryDelayMs: 1000
