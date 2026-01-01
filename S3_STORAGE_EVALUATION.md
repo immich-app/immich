@@ -563,6 +563,176 @@ storage:
 
 ---
 
+## Fly.io + Tigris Deployment Considerations
+
+This section addresses specific requirements for deploying Immich on [Fly.io](https://fly.io) with [Tigris object storage](https://www.tigrisdata.com/docs/overview/).
+
+### Tigris S3 Compatibility
+
+| Feature | Tigris Support | Impact on Immich |
+|---------|---------------|------------------|
+| PutObject/GetObject | ✅ Full | Core operations work |
+| Multipart uploads | ✅ Full | Large video uploads work |
+| Presigned URLs | ✅ Full | Direct client downloads/uploads |
+| **Bucket versioning** | ❌ Not supported | Cannot use S3 versioning for backup |
+| **S3 notifications** | ❌ Not supported | Can't trigger jobs on upload - need webhook |
+| Object locking | ❌ Not supported | No immutable backups via S3 |
+| ACLs | ⚠️ Canned only | `public-read` or `private` only |
+| Server-side encryption | ✅ Managed keys | Automatic, no KMS |
+
+### Tigris Advantages for Immich
+
+1. **Global auto-distribution**: Objects cached near users automatically - great for photo sharing
+2. **Single endpoint**: `fly.storage.tigris.dev` works worldwide, no region config needed
+3. **Small object optimization**: Lower latency than S3 for thumbnails (< 256KB)
+4. **Shadow buckets**: Zero-downtime migration from existing S3 provider
+5. **Built-in CDN behavior**: No CloudFront setup needed
+
+### Fly.io Architecture Requirements
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                         Fly.io                                   │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│  ┌─────────────┐     ┌─────────────┐     ┌─────────────┐        │
+│  │ Immich Web  │     │ Immich API  │     │ Immich ML   │        │
+│  │  (Machine)  │     │  (Machine)  │     │  (Machine)  │        │
+│  └─────────────┘     └──────┬──────┘     └──────┬──────┘        │
+│                             │                    │               │
+│                      ┌──────▼──────┐      ┌──────▼──────┐       │
+│                      │ Fly Volume  │      │ Fly Volume  │       │
+│                      │ (previews)  │      │ (ML cache)  │       │
+│                      └──────┬──────┘      └─────────────┘       │
+│                             │                                    │
+└─────────────────────────────┼────────────────────────────────────┘
+                              │
+                       ┌──────▼──────┐
+                       │   Tigris    │
+                       │ (originals) │
+                       └─────────────┘
+```
+
+**Critical: Fly Volumes Required**
+
+Fly.io machines have ephemeral storage. You MUST use [Fly Volumes](https://fly.io/docs/volumes/) for:
+- **Thumbnails/previews**: ML processing needs local access
+- **Upload staging**: Temporary storage before Tigris push
+- **Redis data**: If using Redis for job queues
+
+```bash
+# Create volumes for Immich
+fly volumes create immich_cache --size 50 --region ord
+fly volumes create immich_uploads --size 20 --region ord
+```
+
+### Configuration for Fly.io + Tigris
+
+```yaml
+# fly.toml
+[env]
+  # Tigris credentials auto-injected by `fly storage create`
+  # AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_ENDPOINT_URL_S3
+
+  # Immich S3 config
+  STORAGE_BACKEND: "tigris"
+  STORAGE_BUCKET: "immich-photos"
+  STORAGE_ENDPOINT: "https://fly.storage.tigris.dev"
+
+  # Keep generated files on Fly Volume
+  IMMICH_MEDIA_LOCATION: "/data"
+
+  # Upload strategy
+  UPLOAD_STRATEGY: "local-first"
+
+[mounts]
+  source = "immich_cache"
+  destination = "/data"
+```
+
+### Tigris-Specific Implementation Changes
+
+#### 1. No S3 Event Notifications
+
+Tigris doesn't support S3 bucket notifications. For S3-first uploads:
+
+```typescript
+// Instead of S3 triggering Lambda/webhook, client confirms upload
+async confirmDirectUpload(userId: string, s3Key: string) {
+  // Verify object exists in Tigris
+  const head = await this.s3.headObject({ Bucket: this.bucket, Key: s3Key });
+
+  // Create asset record and queue jobs
+  const asset = await this.createAssetRecord(userId, s3Key, head.ContentLength);
+  await this.queueThumbnailGeneration(asset.id);
+}
+```
+
+#### 2. Leverage Global Caching
+
+Tigris automatically caches objects near requesting users. Optimize for this:
+
+```typescript
+// Set cache headers on upload for thumbnails
+await this.s3.putObject({
+  Bucket: this.bucket,
+  Key: thumbnailKey,
+  Body: thumbnailBuffer,
+  ContentType: 'image/webp',
+  CacheControl: 'public, max-age=31536000', // 1 year - Tigris will cache globally
+});
+```
+
+#### 3. Presigned URLs with Tigris Endpoint
+
+```typescript
+// Use Tigris endpoint for presigned URLs
+const url = await getSignedUrl(this.s3, new GetObjectCommand({
+  Bucket: 'immich-photos',
+  Key: `users/${userId}/${assetId}/original.jpg`,
+}), { expiresIn: 3600 });
+
+// Returns: https://fly.storage.tigris.dev/immich-photos/users/.../original.jpg?X-Amz-...
+```
+
+### Database: Fly Postgres
+
+Use [Fly Postgres](https://fly.io/docs/postgres/) for the database:
+
+```bash
+fly postgres create --name immich-db --region ord
+fly postgres attach immich-db --app immich
+```
+
+**Note**: Fly Postgres is single-region. For multi-region Immich, consider:
+- [Supabase](https://supabase.com) (managed Postgres)
+- [Neon](https://neon.tech) (serverless Postgres with read replicas)
+
+### Cost Considerations
+
+| Component | Fly.io Pricing | Notes |
+|-----------|---------------|-------|
+| Machines | ~$5-15/month each | Depends on size |
+| Volumes | $0.15/GB/month | Need for cache |
+| Tigris | $0.02/GB/month storage | + $0.01/10k requests |
+| Postgres | ~$7/month minimum | Fly Postgres |
+| Bandwidth | Free within Fly | Tigris egress included |
+
+**Tigris vs AWS S3 cost**: Tigris is ~30% cheaper on storage, and egress to Fly apps is free.
+
+### Migration Path
+
+Use Tigris [Shadow Buckets](https://www.tigrisdata.com/docs/objects/shadow-bucket/) for zero-downtime migration:
+
+```bash
+# Create Tigris bucket with shadow to existing S3
+fly storage create immich-photos --shadow-bucket s3://old-bucket --shadow-region us-east-1
+```
+
+Objects are transparently fetched from old bucket and cached in Tigris on first access.
+
+---
+
 ## Conclusion
 
 S3 storage support for Immich is feasible with moderate effort. The recommended approach is:
