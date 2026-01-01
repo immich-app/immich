@@ -4,6 +4,8 @@
 
 This document evaluates the feasibility of adding S3 storage support to Immich. After analyzing the codebase, the integration is **moderately complex** (estimated effort: Medium-High). The architecture has good abstraction points, but several components assume local filesystem access.
 
+> **Note**: This evaluation incorporates feedback from [GitHub Discussion #1683](https://github.com/immich-app/immich/discussions/1683) and [Issue #4445](https://github.com/immich-app/immich/issues/4445). The maintainers previously closed discussion #1683 indicating they would not pursue native S3 support, though issue #4445 shows work was started on object storage.
+
 ### Key Recommendation
 
 A **hybrid approach** is recommended:
@@ -481,6 +483,139 @@ storage:
 
 ---
 
+## Community Feedback (from GitHub Discussion #1683)
+
+The following considerations were raised by the community and should be addressed:
+
+### 1. FUSE-Based Workarounds Already Exist
+
+Many users successfully use FUSE mounts as a workaround:
+- **rclone mount** - Most popular, works with any S3-compatible storage
+- **JuiceFS + Redis** - Object storage abstraction with metadata caching
+- **s3ql, geesefs** - Direct S3 FUSE implementations
+
+**Consideration**: Native S3 support should provide clear benefits over FUSE:
+- Lower latency (no FUSE overhead)
+- Better error handling (S3 errors vs filesystem errors)
+- Presigned URLs for direct client access
+
+### 2. Historical Hardlink Issue (Resolved)
+
+Early attempts with FUSE mounts failed with `ENOSYS: function not implemented, link` errors. **PR #2832** resolved this by replacing hardlink operations with copy-based alternatives.
+
+**Current Status**: The codebase no longer uses hardlinks for file operations. Verified by code search - only `unlink` (delete) operations exist.
+
+### 3. Direct Client-to-S3 Uploads
+
+Community requested bypassing the server for uploads entirely:
+
+```
+Mobile App → Presigned PUT URL → S3 (direct)
+                ↓
+           Notify Server → Queue metadata extraction
+```
+
+**Benefits**:
+- Reduces server bandwidth requirements
+- Enables deployment on minimal compute (Raspberry Pi, Oracle Cloud free tier)
+- Better for large video uploads
+
+**Implementation Requirement**:
+```typescript
+// Generate presigned upload URL
+async getUploadUrl(userId: string, filename: string): Promise<{url: string, key: string}> {
+  const key = `users/${userId}/uploads/${uuid()}/${filename}`;
+  const url = await this.s3.getSignedUrl('putObject', {
+    Bucket: this.bucket,
+    Key: key,
+    Expires: 3600,
+    ContentType: mimeTypes.lookup(filename),
+  });
+  return { url, key };
+}
+
+// After upload, client notifies server
+async confirmUpload(userId: string, key: string, metadata: UploadMetadata) {
+  // Verify file exists in S3
+  // Create asset record
+  // Queue thumbnail generation (requires download to local)
+  // Queue metadata extraction
+}
+```
+
+### 4. Video Streaming Performance
+
+Users reported video playback delays with NFS/network mounts. For S3:
+
+**Solutions**:
+- **Range request support**: S3 natively supports HTTP Range headers
+- **Presigned URLs with CloudFront**: CDN caching for frequently accessed videos
+- **Adaptive bitrate**: Serve encoded versions based on client capability
+
+### 5. Kubernetes/Container Orchestration
+
+Enterprise users need:
+- **Multi-pod read access**: S3 naturally supports this (vs local storage)
+- **Stateless containers**: No persistent volume claims needed for media
+- **Horizontal scaling**: Any pod can serve any asset
+
+### 6. Storage Template Incompatibility
+
+Current storage templates (e.g., `{{y}}/{{MM}}/{{filename}}`) assume filesystem paths.
+
+**Recommendation**: Disable storage template migration for S3 backends (as noted in #4445). Use flat structure with UUID-based keys:
+```
+s3://bucket/users/{userId}/{assetId}/original.{ext}
+s3://bucket/users/{userId}/{assetId}/preview.webp
+s3://bucket/users/{userId}/{assetId}/thumbnail.webp
+```
+
+### 7. Multer-S3 for Direct Upload Handling
+
+The community suggested using [multer-s3](https://github.com/badunk/multer-s3) for streaming uploads directly to S3:
+
+```typescript
+import multerS3 from 'multer-s3';
+import { S3Client } from '@aws-sdk/client-s3';
+
+const upload = multer({
+  storage: multerS3({
+    s3: new S3Client({ region: 'us-east-1' }),
+    bucket: 'immich-uploads',
+    key: (req, file, cb) => {
+      cb(null, `uploads/${req.user.id}/${uuid()}-${file.originalname}`);
+    },
+  }),
+});
+```
+
+**Trade-off**: This bypasses local staging, meaning:
+- Metadata extraction requires downloading from S3
+- Thumbnail generation requires downloading
+- If processing fails, file is already in S3 (orphan cleanup needed)
+
+### 8. Consistency Guarantees
+
+From #4445 discussion, the preference is:
+
+> "Direct object storage uploads for consistency, knowing for a fact that if an asset is in Immich, it is absolutely also in the object storage."
+
+**Two approaches**:
+
+| Approach | Consistency | Complexity |
+|----------|-------------|------------|
+| Local-first, then S3 | Eventually consistent | Lower |
+| S3-first, download for processing | Strongly consistent | Higher |
+
+**Recommendation**: Offer both via configuration:
+```yaml
+storage:
+  s3:
+    uploadStrategy: 'local-first'  # or 's3-first'
+```
+
+---
+
 ## Conclusion
 
 S3 storage support for Immich is feasible with moderate effort. The recommended approach is:
@@ -492,3 +627,21 @@ S3 storage support for Immich is feasible with moderate effort. The recommended 
 5. **Presigned URLs for downloads**: Better performance than server proxy
 
 This approach minimizes changes to the ML pipeline while providing the benefits of cloud storage for original files.
+
+### Additional Recommendations from Community Feedback
+
+6. **Support direct client-to-S3 uploads** via presigned PUT URLs for minimal-compute deployments
+7. **Disable storage templates** when using S3 (use flat UUID-based structure)
+8. **Offer configurable upload strategy**: local-first vs S3-first based on consistency requirements
+9. **CDN integration path** for video streaming performance (CloudFront, etc.)
+10. **Document FUSE alternatives** for users who prefer that approach
+
+### Why Native S3 Over FUSE?
+
+| Aspect | FUSE Mount | Native S3 |
+|--------|------------|-----------|
+| Latency | Higher (FUSE overhead) | Lower (direct API) |
+| Error handling | Filesystem errors | S3-specific errors |
+| Presigned URLs | Not possible | Direct client access |
+| Kubernetes | Requires sidecar/CSI | Stateless pods |
+| Debugging | Opaque | Full S3 SDK logging |
