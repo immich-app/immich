@@ -1,11 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { OnJob } from 'src/decorators';
-import { JobName, JobStatus, QueueName, StorageBackend, StorageLocationType } from 'src/enum';
+import { JobName, JobStatus, QueueName, StorageBackend } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
 import { JobOf } from 'src/types';
 import { StorageAdapterFactory } from 'src/repositories/storage';
-import { StorageCore } from 'src/cores/storage.core';
-import { getConfig } from 'src/utils/config';
+import { mimeTypes } from 'src/utils/mime-types';
 
 /**
  * Service for handling S3 storage operations.
@@ -13,12 +12,7 @@ import { getConfig } from 'src/utils/config';
  */
 @Injectable()
 export class S3StorageService extends BaseService {
-  private storageAdapterFactory: StorageAdapterFactory;
-
-  constructor() {
-    super();
-    this.storageAdapterFactory = new StorageAdapterFactory();
-  }
+  private storageAdapterFactory = new StorageAdapterFactory();
 
   /**
    * Handle uploading a single asset's original file to S3.
@@ -28,11 +22,7 @@ export class S3StorageService extends BaseService {
   async handleS3UploadAsset(job: JobOf<JobName.S3UploadAsset>): Promise<JobStatus> {
     const { id } = job;
 
-    const config = await getConfig({
-      configRepo: this.configRepository,
-      metadataRepo: this.systemMetadataRepository,
-      logger: this.logger,
-    });
+    const config = await this.getConfig({ withCache: true });
 
     // Check if S3 is enabled for originals
     if (!config.storage.s3.enabled || config.storage.locations.originals !== StorageBackend.S3) {
@@ -66,7 +56,7 @@ export class S3StorageService extends BaseService {
 
       // Upload to S3
       await s3Adapter.write(s3Key, fileBuffer, {
-        contentType: this.getMimeType(asset.originalPath),
+        contentType: mimeTypes.lookup(asset.originalPath),
       });
 
       // Verify upload
@@ -110,11 +100,7 @@ export class S3StorageService extends BaseService {
    */
   @OnJob({ name: JobName.S3UploadQueueAll, queue: QueueName.S3Upload })
   async handleS3UploadQueueAll(): Promise<JobStatus> {
-    const config = await getConfig({
-      configRepo: this.configRepository,
-      metadataRepo: this.systemMetadataRepository,
-      logger: this.logger,
-    });
+    const config = await this.getConfig({ withCache: true });
 
     if (!config.storage.s3.enabled || config.storage.locations.originals !== StorageBackend.S3) {
       this.logger.log('S3 upload queue all skipped: S3 not enabled for originals');
@@ -149,41 +135,10 @@ export class S3StorageService extends BaseService {
   }
 
   /**
-   * Get MIME type from file path.
-   */
-  private getMimeType(filePath: string): string {
-    const ext = filePath.split('.').pop()?.toLowerCase() || '';
-    const mimeTypes: Record<string, string> = {
-      jpg: 'image/jpeg',
-      jpeg: 'image/jpeg',
-      png: 'image/png',
-      gif: 'image/gif',
-      webp: 'image/webp',
-      heic: 'image/heic',
-      heif: 'image/heif',
-      mp4: 'video/mp4',
-      mov: 'video/quicktime',
-      avi: 'video/x-msvideo',
-      mkv: 'video/x-matroska',
-      webm: 'video/webm',
-      raw: 'image/x-raw',
-      dng: 'image/x-adobe-dng',
-      cr2: 'image/x-canon-cr2',
-      nef: 'image/x-nikon-nef',
-      arw: 'image/x-sony-arw',
-    };
-    return mimeTypes[ext] || 'application/octet-stream';
-  }
-
-  /**
    * Get a presigned download URL for an S3 asset.
    */
   async getPresignedDownloadUrl(assetId: string, expiresIn: number = 3600): Promise<string | null> {
-    const config = await getConfig({
-      configRepo: this.configRepository,
-      metadataRepo: this.systemMetadataRepository,
-      logger: this.logger,
-    });
+    const config = await this.getConfig({ withCache: true });
 
     if (!config.storage.s3.enabled) {
       return null;
@@ -212,11 +167,7 @@ export class S3StorageService extends BaseService {
     contentType: string,
     expiresIn: number = 3600,
   ): Promise<{ url: string; key: string } | null> {
-    const config = await getConfig({
-      configRepo: this.configRepository,
-      metadataRepo: this.systemMetadataRepository,
-      logger: this.logger,
-    });
+    const config = await this.getConfig({ withCache: true });
 
     if (!config.storage.s3.enabled || config.storage.upload.strategy !== 's3-first') {
       return null;

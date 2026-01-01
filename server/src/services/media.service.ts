@@ -232,6 +232,9 @@ export class MediaService extends BaseService {
 
     await this.assetRepository.upsertJobStatus({ assetId: asset.id, previewAt: new Date(), thumbnailAt: new Date() });
 
+    // Queue S3 upload job after thumbnail generation is complete
+    await this.jobRepository.queue({ name: JobName.S3UploadAsset, data: { id: asset.id } });
+
     return JobStatus.Success;
   }
 
