@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { parse } from 'node:path';
+import { basename, parse } from 'node:path';
 import { StorageCore } from 'src/cores/storage.core';
 import { AssetIdsDto } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -94,13 +94,13 @@ export class DownloadService extends BaseService {
         continue;
       }
 
-      const { originalPath, originalFileName } = asset;
+      const { originalPath } = asset;
 
-      let filename = originalFileName;
+      let filename = basename(originalPath);
       const count = paths[filename] || 0;
       paths[filename] = count + 1;
       if (count !== 0) {
-        const parsedFilename = parse(originalFileName);
+        const parsedFilename = parse(filename);
         filename = `${parsedFilename.name}+${count}${parsedFilename.ext}`;
       }
 
