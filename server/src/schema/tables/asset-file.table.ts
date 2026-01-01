@@ -1,5 +1,6 @@
 import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
-import { AssetFileType } from 'src/enum';
+import { AssetFileType, StorageBackend } from 'src/enum';
+import { storage_backend_enum } from 'src/schema/enums';
 import { AssetTable } from 'src/schema/tables/asset.table';
 import {
   Column,
@@ -37,4 +38,14 @@ export class AssetFileTable {
 
   @UpdateIdColumn({ index: true })
   updateId!: Generated<string>;
+
+  // S3 storage columns
+  @Column({ enum: storage_backend_enum, default: StorageBackend.Local })
+  storageBackend!: Generated<StorageBackend>;
+
+  @Column({ type: 'character varying', nullable: true })
+  s3Bucket!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  s3Key!: string | null;
 }

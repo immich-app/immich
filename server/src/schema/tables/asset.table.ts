@@ -1,6 +1,6 @@
 import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
-import { AssetStatus, AssetType, AssetVisibility } from 'src/enum';
-import { asset_visibility_enum, assets_status_enum } from 'src/schema/enums';
+import { AssetStatus, AssetType, AssetVisibility, StorageBackend } from 'src/enum';
+import { asset_visibility_enum, assets_status_enum, storage_backend_enum } from 'src/schema/enums';
 import { asset_delete_audit } from 'src/schema/functions';
 import { LibraryTable } from 'src/schema/tables/library.table';
 import { StackTable } from 'src/schema/tables/stack.table';
@@ -137,4 +137,14 @@ export class AssetTable {
 
   @Column({ enum: asset_visibility_enum, default: AssetVisibility.Timeline })
   visibility!: Generated<AssetVisibility>;
+
+  // S3 storage columns
+  @Column({ enum: storage_backend_enum, default: StorageBackend.Local })
+  storageBackend!: Generated<StorageBackend>;
+
+  @Column({ type: 'character varying', nullable: true })
+  s3Bucket!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  s3Key!: string | null;
 }

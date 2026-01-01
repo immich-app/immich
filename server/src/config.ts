@@ -7,6 +7,7 @@ import {
   LogLevel,
   OAuthTokenEndpointAuthMethod,
   QueueName,
+  StorageBackend,
   ToneMapping,
   TranscodeHardwareAcceleration,
   TranscodePolicy,
@@ -122,6 +123,29 @@ export interface SystemConfig {
     enabled: boolean;
     hashVerificationEnabled: boolean;
     template: string;
+  };
+  storage: {
+    backend: StorageBackend;
+    s3: {
+      enabled: boolean;
+      endpoint: string;
+      bucket: string;
+      region: string;
+      accessKeyId: string;
+      secretAccessKey: string;
+      prefix: string;
+      forcePathStyle: boolean;
+    };
+    locations: {
+      originals: StorageBackend;
+      thumbnails: StorageBackend;
+      previews: StorageBackend;
+      encodedVideos: StorageBackend;
+    };
+    upload: {
+      strategy: 'local-first' | 's3-first';
+      deleteLocalAfterUpload: boolean;
+    };
   };
   image: {
     thumbnail: ImageOptions;
@@ -312,6 +336,29 @@ export const defaults = Object.freeze<SystemConfig>({
     enabled: false,
     hashVerificationEnabled: true,
     template: '{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}',
+  },
+  storage: {
+    backend: StorageBackend.Local,
+    s3: {
+      enabled: false,
+      endpoint: process.env.STORAGE_S3_ENDPOINT || '',
+      bucket: process.env.STORAGE_S3_BUCKET || '',
+      region: process.env.STORAGE_S3_REGION || 'us-east-1',
+      accessKeyId: process.env.STORAGE_S3_ACCESS_KEY_ID || '',
+      secretAccessKey: process.env.STORAGE_S3_SECRET_ACCESS_KEY || '',
+      prefix: process.env.STORAGE_S3_PREFIX || 'users/',
+      forcePathStyle: true,
+    },
+    locations: {
+      originals: StorageBackend.Local,
+      thumbnails: StorageBackend.Local,
+      previews: StorageBackend.Local,
+      encodedVideos: StorageBackend.Local,
+    },
+    upload: {
+      strategy: 'local-first',
+      deleteLocalAfterUpload: false,
+    },
   },
   image: {
     thumbnail: {

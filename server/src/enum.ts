@@ -291,6 +291,18 @@ export enum StorageFolder {
   Backups = 'backups',
 }
 
+export enum StorageBackend {
+  Local = 'local',
+  S3 = 's3',
+}
+
+export enum StorageLocationType {
+  Originals = 'originals',
+  Thumbnails = 'thumbnails',
+  Previews = 'previews',
+  EncodedVideos = 'encoded-videos',
+}
+
 export enum SystemMetadataKey {
   MediaLocation = 'MediaLocation',
   ReverseGeocodingState = 'reverse-geocoding-state',
@@ -550,6 +562,7 @@ export enum QueueName {
   BackupDatabase = 'backupDatabase',
   Ocr = 'ocr',
   Workflow = 'workflow',
+  S3Upload = 's3Upload',
 }
 
 export enum QueueJobStatus {
@@ -627,6 +640,10 @@ export enum JobName {
 
   StorageTemplateMigration = 'StorageTemplateMigration',
   StorageTemplateMigrationSingle = 'StorageTemplateMigrationSingle',
+
+  // S3 Storage
+  S3UploadAsset = 'S3UploadAsset',
+  S3UploadQueueAll = 'S3UploadQueueAll',
 
   TagCleanup = 'TagCleanup',
 

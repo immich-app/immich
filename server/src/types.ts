@@ -385,7 +385,11 @@ export type JobItem =
   | { name: JobName.Ocr; data: IEntityJob }
 
   // Workflow
-  | { name: JobName.WorkflowRun; data: IWorkflowJob };
+  | { name: JobName.WorkflowRun; data: IWorkflowJob }
+
+  // S3 Storage
+  | { name: JobName.S3UploadAsset; data: IEntityJob }
+  | { name: JobName.S3UploadQueueAll; data?: IBaseJob };
 
 export type VectorExtension = (typeof VECTOR_EXTENSIONS)[number];
 
