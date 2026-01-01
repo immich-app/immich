@@ -6,9 +6,13 @@
   import { SettingInputFieldType } from '$lib/constants';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { systemConfigManager } from '$lib/managers/system-config-manager.svelte';
-  import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
-  import { StorageBackend } from '@immich/sdk';
+
+  // Define locally until SDK is regenerated
+  enum StorageBackend {
+    Local = 'local',
+    S3 = 's3',
+  }
 
   const disabled = $derived(featureFlagsManager.value.configFile);
   const config = $derived(systemConfigManager.value);
