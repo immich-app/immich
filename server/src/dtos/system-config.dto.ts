@@ -231,6 +231,12 @@ class SystemConfigJobDto implements Record<ConcurrentQueueName, JobSettingsDto> 
   @IsObject()
   @Type(() => JobSettingsDto)
   [QueueName.Workflow]!: JobSettingsDto;
+
+  @ApiProperty({ type: JobSettingsDto })
+  @ValidateNested()
+  @IsObject()
+  @Type(() => JobSettingsDto)
+  [QueueName.S3Upload]!: JobSettingsDto;
 }
 
 class SystemConfigLibraryScanDto {
@@ -720,6 +726,74 @@ class SystemConfigUserDto {
   @Type(() => Number)
   @ApiProperty({ type: 'integer' })
   deleteDelay!: number;
+}
+
+class SystemConfigS3Dto {
+  @ValidateBoolean()
+  enabled!: boolean;
+
+  @IsString()
+  endpoint!: string;
+
+  @IsString()
+  bucket!: string;
+
+  @IsString()
+  region!: string;
+
+  @IsString()
+  accessKeyId!: string;
+
+  @IsString()
+  secretAccessKey!: string;
+
+  @IsString()
+  prefix!: string;
+
+  @ValidateBoolean()
+  forcePathStyle!: boolean;
+}
+
+class SystemConfigStorageLocationsDto {
+  @ValidateEnum({ enum: StorageBackend, name: 'StorageBackend' })
+  originals!: StorageBackend;
+
+  @ValidateEnum({ enum: StorageBackend, name: 'StorageBackend' })
+  thumbnails!: StorageBackend;
+
+  @ValidateEnum({ enum: StorageBackend, name: 'StorageBackend' })
+  previews!: StorageBackend;
+
+  @ValidateEnum({ enum: StorageBackend, name: 'StorageBackend' })
+  encodedVideos!: StorageBackend;
+}
+
+class SystemConfigStorageUploadDto {
+  @IsString()
+  strategy!: 'local-first' | 's3-first';
+
+  @ValidateBoolean()
+  deleteLocalAfterUpload!: boolean;
+}
+
+class SystemConfigStorageDto {
+  @ValidateEnum({ enum: StorageBackend, name: 'StorageBackend' })
+  backend!: StorageBackend;
+
+  @Type(() => SystemConfigS3Dto)
+  @ValidateNested()
+  @IsObject()
+  s3!: SystemConfigS3Dto;
+
+  @Type(() => SystemConfigStorageLocationsDto)
+  @ValidateNested()
+  @IsObject()
+  locations!: SystemConfigStorageLocationsDto;
+
+  @Type(() => SystemConfigStorageUploadDto)
+  @ValidateNested()
+  @IsObject()
+  upload!: SystemConfigStorageUploadDto;
 }
 
 export class SystemConfigDto implements SystemConfig {

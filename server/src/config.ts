@@ -260,6 +260,7 @@ export const defaults = Object.freeze<SystemConfig>({
     [QueueName.Notification]: { concurrency: 5 },
     [QueueName.Ocr]: { concurrency: 1 },
     [QueueName.Workflow]: { concurrency: 5 },
+    [QueueName.S3Upload]: { concurrency: 3 },
   },
   logging: {
     enabled: true,

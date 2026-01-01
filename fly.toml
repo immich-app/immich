@@ -1,0 +1,52 @@
+# Immich Server with S3 support (custom fork)
+app = 'immich-falling-sun-1817'
+primary_region = 'ord'
+
+[build]
+  dockerfile = 'server/Dockerfile'
+
+[env]
+  IMMICH_ENV = 'production'
+  IMMICH_LOG_LEVEL = 'log'
+  IMMICH_MEDIA_LOCATION = '/usr/src/app/upload'
+  # Database
+  DB_HOSTNAME = 'immich-postgres.internal'
+  DB_PORT = '5432'
+  DB_DATABASE_NAME = 'immich'
+  DB_USERNAME = 'immich'
+  # Redis
+  REDIS_HOSTNAME = 'immich-redis.internal'
+  REDIS_PORT = '6379'
+  # Machine Learning
+  IMMICH_MACHINE_LEARNING_URL = 'http://immich-ml1.internal:3003'
+  # S3/Tigris Storage
+  STORAGE_S3_ENDPOINT = 'https://fly.storage.tigris.dev'
+  STORAGE_S3_BUCKET = 'immich-media'
+  STORAGE_S3_REGION = 'auto'
+  STORAGE_S3_PREFIX = 'users/'
+  # Google OAuth (restricted signup)
+  OAUTH_ENABLED = 'true'
+  OAUTH_ISSUER_URL = 'https://accounts.google.com'
+  OAUTH_SCOPE = 'openid email profile'
+  OAUTH_AUTO_REGISTER = 'false'
+  OAUTH_BUTTON_TEXT = 'Sign in with Google'
+
+[[mounts]]
+  source = 'immich_upload'
+  destination = '/usr/src/app/upload'
+
+[http_service]
+  internal_port = 2283
+  force_https = true
+  auto_stop_machines = 'off'
+  auto_start_machines = true
+  min_machines_running = 1
+
+  [http_service.concurrency]
+    type = 'requests'
+    hard_limit = 250
+    soft_limit = 200
+
+[[vm]]
+  memory = '2gb'
+  cpus = 2
