@@ -11,7 +11,8 @@ import {
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { ApiBody, ApiConsumes, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { AuthDto, Auth } from 'src/middleware/auth.guard';
+import { AuthDto } from 'src/dtos/auth.dto';
+import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import {
   GooglePhotosImportFromDriveDto,
   GooglePhotosImportJobDto,

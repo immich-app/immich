@@ -9,6 +9,7 @@ import { AuthController } from 'src/controllers/auth.controller';
 import { DownloadController } from 'src/controllers/download.controller';
 import { DuplicateController } from 'src/controllers/duplicate.controller';
 import { FaceController } from 'src/controllers/face.controller';
+import { GooglePhotosImportController } from 'src/controllers/google-photos-import.controller';
 import { JobController } from 'src/controllers/job.controller';
 import { LibraryController } from 'src/controllers/library.controller';
 import { MaintenanceController } from 'src/controllers/maintenance.controller';
@@ -49,6 +50,7 @@ export const controllers = [
   DownloadController,
   DuplicateController,
   FaceController,
+  GooglePhotosImportController,
   JobController,
   LibraryController,
   MaintenanceController,

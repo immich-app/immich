@@ -7,7 +7,7 @@
     mdiCellphoneArrowDownVariant,
     mdiContentDuplicate,
     mdiCrosshairsGps,
-    mdiGooglePhotos,
+    mdiGoogle,
     mdiImageSizeSelectLarge,
     mdiLinkEdit,
     mdiStateMachine,
@@ -22,7 +22,7 @@
   ];
 
   const importLinks = [
-    { href: AppRoute.GOOGLE_PHOTOS_IMPORT, icon: mdiGooglePhotos, label: $t('import_from_google_photos') },
+    { href: AppRoute.GOOGLE_PHOTOS_IMPORT, icon: mdiGoogle, label: $t('import_from_google_photos') },
   ];
 </script>
 

@@ -764,6 +764,9 @@ importers:
       async-mutex:
         specifier: ^0.5.0
         version: 0.5.0
+      byte-size:
+        specifier: ^9.0.1
+        version: 9.0.1
       dom-to-image:
         specifier: ^2.6.0
         version: 2.6.0
@@ -12166,6 +12169,7 @@ packages:
   whatwg-encoding@2.0.0:
     resolution: {integrity: sha512-p41ogyeMUrw3jWclHWTQg1k05DSVXPLcVxRTYsXUk+ZooOCZLcoYgPZ/HL/D/N+uQPOtcp1me1WhBEaX02mhWg==}
     engines: {node: '>=12'}
+    deprecated: Use @exodus/bytes instead for a more spec-conformant and faster implementation
 
   whatwg-encoding@3.1.1:
     resolution: {integrity: sha512-6qN4hJdMwfYBtE3YBTTHhoeuUrDBPZmbQaxWAqSALV/MeEnR5z1xd8UKud2RAkFoPkmB+hli1TZSnyi84xz1vQ==}

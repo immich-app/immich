@@ -12,6 +12,7 @@ import { CliService } from 'src/services/cli.service';
 import { DatabaseService } from 'src/services/database.service';
 import { DownloadService } from 'src/services/download.service';
 import { DuplicateService } from 'src/services/duplicate.service';
+import { GooglePhotosImportService } from 'src/services/google-photos-import.service';
 import { JobService } from 'src/services/job.service';
 import { LibraryService } from 'src/services/library.service';
 import { MaintenanceService } from 'src/services/maintenance.service';
@@ -63,6 +64,7 @@ export const services = [
   DatabaseService,
   DownloadService,
   DuplicateService,
+  GooglePhotosImportService,
   JobService,
   LibraryService,
   MaintenanceService,
