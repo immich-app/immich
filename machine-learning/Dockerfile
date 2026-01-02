@@ -2,7 +2,7 @@ ARG DEVICE=cpu
 
 FROM python:3.11-bookworm@sha256:667cf70698924920f29ebdb8d749ab665811503b87093d4f11826d114fd7255e AS builder-cpu
 
-FROM builder-cpu AS builder-openvino
+FROM python:3.13-slim-trixie@sha256:0222b795db95bf7412cede36ab46a266cfb31f632e64051aac9806dabf840a61 AS builder-openvino
 
 FROM builder-cpu AS builder-cuda
 
@@ -22,20 +22,18 @@ FROM builder-cpu AS builder-rknn
 
 # Warning: 25GiB+ disk space required to pull this image
 # TODO: find a way to reduce the image size
-FROM rocm/dev-ubuntu-22.04:6.4.3-complete@sha256:6cda50e312f3aac068cea9ec06c560ca1f522ad546bc8b3d2cf06da0fe8e8a76 AS builder-rocm
+FROM rocm/dev-ubuntu-24.04:6.4.4-complete@sha256:31418ac10a3769a71eaef330c07280d1d999d7074621339b8f93c484c35f6078 AS builder-rocm
 
 # renovate: datasource=github-releases depName=Microsoft/onnxruntime
 ARG ONNXRUNTIME_VERSION="v1.22.1"
 WORKDIR /code
 
-RUN apt-get update && apt-get install -y --no-install-recommends wget git python3.10-venv
-RUN wget -nv https://github.com/Kitware/CMake/releases/download/v3.30.1/cmake-3.30.1-linux-x86_64.sh && \
-    chmod +x cmake-3.30.1-linux-x86_64.sh && \
-    mkdir -p /code/cmake-3.30.1-linux-x86_64 && \
-    ./cmake-3.30.1-linux-x86_64.sh --skip-license --prefix=/code/cmake-3.30.1-linux-x86_64 && \
-    rm cmake-3.30.1-linux-x86_64.sh
-
-ENV PATH=/code/cmake-3.30.1-linux-x86_64/bin:${PATH}
+RUN apt-get update && apt-get install -y --no-install-recommends wget git
+RUN wget -nv https://github.com/Kitware/CMake/releases/download/v3.31.9/cmake-3.31.9-linux-x86_64.sh && \
+    chmod +x cmake-3.31.9-linux-x86_64.sh && \
+    mkdir -p /code/cmake-3.31.9-linux-x86_64 && \
+    ./cmake-3.31.9-linux-x86_64.sh --skip-license --prefix=/code/cmake-3.31.9-linux-x86_64 && \
+    rm cmake-3.31.9-linux-x86_64.sh
 
 RUN git clone --single-branch --branch "${ONNXRUNTIME_VERSION}" --recursive "https://github.com/Microsoft/onnxruntime" onnxruntime
 WORKDIR /code/onnxruntime
@@ -45,9 +43,26 @@ COPY ./patches/* /tmp/
 RUN git apply /tmp/*.patch
 
 RUN /bin/sh ./dockerfiles/scripts/install_common_deps.sh
+
+ENV PATH=/opt/rocm-venv/bin:/code/cmake-3.31.9-linux-x86_64/bin:${PATH}
+ENV CCACHE_DIR="/ccache"
 # Note: the `parallel` setting uses a substantial amount of RAM
-RUN ./build.sh --allow_running_as_root --config Release --build_wheel --update --build --parallel 17 --cmake_extra_defines\
-    ONNXRUNTIME_VERSION="${ONNXRUNTIME_VERSION}" --skip_tests --use_rocm --rocm_home=/opt/rocm
+RUN --mount=type=cache,target=/ccache \
+    ./build.sh \
+    --allow_running_as_root \
+    --config Release \
+    --build_wheel \
+    --update \
+    --build \
+    --parallel 17 \
+    --cmake_extra_defines \
+    ONNXRUNTIME_VERSION="${ONNXRUNTIME_VERSION}" \
+    CMAKE_HIP_ARCHITECTURES="gfx900;gfx906;gfx908;gfx90a;gfx940;gfx941;gfx942;gfx1030;gfx1100;gfx1101;gfx1102;gfx1200;gfx1201" \
+    --skip_tests \
+    --use_rocm \
+    --rocm_home=/opt/rocm \
+    --use_cache \
+    --compile_no_warning_as_error
 RUN mv /code/onnxruntime/build/Linux/Release/dist/*.whl /opt/
 
 FROM builder-${DEVICE} AS builder
@@ -73,15 +88,18 @@ FROM python:3.11-slim-bookworm@sha256:917ec0e42cd6af87657a768449c2f604a6b67c7ab8
 ENV LD_PRELOAD=/usr/lib/libmimalloc.so.2 \
     MACHINE_LEARNING_MODEL_ARENA=false
 
-FROM python:3.11-slim-bookworm@sha256:917ec0e42cd6af87657a768449c2f604a6b67c7ab8e10ff917b8724799f816d3 AS prod-openvino
+FROM python:3.13-slim-trixie@sha256:0222b795db95bf7412cede36ab46a266cfb31f632e64051aac9806dabf840a61 AS prod-openvino
 
 RUN apt-get update && \
     apt-get install --no-install-recommends -yqq ocl-icd-libopencl1 wget && \
-    wget -nv https://github.com/intel/intel-graphics-compiler/releases/download/igc-1.0.17384.11/intel-igc-core_1.0.17384.11_amd64.deb && \
-    wget -nv https://github.com/intel/intel-graphics-compiler/releases/download/igc-1.0.17384.11/intel-igc-opencl_1.0.17384.11_amd64.deb && \
-    wget -nv https://github.com/intel/compute-runtime/releases/download/24.31.30508.7/intel-opencl-icd_24.31.30508.7_amd64.deb && \
+    wget -nv https://github.com/intel/intel-graphics-compiler/releases/download/v2.24.8/intel-igc-core-2_2.24.8+20344_amd64.deb && \
+    wget -nv https://github.com/intel/intel-graphics-compiler/releases/download/v2.24.8/intel-igc-opencl-2_2.24.8+20344_amd64.deb && \
+    wget -nv https://github.com/intel/compute-runtime/releases/download/25.48.36300.8/intel-opencl-icd_25.48.36300.8-0_amd64.deb &&  \
+    wget -nv https://github.com/intel/intel-graphics-compiler/releases/download/igc-1.0.17537.24/intel-igc-core_1.0.17537.24_amd64.deb && \
+    wget -nv https://github.com/intel/intel-graphics-compiler/releases/download/igc-1.0.17537.24/intel-igc-opencl_1.0.17537.24_amd64.deb && \
+    wget -nv https://github.com/intel/compute-runtime/releases/download/24.35.30872.36/intel-opencl-icd-legacy1_24.35.30872.36_amd64.deb && \
     # TODO: Figure out how to get renovate to manage this differently versioned libigdgmm file
-    wget -nv https://github.com/intel/compute-runtime/releases/download/24.31.30508.7/libigdgmm12_22.4.1_amd64.deb && \
+    wget -nv https://github.com/intel/compute-runtime/releases/download/25.48.36300.8/libigdgmm12_22.8.2_amd64.deb && \
     dpkg -i *.deb && \
     rm *.deb && \
     apt-get remove wget -yqq && \
@@ -102,7 +120,7 @@ COPY --from=builder-cuda /usr/local/bin/python3 /usr/local/bin/python3
 COPY --from=builder-cuda /usr/local/lib/python3.11 /usr/local/lib/python3.11
 COPY --from=builder-cuda /usr/local/lib/libpython3.11.so /usr/local/lib/libpython3.11.so
 
-FROM rocm/dev-ubuntu-22.04:6.4.3-complete@sha256:6cda50e312f3aac068cea9ec06c560ca1f522ad546bc8b3d2cf06da0fe8e8a76 AS prod-rocm
+FROM rocm/dev-ubuntu-24.04:6.4.4-complete@sha256:31418ac10a3769a71eaef330c07280d1d999d7074621339b8f93c484c35f6078 AS prod-rocm
 
 FROM prod-cpu AS prod-armnn
 
