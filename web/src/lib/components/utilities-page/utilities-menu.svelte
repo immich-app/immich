@@ -7,6 +7,7 @@
     mdiCellphoneArrowDownVariant,
     mdiContentDuplicate,
     mdiCrosshairsGps,
+    mdiGooglePhotos,
     mdiImageSizeSelectLarge,
     mdiLinkEdit,
     mdiStateMachine,
@@ -19,8 +20,23 @@
     { href: AppRoute.GEOLOCATION, icon: mdiCrosshairsGps, label: $t('manage_geolocation') },
     { href: AppRoute.WORKFLOWS, icon: mdiStateMachine, label: $t('workflows') },
   ];
+
+  const importLinks = [
+    { href: AppRoute.GOOGLE_PHOTOS_IMPORT, icon: mdiGooglePhotos, label: $t('import_from_google_photos') },
+  ];
 </script>
 
+<div class="border border-gray-300 dark:border-immich-dark-gray rounded-3xl pt-1 pb-6 dark:text-white">
+  <p class="uppercase text-xs font-medium p-4">{$t('import')}</p>
+
+  {#each importLinks as link (link.href)}
+    <a href={link.href} class="w-full hover:bg-gray-100 dark:hover:bg-immich-dark-gray flex items-center gap-4 p-4">
+      <span><Icon icon={link.icon} class="text-primary" size="24" /> </span>
+      {link.label}
+    </a>
+  {/each}
+</div>
+<br />
 <div class="border border-gray-300 dark:border-immich-dark-gray rounded-3xl pt-1 pb-6 dark:text-white">
   <p class="uppercase text-xs font-medium p-4">{$t('organize_your_library')}</p>
 

@@ -1241,6 +1241,8 @@
   "image_viewer_page_state_provider_share_error": "Share Error",
   "immich_logo": "Immich Logo",
   "immich_web_interface": "Immich Web Interface",
+  "import": "Import",
+  "import_from_google_photos": "Import from Google Photos",
   "import_from_json": "Import from JSON",
   "import_path": "Import path",
   "in_albums": "In {count, plural, one {# album} other {# albums}}",
