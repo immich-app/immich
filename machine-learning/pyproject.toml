@@ -3,7 +3,7 @@ name = "immich-ml"
 version = "2.4.1"
 description = ""
 authors = [{ name = "Hau Tran", email = "alex.tran1502@gmail.com" }]
-requires-python = ">=3.10,<4.0"
+requires-python = ">=3.11,<4.0"
 readme = "README.md"
 dependencies = [
     "aiocache>=0.12.1,<1.0",
@@ -12,7 +12,7 @@ dependencies = [
     "gunicorn>=21.1.0",
     "huggingface-hub>=0.20.1,<1.0",
     "insightface>=0.7.3,<1.0",
-    "numpy<2",
+    "numpy>=2.3.4",
     "opencv-python-headless>=4.7.0.72,<5.0",
     "orjson>=3.9.5",
     "pillow>=9.5.0,<11.0",
@@ -49,23 +49,15 @@ lint = [
 dev = ["locust>=2.15.1", { include-group = "test" }, { include-group = "lint" }]
 
 [project.optional-dependencies]
-cpu = ["onnxruntime>=1.15.0,<2"]
-cuda = ["onnxruntime-gpu>=1.17.0,<2"]
-openvino = ["onnxruntime-openvino>=1.17.1,<1.19.0"]
-armnn = ["onnxruntime>=1.15.0,<2"]
-rknn = ["onnxruntime>=1.15.0,<2", "rknn-toolkit-lite2>=2.3.0,<3"]
+cpu = ["onnxruntime>=1.23.2,<2"]
+cuda = ["onnxruntime-gpu>=1.23.2,<2"]
+openvino = ["onnxruntime-openvino>=1.23.0,<2"]
+armnn = ["onnxruntime>=1.23.2,<2"]
+rknn = ["onnxruntime>=1.23.2,<2", "rknn-toolkit-lite2>=2.3.0,<3"]
 rocm = []
 
 [tool.uv]
 compile-bytecode = true
-
-[[tool.uv.index]]
-name = "cuda12"
-url = "https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/onnxruntime-cuda-12/pypi/simple/"
-explicit = true
-
-[tool.uv.sources]
-onnxruntime-gpu = { index = "cuda12" }
 
 [tool.hatch.build.targets.sdist]
 include = ["immich_ml"]
