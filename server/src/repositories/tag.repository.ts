@@ -128,6 +128,17 @@ export class TagRepository {
     await this.db.deleteFrom('tag_asset').where('tagId', '=', tagId).where('assetId', 'in', assetIds).execute();
   }
 
+  @GenerateSql({ params: [DummyValue.UUID] })
+  async getDescendantIds(tagId: string): Promise<string[]> {
+    const results = await this.db
+      .selectFrom('tag_closure')
+      .select('id_descendant')
+      .where('id_ancestor', '=', tagId)
+      .execute();
+
+    return results.map(({ id_descendant }) => id_descendant);
+  }
+
   @GenerateSql({ params: [[{ assetId: DummyValue.UUID, tagIds: DummyValue.UUID }]] })
   @Chunked()
   upsertAssetIds(items: Insertable<TagAssetTable>[]) {
