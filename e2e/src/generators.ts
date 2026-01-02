@@ -26,6 +26,5 @@ export const makeRandomImage = () => {
   if (!value) {
     throw new Error('Ran out of random asset data');
   }
-
   return value;
 };

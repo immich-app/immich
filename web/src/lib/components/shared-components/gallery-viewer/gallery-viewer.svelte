@@ -2,9 +2,11 @@
   import { goto } from '$app/navigation';
   import { shortcuts, type ShortcutOptions } from '$lib/actions/shortcut';
   import type { Action } from '$lib/components/asset-viewer/actions/action';
+  import type { AssetCursor } from '$lib/components/asset-viewer/asset-viewer.svelte';
   import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
   import { AppRoute, AssetAction } from '$lib/constants';
   import Portal from '$lib/elements/Portal.svelte';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import type { TimelineAsset, Viewport } from '$lib/managers/timeline-manager/types';
   import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
@@ -19,15 +21,16 @@
   import { getJustifiedLayoutFromAssets } from '$lib/utils/layout-utils';
   import { navigate } from '$lib/utils/navigation';
   import { isTimelineAsset, toTimelineAsset } from '$lib/utils/timeline-util';
-  import { AssetVisibility, type AssetResponseDto } from '@immich/sdk';
+  import { AssetVisibility, getAssetInfo, type AssetResponseDto } from '@immich/sdk';
   import { modalManager } from '@immich/ui';
   import { debounce } from 'lodash-es';
+  import { untrack } from 'svelte';
   import { t } from 'svelte-i18n';
   import DeleteAssetDialog from '../../photos-page/delete-asset-dialog.svelte';
 
   interface Props {
     initialAssetId?: string;
-    assets: TimelineAsset[] | AssetResponseDto[];
+    assets: AssetResponseDto[];
     assetInteraction: AssetInteraction;
     disableAssetSelect?: boolean;
     showArchiveIcon?: boolean;
@@ -229,7 +232,7 @@
     isShowDeleteConfirmation = false;
     await deleteAssets(
       !(isTrashEnabled && !force),
-      (assetIds) => (assets = assets.filter((asset) => !assetIds.includes(asset.id)) as TimelineAsset[]),
+      (assetIds) => (assets = assets.filter((asset) => !assetIds.includes(asset.id))),
       assetInteraction.selectedAssets,
       onReload,
     );
@@ -242,7 +245,7 @@
       assetInteraction.isAllArchived ? AssetVisibility.Timeline : AssetVisibility.Archive,
     );
     if (ids) {
-      assets = assets.filter((asset) => !ids.includes(asset.id)) as TimelineAsset[];
+      assets = assets.filter((asset) => !ids.includes(asset.id));
       deselectAllAssets();
     }
   };
@@ -424,6 +427,59 @@
       selectAssetCandidates(lastAssetMouseEvent);
     }
   });
+
+  const getNextAsset = async (currentAsset: AssetResponseDto | undefined, preload: boolean = true) => {
+    if (!currentAsset) {
+      return;
+    }
+    const cursor = assets.indexOf(currentAsset);
+    if (cursor < assets.length - 1) {
+      const id = assets[cursor + 1].id;
+      const asset = await getAssetInfo({ ...authManager.params, id });
+      if (preload) {
+        void getNextAsset(asset, false);
+      }
+      return asset;
+    }
+  };
+
+  const getPreviousAsset = async (currentAsset: AssetResponseDto | undefined, preload: boolean = true) => {
+    if (!currentAsset) {
+      return;
+    }
+    const cursor = assets.indexOf(currentAsset);
+    if (cursor <= 0) {
+      return;
+    }
+    const id = assets[cursor - 1].id;
+    const asset = await getAssetInfo({ ...authManager.params, id });
+    if (preload) {
+      void getPreviousAsset(asset, false);
+    }
+    return asset;
+  };
+
+  let assetCursor = $state<AssetCursor>({
+    current: $viewingAsset,
+    previousAsset: undefined,
+    nextAsset: undefined,
+  });
+
+  const loadCloseAssets = async (currentAsset: AssetResponseDto) => {
+    const [nextAsset, previousAsset] = await Promise.all([getNextAsset(currentAsset), getPreviousAsset(currentAsset)]);
+    assetCursor = {
+      current: currentAsset,
+      nextAsset,
+      previousAsset,
+    };
+  };
+
+  //TODO: replace this with async derived in svelte 6
+  $effect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+    $viewingAsset;
+    untrack(() => void loadCloseAssets($viewingAsset));
+  });
 </script>
 
 <svelte:document
@@ -488,7 +544,7 @@
   <Portal target="body">
     {#await import('$lib/components/asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
       <AssetViewer
-        asset={$viewingAsset}
+        cursor={assetCursor}
         onAction={handleAction}
         onPrevious={handlePrevious}
         onNext={handleNext}
