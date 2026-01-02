@@ -6,9 +6,11 @@ import {
   Param,
   Post,
   Query,
+  Res,
   UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
+import { Response } from 'express';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { ApiBody, ApiConsumes, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -106,6 +108,53 @@ export class GooglePhotosImportController {
     authUrl.searchParams.set('state', auth.user.id);
 
     return { authUrl: authUrl.toString() };
+  }
+
+  @Get('google-drive/callback')
+  @ApiOperation({ summary: 'Google Drive OAuth callback' })
+  async handleGoogleDriveCallback(
+    @Query('code') code: string,
+    @Query('state') userId: string,
+    @Query('error') error: string,
+    @Res() res: Response,
+  ): Promise<void> {
+    if (error) {
+      res.redirect('/utilities/google-photos-import?error=' + encodeURIComponent(error));
+      return;
+    }
+
+    try {
+      // Exchange code for tokens
+      const clientId = process.env.GOOGLE_CLIENT_ID;
+      const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+      const redirectUri = process.env.GOOGLE_REDIRECT_URI;
+
+      const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          code,
+          client_id: clientId!,
+          client_secret: clientSecret!,
+          redirect_uri: redirectUri!,
+          grant_type: 'authorization_code',
+        }),
+      });
+
+      if (!tokenResponse.ok) {
+        throw new Error('Failed to exchange code for tokens');
+      }
+
+      const tokens = await tokenResponse.json();
+
+      // TODO: Store tokens securely for this user
+      // For now, we'll pass success back to the frontend
+      // In production, store in database associated with userId
+
+      res.redirect('/utilities/google-photos-import?connected=true');
+    } catch (err) {
+      res.redirect('/utilities/google-photos-import?error=' + encodeURIComponent('Failed to connect'));
+    }
   }
 
   @Delete('google-drive/auth')

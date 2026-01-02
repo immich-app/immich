@@ -32,33 +32,32 @@
     isConnecting = true;
 
     try {
-      // This would trigger OAuth flow
-      // For now, we'll simulate the connection
-      // In production, this calls the server endpoint that initiates Google OAuth
-      const response = await fetch('/api/google-drive/auth', {
+      // Get the OAuth URL from the server
+      const response = await fetch('/api/google-photos/google-drive/auth', {
         method: 'POST',
       });
 
       if (!response.ok) {
-        throw new Error('Failed to connect to Google Drive');
+        const error = await response.text();
+        throw new Error(error || 'Failed to connect to Google Drive');
       }
 
-      googlePhotosImportStore.setGoogleDriveConnected(true);
-      onConnect?.();
+      const { authUrl } = await response.json();
 
-      // Load files after connection
-      await loadDriveFiles();
+      // Redirect to Google OAuth
+      window.location.href = authUrl;
     } catch (error) {
       console.error('Failed to connect:', error);
-      googlePhotosImportStore.setError('Failed to connect to Google Drive. Please try again.');
-    } finally {
+      googlePhotosImportStore.setError(
+        error instanceof Error ? error.message : 'Failed to connect to Google Drive. Please try again.'
+      );
       isConnecting = false;
     }
   }
 
   async function disconnectGoogleDrive() {
     try {
-      await fetch('/api/google-drive/auth', { method: 'DELETE' });
+      await fetch('/api/google-photos/google-drive/auth', { method: 'DELETE' });
       googlePhotosImportStore.setGoogleDriveConnected(false);
       googlePhotosImportStore.setDriveFiles([]);
       googlePhotosImportStore.deselectAllDriveFiles();
@@ -73,7 +72,7 @@
 
     try {
       // Search for Takeout files in Drive
-      const response = await fetch('/api/google-drive/files?query=takeout');
+      const response = await fetch('/api/google-photos/google-drive/files?query=takeout');
 
       if (!response.ok) {
         throw new Error('Failed to load files');
