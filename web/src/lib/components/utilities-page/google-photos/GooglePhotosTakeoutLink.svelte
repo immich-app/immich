@@ -30,22 +30,65 @@
   </Button>
 
   <div class="instructions">
-    <h4>Quick settings to select in Google Takeout:</h4>
-    <ul>
-      <li><strong>File type:</strong> .zip</li>
-      <li><strong>Frequency:</strong> Export once</li>
-      <li><strong>File size:</strong> 50 GB (fewer files to manage)</li>
-      <li>
-        <strong>Destination:</strong>
-        <ul>
-          <li><em>Add to Drive</em> — for automatic import (recommended)</li>
-          <li><em>Send download link via email</em> — for manual upload</li>
-        </ul>
-      </li>
-    </ul>
+    <h4>Configure these settings in Google Takeout:</h4>
+
+    <div class="setting-group">
+      <div class="setting-number">1</div>
+      <div class="setting-content">
+        <div class="setting-label">Destination</div>
+        <div class="setting-value">
+          <strong>Add to Drive</strong> (recommended)
+        </div>
+        <div class="setting-hint">
+          Files will be added to your Google Drive and you'll receive an email with the link.
+          This allows direct import without downloading.
+        </div>
+      </div>
+    </div>
+
+    <div class="setting-group">
+      <div class="setting-number">2</div>
+      <div class="setting-content">
+        <div class="setting-label">Frequency</div>
+        <div class="setting-value">
+          <strong>Export once</strong>
+        </div>
+        <div class="setting-hint">
+          Creates a single export. Choose "Export every 2 months" only if you want recurring backups.
+        </div>
+      </div>
+    </div>
+
+    <div class="setting-group">
+      <div class="setting-number">3</div>
+      <div class="setting-content">
+        <div class="setting-label">File type</div>
+        <div class="setting-value">
+          <strong>.zip</strong>
+        </div>
+        <div class="setting-hint">
+          ZIP files can be opened on almost any computer. Do not use .tgz format.
+        </div>
+      </div>
+    </div>
+
+    <div class="setting-group">
+      <div class="setting-number">4</div>
+      <div class="setting-content">
+        <div class="setting-label">File size</div>
+        <div class="setting-value">
+          <strong>50 GB</strong>
+        </div>
+        <div class="setting-hint">
+          Larger size = fewer files to manage. Your export may still be split into multiple files
+          if your library exceeds this size.
+        </div>
+      </div>
+    </div>
+
     <p class="note">
-      <strong>Note:</strong> Google may take several hours to prepare large photo libraries.
-      You'll receive an email when your export is ready.
+      <strong>Processing time:</strong> Google may take several hours (or days for very large libraries)
+      to prepare your export. You'll receive an email when it's ready.
     </p>
   </div>
 </div>
@@ -125,10 +168,53 @@
     margin-bottom: 0.5rem;
   }
 
-  .instructions ul ul {
-    margin-top: 0.5rem;
-    padding-left: 1rem;
-    list-style-type: circle;
+  .setting-group {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    padding: 0.875rem;
+    background: var(--immich-bg-hover);
+    border-radius: 0.5rem;
+  }
+
+  .setting-number {
+    flex-shrink: 0;
+    width: 1.75rem;
+    height: 1.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--immich-primary);
+    color: white;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    border-radius: 50%;
+  }
+
+  .setting-content {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .setting-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--immich-fg-muted);
+    margin-bottom: 0.25rem;
+  }
+
+  .setting-value {
+    font-size: 0.9375rem;
+    color: var(--immich-fg);
+    margin-bottom: 0.25rem;
+  }
+
+  .setting-hint {
+    font-size: 0.8125rem;
+    color: var(--immich-fg-muted);
+    line-height: 1.4;
   }
 
   .note {
