@@ -13,12 +13,15 @@ FROM builder AS server
 
 WORKDIR /usr/src/app
 COPY ./server ./server/
+COPY ./open-api ./open-api/
 RUN --mount=type=cache,id=pnpm-server,target=/buildcache/pnpm-store \
   --mount=type=bind,source=package.json,target=package.json \
   --mount=type=bind,source=.pnpmfile.cjs,target=.pnpmfile.cjs \
   --mount=type=bind,source=pnpm-lock.yaml,target=pnpm-lock.yaml \
   --mount=type=bind,source=pnpm-workspace.yaml,target=pnpm-workspace.yaml \
   SHARP_IGNORE_GLOBAL_LIBVIPS=true pnpm --filter immich --frozen-lockfile build && \
+  pnpm --filter immich sync:open-api && \
+  pnpm --filter @immich/sdk build && \
   SHARP_FORCE_GLOBAL_LIBVIPS=true pnpm --filter immich --frozen-lockfile --prod --no-optional deploy /output/server-pruned
 
 FROM builder AS web
@@ -26,7 +29,7 @@ FROM builder AS web
 WORKDIR /usr/src/app
 COPY ./web ./web/
 COPY ./i18n ./i18n/
-COPY ./open-api ./open-api/
+COPY --from=server /usr/src/app/open-api ./open-api/
 RUN --mount=type=cache,id=pnpm-web,target=/buildcache/pnpm-store \
   --mount=type=bind,source=package.json,target=package.json \
   --mount=type=bind,source=.pnpmfile.cjs,target=.pnpmfile.cjs \
