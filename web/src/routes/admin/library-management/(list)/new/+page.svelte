@@ -5,12 +5,13 @@
   import { handleCreateLibrary } from '$lib/services/library.service';
   import { user } from '$lib/stores/user.store';
   import { searchUsersAdmin } from '@immich/sdk';
-  import { FormModal, Text } from '@immich/ui';
+  import { Field, FormModal, Switch, Text } from '@immich/ui';
   import { mdiFolderSync } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
 
   let ownerId: string = $state($user.id);
+  let isShared = $state(false);
 
   let userOptions: { value: string; text: string }[] = $state([]);
 
@@ -24,7 +25,7 @@
   };
 
   const onSubmit = async () => {
-    const library = await handleCreateLibrary({ ownerId });
+    const library = await handleCreateLibrary({ ownerId, isShared });
     if (library) {
       await goto(`${AppRoute.ADMIN_LIBRARIES}/${library.id}`, { replaceState: true });
     }
@@ -40,5 +41,9 @@
   submitText={$t('create')}
 >
   <SettingSelect label={$t('owner')} bind:value={ownerId} options={userOptions} name="user" />
+  <Field label={$t('admin.library_shared_with_all_users')}>
+    <Switch bind:checked={isShared} />
+    <Text size="small" class="mt-2" color="secondary">{$t('admin.library_shared_with_all_users_description')}</Text>
+  </Field>
   <Text color="warning" size="small">{$t('admin.note_cannot_be_changed_later')}</Text>
 </FormModal>

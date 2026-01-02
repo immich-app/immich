@@ -756,6 +756,7 @@ export type LibraryResponseDto = {
     exclusionPatterns: string[];
     id: string;
     importPaths: string[];
+    isShared: boolean;
     name: string;
     ownerId: string;
     refreshedAt: string | null;
@@ -764,12 +765,14 @@ export type LibraryResponseDto = {
 export type CreateLibraryDto = {
     exclusionPatterns?: string[];
     importPaths?: string[];
+    isShared?: boolean;
     name?: string;
     ownerId: string;
 };
 export type UpdateLibraryDto = {
     exclusionPatterns?: string[];
     importPaths?: string[];
+    isShared?: boolean;
     name?: string;
 };
 export type LibraryStatsResponseDto = {

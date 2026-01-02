@@ -65,6 +65,7 @@ interface AssetBuilderOptions {
 
 export interface TimeBucketOptions extends AssetBuilderOptions {
   order?: AssetOrder;
+  includeSharedLibraries?: boolean;
 }
 
 export interface TimeBucketItem {
@@ -600,6 +601,11 @@ export class AssetRepository {
       .with('asset', (qb) =>
         qb
           .selectFrom('asset')
+          .$if(options.includeSharedLibraries === true, (qb) =>
+            qb.leftJoin('library', (join) =>
+              join.onRef('library.id', '=', 'asset.libraryId').on('library.deletedAt', 'is', null),
+            ),
+          )
           .select(truncatedDate<Date>().as('timeBucket'))
           .$if(!!options.isTrashed, (qb) => qb.where('asset.status', '!=', AssetStatus.Deleted))
           .where('asset.deletedAt', options.isTrashed ? 'is not' : 'is', null)
@@ -618,7 +624,14 @@ export class AssetRepository {
               )
               .where((eb) => eb.or([eb('asset.stackId', 'is', null), eb(eb.table('stack'), 'is not', null)])),
           )
-          .$if(!!options.userIds, (qb) => qb.where('asset.ownerId', '=', anyUuid(options.userIds!)))
+          .$if(!!options.userIds, (qb) => {
+            if (options.includeSharedLibraries) {
+              return qb.where((eb) =>
+                eb.or([eb('asset.ownerId', '=', anyUuid(options.userIds!)), sql<boolean>`"library"."isShared" = true`]),
+              );
+            }
+            return qb.where('asset.ownerId', '=', anyUuid(options.userIds!));
+          })
           .$if(options.isFavorite !== undefined, (qb) => qb.where('asset.isFavorite', '=', options.isFavorite!))
           .$if(!!options.assetType, (qb) => qb.where('asset.type', '=', options.assetType!))
           .$if(options.isDuplicate !== undefined, (qb) =>
@@ -643,6 +656,11 @@ export class AssetRepository {
         qb
           .selectFrom('asset')
           .innerJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
+          .$if(options.includeSharedLibraries === true, (qb) =>
+            qb.leftJoin('library', (join) =>
+              join.onRef('library.id', '=', 'asset.libraryId').on('library.deletedAt', 'is', null),
+            ),
+          )
           .select((eb) => [
             'asset.duration',
             'asset.id',
@@ -691,7 +709,14 @@ export class AssetRepository {
             ),
           )
           .$if(!!options.personId, (qb) => hasPeople(qb, [options.personId!]))
-          .$if(!!options.userIds, (qb) => qb.where('asset.ownerId', '=', anyUuid(options.userIds!)))
+          .$if(!!options.userIds, (qb) => {
+            if (options.includeSharedLibraries) {
+              return qb.where((eb) =>
+                eb.or([eb('asset.ownerId', '=', anyUuid(options.userIds!)), sql<boolean>`"library"."isShared" = true`]),
+              );
+            }
+            return qb.where('asset.ownerId', '=', anyUuid(options.userIds!));
+          })
           .$if(options.isFavorite !== undefined, (qb) => qb.where('asset.isFavorite', '=', options.isFavorite!))
           .$if(!!options.withStacked, (qb) =>
             qb

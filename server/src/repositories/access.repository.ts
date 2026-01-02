@@ -215,6 +215,33 @@ class AssetAccess {
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
+  async checkSharedLibraryAccess(userId: string, assetIds: Set<string>) {
+    if (assetIds.size === 0) {
+      return new Set<string>();
+    }
+
+    return this.db
+      .selectFrom('asset')
+      .innerJoin('library', (join) =>
+        join.onRef('library.id', '=', 'asset.libraryId').on('library.deletedAt', 'is', null),
+      )
+      .select(['asset.id'])
+      .where('asset.id', 'in', [...assetIds])
+      .where('asset.deletedAt', 'is', null)
+      .where('library.isShared', '=', true)
+      .where((eb) =>
+        eb.or([
+          eb('asset.visibility', '=', sql.lit(AssetVisibility.Timeline)),
+          eb('asset.visibility', '=', sql.lit(AssetVisibility.Hidden)),
+        ]),
+      )
+      .where('asset.ownerId', '!=', asUuid(userId))
+      .execute()
+      .then((assets) => new Set(assets.map((asset) => asset.id)));
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
+  @ChunkedSet({ paramIndex: 1 })
   async checkSharedLinkAccess(sharedLinkId: string, assetIds: Set<string>) {
     if (assetIds.size === 0) {
       return new Set<string>();

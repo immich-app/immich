@@ -16232,6 +16232,9 @@
             "type": "array",
             "uniqueItems": true
           },
+          "isShared": {
+            "type": "boolean"
+          },
           "name": {
             "type": "string"
           },
@@ -16764,6 +16767,9 @@
             },
             "type": "array"
           },
+          "isShared": {
+            "type": "boolean"
+          },
           "name": {
             "type": "string"
           },
@@ -16786,6 +16792,7 @@
           "exclusionPatterns",
           "id",
           "importPaths",
+          "isShared",
           "name",
           "ownerId",
           "refreshedAt",
@@ -22697,6 +22704,9 @@
             "maxItems": 128,
             "type": "array",
             "uniqueItems": true
+          },
+          "isShared": {
+            "type": "boolean"
           },
           "name": {
             "type": "string"

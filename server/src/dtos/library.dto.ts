@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { ArrayMaxSize, ArrayUnique, IsNotEmpty, IsString } from 'class-validator';
 import { Library } from 'src/database';
-import { Optional, ValidateUUID } from 'src/validation';
+import { Optional, ValidateBoolean, ValidateUUID } from 'src/validation';
 
 export class CreateLibraryDto {
   @ValidateUUID()
@@ -25,6 +25,10 @@ export class CreateLibraryDto {
   @ArrayUnique()
   @ArrayMaxSize(128)
   exclusionPatterns?: string[];
+
+  @Optional()
+  @ValidateBoolean()
+  isShared?: boolean;
 }
 
 export class UpdateLibraryDto {
@@ -46,6 +50,10 @@ export class UpdateLibraryDto {
   @ArrayUnique()
   @ArrayMaxSize(128)
   exclusionPatterns?: string[];
+
+  @Optional()
+  @ValidateBoolean()
+  isShared?: boolean;
 }
 
 export interface CrawlOptionsDto {
@@ -94,6 +102,8 @@ export class LibraryResponseDto {
   ownerId!: string;
   name!: string;
 
+  isShared!: boolean;
+
   @ApiProperty({ type: 'integer' })
   assetCount!: number;
 
@@ -129,6 +139,7 @@ export function mapLibrary(entity: Library): LibraryResponseDto {
     id: entity.id,
     ownerId: entity.ownerId,
     name: entity.name,
+    isShared: entity.isShared,
     createdAt: entity.createdAt,
     updatedAt: entity.updatedAt,
     refreshedAt: entity.refreshedAt,

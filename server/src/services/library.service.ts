@@ -223,6 +223,7 @@ export class LibraryService extends BaseService {
       ownerId: dto.ownerId,
       name: dto.name ?? 'New External Library',
       importPaths: dto.importPaths ?? [],
+      isShared: dto.isShared ?? false,
       exclusionPatterns: dto.exclusionPatterns ?? [
         '**/@eaDir/**',
         '**/._*',

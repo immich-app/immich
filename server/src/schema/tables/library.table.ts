@@ -30,6 +30,9 @@ export class LibraryTable {
   @Column({ type: 'text', array: true })
   exclusionPatterns!: string[];
 
+  @Column({ default: false })
+  isShared!: Generated<boolean>;
+
   @CreateDateColumn()
   createdAt!: Generated<Timestamp>;
 

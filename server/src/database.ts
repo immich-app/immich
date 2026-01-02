@@ -50,6 +50,7 @@ export type Library = {
   name: string;
   importPaths: string[];
   exclusionPatterns: string[];
+  isShared: boolean;
   deletedAt: Date | null;
   refreshedAt: Date | null;
   assets?: MapAsset[];

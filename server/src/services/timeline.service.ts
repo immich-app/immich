@@ -41,7 +41,8 @@ export class TimelineService extends BaseService {
       }
     }
 
-    return { ...options, userIds };
+    const includeSharedLibraries = userId === auth.user.id;
+    return { ...options, userIds, includeSharedLibraries };
   }
 
   private async timeBucketChecks(auth: AuthDto, dto: TimeBucketDto) {

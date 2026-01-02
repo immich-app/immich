@@ -21,6 +21,7 @@ describe(TimelineService.name, () => {
       );
       expect(mocks.asset.getTimeBuckets).toHaveBeenCalledWith({
         userIds: [authStub.admin.user.id],
+        includeSharedLibraries: true,
       });
     });
   });
@@ -38,10 +39,11 @@ describe(TimelineService.name, () => {
       expect(mocks.access.album.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['album-id']));
       expect(mocks.asset.getTimeBucket).toHaveBeenCalledWith(
         'bucket',
-        {
+        expect.objectContaining({
           timeBucket: 'bucket',
           albumId: 'album-id',
-        },
+          includeSharedLibraries: false,
+        }),
         authStub.admin,
       );
     });
@@ -63,6 +65,7 @@ describe(TimelineService.name, () => {
           timeBucket: 'bucket',
           visibility: AssetVisibility.Archive,
           userIds: [authStub.admin.user.id],
+          includeSharedLibraries: true,
         }),
         authStub.admin,
       );
@@ -88,6 +91,7 @@ describe(TimelineService.name, () => {
           visibility: AssetVisibility.Timeline,
           withPartners: true,
           userIds: [authStub.admin.user.id],
+          includeSharedLibraries: true,
         },
         authStub.admin,
       );
@@ -111,6 +115,7 @@ describe(TimelineService.name, () => {
           tagId: 'tag-123',
           timeBucket: 'bucket',
           userIds: [authStub.admin.user.id],
+          includeSharedLibraries: true,
         },
         authStub.admin,
       );
@@ -131,6 +136,7 @@ describe(TimelineService.name, () => {
         expect.objectContaining({
           timeBucket: 'bucket',
           userIds: [authStub.admin.user.id],
+          includeSharedLibraries: true,
         }),
         authStub.admin,
       );
