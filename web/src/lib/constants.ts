@@ -60,6 +60,7 @@ export enum AppRoute {
   LARGE_FILES = '/utilities/large-files',
   GEOLOCATION = '/utilities/geolocation',
   WORKFLOWS = '/utilities/workflows',
+  GOOGLE_PHOTOS_IMPORT = '/utilities/google-photos-import',
 
   FOLDERS = '/folders',
   TAGS = '/tags',
