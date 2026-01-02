@@ -754,48 +754,6 @@ class SystemConfigS3Dto {
   forcePathStyle!: boolean;
 }
 
-class SystemConfigStorageLocationsDto {
-  @ValidateEnum({ enum: StorageBackend, name: 'StorageBackend' })
-  originals!: StorageBackend;
-
-  @ValidateEnum({ enum: StorageBackend, name: 'StorageBackend' })
-  thumbnails!: StorageBackend;
-
-  @ValidateEnum({ enum: StorageBackend, name: 'StorageBackend' })
-  previews!: StorageBackend;
-
-  @ValidateEnum({ enum: StorageBackend, name: 'StorageBackend' })
-  encodedVideos!: StorageBackend;
-}
-
-class SystemConfigStorageUploadDto {
-  @IsString()
-  strategy!: 'local-first' | 's3-first';
-
-  @ValidateBoolean()
-  deleteLocalAfterUpload!: boolean;
-}
-
-class SystemConfigStorageDto {
-  @ValidateEnum({ enum: StorageBackend, name: 'StorageBackend' })
-  backend!: StorageBackend;
-
-  @Type(() => SystemConfigS3Dto)
-  @ValidateNested()
-  @IsObject()
-  s3!: SystemConfigS3Dto;
-
-  @Type(() => SystemConfigStorageLocationsDto)
-  @ValidateNested()
-  @IsObject()
-  locations!: SystemConfigStorageLocationsDto;
-
-  @Type(() => SystemConfigStorageUploadDto)
-  @ValidateNested()
-  @IsObject()
-  upload!: SystemConfigStorageUploadDto;
-}
-
 export class SystemConfigDto implements SystemConfig {
   @Type(() => SystemConfigBackupsDto)
   @ValidateNested()

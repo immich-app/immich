@@ -735,6 +735,7 @@ export type QueuesResponseLegacyDto = {
     migration: QueueResponseLegacyDto;
     notifications: QueueResponseLegacyDto;
     ocr: QueueResponseLegacyDto;
+    s3Upload: QueueResponseLegacyDto;
     search: QueueResponseLegacyDto;
     sidecar: QueueResponseLegacyDto;
     smartSearch: QueueResponseLegacyDto;
@@ -1469,6 +1470,7 @@ export type SystemConfigJobDto = {
     migration: JobSettingsDto;
     notifications: JobSettingsDto;
     ocr: JobSettingsDto;
+    s3Upload: JobSettingsDto;
     search: JobSettingsDto;
     sidecar: JobSettingsDto;
     smartSearch: JobSettingsDto;
@@ -1583,6 +1585,32 @@ export type SystemConfigServerDto = {
     loginPageMessage: string;
     publicUsers: boolean;
 };
+export type SystemConfigStorageLocationsDto = {
+    encodedVideos: StorageBackend;
+    originals: StorageBackend;
+    previews: StorageBackend;
+    thumbnails: StorageBackend;
+};
+export type SystemConfigStorageS3Dto = {
+    accessKeyId: string;
+    bucket: string;
+    enabled: boolean;
+    endpoint: string;
+    forcePathStyle: boolean;
+    prefix: string;
+    region: string;
+    secretAccessKey: string;
+};
+export type SystemConfigStorageUploadDto = {
+    deleteLocalAfterUpload: boolean;
+    strategy: UploadStrategy;
+};
+export type SystemConfigStorageDto = {
+    backend: StorageBackend;
+    locations: SystemConfigStorageLocationsDto;
+    s3: SystemConfigStorageS3Dto;
+    upload: SystemConfigStorageUploadDto;
+};
 export type SystemConfigStorageTemplateDto = {
     enabled: boolean;
     hashVerificationEnabled: boolean;
@@ -1623,6 +1651,7 @@ export type SystemConfigDto = {
     passwordLogin: SystemConfigPasswordLoginDto;
     reverseGeocoding: SystemConfigReverseGeocodingDto;
     server: SystemConfigServerDto;
+    storage: SystemConfigStorageDto;
     storageTemplate: SystemConfigStorageTemplateDto;
     templates: SystemConfigTemplatesDto;
     theme: SystemConfigThemeDto;
@@ -5415,7 +5444,8 @@ export enum QueueName {
     Notifications = "notifications",
     BackupDatabase = "backupDatabase",
     Ocr = "ocr",
-    Workflow = "workflow"
+    Workflow = "workflow",
+    S3Upload = "s3Upload"
 }
 export enum QueueCommand {
     Start = "start",
@@ -5504,6 +5534,8 @@ export enum JobName {
     SmartSearch = "SmartSearch",
     StorageTemplateMigration = "StorageTemplateMigration",
     StorageTemplateMigrationSingle = "StorageTemplateMigrationSingle",
+    S3UploadAsset = "S3UploadAsset",
+    S3UploadQueueAll = "S3UploadQueueAll",
     TagCleanup = "TagCleanup",
     VersionCheck = "VersionCheck",
     OcrQueueAll = "OcrQueueAll",
@@ -5660,4 +5692,12 @@ export enum LogLevel {
 export enum OAuthTokenEndpointAuthMethod {
     ClientSecretPost = "client_secret_post",
     ClientSecretBasic = "client_secret_basic"
+}
+export enum StorageBackend {
+    Local = "local",
+    S3 = "s3"
+}
+export enum UploadStrategy {
+    LocalFirst = "local-first",
+    S3First = "s3-first"
 }

@@ -16720,6 +16720,8 @@
           "SmartSearch",
           "StorageTemplateMigration",
           "StorageTemplateMigrationSingle",
+          "S3UploadAsset",
+          "S3UploadQueueAll",
           "TagCleanup",
           "VersionCheck",
           "OcrQueueAll",
@@ -18624,7 +18626,8 @@
           "notifications",
           "backupDatabase",
           "ocr",
-          "workflow"
+          "workflow",
+          "s3Upload"
         ],
         "type": "string"
       },
@@ -18752,6 +18755,9 @@
           "ocr": {
             "$ref": "#/components/schemas/QueueResponseLegacyDto"
           },
+          "s3Upload": {
+            "$ref": "#/components/schemas/QueueResponseLegacyDto"
+          },
           "search": {
             "$ref": "#/components/schemas/QueueResponseLegacyDto"
           },
@@ -18785,6 +18791,7 @@
           "migration",
           "notifications",
           "ocr",
+          "s3Upload",
           "search",
           "sidecar",
           "smartSearch",
@@ -20259,6 +20266,13 @@
         },
         "type": "object"
       },
+      "StorageBackend": {
+        "enum": [
+          "local",
+          "s3"
+        ],
+        "type": "string"
+      },
       "SyncAckDeleteDto": {
         "properties": {
           "types": {
@@ -21357,6 +21371,9 @@
           "server": {
             "$ref": "#/components/schemas/SystemConfigServerDto"
           },
+          "storage": {
+            "$ref": "#/components/schemas/SystemConfigStorageDto"
+          },
           "storageTemplate": {
             "$ref": "#/components/schemas/SystemConfigStorageTemplateDto"
           },
@@ -21390,6 +21407,7 @@
           "passwordLogin",
           "reverseGeocoding",
           "server",
+          "storage",
           "storageTemplate",
           "templates",
           "theme",
@@ -21646,6 +21664,9 @@
           "ocr": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
+          "s3Upload": {
+            "$ref": "#/components/schemas/JobSettingsDto"
+          },
           "search": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
@@ -21673,6 +21694,7 @@
           "migration",
           "notifications",
           "ocr",
+          "s3Upload",
           "search",
           "sidecar",
           "smartSearch",
@@ -22054,6 +22076,111 @@
         ],
         "type": "object"
       },
+      "SystemConfigStorageDto": {
+        "properties": {
+          "backend": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/StorageBackend"
+              }
+            ]
+          },
+          "locations": {
+            "$ref": "#/components/schemas/SystemConfigStorageLocationsDto"
+          },
+          "s3": {
+            "$ref": "#/components/schemas/SystemConfigStorageS3Dto"
+          },
+          "upload": {
+            "$ref": "#/components/schemas/SystemConfigStorageUploadDto"
+          }
+        },
+        "required": [
+          "backend",
+          "locations",
+          "s3",
+          "upload"
+        ],
+        "type": "object"
+      },
+      "SystemConfigStorageLocationsDto": {
+        "properties": {
+          "encodedVideos": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/StorageBackend"
+              }
+            ]
+          },
+          "originals": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/StorageBackend"
+              }
+            ]
+          },
+          "previews": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/StorageBackend"
+              }
+            ]
+          },
+          "thumbnails": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/StorageBackend"
+              }
+            ]
+          }
+        },
+        "required": [
+          "encodedVideos",
+          "originals",
+          "previews",
+          "thumbnails"
+        ],
+        "type": "object"
+      },
+      "SystemConfigStorageS3Dto": {
+        "properties": {
+          "accessKeyId": {
+            "type": "string"
+          },
+          "bucket": {
+            "type": "string"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "endpoint": {
+            "type": "string"
+          },
+          "forcePathStyle": {
+            "type": "boolean"
+          },
+          "prefix": {
+            "type": "string"
+          },
+          "region": {
+            "type": "string"
+          },
+          "secretAccessKey": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "accessKeyId",
+          "bucket",
+          "enabled",
+          "endpoint",
+          "forcePathStyle",
+          "prefix",
+          "region",
+          "secretAccessKey"
+        ],
+        "type": "object"
+      },
       "SystemConfigStorageTemplateDto": {
         "properties": {
           "enabled": {
@@ -22070,6 +22197,25 @@
           "enabled",
           "hashVerificationEnabled",
           "template"
+        ],
+        "type": "object"
+      },
+      "SystemConfigStorageUploadDto": {
+        "properties": {
+          "deleteLocalAfterUpload": {
+            "type": "boolean"
+          },
+          "strategy": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UploadStrategy"
+              }
+            ]
+          }
+        },
+        "required": [
+          "deleteLocalAfterUpload",
+          "strategy"
         ],
         "type": "object"
       },
@@ -22703,6 +22849,13 @@
           }
         },
         "type": "object"
+      },
+      "UploadStrategy": {
+        "enum": [
+          "local-first",
+          "s3-first"
+        ],
+        "type": "string"
       },
       "UsageByUserDto": {
         "properties": {
