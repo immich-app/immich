@@ -7,12 +7,12 @@
   import { t } from 'svelte-i18n';
 
   interface Props {
-    onClose: (success?: boolean) => void;
+    onClose: () => void;
     albumId?: string;
     assetIds?: string[];
   }
 
-  let { onClose, albumId = $bindable(), assetIds = $bindable([]) }: Props = $props();
+  let { onClose, albumId, assetIds }: Props = $props();
 
   let description = $state('');
   let allowDownload = $state(true);
@@ -44,7 +44,7 @@
       slug,
     });
     if (success) {
-      onClose(true);
+      onClose();
     }
   };
 </script>
