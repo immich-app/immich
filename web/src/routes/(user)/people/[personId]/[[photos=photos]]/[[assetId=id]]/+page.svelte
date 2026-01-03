@@ -38,13 +38,7 @@
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { isExternalUrl } from '$lib/utils/navigation';
-  import {
-    AssetVisibility,
-    getPersonStatistics,
-    searchPerson,
-    updatePerson,
-    type PersonResponseDto,
-  } from '@immich/sdk';
+  import { AssetVisibility, searchPerson, updatePerson, type PersonResponseDto } from '@immich/sdk';
   import { LoadingSpinner, modalManager, toastManager } from '@immich/ui';
   import {
     mdiAccountBoxOutline,
@@ -69,7 +63,7 @@
 
   let { data }: Props = $props();
 
-  let numberOfAssets = $state(data.statistics.assets);
+  let numberOfAssets = $derived(data.statistics.assets);
   let { isViewing: showAssetViewer } = assetViewingStore;
 
   let timelineManager = $state<TimelineManager>() as TimelineManager;
@@ -129,12 +123,7 @@
   };
 
   const updateAssetCount = async () => {
-    try {
-      const { assets } = await getPersonStatistics({ id: person.id });
-      numberOfAssets = assets;
-    } catch (error) {
-      handleError(error, "Can't update the asset count");
-    }
+    await invalidateAll();
   };
 
   afterNavigate(({ from }) => {
@@ -373,6 +362,8 @@
       singleSelect={viewMode === PersonPageViewMode.SELECT_PERSON}
       onSelect={handleSelectFeaturePhoto}
       onEscape={handleEscape}
+      onKeyboardDelete={() => updateAssetCount()}
+      onKeyboardArchive={() => updateAssetCount()}
     >
       {#if viewMode === PersonPageViewMode.VIEW_ASSETS}
         <!-- Person information block -->

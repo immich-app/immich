@@ -27,6 +27,8 @@
     assetInteraction: AssetInteraction;
     isShowDeleteConfirmation: boolean;
     onEscape?: () => void;
+    onAssetDelete?: (assetIds: string[]) => void;
+    onArchive?: (ids: string[]) => void;
     scrollToAsset: (asset: TimelineAsset) => boolean;
   }
 
@@ -35,6 +37,8 @@
     assetInteraction,
     isShowDeleteConfirmation = $bindable(false),
     onEscape,
+    onAssetDelete,
+    onArchive,
     scrollToAsset,
   }: Props = $props();
 
@@ -44,7 +48,10 @@
     isShowDeleteConfirmation = false;
     await deleteAssets(
       !(isTrashEnabled && !force),
-      (assetIds) => timelineManager.removeAssets(assetIds),
+      (assetIds) => {
+        timelineManager.removeAssets(assetIds);
+        onAssetDelete?.(assetIds);
+      },
       assetInteraction.selectedAssets,
       !isTrashEnabled || force ? undefined : (assets) => timelineManager.upsertAssets(assets),
     );
@@ -81,6 +88,7 @@
     const visibility = assetInteraction.isAllArchived ? AssetVisibility.Timeline : AssetVisibility.Archive;
     const ids = await archiveAssets(assetInteraction.selectedAssets, visibility);
     timelineManager.update(ids, (asset) => (asset.visibility = visibility));
+    onArchive?.(ids);
     deselectAllAssets();
   };
 
