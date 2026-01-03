@@ -7,6 +7,10 @@ describe('i18n', () => {
     const languageFiles = readdirSync('../i18n').sort();
     for (const filename of languageFiles) {
       test(`${filename} should have a loader`, async () => {
+        if (!filename.endsWith('.json') || filename == 'package.json') {
+          return;
+        }
+
         const code = filename.replaceAll('.json', '');
         const item = langs.find((lang) => lang.weblateCode === code || lang.code === code);
         expect(item, `${filename} has no loader`).toBeDefined();
