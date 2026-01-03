@@ -43,7 +43,6 @@ class _CleanupSettingsState extends ConsumerState<CleanupSettings> {
 
   Future<void> _selectDate() async {
     final state = ref.read(cleanupProvider);
-    final notifier = ref.read(cleanupProvider.notifier);
     ref.read(hapticFeedbackProvider.notifier).heavyImpact();
 
     final DateTime? picked = await showDatePicker(
@@ -52,17 +51,17 @@ class _CleanupSettingsState extends ConsumerState<CleanupSettings> {
       firstDate: DateTime(2000),
       lastDate: DateTime.now(),
     );
+
     if (picked != null) {
-      notifier.setSelectedDate(picked);
+      ref.read(cleanupProvider.notifier).setSelectedDate(picked);
       setState(() => _currentStep = 1);
     }
   }
 
   Future<void> _scanAssets() async {
-    final notifier = ref.read(cleanupProvider.notifier);
     ref.read(hapticFeedbackProvider.notifier).heavyImpact();
 
-    await notifier.scanAssets();
+    await ref.read(cleanupProvider.notifier).scanAssets();
     final state = ref.read(cleanupProvider);
 
     setState(() {
@@ -75,7 +74,6 @@ class _CleanupSettingsState extends ConsumerState<CleanupSettings> {
 
   Future<void> _deleteAssets() async {
     final state = ref.read(cleanupProvider);
-    final notifier = ref.read(cleanupProvider.notifier);
 
     if (state.assetsToDelete.isEmpty || state.selectedDate == null) {
       return;
@@ -92,7 +90,7 @@ class _CleanupSettingsState extends ConsumerState<CleanupSettings> {
       return;
     }
 
-    final deletedCount = await notifier.deleteAssets();
+    final deletedCount = await ref.read(cleanupProvider.notifier).deleteAssets();
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -184,13 +182,10 @@ class _CleanupSettingsState extends ConsumerState<CleanupSettings> {
           switch (_currentStep) {
             case 0:
               await _selectDate();
-              break;
             case 1:
               await _scanAssets();
-              break;
             case 2:
               await _deleteAssets();
-              break;
           }
         },
         onStepCancel: () {

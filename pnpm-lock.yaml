@@ -200,7 +200,7 @@ importers:
         version: 10.1.0
       '@immich/cli':
         specifier: file:../cli
-        version: link:../cli
+        version: file:cli
       '@immich/sdk':
         specifier: file:../open-api/typescript-sdk
         version: link:../open-api/typescript-sdk
@@ -244,8 +244,8 @@ importers:
         specifier: ^62.0.0
         version: 62.0.0(eslint@9.39.2(jiti@2.6.1))
       exiftool-vendored:
-        specifier: ^34.0.0
-        version: 34.1.0
+        specifier: ^34.3.0
+        version: 34.3.0
       globals:
         specifier: ^16.0.0
         version: 16.5.0
@@ -428,8 +428,8 @@ importers:
         specifier: 4.3.5
         version: 4.3.5
       exiftool-vendored:
-        specifier: ^34.0.0
-        version: 34.1.0
+        specifier: ^34.3.0
+        version: 34.3.0
       express:
         specifier: ^5.1.0
         version: 5.2.1
@@ -3045,6 +3045,11 @@ packages:
     engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
     cpu: [x64]
     os: [win32]
+
+  '@immich/cli@file:cli':
+    resolution: {directory: cli, type: directory}
+    engines: {node: '>=20.0.0'}
+    hasBin: true
 
   '@immich/justified-layout-wasm@0.4.3':
     resolution: {integrity: sha512-fpcQ7zPhP3Cp1bEXhONVYSUeIANa2uzaQFGKufUZQo5FO7aFT77szTVChhlCy4XaVy5R4ZvgSkA/1TJmeORz7Q==}
@@ -7064,17 +7069,17 @@ packages:
     resolution: {integrity: sha512-8uSpZZocAZRBAPIEINJj3Lo9HyGitllczc27Eh5YYojjMFMn8yHMDMaUHE2Jqfq05D/wucwI4JGURyXt1vchyg==}
     engines: {node: '>=10'}
 
-  exiftool-vendored.exe@13.44.0:
-    resolution: {integrity: sha512-PzQrrz9k4YzxtcX1r/hEy+xzj6MKXXiEBCU+FhYlipr4fuKKeXgspB7kliPSfSSFAChYoSH294zd23ZUXgB4TQ==}
+  exiftool-vendored.exe@13.45.0:
+    resolution: {integrity: sha512-xa+gEnZ2Q9BAzaDr35xgADql+T6L92RqK0GjzOjzDuObwhr+sBr5RdySvZ3osHac9GJypxvk4cewNnj4OnPL3Q==}
     os: [win32]
 
-  exiftool-vendored.pl@13.44.0:
-    resolution: {integrity: sha512-KPqyZK5guU/HKJ4x7OdxC0bqwClz34AtQYeirvvGFBjvfpG6Ewt+Kx9TEd/JbvJyLgMS5k5GHvkH5R5iAL+Arg==}
+  exiftool-vendored.pl@13.45.0:
+    resolution: {integrity: sha512-uA58bMcXqdSQAqsZbHa/SMU6XKXsmoMcJSlKJjsCmLlQKEThncuAlpg8wGVNhULNXxYmRXXnYQ1756UYQY9VIA==}
     os: ['!win32']
     hasBin: true
 
-  exiftool-vendored@34.1.0:
-    resolution: {integrity: sha512-piPUu8oaBT0JQcR0gH/ZLjnTrHu51lMs+GjAQPrtVyvt8bfB1vzTWYbw+9jN4qyO8HwCweJuj7xivmWS0/fa/A==}
+  exiftool-vendored@34.3.0:
+    resolution: {integrity: sha512-CpNH1FAhIQG5AlKndlTf05mNbuFxINyzG9629ZI/CKwr+39zWo8swxpnXc3GUfUvUfxkCCxumDPy2QVmi3XJkQ==}
     engines: {node: '>=20.0.0'}
 
   expect-type@1.3.0:
@@ -7151,6 +7156,9 @@ packages:
 
   fastq@1.19.1:
     resolution: {integrity: sha512-GwLTyxkCXjXbxqIhTsMI2Nui8huMPtnxg7krajPJAjnEG/iiOS7i+zCtWGZR9G0NBKbXKh6X9m9UIsYX/N6vvQ==}
+
+  fastq@1.20.1:
+    resolution: {integrity: sha512-GGToxJ/w1x32s/D2EKND7kTil4n8OVk/9mycTc4VDza13lOvpUZTGX3mFSCtV9ksdGBVzvsyAVLM6mHFThxXxw==}
 
   fault@2.0.1:
     resolution: {integrity: sha512-WtySTkS4OKev5JtpHXnib4Gxiurzh5NCGvWrFaZ34m6JehfTUhKZvn9njTfw48t6JumVQOmrKqpmGcdwxnhqBQ==}
@@ -8385,6 +8393,9 @@ packages:
 
   lodash-es@4.17.21:
     resolution: {integrity: sha512-mKnC+QJ9pWVzv+C4/U3rRsHapFfHvQFoFB92e52xeyGMcX6/OlIl78je1u8vePzYZSkkogMPJ2yjxxsb89cxyw==}
+
+  lodash-es@4.17.22:
+    resolution: {integrity: sha512-XEawp1t0gxSi9x01glktRZ5HDy0HXqrM0x5pXQM98EaI0NxO6jVM7omDOxsuEo5UIASAnm2bRp1Jt/e0a2XU8Q==}
 
   lodash.camelcase@4.3.0:
     resolution: {integrity: sha512-TwuEnCnxbc3rAvhf/LbG7tJUDzhqXyFnv3dtzLOPgCG/hODL7WFnsbwktkD7yUV0RrreP/l1PALq/YSg6VvjlA==}
@@ -11831,10 +11842,12 @@ packages:
   whatwg-encoding@2.0.0:
     resolution: {integrity: sha512-p41ogyeMUrw3jWclHWTQg1k05DSVXPLcVxRTYsXUk+ZooOCZLcoYgPZ/HL/D/N+uQPOtcp1me1WhBEaX02mhWg==}
     engines: {node: '>=12'}
+    deprecated: Use @exodus/bytes instead for a more spec-conformant and faster implementation
 
   whatwg-encoding@3.1.1:
     resolution: {integrity: sha512-6qN4hJdMwfYBtE3YBTTHhoeuUrDBPZmbQaxWAqSALV/MeEnR5z1xd8UKud2RAkFoPkmB+hli1TZSnyi84xz1vQ==}
     engines: {node: '>=18'}
+    deprecated: Use @exodus/bytes instead for a more spec-conformant and faster implementation
 
   whatwg-mimetype@3.0.0:
     resolution: {integrity: sha512-nt+N2dzIutVRxARx1nghPKGv1xHikU7HKdfafKkLNLindmPU/ch3U31NOCGGA/dmPcmb1VlofO0vnKAcsm0o/Q==}
@@ -15024,6 +15037,14 @@ snapshots:
 
   '@img/sharp-win32-x64@0.34.5':
     optional: true
+
+  '@immich/cli@file:cli':
+    dependencies:
+      chokidar: 4.0.3
+      fast-glob: 3.3.3
+      fastq: 1.20.1
+      lodash-es: 4.17.22
+      micromatch: 4.0.8
 
   '@immich/justified-layout-wasm@0.4.3': {}
 
@@ -19581,21 +19602,21 @@ snapshots:
       signal-exit: 3.0.7
       strip-final-newline: 2.0.0
 
-  exiftool-vendored.exe@13.44.0:
+  exiftool-vendored.exe@13.45.0:
     optional: true
 
-  exiftool-vendored.pl@13.44.0: {}
+  exiftool-vendored.pl@13.45.0: {}
 
-  exiftool-vendored@34.1.0:
+  exiftool-vendored@34.3.0:
     dependencies:
       '@photostructure/tz-lookup': 11.3.0
       '@types/luxon': 3.7.1
       batch-cluster: 16.0.0
-      exiftool-vendored.pl: 13.44.0
+      exiftool-vendored.pl: 13.45.0
       he: 1.2.0
       luxon: 3.7.2
     optionalDependencies:
-      exiftool-vendored.exe: 13.44.0
+      exiftool-vendored.exe: 13.45.0
 
   expect-type@1.3.0: {}
 
@@ -19758,6 +19779,10 @@ snapshots:
       strnum: 2.1.2
 
   fastq@1.19.1:
+    dependencies:
+      reusify: 1.1.0
+
+  fastq@1.20.1:
     dependencies:
       reusify: 1.1.0
 
@@ -21165,6 +21190,8 @@ snapshots:
       p-locate: 6.0.0
 
   lodash-es@4.17.21: {}
+
+  lodash-es@4.17.22: {}
 
   lodash.camelcase@4.3.0: {}
 
