@@ -24,7 +24,7 @@ export const getSharedLinkActions = ($t: MessageFormatter, sharedLink: SharedLin
   const Edit: ActionItem = {
     title: $t('edit_link'),
     icon: mdiPencilOutline,
-    onAction: () => goto(`${AppRoute.SHARED_LINKS}/${sharedLink.id}`),
+    onAction: () => goto(`${AppRoute.SHARED_LINKS}/${sharedLink.id}/edit`),
   };
 
   const Delete: ActionItem = {

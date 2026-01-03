@@ -2,6 +2,7 @@ import { Kysely } from 'kysely';
 import { AlbumUserRole, SyncEntityType, SyncRequestType } from 'src/enum';
 import { AssetRepository } from 'src/repositories/asset.repository';
 import { DB } from 'src/schema';
+import { updateLockedColumns } from 'src/utils/database';
 import { SyncTestContext } from 'test/medium.factory';
 import { factory } from 'test/small.factory';
 import { getKyselyDB, wait } from 'test/utils';
@@ -288,10 +289,13 @@ describe(SyncRequestType.AlbumAssetExifsV1, () => {
 
     // update the asset
     const assetRepository = ctx.get(AssetRepository);
-    await assetRepository.upsertExif({
-      assetId: asset.id,
-      city: 'New City',
-    });
+    await assetRepository.upsertExif(
+      updateLockedColumns({
+        assetId: asset.id,
+        city: 'New City',
+      }),
+      { lockedPropertiesBehavior: 'append' },
+    );
 
     await expect(ctx.syncStream(auth, [SyncRequestType.AlbumAssetExifsV1])).resolves.toEqual([
       {
@@ -346,10 +350,13 @@ describe(SyncRequestType.AlbumAssetExifsV1, () => {
 
     // update the asset
     const assetRepository = ctx.get(AssetRepository);
-    await assetRepository.upsertExif({
-      assetId: assetDelayedExif.id,
-      city: 'Delayed Exif',
-    });
+    await assetRepository.upsertExif(
+      updateLockedColumns({
+        assetId: assetDelayedExif.id,
+        city: 'Delayed Exif',
+      }),
+      { lockedPropertiesBehavior: 'append' },
+    );
 
     await expect(ctx.syncStream(auth, [SyncRequestType.AlbumAssetExifsV1])).resolves.toEqual([
       {

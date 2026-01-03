@@ -241,7 +241,7 @@ export const asQueueItem = ($t: MessageFormatter, queue: { name: QueueName }): Q
     },
     [QueueName.Workflow]: {
       icon: mdiStateMachine,
-      title: $t('workflow'),
+      title: $t('workflows'),
     },
   };
 

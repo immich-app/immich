@@ -13,6 +13,7 @@
   import Skeleton from '$lib/elements/Skeleton.svelte';
   import type { DayGroup } from '$lib/managers/timeline-manager/day-group.svelte';
   import { isIntersecting } from '$lib/managers/timeline-manager/internal/intersection-support.svelte';
+  import { focusAsset } from '$lib/components/timeline/actions/focus-actions';
   import type { MonthGroup } from '$lib/managers/timeline-manager/month-group.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset, TimelineManagerOptions, ViewportTopMonth } from '$lib/managers/timeline-manager/types';
@@ -25,7 +26,7 @@
   import { getTimes, type ScrubberListener } from '$lib/utils/timeline-util';
   import { type AlbumResponseDto, type PersonResponseDto, type UserResponseDto } from '@immich/sdk';
   import { DateTime } from 'luxon';
-  import { onDestroy, onMount, type Snippet } from 'svelte';
+  import { onDestroy, onMount, tick, type Snippet } from 'svelte';
   import type { UpdatePayload } from 'vite';
 
   interface Props {
@@ -226,6 +227,9 @@
     if (!scrolled) {
       // if the asset is not found, scroll to the top
       timelineManager.scrollTo(0);
+    } else if (scrollTarget) {
+      await tick();
+      focusAsset(scrollTarget);
     }
     invisible = false;
   };
