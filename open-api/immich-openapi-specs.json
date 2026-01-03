@@ -4448,6 +4448,83 @@
         "x-immich-state": "Stable"
       }
     },
+    "/download/archive/{id}": {
+      "get": {
+        "description": "Download a ZIP archive corresponding to the given download request. The download request needs to be created first.",
+        "operationId": "downloadRequestArchive",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Download asset archive from download request",
+        "tags": [
+          "Download"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "asset.download",
+        "x-immich-state": "Stable"
+      }
+    },
     "/download/info": {
       "post": {
         "description": "Retrieve information about how to request a download for the specified assets or album. The response includes groups of assets that can be downloaded together.",
@@ -4515,6 +4592,79 @@
           {
             "version": "v1",
             "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "asset.download",
+        "x-immich-state": "Stable"
+      }
+    },
+    "/download/request": {
+      "post": {
+        "description": "Create a download request for the specified assets or album. The response includes one or more tokens that can be used to download groups of assets.",
+        "operationId": "prepareDownload",
+        "parameters": [
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DownloadInfoDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PrepareDownloadResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Prepare download archive",
+        "tags": [
+          "Download"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v2",
+            "state": "Added"
           },
           {
             "version": "v2",
@@ -18494,6 +18644,39 @@
           "PersonRecognized"
         ],
         "type": "string"
+      },
+      "PrepareDownloadArchiveInfo": {
+        "properties": {
+          "downloadRequestId": {
+            "type": "string"
+          },
+          "size": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "downloadRequestId",
+          "size"
+        ],
+        "type": "object"
+      },
+      "PrepareDownloadResponseDto": {
+        "properties": {
+          "archives": {
+            "items": {
+              "$ref": "#/components/schemas/PrepareDownloadArchiveInfo"
+            },
+            "type": "array"
+          },
+          "totalSize": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "archives",
+          "totalSize"
+        ],
+        "type": "object"
       },
       "PurchaseResponse": {
         "properties": {
