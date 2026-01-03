@@ -22474,6 +22474,14 @@
             },
             "type": "array"
           },
+          "originalFileName": {
+            "description": "Array of original file names for each asset",
+            "items": {
+              "nullable": true,
+              "type": "string"
+            },
+            "type": "array"
+          },
           "ownerId": {
             "description": "Array of owner IDs for each asset",
             "items": {
@@ -22536,6 +22544,7 @@
           "isTrashed",
           "livePhotoVideoId",
           "localOffsetHours",
+          "originalFileName",
           "ownerId",
           "projectionType",
           "ratio",

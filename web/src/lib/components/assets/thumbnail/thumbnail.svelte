@@ -2,6 +2,7 @@
   import { ProjectionType } from '$lib/constants';
   import { locale, playVideoThumbnailOnHover } from '$lib/stores/preferences.store';
   import { getAssetOriginalUrl, getAssetPlaybackUrl, getAssetThumbnailUrl } from '$lib/utils';
+  import { isDngFile } from '$lib/utils/asset-utils';
   import { timeToSeconds } from '$lib/utils/date-time';
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { AssetMediaSize, AssetVisibility, type UserResponseDto } from '@immich/sdk';
@@ -300,6 +301,12 @@
             <span class="pe-2 pt-2">
               <Icon data-icon-playable icon={mdiFileGifBox} size="24" />
             </span>
+          </div>
+        {/if}
+
+        {#if asset.isImage && isDngFile(asset)}
+          <div class="absolute end-2 top-2 flex place-items-center gap-1 text-xs font-semibold text-white">
+            <span class="px-2 py-1 ">RAW</span>
           </div>
         {/if}
 
