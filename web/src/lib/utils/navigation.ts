@@ -47,7 +47,7 @@ export function currentUrlReplaceAssetId(assetId: string) {
   // off / instead of a subpath, unlike every other asset-containing route.
   return isPhotosRoute($page.route.id)
     ? `${AppRoute.PHOTOS}/${assetId}${searchparams}`
-    : `${$page.url.pathname.replace(/(\/photos.*)$/, '')}/photos/${assetId}${searchparams}`;
+    : `${$page.url.pathname.replace(/\/photos\/[^/]+$/, '')}/photos/${assetId}${searchparams}`;
 }
 
 function replaceScrollTarget(url: string, searchParams?: AssetGridRouteSearchParams | null) {
