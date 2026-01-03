@@ -14,17 +14,16 @@
 
   let { asset, zoomToggle = $bindable() }: Props = $props();
 
-  const loadAssetData = async (id: string, useOriginal: boolean) => {
-    // For 360° panorama images, we must use the original or fullsize image
+  const loadAssetData = async (id: string) => {
+    // For 360° panorama images, we must use the fullsize image
     // because the preview may have a broken aspect ratio (2:1 is required for equirectangular projection)
-    const size = useOriginal ? AssetMediaSize.Fullsize : AssetMediaSize.Preview;
-    const data = await viewAsset({ ...authManager.params, id, size });
+    const data = await viewAsset({ ...authManager.params, id, size: AssetMediaSize.Fullsize });
     return URL.createObjectURL(data);
   };
 </script>
 
 <div transition:fade={{ duration: 150 }} class="flex h-full select-none place-content-center place-items-center">
-  {#await Promise.all([loadAssetData(asset.id, true), import('./photo-sphere-viewer-adapter.svelte')])}
+  {#await Promise.all([loadAssetData(asset.id), import('./photo-sphere-viewer-adapter.svelte')])}
     <LoadingSpinner />
   {:then [data, { default: PhotoSphereViewer }]}
     <PhotoSphereViewer
