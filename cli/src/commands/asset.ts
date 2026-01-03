@@ -191,9 +191,6 @@ export const checkForDuplicates = async (files: string[], { concurrency, skipHas
     totalSize += stats.size;
   }
 
-  let processedBytes = 0;
-  let checkedBytes = 0;
-
   if (progress) {
     multiBar = new MultiBar(
       {
@@ -252,9 +249,6 @@ export const checkForDuplicates = async (files: string[], { concurrency, skipHas
         const stats = statsMap.get(asset.id);
         processedSize += stats?.size || 0;
       }
-      processedBytes += processedSize;
-      // hashProgressBar?.increment(processedSize);
-      checkedBytes += processedSize;
       checkProgressBar?.increment(processedSize);
     },
     { concurrency, retry: 3 },
