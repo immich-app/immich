@@ -1,4 +1,4 @@
-import { DatabaseExtension, ImmichEnvironment, ImmichWorker } from 'src/enum';
+import { DatabaseExtension, ImmichEnvironment, ImmichWorker, LogFormat } from 'src/enum';
 import { ConfigRepository, EnvData } from 'src/repositories/config.repository';
 import { RepositoryInterface } from 'src/types';
 import { Mocked, vitest } from 'vitest';
@@ -6,6 +6,7 @@ import { Mocked, vitest } from 'vitest';
 const envData: EnvData = {
   port: 2283,
   environment: ImmichEnvironment.Production,
+  logFormat: LogFormat.Console,
 
   buildMetadata: {},
   bull: {
