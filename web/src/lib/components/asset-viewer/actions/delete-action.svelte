@@ -5,6 +5,7 @@
   import Portal from '$lib/elements/Portal.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { showDeleteModal } from '$lib/stores/preferences.store';
+  import { deleteAssets as deleteAssetsUtil, type OnUndoDelete } from '$lib/utils/actions';
   import { handleError } from '$lib/utils/handle-error';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { deleteAssets, type AssetResponseDto } from '@immich/sdk';
@@ -17,9 +18,10 @@
     asset: AssetResponseDto;
     onAction: OnAction;
     preAction: PreAction;
+    onUndoDelete?: OnUndoDelete;
   }
 
-  let { asset, onAction, preAction }: Props = $props();
+  let { asset, onAction, preAction, onUndoDelete = undefined }: Props = $props();
 
   let showConfirmModal = $state(false);
 
@@ -38,14 +40,14 @@
   };
 
   const trashAsset = async () => {
-    try {
-      preAction({ type: AssetAction.TRASH, asset: toTimelineAsset(asset) });
-      await deleteAssets({ assetBulkDeleteDto: { ids: [asset.id] } });
-      onAction({ type: AssetAction.TRASH, asset: toTimelineAsset(asset) });
-      toastManager.success($t('moved_to_trash'));
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_trash_asset'));
-    }
+    const timelineAsset = toTimelineAsset(asset);
+    preAction({ type: AssetAction.TRASH, asset: timelineAsset });
+    await deleteAssetsUtil(
+      false,
+      () => onAction({ type: AssetAction.TRASH, asset: timelineAsset }),
+      [timelineAsset],
+      onUndoDelete,
+    );
   };
 
   const deleteAsset = async () => {
