@@ -37,7 +37,7 @@ translation:
 	dart run easy_localization:generate -S ../i18n
 	dart run bin/generate_keys.dart
 	dart format lib/generated/codegen_loader.g.dart
-	dart format lib/generated/intl_keys.g.dart
+	dart format lib/generated/translations.g.dart
 
 analyze:
 	dart analyze --fatal-infos
