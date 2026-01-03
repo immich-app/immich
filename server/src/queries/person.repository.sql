@@ -119,6 +119,7 @@ select
   "asset_face"."id",
   "asset_face"."personId",
   "asset_face"."sourceType",
+  "asset_face"."assetId",
   (
     select
       to_json(obj)
