@@ -29,6 +29,24 @@ import 'package:immich_mobile/widgets/common/immich_sliver_app_bar.dart';
 import 'package:immich_mobile/widgets/common/mesmerizing_sliver_app_bar.dart';
 import 'package:immich_mobile/widgets/common/selection_sliver_app_bar.dart';
 
+final _runtimeTimelineArgsProvider = StateProvider<TimelineArgs>((ref) {
+  return const TimelineArgs(maxWidth: 0, maxHeight: 0);
+});
+
+class _TimelineRowAnchor {
+  final int rowIndex;
+  final double deltaPx;
+
+  const _TimelineRowAnchor({required this.rowIndex, required this.deltaPx});
+
+  @override
+  String toString() => '_TimelineRowAnchor(rowIndex: $rowIndex, deltaPx: $deltaPx)';
+}
+
+final _timelineAnchorRowProvider = StateProvider<_TimelineRowAnchor?>((ref) => null);
+
+final _timelinePendingRestoreRowAnchorProvider = StateProvider<_TimelineRowAnchor?>((ref) => null);
+
 class Timeline extends StatelessWidget {
   const Timeline({
     super.key,
@@ -61,29 +79,48 @@ class Timeline extends StatelessWidget {
       resizeToAvoidBottomInset: false,
       floatingActionButton: const DownloadStatusFloatingButton(),
       body: LayoutBuilder(
-        builder: (_, constraints) => ProviderScope(
-          overrides: [
-            timelineArgsProvider.overrideWith(
-              (ref) => TimelineArgs(
-                maxWidth: constraints.maxWidth,
-                maxHeight: constraints.maxHeight,
-                columnCount: ref.watch(settingsProvider.select((s) => s.get(Setting.tilesPerRow))),
-                showStorageIndicator: showStorageIndicator,
-                withStack: withStack,
-                groupBy: groupBy,
-              ),
+        builder: (_, constraints) {
+          return ProviderScope(
+            overrides: [timelineArgsProvider.overrideWith((ref) => ref.watch(_runtimeTimelineArgsProvider))],
+            child: Consumer(
+              builder: (context, ref, _) {
+                final columnCount = ref.watch(settingsProvider.select((s) => s.get(Setting.tilesPerRow)));
+                final desired = TimelineArgs(
+                  maxWidth: constraints.maxWidth,
+                  maxHeight: constraints.maxHeight,
+                  columnCount: columnCount,
+                  showStorageIndicator: showStorageIndicator,
+                  withStack: withStack,
+                  groupBy: groupBy,
+                );
+                final current = ref.watch(_runtimeTimelineArgsProvider);
+
+                if (current != desired) {
+                  final rowAnchor = ref.read(_timelineAnchorRowProvider);
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    final latest = ref.read(_runtimeTimelineArgsProvider);
+                    if (latest != desired) {
+                      ref.read(_runtimeTimelineArgsProvider.notifier).state = desired;
+                    }
+                    if (rowAnchor != null) {
+                      ref.read(_timelinePendingRestoreRowAnchorProvider.notifier).state = rowAnchor;
+                    }
+                  });
+                }
+
+                return _SliverTimeline(
+                  topSliverWidget: topSliverWidget,
+                  topSliverWidgetHeight: topSliverWidgetHeight,
+                  appBar: appBar,
+                  bottomSheet: bottomSheet,
+                  withScrubber: withScrubber,
+                  snapToMonth: snapToMonth,
+                  initialScrollOffset: initialScrollOffset,
+                );
+              },
             ),
-          ],
-          child: _SliverTimeline(
-            topSliverWidget: topSliverWidget,
-            topSliverWidgetHeight: topSliverWidgetHeight,
-            appBar: appBar,
-            bottomSheet: bottomSheet,
-            withScrubber: withScrubber,
-            snapToMonth: snapToMonth,
-            initialScrollOffset: initialScrollOffset,
-          ),
-        ),
+          );
+        },
       ),
     );
   }
@@ -126,13 +163,22 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
   double _scaleFactor = 3.0;
   double _baseScaleFactor = 3.0;
   int? _scaleRestoreAssetIndex;
+  _TimelineRowAnchor? _pendingRestoreRowAnchor;
+  bool _hasPendingRowAnchorRestore = false;
 
   @override
   void initState() {
     super.initState();
     _scrollController = ScrollController(
       initialScrollOffset: widget.initialScrollOffset ?? 0.0,
-      onAttach: _restoreScalePosition,
+      onAttach: (position) {
+        _scrollController.addListener(_onScroll);
+        _restoreScalePosition(position);
+        _restoreRowAnchor();
+      },
+      onDetach: (position) {
+        _scrollController.removeListener(_onScroll);
+      },
     );
     _eventSubscription = EventStream.shared.listen(_onEvent);
 
@@ -142,6 +188,75 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
     _baseScaleFactor = _scaleFactor;
 
     ref.listenManual(multiSelectProvider.select((s) => s.isEnabled), _onMultiSelectionToggled);
+
+    ref.listenManual(_timelinePendingRestoreRowAnchorProvider, (_, next) {
+      if (next == null) return;
+      _pendingRestoreRowAnchor = next;
+      _hasPendingRowAnchorRestore = true;
+      _restoreRowAnchor();
+      ref.read(_timelinePendingRestoreRowAnchorProvider.notifier).state = null;
+    });
+
+    ref.listenManual(timelineSegmentProvider.select((async) => async.valueOrNull), (previous, next) {
+      if (previous == null || next == null) return;
+
+      if (previous.equals(next)) return;
+
+      final currentAnchor = ref.read(_timelineAnchorRowProvider);
+      if (currentAnchor == null) return;
+
+      if (next.isEmpty) return;
+
+      final targetSegment = next.findByIndex(currentAnchor.rowIndex);
+      if (targetSegment == null) {
+        final lastSegment = next.lastOrNull;
+        if (lastSegment == null) return;
+        final clampedRowIndex = currentAnchor.rowIndex.clamp(0, lastSegment.lastIndex);
+        final fallbackSegment = next.findByIndex(clampedRowIndex);
+        if (fallbackSegment == null) return;
+        final targetOffset = fallbackSegment.indexToLayoutOffset(clampedRowIndex) + currentAnchor.deltaPx;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted || !_scrollController.hasClients) return;
+          final max = _scrollController.position.maxScrollExtent;
+          final clamped = targetOffset.clamp(0.0, max);
+          _scrollController.jumpTo(clamped);
+        });
+        return;
+      }
+
+      final targetOffset = targetSegment.indexToLayoutOffset(currentAnchor.rowIndex) + currentAnchor.deltaPx;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted || !_scrollController.hasClients) return;
+        final max = _scrollController.position.maxScrollExtent;
+        final clamped = targetOffset.clamp(0.0, max);
+        final currentOffset = _scrollController.offset;
+        if ((clamped - currentOffset).abs() > 1.0) {
+          _scrollController.jumpTo(clamped);
+        }
+      });
+    });
+  }
+
+  _TimelineRowAnchor? _computeRowAnchor(List<Segment> segments, double scrollOffset) {
+    final segment = segments.findByOffset(scrollOffset) ?? segments.lastOrNull;
+    if (segment == null) return null;
+    final rowIndex = segment.getMinChildIndexForScrollOffset(scrollOffset);
+    final rowOffset = segment.indexToLayoutOffset(rowIndex);
+    final deltaPx = (scrollOffset - rowOffset).clamp(0.0, double.infinity);
+    return _TimelineRowAnchor(rowIndex: rowIndex, deltaPx: deltaPx);
+  }
+
+  void _onScroll() {
+    if (!_scrollController.hasClients) return;
+    final scrollOffset = _scrollController.offset;
+    final asyncSegments = ref.read(timelineSegmentProvider);
+    asyncSegments.whenData((segments) {
+      if (segments.isEmpty) return;
+      final rowAnchor = _computeRowAnchor(segments, scrollOffset);
+      if (rowAnchor != null) {
+        ref.read(_timelineAnchorRowProvider.notifier).state = rowAnchor;
+      }
+    });
   }
 
   void _onEvent(Event event) {
@@ -185,6 +300,45 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
       }
     });
     _scaleRestoreAssetIndex = null;
+  }
+
+  void _restoreRowAnchor() {
+    if (_pendingRestoreRowAnchor == null || !_hasPendingRowAnchorRestore) return;
+
+    final asyncSegments = ref.read(timelineSegmentProvider);
+    asyncSegments.whenData((segments) {
+      if (segments.isEmpty) return;
+
+      final rowAnchor = _pendingRestoreRowAnchor!;
+      final targetSegment = segments.findByIndex(rowAnchor.rowIndex);
+      if (targetSegment == null) {
+        final lastSegment = segments.lastOrNull;
+        if (lastSegment == null) return;
+        final clampedRowIndex = rowAnchor.rowIndex.clamp(0, lastSegment.lastIndex);
+        final fallbackSegment = segments.findByIndex(clampedRowIndex);
+        if (fallbackSegment == null) return;
+        final targetOffset = fallbackSegment.indexToLayoutOffset(clampedRowIndex) + rowAnchor.deltaPx;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted || !_scrollController.hasClients) return;
+          final max = _scrollController.position.maxScrollExtent;
+          final clamped = targetOffset.clamp(0.0, max);
+          _scrollController.jumpTo(clamped);
+          _hasPendingRowAnchorRestore = false;
+          _pendingRestoreRowAnchor = null;
+        });
+        return;
+      }
+
+      final targetOffset = targetSegment.indexToLayoutOffset(rowAnchor.rowIndex) + rowAnchor.deltaPx;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted || !_scrollController.hasClients) return;
+        final max = _scrollController.position.maxScrollExtent;
+        final clamped = targetOffset.clamp(0.0, max);
+        _scrollController.jumpTo(clamped);
+        _hasPendingRowAnchorRestore = false;
+        _pendingRestoreRowAnchor = null;
+      });
+    });
   }
 
   @override
@@ -331,6 +485,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
               (isMultiSelectEnabled ? bottomSheetOpenModifier : 0);
 
           final grid = CustomScrollView(
+            key: const PageStorageKey<String>('timeline-grid-scroll'),
             primary: true,
             physics: _scrollPhysics,
             cacheExtent: maxHeight * 2,
