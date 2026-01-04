@@ -107,6 +107,7 @@ const validVideos = [
   '.mp4',
   '.mpg',
   '.mts',
+  '.mxf',
   '.vob',
   '.webm',
   '.wmv',
