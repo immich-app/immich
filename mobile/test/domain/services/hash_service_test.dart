@@ -33,6 +33,7 @@ void main() {
     registerFallbackValue(LocalAssetStub.image1);
     registerFallbackValue(<String, String>{});
 
+    when(() => mockAssetRepo.getHashMappingFromCloudId()).thenAnswer((_) async => {});
     when(() => mockAssetRepo.updateHashes(any())).thenAnswer((_) async => {});
   });
 

@@ -121,4 +121,7 @@ abstract class NativeSyncApi {
 
   @TaskQueue(type: TaskQueueType.serialBackgroundThread)
   Map<String, List<PlatformAsset>> getTrashedAssets();
+
+  @TaskQueue(type: TaskQueueType.serialBackgroundThread)
+  Map<String, String?> getCloudIdForAssetIds(List<String> assetIds);
 }
