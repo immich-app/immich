@@ -17,6 +17,7 @@ sealed class BaseAsset {
   final AssetType type;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final DateTime? deletedAt;
   final int? width;
   final int? height;
   final int? durationInSeconds;
@@ -29,6 +30,7 @@ sealed class BaseAsset {
     required this.type,
     required this.createdAt,
     required this.updatedAt,
+    this.deletedAt,
     this.width,
     this.height,
     this.durationInSeconds,
@@ -67,6 +69,7 @@ sealed class BaseAsset {
   type: $type,
   createdAt: $createdAt,
   updatedAt: $updatedAt,
+  deletedAt: $deletedAt,
   width: ${width ?? "<NA>"},
   height: ${height ?? "<NA>"},
   durationInSeconds: ${durationInSeconds ?? "<NA>"},
@@ -82,6 +85,7 @@ sealed class BaseAsset {
           type == other.type &&
           createdAt == other.createdAt &&
           updatedAt == other.updatedAt &&
+          deletedAt == other.deletedAt &&
           width == other.width &&
           height == other.height &&
           durationInSeconds == other.durationInSeconds &&
@@ -96,6 +100,7 @@ sealed class BaseAsset {
         type.hashCode ^
         createdAt.hashCode ^
         updatedAt.hashCode ^
+        deletedAt.hashCode ^
         width.hashCode ^
         height.hashCode ^
         durationInSeconds.hashCode ^

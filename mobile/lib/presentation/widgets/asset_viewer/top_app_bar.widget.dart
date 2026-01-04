@@ -15,6 +15,7 @@ import 'package:immich_mobile/providers/activity.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/trash_sync.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 
@@ -49,6 +50,8 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
 
     final originalTheme = context.themeData;
 
+    final isWaitingForSyncApproval = ref.watch(isWaitingForSyncApprovalProvider(asset.checksum)).value == true;
+
     final actions = <Widget>[
       if (asset.isMotionPhoto) const MotionPhotoActionButton(iconOnly: true),
       if (album != null && album.isActivityEnabled && album.isShared)
@@ -59,9 +62,9 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
           },
         ),
 
-      if (asset.hasRemote && isOwner && !asset.isFavorite)
+      if (asset.hasRemote && isOwner && !asset.isFavorite && !isWaitingForSyncApproval)
         const FavoriteActionButton(source: ActionSource.viewer, iconOnly: true),
-      if (asset.hasRemote && isOwner && asset.isFavorite)
+      if (asset.hasRemote && isOwner && asset.isFavorite && !isWaitingForSyncApproval)
         const UnFavoriteActionButton(source: ActionSource.viewer, iconOnly: true),
 
       ViewerKebabMenu(originalTheme: originalTheme),
