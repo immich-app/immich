@@ -96,7 +96,7 @@ class NativeVideoViewer extends HookConsumerWidget {
       try {
         if (videoAsset.hasLocal && videoAsset.livePhotoVideoId == null) {
           final id = videoAsset is LocalAsset ? videoAsset.id : (videoAsset as RemoteAsset).localId!;
-          final file = await const StorageRepository().getFileForAsset(id);
+          final file = await StorageRepository().getFileForAsset(id);
           if (!context.mounted) {
             return null;
           }
