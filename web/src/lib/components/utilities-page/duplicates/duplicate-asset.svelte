@@ -101,7 +101,7 @@
   }
 </script>
 
-<div class="min-w-60 transition-colors border rounded-lg">
+<div class="min-w-60 transition-colors border rounded-lg flex-1">
   <div class="relative w-full">
     <button
       type="button"
@@ -168,7 +168,11 @@
       ? 'bg-success/15 dark:bg-[#001a06]'
       : 'bg-transparent'}"
   >
-    <InfoRow icon={mdiImageOutline} highlight={hasDifferentValues.fileName} title={$t('file_name')}>
+    <InfoRow
+      icon={mdiImageOutline}
+      highlight={hasDifferentValues.fileName}
+      title={$t('file_name', { values: { file_name: asset.originalFileName ?? '' } })}
+    >
       {asset.originalFileName}
     </InfoRow>
 
