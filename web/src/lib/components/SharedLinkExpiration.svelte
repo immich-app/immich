@@ -55,6 +55,19 @@
     return closestOption;
   };
 
+  const deduplicateOptionsByValue = (
+    options: { text: string; value: string | number }[],
+  ): { text: string; value: string | number }[] => {
+    const seen = new Set<string | number>();
+    return options.filter((option) => {
+      if (seen.has(option.value)) {
+        return false;
+      }
+      seen.add(option.value);
+      return true;
+    });
+  };
+
   const onSelect = (option: number | string) => {
     const expirationOption = Number(option);
 
@@ -68,9 +81,9 @@
   <SettingSelect
     bind:value={expirationOption}
     {onSelect}
-    options={[...new Set([...expiredDateOptions, getExpirationOption(createdAt, expiresAt)])]}
+    options={deduplicateOptionsByValue([...expiredDateOptions, getExpirationOption(createdAt, expiresAt)])}
     label={$t('expire_after')}
-    disabled={expiresAt !== null && DateTime.fromISO(expiresAt) < DateTime.now()}
+    disabled={false}
     number={true}
   />
 </div>
