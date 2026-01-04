@@ -146,6 +146,8 @@ services:
     ports:
       - 5432:5432
     shm_size: 128mb
+    healthcheck:
+      disable: false
   # set IMMICH_TELEMETRY_INCLUDE=all in .env to enable metrics
   # immich-prometheus:
   #   container_name: immich_prometheus
