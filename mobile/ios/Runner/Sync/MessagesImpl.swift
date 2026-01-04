@@ -382,6 +382,95 @@ class NativeSyncApiImpl: ImmichPlugin, NativeSyncApi, FlutterPlugin {
     throw PigeonError(code: "UNSUPPORTED_OS", message: "This feature not supported on iOS.", details: nil)
   }
 
+  func getAssetFilePath(assetId: String, completion: @escaping (Result<String?, Error>) -> Void) {
+    Task {
+      do {
+        let filePath = try await exportAssetToFile(assetId: assetId, isRaw: false)
+        DispatchQueue.main.async {
+          completion(.success(filePath))
+        }
+      } catch {
+        DispatchQueue.main.async {
+          completion(.failure(error))
+        }
+      }
+    }
+  }
+
+  func hasRawResource(assetId: String) throws -> Bool {
+    let options = PHFetchOptions()
+    let result = PHAsset.fetchAssets(withLocalIdentifiers: [assetId], options: options)
+
+    guard let asset = result.firstObject else {
+      return false
+    }
+
+    return asset.getRawResource() != nil
+  }
+
+  func getRawFilePath(assetId: String, completion: @escaping (Result<String?, Error>) -> Void) {
+    Task {
+      do {
+        let filePath = try await exportAssetToFile(assetId: assetId, isRaw: true)
+        DispatchQueue.main.async {
+          completion(.success(filePath))
+        }
+      } catch {
+        DispatchQueue.main.async {
+          completion(.failure(error))
+        }
+      }
+    }
+  }
+
+  /// Export asset resource to a temporary file and return the file path.
+  private func exportAssetToFile(assetId: String, isRaw: Bool) async throws -> String? {
+    let options = PHFetchOptions()
+    let result = PHAsset.fetchAssets(withLocalIdentifiers: [assetId], options: options)
+
+    guard let asset = result.firstObject else {
+      return nil
+    }
+
+    let resource: PHAssetResource?
+    if isRaw {
+      resource = asset.getRawResource()
+    } else {
+      resource = asset.getResource()
+    }
+
+    guard let res = resource else {
+      return nil
+    }
+
+    // Create temporary directory for asset files
+    let tempDir = FileManager.default.temporaryDirectory.appendingPathComponent("asset_files")
+    try? FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
+
+    // Use original filename to preserve extension
+    let tempFileURL = tempDir.appendingPathComponent(res.originalFilename)
+
+    // Remove existing file if any
+    try? FileManager.default.removeItem(at: tempFileURL)
+
+    let requestOptions = PHAssetResourceRequestOptions()
+    requestOptions.isNetworkAccessAllowed = true
+
+    return try await withCheckedThrowingContinuation { continuation in
+      PHAssetResourceManager.default().writeData(
+        for: res,
+        toFile: tempFileURL,
+        options: requestOptions
+      ) { error in
+        if let error = error {
+          continuation.resume(throwing: error)
+        } else {
+          continuation.resume(returning: tempFileURL.path)
+        }
+      }
+    }
+  }
+
   private func getAssetsFromAlbum(in album: PHAssetCollection, options: PHFetchOptions) -> PHFetchResult<PHAsset> {
     // Ensure to actually getting all assets for the Recents album
     if (album.assetCollectionSubtype == .smartAlbumUserLibrary) {

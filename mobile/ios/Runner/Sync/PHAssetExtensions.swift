@@ -63,6 +63,61 @@ extension PHAsset {
     return nil
   }
 
+  /// Get the RAW resource for this asset, if available.
+  /// Returns nil if the asset doesn't have a RAW resource.
+  ///
+  /// In iOS, when a photo has both JPEG and RAW, they are stored as separate resources:
+  /// - The primary resource (usually JPEG/HEIC) has type `.photo` (1)
+  /// - The RAW resource has type `.alternatePhoto` (4)
+  /// Both may have `isCurrent = true` when imported from camera.
+  func getRawResource() -> PHAssetResource? {
+    guard mediaType == .image else {
+      return nil
+    }
+
+    let resources = PHAssetResource.assetResources(for: self)
+    let rawExtensions = [
+      "dng", "raw", "raf", "cr2", "cr3", "nef", "arw", "orf", "rw2", "pef", "srw",
+    ]
+
+    // Filter to only image resources (including alternatePhoto which is type=4 for RAW files)
+    let imageResources = resources.filter {
+      $0.isMediaResource
+        && ($0.type == .photo || $0.type == .fullSizePhoto || $0.type == .alternatePhoto)
+    }
+
+    // If there's only one image resource, there's no RAW+JPEG pair
+    guard imageResources.count > 1 else {
+      return nil
+    }
+
+    // First, try to find a resource with .alternatePhoto type (type=4) which is typically RAW
+    if let rawResource = imageResources.first(where: { $0.type == .alternatePhoto }) {
+      let filename = rawResource.originalFilename.lowercased()
+      if rawExtensions.contains(where: { filename.hasSuffix(".\($0)") }) {
+        return rawResource
+      }
+    }
+
+    // Second, try to find by isCurrent=false (older pairing method)
+    if let rawResource = imageResources.first(where: { !$0.isCurrent }) {
+      let filename = rawResource.originalFilename.lowercased()
+      if rawExtensions.contains(where: { filename.hasSuffix(".\($0)") }) {
+        return rawResource
+      }
+    }
+
+    // Third, look for any resource with RAW file extension
+    for resource in imageResources {
+      let filename = resource.originalFilename.lowercased()
+      if rawExtensions.contains(where: { filename.hasSuffix(".\($0)") }) {
+        return resource
+      }
+    }
+
+    return nil
+  }
+
   private func isValidResourceType(_ type: PHAssetResourceType) -> Bool {
     switch mediaType {
     case .image:
