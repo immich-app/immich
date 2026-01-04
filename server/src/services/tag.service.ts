@@ -70,9 +70,19 @@ export class TagService extends BaseService {
   async remove(auth: AuthDto, id: string): Promise<void> {
     await this.requireAccess({ auth, permission: Permission.TagDelete, ids: [id] });
 
-    // TODO sync tag changes for affected assets
+    const descendantTagIds = await this.tagRepository.getDescendantTagIds(id);
+
+    const affectedAssetIds = new Set<string>();
+    for (const tagId of descendantTagIds) {
+      const assetIds = await this.tagRepository.getAssetIdsForTag(tagId);
+      assetIds.forEach((assetId) => affectedAssetIds.add(assetId));
+    }
 
     await this.tagRepository.delete(id);
+
+    for (const assetId of affectedAssetIds) {
+      await this.eventRepository.emit('AssetUntag', { assetId });
+    }
   }
 
   async bulkTagAssets(auth: AuthDto, dto: TagBulkAssetsDto): Promise<TagBulkAssetsResponseDto> {
