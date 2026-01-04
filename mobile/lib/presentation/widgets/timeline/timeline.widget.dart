@@ -42,6 +42,7 @@ class Timeline extends StatelessWidget {
     this.withScrubber = true,
     this.snapToMonth = true,
     this.initialScrollOffset,
+    this.readOnly = false,
   });
 
   final Widget? topSliverWidget;
@@ -54,6 +55,7 @@ class Timeline extends StatelessWidget {
   final bool withScrubber;
   final bool snapToMonth;
   final double? initialScrollOffset;
+  final bool readOnly;
 
   @override
   Widget build(BuildContext context) {
@@ -73,6 +75,7 @@ class Timeline extends StatelessWidget {
                 groupBy: groupBy,
               ),
             ),
+            if (readOnly) readonlyModeProvider.overrideWith(() => _AlwaysReadOnlyNotifier()),
           ],
           child: _SliverTimeline(
             topSliverWidget: topSliverWidget,
@@ -87,6 +90,17 @@ class Timeline extends StatelessWidget {
       ),
     );
   }
+}
+
+class _AlwaysReadOnlyNotifier extends ReadOnlyModeNotifier {
+  @override
+  bool build() => true;
+
+  @override
+  void setReadonlyMode(bool value) {}
+
+  @override
+  void toggleReadonlyMode() {}
 }
 
 class _SliverTimeline extends ConsumerStatefulWidget {
