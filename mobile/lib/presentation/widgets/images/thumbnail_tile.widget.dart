@@ -10,6 +10,8 @@ import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart'
 import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
 import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
+import 'package:immich_mobile/providers/partner.provider.dart';
+import 'package:immich_mobile/utils/hash.dart';
 
 class ThumbnailTile extends ConsumerWidget {
   const ThumbnailTile(
@@ -44,6 +46,10 @@ class ThumbnailTile extends ConsumerWidget {
 
     final bool storageIndicator =
         ref.watch(settingsProvider.select((s) => s.get(Setting.showStorageIndicator))) && showStorageIndicator;
+
+    final isPartnerShared = asset is RemoteAsset
+        ? ref.watch(partnerSharedWithProvider).map((e) => fastHash(e.id)).contains(fastHash(asset.ownerId))
+        : false;
 
     return Stack(
       children: [
@@ -96,7 +102,7 @@ class ThumbnailTile extends ConsumerWidget {
                       ),
                     ),
                   },
-                if (asset != null && asset.isFavorite)
+                if (asset != null && asset.isFavorite && !isPartnerShared)
                   const Align(
                     alignment: Alignment.bottomLeft,
                     child: Padding(
