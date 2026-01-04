@@ -19281,6 +19281,12 @@
           "publicUsers": {
             "type": "boolean"
           },
+          "sessionDeleteDelayBrowser": {
+            "type": "integer"
+          },
+          "sessionDeleteDelayMobile": {
+            "type": "integer"
+          },
           "trashDays": {
             "type": "integer"
           },
@@ -19298,6 +19304,8 @@
           "mapLightStyleUrl",
           "oauthButtonText",
           "publicUsers",
+          "sessionDeleteDelayBrowser",
+          "sessionDeleteDelayMobile",
           "trashDays",
           "userDeleteDelay"
         ],
@@ -22198,10 +22206,20 @@
           "deleteDelay": {
             "minimum": 1,
             "type": "integer"
+          },
+          "sessionDeleteDelayBrowser": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "sessionDeleteDelayMobile": {
+            "minimum": 1,
+            "type": "integer"
           }
         },
         "required": [
-          "deleteDelay"
+          "deleteDelay",
+          "sessionDeleteDelayBrowser",
+          "sessionDeleteDelayMobile"
         ],
         "type": "object"
       },
