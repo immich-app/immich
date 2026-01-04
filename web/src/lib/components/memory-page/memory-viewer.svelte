@@ -26,13 +26,13 @@
   import type { TimelineAsset, Viewport } from '$lib/managers/timeline-manager/types';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { type MemoryAsset, memoryStore } from '$lib/stores/memory.store.svelte';
+  import { memoryStore, type MemoryAsset } from '$lib/stores/memory.store.svelte';
   import { locale, videoViewerMuted, videoViewerVolume } from '$lib/stores/preferences.store';
   import { preferences } from '$lib/stores/user.store';
   import { getAssetThumbnailUrl, handlePromiseError, memoryLaneTitle } from '$lib/utils';
   import { cancelMultiselect } from '$lib/utils/asset-utils';
   import { fromISODateTimeUTC, toTimelineAsset } from '$lib/utils/timeline-util';
-  import { AssetMediaSize, getAssetInfo } from '@immich/sdk';
+  import { AssetMediaSize, AssetTypeEnum, getAssetInfo } from '@immich/sdk';
   import { IconButton, toastManager } from '@immich/ui';
   import {
     mdiCardsOutline,
@@ -67,7 +67,7 @@
   let currentMemoryAssetFull = $derived.by(async () =>
     current?.asset ? await getAssetInfo({ ...authManager.params, id: current.asset.id }) : undefined,
   );
-  let currentTimelineAssets = $derived(current?.memory.assets.map((asset) => toTimelineAsset(asset)) || []);
+  let currentTimelineAssets = $derived(current?.memory.assets || []);
 
   let isSaved = $derived(current?.memory.isSaved);
   let viewerHeight = $state(0);
@@ -396,7 +396,7 @@
           </p>
         </div>
 
-        {#if currentTimelineAssets.some(({ isVideo }) => isVideo)}
+        {#if currentTimelineAssets.some((asset) => asset.type === AssetTypeEnum.Video)}
           <div class="w-12.5 dark">
             <IconButton
               shape="round"
@@ -651,8 +651,6 @@
       bind:this={memoryGallery}
     >
       <GalleryViewer
-        onNext={handleNextAsset}
-        onPrevious={handlePreviousAsset}
         assets={currentTimelineAssets}
         viewport={galleryViewport}
         {assetInteraction}

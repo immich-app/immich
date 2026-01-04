@@ -1,8 +1,8 @@
 import { goto } from '$app/navigation';
 import { page } from '$app/stores';
+import type { RouteId } from '$app/types';
 import { AppRoute } from '$lib/constants';
-import { getAssetInfo } from '@immich/sdk';
-import type { NavigationTarget } from '@sveltejs/kit';
+import { assetCacheManager } from '$lib/managers/AssetCacheManager.svelte';
 import { get } from 'svelte/store';
 
 export type AssetGridRouteSearchParams = {
@@ -20,11 +20,12 @@ export const isAlbumsRoute = (route?: string | null) => !!route?.startsWith('/(u
 export const isPeopleRoute = (route?: string | null) => !!route?.startsWith('/(user)/people/[personId]');
 export const isLockedFolderRoute = (route?: string | null) => !!route?.startsWith('/(user)/locked');
 
-export const isAssetViewerRoute = (target?: NavigationTarget | null) =>
-  !!(target?.route.id?.endsWith('/[[assetId=id]]') && 'assetId' in (target?.params || {}));
+export const isAssetViewerRoute = (
+  target?: { route?: { id?: RouteId | null }; params?: Record<string, string> | null } | null,
+) => !!(target?.route?.id?.endsWith('/[[assetId=id]]') && 'assetId' in (target?.params || {}));
 
 export function getAssetInfoFromParam({ assetId, slug, key }: { assetId?: string; key?: string; slug?: string }) {
-  return assetId ? getAssetInfo({ id: assetId, slug, key }) : undefined;
+  return assetId ? assetCacheManager.getAsset({ id: assetId, slug, key }, false) : undefined;
 }
 
 function currentUrlWithoutAsset() {

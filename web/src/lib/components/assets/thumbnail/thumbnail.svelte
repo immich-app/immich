@@ -1,10 +1,18 @@
 <script lang="ts">
+  import { thumbhash } from '$lib/actions/thumbhash';
   import { ProjectionType } from '$lib/constants';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
+  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
+  import { mobileDevice } from '$lib/stores/mobile-device.svelte';
   import { locale, playVideoThumbnailOnHover } from '$lib/stores/preferences.store';
   import { getAssetOriginalUrl, getAssetPlaybackUrl, getAssetThumbnailUrl } from '$lib/utils';
   import { timeToSeconds } from '$lib/utils/date-time';
+  import { moveFocus } from '$lib/utils/focus-util';
+  import { currentUrlReplaceAssetId } from '$lib/utils/navigation';
   import { getAltText } from '$lib/utils/thumbnail-util';
+  import { TUNABLES } from '$lib/utils/tunables';
   import { AssetMediaSize, AssetVisibility, type UserResponseDto } from '@immich/sdk';
+  import { Icon } from '@immich/ui';
   import {
     mdiArchiveArrowDownOutline,
     mdiCameraBurst,
@@ -15,21 +23,11 @@
     mdiMotionPlayOutline,
     mdiRotate360,
   } from '@mdi/js';
-
-  import { thumbhash } from '$lib/actions/thumbhash';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-  import { mobileDevice } from '$lib/stores/mobile-device.svelte';
-  import { moveFocus } from '$lib/utils/focus-util';
-  import { currentUrlReplaceAssetId } from '$lib/utils/navigation';
-  import { TUNABLES } from '$lib/utils/tunables';
-  import { Icon } from '@immich/ui';
   import { onMount } from 'svelte';
   import type { ClassValue } from 'svelte/elements';
   import { fade } from 'svelte/transition';
   import ImageThumbnail from './image-thumbnail.svelte';
   import VideoThumbnail from './video-thumbnail.svelte';
-
   interface Props {
     asset: TimelineAsset;
     groupIndex?: number;

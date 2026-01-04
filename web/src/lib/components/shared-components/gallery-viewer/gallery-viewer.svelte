@@ -2,9 +2,11 @@
   import { goto } from '$app/navigation';
   import { shortcuts, type ShortcutOptions } from '$lib/actions/shortcut';
   import type { Action } from '$lib/components/asset-viewer/actions/action';
+  import type { AssetCursor } from '$lib/components/asset-viewer/asset-viewer.svelte';
   import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
   import { AppRoute, AssetAction } from '$lib/constants';
   import Portal from '$lib/elements/Portal.svelte';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import type { TimelineAsset, Viewport } from '$lib/managers/timeline-manager/types';
   import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
@@ -19,15 +21,16 @@
   import { getJustifiedLayoutFromAssets } from '$lib/utils/layout-utils';
   import { navigate } from '$lib/utils/navigation';
   import { isTimelineAsset, toTimelineAsset } from '$lib/utils/timeline-util';
-  import { AssetVisibility, type AssetResponseDto } from '@immich/sdk';
+  import { AssetVisibility, getAssetInfo, type AssetResponseDto } from '@immich/sdk';
   import { modalManager } from '@immich/ui';
   import { debounce } from 'lodash-es';
+  import { untrack } from 'svelte';
   import { t } from 'svelte-i18n';
   import DeleteAssetDialog from '../../photos-page/delete-asset-dialog.svelte';
 
   interface Props {
     initialAssetId?: string;
-    assets: TimelineAsset[] | AssetResponseDto[];
+    assets: AssetResponseDto[];
     assetInteraction: AssetInteraction;
     disableAssetSelect?: boolean;
     showArchiveIcon?: boolean;
@@ -35,9 +38,7 @@
     onIntersected?: (() => void) | undefined;
     showAssetName?: boolean;
     isShowDeleteConfirmation?: boolean;
-    onPrevious?: (() => Promise<{ id: string } | undefined>) | undefined;
-    onNext?: (() => Promise<{ id: string } | undefined>) | undefined;
-    onRandom?: (() => Promise<{ id: string } | undefined>) | undefined;
+    onNavigateToAsset?: (asset: AssetResponseDto | undefined) => Promise<boolean>;
     onReload?: (() => void) | undefined;
     pageHeaderOffset?: number;
     slidingWindowOffset?: number;
@@ -54,9 +55,7 @@
     onIntersected = undefined,
     showAssetName = false,
     isShowDeleteConfirmation = $bindable(false),
-    onPrevious = undefined,
-    onNext = undefined,
-    onRandom = undefined,
+    onNavigateToAsset,
     onReload = undefined,
     slidingWindowOffset = 0,
     pageHeaderOffset = 0,
@@ -86,7 +85,7 @@
     return top + pageHeaderOffset < window.bottom && top + geo.getHeight(i) > window.top;
   };
 
-  let currentIndex = 0;
+  let currentIndex = $state(0);
   if (initialAssetId && assets.length > 0) {
     const index = assets.findIndex(({ id }) => id === initialAssetId);
     if (index !== -1) {
@@ -229,7 +228,7 @@
     isShowDeleteConfirmation = false;
     await deleteAssets(
       !(isTrashEnabled && !force),
-      (assetIds) => (assets = assets.filter((asset) => !assetIds.includes(asset.id)) as TimelineAsset[]),
+      (assetIds) => (assets = assets.filter((asset) => !assetIds.includes(asset.id))),
       assetInteraction.selectedAssets,
       onReload,
     );
@@ -242,7 +241,7 @@
       assetInteraction.isAllArchived ? AssetVisibility.Timeline : AssetVisibility.Archive,
     );
     if (ids) {
-      assets = assets.filter((asset) => !ids.includes(asset.id)) as TimelineAsset[];
+      assets = assets.filter((asset) => !ids.includes(asset.id));
       deselectAllAssets();
     }
   };
@@ -295,47 +294,14 @@
     })(),
   );
 
-  const handleNext = async (): Promise<boolean> => {
-    try {
-      let asset: { id: string } | undefined;
-      if (onNext) {
-        asset = await onNext();
-      } else {
-        if (currentIndex >= assets.length - 1) {
-          return false;
-        }
-
-        currentIndex = currentIndex + 1;
-        asset = currentIndex < assets.length ? assets[currentIndex] : undefined;
-      }
-
-      if (!asset) {
-        return false;
-      }
-
-      await navigateToAsset(asset);
-      return true;
-    } catch (error) {
-      handleError(error, $t('errors.cannot_navigate_next_asset'));
-      return false;
-    }
-  };
-
   const handleRandom = async (): Promise<{ id: string } | undefined> => {
     try {
-      let asset: { id: string } | undefined;
-      if (onRandom) {
-        asset = await onRandom();
-      } else {
-        if (assets.length > 0) {
-          const randomIndex = Math.floor(Math.random() * assets.length);
-          asset = assets[randomIndex];
-        }
-      }
-
-      if (!asset) {
+      if (assets.length === 0) {
         return;
       }
+
+      const randomIndex = Math.floor(Math.random() * assets.length);
+      const asset = assets[randomIndex];
 
       await navigateToAsset(asset);
       return asset;
@@ -345,30 +311,13 @@
     }
   };
 
-  const handlePrevious = async (): Promise<boolean> => {
-    try {
-      let asset: { id: string } | undefined;
-      if (onPrevious) {
-        asset = await onPrevious();
-      } else {
-        if (currentIndex <= 0) {
-          return false;
-        }
-
-        currentIndex = currentIndex - 1;
-        asset = currentIndex >= 0 ? assets[currentIndex] : undefined;
-      }
-
-      if (!asset) {
-        return false;
-      }
-
-      await navigateToAsset(asset);
+  const handleNavigateToAsset = async (target: AssetResponseDto | undefined | null) => {
+    if (target) {
+      currentIndex = assets.indexOf(target);
+      await (onNavigateToAsset ? onNavigateToAsset(target) : navigateToAsset(target));
       return true;
-    } catch (error) {
-      handleError(error, $t('errors.cannot_navigate_previous_asset'));
-      return false;
     }
+    return false;
   };
 
   const navigateToAsset = async (asset?: { id: string }) => {
@@ -390,9 +339,9 @@
         if (assets.length === 0) {
           await goto(AppRoute.PHOTOS);
         } else if (currentIndex === assets.length) {
-          await handlePrevious();
+          await handleNavigateToAsset(assetCursor.previousAsset);
         } else {
-          await setAssetId(assets[currentIndex].id);
+          await handleNavigateToAsset(assetCursor.nextAsset);
         }
         break;
       }
@@ -423,6 +372,59 @@
     if (shiftKeyIsDown && lastAssetMouseEvent) {
       selectAssetCandidates(lastAssetMouseEvent);
     }
+  });
+
+  const getNextAsset = async (currentAsset: AssetResponseDto | undefined, preload: boolean = true) => {
+    if (!currentAsset) {
+      return;
+    }
+    const cursor = assets.indexOf(currentAsset);
+    if (cursor < assets.length - 1) {
+      const id = assets[cursor + 1].id;
+      const asset = await getAssetInfo({ ...authManager.params, id });
+      if (preload) {
+        void getNextAsset(asset, false);
+      }
+      return asset;
+    }
+  };
+
+  const getPreviousAsset = async (currentAsset: AssetResponseDto | undefined, preload: boolean = true) => {
+    if (!currentAsset) {
+      return;
+    }
+    const cursor = assets.indexOf(currentAsset);
+    if (cursor <= 0) {
+      return;
+    }
+    const id = assets[cursor - 1].id;
+    const asset = await getAssetInfo({ ...authManager.params, id });
+    if (preload) {
+      void getPreviousAsset(asset, false);
+    }
+    return asset;
+  };
+
+  let assetCursor = $state<AssetCursor>({
+    current: $viewingAsset,
+    previousAsset: undefined,
+    nextAsset: undefined,
+  });
+
+  const loadCloseAssets = async (currentAsset: AssetResponseDto) => {
+    const [nextAsset, previousAsset] = await Promise.all([getNextAsset(currentAsset), getPreviousAsset(currentAsset)]);
+    assetCursor = {
+      current: currentAsset,
+      nextAsset,
+      previousAsset,
+    };
+  };
+
+  //TODO: replace this with async derived in svelte 6
+  $effect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+    $viewingAsset;
+    untrack(() => void loadCloseAssets($viewingAsset));
   });
 </script>
 
@@ -488,10 +490,9 @@
   <Portal target="body">
     {#await import('$lib/components/asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
       <AssetViewer
-        asset={$viewingAsset}
+        cursor={assetCursor}
         onAction={handleAction}
-        onPrevious={handlePrevious}
-        onNext={handleNext}
+        onNavigateToAsset={handleNavigateToAsset}
         onRandom={handleRandom}
         onClose={() => {
           assetViewingStore.showAssetViewer(false);
