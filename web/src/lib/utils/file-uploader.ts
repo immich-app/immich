@@ -125,6 +125,7 @@ async function fileUploader({
 }: FileUploaderParams): Promise<string | undefined> {
   const fileCreatedAt = new Date(assetFile.lastModified).toISOString();
   const $t = get(t);
+  const wasInitiallyLoggedIn = !!get(user);
 
   uploadAssetsStore.markStarted(deviceAssetId);
 
@@ -216,7 +217,7 @@ async function fileUploader({
     return responseData.id;
   } catch (error) {
     // ignore errors if the user logs out during uploads
-    if (!get(user)) {
+    if (wasInitiallyLoggedIn && !get(user)) {
       return;
     }
 
