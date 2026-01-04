@@ -1,6 +1,8 @@
 import { defaultLang, langs, locales } from '$lib/constants';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { lang } from '$lib/stores/preferences.store';
+import { getActiveAccountId } from '$lib/stores/saved-accounts.store';
+import { getCurrentSessionToken } from '$lib/utils/auth';
 import { handleError } from '$lib/utils/handle-error';
 import {
   AssetJobName,
@@ -180,6 +182,14 @@ const createUrl = (path: string, parameters?: Record<string, unknown>) => {
     const value = parameters[key];
     if (value !== undefined && value !== null) {
       searchParameters.set(key, value.toString());
+    }
+  }
+
+  const activeAccountId = getActiveAccountId();
+  if (activeAccountId) {
+    const sessionToken = getCurrentSessionToken();
+    if (sessionToken) {
+      searchParameters.set('sessionKey', sessionToken);
     }
   }
 

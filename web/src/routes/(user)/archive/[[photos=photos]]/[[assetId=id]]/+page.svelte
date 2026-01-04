@@ -16,6 +16,7 @@
   import SetVisibilityAction from '$lib/components/timeline/actions/SetVisibilityAction.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
+  import { user } from '$lib/stores/user.store';
   import { AssetVisibility } from '@immich/sdk';
   import { mdiDotsVertical, mdiPlus } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -27,7 +28,7 @@
 
   let { data }: Props = $props();
   let timelineManager = $state<TimelineManager>() as TimelineManager;
-  const options = { visibility: AssetVisibility.Archive };
+  const options = $derived({ visibility: AssetVisibility.Archive, _accountSwitchId: $user?.id });
 
   const assetInteraction = new AssetInteraction();
 

@@ -5,7 +5,6 @@
   import { requestServerInfo } from '$lib/utils/auth';
   import { getByteUnitString } from '$lib/utils/byte-units';
   import { LoadingSpinner } from '@immich/ui';
-  import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
 
   let usageClasses = $state('');
@@ -37,11 +36,11 @@
     }
   });
 
-  onMount(async () => {
-    if (userInteraction.serverInfo && $user) {
-      return;
+  $effect(() => {
+    const userId = $user?.id;
+    if (userId && !userInteraction.serverInfo) {
+      requestServerInfo().catch(() => {});
     }
-    await requestServerInfo();
   });
 </script>
 

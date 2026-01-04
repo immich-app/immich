@@ -42,7 +42,12 @@
 
   let { isViewing: showAssetViewer } = assetViewingStore;
   let timelineManager = $state<TimelineManager>() as TimelineManager;
-  const options = { visibility: AssetVisibility.Timeline, withStacked: true, withPartners: true };
+  const options = $derived({
+    visibility: AssetVisibility.Timeline,
+    withStacked: true,
+    withPartners: true,
+    _accountSwitchId: $user?.id,
+  });
 
   const assetInteraction = new AssetInteraction();
 
@@ -87,76 +92,78 @@
   });
 </script>
 
-<UserPageLayout hideNavbar={assetInteraction.selectionActive} showUploadButton scrollbar={false}>
-  <Timeline
-    enableRouting={true}
-    bind:timelineManager
-    {options}
-    {assetInteraction}
-    removeAction={AssetAction.ARCHIVE}
-    onEscape={handleEscape}
-    withStacked
-  >
-    {#if $preferences.memories.enabled}
-      <MemoryLane />
-    {/if}
-    {#snippet empty()}
-      <EmptyPlaceholder text={$t('no_assets_message')} onClick={() => openFileUploadDialog()} class="mt-10 mx-auto" />
-    {/snippet}
-  </Timeline>
-</UserPageLayout>
+{#key $user?.id}
+  <UserPageLayout hideNavbar={assetInteraction.selectionActive} showUploadButton scrollbar={false}>
+    <Timeline
+      enableRouting={true}
+      bind:timelineManager
+      {options}
+      {assetInteraction}
+      removeAction={AssetAction.ARCHIVE}
+      onEscape={handleEscape}
+      withStacked
+    >
+      {#if $preferences.memories.enabled}
+        <MemoryLane />
+      {/if}
+      {#snippet empty()}
+        <EmptyPlaceholder text={$t('no_assets_message')} onClick={() => openFileUploadDialog()} class="mt-10 mx-auto" />
+      {/snippet}
+    </Timeline>
+  </UserPageLayout>
 
-{#if assetInteraction.selectionActive}
-  <AssetSelectControlBar
-    ownerId={$user.id}
-    assets={assetInteraction.selectedAssets}
-    clearSelect={() => assetInteraction.clearMultiselect()}
-  >
-    <CreateSharedLink />
-    <SelectAllAssets {timelineManager} {assetInteraction} />
-    <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
-      <AddToAlbum />
-      <AddToAlbum shared />
-    </ButtonContextMenu>
-    <FavoriteAction
-      removeFavorite={assetInteraction.isAllFavorite}
-      onFavorite={(ids, isFavorite) => timelineManager.update(ids, (asset) => (asset.isFavorite = isFavorite))}
-    ></FavoriteAction>
-    <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
-      <DownloadAction menuItem />
-      {#if assetInteraction.selectedAssets.length > 1 || isAssetStackSelected}
-        <StackAction
-          unstack={isAssetStackSelected}
-          onStack={(result) => updateStackedAssetInTimeline(timelineManager, result)}
-          onUnstack={(assets) => updateUnstackedAssetInTimeline(timelineManager, assets)}
-        />
-      {/if}
-      {#if isLinkActionAvailable}
-        <LinkLivePhotoAction
+  {#if assetInteraction.selectionActive}
+    <AssetSelectControlBar
+      ownerId={$user.id}
+      assets={assetInteraction.selectedAssets}
+      clearSelect={() => assetInteraction.clearMultiselect()}
+    >
+      <CreateSharedLink />
+      <SelectAllAssets {timelineManager} {assetInteraction} />
+      <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
+        <AddToAlbum />
+        <AddToAlbum shared />
+      </ButtonContextMenu>
+      <FavoriteAction
+        removeFavorite={assetInteraction.isAllFavorite}
+        onFavorite={(ids, isFavorite) => timelineManager.update(ids, (asset) => (asset.isFavorite = isFavorite))}
+      ></FavoriteAction>
+      <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
+        <DownloadAction menuItem />
+        {#if assetInteraction.selectedAssets.length > 1 || isAssetStackSelected}
+          <StackAction
+            unstack={isAssetStackSelected}
+            onStack={(result) => updateStackedAssetInTimeline(timelineManager, result)}
+            onUnstack={(assets) => updateUnstackedAssetInTimeline(timelineManager, assets)}
+          />
+        {/if}
+        {#if isLinkActionAvailable}
+          <LinkLivePhotoAction
+            menuItem
+            unlink={assetInteraction.selectedAssets.length === 1}
+            onLink={handleLink}
+            onUnlink={handleUnlink}
+          />
+        {/if}
+        <ChangeDate menuItem />
+        <ChangeDescription menuItem />
+        <ChangeLocation menuItem />
+        <ArchiveAction
           menuItem
-          unlink={assetInteraction.selectedAssets.length === 1}
-          onLink={handleLink}
-          onUnlink={handleUnlink}
+          onArchive={(ids, visibility) => timelineManager.update(ids, (asset) => (asset.visibility = visibility))}
         />
-      {/if}
-      <ChangeDate menuItem />
-      <ChangeDescription menuItem />
-      <ChangeLocation menuItem />
-      <ArchiveAction
-        menuItem
-        onArchive={(ids, visibility) => timelineManager.update(ids, (asset) => (asset.visibility = visibility))}
-      />
-      {#if $preferences.tags.enabled}
-        <TagAction menuItem />
-      {/if}
-      <DeleteAssets
-        menuItem
-        onAssetDelete={(assetIds) => timelineManager.removeAssets(assetIds)}
-        onUndoDelete={(assets) => timelineManager.upsertAssets(assets)}
-      />
-      <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />
-      <hr />
-      <AssetJobActions />
-    </ButtonContextMenu>
-  </AssetSelectControlBar>
-{/if}
+        {#if $preferences.tags.enabled}
+          <TagAction menuItem />
+        {/if}
+        <DeleteAssets
+          menuItem
+          onAssetDelete={(assetIds) => timelineManager.removeAssets(assetIds)}
+          onUndoDelete={(assets) => timelineManager.upsertAssets(assets)}
+        />
+        <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />
+        <hr />
+        <AssetJobActions />
+      </ButtonContextMenu>
+    </AssetSelectControlBar>
+  {/if}
+{/key}

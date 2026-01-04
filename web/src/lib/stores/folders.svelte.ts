@@ -20,6 +20,7 @@ class FoldersStore {
 
   constructor() {
     eventManager.on('AuthLogout', () => this.clearCache());
+    eventManager.on('AuthLogin', () => this.clearCache());
   }
 
   async fetchTree(): Promise<TreeNode> {
