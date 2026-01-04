@@ -704,6 +704,7 @@ describe(AssetService.name, () => {
 
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
       mocks.ocr.getByAssetId.mockResolvedValue([ocr1, ocr2]);
+      mocks.asset.getById.mockResolvedValue(assetStub.image);
 
       await expect(sut.getOcr(authStub.admin, 'asset-1')).resolves.toEqual([ocr1, ocr2]);
 
@@ -718,7 +719,7 @@ describe(AssetService.name, () => {
     it('should return empty array when no OCR data exists', async () => {
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
       mocks.ocr.getByAssetId.mockResolvedValue([]);
-
+      mocks.asset.getById.mockResolvedValue(assetStub.image);
       await expect(sut.getOcr(authStub.admin, 'asset-1')).resolves.toEqual([]);
 
       expect(mocks.ocr.getByAssetId).toHaveBeenCalledWith('asset-1');

@@ -25,6 +25,7 @@ export const faceStub = {
     deletedAt: new Date(),
     updatedAt: new Date('2023-01-01T00:00:00Z'),
     updateId: '0d1173e3-4d80-4d76-b41e-57d56de21125',
+    isVisible: true,
   }),
   primaryFace1: Object.freeze({
     id: 'assetFaceId2',
@@ -43,6 +44,7 @@ export const faceStub = {
     deletedAt: null,
     updatedAt: new Date('2023-01-01T00:00:00Z'),
     updateId: '0d1173e3-4d80-4d76-b41e-57d56de21125',
+    isVisible: true,
   }),
   mergeFace1: Object.freeze({
     id: 'assetFaceId3',
@@ -61,6 +63,7 @@ export const faceStub = {
     deletedAt: null,
     updatedAt: new Date('2023-01-01T00:00:00Z'),
     updateId: '0d1173e3-4d80-4d76-b41e-57d56de21125',
+    isVisible: true,
   }),
   noPerson1: Object.freeze({
     id: 'assetFaceId8',
@@ -79,6 +82,7 @@ export const faceStub = {
     deletedAt: null,
     updatedAt: new Date('2023-01-01T00:00:00Z'),
     updateId: '0d1173e3-4d80-4d76-b41e-57d56de21125',
+    isVisible: true,
   }),
   noPerson2: Object.freeze({
     id: 'assetFaceId9',
@@ -97,6 +101,7 @@ export const faceStub = {
     deletedAt: null,
     updatedAt: new Date('2023-01-01T00:00:00Z'),
     updateId: '0d1173e3-4d80-4d76-b41e-57d56de21125',
+    isVisible: true,
   }),
   fromExif1: Object.freeze({
     id: 'assetFaceId9',
@@ -114,6 +119,7 @@ export const faceStub = {
     deletedAt: null,
     updatedAt: new Date('2023-01-01T00:00:00Z'),
     updateId: '0d1173e3-4d80-4d76-b41e-57d56de21125',
+    isVisible: true,
   }),
   fromExif2: Object.freeze({
     id: 'assetFaceId9',
@@ -131,6 +137,7 @@ export const faceStub = {
     deletedAt: null,
     updatedAt: new Date('2023-01-01T00:00:00Z'),
     updateId: '0d1173e3-4d80-4d76-b41e-57d56de21125',
+    isVisible: true,
   }),
   withBirthDate: Object.freeze({
     id: 'assetFaceId10',
@@ -148,5 +155,6 @@ export const faceStub = {
     deletedAt: null,
     updatedAt: new Date('2023-01-01T00:00:00Z'),
     updateId: '0d1173e3-4d80-4d76-b41e-57d56de21125',
+    isVisible: true,
   }),
 };
