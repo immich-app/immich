@@ -38,7 +38,7 @@ describe(SyncRequestType.AlbumAssetExifsV1, () => {
     const { asset } = await ctx.newAsset({ ownerId: user2.id });
     await ctx.newExif({ assetId: asset.id, make: 'Canon' });
     const { album } = await ctx.newAlbum({ ownerId: user2.id });
-    await ctx.newAlbumAsset({ albumId: album.id, assetId: asset.id });
+    await ctx.newAlbumAsset({ albumId: album.id, assetId: asset.id, createdBy: user2.id });
     await ctx.newAlbumUser({ albumId: album.id, userId: auth.user.id, role: AlbumUserRole.Editor });
 
     const response = await ctx.syncStream(auth, [SyncRequestType.AlbumAssetExifsV1]);
@@ -87,7 +87,7 @@ describe(SyncRequestType.AlbumAssetExifsV1, () => {
     const { asset } = await ctx.newAsset({ ownerId: auth.user.id });
     await ctx.newExif({ assetId: asset.id, make: 'Canon' });
     const { album } = await ctx.newAlbum({ ownerId: auth.user.id });
-    await ctx.newAlbumAsset({ albumId: album.id, assetId: asset.id });
+    await ctx.newAlbumAsset({ albumId: album.id, assetId: asset.id, createdBy: auth.user.id });
 
     await expect(ctx.syncStream(auth, [SyncRequestType.AssetExifsV1])).resolves.toEqual([
       expect.objectContaining({ type: SyncEntityType.AssetExifV1 }),
@@ -107,7 +107,7 @@ describe(SyncRequestType.AlbumAssetExifsV1, () => {
     const { asset } = await ctx.newAsset({ ownerId: user3.id });
     await ctx.newExif({ assetId: asset.id, make: 'Canon' });
     const { album } = await ctx.newAlbum({ ownerId: user2.id });
-    await ctx.newAlbumAsset({ albumId: album.id, assetId: asset.id });
+    await ctx.newAlbumAsset({ albumId: album.id, assetId: asset.id, createdBy: user2.id });
     await ctx.newAlbumUser({ albumId: album.id, userId: user3.id, role: AlbumUserRole.Editor });
     const { session } = await ctx.newSession({ userId: user3.id });
     const authUser3 = factory.auth({ session, user: user3 });
@@ -126,16 +126,16 @@ describe(SyncRequestType.AlbumAssetExifsV1, () => {
     const { album: album2 } = await ctx.newAlbum({ ownerId: user2.id });
     const { asset: asset1User2 } = await ctx.newAsset({ ownerId: user2.id });
     await ctx.newExif({ assetId: asset1User2.id, make: 'asset1User2' });
-    await ctx.newAlbumAsset({ albumId: album2.id, assetId: asset1User2.id });
+    await ctx.newAlbumAsset({ albumId: album2.id, assetId: asset1User2.id, createdBy: user2.id });
     await wait(2);
     const { asset: asset2User2 } = await ctx.newAsset({ ownerId: user2.id });
     await ctx.newExif({ assetId: asset2User2.id, make: 'asset2User2' });
-    await ctx.newAlbumAsset({ albumId: album2.id, assetId: asset2User2.id });
+    await ctx.newAlbumAsset({ albumId: album2.id, assetId: asset2User2.id, createdBy: user2.id });
     await wait(2);
-    await ctx.newAlbumAsset({ albumId: album1.id, assetId: asset2User2.id });
+    await ctx.newAlbumAsset({ albumId: album1.id, assetId: asset2User2.id, createdBy: user2.id });
     await wait(2);
     const { asset: asset3User2 } = await ctx.newAsset({ ownerId: user2.id });
-    await ctx.newAlbumAsset({ albumId: album2.id, assetId: asset3User2.id });
+    await ctx.newAlbumAsset({ albumId: album2.id, assetId: asset3User2.id, createdBy: user2.id });
     await ctx.newExif({ assetId: asset3User2.id, make: 'asset3User2' });
     await wait(2);
     await ctx.newAlbumUser({ albumId: album1.id, userId: auth.user.id, role: AlbumUserRole.Editor });
@@ -203,9 +203,9 @@ describe(SyncRequestType.AlbumAssetExifsV1, () => {
     await ctx.newExif({ assetId: album1Asset.id, make: 'album1Asset' });
     const { album: album1 } = await ctx.newAlbum({ ownerId: user2.id });
     const { album: album2 } = await ctx.newAlbum({ ownerId: user2.id });
-    await ctx.newAlbumAsset({ albumId: album2.id, assetId: firstAsset.id });
+    await ctx.newAlbumAsset({ albumId: album2.id, assetId: firstAsset.id, createdBy: user2.id });
     await wait(2);
-    await ctx.newAlbumAsset({ albumId: album1.id, assetId: album1Asset.id });
+    await ctx.newAlbumAsset({ albumId: album1.id, assetId: album1Asset.id, createdBy: user2.id });
     await ctx.newAlbumUser({ albumId: album1.id, userId: auth.user.id, role: AlbumUserRole.Editor });
 
     const firstAlbumResponse = await ctx.syncStream(auth, [SyncRequestType.AlbumAssetExifsV1]);
@@ -241,7 +241,7 @@ describe(SyncRequestType.AlbumAssetExifsV1, () => {
     //  ack initial album asset sync
     await ctx.syncAckAll(auth, response);
 
-    await ctx.newAlbumAsset({ albumId: album2.id, assetId: secondAsset.id });
+    await ctx.newAlbumAsset({ albumId: album2.id, assetId: secondAsset.id, createdBy: user2.id });
     await wait(2);
 
     // should backfill the new asset even though it's older than the first asset
@@ -269,7 +269,7 @@ describe(SyncRequestType.AlbumAssetExifsV1, () => {
     await ctx.newExif({ assetId: asset.id, make: 'asset' });
     const { album } = await ctx.newAlbum({ ownerId: user2.id });
     await wait(2);
-    await ctx.newAlbumAsset({ albumId: album.id, assetId: asset.id });
+    await ctx.newAlbumAsset({ albumId: album.id, assetId: asset.id, createdBy: user2.id });
     await ctx.newAlbumUser({ albumId: album.id, userId: auth.user.id, role: AlbumUserRole.Editor });
 
     const response = await ctx.syncStream(auth, [SyncRequestType.AlbumAssetExifsV1]);
@@ -319,11 +319,11 @@ describe(SyncRequestType.AlbumAssetExifsV1, () => {
     const { album } = await ctx.newAlbum({ ownerId: user2.id });
     const { asset: newerAsset } = await ctx.newAsset({ ownerId: user2.id });
     await ctx.newExif({ assetId: newerAsset.id, make: 'newerAsset' });
-    await ctx.newAlbumAsset({ albumId: album.id, assetId: assetWithExif.id });
+    await ctx.newAlbumAsset({ albumId: album.id, assetId: assetWithExif.id, createdBy: user2.id });
     await wait(2);
-    await ctx.newAlbumAsset({ albumId: album.id, assetId: assetDelayedExif.id });
+    await ctx.newAlbumAsset({ albumId: album.id, assetId: assetDelayedExif.id, createdBy: user2.id });
     await wait(2);
-    await ctx.newAlbumAsset({ albumId: album.id, assetId: newerAsset.id });
+    await ctx.newAlbumAsset({ albumId: album.id, assetId: newerAsset.id, createdBy: user2.id });
     await ctx.newAlbumUser({ albumId: album.id, userId: auth.user.id, role: AlbumUserRole.Editor });
 
     const response = await ctx.syncStream(auth, [SyncRequestType.AlbumAssetExifsV1]);
