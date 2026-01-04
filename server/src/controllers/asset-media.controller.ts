@@ -7,6 +7,7 @@ import {
   Next,
   Param,
   ParseFilePipe,
+  ParseIntPipe,
   Post,
   Put,
   Query,
@@ -165,6 +166,26 @@ export class AssetMediaController {
       const finalRedirPath = redirPath + '?' + redirSearchParams.toString();
       return res.redirect(finalRedirPath);
     }
+  }
+
+  @Get(':id/tiles/:level/:col/:row')
+  @FileResponse()
+  @Authenticated({ permission: Permission.AssetView, sharedLink: true })
+  @Endpoint({
+    summary: 'Get an image tile',
+    description: 'Download a specific tile from an image at the specified level and position',
+    history: new HistoryBuilder().added('v2.4.0').stable('v2.4.0'),
+  })
+  async getAssetTile(
+    @Auth() auth: AuthDto,
+    @Param() { id }: UUIDParamDto,
+    @Param('level', ParseIntPipe) level: number,
+    @Param('col', ParseIntPipe) col: number,
+    @Param('row', ParseIntPipe) row: number,
+    @Res() res: Response,
+    @Next() next: NextFunction,
+  ) {
+    await sendFile(res, next, () => this.service.getAssetTile(auth, id, level, col, row), this.logger);
   }
 
   @Get(':id/video/playback')
