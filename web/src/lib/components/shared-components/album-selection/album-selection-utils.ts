@@ -27,12 +27,10 @@ export const isSelectableRowType = (type: AlbumModalRowType) =>
 const $t = get(t);
 
 export class AlbumModalRowConverter {
-  private readonly shared: boolean;
   private readonly sortBy: string;
   private readonly orderBy: string;
 
-  constructor(shared: boolean, sortBy: string, orderBy: string) {
-    this.shared = shared;
+  constructor(sortBy: string, orderBy: string) {
     this.sortBy = sortBy;
     this.orderBy = orderBy;
   }
@@ -44,8 +42,8 @@ export class AlbumModalRowConverter {
     selectedRowIndex: number,
     multiSelectedAlbumIds: string[],
   ): AlbumModalRow[] {
-    // only show recent albums if no search was entered, or we're in the normal albums (non-shared) modal.
-    const recentAlbumsToShow = !this.shared && search.length === 0 ? recentAlbums : [];
+    // only show recent albums if no search was entered
+    const recentAlbumsToShow = search.length === 0 ? recentAlbums : [];
     const rows: AlbumModalRow[] = [{ type: AlbumModalRowType.NEW_ALBUM, selected: selectedRowIndex === 0 }];
 
     const filteredAlbums = sortAlbums(
@@ -71,12 +69,11 @@ export class AlbumModalRowConverter {
         }
       }
 
-      if (!this.shared) {
+
         rows.push({
           type: AlbumModalRowType.SECTION,
           text: (search.length === 0 ? $t('all_albums') : $t('albums')).toUpperCase(),
         });
-      }
 
       const selectedOffsetDueToNewAndRecents = 1 + recentAlbumsToShow.length;
       for (const [i, album] of filteredAlbums.entries()) {

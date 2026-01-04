@@ -5,20 +5,19 @@
   import type { OnAddToAlbum } from '$lib/utils/actions';
   import { addAssetsToAlbum, addAssetsToAlbums } from '$lib/utils/asset-utils';
   import { modalManager } from '@immich/ui';
-  import { mdiImageAlbum, mdiShareVariantOutline } from '@mdi/js';
+  import { mdiImageAlbum } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
   interface Props {
-    shared?: boolean;
     onAddToAlbum?: OnAddToAlbum;
   }
 
-  let { shared = false, onAddToAlbum = () => {} }: Props = $props();
+  let { onAddToAlbum = () => {} }: Props = $props();
 
   const { getAssets } = getAssetControlContext();
 
   const onClick = async () => {
-    const albums = await modalManager.show(AlbumPickerModal, { shared });
+    const albums = await modalManager.show(AlbumPickerModal, {});
     if (!albums || albums.length === 0) {
       return;
     }
@@ -38,9 +37,4 @@
   };
 </script>
 
-<MenuOption
-  {onClick}
-  text={shared ? $t('add_to_shared_album') : $t('add_to_album')}
-  icon={shared ? mdiShareVariantOutline : mdiImageAlbum}
-  shortcut={{ key: 'l', shift: shared }}
-/>
+<MenuOption {onClick} text={$t('add_to_album')} icon={mdiImageAlbum} shortcut={{ key: 'l' }} />

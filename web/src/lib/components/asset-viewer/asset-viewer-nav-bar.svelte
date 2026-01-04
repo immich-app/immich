@@ -197,7 +197,6 @@
             <RestoreAction {asset} {onAction} />
           {:else}
             <AddToAlbumAction {asset} {onAction} />
-            <AddToAlbumAction {asset} {onAction} shared />
           {/if}
         {/if}
 

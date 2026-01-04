@@ -275,7 +275,6 @@
         />
         <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
           <AddToAlbum {onAddToAlbum} />
-          <AddToAlbum shared {onAddToAlbum} />
         </ButtonContextMenu>
         <FavoriteAction
           removeFavorite={assetInteraction.isAllFavorite}
@@ -416,7 +415,6 @@
           />
           <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
             <AddToAlbum {onAddToAlbum} />
-            <AddToAlbum shared {onAddToAlbum} />
           </ButtonContextMenu>
           <FavoriteAction
             removeFavorite={assetInteraction.isAllFavorite}
