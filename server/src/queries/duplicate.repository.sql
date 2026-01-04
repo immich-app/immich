@@ -59,8 +59,70 @@ where
     where
       "unique"."duplicateId" = "duplicates"."duplicateId"
   )
+limit
+  $4
+offset
+  $5
 
 -- DuplicateRepository.delete
+with
+  "duplicates" as (
+    select
+      "asset"."duplicateId",
+      json_agg(
+        "asset2"
+        order by
+          "asset"."localDateTime" asc
+      ) as "assets"
+    from
+      "asset"
+      inner join lateral (
+        select
+          "asset".*,
+          "asset_exif" as "exifInfo"
+        from
+          "asset_exif"
+        where
+          "asset_exif"."assetId" = "asset"."id"
+      ) as "asset2" on true
+    where
+      "asset"."visibility" in ('archive', 'timeline')
+      and "asset"."ownerId" = $1::uuid
+      and "asset"."duplicateId" is not null
+      and "asset"."deletedAt" is null
+      and "asset"."stackId" is null
+    group by
+      "asset"."duplicateId"
+  ),
+  "unique" as (
+    select
+      "duplicateId"
+    from
+      "duplicates"
+    where
+      json_array_length("assets") = $2
+  ),
+  "removed_unique" as (
+    update "asset"
+    set
+      "duplicateId" = $3
+    from
+      "unique"
+    where
+      "asset"."duplicateId" = "unique"."duplicateId"
+  )
+select
+  count(*) as "count"
+from
+  "duplicates"
+where
+  not exists (
+    select
+    from
+      "unique"
+    where
+      "unique"."duplicateId" = "duplicates"."duplicateId"
+  )
 update "asset"
 set
   "duplicateId" = $1
