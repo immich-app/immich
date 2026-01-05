@@ -1,7 +1,7 @@
 experimental_monorepo_root = true
 
 [tools]
-node = "24.11.1"
+node = "24.12.0"
 flutter = "3.35.7"
 pnpm = "10.27.0"
 terragrunt = "0.93.10"
