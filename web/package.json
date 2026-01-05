@@ -25,7 +25,7 @@
     "prepare": "svelte-kit sync"
   },
   "dependencies": {
-    "@formatjs/icu-messageformat-parser": "^2.9.8",
+    "@formatjs/icu-messageformat-parser": "^3.0.0",
     "@immich/justified-layout-wasm": "^0.4.3",
     "@immich/sdk": "file:../open-api/typescript-sdk",
     "@immich/ui": "^0.52.0",
@@ -47,7 +47,7 @@
     "geojson": "^0.5.0",
     "handlebars": "^4.7.8",
     "happy-dom": "^20.0.0",
-    "intl-messageformat": "^10.7.11",
+    "intl-messageformat": "^11.0.0",
     "justified-layout": "^4.1.0",
     "lodash-es": "^4.17.21",
     "luxon": "^3.4.4",
