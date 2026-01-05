@@ -139,6 +139,7 @@ When enabled, logs are output in structured JSON format:
 ```
 
 This format includes:
+
 - `level`: Log level (log, warn, error, etc.)
 - `pid`: Process ID
 - `timestamp`: Unix timestamp in milliseconds
