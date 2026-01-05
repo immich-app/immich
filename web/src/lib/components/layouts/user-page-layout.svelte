@@ -6,8 +6,11 @@
   import { useActions, type ActionArray } from '$lib/actions/use-actions';
   import NavigationBar from '$lib/components/shared-components/navigation-bar/navigation-bar.svelte';
   import UserSidebar from '$lib/components/shared-components/side-bar/user-sidebar.svelte';
+  import type { HeaderButtonActionItem } from '$lib/types';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
+  import { Button, ContextMenuButton, HStack, isMenuItemType, type MenuItemType } from '@immich/ui';
   import type { Snippet } from 'svelte';
+  import { t } from 'svelte-i18n';
 
   interface Props {
     hideNavbar?: boolean;
@@ -16,6 +19,7 @@
     description?: string | undefined;
     scrollbar?: boolean;
     use?: ActionArray;
+    actions?: Array<HeaderButtonActionItem | MenuItemType>;
     header?: Snippet;
     sidebar?: Snippet;
     buttons?: Snippet;
@@ -29,6 +33,7 @@
     description = undefined,
     scrollbar = true,
     use = [],
+    actions = [],
     header,
     sidebar,
     buttons,
@@ -74,7 +79,31 @@
             <p class="text-sm text-gray-400 dark:text-gray-600">{description}</p>
           {/if}
         </div>
+
         {@render buttons?.()}
+
+        {#if actions.length > 0}
+          <div class="hidden md:block">
+            <HStack gap={0}>
+              {#each actions as action, i (i)}
+                {#if !isMenuItemType(action) && (action.$if?.() ?? true)}
+                  <Button
+                    variant="ghost"
+                    size="small"
+                    color={action.color ?? 'secondary'}
+                    leadingIcon={action.icon}
+                    onclick={() => action.onAction(action)}
+                    title={action.data?.title}
+                  >
+                    {action.title}
+                  </Button>
+                {/if}
+              {/each}
+            </HStack>
+          </div>
+
+          <ContextMenuButton aria-label={$t('open')} items={actions} class="md:hidden" />
+        {/if}
       </div>
     {/if}
   </main>
