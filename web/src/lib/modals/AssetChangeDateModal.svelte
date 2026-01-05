@@ -28,7 +28,7 @@
   // the offsets (and validity) for time zones may change if the date is changed, which is why we recompute the list
   let selectedOption = $derived(getPreferredTimeZone(initialDate, initialTimeZone, timezones, lastSelectedTimezone));
 
-  const handleClose = async () => {
+  const handleConfirm = async () => {
     if (!date.isValid || !selectedOption) {
       onClose(false);
       return;
@@ -51,23 +51,30 @@
 
 <Modal title={$t('edit_date_and_time')} icon={mdiCalendarEdit} onClose={() => onClose(false)} size="small">
   <ModalBody>
-    <Label for="datetime" class="block mb-1">{$t('date_and_time')}</Label>
-    <DateInput
-      class="immich-form-input text-gray-700 w-full mb-2"
-      id="datetime"
-      type="datetime-local"
-      bind:value={selectedDate}
-    />
-    {#if timezoneInput}
-      <div class="w-full">
-        <Combobox bind:selectedOption label={$t('timezone')} options={timezones} placeholder={$t('search_timezone')} />
-      </div>
-    {/if}
+    <form id="asset-change-date-form" onsubmit={handleConfirm}>
+      <Label for="datetime" class="block mb-1">{$t('date_and_time')}</Label>
+      <DateInput
+        class="immich-form-input text-gray-700 w-full mb-2"
+        id="datetime"
+        type="datetime-local"
+        bind:value={selectedDate}
+      />
+      {#if timezoneInput}
+        <div class="w-full">
+          <Combobox
+            bind:selectedOption
+            label={$t('timezone')}
+            options={timezones}
+            placeholder={$t('search_timezone')}
+          />
+        </div>
+      {/if}
+    </form>
   </ModalBody>
   <ModalFooter>
     <HStack fullWidth>
       <Button shape="round" color="secondary" fullWidth onclick={() => onClose(false)}>{$t('cancel')}</Button>
-      <Button shape="round" type="submit" fullWidth onclick={handleClose}>{$t('confirm')}</Button>
+      <Button shape="round" type="submit" fullWidth form="asset-change-date-form">{$t('confirm')}</Button>
     </HStack>
   </ModalFooter>
 </Modal>

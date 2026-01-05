@@ -65,29 +65,31 @@
 
 <Modal title={$t('edit_date_and_time')} icon={mdiCalendarEdit} onClose={() => onClose(false)} size="small">
   <ModalBody>
-    <Field label={$t('edit_date_and_time_by_offset')}>
-      <Switch data-testid="edit-by-offset-switch" bind:checked={showRelative} class="mb-2" />
-    </Field>
-    {#if showRelative}
-      <Label for="relativedatetime" class="block mb-1">{$t('offset')}</Label>
-      <DurationInput
-        class="immich-form-input w-full text-gray-700 mb-2"
-        id="relativedatetime"
-        bind:value={selectedDuration}
-      />
-    {:else}
-      <Label for="datetime" class="block mb-1">{$t('date_and_time')}</Label>
-      <DateInput class="immich-form-input w-full mb-2" id="datetime" type="datetime-local" bind:value={selectedDate} />
-    {/if}
-    <div class="w-full">
-      <Combobox
-        bind:selectedOption
-        label={$t('timezone')}
-        options={timezones}
-        placeholder={$t('search_timezone')}
-        onSelect={(option) => (lastSelectedTimezone = option as ZoneOption)}
-      ></Combobox>
-    </div>
+    <form id="change-date-form" onsubmit={handleConfirm}>
+      <Field label={$t('edit_date_and_time_by_offset')}>
+        <Switch data-testid="edit-by-offset-switch" bind:checked={showRelative} class="mb-2" />
+      </Field>
+      {#if showRelative}
+        <Label for="relativedatetime" class="block mb-1">{$t('offset')}</Label>
+        <DurationInput
+          class="immich-form-input w-full text-gray-700 mb-2"
+          id="relativedatetime"
+          bind:value={selectedDuration}
+        />
+      {:else}
+        <Label for="datetime" class="block mb-1">{$t('date_and_time')}</Label>
+        <DateInput class="immich-form-input w-full mb-2" id="datetime" type="datetime-local" bind:value={selectedDate} />
+      {/if}
+      <div class="w-full">
+        <Combobox
+          bind:selectedOption
+          label={$t('timezone')}
+          options={timezones}
+          placeholder={$t('search_timezone')}
+          onSelect={(option) => (lastSelectedTimezone = option as ZoneOption)}
+        ></Combobox>
+      </div>
+    </form>
     <!-- <Card color="secondary" class={!showRelative || !currentInterval ? 'invisible' : ''}>
         <CardBody class="p-2">
           <div class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-3 items-center">
@@ -120,7 +122,7 @@
       <Button shape="round" color="secondary" fullWidth onclick={() => onClose(false)}>
         {$t('cancel')}
       </Button>
-      <Button shape="round" color="primary" fullWidth onclick={handleConfirm} disabled={!date.isValid}>
+      <Button shape="round" color="primary" fullWidth type="submit" form="change-date-form" disabled={!date.isValid}>
         {$t('confirm')}
       </Button>
     </HStack>

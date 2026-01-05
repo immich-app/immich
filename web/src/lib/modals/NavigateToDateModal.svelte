@@ -20,7 +20,7 @@
   // the offsets (and validity) for time zones may change if the date is changed, which is why we recompute the list
   let selectedOption: ZoneOption | undefined = $derived(getPreferredTimeZone(initialDate, undefined, timezones));
 
-  const handleClose = async () => {
+  const handleConfirm = async () => {
     if (!date.isValid || !selectedOption) {
       onClose();
       return;
@@ -38,24 +38,26 @@
 
 <Modal title={$t('navigate_to_time')} icon={mdiNavigationVariantOutline} onClose={() => onClose()}>
   <ModalBody>
-    <VStack fullWidth>
-      <HStack fullWidth>
-        <label class="immich-form-label" for="datetime">{$t('date_and_time')}</label>
-      </HStack>
-      <HStack fullWidth>
-        <DateInput
-          class="immich-form-input text-gray-700 w-full"
-          id="datetime"
-          type="datetime-local"
-          bind:value={selectedDate}
-        />
-      </HStack>
-    </VStack>
+    <form id="navigate-to-date-form" onsubmit={handleConfirm}>
+      <VStack fullWidth>
+        <HStack fullWidth>
+          <label class="immich-form-label" for="datetime">{$t('date_and_time')}</label>
+        </HStack>
+        <HStack fullWidth>
+          <DateInput
+            class="immich-form-input text-gray-700 w-full"
+            id="datetime"
+            type="datetime-local"
+            bind:value={selectedDate}
+          />
+        </HStack>
+      </VStack>
+    </form>
   </ModalBody>
   <ModalFooter>
     <HStack fullWidth>
       <Button shape="round" color="secondary" fullWidth onclick={() => onClose()}>{$t('cancel')}</Button>
-      <Button shape="round" type="submit" fullWidth onclick={handleClose}>{$t('confirm')}</Button>
+      <Button shape="round" type="submit" fullWidth form="navigate-to-date-form">{$t('confirm')}</Button>
     </HStack>
   </ModalFooter>
 </Modal>
