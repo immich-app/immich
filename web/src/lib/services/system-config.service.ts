@@ -41,7 +41,7 @@ export const getSystemConfigActions = (
     description: $t('admin.import_config_from_json_description'),
     type: $t('command'),
     icon: mdiUpload,
-    $if: () => !featureFlags.configFile,
+    // $if: () => !featureFlags.configFile,
     onAction: () => handleUploadConfig(),
     shortcuts: { shift: true, key: 'u' },
   };
@@ -94,23 +94,31 @@ export const handleDownloadConfig = (config: SystemConfigDto) => {
 };
 
 export const handleUploadConfig = () => {
-  const input = globalThis.document.createElement('input');
+  const input = document.createElement('input');
   input.setAttribute('type', 'file');
-  input.setAttribute('accept', 'json');
+  input.setAttribute('accept', '.json');
   input.setAttribute('style', 'display: none');
 
-  input.addEventListener('change', ({ target }) => {
-    const file = (target as HTMLInputElement).files?.[0];
+  input.addEventListener('change', () => {
+    const file = input.files?.[0];
     if (!file) {
       return;
     }
-    const reader = async () => {
-      const text = await file.text();
-      const newConfig = JSON.parse(text);
-      await handleSystemConfigSave(newConfig);
-    };
-    reader().catch((error) => console.error('Error handling JSON config upload', error));
-    globalThis.document.append(input);
+
+    file
+      .text()
+      .then((text) => {
+        const newConfig = JSON.parse(text);
+        return handleSystemConfigSave(newConfig);
+      })
+      .catch((error) => {
+        console.error('Error handling JSON config upload', error);
+      })
+      .finally(() => {
+        input.remove();
+      });
   });
-  input.remove();
+
+  document.body.append(input);
+  input.click();
 };
