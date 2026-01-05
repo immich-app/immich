@@ -162,7 +162,7 @@
     "typescript": "^5.9.2",
     "typescript-eslint": "^8.28.0",
     "unplugin-swc": "^1.4.5",
-    "vite-tsconfig-paths": "^5.0.0",
+    "vite-tsconfig-paths": "^6.0.0",
     "vitest": "^3.0.0"
   },
   "volta": {
