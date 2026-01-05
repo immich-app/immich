@@ -30,6 +30,7 @@
   import Timeline from '$lib/components/timeline/Timeline.svelte';
   import { AlbumPageViewMode, AppRoute } from '$lib/constants';
   import { activityManager } from '$lib/managers/activity-manager.svelte';
+  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
@@ -100,7 +101,6 @@
   let backUrl: string = $state(AppRoute.ALBUMS);
   let viewMode: AlbumPageViewMode = $state(AlbumPageViewMode.VIEW);
   let isCreatingSharedAlbum = $state(false);
-  let isShowActivity = $state(false);
   let albumOrder: AssetOrder | undefined = $state(data.album.order);
 
   let timelineManager = $state<TimelineManager>() as TimelineManager;
@@ -136,10 +136,6 @@
     } catch (error) {
       handleError(error, $t('errors.cant_change_asset_favorite'));
     }
-  };
-
-  const handleOpenAndCloseActivityTab = () => {
-    isShowActivity = !isShowActivity;
   };
 
   const handleStartSlideshow = async () => {
@@ -302,7 +298,7 @@
 
   $effect(() => {
     if (!album.isActivityEnabled && activityManager.commentCount === 0) {
-      isShowActivity = false;
+      assetViewerManager.closeActivityPanel();
     }
   });
 
@@ -537,7 +533,6 @@
             numberOfComments={activityManager.commentCount}
             numberOfLikes={undefined}
             onFavorite={handleFavorite}
-            onOpenActivityTab={handleOpenAndCloseActivityTab}
           />
         </div>
       {/if}
@@ -724,7 +719,7 @@
       {/if}
     {/if}
   </div>
-  {#if album.albumUsers.length > 0 && album && isShowActivity && $user && !$showAssetViewer}
+  {#if album.albumUsers.length > 0 && album && assetViewerManager.isShowActivityPanel && $user && !$showAssetViewer}
     <div class="flex">
       <div
         transition:fly={{ duration: 150 }}
@@ -737,7 +732,6 @@
           disabled={!album.isActivityEnabled}
           albumOwnerId={album.ownerId}
           albumId={album.id}
-          onClose={handleOpenAndCloseActivityTab}
         />
       </div>
     </div>

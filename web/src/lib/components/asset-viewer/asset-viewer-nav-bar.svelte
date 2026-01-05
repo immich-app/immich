@@ -24,6 +24,7 @@
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import { AppRoute } from '$lib/constants';
+  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { getAssetActions, handleReplaceAsset } from '$lib/services/asset.service';
   import { photoViewerImgElement } from '$lib/stores/assets-store.svelte';
@@ -68,7 +69,6 @@
     person?: PersonResponseDto | null;
     stack?: StackResponseDto | null;
     showCloseButton?: boolean;
-    showDetailButton: boolean;
     showSlideshow?: boolean;
     onZoomImage: () => void;
     onCopyImage?: () => Promise<void>;
@@ -77,7 +77,6 @@
     onUndoDelete?: OnUndoDelete;
     onRunJob: (name: AssetJobName) => void;
     onPlaySlideshow: () => void;
-    onShowDetail: () => void;
     // export let showEditorHandler: () => void;
     onClose: () => void;
     motionPhoto?: Snippet;
@@ -91,7 +90,6 @@
     person = null,
     stack = null,
     showCloseButton = true,
-    showDetailButton,
     showSlideshow = false,
     onZoomImage,
     onCopyImage,
@@ -100,7 +98,6 @@
     onUndoDelete = undefined,
     onRunJob,
     onPlaySlideshow,
-    onShowDetail,
     onClose,
     motionPhoto,
     playOriginalVideo = false,
@@ -143,7 +140,7 @@
         shape="round"
         color="danger"
         icon={mdiAlertOutline}
-        onclick={onShowDetail}
+        onclick={() => assetViewerManager.toggleDetailPanel()}
         aria-label={$t('asset_offline')}
       />
     {/if}
@@ -176,8 +173,8 @@
       <DownloadAction asset={toTimelineAsset(asset)} />
     {/if}
 
-    {#if showDetailButton}
-      <ShowDetailAction {onShowDetail} />
+    {#if asset.hasMetadata}
+      <ShowDetailAction />
     {/if}
 
     {#if isOwner}
