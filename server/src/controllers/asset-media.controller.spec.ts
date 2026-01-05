@@ -14,7 +14,6 @@ const makeUploadDto = (options?: { omit: string }): Record<string, any> => {
     fileCreatedAt: new Date().toISOString(),
     fileModifiedAt: new Date().toISOString(),
     isFavorite: 'false',
-    duration: '0:00:00.000000',
   };
 
   const omit = options?.omit;
