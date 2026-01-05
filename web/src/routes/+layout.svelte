@@ -166,7 +166,7 @@
       title: $t('external_libraries'),
       description: $t('admin.external_libraries_page_description'),
       icon: mdiBookshelf,
-      onAction: () => goto(AppRoute.ADMIN_LIBRARY_MANAGEMENT),
+      onAction: () => goto(AppRoute.ADMIN_LIBRARIES),
     },
     {
       title: $t('server_stats'),

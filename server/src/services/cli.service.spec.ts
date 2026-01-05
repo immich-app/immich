@@ -89,6 +89,7 @@ describe(CliService.name, () => {
         alreadyDisabled: true,
       });
 
+      expect(mocks.app.sendOneShotAppRestart).toHaveBeenCalledTimes(0);
       expect(mocks.systemMetadata.set).toHaveBeenCalledTimes(0);
       expect(mocks.event.emit).toHaveBeenCalledTimes(0);
     });
@@ -99,6 +100,7 @@ describe(CliService.name, () => {
         alreadyDisabled: false,
       });
 
+      expect(mocks.app.sendOneShotAppRestart).toHaveBeenCalled();
       expect(mocks.systemMetadata.set).toHaveBeenCalledWith(SystemMetadataKey.MaintenanceMode, {
         isMaintenanceMode: false,
       });
@@ -114,6 +116,7 @@ describe(CliService.name, () => {
         }),
       );
 
+      expect(mocks.app.sendOneShotAppRestart).toHaveBeenCalledTimes(0);
       expect(mocks.systemMetadata.set).toHaveBeenCalledTimes(0);
       expect(mocks.event.emit).toHaveBeenCalledTimes(0);
     });
@@ -126,6 +129,7 @@ describe(CliService.name, () => {
         }),
       );
 
+      expect(mocks.app.sendOneShotAppRestart).toHaveBeenCalled();
       expect(mocks.systemMetadata.set).toHaveBeenCalledWith(SystemMetadataKey.MaintenanceMode, {
         isMaintenanceMode: true,
         secret: expect.stringMatching(/^\w{128}$/),

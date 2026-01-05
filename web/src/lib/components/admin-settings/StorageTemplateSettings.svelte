@@ -60,6 +60,9 @@
       assetId: 'a8312960-e277-447d-b4ea-56717ccba856',
       assetIdShort: '56717ccba856',
       album: $t('album_name'),
+      make: 'FUJIFILM',
+      model: 'X-T50',
+      lensModel: 'XF27mm F2.8 R WR',
     };
 
     const dt = luxon.DateTime.fromISO(new Date('2022-02-03T04:56:05.250').toISOString());

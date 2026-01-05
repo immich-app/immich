@@ -27,6 +27,9 @@ export const getShortDateRange = (startDate: string | Date, endDate: string | Da
   const endDateLocalized = endDate.toLocaleString(userLocale, {
     month: 'short',
     year: 'numeric',
+    // The API returns the date in UTC. If the earliest asset was taken on Jan 1st at 1am,
+    // we expect the album to start in January, even if the local timezone is UTC-5 for instance.
+    timeZone: 'UTC',
   });
 
   if (startDate.getFullYear() === endDate.getFullYear()) {
