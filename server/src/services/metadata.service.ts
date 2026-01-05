@@ -366,9 +366,13 @@ export class MetadataService extends BaseService {
 
     const isChanged = sidecarPath !== sidecarFile?.path;
 
-    this.logger.debug(
-      `Sidecar check found old=${sidecarFile?.path}, new=${sidecarPath} will ${isChanged ? 'update' : 'do nothing for'}  asset ${asset.id}: ${asset.originalPath}`,
-    );
+    if (sidecarFile?.path || sidecarPath) {
+      this.logger.debug(
+        `Sidecar check found old=${sidecarFile?.path}, new=${sidecarPath} will ${isChanged ? 'update' : 'do nothing for'} asset ${asset.id}: ${asset.originalPath}`,
+      );
+    } else {
+      this.logger.verbose(`No sidecars found for asset ${asset.id}: ${asset.originalPath}`);
+    }
 
     if (!isChanged) {
       return JobStatus.Skipped;
@@ -858,9 +862,13 @@ export class MetadataService extends BaseService {
     const result = firstDateTime(exifTags);
     const tag = result?.tag;
     const dateTime = result?.dateTime;
-    this.logger.verbose(
-      `Date and time is ${dateTime} using exifTag ${tag} for asset ${asset.id}: ${asset.originalPath}`,
-    );
+    if (dateTime) {
+      this.logger.verbose(
+        `Date and time is ${dateTime} using exifTag ${tag} for asset ${asset.id}: ${asset.originalPath}`,
+      );
+    } else {
+      this.logger.verbose(`No exif date time information found for asset ${asset.id}: ${asset.originalPath}`);
+    }
 
     // timezone
     let timeZone = exifTags.tz ?? null;

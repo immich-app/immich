@@ -144,14 +144,28 @@ export class AssetService extends BaseService {
     await this.requireAccess({ auth, permission: Permission.AssetUpdate, ids });
 
     const assetDto = _.omitBy({ isFavorite, visibility, duplicateId }, _.isUndefined);
-    const exifDto = _.omitBy({ latitude, longitude, rating, description, dateTimeOriginal }, _.isUndefined);
+    const exifDto = _.omitBy(
+      {
+        latitude,
+        longitude,
+        rating,
+        description,
+        dateTimeOriginal,
+      },
+      _.isUndefined,
+    );
+    const extractedTimeZone = dateTimeOriginal ? DateTime.fromISO(dateTimeOriginal, { setZone: true }).zone : undefined;
 
     if (Object.keys(exifDto).length > 0) {
       await this.assetRepository.updateAllExif(ids, exifDto);
     }
 
-    if ((dateTimeRelative !== undefined && dateTimeRelative !== 0) || timeZone !== undefined) {
-      await this.assetRepository.updateDateTimeOriginal(ids, dateTimeRelative, timeZone);
+    if (
+      (dateTimeRelative !== undefined && dateTimeRelative !== 0) ||
+      timeZone !== undefined ||
+      extractedTimeZone?.type === 'fixed'
+    ) {
+      await this.assetRepository.updateDateTimeOriginal(ids, dateTimeRelative, timeZone ?? extractedTimeZone?.name);
     }
 
     if (Object.keys(assetDto).length > 0) {
@@ -436,7 +450,19 @@ export class AssetService extends BaseService {
     rating?: number;
   }) {
     const { id, description, dateTimeOriginal, latitude, longitude, rating } = dto;
-    const writes = _.omitBy({ description, dateTimeOriginal, latitude, longitude, rating }, _.isUndefined);
+    const extractedTimeZone = dateTimeOriginal ? DateTime.fromISO(dateTimeOriginal, { setZone: true }).zone : undefined;
+    const writes = _.omitBy(
+      {
+        description,
+        dateTimeOriginal,
+        timeZone: extractedTimeZone?.type === 'fixed' ? extractedTimeZone.name : undefined,
+        latitude,
+        longitude,
+        rating,
+      },
+      _.isUndefined,
+    );
+
     if (Object.keys(writes).length > 0) {
       await this.assetRepository.upsertExif(
         updateLockedColumns({
