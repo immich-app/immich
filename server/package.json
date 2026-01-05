@@ -47,7 +47,7 @@
     "@opentelemetry/context-async-hooks": "^2.0.0",
     "@opentelemetry/exporter-prometheus": "^0.208.0",
     "@opentelemetry/instrumentation-http": "^0.208.0",
-    "@opentelemetry/instrumentation-ioredis": "^0.56.0",
+    "@opentelemetry/instrumentation-ioredis": "^0.57.0",
     "@opentelemetry/instrumentation-nestjs-core": "^0.55.0",
     "@opentelemetry/instrumentation-pg": "^0.61.0",
     "@opentelemetry/resources": "^2.0.1",
