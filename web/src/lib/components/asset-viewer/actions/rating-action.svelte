@@ -18,7 +18,6 @@
   const rateAsset = async (rating: number | null) => {
     try {
       const updateAssetDto = rating === null ? {} : { rating };
-
       await updateAsset({
         id: asset.id,
         updateAssetDto,

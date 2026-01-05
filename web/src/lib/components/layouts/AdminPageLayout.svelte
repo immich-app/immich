@@ -1,7 +1,7 @@
 <script lang="ts">
   import PageContent from '$lib/components/layouts/PageContent.svelte';
   import NavigationBar from '$lib/components/shared-components/navigation-bar/navigation-bar.svelte';
-  import AdminSidebar from '$lib/sidebars/AdminSidebar.svelte';
+  import AdminSidebar from '$lib/components/AdminSidebar.svelte';
   import { sidebarStore } from '$lib/stores/sidebar.svelte';
   import type { HeaderButtonActionItem } from '$lib/types';
   import {

@@ -31,6 +31,7 @@
   import { user } from '$lib/stores/user.store';
   import { photoZoomState } from '$lib/stores/zoom-image.store';
   import { getAssetJobName, getSharedLink } from '$lib/utils';
+  import type { OnUndoDelete } from '$lib/utils/actions';
   import { canCopyImageToClipboard } from '$lib/utils/asset-utils';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import {
@@ -74,6 +75,7 @@
     onCopyImage?: () => Promise<void>;
     preAction: PreAction;
     onAction: OnAction;
+    onUndoDelete?: OnUndoDelete;
     onRunJob: (name: AssetJobName) => void;
     onPlaySlideshow: () => void;
     onShowDetail: () => void;
@@ -96,6 +98,7 @@
     onCopyImage,
     preAction,
     onAction,
+    onUndoDelete = undefined,
     onRunJob,
     onPlaySlideshow,
     onShowDetail,
@@ -184,7 +187,7 @@
     {/if}
 
     {#if isOwner}
-      <DeleteAction {asset} {onAction} {preAction} />
+      <DeleteAction {asset} {onAction} {preAction} {onUndoDelete} />
 
       <ButtonContextMenu direction="left" align="top-right" color="secondary" title={$t('more')} icon={mdiDotsVertical}>
         {#if showSlideshow && !isLocked}
