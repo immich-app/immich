@@ -26,7 +26,7 @@
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { systemConfigManager } from '$lib/managers/system-config-manager.svelte';
   import { getSystemConfigActions } from '$lib/services/system-config.service';
-  import { Alert, CommandPaletteContext, Container } from '@immich/ui';
+  import { Alert, CommandPaletteDefaultProvider, Container } from '@immich/ui';
   import {
     mdiAccountOutline,
     mdiBackupRestore,
@@ -214,7 +214,7 @@
   );
 </script>
 
-<CommandPaletteContext commands={[CopyToClipboard, Upload, Download]} />
+<CommandPaletteDefaultProvider name={$t('admin.system_settings')} actions={[CopyToClipboard, Upload, Download]} />
 
 <AdminPageLayout breadcrumbs={[{ title: data.meta.title }]} actions={[CopyToClipboard, Download, Upload]}>
   <Container size="large" center>

@@ -1,14 +1,13 @@
-<script lang="ts">
+<script lang="ts" generics="T extends Record<string, unknown>">
   import { TooltipProvider } from '@immich/ui';
   import type { Component } from 'svelte';
 
-  type Props<T extends Record<string, unknown>> = {
+  type Props = {
     component: Component<T>;
     componentProps: T;
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { component: Test, componentProps }: Props<any> = $props();
+  const { component: Test, componentProps }: Props = $props();
 </script>
 
 <TooltipProvider>

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { sdkMock } from '$lib/__mocks__/sdk.mock';
 import { renderWithTooltips } from '$tests/helpers';
 import { albumFactory } from '@test-data/factories/album-factory';
@@ -11,7 +10,7 @@ import AlbumCard from '../album-card.svelte';
 const onShowContextMenu = vi.fn();
 
 describe('AlbumCard component', () => {
-  let sut: RenderResult<any>;
+  let sut: RenderResult<typeof AlbumCard>;
 
   beforeAll(async () => {
     await init({ fallbackLocale: 'en-US' });

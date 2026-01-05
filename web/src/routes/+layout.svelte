@@ -22,7 +22,7 @@
   import { maintenanceShouldRedirect } from '$lib/utils/maintenance';
   import { isAssetViewerRoute } from '$lib/utils/navigation';
   import {
-    CommandPaletteContext,
+    CommandPaletteDefaultProvider,
     TooltipProvider,
     modalManager,
     setTranslations,
@@ -187,7 +187,7 @@
 </script>
 
 <OnEvents {onReleaseEvent} />
-<CommandPaletteContext {commands} />
+<CommandPaletteDefaultProvider name="Global" actions={commands} />
 
 <svelte:head>
   <title>{page.data.meta?.title || 'Web'} - Immich</title>

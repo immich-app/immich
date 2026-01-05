@@ -16,12 +16,13 @@ describe('AssetViewerNavBar component', () => {
     showShareButton: false,
     preAction: () => {},
     onZoomImage: () => {},
-    onCopyImage: () => {},
     onAction: () => {},
     onRunJob: () => {},
     onPlaySlideshow: () => {},
     onShowDetail: () => {},
     onClose: () => {},
+    playOriginalVideo: false,
+    setPlayOriginalVideo: () => Promise.resolve(),
   };
 
   beforeAll(() => {

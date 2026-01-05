@@ -1,7 +1,13 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import TestWrapper from '$lib/components/TestWrapper.svelte';
-import { render } from '@testing-library/svelte';
+import { render, type RenderResult } from '@testing-library/svelte';
+import { type Component } from 'svelte';
 
-export const renderWithTooltips = (component: any, props: any = {}) => {
-  return render(TestWrapper, { component, componentProps: props } as any);
+export const renderWithTooltips = <T extends Record<string, unknown>, K extends Component<T>>(
+  component: K,
+  props: T,
+) => {
+  return render(TestWrapper as Component<{ component: K; componentProps: T }>, {
+    component,
+    componentProps: props,
+  }) as unknown as RenderResult<K>;
 };

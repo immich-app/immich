@@ -5,7 +5,7 @@
   import { locale } from '$lib/stores/preferences.store';
   import { getByteUnitString } from '$lib/utils/byte-units';
   import { searchUsersAdmin, type UserAdminResponseDto } from '@immich/sdk';
-  import { Button, CommandPaletteContext, Container, Icon } from '@immich/ui';
+  import { Button, CommandPaletteDefaultProvider, Container, Icon } from '@immich/ui';
   import { mdiInfinity } from '@mdi/js';
   import type { Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -44,7 +44,7 @@
   {onUserAdminDeleted}
 />
 
-<CommandPaletteContext commands={[Create]} />
+<CommandPaletteDefaultProvider name={$t('users')} actions={[Create]} />
 
 <AdminPageLayout breadcrumbs={[{ title: data.meta.title }]} actions={[Create]}>
   <Container center size="large">
