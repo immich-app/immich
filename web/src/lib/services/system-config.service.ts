@@ -41,7 +41,7 @@ export const getSystemConfigActions = (
     description: $t('admin.import_config_from_json_description'),
     type: $t('command'),
     icon: mdiUpload,
-    // $if: () => !featureFlags.configFile,
+    $if: () => !featureFlags.configFile,
     onAction: () => handleUploadConfig(),
     shortcuts: { shift: true, key: 'u' },
   };
