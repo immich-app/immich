@@ -1,5 +1,6 @@
 import '@testing-library/jest-dom';
 import { init } from 'svelte-i18n';
+import { vi } from 'vitest';
 
 beforeAll(async () => {
   await init({ fallbackLocale: 'dev' });
@@ -25,10 +26,7 @@ const localStorageMock = {
   removeItem: vi.fn(),
   clear: vi.fn(),
 };
-Object.defineProperty(globalThis, 'localStorage', {
-  writable: true,
-  value: localStorageMock,
-});
+vi.stubGlobal('localStorage', localStorageMock);
 
 vi.mock('$env/dynamic/public', () => {
   return {
