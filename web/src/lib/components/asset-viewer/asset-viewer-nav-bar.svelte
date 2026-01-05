@@ -229,11 +229,7 @@
 
         {#if !isLocked}
           <ArchiveAction {asset} {onAction} {preAction} />
-          <MenuOption 
-            icon={mdiUpload}
-            onClick={() => handleReplaceAsset(asset.id)}
-            text={$t('replace_with_upload')} 
-          />
+          <MenuOption icon={mdiUpload} onClick={() => handleReplaceAsset(asset.id)} text={$t('replace_with_upload')} />
           {#if !asset.isArchived && !asset.isTrashed}
             <MenuOption
               icon={mdiImageSearch}
