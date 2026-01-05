@@ -10,7 +10,7 @@ export const load = (async ({ url }) => {
 
   const { isElevated, pinCode } = await getAuthStatus();
   if (!isElevated || !pinCode) {
-    redirect(302, `${AppRoute.AUTH_PIN_PROMPT}?continue=${encodeURIComponent(url.pathname + url.search)}`);
+    redirect(307, `${AppRoute.AUTH_PIN_PROMPT}?continue=${encodeURIComponent(url.pathname + url.search)}`);
   }
 
   const $t = await getFormatter();
