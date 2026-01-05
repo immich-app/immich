@@ -7323,16 +7323,12 @@ class TrashedLocalAssetEntity extends Table
     requiredDuringInsert: false,
     defaultValue: const CustomExpression('0'),
   );
-  late final GeneratedColumn<bool> isRestorable = GeneratedColumn<bool>(
-    'is_restorable',
+  late final GeneratedColumn<int> source = GeneratedColumn<int>(
+    'source',
     aliasedName,
     false,
-    type: DriftSqlType.bool,
-    requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'CHECK ("is_restorable" IN (0, 1))',
-    ),
-    defaultValue: const CustomExpression('0'),
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
   );
   @override
   List<GeneratedColumn> get $columns => [
@@ -7348,7 +7344,7 @@ class TrashedLocalAssetEntity extends Table
     checksum,
     isFavorite,
     orientation,
-    isRestorable,
+    source,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -7412,9 +7408,9 @@ class TrashedLocalAssetEntity extends Table
         DriftSqlType.int,
         data['${effectivePrefix}orientation'],
       )!,
-      isRestorable: attachedDatabase.typeMapping.read(
-        DriftSqlType.bool,
-        data['${effectivePrefix}is_restorable'],
+      source: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}source'],
       )!,
     );
   }
@@ -7444,7 +7440,7 @@ class TrashedLocalAssetEntityData extends DataClass
   final String? checksum;
   final bool isFavorite;
   final int orientation;
-  final bool isRestorable;
+  final int source;
   const TrashedLocalAssetEntityData({
     required this.name,
     required this.type,
@@ -7458,7 +7454,7 @@ class TrashedLocalAssetEntityData extends DataClass
     this.checksum,
     required this.isFavorite,
     required this.orientation,
-    required this.isRestorable,
+    required this.source,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -7483,7 +7479,7 @@ class TrashedLocalAssetEntityData extends DataClass
     }
     map['is_favorite'] = Variable<bool>(isFavorite);
     map['orientation'] = Variable<int>(orientation);
-    map['is_restorable'] = Variable<bool>(isRestorable);
+    map['source'] = Variable<int>(source);
     return map;
   }
 
@@ -7505,7 +7501,7 @@ class TrashedLocalAssetEntityData extends DataClass
       checksum: serializer.fromJson<String?>(json['checksum']),
       isFavorite: serializer.fromJson<bool>(json['isFavorite']),
       orientation: serializer.fromJson<int>(json['orientation']),
-      isRestorable: serializer.fromJson<bool>(json['isRestorable']),
+      source: serializer.fromJson<int>(json['source']),
     );
   }
   @override
@@ -7524,7 +7520,7 @@ class TrashedLocalAssetEntityData extends DataClass
       'checksum': serializer.toJson<String?>(checksum),
       'isFavorite': serializer.toJson<bool>(isFavorite),
       'orientation': serializer.toJson<int>(orientation),
-      'isRestorable': serializer.toJson<bool>(isRestorable),
+      'source': serializer.toJson<int>(source),
     };
   }
 
@@ -7541,7 +7537,7 @@ class TrashedLocalAssetEntityData extends DataClass
     Value<String?> checksum = const Value.absent(),
     bool? isFavorite,
     int? orientation,
-    bool? isRestorable,
+    int? source,
   }) => TrashedLocalAssetEntityData(
     name: name ?? this.name,
     type: type ?? this.type,
@@ -7557,7 +7553,7 @@ class TrashedLocalAssetEntityData extends DataClass
     checksum: checksum.present ? checksum.value : this.checksum,
     isFavorite: isFavorite ?? this.isFavorite,
     orientation: orientation ?? this.orientation,
-    isRestorable: isRestorable ?? this.isRestorable,
+    source: source ?? this.source,
   );
   TrashedLocalAssetEntityData copyWithCompanion(
     TrashedLocalAssetEntityCompanion data,
@@ -7581,9 +7577,7 @@ class TrashedLocalAssetEntityData extends DataClass
       orientation: data.orientation.present
           ? data.orientation.value
           : this.orientation,
-      isRestorable: data.isRestorable.present
-          ? data.isRestorable.value
-          : this.isRestorable,
+      source: data.source.present ? data.source.value : this.source,
     );
   }
 
@@ -7602,7 +7596,7 @@ class TrashedLocalAssetEntityData extends DataClass
           ..write('checksum: $checksum, ')
           ..write('isFavorite: $isFavorite, ')
           ..write('orientation: $orientation, ')
-          ..write('isRestorable: $isRestorable')
+          ..write('source: $source')
           ..write(')'))
         .toString();
   }
@@ -7621,7 +7615,7 @@ class TrashedLocalAssetEntityData extends DataClass
     checksum,
     isFavorite,
     orientation,
-    isRestorable,
+    source,
   );
   @override
   bool operator ==(Object other) =>
@@ -7639,7 +7633,7 @@ class TrashedLocalAssetEntityData extends DataClass
           other.checksum == this.checksum &&
           other.isFavorite == this.isFavorite &&
           other.orientation == this.orientation &&
-          other.isRestorable == this.isRestorable);
+          other.source == this.source);
 }
 
 class TrashedLocalAssetEntityCompanion
@@ -7656,7 +7650,7 @@ class TrashedLocalAssetEntityCompanion
   final Value<String?> checksum;
   final Value<bool> isFavorite;
   final Value<int> orientation;
-  final Value<bool> isRestorable;
+  final Value<int> source;
   const TrashedLocalAssetEntityCompanion({
     this.name = const Value.absent(),
     this.type = const Value.absent(),
@@ -7670,7 +7664,7 @@ class TrashedLocalAssetEntityCompanion
     this.checksum = const Value.absent(),
     this.isFavorite = const Value.absent(),
     this.orientation = const Value.absent(),
-    this.isRestorable = const Value.absent(),
+    this.source = const Value.absent(),
   });
   TrashedLocalAssetEntityCompanion.insert({
     required String name,
@@ -7685,11 +7679,12 @@ class TrashedLocalAssetEntityCompanion
     this.checksum = const Value.absent(),
     this.isFavorite = const Value.absent(),
     this.orientation = const Value.absent(),
-    this.isRestorable = const Value.absent(),
+    required int source,
   }) : name = Value(name),
        type = Value(type),
        id = Value(id),
-       albumId = Value(albumId);
+       albumId = Value(albumId),
+       source = Value(source);
   static Insertable<TrashedLocalAssetEntityData> custom({
     Expression<String>? name,
     Expression<int>? type,
@@ -7703,7 +7698,7 @@ class TrashedLocalAssetEntityCompanion
     Expression<String>? checksum,
     Expression<bool>? isFavorite,
     Expression<int>? orientation,
-    Expression<bool>? isRestorable,
+    Expression<int>? source,
   }) {
     return RawValuesInsertable({
       if (name != null) 'name': name,
@@ -7718,7 +7713,7 @@ class TrashedLocalAssetEntityCompanion
       if (checksum != null) 'checksum': checksum,
       if (isFavorite != null) 'is_favorite': isFavorite,
       if (orientation != null) 'orientation': orientation,
-      if (isRestorable != null) 'is_restorable': isRestorable,
+      if (source != null) 'source': source,
     });
   }
 
@@ -7735,7 +7730,7 @@ class TrashedLocalAssetEntityCompanion
     Value<String?>? checksum,
     Value<bool>? isFavorite,
     Value<int>? orientation,
-    Value<bool>? isRestorable,
+    Value<int>? source,
   }) {
     return TrashedLocalAssetEntityCompanion(
       name: name ?? this.name,
@@ -7750,7 +7745,7 @@ class TrashedLocalAssetEntityCompanion
       checksum: checksum ?? this.checksum,
       isFavorite: isFavorite ?? this.isFavorite,
       orientation: orientation ?? this.orientation,
-      isRestorable: isRestorable ?? this.isRestorable,
+      source: source ?? this.source,
     );
   }
 
@@ -7793,8 +7788,8 @@ class TrashedLocalAssetEntityCompanion
     if (orientation.present) {
       map['orientation'] = Variable<int>(orientation.value);
     }
-    if (isRestorable.present) {
-      map['is_restorable'] = Variable<bool>(isRestorable.value);
+    if (source.present) {
+      map['source'] = Variable<int>(source.value);
     }
     return map;
   }
@@ -7814,7 +7809,7 @@ class TrashedLocalAssetEntityCompanion
           ..write('checksum: $checksum, ')
           ..write('isFavorite: $isFavorite, ')
           ..write('orientation: $orientation, ')
-          ..write('isRestorable: $isRestorable')
+          ..write('source: $source')
           ..write(')'))
         .toString();
   }

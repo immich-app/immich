@@ -6385,20 +6385,16 @@ class Shape25 extends i0.VersionedTable {
       columnsByName['is_favorite']! as i1.GeneratedColumn<bool>;
   i1.GeneratedColumn<int> get orientation =>
       columnsByName['orientation']! as i1.GeneratedColumn<int>;
-  i1.GeneratedColumn<bool> get isRestorable =>
-      columnsByName['is_restorable']! as i1.GeneratedColumn<bool>;
+  i1.GeneratedColumn<int> get source =>
+      columnsByName['source']! as i1.GeneratedColumn<int>;
 }
 
-i1.GeneratedColumn<bool> _column_97(String aliasedName) =>
-    i1.GeneratedColumn<bool>(
-      'is_restorable',
+i1.GeneratedColumn<int> _column_97(String aliasedName) =>
+    i1.GeneratedColumn<int>(
+      'source',
       aliasedName,
       false,
-      type: i1.DriftSqlType.bool,
-      defaultConstraints: i1.GeneratedColumn.constraintIsAlways(
-        'CHECK ("is_restorable" IN (0, 1))',
-      ),
-      defaultValue: const CustomExpression('0'),
+      type: i1.DriftSqlType.int,
     );
 i0.MigrationStepWithVersion migrationSteps({
   required Future<void> Function(i1.Migrator m, Schema2 schema) from1To2,

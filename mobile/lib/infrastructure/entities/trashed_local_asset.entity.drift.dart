@@ -22,7 +22,7 @@ typedef $$TrashedLocalAssetEntityTableCreateCompanionBuilder =
       i0.Value<String?> checksum,
       i0.Value<bool> isFavorite,
       i0.Value<int> orientation,
-      i0.Value<bool> isRestorable,
+      required i3.TrashOrigin source,
     });
 typedef $$TrashedLocalAssetEntityTableUpdateCompanionBuilder =
     i1.TrashedLocalAssetEntityCompanion Function({
@@ -38,7 +38,7 @@ typedef $$TrashedLocalAssetEntityTableUpdateCompanionBuilder =
       i0.Value<String?> checksum,
       i0.Value<bool> isFavorite,
       i0.Value<int> orientation,
-      i0.Value<bool> isRestorable,
+      i0.Value<i3.TrashOrigin> source,
     });
 
 class $$TrashedLocalAssetEntityTableFilterComposer
@@ -112,9 +112,10 @@ class $$TrashedLocalAssetEntityTableFilterComposer
     builder: (column) => i0.ColumnFilters(column),
   );
 
-  i0.ColumnFilters<bool> get isRestorable => $composableBuilder(
-    column: $table.isRestorable,
-    builder: (column) => i0.ColumnFilters(column),
+  i0.ColumnWithTypeConverterFilters<i3.TrashOrigin, i3.TrashOrigin, int>
+  get source => $composableBuilder(
+    column: $table.source,
+    builder: (column) => i0.ColumnWithTypeConverterFilters(column),
   );
 }
 
@@ -188,8 +189,8 @@ class $$TrashedLocalAssetEntityTableOrderingComposer
     builder: (column) => i0.ColumnOrderings(column),
   );
 
-  i0.ColumnOrderings<bool> get isRestorable => $composableBuilder(
-    column: $table.isRestorable,
+  i0.ColumnOrderings<int> get source => $composableBuilder(
+    column: $table.source,
     builder: (column) => i0.ColumnOrderings(column),
   );
 }
@@ -246,10 +247,8 @@ class $$TrashedLocalAssetEntityTableAnnotationComposer
     builder: (column) => column,
   );
 
-  i0.GeneratedColumn<bool> get isRestorable => $composableBuilder(
-    column: $table.isRestorable,
-    builder: (column) => column,
-  );
+  i0.GeneratedColumnWithTypeConverter<i3.TrashOrigin, int> get source =>
+      $composableBuilder(column: $table.source, builder: (column) => column);
 }
 
 class $$TrashedLocalAssetEntityTableTableManager
@@ -310,7 +309,7 @@ class $$TrashedLocalAssetEntityTableTableManager
                 i0.Value<String?> checksum = const i0.Value.absent(),
                 i0.Value<bool> isFavorite = const i0.Value.absent(),
                 i0.Value<int> orientation = const i0.Value.absent(),
-                i0.Value<bool> isRestorable = const i0.Value.absent(),
+                i0.Value<i3.TrashOrigin> source = const i0.Value.absent(),
               }) => i1.TrashedLocalAssetEntityCompanion(
                 name: name,
                 type: type,
@@ -324,7 +323,7 @@ class $$TrashedLocalAssetEntityTableTableManager
                 checksum: checksum,
                 isFavorite: isFavorite,
                 orientation: orientation,
-                isRestorable: isRestorable,
+                source: source,
               ),
           createCompanionCallback:
               ({
@@ -340,7 +339,7 @@ class $$TrashedLocalAssetEntityTableTableManager
                 i0.Value<String?> checksum = const i0.Value.absent(),
                 i0.Value<bool> isFavorite = const i0.Value.absent(),
                 i0.Value<int> orientation = const i0.Value.absent(),
-                i0.Value<bool> isRestorable = const i0.Value.absent(),
+                required i3.TrashOrigin source,
               }) => i1.TrashedLocalAssetEntityCompanion.insert(
                 name: name,
                 type: type,
@@ -354,7 +353,7 @@ class $$TrashedLocalAssetEntityTableTableManager
                 checksum: checksum,
                 isFavorite: isFavorite,
                 orientation: orientation,
-                isRestorable: isRestorable,
+                source: source,
               ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), i0.BaseReferences(db, table, e)))
@@ -539,20 +538,17 @@ class $TrashedLocalAssetEntityTable extends i3.TrashedLocalAssetEntity
     requiredDuringInsert: false,
     defaultValue: const i4.Constant(0),
   );
-  static const i0.VerificationMeta _isRestorableMeta =
-      const i0.VerificationMeta('isRestorable');
   @override
-  late final i0.GeneratedColumn<bool> isRestorable = i0.GeneratedColumn<bool>(
-    'is_restorable',
-    aliasedName,
-    false,
-    type: i0.DriftSqlType.bool,
-    requiredDuringInsert: false,
-    defaultConstraints: i0.GeneratedColumn.constraintIsAlways(
-      'CHECK ("is_restorable" IN (0, 1))',
-    ),
-    defaultValue: const i4.Constant(false),
-  );
+  late final i0.GeneratedColumnWithTypeConverter<i3.TrashOrigin, int> source =
+      i0.GeneratedColumn<int>(
+        'source',
+        aliasedName,
+        false,
+        type: i0.DriftSqlType.int,
+        requiredDuringInsert: true,
+      ).withConverter<i3.TrashOrigin>(
+        i1.$TrashedLocalAssetEntityTable.$convertersource,
+      );
   @override
   List<i0.GeneratedColumn> get $columns => [
     name,
@@ -567,7 +563,7 @@ class $TrashedLocalAssetEntityTable extends i3.TrashedLocalAssetEntity
     checksum,
     isFavorite,
     orientation,
-    isRestorable,
+    source,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -656,15 +652,6 @@ class $TrashedLocalAssetEntityTable extends i3.TrashedLocalAssetEntity
         ),
       );
     }
-    if (data.containsKey('is_restorable')) {
-      context.handle(
-        _isRestorableMeta,
-        isRestorable.isAcceptableOrUnknown(
-          data['is_restorable']!,
-          _isRestorableMeta,
-        ),
-      );
-    }
     return context;
   }
 
@@ -727,10 +714,12 @@ class $TrashedLocalAssetEntityTable extends i3.TrashedLocalAssetEntity
         i0.DriftSqlType.int,
         data['${effectivePrefix}orientation'],
       )!,
-      isRestorable: attachedDatabase.typeMapping.read(
-        i0.DriftSqlType.bool,
-        data['${effectivePrefix}is_restorable'],
-      )!,
+      source: i1.$TrashedLocalAssetEntityTable.$convertersource.fromSql(
+        attachedDatabase.typeMapping.read(
+          i0.DriftSqlType.int,
+          data['${effectivePrefix}source'],
+        )!,
+      ),
     );
   }
 
@@ -741,6 +730,8 @@ class $TrashedLocalAssetEntityTable extends i3.TrashedLocalAssetEntity
 
   static i0.JsonTypeConverter2<i2.AssetType, int, int> $convertertype =
       const i0.EnumIndexConverter<i2.AssetType>(i2.AssetType.values);
+  static i0.JsonTypeConverter2<i3.TrashOrigin, int, int> $convertersource =
+      const i0.EnumIndexConverter<i3.TrashOrigin>(i3.TrashOrigin.values);
   @override
   bool get withoutRowId => true;
   @override
@@ -761,7 +752,7 @@ class TrashedLocalAssetEntityData extends i0.DataClass
   final String? checksum;
   final bool isFavorite;
   final int orientation;
-  final bool isRestorable;
+  final i3.TrashOrigin source;
   const TrashedLocalAssetEntityData({
     required this.name,
     required this.type,
@@ -775,7 +766,7 @@ class TrashedLocalAssetEntityData extends i0.DataClass
     this.checksum,
     required this.isFavorite,
     required this.orientation,
-    required this.isRestorable,
+    required this.source,
   });
   @override
   Map<String, i0.Expression> toColumns(bool nullToAbsent) {
@@ -804,7 +795,11 @@ class TrashedLocalAssetEntityData extends i0.DataClass
     }
     map['is_favorite'] = i0.Variable<bool>(isFavorite);
     map['orientation'] = i0.Variable<int>(orientation);
-    map['is_restorable'] = i0.Variable<bool>(isRestorable);
+    {
+      map['source'] = i0.Variable<int>(
+        i1.$TrashedLocalAssetEntityTable.$convertersource.toSql(source),
+      );
+    }
     return map;
   }
 
@@ -828,7 +823,9 @@ class TrashedLocalAssetEntityData extends i0.DataClass
       checksum: serializer.fromJson<String?>(json['checksum']),
       isFavorite: serializer.fromJson<bool>(json['isFavorite']),
       orientation: serializer.fromJson<int>(json['orientation']),
-      isRestorable: serializer.fromJson<bool>(json['isRestorable']),
+      source: i1.$TrashedLocalAssetEntityTable.$convertersource.fromJson(
+        serializer.fromJson<int>(json['source']),
+      ),
     );
   }
   @override
@@ -849,7 +846,9 @@ class TrashedLocalAssetEntityData extends i0.DataClass
       'checksum': serializer.toJson<String?>(checksum),
       'isFavorite': serializer.toJson<bool>(isFavorite),
       'orientation': serializer.toJson<int>(orientation),
-      'isRestorable': serializer.toJson<bool>(isRestorable),
+      'source': serializer.toJson<int>(
+        i1.$TrashedLocalAssetEntityTable.$convertersource.toJson(source),
+      ),
     };
   }
 
@@ -866,7 +865,7 @@ class TrashedLocalAssetEntityData extends i0.DataClass
     i0.Value<String?> checksum = const i0.Value.absent(),
     bool? isFavorite,
     int? orientation,
-    bool? isRestorable,
+    i3.TrashOrigin? source,
   }) => i1.TrashedLocalAssetEntityData(
     name: name ?? this.name,
     type: type ?? this.type,
@@ -882,7 +881,7 @@ class TrashedLocalAssetEntityData extends i0.DataClass
     checksum: checksum.present ? checksum.value : this.checksum,
     isFavorite: isFavorite ?? this.isFavorite,
     orientation: orientation ?? this.orientation,
-    isRestorable: isRestorable ?? this.isRestorable,
+    source: source ?? this.source,
   );
   TrashedLocalAssetEntityData copyWithCompanion(
     i1.TrashedLocalAssetEntityCompanion data,
@@ -906,9 +905,7 @@ class TrashedLocalAssetEntityData extends i0.DataClass
       orientation: data.orientation.present
           ? data.orientation.value
           : this.orientation,
-      isRestorable: data.isRestorable.present
-          ? data.isRestorable.value
-          : this.isRestorable,
+      source: data.source.present ? data.source.value : this.source,
     );
   }
 
@@ -927,7 +924,7 @@ class TrashedLocalAssetEntityData extends i0.DataClass
           ..write('checksum: $checksum, ')
           ..write('isFavorite: $isFavorite, ')
           ..write('orientation: $orientation, ')
-          ..write('isRestorable: $isRestorable')
+          ..write('source: $source')
           ..write(')'))
         .toString();
   }
@@ -946,7 +943,7 @@ class TrashedLocalAssetEntityData extends i0.DataClass
     checksum,
     isFavorite,
     orientation,
-    isRestorable,
+    source,
   );
   @override
   bool operator ==(Object other) =>
@@ -964,7 +961,7 @@ class TrashedLocalAssetEntityData extends i0.DataClass
           other.checksum == this.checksum &&
           other.isFavorite == this.isFavorite &&
           other.orientation == this.orientation &&
-          other.isRestorable == this.isRestorable);
+          other.source == this.source);
 }
 
 class TrashedLocalAssetEntityCompanion
@@ -981,7 +978,7 @@ class TrashedLocalAssetEntityCompanion
   final i0.Value<String?> checksum;
   final i0.Value<bool> isFavorite;
   final i0.Value<int> orientation;
-  final i0.Value<bool> isRestorable;
+  final i0.Value<i3.TrashOrigin> source;
   const TrashedLocalAssetEntityCompanion({
     this.name = const i0.Value.absent(),
     this.type = const i0.Value.absent(),
@@ -995,7 +992,7 @@ class TrashedLocalAssetEntityCompanion
     this.checksum = const i0.Value.absent(),
     this.isFavorite = const i0.Value.absent(),
     this.orientation = const i0.Value.absent(),
-    this.isRestorable = const i0.Value.absent(),
+    this.source = const i0.Value.absent(),
   });
   TrashedLocalAssetEntityCompanion.insert({
     required String name,
@@ -1010,11 +1007,12 @@ class TrashedLocalAssetEntityCompanion
     this.checksum = const i0.Value.absent(),
     this.isFavorite = const i0.Value.absent(),
     this.orientation = const i0.Value.absent(),
-    this.isRestorable = const i0.Value.absent(),
+    required i3.TrashOrigin source,
   }) : name = i0.Value(name),
        type = i0.Value(type),
        id = i0.Value(id),
-       albumId = i0.Value(albumId);
+       albumId = i0.Value(albumId),
+       source = i0.Value(source);
   static i0.Insertable<i1.TrashedLocalAssetEntityData> custom({
     i0.Expression<String>? name,
     i0.Expression<int>? type,
@@ -1028,7 +1026,7 @@ class TrashedLocalAssetEntityCompanion
     i0.Expression<String>? checksum,
     i0.Expression<bool>? isFavorite,
     i0.Expression<int>? orientation,
-    i0.Expression<bool>? isRestorable,
+    i0.Expression<int>? source,
   }) {
     return i0.RawValuesInsertable({
       if (name != null) 'name': name,
@@ -1043,7 +1041,7 @@ class TrashedLocalAssetEntityCompanion
       if (checksum != null) 'checksum': checksum,
       if (isFavorite != null) 'is_favorite': isFavorite,
       if (orientation != null) 'orientation': orientation,
-      if (isRestorable != null) 'is_restorable': isRestorable,
+      if (source != null) 'source': source,
     });
   }
 
@@ -1060,7 +1058,7 @@ class TrashedLocalAssetEntityCompanion
     i0.Value<String?>? checksum,
     i0.Value<bool>? isFavorite,
     i0.Value<int>? orientation,
-    i0.Value<bool>? isRestorable,
+    i0.Value<i3.TrashOrigin>? source,
   }) {
     return i1.TrashedLocalAssetEntityCompanion(
       name: name ?? this.name,
@@ -1075,7 +1073,7 @@ class TrashedLocalAssetEntityCompanion
       checksum: checksum ?? this.checksum,
       isFavorite: isFavorite ?? this.isFavorite,
       orientation: orientation ?? this.orientation,
-      isRestorable: isRestorable ?? this.isRestorable,
+      source: source ?? this.source,
     );
   }
 
@@ -1120,8 +1118,10 @@ class TrashedLocalAssetEntityCompanion
     if (orientation.present) {
       map['orientation'] = i0.Variable<int>(orientation.value);
     }
-    if (isRestorable.present) {
-      map['is_restorable'] = i0.Variable<bool>(isRestorable.value);
+    if (source.present) {
+      map['source'] = i0.Variable<int>(
+        i1.$TrashedLocalAssetEntityTable.$convertersource.toSql(source.value),
+      );
     }
     return map;
   }
@@ -1141,7 +1141,7 @@ class TrashedLocalAssetEntityCompanion
           ..write('checksum: $checksum, ')
           ..write('isFavorite: $isFavorite, ')
           ..write('orientation: $orientation, ')
-          ..write('isRestorable: $isRestorable')
+          ..write('source: $source')
           ..write(')'))
         .toString();
   }

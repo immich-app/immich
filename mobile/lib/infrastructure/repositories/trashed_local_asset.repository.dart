@@ -48,7 +48,7 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
                 _db.remoteAssetEntity.checksum.equalsExp(_db.trashedLocalAssetEntity.checksum),
               ),
             ])..where(
-              _db.trashedLocalAssetEntity.isRestorable.equals(true) &
+              _db.trashedLocalAssetEntity.source.isNotValue(TrashOrigin.localUser.index) &
                   _db.trashedLocalAssetEntity.albumId.isInQuery(selectedAlbumIds) &
                   _db.remoteAssetEntity.deletedAt.isNull(),
             ))
@@ -85,6 +85,7 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
             durationInSeconds: Value(item.asset.durationInSeconds),
             isFavorite: Value(item.asset.isFavorite),
             orientation: Value(item.asset.orientation),
+            source: TrashOrigin.localSync,
           );
 
           batch.insert<$TrashedLocalAssetEntityTable, TrashedLocalAssetEntityData>(
@@ -148,7 +149,7 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
             orientation: Value(asset.orientation),
             createdAt: Value(asset.createdAt),
             updatedAt: Value(asset.updatedAt),
-            isRestorable: const Value(true),
+            source: const Value(TrashOrigin.remoteSync),
           ),
         );
       }
@@ -244,7 +245,7 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
         checksum: Value(e.asset.checksum),
         isFavorite: Value(e.asset.isFavorite),
         orientation: Value(e.asset.orientation),
-        isRestorable: const Value(false),
+        source: TrashOrigin.localUser,
         albumId: e.albumId,
       );
     });
