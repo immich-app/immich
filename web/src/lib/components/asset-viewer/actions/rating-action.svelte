@@ -8,10 +8,10 @@
   import { updateAsset, type AssetResponseDto } from '@immich/sdk';
   import { t } from 'svelte-i18n';
 
-  interface Props {
+  type Props = {
     asset: AssetResponseDto;
     onAction: OnAction;
-  }
+  };
 
   let { asset, onAction }: Props = $props();
 
@@ -41,24 +41,16 @@
       handleError(error, $t('errors.unable_to_set_rating'));
     }
   };
-
-  const onShortcut0 = () => rateAsset(null);
-  const onShortcut1 = () => rateAsset(1);
-  const onShortcut2 = () => rateAsset(2);
-  const onShortcut3 = () => rateAsset(3);
-  const onShortcut4 = () => rateAsset(4);
-  const onShortcut5 = () => rateAsset(5);
 </script>
 
 <svelte:document
   use:shortcuts={$preferences?.ratings.enabled
     ? [
-        { shortcut: { key: '0' }, onShortcut: onShortcut0 },
-        { shortcut: { key: '1' }, onShortcut: onShortcut1 },
-        { shortcut: { key: '2' }, onShortcut: onShortcut2 },
-        { shortcut: { key: '3' }, onShortcut: onShortcut3 },
-        { shortcut: { key: '4' }, onShortcut: onShortcut4 },
-        { shortcut: { key: '5' }, onShortcut: onShortcut5 },
+        { shortcut: { key: '0' }, onShortcut: () => rateAsset(null) },
+        ...[1, 2, 3, 4, 5].map((rating) => ({
+          shortcut: { key: String(rating) },
+          onShortcut: () => rateAsset(rating),
+        })),
       ]
     : []}
 />
