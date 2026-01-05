@@ -40,6 +40,12 @@
     children,
   }: Props = $props();
 
+  const enabledActions = $derived(
+    actions
+      .filter((action): action is HeaderButtonActionItem => !isMenuItemType(action))
+      .filter((action) => action.$if?.() ?? true),
+  );
+
   let scrollbarClass = $derived(scrollbar ? 'immich-scrollbar' : 'scrollbar-hidden');
   let hasTitleClass = $derived(title ? 'top-16 h-[calc(100%-(--spacing(16)))]' : 'top-0 h-full');
 </script>
@@ -82,22 +88,20 @@
 
         {@render buttons?.()}
 
-        {#if actions.length > 0}
+        {#if enabledActions.length > 0}
           <div class="hidden md:block">
             <HStack gap={0}>
-              {#each actions as action, i (i)}
-                {#if !isMenuItemType(action) && (action.$if?.() ?? true)}
-                  <Button
-                    variant="ghost"
-                    size="small"
-                    color={action.color ?? 'secondary'}
-                    leadingIcon={action.icon}
-                    onclick={() => action.onAction(action)}
-                    title={action.data?.title}
-                  >
-                    {action.title}
-                  </Button>
-                {/if}
+              {#each enabledActions as action, i (i)}
+                <Button
+                  variant="ghost"
+                  size="small"
+                  color={action.color ?? 'secondary'}
+                  leadingIcon={action.icon}
+                  onclick={() => action.onAction(action)}
+                  title={action.data?.title}
+                >
+                  {action.title}
+                </Button>
               {/each}
             </HStack>
           </div>
