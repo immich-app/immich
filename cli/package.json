@@ -36,7 +36,7 @@
     "typescript": "^5.3.3",
     "typescript-eslint": "^8.28.0",
     "vite": "^7.0.0",
-    "vite-tsconfig-paths": "^5.0.0",
+    "vite-tsconfig-paths": "^6.0.0",
     "vitest": "^3.0.0",
     "vitest-fetch-mock": "^0.4.0",
     "yaml": "^2.3.1"
