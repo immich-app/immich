@@ -1,6 +1,7 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
+import 'package:immich_mobile/providers/cleanup.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
 
@@ -14,8 +15,18 @@ class CleanupService {
 
   const CleanupService(this._localAssetRepository, this._assetMediaRepository);
 
-  Future<List<LocalAsset>> getRemovalCandidates(String userId, DateTime cutoffDate) {
-    return _localAssetRepository.getRemovalCandidates(userId, cutoffDate);
+  Future<List<LocalAsset>> getRemovalCandidates(
+    String userId,
+    DateTime cutoffDate, {
+    AssetFilterType filterType = AssetFilterType.all,
+    bool keepFavorites = true,
+  }) {
+    return _localAssetRepository.getRemovalCandidates(
+      userId,
+      cutoffDate,
+      filterType: filterType,
+      keepFavorites: keepFavorites,
+    );
   }
 
   Future<int> deleteLocalAssets(List<String> localIds) async {

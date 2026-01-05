@@ -7,6 +7,7 @@ import 'package:immich_mobile/infrastructure/entities/local_album.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
+import 'package:immich_mobile/providers/cleanup.provider.dart';
 
 class DriftLocalAssetRepository extends DriftDatabaseRepository {
   final Drift _db;
@@ -127,7 +128,12 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
     return result;
   }
 
-  Future<List<LocalAsset>> getRemovalCandidates(String userId, DateTime cutoffDate) async {
+  Future<List<LocalAsset>> getRemovalCandidates(
+    String userId,
+    DateTime cutoffDate, {
+    AssetFilterType filterType = AssetFilterType.all,
+    bool keepFavorites = true,
+  }) async {
     final query = _db.localAssetEntity.select().join([
       innerJoin(
         _db.remoteAssetEntity,
@@ -135,7 +141,21 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
             _db.remoteAssetEntity.ownerId.equals(userId) &
             _db.remoteAssetEntity.deletedAt.isNull(),
       ),
-    ])..where(_db.localAssetEntity.createdAt.isSmallerOrEqualValue(cutoffDate));
+    ]);
+
+    Expression<bool> whereClause = _db.localAssetEntity.createdAt.isSmallerOrEqualValue(cutoffDate);
+
+    if (filterType == AssetFilterType.photosOnly) {
+      whereClause = whereClause & _db.localAssetEntity.type.equals(AssetType.image.index);
+    } else if (filterType == AssetFilterType.videosOnly) {
+      whereClause = whereClause & _db.localAssetEntity.type.equals(AssetType.video.index);
+    }
+
+    if (keepFavorites) {
+      whereClause = whereClause & _db.localAssetEntity.isFavorite.equals(false);
+    }
+
+    query.where(whereClause);
 
     final rows = await query.get();
     return rows.map((row) => row.readTable(_db.localAssetEntity).toDto()).toList();

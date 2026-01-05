@@ -3,17 +3,23 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/services/cleanup.service.dart';
 
+enum AssetFilterType { all, photosOnly, videosOnly }
+
 class CleanupState {
   final DateTime? selectedDate;
   final List<LocalAsset> assetsToDelete;
   final bool isScanning;
   final bool isDeleting;
+  final AssetFilterType filterType;
+  final bool keepFavorites;
 
   const CleanupState({
     this.selectedDate,
     this.assetsToDelete = const [],
     this.isScanning = false,
     this.isDeleting = false,
+    this.filterType = AssetFilterType.all,
+    this.keepFavorites = true,
   });
 
   CleanupState copyWith({
@@ -21,12 +27,16 @@ class CleanupState {
     List<LocalAsset>? assetsToDelete,
     bool? isScanning,
     bool? isDeleting,
+    AssetFilterType? filterType,
+    bool? keepFavorites,
   }) {
     return CleanupState(
       selectedDate: selectedDate ?? this.selectedDate,
       assetsToDelete: assetsToDelete ?? this.assetsToDelete,
       isScanning: isScanning ?? this.isScanning,
       isDeleting: isDeleting ?? this.isDeleting,
+      filterType: filterType ?? this.filterType,
+      keepFavorites: keepFavorites ?? this.keepFavorites,
     );
   }
 }
@@ -45,6 +55,14 @@ class CleanupNotifier extends StateNotifier<CleanupState> {
     state = state.copyWith(selectedDate: date, assetsToDelete: []);
   }
 
+  void setFilterType(AssetFilterType filterType) {
+    state = state.copyWith(filterType: filterType, assetsToDelete: []);
+  }
+
+  void setKeepFavorites(bool keepFavorites) {
+    state = state.copyWith(keepFavorites: keepFavorites, assetsToDelete: []);
+  }
+
   Future<void> scanAssets() async {
     if (_userId == null || state.selectedDate == null) {
       return;
@@ -52,7 +70,12 @@ class CleanupNotifier extends StateNotifier<CleanupState> {
 
     state = state.copyWith(isScanning: true);
     try {
-      final assets = await _cleanupService.getRemovalCandidates(_userId, state.selectedDate!);
+      final assets = await _cleanupService.getRemovalCandidates(
+        _userId,
+        state.selectedDate!,
+        filterType: state.filterType,
+        keepFavorites: state.keepFavorites,
+      );
       state = state.copyWith(assetsToDelete: assets, isScanning: false);
     } catch (e) {
       state = state.copyWith(isScanning: false);
