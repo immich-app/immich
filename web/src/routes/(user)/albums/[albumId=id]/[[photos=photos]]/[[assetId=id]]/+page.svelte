@@ -652,7 +652,7 @@
               />
             {/if}
 
-            {#if isOwned}
+            {#if isOwned || containsEditors}
               <ButtonContextMenu
                 icon={mdiDotsVertical}
                 title={$t('album_options')}
@@ -666,7 +666,7 @@
                     onClick={() => timelineManager.toggleShowAssetOwners()}
                   />
                 {/if}
-                {#if album.assetCount > 0}
+                {#if isOwned && album.assetCount > 0}
                   <MenuOption
                     icon={mdiImageOutline}
                     text={$t('select_album_cover')}
@@ -675,11 +675,13 @@
                   <MenuOption icon={mdiCogOutline} text={$t('options')} onClick={handleOptions} />
                 {/if}
 
-                <MenuOption
-                  icon={mdiDeleteOutline}
-                  text={$t('delete_album')}
-                  onClick={() => handleDeleteAlbum(album)}
-                />
+                {#if isOwned}
+                  <MenuOption
+                    icon={mdiDeleteOutline}
+                    text={$t('delete_album')}
+                    onClick={() => handleDeleteAlbum(album)}
+                  />
+                {/if}
               </ButtonContextMenu>
             {/if}
 
