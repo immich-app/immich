@@ -674,13 +674,13 @@
                   />
                   <MenuOption icon={mdiCogOutline} text={$t('options')} onClick={handleOptions} />
                 {/if}
-                
+
                 {#if isOwned}
-                <MenuOption
-                  icon={mdiDeleteOutline}
-                  text={$t('delete_album')}
-                  onClick={() => handleDeleteAlbum(album)}
-                />
+                  <MenuOption
+                    icon={mdiDeleteOutline}
+                    text={$t('delete_album')}
+                    onClick={() => handleDeleteAlbum(album)}
+                  />
                 {/if}
               </ButtonContextMenu>
             {/if}
