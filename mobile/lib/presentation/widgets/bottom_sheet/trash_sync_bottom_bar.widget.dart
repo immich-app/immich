@@ -17,11 +17,17 @@ class TrashSyncBottomBar extends ConsumerWidget {
           height: 64,
           child: Container(
             color: context.themeData.canvasColor,
-            child: const Row(
+            child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                KeepOnDeviceActionButton(source: ActionSource.timeline, isPreview: false),
-                MoveToTrashActionButton(source: ActionSource.timeline, isPreview: false),
+                KeepOnDeviceActionButton(
+                  source: ActionSource.timeline,
+                  onResult: (result) => showKeepResultToast(context, result),
+                ),
+                MoveToTrashActionButton(
+                  source: ActionSource.timeline,
+                  onResult: (result) => showTrashResultToast(context, result),
+                ),
               ],
             ),
           ),

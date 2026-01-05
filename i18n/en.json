@@ -581,7 +581,7 @@
   "assets_count": "{count, plural, one {# asset} other {# assets}}",
   "assets_deleted_permanently": "{count} asset(s) deleted permanently",
   "assets_deleted_permanently_from_server": "{count} asset(s) deleted permanently from the Immich server",
-  "assets_denied_to_moved_to_trash_count": "Allowed to keep {count, plural, one {# asset} other {# assets}} on device",
+  "assets_denied_to_moved_to_trash_count": "Keeping local copies of {count, plural, one {# asset} other {# assets}}",
   "assets_downloaded_failed": "{count, plural, one {Downloaded # file - {error} file failed} other {Downloaded # files - {error} files failed}}",
   "assets_downloaded_successfully": "{count, plural, one {Downloaded # file successfully} other {Downloaded # files successfully}}",
   "assets_moved_to_trash_count": "Moved {count, plural, one {# asset} other {# assets}} to trash",

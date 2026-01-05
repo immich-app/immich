@@ -3,14 +3,26 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
-import 'package:immich_mobile/domain/models/events.model.dart';
-import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
 import 'base_action_button.widget.dart';
+
+void showTrashResultToast(BuildContext context, ActionResult result) {
+  if (!context.mounted) return;
+  final message = result.success
+      ? 'assets_allowed_to_moved_to_trash_count'.t(args: {'count': '${result.count}'})
+      : 'scaffold_body_error_occurred'.t();
+  ImmichToast.show(
+    context: context,
+    msg: message,
+    gravity: ToastGravity.BOTTOM,
+    toastType: result.success ? ToastType.success : ToastType.error,
+  );
+}
 
 /// This move to trash action has the following behavior:
 /// - Allows moving to the local trash those assets that are in the remote trash.
@@ -18,15 +30,16 @@ import 'base_action_button.widget.dart';
 /// This action is used when the asset is selected in multi-selection mode in the review out-of-sync changes
 class MoveToTrashActionButton extends ConsumerWidget {
   final ActionSource source;
-  final bool isPreview;
+  final void Function(ActionResult result) onResult;
 
-  const MoveToTrashActionButton({super.key, required this.source, required this.isPreview});
+  const MoveToTrashActionButton({super.key, required this.source, required this.onResult});
 
   void _onTap(BuildContext context, WidgetRef ref) async {
     if (!context.mounted) {
       return;
     }
-
+    final assetViewerNotifier = ref.read(assetViewerProvider.notifier);
+    assetViewerNotifier.setControls(false);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (BuildContext context) {
@@ -52,6 +65,7 @@ class MoveToTrashActionButton extends ConsumerWidget {
     );
 
     if (confirmed != true) {
+      assetViewerNotifier.setControls(true);
       return;
     }
 
@@ -59,34 +73,14 @@ class MoveToTrashActionButton extends ConsumerWidget {
     final multiSelectNotifier = ref.read(multiSelectProvider.notifier);
 
     final result = await actionNotifier.resolveRemoteTrash(source, allow: true);
+    onResult.call(result);
     multiSelectNotifier.reset();
-
-    if (source == ActionSource.viewer) {
-      Future.delayed(Durations.extralong4, () {
-        EventStream.shared.emit(const ViewerReloadAssetEvent());
-        EventStream.shared.emit(const TimelineReloadEvent());
-      });
-    }
-
-    if (context.mounted) {
-      final successMessage = 'assets_allowed_to_moved_to_trash_count'.t(
-        context: context,
-        args: {'count': result.count.toString()},
-      );
-
-      ImmichToast.show(
-        context: context,
-        msg: result.success ? successMessage : 'scaffold_body_error_occurred'.t(context: context),
-        gravity: ToastGravity.BOTTOM,
-        toastType: result.success ? ToastType.success : ToastType.error,
-      );
-    }
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     const iconData = Icons.delete_forever_outlined;
-    return isPreview
+    return (source == ActionSource.viewer)
         ? BaseActionButton(
             maxWidth: 100.0,
             iconData: iconData,
