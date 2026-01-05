@@ -3,7 +3,7 @@
   import { locale } from '$lib/stores/preferences.store';
   import { getByteUnitString, getBytesWithUnit } from '$lib/utils/byte-units';
   import type { ServerStatsResponseDto } from '@immich/sdk';
-  import { Icon } from '@immich/ui';
+  import { Heading, Icon } from '@immich/ui';
   import { mdiCameraIris, mdiChartPie, mdiPlayCircle } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
@@ -25,15 +25,16 @@
   let [statsUsage, statsUsageUnit] = $derived(getBytesWithUnit(stats.usage, stats.usage > TiB ? 2 : 0));
 </script>
 
-<div class="flex flex-col gap-5">
+<div class="flex flex-col gap-5 my-4">
   <div>
-    <p class="text-sm dark:text-immich-dark-fg uppercase">{$t('total_usage')}</p>
+    <Heading size="tiny" class="mb-2">{$t('total_usage')}</Heading>
 
-    <div class="mt-5 hidden justify-between lg:flex gap-4">
+    <div class="hidden justify-between lg:flex gap-4">
       <StatsCard icon={mdiCameraIris} title={$t('photos')} value={stats.photos} />
       <StatsCard icon={mdiPlayCircle} title={$t('videos')} value={stats.videos} />
       <StatsCard icon={mdiChartPie} title={$t('storage')} value={statsUsage} unit={statsUsageUnit} />
     </div>
+
     <div class="mt-5 flex lg:hidden">
       <div class="flex flex-col justify-between rounded-3xl bg-subtle p-5 dark:bg-immich-dark-gray">
         <div class="flex flex-wrap gap-x-12">
@@ -78,7 +79,7 @@
   </div>
 
   <div>
-    <p class="text-sm dark:text-immich-dark-fg uppercase">{$t('user_usage_detail')}</p>
+    <Heading size="tiny" class="mb-2">{$t('user_usage_detail')}</Heading>
     <table class="mt-5 w-full text-start">
       <thead
         class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray"
