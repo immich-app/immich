@@ -311,7 +311,7 @@ importers:
         specifier: ^1.0.1
         version: 1.1.1
       esbuild:
-        specifier: ^0.27.2
+        specifier: ^0.27.0
         version: 0.27.2
       typescript:
         specifier: ^5.3.2
@@ -425,8 +425,8 @@ importers:
         specifier: ^1.4.7
         version: 1.4.7
       cron:
-        specifier: 4.4.0
-        version: 4.4.0
+        specifier: 4.3.5
+        version: 4.3.5
       exiftool-vendored:
         specifier: ^34.3.0
         version: 34.3.0
@@ -461,11 +461,11 @@ importers:
         specifier: ^9.0.2
         version: 9.0.3
       kysely:
-        specifier: 0.28.9
-        version: 0.28.9
+        specifier: 0.28.2
+        version: 0.28.2
       kysely-postgres-js:
         specifier: ^3.0.0
-        version: 3.0.0(kysely@0.28.9)(postgres@3.4.7)
+        version: 3.0.0(kysely@0.28.2)(postgres@3.4.7)
       lodash:
         specifier: ^4.17.21
         version: 4.17.21
@@ -486,7 +486,7 @@ importers:
         version: 5.4.3(@nestjs/common@11.1.11(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.11)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       nestjs-kysely:
         specifier: 3.1.2
-        version: 3.1.2(@nestjs/common@11.1.11(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.11)(kysely@0.28.9)(reflect-metadata@0.2.2)
+        version: 3.1.2(@nestjs/common@11.1.11(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.11)(kysely@0.28.2)(reflect-metadata@0.2.2)
       nestjs-otel:
         specifier: ^7.0.0
         version: 7.0.1(@nestjs/common@11.1.11(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.11)
@@ -717,8 +717,8 @@ importers:
         specifier: file:../open-api/typescript-sdk
         version: link:../open-api/typescript-sdk
       '@immich/ui':
-        specifier: ^0.51.0
-        version: 0.51.0(@sveltejs/kit@2.49.2(@opentelemetry/api@1.9.0)(@sveltejs/vite-plugin-svelte@6.2.1(svelte@5.46.1)(vite@7.3.0(@types/node@25.0.3)(jiti@2.6.1)(lightningcss@1.30.2)(sass@1.97.1)(terser@5.44.1)(yaml@2.8.2)))(svelte@5.46.1)(vite@7.3.0(@types/node@25.0.3)(jiti@2.6.1)(lightningcss@1.30.2)(sass@1.97.1)(terser@5.44.1)(yaml@2.8.2)))(svelte@5.46.1)
+        specifier: ^0.50.1
+        version: 0.50.1(@sveltejs/kit@2.49.2(@opentelemetry/api@1.9.0)(@sveltejs/vite-plugin-svelte@6.2.1(svelte@5.46.1)(vite@7.3.0(@types/node@25.0.3)(jiti@2.6.1)(lightningcss@1.30.2)(sass@1.97.1)(terser@5.44.1)(yaml@2.8.2)))(svelte@5.46.1)(vite@7.3.0(@types/node@25.0.3)(jiti@2.6.1)(lightningcss@1.30.2)(sass@1.97.1)(terser@5.44.1)(yaml@2.8.2)))(svelte@5.46.1)
       '@mapbox/mapbox-gl-rtl-text':
         specifier: 0.2.3
         version: 0.2.3(mapbox-gl@1.13.3)
@@ -3054,8 +3054,8 @@ packages:
     peerDependencies:
       svelte: ^5.0.0
 
-  '@immich/ui@0.51.0':
-    resolution: {integrity: sha512-suCArLt/h0fPwT1BnpDpycuyx0cZYkuZaW8NOKvzTTAulIT6q67SWCz2Gb+Ae3blKh/b7r5Qoz65v5FzWqZdPQ==}
+  '@immich/ui@0.50.1':
+    resolution: {integrity: sha512-fNlQGh75ZFa/UZAgJaYk9/ItHOXHNNzN4CunjCmE7WocVVkUZbUxopN9Ku3F5GULSqD/zJ5gNO6PQAZ1ZoSaaQ==}
     peerDependencies:
       svelte: ^5.0.0
 
@@ -6299,10 +6299,6 @@ packages:
     resolution: {integrity: sha512-hKPP7fq1+OfyCqoePkKfVq7tNAdFwiQORr4lZUHwrf0tebC65fYEeWgOrXOL6prn1/fegGOdTfrM6e34PJfksg==}
     engines: {node: '>=18.x'}
 
-  cron@4.4.0:
-    resolution: {integrity: sha512-fkdfq+b+AHI4cKdhZlppHveI/mgz2qpiYxcm+t5E5TsxX7QrLS1VE0+7GENEk9z0EeGPcpSciGv6ez24duWhwQ==}
-    engines: {node: '>=18.x'}
-
   cross-spawn@7.0.6:
     resolution: {integrity: sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA==}
     engines: {node: '>= 8'}
@@ -8251,9 +8247,9 @@ packages:
       postgres:
         optional: true
 
-  kysely@0.28.9:
-    resolution: {integrity: sha512-3BeXMoiOhpOwu62CiVpO6lxfq4eS6KMYfQdMsN/2kUCRNuF2YiEr7u0HLHaQU+O4Xu8YXE3bHVkwaQ85i72EuA==}
-    engines: {node: '>=20.0.0'}
+  kysely@0.28.2:
+    resolution: {integrity: sha512-4YAVLoF0Sf0UTqlhgQMFU9iQECdah7n+13ANkiuVfRvlK+uI0Etbgd7bVP36dKlG+NXWbhGua8vnGt+sdhvT7A==}
+    engines: {node: '>=18.0.0'}
 
   latest-version@7.0.0:
     resolution: {integrity: sha512-KvNT4XqAMzdcL6ka6Tl3i2lYeFDgXNCuIX+xNx6ZMVR1dFq+idXd9FLKNMOIx0t9mJ9/HudyX4oZWXZQ0UJHeg==}
@@ -10679,10 +10675,6 @@ packages:
 
   simple-icons@15.22.0:
     resolution: {integrity: sha512-i/w5Ie4tENfGYbdCo2iJ+oies0vOFd8QXWHopKOUzudfLCvnmeheF2PpHp89Z2azpc+c2su3lMiWO/SpP+429A==}
-    engines: {node: '>=0.12.18'}
-
-  simple-icons@16.4.0:
-    resolution: {integrity: sha512-8CKtCvx1Zq3L0CBsR4RR1MjGCXkXbzdspwl2yCxs8oWkstbzj2+DatRKDee/tuj3Ffd/2CDzwEky9RgG2yggew==}
     engines: {node: '>=0.12.18'}
 
   sirv@2.0.4:
@@ -15034,14 +15026,14 @@ snapshots:
     dependencies:
       svelte: 5.46.1
 
-  '@immich/ui@0.51.0(@sveltejs/kit@2.49.2(@opentelemetry/api@1.9.0)(@sveltejs/vite-plugin-svelte@6.2.1(svelte@5.46.1)(vite@7.3.0(@types/node@25.0.3)(jiti@2.6.1)(lightningcss@1.30.2)(sass@1.97.1)(terser@5.44.1)(yaml@2.8.2)))(svelte@5.46.1)(vite@7.3.0(@types/node@25.0.3)(jiti@2.6.1)(lightningcss@1.30.2)(sass@1.97.1)(terser@5.44.1)(yaml@2.8.2)))(svelte@5.46.1)':
+  '@immich/ui@0.50.1(@sveltejs/kit@2.49.2(@opentelemetry/api@1.9.0)(@sveltejs/vite-plugin-svelte@6.2.1(svelte@5.46.1)(vite@7.3.0(@types/node@25.0.3)(jiti@2.6.1)(lightningcss@1.30.2)(sass@1.97.1)(terser@5.44.1)(yaml@2.8.2)))(svelte@5.46.1)(vite@7.3.0(@types/node@25.0.3)(jiti@2.6.1)(lightningcss@1.30.2)(sass@1.97.1)(terser@5.44.1)(yaml@2.8.2)))(svelte@5.46.1)':
     dependencies:
       '@immich/svelte-markdown-preprocess': 0.1.0(svelte@5.46.1)
       '@internationalized/date': 3.10.0
       '@mdi/js': 7.4.47
       bits-ui: 2.14.4(@internationalized/date@3.10.0)(@sveltejs/kit@2.49.2(@opentelemetry/api@1.9.0)(@sveltejs/vite-plugin-svelte@6.2.1(svelte@5.46.1)(vite@7.3.0(@types/node@25.0.3)(jiti@2.6.1)(lightningcss@1.30.2)(sass@1.97.1)(terser@5.44.1)(yaml@2.8.2)))(svelte@5.46.1)(vite@7.3.0(@types/node@25.0.3)(jiti@2.6.1)(lightningcss@1.30.2)(sass@1.97.1)(terser@5.44.1)(yaml@2.8.2)))(svelte@5.46.1)
       luxon: 3.7.2
-      simple-icons: 16.4.0
+      simple-icons: 15.22.0
       svelte: 5.46.1
       svelte-highlight: 7.9.0
       tailwind-merge: 3.4.0
@@ -18692,11 +18684,6 @@ snapshots:
       '@types/luxon': 3.7.1
       luxon: 3.7.2
 
-  cron@4.4.0:
-    dependencies:
-      '@types/luxon': 3.7.1
-      luxon: 3.7.2
-
   cross-spawn@7.0.6:
     dependencies:
       path-key: 3.1.1
@@ -21064,13 +21051,13 @@ snapshots:
       type-is: 2.0.1
       vary: 1.1.2
 
-  kysely-postgres-js@3.0.0(kysely@0.28.9)(postgres@3.4.7):
+  kysely-postgres-js@3.0.0(kysely@0.28.2)(postgres@3.4.7):
     dependencies:
-      kysely: 0.28.9
+      kysely: 0.28.2
     optionalDependencies:
       postgres: 3.4.7
 
-  kysely@0.28.9: {}
+  kysely@0.28.2: {}
 
   latest-version@7.0.0:
     dependencies:
@@ -22117,11 +22104,11 @@ snapshots:
       reflect-metadata: 0.2.2
       rxjs: 7.8.2
 
-  nestjs-kysely@3.1.2(@nestjs/common@11.1.11(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.11)(kysely@0.28.9)(reflect-metadata@0.2.2):
+  nestjs-kysely@3.1.2(@nestjs/common@11.1.11(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.11)(kysely@0.28.2)(reflect-metadata@0.2.2):
     dependencies:
       '@nestjs/common': 11.1.11(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       '@nestjs/core': 11.1.11(@nestjs/common@11.1.11(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/platform-express@11.1.11)(@nestjs/websockets@11.1.11)(reflect-metadata@0.2.2)(rxjs@7.8.2)
-      kysely: 0.28.9
+      kysely: 0.28.2
       reflect-metadata: 0.2.2
       tslib: 2.8.1
 
@@ -24029,8 +24016,6 @@ snapshots:
     optional: true
 
   simple-icons@15.22.0: {}
-
-  simple-icons@16.4.0: {}
 
   sirv@2.0.4:
     dependencies:
