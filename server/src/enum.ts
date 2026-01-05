@@ -296,6 +296,11 @@ export enum StorageBackend {
   S3 = 's3',
 }
 
+export enum S3DeliveryMethod {
+  Redirect = 'redirect',
+  Proxy = 'proxy',
+}
+
 export enum StorageLocationType {
   Originals = 'originals',
   Thumbnails = 'thumbnails',
@@ -320,6 +325,7 @@ export enum UserMetadataKey {
   Preferences = 'preferences',
   License = 'license',
   Onboarding = 'onboarding',
+  GoogleDriveTokens = 'google-drive-tokens',
 }
 
 export enum AssetMetadataKey {
@@ -852,6 +858,7 @@ export enum ApiTag {
   Download = 'Download',
   Duplicates = 'Duplicates',
   Faces = 'Faces',
+  Importer = 'Importer',
   Jobs = 'Jobs',
   Libraries = 'Libraries',
   Maintenance = 'Maintenance (admin)',

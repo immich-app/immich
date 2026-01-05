@@ -1,5 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
+  import { onMount } from 'svelte';
   import GooglePhotosTakeoutLink from '$lib/components/utilities-page/google-photos/GooglePhotosTakeoutLink.svelte';
   import GooglePhotosDropZone from '$lib/components/utilities-page/google-photos/GooglePhotosDropZone.svelte';
   import GoogleDriveConnect from '$lib/components/utilities-page/google-photos/GoogleDriveConnect.svelte';
@@ -7,13 +8,59 @@
   import { googlePhotosImportStore } from '$lib/stores/google-photos-import.store';
   import { Button } from '@immich/ui';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
+  import type { PageData } from './$types';
 
+  interface Props {
+    data: PageData;
+  }
+
+  let { data }: Props = $props();
   let isImporting = $state(false);
+  let isGeneratingToken = $state(false);
+  let setupToken = $state<{ token: string; expiresAt: string } | null>(null);
+  let showAdvancedOptions = $state(false);
 
-  const store = $derived.by(() => {
-    let value: typeof $googlePhotosImportStore;
-    googlePhotosImportStore.subscribe((v) => (value = v))();
-    return value!;
+  // Handle OAuth callback URL parameters
+  onMount(() => {
+    const url = new URL(window.location.href);
+    const connected = url.searchParams.get('connected');
+    const error = url.searchParams.get('error');
+
+    if (connected === 'true') {
+      googlePhotosImportStore.setGoogleDriveConnected(true);
+      // Clean up URL
+      url.searchParams.delete('connected');
+      window.history.replaceState({}, '', url.pathname);
+      // Load files from Drive
+      loadDriveFiles();
+    } else if (error) {
+      googlePhotosImportStore.setError(decodeURIComponent(error));
+      // Clean up URL
+      url.searchParams.delete('error');
+      window.history.replaceState({}, '', url.pathname);
+    }
+  });
+
+  async function loadDriveFiles() {
+    try {
+      const response = await fetch('/api/google-photos/google-drive/files?query=takeout');
+      if (response.ok) {
+        const data = await response.json();
+        googlePhotosImportStore.setDriveFiles(data.files || []);
+      }
+    } catch (error) {
+      console.error('Failed to load Drive files:', error);
+    }
+  }
+
+  // Reactive store subscription
+  let store = $state<typeof $googlePhotosImportStore>($googlePhotosImportStore);
+
+  $effect(() => {
+    const unsubscribe = googlePhotosImportStore.subscribe((v) => {
+      store = v;
+    });
+    return unsubscribe;
   });
 
   const hasFilesToImport = $derived(
@@ -28,13 +75,13 @@
 
     // Initialize progress
     googlePhotosImportStore.setProgress({
-      phase: 'extracting',
+      phase: 'downloading',
       current: 0,
       total: store.uploadedFiles.length + store.selectedDriveFiles.length,
       albumsFound: 0,
-      photosMatched: 0,
-      photosMissingMetadata: 0,
+      photosImported: 0,
       errors: [],
+      events: [{ timestamp: new Date().toISOString(), type: 'info', message: 'Starting import...' }],
     });
 
     try {
@@ -77,14 +124,22 @@
   }
 
   async function importFromDrive(fileIds: string[]) {
-    const response = await fetch('/api/google-photos/import-from-drive', {
+    // Get file sizes for volume sizing (ensure they're numbers, not strings)
+    const fileSizes = fileIds.map((id) => {
+      const file = store.driveFiles.find((f) => f.id === id);
+      return Number(file?.size) || 0;
+    });
+
+    // Use the Fly worker endpoint for Google Drive imports
+    const response = await fetch('/api/google-photos/import-from-drive-worker', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ fileIds }),
+      body: JSON.stringify({ fileIds, fileSizes }),
     });
 
     if (!response.ok) {
-      throw new Error('Failed to import from Google Drive');
+      const error = await response.text();
+      throw new Error(`Failed to import from Google Drive: ${error}`);
     }
 
     await pollImportProgress(await response.json());
@@ -121,9 +176,59 @@
     googlePhotosImportStore.reset();
     isImporting = false;
   }
+
+  function getPlatform(): string {
+    const userAgent = navigator.userAgent.toLowerCase();
+    if (userAgent.includes('win')) return 'windows-amd64';
+    if (userAgent.includes('mac')) {
+      // Check for Apple Silicon
+      if (userAgent.includes('arm') || navigator.platform === 'MacIntel') {
+        return 'darwin-arm64';
+      }
+      return 'darwin-amd64';
+    }
+    return 'linux-amd64';
+  }
+
+  async function downloadImporter() {
+    isGeneratingToken = true;
+
+    try {
+      // Generate setup token
+      const response = await fetch('/api/importer/setup-token', {
+        method: 'POST',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate setup token');
+      }
+
+      const tokenData = await response.json();
+      setupToken = tokenData;
+
+      // Download bootstrap binary
+      const platform = getPlatform();
+      const downloadUrl = `/api/importer/bootstrap/${tokenData.token}/${platform}`;
+
+      // Trigger download
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = platform.includes('windows') ? 'immich-importer-setup.exe' : 'immich-importer-setup';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error('Failed to download importer:', error);
+      googlePhotosImportStore.setError(
+        error instanceof Error ? error.message : 'Failed to download importer'
+      );
+    } finally {
+      isGeneratingToken = false;
+    }
+  }
 </script>
 
-<UserPageLayout title="Import from Google Photos">
+<UserPageLayout title={data.meta.title}>
   <svelte:fragment slot="buttons">
     <Button href="/utilities" color="secondary" size="sm">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 mr-1">
@@ -159,13 +264,77 @@
             Choose how to import your Google Takeout files:
           </p>
 
-          <div class="options-grid">
-            <GoogleDriveConnect />
-            <div class="or-divider">
-              <span>OR</span>
+          <!-- Desktop Importer - Recommended Option -->
+          <div class="desktop-importer-card">
+            <div class="card-header">
+              <div class="recommended-badge">Recommended</div>
+              <h3>Desktop Importer App</h3>
             </div>
-            <GooglePhotosDropZone />
+            <p class="card-description">
+              Download a small desktop app that handles the entire import process on your computer.
+              Works with large libraries, can be paused and resumed, and runs faster than browser uploads.
+            </p>
+            <div class="card-features">
+              <div class="feature">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
+                </svg>
+                <span>Resumable - safe to close and restart</span>
+              </div>
+              <div class="feature">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
+                </svg>
+                <span>Downloads directly from Google Drive</span>
+              </div>
+              <div class="feature">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
+                </svg>
+                <span>Works with Takeout files still generating</span>
+              </div>
+            </div>
+            <Button onclick={downloadImporter} color="primary" size="lg" disabled={isGeneratingToken}>
+              {#if isGeneratingToken}
+                <span class="spinner"></span>
+                Preparing download...
+              {:else}
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 mr-2">
+                  <path d="M10.75 2.75a.75.75 0 00-1.5 0v8.614L6.295 8.235a.75.75 0 10-1.09 1.03l4.25 4.5a.75.75 0 001.09 0l4.25-4.5a.75.75 0 00-1.09-1.03l-2.955 3.129V2.75z" />
+                  <path d="M3.5 12.75a.75.75 0 00-1.5 0v2.5A2.75 2.75 0 004.75 18h10.5A2.75 2.75 0 0018 15.25v-2.5a.75.75 0 00-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5z" />
+                </svg>
+                Download Importer App
+              {/if}
+            </Button>
+            {#if setupToken}
+              <p class="token-info">
+                App downloaded! Run it to start importing. Token valid until {new Date(setupToken.expiresAt).toLocaleDateString()}.
+              </p>
+            {/if}
           </div>
+
+          <!-- Toggle for advanced options -->
+          <button class="advanced-toggle" onclick={() => showAdvancedOptions = !showAdvancedOptions}>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class:rotated={showAdvancedOptions}>
+              <path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 011.06 0L10 11.94l3.72-3.72a.75.75 0 111.06 1.06l-4.25 4.25a.75.75 0 01-1.06 0L5.22 9.28a.75.75 0 010-1.06z" clip-rule="evenodd" />
+            </svg>
+            {showAdvancedOptions ? 'Hide' : 'Show'} advanced import options
+          </button>
+
+          {#if showAdvancedOptions}
+            <div class="advanced-options">
+              <p class="advanced-description">
+                These options process files through this Immich server. Use the desktop app above for large libraries.
+              </p>
+              <div class="options-grid">
+                <GoogleDriveConnect />
+                <div class="or-divider">
+                  <span>OR</span>
+                </div>
+                <GooglePhotosDropZone />
+              </div>
+            </div>
+          {/if}
         </div>
       </div>
 
@@ -360,5 +529,120 @@
   .error-banner button:hover {
     background: var(--immich-danger);
     color: white;
+  }
+
+  /* Desktop Importer Card */
+  .desktop-importer-card {
+    background: linear-gradient(135deg, var(--immich-bg) 0%, rgba(74, 144, 217, 0.05) 100%);
+    border: 2px solid var(--immich-primary);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .recommended-badge {
+    background: var(--immich-primary);
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .card-header h3 {
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--immich-fg);
+  }
+
+  .card-description {
+    margin: 0 0 1rem 0;
+    font-size: 0.875rem;
+    color: var(--immich-fg-muted);
+    line-height: 1.5;
+  }
+
+  .card-features {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .feature {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--immich-fg);
+  }
+
+  .feature svg {
+    width: 1.25rem;
+    height: 1.25rem;
+    color: var(--immich-primary);
+    flex-shrink: 0;
+  }
+
+  .token-info {
+    margin: 1rem 0 0 0;
+    font-size: 0.875rem;
+    color: var(--immich-primary);
+    text-align: center;
+  }
+
+  /* Advanced Options Toggle */
+  .advanced-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.75rem;
+    background: transparent;
+    border: 1px solid var(--immich-border);
+    border-radius: 0.5rem;
+    color: var(--immich-fg-muted);
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .advanced-toggle:hover {
+    background: var(--immich-bg);
+    color: var(--immich-fg);
+  }
+
+  .advanced-toggle svg {
+    width: 1.25rem;
+    height: 1.25rem;
+    transition: transform 0.2s;
+  }
+
+  .advanced-toggle svg.rotated {
+    transform: rotate(180deg);
+  }
+
+  .advanced-options {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--immich-border);
+  }
+
+  .advanced-description {
+    margin: 0 0 1rem 0;
+    font-size: 0.875rem;
+    color: var(--immich-fg-muted);
+    text-align: center;
   }
 </style>
