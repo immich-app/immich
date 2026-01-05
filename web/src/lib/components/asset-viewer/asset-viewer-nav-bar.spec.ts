@@ -10,7 +10,6 @@ describe('AssetViewerNavBar component', () => {
   const additionalProps = {
     showCopyButton: false,
     showZoomButton: false,
-    showDetailButton: false,
     showDownloadButton: false,
     showMotionPlayButton: false,
     showShareButton: false,
@@ -19,7 +18,6 @@ describe('AssetViewerNavBar component', () => {
     onAction: () => {},
     onRunJob: () => {},
     onPlaySlideshow: () => {},
-    onShowDetail: () => {},
     onClose: () => {},
     playOriginalVideo: false,
     setPlayOriginalVideo: () => Promise.resolve(),
