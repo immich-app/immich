@@ -16,7 +16,7 @@
   } from '$lib/services/library.service';
   import { getBytesWithUnit } from '$lib/utils/byte-units';
   import type { LibraryResponseDto } from '@immich/sdk';
-  import { Code, CommandPaletteContext, Container, Heading, modalManager } from '@immich/ui';
+  import { Code, CommandPaletteDefaultProvider, Container, Heading, modalManager } from '@immich/ui';
   import { mdiCameraIris, mdiChartPie, mdiFilterMinusOutline, mdiFolderOutline, mdiPlayCircle } from '@mdi/js';
   import type { Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -51,7 +51,7 @@
 
 <OnEvents {onLibraryUpdate} {onLibraryDelete} />
 
-<CommandPaletteContext commands={[Edit, Delete, AddFolder, AddExclusionPattern, Scan]} />
+<CommandPaletteDefaultProvider name={$t('library')} actions={[Edit, Delete, AddFolder, AddExclusionPattern, Scan]} />
 
 <AdminPageLayout
   breadcrumbs={[{ title: $t('external_libraries'), href: AppRoute.ADMIN_LIBRARIES }, { title: library.name }]}

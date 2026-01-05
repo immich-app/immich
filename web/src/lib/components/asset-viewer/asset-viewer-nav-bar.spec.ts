@@ -1,9 +1,9 @@
 import { preferences as preferencesStore, resetSavedUser, user as userStore } from '$lib/stores/user.store';
+import { renderWithTooltips } from '$tests/helpers';
 import { assetFactory } from '@test-data/factories/asset-factory';
 import { preferencesFactory } from '@test-data/factories/preferences-factory';
 import { userAdminFactory } from '@test-data/factories/user-factory';
 import '@testing-library/jest-dom';
-import { render } from '@testing-library/svelte';
 import AssetViewerNavBar from './asset-viewer-nav-bar.svelte';
 
 describe('AssetViewerNavBar component', () => {
@@ -16,12 +16,13 @@ describe('AssetViewerNavBar component', () => {
     showShareButton: false,
     preAction: () => {},
     onZoomImage: () => {},
-    onCopyImage: () => {},
     onAction: () => {},
     onRunJob: () => {},
     onPlaySlideshow: () => {},
     onShowDetail: () => {},
     onClose: () => {},
+    playOriginalVideo: false,
+    setPlayOriginalVideo: () => Promise.resolve(),
   };
 
   beforeAll(() => {
@@ -51,8 +52,8 @@ describe('AssetViewerNavBar component', () => {
     preferencesStore.set(prefs);
 
     const asset = assetFactory.build({ isTrashed: false });
-    const { getByTitle } = render(AssetViewerNavBar, { asset, ...additionalProps });
-    expect(getByTitle('go_back')).toBeInTheDocument();
+    const { getByLabelText } = renderWithTooltips(AssetViewerNavBar, { asset, ...additionalProps });
+    expect(getByLabelText('go_back')).toBeInTheDocument();
   });
 
   describe('if the current user owns the asset', () => {
@@ -65,8 +66,8 @@ describe('AssetViewerNavBar component', () => {
       const prefs = preferencesFactory.build({ cast: { gCastEnabled: false } });
       preferencesStore.set(prefs);
 
-      const { getByTitle } = render(AssetViewerNavBar, { asset, ...additionalProps });
-      expect(getByTitle('delete')).toBeInTheDocument();
+      const { getByLabelText } = renderWithTooltips(AssetViewerNavBar, { asset, ...additionalProps });
+      expect(getByLabelText('delete')).toBeInTheDocument();
     });
   });
 });

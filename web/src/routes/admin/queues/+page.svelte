@@ -5,7 +5,7 @@
   import { queueManager } from '$lib/managers/queue-manager.svelte';
   import { getQueuesActions } from '$lib/services/queue.service';
   import { type QueueResponseDto } from '@immich/sdk';
-  import { CommandPaletteContext, Container, type ActionItem } from '@immich/ui';
+  import { CommandPaletteDefaultProvider, Container, type ActionItem } from '@immich/ui';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
@@ -33,7 +33,7 @@
   };
 </script>
 
-<CommandPaletteContext {commands} />
+<CommandPaletteDefaultProvider name={$t('admin.queues')} actions={commands} />
 
 <OnEvents {onQueueUpdate} />
 
