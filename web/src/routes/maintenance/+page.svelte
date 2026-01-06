@@ -44,8 +44,11 @@
         <Button onclick={end}>{$t('maintenance_end')}</Button>
       {:else}
         <ProgressBar progress={$status.progress || 0} />
-        {#if $status.task !== 'ready'}
-          <Text>{$t(`maintenance_task_${$status.task as 'backup' | 'restore'}`)}</Text>
+        {#if $status.task === 'backup'}
+          <Text>{$t('maintenance_task_backup')}</Text>
+        {/if}
+        {#if $status.task === 'restore'}
+          <Text>{$t('maintenance_task_restore')}</Text>
         {/if}
       {/if}
     {:else if $status?.action === MaintenanceAction.RestoreDatabase && $auth}
