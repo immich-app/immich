@@ -1,7 +1,7 @@
 <script lang="ts">
   import { afterNavigate, goto, onNavigate } from '$app/navigation';
   import { scrollMemoryClearer } from '$lib/actions/scroll-memory';
-  import CastButton from '$lib/cast/cast-button.svelte';
+  import ActionButton from '$lib/components/ActionButton.svelte';
   import AlbumDescription from '$lib/components/album-page/album-description.svelte';
   import AlbumMap from '$lib/components/album-page/album-map.svelte';
   import AlbumSummary from '$lib/components/album-page/album-summary.svelte';
@@ -39,6 +39,7 @@
   import AlbumUsersModal from '$lib/modals/AlbumUsersModal.svelte';
   import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
   import { handleDeleteAlbum, handleDownloadAlbum } from '$lib/services/album.service';
+  import { getGlobalActions } from '$lib/services/app.service';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
@@ -413,6 +414,8 @@
       }
     }
   };
+
+  const { Cast } = $derived(getGlobalActions($t));
 </script>
 
 <OnEvents {onSharedLinkCreate} {onAlbumDelete} />
@@ -592,7 +595,7 @@
       {#if viewMode === AlbumPageViewMode.VIEW}
         <ControlAppBar showBackButton backIcon={mdiArrowLeft} onClose={() => goto(backUrl)}>
           {#snippet trailing()}
-            <CastButton />
+            <ActionButton action={Cast} />
 
             {#if isEditor}
               <IconButton
