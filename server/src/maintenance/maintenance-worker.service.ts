@@ -43,7 +43,7 @@ import { getExternalDomain } from 'src/utils/misc';
  */
 @Injectable()
 export class MaintenanceWorkerService {
-  #secret: string = null!;
+  #secret: string | null = null;
   #status: MaintenanceStatusResponseDto = {
     active: true,
     action: MaintenanceAction.Start,
@@ -201,6 +201,14 @@ export class MaintenanceWorkerService {
     return downloadDatabaseBackup(fileName);
   }
 
+  private get secret() {
+    if (!this.#secret) {
+      throw new Error('Secret is not initialised yet.');
+    }
+
+    return this.#secret;
+  }
+
   private get backupRepos() {
     return {
       logger: this.logger,
@@ -241,7 +249,7 @@ export class MaintenanceWorkerService {
       {
         username: 'immich-admin',
       },
-      this.#secret,
+      this.secret,
     );
 
     this.logger.log(`\n\n🚧 Immich is in maintenance mode, you can log in using the following URL:\n${url}\n`);
@@ -271,7 +279,7 @@ export class MaintenanceWorkerService {
     }
 
     try {
-      const result = await jwtVerify<MaintenanceAuthDto>(jwt, new TextEncoder().encode(this.#secret));
+      const result = await jwtVerify<MaintenanceAuthDto>(jwt, new TextEncoder().encode(this.secret));
       return result.payload;
     } catch {
       throw new UnauthorizedException('Invalid JWT Token');
@@ -313,7 +321,7 @@ export class MaintenanceWorkerService {
 
     await this.systemMetadataRepository.set(SystemMetadataKey.MaintenanceMode, {
       isMaintenanceMode: true,
-      secret: this.#secret,
+      secret: this.secret,
       action: {
         action: MaintenanceAction.Start,
       },
