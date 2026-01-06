@@ -126,7 +126,7 @@ describe('/admin/database-backups', () => {
       expect(status2).toBe(200);
       expect(body).toEqual({
         active: true,
-        action: 'restore_database',
+        action: 'select_database_restore',
       });
     });
   });
