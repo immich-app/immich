@@ -1082,6 +1082,7 @@
     "unable_to_scan_library": "Unable to scan library",
     "unable_to_set_feature_photo": "Unable to set feature photo",
     "unable_to_set_profile_picture": "Unable to set profile picture",
+    "unable_to_set_rating": "Unable to set rating",
     "unable_to_submit_job": "Unable to submit job",
     "unable_to_trash_asset": "Unable to trash asset",
     "unable_to_unlink_account": "Unable to unlink account",
@@ -1702,10 +1703,12 @@
   "purchase_settings_server_activated": "The server product key is managed by the admin",
   "query_asset_id": "Query Asset ID",
   "queue_status": "Queuing {count}/{total}",
+  "rate_asset": "Rate Asset",
   "rating": "Star rating",
   "rating_clear": "Clear rating",
   "rating_count": "{count, plural, one {# star} other {# stars}}",
   "rating_description": "Display the EXIF rating in the info panel",
+  "rating_set": "Rating set to {rating, plural, one {# star} other {# stars}}",
   "reaction_options": "Reaction options",
   "read_changelog": "Read Changelog",
   "readonly_mode_disabled": "Read-only mode disabled",
@@ -2296,6 +2299,7 @@
   "yes": "Yes",
   "you_dont_have_any_shared_links": "You don't have any shared links",
   "your_wifi_name": "Your Wi-Fi name",
+  "zero_to_clear_rating": "press 0 to clear asset rating",
   "zoom_image": "Zoom Image",
   "zoom_to_bounds": "Zoom to bounds"
 }

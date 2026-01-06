@@ -331,6 +331,16 @@
         asset = { ...asset, people: assetInfo.people };
         break;
       }
+      case AssetAction.RATING: {
+        asset = {
+          ...asset,
+          exifInfo: {
+            ...asset.exifInfo,
+            rating: action.rating,
+          },
+        };
+        break;
+      }
       case AssetAction.KEEP_THIS_DELETE_OTHERS:
       case AssetAction.UNSTACK: {
         closeViewer();
