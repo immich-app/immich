@@ -65,8 +65,7 @@
     preAction?: PreAction | undefined;
     onAction?: OnAction | undefined;
     onUndoDelete?: OnUndoDelete | undefined;
-    showCloseButton?: boolean;
-    onClose: (asset: AssetResponseDto) => void;
+    onClose?: (asset: AssetResponseDto) => void;
     onNext: () => Promise<HasAsset>;
     onPrevious: () => Promise<HasAsset>;
     onRandom: () => Promise<{ id: string } | undefined>;
@@ -84,7 +83,6 @@
     preAction = undefined,
     onAction = undefined,
     onUndoDelete = undefined,
-    showCloseButton,
     onClose,
     onNext,
     onPrevious,
@@ -203,7 +201,7 @@
   };
 
   const closeViewer = () => {
-    onClose(asset);
+    onClose?.(asset);
   };
 
   const closeEditor = () => {
@@ -331,6 +329,16 @@
         asset = { ...asset, people: assetInfo.people };
         break;
       }
+      case AssetAction.RATING: {
+        asset = {
+          ...asset,
+          exifInfo: {
+            ...asset.exifInfo,
+            rating: action.rating,
+          },
+        };
+        break;
+      }
       case AssetAction.KEEP_THIS_DELETE_OTHERS:
       case AssetAction.UNSTACK: {
         closeViewer();
@@ -401,7 +409,6 @@
         {album}
         {person}
         {stack}
-        {showCloseButton}
         showSlideshow={true}
         onZoomImage={zoomToggle}
         onCopyImage={copyImage}
@@ -410,7 +417,7 @@
         {onUndoDelete}
         onRunJob={handleRunJob}
         onPlaySlideshow={() => ($slideshowState = SlideshowState.PlaySlideshow)}
-        onClose={closeViewer}
+        onClose={onClose ? () => onClose(asset) : undefined}
         {playOriginalVideo}
         {setPlayOriginalVideo}
       >

@@ -292,6 +292,15 @@ importers:
         specifier: ^3.0.0
         version: 3.2.4(@types/debug@4.1.12)(@types/node@24.10.4)(happy-dom@20.0.11)(jiti@2.6.1)(jsdom@26.1.0(canvas@2.11.2(encoding@0.1.13)))(lightningcss@1.30.2)(sass@1.97.1)(terser@5.44.1)(yaml@2.8.2)
 
+  i18n:
+    devDependencies:
+      prettier:
+        specifier: ^3.7.4
+        version: 3.7.4
+      prettier-plugin-sort-json:
+        specifier: ^4.1.1
+        version: 4.1.1(prettier@3.7.4)
+
   open-api/typescript-sdk:
     dependencies:
       '@oazapfts/runtime':

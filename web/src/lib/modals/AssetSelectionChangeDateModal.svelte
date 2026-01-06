@@ -8,7 +8,7 @@
   import { getOwnedAssetsWithWarning } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
   import { updateAssets } from '@immich/sdk';
-  import { Button, Field, HStack, Label, Modal, ModalBody, ModalFooter, Switch } from '@immich/ui';
+  import { Field, FormModal, Label, Switch } from '@immich/ui';
   import { mdiCalendarEdit } from '@mdi/js';
   import { DateTime } from 'luxon';
   import { t } from 'svelte-i18n';
@@ -30,7 +30,7 @@
   // the offsets (and validity) for time zones may change if the date is changed, which is why we recompute the list
   let selectedOption = $derived(getPreferredTimeZone(initialDate, initialTimeZone, timezones, lastSelectedTimezone));
 
-  const handleConfirm = async () => {
+  const onSubmit = async () => {
     const ids = getOwnedAssetsWithWarning(assets, $user);
     try {
       if (showRelative && (selectedDuration || selectedOption)) {
@@ -63,66 +63,62 @@
   const date = $derived(DateTime.fromISO(selectedDate, { zone: selectedOption?.value, setZone: true }));
 </script>
 
-<Modal title={$t('edit_date_and_time')} icon={mdiCalendarEdit} onClose={() => onClose(false)} size="small">
-  <ModalBody>
-    <Field label={$t('edit_date_and_time_by_offset')}>
-      <Switch data-testid="edit-by-offset-switch" bind:checked={showRelative} class="mb-2" />
-    </Field>
-    {#if showRelative}
-      <Label for="relativedatetime" class="block mb-1">{$t('offset')}</Label>
-      <DurationInput
-        class="immich-form-input w-full text-gray-700 mb-2"
-        id="relativedatetime"
-        bind:value={selectedDuration}
-      />
-    {:else}
-      <Label for="datetime" class="block mb-1">{$t('date_and_time')}</Label>
-      <DateInput class="immich-form-input w-full mb-2" id="datetime" type="datetime-local" bind:value={selectedDate} />
-    {/if}
-    <div class="w-full">
-      <Combobox
-        bind:selectedOption
-        label={$t('timezone')}
-        options={timezones}
-        placeholder={$t('search_timezone')}
-        onSelect={(option) => (lastSelectedTimezone = option as ZoneOption)}
-      ></Combobox>
-    </div>
-    <!-- <Card color="secondary" class={!showRelative || !currentInterval ? 'invisible' : ''}>
-        <CardBody class="p-2">
-          <div class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-3 items-center">
-            <div class="col-span-2 immich-form-label" data-testid="interval-preview">Preview</div>
-            <Text size="small" class="-mt-2 immich-form-label col-span-2"
-              >Showing changes for first selected asset only</Text
-            >
-            <label class="immich-form-label" for="from">Before</label>
-            <DateInput
-              class="dark:text-gray-300 text-gray-700 text-base"
-              id="from"
-              type="datetime-local"
-              readonly
-              bind:value={before}
-            />
-            <label class="immich-form-label" for="to">After</label>
-            <DateInput
-              class="dark:text-gray-300 text-gray-700 text-base"
-              id="to"
-              type="datetime-local"
-              readonly
-              bind:value={after}
-            />
-          </div>
-        </CardBody>
-      </Card> -->
-  </ModalBody>
-  <ModalFooter>
-    <HStack fullWidth>
-      <Button shape="round" color="secondary" fullWidth onclick={() => onClose(false)}>
-        {$t('cancel')}
-      </Button>
-      <Button shape="round" color="primary" fullWidth onclick={handleConfirm} disabled={!date.isValid}>
-        {$t('confirm')}
-      </Button>
-    </HStack>
-  </ModalFooter>
-</Modal>
+<FormModal
+  title={$t('edit_date_and_time')}
+  icon={mdiCalendarEdit}
+  onClose={() => onClose(false)}
+  {onSubmit}
+  submitText={$t('confirm')}
+  disabled={!date.isValid}
+  size="small"
+>
+  <Field label={$t('edit_date_and_time_by_offset')}>
+    <Switch data-testid="edit-by-offset-switch" bind:checked={showRelative} class="mb-2" />
+  </Field>
+  {#if showRelative}
+    <Label for="relativedatetime" class="block mb-1">{$t('offset')}</Label>
+    <DurationInput
+      class="immich-form-input w-full text-gray-700 mb-2"
+      id="relativedatetime"
+      bind:value={selectedDuration}
+    />
+  {:else}
+    <Label for="datetime" class="block mb-1">{$t('date_and_time')}</Label>
+    <DateInput class="immich-form-input w-full mb-2" id="datetime" type="datetime-local" bind:value={selectedDate} />
+  {/if}
+  <div class="w-full">
+    <Combobox
+      bind:selectedOption
+      label={$t('timezone')}
+      options={timezones}
+      placeholder={$t('search_timezone')}
+      onSelect={(option) => (lastSelectedTimezone = option as ZoneOption)}
+    ></Combobox>
+  </div>
+  <!-- <Card color="secondary" class={!showRelative || !currentInterval ? 'invisible' : ''}>
+      <CardBody class="p-2">
+        <div class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-3 items-center">
+          <div class="col-span-2 immich-form-label" data-testid="interval-preview">Preview</div>
+          <Text size="small" class="-mt-2 immich-form-label col-span-2"
+            >Showing changes for first selected asset only</Text
+          >
+          <label class="immich-form-label" for="from">Before</label>
+          <DateInput
+            class="dark:text-gray-300 text-gray-700 text-base"
+            id="from"
+            type="datetime-local"
+            readonly
+            bind:value={before}
+          />
+          <label class="immich-form-label" for="to">After</label>
+          <DateInput
+            class="dark:text-gray-300 text-gray-700 text-base"
+            id="to"
+            type="datetime-local"
+            readonly
+            bind:value={after}
+          />
+        </div>
+      </CardBody>
+    </Card> -->
+</FormModal>

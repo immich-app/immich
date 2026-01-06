@@ -12,6 +12,7 @@
   import DownloadAction from '$lib/components/asset-viewer/actions/download-action.svelte';
   import FavoriteAction from '$lib/components/asset-viewer/actions/favorite-action.svelte';
   import KeepThisDeleteOthersAction from '$lib/components/asset-viewer/actions/keep-this-delete-others.svelte';
+  import RatingAction from '$lib/components/asset-viewer/actions/rating-action.svelte';
   import RemoveAssetFromStack from '$lib/components/asset-viewer/actions/remove-asset-from-stack.svelte';
   import RestoreAction from '$lib/components/asset-viewer/actions/restore-action.svelte';
   import SetAlbumCoverAction from '$lib/components/asset-viewer/actions/set-album-cover-action.svelte';
@@ -68,7 +69,6 @@
     album?: AlbumResponseDto | null;
     person?: PersonResponseDto | null;
     stack?: StackResponseDto | null;
-    showCloseButton?: boolean;
     showSlideshow?: boolean;
     onZoomImage: () => void;
     onCopyImage?: () => Promise<void>;
@@ -78,7 +78,7 @@
     onRunJob: (name: AssetJobName) => void;
     onPlaySlideshow: () => void;
     // export let showEditorHandler: () => void;
-    onClose: () => void;
+    onClose?: () => void;
     motionPhoto?: Snippet;
     playOriginalVideo: boolean;
     setPlayOriginalVideo: (value: boolean) => void;
@@ -89,7 +89,6 @@
     album = null,
     person = null,
     stack = null,
-    showCloseButton = true,
     showSlideshow = false,
     onZoomImage,
     onCopyImage,
@@ -127,7 +126,7 @@
   class="flex h-16 place-items-center justify-between bg-linear-to-b from-black/40 px-3 transition-transform duration-200"
 >
   <div class="dark">
-    {#if showCloseButton}
+    {#if onClose}
       <CloseAction {onClose} />
     {/if}
   </div>
@@ -179,6 +178,7 @@
 
     {#if isOwner}
       <FavoriteAction {asset} {onAction} />
+      <RatingAction {asset} {onAction} />
     {/if}
 
     {#if isOwner}

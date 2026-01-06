@@ -146,12 +146,10 @@
       {#await import('$lib/components/asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
         <AssetViewer
           {asset}
-          showCloseButton={false}
           onAction={handleAction}
           onPrevious={() => Promise.resolve(false)}
           onNext={() => Promise.resolve(false)}
           onRandom={() => Promise.resolve(undefined)}
-          onClose={() => {}}
         />
       {/await}
     {/await}
