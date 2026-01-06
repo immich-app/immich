@@ -1,5 +1,4 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/models/memories/memory.model.dart';
@@ -23,26 +22,39 @@ class MemoryLane extends HookConsumerWidget {
           (memories) => memories != null
               ? ConstrainedBox(
                   constraints: const BoxConstraints(maxHeight: 200),
-                  child: CarouselView(
-                    itemExtent: 145.0,
-                    shrinkExtent: 1.0,
-                    elevation: 2,
-                    backgroundColor: Colors.black,
-                    overlayColor: WidgetStateProperty.all(Colors.white.withValues(alpha: 0.1)),
-                    onTap: (memoryIndex) {
-                      ref.read(hapticFeedbackProvider.notifier).heavyImpact();
-                      if (memories[memoryIndex].assets.isNotEmpty) {
-                        final asset = memories[memoryIndex].assets[0];
-                        ref.read(currentAssetProvider.notifier).set(asset);
-                        if (asset.isVideo || asset.isMotionPhoto) {
-                          ref.read(videoPlaybackValueProvider.notifier).reset();
-                        }
-                      }
-                      context.pushRoute(MemoryRoute(memories: memories, memoryIndex: memoryIndex));
+                  child: ListView.builder(
+                    key: const PageStorageKey<String>('memory-lane-scroll'),
+                    scrollDirection: Axis.horizontal,
+                    physics: const BouncingScrollPhysics(),
+                    itemCount: memories.length,
+                    itemBuilder: (ctx, memoryIndex) {
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: InkWell(
+                          onTap: () {
+                            ref.read(hapticFeedbackProvider.notifier).heavyImpact();
+                            if (memories[memoryIndex].assets.isNotEmpty) {
+                              final asset = memories[memoryIndex].assets[0];
+                              ref.read(currentAssetProvider.notifier).set(asset);
+                              if (asset.isVideo || asset.isMotionPhoto) {
+                                ref.read(videoPlaybackValueProvider.notifier).reset();
+                              }
+                            }
+                            context.pushRoute(MemoryRoute(memories: memories, memoryIndex: memoryIndex));
+                          },
+                          child: Material(
+                            elevation: 2,
+                            color: Colors.black,
+                            borderRadius: const BorderRadius.all(Radius.circular(12)),
+                            child: SizedBox(
+                              width: 205,
+                              height: 200,
+                              child: MemoryCard(index: memoryIndex, memory: memories[memoryIndex]),
+                            ),
+                          ),
+                        ),
+                      );
                     },
-                    children: memories
-                        .mapIndexed<Widget>((index, memory) => MemoryCard(index: index, memory: memory))
-                        .toList(),
                   ),
                 )
               : const SizedBox(),
