@@ -5,6 +5,7 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart';
 import 'package:immich_mobile/providers/cleanup.provider.dart';
@@ -468,6 +469,28 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
                         'cleanup_step3_description'.t(context: context),
                         style: context.textTheme.labelLarge?.copyWith(fontSize: 15),
                       ),
+                      if (CurrentPlatform.isIOS) ...[
+                        const SizedBox(height: 12),
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: context.colorScheme.primaryContainer.withValues(alpha: 0.3),
+                            borderRadius: const BorderRadius.all(Radius.circular(8)),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(Icons.info_outline, color: context.colorScheme.primary),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  'cleanup_icloud_shared_albums_excluded'.t(context: context),
+                                  style: context.textTheme.labelLarge,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                       const SizedBox(height: 16),
                       state.isScanning
                           ? SizedBox(
