@@ -42,7 +42,12 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
     return CleanupStep.selectDate;
   }
 
-  void _goToFiltersStep() {
+  void _goToFilterStep() {
+    ref.read(hapticFeedbackProvider.notifier).mediumImpact();
+    setState(() => _currentStep = CleanupStep.filterOptions);
+  }
+
+  void _goToScanStep() {
     ref.read(hapticFeedbackProvider.notifier).mediumImpact();
     setState(() => _currentStep = CleanupStep.scan);
   }
@@ -70,7 +75,7 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
 
   Future<void> _selectDate() async {
     final state = ref.read(cleanupProvider);
-    ref.read(hapticFeedbackProvider.notifier).heavyImpact();
+    ref.read(hapticFeedbackProvider.notifier).mediumImpact();
 
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -85,7 +90,7 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
   }
 
   Future<void> _scanAssets() async {
-    ref.read(hapticFeedbackProvider.notifier).heavyImpact();
+    ref.read(hapticFeedbackProvider.notifier).mediumImpact();
 
     await ref.read(cleanupProvider.notifier).scanAssets();
     final state = ref.read(cleanupProvider);
@@ -105,7 +110,7 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
       return;
     }
 
-    ref.read(hapticFeedbackProvider.notifier).heavyImpact();
+    ref.read(hapticFeedbackProvider.notifier).mediumImpact();
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) =>
@@ -118,13 +123,14 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
 
     final deletedCount = await ref.read(cleanupProvider.notifier).deleteAssets();
 
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('cleanup_deleted_assets'.t(context: context, args: {'count': deletedCount.toString()})),
-        ),
-      );
+    if (mounted && deletedCount > 0) {
+      ref.read(hapticFeedbackProvider.notifier).heavyImpact();
       setState(() => _currentStep = CleanupStep.selectDate);
+
+      await showDialog<void>(
+        context: context,
+        builder: (ctx) => _DeleteSuccessDialog(deletedCount: deletedCount),
+      );
     }
   }
 
@@ -230,18 +236,7 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
                   setState(() => _currentStep = CleanupStep.values[step]);
                 }
               },
-              onStepContinue: () async {
-                switch (_currentStep) {
-                  case CleanupStep.selectDate:
-                    await _selectDate();
-                  case CleanupStep.filterOptions:
-                    _goToFiltersStep();
-                  case CleanupStep.scan:
-                    await _scanAssets();
-                  case CleanupStep.delete:
-                    await _deleteAssets();
-                }
-              },
+
               onStepCancel: () {
                 if (_currentStep.index > 0) {
                   setState(() => _currentStep = CleanupStep.values[_currentStep.index - 1]);
@@ -332,7 +327,7 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
                       ),
                       const SizedBox(height: 16),
                       ElevatedButton.icon(
-                        onPressed: hasDate ? () => setState(() => _currentStep = CleanupStep.filterOptions) : null,
+                        onPressed: hasDate ? () => _goToFilterStep() : null,
                         icon: const Icon(Icons.arrow_forward),
                         label: Text('continue'.t(context: context)),
                         style: ElevatedButton.styleFrom(minimumSize: const Size(double.infinity, 48)),
@@ -411,7 +406,7 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
                       ),
                       const SizedBox(height: 16),
                       ElevatedButton.icon(
-                        onPressed: _goToFiltersStep,
+                        onPressed: _goToScanStep,
                         icon: const Icon(Icons.arrow_forward),
                         label: Text('continue'.t(context: context)),
                         style: ElevatedButton.styleFrom(minimumSize: const Size(double.infinity, 48)),
@@ -462,7 +457,7 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
                             color: context.colorScheme.primaryContainer.withValues(alpha: 0.3),
-                            borderRadius: const BorderRadius.all(Radius.circular(8)),
+                            borderRadius: const BorderRadius.all(Radius.circular(12)),
                           ),
                           child: Row(
                             children: [
@@ -629,6 +624,42 @@ class _DeleteConfirmationDialog extends StatelessWidget {
             foregroundColor: context.colorScheme.onError,
           ),
           child: Text('confirm'.t(context: context)),
+        ),
+      ],
+    );
+  }
+}
+
+class _DeleteSuccessDialog extends StatelessWidget {
+  final int deletedCount;
+
+  const _DeleteSuccessDialog({required this.deletedCount});
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      icon: Icon(Icons.check_circle, color: context.colorScheme.primary, size: 48),
+      title: Text('success'.t(context: context)),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            'cleanup_deleted_assets'.t(context: context, args: {'count': deletedCount.toString()}),
+            style: context.textTheme.labelLarge?.copyWith(fontSize: 16),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'cleanup_trash_hint'.t(context: context),
+            style: context.textTheme.labelLarge?.copyWith(fontSize: 16, color: context.primaryColor),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+      actions: [
+        ElevatedButton(
+          onPressed: () => context.pop(),
+          child: Text('done'.t(context: context)),
         ),
       ],
     );

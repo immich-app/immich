@@ -19,9 +19,7 @@ class CleanupPreviewPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'cleanup_preview_title'.t(context: context, args: {'count': assets.length.toString()}),
-        ),
+        title: Text('cleanup_preview_title'.t(context: context, args: {'count': assets.length.toString()})),
         centerTitle: true,
         elevation: 0,
         scrolledUnderElevation: 0,

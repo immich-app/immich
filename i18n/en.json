@@ -748,6 +748,7 @@
   "cleanup_preview_title": "Assets to remove ({count})",
   "cleanup_step3_description": "Scan for photos and videos that have been backed up to the server with the selected cutoff date and filter options",
   "cleanup_step4_summary": "{count} assets created before {date} are queued for removal from your device",
+  "cleanup_trash_hint": "To fully reclaim storage space, open the system gallery app and empty the trash",
   "clear": "Clear",
   "clear_all": "Clear all",
   "clear_all_recent_searches": "Clear all recent searches",
