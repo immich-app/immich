@@ -101,9 +101,6 @@ export class ProcessRepository {
       }
     });
 
-    // attach _process to Duplex for testing suite
-    (duplex as never as { _process: ChildProcessWithoutNullStreams })._process = process;
-
-    return duplex;
+    return Object.assign(duplex, { _process: process });
   }
 }
