@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { locale } from '$lib/stores/preferences.store';
   import { uploadRequest } from '$lib/utils';
   import { openFilePicker } from '$lib/utils/file-uploader';
   import { handleError } from '$lib/utils/handle-error';
@@ -24,7 +25,7 @@
     type ContextMenuBaseProps,
   } from '@immich/ui';
   import { mdiDotsVertical, mdiDownload, mdiTrashCanOutline } from '@mdi/js';
-  import { DateTime, Interval } from 'luxon';
+  import { DateTime } from 'luxon';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { SvelteSet } from 'svelte/reactivity';
@@ -38,13 +39,10 @@
   const mapBackups = (filenames: string[]) => {
     return filenames.map((filename) => {
       const date = /\d{4}\d{2}\d{2}T\d{2}\d{2}\d{2}/.exec(filename);
-      const minutesAgo = date
-        ? Interval.fromDateTimes(DateTime.now(), DateTime.fromFormat(date[0], "yyyyMMdd'T'HHmmss")).length('minutes')
-        : null;
 
       return {
         filename,
-        minutesAgo,
+        timeText: date ? DateTime.fromFormat(date[0], "yyyyMMdd'T'HHmmss").toRelative({ locale: $locale }) : null,
       };
     });
   };
@@ -188,34 +186,8 @@
         <HStack>
           <Stack class="grow">
             <Text>{backup.filename}</Text>
-            {#if typeof backup.minutesAgo === 'number'}
-              <Text color="info" size="small">
-                {#if backup.minutesAgo <= 1}
-                  {$t('created_minute_ago')}
-                {:else if backup.minutesAgo < 60}
-                  {$t('created_minutes_ago', {
-                    values: {
-                      count: backup.minutesAgo,
-                    },
-                  })}
-                {:else if backup.minutesAgo < 60 * 2}
-                  {$t('created_hour_ago')}
-                {:else if backup.minutesAgo < 60 * 24}
-                  {$t('created_hours_ago', {
-                    values: {
-                      count: Math.floor(backup.minutesAgo / 60),
-                    },
-                  })}
-                {:else if backup.minutesAgo < 60 * 24 * 2}
-                  {$t('created_day_ago')}
-                {:else}
-                  {$t('created_days_ago', {
-                    values: {
-                      count: Math.floor(backup.minutesAgo / (60 * 24)),
-                    },
-                  })}
-                {/if}
-              </Text>
+            {#if typeof backup.timeText}
+              <Text color="info" size="small">{backup.timeText}</Text>
             {/if}
           </Stack>
 
