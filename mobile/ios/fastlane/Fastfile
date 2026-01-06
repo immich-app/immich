@@ -48,13 +48,21 @@ platform :ios do
   
   # Helper method to sync certificates and profiles using match
   def sync_code_signing(app_identifiers:, readonly: true)
+    keychain = ENV["KEYCHAIN_NAME"] || "login.keychain"
+    keychain_password = ENV["KEYCHAIN_PASSWORD"] || ""
+    
     match(
       type: "appstore",
       app_identifier: app_identifiers,
       readonly: readonly,
-      keychain_name: ENV["KEYCHAIN_NAME"] || "login.keychain",
-      keychain_password: ENV["KEYCHAIN_PASSWORD"] || ""
+      keychain_name: keychain,
+      keychain_password: keychain_password
     )
+    
+    # Set key partition list after match imports certificates (required for CI)
+    if ENV["CI"] && !keychain_password.empty?
+      sh("security set-key-partition-list -S apple-tool:,apple: -s -k \"#{keychain_password}\" #{keychain} 2>/dev/null || true")
+    end
   end
   
   # Helper method to get version from pubspec.yaml
