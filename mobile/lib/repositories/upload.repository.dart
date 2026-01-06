@@ -94,55 +94,6 @@ class UploadRepository {
     );
   }
 
-  Future<void> backupWithDartClient(Iterable<UploadTaskWithFile> tasks, CancellationToken cancelToken) async {
-    final httpClient = Client();
-    final String savedEndpoint = Store.get(StoreKey.serverEndpoint);
-
-    Logger logger = Logger('UploadRepository');
-    for (final candidate in tasks) {
-      if (cancelToken.isCancelled) {
-        logger.warning("Backup was cancelled by the user");
-        break;
-      }
-
-      try {
-        final fileStream = candidate.file.openRead();
-        final assetRawUploadData = MultipartFile(
-          "assetData",
-          fileStream,
-          candidate.file.lengthSync(),
-          filename: candidate.task.filename,
-        );
-
-        final baseRequest = MultipartRequest('POST', Uri.parse('$savedEndpoint/assets'));
-
-        baseRequest.headers.addAll(candidate.task.headers);
-        baseRequest.fields.addAll(candidate.task.fields);
-        baseRequest.files.add(assetRawUploadData);
-
-        final response = await httpClient.send(baseRequest, cancellationToken: cancelToken);
-
-        final responseBody = jsonDecode(await response.stream.bytesToString());
-
-        if (![200, 201].contains(response.statusCode)) {
-          final error = responseBody;
-
-          logger.warning(
-            "Error(${error['statusCode']}) uploading ${candidate.task.filename} | Created on ${candidate.task.fields["fileCreatedAt"]} | ${error['error']}",
-          );
-
-          continue;
-        }
-      } on CancelledException {
-        logger.warning("Backup was cancelled by the user");
-        break;
-      } catch (error, stackTrace) {
-        logger.warning("Error backup asset: ${error.toString()}: $stackTrace");
-        continue;
-      }
-    }
-  }
-
   Future<UploadResult> uploadSingleAsset({
     required File file,
     required String originalFileName,

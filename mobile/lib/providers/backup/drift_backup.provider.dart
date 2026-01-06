@@ -9,9 +9,12 @@ import 'package:logging/logging.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/extensions/network_capability_extensions.dart';
 import 'package:immich_mobile/extensions/string_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/backup.repository.dart';
+import 'package:immich_mobile/platform/connectivity_api.g.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/services/upload.service.dart';
 
@@ -205,11 +208,11 @@ class DriftBackupState {
 }
 
 final driftBackupProvider = StateNotifierProvider<DriftBackupNotifier, DriftBackupState>((ref) {
-  return DriftBackupNotifier(ref.watch(uploadServiceProvider));
+  return DriftBackupNotifier(ref.watch(uploadServiceProvider), ref.watch(connectivityApiProvider));
 });
 
 class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
-  DriftBackupNotifier(this._uploadService)
+  DriftBackupNotifier(this._uploadService, this._connectivityApi)
     : super(
         const DriftBackupState(
           totalCount: 0,
@@ -231,6 +234,7 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
   }
 
   final UploadService _uploadService;
+  final ConnectivityApi _connectivityApi;
   StreamSubscription<TaskStatusUpdate>? _statusSubscription;
   StreamSubscription<TaskProgressUpdate>? _progressSubscription;
   final _logger = Logger("DriftBackupNotifier");
@@ -387,14 +391,19 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
     state = state.copyWith(isSyncing: isSyncing);
   }
 
-  Future<void> startBackup(String userId) {
+  Future<void> startBackup(String userId) async {
     state = state.copyWith(error: BackupError.none);
 
     final cancelToken = CancellationToken();
     state = state.copyWith(cancelToken: cancelToken);
 
+    final networkCapabilities = await _connectivityApi.getCapabilities();
+    final hasWifi = networkCapabilities.isUnmetered;
+    _logger.info('Network capabilities: $networkCapabilities, hasWifi/isUnmetered: $hasWifi');
+
     return _uploadService.startForegroundUpload(
       userId,
+      hasWifi,
       cancelToken,
       _handleForegroundBackupProgress,
       _handleForegroundBackupSuccess,

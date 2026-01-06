@@ -146,45 +146,9 @@ class UploadService {
     }
   }
 
-  Future<void> startBackupWithHttpClient(String userId, bool hasWifi, CancellationToken token) async {
-    await _storageRepository.clearCache();
-
-    shouldAbortQueuingTasks = false;
-
-    final candidates = await _backupRepository.getCandidates(userId);
-    if (candidates.isEmpty) {
-      return;
-    }
-
-    const batchSize = 100;
-    for (int i = 0; i < candidates.length; i += batchSize) {
-      if (shouldAbortQueuingTasks || token.isCancelled) {
-        break;
-      }
-
-      final batch = candidates.skip(i).take(batchSize).toList();
-      List<UploadTaskWithFile> tasks = [];
-      for (final asset in batch) {
-        final requireWifi = _shouldRequireWiFi(asset);
-        if (requireWifi && !hasWifi) {
-          _logger.warning('Skipping upload for ${asset.id} because it requires WiFi');
-          continue;
-        }
-
-        final task = await _getUploadTaskWithFile(asset);
-        if (task != null) {
-          tasks.add(task);
-        }
-      }
-
-      if (tasks.isNotEmpty && !shouldAbortQueuingTasks) {
-        await _uploadRepository.backupWithDartClient(tasks, token);
-      }
-    }
-  }
-
   Future<void> startForegroundUpload(
     String userId,
+    bool hasWifi,
     CancellationToken cancelToken,
     void Function(String localAssetId, String filename, int bytes, int totalBytes) onProgress,
     void Function(String localAssetId, String remoteAssetId) onSuccess,
@@ -219,6 +183,12 @@ class UploadService {
           currentIndex++;
 
           final asset = candidates[index];
+
+          final requireWifi = _shouldRequireWiFi(asset);
+          if (requireWifi && !hasWifi) {
+            _logger.warning('Skipping upload for ${asset.id} because it requires WiFi');
+            continue;
+          }
 
           await _uploadSingleAsset(
             asset,
@@ -458,42 +428,6 @@ class UploadService {
     } catch (error, stackTrace) {
       dPrint(() => "Error handling live photo upload task: $error $stackTrace");
     }
-  }
-
-  Future<UploadTaskWithFile?> _getUploadTaskWithFile(LocalAsset asset) async {
-    final entity = await _storageRepository.getAssetEntityForAsset(asset);
-    if (entity == null) {
-      return null;
-    }
-
-    final file = await _storageRepository.getFileForAsset(asset.id);
-    if (file == null) {
-      return null;
-    }
-
-    final originalFileName = entity.isLivePhoto ? p.setExtension(asset.name, p.extension(file.path)) : asset.name;
-
-    String metadata = UploadTaskMetadata(
-      localAssetId: asset.id,
-      isLivePhotos: entity.isLivePhoto,
-      livePhotoVideoId: '',
-    ).toJson();
-
-    return UploadTaskWithFile(
-      file: file,
-      task: await buildUploadTask(
-        file,
-        createdAt: asset.createdAt,
-        modifiedAt: asset.updatedAt,
-        originalFileName: originalFileName,
-        deviceAssetId: asset.id,
-        metadata: metadata,
-        group: "group",
-        priority: 0,
-        isFavorite: asset.isFavorite,
-        requiresWiFi: false,
-      ),
-    );
   }
 
   @visibleForTesting
