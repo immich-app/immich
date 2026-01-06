@@ -6395,6 +6395,7 @@ i1.GeneratedColumn<int> _column_97(String aliasedName) =>
       aliasedName,
       false,
       type: i1.DriftSqlType.int,
+      defaultValue: const CustomExpression('0'),
     );
 i0.MigrationStepWithVersion migrationSteps({
   required Future<void> Function(i1.Migrator m, Schema2 schema) from1To2,

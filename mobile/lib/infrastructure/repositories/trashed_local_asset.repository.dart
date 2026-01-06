@@ -85,7 +85,7 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
             durationInSeconds: Value(item.asset.durationInSeconds),
             isFavorite: Value(item.asset.isFavorite),
             orientation: Value(item.asset.orientation),
-            source: TrashOrigin.localSync,
+            source: const Value(TrashOrigin.localSync),
           );
 
           batch.insert<$TrashedLocalAssetEntityTable, TrashedLocalAssetEntityData>(
@@ -245,7 +245,7 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
         checksum: Value(e.asset.checksum),
         isFavorite: Value(e.asset.isFavorite),
         orientation: Value(e.asset.orientation),
-        source: TrashOrigin.localUser,
+        source: const Value(TrashOrigin.localUser),
         albumId: e.albumId,
       );
     });
