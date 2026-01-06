@@ -1,0 +1,19 @@
+git_url(ENV["MATCH_GIT_URL"] || "https://github.com/immich-app/ios-certs")
+
+storage_mode("git")
+
+type("appstore")
+
+team_id("2F67MQ8R79")
+
+app_identifier([
+  "app.alextran.immich",
+  "app.alextran.immich.ShareExtension",
+  "app.alextran.immich.Widget",
+  "app.alextran.immich.development",
+  "app.alextran.immich.development.ShareExtension",
+  "app.alextran.immich.development.Widget"
+])
+
+# For all available options run `fastlane match --help`
+# The docs are available on https://docs.fastlane.tools/actions/match
