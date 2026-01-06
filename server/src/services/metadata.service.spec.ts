@@ -187,7 +187,9 @@ describe(MetadataService.name, () => {
 
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
       expect(mocks.assetJob.getForMetadataExtraction).toHaveBeenCalledWith(assetStub.sidecar.id);
-      expect(mocks.asset.upsertExif).toHaveBeenCalledWith(expect.objectContaining({ dateTimeOriginal: sidecarDate }));
+      expect(mocks.asset.upsertExif).toHaveBeenCalledWith(expect.objectContaining({ dateTimeOriginal: sidecarDate }), {
+        lockedPropertiesBehavior: 'skip',
+      });
       expect(mocks.asset.update).toHaveBeenCalledWith(
         expect.objectContaining({
           id: assetStub.image.id,
@@ -214,6 +216,7 @@ describe(MetadataService.name, () => {
       expect(mocks.assetJob.getForMetadataExtraction).toHaveBeenCalledWith(assetStub.image.id);
       expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
         expect.objectContaining({ dateTimeOriginal: fileModifiedAt }),
+        { lockedPropertiesBehavior: 'skip' },
       );
       expect(mocks.asset.update).toHaveBeenCalledWith({
         id: assetStub.image.id,
@@ -238,7 +241,10 @@ describe(MetadataService.name, () => {
 
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
       expect(mocks.assetJob.getForMetadataExtraction).toHaveBeenCalledWith(assetStub.image.id);
-      expect(mocks.asset.upsertExif).toHaveBeenCalledWith(expect.objectContaining({ dateTimeOriginal: fileCreatedAt }));
+      expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
+        expect.objectContaining({ dateTimeOriginal: fileCreatedAt }),
+        { lockedPropertiesBehavior: 'skip' },
+      );
       expect(mocks.asset.update).toHaveBeenCalledWith({
         id: assetStub.image.id,
         duration: null,
@@ -258,6 +264,7 @@ describe(MetadataService.name, () => {
         expect.objectContaining({
           dateTimeOriginal: new Date('2022-01-01T00:00:00.000Z'),
         }),
+        { lockedPropertiesBehavior: 'skip' },
       );
 
       expect(mocks.asset.update).toHaveBeenCalledWith(
@@ -281,7 +288,9 @@ describe(MetadataService.name, () => {
 
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
       expect(mocks.assetJob.getForMetadataExtraction).toHaveBeenCalledWith(assetStub.image.id);
-      expect(mocks.asset.upsertExif).toHaveBeenCalledWith(expect.objectContaining({ iso: 160 }));
+      expect(mocks.asset.upsertExif).toHaveBeenCalledWith(expect.objectContaining({ iso: 160 }), {
+        lockedPropertiesBehavior: 'skip',
+      });
       expect(mocks.asset.update).toHaveBeenCalledWith({
         id: assetStub.image.id,
         duration: null,
@@ -310,6 +319,7 @@ describe(MetadataService.name, () => {
       expect(mocks.assetJob.getForMetadataExtraction).toHaveBeenCalledWith(assetStub.image.id);
       expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
         expect.objectContaining({ city: null, state: null, country: null }),
+        { lockedPropertiesBehavior: 'skip' },
       );
       expect(mocks.asset.update).toHaveBeenCalledWith({
         id: assetStub.withLocation.id,
@@ -339,6 +349,7 @@ describe(MetadataService.name, () => {
       expect(mocks.assetJob.getForMetadataExtraction).toHaveBeenCalledWith(assetStub.image.id);
       expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
         expect.objectContaining({ city: 'City', state: 'State', country: 'Country' }),
+        { lockedPropertiesBehavior: 'skip' },
       );
       expect(mocks.asset.update).toHaveBeenCalledWith({
         id: assetStub.withLocation.id,
@@ -358,7 +369,10 @@ describe(MetadataService.name, () => {
 
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
       expect(mocks.assetJob.getForMetadataExtraction).toHaveBeenCalledWith(assetStub.image.id);
-      expect(mocks.asset.upsertExif).toHaveBeenCalledWith(expect.objectContaining({ latitude: null, longitude: null }));
+      expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
+        expect.objectContaining({ latitude: null, longitude: null }),
+        { lockedPropertiesBehavior: 'skip' },
+      );
     });
 
     it('should extract tags from TagsList', async () => {
@@ -571,6 +585,7 @@ describe(MetadataService.name, () => {
       expect(mocks.assetJob.getForMetadataExtraction).toHaveBeenCalledWith(assetStub.video.id);
       expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
         expect.objectContaining({ orientation: ExifOrientation.Rotate270CW.toString() }),
+        { lockedPropertiesBehavior: 'skip' },
       );
     });
 
@@ -879,37 +894,40 @@ describe(MetadataService.name, () => {
 
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
       expect(mocks.assetJob.getForMetadataExtraction).toHaveBeenCalledWith(assetStub.image.id);
-      expect(mocks.asset.upsertExif).toHaveBeenCalledWith({
-        assetId: assetStub.image.id,
-        bitsPerSample: expect.any(Number),
-        autoStackId: null,
-        colorspace: tags.ColorSpace,
-        dateTimeOriginal: dateForTest,
-        description: tags.ImageDescription,
-        exifImageHeight: null,
-        exifImageWidth: null,
-        exposureTime: tags.ExposureTime,
-        fNumber: null,
-        fileSizeInByte: 123_456,
-        focalLength: tags.FocalLength,
-        fps: null,
-        iso: tags.ISO,
-        latitude: null,
-        lensModel: tags.LensModel,
-        livePhotoCID: tags.MediaGroupUUID,
-        longitude: null,
-        make: tags.Make,
-        model: tags.Model,
-        modifyDate: expect.any(Date),
-        orientation: tags.Orientation?.toString(),
-        profileDescription: tags.ProfileDescription,
-        projectionType: 'EQUIRECTANGULAR',
-        timeZone: tags.tz,
-        rating: tags.Rating,
-        country: null,
-        state: null,
-        city: null,
-      });
+      expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
+        {
+          assetId: assetStub.image.id,
+          bitsPerSample: expect.any(Number),
+          autoStackId: null,
+          colorspace: tags.ColorSpace,
+          dateTimeOriginal: dateForTest,
+          description: tags.ImageDescription,
+          exifImageHeight: null,
+          exifImageWidth: null,
+          exposureTime: tags.ExposureTime,
+          fNumber: null,
+          fileSizeInByte: 123_456,
+          focalLength: tags.FocalLength,
+          fps: null,
+          iso: tags.ISO,
+          latitude: null,
+          lensModel: tags.LensModel,
+          livePhotoCID: tags.MediaGroupUUID,
+          longitude: null,
+          make: tags.Make,
+          model: tags.Model,
+          modifyDate: expect.any(Date),
+          orientation: tags.Orientation?.toString(),
+          profileDescription: tags.ProfileDescription,
+          projectionType: 'EQUIRECTANGULAR',
+          timeZone: tags.tz,
+          rating: tags.Rating,
+          country: null,
+          state: null,
+          city: null,
+        },
+        { lockedPropertiesBehavior: 'skip' },
+      );
       expect(mocks.asset.update).toHaveBeenCalledWith(
         expect.objectContaining({
           id: assetStub.image.id,
@@ -943,6 +961,7 @@ describe(MetadataService.name, () => {
         expect.objectContaining({
           timeZone: 'UTC+0',
         }),
+        { lockedPropertiesBehavior: 'skip' },
       );
     });
 
@@ -1103,6 +1122,7 @@ describe(MetadataService.name, () => {
         expect.objectContaining({
           description: '',
         }),
+        { lockedPropertiesBehavior: 'skip' },
       );
 
       mockReadTags({ ImageDescription: ' my\n description' });
@@ -1111,6 +1131,7 @@ describe(MetadataService.name, () => {
         expect.objectContaining({
           description: 'my\n description',
         }),
+        { lockedPropertiesBehavior: 'skip' },
       );
     });
 
@@ -1123,6 +1144,7 @@ describe(MetadataService.name, () => {
         expect.objectContaining({
           description: '1000',
         }),
+        { lockedPropertiesBehavior: 'skip' },
       );
     });
 
@@ -1346,6 +1368,7 @@ describe(MetadataService.name, () => {
         expect.objectContaining({
           modifyDate: expect.any(Date),
         }),
+        { lockedPropertiesBehavior: 'skip' },
       );
     });
 
@@ -1358,6 +1381,7 @@ describe(MetadataService.name, () => {
         expect.objectContaining({
           rating: null,
         }),
+        { lockedPropertiesBehavior: 'skip' },
       );
     });
 
@@ -1370,6 +1394,7 @@ describe(MetadataService.name, () => {
         expect.objectContaining({
           rating: 5,
         }),
+        { lockedPropertiesBehavior: 'skip' },
       );
     });
 
@@ -1382,6 +1407,7 @@ describe(MetadataService.name, () => {
         expect.objectContaining({
           rating: -1,
         }),
+        { lockedPropertiesBehavior: 'skip' },
       );
     });
 
@@ -1503,7 +1529,9 @@ describe(MetadataService.name, () => {
       mockReadTags(exif);
 
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
-      expect(mocks.asset.upsertExif).toHaveBeenCalledWith(expect.objectContaining(expected));
+      expect(mocks.asset.upsertExif).toHaveBeenCalledWith(expect.objectContaining(expected), {
+        lockedPropertiesBehavior: 'skip',
+      });
     });
 
     it.each([
@@ -1529,6 +1557,7 @@ describe(MetadataService.name, () => {
         expect.objectContaining({
           lensModel: expected,
         }),
+        { lockedPropertiesBehavior: 'skip' },
       );
     });
   });
@@ -1637,12 +1666,14 @@ describe(MetadataService.name, () => {
 
   describe('handleSidecarWrite', () => {
     it('should skip assets that no longer exist', async () => {
+      mocks.assetJob.getLockedPropertiesForMetadataExtraction.mockResolvedValue([]);
       mocks.assetJob.getForSidecarWriteJob.mockResolvedValue(void 0);
       await expect(sut.handleSidecarWrite({ id: 'asset-123' })).resolves.toBe(JobStatus.Failed);
       expect(mocks.metadata.writeTags).not.toHaveBeenCalled();
     });
 
     it('should skip jobs with no metadata', async () => {
+      mocks.assetJob.getLockedPropertiesForMetadataExtraction.mockResolvedValue([]);
       const asset = factory.jobAssets.sidecarWrite();
       mocks.assetJob.getForSidecarWriteJob.mockResolvedValue(asset);
       await expect(sut.handleSidecarWrite({ id: asset.id })).resolves.toBe(JobStatus.Skipped);
@@ -1655,20 +1686,22 @@ describe(MetadataService.name, () => {
       const gps = 12;
       const date = '2023-11-22T04:56:12.196Z';
 
+      mocks.assetJob.getLockedPropertiesForMetadataExtraction.mockResolvedValue([
+        'description',
+        'latitude',
+        'longitude',
+        'dateTimeOriginal',
+      ]);
       mocks.assetJob.getForSidecarWriteJob.mockResolvedValue(asset);
       await expect(
         sut.handleSidecarWrite({
           id: asset.id,
-          description,
-          latitude: gps,
-          longitude: gps,
-          dateTimeOriginal: date,
         }),
       ).resolves.toBe(JobStatus.Success);
       expect(mocks.metadata.writeTags).toHaveBeenCalledWith(asset.files[0].path, {
+        DateTimeOriginal: date,
         Description: description,
         ImageDescription: description,
-        DateTimeOriginal: date,
         GPSLatitude: gps,
         GPSLongitude: gps,
       });

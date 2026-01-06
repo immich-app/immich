@@ -223,11 +223,6 @@ export interface IDeleteFilesJob extends IBaseJob {
 }
 
 export interface ISidecarWriteJob extends IEntityJob {
-  description?: string;
-  dateTimeOriginal?: string;
-  latitude?: number;
-  longitude?: number;
-  rating?: number;
   tags?: true;
 }
 
@@ -478,6 +473,9 @@ export type StorageAsset = {
   originalFileName: string;
   fileSizeInByte: number | null;
   files: AssetFile[];
+  make: string | null;
+  model: string | null;
+  lensModel: string | null;
 };
 
 export type OnThisDayData = { year: number };

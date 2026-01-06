@@ -9,7 +9,7 @@ import {
 import { Server, Socket } from 'socket.io';
 import { MaintenanceAuthDto, MaintenanceStatusResponseDto } from 'src/dtos/maintenance.dto';
 import { AppRepository } from 'src/repositories/app.repository';
-import { AppRestartEvent } from 'src/repositories/event.repository';
+import { AppRestartEvent, ArgsOf } from 'src/repositories/event.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 
 interface ServerEventMap {
@@ -47,8 +47,13 @@ export class MaintenanceWebsocketRepository implements OnGatewayConnection, OnGa
 
   afterInit(server: Server) {
     this.logger.log('Initialized websocket server');
-    server.on('AppRestart', () => this.appRepository.exitApp());
     server.on('MaintenanceStatus', (status) => this.statusUpdateFn?.(status));
+    server.on('AppRestart', (event: ArgsOf<'AppRestart'>, ack?: (ok: 'ok') => void) => {
+      this.logger.log(`Restarting due to event... ${JSON.stringify(event)}`);
+
+      ack?.('ok');
+      this.appRepository.exitApp();
+    });
   }
 
   clientSend<T extends keyof ClientEventMap>(event: T, room: string, ...data: ClientEventMap[T]) {

@@ -268,4 +268,166 @@ describe(AssetService.name, () => {
       });
     });
   });
+
+  describe('update', () => {
+    it('should automatically lock lockable columns', async () => {
+      const { sut, ctx } = setup();
+      ctx.getMock(JobRepository).queue.mockResolvedValue();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newExif({ assetId: asset.id, dateTimeOriginal: '2023-11-19T18:11:00' });
+
+      await expect(
+        ctx.database
+          .selectFrom('asset_exif')
+          .select('lockedProperties')
+          .where('assetId', '=', asset.id)
+          .executeTakeFirstOrThrow(),
+      ).resolves.toEqual({ lockedProperties: null });
+
+      await sut.update(auth, asset.id, {
+        latitude: 42,
+        longitude: 42,
+        rating: 3,
+        description: 'foo',
+        dateTimeOriginal: '2023-11-19T18:11:00+01:00',
+      });
+
+      await expect(
+        ctx.database
+          .selectFrom('asset_exif')
+          .select('lockedProperties')
+          .where('assetId', '=', asset.id)
+          .executeTakeFirstOrThrow(),
+      ).resolves.toEqual({
+        lockedProperties: ['timeZone', 'rating', 'description', 'latitude', 'longitude', 'dateTimeOriginal'],
+      });
+    });
+
+    it('should update dateTimeOriginal', async () => {
+      const { sut, ctx } = setup();
+      ctx.getMock(JobRepository).queue.mockResolvedValue();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newExif({ assetId: asset.id, description: 'test' });
+
+      await sut.update(auth, asset.id, { dateTimeOriginal: '2023-11-19T18:11:00' });
+
+      await expect(ctx.get(AssetRepository).getById(asset.id, { exifInfo: true })).resolves.toEqual(
+        expect.objectContaining({
+          exifInfo: expect.objectContaining({ dateTimeOriginal: '2023-11-19T18:11:00+00:00', timeZone: null }),
+        }),
+      );
+    });
+
+    it('should update dateTimeOriginal with time zone', async () => {
+      const { sut, ctx } = setup();
+      ctx.getMock(JobRepository).queue.mockResolvedValue();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newExif({ assetId: asset.id, description: 'test' });
+
+      await sut.update(auth, asset.id, { dateTimeOriginal: '2023-11-19T18:11:00.000-07:00' });
+
+      await expect(ctx.get(AssetRepository).getById(asset.id, { exifInfo: true })).resolves.toEqual(
+        expect.objectContaining({
+          exifInfo: expect.objectContaining({ dateTimeOriginal: '2023-11-20T01:11:00+00:00', timeZone: 'UTC-7' }),
+        }),
+      );
+    });
+  });
+
+  describe('updateAll', () => {
+    it('should automatically lock lockable columns', async () => {
+      const { sut, ctx } = setup();
+      ctx.getMock(JobRepository).queueAll.mockResolvedValue();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newExif({ assetId: asset.id, dateTimeOriginal: '2023-11-19T18:11:00' });
+
+      await expect(
+        ctx.database
+          .selectFrom('asset_exif')
+          .select('lockedProperties')
+          .where('assetId', '=', asset.id)
+          .executeTakeFirstOrThrow(),
+      ).resolves.toEqual({ lockedProperties: null });
+
+      await sut.updateAll(auth, {
+        ids: [asset.id],
+        latitude: 42,
+        description: 'foo',
+        longitude: 42,
+        rating: 3,
+        dateTimeOriginal: '2023-11-19T18:11:00+01:00',
+      });
+
+      await expect(
+        ctx.database
+          .selectFrom('asset_exif')
+          .select('lockedProperties')
+          .where('assetId', '=', asset.id)
+          .executeTakeFirstOrThrow(),
+      ).resolves.toEqual({
+        lockedProperties: ['timeZone', 'rating', 'description', 'latitude', 'longitude', 'dateTimeOriginal'],
+      });
+    });
+
+    it('should relatively update assets', async () => {
+      const { sut, ctx } = setup();
+      ctx.getMock(JobRepository).queueAll.mockResolvedValue();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newExif({ assetId: asset.id, dateTimeOriginal: '2023-11-19T18:11:00' });
+
+      await sut.updateAll(auth, { ids: [asset.id], dateTimeRelative: -11 });
+
+      await expect(ctx.get(AssetRepository).getById(asset.id, { exifInfo: true })).resolves.toEqual(
+        expect.objectContaining({
+          exifInfo: expect.objectContaining({
+            dateTimeOriginal: '2023-11-19T18:00:00+00:00',
+          }),
+        }),
+      );
+    });
+
+    it('should update dateTimeOriginal', async () => {
+      const { sut, ctx } = setup();
+      ctx.getMock(JobRepository).queueAll.mockResolvedValue();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newExif({ assetId: asset.id, description: 'test' });
+
+      await sut.updateAll(auth, { ids: [asset.id], dateTimeOriginal: '2023-11-19T18:11:00' });
+
+      await expect(ctx.get(AssetRepository).getById(asset.id, { exifInfo: true })).resolves.toEqual(
+        expect.objectContaining({
+          exifInfo: expect.objectContaining({ dateTimeOriginal: '2023-11-19T18:11:00+00:00', timeZone: null }),
+        }),
+      );
+    });
+
+    it('should update dateTimeOriginal with time zone', async () => {
+      const { sut, ctx } = setup();
+      ctx.getMock(JobRepository).queueAll.mockResolvedValue();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newExif({ assetId: asset.id, description: 'test' });
+
+      await sut.updateAll(auth, { ids: [asset.id], dateTimeOriginal: '2023-11-19T18:11:00.000-07:00' });
+
+      await expect(ctx.get(AssetRepository).getById(asset.id, { exifInfo: true })).resolves.toEqual(
+        expect.objectContaining({
+          exifInfo: expect.objectContaining({ dateTimeOriginal: '2023-11-20T01:11:00+00:00', timeZone: 'UTC-7' }),
+        }),
+      );
+    });
+  });
 });
