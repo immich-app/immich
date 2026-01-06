@@ -4,9 +4,8 @@
   import SettingAccordionState from '$lib/components/shared-components/settings/setting-accordion-state.svelte';
   import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
   import { QueryParameter } from '$lib/constants';
-  import { handleError } from '$lib/utils/handle-error';
-  import { MaintenanceAction, setMaintenanceMode } from '@immich/sdk';
-  import { mdiProgressWrench, mdiRefresh } from '@mdi/js';
+  import { getMaintenanceAdminActions } from '$lib/services/maintenance.service';
+  import { mdiRefresh } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
 
@@ -14,31 +13,11 @@
     data: PageData;
   };
 
-  let { data }: Props = $props();
-
-  async function switchToMaintenance() {
-    try {
-      await setMaintenanceMode({
-        setMaintenanceModeDto: {
-          action: MaintenanceAction.Start,
-        },
-      });
-    } catch (error) {
-      handleError(error, $t('admin.maintenance_start_error'));
-    }
-  }
+  const { data }: Props = $props();
+  const { StartMaintenance } = $derived(getMaintenanceAdminActions($t));
 </script>
 
-<AdminPageLayout
-  breadcrumbs={[{ title: data.meta.title }]}
-  actions={[
-    {
-      title: $t('admin.maintenance_start'),
-      onAction: switchToMaintenance,
-      icon: mdiProgressWrench,
-    },
-  ]}
->
+<AdminPageLayout breadcrumbs={[{ title: data.meta.title }]} actions={[StartMaintenance]}>
   <section id="setting-content" class="flex place-content-center sm:mx-4">
     <section class="w-full pb-28 sm:w-5/6 md:w-[850px]">
       <SettingAccordionState queryParam={QueryParameter.IS_OPEN}>

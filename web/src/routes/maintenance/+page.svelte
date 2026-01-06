@@ -2,9 +2,9 @@
   import AuthPageLayout from '$lib/components/layouts/AuthPageLayout.svelte';
   import MaintenanceRestoreFlow from '$lib/components/maintenance/MaintenanceRestoreFlow.svelte';
   import FormatMessage from '$lib/elements/FormatMessage.svelte';
+  import { handleSetMaintenanceMode } from '$lib/services/maintenance.service';
   import { maintenanceStore } from '$lib/stores/maintenance.store';
-  import { handleError } from '$lib/utils/handle-error';
-  import { MaintenanceAction, setMaintenanceMode } from '@immich/sdk';
+  import { MaintenanceAction } from '@immich/sdk';
   import { Button, Heading, Link, ProgressBar, Scrollable, Text } from '@immich/ui';
   import { t } from 'svelte-i18n';
 
@@ -17,17 +17,10 @@
     history.replaceState({}, document.title, url);
   }
 
-  async function end() {
-    try {
-      await setMaintenanceMode({
-        setMaintenanceModeDto: {
-          action: MaintenanceAction.End,
-        },
-      });
-    } catch (error) {
-      handleError(error, $t('maintenance_end_error'));
-    }
-  }
+  const end = () =>
+    handleSetMaintenanceMode({
+      action: MaintenanceAction.End,
+    });
 
   let error = $derived(
     $status?.error

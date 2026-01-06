@@ -1,16 +1,10 @@
 <script lang="ts">
+  import { handleDeleteDatabaseBackup, handleRestoreDatabaseBackup } from '$lib/services/database-backups.service';
   import { locale } from '$lib/stores/preferences.store';
   import { uploadRequest } from '$lib/utils';
   import { openFilePicker } from '$lib/utils/file-uploader';
   import { handleError } from '$lib/utils/handle-error';
-  import {
-    deleteDatabaseBackup,
-    getBaseUrl,
-    listDatabaseBackups,
-    MaintenanceAction,
-    setMaintenanceMode,
-    type DatabaseBackupUploadDto,
-  } from '@immich/sdk';
+  import { getBaseUrl, listDatabaseBackups, type DatabaseBackupUploadDto } from '@immich/sdk';
   import {
     Button,
     Card,
@@ -18,7 +12,6 @@
     HStack,
     IconButton,
     menuManager,
-    modalManager,
     ProgressBar,
     Stack,
     Text,
@@ -61,51 +54,14 @@
     }
   });
 
-  async function restore(filename: string) {
-    const confirm = await modalManager.showDialog({
-      confirmText: $t('restore'),
-      title: $t('admin.maintenance_restore_backup'),
-      prompt: $t('admin.maintenance_restore_backup_description'),
-    });
-
-    if (confirm) {
-      try {
-        await setMaintenanceMode({
-          setMaintenanceModeDto: {
-            action: MaintenanceAction.RestoreDatabase,
-            restoreBackupFilename: filename,
-          },
-        });
-      } catch (error) {
-        handleError(error, $t('admin.maintenance_start_error'));
-      }
-    }
-  }
-
   async function remove(filename: string) {
-    const confirm = await modalManager.showDialog({
-      confirmText: $t('delete'),
-      title: $t('admin.maintenance_delete_backup'),
-      prompt: $t('admin.maintenance_delete_backup_description'),
-    });
+    deleting.add(filename);
 
-    if (confirm) {
-      try {
-        deleting.add(filename);
-
-        await deleteDatabaseBackup({
-          databaseBackupDeleteDto: {
-            backups: [filename],
-          },
-        });
-
-        backups = backups.filter((backup) => backup.filename !== filename);
-      } catch (error) {
-        handleError(error, $t('admin.maintenance_delete_error'));
-      } finally {
-        deleting.delete(filename);
-      }
+    if (await handleDeleteDatabaseBackup(filename)) {
+      backups = backups.filter((backup) => backup.filename !== filename);
     }
+
+    deleting.delete(filename);
   }
 
   function download(filename: string) {
@@ -191,8 +147,10 @@
             {/if}
           </Stack>
 
-          <Button size="small" disabled={deleting.has(backup.filename)} onclick={() => restore(backup.filename)}
-            >{$t('restore')}</Button
+          <Button
+            size="small"
+            disabled={deleting.has(backup.filename)}
+            onclick={() => handleRestoreDatabaseBackup(backup.filename)}>{$t('restore')}</Button
           >
 
           <IconButton
