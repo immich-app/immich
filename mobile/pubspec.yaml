@@ -6,7 +6,7 @@ version: 2.4.1+3030
 
 environment:
   sdk: '>=3.8.0 <4.0.0'
-  flutter: 3.35.7
+  flutter: 3.35.4
 
 dependencies:
   async: ^2.13.0
