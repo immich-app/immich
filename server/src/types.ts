@@ -389,7 +389,11 @@ export type JobItem =
 
   // S3 Storage
   | { name: JobName.S3UploadAsset; data: IEntityJob }
-  | { name: JobName.S3UploadQueueAll; data?: IBaseJob };
+  | { name: JobName.S3UploadQueueAll; data?: IBaseJob }
+
+  // Asset Encryption
+  | { name: JobName.AssetEncrypt; data: IEntityJob }
+  | { name: JobName.AssetEncryptAll; data?: IBaseJob };
 
 export type VectorExtension = (typeof VECTOR_EXTENSIONS)[number];
 

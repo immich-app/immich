@@ -23,4 +23,13 @@ export class AssetJobStatusTable {
 
   @Column({ type: 'timestamp with time zone', nullable: true })
   ocrAt!: Timestamp | null;
+
+  @Column({ type: 'timestamp with time zone', nullable: true })
+  smartSearchAt!: Timestamp | null;
+
+  @Column({ type: 'timestamp with time zone', nullable: true })
+  videoEncodedAt!: Timestamp | null;
+
+  @Column({ type: 'timestamp with time zone', nullable: true })
+  encryptedAt!: Timestamp | null;
 }

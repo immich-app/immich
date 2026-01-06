@@ -5,7 +5,7 @@ import { basename, extname } from 'node:path';
 import { promisify } from 'node:util';
 import { CacheControl } from 'src/enum';
 import { LoggingRepository } from 'src/repositories/logging.repository';
-import { ImmichReadStream } from 'src/repositories/storage.repository';
+import { ImmichReadStream, StorageRepository } from 'src/repositories/storage.repository';
 import { isConnectionAborted } from 'src/utils/misc';
 
 export function getFileNameWithoutExtension(path: string): string {
@@ -20,11 +20,18 @@ export function getLivePhotoMotionFilename(stillName: string, motionName: string
   return getFileNameWithoutExtension(stillName) + extname(motionName);
 }
 
+export interface EncryptionInfo {
+  /** Data Encryption Key for decrypting the file */
+  dek: Buffer;
+}
+
 export class ImmichFileResponse {
   public readonly path!: string;
   public readonly contentType!: string;
   public readonly cacheControl!: CacheControl;
   public readonly fileName?: string;
+  /** If present, file is encrypted and needs decryption */
+  public readonly encryption?: EncryptionInfo;
 
   constructor(response: ImmichFileResponse) {
     Object.assign(this, response);
@@ -44,6 +51,7 @@ export const sendFile = async (
   next: NextFunction,
   handler: () => Promise<ImmichFileResponse>,
   logger: LoggingRepository,
+  storageRepository?: StorageRepository,
 ): Promise<void> => {
   // promisified version of 'res.sendFile' for cleaner async handling
   const _sendFile = (path: string, options: SendFileOptions) =>
@@ -63,6 +71,40 @@ export const sendFile = async (
     }
 
     await access(file.path, constants.R_OK);
+
+    // Handle encrypted files
+    if (file.encryption) {
+      if (!storageRepository) {
+        throw new Error('StorageRepository required for encrypted file streaming');
+      }
+
+      const stream = await storageRepository.createDecryptedReadStream(
+        file.path,
+        file.encryption.dek,
+        file.contentType,
+      );
+
+      // Note: Content-Length header will be approximate for encrypted files
+      // The actual decrypted size is slightly different from the stored size
+      res.header('Content-Length', String(stream.length));
+
+      return new Promise<void>((resolve, reject) => {
+        stream.stream.on('error', (error) => {
+          if (!isConnectionAborted(error)) {
+            logger.error(`Error streaming decrypted file: ${error}`, (error as Error).stack);
+          }
+          if (!res.headersSent) {
+            reject(error);
+          } else {
+            resolve();
+          }
+        });
+
+        stream.stream.on('end', () => resolve());
+
+        stream.stream.pipe(res);
+      });
+    }
 
     return await _sendFile(file.path, { dotfiles: 'allow' });
   } catch (error: Error | any) {

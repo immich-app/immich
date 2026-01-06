@@ -239,12 +239,43 @@ export class AssetRepository {
               previewAt: eb.ref('excluded.previewAt'),
               thumbnailAt: eb.ref('excluded.thumbnailAt'),
               ocrAt: eb.ref('excluded.ocrAt'),
+              smartSearchAt: eb.ref('excluded.smartSearchAt'),
+              videoEncodedAt: eb.ref('excluded.videoEncodedAt'),
+              encryptedAt: eb.ref('excluded.encryptedAt'),
             },
             values[0],
           ),
         ),
       )
       .execute();
+  }
+
+  async getJobStatus(assetId: string): Promise<{
+    assetId: string;
+    facesRecognizedAt: Date | null;
+    ocrAt: Date | null;
+    smartSearchAt: Date | null;
+    videoEncodedAt: Date | null;
+    encryptedAt: Date | null;
+  } | null> {
+    const result = await this.db
+      .selectFrom('asset_job_status')
+      .select(['assetId', 'facesRecognizedAt', 'ocrAt', 'smartSearchAt', 'videoEncodedAt', 'encryptedAt'])
+      .where('assetId', '=', assetId)
+      .executeTakeFirst();
+
+    if (!result) {
+      return null;
+    }
+
+    return {
+      assetId: result.assetId,
+      facesRecognizedAt: result.facesRecognizedAt ? new Date(result.facesRecognizedAt) : null,
+      ocrAt: result.ocrAt ? new Date(result.ocrAt) : null,
+      smartSearchAt: result.smartSearchAt ? new Date(result.smartSearchAt) : null,
+      videoEncodedAt: result.videoEncodedAt ? new Date(result.videoEncodedAt) : null,
+      encryptedAt: result.encryptedAt ? new Date(result.encryptedAt) : null,
+    };
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })

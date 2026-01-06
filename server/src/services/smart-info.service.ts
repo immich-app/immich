@@ -123,6 +123,9 @@ export class SmartInfoService extends BaseService {
 
     await this.searchRepository.upsert(asset.id, embedding);
 
+    // Track smart search completion for encryption coordination
+    await this.assetRepository.upsertJobStatus({ assetId: asset.id, smartSearchAt: new Date() });
+
     return JobStatus.Success;
   }
 }

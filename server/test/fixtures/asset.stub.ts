@@ -1,6 +1,6 @@
 import { AssetFace, AssetFile, Exif } from 'src/database';
 import { MapAsset } from 'src/dtos/asset-response.dto';
-import { AssetFileType, AssetStatus, AssetType, AssetVisibility } from 'src/enum';
+import { AssetFileType, AssetStatus, AssetType, AssetVisibility, StorageBackend } from 'src/enum';
 import { StorageAsset } from 'src/types';
 import { authStub } from 'test/fixtures/auth.stub';
 import { fileStub } from 'test/fixtures/file.stub';
@@ -104,6 +104,9 @@ export const assetStub = {
     stackId: null,
     updateId: '42',
     visibility: AssetVisibility.Timeline,
+    storageBackend: StorageBackend.Local,
+    s3Bucket: null,
+    s3Key: null,
   }),
 
   noWebpPath: Object.freeze({
@@ -142,6 +145,9 @@ export const assetStub = {
     stackId: null,
     updateId: '42',
     visibility: AssetVisibility.Timeline,
+    storageBackend: StorageBackend.Local,
+    s3Bucket: null,
+    s3Key: null,
   }),
 
   noThumbhash: Object.freeze({
@@ -177,6 +183,9 @@ export const assetStub = {
     stackId: null,
     updateId: '42',
     visibility: AssetVisibility.Timeline,
+    storageBackend: StorageBackend.Local,
+    s3Bucket: null,
+    s3Key: null,
   }),
 
   primaryImage: Object.freeze({
@@ -222,6 +231,9 @@ export const assetStub = {
     updateId: '42',
     libraryId: null,
     visibility: AssetVisibility.Timeline,
+    storageBackend: StorageBackend.Local,
+    s3Bucket: null,
+    s3Key: null,
   }),
 
   image: Object.freeze({
@@ -267,6 +279,10 @@ export const assetStub = {
     height: 3840,
     width: 2160,
     visibility: AssetVisibility.Timeline,
+    storageBackend: StorageBackend.Local,
+    s3Bucket: null,
+    s3Key: null,
+
   }),
 
   trashed: Object.freeze({
@@ -307,6 +323,9 @@ export const assetStub = {
     stackId: null,
     updateId: '42',
     visibility: AssetVisibility.Timeline,
+    storageBackend: StorageBackend.Local,
+    s3Bucket: null,
+    s3Key: null,
   }),
 
   trashedOffline: Object.freeze({
@@ -347,6 +366,9 @@ export const assetStub = {
     stackId: null,
     updateId: '42',
     visibility: AssetVisibility.Timeline,
+    storageBackend: StorageBackend.Local,
+    s3Bucket: null,
+    s3Key: null,
   }),
   archived: Object.freeze({
     id: 'asset-id',
@@ -386,6 +408,9 @@ export const assetStub = {
     stackId: null,
     updateId: '42',
     visibility: AssetVisibility.Timeline,
+    storageBackend: StorageBackend.Local,
+    s3Bucket: null,
+    s3Key: null,
   }),
 
   external: Object.freeze({
@@ -425,6 +450,9 @@ export const assetStub = {
     stackId: null,
     stack: null,
     visibility: AssetVisibility.Timeline,
+    storageBackend: StorageBackend.Local,
+    s3Bucket: null,
+    s3Key: null,
   }),
 
   image1: Object.freeze({
@@ -464,6 +492,9 @@ export const assetStub = {
     libraryId: null,
     stack: null,
     visibility: AssetVisibility.Timeline,
+    storageBackend: StorageBackend.Local,
+    s3Bucket: null,
+    s3Key: null,
   }),
 
   imageFrom2015: Object.freeze({
@@ -502,6 +533,9 @@ export const assetStub = {
     duplicateId: null,
     isOffline: false,
     visibility: AssetVisibility.Timeline,
+    storageBackend: StorageBackend.Local,
+    s3Bucket: null,
+    s3Key: null,
   }),
 
   video: Object.freeze({
@@ -542,6 +576,10 @@ export const assetStub = {
     libraryId: null,
     stackId: null,
     visibility: AssetVisibility.Timeline,
+    storageBackend: StorageBackend.Local,
+    s3Bucket: null,
+    s3Key: null,
+
   }),
 
   livePhotoMotionAsset: Object.freeze({
@@ -559,6 +597,10 @@ export const assetStub = {
     files: [] as AssetFile[],
     libraryId: null,
     visibility: AssetVisibility.Hidden,
+    storageBackend: StorageBackend.Local,
+    s3Bucket: null,
+    s3Key: null,
+
   } as MapAsset & { faces: AssetFace[]; files: AssetFile[]; exifInfo: Exif }),
 
   livePhotoStillAsset: Object.freeze({
@@ -577,6 +619,10 @@ export const assetStub = {
     files,
     faces: [] as AssetFace[],
     visibility: AssetVisibility.Timeline,
+    storageBackend: StorageBackend.Local,
+    s3Bucket: null,
+    s3Key: null,
+
   } as MapAsset & { faces: AssetFace[]; files: AssetFile[] }),
 
   livePhotoWithOriginalFileName: Object.freeze({
@@ -597,6 +643,9 @@ export const assetStub = {
     libraryId: null,
     faces: [] as AssetFace[],
     visibility: AssetVisibility.Timeline,
+    storageBackend: StorageBackend.Local,
+    s3Bucket: null,
+    s3Key: null,
   } as MapAsset & { faces: AssetFace[]; files: AssetFile[] }),
 
   withLocation: Object.freeze({
@@ -641,6 +690,10 @@ export const assetStub = {
     isOffline: false,
     tags: [],
     visibility: AssetVisibility.Timeline,
+    storageBackend: StorageBackend.Local,
+    s3Bucket: null,
+    s3Key: null,
+
   }),
 
   sidecar: Object.freeze({
@@ -676,6 +729,9 @@ export const assetStub = {
     libraryId: null,
     stackId: null,
     visibility: AssetVisibility.Timeline,
+    storageBackend: StorageBackend.Local,
+    s3Bucket: null,
+    s3Key: null,
   }),
 
   sidecarWithoutExt: Object.freeze({
@@ -708,6 +764,9 @@ export const assetStub = {
     duplicateId: null,
     isOffline: false,
     visibility: AssetVisibility.Timeline,
+    storageBackend: StorageBackend.Local,
+    s3Bucket: null,
+    s3Key: null,
   }),
 
   hasEncodedVideo: Object.freeze({
@@ -747,6 +806,10 @@ export const assetStub = {
     stackId: null,
     stack: null,
     visibility: AssetVisibility.Timeline,
+    storageBackend: StorageBackend.Local,
+    s3Bucket: null,
+    s3Key: null,
+
   }),
 
   hasFileExtension: Object.freeze({
@@ -783,6 +846,9 @@ export const assetStub = {
     duplicateId: null,
     isOffline: false,
     visibility: AssetVisibility.Timeline,
+    storageBackend: StorageBackend.Local,
+    s3Bucket: null,
+    s3Key: null,
   }),
 
   imageDng: Object.freeze({
@@ -823,6 +889,9 @@ export const assetStub = {
     libraryId: null,
     stackId: null,
     visibility: AssetVisibility.Timeline,
+    storageBackend: StorageBackend.Local,
+    s3Bucket: null,
+    s3Key: null,
   }),
 
   imageHif: Object.freeze({
@@ -863,6 +932,9 @@ export const assetStub = {
     libraryId: null,
     stackId: null,
     visibility: AssetVisibility.Timeline,
+    storageBackend: StorageBackend.Local,
+    s3Bucket: null,
+    s3Key: null,
   }),
   panoramaTif: Object.freeze({
     id: 'asset-id',
@@ -902,5 +974,8 @@ export const assetStub = {
     libraryId: null,
     stackId: null,
     visibility: AssetVisibility.Timeline,
+    storageBackend: StorageBackend.Local,
+    s3Bucket: null,
+    s3Key: null,
   }),
 };

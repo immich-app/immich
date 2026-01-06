@@ -36,6 +36,7 @@ import { TimelineController } from 'src/controllers/timeline.controller';
 import { TrashController } from 'src/controllers/trash.controller';
 import { UserAdminController } from 'src/controllers/user-admin.controller';
 import { UserController } from 'src/controllers/user.controller';
+import { VaultController } from 'src/controllers/vault.controller';
 import { ViewController } from 'src/controllers/view.controller';
 import { WorkflowController } from 'src/controllers/workflow.controller';
 
@@ -78,6 +79,7 @@ export const controllers = [
   TrashController,
   UserAdminController,
   UserController,
+  VaultController,
   ViewController,
   WorkflowController,
 ];

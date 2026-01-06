@@ -191,6 +191,8 @@ export const endpointTags: Record<ApiTag, string> = {
     'Administrative endpoints for managing users, including creating, updating, deleting, and restoring users. Also includes endpoints for resetting passwords and PIN codes.',
   [ApiTag.Users]:
     'Endpoints for viewing and updating the current users, including product key information, profile picture data, onboarding progress, and more.',
+  [ApiTag.Vault]:
+    'Endpoints for managing the user vault, which enables end-to-end encryption for assets. Includes vault setup, unlock, lock, and password management.',
   [ApiTag.Views]: 'Endpoints for specialized views, such as the folder view.',
   [ApiTag.Workflows]:
     'A workflow is a set of actions that run whenever a triggering event occurs. Workflows also can include filters to further limit execution.',

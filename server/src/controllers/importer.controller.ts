@@ -1,6 +1,6 @@
-import { Controller, Get, Param, Post, Res, StreamableFile } from '@nestjs/common';
+import { Controller, Get, Param, Post, Req, Res, StreamableFile } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
@@ -25,8 +25,11 @@ export class ImporterController {
       'Creates a temporary API key and setup token that can be used to configure the desktop importer app. The token is valid for 30 days.',
     history: new HistoryBuilder().added('v1'),
   })
-  createSetupToken(@Auth() auth: AuthDto): Promise<SetupTokenResponseDto> {
-    return this.service.createSetupToken(auth);
+  createSetupToken(@Auth() auth: AuthDto, @Req() req: Request): Promise<SetupTokenResponseDto> {
+    const protocol = req.get('x-forwarded-proto') || req.protocol || 'https';
+    const host = req.get('x-forwarded-host') || req.get('host') || '';
+    const baseUrl = host ? `${protocol}://${host}` : undefined;
+    return this.service.createSetupToken(auth, baseUrl);
   }
 
   @Get('config/:token')

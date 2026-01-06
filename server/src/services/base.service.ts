@@ -7,10 +7,12 @@ import { StorageCore } from 'src/cores/storage.core';
 import { UserAdmin } from 'src/database';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { ActivityRepository } from 'src/repositories/activity.repository';
+import { AdminRecoveryKeyRepository } from 'src/repositories/admin-recovery-key.repository';
 import { AlbumUserRepository } from 'src/repositories/album-user.repository';
 import { AlbumRepository } from 'src/repositories/album.repository';
 import { ApiKeyRepository } from 'src/repositories/api-key.repository';
 import { AppRepository } from 'src/repositories/app.repository';
+import { AssetEncryptionRepository } from 'src/repositories/asset-encryption.repository';
 import { AssetJobRepository } from 'src/repositories/asset-job.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
 import { AuditRepository } from 'src/repositories/audit.repository';
@@ -52,6 +54,7 @@ import { TagRepository } from 'src/repositories/tag.repository';
 import { TelemetryRepository } from 'src/repositories/telemetry.repository';
 import { TrashRepository } from 'src/repositories/trash.repository';
 import { UserRepository } from 'src/repositories/user.repository';
+import { VaultRepository } from 'src/repositories/vault.repository';
 import { VersionHistoryRepository } from 'src/repositories/version-history.repository';
 import { ViewRepository } from 'src/repositories/view-repository';
 import { WebsocketRepository } from 'src/repositories/websocket.repository';
@@ -64,11 +67,13 @@ export const BASE_SERVICE_DEPENDENCIES = [
   LoggingRepository,
   AccessRepository,
   ActivityRepository,
+  AdminRecoveryKeyRepository,
   AlbumRepository,
   AlbumUserRepository,
   ApiKeyRepository,
   AppRepository,
   AssetRepository,
+  AssetEncryptionRepository,
   AssetJobRepository,
   AuditRepository,
   ConfigRepository,
@@ -108,6 +113,7 @@ export const BASE_SERVICE_DEPENDENCIES = [
   TelemetryRepository,
   TrashRepository,
   UserRepository,
+  VaultRepository,
   VersionHistoryRepository,
   ViewRepository,
   WebsocketRepository,
@@ -122,11 +128,13 @@ export class BaseService {
     protected logger: LoggingRepository,
     protected accessRepository: AccessRepository,
     protected activityRepository: ActivityRepository,
+    protected adminRecoveryKeyRepository: AdminRecoveryKeyRepository,
     protected albumRepository: AlbumRepository,
     protected albumUserRepository: AlbumUserRepository,
     protected apiKeyRepository: ApiKeyRepository,
     protected appRepository: AppRepository,
     protected assetRepository: AssetRepository,
+    protected assetEncryptionRepository: AssetEncryptionRepository,
     protected assetJobRepository: AssetJobRepository,
     protected auditRepository: AuditRepository,
     protected configRepository: ConfigRepository,
@@ -166,6 +174,7 @@ export class BaseService {
     protected telemetryRepository: TelemetryRepository,
     protected trashRepository: TrashRepository,
     protected userRepository: UserRepository,
+    protected vaultRepository: VaultRepository,
     protected versionRepository: VersionHistoryRepository,
     protected viewRepository: ViewRepository,
     protected websocketRepository: WebsocketRepository,

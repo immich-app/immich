@@ -103,6 +103,61 @@ export class StorageRepository {
     };
   }
 
+  /**
+   * Create a read stream that decrypts an AES-256-GCM encrypted file on-the-fly.
+   * File format: [16-byte IV][encrypted data][16-byte auth tag]
+   * @param filepath Path to the encrypted file
+   * @param dek Data Encryption Key (32 bytes)
+   * @param mimeType Optional MIME type
+   */
+  async createDecryptedReadStream(
+    filepath: string,
+    dek: Buffer,
+    mimeType?: string | null,
+  ): Promise<ImmichReadStream> {
+    const { createDecipheriv } = await import('node:crypto');
+    const { size } = await fs.stat(filepath);
+    await fs.access(filepath, constants.R_OK);
+
+    // Encrypted file format: [16-byte IV][ciphertext][16-byte auth tag]
+    const IV_SIZE = 16;
+    const AUTH_TAG_SIZE = 16;
+    const encryptedDataSize = size - IV_SIZE - AUTH_TAG_SIZE;
+
+    if (encryptedDataSize < 0) {
+      throw new Error('File too small to be encrypted');
+    }
+
+    // Read IV from start of file
+    const ivHandle = await fs.open(filepath, 'r');
+    const ivBuffer = Buffer.alloc(IV_SIZE);
+    await ivHandle.read(ivBuffer, 0, IV_SIZE, 0);
+
+    // Read auth tag from end of file
+    const authTagBuffer = Buffer.alloc(AUTH_TAG_SIZE);
+    await ivHandle.read(authTagBuffer, 0, AUTH_TAG_SIZE, size - AUTH_TAG_SIZE);
+    await ivHandle.close();
+
+    // Create decipher
+    const decipher = createDecipheriv('aes-256-gcm', dek, ivBuffer);
+    decipher.setAuthTag(authTagBuffer);
+
+    // Create read stream starting after IV, ending before auth tag
+    const encryptedStream = createReadStream(filepath, {
+      start: IV_SIZE,
+      end: size - AUTH_TAG_SIZE - 1, // end is inclusive
+    });
+
+    // Pipe through decipher
+    const decryptedStream = encryptedStream.pipe(decipher);
+
+    return {
+      stream: decryptedStream,
+      length: encryptedDataSize, // This is approximate - decrypted size may differ slightly
+      type: mimeType || undefined,
+    };
+  }
+
   async readFile(filepath: string, options?: ReadOptionsWithBuffer<Buffer>): Promise<Buffer> {
     const file = await fs.open(filepath);
     try {

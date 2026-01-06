@@ -492,6 +492,7 @@ export enum MetadataKey {
 export enum RouteKey {
   Asset = 'assets',
   User = 'users',
+  Vault = 'vault',
 }
 
 export enum CacheControl {
@@ -569,6 +570,7 @@ export enum QueueName {
   Ocr = 'ocr',
   Workflow = 'workflow',
   S3Upload = 's3Upload',
+  Encryption = 'encryption',
 }
 
 export enum QueueJobStatus {
@@ -661,6 +663,10 @@ export enum JobName {
 
   // Workflow
   WorkflowRun = 'WorkflowRun',
+
+  // Asset Encryption
+  AssetEncrypt = 'AssetEncrypt',
+  AssetEncryptAll = 'AssetEncryptAll',
 }
 
 export enum QueueCommand {
@@ -883,6 +889,7 @@ export enum ApiTag {
   Trash = 'Trash',
   UsersAdmin = 'Users (admin)',
   Users = 'Users',
+  Vault = 'Vault',
   Views = 'Views',
   Workflows = 'Workflows',
 }

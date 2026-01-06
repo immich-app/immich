@@ -22,6 +22,7 @@ import {
   AssetVisibility,
   MemoryType,
   Permission,
+  StorageBackend,
   UserMetadataKey,
   UserStatus,
 } from 'src/enum';
@@ -146,6 +147,8 @@ const sessionFactory = (session: Partial<Session> = {}) => ({
   pinExpiresAt: newDate(),
   isPendingSyncReset: false,
   appVersion: session.appVersion ?? null,
+  encryptedVaultKeyCache: null,
+  vaultKeyExpiresAt: null,
   ...session,
 });
 
@@ -250,6 +253,9 @@ const assetFactory = (asset: Partial<MapAsset> = {}) => ({
   thumbhash: null,
   type: AssetType.Image,
   visibility: AssetVisibility.Timeline,
+  storageBackend: StorageBackend.Local,
+  s3Bucket: null,
+  s3Key: null,
   ...asset,
 });
 

@@ -69,6 +69,9 @@ export class QueuesResponseLegacyDto implements Record<QueueName, QueueResponseL
 
   @ApiProperty({ type: QueueResponseLegacyDto })
   [QueueName.S3Upload]!: QueueResponseLegacyDto;
+
+  @ApiProperty({ type: QueueResponseLegacyDto })
+  [QueueName.Encryption]!: QueueResponseLegacyDto;
 }
 
 export const mapQueueLegacy = (response: QueueResponseDto): QueueResponseLegacyDto => {

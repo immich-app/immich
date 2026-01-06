@@ -232,8 +232,8 @@ export class MediaService extends BaseService {
 
     await this.assetRepository.upsertJobStatus({ assetId: asset.id, previewAt: new Date(), thumbnailAt: new Date() });
 
-    // Queue S3 upload job after thumbnail generation is complete
-    await this.jobRepository.queue({ name: JobName.S3UploadAsset, data: { id: asset.id } });
+    // S3 upload is now queued after encryption (see asset-encryption.service.ts)
+    // For users without vault, encryption service will queue S3 upload directly
 
     return JobStatus.Success;
   }
@@ -515,6 +515,9 @@ export class MediaService extends BaseService {
         this.logger.verbose(`Asset ${asset.id} does not require transcoding based on current policy, skipping`);
       }
 
+      // Mark video encoding as complete (skipped) for encryption coordination
+      await this.assetRepository.upsertJobStatus({ assetId: asset.id, videoEncodedAt: new Date() });
+
       return JobStatus.Skipped;
     }
 
@@ -559,6 +562,9 @@ export class MediaService extends BaseService {
     this.logger.log(`Successfully encoded ${asset.id}`);
 
     await this.assetRepository.update({ id: asset.id, encodedVideoPath: output });
+
+    // Track video encoding completion for encryption coordination
+    await this.assetRepository.upsertJobStatus({ assetId: asset.id, videoEncodedAt: new Date() });
 
     return JobStatus.Success;
   }

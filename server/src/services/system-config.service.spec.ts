@@ -41,6 +41,8 @@ const updatedConfig = Object.freeze<SystemConfig>({
     [QueueName.Notification]: { concurrency: 5 },
     [QueueName.Ocr]: { concurrency: 1 },
     [QueueName.Workflow]: { concurrency: 5 },
+    [QueueName.S3Upload]: { concurrency: 5 },
+    [QueueName.Encryption]: { concurrency: 2 },
   },
   backup: {
     database: {

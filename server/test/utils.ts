@@ -16,6 +16,8 @@ import { AuthGuard } from 'src/middleware/auth.guard';
 import { FileUploadInterceptor } from 'src/middleware/file-upload.interceptor';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { ActivityRepository } from 'src/repositories/activity.repository';
+import { AdminRecoveryKeyRepository } from 'src/repositories/admin-recovery-key.repository';
+import { AssetEncryptionRepository } from 'src/repositories/asset-encryption.repository';
 import { AlbumUserRepository } from 'src/repositories/album-user.repository';
 import { AlbumRepository } from 'src/repositories/album.repository';
 import { ApiKeyRepository } from 'src/repositories/api-key.repository';
@@ -61,6 +63,7 @@ import { TagRepository } from 'src/repositories/tag.repository';
 import { TelemetryRepository } from 'src/repositories/telemetry.repository';
 import { TrashRepository } from 'src/repositories/trash.repository';
 import { UserRepository } from 'src/repositories/user.repository';
+import { VaultRepository } from 'src/repositories/vault.repository';
 import { VersionHistoryRepository } from 'src/repositories/version-history.repository';
 import { ViewRepository } from 'src/repositories/view-repository';
 import { WebsocketRepository } from 'src/repositories/websocket.repository';
@@ -210,12 +213,14 @@ export const automock = <T>(
 export type ServiceOverrides = {
   access: AccessRepository;
   activity: ActivityRepository;
+  adminRecoveryKey: AdminRecoveryKeyRepository;
   album: AlbumRepository;
   albumUser: AlbumUserRepository;
   apiKey: ApiKeyRepository;
   app: AppRepository;
   audit: AuditRepository;
   asset: AssetRepository;
+  assetEncryption: AssetEncryptionRepository;
   assetJob: AssetJobRepository;
   config: ConfigRepository;
   cron: CronRepository;
@@ -255,6 +260,7 @@ export type ServiceOverrides = {
   telemetry: TelemetryRepository;
   trash: TrashRepository;
   user: UserRepository;
+  vault: VaultRepository;
   versionHistory: VersionHistoryRepository;
   view: ViewRepository;
   websocket: WebsocketRepository;
@@ -285,10 +291,12 @@ export const getMocks = () => {
     cron: automock(CronRepository, { args: [, loggerMock] }),
     crypto: newCryptoRepositoryMock(),
     activity: automock(ActivityRepository),
+    adminRecoveryKey: automock(AdminRecoveryKeyRepository),
     audit: automock(AuditRepository),
     album: automock(AlbumRepository, { strict: false }),
     albumUser: automock(AlbumUserRepository),
     asset: newAssetRepositoryMock(),
+    assetEncryption: automock(AssetEncryptionRepository),
     assetJob: automock(AssetJobRepository),
     app: automock(AppRepository, { strict: false }),
     config: newConfigRepositoryMock(),
@@ -331,6 +339,7 @@ export const getMocks = () => {
     telemetry: newTelemetryRepositoryMock(),
     trash: automock(TrashRepository),
     user: automock(UserRepository, { strict: false }),
+    vault: automock(VaultRepository),
     versionHistory: automock(VersionHistoryRepository),
     view: automock(ViewRepository),
     // eslint-disable-next-line no-sparse-arrays
@@ -351,11 +360,13 @@ export const newTestService = <T extends BaseService>(
     overrides.logger || (mocks.logger as As<LoggingRepository>),
     overrides.access || (mocks.access as IAccessRepository as AccessRepository),
     overrides.activity || (mocks.activity as As<ActivityRepository>),
+    overrides.adminRecoveryKey || (mocks.adminRecoveryKey as As<AdminRecoveryKeyRepository>),
     overrides.album || (mocks.album as As<AlbumRepository>),
     overrides.albumUser || (mocks.albumUser as As<AlbumUserRepository>),
     overrides.apiKey || (mocks.apiKey as As<ApiKeyRepository>),
     overrides.app || (mocks.app as As<AppRepository>),
     overrides.asset || (mocks.asset as As<AssetRepository>),
+    overrides.assetEncryption || (mocks.assetEncryption as As<AssetEncryptionRepository>),
     overrides.assetJob || (mocks.assetJob as As<AssetJobRepository>),
     overrides.audit || (mocks.audit as As<AuditRepository>),
     overrides.config || (mocks.config as As<ConfigRepository> as ConfigRepository),
@@ -395,6 +406,7 @@ export const newTestService = <T extends BaseService>(
     overrides.telemetry || (mocks.telemetry as unknown as TelemetryRepository),
     overrides.trash || (mocks.trash as As<TrashRepository>),
     overrides.user || (mocks.user as As<UserRepository>),
+    overrides.vault || (mocks.vault as As<VaultRepository>),
     overrides.versionHistory || (mocks.versionHistory as As<VersionHistoryRepository>),
     overrides.view || (mocks.view as As<ViewRepository>),
     overrides.websocket || (mocks.websocket as As<WebsocketRepository>),

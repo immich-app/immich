@@ -1,4 +1,10 @@
-import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { extname } from 'node:path';
 import sanitize from 'sanitize-filename';
 import { StorageCore } from 'src/cores/storage.core';
@@ -37,7 +43,7 @@ import { UploadFile, UploadRequest } from 'src/types';
 import { requireUploadAccess } from 'src/utils/access';
 import { asUploadRequest, getAssetFiles, onBeforeLink } from 'src/utils/asset.util';
 import { isAssetChecksumConstraint } from 'src/utils/database';
-import { getFilenameExtension, getFileNameWithoutExtension, ImmichFileResponse } from 'src/utils/file';
+import { EncryptionInfo, getFilenameExtension, getFileNameWithoutExtension, ImmichFileResponse } from 'src/utils/file';
 import { mimeTypes } from 'src/utils/mime-types';
 import { fromChecksum } from 'src/utils/request';
 
@@ -198,11 +204,15 @@ export class AssetMediaService extends BaseService {
 
     const asset = await this.findOrFail(id);
 
+    // Check if asset is encrypted and get decryption key
+    const encryption = await this.getEncryptionInfo(auth, id);
+
     return new ImmichFileResponse({
       path: asset.originalPath,
       fileName: asset.originalFileName,
       contentType: mimeTypes.lookup(asset.originalPath),
       cacheControl: CacheControl.PrivateWithCache,
+      encryption,
     });
   }
 
@@ -240,11 +250,15 @@ export class AssetMediaService extends BaseService {
     fileName += `_${size}`;
     fileName += getFilenameExtension(filepath);
 
+    // Check if asset is encrypted and get decryption key
+    const encryption = await this.getEncryptionInfo(auth, id);
+
     return new ImmichFileResponse({
       fileName,
       path: filepath,
       contentType: mimeTypes.lookup(filepath),
       cacheControl: CacheControl.PrivateWithCache,
+      encryption,
     });
   }
 
@@ -259,10 +273,14 @@ export class AssetMediaService extends BaseService {
 
     const filepath = asset.encodedVideoPath || asset.originalPath;
 
+    // Check if asset is encrypted and get decryption key
+    const encryption = await this.getEncryptionInfo(auth, id);
+
     return new ImmichFileResponse({
       path: filepath,
       contentType: mimeTypes.lookup(filepath),
       cacheControl: CacheControl.PrivateWithCache,
+      encryption,
     });
   }
 
@@ -471,5 +489,81 @@ export class AssetMediaService extends BaseService {
     }
 
     return asset;
+  }
+
+  /**
+   * Get encryption info for an asset if it's encrypted.
+   * Returns undefined if asset is not encrypted.
+   * Throws ForbiddenException if vault is locked.
+   */
+  private async getEncryptionInfo(auth: AuthDto, assetId: string): Promise<EncryptionInfo | undefined> {
+    // Check if asset is encrypted
+    const encryptionMeta = await this.assetEncryptionRepository.getByAssetId(assetId);
+    if (!encryptionMeta) {
+      return undefined;
+    }
+
+    // Asset is encrypted, get vault key from session
+    const vaultKey = await this.getVaultKeyFromSession(auth);
+    if (!vaultKey) {
+      throw new ForbiddenException('Vault is locked. Please unlock your vault to access encrypted assets.');
+    }
+
+    // Unwrap the DEK
+    try {
+      const dek = this.cryptoRepository.unwrapKey(encryptionMeta.wrappedDek, vaultKey);
+      return { dek };
+    } catch (error) {
+      this.logger.error(`Failed to unwrap DEK for asset ${assetId}: ${error}`);
+      throw new InternalServerErrorException('Failed to decrypt asset');
+    }
+  }
+
+  /**
+   * Get the vault key from the session cache.
+   * Returns null if vault is not unlocked for this session.
+   */
+  private async getVaultKeyFromSession(auth: AuthDto): Promise<Buffer | null> {
+    if (!auth.session) {
+      return null;
+    }
+
+    // Get session with vault key cache
+    const sessionRecord = await this.sessionRepository.update(auth.session.id, {});
+    if (!sessionRecord?.encryptedVaultKeyCache || !sessionRecord.vaultKeyExpiresAt) {
+      return null;
+    }
+
+    // Check if expired
+    if (new Date(sessionRecord.vaultKeyExpiresAt) <= new Date()) {
+      // Clear expired cache
+      await this.sessionRepository.update(auth.session.id, {
+        encryptedVaultKeyCache: null,
+        vaultKeyExpiresAt: null,
+      });
+      return null;
+    }
+
+    // Decrypt vault key from cache using session-derived key
+    try {
+      const sessionKey = await this.deriveSessionKey(auth.session.id);
+      return this.cryptoRepository.unwrapKey(sessionRecord.encryptedVaultKeyCache, sessionKey);
+    } catch {
+      this.logger.warn(`Failed to decrypt vault key from session cache`);
+      return null;
+    }
+  }
+
+  /**
+   * Derive a session key from the session ID.
+   */
+  private async deriveSessionKey(sessionId: string): Promise<Buffer> {
+    const { scryptSync } = await import('node:crypto');
+    const salt = Buffer.from('immich-vault-session-key', 'utf8');
+    return scryptSync(sessionId, salt, 32, {
+      N: 2 ** 14,
+      r: 8,
+      p: 1,
+    });
   }
 }

@@ -53,7 +53,7 @@ export class ImporterService extends BaseService {
     }
   }
 
-  async createSetupToken(auth: AuthDto): Promise<SetupTokenResponseDto> {
+  async createSetupToken(auth: AuthDto, requestBaseUrl?: string): Promise<SetupTokenResponseDto> {
     // 1. Create temporary API key with import permissions
     const apiKey = await this.createTemporaryApiKey(auth.user.id);
 
@@ -62,9 +62,9 @@ export class ImporterService extends BaseService {
     const now = new Date();
     const expiresAt = new Date(now.getTime() + TOKEN_TTL_MS);
 
-    // 3. Get server URL from config
+    // 3. Get server URL - prefer config, then request URL, then fallback
     const config = await this.getConfig({ withCache: true });
-    const serverUrl = config.server.externalDomain || this.getDefaultServerUrl();
+    const serverUrl = config.server.externalDomain || requestBaseUrl || this.getDefaultServerUrl();
 
     // 4. Store token data
     this.setupTokens.set(token, {

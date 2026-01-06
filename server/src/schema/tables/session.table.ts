@@ -53,4 +53,12 @@ export class SessionTable {
 
   @Column({ type: 'timestamp with time zone', nullable: true })
   pinExpiresAt!: Timestamp | null;
+
+  /** Vault key encrypted with session-specific key, base64 encoded */
+  @Column({ type: 'character varying', nullable: true })
+  encryptedVaultKeyCache!: string | null;
+
+  /** When the cached vault key expires */
+  @Column({ type: 'timestamp with time zone', nullable: true })
+  vaultKeyExpiresAt!: Timestamp | null;
 }

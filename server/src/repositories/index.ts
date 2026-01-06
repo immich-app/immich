@@ -1,9 +1,11 @@
 import { AccessRepository } from 'src/repositories/access.repository';
 import { ActivityRepository } from 'src/repositories/activity.repository';
+import { AdminRecoveryKeyRepository } from 'src/repositories/admin-recovery-key.repository';
 import { AlbumUserRepository } from 'src/repositories/album-user.repository';
 import { AlbumRepository } from 'src/repositories/album.repository';
 import { ApiKeyRepository } from 'src/repositories/api-key.repository';
 import { AppRepository } from 'src/repositories/app.repository';
+import { AssetEncryptionRepository } from 'src/repositories/asset-encryption.repository';
 import { AssetJobRepository } from 'src/repositories/asset-job.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
 import { AuditRepository } from 'src/repositories/audit.repository';
@@ -46,6 +48,7 @@ import { TelemetryRepository } from 'src/repositories/telemetry.repository';
 import { TrashRepository } from 'src/repositories/trash.repository';
 import { UserRepository } from 'src/repositories/user.repository';
 import { VersionHistoryRepository } from 'src/repositories/version-history.repository';
+import { VaultRepository } from 'src/repositories/vault.repository';
 import { ViewRepository } from 'src/repositories/view-repository';
 import { WebsocketRepository } from 'src/repositories/websocket.repository';
 import { WorkflowRepository } from 'src/repositories/workflow.repository';
@@ -53,12 +56,14 @@ import { WorkflowRepository } from 'src/repositories/workflow.repository';
 export const repositories = [
   AccessRepository,
   ActivityRepository,
+  AdminRecoveryKeyRepository,
   AlbumRepository,
   AlbumUserRepository,
   AuditRepository,
   ApiKeyRepository,
   AppRepository,
   AssetRepository,
+  AssetEncryptionRepository,
   AssetJobRepository,
   ConfigRepository,
   CronRepository,
@@ -98,6 +103,7 @@ export const repositories = [
   TelemetryRepository,
   TrashRepository,
   UserRepository,
+  VaultRepository,
   ViewRepository,
   VersionHistoryRepository,
   WebsocketRepository,

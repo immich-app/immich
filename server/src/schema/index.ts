@@ -71,6 +71,9 @@ import { UserMetadataTable } from 'src/schema/tables/user-metadata.table';
 import { UserTable } from 'src/schema/tables/user.table';
 import { VersionHistoryTable } from 'src/schema/tables/version-history.table';
 import { WorkflowActionTable, WorkflowFilterTable, WorkflowTable } from 'src/schema/tables/workflow.table';
+import { AdminRecoveryKeyTable } from 'src/schema/tables/admin-recovery-key.table';
+import { AssetEncryptionTable } from 'src/schema/tables/asset-encryption.table';
+import { UserVaultTable } from 'src/schema/tables/user-vault.table';
 import { Database, Extensions, Generated, Int8 } from 'src/sql-tools';
 
 @Extensions(['uuid-ossp', 'unaccent', 'cube', 'earthdistance', 'pg_trgm', 'plpgsql'])
@@ -133,6 +136,9 @@ export class ImmichDatabase {
     WorkflowTable,
     WorkflowFilterTable,
     WorkflowActionTable,
+    AdminRecoveryKeyTable,
+    AssetEncryptionTable,
+    UserVaultTable,
   ];
 
   functions = [
@@ -247,4 +253,8 @@ export interface DB {
   workflow: WorkflowTable;
   workflow_filter: WorkflowFilterTable;
   workflow_action: WorkflowActionTable;
+
+  admin_recovery_key: AdminRecoveryKeyTable;
+  asset_encryption: AssetEncryptionTable;
+  user_vault: UserVaultTable;
 }

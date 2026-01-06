@@ -12,7 +12,7 @@ import {
 } from 'src/dtos/person.dto';
 import { TagResponseDto, mapTag } from 'src/dtos/tag.dto';
 import { UserResponseDto, mapUser } from 'src/dtos/user.dto';
-import { AssetStatus, AssetType, AssetVisibility } from 'src/enum';
+import { AssetStatus, AssetType, AssetVisibility, StorageBackend } from 'src/enum';
 import { hexOrBufferToBase64 } from 'src/utils/bytes';
 import { mimeTypes } from 'src/utils/mime-types';
 import { ValidateEnum } from 'src/validation';
@@ -129,6 +129,9 @@ export type MapAsset = {
   tags?: Tag[];
   thumbhash: Buffer<ArrayBufferLike> | null;
   type: AssetType;
+  storageBackend?: StorageBackend;
+  s3Bucket?: string | null;
+  s3Key?: string | null;
 };
 
 export class AssetStackResponseDto {
