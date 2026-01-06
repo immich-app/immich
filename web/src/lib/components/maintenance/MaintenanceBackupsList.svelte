@@ -52,10 +52,14 @@
   let deleting = new SvelteSet();
   let backups = $state(mapBackups(props.backups ?? []));
 
-  onMount(async () => {
+  async function reloadBackups() {
+    const result = await listDatabaseBackups();
+    backups = mapBackups(result.backups);
+  }
+
+  onMount(() => {
     if (!props.backups) {
-      const result = await listDatabaseBackups();
-      backups = mapBackups(result.backups);
+      void reloadBackups();
     }
   });
 
@@ -152,8 +156,7 @@
 
       uploadProgress = 1;
 
-      const { backups: newList } = await listDatabaseBackups();
-      backups = mapBackups(newList);
+      void reloadBackups();
     } catch (error) {
       handleError(error, $t('admin.maintenance_upload_backup_error'));
     } finally {
