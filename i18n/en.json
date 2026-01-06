@@ -1140,7 +1140,7 @@
   "features": "Features",
   "features_in_development": "Features in Development",
   "features_setting_description": "Manage the app features",
-  "file_name": "File name",
+  "file_name": "File name: {file_name}",
   "file_name_or_extension": "File name or extension",
   "file_size": "File size",
   "filename": "Filename",
