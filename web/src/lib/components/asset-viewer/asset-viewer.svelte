@@ -361,8 +361,8 @@
           ...asset,
           exifInfo: {
             ...asset.exifInfo,
-            rating: action.rating
-          }
+            rating: action.rating,
+          },
         };
         break;
       }
