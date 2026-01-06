@@ -79,7 +79,7 @@ ENV NODE_ENV=production \
   NVIDIA_VISIBLE_DEVICES=all
 
 COPY --from=server /output/server-pruned ./server
-RUN chmod +x ./server/bin/*.sh
+RUN chmod +x ./server/bin/*
 COPY --from=web /usr/src/app/web/build /build/www
 COPY --from=cli /output/cli-pruned ./cli
 COPY --from=plugins /usr/src/app/plugins/dist /build/corePlugin/dist
