@@ -67,12 +67,7 @@
   />
   {#if timezoneInput}
     <div class="w-full">
-      <Combobox
-        bind:selectedOption
-        label={$t('timezone')}
-        options={timezones}
-        placeholder={$t('search_timezone')}
-      />
+      <Combobox bind:selectedOption label={$t('timezone')} options={timezones} placeholder={$t('search_timezone')} />
     </div>
   {/if}
 </FormModal>
