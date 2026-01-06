@@ -5,11 +5,10 @@ import { DummyValue, GenerateSql } from 'src/decorators';
 import { IntegrityReportType } from 'src/enum';
 import { DB } from 'src/schema';
 import { IntegrityReportTable } from 'src/schema/tables/integrity-report.table';
-import { paginationHelper } from 'src/utils/pagination';
 
 export interface ReportPaginationOptions {
-  page: number;
-  size: number;
+  cursor?: string;
+  limit: number;
 }
 
 @Injectable()
@@ -64,18 +63,21 @@ export class IntegrityRepository {
       .executeTakeFirstOrThrow();
   }
 
-  @GenerateSql({ params: [{ page: 1, size: 100 }, DummyValue.STRING] })
+  @GenerateSql({ params: [{ cursor: DummyValue.NUMBER, limit: 100 }, DummyValue.STRING] })
   async getIntegrityReports(pagination: ReportPaginationOptions, type: IntegrityReportType) {
     const items = await this.db
       .selectFrom('integrity_report')
-      .select(['id', 'type', 'path', 'assetId', 'fileAssetId'])
+      .select(['id', 'type', 'path', 'assetId', 'fileAssetId', 'createdAt'])
       .where('type', '=', type)
-      .orderBy('createdAt', 'desc')
-      .limit(pagination.size + 1)
-      .offset((pagination.page - 1) * pagination.size)
+      .$if(pagination.cursor !== undefined, (eb) => eb.where('id', '<=', pagination.cursor!))
+      .orderBy('id', 'desc')
+      .limit(pagination.limit + 1)
       .execute();
 
-    return paginationHelper(items, pagination.size);
+    return {
+      items: items.slice(0, pagination.limit),
+      nextCursor: items[pagination.limit]?.id,
+    };
   }
 
   @GenerateSql({ params: [DummyValue.STRING] })

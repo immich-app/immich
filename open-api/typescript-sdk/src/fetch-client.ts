@@ -41,8 +41,8 @@ export type ActivityStatisticsResponseDto = {
     likes: number;
 };
 export type IntegrityGetReportDto = {
-    page?: number;
-    size?: number;
+    cursor?: string;
+    limit?: number;
     "type": IntegrityReportType;
 };
 export type IntegrityReportDto = {
@@ -51,8 +51,8 @@ export type IntegrityReportDto = {
     "type": IntegrityReportType;
 };
 export type IntegrityReportResponseDto = {
-    hasNextPage: boolean;
     items: IntegrityReportDto[];
+    nextCursor?: string;
 };
 export type IntegrityReportSummaryResponseDto = {
     checksum_mismatch: number;

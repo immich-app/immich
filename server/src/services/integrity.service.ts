@@ -140,7 +140,7 @@ export class IntegrityService extends BaseService {
   }
 
   async getIntegrityReport(dto: IntegrityGetReportDto): Promise<IntegrityReportResponseDto> {
-    return this.integrityRepository.getIntegrityReports({ page: dto.page || 1, size: dto.size || 100 }, dto.type);
+    return this.integrityRepository.getIntegrityReports({ cursor: dto.cursor, limit: dto.limit || 100 }, dto.type);
   }
 
   getIntegrityReportCsv(type: IntegrityReportType): Readable {

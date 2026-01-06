@@ -13,19 +13,18 @@ part of openapi.api;
 class IntegrityGetReportDto {
   /// Returns a new [IntegrityGetReportDto] instance.
   IntegrityGetReportDto({
-    this.page,
-    this.size,
+    this.cursor,
+    this.limit,
     required this.type,
   });
 
-  /// Minimum value: 1
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  num? page;
+  DateTime? cursor;
 
   /// Minimum value: 1
   ///
@@ -34,37 +33,37 @@ class IntegrityGetReportDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  num? size;
+  num? limit;
 
   IntegrityReportType type;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is IntegrityGetReportDto &&
-    other.page == page &&
-    other.size == size &&
+    other.cursor == cursor &&
+    other.limit == limit &&
     other.type == type;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (page == null ? 0 : page!.hashCode) +
-    (size == null ? 0 : size!.hashCode) +
+    (cursor == null ? 0 : cursor!.hashCode) +
+    (limit == null ? 0 : limit!.hashCode) +
     (type.hashCode);
 
   @override
-  String toString() => 'IntegrityGetReportDto[page=$page, size=$size, type=$type]';
+  String toString() => 'IntegrityGetReportDto[cursor=$cursor, limit=$limit, type=$type]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.page != null) {
-      json[r'page'] = this.page;
+    if (this.cursor != null) {
+      json[r'cursor'] = this.cursor!.toUtc().toIso8601String();
     } else {
-    //  json[r'page'] = null;
+    //  json[r'cursor'] = null;
     }
-    if (this.size != null) {
-      json[r'size'] = this.size;
+    if (this.limit != null) {
+      json[r'limit'] = this.limit;
     } else {
-    //  json[r'size'] = null;
+    //  json[r'limit'] = null;
     }
       json[r'type'] = this.type;
     return json;
@@ -79,8 +78,8 @@ class IntegrityGetReportDto {
       final json = value.cast<String, dynamic>();
 
       return IntegrityGetReportDto(
-        page: num.parse('${json[r'page']}'),
-        size: num.parse('${json[r'size']}'),
+        cursor: mapDateTime(json, r'cursor', r''),
+        limit: num.parse('${json[r'limit']}'),
         type: IntegrityReportType.fromJson(json[r'type'])!,
       );
     }

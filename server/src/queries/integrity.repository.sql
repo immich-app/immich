@@ -31,16 +31,16 @@ select
   "type",
   "path",
   "assetId",
-  "fileAssetId"
+  "fileAssetId",
+  "createdAt"
 from
   "integrity_report"
 where
   "type" = $1
+  and "createdAt" <= $2
 order by
   "createdAt" desc
 limit
-  $2
-offset
   $3
 
 -- IntegrityRepository.getAssetPathsByPaths

@@ -1,21 +1,13 @@
+import { PrimaryGeneratedUuidV7Column } from 'src/decorators';
 import { IntegrityReportType } from 'src/enum';
 import { AssetFileTable } from 'src/schema/tables/asset-file.table';
 import { AssetTable } from 'src/schema/tables/asset.table';
-import {
-  Column,
-  CreateDateColumn,
-  ForeignKeyColumn,
-  Generated,
-  PrimaryGeneratedColumn,
-  Table,
-  Timestamp,
-  Unique,
-} from 'src/sql-tools';
+import { Column, CreateDateColumn, ForeignKeyColumn, Generated, Table, Timestamp, Unique } from 'src/sql-tools';
 
 @Table('integrity_report')
 @Unique({ columns: ['type', 'path'] })
 export class IntegrityReportTable {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedUuidV7Column()
   id!: Generated<string>;
 
   @Column()

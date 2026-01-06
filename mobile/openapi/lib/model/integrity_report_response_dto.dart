@@ -13,32 +13,42 @@ part of openapi.api;
 class IntegrityReportResponseDto {
   /// Returns a new [IntegrityReportResponseDto] instance.
   IntegrityReportResponseDto({
-    required this.hasNextPage,
     this.items = const [],
+    this.nextCursor,
   });
-
-  bool hasNextPage;
 
   List<IntegrityReportDto> items;
 
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  DateTime? nextCursor;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is IntegrityReportResponseDto &&
-    other.hasNextPage == hasNextPage &&
-    _deepEquality.equals(other.items, items);
+    _deepEquality.equals(other.items, items) &&
+    other.nextCursor == nextCursor;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (hasNextPage.hashCode) +
-    (items.hashCode);
+    (items.hashCode) +
+    (nextCursor == null ? 0 : nextCursor!.hashCode);
 
   @override
-  String toString() => 'IntegrityReportResponseDto[hasNextPage=$hasNextPage, items=$items]';
+  String toString() => 'IntegrityReportResponseDto[items=$items, nextCursor=$nextCursor]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'hasNextPage'] = this.hasNextPage;
       json[r'items'] = this.items;
+    if (this.nextCursor != null) {
+      json[r'nextCursor'] = this.nextCursor!.toUtc().toIso8601String();
+    } else {
+    //  json[r'nextCursor'] = null;
+    }
     return json;
   }
 
@@ -51,8 +61,8 @@ class IntegrityReportResponseDto {
       final json = value.cast<String, dynamic>();
 
       return IntegrityReportResponseDto(
-        hasNextPage: mapValueOfType<bool>(json, r'hasNextPage')!,
         items: IntegrityReportDto.listFromJson(json[r'items']),
+        nextCursor: mapDateTime(json, r'nextCursor', r''),
       );
     }
     return null;
@@ -100,7 +110,6 @@ class IntegrityReportResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'hasNextPage',
     'items',
   };
 }

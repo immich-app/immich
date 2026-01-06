@@ -16928,11 +16928,11 @@
       },
       "IntegrityGetReportDto": {
         "properties": {
-          "page": {
-            "minimum": 1,
-            "type": "number"
+          "cursor": {
+            "format": "uuid",
+            "type": "string"
           },
-          "size": {
+          "limit": {
             "minimum": 1,
             "type": "number"
           },
@@ -16974,18 +16974,17 @@
       },
       "IntegrityReportResponseDto": {
         "properties": {
-          "hasNextPage": {
-            "type": "boolean"
-          },
           "items": {
             "items": {
               "$ref": "#/components/schemas/IntegrityReportDto"
             },
             "type": "array"
+          },
+          "nextCursor": {
+            "type": "string"
           }
         },
         "required": [
-          "hasNextPage",
           "items"
         ],
         "type": "object"
