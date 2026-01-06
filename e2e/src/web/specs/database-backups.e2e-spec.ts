@@ -22,7 +22,7 @@ test.describe('Database Backups', () => {
 
     await page.goto('/admin/maintenance?isOpen=backups');
     await page.getByRole('button', { name: 'Restore', exact: true }).click();
-    await page.locator('#bits-c2').getByRole('button', { name: 'Restore' }).click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Restore' }).click();
 
     await page.waitForURL('/maintenance?**');
     await page.waitForURL('/admin/maintenance**', { timeout: 60_000 });
@@ -37,7 +37,7 @@ test.describe('Database Backups', () => {
 
     await page.goto('/admin/maintenance?isOpen=backups');
     await page.getByRole('button', { name: 'Restore', exact: true }).click();
-    await page.locator('#bits-c2').getByRole('button', { name: 'Restore' }).click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Restore' }).click();
 
     await page.waitForURL('/maintenance?**');
     await expect(page.getByText('IM CORRUPTED')).toBeVisible({ timeout: 60_000 });
@@ -67,7 +67,7 @@ test.describe('Database Backups', () => {
 
     await page.getByRole('button', { name: 'Next' }).click();
     await page.getByRole('button', { name: 'Restore', exact: true }).click();
-    await page.locator('#bits-c2').getByRole('button', { name: 'Restore' }).click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Restore' }).click();
 
     await page.waitForURL('/maintenance?**');
     await page.waitForURL('/photos', { timeout: 60_000 });
