@@ -8,9 +8,8 @@ enum TrashOrigin {
   // do not change this order!
   localSync,
   remoteSync,
-  localUser
+  localUser,
 }
-
 
 @TableIndex.sql('CREATE INDEX IF NOT EXISTS idx_trashed_local_asset_checksum ON trashed_local_asset_entity (checksum)')
 @TableIndex.sql('CREATE INDEX IF NOT EXISTS idx_trashed_local_asset_album ON trashed_local_asset_entity (album_id)')
