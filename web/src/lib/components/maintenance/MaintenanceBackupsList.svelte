@@ -24,6 +24,7 @@
     type ContextMenuBaseProps,
   } from '@immich/ui';
   import { mdiDotsVertical, mdiDownload, mdiTrashCanOutline } from '@mdi/js';
+  import { DateTime, Interval } from 'luxon';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { SvelteSet } from 'svelte/reactivity';
@@ -36,11 +37,9 @@
 
   const mapBackups = (filenames: string[]) => {
     return filenames.map((filename) => {
-      const date = /(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})/.exec(filename);
+      const date = /\d{4}\d{2}\d{2}T\d{2}\d{2}\d{2}/.exec(filename);
       const minutesAgo = date
-        ? Math.floor(
-            (+Date.now() - +new Date(`${date[1]}-${date[2]}-${date[3]}T${date[4]}:${date[5]}:${date[6]}`)) / 60_000,
-          )
+        ? Interval.fromDateTimes(DateTime.now(), DateTime.fromFormat(date[0], "yyyyMMdd'T'HHmmss")).length('minutes')
         : null;
 
       return {
