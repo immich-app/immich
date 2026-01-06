@@ -69,7 +69,6 @@
     album?: AlbumResponseDto | null;
     person?: PersonResponseDto | null;
     stack?: StackResponseDto | null;
-    showCloseButton?: boolean;
     showSlideshow?: boolean;
     onZoomImage: () => void;
     onCopyImage?: () => Promise<void>;
@@ -79,7 +78,7 @@
     onRunJob: (name: AssetJobName) => void;
     onPlaySlideshow: () => void;
     // export let showEditorHandler: () => void;
-    onClose: () => void;
+    onClose?: () => void;
     motionPhoto?: Snippet;
     playOriginalVideo: boolean;
     setPlayOriginalVideo: (value: boolean) => void;
@@ -90,7 +89,6 @@
     album = null,
     person = null,
     stack = null,
-    showCloseButton = true,
     showSlideshow = false,
     onZoomImage,
     onCopyImage,
@@ -128,7 +126,7 @@
   class="flex h-16 place-items-center justify-between bg-linear-to-b from-black/40 px-3 transition-transform duration-200"
 >
   <div class="dark">
-    {#if showCloseButton}
+    {#if onClose}
       <CloseAction {onClose} />
     {/if}
   </div>
