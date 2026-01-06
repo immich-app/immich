@@ -67,15 +67,18 @@
                       })}
                     {/if}
                   </Text>
-                  {#if !files && (folder === 'profile' || folder === 'upload')}
-                    <Text variant="italic">{$t('maintenance_restore_library_hint_missing_files')}</Text>
-                  {/if}
-                  {#if !files && (folder === 'encoded-video' || folder === 'thumbs')}
-                    <Text variant="italic">{$t('maintenance_restore_library_hint_regenerate_later')}</Text>
-                  {/if}
-                  {#if !files && folder === 'library'}
-                    <Text variant="italic">{$t('maintenance_restore_library_hint_storage_template_missing_files')}</Text
-                    >
+                  {#if !files}
+                    {#if folder === 'profile' || folder === 'upload'}
+                      <Text variant="italic">{$t('maintenance_restore_library_hint_missing_files')}</Text>
+                    {/if}
+                    {#if folder === 'encoded-video' || folder === 'thumbs'}
+                      <Text variant="italic">{$t('maintenance_restore_library_hint_regenerate_later')}</Text>
+                    {/if}
+                    {#if folder === 'library'}
+                      <Text variant="italic"
+                        >{$t('maintenance_restore_library_hint_storage_template_missing_files')}</Text
+                      >
+                    {/if}
                   {/if}
                 </Stack>
               </HStack>
