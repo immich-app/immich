@@ -252,14 +252,28 @@ jobs:
           security default-keychain -s build.keychain
           security unlock-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
           security set-keychain-settings -t 3600 -u build.keychain
+          
+          # Add keychain to search list (required for codesign to find certificates)
+          security list-keychains -d user -s build.keychain login.keychain
+          
+          # Download and install Apple WWDR certificates (required for code signing)
+          curl -sL https://developer.apple.com/certificationauthority/AppleWWDRCA.cer -o AppleWWDRCA.cer
+          curl -sL https://www.apple.com/certificateauthority/AppleWWDRCAG3.cer -o AppleWWDRCAG3.cer
+          security import AppleWWDRCA.cer -k build.keychain -T /usr/bin/codesign
+          security import AppleWWDRCAG3.cer -k build.keychain -T /usr/bin/codesign
+          
+          # Set key partition list to allow codesign access
+          security set-key-partition-list -S apple-tool:,apple: -s -k "$KEYCHAIN_PASSWORD" build.keychain
 
       - name: Build and deploy to TestFlight
         env:
           FASTLANE_TEAM_ID: ${{ secrets.FASTLANE_TEAM_ID }}
           MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
           MATCH_GIT_BASIC_AUTHORIZATION: ${{ steps.match-auth.outputs.base64_token }}
-          KEYCHAIN_NAME: build.keychain
+          KEYCHAIN_NAME: build.keychain-db
           KEYCHAIN_PASSWORD: ${{ github.run_id }}
+          MATCH_KEYCHAIN_NAME: build.keychain-db
+          MATCH_KEYCHAIN_PASSWORD: ${{ github.run_id }}
           APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
           APP_STORE_CONNECT_API_KEY_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
           ENVIRONMENT: ${{ inputs.environment || 'development' }}
