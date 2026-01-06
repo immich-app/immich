@@ -49,7 +49,7 @@ const defaultMapSettings = {
 const persistedObject = <T>(key: string, defaults: T) =>
   persisted<T>(key, defaults, {
     serializer: {
-      parse: (text) => ({ ...defaultMapSettings, ...JSON.parse(text ?? null) }),
+      parse: (text) => ({ ...defaults, ...JSON.parse(text ?? null) }),
       stringify: JSON.stringify,
     },
   });
@@ -155,15 +155,43 @@ export interface DuplicateSettings {
   synchronizeVisibility: boolean;
   synchronizeFavorites: boolean;
   synchronizeRating: boolean;
-  synchronizeDescpription: boolean;
+  synchronizeDescription: boolean;
   synchronizeLocation: boolean;
+  synchronizeTags: boolean;
+  /** @deprecated typo retained for migration */
+  synchronizeDescpription?: boolean;
 }
 
-export const duplicateSettings = persistedObject<DuplicateSettings>('duplicate-settings', {
+const defaultDuplicateSettings: DuplicateSettings = {
   synchronizeAlbums: false,
   synchronizeVisibility: false,
   synchronizeFavorites: false,
   synchronizeRating: false,
-  synchronizeDescpription: false,
+  synchronizeDescription: false,
   synchronizeLocation: false,
+  synchronizeTags: false,
+};
+
+const normalizeDuplicateSettings = (
+  settings: Partial<DuplicateSettings> & { synchronizeDescpription?: boolean },
+): DuplicateSettings => {
+  const { synchronizeDescpription: _deprecated, ...rest } = settings;
+  return {
+    ...defaultDuplicateSettings,
+    ...rest,
+    synchronizeDescription:
+      settings.synchronizeDescription ??
+      settings.synchronizeDescpription ??
+      defaultDuplicateSettings.synchronizeDescription,
+  };
+};
+
+export const duplicateSettings = persisted<DuplicateSettings>('duplicate-settings', defaultDuplicateSettings, {
+  serializer: {
+    parse: (text) => {
+      const parsed = text ? JSON.parse(text) : null;
+      return normalizeDuplicateSettings(parsed ?? {});
+    },
+    stringify: JSON.stringify,
+  },
 });
