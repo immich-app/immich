@@ -28,13 +28,13 @@
   import { t } from 'svelte-i18n';
   import { SvelteSet } from 'svelte/reactivity';
 
-  interface Props {
+  type Props = {
     backups?: string[];
-  }
+  };
 
   let props: Props = $props();
 
-  function mapBackups(filenames: string[]) {
+  const mapBackups = (filenames: string[]) => {
     return filenames.map((filename) => {
       const date = /(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})/.exec(filename);
       const minutesAgo = date
@@ -48,7 +48,7 @@
         minutesAgo,
       };
     });
-  }
+  };
 
   let deleting = new SvelteSet();
   let backups = $state(mapBackups(props.backups ?? []));
