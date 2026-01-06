@@ -48,7 +48,7 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
                 _db.remoteAssetEntity.checksum.equalsExp(_db.trashedLocalAssetEntity.checksum),
               ),
             ])..where(
-              _db.trashedLocalAssetEntity.source.isNotValue(TrashOrigin.localUser.index) &
+              _db.trashedLocalAssetEntity.source.equalsValue(TrashOrigin.remoteSync) &
                   _db.trashedLocalAssetEntity.albumId.isInQuery(selectedAlbumIds) &
                   _db.remoteAssetEntity.deletedAt.isNull(),
             ))
