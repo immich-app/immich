@@ -29,12 +29,12 @@ describe(ProcessRepository.name, () => {
 
   describe('createSpawnDuplexStream', () => {
     it('should work (drain to stdout)', async () => {
-      const process = sut.createSpawnDuplexStream('bash', ['-c', 'exit 0']);
+      const process = sut.spawnDuplexStream('bash', ['-c', 'exit 0']);
       await pipeline(process, sink);
     });
 
     it('should throw on non-zero exit code', async () => {
-      const process = sut.createSpawnDuplexStream('bash', ['-c', 'echo "error message" >&2; exit 1']);
+      const process = sut.spawnDuplexStream('bash', ['-c', 'echo "error message" >&2; exit 1']);
       await expect(pipeline(process, sink)).rejects.toThrowErrorMatchingInlineSnapshot(`
         [Error: bash non-zero exit code (1)
         error message
@@ -55,7 +55,7 @@ describe(ProcessRepository.name, () => {
         },
       });
 
-      const echoProcess = sut.createSpawnDuplexStream('cat');
+      const echoProcess = sut.spawnDuplexStream('cat');
       await pipeline(Readable.from(data()), echoProcess, sink);
       expect(output).toBe('Hello, world!');
     });
@@ -73,7 +73,7 @@ describe(ProcessRepository.name, () => {
         yield 'Write after stdin close / process exit!';
       }
 
-      const process = sut.createSpawnDuplexStream('bash', ['-c', 'exit 0']);
+      const process = sut.spawnDuplexStream('bash', ['-c', 'exit 0']);
 
       const realProcess = (process as never as { _process: ChildProcessWithoutNullStreams })._process;
       realProcess.on('close', () => setImmediate(() => resolve1()));

@@ -156,14 +156,14 @@ export async function createDatabaseBackup(
   );
 
   try {
-    const pgdump = processRepository.createSpawnDuplexStream(bin, args, {
+    const pgdump = processRepository.spawnDuplexStream(bin, args, {
       env: {
         PATH: process.env.PATH,
         PGPASSWORD: databasePassword,
       },
     });
 
-    const gzip = processRepository.createSpawnDuplexStream('gzip', ['--rsyncable']);
+    const gzip = processRepository.spawnDuplexStream('gzip', ['--rsyncable']);
     const fileStream = storage.createWriteStream(backupFilePath);
 
     await pipeline(pgdump, gzip, fileStream);
@@ -239,7 +239,7 @@ export async function restoreDatabaseBackup(
     }
 
     const sqlStream = Readable.from(sql());
-    const psql = processRepository.createSpawnDuplexStream(bin, args, {
+    const psql = processRepository.spawnDuplexStream(bin, args, {
       env: {
         PATH: process.env.PATH,
         PGPASSWORD: databasePassword,

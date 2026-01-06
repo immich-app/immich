@@ -306,7 +306,7 @@ describe(MaintenanceWorkerService.name, () => {
 
       mocks.storage.readdir.mockResolvedValue([]);
       mocks.process.spawn.mockReturnValue(mockSpawn(0, 'data', ''));
-      mocks.process.createSpawnDuplexStream.mockImplementation(() => mockDuplex('command', 0, 'data', ''));
+      mocks.process.spawnDuplexStream.mockImplementation(() => mockDuplex('command', 0, 'data', ''));
       mocks.storage.rename.mockResolvedValue();
       mocks.storage.unlink.mockResolvedValue();
       mocks.storage.createPlainReadStream.mockReturnValue(Readable.from(mockData()));
@@ -375,7 +375,7 @@ describe(MaintenanceWorkerService.name, () => {
     });
 
     it('should fail if backup creation fails', async () => {
-      mocks.process.createSpawnDuplexStream.mockReturnValueOnce(mockDuplex('pg_dump', 1, '', 'error'));
+      mocks.process.spawnDuplexStream.mockReturnValueOnce(mockDuplex('pg_dump', 1, '', 'error'));
 
       await sut.runAction({
         action: MaintenanceAction.RestoreDatabase,
@@ -399,7 +399,7 @@ describe(MaintenanceWorkerService.name, () => {
     });
 
     it('should fail if restore itself fails', async () => {
-      mocks.process.createSpawnDuplexStream
+      mocks.process.spawnDuplexStream
         .mockReturnValueOnce(mockDuplex('pg_dump', 0, 'data', ''))
         .mockReturnValueOnce(mockDuplex('gzip', 0, 'data', ''))
         .mockReturnValueOnce(mockDuplex('psql', 1, '', 'error'));

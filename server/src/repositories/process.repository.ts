@@ -8,7 +8,7 @@ export class ProcessRepository {
     return spawn(command, args, options);
   }
 
-  createSpawnDuplexStream(command: string, args?: readonly string[], options?: SpawnOptionsWithoutStdio): Duplex {
+  spawnDuplexStream(command: string, args?: readonly string[], options?: SpawnOptionsWithoutStdio): Duplex {
     let stdinClosed = false;
     let drainCallback: undefined | (() => void);
 
