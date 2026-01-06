@@ -55,8 +55,8 @@ class LocalAsset extends BaseAsset {
    width: ${width ?? "<NA>"},
    height: ${height ?? "<NA>"},
    durationInSeconds: ${durationInSeconds ?? "<NA>"},
-   remoteId: ${remoteId ?? "<NA>"}
-   cloudId: ${cloudId ?? "<NA>"}
+   remoteId: ${remoteId ?? "<NA>"},
+   cloudId: ${cloudId ?? "<NA>"},
    checksum: ${checksum ?? "<NA>"},
    isFavorite: $isFavorite,
    orientation: $orientation,
