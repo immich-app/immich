@@ -4,7 +4,7 @@ import {
   LoginResponseDto,
   ManualJobName,
   QueueCommand,
-  QueueName
+  QueueName,
 } from '@immich/sdk';
 import { readFile } from 'node:fs/promises';
 import { app, testAssetDir, utils } from 'src/utils';
@@ -28,17 +28,17 @@ describe('/admin/integrity', () => {
   beforeAll(async () => {
     await utils.resetDatabase();
     admin = await utils.adminSetup();
-    
+
     user1 = await utils.userSetup(admin.accessToken, {
       email: '1@example.com',
       name: '1',
-      password: '1'
+      password: '1',
     });
-    
+
     user2 = await utils.userSetup(admin.accessToken, {
       email: '2@example.com',
       name: '2',
-      password: '2'
+      password: '2',
     });
 
     for (const queue of Object.values(QueueName)) {
@@ -46,9 +46,9 @@ describe('/admin/integrity', () => {
         continue;
       }
 
-    await utils.queueCommand(admin.accessToken, queue, {
-      command: QueueCommand.Pause
-    });
+      await utils.queueCommand(admin.accessToken, queue, {
+        command: QueueCommand.Pause,
+      });
     }
   });
 
@@ -76,19 +76,19 @@ describe('/admin/integrity', () => {
 
     await utils.mkFolder('/data/bak');
     await utils.copyFolder(`/data/upload/${admin.userId}`, `/data/bak/${admin.userId}`);
-    
+
     for (const queue of Object.values(QueueName)) {
       if (queue === QueueName.IntegrityCheck) {
         continue;
       }
 
-    await utils.queueCommand(admin.accessToken, queue, {
-      command: QueueCommand.Empty
-    });
+      await utils.queueCommand(admin.accessToken, queue, {
+        command: QueueCommand.Empty,
+      });
 
-    await utils.queueCommand(admin.accessToken, queue, {
-      command: QueueCommand.Resume
-    });
+      await utils.queueCommand(admin.accessToken, queue, {
+        command: QueueCommand.Resume,
+      });
     }
   });
 
@@ -176,36 +176,33 @@ describe('/admin/integrity', () => {
       );
     });
 
-    it.sequential(
-      'should delete orphan files (job: delete all orphan file reports)',
-      async () => {
-        await utils.putTextFile('orphan', `/data/upload/${admin.userId}/orphan1.png`);
+    it.sequential('should delete orphan files (job: delete all orphan file reports)', async () => {
+      await utils.putTextFile('orphan', `/data/upload/${admin.userId}/orphan1.png`);
 
-        await utils.createJob(admin.accessToken, {
-          name: ManualJobName.IntegrityOrphanFiles,
-        });
+      await utils.createJob(admin.accessToken, {
+        name: ManualJobName.IntegrityOrphanFiles,
+      });
 
-        await utils.waitForQueueFinish(admin.accessToken, QueueName.IntegrityCheck);
+      await utils.waitForQueueFinish(admin.accessToken, QueueName.IntegrityCheck);
 
-        await utils.createJob(admin.accessToken, {
-          name: ManualJobName.IntegrityOrphanFilesDeleteAll,
-        });
+      await utils.createJob(admin.accessToken, {
+        name: ManualJobName.IntegrityOrphanFilesDeleteAll,
+      });
 
-        await utils.waitForQueueFinish(admin.accessToken, QueueName.IntegrityCheck);
+      await utils.waitForQueueFinish(admin.accessToken, QueueName.IntegrityCheck);
 
-        const { status, body } = await request(app)
-          .get('/admin/integrity/summary')
-          .set('Authorization', `Bearer ${admin.accessToken}`)
-          .send();
+      const { status, body } = await request(app)
+        .get('/admin/integrity/summary')
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send();
 
-        expect(status).toBe(200);
-        expect(body).toEqual(
-          expect.objectContaining({
-            orphan_file: 0,
-          }),
-        );
-      },
-    );
+      expect(status).toBe(200);
+      expect(body).toEqual(
+        expect.objectContaining({
+          orphan_file: 0,
+        }),
+      );
+    });
 
     it.sequential('should detect a missing file and not a checksum mismatch (job: check missing files)', async () => {
       await utils.deleteFolder(`/data/upload/${admin.userId}`);
@@ -251,52 +248,51 @@ describe('/admin/integrity', () => {
       );
     });
 
-    it.sequential(
-      'should delete assets with missing files (job: delete all missing file reports)',
-      async () => {
-        await utils.deleteFolder(`/data/upload/${user1.userId}`);
+    it.sequential('should delete assets with missing files (job: delete all missing file reports)', async () => {
+      await utils.deleteFolder(`/data/upload/${user1.userId}`);
 
-        await utils.createJob(admin.accessToken, {
-          name: ManualJobName.IntegrityMissingFiles,
-        });
+      await utils.createJob(admin.accessToken, {
+        name: ManualJobName.IntegrityMissingFiles,
+      });
 
-        await utils.waitForQueueFinish(admin.accessToken, QueueName.IntegrityCheck);
+      await utils.waitForQueueFinish(admin.accessToken, QueueName.IntegrityCheck);
 
-        const { status: listStatus, body: listBody } = await request(app)
-          .get('/admin/integrity/summary')
-          .set('Authorization', `Bearer ${admin.accessToken}`)
-          .send();
+      const { status: listStatus, body: listBody } = await request(app)
+        .get('/admin/integrity/summary')
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send();
 
-        expect(listStatus).toBe(200);
-        expect(listBody).toEqual(
-          expect.objectContaining({
-            missing_file: 1,
-          }),
-        );
+      expect(listStatus).toBe(200);
+      expect(listBody).toEqual(
+        expect.objectContaining({
+          missing_file: 1,
+        }),
+      );
 
-        await utils.createJob(admin.accessToken, {
-          name: ManualJobName.IntegrityMissingFilesDeleteAll,
-        });
+      await utils.createJob(admin.accessToken, {
+        name: ManualJobName.IntegrityMissingFilesDeleteAll,
+      });
 
-        await utils.waitForQueueFinish(admin.accessToken, QueueName.IntegrityCheck);
+      await utils.waitForQueueFinish(admin.accessToken, QueueName.IntegrityCheck);
 
-        const { status, body } = await request(app)
-          .get('/admin/integrity/summary')
-          .set('Authorization', `Bearer ${admin.accessToken}`)
-          .send();
+      const { status, body } = await request(app)
+        .get('/admin/integrity/summary')
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send();
 
-        expect(status).toBe(200);
-        expect(body).toEqual(
-          expect.objectContaining({
-            missing_file: 0,
-          }),
-        );
+      expect(status).toBe(200);
+      expect(body).toEqual(
+        expect.objectContaining({
+          missing_file: 0,
+        }),
+      );
 
-        await expect(utils.getAssetInfo(user1.accessToken, asset1.id)).resolves.toEqual(expect.objectContaining({
-          isTrashed: true
-        }));
-      },
-    );
+      await expect(utils.getAssetInfo(user1.accessToken, asset1.id)).resolves.toEqual(
+        expect.objectContaining({
+          isTrashed: true,
+        }),
+      );
+    });
 
     it.sequential('should detect a checksum mismatch (job: check file checksums)', async () => {
       await utils.truncateFolder(`/data/upload/${admin.userId}`);
@@ -381,9 +377,11 @@ describe('/admin/integrity', () => {
           }),
         );
 
-        await expect(utils.getAssetInfo(user2.accessToken, asset2.id)).resolves.toEqual(expect.objectContaining({
-          isTrashed: true
-        }));
+        await expect(utils.getAssetInfo(user2.accessToken, asset2.id)).resolves.toEqual(
+          expect.objectContaining({
+            isTrashed: true,
+          }),
+        );
       },
     );
   });
