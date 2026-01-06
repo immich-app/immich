@@ -21,6 +21,20 @@ platform :ios do
   CODE_SIGN_IDENTITY = "Apple Distribution: Hau Tran (#{TEAM_ID})"
   BASE_BUNDLE_ID = "app.alextran.immich"
   
+  # App identifiers for production
+  PROD_APP_IDENTIFIERS = [
+    "app.alextran.immich",
+    "app.alextran.immich.ShareExtension",
+    "app.alextran.immich.Widget"
+  ]
+  
+  # App identifiers for development
+  DEV_APP_IDENTIFIERS = [
+    "app.alextran.immich.development",
+    "app.alextran.immich.development.ShareExtension",
+    "app.alextran.immich.development.Widget"
+  ]
+  
   # Helper method to get App Store Connect API key
   def get_api_key
     app_store_connect_api_key(
@@ -29,6 +43,17 @@ platform :ios do
       key_filepath: "#{Dir.home}/.appstoreconnect/private_keys/AuthKey_#{ENV['APP_STORE_CONNECT_API_KEY_ID']}.p8",
       duration: 1200,
       in_house: false
+    )
+  end
+  
+  # Helper method to sync certificates and profiles using match
+  def sync_code_signing(app_identifiers:, readonly: true)
+    match(
+      type: "appstore",
+      app_identifier: app_identifiers,
+      readonly: readonly,
+      keychain_name: ENV["KEYCHAIN_NAME"] || "login.keychain",
+      keychain_password: ENV["KEYCHAIN_PASSWORD"] || ""
     )
   end
   
@@ -54,7 +79,7 @@ end
       team_id: ENV["FASTLANE_TEAM_ID"] || TEAM_ID,
       code_sign_identity: CODE_SIGN_IDENTITY,
       bundle_identifier: "#{BASE_BUNDLE_ID}#{bundle_suffix}",
-      profile_name: "#{BASE_BUNDLE_ID}#{bundle_suffix} AppStore",
+      profile_name: "match AppStore #{BASE_BUNDLE_ID}#{bundle_suffix}",
       targets: ["Runner"]
     )
     
@@ -65,7 +90,7 @@ end
       team_id: ENV["FASTLANE_TEAM_ID"] || TEAM_ID,
       code_sign_identity: CODE_SIGN_IDENTITY,
       bundle_identifier: "#{BASE_BUNDLE_ID}#{bundle_suffix}.ShareExtension",
-      profile_name: "#{BASE_BUNDLE_ID}#{bundle_suffix}.ShareExtension AppStore",
+      profile_name: "match AppStore #{BASE_BUNDLE_ID}#{bundle_suffix}.ShareExtension",
       targets: ["ShareExtension"]
     )
     
@@ -76,7 +101,7 @@ end
       team_id: ENV["FASTLANE_TEAM_ID"] || TEAM_ID,
       code_sign_identity: CODE_SIGN_IDENTITY,
       bundle_identifier: "#{BASE_BUNDLE_ID}#{bundle_suffix}.Widget",
-      profile_name: "#{BASE_BUNDLE_ID}#{bundle_suffix}.Widget AppStore",
+      profile_name: "match AppStore #{BASE_BUNDLE_ID}#{bundle_suffix}.Widget",
       targets: ["WidgetExtension"]
     )
   end
@@ -115,9 +140,9 @@ end
       xcargs: "-skipMacroValidation CODE_SIGN_IDENTITY='#{CODE_SIGN_IDENTITY}' CODE_SIGN_STYLE=Manual",
       export_options: {
         provisioningProfiles: {
-          "#{app_identifier}" => "#{app_identifier} AppStore",
-          "#{app_identifier}.ShareExtension" => "#{app_identifier}.ShareExtension AppStore",
-          "#{app_identifier}.Widget" => "#{app_identifier}.Widget AppStore"
+          "#{app_identifier}" => "match AppStore #{app_identifier}",
+          "#{app_identifier}.ShareExtension" => "match AppStore #{app_identifier}.ShareExtension",
+          "#{app_identifier}.Widget" => "match AppStore #{app_identifier}.Widget"
         },
         signingStyle: "manual",
         signingCertificate: CODE_SIGN_IDENTITY
@@ -136,10 +161,8 @@ end
   lane :gha_testflight_dev do
     api_key = get_api_key
     
-    # Install development provisioning profiles
-    install_provisioning_profile(path: "profile_dev.mobileprovision")
-    install_provisioning_profile(path: "profile_dev_share.mobileprovision")
-    install_provisioning_profile(path: "profile_dev_widget.mobileprovision")
+    # Sync certificates and profiles using match
+    sync_code_signing(app_identifiers: DEV_APP_IDENTIFIERS)
     
     # Configure code signing for dev bundle IDs
     configure_code_signing(bundle_id_suffix: "development")
@@ -157,11 +180,8 @@ end
   lane :gha_release_prod do
     api_key = get_api_key
     
-    # Install provisioning profiles
-    install_provisioning_profile(path: "profile.mobileprovision")
-    install_provisioning_profile(path: "profile_share.mobileprovision")
-    install_provisioning_profile(path: "profile_widget.mobileprovision")
-    
+    # Sync certificates and profiles using match
+    sync_code_signing(app_identifiers: PROD_APP_IDENTIFIERS)
     
     # Configure code signing for production bundle IDs
     configure_code_signing
@@ -215,10 +235,8 @@ end
     # Use the same build process as production, just skip the upload
     # This ensures PR builds validate the same way as production builds
     
-    # Install provisioning profiles (use development profiles for PR builds)
-    install_provisioning_profile(path: "profile_dev.mobileprovision")
-    install_provisioning_profile(path: "profile_dev_share.mobileprovision")
-    install_provisioning_profile(path: "profile_dev_widget.mobileprovision")
+    # Sync certificates and profiles using match
+    sync_code_signing(app_identifiers: DEV_APP_IDENTIFIERS)
     
     # Configure code signing for dev bundle IDs
     configure_code_signing(bundle_id_suffix: "development")
@@ -233,14 +251,40 @@ end
       xcargs: "-skipMacroValidation CODE_SIGN_IDENTITY='#{CODE_SIGN_IDENTITY}' CODE_SIGN_STYLE=Manual",
       export_options: {
         provisioningProfiles: {
-          "#{BASE_BUNDLE_ID}.development" => "#{BASE_BUNDLE_ID}.development AppStore",
-          "#{BASE_BUNDLE_ID}.development.ShareExtension" => "#{BASE_BUNDLE_ID}.development.ShareExtension AppStore",
-          "#{BASE_BUNDLE_ID}.development.Widget" => "#{BASE_BUNDLE_ID}.development.Widget AppStore"
+          "#{BASE_BUNDLE_ID}.development" => "match AppStore #{BASE_BUNDLE_ID}.development",
+          "#{BASE_BUNDLE_ID}.development.ShareExtension" => "match AppStore #{BASE_BUNDLE_ID}.development.ShareExtension",
+          "#{BASE_BUNDLE_ID}.development.Widget" => "match AppStore #{BASE_BUNDLE_ID}.development.Widget"
         },
         signingStyle: "manual",
         signingCertificate: CODE_SIGN_IDENTITY
       }
     )
+  end
+
+  desc "Sync all certificates and profiles (run locally to update match repo)"
+  lane :sync_certificates do
+    # Sync production certificates and profiles
+    match(
+      type: "appstore",
+      app_identifier: PROD_APP_IDENTIFIERS,
+      readonly: false
+    )
+    
+    # Sync development certificates and profiles
+    match(
+      type: "appstore",
+      app_identifier: DEV_APP_IDENTIFIERS,
+      readonly: false
+    )
+  end
+
+  desc "Regenerate all certificates and profiles (use when expired)"
+  lane :regenerate_certificates do
+    # Nuke existing certificates
+    match_nuke(type: "appstore")
+    
+    # Generate new ones
+    sync_certificates
   end
 
 end

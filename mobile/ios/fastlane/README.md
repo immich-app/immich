@@ -39,6 +39,30 @@ iOS Release to TestFlight
 
 iOS Manual Release
 
+### ios gha_build_only
+
+```sh
+[bundle exec] fastlane ios gha_build_only
+```
+
+iOS Build Only (no TestFlight upload)
+
+### ios sync_certificates
+
+```sh
+[bundle exec] fastlane ios sync_certificates
+```
+
+Sync all certificates and profiles (run locally to update match repo)
+
+### ios regenerate_certificates
+
+```sh
+[bundle exec] fastlane ios regenerate_certificates
+```
+
+Regenerate all certificates and profiles (use when expired)
+
 ----
 
 This README.md is auto-generated and will be re-generated every time [_fastlane_](https://fastlane.tools) is run.

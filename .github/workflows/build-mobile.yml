@@ -26,21 +26,9 @@ on:
         required: true
       APP_STORE_CONNECT_API_KEY:
         required: true
-      IOS_CERTIFICATE_P12:
+      MATCH_PASSWORD:
         required: true
-      IOS_CERTIFICATE_PASSWORD:
-        required: true
-      IOS_PROVISIONING_PROFILE:
-        required: true
-      IOS_PROVISIONING_PROFILE_SHARE_EXTENSION:
-        required: true
-      IOS_PROVISIONING_PROFILE_WIDGET_EXTENSION:
-        required: true
-      IOS_DEVELOPMENT_PROVISIONING_PROFILE:
-        required: true
-      IOS_DEVELOPMENT_PROVISIONING_PROFILE_SHARE_EXTENSION:
-        required: true
-      IOS_DEVELOPMENT_PROVISIONING_PROFILE_WIDGET_EXTENSION:
+      MATCH_GIT_BASIC_AUTHORIZATION:
         required: true
       FASTLANE_TEAM_ID:
         required: true
@@ -193,6 +181,21 @@ jobs:
     runs-on: macos-latest
 
     steps:
+      - name: Generate token for ios-certs repo
+        id: token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.PUSH_O_MATIC_APP_ID }}
+          private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
+          owner: immich-app
+          repositories: immich,ios-certs
+
+      - name: Set up match authorization
+        id: match-auth
+        run: |
+          # Create base64-encoded authorization for match
+          echo "base64_token=$(echo -n 'x-access-token:${{ steps.token.outputs.token }}' | base64)" >> $GITHUB_OUTPUT
+
       - name: Checkout code
         uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
         with:
@@ -240,64 +243,26 @@ jobs:
           mkdir -p ~/.appstoreconnect/private_keys
           echo "$API_KEY_CONTENT" | base64 --decode > ~/.appstoreconnect/private_keys/AuthKey_${API_KEY_ID}.p8
 
-      - name: Import Certificate and Provisioning Profiles
+      - name: Create keychain for match
         env:
-          IOS_CERTIFICATE_P12: ${{ secrets.IOS_CERTIFICATE_P12 }}
-          IOS_CERTIFICATE_PASSWORD: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
-          IOS_PROVISIONING_PROFILE: ${{ secrets.IOS_PROVISIONING_PROFILE }}
-          IOS_PROVISIONING_PROFILE_SHARE_EXTENSION: ${{ secrets.IOS_PROVISIONING_PROFILE_SHARE_EXTENSION }}
-          IOS_PROVISIONING_PROFILE_WIDGET_EXTENSION: ${{ secrets.IOS_PROVISIONING_PROFILE_WIDGET_EXTENSION }}
-          IOS_DEVELOPMENT_PROVISIONING_PROFILE: ${{ secrets.IOS_DEVELOPMENT_PROVISIONING_PROFILE }}
-          IOS_DEVELOPMENT_PROVISIONING_PROFILE_SHARE_EXTENSION: ${{ secrets.IOS_DEVELOPMENT_PROVISIONING_PROFILE_SHARE_EXTENSION }}
-          IOS_DEVELOPMENT_PROVISIONING_PROFILE_WIDGET_EXTENSION: ${{ secrets.IOS_DEVELOPMENT_PROVISIONING_PROFILE_WIDGET_EXTENSION }}
-          ENVIRONMENT: ${{ inputs.environment || 'development' }}
-        working-directory: ./mobile/ios
+          KEYCHAIN_PASSWORD: ${{ github.run_id }}
         run: |
-          # Decode certificate
-          echo "$IOS_CERTIFICATE_P12" | base64 --decode > certificate.p12
-
-          # Decode provisioning profiles based on environment
-          if [[ "$ENVIRONMENT" == "development" ]]; then
-            echo "$IOS_DEVELOPMENT_PROVISIONING_PROFILE" | base64 --decode > profile_dev.mobileprovision
-            echo "$IOS_DEVELOPMENT_PROVISIONING_PROFILE_SHARE_EXTENSION" | base64 --decode > profile_dev_share.mobileprovision
-            echo "$IOS_DEVELOPMENT_PROVISIONING_PROFILE_WIDGET_EXTENSION" | base64 --decode > profile_dev_widget.mobileprovision
-            ls -lh profile_dev*.mobileprovision
-          else
-            echo "$IOS_PROVISIONING_PROFILE" | base64 --decode > profile.mobileprovision
-            echo "$IOS_PROVISIONING_PROFILE_SHARE_EXTENSION" | base64 --decode > profile_share.mobileprovision
-            echo "$IOS_PROVISIONING_PROFILE_WIDGET_EXTENSION" | base64 --decode > profile_widget.mobileprovision
-            ls -lh profile*.mobileprovision
-          fi
-
-      - name: Create keychain and import certificate
-        env:
-          KEYCHAIN_PASSWORD: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
-          CERTIFICATE_PASSWORD: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
-        working-directory: ./mobile/ios
-        run: |
-          # Create keychain
+          # Create a temporary keychain for CI
           security create-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
           security default-keychain -s build.keychain
           security unlock-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
           security set-keychain-settings -t 3600 -u build.keychain
 
-          # Import certificate
-          security import certificate.p12 -k build.keychain -P "$CERTIFICATE_PASSWORD" -T /usr/bin/codesign -T /usr/bin/security
-          security set-key-partition-list -S apple-tool:,apple: -s -k "$KEYCHAIN_PASSWORD" build.keychain
-
-          # Verify certificate was imported
-          security find-identity -v -p codesigning build.keychain
-
       - name: Build and deploy to TestFlight
         env:
           FASTLANE_TEAM_ID: ${{ secrets.FASTLANE_TEAM_ID }}
-          IOS_CERTIFICATE_PASSWORD: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+          MATCH_GIT_BASIC_AUTHORIZATION: ${{ steps.match-auth.outputs.base64_token }}
           KEYCHAIN_NAME: build.keychain
-          KEYCHAIN_PASSWORD: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
+          KEYCHAIN_PASSWORD: ${{ github.run_id }}
           APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
           APP_STORE_CONNECT_API_KEY_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
           ENVIRONMENT: ${{ inputs.environment || 'development' }}
-          BUNDLE_ID_SUFFIX: ${{ inputs.environment == 'production' && '' || 'development' }}
           GITHUB_REF: ${{ github.ref }}
         working-directory: ./mobile/ios
         run: |
