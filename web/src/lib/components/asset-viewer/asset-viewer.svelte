@@ -2,7 +2,6 @@
   import { goto } from '$app/navigation';
   import { focusTrap } from '$lib/actions/focus-trap';
   import type { Action, OnAction, PreAction } from '$lib/components/asset-viewer/actions/action';
-  import MotionPhotoAction from '$lib/components/asset-viewer/actions/motion-photo-action.svelte';
   import NextAssetAction from '$lib/components/asset-viewer/actions/next-asset-action.svelte';
   import PreviousAssetAction from '$lib/components/asset-viewer/actions/previous-asset-action.svelte';
   import AssetViewerNavBar from '$lib/components/asset-viewer/asset-viewer-nav-bar.svelte';
@@ -102,7 +101,6 @@
   const stackSelectedThumbnailSize = 65;
 
   let appearsInAlbums: AlbumResponseDto[] = $state([]);
-  let shouldPlayMotionPhoto = $state(false);
   let sharedLink = getSharedLink();
   let previewStackedAsset: AssetResponseDto | undefined = $state();
   let isShowEditor = $state(false);
@@ -420,14 +418,7 @@
         onClose={onClose ? () => onClose(asset) : undefined}
         {playOriginalVideo}
         {setPlayOriginalVideo}
-      >
-        {#snippet motionPhoto()}
-          <MotionPhotoAction
-            isPlaying={shouldPlayMotionPhoto}
-            onClick={(shouldPlay) => (shouldPlayMotionPhoto = shouldPlay)}
-          />
-        {/snippet}
-      </AssetViewerNavBar>
+      />
     </div>
   {/if}
 
@@ -483,7 +474,7 @@
     {:else}
       {#key asset.id}
         {#if asset.type === AssetTypeEnum.Image}
-          {#if shouldPlayMotionPhoto && asset.livePhotoVideoId}
+          {#if assetViewerManager.isPlayingMotionPhoto && asset.livePhotoVideoId}
             <VideoViewer
               assetId={asset.livePhotoVideoId}
               cacheKey={asset.thumbhash}
@@ -491,7 +482,7 @@
               loopVideo={$slideshowState !== SlideshowState.PlaySlideshow}
               onPreviousAsset={() => navigateAsset('previous')}
               onNextAsset={() => navigateAsset('next')}
-              onVideoEnded={() => (shouldPlayMotionPhoto = false)}
+              onVideoEnded={() => (assetViewerManager.isPlayingMotionPhoto = false)}
               {playOriginalVideo}
             />
           {:else if asset.exifInfo?.projectionType === ProjectionType.EQUIRECTANGULAR || (asset.originalPath && asset.originalPath

@@ -7,7 +7,6 @@
   import AddToAlbumAction from '$lib/components/asset-viewer/actions/add-to-album-action.svelte';
   import AddToStackAction from '$lib/components/asset-viewer/actions/add-to-stack-action.svelte';
   import ArchiveAction from '$lib/components/asset-viewer/actions/archive-action.svelte';
-  import CloseAction from '$lib/components/asset-viewer/actions/close-action.svelte';
   import DeleteAction from '$lib/components/asset-viewer/actions/delete-action.svelte';
   import DownloadAction from '$lib/components/asset-viewer/actions/download-action.svelte';
   import FavoriteAction from '$lib/components/asset-viewer/actions/favorite-action.svelte';
@@ -20,12 +19,10 @@
   import SetProfilePictureAction from '$lib/components/asset-viewer/actions/set-profile-picture-action.svelte';
   import SetStackPrimaryAsset from '$lib/components/asset-viewer/actions/set-stack-primary-asset.svelte';
   import SetVisibilityAction from '$lib/components/asset-viewer/actions/set-visibility-action.svelte';
-  import ShowDetailAction from '$lib/components/asset-viewer/actions/show-detail-action.svelte';
   import UnstackAction from '$lib/components/asset-viewer/actions/unstack-action.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import { AppRoute } from '$lib/constants';
-  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { getAssetActions, handleReplaceAsset } from '$lib/services/asset.service';
   import { photoViewerImgElement } from '$lib/stores/assets-store.svelte';
@@ -44,9 +41,9 @@
     type PersonResponseDto,
     type StackResponseDto,
   } from '@immich/sdk';
-  import { IconButton } from '@immich/ui';
+  import { CommandPaletteDefaultProvider, IconButton, type ActionItem } from '@immich/ui';
   import {
-    mdiAlertOutline,
+    mdiArrowLeft,
     mdiCogRefreshOutline,
     mdiCompare,
     mdiContentCopy,
@@ -61,7 +58,6 @@
     mdiUpload,
     mdiVideoOutline,
   } from '@mdi/js';
-  import type { Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
 
   interface Props {
@@ -79,7 +75,6 @@
     onPlaySlideshow: () => void;
     // export let showEditorHandler: () => void;
     onClose?: () => void;
-    motionPhoto?: Snippet;
     playOriginalVideo: boolean;
     setPlayOriginalVideo: (value: boolean) => void;
   }
@@ -98,7 +93,6 @@
     onRunJob,
     onPlaySlideshow,
     onClose,
-    motionPhoto,
     playOriginalVideo = false,
     setPlayOriginalVideo,
   }: Props = $props();
@@ -109,7 +103,15 @@
   let isLocked = $derived(asset.visibility === AssetVisibility.Locked);
   let smartSearchEnabled = $derived(featureFlagsManager.value.smartSearch);
 
-  const { Share } = $derived(getAssetActions($t, asset));
+  const Close: ActionItem = {
+    title: $t('go_back'),
+    icon: mdiArrowLeft,
+    $if: () => !!onClose,
+    onAction: () => onClose?.(),
+    shortcuts: [{ key: 'Escape' }],
+  };
+
+  const { Share, Offline, PlayMotionPhoto, StopMotionPhoto, Info } = $derived(getAssetActions($t, asset));
 
   // $: showEditorButton =
   //   isOwner &&
@@ -122,30 +124,26 @@
   //   !asset.livePhotoVideoId;
 </script>
 
+<CommandPaletteDefaultProvider
+  name={$t('assets')}
+  actions={[Close, Share, Offline, PlayMotionPhoto, StopMotionPhoto, Info]}
+/>
+
 <div
   class="flex h-16 place-items-center justify-between bg-linear-to-b from-black/40 px-3 transition-transform duration-200"
 >
   <div class="dark">
-    {#if onClose}
-      <CloseAction {onClose} />
-    {/if}
+    <ActionButton action={Close} />
   </div>
+
   <div class="flex gap-2 overflow-x-auto dark" data-testid="asset-viewer-navbar-actions">
     <CastButton />
 
     <ActionButton action={Share} />
-    {#if asset.isOffline}
-      <IconButton
-        shape="round"
-        color="danger"
-        icon={mdiAlertOutline}
-        onclick={() => assetViewerManager.toggleDetailPanel()}
-        aria-label={$t('asset_offline')}
-      />
-    {/if}
-    {#if asset.livePhotoVideoId}
-      {@render motionPhoto?.()}
-    {/if}
+    <ActionButton action={Offline} />
+    <ActionButton action={PlayMotionPhoto} />
+    <ActionButton action={StopMotionPhoto} />
+
     {#if asset.type === AssetTypeEnum.Image}
       <IconButton
         class="hidden sm:flex"
@@ -172,9 +170,7 @@
       <DownloadAction asset={toTimelineAsset(asset)} />
     {/if}
 
-    {#if asset.hasMetadata}
-      <ShowDetailAction />
-    {/if}
+    <ActionButton action={Info} />
 
     {#if isOwner}
       <FavoriteAction {asset} {onAction} />
