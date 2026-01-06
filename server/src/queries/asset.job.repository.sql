@@ -50,9 +50,11 @@ select
         where
           "asset"."id" = "tag_asset"."assetId"
       ) as agg
-  ) as "tags"
+  ) as "tags",
+  to_json("asset_exif") as "exifInfo"
 from
   "asset"
+  inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
   "asset"."id" = $2::uuid
 limit
@@ -223,6 +225,14 @@ from
   "asset"
 where
   "asset"."id" = $2
+
+-- AssetJobRepository.getLockedPropertiesForMetadataExtraction
+select
+  "asset_exif"."lockedProperties"
+from
+  "asset_exif"
+where
+  "asset_exif"."assetId" = $1
 
 -- AssetJobRepository.getAlbumThumbnailFiles
 select
@@ -483,6 +493,9 @@ select
   "asset"."fileCreatedAt",
   "asset_exif"."timeZone",
   "asset_exif"."fileSizeInByte",
+  "asset_exif"."make",
+  "asset_exif"."model",
+  "asset_exif"."lensModel",
   (
     select
       coalesce(json_agg(agg), '[]')
@@ -519,6 +532,9 @@ select
   "asset"."fileCreatedAt",
   "asset_exif"."timeZone",
   "asset_exif"."fileSizeInByte",
+  "asset_exif"."make",
+  "asset_exif"."model",
+  "asset_exif"."lensModel",
   (
     select
       coalesce(json_agg(agg), '[]')

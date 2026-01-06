@@ -8020,6 +8020,55 @@
         "x-immich-state": "Alpha"
       }
     },
+    "/plugins/triggers": {
+      "get": {
+        "description": "Retrieve a list of all available plugin triggers.",
+        "operationId": "getPluginTriggers",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PluginTriggerResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "List all plugin triggers",
+        "tags": [
+          "Plugins"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v2.3.0",
+            "state": "Added"
+          },
+          {
+            "version": "v2.3.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "plugin.read",
+        "x-immich-state": "Alpha"
+      }
+    },
     "/plugins/{id}": {
       "get": {
         "description": "Retrieve information about a specific plugin by its ID.",
@@ -10328,6 +10377,21 @@
             "name": "albumId",
             "required": false,
             "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": false,
+            "in": "query",
+            "x-immich-history": [
+              {
+                "version": "v2.5.0",
+                "state": "Added"
+              }
+            ],
             "schema": {
               "format": "uuid",
               "type": "string"
@@ -14268,7 +14332,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "2.3.1",
+    "version": "2.4.1",
     "contact": {}
   },
   "tags": [
@@ -18282,7 +18346,7 @@
           },
           "supportedContexts": {
             "items": {
-              "$ref": "#/components/schemas/PluginContext"
+              "$ref": "#/components/schemas/PluginContextType"
             },
             "type": "array"
           },
@@ -18301,7 +18365,7 @@
         ],
         "type": "object"
       },
-      "PluginContext": {
+      "PluginContextType": {
         "enum": [
           "asset",
           "album",
@@ -18329,7 +18393,7 @@
           },
           "supportedContexts": {
             "items": {
-              "$ref": "#/components/schemas/PluginContext"
+              "$ref": "#/components/schemas/PluginContextType"
             },
             "type": "array"
           },
@@ -18398,6 +18462,29 @@
           "title",
           "updatedAt",
           "version"
+        ],
+        "type": "object"
+      },
+      "PluginTriggerResponseDto": {
+        "properties": {
+          "contextType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PluginContextType"
+              }
+            ]
+          },
+          "type": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PluginTriggerType"
+              }
+            ]
+          }
+        },
+        "required": [
+          "contextType",
+          "type"
         ],
         "type": "object"
       },
@@ -23316,11 +23403,11 @@
             "type": "string"
           },
           "triggerType": {
-            "enum": [
-              "AssetCreate",
-              "PersonRecognized"
-            ],
-            "type": "string"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PluginTriggerType"
+              }
+            ]
           }
         },
         "required": [
@@ -23358,6 +23445,13 @@
           },
           "name": {
             "type": "string"
+          },
+          "triggerType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PluginTriggerType"
+              }
+            ]
           }
         },
         "type": "object"

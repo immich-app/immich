@@ -59,11 +59,11 @@ export const authenticate = async (url: URL, options?: AuthOptions) => {
   }
 
   if (!user) {
-    redirect(302, `${AppRoute.AUTH_LOGIN}?continue=${encodeURIComponent(url.pathname + url.search)}`);
+    redirect(307, `${AppRoute.AUTH_LOGIN}?continue=${encodeURIComponent(url.pathname + url.search)}`);
   }
 
   if (adminRoute && !user.isAdmin) {
-    redirect(302, AppRoute.PHOTOS);
+    redirect(307, AppRoute.PHOTOS);
   }
 };
 
