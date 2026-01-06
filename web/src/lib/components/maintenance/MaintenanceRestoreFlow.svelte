@@ -6,9 +6,9 @@
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
 
-  interface Props {
+  type Props = {
     end?: () => void;
-  }
+  };
 
   let props: Props = $props();
   let stage = $state(0);
