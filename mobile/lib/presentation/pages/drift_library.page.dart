@@ -53,15 +53,15 @@ class _ActionButtonGrid extends ConsumerWidget {
             Row(
               children: [
                 _ActionButton(
-                  icon: Icons.favorite_outline_rounded,
-                  onTap: () => context.pushRoute(const DriftFavoriteRoute()),
-                  label: 'favorites'.t(context: context),
+                  icon: Icons.photo_library_outlined,
+                  onTap: () => context.pushRoute(const DriftAllPhotosRoute()),
+                  label: 'all'.t(context: context),
                 ),
                 const SizedBox(width: 8),
                 _ActionButton(
-                  icon: Icons.archive_outlined,
-                  onTap: () => context.pushRoute(const DriftArchiveRoute()),
-                  label: 'archived'.t(context: context),
+                  icon: Icons.favorite_outline_rounded,
+                  onTap: () => context.pushRoute(const DriftFavoriteRoute()),
+                  label: 'favorites'.t(context: context),
                 ),
               ],
             ),
@@ -69,11 +69,21 @@ class _ActionButtonGrid extends ConsumerWidget {
             Row(
               children: [
                 _ActionButton(
+                  icon: Icons.archive_outlined,
+                  onTap: () => context.pushRoute(const DriftArchiveRoute()),
+                  label: 'archived'.t(context: context),
+                ),
+                const SizedBox(width: 8),
+                _ActionButton(
                   icon: Icons.link_outlined,
                   onTap: () => context.pushRoute(const SharedLinkRoute()),
                   label: 'shared_links'.t(context: context),
                 ),
-                isTrashEnable ? const SizedBox(width: 8) : const SizedBox.shrink(),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
                 isTrashEnable
                     ? _ActionButton(
                         icon: Icons.delete_outline_rounded,
@@ -81,6 +91,8 @@ class _ActionButtonGrid extends ConsumerWidget {
                         label: 'trash'.t(context: context),
                       )
                     : const SizedBox.shrink(),
+                isTrashEnable ? const SizedBox(width: 8) : const SizedBox.shrink(),
+                const Expanded(child: SizedBox.shrink()),
               ],
             ),
           ],

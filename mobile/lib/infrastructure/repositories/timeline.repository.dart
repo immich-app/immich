@@ -38,6 +38,12 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
     origin: TimelineOrigin.main,
   );
 
+  TimelineQuery unorganized(List<String> userIds, GroupAssetsBy groupBy) => (
+    bucketSource: () => _watchUnorganizedBucket(userIds, groupBy: groupBy),
+    assetSource: (offset, count) => _getUnorganizedAssets(userIds, offset: offset, count: count),
+    origin: TimelineOrigin.unorganized,
+  );
+
   Stream<List<Bucket>> _watchMainBucket(List<String> userIds, {GroupAssetsBy groupBy = GroupAssetsBy.day}) {
     if (groupBy == GroupAssetsBy.none) {
       throw UnsupportedError("GroupAssetsBy.none is not supported for watchMainBucket");
@@ -87,6 +93,54 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
                 ),
         )
         .get();
+  }
+
+  Stream<List<Bucket>> _watchUnorganizedBucket(List<String> userIds, {GroupAssetsBy groupBy = GroupAssetsBy.day}) {
+    if (groupBy == GroupAssetsBy.none) {
+      throw UnsupportedError("GroupAssetsBy.none is not supported for watchUnorganizedBucket");
+    }
+
+    final assetCountExp = _db.remoteAssetEntity.id.count();
+    final dateExp = _db.remoteAssetEntity.createdAt.dateFmt(groupBy);
+
+    final query = _db.remoteAssetEntity.selectOnly()
+      ..addColumns([assetCountExp, dateExp])
+      ..where(
+        _db.remoteAssetEntity.deletedAt.isNull() &
+        _db.remoteAssetEntity.visibility.equalsValue(AssetVisibility.timeline) &
+        _db.remoteAssetEntity.ownerId.isIn(userIds) &
+        notExistsQuery(
+          _db.remoteAlbumAssetEntity.selectOnly()
+            ..addColumns([_db.remoteAlbumAssetEntity.assetId])
+            ..where(_db.remoteAlbumAssetEntity.assetId.equalsExp(_db.remoteAssetEntity.id)),
+        ),
+      )
+      ..groupBy([dateExp])
+      ..orderBy([OrderingTerm.desc(dateExp)]);
+
+    return query.map((row) {
+      final timeline = row.read(dateExp)!.truncateDate(groupBy);
+      final assetCount = row.read(assetCountExp)!;
+      return TimeBucket(date: timeline, assetCount: assetCount);
+    }).watch();
+  }
+
+  Future<List<BaseAsset>> _getUnorganizedAssets(List<String> userIds, {required int offset, required int count}) {
+    final query = _db.remoteAssetEntity.select()
+      ..where((row) =>
+        row.deletedAt.isNull() &
+        row.visibility.equalsValue(AssetVisibility.timeline) &
+        row.ownerId.isIn(userIds) &
+        notExistsQuery(
+          _db.remoteAlbumAssetEntity.selectOnly()
+            ..addColumns([_db.remoteAlbumAssetEntity.assetId])
+            ..where(_db.remoteAlbumAssetEntity.assetId.equalsExp(row.id)),
+        ),
+      )
+      ..orderBy([(row) => OrderingTerm.desc(row.createdAt)])
+      ..limit(count, offset: offset);
+
+    return query.map((row) => row.toDto()).get();
   }
 
   TimelineQuery localAlbum(String albumId, GroupAssetsBy groupBy) => (

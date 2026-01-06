@@ -21,6 +21,7 @@ typedef TimelineQuery = ({TimelineAssetSource assetSource, TimelineBucketSource 
 
 enum TimelineOrigin {
   main,
+  unorganized,
   localAlbum,
   remoteAlbum,
   remoteAssets,
@@ -52,6 +53,8 @@ class TimelineFactory {
   }
 
   TimelineService main(List<String> timelineUsers) => TimelineService(_timelineRepository.main(timelineUsers, groupBy));
+
+  TimelineService unorganized(List<String> timelineUsers) => TimelineService(_timelineRepository.unorganized(timelineUsers, groupBy));
 
   TimelineService localAlbum({required String albumId}) =>
       TimelineService(_timelineRepository.localAlbum(albumId, groupBy));

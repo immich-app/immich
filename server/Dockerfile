@@ -33,7 +33,7 @@ RUN --mount=type=cache,id=pnpm-web,target=/buildcache/pnpm-store \
   --mount=type=bind,source=pnpm-lock.yaml,target=pnpm-lock.yaml \
   --mount=type=bind,source=pnpm-workspace.yaml,target=pnpm-workspace.yaml \
   SHARP_IGNORE_GLOBAL_LIBVIPS=true pnpm --filter @immich/sdk --filter immich-web --frozen-lockfile --force install && \
-  pnpm --filter @immich/sdk --filter immich-web build
+  NODE_OPTIONS=--max-old-space-size=4096 pnpm --filter @immich/sdk --filter immich-web build
 
 FROM builder AS cli
 
@@ -79,6 +79,7 @@ ENV NODE_ENV=production \
   NVIDIA_VISIBLE_DEVICES=all
 
 COPY --from=server /output/server-pruned ./server
+RUN chmod +x ./server/bin/*.sh
 COPY --from=web /usr/src/app/web/build /build/www
 COPY --from=cli /output/cli-pruned ./cli
 COPY --from=plugins /usr/src/app/plugins/dist /build/corePlugin/dist

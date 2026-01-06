@@ -38,6 +38,9 @@ export class TimeBucketDto {
   @ValidateBoolean({ optional: true, description: 'Include assets shared by partners' })
   withPartners?: boolean;
 
+  @ValidateBoolean({ optional: true, description: 'Filter to assets NOT in any album' })
+  isNotInAlbum?: boolean;
+
   @ValidateEnum({
     enum: AssetOrder,
     name: 'AssetOrder',

@@ -16,9 +16,11 @@
     mdiFolderOutline,
     mdiHeart,
     mdiHeartOutline,
+    mdiImage,
     mdiImageAlbum,
     mdiImageMultiple,
     mdiImageMultipleOutline,
+    mdiImageOutline,
     mdiLink,
     mdiLock,
     mdiLockOutline,
@@ -35,6 +37,7 @@
   import { fly } from 'svelte/transition';
   import SideBarLink from './side-bar-link.svelte';
 
+  let isAllSelected: boolean = $state(false);
   let isArchiveSelected: boolean = $state(false);
   let isFavoritesSelected: boolean = $state(false);
   let isMapSelected: boolean = $state(false);
@@ -52,6 +55,13 @@
     href={resolve('/(user)/photos')}
     bind:isSelected={isPhotosSelected}
     icon={isPhotosSelected ? mdiImageMultiple : mdiImageMultipleOutline}
+  ></SideBarLink>
+
+  <SideBarLink
+    title={$t('all')}
+    href={resolve('/(user)/all')}
+    bind:isSelected={isAllSelected}
+    icon={isAllSelected ? mdiImage : mdiImageOutline}
   ></SideBarLink>
 
   {#if featureFlagsManager.value.search}

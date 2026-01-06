@@ -12620,6 +12620,15 @@
             }
           },
           {
+            "name": "isNotInAlbum",
+            "required": false,
+            "in": "query",
+            "description": "Filter to assets NOT in any album",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
             "name": "key",
             "required": false,
             "in": "query",
@@ -12791,6 +12800,15 @@
             "required": false,
             "in": "query",
             "description": "Filter by trash status (true for trashed assets only, false for non-trashed only)",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "isNotInAlbum",
+            "required": false,
+            "in": "query",
+            "description": "Filter to assets NOT in any album",
             "schema": {
               "type": "boolean"
             }
