@@ -26,7 +26,7 @@ export class DuplicateController {
   getAssetDuplicates(
     @Auth() auth: AuthDto,
     @Query('page') page: number = 1,
-    @Query('size') size: number = 20,
+    @Query('size') size: number = 200,
   ): Promise<DuplicateResponseDto> {
     return this.service.getDuplicates(auth, page, size);
   }

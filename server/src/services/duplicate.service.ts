@@ -17,7 +17,7 @@ import { isDuplicateDetectionEnabled } from 'src/utils/misc';
 export class DuplicateService extends BaseService {
   @Inject() private assetService!: AssetService;
 
-  async getDuplicates(auth: AuthDto, page = 1, size = 20): Promise<DuplicateResponseDto> {
+  async getDuplicates(auth: AuthDto, page = 1, size = 200): Promise<DuplicateResponseDto> {
     const { items, totalItems } = await this.duplicateRepository.getAll(auth.user.id, page, size);
 
     const duplicates = items.map(({ duplicateId, assets }) => ({
