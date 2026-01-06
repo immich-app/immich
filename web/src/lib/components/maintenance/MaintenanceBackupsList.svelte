@@ -1,10 +1,12 @@
 <script lang="ts">
-  import { handleDeleteDatabaseBackup, handleRestoreDatabaseBackup } from '$lib/services/database-backups.service';
+  import {
+    getDatabaseBackupActions,
+    handleDeleteDatabaseBackup,
+    handleRestoreDatabaseBackup,
+    handleUploadDatabaseBackup,
+  } from '$lib/services/database-backups.service';
   import { locale } from '$lib/stores/preferences.store';
-  import { uploadRequest } from '$lib/utils';
-  import { openFilePicker } from '$lib/utils/file-uploader';
-  import { handleError } from '$lib/utils/handle-error';
-  import { getBaseUrl, listDatabaseBackups, type DatabaseBackupUploadDto } from '@immich/sdk';
+  import { listDatabaseBackups } from '@immich/sdk';
   import {
     Button,
     Card,
@@ -17,7 +19,7 @@
     Text,
     type ContextMenuBaseProps,
   } from '@immich/ui';
-  import { mdiDotsVertical, mdiDownload, mdiTrashCanOutline } from '@mdi/js';
+  import { mdiDotsVertical } from '@mdi/js';
   import { DateTime } from 'luxon';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -64,58 +66,20 @@
     deleting.delete(filename);
   }
 
-  function download(filename: string) {
-    location.href = getBaseUrl() + '/admin/database-backups/' + filename;
-  }
-
   const handleOpen = async (event: Event, props: Partial<ContextMenuBaseProps>, filename: string) => {
+    const { Download, Delete } = getDatabaseBackupActions($t, filename, () => remove(filename));
+
     await menuManager.show({
       ...props,
       target: event.currentTarget as HTMLElement,
-      items: [
-        {
-          title: $t('download'),
-          icon: mdiDownload,
-          onAction() {
-            void download(filename);
-          },
-        },
-        {
-          title: $t('delete'),
-          icon: mdiTrashCanOutline,
-          color: 'danger',
-          onAction() {
-            void remove(filename);
-          },
-        },
-      ],
+      items: [Download, Delete],
     });
   };
 
   let uploadProgress = $state(-1);
 
-  async function upload() {
-    try {
-      const [file] = await openFilePicker({ multiple: false });
-      const formData = new FormData();
-      formData.append('file', file);
-
-      await uploadRequest<DatabaseBackupUploadDto>({
-        url: getBaseUrl() + '/admin/database-backups/upload',
-        data: formData,
-        onUploadProgress(event) {
-          uploadProgress = event.loaded / event.total;
-        },
-      });
-
-      uploadProgress = 1;
-
-      void reloadBackups();
-    } catch (error) {
-      handleError(error, $t('admin.maintenance_upload_backup_error'));
-    } finally {
-      uploadProgress = -1;
-    }
+  function upload() {
+    void handleUploadDatabaseBackup((value) => (uploadProgress = value)).then(reloadBackups);
   }
 </script>
 
