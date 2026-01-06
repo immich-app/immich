@@ -9,16 +9,18 @@
   import OnEvents from '$lib/components/OnEvents.svelte';
   import { AppRoute, AssetAction, ProjectionType } from '$lib/constants';
   import { activityManager } from '$lib/managers/activity-manager.svelte';
+  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import { closeEditorCofirm } from '$lib/stores/asset-editor.store';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { ocrManager } from '$lib/stores/ocr.svelte';
-  import { alwaysLoadOriginalVideo, isShowDetail } from '$lib/stores/preferences.store';
+  import { alwaysLoadOriginalVideo } from '$lib/stores/preferences.store';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { user } from '$lib/stores/user.store';
   import { websocketEvents } from '$lib/stores/websocket';
   import { getAssetJobMessage, getSharedLink, handlePromiseError } from '$lib/utils';
+  import type { OnUndoDelete } from '$lib/utils/actions';
   import { handleError } from '$lib/utils/handle-error';
   import { SlideshowHistory } from '$lib/utils/slideshow-history';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
@@ -62,8 +64,8 @@
     person?: PersonResponseDto | null;
     preAction?: PreAction | undefined;
     onAction?: OnAction | undefined;
-    showCloseButton?: boolean;
-    onClose: (asset: AssetResponseDto) => void;
+    onUndoDelete?: OnUndoDelete | undefined;
+    onClose?: (asset: AssetResponseDto) => void;
     onNext: () => Promise<HasAsset>;
     onPrevious: () => Promise<HasAsset>;
     onRandom: () => Promise<{ id: string } | undefined>;
@@ -80,7 +82,7 @@
     person = null,
     preAction = undefined,
     onAction = undefined,
-    showCloseButton,
+    onUndoDelete = undefined,
     onClose,
     onNext,
     onPrevious,
@@ -102,11 +104,7 @@
   let appearsInAlbums: AlbumResponseDto[] = $state([]);
   let shouldPlayMotionPhoto = $state(false);
   let sharedLink = getSharedLink();
-  let enableDetailPanel = asset.hasMetadata;
-  let slideshowStateUnsubscribe: () => void;
-  let shuffleSlideshowUnsubscribe: () => void;
   let previewStackedAsset: AssetResponseDto | undefined = $state();
-  let isShowActivity = $state(false);
   let isShowEditor = $state(false);
   let fullscreenElement = $state<Element>();
   let unsubscribes: (() => void)[] = [];
@@ -160,24 +158,22 @@
     unsubscribes.push(
       websocketEvents.on('on_upload_success', (asset) => onAssetUpdate({ event: 'upload', asset })),
       websocketEvents.on('on_asset_update', (asset) => onAssetUpdate({ event: 'update', asset })),
+      slideshowState.subscribe((value) => {
+        if (value === SlideshowState.PlaySlideshow) {
+          slideshowHistory.reset();
+          slideshowHistory.queue(toTimelineAsset(asset));
+          handlePromiseError(handlePlaySlideshow());
+        } else if (value === SlideshowState.StopSlideshow) {
+          handlePromiseError(handleStopSlideshow());
+        }
+      }),
+      slideshowNavigation.subscribe((value) => {
+        if (value === SlideshowNavigation.Shuffle) {
+          slideshowHistory.reset();
+          slideshowHistory.queue(toTimelineAsset(asset));
+        }
+      }),
     );
-
-    slideshowStateUnsubscribe = slideshowState.subscribe((value) => {
-      if (value === SlideshowState.PlaySlideshow) {
-        slideshowHistory.reset();
-        slideshowHistory.queue(toTimelineAsset(asset));
-        handlePromiseError(handlePlaySlideshow());
-      } else if (value === SlideshowState.StopSlideshow) {
-        handlePromiseError(handleStopSlideshow());
-      }
-    });
-
-    shuffleSlideshowUnsubscribe = slideshowNavigation.subscribe((value) => {
-      if (value === SlideshowNavigation.Shuffle) {
-        slideshowHistory.reset();
-        slideshowHistory.queue(toTimelineAsset(asset));
-      }
-    });
 
     if (!sharedLink) {
       await handleGetAllAlbums();
@@ -185,14 +181,6 @@
   });
 
   onDestroy(() => {
-    if (slideshowStateUnsubscribe) {
-      slideshowStateUnsubscribe();
-    }
-
-    if (shuffleSlideshowUnsubscribe) {
-      shuffleSlideshowUnsubscribe();
-    }
-
     for (const unsubscribe of unsubscribes) {
       unsubscribe();
     }
@@ -212,20 +200,8 @@
     }
   };
 
-  const handleOpenActivity = () => {
-    if ($isShowDetail) {
-      $isShowDetail = false;
-    }
-    isShowActivity = !isShowActivity;
-  };
-
-  const toggleDetailPanel = () => {
-    isShowActivity = false;
-    $isShowDetail = !$isShowDetail;
-  };
-
   const closeViewer = () => {
-    onClose(asset);
+    onClose?.(asset);
   };
 
   const closeEditor = () => {
@@ -353,6 +329,16 @@
         asset = { ...asset, people: assetInfo.people };
         break;
       }
+      case AssetAction.RATING: {
+        asset = {
+          ...asset,
+          exifInfo: {
+            ...asset.exifInfo,
+            rating: action.rating,
+          },
+        };
+        break;
+      }
       case AssetAction.KEEP_THIS_DELETE_OTHERS:
       case AssetAction.UNSTACK: {
         closeViewer();
@@ -386,7 +372,7 @@
   });
   $effect(() => {
     if (album && !album.isActivityEnabled && activityManager.commentCount === 0) {
-      isShowActivity = false;
+      assetViewerManager.closeActivityPanel();
     }
   });
   $effect(() => {
@@ -423,17 +409,15 @@
         {album}
         {person}
         {stack}
-        {showCloseButton}
-        showDetailButton={enableDetailPanel}
         showSlideshow={true}
         onZoomImage={zoomToggle}
         onCopyImage={copyImage}
         preAction={handlePreAction}
         onAction={handleAction}
+        {onUndoDelete}
         onRunJob={handleRunJob}
         onPlaySlideshow={() => ($slideshowState = SlideshowState.PlaySlideshow)}
-        onShowDetail={toggleDetailPanel}
-        onClose={closeViewer}
+        onClose={onClose ? () => onClose(asset) : undefined}
         {playOriginalVideo}
         {setPlayOriginalVideo}
       >
@@ -551,7 +535,6 @@
               numberOfComments={activityManager.commentCount}
               numberOfLikes={activityManager.likeCount}
               onFavorite={handleFavorite}
-              onOpenActivityTab={handleOpenActivity}
             />
           </div>
         {/if}
@@ -571,14 +554,14 @@
     </div>
   {/if}
 
-  {#if enableDetailPanel && $slideshowState === SlideshowState.None && $isShowDetail && !isShowEditor}
+  {#if asset.hasMetadata && $slideshowState === SlideshowState.None && assetViewerManager.isShowDetailPanel && !isShowEditor}
     <div
       transition:fly={{ duration: 150 }}
       id="detail-panel"
       class="row-start-1 row-span-4 w-[360px] overflow-y-auto transition-all dark:border-l dark:border-s-immich-dark-gray bg-light"
       translate="yes"
     >
-      <DetailPanel {asset} currentAlbum={album} albums={appearsInAlbums} onClose={() => ($isShowDetail = false)} />
+      <DetailPanel {asset} currentAlbum={album} albums={appearsInAlbums} />
     </div>
   {/if}
 
@@ -629,7 +612,7 @@
     </div>
   {/if}
 
-  {#if isShared && album && isShowActivity && $user}
+  {#if isShared && album && assetViewerManager.isShowActivityPanel && $user}
     <div
       transition:fly={{ duration: 150 }}
       id="activity-panel"
@@ -643,7 +626,6 @@
         albumOwnerId={album.ownerId}
         albumId={album.id}
         assetId={asset.id}
-        onClose={() => (isShowActivity = false)}
       />
     </div>
   {/if}

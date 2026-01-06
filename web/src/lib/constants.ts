@@ -18,6 +18,7 @@ export enum AssetAction {
   SET_VISIBILITY_LOCKED = 'set-visibility-locked',
   SET_VISIBILITY_TIMELINE = 'set-visibility-timeline',
   SET_PERSON_FEATURED_PHOTO = 'set-person-featured-photo',
+  RATING = 'rating',
 }
 
 export enum AppRoute {

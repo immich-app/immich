@@ -2,6 +2,7 @@
   import { goto } from '$app/navigation';
   import { resolve } from '$app/paths';
   import CastButton from '$lib/cast/cast-button.svelte';
+  import ActionButton from '$lib/components/ActionButton.svelte';
   import type { OnAction, PreAction } from '$lib/components/asset-viewer/actions/action';
   import AddToAlbumAction from '$lib/components/asset-viewer/actions/add-to-album-action.svelte';
   import AddToStackAction from '$lib/components/asset-viewer/actions/add-to-stack-action.svelte';
@@ -11,6 +12,7 @@
   import DownloadAction from '$lib/components/asset-viewer/actions/download-action.svelte';
   import FavoriteAction from '$lib/components/asset-viewer/actions/favorite-action.svelte';
   import KeepThisDeleteOthersAction from '$lib/components/asset-viewer/actions/keep-this-delete-others.svelte';
+  import RatingAction from '$lib/components/asset-viewer/actions/rating-action.svelte';
   import RemoveAssetFromStack from '$lib/components/asset-viewer/actions/remove-asset-from-stack.svelte';
   import RestoreAction from '$lib/components/asset-viewer/actions/restore-action.svelte';
   import SetAlbumCoverAction from '$lib/components/asset-viewer/actions/set-album-cover-action.svelte';
@@ -18,18 +20,19 @@
   import SetProfilePictureAction from '$lib/components/asset-viewer/actions/set-profile-picture-action.svelte';
   import SetStackPrimaryAsset from '$lib/components/asset-viewer/actions/set-stack-primary-asset.svelte';
   import SetVisibilityAction from '$lib/components/asset-viewer/actions/set-visibility-action.svelte';
-  import ShareAction from '$lib/components/asset-viewer/actions/share-action.svelte';
   import ShowDetailAction from '$lib/components/asset-viewer/actions/show-detail-action.svelte';
   import UnstackAction from '$lib/components/asset-viewer/actions/unstack-action.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import { AppRoute } from '$lib/constants';
+  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
-  import { handleReplaceAsset } from '$lib/services/asset.service';
+  import { getAssetActions, handleReplaceAsset } from '$lib/services/asset.service';
   import { photoViewerImgElement } from '$lib/stores/assets-store.svelte';
   import { user } from '$lib/stores/user.store';
   import { photoZoomState } from '$lib/stores/zoom-image.store';
   import { getAssetJobName, getSharedLink } from '$lib/utils';
+  import type { OnUndoDelete } from '$lib/utils/actions';
   import { canCopyImageToClipboard } from '$lib/utils/asset-utils';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import {
@@ -66,18 +69,16 @@
     album?: AlbumResponseDto | null;
     person?: PersonResponseDto | null;
     stack?: StackResponseDto | null;
-    showCloseButton?: boolean;
-    showDetailButton: boolean;
     showSlideshow?: boolean;
     onZoomImage: () => void;
     onCopyImage?: () => Promise<void>;
     preAction: PreAction;
     onAction: OnAction;
+    onUndoDelete?: OnUndoDelete;
     onRunJob: (name: AssetJobName) => void;
     onPlaySlideshow: () => void;
-    onShowDetail: () => void;
     // export let showEditorHandler: () => void;
-    onClose: () => void;
+    onClose?: () => void;
     motionPhoto?: Snippet;
     playOriginalVideo: boolean;
     setPlayOriginalVideo: (value: boolean) => void;
@@ -88,16 +89,14 @@
     album = null,
     person = null,
     stack = null,
-    showCloseButton = true,
-    showDetailButton,
     showSlideshow = false,
     onZoomImage,
     onCopyImage,
     preAction,
     onAction,
+    onUndoDelete = undefined,
     onRunJob,
     onPlaySlideshow,
-    onShowDetail,
     onClose,
     motionPhoto,
     playOriginalVideo = false,
@@ -109,6 +108,8 @@
   let showDownloadButton = $derived(sharedLink ? sharedLink.allowDownload : !asset.isOffline);
   let isLocked = $derived(asset.visibility === AssetVisibility.Locked);
   let smartSearchEnabled = $derived(featureFlagsManager.value.smartSearch);
+
+  const { Share } = $derived(getAssetActions($t, asset));
 
   // $: showEditorButton =
   //   isOwner &&
@@ -125,22 +126,20 @@
   class="flex h-16 place-items-center justify-between bg-linear-to-b from-black/40 px-3 transition-transform duration-200"
 >
   <div class="dark">
-    {#if showCloseButton}
+    {#if onClose}
       <CloseAction {onClose} />
     {/if}
   </div>
   <div class="flex gap-2 overflow-x-auto dark" data-testid="asset-viewer-navbar-actions">
     <CastButton />
 
-    {#if !asset.isTrashed && $user && !isLocked}
-      <ShareAction {asset} />
-    {/if}
+    <ActionButton action={Share} />
     {#if asset.isOffline}
       <IconButton
         shape="round"
         color="danger"
         icon={mdiAlertOutline}
-        onclick={onShowDetail}
+        onclick={() => assetViewerManager.toggleDetailPanel()}
         aria-label={$t('asset_offline')}
       />
     {/if}
@@ -173,16 +172,17 @@
       <DownloadAction asset={toTimelineAsset(asset)} />
     {/if}
 
-    {#if showDetailButton}
-      <ShowDetailAction {onShowDetail} />
+    {#if asset.hasMetadata}
+      <ShowDetailAction />
     {/if}
 
     {#if isOwner}
       <FavoriteAction {asset} {onAction} />
+      <RatingAction {asset} {onAction} />
     {/if}
 
     {#if isOwner}
-      <DeleteAction {asset} {onAction} {preAction} />
+      <DeleteAction {asset} {onAction} {preAction} {onUndoDelete} />
 
       <ButtonContextMenu direction="left" align="top-right" color="secondary" title={$t('more')} icon={mdiDotsVertical}>
         {#if showSlideshow && !isLocked}
