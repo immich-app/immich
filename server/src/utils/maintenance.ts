@@ -85,21 +85,17 @@ export async function detectPriorInstall(
       Object.values(StorageFolder).map(async (folder) => {
         const path = StorageCore.getBaseFolder(folder);
         const files = await storageRepository.readdir(path);
-        const fn = join(StorageCore.getBaseFolder(folder), '.immich');
+        const filename = join(StorageCore.getBaseFolder(folder), '.immich');
 
         let readable = false,
           writable = false;
 
         try {
-          await storageRepository.readFile(fn);
+          await storageRepository.readFile(filename);
           readable = true;
 
-          try {
-            await storageRepository.overwriteFile(fn, Buffer.from(`${Date.now()}`));
-            writable = true;
-          } catch {
-            // no-op
-          }
+          await storageRepository.overwriteFile(filename, Buffer.from(`${Date.now()}`));
+          writable = true;
         } catch {
           // no-op
         }
