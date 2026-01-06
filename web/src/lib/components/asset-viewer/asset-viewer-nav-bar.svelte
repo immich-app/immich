@@ -1,7 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { resolve } from '$app/paths';
-  import CastButton from '$lib/cast/cast-button.svelte';
   import ActionButton from '$lib/components/ActionButton.svelte';
   import type { OnAction, PreAction } from '$lib/components/asset-viewer/actions/action';
   import AddToAlbumAction from '$lib/components/asset-viewer/actions/add-to-album-action.svelte';
@@ -24,6 +23,7 @@
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import { AppRoute } from '$lib/constants';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
+  import { getGlobalActions } from '$lib/services/app.service';
   import { getAssetActions, handleReplaceAsset } from '$lib/services/asset.service';
   import { photoViewerImgElement } from '$lib/stores/assets-store.svelte';
   import { user } from '$lib/stores/user.store';
@@ -111,6 +111,8 @@
     shortcuts: [{ key: 'Escape' }],
   };
 
+  const { Cast } = $derived(getGlobalActions($t));
+
   const { Share, Offline, PlayMotionPhoto, StopMotionPhoto, Info } = $derived(getAssetActions($t, asset));
 
   // $: showEditorButton =
@@ -137,8 +139,7 @@
   </div>
 
   <div class="flex gap-2 overflow-x-auto dark" data-testid="asset-viewer-navbar-actions">
-    <CastButton />
-
+    <ActionButton action={Cast} />
     <ActionButton action={Share} />
     <ActionButton action={Offline} />
     <ActionButton action={PlayMotionPhoto} />
