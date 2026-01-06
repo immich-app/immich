@@ -53,7 +53,7 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
     return _db.mergedAssetDrift
         .mergedAsset(userIds: userIds, limit: (_) => Limit(count, offset))
         .map(
-          (row) => row.remoteId != null && row.ownerId != null
+          (row) => row.remoteId != null && row.ownerId != null && row.deletedAt == null
               ? RemoteAsset(
                   id: row.remoteId!,
                   localId: row.localId,
@@ -73,7 +73,7 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
                 )
               : LocalAsset(
                   id: row.localId!,
-                  remoteId: row.remoteId,
+                  remoteId: row.deletedAt == null ? row.remoteId : null,
                   name: row.name,
                   checksum: row.checksum,
                   type: row.type,
