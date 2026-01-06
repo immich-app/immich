@@ -16,7 +16,16 @@
   import { suggestDuplicate } from '$lib/utils/duplicate-utils';
   import { handleError } from '$lib/utils/handle-error';
   import type { AssetBulkUpdateDto, AssetResponseDto } from '@immich/sdk';
-  import { AssetVisibility, copyAsset, deleteAssets, deleteDuplicates, getAssetInfo, updateAssets } from '@immich/sdk';
+  import {
+    addAssetsToAlbums,
+    AssetVisibility,
+    bulkTagAssets,
+    deleteAssets,
+    deleteDuplicates,
+    getAllAlbums,
+    getAssetInfo,
+    updateAssets,
+  } from '@immich/sdk';
   import { Button, HStack, IconButton, modalManager, Text, toastManager } from '@immich/ui';
   import {
     mdiCheckOutline,
@@ -30,6 +39,7 @@
     mdiTrashCanOutline,
   } from '@mdi/js';
   import { t } from 'svelte-i18n';
+  import { SvelteSet } from 'svelte/reactivity';
   import type { PageData } from './$types';
 
   interface Props {
@@ -109,75 +119,166 @@
   };
 
   const getSyncedInfo = async (assetIds: string[]) => {
+    if (assetIds.length === 0) {
+      return {
+        isFavorite: false,
+        visibility: undefined,
+        rating: 0,
+        description: null,
+        latitude: null,
+        longitude: null,
+        tagIds: [],
+      };
+    }
+
     const allAssetsInfo = await Promise.all(
       assetIds.map((assetId) => getAssetInfo({ ...authManager.params, id: assetId })),
     );
     // If any of the assets is favorite, we consider the synced info as favorite
     const isFavorite = allAssetsInfo.some((asset) => asset.isFavorite);
-    // Choose the most restrictive visibility level among the assets
-    const visibility = [
-      AssetVisibility.Locked,
-      AssetVisibility.Hidden,
-      AssetVisibility.Archive,
-      AssetVisibility.Timeline,
-    ].find((level) => allAssetsInfo.some((asset) => asset.visibility === level));
+    // Choose the most restrictive user-visible level (Hidden is internal-only)
+    const visibilityOrder = [AssetVisibility.Locked, AssetVisibility.Archive, AssetVisibility.Timeline];
+    let visibility = visibilityOrder.find((level) => allAssetsInfo.some((asset) => asset.visibility === level));
+    if (!visibility && allAssetsInfo.some((asset) => asset.visibility === AssetVisibility.Hidden)) {
+      visibility = AssetVisibility.Hidden;
+    }
     // Choose the highest rating from the exif data of the assets
-    const rating = Math.max(...allAssetsInfo.map((asset) => asset.exifInfo?.rating ?? 0));
-    // Concatenate the single descriptions of the assets
-    const description = allAssetsInfo.map((asset) => asset.exifInfo?.description).join('\n');
-    // Check that only one pair of latitude/longitude exists among the assets
-    const latitudes = new Set(allAssetsInfo.map((asset) => asset.exifInfo?.latitude).filter((lat) => lat !== null));
-    const longitudes = new Set(allAssetsInfo.map((asset) => asset.exifInfo?.longitude).filter((lon) => lon !== null));
-    const latitude = latitudes.size === 1 ? Array.from(latitudes)[0] : null;
-    const longitude = longitudes.size === 1 ? Array.from(longitudes)[0] : null;
+    let rating = 0;
+    for (const asset of allAssetsInfo) {
+      const assetRating = asset.exifInfo?.rating ?? 0;
+      if (assetRating > rating) {
+        rating = assetRating;
+      }
+    }
+    // Concatenate unique non-empty description lines to avoid duplicates across multi-line values
+    const uniqueNonEmptyLines = (values: Array<string | null | undefined>) => {
+      const unique = new SvelteSet<string>();
+      const lines: string[] = [];
+      for (const value of values) {
+        if (!value) {
+          continue;
+        }
+        for (const line of value.split(/\r?\n/)) {
+          const trimmed = line.trim();
+          if (!trimmed || unique.has(trimmed)) {
+            continue;
+          }
+          unique.add(trimmed);
+          lines.push(trimmed);
+        }
+      }
+      return lines;
+    };
+    const description =
+      uniqueNonEmptyLines(allAssetsInfo.map((asset) => asset.exifInfo?.description)).join('\n') || null;
 
-    return { isFavorite, visibility, rating, description, latitude, longitude };
+    // Helper: return unique numeric coordinate pair or null
+    const getUniqueCoordinate = (assets: AssetResponseDto[], key: 'latitude' | 'longitude'): number | null => {
+      const values = assets
+        .map((asset) => asset.exifInfo?.[key])
+        .filter((value): value is number => Number.isFinite(value));
+
+      if (values.length === 0) {
+        return null;
+      }
+
+      const unique = new SvelteSet(values);
+      return unique.size === 1 ? Array.from(unique)[0] : null;
+    };
+
+    const latitude: number | null = getUniqueCoordinate(allAssetsInfo, 'latitude');
+    const longitude: number | null = getUniqueCoordinate(allAssetsInfo, 'longitude');
+
+    // Collect all unique tag IDs from all assets: flatten tags, extract IDs, deduplicate
+    const tagIds = [
+      ...new SvelteSet(
+        allAssetsInfo
+          .flatMap((asset) => asset.tags ?? [])
+          .map((tag) => tag.id)
+          .filter((id): id is string => !!id),
+      ),
+    ];
+
+    return { isFavorite, visibility, rating, description, latitude, longitude, tagIds };
   };
 
   const handleResolve = async (duplicateId: string, duplicateAssetIds: string[], trashIds: string[]) => {
+    const forceDelete = !featureFlagsManager.value.trash;
+    const shouldConfirmDelete = trashIds.length > 0 && forceDelete;
+
     return withConfirmation(
       async () => {
-        const { isFavorite, visibility, rating, description, latitude, longitude } =
-          await getSyncedInfo(duplicateAssetIds);
+        const idsToKeep = duplicateAssetIds.filter((id) => !trashIds.includes(id));
+
+        const needsSyncedInfo =
+          $duplicateSettings.synchronizeFavorites ||
+          $duplicateSettings.synchronizeVisibility ||
+          $duplicateSettings.synchronizeRating ||
+          $duplicateSettings.synchronizeDescription ||
+          $duplicateSettings.synchronizeLocation ||
+          $duplicateSettings.synchronizeTags;
+        const syncedInfo = needsSyncedInfo ? await getSyncedInfo(duplicateAssetIds) : null;
+
         let assetBulkUpdate: AssetBulkUpdateDto = {
-          ids: duplicateAssetIds,
+          ids: idsToKeep,
           duplicateId: null,
         };
-        if ($duplicateSettings.synchronizeFavorites) {
-          assetBulkUpdate.isFavorite = isFavorite;
+        if ($duplicateSettings.synchronizeFavorites && syncedInfo) {
+          assetBulkUpdate.isFavorite = syncedInfo.isFavorite;
         }
-        if ($duplicateSettings.synchronizeVisibility) {
-          assetBulkUpdate.visibility = visibility;
+        if ($duplicateSettings.synchronizeVisibility && syncedInfo) {
+          assetBulkUpdate.visibility = syncedInfo.visibility;
         }
-        if ($duplicateSettings.synchronizeRating) {
-          assetBulkUpdate.rating = rating;
+        if ($duplicateSettings.synchronizeRating && syncedInfo) {
+          assetBulkUpdate.rating = syncedInfo.rating;
         }
-        if ($duplicateSettings.synchronizeDescpription) {
-          assetBulkUpdate.description = description;
+        if ($duplicateSettings.synchronizeDescription && syncedInfo && syncedInfo.description !== null) {
+          assetBulkUpdate.description = syncedInfo.description;
         }
-        if ($duplicateSettings.synchronizeLocation && latitude !== null && longitude !== null) {
-          assetBulkUpdate.latitude = latitude;
-          assetBulkUpdate.longitude = longitude;
+        // If all assets have the same location, use it; otherwise don't set it (leave as-is)
+        // Note: We cannot explicitly clear location via updateAssets API - it doesn't accept null
+        // The keeper asset will retain its original location if coordinates differ
+        if (
+          $duplicateSettings.synchronizeLocation &&
+          syncedInfo &&
+          syncedInfo.latitude !== null &&
+          syncedInfo.longitude !== null
+        ) {
+          assetBulkUpdate.latitude = syncedInfo.latitude;
+          assetBulkUpdate.longitude = syncedInfo.longitude;
         }
+
         if ($duplicateSettings.synchronizeAlbums) {
-          const idsToKeep = duplicateAssetIds.filter((id) => !trashIds.includes(id));
-          for (const sourceId of trashIds) {
-            for (const targetId of idsToKeep) {
-              await copyAsset({ assetCopyDto: { sourceId, targetId, albums: true } });
+          const mergedAlbumIds = new SvelteSet<string>();
+          for (const sourceId of duplicateAssetIds) {
+            const albums = await getAllAlbums({ assetId: sourceId });
+            for (const album of albums) {
+              mergedAlbumIds.add(album.id);
             }
+          }
+
+          const albumIds = [...mergedAlbumIds];
+          if (albumIds.length > 0 && idsToKeep.length > 0) {
+            await addAssetsToAlbums({ albumsAddAssetsDto: { albumIds, assetIds: idsToKeep } });
           }
         }
 
-        await deleteAssets({ assetBulkDeleteDto: { ids: trashIds, force: !featureFlagsManager.value.trash } });
-        await updateAssets({ assetBulkUpdateDto: assetBulkUpdate });
+        if ($duplicateSettings.synchronizeTags && idsToKeep.length > 0 && syncedInfo && syncedInfo.tagIds.length > 0) {
+          await bulkTagAssets({ tagBulkAssetsDto: { tagIds: syncedInfo.tagIds, assetIds: idsToKeep } });
+        }
 
+        await updateAssets({ assetBulkUpdateDto: assetBulkUpdate });
+        await deleteAssets({ assetBulkDeleteDto: { ids: trashIds, force: forceDelete } });
+
+        // This line ensures that once a duplicate group is resolved, it disappears from the
+        // duplicates list shown to the user, maintaining consistent UI state
         duplicates = duplicates.filter((duplicate) => duplicate.duplicateId !== duplicateId);
 
         deletedNotification(trashIds.length);
         await navigateToIndex(duplicatesIndex);
       },
-      trashIds.length > 0 && !featureFlagsManager.value.trash ? $t('delete_duplicates_confirmation') : undefined,
-      trashIds.length > 0 && !featureFlagsManager.value.trash ? $t('permanently_delete') : undefined,
+      shouldConfirmDelete ? $t('delete_duplicates_confirmation') : undefined,
+      shouldConfirmDelete ? $t('permanently_delete') : undefined,
     );
   };
 
