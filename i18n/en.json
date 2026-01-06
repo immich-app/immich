@@ -745,6 +745,7 @@
   "cleanup_found_assets": "Found {count} backed up assets",
   "cleanup_icloud_shared_albums_excluded": "iCloud Shared Albums are excluded from the scan",
   "cleanup_no_assets_found": "No backed up assets found matching your criteria",
+  "cleanup_preview_title": "Assets to remove ({count})",
   "cleanup_step3_description": "Scan for photos and videos that have been backed up to the server with the selected cutoff date and filter options",
   "cleanup_step4_summary": "{count} assets created before {date} are queued for removal from your device",
   "clear": "Clear",

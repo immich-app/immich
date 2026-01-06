@@ -1,16 +1,14 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/domain/models/timeline.model.dart';
-import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
-import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart';
 import 'package:immich_mobile/providers/cleanup.provider.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
+import 'package:immich_mobile/routing/router.dart';
 
 enum CleanupStep { selectDate, filterOptions, scan, delete }
 
@@ -136,18 +134,7 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
 
   void _showAssetsPreview(List<LocalAsset> assets) {
     ref.read(hapticFeedbackProvider.notifier).mediumImpact();
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.9,
-        minChildSize: 0.5,
-        maxChildSize: 0.95,
-        expand: false,
-        builder: (context, scrollController) => _CleanupAssetsPreview(assets: assets),
-      ),
-    );
+    context.pushRoute(CleanupPreviewRoute(assets: assets));
   }
 
   @override
@@ -644,64 +631,6 @@ class _DeleteConfirmationDialog extends StatelessWidget {
           child: Text('confirm'.t(context: context)),
         ),
       ],
-    );
-  }
-}
-
-class _CleanupAssetsPreview extends StatelessWidget {
-  final List<LocalAsset> assets;
-
-  const _CleanupAssetsPreview({required this.assets});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        const _DragHandle(),
-        Expanded(
-          child: ProviderScope(
-            overrides: [
-              timelineServiceProvider.overrideWith((ref) {
-                final timelineService = ref
-                    .watch(timelineFactoryProvider)
-                    .fromAssetsWithBuckets(assets.cast<BaseAsset>(), TimelineOrigin.search);
-                ref.onDispose(timelineService.dispose);
-                return timelineService;
-              }),
-            ],
-            child: const Timeline(
-              appBar: null,
-              bottomSheet: null,
-              withScrubber: false,
-              groupBy: GroupAssetsBy.day,
-              readOnly: true,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _DragHandle extends StatelessWidget {
-  const _DragHandle();
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 38,
-      child: Center(
-        child: SizedBox(
-          width: 32,
-          height: 6,
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              borderRadius: const BorderRadius.all(Radius.circular(20)),
-              color: context.colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
-            ),
-          ),
-        ),
-      ),
     );
   }
 }
