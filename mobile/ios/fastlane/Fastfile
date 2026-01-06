@@ -243,13 +243,13 @@ end
     # Use the same build process as production, just skip the upload
     # This ensures PR builds validate the same way as production builds
     
-    # Sync certificates and profiles using match
-    sync_code_signing(app_identifiers: DEV_APP_IDENTIFIERS)
+    # Sync certificates and profiles using match (use production profiles)
+    sync_code_signing(app_identifiers: PROD_APP_IDENTIFIERS)
     
-    # Configure code signing for dev bundle IDs
-    configure_code_signing(bundle_id_suffix: "development")
+    # Configure code signing for production bundle IDs
+    configure_code_signing
     
-    # Build the app (same as gha_testflight_dev but without upload)
+    # Build the app (same as production but without upload)
     build_app(
       scheme: "Runner",
       workspace: "Runner.xcworkspace",
@@ -259,9 +259,9 @@ end
       xcargs: "-skipMacroValidation CODE_SIGN_IDENTITY='#{CODE_SIGN_IDENTITY}' CODE_SIGN_STYLE=Manual",
       export_options: {
         provisioningProfiles: {
-          "#{BASE_BUNDLE_ID}.development" => "match AppStore #{BASE_BUNDLE_ID}.development",
-          "#{BASE_BUNDLE_ID}.development.ShareExtension" => "match AppStore #{BASE_BUNDLE_ID}.development.ShareExtension",
-          "#{BASE_BUNDLE_ID}.development.Widget" => "match AppStore #{BASE_BUNDLE_ID}.development.Widget"
+          "#{BASE_BUNDLE_ID}" => "match AppStore #{BASE_BUNDLE_ID}",
+          "#{BASE_BUNDLE_ID}.ShareExtension" => "match AppStore #{BASE_BUNDLE_ID}.ShareExtension",
+          "#{BASE_BUNDLE_ID}.Widget" => "match AppStore #{BASE_BUNDLE_ID}.Widget"
         },
         signingStyle: "manual",
         signingCertificate: CODE_SIGN_IDENTITY

@@ -252,10 +252,10 @@ jobs:
           security default-keychain -s build.keychain
           security unlock-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
           security set-keychain-settings -t 3600 -l -u build.keychain
-          
+
           # Add keychain to search list (required for codesign to find certificates)
           security list-keychains -d user -s build.keychain login.keychain
-          
+
           # Download and install Apple WWDR certificates (required for code signing)
           curl -sL https://developer.apple.com/certificationauthority/AppleWWDRCA.cer -o AppleWWDRCA.cer
           curl -sL https://www.apple.com/certificateauthority/AppleWWDRCAG3.cer -o AppleWWDRCAG3.cer
