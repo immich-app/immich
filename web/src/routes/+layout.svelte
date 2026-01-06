@@ -21,7 +21,14 @@
   import { copyToClipboard, getReleaseType, semverToName } from '$lib/utils';
   import { maintenanceShouldRedirect } from '$lib/utils/maintenance';
   import { isAssetViewerRoute } from '$lib/utils/navigation';
-  import { CommandPaletteContext, modalManager, setTranslations, toastManager, type ActionItem } from '@immich/ui';
+  import {
+    CommandPaletteDefaultProvider,
+    TooltipProvider,
+    modalManager,
+    setTranslations,
+    toastManager,
+    type ActionItem,
+  } from '@immich/ui';
   import { mdiAccountMultipleOutline, mdiBookshelf, mdiCog, mdiServer, mdiSync, mdiThemeLightDark } from '@mdi/js';
   import { onMount, type Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -166,7 +173,7 @@
       title: $t('external_libraries'),
       description: $t('admin.external_libraries_page_description'),
       icon: mdiBookshelf,
-      onAction: () => goto(AppRoute.ADMIN_LIBRARY_MANAGEMENT),
+      onAction: () => goto(AppRoute.ADMIN_LIBRARIES),
     },
     {
       title: $t('server_stats'),
@@ -180,7 +187,7 @@
 </script>
 
 <OnEvents {onReleaseEvent} />
-<CommandPaletteContext {commands} />
+<CommandPaletteDefaultProvider name="Global" actions={commands} />
 
 <svelte:head>
   <title>{page.data.meta?.title || 'Web'} - Immich</title>
@@ -228,15 +235,17 @@
   }}
 />
 
-{#if page.data.error}
-  <ErrorLayout error={page.data.error}></ErrorLayout>
-{:else}
-  {@render children?.()}
-{/if}
+<TooltipProvider>
+  {#if page.data.error}
+    <ErrorLayout error={page.data.error}></ErrorLayout>
+  {:else}
+    {@render children?.()}
+  {/if}
 
-{#if showNavigationLoadingBar}
-  <NavigationLoadingBar />
-{/if}
+  {#if showNavigationLoadingBar}
+    <NavigationLoadingBar />
+  {/if}
 
-<DownloadPanel />
-<UploadPanel />
+  <DownloadPanel />
+  <UploadPanel />
+</TooltipProvider>

@@ -53,7 +53,7 @@ class BaseActionButton extends ConsumerWidget {
         style: MenuItemButton.styleFrom(alignment: Alignment.centerLeft, padding: const EdgeInsets.all(16)),
         leadingIcon: Icon(iconData, color: effectiveIconColor),
         onPressed: onPressed,
-        child: Text(label, style: theme.textTheme.labelLarge?.copyWith(fontSize: 16)),
+        child: Text(label, style: theme.textTheme.labelLarge?.copyWith(fontSize: 16, color: iconColor)),
       );
     }
 
