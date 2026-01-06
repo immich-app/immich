@@ -2,6 +2,7 @@
   import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
   import ServerStatisticsPanel from '$lib/components/server-statistics/ServerStatisticsPanel.svelte';
   import { getServerStatistics } from '@immich/sdk';
+  import { Container } from '@immich/ui';
   import { onMount } from 'svelte';
   import type { PageData } from './$types';
 
@@ -24,10 +25,8 @@
   });
 </script>
 
-<AdminPageLayout title={data.meta.title}>
-  <section id="setting-content" class="flex place-content-center sm:mx-4">
-    <section class="w-full pb-28 sm:w-5/6 md:w-212.5">
-      <ServerStatisticsPanel {stats} />
-    </section>
-  </section>
+<AdminPageLayout breadcrumbs={[{ title: data.meta.title }]}>
+  <Container size="large" center>
+    <ServerStatisticsPanel {stats} />
+  </Container>
 </AdminPageLayout>

@@ -79,14 +79,15 @@ const undoDeleteAssets = async (onUndoDelete: OnUndoDelete, assets: TimelineAsse
  */
 export function updateStackedAssetInTimeline(timelineManager: TimelineManager, { stack, toDeleteIds }: StackResponse) {
   if (stack != undefined) {
-    timelineManager.updateAssetOperation([stack.primaryAssetId], (asset) => {
-      asset.stack = {
-        id: stack.id,
-        primaryAssetId: stack.primaryAssetId,
-        assetCount: stack.assets.length,
-      };
-      return { remove: false };
-    });
+    timelineManager.update(
+      [stack.primaryAssetId],
+      (asset) =>
+        (asset.stack = {
+          id: stack.id,
+          primaryAssetId: stack.primaryAssetId,
+          assetCount: stack.assets.length,
+        }),
+    );
 
     timelineManager.removeAssets(toDeleteIds);
   }
@@ -101,7 +102,7 @@ export function updateStackedAssetInTimeline(timelineManager: TimelineManager, {
  * @param assets - The array of asset response DTOs to update in the timeline manager.
  */
 export function updateUnstackedAssetInTimeline(timelineManager: TimelineManager, assets: TimelineAsset[]) {
-  timelineManager.updateAssetOperation(
+  timelineManager.update(
     assets.map((asset) => asset.id),
     (asset) => {
       asset.stack = null;

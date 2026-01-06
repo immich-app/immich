@@ -7,11 +7,12 @@
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
 
-  interface Props {
+  type Props = {
     asset: AssetResponseDto;
-  }
+    zoomToggle?: (() => void) | null;
+  };
 
-  const { asset }: Props = $props();
+  let { asset, zoomToggle = $bindable() }: Props = $props();
 
   const loadAssetData = async (id: string) => {
     const data = await viewAsset({ ...authManager.params, id, size: AssetMediaSize.Preview });
@@ -24,6 +25,7 @@
     <LoadingSpinner />
   {:then [data, { default: PhotoSphereViewer }]}
     <PhotoSphereViewer
+      bind:zoomToggle
       panorama={data}
       originalPanorama={isWebCompatibleImage(asset)
         ? getAssetOriginalUrl(asset.id)

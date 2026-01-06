@@ -9,7 +9,7 @@ export const load = (async ({ parent, url }) => {
 
   if (!serverConfigManager.value.isInitialized) {
     // Admin not registered
-    redirect(302, AppRoute.AUTH_REGISTER);
+    redirect(307, AppRoute.AUTH_REGISTER);
   }
 
   const $t = await getFormatter();

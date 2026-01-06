@@ -1,3 +1,4 @@
+import { CancellableTask } from '$lib/utils/cancellable-task';
 import { getAssetOcr } from '@immich/sdk';
 
 export type OcrBoundingBox = {
@@ -20,6 +21,8 @@ class OcrManager {
   #data = $state<OcrBoundingBox[]>([]);
   showOverlay = $state(false);
   #hasOcrData = $derived(this.#data.length > 0);
+  #ocrLoader = new CancellableTask();
+  #cleared = false;
 
   get data() {
     return this.#data;
@@ -30,10 +33,17 @@ class OcrManager {
   }
 
   async getAssetOcr(id: string) {
-    this.#data = await getAssetOcr({ id });
+    if (this.#cleared) {
+      await this.#ocrLoader.reset();
+      this.#cleared = false;
+    }
+    await this.#ocrLoader.execute(async () => {
+      this.#data = await getAssetOcr({ id });
+    }, false);
   }
 
   clear() {
+    this.#cleared = true;
     this.#data = [];
     this.showOverlay = false;
   }

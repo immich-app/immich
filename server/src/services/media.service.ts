@@ -178,7 +178,7 @@ export class MediaService extends BaseService {
   async handleGenerateThumbnails({ id }: JobOf<JobName.AssetGenerateThumbnails>): Promise<JobStatus> {
     const asset = await this.assetJobRepository.getForGenerateThumbnailJob(id);
     if (!asset) {
-      this.logger.warn(`Thumbnail generation failed for asset ${id}: not found`);
+      this.logger.warn(`Thumbnail generation failed for asset ${id}: not found in database or missing metadata`);
       return JobStatus.Failed;
     }
 
@@ -194,8 +194,10 @@ export class MediaService extends BaseService {
       thumbhash: Buffer;
     };
     if (asset.type === AssetType.Video || asset.originalFileName.toLowerCase().endsWith('.gif')) {
+      this.logger.verbose(`Thumbnail generation for video ${id} ${asset.originalPath}`);
       generated = await this.generateVideoThumbnails(asset);
     } else if (asset.type === AssetType.Image) {
+      this.logger.verbose(`Thumbnail generation for image ${id} ${asset.originalPath}`);
       generated = await this.generateImageThumbnails(asset);
     } else {
       this.logger.warn(`Skipping thumbnail generation for asset ${id}: ${asset.type} is not an image or video`);
@@ -624,7 +626,7 @@ export class MediaService extends BaseService {
   private getMainStream<T extends VideoStreamInfo | AudioStreamInfo>(streams: T[]): T {
     return streams
       .filter((stream) => stream.codecName !== 'unknown')
-      .sort((stream1, stream2) => stream2.bitrate - stream1.bitrate)[0];
+      .toSorted((stream1, stream2) => stream2.bitrate - stream1.bitrate)[0];
   }
 
   private getTranscodeTarget(

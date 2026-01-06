@@ -14,22 +14,22 @@ export const load = (async ({ fetch }) => {
     await init(fetch);
 
     if (serverConfigManager.value.maintenanceMode) {
-      redirect(302, AppRoute.MAINTENANCE);
+      redirect(307, AppRoute.MAINTENANCE);
     }
 
     const authenticated = await loadUser();
     if (authenticated) {
-      redirect(302, AppRoute.PHOTOS);
+      redirect(307, AppRoute.PHOTOS);
     }
 
     if (serverConfigManager.value.isInitialized) {
       // Redirect to login page if there exists an admin account (i.e. server is initialized)
-      redirect(302, AppRoute.AUTH_LOGIN);
+      redirect(307, AppRoute.AUTH_LOGIN);
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (redirectError: any) {
-    if (redirectError?.status === 302) {
+    if (redirectError?.status === 307) {
       throw redirectError;
     }
   }

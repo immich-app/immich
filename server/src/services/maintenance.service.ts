@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { OnEvent } from 'src/decorators';
 import { MaintenanceAuthDto } from 'src/dtos/maintenance.dto';
 import { SystemMetadataKey } from 'src/enum';
+import { ArgOf } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
 import { MaintenanceModeState } from 'src/types';
 import { createMaintenanceLoginUrl, generateMaintenanceSecret, signMaintenanceJwt } from 'src/utils/maintenance';
@@ -31,7 +32,10 @@ export class MaintenanceService extends BaseService {
   }
 
   @OnEvent({ name: 'AppRestart', server: true })
-  onRestart(): void {
+  onRestart(event: ArgOf<'AppRestart'>, ack?: (ok: 'ok') => void): void {
+    this.logger.log(`Restarting due to event... ${JSON.stringify(event)}`);
+
+    ack?.('ok');
     this.appRepository.exitApp();
   }
 

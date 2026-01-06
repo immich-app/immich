@@ -12,12 +12,22 @@ export class WorkflowRepository {
 
   @GenerateSql({ params: [DummyValue.UUID] })
   getWorkflow(id: string) {
-    return this.db.selectFrom('workflow').selectAll().where('id', '=', id).executeTakeFirst();
+    return this.db
+      .selectFrom('workflow')
+      .selectAll()
+      .where('id', '=', id)
+      .orderBy('createdAt', 'desc')
+      .executeTakeFirst();
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
   getWorkflowsByOwner(ownerId: string) {
-    return this.db.selectFrom('workflow').selectAll().where('ownerId', '=', ownerId).orderBy('name').execute();
+    return this.db
+      .selectFrom('workflow')
+      .selectAll()
+      .where('ownerId', '=', ownerId)
+      .orderBy('createdAt', 'desc')
+      .execute();
   }
 
   @GenerateSql({ params: [PluginTriggerType.AssetCreate] })

@@ -394,6 +394,20 @@ describe(schemaDiff.name, () => {
 
         expect(diff.items).toEqual([]);
       });
+
+      it('should support arrays, ignoring types', () => {
+        const diff = schemaDiff(
+          fromColumn({ name: 'column1', type: 'character varying', isArray: true, default: "'{}'" }),
+          fromColumn({
+            name: 'column1',
+            type: 'character varying',
+            isArray: true,
+            default: "'{}'::character varying[]",
+          }),
+        );
+
+        expect(diff.items).toEqual([]);
+      });
     });
   });
 

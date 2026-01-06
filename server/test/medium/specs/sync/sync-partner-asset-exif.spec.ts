@@ -176,7 +176,7 @@ describe(SyncRequestType.PartnerAssetExifsV1, () => {
     const newResponse = await ctx.syncStream(auth, [SyncRequestType.PartnerAssetExifsV1]);
     expect(newResponse).toEqual([
       {
-        ack: expect.stringMatching(new RegExp(`${SyncEntityType.PartnerAssetExifBackfillV1}\\|.+?\\|.+`)),
+        ack: expect.stringMatching(new RegExp(String.raw`${SyncEntityType.PartnerAssetExifBackfillV1}\|.+?\|.+`)),
         data: expect.objectContaining({
           assetId: assetUser3.id,
         }),
@@ -226,7 +226,7 @@ describe(SyncRequestType.PartnerAssetExifsV1, () => {
     const newResponse = await ctx.syncStream(auth, [SyncRequestType.PartnerAssetExifsV1]);
     expect(newResponse).toEqual([
       {
-        ack: expect.stringMatching(new RegExp(`${SyncEntityType.PartnerAssetExifBackfillV1}\\|.+?\\|.+`)),
+        ack: expect.stringMatching(new RegExp(String.raw`${SyncEntityType.PartnerAssetExifBackfillV1}\|.+?\|.+`)),
         data: expect.objectContaining({
           assetId: assetUser3.id,
         }),

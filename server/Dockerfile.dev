@@ -1,5 +1,5 @@
 # dev build
-FROM ghcr.io/immich-app/base-server-dev:202511181104@sha256:fd445b91d4db131aae71b143b647d2262818dac80946078ce231c79cb9acecba AS dev
+FROM ghcr.io/immich-app/base-server-dev:202511261514@sha256:cbcca5851fd11042463f09797e6d6068d94adbb108749e62aa69159df59c0591 AS dev
 
 ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0 \
   CI=1 \
@@ -44,18 +44,18 @@ FROM dev-container-server AS dev-container-mobile
 USER root
 # Enable multiarch for arm64 if necessary
 RUN if [ "$(dpkg --print-architecture)" = "arm64" ]; then \
-    dpkg --add-architecture amd64 && \
-    apt-get update && \
-    apt-get install -y --no-install-recommends \
-    gnupg \
-    qemu-user-static \
-    libc6:amd64 \
-    libstdc++6:amd64 \
-    libgcc1:amd64; \
+  dpkg --add-architecture amd64 && \
+  apt-get update && \
+  apt-get install -y --no-install-recommends \
+  gnupg \
+  qemu-user-static \
+  libc6:amd64 \
+  libstdc++6:amd64 \
+  libgcc1:amd64; \
   else \
-    apt-get update && \
-    apt-get install -y --no-install-recommends \
-    gnupg; \
+  apt-get update && \
+  apt-get install -y --no-install-recommends \
+  gnupg; \
   fi
 
 # Flutter SDK

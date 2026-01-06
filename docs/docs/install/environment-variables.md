@@ -34,6 +34,7 @@ These environment variables are used by the `docker-compose.yml` file and do **N
 | `TZ`                                | Timezone                                                                                  |        <sup>\*1</sup>        | server                   | microservices      |
 | `IMMICH_ENV`                        | Environment (production, development)                                                     |         `production`         | server, machine learning | api, microservices |
 | `IMMICH_LOG_LEVEL`                  | Log level (verbose, debug, log, warn, error)                                              |            `log`             | server, machine learning | api, microservices |
+| `IMMICH_LOG_FORMAT`                 | Log output format (`console`, `json`)                                                     |          `console`           | server                   | api, microservices |
 | `IMMICH_MEDIA_LOCATION`             | Media location inside the container ⚠️**You probably shouldn't set this**<sup>\*2</sup>⚠️ |           `/data`            | server                   | api, microservices |
 | `IMMICH_CONFIG_FILE`                | Path to config file                                                                       |                              | server                   | api, microservices |
 | `NO_COLOR`                          | Set to `true` to disable color-coded log output                                           |           `false`            | server, machine learning |                    |
@@ -43,6 +44,7 @@ These environment variables are used by the `docker-compose.yml` file and do **N
 | `IMMICH_PROCESS_INVALID_IMAGES`     | When `true`, generate thumbnails for invalid images                                       |                              | server                   | microservices      |
 | `IMMICH_TRUSTED_PROXIES`            | List of comma-separated IPs set as trusted proxies                                        |                              | server                   | api                |
 | `IMMICH_IGNORE_MOUNT_CHECK_ERRORS`  | See [System Integrity](/administration/system-integrity)                                  |                              | server                   | api, microservices |
+| `IMMICH_ALLOW_SETUP`                | When `false` disables the `/auth/admin-sign-up` endpoint                                  |            `true`            | server                   | api                |
 
 \*1: `TZ` should be set to a `TZ identifier` from [this list][tz-list]. For example, `TZ="Etc/UTC"`.
 `TZ` is used by `exiftool` as a fallback in case the timezone cannot be determined from the image metadata. It is also used for logfile timestamps and cron job execution.
@@ -62,10 +64,10 @@ Information on the current workers can be found [here](/administration/jobs-work
 
 ## Ports
 
-| Variable      | Description    |                  Default                   |
-| :------------ | :------------- | :----------------------------------------: |
-| `IMMICH_HOST` | Listening host |                 `0.0.0.0`                  |
-| `IMMICH_PORT` | Listening port | `2283` (server), `3003` (machine learning) |
+| Variable      | Description    |                  Default                   | Containers               |
+| :------------ | :------------- | :----------------------------------------: | :----------------------- |
+| `IMMICH_HOST` | Listening host |                 `0.0.0.0`                  | server, machine learning |
+| `IMMICH_PORT` | Listening port | `2283` (server), `3003` (machine learning) | server, machine learning |
 
 ## Database
 
@@ -80,7 +82,7 @@ Information on the current workers can be found [here](/administration/jobs-work
 | `DB_SSL_MODE`                       | Database SSL mode                                                                      |            | server                         |
 | `DB_VECTOR_EXTENSION`<sup>\*2</sup> | Database vector extension (one of [`vectorchord`, `pgvector`, `pgvecto.rs`])           |            | server                         |
 | `DB_SKIP_MIGRATIONS`                | Whether to skip running migrations on startup (one of [`true`, `false`])               |  `false`   | server                         |
-| `DB_STORAGE_TYPE`                   | Optimize concurrent IO on SSDs or sequential IO on HDDs ([`SSD`, `HDD`])<sup>\*3</sup> |   `SSD`    | server                         |
+| `DB_STORAGE_TYPE`                   | Optimize concurrent IO on SSDs or sequential IO on HDDs ([`SSD`, `HDD`])<sup>\*3</sup> |   `SSD`    | database                       |
 
 \*1: The values of `DB_USERNAME`, `DB_PASSWORD`, and `DB_DATABASE_NAME` are passed to the Postgres container as the variables `POSTGRES_USER`, `POSTGRES_PASSWORD`, and `POSTGRES_DB` in `docker-compose.yml`.
 

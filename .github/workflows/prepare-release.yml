@@ -45,11 +45,12 @@ jobs:
     needs: [merge_translations]
     outputs:
       ref: ${{ steps.push-tag.outputs.commit_long_sha }}
+      version: ${{ steps.output.outputs.version }}
     permissions: {} # No job-level permissions are needed because it uses the app-token
     steps:
       - name: Generate a token
         id: generate-token
-        uses: actions/create-github-app-token@67018539274d69449ef7c02e8e71183d1719ab42 # v2.1.4
+        uses: actions/create-github-app-token@29824e69f54612133e76f7eaac726eef6c875baf # v2.2.1
         with:
           app-id: ${{ secrets.PUSH_O_MATIC_APP_ID }}
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
@@ -62,13 +63,13 @@ jobs:
           ref: main
 
       - name: Install uv
-        uses: astral-sh/setup-uv@5a7eac68fb9809dea845d802897dc5c723910fa3 # v7.1.3
+        uses: astral-sh/setup-uv@681c641aba71e4a1c380be3ab5e12ad51f415867 # v7.1.6
 
       - name: Setup pnpm
         uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4.2.0
 
       - name: Setup Node
-        uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6.0.0
+        uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
         with:
           node-version-file: './server/.nvmrc'
           cache: 'pnpm'
@@ -80,13 +81,16 @@ jobs:
           MOBILE_BUMP: ${{ inputs.mobileBump }}
         run: misc/release/pump-version.sh -s "${SERVER_BUMP}" -m "${MOBILE_BUMP}"
 
+      - id: output
+        run: echo "version=$IMMICH_VERSION" >> $GITHUB_OUTPUT
+
       - name: Commit and tag
         id: push-tag
         uses: EndBug/add-and-commit@a94899bca583c204427a224a7af87c02f9b325d5 # v9.1.4
         with:
           default_author: github_actions
-          message: 'chore: version ${{ env.IMMICH_VERSION }}'
-          tag: ${{ env.IMMICH_VERSION }}
+          message: 'chore: version ${{ steps.output.outputs.version }}'
+          tag: ${{ steps.output.outputs.version }}
           push: true
 
   build_mobile:
@@ -119,14 +123,14 @@ jobs:
 
   prepare_release:
     runs-on: ubuntu-latest
-    needs: build_mobile
+    needs: [build_mobile, bump_version]
     permissions:
       actions: read # To download the app artifact
       # No content permissions are needed because it uses the app-token
     steps:
       - name: Generate a token
         id: generate-token
-        uses: actions/create-github-app-token@67018539274d69449ef7c02e8e71183d1719ab42 # v2.1.4
+        uses: actions/create-github-app-token@29824e69f54612133e76f7eaac726eef6c875baf # v2.2.1
         with:
           app-id: ${{ secrets.PUSH_O_MATIC_APP_ID }}
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
@@ -144,10 +148,10 @@ jobs:
           github-token: ${{ steps.generate-token.outputs.token }}
 
       - name: Create draft release
-        uses: softprops/action-gh-release@5be0e66d93ac7ed76da52eca8bb058f665c3a5fe # v2.4.2
+        uses: softprops/action-gh-release@a06a81a03ee405af7f2048a818ed3f03bbf83c7b # v2.5.0
         with:
           draft: true
-          tag_name: ${{ env.IMMICH_VERSION }}
+          tag_name: ${{ needs.bump_version.outputs.version }}
           token: ${{ steps.generate-token.outputs.token }}
           generate_release_notes: true
           body_path: misc/release/notes.tmpl

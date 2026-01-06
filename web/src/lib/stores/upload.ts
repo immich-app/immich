@@ -1,5 +1,5 @@
+import { UploadState, type UploadAsset } from '$lib/types';
 import { derived, writable } from 'svelte/store';
-import { UploadState, type UploadAsset } from '../models/upload-asset';
 
 function createUploadStore() {
   const uploadAssets = writable<Array<UploadAsset>>([]);

@@ -45,12 +45,12 @@ export class OcrRepository {
           textScore: DummyValue.NUMBER,
         },
       ],
+      DummyValue.STRING,
     ],
   })
-  upsert(assetId: string, ocrDataList: Insertable<AssetOcrTable>[]) {
+  upsert(assetId: string, ocrDataList: Insertable<AssetOcrTable>[], searchText: string) {
     let query = this.db.with('deleted_ocr', (db) => db.deleteFrom('asset_ocr').where('assetId', '=', assetId));
     if (ocrDataList.length > 0) {
-      const searchText = ocrDataList.map((item) => item.text.trim()).join(' ');
       (query as any) = query
         .with('inserted_ocr', (db) => db.insertInto('asset_ocr').values(ocrDataList))
         .with('inserted_search', (db) =>

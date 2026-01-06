@@ -30,6 +30,7 @@
   import Timeline from '$lib/components/timeline/Timeline.svelte';
   import { AlbumPageViewMode, AppRoute } from '$lib/constants';
   import { activityManager } from '$lib/managers/activity-manager.svelte';
+  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
@@ -66,6 +67,8 @@
   } from '@immich/sdk';
   import { Button, Icon, IconButton, modalManager, toastManager } from '@immich/ui';
   import {
+    mdiAccountEye,
+    mdiAccountEyeOutline,
     mdiArrowLeft,
     mdiCogOutline,
     mdiDeleteOutline,
@@ -98,8 +101,10 @@
   let backUrl: string = $state(AppRoute.ALBUMS);
   let viewMode: AlbumPageViewMode = $state(AlbumPageViewMode.VIEW);
   let isCreatingSharedAlbum = $state(false);
-  let isShowActivity = $state(false);
   let albumOrder: AssetOrder | undefined = $state(data.album.order);
+
+  let timelineManager = $state<TimelineManager>() as TimelineManager;
+  let showAlbumUsers = $derived(timelineManager?.showAssetOwners ?? false);
 
   const assetInteraction = new AssetInteraction();
   const timelineInteraction = new AssetInteraction();
@@ -131,10 +136,6 @@
     } catch (error) {
       handleError(error, $t('errors.cant_change_asset_favorite'));
     }
-  };
-
-  const handleOpenAndCloseActivityTab = () => {
-    isShowActivity = !isShowActivity;
   };
 
   const handleStartSlideshow = async () => {
@@ -290,13 +291,17 @@
   let album = $derived(data.album);
   let albumId = $derived(album.id);
 
+  const containsEditors = $derived(album?.shared && album.albumUsers.some(({ role }) => role === AlbumUserRole.Editor));
+  const albumUsers = $derived(
+    showAlbumUsers && containsEditors ? [album.owner, ...album.albumUsers.map(({ user }) => user)] : [],
+  );
+
   $effect(() => {
     if (!album.isActivityEnabled && activityManager.commentCount === 0) {
-      isShowActivity = false;
+      assetViewerManager.closeActivityPanel();
     }
   });
 
-  let timelineManager = $state<TimelineManager>() as TimelineManager;
   const options = $derived.by(() => {
     if (viewMode === AlbumPageViewMode.SELECT_ASSETS) {
       return {
@@ -418,6 +423,7 @@
       <Timeline
         enableRouting={viewMode === AlbumPageViewMode.SELECT_ASSETS ? false : true}
         {album}
+        {albumUsers}
         bind:timelineManager
         {options}
         assetInteraction={currentAssetIntersection}
@@ -527,7 +533,6 @@
             numberOfComments={activityManager.commentCount}
             numberOfLikes={undefined}
             onFavorite={handleFavorite}
-            onOpenActivityTab={handleOpenAndCloseActivityTab}
           />
         </div>
       {/if}
@@ -547,11 +552,7 @@
         {#if assetInteraction.isAllUserOwned}
           <FavoriteAction
             removeFavorite={assetInteraction.isAllFavorite}
-            onFavorite={(ids, isFavorite) =>
-              timelineManager.updateAssetOperation(ids, (asset) => {
-                asset.isFavorite = isFavorite;
-                return { remove: false };
-              })}
+            onFavorite={(ids, isFavorite) => timelineManager.update(ids, (asset) => (asset.isFavorite = isFavorite))}
           ></FavoriteAction>
         {/if}
         <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')} offset={{ x: 175, y: 25 }}>
@@ -567,7 +568,11 @@
                 onClick={() => updateThumbnailUsingCurrentSelection()}
               />
             {/if}
-            <ArchiveAction menuItem unarchive={assetInteraction.isAllArchived} />
+            <ArchiveAction
+              menuItem
+              unarchive={assetInteraction.isAllArchived}
+              onArchive={(ids, visibility) => timelineManager.update(ids, (asset) => (asset.visibility = visibility))}
+            />
             <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />
           {/if}
 
@@ -642,14 +647,21 @@
               />
             {/if}
 
-            {#if isOwned}
+            {#if isOwned || containsEditors}
               <ButtonContextMenu
                 icon={mdiDotsVertical}
                 title={$t('album_options')}
                 color="secondary"
                 offset={{ x: 175, y: 25 }}
               >
-                {#if album.assetCount > 0}
+                {#if containsEditors}
+                  <MenuOption
+                    icon={showAlbumUsers ? mdiAccountEye : mdiAccountEyeOutline}
+                    text={$t('view_asset_owners')}
+                    onClick={() => timelineManager.toggleShowAssetOwners()}
+                  />
+                {/if}
+                {#if isOwned && album.assetCount > 0}
                   <MenuOption
                     icon={mdiImageOutline}
                     text={$t('select_album_cover')}
@@ -658,11 +670,13 @@
                   <MenuOption icon={mdiCogOutline} text={$t('options')} onClick={handleOptions} />
                 {/if}
 
-                <MenuOption
-                  icon={mdiDeleteOutline}
-                  text={$t('delete_album')}
-                  onClick={() => handleDeleteAlbum(album)}
-                />
+                {#if isOwned}
+                  <MenuOption
+                    icon={mdiDeleteOutline}
+                    text={$t('delete_album')}
+                    onClick={() => handleDeleteAlbum(album)}
+                  />
+                {/if}
               </ButtonContextMenu>
             {/if}
 
@@ -705,7 +719,7 @@
       {/if}
     {/if}
   </div>
-  {#if album.albumUsers.length > 0 && album && isShowActivity && $user && !$showAssetViewer}
+  {#if album.albumUsers.length > 0 && album && assetViewerManager.isShowActivityPanel && $user && !$showAssetViewer}
     <div class="flex">
       <div
         transition:fly={{ duration: 150 }}
@@ -718,7 +732,6 @@
           disabled={!album.isActivityEnabled}
           albumOwnerId={album.ownerId}
           albumId={album.id}
-          onClose={handleOpenAndCloseActivityTab}
         />
       </div>
     </div>

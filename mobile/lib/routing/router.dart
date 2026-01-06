@@ -78,9 +78,9 @@ import 'package:immich_mobile/pages/search/recently_taken.page.dart';
 import 'package:immich_mobile/pages/search/search.page.dart';
 import 'package:immich_mobile/pages/settings/sync_status.page.dart';
 import 'package:immich_mobile/pages/share_intent/share_intent.page.dart';
-import 'package:immich_mobile/presentation/pages/dev/feat_in_development.page.dart';
 import 'package:immich_mobile/presentation/pages/dev/main_timeline.page.dart';
 import 'package:immich_mobile/presentation/pages/dev/media_stat.page.dart';
+import 'package:immich_mobile/presentation/pages/dev/ui_showcase.page.dart';
 import 'package:immich_mobile/presentation/pages/download_info.page.dart';
 import 'package:immich_mobile/presentation/pages/drift_activities.page.dart';
 import 'package:immich_mobile/presentation/pages/drift_album.page.dart';
@@ -167,7 +167,7 @@ class AppRouter extends RootStackRouter {
     AutoRoute(page: LoginRoute.page, guards: [_duplicateGuard]),
     AutoRoute(page: ChangePasswordRoute.page),
     AutoRoute(page: SearchRoute.page, guards: [_authGuard, _duplicateGuard], maintainState: false),
-    CustomRoute(
+    AutoRoute(
       page: TabControllerRoute.page,
       guards: [_authGuard, _duplicateGuard],
       children: [
@@ -176,9 +176,8 @@ class AppRouter extends RootStackRouter {
         AutoRoute(page: LibraryRoute.page, guards: [_authGuard, _duplicateGuard]),
         AutoRoute(page: AlbumsRoute.page, guards: [_authGuard, _duplicateGuard]),
       ],
-      transitionsBuilder: TransitionsBuilders.fadeIn,
     ),
-    CustomRoute(
+    AutoRoute(
       page: TabShellRoute.page,
       guards: [_authGuard, _duplicateGuard],
       children: [
@@ -187,7 +186,6 @@ class AppRouter extends RootStackRouter {
         AutoRoute(page: DriftLibraryRoute.page, guards: [_authGuard, _duplicateGuard]),
         AutoRoute(page: DriftAlbumsRoute.page, guards: [_authGuard, _duplicateGuard]),
       ],
-      transitionsBuilder: TransitionsBuilders.fadeIn,
     ),
     CustomRoute(
       page: GalleryViewerRoute.page,
@@ -245,23 +243,15 @@ class AppRouter extends RootStackRouter {
       guards: [_authGuard, _duplicateGuard],
       transitionsBuilder: TransitionsBuilders.slideLeft,
     ),
-    CustomRoute(page: FolderRoute.page, guards: [_authGuard], transitionsBuilder: TransitionsBuilders.fadeIn),
+    AutoRoute(page: FolderRoute.page, guards: [_authGuard]),
     AutoRoute(page: PartnerDetailRoute.page, guards: [_authGuard, _duplicateGuard]),
     AutoRoute(page: PersonResultRoute.page, guards: [_authGuard, _duplicateGuard]),
     AutoRoute(page: AllPeopleRoute.page, guards: [_authGuard, _duplicateGuard]),
     AutoRoute(page: MemoryRoute.page, guards: [_authGuard, _duplicateGuard]),
     AutoRoute(page: MapRoute.page, guards: [_authGuard, _duplicateGuard]),
     AutoRoute(page: AlbumOptionsRoute.page, guards: [_authGuard, _duplicateGuard]),
-    CustomRoute(
-      page: TrashRoute.page,
-      guards: [_authGuard, _duplicateGuard],
-      transitionsBuilder: TransitionsBuilders.slideLeft,
-    ),
-    CustomRoute(
-      page: SharedLinkRoute.page,
-      guards: [_authGuard, _duplicateGuard],
-      transitionsBuilder: TransitionsBuilders.slideLeft,
-    ),
+    AutoRoute(page: TrashRoute.page, guards: [_authGuard, _duplicateGuard]),
+    AutoRoute(page: SharedLinkRoute.page, guards: [_authGuard, _duplicateGuard]),
     AutoRoute(page: SharedLinkEditRoute.page, guards: [_authGuard, _duplicateGuard]),
     CustomRoute(
       page: ActivitiesRoute.page,
@@ -296,7 +286,6 @@ class AppRouter extends RootStackRouter {
     AutoRoute(page: ShareIntentRoute.page, guards: [_authGuard, _duplicateGuard]),
     AutoRoute(page: LockedRoute.page, guards: [_authGuard, _lockedGuard, _duplicateGuard]),
     AutoRoute(page: PinAuthRoute.page, guards: [_authGuard, _duplicateGuard]),
-    AutoRoute(page: FeatInDevRoute.page, guards: [_authGuard, _duplicateGuard]),
     AutoRoute(page: LocalMediaSummaryRoute.page, guards: [_authGuard, _duplicateGuard]),
     AutoRoute(page: RemoteMediaSummaryRoute.page, guards: [_authGuard, _duplicateGuard]),
     AutoRoute(page: DriftBackupRoute.page, guards: [_authGuard, _duplicateGuard]),
@@ -348,6 +337,7 @@ class AppRouter extends RootStackRouter {
     AutoRoute(page: DriftBackupAssetDetailRoute.page, guards: [_authGuard, _duplicateGuard]),
     AutoRoute(page: AssetTroubleshootRoute.page, guards: [_authGuard, _duplicateGuard]),
     AutoRoute(page: DownloadInfoRoute.page, guards: [_authGuard, _duplicateGuard]),
+    AutoRoute(page: ImmichUIShowcaseRoute.page, guards: [_authGuard, _duplicateGuard]),
     // required to handle all deeplinks in deep_link.service.dart
     // auto_route_library#1722
     RedirectRoute(path: '*', redirectTo: '/'),

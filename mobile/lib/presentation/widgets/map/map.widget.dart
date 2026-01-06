@@ -12,6 +12,8 @@ import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/map_bottom_sheet.widget.dart';
 import 'package:immich_mobile/presentation/widgets/map/map.state.dart';
 import 'package:immich_mobile/presentation/widgets/map/map_utils.dart';
+import 'package:immich_mobile/providers/routes.provider.dart';
+import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/async_mutex.dart';
 import 'package:immich_mobile/utils/debounce.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
@@ -111,6 +113,14 @@ class _DriftMapState extends ConsumerState<DriftMap> {
   Future<void> setBounds() async {
     final controller = mapController;
     if (controller == null || !mounted) {
+      return;
+    }
+
+    // When the AssetViewer is open, the DriftMap route stays alive in the background.
+    // If we continue to update bounds, the map-scoped timeline service gets recreated and the previous one disposed,
+    // which can invalidate the TimelineService instance that was passed into AssetViewerRoute (causing "loading forever").
+    final currentRoute = ref.read(currentRouteNameProvider);
+    if (currentRoute == AssetViewerRoute.name || currentRoute == GalleryViewerRoute.name) {
       return;
     }
 

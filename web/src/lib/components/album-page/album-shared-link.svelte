@@ -32,7 +32,7 @@
       .filter(Boolean)
       .join(' • ');
 
-  const SharedLinkActions = $derived(getSharedLinkActions($t, sharedLink));
+  const { ViewQrCode, Copy } = $derived(getSharedLinkActions($t, sharedLink));
 </script>
 
 <div class="flex justify-between items-center">
@@ -41,7 +41,7 @@
     <Text size="tiny" color="muted">{getShareProperties()}</Text>
   </div>
   <div class="flex">
-    <ActionButton action={SharedLinkActions.ViewQrCode} />
-    <ActionButton action={SharedLinkActions.Copy} />
+    <ActionButton action={ViewQrCode} />
+    <ActionButton action={Copy} />
   </div>
 </div>

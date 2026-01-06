@@ -13,8 +13,8 @@
   import { AppRoute, QueryParameter } from '$lib/constants';
   import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
   import { systemConfigManager } from '$lib/managers/system-config-manager.svelte';
-  import { OnboardingRole } from '$lib/models/onboarding-role';
   import { user } from '$lib/stores/user.store';
+  import { OnboardingRole } from '$lib/types';
   import { setUserOnboarding, updateAdminOnboarding } from '@immich/sdk';
   import {
     mdiCellphoneArrowDownVariant,

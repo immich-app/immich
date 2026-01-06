@@ -36,7 +36,7 @@ from .schemas import (
     T,
 )
 
-MultiPartParser.max_file_size = 2**26  # spools to disk if payload is 64 MiB or larger
+MultiPartParser.spool_max_size = 2**26  # spools to disk if payload is 64 MiB or larger
 
 model_cache = ModelCache(revalidate=settings.model_ttl > 0)
 thread_pool: ThreadPoolExecutor | None = None

@@ -14,17 +14,17 @@ export const load = (({ url }) => {
   const target = queryParams.get('target') as LinkTarget;
   switch (target) {
     case LinkTarget.HOME: {
-      return redirect(302, AppRoute.PHOTOS);
+      return redirect(307, AppRoute.PHOTOS);
     }
 
     case LinkTarget.UNSUBSCRIBE: {
-      return redirect(302, `${AppRoute.USER_SETTINGS}?isOpen=notifications`);
+      return redirect(307, `${AppRoute.USER_SETTINGS}?isOpen=notifications`);
     }
 
     case LinkTarget.VIEW_ASSET: {
       const id = queryParams.get('id');
       if (id) {
-        return redirect(302, `${AppRoute.PHOTOS}/${id}`);
+        return redirect(307, `${AppRoute.PHOTOS}/${id}`);
       }
       break;
     }
@@ -42,12 +42,12 @@ export const load = (({ url }) => {
           redirectUrl.searchParams.append('activationKey', activationKey);
         }
 
-        return redirect(302, redirectUrl);
+        return redirect(307, redirectUrl);
       }
 
       break;
     }
   }
 
-  return redirect(302, AppRoute.PHOTOS);
+  return redirect(307, AppRoute.PHOTOS);
 }) satisfies PageLoad;

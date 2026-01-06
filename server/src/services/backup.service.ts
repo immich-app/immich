@@ -61,7 +61,7 @@ export class BackupService extends BaseService {
         const newBackupStyle = file.match(/immich-db-backup-\d{8}T\d{6}-v.*-pg.*\.sql\.gz$/);
         return oldBackupStyle || newBackupStyle;
       })
-      .sort()
+      .toSorted()
       .toReversed();
 
     const toDelete = backups.slice(config.keepLastAmount);

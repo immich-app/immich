@@ -53,16 +53,18 @@ class ServerUpdateNotification extends HookConsumerWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
-              serverInfoState.versionStatus.message,
-              textAlign: TextAlign.start,
-              maxLines: 3,
-              overflow: TextOverflow.ellipsis,
-              style: context.textTheme.labelLarge,
+            Expanded(
+              child: Text(
+                serverInfoState.versionStatus.message,
+                textAlign: TextAlign.start,
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+                style: context.textTheme.labelLarge,
+              ),
             ),
             if (serverInfoState.versionStatus == VersionStatus.serverOutOfDate ||
                 serverInfoState.versionStatus == VersionStatus.clientOutOfDate) ...[
-              const Spacer(),
+              const SizedBox(width: 8),
               TextButton(
                 onPressed: openUpdateLink,
                 style: TextButton.styleFrom(

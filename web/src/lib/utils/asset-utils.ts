@@ -353,7 +353,7 @@ const supportedImageMimeTypes = new Set([
 
 const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent); // https://stackoverflow.com/a/23522755
 if (isSafari) {
-  supportedImageMimeTypes.add('image/heic').add('image/heif');
+  supportedImageMimeTypes.add('image/heic').add('image/heif').add('image/jxl');
 }
 
 /**

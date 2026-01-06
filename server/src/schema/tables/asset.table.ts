@@ -105,9 +105,6 @@ export class AssetTable {
   @Column({ index: true })
   originalFileName!: string;
 
-  @Column({ nullable: true })
-  sidecarPath!: string | null;
-
   @Column({ type: 'bytea', nullable: true })
   thumbhash!: Buffer | null;
 

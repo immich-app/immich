@@ -44,6 +44,7 @@ export enum AssetFileType {
   FullSize = 'fullsize',
   Preview = 'preview',
   Thumbnail = 'thumbnail',
+  Sidecar = 'sidecar',
 }
 
 export enum AlbumUserRole {
@@ -451,6 +452,11 @@ export enum LogLevel {
   Warn = 'warn',
   Error = 'error',
   Fatal = 'fatal',
+}
+
+export enum LogFormat {
+  Console = 'console',
+  Json = 'json',
 }
 
 export enum ApiCustomExtension {

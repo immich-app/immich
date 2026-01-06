@@ -78,7 +78,7 @@
       </Button>
       {#if $user.isAdmin}
         <Button
-          href={AppRoute.ADMIN_USERS}
+          href={AppRoute.ADMIN_SETTINGS}
           onclick={onClose}
           shape="round"
           variant="ghost"
