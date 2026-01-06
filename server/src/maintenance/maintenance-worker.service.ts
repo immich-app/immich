@@ -303,12 +303,8 @@ export class MaintenanceWorkerService {
       case MaintenanceAction.End: {
         return this.endMaintenance();
       }
-      case MaintenanceAction.RestoreDatabase: {
-        if (!action.restoreBackupFilename) {
-          return;
-        }
-
-        break;
+      case MaintenanceAction.SelectDatabaseRestore: {
+        return;
       }
     }
 
@@ -330,6 +326,10 @@ export class MaintenanceWorkerService {
     try {
       switch (action.action) {
         case MaintenanceAction.RestoreDatabase: {
+          if (!action.restoreBackupFilename) {
+            throw new Error("Expected restoreBackupFilename but it's missing!");
+          }
+
           await this.restoreBackup(action.restoreBackupFilename);
           break;
         }

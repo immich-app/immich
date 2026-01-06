@@ -5264,6 +5264,7 @@ export enum UserAvatarColor {
 export enum MaintenanceAction {
     Start = "start",
     End = "end",
+    SelectDatabaseRestore = "select_database_restore",
     RestoreDatabase = "restore_database"
 }
 export enum StorageFolder {

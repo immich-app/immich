@@ -31,11 +31,11 @@
 </script>
 
 <AuthPageLayout
-  withHeader={$status?.action !== MaintenanceAction.RestoreDatabase}
+  withHeader={$status?.action === MaintenanceAction.Start || $status?.action === MaintenanceAction.End}
   withBackdrop={$status?.action === MaintenanceAction.Start}
 >
   <div class="flex flex-col place-items-center text-center gap-4">
-    {#if $status?.action === MaintenanceAction.RestoreDatabase && $status.task}
+    {#if $status?.action === MaintenanceAction.RestoreDatabase}
       <Heading size="large" color="primary" tag="h1">{$t('maintenance_action_restore')}</Heading>
       {#if $status.error}
         <Scrollable class="max-h-80">
@@ -51,7 +51,7 @@
           <Text>{$t('maintenance_task_restore')}</Text>
         {/if}
       {/if}
-    {:else if $status?.action === MaintenanceAction.RestoreDatabase && $auth}
+    {:else if $status?.action === MaintenanceAction.SelectDatabaseRestore && $auth}
       <MaintenanceRestoreFlow {end} />
     {:else}
       <Heading size="large" color="primary" tag="h1">{$t('maintenance_title')}</Heading>

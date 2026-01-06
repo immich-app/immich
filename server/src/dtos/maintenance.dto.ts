@@ -1,3 +1,4 @@
+import { ValidateIf } from 'class-validator';
 import { MaintenanceAction, StorageFolder } from 'src/enum';
 import { ValidateEnum, ValidateString } from 'src/validation';
 
@@ -5,7 +6,8 @@ export class SetMaintenanceModeDto {
   @ValidateEnum({ enum: MaintenanceAction, name: 'MaintenanceAction' })
   action!: MaintenanceAction;
 
-  @ValidateString({ optional: true })
+  @ValidateIf((o) => o.action === MaintenanceAction.RestoreDatabase)
+  @ValidateString()
   restoreBackupFilename?: string;
 }
 

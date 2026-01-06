@@ -65,7 +65,7 @@ export class MaintenanceService extends BaseService {
 
     return this.startMaintenance(
       {
-        action: MaintenanceAction.RestoreDatabase,
+        action: MaintenanceAction.SelectDatabaseRestore,
       },
       'admin',
     );

@@ -17317,6 +17317,7 @@
         "enum": [
           "start",
           "end",
+          "select_database_restore",
           "restore_database"
         ],
         "type": "string"
