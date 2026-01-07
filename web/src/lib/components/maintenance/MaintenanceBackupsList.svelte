@@ -67,7 +67,7 @@
   }
 
   const handleOpen = async (event: Event, props: Partial<ContextMenuBaseProps>, filename: string) => {
-    const { Download, Delete } = getDatabaseBackupActions($t, filename, () => remove(filename));
+    const { Download, Delete } = getDatabaseBackupActions($t, filename, () => void remove(filename));
 
     await menuManager.show({
       ...props,
