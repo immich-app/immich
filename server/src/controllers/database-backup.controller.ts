@@ -31,7 +31,7 @@ export class DatabaseBackupController {
   @Endpoint({
     summary: 'List database backups',
     description: 'Get the list of the successful and failed backups',
-    history: new HistoryBuilder().added('v2.4.0').alpha('v2.4.0'),
+    history: new HistoryBuilder().added('v2.5.0').alpha('v2.5.0'),
   })
   @Authenticated({ permission: Permission.Maintenance, admin: true })
   listDatabaseBackups(): Promise<DatabaseBackupListResponseDto> {
@@ -43,7 +43,7 @@ export class DatabaseBackupController {
   @Endpoint({
     summary: 'Download database backup',
     description: 'Downloads the database backup file',
-    history: new HistoryBuilder().added('v2.4.0').alpha('v2.4.0'),
+    history: new HistoryBuilder().added('v2.5.0').alpha('v2.5.0'),
   })
   @Authenticated({ permission: Permission.BackupDownload, admin: true })
   async downloadDatabaseBackup(
@@ -58,7 +58,7 @@ export class DatabaseBackupController {
   @Endpoint({
     summary: 'Delete database backup',
     description: 'Delete a backup by its filename',
-    history: new HistoryBuilder().added('v2.4.0').alpha('v2.4.0'),
+    history: new HistoryBuilder().added('v2.5.0').alpha('v2.5.0'),
   })
   @Authenticated({ permission: Permission.BackupDelete, admin: true })
   async deleteDatabaseBackup(@Body() dto: DatabaseBackupDeleteDto): Promise<void> {
@@ -69,7 +69,7 @@ export class DatabaseBackupController {
   @Endpoint({
     summary: 'Start database backup restore flow',
     description: 'Put Immich into maintenance mode to restore a backup (Immich must not be configured)',
-    history: new HistoryBuilder().added('v2.4.0').alpha('v2.4.0'),
+    history: new HistoryBuilder().added('v2.5.0').alpha('v2.5.0'),
   })
   async startDatabaseRestoreFlow(
     @GetLoginDetails() loginDetails: LoginDetails,
@@ -89,7 +89,7 @@ export class DatabaseBackupController {
   @Endpoint({
     summary: 'Upload database backup',
     description: 'Uploads .sql/.sql.gz file to restore backup from',
-    history: new HistoryBuilder().added('v2.4.0').alpha('v2.4.0'),
+    history: new HistoryBuilder().added('v2.5.0').alpha('v2.5.0'),
   })
   @UseInterceptors(FileInterceptor('file'))
   uploadDatabaseBackup(
