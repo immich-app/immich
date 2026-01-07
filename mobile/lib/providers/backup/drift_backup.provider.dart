@@ -12,6 +12,7 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/network_capability_extensions.dart';
 import 'package:immich_mobile/extensions/string_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/backup.repository.dart';
+import 'package:immich_mobile/utils/upload_speed_calculator.dart';
 import 'package:immich_mobile/platform/connectivity_api.g.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
@@ -238,6 +239,7 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
   StreamSubscription<TaskStatusUpdate>? _statusSubscription;
   StreamSubscription<TaskProgressUpdate>? _progressSubscription;
   final _logger = Logger("DriftBackupNotifier");
+  final _uploadSpeedManager = UploadSpeedManager();
 
   /// Remove upload item from state
   void _removeUploadItem(String taskId) {
@@ -414,6 +416,7 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
 
   Future<void> stopBackup() async {
     state.cancelToken?.cancel();
+    _uploadSpeedManager.clear();
     state = state.copyWith(cancelToken: null, uploadItems: {}, iCloudDownloadProgress: {});
   }
 
@@ -435,12 +438,18 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
     }
 
     final progress = totalBytes > 0 ? bytes / totalBytes : 0.0;
+    final networkSpeedAsString = _uploadSpeedManager.updateProgress(localAssetId, bytes, totalBytes);
     final currentItem = state.uploadItems[localAssetId];
     if (currentItem != null) {
       state = state.copyWith(
         uploadItems: {
           ...state.uploadItems,
-          localAssetId: currentItem.copyWith(filename: filename, progress: progress, fileSize: totalBytes),
+          localAssetId: currentItem.copyWith(
+            filename: filename,
+            progress: progress,
+            fileSize: totalBytes,
+            networkSpeedAsString: networkSpeedAsString,
+          ),
         },
       );
     } else {
@@ -452,7 +461,7 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
             filename: filename,
             progress: progress,
             fileSize: totalBytes,
-            networkSpeedAsString: '',
+            networkSpeedAsString: networkSpeedAsString,
           ),
         },
       );
@@ -461,6 +470,7 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
 
   void _handleForegroundBackupSuccess(String localAssetId, String remoteAssetId) {
     state = state.copyWith(backupCount: state.backupCount + 1, remainderCount: state.remainderCount - 1);
+    _uploadSpeedManager.removeTask(localAssetId);
 
     Future.delayed(const Duration(milliseconds: 1000), () {
       _removeUploadItem(localAssetId);
