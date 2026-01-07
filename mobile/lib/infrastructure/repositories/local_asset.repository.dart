@@ -147,15 +147,13 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
       ..where(_db.localAlbumEntity.isIosSharedAlbum.equals(true));
 
     final query = _db.localAssetEntity.select().join([
-      innerJoin(
-        _db.remoteAssetEntity,
-        _db.localAssetEntity.checksum.equalsExp(_db.remoteAssetEntity.checksum) &
-            _db.remoteAssetEntity.ownerId.equals(userId) &
-            _db.remoteAssetEntity.deletedAt.isNull(),
-      ),
+      innerJoin(_db.remoteAssetEntity, _db.localAssetEntity.checksum.equalsExp(_db.remoteAssetEntity.checksum)),
     ]);
 
-    Expression<bool> whereClause = _db.localAssetEntity.createdAt.isSmallerOrEqualValue(cutoffDate);
+    Expression<bool> whereClause =
+        _db.localAssetEntity.createdAt.isSmallerOrEqualValue(cutoffDate) &
+        _db.remoteAssetEntity.ownerId.equals(userId) &
+        _db.remoteAssetEntity.deletedAt.isNull();
 
     // Exclude assets that are in iOS shared albums
     whereClause = whereClause & _db.localAssetEntity.id.isNotInQuery(iosSharedAlbumAssets);
