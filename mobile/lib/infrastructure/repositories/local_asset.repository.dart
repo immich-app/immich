@@ -8,7 +8,6 @@ import 'package:immich_mobile/infrastructure/entities/local_album.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
-import 'package:immich_mobile/providers/cleanup.provider.dart';
 
 class DriftLocalAssetRepository extends DriftDatabaseRepository {
   final Drift _db;
