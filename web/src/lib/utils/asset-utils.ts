@@ -9,7 +9,7 @@ import { assetsSnapshot } from '$lib/managers/timeline-manager/utils.svelte';
 import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
 import { isSelectingAllAssets } from '$lib/stores/assets-store.svelte';
 import { preferences } from '$lib/stores/user.store';
-import { downloadRequest, sleep, withError } from '$lib/utils';
+import { downloadRequest, withError } from '$lib/utils';
 import { getByteUnitString } from '$lib/utils/byte-units';
 import { getFormatter } from '$lib/utils/i18n';
 import { navigate } from '$lib/utils/navigation';
@@ -23,7 +23,6 @@ import {
   createStack,
   deleteAssets,
   deleteStacks,
-  getAssetInfo,
   getBaseUrl,
   getDownloadInfo,
   getStack,
@@ -228,48 +227,6 @@ export const downloadArchive = async (fileName: string, options: Omit<DownloadIn
       return;
     } finally {
       setTimeout(() => downloadManager.clear(downloadKey), 5000);
-    }
-  }
-};
-
-export const downloadFile = async (asset: AssetResponseDto) => {
-  const $t = get(t);
-  const assets = [
-    {
-      filename: asset.originalFileName,
-      id: asset.id,
-      size: asset.exifInfo?.fileSizeInByte || 0,
-    },
-  ];
-
-  const isAndroidMotionVideo = (asset: AssetResponseDto) => {
-    return asset.originalPath.includes('encoded-video');
-  };
-
-  if (asset.livePhotoVideoId) {
-    const motionAsset = await getAssetInfo({ ...authManager.params, id: asset.livePhotoVideoId });
-    if (!isAndroidMotionVideo(motionAsset) || get(preferences)?.download.includeEmbeddedVideos) {
-      assets.push({
-        filename: motionAsset.originalFileName,
-        id: asset.livePhotoVideoId,
-        size: motionAsset.exifInfo?.fileSizeInByte || 0,
-      });
-    }
-  }
-
-  const queryParams = asQueryString(authManager.params);
-
-  for (const [i, { filename, id }] of assets.entries()) {
-    if (i !== 0) {
-      // play nice with Safari
-      await sleep(500);
-    }
-
-    try {
-      toastManager.success($t('downloading_asset_filename', { values: { filename: asset.originalFileName } }));
-      downloadUrl(getBaseUrl() + `/assets/${id}/original` + (queryParams ? `?${queryParams}` : ''), filename);
-    } catch (error) {
-      handleError(error, $t('errors.error_downloading', { values: { filename } }));
     }
   }
 };

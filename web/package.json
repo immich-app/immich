@@ -27,7 +27,7 @@
     "@formatjs/icu-messageformat-parser": "^3.0.0",
     "@immich/justified-layout-wasm": "^0.4.3",
     "@immich/sdk": "file:../open-api/typescript-sdk",
-    "@immich/ui": "^0.52.0",
+    "@immich/ui": "^0.53.3",
     "@mapbox/mapbox-gl-rtl-text": "0.2.3",
     "@mdi/js": "^7.4.47",
     "@photo-sphere-viewer/core": "^5.14.0",

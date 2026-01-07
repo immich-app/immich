@@ -354,15 +354,6 @@
     selectedEditType = type;
   };
 
-  const handleAssetReplace = async ({ oldAssetId, newAssetId }: { oldAssetId: string; newAssetId: string }) => {
-    if (oldAssetId !== asset.id) {
-      return;
-    }
-
-    await new Promise((promise) => setTimeout(promise, 500));
-    await goto(`${AppRoute.PHOTOS}/${newAssetId}`);
-  };
-
   let isFullScreen = $derived(fullscreenElement !== null);
 
   $effect(() => {
@@ -395,6 +386,15 @@
     preloadManager.preload(cursor.previousAsset);
   });
 
+  const onAssetReplace = async ({ oldAssetId, newAssetId }: { oldAssetId: string; newAssetId: string }) => {
+    if (oldAssetId !== asset.id) {
+      return;
+    }
+
+    await new Promise((promise) => setTimeout(promise, 500));
+    await goto(`${AppRoute.PHOTOS}/${newAssetId}`);
+  };
+
   $effect(() => {
     // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     asset.id;
@@ -424,7 +424,7 @@
   });
 </script>
 
-<OnEvents onAssetReplace={handleAssetReplace} />
+<OnEvents {onAssetReplace} />
 
 <svelte:document bind:fullscreenElement />
 

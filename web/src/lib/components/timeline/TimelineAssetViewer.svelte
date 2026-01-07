@@ -4,7 +4,6 @@
   import { AssetAction } from '$lib/constants';
   import { assetCacheManager } from '$lib/managers/AssetCacheManager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { eventManager } from '$lib/managers/event-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
@@ -13,7 +12,7 @@
   import { updateStackedAssetInTimeline, updateUnstackedAssetInTimeline } from '$lib/utils/actions';
   import { navigate } from '$lib/utils/navigation';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
-  import { getAssetInfo, type AlbumResponseDto, type AssetResponseDto, type PersonResponseDto } from '@immich/sdk';
+  import { type AlbumResponseDto, type AssetResponseDto, type PersonResponseDto, getAssetInfo } from '@immich/sdk';
   import { onDestroy, onMount, untrack } from 'svelte';
 
   let { asset: viewingAsset, gridScrollTarget } = assetViewingStore;
@@ -25,14 +24,7 @@
     isShared?: boolean;
     album?: AlbumResponseDto;
     person?: PersonResponseDto;
-
-    removeAction?:
-      | AssetAction.UNARCHIVE
-      | AssetAction.ARCHIVE
-      | AssetAction.FAVORITE
-      | AssetAction.UNFAVORITE
-      | AssetAction.SET_VISIBILITY_TIMELINE
-      | null;
+    removeAction?: AssetAction.UNARCHIVE | AssetAction.ARCHIVE | AssetAction.SET_VISIBILITY_TIMELINE | null;
   }
 
   let {
@@ -59,7 +51,6 @@
 
   const getPreviousAsset = async (currentAsset: AssetResponseDto, preload: boolean = true) => {
     const laterTimelineAsset = await timelineManager.getLaterAsset(currentAsset);
-
     if (laterTimelineAsset) {
       const asset = await assetCacheManager.getAsset({ ...authManager.params, id: laterTimelineAsset.id });
       if (preload) {
@@ -97,11 +88,8 @@
     if (!targetAsset) {
       return false;
     }
-    let waitForAssetViewerFree = new Promise<void>((resolve) => {
-      eventManager.once('AssetViewerFree', () => resolve());
-    });
+
     await navigate({ targetRoute: 'current', assetId: targetAsset.id });
-    await waitForAssetViewerFree;
     return true;
   };
 
@@ -145,8 +133,6 @@
     switch (action.type) {
       case AssetAction.ARCHIVE:
       case AssetAction.UNARCHIVE:
-      case AssetAction.FAVORITE:
-      case AssetAction.UNFAVORITE:
       case AssetAction.ADD: {
         timelineManager.upsertAssets([action.asset]);
         break;
@@ -199,9 +185,6 @@
       }
     }
   };
-  onDestroy(() => {
-    assetCacheManager.invalidate();
-  });
   const handleUndoDelete = async (assets: TimelineAsset[]) => {
     timelineManager.upsertAssets(assets);
     if (assets.length > 0) {
@@ -211,21 +194,27 @@
       await navigate({ targetRoute: 'current', assetId: restoredAsset.id });
     }
   };
-  const onAssetUpdate = ({ asset }: { event: 'upload' | 'update'; asset: AssetResponseDto }) => {
+
+  const handleUpdateOrUpload = (asset: AssetResponseDto) => {
     if (asset.id === assetCursor.current.id) {
       void loadCloseAssets(asset);
     }
   };
+
   onMount(() => {
     const unsubscribes = [
-      websocketEvents.on('on_upload_success', (asset: AssetResponseDto) => onAssetUpdate({ event: 'upload', asset })),
-      websocketEvents.on('on_asset_update', (asset: AssetResponseDto) => onAssetUpdate({ event: 'update', asset })),
+      websocketEvents.on('on_upload_success', (asset: AssetResponseDto) => handleUpdateOrUpload(asset)),
+      websocketEvents.on('on_asset_update', (asset: AssetResponseDto) => handleUpdateOrUpload(asset)),
     ];
     return () => {
       for (const unsubscribe of unsubscribes) {
         unsubscribe();
       }
     };
+  });
+
+  onDestroy(() => {
+    assetCacheManager.invalidate();
   });
 </script>
 
