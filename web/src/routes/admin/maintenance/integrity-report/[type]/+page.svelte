@@ -57,8 +57,8 @@
     if (confirm) {
       let name: ManualJobName;
       switch (data.type) {
-        case IntegrityReportType.OrphanFile: {
-          name = ManualJobName.IntegrityOrphanFilesDeleteAll;
+        case IntegrityReportType.UntrackedFile: {
+          name = ManualJobName.IntegrityUntrackedFilesDeleteAll;
           break;
         }
         case IntegrityReportType.MissingFile: {
@@ -108,7 +108,7 @@
   const handleOpen = async (event: Event, props: Partial<ContextMenuBaseProps>, reportId: string) => {
     const items: MenuItems = [];
 
-    if (data.type === IntegrityReportType.OrphanFile || data.type === IntegrityReportType.ChecksumMismatch) {
+    if (data.type === IntegrityReportType.UntrackedFile || data.type === IntegrityReportType.ChecksumMismatch) {
       items.push({
         title: $t('download'),
         icon: mdiDownload,

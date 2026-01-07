@@ -180,7 +180,7 @@ class MaintenanceAdminApi {
 
   /// Download flagged file
   ///
-  /// Download the orphan/broken file if one exists
+  /// Download the untracked/broken file if one exists
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -215,7 +215,7 @@ class MaintenanceAdminApi {
 
   /// Download flagged file
   ///
-  /// Download the orphan/broken file if one exists
+  /// Download the untracked/broken file if one exists
   ///
   /// Parameters:
   ///

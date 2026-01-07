@@ -294,7 +294,7 @@ export interface IIntegrityDeleteReportsJob {
   }[];
 }
 
-export interface IIntegrityOrphanedFilesJob {
+export interface IIntegrityUntrackedFilesJob {
   type: 'asset' | 'asset_file';
   paths: string[];
 }
@@ -428,9 +428,9 @@ export type JobItem =
   | { name: JobName.WorkflowRun; data: IWorkflowJob }
 
   // Integrity
-  | { name: JobName.IntegrityOrphanedFilesQueueAll; data?: IIntegrityJob }
-  | { name: JobName.IntegrityOrphanedFiles; data: IIntegrityOrphanedFilesJob }
-  | { name: JobName.IntegrityOrphanedFilesRefresh; data: IIntegrityPathWithReportJob }
+  | { name: JobName.IntegrityUntrackedFilesQueueAll; data?: IIntegrityJob }
+  | { name: JobName.IntegrityUntrackedFiles; data: IIntegrityUntrackedFilesJob }
+  | { name: JobName.IntegrityUntrackedFilesRefresh; data: IIntegrityPathWithReportJob }
   | { name: JobName.IntegrityMissingFilesQueueAll; data?: IIntegrityJob }
   | { name: JobName.IntegrityMissingFiles; data: IIntegrityPathWithReportJob }
   | { name: JobName.IntegrityMissingFilesRefresh; data: IIntegrityPathWithReportJob }

@@ -31,15 +31,15 @@ import {
   IIntegrityDeleteReportTypeJob,
   IIntegrityJob,
   IIntegrityMissingFilesJob,
-  IIntegrityOrphanedFilesJob,
   IIntegrityPathWithChecksumJob,
   IIntegrityPathWithReportJob,
+  IIntegrityUntrackedFilesJob,
 } from 'src/types';
 import { ImmichFileResponse } from 'src/utils/file';
 import { handlePromiseError } from 'src/utils/misc';
 
 /**
- * Orphan Files:
+ * Untracked Files:
  *   Files are detected in /data/encoded-video, /data/library, /data/upload
  *     Checked against the asset table
  *   Files are detected in /data/thumbs
@@ -69,20 +69,20 @@ export class IntegrityService extends BaseService {
   @OnEvent({ name: 'ConfigInit', workers: [ImmichWorker.Microservices] })
   async onConfigInit({
     newConfig: {
-      integrityChecks: { orphanedFiles, missingFiles, checksumFiles },
+      integrityChecks: { untrackedFiles, missingFiles, checksumFiles },
     },
   }: ArgOf<'ConfigInit'>) {
     this.integrityLock = await this.databaseRepository.tryLock(DatabaseLock.IntegrityCheck);
     if (this.integrityLock) {
       this.cronRepository.create({
-        name: 'integrityOrphanedFiles',
-        expression: orphanedFiles.cronExpression,
+        name: 'integrityUntrackedFiles',
+        expression: untrackedFiles.cronExpression,
         onTick: () =>
           handlePromiseError(
-            this.jobRepository.queue({ name: JobName.IntegrityOrphanedFilesQueueAll, data: {} }),
+            this.jobRepository.queue({ name: JobName.IntegrityUntrackedFilesQueueAll, data: {} }),
             this.logger,
           ),
-        start: orphanedFiles.enabled,
+        start: untrackedFiles.enabled,
       });
 
       this.cronRepository.create({
@@ -109,7 +109,7 @@ export class IntegrityService extends BaseService {
   @OnEvent({ name: 'ConfigUpdate', server: true })
   onConfigUpdate({
     newConfig: {
-      integrityChecks: { orphanedFiles, missingFiles, checksumFiles },
+      integrityChecks: { untrackedFiles, missingFiles, checksumFiles },
     },
   }: ArgOf<'ConfigUpdate'>) {
     if (!this.integrityLock) {
@@ -117,9 +117,9 @@ export class IntegrityService extends BaseService {
     }
 
     this.cronRepository.update({
-      name: 'integrityOrphanedFiles',
-      expression: orphanedFiles.cronExpression,
-      start: orphanedFiles.enabled,
+      name: 'integrityUntrackedFiles',
+      expression: untrackedFiles.cronExpression,
+      start: untrackedFiles.enabled,
     });
 
     this.cronRepository.update({
@@ -194,16 +194,16 @@ export class IntegrityService extends BaseService {
     }
   }
 
-  @OnJob({ name: JobName.IntegrityOrphanedFilesQueueAll, queue: QueueName.IntegrityCheck })
-  async handleOrphanedFilesQueueAll({ refreshOnly }: IIntegrityJob = {}): Promise<JobStatus> {
-    this.logger.log(`Checking for out of date orphaned file reports...`);
+  @OnJob({ name: JobName.IntegrityUntrackedFilesQueueAll, queue: QueueName.IntegrityCheck })
+  async handleUntrackedFilesQueueAll({ refreshOnly }: IIntegrityJob = {}): Promise<JobStatus> {
+    this.logger.log(`Checking for out of date untracked file reports...`);
 
-    const reports = this.integrityRepository.streamIntegrityReportsWithAssetChecksum(IntegrityReportType.OrphanFile);
+    const reports = this.integrityRepository.streamIntegrityReportsWithAssetChecksum(IntegrityReportType.UntrackedFile);
 
     let total = 0;
     for await (const batchReports of chunk(reports, JOBS_LIBRARY_PAGINATION_SIZE)) {
       await this.jobRepository.queue({
-        name: JobName.IntegrityOrphanedFilesRefresh,
+        name: JobName.IntegrityUntrackedFilesRefresh,
         data: {
           items: batchReports,
         },
@@ -218,7 +218,7 @@ export class IntegrityService extends BaseService {
       return JobStatus.Success;
     }
 
-    this.logger.log(`Scanning for orphaned files...`);
+    this.logger.log(`Scanning for untracked files...`);
 
     const assetPaths = this.storageRepository.walk({
       pathsToCrawl: [StorageFolder.EncodedVideo, StorageFolder.Library, StorageFolder.Upload].map((folder) =>
@@ -247,7 +247,7 @@ export class IntegrityService extends BaseService {
     total = 0;
     for await (const [batchType, batchPaths] of paths()) {
       await this.jobRepository.queue({
-        name: JobName.IntegrityOrphanedFiles,
+        name: JobName.IntegrityUntrackedFiles,
         data: {
           type: batchType,
           paths: batchPaths,
@@ -257,48 +257,48 @@ export class IntegrityService extends BaseService {
       const count = batchPaths.length;
       total += count;
 
-      this.logger.log(`Queued orphan check of ${count} file(s) (${total} so far)`);
+      this.logger.log(`Queued untracked check of ${count} file(s) (${total} so far)`);
     }
 
     return JobStatus.Success;
   }
 
-  @OnJob({ name: JobName.IntegrityOrphanedFiles, queue: QueueName.IntegrityCheck })
-  async handleOrphanedFiles({ type, paths }: IIntegrityOrphanedFilesJob): Promise<JobStatus> {
-    this.logger.log(`Processing batch of ${paths.length} files to check if they are orphaned.`);
+  @OnJob({ name: JobName.IntegrityUntrackedFiles, queue: QueueName.IntegrityCheck })
+  async handleUntrackedFiles({ type, paths }: IIntegrityUntrackedFilesJob): Promise<JobStatus> {
+    this.logger.log(`Processing batch of ${paths.length} files to check if they are untracked.`);
 
-    const orphanedFiles = new Set<string>(paths);
+    const untrackedFiles = new Set<string>(paths);
     if (type === 'asset') {
       const assets = await this.integrityRepository.getAssetPathsByPaths(paths);
       for (const { originalPath, encodedVideoPath } of assets) {
-        orphanedFiles.delete(originalPath);
+        untrackedFiles.delete(originalPath);
 
         if (encodedVideoPath) {
-          orphanedFiles.delete(encodedVideoPath);
+          untrackedFiles.delete(encodedVideoPath);
         }
       }
     } else {
       const assets = await this.integrityRepository.getAssetFilePathsByPaths(paths);
       for (const { path } of assets) {
-        orphanedFiles.delete(path);
+        untrackedFiles.delete(path);
       }
     }
 
-    if (orphanedFiles.size > 0) {
+    if (untrackedFiles.size > 0) {
       await this.integrityRepository.create(
-        [...orphanedFiles].map((path) => ({
-          type: IntegrityReportType.OrphanFile,
+        [...untrackedFiles].map((path) => ({
+          type: IntegrityReportType.UntrackedFile,
           path,
         })),
       );
     }
 
-    this.logger.log(`Processed ${paths.length} and found ${orphanedFiles.size} orphaned file(s).`);
+    this.logger.log(`Processed ${paths.length} and found ${untrackedFiles.size} untracked file(s).`);
     return JobStatus.Success;
   }
 
-  @OnJob({ name: JobName.IntegrityOrphanedFilesRefresh, queue: QueueName.IntegrityCheck })
-  async handleOrphanedRefresh({ items }: IIntegrityPathWithReportJob): Promise<JobStatus> {
+  @OnJob({ name: JobName.IntegrityUntrackedFilesRefresh, queue: QueueName.IntegrityCheck })
+  async handleUntrackedRefresh({ items }: IIntegrityPathWithReportJob): Promise<JobStatus> {
     this.logger.log(`Processing batch of ${items.length} reports to check if they are out of date.`);
 
     const results = await Promise.all(
@@ -619,7 +619,7 @@ export class IntegrityService extends BaseService {
         properties = ['assetId', 'fileAssetId'] as const;
         break;
       }
-      case IntegrityReportType.OrphanFile: {
+      case IntegrityReportType.UntrackedFile: {
         properties = [void 0] as const;
         break;
       }

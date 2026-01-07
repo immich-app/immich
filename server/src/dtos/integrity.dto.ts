@@ -10,7 +10,7 @@ export class IntegrityReportSummaryResponseDto {
   @ApiProperty({ type: 'integer' })
   [IntegrityReportType.MissingFile]!: number;
   @ApiProperty({ type: 'integer' })
-  [IntegrityReportType.OrphanFile]!: number;
+  [IntegrityReportType.UntrackedFile]!: number;
 }
 
 export class IntegrityGetReportDto {

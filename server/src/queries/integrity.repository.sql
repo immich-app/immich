@@ -21,7 +21,7 @@ select
   count(*) filter (
     where
       "type" = $3
-  ) as "orphan_file"
+  ) as "untracked_file"
 from
   "integrity_report"
 

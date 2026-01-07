@@ -30,7 +30,7 @@
   let integrityReport: IntegrityReportSummaryResponseDto = $state(data.integrityReport);
 
   const TYPES: IntegrityReportType[] = [
-    IntegrityReportType.OrphanFile,
+    IntegrityReportType.UntrackedFile,
     IntegrityReportType.MissingFile,
     IntegrityReportType.ChecksumMismatch,
   ];
@@ -53,8 +53,8 @@
   async function runJob(reportType: IntegrityReportType, refreshOnly?: boolean) {
     let name: ManualJobName;
     switch (reportType) {
-      case IntegrityReportType.OrphanFile: {
-        name = refreshOnly ? ManualJobName.IntegrityOrphanFilesRefresh : ManualJobName.IntegrityOrphanFiles;
+      case IntegrityReportType.UntrackedFile: {
+        name = refreshOnly ? ManualJobName.IntegrityUntrackedFilesRefresh : ManualJobName.IntegrityUntrackedFiles;
         break;
       }
       case IntegrityReportType.MissingFile: {

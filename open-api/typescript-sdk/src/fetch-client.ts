@@ -8,7 +8,7 @@ import * as Oazapfts from "@oazapfts/runtime";
 import * as QS from "@oazapfts/runtime/query";
 export const defaults: Oazapfts.Defaults<Oazapfts.CustomHeaders> = {
     headers: {},
-    baseUrl: "/api",
+    baseUrl: "/api"
 };
 const oazapfts = Oazapfts.runtime(defaults);
 export const servers = {
@@ -57,7 +57,7 @@ export type IntegrityReportResponseDto = {
 export type IntegrityReportSummaryResponseDto = {
     checksum_mismatch: number;
     missing_file: number;
-    orphan_file: number;
+    untracked_file: number;
 };
 export type SetMaintenanceModeDto = {
     action: MaintenanceAction;
@@ -1491,7 +1491,7 @@ export type SystemConfigIntegrityJob = {
 export type SystemConfigIntegrityChecks = {
     checksumFiles: SystemConfigIntegrityChecksumJob;
     missingFiles: SystemConfigIntegrityJob;
-    orphanedFiles: SystemConfigIntegrityJob;
+    untrackedFiles: SystemConfigIntegrityJob;
 };
 export type JobSettingsDto = {
     concurrency: number;
@@ -5257,7 +5257,7 @@ export enum UserAvatarColor {
     Amber = "amber"
 }
 export enum IntegrityReportType {
-    OrphanFile = "orphan_file",
+    UntrackedFile = "untracked_file",
     MissingFile = "missing_file",
     ChecksumMismatch = "checksum_mismatch"
 }
@@ -5503,13 +5503,13 @@ export enum ManualJobName {
     MemoryCreate = "memory-create",
     BackupDatabase = "backup-database",
     IntegrityMissingFiles = "integrity-missing-files",
-    IntegrityOrphanFiles = "integrity-orphan-files",
+    IntegrityUntrackedFiles = "integrity-untracked-files",
     IntegrityChecksumMismatch = "integrity-checksum-mismatch",
     IntegrityMissingFilesRefresh = "integrity-missing-files-refresh",
-    IntegrityOrphanFilesRefresh = "integrity-orphan-files-refresh",
+    IntegrityUntrackedFilesRefresh = "integrity-untracked-files-refresh",
     IntegrityChecksumMismatchRefresh = "integrity-checksum-mismatch-refresh",
     IntegrityMissingFilesDeleteAll = "integrity-missing-files-delete-all",
-    IntegrityOrphanFilesDeleteAll = "integrity-orphan-files-delete-all",
+    IntegrityUntrackedFilesDeleteAll = "integrity-untracked-files-delete-all",
     IntegrityChecksumMismatchDeleteAll = "integrity-checksum-mismatch-delete-all"
 }
 export enum QueueName {
@@ -5624,9 +5624,9 @@ export enum JobName {
     OcrQueueAll = "OcrQueueAll",
     Ocr = "Ocr",
     WorkflowRun = "WorkflowRun",
-    IntegrityOrphanedFilesQueueAll = "IntegrityOrphanedFilesQueueAll",
-    IntegrityOrphanedFiles = "IntegrityOrphanedFiles",
-    IntegrityOrphanedRefresh = "IntegrityOrphanedRefresh",
+    IntegrityUntrackedFilesQueueAll = "IntegrityUntrackedFilesQueueAll",
+    IntegrityUntrackedFiles = "IntegrityUntrackedFiles",
+    IntegrityUntrackedRefresh = "IntegrityUntrackedRefresh",
     IntegrityMissingFilesQueueAll = "IntegrityMissingFilesQueueAll",
     IntegrityMissingFiles = "IntegrityMissingFiles",
     IntegrityMissingFilesRefresh = "IntegrityMissingFilesRefresh",

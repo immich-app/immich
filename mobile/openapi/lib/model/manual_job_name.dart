@@ -30,13 +30,13 @@ class ManualJobName {
   static const memoryCreate = ManualJobName._(r'memory-create');
   static const backupDatabase = ManualJobName._(r'backup-database');
   static const integrityMissingFiles = ManualJobName._(r'integrity-missing-files');
-  static const integrityOrphanFiles = ManualJobName._(r'integrity-orphan-files');
+  static const integrityUntrackedFiles = ManualJobName._(r'integrity-untracked-files');
   static const integrityChecksumMismatch = ManualJobName._(r'integrity-checksum-mismatch');
   static const integrityMissingFilesRefresh = ManualJobName._(r'integrity-missing-files-refresh');
-  static const integrityOrphanFilesRefresh = ManualJobName._(r'integrity-orphan-files-refresh');
+  static const integrityUntrackedFilesRefresh = ManualJobName._(r'integrity-untracked-files-refresh');
   static const integrityChecksumMismatchRefresh = ManualJobName._(r'integrity-checksum-mismatch-refresh');
   static const integrityMissingFilesDeleteAll = ManualJobName._(r'integrity-missing-files-delete-all');
-  static const integrityOrphanFilesDeleteAll = ManualJobName._(r'integrity-orphan-files-delete-all');
+  static const integrityUntrackedFilesDeleteAll = ManualJobName._(r'integrity-untracked-files-delete-all');
   static const integrityChecksumMismatchDeleteAll = ManualJobName._(r'integrity-checksum-mismatch-delete-all');
 
   /// List of all possible values in this [enum][ManualJobName].
@@ -48,13 +48,13 @@ class ManualJobName {
     memoryCreate,
     backupDatabase,
     integrityMissingFiles,
-    integrityOrphanFiles,
+    integrityUntrackedFiles,
     integrityChecksumMismatch,
     integrityMissingFilesRefresh,
-    integrityOrphanFilesRefresh,
+    integrityUntrackedFilesRefresh,
     integrityChecksumMismatchRefresh,
     integrityMissingFilesDeleteAll,
-    integrityOrphanFilesDeleteAll,
+    integrityUntrackedFilesDeleteAll,
     integrityChecksumMismatchDeleteAll,
   ];
 
@@ -101,13 +101,13 @@ class ManualJobNameTypeTransformer {
         case r'memory-create': return ManualJobName.memoryCreate;
         case r'backup-database': return ManualJobName.backupDatabase;
         case r'integrity-missing-files': return ManualJobName.integrityMissingFiles;
-        case r'integrity-orphan-files': return ManualJobName.integrityOrphanFiles;
+        case r'integrity-untracked-files': return ManualJobName.integrityUntrackedFiles;
         case r'integrity-checksum-mismatch': return ManualJobName.integrityChecksumMismatch;
         case r'integrity-missing-files-refresh': return ManualJobName.integrityMissingFilesRefresh;
-        case r'integrity-orphan-files-refresh': return ManualJobName.integrityOrphanFilesRefresh;
+        case r'integrity-untracked-files-refresh': return ManualJobName.integrityUntrackedFilesRefresh;
         case r'integrity-checksum-mismatch-refresh': return ManualJobName.integrityChecksumMismatchRefresh;
         case r'integrity-missing-files-delete-all': return ManualJobName.integrityMissingFilesDeleteAll;
-        case r'integrity-orphan-files-delete-all': return ManualJobName.integrityOrphanFilesDeleteAll;
+        case r'integrity-untracked-files-delete-all': return ManualJobName.integrityUntrackedFilesDeleteAll;
         case r'integrity-checksum-mismatch-delete-all': return ManualJobName.integrityChecksumMismatchDeleteAll;
         default:
           if (!allowNull) {

@@ -74,7 +74,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
     tonemap: ToneMapping.Hable,
   },
   integrityChecks: {
-    orphanedFiles: {
+    untrackedFiles: {
       enabled: true,
       cronExpression: '0 03 * * *',
     },

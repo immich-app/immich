@@ -51,7 +51,7 @@ export interface SystemConfig {
       enabled: boolean;
       cronExpression: string;
     };
-    orphanedFiles: {
+    untrackedFiles: {
       enabled: boolean;
       cronExpression: string;
     };
@@ -243,7 +243,7 @@ export const defaults = Object.freeze<SystemConfig>({
       enabled: true,
       cronExpression: CronExpression.EVERY_DAY_AT_3AM,
     },
-    orphanedFiles: {
+    untrackedFiles: {
       enabled: true,
       cronExpression: CronExpression.EVERY_DAY_AT_3AM,
     },

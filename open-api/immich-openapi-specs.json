@@ -431,7 +431,7 @@
     },
     "/admin/integrity/report/{id}/file": {
       "get": {
-        "description": "Download the orphan/broken file if one exists",
+        "description": "Download the untracked/broken file if one exists",
         "operationId": "getIntegrityReportFile",
         "parameters": [
           {
@@ -16997,20 +16997,20 @@
           "missing_file": {
             "type": "integer"
           },
-          "orphan_file": {
+          "untracked_file": {
             "type": "integer"
           }
         },
         "required": [
           "checksum_mismatch",
           "missing_file",
-          "orphan_file"
+          "untracked_file"
         ],
         "type": "object"
       },
       "IntegrityReportType": {
         "enum": [
-          "orphan_file",
+          "untracked_file",
           "missing_file",
           "checksum_mismatch"
         ],
@@ -17088,9 +17088,9 @@
           "OcrQueueAll",
           "Ocr",
           "WorkflowRun",
-          "IntegrityOrphanedFilesQueueAll",
-          "IntegrityOrphanedFiles",
-          "IntegrityOrphanedRefresh",
+          "IntegrityUntrackedFilesQueueAll",
+          "IntegrityUntrackedFiles",
+          "IntegrityUntrackedRefresh",
           "IntegrityMissingFilesQueueAll",
           "IntegrityMissingFiles",
           "IntegrityMissingFilesRefresh",
@@ -17368,13 +17368,13 @@
           "memory-create",
           "backup-database",
           "integrity-missing-files",
-          "integrity-orphan-files",
+          "integrity-untracked-files",
           "integrity-checksum-mismatch",
           "integrity-missing-files-refresh",
-          "integrity-orphan-files-refresh",
+          "integrity-untracked-files-refresh",
           "integrity-checksum-mismatch-refresh",
           "integrity-missing-files-delete-all",
-          "integrity-orphan-files-delete-all",
+          "integrity-untracked-files-delete-all",
           "integrity-checksum-mismatch-delete-all"
         ],
         "type": "string"
@@ -22022,14 +22022,14 @@
           "missingFiles": {
             "$ref": "#/components/schemas/SystemConfigIntegrityJob"
           },
-          "orphanedFiles": {
+          "untrackedFiles": {
             "$ref": "#/components/schemas/SystemConfigIntegrityJob"
           }
         },
         "required": [
           "checksumFiles",
           "missingFiles",
-          "orphanedFiles"
+          "untrackedFiles"
         ],
         "type": "object"
       },

@@ -15,36 +15,36 @@ class SystemConfigIntegrityChecks {
   SystemConfigIntegrityChecks({
     required this.checksumFiles,
     required this.missingFiles,
-    required this.orphanedFiles,
+    required this.untrackedFiles,
   });
 
   SystemConfigIntegrityChecksumJob checksumFiles;
 
   SystemConfigIntegrityJob missingFiles;
 
-  SystemConfigIntegrityJob orphanedFiles;
+  SystemConfigIntegrityJob untrackedFiles;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigIntegrityChecks &&
     other.checksumFiles == checksumFiles &&
     other.missingFiles == missingFiles &&
-    other.orphanedFiles == orphanedFiles;
+    other.untrackedFiles == untrackedFiles;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (checksumFiles.hashCode) +
     (missingFiles.hashCode) +
-    (orphanedFiles.hashCode);
+    (untrackedFiles.hashCode);
 
   @override
-  String toString() => 'SystemConfigIntegrityChecks[checksumFiles=$checksumFiles, missingFiles=$missingFiles, orphanedFiles=$orphanedFiles]';
+  String toString() => 'SystemConfigIntegrityChecks[checksumFiles=$checksumFiles, missingFiles=$missingFiles, untrackedFiles=$untrackedFiles]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'checksumFiles'] = this.checksumFiles;
       json[r'missingFiles'] = this.missingFiles;
-      json[r'orphanedFiles'] = this.orphanedFiles;
+      json[r'untrackedFiles'] = this.untrackedFiles;
     return json;
   }
 
@@ -59,7 +59,7 @@ class SystemConfigIntegrityChecks {
       return SystemConfigIntegrityChecks(
         checksumFiles: SystemConfigIntegrityChecksumJob.fromJson(json[r'checksumFiles'])!,
         missingFiles: SystemConfigIntegrityJob.fromJson(json[r'missingFiles'])!,
-        orphanedFiles: SystemConfigIntegrityJob.fromJson(json[r'orphanedFiles'])!,
+        untrackedFiles: SystemConfigIntegrityJob.fromJson(json[r'untrackedFiles'])!,
       );
     }
     return null;
@@ -109,7 +109,7 @@ class SystemConfigIntegrityChecks {
   static const requiredKeys = <String>{
     'checksumFiles',
     'missingFiles',
-    'orphanedFiles',
+    'untrackedFiles',
   };
 }
 

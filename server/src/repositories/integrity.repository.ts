@@ -57,8 +57,8 @@ export class IntegrityRepository {
       .select((eb) =>
         eb.fn
           .countAll<number>()
-          .filterWhere('type', '=', IntegrityReportType.OrphanFile)
-          .as(IntegrityReportType.OrphanFile),
+          .filterWhere('type', '=', IntegrityReportType.UntrackedFile)
+          .as(IntegrityReportType.UntrackedFile),
       )
       .executeTakeFirstOrThrow();
   }
@@ -149,7 +149,7 @@ export class IntegrityRepository {
       )
       .leftJoin('integrity_report', (join) =>
         join
-          .on('integrity_report.type', '=', IntegrityReportType.OrphanFile)
+          .on('integrity_report.type', '=', IntegrityReportType.UntrackedFile)
           .on((eb) =>
             eb.or([
               eb('integrity_report.assetId', '=', eb.ref('allPaths.assetId')),

@@ -21,8 +21,8 @@
       value: ManualJobName.IntegrityMissingFiles,
     },
     {
-      title: $t('admin.maintenance_integrity_orphan_file_job'),
-      value: ManualJobName.IntegrityOrphanFiles,
+      title: $t('admin.maintenance_integrity_untracked_file_job'),
+      value: ManualJobName.IntegrityUntrackedFiles,
     },
     {
       title: $t('admin.maintenance_integrity_checksum_mismatch_job'),
@@ -33,8 +33,8 @@
       value: ManualJobName.IntegrityMissingFilesRefresh,
     },
     {
-      title: $t('admin.maintenance_integrity_orphan_file_refresh_job'),
-      value: ManualJobName.IntegrityOrphanFilesRefresh,
+      title: $t('admin.maintenance_integrity_untracked_file_refresh_job'),
+      value: ManualJobName.IntegrityUntrackedFilesRefresh,
     },
     {
       title: $t('admin.maintenance_integrity_checksum_mismatch_refresh_job'),

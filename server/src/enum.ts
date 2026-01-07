@@ -347,7 +347,7 @@ export enum SourceType {
 }
 
 export enum IntegrityReportType {
-  OrphanFile = 'orphan_file',
+  UntrackedFile = 'untracked_file',
   MissingFile = 'missing_file',
   ChecksumFail = 'checksum_mismatch',
 }
@@ -360,13 +360,13 @@ export enum ManualJobName {
   MemoryCreate = 'memory-create',
   BackupDatabase = 'backup-database',
   IntegrityMissingFiles = `integrity-missing-files`,
-  IntegrityOrphanFiles = `integrity-orphan-files`,
+  IntegrityUntrackedFiles = `integrity-untracked-files`,
   IntegrityChecksumFiles = `integrity-checksum-mismatch`,
   IntegrityMissingFilesRefresh = `integrity-missing-files-refresh`,
-  IntegrityOrphanFilesRefresh = `integrity-orphan-files-refresh`,
+  IntegrityUntrackedFilesRefresh = `integrity-untracked-files-refresh`,
   IntegrityChecksumFilesRefresh = `integrity-checksum-mismatch-refresh`,
   IntegrityMissingFilesDeleteAll = `integrity-missing-files-delete-all`,
-  IntegrityOrphanFilesDeleteAll = `integrity-orphan-files-delete-all`,
+  IntegrityUntrackedFilesDeleteAll = `integrity-untracked-files-delete-all`,
   IntegrityChecksumFilesDeleteAll = `integrity-checksum-mismatch-delete-all`,
 }
 
@@ -662,9 +662,9 @@ export enum JobName {
   WorkflowRun = 'WorkflowRun',
 
   // Integrity
-  IntegrityOrphanedFilesQueueAll = 'IntegrityOrphanedFilesQueueAll',
-  IntegrityOrphanedFiles = 'IntegrityOrphanedFiles',
-  IntegrityOrphanedFilesRefresh = 'IntegrityOrphanedRefresh',
+  IntegrityUntrackedFilesQueueAll = 'IntegrityUntrackedFilesQueueAll',
+  IntegrityUntrackedFiles = 'IntegrityUntrackedFiles',
+  IntegrityUntrackedFilesRefresh = 'IntegrityUntrackedRefresh',
   IntegrityMissingFilesQueueAll = 'IntegrityMissingFilesQueueAll',
   IntegrityMissingFiles = 'IntegrityMissingFiles',
   IntegrityMissingFilesRefresh = 'IntegrityMissingFilesRefresh',

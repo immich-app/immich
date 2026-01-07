@@ -145,7 +145,7 @@ describe(IntegrityService.name, () => {
       expect(mocks.asset.deleteFiles).toHaveBeenCalledWith([{ id: 'fileAssetId' }]);
     });
 
-    it('deletes orphaned file', async () => {
+    it('deletes untracked file', async () => {
       mocks.integrityReport.getById.mockResolvedValue({
         id: 'id',
         createdAt: new Date(0),
@@ -169,7 +169,7 @@ describe(IntegrityService.name, () => {
     });
   });
 
-  describe('handleOrphanedFilesQueueAll', () => {
+  describe('handleUntrackedFilesQueueAll', () => {
     beforeEach(() => {
       mocks.integrityReport.streamIntegrityReportsWithAssetChecksum.mockReturnValue((function* () {})() as never);
     });
@@ -189,11 +189,11 @@ describe(IntegrityService.name, () => {
         })() as never,
       );
 
-      await sut.handleOrphanedFilesQueueAll({ refreshOnly: false });
+      await sut.handleUntrackedFilesQueueAll({ refreshOnly: false });
 
       expect(mocks.job.queue).toBeCalledTimes(4);
       expect(mocks.job.queue).toBeCalledWith({
-        name: JobName.IntegrityOrphanedFiles,
+        name: JobName.IntegrityUntrackedFiles,
         data: {
           type: 'asset',
           paths: expect.arrayContaining(['/path/to/file']),
@@ -201,7 +201,7 @@ describe(IntegrityService.name, () => {
       });
 
       expect(mocks.job.queue).toBeCalledWith({
-        name: JobName.IntegrityOrphanedFiles,
+        name: JobName.IntegrityUntrackedFiles,
         data: {
           type: 'asset_file',
           paths: expect.arrayContaining(['/path/to/file3']),
@@ -216,11 +216,11 @@ describe(IntegrityService.name, () => {
         })() as never,
       );
 
-      await sut.handleOrphanedFilesQueueAll({ refreshOnly: false });
+      await sut.handleUntrackedFilesQueueAll({ refreshOnly: false });
 
       expect(mocks.job.queue).toBeCalledTimes(1);
       expect(mocks.job.queue).toBeCalledWith({
-        name: JobName.IntegrityOrphanedFilesRefresh,
+        name: JobName.IntegrityUntrackedFilesRefresh,
         data: {
           items: expect.arrayContaining(['mockReport']),
         },
@@ -228,33 +228,33 @@ describe(IntegrityService.name, () => {
     });
 
     it('should succeed', async () => {
-      await expect(sut.handleOrphanedFilesQueueAll({ refreshOnly: false })).resolves.toBe(JobStatus.Success);
+      await expect(sut.handleUntrackedFilesQueueAll({ refreshOnly: false })).resolves.toBe(JobStatus.Success);
     });
   });
 
-  describe('handleOrphanedFiles', () => {
-    it('should detect orphaned asset files', async () => {
+  describe('handleUntrackedFiles', () => {
+    it('should detect untracked asset files', async () => {
       mocks.integrityReport.getAssetPathsByPaths.mockResolvedValue([
         { originalPath: '/path/to/file1', encodedVideoPath: null },
       ]);
 
-      await sut.handleOrphanedFiles({
+      await sut.handleUntrackedFiles({
         type: 'asset',
-        paths: ['/path/to/file1', '/path/to/orphan'],
+        paths: ['/path/to/file1', '/path/to/untracked'],
       });
 
-      expect(mocks.integrityReport.getAssetPathsByPaths).toHaveBeenCalledWith(['/path/to/file1', '/path/to/orphan']);
+      expect(mocks.integrityReport.getAssetPathsByPaths).toHaveBeenCalledWith(['/path/to/file1', '/path/to/untracked']);
       expect(mocks.integrityReport.create).toHaveBeenCalledWith([
-        { type: IntegrityReportType.OrphanFile, path: '/path/to/orphan' },
+        { type: IntegrityReportType.UntrackedFile, path: '/path/to/untracked' },
       ]);
     });
 
-    it('should not create reports when no orphans found for assets', async () => {
+    it('should not create reports when no untracked files found for assets', async () => {
       mocks.integrityReport.getAssetPathsByPaths.mockResolvedValue([
         { originalPath: '/path/to/file1', encodedVideoPath: '/path/to/encoded' },
       ]);
 
-      await sut.handleOrphanedFiles({
+      await sut.handleUntrackedFiles({
         type: 'asset',
         paths: ['/path/to/file1', '/path/to/encoded'],
       });
@@ -262,28 +262,28 @@ describe(IntegrityService.name, () => {
       expect(mocks.integrityReport.create).not.toHaveBeenCalled();
     });
 
-    it('should detect orphaned asset_file files', async () => {
+    it('should detect untracked asset_file files', async () => {
       mocks.integrityReport.getAssetFilePathsByPaths.mockResolvedValue([{ path: '/path/to/thumb1' }]);
 
-      await sut.handleOrphanedFiles({
+      await sut.handleUntrackedFiles({
         type: 'asset_file',
-        paths: ['/path/to/thumb1', '/path/to/orphan_thumb'],
+        paths: ['/path/to/thumb1', '/path/to/untracked_thumb'],
       });
 
       expect(mocks.integrityReport.create).toHaveBeenCalledWith([
-        { type: IntegrityReportType.OrphanFile, path: '/path/to/orphan_thumb' },
+        { type: IntegrityReportType.UntrackedFile, path: '/path/to/untracked_thumb' },
       ]);
     });
   });
 
-  describe('handleOrphanedRefresh', () => {
+  describe('handleUntrackedRefresh', () => {
     it('should delete reports for files that no longer exist', async () => {
       mocks.storage.stat
         .mockRejectedValueOnce(new Error('ENOENT'))
         .mockResolvedValueOnce({} as never)
         .mockRejectedValueOnce(new Error('ENOENT'));
 
-      await sut.handleOrphanedRefresh({
+      await sut.handleUntrackedRefresh({
         items: [
           { reportId: 'report1', path: '/path/to/missing1' },
           { reportId: 'report2', path: '/path/to/existing' },
@@ -297,7 +297,7 @@ describe(IntegrityService.name, () => {
     it('should not delete reports for files that still exist', async () => {
       mocks.storage.stat.mockResolvedValue({} as never);
 
-      await sut.handleOrphanedRefresh({
+      await sut.handleUntrackedRefresh({
         items: [{ reportId: 'report1', path: '/path/to/existing' }],
       });
 
@@ -305,7 +305,7 @@ describe(IntegrityService.name, () => {
     });
 
     it('should succeed', async () => {
-      await expect(sut.handleOrphanedRefresh({ items: [] })).resolves.toBe(JobStatus.Success);
+      await expect(sut.handleUntrackedRefresh({ items: [] })).resolves.toBe(JobStatus.Success);
     });
   });
 
@@ -604,24 +604,24 @@ describe(IntegrityService.name, () => {
       expect(mocks.job.queue).toHaveBeenCalledTimes(2);
     });
 
-    it('should queue delete jobs for orphan file reports', async () => {
+    it('should queue delete jobs for untracked file reports', async () => {
       mocks.integrityReport.streamIntegrityReportsByProperty.mockReturnValue(
         (function* () {
-          yield { id: 'report1', path: '/path/to/orphan' };
+          yield { id: 'report1', path: '/path/to/untracked' };
         })() as never,
       );
 
-      await sut.handleDeleteAllIntegrityReports({ type: IntegrityReportType.OrphanFile });
+      await sut.handleDeleteAllIntegrityReports({ type: IntegrityReportType.UntrackedFile });
 
       expect(mocks.integrityReport.streamIntegrityReportsByProperty).toHaveBeenCalledWith(
         undefined,
-        IntegrityReportType.OrphanFile,
+        IntegrityReportType.UntrackedFile,
       );
 
       expect(mocks.job.queue).toHaveBeenCalledWith({
         name: JobName.IntegrityDeleteReports,
         data: {
-          reports: [{ id: 'report1', path: '/path/to/orphan' }],
+          reports: [{ id: 'report1', path: '/path/to/untracked' }],
         },
       });
     });
@@ -648,7 +648,7 @@ describe(IntegrityService.name, () => {
           { id: 'report1', assetId: 'asset1', fileAssetId: null, path: '/path/to/file1' },
           { id: 'report2', assetId: 'asset2', fileAssetId: null, path: '/path/to/file2' },
           { id: 'report3', assetId: null, fileAssetId: 'fileAsset1', path: '/path/to/file3' },
-          { id: 'report4', assetId: null, fileAssetId: null, path: '/path/to/orphan' },
+          { id: 'report4', assetId: null, fileAssetId: null, path: '/path/to/untracked' },
         ],
       });
 
@@ -666,7 +666,7 @@ describe(IntegrityService.name, () => {
 
       expect(mocks.asset.deleteFiles).toHaveBeenCalledWith([{ id: 'fileAsset1' }]);
 
-      expect(mocks.storage.unlink).toHaveBeenCalledWith('/path/to/orphan');
+      expect(mocks.storage.unlink).toHaveBeenCalledWith('/path/to/untracked');
       expect(mocks.integrityReport.deleteByIds).toHaveBeenCalledWith(['report4']);
     });
 

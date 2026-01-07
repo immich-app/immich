@@ -100,7 +100,7 @@ describe('/admin/integrity', () => {
   describe('POST /summary (& jobs)', async () => {
     it.sequential('reports no issues', async () => {
       await utils.createJob(admin.accessToken, {
-        name: ManualJobName.IntegrityOrphanFiles,
+        name: ManualJobName.IntegrityUntrackedFiles,
       });
 
       await utils.createJob(admin.accessToken, {
@@ -112,7 +112,7 @@ describe('/admin/integrity', () => {
       });
 
       await utils.createJob(admin.accessToken, {
-        name: ManualJobName.IntegrityOrphanFilesDeleteAll,
+        name: ManualJobName.IntegrityUntrackedFilesDeleteAll,
       });
 
       await utils.waitForQueueFinish(admin.accessToken, QueueName.IntegrityCheck);
@@ -125,16 +125,16 @@ describe('/admin/integrity', () => {
       expect(status).toBe(200);
       expect(body).toEqual({
         missing_file: 0,
-        orphan_file: 0,
+        untracked_file: 0,
         checksum_mismatch: 0,
       });
     });
 
-    it.sequential('should detect an orphan file (job: check orphan files)', async () => {
-      await utils.putTextFile('orphan', `/data/upload/${admin.userId}/orphan1.png`);
+    it.sequential('should detect an untracked file (job: check untracked files)', async () => {
+      await utils.putTextFile('untracked', `/data/upload/${admin.userId}/untracked1.png`);
 
       await utils.createJob(admin.accessToken, {
-        name: ManualJobName.IntegrityOrphanFiles,
+        name: ManualJobName.IntegrityUntrackedFiles,
       });
 
       await utils.waitForQueueFinish(admin.accessToken, QueueName.IntegrityCheck);
@@ -147,18 +147,18 @@ describe('/admin/integrity', () => {
       expect(status).toBe(200);
       expect(body).toEqual(
         expect.objectContaining({
-          orphan_file: 1,
+          untracked_file: 1,
         }),
       );
     });
 
-    it.sequential('should detect outdated orphan file reports (job: refresh orphan files)', async () => {
+    it.sequential('should detect outdated untracked file reports (job: refresh untracked files)', async () => {
       // these should not be detected:
-      await utils.putTextFile('orphan', `/data/upload/${admin.userId}/orphan2.png`);
-      await utils.putTextFile('orphan', `/data/upload/${admin.userId}/orphan3.png`);
+      await utils.putTextFile('untracked', `/data/upload/${admin.userId}/untracked2.png`);
+      await utils.putTextFile('untracked', `/data/upload/${admin.userId}/untracked3.png`);
 
       await utils.createJob(admin.accessToken, {
-        name: ManualJobName.IntegrityOrphanFilesRefresh,
+        name: ManualJobName.IntegrityUntrackedFilesRefresh,
       });
 
       await utils.waitForQueueFinish(admin.accessToken, QueueName.IntegrityCheck);
@@ -171,22 +171,22 @@ describe('/admin/integrity', () => {
       expect(status).toBe(200);
       expect(body).toEqual(
         expect.objectContaining({
-          orphan_file: 0,
+          untracked_file: 0,
         }),
       );
     });
 
-    it.sequential('should delete orphan files (job: delete all orphan file reports)', async () => {
-      await utils.putTextFile('orphan', `/data/upload/${admin.userId}/orphan1.png`);
+    it.sequential('should delete untracked files (job: delete all untracked file reports)', async () => {
+      await utils.putTextFile('untracked', `/data/upload/${admin.userId}/untracked1.png`);
 
       await utils.createJob(admin.accessToken, {
-        name: ManualJobName.IntegrityOrphanFiles,
+        name: ManualJobName.IntegrityUntrackedFiles,
       });
 
       await utils.waitForQueueFinish(admin.accessToken, QueueName.IntegrityCheck);
 
       await utils.createJob(admin.accessToken, {
-        name: ManualJobName.IntegrityOrphanFilesDeleteAll,
+        name: ManualJobName.IntegrityUntrackedFilesDeleteAll,
       });
 
       await utils.waitForQueueFinish(admin.accessToken, QueueName.IntegrityCheck);
@@ -199,7 +199,7 @@ describe('/admin/integrity', () => {
       expect(status).toBe(200);
       expect(body).toEqual(
         expect.objectContaining({
-          orphan_file: 0,
+          untracked_file: 0,
         }),
       );
     });
@@ -387,11 +387,11 @@ describe('/admin/integrity', () => {
   });
 
   describe('POST /report', async () => {
-    it.sequential('reports orphan files', async () => {
-      await utils.putTextFile('orphan', `/data/upload/${admin.userId}/orphan1.png`);
+    it.sequential('reports untracked files', async () => {
+      await utils.putTextFile('untracked', `/data/upload/${admin.userId}/untracked1.png`);
 
       await utils.createJob(admin.accessToken, {
-        name: ManualJobName.IntegrityOrphanFiles,
+        name: ManualJobName.IntegrityUntrackedFiles,
       });
 
       await utils.waitForQueueFinish(admin.accessToken, QueueName.IntegrityCheck);
@@ -399,7 +399,7 @@ describe('/admin/integrity', () => {
       const { status, body } = await request(app)
         .post('/admin/integrity/report')
         .set('Authorization', `Bearer ${admin.accessToken}`)
-        .send({ type: 'orphan_file' });
+        .send({ type: 'untracked_file' });
 
       expect(status).toBe(200);
       expect(body).toEqual({
@@ -407,8 +407,8 @@ describe('/admin/integrity', () => {
         items: expect.arrayContaining([
           {
             id: expect.any(String),
-            type: 'orphan_file',
-            path: `/data/upload/${admin.userId}/orphan1.png`,
+            type: 'untracked_file',
+            path: `/data/upload/${admin.userId}/untracked1.png`,
             assetId: null,
             fileAssetId: null,
           },
@@ -476,11 +476,11 @@ describe('/admin/integrity', () => {
   });
 
   describe('DELETE /report/:id', async () => {
-    it.sequential('delete orphan files', async () => {
-      await utils.putTextFile('orphan', `/data/upload/${admin.userId}/orphan1.png`);
+    it.sequential('delete untracked files', async () => {
+      await utils.putTextFile('untracked', `/data/upload/${admin.userId}/untracked1.png`);
 
       await utils.createJob(admin.accessToken, {
-        name: ManualJobName.IntegrityOrphanFiles,
+        name: ManualJobName.IntegrityUntrackedFiles,
       });
 
       await utils.waitForQueueFinish(admin.accessToken, QueueName.IntegrityCheck);
@@ -488,12 +488,12 @@ describe('/admin/integrity', () => {
       const { status: listStatus, body: listBody } = await request(app)
         .post('/admin/integrity/report')
         .set('Authorization', `Bearer ${admin.accessToken}`)
-        .send({ type: 'orphan_file' });
+        .send({ type: 'untracked_file' });
 
       expect(listStatus).toBe(200);
 
       const report = (listBody as IntegrityReportResponseDto).items.find(
-        (item) => item.path === `/data/upload/${admin.userId}/orphan1.png`,
+        (item) => item.path === `/data/upload/${admin.userId}/untracked1.png`,
       )!;
 
       const { status } = await request(app)
@@ -504,7 +504,7 @@ describe('/admin/integrity', () => {
       expect(status).toBe(200);
 
       await utils.createJob(admin.accessToken, {
-        name: ManualJobName.IntegrityOrphanFiles,
+        name: ManualJobName.IntegrityUntrackedFiles,
       });
 
       await utils.waitForQueueFinish(admin.accessToken, QueueName.IntegrityCheck);
@@ -512,7 +512,7 @@ describe('/admin/integrity', () => {
       const { status: listStatus2, body: listBody2 } = await request(app)
         .post('/admin/integrity/report')
         .set('Authorization', `Bearer ${admin.accessToken}`)
-        .send({ type: 'orphan_file' });
+        .send({ type: 'untracked_file' });
 
       expect(listStatus2).toBe(200);
       expect(listBody2).not.toBe(
@@ -610,17 +610,17 @@ describe('/admin/integrity', () => {
   });
 
   describe('GET /report/:type/csv', () => {
-    it.sequential('exports orphan files as csv', async () => {
-      await utils.putTextFile('orphan', `/data/upload/${admin.userId}/orphan1.png`);
+    it.sequential('exports untracked files as csv', async () => {
+      await utils.putTextFile('untracked', `/data/upload/${admin.userId}/untracked1.png`);
 
       await utils.createJob(admin.accessToken, {
-        name: ManualJobName.IntegrityOrphanFiles,
+        name: ManualJobName.IntegrityUntrackedFiles,
       });
 
       await utils.waitForQueueFinish(admin.accessToken, QueueName.IntegrityCheck);
 
       const { status, headers, text } = await request(app)
-        .get('/admin/integrity/report/orphan_file/csv')
+        .get('/admin/integrity/report/untracked_file/csv')
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .send();
 
@@ -628,17 +628,17 @@ describe('/admin/integrity', () => {
       expect(headers['content-type']).toContain('text/csv');
       expect(headers['content-disposition']).toContain('.csv');
       expect(text).toContain('id,type,assetId,fileAssetId,path');
-      expect(text).toContain(`orphan_file`);
-      expect(text).toContain(`/data/upload/${admin.userId}/orphan1.png`);
+      expect(text).toContain(`untracked_file`);
+      expect(text).toContain(`/data/upload/${admin.userId}/untracked1.png`);
     });
   });
 
   describe('GET /report/:id/file', () => {
-    it.sequential('downloads orphan file', async () => {
-      await utils.putTextFile('orphan-content', `/data/upload/${admin.userId}/orphan1.png`);
+    it.sequential('downloads untracked file', async () => {
+      await utils.putTextFile('untracked-content', `/data/upload/${admin.userId}/untracked1.png`);
 
       await utils.createJob(admin.accessToken, {
-        name: ManualJobName.IntegrityOrphanFiles,
+        name: ManualJobName.IntegrityUntrackedFiles,
       });
 
       await utils.waitForQueueFinish(admin.accessToken, QueueName.IntegrityCheck);
@@ -646,10 +646,10 @@ describe('/admin/integrity', () => {
       const { body: listBody } = await request(app)
         .post('/admin/integrity/report')
         .set('Authorization', `Bearer ${admin.accessToken}`)
-        .send({ type: 'orphan_file' });
+        .send({ type: 'untracked_file' });
 
       const report = (listBody as IntegrityReportResponseDto).items.find(
-        (item) => item.path === `/data/upload/${admin.userId}/orphan1.png`,
+        (item) => item.path === `/data/upload/${admin.userId}/untracked1.png`,
       )!;
 
       const { status, headers, body } = await request(app)
@@ -660,7 +660,7 @@ describe('/admin/integrity', () => {
 
       expect(status).toBe(200);
       expect(headers['content-type']).toContain('application/octet-stream');
-      expect(body.toString()).toBe('orphan-content');
+      expect(body.toString()).toBe('untracked-content');
     });
   });
 });

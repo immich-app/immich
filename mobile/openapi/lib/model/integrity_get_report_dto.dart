@@ -24,7 +24,7 @@ class IntegrityGetReportDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  DateTime? cursor;
+  String? cursor;
 
   /// Minimum value: 1
   ///
@@ -56,7 +56,7 @@ class IntegrityGetReportDto {
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
     if (this.cursor != null) {
-      json[r'cursor'] = this.cursor!.toUtc().toIso8601String();
+      json[r'cursor'] = this.cursor;
     } else {
     //  json[r'cursor'] = null;
     }
@@ -78,7 +78,7 @@ class IntegrityGetReportDto {
       final json = value.cast<String, dynamic>();
 
       return IntegrityGetReportDto(
-        cursor: mapDateTime(json, r'cursor', r''),
+        cursor: mapValueOfType<String>(json, r'cursor'),
         limit: num.parse('${json[r'limit']}'),
         type: IntegrityReportType.fromJson(json[r'type'])!,
       );

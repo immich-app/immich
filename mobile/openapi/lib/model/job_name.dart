@@ -78,9 +78,9 @@ class JobName {
   static const ocrQueueAll = JobName._(r'OcrQueueAll');
   static const ocr = JobName._(r'Ocr');
   static const workflowRun = JobName._(r'WorkflowRun');
-  static const integrityOrphanedFilesQueueAll = JobName._(r'IntegrityOrphanedFilesQueueAll');
-  static const integrityOrphanedFiles = JobName._(r'IntegrityOrphanedFiles');
-  static const integrityOrphanedRefresh = JobName._(r'IntegrityOrphanedRefresh');
+  static const integrityUntrackedFilesQueueAll = JobName._(r'IntegrityUntrackedFilesQueueAll');
+  static const integrityUntrackedFiles = JobName._(r'IntegrityUntrackedFiles');
+  static const integrityUntrackedRefresh = JobName._(r'IntegrityUntrackedRefresh');
   static const integrityMissingFilesQueueAll = JobName._(r'IntegrityMissingFilesQueueAll');
   static const integrityMissingFiles = JobName._(r'IntegrityMissingFiles');
   static const integrityMissingFilesRefresh = JobName._(r'IntegrityMissingFilesRefresh');
@@ -146,9 +146,9 @@ class JobName {
     ocrQueueAll,
     ocr,
     workflowRun,
-    integrityOrphanedFilesQueueAll,
-    integrityOrphanedFiles,
-    integrityOrphanedRefresh,
+    integrityUntrackedFilesQueueAll,
+    integrityUntrackedFiles,
+    integrityUntrackedRefresh,
     integrityMissingFilesQueueAll,
     integrityMissingFiles,
     integrityMissingFilesRefresh,
@@ -249,9 +249,9 @@ class JobNameTypeTransformer {
         case r'OcrQueueAll': return JobName.ocrQueueAll;
         case r'Ocr': return JobName.ocr;
         case r'WorkflowRun': return JobName.workflowRun;
-        case r'IntegrityOrphanedFilesQueueAll': return JobName.integrityOrphanedFilesQueueAll;
-        case r'IntegrityOrphanedFiles': return JobName.integrityOrphanedFiles;
-        case r'IntegrityOrphanedRefresh': return JobName.integrityOrphanedRefresh;
+        case r'IntegrityUntrackedFilesQueueAll': return JobName.integrityUntrackedFilesQueueAll;
+        case r'IntegrityUntrackedFiles': return JobName.integrityUntrackedFiles;
+        case r'IntegrityUntrackedRefresh': return JobName.integrityUntrackedRefresh;
         case r'IntegrityMissingFilesQueueAll': return JobName.integrityMissingFilesQueueAll;
         case r'IntegrityMissingFiles': return JobName.integrityMissingFiles;
         case r'IntegrityMissingFilesRefresh': return JobName.integrityMissingFilesRefresh;

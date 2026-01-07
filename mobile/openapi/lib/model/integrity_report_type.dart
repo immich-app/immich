@@ -23,13 +23,13 @@ class IntegrityReportType {
 
   String toJson() => value;
 
-  static const orphanFile = IntegrityReportType._(r'orphan_file');
+  static const untrackedFile = IntegrityReportType._(r'untracked_file');
   static const missingFile = IntegrityReportType._(r'missing_file');
   static const checksumMismatch = IntegrityReportType._(r'checksum_mismatch');
 
   /// List of all possible values in this [enum][IntegrityReportType].
   static const values = <IntegrityReportType>[
-    orphanFile,
+    untrackedFile,
     missingFile,
     checksumMismatch,
   ];
@@ -70,7 +70,7 @@ class IntegrityReportTypeTypeTransformer {
   IntegrityReportType? decode(dynamic data, {bool allowNull = true}) {
     if (data != null) {
       switch (data) {
-        case r'orphan_file': return IntegrityReportType.orphanFile;
+        case r'untracked_file': return IntegrityReportType.untrackedFile;
         case r'missing_file': return IntegrityReportType.missingFile;
         case r'checksum_mismatch': return IntegrityReportType.checksumMismatch;
         default:

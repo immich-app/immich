@@ -25,7 +25,7 @@ class IntegrityReportResponseDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  DateTime? nextCursor;
+  String? nextCursor;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is IntegrityReportResponseDto &&
@@ -45,7 +45,7 @@ class IntegrityReportResponseDto {
     final json = <String, dynamic>{};
       json[r'items'] = this.items;
     if (this.nextCursor != null) {
-      json[r'nextCursor'] = this.nextCursor!.toUtc().toIso8601String();
+      json[r'nextCursor'] = this.nextCursor;
     } else {
     //  json[r'nextCursor'] = null;
     }
@@ -62,7 +62,7 @@ class IntegrityReportResponseDto {
 
       return IntegrityReportResponseDto(
         items: IntegrityReportDto.listFromJson(json[r'items']),
-        nextCursor: mapDateTime(json, r'nextCursor', r''),
+        nextCursor: mapValueOfType<String>(json, r'nextCursor'),
       );
     }
     return null;

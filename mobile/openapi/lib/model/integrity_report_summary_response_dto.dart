@@ -15,36 +15,36 @@ class IntegrityReportSummaryResponseDto {
   IntegrityReportSummaryResponseDto({
     required this.checksumMismatch,
     required this.missingFile,
-    required this.orphanFile,
+    required this.untrackedFile,
   });
 
   int checksumMismatch;
 
   int missingFile;
 
-  int orphanFile;
+  int untrackedFile;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is IntegrityReportSummaryResponseDto &&
     other.checksumMismatch == checksumMismatch &&
     other.missingFile == missingFile &&
-    other.orphanFile == orphanFile;
+    other.untrackedFile == untrackedFile;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (checksumMismatch.hashCode) +
     (missingFile.hashCode) +
-    (orphanFile.hashCode);
+    (untrackedFile.hashCode);
 
   @override
-  String toString() => 'IntegrityReportSummaryResponseDto[checksumMismatch=$checksumMismatch, missingFile=$missingFile, orphanFile=$orphanFile]';
+  String toString() => 'IntegrityReportSummaryResponseDto[checksumMismatch=$checksumMismatch, missingFile=$missingFile, untrackedFile=$untrackedFile]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'checksum_mismatch'] = this.checksumMismatch;
       json[r'missing_file'] = this.missingFile;
-      json[r'orphan_file'] = this.orphanFile;
+      json[r'untracked_file'] = this.untrackedFile;
     return json;
   }
 
@@ -59,7 +59,7 @@ class IntegrityReportSummaryResponseDto {
       return IntegrityReportSummaryResponseDto(
         checksumMismatch: mapValueOfType<int>(json, r'checksum_mismatch')!,
         missingFile: mapValueOfType<int>(json, r'missing_file')!,
-        orphanFile: mapValueOfType<int>(json, r'orphan_file')!,
+        untrackedFile: mapValueOfType<int>(json, r'untracked_file')!,
       );
     }
     return null;
@@ -109,7 +109,7 @@ class IntegrityReportSummaryResponseDto {
   static const requiredKeys = <String>{
     'checksum_mismatch',
     'missing_file',
-    'orphan_file',
+    'untracked_file',
   };
 }
 

@@ -38,8 +38,8 @@ const asJobItem = (dto: JobCreateDto): JobItem => {
       return { name: JobName.IntegrityMissingFilesQueueAll };
     }
 
-    case ManualJobName.IntegrityOrphanFiles: {
-      return { name: JobName.IntegrityOrphanedFilesQueueAll };
+    case ManualJobName.IntegrityUntrackedFiles: {
+      return { name: JobName.IntegrityUntrackedFilesQueueAll };
     }
 
     case ManualJobName.IntegrityChecksumFiles: {
@@ -50,8 +50,8 @@ const asJobItem = (dto: JobCreateDto): JobItem => {
       return { name: JobName.IntegrityMissingFilesQueueAll, data: { refreshOnly: true } };
     }
 
-    case ManualJobName.IntegrityOrphanFilesRefresh: {
-      return { name: JobName.IntegrityOrphanedFilesQueueAll, data: { refreshOnly: true } };
+    case ManualJobName.IntegrityUntrackedFilesRefresh: {
+      return { name: JobName.IntegrityUntrackedFilesQueueAll, data: { refreshOnly: true } };
     }
 
     case ManualJobName.IntegrityChecksumFilesRefresh: {
@@ -62,8 +62,8 @@ const asJobItem = (dto: JobCreateDto): JobItem => {
       return { name: JobName.IntegrityDeleteReportType, data: { type: IntegrityReportType.MissingFile } };
     }
 
-    case ManualJobName.IntegrityOrphanFilesDeleteAll: {
-      return { name: JobName.IntegrityDeleteReportType, data: { type: IntegrityReportType.OrphanFile } };
+    case ManualJobName.IntegrityUntrackedFilesDeleteAll: {
+      return { name: JobName.IntegrityDeleteReportType, data: { type: IntegrityReportType.UntrackedFile } };
     }
 
     case ManualJobName.IntegrityChecksumFilesDeleteAll: {

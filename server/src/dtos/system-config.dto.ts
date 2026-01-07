@@ -174,7 +174,7 @@ class SystemConfigIntegrityChecks {
   @Type(() => SystemConfigIntegrityJob)
   @ValidateNested()
   @IsObject()
-  orphanedFiles!: SystemConfigIntegrityJob;
+  untrackedFiles!: SystemConfigIntegrityJob;
 
   @Type(() => SystemConfigIntegrityChecksumJob)
   @ValidateNested()
