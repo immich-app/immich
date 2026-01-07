@@ -30,7 +30,6 @@ class ViewerBottomBar extends ConsumerWidget {
     final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
     final user = ref.watch(currentUserProvider);
     final isOwner = asset is RemoteAsset && asset.ownerId == user?.id;
-    final isTrashed = asset is RemoteAsset && asset.isTrashed;
     final isSheetOpen = ref.watch(assetViewerProvider.select((s) => s.showingBottomSheet));
     int opacity = ref.watch(assetViewerProvider.select((state) => state.backgroundOpacity));
     final showControls = ref.watch(assetViewerProvider.select((s) => s.showingControls));
@@ -53,7 +52,7 @@ class ViewerBottomBar extends ConsumerWidget {
         if (isOwner) ...[
           if (asset.isLocalOnly)
             const DeleteLocalActionButton(source: ActionSource.viewer)
-          else if (isTrashed)
+          else if (asset is RemoteAsset && asset.deletedAt != null)
             const DeletePermanentActionButton(source: ActionSource.viewer, useShortLabel: true)
           else
             const DeleteActionButton(source: ActionSource.viewer, showConfirmation: true),
