@@ -2,8 +2,9 @@
   import type { Action } from '$lib/components/asset-viewer/actions/action';
   import type { AssetCursor } from '$lib/components/asset-viewer/asset-viewer.svelte';
   import { AssetAction } from '$lib/constants';
-
+  import { assetCacheManager } from '$lib/managers/AssetCacheManager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
+  import { eventManager } from '$lib/managers/event-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
@@ -12,8 +13,8 @@
   import { updateStackedAssetInTimeline, updateUnstackedAssetInTimeline } from '$lib/utils/actions';
   import { navigate } from '$lib/utils/navigation';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
-  import { type AlbumResponseDto, type AssetResponseDto, type PersonResponseDto, getAssetInfo } from '@immich/sdk';
-  import { onMount, untrack } from 'svelte';
+  import { getAssetInfo, type AlbumResponseDto, type AssetResponseDto, type PersonResponseDto } from '@immich/sdk';
+  import { onDestroy, onMount, untrack } from 'svelte';
 
   let { asset: viewingAsset, gridScrollTarget } = assetViewingStore;
 
@@ -47,7 +48,7 @@
   const getNextAsset = async (currentAsset: AssetResponseDto, preload: boolean = true) => {
     const earlierTimelineAsset = await timelineManager.getEarlierAsset(currentAsset);
     if (earlierTimelineAsset) {
-      const asset = await getAssetInfo({ ...authManager.params, id: earlierTimelineAsset.id });
+      const asset = await assetCacheManager.getAsset({ ...authManager.params, id: earlierTimelineAsset.id });
       if (preload) {
         // also pre-cache an extra one, to pre-cache these assetInfos for the next nav after this one is complete
         void getNextAsset(asset, false);
@@ -60,7 +61,7 @@
     const laterTimelineAsset = await timelineManager.getLaterAsset(currentAsset);
 
     if (laterTimelineAsset) {
-      const asset = await getAssetInfo({ ...authManager.params, id: laterTimelineAsset.id });
+      const asset = await assetCacheManager.getAsset({ ...authManager.params, id: laterTimelineAsset.id });
       if (preload) {
         // also pre-cache an extra one, to pre-cache these assetInfos for the next nav after this one is complete
         void getPreviousAsset(asset, false);
@@ -96,8 +97,11 @@
     if (!targetAsset) {
       return false;
     }
-
+    let waitForAssetViewerFree = new Promise<void>((resolve) => {
+      eventManager.once('AssetViewerFree', () => resolve());
+    });
     await navigate({ targetRoute: 'current', assetId: targetAsset.id });
+    await waitForAssetViewerFree;
     return true;
   };
 
@@ -195,6 +199,9 @@
       }
     }
   };
+  onDestroy(() => {
+    assetCacheManager.invalidate();
+  });
   const handleUndoDelete = async (assets: TimelineAsset[]) => {
     timelineManager.upsertAssets(assets);
     if (assets.length > 0) {
@@ -230,10 +237,12 @@
     {album}
     {person}
     preAction={handlePreAction}
-    onAction={handleAction}
+    onAction={(action) => {
+      handleAction(action);
+      assetCacheManager.invalidate();
+    }}
     onUndoDelete={handleUndoDelete}
-    onPrevious={() => handleNavigateToAsset(assetCursor.previousAsset)}
-    onNext={() => handleNavigateToAsset(assetCursor.nextAsset)}
+    onNavigateToAsset={handleNavigateToAsset}
     onRandom={handleRandom}
     onClose={handleClose}
   />

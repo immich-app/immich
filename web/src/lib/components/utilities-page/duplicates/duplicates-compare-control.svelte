@@ -44,21 +44,11 @@
     assetViewingStore.showAssetViewer(false);
   });
 
-  const onNext = async () => {
-    const index = getAssetIndex($viewingAsset.id) + 1;
-    if (index >= assets.length) {
+  const handleNavigateToAsset = async (asset: AssetResponseDto | undefined | null) => {
+    if (!asset) {
       return false;
     }
-    await onViewAsset(assets[index]);
-    return true;
-  };
-
-  const onPrevious = async () => {
-    const index = getAssetIndex($viewingAsset.id) - 1;
-    if (index < 0) {
-      return false;
-    }
-    await onViewAsset(assets[index]);
+    await onViewAsset(asset);
     return true;
   };
 
@@ -191,8 +181,7 @@
       <AssetViewer
         cursor={assetCursor}
         showNavigation={assets.length > 1}
-        {onNext}
-        {onPrevious}
+        onNavigateToAsset={handleNavigateToAsset}
         {onRandom}
         onClose={() => {
           assetViewingStore.showAssetViewer(false);

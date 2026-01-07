@@ -22,7 +22,7 @@
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { AssetMediaSize, type SharedLinkResponseDto } from '@immich/sdk';
   import { LoadingSpinner, toastManager } from '@immich/ui';
-  import { onDestroy, onMount } from 'svelte';
+  import { onDestroy, onMount, untrack } from 'svelte';
   import { useSwipe, type SwipeCustomEvent } from 'svelte-gestures';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
@@ -34,6 +34,10 @@
     haveFadeTransition?: boolean;
     sharedLink?: SharedLinkResponseDto | undefined;
     onPreviousAsset?: (() => void) | null;
+    onFree?: (() => void) | null;
+    onBusy?: (() => void) | null;
+    onError?: (() => void) | null;
+    onLoad?: (() => void) | null;
     onNextAsset?: (() => void) | null;
     copyImage?: () => Promise<void>;
     zoomToggle?: (() => void) | null;
@@ -46,6 +50,10 @@
     sharedLink = undefined,
     onPreviousAsset = null,
     onNextAsset = null,
+    onFree = null,
+    onBusy = null,
+    onError = null,
+    onLoad = null,
     copyImage = $bindable(),
     zoomToggle = $bindable(),
   }: Props = $props();
@@ -156,16 +164,23 @@
   };
 
   const onload = () => {
+    onLoad?.();
+    onFree?.();
     imageLoaded = true;
     originalImageLoaded = targetImageSize === AssetMediaSize.Fullsize || targetImageSize === 'original';
   };
 
   const onerror = () => {
+    onError?.();
+    onFree?.();
     imageError = imageLoaded = true;
   };
 
   onMount(() => {
     return () => {
+      if (!imageLoaded && !imageError) {
+        onFree?.();
+      }
       preloadManager.cancelPreloadUrl(imageLoaderUrl);
     };
   });
@@ -180,10 +195,16 @@
   let lastUrl: string | undefined;
 
   $effect(() => {
+    if (!lastUrl) {
+      untrack(() => onBusy?.());
+    }
     if (lastUrl && lastUrl !== imageLoaderUrl) {
-      imageLoaded = false;
-      originalImageLoaded = false;
-      imageError = false;
+      untrack(() => {
+        imageLoaded = false;
+        originalImageLoaded = false;
+        imageError = false;
+        onBusy?.();
+      });
     }
     lastUrl = imageLoaderUrl;
   });

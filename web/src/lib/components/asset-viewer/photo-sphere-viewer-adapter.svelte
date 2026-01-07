@@ -1,5 +1,6 @@
 <script lang="ts">
   import { shortcuts } from '$lib/actions/shortcut';
+  import { eventManager } from '$lib/managers/event-manager.svelte';
   import { boundingBoxesArray, type Faces } from '$lib/stores/people.store';
   import { alwaysLoadOriginalFile } from '$lib/stores/preferences.store';
   import { photoZoomState } from '$lib/stores/zoom-image.store';
@@ -110,6 +111,8 @@
     viewer.animate({ zoom: $photoZoomState.currentZoom > 1 ? 50 : 83.3, speed: 250 });
   };
 
+  const handleReady = () => eventManager.emit('AssetViewerFree');
+
   let hasChangedResolution: boolean = false;
   onMount(() => {
     if (!container) {
@@ -154,6 +157,7 @@
       zoomSpeed: 0.5,
       fisheye: false,
     });
+    viewer.addEventListener('ready', handleReady);
     const resolutionPlugin = viewer.getPlugin<ResolutionPlugin>(ResolutionPlugin);
     const zoomHandler = ({ zoomLevel }: events.ZoomUpdatedEvent) => {
       // zoomLevel range: [0, 100]
@@ -178,6 +182,7 @@
 
   onDestroy(() => {
     if (viewer) {
+      viewer.removeEventListener('ready', handleReady);
       viewer.destroy();
     }
     boundingBoxesUnsubscribe();

@@ -35,9 +35,7 @@
     onIntersected?: (() => void) | undefined;
     showAssetName?: boolean;
     isShowDeleteConfirmation?: boolean;
-    onPrevious?: (() => Promise<{ id: string } | undefined>) | undefined;
-    onNext?: (() => Promise<{ id: string } | undefined>) | undefined;
-    onRandom?: (() => Promise<{ id: string } | undefined>) | undefined;
+    onNavigateToAsset?: (asset: AssetResponseDto | undefined) => Promise<boolean>;
     onReload?: (() => void) | undefined;
     pageHeaderOffset?: number;
     slidingWindowOffset?: number;
@@ -54,9 +52,7 @@
     onIntersected = undefined,
     showAssetName = false,
     isShowDeleteConfirmation = $bindable(false),
-    onPrevious = undefined,
-    onNext = undefined,
-    onRandom = undefined,
+    onNavigateToAsset,
     onReload = undefined,
     slidingWindowOffset = 0,
     pageHeaderOffset = 0,
@@ -86,7 +82,7 @@
     return top + pageHeaderOffset < window.bottom && top + geo.getHeight(i) > window.top;
   };
 
-  let currentIndex = 0;
+  let currentIndex = $state(0);
   if (initialAssetId && assets.length > 0) {
     const index = assets.findIndex(({ id }) => id === initialAssetId);
     if (index !== -1) {
@@ -295,47 +291,14 @@
     })(),
   );
 
-  const handleNext = async (): Promise<boolean> => {
-    try {
-      let asset: { id: string } | undefined;
-      if (onNext) {
-        asset = await onNext();
-      } else {
-        if (currentIndex >= assets.length - 1) {
-          return false;
-        }
-
-        currentIndex = currentIndex + 1;
-        asset = currentIndex < assets.length ? assets[currentIndex] : undefined;
-      }
-
-      if (!asset) {
-        return false;
-      }
-
-      await navigateToAsset(asset);
-      return true;
-    } catch (error) {
-      handleError(error, $t('errors.cannot_navigate_next_asset'));
-      return false;
-    }
-  };
-
   const handleRandom = async (): Promise<{ id: string } | undefined> => {
     try {
-      let asset: { id: string } | undefined;
-      if (onRandom) {
-        asset = await onRandom();
-      } else {
-        if (assets.length > 0) {
-          const randomIndex = Math.floor(Math.random() * assets.length);
-          asset = assets[randomIndex];
-        }
-      }
-
-      if (!asset) {
+      if (assets.length === 0) {
         return;
       }
+
+      const randomIndex = Math.floor(Math.random() * assets.length);
+      const asset = assets[randomIndex];
 
       await navigateToAsset(asset);
       return asset;
@@ -345,30 +308,13 @@
     }
   };
 
-  const handlePrevious = async (): Promise<boolean> => {
-    try {
-      let asset: { id: string } | undefined;
-      if (onPrevious) {
-        asset = await onPrevious();
-      } else {
-        if (currentIndex <= 0) {
-          return false;
-        }
-
-        currentIndex = currentIndex - 1;
-        asset = currentIndex >= 0 ? assets[currentIndex] : undefined;
-      }
-
-      if (!asset) {
-        return false;
-      }
-
-      await navigateToAsset(asset);
+  const handleNavigateToAsset = async (target: AssetResponseDto | undefined | null) => {
+    if (target) {
+      currentIndex = assets.indexOf(target);
+      await (onNavigateToAsset ? onNavigateToAsset(target) : navigateToAsset(target));
       return true;
-    } catch (error) {
-      handleError(error, $t('errors.cannot_navigate_previous_asset'));
-      return false;
     }
+    return false;
   };
 
   const navigateToAsset = async (asset?: { id: string }) => {
@@ -390,9 +336,9 @@
         if (assets.length === 0) {
           await goto(AppRoute.PHOTOS);
         } else if (currentIndex === assets.length) {
-          await handlePrevious();
+          await handleNavigateToAsset(assetCursor.previousAsset);
         } else {
-          await setAssetId(assets[currentIndex].id);
+          await handleNavigateToAsset(assetCursor.nextAsset);
         }
         break;
       }
@@ -496,8 +442,7 @@
       <AssetViewer
         cursor={assetCursor}
         onAction={handleAction}
-        onPrevious={handlePrevious}
-        onNext={handleNext}
+        onNavigateToAsset={handleNavigateToAsset}
         onRandom={handleRandom}
         onClose={() => {
           assetViewingStore.showAssetViewer(false);
