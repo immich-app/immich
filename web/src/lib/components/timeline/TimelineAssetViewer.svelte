@@ -5,6 +5,7 @@
 
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
+  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { websocketEvents } from '$lib/stores/websocket';
   import { handlePromiseError } from '$lib/utils';
@@ -194,6 +195,15 @@
       }
     }
   };
+  const handleUndoDelete = async (assets: TimelineAsset[]) => {
+    timelineManager.upsertAssets(assets);
+    if (assets.length > 0) {
+      const restoredAsset = assets[0];
+      const asset = await getAssetInfo({ ...authManager.params, id: restoredAsset.id });
+      assetViewingStore.setAsset(asset);
+      await navigate({ targetRoute: 'current', assetId: restoredAsset.id });
+    }
+  };
   const onAssetUpdate = ({ asset }: { event: 'upload' | 'update'; asset: AssetResponseDto }) => {
     if (asset.id === assetCursor.current.id) {
       void loadCloseAssets(asset);
@@ -221,6 +231,7 @@
     {person}
     preAction={handlePreAction}
     onAction={handleAction}
+    onUndoDelete={handleUndoDelete}
     onPrevious={() => handleNavigateToAsset(assetCursor.previousAsset)}
     onNext={() => handleNavigateToAsset(assetCursor.nextAsset)}
     onRandom={handleRandom}

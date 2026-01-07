@@ -8,7 +8,7 @@
   import { locale } from '$lib/stores/preferences.store';
   import { getBytesWithUnit } from '$lib/utils/byte-units';
   import { getLibrary, getLibraryStatistics, type LibraryResponseDto } from '@immich/sdk';
-  import { Button, CommandPaletteContext } from '@immich/ui';
+  import { Button, CommandPaletteDefaultProvider } from '@immich/ui';
   import type { Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
@@ -51,7 +51,7 @@
 
 <OnEvents {onLibraryCreate} {onLibraryUpdate} {onLibraryDelete} />
 
-<CommandPaletteContext commands={[Create, ScanAll]} />
+<CommandPaletteDefaultProvider name={$t('library')} actions={[Create, ScanAll]} />
 
 <AdminPageLayout breadcrumbs={[{ title: data.meta.title }]} actions={[ScanAll, Create]}>
   <section class="my-4">
