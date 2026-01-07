@@ -66,5 +66,6 @@ extension RemoteAssetEntityDataDomainEx on RemoteAssetEntityData {
     livePhotoVideoId: livePhotoVideoId,
     localId: localId,
     stackId: stackId,
+    isTrashed: deletedAt != null,
   );
 }
