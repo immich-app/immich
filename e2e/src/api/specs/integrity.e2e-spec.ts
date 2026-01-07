@@ -403,7 +403,7 @@ describe('/admin/integrity', () => {
 
       expect(status).toBe(200);
       expect(body).toEqual({
-        hasNextPage: expect.any(Boolean),
+        nextCursor: undefined,
         items: expect.arrayContaining([
           {
             id: expect.any(String),
@@ -411,6 +411,7 @@ describe('/admin/integrity', () => {
             path: `/data/upload/${admin.userId}/untracked1.png`,
             assetId: null,
             fileAssetId: null,
+            createdAt: expect.any(String),
           },
         ]),
       });
@@ -432,7 +433,7 @@ describe('/admin/integrity', () => {
 
       expect(status).toBe(200);
       expect(body).toEqual({
-        hasNextPage: expect.any(Boolean),
+        nextCursor: undefined,
         items: expect.arrayContaining([
           {
             id: expect.any(String),
@@ -440,6 +441,7 @@ describe('/admin/integrity', () => {
             path: expect.any(String),
             assetId: asset.id,
             fileAssetId: null,
+            createdAt: expect.any(String),
           },
         ]),
       });
@@ -461,7 +463,7 @@ describe('/admin/integrity', () => {
 
       expect(status).toBe(200);
       expect(body).toEqual({
-        hasNextPage: expect.any(Boolean),
+        nextCursor: undefined,
         items: expect.arrayContaining([
           {
             id: expect.any(String),
@@ -469,6 +471,7 @@ describe('/admin/integrity', () => {
             path: expect.any(String),
             assetId: asset.id,
             fileAssetId: null,
+            createdAt: expect.any(String),
           },
         ]),
       });
