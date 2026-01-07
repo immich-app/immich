@@ -372,7 +372,7 @@ export class AssetService extends BaseService {
     return JobStatus.Success;
   }
 
-  @OnEvent({ name: 'AssetDeleteRequest' })
+  @OnEvent({ name: 'DeleteAssets' })
   async deleteAll(auth: AuthDto, dto: AssetBulkDeleteDto): Promise<void> {
     const { ids, force } = dto;
 

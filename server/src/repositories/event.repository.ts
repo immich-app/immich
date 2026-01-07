@@ -52,9 +52,9 @@ type EventMap = {
   AssetTrash: [{ assetId: string; userId: string }];
   AssetDelete: [{ assetId: string; userId: string }];
   AssetMetadataExtracted: [{ assetId: string; userId: string; source?: JobSource }];
+  DeleteAssets: [{ auth: AuthDto; dto: AssetBulkDeleteDto }];
 
   // asset bulk events
-  AssetDeleteRequest: [{ auth: AuthDto; dto: AssetBulkDeleteDto }];
   AssetTrashAll: [{ assetIds: string[]; userId: string }];
   AssetDeleteAll: [{ assetIds: string[]; userId: string }];
   AssetRestoreAll: [{ assetIds: string[]; userId: string }];

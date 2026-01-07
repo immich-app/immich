@@ -82,7 +82,7 @@ export class DuplicateService extends BaseService {
 
       const { trash } = await this.getConfig({ withCache: false });
 
-      await this.eventRepository.emit('AssetDeleteRequest', {
+      await this.eventRepository.emit('DeleteAssets', {
         auth,
         dto: { ids: idsToDelete, force: !trash },
       });
