@@ -37,9 +37,9 @@ from
   "integrity_report"
 where
   "type" = $1
-  and "createdAt" <= $2
+  and "id" <= $2
 order by
-  "createdAt" desc
+  "id" desc
 limit
   $3
 
