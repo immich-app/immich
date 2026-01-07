@@ -14,13 +14,21 @@
   import { themeManager } from '$lib/managers/theme-manager.svelte';
   import ServerRestartingModal from '$lib/modals/ServerRestartingModal.svelte';
   import VersionAnnouncementModal from '$lib/modals/VersionAnnouncementModal.svelte';
+  import { sidebarStore } from '$lib/stores/sidebar.svelte';
   import { user } from '$lib/stores/user.store';
   import { closeWebsocketConnection, openWebsocketConnection, websocketStore } from '$lib/stores/websocket';
   import type { ReleaseEvent } from '$lib/types';
   import { copyToClipboard, getReleaseType, semverToName } from '$lib/utils';
   import { maintenanceShouldRedirect } from '$lib/utils/maintenance';
   import { isAssetViewerRoute } from '$lib/utils/navigation';
-  import { CommandPaletteContext, modalManager, setTranslations, type ActionItem } from '@immich/ui';
+  import {
+    CommandPaletteDefaultProvider,
+    TooltipProvider,
+    modalManager,
+    setTranslations,
+    toastManager,
+    type ActionItem,
+  } from '@immich/ui';
   import { mdiAccountMultipleOutline, mdiBookshelf, mdiCog, mdiServer, mdiSync, mdiThemeLightDark } from '@mdi/js';
   import { onMount, type Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -52,6 +60,8 @@
     return new URL(page.url.pathname + page.url.search, 'https://my.immich.app');
   };
 
+  toastManager.setOptions({ class: 'top-16' });
+
   onMount(() => {
     const element = document.querySelector('#stencil');
     element?.remove();
@@ -61,6 +71,10 @@
   eventManager.emit('AppInit');
 
   beforeNavigate(({ from, to }) => {
+    if (sidebarStore.isOpen) {
+      sidebarStore.reset();
+    }
+
     if (isAssetViewerRoute(from) && isAssetViewerRoute(to)) {
       return;
     }
@@ -143,22 +157,23 @@
       onAction: () => goto(AppRoute.ADMIN_USERS),
     },
     {
-      title: $t('jobs'),
-      description: $t('admin.jobs_page_description'),
-      icon: mdiSync,
-      onAction: () => goto(AppRoute.ADMIN_JOBS),
-    },
-    {
       title: $t('settings'),
-      description: $t('admin.jobs_page_description'),
+      description: $t('admin.settings_page_description'),
       icon: mdiCog,
       onAction: () => goto(AppRoute.ADMIN_SETTINGS),
+    },
+    {
+      title: $t('admin.queues'),
+      description: $t('admin.queues_page_description'),
+      icon: mdiSync,
+      type: $t('page'),
+      onAction: () => goto(AppRoute.ADMIN_QUEUES),
     },
     {
       title: $t('external_libraries'),
       description: $t('admin.external_libraries_page_description'),
       icon: mdiBookshelf,
-      onAction: () => goto(AppRoute.ADMIN_LIBRARY_MANAGEMENT),
+      onAction: () => goto(AppRoute.ADMIN_LIBRARIES),
     },
     {
       title: $t('server_stats'),
@@ -172,7 +187,7 @@
 </script>
 
 <OnEvents {onReleaseEvent} />
-<CommandPaletteContext {commands} />
+<CommandPaletteDefaultProvider name="Global" actions={commands} />
 
 <svelte:head>
   <title>{page.data.meta?.title || 'Web'} - Immich</title>
@@ -220,15 +235,17 @@
   }}
 />
 
-{#if page.data.error}
-  <ErrorLayout error={page.data.error}></ErrorLayout>
-{:else}
-  {@render children?.()}
-{/if}
+<TooltipProvider>
+  {#if page.data.error}
+    <ErrorLayout error={page.data.error}></ErrorLayout>
+  {:else}
+    {@render children?.()}
+  {/if}
 
-{#if showNavigationLoadingBar}
-  <NavigationLoadingBar />
-{/if}
+  {#if showNavigationLoadingBar}
+    <NavigationLoadingBar />
+  {/if}
 
-<DownloadPanel />
-<UploadPanel />
+  <DownloadPanel />
+  <UploadPanel />
+</TooltipProvider>

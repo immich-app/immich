@@ -9,6 +9,7 @@
   import type { Viewport } from '$lib/managers/timeline-manager/types';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
+  import { mobileDevice } from '$lib/stores/mobile-device.svelte';
   import { handlePromiseError } from '$lib/utils';
   import { cancelMultiselect, downloadArchive } from '$lib/utils/asset-utils';
   import { fileUploadHandler, openFileUploadDialog } from '$lib/utils/file-uploader';
@@ -108,7 +109,7 @@
       <ControlAppBar onClose={() => goto(AppRoute.PHOTOS)} backIcon={mdiArrowLeft} showBackButton={false}>
         {#snippet leading()}
           <a data-sveltekit-preload-data="hover" class="ms-4" href="/">
-            <Logo variant="inline" />
+            <Logo variant={mobileDevice.maxMd ? 'icon' : 'inline'} class="min-w-10" />
           </a>
         {/snippet}
 
@@ -145,12 +146,10 @@
       {#await import('$lib/components/asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
         <AssetViewer
           {asset}
-          showCloseButton={false}
           onAction={handleAction}
           onPrevious={() => Promise.resolve(false)}
           onNext={() => Promise.resolve(false)}
           onRandom={() => Promise.resolve(undefined)}
-          onClose={() => {}}
         />
       {/await}
     {/await}

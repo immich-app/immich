@@ -1,6 +1,6 @@
 {
   "name": "immich",
-  "version": "2.3.1",
+  "version": "2.4.1",
   "description": "",
   "author": "",
   "private": true,
@@ -47,7 +47,7 @@
     "@opentelemetry/context-async-hooks": "^2.0.0",
     "@opentelemetry/exporter-prometheus": "^0.208.0",
     "@opentelemetry/instrumentation-http": "^0.208.0",
-    "@opentelemetry/instrumentation-ioredis": "^0.56.0",
+    "@opentelemetry/instrumentation-ioredis": "^0.57.0",
     "@opentelemetry/instrumentation-nestjs-core": "^0.55.0",
     "@opentelemetry/instrumentation-pg": "^0.61.0",
     "@opentelemetry/resources": "^2.0.1",
@@ -69,8 +69,8 @@
     "compression": "^1.8.0",
     "cookie": "^1.0.2",
     "cookie-parser": "^1.4.7",
-    "cron": "4.3.3",
-    "exiftool-vendored": "^33.0.0",
+    "cron": "4.3.5",
+    "exiftool-vendored": "^34.3.0",
     "express": "^5.1.0",
     "fast-glob": "^3.3.2",
     "fluent-ffmpeg": "^2.1.2",
@@ -136,7 +136,7 @@
     "@types/luxon": "^3.6.2",
     "@types/mock-fs": "^4.13.1",
     "@types/multer": "^2.0.0",
-    "@types/node": "^24.10.1",
+    "@types/node": "^24.10.4",
     "@types/nodemailer": "^7.0.0",
     "@types/picomatch": "^4.0.0",
     "@types/pngjs": "^6.0.5",
@@ -155,7 +155,7 @@
     "mock-fs": "^5.2.0",
     "node-gyp": "^12.0.0",
     "pngjs": "^7.0.0",
-    "prettier": "^3.0.2",
+    "prettier": "^3.7.4",
     "prettier-plugin-organize-imports": "^4.0.0",
     "sql-formatter": "^15.0.0",
     "supertest": "^7.1.0",
@@ -164,11 +164,11 @@
     "typescript": "^5.9.2",
     "typescript-eslint": "^8.28.0",
     "unplugin-swc": "^1.4.5",
-    "vite-tsconfig-paths": "^5.0.0",
+    "vite-tsconfig-paths": "^6.0.0",
     "vitest": "^3.0.0"
   },
   "volta": {
-    "node": "24.11.1"
+    "node": "24.12.0"
   },
   "overrides": {
     "sharp": "^0.34.5"

@@ -31,8 +31,10 @@ class _SharePreparingDialog extends StatelessWidget {
 
 class ShareActionButton extends ConsumerWidget {
   final ActionSource source;
+  final bool iconOnly;
+  final bool menuItem;
 
-  const ShareActionButton({super.key, required this.source});
+  const ShareActionButton({super.key, required this.source, this.iconOnly = false, this.menuItem = false});
 
   void _onTap(BuildContext context, WidgetRef ref) async {
     if (!context.mounted) {
@@ -74,6 +76,8 @@ class ShareActionButton extends ConsumerWidget {
     return BaseActionButton(
       iconData: Platform.isAndroid ? Icons.share_rounded : Icons.ios_share_rounded,
       label: 'share'.t(context: context),
+      iconOnly: iconOnly,
+      menuItem: menuItem,
       onPressed: () => _onTap(context, ref),
     );
   }

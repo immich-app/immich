@@ -9,6 +9,7 @@ import { handleError } from '$lib/utils/handle-error';
 import { getFormatter } from '$lib/utils/i18n';
 import {
   createSharedLink,
+  getSharedLinkById,
   removeSharedLink,
   removeSharedLinkAssets,
   updateSharedLink,
@@ -24,26 +25,26 @@ export const getSharedLinkActions = ($t: MessageFormatter, sharedLink: SharedLin
   const Edit: ActionItem = {
     title: $t('edit_link'),
     icon: mdiPencilOutline,
-    onAction: () => void goto(`${AppRoute.SHARED_LINKS}/${sharedLink.id}`),
+    onAction: () => goto(`${AppRoute.SHARED_LINKS}/${sharedLink.id}/edit`),
   };
 
   const Delete: ActionItem = {
     title: $t('delete_link'),
     icon: mdiTrashCanOutline,
     color: 'danger',
-    onAction: () => void handleDeleteSharedLink(sharedLink),
+    onAction: () => handleDeleteSharedLink(sharedLink),
   };
 
   const Copy: ActionItem = {
     title: $t('copy_link'),
     icon: mdiContentCopy,
-    onAction: () => void copyToClipboard(asUrl(sharedLink)),
+    onAction: () => copyToClipboard(asUrl(sharedLink)),
   };
 
   const ViewQrCode: ActionItem = {
     title: $t('view_qr_code'),
     icon: mdiQrcode,
-    onAction: () => void handleShowSharedLinkQrCode(sharedLink),
+    onAction: () => handleShowSharedLinkQrCode(sharedLink),
   };
 
   return { Edit, Delete, Copy, ViewQrCode };
@@ -58,7 +59,11 @@ export const handleCreateSharedLink = async (dto: SharedLinkCreateDto) => {
   const $t = await getFormatter();
 
   try {
-    const sharedLink = await createSharedLink({ sharedLinkCreateDto: dto });
+    let sharedLink = await createSharedLink({ sharedLinkCreateDto: dto });
+    if (dto.albumId) {
+      // fetch album details, for event
+      sharedLink = await getSharedLinkById({ id: sharedLink.id });
+    }
 
     eventManager.emit('SharedLinkCreate', sharedLink);
 
@@ -88,7 +93,7 @@ export const handleUpdateSharedLink = async (sharedLink: SharedLinkResponseDto, 
   }
 };
 
-export const handleDeleteSharedLink = async (sharedLink: SharedLinkResponseDto): Promise<boolean> => {
+const handleDeleteSharedLink = async (sharedLink: SharedLinkResponseDto) => {
   const $t = await getFormatter();
   const success = await modalManager.showDialog({
     title: $t('delete_shared_link'),
@@ -96,17 +101,15 @@ export const handleDeleteSharedLink = async (sharedLink: SharedLinkResponseDto):
     confirmText: $t('delete'),
   });
   if (!success) {
-    return false;
+    return;
   }
 
   try {
     await removeSharedLink({ id: sharedLink.id });
     eventManager.emit('SharedLinkDelete', sharedLink);
     toastManager.success($t('deleted_shared_link'));
-    return true;
   } catch (error) {
     handleError(error, $t('errors.unable_to_delete_shared_link'));
-    return false;
   }
 };
 

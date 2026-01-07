@@ -50,6 +50,7 @@ export class AssetJobRepository {
             .whereRef('asset.id', '=', 'tag_asset.assetId'),
         ).as('tags'),
       )
+      .$call(withExifInner)
       .limit(1)
       .executeTakeFirst();
   }
@@ -126,6 +127,16 @@ export class AssetJobRepository {
       .select((eb) => withFiles(eb, AssetFileType.Sidecar))
       .where('asset.id', '=', id)
       .executeTakeFirst();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  async getLockedPropertiesForMetadataExtraction(assetId: string) {
+    return this.db
+      .selectFrom('asset_exif')
+      .select('asset_exif.lockedProperties')
+      .where('asset_exif.assetId', '=', assetId)
+      .executeTakeFirst()
+      .then((row) => row?.lockedProperties ?? []);
   }
 
   @GenerateSql({ params: [DummyValue.UUID, AssetFileType.Thumbnail] })
@@ -232,6 +243,7 @@ export class AssetJobRepository {
         'asset.livePhotoVideoId',
         'asset.encodedVideoPath',
         'asset.originalPath',
+        'asset.isOffline',
       ])
       .$call(withExif)
       .select(withFacesAndPeople)
@@ -312,6 +324,9 @@ export class AssetJobRepository {
         'asset.fileCreatedAt',
         'asset_exif.timeZone',
         'asset_exif.fileSizeInByte',
+        'asset_exif.make',
+        'asset_exif.model',
+        'asset_exif.lensModel',
       ])
       .select((eb) => withFiles(eb, AssetFileType.Sidecar))
       .where('asset.deletedAt', 'is', null);

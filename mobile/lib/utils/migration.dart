@@ -31,7 +31,7 @@ import 'package:isar/isar.dart';
 // ignore: import_rule_photo_manager
 import 'package:photo_manager/photo_manager.dart';
 
-const int targetVersion = 19;
+const int targetVersion = 20;
 
 Future<void> migrateDatabaseIfNeeded(Isar db, Drift drift) async {
   final hasVersion = Store.tryGet(StoreKey.version) != null;
@@ -81,9 +81,13 @@ Future<void> migrateDatabaseIfNeeded(Isar db, Drift drift) async {
   }
 
   if (version < 19 && Store.isBetaTimelineEnabled) {
-    if (!await _populateUpdatedAtTime(drift)) {
+    if (!await _populateLocalAssetTime(drift)) {
       return;
     }
+  }
+
+  if (version < 20 && Store.isBetaTimelineEnabled) {
+    await _syncLocalAlbumIsIosSharedAlbum(drift);
   }
 
   if (targetVersion >= 12) {
@@ -229,7 +233,7 @@ Future<void> _migrateDeviceAsset(Isar db) async {
   });
 }
 
-Future<bool> _populateUpdatedAtTime(Drift db) async {
+Future<bool> _populateLocalAssetTime(Drift db) async {
   try {
     final nativeApi = NativeSyncApi();
     final albums = await nativeApi.getAlbums();
@@ -240,6 +244,9 @@ Future<bool> _populateUpdatedAtTime(Drift db) async {
           batch.update(
             db.localAssetEntity,
             LocalAssetEntityCompanion(
+              longitude: Value(asset.longitude),
+              latitude: Value(asset.latitude),
+              adjustmentTime: Value(tryFromSecondsSinceEpoch(asset.adjustmentTime, isUtc: true)),
               updatedAt: Value(tryFromSecondsSinceEpoch(asset.updatedAt, isUtc: true) ?? DateTime.timestamp()),
             ),
             where: (t) => t.id.equals(asset.id),
@@ -250,8 +257,27 @@ Future<bool> _populateUpdatedAtTime(Drift db) async {
 
     return true;
   } catch (error) {
-    dPrint(() => "[MIGRATION] Error while populating updatedAt time: $error");
+    dPrint(() => "[MIGRATION] Error while populating asset time: $error");
     return false;
+  }
+}
+
+Future<void> _syncLocalAlbumIsIosSharedAlbum(Drift db) async {
+  try {
+    final nativeApi = NativeSyncApi();
+    final albums = await nativeApi.getAlbums();
+    await db.batch((batch) {
+      for (final album in albums) {
+        batch.update(
+          db.localAlbumEntity,
+          LocalAlbumEntityCompanion(isIosSharedAlbum: Value(album.isCloud)),
+          where: (t) => t.id.equals(album.id),
+        );
+      }
+    });
+    dPrint(() => "[MIGRATION] Successfully updated isIosSharedAlbum for ${albums.length} albums");
+  } catch (error) {
+    dPrint(() => "[MIGRATION] Error while syncing local album isIosSharedAlbum: $error");
   }
 }
 

@@ -1,9 +1,40 @@
+import { goto } from '$app/navigation';
+import ToastAction from '$lib/components/ToastAction.svelte';
+import { AppRoute } from '$lib/constants';
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import { downloadArchive } from '$lib/utils/asset-utils';
 import { handleError } from '$lib/utils/handle-error';
 import { getFormatter } from '$lib/utils/i18n';
-import { deleteAlbum, type AlbumResponseDto } from '@immich/sdk';
+import { deleteAlbum, updateAlbumInfo, type AlbumResponseDto, type UpdateAlbumDto } from '@immich/sdk';
 import { modalManager, toastManager } from '@immich/ui';
+
+export const handleUpdateAlbum = async ({ id }: { id: string }, dto: UpdateAlbumDto) => {
+  const $t = await getFormatter();
+
+  try {
+    const response = await updateAlbumInfo({ id, updateAlbumDto: dto });
+    eventManager.emit('AlbumUpdate', response);
+    toastManager.custom({
+      component: ToastAction,
+      props: {
+        color: 'primary',
+        title: $t('success'),
+        description: $t('album_info_updated'),
+        button: {
+          text: $t('view_album'),
+          color: 'primary',
+          onClick() {
+            return goto(`${AppRoute.ALBUMS}/${id}`);
+          },
+        },
+      },
+    });
+
+    return true;
+  } catch (error) {
+    handleError(error, $t('errors.unable_to_update_album_info'));
+  }
+};
 
 export const handleDeleteAlbum = async (album: AlbumResponseDto, options?: { prompt?: boolean; notify?: boolean }) => {
   const $t = await getFormatter();
