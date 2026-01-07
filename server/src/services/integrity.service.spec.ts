@@ -28,16 +28,16 @@ describe(IntegrityService.name, () => {
     it('gets report', async () => {
       mocks.integrityReport.getIntegrityReports.mockResolvedValue({
         items: [],
-        hasNextPage: false,
+        nextCursor: undefined,
       });
 
       await expect(sut.getIntegrityReport({ type: IntegrityReportType.ChecksumFail })).resolves.toEqual({
         items: [],
-        hasNextPage: false,
+        nextCursor: undefined,
       });
 
       expect(mocks.integrityReport.getIntegrityReports).toHaveBeenCalledWith(
-        { page: 1, size: 100 },
+        { cursor: undefined, limit: 100 },
         IntegrityReportType.ChecksumFail,
       );
     });
