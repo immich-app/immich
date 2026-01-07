@@ -19,7 +19,7 @@
     detectedInstall = await detectPriorInstall();
   }
 
-  onMount(reload);
+  onMount(() => void reload());
 </script>
 
 {#if stage === 0}

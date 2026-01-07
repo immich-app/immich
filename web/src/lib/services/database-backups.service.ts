@@ -1,3 +1,4 @@
+import { eventManager } from '$lib/managers/event-manager.svelte';
 import { uploadRequest } from '$lib/utils';
 import { openFilePicker } from '$lib/utils/file-uploader';
 import { handleError } from '$lib/utils/handle-error';
@@ -13,7 +14,7 @@ import { modalManager, type ActionItem } from '@immich/ui';
 import { mdiDownload, mdiTrashCanOutline } from '@mdi/js';
 import type { MessageFormatter } from 'svelte-i18n';
 
-export const getDatabaseBackupActions = ($t: MessageFormatter, filename: string, remove: () => void) => {
+export const getDatabaseBackupActions = ($t: MessageFormatter, filename: string) => {
   const Download: ActionItem = {
     title: $t('download'),
     icon: mdiDownload,
@@ -26,7 +27,9 @@ export const getDatabaseBackupActions = ($t: MessageFormatter, filename: string,
     title: $t('delete'),
     icon: mdiTrashCanOutline,
     color: 'danger',
-    onAction: remove,
+    onAction() {
+      void handleDeleteDatabaseBackup(filename);
+    },
   };
 
   return { Download, Delete };
@@ -69,15 +72,25 @@ export const handleDeleteDatabaseBackup = async (...filenames: string[]) => {
   }
 
   try {
+    for (const filename of filenames) {
+      eventManager.emit('BackupDelete', { filename, isDeleting: true, isDeleted: false });
+    }
+
     await deleteDatabaseBackup({
       databaseBackupDeleteDto: {
         backups: filenames,
       },
     });
 
-    return true;
+    for (const filename of filenames) {
+      eventManager.emit('BackupDelete', { filename, isDeleting: false, isDeleted: true });
+    }
   } catch (error) {
     handleError(error, $t('admin.maintenance_delete_error'));
+
+    for (const filename of filenames) {
+      eventManager.emit('BackupDelete', { filename, isDeleting: false, isDeleted: false });
+    }
   }
 };
 
@@ -85,7 +98,7 @@ export const handleDownloadDatabaseBackup = (filename: string) => {
   location.href = getBaseUrl() + '/admin/database-backups/' + filename;
 };
 
-export const handleUploadDatabaseBackup = async (progressFn?: (progress: number) => void) => {
+export const handleUploadDatabaseBackup = async () => {
   const $t = await getFormatter();
 
   try {
@@ -97,16 +110,14 @@ export const handleUploadDatabaseBackup = async (progressFn?: (progress: number)
       url: getBaseUrl() + '/admin/database-backups/upload',
       data: formData,
       onUploadProgress(event) {
-        progressFn?.(event.loaded / event.total);
+        eventManager.emit('BackupUpload', { progress: event.loaded / event.total, isComplete: false });
       },
     });
 
-    progressFn?.(1);
-
-    return true;
+    eventManager.emit('BackupUpload', { progress: 1, isComplete: true });
   } catch (error) {
     handleError(error, $t('admin.maintenance_upload_backup_error'));
   } finally {
-    progressFn?.(-1);
+    eventManager.emit('BackupUpload', { progress: -1, isComplete: false });
   }
 };

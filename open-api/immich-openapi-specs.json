@@ -360,11 +360,11 @@
         "x-immich-admin-only": true,
         "x-immich-history": [
           {
-            "version": "v2.4.0",
+            "version": "v2.5.0",
             "state": "Added"
           },
           {
-            "version": "v2.4.0",
+            "version": "v2.5.0",
             "state": "Alpha"
           }
         ],
@@ -405,11 +405,11 @@
         "x-immich-admin-only": true,
         "x-immich-history": [
           {
-            "version": "v2.4.0",
+            "version": "v2.5.0",
             "state": "Added"
           },
           {
-            "version": "v2.4.0",
+            "version": "v2.5.0",
             "state": "Alpha"
           }
         ],
@@ -433,11 +433,11 @@
         ],
         "x-immich-history": [
           {
-            "version": "v2.4.0",
+            "version": "v2.5.0",
             "state": "Added"
           },
           {
-            "version": "v2.4.0",
+            "version": "v2.5.0",
             "state": "Alpha"
           }
         ],
@@ -483,11 +483,11 @@
         "x-immich-admin-only": true,
         "x-immich-history": [
           {
-            "version": "v2.4.0",
+            "version": "v2.5.0",
             "state": "Added"
           },
           {
-            "version": "v2.4.0",
+            "version": "v2.5.0",
             "state": "Alpha"
           }
         ],
@@ -541,11 +541,11 @@
         "x-immich-admin-only": true,
         "x-immich-history": [
           {
-            "version": "v2.4.0",
+            "version": "v2.5.0",
             "state": "Added"
           },
           {
-            "version": "v2.4.0",
+            "version": "v2.5.0",
             "state": "Alpha"
           }
         ],
@@ -638,11 +638,11 @@
         "x-immich-admin-only": true,
         "x-immich-history": [
           {
-            "version": "v2.4.0",
+            "version": "v2.5.0",
             "state": "Added"
           },
           {
-            "version": "v2.4.0",
+            "version": "v2.5.0",
             "state": "Alpha"
           }
         ],
@@ -717,11 +717,11 @@
         ],
         "x-immich-history": [
           {
-            "version": "v2.4.0",
+            "version": "v2.5.0",
             "state": "Added"
           },
           {
-            "version": "v2.4.0",
+            "version": "v2.5.0",
             "state": "Alpha"
           }
         ],

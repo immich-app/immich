@@ -19,7 +19,7 @@
 
 <AdminPageLayout breadcrumbs={[{ title: data.meta.title }]} actions={[StartMaintenance]}>
   <section id="setting-content" class="flex place-content-center sm:mx-4">
-    <section class="w-full pb-28 sm:w-5/6 md:w-[850px]">
+    <section class="w-full pb-28 sm:w-5/6 md:w-212.5">
       <SettingAccordionState queryParam={QueryParameter.IS_OPEN}>
         <SettingAccordion
           title={$t('admin.maintenance_restore_database_backup')}

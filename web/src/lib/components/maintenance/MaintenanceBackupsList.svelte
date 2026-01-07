@@ -1,7 +1,7 @@
 <script lang="ts">
+  import OnEvents from '$lib/components/OnEvents.svelte';
   import {
     getDatabaseBackupActions,
-    handleDeleteDatabaseBackup,
     handleRestoreDatabaseBackup,
     handleUploadDatabaseBackup,
   } from '$lib/services/database-backups.service';
@@ -31,7 +31,7 @@
 
   let props: Props = $props();
 
-  const mapBackups = (filenames: string[]) => {
+  export const mapTimeToDatabaseBackups = (filenames: string[]) => {
     return filenames.map((filename) => {
       const date = /\d{4}\d{2}\d{2}T\d{2}\d{2}\d{2}/.exec(filename);
 
@@ -43,11 +43,11 @@
   };
 
   let deleting = new SvelteSet();
-  let backups = $state(mapBackups(props.backups ?? []));
+  let backups = $state(mapTimeToDatabaseBackups(props.backups ?? []));
 
   async function reloadBackups() {
     const result = await listDatabaseBackups();
-    backups = mapBackups(result.backups);
+    backups = mapTimeToDatabaseBackups(result.backups);
   }
 
   onMount(() => {
@@ -56,18 +56,8 @@
     }
   });
 
-  async function remove(filename: string) {
-    deleting.add(filename);
-
-    if (await handleDeleteDatabaseBackup(filename)) {
-      backups = backups.filter((backup) => backup.filename !== filename);
-    }
-
-    deleting.delete(filename);
-  }
-
   const handleOpen = async (event: Event, props: Partial<ContextMenuBaseProps>, filename: string) => {
-    const { Download, Delete } = getDatabaseBackupActions($t, filename, () => void remove(filename));
+    const { Download, Delete } = getDatabaseBackupActions($t, filename);
 
     await menuManager.show({
       ...props,
@@ -78,10 +68,28 @@
 
   let uploadProgress = $state(-1);
 
-  function upload() {
-    void handleUploadDatabaseBackup((value) => (uploadProgress = value)).then(reloadBackups);
+  function onBackupDelete(event: { filename: string; isDeleting: boolean; isDeleted: boolean }) {
+    if (event.isDeleted) {
+      backups = backups.filter((backup) => backup.filename !== event.filename);
+    }
+
+    if (event.isDeleting) {
+      deleting.add(event.filename);
+    } else {
+      deleting.delete(event.filename);
+    }
+  }
+
+  function onBackupUpload(event: { progress: number; isComplete: boolean }) {
+    uploadProgress = event.progress;
+
+    if (event.isComplete) {
+      void reloadBackups();
+    }
   }
 </script>
+
+<OnEvents {onBackupDelete} {onBackupUpload} />
 
 <Stack gap={2} class="mt-4 text-left">
   <Card>
@@ -89,7 +97,7 @@
       {#if uploadProgress === -1}
         <HStack>
           <Text class="grow">{$t('admin.maintenance_upload_backup')}</Text>
-          <Button size="tiny" onclick={upload}>{$t('select_from_computer')}</Button>
+          <Button size="tiny" onclick={handleUploadDatabaseBackup}>{$t('select_from_computer')}</Button>
         </HStack>
       {:else}
         <HStack gap={8}>
