@@ -61,8 +61,7 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
           (_) async {
             try {
               wsProvider.connect();
-              await infoProvider.getServerInfo();
-              final serverInfo = ref.read(serverInfoProvider);
+              final serverInfo = await infoProvider.getServerInfo();
 
               if (Store.isBetaTimelineEnabled) {
                 bool syncSuccess = false;
