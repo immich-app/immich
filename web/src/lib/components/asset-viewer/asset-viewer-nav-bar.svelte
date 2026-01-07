@@ -8,7 +8,6 @@
   import ArchiveAction from '$lib/components/asset-viewer/actions/archive-action.svelte';
   import DeleteAction from '$lib/components/asset-viewer/actions/delete-action.svelte';
   import DownloadAction from '$lib/components/asset-viewer/actions/download-action.svelte';
-  import FavoriteAction from '$lib/components/asset-viewer/actions/favorite-action.svelte';
   import KeepThisDeleteOthersAction from '$lib/components/asset-viewer/actions/keep-this-delete-others.svelte';
   import RatingAction from '$lib/components/asset-viewer/actions/rating-action.svelte';
   import RemoveAssetFromStack from '$lib/components/asset-viewer/actions/remove-asset-from-stack.svelte';
@@ -28,7 +27,7 @@
   import { photoViewerImgElement } from '$lib/stores/assets-store.svelte';
   import { user } from '$lib/stores/user.store';
   import { photoZoomState } from '$lib/stores/zoom-image.store';
-  import { getAssetJobName, getSharedLink } from '$lib/utils';
+  import { getAssetJobName, getSharedLink, withoutIcons } from '$lib/utils';
   import type { OnUndoDelete } from '$lib/utils/actions';
   import { canCopyImageToClipboard } from '$lib/utils/asset-utils';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
@@ -105,6 +104,7 @@
 
   const Close: ActionItem = {
     title: $t('go_back'),
+    type: $t('assets'),
     icon: mdiArrowLeft,
     $if: () => !!onClose,
     onAction: () => onClose?.(),
@@ -113,7 +113,9 @@
 
   const { Cast } = $derived(getGlobalActions($t));
 
-  const { Share, Offline, PlayMotionPhoto, StopMotionPhoto, Info } = $derived(getAssetActions($t, asset));
+  const { Share, Offline, Favorite, Unfavorite, PlayMotionPhoto, StopMotionPhoto, Info } = $derived(
+    getAssetActions($t, asset),
+  );
 
   // $: showEditorButton =
   //   isOwner &&
@@ -128,7 +130,7 @@
 
 <CommandPaletteDefaultProvider
   name={$t('assets')}
-  actions={[Close, Share, Offline, PlayMotionPhoto, StopMotionPhoto, Info]}
+  actions={withoutIcons([Close, Share, Offline, Favorite, Unfavorite, PlayMotionPhoto, StopMotionPhoto, Info])}
 />
 
 <div
@@ -172,9 +174,10 @@
     {/if}
 
     <ActionButton action={Info} />
+    <ActionButton action={Favorite} />
+    <ActionButton action={Unfavorite} />
 
     {#if isOwner}
-      <FavoriteAction {asset} {onAction} />
       <RatingAction {asset} {onAction} />
     {/if}
 
