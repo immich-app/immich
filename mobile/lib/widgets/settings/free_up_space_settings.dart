@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
@@ -9,8 +10,6 @@ import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/providers/cleanup.provider.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
-
-enum CleanupStep { selectDate, filterOptions, scan, delete }
 
 class FreeUpSpaceSettings extends ConsumerStatefulWidget {
   const FreeUpSpaceSettings({super.key});
@@ -42,7 +41,7 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
     return CleanupStep.selectDate;
   }
 
-  void _goToFilterStep() {
+  void _goToFiltersStep() {
     ref.read(hapticFeedbackProvider.notifier).mediumImpact();
     setState(() => _currentStep = CleanupStep.filterOptions);
   }
@@ -52,11 +51,9 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
     setState(() => _currentStep = CleanupStep.scan);
   }
 
-  void _setPresetDate(int? daysAgo) {
+  void _setPresetDate(int daysAgo) {
     ref.read(hapticFeedbackProvider.notifier).mediumImpact();
-    final date = daysAgo != null
-        ? DateTime.now().subtract(Duration(days: daysAgo))
-        : DateTime(2000); // Very old date for "all" option
+    final date = DateTime.now().subtract(Duration(days: daysAgo));
     ref.read(cleanupProvider.notifier).setSelectedDate(date);
     setState(() => _hasScanned = false);
   }
@@ -125,17 +122,14 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
 
     if (mounted && deletedCount > 0) {
       ref.read(hapticFeedbackProvider.notifier).heavyImpact();
-      setState(() => _currentStep = CleanupStep.selectDate);
 
       await showDialog<void>(
         context: context,
         builder: (ctx) => _DeleteSuccessDialog(deletedCount: deletedCount),
       );
     }
-  }
 
-  String _formatDate(DateTime date) {
-    return DateFormat.yMMMd().format(date);
+    setState(() => _currentStep = CleanupStep.selectDate);
   }
 
   void _showAssetsPreview(List<LocalAsset> assets) {
@@ -236,12 +230,6 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
                   setState(() => _currentStep = CleanupStep.values[step]);
                 }
               },
-
-              onStepCancel: () {
-                if (_currentStep.index > 0) {
-                  setState(() => _currentStep = CleanupStep.values[_currentStep.index - 1]);
-                }
-              },
               controlsBuilder: (_, __) => const SizedBox.shrink(),
               steps: [
                 // Step 1: Select Cutoff Date
@@ -258,7 +246,7 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
                   ),
                   subtitle: hasDate
                       ? Text(
-                          _formatDate(state.selectedDate!),
+                          DateFormat.yMMMd().format(state.selectedDate!),
                           style: context.textTheme.bodyMedium?.copyWith(
                             color: context.colorScheme.primary,
                             fontWeight: FontWeight.w500,
@@ -327,7 +315,7 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
                       ),
                       const SizedBox(height: 16),
                       ElevatedButton.icon(
-                        onPressed: hasDate ? () => _goToFilterStep() : null,
+                        onPressed: hasDate ? () => _goToFiltersStep() : null,
                         icon: const Icon(Icons.arrow_forward),
                         label: Text('continue'.t(context: context)),
                         style: ElevatedButton.styleFrom(minimumSize: const Size(double.infinity, 48)),
@@ -545,7 +533,7 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
                                   context: context,
                                   args: {
                                     'count': state.assetsToDelete.length.toString(),
-                                    'date': _formatDate(state.selectedDate!),
+                                    'date': DateFormat.yMMMd().format(state.selectedDate!),
                                   },
                                 ),
                                 style: context.textTheme.labelLarge?.copyWith(fontSize: 15),

@@ -1,6 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/constants/constants.dart';
+import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album.entity.dart';
@@ -160,9 +161,9 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
     whereClause = whereClause & _db.localAssetEntity.id.isNotInQuery(iosSharedAlbumAssets);
 
     if (filterType == AssetFilterType.photosOnly) {
-      whereClause = whereClause & _db.localAssetEntity.type.equals(AssetType.image.index);
+      whereClause = whereClause & _db.localAssetEntity.type.equalsValue(AssetType.image);
     } else if (filterType == AssetFilterType.videosOnly) {
-      whereClause = whereClause & _db.localAssetEntity.type.equals(AssetType.video.index);
+      whereClause = whereClause & _db.localAssetEntity.type.equalsValue(AssetType.video);
     }
 
     if (keepFavorites) {
