@@ -3,7 +3,7 @@ import { cancelImageUrl, preloadImageUrl } from '$lib/utils/sw-messaging';
 import { AssetTypeEnum, type AssetResponseDto } from '@immich/sdk';
 
 class PreloadManager {
-  preload(asset: AssetResponseDto | undefined | null) {
+  preload(asset: AssetResponseDto | undefined) {
     if (globalThis.isSecureContext) {
       preloadImageUrl(getAssetUrl({ asset }));
       return;
@@ -19,7 +19,7 @@ class PreloadManager {
     img.src = url;
   }
 
-  cancel(asset: AssetResponseDto | undefined | null) {
+  cancel(asset: AssetResponseDto | undefined) {
     if (!globalThis.isSecureContext || !asset) {
       return;
     }
@@ -27,7 +27,7 @@ class PreloadManager {
     cancelImageUrl(url);
   }
 
-  cancelPreloadUrl(url: string | undefined | null) {
+  cancelPreloadUrl(url: string | undefined) {
     if (!globalThis.isSecureContext) {
       return;
     }

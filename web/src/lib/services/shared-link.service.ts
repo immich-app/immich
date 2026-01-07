@@ -9,6 +9,7 @@ import { handleError } from '$lib/utils/handle-error';
 import { getFormatter } from '$lib/utils/i18n';
 import {
   createSharedLink,
+  getSharedLinkById,
   removeSharedLink,
   removeSharedLinkAssets,
   updateSharedLink,
@@ -58,7 +59,11 @@ export const handleCreateSharedLink = async (dto: SharedLinkCreateDto) => {
   const $t = await getFormatter();
 
   try {
-    const sharedLink = await createSharedLink({ sharedLinkCreateDto: dto });
+    let sharedLink = await createSharedLink({ sharedLinkCreateDto: dto });
+    if (dto.albumId) {
+      // fetch album details, for event
+      sharedLink = await getSharedLinkById({ id: sharedLink.id });
+    }
 
     eventManager.emit('SharedLinkCreate', sharedLink);
 

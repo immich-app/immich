@@ -3,16 +3,16 @@
   import type { AssetCursor } from '$lib/components/asset-viewer/asset-viewer.svelte';
   import { AssetAction } from '$lib/constants';
   import { assetCacheManager } from '$lib/managers/AssetCacheManager.svelte';
-
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
+  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { websocketEvents } from '$lib/stores/websocket';
   import { handlePromiseError } from '$lib/utils';
   import { updateStackedAssetInTimeline, updateUnstackedAssetInTimeline } from '$lib/utils/actions';
   import { navigate } from '$lib/utils/navigation';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
-  import { type AlbumResponseDto, type AssetResponseDto, type PersonResponseDto } from '@immich/sdk';
+  import { getAssetInfo, type AlbumResponseDto, type AssetResponseDto, type PersonResponseDto } from '@immich/sdk';
   import { onDestroy, onMount, untrack } from 'svelte';
 
   let { asset: viewingAsset, gridScrollTarget } = assetViewingStore;
@@ -22,8 +22,8 @@
     invisible: boolean;
     withStacked?: boolean;
     isShared?: boolean;
-    album?: AlbumResponseDto | null;
-    person?: PersonResponseDto | null;
+    album?: AlbumResponseDto;
+    person?: PersonResponseDto;
 
     removeAction?:
       | AssetAction.UNARCHIVE
@@ -40,8 +40,8 @@
     removeAction,
     withStacked = false,
     isShared = false,
-    album = null,
-    person = null,
+    album,
+    person,
   }: Props = $props();
 
   const getNextAsset = async (currentAsset: AssetResponseDto, preload: boolean = true) => {
@@ -195,6 +195,15 @@
       }
     }
   };
+  const handleUndoDelete = async (assets: TimelineAsset[]) => {
+    timelineManager.upsertAssets(assets);
+    if (assets.length > 0) {
+      const restoredAsset = assets[0];
+      const asset = await getAssetInfo({ ...authManager.params, id: restoredAsset.id });
+      assetViewingStore.setAsset(asset);
+      await navigate({ targetRoute: 'current', assetId: restoredAsset.id });
+    }
+  };
   onDestroy(() => {
     assetCacheManager.invalidate();
   });
@@ -228,6 +237,7 @@
       handleAction(action);
       assetCacheManager.invalidate();
     }}
+    onUndoDelete={handleUndoDelete}
     onPrevious={() => handleNavigateToAsset(assetCursor.previousAsset)}
     onNext={() => handleNavigateToAsset(assetCursor.nextAsset)}
     onRandom={handleRandom}

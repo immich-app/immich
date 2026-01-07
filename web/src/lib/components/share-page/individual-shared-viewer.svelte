@@ -145,13 +145,11 @@
     {#await getAssetInfo({ ...authManager.params, id: assets[0].id }) then asset}
       {#await import('$lib/components/asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
         <AssetViewer
-          cursor={{ current: asset, nextAsset: null, previousAsset: null }}
-          showCloseButton={false}
+          cursor={{ current: asset }}
           onAction={handleAction}
           onPrevious={() => Promise.resolve(false)}
           onNext={() => Promise.resolve(false)}
           onRandom={() => Promise.resolve(undefined)}
-          onClose={() => {}}
         />
       {/await}
     {/await}

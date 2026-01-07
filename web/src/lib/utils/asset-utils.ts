@@ -557,6 +557,26 @@ export const delay = async (ms: number) => {
   return new Promise((resolve) => setTimeout(resolve, ms));
 };
 
+export const getNextAsset = (assets: AssetResponseDto[], currentAsset: AssetResponseDto | undefined) => {
+  if (!currentAsset) {
+    return;
+  }
+  const cursor = assets.indexOf(currentAsset);
+  if (cursor < assets.length - 1) {
+    return assets[cursor + 1];
+  }
+};
+
+export const getPreviousAsset = (assets: AssetResponseDto[], currentAsset: AssetResponseDto | undefined) => {
+  if (!currentAsset) {
+    return;
+  }
+  const cursor = assets.indexOf(currentAsset);
+  if (cursor > 0) {
+    return assets[cursor - 1];
+  }
+};
+
 export const canCopyImageToClipboard = (): boolean => {
   return !!(navigator.clipboard && globalThis.ClipboardItem);
 };

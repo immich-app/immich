@@ -177,7 +177,7 @@
   let containerWidth = $state(0);
   let containerHeight = $state(0);
 
-  let lastUrl: string | undefined | null;
+  let lastUrl: string | undefined;
 
   $effect(() => {
     if (lastUrl && lastUrl !== imageLoaderUrl) {
