@@ -25,7 +25,7 @@ export class MaintenanceController {
   @Endpoint({
     summary: 'Get maintenance mode status',
     description: 'Fetch information about the currently running maintenance action.',
-    history: new HistoryBuilder().added('v2.4.0').alpha('v2.4.0'),
+    history: new HistoryBuilder().added('v2.5.0').alpha('v2.5.0'),
   })
   getMaintenanceStatus(): MaintenanceStatusResponseDto {
     return this.service.getMaintenanceStatus();
@@ -35,7 +35,7 @@ export class MaintenanceController {
   @Endpoint({
     summary: 'Detect existing install',
     description: 'Collect integrity checks and other heuristics about local data.',
-    history: new HistoryBuilder().added('v2.4.0').alpha('v2.4.0'),
+    history: new HistoryBuilder().added('v2.5.0').alpha('v2.5.0'),
   })
   @Authenticated({ permission: Permission.Maintenance, admin: true })
   detectPriorInstall(): Promise<MaintenanceDetectInstallResponseDto> {
