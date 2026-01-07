@@ -65,7 +65,7 @@
           {/if}
         </CardBody>
 
-        <CardFooter>
+        <CardFooter class="items-start">
           <Link href="https://discord.immich.app" class="flex grow basis-0 justify-center">
             <VStack>
               <Icon icon={mdiMessage} size="24" />
