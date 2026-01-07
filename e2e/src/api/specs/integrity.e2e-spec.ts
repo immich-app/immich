@@ -111,6 +111,8 @@ describe('/admin/integrity', () => {
         name: ManualJobName.IntegrityChecksumMismatch,
       });
 
+      await utils.waitForQueueFinish(admin.accessToken, QueueName.IntegrityCheck);
+
       await utils.createJob(admin.accessToken, {
         name: ManualJobName.IntegrityUntrackedFilesDeleteAll,
       });
