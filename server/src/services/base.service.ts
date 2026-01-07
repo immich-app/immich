@@ -18,6 +18,7 @@ import { ConfigRepository } from 'src/repositories/config.repository';
 import { CronRepository } from 'src/repositories/cron.repository';
 import { CryptoRepository } from 'src/repositories/crypto.repository';
 import { DatabaseRepository } from 'src/repositories/database.repository';
+import { DownloadRequestRepository } from 'src/repositories/download-request.repository';
 import { DownloadRepository } from 'src/repositories/download.repository';
 import { DuplicateRepository } from 'src/repositories/duplicate.repository';
 import { EmailRepository } from 'src/repositories/email.repository';
@@ -76,6 +77,7 @@ export const BASE_SERVICE_DEPENDENCIES = [
   CryptoRepository,
   DatabaseRepository,
   DownloadRepository,
+  DownloadRequestRepository,
   DuplicateRepository,
   EmailRepository,
   EventRepository,
@@ -134,6 +136,7 @@ export class BaseService {
     protected cryptoRepository: CryptoRepository,
     protected databaseRepository: DatabaseRepository,
     protected downloadRepository: DownloadRepository,
+    protected downloadRequestRepository: DownloadRequestRepository,
     protected duplicateRepository: DuplicateRepository,
     protected emailRepository: EmailRepository,
     protected eventRepository: EventRepository,

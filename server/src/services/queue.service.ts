@@ -272,6 +272,7 @@ export class QueueService extends BaseService {
         { name: JobName.SessionCleanup },
         { name: JobName.AuditTableCleanup },
         { name: JobName.AuditLogCleanup },
+        { name: JobName.DownloadRequestCleanup },
       );
     }
 

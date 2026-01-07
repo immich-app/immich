@@ -38,6 +38,8 @@ import { AssetMetadataTable } from 'src/schema/tables/asset-metadata.table';
 import { AssetOcrTable } from 'src/schema/tables/asset-ocr.table';
 import { AssetTable } from 'src/schema/tables/asset.table';
 import { AuditTable } from 'src/schema/tables/audit.table';
+import { DownloadRequestAssetTable } from 'src/schema/tables/download-request-asset.table';
+import { DownloadRequestTable } from 'src/schema/tables/download-request.table';
 import { FaceSearchTable } from 'src/schema/tables/face-search.table';
 import { GeodataPlacesTable } from 'src/schema/tables/geodata-places.table';
 import { LibraryTable } from 'src/schema/tables/library.table';
@@ -96,6 +98,8 @@ export class ImmichDatabase {
     AssetFileTable,
     AuditTable,
     AssetExifTable,
+    DownloadRequestAssetTable,
+    DownloadRequestTable,
     FaceSearchTable,
     GeodataPlacesTable,
     LibraryTable,
@@ -190,6 +194,9 @@ export interface DB {
   ocr_search: OcrSearchTable;
 
   audit: AuditTable;
+
+  download_request_asset: DownloadRequestAssetTable;
+  download_request: DownloadRequestTable;
 
   face_search: FaceSearchTable;
 
