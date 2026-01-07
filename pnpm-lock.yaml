@@ -761,9 +761,6 @@ importers:
       '@zoom-image/svelte':
         specifier: ^0.3.0
         version: 0.3.8(svelte@5.46.1)
-      async-mutex:
-        specifier: ^0.5.0
-        version: 0.5.0
       dom-to-image:
         specifier: ^2.6.0
         version: 2.6.0
@@ -5619,9 +5616,6 @@ packages:
 
   async-lock@1.4.1:
     resolution: {integrity: sha512-Az2ZTpuytrtqENulXwO3GGv1Bztugx6TT37NIo7imr/Qo0gsYiGtSdBa2B6fsXhTpVZDNfu1Qn3pk531e3q+nQ==}
-
-  async-mutex@0.5.0:
-    resolution: {integrity: sha512-1A94B18jkJ3DYq284ohPxoXbfTA5HsQ7/Mf4DEhcyLx3Bz27Rh59iScbB6EPiP+B+joue6YCxcMXSbFC1tZKwA==}
 
   async@0.2.10:
     resolution: {integrity: sha512-eAkdoKxU6/LkKDBzLpT+t6Ff5EtfSF4wx1WfJiPEEV7WNLnDaRXk0oVysiEPm262roaachGexwUv94WhSgN5TQ==}
@@ -18000,10 +17994,6 @@ snapshots:
   astring@1.9.0: {}
 
   async-lock@1.4.1: {}
-
-  async-mutex@0.5.0:
-    dependencies:
-      tslib: 2.8.1
 
   async@0.2.10: {}
 

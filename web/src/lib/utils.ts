@@ -1,10 +1,12 @@
 import { defaultLang, langs, locales } from '$lib/constants';
 import { authManager } from '$lib/managers/auth-manager.svelte';
-import { lang } from '$lib/stores/preferences.store';
+import { alwaysLoadOriginalFile, lang } from '$lib/stores/preferences.store';
+import { isWebCompatibleImage } from '$lib/utils/asset-utils';
 import { handleError } from '$lib/utils/handle-error';
 import {
   AssetJobName,
   AssetMediaSize,
+  AssetTypeEnum,
   MemoryType,
   QueueName,
   finishOAuth,
@@ -17,6 +19,7 @@ import {
   linkOAuthAccount,
   startOAuth,
   unlinkOAuthAccount,
+  type AssetResponseDto,
   type MemoryResponseDto,
   type PersonResponseDto,
   type ServerVersionResponseDto,
@@ -190,6 +193,40 @@ const createUrl = (path: string, parameters?: Record<string, unknown>) => {
 };
 
 type AssetUrlOptions = { id: string; cacheKey?: string | null };
+
+export const getAssetUrl = ({
+  asset,
+  sharedLink,
+  forceOriginal = false,
+}: {
+  asset: AssetResponseDto | undefined;
+  sharedLink?: SharedLinkResponseDto;
+  forceOriginal?: boolean;
+}) => {
+  if (!asset) {
+    return;
+  }
+  const id = asset.id;
+  const cacheKey = asset.thumbhash;
+  if (sharedLink && (!sharedLink.allowDownload || !sharedLink.showMetadata)) {
+    return getAssetThumbnailUrl({ id, size: AssetMediaSize.Preview, cacheKey });
+  }
+  const targetSize = targetImageSize(asset, forceOriginal);
+  return targetSize === 'original'
+    ? getAssetOriginalUrl({ id, cacheKey })
+    : getAssetThumbnailUrl({ id, size: targetSize, cacheKey });
+};
+
+const forceUseOriginal = (asset: AssetResponseDto) => {
+  return asset.type === AssetTypeEnum.Image && asset.duration && !asset.duration.includes('0:00:00.000');
+};
+
+export const targetImageSize = (asset: AssetResponseDto, forceOriginal: boolean) => {
+  if (forceOriginal || get(alwaysLoadOriginalFile) || forceUseOriginal(asset)) {
+    return isWebCompatibleImage(asset) ? 'original' : AssetMediaSize.Fullsize;
+  }
+  return AssetMediaSize.Preview;
+};
 
 export const getAssetOriginalUrl = (options: string | AssetUrlOptions) => {
   if (typeof options === 'string') {

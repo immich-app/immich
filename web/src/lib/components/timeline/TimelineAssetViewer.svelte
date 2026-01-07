@@ -1,24 +1,29 @@
 <script lang="ts">
   import type { Action } from '$lib/components/asset-viewer/actions/action';
+  import type { AssetCursor } from '$lib/components/asset-viewer/asset-viewer.svelte';
   import { AssetAction } from '$lib/constants';
+
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
+  import { websocketEvents } from '$lib/stores/websocket';
+  import { handlePromiseError } from '$lib/utils';
   import { updateStackedAssetInTimeline, updateUnstackedAssetInTimeline } from '$lib/utils/actions';
   import { navigate } from '$lib/utils/navigation';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
-  import { getAssetInfo, type AlbumResponseDto, type PersonResponseDto } from '@immich/sdk';
+  import { type AlbumResponseDto, type AssetResponseDto, type PersonResponseDto, getAssetInfo } from '@immich/sdk';
+  import { onMount, untrack } from 'svelte';
 
-  let { asset: viewingAsset, gridScrollTarget, mutex, preloadAssets } = assetViewingStore;
+  let { asset: viewingAsset, gridScrollTarget } = assetViewingStore;
 
   interface Props {
     timelineManager: TimelineManager;
     invisible: boolean;
     withStacked?: boolean;
     isShared?: boolean;
-    album?: AlbumResponseDto | null;
-    person?: PersonResponseDto | null;
+    album?: AlbumResponseDto;
+    person?: PersonResponseDto;
 
     removeAction?:
       | AssetAction.UNARCHIVE
@@ -35,48 +40,72 @@
     removeAction,
     withStacked = false,
     isShared = false,
-    album = null,
-    person = null,
+    album,
+    person,
   }: Props = $props();
 
-  const handlePrevious = async () => {
-    const release = await mutex.acquire();
-    const laterAsset = await timelineManager.getLaterAsset($viewingAsset);
-
-    if (laterAsset) {
-      const preloadAsset = await timelineManager.getLaterAsset(laterAsset);
-      const asset = await getAssetInfo({ ...authManager.params, id: laterAsset.id });
-      assetViewingStore.setAsset(asset, preloadAsset ? [preloadAsset] : []);
-      await navigate({ targetRoute: 'current', assetId: laterAsset.id });
+  const getNextAsset = async (currentAsset: AssetResponseDto, preload: boolean = true) => {
+    const earlierTimelineAsset = await timelineManager.getEarlierAsset(currentAsset);
+    if (earlierTimelineAsset) {
+      const asset = await getAssetInfo({ ...authManager.params, id: earlierTimelineAsset.id });
+      if (preload) {
+        // also pre-cache an extra one, to pre-cache these assetInfos for the next nav after this one is complete
+        void getNextAsset(asset, false);
+      }
+      return asset;
     }
-
-    release();
-    return !!laterAsset;
   };
 
-  const handleNext = async () => {
-    const release = await mutex.acquire();
-    const earlierAsset = await timelineManager.getEarlierAsset($viewingAsset);
+  const getPreviousAsset = async (currentAsset: AssetResponseDto, preload: boolean = true) => {
+    const laterTimelineAsset = await timelineManager.getLaterAsset(currentAsset);
 
-    if (earlierAsset) {
-      const preloadAsset = await timelineManager.getEarlierAsset(earlierAsset);
-      const asset = await getAssetInfo({ ...authManager.params, id: earlierAsset.id });
-      assetViewingStore.setAsset(asset, preloadAsset ? [preloadAsset] : []);
-      await navigate({ targetRoute: 'current', assetId: earlierAsset.id });
+    if (laterTimelineAsset) {
+      const asset = await getAssetInfo({ ...authManager.params, id: laterTimelineAsset.id });
+      if (preload) {
+        // also pre-cache an extra one, to pre-cache these assetInfos for the next nav after this one is complete
+        void getPreviousAsset(asset, false);
+      }
+      return asset;
+    }
+  };
+
+  let assetCursor = $state<AssetCursor>({
+    current: $viewingAsset,
+    previousAsset: undefined,
+    nextAsset: undefined,
+  });
+
+  const loadCloseAssets = async (currentAsset: AssetResponseDto) => {
+    const [nextAsset, previousAsset] = await Promise.all([getNextAsset(currentAsset), getPreviousAsset(currentAsset)]);
+
+    assetCursor = {
+      current: currentAsset,
+      nextAsset,
+      previousAsset,
+    };
+  };
+
+  //TODO: replace this with async derived in svelte 6
+  $effect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+    $viewingAsset;
+    untrack(() => handlePromiseError(loadCloseAssets($viewingAsset)));
+  });
+
+  const handleNavigateToAsset = async (targetAsset: AssetResponseDto | undefined | null) => {
+    if (!targetAsset) {
+      return false;
     }
 
-    release();
-    return !!earlierAsset;
+    await navigate({ targetRoute: 'current', assetId: targetAsset.id });
+    return true;
   };
 
   const handleRandom = async () => {
     const randomAsset = await timelineManager.getRandomAsset();
-
     if (randomAsset) {
-      const asset = await getAssetInfo({ ...authManager.params, id: randomAsset.id });
-      assetViewingStore.setAsset(asset);
       await navigate({ targetRoute: 'current', assetId: randomAsset.id });
-      return asset;
+      return { id: randomAsset.id };
     }
   };
 
@@ -98,7 +127,9 @@
       case AssetAction.SET_VISIBILITY_TIMELINE: {
         // find the next asset to show or close the viewer
         // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-        (await handleNext()) || (await handlePrevious()) || (await handleClose(action.asset));
+        (await handleNavigateToAsset(assetCursor?.nextAsset)) ||
+          (await handleNavigateToAsset(assetCursor?.previousAsset)) ||
+          (await handleClose(action.asset));
 
         // delete after find the next one
         timelineManager.removeAssets([action.asset.id]);
@@ -173,21 +204,36 @@
       await navigate({ targetRoute: 'current', assetId: restoredAsset.id });
     }
   };
+  const onAssetUpdate = ({ asset }: { event: 'upload' | 'update'; asset: AssetResponseDto }) => {
+    if (asset.id === assetCursor.current.id) {
+      void loadCloseAssets(asset);
+    }
+  };
+  onMount(() => {
+    const unsubscribes = [
+      websocketEvents.on('on_upload_success', (asset: AssetResponseDto) => onAssetUpdate({ event: 'upload', asset })),
+      websocketEvents.on('on_asset_update', (asset: AssetResponseDto) => onAssetUpdate({ event: 'update', asset })),
+    ];
+    return () => {
+      for (const unsubscribe of unsubscribes) {
+        unsubscribe();
+      }
+    };
+  });
 </script>
 
 {#await import('$lib/components/asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
   <AssetViewer
     {withStacked}
-    asset={$viewingAsset}
-    preloadAssets={$preloadAssets}
+    cursor={assetCursor}
     {isShared}
     {album}
     {person}
     preAction={handlePreAction}
     onAction={handleAction}
     onUndoDelete={handleUndoDelete}
-    onPrevious={handlePrevious}
-    onNext={handleNext}
+    onPrevious={() => handleNavigateToAsset(assetCursor.previousAsset)}
+    onNext={() => handleNavigateToAsset(assetCursor.nextAsset)}
     onRandom={handleRandom}
     onClose={handleClose}
   />

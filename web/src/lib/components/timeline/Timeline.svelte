@@ -7,13 +7,13 @@
   import Scrubber from '$lib/components/timeline/Scrubber.svelte';
   import TimelineAssetViewer from '$lib/components/timeline/TimelineAssetViewer.svelte';
   import TimelineKeyboardActions from '$lib/components/timeline/actions/TimelineKeyboardActions.svelte';
+  import { focusAsset } from '$lib/components/timeline/actions/focus-actions';
   import { AssetAction } from '$lib/constants';
   import HotModuleReload from '$lib/elements/HotModuleReload.svelte';
   import Portal from '$lib/elements/Portal.svelte';
   import Skeleton from '$lib/elements/Skeleton.svelte';
   import type { DayGroup } from '$lib/managers/timeline-manager/day-group.svelte';
   import { isIntersecting } from '$lib/managers/timeline-manager/internal/intersection-support.svelte';
-  import { focusAsset } from '$lib/components/timeline/actions/focus-actions';
   import type { MonthGroup } from '$lib/managers/timeline-manager/month-group.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset, TimelineManagerOptions, ViewportTopMonth } from '$lib/managers/timeline-manager/types';
@@ -49,9 +49,9 @@
     withStacked?: boolean;
     showArchiveIcon?: boolean;
     isShared?: boolean;
-    album?: AlbumResponseDto | null;
+    album?: AlbumResponseDto;
     albumUsers?: UserResponseDto[];
-    person?: PersonResponseDto | null;
+    person?: PersonResponseDto;
     isShowDeleteConfirmation?: boolean;
     onSelect?: (asset: TimelineAsset) => void;
     onEscape?: () => void;
@@ -82,9 +82,9 @@
     withStacked = false,
     showArchiveIcon = false,
     isShared = false,
-    album = null,
+    album,
     albumUsers = [],
-    person = null,
+    person,
     isShowDeleteConfirmation = $bindable(false),
     onSelect = () => {},
     onEscape = () => {},

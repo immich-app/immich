@@ -39,7 +39,6 @@
     "@types/geojson": "^7946.0.16",
     "@zoom-image/core": "^0.41.0",
     "@zoom-image/svelte": "^0.3.0",
-    "async-mutex": "^0.5.0",
     "dom-to-image": "^2.6.0",
     "fabric": "^6.5.4",
     "geo-coordinates-parser": "^1.7.4",
