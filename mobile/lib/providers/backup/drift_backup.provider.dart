@@ -430,13 +430,17 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
   }
 
   void _handleForegroundBackupProgress(String localAssetId, String filename, int bytes, int totalBytes) {
+    if (state.cancelToken == null) {
+      return;
+    }
+
     final progress = totalBytes > 0 ? bytes / totalBytes : 0.0;
     final currentItem = state.uploadItems[localAssetId];
     if (currentItem != null) {
       state = state.copyWith(
         uploadItems: {
           ...state.uploadItems,
-          localAssetId: currentItem.copyWith(progress: progress, fileSize: totalBytes),
+          localAssetId: currentItem.copyWith(filename: filename, progress: progress, fileSize: totalBytes),
         },
       );
     } else {

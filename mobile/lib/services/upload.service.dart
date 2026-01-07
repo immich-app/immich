@@ -194,7 +194,7 @@ class UploadService {
             asset,
             httpClient,
             cancelToken,
-            (bytes, totalBytes) => onProgress(asset.localId!, asset.name, bytes, totalBytes),
+            onProgress,
             onSuccess,
             onError,
             onICloudProgress: onICloudProgress,
@@ -221,7 +221,7 @@ class UploadService {
     LocalAsset asset,
     Client httpClient,
     CancellationToken cancelToken,
-    void Function(int bytes, int totalBytes) onProgress,
+    void Function(String id, String filename, int bytes, int totalBytes) onProgress,
     void Function(String localAssetId, String remoteAssetId) onSuccess,
     void Function(String errorMessage) onError, {
     void Function(String localAssetId, double progress)? onICloudProgress,
@@ -307,7 +307,7 @@ class UploadService {
           fields: fields,
           httpClient: httpClient,
           cancelToken: cancelToken,
-          onProgress: onProgress,
+          onProgress: (bytes, totalBytes) => onProgress(asset.localId!, livePhotoTitle, bytes, totalBytes),
         );
       }
 
@@ -323,7 +323,7 @@ class UploadService {
         fields: fields,
         httpClient: httpClient,
         cancelToken: cancelToken,
-        onProgress: onProgress,
+        onProgress: (bytes, totalBytes) => onProgress(asset.localId!, originalFileName, bytes, totalBytes),
       );
 
       if (result.isSuccess && result.remoteAssetId != null) {
