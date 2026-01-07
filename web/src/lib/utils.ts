@@ -26,7 +26,7 @@ import {
   type SharedLinkResponseDto,
   type UserResponseDto,
 } from '@immich/sdk';
-import { toastManager, type ActionItem } from '@immich/ui';
+import { toastManager, type ActionItem, type IfLike } from '@immich/ui';
 import { mdiCogRefreshOutline, mdiDatabaseRefreshOutline, mdiHeadSyncOutline, mdiImageRefreshOutline } from '@mdi/js';
 import { init, register, t } from 'svelte-i18n';
 import { derived, get } from 'svelte/store';
@@ -443,3 +443,5 @@ export const semverToName = ({ major, minor, patch }: ServerVersionResponseDto) 
 
 export const withoutIcons = (actions: ActionItem[]): ActionItem[] =>
   actions.map((action) => ({ ...action, icon: undefined }));
+
+export const isEnabled = ({ $if }: IfLike) => $if?.() ?? true;

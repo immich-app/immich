@@ -1,14 +1,27 @@
 import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
+import { authManager } from '$lib/managers/auth-manager.svelte';
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
-import { user as authUser } from '$lib/stores/user.store';
+import { user as authUser, preferences } from '$lib/stores/user.store';
+import { getSharedLink, sleep } from '$lib/utils';
+import { downloadUrl } from '$lib/utils/asset-utils';
 import { openFileUploadDialog } from '$lib/utils/file-uploader';
 import { handleError } from '$lib/utils/handle-error';
 import { getFormatter } from '$lib/utils/i18n';
-import { AssetVisibility, copyAsset, deleteAssets, updateAsset, type AssetResponseDto } from '@immich/sdk';
+import { asQueryString } from '$lib/utils/shared-links';
+import {
+  AssetVisibility,
+  copyAsset,
+  deleteAssets,
+  getAssetInfo,
+  getBaseUrl,
+  updateAsset,
+  type AssetResponseDto,
+} from '@immich/sdk';
 import { modalManager, toastManager, type ActionItem } from '@immich/ui';
 import {
   mdiAlertOutline,
+  mdiDownload,
   mdiHeart,
   mdiHeartOutline,
   mdiInformationOutline,
@@ -20,6 +33,7 @@ import type { MessageFormatter } from 'svelte-i18n';
 import { get } from 'svelte/store';
 
 export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) => {
+  const sharedLink = getSharedLink();
   const currentAuthUser = get(authUser);
   const isOwner = !!(currentAuthUser && currentAuthUser.id === asset.ownerId);
 
@@ -29,6 +43,20 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
     type: $t('assets'),
     $if: () => !!(get(authUser) && !asset.isTrashed && asset.visibility !== AssetVisibility.Locked),
     onAction: () => modalManager.show(SharedLinkCreateModal, { assetIds: [asset.id] }),
+  };
+
+  const Download: ActionItem = {
+    title: $t('download'),
+    icon: mdiDownload,
+    shortcuts: { key: 'd', shift: true },
+    type: $t('assets'),
+    $if: () => !!currentAuthUser,
+    onAction: () => handleDownloadAsset(asset),
+  };
+
+  const SharedLinkDownload: ActionItem = {
+    ...Download,
+    $if: () => !currentAuthUser && sharedLink && sharedLink.allowDownload,
   };
 
   const PlayMotionPhoto: ActionItem = {
@@ -87,7 +115,50 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
     shortcuts: [{ key: 'i' }],
   };
 
-  return { Share, Offline, Info, Favorite, Unfavorite, PlayMotionPhoto, StopMotionPhoto };
+  return { Share, Download, SharedLinkDownload, Offline, Info, Favorite, Unfavorite, PlayMotionPhoto, StopMotionPhoto };
+};
+
+export const handleDownloadAsset = async (asset: AssetResponseDto) => {
+  const $t = await getFormatter();
+
+  const assets = [
+    {
+      filename: asset.originalFileName,
+      id: asset.id,
+      size: asset.exifInfo?.fileSizeInByte || 0,
+    },
+  ];
+
+  const isAndroidMotionVideo = (asset: AssetResponseDto) => {
+    return asset.originalPath.includes('encoded-video');
+  };
+
+  if (asset.livePhotoVideoId) {
+    const motionAsset = await getAssetInfo({ ...authManager.params, id: asset.livePhotoVideoId });
+    if (!isAndroidMotionVideo(motionAsset) || get(preferences)?.download.includeEmbeddedVideos) {
+      assets.push({
+        filename: motionAsset.originalFileName,
+        id: asset.livePhotoVideoId,
+        size: motionAsset.exifInfo?.fileSizeInByte || 0,
+      });
+    }
+  }
+
+  const queryParams = asQueryString(authManager.params);
+
+  for (const [i, { filename, id }] of assets.entries()) {
+    if (i !== 0) {
+      // play nice with Safari
+      await sleep(500);
+    }
+
+    try {
+      toastManager.success($t('downloading_asset_filename', { values: { filename: asset.originalFileName } }));
+      downloadUrl(getBaseUrl() + `/assets/${id}/original` + (queryParams ? `?${queryParams}` : ''), filename);
+    } catch (error) {
+      handleError(error, $t('errors.error_downloading', { values: { filename } }));
+    }
+  }
 };
 
 const handleFavorite = async (asset: AssetResponseDto) => {
