@@ -56,8 +56,8 @@
 
   export type AssetCursor = {
     current: AssetResponseDto;
-    nextAsset: AssetResponseDto | undefined | null;
-    previousAsset: AssetResponseDto | undefined | null;
+    nextAsset?: AssetResponseDto;
+    previousAsset?: AssetResponseDto;
   };
 
   interface Props {
@@ -65,11 +65,11 @@
     showNavigation?: boolean;
     withStacked?: boolean;
     isShared?: boolean;
-    album?: AlbumResponseDto | null;
-    person?: PersonResponseDto | null;
-    preAction?: PreAction | undefined;
-    onAction?: OnAction | undefined;
-    onUndoDelete?: OnUndoDelete | undefined;
+    album?: AlbumResponseDto;
+    person?: PersonResponseDto;
+    preAction?: PreAction;
+    onAction?: OnAction;
+    onUndoDelete?: OnUndoDelete;
     onClose?: (asset: AssetResponseDto) => void;
     onNext: () => Promise<HasAsset>;
     onPrevious: () => Promise<HasAsset>;
@@ -82,11 +82,11 @@
     showNavigation = true,
     withStacked = false,
     isShared = false,
-    album = null,
-    person = null,
-    preAction = undefined,
-    onAction = undefined,
-    onUndoDelete = undefined,
+    album,
+    person,
+    preAction,
+    onAction,
+    onUndoDelete,
     onClose,
     onNext,
     onPrevious,
@@ -163,8 +163,6 @@
           handlePromiseError(handleStopSlideshow());
         }
       }),
-    );
-    unsubscribes.push(
       slideshowNavigation.subscribe((value) => {
         if (value === SlideshowNavigation.Shuffle) {
           slideshowHistory.reset();

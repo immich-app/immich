@@ -22,8 +22,8 @@
     invisible: boolean;
     withStacked?: boolean;
     isShared?: boolean;
-    album?: AlbumResponseDto | null;
-    person?: PersonResponseDto | null;
+    album?: AlbumResponseDto;
+    person?: PersonResponseDto;
 
     removeAction?:
       | AssetAction.UNARCHIVE
@@ -40,8 +40,8 @@
     removeAction,
     withStacked = false,
     isShared = false,
-    album = null,
-    person = null,
+    album,
+    person,
   }: Props = $props();
 
   const getNextAsset = async (currentAsset: AssetResponseDto, preload: boolean = true) => {
