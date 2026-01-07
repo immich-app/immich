@@ -246,7 +246,7 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
     return query.map((row) => row.readTable(_db.localAssetEntity).toDto()).get();
   }
 
-  Future<void> updateCloudMapping(Map<String, String?> cloudMapping) {
+  Future<void> updateCloudMapping(Map<String, String> cloudMapping) {
     if (cloudMapping.isEmpty) {
       return Future.value();
     }

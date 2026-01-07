@@ -252,6 +252,40 @@ data class HashResult (
 
   override fun hashCode(): Int = toList().hashCode()
 }
+
+/** Generated class from Pigeon that represents data sent in messages. */
+data class CloudIdResult (
+  val assetId: String,
+  val error: String? = null,
+  val cloudId: String? = null
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): CloudIdResult {
+      val assetId = pigeonVar_list[0] as String
+      val error = pigeonVar_list[1] as String?
+      val cloudId = pigeonVar_list[2] as String?
+      return CloudIdResult(assetId, error, cloudId)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      assetId,
+      error,
+      cloudId,
+    )
+  }
+  override fun equals(other: Any?): Boolean {
+    if (other !is CloudIdResult) {
+      return false
+    }
+    if (this === other) {
+      return true
+    }
+    return MessagesPigeonUtils.deepEquals(toList(), other.toList())  }
+
+  override fun hashCode(): Int = toList().hashCode()
+}
 private open class MessagesPigeonCodec : StandardMessageCodec() {
   override fun readValueOfType(type: Byte, buffer: ByteBuffer): Any? {
     return when (type) {
@@ -275,6 +309,11 @@ private open class MessagesPigeonCodec : StandardMessageCodec() {
           HashResult.fromList(it)
         }
       }
+      133.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          CloudIdResult.fromList(it)
+        }
+      }
       else -> super.readValueOfType(type, buffer)
     }
   }
@@ -296,6 +335,10 @@ private open class MessagesPigeonCodec : StandardMessageCodec() {
         stream.write(132)
         writeValue(stream, value.toList())
       }
+      is CloudIdResult -> {
+        stream.write(133)
+        writeValue(stream, value.toList())
+      }
       else -> super.writeValue(stream, value)
     }
   }
@@ -315,7 +358,7 @@ interface NativeSyncApi {
   fun hashAssets(assetIds: List<String>, allowNetworkAccess: Boolean, callback: (Result<List<HashResult>>) -> Unit)
   fun cancelHashing()
   fun getTrashedAssets(): Map<String, List<PlatformAsset>>
-  fun getCloudIdForAssetIds(assetIds: List<String>): Map<String, String?>
+  fun getCloudIdForAssetIds(assetIds: List<String>): List<CloudIdResult>
 
   companion object {
     /** The codec used by NativeSyncApi. */

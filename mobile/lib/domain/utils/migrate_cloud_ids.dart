@@ -55,7 +55,18 @@ Future<void> _populateCloudIds(Drift drift) async {
     ..addColumns([drift.localAssetEntity.id])
     ..where(drift.localAssetEntity.iCloudId.isNull());
   final ids = await query.map((row) => row.read(drift.localAssetEntity.id)!).get();
-  final cloudMapping = await NativeSyncApi().getCloudIdForAssetIds(ids);
+  final cloudMapping = <String, String>{};
+  final cloudIds = await NativeSyncApi().getCloudIdForAssetIds(ids);
+  for (int i = 0; i < cloudIds.length; i++) {
+    final cloudIdResult = cloudIds[i];
+    if (cloudIdResult.cloudId != null) {
+      cloudMapping[cloudIdResult.assetId] = cloudIdResult.cloudId!;
+    } else {
+      Logger(
+        'migrateCloudIds',
+      ).warning("Failed to hash asset with id: ${cloudIdResult.assetId}. Error: ${cloudIdResult.error ?? "unknown"}");
+    }
+  }
   await DriftLocalAlbumRepository(drift).updateCloudMapping(cloudMapping);
 }
 

@@ -312,7 +312,20 @@ class LocalSyncService {
     }
 
     final assetIds = assets.map((a) => a.id).toList();
-    final cloudMapping = await _nativeSyncApi.getCloudIdForAssetIds(assetIds);
+    final cloudMapping = <String, String>{};
+    final cloudIds = await _nativeSyncApi.getCloudIdForAssetIds(assetIds);
+    for (int i = 0; i < cloudIds.length; i++) {
+      final cloudIdResult = cloudIds[i];
+      if (cloudIdResult.cloudId != null) {
+        cloudMapping[cloudIdResult.assetId] = cloudIdResult.cloudId!;
+      } else {
+        final asset = assets.firstWhereOrNull((a) => a.id == cloudIdResult.assetId);
+        _log.warning(
+          "Failed to hash asset with id: ${cloudIdResult.assetId}, name: ${asset?.name}, createdAt: ${asset?.createdAt}. Error: ${cloudIdResult.error ?? "unknown"}",
+        );
+      }
+    }
+
     await _localAlbumRepository.updateCloudMapping(cloudMapping);
   }
 
