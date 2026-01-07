@@ -1,7 +1,19 @@
 <script lang="ts">
   import { copyToClipboard } from '$lib/utils';
-  import { Icon, IconButton, Logo } from '@immich/ui';
-  import { mdiCodeTags, mdiContentCopy, mdiMessage, mdiPartyPopper } from '@mdi/js';
+  import {
+    Card,
+    CardBody,
+    CardFooter,
+    CardHeader,
+    CardTitle,
+    Icon,
+    IconButton,
+    Link,
+    Logo,
+    Text,
+    VStack,
+  } from '@immich/ui';
+  import { mdiAlarmLight, mdiCodeTags, mdiContentCopy, mdiMessage, mdiPartyPopper } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
   interface Props {
@@ -19,90 +31,61 @@
   };
 </script>
 
-<div class="h-dvh w-dvw">
+<div class="flex flex-col h-dvh w-dvw">
   <section>
     <div class="flex place-items-center border-b px-6 py-4 dark:border-b-immich-dark-gray">
-      <a class="flex place-items-center gap-2 hover:cursor-pointer" href="/photos">
+      <Link href="/photos">
         <Logo variant="inline" />
-      </a>
+      </Link>
     </div>
   </section>
 
-  <div class="fixed top-0 flex h-full w-full place-content-center place-items-center overflow-hidden bg-black/50">
-    <div>
-      <div
-        class="w-125 max-w-[95vw] rounded-3xl border shadow-sm dark:border-immich-dark-gray dark:text-immich-dark-fg bg-subtle/80"
-      >
-        <div>
-          <div class="flex items-center justify-between gap-4 px-4 py-4">
-            <h1 class="font-medium text-primary">
-              🚨 {$t('error_title')}
-            </h1>
-            <div class="flex justify-end">
-              <IconButton
-                shape="round"
-                color="primary"
-                icon={mdiContentCopy}
-                aria-label={$t('copy_error')}
-                onclick={() => handleCopy()}
-              />
-            </div>
-          </div>
+  <div class="flex flex-1 w-full place-content-center place-items-center overflow-hidden bg-black/30">
+    <div class="max-w-[95vw]">
+      <Card color="secondary">
+        <CardHeader class="flex-row justify-between gap-12">
+          <CardTitle tag="h1" size="medium" class="text-primary flex place-items-center gap-4">
+            <Icon icon={mdiAlarmLight} color="red" size="32" />
+            {$t('error_title')}
+          </CardTitle>
+          <IconButton
+            shape="round"
+            color="primary"
+            icon={mdiContentCopy}
+            aria-label={$t('copy_error')}
+            onclick={handleCopy}
+          />
+        </CardHeader>
 
-          <hr />
+        <CardBody class="flex flex-col gap-2">
+          <Text color="danger">{error?.message} (HTTP {error?.code})</Text>
+          {#if error?.stack}
+            <label for="stacktrace">{$t('stacktrace')}</label>
+            <pre id="stacktrace" class="text-xs">{error.stack}</pre>
+          {/if}
+        </CardBody>
 
-          <div class="immich-scrollbar max-h-[75vh] min-h-75 gap-4 overflow-y-auto p-4 pb-4">
-            <div class="flex w-full flex-col gap-2">
-              <p class="text-red-500">{error?.message} ({error?.code})</p>
-              {#if error?.stack}
-                <label for="stacktrace">{$t('stacktrace')}</label>
-                <pre id="stacktrace" class="text-xs">{error?.stack || 'No stack'}</pre>
-              {/if}
-            </div>
-          </div>
-
-          <hr />
-
-          <div class="flex place-content-center place-items-center justify-around">
-            <!-- href="https://github.com/immich-app/immich/issues/new" -->
-            <a
-              href="https://discord.immich.app"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="flex grow basis-0 justify-center p-4"
-            >
-              <div class="flex flex-col place-content-center place-items-center gap-2">
-                <Icon icon={mdiMessage} size="24" />
-                <p class="text-sm">{$t('get_help')}</p>
-              </div>
-            </a>
-
-            <a
-              href="https://github.com/immich-app/immich/releases"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="flex grow basis-0 justify-center p-4"
-            >
-              <div class="flex flex-col place-content-center place-items-center gap-2">
-                <Icon icon={mdiPartyPopper} size="24" />
-                <p class="text-sm">{$t('read_changelog')}</p>
-              </div>
-            </a>
-
-            <a
-              href="https://docs.immich.app/guides/docker-help"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="flex grow basis-0 justify-center p-4"
-            >
-              <div class="flex flex-col place-content-center place-items-center gap-2">
-                <Icon icon={mdiCodeTags} size="24" />
-                <p class="text-sm">{$t('check_logs')}</p>
-              </div>
-            </a>
-          </div>
-        </div>
-      </div>
+        <CardFooter class="items-start">
+          <Link href="https://discord.immich.app" class="flex grow basis-0 justify-center">
+            <VStack>
+              <Icon icon={mdiMessage} size="24" />
+              <Text size="small" class="text-center">{$t('get_help')}</Text>
+            </VStack>
+          </Link>
+          <Link href="https://github.com/immich-app/immich/releases" class="flex grow basis-0 justify-center">
+            <VStack>
+              <Icon icon={mdiPartyPopper} size="24" />
+              <Text size="small" class="text-center">{$t('read_changelog')}</Text>
+            </VStack>
+          </Link>
+          <Link href="https://docs.immich.app/guides/docker-help" class="flex grow basis-0 justify-center">
+            <VStack>
+              <Icon icon={mdiCodeTags} size="24" />
+              <Text size="small" class="text-center">{$t('check_logs')}</Text>
+            </VStack>
+          </Link>
+        </CardFooter>
+      </Card>
     </div>
   </div>
 </div>
