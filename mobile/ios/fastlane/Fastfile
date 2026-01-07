@@ -44,13 +44,8 @@ def get_version_from_pubspec
 end
   
   # Helper method to configure code signing for all targets
-  def configure_code_signing(bundle_id_suffix: "", profile_name_main: nil, profile_name_share: nil, profile_name_widget: nil)
+  def configure_code_signing(bundle_id_suffix: "", profile_name_main:, profile_name_share:, profile_name_widget:)
     bundle_suffix = bundle_id_suffix.empty? ? "" : ".#{bundle_id_suffix}"
-    
-    # Use provided profile names or fall back to default naming convention
-    main_profile = profile_name_main || "#{BASE_BUNDLE_ID}#{bundle_suffix} AppStore"
-    share_profile = profile_name_share || "#{BASE_BUNDLE_ID}#{bundle_suffix}.ShareExtension AppStore"
-    widget_profile = profile_name_widget || "#{BASE_BUNDLE_ID}#{bundle_suffix}.Widget AppStore"
     
     # Runner (main app)
     update_code_signing_settings(
@@ -59,7 +54,7 @@ end
       team_id: ENV["FASTLANE_TEAM_ID"] || TEAM_ID,
       code_sign_identity: CODE_SIGN_IDENTITY,
       bundle_identifier: "#{BASE_BUNDLE_ID}#{bundle_suffix}",
-      profile_name: main_profile,
+      profile_name: profile_name_main,
       targets: ["Runner"]
     )
     
@@ -70,7 +65,7 @@ end
       team_id: ENV["FASTLANE_TEAM_ID"] || TEAM_ID,
       code_sign_identity: CODE_SIGN_IDENTITY,
       bundle_identifier: "#{BASE_BUNDLE_ID}#{bundle_suffix}.ShareExtension",
-      profile_name: share_profile,
+      profile_name: profile_name_share,
       targets: ["ShareExtension"]
     )
     
@@ -81,7 +76,7 @@ end
       team_id: ENV["FASTLANE_TEAM_ID"] || TEAM_ID,
       code_sign_identity: CODE_SIGN_IDENTITY,
       bundle_identifier: "#{BASE_BUNDLE_ID}#{bundle_suffix}.Widget",
-      profile_name: widget_profile,
+      profile_name: profile_name_widget,
       targets: ["WidgetExtension"]
     )
   end
@@ -93,17 +88,12 @@ end
     configuration: "Release",
     distribute_external: true,
     version_number: nil,
-    profile_name_main: nil,
-    profile_name_share: nil,
-    profile_name_widget: nil
+    profile_name_main:,
+    profile_name_share:,
+    profile_name_widget:
   )
     bundle_suffix = bundle_id_suffix.empty? ? "" : ".#{bundle_id_suffix}"
     app_identifier = "#{BASE_BUNDLE_ID}#{bundle_suffix}"
-    
-    # Use provided profile names or fall back to default naming convention
-    main_profile = profile_name_main || "#{app_identifier} AppStore"
-    share_profile = profile_name_share || "#{app_identifier}.ShareExtension AppStore"
-    widget_profile = profile_name_widget || "#{app_identifier}.Widget AppStore"
     
     # Set version number if provided
     if version_number
@@ -128,9 +118,9 @@ end
       xcargs: "-skipMacroValidation CODE_SIGN_IDENTITY='#{CODE_SIGN_IDENTITY}' CODE_SIGN_STYLE=Manual",
       export_options: {
         provisioningProfiles: {
-          "#{app_identifier}" => main_profile,
-          "#{app_identifier}.ShareExtension" => share_profile,
-          "#{app_identifier}.Widget" => widget_profile
+          "#{app_identifier}" => profile_name_main,
+          "#{app_identifier}.ShareExtension" => profile_name_share,
+          "#{app_identifier}.Widget" => profile_name_widget
         },
         signingStyle: "manual",
         signingCertificate: CODE_SIGN_IDENTITY
