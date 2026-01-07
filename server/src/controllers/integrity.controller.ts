@@ -13,7 +13,7 @@ import { Auth, Authenticated, FileResponse } from 'src/middleware/auth.guard';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { IntegrityService } from 'src/services/integrity.service';
 import { sendFile } from 'src/utils/file';
-import { IntegrityReportTypeParamDto, UUIDParamDto } from 'src/validation';
+import { IntegrityReportTypeParamDto, UUIDv7ParamDto } from 'src/validation';
 
 @ApiTags(ApiTag.Maintenance)
 @Controller('admin/integrity')
@@ -53,7 +53,7 @@ export class IntegrityController {
     history: new HistoryBuilder().added('v9.9.9').alpha('v9.9.9'),
   })
   @Authenticated({ permission: Permission.Maintenance, admin: true })
-  async deleteIntegrityReport(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<void> {
+  async deleteIntegrityReport(@Auth() auth: AuthDto, @Param() { id }: UUIDv7ParamDto): Promise<void> {
     await this.service.deleteIntegrityReport(auth, id);
   }
 
@@ -82,7 +82,7 @@ export class IntegrityController {
   @FileResponse()
   @Authenticated({ permission: Permission.Maintenance, admin: true })
   async getIntegrityReportFile(
-    @Param() { id }: UUIDParamDto,
+    @Param() { id }: UUIDv7ParamDto,
     @Res() res: Response,
     @Next() next: NextFunction,
   ): Promise<void> {

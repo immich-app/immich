@@ -89,6 +89,13 @@ export class UUIDParamDto {
   id!: string;
 }
 
+export class UUIDv7ParamDto {
+  @IsNotEmpty()
+  @IsUUID('7')
+  @ApiProperty({ format: 'uuid' })
+  id!: string;
+}
+
 export class UUIDAssetIDParamDto {
   @ValidateUUID()
   id!: string;
