@@ -10,6 +10,7 @@ import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/sync.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
+import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:logging/logging.dart';
 // ignore: import_rule_openapi
 import 'package:openapi/api.dart';
@@ -30,6 +31,7 @@ Future<void> syncCloudIds(ProviderContainer ref) async {
   }
 
   final mappingsToUpdate = await _fetchCloudIdMappings(db, currentUser.id);
+  dPrint(() => 'Found ${mappingsToUpdate.length} assets to update cloud IDs for.');
   final assetApi = ref.read(apiServiceProvider).assetsApi;
   for (final mapping in mappingsToUpdate) {
     final mobileMeta = AssetMetadataUpsertItemDto(
