@@ -141,7 +141,7 @@ export class AssetMediaService extends BaseService {
         ids: [auth.user.id],
       });
 
-      this.requireQuota(auth, file.size);
+      await this.requireQuota(auth, file.size);
 
       if (dto.livePhotoVideoId) {
         await onBeforeLink(
@@ -174,7 +174,7 @@ export class AssetMediaService extends BaseService {
         throw new Error('Asset not found');
       }
 
-      this.requireQuota(auth, file.size);
+      await this.requireQuota(auth, file.size);
 
       await this.replaceFileData(asset.id, dto, file, sidecarFile?.originalPath);
 
@@ -458,9 +458,35 @@ export class AssetMediaService extends BaseService {
     return asset;
   }
 
-  private requireQuota(auth: AuthDto, size: number) {
+  private async requireQuota(auth: AuthDto, size: number) {
+    // Check per-user quota
     if (auth.user.quotaSizeInBytes !== null && auth.user.quotaSizeInBytes < auth.user.quotaUsageInBytes + size) {
       throw new BadRequestException('Quota has been exceeded!');
+    }
+
+    // Check server-wide quota
+    await this.requireServerQuota(size);
+  }
+
+  private async requireServerQuota(size: number) {
+    const config = await this.getConfig({ withCache: true });
+    const serverQuotaGiB = config.server.storageQuotaSizeInGigabytes;
+
+    // If server quota is disabled (null), skip check
+    if (serverQuotaGiB === null || serverQuotaGiB === 0) {
+      return;
+    }
+
+    // Convert quota from GiB to bytes
+    const serverQuotaBytes = serverQuotaGiB * 1024 ** 3;
+
+    // Calculate current total usage
+    const userStats = await this.userRepository.getUserStats();
+    const totalUsage = userStats.reduce((sum, user) => sum + user.usage, 0);
+
+    // Check if adding this file would exceed the quota
+    if (totalUsage + size > serverQuotaBytes) {
+      throw new BadRequestException('Server storage quota has been exceeded!');
     }
   }
 

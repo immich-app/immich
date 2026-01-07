@@ -174,6 +174,27 @@ Overrides the domain name in shared links and email notifications. The URL shoul
 
 The administrator can set a custom message on the login screen (the message will be displayed to all users).
 
+### Server Storage Quota
+
+Configure a server-wide storage quota that limits the total storage used across all users on the instance. This complements per-user quotas and provides an additional layer of control.
+
+**Configuration options:**
+
+- **UI**: Enter the quota value in GiB (gibibytes). Leave empty for unlimited (default).
+- **Config file**: Use gigabytes (number): `"storageQuotaSizeInGigabytes": 100` (for 100GiB)
+
+**How it works:**
+
+- When enabled, the server-wide quota limits the total storage across all users
+- Both per-user quotas and server-wide quota are checked during uploads
+- If either quota would be exceeded, the upload is rejected
+- External libraries do not count toward the quota (same as per-user quotas)
+
+**Default behavior:**
+
+- Disabled by default (`null`) - no server-wide quota enforcement
+- Existing instances are unaffected unless explicitly configured
+
 ## Storage Template
 
 Immich supports a custom [Storage Template](/administration/storage-template). Learn more about this feature and its configuration [here](/administration/storage-template).

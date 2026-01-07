@@ -19417,6 +19417,17 @@
             "default": 0,
             "type": "integer"
           },
+          "serverQuotaSizeInBytes": {
+            "default": null,
+            "format": "int64",
+            "nullable": true,
+            "type": "integer"
+          },
+          "serverQuotaUsageInBytes": {
+            "default": 0,
+            "format": "int64",
+            "type": "integer"
+          },
           "usage": {
             "default": 0,
             "format": "int64",
@@ -19456,6 +19467,8 @@
         },
         "required": [
           "photos",
+          "serverQuotaSizeInBytes",
+          "serverQuotaUsageInBytes",
           "usage",
           "usageByUser",
           "usagePhotos",
@@ -21989,12 +22002,18 @@
           },
           "publicUsers": {
             "type": "boolean"
+          },
+          "storageQuotaSizeInGigabytes": {
+            "minimum": 0,
+            "nullable": true,
+            "type": "number"
           }
         },
         "required": [
           "externalDomain",
           "loginPageMessage",
-          "publicUsers"
+          "publicUsers",
+          "storageQuotaSizeInGigabytes"
         ],
         "type": "object"
       },

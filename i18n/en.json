@@ -305,6 +305,8 @@
     "server_stats_page_description": "Admin server statistics page",
     "server_welcome_message": "Welcome message",
     "server_welcome_message_description": "A message that is displayed on the login page.",
+    "server_storage_quota_gib": "Server Storage Quota (GiB)",
+    "server_storage_quota_gib_description": "Total storage allowed across all users. Leave empty or set to 0 for unlimited. External libraries do not count towards this quota.",
     "settings_page_description": "Admin settings page",
     "sidecar_job": "Sidecar metadata",
     "sidecar_job_description": "Discover or synchronize sidecar metadata from the filesystem",

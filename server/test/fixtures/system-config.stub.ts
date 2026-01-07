@@ -117,4 +117,14 @@ export const systemConfigStub = {
       publicUsers: false,
     },
   },
+  serverQuotaEnabled: {
+    server: {
+      storageQuotaSizeInGigabytes: 100,
+    },
+  },
+  serverQuotaDisabled: {
+    server: {
+      storageQuotaSizeInGigabytes: null,
+    },
+  },
 } satisfies Record<string, DeepPartial<SystemConfig>>;

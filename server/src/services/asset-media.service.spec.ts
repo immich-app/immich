@@ -358,6 +358,8 @@ describe(AssetMediaService.name, () => {
       };
 
       mocks.asset.create.mockResolvedValue(assetEntity);
+      mocks.user.getUserStats.mockResolvedValue([]);
+      mocks.systemMetadata.get.mockResolvedValue(null);
 
       await expect(sut.uploadAsset(authStub.user1, createDto, file)).resolves.toEqual({
         id: 'id_1',
@@ -371,6 +373,151 @@ describe(AssetMediaService.name, () => {
         expect.any(Date),
         new Date(createDto.fileModifiedAt),
       );
+    });
+
+    it('should throw an error if server-wide quota is exceeded', async () => {
+      const file = {
+        uuid: 'random-uuid',
+        originalPath: 'fake_path/asset_1.jpeg',
+        mimeType: 'image/jpeg',
+        checksum: Buffer.from('file hash', 'utf8'),
+        originalName: 'asset_1.jpeg',
+        size: 100,
+      };
+
+      // Mock server quota enabled with ~1KB limit (0.000000001 GiB)
+      mocks.systemMetadata.get.mockResolvedValue({
+        server: {
+          storageQuotaSizeInGigabytes: 0.000000001,
+        },
+      } as any);
+
+      // Mock current usage: 950 bytes (from one user)
+      mocks.user.getUserStats.mockResolvedValue([
+        {
+          userId: 'user-1',
+          userName: 'User 1',
+          photos: 1,
+          videos: 0,
+          usage: 950,
+          usagePhotos: 950,
+          usageVideos: 0,
+          quotaSizeInBytes: null,
+        },
+      ]);
+
+      await expect(sut.uploadAsset(authStub.user1, createDto, file)).rejects.toBeInstanceOf(BadRequestException);
+      expect(mocks.asset.create).not.toHaveBeenCalled();
+    });
+
+    it('should allow upload when server quota is disabled (null)', async () => {
+      const file = {
+        uuid: 'random-uuid',
+        originalPath: 'fake_path/asset_1.jpeg',
+        mimeType: 'image/jpeg',
+        checksum: Buffer.from('file hash', 'utf8'),
+        originalName: 'asset_1.jpeg',
+        size: 42,
+      };
+
+      mocks.asset.create.mockResolvedValue(assetEntity);
+      // Mock server quota disabled
+      mocks.systemMetadata.get.mockResolvedValue({
+        server: {
+          storageQuotaSizeInGigabytes: null,
+        },
+      } as any);
+      mocks.user.getUserStats.mockResolvedValue([]);
+
+      await expect(sut.uploadAsset(authStub.user1, createDto, file)).resolves.toEqual({
+        id: 'id_1',
+        status: AssetMediaStatus.CREATED,
+      });
+
+      expect(mocks.asset.create).toHaveBeenCalled();
+    });
+
+    it('should allow upload when both quotas are satisfied', async () => {
+      const file = {
+        uuid: 'random-uuid',
+        originalPath: 'fake_path/asset_1.jpeg',
+        mimeType: 'image/jpeg',
+        checksum: Buffer.from('file hash', 'utf8'),
+        originalName: 'asset_1.jpeg',
+        size: 50,
+      };
+
+      mocks.asset.create.mockResolvedValue(assetEntity);
+      // Mock server quota enabled with 1 GiB limit
+      mocks.systemMetadata.get.mockResolvedValue({
+        server: {
+          storageQuotaSizeInGigabytes: 1,
+        },
+      } as any);
+
+      // Mock current usage: 100 bytes
+      mocks.user.getUserStats.mockResolvedValue([
+        {
+          userId: 'user-1',
+          userName: 'User 1',
+          photos: 1,
+          videos: 0,
+          usage: 100,
+          usagePhotos: 100,
+          usageVideos: 0,
+          quotaSizeInBytes: null,
+        },
+      ]);
+
+      await expect(sut.uploadAsset(authStub.user1, createDto, file)).resolves.toEqual({
+        id: 'id_1',
+        status: AssetMediaStatus.CREATED,
+      });
+
+      expect(mocks.asset.create).toHaveBeenCalled();
+    });
+
+    it('should check server quota even when user quota is unlimited', async () => {
+      const file = {
+        uuid: 'random-uuid',
+        originalPath: 'fake_path/asset_1.jpeg',
+        mimeType: 'image/jpeg',
+        checksum: Buffer.from('file hash', 'utf8'),
+        originalName: 'asset_1.jpeg',
+        size: 100,
+      };
+
+      // Mock server quota enabled with ~1KB limit (0.000000001 GiB)
+      mocks.systemMetadata.get.mockResolvedValue({
+        server: {
+          storageQuotaSizeInGigabytes: 0.000000001,
+        },
+      } as any);
+
+      // Mock current usage: 950 bytes
+      mocks.user.getUserStats.mockResolvedValue([
+        {
+          userId: 'user-1',
+          userName: 'User 1',
+          photos: 1,
+          videos: 0,
+          usage: 950,
+          usagePhotos: 950,
+          usageVideos: 0,
+          quotaSizeInBytes: null,
+        },
+      ]);
+
+      // User has unlimited quota (null)
+      await expect(
+        sut.uploadAsset(
+          { ...authStub.user1, user: { ...authStub.user1.user, quotaSizeInBytes: null, quotaUsageInBytes: 0 } },
+          createDto,
+          file,
+        ),
+      ).rejects.toBeInstanceOf(BadRequestException);
+
+      expect(mocks.asset.create).not.toHaveBeenCalled();
     });
 
     it('should handle a duplicate', async () => {

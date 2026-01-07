@@ -138,6 +138,7 @@ export class ServerService extends BaseService {
   async getStatistics(): Promise<ServerStatsResponseDto> {
     const userStats: UserStatsQueryResponse[] = await this.userRepository.getUserStats();
     const serverStats = new ServerStatsResponseDto();
+    const config = await this.getConfig({ withCache: false });
 
     for (const user of userStats) {
       const usage = new UsageByUserDto();
@@ -158,6 +159,12 @@ export class ServerService extends BaseService {
 
       serverStats.usageByUser.push(usage);
     }
+
+    // Set server-wide quota information
+    // Convert from GiB (config) to bytes (API response)
+    serverStats.serverQuotaSizeInBytes =
+      config.server.storageQuotaSizeInGigabytes === null ? null : config.server.storageQuotaSizeInGigabytes * 1024 ** 3;
+    serverStats.serverQuotaUsageInBytes = serverStats.usage;
 
     return serverStats;
   }

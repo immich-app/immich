@@ -4,6 +4,7 @@
   import { userInteraction } from '$lib/stores/user.svelte';
   import { requestServerInfo } from '$lib/utils/auth';
   import { getByteUnitString } from '$lib/utils/byte-units';
+  import { getServerStatistics } from '@immich/sdk';
   import { LoadingSpinner } from '@immich/ui';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -11,8 +12,23 @@
   let usageClasses = $state('');
 
   let hasQuota = $derived($user?.quotaSizeInBytes !== null);
-  let availableBytes = $derived((hasQuota ? $user?.quotaSizeInBytes : userInteraction.serverInfo?.diskSizeRaw) || 0);
-  let usedBytes = $derived((hasQuota ? $user?.quotaUsageInBytes : userInteraction.serverInfo?.diskUseRaw) || 0);
+  let hasServerQuota = $derived(userInteraction.serverStats?.serverQuotaSizeInBytes !== null);
+
+  let availableBytes = $derived(
+    hasQuota
+      ? $user?.quotaSizeInBytes || 0
+      : hasServerQuota
+        ? userInteraction.serverStats?.serverQuotaSizeInBytes || 0
+        : userInteraction.serverInfo?.diskSizeRaw || 0,
+  );
+
+  let usedBytes = $derived(
+    hasQuota
+      ? $user?.quotaUsageInBytes || 0
+      : hasServerQuota
+        ? userInteraction.serverStats?.serverQuotaUsageInBytes || 0
+        : userInteraction.serverInfo?.diskUseRaw || 0,
+  );
   let usedPercentage = $derived(Math.min(Math.round((usedBytes / availableBytes) * 100), 100));
 
   const onUpdate = () => {
@@ -39,9 +55,15 @@
 
   onMount(async () => {
     if (userInteraction.serverInfo && $user) {
+      if (!userInteraction.serverStats) {
+        userInteraction.serverStats = await getServerStatistics();
+      }
       return;
     }
     await requestServerInfo();
+    if (!userInteraction.serverStats) {
+      userInteraction.serverStats = await getServerStatistics();
+    }
   });
 </script>
 

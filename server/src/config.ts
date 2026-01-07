@@ -183,6 +183,7 @@ export interface SystemConfig {
     externalDomain: string;
     loginPageMessage: string;
     publicUsers: boolean;
+    storageQuotaSizeInGigabytes: number | null;
   };
   user: {
     deleteDelay: number;
@@ -363,6 +364,7 @@ export const defaults = Object.freeze<SystemConfig>({
     externalDomain: '',
     loginPageMessage: '',
     publicUsers: true,
+    storageQuotaSizeInGigabytes: null,
   },
   notifications: {
     smtp: {

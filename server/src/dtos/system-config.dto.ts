@@ -465,6 +465,12 @@ class SystemConfigServerDto {
 
   @ValidateBoolean()
   publicUsers!: boolean;
+
+  @IsNumber()
+  @Min(0)
+  @Optional({ nullable: true })
+  @ApiProperty({ type: 'number', nullable: true })
+  storageQuotaSizeInGigabytes!: number | null;
 }
 
 class SystemConfigSmtpTransportDto {

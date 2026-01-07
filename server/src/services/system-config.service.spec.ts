@@ -155,6 +155,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
     externalDomain: '',
     loginPageMessage: '',
     publicUsers: true,
+    storageQuotaSizeInGigabytes: null,
   },
   storageTemplate: {
     enabled: false,

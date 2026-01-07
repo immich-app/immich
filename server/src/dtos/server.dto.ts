@@ -116,6 +116,12 @@ export class ServerStatsResponseDto {
   @ApiProperty({ type: 'integer', format: 'int64' })
   usageVideos = 0;
 
+  @ApiProperty({ type: 'integer', format: 'int64', nullable: true })
+  serverQuotaSizeInBytes: number | null = null;
+
+  @ApiProperty({ type: 'integer', format: 'int64' })
+  serverQuotaUsageInBytes = 0;
+
   @ApiProperty({
     isArray: true,
     type: UsageByUserDto,

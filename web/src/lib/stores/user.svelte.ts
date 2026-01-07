@@ -2,6 +2,7 @@ import { eventManager } from '$lib/managers/event-manager.svelte';
 import type {
   AlbumResponseDto,
   ServerAboutResponseDto,
+  ServerStatsResponseDto,
   ServerStorageResponseDto,
   ServerVersionHistoryResponseDto,
 } from '@immich/sdk';
@@ -11,6 +12,7 @@ interface UserInteractions {
   versions?: ServerVersionHistoryResponseDto[];
   aboutInfo?: ServerAboutResponseDto;
   serverInfo?: ServerStorageResponseDto;
+  serverStats?: ServerStatsResponseDto;
 }
 
 const defaultUserInteraction: UserInteractions = {
@@ -18,6 +20,7 @@ const defaultUserInteraction: UserInteractions = {
   versions: undefined,
   aboutInfo: undefined,
   serverInfo: undefined,
+  serverStats: undefined,
 };
 
 export const userInteraction = $state<UserInteractions>(defaultUserInteraction);

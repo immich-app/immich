@@ -206,6 +206,7 @@ describe(ServerService.name, () => {
           quotaSizeInBytes: 0,
         },
       ]);
+      mocks.systemMetadata.get.mockResolvedValue(null);
 
       await expect(sut.getStatistics()).resolves.toEqual({
         photos: 120,
@@ -213,6 +214,8 @@ describe(ServerService.name, () => {
         usage: 1_123_455,
         usagePhotos: 1001,
         usageVideos: 122_455,
+        serverQuotaSizeInBytes: null,
+        serverQuotaUsageInBytes: 1_123_455,
         usageByUser: [
           {
             photos: 10,
