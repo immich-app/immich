@@ -37,13 +37,17 @@ describe('PhotoViewer component', () => {
         CastState: {
           NO_DEVICES_AVAILABLE: 'NO_DEVICES_AVAILABLE',
         },
-        RemotePlayer: vi.fn().mockImplementation(() => ({})),
+        RemotePlayer: vi.fn().mockImplementation(function () {}),
         RemotePlayerEventType: {
           ANY_CHANGE: 'anyChanged',
         },
-        RemotePlayerController: vi.fn().mockImplementation(() => ({ addEventListener: vi.fn() })),
+        RemotePlayerController: vi.fn().mockImplementation(function () {
+          return { addEventListener: vi.fn() };
+        }),
         CastContext: {
-          getInstance: vi.fn().mockImplementation(() => ({ setOptions: vi.fn(), addEventListener: vi.fn() })),
+          getInstance: vi.fn().mockImplementation(function () {
+            return { setOptions: vi.fn(), addEventListener: vi.fn() };
+          }),
         },
         CastContextEventType: {
           SESSION_STATE_CHANGED: 'sessionstatechanged',
