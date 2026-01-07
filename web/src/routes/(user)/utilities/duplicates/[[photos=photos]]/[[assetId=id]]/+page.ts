@@ -9,7 +9,7 @@ export const load = (async ({ params, url }) => {
   const asset = await getAssetInfoFromParam(params);
   const $t = await getFormatter();
 
-  const PAGE_SIZE = 10;
+  const PAGE_SIZE = 200;
 
   const indexParam = url.searchParams.get('index') ?? '0';
   const parsedIndex = Number.parseInt(indexParam, 10);

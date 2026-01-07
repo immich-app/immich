@@ -12,7 +12,7 @@
   import { locale } from '$lib/stores/preferences.store';
   import { stackAssets } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
-  import type { AssetResponseDto } from '@immich/sdk';
+  import type { AssetResponseDto, DuplicateResponseDto } from '@immich/sdk';
   import {
     countDeDuplicateAll,
     countKeepAll,
@@ -35,6 +35,7 @@
   } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
+  import { SvelteMap } from 'svelte/reactivity';
 
   interface Props {
     data: PageData;
@@ -66,7 +67,7 @@
   };
 
   let duplicatesRes = $state(data.duplicatesRes);
-  let pageCache = $state<Map<number, typeof duplicatesRes>>(new Map());
+  let pageCache = new SvelteMap<number, DuplicateResponseDto>();
 
   $effect(() => {
     const initialPage = Math.floor(duplicatesIndex / PAGE_SIZE) + 1;
