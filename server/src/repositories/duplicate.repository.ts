@@ -28,51 +28,7 @@ export class DuplicateRepository {
 
   @GenerateSql({ params: [DummyValue.UUID] })
   async getAll(userId: string, page: number, size: number) {
-    const query = this.db
-      .with('duplicates', (qb) =>
-        qb
-          .selectFrom('asset')
-          .$call(withDefaultVisibility)
-          .innerJoinLateral(
-            (qb) =>
-              qb
-                .selectFrom('asset_exif')
-                .selectAll('asset')
-                .select((eb) => eb.table('asset_exif').as('exifInfo'))
-                .whereRef('asset_exif.assetId', '=', 'asset.id')
-                .as('asset2'),
-            (join) => join.onTrue(),
-          )
-          .select('asset.duplicateId')
-          .select((eb) =>
-            eb.fn.jsonAgg('asset2').orderBy('asset.localDateTime', 'asc').$castTo<MapAsset[]>().as('assets'),
-          )
-          .where('asset.ownerId', '=', asUuid(userId))
-          .where('asset.duplicateId', 'is not', null)
-          .$narrowType<{ duplicateId: NotNull }>()
-          .where('asset.deletedAt', 'is', null)
-          .where('asset.stackId', 'is', null)
-          .groupBy('asset.duplicateId'),
-      )
-      .with('unique', (qb) =>
-        qb
-          .selectFrom('duplicates')
-          .select('duplicateId')
-          .where((eb) => eb(eb.fn('json_array_length', ['assets']), '=', 1)),
-      )
-      .with('removed_unique', (qb) =>
-        qb
-          .updateTable('asset')
-          .set({ duplicateId: null })
-          .from('unique')
-          .whereRef('asset.duplicateId', '=', 'unique.duplicateId'),
-      )
-      .selectFrom('duplicates')
-      .selectAll()
-      // TODO: compare with filtering by json_array_length > 1
-      .where(({ not, exists }) =>
-        not(exists((eb) => eb.selectFrom('unique').whereRef('unique.duplicateId', '=', 'duplicates.duplicateId'))),
-      );
+    const query = this.buildGetAllQuery(userId);
 
     const [items, totalItems] = await Promise.all([
       query
@@ -90,6 +46,61 @@ export class DuplicateRepository {
       items,
       totalItems,
     };
+  }
+
+  streamForGetAll(userId: string) {
+    const query = this.buildGetAllQuery(userId);
+    return query.stream();
+  }
+
+  private buildGetAllQuery(userId: string) {
+    return (
+      this.db
+        .with('duplicates', (qb) =>
+          qb
+            .selectFrom('asset')
+            .$call(withDefaultVisibility)
+            .innerJoinLateral(
+              (qb) =>
+                qb
+                  .selectFrom('asset_exif')
+                  .selectAll('asset')
+                  .select((eb) => eb.table('asset_exif').as('exifInfo'))
+                  .whereRef('asset_exif.assetId', '=', 'asset.id')
+                  .as('asset2'),
+              (join) => join.onTrue(),
+            )
+            .select('asset.duplicateId')
+            .select((eb) =>
+              eb.fn.jsonAgg('asset2').orderBy('asset.localDateTime', 'asc').$castTo<MapAsset[]>().as('assets'),
+            )
+            .where('asset.ownerId', '=', asUuid(userId))
+            .where('asset.duplicateId', 'is not', null)
+            .$narrowType<{ duplicateId: NotNull }>()
+            .where('asset.deletedAt', 'is', null)
+            .where('asset.stackId', 'is', null)
+            .groupBy('asset.duplicateId'),
+        )
+        .with('unique', (qb) =>
+          qb
+            .selectFrom('duplicates')
+            .select('duplicateId')
+            .where((eb) => eb(eb.fn('json_array_length', ['assets']), '=', 1)),
+        )
+        .with('removed_unique', (qb) =>
+          qb
+            .updateTable('asset')
+            .set({ duplicateId: null })
+            .from('unique')
+            .whereRef('asset.duplicateId', '=', 'unique.duplicateId'),
+        )
+        .selectFrom('duplicates')
+        .selectAll()
+        // TODO: compare with filtering by json_array_length > 1
+        .where(({ not, exists }) =>
+          not(exists((eb) => eb.selectFrom('unique').whereRef('unique.duplicateId', '=', 'duplicates.duplicateId'))),
+        )
+    );
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID] })

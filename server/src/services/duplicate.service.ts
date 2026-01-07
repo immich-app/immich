@@ -45,86 +45,52 @@ export class DuplicateService extends BaseService {
   }
 
   async countDeDuplicateAll(auth: AuthDto): Promise<number> {
-    let page = 1;
-    const size = 100;
-    let hasNextPage = true;
     let totalToDelete = 0;
 
-    while (hasNextPage) {
-      const duplicates = await this.getDuplicates(auth, page, size);
-
-      const idsToKeep = duplicates.items.map((group) => suggestDuplicate(group.assets)).map((asset) => asset?.id);
-      const idsToDelete = duplicates.items.flatMap((group, i) =>
-        group.assets.map((asset) => asset.id).filter((asset) => asset !== idsToKeep[i]),
-      );
-
-      totalToDelete += idsToDelete.length;
-
-      hasNextPage = duplicates.hasNextPage;
-      page++;
+    for await (const duplicate of this.duplicateRepository.streamForGetAll(auth.user.id)) {
+      totalToDelete += duplicate.assets.length - 1;
     }
 
     return totalToDelete;
   }
 
   async deDuplicateAll(auth: AuthDto) {
-    let page = 1;
-    const size = 100;
-    let hasNextPage = true;
+    const idsToDelete: string[] = [];
 
-    while (hasNextPage) {
-      const duplicates = await this.getDuplicates(auth, page, size);
+    for await (const duplicate of this.duplicateRepository.streamForGetAll(auth.user.id)) {
+      const assets = duplicate.assets.map((asset) => mapAsset(asset));
 
-      const idsToKeep = duplicates.items.map((group) => suggestDuplicate(group.assets)).map((asset) => asset?.id);
-      const idsToDelete = duplicates.items.flatMap((group, i) =>
-        group.assets.map((asset) => asset.id).filter((asset) => asset !== idsToKeep[i]),
-      );
+      const keep = suggestDuplicate(assets)?.id;
 
-      const { trash } = await this.getConfig({ withCache: false });
-
-      await this.eventRepository.emit('DeleteAssets', {
-        auth,
-        dto: { ids: idsToDelete, force: !trash },
-      });
-
-      hasNextPage = duplicates.hasNextPage;
-      page++;
+      idsToDelete.push(...assets.filter((a) => a.id !== keep).map((a) => a.id));
     }
+
+    const { trash } = await this.getConfig({ withCache: false });
+
+    await this.eventRepository.emit('DeleteAssets', {
+      auth,
+      dto: { ids: idsToDelete, force: !trash },
+    });
   }
 
   async countKeepAll(auth: AuthDto): Promise<number> {
-    let page = 1;
-    const size = 100;
-    let hasNextPage = true;
     let totalToDelete = 0;
 
-    while (hasNextPage) {
-      const duplicates = await this.getDuplicates(auth, page, size);
-
-      totalToDelete += duplicates.items.length;
-
-      hasNextPage = duplicates.hasNextPage;
-      page++;
+    for await (const _ of this.duplicateRepository.streamForGetAll(auth.user.id)) {
+      totalToDelete++;
     }
 
     return totalToDelete;
   }
 
   async keepAll(auth: AuthDto) {
-    let page = 1;
-    const size = 100;
-    let hasNextPage = true;
+    const idsToDelete: string[] = [];
 
-    while (hasNextPage) {
-      const duplicates = await this.getDuplicates(auth, page, size);
-
-      const idsToDelete = duplicates.items.map(({ duplicateId }) => duplicateId);
-
-      await this.deleteAll(auth, { ids: idsToDelete });
-
-      hasNextPage = duplicates.hasNextPage;
-      page++;
+    for await (const duplicate of this.duplicateRepository.streamForGetAll(auth.user.id)) {
+      idsToDelete.push(duplicate.duplicateId);
     }
+
+    await this.deleteAll(auth, { ids: idsToDelete });
   }
 
   @OnJob({ name: JobName.AssetDetectDuplicatesQueueAll, queue: QueueName.DuplicateDetection })
