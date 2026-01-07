@@ -480,7 +480,7 @@ importers:
         version: 4.17.21
       lodash-es:
         specifier: ^4.17.21
-        version: 4.17.21
+        version: 4.17.22
       luxon:
         specifier: ^3.4.2
         version: 3.7.2
