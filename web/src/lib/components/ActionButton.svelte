@@ -9,6 +9,6 @@
   const { title, icon, color = 'secondary', onAction } = $derived(action);
 </script>
 
-{#if action.$if?.() ?? true}
+{#if icon && (action.$if?.() ?? true)}
   <IconButton variant="ghost" shape="round" {color} {icon} aria-label={title} onclick={() => onAction(action)} />
 {/if}

@@ -12,7 +12,7 @@
   import { updateStackedAssetInTimeline, updateUnstackedAssetInTimeline } from '$lib/utils/actions';
   import { navigate } from '$lib/utils/navigation';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
-  import { getAssetInfo, type AlbumResponseDto, type AssetResponseDto, type PersonResponseDto } from '@immich/sdk';
+  import { type AlbumResponseDto, type AssetResponseDto, type PersonResponseDto, getAssetInfo } from '@immich/sdk';
   import { onDestroy, onMount, untrack } from 'svelte';
 
   let { asset: viewingAsset, gridScrollTarget } = assetViewingStore;
@@ -25,13 +25,7 @@
     album?: AlbumResponseDto;
     person?: PersonResponseDto;
 
-    removeAction?:
-      | AssetAction.UNARCHIVE
-      | AssetAction.ARCHIVE
-      | AssetAction.FAVORITE
-      | AssetAction.UNFAVORITE
-      | AssetAction.SET_VISIBILITY_TIMELINE
-      | null;
+    removeAction?: AssetAction.UNARCHIVE | AssetAction.ARCHIVE | AssetAction.SET_VISIBILITY_TIMELINE | null;
   }
 
   let {
@@ -47,7 +41,7 @@
   const getNextAsset = async (currentAsset: AssetResponseDto, preload: boolean = true) => {
     const earlierTimelineAsset = await timelineManager.getEarlierAsset(currentAsset);
     if (earlierTimelineAsset) {
-      const asset = await assetCacheManager.getAsset({ ...authManager.params, id: earlierTimelineAsset.id });
+      const asset = await getAssetInfo({ ...authManager.params, id: earlierTimelineAsset.id });
       if (preload) {
         // also pre-cache an extra one, to pre-cache these assetInfos for the next nav after this one is complete
         void getNextAsset(asset, false);
@@ -60,7 +54,7 @@
     const laterTimelineAsset = await timelineManager.getLaterAsset(currentAsset);
 
     if (laterTimelineAsset) {
-      const asset = await assetCacheManager.getAsset({ ...authManager.params, id: laterTimelineAsset.id });
+      const asset = await getAssetInfo({ ...authManager.params, id: laterTimelineAsset.id });
       if (preload) {
         // also pre-cache an extra one, to pre-cache these assetInfos for the next nav after this one is complete
         void getPreviousAsset(asset, false);
@@ -141,8 +135,6 @@
     switch (action.type) {
       case AssetAction.ARCHIVE:
       case AssetAction.UNARCHIVE:
-      case AssetAction.FAVORITE:
-      case AssetAction.UNFAVORITE:
       case AssetAction.ADD: {
         timelineManager.upsertAssets([action.asset]);
         break;
