@@ -3,6 +3,7 @@ import type { ReleaseEvent } from '$lib/types';
 import type {
   AlbumResponseDto,
   ApiKeyResponseDto,
+  AssetResponseDto,
   LibraryResponseDto,
   LoginResponseDto,
   QueueResponseDto,
@@ -24,6 +25,7 @@ export type Events = {
   ApiKeyUpdate: [ApiKeyResponseDto];
   ApiKeyDelete: [ApiKeyResponseDto];
 
+  AssetUpdate: [AssetResponseDto];
   AssetReplace: [{ oldAssetId: string; newAssetId: string }];
 
   AlbumUpdate: [AlbumResponseDto];

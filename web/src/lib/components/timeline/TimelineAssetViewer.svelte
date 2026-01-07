@@ -25,13 +25,7 @@
     album?: AlbumResponseDto;
     person?: PersonResponseDto;
 
-    removeAction?:
-      | AssetAction.UNARCHIVE
-      | AssetAction.ARCHIVE
-      | AssetAction.FAVORITE
-      | AssetAction.UNFAVORITE
-      | AssetAction.SET_VISIBILITY_TIMELINE
-      | null;
+    removeAction?: AssetAction.UNARCHIVE | AssetAction.ARCHIVE | AssetAction.SET_VISIBILITY_TIMELINE | null;
   }
 
   let {
@@ -141,8 +135,6 @@
     switch (action.type) {
       case AssetAction.ARCHIVE:
       case AssetAction.UNARCHIVE:
-      case AssetAction.FAVORITE:
-      case AssetAction.UNFAVORITE:
       case AssetAction.ADD: {
         timelineManager.upsertAssets([action.asset]);
         break;
