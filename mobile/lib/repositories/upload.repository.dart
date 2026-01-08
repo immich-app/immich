@@ -94,56 +94,7 @@ class UploadRepository {
     );
   }
 
-  Future<UploadResult> uploadSingleAsset({
-    required File file,
-    required String originalFileName,
-    required Map<String, String> headers,
-    required Map<String, String> fields,
-    required Client httpClient,
-    required CancellationToken cancelToken,
-    required void Function(int bytes, int totalBytes) onProgress,
-  }) async {
-    return _uploadFile(
-      file: file,
-      originalFileName: originalFileName,
-      headers: headers,
-      fields: fields,
-      httpClient: httpClient,
-      cancelToken: cancelToken,
-      onProgress: onProgress,
-      logContext: 'assetUpload',
-    );
-  }
-
-  /// Upload live photo video part and return the video asset ID
-  Future<String?> uploadLivePhotoVideo({
-    required File livePhotoFile,
-    required String originalFileName,
-    required Map<String, String> headers,
-    required Map<String, String> fields,
-    required Client httpClient,
-    required CancellationToken cancelToken,
-    required void Function(int bytes, int totalBytes) onProgress,
-  }) async {
-    final result = await _uploadFile(
-      file: livePhotoFile,
-      originalFileName: originalFileName,
-      headers: headers,
-      fields: fields,
-      httpClient: httpClient,
-      cancelToken: cancelToken,
-      onProgress: onProgress,
-      logContext: 'livePhotoVideoUpload',
-    );
-
-    if (result.isSuccess && result.remoteAssetId != null) {
-      return result.remoteAssetId;
-    }
-
-    return null;
-  }
-
-  Future<UploadResult> _uploadFile({
+  Future<UploadResult> uploadFile({
     required File file,
     required String originalFileName,
     required Map<String, String> headers,

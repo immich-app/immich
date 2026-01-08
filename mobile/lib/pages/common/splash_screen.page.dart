@@ -132,7 +132,7 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
     if (isEnableBackup) {
       final currentUser = Store.tryGet(StoreKey.currentUser);
       if (currentUser != null) {
-        unawaited(notifier.startBackup(currentUser.id));
+        unawaited(notifier.startForegroundBackup(currentUser.id));
       }
     }
   }

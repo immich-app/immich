@@ -121,7 +121,7 @@ class UploadService {
   /// Find backup candidates
   /// Build the upload tasks
   /// Enqueue the tasks
-  Future<void> startBackupWithURLSession(String userId) async {
+  Future<void> startUploadWithURLSession(String userId) async {
     await _storageRepository.clearCache();
 
     shouldAbortQueuingTasks = false;
@@ -146,14 +146,14 @@ class UploadService {
     }
   }
 
-  Future<void> startForegroundUpload(
+  Future<void> startUploadWithHttp(
     String userId,
     bool hasWifi,
-    CancellationToken cancelToken,
-    void Function(String localAssetId, String filename, int bytes, int totalBytes) onProgress,
-    void Function(String localAssetId, String remoteAssetId) onSuccess,
-    void Function(String errorMessage) onError, {
-    void Function(String localAssetId, double progress)? onICloudProgress,
+    CancellationToken cancelToken, {
+    required void Function(String localAssetId, String filename, int bytes, int totalBytes) onProgress,
+    required void Function(String localAssetId, String remoteAssetId) onSuccess,
+    required void Function(String errorMessage) onError,
+    required void Function(String localAssetId, double progress) onICloudProgress,
   }) async {
     const concurrentUploads = 3;
     final httpClients = List.generate(concurrentUploads, (_) => Client());
@@ -186,7 +186,6 @@ class UploadService {
 
           final requireWifi = _shouldRequireWiFi(asset);
           if (requireWifi && !hasWifi) {
-            _logger.warning('Skipping upload for ${asset.id} because it requires WiFi');
             continue;
           }
 
@@ -194,9 +193,9 @@ class UploadService {
             asset,
             httpClient,
             cancelToken,
-            onProgress,
-            onSuccess,
-            onError,
+            onProgress: onProgress,
+            onSuccess: onSuccess,
+            onError: onError,
             onICloudProgress: onICloudProgress,
           );
         }
@@ -220,11 +219,11 @@ class UploadService {
   Future<void> _uploadSingleAsset(
     LocalAsset asset,
     Client httpClient,
-    CancellationToken cancelToken,
-    void Function(String id, String filename, int bytes, int totalBytes) onProgress,
-    void Function(String localAssetId, String remoteAssetId) onSuccess,
-    void Function(String errorMessage) onError, {
-    void Function(String localAssetId, double progress)? onICloudProgress,
+    CancellationToken cancelToken, {
+    required void Function(String id, String filename, int bytes, int totalBytes) onProgress,
+    required void Function(String localAssetId, String remoteAssetId) onSuccess,
+    required void Function(String errorMessage) onError,
+    required void Function(String localAssetId, double progress) onICloudProgress,
   }) async {
     File? file;
     File? livePhotoFile;
@@ -244,12 +243,10 @@ class UploadService {
         PMProgressHandler? progressHandler;
         StreamSubscription? progressSubscription;
 
-        if (onICloudProgress != null) {
-          progressHandler = PMProgressHandler();
-          progressSubscription = progressHandler.stream.listen((event) {
-            onICloudProgress(asset.localId!, event.progress);
-          });
-        }
+        progressHandler = PMProgressHandler();
+        progressSubscription = progressHandler.stream.listen((event) {
+          onICloudProgress(asset.localId!, event.progress);
+        });
 
         try {
           file = await _storageRepository.loadFileFromCloud(asset.id, progressHandler: progressHandler);
@@ -260,7 +257,7 @@ class UploadService {
             );
           }
         } finally {
-          await progressSubscription?.cancel();
+          await progressSubscription.cancel();
         }
       } else {
         // Get files locally
@@ -300,23 +297,28 @@ class UploadService {
       String? livePhotoVideoId;
       if (entity.isLivePhoto && livePhotoFile != null) {
         final livePhotoTitle = p.setExtension(originalFileName, p.extension(livePhotoFile.path));
-        livePhotoVideoId = await _uploadRepository.uploadLivePhotoVideo(
-          livePhotoFile: livePhotoFile,
+
+        final livePhotoResult = await _uploadRepository.uploadFile(
+          file: livePhotoFile,
           originalFileName: livePhotoTitle,
           headers: headers,
           fields: fields,
           httpClient: httpClient,
           cancelToken: cancelToken,
           onProgress: (bytes, totalBytes) => onProgress(asset.localId!, livePhotoTitle, bytes, totalBytes),
+          logContext: 'livePhotoVideo[${asset.localId}]',
         );
+
+        if (livePhotoResult.isSuccess && livePhotoResult.remoteAssetId != null) {
+          livePhotoVideoId = livePhotoResult.remoteAssetId;
+        }
       }
 
-      // Add livePhotoVideoId to fields if available
       if (livePhotoVideoId != null) {
         fields['livePhotoVideoId'] = livePhotoVideoId;
       }
 
-      final result = await _uploadRepository.uploadSingleAsset(
+      final result = await _uploadRepository.uploadFile(
         file: file,
         originalFileName: originalFileName,
         headers: headers,
@@ -324,6 +326,7 @@ class UploadService {
         httpClient: httpClient,
         cancelToken: cancelToken,
         onProgress: (bytes, totalBytes) => onProgress(asset.localId!, originalFileName, bytes, totalBytes),
+        logContext: 'asset[${asset.localId}]',
       );
 
       if (result.isSuccess && result.remoteAssetId != null) {

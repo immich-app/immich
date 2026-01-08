@@ -393,7 +393,7 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
     state = state.copyWith(isSyncing: isSyncing);
   }
 
-  Future<void> startBackup(String userId) async {
+  Future<void> startForegroundBackup(String userId) async {
     state = state.copyWith(error: BackupError.none);
 
     final cancelToken = CancellationToken();
@@ -403,13 +403,13 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
     final hasWifi = networkCapabilities.isUnmetered;
     _logger.info('Network capabilities: $networkCapabilities, hasWifi/isUnmetered: $hasWifi');
 
-    return _uploadService.startForegroundUpload(
+    return _uploadService.startUploadWithHttp(
       userId,
       hasWifi,
       cancelToken,
-      _handleForegroundBackupProgress,
-      _handleForegroundBackupSuccess,
-      _handleForegroundBackupError,
+      onProgress: _handleForegroundBackupProgress,
+      onSuccess: _handleForegroundBackupSuccess,
+      onError: _handleForegroundBackupError,
       onICloudProgress: _handleICloudProgress,
     );
   }
@@ -497,7 +497,7 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
 
     if (tasks.isEmpty) {
       _logger.info("Start backup with URLSession");
-      return _uploadService.startBackupWithURLSession(userId);
+      return _uploadService.startUploadWithURLSession(userId);
     }
 
     _logger.info("Tasks to resume: ${tasks.length}");

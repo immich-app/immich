@@ -116,7 +116,7 @@ class _DriftBackupAlbumSelectionPageState extends ConsumerState<DriftBackupAlbum
                 backupNotifier.stopBackup().whenComplete(
                   () => backgroundSync.syncRemote().then((success) {
                     if (success) {
-                      return backupNotifier.startBackup(user.id);
+                      return backupNotifier.startForegroundBackup(user.id);
                     } else {
                       Logger('DriftBackupAlbumSelectionPage').warning('Background sync failed, not starting backup');
                     }
