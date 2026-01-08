@@ -12,11 +12,13 @@ class ImmichTheme {
 
 ThemeData getThemeData({required ColorScheme colorScheme, required Locale locale}) {
   final isDark = colorScheme.brightness == Brightness.dark;
+  final warningColor = isDark ? const Color(0xFFF3BC6A) : const Color(0xFFC47A00);
+  final onWarningColor = isDark ? Colors.black : Colors.white;
 
   return ThemeData(
     useMaterial3: true,
     brightness: colorScheme.brightness,
-    colorScheme: colorScheme,
+    colorScheme: colorScheme.copyWith(tertiary: warningColor, onTertiary: onWarningColor),
     primaryColor: colorScheme.primary,
     hintColor: colorScheme.onSurfaceSecondary,
     focusColor: colorScheme.primary,

@@ -101,7 +101,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
           if (count == 0) {
             return const SizedBox.shrink();
           }
-          final btnColor = const Color.fromARGB(255, 243, 188, 106);
+          final btnColor = theme.colorScheme.tertiary;
           return buildActionButton(
             Icons.warning_amber_rounded,
             'review_out_of_sync_changes'.t(),
