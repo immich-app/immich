@@ -56,6 +56,7 @@ import { AlbumTable } from 'src/schema/tables/album.table';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
 import { AssetFileTable } from 'src/schema/tables/asset-file.table';
 import { AssetJobStatusTable } from 'src/schema/tables/asset-job-status.table';
+import { AssetMetadataTable } from 'src/schema/tables/asset-metadata.table';
 import { AssetTable } from 'src/schema/tables/asset.table';
 import { FaceSearchTable } from 'src/schema/tables/face-search.table';
 import { MemoryTable } from 'src/schema/tables/memory.table';
@@ -177,6 +178,12 @@ export class MediumTestContext<S extends BaseService = BaseService> {
     const asset = mediumFactory.assetInsert(dto);
     const result = await this.get(AssetRepository).create(asset);
     return { asset, result };
+  }
+
+  async newMetadata(dto: Insertable<AssetMetadataTable>) {
+    const { assetId, ...item } = dto;
+    const result = await this.get(AssetRepository).upsertMetadata(assetId, [item]);
+    return { metadata: dto, result };
   }
 
   async newAssetFile(dto: Insertable<AssetFileTable>) {

@@ -67,9 +67,6 @@ String parameterToString(dynamic value) {
   if (value is AssetMediaStatus) {
     return AssetMediaStatusTypeTransformer().encode(value).toString();
   }
-  if (value is AssetMetadataKey) {
-    return AssetMetadataKeyTypeTransformer().encode(value).toString();
-  }
   if (value is AssetOrder) {
     return AssetOrderTypeTransformer().encode(value).toString();
   }

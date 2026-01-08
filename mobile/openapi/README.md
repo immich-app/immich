@@ -100,6 +100,7 @@ Class | Method | HTTP request | Description
 *AssetsApi* | [**copyAsset**](doc//AssetsApi.md#copyasset) | **PUT** /assets/copy | Copy asset
 *AssetsApi* | [**deleteAssetMetadata**](doc//AssetsApi.md#deleteassetmetadata) | **DELETE** /assets/{id}/metadata/{key} | Delete asset metadata by key
 *AssetsApi* | [**deleteAssets**](doc//AssetsApi.md#deleteassets) | **DELETE** /assets | Delete assets
+*AssetsApi* | [**deleteBulkAssetMetadata**](doc//AssetsApi.md#deletebulkassetmetadata) | **DELETE** /assets/metadata | Delete asset metadata
 *AssetsApi* | [**downloadAsset**](doc//AssetsApi.md#downloadasset) | **GET** /assets/{id}/original | Download original asset
 *AssetsApi* | [**getAllUserAssetsByDeviceId**](doc//AssetsApi.md#getalluserassetsbydeviceid) | **GET** /assets/device/{deviceId} | Retrieve assets by device ID
 *AssetsApi* | [**getAssetInfo**](doc//AssetsApi.md#getassetinfo) | **GET** /assets/{id} | Retrieve an asset
@@ -114,6 +115,7 @@ Class | Method | HTTP request | Description
 *AssetsApi* | [**updateAsset**](doc//AssetsApi.md#updateasset) | **PUT** /assets/{id} | Update an asset
 *AssetsApi* | [**updateAssetMetadata**](doc//AssetsApi.md#updateassetmetadata) | **PUT** /assets/{id}/metadata | Update asset metadata
 *AssetsApi* | [**updateAssets**](doc//AssetsApi.md#updateassets) | **PUT** /assets | Update assets
+*AssetsApi* | [**updateBulkAssetMetadata**](doc//AssetsApi.md#updatebulkassetmetadata) | **PUT** /assets/metadata | Upsert asset metadata
 *AssetsApi* | [**uploadAsset**](doc//AssetsApi.md#uploadasset) | **POST** /assets | Upload asset
 *AssetsApi* | [**viewAsset**](doc//AssetsApi.md#viewasset) | **GET** /assets/{id}/thumbnail | View asset thumbnail
 *AuthenticationApi* | [**changePassword**](doc//AuthenticationApi.md#changepassword) | **POST** /auth/change-password | Change password
@@ -358,7 +360,11 @@ Class | Method | HTTP request | Description
  - [AssetMediaResponseDto](doc//AssetMediaResponseDto.md)
  - [AssetMediaSize](doc//AssetMediaSize.md)
  - [AssetMediaStatus](doc//AssetMediaStatus.md)
- - [AssetMetadataKey](doc//AssetMetadataKey.md)
+ - [AssetMetadataBulkDeleteDto](doc//AssetMetadataBulkDeleteDto.md)
+ - [AssetMetadataBulkDeleteItemDto](doc//AssetMetadataBulkDeleteItemDto.md)
+ - [AssetMetadataBulkResponseDto](doc//AssetMetadataBulkResponseDto.md)
+ - [AssetMetadataBulkUpsertDto](doc//AssetMetadataBulkUpsertDto.md)
+ - [AssetMetadataBulkUpsertItemDto](doc//AssetMetadataBulkUpsertItemDto.md)
  - [AssetMetadataResponseDto](doc//AssetMetadataResponseDto.md)
  - [AssetMetadataUpsertDto](doc//AssetMetadataUpsertDto.md)
  - [AssetMetadataUpsertItemDto](doc//AssetMetadataUpsertItemDto.md)
