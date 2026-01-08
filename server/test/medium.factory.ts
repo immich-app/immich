@@ -69,6 +69,7 @@ import { UserTable } from 'src/schema/tables/user.table';
 import { BASE_SERVICE_DEPENDENCIES, BaseService } from 'src/services/base.service';
 import { MetadataService } from 'src/services/metadata.service';
 import { SyncService } from 'src/services/sync.service';
+import { UploadFile } from 'src/types';
 import { mockEnvData } from 'test/repositories/config.repository.mock';
 import { newTelemetryRepositoryMock } from 'test/repositories/telemetry.repository.mock';
 import { factory, newDate, newEmbedding, newUuid } from 'test/small.factory';
@@ -746,6 +747,17 @@ const loginResponse = (): LoginResponseDto => {
   };
 };
 
+const uploadFile = (file: Partial<UploadFile> = {}) => {
+  return {
+    uuid: newUuid(),
+    checksum: randomBytes(32),
+    originalPath: '/path/to/file.jpg',
+    originalName: 'file.jpg',
+    size: 123_456,
+    ...file,
+  };
+};
+
 export const mediumFactory = {
   assetInsert,
   assetFaceInsert,
@@ -760,4 +772,5 @@ export const mediumFactory = {
   loginDetails,
   loginResponse,
   tagInsert,
+  uploadFile,
 };
