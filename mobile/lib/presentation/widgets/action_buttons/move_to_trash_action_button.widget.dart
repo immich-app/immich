@@ -38,6 +38,7 @@ class MoveToTrashActionButton extends ConsumerWidget {
     if (!context.mounted) {
       return;
     }
+    final selectedCount = source == ActionSource.viewer ? 1 : ref.read(multiSelectProvider).selectedAssets.length;
     final assetViewerNotifier = ref.read(assetViewerProvider.notifier);
     assetViewerNotifier.setControls(false);
     final confirmed = await showDialog<bool>(
@@ -45,10 +46,7 @@ class MoveToTrashActionButton extends ConsumerWidget {
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text('asset_out_of_sync_trash_confirmation_title'.tr()),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [Text('asset_out_of_sync_trash_confirmation_text'.tr())],
-          ),
+          content: Text('asset_out_of_sync_trash_confirmation_text'.t(args: {'count': '$selectedCount'})),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),

@@ -55,7 +55,10 @@ class ViewerBottomBar extends ConsumerWidget {
 
     final actions = <Widget>[
       if (isSyncTrashTimeline || isWaitingForSyncApproval) ...[
-        const Text('asset_out_of_sync_actions_title').tr(),
+        Text(
+          'asset_out_of_sync_actions_title',
+          style: context.textTheme.bodyMedium?.copyWith(color: Colors.white),
+        ).tr(),
         KeepOnDeviceActionButton(
           source: ActionSource.viewer,
           onResult: (result) {
