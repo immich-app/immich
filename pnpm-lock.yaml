@@ -737,6 +737,9 @@ importers:
       '@photo-sphere-viewer/core':
         specifier: ^5.14.0
         version: 5.14.0
+      '@photo-sphere-viewer/equirectangular-tiles-adapter':
+        specifier: ^5.14.0
+        version: 5.14.0(@photo-sphere-viewer/core@5.14.0)
       '@photo-sphere-viewer/equirectangular-video-adapter':
         specifier: ^5.14.0
         version: 5.14.0(@photo-sphere-viewer/core@5.14.0)(@photo-sphere-viewer/video-plugin@5.14.0(@photo-sphere-viewer/core@5.14.0))
@@ -3943,6 +3946,11 @@ packages:
 
   '@photo-sphere-viewer/core@5.14.0':
     resolution: {integrity: sha512-V0JeDSB1D2Q60Zqn7+0FPjq8gqbKEwuxMzNdTLydefkQugVztLvdZykO+4k5XTpweZ2QAWPH/QOI1xZbsdvR9A==}
+
+  '@photo-sphere-viewer/equirectangular-tiles-adapter@5.14.0':
+    resolution: {integrity: sha512-PEZreZg79tdkYbiswKppmLuwkJnMnhLVHTHJdWYqpjFt6PJ/ieh7Eg/8fIACc+DPtFrgzyCcH/6QAHPUE9nblQ==}
+    peerDependencies:
+      '@photo-sphere-viewer/core': 5.14.0
 
   '@photo-sphere-viewer/equirectangular-video-adapter@5.14.0':
     resolution: {integrity: sha512-Ez88sZ4sj3fONpZSortnN3gLXlvV/hn5U/88LsWtxI73YwhkZ06ZtXFYLXU4MBaJvqCbMGaR6j39uVXTWFo5rw==}
@@ -16093,6 +16101,10 @@ snapshots:
   '@photo-sphere-viewer/core@5.14.0':
     dependencies:
       three: 0.179.1
+
+  '@photo-sphere-viewer/equirectangular-tiles-adapter@5.14.0(@photo-sphere-viewer/core@5.14.0)':
+    dependencies:
+      '@photo-sphere-viewer/core': 5.14.0
 
   '@photo-sphere-viewer/equirectangular-video-adapter@5.14.0(@photo-sphere-viewer/core@5.14.0)(@photo-sphere-viewer/video-plugin@5.14.0(@photo-sphere-viewer/core@5.14.0))':
     dependencies:
