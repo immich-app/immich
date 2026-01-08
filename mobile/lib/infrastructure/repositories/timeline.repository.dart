@@ -253,6 +253,24 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
     origin: origin,
   );
 
+  TimelineQuery fromAssetsWithBuckets(List<BaseAsset> assets, TimelineOrigin origin) {
+    // Sort assets by date descending and group by day
+    final sorted = List<BaseAsset>.from(assets)..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    final Map<DateTime, int> bucketCounts = {};
+    for (final asset in sorted) {
+      final date = DateTime(asset.createdAt.year, asset.createdAt.month, asset.createdAt.day);
+      bucketCounts[date] = (bucketCounts[date] ?? 0) + 1;
+    }
+
+    final buckets = bucketCounts.entries.map((e) => TimeBucket(date: e.key, assetCount: e.value)).toList();
+
+    return (
+      bucketSource: () => Stream.value(buckets),
+      assetSource: (offset, count) => Future.value(sorted.skip(offset).take(count).toList(growable: false)),
+      origin: origin,
+    );
+  }
+
   TimelineQuery remote(String ownerId, GroupAssetsBy groupBy) => _remoteQueryBuilder(
     filter: (row) =>
         row.deletedAt.isNull() & row.visibility.equalsValue(AssetVisibility.timeline) & row.ownerId.equals(ownerId),

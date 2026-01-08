@@ -13,7 +13,7 @@
   import { showDeleteModal } from '$lib/stores/preferences.store';
   import { handlePromiseError } from '$lib/utils';
   import { deleteAssets } from '$lib/utils/actions';
-  import { archiveAssets, cancelMultiselect } from '$lib/utils/asset-utils';
+  import { archiveAssets, cancelMultiselect, getNextAsset, getPreviousAsset } from '$lib/utils/asset-utils';
   import { moveFocus } from '$lib/utils/focus-util';
   import { handleError } from '$lib/utils/handle-error';
   import { getJustifiedLayoutFromAssets } from '$lib/utils/layout-utils';
@@ -27,7 +27,7 @@
 
   interface Props {
     initialAssetId?: string;
-    assets: TimelineAsset[] | AssetResponseDto[];
+    assets: AssetResponseDto[];
     assetInteraction: AssetInteraction;
     disableAssetSelect?: boolean;
     showArchiveIcon?: boolean;
@@ -229,7 +229,7 @@
     isShowDeleteConfirmation = false;
     await deleteAssets(
       !(isTrashEnabled && !force),
-      (assetIds) => (assets = assets.filter((asset) => !assetIds.includes(asset.id)) as TimelineAsset[]),
+      (assetIds) => (assets = assets.filter((asset) => !assetIds.includes(asset.id))),
       assetInteraction.selectedAssets,
       onReload,
     );
@@ -242,7 +242,7 @@
       assetInteraction.isAllArchived ? AssetVisibility.Timeline : AssetVisibility.Archive,
     );
     if (ids) {
-      assets = assets.filter((asset) => !ids.includes(asset.id)) as TimelineAsset[];
+      assets = assets.filter((asset) => !ids.includes(asset.id));
       deselectAllAssets();
     }
   };
@@ -424,6 +424,12 @@
       selectAssetCandidates(lastAssetMouseEvent);
     }
   });
+
+  const assetCursor = $derived({
+    current: $viewingAsset,
+    nextAsset: getNextAsset(assets, $viewingAsset),
+    previousAsset: getPreviousAsset(assets, $viewingAsset),
+  });
 </script>
 
 <svelte:document
@@ -488,7 +494,7 @@
   <Portal target="body">
     {#await import('$lib/components/asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
       <AssetViewer
-        asset={$viewingAsset}
+        cursor={assetCursor}
         onAction={handleAction}
         onPrevious={handlePrevious}
         onNext={handleNext}
