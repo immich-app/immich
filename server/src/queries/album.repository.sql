@@ -167,12 +167,8 @@ order by
 -- AlbumRepository.getMetadataForIds
 select
   "album_asset"."albumId" as "albumId",
-  min(
-    ("asset"."localDateTime" AT TIME ZONE 'UTC'::text)::date
-  ) as "startDate",
-  max(
-    ("asset"."localDateTime" AT TIME ZONE 'UTC'::text)::date
-  ) as "endDate",
+  min("asset"."localDateTime") as "startDate",
+  max("asset"."localDateTime") as "endDate",
   max("asset"."updatedAt") as "lastModifiedAssetTimestamp",
   count("asset"."id")::int as "assetCount"
 from
