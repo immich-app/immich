@@ -5,6 +5,7 @@
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { handlePromiseError } from '$lib/utils';
+  import { getNextAsset, getPreviousAsset } from '$lib/utils/asset-utils';
   import { suggestDuplicate } from '$lib/utils/duplicate-utils';
   import { navigate } from '$lib/utils/navigation';
   import { getAssetInfo, type AssetResponseDto } from '@immich/sdk';
@@ -102,6 +103,12 @@
   const handleStack = () => {
     onStack(assets);
   };
+
+  const assetCursor = $derived({
+    current: $viewingAsset,
+    nextAsset: getNextAsset(assets, $viewingAsset),
+    previousAsset: getPreviousAsset(assets, $viewingAsset),
+  });
 </script>
 
 <svelte:document
@@ -182,7 +189,7 @@
   {#await import('$lib/components/asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
     <Portal target="body">
       <AssetViewer
-        asset={$viewingAsset}
+        cursor={assetCursor}
         showNavigation={assets.length > 1}
         {onNext}
         {onPrevious}
