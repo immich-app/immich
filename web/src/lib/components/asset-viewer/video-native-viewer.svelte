@@ -4,6 +4,7 @@
   import VideoRemoteViewer from '$lib/components/asset-viewer/video-remote-viewer.svelte';
   import { assetViewerFadeDuration } from '$lib/constants';
   import { assetCacheManager } from '$lib/managers/AssetCacheManager.svelte';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import { castManager } from '$lib/managers/cast-manager.svelte';
   import { eventManager } from '$lib/managers/event-manager.svelte';
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
@@ -22,6 +23,8 @@
   import { fade } from 'svelte/transition';
 
   interface Props {
+    transitionName?: string | null;
+    asset: AssetResponseDto;
     assetId: string;
     previousAsset?: AssetResponseDto;
     nextAsset?: AssetResponseDto;
@@ -37,6 +40,8 @@
   }
 
   let {
+    transitionName,
+    asset,
     assetId,
     previousAsset,
     nextAsset,
@@ -50,8 +55,6 @@
     onVideoStarted = () => {},
     onClose = () => {},
   }: Props = $props();
-
-  let asset = $state<AssetResponseDto | null>(null);
 
   let videoPlayer: HTMLVideoElement | undefined = $state();
   let isLoading = $state(true);
@@ -83,7 +86,7 @@
 
   $effect(
     () =>
-      void assetCacheManager.getAsset({ key: cacheKey ?? assetId, id: assetId }).then((assetDto) => (asset = assetDto)),
+      void assetCacheManager.getAsset({ ...authManager.params, id: assetId }).then((assetDto) => (asset = assetDto)),
   );
 
   $effect(() => {
@@ -193,8 +196,9 @@
         />
       </div>
     {:else}
-      <div>
+      <div class="relative">
         <video
+          style:view-transition-name={transitionName}
           style:height={box.height}
           style:width={box.width}
           bind:this={videoPlayer}
@@ -221,7 +225,7 @@
         </video>
 
         {#if isLoading}
-          <div class="absolute flex place-content-center place-items-center">
+          <div class="absolute inset-0 flex place-content-center place-items-center">
             <LoadingSpinner />
           </div>
         {/if}
@@ -233,3 +237,9 @@
     {/if}
   </div>
 {/if}
+
+<style>
+  video:focus {
+    outline: none;
+  }
+</style>

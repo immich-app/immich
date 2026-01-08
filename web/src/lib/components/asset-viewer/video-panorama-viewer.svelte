@@ -5,10 +5,11 @@
   import { fade } from 'svelte/transition';
 
   interface Props {
+    transitionName?: string | null;
     assetId: string;
   }
 
-  const { assetId }: Props = $props();
+  const { assetId, transitionName }: Props = $props();
 
   const modules = Promise.all([
     import('./photo-sphere-viewer-adapter.svelte').then((module) => module.default),
@@ -23,6 +24,7 @@
     <LoadingSpinner />
   {:then [PhotoSphereViewer, adapter, videoPlugin]}
     <PhotoSphereViewer
+      {transitionName}
       panorama={{ source: getAssetPlaybackUrl(assetId) }}
       originalPanorama={{ source: getAssetOriginalUrl(assetId) }}
       plugins={[videoPlugin]}
