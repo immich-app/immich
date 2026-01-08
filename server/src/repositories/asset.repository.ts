@@ -258,6 +258,10 @@ export class AssetRepository {
   }
 
   upsertMetadata(id: string, items: Array<{ key: string; value: object }>) {
+    if (items.length === 0) {
+      return [];
+    }
+
     return this.db
       .insertInto('asset_metadata')
       .values(items.map((item) => ({ assetId: id, ...item })))

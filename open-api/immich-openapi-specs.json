@@ -15605,8 +15605,7 @@
           "deviceAssetId",
           "deviceId",
           "fileCreatedAt",
-          "fileModifiedAt",
-          "metadata"
+          "fileModifiedAt"
         ],
         "type": "object"
       },
