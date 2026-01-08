@@ -28,6 +28,7 @@ test.describe('Integrity', () => {
 
     const previousCount = Number.parseInt((await count.textContent()) ?? '');
 
+    await utils.mkFolder(`/data/upload/${admin.userId}`);
     await utils.putTextFile('untracked', `/data/upload/${admin.userId}/untracked1.png`);
 
     const checkButton = page.getByText('Integrity Report').locator('..').getByRole('button', { name: 'Check All' });
