@@ -15,9 +15,11 @@ import type {
 
 export type Events = {
   AppInit: [];
-  UserLogin: [];
+
   AuthLogin: [LoginResponseDto];
   AuthLogout: [];
+  AuthUserLoaded: [UserAdminResponseDto];
+
   LanguageChange: [{ name: string; code: string; rtl?: boolean }];
   ThemeChange: [ThemeSetting];
 
