@@ -15,7 +15,6 @@ import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/download_status_floating_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/general_bottom_sheet.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/scrubber.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/segment.model.dart';
@@ -29,7 +28,7 @@ import 'package:immich_mobile/widgets/common/immich_sliver_app_bar.dart';
 import 'package:immich_mobile/widgets/common/mesmerizing_sliver_app_bar.dart';
 import 'package:immich_mobile/widgets/common/selection_sliver_app_bar.dart';
 
-class Timeline extends StatelessWidget {
+class Timeline extends StatefulWidget {
   const Timeline({
     super.key,
     this.topSliverWidget,
@@ -56,64 +55,113 @@ class Timeline extends StatelessWidget {
   final double? initialScrollOffset;
 
   @override
+  State<Timeline> createState() => _TimelineState();
+}
+
+class _TimelineState extends State<Timeline> {
+  late final ScrollController _scrollController;
+  // Track constraints to compute key - only change key on significant dimension changes
+  // Use width bucket to avoid key changes from bottom nav show/hide (height changes)
+  int _widthBucket = 0;
+  // Store target asset index when dimensions change to restore scroll position
+  int? _restoreAssetIndex;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController(
+      initialScrollOffset: widget.initialScrollOffset ?? 0.0,
+    );
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
-      floatingActionButton: const DownloadStatusFloatingButton(),
-      body: LayoutBuilder(
-        builder: (_, constraints) => ProviderScope(
-          overrides: [
-            timelineArgsProvider.overrideWith(
-              (ref) => TimelineArgs(
-                maxWidth: constraints.maxWidth,
-                maxHeight: constraints.maxHeight,
-                columnCount: ref.watch(settingsProvider.select((s) => s.get(Setting.tilesPerRow))),
-                showStorageIndicator: showStorageIndicator,
-                withStack: withStack,
-                groupBy: groupBy,
-              ),
+    return LayoutBuilder(
+      builder: (_, constraints) {
+        // In landscape with NavigationRail, there can be clipping on the right edge.
+        // Use half the gesture inset as it provides a better balance.
+        final isLandscape = MediaQuery.orientationOf(context) == Orientation.landscape;
+        final rightInset = isLandscape ? MediaQuery.systemGestureInsetsOf(context).right / 2 : 0.0;
+        final availableWidth = constraints.maxWidth - rightInset;
+
+        // Only change key when width changes significantly (> 50px)
+        // Use availableWidth to ensure orientation changes trigger rebuild
+        final newWidthBucket = (availableWidth / 50).round();
+        int? restoreIndex;
+        if (newWidthBucket != _widthBucket) {
+          // Width changed - save current asset index for restoration
+          if (_widthBucket != 0) {
+            restoreIndex = _restoreAssetIndex;
+          }
+          _widthBucket = newWidthBucket;
+        }
+
+          return ProviderScope(
+              key: ValueKey(_widthBucket),
+              overrides: [
+                timelineArgsProvider.overrideWith(
+                  (ref) => TimelineArgs(
+                    maxWidth: availableWidth,
+                    maxHeight: constraints.maxHeight,
+                    columnCount: ref.watch(settingsProvider.select((s) => s.get(Setting.tilesPerRow))),
+                    showStorageIndicator: widget.showStorageIndicator,
+                    withStack: widget.withStack,
+                    groupBy: widget.groupBy,
+                  ),
+                ),
+              ],
+              child: _SliverTimeline(
+                scrollController: _scrollController,
+                topSliverWidget: widget.topSliverWidget,
+                topSliverWidgetHeight: widget.topSliverWidgetHeight,
+                appBar: widget.appBar,
+                bottomSheet: widget.bottomSheet,
+                withScrubber: widget.withScrubber,
+                snapToMonth: widget.snapToMonth,
+                restoreAssetIndex: restoreIndex,
+                onVisibleAssetChanged: (index) => _restoreAssetIndex = index,
             ),
-          ],
-          child: _SliverTimeline(
-            topSliverWidget: topSliverWidget,
-            topSliverWidgetHeight: topSliverWidgetHeight,
-            appBar: appBar,
-            bottomSheet: bottomSheet,
-            withScrubber: withScrubber,
-            snapToMonth: snapToMonth,
-            initialScrollOffset: initialScrollOffset,
-          ),
-        ),
-      ),
+        );
+      },
     );
   }
 }
 
 class _SliverTimeline extends ConsumerStatefulWidget {
   const _SliverTimeline({
+    required this.scrollController,
     this.topSliverWidget,
     this.topSliverWidgetHeight,
     this.appBar,
     this.bottomSheet,
     this.withScrubber = true,
     this.snapToMonth = true,
-    this.initialScrollOffset,
+    this.restoreAssetIndex,
+    this.onVisibleAssetChanged,
   });
 
+  final ScrollController scrollController;
   final Widget? topSliverWidget;
   final double? topSliverWidgetHeight;
   final Widget? appBar;
   final Widget? bottomSheet;
   final bool withScrubber;
   final bool snapToMonth;
-  final double? initialScrollOffset;
+  final int? restoreAssetIndex;
+  final void Function(int index)? onVisibleAssetChanged;
 
   @override
   ConsumerState createState() => _SliverTimelineState();
 }
 
 class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
-  late final ScrollController _scrollController;
+  ScrollController get _scrollController => widget.scrollController;
   StreamSubscription? _eventSubscription;
 
   // Drag selection state
@@ -126,14 +174,11 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
   double _scaleFactor = 3.0;
   double _baseScaleFactor = 3.0;
   int? _scaleRestoreAssetIndex;
+  int? _scaleRestoreColumnCount;
 
   @override
   void initState() {
     super.initState();
-    _scrollController = ScrollController(
-      initialScrollOffset: widget.initialScrollOffset ?? 0.0,
-      onAttach: _restoreScalePosition,
-    );
     _eventSubscription = EventStream.shared.listen(_onEvent);
 
     final currentTilesPerRow = ref.read(settingsProvider).get(Setting.tilesPerRow);
@@ -142,6 +187,60 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
     _baseScaleFactor = _scaleFactor;
 
     ref.listenManual(multiSelectProvider.select((s) => s.isEnabled), _onMultiSelectionToggled);
+
+    // Track visible asset changes for scroll restoration on dimension changes
+    _scrollController.addListener(_onScrollChanged);
+
+    // Restore scroll position if we have a target asset index (from dimension change)
+    // Use listenManual to wait for segments to be available, then close the subscription
+    if (widget.restoreAssetIndex != null) {
+      final targetIndex = widget.restoreAssetIndex!;
+      ProviderSubscription<AsyncValue<List<Segment>>>? subscription;
+      subscription = ref.listenManual(timelineSegmentProvider, (_, asyncSegments) {
+        asyncSegments.whenData((segments) {
+          if (!mounted || segments.isEmpty) return;
+          _scrollToAssetIndex(targetIndex, segments);
+          subscription?.close();
+        });
+      }, fireImmediately: true);
+    }
+  }
+
+  void _scrollToAssetIndex(int targetIndex, List<Segment> segments, {int? columnCountOverride}) {
+    final targetSegment = segments.lastWhereOrNull((s) => s.firstAssetIndex <= targetIndex);
+    if (targetSegment == null) return;
+
+    final assetIndexInSegment = targetIndex - targetSegment.firstAssetIndex;
+    final columnCount = columnCountOverride ?? ref.read(timelineArgsProvider).columnCount;
+    final rowIndexInSegment = (assetIndexInSegment / columnCount).floor();
+    final targetRowIndex = targetSegment.firstIndex + 1 + rowIndexInSegment;
+    final targetOffset = targetSegment.indexToLayoutOffset(targetRowIndex);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && _scrollController.hasClients) {
+        _scrollController.jumpTo(targetOffset.clamp(0.0, _scrollController.position.maxScrollExtent));
+      }
+    });
+  }
+
+  void _onScrollChanged() {
+    if (!_scrollController.hasClients) return;
+    final offset = _scrollController.offset;
+    final asyncSegments = ref.read(timelineSegmentProvider);
+    asyncSegments.whenData((segments) {
+      final segment = segments.findByOffset(offset);
+      if (segment != null) {
+        final rowIndex = segment.getMinChildIndexForScrollOffset(offset);
+        if (rowIndex > segment.firstIndex) {
+          final rowIndexInSegment = rowIndex - (segment.firstIndex + 1);
+          final assetsPerRow = ref.read(timelineArgsProvider).columnCount;
+          final assetIndex = segment.firstAssetIndex + (rowIndexInSegment * assetsPerRow);
+          widget.onVisibleAssetChanged?.call(assetIndex);
+        } else {
+          widget.onVisibleAssetChanged?.call(segment.firstAssetIndex);
+        }
+      }
+    });
   }
 
   void _onEvent(Event event) {
@@ -165,31 +264,27 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
     EventStream.shared.emit(MultiSelectToggleEvent(isEnabled));
   }
 
-  void _restoreScalePosition(_) {
-    if (_scaleRestoreAssetIndex == null) return;
-
-    final asyncSegments = ref.read(timelineSegmentProvider);
-    asyncSegments.whenData((segments) {
-      final targetSegment = segments.lastWhereOrNull((segment) => segment.firstAssetIndex <= _scaleRestoreAssetIndex!);
-      if (targetSegment != null) {
-        final assetIndexInSegment = _scaleRestoreAssetIndex! - targetSegment.firstAssetIndex;
-        final newColumnCount = ref.read(timelineArgsProvider).columnCount;
-        final rowIndexInSegment = (assetIndexInSegment / newColumnCount).floor();
-        final targetRowIndex = targetSegment.firstIndex + 1 + rowIndexInSegment;
-        final targetOffset = targetSegment.indexToLayoutOffset(targetRowIndex);
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted) {
-            _scrollController.jumpTo(targetOffset.clamp(0.0, _scrollController.position.maxScrollExtent));
-          }
-        });
-      }
-    });
+  void _restoreScalePosition() {
+    if (_scaleRestoreAssetIndex == null || _scaleRestoreColumnCount == null) return;
+    final targetIndex = _scaleRestoreAssetIndex!;
+    final columnCount = _scaleRestoreColumnCount!;
     _scaleRestoreAssetIndex = null;
+    _scaleRestoreColumnCount = null;
+
+    // Listen for segments to be rebuilt with new column count, then restore position
+    ProviderSubscription<AsyncValue<List<Segment>>>? subscription;
+    subscription = ref.listenManual(timelineSegmentProvider, (_, asyncSegments) {
+      asyncSegments.whenData((segments) {
+        if (!mounted || segments.isEmpty) return;
+        _scrollToAssetIndex(targetIndex, segments, columnCountOverride: columnCount);
+        subscription?.close();
+      });
+    }, fireImmediately: true);
   }
 
   @override
   void dispose() {
-    _scrollController.dispose();
+    _scrollController.removeListener(_onScrollChanged);
     _eventSubscription?.cancel();
     super.dispose();
   }
@@ -409,9 +504,11 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
                           _scaleFactor = newScaleFactor;
                           _perRow = newPerRow;
                           _scaleRestoreAssetIndex = targetAssetIndex;
+                          _scaleRestoreColumnCount = newPerRow;
                         });
 
                         ref.read(settingsProvider.notifier).set(Setting.tilesPerRow, _perRow);
+                        _restoreScalePosition();
                       }
                     };
                   },
