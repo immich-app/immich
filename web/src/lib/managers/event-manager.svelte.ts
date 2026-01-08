@@ -1,5 +1,6 @@
 import type { ThemeSetting } from '$lib/managers/theme-manager.svelte';
 import type { ReleaseEvent } from '$lib/types';
+import type { TreeNode } from '$lib/utils/tree-utils';
 import type {
   AlbumResponseDto,
   ApiKeyResponseDto,
@@ -10,6 +11,7 @@ import type {
   QueueResponseDto,
   SharedLinkResponseDto,
   SystemConfigDto,
+  TagResponseDto,
   UserAdminResponseDto,
   WorkflowResponseDto,
 } from '@immich/sdk';
@@ -41,6 +43,10 @@ export type Events = {
   SharedLinkCreate: [SharedLinkResponseDto];
   SharedLinkUpdate: [SharedLinkResponseDto];
   SharedLinkDelete: [SharedLinkResponseDto];
+
+  TagCreate: [TagResponseDto];
+  TagUpdate: [TagResponseDto];
+  TagDelete: [TreeNode];
 
   UserAdminCreate: [UserAdminResponseDto];
   UserAdminUpdate: [UserAdminResponseDto];
