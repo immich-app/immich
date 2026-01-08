@@ -2,7 +2,7 @@
   import type { Action } from '$lib/components/asset-viewer/actions/action';
   import type { AssetCursor } from '$lib/components/asset-viewer/asset-viewer.svelte';
   import { AssetAction } from '$lib/constants';
-
+  import { assetCacheManager } from '$lib/managers/AssetCacheManager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
@@ -13,7 +13,7 @@
   import { navigate } from '$lib/utils/navigation';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { type AlbumResponseDto, type AssetResponseDto, type PersonResponseDto, getAssetInfo } from '@immich/sdk';
-  import { onMount, untrack } from 'svelte';
+  import { onDestroy, onMount, untrack } from 'svelte';
 
   let { asset: viewingAsset, gridScrollTarget } = assetViewingStore;
 
@@ -196,6 +196,9 @@
       await navigate({ targetRoute: 'current', assetId: restoredAsset.id });
     }
   };
+  onDestroy(() => {
+    assetCacheManager.invalidate();
+  });
   const onAssetUpdate = ({ asset }: { event: 'upload' | 'update'; asset: AssetResponseDto }) => {
     if (asset.id === assetCursor.current.id) {
       void loadCloseAssets(asset);
@@ -222,7 +225,10 @@
     {album}
     {person}
     preAction={handlePreAction}
-    onAction={handleAction}
+    onAction={(action) => {
+      handleAction(action);
+      assetCacheManager.invalidate();
+    }}
     onUndoDelete={handleUndoDelete}
     onPrevious={() => handleNavigateToAsset(assetCursor.previousAsset)}
     onNext={() => handleNavigateToAsset(assetCursor.nextAsset)}
