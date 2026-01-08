@@ -21,15 +21,26 @@ class DriftUploadDetailPage extends ConsumerStatefulWidget {
 class _DriftUploadDetailPageState extends ConsumerState<DriftUploadDetailPage> {
   final List<DriftUploadStatus> _completedItems = [];
   final Set<String> _seenTaskIds = {};
+  final Set<String> _failedTaskIds = {};
 
   @override
   Widget build(BuildContext context) {
     final uploadItems = ref.watch(driftBackupProvider.select((state) => state.uploadItems));
     final iCloudProgress = ref.watch(driftBackupProvider.select((state) => state.iCloudDownloadProgress));
 
-    // Watch for items with progress >= 1.0 (completed) before they get removed
+    // Track failed items to exclude them from completed list
     for (final item in uploadItems.values) {
-      if (item.progress >= 1.0 && item.isFailed != true) {
+      if (item.isFailed == true) {
+        _failedTaskIds.add(item.taskId);
+      }
+    }
+
+    // Remove any items from completed list that have since failed
+    _completedItems.removeWhere((item) => _failedTaskIds.contains(item.taskId));
+
+    // Watch for items with progress >= 1.0 (completed successfully) before they get removed
+    for (final item in uploadItems.values) {
+      if (item.progress >= 1.0 && item.isFailed != true && !_failedTaskIds.contains(item.taskId)) {
         if (!_seenTaskIds.contains(item.taskId)) {
           _seenTaskIds.add(item.taskId);
           _completedItems.insert(0, item);
@@ -60,6 +71,7 @@ class _DriftUploadDetailPageState extends ConsumerState<DriftUploadDetailPage> {
                 setState(() {
                   _completedItems.clear();
                   _seenTaskIds.clear();
+                  _failedTaskIds.clear();
                 });
               },
             ),
@@ -294,7 +306,7 @@ class _DriftUploadDetailPageState extends ConsumerState<DriftUploadDetailPage> {
         child: Padding(
           padding: const EdgeInsets.all(12),
           child: SizedBox(
-            height: 56,
+            height: 64,
             child: Row(
               children: [
                 _CurrentUploadThumbnail(taskId: item.taskId),
@@ -314,12 +326,12 @@ class _DriftUploadDetailPageState extends ConsumerState<DriftUploadDetailPage> {
                         isFailed
                             ? item.error ?? "Upload failed"
                             : "${formatHumanReadableBytes(item.fileSize, 1)} • ${item.networkSpeedAsString}",
-                        style: context.textTheme.bodySmall?.copyWith(
+                        style: context.textTheme.labelLarge?.copyWith(
                           color: isFailed
                               ? context.colorScheme.error
                               : context.colorScheme.onSurface.withValues(alpha: 0.6),
                         ),
-                        maxLines: 1,
+                        maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
                       if (!isFailed) ...[
@@ -408,7 +420,7 @@ class _DriftUploadDetailPageState extends ConsumerState<DriftUploadDetailPage> {
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: SizedBox(
-          height: 56,
+          height: 64,
           child: Row(
             children: [
               SizedBox(

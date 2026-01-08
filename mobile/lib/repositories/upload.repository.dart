@@ -117,18 +117,34 @@ class UploadRepository {
       baseRequest.files.add(assetRawUploadData);
 
       final response = await httpClient.send(baseRequest, cancellationToken: cancelToken);
-      final responseBody = jsonDecode(await response.stream.bytesToString());
+      final responseBodyString = await response.stream.bytesToString();
 
       if (![200, 201].contains(response.statusCode)) {
-        final error = responseBody;
-        final errorMessage = error['message'] ?? error['error'];
+        String? errorMessage;
 
-        logger.warning("Error(${error['statusCode']}) uploading $logContext | $originalFileName | ${error['error']}");
+        if (response.statusCode == 413) {
+          errorMessage = 'Error(413) File is too large to upload';
+          return UploadResult.error(statusCode: response.statusCode, errorMessage: errorMessage);
+        }
+
+        try {
+          final error = jsonDecode(responseBodyString);
+          errorMessage = error['message'] ?? error['error'];
+        } catch (_) {
+          errorMessage = responseBodyString.isNotEmpty
+              ? responseBodyString
+              : 'Upload failed with status ${response.statusCode}';
+        }
 
         return UploadResult.error(statusCode: response.statusCode, errorMessage: errorMessage);
       }
 
-      return UploadResult.success(remoteAssetId: responseBody['id'] as String);
+      try {
+        final responseBody = jsonDecode(responseBodyString);
+        return UploadResult.success(remoteAssetId: responseBody['id'] as String);
+      } catch (e) {
+        return UploadResult.error(errorMessage: 'Failed to parse server response');
+      }
     } on CancelledException {
       logger.warning("Upload $logContext was cancelled");
       return UploadResult.cancelled();

@@ -152,7 +152,7 @@ class UploadService {
     CancellationToken cancelToken, {
     required void Function(String localAssetId, String filename, int bytes, int totalBytes) onProgress,
     required void Function(String localAssetId, String remoteAssetId) onSuccess,
-    required void Function(String errorMessage) onError,
+    required void Function(String localAssetId, String errorMessage) onError,
     required void Function(String localAssetId, double progress) onICloudProgress,
   }) async {
     const concurrentUploads = 3;
@@ -222,7 +222,7 @@ class UploadService {
     CancellationToken cancelToken, {
     required void Function(String id, String filename, int bytes, int totalBytes) onProgress,
     required void Function(String localAssetId, String remoteAssetId) onSuccess,
-    required void Function(String errorMessage) onError,
+    required void Function(String localAssetId, String errorMessage) onError,
     required void Function(String localAssetId, double progress) onICloudProgress,
   }) async {
     File? file;
@@ -340,7 +340,7 @@ class UploadService {
               "Error(${result.statusCode}) uploading ${asset.localId} | $originalFileName | Created on ${asset.createdAt} | ${result.errorMessage}",
         );
 
-        onError(result.errorMessage!);
+        onError(asset.localId!, result.errorMessage!);
 
         if (result.errorMessage == "Quota has been exceeded!") {
           shouldAbortQueuingTasks = true;
@@ -348,7 +348,7 @@ class UploadService {
       }
     } catch (error, stackTrace) {
       dPrint(() => "Error backup asset: ${error.toString()}: $stackTrace");
-      onError(error.toString());
+      onError(asset.localId!, error.toString());
     } finally {
       if (Platform.isIOS) {
         try {

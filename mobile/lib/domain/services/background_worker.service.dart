@@ -255,7 +255,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
               _cancellationToken,
               onProgress: (_, __, ___, ____) {},
               onSuccess: (_, __) {},
-              onError: (_) {},
+              onError: (_, __) {},
               onICloudProgress: (_, __) {},
             );
       },

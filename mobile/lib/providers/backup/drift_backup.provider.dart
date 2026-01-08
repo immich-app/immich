@@ -477,8 +477,33 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
     });
   }
 
-  void _handleForegroundBackupError(String errorMessage) {
-    _logger.severe("Upload failed: $errorMessage");
+  void _handleForegroundBackupError(String localAssetId, String errorMessage) {
+    _logger.severe("Upload failed for $localAssetId: $errorMessage");
+
+    final currentItem = state.uploadItems[localAssetId];
+    if (currentItem != null) {
+      state = state.copyWith(
+        uploadItems: {
+          ...state.uploadItems,
+          localAssetId: currentItem.copyWith(isFailed: true, error: errorMessage),
+        },
+      );
+    } else {
+      state = state.copyWith(
+        uploadItems: {
+          ...state.uploadItems,
+          localAssetId: DriftUploadStatus(
+            taskId: localAssetId,
+            filename: 'Unknown',
+            progress: 0,
+            fileSize: 0,
+            networkSpeedAsString: '',
+            isFailed: true,
+            error: errorMessage,
+          ),
+        },
+      );
+    }
   }
 
   Future<void> startBackupWithURLSession(String userId) async {
