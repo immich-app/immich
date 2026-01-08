@@ -13,7 +13,7 @@ import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:logging/logging.dart';
 // ignore: import_rule_openapi
-import 'package:openapi/api.dart';
+import 'package:openapi/api.dart' hide AssetVisibility;
 
 Future<void> syncCloudIds(ProviderContainer ref) async {
   final db = ref.read(driftProvider);
@@ -91,6 +91,8 @@ Future<List<_CloudIdMapping>> _fetchCloudIdMappings(Drift drift, String userId) 
         drift.localAssetEntity.id.isNotNull() &
             drift.localAssetEntity.iCloudId.isNotNull() &
             drift.remoteAssetEntity.ownerId.equals(userId) &
+            // Skip locked assets as we cannot update them without unlocking first
+            drift.remoteAssetEntity.visibility.isNotValue(AssetVisibility.locked.index) &
             (drift.remoteAssetCloudIdEntity.cloudId.isNull() |
                 ((drift.remoteAssetCloudIdEntity.adjustmentTime.isNotExp(drift.localAssetEntity.adjustmentTime)) &
                     (drift.remoteAssetCloudIdEntity.latitude.isNotExp(drift.localAssetEntity.latitude)) &
