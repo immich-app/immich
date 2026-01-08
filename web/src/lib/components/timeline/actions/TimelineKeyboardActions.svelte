@@ -1,7 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { shortcuts, type ShortcutOptions } from '$lib/actions/shortcut';
-  import DeleteAssetDialog from '$lib/components/photos-page/delete-asset-dialog.svelte';
   import {
     setFocusToAsset as setFocusAssetInit,
     setFocusTo as setFocusToInit,
@@ -10,6 +9,7 @@
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
+  import AssetDeleteConfirmModal from '$lib/modals/AssetDeleteConfirmModal.svelte';
   import NavigateToDateModal from '$lib/modals/NavigateToDateModal.svelte';
   import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
@@ -22,51 +22,40 @@
   import { AssetVisibility } from '@immich/sdk';
   import { modalManager } from '@immich/ui';
 
-  interface Props {
+  type Props = {
     timelineManager: TimelineManager;
     assetInteraction: AssetInteraction;
-    isShowDeleteConfirmation: boolean;
     onEscape?: () => void;
     scrollToAsset: (asset: TimelineAsset) => boolean;
-  }
+  };
 
-  let {
-    timelineManager = $bindable(),
-    assetInteraction,
-    isShowDeleteConfirmation = $bindable(false),
-    onEscape,
-    scrollToAsset,
-  }: Props = $props();
+  let { timelineManager = $bindable(), assetInteraction, onEscape, scrollToAsset }: Props = $props();
 
   const { isViewing: showAssetViewer } = assetViewingStore;
 
-  const trashOrDelete = async (force: boolean = false) => {
-    isShowDeleteConfirmation = false;
+  const trashOrDelete = async (forceRequested?: boolean) => {
+    const force = forceRequested || !featureFlagsManager.value.trash;
+    const selectedAssets = assetInteraction.selectedAssets;
+
+    if ($showDeleteModal && force) {
+      const confirmed = await modalManager.show(AssetDeleteConfirmModal, { size: selectedAssets.length });
+      if (!confirmed) {
+        return;
+      }
+    }
+
     await deleteAssets(
-      !(isTrashEnabled && !force),
+      force,
       (assetIds) => timelineManager.removeAssets(assetIds),
-      assetInteraction.selectedAssets,
-      !isTrashEnabled || force ? undefined : (assets) => timelineManager.upsertAssets(assets),
+      selectedAssets,
+      force ? undefined : (assets) => timelineManager.upsertAssets(assets),
     );
     assetInteraction.clearMultiselect();
   };
 
   const onDelete = () => {
     const hasTrashedAsset = assetInteraction.selectedAssets.some((asset) => asset.isTrashed);
-
-    if ($showDeleteModal && (!isTrashEnabled || hasTrashedAsset)) {
-      isShowDeleteConfirmation = true;
-      return;
-    }
     handlePromiseError(trashOrDelete(hasTrashedAsset));
-  };
-
-  const onForceDelete = () => {
-    if ($showDeleteModal) {
-      isShowDeleteConfirmation = true;
-      return;
-    }
-    handlePromiseError(trashOrDelete(true));
   };
 
   const onStackAssets = async () => {
@@ -118,9 +107,7 @@
     }
   };
 
-  const isTrashEnabled = $derived(featureFlagsManager.value.trash);
   const isEmpty = $derived(timelineManager.isInitialized && timelineManager.months.length === 0);
-  const idsSelectedAssets = $derived(assetInteraction.selectedAssets.map(({ id }) => id));
   let isShortcutModalOpen = false;
 
   const handleOpenShortcutModal = async () => {
@@ -176,7 +163,7 @@
       if (assetInteraction.selectionActive) {
         shortcuts.push(
           { shortcut: { key: 'Delete' }, onShortcut: onDelete },
-          { shortcut: { key: 'Delete', shift: true }, onShortcut: onForceDelete },
+          { shortcut: { key: 'Delete', shift: true }, onShortcut: () => trashOrDelete(true) },
           { shortcut: { key: 'D', ctrl: true }, onShortcut: () => deselectAllAssets() },
           { shortcut: { key: 's' }, onShortcut: () => onStackAssets() },
           { shortcut: { key: 'a', shift: true }, onShortcut: toggleArchive },
@@ -189,11 +176,3 @@
 </script>
 
 <svelte:document onkeydown={onKeyDown} onkeyup={onKeyUp} onselectstart={onSelectStart} use:shortcuts={shortcutList} />
-
-{#if isShowDeleteConfirmation}
-  <DeleteAssetDialog
-    size={idsSelectedAssets.length}
-    onCancel={() => (isShowDeleteConfirmation = false)}
-    onConfirm={() => handlePromiseError(trashOrDelete(true))}
-  />
-{/if}
