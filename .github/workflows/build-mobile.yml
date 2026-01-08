@@ -30,18 +30,6 @@ on:
         required: true
       IOS_CERTIFICATE_PASSWORD:
         required: true
-      IOS_PROVISIONING_PROFILE:
-        required: true
-      IOS_PROVISIONING_PROFILE_SHARE_EXTENSION:
-        required: true
-      IOS_PROVISIONING_PROFILE_WIDGET_EXTENSION:
-        required: true
-      IOS_DEVELOPMENT_PROVISIONING_PROFILE:
-        required: true
-      IOS_DEVELOPMENT_PROVISIONING_PROFILE_SHARE_EXTENSION:
-        required: true
-      IOS_DEVELOPMENT_PROVISIONING_PROFILE_WIDGET_EXTENSION:
-        required: true
       FASTLANE_TEAM_ID:
         required: true
   pull_request:
@@ -240,34 +228,13 @@ jobs:
           mkdir -p ~/.appstoreconnect/private_keys
           echo "$API_KEY_CONTENT" | base64 --decode > ~/.appstoreconnect/private_keys/AuthKey_${API_KEY_ID}.p8
 
-      - name: Import Certificate and Provisioning Profiles
+      - name: Import Certificate
         env:
           IOS_CERTIFICATE_P12: ${{ secrets.IOS_CERTIFICATE_P12 }}
-          IOS_CERTIFICATE_PASSWORD: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
-          IOS_PROVISIONING_PROFILE: ${{ secrets.IOS_PROVISIONING_PROFILE }}
-          IOS_PROVISIONING_PROFILE_SHARE_EXTENSION: ${{ secrets.IOS_PROVISIONING_PROFILE_SHARE_EXTENSION }}
-          IOS_PROVISIONING_PROFILE_WIDGET_EXTENSION: ${{ secrets.IOS_PROVISIONING_PROFILE_WIDGET_EXTENSION }}
-          IOS_DEVELOPMENT_PROVISIONING_PROFILE: ${{ secrets.IOS_DEVELOPMENT_PROVISIONING_PROFILE }}
-          IOS_DEVELOPMENT_PROVISIONING_PROFILE_SHARE_EXTENSION: ${{ secrets.IOS_DEVELOPMENT_PROVISIONING_PROFILE_SHARE_EXTENSION }}
-          IOS_DEVELOPMENT_PROVISIONING_PROFILE_WIDGET_EXTENSION: ${{ secrets.IOS_DEVELOPMENT_PROVISIONING_PROFILE_WIDGET_EXTENSION }}
-          ENVIRONMENT: ${{ inputs.environment || 'development' }}
         working-directory: ./mobile/ios
         run: |
           # Decode certificate
           echo "$IOS_CERTIFICATE_P12" | base64 --decode > certificate.p12
-
-          # Decode provisioning profiles based on environment
-          if [[ "$ENVIRONMENT" == "development" ]]; then
-            echo "$IOS_DEVELOPMENT_PROVISIONING_PROFILE" | base64 --decode > profile_dev.mobileprovision
-            echo "$IOS_DEVELOPMENT_PROVISIONING_PROFILE_SHARE_EXTENSION" | base64 --decode > profile_dev_share.mobileprovision
-            echo "$IOS_DEVELOPMENT_PROVISIONING_PROFILE_WIDGET_EXTENSION" | base64 --decode > profile_dev_widget.mobileprovision
-            ls -lh profile_dev*.mobileprovision
-          else
-            echo "$IOS_PROVISIONING_PROFILE" | base64 --decode > profile.mobileprovision
-            echo "$IOS_PROVISIONING_PROFILE_SHARE_EXTENSION" | base64 --decode > profile_share.mobileprovision
-            echo "$IOS_PROVISIONING_PROFILE_WIDGET_EXTENSION" | base64 --decode > profile_widget.mobileprovision
-            ls -lh profile*.mobileprovision
-          fi
 
       - name: Create keychain and import certificate
         env:
