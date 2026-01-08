@@ -6,6 +6,7 @@ import type {
   AssetResponseDto,
   LibraryResponseDto,
   LoginResponseDto,
+  PersonResponseDto,
   QueueResponseDto,
   SharedLinkResponseDto,
   SystemConfigDto,
@@ -32,6 +33,8 @@ export type Events = {
 
   AlbumUpdate: [AlbumResponseDto];
   AlbumDelete: [AlbumResponseDto];
+
+  PersonUpdate: [PersonResponseDto];
 
   QueueUpdate: [QueueResponseDto];
 
