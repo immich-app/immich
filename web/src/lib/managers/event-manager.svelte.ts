@@ -28,8 +28,10 @@ export type Events = {
   AssetUpdate: [AssetResponseDto];
   AssetReplace: [{ oldAssetId: string; newAssetId: string }];
 
+  AlbumAddAssets: [];
   AlbumUpdate: [AlbumResponseDto];
   AlbumDelete: [AlbumResponseDto];
+  AlbumShare: [];
 
   QueueUpdate: [QueueResponseDto];
 
