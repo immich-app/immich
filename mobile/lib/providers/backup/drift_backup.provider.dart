@@ -414,7 +414,7 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
     );
   }
 
-  Future<void> stopBackup() async {
+  Future<void> stopForegroundBackup() async {
     state.cancelToken?.cancel();
     _uploadSpeedManager.clear();
     state = state.copyWith(cancelToken: null, uploadItems: {}, iCloudDownloadProgress: {});
