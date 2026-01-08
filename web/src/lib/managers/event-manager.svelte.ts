@@ -19,6 +19,8 @@ export type Events = {
   ThemeChange: [ThemeSetting];
 
   AssetReplace: [{ oldAssetId: string; newAssetId: string }];
+  AssetsArchive: [string[]];
+  AssetsDelete: [string[]];
 
   AlbumDelete: [AlbumResponseDto];
 

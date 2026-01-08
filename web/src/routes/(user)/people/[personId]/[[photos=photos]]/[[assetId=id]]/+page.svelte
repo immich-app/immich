@@ -56,6 +56,7 @@
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
+  import OnEvents from '$lib/components/OnEvents.svelte';
 
   interface Props {
     data: PageData;
@@ -342,6 +343,8 @@
   };
 </script>
 
+<OnEvents onAssetsDelete={updateAssetCount} onAssetsArchive={updateAssetCount} />
+
 <main
   class="relative z-0 h-dvh overflow-hidden px-2 md:px-6 md:pt-(--navbar-height-md) pt-(--navbar-height)"
   use:scrollMemoryClearer={{
@@ -362,8 +365,6 @@
       singleSelect={viewMode === PersonPageViewMode.SELECT_PERSON}
       onSelect={handleSelectFeaturePhoto}
       onEscape={handleEscape}
-      onKeyboardDelete={() => updateAssetCount()}
-      onKeyboardArchive={() => updateAssetCount()}
     >
       {#if viewMode === PersonPageViewMode.VIEW_ASSETS}
         <!-- Person information block -->

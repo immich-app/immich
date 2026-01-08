@@ -7,6 +7,7 @@
     setFocusTo as setFocusToInit,
   } from '$lib/components/timeline/actions/focus-actions';
   import { AppRoute } from '$lib/constants';
+  import { eventManager } from '$lib/managers/event-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
@@ -27,8 +28,6 @@
     assetInteraction: AssetInteraction;
     isShowDeleteConfirmation: boolean;
     onEscape?: () => void;
-    onAssetDelete?: (assetIds: string[]) => void;
-    onArchive?: (ids: string[]) => void;
     scrollToAsset: (asset: TimelineAsset) => boolean;
   }
 
@@ -37,8 +36,6 @@
     assetInteraction,
     isShowDeleteConfirmation = $bindable(false),
     onEscape,
-    onAssetDelete,
-    onArchive,
     scrollToAsset,
   }: Props = $props();
 
@@ -50,7 +47,7 @@
       !(isTrashEnabled && !force),
       (assetIds) => {
         timelineManager.removeAssets(assetIds);
-        onAssetDelete?.(assetIds);
+        eventManager.emit('AssetsDelete', assetIds);
       },
       assetInteraction.selectedAssets,
       !isTrashEnabled || force ? undefined : (assets) => timelineManager.upsertAssets(assets),
@@ -88,7 +85,7 @@
     const visibility = assetInteraction.isAllArchived ? AssetVisibility.Timeline : AssetVisibility.Archive;
     const ids = await archiveAssets(assetInteraction.selectedAssets, visibility);
     timelineManager.update(ids, (asset) => (asset.visibility = visibility));
-    onArchive?.(ids);
+    eventManager.emit('AssetsArchive', ids);
     deselectAllAssets();
   };
 
