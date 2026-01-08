@@ -20,29 +20,17 @@
   let assets = $derived(data.assets);
   let asset = $derived(data.asset);
   const { isViewing: showAssetViewer, asset: viewingAsset, setAsset } = assetViewingStore;
-  const getAssetIndex = (id: string) => assets.findIndex((asset) => asset.id === id);
-
   $effect(() => {
     if (asset) {
       setAsset(asset);
     }
   });
 
-  const onNext = async () => {
-    const index = getAssetIndex($viewingAsset.id) + 1;
-    if (index >= assets.length) {
+  const handleNavigateToAsset = async (asset: AssetResponseDto | undefined | null) => {
+    if (!asset) {
       return false;
     }
-    await onViewAsset(assets[index]);
-    return true;
-  };
-
-  const onPrevious = async () => {
-    const index = getAssetIndex($viewingAsset.id) - 1;
-    if (index < 0) {
-      return false;
-    }
-    await onViewAsset(assets[index]);
+    await onViewAsset(asset);
     return true;
   };
 
@@ -93,9 +81,8 @@
     <Portal target="body">
       <AssetViewer
         cursor={assetCursor}
+        onNavigateToAsset={handleNavigateToAsset}
         showNavigation={assets.length > 1}
-        {onNext}
-        {onPrevious}
         {onRandom}
         {onAction}
         onClose={() => {

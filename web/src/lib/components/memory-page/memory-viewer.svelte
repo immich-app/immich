@@ -26,7 +26,7 @@
   import type { TimelineAsset, Viewport } from '$lib/managers/timeline-manager/types';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { type MemoryAsset, memoryStore } from '$lib/stores/memory.store.svelte';
+  import { memoryStore, type MemoryAsset } from '$lib/stores/memory.store.svelte';
   import { locale, videoViewerMuted, videoViewerVolume } from '$lib/stores/preferences.store';
   import { preferences } from '$lib/stores/user.store';
   import { getAssetThumbnailUrl, handlePromiseError, memoryLaneTitle } from '$lib/utils';
@@ -651,8 +651,6 @@
       bind:this={memoryGallery}
     >
       <GalleryViewer
-        onNext={handleNextAsset}
-        onPrevious={handlePreviousAsset}
         assets={currentTimelineAssets}
         viewport={galleryViewport}
         {assetInteraction}
