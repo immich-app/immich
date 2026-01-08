@@ -26,7 +26,7 @@ test.describe('Integrity', () => {
 
     const count = page.getByText('Untracked Files').locator('..').locator('..').locator('div').nth(1);
 
-    const previousCount = parseInt((await count.textContent()) ?? '');
+    const previousCount = Number.parseInt((await count.textContent()) ?? '');
 
     await utils.putTextFile('untracked', `/data/upload/${admin.userId}/untracked1.png`);
 
