@@ -186,12 +186,12 @@ class AssetsApi {
   ///
   /// * [String] id (required):
   ///
-  /// * [AssetMetadataKey] key (required):
-  Future<Response> deleteAssetMetadataWithHttpInfo(String id, AssetMetadataKey key,) async {
+  /// * [String] key (required):
+  Future<Response> deleteAssetMetadataWithHttpInfo(String id, String key,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/assets/{id}/metadata/{key}'
       .replaceAll('{id}', id)
-      .replaceAll('{key}', key.toString());
+      .replaceAll('{key}', key);
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -222,8 +222,8 @@ class AssetsApi {
   ///
   /// * [String] id (required):
   ///
-  /// * [AssetMetadataKey] key (required):
-  Future<void> deleteAssetMetadata(String id, AssetMetadataKey key,) async {
+  /// * [String] key (required):
+  Future<void> deleteAssetMetadata(String id, String key,) async {
     final response = await deleteAssetMetadataWithHttpInfo(id, key,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
@@ -273,6 +273,54 @@ class AssetsApi {
   /// * [AssetBulkDeleteDto] assetBulkDeleteDto (required):
   Future<void> deleteAssets(AssetBulkDeleteDto assetBulkDeleteDto,) async {
     final response = await deleteAssetsWithHttpInfo(assetBulkDeleteDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
+  /// Delete asset metadata
+  ///
+  /// Delete metadata key-value pairs for multiple assets.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [AssetMetadataBulkDeleteDto] assetMetadataBulkDeleteDto (required):
+  Future<Response> deleteBulkAssetMetadataWithHttpInfo(AssetMetadataBulkDeleteDto assetMetadataBulkDeleteDto,) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/assets/metadata';
+
+    // ignore: prefer_final_locals
+    Object? postBody = assetMetadataBulkDeleteDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'DELETE',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Delete asset metadata
+  ///
+  /// Delete metadata key-value pairs for multiple assets.
+  ///
+  /// Parameters:
+  ///
+  /// * [AssetMetadataBulkDeleteDto] assetMetadataBulkDeleteDto (required):
+  Future<void> deleteBulkAssetMetadata(AssetMetadataBulkDeleteDto assetMetadataBulkDeleteDto,) async {
+    final response = await deleteBulkAssetMetadataWithHttpInfo(assetMetadataBulkDeleteDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -552,12 +600,12 @@ class AssetsApi {
   ///
   /// * [String] id (required):
   ///
-  /// * [AssetMetadataKey] key (required):
-  Future<Response> getAssetMetadataByKeyWithHttpInfo(String id, AssetMetadataKey key,) async {
+  /// * [String] key (required):
+  Future<Response> getAssetMetadataByKeyWithHttpInfo(String id, String key,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/assets/{id}/metadata/{key}'
       .replaceAll('{id}', id)
-      .replaceAll('{key}', key.toString());
+      .replaceAll('{key}', key);
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -588,8 +636,8 @@ class AssetsApi {
   ///
   /// * [String] id (required):
   ///
-  /// * [AssetMetadataKey] key (required):
-  Future<AssetMetadataResponseDto?> getAssetMetadataByKey(String id, AssetMetadataKey key,) async {
+  /// * [String] key (required):
+  Future<AssetMetadataResponseDto?> getAssetMetadataByKey(String id, String key,) async {
     final response = await getAssetMetadataByKeyWithHttpInfo(id, key,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
@@ -1226,6 +1274,65 @@ class AssetsApi {
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
+  }
+
+  /// Upsert asset metadata
+  ///
+  /// Upsert metadata key-value pairs for multiple assets.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [AssetMetadataBulkUpsertDto] assetMetadataBulkUpsertDto (required):
+  Future<Response> updateBulkAssetMetadataWithHttpInfo(AssetMetadataBulkUpsertDto assetMetadataBulkUpsertDto,) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/assets/metadata';
+
+    // ignore: prefer_final_locals
+    Object? postBody = assetMetadataBulkUpsertDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'PUT',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Upsert asset metadata
+  ///
+  /// Upsert metadata key-value pairs for multiple assets.
+  ///
+  /// Parameters:
+  ///
+  /// * [AssetMetadataBulkUpsertDto] assetMetadataBulkUpsertDto (required):
+  Future<List<AssetMetadataBulkResponseDto>?> updateBulkAssetMetadata(AssetMetadataBulkUpsertDto assetMetadataBulkUpsertDto,) async {
+    final response = await updateBulkAssetMetadataWithHttpInfo(assetMetadataBulkUpsertDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      final responseBody = await _decodeBodyBytes(response);
+      return (await apiClient.deserializeAsync(responseBody, 'List<AssetMetadataBulkResponseDto>') as List)
+        .cast<AssetMetadataBulkResponseDto>()
+        .toList(growable: false);
+
+    }
+    return null;
   }
 
   /// Upload asset

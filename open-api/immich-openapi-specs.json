@@ -2906,6 +2906,112 @@
         "x-immich-state": "Stable"
       }
     },
+    "/assets/metadata": {
+      "delete": {
+        "description": "Delete metadata key-value pairs for multiple assets.",
+        "operationId": "deleteBulkAssetMetadata",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssetMetadataBulkDeleteDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Delete asset metadata",
+        "tags": [
+          "Assets"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v2.5.0",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-permission": "asset.update",
+        "x-immich-state": "Beta"
+      },
+      "put": {
+        "description": "Upsert metadata key-value pairs for multiple assets.",
+        "operationId": "updateBulkAssetMetadata",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssetMetadataBulkUpsertDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AssetMetadataBulkResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Upsert asset metadata",
+        "tags": [
+          "Assets"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v2.5.0",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-permission": "asset.update",
+        "x-immich-state": "Beta"
+      }
+    },
     "/assets/random": {
       "get": {
         "deprecated": true,
@@ -3340,7 +3446,7 @@
             "required": true,
             "in": "path",
             "schema": {
-              "$ref": "#/components/schemas/AssetMetadataKey"
+              "type": "string"
             }
           }
         ],
@@ -3399,7 +3505,7 @@
             "required": true,
             "in": "path",
             "schema": {
-              "$ref": "#/components/schemas/AssetMetadataKey"
+              "type": "string"
             }
           }
         ],
@@ -15575,20 +15681,98 @@
         ],
         "type": "string"
       },
-      "AssetMetadataKey": {
-        "enum": [
-          "mobile-app"
+      "AssetMetadataBulkDeleteDto": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/AssetMetadataBulkDeleteItemDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
         ],
-        "type": "string"
+        "type": "object"
+      },
+      "AssetMetadataBulkDeleteItemDto": {
+        "properties": {
+          "assetId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "assetId",
+          "key"
+        ],
+        "type": "object"
+      },
+      "AssetMetadataBulkResponseDto": {
+        "properties": {
+          "assetId": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "value": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "assetId",
+          "key",
+          "updatedAt",
+          "value"
+        ],
+        "type": "object"
+      },
+      "AssetMetadataBulkUpsertDto": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/AssetMetadataBulkUpsertItemDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "type": "object"
+      },
+      "AssetMetadataBulkUpsertItemDto": {
+        "properties": {
+          "assetId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "value": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "assetId",
+          "key",
+          "value"
+        ],
+        "type": "object"
       },
       "AssetMetadataResponseDto": {
         "properties": {
           "key": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/AssetMetadataKey"
-              }
-            ]
+            "type": "string"
           },
           "updatedAt": {
             "format": "date-time",
@@ -15622,11 +15806,7 @@
       "AssetMetadataUpsertItemDto": {
         "properties": {
           "key": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/AssetMetadataKey"
-              }
-            ]
+            "type": "string"
           },
           "value": {
             "type": "object"
@@ -20651,11 +20831,7 @@
             "type": "string"
           },
           "key": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/AssetMetadataKey"
-              }
-            ]
+            "type": "string"
           }
         },
         "required": [
@@ -20670,11 +20846,7 @@
             "type": "string"
           },
           "key": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/AssetMetadataKey"
-              }
-            ]
+            "type": "string"
           },
           "value": {
             "type": "object"
