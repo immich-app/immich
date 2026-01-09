@@ -9,12 +9,12 @@ export const load = (async ({ params, url }) => {
   await authenticate(url);
 
   if (!UUID_REGEX.test(params.id)) {
-    redirect(302, AppRoute.SHARED_LINKS);
+    redirect(307, AppRoute.SHARED_LINKS);
   }
 
   const [sharedLink] = await getAllSharedLinks({ id: params.id });
   if (!sharedLink) {
-    redirect(302, AppRoute.SHARED_LINKS);
+    redirect(307, AppRoute.SHARED_LINKS);
   }
 
   const $t = await getFormatter();

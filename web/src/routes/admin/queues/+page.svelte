@@ -5,7 +5,7 @@
   import { queueManager } from '$lib/managers/queue-manager.svelte';
   import { getQueuesActions } from '$lib/services/queue.service';
   import { type QueueResponseDto } from '@immich/sdk';
-  import { CommandPaletteContext, type ActionItem } from '@immich/ui';
+  import { CommandPaletteDefaultProvider, Container, type ActionItem } from '@immich/ui';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
@@ -33,16 +33,14 @@
   };
 </script>
 
-<CommandPaletteContext {commands} />
+<CommandPaletteDefaultProvider name={$t('admin.queues')} actions={commands} />
 
 <OnEvents {onQueueUpdate} />
 
 <AdminPageLayout breadcrumbs={[{ title: data.meta.title }]} actions={[ResumePaused, CreateJob, ManageConcurrency]}>
-  <section id="setting-content" class="flex place-content-center sm:mx-4">
-    <section class="w-full pb-28 sm:w-5/6 md:w-212.5">
-      {#if queues}
-        <JobsPanel {queues} />
-      {/if}
-    </section>
-  </section>
+  <Container size="medium" center>
+    {#if queues}
+      <JobsPanel {queues} />
+    {/if}
+  </Container>
 </AdminPageLayout>

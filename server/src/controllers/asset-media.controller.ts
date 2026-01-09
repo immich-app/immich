@@ -15,7 +15,7 @@ import {
   UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
-import { ApiBody, ApiConsumes, ApiHeader, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiConsumes, ApiHeader, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { NextFunction, Request, Response } from 'express';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import {
@@ -62,6 +62,16 @@ export class AssetMediaController {
     required: false,
   })
   @ApiBody({ description: 'Asset Upload Information', type: AssetMediaCreateDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Asset is a duplicate',
+    type: AssetMediaResponseDto,
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Asset uploaded successfully',
+    type: AssetMediaResponseDto,
+  })
   @Endpoint({
     summary: 'Upload asset',
     description: 'Uploads a new asset to the server.',
@@ -103,6 +113,11 @@ export class AssetMediaController {
   @Put(':id/original')
   @UseInterceptors(FileUploadInterceptor)
   @ApiConsumes('multipart/form-data')
+  @ApiResponse({
+    status: 200,
+    description: 'Asset replaced successfully',
+    type: AssetMediaResponseDto,
+  })
   @Endpoint({
     summary: 'Replace asset',
     description: 'Replace the asset with new file, without changing its id.',

@@ -31,7 +31,7 @@ import 'package:isar/isar.dart';
 // ignore: import_rule_photo_manager
 import 'package:photo_manager/photo_manager.dart';
 
-const int targetVersion = 19;
+const int targetVersion = 20;
 
 Future<void> migrateDatabaseIfNeeded(Isar db, Drift drift) async {
   final hasVersion = Store.tryGet(StoreKey.version) != null;
@@ -84,6 +84,10 @@ Future<void> migrateDatabaseIfNeeded(Isar db, Drift drift) async {
     if (!await _populateLocalAssetTime(drift)) {
       return;
     }
+  }
+
+  if (version < 20 && Store.isBetaTimelineEnabled) {
+    await _syncLocalAlbumIsIosSharedAlbum(drift);
   }
 
   if (targetVersion >= 12) {
@@ -255,6 +259,25 @@ Future<bool> _populateLocalAssetTime(Drift db) async {
   } catch (error) {
     dPrint(() => "[MIGRATION] Error while populating asset time: $error");
     return false;
+  }
+}
+
+Future<void> _syncLocalAlbumIsIosSharedAlbum(Drift db) async {
+  try {
+    final nativeApi = NativeSyncApi();
+    final albums = await nativeApi.getAlbums();
+    await db.batch((batch) {
+      for (final album in albums) {
+        batch.update(
+          db.localAlbumEntity,
+          LocalAlbumEntityCompanion(isIosSharedAlbum: Value(album.isCloud)),
+          where: (t) => t.id.equals(album.id),
+        );
+      }
+    });
+    dPrint(() => "[MIGRATION] Successfully updated isIosSharedAlbum for ${albums.length} albums");
+  } catch (error) {
+    dPrint(() => "[MIGRATION] Error while syncing local album isIosSharedAlbum: $error");
   }
 }
 
