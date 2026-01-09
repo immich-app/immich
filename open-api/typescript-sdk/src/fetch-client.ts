@@ -8,7 +8,7 @@ import * as Oazapfts from "@oazapfts/runtime";
 import * as QS from "@oazapfts/runtime/query";
 export const defaults: Oazapfts.Defaults<Oazapfts.CustomHeaders> = {
     headers: {},
-    baseUrl: "/api",
+    baseUrl: "/api"
 };
 const oazapfts = Oazapfts.runtime(defaults);
 export const servers = {
@@ -471,7 +471,7 @@ export type AssetBulkDeleteDto = {
     ids: string[];
 };
 export type AssetMetadataUpsertItemDto = {
-    key: AssetMetadataKey;
+    key: string;
     value: object;
 };
 export type AssetMediaCreateDto = {
@@ -484,7 +484,7 @@ export type AssetMediaCreateDto = {
     filename?: string;
     isFavorite?: boolean;
     livePhotoVideoId?: string;
-    metadata: AssetMetadataUpsertItemDto[];
+    metadata?: AssetMetadataUpsertItemDto[];
     sidecarData?: Blob;
     visibility?: AssetVisibility;
 };
@@ -543,6 +543,27 @@ export type AssetJobsDto = {
     assetIds: string[];
     name: AssetJobName;
 };
+export type AssetMetadataBulkDeleteItemDto = {
+    assetId: string;
+    key: string;
+};
+export type AssetMetadataBulkDeleteDto = {
+    items: AssetMetadataBulkDeleteItemDto[];
+};
+export type AssetMetadataBulkUpsertItemDto = {
+    assetId: string;
+    key: string;
+    value: object;
+};
+export type AssetMetadataBulkUpsertDto = {
+    items: AssetMetadataBulkUpsertItemDto[];
+};
+export type AssetMetadataBulkResponseDto = {
+    assetId: string;
+    key: string;
+    updatedAt: string;
+    value: object;
+};
 export type UpdateAssetDto = {
     dateTimeOriginal?: string;
     description?: string;
@@ -554,7 +575,7 @@ export type UpdateAssetDto = {
     visibility?: AssetVisibility;
 };
 export type AssetMetadataResponseDto = {
-    key: AssetMetadataKey;
+    key: string;
     updatedAt: string;
     value: object;
 };
@@ -2369,6 +2390,9 @@ export function uploadAsset({ key, slug, xImmichChecksum, assetMediaCreateDto }:
     assetMediaCreateDto: AssetMediaCreateDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AssetMediaResponseDto;
+    } | {
         status: 201;
         data: AssetMediaResponseDto;
     }>(`/assets${QS.query(QS.explode({
@@ -2460,6 +2484,33 @@ export function runAssetJobs({ assetJobsDto }: {
         ...opts,
         method: "POST",
         body: assetJobsDto
+    })));
+}
+/**
+ * Delete asset metadata
+ */
+export function deleteBulkAssetMetadata({ assetMetadataBulkDeleteDto }: {
+    assetMetadataBulkDeleteDto: AssetMetadataBulkDeleteDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/assets/metadata", oazapfts.json({
+        ...opts,
+        method: "DELETE",
+        body: assetMetadataBulkDeleteDto
+    })));
+}
+/**
+ * Upsert asset metadata
+ */
+export function updateBulkAssetMetadata({ assetMetadataBulkUpsertDto }: {
+    assetMetadataBulkUpsertDto: AssetMetadataBulkUpsertDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AssetMetadataBulkResponseDto[];
+    }>("/assets/metadata", oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: assetMetadataBulkUpsertDto
     })));
 }
 /**
@@ -2564,7 +2615,7 @@ export function updateAssetMetadata({ id, assetMetadataUpsertDto }: {
  */
 export function deleteAssetMetadata({ id, key }: {
     id: string;
-    key: AssetMetadataKey;
+    key: string;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchText(`/assets/${encodeURIComponent(id)}/metadata/${encodeURIComponent(key)}`, {
         ...opts,
@@ -2576,7 +2627,7 @@ export function deleteAssetMetadata({ id, key }: {
  */
 export function getAssetMetadataByKey({ id, key }: {
     id: string;
-    key: AssetMetadataKey;
+    key: string;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
@@ -5362,9 +5413,6 @@ export enum Permission {
     AdminUserDelete = "adminUser.delete",
     AdminSessionRead = "adminSession.read",
     AdminAuthUnlinkAll = "adminAuth.unlinkAll"
-}
-export enum AssetMetadataKey {
-    MobileApp = "mobile-app"
 }
 export enum AssetMediaStatus {
     Created = "created",

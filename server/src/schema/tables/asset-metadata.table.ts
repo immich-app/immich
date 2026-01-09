@@ -32,7 +32,7 @@ export class AssetMetadataTable {
   assetId!: string;
 
   @PrimaryColumn({ type: 'character varying' })
-  key!: AssetMetadataKey;
+  key!: AssetMetadataKey | string;
 
   @Column({ type: 'jsonb' })
   value!: object;

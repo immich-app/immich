@@ -7,6 +7,9 @@ import {
   AssetBulkUpdateDto,
   AssetCopyDto,
   AssetJobsDto,
+  AssetMetadataBulkDeleteDto,
+  AssetMetadataBulkResponseDto,
+  AssetMetadataBulkUpsertDto,
   AssetMetadataResponseDto,
   AssetMetadataRouteParams,
   AssetMetadataUpsertDto,
@@ -118,6 +121,32 @@ export class AssetController {
   })
   copyAsset(@Auth() auth: AuthDto, @Body() dto: AssetCopyDto): Promise<void> {
     return this.service.copy(auth, dto);
+  }
+
+  @Put('metadata')
+  @Authenticated({ permission: Permission.AssetUpdate })
+  @Endpoint({
+    summary: 'Upsert asset metadata',
+    description: 'Upsert metadata key-value pairs for multiple assets.',
+    history: new HistoryBuilder().added('v1').beta('v2.5.0'),
+  })
+  updateBulkAssetMetadata(
+    @Auth() auth: AuthDto,
+    @Body() dto: AssetMetadataBulkUpsertDto,
+  ): Promise<AssetMetadataBulkResponseDto[]> {
+    return this.service.upsertBulkMetadata(auth, dto);
+  }
+
+  @Delete('metadata')
+  @Authenticated({ permission: Permission.AssetUpdate })
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Endpoint({
+    summary: 'Delete asset metadata',
+    description: 'Delete metadata key-value pairs for multiple assets.',
+    history: new HistoryBuilder().added('v1').beta('v2.5.0'),
+  })
+  deleteBulkAssetMetadata(@Auth() auth: AuthDto, @Body() dto: AssetMetadataBulkDeleteDto): Promise<void> {
+    return this.service.deleteBulkMetadata(auth, dto);
   }
 
   @Put(':id')
