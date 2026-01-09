@@ -463,7 +463,7 @@ test.describe('Timeline', () => {
         });
         changes.albumAdditions.push(...requestJson.ids);
       });
-      await page.getByText('Done').click();
+      await page.getByText('Add assets').click();
       await expect(put).resolves.toEqual({
         ids: [
           'c077ea7b-cfa1-45e4-8554-f86c00ee5658',
