@@ -265,8 +265,8 @@ class ActionService {
     if (trashedChecksums.isEmpty) {
       return false;
     }
-    await _trashSyncRepository.updateApproves(trashedChecksums, allow);
     if (!allow) {
+      await _trashSyncRepository.updateApproves(trashedChecksums, allow);
       return true;
     }
     final localAssets = await _localAssetRepository.getByChecksums(trashedChecksums);
@@ -279,9 +279,16 @@ class ActionService {
       ),
     );
     _logger.info("Moving assets to trash: ${mediaUrls.join(", ")}");
-    if (mediaUrls.isEmpty) {
-      return false;
+    final nonNullUrls = mediaUrls.nonNulls;
+    if (nonNullUrls.isEmpty) {
+      // No local files found; close review to avoid re-showing the same items.
+      await _trashSyncRepository.updateApproves(trashedChecksums, allow);
+      return true;
     }
-    return await _localFilesManager.moveToTrash(mediaUrls.nonNulls.toList());
+    final result = await _localFilesManager.moveToTrash(nonNullUrls.toList());
+    if (result) {
+      await _trashSyncRepository.updateApproves(trashedChecksums, allow);
+    }
+    return result;
   }
 }
