@@ -52,6 +52,8 @@ export type Events = {
   TagUpdate: [TagResponseDto];
   TagDelete: [TreeNode];
 
+  UserPinCodeReset: [];
+
   UserAdminCreate: [UserAdminResponseDto];
   UserAdminUpdate: [UserAdminResponseDto];
   UserAdminRestore: [UserAdminResponseDto];
