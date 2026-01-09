@@ -131,7 +131,7 @@ jobs:
           token: ${{ steps.token.outputs.token }}
 
       - name: Setup Mise
-        uses: immich-app/devtools/actions/use-mise@cd24790a7f5f6439ac32cc94f5523cb2de8bfa8c # use-mise-action-v1.1.0
+        uses: immich-app/devtools/actions/use-mise@b868e6e7c8cc212beec876330b4059e661ee44bb # use-mise-action-v1.1.1
 
       - name: Load parameters
         id: parameters
