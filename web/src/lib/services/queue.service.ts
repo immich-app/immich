@@ -64,9 +64,7 @@ export const getQueuesActions = ($t: MessageFormatter, queues: QueueResponseDto[
     title: $t('admin.create_job'),
     type: $t('command'),
     shortcuts: { shift: true, key: 'n' },
-    onAction: async () => {
-      await modalManager.show(JobCreateModal, {});
-    },
+    onAction: () => modalManager.show(JobCreateModal, {}),
   };
 
   const ManageConcurrency: ActionItem = {
