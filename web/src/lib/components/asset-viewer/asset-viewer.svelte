@@ -68,7 +68,7 @@
     isShared?: boolean;
     album?: AlbumResponseDto;
     person?: PersonResponseDto;
-    timelineManager?: TimelineManager;
+    onAssetChange?: (asset: AssetResponseDto) => void;
     preAction?: PreAction;
     onAction?: OnAction;
     onUndoDelete?: OnUndoDelete;
@@ -86,7 +86,7 @@
     isShared = false,
     album,
     person,
-    timelineManager,
+    onAssetChange,
     preAction,
     onAction,
     onUndoDelete,
@@ -205,7 +205,7 @@
   const closeEditor = async () => {
     if (editManager.hasAppliedEdits) {
       const refreshedAsset = await getAssetInfo({ id: asset.id });
-      timelineManager?.upsertAssets([toTimelineAsset(refreshedAsset)]);
+      onAssetChange?.(refreshedAsset);
       assetViewingStore.setAsset(refreshedAsset);
     }
     isShowEditor = false;

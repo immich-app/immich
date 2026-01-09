@@ -225,7 +225,9 @@
     {isShared}
     {album}
     {person}
-    {timelineManager}
+    onAssetChange={(asset) => {
+      timelineManager?.upsertAssets([toTimelineAsset(asset)]);
+    }}
     preAction={handlePreAction}
     onAction={(action) => {
       handleAction(action);
