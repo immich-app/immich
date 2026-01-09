@@ -79,6 +79,9 @@ class TimelineFactory {
   TimelineService fromAssets(List<BaseAsset> assets, TimelineOrigin type) =>
       TimelineService(_timelineRepository.fromAssets(assets, type));
 
+  TimelineService fromAssetsWithBuckets(List<BaseAsset> assets, TimelineOrigin type) =>
+      TimelineService(_timelineRepository.fromAssetsWithBuckets(assets, type));
+
   TimelineService map(String userId, LatLngBounds bounds) =>
       TimelineService(_timelineRepository.map(userId, bounds, groupBy));
 }

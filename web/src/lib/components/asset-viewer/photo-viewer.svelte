@@ -6,32 +6,30 @@
   import BrokenAsset from '$lib/components/assets/broken-asset.svelte';
   import { assetViewerFadeDuration } from '$lib/constants';
   import { castManager } from '$lib/managers/cast-manager.svelte';
-  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
+  import { preloadManager } from '$lib/managers/PreloadManager.svelte';
   import { photoViewerImgElement } from '$lib/stores/assets-store.svelte';
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import { ocrManager } from '$lib/stores/ocr.svelte';
   import { boundingBoxesArray } from '$lib/stores/people.store';
-  import { alwaysLoadOriginalFile } from '$lib/stores/preferences.store';
   import { SlideshowLook, SlideshowState, slideshowLookCssMapping, slideshowStore } from '$lib/stores/slideshow.store';
   import { photoZoomState } from '$lib/stores/zoom-image.store';
-  import { getAssetOriginalUrl, getAssetThumbnailUrl, handlePromiseError } from '$lib/utils';
-  import { canCopyImageToClipboard, copyImageToClipboard, isWebCompatibleImage } from '$lib/utils/asset-utils';
+  import { getAssetUrl, targetImageSize as getTargetImageSize, handlePromiseError } from '$lib/utils';
+  import { canCopyImageToClipboard, copyImageToClipboard } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
   import { getOcrBoundingBoxes } from '$lib/utils/ocr-utils';
   import { getBoundingBox } from '$lib/utils/people-utils';
-  import { cancelImageUrl } from '$lib/utils/sw-messaging';
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
-  import { AssetMediaSize, AssetTypeEnum, type AssetResponseDto, type SharedLinkResponseDto } from '@immich/sdk';
+  import { AssetMediaSize, type SharedLinkResponseDto } from '@immich/sdk';
   import { LoadingSpinner, toastManager } from '@immich/ui';
   import { onDestroy, onMount } from 'svelte';
   import { useSwipe, type SwipeCustomEvent } from 'svelte-gestures';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
+  import type { AssetCursor } from './asset-viewer.svelte';
 
   interface Props {
-    asset: AssetResponseDto;
-    preloadAssets?: TimelineAsset[] | undefined;
+    cursor: AssetCursor;
     element?: HTMLDivElement | undefined;
     haveFadeTransition?: boolean;
     sharedLink?: SharedLinkResponseDto | undefined;
@@ -42,8 +40,7 @@
   }
 
   let {
-    asset,
-    preloadAssets = undefined,
+    cursor,
     element = $bindable(),
     haveFadeTransition = true,
     sharedLink = undefined,
@@ -54,8 +51,8 @@
   }: Props = $props();
 
   const { slideshowState, slideshowLook } = slideshowStore;
+  const asset = $derived(cursor.current);
 
-  let assetFileUrl: string = $state('');
   let imageLoaded: boolean = $state(false);
   let originalImageLoaded: boolean = $state(false);
   let imageError: boolean = $state(false);
@@ -81,25 +78,6 @@
   );
 
   let isOcrActive = $derived(ocrManager.showOverlay);
-
-  const preload = (targetSize: AssetMediaSize | 'original', preloadAssets?: TimelineAsset[]) => {
-    for (const preloadAsset of preloadAssets || []) {
-      if (preloadAsset.isImage) {
-        let img = new Image();
-        img.src = getAssetUrl(preloadAsset.id, targetSize, preloadAsset.thumbhash);
-      }
-    }
-  };
-
-  const getAssetUrl = (id: string, targetSize: AssetMediaSize | 'original', cacheKey: string | null) => {
-    if (sharedLink && (!sharedLink.allowDownload || !sharedLink.showMetadata)) {
-      return getAssetThumbnailUrl({ id, size: AssetMediaSize.Preview, cacheKey });
-    }
-
-    return targetSize === 'original'
-      ? getAssetOriginalUrl({ id, cacheKey })
-      : getAssetThumbnailUrl({ id, size: targetSize, cacheKey });
-  };
 
   copyImage = async () => {
     if (!canCopyImageToClipboard() || !$photoViewerImgElement) {
@@ -155,23 +133,11 @@
     }
   };
 
-  // when true, will force loading of the original image
-  let forceUseOriginal: boolean = $derived(
-    (asset.type === AssetTypeEnum.Image && asset.duration && !asset.duration.includes('0:00:00.000')) ||
-      $photoZoomState.currentZoom > 1,
-  );
-
-  const targetImageSize = $derived.by(() => {
-    if ($alwaysLoadOriginalFile || forceUseOriginal || originalImageLoaded) {
-      return isWebCompatibleImage(asset) ? 'original' : AssetMediaSize.Fullsize;
-    }
-
-    return AssetMediaSize.Preview;
-  });
+  const targetImageSize = $derived(getTargetImageSize(asset, originalImageLoaded || $photoZoomState.currentZoom > 1));
 
   $effect(() => {
-    if (assetFileUrl) {
-      void cast(assetFileUrl);
+    if (imageLoaderUrl) {
+      void cast(imageLoaderUrl);
     }
   });
 
@@ -191,7 +157,6 @@
 
   const onload = () => {
     imageLoaded = true;
-    assetFileUrl = imageLoaderUrl;
     originalImageLoaded = targetImageSize === AssetMediaSize.Fullsize || targetImageSize === 'original';
   };
 
@@ -199,27 +164,29 @@
     imageError = imageLoaded = true;
   };
 
-  $effect(() => {
-    preload(targetImageSize, preloadAssets);
-  });
-
   onMount(() => {
-    if (loader?.complete) {
-      onload();
-    }
-    loader?.addEventListener('load', onload, { passive: true });
-    loader?.addEventListener('error', onerror, { passive: true });
     return () => {
-      loader?.removeEventListener('load', onload);
-      loader?.removeEventListener('error', onerror);
-      cancelImageUrl(imageLoaderUrl);
+      preloadManager.cancelPreloadUrl(imageLoaderUrl);
     };
   });
 
-  let imageLoaderUrl = $derived(getAssetUrl(asset.id, targetImageSize, asset.thumbhash));
+  let imageLoaderUrl = $derived(
+    getAssetUrl({ asset, sharedLink, forceOriginal: originalImageLoaded || $photoZoomState.currentZoom > 1 }),
+  );
 
   let containerWidth = $state(0);
   let containerHeight = $state(0);
+
+  let lastUrl: string | undefined;
+
+  $effect(() => {
+    if (lastUrl && lastUrl !== imageLoaderUrl) {
+      imageLoaded = false;
+      originalImageLoaded = false;
+      imageError = false;
+    }
+    lastUrl = imageLoaderUrl;
+  });
 </script>
 
 <svelte:document
@@ -232,19 +199,17 @@
   ]}
 />
 {#if imageError}
-  <div class="h-full w-full">
+  <div id="broken-asset" class="h-full w-full">
     <BrokenAsset class="text-xl h-full w-full" />
   </div>
 {/if}
-<!-- svelte-ignore a11y_missing_attribute -->
-<img bind:this={loader} style="display:none" src={imageLoaderUrl} aria-hidden="true" />
+<img bind:this={loader} style="display:none" src={imageLoaderUrl} alt="" aria-hidden="true" {onload} {onerror} />
 <div
   bind:this={element}
-  class="relative h-full select-none"
+  class="relative h-full w-full select-none"
   bind:clientWidth={containerWidth}
   bind:clientHeight={containerHeight}
 >
-  <img style="display:none" src={imageLoaderUrl} alt="" {onload} {onerror} />
   {#if !imageLoaded}
     <div id="spinner" class="flex h-full items-center justify-center">
       <LoadingSpinner />
@@ -258,7 +223,7 @@
     >
       {#if $slideshowState !== SlideshowState.None && $slideshowLook === SlideshowLook.BlurredBackground}
         <img
-          src={assetFileUrl}
+          src={imageLoaderUrl}
           alt=""
           class="-z-1 absolute top-0 start-0 object-cover h-full w-full blur-lg"
           draggable="false"
@@ -266,7 +231,7 @@
       {/if}
       <img
         bind:this={$photoViewerImgElement}
-        src={assetFileUrl}
+        src={imageLoaderUrl}
         alt={$getAltText(toTimelineAsset(asset))}
         class="h-full w-full {$slideshowState === SlideshowState.None
           ? 'object-contain'
@@ -298,6 +263,7 @@
       visibility: visible;
     }
   }
+  #broken-asset,
   #spinner {
     visibility: hidden;
     animation: 0s linear 0.4s forwards delayedVisibility;

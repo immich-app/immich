@@ -5,13 +5,14 @@
 <script lang="ts">
   import { page } from '$app/state';
   import { clickOutside } from '$lib/actions/click-outside';
-  import CastButton from '$lib/cast/cast-button.svelte';
+  import ActionButton from '$lib/components/ActionButton.svelte';
   import NotificationPanel from '$lib/components/shared-components/navigation-bar/notification-panel.svelte';
   import SearchBar from '$lib/components/shared-components/search-bar/search-bar.svelte';
   import { AppRoute } from '$lib/constants';
   import SkipLink from '$lib/elements/SkipLink.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
+  import { getGlobalActions } from '$lib/services/app.service';
   import { mobileDevice } from '$lib/stores/mobile-device.svelte';
   import { notificationManager } from '$lib/stores/notification-manager.svelte';
   import { sidebarStore } from '$lib/stores/sidebar.svelte';
@@ -45,6 +46,8 @@
       console.error('Failed to load notifications on mount', error);
     }
   });
+
+  const { Cast } = $derived(getGlobalActions($t));
 </script>
 
 <svelte:window bind:innerWidth />
@@ -158,7 +161,7 @@
           {/if}
         </div>
 
-        <CastButton />
+        <ActionButton action={Cast} />
 
         <div
           use:clickOutside={{

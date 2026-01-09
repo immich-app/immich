@@ -22,7 +22,7 @@
   import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import { AppRoute, QueryParameter } from '$lib/constants';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
-  import type { TimelineAsset, Viewport } from '$lib/managers/timeline-manager/types';
+  import type { Viewport } from '$lib/managers/timeline-manager/types';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { lang, locale } from '$lib/stores/preferences.store';
@@ -35,6 +35,7 @@
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import {
     type AlbumResponseDto,
+    type AssetResponseDto,
     getPerson,
     getTagById,
     type MetadataSearchDto,
@@ -58,7 +59,7 @@
 
   let nextPage = $state(1);
   let searchResultAlbums: AlbumResponseDto[] = $state([]);
-  let searchResultAssets: TimelineAsset[] = $state([]);
+  let searchResultAssets: AssetResponseDto[] = $state([]);
   let isLoading = $state(true);
   let scrollY = $state(0);
   let scrollYHistory = 0;
@@ -123,7 +124,7 @@
 
   const onAssetDelete = (assetIds: string[]) => {
     const assetIdSet = new Set(assetIds);
-    searchResultAssets = searchResultAssets.filter((asset: TimelineAsset) => !assetIdSet.has(asset.id));
+    searchResultAssets = searchResultAssets.filter((asset: AssetResponseDto) => !assetIdSet.has(asset.id));
   };
 
   const handleSetVisibility = (assetIds: string[]) => {
@@ -132,7 +133,7 @@
   };
 
   const handleSelectAll = () => {
-    assetInteraction.selectAssets(searchResultAssets);
+    assetInteraction.selectAssets(searchResultAssets.map((asset) => toTimelineAsset(asset)));
   };
 
   async function onSearchQueryUpdate() {
@@ -164,7 +165,7 @@
           : await searchAssets({ metadataSearchDto: searchDto });
 
       searchResultAlbums.push(...albums.items);
-      searchResultAssets.push(...assets.items.map((asset) => toTimelineAsset(asset)));
+      searchResultAssets.push(...assets.items);
 
       nextPage = Number(assets.nextPage) || 0;
     } catch (error) {

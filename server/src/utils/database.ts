@@ -446,7 +446,7 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
       qb.where((eb) => eb.not(eb.exists((eb) => eb.selectFrom('album_asset').whereRef('assetId', '=', 'asset.id')))),
     )
     .$if(!!options.withExif, withExifInner)
-    .$if(!!(options.withFaces || options.withPeople || options.personIds), (qb) => qb.select(withFacesAndPeople))
+    .$if(!!(options.withFaces || options.withPeople), (qb) => qb.select(withFacesAndPeople))
     .$if(!options.withDeleted, (qb) => qb.where('asset.deletedAt', 'is', null));
 }
 

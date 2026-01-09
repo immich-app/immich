@@ -21,7 +21,14 @@
   import { copyToClipboard, getReleaseType, semverToName } from '$lib/utils';
   import { maintenanceShouldRedirect } from '$lib/utils/maintenance';
   import { isAssetViewerRoute } from '$lib/utils/navigation';
-  import { CommandPaletteContext, modalManager, setTranslations, toastManager, type ActionItem } from '@immich/ui';
+  import {
+    CommandPaletteDefaultProvider,
+    TooltipProvider,
+    modalManager,
+    setTranslations,
+    toastManager,
+    type ActionItem,
+  } from '@immich/ui';
   import { mdiAccountMultipleOutline, mdiBookshelf, mdiCog, mdiServer, mdiSync, mdiThemeLightDark } from '@mdi/js';
   import { onMount, type Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -42,6 +49,8 @@
       toast_info_title: $t('info'),
       toast_warning_title: $t('warning'),
       toast_danger_title: $t('error'),
+      navigate_next: $t('next'),
+      navigate_previous: $t('previous'),
     });
   });
 
@@ -138,7 +147,6 @@
       icon: mdiThemeLightDark,
       onAction: () => themeManager.toggleTheme(),
       shortcuts: { shift: true, key: 't' },
-      isGlobal: true,
     },
   ];
 
@@ -174,13 +182,13 @@
       icon: mdiServer,
       onAction: () => goto(AppRoute.ADMIN_STATS),
     },
-  ].map((route) => ({ ...route, type: $t('page'), isGlobal: true, $if: () => $user?.isAdmin }));
+  ].map((route) => ({ ...route, type: $t('page'), $if: () => $user?.isAdmin }));
 
   const commands = $derived([...userCommands, ...adminCommands]);
 </script>
 
 <OnEvents {onReleaseEvent} />
-<CommandPaletteContext {commands} />
+<CommandPaletteDefaultProvider name="Global" actions={commands} />
 
 <svelte:head>
   <title>{page.data.meta?.title || 'Web'} - Immich</title>
@@ -228,15 +236,17 @@
   }}
 />
 
-{#if page.data.error}
-  <ErrorLayout error={page.data.error}></ErrorLayout>
-{:else}
-  {@render children?.()}
-{/if}
+<TooltipProvider>
+  {#if page.data.error}
+    <ErrorLayout error={page.data.error}></ErrorLayout>
+  {:else}
+    {@render children?.()}
+  {/if}
 
-{#if showNavigationLoadingBar}
-  <NavigationLoadingBar />
-{/if}
+  {#if showNavigationLoadingBar}
+    <NavigationLoadingBar />
+  {/if}
 
-<DownloadPanel />
-<UploadPanel />
+  <DownloadPanel />
+  <UploadPanel />
+</TooltipProvider>

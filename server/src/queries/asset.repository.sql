@@ -76,6 +76,14 @@ where
   "assetId" = $1
   and "key" = $2
 
+-- AssetRepository.deleteBulkMetadata
+begin
+delete from "asset_metadata"
+where
+  "assetId" = $1
+  and "key" = $2
+commit
+
 -- AssetRepository.getByDayOfYear
 with
   "res" as (
