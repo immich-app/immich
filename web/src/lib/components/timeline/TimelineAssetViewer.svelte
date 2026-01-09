@@ -119,14 +119,15 @@
       case AssetAction.ARCHIVE:
       case AssetAction.SET_VISIBILITY_LOCKED:
       case AssetAction.SET_VISIBILITY_TIMELINE: {
+        // must update manager before performing any navigation
+        timelineManager.removeAssets([action.asset.id]);
+
         // find the next asset to show or close the viewer
         // eslint-disable-next-line @typescript-eslint/no-unused-expressions
         (await handleNavigateToAsset(assetCursor?.nextAsset)) ||
           (await handleNavigateToAsset(assetCursor?.previousAsset)) ||
           (await handleClose(action.asset));
 
-        // delete after find the next one
-        timelineManager.removeAssets([action.asset.id]);
         break;
       }
     }
