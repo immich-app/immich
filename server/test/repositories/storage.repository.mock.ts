@@ -48,6 +48,7 @@ export const newStorageRepositoryMock = (): Mocked<RepositoryInterface<StorageRe
 
   return {
     createZipStream: vitest.fn(),
+    createPlainReadStream: vitest.fn(),
     createReadStream: vitest.fn(),
     readFile: vitest.fn(),
     readTextFile: vitest.fn(),

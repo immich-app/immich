@@ -2,7 +2,7 @@
   import BottomInfo from '$lib/components/shared-components/side-bar/bottom-info.svelte';
   import { AppRoute } from '$lib/constants';
   import { NavbarItem } from '@immich/ui';
-  import { mdiAccountMultipleOutline, mdiBookshelf, mdiCog, mdiServer, mdiTrayFull } from '@mdi/js';
+  import { mdiAccountMultipleOutline, mdiBookshelf, mdiCog, mdiServer, mdiTrayFull, mdiWrench } from '@mdi/js';
   import { t } from 'svelte-i18n';
 </script>
 
@@ -12,6 +12,7 @@
     <NavbarItem title={$t('external_libraries')} href={AppRoute.ADMIN_LIBRARIES} icon={mdiBookshelf} />
     <NavbarItem title={$t('admin.queues')} href={AppRoute.ADMIN_QUEUES} icon={mdiTrayFull} />
     <NavbarItem title={$t('settings')} href={AppRoute.ADMIN_SETTINGS} icon={mdiCog} />
+    <NavbarItem title={$t('admin.maintenance_settings')} href={AppRoute.ADMIN_MAINTENANCE_SETTINGS} icon={mdiWrench} />
     <NavbarItem title={$t('server_stats')} href={AppRoute.ADMIN_STATS} icon={mdiServer} />
   </div>
 

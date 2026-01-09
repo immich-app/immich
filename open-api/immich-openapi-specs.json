@@ -322,6 +322,275 @@
         "x-immich-state": "Stable"
       }
     },
+    "/admin/integrity/report": {
+      "post": {
+        "description": "Get all flagged items by integrity report type",
+        "operationId": "getIntegrityReport",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IntegrityGetReportDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IntegrityReportResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Get integrity report by type",
+        "tags": [
+          "Maintenance (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v9.9.9",
+            "state": "Added"
+          },
+          {
+            "version": "v9.9.9",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "maintenance",
+        "x-immich-state": "Alpha"
+      }
+    },
+    "/admin/integrity/report/{id}": {
+      "delete": {
+        "description": "Delete a given report item and perform corresponding deletion (e.g. trash asset, delete file)",
+        "operationId": "deleteIntegrityReport",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Delete integrity report item",
+        "tags": [
+          "Maintenance (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v9.9.9",
+            "state": "Added"
+          },
+          {
+            "version": "v9.9.9",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "maintenance",
+        "x-immich-state": "Alpha"
+      }
+    },
+    "/admin/integrity/report/{id}/file": {
+      "get": {
+        "description": "Download the untracked/broken file if one exists",
+        "operationId": "getIntegrityReportFile",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Download flagged file",
+        "tags": [
+          "Maintenance (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v9.9.9",
+            "state": "Added"
+          },
+          {
+            "version": "v9.9.9",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "maintenance",
+        "x-immich-state": "Alpha"
+      }
+    },
+    "/admin/integrity/report/{type}/csv": {
+      "get": {
+        "description": "Get all integrity report entries for a given type as a CSV",
+        "operationId": "getIntegrityReportCsv",
+        "parameters": [
+          {
+            "name": "type",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "$ref": "#/components/schemas/IntegrityReportType"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Export integrity report by type as CSV",
+        "tags": [
+          "Maintenance (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v9.9.9",
+            "state": "Added"
+          },
+          {
+            "version": "v9.9.9",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "maintenance",
+        "x-immich-state": "Alpha"
+      }
+    },
+    "/admin/integrity/summary": {
+      "get": {
+        "description": "Get a count of the items flagged in each integrity report",
+        "operationId": "getIntegrityReportSummary",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IntegrityReportSummaryResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Get integrity report summary",
+        "tags": [
+          "Maintenance (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v9.9.9",
+            "state": "Added"
+          },
+          {
+            "version": "v9.9.9",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "maintenance",
+        "x-immich-state": "Alpha"
+      }
+    },
     "/admin/maintenance": {
       "post": {
         "description": "Put Immich into or take it out of maintenance mode",
@@ -14493,6 +14762,10 @@
       "description": "A face is a detected human face within an asset, which can be associated with a person. Faces are normally detected via machine learning, but can also be created via manually."
     },
     {
+      "name": "Integrity (admin)",
+      "description": "Endpoints for viewing and managing integrity reports."
+    },
+    {
       "name": "Jobs",
       "description": "Queues and background jobs are used for processing tasks asynchronously. Queues can be paused and resumed as needed."
     },
@@ -16842,6 +17115,96 @@
         ],
         "type": "string"
       },
+      "IntegrityGetReportDto": {
+        "properties": {
+          "cursor": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "limit": {
+            "minimum": 1,
+            "type": "number"
+          },
+          "type": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/IntegrityReportType"
+              }
+            ]
+          }
+        },
+        "required": [
+          "type"
+        ],
+        "type": "object"
+      },
+      "IntegrityReportDto": {
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "type": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/IntegrityReportType"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "path",
+          "type"
+        ],
+        "type": "object"
+      },
+      "IntegrityReportResponseDto": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/IntegrityReportDto"
+            },
+            "type": "array"
+          },
+          "nextCursor": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "type": "object"
+      },
+      "IntegrityReportSummaryResponseDto": {
+        "properties": {
+          "checksum_mismatch": {
+            "type": "integer"
+          },
+          "missing_file": {
+            "type": "integer"
+          },
+          "untracked_file": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "checksum_mismatch",
+          "missing_file",
+          "untracked_file"
+        ],
+        "type": "object"
+      },
+      "IntegrityReportType": {
+        "enum": [
+          "untracked_file",
+          "missing_file",
+          "checksum_mismatch"
+        ],
+        "type": "string"
+      },
       "JobCreateDto": {
         "properties": {
           "name": {
@@ -16913,7 +17276,17 @@
           "VersionCheck",
           "OcrQueueAll",
           "Ocr",
-          "WorkflowRun"
+          "WorkflowRun",
+          "IntegrityUntrackedFilesQueueAll",
+          "IntegrityUntrackedFiles",
+          "IntegrityUntrackedRefresh",
+          "IntegrityMissingFilesQueueAll",
+          "IntegrityMissingFiles",
+          "IntegrityMissingFilesRefresh",
+          "IntegrityChecksumFiles",
+          "IntegrityChecksumFilesRefresh",
+          "IntegrityDeleteReportType",
+          "IntegrityDeleteReports"
         ],
         "type": "string"
       },
@@ -17182,7 +17555,16 @@
           "user-cleanup",
           "memory-cleanup",
           "memory-create",
-          "backup-database"
+          "backup-database",
+          "integrity-missing-files",
+          "integrity-untracked-files",
+          "integrity-checksum-mismatch",
+          "integrity-missing-files-refresh",
+          "integrity-untracked-files-refresh",
+          "integrity-checksum-mismatch-refresh",
+          "integrity-missing-files-delete-all",
+          "integrity-untracked-files-delete-all",
+          "integrity-checksum-mismatch-delete-all"
         ],
         "type": "string"
       },
@@ -18813,7 +19195,8 @@
           "notifications",
           "backupDatabase",
           "ocr",
-          "workflow"
+          "workflow",
+          "integrityCheck"
         ],
         "type": "string"
       },
@@ -18926,6 +19309,9 @@
           "facialRecognition": {
             "$ref": "#/components/schemas/QueueResponseLegacyDto"
           },
+          "integrityCheck": {
+            "$ref": "#/components/schemas/QueueResponseLegacyDto"
+          },
           "library": {
             "$ref": "#/components/schemas/QueueResponseLegacyDto"
           },
@@ -18969,6 +19355,7 @@
           "duplicateDetection",
           "faceDetection",
           "facialRecognition",
+          "integrityCheck",
           "library",
           "metadataExtraction",
           "migration",
@@ -21499,6 +21886,9 @@
           "image": {
             "$ref": "#/components/schemas/SystemConfigImageDto"
           },
+          "integrityChecks": {
+            "$ref": "#/components/schemas/SystemConfigIntegrityChecks"
+          },
           "job": {
             "$ref": "#/components/schemas/SystemConfigJobDto"
           },
@@ -21558,6 +21948,7 @@
           "backup",
           "ffmpeg",
           "image",
+          "integrityChecks",
           "job",
           "library",
           "logging",
@@ -21804,12 +22195,72 @@
         ],
         "type": "object"
       },
+      "SystemConfigIntegrityChecks": {
+        "properties": {
+          "checksumFiles": {
+            "$ref": "#/components/schemas/SystemConfigIntegrityChecksumJob"
+          },
+          "missingFiles": {
+            "$ref": "#/components/schemas/SystemConfigIntegrityJob"
+          },
+          "untrackedFiles": {
+            "$ref": "#/components/schemas/SystemConfigIntegrityJob"
+          }
+        },
+        "required": [
+          "checksumFiles",
+          "missingFiles",
+          "untrackedFiles"
+        ],
+        "type": "object"
+      },
+      "SystemConfigIntegrityChecksumJob": {
+        "properties": {
+          "cronExpression": {
+            "type": "string"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "percentageLimit": {
+            "type": "number"
+          },
+          "timeLimit": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "cronExpression",
+          "enabled",
+          "percentageLimit",
+          "timeLimit"
+        ],
+        "type": "object"
+      },
+      "SystemConfigIntegrityJob": {
+        "properties": {
+          "cronExpression": {
+            "type": "string"
+          },
+          "enabled": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "cronExpression",
+          "enabled"
+        ],
+        "type": "object"
+      },
       "SystemConfigJobDto": {
         "properties": {
           "backgroundTask": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
           "faceDetection": {
+            "$ref": "#/components/schemas/JobSettingsDto"
+          },
+          "integrityCheck": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
           "library": {
@@ -21849,6 +22300,7 @@
         "required": [
           "backgroundTask",
           "faceDetection",
+          "integrityCheck",
           "library",
           "metadataExtraction",
           "migration",

@@ -130,6 +130,14 @@ const create = (path: string, up: string[], down: string[]) => {
 const compare = async () => {
   const configRepository = new ConfigRepository();
   const { database } = configRepository.getEnv();
+  database.config = {
+    connectionType: 'parts',
+    database: 'immich',
+    host: 'database',
+    password: 'postgres',
+    username: 'postgres',
+    port: 5432,
+  };
   const db = postgres(asPostgresConnectionConfig(database.config));
 
   const source = schemaFromCode({ overrides: true, namingStrategy: 'default' });
