@@ -12,7 +12,6 @@
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { editManager, EditToolType } from '$lib/managers/edit/edit-manager.svelte';
   import { preloadManager } from '$lib/managers/PreloadManager.svelte';
-  import type { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { ocrManager } from '$lib/stores/ocr.svelte';
   import { alwaysLoadOriginalVideo } from '$lib/stores/preferences.store';
@@ -204,7 +203,9 @@
 
   const closeEditor = async () => {
     if (editManager.hasAppliedEdits) {
+      console.log(asset);
       const refreshedAsset = await getAssetInfo({ id: asset.id });
+      console.log(refreshedAsset);
       onAssetChange?.(refreshedAsset);
       assetViewingStore.setAsset(refreshedAsset);
     }
