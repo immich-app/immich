@@ -233,7 +233,7 @@ export class AssetController {
   @Endpoint({
     summary: 'Retrieve edits for an existing asset',
     description: 'Retrieve a series of edit actions (crop, rotate, mirror) associated with the specified asset.',
-    history: new HistoryBuilder().added('v2').beta('v2'),
+    history: new HistoryBuilder().added('v2.5.0').beta('v2.5.0'),
   })
   getAssetEdits(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<AssetEditsDto> {
     return this.service.getAssetEdits(auth, id);
@@ -260,7 +260,7 @@ export class AssetController {
   @Endpoint({
     summary: 'Remove edits from an existing asset',
     description: 'Removes all edit actions (crop, rotate, mirror) associated with the specified asset.',
-    history: new HistoryBuilder().added('v2').beta('v2'),
+    history: new HistoryBuilder().added('v2.5.0').beta('v2.5.0'),
   })
   removeAssetEdits(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<void> {
     return this.service.removeAssetEdits(auth, id);

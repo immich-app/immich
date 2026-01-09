@@ -3340,11 +3340,11 @@
         ],
         "x-immich-history": [
           {
-            "version": "v2",
+            "version": "v2.5.0",
             "state": "Added"
           },
           {
-            "version": "v2",
+            "version": "v2.5.0",
             "state": "Beta"
           }
         ],
@@ -3394,11 +3394,11 @@
         ],
         "x-immich-history": [
           {
-            "version": "v2",
+            "version": "v2.5.0",
             "state": "Added"
           },
           {
-            "version": "v2",
+            "version": "v2.5.0",
             "state": "Beta"
           }
         ],
