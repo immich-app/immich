@@ -3,6 +3,7 @@ import { VECTOR_EXTENSIONS } from 'src/constants';
 import { Asset, AssetFile } from 'src/database';
 import { UploadFieldName } from 'src/dtos/asset-media.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
+import { SetMaintenanceModeDto } from 'src/dtos/maintenance.dto';
 import {
   AssetOrder,
   AssetType,
@@ -485,7 +486,9 @@ export interface MemoryData {
 
 export type VersionCheckMetadata = { checkedAt: string; releaseVersion: string };
 export type SystemFlags = { mountChecks: Record<StorageFolder, boolean> };
-export type MaintenanceModeState = { isMaintenanceMode: true; secret: string } | { isMaintenanceMode: false };
+export type MaintenanceModeState =
+  | { isMaintenanceMode: true; secret: string; action: SetMaintenanceModeDto }
+  | { isMaintenanceMode: false };
 export type MemoriesState = {
   /** memories have already been created through this date */
   lastOnThisDayDate: string;

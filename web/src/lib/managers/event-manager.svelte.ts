@@ -42,6 +42,9 @@ export type Events = {
 
   PersonUpdate: [PersonResponseDto];
 
+  BackupDelete: [{ filename: string; isDeleting: boolean; isDeleted: boolean }];
+  BackupUpload: [{ progress: number; isComplete: boolean }];
+
   QueueUpdate: [QueueResponseDto];
 
   SharedLinkCreate: [SharedLinkResponseDto];
