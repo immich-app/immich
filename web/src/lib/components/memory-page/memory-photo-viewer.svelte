@@ -22,13 +22,14 @@
   let imageLoaded: boolean = $state(false);
   let loader = $state<HTMLImageElement>();
 
-  // Reset zoom state when component mounts (new asset)
-  photoZoomState.set({
-    currentRotation: 0,
-    currentZoom: 1,
-    enable: true,
-    currentPositionX: 0,
-    currentPositionY: 0,
+  onMount(() => {
+    photoZoomState.set({
+      currentRotation: 0,
+      currentZoom: 1,
+      enable: true,
+      currentPositionX: 0,
+      currentPositionY: 0,
+    });
   });
 
   // Notify parent when zoom state changes
