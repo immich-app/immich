@@ -17,9 +17,9 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
-import { AssetMetadataKey, AssetType, AssetVisibility } from 'src/enum';
+import { AssetType, AssetVisibility } from 'src/enum';
 import { AssetStats } from 'src/repositories/asset.repository';
-import { IsNotSiblingOf, Optional, ValidateBoolean, ValidateEnum, ValidateUUID } from 'src/validation';
+import { IsNotSiblingOf, Optional, ValidateBoolean, ValidateEnum, ValidateString, ValidateUUID } from 'src/validation';
 
 export class DeviceIdDto {
   @IsNotEmpty()
@@ -142,8 +142,8 @@ export class AssetMetadataRouteParams {
   @ValidateUUID()
   id!: string;
 
-  @ValidateEnum({ enum: AssetMetadataKey, name: 'AssetMetadataKey' })
-  key!: AssetMetadataKey;
+  @ValidateString()
+  key!: string;
 }
 
 export class AssetMetadataUpsertDto {
@@ -154,24 +154,55 @@ export class AssetMetadataUpsertDto {
 }
 
 export class AssetMetadataUpsertItemDto {
-  @ValidateEnum({ enum: AssetMetadataKey, name: 'AssetMetadataKey' })
-  key!: AssetMetadataKey;
+  @ValidateString()
+  key!: string;
 
   @IsObject()
   value!: object;
 }
 
-export class AssetMetadataMobileAppDto {
-  @IsString()
-  @Optional()
-  iCloudId?: string;
+export class AssetMetadataBulkUpsertDto {
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => AssetMetadataBulkUpsertItemDto)
+  items!: AssetMetadataBulkUpsertItemDto[];
+}
+
+export class AssetMetadataBulkUpsertItemDto {
+  @ValidateUUID()
+  assetId!: string;
+
+  @ValidateString()
+  key!: string;
+
+  @IsObject()
+  value!: object;
+}
+
+export class AssetMetadataBulkDeleteDto {
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => AssetMetadataBulkDeleteItemDto)
+  items!: AssetMetadataBulkDeleteItemDto[];
+}
+
+export class AssetMetadataBulkDeleteItemDto {
+  @ValidateUUID()
+  assetId!: string;
+
+  @ValidateString()
+  key!: string;
 }
 
 export class AssetMetadataResponseDto {
-  @ValidateEnum({ enum: AssetMetadataKey, name: 'AssetMetadataKey' })
-  key!: AssetMetadataKey;
+  @ValidateString()
+  key!: string;
   value!: object;
   updatedAt!: Date;
+}
+
+export class AssetMetadataBulkResponseDto extends AssetMetadataResponseDto {
+  assetId!: string;
 }
 
 export class AssetCopyDto {

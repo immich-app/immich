@@ -11,6 +11,9 @@ import {
   AssetCopyDto,
   AssetJobName,
   AssetJobsDto,
+  AssetMetadataBulkDeleteDto,
+  AssetMetadataBulkResponseDto,
+  AssetMetadataBulkUpsertDto,
   AssetMetadataResponseDto,
   AssetMetadataUpsertDto,
   AssetStatsDto,
@@ -19,16 +22,7 @@ import {
 } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { AssetOcrResponseDto } from 'src/dtos/ocr.dto';
-import {
-  AssetFileType,
-  AssetMetadataKey,
-  AssetStatus,
-  AssetVisibility,
-  JobName,
-  JobStatus,
-  Permission,
-  QueueName,
-} from 'src/enum';
+import { AssetFileType, AssetStatus, AssetVisibility, JobName, JobStatus, Permission, QueueName } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
 import { JobItem, JobOf } from 'src/types';
 import { requireElevatedPermission } from 'src/utils/access';
@@ -144,14 +138,28 @@ export class AssetService extends BaseService {
     await this.requireAccess({ auth, permission: Permission.AssetUpdate, ids });
 
     const assetDto = _.omitBy({ isFavorite, visibility, duplicateId }, _.isUndefined);
-    const exifDto = _.omitBy({ latitude, longitude, rating, description, dateTimeOriginal }, _.isUndefined);
+    const exifDto = _.omitBy(
+      {
+        latitude,
+        longitude,
+        rating,
+        description,
+        dateTimeOriginal,
+      },
+      _.isUndefined,
+    );
+    const extractedTimeZone = dateTimeOriginal ? DateTime.fromISO(dateTimeOriginal, { setZone: true }).zone : undefined;
 
     if (Object.keys(exifDto).length > 0) {
       await this.assetRepository.updateAllExif(ids, exifDto);
     }
 
-    if ((dateTimeRelative !== undefined && dateTimeRelative !== 0) || timeZone !== undefined) {
-      await this.assetRepository.updateDateTimeOriginal(ids, dateTimeRelative, timeZone);
+    if (
+      (dateTimeRelative !== undefined && dateTimeRelative !== 0) ||
+      timeZone !== undefined ||
+      extractedTimeZone?.type === 'fixed'
+    ) {
+      await this.assetRepository.updateDateTimeOriginal(ids, dateTimeRelative, timeZone ?? extractedTimeZone?.name);
     }
 
     if (Object.keys(assetDto).length > 0) {
@@ -367,12 +375,17 @@ export class AssetService extends BaseService {
     return this.ocrRepository.getByAssetId(id);
   }
 
+  async upsertBulkMetadata(auth: AuthDto, dto: AssetMetadataBulkUpsertDto): Promise<AssetMetadataBulkResponseDto[]> {
+    await this.requireAccess({ auth, permission: Permission.AssetUpdate, ids: dto.items.map((item) => item.assetId) });
+    return this.assetRepository.upsertBulkMetadata(dto.items);
+  }
+
   async upsertMetadata(auth: AuthDto, id: string, dto: AssetMetadataUpsertDto): Promise<AssetMetadataResponseDto[]> {
     await this.requireAccess({ auth, permission: Permission.AssetUpdate, ids: [id] });
     return this.assetRepository.upsertMetadata(id, dto.items);
   }
 
-  async getMetadataByKey(auth: AuthDto, id: string, key: AssetMetadataKey): Promise<AssetMetadataResponseDto> {
+  async getMetadataByKey(auth: AuthDto, id: string, key: string): Promise<AssetMetadataResponseDto> {
     await this.requireAccess({ auth, permission: Permission.AssetRead, ids: [id] });
 
     const item = await this.assetRepository.getMetadataByKey(id, key);
@@ -382,9 +395,14 @@ export class AssetService extends BaseService {
     return item;
   }
 
-  async deleteMetadataByKey(auth: AuthDto, id: string, key: AssetMetadataKey): Promise<void> {
+  async deleteMetadataByKey(auth: AuthDto, id: string, key: string): Promise<void> {
     await this.requireAccess({ auth, permission: Permission.AssetUpdate, ids: [id] });
     return this.assetRepository.deleteMetadataByKey(id, key);
+  }
+
+  async deleteBulkMetadata(auth: AuthDto, dto: AssetMetadataBulkDeleteDto) {
+    await this.requireAccess({ auth, permission: Permission.AssetUpdate, ids: dto.items.map((item) => item.assetId) });
+    await this.assetRepository.deleteBulkMetadata(dto.items);
   }
 
   async run(auth: AuthDto, dto: AssetJobsDto) {
@@ -436,7 +454,19 @@ export class AssetService extends BaseService {
     rating?: number;
   }) {
     const { id, description, dateTimeOriginal, latitude, longitude, rating } = dto;
-    const writes = _.omitBy({ description, dateTimeOriginal, latitude, longitude, rating }, _.isUndefined);
+    const extractedTimeZone = dateTimeOriginal ? DateTime.fromISO(dateTimeOriginal, { setZone: true }).zone : undefined;
+    const writes = _.omitBy(
+      {
+        description,
+        dateTimeOriginal,
+        timeZone: extractedTimeZone?.type === 'fixed' ? extractedTimeZone.name : undefined,
+        latitude,
+        longitude,
+        rating,
+      },
+      _.isUndefined,
+    );
+
     if (Object.keys(writes).length > 0) {
       await this.assetRepository.upsertExif(
         updateLockedColumns({

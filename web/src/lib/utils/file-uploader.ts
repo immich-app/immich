@@ -1,8 +1,8 @@
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { uploadManager } from '$lib/managers/upload-manager.svelte';
-import { UploadState } from '$lib/models/upload-asset';
 import { uploadAssetsStore } from '$lib/stores/upload';
 import { user } from '$lib/stores/user.store';
+import { UploadState } from '$lib/types';
 import { uploadRequest } from '$lib/utils';
 import { addAssetsToAlbum } from '$lib/utils/asset-utils';
 import { ExecutorQueue } from '$lib/utils/executor-queue';
