@@ -114,39 +114,26 @@ class TransformManager implements EditToolManager {
 
     if (this.checkCropEdits()) {
       // Convert from display coordinates to loaded preview image coordinates
-      let { x, y, width, height } = this.getRegionInPreviewCoords(this.region);
+      let cropRegion = this.getRegionInPreviewCoords(this.region);
 
       // Transform crop coordinates to account for mirroring
       // The preview shows the mirrored image, but crop is applied before mirror on the server
       // So we need to "unmirror" the crop coordinates
-      if (this.mirrorHorizontal) {
-        x = this.cropImageSize.width - x - width;
-      }
+      cropRegion = this.applyMirrorToCoords(cropRegion, this.cropImageSize);
 
-      if (this.mirrorVertical) {
-        y = this.cropImageSize.height - y - height;
-      }
-
-      const converted = this.convertRegion({
-        region: { x, y, width, height },
+      // Convert from preview image coordinates to original image coordinates
+      cropRegion = this.convertRegion({
+        region: cropRegion,
         from: this.cropImageSize,
         to: this.originalImageSize,
       });
 
-      x = converted.x;
-      y = converted.y;
-      width = converted.width;
-      height = converted.height;
-
-      // fix possible out-of-bounds due to rounding errors
-      x = Math.max(0, Math.min(x, this.originalImageSize.width - width));
-      y = Math.max(0, Math.min(y, this.originalImageSize.height - height));
-      width = Math.min(width, this.originalImageSize.width - x);
-      height = Math.min(height, this.originalImageSize.height - y);
+      // Constrain to original image bounds (fixes possible rounding errors)
+      cropRegion = this.constrainToBounds(cropRegion, this.originalImageSize);
 
       edits.push({
         action: AssetEditAction.Crop,
-        parameters: { x, y, width, height },
+        parameters: cropRegion,
       });
     }
 
@@ -289,10 +276,12 @@ class TransformManager implements EditToolManager {
     const canvasW = this.cropAreaEl.clientWidth;
     const canvasH = this.cropAreaEl.clientHeight;
 
-    let newWidth = this.region.width;
-    let newHeight = this.region.height;
+    // Calculate new dimensions with aspect ratio
+    const { newWidth: w, newHeight: h } = this.keepAspectRatio(this.region.width, this.region.height, aspectRatio);
 
-    const { newWidth: w, newHeight: h } = this.keepAspectRatio(newWidth, newHeight, aspectRatio);
+    // Scale down if needed to fit in canvas
+    let newWidth = w;
+    let newHeight = h;
 
     if (w > canvasW) {
       newWidth = canvasW;
@@ -300,22 +289,15 @@ class TransformManager implements EditToolManager {
     } else if (h > canvasH) {
       newHeight = canvasH;
       newWidth = canvasH * (w / h);
-    } else {
-      newWidth = w;
-      newHeight = h;
     }
 
-    const newX = Math.max(0, Math.min(this.region.x, canvasW - newWidth));
-    const newY = Math.max(0, Math.min(this.region.y, canvasH - newHeight));
-
-    const newCrop = {
+    // Constrain position to keep crop area within canvas
+    return {
+      x: Math.max(0, Math.min(this.region.x, canvasW - newWidth)),
+      y: Math.max(0, Math.min(this.region.y, canvasH - newHeight)),
       width: newWidth,
       height: newHeight,
-      x: newX,
-      y: newY,
     };
-
-    return newCrop;
   }
 
   animateCropChange(element: HTMLElement, from: Region, to: Region, duration = 100) {
@@ -355,6 +337,28 @@ class TransformManager implements EditToolManager {
     }
 
     return { newWidth, newHeight };
+  }
+
+  // Calculate constrained dimensions based on aspect ratio and limits
+  getConstrainedDimensions(
+    desiredWidth: number,
+    desiredHeight: number,
+    maxWidth: number,
+    maxHeight: number,
+    minSize = 50,
+  ) {
+    const { newWidth, newHeight } = this.adjustDimensions(
+      desiredWidth,
+      desiredHeight,
+      this.cropAspectRatio,
+      maxWidth,
+      maxHeight,
+      minSize,
+    );
+    return {
+      width: Math.max(minSize, Math.min(newWidth, maxWidth)),
+      height: Math.max(minSize, Math.min(newHeight, maxHeight)),
+    };
   }
 
   adjustDimensions(
@@ -526,22 +530,13 @@ class TransformManager implements EditToolManager {
       return 1;
     }
 
-    const containerWidth = cropArea?.clientWidth ?? 0;
-    const containerHeight = cropArea?.clientHeight ?? 0;
+    const containerWidth = cropArea.clientWidth;
+    const containerHeight = cropArea.clientHeight;
 
-    const imageAspectRatio = img.width / img.height;
-    let scale: number;
-
-    if (imageAspectRatio > 1) {
-      scale = containerWidth / img.width;
-      if (img.height * scale > containerHeight) {
-        scale = containerHeight / img.height;
-      }
-    } else {
+    // Fit image to container while maintaining aspect ratio
+    let scale = containerWidth / img.width;
+    if (img.height * scale > containerHeight) {
       scale = containerHeight / img.height;
-      if (img.width * scale > containerWidth) {
-        scale = containerWidth / img.width;
-      }
     }
 
     return scale;
@@ -549,26 +544,23 @@ class TransformManager implements EditToolManager {
 
   normalizeCropArea(scale: number) {
     const img = this.imgElement;
-    const crop = { ...this.region };
-
     if (!img) {
-      return crop;
+      return { ...this.region };
     }
 
-    const prevScale = this.cropImageScale;
-    const scaleRatio = scale / prevScale;
+    const scaleRatio = scale / this.cropImageScale;
+    const scaledRegion = {
+      x: this.region.x * scaleRatio,
+      y: this.region.y * scaleRatio,
+      width: this.region.width * scaleRatio,
+      height: this.region.height * scaleRatio,
+    };
 
-    crop.x *= scaleRatio;
-    crop.y *= scaleRatio;
-    crop.width *= scaleRatio;
-    crop.height *= scaleRatio;
-
-    crop.width = Math.min(crop.width, img.width * scale);
-    crop.height = Math.min(crop.height, img.height * scale);
-    crop.x = Math.max(0, Math.min(crop.x, img.width * scale - crop.width));
-    crop.y = Math.max(0, Math.min(crop.y, img.height * scale - crop.height));
-
-    return crop;
+    // Constrain to scaled image bounds
+    return this.constrainToBounds(scaledRegion, {
+      width: img.width * scale,
+      height: img.height * scale,
+    });
   }
 
   resizeCanvas() {
@@ -677,6 +669,15 @@ class TransformManager implements EditToolManager {
     return { mouseX: offsetX, mouseY: offsetY };
   }
 
+  // Boundary detection helpers
+  private isInRange(value: number, target: number, sensitivity: number): boolean {
+    return value >= target - sensitivity && value <= target + sensitivity;
+  }
+
+  private isWithinBounds(value: number, min: number, max: number): boolean {
+    return value >= min && value <= max;
+  }
+
   isOnCropBoundary(mouseX: number, mouseY: number) {
     const { x, y, width, height } = this.region;
     const sensitivity = 10;
@@ -697,34 +698,21 @@ class TransformManager implements EditToolManager {
       };
     }
 
-    const onLeftBoundary =
-      mouseX >= x - sensitivity && mouseX <= x + sensitivity && mouseY >= y && mouseY <= y + height;
+    const onLeftBoundary = this.isInRange(mouseX, x, sensitivity) && this.isWithinBounds(mouseY, y, y + height);
     const onRightBoundary =
-      mouseX >= x + width - sensitivity && mouseX <= x + width + sensitivity && mouseY >= y && mouseY <= y + height;
-    const onTopBoundary = mouseY >= y - sensitivity && mouseY <= y + sensitivity && mouseX >= x && mouseX <= x + width;
+      this.isInRange(mouseX, x + width, sensitivity) && this.isWithinBounds(mouseY, y, y + height);
+    const onTopBoundary = this.isInRange(mouseY, y, sensitivity) && this.isWithinBounds(mouseX, x, x + width);
     const onBottomBoundary =
-      mouseY >= y + height - sensitivity && mouseY <= y + height + sensitivity && mouseX >= x && mouseX <= x + width;
+      this.isInRange(mouseY, y + height, sensitivity) && this.isWithinBounds(mouseX, x, x + width);
 
     const onTopLeftCorner =
-      mouseX >= x - cornerSensitivity &&
-      mouseX <= x + cornerSensitivity &&
-      mouseY >= y - cornerSensitivity &&
-      mouseY <= y + cornerSensitivity;
+      this.isInRange(mouseX, x, cornerSensitivity) && this.isInRange(mouseY, y, cornerSensitivity);
     const onTopRightCorner =
-      mouseX >= x + width - cornerSensitivity &&
-      mouseX <= x + width + cornerSensitivity &&
-      mouseY >= y - cornerSensitivity &&
-      mouseY <= y + cornerSensitivity;
+      this.isInRange(mouseX, x + width, cornerSensitivity) && this.isInRange(mouseY, y, cornerSensitivity);
     const onBottomLeftCorner =
-      mouseX >= x - cornerSensitivity &&
-      mouseX <= x + cornerSensitivity &&
-      mouseY >= y + height - cornerSensitivity &&
-      mouseY <= y + height + cornerSensitivity;
+      this.isInRange(mouseX, x, cornerSensitivity) && this.isInRange(mouseY, y + height, cornerSensitivity);
     const onBottomRightCorner =
-      mouseX >= x + width - cornerSensitivity &&
-      mouseX <= x + width + cornerSensitivity &&
-      mouseY >= y + height - cornerSensitivity &&
-      mouseY <= y + height + cornerSensitivity;
+      this.isInRange(mouseX, x + width, cornerSensitivity) && this.isInRange(mouseY, y + height, cornerSensitivity);
 
     return {
       onLeftBoundary,
@@ -788,14 +776,8 @@ class TransformManager implements EditToolManager {
       return;
     }
 
-    const crop = this.region;
-    const { x, y } = this.dragOffset;
-
-    let newX = mouseX - x;
-    let newY = mouseY - y;
-
-    newX = Math.max(0, Math.min(cropArea.clientWidth - crop.width, newX));
-    newY = Math.max(0, Math.min(cropArea.clientHeight - crop.height, newY));
+    const newX = Math.max(0, Math.min(mouseX - this.dragOffset.x, cropArea.clientWidth - this.region.width));
+    const newY = Math.max(0, Math.min(mouseY - this.dragOffset.y, cropArea.clientHeight - this.region.height));
 
     this.region = {
       ...this.region,
@@ -817,30 +799,30 @@ class TransformManager implements EditToolManager {
 
     const { x, y, width, height } = crop;
     const minSize = 50;
-    let newWidth = width;
-    let newHeight = height;
+    let newRegion = { ...crop };
+
     switch (resizeSideValue) {
       case 'left': {
-        newWidth = width + x - mouseX;
-        newHeight = height;
-        if (newWidth >= minSize && mouseX >= 0) {
-          const { newWidth: w, newHeight: h } = this.keepAspectRatio(newWidth, newHeight);
-          this.region = {
-            ...this.region,
-            width: Math.max(minSize, Math.min(w, canvas.clientWidth)),
-            height: Math.max(minSize, Math.min(h, canvas.clientHeight)),
-            x: Math.max(0, x + width - this.region.width),
+        const desiredWidth = width + (x - mouseX);
+        if (desiredWidth >= minSize && mouseX >= 0) {
+          const { newWidth: w, newHeight: h } = this.keepAspectRatio(desiredWidth, height);
+          const finalWidth = Math.max(minSize, Math.min(w, canvas.clientWidth));
+          const finalHeight = Math.max(minSize, Math.min(h, canvas.clientHeight));
+          newRegion = {
+            x: Math.max(0, x + width - finalWidth),
+            y,
+            width: finalWidth,
+            height: finalHeight,
           };
         }
         break;
       }
       case 'right': {
-        newWidth = mouseX - x;
-        newHeight = height;
-        if (newWidth >= minSize && mouseX <= canvas.clientWidth) {
-          const { newWidth: w, newHeight: h } = this.keepAspectRatio(newWidth, newHeight);
-          this.region = {
-            ...this.region,
+        const desiredWidth = mouseX - x;
+        if (desiredWidth >= minSize && mouseX <= canvas.clientWidth) {
+          const { newWidth: w, newHeight: h } = this.keepAspectRatio(desiredWidth, height);
+          newRegion = {
+            ...newRegion,
             width: Math.max(minSize, Math.min(w, canvas.clientWidth - x)),
             height: Math.max(minSize, Math.min(h, canvas.clientHeight)),
           };
@@ -848,19 +830,18 @@ class TransformManager implements EditToolManager {
         break;
       }
       case 'top': {
-        newHeight = height + y - mouseY;
-        newWidth = width;
-        if (newHeight >= minSize && mouseY >= 0) {
+        const desiredHeight = height + (y - mouseY);
+        if (desiredHeight >= minSize && mouseY >= 0) {
           const { newWidth: w, newHeight: h } = this.adjustDimensions(
-            newWidth,
-            newHeight,
+            width,
+            desiredHeight,
             this.cropAspectRatio,
             canvas.clientWidth,
             canvas.clientHeight,
             minSize,
           );
-          this.region = {
-            ...this.region,
+          newRegion = {
+            x,
             y: Math.max(0, y + height - h),
             width: w,
             height: h,
@@ -869,19 +850,18 @@ class TransformManager implements EditToolManager {
         break;
       }
       case 'bottom': {
-        newHeight = mouseY - y;
-        newWidth = width;
-        if (newHeight >= minSize && mouseY <= canvas.clientHeight) {
+        const desiredHeight = mouseY - y;
+        if (desiredHeight >= minSize && mouseY <= canvas.clientHeight) {
           const { newWidth: w, newHeight: h } = this.adjustDimensions(
-            newWidth,
-            newHeight,
+            width,
+            desiredHeight,
             this.cropAspectRatio,
             canvas.clientWidth,
             canvas.clientHeight - y,
             minSize,
           );
-          this.region = {
-            ...this.region,
+          newRegion = {
+            ...newRegion,
             width: w,
             height: h,
           };
@@ -889,76 +869,75 @@ class TransformManager implements EditToolManager {
         break;
       }
       case 'top-left': {
-        newWidth = width + x - Math.max(mouseX, 0);
-        newHeight = height + y - Math.max(mouseY, 0);
+        const desiredWidth = width + (x - Math.max(mouseX, 0));
+        const desiredHeight = height + (y - Math.max(mouseY, 0));
         const { newWidth: w, newHeight: h } = this.adjustDimensions(
-          newWidth,
-          newHeight,
+          desiredWidth,
+          desiredHeight,
           this.cropAspectRatio,
           canvas.clientWidth,
           canvas.clientHeight,
           minSize,
         );
-        this.region = {
-          width: w,
-          height: h,
+        newRegion = {
           x: Math.max(0, x + width - w),
           y: Math.max(0, y + height - h),
+          width: w,
+          height: h,
         };
-
         break;
       }
       case 'top-right': {
-        newWidth = Math.max(mouseX, 0) - x;
-        newHeight = height + y - Math.max(mouseY, 0);
+        const desiredWidth = Math.max(mouseX, 0) - x;
+        const desiredHeight = height + (y - Math.max(mouseY, 0));
         const { newWidth: w, newHeight: h } = this.adjustDimensions(
-          newWidth,
-          newHeight,
+          desiredWidth,
+          desiredHeight,
           this.cropAspectRatio,
           canvas.clientWidth - x,
           y + height,
           minSize,
         );
-        this.region = {
-          ...this.region,
+        newRegion = {
+          x,
+          y: Math.max(0, y + height - h),
           width: w,
           height: h,
-          y: Math.max(0, y + height - h),
         };
         break;
       }
       case 'bottom-left': {
-        newWidth = width + x - Math.max(mouseX, 0);
-        newHeight = Math.max(mouseY, 0) - y;
+        const desiredWidth = width + (x - Math.max(mouseX, 0));
+        const desiredHeight = Math.max(mouseY, 0) - y;
         const { newWidth: w, newHeight: h } = this.adjustDimensions(
-          newWidth,
-          newHeight,
+          desiredWidth,
+          desiredHeight,
           this.cropAspectRatio,
           canvas.clientWidth,
           canvas.clientHeight - y,
           minSize,
         );
-        this.region = {
-          ...this.region,
+        newRegion = {
+          x: Math.max(0, x + width - w),
+          y,
           width: w,
           height: h,
-          x: Math.max(0, x + width - w),
         };
         break;
       }
       case 'bottom-right': {
-        newWidth = Math.max(mouseX, 0) - x;
-        newHeight = Math.max(mouseY, 0) - y;
+        const desiredWidth = Math.max(mouseX, 0) - x;
+        const desiredHeight = Math.max(mouseY, 0) - y;
         const { newWidth: w, newHeight: h } = this.adjustDimensions(
-          newWidth,
-          newHeight,
+          desiredWidth,
+          desiredHeight,
           this.cropAspectRatio,
           canvas.clientWidth - x,
           canvas.clientHeight - y,
           minSize,
         );
-        this.region = {
-          ...this.region,
+        newRegion = {
+          ...newRegion,
           width: w,
           height: h,
         };
@@ -966,10 +945,11 @@ class TransformManager implements EditToolManager {
       }
     }
 
+    // Constrain the region to canvas bounds
     this.region = {
-      ...this.region,
-      x: Math.max(0, Math.min(this.region.x, canvas.clientWidth - this.region.width)),
-      y: Math.max(0, Math.min(this.region.y, canvas.clientHeight - this.region.height)),
+      ...newRegion,
+      x: Math.max(0, Math.min(newRegion.x, canvas.clientWidth - newRegion.width)),
+      y: Math.max(0, Math.min(newRegion.y, canvas.clientHeight - newRegion.height)),
     };
 
     this.draw();
@@ -1084,6 +1064,7 @@ class TransformManager implements EditToolManager {
     this.setAspectRatio(`${heightRatio}:${widthRatio}`);
   }
 
+  // Coordinate conversion helpers
   convertRegion(settings: RegionConvertParams) {
     const { region, from: fromSize, to: toSize } = settings;
     const scaleX = toSize.width / fromSize.width;
@@ -1103,6 +1084,32 @@ class TransformManager implements EditToolManager {
       y: Math.round(region.y / this.cropImageScale),
       width: Math.round(region.width / this.cropImageScale),
       height: Math.round(region.height / this.cropImageScale),
+    };
+  }
+
+  // Apply mirror transformation to coordinates
+  applyMirrorToCoords(region: Region, imageSize: ImageDimensions): Region {
+    let { x, y } = region;
+    const { width, height } = region;
+
+    if (this.mirrorHorizontal) {
+      x = imageSize.width - x - width;
+    }
+    if (this.mirrorVertical) {
+      y = imageSize.height - y - height;
+    }
+
+    return { x, y, width, height };
+  }
+
+  // Constrain region to bounds
+  constrainToBounds(region: Region, bounds: ImageDimensions): Region {
+    const { x, y, width, height } = region;
+    return {
+      x: Math.max(0, Math.min(x, bounds.width - width)),
+      y: Math.max(0, Math.min(y, bounds.height - height)),
+      width: Math.min(width, bounds.width - Math.max(0, x)),
+      height: Math.min(height, bounds.height - Math.max(0, y)),
     };
   }
 }
