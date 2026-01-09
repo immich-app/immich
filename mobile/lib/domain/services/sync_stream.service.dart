@@ -120,7 +120,6 @@ class SyncStreamService {
             await _handleRemoteTrashed(trashedAssetsMap, reviewMode);
             await _applyRemoteRestoreToLocal();
             if (reviewMode) {
-              await _trashSyncRepository.deleteOutdated();
               final result = await _trashSyncRepository.deleteOutdated();
               _logger.info("syncTrashedAssets, outdated deleted: $result");
             }
