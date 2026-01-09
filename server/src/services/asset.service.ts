@@ -549,6 +549,10 @@ export class AssetService extends BaseService {
       throw new BadRequestException('Editing GIF images is not supported');
     }
 
+    if (asset.originalPath?.toLowerCase().endsWith('.svg')) {
+      throw new BadRequestException('Editing SVG images is not supported');
+    }
+
     // check that crop parameters will not go out of bounds
     const { width: assetWidth, height: assetHeight } = getDimensions(asset.exifInfo!);
 

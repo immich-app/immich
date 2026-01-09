@@ -124,6 +124,7 @@
         (asset.originalPath && asset.originalPath.toLowerCase().endsWith('.insp'))
       ) &&
       !(asset.originalPath && asset.originalPath.toLowerCase().endsWith('.gif')) &&
+      !(asset.originalPath && asset.originalPath.toLowerCase().endsWith('.svg')) &&
       !asset.livePhotoVideoId,
   );
 </script>
