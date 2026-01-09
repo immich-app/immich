@@ -188,6 +188,15 @@ export class StorageTemplateService extends BaseService {
       const storageLabel = user?.storageLabel || null;
       const filename = asset.originalFileName || asset.id;
       await this.moveAsset(asset, { storageLabel, filename });
+
+      // move motion part of live photo
+      if (asset.livePhotoVideoId) {
+        const livePhotoVideo = await this.assetJobRepository.getForStorageTemplateJob(asset.livePhotoVideoId);
+        if (livePhotoVideo) {
+          const motionFilename = getLivePhotoMotionFilename(filename, livePhotoVideo.originalPath);
+          await this.moveAsset(livePhotoVideo, { storageLabel, filename: motionFilename });
+        }
+      }
     }
 
     this.logger.debug('Cleaning up empty directories...');

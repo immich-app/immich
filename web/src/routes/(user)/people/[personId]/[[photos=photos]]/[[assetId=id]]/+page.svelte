@@ -4,10 +4,12 @@
   import { clickOutside } from '$lib/actions/click-outside';
   import { listNavigation } from '$lib/actions/list-navigation';
   import { scrollMemoryClearer } from '$lib/actions/scroll-memory';
+  import ActionMenuItem from '$lib/components/ActionMenuItem.svelte';
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
   import EditNameInput from '$lib/components/faces-page/edit-name-input.svelte';
   import MergeFaceSelector from '$lib/components/faces-page/merge-face-selector.svelte';
   import UnMergeFaceSelector from '$lib/components/faces-page/unmerge-face-selector.svelte';
+  import OnEvents from '$lib/components/OnEvents.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
@@ -28,8 +30,8 @@
   import { AppRoute, PersonPageViewMode, QueryParameter, SessionStorageKey } from '$lib/constants';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-  import PersonEditBirthDateModal from '$lib/modals/PersonEditBirthDateModal.svelte';
   import PersonMergeSuggestionModal from '$lib/modals/PersonMergeSuggestionModal.svelte';
+  import { getPersonActions } from '$lib/services/person.service';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { locale } from '$lib/stores/preferences.store';
@@ -50,7 +52,6 @@
     mdiAccountBoxOutline,
     mdiAccountMultipleCheckOutline,
     mdiArrowLeft,
-    mdiCalendarEditOutline,
     mdiDotsVertical,
     mdiEyeOffOutline,
     mdiEyeOutline,
@@ -79,7 +80,6 @@
   let viewMode: PersonPageViewMode = $state(PersonPageViewMode.VIEW_ASSETS);
   let isEditingName = $state(false);
   let previousRoute: string = $state(AppRoute.EXPLORE);
-  let people: PersonResponseDto[] = [];
   let personMerge1: PersonResponseDto | undefined = $state();
   let personMerge2: PersonResponseDto | undefined = $state();
   let potentialMergePeople: PersonResponseDto[] = $state([]);
@@ -223,9 +223,8 @@
       return { merged: false };
     }
 
-    const [personToMerge, personToBeMergedInto] = result;
+    const [, personToBeMergedInto] = result;
 
-    people = people.filter((person: PersonResponseDto) => person.id !== personToMerge.id);
     if (personToBeMergedInto.name != personName && person.id === personToBeMergedInto.id) {
       await updateAssetCount();
       return { merged: true };
@@ -309,22 +308,6 @@
     await changeName();
   };
 
-  const handleSetBirthDate = async () => {
-    const updatedPerson = await modalManager.show(PersonEditBirthDateModal, { person });
-
-    if (!updatedPerson) {
-      return;
-    }
-
-    person = updatedPerson;
-    people = people.map((person: PersonResponseDto) => {
-      if (person.id === updatedPerson.id) {
-        return updatedPerson;
-      }
-      return person;
-    });
-  };
-
   const handleGoBack = async () => {
     viewMode = PersonPageViewMode.VIEW_ASSETS;
     if ($page.url.searchParams.has(QueryParameter.ACTION)) {
@@ -351,7 +334,17 @@
     timelineManager.removeAssets(assetIds);
     assetInteraction.clearMultiselect();
   };
+
+  const onPersonUpdate = (response: PersonResponseDto) => {
+    if (person.id === response.id) {
+      return (person = response);
+    }
+  };
+
+  const { SetDateOfBirth } = $derived(getPersonActions($t, person));
 </script>
+
+<OnEvents {onPersonUpdate} />
 
 <main
   class="relative z-0 h-dvh overflow-hidden px-2 md:px-6 md:pt-(--navbar-height-md) pt-(--navbar-height)"
@@ -535,7 +528,7 @@
               icon={person.isHidden ? mdiEyeOutline : mdiEyeOffOutline}
               onClick={() => toggleHidePerson()}
             />
-            <MenuOption text={$t('set_date_of_birth')} icon={mdiCalendarEditOutline} onClick={handleSetBirthDate} />
+            <ActionMenuItem action={SetDateOfBirth} />
             <MenuOption
               text={$t('merge_people')}
               icon={mdiAccountMultipleCheckOutline}

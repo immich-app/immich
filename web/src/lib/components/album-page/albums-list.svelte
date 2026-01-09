@@ -6,24 +6,22 @@
   import RightClickContextMenu from '$lib/components/shared-components/context-menu/right-click-context-menu.svelte';
   import AlbumEditModal from '$lib/modals/AlbumEditModal.svelte';
   import AlbumShareModal from '$lib/modals/AlbumShareModal.svelte';
-  import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
   import { handleDeleteAlbum, handleDownloadAlbum } from '$lib/services/album.service';
   import {
     AlbumFilter,
     AlbumGroupBy,
     AlbumSortBy,
     AlbumViewMode,
-    SortOrder,
     locale,
+    SortOrder,
     type AlbumViewSettings,
   } from '$lib/stores/preferences.store';
   import { user } from '$lib/stores/user.store';
   import { userInteraction } from '$lib/stores/user.svelte';
   import { getSelectedAlbumGroupOption, sortAlbums, stringToSortOrder, type AlbumGroup } from '$lib/utils/album-utils';
   import type { ContextMenuPosition } from '$lib/utils/context-menu';
-  import { handleError } from '$lib/utils/handle-error';
   import { normalizeSearchString } from '$lib/utils/string-utils';
-  import { addUsersToAlbum, type AlbumResponseDto, type AlbumUserAddDto } from '@immich/sdk';
+  import { type AlbumResponseDto, type SharedLinkResponseDto } from '@immich/sdk';
   import { modalManager } from '@immich/ui';
   import { mdiDeleteOutline, mdiDownload, mdiRenameOutline, mdiShareVariantOutline } from '@mdi/js';
   import { groupBy } from 'lodash-es';
@@ -200,23 +198,7 @@
       }
 
       case 'share': {
-        const result = await modalManager.show(AlbumShareModal, { album: selectedAlbum });
-        switch (result?.action) {
-          case 'sharedUsers': {
-            await handleAddUsers(selectedAlbum, result.data);
-            break;
-          }
-
-          case 'sharedLink': {
-            const success = await modalManager.show(SharedLinkCreateModal, { albumId: selectedAlbum.id });
-            if (success) {
-              selectedAlbum.shared = true;
-              selectedAlbum.hasSharedLink = true;
-              onUpdate(selectedAlbum);
-            }
-            break;
-          }
-        }
+        await modalManager.show(AlbumShareModal, { album: selectedAlbum });
         break;
       }
 
@@ -251,20 +233,6 @@
     sharedAlbums = findAndUpdate(sharedAlbums, album);
   };
 
-  const handleAddUsers = async (album: AlbumResponseDto, albumUsers: AlbumUserAddDto[]) => {
-    try {
-      const updatedAlbum = await addUsersToAlbum({
-        id: album.id,
-        addUsersDto: {
-          albumUsers,
-        },
-      });
-      onUpdate(updatedAlbum);
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_add_album_users'));
-    }
-  };
-
   const onAlbumUpdate = (album: AlbumResponseDto) => {
     onUpdate(album);
     userInteraction.recentAlbums = findAndUpdate(userInteraction.recentAlbums || [], album);
@@ -274,9 +242,15 @@
     ownedAlbums = ownedAlbums.filter(({ id }) => id !== album.id);
     sharedAlbums = sharedAlbums.filter(({ id }) => id !== album.id);
   };
+
+  const onSharedLinkCreate = (sharedLink: SharedLinkResponseDto) => {
+    if (sharedLink.album) {
+      onUpdate(sharedLink.album);
+    }
+  };
 </script>
 
-<OnEvents {onAlbumUpdate} {onAlbumDelete} />
+<OnEvents {onAlbumUpdate} {onAlbumDelete} {onSharedLinkCreate} />
 
 {#if albums.length > 0}
   {#if userSettings.view === AlbumViewMode.Cover}

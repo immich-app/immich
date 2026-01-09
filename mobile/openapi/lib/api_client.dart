@@ -266,8 +266,16 @@ class ApiClient {
           return AssetMediaSizeTypeTransformer().decode(value);
         case 'AssetMediaStatus':
           return AssetMediaStatusTypeTransformer().decode(value);
-        case 'AssetMetadataKey':
-          return AssetMetadataKeyTypeTransformer().decode(value);
+        case 'AssetMetadataBulkDeleteDto':
+          return AssetMetadataBulkDeleteDto.fromJson(value);
+        case 'AssetMetadataBulkDeleteItemDto':
+          return AssetMetadataBulkDeleteItemDto.fromJson(value);
+        case 'AssetMetadataBulkResponseDto':
+          return AssetMetadataBulkResponseDto.fromJson(value);
+        case 'AssetMetadataBulkUpsertDto':
+          return AssetMetadataBulkUpsertDto.fromJson(value);
+        case 'AssetMetadataBulkUpsertItemDto':
+          return AssetMetadataBulkUpsertItemDto.fromJson(value);
         case 'AssetMetadataResponseDto':
           return AssetMetadataResponseDto.fromJson(value);
         case 'AssetMetadataUpsertDto':

@@ -50,4 +50,13 @@ export class InvocationTracker {
   isActive() {
     return this.invocationsStarted !== this.invocationsEnded;
   }
+
+  async invoke<T>(invocable: () => Promise<T>) {
+    const invocation = this.startInvocation();
+    try {
+      return await invocable();
+    } finally {
+      invocation.endInvocation();
+    }
+  }
 }
