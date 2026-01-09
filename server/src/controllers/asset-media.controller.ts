@@ -115,12 +115,7 @@ export class AssetMediaController {
   @ApiConsumes('multipart/form-data')
   @ApiResponse({
     status: 200,
-    description: 'Asset is a duplicate',
-    type: AssetMediaResponseDto,
-  })
-  @ApiResponse({
-    status: 201,
-    description: 'Asset replaced successfully',
+    description: 'Asset replaced or duplicate detected',
     type: AssetMediaResponseDto,
   })
   @Endpoint({

@@ -2679,9 +2679,6 @@ export function replaceAsset({ id, key, slug, assetMediaReplaceDto }: {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: AssetMediaResponseDto;
-    } | {
-        status: 201;
-        data: AssetMediaResponseDto;
     }>(`/assets/${encodeURIComponent(id)}/original${QS.query(QS.explode({
         key,
         slug
