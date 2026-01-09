@@ -64,7 +64,7 @@ void main() {
     registerFallbackValue(LocalAssetStub.image1);
 
     db = Drift(drift.DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
-    await StoreService.init(storeRepository: DriftStoreRepository(db));
+    await StoreService.init(storeRepository: DriftStoreRepository(db), listenUpdates: false);
   });
 
   tearDownAll(() async {
@@ -150,7 +150,10 @@ void main() {
     when(() => mockLocalFilesManagerRepo.moveToTrash(any())).thenAnswer((_) async => true);
     when(() => mockLocalFilesManagerRepo.restoreAssetsFromTrash(any())).thenAnswer((_) async => []);
     when(() => mockStorageRepo.getAssetEntityForAsset(any())).thenAnswer((_) async => null);
+    when(() => mockTrashSyncRepo.upsertReviewCandidates(any())).thenAnswer((_) async {});
+    when(() => mockTrashSyncRepo.deleteOutdated()).thenAnswer((_) async => 0);
     await Store.put(StoreKey.manageLocalMediaAndroid, false);
+    await Store.put(StoreKey.reviewOutOfSyncChangesAndroid, false);
   });
 
   Future<void> simulateEvents(List<SyncEvent> events) async {
@@ -392,7 +395,9 @@ void main() {
         'album-a': [localAsset],
         'album-b': [mergedAsset],
       };
-      when(() => mockLocalAssetRepo.getAssetsFromBackupAlbums(any<Map<String, DateTime>>())).thenAnswer((invocation) async {
+      when(() => mockLocalAssetRepo.getAssetsFromBackupAlbums(any<Map<String, DateTime>>())).thenAnswer((
+        invocation,
+      ) async {
         final Map<String, DateTime> trashedAssetsMap = invocation.positionalArguments.first as Map<String, DateTime>;
         expect(
           trashedAssetsMap,
@@ -444,6 +449,47 @@ void main() {
 
       verify(() => mockTrashedLocalAssetRepo.trashLocalAsset(assetsByAlbum)).called(1);
       verify(() => mockSyncApiRepo.ack(['asset-remote-only-3'])).called(1);
+    });
+
+    test("uses review mode without moving assets to trash", () async {
+      await Store.put(StoreKey.reviewOutOfSyncChangesAndroid, true);
+      when(() => mockLocalFilesManagerRepo.hasManageMediaPermission()).thenAnswer((_) async => true);
+      final localAsset = LocalAssetStub.image1.copyWith(id: 'local-only', checksum: 'checksum-review', remoteId: null);
+      final assetsByAlbum = {
+        'album-a': [localAsset],
+      };
+      when(
+        () => mockLocalAssetRepo.getAssetsFromBackupAlbums(any<Map<String, DateTime>>()),
+      ).thenAnswer((_) async => assetsByAlbum);
+
+      final events = [
+        SyncStreamStub.assetTrashed(
+          id: 'remote-1',
+          checksum: localAsset.checksum!,
+          ack: 'asset-remote-review-1',
+          trashedAt: DateTime(2025, 5, 1),
+        ),
+      ];
+
+      await simulateEvents(events);
+
+      verify(() => mockTrashSyncRepo.upsertReviewCandidates(any())).called(1);
+      verifyNever(() => mockLocalFilesManagerRepo.moveToTrash(any()));
+      verifyNever(() => mockTrashedLocalAssetRepo.trashLocalAsset(any()));
+    });
+
+    test("does not check MANAGE_MEDIA permission on non-Android platforms", () async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+      addTearDown(() => debugDefaultTargetPlatformOverride = TargetPlatform.android);
+
+      await Store.put(StoreKey.manageLocalMediaAndroid, true);
+      await Store.put(StoreKey.reviewOutOfSyncChangesAndroid, false);
+
+      final events = [SyncStreamStub.assetModified(id: 'remote-1', checksum: 'checksum-1', ack: 'asset-mod-ack-1')];
+
+      await simulateEvents(events);
+
+      verifyNever(() => mockLocalFilesManagerRepo.hasManageMediaPermission());
     });
 
     test("skips device trashing when no local assets match the remote trash payload", () async {
