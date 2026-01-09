@@ -1,6 +1,6 @@
 <script lang="ts">
   import { IconButton } from '@immich/ui';
-  import { mdiPencil } from '@mdi/js';
+  import { mdiTune } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
   interface Props {
@@ -14,7 +14,7 @@
   color="secondary"
   shape="round"
   variant="ghost"
-  icon={mdiPencil}
+  icon={mdiTune}
   aria-label={$t('editor')}
   onclick={() => onAction()}
 />

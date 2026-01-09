@@ -1,9 +1,9 @@
 <script lang="ts">
   import { transformManager } from '$lib/managers/edit/transform-manager.svelte';
-  import { getAssetOriginalUrl } from '$lib/utils';
+  import { getAssetThumbnailUrl } from '$lib/utils';
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
-  import type { AssetResponseDto } from '@immich/sdk';
+  import { AssetMediaSize, type AssetResponseDto } from '@immich/sdk';
 
   interface Props {
     asset: AssetResponseDto;
@@ -13,7 +13,9 @@
 
   let canvasContainer = $state<HTMLElement | null>(null);
 
-  let imageSrc = $derived(getAssetOriginalUrl({ id: asset.id, cacheKey: asset.thumbhash, edited: false }));
+  let imageSrc = $derived(
+    getAssetThumbnailUrl({ id: asset.id, cacheKey: asset.thumbhash, edited: false, size: AssetMediaSize.Preview }),
+  );
 
   let imageTransform = $derived.by(() => {
     const transforms: string[] = [];

@@ -44,7 +44,7 @@
   function ratioSelected(ratio: AspectRatioOption): boolean {
     let currentRatioRotated;
     if (ratio.value === 'original') {
-      const [width, height] = transformManager.cropImageSize;
+      const { width, height } = transformManager.cropImageSize;
       // Account for rotation when comparing to original
       if (isRotated) {
         currentRatioRotated = `${height}:${width}`;
@@ -59,7 +59,7 @@
   function selectAspectRatio(ratio: AspectRatioOption) {
     let appliedRatio;
     if (ratio.value === 'original') {
-      const [width, height] = transformManager.cropImageSize;
+      const { width, height } = transformManager.cropImageSize;
       appliedRatio = `${width}:${height}`;
     } else {
       appliedRatio = rotatedRatio(ratio);
@@ -131,12 +131,14 @@
           {#if ratio.isFree}
             <!-- Free crop icon with dashed border -->
             <div
-              class="w-6 h-6 border-2 border-dashed rounded-xs {ratioSelected(ratio) ? 'border-black' : 'border-white'}"
+              class="w-6 h-6 border-2 border-dashed rounded-xs flex-shrink-0 {ratioSelected(ratio)
+                ? 'border-black'
+                : 'border-white'}"
             ></div>
           {:else}
             <!-- Aspect ratio box -->
             <div
-              class="border-2 rounded-xs {ratioSelected(ratio) ? 'border-black' : 'border-white'}"
+              class="border-2 rounded-xs flex-shrink-0 {ratioSelected(ratio) ? 'border-black' : 'border-white'}"
               style="width: {ratio.width}px; height: {ratio.height}px;"
             ></div>
           {/if}
