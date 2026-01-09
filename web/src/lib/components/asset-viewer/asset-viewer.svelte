@@ -465,6 +465,7 @@
         onCopyImage={copyImage}
         preAction={handlePreAction}
         onAction={handleAction}
+        onEdit={showEditor}
         {onUndoDelete}
         onEdit={showEditor}
         onRunJob={handleRunJob}
