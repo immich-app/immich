@@ -1,5 +1,5 @@
 [tools]
-flutter = "3.35.7"
+flutter = "3.38.5"
 
 [tools."github:CQLabs/homebrew-dcm"]
 version = "1.30.0"
