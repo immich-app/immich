@@ -2528,6 +2528,16 @@
           "required": true
         },
         "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetMediaResponseDto"
+                }
+              }
+            },
+            "description": "Asset is a duplicate"
+          },
           "201": {
             "content": {
               "application/json": {
@@ -2536,7 +2546,7 @@
                 }
               }
             },
-            "description": ""
+            "description": "Asset uploaded successfully"
           }
         },
         "security": [
@@ -3743,7 +3753,7 @@
                 }
               }
             },
-            "description": ""
+            "description": "Asset replaced successfully"
           }
         },
         "security": [
