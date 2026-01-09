@@ -266,8 +266,16 @@ class ApiClient {
           return AssetMediaSizeTypeTransformer().decode(value);
         case 'AssetMediaStatus':
           return AssetMediaStatusTypeTransformer().decode(value);
-        case 'AssetMetadataKey':
-          return AssetMetadataKeyTypeTransformer().decode(value);
+        case 'AssetMetadataBulkDeleteDto':
+          return AssetMetadataBulkDeleteDto.fromJson(value);
+        case 'AssetMetadataBulkDeleteItemDto':
+          return AssetMetadataBulkDeleteItemDto.fromJson(value);
+        case 'AssetMetadataBulkResponseDto':
+          return AssetMetadataBulkResponseDto.fromJson(value);
+        case 'AssetMetadataBulkUpsertDto':
+          return AssetMetadataBulkUpsertDto.fromJson(value);
+        case 'AssetMetadataBulkUpsertItemDto':
+          return AssetMetadataBulkUpsertItemDto.fromJson(value);
         case 'AssetMetadataResponseDto':
           return AssetMetadataResponseDto.fromJson(value);
         case 'AssetMetadataUpsertDto':
@@ -482,12 +490,14 @@ class ApiClient {
           return PlacesResponseDto.fromJson(value);
         case 'PluginActionResponseDto':
           return PluginActionResponseDto.fromJson(value);
-        case 'PluginContext':
-          return PluginContextTypeTransformer().decode(value);
+        case 'PluginContextType':
+          return PluginContextTypeTypeTransformer().decode(value);
         case 'PluginFilterResponseDto':
           return PluginFilterResponseDto.fromJson(value);
         case 'PluginResponseDto':
           return PluginResponseDto.fromJson(value);
+        case 'PluginTriggerResponseDto':
+          return PluginTriggerResponseDto.fromJson(value);
         case 'PluginTriggerType':
           return PluginTriggerTypeTypeTransformer().decode(value);
         case 'PurchaseResponse':

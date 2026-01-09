@@ -81,7 +81,7 @@ class _BaseDraggableScrollableSheetState extends ConsumerState<BaseBottomSheet> 
                 child: CustomScrollView(
                   controller: scrollController,
                   slivers: [
-                    const SliverPersistentHeader(delegate: _DragHandleDelegate(), pinned: true),
+                    const SliverToBoxAdapter(child: _DragHandle()),
                     if (widget.actions.isNotEmpty)
                       SliverToBoxAdapter(
                         child: Column(
@@ -108,31 +108,13 @@ class _BaseDraggableScrollableSheetState extends ConsumerState<BaseBottomSheet> 
   }
 }
 
-class _DragHandleDelegate extends SliverPersistentHeaderDelegate {
-  const _DragHandleDelegate();
-
-  @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
-    return const _DragHandle();
-  }
-
-  @override
-  bool shouldRebuild(_DragHandleDelegate oldDelegate) => false;
-
-  @override
-  double get minExtent => 50.0;
-
-  @override
-  double get maxExtent => 50.0;
-}
-
 class _DragHandle extends StatelessWidget {
   const _DragHandle();
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 50,
+      height: 38,
       child: Center(
         child: SizedBox(
           width: 32,

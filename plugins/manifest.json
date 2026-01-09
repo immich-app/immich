@@ -1,30 +1,36 @@
 {
   "name": "immich-core",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "title": "Immich Core",
   "description": "Core workflow capabilities for Immich",
   "author": "Immich Team",
-
   "wasm": {
     "path": "dist/plugin.wasm"
   },
-
   "filters": [
     {
       "methodName": "filterFileName",
       "title": "Filter by filename",
       "description": "Filter assets by filename pattern using text matching or regular expressions",
-      "supportedContexts": ["asset"],
+      "supportedContexts": [
+        "asset"
+      ],
       "schema": {
         "type": "object",
         "properties": {
           "pattern": {
             "type": "string",
+            "title": "Filename pattern",
             "description": "Text or regex pattern to match against filename"
           },
           "matchType": {
             "type": "string",
-            "enum": ["contains", "regex", "exact"],
+            "title": "Match type",
+            "enum": [
+              "contains",
+              "regex",
+              "exact"
+            ],
             "default": "contains",
             "description": "Type of pattern matching to perform"
           },
@@ -34,43 +40,57 @@
             "description": "Whether matching should be case-sensitive"
           }
         },
-        "required": ["pattern"]
+        "required": [
+          "pattern"
+        ]
       }
     },
     {
       "methodName": "filterFileType",
       "title": "Filter by file type",
       "description": "Filter assets by file type",
-      "supportedContexts": ["asset"],
+      "supportedContexts": [
+        "asset"
+      ],
       "schema": {
         "type": "object",
         "properties": {
           "fileTypes": {
             "type": "array",
+            "title": "File types",
             "items": {
               "type": "string",
-              "enum": ["IMAGE", "VIDEO"]
+              "enum": [
+                "image",
+                "video"
+              ]
             },
             "description": "Allowed file types"
           }
         },
-        "required": ["fileTypes"]
+        "required": [
+          "fileTypes"
+        ]
       }
     },
     {
       "methodName": "filterPerson",
       "title": "Filter by person",
       "description": "Filter by detected person",
-      "supportedContexts": ["person"],
+      "supportedContexts": [
+        "person"
+      ],
       "schema": {
         "type": "object",
         "properties": {
           "personIds": {
             "type": "array",
+            "title": "Person IDs",
             "items": {
               "type": "string"
             },
-            "description": "List of person to match"
+            "description": "List of person to match",
+            "subType": "people-picker"
           },
           "matchAny": {
             "type": "boolean",
@@ -78,24 +98,29 @@
             "description": "Match any name (true) or require all names (false)"
           }
         },
-        "required": ["personIds"]
+        "required": [
+          "personIds"
+        ]
       }
     }
   ],
-
   "actions": [
     {
       "methodName": "actionArchive",
       "title": "Archive",
       "description": "Move the asset to archive",
-      "supportedContexts": ["asset"],
+      "supportedContexts": [
+        "asset"
+      ],
       "schema": {}
     },
     {
       "methodName": "actionFavorite",
       "title": "Favorite",
       "description": "Mark the asset as favorite or unfavorite",
-      "supportedContexts": ["asset"],
+      "supportedContexts": [
+        "asset"
+      ],
       "schema": {
         "type": "object",
         "properties": {
@@ -111,16 +136,23 @@
       "methodName": "actionAddToAlbum",
       "title": "Add to Album",
       "description": "Add the item to a specified album",
-      "supportedContexts": ["asset", "person"],
+      "supportedContexts": [
+        "asset",
+        "person"
+      ],
       "schema": {
         "type": "object",
         "properties": {
           "albumId": {
             "type": "string",
-            "description": "Target album ID"
+            "title": "Album ID",
+            "description": "Target album ID",
+            "subType": "album-picker"
           }
         },
-        "required": ["albumId"]
+        "required": [
+          "albumId"
+        ]
       }
     }
   ]

@@ -15,8 +15,10 @@ import 'package:immich_mobile/widgets/common/immich_toast.dart';
 /// - Prompt to delete the asset locally
 class DeletePermanentActionButton extends ConsumerWidget {
   final ActionSource source;
+  final bool iconOnly;
+  final bool menuItem;
 
-  const DeletePermanentActionButton({super.key, required this.source});
+  const DeletePermanentActionButton({super.key, required this.source, this.iconOnly = false, this.menuItem = false});
 
   void _onTap(BuildContext context, WidgetRef ref) async {
     if (!context.mounted) {
@@ -51,6 +53,8 @@ class DeletePermanentActionButton extends ConsumerWidget {
       maxWidth: 110.0,
       iconData: Icons.delete_forever,
       label: "delete_permanently".t(context: context),
+      iconOnly: iconOnly,
+      menuItem: menuItem,
       onPressed: () => _onTap(context, ref),
     );
   }
