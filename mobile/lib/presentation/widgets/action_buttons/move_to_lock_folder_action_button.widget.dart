@@ -38,8 +38,10 @@ Future<void> performMoveToLockFolderAction(BuildContext context, WidgetRef ref, 
 
 class MoveToLockFolderActionButton extends ConsumerWidget {
   final ActionSource source;
+  final bool iconOnly;
+  final bool menuItem;
 
-  const MoveToLockFolderActionButton({super.key, required this.source});
+  const MoveToLockFolderActionButton({super.key, required this.source, this.iconOnly = false, this.menuItem = false});
 
   Future<void> _onTap(BuildContext context, WidgetRef ref) async {
     await performMoveToLockFolderAction(context, ref, source: source);
@@ -51,6 +53,8 @@ class MoveToLockFolderActionButton extends ConsumerWidget {
       maxWidth: 115.0,
       iconData: Icons.lock_outline_rounded,
       label: "move_to_locked_folder".t(context: context),
+      iconOnly: iconOnly,
+      menuItem: menuItem,
       onPressed: () => _onTap(context, ref),
     );
   }

@@ -67,9 +67,6 @@ String parameterToString(dynamic value) {
   if (value is AssetMediaStatus) {
     return AssetMediaStatusTypeTransformer().encode(value).toString();
   }
-  if (value is AssetMetadataKey) {
-    return AssetMetadataKeyTypeTransformer().encode(value).toString();
-  }
   if (value is AssetOrder) {
     return AssetOrderTypeTransformer().encode(value).toString();
   }
@@ -127,8 +124,8 @@ String parameterToString(dynamic value) {
   if (value is Permission) {
     return PermissionTypeTransformer().encode(value).toString();
   }
-  if (value is PluginContext) {
-    return PluginContextTypeTransformer().encode(value).toString();
+  if (value is PluginContextType) {
+    return PluginContextTypeTypeTransformer().encode(value).toString();
   }
   if (value is PluginTriggerType) {
     return PluginTriggerTypeTypeTransformer().encode(value).toString();

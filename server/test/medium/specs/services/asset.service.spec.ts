@@ -1,5 +1,5 @@
 import { Kysely } from 'kysely';
-import { AssetFileType, JobName, SharedLinkType } from 'src/enum';
+import { AssetFileType, AssetMetadataKey, JobName, SharedLinkType } from 'src/enum';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { AlbumRepository } from 'src/repositories/album.repository';
 import { AssetJobRepository } from 'src/repositories/asset-job.repository';
@@ -266,6 +266,341 @@ describe(AssetService.name, () => {
         name: JobName.FileDelete,
         data: { files: [thumbnailPath, previewPath] },
       });
+    });
+  });
+
+  describe('update', () => {
+    it('should automatically lock lockable columns', async () => {
+      const { sut, ctx } = setup();
+      ctx.getMock(JobRepository).queue.mockResolvedValue();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newExif({ assetId: asset.id, dateTimeOriginal: '2023-11-19T18:11:00' });
+
+      await expect(
+        ctx.database
+          .selectFrom('asset_exif')
+          .select('lockedProperties')
+          .where('assetId', '=', asset.id)
+          .executeTakeFirstOrThrow(),
+      ).resolves.toEqual({ lockedProperties: null });
+
+      await sut.update(auth, asset.id, {
+        latitude: 42,
+        longitude: 42,
+        rating: 3,
+        description: 'foo',
+        dateTimeOriginal: '2023-11-19T18:11:00+01:00',
+      });
+
+      await expect(
+        ctx.database
+          .selectFrom('asset_exif')
+          .select('lockedProperties')
+          .where('assetId', '=', asset.id)
+          .executeTakeFirstOrThrow(),
+      ).resolves.toEqual({
+        lockedProperties: ['timeZone', 'rating', 'description', 'latitude', 'longitude', 'dateTimeOriginal'],
+      });
+    });
+
+    it('should update dateTimeOriginal', async () => {
+      const { sut, ctx } = setup();
+      ctx.getMock(JobRepository).queue.mockResolvedValue();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newExif({ assetId: asset.id, description: 'test' });
+
+      await sut.update(auth, asset.id, { dateTimeOriginal: '2023-11-19T18:11:00' });
+
+      await expect(ctx.get(AssetRepository).getById(asset.id, { exifInfo: true })).resolves.toEqual(
+        expect.objectContaining({
+          exifInfo: expect.objectContaining({ dateTimeOriginal: '2023-11-19T18:11:00+00:00', timeZone: null }),
+        }),
+      );
+    });
+
+    it('should update dateTimeOriginal with time zone', async () => {
+      const { sut, ctx } = setup();
+      ctx.getMock(JobRepository).queue.mockResolvedValue();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newExif({ assetId: asset.id, description: 'test' });
+
+      await sut.update(auth, asset.id, { dateTimeOriginal: '2023-11-19T18:11:00.000-07:00' });
+
+      await expect(ctx.get(AssetRepository).getById(asset.id, { exifInfo: true })).resolves.toEqual(
+        expect.objectContaining({
+          exifInfo: expect.objectContaining({ dateTimeOriginal: '2023-11-20T01:11:00+00:00', timeZone: 'UTC-7' }),
+        }),
+      );
+    });
+  });
+
+  describe('updateAll', () => {
+    it('should automatically lock lockable columns', async () => {
+      const { sut, ctx } = setup();
+      ctx.getMock(JobRepository).queueAll.mockResolvedValue();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newExif({ assetId: asset.id, dateTimeOriginal: '2023-11-19T18:11:00' });
+
+      await expect(
+        ctx.database
+          .selectFrom('asset_exif')
+          .select('lockedProperties')
+          .where('assetId', '=', asset.id)
+          .executeTakeFirstOrThrow(),
+      ).resolves.toEqual({ lockedProperties: null });
+
+      await sut.updateAll(auth, {
+        ids: [asset.id],
+        latitude: 42,
+        description: 'foo',
+        longitude: 42,
+        rating: 3,
+        dateTimeOriginal: '2023-11-19T18:11:00+01:00',
+      });
+
+      await expect(
+        ctx.database
+          .selectFrom('asset_exif')
+          .select('lockedProperties')
+          .where('assetId', '=', asset.id)
+          .executeTakeFirstOrThrow(),
+      ).resolves.toEqual({
+        lockedProperties: ['timeZone', 'rating', 'description', 'latitude', 'longitude', 'dateTimeOriginal'],
+      });
+    });
+
+    it('should relatively update assets', async () => {
+      const { sut, ctx } = setup();
+      ctx.getMock(JobRepository).queueAll.mockResolvedValue();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newExif({ assetId: asset.id, dateTimeOriginal: '2023-11-19T18:11:00' });
+
+      await sut.updateAll(auth, { ids: [asset.id], dateTimeRelative: -11 });
+
+      await expect(ctx.get(AssetRepository).getById(asset.id, { exifInfo: true })).resolves.toEqual(
+        expect.objectContaining({
+          exifInfo: expect.objectContaining({
+            dateTimeOriginal: '2023-11-19T18:00:00+00:00',
+          }),
+        }),
+      );
+    });
+
+    it('should update dateTimeOriginal', async () => {
+      const { sut, ctx } = setup();
+      ctx.getMock(JobRepository).queueAll.mockResolvedValue();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newExif({ assetId: asset.id, description: 'test' });
+
+      await sut.updateAll(auth, { ids: [asset.id], dateTimeOriginal: '2023-11-19T18:11:00' });
+
+      await expect(ctx.get(AssetRepository).getById(asset.id, { exifInfo: true })).resolves.toEqual(
+        expect.objectContaining({
+          exifInfo: expect.objectContaining({ dateTimeOriginal: '2023-11-19T18:11:00+00:00', timeZone: null }),
+        }),
+      );
+    });
+
+    it('should update dateTimeOriginal with time zone', async () => {
+      const { sut, ctx } = setup();
+      ctx.getMock(JobRepository).queueAll.mockResolvedValue();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newExif({ assetId: asset.id, description: 'test' });
+
+      await sut.updateAll(auth, { ids: [asset.id], dateTimeOriginal: '2023-11-19T18:11:00.000-07:00' });
+
+      await expect(ctx.get(AssetRepository).getById(asset.id, { exifInfo: true })).resolves.toEqual(
+        expect.objectContaining({
+          exifInfo: expect.objectContaining({ dateTimeOriginal: '2023-11-20T01:11:00+00:00', timeZone: 'UTC-7' }),
+        }),
+      );
+    });
+  });
+
+  describe('upsertBulkMetadata', () => {
+    it('should work', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      const items = [{ assetId: asset.id, key: AssetMetadataKey.MobileApp, value: { iCloudId: 'foo' } }];
+
+      await sut.upsertBulkMetadata(auth, { items });
+
+      const metadata = await ctx.get(AssetRepository).getMetadata(asset.id);
+      expect(metadata.length).toEqual(1);
+      expect(metadata[0]).toEqual(
+        expect.objectContaining({ key: AssetMetadataKey.MobileApp, value: { iCloudId: 'foo' } }),
+      );
+    });
+
+    it('should work on conflict', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newMetadata({ assetId: asset.id, key: AssetMetadataKey.MobileApp, value: { iCloudId: 'old-id' } });
+
+      // verify existing metadata
+      await expect(ctx.get(AssetRepository).getMetadata(asset.id)).resolves.toEqual([
+        expect.objectContaining({ key: AssetMetadataKey.MobileApp, value: { iCloudId: 'old-id' } }),
+      ]);
+
+      const items = [{ assetId: asset.id, key: AssetMetadataKey.MobileApp, value: { iCloudId: 'new-id' } }];
+      await sut.upsertBulkMetadata(auth, { items });
+
+      // verify updated metadata
+      await expect(ctx.get(AssetRepository).getMetadata(asset.id)).resolves.toEqual([
+        expect.objectContaining({ key: AssetMetadataKey.MobileApp, value: { iCloudId: 'new-id' } }),
+      ]);
+    });
+
+    it('should work with multiple assets', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+      const { asset: asset1 } = await ctx.newAsset({ ownerId: user.id });
+      const { asset: asset2 } = await ctx.newAsset({ ownerId: user.id });
+
+      const items = [
+        { assetId: asset1.id, key: AssetMetadataKey.MobileApp, value: { iCloudId: 'id1' } },
+        { assetId: asset2.id, key: AssetMetadataKey.MobileApp, value: { iCloudId: 'id2' } },
+      ];
+
+      await sut.upsertBulkMetadata(auth, { items });
+
+      const metadata1 = await ctx.get(AssetRepository).getMetadata(asset1.id);
+      expect(metadata1).toEqual([
+        expect.objectContaining({ key: AssetMetadataKey.MobileApp, value: { iCloudId: 'id1' } }),
+      ]);
+
+      const metadata2 = await ctx.get(AssetRepository).getMetadata(asset2.id);
+      expect(metadata2).toEqual([
+        expect.objectContaining({ key: AssetMetadataKey.MobileApp, value: { iCloudId: 'id2' } }),
+      ]);
+    });
+
+    it('should work with multiple metadata for the same asset', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+
+      const items = [
+        { assetId: asset.id, key: AssetMetadataKey.MobileApp, value: { iCloudId: 'id1' } },
+        { assetId: asset.id, key: 'some-other-key', value: { foo: 'bar' } },
+      ];
+
+      await sut.upsertBulkMetadata(auth, { items });
+
+      const metadata = await ctx.get(AssetRepository).getMetadata(asset.id);
+      expect(metadata).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            key: AssetMetadataKey.MobileApp,
+            value: { iCloudId: 'id1' },
+          }),
+          expect.objectContaining({
+            key: 'some-other-key',
+            value: { foo: 'bar' },
+          }),
+        ]),
+      );
+    });
+  });
+
+  describe('deleteBulkMetadata', () => {
+    it('should work', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newMetadata({ assetId: asset.id, key: AssetMetadataKey.MobileApp, value: { iCloudId: 'foo' } });
+
+      await sut.deleteBulkMetadata(auth, { items: [{ assetId: asset.id, key: AssetMetadataKey.MobileApp }] });
+
+      const metadata = await ctx.get(AssetRepository).getMetadata(asset.id);
+      expect(metadata.length).toEqual(0);
+    });
+
+    it('should work even if the item does not exist', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+
+      await sut.deleteBulkMetadata(auth, { items: [{ assetId: asset.id, key: AssetMetadataKey.MobileApp }] });
+
+      const metadata = await ctx.get(AssetRepository).getMetadata(asset.id);
+      expect(metadata.length).toEqual(0);
+    });
+
+    it('should work with multiple assets', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+      const { asset: asset1 } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newMetadata({ assetId: asset1.id, key: AssetMetadataKey.MobileApp, value: { iCloudId: 'id1' } });
+      const { asset: asset2 } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newMetadata({ assetId: asset2.id, key: AssetMetadataKey.MobileApp, value: { iCloudId: 'id2' } });
+
+      await sut.deleteBulkMetadata(auth, {
+        items: [
+          { assetId: asset1.id, key: AssetMetadataKey.MobileApp },
+          { assetId: asset2.id, key: AssetMetadataKey.MobileApp },
+        ],
+      });
+
+      await expect(ctx.get(AssetRepository).getMetadata(asset1.id)).resolves.toEqual([]);
+      await expect(ctx.get(AssetRepository).getMetadata(asset2.id)).resolves.toEqual([]);
+    });
+
+    it('should work with multiple metadata for the same asset', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newMetadata({ assetId: asset.id, key: AssetMetadataKey.MobileApp, value: { iCloudId: 'id1' } });
+      await ctx.newMetadata({ assetId: asset.id, key: 'some-other-key', value: { foo: 'bar' } });
+
+      await sut.deleteBulkMetadata(auth, {
+        items: [
+          { assetId: asset.id, key: AssetMetadataKey.MobileApp },
+          { assetId: asset.id, key: 'some-other-key' },
+        ],
+      });
+
+      await expect(ctx.get(AssetRepository).getMetadata(asset.id)).resolves.toEqual([]);
+    });
+
+    it('should not delete unspecified keys', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newMetadata({ assetId: asset.id, key: AssetMetadataKey.MobileApp, value: { iCloudId: 'id1' } });
+      await ctx.newMetadata({ assetId: asset.id, key: 'some-other-key', value: { foo: 'bar' } });
+
+      await sut.deleteBulkMetadata(auth, {
+        items: [{ assetId: asset.id, key: AssetMetadataKey.MobileApp }],
+      });
+
+      const metadata = await ctx.get(AssetRepository).getMetadata(asset.id);
+      expect(metadata).toEqual([expect.objectContaining({ key: 'some-other-key', value: { foo: 'bar' } })]);
     });
   });
 });

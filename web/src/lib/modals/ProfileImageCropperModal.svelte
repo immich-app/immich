@@ -85,7 +85,7 @@
       <div
         class="relative flex aspect-square w-62.5 overflow-hidden rounded-full border-4 border-immich-primary bg-immich-dark-primary dark:border-immich-dark-primary dark:bg-immich-primary"
       >
-        <PhotoViewer bind:element={imgElement} {asset} />
+        <PhotoViewer bind:element={imgElement} cursor={{ current: asset }} />
       </div>
     </div>
   </ModalBody>

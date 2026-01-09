@@ -282,76 +282,87 @@ class _SyncStatsCounts extends ConsumerWidget {
             _SectionHeaderText(text: "assets".t(context: context)),
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-              child: Flex(
-                direction: Axis.horizontal,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                spacing: 8.0,
-                children: [
-                  Expanded(
-                    child: EntitiyCountTile(
-                      label: "local".t(context: context),
-                      count: localAssetCount,
-                      icon: Icons.smartphone,
+              // 1. Wrap in IntrinsicHeight
+              child: IntrinsicHeight(
+                child: Flex(
+                  direction: Axis.horizontal,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  // 2. Stretch children vertically to fill the IntrinsicHeight
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  spacing: 8.0,
+                  children: [
+                    Expanded(
+                      child: EntityCountTile(
+                        label: "local".t(context: context),
+                        count: localAssetCount,
+                        icon: Icons.smartphone,
+                      ),
                     ),
-                  ),
-                  Expanded(
-                    child: EntitiyCountTile(
-                      label: "remote".t(context: context),
-                      count: remoteAssetCount,
-                      icon: Icons.cloud,
+                    Expanded(
+                      child: EntityCountTile(
+                        label: "remote".t(context: context),
+                        count: remoteAssetCount,
+                        icon: Icons.cloud,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
             _SectionHeaderText(text: "albums".t(context: context)),
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-              child: Flex(
-                direction: Axis.horizontal,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                spacing: 8.0,
-                children: [
-                  Expanded(
-                    child: EntitiyCountTile(
-                      label: "local".t(context: context),
-                      count: localAlbumCount,
-                      icon: Icons.smartphone,
+              child: IntrinsicHeight(
+                child: Flex(
+                  direction: Axis.horizontal,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.stretch, // Added
+                  spacing: 8.0,
+                  children: [
+                    Expanded(
+                      child: EntityCountTile(
+                        label: "local".t(context: context),
+                        count: localAlbumCount,
+                        icon: Icons.smartphone,
+                      ),
                     ),
-                  ),
-                  Expanded(
-                    child: EntitiyCountTile(
-                      label: "remote".t(context: context),
-                      count: remoteAlbumCount,
-                      icon: Icons.cloud,
+                    Expanded(
+                      child: EntityCountTile(
+                        label: "remote".t(context: context),
+                        count: remoteAlbumCount,
+                        icon: Icons.cloud,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
             _SectionHeaderText(text: "other".t(context: context)),
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-              child: Flex(
-                direction: Axis.horizontal,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                spacing: 8.0,
-                children: [
-                  Expanded(
-                    child: EntitiyCountTile(
-                      label: "memories".t(context: context),
-                      count: memoryCount,
-                      icon: Icons.calendar_today,
+              child: IntrinsicHeight(
+                child: Flex(
+                  direction: Axis.horizontal,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.stretch, // Added
+                  spacing: 8.0,
+                  children: [
+                    Expanded(
+                      child: EntityCountTile(
+                        label: "memories".t(context: context),
+                        count: memoryCount,
+                        icon: Icons.calendar_today,
+                      ),
                     ),
-                  ),
-                  Expanded(
-                    child: EntitiyCountTile(
-                      label: "hashed_assets".t(context: context),
-                      count: localHashedCount,
-                      icon: Icons.tag,
+                    Expanded(
+                      child: EntityCountTile(
+                        label: "hashed_assets".t(context: context),
+                        count: localHashedCount,
+                        icon: Icons.tag,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
             // To be removed once the experimental feature is stable
@@ -364,26 +375,29 @@ class _SyncStatsCounts extends ConsumerWidget {
                   return counts.when(
                     data: (c) => Padding(
                       padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-                      child: Flex(
-                        direction: Axis.horizontal,
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        spacing: 8.0,
-                        children: [
-                          Expanded(
-                            child: EntitiyCountTile(
-                              label: "local".t(context: context),
-                              count: c.total,
-                              icon: Icons.delete_outline,
+                      child: IntrinsicHeight(
+                        child: Flex(
+                          direction: Axis.horizontal,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.stretch, // Added
+                          spacing: 8.0,
+                          children: [
+                            Expanded(
+                              child: EntityCountTile(
+                                label: "local".t(context: context),
+                                count: c.total,
+                                icon: Icons.delete_outline,
+                              ),
                             ),
-                          ),
-                          Expanded(
-                            child: EntitiyCountTile(
-                              label: "hashed_assets".t(context: context),
-                              count: c.hashed,
-                              icon: Icons.tag,
+                            Expanded(
+                              child: EntityCountTile(
+                                label: "hashed_assets".t(context: context),
+                                count: c.hashed,
+                                icon: Icons.tag,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                     loading: () => const CircularProgressIndicator(),

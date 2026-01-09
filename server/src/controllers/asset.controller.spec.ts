@@ -79,6 +79,74 @@ describe(AssetController.name, () => {
     });
   });
 
+  describe('PUT /assets/metadata', () => {
+    it('should be an authenticated route', async () => {
+      await request(ctx.getHttpServer()).put(`/assets/metadata`);
+      expect(ctx.authenticate).toHaveBeenCalled();
+    });
+
+    it('should require a valid assetId', async () => {
+      const { status, body } = await request(ctx.getHttpServer())
+        .put('/assets/metadata')
+        .send({ items: [{ assetId: '123', key: 'test', value: {} }] });
+      expect(status).toBe(400);
+      expect(body).toEqual(factory.responses.badRequest(expect.arrayContaining(['items.0.assetId must be a UUID'])));
+    });
+
+    it('should require a key', async () => {
+      const { status, body } = await request(ctx.getHttpServer())
+        .put('/assets/metadata')
+        .send({ items: [{ assetId: factory.uuid(), value: {} }] });
+      expect(status).toBe(400);
+      expect(body).toEqual(
+        factory.responses.badRequest(
+          expect.arrayContaining(['items.0.key must be a string', 'items.0.key should not be empty']),
+        ),
+      );
+    });
+
+    it('should work', async () => {
+      const { status } = await request(ctx.getHttpServer())
+        .put('/assets/metadata')
+        .send({ items: [{ assetId: factory.uuid(), key: AssetMetadataKey.MobileApp, value: { iCloudId: '123' } }] });
+      expect(status).toBe(200);
+    });
+  });
+
+  describe('DELETE /assets/metadata', () => {
+    it('should be an authenticated route', async () => {
+      await request(ctx.getHttpServer()).delete(`/assets/metadata`);
+      expect(ctx.authenticate).toHaveBeenCalled();
+    });
+
+    it('should require a valid assetId', async () => {
+      const { status, body } = await request(ctx.getHttpServer())
+        .delete('/assets/metadata')
+        .send({ items: [{ assetId: '123', key: 'test' }] });
+      expect(status).toBe(400);
+      expect(body).toEqual(factory.responses.badRequest(expect.arrayContaining(['items.0.assetId must be a UUID'])));
+    });
+
+    it('should require a key', async () => {
+      const { status, body } = await request(ctx.getHttpServer())
+        .delete('/assets/metadata')
+        .send({ items: [{ assetId: factory.uuid() }] });
+      expect(status).toBe(400);
+      expect(body).toEqual(
+        factory.responses.badRequest(
+          expect.arrayContaining(['items.0.key must be a string', 'items.0.key should not be empty']),
+        ),
+      );
+    });
+
+    it('should work', async () => {
+      const { status } = await request(ctx.getHttpServer())
+        .delete('/assets/metadata')
+        .send({ items: [{ assetId: factory.uuid(), key: AssetMetadataKey.MobileApp }] });
+      expect(status).toBe(204);
+    });
+  });
+
   describe('PUT /assets/:id', () => {
     it('should be an authenticated route', async () => {
       await request(ctx.getHttpServer()).get(`/assets/123`);
@@ -169,12 +237,10 @@ describe(AssetController.name, () => {
     it('should require each item to have a valid key', async () => {
       const { status, body } = await request(ctx.getHttpServer())
         .put(`/assets/${factory.uuid()}/metadata`)
-        .send({ items: [{ key: 'someKey' }] });
+        .send({ items: [{ value: { some: 'value' } }] });
       expect(status).toBe(400);
       expect(body).toEqual(
-        factory.responses.badRequest(
-          expect.arrayContaining([expect.stringContaining('items.0.key must be one of the following values')]),
-        ),
+        factory.responses.badRequest(['items.0.key must be a string', 'items.0.key should not be empty']),
       );
     });
 
@@ -224,16 +290,6 @@ describe(AssetController.name, () => {
       expect(status).toBe(400);
       expect(body).toEqual(factory.responses.badRequest(expect.arrayContaining(['id must be a UUID'])));
     });
-
-    it('should require a valid key', async () => {
-      const { status, body } = await request(ctx.getHttpServer()).get(`/assets/${factory.uuid()}/metadata/invalid`);
-      expect(status).toBe(400);
-      expect(body).toEqual(
-        factory.responses.badRequest(
-          expect.arrayContaining([expect.stringContaining('key must be one of the following value')]),
-        ),
-      );
-    });
   });
 
   describe('DELETE /assets/:id/metadata/:key', () => {
@@ -246,14 +302,6 @@ describe(AssetController.name, () => {
       const { status, body } = await request(ctx.getHttpServer()).delete(`/assets/123/metadata/mobile-app`);
       expect(status).toBe(400);
       expect(body).toEqual(factory.responses.badRequest(['id must be a UUID']));
-    });
-
-    it('should require a valid key', async () => {
-      const { status, body } = await request(ctx.getHttpServer()).delete(`/assets/${factory.uuid()}/metadata/invalid`);
-      expect(status).toBe(400);
-      expect(body).toEqual(
-        factory.responses.badRequest([expect.stringContaining('key must be one of the following values')]),
-      );
     });
   });
 });
