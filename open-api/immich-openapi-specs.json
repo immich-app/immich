@@ -3753,7 +3753,7 @@
                 }
               }
             },
-            "description": "Asset replaced or duplicate detected"
+            "description": "Asset replaced successfully"
           }
         },
         "security": [
