@@ -32,6 +32,8 @@ export type Events = {
 
   AssetUpdate: [AssetResponseDto];
   AssetReplace: [{ oldAssetId: string; newAssetId: string }];
+  AssetsArchive: [string[]];
+  AssetsDelete: [string[]];
 
   AlbumAddAssets: [];
   AlbumUpdate: [AlbumResponseDto];
