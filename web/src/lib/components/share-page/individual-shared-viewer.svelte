@@ -32,7 +32,7 @@
   const viewport: Viewport = $state({ width: 0, height: 0 });
   const assetInteraction = new AssetInteraction();
 
-  let assets = $derived(sharedLink.assets.map((a) => toTimelineAsset(a)));
+  let assets = $derived(sharedLink.assets);
 
   dragAndDropFilesStore.subscribe((value) => {
     if (value.isDragging && value.files.length > 0) {
@@ -68,7 +68,7 @@
   };
 
   const handleSelectAll = () => {
-    assetInteraction.selectAssets(assets);
+    assetInteraction.selectAssets(assets.map((asset) => toTimelineAsset(asset)));
   };
 
   const handleAction = async (action: Action) => {
@@ -145,7 +145,7 @@
     {#await getAssetInfo({ ...authManager.params, id: assets[0].id }) then asset}
       {#await import('$lib/components/asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
         <AssetViewer
-          {asset}
+          cursor={{ current: asset }}
           onAction={handleAction}
           onPrevious={() => Promise.resolve(false)}
           onNext={() => Promise.resolve(false)}

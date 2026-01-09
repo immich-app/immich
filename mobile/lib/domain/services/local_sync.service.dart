@@ -404,6 +404,7 @@ extension on Iterable<PlatformAlbum> {
         name: e.name,
         updatedAt: tryFromSecondsSinceEpoch(e.updatedAt, isUtc: true) ?? DateTime.timestamp(),
         assetCount: e.assetCount,
+        isIosSharedAlbum: e.isCloud,
       ),
     ).toList();
   }

@@ -49,6 +49,8 @@
       toast_info_title: $t('info'),
       toast_warning_title: $t('warning'),
       toast_danger_title: $t('error'),
+      navigate_next: $t('next'),
+      navigate_previous: $t('previous'),
     });
   });
 
@@ -145,7 +147,6 @@
       icon: mdiThemeLightDark,
       onAction: () => themeManager.toggleTheme(),
       shortcuts: { shift: true, key: 't' },
-      isGlobal: true,
     },
   ];
 
@@ -181,7 +182,7 @@
       icon: mdiServer,
       onAction: () => goto(AppRoute.ADMIN_STATS),
     },
-  ].map((route) => ({ ...route, type: $t('page'), isGlobal: true, $if: () => $user?.isAdmin }));
+  ].map((route) => ({ ...route, type: $t('page'), $if: () => $user?.isAdmin }));
 
   const commands = $derived([...userCommands, ...adminCommands]);
 </script>

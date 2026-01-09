@@ -11,6 +11,9 @@ import {
   AssetCopyDto,
   AssetJobName,
   AssetJobsDto,
+  AssetMetadataBulkDeleteDto,
+  AssetMetadataBulkResponseDto,
+  AssetMetadataBulkUpsertDto,
   AssetMetadataResponseDto,
   AssetMetadataUpsertDto,
   AssetStatsDto,
@@ -19,16 +22,7 @@ import {
 } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { AssetOcrResponseDto } from 'src/dtos/ocr.dto';
-import {
-  AssetFileType,
-  AssetMetadataKey,
-  AssetStatus,
-  AssetVisibility,
-  JobName,
-  JobStatus,
-  Permission,
-  QueueName,
-} from 'src/enum';
+import { AssetFileType, AssetStatus, AssetVisibility, JobName, JobStatus, Permission, QueueName } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
 import { JobItem, JobOf } from 'src/types';
 import { requireElevatedPermission } from 'src/utils/access';
@@ -381,12 +375,17 @@ export class AssetService extends BaseService {
     return this.ocrRepository.getByAssetId(id);
   }
 
+  async upsertBulkMetadata(auth: AuthDto, dto: AssetMetadataBulkUpsertDto): Promise<AssetMetadataBulkResponseDto[]> {
+    await this.requireAccess({ auth, permission: Permission.AssetUpdate, ids: dto.items.map((item) => item.assetId) });
+    return this.assetRepository.upsertBulkMetadata(dto.items);
+  }
+
   async upsertMetadata(auth: AuthDto, id: string, dto: AssetMetadataUpsertDto): Promise<AssetMetadataResponseDto[]> {
     await this.requireAccess({ auth, permission: Permission.AssetUpdate, ids: [id] });
     return this.assetRepository.upsertMetadata(id, dto.items);
   }
 
-  async getMetadataByKey(auth: AuthDto, id: string, key: AssetMetadataKey): Promise<AssetMetadataResponseDto> {
+  async getMetadataByKey(auth: AuthDto, id: string, key: string): Promise<AssetMetadataResponseDto> {
     await this.requireAccess({ auth, permission: Permission.AssetRead, ids: [id] });
 
     const item = await this.assetRepository.getMetadataByKey(id, key);
@@ -396,9 +395,14 @@ export class AssetService extends BaseService {
     return item;
   }
 
-  async deleteMetadataByKey(auth: AuthDto, id: string, key: AssetMetadataKey): Promise<void> {
+  async deleteMetadataByKey(auth: AuthDto, id: string, key: string): Promise<void> {
     await this.requireAccess({ auth, permission: Permission.AssetUpdate, ids: [id] });
     return this.assetRepository.deleteMetadataByKey(id, key);
+  }
+
+  async deleteBulkMetadata(auth: AuthDto, dto: AssetMetadataBulkDeleteDto) {
+    await this.requireAccess({ auth, permission: Permission.AssetUpdate, ids: dto.items.map((item) => item.assetId) });
+    await this.assetRepository.deleteBulkMetadata(dto.items);
   }
 
   async run(auth: AuthDto, dto: AssetJobsDto) {
