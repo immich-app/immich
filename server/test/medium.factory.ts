@@ -581,6 +581,7 @@ const assetFaceInsert = (assetFace: Partial<AssetFace> & { assetId: string }) =>
     imageWidth: assetFace.imageWidth ?? 10,
     personId: assetFace.personId ?? null,
     sourceType: assetFace.sourceType ?? SourceType.MachineLearning,
+    isVisible: assetFace.isVisible ?? true,
   };
 
   return {

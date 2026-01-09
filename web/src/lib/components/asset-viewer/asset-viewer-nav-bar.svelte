@@ -72,7 +72,7 @@
     onUndoDelete?: OnUndoDelete;
     onRunJob: (name: AssetJobName) => void;
     onPlaySlideshow: () => void;
-    // export let showEditorHandler: () => void;
+    // onEdit: () => void;
     onClose?: () => void;
     playOriginalVideo: boolean;
     setPlayOriginalVideo: (value: boolean) => void;
@@ -92,6 +92,7 @@
     onRunJob,
     onPlaySlideshow,
     onClose,
+    // onEdit,
     playOriginalVideo = false,
     setPlayOriginalVideo,
   }: Props = $props();
@@ -114,15 +115,18 @@
   const { Share, Download, SharedLinkDownload, Offline, Favorite, Unfavorite, PlayMotionPhoto, StopMotionPhoto, Info } =
     $derived(getAssetActions($t, asset));
 
-  // $: showEditorButton =
+  // TODO: Enable when edits are ready for release
+  // let showEditorButton = $derived(
   //   isOwner &&
-  //   asset.type === AssetTypeEnum.Image &&
-  //   !(
-  //     asset.exifInfo?.projectionType === ProjectionType.EQUIRECTANGULAR ||
-  //     (asset.originalPath && asset.originalPath.toLowerCase().endsWith('.insp'))
-  //   ) &&
-  //   !(asset.originalPath && asset.originalPath.toLowerCase().endsWith('.gif')) &&
-  //   !asset.livePhotoVideoId;
+  //     asset.type === AssetTypeEnum.Image &&
+  //     !(
+  //       asset.exifInfo?.projectionType === ProjectionType.EQUIRECTANGULAR ||
+  //       (asset.originalPath && asset.originalPath.toLowerCase().endsWith('.insp'))
+  //     ) &&
+  //     !(asset.originalPath && asset.originalPath.toLowerCase().endsWith('.gif')) &&
+  //     !(asset.originalPath && asset.originalPath.toLowerCase().endsWith('.svg')) &&
+  //     !asset.livePhotoVideoId,
+  // );
 </script>
 
 <CommandPaletteDefaultProvider
@@ -174,6 +178,10 @@
     {#if isOwner}
       <RatingAction {asset} {onAction} />
     {/if}
+
+    <!-- {#if showEditorButton}
+      <EditAction onAction={onEdit} />
+    {/if} -->
 
     {#if isOwner}
       <DeleteAction {asset} {onAction} {preAction} {onUndoDelete} />

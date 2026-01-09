@@ -336,10 +336,12 @@ class AssetsApi {
   ///
   /// * [String] id (required):
   ///
+  /// * [bool] edited:
+  ///
   /// * [String] key:
   ///
   /// * [String] slug:
-  Future<Response> downloadAssetWithHttpInfo(String id, { String? key, String? slug, }) async {
+  Future<Response> downloadAssetWithHttpInfo(String id, { bool? edited, String? key, String? slug, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/assets/{id}/original'
       .replaceAll('{id}', id);
@@ -351,6 +353,9 @@ class AssetsApi {
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
+    if (edited != null) {
+      queryParams.addAll(_queryParams('', 'edited', edited));
+    }
     if (key != null) {
       queryParams.addAll(_queryParams('', 'key', key));
     }
@@ -380,11 +385,13 @@ class AssetsApi {
   ///
   /// * [String] id (required):
   ///
+  /// * [bool] edited:
+  ///
   /// * [String] key:
   ///
   /// * [String] slug:
-  Future<MultipartFile?> downloadAsset(String id, { String? key, String? slug, }) async {
-    final response = await downloadAssetWithHttpInfo(id,  key: key, slug: slug, );
+  Future<MultipartFile?> downloadAsset(String id, { bool? edited, String? key, String? slug, }) async {
+    final response = await downloadAssetWithHttpInfo(id,  edited: edited, key: key, slug: slug, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -393,6 +400,67 @@ class AssetsApi {
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
       return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'MultipartFile',) as MultipartFile;
+    
+    }
+    return null;
+  }
+
+  /// Apply edits to an existing asset
+  ///
+  /// Apply a series of edit actions (crop, rotate, mirror) to the specified asset.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [AssetEditActionListDto] assetEditActionListDto (required):
+  Future<Response> editAssetWithHttpInfo(String id, AssetEditActionListDto assetEditActionListDto,) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/assets/{id}/edits'
+      .replaceAll('{id}', id);
+
+    // ignore: prefer_final_locals
+    Object? postBody = assetEditActionListDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'PUT',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Apply edits to an existing asset
+  ///
+  /// Apply a series of edit actions (crop, rotate, mirror) to the specified asset.
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [AssetEditActionListDto] assetEditActionListDto (required):
+  Future<AssetEditsDto?> editAsset(String id, AssetEditActionListDto assetEditActionListDto,) async {
+    final response = await editAssetWithHttpInfo(id, assetEditActionListDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'AssetEditsDto',) as AssetEditsDto;
     
     }
     return null;
@@ -454,6 +522,63 @@ class AssetsApi {
         .cast<String>()
         .toList(growable: false);
 
+    }
+    return null;
+  }
+
+  /// Retrieve edits for an existing asset
+  ///
+  /// Retrieve a series of edit actions (crop, rotate, mirror) associated with the specified asset.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  Future<Response> getAssetEditsWithHttpInfo(String id,) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/assets/{id}/edits'
+      .replaceAll('{id}', id);
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Retrieve edits for an existing asset
+  ///
+  /// Retrieve a series of edit actions (crop, rotate, mirror) associated with the specified asset.
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  Future<AssetEditsDto?> getAssetEdits(String id,) async {
+    final response = await getAssetEditsWithHttpInfo(id,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'AssetEditsDto',) as AssetEditsDto;
+    
     }
     return null;
   }
@@ -919,6 +1044,55 @@ class AssetsApi {
     
     }
     return null;
+  }
+
+  /// Remove edits from an existing asset
+  ///
+  /// Removes all edit actions (crop, rotate, mirror) associated with the specified asset.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  Future<Response> removeAssetEditsWithHttpInfo(String id,) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/assets/{id}/edits'
+      .replaceAll('{id}', id);
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'DELETE',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Remove edits from an existing asset
+  ///
+  /// Removes all edit actions (crop, rotate, mirror) associated with the specified asset.
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  Future<void> removeAssetEdits(String id,) async {
+    final response = await removeAssetEditsWithHttpInfo(id,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
   }
 
   /// Replace asset
@@ -1525,12 +1699,14 @@ class AssetsApi {
   ///
   /// * [String] id (required):
   ///
+  /// * [bool] edited:
+  ///
   /// * [String] key:
   ///
   /// * [AssetMediaSize] size:
   ///
   /// * [String] slug:
-  Future<Response> viewAssetWithHttpInfo(String id, { String? key, AssetMediaSize? size, String? slug, }) async {
+  Future<Response> viewAssetWithHttpInfo(String id, { bool? edited, String? key, AssetMediaSize? size, String? slug, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/assets/{id}/thumbnail'
       .replaceAll('{id}', id);
@@ -1542,6 +1718,9 @@ class AssetsApi {
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
+    if (edited != null) {
+      queryParams.addAll(_queryParams('', 'edited', edited));
+    }
     if (key != null) {
       queryParams.addAll(_queryParams('', 'key', key));
     }
@@ -1574,13 +1753,15 @@ class AssetsApi {
   ///
   /// * [String] id (required):
   ///
+  /// * [bool] edited:
+  ///
   /// * [String] key:
   ///
   /// * [AssetMediaSize] size:
   ///
   /// * [String] slug:
-  Future<MultipartFile?> viewAsset(String id, { String? key, AssetMediaSize? size, String? slug, }) async {
-    final response = await viewAssetWithHttpInfo(id,  key: key, size: size, slug: slug, );
+  Future<MultipartFile?> viewAsset(String id, { bool? edited, String? key, AssetMediaSize? size, String? slug, }) async {
+    final response = await viewAssetWithHttpInfo(id,  edited: edited, key: key, size: size, slug: slug, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

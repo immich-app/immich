@@ -292,6 +292,64 @@ describe(AssetController.name, () => {
     });
   });
 
+  describe('PUT /assets/:id/edits', () => {
+    it('should be an authenticated route', async () => {
+      await request(ctx.getHttpServer()).put(`/assets/${factory.uuid()}/edits`).send({ edits: [] });
+      expect(ctx.authenticate).toHaveBeenCalled();
+    });
+
+    it('should accept valid edits and pass to service correctly', async () => {
+      const edits = [
+        {
+          action: 'crop',
+          parameters: {
+            x: 0,
+            y: 0,
+            width: 100,
+            height: 100,
+          },
+        },
+      ];
+
+      const assetId = factory.uuid();
+      const { status } = await request(ctx.getHttpServer()).put(`/assets/${assetId}/edits`).send({
+        edits,
+      });
+
+      expect(service.editAsset).toHaveBeenCalledWith(undefined, assetId, { edits });
+      expect(status).toBe(200);
+    });
+
+    it('should require a valid id', async () => {
+      const { status, body } = await request(ctx.getHttpServer())
+        .put(`/assets/123/edits`)
+        .send({
+          edits: [
+            {
+              action: 'crop',
+              parameters: {
+                x: 0,
+                y: 0,
+                width: 100,
+                height: 100,
+              },
+            },
+          ],
+        });
+
+      expect(status).toBe(400);
+      expect(body).toEqual(factory.responses.badRequest(expect.arrayContaining(['id must be a UUID'])));
+    });
+
+    it('should require at least one edit', async () => {
+      const { status, body } = await request(ctx.getHttpServer())
+        .put(`/assets/${factory.uuid()}/edits`)
+        .send({ edits: [] });
+      expect(status).toBe(400);
+      expect(body).toEqual(factory.responses.badRequest(['edits must contain at least 1 elements']));
+    });
+  });
+
   describe('DELETE /assets/:id/metadata/:key', () => {
     it('should be an authenticated route', async () => {
       await request(ctx.getHttpServer()).delete(`/assets/${factory.uuid()}/metadata/mobile-app`);

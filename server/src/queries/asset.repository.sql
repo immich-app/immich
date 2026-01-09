@@ -182,6 +182,7 @@ select
         where
           "asset_face"."assetId" = "asset"."id"
           and "asset_face"."deletedAt" is null
+          and "asset_face"."isVisible" is true
       ) as agg
   ) as "faces",
   (
@@ -383,14 +384,10 @@ with
       "asset_exif"."projectionType",
       coalesce(
         case
-          when asset_exif."exifImageHeight" = 0
-          or asset_exif."exifImageWidth" = 0 then 1
-          when "asset_exif"."orientation" in ('5', '6', '7', '8', '-90', '90') then round(
-            asset_exif."exifImageHeight"::numeric / asset_exif."exifImageWidth"::numeric,
-            3
-          )
+          when asset."height" = 0
+          or asset."width" = 0 then 1
           else round(
-            asset_exif."exifImageWidth"::numeric / asset_exif."exifImageHeight"::numeric,
+            asset."width"::numeric / asset."height"::numeric,
             3
           )
         end,
