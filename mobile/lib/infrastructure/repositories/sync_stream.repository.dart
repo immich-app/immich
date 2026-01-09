@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
+import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/memory.model.dart';
@@ -264,7 +265,7 @@ class SyncStreamRepository extends DriftDatabaseRepository {
     try {
       await _db.batch((batch) {
         for (final metadata in data) {
-          if (metadata.key == AssetMetadataKey.mobileApp) {
+          if (metadata.key == kMobileMetadataKey) {
             batch.deleteWhere(_db.remoteAssetCloudIdEntity, (row) => row.assetId.equals(metadata.assetId));
           }
         }
@@ -279,7 +280,7 @@ class SyncStreamRepository extends DriftDatabaseRepository {
     try {
       await _db.batch((batch) {
         for (final metadata in data) {
-          if (metadata.key == AssetMetadataKey.mobileApp) {
+          if (metadata.key == kMobileMetadataKey) {
             final map = metadata.value as Map<String, Object?>;
             final companion = RemoteAssetCloudIdEntityCompanion(
               cloudId: Value(map['iCloudId']?.toString()),

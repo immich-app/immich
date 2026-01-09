@@ -444,7 +444,7 @@ class UploadService {
       'duration': '0',
       if (fields != null) ...fields,
       // Include cloudId and eTag in metadata if available and server version supports it
-      if (CurrentPlatform.isIOS && cloudId != null && _serverInfo.serverVersion.isAtLeast(major: 2, minor: 2))
+      if (CurrentPlatform.isIOS && cloudId != null && _serverInfo.serverVersion.isAtLeast(major: 2, minor: 4))
         'metadata': jsonEncode([
           RemoteAssetMetadataItem(
             key: RemoteAssetMetadataKey.mobileApp,

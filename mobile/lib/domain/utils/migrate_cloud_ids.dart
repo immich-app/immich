@@ -1,7 +1,9 @@
 import 'package:drift/drift.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/asset/asset_metadata.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
@@ -9,6 +11,7 @@ import 'package:immich_mobile/platform/native_sync_api.g.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/sync.provider.dart';
+import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:logging/logging.dart';
@@ -16,9 +19,23 @@ import 'package:logging/logging.dart';
 import 'package:openapi/api.dart' hide AssetVisibility;
 
 Future<void> syncCloudIds(ProviderContainer ref) async {
+  if (!CurrentPlatform.isIOS) {
+    return;
+  }
+
   final db = ref.read(driftProvider);
   // Populate cloud IDs for local assets that don't have one yet
   await _populateCloudIds(db);
+
+  final serverInfo = await ref.read(serverInfoProvider.notifier).getServerInfo();
+  final canUpdateMetadata = serverInfo.serverVersion.isAtLeast(major: 2, minor: 4);
+  if (!canUpdateMetadata) {
+    Logger(
+      'migrateCloudIds',
+    ).fine('Server version does not support asset metadata updates. Skipping cloudId migration.');
+    return;
+  }
+  final canBulkUpdateMetadata = serverInfo.serverVersion.isAtLeast(major: 2, minor: 5);
 
   // Wait for remote sync to complete, so we have up-to-date asset metadata entries
   await ref.read(syncStreamServiceProvider).sync();
@@ -33,9 +50,18 @@ Future<void> syncCloudIds(ProviderContainer ref) async {
   final mappingsToUpdate = await _fetchCloudIdMappings(db, currentUser.id);
   dPrint(() => 'Found ${mappingsToUpdate.length} assets to update cloud IDs for.');
   final assetApi = ref.read(apiServiceProvider).assetsApi;
-  for (final mapping in mappingsToUpdate) {
-    final mobileMeta = AssetMetadataUpsertItemDto(
-      key: AssetMetadataKey.mobileApp,
+
+  if (canBulkUpdateMetadata) {
+    await _bulkUpdateCloudIds(assetApi, mappingsToUpdate);
+    return;
+  }
+  await _sequentialUpdateCloudIds(assetApi, mappingsToUpdate);
+}
+
+Future<void> _sequentialUpdateCloudIds(AssetsApi assetsApi, List<_CloudIdMapping> mappings) async {
+  for (final mapping in mappings) {
+    final item = AssetMetadataUpsertItemDto(
+      key: kMobileMetadataKey,
       value: RemoteAssetMobileAppMetadata(
         cloudId: mapping.localAsset.cloudId,
         createdAt: mapping.localAsset.createdAt.toIso8601String(),
@@ -45,9 +71,38 @@ Future<void> syncCloudIds(ProviderContainer ref) async {
       ),
     );
     try {
-      await assetApi.updateAssetMetadata(mapping.remoteAssetId, AssetMetadataUpsertDto(items: [mobileMeta]));
+      await assetsApi.updateAssetMetadata(mapping.remoteAssetId, AssetMetadataUpsertDto(items: [item]));
     } catch (error, stack) {
       Logger('migrateCloudIds').warning('Failed to update metadata for asset ${mapping.remoteAssetId}', error, stack);
+    }
+  }
+}
+
+Future<void> _bulkUpdateCloudIds(AssetsApi assetsApi, List<_CloudIdMapping> mappings) async {
+  const batchSize = 10000;
+  for (int i = 0; i < mappings.length; i += batchSize) {
+    final endIndex = (i + batchSize > mappings.length) ? mappings.length : i + batchSize;
+    final batch = mappings.sublist(i, endIndex);
+    final items = <AssetMetadataBulkUpsertItemDto>[];
+    for (final mapping in batch) {
+      items.add(
+        AssetMetadataBulkUpsertItemDto(
+          assetId: mapping.remoteAssetId,
+          key: kMobileMetadataKey,
+          value: RemoteAssetMobileAppMetadata(
+            cloudId: mapping.localAsset.cloudId,
+            createdAt: mapping.localAsset.createdAt.toIso8601String(),
+            adjustmentTime: mapping.localAsset.adjustmentTime?.toIso8601String(),
+            latitude: mapping.localAsset.latitude?.toString(),
+            longitude: mapping.localAsset.longitude?.toString(),
+          ),
+        ),
+      );
+    }
+    try {
+      await assetsApi.updateBulkAssetMetadata(AssetMetadataBulkUpsertDto(items: items));
+    } catch (error, stack) {
+      Logger('migrateCloudIds').warning('Failed to bulk update metadata', error, stack);
     }
   }
 }

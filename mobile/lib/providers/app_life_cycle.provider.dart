@@ -147,7 +147,6 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
 
     final backgroundManager = _ref.read(backgroundSyncProvider);
     final isAlbumLinkedSyncEnable = _ref.read(appSettingsServiceProvider).getSetting(AppSettingsEnum.syncAlbums);
-    final serverInfo = _ref.read(serverInfoProvider);
 
     try {
       bool syncSuccess = false;
@@ -161,9 +160,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
             _resumeBackup();
           }),
           _resumeBackup(),
-          // Sync cloud IDs if server version is compatible
-          if (CurrentPlatform.isIOS && serverInfo.serverVersion.isAtLeast(major: 2, minor: 2))
-            backgroundManager.syncCloudIds(),
+          backgroundManager.syncCloudIds(),
         ]);
       } else {
         await _safeRun(backgroundManager.hashAssets(), "hashAssets");

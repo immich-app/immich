@@ -5,13 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
-import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/providers/gallery_permission.provider.dart';
-import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:logging/logging.dart';
@@ -51,7 +49,6 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
     final accessToken = Store.tryGet(StoreKey.accessToken);
 
     if (accessToken != null && serverUrl != null && endpoint != null) {
-      final infoProvider = ref.read(serverInfoProvider.notifier);
       final wsProvider = ref.read(websocketProvider.notifier);
       final backgroundManager = ref.read(backgroundSyncProvider);
       final backupProvider = ref.read(driftBackupProvider.notifier);
@@ -61,7 +58,6 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
           (_) async {
             try {
               wsProvider.connect();
-              final serverInfo = await infoProvider.getServerInfo();
 
               if (Store.isBetaTimelineEnabled) {
                 bool syncSuccess = false;
@@ -76,9 +72,7 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
                       _resumeBackup(backupProvider);
                     }),
                     _resumeBackup(backupProvider),
-                    // Sync cloud IDs if server version is compatible
-                    if (CurrentPlatform.isIOS && serverInfo.serverVersion.isAtLeast(major: 2, minor: 2))
-                      backgroundManager.syncCloudIds(),
+                    backgroundManager.syncCloudIds(),
                   ]);
                 } else {
                   await backgroundManager.hashAssets();
