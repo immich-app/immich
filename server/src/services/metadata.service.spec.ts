@@ -1705,6 +1705,12 @@ describe(MetadataService.name, () => {
         GPSLatitude: gps,
         GPSLongitude: gps,
       });
+      expect(mocks.asset.unlockProperties).toHaveBeenCalledWith(asset.id, [
+        'description',
+        'latitude',
+        'longitude',
+        'dateTimeOriginal',
+      ]);
     });
   });
 
