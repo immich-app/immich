@@ -1,5 +1,6 @@
 import { editManager, type EditActions, type EditToolManager } from '$lib/managers/edit/edit-manager.svelte';
 import { getAssetThumbnailUrl } from '$lib/utils';
+import { getDimensions } from '$lib/utils/asset-utils';
 import { handleError } from '$lib/utils/handle-error';
 import {
   AssetEditAction,
@@ -179,10 +180,8 @@ class TransformManager implements EditToolManager {
   }
 
   async onActivate(asset: AssetResponseDto, edits: EditActions): Promise<void> {
-    this.originalImageSize = {
-      width: asset.exifInfo?.exifImageWidth ?? 0,
-      height: asset.exifInfo?.exifImageHeight ?? 0,
-    };
+    const originalSize = getDimensions(asset.exifInfo!);
+    this.originalImageSize = { width: originalSize.width ?? 0, height: originalSize.height ?? 0 };
 
     this.imgElement = new Image();
 
