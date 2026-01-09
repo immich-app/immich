@@ -225,6 +225,7 @@
     {isShared}
     {album}
     {person}
+    {timelineManager}
     preAction={handlePreAction}
     onAction={(action) => {
       handleAction(action);
