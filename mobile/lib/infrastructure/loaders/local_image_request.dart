@@ -16,7 +16,7 @@ class LocalImageRequest extends ImageRequest {
       return null;
     }
 
-    final Map<String, int> info = await thumbnailApi.requestImage(
+    final Map<String, int> info = await localImageApi.requestImage(
       localId,
       requestId: requestId,
       width: width,
@@ -30,6 +30,6 @@ class LocalImageRequest extends ImageRequest {
 
   @override
   Future<void> _onCancelled() {
-    return thumbnailApi.cancelImageRequest(requestId);
+    return localImageApi.cancelRequest(requestId);
   }
 }

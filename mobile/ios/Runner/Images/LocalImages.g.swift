@@ -47,41 +47,41 @@ private func nilOrValue<T>(_ value: Any?) -> T? {
 }
 
 
-private class ThumbnailsPigeonCodecReader: FlutterStandardReader {
+private class LocalImagesPigeonCodecReader: FlutterStandardReader {
 }
 
-private class ThumbnailsPigeonCodecWriter: FlutterStandardWriter {
+private class LocalImagesPigeonCodecWriter: FlutterStandardWriter {
 }
 
-private class ThumbnailsPigeonCodecReaderWriter: FlutterStandardReaderWriter {
+private class LocalImagesPigeonCodecReaderWriter: FlutterStandardReaderWriter {
   override func reader(with data: Data) -> FlutterStandardReader {
-    return ThumbnailsPigeonCodecReader(data: data)
+    return LocalImagesPigeonCodecReader(data: data)
   }
 
   override func writer(with data: NSMutableData) -> FlutterStandardWriter {
-    return ThumbnailsPigeonCodecWriter(data: data)
+    return LocalImagesPigeonCodecWriter(data: data)
   }
 }
 
-class ThumbnailsPigeonCodec: FlutterStandardMessageCodec, @unchecked Sendable {
-  static let shared = ThumbnailsPigeonCodec(readerWriter: ThumbnailsPigeonCodecReaderWriter())
+class LocalImagesPigeonCodec: FlutterStandardMessageCodec, @unchecked Sendable {
+  static let shared = LocalImagesPigeonCodec(readerWriter: LocalImagesPigeonCodecReaderWriter())
 }
 
 
 /// Generated protocol from Pigeon that represents a handler of messages from Flutter.
-protocol ThumbnailApi {
+protocol LocalImageApi {
   func requestImage(assetId: String, requestId: Int64, width: Int64, height: Int64, isVideo: Bool, completion: @escaping (Result<[String: Int64], Error>) -> Void)
-  func cancelImageRequest(requestId: Int64) throws
+  func cancelRequest(requestId: Int64) throws
   func getThumbhash(thumbhash: String, completion: @escaping (Result<[String: Int64], Error>) -> Void)
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
-class ThumbnailApiSetup {
-  static var codec: FlutterStandardMessageCodec { ThumbnailsPigeonCodec.shared }
-  /// Sets up an instance of `ThumbnailApi` to handle messages through the `binaryMessenger`.
-  static func setUp(binaryMessenger: FlutterBinaryMessenger, api: ThumbnailApi?, messageChannelSuffix: String = "") {
+class LocalImageApiSetup {
+  static var codec: FlutterStandardMessageCodec { LocalImagesPigeonCodec.shared }
+  /// Sets up an instance of `LocalImageApi` to handle messages through the `binaryMessenger`.
+  static func setUp(binaryMessenger: FlutterBinaryMessenger, api: LocalImageApi?, messageChannelSuffix: String = "") {
     let channelSuffix = messageChannelSuffix.count > 0 ? ".\(messageChannelSuffix)" : ""
-    let requestImageChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.ThumbnailApi.requestImage\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    let requestImageChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.LocalImageApi.requestImage\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
       requestImageChannel.setMessageHandler { message, reply in
         let args = message as! [Any?]
@@ -102,22 +102,22 @@ class ThumbnailApiSetup {
     } else {
       requestImageChannel.setMessageHandler(nil)
     }
-    let cancelImageRequestChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.ThumbnailApi.cancelImageRequest\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    let cancelRequestChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.LocalImageApi.cancelRequest\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
-      cancelImageRequestChannel.setMessageHandler { message, reply in
+      cancelRequestChannel.setMessageHandler { message, reply in
         let args = message as! [Any?]
         let requestIdArg = args[0] as! Int64
         do {
-          try api.cancelImageRequest(requestId: requestIdArg)
+          try api.cancelRequest(requestId: requestIdArg)
           reply(wrapResult(nil))
         } catch {
           reply(wrapError(error))
         }
       }
     } else {
-      cancelImageRequestChannel.setMessageHandler(nil)
+      cancelRequestChannel.setMessageHandler(nil)
     }
-    let getThumbhashChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.ThumbnailApi.getThumbhash\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    let getThumbhashChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.LocalImageApi.getThumbhash\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
       getThumbhashChannel.setMessageHandler { message, reply in
         let args = message as! [Any?]

@@ -2,15 +2,11 @@ import 'dart:async';
 import 'dart:ffi';
 import 'dart:ui' as ui;
 
-import 'package:cronet_http/cronet_http.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ffi/ffi.dart';
-import 'package:http/http.dart' as http;
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
-import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
 
 part 'local_image_request.dart';
 part 'thumbhash_image_request.dart';
@@ -52,12 +48,14 @@ abstract class ImageRequest {
 
     final int actualWidth;
     final int actualHeight;
+    final int rowBytes;
     final int actualSize;
     final ui.ImmutableBuffer buffer;
     try {
       actualWidth = info['width']!;
       actualHeight = info['height']!;
-      actualSize = actualWidth * actualHeight * 4;
+      rowBytes = info['rowBytes'] ?? actualWidth * 4;
+      actualSize = rowBytes * actualHeight;
       buffer = await ImmutableBuffer.fromUint8List(pointer.asTypedList(actualSize));
     } finally {
       malloc.free(pointer);
@@ -72,6 +70,7 @@ abstract class ImageRequest {
       buffer,
       width: actualWidth,
       height: actualHeight,
+      rowBytes: rowBytes,
       pixelFormat: ui.PixelFormat.rgba8888,
     );
     final codec = await descriptor.instantiateCodec();

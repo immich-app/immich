@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 54;
+	objectVersion = 77;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -29,9 +29,11 @@
 		FAC6F89B2D287C890078CB2F /* ShareExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = FAC6F8902D287C890078CB2F /* ShareExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		FAC6F8B72D287F120078CB2F /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAC6F8B52D287F120078CB2F /* ShareViewController.swift */; };
 		FAC6F8B92D287F120078CB2F /* MainInterface.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FAC6F8B32D287F120078CB2F /* MainInterface.storyboard */; };
+		FE5499F32F1197D8006016CB /* LocalImages.g.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5499F12F1197D8006016CB /* LocalImages.g.swift */; };
+		FE5499F42F1197D8006016CB /* RemoteImages.g.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5499F22F1197D8006016CB /* RemoteImages.g.swift */; };
+		FE5499F62F11980E006016CB /* LocalImagesImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5499F52F11980E006016CB /* LocalImagesImpl.swift */; };
+		FE5499F82F1198E2006016CB /* RemoteImagesImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5499F72F1198DE006016CB /* RemoteImagesImpl.swift */; };
 		FEAFA8732E4D42F4001E47FE /* Thumbhash.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEAFA8722E4D42F4001E47FE /* Thumbhash.swift */; };
-		FED3B1962E253E9B0030FD97 /* ThumbnailsImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = FED3B1942E253E9B0030FD97 /* ThumbnailsImpl.swift */; };
-		FED3B1972E253E9B0030FD97 /* Thumbnails.g.swift in Sources */ = {isa = PBXBuildFile; fileRef = FED3B1932E253E9B0030FD97 /* Thumbnails.g.swift */; };
 		FEE084F82EC172460045228E /* SQLiteData in Frameworks */ = {isa = PBXBuildFile; productRef = FEE084F72EC172460045228E /* SQLiteData */; };
 		FEE084FB2EC1725A0045228E /* RawStructuredFieldValues in Frameworks */ = {isa = PBXBuildFile; productRef = FEE084FA2EC1725A0045228E /* RawStructuredFieldValues */; };
 		FEE084FD2EC1725A0045228E /* StructuredFieldValues in Frameworks */ = {isa = PBXBuildFile; productRef = FEE084FC2EC1725A0045228E /* StructuredFieldValues */; };
@@ -118,9 +120,11 @@
 		FAC6F8B42D287F120078CB2F /* ShareExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ShareExtension.entitlements; sourceTree = "<group>"; };
 		FAC6F8B52D287F120078CB2F /* ShareViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareViewController.swift; sourceTree = "<group>"; };
 		FAC7416727DB9F5500C668D8 /* RunnerProfile.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = RunnerProfile.entitlements; sourceTree = "<group>"; };
+		FE5499F12F1197D8006016CB /* LocalImages.g.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalImages.g.swift; sourceTree = "<group>"; };
+		FE5499F22F1197D8006016CB /* RemoteImages.g.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteImages.g.swift; sourceTree = "<group>"; };
+		FE5499F52F11980E006016CB /* LocalImagesImpl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalImagesImpl.swift; sourceTree = "<group>"; };
+		FE5499F72F1198DE006016CB /* RemoteImagesImpl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteImagesImpl.swift; sourceTree = "<group>"; };
 		FEAFA8722E4D42F4001E47FE /* Thumbhash.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Thumbhash.swift; sourceTree = "<group>"; };
-		FED3B1932E253E9B0030FD97 /* Thumbnails.g.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Thumbnails.g.swift; sourceTree = "<group>"; };
-		FED3B1942E253E9B0030FD97 /* ThumbnailsImpl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThumbnailsImpl.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -136,15 +140,11 @@
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		B231F52D2E93A44A00BC45D1 /* Core */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
 			path = Core;
 			sourceTree = "<group>";
 		};
 		B2CF7F8C2DDE4EBB00744BF6 /* Sync */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
 			path = Sync;
 			sourceTree = "<group>";
 		};
@@ -158,8 +158,6 @@
 		};
 		FEE084F22EC172080045228E /* Schemas */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
 			path = Schemas;
 			sourceTree = "<group>";
 		};
@@ -321,9 +319,11 @@
 		FED3B1952E253E9B0030FD97 /* Images */ = {
 			isa = PBXGroup;
 			children = (
+				FE5499F72F1198DE006016CB /* RemoteImagesImpl.swift */,
+				FE5499F52F11980E006016CB /* LocalImagesImpl.swift */,
+				FE5499F12F1197D8006016CB /* LocalImages.g.swift */,
+				FE5499F22F1197D8006016CB /* RemoteImages.g.swift */,
 				FEAFA8722E4D42F4001E47FE /* Thumbhash.swift */,
-				FED3B1932E253E9B0030FD97 /* Thumbnails.g.swift */,
-				FED3B1942E253E9B0030FD97 /* ThumbnailsImpl.swift */,
 			);
 			path = Images;
 			sourceTree = "<group>";
@@ -549,9 +549,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -581,9 +585,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -600,12 +608,14 @@
 				65F32F31299BD2F800CE9261 /* BackgroundServicePlugin.swift in Sources */,
 				74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */,
 				B21E34AC2E5B09190031FDB9 /* BackgroundWorker.swift in Sources */,
+				FE5499F32F1197D8006016CB /* LocalImages.g.swift in Sources */,
+				FE5499F62F11980E006016CB /* LocalImagesImpl.swift in Sources */,
+				FE5499F42F1197D8006016CB /* RemoteImages.g.swift in Sources */,
 				B25D377A2E72CA15008B6CA7 /* Connectivity.g.swift in Sources */,
+				FE5499F82F1198E2006016CB /* RemoteImagesImpl.swift in Sources */,
 				FEAFA8732E4D42F4001E47FE /* Thumbhash.swift in Sources */,
 				B25D377C2E72CA26008B6CA7 /* ConnectivityApiImpl.swift in Sources */,
-				FED3B1962E253E9B0030FD97 /* ThumbnailsImpl.swift in Sources */,
 				B21E34AA2E5AFD2B0031FDB9 /* BackgroundWorkerApiImpl.swift in Sources */,
-				FED3B1972E253E9B0030FD97 /* Thumbnails.g.swift in Sources */,
 				1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */,
 				B2BE315F2E5E5229006EEF88 /* BackgroundWorker.g.swift in Sources */,
 				65F32F33299D349D00CE9261 /* BackgroundSyncWorker.swift in Sources */,

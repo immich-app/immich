@@ -29,7 +29,7 @@ data class Request(
   val callback: (Result<Map<String, Long>>) -> Unit
 )
 
-class ThumbnailsImpl(context: Context) : ThumbnailApi {
+class LocalImagesImpl(context: Context) : LocalImageApi {
   private val ctx: Context = context.applicationContext
   private val resolver: ContentResolver = ctx.contentResolver
   private val requestThread = Executors.newSingleThreadExecutor()
@@ -98,7 +98,7 @@ class ThumbnailsImpl(context: Context) : ThumbnailApi {
     requestMap[requestId] = request
   }
 
-  override fun cancelImageRequest(requestId: Long) {
+  override fun cancelRequest(requestId: Long) {
     val request = requestMap.remove(requestId) ?: return
     request.taskFuture.cancel(false)
     request.cancellationSignal.cancel()

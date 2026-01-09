@@ -11,7 +11,7 @@ class ThumbhashImageRequest extends ImageRequest {
       return null;
     }
 
-    final Map<String, int> info = await thumbnailApi.getThumbhash(thumbhash);
+    final Map<String, int> info = await localImageApi.getThumbhash(thumbhash);
     final frame = await _fromPlatformImage(info);
     return frame == null ? null : ImageInfo(image: frame.image, scale: scale);
   }

@@ -56,8 +56,8 @@ public final class ThumbHash {
     int w = Math.round(ratio > 1.0f ? 32.0f : 32.0f * ratio);
     int h = Math.round(ratio > 1.0f ? 32.0f / ratio : 32.0f);
     int size = w * h * 4;
-    long pointer = ThumbnailsImpl.allocateNative(size);
-    ByteBuffer rgba = ThumbnailsImpl.wrapAsBuffer(pointer, size);
+    long pointer = LocalImagesImpl.allocateNative(size);
+    ByteBuffer rgba = LocalImagesImpl.wrapAsBuffer(pointer, size);
     int cx_stop = Math.max(lx, hasAlpha ? 5 : 3);
     int cy_stop = Math.max(ly, hasAlpha ? 5 : 3);
     float[] fx = new float[cx_stop];

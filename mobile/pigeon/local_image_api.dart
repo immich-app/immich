@@ -2,18 +2,18 @@ import 'package:pigeon/pigeon.dart';
 
 @ConfigurePigeon(
   PigeonOptions(
-    dartOut: 'lib/platform/thumbnail_api.g.dart',
-    swiftOut: 'ios/Runner/Images/Thumbnails.g.swift',
+    dartOut: 'lib/platform/local_image_api.g.dart',
+    swiftOut: 'ios/Runner/Images/LocalImages.g.swift',
     swiftOptions: SwiftOptions(includeErrorClass: false),
     kotlinOut:
-        'android/app/src/main/kotlin/app/alextran/immich/images/Thumbnails.g.kt',
+        'android/app/src/main/kotlin/app/alextran/immich/images/LocalImages.g.kt',
     kotlinOptions: KotlinOptions(package: 'app.alextran.immich.images'),
     dartOptions: DartOptions(),
     dartPackageName: 'immich_mobile',
   ),
 )
 @HostApi()
-abstract class ThumbnailApi {
+abstract class LocalImageApi {
   @async
   Map<String, int> requestImage(
     String assetId, {
@@ -23,7 +23,7 @@ abstract class ThumbnailApi {
     required bool isVideo,
   });
 
-  void cancelImageRequest(int requestId);
+  void cancelRequest(int requestId);
 
   @async
   Map<String, int> getThumbhash(String thumbhash);
