@@ -171,16 +171,8 @@ class RemoteAlbumService {
 
   Future<List<RemoteAlbum>> _sortByNewestAsset(List<RemoteAlbum> albums) async {
     // map album IDs to their newest asset dates
-    final Map<String, Future<DateTime?>> assetTimestampFutures = {};
-    for (final album in albums) {
-      assetTimestampFutures[album.id] = _repository.getNewestAssetTimestamp(album.id);
-    }
-
-    // await all database queries
-    final entries = await Future.wait(
-      assetTimestampFutures.entries.map((entry) async => MapEntry(entry.key, await entry.value)),
-    );
-    final assetTimestamps = Map.fromEntries(entries);
+    final albumIds = albums.map((e) => e.id).toList();
+    final assetTimestamps = await _repository.getNewestAssetTimestampForAlbums(albumIds);
 
     final sorted = albums.sorted((a, b) {
       final aDate = assetTimestamps[a.id] ?? DateTime.fromMillisecondsSinceEpoch(0);
@@ -193,15 +185,8 @@ class RemoteAlbumService {
 
   Future<List<RemoteAlbum>> _sortByOldestAsset(List<RemoteAlbum> albums) async {
     // map album IDs to their oldest asset dates
-    final Map<String, Future<DateTime?>> assetTimestampFutures = {
-      for (final album in albums) album.id: _repository.getOldestAssetTimestamp(album.id),
-    };
-
-    // await all database queries
-    final entries = await Future.wait(
-      assetTimestampFutures.entries.map((entry) async => MapEntry(entry.key, await entry.value)),
-    );
-    final assetTimestamps = Map.fromEntries(entries);
+    final albumIds = albums.map((e) => e.id).toList();
+    final assetTimestamps = await _repository.getOldestAssetTimestampForAlbums(albumIds);
 
     final sorted = albums.sorted((a, b) {
       final aDate = assetTimestamps[a.id] ?? DateTime.fromMillisecondsSinceEpoch(0);
