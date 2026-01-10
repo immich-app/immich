@@ -272,6 +272,7 @@ export class AssetCopyDto {
 }
 
 export class AssetDownloadOriginalDto {
+  @ApiPropertyOptional({ description: 'Return edited asset if available', default: false })
   @ValidateBoolean({ optional: true, default: false })
   edited?: boolean;
 }

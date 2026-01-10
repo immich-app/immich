@@ -22,6 +22,7 @@ export class AssetMediaOptionsDto {
   @ValidateEnum({ enum: AssetMediaSize, name: 'AssetMediaSize', optional: true })
   size?: AssetMediaSize;
 
+  @ApiPropertyOptional({ description: 'Return edited asset if available', default: false })
   @ValidateBoolean({ optional: true, default: false })
   edited?: boolean;
 }

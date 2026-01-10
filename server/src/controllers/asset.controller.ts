@@ -248,6 +248,7 @@ export class AssetController {
 
   @Get(':id/edits')
   @Authenticated({ permission: Permission.AssetEditGet })
+  @ApiParam({ name: 'id', description: 'Asset ID', type: String, format: 'uuid' })
   @Endpoint({
     summary: 'Retrieve edits for an existing asset',
     description: 'Retrieve a series of edit actions (crop, rotate, mirror) associated with the specified asset.',
@@ -259,6 +260,7 @@ export class AssetController {
 
   @Put(':id/edits')
   @Authenticated({ permission: Permission.AssetEditCreate })
+  @ApiParam({ name: 'id', description: 'Asset ID', type: String, format: 'uuid' })
   @ApiBody({ description: 'List of edit actions (crop, rotate, mirror) to apply', type: AssetEditActionListDto })
   @Endpoint({
     summary: 'Apply edits to an existing asset',
@@ -276,6 +278,7 @@ export class AssetController {
   @Delete(':id/edits')
   @Authenticated({ permission: Permission.AssetEditDelete })
   @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiParam({ name: 'id', description: 'Asset ID', type: String, format: 'uuid' })
   @Endpoint({
     summary: 'Remove edits from an existing asset',
     description: 'Removes all edit actions (crop, rotate, mirror) associated with the specified asset.',
