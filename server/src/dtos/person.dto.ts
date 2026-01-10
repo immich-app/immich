@@ -55,7 +55,7 @@ export class PersonUpdateDto extends PersonCreateDto {
 }
 
 export class PeopleUpdateDto {
-  @ApiProperty({ description: 'People to update', type: [PeopleUpdateItem] })
+  @ApiProperty({ description: 'People to update', type: () => [PeopleUpdateItem] })
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => PeopleUpdateItem)
