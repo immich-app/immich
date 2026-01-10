@@ -21,7 +21,7 @@ import {
   SetMaintenanceModeDto,
 } from 'src/dtos/maintenance.dto';
 import { ServerConfigDto, ServerVersionResponseDto } from 'src/dtos/server.dto';
-import { ImmichCookie } from 'src/enum';
+import { ApiTag, ImmichCookie } from 'src/enum';
 import { MaintenanceRoute } from 'src/maintenance/maintenance-auth.guard';
 import { MaintenanceWorkerService } from 'src/maintenance/maintenance-worker.service';
 import { GetLoginDetails } from 'src/middleware/auth.guard';
@@ -36,7 +36,7 @@ import type { ServerController as _ServerController } from 'src/controllers/serv
 import { DatabaseBackupDeleteDto, DatabaseBackupListResponseDto } from 'src/dtos/database-backup.dto';
 import { ApiBody, ApiTags } from '@nestjs/swagger';
 
-@ApiTags('Maintenance')
+@ApiTags(ApiTag.Maintenance)
 @Controller()
 export class MaintenanceWorkerController {
   constructor(
