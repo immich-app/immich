@@ -29,21 +29,33 @@ export type UserResponseDto = {
     profileImagePath: string;
 };
 export type ActivityResponseDto = {
-    assetId: string | null;
+    /** Asset ID (if activity is for an asset) */
+    assetId?: string | null;
+    /** Comment text (for comment activities) */
     comment?: string | null;
+    /** Creation date */
     createdAt: string;
+    /** Activity ID */
     id: string;
+    /** Activity type */
     "type": ReactionType;
+    /** User who created the activity */
     user: UserResponseDto;
 };
 export type ActivityCreateDto = {
+    /** Album ID */
     albumId: string;
+    /** Asset ID (if activity is for an asset) */
     assetId?: string;
+    /** Comment text (required if type is comment) */
     comment?: string;
+    /** Activity type (like or comment) */
     "type": ReactionType;
 };
 export type ActivityStatisticsResponseDto = {
+    /** Number of comments */
     comments: number;
+    /** Number of likes */
     likes: number;
 };
 export type DatabaseBackupDeleteDto = {
@@ -89,29 +101,47 @@ export type MaintenanceStatusResponseDto = {
     task?: string;
 };
 export type NotificationCreateDto = {
-    data?: object;
+    /** Additional notification data */
+    data?: object | null;
+    /** Notification description */
     description?: string | null;
+    /** Notification level */
     level?: NotificationLevel;
+    /** Date when notification was read */
     readAt?: string | null;
+    /** Notification title */
     title: string;
+    /** Notification type */
     "type"?: NotificationType;
+    /** User ID to send notification to */
     userId: string;
 };
 export type NotificationDto = {
+    /** Creation date */
     createdAt: string;
+    /** Additional notification data */
     data?: object;
+    /** Notification description */
     description?: string;
+    /** Notification ID */
     id: string;
+    /** Notification level */
     level: NotificationLevel;
-    readAt?: string;
+    /** Date when notification was read */
+    readAt?: string | null;
+    /** Notification title */
     title: string;
+    /** Notification type */
     "type": NotificationType;
 };
 export type TemplateDto = {
+    /** Template name */
     template: string;
 };
 export type TemplateResponseDto = {
+    /** Template HTML content */
     html: string;
+    /** Template name */
     name: string;
 };
 export type SystemConfigSmtpTransportDto = {
@@ -129,6 +159,7 @@ export type SystemConfigSmtpDto = {
     transport: SystemConfigSmtpTransportDto;
 };
 export type TestEmailResponseDto = {
+    /** Email message ID */
     messageId: string;
 };
 export type UserLicense = {
@@ -368,27 +399,49 @@ export type AlbumUserResponseDto = {
     user: UserResponseDto;
 };
 export type ExifResponseDto = {
+    /** City name */
     city?: string | null;
+    /** Country name */
     country?: string | null;
+    /** Original date/time */
     dateTimeOriginal?: string | null;
+    /** Image description */
     description?: string | null;
+    /** Image height in pixels */
     exifImageHeight?: number | null;
+    /** Image width in pixels */
     exifImageWidth?: number | null;
+    /** Exposure time */
     exposureTime?: string | null;
+    /** F-number (aperture) */
     fNumber?: number | null;
+    /** File size in bytes */
     fileSizeInByte?: number | null;
+    /** Focal length in mm */
     focalLength?: number | null;
+    /** ISO sensitivity */
     iso?: number | null;
+    /** GPS latitude */
     latitude?: number | null;
+    /** Lens model */
     lensModel?: string | null;
+    /** GPS longitude */
     longitude?: number | null;
+    /** Camera make */
     make?: string | null;
+    /** Camera model */
     model?: string | null;
+    /** Modification date/time */
     modifyDate?: string | null;
+    /** Image orientation */
     orientation?: string | null;
+    /** Projection type */
     projectionType?: string | null;
+    /** Rating (-1 to 5) */
     rating?: number | null;
+    /** State/province name */
     state?: string | null;
+    /** Time zone */
     timeZone?: string | null;
 };
 export type AssetFaceWithoutPersonResponseDto = {
@@ -430,8 +483,11 @@ export type PersonWithFacesResponseDto = {
     updatedAt?: string;
 };
 export type AssetStackResponseDto = {
+    /** Number of assets in stack */
     assetCount: number;
+    /** Stack ID */
     id: string;
+    /** Primary asset ID */
     primaryAssetId: string;
 };
 export type TagResponseDto = {
@@ -451,45 +507,71 @@ export type TagResponseDto = {
     value: string;
 };
 export type AssetResponseDto = {
-    /** base64 encoded sha1 hash */
+    /** Base64 encoded SHA1 hash */
     checksum: string;
     /** The UTC timestamp when the asset was originally uploaded to Immich. */
     createdAt: string;
+    /** Device asset ID */
     deviceAssetId: string;
+    /** Device ID */
     deviceId: string;
+    /** Duplicate group ID */
     duplicateId?: string | null;
-    duration: string;
+    /** Video duration (for videos) */
+    duration?: string;
+    /** EXIF metadata */
     exifInfo?: ExifResponseDto;
     /** The actual UTC timestamp when the file was created/captured, preserving timezone information. This is the authoritative timestamp for chronological sorting within timeline groups. Combined with timezone data, this can be used to determine the exact moment the photo was taken. */
     fileCreatedAt: string;
     /** The UTC timestamp when the file was last modified on the filesystem. This reflects the last time the physical file was changed, which may be different from when the photo was originally taken. */
     fileModifiedAt: string;
+    /** Whether asset has metadata */
     hasMetadata: boolean;
     height: number | null;
+    /** Asset ID */
     id: string;
+    /** Is archived */
     isArchived: boolean;
     isEdited: boolean;
+    /** Is favorite */
     isFavorite: boolean;
+    /** Is offline */
     isOffline: boolean;
+    /** Is trashed */
     isTrashed: boolean;
+    /** Library ID (deprecated) */
     libraryId?: string | null;
+    /** Live photo video ID */
     livePhotoVideoId?: string | null;
     /** The local date and time when the photo/video was taken, derived from EXIF metadata. This represents the photographer's local time regardless of timezone, stored as a timezone-agnostic timestamp. Used for timeline grouping by "local" days and months. */
     localDateTime: string;
+    /** Original file name */
     originalFileName: string;
+    /** Original MIME type */
     originalMimeType?: string;
+    /** Original file path */
     originalPath: string;
+    /** Owner user details */
     owner?: UserResponseDto;
+    /** Owner user ID */
     ownerId: string;
+    /** Associated people with faces */
     people?: PersonWithFacesResponseDto[];
+    /** Is resized (deprecated) */
     resized?: boolean;
+    /** Stack information */
     stack?: (AssetStackResponseDto) | null;
+    /** Associated tags */
     tags?: TagResponseDto[];
-    thumbhash: string | null;
+    /** Thumbhash for thumbnail generation */
+    thumbhash?: string | null;
+    /** Asset type */
     "type": AssetTypeEnum;
+    /** Unassigned faces */
     unassignedFaces?: AssetFaceWithoutPersonResponseDto[];
     /** The UTC timestamp when the asset record was last updated in the database. This is automatically maintained by the database and reflects when any field in the asset was last modified. */
     updatedAt: string;
+    /** Asset visibility */
     visibility: AssetVisibility;
     width: number | null;
 };
@@ -588,11 +670,15 @@ export type UpdateAlbumDto = {
     order?: AssetOrder;
 };
 export type BulkIdsDto = {
+    /** IDs to process */
     ids: string[];
 };
 export type BulkIdResponseDto = {
+    /** Error reason if failed */
     error?: Error;
+    /** ID */
     id: string;
+    /** Whether operation succeeded */
     success: boolean;
 };
 export type UpdateAlbumUserDto = {
@@ -642,6 +728,7 @@ export type ApiKeyUpdateDto = {
 export type AssetBulkDeleteDto = {
     /** Force delete even if in use */
     force?: boolean;
+    /** IDs to process */
     ids: string[];
 };
 export type AssetMetadataUpsertItemDto = {
@@ -677,7 +764,9 @@ export type AssetMediaCreateDto = {
     visibility?: AssetVisibility;
 };
 export type AssetMediaResponseDto = {
+    /** Asset media ID */
     id: string;
+    /** Upload status */
     status: AssetMediaStatus;
 };
 export type AssetBulkUpdateDto = {
@@ -715,13 +804,19 @@ export type AssetBulkUploadCheckDto = {
     assets: AssetBulkUploadCheckItem[];
 };
 export type AssetBulkUploadCheckResult = {
+    /** Upload action */
     action: Action;
+    /** Existing asset ID if duplicate */
     assetId?: string;
+    /** Asset ID */
     id: string;
+    /** Whether existing asset is trashed */
     isTrashed?: boolean;
+    /** Rejection reason if rejected */
     reason?: Reason;
 };
 export type AssetBulkUploadCheckResponseDto = {
+    /** Upload check results */
     results: AssetBulkUploadCheckResult[];
 };
 export type AssetCopyDto = {
@@ -747,6 +842,7 @@ export type CheckExistingAssetsDto = {
     deviceId: string;
 };
 export type CheckExistingAssetsResponseDto = {
+    /** Existing asset IDs */
     existingIds: string[];
 };
 export type AssetJobsDto = {
@@ -1213,47 +1309,75 @@ export type MapReverseGeocodeResponseDto = {
     state: string | null;
 };
 export type OnThisDayDto = {
+    /** Year for on this day memory */
     year: number;
 };
 export type MemoryResponseDto = {
+    /** Associated assets */
     assets: AssetResponseDto[];
+    /** Creation date */
     createdAt: string;
+    /** Memory data (type-specific) */
     data: OnThisDayDto;
-    deletedAt?: string;
-    hideAt?: string;
+    /** Deletion date */
+    deletedAt?: string | null;
+    /** Date when memory should be hidden */
+    hideAt?: string | null;
+    /** Memory ID */
     id: string;
+    /** Is memory saved */
     isSaved: boolean;
+    /** Memory date */
     memoryAt: string;
+    /** Owner user ID */
     ownerId: string;
-    seenAt?: string;
-    showAt?: string;
+    /** Date when memory was seen */
+    seenAt?: string | null;
+    /** Date when memory should be shown */
+    showAt?: string | null;
+    /** Memory type */
     "type": MemoryType;
+    /** Last update date */
     updatedAt: string;
 };
 export type MemoryCreateDto = {
+    /** Asset IDs to associate with memory */
     assetIds?: string[];
+    /** Memory data (type-specific) */
     data: OnThisDayDto;
+    /** Is memory saved */
     isSaved?: boolean;
+    /** Memory date */
     memoryAt: string;
+    /** Date when memory was seen */
     seenAt?: string;
+    /** Memory type */
     "type": MemoryType;
 };
 export type MemoryStatisticsResponseDto = {
+    /** Total number of memories */
     total: number;
 };
 export type MemoryUpdateDto = {
+    /** Is memory saved */
     isSaved?: boolean;
+    /** Memory date */
     memoryAt?: string;
+    /** Date when memory was seen */
     seenAt?: string;
 };
 export type NotificationDeleteAllDto = {
+    /** Notification IDs to delete */
     ids: string[];
 };
 export type NotificationUpdateAllDto = {
+    /** Notification IDs to update */
     ids: string[];
+    /** Date when notifications were read */
     readAt?: string | null;
 };
 export type NotificationUpdateDto = {
+    /** Date when notification was read */
     readAt?: string | null;
 };
 export type OAuthConfigDto = {
@@ -1453,195 +1577,361 @@ export type QueueJobResponseDto = {
     timestamp: number;
 };
 export type SearchExploreItem = {
+    /** Representative asset */
     data: AssetResponseDto;
+    /** Explore value */
     value: string;
 };
 export type SearchExploreResponseDto = {
+    /** Explore field name */
     fieldName: string;
+    /** Explore items */
     items: SearchExploreItem[];
 };
 export type MetadataSearchDto = {
+    /** Filter by album IDs */
     albumIds?: string[];
+    /** Filter by file checksum */
     checksum?: string;
+    /** Filter by city name */
     city?: string | null;
+    /** Filter by country name */
     country?: string | null;
+    /** Filter by creation date (after) */
     createdAfter?: string;
+    /** Filter by creation date (before) */
     createdBefore?: string;
+    /** Filter by description text */
     description?: string;
+    /** Filter by device asset ID */
     deviceAssetId?: string;
+    /** Device ID to filter by */
     deviceId?: string;
+    /** Filter by encoded video file path */
     encodedVideoPath?: string;
+    /** Filter by asset ID */
     id?: string;
+    /** Filter by encoded status */
     isEncoded?: boolean;
+    /** Filter by favorite status */
     isFavorite?: boolean;
+    /** Filter by motion photo status */
     isMotion?: boolean;
+    /** Filter assets not in any album */
     isNotInAlbum?: boolean;
+    /** Filter by offline status */
     isOffline?: boolean;
+    /** Filter by lens model */
     lensModel?: string | null;
+    /** Library ID to filter by */
     libraryId?: string | null;
-    make?: string;
+    /** Filter by camera make */
+    make?: string | null;
+    /** Filter by camera model */
     model?: string | null;
+    /** Filter by OCR text content */
     ocr?: string;
+    /** Sort order */
     order?: AssetOrder;
+    /** Filter by original file name */
     originalFileName?: string;
+    /** Filter by original file path */
     originalPath?: string;
+    /** Page number */
     page?: number;
+    /** Filter by person IDs */
     personIds?: string[];
+    /** Filter by preview file path */
     previewPath?: string;
+    /** Filter by rating (-1 to 5) */
     rating?: number;
+    /** Number of results to return */
     size?: number;
+    /** Filter by state/province name */
     state?: string | null;
+    /** Filter by tag IDs */
     tagIds?: string[] | null;
+    /** Filter by taken date (after) */
     takenAfter?: string;
+    /** Filter by taken date (before) */
     takenBefore?: string;
+    /** Filter by thumbnail file path */
     thumbnailPath?: string;
+    /** Filter by trash date (after) */
     trashedAfter?: string;
+    /** Filter by trash date (before) */
     trashedBefore?: string;
+    /** Asset type filter */
     "type"?: AssetTypeEnum;
+    /** Filter by update date (after) */
     updatedAfter?: string;
+    /** Filter by update date (before) */
     updatedBefore?: string;
+    /** Filter by visibility */
     visibility?: AssetVisibility;
+    /** Include deleted assets */
     withDeleted?: boolean;
+    /** Include EXIF data in response */
     withExif?: boolean;
+    /** Include assets with people */
     withPeople?: boolean;
+    /** Include stacked assets */
     withStacked?: boolean;
 };
 export type SearchFacetCountResponseDto = {
+    /** Number of assets with this facet value */
     count: number;
+    /** Facet value */
     value: string;
 };
 export type SearchFacetResponseDto = {
+    /** Facet counts */
     counts: SearchFacetCountResponseDto[];
+    /** Facet field name */
     fieldName: string;
 };
 export type SearchAlbumResponseDto = {
+    /** Number of albums in this page */
     count: number;
+    /** Search facets */
     facets: SearchFacetResponseDto[];
+    /** Album items */
     items: AlbumResponseDto[];
+    /** Total number of matching albums */
     total: number;
 };
 export type SearchAssetResponseDto = {
+    /** Number of assets in this page */
     count: number;
+    /** Search facets */
     facets: SearchFacetResponseDto[];
+    /** Asset items */
     items: AssetResponseDto[];
-    nextPage: string | null;
+    /** Next page token */
+    nextPage?: string | null;
+    /** Total number of matching assets */
     total: number;
 };
 export type SearchResponseDto = {
+    /** Album search results */
     albums: SearchAlbumResponseDto;
+    /** Asset search results */
     assets: SearchAssetResponseDto;
 };
 export type PlacesResponseDto = {
+    /** Administrative level 1 name (state/province) */
     admin1name?: string;
+    /** Administrative level 2 name (county/district) */
     admin2name?: string;
+    /** Latitude coordinate */
     latitude: number;
+    /** Longitude coordinate */
     longitude: number;
+    /** Place name */
     name: string;
 };
 export type RandomSearchDto = {
+    /** Filter by album IDs */
     albumIds?: string[];
+    /** Filter by city name */
     city?: string | null;
+    /** Filter by country name */
     country?: string | null;
+    /** Filter by creation date (after) */
     createdAfter?: string;
+    /** Filter by creation date (before) */
     createdBefore?: string;
+    /** Device ID to filter by */
     deviceId?: string;
+    /** Filter by encoded status */
     isEncoded?: boolean;
+    /** Filter by favorite status */
     isFavorite?: boolean;
+    /** Filter by motion photo status */
     isMotion?: boolean;
+    /** Filter assets not in any album */
     isNotInAlbum?: boolean;
+    /** Filter by offline status */
     isOffline?: boolean;
+    /** Filter by lens model */
     lensModel?: string | null;
+    /** Library ID to filter by */
     libraryId?: string | null;
-    make?: string;
+    /** Filter by camera make */
+    make?: string | null;
+    /** Filter by camera model */
     model?: string | null;
+    /** Filter by OCR text content */
     ocr?: string;
+    /** Filter by person IDs */
     personIds?: string[];
+    /** Filter by rating (-1 to 5) */
     rating?: number;
+    /** Number of results to return */
     size?: number;
+    /** Filter by state/province name */
     state?: string | null;
+    /** Filter by tag IDs */
     tagIds?: string[] | null;
+    /** Filter by taken date (after) */
     takenAfter?: string;
+    /** Filter by taken date (before) */
     takenBefore?: string;
+    /** Filter by trash date (after) */
     trashedAfter?: string;
+    /** Filter by trash date (before) */
     trashedBefore?: string;
+    /** Asset type filter */
     "type"?: AssetTypeEnum;
+    /** Filter by update date (after) */
     updatedAfter?: string;
+    /** Filter by update date (before) */
     updatedBefore?: string;
+    /** Filter by visibility */
     visibility?: AssetVisibility;
+    /** Include deleted assets */
     withDeleted?: boolean;
+    /** Include EXIF data in response */
     withExif?: boolean;
+    /** Include assets with people */
     withPeople?: boolean;
+    /** Include stacked assets */
     withStacked?: boolean;
 };
 export type SmartSearchDto = {
+    /** Filter by album IDs */
     albumIds?: string[];
+    /** Filter by city name */
     city?: string | null;
+    /** Filter by country name */
     country?: string | null;
+    /** Filter by creation date (after) */
     createdAfter?: string;
+    /** Filter by creation date (before) */
     createdBefore?: string;
+    /** Device ID to filter by */
     deviceId?: string;
+    /** Filter by encoded status */
     isEncoded?: boolean;
+    /** Filter by favorite status */
     isFavorite?: boolean;
+    /** Filter by motion photo status */
     isMotion?: boolean;
+    /** Filter assets not in any album */
     isNotInAlbum?: boolean;
+    /** Filter by offline status */
     isOffline?: boolean;
+    /** Search language code */
     language?: string;
+    /** Filter by lens model */
     lensModel?: string | null;
+    /** Library ID to filter by */
     libraryId?: string | null;
-    make?: string;
+    /** Filter by camera make */
+    make?: string | null;
+    /** Filter by camera model */
     model?: string | null;
+    /** Filter by OCR text content */
     ocr?: string;
+    /** Page number */
     page?: number;
+    /** Filter by person IDs */
     personIds?: string[];
+    /** Natural language search query */
     query?: string;
+    /** Asset ID to use as search reference */
     queryAssetId?: string;
+    /** Filter by rating (-1 to 5) */
     rating?: number;
+    /** Number of results to return */
     size?: number;
+    /** Filter by state/province name */
     state?: string | null;
+    /** Filter by tag IDs */
     tagIds?: string[] | null;
+    /** Filter by taken date (after) */
     takenAfter?: string;
+    /** Filter by taken date (before) */
     takenBefore?: string;
+    /** Filter by trash date (after) */
     trashedAfter?: string;
+    /** Filter by trash date (before) */
     trashedBefore?: string;
+    /** Asset type filter */
     "type"?: AssetTypeEnum;
+    /** Filter by update date (after) */
     updatedAfter?: string;
+    /** Filter by update date (before) */
     updatedBefore?: string;
+    /** Filter by visibility */
     visibility?: AssetVisibility;
+    /** Include deleted assets */
     withDeleted?: boolean;
+    /** Include EXIF data in response */
     withExif?: boolean;
 };
 export type StatisticsSearchDto = {
+    /** Filter by album IDs */
     albumIds?: string[];
+    /** Filter by city name */
     city?: string | null;
+    /** Filter by country name */
     country?: string | null;
+    /** Filter by creation date (after) */
     createdAfter?: string;
+    /** Filter by creation date (before) */
     createdBefore?: string;
+    /** Filter by description text */
     description?: string;
+    /** Device ID to filter by */
     deviceId?: string;
+    /** Filter by encoded status */
     isEncoded?: boolean;
+    /** Filter by favorite status */
     isFavorite?: boolean;
+    /** Filter by motion photo status */
     isMotion?: boolean;
+    /** Filter assets not in any album */
     isNotInAlbum?: boolean;
+    /** Filter by offline status */
     isOffline?: boolean;
+    /** Filter by lens model */
     lensModel?: string | null;
+    /** Library ID to filter by */
     libraryId?: string | null;
-    make?: string;
+    /** Filter by camera make */
+    make?: string | null;
+    /** Filter by camera model */
     model?: string | null;
+    /** Filter by OCR text content */
     ocr?: string;
+    /** Filter by person IDs */
     personIds?: string[];
+    /** Filter by rating (-1 to 5) */
     rating?: number;
+    /** Filter by state/province name */
     state?: string | null;
+    /** Filter by tag IDs */
     tagIds?: string[] | null;
+    /** Filter by taken date (after) */
     takenAfter?: string;
+    /** Filter by taken date (before) */
     takenBefore?: string;
+    /** Filter by trash date (after) */
     trashedAfter?: string;
+    /** Filter by trash date (before) */
     trashedBefore?: string;
+    /** Asset type filter */
     "type"?: AssetTypeEnum;
+    /** Filter by update date (after) */
     updatedAfter?: string;
+    /** Filter by update date (before) */
     updatedBefore?: string;
+    /** Filter by visibility */
     visibility?: AssetVisibility;
 };
 export type SearchStatisticsResponseDto = {
+    /** Total number of matching assets */
     total: number;
 };
 export type ServerAboutResponseDto = {
@@ -1879,8 +2169,11 @@ export type SharedLinkEditDto = {
     slug?: string | null;
 };
 export type AssetIdsResponseDto = {
+    /** Asset ID */
     assetId: string;
+    /** Error reason if failed */
     error?: Error2;
+    /** Whether operation succeeded */
     success: boolean;
 };
 export type StackResponseDto = {
@@ -2278,11 +2571,15 @@ export type OnboardingDto = {
     isOnboarded: boolean;
 };
 export type CreateProfileImageDto = {
+    /** Profile image file */
     file: Blob;
 };
 export type CreateProfileImageResponseDto = {
+    /** Profile image change date */
     profileChangedAt: string;
+    /** Profile image file path */
     profileImagePath: string;
+    /** User ID */
     userId: string;
 };
 export type WorkflowActionResponseDto = {
@@ -4739,7 +5036,7 @@ export function searchLargeAssets({ albumIds, city, country, createdAfter, creat
     isOffline?: boolean;
     lensModel?: string | null;
     libraryId?: string | null;
-    make?: string;
+    make?: string | null;
     minFileSize?: number;
     model?: string | null;
     ocr?: string;

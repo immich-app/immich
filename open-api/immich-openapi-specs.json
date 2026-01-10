@@ -10,6 +10,7 @@
             "name": "albumId",
             "required": true,
             "in": "query",
+            "description": "Album ID",
             "schema": {
               "format": "uuid",
               "type": "string"
@@ -19,6 +20,7 @@
             "name": "assetId",
             "required": false,
             "in": "query",
+            "description": "Asset ID (if activity is for an asset)",
             "schema": {
               "format": "uuid",
               "type": "string"
@@ -28,6 +30,7 @@
             "name": "level",
             "required": false,
             "in": "query",
+            "description": "Filter by activity level",
             "schema": {
               "$ref": "#/components/schemas/ReactionLevel"
             }
@@ -36,6 +39,7 @@
             "name": "type",
             "required": false,
             "in": "query",
+            "description": "Filter by activity type",
             "schema": {
               "$ref": "#/components/schemas/ReactionType"
             }
@@ -44,6 +48,7 @@
             "name": "userId",
             "required": false,
             "in": "query",
+            "description": "Filter by user ID",
             "schema": {
               "format": "uuid",
               "type": "string"
@@ -166,6 +171,7 @@
             "name": "albumId",
             "required": true,
             "in": "query",
+            "description": "Album ID",
             "schema": {
               "format": "uuid",
               "type": "string"
@@ -175,6 +181,7 @@
             "name": "assetId",
             "required": false,
             "in": "query",
+            "description": "Asset ID (if activity is for an asset)",
             "schema": {
               "format": "uuid",
               "type": "string"
@@ -6492,6 +6499,7 @@
             "name": "for",
             "required": false,
             "in": "query",
+            "description": "Filter by date",
             "schema": {
               "format": "date-time",
               "type": "string"
@@ -6501,6 +6509,7 @@
             "name": "isSaved",
             "required": false,
             "in": "query",
+            "description": "Filter by saved status",
             "schema": {
               "type": "boolean"
             }
@@ -6509,6 +6518,7 @@
             "name": "isTrashed",
             "required": false,
             "in": "query",
+            "description": "Include trashed memories",
             "schema": {
               "type": "boolean"
             }
@@ -6517,6 +6527,7 @@
             "name": "order",
             "required": false,
             "in": "query",
+            "description": "Sort order",
             "schema": {
               "$ref": "#/components/schemas/MemorySearchOrder"
             }
@@ -6535,6 +6546,7 @@
             "name": "type",
             "required": false,
             "in": "query",
+            "description": "Memory type",
             "schema": {
               "$ref": "#/components/schemas/MemoryType"
             }
@@ -6656,6 +6668,7 @@
             "name": "for",
             "required": false,
             "in": "query",
+            "description": "Filter by date",
             "schema": {
               "format": "date-time",
               "type": "string"
@@ -6665,6 +6678,7 @@
             "name": "isSaved",
             "required": false,
             "in": "query",
+            "description": "Filter by saved status",
             "schema": {
               "type": "boolean"
             }
@@ -6673,6 +6687,7 @@
             "name": "isTrashed",
             "required": false,
             "in": "query",
+            "description": "Include trashed memories",
             "schema": {
               "type": "boolean"
             }
@@ -6681,6 +6696,7 @@
             "name": "order",
             "required": false,
             "in": "query",
+            "description": "Sort order",
             "schema": {
               "$ref": "#/components/schemas/MemorySearchOrder"
             }
@@ -6699,6 +6715,7 @@
             "name": "type",
             "required": false,
             "in": "query",
+            "description": "Memory type",
             "schema": {
               "$ref": "#/components/schemas/MemoryType"
             }
@@ -7141,6 +7158,7 @@
             "name": "id",
             "required": false,
             "in": "query",
+            "description": "Filter by notification ID",
             "schema": {
               "format": "uuid",
               "type": "string"
@@ -7150,6 +7168,7 @@
             "name": "level",
             "required": false,
             "in": "query",
+            "description": "Filter by notification level",
             "schema": {
               "$ref": "#/components/schemas/NotificationLevel"
             }
@@ -7158,6 +7177,7 @@
             "name": "type",
             "required": false,
             "in": "query",
+            "description": "Filter by notification type",
             "schema": {
               "$ref": "#/components/schemas/NotificationType"
             }
@@ -7166,6 +7186,7 @@
             "name": "unread",
             "required": false,
             "in": "query",
+            "description": "Filter by unread status",
             "schema": {
               "type": "boolean"
             }
@@ -9292,6 +9313,7 @@
             "name": "albumIds",
             "required": false,
             "in": "query",
+            "description": "Filter by album IDs",
             "schema": {
               "type": "array",
               "items": {
@@ -9304,6 +9326,7 @@
             "name": "city",
             "required": false,
             "in": "query",
+            "description": "Filter by city name",
             "schema": {
               "nullable": true,
               "type": "string"
@@ -9313,6 +9336,7 @@
             "name": "country",
             "required": false,
             "in": "query",
+            "description": "Filter by country name",
             "schema": {
               "nullable": true,
               "type": "string"
@@ -9322,6 +9346,7 @@
             "name": "createdAfter",
             "required": false,
             "in": "query",
+            "description": "Filter by creation date (after)",
             "schema": {
               "format": "date-time",
               "type": "string"
@@ -9331,6 +9356,7 @@
             "name": "createdBefore",
             "required": false,
             "in": "query",
+            "description": "Filter by creation date (before)",
             "schema": {
               "format": "date-time",
               "type": "string"
@@ -9340,6 +9366,7 @@
             "name": "deviceId",
             "required": false,
             "in": "query",
+            "description": "Device ID to filter by",
             "schema": {
               "type": "string"
             }
@@ -9348,6 +9375,7 @@
             "name": "isEncoded",
             "required": false,
             "in": "query",
+            "description": "Filter by encoded status",
             "schema": {
               "type": "boolean"
             }
@@ -9356,6 +9384,7 @@
             "name": "isFavorite",
             "required": false,
             "in": "query",
+            "description": "Filter by favorite status",
             "schema": {
               "type": "boolean"
             }
@@ -9364,6 +9393,7 @@
             "name": "isMotion",
             "required": false,
             "in": "query",
+            "description": "Filter by motion photo status",
             "schema": {
               "type": "boolean"
             }
@@ -9372,6 +9402,7 @@
             "name": "isNotInAlbum",
             "required": false,
             "in": "query",
+            "description": "Filter assets not in any album",
             "schema": {
               "type": "boolean"
             }
@@ -9380,6 +9411,7 @@
             "name": "isOffline",
             "required": false,
             "in": "query",
+            "description": "Filter by offline status",
             "schema": {
               "type": "boolean"
             }
@@ -9388,6 +9420,7 @@
             "name": "lensModel",
             "required": false,
             "in": "query",
+            "description": "Filter by lens model",
             "schema": {
               "nullable": true,
               "type": "string"
@@ -9397,6 +9430,7 @@
             "name": "libraryId",
             "required": false,
             "in": "query",
+            "description": "Library ID to filter by",
             "schema": {
               "format": "uuid",
               "nullable": true,
@@ -9407,7 +9441,9 @@
             "name": "make",
             "required": false,
             "in": "query",
+            "description": "Filter by camera make",
             "schema": {
+              "nullable": true,
               "type": "string"
             }
           },
@@ -9415,6 +9451,7 @@
             "name": "minFileSize",
             "required": false,
             "in": "query",
+            "description": "Minimum file size in bytes",
             "schema": {
               "minimum": 0,
               "type": "integer"
@@ -9424,6 +9461,7 @@
             "name": "model",
             "required": false,
             "in": "query",
+            "description": "Filter by camera model",
             "schema": {
               "nullable": true,
               "type": "string"
@@ -9433,6 +9471,7 @@
             "name": "ocr",
             "required": false,
             "in": "query",
+            "description": "Filter by OCR text content",
             "schema": {
               "type": "string"
             }
@@ -9441,6 +9480,7 @@
             "name": "personIds",
             "required": false,
             "in": "query",
+            "description": "Filter by person IDs",
             "schema": {
               "type": "array",
               "items": {
@@ -9453,26 +9493,29 @@
             "name": "rating",
             "required": false,
             "in": "query",
+            "description": "Filter by rating (-1 to 5)",
             "schema": {
               "minimum": -1,
               "maximum": 5,
-              "type": "number"
+              "type": "integer"
             }
           },
           {
             "name": "size",
             "required": false,
             "in": "query",
+            "description": "Number of results to return",
             "schema": {
               "minimum": 1,
               "maximum": 1000,
-              "type": "number"
+              "type": "integer"
             }
           },
           {
             "name": "state",
             "required": false,
             "in": "query",
+            "description": "Filter by state/province name",
             "schema": {
               "nullable": true,
               "type": "string"
@@ -9482,6 +9525,7 @@
             "name": "tagIds",
             "required": false,
             "in": "query",
+            "description": "Filter by tag IDs",
             "schema": {
               "nullable": true,
               "type": "array",
@@ -9495,6 +9539,7 @@
             "name": "takenAfter",
             "required": false,
             "in": "query",
+            "description": "Filter by taken date (after)",
             "schema": {
               "format": "date-time",
               "type": "string"
@@ -9504,6 +9549,7 @@
             "name": "takenBefore",
             "required": false,
             "in": "query",
+            "description": "Filter by taken date (before)",
             "schema": {
               "format": "date-time",
               "type": "string"
@@ -9513,6 +9559,7 @@
             "name": "trashedAfter",
             "required": false,
             "in": "query",
+            "description": "Filter by trash date (after)",
             "schema": {
               "format": "date-time",
               "type": "string"
@@ -9522,6 +9569,7 @@
             "name": "trashedBefore",
             "required": false,
             "in": "query",
+            "description": "Filter by trash date (before)",
             "schema": {
               "format": "date-time",
               "type": "string"
@@ -9531,6 +9579,7 @@
             "name": "type",
             "required": false,
             "in": "query",
+            "description": "Asset type filter",
             "schema": {
               "$ref": "#/components/schemas/AssetTypeEnum"
             }
@@ -9539,6 +9588,7 @@
             "name": "updatedAfter",
             "required": false,
             "in": "query",
+            "description": "Filter by update date (after)",
             "schema": {
               "format": "date-time",
               "type": "string"
@@ -9548,6 +9598,7 @@
             "name": "updatedBefore",
             "required": false,
             "in": "query",
+            "description": "Filter by update date (before)",
             "schema": {
               "format": "date-time",
               "type": "string"
@@ -9557,6 +9608,7 @@
             "name": "visibility",
             "required": false,
             "in": "query",
+            "description": "Filter by visibility",
             "schema": {
               "$ref": "#/components/schemas/AssetVisibility"
             }
@@ -9565,6 +9617,7 @@
             "name": "withDeleted",
             "required": false,
             "in": "query",
+            "description": "Include deleted assets",
             "schema": {
               "type": "boolean"
             }
@@ -9573,6 +9626,7 @@
             "name": "withExif",
             "required": false,
             "in": "query",
+            "description": "Include EXIF data in response",
             "schema": {
               "type": "boolean"
             }
@@ -9696,6 +9750,7 @@
             "name": "name",
             "required": true,
             "in": "query",
+            "description": "Person name to search for",
             "schema": {
               "type": "string"
             }
@@ -9704,6 +9759,7 @@
             "name": "withHidden",
             "required": false,
             "in": "query",
+            "description": "Include hidden people",
             "schema": {
               "type": "boolean"
             }
@@ -9766,6 +9822,7 @@
             "name": "name",
             "required": true,
             "in": "query",
+            "description": "Place name to search for",
             "schema": {
               "type": "string"
             }
@@ -10014,6 +10071,7 @@
             "name": "country",
             "required": false,
             "in": "query",
+            "description": "Filter by country",
             "schema": {
               "type": "string"
             }
@@ -10033,6 +10091,7 @@
               }
             ],
             "x-immich-state": "Stable",
+            "description": "Include null values in suggestions",
             "schema": {
               "type": "boolean"
             }
@@ -10041,6 +10100,7 @@
             "name": "lensModel",
             "required": false,
             "in": "query",
+            "description": "Filter by lens model",
             "schema": {
               "type": "string"
             }
@@ -10049,6 +10109,7 @@
             "name": "make",
             "required": false,
             "in": "query",
+            "description": "Filter by camera make",
             "schema": {
               "type": "string"
             }
@@ -10057,6 +10118,7 @@
             "name": "model",
             "required": false,
             "in": "query",
+            "description": "Filter by camera model",
             "schema": {
               "type": "string"
             }
@@ -10065,6 +10127,7 @@
             "name": "state",
             "required": false,
             "in": "query",
+            "description": "Filter by state/province",
             "schema": {
               "type": "string"
             }
@@ -10073,6 +10136,7 @@
             "name": "type",
             "required": true,
             "in": "query",
+            "description": "Suggestion type",
             "schema": {
               "$ref": "#/components/schemas/SearchSuggestionType"
             }
@@ -15419,14 +15483,17 @@
       "ActivityCreateDto": {
         "properties": {
           "albumId": {
+            "description": "Album ID",
             "format": "uuid",
             "type": "string"
           },
           "assetId": {
+            "description": "Asset ID (if activity is for an asset)",
             "format": "uuid",
             "type": "string"
           },
           "comment": {
+            "description": "Comment text (required if type is comment)",
             "type": "string"
           },
           "type": {
@@ -15434,7 +15501,8 @@
               {
                 "$ref": "#/components/schemas/ReactionType"
               }
-            ]
+            ],
+            "description": "Activity type (like or comment)"
           }
         },
         "required": [
@@ -15446,18 +15514,22 @@
       "ActivityResponseDto": {
         "properties": {
           "assetId": {
+            "description": "Asset ID (if activity is for an asset)",
             "nullable": true,
             "type": "string"
           },
           "comment": {
+            "description": "Comment text (for comment activities)",
             "nullable": true,
             "type": "string"
           },
           "createdAt": {
+            "description": "Creation date",
             "format": "date-time",
             "type": "string"
           },
           "id": {
+            "description": "Activity ID",
             "type": "string"
           },
           "type": {
@@ -15465,14 +15537,19 @@
               {
                 "$ref": "#/components/schemas/ReactionType"
               }
-            ]
+            ],
+            "description": "Activity type"
           },
           "user": {
-            "$ref": "#/components/schemas/UserResponseDto"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UserResponseDto"
+              }
+            ],
+            "description": "User who created the activity"
           }
         },
         "required": [
-          "assetId",
           "createdAt",
           "id",
           "type",
@@ -15483,9 +15560,11 @@
       "ActivityStatisticsResponseDto": {
         "properties": {
           "comments": {
+            "description": "Number of comments",
             "type": "integer"
           },
           "likes": {
+            "description": "Number of likes",
             "type": "integer"
           }
         },
@@ -15822,6 +15901,7 @@
             "type": "boolean"
           },
           "ids": {
+            "description": "IDs to process",
             "items": {
               "format": "uuid",
               "type": "string"
@@ -15932,6 +16012,7 @@
       "AssetBulkUploadCheckResponseDto": {
         "properties": {
           "results": {
+            "description": "Upload check results",
             "items": {
               "$ref": "#/components/schemas/AssetBulkUploadCheckResult"
             },
@@ -15946,6 +16027,7 @@
       "AssetBulkUploadCheckResult": {
         "properties": {
           "action": {
+            "description": "Upload action",
             "enum": [
               "accept",
               "reject"
@@ -15953,15 +16035,19 @@
             "type": "string"
           },
           "assetId": {
+            "description": "Existing asset ID if duplicate",
             "type": "string"
           },
           "id": {
+            "description": "Asset ID",
             "type": "string"
           },
           "isTrashed": {
+            "description": "Whether existing asset is trashed",
             "type": "boolean"
           },
           "reason": {
+            "description": "Rejection reason if rejected",
             "enum": [
               "duplicate",
               "unsupported-format"
@@ -16446,9 +16532,11 @@
       "AssetIdsResponseDto": {
         "properties": {
           "assetId": {
+            "description": "Asset ID",
             "type": "string"
           },
           "error": {
+            "description": "Error reason if failed",
             "enum": [
               "duplicate",
               "no_permission",
@@ -16457,6 +16545,7 @@
             "type": "string"
           },
           "success": {
+            "description": "Whether operation succeeded",
             "type": "boolean"
           }
         },
@@ -16619,6 +16708,7 @@
       "AssetMediaResponseDto": {
         "properties": {
           "id": {
+            "description": "Asset media ID",
             "type": "string"
           },
           "status": {
@@ -16626,7 +16716,8 @@
               {
                 "$ref": "#/components/schemas/AssetMediaStatus"
               }
-            ]
+            ],
+            "description": "Upload status"
           }
         },
         "required": [
@@ -16645,6 +16736,7 @@
         "type": "string"
       },
       "AssetMediaStatus": {
+        "description": "Upload status",
         "enum": [
           "created",
           "replaced",
@@ -16899,7 +16991,7 @@
       "AssetResponseDto": {
         "properties": {
           "checksum": {
-            "description": "base64 encoded sha1 hash",
+            "description": "Base64 encoded SHA1 hash",
             "type": "string"
           },
           "createdAt": {
@@ -16909,20 +17001,29 @@
             "type": "string"
           },
           "deviceAssetId": {
+            "description": "Device asset ID",
             "type": "string"
           },
           "deviceId": {
+            "description": "Device ID",
             "type": "string"
           },
           "duplicateId": {
+            "description": "Duplicate group ID",
             "nullable": true,
             "type": "string"
           },
           "duration": {
+            "description": "Video duration (for videos)",
             "type": "string"
           },
           "exifInfo": {
-            "$ref": "#/components/schemas/ExifResponseDto"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ExifResponseDto"
+              }
+            ],
+            "description": "EXIF metadata"
           },
           "fileCreatedAt": {
             "description": "The actual UTC timestamp when the file was created/captured, preserving timezone information. This is the authoritative timestamp for chronological sorting within timeline groups. Combined with timezone data, this can be used to determine the exact moment the photo was taken.",
@@ -16937,6 +17038,7 @@
             "type": "string"
           },
           "hasMetadata": {
+            "description": "Whether asset has metadata",
             "type": "boolean"
           },
           "height": {
@@ -16944,9 +17046,11 @@
             "type": "number"
           },
           "id": {
+            "description": "Asset ID",
             "type": "string"
           },
           "isArchived": {
+            "description": "Is archived",
             "type": "boolean"
           },
           "isEdited": {
@@ -16964,16 +17068,20 @@
             "x-immich-state": "Beta"
           },
           "isFavorite": {
+            "description": "Is favorite",
             "type": "boolean"
           },
           "isOffline": {
+            "description": "Is offline",
             "type": "boolean"
           },
           "isTrashed": {
+            "description": "Is trashed",
             "type": "boolean"
           },
           "libraryId": {
             "deprecated": true,
+            "description": "Library ID (deprecated)",
             "nullable": true,
             "type": "string",
             "x-immich-history": [
@@ -16989,6 +17097,7 @@
             "x-immich-state": "Deprecated"
           },
           "livePhotoVideoId": {
+            "description": "Live photo video ID",
             "nullable": true,
             "type": "string"
           },
@@ -16999,21 +17108,31 @@
             "type": "string"
           },
           "originalFileName": {
+            "description": "Original file name",
             "type": "string"
           },
           "originalMimeType": {
+            "description": "Original MIME type",
             "type": "string"
           },
           "originalPath": {
+            "description": "Original file path",
             "type": "string"
           },
           "owner": {
-            "$ref": "#/components/schemas/UserResponseDto"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UserResponseDto"
+              }
+            ],
+            "description": "Owner user details"
           },
           "ownerId": {
+            "description": "Owner user ID",
             "type": "string"
           },
           "people": {
+            "description": "Associated people with faces",
             "items": {
               "$ref": "#/components/schemas/PersonWithFacesResponseDto"
             },
@@ -17021,6 +17140,7 @@
           },
           "resized": {
             "deprecated": true,
+            "description": "Is resized (deprecated)",
             "type": "boolean",
             "x-immich-history": [
               {
@@ -17040,15 +17160,18 @@
                 "$ref": "#/components/schemas/AssetStackResponseDto"
               }
             ],
+            "description": "Stack information",
             "nullable": true
           },
           "tags": {
+            "description": "Associated tags",
             "items": {
               "$ref": "#/components/schemas/TagResponseDto"
             },
             "type": "array"
           },
           "thumbhash": {
+            "description": "Thumbhash for thumbnail generation",
             "nullable": true,
             "type": "string"
           },
@@ -17057,9 +17180,11 @@
               {
                 "$ref": "#/components/schemas/AssetTypeEnum"
               }
-            ]
+            ],
+            "description": "Asset type"
           },
           "unassignedFaces": {
+            "description": "Unassigned faces",
             "items": {
               "$ref": "#/components/schemas/AssetFaceWithoutPersonResponseDto"
             },
@@ -17072,6 +17197,7 @@
             "type": "string"
           },
           "visibility": {
+            "description": "Asset visibility",
             "allOf": [
               {
                 "$ref": "#/components/schemas/AssetVisibility"
@@ -17088,7 +17214,6 @@
           "createdAt",
           "deviceAssetId",
           "deviceId",
-          "duration",
           "fileCreatedAt",
           "fileModifiedAt",
           "hasMetadata",
@@ -17103,7 +17228,6 @@
           "originalFileName",
           "originalPath",
           "ownerId",
-          "thumbhash",
           "type",
           "updatedAt",
           "visibility",
@@ -17114,12 +17238,15 @@
       "AssetStackResponseDto": {
         "properties": {
           "assetCount": {
+            "description": "Number of assets in stack",
             "type": "integer"
           },
           "id": {
+            "description": "Stack ID",
             "type": "string"
           },
           "primaryAssetId": {
+            "description": "Primary asset ID",
             "type": "string"
           }
         },
@@ -17153,6 +17280,7 @@
         "type": "object"
       },
       "AssetTypeEnum": {
+        "description": "Asset type",
         "enum": [
           "IMAGE",
           "VIDEO",
@@ -17162,6 +17290,7 @@
         "type": "string"
       },
       "AssetVisibility": {
+        "description": "Asset visibility",
         "enum": [
           "archive",
           "timeline",
@@ -17234,6 +17363,7 @@
       "BulkIdResponseDto": {
         "properties": {
           "error": {
+            "description": "Error reason if failed",
             "enum": [
               "duplicate",
               "no_permission",
@@ -17243,9 +17373,11 @@
             "type": "string"
           },
           "id": {
+            "description": "ID",
             "type": "string"
           },
           "success": {
+            "description": "Whether operation succeeded",
             "type": "boolean"
           }
         },
@@ -17258,6 +17390,7 @@
       "BulkIdsDto": {
         "properties": {
           "ids": {
+            "description": "IDs to process",
             "items": {
               "format": "uuid",
               "type": "string"
@@ -17362,6 +17495,7 @@
       "CheckExistingAssetsResponseDto": {
         "properties": {
           "existingIds": {
+            "description": "Existing asset IDs",
             "items": {
               "type": "string"
             },
@@ -17466,6 +17600,7 @@
       "CreateProfileImageDto": {
         "properties": {
           "file": {
+            "description": "Profile image file",
             "format": "binary",
             "type": "string"
           }
@@ -17478,13 +17613,16 @@
       "CreateProfileImageResponseDto": {
         "properties": {
           "profileChangedAt": {
+            "description": "Profile image change date",
             "format": "date-time",
             "type": "string"
           },
           "profileImagePath": {
+            "description": "Profile image file path",
             "type": "string"
           },
           "userId": {
+            "description": "User ID",
             "type": "string"
           }
         },
@@ -17769,114 +17907,136 @@
         "properties": {
           "city": {
             "default": null,
+            "description": "City name",
             "nullable": true,
             "type": "string"
           },
           "country": {
             "default": null,
+            "description": "Country name",
             "nullable": true,
             "type": "string"
           },
           "dateTimeOriginal": {
             "default": null,
+            "description": "Original date/time",
             "format": "date-time",
             "nullable": true,
             "type": "string"
           },
           "description": {
             "default": null,
+            "description": "Image description",
             "nullable": true,
             "type": "string"
           },
           "exifImageHeight": {
             "default": null,
+            "description": "Image height in pixels",
             "nullable": true,
-            "type": "number"
+            "type": "integer"
           },
           "exifImageWidth": {
             "default": null,
+            "description": "Image width in pixels",
             "nullable": true,
-            "type": "number"
+            "type": "integer"
           },
           "exposureTime": {
             "default": null,
+            "description": "Exposure time",
             "nullable": true,
             "type": "string"
           },
           "fNumber": {
             "default": null,
+            "description": "F-number (aperture)",
             "nullable": true,
             "type": "number"
           },
           "fileSizeInByte": {
             "default": null,
+            "description": "File size in bytes",
             "format": "int64",
             "nullable": true,
             "type": "integer"
           },
           "focalLength": {
             "default": null,
+            "description": "Focal length in mm",
             "nullable": true,
             "type": "number"
           },
           "iso": {
             "default": null,
+            "description": "ISO sensitivity",
             "nullable": true,
-            "type": "number"
+            "type": "integer"
           },
           "latitude": {
             "default": null,
+            "description": "GPS latitude",
             "nullable": true,
             "type": "number"
           },
           "lensModel": {
             "default": null,
+            "description": "Lens model",
             "nullable": true,
             "type": "string"
           },
           "longitude": {
             "default": null,
+            "description": "GPS longitude",
             "nullable": true,
             "type": "number"
           },
           "make": {
             "default": null,
+            "description": "Camera make",
             "nullable": true,
             "type": "string"
           },
           "model": {
             "default": null,
+            "description": "Camera model",
             "nullable": true,
             "type": "string"
           },
           "modifyDate": {
             "default": null,
+            "description": "Modification date/time",
             "format": "date-time",
             "nullable": true,
             "type": "string"
           },
           "orientation": {
             "default": null,
+            "description": "Image orientation",
             "nullable": true,
             "type": "string"
           },
           "projectionType": {
             "default": null,
+            "description": "Projection type",
             "nullable": true,
             "type": "string"
           },
           "rating": {
             "default": null,
+            "description": "Rating (-1 to 5)",
             "nullable": true,
             "type": "number"
           },
           "state": {
             "default": null,
+            "description": "State/province name",
             "nullable": true,
             "type": "string"
           },
           "timeZone": {
             "default": null,
+            "description": "Time zone",
             "nullable": true,
             "type": "string"
           }
@@ -18515,6 +18675,7 @@
       "MemoryCreateDto": {
         "properties": {
           "assetIds": {
+            "description": "Asset IDs to associate with memory",
             "items": {
               "format": "uuid",
               "type": "string"
@@ -18522,16 +18683,24 @@
             "type": "array"
           },
           "data": {
-            "$ref": "#/components/schemas/OnThisDayDto"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OnThisDayDto"
+              }
+            ],
+            "description": "Memory data (type-specific)"
           },
           "isSaved": {
+            "description": "Is memory saved",
             "type": "boolean"
           },
           "memoryAt": {
+            "description": "Memory date",
             "format": "date-time",
             "type": "string"
           },
           "seenAt": {
+            "description": "Date when memory was seen",
             "format": "date-time",
             "type": "string"
           },
@@ -18540,7 +18709,8 @@
               {
                 "$ref": "#/components/schemas/MemoryType"
               }
-            ]
+            ],
+            "description": "Memory type"
           }
         },
         "required": [
@@ -18553,45 +18723,64 @@
       "MemoryResponseDto": {
         "properties": {
           "assets": {
+            "description": "Associated assets",
             "items": {
               "$ref": "#/components/schemas/AssetResponseDto"
             },
             "type": "array"
           },
           "createdAt": {
+            "description": "Creation date",
             "format": "date-time",
             "type": "string"
           },
           "data": {
-            "$ref": "#/components/schemas/OnThisDayDto"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OnThisDayDto"
+              }
+            ],
+            "description": "Memory data (type-specific)"
           },
           "deletedAt": {
+            "description": "Deletion date",
             "format": "date-time",
+            "nullable": true,
             "type": "string"
           },
           "hideAt": {
+            "description": "Date when memory should be hidden",
             "format": "date-time",
+            "nullable": true,
             "type": "string"
           },
           "id": {
+            "description": "Memory ID",
             "type": "string"
           },
           "isSaved": {
+            "description": "Is memory saved",
             "type": "boolean"
           },
           "memoryAt": {
+            "description": "Memory date",
             "format": "date-time",
             "type": "string"
           },
           "ownerId": {
+            "description": "Owner user ID",
             "type": "string"
           },
           "seenAt": {
+            "description": "Date when memory was seen",
             "format": "date-time",
+            "nullable": true,
             "type": "string"
           },
           "showAt": {
+            "description": "Date when memory should be shown",
             "format": "date-time",
+            "nullable": true,
             "type": "string"
           },
           "type": {
@@ -18599,9 +18788,11 @@
               {
                 "$ref": "#/components/schemas/MemoryType"
               }
-            ]
+            ],
+            "description": "Memory type"
           },
           "updatedAt": {
+            "description": "Last update date",
             "format": "date-time",
             "type": "string"
           }
@@ -18630,6 +18821,7 @@
       "MemoryStatisticsResponseDto": {
         "properties": {
           "total": {
+            "description": "Total number of memories",
             "type": "integer"
           }
         },
@@ -18647,13 +18839,16 @@
       "MemoryUpdateDto": {
         "properties": {
           "isSaved": {
+            "description": "Is memory saved",
             "type": "boolean"
           },
           "memoryAt": {
+            "description": "Memory date",
             "format": "date-time",
             "type": "string"
           },
           "seenAt": {
+            "description": "Date when memory was seen",
             "format": "date-time",
             "type": "string"
           }
@@ -18679,6 +18874,7 @@
       "MetadataSearchDto": {
         "properties": {
           "albumIds": {
+            "description": "Filter by album IDs",
             "items": {
               "format": "uuid",
               "type": "string"
@@ -18686,72 +18882,93 @@
             "type": "array"
           },
           "checksum": {
+            "description": "Filter by file checksum",
             "type": "string"
           },
           "city": {
+            "description": "Filter by city name",
             "nullable": true,
             "type": "string"
           },
           "country": {
+            "description": "Filter by country name",
             "nullable": true,
             "type": "string"
           },
           "createdAfter": {
+            "description": "Filter by creation date (after)",
             "format": "date-time",
             "type": "string"
           },
           "createdBefore": {
+            "description": "Filter by creation date (before)",
             "format": "date-time",
             "type": "string"
           },
           "description": {
+            "description": "Filter by description text",
             "type": "string"
           },
           "deviceAssetId": {
+            "description": "Filter by device asset ID",
             "type": "string"
           },
           "deviceId": {
+            "description": "Device ID to filter by",
             "type": "string"
           },
           "encodedVideoPath": {
+            "description": "Filter by encoded video file path",
             "type": "string"
           },
           "id": {
+            "description": "Filter by asset ID",
             "format": "uuid",
             "type": "string"
           },
           "isEncoded": {
+            "description": "Filter by encoded status",
             "type": "boolean"
           },
           "isFavorite": {
+            "description": "Filter by favorite status",
             "type": "boolean"
           },
           "isMotion": {
+            "description": "Filter by motion photo status",
             "type": "boolean"
           },
           "isNotInAlbum": {
+            "description": "Filter assets not in any album",
             "type": "boolean"
           },
           "isOffline": {
+            "description": "Filter by offline status",
             "type": "boolean"
           },
           "lensModel": {
+            "description": "Filter by lens model",
             "nullable": true,
             "type": "string"
           },
           "libraryId": {
+            "description": "Library ID to filter by",
             "format": "uuid",
             "nullable": true,
             "type": "string"
           },
           "make": {
+            "description": "Filter by camera make",
+            "nullable": true,
             "type": "string"
           },
           "model": {
+            "description": "Filter by camera model",
             "nullable": true,
             "type": "string"
           },
           "ocr": {
+            "description": "Filter by OCR text content",
             "type": "string"
           },
           "order": {
@@ -18760,19 +18977,24 @@
                 "$ref": "#/components/schemas/AssetOrder"
               }
             ],
-            "default": "desc"
+            "default": "desc",
+            "description": "Sort order"
           },
           "originalFileName": {
+            "description": "Filter by original file name",
             "type": "string"
           },
           "originalPath": {
+            "description": "Filter by original file path",
             "type": "string"
           },
           "page": {
+            "description": "Page number",
             "minimum": 1,
-            "type": "number"
+            "type": "integer"
           },
           "personIds": {
+            "description": "Filter by person IDs",
             "items": {
               "format": "uuid",
               "type": "string"
@@ -18780,23 +19002,28 @@
             "type": "array"
           },
           "previewPath": {
+            "description": "Filter by preview file path",
             "type": "string"
           },
           "rating": {
+            "description": "Filter by rating (-1 to 5)",
             "maximum": 5,
             "minimum": -1,
-            "type": "number"
+            "type": "integer"
           },
           "size": {
+            "description": "Number of results to return",
             "maximum": 1000,
             "minimum": 1,
-            "type": "number"
+            "type": "integer"
           },
           "state": {
+            "description": "Filter by state/province name",
             "nullable": true,
             "type": "string"
           },
           "tagIds": {
+            "description": "Filter by tag IDs",
             "items": {
               "format": "uuid",
               "type": "string"
@@ -18805,21 +19032,26 @@
             "type": "array"
           },
           "takenAfter": {
+            "description": "Filter by taken date (after)",
             "format": "date-time",
             "type": "string"
           },
           "takenBefore": {
+            "description": "Filter by taken date (before)",
             "format": "date-time",
             "type": "string"
           },
           "thumbnailPath": {
+            "description": "Filter by thumbnail file path",
             "type": "string"
           },
           "trashedAfter": {
+            "description": "Filter by trash date (after)",
             "format": "date-time",
             "type": "string"
           },
           "trashedBefore": {
+            "description": "Filter by trash date (before)",
             "format": "date-time",
             "type": "string"
           },
@@ -18828,13 +19060,16 @@
               {
                 "$ref": "#/components/schemas/AssetTypeEnum"
               }
-            ]
+            ],
+            "description": "Asset type filter"
           },
           "updatedAfter": {
+            "description": "Filter by update date (after)",
             "format": "date-time",
             "type": "string"
           },
           "updatedBefore": {
+            "description": "Filter by update date (before)",
             "format": "date-time",
             "type": "string"
           },
@@ -18843,18 +19078,23 @@
               {
                 "$ref": "#/components/schemas/AssetVisibility"
               }
-            ]
+            ],
+            "description": "Filter by visibility"
           },
           "withDeleted": {
+            "description": "Include deleted assets",
             "type": "boolean"
           },
           "withExif": {
+            "description": "Include EXIF data in response",
             "type": "boolean"
           },
           "withPeople": {
+            "description": "Include assets with people",
             "type": "boolean"
           },
           "withStacked": {
+            "description": "Include stacked assets",
             "type": "boolean"
           }
         },
@@ -18887,9 +19127,12 @@
       "NotificationCreateDto": {
         "properties": {
           "data": {
+            "description": "Additional notification data",
+            "nullable": true,
             "type": "object"
           },
           "description": {
+            "description": "Notification description",
             "nullable": true,
             "type": "string"
           },
@@ -18898,14 +19141,17 @@
               {
                 "$ref": "#/components/schemas/NotificationLevel"
               }
-            ]
+            ],
+            "description": "Notification level"
           },
           "readAt": {
+            "description": "Date when notification was read",
             "format": "date-time",
             "nullable": true,
             "type": "string"
           },
           "title": {
+            "description": "Notification title",
             "type": "string"
           },
           "type": {
@@ -18913,9 +19159,11 @@
               {
                 "$ref": "#/components/schemas/NotificationType"
               }
-            ]
+            ],
+            "description": "Notification type"
           },
           "userId": {
+            "description": "User ID to send notification to",
             "format": "uuid",
             "type": "string"
           }
@@ -18929,6 +19177,7 @@
       "NotificationDeleteAllDto": {
         "properties": {
           "ids": {
+            "description": "Notification IDs to delete",
             "items": {
               "format": "uuid",
               "type": "string"
@@ -18944,16 +19193,20 @@
       "NotificationDto": {
         "properties": {
           "createdAt": {
+            "description": "Creation date",
             "format": "date-time",
             "type": "string"
           },
           "data": {
+            "description": "Additional notification data",
             "type": "object"
           },
           "description": {
+            "description": "Notification description",
             "type": "string"
           },
           "id": {
+            "description": "Notification ID",
             "type": "string"
           },
           "level": {
@@ -18961,13 +19214,17 @@
               {
                 "$ref": "#/components/schemas/NotificationLevel"
               }
-            ]
+            ],
+            "description": "Notification level"
           },
           "readAt": {
+            "description": "Date when notification was read",
             "format": "date-time",
+            "nullable": true,
             "type": "string"
           },
           "title": {
+            "description": "Notification title",
             "type": "string"
           },
           "type": {
@@ -18975,7 +19232,8 @@
               {
                 "$ref": "#/components/schemas/NotificationType"
               }
-            ]
+            ],
+            "description": "Notification type"
           }
         },
         "required": [
@@ -19010,6 +19268,7 @@
       "NotificationUpdateAllDto": {
         "properties": {
           "ids": {
+            "description": "Notification IDs to update",
             "items": {
               "format": "uuid",
               "type": "string"
@@ -19017,6 +19276,7 @@
             "type": "array"
           },
           "readAt": {
+            "description": "Date when notifications were read",
             "format": "date-time",
             "nullable": true,
             "type": "string"
@@ -19030,6 +19290,7 @@
       "NotificationUpdateDto": {
         "properties": {
           "readAt": {
+            "description": "Date when notification was read",
             "format": "date-time",
             "nullable": true,
             "type": "string"
@@ -19133,8 +19394,9 @@
       "OnThisDayDto": {
         "properties": {
           "year": {
+            "description": "Year for on this day memory",
             "minimum": 1,
-            "type": "number"
+            "type": "integer"
           }
         },
         "required": [
@@ -19822,18 +20084,23 @@
       "PlacesResponseDto": {
         "properties": {
           "admin1name": {
+            "description": "Administrative level 1 name (state/province)",
             "type": "string"
           },
           "admin2name": {
+            "description": "Administrative level 2 name (county/district)",
             "type": "string"
           },
           "latitude": {
+            "description": "Latitude coordinate",
             "type": "number"
           },
           "longitude": {
+            "description": "Longitude coordinate",
             "type": "number"
           },
           "name": {
+            "description": "Place name",
             "type": "string"
           }
         },
@@ -20349,6 +20616,7 @@
       "RandomSearchDto": {
         "properties": {
           "albumIds": {
+            "description": "Filter by album IDs",
             "items": {
               "format": "uuid",
               "type": "string"
@@ -20356,59 +20624,76 @@
             "type": "array"
           },
           "city": {
+            "description": "Filter by city name",
             "nullable": true,
             "type": "string"
           },
           "country": {
+            "description": "Filter by country name",
             "nullable": true,
             "type": "string"
           },
           "createdAfter": {
+            "description": "Filter by creation date (after)",
             "format": "date-time",
             "type": "string"
           },
           "createdBefore": {
+            "description": "Filter by creation date (before)",
             "format": "date-time",
             "type": "string"
           },
           "deviceId": {
+            "description": "Device ID to filter by",
             "type": "string"
           },
           "isEncoded": {
+            "description": "Filter by encoded status",
             "type": "boolean"
           },
           "isFavorite": {
+            "description": "Filter by favorite status",
             "type": "boolean"
           },
           "isMotion": {
+            "description": "Filter by motion photo status",
             "type": "boolean"
           },
           "isNotInAlbum": {
+            "description": "Filter assets not in any album",
             "type": "boolean"
           },
           "isOffline": {
+            "description": "Filter by offline status",
             "type": "boolean"
           },
           "lensModel": {
+            "description": "Filter by lens model",
             "nullable": true,
             "type": "string"
           },
           "libraryId": {
+            "description": "Library ID to filter by",
             "format": "uuid",
             "nullable": true,
             "type": "string"
           },
           "make": {
+            "description": "Filter by camera make",
+            "nullable": true,
             "type": "string"
           },
           "model": {
+            "description": "Filter by camera model",
             "nullable": true,
             "type": "string"
           },
           "ocr": {
+            "description": "Filter by OCR text content",
             "type": "string"
           },
           "personIds": {
+            "description": "Filter by person IDs",
             "items": {
               "format": "uuid",
               "type": "string"
@@ -20416,20 +20701,24 @@
             "type": "array"
           },
           "rating": {
+            "description": "Filter by rating (-1 to 5)",
             "maximum": 5,
             "minimum": -1,
-            "type": "number"
+            "type": "integer"
           },
           "size": {
+            "description": "Number of results to return",
             "maximum": 1000,
             "minimum": 1,
-            "type": "number"
+            "type": "integer"
           },
           "state": {
+            "description": "Filter by state/province name",
             "nullable": true,
             "type": "string"
           },
           "tagIds": {
+            "description": "Filter by tag IDs",
             "items": {
               "format": "uuid",
               "type": "string"
@@ -20438,18 +20727,22 @@
             "type": "array"
           },
           "takenAfter": {
+            "description": "Filter by taken date (after)",
             "format": "date-time",
             "type": "string"
           },
           "takenBefore": {
+            "description": "Filter by taken date (before)",
             "format": "date-time",
             "type": "string"
           },
           "trashedAfter": {
+            "description": "Filter by trash date (after)",
             "format": "date-time",
             "type": "string"
           },
           "trashedBefore": {
+            "description": "Filter by trash date (before)",
             "format": "date-time",
             "type": "string"
           },
@@ -20458,13 +20751,16 @@
               {
                 "$ref": "#/components/schemas/AssetTypeEnum"
               }
-            ]
+            ],
+            "description": "Asset type filter"
           },
           "updatedAfter": {
+            "description": "Filter by update date (after)",
             "format": "date-time",
             "type": "string"
           },
           "updatedBefore": {
+            "description": "Filter by update date (before)",
             "format": "date-time",
             "type": "string"
           },
@@ -20473,18 +20769,23 @@
               {
                 "$ref": "#/components/schemas/AssetVisibility"
               }
-            ]
+            ],
+            "description": "Filter by visibility"
           },
           "withDeleted": {
+            "description": "Include deleted assets",
             "type": "boolean"
           },
           "withExif": {
+            "description": "Include EXIF data in response",
             "type": "boolean"
           },
           "withPeople": {
+            "description": "Include assets with people",
             "type": "boolean"
           },
           "withStacked": {
+            "description": "Include stacked assets",
             "type": "boolean"
           }
         },
@@ -20558,21 +20859,25 @@
       "SearchAlbumResponseDto": {
         "properties": {
           "count": {
+            "description": "Number of albums in this page",
             "type": "integer"
           },
           "facets": {
+            "description": "Search facets",
             "items": {
               "$ref": "#/components/schemas/SearchFacetResponseDto"
             },
             "type": "array"
           },
           "items": {
+            "description": "Album items",
             "items": {
               "$ref": "#/components/schemas/AlbumResponseDto"
             },
             "type": "array"
           },
           "total": {
+            "description": "Total number of matching albums",
             "type": "integer"
           }
         },
@@ -20587,25 +20892,30 @@
       "SearchAssetResponseDto": {
         "properties": {
           "count": {
+            "description": "Number of assets in this page",
             "type": "integer"
           },
           "facets": {
+            "description": "Search facets",
             "items": {
               "$ref": "#/components/schemas/SearchFacetResponseDto"
             },
             "type": "array"
           },
           "items": {
+            "description": "Asset items",
             "items": {
               "$ref": "#/components/schemas/AssetResponseDto"
             },
             "type": "array"
           },
           "nextPage": {
+            "description": "Next page token",
             "nullable": true,
             "type": "string"
           },
           "total": {
+            "description": "Total number of matching assets",
             "type": "integer"
           }
         },
@@ -20613,7 +20923,6 @@
           "count",
           "facets",
           "items",
-          "nextPage",
           "total"
         ],
         "type": "object"
@@ -20621,9 +20930,15 @@
       "SearchExploreItem": {
         "properties": {
           "data": {
-            "$ref": "#/components/schemas/AssetResponseDto"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetResponseDto"
+              }
+            ],
+            "description": "Representative asset"
           },
           "value": {
+            "description": "Explore value",
             "type": "string"
           }
         },
@@ -20636,9 +20951,11 @@
       "SearchExploreResponseDto": {
         "properties": {
           "fieldName": {
+            "description": "Explore field name",
             "type": "string"
           },
           "items": {
+            "description": "Explore items",
             "items": {
               "$ref": "#/components/schemas/SearchExploreItem"
             },
@@ -20654,9 +20971,11 @@
       "SearchFacetCountResponseDto": {
         "properties": {
           "count": {
+            "description": "Number of assets with this facet value",
             "type": "integer"
           },
           "value": {
+            "description": "Facet value",
             "type": "string"
           }
         },
@@ -20669,12 +20988,14 @@
       "SearchFacetResponseDto": {
         "properties": {
           "counts": {
+            "description": "Facet counts",
             "items": {
               "$ref": "#/components/schemas/SearchFacetCountResponseDto"
             },
             "type": "array"
           },
           "fieldName": {
+            "description": "Facet field name",
             "type": "string"
           }
         },
@@ -20687,10 +21008,20 @@
       "SearchResponseDto": {
         "properties": {
           "albums": {
-            "$ref": "#/components/schemas/SearchAlbumResponseDto"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SearchAlbumResponseDto"
+              }
+            ],
+            "description": "Album search results"
           },
           "assets": {
-            "$ref": "#/components/schemas/SearchAssetResponseDto"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SearchAssetResponseDto"
+              }
+            ],
+            "description": "Asset search results"
           }
         },
         "required": [
@@ -20702,6 +21033,7 @@
       "SearchStatisticsResponseDto": {
         "properties": {
           "total": {
+            "description": "Total number of matching assets",
             "type": "integer"
           }
         },
@@ -21557,6 +21889,7 @@
       "SmartSearchDto": {
         "properties": {
           "albumIds": {
+            "description": "Filter by album IDs",
             "items": {
               "format": "uuid",
               "type": "string"
@@ -21564,66 +21897,85 @@
             "type": "array"
           },
           "city": {
+            "description": "Filter by city name",
             "nullable": true,
             "type": "string"
           },
           "country": {
+            "description": "Filter by country name",
             "nullable": true,
             "type": "string"
           },
           "createdAfter": {
+            "description": "Filter by creation date (after)",
             "format": "date-time",
             "type": "string"
           },
           "createdBefore": {
+            "description": "Filter by creation date (before)",
             "format": "date-time",
             "type": "string"
           },
           "deviceId": {
+            "description": "Device ID to filter by",
             "type": "string"
           },
           "isEncoded": {
+            "description": "Filter by encoded status",
             "type": "boolean"
           },
           "isFavorite": {
+            "description": "Filter by favorite status",
             "type": "boolean"
           },
           "isMotion": {
+            "description": "Filter by motion photo status",
             "type": "boolean"
           },
           "isNotInAlbum": {
+            "description": "Filter assets not in any album",
             "type": "boolean"
           },
           "isOffline": {
+            "description": "Filter by offline status",
             "type": "boolean"
           },
           "language": {
+            "description": "Search language code",
             "type": "string"
           },
           "lensModel": {
+            "description": "Filter by lens model",
             "nullable": true,
             "type": "string"
           },
           "libraryId": {
+            "description": "Library ID to filter by",
             "format": "uuid",
             "nullable": true,
             "type": "string"
           },
           "make": {
+            "description": "Filter by camera make",
+            "nullable": true,
             "type": "string"
           },
           "model": {
+            "description": "Filter by camera model",
             "nullable": true,
             "type": "string"
           },
           "ocr": {
+            "description": "Filter by OCR text content",
             "type": "string"
           },
           "page": {
+            "description": "Page number",
             "minimum": 1,
-            "type": "number"
+            "type": "integer"
           },
           "personIds": {
+            "description": "Filter by person IDs",
             "items": {
               "format": "uuid",
               "type": "string"
@@ -21631,27 +21983,33 @@
             "type": "array"
           },
           "query": {
+            "description": "Natural language search query",
             "type": "string"
           },
           "queryAssetId": {
+            "description": "Asset ID to use as search reference",
             "format": "uuid",
             "type": "string"
           },
           "rating": {
+            "description": "Filter by rating (-1 to 5)",
             "maximum": 5,
             "minimum": -1,
-            "type": "number"
+            "type": "integer"
           },
           "size": {
+            "description": "Number of results to return",
             "maximum": 1000,
             "minimum": 1,
-            "type": "number"
+            "type": "integer"
           },
           "state": {
+            "description": "Filter by state/province name",
             "nullable": true,
             "type": "string"
           },
           "tagIds": {
+            "description": "Filter by tag IDs",
             "items": {
               "format": "uuid",
               "type": "string"
@@ -21660,18 +22018,22 @@
             "type": "array"
           },
           "takenAfter": {
+            "description": "Filter by taken date (after)",
             "format": "date-time",
             "type": "string"
           },
           "takenBefore": {
+            "description": "Filter by taken date (before)",
             "format": "date-time",
             "type": "string"
           },
           "trashedAfter": {
+            "description": "Filter by trash date (after)",
             "format": "date-time",
             "type": "string"
           },
           "trashedBefore": {
+            "description": "Filter by trash date (before)",
             "format": "date-time",
             "type": "string"
           },
@@ -21680,13 +22042,16 @@
               {
                 "$ref": "#/components/schemas/AssetTypeEnum"
               }
-            ]
+            ],
+            "description": "Asset type filter"
           },
           "updatedAfter": {
+            "description": "Filter by update date (after)",
             "format": "date-time",
             "type": "string"
           },
           "updatedBefore": {
+            "description": "Filter by update date (before)",
             "format": "date-time",
             "type": "string"
           },
@@ -21695,12 +22060,15 @@
               {
                 "$ref": "#/components/schemas/AssetVisibility"
               }
-            ]
+            ],
+            "description": "Filter by visibility"
           },
           "withDeleted": {
+            "description": "Include deleted assets",
             "type": "boolean"
           },
           "withExif": {
+            "description": "Include EXIF data in response",
             "type": "boolean"
           }
         },
@@ -21770,6 +22138,7 @@
       "StatisticsSearchDto": {
         "properties": {
           "albumIds": {
+            "description": "Filter by album IDs",
             "items": {
               "format": "uuid",
               "type": "string"
@@ -21777,62 +22146,80 @@
             "type": "array"
           },
           "city": {
+            "description": "Filter by city name",
             "nullable": true,
             "type": "string"
           },
           "country": {
+            "description": "Filter by country name",
             "nullable": true,
             "type": "string"
           },
           "createdAfter": {
+            "description": "Filter by creation date (after)",
             "format": "date-time",
             "type": "string"
           },
           "createdBefore": {
+            "description": "Filter by creation date (before)",
             "format": "date-time",
             "type": "string"
           },
           "description": {
+            "description": "Filter by description text",
             "type": "string"
           },
           "deviceId": {
+            "description": "Device ID to filter by",
             "type": "string"
           },
           "isEncoded": {
+            "description": "Filter by encoded status",
             "type": "boolean"
           },
           "isFavorite": {
+            "description": "Filter by favorite status",
             "type": "boolean"
           },
           "isMotion": {
+            "description": "Filter by motion photo status",
             "type": "boolean"
           },
           "isNotInAlbum": {
+            "description": "Filter assets not in any album",
             "type": "boolean"
           },
           "isOffline": {
+            "description": "Filter by offline status",
             "type": "boolean"
           },
           "lensModel": {
+            "description": "Filter by lens model",
             "nullable": true,
             "type": "string"
           },
           "libraryId": {
+            "description": "Library ID to filter by",
             "format": "uuid",
             "nullable": true,
             "type": "string"
           },
           "make": {
+            "description": "Filter by camera make",
+            "nullable": true,
             "type": "string"
           },
           "model": {
+            "description": "Filter by camera model",
             "nullable": true,
             "type": "string"
           },
           "ocr": {
+            "description": "Filter by OCR text content",
             "type": "string"
           },
           "personIds": {
+            "description": "Filter by person IDs",
             "items": {
               "format": "uuid",
               "type": "string"
@@ -21840,15 +22227,18 @@
             "type": "array"
           },
           "rating": {
+            "description": "Filter by rating (-1 to 5)",
             "maximum": 5,
             "minimum": -1,
-            "type": "number"
+            "type": "integer"
           },
           "state": {
+            "description": "Filter by state/province name",
             "nullable": true,
             "type": "string"
           },
           "tagIds": {
+            "description": "Filter by tag IDs",
             "items": {
               "format": "uuid",
               "type": "string"
@@ -21857,18 +22247,22 @@
             "type": "array"
           },
           "takenAfter": {
+            "description": "Filter by taken date (after)",
             "format": "date-time",
             "type": "string"
           },
           "takenBefore": {
+            "description": "Filter by taken date (before)",
             "format": "date-time",
             "type": "string"
           },
           "trashedAfter": {
+            "description": "Filter by trash date (after)",
             "format": "date-time",
             "type": "string"
           },
           "trashedBefore": {
+            "description": "Filter by trash date (before)",
             "format": "date-time",
             "type": "string"
           },
@@ -21877,13 +22271,16 @@
               {
                 "$ref": "#/components/schemas/AssetTypeEnum"
               }
-            ]
+            ],
+            "description": "Asset type filter"
           },
           "updatedAfter": {
+            "description": "Filter by update date (after)",
             "format": "date-time",
             "type": "string"
           },
           "updatedBefore": {
+            "description": "Filter by update date (before)",
             "format": "date-time",
             "type": "string"
           },
@@ -21892,7 +22289,8 @@
               {
                 "$ref": "#/components/schemas/AssetVisibility"
               }
-            ]
+            ],
+            "description": "Filter by visibility"
           }
         },
         "type": "object"
@@ -24038,6 +24436,7 @@
       "TemplateDto": {
         "properties": {
           "template": {
+            "description": "Template name",
             "type": "string"
           }
         },
@@ -24049,9 +24448,11 @@
       "TemplateResponseDto": {
         "properties": {
           "html": {
+            "description": "Template HTML content",
             "type": "string"
           },
           "name": {
+            "description": "Template name",
             "type": "string"
           }
         },
@@ -24064,6 +24465,7 @@
       "TestEmailResponseDto": {
         "properties": {
           "messageId": {
+            "description": "Email message ID",
             "type": "string"
           }
         },
