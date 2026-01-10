@@ -16289,7 +16289,7 @@
           },
           "imageHeight": {
             "description": "Image height in pixels",
-            "type": "number"
+            "type": "integer"
           },
           "imageWidth": {
             "description": "Image width in pixels",
@@ -16362,7 +16362,7 @@
           },
           "imageHeight": {
             "description": "Image height in pixels",
-            "type": "number"
+            "type": "integer"
           },
           "imageWidth": {
             "description": "Image width in pixels",
@@ -16457,7 +16457,7 @@
           },
           "imageHeight": {
             "description": "Image height in pixels",
-            "type": "number"
+            "type": "integer"
           },
           "imageWidth": {
             "description": "Image width in pixels",
@@ -17933,7 +17933,7 @@
             "default": null,
             "description": "Image height in pixels",
             "nullable": true,
-            "type": "number"
+            "type": "integer"
           },
           "exifImageWidth": {
             "default": null,
