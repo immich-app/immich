@@ -102,7 +102,7 @@ export type MaintenanceStatusResponseDto = {
 };
 export type NotificationCreateDto = {
     /** Additional notification data */
-    data?: object | null;
+    data?: object;
     /** Notification description */
     description?: string | null;
     /** Notification level */
@@ -128,7 +128,7 @@ export type NotificationDto = {
     /** Notification level */
     level: NotificationLevel;
     /** Date when notification was read */
-    readAt?: string | null;
+    readAt?: string;
     /** Notification title */
     title: string;
     /** Notification type */
@@ -1322,9 +1322,9 @@ export type MemoryResponseDto = {
     /** Memory data (type-specific) */
     data: OnThisDayDto;
     /** Deletion date */
-    deletedAt?: string | null;
+    deletedAt?: string;
     /** Date when memory should be hidden */
-    hideAt?: string | null;
+    hideAt?: string;
     /** Memory ID */
     id: string;
     /** Is memory saved */
@@ -1334,9 +1334,9 @@ export type MemoryResponseDto = {
     /** Owner user ID */
     ownerId: string;
     /** Date when memory was seen */
-    seenAt?: string | null;
+    seenAt?: string;
     /** Date when memory should be shown */
-    showAt?: string | null;
+    showAt?: string;
     /** Memory type */
     "type": MemoryType;
     /** Last update date */
@@ -1628,7 +1628,7 @@ export type MetadataSearchDto = {
     /** Library ID to filter by */
     libraryId?: string | null;
     /** Filter by camera make */
-    make?: string | null;
+    make?: string;
     /** Filter by camera model */
     model?: string | null;
     /** Filter by OCR text content */
@@ -1760,7 +1760,7 @@ export type RandomSearchDto = {
     /** Library ID to filter by */
     libraryId?: string | null;
     /** Filter by camera make */
-    make?: string | null;
+    make?: string;
     /** Filter by camera model */
     model?: string | null;
     /** Filter by OCR text content */
@@ -1830,7 +1830,7 @@ export type SmartSearchDto = {
     /** Library ID to filter by */
     libraryId?: string | null;
     /** Filter by camera make */
-    make?: string | null;
+    make?: string;
     /** Filter by camera model */
     model?: string | null;
     /** Filter by OCR text content */
@@ -1902,7 +1902,7 @@ export type StatisticsSearchDto = {
     /** Library ID to filter by */
     libraryId?: string | null;
     /** Filter by camera make */
-    make?: string | null;
+    make?: string;
     /** Filter by camera model */
     model?: string | null;
     /** Filter by OCR text content */
@@ -5038,7 +5038,7 @@ export function searchLargeAssets({ albumIds, city, country, createdAfter, creat
     isOffline?: boolean;
     lensModel?: string | null;
     libraryId?: string | null;
-    make?: string | null;
+    make?: string;
     minFileSize?: number;
     model?: string | null;
     ocr?: string;
