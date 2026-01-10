@@ -43,7 +43,7 @@ export class WorkflowCreateDto {
   @Optional()
   description?: string;
 
-  @ApiPropertyOptional({ description: 'Workflow enabled', default: true })
+  @ApiPropertyOptional({ description: 'Workflow enabled' })
   @ValidateBoolean({ optional: true })
   enabled?: boolean;
 
