@@ -98,7 +98,6 @@ export class AssetMediaController {
   @FileResponse()
   @Authenticated({ permission: Permission.AssetDownload, sharedLink: true })
   @ApiParam({ name: 'id', description: 'Asset ID', type: String, format: 'uuid' })
-  @ApiQuery({ name: 'key', description: 'Download key for shared links', type: String, required: false })
   @Endpoint({
     summary: 'Download original asset',
     description: 'Downloads the original file of the specified asset.',
@@ -151,7 +150,6 @@ export class AssetMediaController {
   @Authenticated({ permission: Permission.AssetView, sharedLink: true })
   @ApiParam({ name: 'id', description: 'Asset ID', type: String, format: 'uuid' })
   @ApiQuery({ name: 'size', description: 'Asset media size', type: String, required: false })
-  @ApiQuery({ name: 'key', description: 'Access key for shared links', type: String, required: false })
   @Endpoint({
     summary: 'View asset thumbnail',
     description:

@@ -259,6 +259,7 @@ export class AssetController {
 
   @Put(':id/edits')
   @Authenticated({ permission: Permission.AssetEditCreate })
+  @ApiBody({ description: 'List of edit actions (crop, rotate, mirror) to apply', type: AssetEditActionListDto })
   @Endpoint({
     summary: 'Apply edits to an existing asset',
     description: 'Apply a series of edit actions (crop, rotate, mirror) to the specified asset.',
