@@ -575,6 +575,7 @@
               }
             }
           },
+          "description": "Maintenance mode action",
           "required": true
         },
         "responses": {
@@ -672,6 +673,7 @@
               }
             }
           },
+          "description": "Maintenance token for login",
           "required": true
         },
         "responses": {
