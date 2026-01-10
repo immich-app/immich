@@ -26,7 +26,7 @@ export class SanitizedAssetResponseDto {
   @ApiProperty({ description: 'Asset type', enum: AssetType })
   @ValidateEnum({ enum: AssetType, name: 'AssetTypeEnum' })
   type!: AssetType;
-  @ApiPropertyOptional({ description: 'Thumbhash for thumbnail generation', nullable: true })
+  @ApiProperty({ description: 'Thumbhash for thumbnail generation' })
   thumbhash!: string | null;
   @ApiPropertyOptional({ description: 'Original MIME type' })
   originalMimeType?: string;
@@ -38,15 +38,15 @@ export class SanitizedAssetResponseDto {
     example: '2024-01-15T14:30:00.000Z',
   })
   localDateTime!: Date;
-  @ApiPropertyOptional({ description: 'Video duration (for videos)' })
+  @ApiProperty({ description: 'Video duration (for videos)' })
   duration!: string;
   @ApiPropertyOptional({ description: 'Live photo video ID', nullable: true })
   livePhotoVideoId?: string | null;
   @ApiProperty({ description: 'Whether asset has metadata' })
   hasMetadata!: boolean;
-  @ApiPropertyOptional({ description: 'Asset width', nullable: true })
+  @ApiProperty({ description: 'Asset width' })
   width!: number | null;
-  @ApiPropertyOptional({ description: 'Asset height', nullable: true })
+  @ApiProperty({ description: 'Asset height' })
   height!: number | null;
 }
 
