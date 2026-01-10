@@ -103,15 +103,15 @@ export class MemoryResponseDto {
   createdAt!: Date;
   @ApiProperty({ description: 'Last update date', format: 'date-time' })
   updatedAt!: Date;
-  @ApiPropertyOptional({ description: 'Deletion date', format: 'date-time', nullable: true })
+  @ApiPropertyOptional({ description: 'Deletion date', format: 'date-time' })
   deletedAt?: Date;
   @ApiProperty({ description: 'Memory date', format: 'date-time' })
   memoryAt!: Date;
-  @ApiPropertyOptional({ description: 'Date when memory was seen', format: 'date-time', nullable: true })
+  @ApiPropertyOptional({ description: 'Date when memory was seen', format: 'date-time' })
   seenAt?: Date;
-  @ApiPropertyOptional({ description: 'Date when memory should be shown', format: 'date-time', nullable: true })
+  @ApiPropertyOptional({ description: 'Date when memory should be shown', format: 'date-time' })
   showAt?: Date;
-  @ApiPropertyOptional({ description: 'Date when memory should be hidden', format: 'date-time', nullable: true })
+  @ApiPropertyOptional({ description: 'Date when memory should be hidden', format: 'date-time' })
   hideAt?: Date;
   @ApiProperty({ description: 'Owner user ID' })
   ownerId!: string;

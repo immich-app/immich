@@ -191,7 +191,7 @@ export class UserAdminResponseDto extends UserResponseDto {
   isAdmin!: boolean;
   @ApiProperty({ description: 'Creation date' })
   createdAt!: Date;
-  @ApiProperty({ description: 'Deletion date', nullable: true })
+  @ApiProperty({ description: 'Deletion date' })
   deletedAt!: Date | null;
   @ApiProperty({ description: 'Last update date' })
   updatedAt!: Date;

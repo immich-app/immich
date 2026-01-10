@@ -91,7 +91,7 @@ class BaseSearchDto {
   @Optional({ nullable: true, emptyToNull: true })
   country?: string | null;
 
-  @ApiPropertyOptional({ description: 'Filter by camera make', nullable: true })
+  @ApiPropertyOptional({ description: 'Filter by camera make' })
   @IsString()
   @Optional({ nullable: true, emptyToNull: true })
   make?: string;

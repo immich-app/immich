@@ -37,7 +37,7 @@ export class NotificationDto {
   description?: string;
   @ApiPropertyOptional({ description: 'Additional notification data' })
   data?: any;
-  @ApiPropertyOptional({ description: 'Date when notification was read', format: 'date-time', nullable: true })
+  @ApiPropertyOptional({ description: 'Date when notification was read', format: 'date-time' })
   readAt?: Date;
 }
 
@@ -77,7 +77,7 @@ export class NotificationCreateDto {
   @Optional({ nullable: true })
   description?: string | null;
 
-  @ApiPropertyOptional({ description: 'Additional notification data', nullable: true })
+  @ApiPropertyOptional({ description: 'Additional notification data' })
   @Optional({ nullable: true })
   data?: any;
 
