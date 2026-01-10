@@ -1,5 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { plainToInstance, Transform, Type } from 'class-transformer';
 import { ArrayNotEmpty, IsArray, IsNotEmpty, IsString, ValidateNested } from 'class-validator';
 import { AssetMetadataUpsertItemDto } from 'src/dtos/asset.dto';
@@ -18,6 +18,7 @@ export enum AssetMediaSize {
 }
 
 export class AssetMediaOptionsDto {
+  @ApiProperty({ description: 'Asset media size', enum: AssetMediaSize, required: false })
   @ValidateEnum({ enum: AssetMediaSize, name: 'AssetMediaSize', optional: true })
   size?: AssetMediaSize;
 
@@ -32,44 +33,54 @@ export enum UploadFieldName {
 }
 
 class AssetMediaBase {
+  @ApiProperty({ description: 'Device asset ID' })
   @IsNotEmpty()
   @IsString()
   deviceAssetId!: string;
 
+  @ApiProperty({ description: 'Device ID' })
   @IsNotEmpty()
   @IsString()
   deviceId!: string;
 
+  @ApiProperty({ description: 'File creation date' })
   @ValidateDate()
   fileCreatedAt!: Date;
 
+  @ApiProperty({ description: 'File modification date' })
   @ValidateDate()
   fileModifiedAt!: Date;
 
+  @ApiPropertyOptional({ description: 'Duration (for videos)' })
   @Optional()
   @IsString()
   duration?: string;
 
+  @ApiPropertyOptional({ description: 'Filename' })
   @Optional()
   @IsString()
   filename?: string;
 
   // The properties below are added to correctly generate the API docs
   // and client SDKs. Validation should be handled in the controller.
-  @ApiProperty({ type: 'string', format: 'binary' })
+  @ApiProperty({ type: 'string', format: 'binary', description: 'Asset file data' })
   [UploadFieldName.ASSET_DATA]!: any;
 }
 
 export class AssetMediaCreateDto extends AssetMediaBase {
+  @ApiPropertyOptional({ description: 'Mark as favorite' })
   @ValidateBoolean({ optional: true })
   isFavorite?: boolean;
 
+  @ApiPropertyOptional({ description: 'Asset visibility', enum: AssetVisibility })
   @ValidateEnum({ enum: AssetVisibility, name: 'AssetVisibility', optional: true })
   visibility?: AssetVisibility;
 
+  @ApiPropertyOptional({ description: 'Live photo video ID' })
   @ValidateUUID({ optional: true })
   livePhotoVideoId?: string;
 
+  @ApiPropertyOptional({ description: 'Asset metadata items', type: [AssetMetadataUpsertItemDto] })
   @Transform(({ value }) => {
     try {
       const json = JSON.parse(value);
@@ -84,24 +95,26 @@ export class AssetMediaCreateDto extends AssetMediaBase {
   @IsArray()
   metadata?: AssetMetadataUpsertItemDto[];
 
-  @ApiProperty({ type: 'string', format: 'binary', required: false })
+  @ApiProperty({ type: 'string', format: 'binary', required: false, description: 'Sidecar file data' })
   [UploadFieldName.SIDECAR_DATA]?: any;
 }
 
 export class AssetMediaReplaceDto extends AssetMediaBase {}
 
 export class AssetBulkUploadCheckItem {
+  @ApiProperty({ description: 'Asset ID' })
   @IsString()
   @IsNotEmpty()
   id!: string;
 
-  /** base64 or hex encoded sha1 hash */
+  @ApiProperty({ description: 'Base64 or hex encoded SHA1 hash' })
   @IsString()
   @IsNotEmpty()
   checksum!: string;
 }
 
 export class AssetBulkUploadCheckDto {
+  @ApiProperty({ description: 'Assets to check', type: [AssetBulkUploadCheckItem] })
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => AssetBulkUploadCheckItem)
@@ -109,11 +122,13 @@ export class AssetBulkUploadCheckDto {
 }
 
 export class CheckExistingAssetsDto {
+  @ApiProperty({ description: 'Device asset IDs to check', type: [String] })
   @ArrayNotEmpty()
   @IsString({ each: true })
   @IsNotEmpty({ each: true })
   deviceAssetIds!: string[];
 
+  @ApiProperty({ description: 'Device ID' })
   @IsNotEmpty()
   deviceId!: string;
 }

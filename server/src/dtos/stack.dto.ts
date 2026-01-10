@@ -1,3 +1,4 @@
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { ArrayMinSize } from 'class-validator';
 import { Stack } from 'src/database';
 import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
@@ -5,25 +6,30 @@ import { AuthDto } from 'src/dtos/auth.dto';
 import { ValidateUUID } from 'src/validation';
 
 export class StackCreateDto {
-  /** first asset becomes the primary */
+  @ApiProperty({ description: 'Asset IDs (first becomes primary, min 2)', type: [String] })
   @ValidateUUID({ each: true })
   @ArrayMinSize(2)
   assetIds!: string[];
 }
 
 export class StackSearchDto {
+  @ApiPropertyOptional({ description: 'Filter by primary asset ID' })
   @ValidateUUID({ optional: true })
   primaryAssetId?: string;
 }
 
 export class StackUpdateDto {
+  @ApiPropertyOptional({ description: 'Primary asset ID' })
   @ValidateUUID({ optional: true })
   primaryAssetId?: string;
 }
 
 export class StackResponseDto {
+  @ApiProperty({ description: 'Stack ID' })
   id!: string;
+  @ApiProperty({ description: 'Primary asset ID' })
   primaryAssetId!: string;
+  @ApiProperty({ description: 'Stack assets', type: [AssetResponseDto] })
   assets!: AssetResponseDto[];
 }
 

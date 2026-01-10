@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { ArrayNotEmpty, IsArray, IsString, ValidateNested } from 'class-validator';
 import _ from 'lodash';
@@ -11,156 +11,185 @@ import { AlbumUserRole, AssetOrder } from 'src/enum';
 import { Optional, ValidateBoolean, ValidateEnum, ValidateUUID } from 'src/validation';
 
 export class AlbumInfoDto {
+  @ApiPropertyOptional({ description: 'Exclude assets from response' })
   @ValidateBoolean({ optional: true })
   withoutAssets?: boolean;
 }
 
 export class AlbumUserAddDto {
+  @ApiProperty({ description: 'User ID' })
   @ValidateUUID()
   userId!: string;
 
+  @ApiPropertyOptional({ description: 'Album user role', enum: AlbumUserRole, default: AlbumUserRole.Editor })
   @ValidateEnum({ enum: AlbumUserRole, name: 'AlbumUserRole', default: AlbumUserRole.Editor })
   role?: AlbumUserRole;
 }
 
 export class AddUsersDto {
+  @ApiProperty({ description: 'Album users to add', type: [AlbumUserAddDto] })
   @ArrayNotEmpty()
   albumUsers!: AlbumUserAddDto[];
 }
 
 export class AlbumUserCreateDto {
+  @ApiProperty({ description: 'User ID' })
   @ValidateUUID()
   userId!: string;
 
+  @ApiProperty({ description: 'Album user role', enum: AlbumUserRole })
   @ValidateEnum({ enum: AlbumUserRole, name: 'AlbumUserRole' })
   role!: AlbumUserRole;
 }
 
 export class CreateAlbumDto {
+  @ApiProperty({ description: 'Album name' })
   @IsString()
-  @ApiProperty()
   albumName!: string;
 
+  @ApiPropertyOptional({ description: 'Album description' })
   @IsString()
   @Optional()
   description?: string;
 
+  @ApiPropertyOptional({ description: 'Album users', type: [AlbumUserCreateDto] })
   @Optional()
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => AlbumUserCreateDto)
   albumUsers?: AlbumUserCreateDto[];
 
+  @ApiPropertyOptional({ description: 'Initial asset IDs', type: [String] })
   @ValidateUUID({ optional: true, each: true })
   assetIds?: string[];
 }
 
 export class AlbumsAddAssetsDto {
+  @ApiProperty({ description: 'Album IDs', type: [String] })
   @ValidateUUID({ each: true })
   albumIds!: string[];
 
+  @ApiProperty({ description: 'Asset IDs', type: [String] })
   @ValidateUUID({ each: true })
   assetIds!: string[];
 }
 
 export class AlbumsAddAssetsResponseDto {
+  @ApiProperty({ description: 'Operation success' })
   success!: boolean;
+  @ApiPropertyOptional({ description: 'Error reason', enum: BulkIdErrorReason })
   @ValidateEnum({ enum: BulkIdErrorReason, name: 'BulkIdErrorReason', optional: true })
   error?: BulkIdErrorReason;
 }
 
 export class UpdateAlbumDto {
+  @ApiPropertyOptional({ description: 'Album name' })
   @Optional()
   @IsString()
   albumName?: string;
 
+  @ApiPropertyOptional({ description: 'Album description' })
   @Optional()
   @IsString()
   description?: string;
 
+  @ApiPropertyOptional({ description: 'Album thumbnail asset ID' })
   @ValidateUUID({ optional: true })
   albumThumbnailAssetId?: string;
 
+  @ApiPropertyOptional({ description: 'Enable activity feed' })
   @ValidateBoolean({ optional: true })
   isActivityEnabled?: boolean;
 
+  @ApiPropertyOptional({ description: 'Asset sort order', enum: AssetOrder })
   @ValidateEnum({ enum: AssetOrder, name: 'AssetOrder', optional: true })
   order?: AssetOrder;
 }
 
 export class GetAlbumsDto {
+  @ApiPropertyOptional({ description: 'Filter by shared status: true = only shared, false = only own, undefined = all' })
   @ValidateBoolean({ optional: true })
-  /**
-   * true: only shared albums
-   * false: only non-shared own albums
-   * undefined: shared and owned albums
-   */
   shared?: boolean;
 
-  /**
-   * Only returns albums that contain the asset
-   * Ignores the shared parameter
-   * undefined: get all albums
-   */
+  @ApiPropertyOptional({ description: 'Filter albums containing this asset ID (ignores shared parameter)' })
   @ValidateUUID({ optional: true })
   assetId?: string;
 }
 
 export class AlbumStatisticsResponseDto {
-  @ApiProperty({ type: 'integer' })
+  @ApiProperty({ type: 'integer', description: 'Number of owned albums' })
   owned!: number;
 
-  @ApiProperty({ type: 'integer' })
+  @ApiProperty({ type: 'integer', description: 'Number of shared albums' })
   shared!: number;
 
-  @ApiProperty({ type: 'integer' })
+  @ApiProperty({ type: 'integer', description: 'Number of non-shared albums' })
   notShared!: number;
 }
 
 export class UpdateAlbumUserDto {
+  @ApiProperty({ description: 'Album user role', enum: AlbumUserRole })
   @ValidateEnum({ enum: AlbumUserRole, name: 'AlbumUserRole' })
   role!: AlbumUserRole;
 }
 
 export class AlbumUserResponseDto {
+  @ApiProperty({ description: 'User details', type: UserResponseDto })
   user!: UserResponseDto;
+  @ApiProperty({ description: 'Album user role', enum: AlbumUserRole })
   @ValidateEnum({ enum: AlbumUserRole, name: 'AlbumUserRole' })
   role!: AlbumUserRole;
 }
 
 export class ContributorCountResponseDto {
-  @ApiProperty()
+  @ApiProperty({ description: 'User ID' })
   userId!: string;
 
-  @ApiProperty({ type: 'integer' })
+  @ApiProperty({ type: 'integer', description: 'Number of assets contributed' })
   assetCount!: number;
 }
 
 export class AlbumResponseDto {
+  @ApiProperty({ description: 'Album ID' })
   id!: string;
+  @ApiProperty({ description: 'Owner user ID' })
   ownerId!: string;
+  @ApiProperty({ description: 'Album name' })
   albumName!: string;
+  @ApiProperty({ description: 'Album description' })
   description!: string;
+  @ApiProperty({ description: 'Creation date' })
   createdAt!: Date;
+  @ApiProperty({ description: 'Last update date' })
   updatedAt!: Date;
+  @ApiProperty({ description: 'Thumbnail asset ID', nullable: true })
   albumThumbnailAssetId!: string | null;
+  @ApiProperty({ description: 'Is shared album' })
   shared!: boolean;
+  @ApiProperty({ description: 'Album users', type: [AlbumUserResponseDto] })
   albumUsers!: AlbumUserResponseDto[];
+  @ApiProperty({ description: 'Has shared link' })
   hasSharedLink!: boolean;
+  @ApiProperty({ description: 'Album assets', type: [AssetResponseDto] })
   assets!: AssetResponseDto[];
+  @ApiProperty({ description: 'Album owner', type: UserResponseDto })
   owner!: UserResponseDto;
-  @ApiProperty({ type: 'integer' })
+  @ApiProperty({ type: 'integer', description: 'Number of assets' })
   assetCount!: number;
+  @ApiPropertyOptional({ description: 'Last modified asset timestamp' })
   lastModifiedAssetTimestamp?: Date;
+  @ApiPropertyOptional({ description: 'Start date (earliest asset)' })
   startDate?: Date;
+  @ApiPropertyOptional({ description: 'End date (latest asset)' })
   endDate?: Date;
+  @ApiProperty({ description: 'Activity feed enabled' })
   isActivityEnabled!: boolean;
+  @ApiPropertyOptional({ description: 'Asset sort order', enum: AssetOrder })
   @ValidateEnum({ enum: AssetOrder, name: 'AssetOrder', optional: true })
   order?: AssetOrder;
 
-  // Optional per-user contribution counts for shared albums
+  @ApiPropertyOptional({ description: 'Per-user contribution counts (shared albums only)', type: [ContributorCountResponseDto] })
   @Type(() => ContributorCountResponseDto)
-  @ApiProperty({ type: [ContributorCountResponseDto], required: false })
   contributorCounts?: ContributorCountResponseDto[];
 }
 

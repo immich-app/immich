@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsString } from 'class-validator';
 import { SharedLink } from 'src/database';
 import { HistoryBuilder, Property } from 'src/decorators';
@@ -8,112 +8,143 @@ import { SharedLinkType } from 'src/enum';
 import { Optional, ValidateBoolean, ValidateDate, ValidateEnum, ValidateUUID } from 'src/validation';
 
 export class SharedLinkSearchDto {
+  @ApiPropertyOptional({ description: 'Filter by album ID' })
   @ValidateUUID({ optional: true })
   albumId?: string;
 
+  @ApiPropertyOptional({ description: 'Filter by shared link ID' })
   @ValidateUUID({ optional: true })
   @Property({ history: new HistoryBuilder().added('v2.5.0') })
   id?: string;
 }
 
 export class SharedLinkCreateDto {
+  @ApiProperty({ description: 'Shared link type', enum: SharedLinkType })
   @ValidateEnum({ enum: SharedLinkType, name: 'SharedLinkType' })
   type!: SharedLinkType;
 
+  @ApiPropertyOptional({ description: 'Asset IDs (for individual assets)', type: [String] })
   @ValidateUUID({ each: true, optional: true })
   assetIds?: string[];
 
+  @ApiPropertyOptional({ description: 'Album ID (for album sharing)' })
   @ValidateUUID({ optional: true })
   albumId?: string;
 
+  @ApiPropertyOptional({ description: 'Link description', nullable: true })
   @Optional({ nullable: true, emptyToNull: true })
   @IsString()
   description?: string | null;
 
+  @ApiPropertyOptional({ description: 'Link password', nullable: true })
   @Optional({ nullable: true, emptyToNull: true })
   @IsString()
   password?: string | null;
 
+  @ApiPropertyOptional({ description: 'Custom URL slug', nullable: true })
   @Optional({ nullable: true, emptyToNull: true })
   @IsString()
   slug?: string | null;
 
+  @ApiPropertyOptional({ description: 'Expiration date', nullable: true })
   @ValidateDate({ optional: true, nullable: true })
   expiresAt?: Date | null = null;
 
+  @ApiPropertyOptional({ description: 'Allow uploads', default: false })
   @ValidateBoolean({ optional: true })
   allowUpload?: boolean;
 
+  @ApiPropertyOptional({ description: 'Allow downloads', default: true })
   @ValidateBoolean({ optional: true })
   allowDownload?: boolean = true;
 
+  @ApiPropertyOptional({ description: 'Show metadata', default: true })
   @ValidateBoolean({ optional: true })
   showMetadata?: boolean = true;
 }
 
 export class SharedLinkEditDto {
+  @ApiPropertyOptional({ description: 'Link description', nullable: true })
   @Optional({ nullable: true, emptyToNull: true })
   @IsString()
   description?: string | null;
 
+  @ApiPropertyOptional({ description: 'Link password', nullable: true })
   @Optional({ nullable: true, emptyToNull: true })
   @IsString()
   password?: string | null;
 
+  @ApiPropertyOptional({ description: 'Custom URL slug', nullable: true })
   @Optional({ nullable: true, emptyToNull: true })
   @IsString()
   slug?: string | null;
 
+  @ApiPropertyOptional({ description: 'Expiration date', nullable: true })
   @Optional({ nullable: true })
   expiresAt?: Date | null;
 
+  @ApiPropertyOptional({ description: 'Allow uploads' })
   @ValidateBoolean({ optional: true })
   allowUpload?: boolean;
 
+  @ApiPropertyOptional({ description: 'Allow downloads' })
   @ValidateBoolean({ optional: true })
   allowDownload?: boolean;
 
+  @ApiPropertyOptional({ description: 'Show metadata' })
   @ValidateBoolean({ optional: true })
   showMetadata?: boolean;
 
-  /**
-   * Few clients cannot send null to set the expiryTime to never.
-   * Setting this flag and not sending expiryAt is considered as null instead.
-   * Clients that can send null values can ignore this.
-   */
+  @ApiPropertyOptional({ description: 'Change expiry time (set to true to remove expiry)' })
   @ValidateBoolean({ optional: true })
   changeExpiryTime?: boolean;
 }
 
 export class SharedLinkPasswordDto {
+  @ApiPropertyOptional({ example: 'password', description: 'Link password' })
   @IsString()
   @Optional()
-  @ApiProperty({ example: 'password' })
   password?: string;
 
+  @ApiPropertyOptional({ description: 'Access token' })
   @IsString()
   @Optional()
   token?: string;
 }
 export class SharedLinkResponseDto {
+  @ApiProperty({ description: 'Shared link ID' })
   id!: string;
+  @ApiProperty({ description: 'Link description', nullable: true })
   description!: string | null;
+  @ApiProperty({ description: 'Has password', nullable: true })
   password!: string | null;
+  @ApiPropertyOptional({ description: 'Access token', nullable: true })
   token?: string | null;
+  @ApiProperty({ description: 'Owner user ID' })
   userId!: string;
+  @ApiProperty({ description: 'Encryption key (base64url)' })
   key!: string;
 
+  @ApiProperty({ description: 'Shared link type', enum: SharedLinkType })
   @ValidateEnum({ enum: SharedLinkType, name: 'SharedLinkType' })
   type!: SharedLinkType;
+  @ApiProperty({ description: 'Creation date' })
   createdAt!: Date;
+  @ApiProperty({ description: 'Expiration date', nullable: true })
   expiresAt!: Date | null;
+  @ApiProperty({ description: 'Shared assets', type: [AssetResponseDto] })
   assets!: AssetResponseDto[];
+  @ApiPropertyOptional({ description: 'Shared album', type: AlbumResponseDto })
   album?: AlbumResponseDto;
+  @ApiProperty({ description: 'Allow uploads' })
   allowUpload!: boolean;
 
+  @ApiProperty({ description: 'Allow downloads' })
   allowDownload!: boolean;
+  @ApiProperty({ description: 'Show metadata' })
   showMetadata!: boolean;
 
+  @ApiProperty({ description: 'Custom URL slug', nullable: true })
   slug!: string | null;
 }
 

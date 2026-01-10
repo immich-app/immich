@@ -1,8 +1,10 @@
 import { ValidateIf } from 'class-validator';
 import { MaintenanceAction, StorageFolder } from 'src/enum';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { ValidateEnum, ValidateString } from 'src/validation';
 
 export class SetMaintenanceModeDto {
+  @ApiProperty({ description: 'Maintenance action', enum: MaintenanceAction })
   @ValidateEnum({ enum: MaintenanceAction, name: 'MaintenanceAction' })
   action!: MaintenanceAction;
 
@@ -12,11 +14,13 @@ export class SetMaintenanceModeDto {
 }
 
 export class MaintenanceLoginDto {
+  @ApiPropertyOptional({ description: 'Maintenance token' })
   @ValidateString({ optional: true })
   token?: string;
 }
 
 export class MaintenanceAuthDto {
+  @ApiProperty({ description: 'Maintenance username' })
   username!: string;
 }
 
