@@ -63,7 +63,6 @@ export class QueueController {
   @Authenticated({ permission: Permission.QueueJobRead, admin: true })
   @ApiParam({ name: 'name', description: 'Queue name', type: String })
   @ApiQuery({ name: 'status', description: 'Filter by job status', type: String, required: false })
-  @ApiQuery({ name: 'limit', description: 'Maximum number of jobs to return', type: Number, required: false })
   @Endpoint({
     summary: 'Retrieve queue jobs',
     description: 'Retrieves a list of queue jobs from the specified queue.',

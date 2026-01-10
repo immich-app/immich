@@ -21,18 +21,25 @@ class SystemConfigSmtpTransportDto {
     required this.username,
   });
 
+  /// SMTP server hostname
   String host;
 
+  /// Whether to ignore SSL certificate errors
   bool ignoreCert;
 
+  /// SMTP password
   String password;
 
+  /// SMTP server port
+  ///
   /// Minimum value: 0
   /// Maximum value: 65535
   num port;
 
+  /// Whether to use secure connection (TLS/SSL)
   bool secure;
 
+  /// SMTP username
   String username;
 
   @override

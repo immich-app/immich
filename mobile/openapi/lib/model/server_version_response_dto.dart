@@ -18,10 +18,13 @@ class ServerVersionResponseDto {
     required this.patch_,
   });
 
+  /// Major version number
   int major;
 
+  /// Minor version number
   int minor;
 
+  /// Patch version number
   int patch_;
 
   @override

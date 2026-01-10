@@ -25,6 +25,7 @@ class NotificationsAdminApi {
   /// Parameters:
   ///
   /// * [NotificationCreateDto] notificationCreateDto (required):
+  ///   Notification creation data
   Future<Response> createNotificationWithHttpInfo(NotificationCreateDto notificationCreateDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/admin/notifications';
@@ -57,6 +58,7 @@ class NotificationsAdminApi {
   /// Parameters:
   ///
   /// * [NotificationCreateDto] notificationCreateDto (required):
+  ///   Notification creation data
   Future<NotificationDto?> createNotification(NotificationCreateDto notificationCreateDto,) async {
     final response = await createNotificationWithHttpInfo(notificationCreateDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -81,8 +83,10 @@ class NotificationsAdminApi {
   /// Parameters:
   ///
   /// * [String] name (required):
+  ///   Email template name
   ///
   /// * [TemplateDto] templateDto (required):
+  ///   Template data
   Future<Response> getNotificationTemplateAdminWithHttpInfo(String name, TemplateDto templateDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/admin/notifications/templates/{name}'
@@ -116,8 +120,10 @@ class NotificationsAdminApi {
   /// Parameters:
   ///
   /// * [String] name (required):
+  ///   Email template name
   ///
   /// * [TemplateDto] templateDto (required):
+  ///   Template data
   Future<TemplateResponseDto?> getNotificationTemplateAdmin(String name, TemplateDto templateDto,) async {
     final response = await getNotificationTemplateAdminWithHttpInfo(name, templateDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -142,6 +148,7 @@ class NotificationsAdminApi {
   /// Parameters:
   ///
   /// * [SystemConfigSmtpDto] systemConfigSmtpDto (required):
+  ///   SMTP configuration for test email
   Future<Response> sendTestEmailAdminWithHttpInfo(SystemConfigSmtpDto systemConfigSmtpDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/admin/notifications/test-email';
@@ -174,6 +181,7 @@ class NotificationsAdminApi {
   /// Parameters:
   ///
   /// * [SystemConfigSmtpDto] systemConfigSmtpDto (required):
+  ///   SMTP configuration for test email
   Future<TestEmailResponseDto?> sendTestEmailAdmin(SystemConfigSmtpDto systemConfigSmtpDto,) async {
     final response = await sendTestEmailAdminWithHttpInfo(systemConfigSmtpDto,);
     if (response.statusCode >= HttpStatus.badRequest) {

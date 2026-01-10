@@ -150,8 +150,7 @@ export class AssetMediaController {
   @FileResponse()
   @Authenticated({ permission: Permission.AssetView, sharedLink: true })
   @ApiParam({ name: 'id', description: 'Asset ID', type: String, format: 'uuid' })
-  @ApiQuery({ name: 'size', description: 'Thumbnail size', type: String, required: false })
-  @ApiQuery({ name: 'format', description: 'Thumbnail format', type: String, required: false })
+  @ApiQuery({ name: 'size', description: 'Asset media size', type: String, required: false })
   @ApiQuery({ name: 'key', description: 'Access key for shared links', type: String, required: false })
   @Endpoint({
     summary: 'View asset thumbnail',

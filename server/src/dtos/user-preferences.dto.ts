@@ -19,7 +19,7 @@ class MemoriesUpdate {
   @Optional()
   @IsInt()
   @IsPositive()
-  @ApiPropertyOptional({ type: 'integer', description: 'Memory duration in seconds' })
+  @ApiProperty({ type: 'integer', description: 'Memory duration in seconds' })
   duration?: number;
 }
 

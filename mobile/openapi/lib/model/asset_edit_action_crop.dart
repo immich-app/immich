@@ -17,8 +17,10 @@ class AssetEditActionCrop {
     required this.parameters,
   });
 
+  /// Type of edit action to perform
   AssetEditAction action;
 
+  /// Crop parameters (x, y, width, height)
   CropParameters parameters;
 
   @override

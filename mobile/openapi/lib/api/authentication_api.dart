@@ -133,6 +133,7 @@ class AuthenticationApi {
   /// Parameters:
   ///
   /// * [OAuthCallbackDto] oAuthCallbackDto (required):
+  ///   OAuth callback data
   Future<Response> finishOAuthWithHttpInfo(OAuthCallbackDto oAuthCallbackDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/oauth/callback';
@@ -165,6 +166,7 @@ class AuthenticationApi {
   /// Parameters:
   ///
   /// * [OAuthCallbackDto] oAuthCallbackDto (required):
+  ///   OAuth callback data
   Future<LoginResponseDto?> finishOAuth(OAuthCallbackDto oAuthCallbackDto,) async {
     final response = await finishOAuthWithHttpInfo(oAuthCallbackDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -237,6 +239,7 @@ class AuthenticationApi {
   /// Parameters:
   ///
   /// * [OAuthCallbackDto] oAuthCallbackDto (required):
+  ///   OAuth callback data
   Future<Response> linkOAuthAccountWithHttpInfo(OAuthCallbackDto oAuthCallbackDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/oauth/link';
@@ -269,6 +272,7 @@ class AuthenticationApi {
   /// Parameters:
   ///
   /// * [OAuthCallbackDto] oAuthCallbackDto (required):
+  ///   OAuth callback data
   Future<UserAdminResponseDto?> linkOAuthAccount(OAuthCallbackDto oAuthCallbackDto,) async {
     final response = await linkOAuthAccountWithHttpInfo(oAuthCallbackDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -637,6 +641,7 @@ class AuthenticationApi {
   /// Parameters:
   ///
   /// * [OAuthConfigDto] oAuthConfigDto (required):
+  ///   OAuth configuration
   Future<Response> startOAuthWithHttpInfo(OAuthConfigDto oAuthConfigDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/oauth/authorize';
@@ -669,6 +674,7 @@ class AuthenticationApi {
   /// Parameters:
   ///
   /// * [OAuthConfigDto] oAuthConfigDto (required):
+  ///   OAuth configuration
   Future<OAuthAuthorizeResponseDto?> startOAuth(OAuthConfigDto oAuthConfigDto,) async {
     final response = await startOAuthWithHttpInfo(oAuthConfigDto,);
     if (response.statusCode >= HttpStatus.badRequest) {

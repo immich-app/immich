@@ -145,17 +145,27 @@ export type TemplateResponseDto = {
     name: string;
 };
 export type SystemConfigSmtpTransportDto = {
+    /** SMTP server hostname */
     host: string;
+    /** Whether to ignore SSL certificate errors */
     ignoreCert: boolean;
+    /** SMTP password */
     password: string;
+    /** SMTP server port */
     port: number;
+    /** Whether to use secure connection (TLS/SSL) */
     secure: boolean;
+    /** SMTP username */
     username: string;
 };
 export type SystemConfigSmtpDto = {
+    /** Whether SMTP email notifications are enabled */
     enabled: boolean;
+    /** Email address to send from */
     "from": string;
+    /** Email address for replies */
     replyTo: string;
+    /** SMTP transport configuration */
     transport: SystemConfigSmtpTransportDto;
 };
 export type TestEmailResponseDto = {
@@ -251,117 +261,181 @@ export type UserAdminUpdateDto = {
     storageLabel?: string | null;
 };
 export type AlbumsResponse = {
+    /** Default asset order for albums */
     defaultAssetOrder: AssetOrder;
 };
 export type CastResponse = {
+    /** Whether Google Cast is enabled */
     gCastEnabled: boolean;
 };
 export type DownloadResponse = {
+    /** Maximum archive size in bytes */
     archiveSize: number;
+    /** Whether to include embedded videos in downloads */
     includeEmbeddedVideos: boolean;
 };
 export type EmailNotificationsResponse = {
+    /** Whether to receive email notifications for album invites */
     albumInvite: boolean;
+    /** Whether to receive email notifications for album updates */
     albumUpdate: boolean;
+    /** Whether email notifications are enabled */
     enabled: boolean;
 };
 export type FoldersResponse = {
+    /** Whether folders are enabled */
     enabled: boolean;
+    /** Whether folders appear in web sidebar */
     sidebarWeb: boolean;
 };
 export type MemoriesResponse = {
+    /** Memory duration in seconds */
     duration: number;
+    /** Whether memories are enabled */
     enabled: boolean;
 };
 export type PeopleResponse = {
+    /** Whether people are enabled */
     enabled: boolean;
+    /** Whether people appear in web sidebar */
     sidebarWeb: boolean;
 };
 export type PurchaseResponse = {
+    /** Date until which to hide buy button (ISO 8601 format) */
     hideBuyButtonUntil: string;
+    /** Whether to show support badge */
     showSupportBadge: boolean;
 };
 export type RatingsResponse = {
+    /** Whether ratings are enabled */
     enabled: boolean;
 };
 export type SharedLinksResponse = {
+    /** Whether shared links are enabled */
     enabled: boolean;
+    /** Whether shared links appear in web sidebar */
     sidebarWeb: boolean;
 };
 export type TagsResponse = {
+    /** Whether tags are enabled */
     enabled: boolean;
+    /** Whether tags appear in web sidebar */
     sidebarWeb: boolean;
 };
 export type UserPreferencesResponseDto = {
+    /** Album preferences */
     albums: AlbumsResponse;
+    /** Cast preferences */
     cast: CastResponse;
+    /** Download preferences */
     download: DownloadResponse;
+    /** Email notification preferences */
     emailNotifications: EmailNotificationsResponse;
+    /** Folder preferences */
     folders: FoldersResponse;
+    /** Memory preferences */
     memories: MemoriesResponse;
+    /** People preferences */
     people: PeopleResponse;
+    /** Purchase preferences */
     purchase: PurchaseResponse;
+    /** Rating preferences */
     ratings: RatingsResponse;
+    /** Shared link preferences */
     sharedLinks: SharedLinksResponse;
+    /** Tag preferences */
     tags: TagsResponse;
 };
 export type AlbumsUpdate = {
+    /** Default asset order for albums */
     defaultAssetOrder?: AssetOrder;
 };
 export type AvatarUpdate = {
+    /** Avatar color */
     color?: UserAvatarColor;
 };
 export type CastUpdate = {
+    /** Whether Google Cast is enabled */
     gCastEnabled?: boolean;
 };
 export type DownloadUpdate = {
+    /** Maximum archive size in bytes */
     archiveSize?: number;
+    /** Whether to include embedded videos in downloads */
     includeEmbeddedVideos?: boolean;
 };
 export type EmailNotificationsUpdate = {
+    /** Whether to receive email notifications for album invites */
     albumInvite?: boolean;
+    /** Whether to receive email notifications for album updates */
     albumUpdate?: boolean;
+    /** Whether email notifications are enabled */
     enabled?: boolean;
 };
 export type FoldersUpdate = {
+    /** Whether folders are enabled */
     enabled?: boolean;
+    /** Whether folders appear in web sidebar */
     sidebarWeb?: boolean;
 };
 export type MemoriesUpdate = {
+    /** Memory duration in seconds */
     duration?: number;
+    /** Whether memories are enabled */
     enabled?: boolean;
 };
 export type PeopleUpdate = {
+    /** Whether people are enabled */
     enabled?: boolean;
+    /** Whether people appear in web sidebar */
     sidebarWeb?: boolean;
 };
 export type PurchaseUpdate = {
+    /** Date until which to hide buy button (ISO 8601 format) */
     hideBuyButtonUntil?: string;
+    /** Whether to show support badge */
     showSupportBadge?: boolean;
 };
 export type RatingsUpdate = {
+    /** Whether ratings are enabled */
     enabled?: boolean;
 };
 export type SharedLinksUpdate = {
+    /** Whether shared links are enabled */
     enabled?: boolean;
+    /** Whether shared links appear in web sidebar */
     sidebarWeb?: boolean;
 };
 export type TagsUpdate = {
+    /** Whether tags are enabled */
     enabled?: boolean;
+    /** Whether tags appear in web sidebar */
     sidebarWeb?: boolean;
 };
 export type UserPreferencesUpdateDto = {
+    /** Album preferences */
     albums?: AlbumsUpdate;
+    /** Avatar preferences */
     avatar?: AvatarUpdate;
+    /** Cast preferences */
     cast?: CastUpdate;
+    /** Download preferences */
     download?: DownloadUpdate;
+    /** Email notification preferences */
     emailNotifications?: EmailNotificationsUpdate;
+    /** Folder preferences */
     folders?: FoldersUpdate;
+    /** Memory preferences */
     memories?: MemoriesUpdate;
+    /** People preferences */
     people?: PeopleUpdate;
+    /** Purchase preferences */
     purchase?: PurchaseUpdate;
+    /** Rating preferences */
     ratings?: RatingsUpdate;
+    /** Shared link preferences */
     sharedLinks?: SharedLinksUpdate;
+    /** Tag preferences */
     tags?: TagsUpdate;
 };
 export type SessionResponseDto = {
@@ -914,7 +988,9 @@ export type CropParameters = {
     y: number;
 };
 export type AssetEditActionCrop = {
+    /** Type of edit action to perform */
     action: AssetEditAction;
+    /** Crop parameters (x, y, width, height) */
     parameters: CropParameters;
 };
 export type RotateParameters = {
@@ -922,7 +998,9 @@ export type RotateParameters = {
     angle: number;
 };
 export type AssetEditActionRotate = {
+    /** Type of edit action to perform */
     action: AssetEditAction;
+    /** Rotation parameters (angle in degrees) */
     parameters: RotateParameters;
 };
 export type MirrorParameters = {
@@ -930,16 +1008,19 @@ export type MirrorParameters = {
     axis: MirrorAxis;
 };
 export type AssetEditActionMirror = {
+    /** Type of edit action to perform */
     action: AssetEditAction;
+    /** Mirror parameters (axis: horizontal or vertical) */
     parameters: MirrorParameters;
 };
 export type AssetEditsDto = {
+    /** Asset ID to apply edits to */
     assetId: string;
-    /** list of edits */
+    /** List of edit actions to apply (crop, rotate, or mirror) */
     edits: (AssetEditActionCrop | AssetEditActionRotate | AssetEditActionMirror)[];
 };
 export type AssetEditActionListDto = {
-    /** list of edits */
+    /** List of edit actions to apply (crop, rotate, or mirror) */
     edits: (AssetEditActionCrop | AssetEditActionRotate | AssetEditActionMirror)[];
 };
 export type AssetMetadataResponseDto = {
@@ -1179,19 +1260,29 @@ export type FaceDto = {
     id: string;
 };
 export type QueueStatisticsDto = {
+    /** Number of active jobs */
     active: number;
+    /** Number of completed jobs */
     completed: number;
+    /** Number of delayed jobs */
     delayed: number;
+    /** Number of failed jobs */
     failed: number;
+    /** Number of paused jobs */
     paused: number;
+    /** Number of waiting jobs */
     waiting: number;
 };
 export type QueueStatusLegacyDto = {
+    /** Whether the queue is currently active (has running jobs) */
     isActive: boolean;
+    /** Whether the queue is paused */
     isPaused: boolean;
 };
 export type QueueResponseLegacyDto = {
+    /** Job count statistics for the queue */
     jobCounts: QueueStatisticsDto;
+    /** Current status of the queue */
     queueStatus: QueueStatusLegacyDto;
 };
 export type QueuesResponseLegacyDto = {
@@ -1219,7 +1310,9 @@ export type JobCreateDto = {
     name: ManualJobName;
 };
 export type QueueCommandDto = {
+    /** Queue command to execute */
     command: QueueCommand;
+    /** Force the command execution (if applicable) */
     force?: boolean;
 };
 export type LibraryResponseDto = {
@@ -1561,11 +1654,15 @@ export type PluginTriggerResponseDto = {
     "type": PluginTriggerType;
 };
 export type QueueResponseDto = {
+    /** Whether the queue is paused */
     isPaused: boolean;
+    /** Queue name */
     name: QueueName;
+    /** Queue statistics */
     statistics: QueueStatisticsDto;
 };
 export type QueueUpdateDto = {
+    /** Whether to pause the queue */
     isPaused?: boolean;
 };
 export type QueueDeleteDto = {
@@ -1573,9 +1670,13 @@ export type QueueDeleteDto = {
     failed?: boolean;
 };
 export type QueueJobResponseDto = {
+    /** Job data payload */
     data: object;
+    /** Job ID */
     id?: string;
+    /** Job name */
     name: JobName;
+    /** Job creation timestamp */
     timestamp: number;
 };
 export type SearchExploreItem = {
@@ -1937,62 +2038,113 @@ export type SearchStatisticsResponseDto = {
     total: number;
 };
 export type ServerAboutResponseDto = {
+    /** Build identifier */
     build?: string;
+    /** Build image name */
     buildImage?: string;
+    /** Build image URL */
     buildImageUrl?: string;
+    /** Build URL */
     buildUrl?: string;
+    /** ExifTool version */
     exiftool?: string;
+    /** FFmpeg version */
     ffmpeg?: string;
+    /** ImageMagick version */
     imagemagick?: string;
+    /** libvips version */
     libvips?: string;
+    /** Whether the server is licensed */
     licensed: boolean;
+    /** Node.js version */
     nodejs?: string;
+    /** Repository name */
     repository?: string;
+    /** Repository URL */
     repositoryUrl?: string;
+    /** Source commit hash */
     sourceCommit?: string;
+    /** Source reference (branch/tag) */
     sourceRef?: string;
+    /** Source URL */
     sourceUrl?: string;
+    /** Third-party bug/feature URL */
     thirdPartyBugFeatureUrl?: string;
+    /** Third-party documentation URL */
     thirdPartyDocumentationUrl?: string;
+    /** Third-party source URL */
     thirdPartySourceUrl?: string;
+    /** Third-party support URL */
     thirdPartySupportUrl?: string;
+    /** Server version */
     version: string;
+    /** URL to version information */
     versionUrl: string;
 };
 export type ServerApkLinksDto = {
+    /** APK download link for ARM64 v8a architecture */
     arm64v8a: string;
+    /** APK download link for ARM EABI v7a architecture */
     armeabiv7a: string;
+    /** APK download link for universal architecture */
     universal: string;
+    /** APK download link for x86_64 architecture */
     x86_64: string;
 };
 export type ServerConfigDto = {
+    /** External domain URL */
     externalDomain: string;
+    /** Whether the server has been initialized */
     isInitialized: boolean;
+    /** Whether the admin has completed onboarding */
     isOnboarded: boolean;
+    /** Login page message */
     loginPageMessage: string;
+    /** Whether maintenance mode is active */
     maintenanceMode: boolean;
+    /** Map dark style URL */
     mapDarkStyleUrl: string;
+    /** Map light style URL */
     mapLightStyleUrl: string;
+    /** OAuth button text */
     oauthButtonText: string;
+    /** Whether public user registration is enabled */
     publicUsers: boolean;
+    /** Number of days before trashed assets are permanently deleted */
     trashDays: number;
+    /** Delay in days before deleted users are permanently removed */
     userDeleteDelay: number;
 };
 export type ServerFeaturesDto = {
+    /** Whether config file is available */
     configFile: boolean;
+    /** Whether duplicate detection is enabled */
     duplicateDetection: boolean;
+    /** Whether email notifications are enabled */
     email: boolean;
+    /** Whether facial recognition is enabled */
     facialRecognition: boolean;
+    /** Whether face import is enabled */
     importFaces: boolean;
+    /** Whether map feature is enabled */
     map: boolean;
+    /** Whether OAuth is enabled */
     oauth: boolean;
+    /** Whether OAuth auto-launch is enabled */
     oauthAutoLaunch: boolean;
+    /** Whether OCR is enabled */
     ocr: boolean;
+    /** Whether password login is enabled */
     passwordLogin: boolean;
+    /** Whether reverse geocoding is enabled */
     reverseGeocoding: boolean;
+    /** Whether search is enabled */
     search: boolean;
+    /** Whether sidecar files are supported */
     sidecar: boolean;
+    /** Whether smart search is enabled */
     smartSearch: boolean;
+    /** Whether trash feature is enabled */
     trash: boolean;
 };
 export type LicenseResponseDto = {
@@ -2010,8 +2162,11 @@ export type LicenseKeyDto = {
     licenseKey: string;
 };
 export type ServerMediaTypesResponseDto = {
+    /** Supported image MIME types */
     image: string[];
+    /** Supported sidecar MIME types */
     sidecar: string[];
+    /** Supported video MIME types */
     video: string[];
 };
 export type ServerPingResponse = {};
@@ -2019,38 +2174,62 @@ export type ServerPingResponseRead = {
     res: string;
 };
 export type UsageByUserDto = {
+    /** Number of photos */
     photos: number;
+    /** User quota size in bytes (null if unlimited) */
     quotaSizeInBytes: number | null;
+    /** Total storage usage in bytes */
     usage: number;
+    /** Storage usage for photos in bytes */
     usagePhotos: number;
+    /** Storage usage for videos in bytes */
     usageVideos: number;
+    /** User ID */
     userId: string;
+    /** User name */
     userName: string;
+    /** Number of videos */
     videos: number;
 };
 export type ServerStatsResponseDto = {
+    /** Total number of photos */
     photos: number;
+    /** Total storage usage in bytes */
     usage: number;
     usageByUser: UsageByUserDto[];
+    /** Storage usage for photos in bytes */
     usagePhotos: number;
+    /** Storage usage for videos in bytes */
     usageVideos: number;
+    /** Total number of videos */
     videos: number;
 };
 export type ServerStorageResponseDto = {
+    /** Available disk space (human-readable format) */
     diskAvailable: string;
+    /** Available disk space in bytes */
     diskAvailableRaw: number;
+    /** Total disk size (human-readable format) */
     diskSize: string;
+    /** Total disk size in bytes */
     diskSizeRaw: number;
+    /** Disk usage percentage (0-100) */
     diskUsagePercentage: number;
+    /** Used disk space (human-readable format) */
     diskUse: string;
+    /** Used disk space in bytes */
     diskUseRaw: number;
 };
 export type ServerThemeDto = {
+    /** Custom CSS for theming */
     customCss: string;
 };
 export type ServerVersionResponseDto = {
+    /** Major version number */
     major: number;
+    /** Minor version number */
     minor: number;
+    /** Patch version number */
     patch: number;
 };
 export type VersionCheckStateResponseDto = {
@@ -2060,8 +2239,11 @@ export type VersionCheckStateResponseDto = {
     releaseVersion: string | null;
 };
 export type ServerVersionHistoryResponseDto = {
+    /** When this version was first seen */
     createdAt: string;
+    /** Version history entry ID */
     id: string;
+    /** Version string */
     version: string;
 };
 export type SessionCreateDto = {
@@ -2328,25 +2510,39 @@ export type MachineLearningAvailabilityChecksDto = {
     timeout: number;
 };
 export type ClipConfig = {
+    /** Whether the task is enabled */
     enabled: boolean;
+    /** Name of the model to use */
     modelName: string;
 };
 export type DuplicateDetectionConfig = {
+    /** Whether the task is enabled */
     enabled: boolean;
+    /** Maximum distance threshold for duplicate detection (0.001-0.1) */
     maxDistance: number;
 };
 export type FacialRecognitionConfig = {
+    /** Whether the task is enabled */
     enabled: boolean;
+    /** Maximum distance threshold for face recognition (0.1-2) */
     maxDistance: number;
+    /** Minimum number of faces required for recognition */
     minFaces: number;
+    /** Minimum confidence score for face detection (0.1-1) */
     minScore: number;
+    /** Name of the model to use */
     modelName: string;
 };
 export type OcrConfig = {
+    /** Whether the task is enabled */
     enabled: boolean;
+    /** Maximum resolution for OCR processing */
     maxResolution: number;
+    /** Minimum confidence score for text detection (0.1-1) */
     minDetectionScore: number;
+    /** Minimum confidence score for text recognition (0.1-1) */
     minRecognitionScore: number;
+    /** Name of the model to use */
     modelName: string;
 };
 export type SystemConfigMachineLearningDto = {
@@ -2428,6 +2624,7 @@ export type SystemConfigTemplatesDto = {
     email: SystemConfigTemplateEmailsDto;
 };
 export type SystemConfigThemeDto = {
+    /** Custom CSS for theming */
     customCss: string;
 };
 export type SystemConfigTrashDto = {
@@ -2438,36 +2635,65 @@ export type SystemConfigUserDto = {
     deleteDelay: number;
 };
 export type SystemConfigDto = {
+    /** Backup configuration */
     backup: SystemConfigBackupsDto;
+    /** FFmpeg configuration */
     ffmpeg: SystemConfigFFmpegDto;
+    /** Image processing configuration */
     image: SystemConfigImageDto;
+    /** Job queue configuration */
     job: SystemConfigJobDto;
+    /** Library configuration */
     library: SystemConfigLibraryDto;
+    /** Logging configuration */
     logging: SystemConfigLoggingDto;
+    /** Machine learning configuration */
     machineLearning: SystemConfigMachineLearningDto;
+    /** Map configuration */
     map: SystemConfigMapDto;
+    /** Metadata configuration */
     metadata: SystemConfigMetadataDto;
+    /** New version check configuration */
     newVersionCheck: SystemConfigNewVersionCheckDto;
+    /** Nightly tasks configuration */
     nightlyTasks: SystemConfigNightlyTasksDto;
+    /** Notification configuration */
     notifications: SystemConfigNotificationsDto;
+    /** OAuth configuration */
     oauth: SystemConfigOAuthDto;
+    /** Password login configuration */
     passwordLogin: SystemConfigPasswordLoginDto;
+    /** Reverse geocoding configuration */
     reverseGeocoding: SystemConfigReverseGeocodingDto;
+    /** Server configuration */
     server: SystemConfigServerDto;
+    /** Storage template configuration */
     storageTemplate: SystemConfigStorageTemplateDto;
+    /** Template configuration */
     templates: SystemConfigTemplatesDto;
+    /** Theme configuration */
     theme: SystemConfigThemeDto;
+    /** Trash configuration */
     trash: SystemConfigTrashDto;
+    /** User configuration */
     user: SystemConfigUserDto;
 };
 export type SystemConfigTemplateStorageOptionDto = {
+    /** Available day format options for storage template */
     dayOptions: string[];
+    /** Available hour format options for storage template */
     hourOptions: string[];
+    /** Available minute format options for storage template */
     minuteOptions: string[];
+    /** Available month format options for storage template */
     monthOptions: string[];
+    /** Available preset template options */
     presetOptions: string[];
+    /** Available second format options for storage template */
     secondOptions: string[];
+    /** Available week format options for storage template */
     weekOptions: string[];
+    /** Available year format options for storage template */
     yearOptions: string[];
 };
 export type AdminOnboardingUpdateDto = {

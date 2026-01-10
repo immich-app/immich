@@ -36,46 +36,67 @@ class SystemConfigDto {
     required this.user,
   });
 
+  /// Backup configuration
   SystemConfigBackupsDto backup;
 
+  /// FFmpeg configuration
   SystemConfigFFmpegDto ffmpeg;
 
+  /// Image processing configuration
   SystemConfigImageDto image;
 
+  /// Job queue configuration
   SystemConfigJobDto job;
 
+  /// Library configuration
   SystemConfigLibraryDto library_;
 
+  /// Logging configuration
   SystemConfigLoggingDto logging;
 
+  /// Machine learning configuration
   SystemConfigMachineLearningDto machineLearning;
 
+  /// Map configuration
   SystemConfigMapDto map;
 
+  /// Metadata configuration
   SystemConfigMetadataDto metadata;
 
+  /// New version check configuration
   SystemConfigNewVersionCheckDto newVersionCheck;
 
+  /// Nightly tasks configuration
   SystemConfigNightlyTasksDto nightlyTasks;
 
+  /// Notification configuration
   SystemConfigNotificationsDto notifications;
 
+  /// OAuth configuration
   SystemConfigOAuthDto oauth;
 
+  /// Password login configuration
   SystemConfigPasswordLoginDto passwordLogin;
 
+  /// Reverse geocoding configuration
   SystemConfigReverseGeocodingDto reverseGeocoding;
 
+  /// Server configuration
   SystemConfigServerDto server;
 
+  /// Storage template configuration
   SystemConfigStorageTemplateDto storageTemplate;
 
+  /// Template configuration
   SystemConfigTemplatesDto templates;
 
+  /// Theme configuration
   SystemConfigThemeDto theme;
 
+  /// Trash configuration
   SystemConfigTrashDto trash;
 
+  /// User configuration
   SystemConfigUserDto user;
 
   @override

@@ -17,14 +17,16 @@ class PurchaseUpdate {
     this.showSupportBadge,
   });
 
+  /// Date until which to hide buy button (ISO 8601 format)
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  String? hideBuyButtonUntil;
+  DateTime? hideBuyButtonUntil;
 
+  /// Whether to show support badge
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -50,7 +52,7 @@ class PurchaseUpdate {
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
     if (this.hideBuyButtonUntil != null) {
-      json[r'hideBuyButtonUntil'] = this.hideBuyButtonUntil;
+      json[r'hideBuyButtonUntil'] = this.hideBuyButtonUntil!.toUtc().toIso8601String();
     } else {
     //  json[r'hideBuyButtonUntil'] = null;
     }
@@ -71,7 +73,7 @@ class PurchaseUpdate {
       final json = value.cast<String, dynamic>();
 
       return PurchaseUpdate(
-        hideBuyButtonUntil: mapValueOfType<String>(json, r'hideBuyButtonUntil'),
+        hideBuyButtonUntil: mapDateTime(json, r'hideBuyButtonUntil', r''),
         showSupportBadge: mapValueOfType<bool>(json, r'showSupportBadge'),
       );
     }

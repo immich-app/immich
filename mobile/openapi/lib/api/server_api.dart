@@ -692,6 +692,7 @@ class ServerApi {
   /// Parameters:
   ///
   /// * [LicenseKeyDto] licenseKeyDto (required):
+  ///   Product key to register
   Future<Response> setServerLicenseWithHttpInfo(LicenseKeyDto licenseKeyDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/server/license';
@@ -724,6 +725,7 @@ class ServerApi {
   /// Parameters:
   ///
   /// * [LicenseKeyDto] licenseKeyDto (required):
+  ///   Product key to register
   Future<LicenseResponseDto?> setServerLicense(LicenseKeyDto licenseKeyDto,) async {
     final response = await setServerLicenseWithHttpInfo(licenseKeyDto,);
     if (response.statusCode >= HttpStatus.badRequest) {

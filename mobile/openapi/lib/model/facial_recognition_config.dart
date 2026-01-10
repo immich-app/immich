@@ -20,19 +20,27 @@ class FacialRecognitionConfig {
     required this.modelName,
   });
 
+  /// Whether the task is enabled
   bool enabled;
 
+  /// Maximum distance threshold for face recognition (0.1-2)
+  ///
   /// Minimum value: 0.1
   /// Maximum value: 2
   double maxDistance;
 
+  /// Minimum number of faces required for recognition
+  ///
   /// Minimum value: 1
   int minFaces;
 
+  /// Minimum confidence score for face detection (0.1-1)
+  ///
   /// Minimum value: 0.1
   /// Maximum value: 1
   double minScore;
 
+  /// Name of the model to use
   String modelName;
 
   @override

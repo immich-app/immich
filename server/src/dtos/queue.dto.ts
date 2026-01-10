@@ -54,19 +54,6 @@ export class QueueJobResponseDto {
   timestamp!: number;
 }
 
-export class QueueResponseDto {
-  @ApiProperty({ description: 'Queue name', enum: QueueName })
-  @ValidateEnum({ enum: QueueName, name: 'QueueName' })
-  name!: QueueName;
-
-  @ApiProperty({ description: 'Whether the queue is paused', type: Boolean })
-  @ValidateBoolean()
-  isPaused!: boolean;
-
-  @ApiProperty({ description: 'Queue statistics', type: () => QueueStatisticsDto })
-  statistics!: QueueStatisticsDto;
-}
-
 export class QueueStatisticsDto {
   @ApiProperty({ type: 'integer', description: 'Number of active jobs' })
   active!: number;
@@ -80,4 +67,17 @@ export class QueueStatisticsDto {
   waiting!: number;
   @ApiProperty({ type: 'integer', description: 'Number of paused jobs' })
   paused!: number;
+}
+
+export class QueueResponseDto {
+  @ApiProperty({ description: 'Queue name', enum: QueueName })
+  @ValidateEnum({ enum: QueueName, name: 'QueueName' })
+  name!: QueueName;
+
+  @ApiProperty({ description: 'Whether the queue is paused', type: Boolean })
+  @ValidateBoolean()
+  isPaused!: boolean;
+
+  @ApiProperty({ description: 'Queue statistics', type: QueueStatisticsDto })
+  statistics!: QueueStatisticsDto;
 }

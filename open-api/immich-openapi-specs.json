@@ -752,6 +752,7 @@
               }
             }
           },
+          "description": "Notification creation data",
           "required": true
         },
         "responses": {
@@ -808,6 +809,7 @@
             "name": "name",
             "required": true,
             "in": "path",
+            "description": "Email template name",
             "schema": {
               "type": "string"
             }
@@ -821,6 +823,7 @@
               }
             }
           },
+          "description": "Template data",
           "required": true
         },
         "responses": {
@@ -881,6 +884,7 @@
               }
             }
           },
+          "description": "SMTP configuration for test email",
           "required": true
         },
         "responses": {
@@ -3012,6 +3016,7 @@
               }
             }
           },
+          "description": "SHA1 checksums to check",
           "required": true
         },
         "responses": {
@@ -3186,6 +3191,7 @@
               }
             }
           },
+          "description": "Asset IDs to check",
           "required": true
         },
         "responses": {
@@ -4200,6 +4206,7 @@
             "name": "id",
             "required": true,
             "in": "path",
+            "description": "Asset ID",
             "schema": {
               "format": "uuid",
               "type": "string"
@@ -4209,6 +4216,7 @@
             "name": "key",
             "required": false,
             "in": "query",
+            "description": "Download key for shared links",
             "schema": {
               "type": "string"
             }
@@ -4276,6 +4284,7 @@
             "name": "id",
             "required": true,
             "in": "path",
+            "description": "Asset ID",
             "schema": {
               "format": "uuid",
               "type": "string"
@@ -4306,6 +4315,7 @@
               }
             }
           },
+          "description": "Asset replacement data",
           "required": true
         },
         "responses": {
@@ -4369,6 +4379,7 @@
             "name": "id",
             "required": true,
             "in": "path",
+            "description": "Asset ID",
             "schema": {
               "format": "uuid",
               "type": "string"
@@ -4378,6 +4389,7 @@
             "name": "key",
             "required": false,
             "in": "query",
+            "description": "Access key for shared links",
             "schema": {
               "type": "string"
             }
@@ -4455,6 +4467,7 @@
             "name": "id",
             "required": true,
             "in": "path",
+            "description": "Asset ID",
             "schema": {
               "format": "uuid",
               "type": "string"
@@ -5702,6 +5715,7 @@
               }
             }
           },
+          "description": "Job creation data",
           "required": true
         },
         "responses": {
@@ -5753,6 +5767,7 @@
             "name": "name",
             "required": true,
             "in": "path",
+            "description": "Queue name",
             "schema": {
               "$ref": "#/components/schemas/QueueName"
             }
@@ -5766,6 +5781,7 @@
               }
             }
           },
+          "description": "Queue command options",
           "required": true
         },
         "responses": {
@@ -7490,6 +7506,7 @@
               }
             }
           },
+          "description": "OAuth configuration",
           "required": true
         },
         "responses": {
@@ -7538,6 +7555,7 @@
               }
             }
           },
+          "description": "OAuth callback data",
           "required": true
         },
         "responses": {
@@ -7586,6 +7604,7 @@
               }
             }
           },
+          "description": "OAuth callback data",
           "required": true
         },
         "responses": {
@@ -8962,6 +8981,7 @@
             "name": "name",
             "required": true,
             "in": "path",
+            "description": "Queue name",
             "schema": {
               "$ref": "#/components/schemas/QueueName"
             }
@@ -9016,6 +9036,7 @@
             "name": "name",
             "required": true,
             "in": "path",
+            "description": "Queue name",
             "schema": {
               "$ref": "#/components/schemas/QueueName"
             }
@@ -9029,6 +9050,7 @@
               }
             }
           },
+          "description": "Queue update data",
           "required": true
         },
         "responses": {
@@ -9082,6 +9104,7 @@
             "name": "name",
             "required": true,
             "in": "path",
+            "description": "Queue name",
             "schema": {
               "$ref": "#/components/schemas/QueueName"
             }
@@ -9095,6 +9118,7 @@
               }
             }
           },
+          "description": "Queue deletion options",
           "required": true
         },
         "responses": {
@@ -9139,6 +9163,7 @@
             "name": "name",
             "required": true,
             "in": "path",
+            "description": "Queue name",
             "schema": {
               "$ref": "#/components/schemas/QueueName"
             }
@@ -9147,6 +9172,7 @@
             "name": "status",
             "required": false,
             "in": "query",
+            "description": "Filter by job status",
             "schema": {
               "type": "array",
               "items": {
@@ -10474,6 +10500,7 @@
               }
             }
           },
+          "description": "Product key to register",
           "required": true
         },
         "responses": {
@@ -12217,6 +12244,7 @@
               }
             }
           },
+          "description": "Acknowledgement IDs to delete",
           "required": true
         },
         "responses": {
@@ -12319,6 +12347,7 @@
               }
             }
           },
+          "description": "Synchronization acknowledgements",
           "required": true
         },
         "responses": {
@@ -12373,6 +12402,7 @@
               }
             }
           },
+          "description": "Delta sync request data",
           "required": true
         },
         "responses": {
@@ -12430,6 +12460,7 @@
               }
             }
           },
+          "description": "Full sync request data",
           "required": true
         },
         "responses": {
@@ -12489,6 +12520,7 @@
               }
             }
           },
+          "description": "Sync stream request data",
           "required": true
         },
         "responses": {
@@ -12591,6 +12623,7 @@
               }
             }
           },
+          "description": "System configuration update data",
           "required": true
         },
         "responses": {
@@ -12803,6 +12836,7 @@
               }
             }
           },
+          "description": "Admin onboarding update data",
           "required": true
         },
         "responses": {
@@ -14823,6 +14857,7 @@
             "name": "path",
             "required": true,
             "in": "query",
+            "description": "Original path of the folder",
             "schema": {
               "type": "string"
             }
@@ -15875,7 +15910,8 @@
                 "$ref": "#/components/schemas/AssetOrder"
               }
             ],
-            "default": "desc"
+            "default": "desc",
+            "description": "Default asset order for albums"
           }
         },
         "required": [
@@ -15890,7 +15926,8 @@
               {
                 "$ref": "#/components/schemas/AssetOrder"
               }
-            ]
+            ],
+            "description": "Default asset order for albums"
           }
         },
         "type": "object"
@@ -16157,6 +16194,7 @@
         "type": "object"
       },
       "AssetEditAction": {
+        "description": "Type of edit action to perform",
         "enum": [
           "crop",
           "rotate",
@@ -16171,10 +16209,16 @@
               {
                 "$ref": "#/components/schemas/AssetEditAction"
               }
-            ]
+            ],
+            "description": "Type of edit action to perform"
           },
           "parameters": {
-            "$ref": "#/components/schemas/CropParameters"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CropParameters"
+              }
+            ],
+            "description": "Crop parameters (x, y, width, height)"
           }
         },
         "required": [
@@ -16186,7 +16230,7 @@
       "AssetEditActionListDto": {
         "properties": {
           "edits": {
-            "description": "list of edits",
+            "description": "List of edit actions to apply (crop, rotate, or mirror)",
             "items": {
               "anyOf": [
                 {
@@ -16216,10 +16260,16 @@
               {
                 "$ref": "#/components/schemas/AssetEditAction"
               }
-            ]
+            ],
+            "description": "Type of edit action to perform"
           },
           "parameters": {
-            "$ref": "#/components/schemas/MirrorParameters"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MirrorParameters"
+              }
+            ],
+            "description": "Mirror parameters (axis: horizontal or vertical)"
           }
         },
         "required": [
@@ -16235,10 +16285,16 @@
               {
                 "$ref": "#/components/schemas/AssetEditAction"
               }
-            ]
+            ],
+            "description": "Type of edit action to perform"
           },
           "parameters": {
-            "$ref": "#/components/schemas/RotateParameters"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RotateParameters"
+              }
+            ],
+            "description": "Rotation parameters (angle in degrees)"
           }
         },
         "required": [
@@ -16250,11 +16306,12 @@
       "AssetEditsDto": {
         "properties": {
           "assetId": {
+            "description": "Asset ID to apply edits to",
             "format": "uuid",
             "type": "string"
           },
           "edits": {
-            "description": "list of edits",
+            "description": "List of edit actions to apply (crop, rotate, or mirror)",
             "items": {
               "anyOf": [
                 {
@@ -17350,7 +17407,8 @@
               {
                 "$ref": "#/components/schemas/UserAvatarColor"
               }
-            ]
+            ],
+            "description": "Avatar color"
           }
         },
         "type": "object"
@@ -17411,9 +17469,11 @@
       "CLIPConfig": {
         "properties": {
           "enabled": {
+            "description": "Whether the task is enabled",
             "type": "boolean"
           },
           "modelName": {
+            "description": "Name of the model to use",
             "type": "string"
           }
         },
@@ -17435,6 +17495,7 @@
         "properties": {
           "gCastEnabled": {
             "default": false,
+            "description": "Whether Google Cast is enabled",
             "type": "boolean"
           }
         },
@@ -17446,6 +17507,7 @@
       "CastUpdate": {
         "properties": {
           "gCastEnabled": {
+            "description": "Whether Google Cast is enabled",
             "type": "boolean"
           }
         },
@@ -17792,10 +17854,12 @@
       "DownloadResponse": {
         "properties": {
           "archiveSize": {
+            "description": "Maximum archive size in bytes",
             "type": "integer"
           },
           "includeEmbeddedVideos": {
             "default": false,
+            "description": "Whether to include embedded videos in downloads",
             "type": "boolean"
           }
         },
@@ -17828,10 +17892,12 @@
       "DownloadUpdate": {
         "properties": {
           "archiveSize": {
+            "description": "Maximum archive size in bytes",
             "minimum": 1,
             "type": "integer"
           },
           "includeEmbeddedVideos": {
+            "description": "Whether to include embedded videos in downloads",
             "type": "boolean"
           }
         },
@@ -17840,9 +17906,11 @@
       "DuplicateDetectionConfig": {
         "properties": {
           "enabled": {
+            "description": "Whether the task is enabled",
             "type": "boolean"
           },
           "maxDistance": {
+            "description": "Maximum distance threshold for duplicate detection (0.001-0.1)",
             "format": "double",
             "maximum": 0.1,
             "minimum": 0.001,
@@ -17878,12 +17946,15 @@
       "EmailNotificationsResponse": {
         "properties": {
           "albumInvite": {
+            "description": "Whether to receive email notifications for album invites",
             "type": "boolean"
           },
           "albumUpdate": {
+            "description": "Whether to receive email notifications for album updates",
             "type": "boolean"
           },
           "enabled": {
+            "description": "Whether email notifications are enabled",
             "type": "boolean"
           }
         },
@@ -17897,12 +17968,15 @@
       "EmailNotificationsUpdate": {
         "properties": {
           "albumInvite": {
+            "description": "Whether to receive email notifications for album invites",
             "type": "boolean"
           },
           "albumUpdate": {
+            "description": "Whether to receive email notifications for album updates",
             "type": "boolean"
           },
           "enabled": {
+            "description": "Whether email notifications are enabled",
             "type": "boolean"
           }
         },
@@ -18064,25 +18138,30 @@
       "FacialRecognitionConfig": {
         "properties": {
           "enabled": {
+            "description": "Whether the task is enabled",
             "type": "boolean"
           },
           "maxDistance": {
+            "description": "Maximum distance threshold for face recognition (0.1-2)",
             "format": "double",
             "maximum": 2,
             "minimum": 0.1,
             "type": "number"
           },
           "minFaces": {
+            "description": "Minimum number of faces required for recognition",
             "minimum": 1,
             "type": "integer"
           },
           "minScore": {
+            "description": "Minimum confidence score for face detection (0.1-1)",
             "format": "double",
             "maximum": 1,
             "minimum": 0.1,
             "type": "number"
           },
           "modelName": {
+            "description": "Name of the model to use",
             "type": "string"
           }
         },
@@ -18099,10 +18178,12 @@
         "properties": {
           "enabled": {
             "default": false,
+            "description": "Whether folders are enabled",
             "type": "boolean"
           },
           "sidebarWeb": {
             "default": false,
+            "description": "Whether folders appear in web sidebar",
             "type": "boolean"
           }
         },
@@ -18115,9 +18196,11 @@
       "FoldersUpdate": {
         "properties": {
           "enabled": {
+            "description": "Whether folders are enabled",
             "type": "boolean"
           },
           "sidebarWeb": {
+            "description": "Whether folders appear in web sidebar",
             "type": "boolean"
           }
         },
@@ -18147,6 +18230,7 @@
         "type": "object"
       },
       "JobName": {
+        "description": "Job name",
         "enum": [
           "AssetDelete",
           "AssetDeleteCheck",
@@ -18652,10 +18736,12 @@
         "properties": {
           "duration": {
             "default": 5,
+            "description": "Memory duration in seconds",
             "type": "integer"
           },
           "enabled": {
             "default": true,
+            "description": "Whether memories are enabled",
             "type": "boolean"
           }
         },
@@ -18668,10 +18754,12 @@
       "MemoriesUpdate": {
         "properties": {
           "duration": {
+            "description": "Memory duration in seconds",
             "minimum": 1,
             "type": "integer"
           },
           "enabled": {
+            "description": "Whether memories are enabled",
             "type": "boolean"
           }
         },
@@ -19358,25 +19446,30 @@
       "OcrConfig": {
         "properties": {
           "enabled": {
+            "description": "Whether the task is enabled",
             "type": "boolean"
           },
           "maxResolution": {
+            "description": "Maximum resolution for OCR processing",
             "minimum": 1,
             "type": "integer"
           },
           "minDetectionScore": {
+            "description": "Minimum confidence score for text detection (0.1-1)",
             "format": "double",
             "maximum": 1,
             "minimum": 0.1,
             "type": "number"
           },
           "minRecognitionScore": {
+            "description": "Minimum confidence score for text recognition (0.1-1)",
             "format": "double",
             "maximum": 1,
             "minimum": 0.1,
             "type": "number"
           },
           "modelName": {
+            "description": "Name of the model to use",
             "type": "string"
           }
         },
@@ -19508,10 +19601,12 @@
         "properties": {
           "enabled": {
             "default": true,
+            "description": "Whether people are enabled",
             "type": "boolean"
           },
           "sidebarWeb": {
             "default": false,
+            "description": "Whether people appear in web sidebar",
             "type": "boolean"
           }
         },
@@ -19564,9 +19659,11 @@
       "PeopleUpdate": {
         "properties": {
           "enabled": {
+            "description": "Whether people are enabled",
             "type": "boolean"
           },
           "sidebarWeb": {
+            "description": "Whether people appear in web sidebar",
             "type": "boolean"
           }
         },
@@ -20309,9 +20406,12 @@
       "PurchaseResponse": {
         "properties": {
           "hideBuyButtonUntil": {
+            "description": "Date until which to hide buy button (ISO 8601 format)",
+            "format": "date-time",
             "type": "string"
           },
           "showSupportBadge": {
+            "description": "Whether to show support badge",
             "type": "boolean"
           }
         },
@@ -20324,15 +20424,19 @@
       "PurchaseUpdate": {
         "properties": {
           "hideBuyButtonUntil": {
+            "description": "Date until which to hide buy button (ISO 8601 format)",
+            "format": "date-time",
             "type": "string"
           },
           "showSupportBadge": {
+            "description": "Whether to show support badge",
             "type": "boolean"
           }
         },
         "type": "object"
       },
       "QueueCommand": {
+        "description": "Queue command to execute",
         "enum": [
           "start",
           "pause",
@@ -20349,9 +20453,11 @@
               {
                 "$ref": "#/components/schemas/QueueCommand"
               }
-            ]
+            ],
+            "description": "Queue command to execute"
           },
           "force": {
+            "description": "Force the command execution (if applicable)",
             "type": "boolean"
           }
         },
@@ -20383,9 +20489,12 @@
       "QueueJobResponseDto": {
         "properties": {
           "data": {
+            "description": "Job data payload",
             "type": "object"
           },
           "id": {
+            "description": "Job ID",
+            "format": "uuid",
             "type": "string"
           },
           "name": {
@@ -20393,9 +20502,11 @@
               {
                 "$ref": "#/components/schemas/JobName"
               }
-            ]
+            ],
+            "description": "Job name"
           },
           "timestamp": {
+            "description": "Job creation timestamp",
             "type": "integer"
           }
         },
@@ -20443,6 +20554,7 @@
       "QueueResponseDto": {
         "properties": {
           "isPaused": {
+            "description": "Whether the queue is paused",
             "type": "boolean"
           },
           "name": {
@@ -20450,10 +20562,16 @@
               {
                 "$ref": "#/components/schemas/QueueName"
               }
-            ]
+            ],
+            "description": "Queue name"
           },
           "statistics": {
-            "$ref": "#/components/schemas/QueueStatisticsDto"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/QueueStatisticsDto"
+              }
+            ],
+            "description": "Queue statistics"
           }
         },
         "required": [
@@ -20466,10 +20584,20 @@
       "QueueResponseLegacyDto": {
         "properties": {
           "jobCounts": {
-            "$ref": "#/components/schemas/QueueStatisticsDto"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/QueueStatisticsDto"
+              }
+            ],
+            "description": "Job count statistics for the queue"
           },
           "queueStatus": {
-            "$ref": "#/components/schemas/QueueStatusLegacyDto"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/QueueStatusLegacyDto"
+              }
+            ],
+            "description": "Current status of the queue"
           }
         },
         "required": [
@@ -20481,21 +20609,27 @@
       "QueueStatisticsDto": {
         "properties": {
           "active": {
+            "description": "Number of active jobs",
             "type": "integer"
           },
           "completed": {
+            "description": "Number of completed jobs",
             "type": "integer"
           },
           "delayed": {
+            "description": "Number of delayed jobs",
             "type": "integer"
           },
           "failed": {
+            "description": "Number of failed jobs",
             "type": "integer"
           },
           "paused": {
+            "description": "Number of paused jobs",
             "type": "integer"
           },
           "waiting": {
+            "description": "Number of waiting jobs",
             "type": "integer"
           }
         },
@@ -20512,9 +20646,11 @@
       "QueueStatusLegacyDto": {
         "properties": {
           "isActive": {
+            "description": "Whether the queue is currently active (has running jobs)",
             "type": "boolean"
           },
           "isPaused": {
+            "description": "Whether the queue is paused",
             "type": "boolean"
           }
         },
@@ -20527,6 +20663,7 @@
       "QueueUpdateDto": {
         "properties": {
           "isPaused": {
+            "description": "Whether to pause the queue",
             "type": "boolean"
           }
         },
@@ -20792,6 +20929,7 @@
         "properties": {
           "enabled": {
             "default": false,
+            "description": "Whether ratings are enabled",
             "type": "boolean"
           }
         },
@@ -20803,6 +20941,7 @@
       "RatingsUpdate": {
         "properties": {
           "enabled": {
+            "description": "Whether ratings are enabled",
             "type": "boolean"
           }
         },
@@ -21053,66 +21192,87 @@
       "ServerAboutResponseDto": {
         "properties": {
           "build": {
+            "description": "Build identifier",
             "type": "string"
           },
           "buildImage": {
+            "description": "Build image name",
             "type": "string"
           },
           "buildImageUrl": {
+            "description": "Build image URL",
             "type": "string"
           },
           "buildUrl": {
+            "description": "Build URL",
             "type": "string"
           },
           "exiftool": {
+            "description": "ExifTool version",
             "type": "string"
           },
           "ffmpeg": {
+            "description": "FFmpeg version",
             "type": "string"
           },
           "imagemagick": {
+            "description": "ImageMagick version",
             "type": "string"
           },
           "libvips": {
+            "description": "libvips version",
             "type": "string"
           },
           "licensed": {
+            "description": "Whether the server is licensed",
             "type": "boolean"
           },
           "nodejs": {
+            "description": "Node.js version",
             "type": "string"
           },
           "repository": {
+            "description": "Repository name",
             "type": "string"
           },
           "repositoryUrl": {
+            "description": "Repository URL",
             "type": "string"
           },
           "sourceCommit": {
+            "description": "Source commit hash",
             "type": "string"
           },
           "sourceRef": {
+            "description": "Source reference (branch/tag)",
             "type": "string"
           },
           "sourceUrl": {
+            "description": "Source URL",
             "type": "string"
           },
           "thirdPartyBugFeatureUrl": {
+            "description": "Third-party bug/feature URL",
             "type": "string"
           },
           "thirdPartyDocumentationUrl": {
+            "description": "Third-party documentation URL",
             "type": "string"
           },
           "thirdPartySourceUrl": {
+            "description": "Third-party source URL",
             "type": "string"
           },
           "thirdPartySupportUrl": {
+            "description": "Third-party support URL",
             "type": "string"
           },
           "version": {
+            "description": "Server version",
             "type": "string"
           },
           "versionUrl": {
+            "description": "URL to version information",
             "type": "string"
           }
         },
@@ -21126,15 +21286,19 @@
       "ServerApkLinksDto": {
         "properties": {
           "arm64v8a": {
+            "description": "APK download link for ARM64 v8a architecture",
             "type": "string"
           },
           "armeabiv7a": {
+            "description": "APK download link for ARM EABI v7a architecture",
             "type": "string"
           },
           "universal": {
+            "description": "APK download link for universal architecture",
             "type": "string"
           },
           "x86_64": {
+            "description": "APK download link for x86_64 architecture",
             "type": "string"
           }
         },
@@ -21149,36 +21313,47 @@
       "ServerConfigDto": {
         "properties": {
           "externalDomain": {
+            "description": "External domain URL",
             "type": "string"
           },
           "isInitialized": {
+            "description": "Whether the server has been initialized",
             "type": "boolean"
           },
           "isOnboarded": {
+            "description": "Whether the admin has completed onboarding",
             "type": "boolean"
           },
           "loginPageMessage": {
+            "description": "Login page message",
             "type": "string"
           },
           "maintenanceMode": {
+            "description": "Whether maintenance mode is active",
             "type": "boolean"
           },
           "mapDarkStyleUrl": {
+            "description": "Map dark style URL",
             "type": "string"
           },
           "mapLightStyleUrl": {
+            "description": "Map light style URL",
             "type": "string"
           },
           "oauthButtonText": {
+            "description": "OAuth button text",
             "type": "string"
           },
           "publicUsers": {
+            "description": "Whether public user registration is enabled",
             "type": "boolean"
           },
           "trashDays": {
+            "description": "Number of days before trashed assets are permanently deleted",
             "type": "integer"
           },
           "userDeleteDelay": {
+            "description": "Delay in days before deleted users are permanently removed",
             "type": "integer"
           }
         },
@@ -21200,48 +21375,63 @@
       "ServerFeaturesDto": {
         "properties": {
           "configFile": {
+            "description": "Whether config file is available",
             "type": "boolean"
           },
           "duplicateDetection": {
+            "description": "Whether duplicate detection is enabled",
             "type": "boolean"
           },
           "email": {
+            "description": "Whether email notifications are enabled",
             "type": "boolean"
           },
           "facialRecognition": {
+            "description": "Whether facial recognition is enabled",
             "type": "boolean"
           },
           "importFaces": {
+            "description": "Whether face import is enabled",
             "type": "boolean"
           },
           "map": {
+            "description": "Whether map feature is enabled",
             "type": "boolean"
           },
           "oauth": {
+            "description": "Whether OAuth is enabled",
             "type": "boolean"
           },
           "oauthAutoLaunch": {
+            "description": "Whether OAuth auto-launch is enabled",
             "type": "boolean"
           },
           "ocr": {
+            "description": "Whether OCR is enabled",
             "type": "boolean"
           },
           "passwordLogin": {
+            "description": "Whether password login is enabled",
             "type": "boolean"
           },
           "reverseGeocoding": {
+            "description": "Whether reverse geocoding is enabled",
             "type": "boolean"
           },
           "search": {
+            "description": "Whether search is enabled",
             "type": "boolean"
           },
           "sidecar": {
+            "description": "Whether sidecar files are supported",
             "type": "boolean"
           },
           "smartSearch": {
+            "description": "Whether smart search is enabled",
             "type": "boolean"
           },
           "trash": {
+            "description": "Whether trash feature is enabled",
             "type": "boolean"
           }
         },
@@ -21267,18 +21457,21 @@
       "ServerMediaTypesResponseDto": {
         "properties": {
           "image": {
+            "description": "Supported image MIME types",
             "items": {
               "type": "string"
             },
             "type": "array"
           },
           "sidecar": {
+            "description": "Supported sidecar MIME types",
             "items": {
               "type": "string"
             },
             "type": "array"
           },
           "video": {
+            "description": "Supported video MIME types",
             "items": {
               "type": "string"
             },
@@ -21309,10 +21502,12 @@
         "properties": {
           "photos": {
             "default": 0,
+            "description": "Total number of photos",
             "type": "integer"
           },
           "usage": {
             "default": 0,
+            "description": "Total storage usage in bytes",
             "format": "int64",
             "type": "integer"
           },
@@ -21335,16 +21530,19 @@
           },
           "usagePhotos": {
             "default": 0,
+            "description": "Storage usage for photos in bytes",
             "format": "int64",
             "type": "integer"
           },
           "usageVideos": {
             "default": 0,
+            "description": "Storage usage for videos in bytes",
             "format": "int64",
             "type": "integer"
           },
           "videos": {
             "default": 0,
+            "description": "Total number of videos",
             "type": "integer"
           }
         },
@@ -21361,27 +21559,34 @@
       "ServerStorageResponseDto": {
         "properties": {
           "diskAvailable": {
+            "description": "Available disk space (human-readable format)",
             "type": "string"
           },
           "diskAvailableRaw": {
+            "description": "Available disk space in bytes",
             "format": "int64",
             "type": "integer"
           },
           "diskSize": {
+            "description": "Total disk size (human-readable format)",
             "type": "string"
           },
           "diskSizeRaw": {
+            "description": "Total disk size in bytes",
             "format": "int64",
             "type": "integer"
           },
           "diskUsagePercentage": {
+            "description": "Disk usage percentage (0-100)",
             "format": "double",
             "type": "number"
           },
           "diskUse": {
+            "description": "Used disk space (human-readable format)",
             "type": "string"
           },
           "diskUseRaw": {
+            "description": "Used disk space in bytes",
             "format": "int64",
             "type": "integer"
           }
@@ -21400,6 +21605,7 @@
       "ServerThemeDto": {
         "properties": {
           "customCss": {
+            "description": "Custom CSS for theming",
             "type": "string"
           }
         },
@@ -21411,13 +21617,17 @@
       "ServerVersionHistoryResponseDto": {
         "properties": {
           "createdAt": {
+            "description": "When this version was first seen",
             "format": "date-time",
             "type": "string"
           },
           "id": {
+            "description": "Version history entry ID",
+            "format": "uuid",
             "type": "string"
           },
           "version": {
+            "description": "Version string",
             "type": "string"
           }
         },
@@ -21431,12 +21641,15 @@
       "ServerVersionResponseDto": {
         "properties": {
           "major": {
+            "description": "Major version number",
             "type": "integer"
           },
           "minor": {
+            "description": "Minor version number",
             "type": "integer"
           },
           "patch": {
+            "description": "Patch version number",
             "type": "integer"
           }
         },
@@ -21833,10 +22046,12 @@
         "properties": {
           "enabled": {
             "default": true,
+            "description": "Whether shared links are enabled",
             "type": "boolean"
           },
           "sidebarWeb": {
             "default": false,
+            "description": "Whether shared links appear in web sidebar",
             "type": "boolean"
           }
         },
@@ -21849,9 +22064,11 @@
       "SharedLinksUpdate": {
         "properties": {
           "enabled": {
+            "description": "Whether shared links are enabled",
             "type": "boolean"
           },
           "sidebarWeb": {
+            "description": "Whether shared links appear in web sidebar",
             "type": "boolean"
           }
         },
@@ -23366,67 +23583,172 @@
       "SystemConfigDto": {
         "properties": {
           "backup": {
-            "$ref": "#/components/schemas/SystemConfigBackupsDto"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SystemConfigBackupsDto"
+              }
+            ],
+            "description": "Backup configuration"
           },
           "ffmpeg": {
-            "$ref": "#/components/schemas/SystemConfigFFmpegDto"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SystemConfigFFmpegDto"
+              }
+            ],
+            "description": "FFmpeg configuration"
           },
           "image": {
-            "$ref": "#/components/schemas/SystemConfigImageDto"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SystemConfigImageDto"
+              }
+            ],
+            "description": "Image processing configuration"
           },
           "job": {
-            "$ref": "#/components/schemas/SystemConfigJobDto"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SystemConfigJobDto"
+              }
+            ],
+            "description": "Job queue configuration"
           },
           "library": {
-            "$ref": "#/components/schemas/SystemConfigLibraryDto"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SystemConfigLibraryDto"
+              }
+            ],
+            "description": "Library configuration"
           },
           "logging": {
-            "$ref": "#/components/schemas/SystemConfigLoggingDto"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SystemConfigLoggingDto"
+              }
+            ],
+            "description": "Logging configuration"
           },
           "machineLearning": {
-            "$ref": "#/components/schemas/SystemConfigMachineLearningDto"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SystemConfigMachineLearningDto"
+              }
+            ],
+            "description": "Machine learning configuration"
           },
           "map": {
-            "$ref": "#/components/schemas/SystemConfigMapDto"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SystemConfigMapDto"
+              }
+            ],
+            "description": "Map configuration"
           },
           "metadata": {
-            "$ref": "#/components/schemas/SystemConfigMetadataDto"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SystemConfigMetadataDto"
+              }
+            ],
+            "description": "Metadata configuration"
           },
           "newVersionCheck": {
-            "$ref": "#/components/schemas/SystemConfigNewVersionCheckDto"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SystemConfigNewVersionCheckDto"
+              }
+            ],
+            "description": "New version check configuration"
           },
           "nightlyTasks": {
-            "$ref": "#/components/schemas/SystemConfigNightlyTasksDto"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SystemConfigNightlyTasksDto"
+              }
+            ],
+            "description": "Nightly tasks configuration"
           },
           "notifications": {
-            "$ref": "#/components/schemas/SystemConfigNotificationsDto"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SystemConfigNotificationsDto"
+              }
+            ],
+            "description": "Notification configuration"
           },
           "oauth": {
-            "$ref": "#/components/schemas/SystemConfigOAuthDto"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SystemConfigOAuthDto"
+              }
+            ],
+            "description": "OAuth configuration"
           },
           "passwordLogin": {
-            "$ref": "#/components/schemas/SystemConfigPasswordLoginDto"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SystemConfigPasswordLoginDto"
+              }
+            ],
+            "description": "Password login configuration"
           },
           "reverseGeocoding": {
-            "$ref": "#/components/schemas/SystemConfigReverseGeocodingDto"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SystemConfigReverseGeocodingDto"
+              }
+            ],
+            "description": "Reverse geocoding configuration"
           },
           "server": {
-            "$ref": "#/components/schemas/SystemConfigServerDto"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SystemConfigServerDto"
+              }
+            ],
+            "description": "Server configuration"
           },
           "storageTemplate": {
-            "$ref": "#/components/schemas/SystemConfigStorageTemplateDto"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SystemConfigStorageTemplateDto"
+              }
+            ],
+            "description": "Storage template configuration"
           },
           "templates": {
-            "$ref": "#/components/schemas/SystemConfigTemplatesDto"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SystemConfigTemplatesDto"
+              }
+            ],
+            "description": "Template configuration"
           },
           "theme": {
-            "$ref": "#/components/schemas/SystemConfigThemeDto"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SystemConfigThemeDto"
+              }
+            ],
+            "description": "Theme configuration"
           },
           "trash": {
-            "$ref": "#/components/schemas/SystemConfigTrashDto"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SystemConfigTrashDto"
+              }
+            ],
+            "description": "Trash configuration"
           },
           "user": {
-            "$ref": "#/components/schemas/SystemConfigUserDto"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SystemConfigUserDto"
+              }
+            ],
+            "description": "User configuration"
           }
         },
         "required": [
@@ -24069,16 +24391,24 @@
       "SystemConfigSmtpDto": {
         "properties": {
           "enabled": {
+            "description": "Whether SMTP email notifications are enabled",
             "type": "boolean"
           },
           "from": {
+            "description": "Email address to send from",
             "type": "string"
           },
           "replyTo": {
+            "description": "Email address for replies",
             "type": "string"
           },
           "transport": {
-            "$ref": "#/components/schemas/SystemConfigSmtpTransportDto"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SystemConfigSmtpTransportDto"
+              }
+            ],
+            "description": "SMTP transport configuration"
           }
         },
         "required": [
@@ -24092,23 +24422,29 @@
       "SystemConfigSmtpTransportDto": {
         "properties": {
           "host": {
+            "description": "SMTP server hostname",
             "type": "string"
           },
           "ignoreCert": {
+            "description": "Whether to ignore SSL certificate errors",
             "type": "boolean"
           },
           "password": {
+            "description": "SMTP password",
             "type": "string"
           },
           "port": {
+            "description": "SMTP server port",
             "maximum": 65535,
             "minimum": 0,
             "type": "number"
           },
           "secure": {
+            "description": "Whether to use secure connection (TLS/SSL)",
             "type": "boolean"
           },
           "username": {
+            "description": "SMTP username",
             "type": "string"
           }
         },
@@ -24163,48 +24499,56 @@
       "SystemConfigTemplateStorageOptionDto": {
         "properties": {
           "dayOptions": {
+            "description": "Available day format options for storage template",
             "items": {
               "type": "string"
             },
             "type": "array"
           },
           "hourOptions": {
+            "description": "Available hour format options for storage template",
             "items": {
               "type": "string"
             },
             "type": "array"
           },
           "minuteOptions": {
+            "description": "Available minute format options for storage template",
             "items": {
               "type": "string"
             },
             "type": "array"
           },
           "monthOptions": {
+            "description": "Available month format options for storage template",
             "items": {
               "type": "string"
             },
             "type": "array"
           },
           "presetOptions": {
+            "description": "Available preset template options",
             "items": {
               "type": "string"
             },
             "type": "array"
           },
           "secondOptions": {
+            "description": "Available second format options for storage template",
             "items": {
               "type": "string"
             },
             "type": "array"
           },
           "weekOptions": {
+            "description": "Available week format options for storage template",
             "items": {
               "type": "string"
             },
             "type": "array"
           },
           "yearOptions": {
+            "description": "Available year format options for storage template",
             "items": {
               "type": "string"
             },
@@ -24237,6 +24581,7 @@
       "SystemConfigThemeDto": {
         "properties": {
           "customCss": {
+            "description": "Custom CSS for theming",
             "type": "string"
           }
         },
@@ -24404,10 +24749,12 @@
         "properties": {
           "enabled": {
             "default": true,
+            "description": "Whether tags are enabled",
             "type": "boolean"
           },
           "sidebarWeb": {
             "default": true,
+            "description": "Whether tags appear in web sidebar",
             "type": "boolean"
           }
         },
@@ -24420,9 +24767,11 @@
       "TagsUpdate": {
         "properties": {
           "enabled": {
+            "description": "Whether tags are enabled",
             "type": "boolean"
           },
           "sidebarWeb": {
+            "description": "Whether tags appear in web sidebar",
             "type": "boolean"
           }
         },
@@ -24812,32 +25161,41 @@
       "UsageByUserDto": {
         "properties": {
           "photos": {
+            "description": "Number of photos",
             "type": "integer"
           },
           "quotaSizeInBytes": {
+            "description": "User quota size in bytes (null if unlimited)",
             "format": "int64",
             "nullable": true,
             "type": "integer"
           },
           "usage": {
+            "description": "Total storage usage in bytes",
             "format": "int64",
             "type": "integer"
           },
           "usagePhotos": {
+            "description": "Storage usage for photos in bytes",
             "format": "int64",
             "type": "integer"
           },
           "usageVideos": {
+            "description": "Storage usage for videos in bytes",
             "format": "int64",
             "type": "integer"
           },
           "userId": {
+            "description": "User ID",
+            "format": "uuid",
             "type": "string"
           },
           "userName": {
+            "description": "User name",
             "type": "string"
           },
           "videos": {
+            "description": "Number of videos",
             "type": "integer"
           }
         },
@@ -25136,37 +25494,92 @@
       "UserPreferencesResponseDto": {
         "properties": {
           "albums": {
-            "$ref": "#/components/schemas/AlbumsResponse"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AlbumsResponse"
+              }
+            ],
+            "description": "Album preferences"
           },
           "cast": {
-            "$ref": "#/components/schemas/CastResponse"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CastResponse"
+              }
+            ],
+            "description": "Cast preferences"
           },
           "download": {
-            "$ref": "#/components/schemas/DownloadResponse"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DownloadResponse"
+              }
+            ],
+            "description": "Download preferences"
           },
           "emailNotifications": {
-            "$ref": "#/components/schemas/EmailNotificationsResponse"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/EmailNotificationsResponse"
+              }
+            ],
+            "description": "Email notification preferences"
           },
           "folders": {
-            "$ref": "#/components/schemas/FoldersResponse"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/FoldersResponse"
+              }
+            ],
+            "description": "Folder preferences"
           },
           "memories": {
-            "$ref": "#/components/schemas/MemoriesResponse"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MemoriesResponse"
+              }
+            ],
+            "description": "Memory preferences"
           },
           "people": {
-            "$ref": "#/components/schemas/PeopleResponse"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PeopleResponse"
+              }
+            ],
+            "description": "People preferences"
           },
           "purchase": {
-            "$ref": "#/components/schemas/PurchaseResponse"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PurchaseResponse"
+              }
+            ],
+            "description": "Purchase preferences"
           },
           "ratings": {
-            "$ref": "#/components/schemas/RatingsResponse"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RatingsResponse"
+              }
+            ],
+            "description": "Rating preferences"
           },
           "sharedLinks": {
-            "$ref": "#/components/schemas/SharedLinksResponse"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SharedLinksResponse"
+              }
+            ],
+            "description": "Shared link preferences"
           },
           "tags": {
-            "$ref": "#/components/schemas/TagsResponse"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TagsResponse"
+              }
+            ],
+            "description": "Tag preferences"
           }
         },
         "required": [
@@ -25187,40 +25600,100 @@
       "UserPreferencesUpdateDto": {
         "properties": {
           "albums": {
-            "$ref": "#/components/schemas/AlbumsUpdate"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AlbumsUpdate"
+              }
+            ],
+            "description": "Album preferences"
           },
           "avatar": {
-            "$ref": "#/components/schemas/AvatarUpdate"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AvatarUpdate"
+              }
+            ],
+            "description": "Avatar preferences"
           },
           "cast": {
-            "$ref": "#/components/schemas/CastUpdate"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CastUpdate"
+              }
+            ],
+            "description": "Cast preferences"
           },
           "download": {
-            "$ref": "#/components/schemas/DownloadUpdate"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DownloadUpdate"
+              }
+            ],
+            "description": "Download preferences"
           },
           "emailNotifications": {
-            "$ref": "#/components/schemas/EmailNotificationsUpdate"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/EmailNotificationsUpdate"
+              }
+            ],
+            "description": "Email notification preferences"
           },
           "folders": {
-            "$ref": "#/components/schemas/FoldersUpdate"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/FoldersUpdate"
+              }
+            ],
+            "description": "Folder preferences"
           },
           "memories": {
-            "$ref": "#/components/schemas/MemoriesUpdate"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MemoriesUpdate"
+              }
+            ],
+            "description": "Memory preferences"
           },
           "people": {
-            "$ref": "#/components/schemas/PeopleUpdate"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PeopleUpdate"
+              }
+            ],
+            "description": "People preferences"
           },
           "purchase": {
-            "$ref": "#/components/schemas/PurchaseUpdate"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PurchaseUpdate"
+              }
+            ],
+            "description": "Purchase preferences"
           },
           "ratings": {
-            "$ref": "#/components/schemas/RatingsUpdate"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RatingsUpdate"
+              }
+            ],
+            "description": "Rating preferences"
           },
           "sharedLinks": {
-            "$ref": "#/components/schemas/SharedLinksUpdate"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SharedLinksUpdate"
+              }
+            ],
+            "description": "Shared link preferences"
           },
           "tags": {
-            "$ref": "#/components/schemas/TagsUpdate"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TagsUpdate"
+              }
+            ],
+            "description": "Tag preferences"
           }
         },
         "type": "object"

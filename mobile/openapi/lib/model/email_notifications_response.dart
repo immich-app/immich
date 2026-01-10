@@ -18,10 +18,13 @@ class EmailNotificationsResponse {
     required this.enabled,
   });
 
+  /// Whether to receive email notifications for album invites
   bool albumInvite;
 
+  /// Whether to receive email notifications for album updates
   bool albumUpdate;
 
+  /// Whether email notifications are enabled
   bool enabled;
 
   @override
