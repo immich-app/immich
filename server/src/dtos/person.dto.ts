@@ -27,7 +27,8 @@ export class PersonCreateDto {
   @Optional()
   @IsString()
   name?: string;
-
+  
+  // Note: the mobile app cannot currently set the birth date to null.
   @ApiProperty({ format: 'date', description: 'Person date of birth', required: false, nullable: true })
   @MaxDateString(() => DateTime.now(), { message: 'Birth date cannot be in the future' })
   @IsDateStringFormat('yyyy-MM-dd')
@@ -228,6 +229,7 @@ export class PeopleResponseDto {
   @ApiProperty({ description: 'List of people', type: () => [PersonResponseDto] })
   people!: PersonResponseDto[];
 
+  // TODO: make required after a few versions
   @ApiPropertyOptional({ description: 'Whether there are more pages' })
   @Property({ history: new HistoryBuilder().added('v1.110.0').stable('v2') })
   hasNextPage?: boolean;
