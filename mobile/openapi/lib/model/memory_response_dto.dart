@@ -28,54 +28,43 @@ class MemoryResponseDto {
     required this.updatedAt,
   });
 
+  /// Associated assets
   List<AssetResponseDto> assets;
 
+  /// Creation date
   DateTime createdAt;
 
+  /// Memory data (type-specific)
   OnThisDayDto data;
 
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
+  /// Deletion date
   DateTime? deletedAt;
 
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
+  /// Date when memory should be hidden
   DateTime? hideAt;
 
+  /// Memory ID
   String id;
 
+  /// Is memory saved
   bool isSaved;
 
+  /// Memory date
   DateTime memoryAt;
 
+  /// Owner user ID
   String ownerId;
 
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
+  /// Date when memory was seen
   DateTime? seenAt;
 
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
+  /// Date when memory should be shown
   DateTime? showAt;
 
+  /// Memory type
   MemoryType type;
 
+  /// Last update date
   DateTime updatedAt;
 
   @override

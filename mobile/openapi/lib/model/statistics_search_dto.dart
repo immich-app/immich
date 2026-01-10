@@ -44,12 +44,16 @@ class StatisticsSearchDto {
     this.visibility,
   });
 
+  /// Filter by album IDs
   List<String> albumIds;
 
+  /// Filter by city name
   String? city;
 
+  /// Filter by country name
   String? country;
 
+  /// Filter by creation date (after)
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -58,6 +62,7 @@ class StatisticsSearchDto {
   ///
   DateTime? createdAfter;
 
+  /// Filter by creation date (before)
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -66,6 +71,7 @@ class StatisticsSearchDto {
   ///
   DateTime? createdBefore;
 
+  /// Filter by description text
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -74,6 +80,7 @@ class StatisticsSearchDto {
   ///
   String? description;
 
+  /// Device ID to filter by
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -82,6 +89,7 @@ class StatisticsSearchDto {
   ///
   String? deviceId;
 
+  /// Filter by encoded status
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -90,6 +98,7 @@ class StatisticsSearchDto {
   ///
   bool? isEncoded;
 
+  /// Filter by favorite status
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -98,6 +107,7 @@ class StatisticsSearchDto {
   ///
   bool? isFavorite;
 
+  /// Filter by motion photo status
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -106,6 +116,7 @@ class StatisticsSearchDto {
   ///
   bool? isMotion;
 
+  /// Filter assets not in any album
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -114,6 +125,7 @@ class StatisticsSearchDto {
   ///
   bool? isNotInAlbum;
 
+  /// Filter by offline status
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -122,20 +134,19 @@ class StatisticsSearchDto {
   ///
   bool? isOffline;
 
+  /// Filter by lens model
   String? lensModel;
 
+  /// Library ID to filter by
   String? libraryId;
 
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
+  /// Filter by camera make
   String? make;
 
+  /// Filter by camera model
   String? model;
 
+  /// Filter by OCR text content
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -144,8 +155,11 @@ class StatisticsSearchDto {
   ///
   String? ocr;
 
+  /// Filter by person IDs
   List<String> personIds;
 
+  /// Filter by rating (-1 to 5)
+  ///
   /// Minimum value: -1
   /// Maximum value: 5
   ///
@@ -154,12 +168,15 @@ class StatisticsSearchDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  num? rating;
+  int? rating;
 
+  /// Filter by state/province name
   String? state;
 
+  /// Filter by tag IDs
   List<String>? tagIds;
 
+  /// Filter by taken date (after)
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -168,6 +185,7 @@ class StatisticsSearchDto {
   ///
   DateTime? takenAfter;
 
+  /// Filter by taken date (before)
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -176,6 +194,7 @@ class StatisticsSearchDto {
   ///
   DateTime? takenBefore;
 
+  /// Filter by trash date (after)
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -184,6 +203,7 @@ class StatisticsSearchDto {
   ///
   DateTime? trashedAfter;
 
+  /// Filter by trash date (before)
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -192,6 +212,7 @@ class StatisticsSearchDto {
   ///
   DateTime? trashedBefore;
 
+  /// Asset type filter
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -200,6 +221,7 @@ class StatisticsSearchDto {
   ///
   AssetTypeEnum? type;
 
+  /// Filter by update date (after)
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -208,6 +230,7 @@ class StatisticsSearchDto {
   ///
   DateTime? updatedAfter;
 
+  /// Filter by update date (before)
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -216,6 +239,7 @@ class StatisticsSearchDto {
   ///
   DateTime? updatedBefore;
 
+  /// Filter by visibility
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -465,7 +489,7 @@ class StatisticsSearchDto {
         personIds: json[r'personIds'] is Iterable
             ? (json[r'personIds'] as Iterable).cast<String>().toList(growable: false)
             : const [],
-        rating: num.parse('${json[r'rating']}'),
+        rating: mapValueOfType<int>(json, r'rating'),
         state: mapValueOfType<String>(json, r'state'),
         tagIds: json[r'tagIds'] is Iterable
             ? (json[r'tagIds'] as Iterable).cast<String>().toList(growable: false)

@@ -185,12 +185,16 @@ class NotificationsApi {
   /// Parameters:
   ///
   /// * [String] id:
+  ///   Filter by notification ID
   ///
   /// * [NotificationLevel] level:
+  ///   Filter by notification level
   ///
   /// * [NotificationType] type:
+  ///   Filter by notification type
   ///
   /// * [bool] unread:
+  ///   Filter by unread status
   Future<Response> getNotificationsWithHttpInfo({ String? id, NotificationLevel? level, NotificationType? type, bool? unread, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/notifications';
@@ -236,12 +240,16 @@ class NotificationsApi {
   /// Parameters:
   ///
   /// * [String] id:
+  ///   Filter by notification ID
   ///
   /// * [NotificationLevel] level:
+  ///   Filter by notification level
   ///
   /// * [NotificationType] type:
+  ///   Filter by notification type
   ///
   /// * [bool] unread:
+  ///   Filter by unread status
   Future<List<NotificationDto>?> getNotifications({ String? id, NotificationLevel? level, NotificationType? type, bool? unread, }) async {
     final response = await getNotificationsWithHttpInfo( id: id, level: level, type: type, unread: unread, );
     if (response.statusCode >= HttpStatus.badRequest) {

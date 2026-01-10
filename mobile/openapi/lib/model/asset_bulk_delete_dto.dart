@@ -26,6 +26,7 @@ class AssetBulkDeleteDto {
   ///
   bool? force;
 
+  /// IDs to process
   List<String> ids;
 
   @override

@@ -37,48 +37,70 @@ class ExifResponseDto {
     this.timeZone,
   });
 
+  /// City name
   String? city;
 
+  /// Country name
   String? country;
 
+  /// Original date/time
   DateTime? dateTimeOriginal;
 
+  /// Image description
   String? description;
 
-  num? exifImageHeight;
+  /// Image height in pixels
+  int? exifImageHeight;
 
-  num? exifImageWidth;
+  /// Image width in pixels
+  int? exifImageWidth;
 
+  /// Exposure time
   String? exposureTime;
 
+  /// F-number (aperture)
   num? fNumber;
 
+  /// File size in bytes
   int? fileSizeInByte;
 
+  /// Focal length in mm
   num? focalLength;
 
-  num? iso;
+  /// ISO sensitivity
+  int? iso;
 
+  /// GPS latitude
   num? latitude;
 
+  /// Lens model
   String? lensModel;
 
+  /// GPS longitude
   num? longitude;
 
+  /// Camera make
   String? make;
 
+  /// Camera model
   String? model;
 
+  /// Modification date/time
   DateTime? modifyDate;
 
+  /// Image orientation
   String? orientation;
 
+  /// Projection type
   String? projectionType;
 
+  /// Rating (-1 to 5)
   num? rating;
 
+  /// State/province name
   String? state;
 
+  /// Time zone
   String? timeZone;
 
   @override
@@ -263,12 +285,8 @@ class ExifResponseDto {
         country: mapValueOfType<String>(json, r'country'),
         dateTimeOriginal: mapDateTime(json, r'dateTimeOriginal', r''),
         description: mapValueOfType<String>(json, r'description'),
-        exifImageHeight: json[r'exifImageHeight'] == null
-            ? null
-            : num.parse('${json[r'exifImageHeight']}'),
-        exifImageWidth: json[r'exifImageWidth'] == null
-            ? null
-            : num.parse('${json[r'exifImageWidth']}'),
+        exifImageHeight: mapValueOfType<int>(json, r'exifImageHeight'),
+        exifImageWidth: mapValueOfType<int>(json, r'exifImageWidth'),
         exposureTime: mapValueOfType<String>(json, r'exposureTime'),
         fNumber: json[r'fNumber'] == null
             ? null
@@ -277,9 +295,7 @@ class ExifResponseDto {
         focalLength: json[r'focalLength'] == null
             ? null
             : num.parse('${json[r'focalLength']}'),
-        iso: json[r'iso'] == null
-            ? null
-            : num.parse('${json[r'iso']}'),
+        iso: mapValueOfType<int>(json, r'iso'),
         latitude: json[r'latitude'] == null
             ? null
             : num.parse('${json[r'latitude']}'),

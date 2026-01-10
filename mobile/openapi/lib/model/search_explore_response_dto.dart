@@ -17,8 +17,10 @@ class SearchExploreResponseDto {
     this.items = const [],
   });
 
+  /// Explore field name
   String fieldName;
 
+  /// Explore items
   List<SearchExploreItem> items;
 
   @override

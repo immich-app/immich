@@ -16,18 +16,23 @@ class SearchAssetResponseDto {
     required this.count,
     this.facets = const [],
     this.items = const [],
-    required this.nextPage,
+    this.nextPage,
     required this.total,
   });
 
+  /// Number of assets in this page
   int count;
 
+  /// Search facets
   List<SearchFacetResponseDto> facets;
 
+  /// Asset items
   List<AssetResponseDto> items;
 
+  /// Next page token
   String? nextPage;
 
+  /// Total number of matching assets
   int total;
 
   @override
@@ -128,7 +133,6 @@ class SearchAssetResponseDto {
     'count',
     'facets',
     'items',
-    'nextPage',
     'total',
   };
 }
