@@ -5306,6 +5306,7 @@
             "name": "id",
             "required": true,
             "in": "query",
+            "description": "Asset ID to retrieve faces for",
             "schema": {
               "format": "uuid",
               "type": "string"
@@ -5371,6 +5372,7 @@
               }
             }
           },
+          "description": "Face creation data including asset ID, person ID, image dimensions, and bounding box coordinates",
           "required": true
         },
         "responses": {
@@ -5420,6 +5422,7 @@
             "name": "id",
             "required": true,
             "in": "path",
+            "description": "Face ID to delete",
             "schema": {
               "format": "uuid",
               "type": "string"
@@ -5434,6 +5437,7 @@
               }
             }
           },
+          "description": "Delete options including force flag",
           "required": true
         },
         "responses": {
@@ -5481,6 +5485,7 @@
             "name": "id",
             "required": true,
             "in": "path",
+            "description": "Person ID to assign the face to",
             "schema": {
               "format": "uuid",
               "type": "string"
@@ -5495,6 +5500,7 @@
               }
             }
           },
+          "description": "Face ID to be reassigned to the person",
           "required": true
         },
         "responses": {
