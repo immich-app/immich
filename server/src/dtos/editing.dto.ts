@@ -50,28 +50,28 @@ export class MirrorParameters {
 
 class AssetEditActionBase {
   @IsEnum(AssetEditAction)
-  @ApiProperty({ enum: AssetEditAction, enumName: 'AssetEditAction' })
+  @ApiProperty({ enum: AssetEditAction, enumName: 'AssetEditAction', description: 'Type of edit action to perform' })
   action!: AssetEditAction;
 }
 
 export class AssetEditActionCrop extends AssetEditActionBase {
   @ValidateNested()
   @Type(() => CropParameters)
-  @ApiProperty({ type: CropParameters })
+  @ApiProperty({ type: CropParameters, description: 'Crop parameters (x, y, width, height)' })
   parameters!: CropParameters;
 }
 
 export class AssetEditActionRotate extends AssetEditActionBase {
   @ValidateNested()
   @Type(() => RotateParameters)
-  @ApiProperty({ type: RotateParameters })
+  @ApiProperty({ type: RotateParameters, description: 'Rotation parameters (angle in degrees)' })
   parameters!: RotateParameters;
 }
 
 export class AssetEditActionMirror extends AssetEditActionBase {
   @ValidateNested()
   @Type(() => MirrorParameters)
-  @ApiProperty({ type: MirrorParameters })
+  @ApiProperty({ type: MirrorParameters, description: 'Mirror parameters (axis: horizontal or vertical)' })
   parameters!: MirrorParameters;
 }
 
@@ -114,12 +114,15 @@ export class AssetEditActionListDto {
   @Transform(({ value: edits }) =>
     Array.isArray(edits) ? edits.map((item) => plainToInstance(getActionClass(item), item)) : edits,
   )
-  @ApiProperty({ anyOf: Object.values(actionToClass).map((target) => ({ $ref: getSchemaPath(target) })) })
+  @ApiProperty({
+    anyOf: Object.values(actionToClass).map((target) => ({ $ref: getSchemaPath(target) })),
+    description: 'List of edit actions to apply (crop, rotate, or mirror)',
+  })
   edits!: AssetEditActionItem[];
 }
 
 export class AssetEditsDto extends AssetEditActionListDto {
   @ValidateUUID()
-  @ApiProperty()
+  @ApiProperty({ description: 'Asset ID to apply edits to', type: String, format: 'uuid' })
   assetId!: string;
 }
