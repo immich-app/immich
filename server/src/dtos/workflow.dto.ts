@@ -47,12 +47,12 @@ export class WorkflowCreateDto {
   @ValidateBoolean({ optional: true })
   enabled?: boolean;
 
-  @ApiProperty({ description: 'Workflow filters', type: [WorkflowFilterItemDto] })
+  @ApiProperty({ description: 'Workflow filters', type: () => [WorkflowFilterItemDto] })
   @ValidateNested({ each: true })
   @Type(() => WorkflowFilterItemDto)
   filters!: WorkflowFilterItemDto[];
 
-  @ApiProperty({ description: 'Workflow actions', type: [WorkflowActionItemDto] })
+  @ApiProperty({ description: 'Workflow actions', type: () => [WorkflowActionItemDto] })
   @ValidateNested({ each: true })
   @Type(() => WorkflowActionItemDto)
   actions!: WorkflowActionItemDto[];
@@ -78,13 +78,13 @@ export class WorkflowUpdateDto {
   @ValidateBoolean({ optional: true })
   enabled?: boolean;
 
-  @ApiPropertyOptional({ description: 'Workflow filters', type: [WorkflowFilterItemDto] })
+  @ApiPropertyOptional({ description: 'Workflow filters', type: () => [WorkflowFilterItemDto] })
   @ValidateNested({ each: true })
   @Type(() => WorkflowFilterItemDto)
   @Optional()
   filters?: WorkflowFilterItemDto[];
 
-  @ApiPropertyOptional({ description: 'Workflow actions', type: [WorkflowActionItemDto] })
+  @ApiPropertyOptional({ description: 'Workflow actions', type: () => [WorkflowActionItemDto] })
   @ValidateNested({ each: true })
   @Type(() => WorkflowActionItemDto)
   @Optional()
@@ -107,9 +107,9 @@ export class WorkflowResponseDto {
   createdAt!: string;
   @ApiProperty({ description: 'Workflow enabled' })
   enabled!: boolean;
-  @ApiProperty({ description: 'Workflow filters', type: [WorkflowFilterResponseDto] })
+  @ApiProperty({ description: 'Workflow filters', type: () => [WorkflowFilterResponseDto] })
   filters!: WorkflowFilterResponseDto[];
-  @ApiProperty({ description: 'Workflow actions', type: [WorkflowActionResponseDto] })
+  @ApiProperty({ description: 'Workflow actions', type: () => [WorkflowActionResponseDto] })
   actions!: WorkflowActionResponseDto[];
 }
 

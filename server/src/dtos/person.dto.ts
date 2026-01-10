@@ -123,7 +123,7 @@ export class PersonResponseDto {
 }
 
 export class PersonWithFacesResponseDto extends PersonResponseDto {
-  @ApiProperty({ description: 'Face detections', type: [AssetFaceWithoutPersonResponseDto] })
+  @ApiProperty({ description: 'Face detections', type: () => [AssetFaceWithoutPersonResponseDto] })
   faces!: AssetFaceWithoutPersonResponseDto[];
 }
 
@@ -154,7 +154,7 @@ export class AssetFaceResponseDto extends AssetFaceWithoutPersonResponseDto {
 }
 
 export class AssetFaceUpdateDto {
-  @ApiProperty({ description: 'Face update items', type: [AssetFaceUpdateItem] })
+  @ApiProperty({ description: 'Face update items', type: () => [AssetFaceUpdateItem] })
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => AssetFaceUpdateItem)
@@ -225,7 +225,7 @@ export class PeopleResponseDto {
   total!: number;
   @ApiProperty({ type: 'integer', description: 'Number of hidden people' })
   hidden!: number;
-  @ApiProperty({ description: 'List of people', type: [PersonResponseDto] })
+  @ApiProperty({ description: 'List of people', type: () => [PersonResponseDto] })
   people!: PersonResponseDto[];
 
   @ApiPropertyOptional({ description: 'Whether there are more pages' })

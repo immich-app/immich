@@ -29,7 +29,7 @@ export class StackResponseDto {
   id!: string;
   @ApiProperty({ description: 'Primary asset ID' })
   primaryAssetId!: string;
-  @ApiProperty({ description: 'Stack assets', type: [AssetResponseDto] })
+  @ApiProperty({ description: 'Stack assets', type: () => [AssetResponseDto] })
   assets!: AssetResponseDto[];
 }
 

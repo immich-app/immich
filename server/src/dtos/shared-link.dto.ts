@@ -132,7 +132,7 @@ export class SharedLinkResponseDto {
   createdAt!: Date;
   @ApiProperty({ description: 'Expiration date', nullable: true })
   expiresAt!: Date | null;
-  @ApiProperty({ description: 'Shared assets', type: [AssetResponseDto] })
+  @ApiProperty({ description: 'Shared assets', type: () => [AssetResponseDto] })
   assets!: AssetResponseDto[];
   @ApiPropertyOptional({ description: 'Shared album', type: AlbumResponseDto })
   album?: AlbumResponseDto;

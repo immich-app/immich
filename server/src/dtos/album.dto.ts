@@ -27,7 +27,7 @@ export class AlbumUserAddDto {
 }
 
 export class AddUsersDto {
-  @ApiProperty({ description: 'Album users to add', type: [AlbumUserAddDto] })
+  @ApiProperty({ description: 'Album users to add', type: () => [AlbumUserAddDto] })
   @ArrayNotEmpty()
   albumUsers!: AlbumUserAddDto[];
 }
@@ -52,7 +52,7 @@ export class CreateAlbumDto {
   @Optional()
   description?: string;
 
-  @ApiPropertyOptional({ description: 'Album users', type: [AlbumUserCreateDto] })
+  @ApiPropertyOptional({ description: 'Album users', type: () => [AlbumUserCreateDto] })
   @Optional()
   @IsArray()
   @ValidateNested({ each: true })
@@ -166,11 +166,11 @@ export class AlbumResponseDto {
   albumThumbnailAssetId!: string | null;
   @ApiProperty({ description: 'Is shared album' })
   shared!: boolean;
-  @ApiProperty({ description: 'Album users', type: [AlbumUserResponseDto] })
+  @ApiProperty({ description: 'Album users', type: () => [AlbumUserResponseDto] })
   albumUsers!: AlbumUserResponseDto[];
   @ApiProperty({ description: 'Has shared link' })
   hasSharedLink!: boolean;
-  @ApiProperty({ description: 'Album assets', type: [AssetResponseDto] })
+  @ApiProperty({ description: 'Album assets', type: () => [AssetResponseDto] })
   assets!: AssetResponseDto[];
   @ApiProperty({ description: 'Album owner', type: UserResponseDto })
   owner!: UserResponseDto;
@@ -188,7 +188,7 @@ export class AlbumResponseDto {
   @ValidateEnum({ enum: AssetOrder, name: 'AssetOrder', optional: true })
   order?: AssetOrder;
 
-  @ApiPropertyOptional({ description: 'Per-user contribution counts (shared albums only)', type: [ContributorCountResponseDto] })
+  @ApiPropertyOptional({ description: 'Per-user contribution counts (shared albums only)', type: () => [ContributorCountResponseDto] })
   @Type(() => ContributorCountResponseDto)
   contributorCounts?: ContributorCountResponseDto[];
 }

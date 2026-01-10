@@ -48,7 +48,7 @@ export class AssetDeltaSyncDto {
 export class AssetDeltaSyncResponseDto {
   @ApiProperty({ description: 'Whether full sync is needed' })
   needsFullSync!: boolean;
-  @ApiProperty({ description: 'Upserted assets', type: [AssetResponseDto] })
+  @ApiProperty({ description: 'Upserted assets', type: () => [AssetResponseDto] })
   upserted!: AssetResponseDto[];
   @ApiProperty({ description: 'Deleted asset IDs', type: [String] })
   deleted!: string[];

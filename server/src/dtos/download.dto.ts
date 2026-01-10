@@ -25,7 +25,7 @@ export class DownloadInfoDto {
 export class DownloadResponseDto {
   @ApiProperty({ type: 'integer', description: 'Total size in bytes' })
   totalSize!: number;
-  @ApiProperty({ description: 'Archive information', type: [DownloadArchiveInfo] })
+  @ApiProperty({ description: 'Archive information', type: () => [DownloadArchiveInfo] })
   archives!: DownloadArchiveInfo[];
 }
 

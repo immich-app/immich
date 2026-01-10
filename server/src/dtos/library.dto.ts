@@ -84,7 +84,7 @@ export class ValidateLibraryDto {
 }
 
 export class ValidateLibraryResponseDto {
-  @ApiPropertyOptional({ description: 'Validation results for import paths', type: [ValidateLibraryImportPathResponseDto] })
+  @ApiPropertyOptional({ description: 'Validation results for import paths', type: () => [ValidateLibraryImportPathResponseDto] })
   importPaths?: ValidateLibraryImportPathResponseDto[];
 }
 

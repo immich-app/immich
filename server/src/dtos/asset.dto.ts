@@ -169,7 +169,7 @@ export class AssetMetadataRouteParams {
 }
 
 export class AssetMetadataUpsertDto {
-  @ApiProperty({ description: 'Metadata items to upsert', type: [AssetMetadataUpsertItemDto] })
+  @ApiProperty({ description: 'Metadata items to upsert', type: () => [AssetMetadataUpsertItemDto] })
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => AssetMetadataUpsertItemDto)
@@ -187,7 +187,7 @@ export class AssetMetadataUpsertItemDto {
 }
 
 export class AssetMetadataBulkUpsertDto {
-  @ApiProperty({ description: 'Metadata items to upsert', type: [AssetMetadataBulkUpsertItemDto] })
+  @ApiProperty({ description: 'Metadata items to upsert', type: () => [AssetMetadataBulkUpsertItemDto] })
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => AssetMetadataBulkUpsertItemDto)
@@ -209,7 +209,7 @@ export class AssetMetadataBulkUpsertItemDto {
 }
 
 export class AssetMetadataBulkDeleteDto {
-  @ApiProperty({ description: 'Metadata items to delete', type: [AssetMetadataBulkDeleteItemDto] })
+  @ApiProperty({ description: 'Metadata items to delete', type: () => [AssetMetadataBulkDeleteItemDto] })
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => AssetMetadataBulkDeleteItemDto)

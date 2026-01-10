@@ -114,14 +114,14 @@ export class PluginManifestDto {
   @Type(() => PluginManifestWasmDto)
   wasm!: PluginManifestWasmDto;
 
-  @ApiPropertyOptional({ description: 'Plugin filters', type: [PluginManifestFilterDto] })
+  @ApiPropertyOptional({ description: 'Plugin filters', type: () => [PluginManifestFilterDto] })
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => PluginManifestFilterDto)
   @IsOptional()
   filters?: PluginManifestFilterDto[];
 
-  @ApiPropertyOptional({ description: 'Plugin actions', type: [PluginManifestActionDto] })
+  @ApiPropertyOptional({ description: 'Plugin actions', type: () => [PluginManifestActionDto] })
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => PluginManifestActionDto)

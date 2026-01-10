@@ -1,4 +1,4 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsString } from 'class-validator';
 import { PluginAction, PluginFilter } from 'src/database';
 import { PluginContext as PluginContextType, PluginTriggerType } from 'src/enum';
@@ -31,9 +31,9 @@ export class PluginResponseDto {
   createdAt!: string;
   @ApiProperty({ description: 'Last update date' })
   updatedAt!: string;
-  @ApiProperty({ description: 'Plugin filters', type: [PluginFilterResponseDto] })
+  @ApiProperty({ description: 'Plugin filters', type: () => [PluginFilterResponseDto] })
   filters!: PluginFilterResponseDto[];
-  @ApiProperty({ description: 'Plugin actions', type: [PluginActionResponseDto] })
+  @ApiProperty({ description: 'Plugin actions', type: () => [PluginActionResponseDto] })
   actions!: PluginActionResponseDto[];
 }
 
