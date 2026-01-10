@@ -16,6 +16,7 @@ import 'package:immich_mobile/infrastructure/repositories/storage.repository.dar
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_api.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_stream.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/trash_sync.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/trashed_local_asset.repository.dart';
 import 'package:immich_mobile/repositories/local_files_manager.repository.dart';
 import 'package:mocktail/mocktail.dart';
@@ -48,6 +49,7 @@ void main() {
   late SyncApiRepository mockSyncApiRepo;
   late DriftLocalAssetRepository mockLocalAssetRepo;
   late DriftTrashedLocalAssetRepository mockTrashedLocalAssetRepo;
+  late DriftTrashSyncRepository mockTrashSyncRepo;
   late LocalFilesManagerRepository mockLocalFilesManagerRepo;
   late StorageRepository mockStorageRepo;
   late Future<void> Function(List<SyncEvent>, Function(), Function()) handleEventsCallback;
@@ -62,7 +64,7 @@ void main() {
     registerFallbackValue(LocalAssetStub.image1);
 
     db = Drift(drift.DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
-    await StoreService.init(storeRepository: DriftStoreRepository(db));
+    await StoreService.init(storeRepository: DriftStoreRepository(db), listenUpdates: false);
   });
 
   tearDownAll(() async {
@@ -79,6 +81,7 @@ void main() {
     mockLocalAssetRepo = MockLocalAssetRepository();
     mockTrashedLocalAssetRepo = MockTrashedLocalAssetRepository();
     mockLocalFilesManagerRepo = MockLocalFilesManagerRepository();
+    mockTrashSyncRepo = MockTrashSyncRepository();
     mockStorageRepo = MockStorageRepository();
     mockAbortCallbackWrapper = _MockAbortCallbackWrapper();
     mockResetCallbackWrapper = _MockAbortCallbackWrapper();
@@ -135,9 +138,10 @@ void main() {
       trashedLocalAssetRepository: mockTrashedLocalAssetRepo,
       localFilesManager: mockLocalFilesManagerRepo,
       storageRepository: mockStorageRepo,
+      trashSyncRepository: mockTrashSyncRepo,
     );
 
-    when(() => mockLocalAssetRepo.getAssetsFromBackupAlbums(any())).thenAnswer((_) async => {});
+    when(() => mockLocalAssetRepo.getAssetsFromBackupAlbums(any<Map<String, DateTime>>())).thenAnswer((_) async => {});
     when(() => mockTrashedLocalAssetRepo.trashLocalAsset(any())).thenAnswer((_) async {});
     when(() => mockTrashedLocalAssetRepo.getToRestore()).thenAnswer((_) async => []);
     when(() => mockTrashedLocalAssetRepo.applyRestoredAssets(any())).thenAnswer((_) async {});
@@ -146,7 +150,10 @@ void main() {
     when(() => mockLocalFilesManagerRepo.moveToTrash(any())).thenAnswer((_) async => true);
     when(() => mockLocalFilesManagerRepo.restoreAssetsFromTrash(any())).thenAnswer((_) async => []);
     when(() => mockStorageRepo.getAssetEntityForAsset(any())).thenAnswer((_) async => null);
+    when(() => mockTrashSyncRepo.upsertReviewCandidates(any())).thenAnswer((_) async {});
+    when(() => mockTrashSyncRepo.deleteOutdated()).thenAnswer((_) async => 0);
     await Store.put(StoreKey.manageLocalMediaAndroid, false);
+    await Store.put(StoreKey.reviewOutOfSyncChangesAndroid, false);
   });
 
   Future<void> simulateEvents(List<SyncEvent> events) async {
@@ -216,6 +223,7 @@ void main() {
         localFilesManager: mockLocalFilesManagerRepo,
         storageRepository: mockStorageRepo,
         cancelChecker: cancellationChecker.call,
+        trashSyncRepository: mockTrashSyncRepo,
       );
       await sut.sync();
 
@@ -255,6 +263,7 @@ void main() {
         localFilesManager: mockLocalFilesManagerRepo,
         storageRepository: mockStorageRepo,
         cancelChecker: cancellationChecker.call,
+        trashSyncRepository: mockTrashSyncRepo,
       );
 
       await sut.sync();
@@ -386,9 +395,18 @@ void main() {
         'album-a': [localAsset],
         'album-b': [mergedAsset],
       };
-      when(() => mockLocalAssetRepo.getAssetsFromBackupAlbums(any())).thenAnswer((invocation) async {
-        final Iterable<String> requestedChecksums = invocation.positionalArguments.first as Iterable<String>;
-        expect(requestedChecksums.toSet(), equals({'checksum-local', 'checksum-merged', 'checksum-remote-only'}));
+      when(() => mockLocalAssetRepo.getAssetsFromBackupAlbums(any<Map<String, DateTime>>())).thenAnswer((
+        invocation,
+      ) async {
+        final Map<String, DateTime> trashedAssetsMap = invocation.positionalArguments.first as Map<String, DateTime>;
+        expect(
+          trashedAssetsMap,
+          equals({
+            localAsset.checksum!: DateTime(2025, 5, 1),
+            mergedAsset.checksum!: DateTime(2025, 5, 2),
+            'checksum-remote-only': DateTime(2025, 5, 3),
+          }),
+        );
         return assetsByAlbum;
       });
 
@@ -433,6 +451,47 @@ void main() {
       verify(() => mockSyncApiRepo.ack(['asset-remote-only-3'])).called(1);
     });
 
+    test("uses review mode without moving assets to trash", () async {
+      await Store.put(StoreKey.reviewOutOfSyncChangesAndroid, true);
+      when(() => mockLocalFilesManagerRepo.hasManageMediaPermission()).thenAnswer((_) async => true);
+      final localAsset = LocalAssetStub.image1.copyWith(id: 'local-only', checksum: 'checksum-review', remoteId: null);
+      final assetsByAlbum = {
+        'album-a': [localAsset],
+      };
+      when(
+        () => mockLocalAssetRepo.getAssetsFromBackupAlbums(any<Map<String, DateTime>>()),
+      ).thenAnswer((_) async => assetsByAlbum);
+
+      final events = [
+        SyncStreamStub.assetTrashed(
+          id: 'remote-1',
+          checksum: localAsset.checksum!,
+          ack: 'asset-remote-review-1',
+          trashedAt: DateTime(2025, 5, 1),
+        ),
+      ];
+
+      await simulateEvents(events);
+
+      verify(() => mockTrashSyncRepo.upsertReviewCandidates(any())).called(1);
+      verifyNever(() => mockLocalFilesManagerRepo.moveToTrash(any()));
+      verifyNever(() => mockTrashedLocalAssetRepo.trashLocalAsset(any()));
+    });
+
+    test("does not check MANAGE_MEDIA permission on non-Android platforms", () async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+      addTearDown(() => debugDefaultTargetPlatformOverride = TargetPlatform.android);
+
+      await Store.put(StoreKey.manageLocalMediaAndroid, true);
+      await Store.put(StoreKey.reviewOutOfSyncChangesAndroid, false);
+
+      final events = [SyncStreamStub.assetModified(id: 'remote-1', checksum: 'checksum-1', ack: 'asset-mod-ack-1')];
+
+      await simulateEvents(events);
+
+      verifyNever(() => mockLocalFilesManagerRepo.hasManageMediaPermission());
+    });
+
     test("skips device trashing when no local assets match the remote trash payload", () async {
       final events = [
         SyncStreamStub.assetTrashed(
@@ -445,7 +504,7 @@ void main() {
 
       await simulateEvents(events);
 
-      verify(() => mockLocalAssetRepo.getAssetsFromBackupAlbums(any())).called(1);
+      verify(() => mockLocalAssetRepo.getAssetsFromBackupAlbums(any<Map<String, DateTime>>())).called(1);
       verifyNever(() => mockLocalFilesManagerRepo.moveToTrash(any()));
       verifyNever(() => mockTrashedLocalAssetRepo.trashLocalAsset(any()));
     });
@@ -455,7 +514,7 @@ void main() {
 
       await simulateEvents(events);
 
-      verifyNever(() => mockLocalAssetRepo.getAssetsFromBackupAlbums(any()));
+      verifyNever(() => mockLocalAssetRepo.getAssetsFromBackupAlbums(any<Map<String, DateTime>>()));
       verifyNever(() => mockLocalFilesManagerRepo.moveToTrash(any()));
       verify(() => mockSyncStreamRepo.deleteAssetsV1(any())).called(1);
     });
@@ -474,11 +533,7 @@ void main() {
       });
 
       final events = [
-        SyncStreamStub.assetModified(
-          id: 'remote-1',
-          checksum: 'checksum-trash',
-          ack: 'asset-remote-1-11',
-        ),
+        SyncStreamStub.assetModified(id: 'remote-1', checksum: 'checksum-trash', ack: 'asset-remote-1-11'),
       ];
 
       await simulateEvents(events);
