@@ -18,30 +18,34 @@ void main() {
     mockAlbumApiRepo = MockDriftAlbumApiRepository();
     sut = RemoteAlbumService(mockRemoteAlbumRepo, mockAlbumApiRepo);
 
-    when(() => mockRemoteAlbumRepo.getNewestAssetTimestamp(any())).thenAnswer((invocation) {
-      // Simulate a timestamp for the newest asset in the album
-      final albumID = invocation.positionalArguments[0] as String;
-
-      if (albumID == '1') {
-        return Future.value(DateTime(2023, 1, 1));
-      } else if (albumID == '2') {
-        return Future.value(DateTime(2023, 2, 1));
+    when(() => mockRemoteAlbumRepo.getNewestAssetTimestampForAlbums(any())).thenAnswer((invocation) async {
+      final albumIds = invocation.positionalArguments[0] as List<String>;
+      final result = <String, DateTime?>{};
+      for (final id in albumIds) {
+        if (id == '1') {
+          result[id] = DateTime(2023, 1, 1);
+        } else if (id == '2') {
+          result[id] = DateTime(2023, 2, 1);
+        } else {
+          result[id] = DateTime.fromMillisecondsSinceEpoch(0);
+        }
       }
-
-      return Future.value(DateTime.fromMillisecondsSinceEpoch(0));
+      return result;
     });
 
-    when(() => mockRemoteAlbumRepo.getOldestAssetTimestamp(any())).thenAnswer((invocation) {
-      // Simulate a timestamp for the oldest asset in the album
-      final albumID = invocation.positionalArguments[0] as String;
-
-      if (albumID == '1') {
-        return Future.value(DateTime(2019, 1, 1));
-      } else if (albumID == '2') {
-        return Future.value(DateTime(2019, 2, 1));
+    when(() => mockRemoteAlbumRepo.getOldestAssetTimestampForAlbums(any())).thenAnswer((invocation) async {
+      final albumIds = invocation.positionalArguments[0] as List<String>;
+      final result = <String, DateTime?>{};
+      for (final id in albumIds) {
+        if (id == '1') {
+          result[id] = DateTime(2019, 1, 1);
+        } else if (id == '2') {
+          result[id] = DateTime(2019, 2, 1);
+        } else {
+          result[id] = DateTime.fromMillisecondsSinceEpoch(0);
+        }
       }
-
-      return Future.value(DateTime.fromMillisecondsSinceEpoch(0));
+      return result;
     });
   });
 

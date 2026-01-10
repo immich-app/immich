@@ -321,26 +321,64 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
     }).watchSingleOrNull();
   }
 
-  Future<DateTime?> getNewestAssetTimestamp(String albumId) {
-    final query = _db.remoteAlbumAssetEntity.selectOnly()
-      ..where(_db.remoteAlbumAssetEntity.albumId.equals(albumId))
-      ..addColumns([_db.remoteAssetEntity.localDateTime.max()])
-      ..join([
-        innerJoin(_db.remoteAssetEntity, _db.remoteAssetEntity.id.equalsExp(_db.remoteAlbumAssetEntity.assetId)),
-      ]);
+  Future<Map<String, DateTime?>> getNewestAssetTimestampForAlbums(List<String> albumIds) async {
+    if (albumIds.isEmpty) {
+      return {};
+    }
 
-    return query.map((row) => row.read(_db.remoteAssetEntity.localDateTime.max())).getSingleOrNull();
+    final results = <String, DateTime?>{};
+
+    // Chunk calls to avoid SQLite limit (default 999 variables)
+    const chunkSize = 900;
+    for (var i = 0; i < albumIds.length; i += chunkSize) {
+      final end = (i + chunkSize < albumIds.length) ? i + chunkSize : albumIds.length;
+      final subList = albumIds.sublist(i, end);
+
+      final query = _db.remoteAlbumAssetEntity.selectOnly()
+        ..where(_db.remoteAlbumAssetEntity.albumId.isIn(subList))
+        ..addColumns([_db.remoteAlbumAssetEntity.albumId, _db.remoteAssetEntity.localDateTime.max()])
+        ..join([
+          innerJoin(_db.remoteAssetEntity, _db.remoteAssetEntity.id.equalsExp(_db.remoteAlbumAssetEntity.assetId)),
+        ])
+        ..groupBy([_db.remoteAlbumAssetEntity.albumId]);
+
+      final rows = await query.get();
+      for (final row in rows) {
+        results[row.read(_db.remoteAlbumAssetEntity.albumId)!] = row.read(_db.remoteAssetEntity.localDateTime.max());
+      }
+    }
+
+    return results;
   }
 
-  Future<DateTime?> getOldestAssetTimestamp(String albumId) {
-    final query = _db.remoteAlbumAssetEntity.selectOnly()
-      ..where(_db.remoteAlbumAssetEntity.albumId.equals(albumId))
-      ..addColumns([_db.remoteAssetEntity.localDateTime.min()])
-      ..join([
-        innerJoin(_db.remoteAssetEntity, _db.remoteAssetEntity.id.equalsExp(_db.remoteAlbumAssetEntity.assetId)),
-      ]);
+  Future<Map<String, DateTime?>> getOldestAssetTimestampForAlbums(List<String> albumIds) async {
+    if (albumIds.isEmpty) {
+      return {};
+    }
 
-    return query.map((row) => row.read(_db.remoteAssetEntity.localDateTime.min())).getSingleOrNull();
+    final results = <String, DateTime?>{};
+
+    // Chunk calls to avoid SQLite limit (default 999 variables)
+    const chunkSize = 900;
+    for (var i = 0; i < albumIds.length; i += chunkSize) {
+      final end = (i + chunkSize < albumIds.length) ? i + chunkSize : albumIds.length;
+      final subList = albumIds.sublist(i, end);
+
+      final query = _db.remoteAlbumAssetEntity.selectOnly()
+        ..where(_db.remoteAlbumAssetEntity.albumId.isIn(subList))
+        ..addColumns([_db.remoteAlbumAssetEntity.albumId, _db.remoteAssetEntity.localDateTime.min()])
+        ..join([
+          innerJoin(_db.remoteAssetEntity, _db.remoteAssetEntity.id.equalsExp(_db.remoteAlbumAssetEntity.assetId)),
+        ])
+        ..groupBy([_db.remoteAlbumAssetEntity.albumId]);
+
+      final rows = await query.get();
+      for (final row in rows) {
+        results[row.read(_db.remoteAlbumAssetEntity.albumId)!] = row.read(_db.remoteAssetEntity.localDateTime.min());
+      }
+    }
+
+    return results;
   }
 
   Future<int> getCount() {
