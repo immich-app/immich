@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
-import { ApiBody, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiParam, ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import {
@@ -34,7 +34,6 @@ export class AssetController {
 
   @Get('random')
   @Authenticated({ permission: Permission.AssetRead })
-  @ApiQuery({ name: 'dto', description: 'Number of random assets to retrieve', type: RandomAssetsDto, required: false })
   @Endpoint({
     summary: 'Get random assets',
     description: 'Retrieve a specified number of random assets for the authenticated user.',
@@ -58,7 +57,6 @@ export class AssetController {
 
   @Get('statistics')
   @Authenticated({ permission: Permission.AssetStatistics })
-  @ApiQuery({ name: 'dto', description: 'Statistics filters', type: AssetStatsDto, required: false })
   @Endpoint({
     summary: 'Get asset statistics',
     description: 'Retrieve various statistics about the assets owned by the authenticated user.',

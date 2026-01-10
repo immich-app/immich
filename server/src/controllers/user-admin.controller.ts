@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
-import { ApiBody, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiParam, ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AssetStatsDto, AssetStatsResponseDto } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -24,7 +24,6 @@ export class UserAdminController {
 
   @Get()
   @Authenticated({ permission: Permission.AdminUserRead, admin: true })
-  @ApiQuery({ name: 'dto', description: 'User search filters', type: UserAdminSearchDto, required: false })
   @Endpoint({
     summary: 'Search users',
     description: 'Search for users.',
@@ -107,7 +106,6 @@ export class UserAdminController {
   @Get(':id/statistics')
   @Authenticated({ permission: Permission.AdminUserRead, admin: true })
   @ApiParam({ name: 'id', description: 'User ID', type: String, format: 'uuid' })
-  @ApiQuery({ name: 'dto', description: 'Statistics filters', type: AssetStatsDto, required: false })
   @Endpoint({
     summary: 'Retrieve user statistics',
     description: 'Retrieve asset statistics for a specific user.',

@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
-import { ApiBody, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiParam, ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -16,7 +16,6 @@ export class StackController {
 
   @Get()
   @Authenticated({ permission: Permission.StackRead })
-  @ApiQuery({ name: 'query', description: 'Stack search filters', type: StackSearchDto, required: false })
   @Endpoint({
     summary: 'Retrieve stacks',
     description: 'Retrieve a list of stacks.',

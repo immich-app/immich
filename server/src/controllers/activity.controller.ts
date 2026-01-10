@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Query, Res } from '@nestjs/common';
-import { ApiBody, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiParam, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import {
@@ -22,7 +22,6 @@ export class ActivityController {
 
   @Get()
   @Authenticated({ permission: Permission.ActivityRead })
-  @ApiQuery({ name: 'dto', description: 'Search filters for activities', type: ActivitySearchDto, required: false })
   @Endpoint({
     summary: 'List all activities',
     description:
@@ -55,7 +54,6 @@ export class ActivityController {
 
   @Get('statistics')
   @Authenticated({ permission: Permission.ActivityStatistics })
-  @ApiQuery({ name: 'dto', description: 'Album or asset filters', type: ActivityDto, required: false })
   @Endpoint({
     summary: 'Retrieve activity statistics',
     description: 'Returns the number of likes and comments for a given album or asset in an album.',

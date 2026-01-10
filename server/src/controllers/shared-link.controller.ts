@@ -13,7 +13,7 @@ import {
   Req,
   Res,
 } from '@nestjs/common';
-import { ApiBody, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiParam, ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AssetIdsResponseDto } from 'src/dtos/asset-ids.response.dto';
@@ -40,7 +40,6 @@ export class SharedLinkController {
 
   @Get()
   @Authenticated({ permission: Permission.SharedLinkRead })
-  @ApiQuery({ name: 'dto', description: 'Shared link search filters', type: SharedLinkSearchDto, required: false })
   @Endpoint({
     summary: 'Retrieve all shared links',
     description: 'Retrieve a list of all shared links.',
@@ -52,7 +51,6 @@ export class SharedLinkController {
 
   @Get('me')
   @Authenticated({ sharedLink: true })
-  @ApiQuery({ name: 'dto', description: 'Shared link password/token', type: SharedLinkPasswordDto, required: false })
   @Endpoint({
     summary: 'Retrieve current shared link',
     description: 'Retrieve the current shared link associated with authentication method.',

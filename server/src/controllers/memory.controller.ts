@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
-import { ApiBody, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiParam, ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -22,7 +22,6 @@ export class MemoryController {
 
   @Get()
   @Authenticated({ permission: Permission.MemoryRead })
-  @ApiQuery({ name: 'dto', description: 'Memory search filters', type: MemorySearchDto, required: false })
   @Endpoint({
     summary: 'Retrieve memories',
     description:
@@ -48,7 +47,6 @@ export class MemoryController {
 
   @Get('statistics')
   @Authenticated({ permission: Permission.MemoryStatistics })
-  @ApiQuery({ name: 'dto', description: 'Memory search filters', type: MemorySearchDto, required: false })
   @Endpoint({
     summary: 'Retrieve memories statistics',
     description: 'Retrieve statistics about memories, such as total count and other relevant metrics.',

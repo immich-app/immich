@@ -1,5 +1,5 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Post, Query } from '@nestjs/common';
-import { ApiBody, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -69,7 +69,6 @@ export class SearchController {
   @Post('large-assets')
   @Authenticated({ permission: Permission.AssetRead })
   @HttpCode(HttpStatus.OK)
-  @ApiQuery({ name: 'dto', description: 'Large asset search filters', type: LargeAssetSearchDto, required: false })
   @Endpoint({
     summary: 'Search large assets',
     description: 'Search for assets that are considered large based on specified criteria.',
@@ -105,7 +104,6 @@ export class SearchController {
 
   @Get('person')
   @Authenticated({ permission: Permission.PersonRead })
-  @ApiQuery({ name: 'dto', description: 'Person search filters', type: SearchPeopleDto, required: false })
   @Endpoint({
     summary: 'Search people',
     description: 'Search for people by name.',
@@ -117,7 +115,6 @@ export class SearchController {
 
   @Get('places')
   @Authenticated({ permission: Permission.AssetRead })
-  @ApiQuery({ name: 'dto', description: 'Place search filters', type: SearchPlacesDto, required: false })
   @Endpoint({
     summary: 'Search places',
     description: 'Search for places by name.',
@@ -141,7 +138,6 @@ export class SearchController {
 
   @Get('suggestions')
   @Authenticated({ permission: Permission.AssetRead })
-  @ApiQuery({ name: 'dto', description: 'Search suggestion request', type: SearchSuggestionRequestDto, required: false })
   @Endpoint({
     summary: 'Retrieve search suggestions',
     description:

@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Put, Query } from '@nestjs/common';
-import { ApiBody, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiParam, ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import {
   AddUsersDto,
@@ -27,7 +27,6 @@ export class AlbumController {
 
   @Get()
   @Authenticated({ permission: Permission.AlbumRead })
-  @ApiQuery({ name: 'query', description: 'Album list filters', type: GetAlbumsDto, required: false })
   @Endpoint({
     summary: 'List all albums',
     description: 'Retrieve a list of albums available to the authenticated user.',
@@ -63,7 +62,6 @@ export class AlbumController {
   @Authenticated({ permission: Permission.AlbumRead, sharedLink: true })
   @Get(':id')
   @ApiParam({ name: 'id', description: 'Album ID', type: String, format: 'uuid' })
-  @ApiQuery({ name: 'dto', description: 'Album info options', type: AlbumInfoDto, required: false })
   @Endpoint({
     summary: 'Retrieve an album',
     description: 'Retrieve information about a specific album by its ID.',

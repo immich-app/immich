@@ -12,7 +12,7 @@ import {
   Query,
   Res,
 } from '@nestjs/common';
-import { ApiBody, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiParam, ApiTags } from '@nestjs/swagger';
 import { NextFunction, Response } from 'express';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
@@ -47,7 +47,6 @@ export class PersonController {
 
   @Get()
   @Authenticated({ permission: Permission.PersonRead })
-  @ApiQuery({ name: 'options', description: 'Search filters for people', type: PersonSearchDto, required: false })
   @Endpoint({
     summary: 'Get all people',
     description: 'Retrieve a list of all people.',
