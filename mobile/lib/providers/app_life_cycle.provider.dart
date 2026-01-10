@@ -180,7 +180,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
       final currentUser = Store.tryGet(StoreKey.currentUser);
       if (currentUser != null) {
         await _safeRun(
-          _ref.read(driftBackupProvider.notifier).handleBackupResume(currentUser.id),
+          _ref.read(driftBackupProvider.notifier).startForegroundBackup(currentUser.id),
           "handleBackupResume",
         );
       }

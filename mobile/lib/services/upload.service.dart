@@ -15,7 +15,6 @@ import 'package:immich_mobile/infrastructure/repositories/backup.repository.dart
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
-import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/storage.provider.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
@@ -25,6 +24,7 @@ import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:logging/logging.dart';
 import 'package:path/path.dart' as p;
+import 'package:photo_manager/photo_manager.dart' show PMProgressHandler;
 
 final uploadServiceProvider = Provider((ref) {
   final service = UploadService(
@@ -121,7 +121,7 @@ class UploadService {
   /// Find backup candidates
   /// Build the upload tasks
   /// Enqueue the tasks
-  Future<void> startBackup(String userId, void Function(EnqueueStatus status) onEnqueueTasks) async {
+  Future<void> startUploadWithURLSession(String userId) async {
     await _storageRepository.clearCache();
 
     shouldAbortQueuingTasks = false;
@@ -132,63 +132,231 @@ class UploadService {
     }
 
     const batchSize = 100;
-    int count = 0;
-    for (int i = 0; i < candidates.length; i += batchSize) {
-      if (shouldAbortQueuingTasks) {
-        break;
+    final batch = candidates.take(batchSize).toList();
+    List<UploadTask> tasks = [];
+    for (final asset in batch) {
+      final task = await getUploadTask(asset);
+      if (task != null) {
+        tasks.add(task);
       }
+    }
 
-      final batch = candidates.skip(i).take(batchSize).toList();
-      List<UploadTask> tasks = [];
-      for (final asset in batch) {
-        final task = await getUploadTask(asset);
-        if (task != null) {
-          tasks.add(task);
+    if (tasks.isNotEmpty && !shouldAbortQueuingTasks) {
+      await enqueueTasks(tasks);
+    }
+  }
+
+  Future<void> startUploadWithHttp(
+    String userId,
+    bool hasWifi,
+    CancellationToken cancelToken, {
+    required void Function(String localAssetId, String filename, int bytes, int totalBytes) onProgress,
+    required void Function(String localAssetId, String remoteAssetId) onSuccess,
+    required void Function(String localAssetId, String errorMessage) onError,
+    required void Function(String localAssetId, double progress) onICloudProgress,
+  }) async {
+    const concurrentUploads = 3;
+    final httpClients = List.generate(concurrentUploads, (_) => Client());
+
+    await _storageRepository.clearCache();
+
+    shouldAbortQueuingTasks = false;
+
+    final candidates = await _backupRepository.getCandidates(userId);
+    if (candidates.isEmpty) {
+      return;
+    }
+
+    try {
+      int currentIndex = 0;
+
+      Future<void> worker(Client httpClient) async {
+        while (true) {
+          if (shouldAbortQueuingTasks || cancelToken.isCancelled) {
+            break;
+          }
+
+          final index = currentIndex;
+          if (index >= candidates.length) {
+            break;
+          }
+          currentIndex++;
+
+          final asset = candidates[index];
+
+          final requireWifi = _shouldRequireWiFi(asset);
+          if (requireWifi && !hasWifi) {
+            continue;
+          }
+
+          await _uploadSingleAsset(
+            asset,
+            httpClient,
+            cancelToken,
+            onProgress: onProgress,
+            onSuccess: onSuccess,
+            onError: onError,
+            onICloudProgress: onICloudProgress,
+          );
         }
       }
 
-      if (tasks.isNotEmpty && !shouldAbortQueuingTasks) {
-        count += tasks.length;
-        await enqueueTasks(tasks);
+      // Start all workers in parallel - each worker continuously pulls from the queue
+      final workerFutures = <Future<void>>[];
 
-        onEnqueueTasks(EnqueueStatus(enqueueCount: count, totalCount: candidates.length));
+      for (int i = 0; i < concurrentUploads; i++) {
+        workerFutures.add(worker(httpClients[i]));
+      }
+
+      await Future.wait(workerFutures);
+    } finally {
+      for (final client in httpClients) {
+        client.close();
       }
     }
   }
 
-  Future<void> startBackupWithHttpClient(String userId, bool hasWifi, CancellationToken token) async {
-    await _storageRepository.clearCache();
+  Future<void> _uploadSingleAsset(
+    LocalAsset asset,
+    Client httpClient,
+    CancellationToken cancelToken, {
+    required void Function(String id, String filename, int bytes, int totalBytes) onProgress,
+    required void Function(String localAssetId, String remoteAssetId) onSuccess,
+    required void Function(String localAssetId, String errorMessage) onError,
+    required void Function(String localAssetId, double progress) onICloudProgress,
+  }) async {
+    File? file;
+    File? livePhotoFile;
 
-    shouldAbortQueuingTasks = false;
-
-    final candidates = await _backupRepository.getCandidates(userId);
-    if (candidates.isEmpty) {
-      return;
-    }
-
-    const batchSize = 100;
-    for (int i = 0; i < candidates.length; i += batchSize) {
-      if (shouldAbortQueuingTasks || token.isCancelled) {
-        break;
+    try {
+      final entity = await _storageRepository.getAssetEntityForAsset(asset);
+      if (entity == null) {
+        return;
       }
 
-      final batch = candidates.skip(i).take(batchSize).toList();
-      List<UploadTaskWithFile> tasks = [];
-      for (final asset in batch) {
-        final requireWifi = _shouldRequireWiFi(asset);
-        if (requireWifi && !hasWifi) {
-          _logger.warning('Skipping upload for ${asset.id} because it requires WiFi');
-          continue;
+      final isAvailableLocally = await _storageRepository.isAssetAvailableLocally(asset.id);
+
+      if (!isAvailableLocally && Platform.isIOS) {
+        _logger.info("Loading iCloud asset ${asset.id} - ${asset.name}");
+
+        // Create progress handler for iCloud download
+        PMProgressHandler? progressHandler;
+        StreamSubscription? progressSubscription;
+
+        progressHandler = PMProgressHandler();
+        progressSubscription = progressHandler.stream.listen((event) {
+          onICloudProgress(asset.localId!, event.progress);
+        });
+
+        try {
+          file = await _storageRepository.loadFileFromCloud(asset.id, progressHandler: progressHandler);
+          if (entity.isLivePhoto) {
+            livePhotoFile = await _storageRepository.loadMotionFileFromCloud(
+              asset.id,
+              progressHandler: progressHandler,
+            );
+          }
+        } finally {
+          await progressSubscription.cancel();
+        }
+      } else {
+        // Get files locally
+        file = await _storageRepository.getFileForAsset(asset.id);
+        if (file == null) {
+          return;
         }
 
-        final task = await _getUploadTaskWithFile(asset);
-        if (task != null) {
-          tasks.add(task);
+        // For live photos, get the motion video file
+        if (entity.isLivePhoto) {
+          livePhotoFile = await _storageRepository.getMotionFileForAsset(asset);
+          if (livePhotoFile == null) {
+            _logger.warning("Failed to obtain motion part of the livePhoto - ${asset.name}");
+          }
         }
       }
 
-      if (tasks.isNotEmpty && !shouldAbortQueuingTasks) {
-        await _uploadRepository.backupWithDartClient(tasks, token);
+      if (file == null) {
+        _logger.warning("Failed to obtain file for asset ${asset.id} - ${asset.name}");
+        return;
+      }
+
+      final originalFileName = entity.isLivePhoto ? p.setExtension(asset.name, p.extension(file.path)) : asset.name;
+      final deviceId = Store.get(StoreKey.deviceId);
+
+      final headers = ApiService.getRequestHeaders();
+      final fields = {
+        'deviceAssetId': asset.localId!,
+        'deviceId': deviceId,
+        'fileCreatedAt': asset.createdAt.toUtc().toIso8601String(),
+        'fileModifiedAt': asset.updatedAt.toUtc().toIso8601String(),
+        'isFavorite': asset.isFavorite.toString(),
+        'duration': asset.duration.toString(),
+      };
+
+      // Upload live photo video first if available
+      String? livePhotoVideoId;
+      if (entity.isLivePhoto && livePhotoFile != null) {
+        final livePhotoTitle = p.setExtension(originalFileName, p.extension(livePhotoFile.path));
+
+        final livePhotoResult = await _uploadRepository.uploadFile(
+          file: livePhotoFile,
+          originalFileName: livePhotoTitle,
+          headers: headers,
+          fields: fields,
+          httpClient: httpClient,
+          cancelToken: cancelToken,
+          onProgress: (bytes, totalBytes) => onProgress(asset.localId!, livePhotoTitle, bytes, totalBytes),
+          logContext: 'livePhotoVideo[${asset.localId}]',
+        );
+
+        if (livePhotoResult.isSuccess && livePhotoResult.remoteAssetId != null) {
+          livePhotoVideoId = livePhotoResult.remoteAssetId;
+        }
+      }
+
+      if (livePhotoVideoId != null) {
+        fields['livePhotoVideoId'] = livePhotoVideoId;
+      }
+
+      final result = await _uploadRepository.uploadFile(
+        file: file,
+        originalFileName: originalFileName,
+        headers: headers,
+        fields: fields,
+        httpClient: httpClient,
+        cancelToken: cancelToken,
+        onProgress: (bytes, totalBytes) => onProgress(asset.localId!, originalFileName, bytes, totalBytes),
+        logContext: 'asset[${asset.localId}]',
+      );
+
+      if (result.isSuccess && result.remoteAssetId != null) {
+        onSuccess(asset.localId!, result.remoteAssetId!);
+      } else if (result.isCancelled) {
+        dPrint(() => "Backup was cancelled by the user");
+        shouldAbortQueuingTasks = true;
+      } else if (result.errorMessage != null) {
+        dPrint(
+          () =>
+              "Error(${result.statusCode}) uploading ${asset.localId} | $originalFileName | Created on ${asset.createdAt} | ${result.errorMessage}",
+        );
+
+        onError(asset.localId!, result.errorMessage!);
+
+        if (result.errorMessage == "Quota has been exceeded!") {
+          shouldAbortQueuingTasks = true;
+        }
+      }
+    } catch (error, stackTrace) {
+      dPrint(() => "Error backup asset: ${error.toString()}: $stackTrace");
+      onError(asset.localId!, error.toString());
+    } finally {
+      if (Platform.isIOS) {
+        try {
+          await file?.delete();
+          await livePhotoFile?.delete();
+        } catch (e) {
+          dPrint(() => "ERROR deleting file: ${e.toString()}");
+        }
       }
     }
   }
@@ -263,42 +431,6 @@ class UploadService {
     } catch (error, stackTrace) {
       dPrint(() => "Error handling live photo upload task: $error $stackTrace");
     }
-  }
-
-  Future<UploadTaskWithFile?> _getUploadTaskWithFile(LocalAsset asset) async {
-    final entity = await _storageRepository.getAssetEntityForAsset(asset);
-    if (entity == null) {
-      return null;
-    }
-
-    final file = await _storageRepository.getFileForAsset(asset.id);
-    if (file == null) {
-      return null;
-    }
-
-    final originalFileName = entity.isLivePhoto ? p.setExtension(asset.name, p.extension(file.path)) : asset.name;
-
-    String metadata = UploadTaskMetadata(
-      localAssetId: asset.id,
-      isLivePhotos: entity.isLivePhoto,
-      livePhotoVideoId: '',
-    ).toJson();
-
-    return UploadTaskWithFile(
-      file: file,
-      task: await buildUploadTask(
-        file,
-        createdAt: asset.createdAt,
-        modifiedAt: asset.updatedAt,
-        originalFileName: originalFileName,
-        deviceAssetId: asset.id,
-        metadata: metadata,
-        group: "group",
-        priority: 0,
-        isFavorite: asset.isFavorite,
-        requiresWiFi: false,
-      ),
-    );
   }
 
   @visibleForTesting
