@@ -80,7 +80,7 @@
           checked={$locale == 'default'}
           onToggle={handleToggleLocaleBrowser}
         >
-          <p class="mt-2 dark:text-gray-400">{selectedDate}</p>
+          <p class="mt-2 dark:text-gray-400 font-immich-mono text-sm">{selectedDate}</p>
         </SettingSwitch>
       </div>
       {#if $locale !== 'default'}

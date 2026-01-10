@@ -64,7 +64,7 @@
             >
               <td class="w-1/4 text-ellipsis px-4 text-sm overflow-hidden">{key.name}</td>
               <td
-                class="w-1/4 text-ellipsis px-4 text-xs overflow-hidden line-clamp-3 break-all font-mono"
+                class="w-1/4 text-ellipsis px-4 text-xs overflow-hidden line-clamp-3 break-all font-immich-mono"
                 title={JSON.stringify(key.permissions, undefined, 2)}>{key.permissions}</td
               >
               <td class="w-1/4 text-ellipsis px-4 text-sm overflow-hidden"
