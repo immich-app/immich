@@ -27,7 +27,7 @@ class WorkflowFilterResponseDto {
   String id;
 
   /// Filter order
-  int order;
+  num order;
 
   /// Plugin filter ID
   String pluginFilterId;
@@ -80,7 +80,7 @@ class WorkflowFilterResponseDto {
       return WorkflowFilterResponseDto(
         filterConfig: mapValueOfType<Object>(json, r'filterConfig'),
         id: mapValueOfType<String>(json, r'id')!,
-        order: mapValueOfType<int>(json, r'order')!,
+        order: num.parse('${json[r'order']}'),
         pluginFilterId: mapValueOfType<String>(json, r'pluginFilterId')!,
         workflowId: mapValueOfType<String>(json, r'workflowId')!,
       );

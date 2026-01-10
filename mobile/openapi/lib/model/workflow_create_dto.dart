@@ -15,7 +15,7 @@ class WorkflowCreateDto {
   WorkflowCreateDto({
     this.actions = const [],
     this.description,
-    this.enabled = true,
+    this.enabled,
     this.filters = const [],
     required this.name,
     required this.triggerType,
@@ -34,7 +34,13 @@ class WorkflowCreateDto {
   String? description;
 
   /// Workflow enabled
-  bool enabled;
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  bool? enabled;
 
   /// Workflow filters
   List<WorkflowFilterItemDto> filters;
@@ -59,7 +65,7 @@ class WorkflowCreateDto {
     // ignore: unnecessary_parenthesis
     (actions.hashCode) +
     (description == null ? 0 : description!.hashCode) +
-    (enabled.hashCode) +
+    (enabled == null ? 0 : enabled!.hashCode) +
     (filters.hashCode) +
     (name.hashCode) +
     (triggerType.hashCode);
@@ -75,7 +81,11 @@ class WorkflowCreateDto {
     } else {
     //  json[r'description'] = null;
     }
+    if (this.enabled != null) {
       json[r'enabled'] = this.enabled;
+    } else {
+    //  json[r'enabled'] = null;
+    }
       json[r'filters'] = this.filters;
       json[r'name'] = this.name;
       json[r'triggerType'] = this.triggerType;
@@ -93,7 +103,7 @@ class WorkflowCreateDto {
       return WorkflowCreateDto(
         actions: WorkflowActionItemDto.listFromJson(json[r'actions']),
         description: mapValueOfType<String>(json, r'description'),
-        enabled: mapValueOfType<bool>(json, r'enabled') ?? true,
+        enabled: mapValueOfType<bool>(json, r'enabled'),
         filters: WorkflowFilterItemDto.listFromJson(json[r'filters']),
         name: mapValueOfType<String>(json, r'name')!,
         triggerType: PluginTriggerType.fromJson(json[r'triggerType'])!,

@@ -53,7 +53,7 @@ class ExifResponseDto {
   int? exifImageHeight;
 
   /// Image width in pixels
-  int? exifImageWidth;
+  num? exifImageWidth;
 
   /// Exposure time
   String? exposureTime;
@@ -68,7 +68,7 @@ class ExifResponseDto {
   num? focalLength;
 
   /// ISO sensitivity
-  int? iso;
+  num? iso;
 
   /// GPS latitude
   num? latitude;
@@ -286,7 +286,9 @@ class ExifResponseDto {
         dateTimeOriginal: mapDateTime(json, r'dateTimeOriginal', r''),
         description: mapValueOfType<String>(json, r'description'),
         exifImageHeight: mapValueOfType<int>(json, r'exifImageHeight'),
-        exifImageWidth: mapValueOfType<int>(json, r'exifImageWidth'),
+        exifImageWidth: json[r'exifImageWidth'] == null
+            ? null
+            : num.parse('${json[r'exifImageWidth']}'),
         exposureTime: mapValueOfType<String>(json, r'exposureTime'),
         fNumber: json[r'fNumber'] == null
             ? null
@@ -295,7 +297,9 @@ class ExifResponseDto {
         focalLength: json[r'focalLength'] == null
             ? null
             : num.parse('${json[r'focalLength']}'),
-        iso: mapValueOfType<int>(json, r'iso'),
+        iso: json[r'iso'] == null
+            ? null
+            : num.parse('${json[r'iso']}'),
         latitude: json[r'latitude'] == null
             ? null
             : num.parse('${json[r'latitude']}'),

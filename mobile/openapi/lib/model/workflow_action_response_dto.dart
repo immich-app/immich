@@ -27,7 +27,7 @@ class WorkflowActionResponseDto {
   String id;
 
   /// Action order
-  int order;
+  num order;
 
   /// Plugin action ID
   String pluginActionId;
@@ -80,7 +80,7 @@ class WorkflowActionResponseDto {
       return WorkflowActionResponseDto(
         actionConfig: mapValueOfType<Object>(json, r'actionConfig'),
         id: mapValueOfType<String>(json, r'id')!,
-        order: mapValueOfType<int>(json, r'order')!,
+        order: num.parse('${json[r'order']}'),
         pluginActionId: mapValueOfType<String>(json, r'pluginActionId')!,
         workflowId: mapValueOfType<String>(json, r'workflowId')!,
       );

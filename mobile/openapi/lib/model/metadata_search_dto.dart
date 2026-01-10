@@ -192,6 +192,12 @@ class MetadataSearchDto {
   String? libraryId;
 
   /// Filter by camera make
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
   String? make;
 
   /// Filter by camera model
@@ -236,7 +242,7 @@ class MetadataSearchDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  int? page;
+  num? page;
 
   /// Filter by person IDs
   List<String> personIds;
@@ -260,7 +266,7 @@ class MetadataSearchDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  int? rating;
+  num? rating;
 
   /// Number of results to return
   ///
@@ -272,7 +278,7 @@ class MetadataSearchDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  int? size;
+  num? size;
 
   /// Filter by state/province name
   String? state;
@@ -743,13 +749,13 @@ class MetadataSearchDto {
         order: AssetOrder.fromJson(json[r'order']) ?? AssetOrder.desc,
         originalFileName: mapValueOfType<String>(json, r'originalFileName'),
         originalPath: mapValueOfType<String>(json, r'originalPath'),
-        page: mapValueOfType<int>(json, r'page'),
+        page: num.parse('${json[r'page']}'),
         personIds: json[r'personIds'] is Iterable
             ? (json[r'personIds'] as Iterable).cast<String>().toList(growable: false)
             : const [],
         previewPath: mapValueOfType<String>(json, r'previewPath'),
-        rating: mapValueOfType<int>(json, r'rating'),
-        size: mapValueOfType<int>(json, r'size'),
+        rating: num.parse('${json[r'rating']}'),
+        size: num.parse('${json[r'size']}'),
         state: mapValueOfType<String>(json, r'state'),
         tagIds: json[r'tagIds'] is Iterable
             ? (json[r'tagIds'] as Iterable).cast<String>().toList(growable: false)

@@ -19,7 +19,7 @@ class OnThisDayDto {
   /// Year for on this day memory
   ///
   /// Minimum value: 1
-  int year;
+  num year;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is OnThisDayDto &&
@@ -48,7 +48,7 @@ class OnThisDayDto {
       final json = value.cast<String, dynamic>();
 
       return OnThisDayDto(
-        year: mapValueOfType<int>(json, r'year')!,
+        year: num.parse('${json[r'year']}'),
       );
     }
     return null;
