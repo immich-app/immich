@@ -17,8 +17,15 @@ class DeletePermanentActionButton extends ConsumerWidget {
   final ActionSource source;
   final bool iconOnly;
   final bool menuItem;
+  final bool useShortLabel;
 
-  const DeletePermanentActionButton({super.key, required this.source, this.iconOnly = false, this.menuItem = false});
+  const DeletePermanentActionButton({
+    super.key,
+    required this.source,
+    this.iconOnly = false,
+    this.menuItem = false,
+    this.useShortLabel = false,
+  });
 
   void _onTap(BuildContext context, WidgetRef ref) async {
     if (!context.mounted) {
@@ -52,7 +59,7 @@ class DeletePermanentActionButton extends ConsumerWidget {
     return BaseActionButton(
       maxWidth: 110.0,
       iconData: Icons.delete_forever,
-      label: "delete_permanently".t(context: context),
+      label: useShortLabel ? "delete".t(context: context) : "delete_permanently".t(context: context),
       iconOnly: iconOnly,
       menuItem: menuItem,
       onPressed: () => _onTap(context, ref),

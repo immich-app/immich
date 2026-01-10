@@ -5,6 +5,7 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_local_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/delete_permanent_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/edit_image_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/upload_action_button.widget.dart';
@@ -49,9 +50,12 @@ class ViewerBottomBar extends ConsumerWidget {
         if (asset.hasRemote) AddActionButton(originalTheme: originalTheme),
 
         if (isOwner) ...[
-          asset.isLocalOnly
-              ? const DeleteLocalActionButton(source: ActionSource.viewer)
-              : const DeleteActionButton(source: ActionSource.viewer, showConfirmation: true),
+          if (asset.isLocalOnly)
+            const DeleteLocalActionButton(source: ActionSource.viewer)
+          else if (asset is RemoteAsset && asset.deletedAt != null)
+            const DeletePermanentActionButton(source: ActionSource.viewer, useShortLabel: true)
+          else
+            const DeleteActionButton(source: ActionSource.viewer, showConfirmation: true),
         ],
       ],
     ];
