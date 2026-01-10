@@ -50,6 +50,7 @@
   import OcrButton from './ocr-button.svelte';
   import PhotoViewer from './photo-viewer.svelte';
   import SlideshowBar from './slideshow-bar.svelte';
+  import SlideshowMetadataOverlay from './slideshow-metadata-overlay.svelte';
   import VideoViewer from './video-wrapper-viewer.svelte';
 
   type HasAsset = boolean;
@@ -551,6 +552,10 @@
           <div class="absolute bottom-0 end-0 mb-6 me-6">
             <OcrButton />
           </div>
+        {/if}
+
+        {#if $slideshowState !== SlideshowState.None}
+          <SlideshowMetadataOverlay {asset} />
         {/if}
       {/key}
     {/if}
