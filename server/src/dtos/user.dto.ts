@@ -13,6 +13,7 @@ export class UserUpdateMeDto {
   @Transform(toEmail)
   email?: string;
 
+  // TODO: migrate to the other change password endpoint
   @ApiPropertyOptional({ description: 'User password (deprecated, use change password endpoint)' })
   @Optional()
   @IsNotEmpty()
