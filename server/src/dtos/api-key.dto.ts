@@ -28,13 +28,6 @@ export class APIKeyUpdateDto {
   permissions?: Permission[];
 }
 
-export class APIKeyCreateResponseDto {
-  @ApiProperty({ description: 'API key secret (only shown once)' })
-  secret!: string;
-  @ApiProperty({ description: 'API key details' })
-  apiKey!: APIKeyResponseDto;
-}
-
 export class APIKeyResponseDto {
   @ApiProperty({ description: 'API key ID' })
   id!: string;
@@ -47,4 +40,11 @@ export class APIKeyResponseDto {
   @ApiProperty({ description: 'List of permissions', enum: Permission, isArray: true })
   @ValidateEnum({ enum: Permission, name: 'Permission', each: true })
   permissions!: Permission[];
+}
+
+export class APIKeyCreateResponseDto {
+  @ApiProperty({ description: 'API key secret (only shown once)' })
+  secret!: string;
+  @ApiProperty({ description: 'API key details' })
+  apiKey!: APIKeyResponseDto;
 }
