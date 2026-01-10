@@ -25,6 +25,7 @@ class PeopleApi {
   /// Parameters:
   ///
   /// * [PersonCreateDto] personCreateDto (required):
+  ///   Person creation data
   Future<Response> createPersonWithHttpInfo(PersonCreateDto personCreateDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/people';
@@ -57,6 +58,7 @@ class PeopleApi {
   /// Parameters:
   ///
   /// * [PersonCreateDto] personCreateDto (required):
+  ///   Person creation data
   Future<PersonResponseDto?> createPerson(PersonCreateDto personCreateDto,) async {
     final response = await createPersonWithHttpInfo(personCreateDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -81,6 +83,7 @@ class PeopleApi {
   /// Parameters:
   ///
   /// * [BulkIdsDto] bulkIdsDto (required):
+  ///   Person IDs to delete
   Future<Response> deletePeopleWithHttpInfo(BulkIdsDto bulkIdsDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/people';
@@ -113,6 +116,7 @@ class PeopleApi {
   /// Parameters:
   ///
   /// * [BulkIdsDto] bulkIdsDto (required):
+  ///   Person IDs to delete
   Future<void> deletePeople(BulkIdsDto bulkIdsDto,) async {
     final response = await deletePeopleWithHttpInfo(bulkIdsDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -129,6 +133,7 @@ class PeopleApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Person ID
   Future<Response> deletePersonWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/people/{id}'
@@ -162,6 +167,7 @@ class PeopleApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Person ID
   Future<void> deletePerson(String id,) async {
     final response = await deletePersonWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -270,6 +276,7 @@ class PeopleApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Person ID
   Future<Response> getPersonWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/people/{id}'
@@ -303,6 +310,7 @@ class PeopleApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Person ID
   Future<PersonResponseDto?> getPerson(String id,) async {
     final response = await getPersonWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -327,6 +335,7 @@ class PeopleApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Person ID
   Future<Response> getPersonStatisticsWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/people/{id}/statistics'
@@ -360,6 +369,7 @@ class PeopleApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Person ID
   Future<PersonStatisticsResponseDto?> getPersonStatistics(String id,) async {
     final response = await getPersonStatisticsWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -384,6 +394,7 @@ class PeopleApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Person ID
   Future<Response> getPersonThumbnailWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/people/{id}/thumbnail'
@@ -417,6 +428,7 @@ class PeopleApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Person ID
   Future<MultipartFile?> getPersonThumbnail(String id,) async {
     final response = await getPersonThumbnailWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -441,8 +453,10 @@ class PeopleApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Target person ID to merge into
   ///
   /// * [MergePersonDto] mergePersonDto (required):
+  ///   Person IDs to merge
   Future<Response> mergePersonWithHttpInfo(String id, MergePersonDto mergePersonDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/people/{id}/merge'
@@ -476,8 +490,10 @@ class PeopleApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Target person ID to merge into
   ///
   /// * [MergePersonDto] mergePersonDto (required):
+  ///   Person IDs to merge
   Future<List<BulkIdResponseDto>?> mergePerson(String id, MergePersonDto mergePersonDto,) async {
     final response = await mergePersonWithHttpInfo(id, mergePersonDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -505,8 +521,10 @@ class PeopleApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Target person ID
   ///
   /// * [AssetFaceUpdateDto] assetFaceUpdateDto (required):
+  ///   Faces to reassign
   Future<Response> reassignFacesWithHttpInfo(String id, AssetFaceUpdateDto assetFaceUpdateDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/people/{id}/reassign'
@@ -540,8 +558,10 @@ class PeopleApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Target person ID
   ///
   /// * [AssetFaceUpdateDto] assetFaceUpdateDto (required):
+  ///   Faces to reassign
   Future<List<PersonResponseDto>?> reassignFaces(String id, AssetFaceUpdateDto assetFaceUpdateDto,) async {
     final response = await reassignFacesWithHttpInfo(id, assetFaceUpdateDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -569,6 +589,7 @@ class PeopleApi {
   /// Parameters:
   ///
   /// * [PeopleUpdateDto] peopleUpdateDto (required):
+  ///   Bulk person update data
   Future<Response> updatePeopleWithHttpInfo(PeopleUpdateDto peopleUpdateDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/people';
@@ -601,6 +622,7 @@ class PeopleApi {
   /// Parameters:
   ///
   /// * [PeopleUpdateDto] peopleUpdateDto (required):
+  ///   Bulk person update data
   Future<List<BulkIdResponseDto>?> updatePeople(PeopleUpdateDto peopleUpdateDto,) async {
     final response = await updatePeopleWithHttpInfo(peopleUpdateDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -628,8 +650,10 @@ class PeopleApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Person ID
   ///
   /// * [PersonUpdateDto] personUpdateDto (required):
+  ///   Person update data
   Future<Response> updatePersonWithHttpInfo(String id, PersonUpdateDto personUpdateDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/people/{id}'
@@ -663,8 +687,10 @@ class PeopleApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Person ID
   ///
   /// * [PersonUpdateDto] personUpdateDto (required):
+  ///   Person update data
   Future<PersonResponseDto?> updatePerson(String id, PersonUpdateDto personUpdateDto,) async {
     final response = await updatePersonWithHttpInfo(id, personUpdateDto,);
     if (response.statusCode >= HttpStatus.badRequest) {

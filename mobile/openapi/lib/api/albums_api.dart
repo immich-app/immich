@@ -25,8 +25,10 @@ class AlbumsApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Album ID
   ///
   /// * [BulkIdsDto] bulkIdsDto (required):
+  ///   Asset IDs to add
   ///
   /// * [String] key:
   ///
@@ -71,8 +73,10 @@ class AlbumsApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Album ID
   ///
   /// * [BulkIdsDto] bulkIdsDto (required):
+  ///   Asset IDs to add
   ///
   /// * [String] key:
   ///
@@ -104,6 +108,7 @@ class AlbumsApi {
   /// Parameters:
   ///
   /// * [AlbumsAddAssetsDto] albumsAddAssetsDto (required):
+  ///   Asset and album IDs mapping
   ///
   /// * [String] key:
   ///
@@ -147,6 +152,7 @@ class AlbumsApi {
   /// Parameters:
   ///
   /// * [AlbumsAddAssetsDto] albumsAddAssetsDto (required):
+  ///   Asset and album IDs mapping
   ///
   /// * [String] key:
   ///
@@ -175,8 +181,10 @@ class AlbumsApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Album ID
   ///
   /// * [AddUsersDto] addUsersDto (required):
+  ///   Users to share with and their roles
   Future<Response> addUsersToAlbumWithHttpInfo(String id, AddUsersDto addUsersDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/albums/{id}/users'
@@ -210,8 +218,10 @@ class AlbumsApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Album ID
   ///
   /// * [AddUsersDto] addUsersDto (required):
+  ///   Users to share with and their roles
   Future<AlbumResponseDto?> addUsersToAlbum(String id, AddUsersDto addUsersDto,) async {
     final response = await addUsersToAlbumWithHttpInfo(id, addUsersDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -236,6 +246,7 @@ class AlbumsApi {
   /// Parameters:
   ///
   /// * [CreateAlbumDto] createAlbumDto (required):
+  ///   Album creation data
   Future<Response> createAlbumWithHttpInfo(CreateAlbumDto createAlbumDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/albums';
@@ -268,6 +279,7 @@ class AlbumsApi {
   /// Parameters:
   ///
   /// * [CreateAlbumDto] createAlbumDto (required):
+  ///   Album creation data
   Future<AlbumResponseDto?> createAlbum(CreateAlbumDto createAlbumDto,) async {
     final response = await createAlbumWithHttpInfo(createAlbumDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -292,6 +304,7 @@ class AlbumsApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Album ID
   Future<Response> deleteAlbumWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/albums/{id}'
@@ -325,6 +338,7 @@ class AlbumsApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Album ID
   Future<void> deleteAlbum(String id,) async {
     final response = await deleteAlbumWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -341,6 +355,7 @@ class AlbumsApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Album ID
   ///
   /// * [String] key:
   ///
@@ -390,6 +405,7 @@ class AlbumsApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Album ID
   ///
   /// * [String] key:
   ///
@@ -540,8 +556,10 @@ class AlbumsApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Album ID
   ///
   /// * [BulkIdsDto] bulkIdsDto (required):
+  ///   Asset IDs to remove
   Future<Response> removeAssetFromAlbumWithHttpInfo(String id, BulkIdsDto bulkIdsDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/albums/{id}/assets'
@@ -575,8 +593,10 @@ class AlbumsApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Album ID
   ///
   /// * [BulkIdsDto] bulkIdsDto (required):
+  ///   Asset IDs to remove
   Future<List<BulkIdResponseDto>?> removeAssetFromAlbum(String id, BulkIdsDto bulkIdsDto,) async {
     final response = await removeAssetFromAlbumWithHttpInfo(id, bulkIdsDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -604,8 +624,10 @@ class AlbumsApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Album ID
   ///
   /// * [String] userId (required):
+  ///   User ID (use \"me\" to leave shared album)
   Future<Response> removeUserFromAlbumWithHttpInfo(String id, String userId,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/albums/{id}/user/{userId}'
@@ -640,8 +662,10 @@ class AlbumsApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Album ID
   ///
   /// * [String] userId (required):
+  ///   User ID (use \"me\" to leave shared album)
   Future<void> removeUserFromAlbum(String id, String userId,) async {
     final response = await removeUserFromAlbumWithHttpInfo(id, userId,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -658,8 +682,10 @@ class AlbumsApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Album ID
   ///
   /// * [UpdateAlbumDto] updateAlbumDto (required):
+  ///   Album update data
   Future<Response> updateAlbumInfoWithHttpInfo(String id, UpdateAlbumDto updateAlbumDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/albums/{id}'
@@ -693,8 +719,10 @@ class AlbumsApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Album ID
   ///
   /// * [UpdateAlbumDto] updateAlbumDto (required):
+  ///   Album update data
   Future<AlbumResponseDto?> updateAlbumInfo(String id, UpdateAlbumDto updateAlbumDto,) async {
     final response = await updateAlbumInfoWithHttpInfo(id, updateAlbumDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -719,10 +747,13 @@ class AlbumsApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Album ID
   ///
   /// * [String] userId (required):
+  ///   User ID (use \"me\" for current user)
   ///
   /// * [UpdateAlbumUserDto] updateAlbumUserDto (required):
+  ///   Updated user role
   Future<Response> updateAlbumUserWithHttpInfo(String id, String userId, UpdateAlbumUserDto updateAlbumUserDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/albums/{id}/user/{userId}'
@@ -757,10 +788,13 @@ class AlbumsApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Album ID
   ///
   /// * [String] userId (required):
+  ///   User ID (use \"me\" for current user)
   ///
   /// * [UpdateAlbumUserDto] updateAlbumUserDto (required):
+  ///   Updated user role
   Future<void> updateAlbumUser(String id, String userId, UpdateAlbumUserDto updateAlbumUserDto,) async {
     final response = await updateAlbumUserWithHttpInfo(id, userId, updateAlbumUserDto,);
     if (response.statusCode >= HttpStatus.badRequest) {

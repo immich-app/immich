@@ -25,8 +25,10 @@ class SharedLinksApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Shared link ID
   ///
   /// * [AssetIdsDto] assetIdsDto (required):
+  ///   Asset IDs to add
   ///
   /// * [String] key:
   ///
@@ -71,8 +73,10 @@ class SharedLinksApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Shared link ID
   ///
   /// * [AssetIdsDto] assetIdsDto (required):
+  ///   Asset IDs to add
   ///
   /// * [String] key:
   ///
@@ -104,6 +108,7 @@ class SharedLinksApi {
   /// Parameters:
   ///
   /// * [SharedLinkCreateDto] sharedLinkCreateDto (required):
+  ///   Shared link creation data
   Future<Response> createSharedLinkWithHttpInfo(SharedLinkCreateDto sharedLinkCreateDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/shared-links';
@@ -136,6 +141,7 @@ class SharedLinksApi {
   /// Parameters:
   ///
   /// * [SharedLinkCreateDto] sharedLinkCreateDto (required):
+  ///   Shared link creation data
   Future<SharedLinkResponseDto?> createSharedLink(SharedLinkCreateDto sharedLinkCreateDto,) async {
     final response = await createSharedLinkWithHttpInfo(sharedLinkCreateDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -311,6 +317,7 @@ class SharedLinksApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Shared link ID
   Future<Response> getSharedLinkByIdWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/shared-links/{id}'
@@ -344,6 +351,7 @@ class SharedLinksApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Shared link ID
   Future<SharedLinkResponseDto?> getSharedLinkById(String id,) async {
     final response = await getSharedLinkByIdWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -368,6 +376,7 @@ class SharedLinksApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Shared link ID
   Future<Response> removeSharedLinkWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/shared-links/{id}'
@@ -401,6 +410,7 @@ class SharedLinksApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Shared link ID
   Future<void> removeSharedLink(String id,) async {
     final response = await removeSharedLinkWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -417,8 +427,10 @@ class SharedLinksApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Shared link ID
   ///
   /// * [AssetIdsDto] assetIdsDto (required):
+  ///   Asset IDs to remove
   ///
   /// * [String] key:
   ///
@@ -463,8 +475,10 @@ class SharedLinksApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Shared link ID
   ///
   /// * [AssetIdsDto] assetIdsDto (required):
+  ///   Asset IDs to remove
   ///
   /// * [String] key:
   ///
@@ -496,8 +510,10 @@ class SharedLinksApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Shared link ID
   ///
   /// * [SharedLinkEditDto] sharedLinkEditDto (required):
+  ///   Shared link update data
   Future<Response> updateSharedLinkWithHttpInfo(String id, SharedLinkEditDto sharedLinkEditDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/shared-links/{id}'
@@ -531,8 +547,10 @@ class SharedLinksApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Shared link ID
   ///
   /// * [SharedLinkEditDto] sharedLinkEditDto (required):
+  ///   Shared link update data
   Future<SharedLinkResponseDto?> updateSharedLink(String id, SharedLinkEditDto sharedLinkEditDto,) async {
     final response = await updateSharedLinkWithHttpInfo(id, sharedLinkEditDto,);
     if (response.statusCode >= HttpStatus.badRequest) {

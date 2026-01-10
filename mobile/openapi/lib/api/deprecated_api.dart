@@ -25,6 +25,7 @@ class DeprecatedApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   User ID to share with
   Future<Response> createPartnerDeprecatedWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/partners/{id}'
@@ -58,6 +59,7 @@ class DeprecatedApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   User ID to share with
   Future<PartnerResponseDto?> createPartnerDeprecated(String id,) async {
     final response = await createPartnerDeprecatedWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -82,6 +84,7 @@ class DeprecatedApi {
   /// Parameters:
   ///
   /// * [String] deviceId (required):
+  ///   Device ID
   Future<Response> getAllUserAssetsByDeviceIdWithHttpInfo(String deviceId,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/assets/device/{deviceId}'
@@ -115,6 +118,7 @@ class DeprecatedApi {
   /// Parameters:
   ///
   /// * [String] deviceId (required):
+  ///   Device ID
   Future<List<String>?> getAllUserAssetsByDeviceId(String deviceId,) async {
     final response = await getAllUserAssetsByDeviceIdWithHttpInfo(deviceId,);
     if (response.statusCode >= HttpStatus.badRequest) {

@@ -25,6 +25,7 @@ class StacksApi {
   /// Parameters:
   ///
   /// * [StackCreateDto] stackCreateDto (required):
+  ///   Stack creation data with name and asset IDs
   Future<Response> createStackWithHttpInfo(StackCreateDto stackCreateDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/stacks';
@@ -57,6 +58,7 @@ class StacksApi {
   /// Parameters:
   ///
   /// * [StackCreateDto] stackCreateDto (required):
+  ///   Stack creation data with name and asset IDs
   Future<StackResponseDto?> createStack(StackCreateDto stackCreateDto,) async {
     final response = await createStackWithHttpInfo(stackCreateDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -81,6 +83,7 @@ class StacksApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Stack ID
   Future<Response> deleteStackWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/stacks/{id}'
@@ -114,6 +117,7 @@ class StacksApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Stack ID
   Future<void> deleteStack(String id,) async {
     final response = await deleteStackWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -130,6 +134,7 @@ class StacksApi {
   /// Parameters:
   ///
   /// * [BulkIdsDto] bulkIdsDto (required):
+  ///   Stack IDs to delete
   Future<Response> deleteStacksWithHttpInfo(BulkIdsDto bulkIdsDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/stacks';
@@ -162,6 +167,7 @@ class StacksApi {
   /// Parameters:
   ///
   /// * [BulkIdsDto] bulkIdsDto (required):
+  ///   Stack IDs to delete
   Future<void> deleteStacks(BulkIdsDto bulkIdsDto,) async {
     final response = await deleteStacksWithHttpInfo(bulkIdsDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -178,6 +184,7 @@ class StacksApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Stack ID
   Future<Response> getStackWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/stacks/{id}'
@@ -211,6 +218,7 @@ class StacksApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Stack ID
   Future<StackResponseDto?> getStack(String id,) async {
     final response = await getStackWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -235,8 +243,10 @@ class StacksApi {
   /// Parameters:
   ///
   /// * [String] assetId (required):
+  ///   Asset ID to remove
   ///
   /// * [String] id (required):
+  ///   Stack ID
   Future<Response> removeAssetFromStackWithHttpInfo(String assetId, String id,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/stacks/{id}/assets/{assetId}'
@@ -271,8 +281,10 @@ class StacksApi {
   /// Parameters:
   ///
   /// * [String] assetId (required):
+  ///   Asset ID to remove
   ///
   /// * [String] id (required):
+  ///   Stack ID
   Future<void> removeAssetFromStack(String assetId, String id,) async {
     final response = await removeAssetFromStackWithHttpInfo(assetId, id,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -352,8 +364,10 @@ class StacksApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Stack ID
   ///
   /// * [StackUpdateDto] stackUpdateDto (required):
+  ///   Stack update data
   Future<Response> updateStackWithHttpInfo(String id, StackUpdateDto stackUpdateDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/stacks/{id}'
@@ -387,8 +401,10 @@ class StacksApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Stack ID
   ///
   /// * [StackUpdateDto] stackUpdateDto (required):
+  ///   Stack update data
   Future<StackResponseDto?> updateStack(String id, StackUpdateDto stackUpdateDto,) async {
     final response = await updateStackWithHttpInfo(id, stackUpdateDto,);
     if (response.statusCode >= HttpStatus.badRequest) {

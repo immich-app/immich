@@ -25,6 +25,7 @@ class ActivitiesApi {
   /// Parameters:
   ///
   /// * [ActivityCreateDto] activityCreateDto (required):
+  ///   Activity data (like or comment)
   Future<Response> createActivityWithHttpInfo(ActivityCreateDto activityCreateDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/activities';
@@ -57,6 +58,7 @@ class ActivitiesApi {
   /// Parameters:
   ///
   /// * [ActivityCreateDto] activityCreateDto (required):
+  ///   Activity data (like or comment)
   Future<ActivityResponseDto?> createActivity(ActivityCreateDto activityCreateDto,) async {
     final response = await createActivityWithHttpInfo(activityCreateDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -81,6 +83,7 @@ class ActivitiesApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Activity ID to delete
   Future<Response> deleteActivityWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/activities/{id}'
@@ -114,6 +117,7 @@ class ActivitiesApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Activity ID to delete
   Future<void> deleteActivity(String id,) async {
     final response = await deleteActivityWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {

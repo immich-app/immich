@@ -25,6 +25,7 @@ class DownloadApi {
   /// Parameters:
   ///
   /// * [AssetIdsDto] assetIdsDto (required):
+  ///   Asset IDs to download
   ///
   /// * [String] key:
   ///
@@ -68,6 +69,7 @@ class DownloadApi {
   /// Parameters:
   ///
   /// * [AssetIdsDto] assetIdsDto (required):
+  ///   Asset IDs to download
   ///
   /// * [String] key:
   ///
@@ -96,6 +98,7 @@ class DownloadApi {
   /// Parameters:
   ///
   /// * [DownloadInfoDto] downloadInfoDto (required):
+  ///   Asset IDs, album ID, or user ID to download
   ///
   /// * [String] key:
   ///
@@ -139,6 +142,7 @@ class DownloadApi {
   /// Parameters:
   ///
   /// * [DownloadInfoDto] downloadInfoDto (required):
+  ///   Asset IDs, album ID, or user ID to download
   ///
   /// * [String] key:
   ///
