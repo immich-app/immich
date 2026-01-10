@@ -168,8 +168,12 @@ Class | Method | HTTP request | Description
 *LibrariesApi* | [**validate**](doc//LibrariesApi.md#validate) | **POST** /libraries/{id}/validate | Validate library settings
 *MaintenanceAdminApi* | [**maintenanceLogin**](doc//MaintenanceAdminApi.md#maintenancelogin) | **POST** /admin/maintenance/login | Log into maintenance mode
 *MaintenanceAdminApi* | [**setMaintenanceMode**](doc//MaintenanceAdminApi.md#setmaintenancemode) | **POST** /admin/maintenance | Set maintenance mode
+*MapApi* | [**createFavoriteLocation**](doc//MapApi.md#createfavoritelocation) | **POST** /map/favorite-locations | Create favorite location
+*MapApi* | [**deleteFavoriteLocation**](doc//MapApi.md#deletefavoritelocation) | **DELETE** /map/favorite-locations/{id} | Delete favorite location
+*MapApi* | [**getFavoriteLocations**](doc//MapApi.md#getfavoritelocations) | **GET** /map/favorite-locations | Get favorite locations
 *MapApi* | [**getMapMarkers**](doc//MapApi.md#getmapmarkers) | **GET** /map/markers | Retrieve map markers
 *MapApi* | [**reverseGeocode**](doc//MapApi.md#reversegeocode) | **GET** /map/reverse-geocode | Reverse geocode coordinates
+*MapApi* | [**updateFavoriteLocation**](doc//MapApi.md#updatefavoritelocation) | **PUT** /map/favorite-locations/{id} | Update favorite location
 *MemoriesApi* | [**addMemoryAssets**](doc//MemoriesApi.md#addmemoryassets) | **PUT** /memories/{id}/assets | Add assets to a memory
 *MemoriesApi* | [**createMemory**](doc//MemoriesApi.md#creatememory) | **POST** /memories | Create a memory
 *MemoriesApi* | [**deleteMemory**](doc//MemoriesApi.md#deletememory) | **DELETE** /memories/{id} | Delete a memory
@@ -401,6 +405,7 @@ Class | Method | HTTP request | Description
  - [Colorspace](doc//Colorspace.md)
  - [ContributorCountResponseDto](doc//ContributorCountResponseDto.md)
  - [CreateAlbumDto](doc//CreateAlbumDto.md)
+ - [CreateFavoriteLocationDto](doc//CreateFavoriteLocationDto.md)
  - [CreateLibraryDto](doc//CreateLibraryDto.md)
  - [CreateProfileImageResponseDto](doc//CreateProfileImageResponseDto.md)
  - [CropParameters](doc//CropParameters.md)
@@ -417,6 +422,7 @@ Class | Method | HTTP request | Description
  - [ExifResponseDto](doc//ExifResponseDto.md)
  - [FaceDto](doc//FaceDto.md)
  - [FacialRecognitionConfig](doc//FacialRecognitionConfig.md)
+ - [FavoriteLocationResponseDto](doc//FavoriteLocationResponseDto.md)
  - [FoldersResponse](doc//FoldersResponse.md)
  - [FoldersUpdate](doc//FoldersUpdate.md)
  - [ImageFormat](doc//ImageFormat.md)
@@ -635,6 +641,7 @@ Class | Method | HTTP request | Description
  - [UpdateAlbumDto](doc//UpdateAlbumDto.md)
  - [UpdateAlbumUserDto](doc//UpdateAlbumUserDto.md)
  - [UpdateAssetDto](doc//UpdateAssetDto.md)
+ - [UpdateFavoriteLocationDto](doc//UpdateFavoriteLocationDto.md)
  - [UpdateLibraryDto](doc//UpdateLibraryDto.md)
  - [UsageByUserDto](doc//UsageByUserDto.md)
  - [UserAdminCreateDto](doc//UserAdminCreateDto.md)

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { getName } from 'i18n-iso-countries';
-import { Expression, Insertable, Kysely, NotNull, sql, SqlBool } from 'kysely';
+import { Expression, Insertable, Kysely, NotNull, sql, SqlBool, Updateable } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { createReadStream, existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
@@ -12,6 +12,7 @@ import { ConfigRepository } from 'src/repositories/config.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
 import { DB } from 'src/schema';
+import { FavoriteLocationTable } from 'src/schema/tables/favorite-location.table';
 import { GeodataPlacesTable } from 'src/schema/tables/geodata-places.table';
 import { NaturalEarthCountriesTable } from 'src/schema/tables/natural-earth-countries.table';
 
@@ -136,6 +137,42 @@ export class MapRepository {
       })
       .orderBy('fileCreatedAt', 'desc')
       .execute();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  getFavoriteLocations(userId: string) {
+    return this.db
+      .selectFrom('favorite_location')
+      .selectAll()
+      .where('userId', '=', userId)
+      .orderBy('name', 'asc')
+      .execute();
+  }
+
+  async createFavoriteLocation(entity: Insertable<FavoriteLocationTable>) {
+    const inserted = await this.db
+      .insertInto('favorite_location')
+      .values(entity)
+      .returningAll()
+      .executeTakeFirstOrThrow();
+
+    return inserted;
+  }
+
+  async updateFavoriteLocation(id: string, userId: string, updates: Updateable<FavoriteLocationTable>) {
+    const updated = await this.db
+      .updateTable('favorite_location')
+      .set(updates)
+      .where('id', '=', id)
+      .where('userId', '=', userId)
+      .returningAll()
+      .executeTakeFirstOrThrow();
+
+    return updated;
+  }
+
+  async deleteFavoriteLocation(id: string) {
+    await this.db.deleteFrom('favorite_location').where('id', '=', id).execute();
   }
 
   async reverseGeocode(point: GeoPoint): Promise<ReverseGeocodeResult> {
