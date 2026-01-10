@@ -10,9 +10,9 @@
   import { activityManager } from '$lib/managers/activity-manager.svelte';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
+  import { editManager, EditToolType } from '$lib/managers/edit/edit-manager.svelte';
   import { eventManager } from '$lib/managers/event-manager.svelte';
   import { preloadManager } from '$lib/managers/PreloadManager.svelte';
-  import { closeEditorCofirm } from '$lib/stores/asset-editor.store';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { ocrManager } from '$lib/stores/ocr.svelte';
   import { alwaysLoadOriginalVideo } from '$lib/stores/preferences.store';
@@ -45,8 +45,8 @@
   import ActivityStatus from './activity-status.svelte';
   import ActivityViewer from './activity-viewer.svelte';
   import DetailPanel from './detail-panel.svelte';
-  import CropArea from './editor/crop-tool/crop-area.svelte';
   import EditorPanel from './editor/editor-panel.svelte';
+  import CropArea from './editor/transform-tool/crop-area.svelte';
   import ImagePanoramaViewer from './image-panorama-viewer.svelte';
   import OcrButton from './ocr-button.svelte';
   import PhotoViewer from './photo-viewer.svelte';
@@ -66,6 +66,7 @@
     isShared?: boolean;
     album?: AlbumResponseDto;
     person?: PersonResponseDto;
+    onAssetChange?: (asset: AssetResponseDto) => void;
     preAction?: PreAction;
     onAction?: OnAction;
     onUndoDelete?: OnUndoDelete;
@@ -82,6 +83,7 @@
     isShared = false,
     album,
     person,
+    onAssetChange,
     preAction,
     onAction,
     onUndoDelete,
@@ -102,7 +104,7 @@
   const stackThumbnailSize = 60;
   const stackSelectedThumbnailSize = 65;
 
-  let asset = $derived(cursor.current);
+  const asset = $derived(cursor.current);
   let nextAsset = $derived(cursor.nextAsset);
   let previousAsset = $derived(cursor.previousAsset);
   let appearsInAlbums: AlbumResponseDto[] = $state([]);
@@ -111,7 +113,6 @@
   let isShowEditor = $state(false);
   let fullscreenElement = $state<Element>();
   let unsubscribes: (() => void)[] = [];
-  let selectedEditType: string = $state('');
   let stack: StackResponseDto | null = $state(null);
 
   let zoomToggle = $state(() => void 0);
@@ -199,10 +200,15 @@
     onClose?.(asset);
   };
 
-  const closeEditor = () => {
-    closeEditorCofirm(() => {
-      isShowEditor = false;
-    });
+  const closeEditor = async () => {
+    if (editManager.hasAppliedEdits) {
+      console.log(asset);
+      const refreshedAsset = await getAssetInfo({ id: asset.id });
+      console.log(refreshedAsset);
+      onAssetChange?.(refreshedAsset);
+      assetViewingStore.setAsset(refreshedAsset);
+    }
+    isShowEditor = false;
   };
 
   const tracker = new InvocationTracker();
@@ -251,6 +257,13 @@
         }
       }
     });
+  };
+
+  const showEditor = () => {
+    if (assetViewerManager.isShowActivityPanel) {
+      assetViewerManager.isShowActivityPanel = false;
+    }
+    isShowEditor = !isShowEditor;
   };
 
   const handleRunJob = async (name: AssetJobName) => {
@@ -316,7 +329,7 @@
       case AssetAction.REMOVE_ASSET_FROM_STACK: {
         stack = action.stack;
         if (stack) {
-          asset = stack.assets[0];
+          cursor.current = stack.assets[0];
         }
         break;
       }
@@ -327,11 +340,11 @@
       }
       case AssetAction.SET_PERSON_FEATURED_PHOTO: {
         const assetInfo = await getAssetInfo({ id: asset.id });
-        asset = { ...asset, people: assetInfo.people };
+        cursor.current = { ...asset, people: assetInfo.people };
         break;
       }
       case AssetAction.RATING: {
-        asset = {
+        cursor.current = {
           ...asset,
           exifInfo: {
             ...asset.exifInfo,
@@ -348,10 +361,6 @@
     }
 
     onAction?.(action);
-  };
-
-  const handleUpdateSelectedEditType = (type: string) => {
-    selectedEditType = type;
   };
 
   let isFullScreen = $derived(fullscreenElement !== null);
@@ -395,6 +404,12 @@
     await goto(`${AppRoute.PHOTOS}/${newAssetId}`);
   };
 
+  const onAssetUpdate = (update: AssetResponseDto) => {
+    if (asset.id === update.id) {
+      cursor.current = update;
+    }
+  };
+
   $effect(() => {
     // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     asset.id;
@@ -415,7 +430,7 @@
         (asset.originalPath && asset.originalPath.toLowerCase().endsWith('.insp'))
       ) {
         return 'ImagePanaramaViewer';
-      } else if (isShowEditor && selectedEditType === 'crop') {
+      } else if (isShowEditor && editManager.selectedTool?.type === EditToolType.Transform) {
         return 'CropArea';
       }
       return 'PhotoViewer';
@@ -424,7 +439,7 @@
   });
 </script>
 
-<OnEvents {onAssetReplace} />
+<OnEvents {onAssetReplace} {onAssetUpdate} />
 
 <svelte:document bind:fullscreenElement />
 
@@ -447,6 +462,7 @@
         onCopyImage={copyImage}
         preAction={handlePreAction}
         onAction={handleAction}
+        onEdit={showEditor}
         {onUndoDelete}
         onRunJob={handleRunJob}
         onPlaySlideshow={() => ($slideshowState = SlideshowState.PlaySlideshow)}
@@ -585,7 +601,7 @@
       class="row-start-1 row-span-4 w-[400px] overflow-y-auto transition-all dark:border-l dark:border-s-immich-dark-gray"
       translate="yes"
     >
-      <EditorPanel {asset} onUpdateSelectedType={handleUpdateSelectedEditType} onClose={closeEditor} />
+      <EditorPanel {asset} onClose={closeEditor} />
     </div>
   {/if}
 
@@ -604,7 +620,7 @@
               dimmed={stackedAsset.id !== asset.id}
               asset={toTimelineAsset(stackedAsset)}
               onClick={() => {
-                asset = stackedAsset;
+                cursor.current = stackedAsset;
                 previewStackedAsset = undefined;
               }}
               onMouseEvent={({ isMouseOver }) => handleStackedAssetMouseEvent(isMouseOver, stackedAsset)}

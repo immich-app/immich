@@ -49,6 +49,8 @@
       toast_info_title: $t('info'),
       toast_warning_title: $t('warning'),
       toast_danger_title: $t('error'),
+      navigate_next: $t('next'),
+      navigate_previous: $t('previous'),
     });
   });
 

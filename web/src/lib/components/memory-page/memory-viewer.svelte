@@ -270,7 +270,7 @@
   };
 
   afterNavigate(({ from, to }) => {
-    memoryStore.initialize().then(
+    memoryStore.ready().then(
       () => {
         let target = null;
         if (to?.params?.assetId) {

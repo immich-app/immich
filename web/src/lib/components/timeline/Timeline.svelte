@@ -46,7 +46,6 @@
     album?: AlbumResponseDto;
     albumUsers?: UserResponseDto[];
     person?: PersonResponseDto;
-    isShowDeleteConfirmation?: boolean;
     onSelect?: (asset: TimelineAsset) => void;
     onEscape?: () => void;
     children?: Snippet;
@@ -79,7 +78,6 @@
     album,
     albumUsers = [],
     person,
-    isShowDeleteConfirmation = $bindable(false),
     onSelect = () => {},
     onEscape = () => {},
     children,
@@ -600,7 +598,6 @@
   scrollToAsset={(asset) => scrollToAsset(asset) ?? false}
   {timelineManager}
   {assetInteraction}
-  bind:isShowDeleteConfirmation
   {onEscape}
 />
 
