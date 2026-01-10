@@ -107,7 +107,9 @@ export class UpdateAlbumDto {
 }
 
 export class GetAlbumsDto {
-  @ApiPropertyOptional({ description: 'Filter by shared status: true = only shared, false = only own, undefined = all' })
+  @ApiPropertyOptional({
+    description: 'Filter by shared status: true = only shared, false = only own, undefined = all',
+  })
   @ValidateBoolean({ optional: true })
   shared?: boolean;
 
@@ -188,7 +190,10 @@ export class AlbumResponseDto {
   @ValidateEnum({ enum: AssetOrder, name: 'AssetOrder', optional: true })
   order?: AssetOrder;
 
-  @ApiPropertyOptional({ description: 'Per-user contribution counts (shared albums only)', type: () => [ContributorCountResponseDto] })
+  @ApiPropertyOptional({
+    description: 'Per-user contribution counts (shared albums only)',
+    type: () => [ContributorCountResponseDto],
+  })
   @Type(() => ContributorCountResponseDto)
   contributorCounts?: ContributorCountResponseDto[];
 }

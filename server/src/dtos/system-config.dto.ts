@@ -483,7 +483,7 @@ class SystemConfigSmtpTransportDto {
   @IsString()
   host!: string;
 
-  @ApiProperty({ description: 'SMTP server port', type: Number, minimum: 0, maximum: 65535 })
+  @ApiProperty({ description: 'SMTP server port', type: Number, minimum: 0, maximum: 65_535 })
   @IsNumber()
   @Min(0)
   @Max(65_535)

@@ -127,7 +127,12 @@ export class UsageByUserDto {
   usagePhotos!: number;
   @ApiProperty({ type: 'integer', format: 'int64', description: 'Storage usage for videos in bytes' })
   usageVideos!: number;
-  @ApiProperty({ type: 'integer', format: 'int64', nullable: true, description: 'User quota size in bytes (null if unlimited)' })
+  @ApiProperty({
+    type: 'integer',
+    format: 'int64',
+    nullable: true,
+    description: 'User quota size in bytes (null if unlimited)',
+  })
   quotaSizeInBytes!: number | null;
 }
 

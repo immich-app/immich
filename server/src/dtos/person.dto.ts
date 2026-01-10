@@ -27,7 +27,7 @@ export class PersonCreateDto {
   @Optional()
   @IsString()
   name?: string;
-  
+
   // Note: the mobile app cannot currently set the birth date to null.
   @ApiProperty({ format: 'date', description: 'Person date of birth', required: false, nullable: true })
   @MaxDateString(() => DateTime.now(), { message: 'Birth date cannot be in the future' })

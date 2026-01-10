@@ -23,7 +23,11 @@ export class DuplicateDetectionConfig extends TaskConfig {
   @Min(0.001)
   @Max(0.1)
   @Type(() => Number)
-  @ApiProperty({ type: 'number', format: 'double', description: 'Maximum distance threshold for duplicate detection (0.001-0.1)' })
+  @ApiProperty({
+    type: 'number',
+    format: 'double',
+    description: 'Maximum distance threshold for duplicate detection (0.001-0.1)',
+  })
   maxDistance!: number;
 }
 
@@ -39,7 +43,11 @@ export class FacialRecognitionConfig extends ModelConfig {
   @Min(0.1)
   @Max(2)
   @Type(() => Number)
-  @ApiProperty({ type: 'number', format: 'double', description: 'Maximum distance threshold for face recognition (0.1-2)' })
+  @ApiProperty({
+    type: 'number',
+    format: 'double',
+    description: 'Maximum distance threshold for face recognition (0.1-2)',
+  })
   maxDistance!: number;
 
   @IsNumber()
@@ -67,6 +75,10 @@ export class OcrConfig extends ModelConfig {
   @Min(0.1)
   @Max(1)
   @Type(() => Number)
-  @ApiProperty({ type: 'number', format: 'double', description: 'Minimum confidence score for text recognition (0.1-1)' })
+  @ApiProperty({
+    type: 'number',
+    format: 'double',
+    description: 'Minimum confidence score for text recognition (0.1-1)',
+  })
   minRecognitionScore!: number;
 }
