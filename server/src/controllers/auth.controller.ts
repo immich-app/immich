@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Post, Put, Req, Res } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import {
@@ -28,6 +28,7 @@ export class AuthController {
   constructor(private service: AuthService) {}
 
   @Post('login')
+  @ApiBody({ description: 'Login credentials', type: LoginCredentialDto })
   @Endpoint({
     summary: 'Login',
     description: 'Login with username and password and receive a session token.',
@@ -50,6 +51,7 @@ export class AuthController {
   }
 
   @Post('admin-sign-up')
+  @ApiBody({ description: 'Admin registration data', type: SignUpDto })
   @Endpoint({
     summary: 'Register admin',
     description: 'Create the first admin user in the system.',
@@ -74,6 +76,7 @@ export class AuthController {
   @Post('change-password')
   @Authenticated({ permission: Permission.AuthChangePassword })
   @HttpCode(HttpStatus.OK)
+  @ApiBody({ description: 'Current and new password', type: ChangePasswordDto })
   @Endpoint({
     summary: 'Change password',
     description: 'Change the password of the current user.',
@@ -120,6 +123,7 @@ export class AuthController {
   @Post('pin-code')
   @Authenticated({ permission: Permission.PinCodeCreate })
   @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiBody({ description: 'PIN code setup data', type: PinCodeSetupDto })
   @Endpoint({
     summary: 'Setup pin code',
     description: 'Setup a new pin code for the current user.',
@@ -132,6 +136,7 @@ export class AuthController {
   @Put('pin-code')
   @Authenticated({ permission: Permission.PinCodeUpdate })
   @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiBody({ description: 'Old and new PIN code', type: PinCodeChangeDto })
   @Endpoint({
     summary: 'Change pin code',
     description: 'Change the pin code for the current user.',
@@ -144,6 +149,7 @@ export class AuthController {
   @Delete('pin-code')
   @Authenticated({ permission: Permission.PinCodeDelete })
   @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiBody({ description: 'Account password to reset PIN', type: PinCodeResetDto })
   @Endpoint({
     summary: 'Reset pin code',
     description: 'Reset the pin code for the current user by providing the account password',
@@ -156,6 +162,7 @@ export class AuthController {
   @Post('session/unlock')
   @Authenticated()
   @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiBody({ description: 'PIN code to unlock session', type: SessionUnlockDto })
   @Endpoint({
     summary: 'Unlock auth session',
     description: 'Temporarily grant the session elevated access to locked assets by providing the correct PIN code.',

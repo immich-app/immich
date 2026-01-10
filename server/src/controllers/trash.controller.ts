@@ -1,5 +1,5 @@
 import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -40,6 +40,7 @@ export class TrashController {
   @Post('restore/assets')
   @Authenticated({ permission: Permission.AssetDelete })
   @HttpCode(HttpStatus.OK)
+  @ApiBody({ description: 'Asset IDs to restore', type: BulkIdsDto })
   @Endpoint({
     summary: 'Restore assets',
     description: 'Restore specific assets from the trash.',

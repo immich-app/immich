@@ -13,7 +13,7 @@ import {
   Req,
   Res,
 } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AssetIdsResponseDto } from 'src/dtos/asset-ids.response.dto';
@@ -40,6 +40,7 @@ export class SharedLinkController {
 
   @Get()
   @Authenticated({ permission: Permission.SharedLinkRead })
+  @ApiQuery({ name: 'dto', description: 'Shared link search filters', type: SharedLinkSearchDto, required: false })
   @Endpoint({
     summary: 'Retrieve all shared links',
     description: 'Retrieve a list of all shared links.',
@@ -51,6 +52,7 @@ export class SharedLinkController {
 
   @Get('me')
   @Authenticated({ sharedLink: true })
+  @ApiQuery({ name: 'dto', description: 'Shared link password/token', type: SharedLinkPasswordDto, required: false })
   @Endpoint({
     summary: 'Retrieve current shared link',
     description: 'Retrieve the current shared link associated with authentication method.',
@@ -76,6 +78,7 @@ export class SharedLinkController {
 
   @Get(':id')
   @Authenticated({ permission: Permission.SharedLinkRead })
+  @ApiParam({ name: 'id', description: 'Shared link ID', type: String, format: 'uuid' })
   @Endpoint({
     summary: 'Retrieve a shared link',
     description: 'Retrieve a specific shared link by its ID.',
@@ -87,6 +90,7 @@ export class SharedLinkController {
 
   @Post()
   @Authenticated({ permission: Permission.SharedLinkCreate })
+  @ApiBody({ description: 'Shared link creation data', type: SharedLinkCreateDto })
   @Endpoint({
     summary: 'Create a shared link',
     description: 'Create a new shared link.',
@@ -98,6 +102,8 @@ export class SharedLinkController {
 
   @Patch(':id')
   @Authenticated({ permission: Permission.SharedLinkUpdate })
+  @ApiParam({ name: 'id', description: 'Shared link ID', type: String, format: 'uuid' })
+  @ApiBody({ description: 'Shared link update data', type: SharedLinkEditDto })
   @Endpoint({
     summary: 'Update a shared link',
     description: 'Update an existing shared link by its ID.',
@@ -114,6 +120,7 @@ export class SharedLinkController {
   @Delete(':id')
   @Authenticated({ permission: Permission.SharedLinkDelete })
   @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiParam({ name: 'id', description: 'Shared link ID', type: String, format: 'uuid' })
   @Endpoint({
     summary: 'Delete a shared link',
     description: 'Delete a specific shared link by its ID.',
@@ -125,6 +132,8 @@ export class SharedLinkController {
 
   @Put(':id/assets')
   @Authenticated({ sharedLink: true })
+  @ApiParam({ name: 'id', description: 'Shared link ID', type: String, format: 'uuid' })
+  @ApiBody({ description: 'Asset IDs to add', type: AssetIdsDto })
   @Endpoint({
     summary: 'Add assets to a shared link',
     description:
@@ -141,6 +150,8 @@ export class SharedLinkController {
 
   @Delete(':id/assets')
   @Authenticated({ sharedLink: true })
+  @ApiParam({ name: 'id', description: 'Shared link ID', type: String, format: 'uuid' })
+  @ApiBody({ description: 'Asset IDs to remove', type: AssetIdsDto })
   @Endpoint({
     summary: 'Remove assets from a shared link',
     description:

@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Put, Query } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import {
   AddUsersDto,
@@ -27,6 +27,7 @@ export class AlbumController {
 
   @Get()
   @Authenticated({ permission: Permission.AlbumRead })
+  @ApiQuery({ name: 'query', description: 'Album list filters', type: GetAlbumsDto, required: false })
   @Endpoint({
     summary: 'List all albums',
     description: 'Retrieve a list of albums available to the authenticated user.',
@@ -38,6 +39,7 @@ export class AlbumController {
 
   @Post()
   @Authenticated({ permission: Permission.AlbumCreate })
+  @ApiBody({ description: 'Album creation data', type: CreateAlbumDto })
   @Endpoint({
     summary: 'Create an album',
     description: 'Create a new album. The album can also be created with initial users and assets.',
@@ -60,6 +62,8 @@ export class AlbumController {
 
   @Authenticated({ permission: Permission.AlbumRead, sharedLink: true })
   @Get(':id')
+  @ApiParam({ name: 'id', description: 'Album ID', type: String, format: 'uuid' })
+  @ApiQuery({ name: 'dto', description: 'Album info options', type: AlbumInfoDto, required: false })
   @Endpoint({
     summary: 'Retrieve an album',
     description: 'Retrieve information about a specific album by its ID.',
@@ -75,6 +79,8 @@ export class AlbumController {
 
   @Patch(':id')
   @Authenticated({ permission: Permission.AlbumUpdate })
+  @ApiParam({ name: 'id', description: 'Album ID', type: String, format: 'uuid' })
+  @ApiBody({ description: 'Album update data', type: UpdateAlbumDto })
   @Endpoint({
     summary: 'Update an album',
     description:
@@ -92,6 +98,7 @@ export class AlbumController {
   @Delete(':id')
   @Authenticated({ permission: Permission.AlbumDelete })
   @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiParam({ name: 'id', description: 'Album ID', type: String, format: 'uuid' })
   @Endpoint({
     summary: 'Delete an album',
     description:
@@ -104,6 +111,8 @@ export class AlbumController {
 
   @Put(':id/assets')
   @Authenticated({ permission: Permission.AlbumAssetCreate, sharedLink: true })
+  @ApiParam({ name: 'id', description: 'Album ID', type: String, format: 'uuid' })
+  @ApiBody({ description: 'Asset IDs to add', type: BulkIdsDto })
   @Endpoint({
     summary: 'Add assets to an album',
     description: 'Add multiple assets to a specific album by its ID.',
@@ -119,6 +128,7 @@ export class AlbumController {
 
   @Put('assets')
   @Authenticated({ permission: Permission.AlbumAssetCreate, sharedLink: true })
+  @ApiBody({ description: 'Asset and album IDs mapping', type: AlbumsAddAssetsDto })
   @Endpoint({
     summary: 'Add assets to albums',
     description: 'Send a list of asset IDs and album IDs to add each asset to each album.',
@@ -130,6 +140,8 @@ export class AlbumController {
 
   @Delete(':id/assets')
   @Authenticated({ permission: Permission.AlbumAssetDelete })
+  @ApiParam({ name: 'id', description: 'Album ID', type: String, format: 'uuid' })
+  @ApiBody({ description: 'Asset IDs to remove', type: BulkIdsDto })
   @Endpoint({
     summary: 'Remove assets from an album',
     description: 'Remove multiple assets from a specific album by its ID.',
@@ -145,6 +157,8 @@ export class AlbumController {
 
   @Put(':id/users')
   @Authenticated({ permission: Permission.AlbumUserCreate })
+  @ApiParam({ name: 'id', description: 'Album ID', type: String, format: 'uuid' })
+  @ApiBody({ description: 'Users to share with and their roles', type: AddUsersDto })
   @Endpoint({
     summary: 'Share album with users',
     description: 'Share an album with multiple users. Each user can be given a specific role in the album.',
@@ -161,6 +175,9 @@ export class AlbumController {
   @Put(':id/user/:userId')
   @Authenticated({ permission: Permission.AlbumUserUpdate })
   @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiParam({ name: 'id', description: 'Album ID', type: String, format: 'uuid' })
+  @ApiParam({ name: 'userId', description: 'User ID (use "me" for current user)', type: String })
+  @ApiBody({ description: 'Updated user role', type: UpdateAlbumUserDto })
   @Endpoint({
     summary: 'Update user role',
     description: 'Change the role for a specific user in a specific album.',
@@ -178,6 +195,8 @@ export class AlbumController {
   @Delete(':id/user/:userId')
   @Authenticated({ permission: Permission.AlbumUserDelete })
   @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiParam({ name: 'id', description: 'Album ID', type: String, format: 'uuid' })
+  @ApiParam({ name: 'userId', description: 'User ID (use "me" to leave shared album)', type: String })
   @Endpoint({
     summary: 'Remove user from album',
     description: 'Remove a user from an album. Use an ID of "me" to leave a shared album.',

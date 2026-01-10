@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AssetStatsDto, AssetStatsResponseDto } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -24,6 +24,7 @@ export class UserAdminController {
 
   @Get()
   @Authenticated({ permission: Permission.AdminUserRead, admin: true })
+  @ApiQuery({ name: 'dto', description: 'User search filters', type: UserAdminSearchDto, required: false })
   @Endpoint({
     summary: 'Search users',
     description: 'Search for users.',
@@ -35,6 +36,7 @@ export class UserAdminController {
 
   @Post()
   @Authenticated({ permission: Permission.AdminUserCreate, admin: true })
+  @ApiBody({ description: 'User creation data', type: UserAdminCreateDto })
   @Endpoint({
     summary: 'Create a user',
     description: 'Create a new user.',
@@ -46,6 +48,7 @@ export class UserAdminController {
 
   @Get(':id')
   @Authenticated({ permission: Permission.AdminUserRead, admin: true })
+  @ApiParam({ name: 'id', description: 'User ID', type: String, format: 'uuid' })
   @Endpoint({
     summary: 'Retrieve a user',
     description: 'Retrieve  a specific user by their ID.',
@@ -57,6 +60,8 @@ export class UserAdminController {
 
   @Put(':id')
   @Authenticated({ permission: Permission.AdminUserUpdate, admin: true })
+  @ApiParam({ name: 'id', description: 'User ID', type: String, format: 'uuid' })
+  @ApiBody({ description: 'User update data', type: UserAdminUpdateDto })
   @Endpoint({
     summary: 'Update a user',
     description: 'Update an existing user.',
@@ -72,6 +77,8 @@ export class UserAdminController {
 
   @Delete(':id')
   @Authenticated({ permission: Permission.AdminUserDelete, admin: true })
+  @ApiParam({ name: 'id', description: 'User ID', type: String, format: 'uuid' })
+  @ApiBody({ description: 'User deletion options', type: UserAdminDeleteDto })
   @Endpoint({
     summary: 'Delete a user',
     description: 'Delete a user.',
@@ -87,6 +94,7 @@ export class UserAdminController {
 
   @Get(':id/sessions')
   @Authenticated({ permission: Permission.AdminSessionRead, admin: true })
+  @ApiParam({ name: 'id', description: 'User ID', type: String, format: 'uuid' })
   @Endpoint({
     summary: 'Retrieve user sessions',
     description: 'Retrieve all sessions for a specific user.',
@@ -98,6 +106,8 @@ export class UserAdminController {
 
   @Get(':id/statistics')
   @Authenticated({ permission: Permission.AdminUserRead, admin: true })
+  @ApiParam({ name: 'id', description: 'User ID', type: String, format: 'uuid' })
+  @ApiQuery({ name: 'dto', description: 'Statistics filters', type: AssetStatsDto, required: false })
   @Endpoint({
     summary: 'Retrieve user statistics',
     description: 'Retrieve asset statistics for a specific user.',
@@ -113,6 +123,7 @@ export class UserAdminController {
 
   @Get(':id/preferences')
   @Authenticated({ permission: Permission.AdminUserRead, admin: true })
+  @ApiParam({ name: 'id', description: 'User ID', type: String, format: 'uuid' })
   @Endpoint({
     summary: 'Retrieve user preferences',
     description: 'Retrieve the preferences of a specific user.',
@@ -124,6 +135,8 @@ export class UserAdminController {
 
   @Put(':id/preferences')
   @Authenticated({ permission: Permission.AdminUserUpdate, admin: true })
+  @ApiParam({ name: 'id', description: 'User ID', type: String, format: 'uuid' })
+  @ApiBody({ description: 'User preferences update data', type: UserPreferencesUpdateDto })
   @Endpoint({
     summary: 'Update user preferences',
     description: 'Update the preferences of a specific user.',
@@ -140,6 +153,7 @@ export class UserAdminController {
   @Post(':id/restore')
   @Authenticated({ permission: Permission.AdminUserDelete, admin: true })
   @HttpCode(HttpStatus.OK)
+  @ApiParam({ name: 'id', description: 'User ID', type: String, format: 'uuid' })
   @Endpoint({
     summary: 'Restore a deleted user',
     description: 'Restore a previously deleted user.',

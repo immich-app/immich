@@ -13,7 +13,7 @@ import {
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
-import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiConsumes, ApiParam, ApiTags } from '@nestjs/swagger';
 import { NextFunction, Response } from 'express';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -62,6 +62,7 @@ export class UserController {
 
   @Put('me')
   @Authenticated({ permission: Permission.UserUpdate })
+  @ApiBody({ description: 'User update data', type: UserUpdateMeDto })
   @Endpoint({
     summary: 'Update current user',
     description: 'Update the current user making teh API request.',
@@ -84,6 +85,7 @@ export class UserController {
 
   @Put('me/preferences')
   @Authenticated({ permission: Permission.UserPreferenceUpdate })
+  @ApiBody({ description: 'User preferences update data', type: UserPreferencesUpdateDto })
   @Endpoint({
     summary: 'Update my preferences',
     description: 'Update the preferences of the current user.',
@@ -109,6 +111,7 @@ export class UserController {
 
   @Put('me/license')
   @Authenticated({ permission: Permission.UserLicenseUpdate })
+  @ApiBody({ description: 'Product key to register', type: LicenseKeyDto })
   @Endpoint({
     summary: 'Set user product key',
     description: 'Register a product key for the current user.',
@@ -143,6 +146,7 @@ export class UserController {
 
   @Put('me/onboarding')
   @Authenticated({ permission: Permission.UserOnboardingUpdate })
+  @ApiBody({ description: 'Onboarding status update', type: OnboardingDto })
   @Endpoint({
     summary: 'Update user onboarding',
     description: 'Update the onboarding status of the current user.',
@@ -166,6 +170,7 @@ export class UserController {
 
   @Get(':id')
   @Authenticated({ permission: Permission.UserRead })
+  @ApiParam({ name: 'id', description: 'User ID', type: String, format: 'uuid' })
   @Endpoint({
     summary: 'Retrieve a user',
     description: 'Retrieve a specific user by their ID.',
@@ -207,6 +212,7 @@ export class UserController {
   @Get(':id/profile-image')
   @FileResponse()
   @Authenticated({ permission: Permission.UserProfileImageRead })
+  @ApiParam({ name: 'id', description: 'User ID', type: String, format: 'uuid' })
   @Endpoint({
     summary: 'Retrieve user profile image',
     description: 'Retrieve the profile image file for a user.',

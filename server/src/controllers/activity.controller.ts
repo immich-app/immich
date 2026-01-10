@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Query, Res } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import {
@@ -22,6 +22,7 @@ export class ActivityController {
 
   @Get()
   @Authenticated({ permission: Permission.ActivityRead })
+  @ApiQuery({ name: 'dto', description: 'Search filters for activities', type: ActivitySearchDto, required: false })
   @Endpoint({
     summary: 'List all activities',
     description:
@@ -34,6 +35,7 @@ export class ActivityController {
 
   @Post()
   @Authenticated({ permission: Permission.ActivityCreate })
+  @ApiBody({ description: 'Activity data (like or comment)', type: ActivityCreateDto })
   @Endpoint({
     summary: 'Create an activity',
     description: 'Create a like or a comment for an album, or an asset in an album.',
@@ -53,6 +55,7 @@ export class ActivityController {
 
   @Get('statistics')
   @Authenticated({ permission: Permission.ActivityStatistics })
+  @ApiQuery({ name: 'dto', description: 'Album or asset filters', type: ActivityDto, required: false })
   @Endpoint({
     summary: 'Retrieve activity statistics',
     description: 'Returns the number of likes and comments for a given album or asset in an album.',
@@ -65,6 +68,7 @@ export class ActivityController {
   @Delete(':id')
   @Authenticated({ permission: Permission.ActivityDelete })
   @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiParam({ name: 'id', description: 'Activity ID to delete', type: String, format: 'uuid' })
   @Endpoint({
     summary: 'Delete an activity',
     description: 'Removes a like or comment from a given album or asset in an album.',

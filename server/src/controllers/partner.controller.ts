@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { PartnerCreateDto, PartnerResponseDto, PartnerSearchDto, PartnerUpdateDto } from 'src/dtos/partner.dto';
@@ -15,6 +15,7 @@ export class PartnerController {
 
   @Get()
   @Authenticated({ permission: Permission.PartnerRead })
+  @ApiQuery({ name: 'dto', description: 'Partner search filters', type: PartnerSearchDto, required: false })
   @Endpoint({
     summary: 'Retrieve partners',
     description: 'Retrieve a list of partners with whom assets are shared.',
@@ -26,6 +27,7 @@ export class PartnerController {
 
   @Post()
   @Authenticated({ permission: Permission.PartnerCreate })
+  @ApiBody({ description: 'Partner creation data', type: PartnerCreateDto })
   @Endpoint({
     summary: 'Create a partner',
     description: 'Create a new partner to share assets with.',
@@ -42,12 +44,15 @@ export class PartnerController {
     history: new HistoryBuilder().added('v1').deprecated('v1', { replacementId: 'createPartner' }),
   })
   @Authenticated({ permission: Permission.PartnerCreate })
+  @ApiParam({ name: 'id', description: 'User ID to share with', type: String, format: 'uuid' })
   createPartnerDeprecated(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<PartnerResponseDto> {
     return this.service.create(auth, { sharedWithId: id });
   }
 
   @Put(':id')
   @Authenticated({ permission: Permission.PartnerUpdate })
+  @ApiParam({ name: 'id', description: 'Partner ID', type: String, format: 'uuid' })
+  @ApiBody({ description: 'Partner update data', type: PartnerUpdateDto })
   @Endpoint({
     summary: 'Update a partner',
     description: "Specify whether a partner's assets should appear in the user's timeline.",
@@ -64,6 +69,7 @@ export class PartnerController {
   @Delete(':id')
   @Authenticated({ permission: Permission.PartnerDelete })
   @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiParam({ name: 'id', description: 'Partner ID', type: String, format: 'uuid' })
   @Endpoint({
     summary: 'Remove a partner',
     description: 'Stop sharing assets with a partner.',

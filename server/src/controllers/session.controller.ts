@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiParam, ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { SessionCreateDto, SessionCreateResponseDto, SessionResponseDto, SessionUpdateDto } from 'src/dtos/session.dto';
@@ -15,6 +15,7 @@ export class SessionController {
 
   @Post()
   @Authenticated({ permission: Permission.SessionCreate })
+  @ApiBody({ description: 'Session creation data', type: SessionCreateDto })
   @Endpoint({
     summary: 'Create a session',
     description: 'Create a session as a child to the current session. This endpoint is used for casting.',
@@ -49,6 +50,8 @@ export class SessionController {
 
   @Put(':id')
   @Authenticated({ permission: Permission.SessionUpdate })
+  @ApiParam({ name: 'id', description: 'Session ID', type: String, format: 'uuid' })
+  @ApiBody({ description: 'Session update data', type: SessionUpdateDto })
   @Endpoint({
     summary: 'Update a session',
     description: 'Update a specific session identified by id.',
@@ -65,6 +68,7 @@ export class SessionController {
   @Delete(':id')
   @Authenticated({ permission: Permission.SessionDelete })
   @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiParam({ name: 'id', description: 'Session ID', type: String, format: 'uuid' })
   @Endpoint({
     summary: 'Delete a session',
     description: 'Delete a specific session by id.',
@@ -77,6 +81,7 @@ export class SessionController {
   @Post(':id/lock')
   @Authenticated({ permission: Permission.SessionLock })
   @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiParam({ name: 'id', description: 'Session ID', type: String, format: 'uuid' })
   @Endpoint({
     summary: 'Lock a session',
     description: 'Lock a specific session by id.',

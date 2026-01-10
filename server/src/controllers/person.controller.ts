@@ -12,7 +12,7 @@ import {
   Query,
   Res,
 } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { NextFunction, Response } from 'express';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
@@ -47,6 +47,7 @@ export class PersonController {
 
   @Get()
   @Authenticated({ permission: Permission.PersonRead })
+  @ApiQuery({ name: 'options', description: 'Search filters for people', type: PersonSearchDto, required: false })
   @Endpoint({
     summary: 'Get all people',
     description: 'Retrieve a list of all people.',
@@ -58,6 +59,7 @@ export class PersonController {
 
   @Post()
   @Authenticated({ permission: Permission.PersonCreate })
+  @ApiBody({ description: 'Person creation data', type: PersonCreateDto })
   @Endpoint({
     summary: 'Create a person',
     description: 'Create a new person that can have multiple faces assigned to them.',
@@ -69,6 +71,7 @@ export class PersonController {
 
   @Put()
   @Authenticated({ permission: Permission.PersonUpdate })
+  @ApiBody({ description: 'Bulk person update data', type: PeopleUpdateDto })
   @Endpoint({
     summary: 'Update people',
     description: 'Bulk update multiple people at once.',
@@ -81,6 +84,7 @@ export class PersonController {
   @Delete()
   @Authenticated({ permission: Permission.PersonDelete })
   @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiBody({ description: 'Person IDs to delete', type: BulkIdsDto })
   @Endpoint({
     summary: 'Delete people',
     description: 'Bulk delete a list of people at once.',
@@ -92,6 +96,7 @@ export class PersonController {
 
   @Get(':id')
   @Authenticated({ permission: Permission.PersonRead })
+  @ApiParam({ name: 'id', description: 'Person ID', type: String, format: 'uuid' })
   @Endpoint({
     summary: 'Get a person',
     description: 'Retrieve a person by id.',
@@ -103,6 +108,8 @@ export class PersonController {
 
   @Put(':id')
   @Authenticated({ permission: Permission.PersonUpdate })
+  @ApiParam({ name: 'id', description: 'Person ID', type: String, format: 'uuid' })
+  @ApiBody({ description: 'Person update data', type: PersonUpdateDto })
   @Endpoint({
     summary: 'Update person',
     description: 'Update an individual person.',
@@ -119,6 +126,7 @@ export class PersonController {
   @Delete(':id')
   @Authenticated({ permission: Permission.PersonDelete })
   @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiParam({ name: 'id', description: 'Person ID', type: String, format: 'uuid' })
   @Endpoint({
     summary: 'Delete person',
     description: 'Delete an individual person.',
@@ -130,6 +138,7 @@ export class PersonController {
 
   @Get(':id/statistics')
   @Authenticated({ permission: Permission.PersonStatistics })
+  @ApiParam({ name: 'id', description: 'Person ID', type: String, format: 'uuid' })
   @Endpoint({
     summary: 'Get person statistics',
     description: 'Retrieve statistics about a specific person.',
@@ -142,6 +151,7 @@ export class PersonController {
   @Get(':id/thumbnail')
   @FileResponse()
   @Authenticated({ permission: Permission.PersonRead })
+  @ApiParam({ name: 'id', description: 'Person ID', type: String, format: 'uuid' })
   @Endpoint({
     summary: 'Get person thumbnail',
     description: 'Retrieve the thumbnail file for a person.',
@@ -158,6 +168,8 @@ export class PersonController {
 
   @Put(':id/reassign')
   @Authenticated({ permission: Permission.PersonReassign })
+  @ApiParam({ name: 'id', description: 'Target person ID', type: String, format: 'uuid' })
+  @ApiBody({ description: 'Faces to reassign', type: AssetFaceUpdateDto })
   @Endpoint({
     summary: 'Reassign faces',
     description: 'Bulk reassign a list of faces to a different person.',
@@ -174,6 +186,8 @@ export class PersonController {
   @Post(':id/merge')
   @Authenticated({ permission: Permission.PersonMerge })
   @HttpCode(HttpStatus.OK)
+  @ApiParam({ name: 'id', description: 'Target person ID to merge into', type: String, format: 'uuid' })
+  @ApiBody({ description: 'Person IDs to merge', type: MergePersonDto })
   @Endpoint({
     summary: 'Merge people',
     description: 'Merge a list of people into the person specified in the path parameter.',
