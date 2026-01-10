@@ -40,7 +40,7 @@ export class QueueJobSearchDto {
   status?: QueueJobStatus[];
 }
 export class QueueJobResponseDto {
-  @ApiPropertyOptional({ description: 'Job ID', type: String, format: 'uuid' })
+  @ApiPropertyOptional({ description: 'Job ID', type: String })
   id?: string;
 
   @ApiProperty({ description: 'Job name', enum: JobName })

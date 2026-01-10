@@ -50,7 +50,7 @@ class ExifResponseDto {
   String? description;
 
   /// Image height in pixels
-  int? exifImageHeight;
+  num? exifImageHeight;
 
   /// Image width in pixels
   num? exifImageWidth;
@@ -285,7 +285,9 @@ class ExifResponseDto {
         country: mapValueOfType<String>(json, r'country'),
         dateTimeOriginal: mapDateTime(json, r'dateTimeOriginal', r''),
         description: mapValueOfType<String>(json, r'description'),
-        exifImageHeight: mapValueOfType<int>(json, r'exifImageHeight'),
+        exifImageHeight: json[r'exifImageHeight'] == null
+            ? null
+            : num.parse('${json[r'exifImageHeight']}'),
         exifImageWidth: json[r'exifImageWidth'] == null
             ? null
             : num.parse('${json[r'exifImageWidth']}'),

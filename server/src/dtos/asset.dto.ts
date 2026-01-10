@@ -41,7 +41,7 @@ export class UpdateAssetBase {
   @ValidateEnum({ enum: AssetVisibility, name: 'AssetVisibility', optional: true })
   visibility?: AssetVisibility;
 
-  @ApiPropertyOptional({ description: 'Original date and time (ISO 8601)' })
+  @ApiPropertyOptional({ description: 'Original date and time' })
   @Optional()
   @IsDateString()
   dateTimeOriginal?: string;

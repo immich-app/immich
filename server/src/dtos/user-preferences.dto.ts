@@ -106,7 +106,7 @@ class PurchaseUpdate {
   @ValidateBoolean({ optional: true })
   showSupportBadge?: boolean;
 
-  @ApiPropertyOptional({ description: 'Date until which to hide buy button (ISO 8601 format)', type: String, format: 'date-time' })
+  @ApiPropertyOptional({ description: 'Date until which to hide buy button', type: String })
   @IsDateString()
   @Optional()
   hideBuyButtonUntil?: string;
@@ -259,7 +259,7 @@ class DownloadResponse {
 class PurchaseResponse {
   @ApiProperty({ description: 'Whether to show support badge', type: Boolean })
   showSupportBadge!: boolean;
-  @ApiProperty({ description: 'Date until which to hide buy button (ISO 8601 format)', type: String, format: 'date-time' })
+  @ApiProperty({ description: 'Date until which to hide buy button', type: String })
   hideBuyButtonUntil!: string;
 }
 

@@ -301,7 +301,7 @@ export type PeopleResponse = {
     sidebarWeb: boolean;
 };
 export type PurchaseResponse = {
-    /** Date until which to hide buy button (ISO 8601 format) */
+    /** Date until which to hide buy button */
     hideBuyButtonUntil: string;
     /** Whether to show support badge */
     showSupportBadge: boolean;
@@ -391,7 +391,7 @@ export type PeopleUpdate = {
     sidebarWeb?: boolean;
 };
 export type PurchaseUpdate = {
-    /** Date until which to hide buy button (ISO 8601 format) */
+    /** Date until which to hide buy button */
     hideBuyButtonUntil?: string;
     /** Whether to show support badge */
     showSupportBadge?: boolean;
@@ -846,7 +846,7 @@ export type AssetMediaResponseDto = {
     status: AssetMediaStatus;
 };
 export type AssetBulkUpdateDto = {
-    /** Original date and time (ISO 8601) */
+    /** Original date and time */
     dateTimeOriginal?: string;
     /** Relative time offset in seconds */
     dateTimeRelative?: number;
@@ -960,7 +960,7 @@ export type AssetMetadataBulkResponseDto = {
     value: object;
 };
 export type UpdateAssetDto = {
-    /** Original date and time (ISO 8601) */
+    /** Original date and time */
     dateTimeOriginal?: string;
     /** Asset description */
     description?: string;
@@ -2739,7 +2739,7 @@ export type TimeBucketAssetResponseDto = {
     country: (string | null)[];
     /** Array of video durations in HH:MM:SS format (null for images) */
     duration: (string | null)[];
-    /** Array of file creation timestamps in UTC (ISO 8601 format, without timezone) */
+    /** Array of file creation timestamps in UTC */
     fileCreatedAt: string[];
     /** Array of asset IDs in the time bucket */
     id: string[];

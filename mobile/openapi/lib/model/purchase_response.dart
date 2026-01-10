@@ -17,8 +17,8 @@ class PurchaseResponse {
     required this.showSupportBadge,
   });
 
-  /// Date until which to hide buy button (ISO 8601 format)
-  DateTime hideBuyButtonUntil;
+  /// Date until which to hide buy button
+  String hideBuyButtonUntil;
 
   /// Whether to show support badge
   bool showSupportBadge;
@@ -39,7 +39,7 @@ class PurchaseResponse {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'hideBuyButtonUntil'] = this.hideBuyButtonUntil.toUtc().toIso8601String();
+      json[r'hideBuyButtonUntil'] = this.hideBuyButtonUntil;
       json[r'showSupportBadge'] = this.showSupportBadge;
     return json;
   }
@@ -53,7 +53,7 @@ class PurchaseResponse {
       final json = value.cast<String, dynamic>();
 
       return PurchaseResponse(
-        hideBuyButtonUntil: mapDateTime(json, r'hideBuyButtonUntil', r'')!,
+        hideBuyButtonUntil: mapValueOfType<String>(json, r'hideBuyButtonUntil')!,
         showSupportBadge: mapValueOfType<bool>(json, r'showSupportBadge')!,
       );
     }

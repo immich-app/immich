@@ -15955,7 +15955,7 @@
       "AssetBulkUpdateDto": {
         "properties": {
           "dateTimeOriginal": {
-            "description": "Original date and time (ISO 8601)",
+            "description": "Original date and time",
             "type": "string"
           },
           "dateTimeRelative": {
@@ -18013,7 +18013,7 @@
             "default": null,
             "description": "Image height in pixels",
             "nullable": true,
-            "type": "integer"
+            "type": "number"
           },
           "exifImageWidth": {
             "default": null,
@@ -20406,8 +20406,7 @@
       "PurchaseResponse": {
         "properties": {
           "hideBuyButtonUntil": {
-            "description": "Date until which to hide buy button (ISO 8601 format)",
-            "format": "date-time",
+            "description": "Date until which to hide buy button",
             "type": "string"
           },
           "showSupportBadge": {
@@ -20424,8 +20423,7 @@
       "PurchaseUpdate": {
         "properties": {
           "hideBuyButtonUntil": {
-            "description": "Date until which to hide buy button (ISO 8601 format)",
-            "format": "date-time",
+            "description": "Date until which to hide buy button",
             "type": "string"
           },
           "showSupportBadge": {
@@ -20494,7 +20492,6 @@
           },
           "id": {
             "description": "Job ID",
-            "format": "uuid",
             "type": "string"
           },
           "name": {
@@ -21623,7 +21620,6 @@
           },
           "id": {
             "description": "Version history entry ID",
-            "format": "uuid",
             "type": "string"
           },
           "version": {
@@ -24845,7 +24841,7 @@
             "type": "array"
           },
           "fileCreatedAt": {
-            "description": "Array of file creation timestamps in UTC (ISO 8601 format, without timezone)",
+            "description": "Array of file creation timestamps in UTC",
             "items": {
               "type": "string"
             },
@@ -25089,7 +25085,7 @@
       "UpdateAssetDto": {
         "properties": {
           "dateTimeOriginal": {
-            "description": "Original date and time (ISO 8601)",
+            "description": "Original date and time",
             "type": "string"
           },
           "description": {
@@ -25187,7 +25183,6 @@
           },
           "userId": {
             "description": "User ID",
-            "format": "uuid",
             "type": "string"
           },
           "userName": {

@@ -104,7 +104,7 @@ export class ServerVersionResponseDto {
 }
 
 export class ServerVersionHistoryResponseDto {
-  @ApiProperty({ description: 'Version history entry ID', type: String, format: 'uuid' })
+  @ApiProperty({ description: 'Version history entry ID', type: String })
   id!: string;
   @ApiProperty({ description: 'When this version was first seen', type: String, format: 'date-time' })
   createdAt!: Date;
@@ -113,7 +113,7 @@ export class ServerVersionHistoryResponseDto {
 }
 
 export class UsageByUserDto {
-  @ApiProperty({ type: 'string', format: 'uuid', description: 'User ID' })
+  @ApiProperty({ type: 'string', description: 'User ID' })
   userId!: string;
   @ApiProperty({ type: 'string', description: 'User name' })
   userName!: string;
