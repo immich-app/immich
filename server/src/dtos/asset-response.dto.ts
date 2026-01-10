@@ -44,7 +44,9 @@ export class SanitizedAssetResponseDto {
   livePhotoVideoId?: string | null;
   @ApiProperty({ description: 'Whether asset has metadata' })
   hasMetadata!: boolean;
+  @ApiPropertyOptional({ description: 'Asset width', nullable: true })
   width!: number | null;
+  @ApiPropertyOptional({ description: 'Asset height', nullable: true })
   height!: number | null;
 }
 
