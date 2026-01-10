@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, Header, HttpCode, HttpStatus, Post, Res } from '@nestjs/common';
-import { ApiBody, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
@@ -30,6 +30,7 @@ export class SyncController {
   @Authenticated()
   @HttpCode(HttpStatus.OK)
   @ApiBody({ description: 'Full sync request data', type: AssetFullSyncDto })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Successfully retrieved full sync', type: [AssetResponseDto] })
   @Endpoint({
     summary: 'Get full sync for user',
     description: 'Retrieve all assets for a full synchronization for the authenticated user.',
@@ -43,6 +44,11 @@ export class SyncController {
   @Authenticated()
   @HttpCode(HttpStatus.OK)
   @ApiBody({ description: 'Delta sync request data', type: AssetDeltaSyncDto })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Successfully retrieved delta sync',
+    type: AssetDeltaSyncResponseDto,
+  })
   @Endpoint({
     summary: 'Get delta sync for user',
     description: 'Retrieve changed assets since the last sync for the authenticated user.',
@@ -57,6 +63,7 @@ export class SyncController {
   @Header('Content-Type', 'application/jsonlines+json')
   @HttpCode(HttpStatus.OK)
   @ApiBody({ description: 'Sync stream request data', type: SyncStreamDto })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Successfully streamed sync changes' })
   @Endpoint({
     summary: 'Stream sync changes',
     description:
@@ -74,6 +81,7 @@ export class SyncController {
 
   @Get('ack')
   @Authenticated({ permission: Permission.SyncCheckpointRead })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Successfully retrieved acknowledgements', type: [SyncAckDto] })
   @Endpoint({
     summary: 'Retrieve acknowledgements',
     description: 'Retrieve the synchronization acknowledgments for the current session.',
@@ -87,6 +95,7 @@ export class SyncController {
   @Authenticated({ permission: Permission.SyncCheckpointUpdate })
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiBody({ description: 'Synchronization acknowledgements', type: SyncAckSetDto })
+  @ApiResponse({ status: HttpStatus.NO_CONTENT, description: 'Acknowledgements set successfully' })
   @Endpoint({
     summary: 'Acknowledge changes',
     description:
@@ -101,6 +110,7 @@ export class SyncController {
   @Authenticated({ permission: Permission.SyncCheckpointDelete })
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiBody({ description: 'Acknowledgement IDs to delete', type: SyncAckDeleteDto })
+  @ApiResponse({ status: HttpStatus.NO_CONTENT, description: 'Acknowledgements deleted successfully' })
   @Endpoint({
     summary: 'Delete acknowledgements',
     description: 'Delete specific synchronization acknowledgments.',

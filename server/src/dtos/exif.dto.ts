@@ -1,6 +1,7 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional, ApiSchema } from '@nestjs/swagger';
 import { Exif } from 'src/database';
 
+@ApiSchema({ description: 'EXIF metadata response with camera details' })
 export class ExifResponseDto {
   @ApiPropertyOptional({ description: 'Camera make', nullable: true })
   make?: string | null = null;

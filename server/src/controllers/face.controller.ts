@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
-import { ApiBody, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
@@ -25,6 +25,7 @@ export class FaceController {
     description: 'Face creation data including asset ID, person ID, image dimensions, and bounding box coordinates',
     type: AssetFaceCreateDto,
   })
+  @ApiResponse({ status: HttpStatus.CREATED, description: 'Face created successfully' })
   @Endpoint({
     summary: 'Create a face',
     description:
@@ -43,6 +44,11 @@ export class FaceController {
     type: String,
     format: 'uuid',
     required: true,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Successfully retrieved faces for asset',
+    type: [AssetFaceResponseDto],
   })
   @Endpoint({
     summary: 'Retrieve faces for asset',
@@ -65,6 +71,7 @@ export class FaceController {
     description: 'Face ID to be reassigned to the person',
     type: FaceDto,
   })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Face reassigned successfully', type: PersonResponseDto })
   @Endpoint({
     summary: 'Re-assign a face to another person',
     description: 'Re-assign the face provided in the body to the person identified by the id in the path parameter.',
@@ -91,6 +98,7 @@ export class FaceController {
     description: 'Delete options including force flag',
     type: AssetFaceDeleteDto,
   })
+  @ApiResponse({ status: HttpStatus.NO_CONTENT, description: 'Face deleted successfully' })
   @Endpoint({
     summary: 'Delete a face',
     description: 'Delete a face identified by the id. Optionally can be force deleted.',

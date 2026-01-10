@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Put, Query } from '@nestjs/common';
-import { ApiBody, ApiParam, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import {
   AddUsersDto,
@@ -27,6 +27,7 @@ export class AlbumController {
 
   @Get()
   @Authenticated({ permission: Permission.AlbumRead })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Successfully retrieved albums', type: [AlbumResponseDto] })
   @Endpoint({
     summary: 'List all albums',
     description: 'Retrieve a list of albums available to the authenticated user.',
@@ -39,6 +40,7 @@ export class AlbumController {
   @Post()
   @Authenticated({ permission: Permission.AlbumCreate })
   @ApiBody({ description: 'Album creation data', type: CreateAlbumDto })
+  @ApiResponse({ status: HttpStatus.CREATED, description: 'Album created successfully', type: AlbumResponseDto })
   @Endpoint({
     summary: 'Create an album',
     description: 'Create a new album. The album can also be created with initial users and assets.',
@@ -50,6 +52,11 @@ export class AlbumController {
 
   @Get('statistics')
   @Authenticated({ permission: Permission.AlbumStatistics })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Successfully retrieved album statistics',
+    type: AlbumStatisticsResponseDto,
+  })
   @Endpoint({
     summary: 'Retrieve album statistics',
     description: 'Returns statistics about the albums available to the authenticated user.',
@@ -62,6 +69,7 @@ export class AlbumController {
   @Authenticated({ permission: Permission.AlbumRead, sharedLink: true })
   @Get(':id')
   @ApiParam({ name: 'id', description: 'Album ID', type: String, format: 'uuid' })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Successfully retrieved album', type: AlbumResponseDto })
   @Endpoint({
     summary: 'Retrieve an album',
     description: 'Retrieve information about a specific album by its ID.',
@@ -79,6 +87,7 @@ export class AlbumController {
   @Authenticated({ permission: Permission.AlbumUpdate })
   @ApiParam({ name: 'id', description: 'Album ID', type: String, format: 'uuid' })
   @ApiBody({ description: 'Album update data', type: UpdateAlbumDto })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Album updated successfully', type: AlbumResponseDto })
   @Endpoint({
     summary: 'Update an album',
     description:
@@ -97,6 +106,7 @@ export class AlbumController {
   @Authenticated({ permission: Permission.AlbumDelete })
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiParam({ name: 'id', description: 'Album ID', type: String, format: 'uuid' })
+  @ApiResponse({ status: HttpStatus.NO_CONTENT, description: 'Album deleted successfully' })
   @Endpoint({
     summary: 'Delete an album',
     description:
@@ -111,6 +121,7 @@ export class AlbumController {
   @Authenticated({ permission: Permission.AlbumAssetCreate, sharedLink: true })
   @ApiParam({ name: 'id', description: 'Album ID', type: String, format: 'uuid' })
   @ApiBody({ description: 'Asset IDs to add', type: BulkIdsDto })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Assets added to album successfully', type: [BulkIdResponseDto] })
   @Endpoint({
     summary: 'Add assets to an album',
     description: 'Add multiple assets to a specific album by its ID.',
@@ -127,6 +138,11 @@ export class AlbumController {
   @Put('assets')
   @Authenticated({ permission: Permission.AlbumAssetCreate, sharedLink: true })
   @ApiBody({ description: 'Asset and album IDs mapping', type: AlbumsAddAssetsDto })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Assets added to albums successfully',
+    type: AlbumsAddAssetsResponseDto,
+  })
   @Endpoint({
     summary: 'Add assets to albums',
     description: 'Send a list of asset IDs and album IDs to add each asset to each album.',
@@ -140,6 +156,11 @@ export class AlbumController {
   @Authenticated({ permission: Permission.AlbumAssetDelete })
   @ApiParam({ name: 'id', description: 'Album ID', type: String, format: 'uuid' })
   @ApiBody({ description: 'Asset IDs to remove', type: BulkIdsDto })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Assets removed from album successfully',
+    type: [BulkIdResponseDto],
+  })
   @Endpoint({
     summary: 'Remove assets from an album',
     description: 'Remove multiple assets from a specific album by its ID.',
@@ -157,6 +178,7 @@ export class AlbumController {
   @Authenticated({ permission: Permission.AlbumUserCreate })
   @ApiParam({ name: 'id', description: 'Album ID', type: String, format: 'uuid' })
   @ApiBody({ description: 'Users to share with and their roles', type: AddUsersDto })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Users added to album successfully', type: AlbumResponseDto })
   @Endpoint({
     summary: 'Share album with users',
     description: 'Share an album with multiple users. Each user can be given a specific role in the album.',
@@ -176,6 +198,7 @@ export class AlbumController {
   @ApiParam({ name: 'id', description: 'Album ID', type: String, format: 'uuid' })
   @ApiParam({ name: 'userId', description: 'User ID (use "me" for current user)', type: String })
   @ApiBody({ description: 'Updated user role', type: UpdateAlbumUserDto })
+  @ApiResponse({ status: HttpStatus.NO_CONTENT, description: 'User role updated successfully' })
   @Endpoint({
     summary: 'Update user role',
     description: 'Change the role for a specific user in a specific album.',
@@ -195,6 +218,7 @@ export class AlbumController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiParam({ name: 'id', description: 'Album ID', type: String, format: 'uuid' })
   @ApiParam({ name: 'userId', description: 'User ID (use "me" to leave shared album)', type: String })
+  @ApiResponse({ status: HttpStatus.NO_CONTENT, description: 'User removed from album successfully' })
   @Endpoint({
     summary: 'Remove user from album',
     description: 'Remove a user from an album. Use an ID of "me" to leave a shared album.',

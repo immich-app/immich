@@ -150,6 +150,7 @@ export class AssetMediaController {
   @Authenticated({ permission: Permission.AssetView, sharedLink: true })
   @ApiParam({ name: 'id', description: 'Asset ID', type: String, format: 'uuid' })
   @ApiQuery({ name: 'size', description: 'Asset media size', type: String, required: false })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Successfully retrieved asset thumbnail' })
   @Endpoint({
     summary: 'View asset thumbnail',
     description:
@@ -215,7 +216,6 @@ export class AssetMediaController {
     description: 'Checks if multiple assets exist on the server and returns all existing - used by background backup',
     history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
-  @HttpCode(HttpStatus.OK)
   checkExistingAssets(
     @Auth() auth: AuthDto,
     @Body() dto: CheckExistingAssetsDto,
@@ -226,12 +226,17 @@ export class AssetMediaController {
   @Post('bulk-upload-check')
   @Authenticated({ permission: Permission.AssetUpload })
   @ApiBody({ description: 'SHA1 checksums to check', type: AssetBulkUploadCheckDto })
+  @HttpCode(HttpStatus.OK)
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Successfully checked bulk upload',
+    type: AssetBulkUploadCheckResponseDto,
+  })
   @Endpoint({
     summary: 'Check bulk upload',
     description: 'Determine which assets have already been uploaded to the server based on their SHA1 checksums.',
     history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
-  @HttpCode(HttpStatus.OK)
   checkBulkUpload(
     @Auth() auth: AuthDto,
     @Body() dto: AssetBulkUploadCheckDto,

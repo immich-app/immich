@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
-import { ApiBody, ApiParam, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import {
@@ -34,6 +34,7 @@ export class AssetController {
 
   @Get('random')
   @Authenticated({ permission: Permission.AssetRead })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Successfully retrieved random assets', type: [AssetResponseDto] })
   @Endpoint({
     summary: 'Get random assets',
     description: 'Retrieve a specified number of random assets for the authenticated user.',
@@ -44,6 +45,7 @@ export class AssetController {
   }
 
   @Get('/device/:deviceId')
+  @ApiResponse({ status: HttpStatus.OK, description: 'Successfully retrieved asset IDs by device', type: [String] })
   @Endpoint({
     summary: 'Retrieve assets by device ID',
     description: 'Get all asset of a device that are in the database, ID only.',
@@ -57,6 +59,11 @@ export class AssetController {
 
   @Get('statistics')
   @Authenticated({ permission: Permission.AssetStatistics })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Successfully retrieved asset statistics',
+    type: AssetStatsResponseDto,
+  })
   @Endpoint({
     summary: 'Get asset statistics',
     description: 'Retrieve various statistics about the assets owned by the authenticated user.',
@@ -70,6 +77,7 @@ export class AssetController {
   @Authenticated({ permission: Permission.JobCreate })
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiBody({ description: 'Job type and asset IDs', type: AssetJobsDto })
+  @ApiResponse({ status: HttpStatus.NO_CONTENT, description: 'Asset job started successfully' })
   @Endpoint({
     summary: 'Run an asset job',
     description: 'Run a specific job on a set of assets.',
@@ -83,6 +91,7 @@ export class AssetController {
   @Authenticated({ permission: Permission.AssetUpdate })
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiBody({ description: 'Bulk asset update data', type: AssetBulkUpdateDto })
+  @ApiResponse({ status: HttpStatus.NO_CONTENT, description: 'Assets updated successfully' })
   @Endpoint({
     summary: 'Update assets',
     description: 'Updates multiple assets at the same time.',
@@ -96,6 +105,7 @@ export class AssetController {
   @Authenticated({ permission: Permission.AssetDelete })
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiBody({ description: 'Asset IDs to delete', type: AssetBulkDeleteDto })
+  @ApiResponse({ status: HttpStatus.NO_CONTENT, description: 'Assets deleted successfully' })
   @Endpoint({
     summary: 'Delete assets',
     description: 'Deletes multiple assets at the same time.',
@@ -108,6 +118,7 @@ export class AssetController {
   @Get(':id')
   @Authenticated({ permission: Permission.AssetRead, sharedLink: true })
   @ApiParam({ name: 'id', description: 'Asset ID', type: String, format: 'uuid' })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Successfully retrieved asset', type: AssetResponseDto })
   @Endpoint({
     summary: 'Retrieve an asset',
     description: 'Retrieve detailed information about a specific asset.',
@@ -121,6 +132,7 @@ export class AssetController {
   @Authenticated({ permission: Permission.AssetCopy })
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiBody({ description: 'Source and target asset IDs', type: AssetCopyDto })
+  @ApiResponse({ status: HttpStatus.NO_CONTENT, description: 'Asset copied successfully' })
   @Endpoint({
     summary: 'Copy asset',
     description: 'Copy asset information like albums, tags, etc. from one asset to another.',
@@ -133,6 +145,11 @@ export class AssetController {
   @Put('metadata')
   @Authenticated({ permission: Permission.AssetUpdate })
   @ApiBody({ description: 'Bulk metadata updates', type: AssetMetadataBulkUpsertDto })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Asset metadata updated successfully',
+    type: [AssetMetadataBulkResponseDto],
+  })
   @Endpoint({
     summary: 'Upsert asset metadata',
     description: 'Upsert metadata key-value pairs for multiple assets.',
@@ -149,6 +166,7 @@ export class AssetController {
   @Authenticated({ permission: Permission.AssetUpdate })
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiBody({ description: 'Metadata keys and asset IDs to delete', type: AssetMetadataBulkDeleteDto })
+  @ApiResponse({ status: HttpStatus.NO_CONTENT, description: 'Asset metadata deleted successfully' })
   @Endpoint({
     summary: 'Delete asset metadata',
     description: 'Delete metadata key-value pairs for multiple assets.',
@@ -162,6 +180,7 @@ export class AssetController {
   @Authenticated({ permission: Permission.AssetUpdate })
   @ApiParam({ name: 'id', description: 'Asset ID', type: String, format: 'uuid' })
   @ApiBody({ description: 'Asset update data', type: UpdateAssetDto })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Asset updated successfully', type: AssetResponseDto })
   @Endpoint({
     summary: 'Update an asset',
     description: 'Update information of a specific asset.',
@@ -178,6 +197,11 @@ export class AssetController {
   @Get(':id/metadata')
   @Authenticated({ permission: Permission.AssetRead })
   @ApiParam({ name: 'id', description: 'Asset ID', type: String, format: 'uuid' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Successfully retrieved asset metadata',
+    type: [AssetMetadataResponseDto],
+  })
   @Endpoint({
     summary: 'Get asset metadata',
     description: 'Retrieve all metadata key-value pairs associated with the specified asset.',
@@ -190,6 +214,11 @@ export class AssetController {
   @Get(':id/ocr')
   @Authenticated({ permission: Permission.AssetRead })
   @ApiParam({ name: 'id', description: 'Asset ID', type: String, format: 'uuid' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Successfully retrieved asset OCR data',
+    type: [AssetOcrResponseDto],
+  })
   @Endpoint({
     summary: 'Retrieve asset OCR data',
     description: 'Retrieve all OCR (Optical Character Recognition) data associated with the specified asset.',
@@ -203,6 +232,11 @@ export class AssetController {
   @Authenticated({ permission: Permission.AssetUpdate })
   @ApiParam({ name: 'id', description: 'Asset ID', type: String, format: 'uuid' })
   @ApiBody({ description: 'Metadata key-value pairs', type: AssetMetadataUpsertDto })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Asset metadata updated successfully',
+    type: [AssetMetadataResponseDto],
+  })
   @Endpoint({
     summary: 'Update asset metadata',
     description: 'Update or add metadata key-value pairs for the specified asset.',
@@ -220,6 +254,11 @@ export class AssetController {
   @Authenticated({ permission: Permission.AssetRead })
   @ApiParam({ name: 'id', description: 'Asset ID', type: String, format: 'uuid' })
   @ApiParam({ name: 'key', description: 'Metadata key', type: String })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Successfully retrieved asset metadata by key',
+    type: AssetMetadataResponseDto,
+  })
   @Endpoint({
     summary: 'Retrieve asset metadata by key',
     description: 'Retrieve the value of a specific metadata key associated with the specified asset.',
@@ -237,6 +276,7 @@ export class AssetController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiParam({ name: 'id', description: 'Asset ID', type: String, format: 'uuid' })
   @ApiParam({ name: 'key', description: 'Metadata key to delete', type: String })
+  @ApiResponse({ status: HttpStatus.NO_CONTENT, description: 'Asset metadata deleted successfully' })
   @Endpoint({
     summary: 'Delete asset metadata by key',
     description: 'Delete a specific metadata key-value pair associated with the specified asset.',
@@ -249,6 +289,7 @@ export class AssetController {
   @Get(':id/edits')
   @Authenticated({ permission: Permission.AssetEditGet })
   @ApiParam({ name: 'id', description: 'Asset ID', type: String, format: 'uuid' })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Successfully retrieved asset edits', type: AssetEditsDto })
   @Endpoint({
     summary: 'Retrieve edits for an existing asset',
     description: 'Retrieve a series of edit actions (crop, rotate, mirror) associated with the specified asset.',
@@ -262,6 +303,7 @@ export class AssetController {
   @Authenticated({ permission: Permission.AssetEditCreate })
   @ApiParam({ name: 'id', description: 'Asset ID', type: String, format: 'uuid' })
   @ApiBody({ description: 'List of edit actions (crop, rotate, mirror) to apply', type: AssetEditActionListDto })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Asset edits applied successfully', type: AssetEditsDto })
   @Endpoint({
     summary: 'Apply edits to an existing asset',
     description: 'Apply a series of edit actions (crop, rotate, mirror) to the specified asset.',
@@ -279,6 +321,7 @@ export class AssetController {
   @Authenticated({ permission: Permission.AssetEditDelete })
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiParam({ name: 'id', description: 'Asset ID', type: String, format: 'uuid' })
+  @ApiResponse({ status: HttpStatus.NO_CONTENT, description: 'Asset edits removed successfully' })
   @Endpoint({
     summary: 'Remove edits from an existing asset',
     description: 'Removes all edit actions (crop, rotate, mirror) associated with the specified asset.',

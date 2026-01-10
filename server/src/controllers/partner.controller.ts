@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
-import { ApiBody, ApiParam, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { PartnerCreateDto, PartnerResponseDto, PartnerSearchDto, PartnerUpdateDto } from 'src/dtos/partner.dto';
@@ -15,6 +15,7 @@ export class PartnerController {
 
   @Get()
   @Authenticated({ permission: Permission.PartnerRead })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Successfully retrieved partners', type: [PartnerResponseDto] })
   @Endpoint({
     summary: 'Retrieve partners',
     description: 'Retrieve a list of partners with whom assets are shared.',
@@ -27,6 +28,7 @@ export class PartnerController {
   @Post()
   @Authenticated({ permission: Permission.PartnerCreate })
   @ApiBody({ description: 'Partner creation data', type: PartnerCreateDto })
+  @ApiResponse({ status: HttpStatus.CREATED, description: 'Partner created successfully', type: PartnerResponseDto })
   @Endpoint({
     summary: 'Create a partner',
     description: 'Create a new partner to share assets with.',
@@ -44,6 +46,7 @@ export class PartnerController {
   })
   @Authenticated({ permission: Permission.PartnerCreate })
   @ApiParam({ name: 'id', description: 'User ID to share with', type: String, format: 'uuid' })
+  @ApiResponse({ status: HttpStatus.CREATED, description: 'Partner created successfully', type: PartnerResponseDto })
   createPartnerDeprecated(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<PartnerResponseDto> {
     return this.service.create(auth, { sharedWithId: id });
   }
@@ -52,6 +55,7 @@ export class PartnerController {
   @Authenticated({ permission: Permission.PartnerUpdate })
   @ApiParam({ name: 'id', description: 'Partner ID', type: String, format: 'uuid' })
   @ApiBody({ description: 'Partner update data', type: PartnerUpdateDto })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Partner updated successfully', type: PartnerResponseDto })
   @Endpoint({
     summary: 'Update a partner',
     description: "Specify whether a partner's assets should appear in the user's timeline.",
@@ -69,6 +73,7 @@ export class PartnerController {
   @Authenticated({ permission: Permission.PartnerDelete })
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiParam({ name: 'id', description: 'Partner ID', type: String, format: 'uuid' })
+  @ApiResponse({ status: HttpStatus.NO_CONTENT, description: 'Partner removed successfully' })
   @Endpoint({
     summary: 'Remove a partner',
     description: 'Stop sharing assets with a partner.',

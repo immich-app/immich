@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put } from '@nestjs/common';
-import { ApiBody, ApiParam, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import {
   CreateLibraryDto,
@@ -21,6 +21,7 @@ export class LibraryController {
 
   @Get()
   @Authenticated({ permission: Permission.LibraryRead, admin: true })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Successfully retrieved libraries', type: [LibraryResponseDto] })
   @Endpoint({
     summary: 'Retrieve libraries',
     description: 'Retrieve a list of external libraries.',
@@ -33,6 +34,7 @@ export class LibraryController {
   @Post()
   @Authenticated({ permission: Permission.LibraryCreate, admin: true })
   @ApiBody({ description: 'Library creation data', type: CreateLibraryDto })
+  @ApiResponse({ status: HttpStatus.CREATED, description: 'Library created successfully', type: LibraryResponseDto })
   @Endpoint({
     summary: 'Create a library',
     description: 'Create a new external library.',
@@ -45,6 +47,7 @@ export class LibraryController {
   @Get(':id')
   @Authenticated({ permission: Permission.LibraryRead, admin: true })
   @ApiParam({ name: 'id', description: 'Library ID', type: String, format: 'uuid' })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Successfully retrieved library', type: LibraryResponseDto })
   @Endpoint({
     summary: 'Retrieve a library',
     description: 'Retrieve an external library by its ID.',
@@ -58,6 +61,7 @@ export class LibraryController {
   @Authenticated({ permission: Permission.LibraryUpdate, admin: true })
   @ApiParam({ name: 'id', description: 'Library ID', type: String, format: 'uuid' })
   @ApiBody({ description: 'Library update data', type: UpdateLibraryDto })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Library updated successfully', type: LibraryResponseDto })
   @Endpoint({
     summary: 'Update a library',
     description: 'Update an existing external library.',
@@ -71,6 +75,7 @@ export class LibraryController {
   @Authenticated({ permission: Permission.LibraryDelete, admin: true })
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiParam({ name: 'id', description: 'Library ID', type: String, format: 'uuid' })
+  @ApiResponse({ status: HttpStatus.NO_CONTENT, description: 'Library deleted successfully' })
   @Endpoint({
     summary: 'Delete a library',
     description: 'Delete an external library by its ID.',
@@ -85,6 +90,11 @@ export class LibraryController {
   @HttpCode(HttpStatus.OK)
   @ApiParam({ name: 'id', description: 'Library ID', type: String, format: 'uuid' })
   @ApiBody({ description: 'Library settings to validate', type: ValidateLibraryDto })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Library settings validated successfully',
+    type: ValidateLibraryResponseDto,
+  })
   @Endpoint({
     summary: 'Validate library settings',
     description: 'Validate the settings of an external library.',
@@ -98,6 +108,11 @@ export class LibraryController {
   @Get(':id/statistics')
   @Authenticated({ permission: Permission.LibraryStatistics, admin: true })
   @ApiParam({ name: 'id', description: 'Library ID', type: String, format: 'uuid' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Successfully retrieved library statistics',
+    type: LibraryStatsResponseDto,
+  })
   @Endpoint({
     summary: 'Retrieve library statistics',
     description:
@@ -112,6 +127,7 @@ export class LibraryController {
   @Authenticated({ permission: Permission.LibraryUpdate, admin: true })
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiParam({ name: 'id', description: 'Library ID', type: String, format: 'uuid' })
+  @ApiResponse({ status: HttpStatus.NO_CONTENT, description: 'Library scan queued successfully' })
   @Endpoint({
     summary: 'Scan a library',
     description: 'Queue a scan for the external library to find and import new assets.',

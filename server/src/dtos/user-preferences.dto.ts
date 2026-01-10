@@ -1,4 +1,4 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional, ApiSchema } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsDateString, IsInt, IsPositive, ValidateNested } from 'class-validator';
 import { AssetOrder, UserAvatarColor } from 'src/enum';
@@ -118,6 +118,10 @@ class CastUpdate {
   gCastEnabled?: boolean;
 }
 
+@ApiSchema({
+  description:
+    'User preferences update request with optional preferences for albums, folders, memories, people, ratings, shared links, tags, avatar, email notifications, download, purchase, and cast',
+})
 export class UserPreferencesUpdateDto {
   @ApiPropertyOptional({ description: 'Album preferences', type: AlbumsUpdate })
   @Optional()
@@ -268,6 +272,7 @@ class CastResponse {
   gCastEnabled: boolean = false;
 }
 
+@ApiSchema({ description: 'User preferences response' })
 export class UserPreferencesResponseDto implements UserPreferences {
   @ApiProperty({ description: 'Album preferences', type: AlbumsResponse })
   albums!: AlbumsResponse;

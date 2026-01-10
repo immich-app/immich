@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Query, Res } from '@nestjs/common';
-import { ApiBody, ApiParam, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import {
@@ -22,6 +22,7 @@ export class ActivityController {
 
   @Get()
   @Authenticated({ permission: Permission.ActivityRead })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Successfully retrieved activities', type: [ActivityResponseDto] })
   @Endpoint({
     summary: 'List all activities',
     description:
@@ -35,6 +36,7 @@ export class ActivityController {
   @Post()
   @Authenticated({ permission: Permission.ActivityCreate })
   @ApiBody({ description: 'Activity data (like or comment)', type: ActivityCreateDto })
+  @ApiResponse({ status: HttpStatus.CREATED, description: 'Activity created successfully', type: ActivityResponseDto })
   @Endpoint({
     summary: 'Create an activity',
     description: 'Create a like or a comment for an album, or an asset in an album.',
@@ -54,6 +56,11 @@ export class ActivityController {
 
   @Get('statistics')
   @Authenticated({ permission: Permission.ActivityStatistics })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Successfully retrieved activity statistics',
+    type: ActivityStatisticsResponseDto,
+  })
   @Endpoint({
     summary: 'Retrieve activity statistics',
     description: 'Returns the number of likes and comments for a given album or asset in an album.',
@@ -67,6 +74,7 @@ export class ActivityController {
   @Authenticated({ permission: Permission.ActivityDelete })
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiParam({ name: 'id', description: 'Activity ID to delete', type: String, format: 'uuid' })
+  @ApiResponse({ status: HttpStatus.NO_CONTENT, description: 'Activity deleted successfully' })
   @Endpoint({
     summary: 'Delete an activity',
     description: 'Removes a like or comment from a given album or asset in an album.',

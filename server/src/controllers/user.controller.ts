@@ -13,7 +13,7 @@ import {
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
-import { ApiBody, ApiConsumes, ApiParam, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiConsumes, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { NextFunction, Response } from 'express';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -40,6 +40,7 @@ export class UserController {
 
   @Get()
   @Authenticated({ permission: Permission.UserRead })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Successfully retrieved users', type: [UserResponseDto] })
   @Endpoint({
     summary: 'Get all users',
     description: 'Retrieve a list of all users on the server.',
@@ -51,6 +52,11 @@ export class UserController {
 
   @Get('me')
   @Authenticated({ permission: Permission.UserRead })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Successfully retrieved current user',
+    type: UserAdminResponseDto,
+  })
   @Endpoint({
     summary: 'Get current user',
     description: 'Retrieve information about the user making the API request.',
@@ -63,6 +69,7 @@ export class UserController {
   @Put('me')
   @Authenticated({ permission: Permission.UserUpdate })
   @ApiBody({ description: 'User update data', type: UserUpdateMeDto })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Current user updated successfully', type: UserAdminResponseDto })
   @Endpoint({
     summary: 'Update current user',
     description: 'Update the current user making teh API request.',
@@ -74,6 +81,11 @@ export class UserController {
 
   @Get('me/preferences')
   @Authenticated({ permission: Permission.UserPreferenceRead })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Successfully retrieved user preferences',
+    type: UserPreferencesResponseDto,
+  })
   @Endpoint({
     summary: 'Get my preferences',
     description: 'Retrieve the preferences for the current user.',
@@ -86,6 +98,11 @@ export class UserController {
   @Put('me/preferences')
   @Authenticated({ permission: Permission.UserPreferenceUpdate })
   @ApiBody({ description: 'User preferences update data', type: UserPreferencesUpdateDto })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'User preferences updated successfully',
+    type: UserPreferencesResponseDto,
+  })
   @Endpoint({
     summary: 'Update my preferences',
     description: 'Update the preferences of the current user.',
@@ -100,6 +117,7 @@ export class UserController {
 
   @Get('me/license')
   @Authenticated({ permission: Permission.UserLicenseRead })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Successfully retrieved user license', type: LicenseResponseDto })
   @Endpoint({
     summary: 'Retrieve user product key',
     description: 'Retrieve information about whether the current user has a registered product key.',
@@ -112,6 +130,7 @@ export class UserController {
   @Put('me/license')
   @Authenticated({ permission: Permission.UserLicenseUpdate })
   @ApiBody({ description: 'Product key to register', type: LicenseKeyDto })
+  @ApiResponse({ status: HttpStatus.OK, description: 'User license set successfully', type: LicenseResponseDto })
   @Endpoint({
     summary: 'Set user product key',
     description: 'Register a product key for the current user.',
@@ -124,6 +143,7 @@ export class UserController {
   @Delete('me/license')
   @Authenticated({ permission: Permission.UserLicenseDelete })
   @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiResponse({ status: HttpStatus.NO_CONTENT, description: 'User license deleted successfully' })
   @Endpoint({
     summary: 'Delete user product key',
     description: 'Delete the registered product key for the current user.',
@@ -135,6 +155,11 @@ export class UserController {
 
   @Get('me/onboarding')
   @Authenticated({ permission: Permission.UserOnboardingRead })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Successfully retrieved user onboarding',
+    type: OnboardingResponseDto,
+  })
   @Endpoint({
     summary: 'Retrieve user onboarding',
     description: 'Retrieve the onboarding status of the current user.',
@@ -147,6 +172,11 @@ export class UserController {
   @Put('me/onboarding')
   @Authenticated({ permission: Permission.UserOnboardingUpdate })
   @ApiBody({ description: 'Onboarding status update', type: OnboardingDto })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'User onboarding updated successfully',
+    type: OnboardingResponseDto,
+  })
   @Endpoint({
     summary: 'Update user onboarding',
     description: 'Update the onboarding status of the current user.',
@@ -159,6 +189,7 @@ export class UserController {
   @Delete('me/onboarding')
   @Authenticated({ permission: Permission.UserOnboardingDelete })
   @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiResponse({ status: HttpStatus.NO_CONTENT, description: 'User onboarding deleted successfully' })
   @Endpoint({
     summary: 'Delete user onboarding',
     description: 'Delete the onboarding status of the current user.',
@@ -171,6 +202,7 @@ export class UserController {
   @Get(':id')
   @Authenticated({ permission: Permission.UserRead })
   @ApiParam({ name: 'id', description: 'User ID', type: String, format: 'uuid' })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Successfully retrieved user', type: UserResponseDto })
   @Endpoint({
     summary: 'Retrieve a user',
     description: 'Retrieve a specific user by their ID.',
@@ -200,6 +232,7 @@ export class UserController {
   @Delete('profile-image')
   @Authenticated({ permission: Permission.UserProfileImageDelete })
   @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiResponse({ status: HttpStatus.NO_CONTENT, description: 'User profile image deleted successfully' })
   @Endpoint({
     summary: 'Delete user profile image',
     description: 'Delete the profile image of the current user.',
@@ -213,6 +246,7 @@ export class UserController {
   @FileResponse()
   @Authenticated({ permission: Permission.UserProfileImageRead })
   @ApiParam({ name: 'id', description: 'User ID', type: String, format: 'uuid' })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Successfully retrieved user profile image' })
   @Endpoint({
     summary: 'Retrieve user profile image',
     description: 'Retrieve the profile image file for a user.',

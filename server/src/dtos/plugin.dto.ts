@@ -1,10 +1,11 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiSchema } from '@nestjs/swagger';
 import { IsNotEmpty, IsString } from 'class-validator';
 import { PluginAction, PluginFilter } from 'src/database';
 import { PluginContext as PluginContextType, PluginTriggerType } from 'src/enum';
 import type { JSONSchema } from 'src/types/plugin-schema.types';
 import { ValidateEnum } from 'src/validation';
 
+@ApiSchema({ description: 'Plugin trigger response with context' })
 export class PluginTriggerResponseDto {
   @ApiProperty({ description: 'Trigger type', enum: PluginTriggerType })
   @ValidateEnum({ enum: PluginTriggerType, name: 'PluginTriggerType' })
@@ -14,6 +15,7 @@ export class PluginTriggerResponseDto {
   contextType!: PluginContextType;
 }
 
+@ApiSchema({ description: 'Plugin response with filters and actions' })
 export class PluginResponseDto {
   @ApiProperty({ description: 'Plugin ID' })
   id!: string;
@@ -37,6 +39,7 @@ export class PluginResponseDto {
   actions!: PluginActionResponseDto[];
 }
 
+@ApiSchema({ description: 'Plugin filter response with schema' })
 export class PluginFilterResponseDto {
   @ApiProperty({ description: 'Filter ID' })
   id!: string;
@@ -56,6 +59,7 @@ export class PluginFilterResponseDto {
   schema!: JSONSchema | null;
 }
 
+@ApiSchema({ description: 'Plugin action response with schema' })
 export class PluginActionResponseDto {
   @ApiProperty({ description: 'Action ID' })
   id!: string;
@@ -75,6 +79,7 @@ export class PluginActionResponseDto {
   schema!: JSONSchema | null;
 }
 
+@ApiSchema({ description: 'Plugin installation request with manifest file path' })
 export class PluginInstallDto {
   @ApiProperty({ description: 'Path to plugin manifest file' })
   @IsString()

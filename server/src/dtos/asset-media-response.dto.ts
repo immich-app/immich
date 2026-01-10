@@ -1,4 +1,4 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional, ApiSchema } from '@nestjs/swagger';
 import { ValidateEnum } from 'src/validation';
 
 export enum AssetMediaStatus {
@@ -6,6 +6,7 @@ export enum AssetMediaStatus {
   REPLACED = 'replaced',
   DUPLICATE = 'duplicate',
 }
+@ApiSchema({ description: 'Asset media upload response' })
 export class AssetMediaResponseDto {
   @ApiProperty({ description: 'Upload status', enum: AssetMediaStatus })
   @ValidateEnum({ enum: AssetMediaStatus, name: 'AssetMediaStatus' })
@@ -37,11 +38,13 @@ export class AssetBulkUploadCheckResult {
   isTrashed?: boolean;
 }
 
+@ApiSchema({ description: 'Bulk upload check response with results' })
 export class AssetBulkUploadCheckResponseDto {
   @ApiProperty({ description: 'Upload check results', type: () => [AssetBulkUploadCheckResult] })
   results!: AssetBulkUploadCheckResult[];
 }
 
+@ApiSchema({ description: 'Existing assets check response' })
 export class CheckExistingAssetsResponseDto {
   @ApiProperty({ description: 'Existing asset IDs', type: [String] })
   existingIds!: string[];

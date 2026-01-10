@@ -1,4 +1,4 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional, ApiSchema } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsArray, IsInt, IsNotEmpty, IsNumber, IsString, Max, Min, ValidateNested } from 'class-validator';
 import { Selectable } from 'kysely';
@@ -22,6 +22,7 @@ import {
   ValidateUUID,
 } from 'src/validation';
 
+@ApiSchema({ description: 'Create person request data' })
 export class PersonCreateDto {
   @ApiPropertyOptional({ description: 'Person name' })
   @Optional()
@@ -49,12 +50,14 @@ export class PersonCreateDto {
   color?: string | null;
 }
 
+@ApiSchema({ description: 'Update person request data' })
 export class PersonUpdateDto extends PersonCreateDto {
   @ApiPropertyOptional({ description: 'Asset ID used for feature face thumbnail' })
   @ValidateUUID({ optional: true })
   featureFaceAssetId?: string;
 }
 
+@ApiSchema({ description: 'Bulk update people request' })
 export class PeopleUpdateDto {
   @ApiProperty({ description: 'People to update', type: () => [PeopleUpdateItem] })
   @IsArray()
@@ -63,6 +66,7 @@ export class PeopleUpdateDto {
   people!: PeopleUpdateItem[];
 }
 
+@ApiSchema({ description: 'Person update item with ID' })
 export class PeopleUpdateItem extends PersonUpdateDto {
   @ApiProperty({ description: 'Person ID' })
   @IsString()
@@ -70,12 +74,14 @@ export class PeopleUpdateItem extends PersonUpdateDto {
   id!: string;
 }
 
+@ApiSchema({ description: 'Merge persons request with IDs' })
 export class MergePersonDto {
   @ApiProperty({ description: 'Person IDs to merge', type: [String] })
   @ValidateUUID({ each: true })
   ids!: string[];
 }
 
+@ApiSchema({ description: 'Person search request parameters' })
 export class PersonSearchDto {
   @ApiPropertyOptional({ description: 'Include hidden people' })
   @ValidateBoolean({ optional: true })
@@ -101,6 +107,7 @@ export class PersonSearchDto {
   size: number = 500;
 }
 
+@ApiSchema({ description: 'Person response with face information' })
 export class PersonResponseDto {
   @ApiProperty({ description: 'Person ID' })
   id!: string;
@@ -123,11 +130,13 @@ export class PersonResponseDto {
   color?: string;
 }
 
+@ApiSchema({ description: 'Person response with face detections' })
 export class PersonWithFacesResponseDto extends PersonResponseDto {
   @ApiProperty({ description: 'Face detections', type: () => [AssetFaceWithoutPersonResponseDto] })
   faces!: AssetFaceWithoutPersonResponseDto[];
 }
 
+@ApiSchema({ description: 'Face response without person data' })
 export class AssetFaceWithoutPersonResponseDto {
   @ApiProperty({ description: 'Face ID' })
   @ValidateUUID()
@@ -149,11 +158,13 @@ export class AssetFaceWithoutPersonResponseDto {
   sourceType?: SourceType;
 }
 
+@ApiSchema({ description: 'Face response with person data' })
 export class AssetFaceResponseDto extends AssetFaceWithoutPersonResponseDto {
   @ApiProperty({ description: 'Person associated with face', type: PersonResponseDto, nullable: true })
   person!: PersonResponseDto | null;
 }
 
+@ApiSchema({ description: 'Update face associations request' })
 export class AssetFaceUpdateDto {
   @ApiProperty({ description: 'Face update items', type: () => [AssetFaceUpdateItem] })
   @IsArray()
@@ -162,12 +173,14 @@ export class AssetFaceUpdateDto {
   data!: AssetFaceUpdateItem[];
 }
 
+@ApiSchema({ description: 'Face identifier request' })
 export class FaceDto {
   @ApiProperty({ description: 'Face ID' })
   @ValidateUUID()
   id!: string;
 }
 
+@ApiSchema({ description: 'Face update item with IDs' })
 export class AssetFaceUpdateItem {
   @ApiProperty({ description: 'Person ID' })
   @ValidateUUID()
@@ -178,6 +191,7 @@ export class AssetFaceUpdateItem {
   assetId!: string;
 }
 
+@ApiSchema({ description: 'Create face detection request' })
 export class AssetFaceCreateDto extends AssetFaceUpdateItem {
   @ApiProperty({ type: 'integer', description: 'Image width in pixels' })
   @IsNotEmpty()
@@ -210,17 +224,20 @@ export class AssetFaceCreateDto extends AssetFaceUpdateItem {
   height!: number;
 }
 
+@ApiSchema({ description: 'Delete face request with force flag' })
 export class AssetFaceDeleteDto {
   @ApiProperty({ description: 'Force delete even if person has other faces' })
   @IsNotEmpty()
   force!: boolean;
 }
 
+@ApiSchema({ description: 'Person statistics response with counts' })
 export class PersonStatisticsResponseDto {
   @ApiProperty({ type: 'integer', description: 'Number of assets' })
   assets!: number;
 }
 
+@ApiSchema({ description: 'People list response with pagination' })
 export class PeopleResponseDto {
   @ApiProperty({ type: 'integer', description: 'Total number of people' })
   total!: number;

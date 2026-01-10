@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
-import { ApiBody, ApiParam, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AssetStatsDto, AssetStatsResponseDto } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -24,6 +24,7 @@ export class UserAdminController {
 
   @Get()
   @Authenticated({ permission: Permission.AdminUserRead, admin: true })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Successfully searched users', type: [UserAdminResponseDto] })
   @Endpoint({
     summary: 'Search users',
     description: 'Search for users.',
@@ -36,6 +37,7 @@ export class UserAdminController {
   @Post()
   @Authenticated({ permission: Permission.AdminUserCreate, admin: true })
   @ApiBody({ description: 'User creation data', type: UserAdminCreateDto })
+  @ApiResponse({ status: HttpStatus.CREATED, description: 'User created successfully', type: UserAdminResponseDto })
   @Endpoint({
     summary: 'Create a user',
     description: 'Create a new user.',
@@ -48,6 +50,7 @@ export class UserAdminController {
   @Get(':id')
   @Authenticated({ permission: Permission.AdminUserRead, admin: true })
   @ApiParam({ name: 'id', description: 'User ID', type: String, format: 'uuid' })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Successfully retrieved user', type: UserAdminResponseDto })
   @Endpoint({
     summary: 'Retrieve a user',
     description: 'Retrieve  a specific user by their ID.',
@@ -61,6 +64,7 @@ export class UserAdminController {
   @Authenticated({ permission: Permission.AdminUserUpdate, admin: true })
   @ApiParam({ name: 'id', description: 'User ID', type: String, format: 'uuid' })
   @ApiBody({ description: 'User update data', type: UserAdminUpdateDto })
+  @ApiResponse({ status: HttpStatus.OK, description: 'User updated successfully', type: UserAdminResponseDto })
   @Endpoint({
     summary: 'Update a user',
     description: 'Update an existing user.',
@@ -78,6 +82,7 @@ export class UserAdminController {
   @Authenticated({ permission: Permission.AdminUserDelete, admin: true })
   @ApiParam({ name: 'id', description: 'User ID', type: String, format: 'uuid' })
   @ApiBody({ description: 'User deletion options', type: UserAdminDeleteDto })
+  @ApiResponse({ status: HttpStatus.OK, description: 'User deleted successfully', type: UserAdminResponseDto })
   @Endpoint({
     summary: 'Delete a user',
     description: 'Delete a user.',
@@ -94,6 +99,11 @@ export class UserAdminController {
   @Get(':id/sessions')
   @Authenticated({ permission: Permission.AdminSessionRead, admin: true })
   @ApiParam({ name: 'id', description: 'User ID', type: String, format: 'uuid' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Successfully retrieved user sessions',
+    type: [SessionResponseDto],
+  })
   @Endpoint({
     summary: 'Retrieve user sessions',
     description: 'Retrieve all sessions for a specific user.',
@@ -106,6 +116,11 @@ export class UserAdminController {
   @Get(':id/statistics')
   @Authenticated({ permission: Permission.AdminUserRead, admin: true })
   @ApiParam({ name: 'id', description: 'User ID', type: String, format: 'uuid' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Successfully retrieved user statistics',
+    type: AssetStatsResponseDto,
+  })
   @Endpoint({
     summary: 'Retrieve user statistics',
     description: 'Retrieve asset statistics for a specific user.',
@@ -122,6 +137,11 @@ export class UserAdminController {
   @Get(':id/preferences')
   @Authenticated({ permission: Permission.AdminUserRead, admin: true })
   @ApiParam({ name: 'id', description: 'User ID', type: String, format: 'uuid' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Successfully retrieved user preferences',
+    type: UserPreferencesResponseDto,
+  })
   @Endpoint({
     summary: 'Retrieve user preferences',
     description: 'Retrieve the preferences of a specific user.',
@@ -135,6 +155,11 @@ export class UserAdminController {
   @Authenticated({ permission: Permission.AdminUserUpdate, admin: true })
   @ApiParam({ name: 'id', description: 'User ID', type: String, format: 'uuid' })
   @ApiBody({ description: 'User preferences update data', type: UserPreferencesUpdateDto })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'User preferences updated successfully',
+    type: UserPreferencesResponseDto,
+  })
   @Endpoint({
     summary: 'Update user preferences',
     description: 'Update the preferences of a specific user.',
@@ -152,6 +177,7 @@ export class UserAdminController {
   @Authenticated({ permission: Permission.AdminUserDelete, admin: true })
   @HttpCode(HttpStatus.OK)
   @ApiParam({ name: 'id', description: 'User ID', type: String, format: 'uuid' })
+  @ApiResponse({ status: HttpStatus.OK, description: 'User restored successfully', type: UserAdminResponseDto })
   @Endpoint({
     summary: 'Restore a deleted user',
     description: 'Restore a previously deleted user.',

@@ -1,7 +1,8 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional, ApiSchema } from '@nestjs/swagger';
 import { IsInt, IsPositive } from 'class-validator';
 import { Optional, ValidateUUID } from 'src/validation';
 
+@ApiSchema({ description: 'Download info query parameters with asset, album, or user filters' })
 export class DownloadInfoDto {
   @ApiPropertyOptional({ description: 'Asset IDs to download', type: [String] })
   @ValidateUUID({ each: true, optional: true })
@@ -22,6 +23,7 @@ export class DownloadInfoDto {
   archiveSize?: number;
 }
 
+@ApiSchema({ description: 'Download response with archive info' })
 export class DownloadResponseDto {
   @ApiProperty({ type: 'integer', description: 'Total size in bytes' })
   totalSize!: number;
@@ -29,6 +31,7 @@ export class DownloadResponseDto {
   archives!: DownloadArchiveInfo[];
 }
 
+@ApiSchema({ description: 'Download archive information with size and asset IDs' })
 export class DownloadArchiveInfo {
   @ApiProperty({ type: 'integer', description: 'Archive size in bytes' })
   size!: number;

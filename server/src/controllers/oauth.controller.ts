@@ -1,5 +1,5 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Post, Redirect, Req, Res } from '@nestjs/common';
-import { ApiBody, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import {
@@ -22,6 +22,7 @@ export class OAuthController {
 
   @Get('mobile-redirect')
   @Redirect()
+  @ApiResponse({ status: HttpStatus.OK, description: 'Redirected to mobile app' })
   @Endpoint({
     summary: 'Redirect OAuth to mobile',
     description:
@@ -37,6 +38,11 @@ export class OAuthController {
 
   @Post('authorize')
   @ApiBody({ description: 'OAuth configuration', type: OAuthConfigDto })
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    description: 'OAuth authorization initiated successfully',
+    type: OAuthAuthorizeResponseDto,
+  })
   @Endpoint({
     summary: 'Start OAuth',
     description: 'Initiate the OAuth authorization process.',
@@ -63,6 +69,11 @@ export class OAuthController {
 
   @Post('callback')
   @ApiBody({ description: 'OAuth callback data', type: OAuthCallbackDto })
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    description: 'OAuth authorization completed successfully',
+    type: LoginResponseDto,
+  })
   @Endpoint({
     summary: 'Finish OAuth',
     description: 'Complete the OAuth authorization process by exchanging the authorization code for a session token.',
@@ -91,6 +102,7 @@ export class OAuthController {
   @Authenticated()
   @HttpCode(HttpStatus.OK)
   @ApiBody({ description: 'OAuth callback data', type: OAuthCallbackDto })
+  @ApiResponse({ status: HttpStatus.OK, description: 'OAuth account linked successfully', type: UserAdminResponseDto })
   @Endpoint({
     summary: 'Link OAuth account',
     description: 'Link an OAuth account to the authenticated user.',
@@ -107,6 +119,11 @@ export class OAuthController {
   @Post('unlink')
   @Authenticated()
   @HttpCode(HttpStatus.OK)
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'OAuth account unlinked successfully',
+    type: UserAdminResponseDto,
+  })
   @Endpoint({
     summary: 'Unlink OAuth account',
     description: 'Unlink the OAuth account from the authenticated user.',

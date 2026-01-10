@@ -1,4 +1,4 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional, ApiSchema } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsInt, IsObject, IsPositive, ValidateNested } from 'class-validator';
 import { Memory } from 'src/database';
@@ -7,6 +7,7 @@ import { AuthDto } from 'src/dtos/auth.dto';
 import { AssetOrderWithRandom, MemoryType } from 'src/enum';
 import { Optional, ValidateBoolean, ValidateDate, ValidateEnum, ValidateUUID } from 'src/validation';
 
+@ApiSchema({ description: 'Base memory DTO with saved status and seen date' })
 class MemoryBaseDto {
   @ApiPropertyOptional({ description: 'Is memory saved' })
   @ValidateBoolean({ optional: true })
@@ -17,6 +18,7 @@ class MemoryBaseDto {
   seenAt?: Date;
 }
 
+@ApiSchema({ description: 'Memory search query with filters' })
 export class MemorySearchDto {
   @ApiPropertyOptional({ description: 'Memory type', enum: MemoryType })
   @ValidateEnum({ enum: MemoryType, name: 'MemoryType', optional: true })
@@ -46,6 +48,7 @@ export class MemorySearchDto {
   order?: AssetOrderWithRandom;
 }
 
+@ApiSchema({ description: 'On this day memory data with year' })
 class OnThisDayDto {
   @ApiProperty({ type: 'number', description: 'Year for on this day memory', minimum: 1 })
   @IsInt()
@@ -55,12 +58,14 @@ class OnThisDayDto {
 
 type MemoryData = OnThisDayDto;
 
+@ApiSchema({ description: 'Memory update request with optional fields' })
 export class MemoryUpdateDto extends MemoryBaseDto {
   @ApiPropertyOptional({ description: 'Memory date', format: 'date-time' })
   @ValidateDate({ optional: true })
   memoryAt?: Date;
 }
 
+@ApiSchema({ description: 'Memory creation request with type, data, date, and optional assets' })
 export class MemoryCreateDto extends MemoryBaseDto {
   @ApiProperty({ description: 'Memory type', enum: MemoryType })
   @ValidateEnum({ enum: MemoryType, name: 'MemoryType' })
@@ -91,11 +96,13 @@ export class MemoryCreateDto extends MemoryBaseDto {
   assetIds?: string[];
 }
 
+@ApiSchema({ description: 'Memory statistics response with total count' })
 export class MemoryStatisticsResponseDto {
   @ApiProperty({ type: 'integer', description: 'Total number of memories' })
   total!: number;
 }
 
+@ApiSchema({ description: 'Memory response with associated assets' })
 export class MemoryResponseDto {
   @ApiProperty({ description: 'Memory ID' })
   id!: string;

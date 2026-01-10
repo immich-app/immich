@@ -1,4 +1,4 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional, ApiSchema } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { ArrayNotEmpty, IsArray, IsString, ValidateNested } from 'class-validator';
 import _ from 'lodash';
@@ -10,12 +10,14 @@ import { UserResponseDto, mapUser } from 'src/dtos/user.dto';
 import { AlbumUserRole, AssetOrder } from 'src/enum';
 import { Optional, ValidateBoolean, ValidateEnum, ValidateUUID } from 'src/validation';
 
+@ApiSchema({ description: 'Album info query parameters' })
 export class AlbumInfoDto {
   @ApiPropertyOptional({ description: 'Exclude assets from response' })
   @ValidateBoolean({ optional: true })
   withoutAssets?: boolean;
 }
 
+@ApiSchema({ description: 'Album user addition with user ID and role' })
 export class AlbumUserAddDto {
   @ApiProperty({ description: 'User ID' })
   @ValidateUUID()
@@ -26,12 +28,14 @@ export class AlbumUserAddDto {
   role?: AlbumUserRole;
 }
 
+@ApiSchema({ description: 'Add multiple users to album request' })
 export class AddUsersDto {
   @ApiProperty({ description: 'Album users to add', type: () => [AlbumUserAddDto] })
   @ArrayNotEmpty()
   albumUsers!: AlbumUserAddDto[];
 }
 
+@ApiSchema({ description: 'Album user creation with user ID and role' })
 export class AlbumUserCreateDto {
   @ApiProperty({ description: 'User ID' })
   @ValidateUUID()
@@ -42,6 +46,7 @@ export class AlbumUserCreateDto {
   role!: AlbumUserRole;
 }
 
+@ApiSchema({ description: 'Album creation request with name, description, users, and assets' })
 export class CreateAlbumDto {
   @ApiProperty({ description: 'Album name' })
   @IsString()
@@ -64,6 +69,7 @@ export class CreateAlbumDto {
   assetIds?: string[];
 }
 
+@ApiSchema({ description: 'Add assets to multiple albums request' })
 export class AlbumsAddAssetsDto {
   @ApiProperty({ description: 'Album IDs', type: [String] })
   @ValidateUUID({ each: true })
@@ -74,6 +80,7 @@ export class AlbumsAddAssetsDto {
   assetIds!: string[];
 }
 
+@ApiSchema({ description: 'Album add assets operation response' })
 export class AlbumsAddAssetsResponseDto {
   @ApiProperty({ description: 'Operation success' })
   success!: boolean;
@@ -82,6 +89,7 @@ export class AlbumsAddAssetsResponseDto {
   error?: BulkIdErrorReason;
 }
 
+@ApiSchema({ description: 'Album update request with optional fields' })
 export class UpdateAlbumDto {
   @ApiPropertyOptional({ description: 'Album name' })
   @Optional()
@@ -106,6 +114,7 @@ export class UpdateAlbumDto {
   order?: AssetOrder;
 }
 
+@ApiSchema({ description: 'Get albums query parameters with filters' })
 export class GetAlbumsDto {
   @ApiPropertyOptional({
     description: 'Filter by shared status: true = only shared, false = only own, undefined = all',
@@ -118,6 +127,7 @@ export class GetAlbumsDto {
   assetId?: string;
 }
 
+@ApiSchema({ description: 'Album statistics with count breakdown' })
 export class AlbumStatisticsResponseDto {
   @ApiProperty({ type: 'integer', description: 'Number of owned albums' })
   owned!: number;
@@ -129,12 +139,14 @@ export class AlbumStatisticsResponseDto {
   notShared!: number;
 }
 
+@ApiSchema({ description: 'Update album user role request' })
 export class UpdateAlbumUserDto {
   @ApiProperty({ description: 'Album user role', enum: AlbumUserRole })
   @ValidateEnum({ enum: AlbumUserRole, name: 'AlbumUserRole' })
   role!: AlbumUserRole;
 }
 
+@ApiSchema({ description: 'Album user response with role' })
 export class AlbumUserResponseDto {
   @ApiProperty({ description: 'User details', type: UserResponseDto })
   user!: UserResponseDto;
@@ -143,6 +155,7 @@ export class AlbumUserResponseDto {
   role!: AlbumUserRole;
 }
 
+@ApiSchema({ description: 'Contributor count response with asset count' })
 export class ContributorCountResponseDto {
   @ApiProperty({ description: 'User ID' })
   userId!: string;
@@ -151,6 +164,7 @@ export class ContributorCountResponseDto {
   assetCount!: number;
 }
 
+@ApiSchema({ description: 'Album response with assets and metadata' })
 export class AlbumResponseDto {
   @ApiProperty({ description: 'Album ID' })
   id!: string;

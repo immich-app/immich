@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Put, Query } from '@nestjs/common';
-import { ApiBody, ApiParam, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
@@ -21,6 +21,7 @@ export class NotificationController {
 
   @Get()
   @Authenticated({ permission: Permission.NotificationRead })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Successfully retrieved notifications', type: [NotificationDto] })
   @Endpoint({
     summary: 'Retrieve notifications',
     description: 'Retrieve a list of notifications.',
@@ -34,6 +35,7 @@ export class NotificationController {
   @Authenticated({ permission: Permission.NotificationUpdate })
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiBody({ description: 'Bulk notification update data', type: NotificationUpdateAllDto })
+  @ApiResponse({ status: HttpStatus.NO_CONTENT, description: 'Notifications updated successfully' })
   @Endpoint({
     summary: 'Update notifications',
     description: 'Update a list of notifications. Allows to bulk-set the read status of notifications.',
@@ -47,6 +49,7 @@ export class NotificationController {
   @Authenticated({ permission: Permission.NotificationDelete })
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiBody({ description: 'Notification IDs to delete', type: NotificationDeleteAllDto })
+  @ApiResponse({ status: HttpStatus.NO_CONTENT, description: 'Notifications deleted successfully' })
   @Endpoint({
     summary: 'Delete notifications',
     description: 'Delete a list of notifications at once.',
@@ -59,6 +62,7 @@ export class NotificationController {
   @Get(':id')
   @Authenticated({ permission: Permission.NotificationRead })
   @ApiParam({ name: 'id', description: 'Notification ID', type: String, format: 'uuid' })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Successfully retrieved notification', type: NotificationDto })
   @Endpoint({
     summary: 'Get a notification',
     description: 'Retrieve a specific notification identified by id.',
@@ -72,6 +76,7 @@ export class NotificationController {
   @Authenticated({ permission: Permission.NotificationUpdate })
   @ApiParam({ name: 'id', description: 'Notification ID', type: String, format: 'uuid' })
   @ApiBody({ description: 'Notification update data', type: NotificationUpdateDto })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Notification updated successfully', type: NotificationDto })
   @Endpoint({
     summary: 'Update a notification',
     description: 'Update a specific notification to set its read status.',
@@ -89,6 +94,7 @@ export class NotificationController {
   @Authenticated({ permission: Permission.NotificationDelete })
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiParam({ name: 'id', description: 'Notification ID', type: String, format: 'uuid' })
+  @ApiResponse({ status: HttpStatus.NO_CONTENT, description: 'Notification deleted successfully' })
   @Endpoint({
     summary: 'Delete a notification',
     description: 'Delete a specific notification.',

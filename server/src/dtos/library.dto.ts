@@ -1,8 +1,9 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional, ApiSchema } from '@nestjs/swagger';
 import { ArrayMaxSize, ArrayUnique, IsNotEmpty, IsString } from 'class-validator';
 import { Library } from 'src/database';
 import { Optional, ValidateUUID } from 'src/validation';
 
+@ApiSchema({ description: 'Library creation request with owner, name, import paths, and exclusion patterns' })
 export class CreateLibraryDto {
   @ApiProperty({ description: 'Owner user ID' })
   @ValidateUUID()
@@ -31,6 +32,7 @@ export class CreateLibraryDto {
   exclusionPatterns?: string[];
 }
 
+@ApiSchema({ description: 'Library update request with optional name, import paths, and exclusion patterns' })
 export class UpdateLibraryDto {
   @ApiPropertyOptional({ description: 'Library name' })
   @Optional()
@@ -65,6 +67,7 @@ export interface WalkOptionsDto extends CrawlOptionsDto {
   take: number;
 }
 
+@ApiSchema({ description: 'Library validation request with import paths and exclusion patterns' })
 export class ValidateLibraryDto {
   @ApiPropertyOptional({ description: 'Import paths to validate (max 128)', type: [String] })
   @Optional()
@@ -83,6 +86,7 @@ export class ValidateLibraryDto {
   exclusionPatterns?: string[];
 }
 
+@ApiSchema({ description: 'Library validation response with results' })
 export class ValidateLibraryResponseDto {
   @ApiPropertyOptional({
     description: 'Validation results for import paths',
@@ -91,6 +95,7 @@ export class ValidateLibraryResponseDto {
   importPaths?: ValidateLibraryImportPathResponseDto[];
 }
 
+@ApiSchema({ description: 'Library import path validation response' })
 export class ValidateLibraryImportPathResponseDto {
   @ApiProperty({ description: 'Import path' })
   importPath!: string;
@@ -100,12 +105,14 @@ export class ValidateLibraryImportPathResponseDto {
   message?: string;
 }
 
+@ApiSchema({ description: 'Library search query with optional user ID filter' })
 export class LibrarySearchDto {
   @ApiPropertyOptional({ description: 'Filter by user ID' })
   @ValidateUUID({ optional: true })
   userId?: string;
 }
 
+@ApiSchema({ description: 'Library response with import paths' })
 export class LibraryResponseDto {
   @ApiProperty({ description: 'Library ID' })
   id!: string;
@@ -131,6 +138,7 @@ export class LibraryResponseDto {
   refreshedAt!: Date | null;
 }
 
+@ApiSchema({ description: 'Library statistics with asset counts' })
 export class LibraryStatsResponseDto {
   @ApiProperty({ type: 'integer', description: 'Number of photos' })
   photos = 0;

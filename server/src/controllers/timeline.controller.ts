@@ -1,8 +1,13 @@
-import { Controller, Get, Header, Query } from '@nestjs/common';
-import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { Controller, Get, Header, HttpStatus, Query } from '@nestjs/common';
+import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { TimeBucketAssetDto, TimeBucketAssetResponseDto, TimeBucketDto } from 'src/dtos/time-bucket.dto';
+import {
+  TimeBucketAssetDto,
+  TimeBucketAssetResponseDto,
+  TimeBucketDto,
+  TimeBucketsResponseDto,
+} from 'src/dtos/time-bucket.dto';
 import { ApiTag, Permission } from 'src/enum';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { TimelineService } from 'src/services/timeline.service';
@@ -14,6 +19,11 @@ export class TimelineController {
 
   @Get('buckets')
   @Authenticated({ permission: Permission.AssetRead, sharedLink: true })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Successfully retrieved time buckets',
+    type: [TimeBucketsResponseDto],
+  })
   @Endpoint({
     summary: 'Get time buckets',
     description: 'Retrieve a list of all minimal time buckets.',
@@ -25,7 +35,11 @@ export class TimelineController {
 
   @Get('bucket')
   @Authenticated({ permission: Permission.AssetRead, sharedLink: true })
-  @ApiOkResponse({ type: TimeBucketAssetResponseDto })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Successfully retrieved time bucket',
+    type: TimeBucketAssetResponseDto,
+  })
   @Header('Content-Type', 'application/json')
   @Endpoint({
     summary: 'Get time bucket',

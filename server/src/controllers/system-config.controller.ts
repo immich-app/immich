@@ -1,5 +1,5 @@
-import { Body, Controller, Get, Put } from '@nestjs/common';
-import { ApiBody, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Get, HttpStatus, Put } from '@nestjs/common';
+import { ApiBody, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { SystemConfigDto, SystemConfigTemplateStorageOptionDto } from 'src/dtos/system-config.dto';
 import { ApiTag, Permission } from 'src/enum';
@@ -17,6 +17,11 @@ export class SystemConfigController {
 
   @Get()
   @Authenticated({ permission: Permission.SystemConfigRead, admin: true })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Successfully retrieved system configuration',
+    type: SystemConfigDto,
+  })
   @Endpoint({
     summary: 'Get system configuration',
     description: 'Retrieve the current system configuration.',
@@ -28,6 +33,11 @@ export class SystemConfigController {
 
   @Get('defaults')
   @Authenticated({ permission: Permission.SystemConfigRead, admin: true })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Successfully retrieved system configuration defaults',
+    type: SystemConfigDto,
+  })
   @Endpoint({
     summary: 'Get system configuration defaults',
     description: 'Retrieve the default values for the system configuration.',
@@ -40,6 +50,11 @@ export class SystemConfigController {
   @Put()
   @Authenticated({ permission: Permission.SystemConfigUpdate, admin: true })
   @ApiBody({ description: 'System configuration update data', type: SystemConfigDto })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'System configuration updated successfully',
+    type: SystemConfigDto,
+  })
   @Endpoint({
     summary: 'Update system configuration',
     description: 'Update the system configuration with a new system configuration.',
@@ -51,6 +66,11 @@ export class SystemConfigController {
 
   @Get('storage-template-options')
   @Authenticated({ permission: Permission.SystemConfigRead, admin: true })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Successfully retrieved storage template options',
+    type: SystemConfigTemplateStorageOptionDto,
+  })
   @Endpoint({
     summary: 'Get storage template options',
     description: 'Retrieve exemplary storage template options.',

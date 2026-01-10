@@ -1,4 +1,4 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional, ApiSchema } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
   ArrayMinSize,
@@ -16,6 +16,7 @@ import { PluginContext } from 'src/enum';
 import { JSONSchema } from 'src/types/plugin-schema.types';
 import { ValidateEnum } from 'src/validation';
 
+@ApiSchema({ description: 'Plugin manifest WASM configuration with file path' })
 class PluginManifestWasmDto {
   @ApiProperty({ description: 'WASM file path' })
   @IsString()
@@ -23,6 +24,7 @@ class PluginManifestWasmDto {
   path!: string;
 }
 
+@ApiSchema({ description: 'Plugin manifest filter with method name, title, description, and schema' })
 class PluginManifestFilterDto {
   @ApiProperty({ description: 'Filter method name' })
   @IsString()
@@ -51,6 +53,7 @@ class PluginManifestFilterDto {
   schema?: JSONSchema;
 }
 
+@ApiSchema({ description: 'Plugin manifest action with method name, title, description, and schema' })
 class PluginManifestActionDto {
   @ApiProperty({ description: 'Action method name' })
   @IsString()
@@ -79,6 +82,9 @@ class PluginManifestActionDto {
   schema?: JSONSchema;
 }
 
+@ApiSchema({
+  description: 'Plugin manifest with name, version, title, description, author, WASM config, filters, and actions',
+})
 export class PluginManifestDto {
   @ApiProperty({ description: 'Plugin name (lowercase, numbers, hyphens only)' })
   @IsString()

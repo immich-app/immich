@@ -1,8 +1,9 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional, ApiSchema } from '@nestjs/swagger';
 import { IsHexColor, IsNotEmpty, IsString } from 'class-validator';
 import { Tag } from 'src/database';
 import { Optional, ValidateHexColor, ValidateUUID } from 'src/validation';
 
+@ApiSchema({ description: 'Tag creation request with name, optional parent, and color' })
 export class TagCreateDto {
   @ApiProperty({ description: 'Tag name' })
   @IsString()
@@ -19,6 +20,7 @@ export class TagCreateDto {
   color?: string;
 }
 
+@ApiSchema({ description: 'Tag update request with optional color' })
 export class TagUpdateDto {
   @ApiPropertyOptional({ description: 'Tag color (hex)', nullable: true })
   @Optional({ emptyToNull: true, nullable: true })
@@ -26,6 +28,7 @@ export class TagUpdateDto {
   color?: string | null;
 }
 
+@ApiSchema({ description: 'Tag upsert request with tag names' })
 export class TagUpsertDto {
   @ApiProperty({ description: 'Tag names to upsert', type: [String] })
   @IsString({ each: true })
@@ -33,6 +36,7 @@ export class TagUpsertDto {
   tags!: string[];
 }
 
+@ApiSchema({ description: 'Tag bulk assets request with tag IDs and asset IDs' })
 export class TagBulkAssetsDto {
   @ApiProperty({ description: 'Tag IDs', type: [String] })
   @ValidateUUID({ each: true })
@@ -43,11 +47,13 @@ export class TagBulkAssetsDto {
   assetIds!: string[];
 }
 
+@ApiSchema({ description: 'Tag bulk assets operation response' })
 export class TagBulkAssetsResponseDto {
   @ApiProperty({ type: 'integer', description: 'Number of assets tagged' })
   count!: number;
 }
 
+@ApiSchema({ description: 'Tag response with metadata' })
 export class TagResponseDto {
   @ApiProperty({ description: 'Tag ID' })
   id!: string;

@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
-import { ApiBody, ApiParam, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -22,6 +22,7 @@ export class MemoryController {
 
   @Get()
   @Authenticated({ permission: Permission.MemoryRead })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Successfully retrieved memories', type: [MemoryResponseDto] })
   @Endpoint({
     summary: 'Retrieve memories',
     description:
@@ -35,6 +36,7 @@ export class MemoryController {
   @Post()
   @Authenticated({ permission: Permission.MemoryCreate })
   @ApiBody({ description: 'Memory creation data with name, description, and asset IDs', type: MemoryCreateDto })
+  @ApiResponse({ status: HttpStatus.CREATED, description: 'Memory created successfully', type: MemoryResponseDto })
   @Endpoint({
     summary: 'Create a memory',
     description:
@@ -47,6 +49,11 @@ export class MemoryController {
 
   @Get('statistics')
   @Authenticated({ permission: Permission.MemoryStatistics })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Successfully retrieved memory statistics',
+    type: MemoryStatisticsResponseDto,
+  })
   @Endpoint({
     summary: 'Retrieve memories statistics',
     description: 'Retrieve statistics about memories, such as total count and other relevant metrics.',
@@ -59,6 +66,7 @@ export class MemoryController {
   @Get(':id')
   @Authenticated({ permission: Permission.MemoryRead })
   @ApiParam({ name: 'id', description: 'Memory ID', type: String, format: 'uuid' })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Successfully retrieved memory', type: MemoryResponseDto })
   @Endpoint({
     summary: 'Retrieve a memory',
     description: 'Retrieve a specific memory by its ID.',
@@ -72,6 +80,7 @@ export class MemoryController {
   @Authenticated({ permission: Permission.MemoryUpdate })
   @ApiParam({ name: 'id', description: 'Memory ID', type: String, format: 'uuid' })
   @ApiBody({ description: 'Memory update data', type: MemoryUpdateDto })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Memory updated successfully', type: MemoryResponseDto })
   @Endpoint({
     summary: 'Update a memory',
     description: 'Update an existing memory by its ID.',
@@ -89,6 +98,7 @@ export class MemoryController {
   @Authenticated({ permission: Permission.MemoryDelete })
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiParam({ name: 'id', description: 'Memory ID', type: String, format: 'uuid' })
+  @ApiResponse({ status: HttpStatus.NO_CONTENT, description: 'Memory deleted successfully' })
   @Endpoint({
     summary: 'Delete a memory',
     description: 'Delete a specific memory by its ID.',
@@ -102,6 +112,7 @@ export class MemoryController {
   @Authenticated({ permission: Permission.MemoryAssetCreate })
   @ApiParam({ name: 'id', description: 'Memory ID', type: String, format: 'uuid' })
   @ApiBody({ description: 'Asset IDs to add', type: BulkIdsDto })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Assets added to memory successfully', type: [BulkIdResponseDto] })
   @Endpoint({
     summary: 'Add assets to a memory',
     description: 'Add a list of asset IDs to a specific memory.',
@@ -120,6 +131,11 @@ export class MemoryController {
   @HttpCode(HttpStatus.OK)
   @ApiParam({ name: 'id', description: 'Memory ID', type: String, format: 'uuid' })
   @ApiBody({ description: 'Asset IDs to remove', type: BulkIdsDto })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Assets removed from memory successfully',
+    type: [BulkIdResponseDto],
+  })
   @Endpoint({
     summary: 'Remove assets from a memory',
     description: 'Remove a list of asset IDs from a specific memory.',

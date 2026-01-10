@@ -1,4 +1,4 @@
-import { ApiExtraModels, ApiProperty, getSchemaPath } from '@nestjs/swagger';
+import { ApiExtraModels, ApiProperty, ApiSchema, getSchemaPath } from '@nestjs/swagger';
 import { ClassConstructor, plainToInstance, Transform, Type } from 'class-transformer';
 import { ArrayMinSize, IsEnum, IsInt, Min, ValidateNested } from 'class-validator';
 import { IsAxisAlignedRotation, IsUniqueEditActions, ValidateUUID } from 'src/validation';
@@ -14,6 +14,7 @@ export enum MirrorAxis {
   Vertical = 'vertical',
 }
 
+@ApiSchema({ description: 'Crop parameters with coordinates and dimensions' })
 export class CropParameters {
   @IsInt()
   @Min(0)
@@ -36,24 +37,28 @@ export class CropParameters {
   height!: number;
 }
 
+@ApiSchema({ description: 'Rotation parameters with angle' })
 export class RotateParameters {
   @IsAxisAlignedRotation()
   @ApiProperty({ description: 'Rotation angle in degrees' })
   angle!: number;
 }
 
+@ApiSchema({ description: 'Mirror parameters with axis' })
 export class MirrorParameters {
   @IsEnum(MirrorAxis)
   @ApiProperty({ enum: MirrorAxis, enumName: 'MirrorAxis', description: 'Axis to mirror along' })
   axis!: MirrorAxis;
 }
 
+@ApiSchema({ description: 'Base asset edit action with action type' })
 class AssetEditActionBase {
   @IsEnum(AssetEditAction)
   @ApiProperty({ enum: AssetEditAction, enumName: 'AssetEditAction', description: 'Type of edit action to perform' })
   action!: AssetEditAction;
 }
 
+@ApiSchema({ description: 'Asset edit action for cropping' })
 export class AssetEditActionCrop extends AssetEditActionBase {
   @ValidateNested()
   @Type(() => CropParameters)
@@ -61,6 +66,7 @@ export class AssetEditActionCrop extends AssetEditActionBase {
   parameters!: CropParameters;
 }
 
+@ApiSchema({ description: 'Asset edit action for rotation' })
 export class AssetEditActionRotate extends AssetEditActionBase {
   @ValidateNested()
   @Type(() => RotateParameters)
@@ -68,6 +74,7 @@ export class AssetEditActionRotate extends AssetEditActionBase {
   parameters!: RotateParameters;
 }
 
+@ApiSchema({ description: 'Asset edit action for mirroring' })
 export class AssetEditActionMirror extends AssetEditActionBase {
   @ValidateNested()
   @Type(() => MirrorParameters)
@@ -106,6 +113,7 @@ const getActionClass = (item: { action: AssetEditAction }): ClassConstructor<Ass
   actionToClass[item.action];
 
 @ApiExtraModels(AssetEditActionRotate, AssetEditActionMirror, AssetEditActionCrop)
+@ApiSchema({ description: 'Asset edit actions list' })
 export class AssetEditActionListDto {
   /** list of edits */
   @ArrayMinSize(1)

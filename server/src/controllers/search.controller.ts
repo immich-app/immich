@@ -1,5 +1,5 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Post, Query } from '@nestjs/common';
-import { ApiBody, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -31,6 +31,11 @@ export class SearchController {
   @Authenticated({ permission: Permission.AssetRead })
   @HttpCode(HttpStatus.OK)
   @ApiBody({ description: 'Metadata search criteria', type: MetadataSearchDto })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Successfully searched assets by metadata',
+    type: SearchResponseDto,
+  })
   @Endpoint({
     summary: 'Search assets by metadata',
     description: 'Search for assets based on various metadata criteria.',
@@ -44,6 +49,11 @@ export class SearchController {
   @Authenticated({ permission: Permission.AssetStatistics })
   @HttpCode(HttpStatus.OK)
   @ApiBody({ description: 'Statistics search criteria', type: StatisticsSearchDto })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Successfully retrieved asset statistics',
+    type: SearchStatisticsResponseDto,
+  })
   @Endpoint({
     summary: 'Search asset statistics',
     description: 'Retrieve statistical data about assets based on search criteria, such as the total matching count.',
@@ -57,6 +67,7 @@ export class SearchController {
   @Authenticated({ permission: Permission.AssetRead })
   @HttpCode(HttpStatus.OK)
   @ApiBody({ description: 'Random search criteria', type: RandomSearchDto })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Successfully retrieved random assets', type: [AssetResponseDto] })
   @Endpoint({
     summary: 'Search random assets',
     description: 'Retrieve a random selection of assets based on the provided criteria.',
@@ -69,6 +80,7 @@ export class SearchController {
   @Post('large-assets')
   @Authenticated({ permission: Permission.AssetRead })
   @HttpCode(HttpStatus.OK)
+  @ApiResponse({ status: HttpStatus.OK, description: 'Successfully retrieved large assets', type: [AssetResponseDto] })
   @Endpoint({
     summary: 'Search large assets',
     description: 'Search for assets that are considered large based on specified criteria.',
@@ -82,6 +94,7 @@ export class SearchController {
   @Authenticated({ permission: Permission.AssetRead })
   @HttpCode(HttpStatus.OK)
   @ApiBody({ description: 'Smart search query and filters', type: SmartSearchDto })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Successfully performed smart search', type: SearchResponseDto })
   @Endpoint({
     summary: 'Smart asset search',
     description: 'Perform a smart search for assets by using machine learning vectors to determine relevance.',
@@ -93,6 +106,11 @@ export class SearchController {
 
   @Get('explore')
   @Authenticated({ permission: Permission.AssetRead })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Successfully retrieved explore data',
+    type: [SearchExploreResponseDto],
+  })
   @Endpoint({
     summary: 'Retrieve explore data',
     description: 'Retrieve data for the explore section, such as popular people and places.',
@@ -104,6 +122,7 @@ export class SearchController {
 
   @Get('person')
   @Authenticated({ permission: Permission.PersonRead })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Successfully searched people', type: [PersonResponseDto] })
   @Endpoint({
     summary: 'Search people',
     description: 'Search for people by name.',
@@ -115,6 +134,7 @@ export class SearchController {
 
   @Get('places')
   @Authenticated({ permission: Permission.AssetRead })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Successfully searched places', type: [PlacesResponseDto] })
   @Endpoint({
     summary: 'Search places',
     description: 'Search for places by name.',
@@ -126,6 +146,11 @@ export class SearchController {
 
   @Get('cities')
   @Authenticated({ permission: Permission.AssetRead })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Successfully retrieved assets by city',
+    type: [AssetResponseDto],
+  })
   @Endpoint({
     summary: 'Retrieve assets by city',
     description:
@@ -138,6 +163,7 @@ export class SearchController {
 
   @Get('suggestions')
   @Authenticated({ permission: Permission.AssetRead })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Successfully retrieved search suggestions', type: [String] })
   @Endpoint({
     summary: 'Retrieve search suggestions',
     description:

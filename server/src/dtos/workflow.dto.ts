@@ -1,4 +1,4 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional, ApiSchema } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsNotEmpty, IsObject, IsString, IsUUID, ValidateNested } from 'class-validator';
 import { WorkflowAction, WorkflowFilter } from 'src/database';
@@ -6,6 +6,7 @@ import { PluginTriggerType } from 'src/enum';
 import type { ActionConfig, FilterConfig } from 'src/types/plugin-schema.types';
 import { Optional, ValidateBoolean, ValidateEnum } from 'src/validation';
 
+@ApiSchema({ description: 'Workflow filter item with plugin filter ID and configuration' })
 export class WorkflowFilterItemDto {
   @ApiProperty({ description: 'Plugin filter ID' })
   @IsUUID()
@@ -17,6 +18,7 @@ export class WorkflowFilterItemDto {
   filterConfig?: FilterConfig;
 }
 
+@ApiSchema({ description: 'Workflow action item with plugin action ID and configuration' })
 export class WorkflowActionItemDto {
   @ApiProperty({ description: 'Plugin action ID' })
   @IsUUID()
@@ -28,6 +30,7 @@ export class WorkflowActionItemDto {
   actionConfig?: ActionConfig;
 }
 
+@ApiSchema({ description: 'Workflow creation request with trigger type, name, filters, and actions' })
 export class WorkflowCreateDto {
   @ApiProperty({ description: 'Workflow trigger type', enum: PluginTriggerType })
   @ValidateEnum({ enum: PluginTriggerType, name: 'PluginTriggerType' })
@@ -58,6 +61,7 @@ export class WorkflowCreateDto {
   actions!: WorkflowActionItemDto[];
 }
 
+@ApiSchema({ description: 'Workflow update request with optional fields' })
 export class WorkflowUpdateDto {
   @ApiPropertyOptional({ description: 'Workflow trigger type', enum: PluginTriggerType })
   @ValidateEnum({ enum: PluginTriggerType, name: 'PluginTriggerType', optional: true })
@@ -91,6 +95,7 @@ export class WorkflowUpdateDto {
   actions?: WorkflowActionItemDto[];
 }
 
+@ApiSchema({ description: 'Workflow response with filters and actions' })
 export class WorkflowResponseDto {
   @ApiProperty({ description: 'Workflow ID' })
   id!: string;
@@ -113,6 +118,7 @@ export class WorkflowResponseDto {
   actions!: WorkflowActionResponseDto[];
 }
 
+@ApiSchema({ description: 'Workflow filter response with schema' })
 export class WorkflowFilterResponseDto {
   @ApiProperty({ description: 'Filter ID' })
   id!: string;
@@ -126,6 +132,7 @@ export class WorkflowFilterResponseDto {
   order!: number;
 }
 
+@ApiSchema({ description: 'Workflow action response with schema' })
 export class WorkflowActionResponseDto {
   @ApiProperty({ description: 'Action ID' })
   id!: string;

@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Put, Query } from '@nestjs/common';
-import { ApiBody, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
@@ -21,6 +21,7 @@ export class QueueController {
 
   @Get()
   @Authenticated({ permission: Permission.QueueRead, admin: true })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Successfully retrieved queues', type: [QueueResponseDto] })
   @Endpoint({
     summary: 'List all queues',
     description: 'Retrieves a list of queues.',
@@ -33,6 +34,7 @@ export class QueueController {
   @Get(':name')
   @Authenticated({ permission: Permission.QueueRead, admin: true })
   @ApiParam({ name: 'name', description: 'Queue name', type: String })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Successfully retrieved queue', type: QueueResponseDto })
   @Endpoint({
     summary: 'Retrieve a queue',
     description: 'Retrieves a specific queue by its name.',
@@ -46,6 +48,7 @@ export class QueueController {
   @Authenticated({ permission: Permission.QueueUpdate, admin: true })
   @ApiParam({ name: 'name', description: 'Queue name', type: String })
   @ApiBody({ description: 'Queue update data', type: QueueUpdateDto })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Queue updated successfully', type: QueueResponseDto })
   @Endpoint({
     summary: 'Update a queue',
     description: 'Change the paused status of a specific queue.',
@@ -63,6 +66,7 @@ export class QueueController {
   @Authenticated({ permission: Permission.QueueJobRead, admin: true })
   @ApiParam({ name: 'name', description: 'Queue name', type: String })
   @ApiQuery({ name: 'status', description: 'Filter by job status', type: String, required: false })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Successfully retrieved queue jobs', type: [QueueJobResponseDto] })
   @Endpoint({
     summary: 'Retrieve queue jobs',
     description: 'Retrieves a list of queue jobs from the specified queue.',
@@ -81,6 +85,7 @@ export class QueueController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiParam({ name: 'name', description: 'Queue name', type: String })
   @ApiBody({ description: 'Queue deletion options', type: QueueDeleteDto })
+  @ApiResponse({ status: HttpStatus.NO_CONTENT, description: 'Queue emptied successfully' })
   @Endpoint({
     summary: 'Empty a queue',
     description: 'Removes all jobs from the specified queue.',

@@ -1,5 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional, ApiSchema } from '@nestjs/swagger';
 import { plainToInstance, Transform, Type } from 'class-transformer';
 import { ArrayNotEmpty, IsArray, IsNotEmpty, IsString, ValidateNested } from 'class-validator';
 import { AssetMetadataUpsertItemDto } from 'src/dtos/asset.dto';
@@ -17,6 +17,7 @@ export enum AssetMediaSize {
   THUMBNAIL = 'thumbnail',
 }
 
+@ApiSchema({ description: 'Asset media options with size and edited flag' })
 export class AssetMediaOptionsDto {
   @ApiProperty({ description: 'Asset media size', enum: AssetMediaSize, required: false })
   @ValidateEnum({ enum: AssetMediaSize, name: 'AssetMediaSize', optional: true })
@@ -33,6 +34,7 @@ export enum UploadFieldName {
   PROFILE_DATA = 'file',
 }
 
+@ApiSchema({ description: 'Base asset media DTO with device info and file metadata' })
 class AssetMediaBase {
   @ApiProperty({ description: 'Device asset ID' })
   @IsNotEmpty()
@@ -68,6 +70,7 @@ class AssetMediaBase {
   [UploadFieldName.ASSET_DATA]!: any;
 }
 
+@ApiSchema({ description: 'Asset media creation request with file data and optional metadata' })
 export class AssetMediaCreateDto extends AssetMediaBase {
   @ApiPropertyOptional({ description: 'Mark as favorite' })
   @ValidateBoolean({ optional: true })
@@ -100,8 +103,10 @@ export class AssetMediaCreateDto extends AssetMediaBase {
   [UploadFieldName.SIDECAR_DATA]?: any;
 }
 
+@ApiSchema({ description: 'Asset media replace request with file data' })
 export class AssetMediaReplaceDto extends AssetMediaBase {}
 
+@ApiSchema({ description: 'Asset bulk upload check item with ID and checksum' })
 export class AssetBulkUploadCheckItem {
   @ApiProperty({ description: 'Asset ID' })
   @IsString()
@@ -114,6 +119,7 @@ export class AssetBulkUploadCheckItem {
   checksum!: string;
 }
 
+@ApiSchema({ description: 'Asset bulk upload check request with assets array' })
 export class AssetBulkUploadCheckDto {
   @ApiProperty({ description: 'Assets to check', type: [AssetBulkUploadCheckItem] })
   @IsArray()
@@ -122,6 +128,7 @@ export class AssetBulkUploadCheckDto {
   assets!: AssetBulkUploadCheckItem[];
 }
 
+@ApiSchema({ description: 'Check existing assets request with device asset IDs and device ID' })
 export class CheckExistingAssetsDto {
   @ApiProperty({ description: 'Device asset IDs to check', type: [String] })
   @ArrayNotEmpty()

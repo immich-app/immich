@@ -1,4 +1,4 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional, ApiSchema } from '@nestjs/swagger';
 import { IsString } from 'class-validator';
 import { SharedLink } from 'src/database';
 import { HistoryBuilder, Property } from 'src/decorators';
@@ -7,6 +7,7 @@ import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
 import { SharedLinkType } from 'src/enum';
 import { Optional, ValidateBoolean, ValidateDate, ValidateEnum, ValidateUUID } from 'src/validation';
 
+@ApiSchema({ description: 'Shared link search query with optional album and ID filters' })
 export class SharedLinkSearchDto {
   @ApiPropertyOptional({ description: 'Filter by album ID' })
   @ValidateUUID({ optional: true })
@@ -18,6 +19,7 @@ export class SharedLinkSearchDto {
   id?: string;
 }
 
+@ApiSchema({ description: 'Shared link creation request with type, assets/album, and options' })
 export class SharedLinkCreateDto {
   @ApiProperty({ description: 'Shared link type', enum: SharedLinkType })
   @ValidateEnum({ enum: SharedLinkType, name: 'SharedLinkType' })
@@ -63,6 +65,7 @@ export class SharedLinkCreateDto {
   showMetadata?: boolean = true;
 }
 
+@ApiSchema({ description: 'Shared link edit request with optional fields' })
 export class SharedLinkEditDto {
   @ApiPropertyOptional({ description: 'Link description', nullable: true })
   @Optional({ nullable: true, emptyToNull: true })
@@ -105,6 +108,7 @@ export class SharedLinkEditDto {
   changeExpiryTime?: boolean;
 }
 
+@ApiSchema({ description: 'Shared link password request with password or token' })
 export class SharedLinkPasswordDto {
   @ApiPropertyOptional({ example: 'password', description: 'Link password' })
   @IsString()
@@ -116,6 +120,7 @@ export class SharedLinkPasswordDto {
   @Optional()
   token?: string;
 }
+@ApiSchema({ description: 'Shared link response with assets' })
 export class SharedLinkResponseDto {
   @ApiProperty({ description: 'Shared link ID' })
   id!: string;

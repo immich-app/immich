@@ -1,5 +1,5 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Post } from '@nestjs/common';
-import { ApiBody, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import {
   AdminOnboardingUpdateDto,
@@ -17,6 +17,11 @@ export class SystemMetadataController {
 
   @Get('admin-onboarding')
   @Authenticated({ permission: Permission.SystemMetadataRead, admin: true })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Successfully retrieved admin onboarding status',
+    type: AdminOnboardingUpdateDto,
+  })
   @Endpoint({
     summary: 'Retrieve admin onboarding',
     description: 'Retrieve the current admin onboarding status.',
@@ -30,6 +35,7 @@ export class SystemMetadataController {
   @Authenticated({ permission: Permission.SystemMetadataUpdate, admin: true })
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiBody({ description: 'Admin onboarding update data', type: AdminOnboardingUpdateDto })
+  @ApiResponse({ status: HttpStatus.NO_CONTENT, description: 'Admin onboarding updated successfully' })
   @Endpoint({
     summary: 'Update admin onboarding',
     description: 'Update the admin onboarding status.',
@@ -41,6 +47,11 @@ export class SystemMetadataController {
 
   @Get('reverse-geocoding-state')
   @Authenticated({ permission: Permission.SystemMetadataRead, admin: true })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Successfully retrieved reverse geocoding state',
+    type: ReverseGeocodingStateResponseDto,
+  })
   @Endpoint({
     summary: 'Retrieve reverse geocoding state',
     description: 'Retrieve the current state of the reverse geocoding import.',
@@ -52,6 +63,11 @@ export class SystemMetadataController {
 
   @Get('version-check-state')
   @Authenticated({ permission: Permission.SystemMetadataRead, admin: true })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Successfully retrieved version check state',
+    type: VersionCheckStateResponseDto,
+  })
   @Endpoint({
     summary: 'Retrieve version check state',
     description: 'Retrieve the current state of the version check process.',

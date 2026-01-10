@@ -1,14 +1,16 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiSchema } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsNotEmpty, IsNumber, IsString, Max, Min } from 'class-validator';
 import { ValidateBoolean } from 'src/validation';
 
+@ApiSchema({ description: 'Base task configuration with enabled flag' })
 export class TaskConfig {
   @ApiProperty({ description: 'Whether the task is enabled', type: Boolean })
   @ValidateBoolean()
   enabled!: boolean;
 }
 
+@ApiSchema({ description: 'Model configuration with model name' })
 export class ModelConfig extends TaskConfig {
   @ApiProperty({ description: 'Name of the model to use', type: String })
   @IsString()
@@ -16,8 +18,10 @@ export class ModelConfig extends TaskConfig {
   modelName!: string;
 }
 
+@ApiSchema({ description: 'CLIP model configuration' })
 export class CLIPConfig extends ModelConfig {}
 
+@ApiSchema({ description: 'Duplicate detection configuration with maximum distance threshold' })
 export class DuplicateDetectionConfig extends TaskConfig {
   @IsNumber()
   @Min(0.001)
@@ -31,6 +35,7 @@ export class DuplicateDetectionConfig extends TaskConfig {
   maxDistance!: number;
 }
 
+@ApiSchema({ description: 'Facial recognition configuration with confidence scores and distance thresholds' })
 export class FacialRecognitionConfig extends ModelConfig {
   @IsNumber()
   @Min(0.1)
@@ -57,6 +62,7 @@ export class FacialRecognitionConfig extends ModelConfig {
   minFaces!: number;
 }
 
+@ApiSchema({ description: 'OCR configuration with resolution and confidence score thresholds' })
 export class OcrConfig extends ModelConfig {
   @IsNumber()
   @Min(1)

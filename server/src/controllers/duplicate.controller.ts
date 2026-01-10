@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param } from '@nestjs/common';
-import { ApiBody, ApiParam, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -16,6 +16,11 @@ export class DuplicateController {
 
   @Get()
   @Authenticated({ permission: Permission.DuplicateRead })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Successfully retrieved duplicates',
+    type: [DuplicateResponseDto],
+  })
   @Endpoint({
     summary: 'Retrieve duplicates',
     description: 'Retrieve a list of duplicate assets available to the authenticated user.',
@@ -29,6 +34,7 @@ export class DuplicateController {
   @Authenticated({ permission: Permission.DuplicateDelete })
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiBody({ description: 'Duplicate asset IDs to delete', type: BulkIdsDto })
+  @ApiResponse({ status: HttpStatus.NO_CONTENT, description: 'Duplicates deleted successfully' })
   @Endpoint({
     summary: 'Delete duplicates',
     description: 'Delete multiple duplicate assets specified by their IDs.',
@@ -42,6 +48,7 @@ export class DuplicateController {
   @Authenticated({ permission: Permission.DuplicateDelete })
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiParam({ name: 'id', description: 'Duplicate asset ID', type: String, format: 'uuid' })
+  @ApiResponse({ status: HttpStatus.NO_CONTENT, description: 'Duplicate deleted successfully' })
   @Endpoint({
     summary: 'Delete a duplicate',
     description: 'Delete a single duplicate asset specified by its ID.',

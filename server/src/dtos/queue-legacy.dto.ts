@@ -1,7 +1,8 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiSchema } from '@nestjs/swagger';
 import { QueueResponseDto, QueueStatisticsDto } from 'src/dtos/queue.dto';
 import { QueueName } from 'src/enum';
 
+@ApiSchema({ description: 'Queue status legacy response with active and paused flags' })
 export class QueueStatusLegacyDto {
   @ApiProperty({ description: 'Whether the queue is currently active (has running jobs)', type: Boolean })
   isActive!: boolean;
@@ -9,6 +10,7 @@ export class QueueStatusLegacyDto {
   isPaused!: boolean;
 }
 
+@ApiSchema({ description: 'Queue response legacy with status and job counts' })
 export class QueueResponseLegacyDto {
   @ApiProperty({ type: QueueStatusLegacyDto, description: 'Current status of the queue' })
   queueStatus!: QueueStatusLegacyDto;
@@ -17,6 +19,7 @@ export class QueueResponseLegacyDto {
   jobCounts!: QueueStatisticsDto;
 }
 
+@ApiSchema({ description: 'Queues response legacy with all queue names mapped to queue responses' })
 export class QueuesResponseLegacyDto implements Record<QueueName, QueueResponseLegacyDto> {
   @ApiProperty({ type: QueueResponseLegacyDto })
   [QueueName.ThumbnailGeneration]!: QueueResponseLegacyDto;

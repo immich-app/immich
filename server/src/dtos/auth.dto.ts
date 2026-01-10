@@ -1,4 +1,4 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional, ApiSchema } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
 import { AuthApiKey, AuthSession, AuthSharedLink, AuthUser, UserAdmin } from 'src/database';
@@ -11,6 +11,7 @@ export type CookieResponse = {
   values: Array<{ key: ImmichCookie; value: string | null }>;
 };
 
+@ApiSchema({ description: 'Authentication context with user, API key, shared link, or session' })
 export class AuthDto {
   @ApiProperty({ description: 'Authenticated user' })
   user!: AuthUser;
@@ -23,6 +24,7 @@ export class AuthDto {
   session?: AuthSession;
 }
 
+@ApiSchema({ description: 'Login credentials with email and password' })
 export class LoginCredentialDto {
   @ApiProperty({ example: 'testuser@email.com', description: 'User email' })
   @IsEmail({ require_tld: false })
@@ -36,6 +38,7 @@ export class LoginCredentialDto {
   password!: string;
 }
 
+@ApiSchema({ description: 'Login response with access token' })
 export class LoginResponseDto {
   @ApiProperty({ description: 'Access token' })
   accessToken!: string;
@@ -72,6 +75,7 @@ export function mapLoginResponse(entity: UserAdmin, accessToken: string): LoginR
   };
 }
 
+@ApiSchema({ description: 'Logout response with redirect URI' })
 export class LogoutResponseDto {
   @ApiProperty({ description: 'Logout successful' })
   successful!: boolean;
@@ -79,6 +83,7 @@ export class LogoutResponseDto {
   redirectUri!: string;
 }
 
+@ApiSchema({ description: 'User sign up request with email, password, and name' })
 export class SignUpDto extends LoginCredentialDto {
   @ApiProperty({ example: 'Admin', description: 'User name' })
   @IsString()
@@ -86,6 +91,7 @@ export class SignUpDto extends LoginCredentialDto {
   name!: string;
 }
 
+@ApiSchema({ description: 'Change password request with current and new password' })
 export class ChangePasswordDto {
   @ApiProperty({ example: 'password', description: 'Current password' })
   @IsString()
@@ -103,12 +109,14 @@ export class ChangePasswordDto {
   invalidateSessions?: boolean;
 }
 
+@ApiSchema({ description: 'PIN code setup request' })
 export class PinCodeSetupDto {
   @ApiProperty({ description: 'PIN code (4-6 digits)' })
   @PinCode()
   pinCode!: string;
 }
 
+@ApiSchema({ description: 'PIN code reset request with optional PIN or password' })
 export class PinCodeResetDto {
   @ApiPropertyOptional({ description: 'New PIN code (4-6 digits)' })
   @PinCode({ optional: true })
@@ -121,19 +129,23 @@ export class PinCodeResetDto {
   password?: string;
 }
 
+@ApiSchema({ description: 'Session unlock request with PIN or password' })
 export class SessionUnlockDto extends PinCodeResetDto {}
 
+@ApiSchema({ description: 'PIN code change request with old and new PIN' })
 export class PinCodeChangeDto extends PinCodeResetDto {
   @ApiProperty({ description: 'New PIN code (4-6 digits)' })
   @PinCode()
   newPinCode!: string;
 }
 
+@ApiSchema({ description: 'Access token validation response' })
 export class ValidateAccessTokenResponseDto {
   @ApiProperty({ description: 'Authentication status' })
   authStatus!: boolean;
 }
 
+@ApiSchema({ description: 'OAuth callback request with URL and optional state/code verifier' })
 export class OAuthCallbackDto {
   @ApiProperty({ description: 'OAuth callback URL' })
   @IsNotEmpty()
@@ -151,6 +163,7 @@ export class OAuthCallbackDto {
   codeVerifier?: string;
 }
 
+@ApiSchema({ description: 'OAuth configuration request with redirect URI and optional PKCE parameters' })
 export class OAuthConfigDto {
   @ApiProperty({ description: 'OAuth redirect URI' })
   @IsNotEmpty()
@@ -168,11 +181,13 @@ export class OAuthConfigDto {
   codeChallenge?: string;
 }
 
+@ApiSchema({ description: 'OAuth authorization URL response' })
 export class OAuthAuthorizeResponseDto {
   @ApiProperty({ description: 'OAuth authorization URL' })
   url!: string;
 }
 
+@ApiSchema({ description: 'Authentication status response' })
 export class AuthStatusResponseDto {
   @ApiProperty({ description: 'Has PIN code set' })
   pinCode!: boolean;

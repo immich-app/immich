@@ -1,5 +1,5 @@
 import { Body, Controller, HttpCode, HttpStatus, Post, StreamableFile } from '@nestjs/common';
-import { ApiBody, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AssetIdsDto } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -17,6 +17,11 @@ export class DownloadController {
   @Post('info')
   @Authenticated({ permission: Permission.AssetDownload, sharedLink: true })
   @ApiBody({ description: 'Asset IDs, album ID, or user ID to download', type: DownloadInfoDto })
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    description: 'Successfully retrieved download information',
+    type: DownloadResponseDto,
+  })
   @Endpoint({
     summary: 'Retrieve download information',
     description:
