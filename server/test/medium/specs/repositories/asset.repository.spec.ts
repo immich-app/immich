@@ -87,4 +87,64 @@ describe(AssetRepository.name, () => {
       ).resolves.toEqual({ lockedProperties: ['description', 'dateTimeOriginal'] });
     });
   });
+
+  describe('unlockProperties', () => {
+    it('should unlock one property', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newExif({
+        assetId: asset.id,
+        dateTimeOriginal: '2023-11-19T18:11:00',
+        lockedProperties: ['dateTimeOriginal', 'description'],
+      });
+
+      await expect(
+        ctx.database
+          .selectFrom('asset_exif')
+          .select('lockedProperties')
+          .where('assetId', '=', asset.id)
+          .executeTakeFirstOrThrow(),
+      ).resolves.toEqual({ lockedProperties: ['dateTimeOriginal', 'description'] });
+
+      await sut.unlockProperties(asset.id, ['dateTimeOriginal']);
+
+      await expect(
+        ctx.database
+          .selectFrom('asset_exif')
+          .select('lockedProperties')
+          .where('assetId', '=', asset.id)
+          .executeTakeFirstOrThrow(),
+      ).resolves.toEqual({ lockedProperties: ['description'] });
+    });
+
+    it('should unlock all properties', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newExif({
+        assetId: asset.id,
+        dateTimeOriginal: '2023-11-19T18:11:00',
+        lockedProperties: ['dateTimeOriginal', 'description'],
+      });
+
+      await expect(
+        ctx.database
+          .selectFrom('asset_exif')
+          .select('lockedProperties')
+          .where('assetId', '=', asset.id)
+          .executeTakeFirstOrThrow(),
+      ).resolves.toEqual({ lockedProperties: ['dateTimeOriginal', 'description'] });
+
+      await sut.unlockProperties(asset.id, ['description', 'dateTimeOriginal']);
+
+      await expect(
+        ctx.database
+          .selectFrom('asset_exif')
+          .select('lockedProperties')
+          .where('assetId', '=', asset.id)
+          .executeTakeFirstOrThrow(),
+      ).resolves.toEqual({ lockedProperties: null });
+    });
+  });
 });
