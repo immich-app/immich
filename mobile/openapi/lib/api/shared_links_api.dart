@@ -166,8 +166,10 @@ class SharedLinksApi {
   /// Parameters:
   ///
   /// * [String] albumId:
+  ///   Filter by album ID
   ///
   /// * [String] id:
+  ///   Filter by shared link ID
   Future<Response> getAllSharedLinksWithHttpInfo({ String? albumId, String? id, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/shared-links';
@@ -207,8 +209,10 @@ class SharedLinksApi {
   /// Parameters:
   ///
   /// * [String] albumId:
+  ///   Filter by album ID
   ///
   /// * [String] id:
+  ///   Filter by shared link ID
   Future<List<SharedLinkResponseDto>?> getAllSharedLinks({ String? albumId, String? id, }) async {
     final response = await getAllSharedLinksWithHttpInfo( albumId: albumId, id: id, );
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -238,10 +242,12 @@ class SharedLinksApi {
   /// * [String] key:
   ///
   /// * [String] password:
+  ///   Link password
   ///
   /// * [String] slug:
   ///
   /// * [String] token:
+  ///   Access token
   Future<Response> getMySharedLinkWithHttpInfo({ String? key, String? password, String? slug, String? token, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/shared-links/me';
@@ -289,10 +295,12 @@ class SharedLinksApi {
   /// * [String] key:
   ///
   /// * [String] password:
+  ///   Link password
   ///
   /// * [String] slug:
   ///
   /// * [String] token:
+  ///   Access token
   Future<SharedLinkResponseDto?> getMySharedLink({ String? key, String? password, String? slug, String? token, }) async {
     final response = await getMySharedLinkWithHttpInfo( key: key, password: password, slug: slug, token: token, );
     if (response.statusCode >= HttpStatus.badRequest) {

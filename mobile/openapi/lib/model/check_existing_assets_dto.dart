@@ -17,8 +17,10 @@ class CheckExistingAssetsDto {
     required this.deviceId,
   });
 
+  /// Device asset IDs to check
   List<String> deviceAssetIds;
 
+  /// Device ID
   String deviceId;
 
   @override

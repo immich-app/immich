@@ -19,12 +19,16 @@ class AssetMetadataBulkResponseDto {
     required this.value,
   });
 
+  /// Asset ID
   String assetId;
 
+  /// Metadata key
   String key;
 
+  /// Last update date
   DateTime updatedAt;
 
+  /// Metadata value (object)
   Object value;
 
   @override

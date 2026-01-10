@@ -23,6 +23,7 @@ class UpdateAssetDto {
     this.visibility,
   });
 
+  /// Original date and time (ISO 8601)
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -31,6 +32,7 @@ class UpdateAssetDto {
   ///
   String? dateTimeOriginal;
 
+  /// Asset description
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -39,6 +41,7 @@ class UpdateAssetDto {
   ///
   String? description;
 
+  /// Mark as favorite
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -47,6 +50,7 @@ class UpdateAssetDto {
   ///
   bool? isFavorite;
 
+  /// Latitude coordinate
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -55,8 +59,10 @@ class UpdateAssetDto {
   ///
   num? latitude;
 
+  /// Live photo video ID
   String? livePhotoVideoId;
 
+  /// Longitude coordinate
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -65,6 +71,8 @@ class UpdateAssetDto {
   ///
   num? longitude;
 
+  /// Rating (-1 to 5)
+  ///
   /// Minimum value: -1
   /// Maximum value: 5
   ///
@@ -75,6 +83,7 @@ class UpdateAssetDto {
   ///
   num? rating;
 
+  /// Asset visibility
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated

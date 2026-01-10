@@ -17,8 +17,10 @@ class AlbumUserResponseDto {
     required this.user,
   });
 
+  /// Album user role
   AlbumUserRole role;
 
+  /// User details
   UserResponseDto user;
 
   @override

@@ -184,8 +184,10 @@ class PeopleApi {
   /// Parameters:
   ///
   /// * [String] closestAssetId:
+  ///   Closest asset ID for similarity search
   ///
   /// * [String] closestPersonId:
+  ///   Closest person ID for similarity search
   ///
   /// * [num] page:
   ///   Page number for pagination
@@ -194,6 +196,7 @@ class PeopleApi {
   ///   Number of items per page
   ///
   /// * [bool] withHidden:
+  ///   Include hidden people
   Future<Response> getAllPeopleWithHttpInfo({ String? closestAssetId, String? closestPersonId, num? page, num? size, bool? withHidden, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/people';
@@ -242,8 +245,10 @@ class PeopleApi {
   /// Parameters:
   ///
   /// * [String] closestAssetId:
+  ///   Closest asset ID for similarity search
   ///
   /// * [String] closestPersonId:
+  ///   Closest person ID for similarity search
   ///
   /// * [num] page:
   ///   Page number for pagination
@@ -252,6 +257,7 @@ class PeopleApi {
   ///   Number of items per page
   ///
   /// * [bool] withHidden:
+  ///   Include hidden people
   Future<PeopleResponseDto?> getAllPeople({ String? closestAssetId, String? closestPersonId, num? page, num? size, bool? withHidden, }) async {
     final response = await getAllPeopleWithHttpInfo( closestAssetId: closestAssetId, closestPersonId: closestPersonId, page: page, size: size, withHidden: withHidden, );
     if (response.statusCode >= HttpStatus.badRequest) {

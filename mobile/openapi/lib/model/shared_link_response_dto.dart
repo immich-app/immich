@@ -30,6 +30,7 @@ class SharedLinkResponseDto {
     required this.userId,
   });
 
+  /// Shared album
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -38,32 +39,46 @@ class SharedLinkResponseDto {
   ///
   AlbumResponseDto? album;
 
+  /// Allow downloads
   bool allowDownload;
 
+  /// Allow uploads
   bool allowUpload;
 
+  /// Shared assets
   List<AssetResponseDto> assets;
 
+  /// Creation date
   DateTime createdAt;
 
+  /// Link description
   String? description;
 
+  /// Expiration date
   DateTime? expiresAt;
 
+  /// Shared link ID
   String id;
 
+  /// Encryption key (base64url)
   String key;
 
+  /// Has password
   String? password;
 
+  /// Show metadata
   bool showMetadata;
 
+  /// Custom URL slug
   String? slug;
 
+  /// Access token
   String? token;
 
+  /// Shared link type
   SharedLinkType type;
 
+  /// Owner user ID
   String userId;
 
   @override

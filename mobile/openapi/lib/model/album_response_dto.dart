@@ -34,22 +34,31 @@ class AlbumResponseDto {
     required this.updatedAt,
   });
 
+  /// Album name
   String albumName;
 
+  /// Thumbnail asset ID
   String? albumThumbnailAssetId;
 
+  /// Album users
   List<AlbumUserResponseDto> albumUsers;
 
+  /// Number of assets
   int assetCount;
 
+  /// Album assets
   List<AssetResponseDto> assets;
 
+  /// Per-user contribution counts (shared albums only)
   List<ContributorCountResponseDto> contributorCounts;
 
+  /// Creation date
   DateTime createdAt;
 
+  /// Album description
   String description;
 
+  /// End date (latest asset)
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -58,12 +67,16 @@ class AlbumResponseDto {
   ///
   DateTime? endDate;
 
+  /// Has shared link
   bool hasSharedLink;
 
+  /// Album ID
   String id;
 
+  /// Activity feed enabled
   bool isActivityEnabled;
 
+  /// Last modified asset timestamp
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -72,6 +85,7 @@ class AlbumResponseDto {
   ///
   DateTime? lastModifiedAssetTimestamp;
 
+  /// Asset sort order
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -80,12 +94,16 @@ class AlbumResponseDto {
   ///
   AssetOrder? order;
 
+  /// Album owner
   UserResponseDto owner;
 
+  /// Owner user ID
   String ownerId;
 
+  /// Is shared album
   bool shared;
 
+  /// Start date (earliest asset)
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -94,6 +112,7 @@ class AlbumResponseDto {
   ///
   DateTime? startDate;
 
+  /// Last update date
   DateTime updatedAt;
 
   @override

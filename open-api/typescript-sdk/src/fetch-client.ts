@@ -15,11 +15,17 @@ export const servers = {
     server1: "/api"
 };
 export type UserResponseDto = {
+    /** Avatar color */
     avatarColor: UserAvatarColor;
+    /** User email */
     email: string;
+    /** User ID */
     id: string;
+    /** User name */
     name: string;
+    /** Profile change date */
     profileChangedAt: string;
+    /** Profile image path */
     profileImagePath: string;
 };
 export type ActivityResponseDto = {
@@ -54,6 +60,7 @@ export type DatabaseBackupUploadDto = {
     file?: Blob;
 };
 export type SetMaintenanceModeDto = {
+    /** Maintenance action */
     action: MaintenanceAction;
     restoreBackupFilename?: string;
 };
@@ -67,9 +74,11 @@ export type MaintenanceDetectInstallResponseDto = {
     storage: MaintenanceDetectInstallStorageFolderDto[];
 };
 export type MaintenanceLoginDto = {
+    /** Maintenance token */
     token?: string;
 };
 export type MaintenanceAuthDto = {
+    /** Maintenance username */
     username: string;
 };
 export type MaintenanceStatusResponseDto = {
@@ -123,52 +132,91 @@ export type TestEmailResponseDto = {
     messageId: string;
 };
 export type UserLicense = {
+    /** Activation date */
     activatedAt: string;
+    /** Activation key */
     activationKey: string;
+    /** License key */
     licenseKey: string;
 };
 export type UserAdminResponseDto = {
+    /** Avatar color */
     avatarColor: UserAvatarColor;
+    /** Creation date */
     createdAt: string;
+    /** Deletion date */
     deletedAt: string | null;
+    /** User email */
     email: string;
+    /** User ID */
     id: string;
+    /** Is admin user */
     isAdmin: boolean;
+    /** User license */
     license: (UserLicense) | null;
+    /** User name */
     name: string;
+    /** OAuth ID */
     oauthId: string;
+    /** Profile change date */
     profileChangedAt: string;
+    /** Profile image path */
     profileImagePath: string;
+    /** Storage quota in bytes */
     quotaSizeInBytes: number | null;
+    /** Storage usage in bytes */
     quotaUsageInBytes: number | null;
+    /** Require password change on next login */
     shouldChangePassword: boolean;
+    /** User status */
     status: UserStatus;
+    /** Storage label */
     storageLabel: string | null;
+    /** Last update date */
     updatedAt: string;
 };
 export type UserAdminCreateDto = {
+    /** Avatar color */
     avatarColor?: (UserAvatarColor) | null;
+    /** User email */
     email: string;
+    /** Grant admin privileges */
     isAdmin?: boolean;
+    /** User name */
     name: string;
+    /** Send notification email */
     notify?: boolean;
+    /** User password */
     password: string;
+    /** Storage quota in bytes */
     quotaSizeInBytes?: number | null;
+    /** Require password change on next login */
     shouldChangePassword?: boolean;
+    /** Storage label */
     storageLabel?: string | null;
 };
 export type UserAdminDeleteDto = {
+    /** Force delete even if user has assets */
     force?: boolean;
 };
 export type UserAdminUpdateDto = {
+    /** Avatar color */
     avatarColor?: (UserAvatarColor) | null;
+    /** User email */
     email?: string;
+    /** Grant admin privileges */
     isAdmin?: boolean;
+    /** User name */
     name?: string;
+    /** User password */
     password?: string;
+    /** PIN code */
     pinCode?: string | null;
+    /** Storage quota in bytes */
     quotaSizeInBytes?: number | null;
+    /** Require password change on next login */
     shouldChangePassword?: boolean;
+    /** Storage label */
     storageLabel?: string | null;
 };
 export type AlbumsResponse = {
@@ -286,23 +334,37 @@ export type UserPreferencesUpdateDto = {
     tags?: TagsUpdate;
 };
 export type SessionResponseDto = {
+    /** App version */
     appVersion: string | null;
+    /** Creation date */
     createdAt: string;
+    /** Is current session */
     current: boolean;
+    /** Device OS */
     deviceOS: string;
+    /** Device type */
     deviceType: string;
+    /** Expiration date */
     expiresAt?: string;
+    /** Session ID */
     id: string;
+    /** Is pending sync reset */
     isPendingSyncReset: boolean;
+    /** Last update date */
     updatedAt: string;
 };
 export type AssetStatsResponseDto = {
+    /** Number of images */
     images: number;
+    /** Total number of assets */
     total: number;
+    /** Number of videos */
     videos: number;
 };
 export type AlbumUserResponseDto = {
+    /** Album user role */
     role: AlbumUserRole;
+    /** User details */
     user: UserResponseDto;
 };
 export type ExifResponseDto = {
@@ -330,24 +392,41 @@ export type ExifResponseDto = {
     timeZone?: string | null;
 };
 export type AssetFaceWithoutPersonResponseDto = {
+    /** Bounding box X1 coordinate */
     boundingBoxX1: number;
+    /** Bounding box X2 coordinate */
     boundingBoxX2: number;
+    /** Bounding box Y1 coordinate */
     boundingBoxY1: number;
+    /** Bounding box Y2 coordinate */
     boundingBoxY2: number;
+    /** Face ID */
     id: string;
+    /** Image height in pixels */
     imageHeight: number;
+    /** Image width in pixels */
     imageWidth: number;
+    /** Face detection source type */
     sourceType?: SourceType;
 };
 export type PersonWithFacesResponseDto = {
+    /** Person date of birth */
     birthDate: string | null;
+    /** Person color (hex) */
     color?: string;
+    /** Face detections */
     faces: AssetFaceWithoutPersonResponseDto[];
+    /** Person ID */
     id: string;
+    /** Is favorite */
     isFavorite?: boolean;
+    /** Is hidden */
     isHidden: boolean;
+    /** Person name */
     name: string;
+    /** Thumbnail path */
     thumbnailPath: string;
+    /** Last update date */
     updatedAt?: string;
 };
 export type AssetStackResponseDto = {
@@ -356,12 +435,19 @@ export type AssetStackResponseDto = {
     primaryAssetId: string;
 };
 export type TagResponseDto = {
+    /** Tag color (hex) */
     color?: string;
+    /** Creation date */
     createdAt: string;
+    /** Tag ID */
     id: string;
+    /** Tag name */
     name: string;
+    /** Parent tag ID */
     parentId?: string;
+    /** Last update date */
     updatedAt: string;
+    /** Tag value (full path) */
     value: string;
 };
 export type AssetResponseDto = {
@@ -408,58 +494,97 @@ export type AssetResponseDto = {
     width: number | null;
 };
 export type ContributorCountResponseDto = {
+    /** Number of assets contributed */
     assetCount: number;
+    /** User ID */
     userId: string;
 };
 export type AlbumResponseDto = {
+    /** Album name */
     albumName: string;
+    /** Thumbnail asset ID */
     albumThumbnailAssetId: string | null;
+    /** Album users */
     albumUsers: AlbumUserResponseDto[];
+    /** Number of assets */
     assetCount: number;
+    /** Album assets */
     assets: AssetResponseDto[];
+    /** Per-user contribution counts (shared albums only) */
     contributorCounts?: ContributorCountResponseDto[];
+    /** Creation date */
     createdAt: string;
+    /** Album description */
     description: string;
+    /** End date (latest asset) */
     endDate?: string;
+    /** Has shared link */
     hasSharedLink: boolean;
+    /** Album ID */
     id: string;
+    /** Activity feed enabled */
     isActivityEnabled: boolean;
+    /** Last modified asset timestamp */
     lastModifiedAssetTimestamp?: string;
+    /** Asset sort order */
     order?: AssetOrder;
+    /** Album owner */
     owner: UserResponseDto;
+    /** Owner user ID */
     ownerId: string;
+    /** Is shared album */
     shared: boolean;
+    /** Start date (earliest asset) */
     startDate?: string;
+    /** Last update date */
     updatedAt: string;
 };
 export type AlbumUserCreateDto = {
+    /** Album user role */
     role: AlbumUserRole;
+    /** User ID */
     userId: string;
 };
 export type CreateAlbumDto = {
+    /** Album name */
     albumName: string;
+    /** Album users */
     albumUsers?: AlbumUserCreateDto[];
+    /** Initial asset IDs */
     assetIds?: string[];
+    /** Album description */
     description?: string;
 };
 export type AlbumsAddAssetsDto = {
+    /** Album IDs */
     albumIds: string[];
+    /** Asset IDs */
     assetIds: string[];
 };
 export type AlbumsAddAssetsResponseDto = {
+    /** Error reason */
     error?: BulkIdErrorReason;
+    /** Operation success */
     success: boolean;
 };
 export type AlbumStatisticsResponseDto = {
+    /** Number of non-shared albums */
     notShared: number;
+    /** Number of owned albums */
     owned: number;
+    /** Number of shared albums */
     shared: number;
 };
 export type UpdateAlbumDto = {
+    /** Album name */
     albumName?: string;
+    /** Album thumbnail asset ID */
     albumThumbnailAssetId?: string;
+    /** Album description */
     description?: string;
+    /** Enable activity feed */
     isActivityEnabled?: boolean;
+    /** Asset sort order */
     order?: AssetOrder;
 };
 export type BulkIdsDto = {
@@ -471,54 +596,84 @@ export type BulkIdResponseDto = {
     success: boolean;
 };
 export type UpdateAlbumUserDto = {
+    /** Album user role */
     role: AlbumUserRole;
 };
 export type AlbumUserAddDto = {
+    /** Album user role */
     role?: AlbumUserRole;
+    /** User ID */
     userId: string;
 };
 export type AddUsersDto = {
+    /** Album users to add */
     albumUsers: AlbumUserAddDto[];
 };
 export type ApiKeyResponseDto = {
+    /** Creation date */
     createdAt: string;
+    /** API key ID */
     id: string;
+    /** API key name */
     name: string;
+    /** List of permissions */
     permissions: Permission[];
+    /** Last update date */
     updatedAt: string;
 };
 export type ApiKeyCreateDto = {
+    /** API key name */
     name?: string;
+    /** List of permissions */
     permissions: Permission[];
 };
 export type ApiKeyCreateResponseDto = {
+    /** API key details */
     apiKey: ApiKeyResponseDto;
+    /** API key secret (only shown once) */
     secret: string;
 };
 export type ApiKeyUpdateDto = {
+    /** API key name */
     name?: string;
+    /** List of permissions */
     permissions?: Permission[];
 };
 export type AssetBulkDeleteDto = {
+    /** Force delete even if in use */
     force?: boolean;
     ids: string[];
 };
 export type AssetMetadataUpsertItemDto = {
+    /** Metadata key */
     key: string;
+    /** Metadata value (object) */
     value: object;
 };
 export type AssetMediaCreateDto = {
+    /** Asset file data */
     assetData: Blob;
+    /** Device asset ID */
     deviceAssetId: string;
+    /** Device ID */
     deviceId: string;
+    /** Duration (for videos) */
     duration?: string;
+    /** File creation date */
     fileCreatedAt: string;
+    /** File modification date */
     fileModifiedAt: string;
+    /** Filename */
     filename?: string;
+    /** Mark as favorite */
     isFavorite?: boolean;
+    /** Live photo video ID */
     livePhotoVideoId?: string;
+    /** Asset metadata items */
     metadata?: AssetMetadataUpsertItemDto[];
+    /** Sidecar file data */
     sidecarData?: Blob;
+    /** Asset visibility */
     visibility?: AssetVisibility;
 };
 export type AssetMediaResponseDto = {
@@ -526,24 +681,37 @@ export type AssetMediaResponseDto = {
     status: AssetMediaStatus;
 };
 export type AssetBulkUpdateDto = {
+    /** Original date and time (ISO 8601) */
     dateTimeOriginal?: string;
+    /** Relative time offset in seconds */
     dateTimeRelative?: number;
+    /** Asset description */
     description?: string;
+    /** Duplicate asset ID */
     duplicateId?: string | null;
+    /** Asset IDs to update */
     ids: string[];
+    /** Mark as favorite */
     isFavorite?: boolean;
+    /** Latitude coordinate */
     latitude?: number;
+    /** Longitude coordinate */
     longitude?: number;
+    /** Rating (-1 to 5) */
     rating?: number;
+    /** Time zone (IANA timezone) */
     timeZone?: string;
+    /** Asset visibility */
     visibility?: AssetVisibility;
 };
 export type AssetBulkUploadCheckItem = {
-    /** base64 or hex encoded sha1 hash */
+    /** Base64 or hex encoded SHA1 hash */
     checksum: string;
+    /** Asset ID */
     id: string;
 };
 export type AssetBulkUploadCheckDto = {
+    /** Assets to check */
     assets: AssetBulkUploadCheckItem[];
 };
 export type AssetBulkUploadCheckResult = {
@@ -557,54 +725,84 @@ export type AssetBulkUploadCheckResponseDto = {
     results: AssetBulkUploadCheckResult[];
 };
 export type AssetCopyDto = {
+    /** Copy album associations */
     albums?: boolean;
+    /** Copy favorite status */
     favorite?: boolean;
+    /** Copy shared links */
     sharedLinks?: boolean;
+    /** Copy sidecar file */
     sidecar?: boolean;
+    /** Source asset ID */
     sourceId: string;
+    /** Copy stack association */
     stack?: boolean;
+    /** Target asset ID */
     targetId: string;
 };
 export type CheckExistingAssetsDto = {
+    /** Device asset IDs to check */
     deviceAssetIds: string[];
+    /** Device ID */
     deviceId: string;
 };
 export type CheckExistingAssetsResponseDto = {
     existingIds: string[];
 };
 export type AssetJobsDto = {
+    /** Asset IDs */
     assetIds: string[];
+    /** Job name */
     name: AssetJobName;
 };
 export type AssetMetadataBulkDeleteItemDto = {
+    /** Asset ID */
     assetId: string;
+    /** Metadata key */
     key: string;
 };
 export type AssetMetadataBulkDeleteDto = {
+    /** Metadata items to delete */
     items: AssetMetadataBulkDeleteItemDto[];
 };
 export type AssetMetadataBulkUpsertItemDto = {
+    /** Asset ID */
     assetId: string;
+    /** Metadata key */
     key: string;
+    /** Metadata value (object) */
     value: object;
 };
 export type AssetMetadataBulkUpsertDto = {
+    /** Metadata items to upsert */
     items: AssetMetadataBulkUpsertItemDto[];
 };
 export type AssetMetadataBulkResponseDto = {
+    /** Asset ID */
     assetId: string;
+    /** Metadata key */
     key: string;
+    /** Last update date */
     updatedAt: string;
+    /** Metadata value (object) */
     value: object;
 };
 export type UpdateAssetDto = {
+    /** Original date and time (ISO 8601) */
     dateTimeOriginal?: string;
+    /** Asset description */
     description?: string;
+    /** Mark as favorite */
     isFavorite?: boolean;
+    /** Latitude coordinate */
     latitude?: number;
+    /** Live photo video ID */
     livePhotoVideoId?: string | null;
+    /** Longitude coordinate */
     longitude?: number;
+    /** Rating (-1 to 5) */
     rating?: number;
+    /** Asset visibility */
     visibility?: AssetVisibility;
 };
 export type CropParameters = {
@@ -647,11 +845,15 @@ export type AssetEditActionListDto = {
     edits: (AssetEditActionCrop | AssetEditActionRotate | AssetEditActionMirror)[];
 };
 export type AssetMetadataResponseDto = {
+    /** Metadata key */
     key: string;
+    /** Last update date */
     updatedAt: string;
+    /** Metadata value (object) */
     value: object;
 };
 export type AssetMetadataUpsertDto = {
+    /** Metadata items to upsert */
     items: AssetMetadataUpsertItemDto[];
 };
 export type AssetOcrResponseDto = {
@@ -681,124 +883,201 @@ export type AssetOcrResponseDto = {
     y4: number;
 };
 export type AssetMediaReplaceDto = {
+    /** Asset file data */
     assetData: Blob;
+    /** Device asset ID */
     deviceAssetId: string;
+    /** Device ID */
     deviceId: string;
+    /** Duration (for videos) */
     duration?: string;
+    /** File creation date */
     fileCreatedAt: string;
+    /** File modification date */
     fileModifiedAt: string;
+    /** Filename */
     filename?: string;
 };
 export type SignUpDto = {
+    /** User email */
     email: string;
+    /** User name */
     name: string;
+    /** User password */
     password: string;
 };
 export type ChangePasswordDto = {
+    /** Invalidate all other sessions */
     invalidateSessions?: boolean;
+    /** New password (min 8 characters) */
     newPassword: string;
+    /** Current password */
     password: string;
 };
 export type LoginCredentialDto = {
+    /** User email */
     email: string;
+    /** User password */
     password: string;
 };
 export type LoginResponseDto = {
+    /** Access token */
     accessToken: string;
+    /** Is admin user */
     isAdmin: boolean;
+    /** Is onboarded */
     isOnboarded: boolean;
+    /** User name */
     name: string;
+    /** Profile image path */
     profileImagePath: string;
+    /** Should change password */
     shouldChangePassword: boolean;
+    /** User email */
     userEmail: string;
+    /** User ID */
     userId: string;
 };
 export type LogoutResponseDto = {
+    /** Redirect URI */
     redirectUri: string;
+    /** Logout successful */
     successful: boolean;
 };
 export type PinCodeResetDto = {
+    /** User password (required if PIN code is not provided) */
     password?: string;
+    /** New PIN code (4-6 digits) */
     pinCode?: string;
 };
 export type PinCodeSetupDto = {
+    /** PIN code (4-6 digits) */
     pinCode: string;
 };
 export type PinCodeChangeDto = {
+    /** New PIN code (4-6 digits) */
     newPinCode: string;
+    /** User password (required if PIN code is not provided) */
     password?: string;
+    /** New PIN code (4-6 digits) */
     pinCode?: string;
 };
 export type SessionUnlockDto = {
+    /** User password (required if PIN code is not provided) */
     password?: string;
+    /** New PIN code (4-6 digits) */
     pinCode?: string;
 };
 export type AuthStatusResponseDto = {
+    /** Session expiration date */
     expiresAt?: string;
+    /** Is elevated session */
     isElevated: boolean;
+    /** Has password set */
     password: boolean;
+    /** Has PIN code set */
     pinCode: boolean;
+    /** PIN expiration date */
     pinExpiresAt?: string;
 };
 export type ValidateAccessTokenResponseDto = {
+    /** Authentication status */
     authStatus: boolean;
 };
 export type AssetIdsDto = {
+    /** Asset IDs */
     assetIds: string[];
 };
 export type DownloadInfoDto = {
+    /** Album ID to download */
     albumId?: string;
+    /** Archive size limit in bytes */
     archiveSize?: number;
+    /** Asset IDs to download */
     assetIds?: string[];
+    /** User ID to download assets from */
     userId?: string;
 };
 export type DownloadArchiveInfo = {
+    /** Asset IDs in this archive */
     assetIds: string[];
+    /** Archive size in bytes */
     size: number;
 };
 export type DownloadResponseDto = {
+    /** Archive information */
     archives: DownloadArchiveInfo[];
+    /** Total size in bytes */
     totalSize: number;
 };
 export type DuplicateResponseDto = {
+    /** Duplicate assets */
     assets: AssetResponseDto[];
+    /** Duplicate group ID */
     duplicateId: string;
 };
 export type PersonResponseDto = {
+    /** Person date of birth */
     birthDate: string | null;
+    /** Person color (hex) */
     color?: string;
+    /** Person ID */
     id: string;
+    /** Is favorite */
     isFavorite?: boolean;
+    /** Is hidden */
     isHidden: boolean;
+    /** Person name */
     name: string;
+    /** Thumbnail path */
     thumbnailPath: string;
+    /** Last update date */
     updatedAt?: string;
 };
 export type AssetFaceResponseDto = {
+    /** Bounding box X1 coordinate */
     boundingBoxX1: number;
+    /** Bounding box X2 coordinate */
     boundingBoxX2: number;
+    /** Bounding box Y1 coordinate */
     boundingBoxY1: number;
+    /** Bounding box Y2 coordinate */
     boundingBoxY2: number;
+    /** Face ID */
     id: string;
+    /** Image height in pixels */
     imageHeight: number;
+    /** Image width in pixels */
     imageWidth: number;
+    /** Person associated with face */
     person: (PersonResponseDto) | null;
+    /** Face detection source type */
     sourceType?: SourceType;
 };
 export type AssetFaceCreateDto = {
+    /** Asset ID */
     assetId: string;
+    /** Face bounding box height */
     height: number;
+    /** Image height in pixels */
     imageHeight: number;
+    /** Image width in pixels */
     imageWidth: number;
+    /** Person ID */
     personId: string;
+    /** Face bounding box width */
     width: number;
+    /** Face bounding box X coordinate */
     x: number;
+    /** Face bounding box Y coordinate */
     y: number;
 };
 export type AssetFaceDeleteDto = {
+    /** Force delete even if person has other faces */
     force: boolean;
 };
 export type FaceDto = {
+    /** Face ID */
     id: string;
 };
 export type QueueStatisticsDto = {
@@ -838,6 +1117,7 @@ export type QueuesResponseLegacyDto = {
     workflow: QueueResponseLegacyDto;
 };
 export type JobCreateDto = {
+    /** Job name */
     name: ManualJobName;
 };
 export type QueueCommandDto = {
@@ -845,56 +1125,91 @@ export type QueueCommandDto = {
     force?: boolean;
 };
 export type LibraryResponseDto = {
+    /** Number of assets */
     assetCount: number;
+    /** Creation date */
     createdAt: string;
+    /** Exclusion patterns */
     exclusionPatterns: string[];
+    /** Library ID */
     id: string;
+    /** Import paths */
     importPaths: string[];
+    /** Library name */
     name: string;
+    /** Owner user ID */
     ownerId: string;
+    /** Last refresh date */
     refreshedAt: string | null;
+    /** Last update date */
     updatedAt: string;
 };
 export type CreateLibraryDto = {
+    /** Exclusion patterns (max 128) */
     exclusionPatterns?: string[];
+    /** Import paths (max 128) */
     importPaths?: string[];
+    /** Library name */
     name?: string;
+    /** Owner user ID */
     ownerId: string;
 };
 export type UpdateLibraryDto = {
+    /** Exclusion patterns (max 128) */
     exclusionPatterns?: string[];
+    /** Import paths (max 128) */
     importPaths?: string[];
+    /** Library name */
     name?: string;
 };
 export type LibraryStatsResponseDto = {
+    /** Number of photos */
     photos: number;
+    /** Total number of assets */
     total: number;
+    /** Storage usage in bytes */
     usage: number;
+    /** Number of videos */
     videos: number;
 };
 export type ValidateLibraryDto = {
+    /** Exclusion patterns (max 128) */
     exclusionPatterns?: string[];
+    /** Import paths to validate (max 128) */
     importPaths?: string[];
 };
 export type ValidateLibraryImportPathResponseDto = {
+    /** Import path */
     importPath: string;
+    /** Is valid */
     isValid: boolean;
+    /** Validation message */
     message?: string;
 };
 export type ValidateLibraryResponseDto = {
+    /** Validation results for import paths */
     importPaths?: ValidateLibraryImportPathResponseDto[];
 };
 export type MapMarkerResponseDto = {
+    /** City name */
     city: string | null;
+    /** Country name */
     country: string | null;
+    /** Asset ID */
     id: string;
+    /** Latitude */
     lat: number;
+    /** Longitude */
     lon: number;
+    /** State/Province name */
     state: string | null;
 };
 export type MapReverseGeocodeResponseDto = {
+    /** City name */
     city: string | null;
+    /** Country name */
     country: string | null;
+    /** State/Province name */
     state: string | null;
 };
 export type OnThisDayDto = {
@@ -942,126 +1257,181 @@ export type NotificationUpdateDto = {
     readAt?: string | null;
 };
 export type OAuthConfigDto = {
+    /** OAuth code challenge (PKCE) */
     codeChallenge?: string;
+    /** OAuth redirect URI */
     redirectUri: string;
+    /** OAuth state parameter */
     state?: string;
 };
 export type OAuthAuthorizeResponseDto = {
+    /** OAuth authorization URL */
     url: string;
 };
 export type OAuthCallbackDto = {
+    /** OAuth code verifier (PKCE) */
     codeVerifier?: string;
+    /** OAuth state parameter */
     state?: string;
+    /** OAuth callback URL */
     url: string;
 };
 export type PartnerResponseDto = {
+    /** Avatar color */
     avatarColor: UserAvatarColor;
+    /** User email */
     email: string;
+    /** User ID */
     id: string;
+    /** Show in timeline */
     inTimeline?: boolean;
+    /** User name */
     name: string;
+    /** Profile change date */
     profileChangedAt: string;
+    /** Profile image path */
     profileImagePath: string;
 };
 export type PartnerCreateDto = {
+    /** User ID to share with */
     sharedWithId: string;
 };
 export type PartnerUpdateDto = {
+    /** Show partner assets in timeline */
     inTimeline: boolean;
 };
 export type PeopleResponseDto = {
+    /** Whether there are more pages */
     hasNextPage?: boolean;
+    /** Number of hidden people */
     hidden: number;
+    /** List of people */
     people: PersonResponseDto[];
+    /** Total number of people */
     total: number;
 };
 export type PersonCreateDto = {
-    /** Person date of birth.
-    Note: the mobile app cannot currently set the birth date to null. */
+    /** Person date of birth */
     birthDate?: string | null;
+    /** Person color (hex) */
     color?: string | null;
+    /** Mark as favorite */
     isFavorite?: boolean;
-    /** Person visibility */
+    /** Person visibility (hidden) */
     isHidden?: boolean;
-    /** Person name. */
+    /** Person name */
     name?: string;
 };
 export type PeopleUpdateItem = {
-    /** Person date of birth.
-    Note: the mobile app cannot currently set the birth date to null. */
+    /** Person date of birth */
     birthDate?: string | null;
+    /** Person color (hex) */
     color?: string | null;
-    /** Asset is used to get the feature face thumbnail. */
+    /** Asset ID used for feature face thumbnail */
     featureFaceAssetId?: string;
-    /** Person id. */
+    /** Person ID */
     id: string;
+    /** Mark as favorite */
     isFavorite?: boolean;
-    /** Person visibility */
+    /** Person visibility (hidden) */
     isHidden?: boolean;
-    /** Person name. */
+    /** Person name */
     name?: string;
 };
 export type PeopleUpdateDto = {
+    /** People to update */
     people: PeopleUpdateItem[];
 };
 export type PersonUpdateDto = {
-    /** Person date of birth.
-    Note: the mobile app cannot currently set the birth date to null. */
+    /** Person date of birth */
     birthDate?: string | null;
+    /** Person color (hex) */
     color?: string | null;
-    /** Asset is used to get the feature face thumbnail. */
+    /** Asset ID used for feature face thumbnail */
     featureFaceAssetId?: string;
+    /** Mark as favorite */
     isFavorite?: boolean;
-    /** Person visibility */
+    /** Person visibility (hidden) */
     isHidden?: boolean;
-    /** Person name. */
+    /** Person name */
     name?: string;
 };
 export type MergePersonDto = {
+    /** Person IDs to merge */
     ids: string[];
 };
 export type AssetFaceUpdateItem = {
+    /** Asset ID */
     assetId: string;
+    /** Person ID */
     personId: string;
 };
 export type AssetFaceUpdateDto = {
+    /** Face update items */
     data: AssetFaceUpdateItem[];
 };
 export type PersonStatisticsResponseDto = {
+    /** Number of assets */
     assets: number;
 };
 export type PluginActionResponseDto = {
+    /** Action description */
     description: string;
+    /** Action ID */
     id: string;
+    /** Method name */
     methodName: string;
+    /** Plugin ID */
     pluginId: string;
+    /** Action schema */
     schema: object | null;
+    /** Supported contexts */
     supportedContexts: PluginContextType[];
+    /** Action title */
     title: string;
 };
 export type PluginFilterResponseDto = {
+    /** Filter description */
     description: string;
+    /** Filter ID */
     id: string;
+    /** Method name */
     methodName: string;
+    /** Plugin ID */
     pluginId: string;
+    /** Filter schema */
     schema: object | null;
+    /** Supported contexts */
     supportedContexts: PluginContextType[];
+    /** Filter title */
     title: string;
 };
 export type PluginResponseDto = {
+    /** Plugin actions */
     actions: PluginActionResponseDto[];
+    /** Plugin author */
     author: string;
+    /** Creation date */
     createdAt: string;
+    /** Plugin description */
     description: string;
+    /** Plugin filters */
     filters: PluginFilterResponseDto[];
+    /** Plugin ID */
     id: string;
+    /** Plugin name */
     name: string;
+    /** Plugin title */
     title: string;
+    /** Last update date */
     updatedAt: string;
+    /** Plugin version */
     version: string;
 };
 export type PluginTriggerResponseDto = {
+    /** Context type */
     contextType: PluginContextType;
+    /** Trigger type */
     "type": PluginTriggerType;
 };
 export type QueueResponseDto = {
@@ -1334,12 +1704,17 @@ export type ServerFeaturesDto = {
     trash: boolean;
 };
 export type LicenseResponseDto = {
+    /** Activation date */
     activatedAt: string;
+    /** Activation key */
     activationKey: string;
+    /** License key (format: IM(SV|CL)(-XXXX){8}) */
     licenseKey: string;
 };
 export type LicenseKeyDto = {
+    /** Activation key */
     activationKey: string;
+    /** License key (format: IM(SV|CL)(-XXXX){8}) */
     licenseKey: string;
 };
 export type ServerMediaTypesResponseDto = {
@@ -1387,7 +1762,9 @@ export type ServerVersionResponseDto = {
     patch: number;
 };
 export type VersionCheckStateResponseDto = {
+    /** Last check timestamp */
     checkedAt: string | null;
+    /** Release version */
     releaseVersion: string | null;
 };
 export type ServerVersionHistoryResponseDto = {
@@ -1396,66 +1773,109 @@ export type ServerVersionHistoryResponseDto = {
     version: string;
 };
 export type SessionCreateDto = {
+    /** Device OS */
     deviceOS?: string;
+    /** Device type */
     deviceType?: string;
-    /** session duration, in seconds */
+    /** Session duration in seconds */
     duration?: number;
 };
 export type SessionCreateResponseDto = {
+    /** App version */
     appVersion: string | null;
+    /** Creation date */
     createdAt: string;
+    /** Is current session */
     current: boolean;
+    /** Device OS */
     deviceOS: string;
+    /** Device type */
     deviceType: string;
+    /** Expiration date */
     expiresAt?: string;
+    /** Session ID */
     id: string;
+    /** Is pending sync reset */
     isPendingSyncReset: boolean;
+    /** Session token */
     token: string;
+    /** Last update date */
     updatedAt: string;
 };
 export type SessionUpdateDto = {
+    /** Reset pending sync state */
     isPendingSyncReset?: boolean;
 };
 export type SharedLinkResponseDto = {
+    /** Shared album */
     album?: AlbumResponseDto;
+    /** Allow downloads */
     allowDownload: boolean;
+    /** Allow uploads */
     allowUpload: boolean;
+    /** Shared assets */
     assets: AssetResponseDto[];
+    /** Creation date */
     createdAt: string;
+    /** Link description */
     description: string | null;
+    /** Expiration date */
     expiresAt: string | null;
+    /** Shared link ID */
     id: string;
+    /** Encryption key (base64url) */
     key: string;
+    /** Has password */
     password: string | null;
+    /** Show metadata */
     showMetadata: boolean;
+    /** Custom URL slug */
     slug: string | null;
+    /** Access token */
     token?: string | null;
+    /** Shared link type */
     "type": SharedLinkType;
+    /** Owner user ID */
     userId: string;
 };
 export type SharedLinkCreateDto = {
+    /** Album ID (for album sharing) */
     albumId?: string;
+    /** Allow downloads */
     allowDownload?: boolean;
+    /** Allow uploads */
     allowUpload?: boolean;
+    /** Asset IDs (for individual assets) */
     assetIds?: string[];
+    /** Link description */
     description?: string | null;
+    /** Expiration date */
     expiresAt?: string | null;
+    /** Link password */
     password?: string | null;
+    /** Show metadata */
     showMetadata?: boolean;
+    /** Custom URL slug */
     slug?: string | null;
+    /** Shared link type */
     "type": SharedLinkType;
 };
 export type SharedLinkEditDto = {
+    /** Allow downloads */
     allowDownload?: boolean;
+    /** Allow uploads */
     allowUpload?: boolean;
-    /** Few clients cannot send null to set the expiryTime to never.
-    Setting this flag and not sending expiryAt is considered as null instead.
-    Clients that can send null values can ignore this. */
+    /** Change expiry time (set to true to remove expiry) */
     changeExpiryTime?: boolean;
+    /** Link description */
     description?: string | null;
+    /** Expiration date */
     expiresAt?: string | null;
+    /** Link password */
     password?: string | null;
+    /** Show metadata */
     showMetadata?: boolean;
+    /** Custom URL slug */
     slug?: string | null;
 };
 export type AssetIdsResponseDto = {
@@ -1464,44 +1884,63 @@ export type AssetIdsResponseDto = {
     success: boolean;
 };
 export type StackResponseDto = {
+    /** Stack assets */
     assets: AssetResponseDto[];
+    /** Stack ID */
     id: string;
+    /** Primary asset ID */
     primaryAssetId: string;
 };
 export type StackCreateDto = {
-    /** first asset becomes the primary */
+    /** Asset IDs (first becomes primary, min 2) */
     assetIds: string[];
 };
 export type StackUpdateDto = {
+    /** Primary asset ID */
     primaryAssetId?: string;
 };
 export type SyncAckDeleteDto = {
+    /** Sync entity types to delete acks for */
     types?: SyncEntityType[];
 };
 export type SyncAckDto = {
+    /** Acknowledgment ID */
     ack: string;
+    /** Sync entity type */
     "type": SyncEntityType;
 };
 export type SyncAckSetDto = {
+    /** Acknowledgment IDs (max 1000) */
     acks: string[];
 };
 export type AssetDeltaSyncDto = {
+    /** Sync assets updated after this date */
     updatedAfter: string;
+    /** User IDs to sync */
     userIds: string[];
 };
 export type AssetDeltaSyncResponseDto = {
+    /** Deleted asset IDs */
     deleted: string[];
+    /** Whether full sync is needed */
     needsFullSync: boolean;
+    /** Upserted assets */
     upserted: AssetResponseDto[];
 };
 export type AssetFullSyncDto = {
+    /** Last asset ID (pagination) */
     lastId?: string;
+    /** Maximum number of assets to return */
     limit: number;
+    /** Sync assets updated until this date */
     updatedUntil: string;
+    /** Filter by user ID */
     userId?: string;
 };
 export type SyncStreamDto = {
+    /** Reset sync state */
     reset?: boolean;
+    /** Sync request types */
     types: SyncRequestType[];
 };
 export type DatabaseBackupConfig = {
@@ -1737,28 +2176,39 @@ export type SystemConfigTemplateStorageOptionDto = {
     yearOptions: string[];
 };
 export type AdminOnboardingUpdateDto = {
+    /** Is admin onboarded */
     isOnboarded: boolean;
 };
 export type ReverseGeocodingStateResponseDto = {
+    /** Last import file name */
     lastImportFileName: string | null;
+    /** Last update timestamp */
     lastUpdate: string | null;
 };
 export type TagCreateDto = {
+    /** Tag color (hex) */
     color?: string;
+    /** Tag name */
     name: string;
+    /** Parent tag ID */
     parentId?: string | null;
 };
 export type TagUpsertDto = {
+    /** Tag names to upsert */
     tags: string[];
 };
 export type TagBulkAssetsDto = {
+    /** Asset IDs */
     assetIds: string[];
+    /** Tag IDs */
     tagIds: string[];
 };
 export type TagBulkAssetsResponseDto = {
+    /** Number of assets tagged */
     count: number;
 };
 export type TagUpdateDto = {
+    /** Tag color (hex) */
     color?: string | null;
 };
 export type TimeBucketAssetResponseDto = {
@@ -1806,18 +2256,25 @@ export type TimeBucketsResponseDto = {
     timeBucket: string;
 };
 export type TrashResponseDto = {
+    /** Number of items in trash */
     count: number;
 };
 export type UserUpdateMeDto = {
+    /** Avatar color */
     avatarColor?: (UserAvatarColor) | null;
+    /** User email */
     email?: string;
+    /** User name */
     name?: string;
+    /** User password (deprecated, use change password endpoint) */
     password?: string;
 };
 export type OnboardingResponseDto = {
+    /** Is user onboarded */
     isOnboarded: boolean;
 };
 export type OnboardingDto = {
+    /** Is user onboarded */
     isOnboarded: boolean;
 };
 export type CreateProfileImageDto = {
@@ -1829,52 +2286,87 @@ export type CreateProfileImageResponseDto = {
     userId: string;
 };
 export type WorkflowActionResponseDto = {
+    /** Action configuration */
     actionConfig: object | null;
+    /** Action ID */
     id: string;
+    /** Action order */
     order: number;
+    /** Plugin action ID */
     pluginActionId: string;
+    /** Workflow ID */
     workflowId: string;
 };
 export type WorkflowFilterResponseDto = {
+    /** Filter configuration */
     filterConfig: object | null;
+    /** Filter ID */
     id: string;
+    /** Filter order */
     order: number;
+    /** Plugin filter ID */
     pluginFilterId: string;
+    /** Workflow ID */
     workflowId: string;
 };
 export type WorkflowResponseDto = {
+    /** Workflow actions */
     actions: WorkflowActionResponseDto[];
+    /** Creation date */
     createdAt: string;
+    /** Workflow description */
     description: string;
+    /** Workflow enabled */
     enabled: boolean;
+    /** Workflow filters */
     filters: WorkflowFilterResponseDto[];
+    /** Workflow ID */
     id: string;
+    /** Workflow name */
     name: string | null;
+    /** Owner user ID */
     ownerId: string;
+    /** Workflow trigger type */
     triggerType: PluginTriggerType;
 };
 export type WorkflowActionItemDto = {
+    /** Action configuration */
     actionConfig?: object;
+    /** Plugin action ID */
     pluginActionId: string;
 };
 export type WorkflowFilterItemDto = {
+    /** Filter configuration */
     filterConfig?: object;
+    /** Plugin filter ID */
     pluginFilterId: string;
 };
 export type WorkflowCreateDto = {
+    /** Workflow actions */
     actions: WorkflowActionItemDto[];
+    /** Workflow description */
     description?: string;
+    /** Workflow enabled */
     enabled?: boolean;
+    /** Workflow filters */
     filters: WorkflowFilterItemDto[];
+    /** Workflow name */
     name: string;
+    /** Workflow trigger type */
     triggerType: PluginTriggerType;
 };
 export type WorkflowUpdateDto = {
+    /** Workflow actions */
     actions?: WorkflowActionItemDto[];
+    /** Workflow description */
     description?: string;
+    /** Workflow enabled */
     enabled?: boolean;
+    /** Workflow filters */
     filters?: WorkflowFilterItemDto[];
+    /** Workflow name */
     name?: string;
+    /** Workflow trigger type */
     triggerType?: PluginTriggerType;
 };
 export type SyncAckV1 = {};

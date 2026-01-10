@@ -20,14 +20,19 @@ class WorkflowFilterResponseDto {
     required this.workflowId,
   });
 
+  /// Filter configuration
   Object? filterConfig;
 
+  /// Filter ID
   String id;
 
-  num order;
+  /// Filter order
+  int order;
 
+  /// Plugin filter ID
   String pluginFilterId;
 
+  /// Workflow ID
   String workflowId;
 
   @override
@@ -75,7 +80,7 @@ class WorkflowFilterResponseDto {
       return WorkflowFilterResponseDto(
         filterConfig: mapValueOfType<Object>(json, r'filterConfig'),
         id: mapValueOfType<String>(json, r'id')!,
-        order: num.parse('${json[r'order']}'),
+        order: mapValueOfType<int>(json, r'order')!,
         pluginFilterId: mapValueOfType<String>(json, r'pluginFilterId')!,
         workflowId: mapValueOfType<String>(json, r'workflowId')!,
       );

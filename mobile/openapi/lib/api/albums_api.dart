@@ -362,6 +362,7 @@ class AlbumsApi {
   /// * [String] slug:
   ///
   /// * [bool] withoutAssets:
+  ///   Exclude assets from response
   Future<Response> getAlbumInfoWithHttpInfo(String id, { String? key, String? slug, bool? withoutAssets, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/albums/{id}'
@@ -412,6 +413,7 @@ class AlbumsApi {
   /// * [String] slug:
   ///
   /// * [bool] withoutAssets:
+  ///   Exclude assets from response
   Future<AlbumResponseDto?> getAlbumInfo(String id, { String? key, String? slug, bool? withoutAssets, }) async {
     final response = await getAlbumInfoWithHttpInfo(id,  key: key, slug: slug, withoutAssets: withoutAssets, );
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -484,9 +486,10 @@ class AlbumsApi {
   /// Parameters:
   ///
   /// * [String] assetId:
-  ///   Only returns albums that contain the asset Ignores the shared parameter undefined: get all albums
+  ///   Filter albums containing this asset ID (ignores shared parameter)
   ///
   /// * [bool] shared:
+  ///   Filter by shared status: true = only shared, false = only own, undefined = all
   Future<Response> getAllAlbumsWithHttpInfo({ String? assetId, bool? shared, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/albums';
@@ -526,9 +529,10 @@ class AlbumsApi {
   /// Parameters:
   ///
   /// * [String] assetId:
-  ///   Only returns albums that contain the asset Ignores the shared parameter undefined: get all albums
+  ///   Filter albums containing this asset ID (ignores shared parameter)
   ///
   /// * [bool] shared:
+  ///   Filter by shared status: true = only shared, false = only own, undefined = all
   Future<List<AlbumResponseDto>?> getAllAlbums({ String? assetId, bool? shared, }) async {
     final response = await getAllAlbumsWithHttpInfo( assetId: assetId, shared: shared, );
     if (response.statusCode >= HttpStatus.badRequest) {
