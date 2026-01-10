@@ -63,6 +63,7 @@
   let galleryFirstLoad = $state(true);
   let playerInitialized = $state(false);
   let paused = $state(false);
+  let isZoomed = $state(false);
   let current = $state<MemoryAsset | undefined>(undefined);
   let currentMemoryAssetFull = $derived.by(async () =>
     current?.asset ? await getAssetInfo({ ...authManager.params, id: current.asset.id }) : undefined,
@@ -225,10 +226,20 @@
     galleryInView = false;
     // only call play after the first page load. When page first loads the gallery will not be visible
     // and calling play here will result in duplicate invocation.
-    if (!galleryFirstLoad) {
+    // Also don't auto-play if user is zoomed in
+    if (!galleryFirstLoad && !isZoomed) {
       handlePromiseError(handleAction('galleryOutOfView', 'play'));
     }
     galleryFirstLoad = false;
+  };
+
+  const handleZoomChange = (zoomed: boolean) => {
+    isZoomed = zoomed;
+    if (zoomed) {
+      handlePromiseError(handleAction('zoomIn', 'pause'));
+    } else if (!galleryInView && !paused) {
+      handlePromiseError(handleAction('zoomOut', 'play'));
+    }
   };
 
   const loadFromParams = (page: Page | NavigationTarget | null) => {
@@ -485,7 +496,7 @@
                   videoViewerVolume={$videoViewerVolume}
                 />
               {:else}
-                <MemoryPhotoViewer asset={current.asset} onImageLoad={resetAndPlay} />
+                <MemoryPhotoViewer asset={current.asset} onImageLoad={resetAndPlay} onZoomChange={handleZoomChange} />
               {/if}
             {/key}
 
