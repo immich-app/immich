@@ -14,7 +14,13 @@
   import { showDeleteModal } from '$lib/stores/preferences.store';
   import { handlePromiseError } from '$lib/utils';
   import { deleteAssets } from '$lib/utils/actions';
-  import { archiveAssets, cancelMultiselect, getNextAsset, getPreviousAsset } from '$lib/utils/asset-utils';
+  import {
+    archiveAssets,
+    cancelMultiselect,
+    getNextAsset,
+    getPreviousAsset,
+    navigateToAsset,
+  } from '$lib/utils/asset-utils';
   import { moveFocus } from '$lib/utils/focus-util';
   import { handleError } from '$lib/utils/handle-error';
   import { getJustifiedLayoutFromAssets } from '$lib/utils/layout-utils';
@@ -26,7 +32,6 @@
   import { t } from 'svelte-i18n';
 
   type Props = {
-    initialAssetId?: string;
     assets: AssetResponseDto[];
     assetInteraction: AssetInteraction;
     disableAssetSelect?: boolean;
@@ -34,7 +39,6 @@
     viewport: Viewport;
     onIntersected?: (() => void) | undefined;
     showAssetName?: boolean;
-    onNavigateToAsset?: (asset: AssetResponseDto | undefined) => Promise<boolean>;
     onReload?: (() => void) | undefined;
     pageHeaderOffset?: number;
     slidingWindowOffset?: number;
@@ -42,7 +46,6 @@
   };
 
   let {
-    initialAssetId = undefined,
     assets = $bindable(),
     assetInteraction,
     disableAssetSelect = false,
@@ -50,14 +53,13 @@
     viewport,
     onIntersected = undefined,
     showAssetName = false,
-    onNavigateToAsset,
     onReload = undefined,
     slidingWindowOffset = 0,
     pageHeaderOffset = 0,
     arrowNavigation = true,
   }: Props = $props();
 
-  let { isViewing: isViewerOpen, asset: viewingAsset, setAssetId } = assetViewingStore;
+  let { isViewing: isViewerOpen, asset: viewingAsset } = assetViewingStore;
 
   const geometry = $derived(
     getJustifiedLayoutFromAssets(assets, {
@@ -80,14 +82,6 @@
     return top + pageHeaderOffset < window.bottom && top + geo.getHeight(i) > window.top;
   };
 
-  let currentIndex = $state(0);
-  if (initialAssetId && assets.length > 0) {
-    const index = assets.findIndex(({ id }) => id === initialAssetId);
-    if (index !== -1) {
-      currentIndex = index;
-    }
-  }
-
   let shiftKeyIsDown = $state(false);
   let lastAssetMouseEvent: TimelineAsset | null = $state(null);
   let scrollTop = $state(0);
@@ -101,7 +95,8 @@
   });
 
   const updateCurrentAsset = (asset: AssetResponseDto) => {
-    assets[currentIndex] = asset;
+    const index = assets.findIndex((oldAsset) => oldAsset.id === asset.id);
+    assets[index] = asset;
   };
 
   const updateSlidingWindow = () => (scrollTop = document.scrollingElement?.scrollTop ?? 0);
@@ -120,11 +115,6 @@
       }
     }
   });
-  const viewAssetHandler = async (asset: TimelineAsset) => {
-    currentIndex = assets.findIndex((a) => a.id == asset.id);
-    await setAssetId(assets[currentIndex].id);
-    await navigate({ targetRoute: 'current', assetId: $viewingAsset.id });
-  };
 
   const selectAllAssets = () => {
     assetInteraction.selectAssets(assets.map((a) => toTimelineAsset(a)));
@@ -307,22 +297,6 @@
     }
   };
 
-  const handleNavigateToAsset = async (target: AssetResponseDto | undefined | null) => {
-    if (target) {
-      currentIndex = assets.indexOf(target);
-      await (onNavigateToAsset ? onNavigateToAsset(target) : navigateToAsset(target));
-      return true;
-    }
-    return false;
-  };
-
-  const navigateToAsset = async (asset?: { id: string }) => {
-    if (asset && asset.id !== $viewingAsset.id) {
-      await setAssetId(asset.id);
-      await navigate({ targetRoute: 'current', assetId: $viewingAsset.id });
-    }
-  };
-
   const handleAction = async (action: Action) => {
     switch (action.type) {
       case AssetAction.ARCHIVE:
@@ -333,11 +307,13 @@
           1,
         );
         if (assets.length === 0) {
-          await goto(AppRoute.PHOTOS);
-        } else if (currentIndex === assets.length) {
-          await handleNavigateToAsset(assetCursor.previousAsset);
-        } else {
-          await handleNavigateToAsset(assetCursor.nextAsset);
+          return await goto(AppRoute.PHOTOS);
+        }
+        const index = assets.findIndex((asset) => asset.id === $viewingAsset?.id);
+        if (index === assets.length) {
+          await navigateToAsset(assetCursor.previousAsset);
+        } else if (index >= 0) {
+          await navigateToAsset(assetCursor.nextAsset);
         }
         break;
       }
@@ -400,7 +376,7 @@
                 handleSelectAssets(currentAsset);
                 return;
               }
-              void viewAssetHandler(currentAsset);
+              void navigateToAsset(asset);
             }}
             onSelect={() => handleSelectAssets(currentAsset)}
             onMouseEvent={() => assetMouseEventHandler(currentAsset)}
@@ -431,7 +407,6 @@
       <AssetViewer
         cursor={assetCursor}
         onAction={handleAction}
-        onNavigateToAsset={handleNavigateToAsset}
         onRandom={handleRandom}
         onAssetChange={updateCurrentAsset}
         onClose={() => {

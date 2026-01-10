@@ -43,14 +43,6 @@
     assetViewingStore.showAssetViewer(false);
   });
 
-  const handleNavigateToAsset = async (asset: AssetResponseDto | undefined | null) => {
-    if (!asset) {
-      return false;
-    }
-    await onViewAsset(asset);
-    return true;
-  };
-
   const onRandom = async () => {
     if (assets.length <= 0) {
       return;
@@ -180,7 +172,6 @@
       <AssetViewer
         cursor={assetCursor}
         showNavigation={assets.length > 1}
-        onNavigateToAsset={handleNavigateToAsset}
         {onRandom}
         onClose={() => {
           assetViewingStore.showAssetViewer(false);

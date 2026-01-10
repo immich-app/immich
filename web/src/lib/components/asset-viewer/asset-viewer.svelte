@@ -20,6 +20,7 @@
   import { user } from '$lib/stores/user.store';
   import { getAssetJobMessage, getAssetUrl, getSharedLink, handlePromiseError } from '$lib/utils';
   import type { OnUndoDelete } from '$lib/utils/actions';
+  import { navigateToAsset } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
   import { InvocationTracker } from '$lib/utils/invocationTracker';
   import { SlideshowHistory } from '$lib/utils/slideshow-history';
@@ -71,7 +72,6 @@
     onAction?: OnAction;
     onUndoDelete?: OnUndoDelete;
     onClose?: (asset: AssetResponseDto) => void;
-    onNavigateToAsset?: (asset: AssetResponseDto | undefined | null) => Promise<boolean>;
     onRandom?: () => Promise<{ id: string } | undefined>;
     copyImage?: () => Promise<void>;
   }
@@ -88,7 +88,6 @@
     onAction,
     onUndoDelete,
     onClose,
-    onNavigateToAsset,
     onRandom,
     copyImage = $bindable(),
   }: Props = $props();
@@ -240,13 +239,9 @@
             hasNext = true;
           }
         }
-      } else if (onNavigateToAsset) {
-        hasNext =
-          order === 'previous'
-            ? await onNavigateToAsset(cursor.previousAsset)
-            : await onNavigateToAsset(cursor.nextAsset);
       } else {
-        hasNext = false;
+        hasNext =
+          order === 'previous' ? await navigateToAsset(cursor.previousAsset) : await navigateToAsset(cursor.nextAsset);
       }
 
       if ($slideshowState === SlideshowState.PlaySlideshow) {

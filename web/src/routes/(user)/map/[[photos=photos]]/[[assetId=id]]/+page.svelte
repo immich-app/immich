@@ -38,14 +38,6 @@
     await setAssetId(assetIds[0]);
   }
 
-  const handleNavigateToAsset = async (currentAsset: AssetResponseDto | undefined | null) => {
-    if (!currentAsset) {
-      return false;
-    }
-    await navigate({ targetRoute: 'current', assetId: currentAsset.id });
-    return true;
-  };
-
   async function navigateRandom() {
     if (viewingAssets.length <= 0) {
       return undefined;
@@ -131,7 +123,6 @@
         <AssetViewer
           cursor={assetCursor}
           showNavigation={viewingAssets.length > 1}
-          onNavigateToAsset={handleNavigateToAsset}
           onRandom={navigateRandom}
           onClose={() => {
             assetViewingStore.showAssetViewer(false);

@@ -10,6 +10,7 @@
   import { websocketEvents } from '$lib/stores/websocket';
   import { handlePromiseError } from '$lib/utils';
   import { updateStackedAssetInTimeline, updateUnstackedAssetInTimeline } from '$lib/utils/actions';
+  import { navigateToAsset } from '$lib/utils/asset-utils';
   import { navigate } from '$lib/utils/navigation';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { type AlbumResponseDto, type AssetResponseDto, type PersonResponseDto, getAssetInfo } from '@immich/sdk';
@@ -84,15 +85,6 @@
     untrack(() => handlePromiseError(loadCloseAssets($viewingAsset)));
   });
 
-  const handleNavigateToAsset = async (targetAsset: AssetResponseDto | undefined | null) => {
-    if (!targetAsset) {
-      return false;
-    }
-
-    await navigate({ targetRoute: 'current', assetId: targetAsset.id });
-    return true;
-  };
-
   const handleRandom = async () => {
     const randomAsset = await timelineManager.getRandomAsset();
     if (randomAsset) {
@@ -122,8 +114,8 @@
 
         // find the next asset to show or close the viewer
         // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-        (await handleNavigateToAsset(assetCursor?.nextAsset)) ||
-          (await handleNavigateToAsset(assetCursor?.previousAsset)) ||
+        (await navigateToAsset(assetCursor?.nextAsset)) ||
+          (await navigateToAsset(assetCursor?.previousAsset)) ||
           (await handleClose(action.asset));
 
         break;
@@ -235,7 +227,6 @@
       assetCacheManager.invalidate();
     }}
     onUndoDelete={handleUndoDelete}
-    onNavigateToAsset={handleNavigateToAsset}
     onRandom={handleRandom}
     onClose={handleClose}
   />

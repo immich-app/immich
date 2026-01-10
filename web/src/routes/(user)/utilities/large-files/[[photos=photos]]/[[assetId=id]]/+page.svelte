@@ -26,14 +26,6 @@
     }
   });
 
-  const handleNavigateToAsset = async (asset: AssetResponseDto | undefined | null) => {
-    if (!asset) {
-      return false;
-    }
-    await onViewAsset(asset);
-    return true;
-  };
-
   const onRandom = async () => {
     if (assets.length <= 0) {
       return undefined;
@@ -81,7 +73,6 @@
     <Portal target="body">
       <AssetViewer
         cursor={assetCursor}
-        onNavigateToAsset={handleNavigateToAsset}
         showNavigation={assets.length > 1}
         {onRandom}
         {onAction}
