@@ -8,7 +8,7 @@ export class ExifResponseDto {
   model?: string | null = null;
   @ApiPropertyOptional({ type: 'number', description: 'Image width in pixels', nullable: true })
   exifImageWidth?: number | null = null;
-  @ApiPropertyOptional({ type: 'number', description: 'Image height in pixels', nullable: true })
+  @ApiPropertyOptional({ type: 'integer', description: 'Image height in pixels', nullable: true })
   exifImageHeight?: number | null = null;
 
   @ApiProperty({ type: 'integer', format: 'int64', description: 'File size in bytes', nullable: true })
