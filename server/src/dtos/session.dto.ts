@@ -4,7 +4,7 @@ import { Session } from 'src/database';
 import { Optional, ValidateBoolean } from 'src/validation';
 
 export class SessionCreateDto {
-  @ApiPropertyOptional({ type: 'integer', description: 'Session duration in seconds' })
+  @ApiPropertyOptional({ type: 'number', description: 'Session duration in seconds' })
   @IsInt()
   @IsPositive()
   @Optional()

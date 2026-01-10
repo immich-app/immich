@@ -122,7 +122,7 @@ class BaseSearchDto {
   @ValidateUUID({ each: true, optional: true })
   albumIds?: string[];
 
-  @ApiPropertyOptional({ type: 'integer', description: 'Filter by rating (-1 to 5)', minimum: -1, maximum: 5 })
+  @ApiPropertyOptional({ type: 'number', description: 'Filter by rating (-1 to 5)', minimum: -1, maximum: 5 })
   @Optional()
   @IsInt()
   @Max(5)
@@ -145,7 +145,7 @@ class BaseSearchWithResultsDto extends BaseSearchDto {
   @ValidateBoolean({ optional: true })
   withExif?: boolean;
 
-  @ApiPropertyOptional({ type: 'integer', description: 'Number of results to return', minimum: 1, maximum: 1000 })
+  @ApiPropertyOptional({ type: 'number', description: 'Number of results to return', minimum: 1, maximum: 1000 })
   @IsInt()
   @Min(1)
   @Max(1000)
@@ -226,7 +226,7 @@ export class MetadataSearchDto extends RandomSearchDto {
   @ValidateEnum({ enum: AssetOrder, name: 'AssetOrder', optional: true, default: AssetOrder.Desc })
   order?: AssetOrder;
 
-  @ApiPropertyOptional({ type: 'integer', description: 'Page number', minimum: 1 })
+  @ApiPropertyOptional({ type: 'number', description: 'Page number', minimum: 1 })
   @IsInt()
   @Min(1)
   @Type(() => Number)
@@ -256,7 +256,7 @@ export class SmartSearchDto extends BaseSearchWithResultsDto {
   @Optional()
   language?: string;
 
-  @ApiPropertyOptional({ type: 'integer', description: 'Page number', minimum: 1 })
+  @ApiPropertyOptional({ type: 'number', description: 'Page number', minimum: 1 })
   @IsInt()
   @Min(1)
   @Type(() => Number)

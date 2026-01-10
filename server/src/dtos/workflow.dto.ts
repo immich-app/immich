@@ -122,7 +122,7 @@ export class WorkflowFilterResponseDto {
   pluginFilterId!: string;
   @ApiProperty({ description: 'Filter configuration', nullable: true })
   filterConfig!: FilterConfig | null;
-  @ApiProperty({ description: 'Filter order', type: 'integer' })
+  @ApiProperty({ description: 'Filter order', type: 'number' })
   order!: number;
 }
 
@@ -135,7 +135,7 @@ export class WorkflowActionResponseDto {
   pluginActionId!: string;
   @ApiProperty({ description: 'Action configuration', nullable: true })
   actionConfig!: ActionConfig | null;
-  @ApiProperty({ description: 'Action order', type: 'integer' })
+  @ApiProperty({ description: 'Action order', type: 'number' })
   order!: number;
 }
 

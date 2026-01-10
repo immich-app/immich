@@ -131,7 +131,7 @@ export class AssetFaceWithoutPersonResponseDto {
   @ApiProperty({ description: 'Face ID' })
   @ValidateUUID()
   id!: string;
-  @ApiProperty({ type: 'integer', description: 'Image height in pixels' })
+  @ApiProperty({ type: 'number', description: 'Image height in pixels' })
   imageHeight!: number;
   @ApiProperty({ type: 'integer', description: 'Image width in pixels' })
   imageWidth!: number;
@@ -183,7 +183,7 @@ export class AssetFaceCreateDto extends AssetFaceUpdateItem {
   @IsNumber()
   imageWidth!: number;
 
-  @ApiProperty({ type: 'integer', description: 'Image height in pixels' })
+  @ApiProperty({ type: 'number', description: 'Image height in pixels' })
   @IsNotEmpty()
   @IsNumber()
   imageHeight!: number;

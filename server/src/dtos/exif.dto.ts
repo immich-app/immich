@@ -6,9 +6,9 @@ export class ExifResponseDto {
   make?: string | null = null;
   @ApiPropertyOptional({ description: 'Camera model', nullable: true })
   model?: string | null = null;
-  @ApiPropertyOptional({ type: 'integer', description: 'Image width in pixels', nullable: true })
+  @ApiPropertyOptional({ type: 'number', description: 'Image width in pixels', nullable: true })
   exifImageWidth?: number | null = null;
-  @ApiPropertyOptional({ type: 'integer', description: 'Image height in pixels', nullable: true })
+  @ApiPropertyOptional({ type: 'number', description: 'Image height in pixels', nullable: true })
   exifImageHeight?: number | null = null;
 
   @ApiProperty({ type: 'integer', format: 'int64', description: 'File size in bytes', nullable: true })
@@ -27,7 +27,7 @@ export class ExifResponseDto {
   fNumber?: number | null = null;
   @ApiPropertyOptional({ type: 'number', description: 'Focal length in mm', nullable: true })
   focalLength?: number | null = null;
-  @ApiPropertyOptional({ type: 'integer', description: 'ISO sensitivity', nullable: true })
+  @ApiPropertyOptional({ type: 'number', description: 'ISO sensitivity', nullable: true })
   iso?: number | null = null;
   @ApiPropertyOptional({ description: 'Exposure time', nullable: true })
   exposureTime?: string | null = null;

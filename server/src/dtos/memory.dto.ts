@@ -47,7 +47,7 @@ export class MemorySearchDto {
 }
 
 class OnThisDayDto {
-  @ApiProperty({ type: 'integer', description: 'Year for on this day memory', minimum: 1 })
+  @ApiProperty({ type: 'number', description: 'Year for on this day memory', minimum: 1 })
   @IsInt()
   @IsPositive()
   year!: number;
