@@ -1,5 +1,5 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Put } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiParam, ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { JobCreateDto } from 'src/dtos/job.dto';
@@ -32,6 +32,7 @@ export class JobController {
   @Post()
   @Authenticated({ permission: Permission.JobCreate, admin: true })
   @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiBody({ description: 'Job creation data', type: JobCreateDto })
   @Endpoint({
     summary: 'Create a manual job',
     description:
@@ -44,6 +45,8 @@ export class JobController {
 
   @Put(':name')
   @Authenticated({ permission: Permission.JobCreate, admin: true })
+  @ApiParam({ name: 'name', description: 'Queue name', type: String })
+  @ApiBody({ description: 'Queue command options', type: QueueCommandDto })
   @Endpoint({
     summary: 'Run jobs',
     description:

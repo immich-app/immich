@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Put } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { SystemConfigDto, SystemConfigTemplateStorageOptionDto } from 'src/dtos/system-config.dto';
 import { ApiTag, Permission } from 'src/enum';
@@ -39,6 +39,7 @@ export class SystemConfigController {
 
   @Put()
   @Authenticated({ permission: Permission.SystemConfigUpdate, admin: true })
+  @ApiBody({ description: 'System configuration update data', type: SystemConfigDto })
   @Endpoint({
     summary: 'Update system configuration',
     description: 'Update the system configuration with a new system configuration.',

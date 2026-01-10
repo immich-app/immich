@@ -1,5 +1,5 @@
 import { Controller, Get, HttpCode, HttpStatus, Query } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiQuery, ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
@@ -31,6 +31,8 @@ export class MapController {
   @Get('reverse-geocode')
   @Authenticated({ permission: Permission.MapSearch })
   @HttpCode(HttpStatus.OK)
+  @ApiQuery({ name: 'latitude', description: 'Latitude coordinate', type: Number, required: true })
+  @ApiQuery({ name: 'longitude', description: 'Longitude coordinate', type: Number, required: true })
   @Endpoint({
     summary: 'Reverse geocode coordinates',
     description: 'Retrieve location information (e.g., city, country) for given latitude and longitude coordinates.',

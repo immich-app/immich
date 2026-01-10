@@ -15,7 +15,7 @@ import {
   UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
-import { ApiBody, ApiConsumes, ApiHeader, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiConsumes, ApiHeader, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { NextFunction, Request, Response } from 'express';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import {
@@ -97,6 +97,8 @@ export class AssetMediaController {
   @Get(':id/original')
   @FileResponse()
   @Authenticated({ permission: Permission.AssetDownload, sharedLink: true })
+  @ApiParam({ name: 'id', description: 'Asset ID', type: String, format: 'uuid' })
+  @ApiQuery({ name: 'key', description: 'Download key for shared links', type: String, required: false })
   @Endpoint({
     summary: 'Download original asset',
     description: 'Downloads the original file of the specified asset.',
@@ -115,6 +117,8 @@ export class AssetMediaController {
   @Put(':id/original')
   @UseInterceptors(FileUploadInterceptor)
   @ApiConsumes('multipart/form-data')
+  @ApiParam({ name: 'id', description: 'Asset ID', type: String, format: 'uuid' })
+  @ApiBody({ description: 'Asset replacement data', type: AssetMediaReplaceDto })
   @ApiResponse({
     status: 200,
     description: 'Asset replaced successfully',
@@ -145,6 +149,10 @@ export class AssetMediaController {
   @Get(':id/thumbnail')
   @FileResponse()
   @Authenticated({ permission: Permission.AssetView, sharedLink: true })
+  @ApiParam({ name: 'id', description: 'Asset ID', type: String, format: 'uuid' })
+  @ApiQuery({ name: 'size', description: 'Thumbnail size', type: String, required: false })
+  @ApiQuery({ name: 'format', description: 'Thumbnail format', type: String, required: false })
+  @ApiQuery({ name: 'key', description: 'Access key for shared links', type: String, required: false })
   @Endpoint({
     summary: 'View asset thumbnail',
     description:
@@ -188,6 +196,7 @@ export class AssetMediaController {
   @Get(':id/video/playback')
   @FileResponse()
   @Authenticated({ permission: Permission.AssetView, sharedLink: true })
+  @ApiParam({ name: 'id', description: 'Asset ID', type: String, format: 'uuid' })
   @Endpoint({
     summary: 'Play asset video',
     description: 'Streams the video file for the specified asset. This endpoint also supports byte range requests.',
@@ -219,6 +228,7 @@ export class AssetMediaController {
 
   @Post('bulk-upload-check')
   @Authenticated({ permission: Permission.AssetUpload })
+  @ApiBody({ description: 'SHA1 checksums to check', type: AssetBulkUploadCheckDto })
   @Endpoint({
     summary: 'Check bulk upload',
     description: 'Determine which assets have already been uploaded to the server based on their SHA1 checksums.',
