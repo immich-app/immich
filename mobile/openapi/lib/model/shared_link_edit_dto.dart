@@ -23,6 +23,7 @@ class SharedLinkEditDto {
     this.slug,
   });
 
+  /// Allow downloads
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -31,6 +32,7 @@ class SharedLinkEditDto {
   ///
   bool? allowDownload;
 
+  /// Allow uploads
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -39,7 +41,7 @@ class SharedLinkEditDto {
   ///
   bool? allowUpload;
 
-  /// Few clients cannot send null to set the expiryTime to never. Setting this flag and not sending expiryAt is considered as null instead. Clients that can send null values can ignore this.
+  /// Change expiry time (set to true to remove expiry)
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -48,12 +50,16 @@ class SharedLinkEditDto {
   ///
   bool? changeExpiryTime;
 
+  /// Link description
   String? description;
 
+  /// Expiration date
   DateTime? expiresAt;
 
+  /// Link password
   String? password;
 
+  /// Show metadata
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -62,6 +68,7 @@ class SharedLinkEditDto {
   ///
   bool? showMetadata;
 
+  /// Custom URL slug
   String? slug;
 
   @override

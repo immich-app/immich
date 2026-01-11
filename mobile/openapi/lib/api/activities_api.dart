@@ -25,6 +25,7 @@ class ActivitiesApi {
   /// Parameters:
   ///
   /// * [ActivityCreateDto] activityCreateDto (required):
+  ///   Activity data (like or comment)
   Future<Response> createActivityWithHttpInfo(ActivityCreateDto activityCreateDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/activities';
@@ -57,6 +58,7 @@ class ActivitiesApi {
   /// Parameters:
   ///
   /// * [ActivityCreateDto] activityCreateDto (required):
+  ///   Activity data (like or comment)
   Future<ActivityResponseDto?> createActivity(ActivityCreateDto activityCreateDto,) async {
     final response = await createActivityWithHttpInfo(activityCreateDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -81,6 +83,7 @@ class ActivitiesApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Activity ID to delete
   Future<Response> deleteActivityWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/activities/{id}'
@@ -114,6 +117,7 @@ class ActivitiesApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Activity ID to delete
   Future<void> deleteActivity(String id,) async {
     final response = await deleteActivityWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -130,14 +134,19 @@ class ActivitiesApi {
   /// Parameters:
   ///
   /// * [String] albumId (required):
+  ///   Album ID
   ///
   /// * [String] assetId:
+  ///   Asset ID (if activity is for an asset)
   ///
   /// * [ReactionLevel] level:
+  ///   Filter by activity level
   ///
   /// * [ReactionType] type:
+  ///   Filter by activity type
   ///
   /// * [String] userId:
+  ///   Filter by user ID
   Future<Response> getActivitiesWithHttpInfo(String albumId, { String? assetId, ReactionLevel? level, ReactionType? type, String? userId, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/activities';
@@ -184,14 +193,19 @@ class ActivitiesApi {
   /// Parameters:
   ///
   /// * [String] albumId (required):
+  ///   Album ID
   ///
   /// * [String] assetId:
+  ///   Asset ID (if activity is for an asset)
   ///
   /// * [ReactionLevel] level:
+  ///   Filter by activity level
   ///
   /// * [ReactionType] type:
+  ///   Filter by activity type
   ///
   /// * [String] userId:
+  ///   Filter by user ID
   Future<List<ActivityResponseDto>?> getActivities(String albumId, { String? assetId, ReactionLevel? level, ReactionType? type, String? userId, }) async {
     final response = await getActivitiesWithHttpInfo(albumId,  assetId: assetId, level: level, type: type, userId: userId, );
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -219,8 +233,10 @@ class ActivitiesApi {
   /// Parameters:
   ///
   /// * [String] albumId (required):
+  ///   Album ID
   ///
   /// * [String] assetId:
+  ///   Asset ID (if activity is for an asset)
   Future<Response> getActivityStatisticsWithHttpInfo(String albumId, { String? assetId, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/activities/statistics';
@@ -258,8 +274,10 @@ class ActivitiesApi {
   /// Parameters:
   ///
   /// * [String] albumId (required):
+  ///   Album ID
   ///
   /// * [String] assetId:
+  ///   Asset ID (if activity is for an asset)
   Future<ActivityStatisticsResponseDto?> getActivityStatistics(String albumId, { String? assetId, }) async {
     final response = await getActivityStatisticsWithHttpInfo(albumId,  assetId: assetId, );
     if (response.statusCode >= HttpStatus.badRequest) {

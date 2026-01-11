@@ -16,6 +16,7 @@ class SetMaintenanceModeDto {
     required this.action,
   });
 
+  /// Maintenance action
   MaintenanceAction action;
 
   @override

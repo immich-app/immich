@@ -24,8 +24,10 @@ class UserAdminUpdateDto {
     this.storageLabel,
   });
 
+  /// Avatar color
   UserAvatarColor? avatarColor;
 
+  /// User email
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -34,6 +36,7 @@ class UserAdminUpdateDto {
   ///
   String? email;
 
+  /// Grant admin privileges
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -42,6 +45,7 @@ class UserAdminUpdateDto {
   ///
   bool? isAdmin;
 
+  /// User name
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -50,6 +54,7 @@ class UserAdminUpdateDto {
   ///
   String? name;
 
+  /// User password
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -58,11 +63,15 @@ class UserAdminUpdateDto {
   ///
   String? password;
 
+  /// PIN code
   String? pinCode;
 
+  /// Storage quota in bytes
+  ///
   /// Minimum value: 0
   int? quotaSizeInBytes;
 
+  /// Require password change on next login
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -71,6 +80,7 @@ class UserAdminUpdateDto {
   ///
   bool? shouldChangePassword;
 
+  /// Storage label
   String? storageLabel;
 
   @override

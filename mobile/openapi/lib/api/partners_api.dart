@@ -25,6 +25,7 @@ class PartnersApi {
   /// Parameters:
   ///
   /// * [PartnerCreateDto] partnerCreateDto (required):
+  ///   Partner creation data
   Future<Response> createPartnerWithHttpInfo(PartnerCreateDto partnerCreateDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/partners';
@@ -57,6 +58,7 @@ class PartnersApi {
   /// Parameters:
   ///
   /// * [PartnerCreateDto] partnerCreateDto (required):
+  ///   Partner creation data
   Future<PartnerResponseDto?> createPartner(PartnerCreateDto partnerCreateDto,) async {
     final response = await createPartnerWithHttpInfo(partnerCreateDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -81,6 +83,7 @@ class PartnersApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   User ID to share with
   Future<Response> createPartnerDeprecatedWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/partners/{id}'
@@ -114,6 +117,7 @@ class PartnersApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   User ID to share with
   Future<PartnerResponseDto?> createPartnerDeprecated(String id,) async {
     final response = await createPartnerDeprecatedWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -138,6 +142,7 @@ class PartnersApi {
   /// Parameters:
   ///
   /// * [PartnerDirection] direction (required):
+  ///   Partner direction
   Future<Response> getPartnersWithHttpInfo(PartnerDirection direction,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/partners';
@@ -172,6 +177,7 @@ class PartnersApi {
   /// Parameters:
   ///
   /// * [PartnerDirection] direction (required):
+  ///   Partner direction
   Future<List<PartnerResponseDto>?> getPartners(PartnerDirection direction,) async {
     final response = await getPartnersWithHttpInfo(direction,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -199,6 +205,7 @@ class PartnersApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Partner ID
   Future<Response> removePartnerWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/partners/{id}'
@@ -232,6 +239,7 @@ class PartnersApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Partner ID
   Future<void> removePartner(String id,) async {
     final response = await removePartnerWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -248,8 +256,10 @@ class PartnersApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Partner ID
   ///
   /// * [PartnerUpdateDto] partnerUpdateDto (required):
+  ///   Partner update data
   Future<Response> updatePartnerWithHttpInfo(String id, PartnerUpdateDto partnerUpdateDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/partners/{id}'
@@ -283,8 +293,10 @@ class PartnersApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Partner ID
   ///
   /// * [PartnerUpdateDto] partnerUpdateDto (required):
+  ///   Partner update data
   Future<PartnerResponseDto?> updatePartner(String id, PartnerUpdateDto partnerUpdateDto,) async {
     final response = await updatePartnerWithHttpInfo(id, partnerUpdateDto,);
     if (response.statusCode >= HttpStatus.badRequest) {

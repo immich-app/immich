@@ -1,13 +1,18 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiSchema } from '@nestjs/swagger';
 import { UploadFieldName } from 'src/dtos/asset-media.dto';
 
+@ApiSchema({ description: 'Profile image creation request with image file' })
 export class CreateProfileImageDto {
-  @ApiProperty({ type: 'string', format: 'binary' })
+  @ApiProperty({ type: 'string', format: 'binary', description: 'Profile image file' })
   [UploadFieldName.PROFILE_DATA]!: Express.Multer.File;
 }
 
+@ApiSchema({ description: 'Profile image creation response' })
 export class CreateProfileImageResponseDto {
+  @ApiProperty({ description: 'User ID' })
   userId!: string;
+  @ApiProperty({ description: 'Profile image change date', format: 'date-time' })
   profileChangedAt!: Date;
+  @ApiProperty({ description: 'Profile image file path' })
   profileImagePath!: string;
 }

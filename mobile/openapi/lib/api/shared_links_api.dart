@@ -25,12 +25,16 @@ class SharedLinksApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Shared link ID
   ///
   /// * [AssetIdsDto] assetIdsDto (required):
+  ///   Asset IDs to add
   ///
   /// * [String] key:
+  ///   Access key for shared links
   ///
   /// * [String] slug:
+  ///   Access slug for shared links
   Future<Response> addSharedLinkAssetsWithHttpInfo(String id, AssetIdsDto assetIdsDto, { String? key, String? slug, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/shared-links/{id}/assets'
@@ -71,12 +75,16 @@ class SharedLinksApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Shared link ID
   ///
   /// * [AssetIdsDto] assetIdsDto (required):
+  ///   Asset IDs to add
   ///
   /// * [String] key:
+  ///   Access key for shared links
   ///
   /// * [String] slug:
+  ///   Access slug for shared links
   Future<List<AssetIdsResponseDto>?> addSharedLinkAssets(String id, AssetIdsDto assetIdsDto, { String? key, String? slug, }) async {
     final response = await addSharedLinkAssetsWithHttpInfo(id, assetIdsDto,  key: key, slug: slug, );
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -104,6 +112,7 @@ class SharedLinksApi {
   /// Parameters:
   ///
   /// * [SharedLinkCreateDto] sharedLinkCreateDto (required):
+  ///   Shared link creation data
   Future<Response> createSharedLinkWithHttpInfo(SharedLinkCreateDto sharedLinkCreateDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/shared-links';
@@ -136,6 +145,7 @@ class SharedLinksApi {
   /// Parameters:
   ///
   /// * [SharedLinkCreateDto] sharedLinkCreateDto (required):
+  ///   Shared link creation data
   Future<SharedLinkResponseDto?> createSharedLink(SharedLinkCreateDto sharedLinkCreateDto,) async {
     final response = await createSharedLinkWithHttpInfo(sharedLinkCreateDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -160,8 +170,10 @@ class SharedLinksApi {
   /// Parameters:
   ///
   /// * [String] albumId:
+  ///   Filter by album ID
   ///
   /// * [String] id:
+  ///   Filter by shared link ID
   Future<Response> getAllSharedLinksWithHttpInfo({ String? albumId, String? id, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/shared-links';
@@ -201,8 +213,10 @@ class SharedLinksApi {
   /// Parameters:
   ///
   /// * [String] albumId:
+  ///   Filter by album ID
   ///
   /// * [String] id:
+  ///   Filter by shared link ID
   Future<List<SharedLinkResponseDto>?> getAllSharedLinks({ String? albumId, String? id, }) async {
     final response = await getAllSharedLinksWithHttpInfo( albumId: albumId, id: id, );
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -230,12 +244,16 @@ class SharedLinksApi {
   /// Parameters:
   ///
   /// * [String] key:
+  ///   Access key for shared links
   ///
   /// * [String] password:
+  ///   Link password
   ///
   /// * [String] slug:
+  ///   Access slug for shared links
   ///
   /// * [String] token:
+  ///   Access token
   Future<Response> getMySharedLinkWithHttpInfo({ String? key, String? password, String? slug, String? token, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/shared-links/me';
@@ -281,12 +299,16 @@ class SharedLinksApi {
   /// Parameters:
   ///
   /// * [String] key:
+  ///   Access key for shared links
   ///
   /// * [String] password:
+  ///   Link password
   ///
   /// * [String] slug:
+  ///   Access slug for shared links
   ///
   /// * [String] token:
+  ///   Access token
   Future<SharedLinkResponseDto?> getMySharedLink({ String? key, String? password, String? slug, String? token, }) async {
     final response = await getMySharedLinkWithHttpInfo( key: key, password: password, slug: slug, token: token, );
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -311,6 +333,7 @@ class SharedLinksApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Shared link ID
   Future<Response> getSharedLinkByIdWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/shared-links/{id}'
@@ -344,6 +367,7 @@ class SharedLinksApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Shared link ID
   Future<SharedLinkResponseDto?> getSharedLinkById(String id,) async {
     final response = await getSharedLinkByIdWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -368,6 +392,7 @@ class SharedLinksApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Shared link ID
   Future<Response> removeSharedLinkWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/shared-links/{id}'
@@ -401,6 +426,7 @@ class SharedLinksApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Shared link ID
   Future<void> removeSharedLink(String id,) async {
     final response = await removeSharedLinkWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -417,12 +443,16 @@ class SharedLinksApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Shared link ID
   ///
   /// * [AssetIdsDto] assetIdsDto (required):
+  ///   Asset IDs to remove
   ///
   /// * [String] key:
+  ///   Access key for shared links
   ///
   /// * [String] slug:
+  ///   Access slug for shared links
   Future<Response> removeSharedLinkAssetsWithHttpInfo(String id, AssetIdsDto assetIdsDto, { String? key, String? slug, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/shared-links/{id}/assets'
@@ -463,12 +493,16 @@ class SharedLinksApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Shared link ID
   ///
   /// * [AssetIdsDto] assetIdsDto (required):
+  ///   Asset IDs to remove
   ///
   /// * [String] key:
+  ///   Access key for shared links
   ///
   /// * [String] slug:
+  ///   Access slug for shared links
   Future<List<AssetIdsResponseDto>?> removeSharedLinkAssets(String id, AssetIdsDto assetIdsDto, { String? key, String? slug, }) async {
     final response = await removeSharedLinkAssetsWithHttpInfo(id, assetIdsDto,  key: key, slug: slug, );
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -496,8 +530,10 @@ class SharedLinksApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Shared link ID
   ///
   /// * [SharedLinkEditDto] sharedLinkEditDto (required):
+  ///   Shared link update data
   Future<Response> updateSharedLinkWithHttpInfo(String id, SharedLinkEditDto sharedLinkEditDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/shared-links/{id}'
@@ -531,8 +567,10 @@ class SharedLinksApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Shared link ID
   ///
   /// * [SharedLinkEditDto] sharedLinkEditDto (required):
+  ///   Shared link update data
   Future<SharedLinkResponseDto?> updateSharedLink(String id, SharedLinkEditDto sharedLinkEditDto,) async {
     final response = await updateSharedLinkWithHttpInfo(id, sharedLinkEditDto,);
     if (response.statusCode >= HttpStatus.badRequest) {

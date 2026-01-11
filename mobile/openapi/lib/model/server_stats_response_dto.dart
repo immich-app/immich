@@ -21,16 +21,21 @@ class ServerStatsResponseDto {
     this.videos = 0,
   });
 
+  /// Total number of photos
   int photos;
 
+  /// Total storage usage in bytes
   int usage;
 
   List<UsageByUserDto> usageByUser;
 
+  /// Storage usage for photos in bytes
   int usagePhotos;
 
+  /// Storage usage for videos in bytes
   int usageVideos;
 
+  /// Total number of videos
   int videos;
 
   @override

@@ -17,8 +17,10 @@ class AssetEditActionRotate {
     required this.parameters,
   });
 
+  /// Type of edit action to perform
   AssetEditAction action;
 
+  /// Rotation parameters (angle in degrees)
   RotateParameters parameters;
 
   @override

@@ -17,8 +17,10 @@ class PeopleResponse {
     this.sidebarWeb = false,
   });
 
+  /// Whether people are enabled
   bool enabled;
 
+  /// Whether people appear in web sidebar
   bool sidebarWeb;
 
   @override

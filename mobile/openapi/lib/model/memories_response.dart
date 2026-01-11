@@ -17,8 +17,10 @@ class MemoriesResponse {
     this.enabled = true,
   });
 
+  /// Memory duration in seconds
   int duration;
 
+  /// Whether memories are enabled
   bool enabled;
 
   @override

@@ -17,8 +17,10 @@ class DownloadResponseDto {
     required this.totalSize,
   });
 
+  /// Archive information
   List<DownloadArchiveInfo> archives;
 
+  /// Total size in bytes
   int totalSize;
 
   @override

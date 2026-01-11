@@ -26,26 +26,37 @@ class UserPreferencesResponseDto {
     required this.tags,
   });
 
+  /// Album preferences
   AlbumsResponse albums;
 
+  /// Cast preferences
   CastResponse cast;
 
+  /// Download preferences
   DownloadResponse download;
 
+  /// Email notification preferences
   EmailNotificationsResponse emailNotifications;
 
+  /// Folder preferences
   FoldersResponse folders;
 
+  /// Memory preferences
   MemoriesResponse memories;
 
+  /// People preferences
   PeopleResponse people;
 
+  /// Purchase preferences
   PurchaseResponse purchase;
 
+  /// Rating preferences
   RatingsResponse ratings;
 
+  /// Shared link preferences
   SharedLinksResponse sharedLinks;
 
+  /// Tag preferences
   TagsResponse tags;
 
   @override

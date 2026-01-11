@@ -1,32 +1,40 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional, ApiSchema } from '@nestjs/swagger';
 import { IsInt, IsPositive } from 'class-validator';
 import { Optional, ValidateUUID } from 'src/validation';
 
+@ApiSchema({ description: 'Download info query parameters with asset, album, or user filters' })
 export class DownloadInfoDto {
+  @ApiPropertyOptional({ description: 'Asset IDs to download', type: [String] })
   @ValidateUUID({ each: true, optional: true })
   assetIds?: string[];
 
+  @ApiPropertyOptional({ description: 'Album ID to download' })
   @ValidateUUID({ optional: true })
   albumId?: string;
 
+  @ApiPropertyOptional({ description: 'User ID to download assets from' })
   @ValidateUUID({ optional: true })
   userId?: string;
 
+  @ApiPropertyOptional({ type: 'integer', description: 'Archive size limit in bytes' })
   @IsInt()
   @IsPositive()
   @Optional()
-  @ApiProperty({ type: 'integer' })
   archiveSize?: number;
 }
 
+@ApiSchema({ description: 'Download response with archive info' })
 export class DownloadResponseDto {
-  @ApiProperty({ type: 'integer' })
+  @ApiProperty({ type: 'integer', description: 'Total size in bytes' })
   totalSize!: number;
+  @ApiProperty({ description: 'Archive information', type: () => [DownloadArchiveInfo] })
   archives!: DownloadArchiveInfo[];
 }
 
+@ApiSchema({ description: 'Download archive information with size and asset IDs' })
 export class DownloadArchiveInfo {
-  @ApiProperty({ type: 'integer' })
+  @ApiProperty({ type: 'integer', description: 'Archive size in bytes' })
   size!: number;
+  @ApiProperty({ description: 'Asset IDs in this archive', type: [String] })
   assetIds!: string[];
 }

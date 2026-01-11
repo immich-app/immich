@@ -56,7 +56,7 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = APIKeysApi();
-final aPIKeyCreateDto = APIKeyCreateDto(); // APIKeyCreateDto | 
+final aPIKeyCreateDto = APIKeyCreateDto(); // APIKeyCreateDto | API key creation data with name and permissions
 
 try {
     final result = api_instance.createApiKey(aPIKeyCreateDto);

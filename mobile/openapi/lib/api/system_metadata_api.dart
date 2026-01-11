@@ -169,6 +169,7 @@ class SystemMetadataApi {
   /// Parameters:
   ///
   /// * [AdminOnboardingUpdateDto] adminOnboardingUpdateDto (required):
+  ///   Admin onboarding update data
   Future<Response> updateAdminOnboardingWithHttpInfo(AdminOnboardingUpdateDto adminOnboardingUpdateDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/system-metadata/admin-onboarding';
@@ -201,6 +202,7 @@ class SystemMetadataApi {
   /// Parameters:
   ///
   /// * [AdminOnboardingUpdateDto] adminOnboardingUpdateDto (required):
+  ///   Admin onboarding update data
   Future<void> updateAdminOnboarding(AdminOnboardingUpdateDto adminOnboardingUpdateDto,) async {
     final response = await updateAdminOnboardingWithHttpInfo(adminOnboardingUpdateDto,);
     if (response.statusCode >= HttpStatus.badRequest) {

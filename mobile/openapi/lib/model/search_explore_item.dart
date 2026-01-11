@@ -17,8 +17,10 @@ class SearchExploreItem {
     required this.value,
   });
 
+  /// Representative asset
   AssetResponseDto data;
 
+  /// Explore value
   String value;
 
   @override

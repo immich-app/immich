@@ -27,6 +27,7 @@ class UserPreferencesUpdateDto {
     this.tags,
   });
 
+  /// Album preferences
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -35,6 +36,7 @@ class UserPreferencesUpdateDto {
   ///
   AlbumsUpdate? albums;
 
+  /// Avatar preferences
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -43,6 +45,7 @@ class UserPreferencesUpdateDto {
   ///
   AvatarUpdate? avatar;
 
+  /// Cast preferences
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -51,6 +54,7 @@ class UserPreferencesUpdateDto {
   ///
   CastUpdate? cast;
 
+  /// Download preferences
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -59,6 +63,7 @@ class UserPreferencesUpdateDto {
   ///
   DownloadUpdate? download;
 
+  /// Email notification preferences
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -67,6 +72,7 @@ class UserPreferencesUpdateDto {
   ///
   EmailNotificationsUpdate? emailNotifications;
 
+  /// Folder preferences
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -75,6 +81,7 @@ class UserPreferencesUpdateDto {
   ///
   FoldersUpdate? folders;
 
+  /// Memory preferences
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -83,6 +90,7 @@ class UserPreferencesUpdateDto {
   ///
   MemoriesUpdate? memories;
 
+  /// People preferences
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -91,6 +99,7 @@ class UserPreferencesUpdateDto {
   ///
   PeopleUpdate? people;
 
+  /// Purchase preferences
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -99,6 +108,7 @@ class UserPreferencesUpdateDto {
   ///
   PurchaseUpdate? purchase;
 
+  /// Rating preferences
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -107,6 +117,7 @@ class UserPreferencesUpdateDto {
   ///
   RatingsUpdate? ratings;
 
+  /// Shared link preferences
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -115,6 +126,7 @@ class UserPreferencesUpdateDto {
   ///
   SharedLinksUpdate? sharedLinks;
 
+  /// Tag preferences
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated

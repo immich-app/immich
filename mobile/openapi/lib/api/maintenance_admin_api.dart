@@ -25,6 +25,7 @@ class MaintenanceAdminApi {
   /// Parameters:
   ///
   /// * [MaintenanceLoginDto] maintenanceLoginDto (required):
+  ///   Maintenance token for login
   Future<Response> maintenanceLoginWithHttpInfo(MaintenanceLoginDto maintenanceLoginDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/admin/maintenance/login';
@@ -57,6 +58,7 @@ class MaintenanceAdminApi {
   /// Parameters:
   ///
   /// * [MaintenanceLoginDto] maintenanceLoginDto (required):
+  ///   Maintenance token for login
   Future<MaintenanceAuthDto?> maintenanceLogin(MaintenanceLoginDto maintenanceLoginDto,) async {
     final response = await maintenanceLoginWithHttpInfo(maintenanceLoginDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -81,6 +83,7 @@ class MaintenanceAdminApi {
   /// Parameters:
   ///
   /// * [SetMaintenanceModeDto] setMaintenanceModeDto (required):
+  ///   Maintenance mode action
   Future<Response> setMaintenanceModeWithHttpInfo(SetMaintenanceModeDto setMaintenanceModeDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/admin/maintenance';
@@ -113,6 +116,7 @@ class MaintenanceAdminApi {
   /// Parameters:
   ///
   /// * [SetMaintenanceModeDto] setMaintenanceModeDto (required):
+  ///   Maintenance mode action
   Future<void> setMaintenanceMode(SetMaintenanceModeDto setMaintenanceModeDto,) async {
     final response = await setMaintenanceModeWithHttpInfo(setMaintenanceModeDto,);
     if (response.statusCode >= HttpStatus.badRequest) {

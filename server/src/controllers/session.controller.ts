@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { SessionCreateDto, SessionCreateResponseDto, SessionResponseDto, SessionUpdateDto } from 'src/dtos/session.dto';
@@ -15,6 +15,12 @@ export class SessionController {
 
   @Post()
   @Authenticated({ permission: Permission.SessionCreate })
+  @ApiBody({ description: 'Session creation data', type: SessionCreateDto })
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    description: 'Session created successfully',
+    type: SessionCreateResponseDto,
+  })
   @Endpoint({
     summary: 'Create a session',
     description: 'Create a session as a child to the current session. This endpoint is used for casting.',
@@ -26,6 +32,7 @@ export class SessionController {
 
   @Get()
   @Authenticated({ permission: Permission.SessionRead })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Successfully retrieved sessions', type: [SessionResponseDto] })
   @Endpoint({
     summary: 'Retrieve sessions',
     description: 'Retrieve a list of sessions for the user.',
@@ -38,6 +45,7 @@ export class SessionController {
   @Delete()
   @Authenticated({ permission: Permission.SessionDelete })
   @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiResponse({ status: HttpStatus.NO_CONTENT, description: 'All sessions deleted successfully' })
   @Endpoint({
     summary: 'Delete all sessions',
     description: 'Delete all sessions for the user. This will not delete the current session.',
@@ -49,6 +57,9 @@ export class SessionController {
 
   @Put(':id')
   @Authenticated({ permission: Permission.SessionUpdate })
+  @ApiParam({ name: 'id', description: 'Session ID', type: String, format: 'uuid' })
+  @ApiBody({ description: 'Session update data', type: SessionUpdateDto })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Session updated successfully', type: SessionResponseDto })
   @Endpoint({
     summary: 'Update a session',
     description: 'Update a specific session identified by id.',
@@ -65,6 +76,8 @@ export class SessionController {
   @Delete(':id')
   @Authenticated({ permission: Permission.SessionDelete })
   @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiParam({ name: 'id', description: 'Session ID', type: String, format: 'uuid' })
+  @ApiResponse({ status: HttpStatus.NO_CONTENT, description: 'Session deleted successfully' })
   @Endpoint({
     summary: 'Delete a session',
     description: 'Delete a specific session by id.',
@@ -77,6 +90,8 @@ export class SessionController {
   @Post(':id/lock')
   @Authenticated({ permission: Permission.SessionLock })
   @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiParam({ name: 'id', description: 'Session ID', type: String, format: 'uuid' })
+  @ApiResponse({ status: HttpStatus.NO_CONTENT, description: 'Session locked successfully' })
   @Endpoint({
     summary: 'Lock a session',
     description: 'Lock a specific session by id.',

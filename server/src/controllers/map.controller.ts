@@ -1,5 +1,5 @@
 import { Controller, Get, HttpCode, HttpStatus, Query } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
@@ -19,6 +19,11 @@ export class MapController {
 
   @Get('markers')
   @Authenticated()
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Successfully retrieved map markers',
+    type: [MapMarkerResponseDto],
+  })
   @Endpoint({
     summary: 'Retrieve map markers',
     description: 'Retrieve a list of latitude and longitude coordinates for every asset with location data.',
@@ -31,6 +36,11 @@ export class MapController {
   @Authenticated()
   @Get('reverse-geocode')
   @HttpCode(HttpStatus.OK)
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Successfully reverse geocoded coordinates',
+    type: [MapReverseGeocodeResponseDto],
+  })
   @Endpoint({
     summary: 'Reverse geocode coordinates',
     description: 'Retrieve location information (e.g., city, country) for given latitude and longitude coordinates.',

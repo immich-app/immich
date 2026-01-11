@@ -25,8 +25,10 @@ class MemoriesApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Memory ID
   ///
   /// * [BulkIdsDto] bulkIdsDto (required):
+  ///   Asset IDs to add
   Future<Response> addMemoryAssetsWithHttpInfo(String id, BulkIdsDto bulkIdsDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/memories/{id}/assets'
@@ -60,8 +62,10 @@ class MemoriesApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Memory ID
   ///
   /// * [BulkIdsDto] bulkIdsDto (required):
+  ///   Asset IDs to add
   Future<List<BulkIdResponseDto>?> addMemoryAssets(String id, BulkIdsDto bulkIdsDto,) async {
     final response = await addMemoryAssetsWithHttpInfo(id, bulkIdsDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -89,6 +93,7 @@ class MemoriesApi {
   /// Parameters:
   ///
   /// * [MemoryCreateDto] memoryCreateDto (required):
+  ///   Memory creation data with name, description, and asset IDs
   Future<Response> createMemoryWithHttpInfo(MemoryCreateDto memoryCreateDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/memories';
@@ -121,6 +126,7 @@ class MemoriesApi {
   /// Parameters:
   ///
   /// * [MemoryCreateDto] memoryCreateDto (required):
+  ///   Memory creation data with name, description, and asset IDs
   Future<MemoryResponseDto?> createMemory(MemoryCreateDto memoryCreateDto,) async {
     final response = await createMemoryWithHttpInfo(memoryCreateDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -145,6 +151,7 @@ class MemoriesApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Memory ID
   Future<Response> deleteMemoryWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/memories/{id}'
@@ -178,6 +185,7 @@ class MemoriesApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Memory ID
   Future<void> deleteMemory(String id,) async {
     final response = await deleteMemoryWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -194,6 +202,7 @@ class MemoriesApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Memory ID
   Future<Response> getMemoryWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/memories/{id}'
@@ -227,6 +236,7 @@ class MemoriesApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Memory ID
   Future<MemoryResponseDto?> getMemory(String id,) async {
     final response = await getMemoryWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -251,17 +261,22 @@ class MemoriesApi {
   /// Parameters:
   ///
   /// * [DateTime] for_:
+  ///   Filter by date
   ///
   /// * [bool] isSaved:
+  ///   Filter by saved status
   ///
   /// * [bool] isTrashed:
+  ///   Include trashed memories
   ///
   /// * [MemorySearchOrder] order:
+  ///   Sort order
   ///
   /// * [int] size:
   ///   Number of memories to return
   ///
   /// * [MemoryType] type:
+  ///   Memory type
   Future<Response> memoriesStatisticsWithHttpInfo({ DateTime? for_, bool? isSaved, bool? isTrashed, MemorySearchOrder? order, int? size, MemoryType? type, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/memories/statistics';
@@ -313,17 +328,22 @@ class MemoriesApi {
   /// Parameters:
   ///
   /// * [DateTime] for_:
+  ///   Filter by date
   ///
   /// * [bool] isSaved:
+  ///   Filter by saved status
   ///
   /// * [bool] isTrashed:
+  ///   Include trashed memories
   ///
   /// * [MemorySearchOrder] order:
+  ///   Sort order
   ///
   /// * [int] size:
   ///   Number of memories to return
   ///
   /// * [MemoryType] type:
+  ///   Memory type
   Future<MemoryStatisticsResponseDto?> memoriesStatistics({ DateTime? for_, bool? isSaved, bool? isTrashed, MemorySearchOrder? order, int? size, MemoryType? type, }) async {
     final response = await memoriesStatisticsWithHttpInfo( for_: for_, isSaved: isSaved, isTrashed: isTrashed, order: order, size: size, type: type, );
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -348,8 +368,10 @@ class MemoriesApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Memory ID
   ///
   /// * [BulkIdsDto] bulkIdsDto (required):
+  ///   Asset IDs to remove
   Future<Response> removeMemoryAssetsWithHttpInfo(String id, BulkIdsDto bulkIdsDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/memories/{id}/assets'
@@ -383,8 +405,10 @@ class MemoriesApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Memory ID
   ///
   /// * [BulkIdsDto] bulkIdsDto (required):
+  ///   Asset IDs to remove
   Future<List<BulkIdResponseDto>?> removeMemoryAssets(String id, BulkIdsDto bulkIdsDto,) async {
     final response = await removeMemoryAssetsWithHttpInfo(id, bulkIdsDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -412,17 +436,22 @@ class MemoriesApi {
   /// Parameters:
   ///
   /// * [DateTime] for_:
+  ///   Filter by date
   ///
   /// * [bool] isSaved:
+  ///   Filter by saved status
   ///
   /// * [bool] isTrashed:
+  ///   Include trashed memories
   ///
   /// * [MemorySearchOrder] order:
+  ///   Sort order
   ///
   /// * [int] size:
   ///   Number of memories to return
   ///
   /// * [MemoryType] type:
+  ///   Memory type
   Future<Response> searchMemoriesWithHttpInfo({ DateTime? for_, bool? isSaved, bool? isTrashed, MemorySearchOrder? order, int? size, MemoryType? type, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/memories';
@@ -474,17 +503,22 @@ class MemoriesApi {
   /// Parameters:
   ///
   /// * [DateTime] for_:
+  ///   Filter by date
   ///
   /// * [bool] isSaved:
+  ///   Filter by saved status
   ///
   /// * [bool] isTrashed:
+  ///   Include trashed memories
   ///
   /// * [MemorySearchOrder] order:
+  ///   Sort order
   ///
   /// * [int] size:
   ///   Number of memories to return
   ///
   /// * [MemoryType] type:
+  ///   Memory type
   Future<List<MemoryResponseDto>?> searchMemories({ DateTime? for_, bool? isSaved, bool? isTrashed, MemorySearchOrder? order, int? size, MemoryType? type, }) async {
     final response = await searchMemoriesWithHttpInfo( for_: for_, isSaved: isSaved, isTrashed: isTrashed, order: order, size: size, type: type, );
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -512,8 +546,10 @@ class MemoriesApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Memory ID
   ///
   /// * [MemoryUpdateDto] memoryUpdateDto (required):
+  ///   Memory update data
   Future<Response> updateMemoryWithHttpInfo(String id, MemoryUpdateDto memoryUpdateDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/memories/{id}'
@@ -547,8 +583,10 @@ class MemoriesApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Memory ID
   ///
   /// * [MemoryUpdateDto] memoryUpdateDto (required):
+  ///   Memory update data
   Future<MemoryResponseDto?> updateMemory(String id, MemoryUpdateDto memoryUpdateDto,) async {
     final response = await updateMemoryWithHttpInfo(id, memoryUpdateDto,);
     if (response.statusCode >= HttpStatus.badRequest) {

@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -23,6 +23,8 @@ export class TagController {
 
   @Post()
   @Authenticated({ permission: Permission.TagCreate })
+  @ApiBody({ description: 'Tag creation data with name and optional color', type: TagCreateDto })
+  @ApiResponse({ status: HttpStatus.CREATED, description: 'Tag created successfully', type: TagResponseDto })
   @Endpoint({
     summary: 'Create a tag',
     description: 'Create a new tag by providing a name and optional color.',
@@ -34,6 +36,7 @@ export class TagController {
 
   @Get()
   @Authenticated({ permission: Permission.TagRead })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Successfully retrieved tags', type: [TagResponseDto] })
   @Endpoint({
     summary: 'Retrieve tags',
     description: 'Retrieve a list of all tags.',
@@ -45,6 +48,8 @@ export class TagController {
 
   @Put()
   @Authenticated({ permission: Permission.TagCreate })
+  @ApiBody({ description: 'Tags to create or update', type: TagUpsertDto })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Tags upserted successfully', type: [TagResponseDto] })
   @Endpoint({
     summary: 'Upsert tags',
     description: 'Create or update multiple tags in a single request.',
@@ -56,6 +61,8 @@ export class TagController {
 
   @Put('assets')
   @Authenticated({ permission: Permission.TagAsset })
+  @ApiBody({ description: 'Tag and asset IDs mapping', type: TagBulkAssetsDto })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Assets tagged successfully', type: TagBulkAssetsResponseDto })
   @Endpoint({
     summary: 'Tag assets',
     description: 'Add multiple tags to multiple assets in a single request.',
@@ -67,6 +74,8 @@ export class TagController {
 
   @Get(':id')
   @Authenticated({ permission: Permission.TagRead })
+  @ApiParam({ name: 'id', description: 'Tag ID', type: String, format: 'uuid' })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Successfully retrieved tag', type: TagResponseDto })
   @Endpoint({
     summary: 'Retrieve a tag',
     description: 'Retrieve a specific tag by its ID.',
@@ -78,6 +87,9 @@ export class TagController {
 
   @Put(':id')
   @Authenticated({ permission: Permission.TagUpdate })
+  @ApiParam({ name: 'id', description: 'Tag ID', type: String, format: 'uuid' })
+  @ApiBody({ description: 'Tag update data', type: TagUpdateDto })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Tag updated successfully', type: TagResponseDto })
   @Endpoint({
     summary: 'Update a tag',
     description: 'Update an existing tag identified by its ID.',
@@ -90,6 +102,8 @@ export class TagController {
   @Delete(':id')
   @Authenticated({ permission: Permission.TagDelete })
   @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiParam({ name: 'id', description: 'Tag ID', type: String, format: 'uuid' })
+  @ApiResponse({ status: HttpStatus.NO_CONTENT, description: 'Tag deleted successfully' })
   @Endpoint({
     summary: 'Delete a tag',
     description: 'Delete a specific tag by its ID.',
@@ -101,6 +115,9 @@ export class TagController {
 
   @Put(':id/assets')
   @Authenticated({ permission: Permission.TagAsset })
+  @ApiParam({ name: 'id', description: 'Tag ID', type: String, format: 'uuid' })
+  @ApiBody({ description: 'Asset IDs to tag', type: BulkIdsDto })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Assets tagged successfully', type: [BulkIdResponseDto] })
   @Endpoint({
     summary: 'Tag assets',
     description: 'Add a tag to all the specified assets.',
@@ -116,6 +133,9 @@ export class TagController {
 
   @Delete(':id/assets')
   @Authenticated({ permission: Permission.TagAsset })
+  @ApiParam({ name: 'id', description: 'Tag ID', type: String, format: 'uuid' })
+  @ApiBody({ description: 'Asset IDs to untag', type: BulkIdsDto })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Assets untagged successfully', type: [BulkIdResponseDto] })
   @Endpoint({
     summary: 'Untag assets',
     description: 'Remove a tag from all the specified assets.',

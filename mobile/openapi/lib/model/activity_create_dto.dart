@@ -19,8 +19,10 @@ class ActivityCreateDto {
     required this.type,
   });
 
+  /// Album ID
   String albumId;
 
+  /// Asset ID (if activity is for an asset)
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -29,6 +31,7 @@ class ActivityCreateDto {
   ///
   String? assetId;
 
+  /// Comment text (required if type is comment)
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -37,6 +40,7 @@ class ActivityCreateDto {
   ///
   String? comment;
 
+  /// Activity type (like or comment)
   ReactionType type;
 
   @override

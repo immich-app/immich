@@ -25,6 +25,7 @@ class ViewsApi {
   /// Parameters:
   ///
   /// * [String] path (required):
+  ///   Original path of the folder
   Future<Response> getAssetsByOriginalPathWithHttpInfo(String path,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/view/folder';
@@ -59,6 +60,7 @@ class ViewsApi {
   /// Parameters:
   ///
   /// * [String] path (required):
+  ///   Original path of the folder
   Future<List<AssetResponseDto>?> getAssetsByOriginalPath(String path,) async {
     final response = await getAssetsByOriginalPathWithHttpInfo(path,);
     if (response.statusCode >= HttpStatus.badRequest) {

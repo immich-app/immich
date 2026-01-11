@@ -18,10 +18,13 @@ class AssetMetadataBulkUpsertItemDto {
     required this.value,
   });
 
+  /// Asset ID
   String assetId;
 
+  /// Metadata key
   String key;
 
+  /// Metadata value (object)
   Object value;
 
   @override

@@ -18,8 +18,10 @@ class PinCodeChangeDto {
     this.pinCode,
   });
 
+  /// New PIN code (4-6 digits)
   String newPinCode;
 
+  /// User password (required if PIN code is not provided)
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -28,6 +30,7 @@ class PinCodeChangeDto {
   ///
   String? password;
 
+  /// New PIN code (4-6 digits)
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated

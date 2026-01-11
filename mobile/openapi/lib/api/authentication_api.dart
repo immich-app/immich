@@ -25,6 +25,7 @@ class AuthenticationApi {
   /// Parameters:
   ///
   /// * [ChangePasswordDto] changePasswordDto (required):
+  ///   Current and new password
   Future<Response> changePasswordWithHttpInfo(ChangePasswordDto changePasswordDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/auth/change-password';
@@ -57,6 +58,7 @@ class AuthenticationApi {
   /// Parameters:
   ///
   /// * [ChangePasswordDto] changePasswordDto (required):
+  ///   Current and new password
   Future<UserAdminResponseDto?> changePassword(ChangePasswordDto changePasswordDto,) async {
     final response = await changePasswordWithHttpInfo(changePasswordDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -81,6 +83,7 @@ class AuthenticationApi {
   /// Parameters:
   ///
   /// * [PinCodeChangeDto] pinCodeChangeDto (required):
+  ///   Old and new PIN code
   Future<Response> changePinCodeWithHttpInfo(PinCodeChangeDto pinCodeChangeDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/auth/pin-code';
@@ -113,6 +116,7 @@ class AuthenticationApi {
   /// Parameters:
   ///
   /// * [PinCodeChangeDto] pinCodeChangeDto (required):
+  ///   Old and new PIN code
   Future<void> changePinCode(PinCodeChangeDto pinCodeChangeDto,) async {
     final response = await changePinCodeWithHttpInfo(pinCodeChangeDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -129,6 +133,7 @@ class AuthenticationApi {
   /// Parameters:
   ///
   /// * [OAuthCallbackDto] oAuthCallbackDto (required):
+  ///   OAuth callback data
   Future<Response> finishOAuthWithHttpInfo(OAuthCallbackDto oAuthCallbackDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/oauth/callback';
@@ -161,6 +166,7 @@ class AuthenticationApi {
   /// Parameters:
   ///
   /// * [OAuthCallbackDto] oAuthCallbackDto (required):
+  ///   OAuth callback data
   Future<LoginResponseDto?> finishOAuth(OAuthCallbackDto oAuthCallbackDto,) async {
     final response = await finishOAuthWithHttpInfo(oAuthCallbackDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -233,6 +239,7 @@ class AuthenticationApi {
   /// Parameters:
   ///
   /// * [OAuthCallbackDto] oAuthCallbackDto (required):
+  ///   OAuth callback data
   Future<Response> linkOAuthAccountWithHttpInfo(OAuthCallbackDto oAuthCallbackDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/oauth/link';
@@ -265,6 +272,7 @@ class AuthenticationApi {
   /// Parameters:
   ///
   /// * [OAuthCallbackDto] oAuthCallbackDto (required):
+  ///   OAuth callback data
   Future<UserAdminResponseDto?> linkOAuthAccount(OAuthCallbackDto oAuthCallbackDto,) async {
     final response = await linkOAuthAccountWithHttpInfo(oAuthCallbackDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -329,6 +337,7 @@ class AuthenticationApi {
   /// Parameters:
   ///
   /// * [LoginCredentialDto] loginCredentialDto (required):
+  ///   Login credentials
   Future<Response> loginWithHttpInfo(LoginCredentialDto loginCredentialDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/auth/login';
@@ -361,6 +370,7 @@ class AuthenticationApi {
   /// Parameters:
   ///
   /// * [LoginCredentialDto] loginCredentialDto (required):
+  ///   Login credentials
   Future<LoginResponseDto?> login(LoginCredentialDto loginCredentialDto,) async {
     final response = await loginWithHttpInfo(loginCredentialDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -473,6 +483,7 @@ class AuthenticationApi {
   /// Parameters:
   ///
   /// * [PinCodeResetDto] pinCodeResetDto (required):
+  ///   Account password to reset PIN
   Future<Response> resetPinCodeWithHttpInfo(PinCodeResetDto pinCodeResetDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/auth/pin-code';
@@ -505,6 +516,7 @@ class AuthenticationApi {
   /// Parameters:
   ///
   /// * [PinCodeResetDto] pinCodeResetDto (required):
+  ///   Account password to reset PIN
   Future<void> resetPinCode(PinCodeResetDto pinCodeResetDto,) async {
     final response = await resetPinCodeWithHttpInfo(pinCodeResetDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -521,6 +533,7 @@ class AuthenticationApi {
   /// Parameters:
   ///
   /// * [PinCodeSetupDto] pinCodeSetupDto (required):
+  ///   PIN code setup data
   Future<Response> setupPinCodeWithHttpInfo(PinCodeSetupDto pinCodeSetupDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/auth/pin-code';
@@ -553,6 +566,7 @@ class AuthenticationApi {
   /// Parameters:
   ///
   /// * [PinCodeSetupDto] pinCodeSetupDto (required):
+  ///   PIN code setup data
   Future<void> setupPinCode(PinCodeSetupDto pinCodeSetupDto,) async {
     final response = await setupPinCodeWithHttpInfo(pinCodeSetupDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -569,6 +583,7 @@ class AuthenticationApi {
   /// Parameters:
   ///
   /// * [SignUpDto] signUpDto (required):
+  ///   Admin registration data
   Future<Response> signUpAdminWithHttpInfo(SignUpDto signUpDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/auth/admin-sign-up';
@@ -601,6 +616,7 @@ class AuthenticationApi {
   /// Parameters:
   ///
   /// * [SignUpDto] signUpDto (required):
+  ///   Admin registration data
   Future<UserAdminResponseDto?> signUpAdmin(SignUpDto signUpDto,) async {
     final response = await signUpAdminWithHttpInfo(signUpDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -625,6 +641,7 @@ class AuthenticationApi {
   /// Parameters:
   ///
   /// * [OAuthConfigDto] oAuthConfigDto (required):
+  ///   OAuth configuration
   Future<Response> startOAuthWithHttpInfo(OAuthConfigDto oAuthConfigDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/oauth/authorize';
@@ -657,6 +674,7 @@ class AuthenticationApi {
   /// Parameters:
   ///
   /// * [OAuthConfigDto] oAuthConfigDto (required):
+  ///   OAuth configuration
   Future<OAuthAuthorizeResponseDto?> startOAuth(OAuthConfigDto oAuthConfigDto,) async {
     final response = await startOAuthWithHttpInfo(oAuthConfigDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -729,6 +747,7 @@ class AuthenticationApi {
   /// Parameters:
   ///
   /// * [SessionUnlockDto] sessionUnlockDto (required):
+  ///   PIN code to unlock session
   Future<Response> unlockAuthSessionWithHttpInfo(SessionUnlockDto sessionUnlockDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/auth/session/unlock';
@@ -761,6 +780,7 @@ class AuthenticationApi {
   /// Parameters:
   ///
   /// * [SessionUnlockDto] sessionUnlockDto (required):
+  ///   PIN code to unlock session
   Future<void> unlockAuthSession(SessionUnlockDto sessionUnlockDto,) async {
     final response = await unlockAuthSessionWithHttpInfo(sessionUnlockDto,);
     if (response.statusCode >= HttpStatus.badRequest) {

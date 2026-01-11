@@ -1,5 +1,5 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Put } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { JobCreateDto } from 'src/dtos/job.dto';
@@ -20,6 +20,11 @@ export class JobController {
 
   @Get()
   @Authenticated({ permission: Permission.JobRead, admin: true })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Successfully retrieved queue counts and status',
+    type: QueuesResponseLegacyDto,
+  })
   @Endpoint({
     summary: 'Retrieve queue counts and status',
     description: 'Retrieve the counts of the current queue, as well as the current status.',
@@ -32,6 +37,8 @@ export class JobController {
   @Post()
   @Authenticated({ permission: Permission.JobCreate, admin: true })
   @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiBody({ description: 'Job creation data', type: JobCreateDto })
+  @ApiResponse({ status: HttpStatus.NO_CONTENT, description: 'Job created successfully' })
   @Endpoint({
     summary: 'Create a manual job',
     description:
@@ -44,6 +51,13 @@ export class JobController {
 
   @Put(':name')
   @Authenticated({ permission: Permission.JobCreate, admin: true })
+  @ApiParam({ name: 'name', description: 'Queue name', type: String })
+  @ApiBody({ description: 'Queue command options', type: QueueCommandDto })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Queue command executed successfully',
+    type: QueueResponseLegacyDto,
+  })
   @Endpoint({
     summary: 'Run jobs',
     description:

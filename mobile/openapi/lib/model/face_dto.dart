@@ -16,6 +16,7 @@ class FaceDto {
     required this.id,
   });
 
+  /// Face ID
   String id;
 
   @override

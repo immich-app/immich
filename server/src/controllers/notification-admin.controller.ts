@@ -1,5 +1,5 @@
 import { Body, Controller, HttpCode, HttpStatus, Param, Post } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
@@ -22,6 +22,8 @@ export class NotificationAdminController {
 
   @Post()
   @Authenticated({ admin: true })
+  @ApiBody({ description: 'Notification creation data', type: NotificationCreateDto })
+  @ApiResponse({ status: HttpStatus.CREATED, description: 'Notification created successfully', type: NotificationDto })
   @Endpoint({
     summary: 'Create a notification',
     description: 'Create a new notification for a specific user.',
@@ -34,6 +36,8 @@ export class NotificationAdminController {
   @Post('test-email')
   @Authenticated({ admin: true })
   @HttpCode(HttpStatus.OK)
+  @ApiBody({ description: 'SMTP configuration for test email', type: SystemConfigSmtpDto })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Test email sent successfully', type: TestEmailResponseDto })
   @Endpoint({
     summary: 'Send test email',
     description: 'Send a test email using the provided SMTP configuration.',
@@ -46,6 +50,13 @@ export class NotificationAdminController {
   @Post('templates/:name')
   @Authenticated({ admin: true })
   @HttpCode(HttpStatus.OK)
+  @ApiParam({ name: 'name', description: 'Email template name', type: String })
+  @ApiBody({ description: 'Template data', type: TemplateDto })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Successfully rendered email template',
+    type: TemplateResponseDto,
+  })
   @Endpoint({
     summary: 'Render email template',
     description: 'Retrieve a preview of the provided email template.',

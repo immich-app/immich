@@ -18,10 +18,13 @@ class QueueResponseDto {
     required this.statistics,
   });
 
+  /// Whether the queue is paused
   bool isPaused;
 
+  /// Queue name
   QueueName name;
 
+  /// Queue statistics
   QueueStatisticsDto statistics;
 
   @override

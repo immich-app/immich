@@ -15,7 +15,7 @@ class SharedLinkCreateDto {
   SharedLinkCreateDto({
     this.albumId,
     this.allowDownload = true,
-    this.allowUpload,
+    this.allowUpload = false,
     this.assetIds = const [],
     this.description,
     this.expiresAt,
@@ -25,6 +25,7 @@ class SharedLinkCreateDto {
     required this.type,
   });
 
+  /// Album ID (for album sharing)
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -33,28 +34,31 @@ class SharedLinkCreateDto {
   ///
   String? albumId;
 
+  /// Allow downloads
   bool allowDownload;
 
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  bool? allowUpload;
+  /// Allow uploads
+  bool allowUpload;
 
+  /// Asset IDs (for individual assets)
   List<String> assetIds;
 
+  /// Link description
   String? description;
 
+  /// Expiration date
   DateTime? expiresAt;
 
+  /// Link password
   String? password;
 
+  /// Show metadata
   bool showMetadata;
 
+  /// Custom URL slug
   String? slug;
 
+  /// Shared link type
   SharedLinkType type;
 
   @override
@@ -75,7 +79,7 @@ class SharedLinkCreateDto {
     // ignore: unnecessary_parenthesis
     (albumId == null ? 0 : albumId!.hashCode) +
     (allowDownload.hashCode) +
-    (allowUpload == null ? 0 : allowUpload!.hashCode) +
+    (allowUpload.hashCode) +
     (assetIds.hashCode) +
     (description == null ? 0 : description!.hashCode) +
     (expiresAt == null ? 0 : expiresAt!.hashCode) +
@@ -95,11 +99,7 @@ class SharedLinkCreateDto {
     //  json[r'albumId'] = null;
     }
       json[r'allowDownload'] = this.allowDownload;
-    if (this.allowUpload != null) {
       json[r'allowUpload'] = this.allowUpload;
-    } else {
-    //  json[r'allowUpload'] = null;
-    }
       json[r'assetIds'] = this.assetIds;
     if (this.description != null) {
       json[r'description'] = this.description;
@@ -137,7 +137,7 @@ class SharedLinkCreateDto {
       return SharedLinkCreateDto(
         albumId: mapValueOfType<String>(json, r'albumId'),
         allowDownload: mapValueOfType<bool>(json, r'allowDownload') ?? true,
-        allowUpload: mapValueOfType<bool>(json, r'allowUpload'),
+        allowUpload: mapValueOfType<bool>(json, r'allowUpload') ?? false,
         assetIds: json[r'assetIds'] is Iterable
             ? (json[r'assetIds'] as Iterable).cast<String>().toList(growable: false)
             : const [],

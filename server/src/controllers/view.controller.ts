@@ -1,5 +1,5 @@
-import { Controller, Get, Query } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { Controller, Get, HttpStatus, Query } from '@nestjs/common';
+import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -14,6 +14,7 @@ export class ViewController {
 
   @Get('folder/unique-paths')
   @Authenticated()
+  @ApiResponse({ status: HttpStatus.OK, description: 'Successfully retrieved unique paths', type: [String] })
   @Endpoint({
     summary: 'Retrieve unique paths',
     description: 'Retrieve a list of unique folder paths from asset original paths.',
@@ -25,6 +26,12 @@ export class ViewController {
 
   @Get('folder')
   @Authenticated()
+  @ApiQuery({ name: 'path', description: 'Original path of the folder', type: String, required: true })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Successfully retrieved assets by original path',
+    type: [AssetResponseDto],
+  })
   @Endpoint({
     summary: 'Retrieve assets by original path',
     description: 'Retrieve assets that are children of a specific folder.',

@@ -25,8 +25,10 @@ class QueuesApi {
   /// Parameters:
   ///
   /// * [QueueName] name (required):
+  ///   Queue name
   ///
   /// * [QueueDeleteDto] queueDeleteDto (required):
+  ///   Queue deletion options
   Future<Response> emptyQueueWithHttpInfo(QueueName name, QueueDeleteDto queueDeleteDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/queues/{name}/jobs'
@@ -60,8 +62,10 @@ class QueuesApi {
   /// Parameters:
   ///
   /// * [QueueName] name (required):
+  ///   Queue name
   ///
   /// * [QueueDeleteDto] queueDeleteDto (required):
+  ///   Queue deletion options
   Future<void> emptyQueue(QueueName name, QueueDeleteDto queueDeleteDto,) async {
     final response = await emptyQueueWithHttpInfo(name, queueDeleteDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -78,6 +82,7 @@ class QueuesApi {
   /// Parameters:
   ///
   /// * [QueueName] name (required):
+  ///   Queue name
   Future<Response> getQueueWithHttpInfo(QueueName name,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/queues/{name}'
@@ -111,6 +116,7 @@ class QueuesApi {
   /// Parameters:
   ///
   /// * [QueueName] name (required):
+  ///   Queue name
   Future<QueueResponseDto?> getQueue(QueueName name,) async {
     final response = await getQueueWithHttpInfo(name,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -135,8 +141,10 @@ class QueuesApi {
   /// Parameters:
   ///
   /// * [QueueName] name (required):
+  ///   Queue name
   ///
   /// * [List<QueueJobStatus>] status:
+  ///   Filter by job status
   Future<Response> getQueueJobsWithHttpInfo(QueueName name, { List<QueueJobStatus>? status, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/queues/{name}/jobs'
@@ -174,8 +182,10 @@ class QueuesApi {
   /// Parameters:
   ///
   /// * [QueueName] name (required):
+  ///   Queue name
   ///
   /// * [List<QueueJobStatus>] status:
+  ///   Filter by job status
   Future<List<QueueJobResponseDto>?> getQueueJobs(QueueName name, { List<QueueJobStatus>? status, }) async {
     final response = await getQueueJobsWithHttpInfo(name,  status: status, );
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -254,8 +264,10 @@ class QueuesApi {
   /// Parameters:
   ///
   /// * [QueueName] name (required):
+  ///   Queue name
   ///
   /// * [QueueUpdateDto] queueUpdateDto (required):
+  ///   Queue update data
   Future<Response> updateQueueWithHttpInfo(QueueName name, QueueUpdateDto queueUpdateDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/queues/{name}'
@@ -289,8 +301,10 @@ class QueuesApi {
   /// Parameters:
   ///
   /// * [QueueName] name (required):
+  ///   Queue name
   ///
   /// * [QueueUpdateDto] queueUpdateDto (required):
+  ///   Queue update data
   Future<QueueResponseDto?> updateQueue(QueueName name, QueueUpdateDto queueUpdateDto,) async {
     final response = await updateQueueWithHttpInfo(name, queueUpdateDto,);
     if (response.statusCode >= HttpStatus.badRequest) {

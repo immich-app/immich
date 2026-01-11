@@ -16,6 +16,7 @@ class SyncAckSetDto {
     this.acks = const [],
   });
 
+  /// Acknowledgment IDs (max 1000)
   List<String> acks;
 
   @override

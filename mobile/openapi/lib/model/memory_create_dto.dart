@@ -21,10 +21,13 @@ class MemoryCreateDto {
     required this.type,
   });
 
+  /// Asset IDs to associate with memory
   List<String> assetIds;
 
+  /// Memory data (type-specific)
   OnThisDayDto data;
 
+  /// Is memory saved
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -33,8 +36,10 @@ class MemoryCreateDto {
   ///
   bool? isSaved;
 
+  /// Memory date
   DateTime memoryAt;
 
+  /// Date when memory was seen
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -43,6 +48,7 @@ class MemoryCreateDto {
   ///
   DateTime? seenAt;
 
+  /// Memory type
   MemoryType type;
 
   @override

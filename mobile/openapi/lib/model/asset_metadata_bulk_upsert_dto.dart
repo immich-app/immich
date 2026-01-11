@@ -16,6 +16,7 @@ class AssetMetadataBulkUpsertDto {
     this.items = const [],
   });
 
+  /// Metadata items to upsert
   List<AssetMetadataBulkUpsertItemDto> items;
 
   @override

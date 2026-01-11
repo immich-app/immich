@@ -1,5 +1,5 @@
 import { Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { ApiTag, Permission } from 'src/enum';
@@ -13,6 +13,7 @@ export class AuthAdminController {
   @Post('unlink-all')
   @Authenticated({ permission: Permission.AdminAuthUnlinkAll, admin: true })
   @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiResponse({ status: HttpStatus.NO_CONTENT, description: 'All OAuth accounts unlinked successfully' })
   @Endpoint({
     summary: 'Unlink all OAuth accounts',
     description: 'Unlinks all OAuth accounts associated with user accounts in the system.',

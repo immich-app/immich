@@ -25,6 +25,7 @@ class WorkflowsApi {
   /// Parameters:
   ///
   /// * [WorkflowCreateDto] workflowCreateDto (required):
+  ///   Workflow creation data
   Future<Response> createWorkflowWithHttpInfo(WorkflowCreateDto workflowCreateDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/workflows';
@@ -57,6 +58,7 @@ class WorkflowsApi {
   /// Parameters:
   ///
   /// * [WorkflowCreateDto] workflowCreateDto (required):
+  ///   Workflow creation data
   Future<WorkflowResponseDto?> createWorkflow(WorkflowCreateDto workflowCreateDto,) async {
     final response = await createWorkflowWithHttpInfo(workflowCreateDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -81,6 +83,7 @@ class WorkflowsApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Workflow ID
   Future<Response> deleteWorkflowWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/workflows/{id}'
@@ -114,6 +117,7 @@ class WorkflowsApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Workflow ID
   Future<void> deleteWorkflow(String id,) async {
     final response = await deleteWorkflowWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -130,6 +134,7 @@ class WorkflowsApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Workflow ID
   Future<Response> getWorkflowWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/workflows/{id}'
@@ -163,6 +168,7 @@ class WorkflowsApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Workflow ID
   Future<WorkflowResponseDto?> getWorkflow(String id,) async {
     final response = await getWorkflowWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -238,8 +244,10 @@ class WorkflowsApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Workflow ID
   ///
   /// * [WorkflowUpdateDto] workflowUpdateDto (required):
+  ///   Workflow update data
   Future<Response> updateWorkflowWithHttpInfo(String id, WorkflowUpdateDto workflowUpdateDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/workflows/{id}'
@@ -273,8 +281,10 @@ class WorkflowsApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Workflow ID
   ///
   /// * [WorkflowUpdateDto] workflowUpdateDto (required):
+  ///   Workflow update data
   Future<WorkflowResponseDto?> updateWorkflow(String id, WorkflowUpdateDto workflowUpdateDto,) async {
     final response = await updateWorkflowWithHttpInfo(id, workflowUpdateDto,);
     if (response.statusCode >= HttpStatus.badRequest) {

@@ -17,8 +17,10 @@ class QueueResponseLegacyDto {
     required this.queueStatus,
   });
 
+  /// Job count statistics for the queue
   QueueStatisticsDto jobCounts;
 
+  /// Current status of the queue
   QueueStatusLegacyDto queueStatus;
 
   @override

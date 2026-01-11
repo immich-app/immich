@@ -1,14 +1,16 @@
 import { Body, Controller, Get, Post, Req, Res } from '@nestjs/common';
+import { ApiBody, ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
 import { MaintenanceAuthDto, MaintenanceLoginDto, SetMaintenanceModeDto } from 'src/dtos/maintenance.dto';
 import { ServerConfigDto } from 'src/dtos/server.dto';
-import { ImmichCookie, MaintenanceAction } from 'src/enum';
+import { ApiTag, ImmichCookie, MaintenanceAction } from 'src/enum';
 import { MaintenanceRoute } from 'src/maintenance/maintenance-auth.guard';
 import { MaintenanceWorkerService } from 'src/maintenance/maintenance-worker.service';
 import { GetLoginDetails } from 'src/middleware/auth.guard';
 import { LoginDetails } from 'src/services/auth.service';
 import { respondWithCookie } from 'src/utils/response';
 
+@ApiTags(ApiTag.Maintenance)
 @Controller()
 export class MaintenanceWorkerController {
   constructor(private service: MaintenanceWorkerService) {}
@@ -19,6 +21,7 @@ export class MaintenanceWorkerController {
   }
 
   @Post('admin/maintenance/login')
+  @ApiBody({ description: 'Maintenance token for login', type: MaintenanceLoginDto })
   async maintenanceLogin(
     @Req() request: Request,
     @Body() dto: MaintenanceLoginDto,
@@ -35,6 +38,7 @@ export class MaintenanceWorkerController {
 
   @Post('admin/maintenance')
   @MaintenanceRoute()
+  @ApiBody({ description: 'Maintenance mode action', type: SetMaintenanceModeDto })
   async setMaintenanceMode(@Body() dto: SetMaintenanceModeDto): Promise<void> {
     if (dto.action === MaintenanceAction.End) {
       await this.service.endMaintenance();

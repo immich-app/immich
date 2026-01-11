@@ -18,10 +18,13 @@ class ValidateLibraryImportPathResponseDto {
     this.message,
   });
 
+  /// Import path
   String importPath;
 
+  /// Is valid
   bool isValid;
 
+  /// Validation message
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated

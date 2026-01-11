@@ -24,16 +24,22 @@ class SessionResponseDto {
     required this.updatedAt,
   });
 
+  /// App version
   String? appVersion;
 
+  /// Creation date
   String createdAt;
 
+  /// Is current session
   bool current;
 
+  /// Device OS
   String deviceOS;
 
+  /// Device type
   String deviceType;
 
+  /// Expiration date
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -42,10 +48,13 @@ class SessionResponseDto {
   ///
   String? expiresAt;
 
+  /// Session ID
   String id;
 
+  /// Is pending sync reset
   bool isPendingSyncReset;
 
+  /// Last update date
   String updatedAt;
 
   @override

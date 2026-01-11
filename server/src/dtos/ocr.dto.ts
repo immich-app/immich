@@ -1,5 +1,6 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiSchema } from '@nestjs/swagger';
 
+@ApiSchema({ description: 'OCR response with text detection boxes' })
 export class AssetOcrResponseDto {
   @ApiProperty({ type: 'string', format: 'uuid' })
   id!: string;

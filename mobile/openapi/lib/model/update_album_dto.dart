@@ -20,6 +20,7 @@ class UpdateAlbumDto {
     this.order,
   });
 
+  /// Album name
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -28,6 +29,7 @@ class UpdateAlbumDto {
   ///
   String? albumName;
 
+  /// Album thumbnail asset ID
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -36,6 +38,7 @@ class UpdateAlbumDto {
   ///
   String? albumThumbnailAssetId;
 
+  /// Album description
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -44,6 +47,7 @@ class UpdateAlbumDto {
   ///
   String? description;
 
+  /// Enable activity feed
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -52,6 +56,7 @@ class UpdateAlbumDto {
   ///
   bool? isActivityEnabled;
 
+  /// Asset sort order
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated

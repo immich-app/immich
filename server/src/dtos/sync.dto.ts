@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-function-type */
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional, ApiSchema } from '@nestjs/swagger';
 import { ArrayMaxSize, IsInt, IsPositive, IsString } from 'class-validator';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import {
@@ -16,33 +16,44 @@ import {
 import { UserMetadata } from 'src/types';
 import { ValidateBoolean, ValidateDate, ValidateEnum, ValidateUUID } from 'src/validation';
 
+@ApiSchema({ description: 'Full asset sync request with pagination and date filter' })
 export class AssetFullSyncDto {
+  @ApiPropertyOptional({ description: 'Last asset ID (pagination)' })
   @ValidateUUID({ optional: true })
   lastId?: string;
 
+  @ApiProperty({ description: 'Sync assets updated until this date' })
   @ValidateDate()
   updatedUntil!: Date;
 
+  @ApiProperty({ type: 'integer', description: 'Maximum number of assets to return' })
   @IsInt()
   @IsPositive()
-  @ApiProperty({ type: 'integer' })
   limit!: number;
 
+  @ApiPropertyOptional({ description: 'Filter by user ID' })
   @ValidateUUID({ optional: true })
   userId?: string;
 }
 
+@ApiSchema({ description: 'Delta asset sync request with date and user IDs' })
 export class AssetDeltaSyncDto {
+  @ApiProperty({ description: 'Sync assets updated after this date' })
   @ValidateDate()
   updatedAfter!: Date;
 
+  @ApiProperty({ description: 'User IDs to sync', type: [String] })
   @ValidateUUID({ each: true })
   userIds!: string[];
 }
 
+@ApiSchema({ description: 'Asset delta sync response with changes' })
 export class AssetDeltaSyncResponseDto {
+  @ApiProperty({ description: 'Whether full sync is needed' })
   needsFullSync!: boolean;
+  @ApiProperty({ description: 'Upserted assets', type: () => [AssetResponseDto] })
   upserted!: AssetResponseDto[];
+  @ApiProperty({ description: 'Deleted asset IDs', type: [String] })
   deleted!: string[];
 }
 
@@ -391,27 +402,37 @@ export type SyncItem = {
   [SyncEntityType.SyncResetV1]: SyncResetV1;
 };
 
+@ApiSchema({ description: 'Sync stream request with types and optional reset flag' })
 export class SyncStreamDto {
+  @ApiProperty({ description: 'Sync request types', enum: SyncRequestType, isArray: true })
   @ValidateEnum({ enum: SyncRequestType, name: 'SyncRequestType', each: true })
   types!: SyncRequestType[];
 
+  @ApiPropertyOptional({ description: 'Reset sync state' })
   @ValidateBoolean({ optional: true })
   reset?: boolean;
 }
 
+@ApiSchema({ description: 'Sync acknowledgment request with entity type and ID' })
 export class SyncAckDto {
+  @ApiProperty({ description: 'Sync entity type', enum: SyncEntityType })
   @ValidateEnum({ enum: SyncEntityType, name: 'SyncEntityType' })
   type!: SyncEntityType;
+  @ApiProperty({ description: 'Acknowledgment ID' })
   ack!: string;
 }
 
+@ApiSchema({ description: 'Sync acknowledgment set request with array of IDs' })
 export class SyncAckSetDto {
+  @ApiProperty({ description: 'Acknowledgment IDs (max 1000)', type: [String] })
   @ArrayMaxSize(1000)
   @IsString({ each: true })
   acks!: string[];
 }
 
+@ApiSchema({ description: 'Sync acknowledgment delete request with optional entity types' })
 export class SyncAckDeleteDto {
+  @ApiPropertyOptional({ description: 'Sync entity types to delete acks for', enum: SyncEntityType, isArray: true })
   @ValidateEnum({ enum: SyncEntityType, name: 'SyncEntityType', optional: true, each: true })
   types?: SyncEntityType[];
 }
