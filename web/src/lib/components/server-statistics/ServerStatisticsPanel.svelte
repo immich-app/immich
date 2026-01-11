@@ -3,7 +3,7 @@
   import { locale } from '$lib/stores/preferences.store';
   import { getByteUnitString, getBytesWithUnit } from '$lib/utils/byte-units';
   import type { ServerStatsResponseDto } from '@immich/sdk';
-  import { Code, Heading, Icon, Text } from '@immich/ui';
+  import { Code, Icon, Text } from '@immich/ui';
   import { mdiCameraIris, mdiChartPie, mdiPlayCircle } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
@@ -26,7 +26,7 @@
 
 <div class="flex flex-col gap-5 my-4">
   <div>
-    <Heading size="tiny" class="mb-2">{$t('total_usage')}</Heading>
+    <Text class="mb-2 font-semibold">{$t('total_usage')}</Text>
 
     <div class="hidden justify-between lg:flex gap-4">
       <StatsCard icon={mdiCameraIris} title={$t('photos')} value={stats.photos} />
@@ -75,7 +75,7 @@
   </div>
 
   <div>
-    <Heading size="tiny" class="mb-2">{$t('user_usage_detail')}</Heading>
+    <Text class="mt-6 mb-2 font-semibold">{$t('user_usage_detail')}</Text>
     <table class="mt-5 w-full text-start">
       <thead
         class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray"
