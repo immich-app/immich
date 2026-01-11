@@ -4,40 +4,29 @@ sidebar_position: 60
 
 # Unraid
 
-Immich can easily be installed and updated on Unraid via:
+Immich can easily be installed and updated on Unraid via either:
 
-1. [Docker Compose Manager](https://forums.unraid.net/topic/114415-plugin-docker-compose-manager/) plugin from the Unraid Community Apps
-2. Community made template on the Unraid Community Apps
+1. [Docker Compose Manager](https://forums.unraid.net/topic/114415-plugin-docker-compose-manager/) (plugin from the Unraid Community Apps) (recommended).
+2. Community-maintained templates from the [Community Applications](https://forums.unraid.net/topic/38582-plug-in-community-applications/) (not recommended).
 
-## Community Applications Template
-
-:::info
-
-- The Unraid template uses a community made image and is not officially supported by Immich
-
-:::
-
-In order to install Immich from the Unraid CA, you will need an existing Redis and PostgreSQL 14 container, If you do not already have Redis or PostgreSQL you can install them from the Unraid CA, just make sure you choose PostgreSQL **14**.
-
-Once you have Redis and PostgreSQL running, search for Immich on the Unraid CA, choose either of the templates listed and fill out the example variables.
-
-For more information about setting up the community image see [here](https://github.com/imagegenius/docker-immich#application-setup)
-
-## Docker-Compose Method (Official)
+## Docker Compose (recommended)
 
 :::info
 
-- Guide was written using Unraid v6.12.10.
-- Requires you to have installed the plugin: [Docker Compose Manager](https://forums.unraid.net/topic/114415-plugin-docker-compose-manager/)
-- An Unraid share created for your images
-- There has been a [report](https://forums.unraid.net/topic/130006-errortraps-traps-node27707-trap-invalid-opcode-ip14fcfc8d03c0-sp7fff32889dd8-more/#comment-1189395) of this not working if your Unraid server doesn't support AVX _(e.g. using a T610)_
+- This guide was written using Unraid v7.1.4.
+- Requires you to have installed the [Docker Compose Manager](https://forums.unraid.net/topic/114415-plugin-docker-compose-manager/) plugin.
+- An Unraid share for your images.
+
+_Note: There has been a [report](https://forums.unraid.net/topic/130006-errortraps-traps-node27707-trap-invalid-opcode-ip14fcfc8d03c0-sp7fff32889dd8-more/#comment-1189395) of this not working if your Unraid server doesn't support AVX (e.g. using a T610)_
 
 :::
 
-## Installation Steps
+### Installation Steps
 
-1. Go to "**Plugins**" and click on "**Compose.Manager**"
-2. Click "**Add New Stack**" and when prompted for a label enter "**Immich**"
+1. Go to "**Plugins**" and click on the icon to the left of "**Compose Manager**".
+2. Click "**Add New Stack**".
+3. Enter "**Immich**" as the stack name.
+4. Click OK.
 
 <img
 src={require('./img/unraid01.webp').default}
@@ -45,48 +34,19 @@ width="70%"
 alt="Select Plugins > Compose.Manager > Add New Stack > Label it Immich"
 />
 
-3.  Select the cogwheel ⚙️ next to Immich and click "**Edit Stack**"
-4.  Click "**Compose File**" and then paste the entire contents of the [Immich Docker Compose](https://github.com/immich-app/immich/releases/latest/download/docker-compose.yml) file into the Unraid editor. Remove any text that may be in the text area by default. Note that Unraid v6.12.10 uses version 24.0.9 of the Docker Engine, which does not support healthcheck `start_interval` as defined in the `database` service of the Docker compose file (version 25 or higher is needed). This parameter defines an initial waiting period before starting health checks, to give the container time to start up. Commenting out the `start_interval` and `start_period` parameters will allow the containers to start up normally. The only downside to this is that the database container will not receive an initial health check until `interval` time has passed.
+5.  Click the cogwheel ⚙️ → "**Edit Stack**".
+6.  Click "**Compose File**". Remove any text that may be in the editor by default. **Paste** the entire contents of the [Immich Docker Compose](https://github.com/immich-app/immich/releases/latest/download/docker-compose.yml) file into the editor. Click "**Save Changes**".
+7.  You will be prompted to edit stack UI labels. You don't have to. Just leave this blank and click "**Ok**".
+8.  Select the cog ⚙️ next to Immich again and click "**Edit Stack**", then click "**Env File**".
+9.  Paste the entire contents of [example.env](https://github.com/immich-app/immich/releases/latest/download/example.env) into the Unraid editor, then **before saving** edit the following:
+    - `UPLOAD_LOCATION`: Absolute path to where you want to store the immich assets. For example `/mnt/user/immich` (if the share is called immich) or `/mnt/user/images/immich` (if you have a share called "images" with a folder called "immich" inside it). Note that Immich will populate this folder with data like backups, images, converted videos etc.
+    - `DB_DATA_LOCATION`: Absolute path to the PostgreSQL data folder. For example `/mnt/user/appdata/immich_postgresql/data`. You must create this folder if you don't already have it. If left at default it will try to use Unraid's `/boot/config/plugins/compose.manager/projects/[stack_name]/postgres` folder which it doesn't have permissions to, resulting in this container continuously restarting. Make sure the folder is on an SSD for optimal performance.
+    - To set a timezone uncomment the `TZ=` line and change Etc/UTC to a TZ identifier from [this list](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List). For example `TZ=Europe/Copenhagen`.
+    - Set a `DB_PASSWORD` for PostgreSQL.
 
     <details >
-        <summary>Using an existing Postgres container? Click me! Otherwise proceed to step 5.</summary>
-        <ul>
-            <li>Comment out the database service</li>
-            <img
-                src={require('./img/unraid02.webp').default}
-                width="50%"
-                alt="Comment out database service in the compose file"
-            />
-            <li>Comment out the database dependency for <b>each service</b> <i>(example in screenshot below only shows 2 of the services - ensure you do this for all services)</i></li>
-            <img
-                src={require('./img/unraid03.webp').default}
-                width="50%"
-                alt="Comment out every reference to the database service in the compose file"
-            />
-            <li>Comment out the volumes</li>
-            <img
-                src={require('./img/unraid04.webp').default}
-                width="20%"
-                alt="Comment out database volume"
-            />
-        </ul>
-    </details>
-
-5.  Click "**Save Changes**", you will be prompted to edit stack UI labels, just leave this blank and click "**Ok**"
-6.  Select the cog ⚙️ next to Immich, click "**Edit Stack**", then click "**Env File**"
-7.  Paste the entire contents of the [Immich example.env](https://github.com/immich-app/immich/releases/latest/download/example.env) file into the Unraid editor, then **before saving** edit the following:
-    - `UPLOAD_LOCATION`: Create a folder in your Images Unraid share and place the **absolute** location here > For example my _"images"_ share has a folder within it called _"immich"_. If I browse to this directory in the terminal and type `pwd` the output is `/mnt/user/images/immich`. This is the exact value I need to enter as my `UPLOAD_LOCATION`
-    - `DB_DATA_LOCATION`: Change this to use an Unraid share (preferably a cache pool, e.g. `/mnt/user/appdata/postgresql/data`). This uses the `appdata` share. Do also create the `postgresql` folder, by running `mkdir /mnt/user/{share_location}/postgresql/data`. If left at default it will try to use Unraid's `/boot/config/plugins/compose.manager/projects/[stack_name]/postgres` folder which it doesn't have permissions to, resulting in this container continuously restarting.
-
-      <img
-      src={require('./img/unraid05.webp').default}
-      width="70%"
-      alt="Absolute location of where you want immich images stored"
-      />
-
-    <details >
-        <summary>Using an existing Postgres container? Click me! Otherwise proceed to step 8.</summary>
-        <p>Update the following database variables as relevant to your Postgres container:</p>
+        <summary>Using an existing PostgreSQL container? Click me! Otherwise proceed.</summary>
+        <p>Update the following database variables as relevant to your PostgreSQL container:</p>
         <ul>
             <li><code>DB_HOSTNAME</code></li>
             <li><code>DB_USERNAME</code></li>
@@ -96,11 +56,9 @@ alt="Select Plugins > Compose.Manager > Add New Stack > Label it Immich"
         </ul>
     </details>
 
-8.  Click "**Save Changes**" followed by "**Compose Up**" and Unraid will begin to create the Immich containers in a popup window. Once complete you will see a message on the popup window stating _"Connection Closed"_. Click "**Done**" and go to the Unraid "**Docker**" page
-
-    > Note: This can take several minutes depending on your Internet speed and Unraid hardware
-
-9.  Once on the Docker page you will see several Immich containers, one of them will be labelled `immich_server` and will have a port mapping. Visit the `IP:PORT` displayed in your web browser and you should see the Immich admin setup page.
+10.  Click "**Save Changes**".
+11.  Click "**Compose Up**" and wait for Unraid to create the containers. Once complete click "**Done**" and go to the Unraid "**Docker**" page.
+12.  On the Docker page you should now see three new docker containers: `immich_redis`, `immich_machine_learning` and `immich_server`. To the right of `immich_server` you can see the assigned port mapping. Visit `UNRAID_IP:PORT` (for example `192.168.1.50:2283`) to go to the Immich admin setup page. You can change the port number in the docker-compose.yml file you added earlier.
 
 <img
 src={require('./img/unraid06.webp').default}
@@ -128,39 +86,43 @@ alt="Go to Docker Tab and visit the address listed next to immich-web"
 For more information on how to use the application once installed, please refer to the [Post Install](/install/post-install.mdx) guide.
 :::
 
-## Updating Steps
+### Hardware Transcoding and Hardware-Accelerated Machine Learning
+
+In order to configure Immich for hardware transcoding and machine learning you need to edit the docker-compose.yml file accordingly, but since Unraid doesn't support multiple compose files you should pay attention to the "Single Compose File" section under [Hardware Transcoding](https://docs.immich.app/features/hardware-transcoding) and [Hardware-Accelerated Machine Learning](https://docs.immich.app/features/ml-hardware-acceleration). Apart from that there is nothing unique about Unraid. Just make sure you are using a version of Unraid with a kernel that supports your GPU.
+
+## Updating
 
 :::danger
-Make sure to read the general [upgrade instructions](/install/upgrading.md).
+Always follow the general [upgrade instructions](/install/upgrading.md) when upgrading.
 :::
 
-Updating is extremely easy however it's important to be aware that containers managed via the Docker Compose Manager plugin do not integrate with Unraid's native dockerman UI, the label "_update ready_" will always be present on containers installed via the Docker Compose Manager.
+In Unraid, if you installed Immich using Docker Compose Manager you won't get notified about new versions in Unraid.
 
-<img
-src={require('./img/unraid09.webp').default}
-width="50%"
-alt="Docker Compose containers always say update ready, ignore it"
-/>
-
-You should ignore the "_update ready_" on the Unraid WebUI and update when you receive the notification within the Immich WebUI.
-<img
-src={require('./img/unraid10.webp').default}
-width="50%"
-alt="Immich update notification"
-/>
-
-1. Go to the "**Docker**" tab and scroll to the Compose section
-2. Next to Immich click the "**Update Stack**" button and Unraid will begin to update all Immich related containers
-   > Note: **Do not** select Compose Down first, it is unnecessary.
+1. Go to the "**Docker**" tab and scroll to the Compose section at the bottom.
+2. Next to Immich click the "**Update Stack**" button and Unraid will begin to update all Immich related containers. Note: **Do not** select Compose Down first, it is unnecessary.
 3. Once complete you will see a "_Connection Closed_" message, select "**Done**".
    <img
    src={require('./img/unraid11.webp').default}
    width="50%"
    alt="Wait for Connection Closed and click Done"
    />
-4. Return back to the Immich WebUI and you will see the version has been updated to the latest
+4. Return back to the Immich WebUI and you will see the version has been updated to the latest.
    <img
    src={require('./img/unraid12.webp').default}
    width="70%"
    alt="Wait for Connection Closed and click Done"
    />
+
+## Community Applications Template (not recommended)
+
+:::info
+
+- The Unraid template uses a community made image that is not officially supported by Immich.
+
+:::
+
+In order to install Immich from the Unraid Community Applications, you will need an existing Redis and PostgreSQL 14 container, If you do not already have Redis or PostgreSQL you can install them from the Unraid Community Applications, just make sure you choose PostgreSQL **14**.
+
+Once you have Redis and PostgreSQL running, search for Immich on the Unraid Community Applications, choose either of the templates listed and fill out the example variables.
+
+For more information about setting up the community image see [here](https://github.com/imagegenius/docker-immich#application-setup)
