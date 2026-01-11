@@ -141,12 +141,12 @@
     <div class="flex gap-2 justify-end place-items-center">
       <Text class="hidden md:block text-xs mr-4 text-dark/50">{$t('geolocation_instruction_location')}</Text>
       <div class="border flex place-items-center place-content-center px-2 py-1 bg-primary/10 rounded-2xl">
-        <Text class="hidden md:inline-block text-xs text-gray-500 font-mono mr-5 ml-2 uppercase">
+        <Text class="hidden md:inline-block text-xs text-gray-500 font-immich-mono mr-5 ml-2 uppercase">
           {$t('selected_gps_coordinates')}
         </Text>
         <Text
           title="latitude, longitude"
-          class="rounded-3xl font-mono text-sm text-primary px-2 py-1 transition-all duration-100 ease-in-out {locationUpdated
+          class="rounded-3xl font-immich-mono text-sm text-primary px-2 py-1 transition-all duration-100 ease-in-out {locationUpdated
             ? 'bg-primary/90 text-light font-semibold scale-105'
             : ''}">{location.latitude.toFixed(3)}, {location.longitude.toFixed(3)}</Text
         >

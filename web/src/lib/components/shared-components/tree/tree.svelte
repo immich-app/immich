@@ -42,7 +42,9 @@
       size="20"
     />
   </div>
-  <span class="text-nowrap overflow-hidden text-ellipsis font-mono ps-1 pt-1 whitespace-pre-wrap">{node.value}</span>
+  <span class="text-nowrap overflow-hidden text-ellipsis font-immich-mono ps-1 pt-1 whitespace-pre-wrap"
+    >{node.value}</span
+  >
 </a>
 
 {#if isOpen}

@@ -326,7 +326,7 @@
 
 {#snippet cardOrder(index: number)}
   <div class="h-8 w-8 rounded-lg flex place-items-center place-content-center shrink-0 border bg-light-50">
-    <Text size="small" class="font-mono font-bold">
+    <Text size="small" class="font-immich-mono font-bold">
       {index + 1}
     </Text>
   </div>
