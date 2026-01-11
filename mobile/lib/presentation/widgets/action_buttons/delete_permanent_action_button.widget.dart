@@ -4,6 +4,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/events.model.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
@@ -15,14 +16,47 @@ import 'package:immich_mobile/widgets/common/immich_toast.dart';
 /// - Prompt to delete the asset locally
 class DeletePermanentActionButton extends ConsumerWidget {
   final ActionSource source;
+  final bool showConfirmation;
   final bool iconOnly;
   final bool menuItem;
 
-  const DeletePermanentActionButton({super.key, required this.source, this.iconOnly = false, this.menuItem = false});
+  const DeletePermanentActionButton({
+    super.key,
+    required this.source,
+    this.showConfirmation = true,
+    this.iconOnly = false,
+    this.menuItem = false,
+  });
 
   void _onTap(BuildContext context, WidgetRef ref) async {
     if (!context.mounted) {
       return;
+    }
+
+    if (showConfirmation) {
+      final confirm = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text('delete_permanently'.t(context: context)),
+          content: Text(
+            'delete_permanently_action_confirmation_message'.t(context: context),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text('cancel'.t(context: context)),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text(
+                'confirm'.t(context: context),
+                style: TextStyle(color: context.colorScheme.error),
+              ),
+            ),
+          ],
+        ),
+      );
+      if (confirm != true) return;
     }
 
     final result = await ref.read(actionProvider.notifier).deleteRemoteAndLocal(source);

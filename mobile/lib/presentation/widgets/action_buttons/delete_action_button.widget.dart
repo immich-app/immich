@@ -23,7 +23,7 @@ class DeleteActionButton extends ConsumerWidget {
   const DeleteActionButton({
     super.key,
     required this.source,
-    this.showConfirmation = false,
+    this.showConfirmation = true,
     this.iconOnly = false,
     this.menuItem = false,
   });
