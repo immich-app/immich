@@ -2821,7 +2821,6 @@
               }
             }
           },
-          "description": "Asset IDs to delete",
           "required": true
         },
         "responses": {
@@ -2970,7 +2969,6 @@
               }
             }
           },
-          "description": "Bulk asset update data",
           "required": true
         },
         "responses": {
@@ -3085,7 +3083,6 @@
               }
             }
           },
-          "description": "Source and target asset IDs",
           "required": true
         },
         "responses": {
@@ -3260,7 +3257,6 @@
               }
             }
           },
-          "description": "Job type and asset IDs",
           "required": true
         },
         "responses": {
@@ -3314,7 +3310,6 @@
               }
             }
           },
-          "description": "Metadata keys and asset IDs to delete",
           "required": true
         },
         "responses": {
@@ -3362,7 +3357,6 @@
               }
             }
           },
-          "description": "Bulk metadata updates",
           "required": true
         },
         "responses": {
@@ -3559,7 +3553,6 @@
             "name": "id",
             "required": true,
             "in": "path",
-            "description": "Asset ID",
             "schema": {
               "format": "uuid",
               "type": "string"
@@ -3636,7 +3629,6 @@
             "name": "id",
             "required": true,
             "in": "path",
-            "description": "Asset ID",
             "schema": {
               "format": "uuid",
               "type": "string"
@@ -3651,7 +3643,6 @@
               }
             }
           },
-          "description": "Asset update data",
           "required": true
         },
         "responses": {
@@ -3708,7 +3699,6 @@
             "name": "id",
             "required": true,
             "in": "path",
-            "description": "Asset ID",
             "schema": {
               "format": "uuid",
               "type": "string"
@@ -3756,7 +3746,6 @@
             "name": "id",
             "required": true,
             "in": "path",
-            "description": "Asset ID",
             "schema": {
               "format": "uuid",
               "type": "string"
@@ -3811,7 +3800,6 @@
             "name": "id",
             "required": true,
             "in": "path",
-            "description": "Asset ID",
             "schema": {
               "format": "uuid",
               "type": "string"
@@ -3826,7 +3814,6 @@
               }
             }
           },
-          "description": "List of edit actions (crop, rotate, mirror) to apply",
           "required": true
         },
         "responses": {
@@ -3879,7 +3866,6 @@
             "name": "id",
             "required": true,
             "in": "path",
-            "description": "Asset ID",
             "schema": {
               "format": "uuid",
               "type": "string"
@@ -3941,7 +3927,6 @@
             "name": "id",
             "required": true,
             "in": "path",
-            "description": "Asset ID",
             "schema": {
               "format": "uuid",
               "type": "string"
@@ -3956,7 +3941,6 @@
               }
             }
           },
-          "description": "Metadata key-value pairs",
           "required": true
         },
         "responses": {
@@ -4026,7 +4010,7 @@
             "name": "key",
             "required": true,
             "in": "path",
-            "description": "Metadata key to delete",
+            "description": "Metadata key",
             "schema": {
               "type": "string"
             }
@@ -4147,7 +4131,6 @@
             "name": "id",
             "required": true,
             "in": "path",
-            "description": "Asset ID",
             "schema": {
               "format": "uuid",
               "type": "string"
@@ -17412,15 +17395,15 @@
         "properties": {
           "images": {
             "description": "Number of images",
-            "type": "integer"
+            "type": "number"
           },
           "total": {
             "description": "Total number of assets",
-            "type": "integer"
+            "type": "number"
           },
           "videos": {
             "description": "Number of videos",
-            "type": "integer"
+            "type": "number"
           }
         },
         "required": [

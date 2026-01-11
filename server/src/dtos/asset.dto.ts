@@ -23,7 +23,7 @@ import { IsNotSiblingOf, Optional, ValidateBoolean, ValidateEnum, ValidateString
 
 @ApiSchema({ description: 'Device ID request parameter' })
 export class DeviceIdDto {
-  @ApiProperty({ description: 'Device ID' })
+  /** Device ID */
   @IsNotEmpty()
   @IsString()
   deviceId!: string;
@@ -35,39 +35,39 @@ const ValidateGPS = () => ValidateIf(hasGPS);
 
 @ApiSchema({ description: 'Base asset update fields' })
 export class UpdateAssetBase {
-  @ApiPropertyOptional({ description: 'Mark as favorite' })
+  /** Mark as favorite */
   @ValidateBoolean({ optional: true })
   isFavorite?: boolean;
 
-  @ApiPropertyOptional({ description: 'Asset visibility', enum: AssetVisibility })
+  /** Asset visibility */
   @ValidateEnum({ enum: AssetVisibility, name: 'AssetVisibility', optional: true })
   visibility?: AssetVisibility;
 
-  @ApiPropertyOptional({ description: 'Original date and time' })
+  /** Original date and time */
   @Optional()
   @IsDateString()
   dateTimeOriginal?: string;
 
-  @ApiPropertyOptional({ description: 'Latitude coordinate' })
+  /** Latitude coordinate */
   @ValidateGPS()
   @IsLatitude()
   @IsNotEmpty()
   latitude?: number;
 
-  @ApiPropertyOptional({ description: 'Longitude coordinate' })
+  /** Longitude coordinate */
   @ValidateGPS()
   @IsLongitude()
   @IsNotEmpty()
   longitude?: number;
 
-  @ApiPropertyOptional({ description: 'Rating (-1 to 5)' })
+  /** Rating (-1 to 5) */
   @Optional()
   @IsInt()
   @Max(5)
   @Min(-1)
   rating?: number;
 
-  @ApiPropertyOptional({ description: 'Asset description' })
+  /** Asset description */
   @Optional()
   @IsString()
   description?: string;
@@ -75,21 +75,21 @@ export class UpdateAssetBase {
 
 @ApiSchema({ description: 'Bulk asset update request with IDs and update fields' })
 export class AssetBulkUpdateDto extends UpdateAssetBase {
-  @ApiProperty({ description: 'Asset IDs to update', type: [String] })
+  /** Asset IDs to update */
   @ValidateUUID({ each: true })
   ids!: string[];
 
-  @ApiPropertyOptional({ description: 'Duplicate asset ID', nullable: true })
+  /** Duplicate asset ID */
   @Optional()
   duplicateId?: string | null;
 
-  @ApiPropertyOptional({ description: 'Relative time offset in seconds' })
+  /** Relative time offset in seconds */
   @IsNotSiblingOf(['dateTimeOriginal'])
   @Optional()
   @IsInt()
   dateTimeRelative?: number;
 
-  @ApiPropertyOptional({ description: 'Time zone (IANA timezone)' })
+  /** Time zone (IANA timezone) */
   @IsNotSiblingOf(['dateTimeOriginal'])
   @IsTimeZone()
   @Optional()
@@ -98,14 +98,15 @@ export class AssetBulkUpdateDto extends UpdateAssetBase {
 
 @ApiSchema({ description: 'Asset update request with optional live photo video ID' })
 export class UpdateAssetDto extends UpdateAssetBase {
-  @ApiPropertyOptional({ description: 'Live photo video ID', nullable: true })
+  /** Live photo video ID */
+  @ApiPropertyOptional({ nullable: true })
   @ValidateUUID({ optional: true, nullable: true })
   livePhotoVideoId?: string | null;
 }
 
 @ApiSchema({ description: 'Random assets query parameters' })
 export class RandomAssetsDto {
-  @ApiPropertyOptional({ description: 'Number of random assets to return' })
+  /** Number of random assets to return */
   @Optional()
   @IsInt()
   @IsPositive()
@@ -115,14 +116,14 @@ export class RandomAssetsDto {
 
 @ApiSchema({ description: 'Bulk asset delete request with IDs and optional force flag' })
 export class AssetBulkDeleteDto extends BulkIdsDto {
-  @ApiPropertyOptional({ description: 'Force delete even if in use' })
+  /** Force delete even if in use */
   @ValidateBoolean({ optional: true })
   force?: boolean;
 }
 
 @ApiSchema({ description: 'Asset IDs request parameter' })
 export class AssetIdsDto {
-  @ApiProperty({ description: 'Asset IDs', type: [String] })
+  /** Asset IDs */
   @ValidateUUID({ each: true })
   assetIds!: string[];
 }
@@ -136,52 +137,53 @@ export enum AssetJobName {
 
 @ApiSchema({ description: 'Asset job request with IDs and job name' })
 export class AssetJobsDto extends AssetIdsDto {
-  @ApiProperty({ description: 'Job name', enum: AssetJobName })
+  /** Job name */
   @ValidateEnum({ enum: AssetJobName, name: 'AssetJobName' })
   name!: AssetJobName;
 }
 
 @ApiSchema({ description: 'Asset statistics query parameters' })
 export class AssetStatsDto {
-  @ApiPropertyOptional({ description: 'Filter by visibility', enum: AssetVisibility })
+  /** Filter by visibility */
+  @ApiPropertyOptional({ enum: AssetVisibility })
   @ValidateEnum({ enum: AssetVisibility, name: 'AssetVisibility', optional: true })
   visibility?: AssetVisibility;
 
-  @ApiPropertyOptional({ description: 'Filter by favorite status' })
+  /** Filter by favorite status */
   @ValidateBoolean({ optional: true })
   isFavorite?: boolean;
 
-  @ApiPropertyOptional({ description: 'Filter by trash status' })
+  /** Filter by trash status */
   @ValidateBoolean({ optional: true })
   isTrashed?: boolean;
 }
 
 @ApiSchema({ description: 'Asset statistics response with counts' })
 export class AssetStatsResponseDto {
-  @ApiProperty({ type: 'integer', description: 'Number of images' })
+  /** Number of images */
   images!: number;
 
-  @ApiProperty({ type: 'integer', description: 'Number of videos' })
+  /** Number of videos */
   videos!: number;
 
-  @ApiProperty({ type: 'integer', description: 'Total number of assets' })
+  /** Total number of assets */
   total!: number;
 }
 
 @ApiSchema({ description: 'Asset metadata route parameters' })
 export class AssetMetadataRouteParams {
-  @ApiProperty({ description: 'Asset ID' })
+  /** Asset ID */
   @ValidateUUID()
   id!: string;
 
-  @ApiProperty({ description: 'Metadata key' })
+  /** Metadata key */
   @ValidateString()
   key!: string;
 }
 
 @ApiSchema({ description: 'Asset metadata upsert request' })
 export class AssetMetadataUpsertDto {
-  @ApiProperty({ description: 'Metadata items to upsert', type: () => [AssetMetadataUpsertItemDto] })
+  /** Metadata items to upsert */
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => AssetMetadataUpsertItemDto)
@@ -190,18 +192,18 @@ export class AssetMetadataUpsertDto {
 
 @ApiSchema({ description: 'Asset metadata upsert item with key and value' })
 export class AssetMetadataUpsertItemDto {
-  @ApiProperty({ description: 'Metadata key' })
+  /** Metadata key */
   @ValidateString()
   key!: string;
 
-  @ApiProperty({ description: 'Metadata value (object)' })
+  /** Metadata value (object) */
   @IsObject()
   value!: object;
 }
 
 @ApiSchema({ description: 'Bulk asset metadata upsert request' })
 export class AssetMetadataBulkUpsertDto {
-  @ApiProperty({ description: 'Metadata items to upsert', type: () => [AssetMetadataBulkUpsertItemDto] })
+  /** Metadata items to upsert */
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => AssetMetadataBulkUpsertItemDto)
@@ -210,22 +212,22 @@ export class AssetMetadataBulkUpsertDto {
 
 @ApiSchema({ description: 'Bulk asset metadata upsert item with asset ID, key, and value' })
 export class AssetMetadataBulkUpsertItemDto {
-  @ApiProperty({ description: 'Asset ID' })
+  /** Asset ID */
   @ValidateUUID()
   assetId!: string;
 
-  @ApiProperty({ description: 'Metadata key' })
+  /** Metadata key */
   @ValidateString()
   key!: string;
 
-  @ApiProperty({ description: 'Metadata value (object)' })
+  /** Metadata value (object) */
   @IsObject()
   value!: object;
 }
 
 @ApiSchema({ description: 'Bulk asset metadata delete request' })
 export class AssetMetadataBulkDeleteDto {
-  @ApiProperty({ description: 'Metadata items to delete', type: () => [AssetMetadataBulkDeleteItemDto] })
+  /** Metadata items to delete */
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => AssetMetadataBulkDeleteItemDto)
@@ -234,66 +236,68 @@ export class AssetMetadataBulkDeleteDto {
 
 @ApiSchema({ description: 'Bulk asset metadata delete item with asset ID and key' })
 export class AssetMetadataBulkDeleteItemDto {
-  @ApiProperty({ description: 'Asset ID' })
+  /** Asset ID */
   @ValidateUUID()
   assetId!: string;
 
-  @ApiProperty({ description: 'Metadata key' })
+  /** Metadata key */
   @ValidateString()
   key!: string;
 }
 
 @ApiSchema({ description: 'Asset metadata response with key value' })
 export class AssetMetadataResponseDto {
-  @ApiProperty({ description: 'Metadata key' })
+  /** Metadata key */
   @ValidateString()
   key!: string;
-  @ApiProperty({ description: 'Metadata value (object)' })
+
+  /** Metadata value (object) */
   value!: object;
-  @ApiProperty({ description: 'Last update date' })
+
+  /** Last update date */
   updatedAt!: Date;
 }
 
 @ApiSchema({ description: 'Bulk asset metadata response with asset ID' })
 export class AssetMetadataBulkResponseDto extends AssetMetadataResponseDto {
-  @ApiProperty({ description: 'Asset ID' })
+  /** Asset ID */
   assetId!: string;
 }
 
 @ApiSchema({ description: 'Asset copy request with source, target, and copy options' })
 export class AssetCopyDto {
-  @ApiProperty({ description: 'Source asset ID' })
+  /** Source asset ID */
   @ValidateUUID()
   sourceId!: string;
 
-  @ApiProperty({ description: 'Target asset ID' })
+  /** Target asset ID */
   @ValidateUUID()
   targetId!: string;
 
-  @ApiPropertyOptional({ description: 'Copy shared links', default: true })
+  /** Copy shared links */
   @ValidateBoolean({ optional: true, default: true })
   sharedLinks?: boolean;
 
-  @ApiPropertyOptional({ description: 'Copy album associations', default: true })
+  /** Copy album associations */
   @ValidateBoolean({ optional: true, default: true })
   albums?: boolean;
 
-  @ApiPropertyOptional({ description: 'Copy sidecar file', default: true })
+  /** Copy sidecar file */
   @ValidateBoolean({ optional: true, default: true })
   sidecar?: boolean;
 
-  @ApiPropertyOptional({ description: 'Copy stack association', default: true })
+  /** Copy stack association */
   @ValidateBoolean({ optional: true, default: true })
   stack?: boolean;
 
-  @ApiPropertyOptional({ description: 'Copy favorite status', default: true })
+  /** Copy favorite status */
   @ValidateBoolean({ optional: true, default: true })
   favorite?: boolean;
 }
 
 @ApiSchema({ description: 'Asset download original query parameters' })
 export class AssetDownloadOriginalDto {
-  @ApiPropertyOptional({ description: 'Return edited asset if available', default: false })
+  /** Return edited asset if available */
   @ValidateBoolean({ optional: true, default: false })
   edited?: boolean;
 }
