@@ -7,7 +7,7 @@ part of 'activity_statistics.provider.dart';
 // **************************************************************************
 
 String _$activityStatisticsHash() =>
-    r'1f43f0bcb11c754ca3cb586a13570db25023b9a8';
+    r'ae0123a6ce129988e21f7327273af4d9acbae0f6';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -37,22 +37,22 @@ abstract class _$ActivityStatistics extends BuildlessAutoDisposeNotifier<int> {
   int build(String albumId, [String? assetId]);
 }
 
-/// Maintains the current number of comments by <shared-album, asset>
+/// Maintains the current number of activities (comments + likes) by <shared-album, asset>
 ///
 /// Copied from [ActivityStatistics].
 @ProviderFor(ActivityStatistics)
 const activityStatisticsProvider = ActivityStatisticsFamily();
 
-/// Maintains the current number of comments by <shared-album, asset>
+/// Maintains the current number of activities (comments + likes) by <shared-album, asset>
 ///
 /// Copied from [ActivityStatistics].
 class ActivityStatisticsFamily extends Family<int> {
-  /// Maintains the current number of comments by <shared-album, asset>
+  /// Maintains the current number of activities (comments + likes) by <shared-album, asset>
   ///
   /// Copied from [ActivityStatistics].
   const ActivityStatisticsFamily();
 
-  /// Maintains the current number of comments by <shared-album, asset>
+  /// Maintains the current number of activities (comments + likes) by <shared-album, asset>
   ///
   /// Copied from [ActivityStatistics].
   ActivityStatisticsProvider call(String albumId, [String? assetId]) {
@@ -81,12 +81,12 @@ class ActivityStatisticsFamily extends Family<int> {
   String? get name => r'activityStatisticsProvider';
 }
 
-/// Maintains the current number of comments by <shared-album, asset>
+/// Maintains the current number of activities (comments + likes) by <shared-album, asset>
 ///
 /// Copied from [ActivityStatistics].
 class ActivityStatisticsProvider
     extends AutoDisposeNotifierProviderImpl<ActivityStatistics, int> {
-  /// Maintains the current number of comments by <shared-album, asset>
+  /// Maintains the current number of activities (comments + likes) by <shared-album, asset>
   ///
   /// Copied from [ActivityStatistics].
   ActivityStatisticsProvider(String albumId, [String? assetId])
