@@ -10,6 +10,7 @@ import 'package:immich_mobile/utils/image_url_builder.dart';
 class PositionedAssetMarkerIcon extends StatelessWidget {
   final Point<num> point;
   final String assetRemoteId;
+  final String assetThumbhash;
   final double size;
   final int durationInMilliseconds;
 
@@ -18,6 +19,7 @@ class PositionedAssetMarkerIcon extends StatelessWidget {
   const PositionedAssetMarkerIcon({
     required this.point,
     required this.assetRemoteId,
+    required this.assetThumbhash,
     this.size = 100,
     this.durationInMilliseconds = 100,
     this.onTap,
@@ -35,7 +37,7 @@ class PositionedAssetMarkerIcon extends StatelessWidget {
         onTap: () => onTap?.call(),
         child: SizedBox.square(
           dimension: size,
-          child: _AssetMarkerIcon(id: assetRemoteId, key: Key(assetRemoteId)),
+          child: _AssetMarkerIcon(id: assetRemoteId, thumbhash: assetThumbhash, key: Key(assetRemoteId)),
         ),
       ),
     );
@@ -43,14 +45,15 @@ class PositionedAssetMarkerIcon extends StatelessWidget {
 }
 
 class _AssetMarkerIcon extends StatelessWidget {
-  const _AssetMarkerIcon({required this.id, super.key});
+  const _AssetMarkerIcon({required this.id, required this.thumbhash, super.key});
 
   final String id;
+  final String thumbhash;
 
   @override
   Widget build(BuildContext context) {
     final imageUrl = getThumbnailUrlForRemoteId(id);
-    final cacheKey = getThumbnailCacheKeyForRemoteId(id);
+    final cacheKey = getThumbnailCacheKeyForRemoteId(id, thumbhash);
     return LayoutBuilder(
       builder: (context, constraints) {
         return Stack(

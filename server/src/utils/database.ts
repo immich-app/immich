@@ -1,4 +1,5 @@
 import {
+  AliasedRawBuilder,
   DeduplicateJoinsPlugin,
   Expression,
   ExpressionBuilder,
@@ -16,6 +17,7 @@ import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
 import { parse } from 'pg-connection-string';
 import postgres, { Notice, PostgresError } from 'postgres';
 import { columns, Exif, lockableProperties, LockableProperty, Person } from 'src/database';
+import { AssetEditActionItem } from 'src/dtos/editing.dto';
 import { AssetFileType, AssetVisibility, DatabaseExtension, DatabaseSslMode } from 'src/enum';
 import { AssetSearchBuilderOptions } from 'src/repositories/search.repository';
 import { DB } from 'src/schema';
@@ -180,13 +182,14 @@ export function withSmartSearch<O>(qb: SelectQueryBuilder<DB, 'asset', O>) {
     .select((eb) => toJson(eb, 'smart_search').as('smartSearch'));
 }
 
-export function withFaces(eb: ExpressionBuilder<DB, 'asset'>, withDeletedFace?: boolean) {
+export function withFaces(eb: ExpressionBuilder<DB, 'asset'>, withHidden?: boolean, withDeletedFace?: boolean) {
   return jsonArrayFrom(
     eb
       .selectFrom('asset_face')
       .selectAll('asset_face')
       .whereRef('asset_face.assetId', '=', 'asset.id')
-      .$if(!withDeletedFace, (qb) => qb.where('asset_face.deletedAt', 'is', null)),
+      .$if(!withDeletedFace, (qb) => qb.where('asset_face.deletedAt', 'is', null))
+      .$if(!withHidden, (qb) => qb.where('asset_face.isVisible', '=', true)),
   ).as('faces');
 }
 
@@ -208,7 +211,11 @@ export function withFilePath(eb: ExpressionBuilder<DB, 'asset'>, type: AssetFile
     .where('asset_file.type', '=', type);
 }
 
-export function withFacesAndPeople(eb: ExpressionBuilder<DB, 'asset'>, withDeletedFace?: boolean) {
+export function withFacesAndPeople(
+  eb: ExpressionBuilder<DB, 'asset'>,
+  withHidden?: boolean,
+  withDeletedFace?: boolean,
+) {
   return jsonArrayFrom(
     eb
       .selectFrom('asset_face')
@@ -220,7 +227,8 @@ export function withFacesAndPeople(eb: ExpressionBuilder<DB, 'asset'>, withDelet
       .selectAll('asset_face')
       .select((eb) => eb.table('person').$castTo<Person>().as('person'))
       .whereRef('asset_face.assetId', '=', 'asset.id')
-      .$if(!withDeletedFace, (qb) => qb.where('asset_face.deletedAt', 'is', null)),
+      .$if(!withDeletedFace, (qb) => qb.where('asset_face.deletedAt', 'is', null))
+      .$if(!withHidden, (qb) => qb.where('asset_face.isVisible', 'is', true)),
   ).as('faces');
 }
 
@@ -232,6 +240,7 @@ export function hasPeople<O>(qb: SelectQueryBuilder<DB, 'asset', O>, personIds: 
         .select('assetId')
         .where('personId', '=', anyUuid(personIds!))
         .where('deletedAt', 'is', null)
+        .where('isVisible', 'is', true)
         .groupBy('assetId')
         .having((eb) => eb.fn.count('personId').distinct(), '=', personIds.length)
         .as('has_people'),
@@ -345,6 +354,17 @@ export const tokenizeForSearch = (text: string): string[] => {
   }
   return tokens;
 };
+
+// needed to properly type the return with the EditActionItem discriminated union type
+type AliasedEditActions = AliasedRawBuilder<AssetEditActionItem[], 'edits'>;
+export function withEdits(eb: ExpressionBuilder<DB, 'asset'>): AliasedEditActions {
+  return jsonArrayFrom(
+    eb
+      .selectFrom('asset_edit')
+      .select(['asset_edit.action', 'asset_edit.parameters'])
+      .whereRef('asset_edit.assetId', '=', 'asset.id'),
+  ).as('edits') as AliasedEditActions;
+}
 
 const joinDeduplicationPlugin = new DeduplicateJoinsPlugin();
 /** TODO: This should only be used for search-related queries, not as a general purpose query builder */

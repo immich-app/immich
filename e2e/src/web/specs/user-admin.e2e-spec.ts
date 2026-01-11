@@ -56,7 +56,7 @@ test.describe('User Administration', () => {
     await expect(page.getByLabel('Admin User')).not.toBeChecked();
     await page.getByLabel('Admin User').click();
     await expect(page.getByLabel('Admin User')).toBeChecked();
-    await page.getByRole('button', { name: 'Confirm' }).click();
+    await page.getByRole('button', { name: 'Save' }).click();
 
     await expect
       .poll(async () => {
@@ -85,7 +85,7 @@ test.describe('User Administration', () => {
     await expect(page.getByLabel('Admin User')).toBeChecked();
     await page.getByLabel('Admin User').click();
     await expect(page.getByLabel('Admin User')).not.toBeChecked();
-    await page.getByRole('button', { name: 'Confirm' }).click();
+    await page.getByRole('button', { name: 'Save' }).click();
 
     await expect
       .poll(async () => {

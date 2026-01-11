@@ -2,6 +2,7 @@ packages:
   - cli
   - docs
   - e2e
+  - e2e-auth-server
   - i18n
   - open-api/typescript-sdk
   - server

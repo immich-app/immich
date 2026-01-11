@@ -1,3 +1,4 @@
+import { AssetResponseDto } from '@immich/sdk';
 import { BrowserContext, Page, Request, Route } from '@playwright/test';
 import { basename } from 'node:path';
 import {
@@ -63,15 +64,33 @@ export const setupTimelineMockApiRoutes = async (
   });
 
   await context.route('**/api/assets/*', async (route, request) => {
-    const url = new URL(request.url());
-    const pathname = url.pathname;
-    const assetId = basename(pathname);
-    const asset = getAsset(timelineRestData, assetId);
-    return route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      json: asset,
-    });
+    if (request.method() === 'GET') {
+      const url = new URL(request.url());
+      const pathname = url.pathname;
+      const assetId = basename(pathname);
+      let asset = getAsset(timelineRestData, assetId);
+      if (changes.assetDeletions.includes(asset!.id)) {
+        asset = {
+          ...asset,
+          isTrashed: true,
+        } as AssetResponseDto;
+      }
+      return route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        json: asset,
+      });
+    }
+    await route.fallback();
+  });
+
+  await context.route('**/api/assets', async (route, request) => {
+    if (request.method() === 'DELETE') {
+      return route.fulfill({
+        status: 204,
+      });
+    }
+    await route.fallback();
   });
 
   await context.route('**/api/assets/*/ocr', async (route) => {
@@ -117,17 +136,28 @@ export const setupTimelineMockApiRoutes = async (
   });
 
   await context.route('**/api/albums/**', async (route, request) => {
-    const pattern = /\/api\/albums\/(?<albumId>[^/?]+)/;
-    const match = request.url().match(pattern);
-    if (!match) {
-      return route.continue();
+    const albumsMatch = request.url().match(/\/api\/albums\/(?<albumId>[^/?]+)/);
+    if (albumsMatch) {
+      const album = getAlbum(timelineRestData, testContext.adminId, albumsMatch.groups?.albumId, changes);
+      return route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        json: album,
+      });
     }
-    const album = getAlbum(timelineRestData, testContext.adminId, match.groups?.albumId, changes);
-    return route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      json: album,
-    });
+    return route.fallback();
+  });
+
+  await context.route('**/api/albums**', async (route, request) => {
+    const allAlbums = request.url().match(/\/api\/albums\?assetId=(?<assetId>[^&]+)/);
+    if (allAlbums) {
+      return route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        json: [],
+      });
+    }
+    return route.fallback();
   });
 };
 

@@ -10,6 +10,7 @@ import 'package:immich_mobile/presentation/widgets/images/one_frame_multi_image_
 import 'package:immich_mobile/providers/image/cache/remote_image_cache_manager.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
+import 'package:openapi/api.dart';
 
 class RemoteThumbProvider extends CancellableImageProvider<RemoteThumbProvider>
     with CancellableImageProviderMixin<RemoteThumbProvider> {
@@ -93,7 +94,7 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
 
     final headers = ApiService.getRequestHeaders();
     final request = this.request = RemoteImageRequest(
-      uri: getPreviewUrlForRemoteId(key.assetId),
+      uri: getThumbnailUrlForRemoteId(key.assetId, type: AssetMediaSize.preview),
       headers: headers,
       cacheManager: cacheManager,
     );

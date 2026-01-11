@@ -20,7 +20,7 @@ class SyncAssetMetadataV1 {
 
   String assetId;
 
-  AssetMetadataKey key;
+  String key;
 
   Object value;
 
@@ -58,7 +58,7 @@ class SyncAssetMetadataV1 {
 
       return SyncAssetMetadataV1(
         assetId: mapValueOfType<String>(json, r'assetId')!,
-        key: AssetMetadataKey.fromJson(json[r'key'])!,
+        key: mapValueOfType<String>(json, r'key')!,
         value: mapValueOfType<Object>(json, r'value')!,
       );
     }

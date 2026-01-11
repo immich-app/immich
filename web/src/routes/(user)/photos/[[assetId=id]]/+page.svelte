@@ -1,7 +1,6 @@
 <script lang="ts">
   import { beforeNavigate } from '$app/navigation';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-  import MemoryLane from '$lib/components/photos-page/memory-lane.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import AddToAlbum from '$lib/components/timeline/actions/AddToAlbumAction.svelte';
@@ -21,12 +20,14 @@
   import TagAction from '$lib/components/timeline/actions/TagAction.svelte';
   import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import Timeline from '$lib/components/timeline/Timeline.svelte';
-  import { AssetAction } from '$lib/constants';
+  import { AppRoute, AssetAction, QueryParameter } from '$lib/constants';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
+  import { memoryStore } from '$lib/stores/memory.store.svelte';
   import { preferences, user } from '$lib/stores/user.store';
+  import { getAssetThumbnailUrl, memoryLaneTitle } from '$lib/utils';
   import {
     updateStackedAssetInTimeline,
     updateUnstackedAssetInTimeline,
@@ -34,10 +35,11 @@
     type OnUnlink,
   } from '$lib/utils/actions';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
+  import { getAltText } from '$lib/utils/thumbnail-util';
+  import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { AssetVisibility } from '@immich/sdk';
-
+  import { ImageCarousel } from '@immich/ui';
   import { mdiDotsVertical, mdiPlus } from '@mdi/js';
-
   import { t } from 'svelte-i18n';
 
   let { isViewing: showAssetViewer } = assetViewingStore;
@@ -85,6 +87,16 @@
   beforeNavigate(() => {
     isFaceEditMode.value = false;
   });
+
+  const items = $derived(
+    memoryStore.memories.map((memory) => ({
+      id: memory.id,
+      title: $memoryLaneTitle(memory),
+      href: `${AppRoute.MEMORY}?${QueryParameter.ID}=${memory.assets[0].id}`,
+      alt: $t('memory_lane_title', { values: { title: $getAltText(toTimelineAsset(memory.assets[0])) } }),
+      src: getAssetThumbnailUrl(memory.assets[0].id),
+    })),
+  );
 </script>
 
 <UserPageLayout hideNavbar={assetInteraction.selectionActive} showUploadButton scrollbar={false}>
@@ -98,7 +110,7 @@
     withStacked
   >
     {#if $preferences.memories.enabled}
-      <MemoryLane />
+      <ImageCarousel {items} />
     {/if}
     {#snippet empty()}
       <EmptyPlaceholder text={$t('no_assets_message')} onClick={() => openFileUploadDialog()} class="mt-10 mx-auto" />

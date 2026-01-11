@@ -32,8 +32,8 @@
     const allMethodsDisabled = !configToEdit.oauth.enabled && !configToEdit.passwordLogin.enabled;
 
     if (allMethodsDisabled) {
-      const isConfirmed = await modalManager.show(AuthDisableLoginConfirmModal);
-      if (!isConfirmed) {
+      const confirmed = await modalManager.show(AuthDisableLoginConfirmModal);
+      if (!confirmed) {
         return false;
       }
     }

@@ -45,6 +45,9 @@ export enum AssetFileType {
   Preview = 'preview',
   Thumbnail = 'thumbnail',
   Sidecar = 'sidecar',
+  FullSizeEdited = 'fullsize_edited',
+  PreviewEdited = 'preview_edited',
+  ThumbnailEdited = 'thumbnail_edited',
 }
 
 export enum AlbumUserRole {
@@ -106,6 +109,11 @@ export enum Permission {
   AssetUpload = 'asset.upload',
   AssetReplace = 'asset.replace',
   AssetCopy = 'asset.copy',
+  AssetDerive = 'asset.derive',
+
+  AssetEditGet = 'asset.edit.get',
+  AssetEditCreate = 'asset.edit.create',
+  AssetEditDelete = 'asset.edit.delete',
 
   AlbumCreate = 'album.create',
   AlbumRead = 'album.read',
@@ -358,6 +366,9 @@ export enum AssetPathType {
   Original = 'original',
   FullSize = 'fullsize',
   Preview = 'preview',
+  EditedFullSize = 'edited_fullsize',
+  EditedPreview = 'edited_preview',
+  EditedThumbnail = 'edited_thumbnail',
   Thumbnail = 'thumbnail',
   EncodedVideo = 'encoded_video',
   Sidecar = 'sidecar',
@@ -555,6 +566,7 @@ export enum QueueName {
   BackupDatabase = 'backupDatabase',
   Ocr = 'ocr',
   Workflow = 'workflow',
+  Editor = 'editor',
 }
 
 export enum QueueJobStatus {
@@ -573,6 +585,7 @@ export enum JobName {
   AssetDetectFaces = 'AssetDetectFaces',
   AssetDetectDuplicatesQueueAll = 'AssetDetectDuplicatesQueueAll',
   AssetDetectDuplicates = 'AssetDetectDuplicates',
+  AssetEditThumbnailGeneration = 'AssetEditThumbnailGeneration',
   AssetEncodeVideoQueueAll = 'AssetEncodeVideoQueueAll',
   AssetEncodeVideo = 'AssetEncodeVideo',
   AssetEmptyTrash = 'AssetEmptyTrash',

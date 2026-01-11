@@ -5,11 +5,12 @@ import { InjectKysely } from 'nestjs-kysely';
 import { LockableProperty, Stack } from 'src/database';
 import { Chunked, ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { AssetFileType, AssetMetadataKey, AssetOrder, AssetStatus, AssetType, AssetVisibility } from 'src/enum';
+import { AssetFileType, AssetOrder, AssetStatus, AssetType, AssetVisibility } from 'src/enum';
 import { DB } from 'src/schema';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
 import { AssetFileTable } from 'src/schema/tables/asset-file.table';
 import { AssetJobStatusTable } from 'src/schema/tables/asset-job-status.table';
+import { AssetMetadataTable } from 'src/schema/tables/asset-metadata.table';
 import { AssetTable } from 'src/schema/tables/asset.table';
 import {
   anyUuid,
@@ -19,6 +20,7 @@ import {
   truncatedDate,
   unnest,
   withDefaultVisibility,
+  withEdits,
   withExif,
   withFaces,
   withFacesAndPeople,
@@ -111,6 +113,7 @@ interface GetByIdsRelations {
   smartSearch?: boolean;
   stack?: { assets?: boolean };
   tags?: boolean;
+  edits?: boolean;
 }
 
 const distinctLocked = <T extends LockableProperty[] | null>(eb: ExpressionBuilder<DB, 'asset_exif'>, columns: T) =>
@@ -256,7 +259,11 @@ export class AssetRepository {
       .execute();
   }
 
-  upsertMetadata(id: string, items: Array<{ key: AssetMetadataKey; value: object }>) {
+  upsertMetadata(id: string, items: Array<{ key: string; value: object }>) {
+    if (items.length === 0) {
+      return [];
+    }
+
     return this.db
       .insertInto('asset_metadata')
       .values(items.map((item) => ({ assetId: id, ...item })))
@@ -269,8 +276,21 @@ export class AssetRepository {
       .execute();
   }
 
+  upsertBulkMetadata(items: Insertable<AssetMetadataTable>[]) {
+    return this.db
+      .insertInto('asset_metadata')
+      .values(items)
+      .onConflict((oc) =>
+        oc
+          .columns(['assetId', 'key'])
+          .doUpdateSet((eb) => ({ key: eb.ref('excluded.key'), value: eb.ref('excluded.value') })),
+      )
+      .returning(['assetId', 'key', 'value', 'updatedAt'])
+      .execute();
+  }
+
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING] })
-  getMetadataByKey(assetId: string, key: AssetMetadataKey) {
+  getMetadataByKey(assetId: string, key: string) {
     return this.db
       .selectFrom('asset_metadata')
       .select(['key', 'value', 'updatedAt'])
@@ -280,8 +300,21 @@ export class AssetRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING] })
-  async deleteMetadataByKey(id: string, key: AssetMetadataKey) {
+  async deleteMetadataByKey(id: string, key: string) {
     await this.db.deleteFrom('asset_metadata').where('assetId', '=', id).where('key', '=', key).execute();
+  }
+
+  @GenerateSql({ params: [[{ assetId: DummyValue.UUID, key: DummyValue.STRING }]] })
+  async deleteBulkMetadata(items: Array<{ assetId: string; key: string }>) {
+    if (items.length === 0) {
+      return;
+    }
+
+    await this.db.transaction().execute(async (tx) => {
+      for (const { assetId, key } of items) {
+        await tx.deleteFrom('asset_metadata').where('assetId', '=', assetId).where('key', '=', key).execute();
+      }
+    });
   }
 
   create(asset: Insertable<AssetTable>) {
@@ -441,7 +474,10 @@ export class AssetRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
-  getById(id: string, { exifInfo, faces, files, library, owner, smartSearch, stack, tags }: GetByIdsRelations = {}) {
+  getById(
+    id: string,
+    { exifInfo, faces, files, library, owner, smartSearch, stack, tags, edits }: GetByIdsRelations = {},
+  ) {
     return this.db
       .selectFrom('asset')
       .selectAll('asset')
@@ -478,6 +514,7 @@ export class AssetRepository {
       )
       .$if(!!files, (qb) => qb.select(withFiles))
       .$if(!!tags, (qb) => qb.select(withTags))
+      .$if(!!edits, (qb) => qb.select(withEdits))
       .limit(1)
       .executeTakeFirst();
   }
@@ -505,10 +542,11 @@ export class AssetRepository {
         .selectAll('asset')
         .$call(withExif)
         .$call((qb) => qb.select(withFacesAndPeople))
+        .$call((qb) => qb.select(withEdits))
         .executeTakeFirst();
     }
 
-    return this.getById(asset.id, { exifInfo: true, faces: { person: true } });
+    return this.getById(asset.id, { exifInfo: true, faces: { person: true }, edits: true });
   }
 
   async remove(asset: { id: string }): Promise<void> {
@@ -665,11 +703,9 @@ export class AssetRepository {
               .coalesce(
                 eb
                   .case()
-                  .when(sql`asset_exif."exifImageHeight" = 0 or asset_exif."exifImageWidth" = 0`)
+                  .when(sql`asset."height" = 0 or asset."width" = 0`)
                   .then(eb.lit(1))
-                  .when('asset_exif.orientation', 'in', sql<string>`('5', '6', '7', '8', '-90', '90')`)
-                  .then(sql`round(asset_exif."exifImageHeight"::numeric / asset_exif."exifImageWidth"::numeric, 3)`)
-                  .else(sql`round(asset_exif."exifImageWidth"::numeric / asset_exif."exifImageHeight"::numeric, 3)`)
+                  .else(sql`round(asset."width"::numeric / asset."height"::numeric, 3)`)
                   .end(),
                 eb.lit(1),
               )

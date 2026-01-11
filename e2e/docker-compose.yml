@@ -1,6 +1,12 @@
 name: immich-e2e
 
 services:
+  e2e-auth-server:
+    build:
+      context: ../e2e-auth-server
+    ports:
+      - 2286:2286
+
   immich-server:
     container_name: immich-e2e-server
     image: immich-server:latest
@@ -27,8 +33,6 @@ services:
       - IMMICH_IGNORE_MOUNT_CHECK_ERRORS=true
     volumes:
       - ./test-assets:/test-assets
-    extra_hosts:
-      - 'auth-server:host-gateway'
     depends_on:
       redis:
         condition: service_started

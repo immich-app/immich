@@ -5,8 +5,6 @@ import type { AlbumResponseDto, AssetResponseDto, PersonResponseDto, StackRespon
 type ActionMap = {
   [AssetAction.ARCHIVE]: { asset: TimelineAsset };
   [AssetAction.UNARCHIVE]: { asset: TimelineAsset };
-  [AssetAction.FAVORITE]: { asset: TimelineAsset };
-  [AssetAction.UNFAVORITE]: { asset: TimelineAsset };
   [AssetAction.TRASH]: { asset: TimelineAsset };
   [AssetAction.DELETE]: { asset: TimelineAsset };
   [AssetAction.RESTORE]: { asset: TimelineAsset };

@@ -1,6 +1,6 @@
 <script lang="ts">
   import { shortcut } from '$lib/actions/shortcut';
-  import CastButton from '$lib/cast/cast-button.svelte';
+  import ActionButton from '$lib/components/ActionButton.svelte';
   import AlbumMap from '$lib/components/album-page/album-map.svelte';
   import DownloadAction from '$lib/components/timeline/actions/DownloadAction.svelte';
   import SelectAllAssets from '$lib/components/timeline/actions/SelectAllAction.svelte';
@@ -9,6 +9,7 @@
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import { handleDownloadAlbum } from '$lib/services/album.service';
+  import { getGlobalActions } from '$lib/services/app.service';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
@@ -58,6 +59,8 @@
       handlePromiseError(setAssetId(asset.id).then(() => ($slideshowState = SlideshowState.PlaySlideshow)));
     }
   };
+
+  const { Cast } = $derived(getGlobalActions($t));
 </script>
 
 <svelte:document
@@ -116,7 +119,7 @@
       {/snippet}
 
       {#snippet trailing()}
-        <CastButton />
+        <ActionButton action={Cast} />
 
         {#if sharedLink.allowUpload}
           <IconButton

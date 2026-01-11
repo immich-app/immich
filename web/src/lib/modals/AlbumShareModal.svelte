@@ -2,16 +2,17 @@
   import AlbumSharedLink from '$lib/components/album-page/album-shared-link.svelte';
   import { AppRoute } from '$lib/constants';
   import Dropdown from '$lib/elements/Dropdown.svelte';
+  import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
+  import { handleAddUsersToAlbum } from '$lib/services/album.service';
   import {
     AlbumUserRole,
     getAllSharedLinks,
     searchUsers,
     type AlbumResponseDto,
-    type AlbumUserAddDto,
     type SharedLinkResponseDto,
     type UserResponseDto,
   } from '@immich/sdk';
-  import { Button, Icon, Link, Modal, ModalBody, Stack, Text } from '@immich/ui';
+  import { Button, Icon, Link, Modal, ModalBody, modalManager, Stack, Text } from '@immich/ui';
   import { mdiCheck, mdiEye, mdiLink, mdiPencil } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -19,7 +20,7 @@
 
   interface Props {
     album: AlbumResponseDto;
-    onClose: (result?: { action: 'sharedLink' } | { action: 'sharedUsers'; data: AlbumUserAddDto[] }) => void;
+    onClose: () => void;
   }
 
   let { album, onClose }: Props = $props();
@@ -61,6 +62,21 @@
     } else {
       selectedUsers[user.id].role = role;
     }
+  };
+
+  const onShareUser = async () => {
+    const success = await handleAddUsersToAlbum(
+      album,
+      Object.values(selectedUsers).map(({ user, ...rest }) => ({ userId: user.id, ...rest })),
+    );
+    if (success) {
+      onClose();
+    }
+  };
+
+  const onShareLink = () => {
+    void modalManager.show(SharedLinkCreateModal, { albumId: album.id });
+    onClose();
   };
 </script>
 
@@ -145,12 +161,10 @@
           fullWidth
           shape="round"
           disabled={Object.keys(selectedUsers).length === 0}
-          onclick={() =>
-            onClose({
-              action: 'sharedUsers',
-              data: Object.values(selectedUsers).map(({ user, ...rest }) => ({ userId: user.id, ...rest })),
-            })}>{$t('add')}</Button
+          onclick={onShareUser}
         >
+          {$t('add')}
+        </Button>
       </div>
     {/if}
 
@@ -170,13 +184,9 @@
         </Stack>
       {/if}
 
-      <Button
-        leadingIcon={mdiLink}
-        size="small"
-        shape="round"
-        fullWidth
-        onclick={() => onClose({ action: 'sharedLink' })}>{$t('create_link')}</Button
-      >
+      <Button leadingIcon={mdiLink} size="small" shape="round" fullWidth onclick={onShareLink}>
+        {$t('create_link')}
+      </Button>
     </Stack>
   </ModalBody>
 </Modal>

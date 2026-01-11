@@ -13,17 +13,16 @@
 
   let { asset, isOwner }: Props = $props();
 
-  let currentDescription = asset.exifInfo?.description ?? '';
-  let draftDescription = $state(currentDescription);
+  let currentDescription = $derived(asset.exifInfo?.description ?? '');
+  let description = $derived(currentDescription);
 
   const handleFocusOut = async () => {
-    if (draftDescription === currentDescription) {
+    if (description === currentDescription) {
       return;
     }
     try {
-      await updateAsset({ id: asset.id, updateAssetDto: { description: draftDescription } });
+      await updateAsset({ id: asset.id, updateAssetDto: { description } });
       toastManager.success($t('asset_description_updated'));
-      currentDescription = draftDescription;
     } catch (error) {
       handleError(error, $t('cannot_update_the_description'));
     }
@@ -33,7 +32,7 @@
 {#if isOwner}
   <section class="px-4 mt-10">
     <Textarea
-      bind:value={draftDescription}
+      bind:value={description}
       class="max-h-40 outline-none border-b border-gray-500 bg-transparent ring-0 focus:ring-0 resize-none focus:border-b-2 focus:border-immich-primary dark:focus:border-immich-dark-primary dark:bg-transparent"
       rows={1}
       grow
@@ -47,8 +46,8 @@
       }))}
     />
   </section>
-{:else if draftDescription}
+{:else if description}
   <section class="px-4 mt-6">
-    <p class="wrap-break-word whitespace-pre-line w-full text-black dark:text-white text-base">{draftDescription}</p>
+    <p class="wrap-break-word whitespace-pre-line w-full text-black dark:text-white text-base">{description}</p>
   </section>
 {/if}

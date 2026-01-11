@@ -3,15 +3,8 @@ import { PersistedLocalStorage } from '$lib/utils/persisted';
 const isShowDetailPanel = new PersistedLocalStorage<boolean>('asset-viewer-state', false);
 
 export class AssetViewerManager {
-  #isShowActivityPanel = $state(false);
-
-  get isShowActivityPanel() {
-    return this.#isShowActivityPanel;
-  }
-
-  private set isShowActivityPanel(value: boolean) {
-    this.#isShowActivityPanel = value;
-  }
+  isShowActivityPanel = $state(false);
+  isPlayingMotionPhoto = $state(false);
 
   get isShowDetailPanel() {
     return isShowDetailPanel.current;

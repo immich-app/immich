@@ -110,6 +110,7 @@
     "socket.io": "^4.8.1",
     "tailwindcss-preset-email": "^1.4.0",
     "thumbhash": "^0.1.1",
+    "transformation-matrix": "^3.1.0",
     "ua-parser-js": "^2.0.0",
     "uuid": "^11.1.0",
     "validator": "^13.12.0"
@@ -128,8 +129,8 @@
     "@types/cookie-parser": "^1.4.8",
     "@types/express": "^5.0.0",
     "@types/fluent-ffmpeg": "^2.1.21",
-    "@types/jsonwebtoken": "^9.0.10",
     "@types/js-yaml": "^4.0.9",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/lodash": "^4.14.197",
     "@types/luxon": "^3.6.2",
     "@types/mock-fs": "^4.13.1",

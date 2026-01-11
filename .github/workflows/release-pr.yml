@@ -23,7 +23,7 @@ jobs:
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
 
       - name: Checkout
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           token: ${{ steps.generate-token.outputs.token }}
           persist-credentials: true
@@ -159,7 +159,7 @@ jobs:
 
       - name: Create PR
         id: create-pr
-        uses: peter-evans/create-pull-request@22a9089034f40e5a961c8808d113e2c98fb63676 # v7.0.11
+        uses: peter-evans/create-pull-request@98357b18bf14b5342f975ff684046ec3b2a07725 # v8.0.0
         with:
           token: ${{ steps.generate-token.outputs.token }}
           commit-message: 'chore: release ${{ steps.bump-type.outputs.next }}'

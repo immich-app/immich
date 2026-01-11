@@ -8,7 +8,7 @@ import * as Oazapfts from "@oazapfts/runtime";
 import * as QS from "@oazapfts/runtime/query";
 export const defaults: Oazapfts.Defaults<Oazapfts.CustomHeaders> = {
     headers: {},
-    baseUrl: "/api",
+    baseUrl: "/api"
 };
 const oazapfts = Oazapfts.runtime(defaults);
 export const servers = {
@@ -349,6 +349,7 @@ export type AssetResponseDto = {
     /** The UTC timestamp when the file was last modified on the filesystem. This reflects the last time the physical file was changed, which may be different from when the photo was originally taken. */
     fileModifiedAt: string;
     hasMetadata: boolean;
+    height: number | null;
     id: string;
     isArchived: boolean;
     isFavorite: boolean;
@@ -373,6 +374,7 @@ export type AssetResponseDto = {
     /** The UTC timestamp when the asset record was last updated in the database. This is automatically maintained by the database and reflects when any field in the asset was last modified. */
     updatedAt: string;
     visibility: AssetVisibility;
+    width: number | null;
 };
 export type ContributorCountResponseDto = {
     assetCount: number;
@@ -471,7 +473,7 @@ export type AssetBulkDeleteDto = {
     ids: string[];
 };
 export type AssetMetadataUpsertItemDto = {
-    key: AssetMetadataKey;
+    key: string;
     value: object;
 };
 export type AssetMediaCreateDto = {
@@ -484,7 +486,7 @@ export type AssetMediaCreateDto = {
     filename?: string;
     isFavorite?: boolean;
     livePhotoVideoId?: string;
-    metadata: AssetMetadataUpsertItemDto[];
+    metadata?: AssetMetadataUpsertItemDto[];
     sidecarData?: Blob;
     visibility?: AssetVisibility;
 };
@@ -543,6 +545,27 @@ export type AssetJobsDto = {
     assetIds: string[];
     name: AssetJobName;
 };
+export type AssetMetadataBulkDeleteItemDto = {
+    assetId: string;
+    key: string;
+};
+export type AssetMetadataBulkDeleteDto = {
+    items: AssetMetadataBulkDeleteItemDto[];
+};
+export type AssetMetadataBulkUpsertItemDto = {
+    assetId: string;
+    key: string;
+    value: object;
+};
+export type AssetMetadataBulkUpsertDto = {
+    items: AssetMetadataBulkUpsertItemDto[];
+};
+export type AssetMetadataBulkResponseDto = {
+    assetId: string;
+    key: string;
+    updatedAt: string;
+    value: object;
+};
 export type UpdateAssetDto = {
     dateTimeOriginal?: string;
     description?: string;
@@ -553,8 +576,47 @@ export type UpdateAssetDto = {
     rating?: number;
     visibility?: AssetVisibility;
 };
+export type CropParameters = {
+    /** Height of the crop */
+    height: number;
+    /** Width of the crop */
+    width: number;
+    /** Top-Left X coordinate of crop */
+    x: number;
+    /** Top-Left Y coordinate of crop */
+    y: number;
+};
+export type AssetEditActionCrop = {
+    action: AssetEditAction;
+    parameters: CropParameters;
+};
+export type RotateParameters = {
+    /** Rotation angle in degrees */
+    angle: number;
+};
+export type AssetEditActionRotate = {
+    action: AssetEditAction;
+    parameters: RotateParameters;
+};
+export type MirrorParameters = {
+    /** Axis to mirror along */
+    axis: MirrorAxis;
+};
+export type AssetEditActionMirror = {
+    action: AssetEditAction;
+    parameters: MirrorParameters;
+};
+export type AssetEditsDto = {
+    assetId: string;
+    /** list of edits */
+    edits: (AssetEditActionCrop | AssetEditActionRotate | AssetEditActionMirror)[];
+};
+export type AssetEditActionListDto = {
+    /** list of edits */
+    edits: (AssetEditActionCrop | AssetEditActionRotate | AssetEditActionMirror)[];
+};
 export type AssetMetadataResponseDto = {
-    key: AssetMetadataKey;
+    key: string;
     updatedAt: string;
     value: object;
 };
@@ -728,6 +790,7 @@ export type QueuesResponseLegacyDto = {
     backgroundTask: QueueResponseLegacyDto;
     backupDatabase: QueueResponseLegacyDto;
     duplicateDetection: QueueResponseLegacyDto;
+    editor: QueueResponseLegacyDto;
     faceDetection: QueueResponseLegacyDto;
     facialRecognition: QueueResponseLegacyDto;
     library: QueueResponseLegacyDto;
@@ -1463,6 +1526,7 @@ export type JobSettingsDto = {
 };
 export type SystemConfigJobDto = {
     backgroundTask: JobSettingsDto;
+    editor: JobSettingsDto;
     faceDetection: JobSettingsDto;
     library: JobSettingsDto;
     metadataExtraction: JobSettingsDto;
@@ -2369,6 +2433,9 @@ export function uploadAsset({ key, slug, xImmichChecksum, assetMediaCreateDto }:
     assetMediaCreateDto: AssetMediaCreateDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AssetMediaResponseDto;
+    } | {
         status: 201;
         data: AssetMediaResponseDto;
     }>(`/assets${QS.query(QS.explode({
@@ -2463,6 +2530,33 @@ export function runAssetJobs({ assetJobsDto }: {
     })));
 }
 /**
+ * Delete asset metadata
+ */
+export function deleteBulkAssetMetadata({ assetMetadataBulkDeleteDto }: {
+    assetMetadataBulkDeleteDto: AssetMetadataBulkDeleteDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/assets/metadata", oazapfts.json({
+        ...opts,
+        method: "DELETE",
+        body: assetMetadataBulkDeleteDto
+    })));
+}
+/**
+ * Upsert asset metadata
+ */
+export function updateBulkAssetMetadata({ assetMetadataBulkUpsertDto }: {
+    assetMetadataBulkUpsertDto: AssetMetadataBulkUpsertDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AssetMetadataBulkResponseDto[];
+    }>("/assets/metadata", oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: assetMetadataBulkUpsertDto
+    })));
+}
+/**
  * Get random assets
  */
 export function getRandom({ count }: {
@@ -2531,6 +2625,46 @@ export function updateAsset({ id, updateAssetDto }: {
     })));
 }
 /**
+ * Remove edits from an existing asset
+ */
+export function removeAssetEdits({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/assets/${encodeURIComponent(id)}/edits`, {
+        ...opts,
+        method: "DELETE"
+    }));
+}
+/**
+ * Retrieve edits for an existing asset
+ */
+export function getAssetEdits({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AssetEditsDto;
+    }>(`/assets/${encodeURIComponent(id)}/edits`, {
+        ...opts
+    }));
+}
+/**
+ * Apply edits to an existing asset
+ */
+export function editAsset({ id, assetEditActionListDto }: {
+    id: string;
+    assetEditActionListDto: AssetEditActionListDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AssetEditsDto;
+    }>(`/assets/${encodeURIComponent(id)}/edits`, oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: assetEditActionListDto
+    })));
+}
+/**
  * Get asset metadata
  */
 export function getAssetMetadata({ id }: {
@@ -2564,7 +2698,7 @@ export function updateAssetMetadata({ id, assetMetadataUpsertDto }: {
  */
 export function deleteAssetMetadata({ id, key }: {
     id: string;
-    key: AssetMetadataKey;
+    key: string;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchText(`/assets/${encodeURIComponent(id)}/metadata/${encodeURIComponent(key)}`, {
         ...opts,
@@ -2576,7 +2710,7 @@ export function deleteAssetMetadata({ id, key }: {
  */
 export function getAssetMetadataByKey({ id, key }: {
     id: string;
-    key: AssetMetadataKey;
+    key: string;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
@@ -2601,7 +2735,8 @@ export function getAssetOcr({ id }: {
 /**
  * Download original asset
  */
-export function downloadAsset({ id, key, slug }: {
+export function downloadAsset({ edited, id, key, slug }: {
+    edited?: boolean;
     id: string;
     key?: string;
     slug?: string;
@@ -2610,6 +2745,7 @@ export function downloadAsset({ id, key, slug }: {
         status: 200;
         data: Blob;
     }>(`/assets/${encodeURIComponent(id)}/original${QS.query(QS.explode({
+        edited,
         key,
         slug
     }))}`, {
@@ -2640,7 +2776,8 @@ export function replaceAsset({ id, key, slug, assetMediaReplaceDto }: {
 /**
  * View asset thumbnail
  */
-export function viewAsset({ id, key, size, slug }: {
+export function viewAsset({ edited, id, key, size, slug }: {
+    edited?: boolean;
     id: string;
     key?: string;
     size?: AssetMediaSize;
@@ -2650,6 +2787,7 @@ export function viewAsset({ id, key, size, slug }: {
         status: 200;
         data: Blob;
     }>(`/assets/${encodeURIComponent(id)}/thumbnail${QS.query(QS.explode({
+        edited,
         key,
         size,
         slug
@@ -5237,6 +5375,10 @@ export enum Permission {
     AssetUpload = "asset.upload",
     AssetReplace = "asset.replace",
     AssetCopy = "asset.copy",
+    AssetDerive = "asset.derive",
+    AssetEditGet = "asset.edit.get",
+    AssetEditCreate = "asset.edit.create",
+    AssetEditDelete = "asset.edit.delete",
     AlbumCreate = "album.create",
     AlbumRead = "album.read",
     AlbumUpdate = "album.update",
@@ -5363,9 +5505,6 @@ export enum Permission {
     AdminSessionRead = "adminSession.read",
     AdminAuthUnlinkAll = "adminAuth.unlinkAll"
 }
-export enum AssetMetadataKey {
-    MobileApp = "mobile-app"
-}
 export enum AssetMediaStatus {
     Created = "created",
     Replaced = "replaced",
@@ -5384,6 +5523,15 @@ export enum AssetJobName {
     RefreshMetadata = "refresh-metadata",
     RegenerateThumbnail = "regenerate-thumbnail",
     TranscodeVideo = "transcode-video"
+}
+export enum AssetEditAction {
+    Crop = "crop",
+    Rotate = "rotate",
+    Mirror = "mirror"
+}
+export enum MirrorAxis {
+    Horizontal = "horizontal",
+    Vertical = "vertical"
 }
 export enum AssetMediaSize {
     Fullsize = "fullsize",
@@ -5415,7 +5563,8 @@ export enum QueueName {
     Notifications = "notifications",
     BackupDatabase = "backupDatabase",
     Ocr = "ocr",
-    Workflow = "workflow"
+    Workflow = "workflow",
+    Editor = "editor"
 }
 export enum QueueCommand {
     Start = "start",
@@ -5460,6 +5609,7 @@ export enum JobName {
     AssetDetectFaces = "AssetDetectFaces",
     AssetDetectDuplicatesQueueAll = "AssetDetectDuplicatesQueueAll",
     AssetDetectDuplicates = "AssetDetectDuplicates",
+    AssetEditThumbnailGeneration = "AssetEditThumbnailGeneration",
     AssetEncodeVideoQueueAll = "AssetEncodeVideoQueueAll",
     AssetEncodeVideo = "AssetEncodeVideo",
     AssetEmptyTrash = "AssetEmptyTrash",

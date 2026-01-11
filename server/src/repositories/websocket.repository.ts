@@ -37,6 +37,7 @@ export interface ClientEventMap {
 
   AssetUploadReadyV1: [{ asset: SyncAssetV1; exif: SyncAssetExifV1 }];
   AppRestartV1: [AppRestartEvent];
+  AssetEditReadyV1: [{ assetId: string }];
 }
 
 export type AuthFn = (client: Socket) => Promise<AuthDto>;

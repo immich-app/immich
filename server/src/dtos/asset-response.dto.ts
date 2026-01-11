@@ -3,6 +3,7 @@ import { Selectable } from 'kysely';
 import { AssetFace, AssetFile, Exif, Stack, Tag, User } from 'src/database';
 import { HistoryBuilder, Property } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
+import { AssetEditActionItem } from 'src/dtos/editing.dto';
 import { ExifResponseDto, mapExif } from 'src/dtos/exif.dto';
 import {
   AssetFaceWithoutPersonResponseDto,
@@ -13,6 +14,8 @@ import {
 import { TagResponseDto, mapTag } from 'src/dtos/tag.dto';
 import { UserResponseDto, mapUser } from 'src/dtos/user.dto';
 import { AssetStatus, AssetType, AssetVisibility } from 'src/enum';
+import { ImageDimensions } from 'src/types';
+import { getDimensions } from 'src/utils/asset.util';
 import { hexOrBufferToBase64 } from 'src/utils/bytes';
 import { mimeTypes } from 'src/utils/mime-types';
 import { ValidateEnum } from 'src/validation';
@@ -34,6 +37,8 @@ export class SanitizedAssetResponseDto {
   duration!: string;
   livePhotoVideoId?: string | null;
   hasMetadata!: boolean;
+  width!: number | null;
+  height!: number | null;
 }
 
 export class AssetResponseDto extends SanitizedAssetResponseDto {
@@ -107,6 +112,7 @@ export type MapAsset = {
   deviceId: string;
   duplicateId: string | null;
   duration: string | null;
+  edits?: AssetEditActionItem[];
   encodedVideoPath: string | null;
   exifInfo?: Selectable<Exif> | null;
   faces?: AssetFace[];
@@ -129,6 +135,8 @@ export type MapAsset = {
   tags?: Tag[];
   thumbhash: Buffer<ArrayBufferLike> | null;
   type: AssetType;
+  width: number | null;
+  height: number | null;
 };
 
 export class AssetStackResponseDto {
@@ -147,7 +155,11 @@ export type AssetMapOptions = {
 };
 
 // TODO: this is inefficient
-const peopleWithFaces = (faces?: AssetFace[]): PersonWithFacesResponseDto[] => {
+const peopleWithFaces = (
+  faces?: AssetFace[],
+  edits?: AssetEditActionItem[],
+  assetDimensions?: ImageDimensions,
+): PersonWithFacesResponseDto[] => {
   const result: PersonWithFacesResponseDto[] = [];
   if (faces) {
     for (const face of faces) {
@@ -156,7 +168,7 @@ const peopleWithFaces = (faces?: AssetFace[]): PersonWithFacesResponseDto[] => {
         if (existingPersonEntry) {
           existingPersonEntry.faces.push(face);
         } else {
-          result.push({ ...mapPerson(face.person!), faces: [mapFacesWithoutPerson(face)] });
+          result.push({ ...mapPerson(face.person!), faces: [mapFacesWithoutPerson(face, edits, assetDimensions)] });
         }
       }
     }
@@ -190,9 +202,13 @@ export function mapAsset(entity: MapAsset, options: AssetMapOptions = {}): Asset
       duration: entity.duration ?? '0:00:00.00000',
       livePhotoVideoId: entity.livePhotoVideoId,
       hasMetadata: false,
+      width: entity.width,
+      height: entity.height,
     };
     return sanitizedAssetResponse as AssetResponseDto;
   }
+
+  const assetDimensions = entity.exifInfo ? getDimensions(entity.exifInfo) : undefined;
 
   return {
     id: entity.id,
@@ -219,7 +235,7 @@ export function mapAsset(entity: MapAsset, options: AssetMapOptions = {}): Asset
     exifInfo: entity.exifInfo ? mapExif(entity.exifInfo) : undefined,
     livePhotoVideoId: entity.livePhotoVideoId,
     tags: entity.tags?.map((tag) => mapTag(tag)),
-    people: peopleWithFaces(entity.faces),
+    people: peopleWithFaces(entity.faces, entity.edits, assetDimensions),
     unassignedFaces: entity.faces?.filter((face) => !face.person).map((a) => mapFacesWithoutPerson(a)),
     checksum: hexOrBufferToBase64(entity.checksum)!,
     stack: withStack ? mapStack(entity) : undefined,
@@ -227,5 +243,7 @@ export function mapAsset(entity: MapAsset, options: AssetMapOptions = {}): Asset
     hasMetadata: true,
     duplicateId: entity.duplicateId,
     resized: true,
+    width: entity.width,
+    height: entity.height,
   };
 }

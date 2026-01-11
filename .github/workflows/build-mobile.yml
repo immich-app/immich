@@ -30,18 +30,6 @@ on:
         required: true
       IOS_CERTIFICATE_PASSWORD:
         required: true
-      IOS_PROVISIONING_PROFILE:
-        required: true
-      IOS_PROVISIONING_PROFILE_SHARE_EXTENSION:
-        required: true
-      IOS_PROVISIONING_PROFILE_WIDGET_EXTENSION:
-        required: true
-      IOS_DEVELOPMENT_PROVISIONING_PROFILE:
-        required: true
-      IOS_DEVELOPMENT_PROVISIONING_PROFILE_SHARE_EXTENSION:
-        required: true
-      IOS_DEVELOPMENT_PROVISIONING_PROFILE_WIDGET_EXTENSION:
-        required: true
       FASTLANE_TEAM_ID:
         required: true
   pull_request:
@@ -96,7 +84,7 @@ jobs:
           app-id: ${{ secrets.PUSH_O_MATIC_APP_ID }}
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
 
-      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           ref: ${{ inputs.ref || github.sha }}
           persist-credentials: false
@@ -115,7 +103,7 @@ jobs:
 
       - name: Restore Gradle Cache
         id: cache-gradle-restore
-        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        uses: actions/cache/restore@9255dc7a253b0ccc959486e2bca901246202afeb # v5.0.1
         with:
           path: |
             ~/.gradle/caches
@@ -165,14 +153,14 @@ jobs:
           fi
 
       - name: Publish Android Artifact
-        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: release-apk-signed
           path: mobile/build/app/outputs/flutter-apk/*.apk
 
       - name: Save Gradle Cache
         id: cache-gradle-save
-        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        uses: actions/cache/save@9255dc7a253b0ccc959486e2bca901246202afeb # v5.0.1
         if: github.ref == 'refs/heads/main'
         with:
           path: |
@@ -194,7 +182,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
           ref: ${{ inputs.ref || github.sha }}
           persist-credentials: false
@@ -240,34 +228,13 @@ jobs:
           mkdir -p ~/.appstoreconnect/private_keys
           echo "$API_KEY_CONTENT" | base64 --decode > ~/.appstoreconnect/private_keys/AuthKey_${API_KEY_ID}.p8
 
-      - name: Import Certificate and Provisioning Profiles
+      - name: Import Certificate
         env:
           IOS_CERTIFICATE_P12: ${{ secrets.IOS_CERTIFICATE_P12 }}
-          IOS_CERTIFICATE_PASSWORD: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
-          IOS_PROVISIONING_PROFILE: ${{ secrets.IOS_PROVISIONING_PROFILE }}
-          IOS_PROVISIONING_PROFILE_SHARE_EXTENSION: ${{ secrets.IOS_PROVISIONING_PROFILE_SHARE_EXTENSION }}
-          IOS_PROVISIONING_PROFILE_WIDGET_EXTENSION: ${{ secrets.IOS_PROVISIONING_PROFILE_WIDGET_EXTENSION }}
-          IOS_DEVELOPMENT_PROVISIONING_PROFILE: ${{ secrets.IOS_DEVELOPMENT_PROVISIONING_PROFILE }}
-          IOS_DEVELOPMENT_PROVISIONING_PROFILE_SHARE_EXTENSION: ${{ secrets.IOS_DEVELOPMENT_PROVISIONING_PROFILE_SHARE_EXTENSION }}
-          IOS_DEVELOPMENT_PROVISIONING_PROFILE_WIDGET_EXTENSION: ${{ secrets.IOS_DEVELOPMENT_PROVISIONING_PROFILE_WIDGET_EXTENSION }}
-          ENVIRONMENT: ${{ inputs.environment || 'development' }}
         working-directory: ./mobile/ios
         run: |
           # Decode certificate
           echo "$IOS_CERTIFICATE_P12" | base64 --decode > certificate.p12
-
-          # Decode provisioning profiles based on environment
-          if [[ "$ENVIRONMENT" == "development" ]]; then
-            echo "$IOS_DEVELOPMENT_PROVISIONING_PROFILE" | base64 --decode > profile_dev.mobileprovision
-            echo "$IOS_DEVELOPMENT_PROVISIONING_PROFILE_SHARE_EXTENSION" | base64 --decode > profile_dev_share.mobileprovision
-            echo "$IOS_DEVELOPMENT_PROVISIONING_PROFILE_WIDGET_EXTENSION" | base64 --decode > profile_dev_widget.mobileprovision
-            ls -lh profile_dev*.mobileprovision
-          else
-            echo "$IOS_PROVISIONING_PROFILE" | base64 --decode > profile.mobileprovision
-            echo "$IOS_PROVISIONING_PROFILE_SHARE_EXTENSION" | base64 --decode > profile_share.mobileprovision
-            echo "$IOS_PROVISIONING_PROFILE_WIDGET_EXTENSION" | base64 --decode > profile_widget.mobileprovision
-            ls -lh profile*.mobileprovision
-          fi
 
       - name: Create keychain and import certificate
         env:
@@ -319,7 +286,7 @@ jobs:
           security delete-keychain build.keychain || true
 
       - name: Upload IPA artifact
-        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: ios-release-ipa
           path: mobile/ios/Runner.ipa

@@ -3,12 +3,12 @@
   import { shortcut as bindShortcut, shortcutLabel as computeShortcutLabel } from '$lib/actions/shortcut';
   import { optionClickCallbackStore, selectedIdStore } from '$lib/stores/context-menu.store';
   import { generateId } from '$lib/utils/generate-id';
-  import { Icon } from '@immich/ui';
+  import { Icon, type IconLike } from '@immich/ui';
 
   interface Props {
     text: string;
     subtitle?: string;
-    icon?: string;
+    icon?: IconLike;
     activeColor?: string;
     textColor?: string;
     onClick: () => void;
@@ -19,7 +19,7 @@
   let {
     text,
     subtitle = '',
-    icon = '',
+    icon,
     activeColor = 'bg-slate-300',
     textColor = 'text-immich-fg dark:text-immich-dark-bg',
     onClick,

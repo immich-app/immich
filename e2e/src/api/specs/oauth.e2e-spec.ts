@@ -1,3 +1,4 @@
+import { OAuthClient, OAuthUser } from '@immich/e2e-auth-server';
 import {
   LoginResponseDto,
   SystemConfigOAuthDto,
@@ -8,13 +9,12 @@ import {
 } from '@immich/sdk';
 import { createHash, randomBytes } from 'node:crypto';
 import { errorDto } from 'src/responses';
-import { OAuthClient, OAuthUser } from 'src/setup/auth-server';
 import { app, asBearerAuth, baseUrl, utils } from 'src/utils';
 import request from 'supertest';
 import { beforeAll, describe, expect, it } from 'vitest';
 
 const authServer = {
-  internal: 'http://auth-server:2286',
+  internal: 'http://e2e-auth-server:2286',
   external: 'http://127.0.0.1:2286',
 };
 

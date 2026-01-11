@@ -29,6 +29,7 @@ import {
   mdiLibraryShelves,
   mdiOcr,
   mdiPause,
+  mdiPencil,
   mdiPlay,
   mdiPlus,
   mdiStateMachine,
@@ -64,9 +65,7 @@ export const getQueuesActions = ($t: MessageFormatter, queues: QueueResponseDto[
     title: $t('admin.create_job'),
     type: $t('command'),
     shortcuts: { shift: true, key: 'n' },
-    onAction: async () => {
-      await modalManager.show(JobCreateModal, {});
-    },
+    onAction: () => modalManager.show(JobCreateModal, {}),
   };
 
   const ManageConcurrency: ActionItem = {
@@ -242,6 +241,10 @@ export const asQueueItem = ($t: MessageFormatter, queue: { name: QueueName }): Q
     [QueueName.Workflow]: {
       icon: mdiStateMachine,
       title: $t('workflows'),
+    },
+    [QueueName.Editor]: {
+      icon: mdiPencil,
+      title: $t('editor'),
     },
   };
 
