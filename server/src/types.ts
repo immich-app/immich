@@ -258,8 +258,9 @@ export interface WorkflowData {
     asset: Asset;
   };
   [PluginTriggerType.PersonRecognized]: {
-    personId: string;
+    userId: string;
     assetId: string;
+    personId: string;
   };
 }
 
