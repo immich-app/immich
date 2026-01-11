@@ -37,7 +37,7 @@
     <span class="hidden md:block absolute start-1 h-full">
       <button
         type="button"
-        aria-label={$t('recent-albums')}
+        aria-label={$t('recent_albums')}
         class="relative flex cursor-default pt-4 pb-4 select-none justify-center hover:cursor-pointer hover:bg-subtle hover:fill-gray hover:text-immich-primary dark:text-immich-dark-fg dark:hover:bg-immich-dark-gray dark:hover:text-immich-dark-primary rounded h-fill"
         onclick={() => (dropdownOpen = !dropdownOpen)}
       >
