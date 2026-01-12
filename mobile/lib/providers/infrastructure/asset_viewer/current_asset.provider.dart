@@ -25,14 +25,6 @@ class CurrentAssetNotifier extends AutoDisposeNotifier<BaseAsset?> {
     _keepAliveLink = ref.keepAlive();
   }
 
-  void clearAsset() {
-    _keepAliveLink?.close();
-    _assetSubscription?.cancel();
-    _keepAliveLink = null;
-    _assetSubscription = null;
-    state = null;
-  }
-
   void dispose() {
     _keepAliveLink?.close();
     _assetSubscription?.cancel();

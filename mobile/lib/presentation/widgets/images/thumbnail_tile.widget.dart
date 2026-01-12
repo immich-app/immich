@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -37,7 +35,6 @@ class ThumbnailTile extends ConsumerStatefulWidget {
 
 class _ThumbnailTileState extends ConsumerState<ThumbnailTile> {
   bool heroInFlight = false;
-  bool _heroListenerAttached = false;
 
   @override
   void dispose() {
@@ -79,20 +76,19 @@ class _ThumbnailTileState extends ConsumerState<ThumbnailTile> {
                   child: Hero(
                     tag: '${asset?.heroTag ?? ''}_$heroIndex',
                     child: Thumbnail.fromAsset(asset: asset, size: widget.size),
-                    //
+                    // Handle hiding assets
                     flightShuttleBuilder: (context, animation, direction, from, to) {
-                      if (!_heroListenerAttached) {
-                        animation.addStatusListener((status) {
-                          final tempInFlight =
-                              status == AnimationStatus.forward ||
-                              status == AnimationStatus.reverse ||
-                              status == AnimationStatus.completed;
+                      log.info("Flightshuttlebuilder triggered");
+                      animation.addStatusListener((status) {
+                        final tempInFlight =
+                            status == AnimationStatus.forward ||
+                            status == AnimationStatus.reverse ||
+                            status == AnimationStatus.completed;
+                        if (heroInFlight != tempInFlight) {
                           setState(() => heroInFlight = tempInFlight);
                           log.info("Hero in flight: $heroInFlight");
-                        });
-                        // _heroListenerAttached = true;
-                      }
-
+                        }
+                      });
                       return to.widget;
                     },
                   ),
@@ -103,37 +99,45 @@ class _ThumbnailTileState extends ConsumerState<ThumbnailTile> {
                     child: _AssetTypeIcons(asset: asset),
                   ),
 
-                if (storageIndicator && asset != null && !heroInFlight)
-                  switch (asset.storage) {
-                    AssetState.local => const Align(
-                      alignment: Alignment.bottomRight,
-                      child: Padding(
-                        padding: EdgeInsets.only(right: 10.0, bottom: 6.0),
-                        child: _TileOverlayIcon(Icons.cloud_off_outlined),
+                if (storageIndicator && asset != null)
+                  AnimatedOpacity(
+                    opacity: heroInFlight ? 0.0 : 1.0,
+                    duration: Durations.short4,
+                    child: switch (asset.storage) {
+                      AssetState.local => const Align(
+                        alignment: Alignment.bottomRight,
+                        child: Padding(
+                          padding: EdgeInsets.only(right: 10.0, bottom: 6.0),
+                          child: _TileOverlayIcon(Icons.cloud_off_outlined),
+                        ),
                       ),
-                    ),
-                    AssetState.remote => const Align(
-                      alignment: Alignment.bottomRight,
-                      child: Padding(
-                        padding: EdgeInsets.only(right: 10.0, bottom: 6.0),
-                        child: _TileOverlayIcon(Icons.cloud_outlined),
+                      AssetState.remote => const Align(
+                        alignment: Alignment.bottomRight,
+                        child: Padding(
+                          padding: EdgeInsets.only(right: 10.0, bottom: 6.0),
+                          child: _TileOverlayIcon(Icons.cloud_outlined),
+                        ),
                       ),
-                    ),
-                    AssetState.merged => const Align(
-                      alignment: Alignment.bottomRight,
-                      child: Padding(
-                        padding: EdgeInsets.only(right: 10.0, bottom: 6.0),
-                        child: _TileOverlayIcon(Icons.cloud_done_outlined),
+                      AssetState.merged => const Align(
+                        alignment: Alignment.bottomRight,
+                        child: Padding(
+                          padding: EdgeInsets.only(right: 10.0, bottom: 6.0),
+                          child: _TileOverlayIcon(Icons.cloud_done_outlined),
+                        ),
                       ),
-                    ),
-                  },
+                    },
+                  ),
 
                 if (asset != null && asset.isFavorite)
-                  const Align(
-                    alignment: Alignment.bottomLeft,
-                    child: Padding(
-                      padding: EdgeInsets.only(left: 10.0, bottom: 6.0),
-                      child: _TileOverlayIcon(Icons.favorite_rounded),
+                  AnimatedOpacity(
+                    duration: Durations.short4,
+                    opacity: heroInFlight ? 0.0 : 1.0,
+                    child: const Align(
+                      alignment: Alignment.bottomLeft,
+                      child: Padding(
+                        padding: EdgeInsets.only(left: 10.0, bottom: 6.0),
+                        child: _TileOverlayIcon(Icons.favorite_rounded),
+                      ),
                     ),
                   ),
               ],

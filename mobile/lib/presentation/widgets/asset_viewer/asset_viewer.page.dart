@@ -619,7 +619,6 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   }
 
   void _onPop<T>(bool didPop, T? result) {
-    ref.read(currentAssetNotifier.notifier).clearAsset();
     ref.read(currentAssetNotifier.notifier).dispose();
   }
 
