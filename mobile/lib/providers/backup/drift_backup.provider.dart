@@ -504,6 +504,8 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
         },
       );
     }
+
+    _uploadSpeedManager.removeTask(localAssetId);
   }
 
   Future<void> startBackupWithURLSession(String userId) async {

@@ -150,10 +150,10 @@ class UploadService {
     String userId,
     bool hasWifi,
     CancellationToken cancelToken, {
-    required void Function(String localAssetId, String filename, int bytes, int totalBytes) onProgress,
-    required void Function(String localAssetId, String remoteAssetId) onSuccess,
-    required void Function(String localAssetId, String errorMessage) onError,
-    required void Function(String localAssetId, double progress) onICloudProgress,
+    void Function(String localAssetId, String filename, int bytes, int totalBytes)? onProgress,
+    void Function(String localAssetId, String remoteAssetId)? onSuccess,
+    void Function(String localAssetId, String errorMessage)? onError,
+    void Function(String localAssetId, double progress)? onICloudProgress,
   }) async {
     const concurrentUploads = 3;
     final httpClients = List.generate(concurrentUploads, (_) => Client());
@@ -220,10 +220,10 @@ class UploadService {
     LocalAsset asset,
     Client httpClient,
     CancellationToken cancelToken, {
-    required void Function(String id, String filename, int bytes, int totalBytes) onProgress,
-    required void Function(String localAssetId, String remoteAssetId) onSuccess,
-    required void Function(String localAssetId, String errorMessage) onError,
-    required void Function(String localAssetId, double progress) onICloudProgress,
+    required void Function(String id, String filename, int bytes, int totalBytes)? onProgress,
+    required void Function(String localAssetId, String remoteAssetId)? onSuccess,
+    required void Function(String localAssetId, String errorMessage)? onError,
+    required void Function(String localAssetId, double progress)? onICloudProgress,
   }) async {
     File? file;
     File? livePhotoFile;
@@ -236,7 +236,7 @@ class UploadService {
 
       final isAvailableLocally = await _storageRepository.isAssetAvailableLocally(asset.id);
 
-      if (!isAvailableLocally && Platform.isIOS) {
+      if (!isAvailableLocally && CurrentPlatform.isIOS) {
         _logger.info("Loading iCloud asset ${asset.id} - ${asset.name}");
 
         // Create progress handler for iCloud download
@@ -245,7 +245,7 @@ class UploadService {
 
         progressHandler = PMProgressHandler();
         progressSubscription = progressHandler.stream.listen((event) {
-          onICloudProgress(asset.localId!, event.progress);
+          onICloudProgress?.call(asset.localId!, event.progress);
         });
 
         try {
@@ -305,7 +305,7 @@ class UploadService {
           fields: fields,
           httpClient: httpClient,
           cancelToken: cancelToken,
-          onProgress: (bytes, totalBytes) => onProgress(asset.localId!, livePhotoTitle, bytes, totalBytes),
+          onProgress: (bytes, totalBytes) => onProgress?.call(asset.localId!, livePhotoTitle, bytes, totalBytes),
           logContext: 'livePhotoVideo[${asset.localId}]',
         );
 
@@ -325,37 +325,37 @@ class UploadService {
         fields: fields,
         httpClient: httpClient,
         cancelToken: cancelToken,
-        onProgress: (bytes, totalBytes) => onProgress(asset.localId!, originalFileName, bytes, totalBytes),
+        onProgress: (bytes, totalBytes) => onProgress?.call(asset.localId!, originalFileName, bytes, totalBytes),
         logContext: 'asset[${asset.localId}]',
       );
 
       if (result.isSuccess && result.remoteAssetId != null) {
-        onSuccess(asset.localId!, result.remoteAssetId!);
+        onSuccess?.call(asset.localId!, result.remoteAssetId!);
       } else if (result.isCancelled) {
-        dPrint(() => "Backup was cancelled by the user");
+        _logger.warning(() => "Backup was cancelled by the user");
         shouldAbortQueuingTasks = true;
       } else if (result.errorMessage != null) {
-        dPrint(
+        _logger.severe(
           () =>
               "Error(${result.statusCode}) uploading ${asset.localId} | $originalFileName | Created on ${asset.createdAt} | ${result.errorMessage}",
         );
 
-        onError(asset.localId!, result.errorMessage!);
+        onError?.call(asset.localId!, result.errorMessage!);
 
         if (result.errorMessage == "Quota has been exceeded!") {
           shouldAbortQueuingTasks = true;
         }
       }
     } catch (error, stackTrace) {
-      dPrint(() => "Error backup asset: ${error.toString()}: $stackTrace");
-      onError(asset.localId!, error.toString());
+      _logger.severe(() => "Error backup asset: ${error.toString()}", stackTrace);
+      onError?.call(asset.localId!, error.toString());
     } finally {
       if (Platform.isIOS) {
         try {
           await file?.delete();
           await livePhotoFile?.delete();
-        } catch (e) {
-          dPrint(() => "ERROR deleting file: ${e.toString()}");
+        } catch (error, stackTrace) {
+          _logger.severe(() => "ERROR deleting file: ${error.toString()}", stackTrace);
         }
       }
     }

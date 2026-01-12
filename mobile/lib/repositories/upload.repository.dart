@@ -110,7 +110,7 @@ class UploadRepository {
       final fileStream = file.openRead();
       final assetRawUploadData = MultipartFile("assetData", fileStream, file.lengthSync(), filename: originalFileName);
 
-      final baseRequest = CustomMultipartRequest('POST', Uri.parse('$savedEndpoint/assets'), onProgress: onProgress);
+      final baseRequest = _CustomMultipartRequest('POST', Uri.parse('$savedEndpoint/assets'), onProgress: onProgress);
 
       baseRequest.headers.addAll(headers);
       baseRequest.fields.addAll(fields);
@@ -183,8 +183,8 @@ class UploadResult {
   }
 }
 
-class CustomMultipartRequest extends MultipartRequest {
-  CustomMultipartRequest(super.method, super.url, {required this.onProgress});
+class _CustomMultipartRequest extends MultipartRequest {
+  _CustomMultipartRequest(super.method, super.url, {required this.onProgress});
 
   final void Function(int bytes, int totalBytes) onProgress;
 

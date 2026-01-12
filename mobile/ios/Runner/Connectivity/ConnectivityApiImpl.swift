@@ -8,12 +8,6 @@ class ConnectivityApiImpl: ConnectivityApi {
   init() {
     monitor.pathUpdateHandler = { [weak self] path in
       self?.currentPath = path
-      print("[ConnectivityApi] Network status changed:")
-      print("  - Status: \(path.status)")
-      print("  - isExpensive: \(path.isExpensive)")
-      print("  - isConstrained: \(path.isConstrained)")
-      print("  - usesWifi: \(path.usesInterfaceType(.wifi))")
-      print("  - usesCellular: \(path.usesInterfaceType(.cellular))")
     }
     monitor.start(queue: queue)
     // Get initial state synchronously

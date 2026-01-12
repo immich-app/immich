@@ -249,15 +249,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
         final networkCapabilities = await _ref?.read(connectivityApiProvider).getCapabilities() ?? [];
         return _ref
             ?.read(uploadServiceProvider)
-            .startUploadWithHttp(
-              currentUser.id,
-              networkCapabilities.isUnmetered,
-              _cancellationToken,
-              onProgress: (_, __, ___, ____) {},
-              onSuccess: (_, __) {},
-              onError: (_, __) {},
-              onICloudProgress: (_, __) {},
-            );
+            .startUploadWithHttp(currentUser.id, networkCapabilities.isUnmetered, _cancellationToken);
       },
       (error, stack) {
         dPrint(() => "Error in backup zone $error, $stack");
