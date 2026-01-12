@@ -8950,6 +8950,14 @@
             }
           },
           {
+            "name": "locationQuery",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "make",
             "required": false,
             "in": "query",
@@ -17853,6 +17861,9 @@
             "nullable": true,
             "type": "string"
           },
+          "locationQuery": {
+            "type": "string"
+          },
           "make": {
             "type": "string"
           },
@@ -19418,6 +19429,9 @@
             "nullable": true,
             "type": "string"
           },
+          "locationQuery": {
+            "type": "string"
+          },
           "make": {
             "type": "string"
           },
@@ -20559,6 +20573,9 @@
             "nullable": true,
             "type": "string"
           },
+          "locationQuery": {
+            "type": "string"
+          },
           "make": {
             "type": "string"
           },
@@ -20765,6 +20782,9 @@
           "libraryId": {
             "format": "uuid",
             "nullable": true,
+            "type": "string"
+          },
+          "locationQuery": {
             "type": "string"
           },
           "make": {

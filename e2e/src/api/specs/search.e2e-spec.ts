@@ -374,6 +374,33 @@ describe('/search', () => {
           assets: [assetLast],
         }),
       },
+      {
+        should: 'should search by locationQuery (city)',
+        deferred: () => ({
+          dto: {
+            locationQuery: 'Paris',
+          },
+          assets: [assetFalcon],
+        }),
+      },
+      {
+        should: 'should search by locationQuery (country partial match)',
+        deferred: () => ({
+          dto: {
+            locationQuery: 'France',
+          },
+          assets: [assetFalcon],
+        }),
+      },
+      {
+        should: 'should search by locationQuery (state)',
+        deferred: () => ({
+          dto: {
+            locationQuery: 'New York',
+          },
+          assets: [assetDensity],
+        }),
+      },
     ];
 
     for (const { should, deferred } of searchTests) {
