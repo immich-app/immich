@@ -35,6 +35,7 @@ class ThumbnailTile extends ConsumerStatefulWidget {
 
 class _ThumbnailTileState extends ConsumerState<ThumbnailTile> {
   bool _hideIndicators = false;
+  bool _showSelectionContainer = false;
 
   @override
   void dispose() {
@@ -56,12 +57,27 @@ class _ThumbnailTileState extends ConsumerState<ThumbnailTile> {
 
     final bool storageIndicator = ref.watch(settingsProvider.select((s) => s.get(Setting.showStorageIndicator)));
 
+    if (isSelected) {
+      _showSelectionContainer = true;
+    }
+
     return Stack(
       children: [
-        Container(color: widget.lockSelection ? context.colorScheme.surfaceContainerHighest : assetContainerColor),
+        Container(
+          color: widget.lockSelection
+              ? context.colorScheme.surfaceContainerHighest
+              : _showSelectionContainer
+              ? assetContainerColor
+              : Colors.transparent,
+        ),
         AnimatedContainer(
           duration: Durations.short4,
           curve: Curves.decelerate,
+          onEnd: () {
+            if (!isSelected) {
+              _showSelectionContainer = false;
+            }
+          },
           padding: EdgeInsets.all(isSelected || widget.lockSelection ? 6 : 0),
           child: TweenAnimationBuilder<double>(
             tween: Tween<double>(begin: 0.0, end: (isSelected || widget.lockSelection) ? 15.0 : 0.0),
