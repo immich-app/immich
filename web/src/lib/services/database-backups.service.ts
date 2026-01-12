@@ -16,6 +16,7 @@ import type { MessageFormatter } from 'svelte-i18n';
 
 export const getDatabaseBackupActions = ($t: MessageFormatter, filename: string) => {
   const Download: ActionItem = {
+    type: $t('command'),
     title: $t('download'),
     icon: mdiDownload,
     onAction() {
@@ -24,6 +25,7 @@ export const getDatabaseBackupActions = ($t: MessageFormatter, filename: string)
   };
 
   const Delete: ActionItem = {
+    type: $t('command'),
     title: $t('delete'),
     icon: mdiTrashCanOutline,
     color: 'danger',
