@@ -530,6 +530,8 @@ class ApiClient {
           return QueueCommandDto.fromJson(value);
         case 'QueueDeleteDto':
           return QueueDeleteDto.fromJson(value);
+        case 'QueueJobCreateDto':
+          return QueueJobCreateDto.fromJson(value);
         case 'QueueJobResponseDto':
           return QueueJobResponseDto.fromJson(value);
         case 'QueueJobStatus':

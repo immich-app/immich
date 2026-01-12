@@ -210,6 +210,7 @@ Class | Method | HTTP request | Description
 *QueuesApi* | [**getQueue**](doc//QueuesApi.md#getqueue) | **GET** /queues/{name} | Retrieve a queue
 *QueuesApi* | [**getQueueJobs**](doc//QueuesApi.md#getqueuejobs) | **GET** /queues/{name}/jobs | Retrieve queue jobs
 *QueuesApi* | [**getQueues**](doc//QueuesApi.md#getqueues) | **GET** /queues | List all queues
+*QueuesApi* | [**queueJob**](doc//QueuesApi.md#queuejob) | **POST** /queues/job | Create a manual job
 *QueuesApi* | [**updateQueue**](doc//QueuesApi.md#updatequeue) | **PUT** /queues/{name} | Update a queue
 *SearchApi* | [**getAssetsByCity**](doc//SearchApi.md#getassetsbycity) | **GET** /search/cities | Retrieve assets by city
 *SearchApi* | [**getExploreData**](doc//SearchApi.md#getexploredata) | **GET** /search/explore | Retrieve explore data
@@ -495,6 +496,7 @@ Class | Method | HTTP request | Description
  - [QueueCommand](doc//QueueCommand.md)
  - [QueueCommandDto](doc//QueueCommandDto.md)
  - [QueueDeleteDto](doc//QueueDeleteDto.md)
+ - [QueueJobCreateDto](doc//QueueJobCreateDto.md)
  - [QueueJobResponseDto](doc//QueueJobResponseDto.md)
  - [QueueJobStatus](doc//QueueJobStatus.md)
  - [QueueName](doc//QueueName.md)

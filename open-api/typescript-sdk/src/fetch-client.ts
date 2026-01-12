@@ -1038,6 +1038,9 @@ export type QueueResponseDto = {
     name: QueueName;
     statistics: QueueStatisticsDto;
 };
+export type QueueJobCreateDto = {
+    job: object;
+};
 export type QueueUpdateDto = {
     isPaused?: boolean;
 };
@@ -3833,6 +3836,18 @@ export function getQueues(opts?: Oazapfts.RequestOpts) {
     }>("/queues", {
         ...opts
     }));
+}
+/**
+ * Create a manual job
+ */
+export function queueJob({ queueJobCreateDto }: {
+    queueJobCreateDto: QueueJobCreateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/queues/job", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: queueJobCreateDto
+    })));
 }
 /**
  * Retrieve a queue

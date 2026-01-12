@@ -8476,6 +8476,56 @@
         "x-immich-state": "Alpha"
       }
     },
+    "/queues/job": {
+      "post": {
+        "description": "Run a specific job. Most jobs are queued automatically, but this endpoint allows for manual creation of a handful of jobs, including various cleanup tasks, as well as creating a new database backup.",
+        "operationId": "queueJob",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QueueJobCreateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Create a manual job",
+        "tags": [
+          "Queues"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v2.5.0",
+            "state": "Added"
+          },
+          {
+            "version": "v2.5.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "job.create",
+        "x-immich-state": "Alpha"
+      }
+    },
     "/queues/{name}": {
       "get": {
         "description": "Retrieves a specific queue by its name.",
@@ -19133,6 +19183,17 @@
             "x-immich-state": "Alpha"
           }
         },
+        "type": "object"
+      },
+      "QueueJobCreateDto": {
+        "properties": {
+          "job": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "job"
+        ],
         "type": "object"
       },
       "QueueJobResponseDto": {

@@ -1,7 +1,75 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { ClassConstructor, Transform, Type } from 'class-transformer';
+import { Equals, IsBoolean, IsDefined, IsOptional, ValidateNested } from 'class-validator';
 import { HistoryBuilder, Property } from 'src/decorators';
 import { JobName, QueueCommand, QueueJobStatus, QueueName } from 'src/enum';
-import { ValidateBoolean, ValidateEnum } from 'src/validation';
+import { transformToOneOf, ValidateBoolean, ValidateEnum } from 'src/validation';
+
+class BaseJobData {
+  @IsOptional()
+  @IsBoolean()
+  force?: boolean;
+}
+
+class BaseJob {
+  @ValidateNested()
+  @Type(() => BaseJobData)
+  data!: BaseJobData;
+}
+
+class JobTagCleanup extends BaseJob {
+  @Equals(JobName.TagCleanup)
+  name!: JobName.TagCleanup;
+}
+
+class JobPersonCleanup extends BaseJob {
+  @Equals(JobName.PersonCleanup)
+  name!: JobName.PersonCleanup;
+}
+
+class JobUserDeleteCheck extends BaseJob {
+  @Equals(JobName.UserDeleteCheck)
+  name!: JobName.UserDeleteCheck;
+}
+
+class JobMemoryCleanup extends BaseJob {
+  @Equals(JobName.MemoryCleanup)
+  name!: JobName.MemoryCleanup;
+}
+
+class JobMemoryGenerate extends BaseJob {
+  @Equals(JobName.MemoryGenerate)
+  name!: JobName.MemoryGenerate;
+}
+
+class JobDatabaseBackup extends BaseJob {
+  @Equals(JobName.DatabaseBackup)
+  name!: JobName.DatabaseBackup;
+}
+
+const JOB_MAP: Record<string, ClassConstructor<object>> = {
+  [JobName.TagCleanup]: JobTagCleanup,
+  [JobName.PersonCleanup]: JobPersonCleanup,
+  [JobName.UserDeleteCheck]: JobUserDeleteCheck,
+  [JobName.MemoryCleanup]: JobMemoryCleanup,
+  [JobName.MemoryGenerate]: JobMemoryGenerate,
+  [JobName.DatabaseBackup]: JobDatabaseBackup,
+};
+
+export class QueueJobCreateDto {
+  @ValidateNested()
+  @Transform(transformToOneOf(JOB_MAP))
+  @IsDefined({
+    message: `job.name must be one of ${Object.keys(JOB_MAP)}`,
+  })
+  job!:
+    | JobTagCleanup
+    | JobPersonCleanup
+    | JobUserDeleteCheck
+    | JobMemoryCleanup
+    | JobMemoryGenerate
+    | JobDatabaseBackup;
+}
 
 export class QueueNameParamDto {
   @ValidateEnum({ enum: QueueName, name: 'QueueName' })

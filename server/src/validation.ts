@@ -7,7 +7,7 @@ import {
   applyDecorators,
 } from '@nestjs/common';
 import { ApiProperty, ApiPropertyOptions } from '@nestjs/swagger';
-import { Transform } from 'class-transformer';
+import { ClassConstructor, Transform, TransformFnParams, plainToInstance } from 'class-transformer';
 import {
   IsArray,
   IsBoolean,
@@ -417,3 +417,8 @@ export function IsIPRange(options: IsIPRangeOptions, validationOptions?: Validat
     validationOptions,
   );
 }
+
+export const transformToOneOf =
+  <T extends Record<string, ClassConstructor<object>>>(map: T) =>
+  ({ value }: TransformFnParams) =>
+    value && typeof value === 'object' && map[value.name] ? plainToInstance(map[value.name], value) : null;

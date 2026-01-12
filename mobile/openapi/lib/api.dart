@@ -241,6 +241,7 @@ part 'model/purchase_update.dart';
 part 'model/queue_command.dart';
 part 'model/queue_command_dto.dart';
 part 'model/queue_delete_dto.dart';
+part 'model/queue_job_create_dto.dart';
 part 'model/queue_job_response_dto.dart';
 part 'model/queue_job_status.dart';
 part 'model/queue_name.dart';
