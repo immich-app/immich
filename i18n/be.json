@@ -326,8 +326,6 @@
   "editor": "Рэдактар",
   "editor_close_without_save_prompt": "Змены не будуць захаваны",
   "editor_close_without_save_title": "Закрыць рэдактар?",
-  "editor_crop_tool_h2_aspect_ratios": "Суадносіны бакоў",
-  "editor_crop_tool_h2_rotation": "Паварот",
   "error": "Памылка",
   "error_saving_image": "Памылка: {error}",
   "exif": "Exif",
