@@ -22,7 +22,7 @@ typedef $$TrashedLocalAssetEntityTableCreateCompanionBuilder =
       i0.Value<String?> checksum,
       i0.Value<bool> isFavorite,
       i0.Value<int> orientation,
-      i0.Value<i3.TrashOrigin> source,
+      required i3.TrashOrigin source,
     });
 typedef $$TrashedLocalAssetEntityTableUpdateCompanionBuilder =
     i1.TrashedLocalAssetEntityCompanion Function({
@@ -339,7 +339,7 @@ class $$TrashedLocalAssetEntityTableTableManager
                 i0.Value<String?> checksum = const i0.Value.absent(),
                 i0.Value<bool> isFavorite = const i0.Value.absent(),
                 i0.Value<int> orientation = const i0.Value.absent(),
-                i0.Value<i3.TrashOrigin> source = const i0.Value.absent(),
+                required i3.TrashOrigin source,
               }) => i1.TrashedLocalAssetEntityCompanion.insert(
                 name: name,
                 type: type,
@@ -545,8 +545,7 @@ class $TrashedLocalAssetEntityTable extends i3.TrashedLocalAssetEntity
         aliasedName,
         false,
         type: i0.DriftSqlType.int,
-        requiredDuringInsert: false,
-        defaultValue: const i4.Constant(0),
+        requiredDuringInsert: true,
       ).withConverter<i3.TrashOrigin>(
         i1.$TrashedLocalAssetEntityTable.$convertersource,
       );
@@ -1008,11 +1007,12 @@ class TrashedLocalAssetEntityCompanion
     this.checksum = const i0.Value.absent(),
     this.isFavorite = const i0.Value.absent(),
     this.orientation = const i0.Value.absent(),
-    this.source = const i0.Value.absent(),
+    required i3.TrashOrigin source,
   }) : name = i0.Value(name),
        type = i0.Value(type),
        id = i0.Value(id),
-       albumId = i0.Value(albumId);
+       albumId = i0.Value(albumId),
+       source = i0.Value(source);
   static i0.Insertable<i1.TrashedLocalAssetEntityData> custom({
     i0.Expression<String>? name,
     i0.Expression<int>? type,

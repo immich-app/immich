@@ -7328,8 +7328,7 @@ class TrashedLocalAssetEntity extends Table
     aliasedName,
     false,
     type: DriftSqlType.int,
-    requiredDuringInsert: false,
-    defaultValue: const CustomExpression('0'),
+    requiredDuringInsert: true,
   );
   @override
   List<GeneratedColumn> get $columns => [
@@ -7680,11 +7679,12 @@ class TrashedLocalAssetEntityCompanion
     this.checksum = const Value.absent(),
     this.isFavorite = const Value.absent(),
     this.orientation = const Value.absent(),
-    this.source = const Value.absent(),
+    required int source,
   }) : name = Value(name),
        type = Value(type),
        id = Value(id),
-       albumId = Value(albumId);
+       albumId = Value(albumId),
+       source = Value(source);
   static Insertable<TrashedLocalAssetEntityData> custom({
     Expression<String>? name,
     Expression<int>? type,
