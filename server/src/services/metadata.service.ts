@@ -196,6 +196,15 @@ export class MetadataService extends BaseService {
     await this.eventRepository.emit('AssetHide', { assetId: motionAsset.id, userId: motionAsset.ownerId });
   }
 
+  private isOrientationSidewards(orientation: ExifOrientation | number): boolean {
+    return [
+      ExifOrientation.MirrorHorizontalRotate270CW,
+      ExifOrientation.Rotate90CW,
+      ExifOrientation.MirrorHorizontalRotate90CW,
+      ExifOrientation.Rotate270CW,
+    ].includes(orientation);
+  }
+
   @OnJob({ name: JobName.AssetExtractMetadataQueueAll, queue: QueueName.MetadataExtraction })
   async handleQueueMetadataExtraction(job: JobOf<JobName.AssetExtractMetadataQueueAll>): Promise<JobStatus> {
     const { force } = job;
@@ -289,6 +298,10 @@ export class MetadataService extends BaseService {
       autoStackId: this.getAutoStackId(exifTags),
     };
 
+    const isSidewards = exifTags.Orientation && this.isOrientationSidewards(exifTags.Orientation);
+    const assetWidth = isSidewards ? validate(height) : validate(width);
+    const assetHeight = isSidewards ? validate(width) : validate(height);
+
     const promises: Promise<unknown>[] = [
       this.assetRepository.upsertExif(exifData, { lockedPropertiesBehavior: 'skip' }),
       this.assetRepository.update({
@@ -297,6 +310,11 @@ export class MetadataService extends BaseService {
         localDateTime: dates.localDateTime,
         fileCreatedAt: dates.dateTimeOriginal ?? undefined,
         fileModifiedAt: stats.mtime,
+
+        // only update the dimensions if they don't already exist
+        // we don't want to overwrite width/height that are modified by edits
+        width: asset.width == null ? assetWidth : undefined,
+        height: asset.height == null ? assetHeight : undefined,
       }),
       this.applyTagList(asset, exifTags),
     ];
@@ -716,12 +734,7 @@ export class MetadataService extends BaseService {
       return regionInfo;
     }
 
-    const isSidewards = [
-      ExifOrientation.MirrorHorizontalRotate270CW,
-      ExifOrientation.Rotate90CW,
-      ExifOrientation.MirrorHorizontalRotate90CW,
-      ExifOrientation.Rotate270CW,
-    ].includes(orientation);
+    const isSidewards = this.isOrientationSidewards(orientation);
 
     // swap image dimensions in AppliedToDimensions if orientation is sidewards
     const adjustedAppliedToDimensions = isSidewards
@@ -971,9 +984,17 @@ export class MetadataService extends BaseService {
   private async getVideoTags(originalPath: string) {
     const { videoStreams, format } = await this.mediaRepository.probe(originalPath);
 
-    const tags: Pick<ImmichTags, 'Duration' | 'Orientation'> = {};
+    const tags: Pick<ImmichTags, 'Duration' | 'Orientation' | 'ImageWidth' | 'ImageHeight'> = {};
 
     if (videoStreams[0]) {
+      // Set video dimensions
+      if (videoStreams[0].width) {
+        tags.ImageWidth = videoStreams[0].width;
+      }
+      if (videoStreams[0].height) {
+        tags.ImageHeight = videoStreams[0].height;
+      }
+
       switch (videoStreams[0].rotation) {
         case -90: {
           tags.Orientation = ExifOrientation.Rotate90CW;
