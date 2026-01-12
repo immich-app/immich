@@ -142,7 +142,7 @@ export const upload = async (paths: string[], baseOptions: BaseOptions, options:
   const { permissions } = await getMyApiKey();
 
   if (!permissions.includes(Permission.AssetUpload)) {
-    console.log("Missing asset.upload permission");
+    console.log(`Missing ${Permission.AssetUpload} permission`);
     return;
   }
 
@@ -222,7 +222,7 @@ export const checkForDuplicates = async (files: string[], { concurrency, skipHas
 
       checkProgressBar?.increment(assets.length);
     },
-    { concurrency, retry: 3 },
+    { concurrency, retry: 3, verbose: true },
   );
 
   const results: { id: string; checksum: string }[] = [];
