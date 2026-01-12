@@ -42,14 +42,17 @@ class ViewerBottomBar extends ConsumerWidget {
 
     final actions = <Widget>[
       const ShareActionButton(source: ActionSource.viewer),
-      if (asset.isLocalOnly) const UploadActionButton(source: ActionSource.viewer),
-      if (asset.type == AssetType.image) const EditImageActionButton(),
-      if (asset.hasRemote) AddActionButton(originalTheme: originalTheme),
 
-      if (isOwner) ...[
-        asset.isLocalOnly
-            ? const DeleteLocalActionButton(source: ActionSource.viewer)
-            : const DeleteActionButton(source: ActionSource.viewer, showConfirmation: true),
+      if (!isInLockedView) ...[
+        if (asset.isLocalOnly) const UploadActionButton(source: ActionSource.viewer),
+        if (asset.type == AssetType.image) const EditImageActionButton(),
+        if (asset.hasRemote) AddActionButton(originalTheme: originalTheme),
+
+        if (isOwner) ...[
+          asset.isLocalOnly
+              ? const DeleteLocalActionButton(source: ActionSource.viewer)
+              : const DeleteActionButton(source: ActionSource.viewer, showConfirmation: true),
+        ],
       ],
     ];
 
@@ -76,7 +79,7 @@ class ViewerBottomBar extends ConsumerWidget {
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         if (asset.isVideo) const VideoControls(),
-                        if (!isInLockedView && !isReadonlyModeEnabled)
+                        if (!isReadonlyModeEnabled)
                           Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: actions),
                       ],
                     ),

@@ -17,8 +17,8 @@ describe('DateSelectionModal component', () => {
   const getRelativeInputToggle = () => screen.getByTestId('edit-by-offset-switch');
   const getDateInput = () => screen.getByLabelText('date_and_time') as HTMLInputElement;
   const getTimeZoneInput = () => screen.getByLabelText('timezone') as HTMLInputElement;
-  const getCancelButton = () => screen.getByText('cancel');
-  const getConfirmButton = () => screen.getByText('confirm');
+  const getCancelButton = () => screen.getByRole('button', { name: /cancel/i });
+  const getConfirmButton = () => screen.getByRole('button', { name: /confirm/i });
 
   beforeEach(() => {
     vi.stubGlobal('IntersectionObserver', getIntersectionObserverMock());
@@ -69,6 +69,34 @@ describe('DateSelectionModal component', () => {
     await fireEvent.click(getCancelButton());
 
     expect(onClose).toHaveBeenCalled();
+  });
+
+  test('does not fall back to UTC when datetime-local value has no seconds', async () => {
+    render(AssetSelectionChangeDateModal, {
+      props: { initialDate, initialTimeZone, assets: [], onClose },
+    });
+
+    await fireEvent.input(getDateInput(), { target: { value: '2024-01-01T00:00' } });
+    await fireEvent.blur(getDateInput());
+
+    expect(getTimeZoneInput().value).toBe('Europe/Berlin (+01:00)');
+
+    await fireEvent.focus(getTimeZoneInput());
+    expect(screen.queryByText('no_results')).not.toBeInTheDocument();
+  });
+
+  test('does not fall back to UTC when datetime-local value has no milliseconds', async () => {
+    render(AssetSelectionChangeDateModal, {
+      props: { initialDate, initialTimeZone, assets: [], onClose },
+    });
+
+    await fireEvent.input(getDateInput(), { target: { value: '2024-01-01T00:00:00' } });
+    await fireEvent.blur(getDateInput());
+
+    expect(getTimeZoneInput().value).toBe('Europe/Berlin (+01:00)');
+
+    await fireEvent.focus(getTimeZoneInput());
+    expect(screen.queryByText('no_results')).not.toBeInTheDocument();
   });
 
   describe('when date is in daylight saving time', () => {
