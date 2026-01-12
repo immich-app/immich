@@ -18,7 +18,7 @@
     type PersonResponseDto,
   } from '@immich/sdk';
   import { Icon, IconButton, LoadingSpinner, modalManager, toastManager } from '@immich/ui';
-  import { mdiAccountOff, mdiArrowLeftThin, mdiPencil, mdiRestart, mdiTrashCan } from '@mdi/js';
+  import { mdiAccountOff, mdiArrowLeftThin, mdiCheck, mdiPencil, mdiRestart, mdiTrashCan } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { linear } from 'svelte/easing';
@@ -126,7 +126,7 @@
           }
         }
 
-        toastManager.success($t('people_edits_count', { values: { count: numberOfChanges } }));
+        toastManager.show({ title: $t('success'), description: $t('people_edits_count', { values: { count: numberOfChanges } }), icon: mdiCheck });
       } catch (error) {
         handleError(error, $t('errors.cant_apply_changes'));
       }

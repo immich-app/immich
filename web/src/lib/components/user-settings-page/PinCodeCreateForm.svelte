@@ -3,6 +3,7 @@
   import { handleError } from '$lib/utils/handle-error';
   import { setupPinCode } from '@immich/sdk';
   import { Button, Heading, toastManager } from '@immich/ui';
+  import { mdiCheck } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
   interface Props {
@@ -26,7 +27,7 @@
     isLoading = true;
     try {
       await setupPinCode({ pinCodeSetupDto: { pinCode: newPinCode } });
-      toastManager.success($t('pin_code_setup_successfully'));
+      toastManager.show({ title: $t('success'), description: $t('pin_code_setup_successfully'), icon: mdiCheck });
       onCreated?.(newPinCode);
       resetForm();
     } catch (error) {

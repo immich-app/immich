@@ -8,7 +8,7 @@
   import { handleError } from '$lib/utils/handle-error';
   import { updatePeople, type PersonResponseDto } from '@immich/sdk';
   import { Button, IconButton, toastManager } from '@immich/ui';
-  import { mdiClose, mdiEye, mdiEyeOff, mdiEyeSettings, mdiRestart } from '@mdi/js';
+  import { mdiCheck, mdiClose, mdiEye, mdiEyeOff, mdiEyeSettings, mdiRestart } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
   interface Props {
@@ -72,7 +72,7 @@
         if (failCount > 0) {
           toastManager.warning($t('errors.unable_to_change_visibility', { values: { count: failCount } }));
         }
-        toastManager.success($t('visibility_changed', { values: { count: successCount } }));
+        toastManager.show({ title: $t('success'), description: $t('visibility_changed', { values: { count: successCount } }), icon: mdiCheck });
       }
 
       for (const person of people) {

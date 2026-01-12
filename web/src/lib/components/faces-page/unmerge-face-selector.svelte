@@ -9,7 +9,7 @@
     type PersonResponseDto,
   } from '@immich/sdk';
   import { Button, toastManager } from '@immich/ui';
-  import { mdiMerge, mdiPlus } from '@mdi/js';
+  import { mdiCheck, mdiMerge, mdiPlus } from '@mdi/js';
   import { onMount, type Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
   import { quintOut } from 'svelte/easing';
@@ -71,7 +71,7 @@
       disableButtons = true;
       const data = await createPerson({ personCreateDto: {} });
       await reassignFaces({ id: data.id, assetFaceUpdateDto: { data: selectedPeople } });
-      toastManager.success($t('reassigned_assets_to_new_person', { values: { count: assetIds.length } }));
+      toastManager.show({ title: $t('success'), description: $t('reassigned_assets_to_new_person', { values: { count: assetIds.length } }), icon: mdiCheck });
     } catch (error) {
       handleError(error, $t('errors.unable_to_reassign_assets_new_person'));
     } finally {
@@ -88,11 +88,13 @@
       disableButtons = true;
       if (selectedPerson) {
         await reassignFaces({ id: selectedPerson.id, assetFaceUpdateDto: { data: selectedPeople } });
-        toastManager.success(
-          $t('reassigned_assets_to_existing_person', {
+        toastManager.show({
+          title: $t('success'),
+          description: $t('reassigned_assets_to_existing_person', {
             values: { count: assetIds.length, name: selectedPerson.name || null },
           }),
-        );
+          icon: mdiCheck,
+        });
       }
     } catch (error) {
       handleError(

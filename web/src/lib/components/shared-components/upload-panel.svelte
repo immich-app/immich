@@ -3,7 +3,7 @@
   import { uploadAssetsStore } from '$lib/stores/upload';
   import { uploadExecutionQueue } from '$lib/utils/file-uploader';
   import { Icon, IconButton, toastManager } from '@immich/ui';
-  import { mdiCancel, mdiCloudUploadOutline, mdiCog, mdiWindowMinimize } from '@mdi/js';
+  import { mdiCancel, mdiCheck, mdiCloudUploadOutline, mdiCog, mdiWindowMinimize } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { quartInOut } from 'svelte/easing';
   import { fade, scale } from 'svelte/transition';
@@ -30,7 +30,7 @@
       if ($stats.errors > 0) {
         toastManager.danger($t('upload_errors', { values: { count: $stats.errors } }));
       } else if ($stats.success > 0) {
-        toastManager.success($t('upload_success'));
+        toastManager.show({ title: $t('success'), description: $t('upload_success'), icon: mdiCheck });
       }
       if ($stats.duplicates > 0) {
         toastManager.warning($t('upload_skipped_duplicates', { values: { count: $stats.duplicates } }));

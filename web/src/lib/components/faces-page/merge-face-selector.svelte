@@ -5,7 +5,7 @@
   import { handleError } from '$lib/utils/handle-error';
   import { getAllPeople, getPerson, mergePerson, type PersonResponseDto } from '@immich/sdk';
   import { Button, Icon, IconButton, modalManager, toastManager } from '@immich/ui';
-  import { mdiCallMerge, mdiMerge, mdiSwapHorizontal } from '@mdi/js';
+  import { mdiCallMerge, mdiCheck, mdiMerge, mdiSwapHorizontal } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { flip } from 'svelte/animate';
@@ -74,7 +74,7 @@
       });
       const mergedPerson = await getPerson({ id: person.id });
       const count = results.filter(({ success }) => success).length;
-      toastManager.success($t('merged_people_count', { values: { count } }));
+      toastManager.show({ title: $t('success'), description: $t('merged_people_count', { values: { count } }), icon: mdiCheck });
       onMerge(mergedPerson);
     } catch (error) {
       handleError(error, $t('cannot_merge_people'));

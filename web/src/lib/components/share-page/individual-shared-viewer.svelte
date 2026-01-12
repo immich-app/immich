@@ -17,7 +17,7 @@
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { addSharedLinkAssets, getAssetInfo, type SharedLinkResponseDto } from '@immich/sdk';
   import { IconButton, Logo, toastManager } from '@immich/ui';
-  import { mdiArrowLeft, mdiDownload, mdiFileImagePlusOutline, mdiSelectAll } from '@mdi/js';
+  import { mdiArrowLeft, mdiCheck, mdiDownload, mdiFileImagePlusOutline, mdiSelectAll } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import ControlAppBar from '../shared-components/control-app-bar.svelte';
   import GalleryViewer from '../shared-components/gallery-viewer/gallery-viewer.svelte';
@@ -61,7 +61,7 @@
 
       const added = data.filter((item) => item.success).length;
 
-      toastManager.success($t('assets_added_count', { values: { count: added } }));
+      toastManager.show({ title: $t('success'), description: $t('assets_added_count', { values: { count: added } }), icon: mdiCheck });
     } catch (error) {
       handleError(error, $t('errors.unable_to_add_assets_to_shared_link'));
     }

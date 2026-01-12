@@ -22,6 +22,7 @@ import {
 } from '@immich/sdk';
 import { modalManager, toastManager, type ActionItem } from '@immich/ui';
 import {
+  mdiCheck,
   mdiDeleteRestore,
   mdiLockReset,
   mdiLockSmart,
@@ -101,7 +102,7 @@ export const handleCreateUserAdmin = async (dto: UserAdminCreateDto) => {
   try {
     const response = await createUserAdmin({ userAdminCreateDto: dto });
     eventManager.emit('UserAdminCreate', response);
-    toastManager.success();
+    toastManager.show({ title: $t('success'), description: $t('user_created'), icon: mdiCheck });
     return response;
   } catch (error) {
     handleError(error, $t('errors.unable_to_create_user'));
@@ -114,7 +115,7 @@ export const handleUpdateUserAdmin = async (user: UserAdminResponseDto, dto: Use
   try {
     const response = await updateUserAdmin({ id: user.id, userAdminUpdateDto: dto });
     eventManager.emit('UserAdminUpdate', response);
-    toastManager.success();
+    toastManager.show({ title: $t('success'), description: $t('user_updated'), icon: mdiCheck });
     return true;
   } catch (error) {
     handleError(error, $t('errors.unable_to_update_user'));
@@ -128,7 +129,7 @@ export const handleDeleteUserAdmin = async (user: UserAdminResponseDto, dto: Use
   try {
     const result = await deleteUserAdmin({ id: user.id, userAdminDeleteDto: dto });
     eventManager.emit('UserAdminDelete', result);
-    toastManager.success();
+    toastManager.show({ title: $t('success'), description: $t('user_deleted'), icon: mdiCheck });
     return true;
   } catch (error) {
     handleError(error, $t('errors.unable_to_delete_user'));
@@ -141,7 +142,7 @@ export const handleRestoreUserAdmin = async (user: UserAdminResponseDto) => {
   try {
     const response = await restoreUserAdmin({ id: user.id });
     eventManager.emit('UserAdminRestore', response);
-    toastManager.success();
+    toastManager.show({ title: $t('success'), description: $t('user_restored'), icon: mdiCheck });
     return true;
   } catch (error) {
     handleError(error, $t('errors.unable_to_restore_user'));
@@ -182,7 +183,7 @@ const handleResetPasswordUserAdmin = async (user: UserAdminResponseDto) => {
     const dto = { password: generatePassword(), shouldChangePassword: true };
     const response = await updateUserAdmin({ id: user.id, userAdminUpdateDto: dto });
     eventManager.emit('UserAdminUpdate', response);
-    toastManager.success();
+    toastManager.show({ title: $t('success'), description: $t('password_reset'), icon: mdiCheck });
     await modalManager.show(PasswordResetSuccessModal, { newPassword: dto.password });
   } catch (error) {
     handleError(error, $t('errors.unable_to_reset_password'));
@@ -200,7 +201,7 @@ const handleResetPinCodeUserAdmin = async (user: UserAdminResponseDto) => {
   try {
     const response = await updateUserAdmin({ id: user.id, userAdminUpdateDto: { pinCode: null } });
     eventManager.emit('UserAdminUpdate', response);
-    toastManager.success($t('pin_code_reset_successfully'));
+    toastManager.show({ title: $t('success'), description: $t('pin_code_reset_successfully'), icon: mdiCheck });
   } catch (error) {
     handleError(error, $t('errors.unable_to_reset_pin_code'));
   }

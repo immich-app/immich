@@ -5,6 +5,7 @@
   import { handleError } from '$lib/utils/handle-error';
   import { AssetJobName, runAssetJobs } from '@immich/sdk';
   import { toastManager } from '@immich/ui';
+  import { mdiCheck } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
   interface Props {
@@ -22,7 +23,7 @@
     try {
       const ids = [...getOwnedAssets()].map(({ id }) => id);
       await runAssetJobs({ assetJobsDto: { assetIds: ids, name } });
-      toastManager.success($getAssetJobMessage(name));
+      toastManager.show({ title: $t('success'), description: $getAssetJobMessage(name), icon: mdiCheck });
       clearSelect();
     } catch (error) {
       handleError(error, $t('errors.unable_to_submit_job'));

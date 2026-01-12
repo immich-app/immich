@@ -46,9 +46,11 @@
     mdiAccountBoxOutline,
     mdiAccountMultipleCheckOutline,
     mdiArrowLeft,
+    mdiCheck,
     mdiDotsVertical,
     mdiEyeOffOutline,
     mdiEyeOutline,
+    mdiHeart,
     mdiHeartMinusOutline,
     mdiHeartOutline,
     mdiPlus,
@@ -150,7 +152,7 @@
         personUpdateDto: { isHidden: !person.isHidden },
       });
 
-      toastManager.success($t('changed_visibility_successfully'));
+      toastManager.show({ title: $t('success'), description: $t('changed_visibility_successfully'), icon: mdiCheck });
 
       await goto(previousRoute);
     } catch (error) {
@@ -168,7 +170,7 @@
       // Invalidate to reload the page data and have the favorite status updated
       await invalidateAll();
 
-      toastManager.success(updatedPerson.isFavorite ? $t('added_to_favorites') : $t('removed_from_favorites'));
+      toastManager.show({ title: $t('success'), description: updatedPerson.isFavorite ? $t('added_to_favorites') : $t('removed_from_favorites'), icon: updatedPerson.isFavorite ? mdiHeart : mdiHeartOutline });
     } catch (error) {
       handleError(error, $t('errors.unable_to_add_remove_favorites', { values: { favorite: person.isFavorite } }));
     }
@@ -187,7 +189,7 @@
     }
     try {
       person = await updatePerson({ id: person.id, personUpdateDto: { featureFaceAssetId: asset.id } });
-      toastManager.success($t('feature_photo_updated'));
+      toastManager.show({ title: $t('success'), description: $t('feature_photo_updated'), icon: mdiCheck });
     } catch (error) {
       handleError(error, $t('errors.unable_to_set_feature_photo'));
     }
@@ -248,7 +250,7 @@
 
     try {
       person = await updatePerson({ id: person.id, personUpdateDto: { name: personName } });
-      toastManager.success($t('change_name_successfully'));
+      toastManager.show({ title: $t('success'), description: $t('change_name_successfully'), icon: mdiCheck });
     } catch (error) {
       handleError(error, $t('errors.unable_to_save_name'));
     }

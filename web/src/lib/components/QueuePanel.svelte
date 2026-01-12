@@ -12,6 +12,7 @@
     type QueueResponseDto,
     runQueueCommandLegacy,
   } from '@immich/sdk';
+  import { mdiCheck } from '@mdi/js';
   import { modalManager, toastManager } from '@immich/ui';
   import type { Component } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -112,7 +113,7 @@
 
       switch (dto.command) {
         case QueueCommand.Empty: {
-          toastManager.success($t('admin.cleared_jobs', { values: { job: item.title } }));
+          toastManager.show({ title: $t('success'), description: $t('admin.cleared_jobs', { values: { job: item.title } }), icon: mdiCheck });
           break;
         }
       }

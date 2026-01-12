@@ -22,7 +22,7 @@ import {
   type WorkflowUpdateDto,
 } from '@immich/sdk';
 import { modalManager, toastManager, type ActionItem } from '@immich/ui';
-import { mdiCodeJson, mdiDelete, mdiPause, mdiPencil, mdiPlay } from '@mdi/js';
+import { mdiCheck, mdiCodeJson, mdiDelete, mdiPause, mdiPencil, mdiPlay } from '@mdi/js';
 import type { MessageFormatter } from 'svelte-i18n';
 
 export type PickerSubType = 'album-picker' | 'people-picker';
@@ -389,7 +389,7 @@ export const handleToggleWorkflowEnabled = async (
     });
 
     eventManager.emit('WorkflowUpdate', updated);
-    toastManager.success($t('workflow_updated'));
+    toastManager.show({ title: $t('success'), description: $t('workflow_updated'), icon: mdiCheck });
     return updated;
   } catch (error) {
     handleError(error, $t('errors.unable_to_update_workflow'));
@@ -411,7 +411,7 @@ export const handleDeleteWorkflow = async (workflow: WorkflowResponseDto): Promi
   try {
     await deleteWorkflow({ id: workflow.id });
     eventManager.emit('WorkflowDelete', workflow);
-    toastManager.success($t('workflow_deleted'));
+    toastManager.show({ title: $t('success'), description: $t('workflow_deleted'), icon: mdiCheck });
     return true;
   } catch (error) {
     handleError(error, $t('errors.unable_to_delete_workflow'));

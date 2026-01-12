@@ -37,6 +37,7 @@
     type StackResponseDto,
   } from '@immich/sdk';
   import { toastManager } from '@immich/ui';
+  import { mdiCheck } from '@mdi/js';
   import { onDestroy, onMount, untrack } from 'svelte';
   import { t } from 'svelte-i18n';
   import { fly } from 'svelte/transition';
@@ -265,7 +266,7 @@
   const handleRunJob = async (name: AssetJobName) => {
     try {
       await runAssetJobs({ assetJobsDto: { assetIds: [asset.id], name } });
-      toastManager.success($getAssetJobMessage(name));
+      toastManager.show({ title: $t('success'), description: $getAssetJobMessage(name), icon: mdiCheck });
     } catch (error) {
       handleError(error, $t('errors.unable_to_submit_job'));
     }

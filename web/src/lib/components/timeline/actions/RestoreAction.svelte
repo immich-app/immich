@@ -4,7 +4,7 @@
   import { handleError } from '$lib/utils/handle-error';
   import { restoreAssets } from '@immich/sdk';
   import { Button, toastManager } from '@immich/ui';
-  import { mdiHistory } from '@mdi/js';
+  import { mdiCheck, mdiHistory } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
   interface Props {
@@ -24,7 +24,7 @@
       const ids = [...getAssets()].map((a) => a.id);
       await restoreAssets({ bulkIdsDto: { ids } });
       onRestore?.(ids);
-      toastManager.success($t('assets_restored_count', { values: { count: ids.length } }));
+      toastManager.show({ title: $t('success'), description: $t('assets_restored_count', { values: { count: ids.length } }), icon: mdiCheck });
       clearSelect();
     } catch (error) {
       handleError(error, $t('errors.unable_to_restore_assets'));

@@ -5,7 +5,7 @@
   import { handleError } from '$lib/utils/handle-error';
   import { updateAssets } from '@immich/sdk';
   import { IconButton, toastManager } from '@immich/ui';
-  import { mdiHeartMinusOutline, mdiHeartOutline, mdiTimerSand } from '@mdi/js';
+  import { mdiHeart, mdiHeartMinusOutline, mdiHeartOutline, mdiTimerSand } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
   interface Props {
@@ -42,11 +42,13 @@
 
       onFavorite?.(ids, isFavorite);
 
-      toastManager.success(
-        isFavorite
+      toastManager.show({
+        title: $t('success'),
+        description: isFavorite
           ? $t('added_to_favorites_count', { values: { count: ids.length } })
           : $t('removed_from_favorites_count', { values: { count: ids.length } }),
-      );
+        icon: isFavorite ? mdiHeart : mdiHeartOutline,
+      });
 
       clearSelect();
     } catch (error) {

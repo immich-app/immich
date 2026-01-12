@@ -3,7 +3,7 @@ import { transformManager } from '$lib/managers/edit/transform-manager.svelte';
 import { waitForWebsocketEvent } from '$lib/stores/websocket';
 import { editAsset, removeAssetEdits, type AssetEditsDto, type AssetResponseDto } from '@immich/sdk';
 import { ConfirmModal, modalManager, toastManager } from '@immich/ui';
-import { mdiCropRotate } from '@mdi/js';
+import { mdiCheck, mdiCropRotate } from '@mdi/js';
 import type { Component } from 'svelte';
 
 export type EditAction = AssetEditsDto['edits'][number];
@@ -129,7 +129,7 @@ export class EditManager {
           }));
 
       await editCompleted;
-      toastManager.success('Edits applied successfully');
+      toastManager.show({ title: 'Success', description: 'Edits applied successfully', icon: mdiCheck });
       this.hasAppliedEdits = true;
 
       return true;

@@ -73,6 +73,7 @@
     mdiAccountEye,
     mdiAccountEyeOutline,
     mdiArrowLeft,
+    mdiCheck,
     mdiCogOutline,
     mdiDeleteOutline,
     mdiDotsVertical,
@@ -232,7 +233,7 @@
           albumThumbnailAssetId: assetId,
         },
       });
-      toastManager.success($t('album_cover_updated'));
+      toastManager.show({ title: $t('success'), description: $t('album_cover_updated'), icon: mdiCheck });
     } catch (error) {
       handleError(error, $t('errors.unable_to_update_album_cover'));
     }

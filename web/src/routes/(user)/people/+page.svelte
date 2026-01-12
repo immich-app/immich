@@ -19,7 +19,7 @@
   import { clearQueryParam } from '$lib/utils/navigation';
   import { getAllPeople, getPerson, searchPerson, updatePerson, type PersonResponseDto } from '@immich/sdk';
   import { Button, Icon, modalManager, toastManager } from '@immich/ui';
-  import { mdiAccountOff, mdiEyeOutline } from '@mdi/js';
+  import { mdiAccountOff, mdiCheck, mdiEyeOutline, mdiHeart, mdiHeartOutline } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { quintOut } from 'svelte/easing';
@@ -157,7 +157,7 @@
             break;
           }
         }
-        toastManager.success($t('change_name_successfully'));
+        toastManager.show({ title: $t('success'), description: $t('change_name_successfully'), icon: mdiCheck });
       } catch (error) {
         handleError(error, $t('errors.unable_to_save_name'));
       }
@@ -178,7 +178,7 @@
         return person;
       });
 
-      toastManager.success($t('changed_visibility_successfully'));
+      toastManager.show({ title: $t('success'), description: $t('changed_visibility_successfully'), icon: mdiCheck });
     } catch (error) {
       handleError(error, $t('errors.unable_to_hide_person'));
     }
@@ -198,7 +198,7 @@
         return person;
       });
 
-      toastManager.success(updatedPerson.isFavorite ? $t('added_to_favorites') : $t('removed_from_favorites'));
+      toastManager.show({ title: $t('success'), description: updatedPerson.isFavorite ? $t('added_to_favorites') : $t('removed_from_favorites'), icon: updatedPerson.isFavorite ? mdiHeart : mdiHeartOutline });
     } catch (error) {
       handleError(error, $t('errors.unable_to_add_remove_favorites', { values: { favorite: detail.isFavorite } }));
     }

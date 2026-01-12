@@ -2,7 +2,7 @@ import { handleError } from '$lib/utils/handle-error';
 import { getFormatter } from '$lib/utils/i18n';
 import { emptyTrash, restoreTrash } from '@immich/sdk';
 import { modalManager, toastManager, type ActionItem } from '@immich/ui';
-import { mdiDeleteForeverOutline, mdiHistory } from '@mdi/js';
+import { mdiCheck, mdiDeleteForeverOutline, mdiHistory } from '@mdi/js';
 import type { MessageFormatter } from 'svelte-i18n';
 
 export const getTrashActions = ($t: MessageFormatter) => {
@@ -31,7 +31,7 @@ export const handleEmptyTrash = async () => {
 
   try {
     const { count } = await emptyTrash();
-    toastManager.success($t('assets_permanently_deleted_count', { values: { count } }));
+    toastManager.show({ title: $t('success'), description: $t('assets_permanently_deleted_count', { values: { count } }), icon: mdiCheck });
   } catch (error) {
     handleError(error, $t('errors.unable_to_empty_trash'));
   }
@@ -47,7 +47,7 @@ export const handleRestoreTrash = async () => {
 
   try {
     const { count } = await restoreTrash();
-    toastManager.success($t('assets_restored_count', { values: { count } }));
+    toastManager.show({ title: $t('success'), description: $t('assets_restored_count', { values: { count } }), icon: mdiCheck });
   } catch (error) {
     handleError(error, $t('errors.unable_to_restore_trash'));
   }

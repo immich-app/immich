@@ -17,6 +17,7 @@
   import { deleteAssets, deleteDuplicates, updateAssets } from '@immich/sdk';
   import { Button, HStack, IconButton, modalManager, Text, toastManager } from '@immich/ui';
   import {
+    mdiCheck,
     mdiCheckOutline,
     mdiChevronLeft,
     mdiChevronRight,
@@ -95,7 +96,7 @@
     const message = featureFlagsManager.value.trash
       ? $t('assets_moved_to_trash_count', { values: { count: trashedCount } })
       : $t('permanently_deleted_assets_count', { values: { count: trashedCount } });
-    toastManager.success(message);
+    toastManager.show({ title: $t('success'), description: message, icon: mdiCheck });
   };
 
   const handleResolve = async (duplicateId: string, duplicateAssetIds: string[], trashIds: string[]) => {
@@ -167,7 +168,7 @@
 
         duplicates = [];
 
-        toastManager.success($t('resolved_all_duplicates'));
+        toastManager.show({ title: $t('success'), description: $t('resolved_all_duplicates'), icon: mdiCheck });
         page.url.searchParams.delete('index');
         await goto(`${AppRoute.DUPLICATES}`);
       },

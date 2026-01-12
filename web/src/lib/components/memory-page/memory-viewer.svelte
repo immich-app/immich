@@ -36,6 +36,7 @@
   import { IconButton, toastManager } from '@immich/ui';
   import {
     mdiCardsOutline,
+    mdiCheck,
     mdiChevronDown,
     mdiChevronLeft,
     mdiChevronRight,
@@ -201,7 +202,7 @@
     }
 
     await memoryStore.deleteMemory(current.memory.id);
-    toastManager.success($t('removed_memory'));
+    toastManager.show({ title: $t('success'), description: $t('removed_memory'), icon: mdiCheck });
     init(page);
   };
 
@@ -212,7 +213,7 @@
 
     const newSavedState = !current.memory.isSaved;
     await memoryStore.updateMemorySaved(current.memory.id, newSavedState);
-    toastManager.success(newSavedState ? $t('added_to_favorites') : $t('removed_from_favorites'));
+    toastManager.show({ title: $t('success'), description: newSavedState ? $t('added_to_favorites') : $t('removed_from_favorites'), icon: newSavedState ? mdiHeart : mdiHeartOutline });
     init(page);
   };
 

@@ -3,7 +3,7 @@
   import { handleError } from '$lib/utils/handle-error';
   import { updateAlbumInfo, type AlbumResponseDto, type AssetResponseDto } from '@immich/sdk';
   import { toastManager } from '@immich/ui';
-  import { mdiImageOutline } from '@mdi/js';
+  import { mdiCheck, mdiImageOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
   interface Props {
@@ -21,7 +21,7 @@
           albumThumbnailAssetId: asset.id,
         },
       });
-      toastManager.success($t('album_cover_updated'));
+      toastManager.show({ title: $t('success'), description: $t('album_cover_updated'), icon: mdiCheck });
     } catch (error) {
       handleError(error, $t('errors.unable_to_update_album_cover'));
     }

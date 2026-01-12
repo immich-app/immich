@@ -4,6 +4,7 @@
   import { handleError } from '$lib/utils/handle-error';
   import { changePinCode } from '@immich/sdk';
   import { Button, Heading, modalManager, Text, toastManager } from '@immich/ui';
+  import { mdiCheck } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
 
@@ -23,7 +24,7 @@
     try {
       await changePinCode({ pinCodeChangeDto: { pinCode: currentPinCode, newPinCode } });
       resetForm();
-      toastManager.success($t('pin_code_changed_successfully'));
+      toastManager.show({ title: $t('success'), description: $t('pin_code_changed_successfully'), icon: mdiCheck });
     } catch (error) {
       handleError(error, $t('unable_to_change_pin_code'));
     } finally {

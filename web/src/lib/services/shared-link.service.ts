@@ -18,7 +18,7 @@ import {
   type SharedLinkResponseDto,
 } from '@immich/sdk';
 import { modalManager, toastManager, type ActionItem } from '@immich/ui';
-import { mdiContentCopy, mdiPencilOutline, mdiQrcode, mdiTrashCanOutline } from '@mdi/js';
+import { mdiCheck, mdiContentCopy, mdiPencilOutline, mdiQrcode, mdiTrashCanOutline } from '@mdi/js';
 import type { MessageFormatter } from 'svelte-i18n';
 
 export const getSharedLinkActions = ($t: MessageFormatter, sharedLink: SharedLinkResponseDto) => {
@@ -84,7 +84,7 @@ export const handleUpdateSharedLink = async (sharedLink: SharedLinkResponseDto, 
     const response = await updateSharedLink({ id: sharedLink.id, sharedLinkEditDto: dto });
 
     eventManager.emit('SharedLinkUpdate', { album: sharedLink.album, ...response });
-    toastManager.success($t('saved'));
+    toastManager.show({ title: $t('success'), description: $t('saved'), icon: mdiCheck });
 
     return true;
   } catch (error) {
@@ -107,7 +107,7 @@ const handleDeleteSharedLink = async (sharedLink: SharedLinkResponseDto) => {
   try {
     await removeSharedLink({ id: sharedLink.id });
     eventManager.emit('SharedLinkDelete', sharedLink);
-    toastManager.success($t('deleted_shared_link'));
+    toastManager.show({ title: $t('success'), description: $t('deleted_shared_link'), icon: mdiCheck });
   } catch (error) {
     handleError(error, $t('errors.unable_to_delete_shared_link'));
   }
@@ -140,7 +140,7 @@ export const handleRemoveSharedLinkAssets = async (sharedLink: SharedLinkRespons
     }
 
     const count = results.filter((item) => item.success).length;
-    toastManager.success($t('assets_removed_count', { values: { count } }));
+    toastManager.show({ title: $t('success'), description: $t('assets_removed_count', { values: { count } }), icon: mdiCheck });
     return true;
   } catch (error) {
     handleError(error, $t('errors.unable_to_remove_assets_from_shared_link'));

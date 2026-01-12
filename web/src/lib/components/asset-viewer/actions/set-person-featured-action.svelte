@@ -4,7 +4,7 @@
   import { handleError } from '$lib/utils/handle-error';
   import { updatePerson, type AssetResponseDto, type PersonResponseDto } from '@immich/sdk';
   import { toastManager } from '@immich/ui';
-  import { mdiFaceManProfile } from '@mdi/js';
+  import { mdiCheck, mdiFaceManProfile } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { OnAction } from './action';
 
@@ -31,7 +31,7 @@
         person,
       });
 
-      toastManager.success($t('feature_photo_updated'));
+      toastManager.show({ title: $t('success'), description: $t('feature_photo_updated'), icon: mdiCheck });
     } catch (error) {
       handleError(error, $t('errors.unable_to_set_feature_photo'));
     }

@@ -2,6 +2,7 @@
   import { handleError } from '$lib/utils/handle-error';
   import { deleteAllSessions, deleteSession, getSessions, type SessionResponseDto } from '@immich/sdk';
   import { Button, modalManager, toastManager } from '@immich/ui';
+  import { mdiCheck } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import DeviceCard from './device-card.svelte';
 
@@ -24,7 +25,7 @@
 
     try {
       await deleteSession({ id: device.id });
-      toastManager.success($t('logged_out_device'));
+      toastManager.show({ title: $t('success'), description: $t('logged_out_device'), icon: mdiCheck });
     } catch (error) {
       handleError(error, $t('errors.unable_to_log_out_device'));
     } finally {
@@ -40,7 +41,7 @@
 
     try {
       await deleteAllSessions();
-      toastManager.success($t('logged_out_all_devices'));
+      toastManager.show({ title: $t('success'), description: $t('logged_out_all_devices'), icon: mdiCheck });
     } catch (error) {
       handleError(error, $t('errors.unable_to_log_out_all_devices'));
     } finally {

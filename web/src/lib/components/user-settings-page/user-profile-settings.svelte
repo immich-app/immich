@@ -3,6 +3,7 @@
   import { handleError } from '$lib/utils/handle-error';
   import { updateMyUser } from '@immich/sdk';
   import { Button, Field, Input, toastManager } from '@immich/ui';
+  import { mdiCheck } from '@mdi/js';
   import { cloneDeep } from 'lodash-es';
   import { t } from 'svelte-i18n';
   import { createBubbler, preventDefault } from 'svelte/legacy';
@@ -23,7 +24,7 @@
       Object.assign(editedUser, data);
       $user = data;
 
-      toastManager.success($t('saved_profile'));
+      toastManager.show({ title: $t('success'), description: $t('saved_profile'), icon: mdiCheck });
     } catch (error) {
       handleError(error, $t('errors.unable_to_save_profile'));
     }

@@ -7,6 +7,7 @@
   import { handleError } from '$lib/utils/handle-error';
   import { updateMyPreferences } from '@immich/sdk';
   import { Button, toastManager } from '@immich/ui';
+  import { mdiCheck } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
 
@@ -25,7 +26,7 @@
       });
       $preferences = newPreferences;
 
-      toastManager.success($t('saved_settings'));
+      toastManager.show({ title: $t('success'), description: $t('saved_settings'), icon: mdiCheck });
     } catch (error) {
       handleError(error, $t('errors.unable_to_update_settings'));
     }

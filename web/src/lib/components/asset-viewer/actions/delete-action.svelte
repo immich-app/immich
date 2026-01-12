@@ -9,7 +9,7 @@
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { deleteAssets, type AssetResponseDto } from '@immich/sdk';
   import { IconButton, modalManager, toastManager } from '@immich/ui';
-  import { mdiDeleteForeverOutline, mdiDeleteOutline } from '@mdi/js';
+  import { mdiCheck, mdiDeleteForeverOutline, mdiDeleteOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { OnAction, PreAction } from './action';
 
@@ -40,7 +40,7 @@
         preAction({ type: AssetAction.DELETE, asset: timelineAsset });
         await deleteAssets({ assetBulkDeleteDto: { ids: [asset.id], force: true } });
         onAction({ type: AssetAction.DELETE, asset: timelineAsset });
-        toastManager.success($t('permanently_deleted_asset'));
+        toastManager.show({ title: $t('success'), description: $t('permanently_deleted_asset'), icon: mdiCheck });
       } catch (error) {
         handleError(error, $t('errors.unable_to_delete_asset'));
       }

@@ -17,6 +17,7 @@ import {
 } from '@immich/sdk';
 import { modalManager, toastManager, type ActionItem, type IconLike } from '@immich/ui';
 import {
+  mdiCheck,
   mdiClose,
   mdiCog,
   mdiContentDuplicate,
@@ -128,7 +129,7 @@ export const handleEmptyQueue = async (queue: QueueResponseDto) => {
     await emptyQueue({ name: queue.name, queueDeleteDto: { failed: false } });
     const response = await getQueue({ name: queue.name });
     eventManager.emit('QueueUpdate', response);
-    toastManager.success($t('admin.cleared_jobs', { values: { job: item.title } }));
+    toastManager.show({ title: $t('success'), description: $t('admin.cleared_jobs', { values: { job: item.title } }), icon: mdiCheck });
   } catch (error) {
     handleError(error, $t('errors.something_went_wrong'));
   }
@@ -154,7 +155,7 @@ const handleRemoveFailedJobs = async (queue: QueueResponseDto) => {
     await emptyQueue({ name: queue.name, queueDeleteDto: { failed: true } });
     const response = await getQueue({ name: queue.name });
     eventManager.emit('QueueUpdate', response);
-    toastManager.success();
+    toastManager.show({ title: $t('success'), description: $t('admin.failed_jobs_cleared'), icon: mdiCheck });
   } catch (error) {
     handleError(error, $t('errors.something_went_wrong'));
   }

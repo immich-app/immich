@@ -21,6 +21,7 @@ import {
 import { modalManager, toastManager, type ActionItem } from '@immich/ui';
 import {
   mdiAlertOutline,
+  mdiCheck,
   mdiDownload,
   mdiHeart,
   mdiHeartOutline,
@@ -153,7 +154,7 @@ export const handleDownloadAsset = async (asset: AssetResponseDto) => {
     }
 
     try {
-      toastManager.success($t('downloading_asset_filename', { values: { filename: asset.originalFileName } }));
+      toastManager.show({ title: $t('success'), description: $t('downloading_asset_filename', { values: { filename: asset.originalFileName } }), icon: mdiDownload });
       downloadUrl(getBaseUrl() + `/assets/${id}/original` + (queryParams ? `?${queryParams}` : ''), filename);
     } catch (error) {
       handleError(error, $t('errors.error_downloading', { values: { filename } }));
@@ -166,7 +167,7 @@ const handleFavorite = async (asset: AssetResponseDto) => {
 
   try {
     const response = await updateAsset({ id: asset.id, updateAssetDto: { isFavorite: true } });
-    toastManager.success($t('added_to_favorites'));
+    toastManager.show({ title: $t('success'), description: $t('added_to_favorites'), icon: mdiHeart });
     eventManager.emit('AssetUpdate', response);
   } catch (error) {
     handleError(error, $t('errors.unable_to_add_remove_favorites', { values: { favorite: asset.isFavorite } }));
@@ -178,7 +179,7 @@ const handleUnfavorite = async (asset: AssetResponseDto) => {
 
   try {
     const response = await updateAsset({ id: asset.id, updateAssetDto: { isFavorite: false } });
-    toastManager.success($t('removed_from_favorites'));
+    toastManager.show({ title: $t('success'), description: $t('removed_from_favorites'), icon: mdiHeartOutline });
     eventManager.emit('AssetUpdate', response);
   } catch (error) {
     handleError(error, $t('errors.unable_to_add_remove_favorites', { values: { favorite: asset.isFavorite } }));

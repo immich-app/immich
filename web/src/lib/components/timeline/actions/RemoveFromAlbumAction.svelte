@@ -3,7 +3,7 @@
   import { handleError } from '$lib/utils/handle-error';
   import { getAlbumInfo, removeAssetFromAlbum, type AlbumResponseDto } from '@immich/sdk';
   import { IconButton, modalManager, toastManager } from '@immich/ui';
-  import { mdiDeleteOutline, mdiImageRemoveOutline } from '@mdi/js';
+  import { mdiCheck, mdiDeleteOutline, mdiImageRemoveOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import MenuOption from '../../shared-components/context-menu/menu-option.svelte';
 
@@ -38,7 +38,7 @@
       onRemove?.(ids);
 
       const count = results.filter(({ success }) => success).length;
-      toastManager.success($t('assets_removed_count', { values: { count } }));
+      toastManager.show({ title: $t('success'), description: $t('assets_removed_count', { values: { count } }), icon: mdiCheck });
 
       clearSelect();
     } catch (error) {

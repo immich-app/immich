@@ -44,6 +44,7 @@
   } from '@immich/ui';
   import {
     mdiArrowLeft,
+    mdiCheck,
     mdiCodeJson,
     mdiContentSave,
     mdiFilterOutline,
@@ -131,7 +132,10 @@
       previousWorkflow = updated;
       editWorkflow = updated;
 
-      toastManager.success($t('workflow_update_success'), {
+      toastManager.show({
+        title: $t('success'),
+        description: $t('workflow_update_success'),
+        icon: mdiCheck,
         closable: true,
       });
     } catch (error) {

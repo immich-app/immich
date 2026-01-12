@@ -22,7 +22,10 @@
     }
     try {
       await updateAsset({ id: asset.id, updateAssetDto: { description } });
-      toastManager.success($t('asset_description_updated'));
+      toastManager.show({
+        title: $t('success'),
+        description: $t('asset_description_updated'),
+      });
     } catch (error) {
       handleError(error, $t('cannot_update_the_description'));
     }

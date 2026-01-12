@@ -6,7 +6,7 @@ import { handleError } from '$lib/utils/handle-error';
 import { getFormatter } from '$lib/utils/i18n';
 import { getConfig, updateConfig, type ServerFeaturesDto, type SystemConfigDto } from '@immich/sdk';
 import { toastManager, type ActionItem } from '@immich/ui';
-import { mdiContentCopy, mdiDownload, mdiUpload } from '@mdi/js';
+import { mdiCheck, mdiContentCopy, mdiDownload, mdiUpload } from '@mdi/js';
 import { isEqual } from 'lodash-es';
 import type { MessageFormatter } from 'svelte-i18n';
 
@@ -62,7 +62,7 @@ export const handleSystemConfigSave = async (update: Partial<SystemConfigDto>) =
     const newConfig = await updateConfig({ systemConfigDto });
 
     eventManager.emit('SystemConfigUpdate', newConfig);
-    toastManager.success($t('settings_saved'));
+    toastManager.show({ title: $t('success'), description: $t('settings_saved'), icon: mdiCheck });
   } catch (error) {
     handleError(error, $t('errors.unable_to_save_settings'));
   }

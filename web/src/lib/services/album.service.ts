@@ -19,7 +19,7 @@ import {
   type UpdateAlbumDto,
 } from '@immich/sdk';
 import { modalManager, toastManager, type ActionItem } from '@immich/ui';
-import { mdiPlusBoxOutline, mdiShareVariantOutline, mdiUpload } from '@mdi/js';
+import { mdiCheck, mdiPlusBoxOutline, mdiShareVariantOutline, mdiUpload } from '@mdi/js';
 import { type MessageFormatter } from 'svelte-i18n';
 import { get } from 'svelte/store';
 
@@ -65,7 +65,7 @@ const addAssets = async (album: AlbumResponseDto, assets: TimelineAsset[]) => {
     const results = await addAssetsToAlbum({ id: album.id, bulkIdsDto: { ids: assetIds } });
 
     const count = results.filter(({ success }) => success).length;
-    toastManager.success($t('assets_added_count', { values: { count } }));
+    toastManager.show({ title: $t('success'), description: $t('assets_added_count', { values: { count } }), icon: mdiCheck });
     eventManager.emit('AlbumAddAssets');
   } catch (error) {
     handleError(error, $t('errors.error_adding_assets_to_album'));
@@ -134,7 +134,7 @@ export const handleDeleteAlbum = async (album: AlbumResponseDto, options?: { pro
     await deleteAlbum({ id: album.id });
     eventManager.emit('AlbumDelete', album);
     if (notify) {
-      toastManager.success();
+      toastManager.show({ title: $t('success'), description: $t('album_deleted'), icon: mdiCheck });
     }
     return true;
   } catch (error) {

@@ -20,7 +20,7 @@ import {
   type UpdateLibraryDto,
 } from '@immich/sdk';
 import { modalManager, toastManager, type ActionItem } from '@immich/ui';
-import { mdiPencilOutline, mdiPlusBoxOutline, mdiSync, mdiTrashCanOutline } from '@mdi/js';
+import { mdiCheck, mdiPencilOutline, mdiPlusBoxOutline, mdiSync, mdiTrashCanOutline } from '@mdi/js';
 import type { MessageFormatter } from 'svelte-i18n';
 
 export const getLibrariesActions = ($t: MessageFormatter, libraries: LibraryResponseDto[]) => {
@@ -158,7 +158,7 @@ export const handleCreateLibrary = async (dto: CreateLibraryDto) => {
   try {
     const library = await createLibrary({ createLibraryDto: dto });
     eventManager.emit('LibraryCreate', library);
-    toastManager.success($t('admin.library_created', { values: { library: library.name } }));
+    toastManager.show({ title: $t('success'), description: $t('admin.library_created', { values: { library: library.name } }), icon: mdiCheck });
     return library;
   } catch (error) {
     handleError(error, $t('errors.unable_to_create_library'));
@@ -171,7 +171,7 @@ export const handleUpdateLibrary = async (library: LibraryResponseDto, dto: Upda
   try {
     const updatedLibrary = await updateLibrary({ id: library.id, updateLibraryDto: dto });
     eventManager.emit('LibraryUpdate', updatedLibrary);
-    toastManager.success($t('admin.library_updated'));
+    toastManager.show({ title: $t('success'), description: $t('admin.library_updated'), icon: mdiCheck });
     return true;
   } catch (error) {
     handleError(error, $t('errors.unable_to_update_library'));
@@ -202,7 +202,7 @@ const handleDeleteLibrary = async (library: LibraryResponseDto) => {
   try {
     await deleteLibrary({ id: library.id });
     eventManager.emit('LibraryDelete', { id: library.id });
-    toastManager.success($t('admin.library_deleted'));
+    toastManager.show({ title: $t('success'), description: $t('admin.library_deleted'), icon: mdiCheck });
   } catch (error) {
     handleError(error, $t('errors.unable_to_remove_library'));
   }
@@ -222,7 +222,7 @@ export const handleAddLibraryFolder = async (library: LibraryResponseDto, folder
       updateLibraryDto: { importPaths: [...library.importPaths, folder] },
     });
     eventManager.emit('LibraryUpdate', updatedLibrary);
-    toastManager.success($t('admin.library_updated'));
+    toastManager.show({ title: $t('success'), description: $t('admin.library_updated'), icon: mdiCheck });
   } catch (error) {
     handleError(error, $t('errors.unable_to_update_library'));
     return false;
@@ -243,7 +243,7 @@ export const handleEditLibraryFolder = async (library: LibraryResponseDto, oldVa
   try {
     const updatedLibrary = await updateLibrary({ id: library.id, updateLibraryDto: { importPaths } });
     eventManager.emit('LibraryUpdate', updatedLibrary);
-    toastManager.success($t('admin.library_updated'));
+    toastManager.show({ title: $t('success'), description: $t('admin.library_updated'), icon: mdiCheck });
   } catch (error) {
     handleError(error, $t('errors.unable_to_update_library'));
     return false;
@@ -270,7 +270,7 @@ const handleDeleteLibraryFolder = async (library: LibraryResponseDto, folder: st
       updateLibraryDto: { importPaths: library.importPaths.filter((path) => path !== folder) },
     });
     eventManager.emit('LibraryUpdate', updatedLibrary);
-    toastManager.success($t('admin.library_updated'));
+    toastManager.show({ title: $t('success'), description: $t('admin.library_updated'), icon: mdiCheck });
   } catch (error) {
     handleError(error, $t('errors.unable_to_update_library'));
   }
@@ -290,7 +290,7 @@ export const handleAddLibraryExclusionPattern = async (library: LibraryResponseD
       updateLibraryDto: { exclusionPatterns: [...library.exclusionPatterns, exclusionPattern] },
     });
     eventManager.emit('LibraryUpdate', updatedLibrary);
-    toastManager.success($t('admin.library_updated'));
+    toastManager.show({ title: $t('success'), description: $t('admin.library_updated'), icon: mdiCheck });
   } catch (error) {
     handleError(error, $t('errors.unable_to_update_library'));
     return false;
@@ -311,7 +311,7 @@ export const handleEditExclusionPattern = async (library: LibraryResponseDto, ol
   try {
     const updatedLibrary = await updateLibrary({ id: library.id, updateLibraryDto: { exclusionPatterns } });
     eventManager.emit('LibraryUpdate', updatedLibrary);
-    toastManager.success($t('admin.library_updated'));
+    toastManager.show({ title: $t('success'), description: $t('admin.library_updated'), icon: mdiCheck });
   } catch (error) {
     handleError(error, $t('errors.unable_to_update_library'));
     return false;
@@ -336,7 +336,7 @@ const handleDeleteExclusionPattern = async (library: LibraryResponseDto, exclusi
       },
     });
     eventManager.emit('LibraryUpdate', updatedLibrary);
-    toastManager.success($t('admin.library_updated'));
+    toastManager.show({ title: $t('success'), description: $t('admin.library_updated'), icon: mdiCheck });
   } catch (error) {
     handleError(error, $t('errors.unable_to_update_library'));
   }

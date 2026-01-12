@@ -13,7 +13,7 @@
   import { isTenMinutesApart } from '$lib/utils/timesince';
   import { ReactionType, type ActivityResponseDto, type AssetTypeEnum, type UserResponseDto } from '@immich/sdk';
   import { Icon, IconButton, LoadingSpinner, Textarea, toastManager } from '@immich/ui';
-  import { mdiClose, mdiDeleteOutline, mdiDotsVertical, mdiSend, mdiThumbUp } from '@mdi/js';
+  import { mdiCheck, mdiClose, mdiDeleteOutline, mdiDotsVertical, mdiSend, mdiThumbUp } from '@mdi/js';
   import * as luxon from 'luxon';
   import { t } from 'svelte-i18n';
   import { fromAction } from 'svelte/attachments';
@@ -74,7 +74,7 @@
         [ReactionType.Comment]: $t('comment_deleted'),
         [ReactionType.Like]: $t('like_deleted'),
       };
-      toastManager.success(deleteMessages[reaction.type]);
+      toastManager.show({ title: $t('success'), description: deleteMessages[reaction.type], icon: mdiCheck });
     } catch (error) {
       handleError(error, $t('errors.unable_to_remove_reaction'));
     }

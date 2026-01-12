@@ -4,7 +4,7 @@ import { handleError } from '$lib/utils/handle-error';
 import { getFormatter } from '$lib/utils/i18n';
 import { updatePerson, type PersonResponseDto } from '@immich/sdk';
 import { modalManager, toastManager, type ActionItem } from '@immich/ui';
-import { mdiCalendarEditOutline } from '@mdi/js';
+import { mdiCalendarEditOutline, mdiCheck } from '@mdi/js';
 import type { MessageFormatter } from 'svelte-i18n';
 
 export const getPersonActions = ($t: MessageFormatter, person: PersonResponseDto) => {
@@ -22,7 +22,7 @@ export const handleUpdatePersonBirthDate = async (person: PersonResponseDto, bir
 
   try {
     const response = await updatePerson({ id: person.id, personUpdateDto: { birthDate } });
-    toastManager.success($t('date_of_birth_saved'));
+    toastManager.show({ title: $t('success'), description: $t('date_of_birth_saved'), icon: mdiCheck });
     eventManager.emit('PersonUpdate', response);
     return true;
   } catch (error) {
