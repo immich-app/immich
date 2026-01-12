@@ -13,6 +13,7 @@ Future<List<String>> getSearchSuggestions(
   String? locationState,
   String? make,
   String? model,
+  String? query,
 }) async {
   final SearchService service = ref.read(searchServiceProvider);
 
@@ -22,6 +23,7 @@ Future<List<String>> getSearchSuggestions(
     state: locationState,
     make: make,
     model: model,
+    query: query,
   );
 
   return suggestions ?? [];

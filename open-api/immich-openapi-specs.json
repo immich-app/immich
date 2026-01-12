@@ -9612,6 +9612,26 @@
             }
           },
           {
+            "name": "query",
+            "required": false,
+            "in": "query",
+            "description": "Fuzzy search query for filtering suggestions using trigram matching.",
+            "x-immich-history": [
+              {
+                "version": "v1.130.0",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              }
+            ],
+            "x-immich-state": "Stable",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "state",
             "required": false,
             "in": "query",

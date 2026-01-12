@@ -4,19 +4,19 @@ import { AssetMapOptions, AssetResponseDto, MapAsset, mapAsset } from 'src/dtos/
 import { AuthDto } from 'src/dtos/auth.dto';
 import { mapPerson, PersonResponseDto } from 'src/dtos/person.dto';
 import {
-  LargeAssetSearchDto,
-  mapPlaces,
-  MetadataSearchDto,
-  PlacesResponseDto,
-  RandomSearchDto,
-  SearchPeopleDto,
-  SearchPlacesDto,
-  SearchResponseDto,
-  SearchStatisticsResponseDto,
-  SearchSuggestionRequestDto,
-  SearchSuggestionType,
-  SmartSearchDto,
-  StatisticsSearchDto,
+    LargeAssetSearchDto,
+    mapPlaces,
+    MetadataSearchDto,
+    PlacesResponseDto,
+    RandomSearchDto,
+    SearchPeopleDto,
+    SearchPlacesDto,
+    SearchResponseDto,
+    SearchStatisticsResponseDto,
+    SearchSuggestionRequestDto,
+    SearchSuggestionType,
+    SmartSearchDto,
+    StatisticsSearchDto,
 } from 'src/dtos/search.dto';
 import { AssetOrder, AssetVisibility, Permission } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
@@ -163,7 +163,7 @@ export class SearchService extends BaseService {
   private getSuggestions(userIds: string[], dto: SearchSuggestionRequestDto): Promise<Array<string | null>> {
     switch (dto.type) {
       case SearchSuggestionType.COUNTRY: {
-        return this.searchRepository.getCountries(userIds);
+        return this.searchRepository.getCountries(userIds, dto);
       }
       case SearchSuggestionType.STATE: {
         return this.searchRepository.getStates(userIds, dto);
