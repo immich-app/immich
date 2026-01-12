@@ -77,6 +77,7 @@ export interface SearchExifOptions {
   state?: string | null;
   description?: string | null;
   rating?: number | null;
+  locationQuery?: string;
 }
 
 export interface SearchEmbeddingOptions {

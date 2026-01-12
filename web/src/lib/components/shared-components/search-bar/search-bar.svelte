@@ -94,6 +94,9 @@
       case 'ocr': {
         return { ocr: term };
       }
+      case 'location': {
+        return { locationQuery: term };
+      }
       default: {
         return { query: term };
       }
@@ -200,7 +203,8 @@
       case 'smart':
       case 'metadata':
       case 'description':
-      case 'ocr': {
+      case 'ocr':
+      case 'location': {
         currentSearchType = searchType;
         return searchType;
       }
@@ -225,6 +229,9 @@
       case 'ocr': {
         return $t('ocr');
       }
+      case 'location': {
+        return $t('location');
+      }
       default: {
         return $t('context');
       }
@@ -240,6 +247,7 @@
     { value: 'metadata', label: () => $t('filename') },
     { value: 'description', label: () => $t('description') },
     { value: 'ocr', label: () => $t('ocr') },
+    { value: 'location', label: () => $t('location') },
   ] as const;
 </script>
 

@@ -106,6 +106,11 @@ class BaseSearchDto {
   @IsNotEmpty()
   @Optional()
   ocr?: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @Optional()
+  locationQuery?: string;
 }
 
 class BaseSearchWithResultsDto extends BaseSearchDto {

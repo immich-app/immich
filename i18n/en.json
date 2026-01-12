@@ -1856,6 +1856,8 @@
   "search_by_description_example": "Hiking day in Sapa",
   "search_by_filename": "Search by file name or extension",
   "search_by_filename_example": "i.e. IMG_1234.JPG or PNG",
+  "search_by_location": "Search by location",
+  "search_by_location_example": "Paris, Tokyo, New York",
   "search_by_ocr": "Search by OCR",
   "search_by_ocr_example": "Latte",
   "search_camera_lens_model": "Search lens model...",
