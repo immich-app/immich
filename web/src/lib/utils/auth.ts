@@ -1,4 +1,5 @@
 import { browser } from '$app/environment';
+import { eventManager } from '$lib/managers/event-manager.svelte';
 import { purchaseStore } from '$lib/stores/purchase.store';
 import { preferences as preferences$, user as user$ } from '$lib/stores/user.store';
 import { userInteraction } from '$lib/stores/user.svelte';
@@ -23,6 +24,8 @@ export const loadUser = async () => {
       [user, preferences, serverInfo] = await Promise.all([getMyUser(), getMyPreferences(), getAboutInfo()]);
       user$.set(user);
       preferences$.set(preferences);
+
+      eventManager.emit('AuthUserLoaded', user);
 
       // Check for license status
       if (serverInfo.licensed || user.license?.activatedAt) {

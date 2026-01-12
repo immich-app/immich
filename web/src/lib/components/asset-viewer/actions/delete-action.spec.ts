@@ -7,6 +7,13 @@ import DeleteAction from './delete-action.svelte';
 let asset: AssetResponseDto;
 
 describe('DeleteAction component', () => {
+  beforeEach(() => {
+    vi.mock(import('$lib/managers/feature-flags-manager.svelte'), () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return { featureFlagsManager: { init: vi.fn(), loadFeatureFlags: vi.fn(), value: { trash: true } } as any };
+    });
+  });
+
   describe('given an asset which is not trashed yet', () => {
     beforeEach(() => {
       asset = assetFactory.build({ isTrashed: false });

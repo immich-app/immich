@@ -146,7 +146,7 @@
   size="medium"
   onClose={handleConfirm}
 >
-  {#snippet promptSnippet()}
+  {#snippet prompt()}
     <div class="flex flex-col w-full h-full gap-2">
       <div class="relative w-64 sm:w-96 z-1">
         {#if suggestionContainer}

@@ -40,6 +40,7 @@ export interface Events {
   AppRestartV1: (event: AppRestartEvent) => void;
 
   MaintenanceStatusV1: (event: MaintenanceStatusResponseDto) => void;
+  AssetEditReadyV1: (data: { assetId: string }) => void;
 }
 
 const websocket: Socket<Events> = io({
@@ -90,4 +91,26 @@ export const openWebsocketConnection = () => {
 
 export const closeWebsocketConnection = () => {
   websocket.disconnect();
+};
+
+export const waitForWebsocketEvent = <T extends keyof Events>(
+  event: T,
+  predicate?: (...args: Parameters<Events[T]>) => boolean,
+  timeout: number = 10_000,
+): Promise<Parameters<Events[T]>> => {
+  return new Promise((resolve, reject) => {
+    // @ts-expect-error: The typings are weird on this?
+    const cleanup = websocketEvents.on(event, (...args: Parameters<Events[T]>) => {
+      if (!predicate || predicate(...args)) {
+        cleanup();
+        clearTimeout(timer);
+        resolve(args);
+      }
+    });
+
+    const timer = setTimeout(() => {
+      cleanup();
+      reject(new Error(`Timeout waiting for event: ${String(event)}`));
+    }, timeout);
+  });
 };

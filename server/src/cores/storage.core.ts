@@ -24,7 +24,13 @@ export interface MoveRequest {
   };
 }
 
-export type GeneratedImageType = AssetPathType.Preview | AssetPathType.Thumbnail | AssetPathType.FullSize;
+export type GeneratedImageType =
+  | AssetPathType.Preview
+  | AssetPathType.Thumbnail
+  | AssetPathType.FullSize
+  | AssetPathType.EditedPreview
+  | AssetPathType.EditedThumbnail
+  | AssetPathType.EditedFullSize;
 export type GeneratedAssetType = GeneratedImageType | AssetPathType.EncodedVideo;
 
 export type ThumbnailPathEntity = { id: string; ownerId: string };
