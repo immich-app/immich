@@ -90,6 +90,5 @@
     name="location"
     placeholder={$t('search_by_location_example')}
     bind:value={query}
-    aria-labelledby="location-label"
   />
 {/if}
