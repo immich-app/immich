@@ -36,8 +36,7 @@ class ThumbnailTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final asset = this.asset;
     final heroIndex = heroOffset ?? TabsRouterScope.of(context)?.controller.activeIndex ?? 0;
-    final currentAsset = ref.watch(currentAssetNotifier);
-    final showIndicators = asset == null || asset != currentAsset;
+    bool _heroInFlight = false;
 
     final assetContainerColor = context.isDarkTheme
         ? context.primaryColor.darken(amount: 0.4)
@@ -70,6 +69,15 @@ class ThumbnailTile extends ConsumerWidget {
                   child: Hero(
                     tag: '${asset?.heroTag ?? ''}_$heroIndex',
                     child: Thumbnail.fromAsset(asset: asset, size: size),
+                    //
+                    flightShuttleBuilder: (context, animation, direction, from, to) {
+                      animation.addStatusListener((status) {
+                        _heroInFlight = status == AnimationStatus.forward || status == AnimationStatus.reverse;
+                        log.info("Hero in flight: $_heroInFlight");
+                      });
+
+                      return to.widget;
+                    },
                   ),
                 ),
                 if (asset != null)
