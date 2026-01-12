@@ -4,11 +4,13 @@ import {
   AssetBulkUploadCheckResult,
   AssetMediaResponseDto,
   AssetMediaStatus,
+  Permission,
   addAssetsToAlbum,
   checkBulkUpload,
   createAlbum,
   defaults,
   getAllAlbums,
+  getMyApiKey,
   getSupportedMediaTypes,
 } from '@immich/sdk';
 import byteSize from 'byte-size';
@@ -136,6 +138,13 @@ export const startWatch = async (
 
 export const upload = async (paths: string[], baseOptions: BaseOptions, options: UploadOptionsDto) => {
   await authenticate(baseOptions);
+
+  const { permissions } = await getMyApiKey();
+
+  if (!permissions.includes(Permission.AssetUpload)) {
+    console.log("Missing asset.upload permission");
+    return;
+  }
 
   const scanFiles = await scan(paths, options);
 
