@@ -55,7 +55,8 @@ class _ThumbnailTileState extends ConsumerState<ThumbnailTile> {
       multiSelectProvider.select((multiselect) => multiselect.selectedAssets.contains(asset)),
     );
 
-    final bool storageIndicator = ref.watch(settingsProvider.select((s) => s.get(Setting.showStorageIndicator)));
+    final bool storageIndicator =
+        ref.watch(settingsProvider.select((s) => s.get(Setting.showStorageIndicator))) && widget.showStorageIndicator;
 
     if (isSelected) {
       _showSelectionContainer = true;
@@ -126,7 +127,6 @@ class _ThumbnailTileState extends ConsumerState<ThumbnailTile> {
                       child: _AssetTypeIcons(asset: asset),
                     ),
                   ),
-
                 if (storageIndicator && asset != null)
                   AnimatedOpacity(
                     opacity: _hideIndicators ? 0.0 : 1.0,
