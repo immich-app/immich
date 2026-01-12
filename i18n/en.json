@@ -2195,7 +2195,6 @@
   "updated_at": "Updated",
   "updated_password": "Updated password",
   "upload": "Upload",
-  "upload_action_prompt": "{count} queued for upload",
   "upload_concurrency": "Upload concurrency",
   "upload_details": "Upload Details",
   "upload_dialog_info": "Do you want to backup the selected Asset(s) to the server?",

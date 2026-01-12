@@ -14,6 +14,7 @@ import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asse
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/providers/backup/asset_upload_progress.provider.dart';
 import 'package:immich_mobile/services/action.service.dart';
 import 'package:immich_mobile/services/download.service.dart';
 import 'package:immich_mobile/services/timeline.service.dart';
@@ -412,14 +413,42 @@ class ActionNotifier extends Notifier<void> {
     }
   }
 
-  Future<ActionResult> upload(ActionSource source) async {
-    final assets = _getAssets(source).whereType<LocalAsset>().toList();
+  Future<ActionResult> upload(ActionSource source, {List<LocalAsset>? assets}) async {
+    final assetsToUpload = assets ?? _getAssets(source).whereType<LocalAsset>().toList();
+
+    final progressNotifier = ref.read(assetUploadProgressProvider.notifier);
+    final cancelToken = CancellationToken();
+    ref.read(manualUploadCancelTokenProvider.notifier).state = cancelToken;
+
+    // Initialize progress for all assets
+    for (final asset in assetsToUpload) {
+      progressNotifier.setProgress(asset.id, 0.0);
+    }
+
     try {
-      await _uploadService.manualBackup(assets, CancellationToken());
-      return ActionResult(count: assets.length, success: true);
+      await _uploadService.manualBackup(
+        assetsToUpload,
+        cancelToken,
+        onProgress: (localAssetId, filename, bytes, totalBytes) {
+          final progress = totalBytes > 0 ? bytes / totalBytes : 0.0;
+          progressNotifier.setProgress(localAssetId, progress);
+        },
+        onSuccess: (localAssetId, remoteAssetId) {
+          progressNotifier.remove(localAssetId);
+        },
+        onError: (localAssetId, errorMessage) {
+          progressNotifier.setError(localAssetId);
+        },
+      );
+      return ActionResult(count: assetsToUpload.length, success: true);
     } catch (error, stack) {
       _logger.severe('Failed manually upload assets', error, stack);
-      return ActionResult(count: assets.length, success: false, error: error.toString());
+      return ActionResult(count: assetsToUpload.length, success: false, error: error.toString());
+    } finally {
+      ref.read(manualUploadCancelTokenProvider.notifier).state = null;
+      Future.delayed(const Duration(seconds: 2), () {
+        progressNotifier.clear();
+      });
     }
   }
 }
