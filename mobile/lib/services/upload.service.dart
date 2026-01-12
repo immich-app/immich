@@ -99,22 +99,64 @@ class UploadService {
     return _backupRepository.getAllCounts(userId);
   }
 
-  Future<void> manualBackup(List<LocalAsset> localAssets) async {
-    await _storageRepository.clearCache();
-    List<UploadTask> tasks = [];
-    for (final asset in localAssets) {
-      final task = await getUploadTask(
-        asset,
-        group: kManualUploadGroup,
-        priority: 1, // High priority after upload motion photo part
-      );
-      if (task != null) {
-        tasks.add(task);
-      }
+  Future<void> manualBackup(
+    List<LocalAsset> localAssets,
+    CancellationToken cancelToken, {
+    void Function(String localAssetId, String filename, int bytes, int totalBytes)? onProgress,
+    void Function(String localAssetId, String remoteAssetId)? onSuccess,
+    void Function(String localAssetId, String errorMessage)? onError,
+    void Function(String localAssetId, double progress)? onICloudProgress,
+  }) async {
+    if (localAssets.isEmpty) {
+      return;
     }
 
-    if (tasks.isNotEmpty) {
-      await enqueueTasks(tasks);
+    const concurrentUploads = 3;
+    final httpClients = List.generate(concurrentUploads, (_) => Client());
+
+    await _storageRepository.clearCache();
+
+    shouldAbortQueuingTasks = false;
+
+    try {
+      int currentIndex = 0;
+
+      Future<void> worker(Client httpClient) async {
+        while (true) {
+          if (shouldAbortQueuingTasks || cancelToken.isCancelled) {
+            break;
+          }
+
+          final index = currentIndex;
+          if (index >= localAssets.length) {
+            break;
+          }
+          currentIndex++;
+
+          final asset = localAssets[index];
+
+          await _uploadSingleAsset(
+            asset,
+            httpClient,
+            cancelToken,
+            onProgress: onProgress,
+            onSuccess: onSuccess,
+            onError: onError,
+            onICloudProgress: onICloudProgress,
+          );
+        }
+      }
+
+      final workerFutures = <Future<void>>[];
+      for (int i = 0; i < concurrentUploads; i++) {
+        workerFutures.add(worker(httpClients[i]));
+      }
+
+      await Future.wait(workerFutures);
+    } finally {
+      for (final client in httpClients) {
+        client.close();
+      }
     }
   }
 
