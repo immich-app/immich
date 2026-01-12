@@ -190,12 +190,30 @@
 
   let nextPreloader: AdaptiveImageLoader | undefined;
   let previousPreloader: AdaptiveImageLoader | undefined;
+  let nextPreviewUrl = $state<string | undefined>();
+  let previousPreviewUrl = $state<string | undefined>();
 
-  const startPreloader = (asset: AssetResponseDto | undefined) => {
+  const setPreviewUrl = (direction: 'next' | 'previous', url: string | undefined) => {
+    if (direction === 'next') {
+      nextPreviewUrl = url;
+    } else {
+      previousPreviewUrl = url;
+    }
+  };
+
+  const startPreloader = (asset: AssetResponseDto | undefined, direction: 'next' | 'previous') => {
     if (!asset) {
       return;
     }
-    const loader = new AdaptiveImageLoader(asset, undefined, undefined, loadImage);
+    const loader = new AdaptiveImageLoader(
+      asset,
+      undefined,
+      {
+        currentZoomFn: () => 1,
+        onQualityUpgrade: (url) => setPreviewUrl(direction, url),
+      },
+      loadImage,
+    );
     loader.start();
     return loader;
   };
@@ -203,14 +221,17 @@
   const destroyPreviousPreloader = () => {
     previousPreloader?.destroy();
     previousPreloader = undefined;
+    previousPreviewUrl = undefined;
   };
 
   const destroyNextPreloader = () => {
     nextPreloader?.destroy();
     nextPreloader = undefined;
+    nextPreviewUrl = undefined;
   };
 
   const cancelPreloadsBeforeNavigation = (direction: 'previous' | 'next') => {
+    setPreviewUrl(direction, undefined);
     if (direction === 'next') {
       destroyPreviousPreloader();
       return;
@@ -225,72 +246,84 @@
     const shouldDestroyPrevious = movedForward || !movedBackward;
     const shouldDestroyNext = movedBackward || !movedForward;
 
-    if (shouldDestroyPrevious) {
-      destroyPreviousPreloader();
-    }
-
-    if (shouldDestroyNext) {
-      destroyNextPreloader();
-    }
-
     if (movedForward) {
-      nextPreloader = startPreloader(newCursor.nextAsset);
+      // When moving forward: old next becomes current, shift preview URLs
+      const oldNextUrl = nextPreviewUrl;
+      destroyPreviousPreloader();
+      previousPreviewUrl = oldNextUrl;
+      destroyNextPreloader();
+      nextPreloader = startPreloader(newCursor.nextAsset, 'next');
     } else if (movedBackward) {
-      previousPreloader = startPreloader(newCursor.previousAsset);
+      // When moving backward: old previous becomes current, shift preview URLs
+      const oldPreviousUrl = previousPreviewUrl;
+      destroyNextPreloader();
+      nextPreviewUrl = oldPreviousUrl;
+      destroyPreviousPreloader();
+      previousPreloader = startPreloader(newCursor.previousAsset, 'previous');
     } else {
-      // Non-adjacent navigation (e.g., slideshow random)
-      previousPreloader = startPreloader(newCursor.previousAsset);
-      nextPreloader = startPreloader(newCursor.nextAsset);
+      // Non-adjacent navigation (e.g., slideshow random) - clear everything
+      if (shouldDestroyPrevious) {
+        destroyPreviousPreloader();
+      }
+      if (shouldDestroyNext) {
+        destroyNextPreloader();
+      }
+      previousPreloader = startPreloader(newCursor.previousAsset, 'previous');
+      nextPreloader = startPreloader(newCursor.nextAsset, 'next');
+    }
+  };
+
+  const getNavigationTarget = () => {
+    if ($slideshowState === SlideshowState.PlaySlideshow) {
+      return $slideshowNavigation === SlideshowNavigation.AscendingOrder ? 'previous' : 'next';
+    } else {
+      return 'skip';
+    }
+  };
+
+  const completeNavigation = async (target: 'previous' | 'next') => {
+    cancelPreloadsBeforeNavigation(target);
+    let hasNext = false;
+
+    if ($slideshowState === SlideshowState.PlaySlideshow && $slideshowNavigation === SlideshowNavigation.Shuffle) {
+      hasNext = target === 'previous' ? slideshowHistory.previous() : slideshowHistory.next();
+      if (!hasNext) {
+        const asset = await onRandom?.();
+        if (asset) {
+          slideshowHistory.queue(asset);
+          hasNext = true;
+        }
+      }
+    } else {
+      hasNext =
+        target === 'previous' ? await navigateToAsset(cursor.previousAsset) : await navigateToAsset(cursor.nextAsset);
+    }
+
+    if ($slideshowState !== SlideshowState.PlaySlideshow) {
+      return;
+    }
+
+    if (hasNext) {
+      $restartSlideshowProgress = true;
+    } else if ($slideshowRepeat && slideshowStartAssetId) {
+      await setAssetId(slideshowStartAssetId);
+      $restartSlideshowProgress = true;
+    } else {
+      await handleStopSlideshow();
     }
   };
 
   const tracker = new InvocationTracker();
-  const navigateAsset = (order?: 'previous' | 'next') => {
-    if (!order) {
-      if ($slideshowState === SlideshowState.PlaySlideshow) {
-        order = $slideshowNavigation === SlideshowNavigation.AscendingOrder ? 'previous' : 'next';
-      } else {
-        return;
-      }
-    }
-
-    cancelPreloadsBeforeNavigation(order);
-
-    if (tracker.isActive()) {
+  const navigateAsset = (target: 'previous' | 'next' | 'skip') => {
+    if (target === 'skip' || tracker.isActive()) {
       return;
     }
 
-    void tracker.invoke(async () => {
-      let hasNext = false;
-
-      if ($slideshowState === SlideshowState.PlaySlideshow && $slideshowNavigation === SlideshowNavigation.Shuffle) {
-        hasNext = order === 'previous' ? slideshowHistory.previous() : slideshowHistory.next();
-        if (!hasNext) {
-          const asset = await onRandom?.();
-          if (asset) {
-            slideshowHistory.queue(asset);
-            hasNext = true;
-          }
-        }
-      } else {
-        hasNext =
-          order === 'previous' ? await navigateToAsset(cursor.previousAsset) : await navigateToAsset(cursor.nextAsset);
-      }
-
-      if ($slideshowState !== SlideshowState.PlaySlideshow) {
-        return;
-      }
-
-      if (hasNext) {
-        $restartSlideshowProgress = true;
-      } else if ($slideshowRepeat && slideshowStartAssetId) {
-        // Loop back to starting asset
-        await setAssetId(slideshowStartAssetId);
-        $restartSlideshowProgress = true;
-      } else {
-        await handleStopSlideshow();
-      }
-    }, $t('error_while_navigating'));
+    void tracker.invoke(
+      () => completeNavigation(target),
+      (error: unknown) => handleError(error, $t('error_while_navigating')),
+      () => eventManager.emit('ViewerFinishNavigate'),
+    );
   };
 
   /**
@@ -441,10 +474,10 @@
     if (!lastCursor && cursor) {
       // "first time" load, start preloads
       if (cursor.nextAsset) {
-        nextPreloader = startPreloader(cursor.nextAsset);
+        nextPreloader = startPreloader(cursor.nextAsset, 'next');
       }
       if (cursor.previousAsset) {
-        previousPreloader = startPreloader(cursor.previousAsset);
+        previousPreloader = startPreloader(cursor.previousAsset, 'previous');
       }
     }
     lastCursor = cursor;
@@ -559,26 +592,26 @@
   <div class="z-[-1] relative col-start-1 col-span-4 row-start-1 row-span-full">
     {#if viewerKind === 'StackVideoViewer'}
       <VideoViewer
-        asset={previewStackedAsset!}
+        cursor={{ ...cursor, current: previewStackedAsset! }}
+        assetId={previewStackedAsset!.id}
         cacheKey={previewStackedAsset!.thumbhash}
         projectionType={previewStackedAsset!.exifInfo?.projectionType}
         loopVideo={true}
-        onPreviousAsset={() => navigateAsset('previous')}
-        onNextAsset={() => navigateAsset('next')}
+        onSwipe={(direction) => navigateAsset(direction === 'left' ? 'next' : 'previous')}
         onClose={closeViewer}
-        onVideoEnded={() => navigateAsset()}
+        onVideoEnded={() => navigateAsset(getNavigationTarget())}
         onVideoStarted={handleVideoStarted}
         {playOriginalVideo}
       />
     {:else if viewerKind === 'LiveVideoViewer'}
       <VideoViewer
-        {asset}
+        {cursor}
         assetId={asset.livePhotoVideoId!}
+        {sharedLink}
         cacheKey={asset.thumbhash}
         projectionType={asset.exifInfo?.projectionType}
         loopVideo={$slideshowState !== SlideshowState.PlaySlideshow}
-        onPreviousAsset={() => navigateAsset('previous')}
-        onNextAsset={() => navigateAsset('next')}
+        onSwipe={(direction) => navigateAsset(direction === 'left' ? 'next' : 'previous')}
         onVideoEnded={() => (assetViewerManager.isPlayingMotionPhoto = false)}
         {playOriginalVideo}
       />
@@ -587,17 +620,21 @@
     {:else if viewerKind === 'CropArea'}
       <CropArea {asset} />
     {:else if viewerKind === 'PhotoViewer'}
-      <PhotoViewer cursor={{ ...cursor, current: asset }} {sharedLink} />
+      <PhotoViewer
+        cursor={{ ...cursor, current: asset }}
+        {sharedLink}
+        onSwipe={(direction) => navigateAsset(direction === 'left' ? 'next' : 'previous')}
+      />
     {:else if viewerKind === 'VideoViewer'}
       <VideoViewer
-        {asset}
+        {cursor}
+        {sharedLink}
         cacheKey={asset.thumbhash}
         projectionType={asset.exifInfo?.projectionType}
         loopVideo={$slideshowState !== SlideshowState.PlaySlideshow}
-        onPreviousAsset={() => navigateAsset('previous')}
-        onNextAsset={() => navigateAsset('next')}
+        onSwipe={(direction) => navigateAsset(direction === 'left' ? 'next' : 'previous')}
         onClose={closeViewer}
-        onVideoEnded={() => navigateAsset()}
+        onVideoEnded={() => navigateAsset(getNavigationTarget())}
         onVideoStarted={handleVideoStarted}
         {playOriginalVideo}
       />

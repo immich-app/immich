@@ -1,50 +1,50 @@
 <script lang="ts">
+  import type { AssetCursor } from '$lib/components/asset-viewer/asset-viewer.svelte';
   import VideoNativeViewer from '$lib/components/asset-viewer/video-native-viewer.svelte';
   import VideoPanoramaViewer from '$lib/components/asset-viewer/video-panorama-viewer.svelte';
   import { ProjectionType } from '$lib/constants';
-  import type { AssetResponseDto } from '@immich/sdk';
+  import type { SharedLinkResponseDto } from '@immich/sdk';
 
   interface Props {
-    asset: AssetResponseDto;
+    cursor: AssetCursor;
     assetId?: string;
+    sharedLink?: SharedLinkResponseDto;
     projectionType: string | null | undefined;
     cacheKey: string | null;
     loopVideo: boolean;
     playOriginalVideo: boolean;
     onClose?: () => void;
-    onPreviousAsset?: () => void;
-    onNextAsset?: () => void;
+    onSwipe?: (direction: 'left' | 'right') => void;
     onVideoEnded?: () => void;
     onVideoStarted?: () => void;
   }
 
   let {
-    asset,
+    cursor,
     assetId,
+    sharedLink,
     projectionType,
     cacheKey,
     loopVideo,
     playOriginalVideo,
-    onPreviousAsset,
+    onSwipe,
     onClose,
-    onNextAsset,
     onVideoEnded,
     onVideoStarted,
   }: Props = $props();
-
-  const effectiveAssetId = $derived(assetId ?? asset.id);
 </script>
 
 {#if projectionType === ProjectionType.EQUIRECTANGULAR}
-  <VideoPanoramaViewer {asset} />
+  <VideoPanoramaViewer asset={cursor.current} />
 {:else}
   <VideoNativeViewer
     {loopVideo}
     {cacheKey}
-    assetId={effectiveAssetId}
+    {cursor}
+    {assetId}
+    {sharedLink}
     {playOriginalVideo}
-    {onPreviousAsset}
-    {onNextAsset}
+    {onSwipe}
     {onVideoEnded}
     {onVideoStarted}
     {onClose}

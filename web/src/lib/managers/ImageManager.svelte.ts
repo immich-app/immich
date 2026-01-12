@@ -40,16 +40,10 @@ class ImageManager {
     if (!asset) {
       return;
     }
-
-    const url = getAssetMediaUrl({ id: asset.id, size, cacheKey: asset.thumbhash });
-    if (!url) {
-      return;
-    }
-
+    const src = getAssetMediaUrl({ id: asset.id, size, cacheKey: asset.thumbhash });
     this.trackLoad(asset);
-
     const img = new Image();
-    img.src = url;
+    img.src = src;
   }
 
   cancel(asset: AssetResponseDto | undefined, size: AllAssetMediaSize = AssetMediaSize.Preview) {

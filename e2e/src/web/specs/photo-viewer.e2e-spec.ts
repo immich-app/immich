@@ -23,32 +23,44 @@ test.describe('Photo Viewer', () => {
 
   test('loads original photo when zoomed', async ({ page }) => {
     await page.goto(`/photos/${asset.id}`);
-    await expect(page.getByTestId('thumbnail')).toHaveAttribute('src', /thumbnail/);
-    const box = await page.getByTestId('thumbnail').boundingBox();
+
+    const thumbnail = page.getByTestId('thumbnail').filter({ visible: true });
+    const original = page.getByTestId('original').filter({ visible: true });
+
+    await expect(thumbnail).toHaveAttribute('src', /thumbnail/);
+    const box = await thumbnail.boundingBox();
     expect(box).toBeTruthy();
     const { x, y, width, height } = box!;
     await page.mouse.move(x + width / 2, y + height / 2);
     await page.mouse.wheel(0, -1);
-    await expect(page.getByTestId('original')).toBeInViewport();
-    await expect(page.getByTestId('original')).toHaveAttribute('src', /original/);
+    await expect(original).toBeInViewport();
+    await expect(original).toHaveAttribute('src', /original/);
   });
 
   test('loads fullsize image when zoomed and original is web-incompatible', async ({ page }) => {
     await page.goto(`/photos/${rawAsset.id}`);
-    await expect(page.getByTestId('thumbnail')).toHaveAttribute('src', /thumbnail/);
-    const box = await page.getByTestId('thumbnail').boundingBox();
+
+    const thumbnail = page.getByTestId('thumbnail').filter({ visible: true });
+    const original = page.getByTestId('original').filter({ visible: true });
+
+    await expect(thumbnail).toHaveAttribute('src', /thumbnail/);
+    const box = await thumbnail.boundingBox();
     expect(box).toBeTruthy();
     const { x, y, width, height } = box!;
     await page.mouse.move(x + width / 2, y + height / 2);
     await page.mouse.wheel(0, -1);
-    await expect(page.getByTestId('original')).toHaveAttribute('src', /fullsize/);
+    await expect(original).toHaveAttribute('src', /fullsize/);
   });
 
   test('reloads photo when checksum changes', async ({ page }) => {
     await page.goto(`/photos/${asset.id}`);
-    await expect(page.getByTestId('thumbnail')).toHaveAttribute('src', /thumbnail/);
-    const initialSrc = await page.getByTestId('thumbnail').getAttribute('src');
+
+    const thumbnail = page.getByTestId('thumbnail').filter({ visible: true });
+    const preview = page.getByTestId('preview').filter({ visible: true });
+
+    await expect(thumbnail).toHaveAttribute('src', /thumbnail/);
+    const initialSrc = await thumbnail.getAttribute('src');
     await utils.replaceAsset(admin.accessToken, asset.id);
-    await expect(page.getByTestId('preview')).not.toHaveAttribute('src', initialSrc!);
+    await expect(preview).not.toHaveAttribute('src', initialSrc!);
   });
 });

@@ -98,13 +98,13 @@ export const setupTimelineMockApiRoutes = async (
   });
 
   await context.route('**/api/assets/*/thumbnail?size=*', async (route, request) => {
-    const pattern = /\/api\/assets\/(?<assetId>[^/]+)\/thumbnail\?size=(?<size>preview|thumbnail)/;
+    const pattern = /\/api\/assets\/(?<assetId>[^/]+)\/thumbnail\?size=(?<size>preview|thumbnail|fullsize)/;
     const match = request.url().match(pattern);
     if (!match?.groups) {
       throw new Error(`Invalid URL for thumbnail endpoint: ${request.url()}`);
     }
 
-    if (match.groups.size === 'preview') {
+    if (match.groups.size === 'preview' || match.groups.size === 'fullsize') {
       if (!route.request().serviceWorker()) {
         return route.continue();
       }
