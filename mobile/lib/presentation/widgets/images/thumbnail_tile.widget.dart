@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -8,11 +10,98 @@ import 'package:immich_mobile/extensions/duration_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
+import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
 
-class ThumbnailTile extends ConsumerStatefulWidget {
+class _DelayedAnimation extends StatefulWidget {
+  final Widget child;
+  final bool show;
+  final Duration showDelay;
+  final Duration hideDelay;
+  final Duration showDuration;
+  final Duration hideDuration;
+
+  const _DelayedAnimation({
+    required this.child,
+    required this.show,
+    this.showDelay = const Duration(milliseconds: 0),
+    this.hideDelay = const Duration(milliseconds: 0),
+    this.showDuration = const Duration(milliseconds: 0),
+    this.hideDuration = const Duration(milliseconds: 0),
+  });
+
+  @override
+  State<_DelayedAnimation> createState() => _DelayedAnimationState();
+}
+
+class _DelayedAnimationState extends State<_DelayedAnimation> {
+  bool _show = false;
+  Duration _currentDuration = const Duration(milliseconds: 200);
+  Timer? _delayTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    // If starting with show=true, show immediately (no delay on initial render)
+    if (widget.show) {
+      _show = true;
+      _currentDuration = widget.showDuration;
+    }
+  }
+
+  @override
+  void didUpdateWidget(_DelayedAnimation oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    // Cancel any pending timer
+    _delayTimer?.cancel();
+
+    if (widget.show && !oldWidget.show) {
+      // Showing
+      _currentDuration = widget.showDuration;
+      if (widget.showDelay == Duration.zero) {
+        setState(() => _show = true);
+      } else {
+        _delayTimer = Timer(widget.showDelay, () {
+          if (mounted) {
+            setState(() => _show = true);
+          }
+        });
+      }
+    } else if (!widget.show && oldWidget.show) {
+      // Hiding
+      if (widget.hideDelay == Duration.zero) {
+        setState(() {
+          _currentDuration = widget.hideDuration;
+          _show = false;
+        });
+      } else {
+        _delayTimer = Timer(widget.hideDelay, () {
+          if (mounted) {
+            setState(() {
+              _currentDuration = widget.hideDuration;
+              _show = false;
+            });
+          }
+        });
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _delayTimer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedOpacity(duration: _currentDuration, opacity: _show ? 1.0 : 0.0, child: widget.child);
+  }
+}
+
+class ThumbnailTile extends ConsumerWidget {
   const ThumbnailTile(
     this.asset, {
     this.size = kThumbnailResolution,
@@ -31,24 +120,11 @@ class ThumbnailTile extends ConsumerStatefulWidget {
   final int? heroOffset;
 
   @override
-  ConsumerState<ThumbnailTile> createState() => _ThumbnailTileState();
-}
-
-class _ThumbnailTileState extends ConsumerState<ThumbnailTile> {
-  final ValueNotifier<bool> _isHeroFlying = ValueNotifier<bool>(false);
-
-  @override
-  void dispose() {
-    _isHeroFlying.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final asset = widget.asset;
-    final heroIndex = widget.heroOffset ?? TabsRouterScope.of(context)?.controller.activeIndex ?? 0;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final asset = this.asset;
+    final heroIndex = heroOffset ?? TabsRouterScope.of(context)?.controller.activeIndex ?? 0;
     final currentAsset = ref.watch(currentAssetNotifier);
-    // final showIndicators = asset == null || asset != currentAsset;
+    final showIndicators = asset == null || asset != currentAsset;
 
     final assetContainerColor = context.isDarkTheme
         ? context.primaryColor.darken(amount: 0.4)
@@ -59,25 +135,21 @@ class _ThumbnailTileState extends ConsumerState<ThumbnailTile> {
     );
 
     final bool storageIndicator =
-        ref.watch(settingsProvider.select((s) => s.get(Setting.showStorageIndicator))) && widget.showStorageIndicator;
+        ref.watch(settingsProvider.select((s) => s.get(Setting.showStorageIndicator))) && showStorageIndicator;
 
     return Stack(
-      //TODO: this breaks the selection animation a bit
       children: [
-        AnimatedContainer(
-          duration: isSelected || widget.lockSelection ? Durations.short4 : const Duration(milliseconds: 500),
-          color: widget.lockSelection
-              ? context.colorScheme.surfaceContainerHighest
-              : isSelected
-              ? assetContainerColor
-              : Colors.transparent,
+        _DelayedAnimation(
+          show: isSelected || lockSelection,
+          hideDelay: Durations.short4,
+          child: Container(color: lockSelection ? context.colorScheme.surfaceContainerHighest : assetContainerColor),
         ),
         AnimatedContainer(
           duration: Durations.short4,
           curve: Curves.decelerate,
-          padding: EdgeInsets.all(isSelected || widget.lockSelection ? 6 : 0),
+          padding: EdgeInsets.all(isSelected || lockSelection ? 6 : 0),
           child: TweenAnimationBuilder<double>(
-            tween: Tween<double>(begin: 0.0, end: (isSelected || widget.lockSelection) ? 15.0 : 0.0),
+            tween: Tween<double>(begin: 0.0, end: (isSelected || lockSelection) ? 15.0 : 0.0),
             duration: Durations.short4,
             curve: Curves.decelerate,
             builder: (context, value, child) {
@@ -88,100 +160,84 @@ class _ThumbnailTileState extends ConsumerState<ThumbnailTile> {
                 Positioned.fill(
                   child: Hero(
                     tag: '${asset?.heroTag ?? ''}_$heroIndex',
-                    placeholderBuilder: (context, heroSize, child) {
-                      // Set flying state to true when placeholder is built
-                      WidgetsBinding.instance.addPostFrameCallback((_) {
-                        _isHeroFlying.value = true;
-                      });
-
-                      return Container(width: heroSize.width, height: heroSize.height, child: child);
-                    },
-                    flightShuttleBuilder: (flightContext, animation, flightDirection, fromHeroContext, toHeroContext) {
-                      // Reset flying state when flight completes
-                      animation.addStatusListener((status) {
-                        if (status == AnimationStatus.completed || status == AnimationStatus.dismissed) {
-                          _isHeroFlying.value = false;
-                        }
-                      });
-
-                      return DefaultTextStyle(
-                        style: DefaultTextStyle.of(toHeroContext).style,
-                        child: toHeroContext.widget,
-                      );
-                    },
-                    child: Thumbnail.fromAsset(asset: asset, size: widget.size),
+                    child: Thumbnail.fromAsset(asset: asset, size: size),
                   ),
                 ),
+                if (asset != null)
+                  _DelayedAnimation(
+                    show: showIndicators,
+                    showDelay: const Duration(milliseconds: 300),
+                    showDuration: const Duration(milliseconds: 200),
+                    hideDuration: const Duration(milliseconds: 150),
+                    child: Align(
+                      alignment: Alignment.topRight,
+                      child: _AssetTypeIcons(asset: asset),
+                    ),
+                  ),
 
-                // Use ValueListenableBuilder to reactively hide/show indicators based on hero flight
-                ValueListenableBuilder<bool>(
-                  valueListenable: _isHeroFlying,
-                  builder: (context, isFlying, _) {
-                    final showIndicators = asset != currentAsset && !isFlying;
+                if (storageIndicator && asset != null)
+                  _DelayedAnimation(
+                    show: showIndicators,
+                    showDelay: const Duration(milliseconds: 300),
+                    showDuration: const Duration(milliseconds: 200),
+                    hideDuration: const Duration(milliseconds: 150),
+                    child: switch (asset.storage) {
+                      AssetState.local => const Align(
+                        alignment: Alignment.bottomRight,
+                        child: Padding(
+                          padding: EdgeInsets.only(right: 10.0, bottom: 6.0),
+                          child: _TileOverlayIcon(Icons.cloud_off_outlined),
+                        ),
+                      ),
+                      AssetState.remote => const Align(
+                        alignment: Alignment.bottomRight,
+                        child: Padding(
+                          padding: EdgeInsets.only(right: 10.0, bottom: 6.0),
+                          child: _TileOverlayIcon(Icons.cloud_outlined),
+                        ),
+                      ),
+                      AssetState.merged => const Align(
+                        alignment: Alignment.bottomRight,
+                        child: Padding(
+                          padding: EdgeInsets.only(right: 10.0, bottom: 6.0),
+                          child: _TileOverlayIcon(Icons.cloud_done_outlined),
+                        ),
+                      ),
+                    },
+                  ),
 
-                    return Stack(
-                      children: [
-                        if (showIndicators && asset != null)
-                          Align(
-                            alignment: Alignment.topRight,
-                            child: _AssetTypeIcons(asset: asset),
-                          ),
-
-                        if (showIndicators && storageIndicator && asset != null)
-                          switch (asset.storage) {
-                            AssetState.local => const Align(
-                              alignment: Alignment.bottomRight,
-                              child: Padding(
-                                padding: EdgeInsets.only(right: 10.0, bottom: 6.0),
-                                child: _TileOverlayIcon(Icons.cloud_off_outlined),
-                              ),
-                            ),
-                            AssetState.remote => const Align(
-                              alignment: Alignment.bottomRight,
-                              child: Padding(
-                                padding: EdgeInsets.only(right: 10.0, bottom: 6.0),
-                                child: _TileOverlayIcon(Icons.cloud_outlined),
-                              ),
-                            ),
-                            AssetState.merged => const Align(
-                              alignment: Alignment.bottomRight,
-                              child: Padding(
-                                padding: EdgeInsets.only(right: 10.0, bottom: 6.0),
-                                child: _TileOverlayIcon(Icons.cloud_done_outlined),
-                              ),
-                            ),
-                          },
-
-                        if (showIndicators && asset != null && asset.isFavorite)
-                          const Align(
-                            alignment: Alignment.bottomLeft,
-                            child: Padding(
-                              padding: EdgeInsets.only(left: 10.0, bottom: 6.0),
-                              child: _TileOverlayIcon(Icons.favorite_rounded),
-                            ),
-                          ),
-                      ],
-                    );
-                  },
-                ),
+                if (asset != null && asset.isFavorite)
+                  _DelayedAnimation(
+                    show: showIndicators,
+                    showDelay: const Duration(milliseconds: 300),
+                    showDuration: const Duration(milliseconds: 200),
+                    hideDuration: const Duration(milliseconds: 150),
+                    child: const Align(
+                      alignment: Alignment.bottomLeft,
+                      child: Padding(
+                        padding: EdgeInsets.only(left: 10.0, bottom: 6.0),
+                        child: _TileOverlayIcon(Icons.favorite_rounded),
+                      ),
+                    ),
+                  ),
               ],
             ),
           ),
         ),
         TweenAnimationBuilder<double>(
-          tween: Tween<double>(begin: 0.0, end: (isSelected || widget.lockSelection) ? 1.0 : 0.0),
+          tween: Tween<double>(begin: 0.0, end: (isSelected || lockSelection) ? 1.0 : 0.0),
           duration: Durations.short4,
           curve: Curves.decelerate,
           builder: (context, value, child) {
             return Padding(
-              padding: EdgeInsets.all((isSelected || widget.lockSelection) ? value * 3.0 : 3.0),
+              padding: EdgeInsets.all((isSelected || lockSelection) ? value * 3.0 : 3.0),
               child: Align(
                 alignment: Alignment.topLeft,
                 child: Opacity(
-                  opacity: (isSelected || widget.lockSelection) ? 1 : value,
+                  opacity: (isSelected || lockSelection) ? 1 : value,
                   child: _SelectionIndicator(
-                    isLocked: widget.lockSelection,
-                    color: widget.lockSelection ? context.colorScheme.surfaceContainerHighest : assetContainerColor,
+                    isLocked: lockSelection,
+                    color: lockSelection ? context.colorScheme.surfaceContainerHighest : assetContainerColor,
                   ),
                 ),
               ),
