@@ -278,37 +278,42 @@
       return;
     }
 
-    void tracker.invoke(async () => {
-      let hasNext: boolean;
+    void tracker.invoke(
+      async () => {
+        let hasNext: boolean;
 
-      if ($slideshowState === SlideshowState.PlaySlideshow && $slideshowNavigation === SlideshowNavigation.Shuffle) {
-        hasNext = order === 'previous' ? slideshowHistory.previous() : slideshowHistory.next();
-        if (!hasNext) {
-          const asset = await onRandom?.();
-          if (asset) {
-            slideshowHistory.queue(asset);
-            hasNext = true;
+        if ($slideshowState === SlideshowState.PlaySlideshow && $slideshowNavigation === SlideshowNavigation.Shuffle) {
+          hasNext = order === 'previous' ? slideshowHistory.previous() : slideshowHistory.next();
+          if (!hasNext) {
+            const asset = await onRandom?.();
+            if (asset) {
+              slideshowHistory.queue(asset);
+              hasNext = true;
+            }
           }
+        } else {
+          hasNext =
+            order === 'previous'
+              ? await navigateToAsset(cursor.previousAsset)
+              : await navigateToAsset(cursor.nextAsset);
         }
-      } else {
-        hasNext =
-          order === 'previous' ? await navigateToAsset(cursor.previousAsset) : await navigateToAsset(cursor.nextAsset);
-      }
 
-      if ($slideshowState !== SlideshowState.PlaySlideshow) {
-        return;
-      }
+        if ($slideshowState !== SlideshowState.PlaySlideshow) {
+          return;
+        }
 
-      if (hasNext) {
-        $restartSlideshowProgress = true;
-      } else if ($slideshowRepeat && slideshowStartAssetId) {
-        // Loop back to starting asset
-        await setAssetId(slideshowStartAssetId);
-        $restartSlideshowProgress = true;
-      } else {
-        await handleStopSlideshow();
-      }
-    }, $t('error_while_navigating'));
+        if (hasNext) {
+          $restartSlideshowProgress = true;
+        } else if ($slideshowRepeat && slideshowStartAssetId) {
+          // Loop back to starting asset
+          await setAssetId(slideshowStartAssetId);
+          $restartSlideshowProgress = true;
+        } else {
+          await handleStopSlideshow();
+        }
+      },
+      (error: unknown) => handleError(error, $t('error_while_navigating')),
+    );
   };
 
   /**
