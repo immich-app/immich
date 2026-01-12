@@ -19,7 +19,7 @@ class QueueJobCreateDtoJob {
 
   BaseJobData data;
 
-  num name;
+  DatabaseBackup name;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is QueueJobCreateDtoJob &&
@@ -52,7 +52,7 @@ class QueueJobCreateDtoJob {
 
       return QueueJobCreateDtoJob(
         data: BaseJobData.fromJson(json[r'data'])!,
-        name: num.parse('${json[r'name']}'),
+        name: DatabaseBackup.fromJson(json[r'name'])!,
       );
     }
     return null;

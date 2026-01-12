@@ -16872,6 +16872,12 @@
         ],
         "type": "object"
       },
+      "DatabaseBackup": {
+        "enum": [
+          "DatabaseBackup"
+        ],
+        "type": "string"
+      },
       "DatabaseBackupConfig": {
         "properties": {
           "cronExpression": {
@@ -17269,8 +17275,11 @@
             "$ref": "#/components/schemas/BaseJobData"
           },
           "name": {
-            "enum": [],
-            "type": "number"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DatabaseBackup"
+              }
+            ]
           }
         },
         "required": [
@@ -17285,8 +17294,11 @@
             "$ref": "#/components/schemas/BaseJobData"
           },
           "name": {
-            "enum": [],
-            "type": "number"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MemoryCleanup"
+              }
+            ]
           }
         },
         "required": [
@@ -17301,8 +17313,11 @@
             "$ref": "#/components/schemas/BaseJobData"
           },
           "name": {
-            "enum": [],
-            "type": "number"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MemoryGenerate"
+              }
+            ]
           }
         },
         "required": [
@@ -17378,8 +17393,11 @@
             "$ref": "#/components/schemas/BaseJobData"
           },
           "name": {
-            "enum": [],
-            "type": "number"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PersonCleanup"
+              }
+            ]
           }
         },
         "required": [
@@ -17406,8 +17424,11 @@
             "$ref": "#/components/schemas/BaseJobData"
           },
           "name": {
-            "enum": [],
-            "type": "number"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TagCleanup"
+              }
+            ]
           }
         },
         "required": [
@@ -17422,8 +17443,11 @@
             "$ref": "#/components/schemas/BaseJobData"
           },
           "name": {
-            "enum": [],
-            "type": "number"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UserDeleteCheck"
+              }
+            ]
           }
         },
         "required": [
@@ -17776,6 +17800,12 @@
         },
         "type": "object"
       },
+      "MemoryCleanup": {
+        "enum": [
+          "MemoryCleanup"
+        ],
+        "type": "string"
+      },
       "MemoryCreateDto": {
         "properties": {
           "assetIds": {
@@ -17813,6 +17843,12 @@
           "type"
         ],
         "type": "object"
+      },
+      "MemoryGenerate": {
+        "enum": [
+          "MemoryGenerate"
+        ],
+        "type": "string"
       },
       "MemoryResponseDto": {
         "properties": {
@@ -18756,6 +18792,12 @@
           "adminUser.delete",
           "adminSession.read",
           "adminAuth.unlinkAll"
+        ],
+        "type": "string"
+      },
+      "PersonCleanup": {
+        "enum": [
+          "PersonCleanup"
         ],
         "type": "string"
       },
@@ -23012,6 +23054,12 @@
         ],
         "type": "object"
       },
+      "TagCleanup": {
+        "enum": [
+          "TagCleanup"
+        ],
+        "type": "string"
+      },
       "TagCreateDto": {
         "properties": {
           "color": {
@@ -23730,6 +23778,12 @@
           "orange",
           "gray",
           "amber"
+        ],
+        "type": "string"
+      },
+      "UserDeleteCheck": {
+        "enum": [
+          "UserDeleteCheck"
         ],
         "type": "string"
       },

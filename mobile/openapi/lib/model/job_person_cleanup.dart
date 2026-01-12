@@ -19,7 +19,7 @@ class JobPersonCleanup {
 
   BaseJobData data;
 
-  num name;
+  PersonCleanup name;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is JobPersonCleanup &&
@@ -52,7 +52,7 @@ class JobPersonCleanup {
 
       return JobPersonCleanup(
         data: BaseJobData.fromJson(json[r'data'])!,
-        name: num.parse('${json[r'name']}'),
+        name: PersonCleanup.fromJson(json[r'name'])!,
       );
     }
     return null;

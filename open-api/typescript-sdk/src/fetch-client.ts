@@ -1043,27 +1043,27 @@ export type BaseJobData = {
 };
 export type JobTagCleanup = {
     data: BaseJobData;
-    name: Name;
+    name: TagCleanup;
 };
 export type JobPersonCleanup = {
     data: BaseJobData;
-    name: Name;
+    name: PersonCleanup;
 };
 export type JobUserDeleteCheck = {
     data: BaseJobData;
-    name: Name;
+    name: UserDeleteCheck;
 };
 export type JobMemoryCleanup = {
     data: BaseJobData;
-    name: Name;
+    name: MemoryCleanup;
 };
 export type JobMemoryGenerate = {
     data: BaseJobData;
-    name: Name;
+    name: MemoryGenerate;
 };
 export type JobDatabaseBackup = {
     data: BaseJobData;
-    name: Name;
+    name: DatabaseBackup;
 };
 export type QueueJobCreateDto = {
     job: JobTagCleanup | JobPersonCleanup | JobUserDeleteCheck | JobMemoryCleanup | JobMemoryGenerate | JobDatabaseBackup;
@@ -5636,7 +5636,23 @@ export enum PluginTriggerType {
     AssetCreate = "AssetCreate",
     PersonRecognized = "PersonRecognized"
 }
-export enum Name {
+export enum TagCleanup {
+    TagCleanup = "TagCleanup"
+}
+export enum PersonCleanup {
+    PersonCleanup = "PersonCleanup"
+}
+export enum UserDeleteCheck {
+    UserDeleteCheck = "UserDeleteCheck"
+}
+export enum MemoryCleanup {
+    MemoryCleanup = "MemoryCleanup"
+}
+export enum MemoryGenerate {
+    MemoryGenerate = "MemoryGenerate"
+}
+export enum DatabaseBackup {
+    DatabaseBackup = "DatabaseBackup"
 }
 export enum QueueJobStatus {
     Active = "active",

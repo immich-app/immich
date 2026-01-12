@@ -19,7 +19,7 @@ class JobMemoryGenerate {
 
   BaseJobData data;
 
-  num name;
+  MemoryGenerate name;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is JobMemoryGenerate &&
@@ -52,7 +52,7 @@ class JobMemoryGenerate {
 
       return JobMemoryGenerate(
         data: BaseJobData.fromJson(json[r'data'])!,
-        name: num.parse('${json[r'name']}'),
+        name: MemoryGenerate.fromJson(json[r'name'])!,
       );
     }
     return null;

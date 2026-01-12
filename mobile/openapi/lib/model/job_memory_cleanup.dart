@@ -19,7 +19,7 @@ class JobMemoryCleanup {
 
   BaseJobData data;
 
-  num name;
+  MemoryCleanup name;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is JobMemoryCleanup &&
@@ -52,7 +52,7 @@ class JobMemoryCleanup {
 
       return JobMemoryCleanup(
         data: BaseJobData.fromJson(json[r'data'])!,
-        name: num.parse('${json[r'name']}'),
+        name: MemoryCleanup.fromJson(json[r'name'])!,
       );
     }
     return null;

@@ -18,31 +18,37 @@ class BaseJob {
 }
 
 class JobTagCleanup extends BaseJob {
+  @ApiProperty({ enumName: JobName.TagCleanup, enum: [JobName.TagCleanup] })
   @Equals(JobName.TagCleanup)
   name!: JobName.TagCleanup;
 }
 
 class JobPersonCleanup extends BaseJob {
+  @ApiProperty({ enumName: JobName.PersonCleanup, enum: [JobName.PersonCleanup] })
   @Equals(JobName.PersonCleanup)
   name!: JobName.PersonCleanup;
 }
 
 class JobUserDeleteCheck extends BaseJob {
+  @ApiProperty({ enumName: JobName.UserDeleteCheck, enum: [JobName.UserDeleteCheck] })
   @Equals(JobName.UserDeleteCheck)
   name!: JobName.UserDeleteCheck;
 }
 
 class JobMemoryCleanup extends BaseJob {
+  @ApiProperty({ enumName: JobName.MemoryCleanup, enum: [JobName.MemoryCleanup] })
   @Equals(JobName.MemoryCleanup)
   name!: JobName.MemoryCleanup;
 }
 
 class JobMemoryGenerate extends BaseJob {
+  @ApiProperty({ enumName: JobName.MemoryGenerate, enum: [JobName.MemoryGenerate] })
   @Equals(JobName.MemoryGenerate)
   name!: JobName.MemoryGenerate;
 }
 
 class JobDatabaseBackup extends BaseJob {
+  @ApiProperty({ enumName: JobName.DatabaseBackup, enum: [JobName.DatabaseBackup] })
   @Equals(JobName.DatabaseBackup)
   name!: JobName.DatabaseBackup;
 }

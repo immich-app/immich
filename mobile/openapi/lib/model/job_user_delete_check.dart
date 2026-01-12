@@ -19,7 +19,7 @@ class JobUserDeleteCheck {
 
   BaseJobData data;
 
-  num name;
+  UserDeleteCheck name;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is JobUserDeleteCheck &&
@@ -52,7 +52,7 @@ class JobUserDeleteCheck {
 
       return JobUserDeleteCheck(
         data: BaseJobData.fromJson(json[r'data'])!,
-        name: num.parse('${json[r'name']}'),
+        name: UserDeleteCheck.fromJson(json[r'name'])!,
       );
     }
     return null;
