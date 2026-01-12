@@ -1,7 +1,7 @@
 <script lang="ts">
+  import AdminSidebar from '$lib/components/AdminSidebar.svelte';
   import PageContent from '$lib/components/layouts/PageContent.svelte';
   import NavigationBar from '$lib/components/shared-components/navigation-bar/navigation-bar.svelte';
-  import AdminSidebar from '$lib/components/AdminSidebar.svelte';
   import { sidebarStore } from '$lib/stores/sidebar.svelte';
   import type { HeaderButtonActionItem } from '$lib/types';
   import {
@@ -28,6 +28,12 @@
   };
 
   let { breadcrumbs, actions = [], children }: Props = $props();
+
+  const enabledActions = $derived(
+    actions
+      .filter((action): action is HeaderButtonActionItem => !isMenuItemType(action))
+      .filter((action) => action.$if?.() ?? true),
+  );
 </script>
 
 <AppShell>
@@ -42,22 +48,20 @@
     <div class="flex h-16 w-full justify-between items-center border-b py-2 px-4 md:px-2">
       <Breadcrumbs items={breadcrumbs} separator={mdiSlashForward} />
 
-      {#if actions.length > 0}
+      {#if enabledActions.length > 0}
         <div class="hidden md:block">
           <HStack gap={0}>
-            {#each actions as action, i (i)}
-              {#if !isMenuItemType(action) && (action.$if?.() ?? true)}
-                <Button
-                  variant="ghost"
-                  size="small"
-                  color={action.color ?? 'secondary'}
-                  leadingIcon={action.icon}
-                  onclick={() => action.onAction(action)}
-                  title={action.data?.title}
-                >
-                  {action.title}
-                </Button>
-              {/if}
+            {#each enabledActions as action, i (i)}
+              <Button
+                variant="ghost"
+                size="small"
+                color={action.color ?? 'secondary'}
+                leadingIcon={action.icon}
+                onclick={() => action.onAction(action)}
+                title={action.data?.title}
+              >
+                {action.title}
+              </Button>
             {/each}
           </HStack>
         </div>

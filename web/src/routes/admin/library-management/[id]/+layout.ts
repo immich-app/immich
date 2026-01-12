@@ -13,7 +13,7 @@ export const load = (async ({ params: { id }, url }) => {
   try {
     library = await getLibrary({ id });
   } catch {
-    redirect(302, AppRoute.ADMIN_LIBRARIES);
+    redirect(307, AppRoute.ADMIN_LIBRARIES);
   }
 
   const statistics = await getLibraryStatistics({ id });

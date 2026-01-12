@@ -1,6 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsString } from 'class-validator';
-import _ from 'lodash';
 import { SharedLink } from 'src/database';
 import { HistoryBuilder, Property } from 'src/decorators';
 import { AlbumResponseDto, mapAlbumWithoutAssets } from 'src/dtos/album.dto';
@@ -118,10 +117,10 @@ export class SharedLinkResponseDto {
   slug!: string | null;
 }
 
-export function mapSharedLink(sharedLink: SharedLink): SharedLinkResponseDto {
-  const linkAssets = sharedLink.assets || [];
+export function mapSharedLink(sharedLink: SharedLink, options: { stripAssetMetadata: boolean }): SharedLinkResponseDto {
+  const assets = sharedLink.assets || [];
 
-  return {
+  const response = {
     id: sharedLink.id,
     description: sharedLink.description,
     password: sharedLink.password,
@@ -130,35 +129,19 @@ export function mapSharedLink(sharedLink: SharedLink): SharedLinkResponseDto {
     type: sharedLink.type,
     createdAt: sharedLink.createdAt,
     expiresAt: sharedLink.expiresAt,
-    assets: linkAssets.map((asset) => mapAsset(asset)),
+    assets: assets.map((asset) => mapAsset(asset, { stripMetadata: options.stripAssetMetadata })),
     album: sharedLink.album ? mapAlbumWithoutAssets(sharedLink.album) : undefined,
     allowUpload: sharedLink.allowUpload,
     allowDownload: sharedLink.allowDownload,
     showMetadata: sharedLink.showExif,
     slug: sharedLink.slug,
   };
-}
 
-export function mapSharedLinkWithoutMetadata(sharedLink: SharedLink): SharedLinkResponseDto {
-  const linkAssets = sharedLink.assets || [];
-  const albumAssets = (sharedLink?.album?.assets || []).map((asset) => asset);
+  // unless we select sharedLink.album.sharedLinks this will be wrong
+  if (response.album) {
+    response.album.hasSharedLink = true;
+    response.album.shared = true;
+  }
 
-  const assets = _.uniqBy([...linkAssets, ...albumAssets], (asset) => asset.id);
-
-  return {
-    id: sharedLink.id,
-    description: sharedLink.description,
-    password: sharedLink.password,
-    userId: sharedLink.userId,
-    key: sharedLink.key.toString('base64url'),
-    type: sharedLink.type,
-    createdAt: sharedLink.createdAt,
-    expiresAt: sharedLink.expiresAt,
-    assets: assets.map((asset) => mapAsset(asset, { stripMetadata: true })),
-    album: sharedLink.album ? mapAlbumWithoutAssets(sharedLink.album) : undefined,
-    allowUpload: sharedLink.allowUpload,
-    allowDownload: sharedLink.allowDownload,
-    showMetadata: sharedLink.showExif,
-    slug: sharedLink.slug,
-  };
+  return response;
 }

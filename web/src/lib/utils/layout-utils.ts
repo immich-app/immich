@@ -49,8 +49,7 @@ function wasmLayoutFromTimeline(assets: TimelineAsset[], options: LayoutOptions)
 function wasmLayoutFromDto(assets: AssetResponseDto[], options: LayoutOptions) {
   const aspectRatios = new Float32Array(assets.length);
   for (let i = 0; i < assets.length; i++) {
-    const { width, height } = getAssetRatio(assets[i]);
-    aspectRatios[i] = width / height;
+    aspectRatios[i] = getAssetRatio(assets[i]) ?? 1;
   }
   return new JustifiedLayout(aspectRatios, options);
 }
@@ -111,7 +110,7 @@ export function justifiedLayout(assets: (TimelineAsset | AssetResponseDto)[], op
   };
 
   const result = createJustifiedLayout(
-    assets.map((asset) => (isTimelineAsset(asset) ? asset.ratio : getAssetRatio(asset))),
+    assets.map((asset) => (isTimelineAsset(asset) ? asset.ratio : (getAssetRatio(asset) ?? 1))),
     adapter,
   );
   return new Adapter(result);

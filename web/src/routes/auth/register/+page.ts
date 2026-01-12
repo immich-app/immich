@@ -8,7 +8,7 @@ export const load = (async ({ parent }) => {
   await parent();
   if (serverConfigManager.value.isInitialized) {
     // Admin has been registered, redirect to login
-    redirect(302, AppRoute.AUTH_LOGIN);
+    redirect(307, AppRoute.AUTH_LOGIN);
   }
 
   const $t = await getFormatter();

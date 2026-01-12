@@ -10,12 +10,12 @@ export const load = (async ({ params, url }) => {
   await requestServerInfo();
 
   if (!UUID_REGEX.test(params.id)) {
-    redirect(302, AppRoute.ADMIN_USERS);
+    redirect(307, AppRoute.ADMIN_USERS);
   }
 
   const [user] = await searchUsersAdmin({ id: params.id, withDeleted: true }).catch(() => []);
   if (!user) {
-    redirect(302, AppRoute.ADMIN_USERS);
+    redirect(307, AppRoute.ADMIN_USERS);
   }
 
   const [userPreferences, userStatistics, userSessions] = await Promise.all([
