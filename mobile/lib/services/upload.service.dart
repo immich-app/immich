@@ -379,6 +379,107 @@ class UploadService {
     return _uploadRepository.start();
   }
 
+  /// Upload multiple files using foreground HTTP with concurrent workers
+  /// This is used for share intent uploads
+  Future<void> uploadFilesWithHttp(
+    List<File> files, {
+    CancellationToken? cancelToken,
+    void Function(String fileId, int bytes, int totalBytes)? onProgress,
+    void Function(String fileId)? onSuccess,
+    void Function(String fileId, String errorMessage)? onError,
+  }) async {
+    if (files.isEmpty) {
+      return;
+    }
+
+    const concurrentUploads = 3;
+    final httpClients = List.generate(concurrentUploads, (_) => Client());
+    final effectiveCancelToken = cancelToken ?? CancellationToken();
+
+    try {
+      int currentIndex = 0;
+
+      Future<void> worker(Client httpClient) async {
+        while (true) {
+          if (effectiveCancelToken.isCancelled) break;
+
+          final index = currentIndex;
+          if (index >= files.length) break;
+          currentIndex++;
+
+          final file = files[index];
+          final fileId = p.hash(file.path).toString();
+
+          final result = await _uploadSingleFileWithHttp(
+            file,
+            deviceAssetId: fileId,
+            httpClient: httpClient,
+            cancelToken: effectiveCancelToken,
+            onProgress: (bytes, totalBytes) => onProgress?.call(fileId, bytes, totalBytes),
+          );
+
+          if (result.isSuccess) {
+            onSuccess?.call(fileId);
+          } else if (!result.isCancelled && result.errorMessage != null) {
+            onError?.call(fileId, result.errorMessage!);
+          }
+        }
+      }
+
+      final workerFutures = <Future<void>>[];
+      for (int i = 0; i < concurrentUploads; i++) {
+        workerFutures.add(worker(httpClients[i]));
+      }
+
+      await Future.wait(workerFutures);
+    } finally {
+      for (final client in httpClients) {
+        client.close();
+      }
+    }
+  }
+
+  /// Upload a single file using foreground HTTP upload
+  Future<UploadResult> _uploadSingleFileWithHttp(
+    File file, {
+    required String deviceAssetId,
+    required Client httpClient,
+    required CancellationToken cancelToken,
+    void Function(int bytes, int totalBytes)? onProgress,
+  }) async {
+    try {
+      final stats = await file.stat();
+      final fileCreatedAt = stats.changed;
+      final fileModifiedAt = stats.modified;
+      final filename = p.basename(file.path);
+
+      final headers = ApiService.getRequestHeaders();
+      final deviceId = Store.get(StoreKey.deviceId);
+
+      final fields = {
+        'deviceAssetId': deviceAssetId,
+        'deviceId': deviceId,
+        'fileCreatedAt': fileCreatedAt.toUtc().toIso8601String(),
+        'fileModifiedAt': fileModifiedAt.toUtc().toIso8601String(),
+        'isFavorite': 'false',
+        'duration': '0',
+      };
+
+      return await _uploadRepository.uploadFile(
+        file: file,
+        originalFileName: filename,
+        headers: headers,
+        fields: fields,
+        httpClient: httpClient,
+        cancelToken: cancelToken,
+        onProgress: onProgress ?? (_, __) {},
+        logContext: 'shareIntent[$deviceAssetId]',
+      );
+    } catch (e) {
+      return UploadResult.error(errorMessage: e.toString());
+    }
+  }
+
   void _handleTaskStatusUpdate(TaskStatusUpdate update) async {
     switch (update.status) {
       case TaskStatus.complete:
