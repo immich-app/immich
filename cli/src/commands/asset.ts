@@ -222,7 +222,7 @@ export const checkForDuplicates = async (files: string[], { concurrency, skipHas
 
       checkProgressBar?.increment(assets.length);
     },
-    { concurrency, retry: 3, verbose: true },
+    { concurrency, retry: 3 },
   );
 
   const results: { id: string; checksum: string }[] = [];
