@@ -1,184 +1,163 @@
 <script lang="ts">
-  import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
-  import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
-  import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
+  import AlbumSharedLink from '$lib/components/album-page/album-shared-link.svelte';
+  import HeaderActionButton from '$lib/components/HeaderActionButton.svelte';
+  import OnEvents from '$lib/components/OnEvents.svelte';
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
-  import type { RenderedOption } from '$lib/elements/Dropdown.svelte';
-  import { handleError } from '$lib/utils/handle-error';
+  import {
+    getAlbumActions,
+    handleRemoveUserFromAlbum,
+    handleUpdateAlbum,
+    handleUpdateUserAlbumRole,
+  } from '$lib/services/album.service';
+  import { user } from '$lib/stores/user.store';
   import {
     AlbumUserRole,
     AssetOrder,
-    removeUserFromAlbum,
-    updateAlbumInfo,
-    updateAlbumUser,
+    getAlbumInfo,
+    getAllSharedLinks,
     type AlbumResponseDto,
+    type SharedLinkResponseDto,
     type UserResponseDto,
   } from '@immich/sdk';
-  import { Icon, Modal, ModalBody, modalManager, toastManager } from '@immich/ui';
-  import { mdiArrowDownThin, mdiArrowUpThin, mdiDotsVertical, mdiPlus } from '@mdi/js';
-  import { findKey } from 'lodash-es';
+  import { Field, Heading, HStack, Modal, ModalBody, Select, Stack, Switch, Text } from '@immich/ui';
+  import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
-  import SettingDropdown from '../components/shared-components/settings/setting-dropdown.svelte';
 
-  interface Props {
+  type Props = {
     album: AlbumResponseDto;
-    order: AssetOrder | undefined;
-    user: UserResponseDto;
-    onClose: (
-      result?: { action: 'changeOrder'; order: AssetOrder } | { action: 'shareUser' } | { action: 'refreshAlbum' },
-    ) => void;
-  }
-
-  let { album, order, user, onClose }: Props = $props();
-
-  const options: Record<AssetOrder, RenderedOption> = {
-    [AssetOrder.Asc]: { icon: mdiArrowUpThin, title: $t('oldest_first') },
-    [AssetOrder.Desc]: { icon: mdiArrowDownThin, title: $t('newest_first') },
+    onClose: () => void;
   };
 
-  let selectedOption = $derived(order ? options[order] : options[AssetOrder.Desc]);
+  let { album, onClose }: Props = $props();
 
-  const handleToggleOrder = async (returnedOption: RenderedOption): Promise<void> => {
-    if (selectedOption === returnedOption) {
-      return;
-    }
-    let order: AssetOrder = AssetOrder.Desc;
-    order = findKey(options, (option) => option === returnedOption) as AssetOrder;
+  const orderOptions = [
+    { label: $t('newest_first'), value: AssetOrder.Desc },
+    { label: $t('oldest_first'), value: AssetOrder.Asc },
+  ];
 
-    try {
-      await updateAlbumInfo({
-        id: album.id,
-        updateAlbumDto: {
-          order,
-        },
-      });
-      onClose({ action: 'changeOrder', order });
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_save_album'));
-    }
-  };
+  const roleOptions: Array<{ label: string; value: AlbumUserRole | 'none'; icon?: string }> = [
+    { label: $t('role_editor'), value: AlbumUserRole.Editor },
+    { label: $t('role_viewer'), value: AlbumUserRole.Viewer },
+    { label: $t('remove_user'), value: 'none' },
+  ];
 
-  const handleToggleActivity = async () => {
-    try {
-      album = await updateAlbumInfo({
-        id: album.id,
-        updateAlbumDto: {
-          isActivityEnabled: !album.isActivityEnabled,
-        },
-      });
+  const selectedOrderOption = $derived(
+    album.order ? orderOptions.find(({ value }) => value === album.order) : orderOptions[0],
+  );
 
-      toastManager.success($t('activity_changed', { values: { enabled: album.isActivityEnabled } }));
-    } catch (error) {
-      handleError(error, $t('errors.cant_change_activity', { values: { enabled: album.isActivityEnabled } }));
-    }
-  };
-
-  const handleRemoveUser = async (user: UserResponseDto): Promise<void> => {
-    const confirmed = await modalManager.showDialog({
-      title: $t('album_remove_user'),
-      prompt: $t('album_remove_user_confirmation', { values: { user: user.name } }),
-      confirmText: $t('remove_user'),
-    });
-
-    if (!confirmed) {
+  const handleRoleSelect = async (user: UserResponseDto, role: AlbumUserRole | 'none') => {
+    if (role === 'none') {
+      await handleRemoveUserFromAlbum(album, user);
       return;
     }
 
-    try {
-      await removeUserFromAlbum({ id: album.id, userId: user.id });
-      onClose({ action: 'refreshAlbum' });
-      toastManager.success($t('album_user_removed', { values: { user: user.name } }));
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_remove_album_users'));
-    }
+    await handleUpdateUserAlbumRole({ albumId: album.id, userId: user.id, role });
   };
 
-  const handleUpdateSharedUserRole = async (user: UserResponseDto, role: AlbumUserRole) => {
-    try {
-      await updateAlbumUser({ id: album.id, userId: user.id, updateAlbumUserDto: { role } });
-      const message = $t('user_role_set', {
-        values: { user: user.name, role: role == AlbumUserRole.Viewer ? $t('role_viewer') : $t('role_editor') },
-      });
-      onClose({ action: 'refreshAlbum' });
-      toastManager.success(message);
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_change_album_user_role'));
-    }
+  const refreshAlbum = async () => {
+    album = await getAlbumInfo({ id: album.id, withoutAssets: true });
   };
+
+  const onAlbumUserDelete = async ({ userId }: { userId: string }) => {
+    album.albumUsers = album.albumUsers.filter(({ user: { id } }) => id !== userId);
+    await refreshAlbum();
+  };
+
+  const onSharedLinkCreate = (sharedLink: SharedLinkResponseDto) => {
+    sharedLinks.push(sharedLink);
+  };
+
+  const onSharedLinkDelete = (sharedLink: SharedLinkResponseDto) => {
+    sharedLinks = sharedLinks.filter(({ id }) => sharedLink.id !== id);
+  };
+
+  const { AddUsers, CreateSharedLink } = $derived(getAlbumActions($t, album));
+
+  let sharedLinks: SharedLinkResponseDto[] = $state([]);
+
+  onMount(async () => {
+    sharedLinks = await getAllSharedLinks({ albumId: album.id });
+  });
 </script>
 
-<Modal title={$t('options')} onClose={() => onClose({ action: 'refreshAlbum' })} size="small">
+<OnEvents
+  {onAlbumUserDelete}
+  onAlbumShare={refreshAlbum}
+  {onSharedLinkCreate}
+  {onSharedLinkDelete}
+  onAlbumUpdate={(newAlbum) => (album = newAlbum)}
+/>
+
+<Modal title={$t('options')} {onClose} size="small">
   <ModalBody>
-    <div class="items-center justify-center">
+    <Stack>
       <div class="py-2">
-        <h2 class="uppercase text-gray text-sm mb-2">{$t('settings')}</h2>
+        <Heading size="tiny">{$t('settings')}</Heading>
         <div class="grid p-2 gap-y-2">
-          {#if order}
-            <SettingDropdown
-              title={$t('display_order')}
-              options={Object.values(options)}
-              selectedOption={options[order]}
-              onToggle={handleToggleOrder}
-            />
+          {#if album.order}
+            <Field label={$t('display_order')}>
+              <Select
+                data={orderOptions}
+                value={selectedOrderOption}
+                onChange={({ value }) => handleUpdateAlbum(album, { order: value })}
+              />
+            </Field>
           {/if}
-          <SettingSwitch
-            title={$t('comments_and_likes')}
-            subtitle={$t('let_others_respond')}
-            checked={album.isActivityEnabled}
-            onToggle={handleToggleActivity}
-          />
+          <Field label={$t('comments_and_likes')} description={$t('let_others_respond')}>
+            <Switch
+              checked={album.isActivityEnabled}
+              onCheckedChange={(checked) => handleUpdateAlbum(album, { isActivityEnabled: checked })}
+            />
+          </Field>
         </div>
       </div>
       <div class="py-2">
-        <div class="uppercase text-gray text-sm mb-3">{$t('people')}</div>
+        <HStack fullWidth class="justify-between">
+          <Heading size="tiny">{$t('people')}</Heading>
+          <HeaderActionButton action={AddUsers} />
+        </HStack>
         <div class="p-2">
-          <button type="button" class="flex items-center gap-2" onclick={() => onClose({ action: 'shareUser' })}>
-            <div class="rounded-full w-10 h-10 border border-gray-500 flex items-center justify-center">
-              <div><Icon icon={mdiPlus} size="25" /></div>
-            </div>
-            <div>{$t('invite_people')}</div>
-          </button>
-
           <div class="flex items-center gap-2 py-2 mt-2">
             <div>
-              <UserAvatar {user} size="md" />
+              <UserAvatar user={$user} size="md" />
             </div>
-            <div class="w-full">{user.name}</div>
-            <div>{$t('owner')}</div>
+            <div class="w-full">{$user.name}</div>
+            <Field disabled class="w-32 shrink-0">
+              <Select data={[{ label: $t('owner'), value: 'owner' }]} value={{ label: $t('owner'), value: 'owner' }} />
+            </Field>
           </div>
 
           {#each album.albumUsers as { user, role } (user.id)}
-            <div class="flex items-center gap-2 py-2">
-              <div>
-                <UserAvatar {user} size="md" />
+            <div class="flex items-center justify-between gap-4 py-2">
+              <div class="flex flex-row items-center gap-2">
+                <div>
+                  <UserAvatar {user} size="md" />
+                </div>
+                <Text>{user.name}</Text>
               </div>
-              <div class="w-full">{user.name}</div>
-              {#if role === AlbumUserRole.Viewer}
-                {$t('role_viewer')}
-              {:else}
-                {$t('role_editor')}
-              {/if}
-              {#if user.id !== album.ownerId}
-                <ButtonContextMenu icon={mdiDotsVertical} size="medium" title={$t('options')}>
-                  {#if role === AlbumUserRole.Viewer}
-                    <MenuOption
-                      onClick={() => handleUpdateSharedUserRole(user, AlbumUserRole.Editor)}
-                      text={$t('allow_edits')}
-                    />
-                  {:else}
-                    <MenuOption
-                      onClick={() => handleUpdateSharedUserRole(user, AlbumUserRole.Viewer)}
-                      text={$t('disallow_edits')}
-                    />
-                  {/if}
-                  <!-- Allow deletion for non-owners -->
-                  <MenuOption onClick={() => handleRemoveUser(user)} text={$t('remove')} />
-                </ButtonContextMenu>
-              {/if}
+              <Field class="w-32">
+                <Select
+                  data={roleOptions}
+                  value={roleOptions.find(({ value }) => value === role)}
+                  onChange={({ value }) => handleRoleSelect(user, value)}
+                />
+              </Field>
             </div>
           {/each}
         </div>
       </div>
-    </div>
+      <Stack gap={6}>
+        <HStack class="justify-between">
+          <Heading size="tiny">{$t('shared_links')}</Heading>
+          <HeaderActionButton action={CreateSharedLink} />
+        </HStack>
+
+        <Stack gap={4}>
+          {#each sharedLinks as sharedLink (sharedLink.id)}
+            <AlbumSharedLink {album} {sharedLink} />
+          {/each}
+        </Stack>
+      </Stack>
+    </Stack>
   </ModalBody>
 </Modal>
