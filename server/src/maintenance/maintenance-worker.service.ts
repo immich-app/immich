@@ -324,16 +324,11 @@ export class MaintenanceWorkerService {
     });
 
     try {
-      switch (action.action) {
-        case MaintenanceAction.RestoreDatabase: {
-          if (!action.restoreBackupFilename) {
-            throw new Error("Expected restoreBackupFilename but it's missing!");
-          }
-
-          await this.restoreBackup(action.restoreBackupFilename);
-          break;
-        }
+      if (!action.restoreBackupFilename) {
+        throw new Error("Expected restoreBackupFilename but it's missing!");
       }
+
+      await this.restoreBackup(action.restoreBackupFilename);
     } catch (error) {
       this.logger.error(`Encountered error running action: ${error}`);
       this.setStatus({
