@@ -66,7 +66,7 @@ class ThumbnailTile extends ConsumerWidget {
                   child: Hero(
                     tag: '${asset?.heroTag ?? ''}_$heroIndex',
                     child: Thumbnail.fromAsset(asset: asset, size: size),
-
+                    //
                     flightShuttleBuilder: (context, animation, direction, from, to) {
                       animation.addStatusListener((status) {
                         _heroInFlight = status == AnimationStatus.forward || status == AnimationStatus.reverse;
