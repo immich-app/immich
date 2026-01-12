@@ -16,7 +16,7 @@ class QueueJobCreateDto {
     required this.job,
   });
 
-  Object job;
+  QueueJobCreateDtoJob job;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is QueueJobCreateDto &&
@@ -45,7 +45,7 @@ class QueueJobCreateDto {
       final json = value.cast<String, dynamic>();
 
       return QueueJobCreateDto(
-        job: mapValueOfType<Object>(json, r'job')!,
+        job: QueueJobCreateDtoJob.fromJson(json[r'job'])!,
       );
     }
     return null;

@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiExtraModels, ApiProperty, getSchemaPath } from '@nestjs/swagger';
 import { ClassConstructor, Transform, Type } from 'class-transformer';
 import { Equals, IsBoolean, IsDefined, IsOptional, ValidateNested } from 'class-validator';
 import { HistoryBuilder, Property } from 'src/decorators';
@@ -56,7 +56,11 @@ const JOB_MAP: Record<string, ClassConstructor<object>> = {
   [JobName.DatabaseBackup]: JobDatabaseBackup,
 };
 
+@ApiExtraModels(...Object.values(JOB_MAP))
 export class QueueJobCreateDto {
+  @ApiProperty({
+    oneOf: Object.values(JOB_MAP).map((job) => ({ $ref: getSchemaPath(job) })),
+  })
   @ValidateNested()
   @Transform(transformToOneOf(JOB_MAP))
   @IsDefined({

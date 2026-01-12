@@ -316,6 +316,8 @@ class ApiClient {
           return AuthStatusResponseDto.fromJson(value);
         case 'AvatarUpdate':
           return AvatarUpdate.fromJson(value);
+        case 'BaseJobData':
+          return BaseJobData.fromJson(value);
         case 'BulkIdErrorReason':
           return BulkIdErrorReasonTypeTransformer().decode(value);
         case 'BulkIdResponseDto':
@@ -382,10 +384,22 @@ class ApiClient {
           return ImageFormatTypeTransformer().decode(value);
         case 'JobCreateDto':
           return JobCreateDto.fromJson(value);
+        case 'JobDatabaseBackup':
+          return JobDatabaseBackup.fromJson(value);
+        case 'JobMemoryCleanup':
+          return JobMemoryCleanup.fromJson(value);
+        case 'JobMemoryGenerate':
+          return JobMemoryGenerate.fromJson(value);
         case 'JobName':
           return JobNameTypeTransformer().decode(value);
+        case 'JobPersonCleanup':
+          return JobPersonCleanup.fromJson(value);
         case 'JobSettingsDto':
           return JobSettingsDto.fromJson(value);
+        case 'JobTagCleanup':
+          return JobTagCleanup.fromJson(value);
+        case 'JobUserDeleteCheck':
+          return JobUserDeleteCheck.fromJson(value);
         case 'LibraryResponseDto':
           return LibraryResponseDto.fromJson(value);
         case 'LibraryStatsResponseDto':
@@ -532,6 +546,8 @@ class ApiClient {
           return QueueDeleteDto.fromJson(value);
         case 'QueueJobCreateDto':
           return QueueJobCreateDto.fromJson(value);
+        case 'QueueJobCreateDtoJob':
+          return QueueJobCreateDtoJob.fromJson(value);
         case 'QueueJobResponseDto':
           return QueueJobResponseDto.fromJson(value);
         case 'QueueJobStatus':

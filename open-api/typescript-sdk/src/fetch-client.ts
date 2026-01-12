@@ -1038,8 +1038,35 @@ export type QueueResponseDto = {
     name: QueueName;
     statistics: QueueStatisticsDto;
 };
+export type BaseJobData = {
+    force?: boolean;
+};
+export type JobTagCleanup = {
+    data: BaseJobData;
+    name: Name;
+};
+export type JobPersonCleanup = {
+    data: BaseJobData;
+    name: Name;
+};
+export type JobUserDeleteCheck = {
+    data: BaseJobData;
+    name: Name;
+};
+export type JobMemoryCleanup = {
+    data: BaseJobData;
+    name: Name;
+};
+export type JobMemoryGenerate = {
+    data: BaseJobData;
+    name: Name;
+};
+export type JobDatabaseBackup = {
+    data: BaseJobData;
+    name: Name;
+};
 export type QueueJobCreateDto = {
-    job: object;
+    job: JobTagCleanup | JobPersonCleanup | JobUserDeleteCheck | JobMemoryCleanup | JobMemoryGenerate | JobDatabaseBackup;
 };
 export type QueueUpdateDto = {
     isPaused?: boolean;
@@ -5608,6 +5635,8 @@ export enum PluginContextType {
 export enum PluginTriggerType {
     AssetCreate = "AssetCreate",
     PersonRecognized = "PersonRecognized"
+}
+export enum Name {
 }
 export enum QueueJobStatus {
     Active = "active",

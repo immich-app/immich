@@ -16575,6 +16575,14 @@
         },
         "type": "object"
       },
+      "BaseJobData": {
+        "properties": {
+          "force": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
       "BulkIdErrorReason": {
         "enum": [
           "duplicate",
@@ -17255,6 +17263,54 @@
         ],
         "type": "object"
       },
+      "JobDatabaseBackup": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/BaseJobData"
+          },
+          "name": {
+            "enum": [],
+            "type": "number"
+          }
+        },
+        "required": [
+          "data",
+          "name"
+        ],
+        "type": "object"
+      },
+      "JobMemoryCleanup": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/BaseJobData"
+          },
+          "name": {
+            "enum": [],
+            "type": "number"
+          }
+        },
+        "required": [
+          "data",
+          "name"
+        ],
+        "type": "object"
+      },
+      "JobMemoryGenerate": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/BaseJobData"
+          },
+          "name": {
+            "enum": [],
+            "type": "number"
+          }
+        },
+        "required": [
+          "data",
+          "name"
+        ],
+        "type": "object"
+      },
       "JobName": {
         "enum": [
           "AssetDelete",
@@ -17316,6 +17372,22 @@
         ],
         "type": "string"
       },
+      "JobPersonCleanup": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/BaseJobData"
+          },
+          "name": {
+            "enum": [],
+            "type": "number"
+          }
+        },
+        "required": [
+          "data",
+          "name"
+        ],
+        "type": "object"
+      },
       "JobSettingsDto": {
         "properties": {
           "concurrency": {
@@ -17325,6 +17397,38 @@
         },
         "required": [
           "concurrency"
+        ],
+        "type": "object"
+      },
+      "JobTagCleanup": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/BaseJobData"
+          },
+          "name": {
+            "enum": [],
+            "type": "number"
+          }
+        },
+        "required": [
+          "data",
+          "name"
+        ],
+        "type": "object"
+      },
+      "JobUserDeleteCheck": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/BaseJobData"
+          },
+          "name": {
+            "enum": [],
+            "type": "number"
+          }
+        },
+        "required": [
+          "data",
+          "name"
         ],
         "type": "object"
       },
@@ -19188,7 +19292,26 @@
       "QueueJobCreateDto": {
         "properties": {
           "job": {
-            "type": "object"
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/JobTagCleanup"
+              },
+              {
+                "$ref": "#/components/schemas/JobPersonCleanup"
+              },
+              {
+                "$ref": "#/components/schemas/JobUserDeleteCheck"
+              },
+              {
+                "$ref": "#/components/schemas/JobMemoryCleanup"
+              },
+              {
+                "$ref": "#/components/schemas/JobMemoryGenerate"
+              },
+              {
+                "$ref": "#/components/schemas/JobDatabaseBackup"
+              }
+            ]
           }
         },
         "required": [
